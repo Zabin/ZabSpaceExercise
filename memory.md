@@ -6,13 +6,14 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Phases 0–2 complete and green (30 tests).** Deterministic core (P0/P1) plus orbits & access
-windows (P2): Kepler+J2 propagator for fictional assets, sgp4 for TLE assets, and an
-`AccessProvider` computing all six channels (uplink/downlink, observation w/ lighting, jam
-footprint, weapon engagement, RPO proximity) with edge-bisection window finding and caching. The
-look-angle pipeline is validated against Skyfield (<1° over 3 h for an ISS TLE). Next action:
-**Phase 3** — orders → validate → queue → execute, the five-D `EffectResolver`, the cyber
-exception, and custody/`Track` with the weapons-quality gate. Build sequence/invariants in `CLAUDE.md`.
+**Phases 0–3 complete and green (44 tests).** P0/P1 deterministic core; P2 orbits & six access
+channels (validated against Skyfield); **P3** orders + effects + custody: `OrderSystem`
+(validate → next-window → execute as a scheduled event), the five-D `EffectResolver` (probabilistic,
+seeded), the cyber exception (resolves off-pass against a modeled access vector + posture), and
+`Track` custody with on-demand confidence decay and the weapons-quality engagement gate. A
+probabilistic engage sequence is shown to replay byte-identically. Next action: **Phase 3.5** —
+bus & payload model (`BusState`, SOH limits, payload gating) + safe mode (headless). Build
+sequence/invariants in `CLAUDE.md`.
 
 ## Internalized summary
 
@@ -44,17 +45,19 @@ Each gets a **regression test** when fixed (test-driven workflow).
   numbers jump 3.5 → 4.5. Treat the appended block as Phase 4 (session layer + first vignette).
 - **Caps unenforced (P0/P1):** ≤24 sats / ≤3 per constellation / 48 ceiling are stated but no
   loader/validator checks them — add pydantic validation at content load.
-- **Effect resolution undefined (P3):** deterministic vs. probabilistic success is unspecified
-  (`03-counterspace-taxonomy.md` vs. `06-bus-and-payload-operations.md`) — decide in `EffectResolver`.
+- **[RESOLVED P3] Effect resolution:** chosen **probabilistic** — `EffectResolver` draws the seeded
+  RNG against a per-effect `success_prob` (modulated by cyber posture / patched vector). Success →
+  intended outcome, failure → `none`; deterministic under replay (draw is in-state).
 - **Safe-mode triggers (P3.5):** which subsystem faults induce safe mode is unspecified; the
   subsystem enum (`power|attitude|thermal|propulsion|cdh|comms`) is undefined; environmental and
   bus-fault inducement are specified but only cyber is exemplified.
 - **Enum overload (P3):** `intended_outcome: safe_mode` doesn't fit the five-D enum — model it as
   a special outcome, not a sixth D.
-- **ROE schema missing (P3):** `kinetic_authorized`, etc. are referenced but absent from the
-  vignette data model — model as boolean flags inside `parameters`.
-- **Kinetic marker missing (P3):** `EffectResolver` has no flag to identify kinetic effects —
-  decide `category == 'direct_ascent'` vs. an explicit `kinetic: true`.
+- **[RESOLVED P3] ROE:** `OrderSystem` takes a `roe` dict of boolean flags (`kinetic_authorized`,
+  `cyber_authorized`); engage/cyber orders are rejected at validation when their flag is unset.
+  Vignettes will surface these as `parameters` and pass them through.
+- **[RESOLVED P3] Kinetic marker:** explicit `kinetic: bool` on `EffectInstance` (debris + political
+  consequence keyed off it), not category-sniffing.
 - **Posture persistence (P3.5/P4.5):** `def.harden` / `def.set_threat_warning` lifecycle is
   undefined — add `active` and an optional `expires_at`.
 - **Sensor contention (P4.5):** prioritization/preemption workflow is underspecified — default to
@@ -88,5 +91,10 @@ test first, implement to green, and add a regression test for every resolved fin
 - **2026-05-24:** Delta-v *burn math* (`apply_impulse`) lives in the propagator now; delta-v
   *budget enforcement* (decrementing `Asset.resources.delta_v_ms`, rejecting over-budget) is
   deferred to Phase 3 with the order/validation layer, where the Asset model lands.
+- **2026-05-24:** Phase 3 design — orders execute as **scheduled simulation events** (queued at the
+  next access window), so execution lands in the event log and replays exactly; validation runs at
+  issue time (re-validation at execute time is a Phase-4.5 refinement). Effect success is
+  probabilistic (seeded), `kinetic` is an explicit flag, ROE is a boolean-flag dict on `OrderSystem`.
 - **Still open:** content file format (JSON vs YAML) — not yet forced; decide before the Phase-4
-  content loader. UI stack — defer to Phase 5.
+  content loader. UI stack — defer to Phase 5. Safe-mode subsystem enum + non-cyber inducement —
+  to be settled in Phase 3.5.

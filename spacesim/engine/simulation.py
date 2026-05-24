@@ -48,6 +48,13 @@ class Simulation:
             self._handlers.update(handlers)
 
     # -- live run --------------------------------------------------------------
+    def register_handler(self, kind: str, fn: EventHandler) -> None:
+        """Register a domain event handler ``(world, payload, rng) -> None``."""
+        self._handlers[kind] = fn
+
+    def handlers(self) -> dict[str, EventHandler]:
+        return dict(self._handlers)
+
     def schedule(self, t: int, kind: str, payload: dict | None = None, actor: str = "system") -> None:
         self.scheduler.schedule(ScheduledEvent(t=t, kind=kind, actor=actor, payload=payload or {}))
 

@@ -8,10 +8,36 @@ from __future__ import annotations
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from spacesim.engine.geometry import GeoPoint
 from spacesim.engine.orbit import OrbitState
+
+
+class AssetResources(BaseModel):
+    delta_v_ms: float = 0.0   # remaining maneuver budget (satellites)
+    power_w: float = 0.0
+    ammo: int = 0             # interceptors / kinetic effectors
+
+
+class Asset(BaseModel):
+    """A commandable entity (subset of ``04-data-model.md`` §3 used through Phase 3)."""
+
+    id: str
+    owner: Literal["blue", "red", "neutral"] = "neutral"
+    kind: str = "satellite"   # satellite|ground_station|sensor|jammer|interceptor|directed_energy|...
+    orbit: Optional[OrbitState] = None
+    location: Optional[GeoPoint] = None
+    elevation_mask_deg: float = 5.0
+    resources: AssetResources = Field(default_factory=AssetResources)
+    health: Literal["nominal", "degraded", "destroyed"] = "nominal"
+    cyber_posture: Literal["low", "medium", "high"] = "medium"
+    cyber_vulnerabilities: list[dict] = Field(default_factory=list)  # {vector, patchable, patched}
+
+    def as_ground_site(self) -> "GroundSite":
+        if self.location is None:
+            raise ValueError(f"asset {self.id} has no location")
+        return GroundSite(id=self.id, location=self.location, elevation_mask_deg=self.elevation_mask_deg)
 
 
 class GroundSite(BaseModel):
@@ -24,6 +50,7 @@ class GroundSite(BaseModel):
 
 class Sensor(BaseModel):
     id: str
+    owner: Literal["blue", "red", "neutral"] = "neutral"
     kind: Literal["ground_radar", "ground_optical", "space_based"] = "ground_radar"
     location: Optional[GeoPoint] = None  # ground sensors
     orbit: Optional[OrbitState] = None   # space-based sensors

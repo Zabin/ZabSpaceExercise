@@ -10,9 +10,10 @@ fleets of space/ground assets as bus and payload operators, constrained by orbit
 (you can only command, observe, or attack when access windows permit). Most effects are reversible
 (EW/cyber/proximity), not kinetic.
 
-**Status: implementation started.** Phases 0–2 are complete and green: skeleton + import guard,
-the deterministic core, and orbits + all six access channels (moderate fidelity, validated against
-Skyfield). Code lives under `spacesim/`. Next: Phase 3 (orders, five-D effects, cyber, custody).
+**Status: implementation started.** Phases 0–3 are complete and green (44 tests): skeleton + import
+guard, the deterministic core, orbits + all six access channels (validated against Skyfield), and
+orders → five-D effect resolver → cyber exception → custody/Track with the weapons-quality gate.
+Code lives under `spacesim/`. Next: Phase 3.5 (bus & payload model + safe mode, headless).
 
 ## Authoritative source & reading order
 
@@ -114,5 +115,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/sun.py` — analytic Sun direction + cylindrical eclipse/lighting test.
 - `spacesim/engine/orbit.py` — `OrbitState`, Kepler+J2 element↔state, regime classification.
 - `spacesim/engine/propagator.py` — `Propagator` seam: Kepler+J2 (fictional) / sgp4 (TLE).
-- `spacesim/engine/entities.py` — `GroundSite`, `Sensor` spatial primitives.
+- `spacesim/engine/entities.py` — `Asset`/`AssetResources`, `GroundSite`, `Sensor`.
 - `spacesim/engine/access.py` — `AccessProvider` seam: all six channels + window caching.
+- `spacesim/engine/custody.py` — `Track` (on-demand confidence decay) + weapons-quality gate.
+- `spacesim/engine/effects.py` — `EffectInstance`/`EffectResolver` seam (5 D's), `is_link_denied`.
+- `spacesim/engine/orders.py` — `Order` + `OrderSystem` (validate → window → execute), cyber exception.
