@@ -10,6 +10,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
+from spacesim.engine.bus import BusState, PayloadState
 from spacesim.engine.geometry import GeoPoint
 from spacesim.engine.orbit import OrbitState
 
@@ -31,8 +32,11 @@ class Asset(BaseModel):
     elevation_mask_deg: float = 5.0
     resources: AssetResources = Field(default_factory=AssetResources)
     health: Literal["nominal", "degraded", "destroyed"] = "nominal"
+    hardening: float = 0.0    # passive defense 0..1; lowers safe-mode susceptibility
     cyber_posture: Literal["low", "medium", "high"] = "medium"
     cyber_vulnerabilities: list[dict] = Field(default_factory=list)  # {vector, patchable, patched}
+    bus_state: Optional[BusState] = None
+    payload_state: Optional[PayloadState] = None
 
     def as_ground_site(self) -> "GroundSite":
         if self.location is None:

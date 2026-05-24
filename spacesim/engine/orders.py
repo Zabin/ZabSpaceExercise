@@ -240,6 +240,8 @@ class OrderSystem:
             success_prob=p.get("success_prob", 0.7),
             access_vector=p.get("access_vector"),
             persistence_s=p.get("persistence_s", 3600.0),
+            sm_susceptibility=p.get("sm_susceptibility", 1.0),
+            persistence_bonus=p.get("persistence_bonus", 1.0),
             window_start=self.sim.clock.now,
         )
         order.status = "queued"

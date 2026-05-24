@@ -10,10 +10,11 @@ fleets of space/ground assets as bus and payload operators, constrained by orbit
 (you can only command, observe, or attack when access windows permit). Most effects are reversible
 (EW/cyber/proximity), not kinetic.
 
-**Status: implementation started.** Phases 0–3 are complete and green (44 tests): skeleton + import
-guard, the deterministic core, orbits + all six access channels (validated against Skyfield), and
-orders → five-D effect resolver → cyber exception → custody/Track with the weapons-quality gate.
-Code lives under `spacesim/`. Next: Phase 3.5 (bus & payload model + safe mode, headless).
+**Status: implementation started.** Phases 0–3.5 are complete and green (54 tests): skeleton + import
+guard, the deterministic core, orbits + all six access channels (validated against Skyfield),
+orders → five-D effect resolver → cyber exception → custody/Track with the weapons-quality gate,
+and the bus & payload SOH model + safe mode (headless). Code lives under `spacesim/`. Next: Phase 4
+(session layer: SessionManager / CellController / SessionAPI + Vignette 1 with fog-of-war).
 
 ## Authoritative source & reading order
 
@@ -120,3 +121,5 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/custody.py` — `Track` (on-demand confidence decay) + weapons-quality gate.
 - `spacesim/engine/effects.py` — `EffectInstance`/`EffectResolver` seam (5 D's), `is_link_denied`.
 - `spacesim/engine/orders.py` — `Order` + `OrderSystem` (validate → window → execute), cyber exception.
+- `spacesim/engine/bus.py` — `BusState`/`PayloadState` SOH (limits, gating, safe mode, pass-gated view).
+- `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.

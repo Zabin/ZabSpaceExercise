@@ -17,13 +17,14 @@ from typing import Literal, Optional, Protocol
 
 from pydantic import BaseModel, Field
 
+from spacesim.engine.bus import enter_safe_mode
 from spacesim.engine.rng import SeededRng
 
 # WorldState is only referenced in annotations (strings under ``from __future__ import
 # annotations``) and via duck-typed attribute access at runtime, so it is intentionally NOT
 # imported here — that would create an import cycle (world.py holds these effect models).
 
-Outcome = Literal["deceive", "disrupt", "deny", "degrade", "destroy", "none"]
+Outcome = Literal["deceive", "disrupt", "deny", "degrade", "destroy", "safe_mode", "none"]
 Category = Literal["direct_ascent", "co_orbital", "electronic_warfare", "directed_energy", "cyber"]
 
 REVERSIBLE_LINK_OUTCOMES = {"deceive", "disrupt", "deny"}
@@ -44,11 +45,14 @@ class EffectInstance(BaseModel):
     intended_outcome: Outcome = "deny"
 
     # Resolution inputs:
-    success_prob: float = 0.9
+    success_prob: float = 0.9             # base probability / base susceptibility for safe_mode
     access_vector: Optional[str] = None   # cyber: which modeled vulnerability
     persistence_s: float = 0.0            # reversible duration when no window span is given
     window_start: Optional[int] = None    # filled by the order layer from the access window
     window_end: Optional[int] = None
+    # Safe-mode inducement (12-safe-mode-loop.md §6.1); only read when intended_outcome=safe_mode:
+    sm_susceptibility: float = 1.0        # White-Cell master dial multiplier
+    persistence_bonus: float = 1.0        # sustained vs. one-shot attempt
 
 
 class EffectOutcome(BaseModel):
@@ -86,6 +90,10 @@ class ModerateEffectResolver:
             return EffectOutcome(achieved_outcome="none", success=False)
 
         p = self._effective_probability(effect, world)
+        if effect.intended_outcome == "safe_mode":
+            # §6.1 susceptibility: base × WC dial × (1 − hardening) × persistence, clamped.
+            hardening = float(getattr(target, "hardening", 0.0)) if target is not None else 0.0
+            p = min(0.98, p * effect.sm_susceptibility * (1.0 - hardening) * effect.persistence_bonus)
         # Draw first (keeps the RNG sequence stable regardless of branch), then branch.
         roll = rng.random()
         success = roll < p
@@ -112,6 +120,10 @@ class ModerateEffectResolver:
         elif achieved == "degrade":
             if target is not None:
                 target.health = "degraded"
+        elif achieved == "safe_mode":
+            if target is not None and target.bus_state is not None:
+                cause = "cyber" if effect.category == "cyber" else "ew" if effect.category == "electronic_warfare" else "bus_stress"
+                enter_safe_mode(target.bus_state, world.now, cause)
         elif achieved in REVERSIBLE_LINK_OUTCOMES:
             world.active_effects.append(
                 ActiveEffect(

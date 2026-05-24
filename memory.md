@@ -6,14 +6,16 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Phases 0–3 complete and green (44 tests).** P0/P1 deterministic core; P2 orbits & six access
-channels (validated against Skyfield); **P3** orders + effects + custody: `OrderSystem`
-(validate → next-window → execute as a scheduled event), the five-D `EffectResolver` (probabilistic,
-seeded), the cyber exception (resolves off-pass against a modeled access vector + posture), and
-`Track` custody with on-demand confidence decay and the weapons-quality engagement gate. A
-probabilistic engage sequence is shown to replay byte-identically. Next action: **Phase 3.5** —
-bus & payload model (`BusState`, SOH limits, payload gating) + safe mode (headless). Build
-sequence/invariants in `CLAUDE.md`.
+**Phases 0–3.5 complete and green (54 tests).** P0/P1 deterministic core; P2 orbits & six access
+channels (validated against Skyfield); P3 orders + five-D effects + cyber exception + custody;
+**P3.5** bus & payload SOH model (`BusState`: power/eclipse, attitude, thermal, propulsion,
+storage, comms with green/yellow/red limits), payload gating (safe mode / power-red / full
+storage), pass-gated telemetry (`ground_view` refreshes only on contact), and safe-mode
+inducement via the §6.1 susceptibility check (hardening + patched-vuln counterplay). `BusSystem`
+drives bus evolution as scheduled `bus_tick` events, so it replays byte-identically. The recovery
+procedure chain is deferred to Phase 4.5 per the safe-mode doc. Next action: **Phase 4** — session
+layer (SessionManager / CellController / SessionAPI) + Vignette 1 end-to-end with fog-of-war.
+Build sequence/invariants in `CLAUDE.md`.
 
 ## Internalized summary
 
@@ -48,11 +50,14 @@ Each gets a **regression test** when fixed (test-driven workflow).
 - **[RESOLVED P3] Effect resolution:** chosen **probabilistic** — `EffectResolver` draws the seeded
   RNG against a per-effect `success_prob` (modulated by cyber posture / patched vector). Success →
   intended outcome, failure → `none`; deterministic under replay (draw is in-state).
-- **Safe-mode triggers (P3.5):** which subsystem faults induce safe mode is unspecified; the
-  subsystem enum (`power|attitude|thermal|propulsion|cdh|comms`) is undefined; environmental and
-  bus-fault inducement are specified but only cyber is exemplified.
-- **Enum overload (P3):** `intended_outcome: safe_mode` doesn't fit the five-D enum — model it as
-  a special outcome, not a sixth D.
+- **[RESOLVED P3.5] Safe-mode triggers:** subsystem enum fixed as
+  `power|attitude|thermal|propulsion|cdh|comms` (`bus.py`). Attack inducement (cyber/ew) implemented
+  via the §6.1 susceptibility check with hardening + patched-vuln counterplay; `cause` records
+  `cyber|ew|bus_stress|fault|environment`. Bus-fault/environmental inducement paths are modeled in
+  data (`cause`) but only cyber is exercised in tests so far — wire EW + power-crisis inducement
+  when the relevant vignettes land (P6).
+- **[RESOLVED P3] Enum overload:** `safe_mode` added to the `Outcome` literal as a **special
+  outcome** (not a sixth D); the resolver branches on it to call `enter_safe_mode`.
 - **[RESOLVED P3] ROE:** `OrderSystem` takes a `roe` dict of boolean flags (`kinetic_authorized`,
   `cyber_authorized`); engage/cyber orders are rejected at validation when their flag is unset.
   Vignettes will surface these as `parameters` and pass them through.
@@ -95,6 +100,10 @@ test first, implement to green, and add a regression test for every resolved fin
   next access window), so execution lands in the event log and replays exactly; validation runs at
   issue time (re-validation at execute time is a Phase-4.5 refinement). Effect success is
   probabilistic (seeded), `kinetic` is an explicit flag, ROE is a boolean-flag dict on `OrderSystem`.
-- **Still open:** content file format (JSON vs YAML) — not yet forced; decide before the Phase-4
-  content loader. UI stack — defer to Phase 5. Safe-mode subsystem enum + non-cyber inducement —
-  to be settled in Phase 3.5.
+- **2026-05-24:** Phase 3.5 — bus evolution runs as scheduled `bus_tick` events (eclipse computed
+  from orbit + analytic Sun), keeping continuous SOH change inside the deterministic event log;
+  `bus.py` is pure data/limits (no heavy imports) so `world.py` can hold `BusState` without a cycle,
+  and `busmodel.py` holds the propagator-aware integration. Pass-gating modeled as a `ground_view`
+  snapshot refreshed only by a `telemetry_contact` event.
+- **Still open:** content file format (JSON vs YAML) — decide before the Phase-4 content loader
+  (imminent). UI stack — defer to Phase 5. EW/bus-stress safe-mode inducement — wire in P6 vignettes.
