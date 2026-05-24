@@ -10,9 +10,9 @@ fleets of space/ground assets as bus and payload operators, constrained by orbit
 (you can only command, observe, or attack when access windows permit). Most effects are reversible
 (EW/cyber/proximity), not kinetic.
 
-**Status: implementation started.** Phase 0 (skeleton + import guard) and Phase 1 (deterministic
-core) are complete and green. Code lives under `spacesim/`. Next: Phase 2 (orbits & the six access
-channels).
+**Status: implementation started.** Phases 0–2 are complete and green: skeleton + import guard,
+the deterministic core, and orbits + all six access channels (moderate fidelity, validated against
+Skyfield). Code lives under `spacesim/`. Next: Phase 3 (orders, five-D effects, cyber, custody).
 
 ## Authoritative source & reading order
 
@@ -110,3 +110,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/world.py` — `WorldState` (pydantic; minimal in P1, extended later).
 - `spacesim/engine/handlers.py` — event-handler registry (`(world, payload, rng) -> None`).
 - `spacesim/engine/simulation.py` — `Simulation` driver + `replay()` + `SavedSession`.
+- `spacesim/engine/geometry.py` — frames (GMST ECI↔ECEF), WGS84 geodety, topocentric look angles.
+- `spacesim/engine/sun.py` — analytic Sun direction + cylindrical eclipse/lighting test.
+- `spacesim/engine/orbit.py` — `OrbitState`, Kepler+J2 element↔state, regime classification.
+- `spacesim/engine/propagator.py` — `Propagator` seam: Kepler+J2 (fictional) / sgp4 (TLE).
+- `spacesim/engine/entities.py` — `GroundSite`, `Sensor` spatial primitives.
+- `spacesim/engine/access.py` — `AccessProvider` seam: all six channels + window caching.

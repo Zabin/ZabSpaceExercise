@@ -6,11 +6,13 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Phase 0 + Phase 1 complete and green (13 tests).** Deterministic core implemented under
-`spacesim/engine/` (clock/scheduler, seeded RNG, event log + snapshots, WorldState, replay +
-save round-trip) with the import guardrails enforced as a test. Next action: **Phase 2** —
-`Propagator` (Kepler + J2, TLE via Skyfield) and `AccessProvider` with all six channels. The build
-sequence and invariants live in `CLAUDE.md`.
+**Phases 0–2 complete and green (30 tests).** Deterministic core (P0/P1) plus orbits & access
+windows (P2): Kepler+J2 propagator for fictional assets, sgp4 for TLE assets, and an
+`AccessProvider` computing all six channels (uplink/downlink, observation w/ lighting, jam
+footprint, weapon engagement, RPO proximity) with edge-bisection window finding and caching. The
+look-angle pipeline is validated against Skyfield (<1° over 3 h for an ISS TLE). Next action:
+**Phase 3** — orders → validate → queue → execute, the five-D `EffectResolver`, the cyber
+exception, and custody/`Track` with the weapons-quality gate. Build sequence/invariants in `CLAUDE.md`.
 
 ## Internalized summary
 
@@ -78,5 +80,13 @@ test first, implement to green, and add a regression test for every resolved fin
   than adding the import-linter dependency — same enforcement, one fewer dep.
 - **2026-05-24:** Save format = `SavedSession{initial_state, seed, final_time, snapshots, eventlog}`;
   `final_time` pins `world.now` so trailing idle time (advance with no events) replays exactly.
-- **Still open:** content file format (JSON vs YAML) — not yet forced; decide before the Phase-2/4
+- **2026-05-24:** Moderate fidelity = two-body **+ J2 secular** precession (RAAN/argp/M rates);
+  TLE assets propagate via **sgp4** with TEME treated as ECI and a GMST-only ECEF rotation —
+  validated within 1° of Skyfield, well inside "moderate." `sgp4` is now a core engine dep;
+  `skyfield` is dev-only (reference test). Sun/eclipse use an analytic low-precision model (no
+  ephemeris download), keeping the engine offline-capable.
+- **2026-05-24:** Delta-v *burn math* (`apply_impulse`) lives in the propagator now; delta-v
+  *budget enforcement* (decrementing `Asset.resources.delta_v_ms`, rejecting over-budget) is
+  deferred to Phase 3 with the order/validation layer, where the Asset model lands.
+- **Still open:** content file format (JSON vs YAML) — not yet forced; decide before the Phase-4
   content loader. UI stack — defer to Phase 5.

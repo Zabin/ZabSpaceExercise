@@ -6,13 +6,13 @@ requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.0",
     "numpy>=1.24",
+    "sgp4>=2.20",       # TLE propagation for real named satellites
 ]
 
 [project.optional-dependencies]
-# Added in later phases as orbits/UI land.
-orbits = ["skyfield>=1.45", "sgp4>=2.20"]
 content = ["pyyaml>=6.0"]
-dev = ["pytest>=7.0", "hypothesis>=6.0"]
+# skyfield is used as an independent reference in the Phase-2 tests.
+dev = ["pytest>=7.0", "hypothesis>=6.0", "skyfield>=1.45"]
 
 [tool.pytest.ini_options]
 # Make the repo root importable so tests can `import spacesim...`.
