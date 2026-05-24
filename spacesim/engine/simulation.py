@@ -75,6 +75,38 @@ class Simulation:
         self.clock.now = target
         self.world.now = target
 
+    def rewind_to(self, t: int) -> None:
+        """Exact rewind: keep event-log entries at or before ``t``, then re-derive state from
+        the initial state + seed (replaying their RNG draws), and drop pending future events.
+        This is the rewind/undo/branch primitive — only sound because the core is deterministic."""
+        keep_seq = -1
+        for e in self.eventlog.entries:
+            if e.sim_time <= t:
+                keep_seq = e.seq
+        if keep_seq >= 0:
+            self.eventlog.truncate_after(keep_seq)
+        else:
+            self.eventlog.entries = []
+        self._rebuild(stop_time=t)
+
+    def undo_last(self, n: int = 1) -> None:
+        """Drop the last ``n`` event-log entries and re-derive state."""
+        if n > 0:
+            self.eventlog.entries = self.eventlog.entries[:-n] if n < len(self.eventlog.entries) else []
+        stop = self.eventlog.entries[-1].sim_time if self.eventlog.entries else 0
+        self._rebuild(stop_time=stop)
+
+    def _rebuild(self, stop_time: int) -> None:
+        world = WorldState.model_validate(self._initial_state)
+        self.rng = SeededRng(self._seed)
+        for entry in self.eventlog.entries:
+            world.now = entry.sim_time
+            self._handlers[entry.kind](world, entry.payload, self.rng)
+        world.now = stop_time
+        self.world = world
+        self.clock.now = stop_time
+        self.scheduler = Scheduler()  # pending future events do not survive a rewind/branch
+
     def snapshot(self) -> Snapshot:
         snap = Snapshot(
             seq=len(self.eventlog),

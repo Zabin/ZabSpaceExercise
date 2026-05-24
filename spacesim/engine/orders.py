@@ -23,10 +23,12 @@ from spacesim.engine.access import (
     COMMAND_UPLINK,
     JAM_FOOTPRINT,
     SENSOR_OBSERVATION,
+    TELEMETRY_DOWNLINK,
     WEAPON_ENGAGEMENT,
 )
+from spacesim.engine.bus import downlink_storage
 from spacesim.engine.custody import Track, WEAPONS_QUALITY_THRESHOLD, observe
-from spacesim.engine.effects import EffectInstance, ModerateEffectResolver
+from spacesim.engine.effects import EffectInstance, ModerateEffectResolver, is_link_denied
 from spacesim.engine.propagator import ModeratePropagator
 from spacesim.engine.world import WorldState
 
@@ -35,6 +37,7 @@ ACTION_CHANNEL = {
     "engage": WEAPON_ENGAGEMENT,
     "observe": SENSOR_OBSERVATION,
     "maneuver": COMMAND_UPLINK,
+    "downlink": TELEMETRY_DOWNLINK,
     "cyber": None,  # not window-gated
 }
 
@@ -82,6 +85,7 @@ class OrderSystem:
         sim.register_handler("execute_effect", self._h_effect)
         sim.register_handler("execute_maneuver", self._h_maneuver)
         sim.register_handler("execute_observe", self._h_observe)
+        sim.register_handler("execute_downlink", self._h_downlink)
 
     # -- issue pipeline --------------------------------------------------------
     def issue(self, order: Order) -> Order:
@@ -145,12 +149,15 @@ class OrderSystem:
             if "via" not in order.params:
                 return False, "no_command_station"
 
+        if order.action == "downlink" and "via" not in order.params:
+            return False, "no_downlink_station"
+
         return True, ""
 
     # -- windowing -------------------------------------------------------------
     def _window_endpoints(self, order: Order) -> tuple[str, str]:
-        if order.action == "maneuver":
-            return order.params["via"], order.actor   # command uplink: station <-> satellite
+        if order.action in ("maneuver", "downlink"):
+            return order.params["via"], order.actor   # uplink/downlink: station <-> satellite
         return order.actor, order.target or ""
 
     def _next_window(self, order: Order, channel: str) -> Optional[AccessWindow]:
@@ -216,6 +223,12 @@ class OrderSystem:
                 "classification": p.get("classification"),
             }
 
+        if order.action == "downlink":
+            return "execute_downlink", {
+                "actor": order.actor,
+                "delivers": p.get("delivers", "imagery_delivered"),
+            }
+
         # maneuver
         dv = list(np.asarray(p.get("dv", [0, 0, 0]), dtype=float))
         return "execute_maneuver", {
@@ -279,6 +292,22 @@ class OrderSystem:
         dv = np.asarray(payload["dv"], dtype=float)
         actor.orbit = self.prop.apply_impulse(actor.orbit, dv, world.now)
         actor.resources.delta_v_ms -= float(payload["cost"])
+
+    def _h_downlink(self, world: WorldState, payload: dict, rng) -> None:
+        """Deliver collected product — unless the downlink is jammed at the execution moment."""
+        actor = world.assets.get(payload["actor"])
+        denied = is_link_denied(world, payload["actor"], world.now)
+        flag = payload["delivers"]
+        if denied:
+            world.effect_log.append({"t": world.now, "template": "downlink", "target": payload["actor"],
+                                     "achieved": "blocked", "success": False})
+            return
+        world.mission[flag] = True
+        world.mission[f"{flag}_at"] = world.now
+        if actor is not None and actor.bus_state is not None:
+            downlink_storage(actor.bus_state, 1.0)
+        world.effect_log.append({"t": world.now, "template": "downlink", "target": payload["actor"],
+                                 "achieved": "delivered", "success": True})
 
     def _h_observe(self, world: WorldState, payload: dict, rng) -> None:
         track = world.track_for(payload["cell"], payload["object"])

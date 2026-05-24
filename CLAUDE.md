@@ -10,11 +10,12 @@ fleets of space/ground assets as bus and payload operators, constrained by orbit
 (you can only command, observe, or attack when access windows permit). Most effects are reversible
 (EW/cyber/proximity), not kinetic.
 
-**Status: implementation started.** Phases 0–3.5 are complete and green (54 tests): skeleton + import
-guard, the deterministic core, orbits + all six access channels (validated against Skyfield),
-orders → five-D effect resolver → cyber exception → custody/Track with the weapons-quality gate,
-and the bus & payload SOH model + safe mode (headless). Code lives under `spacesim/`. Next: Phase 4
-(session layer: SessionManager / CellController / SessionAPI + Vignette 1 with fog-of-war).
+**Status: implementation started.** Phases 0–4 are complete and green (59 tests): skeleton + import
+guard, the deterministic core, orbits + six access channels (validated against Skyfield), orders →
+five-D effects → cyber → custody, the bus/payload SOH model + safe mode, and the **session layer**
+(SessionManager + CellController fog-of-war + in-process SessionAPI) running **Vignette 1**
+end-to-end (play → win → rewind → branch to a different outcome). Code under `spacesim/`; content
+is YAML under `spacesim/content/`. Next: Phase 4.5 (planning & tasking scheduler + safe-mode recovery chain).
 
 ## Authoritative source & reading order
 
@@ -94,7 +95,7 @@ is the canonical permanent gate.
 ## Build/test commands
 
 ```bash
-pip install pydantic numpy pytest hypothesis   # core + dev deps (see pyproject.toml)
+pip install pydantic numpy sgp4 pyyaml pytest hypothesis skyfield   # core + dev deps
 python3 -m pytest                              # runs the whole suite (testpaths = spacesim/tests)
 python3 -m pytest spacesim/tests/test_determinism.py    # the Phase-1 determinism gate
 python3 -m pytest spacesim/tests/test_import_guard.py   # the Phase-0 engine guardrails
@@ -123,3 +124,6 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/orders.py` — `Order` + `OrderSystem` (validate → window → execute), cyber exception.
 - `spacesim/engine/bus.py` — `BusState`/`PayloadState` SOH (limits, gating, safe mode, pass-gated view).
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
+- `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
+- `spacesim/session/` — `SessionManager` (clock/rewind/inject), `CellController` (fog-of-war),
+  `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py` (in-process API impl).

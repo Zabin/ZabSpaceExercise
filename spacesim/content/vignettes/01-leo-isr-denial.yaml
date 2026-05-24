@@ -1,0 +1,90 @@
+vignette:
+  id: leo-isr-denial
+  title: "LEO ISR Denial"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "Imaging a target and downlinking that image are two separate pass problems."
+    - "The most effective Red options here are reversible: jam the downlink, dazzle the optics."
+    - "Escalating to a kinetic ASAT to solve a temporary problem is disproportionate."
+  doctrinal_basis: [orbital_warfare, electromagnetic_warfare, directed_energy]
+  red_doctrine_profile: pla_early_disruption
+  estimated_duration_min: 60
+  start_epoch_utc: "2030-03-15T06:00:00Z"
+
+  geography:
+    theater: "generic Indo-Pacific island chain"
+
+  orbital_environment:
+    debris_fields: []
+    space_weather: nominal
+
+  blue_forces:
+    - id: ISR-EO-1
+      kind: satellite
+      orbit: {source: kepler, a_m: 6978137.0, e: 0.0, i_deg: 97.8, raan_deg: 0.0, argp_deg: 0.0, ta_deg: 0.0}
+      resources: {delta_v_ms: 80.0, power_w: 1500.0}
+      payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
+      bus_state:
+        power: {battery_soc: 0.9, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}
+    # Positioned under the ISR sat's early ascending pass so Blue gets a downlink window soon.
+    - id: GS-NORTH
+      kind: ground_station
+      location: {lat_deg: 22.22, lon_deg: 92.42, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+    - id: GS-EAST
+      kind: ground_station
+      location: {lat_deg: 33.28, lon_deg: 89.73, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+
+  red_forces:
+    - id: RED-SURF
+      kind: terrestrial_force
+      location: {lat_deg: 10.0, lon_deg: 125.0, alt_m: 0.0}
+    # Co-located with GS-NORTH (mask 0 → its jam footprint opens slightly before the
+    # downlink window), so Red can deny Blue's downlink during the same pass.
+    - id: JAM-NORTH
+      kind: jammer
+      location: {lat_deg: 22.22, lon_deg: 92.42, alt_m: 0.0}
+      elevation_mask_deg: 0.0
+    - id: RED-ASAT
+      kind: interceptor
+      location: {lat_deg: 12.0, lon_deg: 123.0, alt_m: 0.0}
+      resources: {ammo: 1}
+
+  sensors:
+    - id: BLUE-RADAR
+      owner: blue
+      kind: ground_radar
+      location: {lat_deg: 12.0, lon_deg: 120.0, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+
+  objectives:
+    blue:
+      - {id: deliver_isr, desc: "Deliver confirmed imagery before the landing window", metric: {kind: deliver_before}}
+    red:
+      - {id: deny_isr, desc: "Deny Blue imagery delivery during the window", metric: {kind: deny_delivery}}
+
+  escalation_thresholds:
+    debris_generating_strike: {political_cost: high, triggers_inject: un_condemnation}
+
+  parameters:
+    - {id: blue_ground_station_count, label: "Blue Ground Stations", type: int, min: 1, max: 6, default: 2}
+    - {id: red_downlink_jam, label: "Red Downlink Jam", type: bool, default: true}
+    - {id: red_kinetic_authorized, label: "Red Kinetic ASAT Authorized", type: bool, default: false}
+    - {id: landing_window_start_s, label: "Landing Window Start (s)", type: int, default: 10800}
+    - {id: attribution_difficulty, label: "Attribution Difficulty", type: enum, options: [easy, realistic, fog], default: realistic}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: ops_fidelity, label: "Ops Fidelity", type: enum, options: [tactical, realistic, full_ttc], default: realistic}
+
+  injects:
+    - id: dazzlers_online
+      label: "Red dazzlers come online"
+      trigger: {type: manual}
+      effects:
+        - {type: message, to: [white], text: "Red dazzlers online; Blue must infer from degraded imagery."}
+    - id: commercial_imagery_leak
+      label: "Commercial SAR imagery reveals the surface group"
+      trigger: {type: time, at_sim_s: 2700}
+      effects:
+        - {type: reveal_asset, target: RED-SURF, to: blue}
+        - {type: message, to: [blue, white], text: "OSINT leak: commercial SAR shows the surface group."}

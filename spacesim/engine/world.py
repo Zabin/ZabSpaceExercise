@@ -28,6 +28,8 @@ class WorldState(BaseModel):
     debris: list[DebrisField] = Field(default_factory=list)
     effect_log: list[dict] = Field(default_factory=list)     # resolved outcomes (for inspection/AAR)
     consequences: list[dict] = Field(default_factory=list)   # political consequences raised
+    messages: list[dict] = Field(default_factory=list)       # injects/alerts addressed to cells
+    mission: dict = Field(default_factory=dict)              # vignette-level objective flags
 
     # Generic scratch state used by the Phase-1 determinism harness.
     entities: dict[str, dict] = Field(default_factory=dict)

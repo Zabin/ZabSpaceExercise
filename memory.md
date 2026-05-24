@@ -6,16 +6,16 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Phases 0–3.5 complete and green (54 tests).** P0/P1 deterministic core; P2 orbits & six access
-channels (validated against Skyfield); P3 orders + five-D effects + cyber exception + custody;
-**P3.5** bus & payload SOH model (`BusState`: power/eclipse, attitude, thermal, propulsion,
-storage, comms with green/yellow/red limits), payload gating (safe mode / power-red / full
-storage), pass-gated telemetry (`ground_view` refreshes only on contact), and safe-mode
-inducement via the §6.1 susceptibility check (hardening + patched-vuln counterplay). `BusSystem`
-drives bus evolution as scheduled `bus_tick` events, so it replays byte-identically. The recovery
-procedure chain is deferred to Phase 4.5 per the safe-mode doc. Next action: **Phase 4** — session
-layer (SessionManager / CellController / SessionAPI) + Vignette 1 end-to-end with fog-of-war.
-Build sequence/invariants in `CLAUDE.md`.
+**Phases 0–4 complete and green (59 tests).** P0–P3.5 as before; **P4** adds the session layer:
+`SessionManager` (authoritative; owns Simulation + OrderSystem + BusSystem, time control, and
+`rewind_to`/`undo_last` via the engine's replay primitive, re-arming scripted schedule on rewind),
+`CellController` fog-of-war (`CellView`: own assets in full, other-side only via own tracks,
+effects as attribution-limited symptoms), and an in-process `SessionAPI`. **Vignette 1** is authored
+as YAML and runs end-to-end through the API: Blue downlinks imagery for a win, then the session
+**rewinds and branches** to a Red win (Red jams the downlink). Fog-of-war verified (Red view never
+contains Blue assets/state). Next action: **Phase 4.5** — unified PlannedActivity scheduler
+(command + collection, ISL relay, stored programs), sensor tasking + contention, and the safe-mode
+**recovery procedure chain** with re-safe-on-persistence. Build sequence/invariants in `CLAUDE.md`.
 
 ## Internalized summary
 
@@ -30,10 +30,9 @@ rewind/undo/branch and a future LAN-multiplayer swap.
 
 - **UI stack:** web (FastAPI + browser, recommended) vs. desktop PyQt. Confirm before Phase 5;
   doesn't block Phases 0–4.5 (engine is UI-agnostic).
-- **Content file format — CONTRADICTION:** `00-BUILD-SPECIFICATION.md` §3.1 says "one **JSON**
-  file per vignette," but `02-tech-stack-recommendation.md`, `01-architecture-overview.md`, and
-  `08-build-roadmap.md` all describe **YAML** loaders. Lean YAML (human-authorable; 3 docs agree),
-  but flag that the binding spec says JSON. Decide before writing the content loader.
+- **[RESOLVED P4] Content file format:** chose **YAML** (matches 3 design docs; human-authorable).
+  Loader is `spacesim/content/vignette.py` (pyyaml + pydantic). The build-spec's "JSON per vignette"
+  wording is noted but not followed; JSON could be added trivially behind the same loader if needed.
 - **3D viewer scope — AMBIGUITY:** build-spec defers the full globe to v1.1, but roadmap Phase 5.5
   and `10-sda-3d-viewer.md` build belief-state 3D *during* v1. Resolve as: v1 = belief-state
   filtering/rendering proof; v1.1 = full CesiumJS globe UI.
@@ -67,10 +66,10 @@ Each gets a **regression test** when fixed (test-driven workflow).
   undefined — add `active` and an optional `expires_at`.
 - **Sensor contention (P4.5):** prioritization/preemption workflow is underspecified — default to
   FIFO with operator reorder.
-- **Vignettes not yet engine-loadable (P4/P6):** all 8 lack `start_epoch_utc`, objective `metrics`,
-  concrete orbit tuples/TLEs, and ground-station coordinates; `escalation_thresholds` appears only
-  in vignette 05. **Vignette 1 (LEO ISR Denial) is the first spike** — use it to lock the content
-  schema, then retrofit the rest.
+- **[PARTIAL P4] Vignettes not yet engine-loadable:** Vignette 1 now exists as a concrete,
+  engine-loadable YAML (real orbit, ground-site coords positioned for an early pass, typed
+  parameters, objective metrics + landing-window deadline) — the content schema is locked.
+  Vignettes 2–8 still need authoring with the same concreteness (Phase 6).
 - **Red doctrine profiles (P6):** `china_integrated` / `russia_ew_first` / `generic` are referenced
   as selectable data presets but none are authored.
 
@@ -105,5 +104,13 @@ test first, implement to green, and add a regression test for every resolved fin
   `bus.py` is pure data/limits (no heavy imports) so `world.py` can hold `BusState` without a cycle,
   and `busmodel.py` holds the propagator-aware integration. Pass-gating modeled as a `ground_view`
   snapshot refreshed only by a `telemetry_contact` event.
-- **Still open:** content file format (JSON vs YAML) — decide before the Phase-4 content loader
-  (imminent). UI stack — defer to Phase 5. EW/bus-stress safe-mode inducement — wire in P6 vignettes.
+- **2026-05-24:** Phase 4 — `rewind_to`/`undo_last` rebuild state by truncating the event log and
+  replaying from the initial state (deterministic core makes this exact); pending future events are
+  dropped, so SessionManager **re-arms** scripted bus-ticks/time-injects after a rewind. Injects run
+  as logged `inject` events so their world-state effects (message/reveal_asset/political/patch) are
+  replay-safe; `change_roe`/`modify_parameter` mutate live (non-engine) state and are noted as not
+  replay-safe across a rewind (avoid mid-branch). CellView exposes own assets fully; other-side only
+  via the cell's own tracks; effects as symptoms (source shown only if attribution is overt).
+- **Still open:** UI stack — defer to Phase 5. EW/bus-stress safe-mode inducement — wire in P6
+  vignettes. Vignettes 2–8 authoring — Phase 6. Order is an engine dataclass (not pydantic) crossing
+  the API in-process; make it a serializable message when the network transport lands.
