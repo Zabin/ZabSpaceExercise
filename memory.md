@@ -6,9 +6,11 @@ log.** Update it as work progresses.
 
 ## Status
 
-Planning complete; **no code yet**. Full cross-doc review done (weighted equally on internal
-consistency and implementation-readiness). Next action: **Phase 0** (project skeleton + import
-guard) when greenlit. The build sequence and invariants live in `CLAUDE.md`.
+**Phase 0 + Phase 1 complete and green (13 tests).** Deterministic core implemented under
+`spacesim/engine/` (clock/scheduler, seeded RNG, event log + snapshots, WorldState, replay +
+save round-trip) with the import guardrails enforced as a test. Next action: **Phase 2** —
+`Propagator` (Kepler + J2, TLE via Skyfield) and `AccessProvider` with all six channels. The build
+sequence and invariants live in `CLAUDE.md`.
 
 ## Internalized summary
 
@@ -70,4 +72,11 @@ test first, implement to green, and add a regression test for every resolved fin
 
 ## Decision log
 
-_(Append dated decisions here as they are made — e.g., "2026-05-24: chose YAML for content files.")_
+- **2026-05-24:** Sim time is stored as **integer microseconds since the Unix epoch** (not float)
+  so replay is byte-identical; ISO-8601 only at the serialization/display boundary (`simtime.py`).
+- **2026-05-24:** Import guard implemented as a **pytest AST scan** (`test_import_guard.py`) rather
+  than adding the import-linter dependency — same enforcement, one fewer dep.
+- **2026-05-24:** Save format = `SavedSession{initial_state, seed, final_time, snapshots, eventlog}`;
+  `final_time` pins `world.now` so trailing idle time (advance with no events) replays exactly.
+- **Still open:** content file format (JSON vs YAML) — not yet forced; decide before the Phase-2/4
+  content loader. UI stack — defer to Phase 5.

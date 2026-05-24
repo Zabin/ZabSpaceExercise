@@ -10,8 +10,9 @@ fleets of space/ground assets as bus and payload operators, constrained by orbit
 (you can only command, observe, or attack when access windows permit). Most effects are reversible
 (EW/cyber/proximity), not kinetic.
 
-**Status: pre-implementation.** The repo is documentation only — no code yet. The next action is
-Phase 0 of the build roadmap.
+**Status: implementation started.** Phase 0 (skeleton + import guard) and Phase 1 (deterministic
+core) are complete and green. Code lives under `spacesim/`. Next: Phase 2 (orbits & the six access
+channels).
 
 ## Authoritative source & reading order
 
@@ -90,5 +91,22 @@ is the canonical permanent gate.
 
 ## Build/test commands
 
-None yet — repo is documentation only. Populate this section (`pytest`, lint, import-guard) once
-`spacesim/` exists.
+```bash
+pip install pydantic numpy pytest hypothesis   # core + dev deps (see pyproject.toml)
+python3 -m pytest                              # runs the whole suite (testpaths = spacesim/tests)
+python3 -m pytest spacesim/tests/test_determinism.py    # the Phase-1 determinism gate
+python3 -m pytest spacesim/tests/test_import_guard.py   # the Phase-0 engine guardrails
+```
+
+The import-guard is a plain pytest test (`test_import_guard.py`), not import-linter — it AST-scans
+`spacesim/engine/` for forbidden imports, wall-clock reads, and any `random` use outside `rng.py`.
+
+## Code map (current)
+
+- `spacesim/engine/simtime.py` — sim-UTC as integer microseconds; ISO conversion at the boundary.
+- `spacesim/engine/rng.py` — `SeededRng`, the only randomness source; serializable state.
+- `spacesim/engine/clock.py` — `SimClock` + `Scheduler` (sub-stepped, deterministic ordering).
+- `spacesim/engine/eventlog.py` — `EventLog`, `EventLogEntry`, `Snapshot`.
+- `spacesim/engine/world.py` — `WorldState` (pydantic; minimal in P1, extended later).
+- `spacesim/engine/handlers.py` — event-handler registry (`(world, payload, rng) -> None`).
+- `spacesim/engine/simulation.py` — `Simulation` driver + `replay()` + `SavedSession`.
