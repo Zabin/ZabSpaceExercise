@@ -17,6 +17,7 @@ from spacesim.engine.access import (
     JAM_FOOTPRINT,
     WEAPON_ENGAGEMENT,
     RPO_PROXIMITY,
+    ISL_LINK,
 )
 from spacesim.engine.bus import (
     BusState,
@@ -26,6 +27,7 @@ from spacesim.engine.bus import (
     can_collect,
     downlink_storage,
     enter_safe_mode,
+    exit_safe_mode,
     overall_status,
     payload_available,
     refresh_ground_view,
@@ -47,6 +49,7 @@ from spacesim.engine.geometry import ECIState, GeoPoint
 from spacesim.engine.orbit import OrbitState
 from spacesim.engine.orders import Order, OrderSystem, scene_from_world
 from spacesim.engine.propagator import ModeratePropagator, Propagator
+from spacesim.engine.recovery import RecoverySystem
 from spacesim.engine.rng import SeededRng
 from spacesim.engine.simulation import SavedSession, Simulation
 from spacesim.engine.world import WorldState
@@ -62,6 +65,8 @@ __all__ = [
     "JAM_FOOTPRINT",
     "WEAPON_ENGAGEMENT",
     "RPO_PROXIMITY",
+    "ISL_LINK",
+    "RecoverySystem",
     "BusState",
     "PayloadState",
     "BusSystem",
@@ -73,6 +78,7 @@ __all__ = [
     "overall_status",
     "payload_available",
     "refresh_ground_view",
+    "exit_safe_mode",
     "Scheduler",
     "SimClock",
     "Track",

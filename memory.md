@@ -6,16 +6,25 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Phases 0–4 complete and green (59 tests).** P0–P3.5 as before; **P4** adds the session layer:
+**Phases 0–4.5 complete and green (66 tests).** P0–P4 as below; **P4.5** adds the planning &
+tasking layer: command **delivery paths** (ground uplink / ISL relay via a crosslink-capable peer /
+stored program — earliest wins, re-validated at execute), **sensor tasking** (intents, `auto`
+sensor selection, incremental confidence, and contention that serializes tasks onto later windows),
+and the **safe-mode recovery chain** (`RecoverySystem`: confirm at first contact → multi-pass
+recovery sized by `safe_mode_recovery_difficulty`, with **re-safe-on-persistence** until the root
+cause — e.g. an unpatched cyber vuln — is removed). New `isl_link` access channel. Next action:
+**Phase 5** — the UI over the SessionAPI (2D map, pass-timeline, order/queue panels, fleet SOH,
+White-Cell controls), per `09-gui-principles.md`. Build sequence/invariants in `CLAUDE.md`.
+
+### Earlier (P4) summary
+P4 adds the session layer:
 `SessionManager` (authoritative; owns Simulation + OrderSystem + BusSystem, time control, and
 `rewind_to`/`undo_last` via the engine's replay primitive, re-arming scripted schedule on rewind),
 `CellController` fog-of-war (`CellView`: own assets in full, other-side only via own tracks,
 effects as attribution-limited symptoms), and an in-process `SessionAPI`. **Vignette 1** is authored
 as YAML and runs end-to-end through the API: Blue downlinks imagery for a win, then the session
 **rewinds and branches** to a Red win (Red jams the downlink). Fog-of-war verified (Red view never
-contains Blue assets/state). Next action: **Phase 4.5** — unified PlannedActivity scheduler
-(command + collection, ISL relay, stored programs), sensor tasking + contention, and the safe-mode
-**recovery procedure chain** with re-safe-on-persistence. Build sequence/invariants in `CLAUDE.md`.
+contains Blue assets/state).
 
 ## Internalized summary
 
@@ -64,8 +73,9 @@ Each gets a **regression test** when fixed (test-driven workflow).
   consequence keyed off it), not category-sniffing.
 - **Posture persistence (P3.5/P4.5):** `def.harden` / `def.set_threat_warning` lifecycle is
   undefined — add `active` and an optional `expires_at`.
-- **Sensor contention (P4.5):** prioritization/preemption workflow is underspecified — default to
-  FIFO with operator reorder.
+- **[RESOLVED P4.5] Sensor contention:** a sensor does one task at a time; `OrderSystem` tracks
+  per-sensor bookings and pushes an overlapping task to the next non-overlapping window (serialize,
+  don't reject). `auto` sensor selection picks the cell's earliest viable, non-contended sensor.
 - **[PARTIAL P4] Vignettes not yet engine-loadable:** Vignette 1 now exists as a concrete,
   engine-loadable YAML (real orbit, ground-site coords positioned for an early pass, typed
   parameters, objective metrics + landing-window deadline) — the content schema is locked.
@@ -111,6 +121,16 @@ test first, implement to green, and add a regression test for every resolved fin
   replay-safe; `change_roe`/`modify_parameter` mutate live (non-engine) state and are noted as not
   replay-safe across a rewind (avoid mid-branch). CellView exposes own assets fully; other-side only
   via the cell's own tracks; effects as symptoms (source shown only if attribution is overt).
-- **Still open:** UI stack — defer to Phase 5. EW/bus-stress safe-mode inducement — wire in P6
-  vignettes. Vignettes 2–8 authoring — Phase 6. Order is an engine dataclass (not pydantic) crossing
-  the API in-process; make it a serializable message when the network transport lands.
+- **2026-05-24:** Phase 4.5 — command delivery picks the **earliest** of ground/ISL/stored windows
+  and stamps `delivery_path`; ISL modeled as a new `isl_link` access channel (sat-sat LOS within
+  `isl_max_range_m`) via a cell-owned `isl_capable` relay. Sensor reports raise confidence
+  incrementally (default gain 1.0; characterize gated by intent). Contention is a live (non-world)
+  booking registry on `OrderSystem` — it resets implicitly when a new OrderSystem is built but NOT
+  on an in-place rewind; acceptable for now (note for Phase 5 session integration). Safe-mode
+  recovery sized by difficulty (quick=1/realistic=2/punishing=3 passes); re-safe if the cause
+  (unpatched cyber vuln) persists.
+- **Still open:** UI stack — **decide at Phase 5 start** (recommendation: FastAPI + web). Posture/
+  defense command persistence (`def.harden`, `def.set_threat_warning`) — implement with the Phase 5
+  command set. EW/bus-stress safe-mode inducement + Vignettes 2–8 — Phase 6. Order is an engine
+  dataclass crossing the API in-process; make it a serializable pydantic message when the network
+  transport lands. Contention registry not rewind-safe (see above).

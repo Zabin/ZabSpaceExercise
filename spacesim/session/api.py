@@ -21,6 +21,7 @@ class OrderAck(BaseModel):
     reason: str = ""
     status: str = "draft"
     earliest_window: Optional[tuple[int, int]] = None
+    delivery_path: Optional[str] = None
 
 
 class CellView(BaseModel):

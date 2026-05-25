@@ -37,6 +37,9 @@ class Asset(BaseModel):
     cyber_vulnerabilities: list[dict] = Field(default_factory=list)  # {vector, patchable, patched}
     bus_state: Optional[BusState] = None
     payload_state: Optional[PayloadState] = None
+    isl_capable: bool = False          # can relay commands to peers via crosslink
+    isl_peers: list[str] = Field(default_factory=list)
+    stored_program: bool = True        # accepts time/condition-triggered onboard commands
 
     def as_ground_site(self) -> "GroundSite":
         if self.location is None:

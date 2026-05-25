@@ -81,6 +81,7 @@ class SessionManager:
             reason=result.fail_reason or "",
             status=result.status,
             earliest_window=result.earliest_window,
+            delivery_path=result.delivery_path,
         )
 
     def fire_inject(self, inject) -> None:

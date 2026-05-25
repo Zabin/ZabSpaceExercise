@@ -33,6 +33,7 @@ SENSOR_OBSERVATION = "sensor_observation"
 JAM_FOOTPRINT = "jam_footprint"
 WEAPON_ENGAGEMENT = "weapon_engagement"
 RPO_PROXIMITY = "rpo_proximity"
+ISL_LINK = "isl_link"  # inter-satellite crosslink (relay path; not one of the six gating channels)
 
 MICROS_PER_SECOND = 1_000_000
 
@@ -62,6 +63,7 @@ class AccessConfig:
     interceptor_max_alt_m: float = 2_000e3   # DA-ASAT reach (LEO only by default)
     interceptor_mask_deg: float = 10.0
     rpo_threshold_m: float = 50_000.0   # proximity-window range gate
+    isl_max_range_m: float = 60_000e3   # max crosslink range (allows LEO<->relay geometry)
     sample_step_s: float = 20.0         # base sampling step (auto-refined for short LEO passes)
     edge_refine_s: float = 1.0          # bisection precision for window edges
 
@@ -122,6 +124,10 @@ class AccessProvider:
             chaser = self.scene.satellites[actor]
             sat = self.scene.satellites[target]
             return self._rpo_predicate(chaser, sat)
+        if channel == ISL_LINK:
+            relay = self.scene.satellites[actor]
+            sat = self.scene.satellites[target]
+            return self._isl_predicate(relay, sat)
         raise ValueError(f"unknown channel {channel!r}")
 
     def _site_and_sat(self, actor: str, target: str) -> tuple[GroundSite, OrbitState]:
@@ -208,6 +214,19 @@ class AccessProvider:
 
         thr = self.cfg.rpo_threshold_m
         return (lambda t: rng(t) <= thr, lambda t: max(0.0, 1.0 - rng(t) / thr))
+
+    def _isl_predicate(self, relay: OrbitState, sat: OrbitState):
+        def rng(t: int) -> float:
+            r_a, _ = self.prop.rv(relay, t)
+            r_b, _ = self.prop.rv(sat, t)
+            return float(np.linalg.norm(r_a - r_b))
+
+        def access(t: int) -> bool:
+            r_a, _ = self.prop.rv(relay, t)
+            r_b, _ = self.prop.rv(sat, t)
+            return _has_line_of_sight(r_a, r_b) and float(np.linalg.norm(r_a - r_b)) <= self.cfg.isl_max_range_m
+
+        return access, (lambda t: max(0.0, 1.0 - rng(t) / self.cfg.isl_max_range_m))
 
     def _step_for(self, actor: str, target: str, channel: str) -> float:
         """Sample finely enough to catch the shortest pass (a fraction of the orbital period)."""

@@ -10,12 +10,13 @@ fleets of space/ground assets as bus and payload operators, constrained by orbit
 (you can only command, observe, or attack when access windows permit). Most effects are reversible
 (EW/cyber/proximity), not kinetic.
 
-**Status: implementation started.** Phases 0–4 are complete and green (59 tests): skeleton + import
+**Status: implementation started.** Phases 0–4.5 are complete and green (66 tests): skeleton + import
 guard, the deterministic core, orbits + six access channels (validated against Skyfield), orders →
-five-D effects → cyber → custody, the bus/payload SOH model + safe mode, and the **session layer**
+five-D effects → cyber → custody, the bus/payload SOH model + safe mode, the **session layer**
 (SessionManager + CellController fog-of-war + in-process SessionAPI) running **Vignette 1**
-end-to-end (play → win → rewind → branch to a different outcome). Code under `spacesim/`; content
-is YAML under `spacesim/content/`. Next: Phase 4.5 (planning & tasking scheduler + safe-mode recovery chain).
+end-to-end (play → win → rewind → branch), and the **planning & tasking** layer (ISL/stored delivery
+paths, sensor tasking with auto-select + contention, and the multi-pass safe-mode recovery chain
+with re-safe-on-persistence). Code under `spacesim/`; content is YAML. Next: Phase 5 (UI over the API).
 
 ## Authoritative source & reading order
 
@@ -79,7 +80,7 @@ spacesim/
 - **P3.5** Bus & payload model + safe mode (headless).
 - **P4** Session layer (SessionManager / CellController / SessionAPI) + Vignette 1 end-to-end with
   fog-of-war. *(Note: this header is missing in the roadmap — its bullets are appended to P3.5.)*
-- **P4.5** Planning & tasking scheduler + safe-mode recovery chain.
+- **P4.5** Planning & tasking scheduler + safe-mode recovery chain. ✓
 - **P5** UI over the API. **P5.5** SDA-derived 3D viewer.
 - **P6** Remaining vignettes + TLE add/name + Red doctrine profiles.
 - **P7** Capstone Vignette 8 + AAR replay. **P8** Document/scaffold fidelity & multiplayer seams.
@@ -121,7 +122,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/access.py` — `AccessProvider` seam: all six channels + window caching.
 - `spacesim/engine/custody.py` — `Track` (on-demand confidence decay) + weapons-quality gate.
 - `spacesim/engine/effects.py` — `EffectInstance`/`EffectResolver` seam (5 D's), `is_link_denied`.
-- `spacesim/engine/orders.py` — `Order` + `OrderSystem` (validate → window → execute), cyber exception.
+- `spacesim/engine/orders.py` — `Order` + `OrderSystem` (validate → window → execute), cyber
+  exception, ISL/stored delivery, sensor tasking (auto-select + contention).
+- `spacesim/engine/recovery.py` — `RecoverySystem`: multi-pass safe-mode recovery + re-safe-on-persistence.
 - `spacesim/engine/bus.py` — `BusState`/`PayloadState` SOH (limits, gating, safe mode, pass-gated view).
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.

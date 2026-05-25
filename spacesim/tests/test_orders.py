@@ -124,7 +124,8 @@ def test_observe_order_resets_custody_at_the_collection_window():
     world.tracks.append(Track(object="TGT", owner="blue", last_observation=0, confidence=0.1, characterized=False))
 
     sim, osys = _sim_with(world)
-    order = osys.issue(Order(cell="blue", actor="RDR", action="observe", target="TGT", params={"quality": 1.0}))
+    order = osys.issue(Order(cell="blue", actor="RDR", action="observe", target="TGT",
+                             params={"intent": "characterize"}))
     assert order.status == "queued"
     sim.advance_to(order.earliest_window[0] + 1)
     tr = world.track_for("blue", "TGT")

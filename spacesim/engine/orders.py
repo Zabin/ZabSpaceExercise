@@ -21,6 +21,7 @@ from spacesim.engine.access import (
     AccessWindow,
     Scene,
     COMMAND_UPLINK,
+    ISL_LINK,
     JAM_FOOTPRINT,
     SENSOR_OBSERVATION,
     TELEMETRY_DOWNLINK,
@@ -51,6 +52,7 @@ class Order:
     params: dict = field(default_factory=dict)
     issued_at: int = 0
     earliest_window: Optional[tuple[int, int]] = None
+    delivery_path: Optional[str] = None  # ground_uplink | isl_relay | stored_program | sensor_collect
     status: str = "draft"     # draft|queued|rejected|executed
     fail_reason: Optional[str] = None
 
@@ -81,6 +83,7 @@ class OrderSystem:
         self.access_config = access_config
         self.horizon = int(horizon_s * 1_000_000)
         self.wq_threshold = wq_threshold
+        self._sensor_bookings: dict[str, list[tuple[int, int]]] = {}  # contention: one task at a time
 
         sim.register_handler("execute_effect", self._h_effect)
         sim.register_handler("execute_maneuver", self._h_maneuver)
@@ -100,16 +103,102 @@ class OrderSystem:
             self._queue_cyber(order)
             return order
 
+        if order.action == "observe":
+            return self._issue_collection(order)
+        if order.action == "maneuver":
+            return self._issue_command(order)
+
         win = self._next_window(order, channel)
         if win is None:
             order.status, order.fail_reason = "rejected", "no_window"
             return order
 
         order.earliest_window = (win.start, win.end)
+        order.delivery_path = "sensor_collect" if order.action == "observe" else "ground_uplink"
         order.status = "queued"
         kind, data = self._exec_payload(order, win)
         self.sim.schedule(win.start, kind, data, actor=order.cell)
         return order
+
+    def _ap(self) -> AccessProvider:
+        return AccessProvider(scene_from_world(self.world), propagator=self.prop, config=self.access_config)
+
+    def _issue_command(self, order: Order) -> Order:
+        """Plan a satellite command across the three delivery paths, choosing the earliest."""
+        now = self.sim.clock.now
+        ap = self._ap()
+        choices: list[tuple[str, AccessWindow]] = []
+
+        stored_at = order.params.get("stored_at")
+        if stored_at is not None and self.world.assets[order.actor].stored_program:
+            t = int(stored_at)
+            choices.append(("stored_program", AccessWindow(channel="stored", actor=order.actor,
+                                                           target=order.actor, start=t, end=t, quality=1.0)))
+        via = order.params.get("via")
+        if via is not None:
+            g = ap.windows(via, order.actor, COMMAND_UPLINK, now, now + self.horizon)
+            if g:
+                choices.append(("ground_uplink", g[0]))
+        isl = self._best_isl_window(ap, order.cell, order.actor, now)
+        if isl is not None:
+            choices.append(("isl_relay", isl))
+
+        if not choices:
+            order.status, order.fail_reason = "rejected", "no_window"
+            return order
+        path, win = min(choices, key=lambda pw: pw[1].start)
+        order.delivery_path = path
+        order.earliest_window = (win.start, win.end)
+        order.status = "queued"
+        kind, data = self._exec_payload(order, win)
+        self.sim.schedule(win.start, kind, data, actor=order.cell)
+        return order
+
+    def _best_isl_window(self, ap: AccessProvider, cell: str, actor: str, now: int) -> Optional[AccessWindow]:
+        best: Optional[AccessWindow] = None
+        for rid, relay in self.world.assets.items():
+            if rid == actor or relay.owner != cell or not relay.isl_capable or relay.orbit is None:
+                continue
+            wins = ap.windows(rid, actor, ISL_LINK, now, now + self.horizon)
+            if wins and (best is None or wins[0].start < best.start):
+                best = wins[0]
+        return best
+
+    def _issue_collection(self, order: Order) -> Order:
+        """Sensor tasking: pick a sensor (or 'auto'), respect contention, queue at the window."""
+        now = self.sim.clock.now
+        ap = self._ap()
+        sensor_ids = self._candidate_sensors(order)
+        chosen: Optional[tuple[str, AccessWindow]] = None
+        for sid in sensor_ids:
+            wins = ap.windows(sid, order.target or "", SENSOR_OBSERVATION, now, now + self.horizon)
+            for w in wins:
+                if not self._contended(sid, w.start, w.end):
+                    chosen = (sid, w)
+                    break
+            if chosen:
+                break
+        if chosen is None:
+            order.status = "rejected"
+            order.fail_reason = "sensor_contended" if sensor_ids else "no_window"
+            return order
+        sid, win = chosen
+        order.actor = sid
+        order.delivery_path = "sensor_collect"
+        order.earliest_window = (win.start, win.end)
+        order.status = "queued"
+        self._sensor_bookings.setdefault(sid, []).append((win.start, win.end))
+        kind, data = self._exec_payload(order, win)
+        self.sim.schedule(win.start, kind, data, actor=order.cell)
+        return order
+
+    def _candidate_sensors(self, order: Order) -> list[str]:
+        if order.actor and order.actor != "auto":
+            return [order.actor]
+        return [sid for sid, s in self.world.sensors.items() if s.owner == order.cell]
+
+    def _contended(self, sid: str, start: int, end: int) -> bool:
+        return any(not (end <= b0 or start >= b1) for (b0, b1) in self._sensor_bookings.get(sid, []))
 
     # -- validation ------------------------------------------------------------
     def _validate(self, order: Order) -> tuple[bool, str]:
@@ -117,6 +206,8 @@ class OrderSystem:
             return False, "unknown_action"
 
         if order.action == "observe":
+            if order.actor == "auto":
+                return True, ""  # sensor chosen at planning time
             sensor = self.world.sensors.get(order.actor)
             if sensor is None:
                 return False, "no_such_sensor"
@@ -146,7 +237,7 @@ class OrderSystem:
             dv = np.asarray(order.params.get("dv", [0, 0, 0]), dtype=float)
             if float(np.linalg.norm(dv)) > actor.resources.delta_v_ms + 1e-9:
                 return False, "insufficient_delta_v"
-            if "via" not in order.params:
+            if "via" not in order.params and "stored_at" not in order.params:
                 return False, "no_command_station"
 
         if order.action == "downlink" and "via" not in order.params:
@@ -215,11 +306,15 @@ class OrderSystem:
             }
 
         if order.action == "observe":
+            intent = p.get("intent", "track")
+            # characterize resolves type/intent; search/track refine the state estimate.
+            characterizes = p.get("characterizes", intent == "characterize")
             return "execute_observe", {
                 "cell": order.cell,
                 "object": order.target,
-                "quality": p.get("quality", 1.0),
-                "characterizes": p.get("characterizes", True),
+                "intent": intent,
+                "gain": p.get("gain", 1.0),       # confidence added per report (toward 1.0)
+                "characterizes": characterizes,
                 "classification": p.get("classification"),
             }
 
@@ -289,6 +384,11 @@ class OrderSystem:
         actor = world.assets.get(payload["actor"])
         if actor is None or actor.orbit is None:
             return
+        # Re-validate at execute time (resources may have changed since planning).
+        if actor.resources.delta_v_ms + 1e-9 < float(payload["cost"]) or actor.health == "destroyed":
+            world.effect_log.append({"t": world.now, "template": "maneuver", "target": payload["actor"],
+                                     "achieved": "failed", "success": False})
+            return
         dv = np.asarray(payload["dv"], dtype=float)
         actor.orbit = self.prop.apply_impulse(actor.orbit, dv, world.now)
         actor.resources.delta_v_ms -= float(payload["cost"])
@@ -312,12 +412,14 @@ class OrderSystem:
     def _h_observe(self, world: WorldState, payload: dict, rng) -> None:
         track = world.track_for(payload["cell"], payload["object"])
         if track is None:
-            track = Track(object=payload["object"], owner=payload["cell"], last_observation=world.now)
+            track = Track(object=payload["object"], owner=payload["cell"], last_observation=world.now, confidence=0.0)
             world.tracks.append(track)
+        # A report raises confidence incrementally (toward 1.0) and shrinks uncertainty.
+        quality = min(1.0, track.current_confidence(world.now) + float(payload.get("gain", 0.5)))
         observe(
             track,
             world.now,
-            quality=payload.get("quality", 1.0),
+            quality=quality,
             characterizes=payload.get("characterizes", True),
             classification=payload.get("classification"),
         )

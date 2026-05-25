@@ -85,6 +85,8 @@ class SafeModeState(BaseModel):
     cause: Optional[str] = None              # fault|environment|cyber|ew|bus_stress (truth)
     defender_confirmed: bool = False
     defender_diagnosis: str = "unknown"      # unknown|suspected_attack|fault|<subsystem>
+    passes_used: int = 0
+    blocked_reason: Optional[str] = None     # e.g. "root cause persists: unpatched ground_modem"
 
 
 class PayloadState(BaseModel):
@@ -167,6 +169,15 @@ def enter_safe_mode(bus: BusState, now: int, cause: str) -> None:
     bus.safe_mode = SafeModeState(active=True, entered_at=now, cause=cause)
     bus.attitude.mode = "safe"
     bus.cdh.fsw_mode = "safe"
+    recompute_status(bus)
+
+
+def exit_safe_mode(bus: BusState) -> None:
+    """Recovery succeeded: return to nominal and re-enable the payload."""
+    bus.mode = "nominal"
+    bus.safe_mode = SafeModeState(active=False)
+    bus.attitude.mode = "nominal"
+    bus.cdh.fsw_mode = "nominal"
     recompute_status(bus)
 
 
