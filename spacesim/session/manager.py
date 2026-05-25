@@ -18,6 +18,7 @@ from spacesim.engine.simulation import Simulation
 from spacesim.engine.world import WorldState
 from spacesim.session.api import OrderAck
 from spacesim.session.cells import CellController
+from spacesim.session.scene import build_scene
 
 BUS_TICK_PERIOD_S = 300.0
 
@@ -102,6 +103,9 @@ class SessionManager:
     # -- reads -----------------------------------------------------------------
     def get_view(self, cell: str):
         return CellController.view(self.sim.world, cell, objectives=self.objectives().get(cell, {}))
+
+    def get_scene(self, cell: str):
+        return build_scene(self.sim.world, cell)
 
     def get_godview(self) -> WorldState:
         return self.sim.world

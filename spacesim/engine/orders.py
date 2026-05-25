@@ -423,3 +423,7 @@ class OrderSystem:
             characterizes=payload.get("characterizes", True),
             classification=payload.get("classification"),
         )
+        # Capture the measured state so the belief stream (map/3D viewer) can propagate it forward.
+        obj = world.assets.get(payload["object"])
+        if obj is not None and obj.orbit is not None:
+            track.state_estimate = obj.orbit.model_copy(deep=True)

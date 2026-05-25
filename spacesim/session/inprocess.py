@@ -72,6 +72,9 @@ class InProcessSession:
     def get_view(self, session: str, cell: str) -> CellView:
         return self._sessions[session].get_view(cell)
 
+    def get_scene(self, session: str, cell: str):
+        return self._sessions[session].get_scene(cell)
+
     def get_godview(self, session: str):
         return self._sessions[session].get_godview()
 

@@ -81,7 +81,7 @@ spacesim/
   fog-of-war. *(Note: this header is missing in the roadmap — its bullets are appended to P3.5.)*
 - **P4.5** Planning & tasking scheduler + safe-mode recovery chain. ✓
 - **P5** UI over the API (FastAPI + web). ✓ (backend tested; browser GUI unverified headless)
-  **P5.5** SDA-derived 3D viewer.
+  **P5.5** Render-from-custody belief scene + 2D map. ✓ (full Cesium 3D globe is the v1.1 follow-on)
 - **P6** Remaining vignettes + TLE add/name + Red doctrine profiles.
 - **P7** Capstone Vignette 8 + AAR replay. **P8** Document/scaffold fidelity & multiplayer seams.
 

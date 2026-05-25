@@ -94,6 +94,37 @@ async function refresh() {
     $("messages").innerHTML = view.messages.map((m) => `<li>${m.text}</li>`).join("");
   }
   $("objectives").textContent = JSON.stringify(await api.get(`/api/sessions/${SID}/objectives`), null, 2);
+  await drawMap();
+}
+
+async function drawMap() {
+  const cell = CELL === "white" ? "blue" : CELL; // god-view borrows Blue's belief frame for the map
+  const scene = await api.get(`/api/sessions/${SID}/scene/${cell}`);
+  const c = $("map"), ctx = c.getContext("2d");
+  ctx.fillStyle = "#0b0f14"; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.strokeStyle = "#1c2531";
+  for (let lon = -180; lon <= 180; lon += 30) { const x = (lon + 180) / 360 * c.width; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, c.height); ctx.stroke(); }
+  for (let lat = -90; lat <= 90; lat += 30) { const y = (90 - lat) / 180 * c.height; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(c.width, y); ctx.stroke(); }
+  const px = (lon) => (lon + 180) / 360 * c.width;
+  const py = (lat) => (90 - lat) / 180 * c.height;
+  // Own assets (known): triangles for on-orbit, squares for ground.
+  ctx.fillStyle = "#6fcf6f";
+  scene.assets.forEach((a) => {
+    const x = px(a.lon_deg), y = py(a.lat_deg);
+    ctx.beginPath();
+    if (a.on_orbit) { ctx.moveTo(x, y - 5); ctx.lineTo(x - 5, y + 4); ctx.lineTo(x + 5, y + 4); ctx.closePath(); ctx.fill(); }
+    else { ctx.fillRect(x - 4, y - 4, 8, 8); }
+    ctx.fillStyle = "#9fb0c0"; ctx.font = "11px monospace"; ctx.fillText(a.id, x + 7, y + 3); ctx.fillStyle = "#6fcf6f";
+  });
+  // Tracks (belief): circle whose radius encodes the growing uncertainty volume.
+  scene.tracks.forEach((t) => {
+    const x = px(t.lon_deg), y = py(t.lat_deg);
+    const r = Math.max(4, Math.min(40, t.uncertainty_km / 20));
+    ctx.strokeStyle = t.characterized ? "#e0c24a" : "#e06a6a";
+    ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.fillStyle = ctx.strokeStyle; ctx.beginPath(); ctx.arc(x, y, 2, 0, 2 * Math.PI); ctx.fill();
+    ctx.fillStyle = "#9fb0c0"; ctx.fillText(`${t.object} ±${t.uncertainty_km}km`, x + 6, y - 6);
+  });
 }
 
 function renderAssets(assets) {

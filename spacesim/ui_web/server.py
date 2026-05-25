@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from spacesim.engine.orders import Order
 from spacesim.session.api import Ack, CellView, OrderAck
 from spacesim.session.inprocess import InProcessSession
+from spacesim.session.scene import SceneView
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -118,6 +119,11 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def get_view(sid: str, cell: str) -> CellView:
         _require(sid)
         return api.get_view(sid, cell)  # fog applied server-side
+
+    @app.get("/api/sessions/{sid}/scene/{cell}")
+    def get_scene(sid: str, cell: str) -> SceneView:
+        _require(sid)
+        return api.get_scene(sid, cell)  # render-from-custody belief geometry
 
     @app.get("/api/sessions/{sid}/godview")
     def get_godview(sid: str) -> dict:
