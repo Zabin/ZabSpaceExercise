@@ -1,0 +1,42 @@
+vignette:
+  id: da-asat-crisis
+  title: "DA-ASAT Crisis"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "A kinetic strike is unambiguous, generates debris, and carries political cost."
+    - "Debris can deny a LEO regime to both sides — escalation is rarely proportionate."
+  doctrinal_basis: [orbital_warfare]
+  red_doctrine_profile: generic
+  start_epoch_utc: "2030-03-15T06:00:00Z"
+  blue_forces:
+    - id: BLUE-SAT
+      kind: satellite
+      orbit: {a_m: 6978137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 0.0}
+      bus_state: {power: {battery_soc: 0.95}}
+  red_forces:
+    - id: RED-ASAT
+      kind: interceptor
+      location: {lat_deg: 0.0, lon_deg: 97.0}
+      elevation_mask_deg: 10.0
+      resources: {ammo: 1}
+  sensors:
+    - {id: RED-RADAR, owner: red, kind: ground_radar, location: {lat_deg: 0.0, lon_deg: 97.0}}
+  objectives:
+    blue:
+      - {id: avoid_debris, desc: "Survive without a debris-generating strike", metric: {kind: no_debris, by_s: 3600}}
+    red:
+      - {id: destroy_sat, desc: "Destroy the Blue satellite", metric: {kind: asset_destroyed, target: BLUE-SAT}}
+  escalation_thresholds:
+    debris_generating_strike: {political_cost: high, triggers_inject: un_condemnation}
+  parameters:
+    - {id: red_kinetic_authorized, label: "Red Kinetic ASAT Authorized", type: bool, default: true}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: generic}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Crisis Window (s)", type: int, default: 3600}
+  injects:
+    - id: un_condemnation
+      label: "UN condemnation after a debris-generating strike"
+      trigger: {type: manual}
+      effects:
+        - {type: political_consequence, severity: high, cause: da_asat}
+        - {type: message, to: [white, red], text: "International condemnation; debris threatens the regime."}

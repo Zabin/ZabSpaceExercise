@@ -1,0 +1,33 @@
+vignette:
+  id: gnss-ew-campaign
+  title: "GNSS EW Campaign"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "PNT denial is local and reversible — jamming the user bubble, not killing the satellite."
+    - "MEO is effectively safe from kinetic ASAT; the fight is electromagnetic."
+  doctrinal_basis: [electromagnetic_warfare]
+  red_doctrine_profile: russia_ew_first
+  start_epoch_utc: "2030-03-15T06:00:00Z"
+  blue_forces:
+    - id: BLUE-GNSS
+      kind: satellite
+      orbit: {a_m: 26560000.0, e: 0.0, i_deg: 55.0, raan_deg: 0, argp_deg: 0, ta_deg: 0.0}
+      bus_state: {power: {battery_soc: 0.95}}
+  red_forces:
+    - id: RED-JAM
+      kind: jammer
+      location: {lat_deg: 10.0, lon_deg: 125.0}
+      elevation_mask_deg: 0.0
+  sensors:
+    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 12.0, lon_deg: 120.0}}
+  objectives:
+    blue:
+      - {id: maintain_service, desc: "Keep PNT service operational", metric: {kind: asset_operational, target: BLUE-GNSS, by_s: 3600}}
+    red:
+      - {id: deny_pnt, desc: "Deny PNT in the user bubble", metric: {kind: link_denied, target: BLUE-GNSS}}
+  parameters:
+    - {id: red_ew_intensity, label: "Red EW Intensity", type: enum, options: [none, harassment, sustained, total], default: sustained}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: russia_ew_first}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Campaign Window (s)", type: int, default: 3600}
+  injects: []

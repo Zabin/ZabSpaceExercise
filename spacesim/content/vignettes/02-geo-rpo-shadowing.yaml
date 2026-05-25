@@ -1,0 +1,38 @@
+vignette:
+  id: geo-rpo-shadowing
+  title: "GEO RPO Shadowing"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "RPO intent is ambiguous: inspection, servicing, and attack look alike on approach."
+    - "Custody of a GEO object decays between optical looks; re-task to keep the volume small."
+  doctrinal_basis: [orbital_warfare]
+  red_doctrine_profile: china_integrated
+  start_epoch_utc: "2030-03-15T06:00:00Z"
+  blue_forces:
+    - id: BLUE-HVA
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 0, argp_deg: 0, ta_deg: 0.0}
+      resources: {delta_v_ms: 60.0}
+      bus_state: {power: {battery_soc: 0.95}}
+  red_forces:
+    - id: RED-INSP
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 0, argp_deg: 0, ta_deg: 0.6}
+      resources: {delta_v_ms: 200.0}
+  sensors:
+    - id: BLUE-OPT
+      owner: blue
+      kind: ground_optical
+      location: {lat_deg: 35.0, lon_deg: 0.0}
+      needs_lighting: true
+  objectives:
+    blue:
+      - {id: maintain_custody, desc: "Keep custody of the inspector", metric: {kind: custody, side: blue, object: RED-INSP, min_conf: 0.5}}
+    red:
+      - {id: close_approach, desc: "Close within 100 km of the HVA", metric: {kind: proximity, a: RED-INSP, b: BLUE-HVA, max_km: 100}}
+  parameters:
+    - {id: rpo_closing_speed, label: "Red RPO Aggressiveness", type: enum, options: [cautious, normal, aggressive], default: normal}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: china_integrated}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Decision Window (s)", type: int, default: 7200}
+  injects: []

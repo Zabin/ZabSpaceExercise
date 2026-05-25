@@ -49,6 +49,14 @@ class InjectRequest(BaseModel):
     inject: Any  # inject id (str) or {effects:[...]}
 
 
+class TleRequest(BaseModel):
+    id: str
+    line1: str
+    line2: str
+    owner: str = "blue"
+    kind: str = "satellite"
+
+
 class OrderRequest(BaseModel):
     cell: str
     actor: str
@@ -108,6 +116,16 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def inject(sid: str, req: InjectRequest) -> Ack:
         _require(sid)
         return api.fire_inject(sid, req.inject)
+
+    @app.post("/api/sessions/{sid}/force/tle")
+    def add_tle(sid: str, req: TleRequest) -> Ack:
+        _require(sid)
+        return api.add_tle(sid, req.id, req.line1, req.line2, owner=req.owner, kind=req.kind)
+
+    @app.post("/api/sessions/{sid}/red_step")
+    def red_step(sid: str) -> list[OrderAck]:
+        _require(sid)
+        return api.red_doctrine_step(sid)
 
     @app.post("/api/sessions/{sid}/order")
     def issue_order(sid: str, req: OrderRequest) -> OrderAck:

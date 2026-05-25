@@ -13,6 +13,8 @@ from typing import Optional
 from spacesim.content.vignette import Vignette, build_world, evaluate_objectives
 from spacesim.engine.busmodel import BusSystem
 from spacesim.engine.custody import Track
+from spacesim.engine.entities import Asset
+from spacesim.engine.orbit import OrbitState
 from spacesim.engine.orders import Order, OrderSystem
 from spacesim.engine.simulation import Simulation
 from spacesim.engine.world import WorldState
@@ -84,6 +86,26 @@ class SessionManager:
             earliest_window=result.earliest_window,
             delivery_path=result.delivery_path,
         )
+
+    def add_tle(self, asset_id: str, line1: str, line2: str, owner: str = "blue", kind: str = "satellite") -> tuple[bool, str]:
+        """White-Cell force edit: add a real named satellite by TLE (validated via sgp4)."""
+        if self.started:
+            return False, "cannot edit force after start"
+        l1, l2 = line1.strip(), line2.strip()
+        if not (l1.startswith("1 ") and l2.startswith("2 ") and len(l1) >= 69 and len(l2) >= 69):
+            return False, "invalid TLE: expected two 69-char lines starting with '1 ' and '2 '"
+        try:
+            from sgp4.api import Satrec
+            sat = Satrec.twoline2rv(l1, l2)
+            err, _, _ = sat.sgp4(sat.jdsatepoch, sat.jdsatepochF)
+            if err != 0:
+                return False, f"invalid TLE: sgp4 error {err}"
+        except Exception as exc:  # malformed TLE is a normal rejection, not a crash
+            return False, f"invalid TLE: {exc}"
+        orbit = OrbitState(source="tle", tle_line1=line1, tle_line2=line2, epoch=self.ctx.start_epoch)
+        self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
+        self.sim._initial_state = self.world.model_dump()  # re-baseline so rewind keeps the edit
+        return True, ""
 
     def fire_inject(self, inject) -> None:
         effects = inject if isinstance(inject, list) else self._inject_effects(inject)

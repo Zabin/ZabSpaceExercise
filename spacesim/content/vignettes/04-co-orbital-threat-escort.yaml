@@ -1,0 +1,39 @@
+vignette:
+  id: co-orbital-threat-escort
+  title: "Co-Orbital Threat & Escort"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "Active defense: an escort interposes and a high-value asset maneuvers to evade."
+    - "Spending delta-v to survive trades against mission lifetime."
+  doctrinal_basis: [orbital_warfare]
+  red_doctrine_profile: china_integrated
+  start_epoch_utc: "2030-03-15T06:00:00Z"
+  blue_forces:
+    - id: BLUE-HVA
+      kind: satellite
+      orbit: {a_m: 7078137.0, e: 0.0, i_deg: 53.0, raan_deg: 20, argp_deg: 0, ta_deg: 0.0}
+      resources: {delta_v_ms: 120.0}
+      bus_state: {power: {battery_soc: 0.95}}
+    - id: BLUE-ESCORT
+      kind: satellite
+      orbit: {a_m: 7078137.0, e: 0.0, i_deg: 53.0, raan_deg: 20, argp_deg: 0, ta_deg: 1.0}
+      resources: {delta_v_ms: 200.0}
+  red_forces:
+    - id: RED-COORB
+      kind: satellite
+      orbit: {a_m: 7078137.0, e: 0.0, i_deg: 53.0, raan_deg: 20, argp_deg: 0, ta_deg: 3.0}
+      resources: {delta_v_ms: 300.0}
+  sensors:
+    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 45.0, lon_deg: 10.0}}
+  objectives:
+    blue:
+      - {id: hva_survives, desc: "Keep the HVA alive through the window", metric: {kind: asset_survived, target: BLUE-HVA, by_s: 3600}}
+    red:
+      - {id: neutralize_hva, desc: "Neutralize the HVA", metric: {kind: asset_safed, target: BLUE-HVA}}
+  parameters:
+    - {id: rpo_closing_speed, label: "Red RPO Aggressiveness", type: enum, options: [cautious, normal, aggressive], default: aggressive}
+    - {id: blue_passive_defenses, label: "Blue Passive Defenses", type: multiselect, options: [maneuver, deception, hardening, dispersal, redundancy], default: [maneuver, redundancy]}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: china_integrated}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Threat Window (s)", type: int, default: 3600}
+  injects: []

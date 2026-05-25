@@ -9,5 +9,8 @@ from spacesim.session.api import Ack, CellView, OrderAck, SessionAPI
 from spacesim.session.cells import CellController
 from spacesim.session.inprocess import InProcessSession
 from spacesim.session.manager import SessionManager
+from spacesim.session.redai import RedDoctrine
+from spacesim.session.scene import SceneView, build_scene
 
-__all__ = ["Ack", "CellView", "OrderAck", "SessionAPI", "CellController", "InProcessSession", "SessionManager"]
+__all__ = ["Ack", "CellView", "OrderAck", "SessionAPI", "CellController", "InProcessSession",
+           "SessionManager", "RedDoctrine", "SceneView", "build_scene"]

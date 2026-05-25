@@ -12,6 +12,7 @@ from spacesim.content.vignette import list_vignettes, load_vignette
 from spacesim.engine.orders import Order
 from spacesim.session.api import Ack, CellView, OrderAck
 from spacesim.session.manager import SessionManager
+from spacesim.session.redai import RedDoctrine
 
 
 class InProcessSession:
@@ -61,6 +62,14 @@ class InProcessSession:
         return Ack()
 
     # -- injects & orders ------------------------------------------------------
+    def add_tle(self, session: str, asset_id: str, line1: str, line2: str,
+                owner: str = "blue", kind: str = "satellite") -> Ack:
+        ok, reason = self._sessions[session].add_tle(asset_id, line1, line2, owner=owner, kind=kind)
+        return Ack(ok=ok, reason=reason)
+
+    def red_doctrine_step(self, session: str) -> list[OrderAck]:
+        return RedDoctrine(self._sessions[session]).step()
+
     def fire_inject(self, session: str, inject) -> Ack:
         self._sessions[session].fire_inject(inject)
         return Ack()

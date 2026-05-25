@@ -72,6 +72,8 @@ class VignetteContext:
     landing_deadline: int
     ops_fidelity: str = "realistic"
     fog_of_war: str = "realistic_sda"
+    objectives: dict = field(default_factory=dict)
+    red_doctrine_profile: str = "generic"
 
 
 def list_vignettes() -> list[dict]:
@@ -139,17 +141,92 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
         landing_deadline=start + int(landing_offset_s * 1_000_000),
         ops_fidelity=str(params.get("ops_fidelity", "realistic")),
         fog_of_war=str(params.get("fog_of_war", "realistic_sda")),
+        objectives=vignette.objectives,
+        red_doctrine_profile=str(params.get("red_doctrine_profile", vignette.red_doctrine_profile)),
     )
     return world, ctx
 
 
 def evaluate_objectives(world, ctx: VignetteContext) -> dict:
-    """Objective status for Vignette 1: Blue must deliver imagery before the landing window."""
-    delivered = bool(world.mission.get("imagery_delivered", False))
-    at = world.mission.get("imagery_delivered_at")
-    in_time = delivered and at is not None and at <= ctx.landing_deadline
-    window_passed = world.now >= ctx.landing_deadline
-    return {
-        "blue": {"deliver_isr": in_time},
-        "red": {"deny_isr": (not in_time) and window_passed},
-    }
+    """Data-driven objective status: each objective declares a ``metric`` evaluated here."""
+    out: dict = {}
+    for side in ("blue", "red"):
+        out[side] = {}
+        for obj in ctx_objectives(world, ctx, side):
+            out[side][obj["id"]] = _evaluate_metric(world, ctx, obj.get("metric", {}))
+    return out
+
+
+def ctx_objectives(world, ctx: VignetteContext, side: str) -> list[dict]:
+    return ctx.objectives.get(side, [])
+
+
+def _deadline(ctx: VignetteContext, metric: dict) -> int:
+    if "by_s" in metric:
+        return ctx.start_epoch + int(float(metric["by_s"]) * 1_000_000)
+    return ctx.landing_deadline
+
+
+def _range_km(world, a_id: str, b_id: str) -> Optional[float]:
+    import numpy as np
+    from spacesim.engine.propagator import ModeratePropagator
+    a, b = world.assets.get(a_id), world.assets.get(b_id)
+    if a is None or b is None or a.orbit is None or b.orbit is None:
+        return None
+    prop = ModeratePropagator()
+    ra, _ = prop.rv(a.orbit, world.now)
+    rb, _ = prop.rv(b.orbit, world.now)
+    return float(np.linalg.norm(ra - rb)) / 1000.0
+
+
+def _evaluate_metric(world, ctx: VignetteContext, m: dict) -> bool:
+    from spacesim.engine.effects import is_link_denied
+    kind = m.get("kind")
+    now = world.now
+    deadline = _deadline(ctx, m)
+
+    if kind == "deliver_before":
+        flag = m.get("flag", "imagery_delivered")
+        at = world.mission.get(f"{flag}_at")
+        return bool(world.mission.get(flag)) and at is not None and at <= deadline
+    if kind == "deny_delivery":
+        flag = m.get("flag", "imagery_delivered")
+        at = world.mission.get(f"{flag}_at")
+        delivered_in_time = bool(world.mission.get(flag)) and at is not None and at <= deadline
+        return (not delivered_in_time) and now >= deadline
+    if kind == "custody":
+        tr = world.track_for(m["side"], m["object"])
+        return tr is not None and tr.current_confidence(now) >= float(m.get("min_conf", 0.5))
+    if kind == "deny_custody":
+        tr = world.track_for(m["side"], m["object"])
+        ok = tr is not None and tr.current_confidence(now) >= float(m.get("min_conf", 0.5))
+        return (not ok) and now >= deadline
+    if kind == "characterized":
+        tr = world.track_for(m["side"], m["object"])
+        return tr is not None and tr.characterized
+    if kind == "asset_destroyed":
+        a = world.assets.get(m["target"])
+        return a is not None and a.health == "destroyed"
+    if kind == "asset_survived":
+        a = world.assets.get(m["target"])
+        return a is not None and a.health != "destroyed" and now >= deadline
+    if kind == "asset_safed":
+        a = world.assets.get(m["target"])
+        return a is not None and a.bus_state is not None and a.bus_state.safe_mode.active
+    if kind == "asset_operational":
+        a = world.assets.get(m["target"])
+        safed = a is not None and a.bus_state is not None and a.bus_state.safe_mode.active
+        return a is not None and a.health != "destroyed" and not safed and now >= deadline
+    if kind == "no_debris":
+        return len(world.debris) == 0 and now >= deadline
+    if kind == "debris_present":
+        return len(world.debris) > 0
+    if kind == "link_denied":
+        return is_link_denied(world, m["target"], now)
+    if kind == "proximity":
+        r = _range_km(world, m["a"], m["b"])
+        return r is not None and r <= float(m.get("max_km", 50.0))
+    if kind == "evade":
+        r = _range_km(world, m["a"], m["b"])
+        return r is not None and r >= float(m.get("min_km", 50.0)) and now >= deadline
+    return False

@@ -1,0 +1,42 @@
+vignette:
+  id: satcom-cyber-link
+  title: "SATCOM Cyber & Link"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "Cyber acts on the ground/link segment and is not gated by orbital passes."
+    - "A single modem exploit can deny service strategically until the vulnerability is patched."
+  doctrinal_basis: [cyber, electromagnetic_warfare]
+  red_doctrine_profile: china_integrated
+  start_epoch_utc: "2030-03-15T06:00:00Z"
+  blue_forces:
+    - id: BLUE-SATCOM
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 0, argp_deg: 0, ta_deg: 0.0}
+      cyber_posture: low
+      cyber_vulnerabilities: [{vector: ground_modem, patchable: true, patched: false}]
+      bus_state: {power: {battery_soc: 0.95}}
+      payload_state: {type: satcom}
+  red_forces:
+    - id: RED-CYBER
+      kind: cyber_unit
+  sensors:
+    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 35.0, lon_deg: 0.0}}
+  objectives:
+    blue:
+      - {id: keep_service, desc: "Keep SATCOM service up", metric: {kind: asset_operational, target: BLUE-SATCOM, by_s: 3600}}
+    red:
+      - {id: disable_satcom, desc: "Disable SATCOM via the modem exploit", metric: {kind: asset_safed, target: BLUE-SATCOM}}
+  parameters:
+    - {id: cyber_authorized, label: "Cyber Authorized", type: bool, default: true}
+    - {id: safe_mode_susceptibility, label: "Safe-Mode Susceptibility", type: enum, options: [robust, realistic, fragile], default: fragile}
+    - {id: safe_mode_root_cause_persists, label: "Root Cause Persists", type: bool, default: true}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: china_integrated}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Campaign Window (s)", type: int, default: 3600}
+  injects:
+    - id: patch_modem
+      label: "Blue patches the ground modem vulnerability"
+      trigger: {type: manual}
+      effects:
+        - {type: patch_cyber_vuln, target: BLUE-SATCOM, vector: ground_modem}
+        - {type: message, to: [blue, white], text: "Modem vulnerability patched; re-safing should stop."}
