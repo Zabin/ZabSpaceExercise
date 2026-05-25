@@ -11,8 +11,9 @@ dependencies = [
 
 [project.optional-dependencies]
 content = ["pyyaml>=6.0"]
-# skyfield is used as an independent reference in the Phase-2 tests.
-dev = ["pytest>=7.0", "hypothesis>=6.0", "skyfield>=1.45"]
+ui = ["fastapi>=0.110", "uvicorn>=0.27"]
+# skyfield is an independent reference in the Phase-2 tests; httpx powers the FastAPI TestClient.
+dev = ["pytest>=7.0", "hypothesis>=6.0", "skyfield>=1.45", "fastapi>=0.110", "httpx>=0.27"]
 
 [tool.pytest.ini_options]
 # Make the repo root importable so tests can `import spacesim...`.

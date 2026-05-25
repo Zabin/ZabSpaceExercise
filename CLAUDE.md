@@ -10,13 +10,12 @@ fleets of space/ground assets as bus and payload operators, constrained by orbit
 (you can only command, observe, or attack when access windows permit). Most effects are reversible
 (EW/cyber/proximity), not kinetic.
 
-**Status: implementation started.** Phases 0–4.5 are complete and green (66 tests): skeleton + import
-guard, the deterministic core, orbits + six access channels (validated against Skyfield), orders →
-five-D effects → cyber → custody, the bus/payload SOH model + safe mode, the **session layer**
-(SessionManager + CellController fog-of-war + in-process SessionAPI) running **Vignette 1**
-end-to-end (play → win → rewind → branch), and the **planning & tasking** layer (ISL/stored delivery
-paths, sensor tasking with auto-select + contention, and the multi-pass safe-mode recovery chain
-with re-safe-on-persistence). Code under `spacesim/`; content is YAML. Next: Phase 5 (UI over the API).
+**Status: implementation started.** Phases 0–5 (backend) are complete and green (72 tests): the
+deterministic engine through Phase 4.5, plus the **web layer** — a FastAPI server wrapping the
+in-process SessionAPI (REST now, WebSocket-ready) with a minimal browser front end. Code under
+`spacesim/`; content is YAML. The UI stack decision is **web (FastAPI + browser)**. Note: the
+browser GUI itself is unverified in this headless environment; the FastAPI endpoints + fog-of-war
+are fully test-covered. Next: Phase 5.5 (SDA-derived 3D viewer) / Phase 6 (remaining vignettes).
 
 ## Authoritative source & reading order
 
@@ -81,7 +80,8 @@ spacesim/
 - **P4** Session layer (SessionManager / CellController / SessionAPI) + Vignette 1 end-to-end with
   fog-of-war. *(Note: this header is missing in the roadmap — its bullets are appended to P3.5.)*
 - **P4.5** Planning & tasking scheduler + safe-mode recovery chain. ✓
-- **P5** UI over the API. **P5.5** SDA-derived 3D viewer.
+- **P5** UI over the API (FastAPI + web). ✓ (backend tested; browser GUI unverified headless)
+  **P5.5** SDA-derived 3D viewer.
 - **P6** Remaining vignettes + TLE add/name + Red doctrine profiles.
 - **P7** Capstone Vignette 8 + AAR replay. **P8** Document/scaffold fidelity & multiplayer seams.
 
@@ -96,7 +96,8 @@ is the canonical permanent gate.
 ## Build/test commands
 
 ```bash
-pip install pydantic numpy sgp4 pyyaml pytest hypothesis skyfield   # core + dev deps
+pip install pydantic numpy sgp4 pyyaml pytest hypothesis skyfield fastapi uvicorn httpx
+uvicorn spacesim.ui_web.server:app            # serve the web UI at http://127.0.0.1:8000/
 python3 -m pytest                              # runs the whole suite (testpaths = spacesim/tests)
 python3 -m pytest spacesim/tests/test_determinism.py    # the Phase-1 determinism gate
 python3 -m pytest spacesim/tests/test_import_guard.py   # the Phase-0 engine guardrails
@@ -130,3 +131,5 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject), `CellController` (fog-of-war),
   `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py` (in-process API impl).
+- `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI) + `static/` browser front end.
+  Run: `uvicorn spacesim.ui_web.server:app` then open http://127.0.0.1:8000/.

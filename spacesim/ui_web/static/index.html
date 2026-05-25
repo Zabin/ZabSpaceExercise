@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Space Control &amp; Orbital Warfare Exercise Simulator</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <strong>Space Control &amp; Orbital Warfare Exercise Simulator</strong>
+    <span id="banner">UNCLASSIFIED // TRAINING</span>
+  </header>
+
+  <section id="setup" class="panel">
+    <label>Vignette
+      <select id="vignette"></select>
+    </label>
+    <label>Seed <input id="seed" type="number" value="1" style="width:5em" /></label>
+    <button id="load">Load</button>
+    <button id="start" disabled>Start</button>
+    <span id="session"></span>
+  </section>
+
+  <main>
+    <section class="panel">
+      <h2>Cell &amp; Time</h2>
+      <div id="cells">
+        <button class="cell" data-cell="white">White</button>
+        <button class="cell" data-cell="blue">Blue</button>
+        <button class="cell" data-cell="red">Red</button>
+      </div>
+      <div class="clock">Sim time: <span id="now">—</span></div>
+      <div class="time-controls">
+        <button data-step="60">+1m</button>
+        <button data-step="600">+10m</button>
+        <button data-step="3600">+1h</button>
+        <button id="rewind">Rewind to start</button>
+      </div>
+      <h3>Objectives</h3>
+      <pre id="objectives">—</pre>
+      <h3>Messages</h3>
+      <ul id="messages"></ul>
+      <button id="fire-inject">Fire inject…</button>
+    </section>
+
+    <section class="panel">
+      <h2>Fleet (own assets)</h2>
+      <table id="assets"><thead><tr><th>ID</th><th>Kind</th><th>Health</th><th>Bus</th></tr></thead><tbody></tbody></table>
+      <h2>Tracks (custody)</h2>
+      <table id="tracks"><thead><tr><th>Object</th><th>Conf</th><th>Char.</th><th>Class</th></tr></thead><tbody></tbody></table>
+      <h2>Perceived effects</h2>
+      <ul id="effects"></ul>
+    </section>
+
+    <section class="panel">
+      <h2>Order panel</h2>
+      <label>Actor <input id="o-actor" placeholder="ISR-EO-1 / auto" /></label>
+      <label>Action
+        <select id="o-action">
+          <option>maneuver</option><option>downlink</option><option>observe</option>
+          <option>jam</option><option>engage</option><option>cyber</option>
+        </select>
+      </label>
+      <label>Target <input id="o-target" placeholder="(optional)" /></label>
+      <label>Params (JSON) <input id="o-params" value='{"via":"GS-NORTH"}' /></label>
+      <button id="issue">Issue order</button>
+      <pre id="order-result">—</pre>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -6,15 +6,24 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Phases 0–4.5 complete and green (66 tests).** P0–P4 as below; **P4.5** adds the planning &
+**Phases 0–5 (backend) complete and green (72 tests).** **P5** adds the web layer: a FastAPI
+server (`spacesim/ui_web/server.py`) wrapping `InProcessSession` 1:1 (REST now, WebSocket-ready —
+`get_eventlog(since_seq)` is the delta contract), with fog-of-war applied server-side in
+`/view/{cell}`, plus a minimal browser front end (`static/`: cell switcher, fleet SOH, tracks,
+objectives, time controls, order panel). **Caveat:** the browser GUI is *unverified* in this
+headless environment — the FastAPI endpoints, fog, and the full Vignette-1 flow (order → advance →
+objectives → rewind, reject reasons, inject) ARE test-covered (`test_web.py`). Next action:
+**Phase 5.5** (SDA 3D viewer — CesiumJS, pure consumer of the per-cell belief stream) or **Phase 6**
+(author Vignettes 2–8 + TLE add + Red doctrine profiles). Build sequence/invariants in `CLAUDE.md`.
+
+### Earlier (P4.5) summary
+**P4.5** adds the planning &
 tasking layer: command **delivery paths** (ground uplink / ISL relay via a crosslink-capable peer /
 stored program — earliest wins, re-validated at execute), **sensor tasking** (intents, `auto`
 sensor selection, incremental confidence, and contention that serializes tasks onto later windows),
 and the **safe-mode recovery chain** (`RecoverySystem`: confirm at first contact → multi-pass
 recovery sized by `safe_mode_recovery_difficulty`, with **re-safe-on-persistence** until the root
-cause — e.g. an unpatched cyber vuln — is removed). New `isl_link` access channel. Next action:
-**Phase 5** — the UI over the SessionAPI (2D map, pass-timeline, order/queue panels, fleet SOH,
-White-Cell controls), per `09-gui-principles.md`. Build sequence/invariants in `CLAUDE.md`.
+cause — e.g. an unpatched cyber vuln — is removed). New `isl_link` access channel.
 
 ### Earlier (P4) summary
 P4 adds the session layer:
@@ -121,6 +130,11 @@ test first, implement to green, and add a regression test for every resolved fin
   replay-safe; `change_roe`/`modify_parameter` mutate live (non-engine) state and are noted as not
   replay-safe across a rewind (avoid mid-branch). CellView exposes own assets fully; other-side only
   via the cell's own tracks; effects as symptoms (source shown only if attribution is overt).
+- **2026-05-24:** **UI stack = web (FastAPI + browser)** (resolves the long-open decision). Rationale:
+  the LAN-multiplayer seam comes nearly free (WebSocket over the same SessionAPI), zero-install, and
+  the backend is unit-testable headlessly (TestClient) whereas a PyQt GUI is not. A localhost FastAPI
+  server still satisfies "offline-capable". Web layer is `spacesim/ui_web/`; engine import-guard
+  unaffected (it only scans `engine/`).
 - **2026-05-24:** Phase 4.5 — command delivery picks the **earliest** of ground/ISL/stored windows
   and stamps `delivery_path`; ISL modeled as a new `isl_link` access channel (sat-sat LOS within
   `isl_max_range_m`) via a cell-owned `isl_capable` relay. Sensor reports raise confidence
@@ -129,8 +143,9 @@ test first, implement to green, and add a regression test for every resolved fin
   on an in-place rewind; acceptable for now (note for Phase 5 session integration). Safe-mode
   recovery sized by difficulty (quick=1/realistic=2/punishing=3 passes); re-safe if the cause
   (unpatched cyber vuln) persists.
-- **Still open:** UI stack — **decide at Phase 5 start** (recommendation: FastAPI + web). Posture/
-  defense command persistence (`def.harden`, `def.set_threat_warning`) — implement with the Phase 5
-  command set. EW/bus-stress safe-mode inducement + Vignettes 2–8 — Phase 6. Order is an engine
-  dataclass crossing the API in-process; make it a serializable pydantic message when the network
-  transport lands. Contention registry not rewind-safe (see above).
+- **Still open:** browser GUI is **unverified headless** — needs a human (or a browser-driver agent)
+  to confirm the Phase-5 GUI done-when visually; backend is covered. Posture/defense command
+  persistence (`def.harden`, `def.set_threat_warning`) — implement with the broader command set.
+  EW/bus-stress safe-mode inducement + Vignettes 2–8 — Phase 6. 3D viewer — Phase 5.5. Order is an
+  engine dataclass crossing the API in-process; make it a serializable pydantic message when the
+  network transport lands. Contention registry not rewind-safe.
