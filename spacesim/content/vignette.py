@@ -60,6 +60,9 @@ class Vignette(BaseModel):
     escalation_thresholds: dict = Field(default_factory=dict)
     parameters: list[Parameter] = Field(default_factory=list)
     injects: list[Inject] = Field(default_factory=list)
+    # Optional guided-walkthrough script: {"blue": [step,...], "red": [step,...]} where each step is
+    # {n, title, when, action, actor, target, params, expect}. Drives the manual + its screenshots.
+    tutorial: dict = Field(default_factory=dict)
 
 
 @dataclass

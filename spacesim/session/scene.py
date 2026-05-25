@@ -8,6 +8,7 @@ the (v1.1) 3D globe are both pure consumers of this; ground truth never reaches 
 
 from __future__ import annotations
 
+import math
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -15,6 +16,7 @@ from pydantic import BaseModel, Field
 from spacesim.engine.geometry import ecef_to_geodetic, eci_to_ecef
 from spacesim.engine.orbit import classify_regime
 from spacesim.engine.propagator import ModeratePropagator
+from spacesim.engine.sun import sun_unit_eci
 
 
 class RenderAsset(BaseModel):
@@ -41,6 +43,8 @@ class RenderTrack(BaseModel):
 class SceneView(BaseModel):
     cell: str
     now: int
+    sun_lat_deg: float = 0.0   # subsolar point — lets the viewer shade the day/night terminator
+    sun_lon_deg: float = 0.0
     assets: list[RenderAsset] = Field(default_factory=list)
     tracks: list[RenderTrack] = Field(default_factory=list)
 
@@ -55,6 +59,9 @@ def _geo(orbit, t):
 
 def build_scene(world, cell: str) -> SceneView:
     now = world.now
+    s = eci_to_ecef(sun_unit_eci(now), now)  # Sun direction in ECEF (unit vector)
+    sun_lat = math.degrees(math.asin(max(-1.0, min(1.0, float(s[2])))))
+    sun_lon = math.degrees(math.atan2(float(s[1]), float(s[0])))
     assets: list[RenderAsset] = []
     for a in world.assets.values():
         if a.owner != cell:
@@ -79,4 +86,5 @@ def build_scene(world, cell: str) -> SceneView:
             uncertainty_km=round(t.current_uncertainty_km(now), 2),
             characterized=t.characterized, classification=t.classification,
         ))
-    return SceneView(cell=cell, now=now, assets=assets, tracks=tracks)
+    return SceneView(cell=cell, now=now, sun_lat_deg=sun_lat, sun_lon_deg=sun_lon,
+                     assets=assets, tracks=tracks)

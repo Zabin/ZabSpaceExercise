@@ -7,6 +7,7 @@ Output: docs/manual/*.png + docs/manual/INDEX.md.  Run: ``python3 tools/render_m
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -267,7 +268,8 @@ def s_belief_map():
     scene = build_scene(world, "blue")
     img, d = canvas("blue", "Belief map (Vignette 2 GEO RPO) — own HVA known; the hostile inspector is a growing uncertainty volume")
     draw_map(d, 12, 66, W - 24, 600, scene, "Render-from-custody — uncertainty grows between optical looks, snaps on report")
-    save(img, "08-belief-map.png", "Belief map: own assets known; tracked objects rendered with growing uncertainty volumes.")
+    chips(d, W - 372, 74, ["+","-","center","tracks","grid","reset"], active="tracks")
+    save(img, "08-belief-map.png", "Belief map (2D) with zoom / pan / center / layer controls; tracked objects show growing uncertainty.")
 
 
 def s_soh_safe():
@@ -380,6 +382,238 @@ def s_doctrine_aar():
     save(img, "13-doctrine-and-aar.png", "Red doctrine campaign + AAR: decision timeline and a branch comparison showing an objective flip.")
 
 
+def chips(d, x, y, items, active=None):
+    """Draw a row of little control buttons; returns the new x cursor."""
+    for label in items:
+        w = 14 + len(label) * 8
+        fill = (47, 111, 99) if label == active else (30, 42, 56)
+        d.rounded_rectangle([x, y, x + w, y + 24], radius=5, fill=fill, outline=(56, 80, 108))
+        d.text((x + 7, y + 5), label, font=f12, fill=TEXT)
+        x += w + 6
+    return x
+
+
+def draw_globe(img, d, x, y, w, h, scene, title, cam):
+    """Orthographic 3D globe (mirrors static/globe.js); rendered into a clipped sub-image."""
+    d.rounded_rectangle([x, y, x + w, y + h], radius=8, fill=PANEL, outline=BORDER)
+    chips(d, x + 12, y + 8, ["rotate","tilt","+","-","zoom-to","spin","reset"], active="tilt")
+    gx, gy, gw, gh = int(x + 8), int(y + 40), int(w - 16), int(h - 50)
+    sub = Image.new("RGB", (gw, gh), (7, 11, 16)); sd = ImageDraw.Draw(sub)
+    cx, cy = gw / 2, gh / 2
+    R = (min(gw, gh) / 2 - 12) * cam.get("zoom", 1.0)
+    lon0, la0 = cam.get("lon0", 0.0), math.radians(cam.get("pitch", 20.0))
+
+    def proj(lat, lon, altkm=0.0):
+        la, lo = math.radians(lat), math.radians(lon - lon0)
+        cosc = math.sin(la0) * math.sin(la) + math.cos(la0) * math.cos(la) * math.cos(lo)
+        px = math.cos(la) * math.sin(lo)
+        py = math.cos(la0) * math.sin(la) - math.sin(la0) * math.cos(la) * math.cos(lo)
+        rad = R * (1 + altkm / 6371.0)
+        return cx + rad * px, cy - rad * py, cosc >= 0
+
+    sd.ellipse([cx - R, cy - R, cx + R, cy + R], fill=(14, 36, 56), outline=BORDER)
+    sx, sy, sfront = proj(scene.sun_lat_deg, scene.sun_lon_deg)
+    if sfront:
+        sd.ellipse([sx - R * 0.5, sy - R * 0.5, sx + R * 0.5, sy + R * 0.5], fill=(28, 56, 78))
+
+    def seg(fn, a, b):
+        prev = None
+        for t in range(a, b + 1, 6):
+            la, lo = fn(t); px, py, fr = proj(la, lo)
+            if prev and prev[2] and fr:
+                sd.line([prev[0], prev[1], px, py], fill=(46, 70, 96))
+            prev = (px, py, fr)
+    for lon in range(-180, 180, 30):
+        seg(lambda t, L=lon: (t, L), -90, 90)
+    for lat in range(-60, 61, 30):
+        seg(lambda t, L=lat: (L, t), -180, 180)
+    for a in scene.assets:
+        px, py, fr = proj(a.lat_deg, a.lon_deg, (a.alt_m or 0) / 1000)
+        if not fr:
+            continue
+        if a.on_orbit:
+            sd.polygon([(px, py - 6), (px - 6, py + 5), (px + 6, py + 5)], fill=GREEN)
+        else:
+            sd.rectangle([px - 4, py - 4, px + 4, py + 4], fill=GREEN)
+        sd.text((px + 8, py - 5), a.id, font=f12, fill=(200, 214, 226))
+    for t in scene.tracks:
+        px, py, fr = proj(t.lat_deg, t.lon_deg, (t.alt_m or 0) / 1000)
+        if not fr:
+            continue
+        rr = max(6, min(40, t.uncertainty_km / 18)); col = YELLOW if t.characterized else RED
+        sd.ellipse([px - rr, py - rr, px + rr, py + rr], outline=col)
+        sd.ellipse([px - 2, py - 2, px + 2, py + 2], fill=col)
+        sd.text((px + 8, py - 16), f"{t.object} ±{t.uncertainty_km}km", font=f12, fill=(200, 214, 226))
+    img.paste(sub, (gx, gy))
+
+
+def s_globe():
+    from spacesim.session import build_scene
+    # A GEO HVA + a tracked inspector + a couple of LEO assets for a fuller globe.
+    from spacesim.engine.entities import Asset
+    from spacesim.engine.custody import Track
+    from spacesim.engine.orbit import OrbitState
+    world = WorldState(now=simtime.minutes(40))
+    world.assets["BLUE-HVA"] = Asset(id="BLUE-HVA", owner="blue", kind="satellite",
+                                     orbit=OrbitState(a_m=42164e3, e=0, i_deg=0.05, raan_deg=0, argp_deg=0, ta_deg=0, epoch=0))
+    world.assets["ISR-LEO"] = Asset(id="ISR-LEO", owner="blue", kind="satellite",
+                                    orbit=OrbitState(a_m=R_EARTH_EQ + 550e3, e=0, i_deg=51.6, raan_deg=33, argp_deg=0, ta_deg=0, epoch=0))
+    world.assets["GS-1"] = Asset(id="GS-1", owner="blue", kind="ground_station", location=GeoPoint(lat_deg=35, lon_deg=-30))
+    world.tracks.append(Track(object="RED-INSP", owner="blue", last_observation=0, confidence=1.0, characterized=True,
+                              classification="hostile",
+                              state_estimate=OrbitState(a_m=42164e3, e=0, i_deg=0.05, raan_deg=0, argp_deg=0, ta_deg=0.6, epoch=0)))
+    scene = build_scene(world, "blue")
+
+    img, d = canvas("blue", "3D globe — orthographic belief view; drag to rotate, tilt/zoom, zoom-to an asset")
+    draw_globe(img, d, 12, 66, W - 24, 600, scene, "globe", {"lon0": -20, "pitch": 25, "zoom": 1.0})
+    save(img, "14-globe-overview.png", "3D globe viewer (zoomed out) with rotate/tilt/zoom/zoom-to controls.")
+
+    img2, d2 = canvas("blue", "3D globe — 'zoom-to' the GEO HVA: the camera centers and zooms on the selected asset")
+    draw_globe(img2, d2, 12, 66, W - 24, 600, scene, "globe", {"lon0": scene.assets[0].lon_deg, "pitch": 5, "zoom": 1.7})
+    save(img2, "15-globe-zoomto.png", "3D globe viewer zoomed-to the selected GEO asset.")
+
+
+def s_white_controls():
+    from spacesim.content.vignette import load_vignette, build_world
+    vig = load_vignette("multi-domain-taiwan")
+    _, ctx = build_world(vig)
+    img, d = canvas("white", "White Cell control panel — scenario dials, time controls, and injects")
+    ix, iy = panel(d, 12, 66, 720, 420, "Parameters (dials)")
+    rows = []
+    for p in vig.parameters:
+        opts = ("/".join(map(str, p.options)) if p.options else (p.type))
+        rows.append([(p.label, TEXT), (opts[:34], MUTED), (str(ctx.param_values.get(p.id)), GREEN)])
+    table(d, ix, iy, ["PARAMETER", "OPTIONS / TYPE", "VALUE"], rows, [300, 280, 110], lh=22)
+    tx, ty = panel(d, 748, 66, W - 760, 150, "Time controls")
+    chips(d, tx, ty + 4, ["+1m", "+10m", "+1h", "⟲ Rewind", "Undo"])
+    lines(d, tx, ty + 40, [("play / pause · fast-forward", MUTED), ("rewind & branch are byte-exact", MUTED)])
+    jx, jy = panel(d, 748, 228, W - 760, 258, "Injects")
+    lines(d, jx, jy, [("• " + i.label, TEXT) for i in vig.injects] or [("(none)", MUTED)])
+    save(img, "16-white-controls.png", "White Cell control panel: parameter dials, time controls, and injects.")
+
+
+ACTIONS_BY_KIND = {"satellite": ["downlink", "maneuver"], "jammer": ["jam"], "interceptor": ["engage"],
+                   "cyber_unit": ["cyber"], "ground_radar": ["observe"], "ground_optical": ["observe"]}
+PARAM_TEMPLATE = {"downlink": '{"via": "GS-NORTH"}', "maneuver": '{"dv": [0,5,0], "via": "GS-NORTH"}',
+                  "jam": '{"success_prob": 1.0, "outcome": "deny"}', "engage": "{}",
+                  "cyber": '{"access_vector": "ground_modem", "outcome": "safe_mode"}', "observe": '{"intent": "characterize"}'}
+
+
+def s_command_menu():
+    img, d = canvas("blue", "Satellite command selection — actions are filtered to the chosen asset's kind")
+    lx, ly = panel(d, 12, 66, 360, 360, "Asset kinds → legal actions")
+    rows = [[(k, BLUEc), (", ".join(v), TEXT)] for k, v in ACTIONS_BY_KIND.items()]
+    table(d, lx, ly, ["KIND", "LEGAL ACTIONS"], rows, [150, 190], lh=24)
+    rx, ry = panel(d, 388, 66, W - 400, 360, "Command panel — Actor: ISR-EO-1 (satellite)")
+    ry = kv(d, rx, ry, [("Actor", "ISR-EO-1  (satellite · blue)", TEXT),
+                        ("Action ▾", "downlink   [maneuver]", GREEN),
+                        ("Target", "(optional)", MUTED),
+                        ("Params", PARAM_TEMPLATE["downlink"], BLUEc)], kw=110)
+    ry += 10
+    d.text((rx, ry), "Selecting an actor filters the Action menu to that kind's legal actions and", font=f13, fill=MUTED)
+    d.text((rx, ry + 18), "pre-fills a parameter template; the order is then queued to its access window.", font=f13, fill=MUTED)
+    save(img, "17-command-menu.png", "Satellite command selection menu: actions filtered by asset kind with a param template.")
+
+
+def _walk_image(cell, stepno, title, when, cmd_lines, result_lines, objectives, fname):
+    img, d = canvas(cell, f"Training walkthrough — {cell.upper()} step {stepno}: {title}")
+    cx, cy = panel(d, 12, 66, 560, 220, "Command")
+    cy = kv(d, cx, cy, [("When", when, YELLOW)] + cmd_lines, kw=110)
+    rx, ry = panel(d, 588, 66, W - 600, 220, "Result")
+    lines(d, rx, ry, result_lines)
+    ox, oy = panel(d, 12, 300, W - 24, 130, "Objectives")
+    pairs = []
+    for side in ("blue", "red"):
+        for oid, met in objectives.get(side, {}).items():
+            pairs.append((f"{side}.{oid}", "MET" if met else "pending", GREEN if met else MUTED))
+    kv(d, ox, oy, pairs, kw=240)
+    save(img, fname, f"Training walkthrough — {cell} step {stepno}: {title}.")
+
+
+def s_training_blue():
+    from spacesim.content.vignette import load_vignette
+    from spacesim.engine.orders import Order
+    mgr = SessionManager(load_vignette("training-basics"), seed=1); mgr.start()
+    O = lambda **k: Order(cell="blue", **k)
+
+    _walk_image("blue", 1, "Review fleet & objectives", "at start",
+                [("Action", "review own assets / SOH", TEXT)],
+                [("ISR-EO-1 nominal; awaiting orders.", MUTED)], mgr.objectives(), "18-train-blue-1.png")
+
+    t = mgr.issue_order("blue", O(actor="RADAR-TRN", action="observe", target="RED-TGT",
+                                  params={"intent": "characterize", "classification": "hostile"}))
+    mgr.advance_to(t.earliest_window[0] + 1)
+    _walk_image("blue", 2, "Task the sensor to build custody", "RADAR-TRN sees RED-TGT",
+                [("Actor", "RADAR-TRN", TEXT), ("Action", "observe (characterize)", TEXT), ("Target", "RED-TGT", TEXT)],
+                [(f"track on RED-TGT · characterized={mgr.world.track_for('blue','RED-TGT').characterized}", GREEN),
+                 ("keep_custody now MET", GREEN)], mgr.objectives(), "19-train-blue-2.png")
+
+    dl = mgr.issue_order("blue", O(actor="ISR-EO-1", action="downlink", params={"via": "GS-TRN"}))
+    _walk_image("blue", 3, "Plan the imagery downlink", "queues to the next GS-TRN pass",
+                [("Actor", "ISR-EO-1", TEXT), ("Action", "downlink", TEXT), ("Params", '{"via":"GS-TRN"}', BLUEc)],
+                [(f"{dl.status} · {dl.delivery_path}", GREEN), (f"executes {simtime.to_iso(dl.earliest_window[0])}", TEXT)],
+                mgr.objectives(), "20-train-blue-3.png")
+
+    mgr.advance_to(dl.earliest_window[1] + 1)
+    _walk_image("blue", 4, "Advance to the downlink window", "+10 min (past the window)",
+                [("Action", "advance time", TEXT)],
+                [("imagery delivered ✓", GREEN), ("deliver_isr now MET", GREEN)], mgr.objectives(), "21-train-blue-4.png")
+
+    mv = mgr.issue_order("blue", O(actor="ISR-EO-1", action="maneuver", params={"dv": [0, 5, 0], "via": "GS-TRN"}))
+    _walk_image("blue", 5, "Maneuver to preserve the orbit", "next GS-TRN command pass",
+                [("Actor", "ISR-EO-1", TEXT), ("Action", "maneuver (Δv 5 m/s)", TEXT)],
+                [(f"{mv.status} · {mv.delivery_path}", GREEN), ("Δv decremented on execution", MUTED)],
+                mgr.objectives(), "22-train-blue-5.png")
+
+    _walk_image("blue", 6, "Confirm the objective", "after execution",
+                [("Action", "review objectives", TEXT)],
+                [("Blue delivered imagery in time.", GREEN)], mgr.objectives(), "23-train-blue-6.png")
+
+
+def s_training_red():
+    from spacesim.content.vignette import load_vignette
+    from spacesim.engine.orders import Order
+    mgr = SessionManager(load_vignette("training-basics"), seed=1); mgr.start()
+    O = lambda **k: Order(cell="red", **k)
+
+    _walk_image("red", 1, "Review own assets", "at start",
+                [("Action", "review jammer / cyber / radar / interceptor", TEXT)],
+                [("Red force ready.", MUTED)], mgr.objectives(), "24-train-red-1.png")
+
+    o = mgr.issue_order("red", O(actor="RED-RDR", action="observe", target="ISR-EO-1", params={"intent": "track"}))
+    mgr.advance_to(o.earliest_window[0] + 1)
+    _walk_image("red", 2, "Find the Blue ISR satellite", "RED-RDR sees ISR-EO-1",
+                [("Actor", "RED-RDR", TEXT), ("Action", "observe (track)", TEXT), ("Target", "ISR-EO-1", TEXT)],
+                [("custody on ISR-EO-1 established", GREEN)], mgr.objectives(), "25-train-red-2.png")
+
+    j = mgr.issue_order("red", O(actor="JAM-TRN", action="jam", target="ISR-EO-1",
+                                 params={"success_prob": 1.0, "outcome": "deny"}))
+    _walk_image("red", 3, "Jam the downlink", "during the GS-TRN pass",
+                [("Actor", "JAM-TRN", TEXT), ("Action", "jam (deny)", TEXT), ("Target", "ISR-EO-1", TEXT)],
+                [(f"{j.status} · {j.delivery_path}", GREEN), ("link denied during the footprint window", YELLOW)],
+                mgr.objectives(), "26-train-red-3.png")
+
+    mgr.issue_order("red", O(actor="RED-CYBER", action="cyber", target="ISR-EO-1",
+                             params={"access_vector": "ground_modem", "outcome": "safe_mode", "success_prob": 1.0, "sm_susceptibility": 1.0}))
+    mgr.advance_to(mgr.world.now + 60 * 1_000_000)
+    _walk_image("red", 4, "Cyber the modem (off-pass)", "any time — cyber isn't window-gated",
+                [("Actor", "RED-CYBER", TEXT), ("Action", "cyber → safe_mode", TEXT), ("Vector", "ground_modem", TEXT)],
+                [(f"ISR-EO-1 bus mode: {mgr.world.assets['ISR-EO-1'].bus_state.mode}", RED), ("disable_isr now MET", GREEN)],
+                mgr.objectives(), "27-train-red-4.png")
+
+    eng = mgr.issue_order("red", O(actor="RED-ASAT", action="engage", target="ISR-EO-1"))
+    _walk_image("red", 5, "Attempt a kinetic strike (ROE check)", "any pass",
+                [("Actor", "RED-ASAT", TEXT), ("Action", "engage", TEXT), ("Target", "ISR-EO-1", TEXT)],
+                [(f"{eng.status.upper()}: {eng.reason}", RED), ("kinetic ASAT is off by default — restraint", MUTED)],
+                mgr.objectives(), "28-train-red-5.png")
+
+    mgr.advance_to(mgr.ctx.landing_deadline + 1)
+    _walk_image("red", 6, "Advance and assess", "past the delivery window",
+                [("Action", "advance time", TEXT)],
+                [("Blue delivered nothing in the window.", GREEN), ("deny_isr now MET", GREEN)],
+                mgr.objectives(), "29-train-red-6.png")
+
+
 def write_index():
     md = ["# Training-manual screenshots\n",
           "Generated by `tools/render_manual.py` from live SessionAPI/engine data (the sandbox cannot",
@@ -405,6 +639,11 @@ def main():
     s_rewind_branch()
     s_tle()
     s_doctrine_aar()
+    s_globe()
+    s_white_controls()
+    s_command_menu()
+    s_training_blue()
+    s_training_red()
     write_index()
 
 

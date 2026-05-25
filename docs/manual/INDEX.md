@@ -10,9 +10,25 @@ install a browser, so these paint the web UI's panels from genuine fog-filtered 
 - **05-order-panel.png** — Order panel: a queued command (with delivery path + window) and a rejected one (with reason).
 - **06-planning-isl.png** — Command planning: ISL relay delivers sooner than a distant ground pass.
 - **07-sda-tasking.png** — Task → custody → unlock: a sensor report yields a weapons-quality track that enables the engagement.
-- **08-belief-map.png** — Belief map: own assets known; tracked objects rendered with growing uncertainty volumes.
+- **08-belief-map.png** — Belief map (2D) with zoom / pan / center / layer controls; tracked objects show growing uncertainty.
 - **09-fleet-soh-safe-mode.png** — Fleet SOH rollup and bus drill-down with a satellite in cyber-induced safe mode.
 - **10-safe-mode-recovery.png** — Safe-mode recovery: re-safed while the vulnerability is unpatched, then recovered after patching.
 - **11-time-travel-branch.png** — Rewind-to-fork and branch: the same start yields a Blue win or a Red denial depending on play.
 - **12-tle-force-add.png** — Force editor: a real satellite added by TLE, validated and propagating.
 - **13-doctrine-and-aar.png** — Red doctrine campaign + AAR: decision timeline and a branch comparison showing an objective flip.
+- **14-globe-overview.png** — 3D globe viewer (zoomed out) with rotate/tilt/zoom/zoom-to controls.
+- **15-globe-zoomto.png** — 3D globe viewer zoomed-to the selected GEO asset.
+- **16-white-controls.png** — White Cell control panel: parameter dials, time controls, and injects.
+- **17-command-menu.png** — Satellite command selection menu: actions filtered by asset kind with a param template.
+- **18-train-blue-1.png** — Training walkthrough — blue step 1: Review fleet & objectives.
+- **19-train-blue-2.png** — Training walkthrough — blue step 2: Task the sensor to build custody.
+- **20-train-blue-3.png** — Training walkthrough — blue step 3: Plan the imagery downlink.
+- **21-train-blue-4.png** — Training walkthrough — blue step 4: Advance to the downlink window.
+- **22-train-blue-5.png** — Training walkthrough — blue step 5: Maneuver to preserve the orbit.
+- **23-train-blue-6.png** — Training walkthrough — blue step 6: Confirm the objective.
+- **24-train-red-1.png** — Training walkthrough — red step 1: Review own assets.
+- **25-train-red-2.png** — Training walkthrough — red step 2: Find the Blue ISR satellite.
+- **26-train-red-3.png** — Training walkthrough — red step 3: Jam the downlink.
+- **27-train-red-4.png** — Training walkthrough — red step 4: Cyber the modem (off-pass).
+- **28-train-red-5.png** — Training walkthrough — red step 5: Attempt a kinetic strike (ROE check).
+- **29-train-red-6.png** — Training walkthrough — red step 6: Advance and assess.

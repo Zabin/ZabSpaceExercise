@@ -7,36 +7,32 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <header>
-    <strong>Space Control &amp; Orbital Warfare Exercise Simulator</strong>
-    <span id="banner">UNCLASSIFIED // TRAINING</span>
-  </header>
-
-  <section id="setup" class="panel">
-    <label>Vignette
-      <select id="vignette"></select>
-    </label>
-    <label>Seed <input id="seed" type="number" value="1" style="width:5em" /></label>
-    <button id="load">Load</button>
+  <header class="toolbar">
+    <span class="title">Space Control &amp; Orbital Warfare</span>
+    <label>Vignette <select id="vignette"></select></label>
+    <label>Seed <input id="seed" type="number" value="1" style="width:4.5em" /></label>
+    <button id="load" class="primary">Load</button>
     <button id="start" disabled>Start</button>
-    <span id="session"></span>
-  </section>
+    <span class="spacer"></span>
+    <div class="ctrl" id="cells">
+      <button class="cell" data-cell="white">White</button>
+      <button class="cell" data-cell="blue">Blue</button>
+      <button class="cell" data-cell="red">Red</button>
+    </div>
+    <div class="ctrl">
+      <button class="icon" data-step="60">+1m</button>
+      <button class="icon" data-step="600">+10m</button>
+      <button class="icon" data-step="3600">+1h</button>
+      <button id="rewind">⟲ Rewind</button>
+    </div>
+    <span class="banner">UNCLASSIFIED // TRAINING</span>
+  </header>
 
   <main>
     <section class="panel">
       <h2>Cell &amp; Time</h2>
-      <div id="cells">
-        <button class="cell" data-cell="white">White</button>
-        <button class="cell" data-cell="blue">Blue</button>
-        <button class="cell" data-cell="red">Red</button>
-      </div>
-      <div class="clock">Sim time: <span id="now">—</span></div>
-      <div class="time-controls">
-        <button data-step="60">+1m</button>
-        <button data-step="600">+10m</button>
-        <button data-step="3600">+1h</button>
-        <button id="rewind">Rewind to start</button>
-      </div>
+      <div class="clock">Sim time: <b id="now">—</b></div>
+      <div id="session" class="toggle"></div>
       <h3>Objectives</h3>
       <pre id="objectives">—</pre>
       <h3>Messages</h3>
@@ -54,26 +50,51 @@
     </section>
 
     <section class="panel">
-      <h2>Order panel</h2>
-      <label>Actor <input id="o-actor" placeholder="ISR-EO-1 / auto" /></label>
-      <label>Action
-        <select id="o-action">
-          <option>maneuver</option><option>downlink</option><option>observe</option>
-          <option>jam</option><option>engage</option><option>cyber</option>
-        </select>
-      </label>
-      <label>Target <input id="o-target" placeholder="(optional)" /></label>
-      <label>Params (JSON) <input id="o-params" value='{"via":"GS-NORTH"}' /></label>
-      <button id="issue">Issue order</button>
+      <h2>Satellite command</h2>
+      <label>Actor <select id="o-actor"></select></label>
+      <div id="actor-info" class="toggle"></div>
+      <label>Action <select id="o-action"></select></label>
+      <label>Target <input id="o-target" placeholder="(e.g. RED-TGT)" style="width:10em" /></label>
+      <label style="display:flex">Params
+        <input id="o-params" style="flex:1" value='{"via":"GS-NORTH"}' /></label>
+      <button id="issue" class="primary">Issue order</button>
+      <h3>Result</h3>
       <pre id="order-result">—</pre>
     </section>
   </main>
 
-  <section class="panel" style="margin:0 12px 12px">
-    <h2>Belief map (render-from-custody — own assets + tracks only)</h2>
-    <canvas id="map" width="1100" height="320"></canvas>
+  <section class="viewers">
+    <div class="panel">
+      <div class="viewer-head">
+        <strong>3D globe</strong><span class="grow"></span>
+        <div class="ctrl">
+          <button class="icon" id="g-zoom-in">＋</button>
+          <button class="icon" id="g-zoom-out">－</button>
+          <label>tilt<input id="g-tilt" type="range" min="-80" max="80" value="20" style="width:90px"></label>
+          <label>zoom-to<select id="g-focus"></select></label>
+          <label class="toggle"><input id="g-auto" type="checkbox"> spin</label>
+          <button id="g-reset">Reset</button>
+        </div>
+      </div>
+      <canvas id="globe" width="520" height="360"></canvas>
+    </div>
+    <div class="panel">
+      <div class="viewer-head">
+        <strong>2D belief map</strong><span class="grow"></span>
+        <div class="ctrl">
+          <button class="icon" id="m-zoom-in">＋</button>
+          <button class="icon" id="m-zoom-out">－</button>
+          <label>center<select id="m-focus"></select></label>
+          <label class="toggle"><input id="m-tracks" type="checkbox" checked> tracks</label>
+          <label class="toggle"><input id="m-grid" type="checkbox" checked> grid</label>
+          <button id="m-reset">Reset</button>
+        </div>
+      </div>
+      <canvas id="map" width="520" height="360"></canvas>
+    </div>
   </section>
 
+  <script src="/globe.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>
