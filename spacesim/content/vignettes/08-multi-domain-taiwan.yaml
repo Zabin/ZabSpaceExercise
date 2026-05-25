@@ -1,0 +1,89 @@
+vignette:
+  id: multi-domain-taiwan
+  title: "Multi-Domain Capstone"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "Integrate every subsystem: ISR, SATCOM, PNT, RPO, EW, cyber, and SDA in one campaign."
+    - "Space enables joint fires; denying it across domains is a synchronized Red effort."
+  doctrinal_basis: [orbital_warfare, electromagnetic_warfare, directed_energy, cyber, sda]
+  red_doctrine_profile: china_integrated
+  estimated_duration_min: 120
+  start_epoch_utc: "2030-03-15T06:00:00Z"
+  blue_forces:
+    - id: ISR-EO-1
+      kind: satellite
+      orbit: {a_m: 6978137.0, e: 0.0, i_deg: 97.8, raan_deg: 0, argp_deg: 0, ta_deg: 0.0}
+      resources: {delta_v_ms: 80.0}
+      payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
+      bus_state: {power: {battery_soc: 0.9, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+    - id: SATCOM-1
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 0, argp_deg: 0, ta_deg: 30.0}
+      cyber_posture: low
+      cyber_vulnerabilities: [{vector: ground_modem, patchable: true, patched: false}]
+      payload_state: {type: satcom}
+      bus_state: {power: {battery_soc: 0.95}}
+    - id: GNSS-1
+      kind: satellite
+      orbit: {a_m: 26560000.0, e: 0.0, i_deg: 55.0, raan_deg: 0, argp_deg: 0, ta_deg: 0.0}
+      bus_state: {power: {battery_soc: 0.95}}
+    - id: GS-NORTH
+      kind: ground_station
+      location: {lat_deg: 22.22, lon_deg: 92.42}
+    - id: GS-EAST
+      kind: ground_station
+      location: {lat_deg: 33.28, lon_deg: 89.73}
+  red_forces:
+    - id: RED-SURF
+      kind: terrestrial_force
+      location: {lat_deg: 24.0, lon_deg: 121.0}
+    - id: JAM-NORTH
+      kind: jammer
+      location: {lat_deg: 22.22, lon_deg: 92.42}
+      elevation_mask_deg: 0.0
+    - id: RED-CYBER
+      kind: cyber_unit
+    - id: RED-INSP
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 0, argp_deg: 0, ta_deg: 30.6}
+      resources: {delta_v_ms: 200.0}
+    - id: RED-ASAT
+      kind: interceptor
+      location: {lat_deg: 0.0, lon_deg: 97.0}
+      elevation_mask_deg: 10.0
+      resources: {ammo: 1}
+  sensors:
+    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 22.0, lon_deg: 92.0}}
+    - {id: BLUE-OPT, owner: blue, kind: ground_optical, location: {lat_deg: 35.0, lon_deg: 0.0}, needs_lighting: true}
+  objectives:
+    blue:
+      - {id: deliver_isr, desc: "Deliver imagery before the landing window", metric: {kind: deliver_before}}
+      - {id: keep_satcom, desc: "Keep SATCOM operational", metric: {kind: asset_operational, target: SATCOM-1, by_s: 5400}}
+      - {id: custody_inspector, desc: "Maintain custody of the GEO inspector", metric: {kind: custody, side: blue, object: RED-INSP, min_conf: 0.5}}
+    red:
+      - {id: deny_isr, desc: "Deny Blue imagery delivery", metric: {kind: deny_delivery}}
+      - {id: disable_satcom, desc: "Disable SATCOM via the modem exploit", metric: {kind: asset_safed, target: SATCOM-1}}
+      - {id: shadow_hva, desc: "Shadow the SATCOM bird within 100 km", metric: {kind: proximity, a: RED-INSP, b: SATCOM-1, max_km: 100}}
+  escalation_thresholds:
+    debris_generating_strike: {political_cost: high, triggers_inject: un_condemnation}
+  parameters:
+    - {id: red_kinetic_authorized, label: "Red Kinetic ASAT Authorized", type: bool, default: false}
+    - {id: cyber_authorized, label: "Cyber Authorized", type: bool, default: true}
+    - {id: safe_mode_susceptibility, label: "Safe-Mode Susceptibility", type: enum, options: [robust, realistic, fragile], default: fragile}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: china_integrated}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: ops_fidelity, label: "Ops Fidelity", type: enum, options: [tactical, realistic, full_ttc], default: realistic}
+    - {id: landing_window_start_s, label: "Landing Window (s)", type: int, default: 5400}
+  injects:
+    - id: commercial_imagery_leak
+      label: "Commercial SAR imagery reveals the surface group"
+      trigger: {type: time, at_sim_s: 2700}
+      effects:
+        - {type: reveal_asset, target: RED-SURF, to: blue}
+        - {type: message, to: [blue, white], text: "OSINT leak: commercial SAR shows the surface group."}
+    - id: patch_modem
+      label: "Blue patches the SATCOM modem vulnerability"
+      trigger: {type: manual}
+      effects:
+        - {type: patch_cyber_vuln, target: SATCOM-1, vector: ground_modem}
+        - {type: message, to: [blue, white], text: "SATCOM modem patched."}

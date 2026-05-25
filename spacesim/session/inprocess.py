@@ -11,6 +11,7 @@ from typing import Optional
 from spacesim.content.vignette import list_vignettes, load_vignette
 from spacesim.engine.orders import Order
 from spacesim.session.api import Ack, CellView, OrderAck
+from spacesim.session import aar
 from spacesim.session.manager import SessionManager
 from spacesim.session.redai import RedDoctrine
 
@@ -92,3 +93,10 @@ class InProcessSession:
 
     def objectives(self, session: str) -> dict:
         return self._sessions[session].objectives()
+
+    # -- after-action review ---------------------------------------------------
+    def aar_report(self, session: str):
+        return aar.report(self._sessions[session])
+
+    def aar_objectives_at(self, session: str, seq=None) -> dict:
+        return aar.objectives_at(self._sessions[session], seq)

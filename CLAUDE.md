@@ -10,12 +10,13 @@ fleets of space/ground assets as bus and payload operators, constrained by orbit
 (you can only command, observe, or attack when access windows permit). Most effects are reversible
 (EW/cyber/proximity), not kinetic.
 
-**Status: implementation started.** Phases 0–5 (backend) are complete and green (72 tests): the
-deterministic engine through Phase 4.5, plus the **web layer** — a FastAPI server wrapping the
-in-process SessionAPI (REST now, WebSocket-ready) with a minimal browser front end. Code under
-`spacesim/`; content is YAML. The UI stack decision is **web (FastAPI + browser)**. Note: the
-browser GUI itself is unverified in this headless environment; the FastAPI endpoints + fog-of-war
-are fully test-covered. Next: Phase 5.5 (SDA-derived 3D viewer) / Phase 6 (remaining vignettes).
+**Status: backend feature-complete through Phase 7 (81 tests green).** Deterministic engine
+(P0–P4.5), the web layer (P5, FastAPI + browser front end), the render-from-custody belief
+scene + 2D map (P5.5), all **eight vignettes** as YAML + TLE force-add + Red doctrine presets (P6),
+and the **capstone Vignette 8 + AAR replay** (P7: read-only replay/scrub, branch comparison,
+campaign summary). Code under `spacesim/`; content is YAML; UI stack = **web**. The browser GUI is
+unverified headless, but every backend path (endpoints, fog, objectives, AAR) is test-covered.
+Remaining: P5.5 full CesiumJS 3D globe (v1.1) and P8 (fidelity/multiplayer seam proofs).
 
 ## Authoritative source & reading order
 
@@ -83,7 +84,8 @@ spacesim/
 - **P5** UI over the API (FastAPI + web). ✓ (backend tested; browser GUI unverified headless)
   **P5.5** Render-from-custody belief scene + 2D map. ✓ (full Cesium 3D globe is the v1.1 follow-on)
 - **P6** Vignettes 2–7 (data) + TLE force-add + Red doctrine profiles. ✓ (all 8 vignette files load/run)
-- **P7** Capstone Vignette 8 + AAR replay. **P8** Document/scaffold fidelity & multiplayer seams.
+- **P7** Capstone Vignette 8 + AAR replay (read-only replay/scrub, branch compare). ✓
+  **P8** Document/scaffold fidelity & multiplayer seams.
 
 ## Test-driven workflow (mandatory)
 

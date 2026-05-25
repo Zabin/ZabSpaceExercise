@@ -158,6 +158,16 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.objectives(sid)
 
+    @app.get("/api/sessions/{sid}/aar")
+    def aar_report(sid: str):
+        _require(sid)
+        return api.aar_report(sid)
+
+    @app.get("/api/sessions/{sid}/aar/objectives")
+    def aar_objectives_at(sid: str, seq: Optional[int] = None) -> dict:
+        _require(sid)
+        return api.aar_objectives_at(sid, seq)
+
     if STATIC_DIR.exists():
         app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
 
