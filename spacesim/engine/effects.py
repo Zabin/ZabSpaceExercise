@@ -13,16 +13,18 @@ flag on the instance; reversible link effects carry a window/persistence span.
 
 from __future__ import annotations
 
-from typing import Literal, Optional, Protocol
+from typing import TYPE_CHECKING, Literal, Optional, Protocol
 
 from pydantic import BaseModel, Field
 
 from spacesim.engine.bus import enter_safe_mode
 from spacesim.engine.rng import SeededRng
 
-# WorldState is only referenced in annotations (strings under ``from __future__ import
-# annotations``) and via duck-typed attribute access at runtime, so it is intentionally NOT
-# imported here — that would create an import cycle (world.py holds these effect models).
+# WorldState is referenced only in annotations and via duck-typed attribute access at runtime, so
+# it must NOT be imported at module load (world.py holds these effect models — that would cycle).
+# The TYPE_CHECKING import keeps type-checkers/linters happy without a runtime dependency.
+if TYPE_CHECKING:
+    from spacesim.engine.world import WorldState
 
 Outcome = Literal["deceive", "disrupt", "deny", "degrade", "destroy", "safe_mode", "none"]
 Category = Literal["direct_ascent", "co_orbital", "electronic_warfare", "directed_energy", "cyber"]

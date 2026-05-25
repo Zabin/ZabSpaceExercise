@@ -13,11 +13,11 @@ from PIL import Image, ImageDraw, ImageFont
 
 from spacesim.content.vignette import list_vignettes, load_vignette
 from spacesim.engine import simtime
-from spacesim.engine.custody import Track, observe
+from spacesim.engine.custody import Track
 from spacesim.engine.entities import Asset, AssetResources, Sensor
 from spacesim.engine.geometry import R_EARTH_EQ, GeoPoint, ecef_to_geodetic, eci_to_ecef
 from spacesim.engine.orbit import OrbitState
-from spacesim.engine.orders import Order, OrderSystem, scene_from_world
+from spacesim.engine.orders import Order, OrderSystem
 from spacesim.engine.propagator import ModeratePropagator
 from spacesim.engine.recovery import RecoverySystem
 from spacesim.engine.effects import EffectInstance, ModerateEffectResolver
@@ -154,9 +154,8 @@ def s_cell(cell, mgr, name, sub):
         god = mgr.get_godview()
         assets = [a.model_dump() for a in god.assets.values()]
         tracks = [t.model_dump() for t in god.tracks]
-        objs = mgr.objectives()
     else:
-        assets = view.own_assets; tracks = view.known_tracks; objs = view.objectives
+        assets = view.own_assets; tracks = view.known_tracks
     ix, iy = panel(d, 12, 66, 560, 360, "Fleet — ground truth" if cell == "white" else "Fleet (own assets)")
     table(d, ix, iy, ["ID", "KIND", "HEALTH", "BUS"], asset_rows(assets),
           [150, 160, 110, 110])

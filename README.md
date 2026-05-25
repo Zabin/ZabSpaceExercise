@@ -1,12 +1,25 @@
 # Space Control & Orbital Warfare Exercise Simulator — Research & Design Package
 
-This package is the **starting point for Claude Code** to build a professional military
-education (PME) wargaming tool for space control and orbital warfare. It contains the
-doctrinal research, a library of exercise vignettes, and a complete software design spec.
+This repository contains both the **research & design package** (doctrinal research, the exercise
+vignette library, and the software design spec) **and a working implementation** of the professional
+military education (PME) wargaming tool for space control and orbital warfare.
 
-> **Status:** Planning / pre-implementation. No code is written yet. Language and GUI are
-> intentionally left open; see `03-software-design/02-tech-stack-recommendation.md` for a
-> recommendation Claude Code may accept or override.
+> **Status:** Backend feature-complete through Phase 7 (deterministic engine, orbits & access
+> windows, effects/cyber/custody, bus & safe mode, the session layer with fog-of-war, planning &
+> tasking, the FastAPI web layer, the belief scene + 2D map, all eight vignettes, and AAR replay).
+> 81 tests pass. The chosen stack is **Python + FastAPI/web**.
+>
+> **New here?** Read **[`docs/TRAINING-MANUAL.md`](docs/TRAINING-MANUAL.md)** to install, run, and
+> drive your first exercise. Project conventions and invariants live in `CLAUDE.md`.
+
+## Quick start
+
+```bash
+pip install pydantic numpy sgp4 pyyaml fastapi uvicorn      # runtime deps
+pip install pytest hypothesis skyfield httpx                # to run the tests
+uvicorn spacesim.ui_web.server:app                          # then open http://127.0.0.1:8000/
+python3 -m pytest                                           # run the full test suite
+```
 
 ## What this is for
 

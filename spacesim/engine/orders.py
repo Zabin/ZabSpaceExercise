@@ -114,7 +114,7 @@ class OrderSystem:
             return order
 
         order.earliest_window = (win.start, win.end)
-        order.delivery_path = "sensor_collect" if order.action == "observe" else "ground_uplink"
+        order.delivery_path = "ground_uplink"  # jam/engage/downlink gate on a single access window
         order.status = "queued"
         kind, data = self._exec_payload(order, win)
         self.sim.schedule(win.start, kind, data, actor=order.cell)

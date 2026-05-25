@@ -6,15 +6,20 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Phases 0–5 (backend) complete and green (72 tests).** **P5** adds the web layer: a FastAPI
-server (`spacesim/ui_web/server.py`) wrapping `InProcessSession` 1:1 (REST now, WebSocket-ready —
-`get_eventlog(since_seq)` is the delta contract), with fog-of-war applied server-side in
-`/view/{cell}`, plus a minimal browser front end (`static/`: cell switcher, fleet SOH, tracks,
-objectives, time controls, order panel). **Caveat:** the browser GUI is *unverified* in this
-headless environment — the FastAPI endpoints, fog, and the full Vignette-1 flow (order → advance →
-objectives → rewind, reject reasons, inject) ARE test-covered (`test_web.py`). Next action:
-**Phase 5.5** (SDA 3D viewer — CesiumJS, pure consumer of the per-cell belief stream) or **Phase 6**
-(author Vignettes 2–8 + TLE add + Red doctrine profiles). Build sequence/invariants in `CLAUDE.md`.
+**Backend feature-complete through Phase 7 — 81 tests green.** Implemented end-to-end:
+P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
+five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
+(SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
+tasking (ISL/stored delivery, sensor tasking + contention, safe-mode recovery chain) · **P5** web
+layer (FastAPI over the SessionAPI + browser front end) · **P5.5** render-from-custody belief scene
+(`/scene`) + 2D map · **P6** all eight vignettes as YAML + TLE force-add + Red doctrine presets +
+data-driven objectives · **P7** capstone Vignette 8 + AAR (read-only replay/scrub, branch compare).
+Plus `docs/manual/` (13 data-driven UI screenshots + INDEX) and `docs/TRAINING-MANUAL.md`.
+
+**Caveat:** the browser GUI is *unverified headless* (no browser installable); every backend path
+(endpoints, fog, objectives, scene, AAR) is test-covered, and the screenshots are faithful
+data-driven renderings, not browser captures. **Remaining:** P5.5 full CesiumJS 3D globe (v1.1);
+**P8** — document/scaffold the high-fidelity and LAN-multiplayer seam proofs. Invariants in `CLAUDE.md`.
 
 ### Earlier (P4.5) summary
 **P4.5** adds the planning &
@@ -85,12 +90,18 @@ Each gets a **regression test** when fixed (test-driven workflow).
 - **[RESOLVED P4.5] Sensor contention:** a sensor does one task at a time; `OrderSystem` tracks
   per-sensor bookings and pushes an overlapping task to the next non-overlapping window (serialize,
   don't reject). `auto` sensor selection picks the cell's earliest viable, non-contended sensor.
-- **[PARTIAL P4] Vignettes not yet engine-loadable:** Vignette 1 now exists as a concrete,
-  engine-loadable YAML (real orbit, ground-site coords positioned for an early pass, typed
-  parameters, objective metrics + landing-window deadline) — the content schema is locked.
-  Vignettes 2–8 still need authoring with the same concreteness (Phase 6).
-- **Red doctrine profiles (P6):** `china_integrated` / `russia_ew_first` / `generic` are referenced
-  as selectable data presets but none are authored.
+- **[RESOLVED P6] Vignettes engine-loadable:** all **eight** vignettes (`01`–`08`) are concrete,
+  loadable YAML (real orbits, sited ground stations/sensors, typed dials, declarative objective
+  metrics). Objective evaluation is data-driven (`evaluate_objectives` dispatches on `metric.kind`).
+- **[RESOLVED P6] Red doctrine profiles:** `china_integrated` / `russia_ew_first` / `generic`
+  implemented as behavior presets in `session/redai.py` (`RedDoctrine.step`), issued through the
+  normal OrderSystem (window/ROE/custody constrained).
+- **[RESOLVED P6] TLE force-add:** `SessionManager.add_tle` validates (format + sgp4) and adds a real
+  named satellite that propagates and generates passes (`POST /force/tle`).
+- **[RESOLVED P5.5] Belief render:** `session/scene.py` `build_scene` is the render-from-custody
+  stream (own assets + tracks with growing uncertainty); 2D canvas map consumes it; Cesium 3D = v1.1.
+- **[RESOLVED P7] AAR:** `session/aar.py` — deterministic read-only replay (`state_at`/`objectives_at`),
+  decision timeline `report`, and `compare_branches`.
 
 ## Workflow note
 
@@ -138,14 +149,17 @@ test first, implement to green, and add a regression test for every resolved fin
 - **2026-05-24:** Phase 4.5 — command delivery picks the **earliest** of ground/ISL/stored windows
   and stamps `delivery_path`; ISL modeled as a new `isl_link` access channel (sat-sat LOS within
   `isl_max_range_m`) via a cell-owned `isl_capable` relay. Sensor reports raise confidence
-  incrementally (default gain 1.0; characterize gated by intent). Contention is a live (non-world)
-  booking registry on `OrderSystem` — it resets implicitly when a new OrderSystem is built but NOT
-  on an in-place rewind; acceptable for now (note for Phase 5 session integration). Safe-mode
-  recovery sized by difficulty (quick=1/realistic=2/punishing=3 passes); re-safe if the cause
-  (unpatched cyber vuln) persists.
-- **Still open:** browser GUI is **unverified headless** — needs a human (or a browser-driver agent)
-  to confirm the Phase-5 GUI done-when visually; backend is covered. Posture/defense command
-  persistence (`def.harden`, `def.set_threat_warning`) — implement with the broader command set.
-  EW/bus-stress safe-mode inducement + Vignettes 2–8 — Phase 6. 3D viewer — Phase 5.5. Order is an
-  engine dataclass crossing the API in-process; make it a serializable pydantic message when the
-  network transport lands. Contention registry not rewind-safe.
+  incrementally (default gain 1.0; characterize gated by intent). Safe-mode recovery sized by
+  difficulty (quick=1/realistic=2/punishing=3 passes); re-safe if the cause persists.
+- **2026-05-25:** Phases 5.5/6/7 — belief scene (`/scene`) + 2D map; all eight vignettes as YAML with
+  data-driven objective metrics; TLE force-add; `RedDoctrine` presets; capstone V8 + AAR
+  (read-only replay/scrub/branch-compare). Refactor pass: `effects.py` uses a `TYPE_CHECKING`
+  import for `WorldState` (pyflakes-clean, no runtime cycle); dead branches/imports removed.
+- **2026-05-25:** Authored `docs/TRAINING-MANUAL.md` (first-time setup + run + guided walkthrough)
+  and `docs/manual/` (13 data-driven UI screenshots, generated by `tools/render_manual.py`).
+- **Still open (deferred / v1.1+):** browser GUI **unverified headless** (needs a human or
+  browser-driver to confirm visuals; backend covered). Sat caps ≤24/≤3/48 not yet validated at
+  content load. Posture/defense command persistence (`def.harden`, `def.set_threat_warning`).
+  EW/bus-stress safe-mode inducement (only cyber exercised). Contention booking registry not
+  rewind-safe. `Order` is an engine dataclass crossing the API in-process — make it a serializable
+  pydantic message at the network transport. Full CesiumJS 3D globe (v1.1). **P8** seam proofs.
