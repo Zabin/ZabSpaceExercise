@@ -70,6 +70,8 @@ class ActiveEffect(BaseModel):
     end: int
     reversible: bool = True
     attribution: str = "ambiguous"
+    category: str = ""    # effect category (electronic_warfare/cyber/directed_energy/...) for diagnostics
+    template: str = ""
 
 
 class DebrisField(BaseModel):
@@ -135,6 +137,8 @@ class ModerateEffectResolver:
                     end=end,
                     reversible=True,
                     attribution=effect.attribution,
+                    category=effect.category,
+                    template=effect.template,
                 )
             )
 

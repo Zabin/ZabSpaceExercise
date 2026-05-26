@@ -108,6 +108,9 @@ objects only as **tracks** with an uncertainty volume that grows between looks):
 - the **2D belief map** — **zoom**, **pan** (drag), **center** on an asset, and **layer** toggles
   (tracks / grid).
 
+Both viewers draw a low-resolution **country map** (coastlines + country borders, tied to lat/long)
+behind the picture so positions read against real geography; toggle it with the **map** control.
+
 ![3D globe](manual/14-globe-overview.png)
 
 ### Commanding & White Cell menus
@@ -310,6 +313,27 @@ unpatched modem vulnerability), the satellite is **re-safed** — you must remov
 the vulnerability, kill the jammer) before recovery sticks:
 
 ![Safe-mode recovery](manual/10-safe-mode-recovery.png)
+
+### Diagnosing attacks from telemetry
+Click any fleet row to open the **subsystem drill-down**: a parameter list (colored against its
+soft/hard limits), a **graph** of each parameter's recent history (realistic baseline + repeatable
+seeded noise), and a **symptom log**. The graphs are deliberately honest — they show *physics*, not
+a verdict. **The tool never tells you "you are being jammed";** you read the signature and infer the
+cause. Each attack vector leaves at least one sign:
+
+| If you see… | Likely cause | Mitigation |
+|---|---|---|
+| `comms.rx_power_dbm` HIGH, `cn0_dbhz` collapses, `ber` spikes, lock intermittent | EW jamming | re-plan frequency/beam; geolocate the jammer |
+| `cdh.fsw_error_count` / `cmd_reject_count` climbing, `cpu_load` high, FSW→safe | Cyber / command-path intrusion | patch the vulnerability; reset FSW |
+| `payload.snr_db` drops, `thermal.optics_temp_c` rises during a pass | Directed-energy / dazzle | re-task off the threat geometry |
+| A hostile **track closing** on the 2D/3D view (± wheel/Δv if you evade) | RPO / co-orbital | maneuver-to-evade; task SDA to characterize |
+| `power.battery_soc` + `bus_voltage_v` sag | eclipse / power fault | shed loads; check the power timeline |
+| All telemetry **ceases** (loss of signal) | kinetic kill | — (irreversible) |
+
+Two worked examples — note the cause is **not** named anywhere on screen:
+
+![Jam signature](manual/30-telemetry-jam.png)
+![Cyber signature](manual/31-telemetry-cyber.png)
 
 ### Cyber — the off-pass exception
 Cyber effects are **not** gated by orbital passes: with a modeled access vector they can act any

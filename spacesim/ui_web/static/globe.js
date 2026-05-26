@@ -7,7 +7,7 @@
 
 window.Globe = (function () {
   const RE = 6371; // km, display only
-  let cv, ctx, scene = null;
+  let cv, ctx, scene = null, showMap = true;
   let cam = { lon0: 0, pitch: 20, zoom: 1, auto: false };
 
   function project(lat, lon, altKm) {
@@ -37,6 +37,12 @@ window.Globe = (function () {
         ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.clip();
         ctx.fillStyle = g; ctx.fillRect(0, 0, cv.width, cv.height); ctx.restore();
       }
+    }
+    // Country map (coastlines + borders), clipped to the near side via the front flag.
+    if (window.WorldMap && WorldMap.ready() && showMap) {
+      ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.clip();
+      WorldMap.draw(ctx, (lon, lat) => { const p = project(lat, lon, 0); return { x: p.x, y: p.y, front: p.front }; }, {});
+      ctx.restore();
     }
     // Graticule (near-side segments only).
     ctx.strokeStyle = "rgba(60,90,120,.5)"; ctx.lineWidth = 1;
@@ -92,7 +98,9 @@ window.Globe = (function () {
     const tilt = document.getElementById("g-tilt"); if (tilt) tilt.addEventListener("input", () => { cam.pitch = +tilt.value; draw(); });
     const auto = document.getElementById("g-auto"); if (auto) auto.addEventListener("change", () => { cam.auto = auto.checked; });
     const focus = document.getElementById("g-focus"); if (focus) focus.addEventListener("change", () => focusOn(focus.value));
+    const mapcb = document.getElementById("g-map"); if (mapcb) mapcb.addEventListener("change", () => { showMap = mapcb.checked; draw(); });
     setInterval(() => { if (cam.auto) { cam.lon0 -= 1.2; draw(); } }, 60);
+    if (window.WorldMap) WorldMap.load().then(draw);
   }
 
   function focusOn(id) {

@@ -75,3 +75,10 @@ canvas { width: 100%; border: 1px solid var(--border); border-radius: 6px; backg
 canvas:active { cursor: grabbing; }
 .toggle { font-size: 12px; color: var(--muted); }
 .toggle input { vertical-align: middle; }
+.sub { margin: 4px 0; }
+.sub b { color: var(--muted); text-transform: uppercase; font-size: 11px; letter-spacing: .5px; margin-right: 6px; }
+.pchip { display: inline-block; margin: 2px; padding: 2px 7px; border-radius: 5px; font-size: 12px; cursor: pointer;
+  border: 1px solid #2a3646; background: #11171f; }
+.pchip:hover { border-color: var(--accent2); }
+.pchip.green { color: var(--green); } .pchip.yellow { color: var(--yellow); border-color: #5a4a1e; }
+.pchip.red { color: var(--red); border-color: #5a2424; } .pchip.los { color: #7a8aa0; }

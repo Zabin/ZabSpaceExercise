@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Optional
 
 from spacesim.content.vignette import Vignette, build_world, evaluate_objectives
+from spacesim.engine import telemetry
 from spacesim.engine.busmodel import BusSystem
 from spacesim.engine.custody import Track
 from spacesim.engine.entities import Asset
@@ -128,6 +129,33 @@ class SessionManager:
 
     def get_scene(self, cell: str):
         return build_scene(self.sim.world, cell)
+
+    def _owns(self, cell: str, asset_id: str) -> bool:
+        asset = self.sim.world.assets.get(asset_id)
+        return asset is not None and (cell == "white" or asset.owner == cell)
+
+    def get_telemetry(self, cell: str, asset_id: str):
+        """Subsystem telemetry DB + symptom log for an own asset (fog: own assets only)."""
+        if not self._owns(cell, asset_id):
+            return None
+        t, seed = self.sim.clock.now, self.sim._seed
+        asset = self.sim.world.assets[asset_id]
+        return {
+            "asset": asset_id, "now": t,
+            "bus_mode": asset.bus_state.mode if asset.bus_state else None,
+            "subsystems": telemetry.telemetry_db(self.sim.world, asset_id, t, seed),
+            "log": telemetry.subsystem_log(self.sim.world, asset_id, t, seed),
+        }
+
+    def get_series(self, cell: str, asset_id: str, param: str,
+                   t0=None, t1=None, n: int = 120):
+        if not self._owns(cell, asset_id) or param not in telemetry.PARAMS:
+            return None
+        now = self.sim.clock.now
+        t1 = now if t1 is None else int(t1)
+        t0 = max(self.ctx.start_epoch, now - 3600 * 1_000_000) if t0 is None else int(t0)
+        return {"asset": asset_id, "param": param,
+                "points": telemetry.series(self.sim.world, asset_id, param, t0, t1, n, self.sim._seed)}
 
     def get_godview(self) -> WorldState:
         return self.sim.world

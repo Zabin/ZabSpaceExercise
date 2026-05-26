@@ -7,6 +7,7 @@ Output: docs/manual/*.png + docs/manual/INDEX.md.  Run: ``python3 tools/render_m
 
 from __future__ import annotations
 
+import json
 import math
 from pathlib import Path
 
@@ -41,6 +42,32 @@ f13b = ImageFont.truetype(FB, 13); f16b = ImageFont.truetype(FB, 16)
 W, H = 1200, 720
 PROP = ModeratePropagator()
 INDEX: list[tuple[str, str]] = []
+
+_WORLD = None
+def world_data():
+    global _WORLD
+    if _WORLD is None:
+        p = Path(__file__).resolve().parent.parent / "spacesim" / "ui_web" / "static" / "world.json"
+        _WORLD = json.loads(p.read_text()) if p.exists() else {"coast": [], "borders": []}
+    return _WORLD
+
+
+def draw_world(d, project, maxjump=None):
+    """Draw coastlines+borders via project(lon,lat)->(x,y) or None (far side). Mirrors world.js."""
+    w = world_data()
+    for arr, col in ((w["coast"], (44, 74, 99)), (w["borders"], (34, 56, 75))):
+        for seg in arr:
+            run = []
+            for lon, lat in seg:
+                p = project(lon, lat)
+                if p is None or (maxjump and run and abs(p[0] - run[-1][0]) > maxjump):
+                    if len(run) > 1:
+                        d.line(run, fill=col)
+                    run = [] if p is None else [p]
+                    continue
+                run.append(p)
+            if len(run) > 1:
+                d.line(run, fill=col)
 
 
 def canvas(cell, subtitle):
@@ -102,6 +129,7 @@ def draw_map(d, x, y, w, h, scene, title):
         py = my + (90 - lat) / 180 * mh; d.line([mx, py, mx + mw, py], fill=(28, 37, 49))
     def P(lon, lat):
         return mx + (lon + 180) / 360 * mw, my + (90 - lat) / 180 * mh
+    draw_world(d, lambda lon, lat: P(lon, lat), maxjump=mw * 0.5)
     for a in scene.assets:
         px, py = P(a.lon_deg, a.lat_deg)
         if a.on_orbit:
@@ -416,6 +444,11 @@ def draw_globe(img, d, x, y, w, h, scene, title, cam):
     if sfront:
         sd.ellipse([sx - R * 0.5, sy - R * 0.5, sx + R * 0.5, sy + R * 0.5], fill=(28, 56, 78))
 
+    def _wproj(lon, lat):
+        px, py, fr = proj(lat, lon, 0)
+        return (px, py) if fr else None
+    draw_world(sd, _wproj)
+
     def seg(fn, a, b):
         prev = None
         for t in range(a, b + 1, 6):
@@ -614,6 +647,85 @@ def s_training_red():
                 mgr.objectives(), "29-train-red-6.png")
 
 
+def draw_graph(d, x, y, w, h, points, spec, title):
+    panel(d, x, y, w, h, title)
+    gx, gy, gw, gh = x + 40, y + 46, w - 56, h - 70
+    d.rectangle([gx, gy, gx + gw, gy + gh], fill=(10, 15, 21), outline=BORDER)
+    vals = [p["value"] for p in points if p["value"] is not None]
+    if not vals:
+        d.text((gx + 10, gy + gh / 2), "loss of signal", font=f13, fill=MUTED); return
+    lo, hi = min(vals + [spec["soft"], spec["hard"]]), max(vals + [spec["soft"], spec["hard"]])
+    if hi == lo: hi = lo + 1
+    pad = (hi - lo) * 0.1; lo -= pad; hi += pad
+    px = lambda i: gx + i / (len(points) - 1 or 1) * gw
+    py = lambda v: gy + gh - (v - lo) / (hi - lo) * gh
+    for lim, c in ((spec["soft"], YELLOW), (spec["hard"], RED)):
+        yy = py(lim)
+        for xx in range(int(gx), int(gx + gw), 8):
+            d.line([xx, yy, xx + 4, yy], fill=c)
+    col = {"green": GREEN, "yellow": YELLOW, "red": RED, "los": MUTED}.get(points[-1]["status"], TEXT)
+    line = [(px(i), py(p["value"])) for i, p in enumerate(points) if p["value"] is not None]
+    if len(line) > 1:
+        d.line(line, fill=col, width=2)
+    d.text((gx, gy - 14), f"{spec['label']} ({spec['unit']})", font=f12, fill=MUTED)
+    d.text((x + 6, gy), f"{hi:.3g}", font=f12, fill=MUTED); d.text((x + 6, gy + gh - 12), f"{lo:.3g}", font=f12, fill=MUTED)
+
+
+def _param_panel(d, x, y, w, h, world, asset_id, t, title):
+    from spacesim.engine import telemetry as tel
+    ix, iy = panel(d, x, y, w, h, title)
+    db = tel.telemetry_db(world, asset_id, t, 1)
+    for sub, params in db.items():
+        d.text((ix, iy), sub.upper(), font=f12, fill=MUTED); iy += 16
+        for p in params:
+            c = {"green": GREEN, "yellow": YELLOW, "red": RED, "los": MUTED}.get(p["status"], TEXT)
+            d.text((ix + 10, iy), f"{p['label']}", font=f13, fill=TEXT)
+            d.text((ix + 180, iy), f"{p['value']} {p['unit']}", font=f13b, fill=c); iy += 17
+        iy += 4
+
+
+def s_telemetry_jam():
+    from spacesim.engine import telemetry as tel
+    from spacesim.engine.effects import ActiveEffect
+    from spacesim.engine.bus import BusState
+    world = WorldState(now=simtime.minutes(20))
+    world.assets["BLUE-SATCOM"] = Asset(id="BLUE-SATCOM", owner="blue", kind="satellite", bus_state=BusState())
+    world.active_effects.append(ActiveEffect(target="BLUE-SATCOM", outcome="deny", start=0,
+                                             end=simtime.minutes(40), category="electronic_warfare"))
+    img, d = canvas("blue", "Subsystem drill-down — diagnosing from telemetry (the cause is NOT labeled)")
+    _param_panel(d, 12, 66, 360, 600, world, "BLUE-SATCOM", world.now, "Subsystems (click a parameter)")
+    pts = tel.series(world, "BLUE-SATCOM", "rx_power_dbm", 0, simtime.minutes(60), 120, 1)
+    sp = tel.PARAMS["rx_power_dbm"]
+    draw_graph(d, 388, 66, W - 400, 300, pts, {"label": sp.label, "unit": sp.unit, "soft": sp.soft, "hard": sp.hard},
+               "comms.rx_power_dbm")
+    lx, ly = panel(d, 388, 378, W - 400, 288, "Subsystem log (symptoms)")
+    log = tel.subsystem_log(world, "BLUE-SATCOM", world.now, 1)
+    lines(d, lx, ly, [(s, RED if "RED" in s else YELLOW) for s in log] or [("(all nominal)", MUTED)])
+    d.text((lx, ly + 200), "Clue: receiver RX power is HIGH and C/N0 has collapsed — consistent with", font=f12, fill=MUTED)
+    d.text((lx, ly + 216), "uplink/downlink jamming. Mitigate: re-plan frequency/beam, geolocate the source.", font=f12, fill=MUTED)
+    save(img, "30-telemetry-jam.png", "Subsystem drill-down: RX power spikes / C/N0 collapses under jamming (operator infers the cause).")
+
+
+def s_telemetry_cyber():
+    from spacesim.engine import telemetry as tel
+    from spacesim.engine.bus import BusState, enter_safe_mode
+    world = WorldState(now=simtime.minutes(30))
+    world.assets["BLUE-SATCOM"] = Asset(id="BLUE-SATCOM", owner="blue", kind="satellite", bus_state=BusState())
+    enter_safe_mode(world.assets["BLUE-SATCOM"].bus_state, now=0, cause="cyber")
+    img, d = canvas("blue", "Subsystem drill-down — a different signature points elsewhere")
+    _param_panel(d, 12, 66, 360, 600, world, "BLUE-SATCOM", world.now, "Subsystems")
+    pts = tel.series(world, "BLUE-SATCOM", "fsw_error_count", 0, simtime.minutes(40), 120, 1)
+    sp = tel.PARAMS["fsw_error_count"]
+    draw_graph(d, 388, 66, W - 400, 300, pts, {"label": sp.label, "unit": sp.unit, "soft": sp.soft, "hard": sp.hard},
+               "cdh.fsw_error_count")
+    lx, ly = panel(d, 388, 378, W - 400, 288, "Subsystem log (symptoms)")
+    log = tel.subsystem_log(world, "BLUE-SATCOM", world.now, 1)
+    lines(d, lx, ly, [(s, RED if "RED" in s else YELLOW) for s in log] or [("(all nominal)", MUTED)])
+    d.text((lx, ly + 200), "Clue: flight-software error & command-reject counters are climbing and the", font=f12, fill=MUTED)
+    d.text((lx, ly + 216), "bird dropped to safe mode — consistent with a cyber/command-path intrusion.", font=f12, fill=MUTED)
+    save(img, "31-telemetry-cyber.png", "Subsystem drill-down: FSW error counters climb + safe mode — a cyber signature.")
+
+
 def write_index():
     md = ["# Training-manual screenshots\n",
           "Generated by `tools/render_manual.py` from live SessionAPI/engine data (the sandbox cannot",
@@ -644,6 +756,8 @@ def main():
     s_command_menu()
     s_training_blue()
     s_training_red()
+    s_telemetry_jam()
+    s_telemetry_cyber()
     write_index()
 
 

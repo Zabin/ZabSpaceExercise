@@ -32,3 +32,5 @@ install a browser, so these paint the web UI's panels from genuine fog-filtered 
 - **27-train-red-4.png** — Training walkthrough — red step 4: Cyber the modem (off-pass).
 - **28-train-red-5.png** — Training walkthrough — red step 5: Attempt a kinetic strike (ROE check).
 - **29-train-red-6.png** — Training walkthrough — red step 6: Advance and assess.
+- **30-telemetry-jam.png** — Subsystem drill-down: RX power spikes / C/N0 collapses under jamming (operator infers the cause).
+- **31-telemetry-cyber.png** — Subsystem drill-down: FSW error counters climb + safe mode — a cyber signature.

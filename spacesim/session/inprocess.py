@@ -85,6 +85,12 @@ class InProcessSession:
     def get_scene(self, session: str, cell: str):
         return self._sessions[session].get_scene(cell)
 
+    def get_telemetry(self, session: str, cell: str, asset: str):
+        return self._sessions[session].get_telemetry(cell, asset)
+
+    def get_series(self, session: str, cell: str, asset: str, param: str, t0=None, t1=None, n: int = 120):
+        return self._sessions[session].get_series(cell, asset, param, t0=t0, t1=t1, n=n)
+
     def get_godview(self, session: str):
         return self._sessions[session].get_godview()
 

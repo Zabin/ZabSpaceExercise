@@ -72,6 +72,7 @@
           <button class="icon" id="g-zoom-out">－</button>
           <label>tilt<input id="g-tilt" type="range" min="-80" max="80" value="20" style="width:90px"></label>
           <label>zoom-to<select id="g-focus"></select></label>
+          <label class="toggle"><input id="g-map" type="checkbox" checked> map</label>
           <label class="toggle"><input id="g-auto" type="checkbox"> spin</label>
           <button id="g-reset">Reset</button>
         </div>
@@ -85,6 +86,7 @@
           <button class="icon" id="m-zoom-in">＋</button>
           <button class="icon" id="m-zoom-out">－</button>
           <label>center<select id="m-focus"></select></label>
+          <label class="toggle"><input id="m-map" type="checkbox" checked> map</label>
           <label class="toggle"><input id="m-tracks" type="checkbox" checked> tracks</label>
           <label class="toggle"><input id="m-grid" type="checkbox" checked> grid</label>
           <button id="m-reset">Reset</button>
@@ -94,6 +96,21 @@
     </div>
   </section>
 
+  <section class="panel" style="margin:0 12px 14px">
+    <h2>Subsystem drill-down — telemetry &amp; logs (click a fleet row, then a parameter)</h2>
+    <div id="drill-title" class="toggle">select an asset above…</div>
+    <div style="display:grid; grid-template-columns: 1fr 540px; gap:12px; margin-top:8px">
+      <div id="drill-params"></div>
+      <div>
+        <canvas id="drill-graph" width="540" height="200"></canvas>
+        <h3>Subsystem log (symptoms — diagnose the cause yourself)</h3>
+        <pre id="drill-log">—</pre>
+      </div>
+    </div>
+  </section>
+
+  <script src="/world.js"></script>
+  <script src="/graph.js"></script>
   <script src="/globe.js"></script>
   <script src="/app.js"></script>
 </body>

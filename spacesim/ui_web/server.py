@@ -143,6 +143,23 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.get_scene(sid, cell)  # render-from-custody belief geometry
 
+    @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}")
+    def telemetry(sid: str, cell: str, asset: str) -> dict:
+        _require(sid)
+        r = api.get_telemetry(sid, cell, asset)
+        if r is None:
+            raise HTTPException(status_code=404, detail="no telemetry for this asset (fog/ownership)")
+        return r
+
+    @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}/{param}")
+    def telemetry_series(sid: str, cell: str, asset: str, param: str,
+                         t0: Optional[int] = None, t1: Optional[int] = None, n: int = 120) -> dict:
+        _require(sid)
+        r = api.get_series(sid, cell, asset, param, t0=t0, t1=t1, n=n)
+        if r is None:
+            raise HTTPException(status_code=404, detail="no such telemetry series")
+        return r
+
     @app.get("/api/sessions/{sid}/godview")
     def get_godview(sid: str) -> dict:
         _require(sid)

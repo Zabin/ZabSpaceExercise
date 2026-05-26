@@ -128,15 +128,21 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/orders.py` — `Order` + `OrderSystem` (validate → window → execute), cyber
   exception, ISL/stored delivery, sensor tasking (auto-select + contention).
 - `spacesim/engine/recovery.py` — `RecoverySystem`: multi-pass safe-mode recovery + re-safe-on-persistence.
+- `spacesim/engine/telemetry.py` — read-time seeded subsystem telemetry (graphs/logs) + attack
+  signatures (jam→RX power, cyber→FSW errors, DE→SNR, power sag, kinetic→loss-of-signal). Pure,
+  never mutates state/RNG (like `scene.py`).
 - `spacesim/engine/bus.py` — `BusState`/`PayloadState` SOH (limits, gating, safe mode, pass-gated view).
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add), `CellController` (fog-of-war),
   `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`, `scene.py` (render-from-custody belief),
   `redai.py` (Red doctrine presets), `aar.py` (replay/scrub/branch-compare).
-- `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI) + `static/` front end: `app.js`
-  (command menu + 2D belief map w/ zoom-pan-layers), `globe.js` (self-contained 3D orthographic
-  globe w/ rotate-tilt-zoom-zoomto), `style.css`, `index.html`.
+- `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`) + `static/`
+  front end: `app.js` (command menu, 2D belief map, subsystem drill-down), `globe.js` (3D
+  orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`
+  (telemetry line graphs), `style.css`, `index.html`.
+- `tools/build_coastlines.py` — regenerates the committed `static/world.json` (low-res world map)
+  from `basemap-data` (offline; coarse fallback if unavailable). `tools/render_manual.py` draws it.
 - `spacesim/content/vignettes/00-training-basics.yaml` — guided tutorial vignette with a per-cell
   `tutorial` step script (≥5 steps each); drives the manual walkthrough + its screenshots.
 - `docs/TRAINING-MANUAL.md` (first-time setup + guided walkthrough) and `docs/manual/` (29 UI

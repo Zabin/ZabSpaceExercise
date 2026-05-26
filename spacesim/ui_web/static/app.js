@@ -5,7 +5,8 @@
 let SID = null, CELL = "white", SCENE = null;
 let ASSETS = {};           // id -> {kind, owner} for the current view (assets + sensors)
 let DEFAULT_STATION = "GS-NORTH";
-const mapCam = { lon: 0, lat: 0, zoom: 1, tracks: true, grid: true };
+const mapCam = { lon: 0, lat: 0, zoom: 1, tracks: true, grid: true, map: true };
+let DRILL = { asset: null, param: null };
 
 const $ = (id) => document.getElementById(id);
 const api = {
@@ -94,7 +95,7 @@ async function refresh() {
 
   $("assets").querySelector("tbody").innerHTML = assets.map((a) => {
     const bus = a.bus_state ? a.bus_state.mode : "—"; const bc = bus === "safe_mode" ? "red" : "";
-    return `<tr><td>${a.id}</td><td>${a.kind}</td><td>${a.health || "—"}</td><td class="${bc}">${bus}</td></tr>`;
+    return `<tr data-asset="${a.id}" style="cursor:pointer"><td>${a.id}</td><td>${a.kind}</td><td>${a.health || "—"}</td><td class="${bc}">${bus}</td></tr>`;
   }).join("");
   $("tracks").querySelector("tbody").innerHTML = tracks.map((t) =>
     `<tr><td>${t.object}</td><td>${(+t.confidence).toFixed(2)}</td><td>${t.characterized}</td><td>${t.classification}</td></tr>`).join("");
@@ -112,6 +113,7 @@ async function refresh() {
   // Viewers.
   SCENE = await api.get(`/api/sessions/${SID}/scene/${CELL === "white" ? "blue" : CELL}`);
   window.Globe && Globe.render(SCENE);
+  if (DRILL.asset) openDrill(DRILL.asset);
   ["g-focus", "m-focus"].forEach((id) => {
     const sel = $(id); if (!sel) return; const cur = sel.value;
     const ids = SCENE.assets.map((a) => a.id).concat(SCENE.tracks.map((t) => t.object));
@@ -128,6 +130,9 @@ function drawMap() {
   x.fillStyle = "#070b10"; x.fillRect(0, 0, c.width, c.height);
   const PX = (lon) => c.width / 2 + (lon - mapCam.lon) * (c.width / 360) * mapCam.zoom;
   const PY = (lat) => c.height / 2 - (lat - mapCam.lat) * (c.height / 180) * mapCam.zoom;
+  if (mapCam.map && window.WorldMap && WorldMap.ready()) {
+    WorldMap.draw(x, (lon, lat) => ({ x: PX(lon), y: PY(lat), front: true }), { maxJump: c.width * 0.5 });
+  }
   if (mapCam.grid) {
     x.strokeStyle = "#1b2531";
     for (let lon = -180; lon <= 180; lon += 30) { x.beginPath(); x.moveTo(PX(lon), 0); x.lineTo(PX(lon), c.height); x.stroke(); }
@@ -165,15 +170,42 @@ function initMapControls() {
   $("m-reset").onclick = () => { Object.assign(mapCam, { lon: 0, lat: 0, zoom: 1 }); drawMap(); };
   $("m-tracks").onchange = (e) => { mapCam.tracks = e.target.checked; drawMap(); };
   $("m-grid").onchange = (e) => { mapCam.grid = e.target.checked; drawMap(); };
+  const mm = $("m-map"); if (mm) mm.onchange = (e) => { mapCam.map = e.target.checked; drawMap(); };
   $("m-focus").onchange = (e) => {
     const a = SCENE && (SCENE.assets.find((z) => z.id === e.target.value) || SCENE.tracks.find((z) => z.object === e.target.value));
     if (a) { mapCam.lon = a.lon_deg; mapCam.lat = a.lat_deg; mapCam.zoom = Math.max(mapCam.zoom, 2.5); drawMap(); }
   };
 }
 
+// ---- subsystem drill-down (telemetry graphs + log; diagnose, don't get told) ----
+let DRILL_DB = {};
+async function openDrill(assetId) {
+  DRILL.asset = assetId;
+  let tele;
+  try { tele = await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${assetId}`); }
+  catch { $("drill-title").textContent = `${assetId} — no telemetry (fog / not your asset)`; $("drill-params").innerHTML = ""; return; }
+  DRILL_DB = {};
+  Object.values(tele.subsystems).forEach((arr) => arr.forEach((p) => (DRILL_DB[p.id] = p)));
+  $("drill-title").textContent = `${assetId} — bus ${tele.bus_mode || "—"}`;
+  $("drill-params").innerHTML = Object.entries(tele.subsystems).map(([sub, params]) =>
+    `<div class="sub"><b>${sub}</b> ` + params.map((p) =>
+      `<span class="pchip ${p.status}" data-param="${p.id}">${p.label} ${p.value ?? "LOS"}</span>`).join(" ") + "</div>").join("");
+  $("drill-log").textContent = (tele.log || []).join("\n") || "(all nominal)";
+  document.querySelectorAll("#drill-params .pchip").forEach((c) => c.onclick = () => drawParam(c.dataset.param));
+  drawParam(DRILL.param && DRILL_DB[DRILL.param] ? DRILL.param : "rx_power_dbm");
+}
+async function drawParam(param) {
+  if (!DRILL_DB[param]) param = Object.keys(DRILL_DB)[0];
+  DRILL.param = param;
+  const series = await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${DRILL.asset}/${param}?n=120`);
+  window.Graph && Graph.draw($("drill-graph"), series, DRILL_DB[param]);
+}
+
 window.addEventListener("DOMContentLoaded", () => {
+  window.WorldMap && WorldMap.load().then(() => drawMap());
   window.Globe && Globe.init("globe");
   initMapControls();
+  $("assets").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-asset]"); if (tr) openDrill(tr.dataset.asset); });
   $("load").onclick = loadSession; $("start").onclick = start; $("rewind").onclick = rewind;
   $("fire-inject").onclick = fireInject; $("issue").onclick = issueOrder;
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
