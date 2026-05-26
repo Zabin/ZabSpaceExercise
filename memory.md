@@ -155,6 +155,12 @@ test first, implement to green, and add a regression test for every resolved fin
   data-driven objective metrics; TLE force-add; `RedDoctrine` presets; capstone V8 + AAR
   (read-only replay/scrub/branch-compare). Refactor pass: `effects.py` uses a `TYPE_CHECKING`
   import for `WorldState` (pyflakes-clean, no runtime cycle); dead branches/imports removed.
+- **2026-05-25:** Wrote `docs/OPERATOR-UI-DESIGN.md` — a ~20-page operator-console UI design spec
+  (research synthesis of `06`/`09`/`13`/`05`/`11`/`12` + the implemented engine). Covers every
+  payload/mission/operator type per cell, the button-logic contract (visible/enabled/disabled-reason/
+  confirm), monitoring·troubleshooting·tasking user flows, attack-signature→action mapping, a widget
+  library, per-payload detail packs, UI-state matrix, wireframes, and a panel→endpoint binding table
+  (consumes existing routes; no engine change). A *future* implementation guide, not yet built.
 - **2026-05-25:** Added **save/resume** (`SessionManager.save_state`/`from_state`: persists eventlog +
   pending scheduled events + the order registry; resume re-derives the world via `_rebuild` and is
   byte-identical incl. queued orders; `Scheduler.pending()`; `/save` & `/load_save`), an **AAR
