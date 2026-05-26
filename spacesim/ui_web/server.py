@@ -65,6 +65,11 @@ class OrderRequest(BaseModel):
     params: dict = {}
 
 
+class CancelRequest(BaseModel):
+    cell: str
+    order_id: str
+
+
 def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     api = api or InProcessSession()
     app = FastAPI(title="Space Control & Orbital Warfare Exercise Simulator")
@@ -132,6 +137,29 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         order = Order(cell=req.cell, actor=req.actor, action=req.action, target=req.target, params=req.params)
         return api.issue_order(sid, req.cell, order)
+
+    @app.get("/api/sessions/{sid}/orders/{cell}")
+    def list_orders(sid: str, cell: str) -> list:
+        _require(sid)
+        return api.list_orders(sid, cell)
+
+    @app.post("/api/sessions/{sid}/cancel")
+    def cancel_order(sid: str, req: CancelRequest) -> Ack:
+        _require(sid)
+        return api.cancel_order(sid, req.cell, req.order_id)
+
+    @app.get("/api/sessions/{sid}/windows/{cell}/{asset}")
+    def windows_ahead(sid: str, cell: str, asset: str) -> dict:
+        _require(sid)
+        r = api.windows_ahead(sid, cell, asset)
+        if r is None:
+            raise HTTPException(status_code=404, detail="no windows for this asset (fog/ownership)")
+        return r
+
+    @app.get("/api/sessions/{sid}/injects")
+    def injects_list(sid: str) -> list:
+        _require(sid)
+        return api.list_injects(sid)
 
     @app.get("/api/sessions/{sid}/view/{cell}")
     def get_view(sid: str, cell: str) -> CellView:

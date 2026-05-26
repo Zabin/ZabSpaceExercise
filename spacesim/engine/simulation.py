@@ -55,8 +55,12 @@ class Simulation:
     def handlers(self) -> dict[str, EventHandler]:
         return dict(self._handlers)
 
-    def schedule(self, t: int, kind: str, payload: dict | None = None, actor: str = "system") -> None:
-        self.scheduler.schedule(ScheduledEvent(t=t, kind=kind, actor=actor, payload=payload or {}))
+    def schedule(self, t: int, kind: str, payload: dict | None = None, actor: str = "system", tag: str = "") -> None:
+        self.scheduler.schedule(ScheduledEvent(t=t, kind=kind, actor=actor, payload=payload or {}, tag=tag))
+
+    def cancel(self, tag: str) -> None:
+        """Cancel a queued (not-yet-fired) event by tag, e.g. an order id."""
+        self.scheduler.cancel(tag)
 
     def _apply(self, kind: str, payload: dict) -> None:
         self._handlers[kind](self.world, payload, self.rng)

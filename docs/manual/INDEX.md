@@ -34,3 +34,4 @@ install a browser, so these paint the web UI's panels from genuine fog-filtered 
 - **29-train-red-6.png** — Training walkthrough — red step 6: Advance and assess.
 - **30-telemetry-jam.png** — Subsystem drill-down: RX power spikes / C/N0 collapses under jamming (operator infers the cause).
 - **31-telemetry-cyber.png** — Subsystem drill-down: FSW error counters climb + safe mode — a cyber signature.
+- **32-command-queue.png** — Command queue (cancellable) and the per-asset pass-timeline ribbon.

@@ -36,14 +36,46 @@ async function loadVignettes() {
 }
 async function loadSession() {
   SID = (await api.post("/api/sessions", { vignette_id: $("vignette").value, seed: +$("seed").value })).session;
-  $("session").textContent = "session " + SID; $("start").disabled = false; await refresh();
+  $("session").textContent = "session " + SID; $("start").disabled = false;
+  const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
+  $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
+  await refresh();
 }
 const start = async () => { await api.post(`/api/sessions/${SID}/start`); await refresh(); };
 const step = async (dt) => { await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: dt }); await refresh(); };
 const rewind = async () => { await api.post(`/api/sessions/${SID}/rewind`, { t: 0 }); await refresh(); };
 async function fireInject() {
-  const id = prompt("Inject id:", "commercial_imagery_leak"); if (!id) return;
+  const id = $("inject-sel").value; if (!id || id === "(none)") return;
   await api.post(`/api/sessions/${SID}/inject`, { inject: id }); await refresh();
+}
+
+async function renderQueue() {
+  const orders = await api.get(`/api/sessions/${SID}/orders/${CELL}`).catch(() => []);
+  $("queue").innerHTML = orders.length ? orders.map((o) => {
+    const w = o.window ? iso(o.window[0]).slice(11, 19) : "—";
+    const cancel = o.status === "queued" ? `<button class="icon" data-oid="${o.id}">✕</button>` : "";
+    return `<div class="qrow ${o.status}"><span>${o.actor} ${o.action} ${o.target || ""}</span>` +
+           `<span class="muted">${o.status} · ${o.delivery_path || ""} · ${w}</span>${cancel}</div>`;
+  }).join("") : "<div class='muted'>(empty)</div>";
+  document.querySelectorAll("#queue [data-oid]").forEach((b) => b.onclick = async () => {
+    await api.post(`/api/sessions/${SID}/cancel`, { cell: CELL, order_id: b.dataset.oid }); refresh();
+  });
+}
+
+async function drawRibbon(actor) {
+  const c = $("ribbon"), x = c.getContext("2d");
+  x.fillStyle = "#0a0f15"; x.fillRect(0, 0, c.width, c.height);
+  const wa = await api.get(`/api/sessions/${SID}/windows/${CELL}/${actor}`).catch(() => null);
+  if (!wa || !wa.windows.length) { x.fillStyle = "#7a8aa0"; x.font = "11px monospace"; x.fillText("no passes / not a satellite", 8, 26); return; }
+  const span = wa.horizon_s * 1e6, now = wa.now;
+  const lane = { command_uplink: 6, telemetry_downlink: 24 };
+  const col = { command_uplink: "#6fcf6f", telemetry_downlink: "#5a96e6" };
+  x.strokeStyle = "#1b2531"; for (let f = 0; f <= 6; f++) { const px = f / 6 * c.width; x.beginPath(); x.moveTo(px, 0); x.lineTo(px, c.height); x.stroke(); }
+  wa.windows.forEach((w) => {
+    const x0 = (w.start - now) / span * c.width, x1 = (w.end - now) / span * c.width;
+    x.fillStyle = col[w.channel] || "#888"; x.fillRect(x0, lane[w.channel] || 14, Math.max(2, x1 - x0), 12);
+  });
+  x.fillStyle = "#9fb0c0"; x.font = "10px monospace"; x.fillText("uplink", 2, 16); x.fillText("downlink", 2, 34);
 }
 
 function setCell(c) {
@@ -64,11 +96,12 @@ async function issueOrder() {
 }
 
 function onActorChange() {
-  const a = ASSETS[$("o-actor").value] || {};
+  const id = $("o-actor").value, a = ASSETS[id] || {};
   $("actor-info").textContent = a.kind ? `${a.kind} · ${a.owner}` : "";
   const acts = ACTIONS_BY_KIND[a.kind] || ["observe"];
   $("o-action").innerHTML = acts.map((x) => `<option>${x}</option>`).join("");
   onActionChange();
+  if (SID && id) drawRibbon(id);
 }
 function onActionChange() {
   const tmpl = PARAM_TEMPLATE[$("o-action").value]; if (tmpl) $("o-params").value = JSON.stringify(tmpl());
@@ -121,6 +154,7 @@ async function refresh() {
     if (ids.includes(cur)) sel.value = cur;
   });
   drawMap();
+  renderQueue();
 }
 
 // ---- 2D belief map with pan / zoom / center / layers ----

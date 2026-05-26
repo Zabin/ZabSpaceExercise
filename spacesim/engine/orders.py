@@ -53,8 +53,9 @@ class Order:
     issued_at: int = 0
     earliest_window: Optional[tuple[int, int]] = None
     delivery_path: Optional[str] = None  # ground_uplink | isl_relay | stored_program | sensor_collect
-    status: str = "draft"     # draft|queued|rejected|executed
+    status: str = "draft"     # draft|queued|rejected|cancelled|executed
     fail_reason: Optional[str] = None
+    id: str = ""
 
 
 def scene_from_world(world: WorldState) -> Scene:
@@ -84,6 +85,8 @@ class OrderSystem:
         self.horizon = int(horizon_s * 1_000_000)
         self.wq_threshold = wq_threshold
         self._sensor_bookings: dict[str, list[tuple[int, int]]] = {}  # contention: one task at a time
+        self.orders: dict[str, Order] = {}   # issued orders by id (for the queue + cancellation)
+        self._order_counter = 0
 
         sim.register_handler("execute_effect", self._h_effect)
         sim.register_handler("execute_maneuver", self._h_maneuver)
@@ -93,6 +96,9 @@ class OrderSystem:
     # -- issue pipeline --------------------------------------------------------
     def issue(self, order: Order) -> Order:
         order.issued_at = self.sim.clock.now
+        self._order_counter += 1
+        order.id = f"ord-{self._order_counter}"
+        self.orders[order.id] = order
         ok, reason = self._validate(order)
         if not ok:
             order.status, order.fail_reason = "rejected", reason
@@ -117,8 +123,17 @@ class OrderSystem:
         order.delivery_path = "ground_uplink"  # jam/engage/downlink gate on a single access window
         order.status = "queued"
         kind, data = self._exec_payload(order, win)
-        self.sim.schedule(win.start, kind, data, actor=order.cell)
+        self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
         return order
+
+    def cancel(self, order_id: str) -> bool:
+        """Cancel a still-queued order; the scheduled event is skipped (never logged → replay-safe)."""
+        o = self.orders.get(order_id)
+        if o is None or o.status != "queued":
+            return False
+        self.sim.cancel(order_id)
+        o.status = "cancelled"
+        return True
 
     def _ap(self) -> AccessProvider:
         return AccessProvider(scene_from_world(self.world), propagator=self.prop, config=self.access_config)
@@ -151,7 +166,7 @@ class OrderSystem:
         order.earliest_window = (win.start, win.end)
         order.status = "queued"
         kind, data = self._exec_payload(order, win)
-        self.sim.schedule(win.start, kind, data, actor=order.cell)
+        self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
         return order
 
     def _best_isl_window(self, ap: AccessProvider, cell: str, actor: str, now: int) -> Optional[AccessWindow]:
@@ -189,7 +204,7 @@ class OrderSystem:
         order.status = "queued"
         self._sensor_bookings.setdefault(sid, []).append((win.start, win.end))
         kind, data = self._exec_payload(order, win)
-        self.sim.schedule(win.start, kind, data, actor=order.cell)
+        self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
         return order
 
     def _candidate_sensors(self, order: Order) -> list[str]:
@@ -354,7 +369,7 @@ class OrderSystem:
         )
         order.status = "queued"
         order.earliest_window = None
-        self.sim.schedule(self.sim.clock.now, "execute_effect", {"effect": effect.model_dump()}, actor=order.cell)
+        self.sim.schedule(self.sim.clock.now, "execute_effect", {"effect": effect.model_dump()}, actor=order.cell, tag=order.id)
 
     # -- handlers (run inside the deterministic event loop) --------------------
     def _h_effect(self, world: WorldState, payload: dict, rng) -> None:

@@ -78,6 +78,19 @@ class InProcessSession:
     def issue_order(self, session: str, cell: str, order: Order) -> OrderAck:
         return self._sessions[session].issue_order(cell, order)
 
+    def list_orders(self, session: str, cell: str) -> list:
+        return self._sessions[session].list_orders(cell)
+
+    def cancel_order(self, session: str, cell: str, order_id: str) -> Ack:
+        ok = self._sessions[session].cancel_order(cell, order_id)
+        return Ack(ok=ok, reason="" if ok else "order not found / not cancellable")
+
+    def windows_ahead(self, session: str, cell: str, asset: str):
+        return self._sessions[session].windows_ahead(cell, asset)
+
+    def list_injects(self, session: str) -> list:
+        return self._sessions[session].list_injects()
+
     # -- reads -----------------------------------------------------------------
     def get_view(self, session: str, cell: str) -> CellView:
         return self._sessions[session].get_view(cell)

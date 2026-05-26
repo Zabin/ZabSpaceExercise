@@ -22,6 +22,7 @@ class ScheduledEvent:
     kind: str
     actor: str = "system"
     payload: dict = field(default_factory=dict)
+    tag: str = ""   # optional handle (e.g. an order id) used to cancel before it fires
 
 
 class SimClock:
@@ -33,18 +34,29 @@ class Scheduler:
     def __init__(self) -> None:
         self._heap: list[tuple[int, int, ScheduledEvent]] = []
         self._order = 0
+        self._cancelled: set[str] = set()
 
     def schedule(self, event: ScheduledEvent) -> None:
         heapq.heappush(self._heap, (event.t, self._order, event))
         self._order += 1
 
+    def cancel(self, tag: str) -> None:
+        """Cancel a not-yet-fired event by tag; it is silently skipped when due (never logged)."""
+        if tag:
+            self._cancelled.add(tag)
+
+    def is_cancelled(self, tag: str) -> bool:
+        return bool(tag) and tag in self._cancelled
+
     def next_time(self) -> int | None:
         return self._heap[0][0] if self._heap else None
 
     def pop_due(self, target: int):
-        """Yield scheduled events with ``t <= target`` in (time, insertion) order."""
+        """Yield due events with ``t <= target`` in order, skipping cancelled ones."""
         while self._heap and self._heap[0][0] <= target:
-            yield heapq.heappop(self._heap)[2]
+            event = heapq.heappop(self._heap)[2]
+            if not self.is_cancelled(event.tag):
+                yield event
 
     def __len__(self) -> int:
         return len(self._heap)

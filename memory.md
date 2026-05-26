@@ -155,6 +155,12 @@ test first, implement to green, and add a regression test for every resolved fin
   data-driven objective metrics; TLE force-add; `RedDoctrine` presets; capstone V8 + AAR
   (read-only replay/scrub/branch-compare). Refactor pass: `effects.py` uses a `TYPE_CHECKING`
   import for `WorldState` (pyflakes-clean, no runtime cycle); dead branches/imports removed.
+- **2026-05-25:** Menu/feature flesh-out — a **cancellable command queue** (`OrderSystem` now ids +
+  registers orders; `Scheduler.cancel(tag)` skips a not-yet-fired event so it never logs → cancel is
+  replay-safe; `list_orders`/`cancel_order` + `/orders/{cell}` & `/cancel`), a **pass-timeline**
+  (`windows_ahead` → `/windows/{cell}/{asset}`, upcoming uplink/downlink windows), and an **inject
+  list** (`/injects`). UI adds the queue panel (with cancel), the ribbon, and an inject dropdown.
+  98 tests green (incl. cancel-is-replay-safe).
 - **2026-05-25:** Added a **country map** (coastlines + country borders) to both viewers: committed
   `static/world.json` generated offline by `tools/build_coastlines.py` from `basemap-data` (shape-
   preserving radial decimation, ~512 coast + 446 border polylines, ~314 KB; coarse fallback if

@@ -37,7 +37,8 @@
       <pre id="objectives">—</pre>
       <h3>Messages</h3>
       <ul id="messages"></ul>
-      <button id="fire-inject">Fire inject…</button>
+      <h3>Injects (White Cell)</h3>
+      <div class="ctrl"><select id="inject-sel"></select><button id="fire-inject">Fire</button></div>
     </section>
 
     <section class="panel">
@@ -60,6 +61,10 @@
       <button id="issue" class="primary">Issue order</button>
       <h3>Result</h3>
       <pre id="order-result">—</pre>
+      <h3>Pass timeline (next 6 h)</h3>
+      <canvas id="ribbon" width="336" height="44"></canvas>
+      <h3>Command queue</h3>
+      <div id="queue"></div>
     </section>
   </main>
 

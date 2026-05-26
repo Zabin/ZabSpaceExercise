@@ -82,3 +82,8 @@ canvas:active { cursor: grabbing; }
 .pchip:hover { border-color: var(--accent2); }
 .pchip.green { color: var(--green); } .pchip.yellow { color: var(--yellow); border-color: #5a4a1e; }
 .pchip.red { color: var(--red); border-color: #5a2424; } .pchip.los { color: #7a8aa0; }
+.muted { color: var(--muted); }
+.qrow { display: flex; align-items: center; gap: 8px; padding: 3px 6px; border-top: 1px solid #1b2531; font-size: 12px; }
+.qrow span:first-child { flex: 1; }
+.qrow.cancelled { opacity: .5; text-decoration: line-through; }
+.qrow.executed { color: var(--green); }

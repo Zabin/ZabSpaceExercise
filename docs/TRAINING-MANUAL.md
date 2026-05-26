@@ -286,6 +286,13 @@ a satellite three ways and the tool picks the soonest: a **ground-station uplink
 
 ![ISL command planning](manual/06-planning-isl.png)
 
+Every issued order lands in the **command queue** with its scheduled window and delivery path, and
+a queued order is **cancellable** until it uplinks. The per-asset **pass-timeline ribbon** shows
+when each upcoming command-uplink and telemetry-downlink window opens, so you can plan against
+real geometry:
+
+![Command queue & pass timeline](manual/32-command-queue.png)
+
 ### SDA sensor tasking → custody → unlock
 You don't know the sky for free — you **task scarce sensors** to detect, track, and characterize
 objects. A good report raises a track's confidence and shrinks its uncertainty; once a track is

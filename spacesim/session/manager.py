@@ -12,11 +12,12 @@ from typing import Optional
 
 from spacesim.content.vignette import Vignette, build_world, evaluate_objectives
 from spacesim.engine import telemetry
+from spacesim.engine.access import AccessProvider, COMMAND_UPLINK, TELEMETRY_DOWNLINK
 from spacesim.engine.busmodel import BusSystem
 from spacesim.engine.custody import Track
 from spacesim.engine.entities import Asset
 from spacesim.engine.orbit import OrbitState
-from spacesim.engine.orders import Order, OrderSystem
+from spacesim.engine.orders import Order, OrderSystem, scene_from_world
 from spacesim.engine.simulation import Simulation
 from spacesim.engine.world import WorldState
 from spacesim.session.api import OrderAck
@@ -75,6 +76,8 @@ class SessionManager:
         # After a replay-based rewind the world object is fresh; repoint live references at it.
         self.world = self.sim.world
         self.osys.world = self.sim.world
+        self.osys.orders.clear()           # queued events were dropped by the rewind
+        self.osys._sensor_bookings.clear()
 
     # -- intents ---------------------------------------------------------------
     def issue_order(self, cell: str, order: Order) -> OrderAck:
@@ -107,6 +110,53 @@ class SessionManager:
         self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
         self.sim._initial_state = self.world.model_dump()  # re-baseline so rewind keeps the edit
         return True, ""
+
+    # -- command queue --------------------------------------------------------
+    def list_orders(self, cell: str) -> list[dict]:
+        """The cell's order queue (white sees all). Display status flips queued→executed past the window."""
+        now = self.sim.clock.now
+        out = []
+        for o in self.osys.orders.values():
+            if cell != "white" and o.cell != cell:
+                continue
+            status = o.status
+            if status == "queued" and o.earliest_window and now > o.earliest_window[0]:
+                status = "executed"
+            out.append({"id": o.id, "cell": o.cell, "actor": o.actor, "action": o.action,
+                        "target": o.target, "status": status, "delivery_path": o.delivery_path,
+                        "window": o.earliest_window, "reason": o.fail_reason})
+        return out
+
+    def cancel_order(self, cell: str, order_id: str) -> bool:
+        o = self.osys.orders.get(order_id)
+        if o is None or (cell != "white" and o.cell != cell):
+            return False
+        return self.osys.cancel(order_id)
+
+    def windows_ahead(self, cell: str, asset_id: str, horizon_s: float = 6 * 3600, limit: int = 16):
+        """Upcoming command-uplink + telemetry-downlink windows for an own satellite (pass timeline)."""
+        if not self._owns(cell, asset_id):
+            return None
+        asset = self.sim.world.assets.get(asset_id)
+        if asset is None or asset.orbit is None:
+            return {"asset": asset_id, "now": self.sim.clock.now, "windows": []}
+        ap = AccessProvider(scene_from_world(self.sim.world), config=self.osys.access_config)
+        now = self.sim.clock.now
+        hz = now + int(horizon_s * 1_000_000)
+        stations = [i for i, a in self.sim.world.assets.items()
+                    if a.owner == asset.owner and a.location is not None]
+        wins = []
+        for st in stations:
+            for ch in (COMMAND_UPLINK, TELEMETRY_DOWNLINK):
+                for w in ap.windows(st, asset_id, ch, now, hz):
+                    wins.append({"channel": ch, "via": st, "start": w.start, "end": w.end,
+                                 "quality": round(w.quality, 2)})
+        wins.sort(key=lambda w: w["start"])
+        return {"asset": asset_id, "now": now, "horizon_s": horizon_s, "windows": wins[:limit]}
+
+    def list_injects(self) -> list[dict]:
+        return [{"id": i.id, "label": i.label, "trigger": (i.trigger or {}).get("type", "manual")}
+                for i in self.vignette.injects]
 
     def fire_inject(self, inject) -> None:
         effects = inject if isinstance(inject, list) else self._inject_effects(inject)
