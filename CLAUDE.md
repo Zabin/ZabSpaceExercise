@@ -152,4 +152,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `docs/OPERATOR-UI-DESIGN.md` — ~20-page operator-console UI design spec (all payload/mission/
   operator types per cell; button logic + monitoring/troubleshooting/tasking flows; binds to the
   existing endpoints). A design proposal to implement *later* to augment the web UI.
+- `docs/SSN-DESIGN.md` — ~10-page plan for a mock Space Surveillance Network: per-cell
+  national/coalition networks, four dispersion presets, global + LEO→GEO coverage, hybrid turnaround
+  (window + processing delay), request→product flow; per-vignette opt-in (V7/V8). Design only.
   Run: `uvicorn spacesim.ui_web.server:app` then open http://127.0.0.1:8000/.

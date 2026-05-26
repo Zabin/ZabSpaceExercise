@@ -155,6 +155,14 @@ test first, implement to green, and add a regression test for every resolved fin
   data-driven objective metrics; TLE force-add; `RedDoctrine` presets; capstone V8 + AAR
   (read-only replay/scrub/branch-compare). Refactor pass: `effects.py` uses a `TYPE_CHECKING`
   import for `WorldState` (pyflakes-clean, no runtime cycle); dead branches/imports removed.
+- **2026-05-25:** Wrote `docs/SSN-DESIGN.md` — ~10-page plan for a mock Space Surveillance Network
+  operators can submit observation requests to. User choices: **per-cell** networks (Blue coalition /
+  Red national), **hybrid** turnaround (earliest viable window within priority max-wait + processing/
+  dissemination delay; coalition/saturation add delay), **four** dispersion presets (sparse/regional/
+  global/proliferated) with sensor-type→regime coverage (radar LEO/MEO, optical MEO/GEO, space-based
+  GEO/cislunar) and global spread, **per-vignette opt-in** (on for V7/V8). Reuses AccessProvider +
+  observe/Track + scheduler/eventlog + fog; resolves as logged `ssn_collect`/`ssn_deliver` events
+  (replay-safe). Design only; not yet built.
 - **2026-05-25:** Wrote `docs/OPERATOR-UI-DESIGN.md` — a ~20-page operator-console UI design spec
   (research synthesis of `06`/`09`/`13`/`05`/`11`/`12` + the implemented engine). Covers every
   payload/mission/operator type per cell, the button-logic contract (visible/enabled/disabled-reason/
