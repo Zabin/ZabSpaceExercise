@@ -213,6 +213,25 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.aar_objectives_at(sid, seq)
 
+    @app.get("/api/sessions/{sid}/aar/at")
+    def aar_snapshot_at(sid: str, seq: Optional[int] = None) -> dict:
+        _require(sid)
+        return api.aar_snapshot_at(sid, seq)
+
+    @app.get("/api/sessions/{sid}/alarms/{cell}")
+    def alarms(sid: str, cell: str) -> list:
+        _require(sid)
+        return api.alarms(sid, cell)
+
+    @app.get("/api/sessions/{sid}/save")
+    def save(sid: str) -> dict:
+        _require(sid)
+        return api.save(sid)
+
+    @app.post("/api/sessions/load_save")
+    def load_save(state: dict) -> dict:
+        return {"session": api.load_save(state)}
+
     if STATIC_DIR.exists():
         app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
 

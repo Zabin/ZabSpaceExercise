@@ -134,9 +134,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/bus.py` — `BusState`/`PayloadState` SOH (limits, gating, safe mode, pass-gated view).
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
-- `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add), `CellController` (fog-of-war),
-  `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`, `scene.py` (render-from-custody belief),
-  `redai.py` (Red doctrine presets), `aar.py` (replay/scrub/branch-compare).
+- `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms),
+  `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`,
+  `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
+  `aar.py` (replay/scrub/branch-compare + `snapshot_at`).
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`) + `static/`
   front end: `app.js` (command menu, 2D belief map, subsystem drill-down), `globe.js` (3D
   orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`

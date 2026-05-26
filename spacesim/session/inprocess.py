@@ -119,3 +119,19 @@ class InProcessSession:
 
     def aar_objectives_at(self, session: str, seq=None) -> dict:
         return aar.objectives_at(self._sessions[session], seq)
+
+    def aar_snapshot_at(self, session: str, seq=None) -> dict:
+        return aar.snapshot_at(self._sessions[session], seq)
+
+    def alarms(self, session: str, cell: str) -> list:
+        return self._sessions[session].alarms(cell)
+
+    # -- save / resume ---------------------------------------------------------
+    def save(self, session: str) -> dict:
+        return self._sessions[session].save_state()
+
+    def load_save(self, state: dict) -> str:
+        self._counter += 1
+        sid = f"sess-{self._counter}"
+        self._sessions[sid] = SessionManager.from_state(state)
+        return sid

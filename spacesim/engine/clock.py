@@ -51,6 +51,10 @@ class Scheduler:
     def next_time(self) -> int | None:
         return self._heap[0][0] if self._heap else None
 
+    def pending(self) -> list["ScheduledEvent"]:
+        """All not-yet-fired, non-cancelled events (for save/resume), in time order."""
+        return [ev for _, _, ev in sorted(self._heap) if not self.is_cancelled(ev.tag)]
+
     def pop_due(self, target: int):
         """Yield due events with ``t <= target`` in order, skipping cancelled ones."""
         while self._heap and self._heap[0][0] <= target:

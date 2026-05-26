@@ -314,6 +314,12 @@ often only discover it at the next telemetry contact:
 
 ![Fleet SOH and safe mode](manual/09-fleet-soh-safe-mode.png)
 
+The fleet view is an **at-a-glance rollup** — one green/yellow/red dot per asset (worst subsystem;
+red if safed) — beside an **alarms/event feed** of off-nominal readings. Like the graphs, the feed
+reports *symptoms*, not the cause:
+
+![Fleet SOH rollup + alarms](manual/34-alarms-soh.png)
+
 ### Safe-mode recovery
 Recovery is a **multi-pass procedure**, not a button. If the root cause persists (e.g. an
 unpatched modem vulnerability), the satellite is **re-safed** — you must remove the cause (patch
@@ -370,6 +376,21 @@ decision, and **compare two branches** to show how a choice changed the outcome:
 ```bash
 curl -X POST http://127.0.0.1:8000/api/sessions/<SID>/red_step     # AI-Red issues one round of orders
 curl      http://127.0.0.1:8000/api/sessions/<SID>/aar             # decision timeline + final objectives
+```
+
+The AAR **scrubber** lets you drag along the event log and read the exact world at any decision
+point (objectives, asset states, debris) — read-only, so it never disturbs the live session:
+
+![AAR scrubber](manual/33-aar-scrubber.png)
+
+### Save & resume
+**Save** (toolbar) writes a complete snapshot — history, the order queue, and pending events — to a
+JSON file; **Load** resumes it. Because the core is deterministic, resume re-derives the exact world
+from `(initial state, seed, event log)` and restores queued orders byte-for-byte.
+
+```bash
+curl http://127.0.0.1:8000/api/sessions/<SID>/save > save.json        # download a session
+curl -X POST http://127.0.0.1:8000/api/sessions/load_save -d @save.json -H 'Content-Type: application/json'
 ```
 
 ---
@@ -431,13 +452,19 @@ per cell, server-side.
 | `POST /api/sessions/{sid}/rewind` `{t}` · `…/undo` `{n}` | Time travel |
 | `POST /api/sessions/{sid}/inject` `{inject}` | Fire an inject (id or `{effects}`) |
 | `POST /api/sessions/{sid}/order` `{cell, actor, action, target, params}` | Issue an order |
+| `GET /api/sessions/{sid}/orders/{cell}` · `POST …/cancel` `{cell, order_id}` | Command queue · cancel a queued order |
+| `GET /api/sessions/{sid}/windows/{cell}/{asset}` | Upcoming passes (pass-timeline ribbon) |
+| `GET /api/sessions/{sid}/injects` | List the vignette's injects |
 | `POST /api/sessions/{sid}/force/tle` `{id, owner, line1, line2}` | Add a real satellite by TLE |
 | `POST /api/sessions/{sid}/red_step` | AI-Red issues one doctrine round |
 | `GET /api/sessions/{sid}/view/{cell}` | Fog-filtered cell view |
 | `GET /api/sessions/{sid}/scene/{cell}` | Belief-render geometry (map/3D) |
+| `GET /api/sessions/{sid}/telemetry/{cell}/{asset}[/{param}]` | Subsystem telemetry DB · a parameter series |
+| `GET /api/sessions/{sid}/alarms/{cell}` | Fleet alarms / event feed |
 | `GET /api/sessions/{sid}/godview` | Ground truth (White only) |
 | `GET /api/sessions/{sid}/objectives` · `…/eventlog` | Objective status · event log |
-| `GET /api/sessions/{sid}/aar` · `…/aar/objectives?seq=` | AAR report · objectives at a point |
+| `GET /api/sessions/{sid}/aar` · `…/aar/objectives?seq=` · `…/aar/at?seq=` | AAR report · objectives · snapshot at a point |
+| `GET /api/sessions/{sid}/save` · `POST /api/sessions/load_save` | Save a session · resume from a saved state |
 
 Interactive API docs are auto-served at **http://127.0.0.1:8000/docs** (FastAPI/Swagger).
 

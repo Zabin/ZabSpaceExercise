@@ -18,6 +18,7 @@ class Ack(BaseModel):
 
 class OrderAck(BaseModel):
     ok: bool
+    id: Optional[str] = None
     reason: str = ""
     status: str = "draft"
     earliest_window: Optional[tuple[int, int]] = None

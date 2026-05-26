@@ -35,3 +35,5 @@ install a browser, so these paint the web UI's panels from genuine fog-filtered 
 - **30-telemetry-jam.png** — Subsystem drill-down: RX power spikes / C/N0 collapses under jamming (operator infers the cause).
 - **31-telemetry-cyber.png** — Subsystem drill-down: FSW error counters climb + safe mode — a cyber signature.
 - **32-command-queue.png** — Command queue (cancellable) and the per-asset pass-timeline ribbon.
+- **33-aar-scrubber.png** — AAR timeline scrubber (state at any event) + save/resume note.
+- **34-alarms-soh.png** — Fleet SOH rollup (per-asset dot) and the alarms/event feed.

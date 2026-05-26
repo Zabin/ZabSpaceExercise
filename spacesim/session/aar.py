@@ -53,6 +53,22 @@ def objectives_at(mgr, seq: Optional[int] = None) -> dict:
     return evaluate_objectives(world, mgr.ctx)
 
 
+def snapshot_at(mgr, seq: Optional[int] = None) -> dict:
+    """A light read-only snapshot for the AAR scrubber: clock, objectives, and per-asset state."""
+    world = state_at(mgr, seq)
+    n = len(mgr.sim.eventlog.entries)
+    return {
+        "seq": n if seq is None else seq,
+        "n_events": n,
+        "now": world.now,
+        "objectives": evaluate_objectives(world, mgr.ctx),
+        "assets": [{"id": a.id, "owner": a.owner, "health": a.health,
+                    "bus_mode": a.bus_state.mode if a.bus_state else None}
+                   for a in world.assets.values()],
+        "debris": len(world.debris),
+    }
+
+
 def _summarize(entry) -> str:
     p = entry.payload
     if entry.kind == "execute_effect":

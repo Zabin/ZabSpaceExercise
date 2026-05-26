@@ -155,6 +155,13 @@ test first, implement to green, and add a regression test for every resolved fin
   data-driven objective metrics; TLE force-add; `RedDoctrine` presets; capstone V8 + AAR
   (read-only replay/scrub/branch-compare). Refactor pass: `effects.py` uses a `TYPE_CHECKING`
   import for `WorldState` (pyflakes-clean, no runtime cycle); dead branches/imports removed.
+- **2026-05-25:** Added **save/resume** (`SessionManager.save_state`/`from_state`: persists eventlog +
+  pending scheduled events + the order registry; resume re-derives the world via `_rebuild` and is
+  byte-identical incl. queued orders; `Scheduler.pending()`; `/save` & `/load_save`), an **AAR
+  scrubber** (`aar.snapshot_at` → `/aar/at?seq=`, read-only state at any event; UI slider), and a
+  **fleet SOH rollup + alarms feed** (`SessionManager.alarms` aggregates per-asset symptom logs +
+  consequences, fog-filtered; `/alarms/{cell}`; UI rollup dot + feed). `OrderAck` gained `id`.
+  101 tests green. Screens 33 (scrubber) + 34 (alarms/SOH) added.
 - **2026-05-25:** Menu/feature flesh-out — a **cancellable command queue** (`OrderSystem` now ids +
   registers orders; `Scheduler.cancel(tag)` skips a not-yet-fired event so it never logs → cancel is
   replay-safe; `list_orders`/`cancel_order` + `/orders/{cell}` & `/cancel`), a **pass-timeline**

@@ -128,7 +128,8 @@ async function refresh() {
 
   $("assets").querySelector("tbody").innerHTML = assets.map((a) => {
     const bus = a.bus_state ? a.bus_state.mode : "—"; const bc = bus === "safe_mode" ? "red" : "";
-    return `<tr data-asset="${a.id}" style="cursor:pointer"><td>${a.id}</td><td>${a.kind}</td><td>${a.health || "—"}</td><td class="${bc}">${bus}</td></tr>`;
+    const soh = rollup(a.bus_state);
+    return `<tr data-asset="${a.id}" style="cursor:pointer"><td class="${soh}">●</td><td>${a.id}</td><td>${a.kind}</td><td>${a.health || "—"}</td><td class="${bc}">${bus}</td></tr>`;
   }).join("");
   $("tracks").querySelector("tbody").innerHTML = tracks.map((t) =>
     `<tr><td>${t.object}</td><td>${(+t.confidence).toFixed(2)}</td><td>${t.characterized}</td><td>${t.classification}</td></tr>`).join("");
@@ -155,6 +156,52 @@ async function refresh() {
   });
   drawMap();
   renderQueue();
+  renderAlarms();
+  refreshAAR();
+}
+
+function rollup(bus) {
+  if (!bus) return "";
+  if (bus.mode === "safe_mode") return "red";
+  const rank = { green: 0, yellow: 1, red: 2 };
+  const subs = [bus.power, bus.attitude, bus.thermal, bus.propulsion, bus.cdh, bus.comms];
+  return subs.reduce((w, s) => (s && rank[s.status] > rank[w] ? s.status : w), "green");
+}
+
+async function renderAlarms() {
+  const al = await api.get(`/api/sessions/${SID}/alarms/${CELL}`).catch(() => []);
+  $("alarms").innerHTML = al.length
+    ? al.map((a) => `<li class="red">${a.asset}: ${a.text}</li>`).join("")
+    : "<li class='muted'>(no alarms)</li>";
+}
+
+async function saveSession() {
+  const state = await api.get(`/api/sessions/${SID}/save`);
+  const blob = new Blob([JSON.stringify(state)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = `${state.vignette_id}-save.json`; a.click();
+}
+async function loadSaveFile(file) {
+  const state = JSON.parse(await file.text());
+  SID = (await api.post("/api/sessions/load_save", state)).session;
+  $("session").textContent = "session " + SID; $("start").disabled = false;
+  const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
+  $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
+  await refresh();
+}
+
+async function refreshAAR() {
+  const snap = await api.get(`/api/sessions/${SID}/aar/at`).catch(() => null);
+  if (!snap) return;
+  const sl = $("aar-slider"); sl.max = snap.n_events; if (+sl.value > snap.n_events) sl.value = snap.n_events;
+  aarAt(sl.value);
+}
+async function aarAt(seq) {
+  const snap = await api.get(`/api/sessions/${SID}/aar/at?seq=${seq}`).catch(() => null);
+  if (!snap) return;
+  $("aar-label").textContent = `event ${snap.seq} / ${snap.n_events} · ${iso(snap.now)} · debris ${snap.debris}`;
+  $("aar-obj").textContent = JSON.stringify(snap.objectives, null, 2);
+  $("aar-assets").textContent = snap.assets.map((a) => `${a.id}: ${a.health}${a.bus_mode ? " / " + a.bus_mode : ""}`).join("\n");
 }
 
 // ---- 2D belief map with pan / zoom / center / layers ----
@@ -242,6 +289,10 @@ window.addEventListener("DOMContentLoaded", () => {
   $("assets").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-asset]"); if (tr) openDrill(tr.dataset.asset); });
   $("load").onclick = loadSession; $("start").onclick = start; $("rewind").onclick = rewind;
   $("fire-inject").onclick = fireInject; $("issue").onclick = issueOrder;
+  $("save").onclick = () => SID && saveSession();
+  $("loadbtn").onclick = () => $("loadfile").click();
+  $("loadfile").onchange = (e) => e.target.files[0] && loadSaveFile(e.target.files[0]);
+  $("aar-slider").oninput = (e) => aarAt(e.target.value);
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
   document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => step(+b.dataset.step));
   document.querySelectorAll(".cell").forEach((b) => b.onclick = () => setCell(b.dataset.cell));

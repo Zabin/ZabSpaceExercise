@@ -85,6 +85,7 @@ class SessionManager:
         result = self.osys.issue(order)
         return OrderAck(
             ok=result.status != "rejected",
+            id=result.id,
             reason=result.fail_reason or "",
             status=result.status,
             earliest_window=result.earliest_window,
@@ -157,6 +158,58 @@ class SessionManager:
     def list_injects(self) -> list[dict]:
         return [{"id": i.id, "label": i.label, "trigger": (i.trigger or {}).get("type", "manual")}
                 for i in self.vignette.injects]
+
+    # -- save / resume --------------------------------------------------------
+    def save_state(self) -> dict:
+        """A complete, serializable snapshot: history + pending events + the order queue.
+
+        Resume is exact because the deterministic core re-derives state from (initial, seed,
+        eventlog); pending scheduled events and the order registry are persisted alongside so
+        queued orders, bus ticks, and scripted injects survive a save/load."""
+        return {
+            "vignette_id": self.vignette.id,
+            "overrides": dict(self.ctx.param_values),
+            "seed": self.sim._seed,
+            "final_time": self.sim.clock.now,
+            "started": self.started,
+            "eventlog": self.sim.eventlog.model_dump(),
+            "pending": [{"t": ev.t, "kind": ev.kind, "actor": ev.actor, "payload": ev.payload, "tag": ev.tag}
+                        for ev in self.sim.scheduler.pending()],
+            "orders": [vars(o) for o in self.osys.orders.values()],
+        }
+
+    @classmethod
+    def from_state(cls, state: dict) -> "SessionManager":
+        from spacesim.content.vignette import load_vignette as _load
+        from spacesim.engine.eventlog import EventLog
+        mgr = cls(_load(state["vignette_id"]), overrides=state.get("overrides"), seed=state["seed"])
+        mgr.sim.eventlog = EventLog.model_validate(state["eventlog"])
+        mgr.sim._rebuild(stop_time=state["final_time"])   # replay history → world + rng at save time
+        mgr._rebind()
+        for p in state.get("pending", []):
+            mgr.sim.schedule(p["t"], p["kind"], p.get("payload"), actor=p.get("actor", "system"), tag=p.get("tag", ""))
+        for od in state.get("orders", []):
+            o = Order(**od)
+            mgr.osys.orders[o.id] = o
+        nums = [int(o.id.split("-")[1]) for o in mgr.osys.orders.values() if o.id.startswith("ord-")]
+        mgr.osys._order_counter = max(nums, default=0)
+        mgr.started = state.get("started", False)
+        return mgr
+
+    # -- fleet SOH rollup & alarms --------------------------------------------
+    def alarms(self, cell: str) -> list[dict]:
+        """Aggregate off-nominal symptoms across the cell's own assets (fog: own only)."""
+        out = []
+        t, seed = self.sim.clock.now, self.sim._seed
+        for aid, a in self.sim.world.assets.items():
+            if a.bus_state is None or (cell != "white" and a.owner != cell):
+                continue
+            for line in telemetry.subsystem_log(self.sim.world, aid, t, seed):
+                out.append({"asset": aid, "text": line})
+        for cons in self.sim.world.consequences:
+            if cell == "white":
+                out.append({"asset": "—", "text": f"political consequence: {cons.get('cause', '')} ({cons.get('severity', '')})"})
+        return out
 
     def fire_inject(self, inject) -> None:
         effects = inject if isinstance(inject, list) else self._inject_effects(inject)
