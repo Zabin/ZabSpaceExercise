@@ -407,7 +407,30 @@ async function openDrill(assetId) {
   $("drill-log").textContent = (tele.log || []).join("\n") || "(all nominal)";
   document.querySelectorAll("#drill-params .pchip").forEach((c) => c.onclick = () => drawParam(c.dataset.param));
   document.querySelectorAll("#drill-params .vbtn").forEach((b) => b.onclick = () => loadVerb(b.dataset.actor, b.dataset.verb));
+  renderRecovery(assetId, tele.bus_mode);
   drawParam(DRILL.param && DRILL_DB[DRILL.param] ? DRILL.param : "rx_power_dbm");
+}
+
+// Safe-mode recovery strip (§5.5): the guided multi-pass chain + a "begin recovery" action.
+async function renderRecovery(assetId, busMode) {
+  const strip = $("recovery-strip");
+  if (busMode !== "safe_mode") { strip.innerHTML = ""; return; }
+  const st = await api.get(`/api/sessions/${SID}/recovery/${CELL}/${assetId}`).catch(() => null);
+  if (!st) { strip.innerHTML = ""; return; }
+  const done = st.confirmed;   // confirmation is the first pass; later steps complete on finish
+  const steps = st.steps.map((s, i) =>
+    `<span class="rstep ${done && i === 0 ? "ok" : ""}">${i + 1}.${s}</span>`).join(" → ");
+  const blocked = st.blocked_reason
+    ? `<div class="red">⚠ ${st.blocked_reason} — remove the root cause (patch the vector / kill the jammer), then recover again.</div>`
+    : "";
+  strip.innerHTML = `<div class="recovery">
+    <b class="red">SAFE MODE</b> · diagnosis: ${st.diagnosis} · passes ${st.passes_used}/${st.passes_needed}
+    <button class="vbtn" id="rec-begin" data-asset="${assetId}">Begin recovery</button>
+    <div class="rsteps">${steps}</div>${blocked}</div>`;
+  $("rec-begin").onclick = async () => {
+    const r = await api.post(`/api/sessions/${SID}/recovery/${CELL}/${assetId}`, { via: DEFAULT_STATION });
+    $("rec-begin").textContent = r.ok ? `recovery scheduled (${r.passes_used} pass${r.passes_used > 1 ? "es" : ""})` : `cannot start: ${r.reason}`;
+  };
 }
 
 // Which command verbs belong on which telemetry-subsystem card (§5.1 cards carry their own buttons).

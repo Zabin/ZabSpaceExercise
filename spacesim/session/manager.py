@@ -18,6 +18,7 @@ from spacesim.engine.custody import Track
 from spacesim.engine.entities import Asset
 from spacesim.engine.orbit import OrbitState
 from spacesim.engine.orders import Order, OrderSystem, scene_from_world
+from spacesim.engine.recovery import RecoverySystem
 from spacesim.engine.simulation import Simulation
 from spacesim.engine.world import WorldState
 from spacesim.session.api import OrderAck
@@ -35,6 +36,12 @@ class SessionManager:
         self.sim.register_handler("inject", self._h_inject)
         self.osys = OrderSystem(self.sim, roe=dict(self.ctx.roe))
         self.bus = BusSystem(self.sim)
+        self.recovery = RecoverySystem(
+            self.sim,
+            difficulty=self.ctx.param_values.get("safe_mode_recovery_difficulty", "realistic"),
+            root_cause_persists=bool(self.ctx.param_values.get("safe_mode_root_cause_persists", True)),
+            access_config=self.osys.access_config,
+        )
         self.started = False
         self.horizon = self.ctx.start_epoch + int(self.vignette.estimated_duration_min * 60 * 4 * 1_000_000)
 
@@ -182,6 +189,51 @@ class SessionManager:
             wa = self.windows_ahead(cell, aid)
             nxt[aid] = wa["windows"][0]["start"] if wa and wa["windows"] else None
         return {"now": self.sim.clock.now, "next": nxt}
+
+    # -- safe-mode recovery (12-safe-mode-loop.md / §5.5 recovery strip) ------
+    _RECOVERY_STEPS = ["establish_contact", "dump_telemetry", "clear_fault", "restore_loads",
+                       "set_attitude", "enable_payload", "verify_nominal"]
+
+    def recovery_status(self, cell: str, asset_id: str) -> Optional[dict]:
+        """Safe-mode + recovery state for the UI recovery strip (fog: own assets only)."""
+        if not self._owns(cell, asset_id):
+            return None
+        a = self.sim.world.assets.get(asset_id)
+        if a is None or a.bus_state is None:
+            return None
+        sm = a.bus_state.safe_mode
+        return {
+            "asset": asset_id,
+            "safe_mode": a.bus_state.mode == "safe_mode",
+            "confirmed": sm.defender_confirmed,
+            "diagnosis": sm.defender_diagnosis,
+            "passes_used": sm.passes_used,
+            "passes_needed": self.recovery.passes_needed(),
+            "blocked_reason": sm.blocked_reason,
+            "steps": list(self._RECOVERY_STEPS),
+        }
+
+    def begin_recovery(self, cell: str, asset_id: str, via: str = "") -> dict:
+        """Schedule the multi-pass recovery chain for a safed own satellite over command windows.
+
+        Auto-selects an uplink station (the caller's ``via`` is tried first, then any own station
+        with a command window) so the UI need not guess which ground site has a pass.
+        """
+        if not self._owns(cell, asset_id):
+            return {"ok": False, "reason": "not_owner"}
+        a = self.sim.world.assets.get(asset_id)
+        if a is None or a.bus_state is None or not a.bus_state.safe_mode.active:
+            return {"ok": False, "reason": "not_safed"}
+        owner = a.owner
+        stations = ([via] if via else []) + [
+            sid for sid, s in self.sim.world.assets.items()
+            if s.owner == owner and s.location is not None and sid != via
+        ]
+        for station in stations:
+            res = self.recovery.begin_recovery(asset_id, station)
+            if res.get("ok"):
+                return {**res, "via": station}
+        return {"ok": False, "reason": "no_pass"}
 
     def list_injects(self) -> list[dict]:
         return [{"id": i.id, "label": i.label, "trigger": (i.trigger or {}).get("type", "manual")}

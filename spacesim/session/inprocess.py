@@ -94,6 +94,12 @@ class InProcessSession:
     def next_contacts(self, session: str, cell: str) -> dict:
         return self._sessions[session].next_contacts(cell)
 
+    def recovery_status(self, session: str, cell: str, asset: str):
+        return self._sessions[session].recovery_status(cell, asset)
+
+    def begin_recovery(self, session: str, cell: str, asset: str, via: str) -> dict:
+        return self._sessions[session].begin_recovery(cell, asset, via)
+
     def list_injects(self, session: str) -> list:
         return self._sessions[session].list_injects()
 

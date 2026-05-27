@@ -70,6 +70,10 @@ class CancelRequest(BaseModel):
     order_id: str
 
 
+class RecoveryRequest(BaseModel):
+    via: str
+
+
 def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     api = api or InProcessSession()
     app = FastAPI(title="Space Control & Orbital Warfare Exercise Simulator")
@@ -168,6 +172,20 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Fleet-rail countdown: next command/telemetry contact time per own satellite."""
         _require(sid)
         return api.next_contacts(sid, cell)
+
+    @app.get("/api/sessions/{sid}/recovery/{cell}/{asset}")
+    def recovery_status(sid: str, cell: str, asset: str) -> dict:
+        _require(sid)
+        r = api.recovery_status(sid, cell, asset)
+        if r is None:
+            raise HTTPException(status_code=404, detail="no recovery state (fog/ownership/no bus)")
+        return r
+
+    @app.post("/api/sessions/{sid}/recovery/{cell}/{asset}")
+    def begin_recovery(sid: str, cell: str, asset: str, req: RecoveryRequest) -> dict:
+        """Schedule the multi-pass safe-mode recovery chain over command-uplink windows."""
+        _require(sid)
+        return api.begin_recovery(sid, cell, asset, req.via)
 
     @app.get("/api/sessions/{sid}/injects")
     def injects_list(sid: str) -> list:

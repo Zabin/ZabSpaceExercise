@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 7 — 122 tests green.** Implemented end-to-end:
+**Backend feature-complete through Phase 7 — 128 tests green.** Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -277,6 +277,19 @@ test first, implement to green, and add a regression test for every resolved fin
   present toggles, no console errors). **Remaining UI polish:** two-param graph overlay + pass-
   correlation shading (P-UI-3), dedicated tasking rail (P-UI-6; `observe` compose already works),
   safe-mode recovery strip (P-UI-7), multi-display reflow (P-UI-8), inline sparklines / six-across grid.
+- **2026-05-27:** **Safe-mode recovery strip (P-UI-7)** — wired the previously test-only
+  `RecoverySystem` into `SessionManager` (difficulty from `param_values`, default realistic) and added
+  `recovery_status`/`begin_recovery` (+ `/recovery/{cell}/{asset}` GET/POST). `begin_recovery`
+  **auto-selects** an own uplink station with a window (UI need not guess `via`). The drill-down shows
+  a recovery strip when an own asset is safed: diagnosis, passes used/needed, the ordered chain, a
+  **Begin recovery** button, and the re-safe `blocked_reason`. Replay-safe (confirm/finish are logged
+  events). **128 tests green** (+3 `test_recovery_session.py`: status+fog, safed precondition,
+  re-safe-until-patched-then-sticks + replay-identical). Browser-verified the full loop on
+  training-basics (red cyber→safe mode→symptoms→strip→begin recovery schedules 2 passes); confirmed
+  `no_pass` on satcom-cyber-link is legit (that vignette has no Blue ground stations → ISL-only).
+  **Remaining UI polish:** two-param graph overlay + pass-correlation shading (P-UI-3), dedicated
+  tasking rail (P-UI-6), multi-display reflow (P-UI-8); `def.patch_cyber` verb (engine) for the
+  per-step recovery deep-link.
 - **Still open (deferred / v1.1+):** browser GUI **unverified headless** (needs a human or
   browser-driver to confirm visuals; backend covered). Sat caps ≤24/≤3/48 not yet validated at
   content load. Posture/defense command persistence (`def.harden`, `def.set_threat_warning`).

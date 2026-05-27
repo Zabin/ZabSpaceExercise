@@ -273,6 +273,12 @@ corresponding command to the next pass; completed steps check off; a blocked ste
 `blocked_reason` (e.g. "root cause persists: unpatched ground_modem") with a deep-link to the fix
 (`def.patch_cyber`). Passes-used and re-safe events are shown inline. See §9.3.
 
+> ✅ *Implemented*: the strip renders in the subsystem drill-down when an own asset is safed —
+> diagnosis, passes used/needed, the ordered chain, a **Begin recovery** action, and the re-safe
+> `blocked_reason`. The engine model abstracts the chain into a confirm + multi-pass finish
+> (`RecoverySystem`), so the strip shows progress/blocked state rather than per-step buttons; the
+> per-step `def.patch_cyber` deep-link arrives when that defensive verb gets an engine handler.
+
 ---
 
 ## 6. Payload consoles by mission type (Workbench tab: "Payload")
@@ -622,6 +628,7 @@ windows, AAR snapshot) — no new server models required beyond what exists.
 | Alarm feed | `GET /alarms/{cell}` | on tick |
 | Objectives/feed | `GET /objectives`, `/eventlog` | on tick |
 | White control panel | `POST /param`, `/start`, time routes, `/inject`, `GET /injects` | on action |
+| Recovery strip | `GET /recovery/{cell}/{asset}` (status), `POST /recovery/{cell}/{asset}` (begin) | on safe-mode + on action |
 | AAR | `GET /aar`, `/aar/at?seq=`, `/aar/objectives?seq=` | on scrub |
 | Save/resume | `GET /save`, `POST /load_save` | on action |
 
@@ -701,8 +708,12 @@ Layered so each phase is shippable and testable against the existing API:
 6. **P-UI-6 Tasking rail** — intent/sensor/priority + contention surfacing. ◻️ *partial*: the
    `observe` compose path tasks sensors with contention handling in the engine; a dedicated
    intent/priority rail UI remains.
-7. **P-UI-7 Recovery strip + White control panel + AAR scrubber polish.** ◻️ *partial*: White time/
-   inject/save-load controls + the AAR scrubber ship; the safe-mode recovery strip remains.
+7. **P-UI-7 Recovery strip + White control panel + AAR scrubber polish.** ✅ *done*: White time/
+   inject/save-load controls + the AAR scrubber, and now the **safe-mode recovery strip** — when an
+   own asset is safed the drill-down shows the diagnosis, passes used/needed, the ordered recovery
+   chain, a **Begin recovery** action (auto-selects an uplink station with a window and schedules the
+   multi-pass chain), and the **re-safe `blocked_reason`** when the root cause persists. Backed by
+   `RecoverySystem` wired into `SessionManager` (`begin_recovery`/`recovery_status`, replay-safe).
 8. **P-UI-8 Accessibility & presentation mode; keyboard; multi-display reflow.** ◻️ *mostly done*:
    `j/k/c/g` keyboard nav + a high-contrast **presentation-mode** toggle ship; multi-display reflow
    (detachable region B/C+D to a second screen) remains.
