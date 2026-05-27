@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 7 — 108 tests green.** Implemented end-to-end:
+**Backend feature-complete through Phase 7 — 109 tests green.** Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -228,6 +228,21 @@ test first, implement to green, and add a regression test for every resolved fin
   strips the signature for the overlay & matches a never-attacked trace; nominal sampling is
   deterministic + read-only). Browser-verified wiring (toggle fires `nominal=1`, ghost renders, no
   console errors); the deviation magnitude itself is unit-proven.
+- **2026-05-27:** Completed the buildable remainder of the operator-UI plan. **Fleet rail (§4.1)**:
+  new `SessionManager.next_contacts(cell)` + `GET /next_contacts/{cell}` (reuses the pass-timeline
+  search; fog-filtered) drives a **next-contact countdown** (amber <5 min / red <1 min), plus a
+  **battery-SoC gauge**, **alarm badge**, and an All/Bus-red/Under-attack/Safed **filter bar**.
+  **Alarm deep-link (§4.3)**: clicking an alarm opens that asset's drill-down. **Consequence-confirm
+  (§12.3)**: the kinetic `engage` verb gets a deliberate confirm before issue. **Keyboard (§12.4)**:
+  `j/k` cycle actor, `c` focus compose, `g` open graph (ignored in fields). Fixed a **fog-adjacent
+  UI race**: a slow god-view `refresh()` could resolve after a player-cell switch and clobber the
+  fog-filtered view (briefly listing the other side's assets in the command menu) — `refresh()` now
+  carries a supersede token (`REFRESH_SEQ`) and aborts before writing if overtaken. **109 tests
+  green** (+1: `next_contacts` matches the pass timeline & respects fog). Browser-verified (columns,
+  filter empties on Safed, `j` wraps within the fog-filtered list, race gone). **Engine-blocked:**
+  P-UI-2 bus-card & P-UI-4 payload-console *command buttons* need the `13-...` catalog verbs
+  (`eps.*`/`adcs.*`/`satcom.*`/…) that have **no engine handlers** — deferred (an engine verb→effect
+  workstream) rather than shipping dead buttons.
 - **Still open (deferred / v1.1+):** browser GUI **unverified headless** (needs a human or
   browser-driver to confirm visuals; backend covered). Sat caps ≤24/≤3/48 not yet validated at
   content load. Posture/defense command persistence (`def.harden`, `def.set_threat_warning`).

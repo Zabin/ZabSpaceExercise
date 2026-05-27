@@ -139,13 +139,15 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
-  `validate_order` dry-run),
+  `validate_order` dry-run, `next_contacts` fleet countdown),
   `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`,
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
   `aar.py` (replay/scrub/branch-compare + `snapshot_at`).
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`) + `static/`
-  front end: `app.js` (command menu with live dry-run preview + pre-disabled Issue, 2D belief map,
-  subsystem drill-down), `globe.js` (3D
+  front end: `app.js` (command menu with live dry-run preview + pre-disabled Issue + kinetic
+  consequence-confirm, fleet rail with next-contact countdown/SoC/alarm badge/filter + alarm
+  deep-link, `j/k/c/g` keyboard nav, supersede-guarded refresh, 2D belief map, subsystem drill-down),
+  `globe.js` (3D
   orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`
   (telemetry line graphs), `style.css`, `index.html`.
 - `tools/build_coastlines.py` — regenerates the committed `static/world.json` (low-res world map)

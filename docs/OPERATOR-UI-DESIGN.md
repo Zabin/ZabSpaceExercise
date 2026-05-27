@@ -181,6 +181,13 @@ SOH ID          regime    next-contact resource gauges  alarm count
 
 A **filter bar** above the rail: All / Bus-red / Payload-degraded / Under-attack-symptoms / Safed.
 
+> ✅ *Implemented* (P-UI-1): the fleet rail now shows the **next-contact countdown** (from a new
+> `GET /next_contacts/{cell}` that reuses the pass-timeline window search; amber < 5 min, red < 1 min),
+> a **battery-SoC gauge**, and an **alarm badge** (count from `/alarms`), with an All / Bus-red /
+> Under-attack / Safed **filter bar**. A fog-adjacent race was fixed in passing: a slow god-view
+> refresh could overwrite a just-selected player cell's fog-filtered view, so `refresh()` now drops
+> any in-flight result that a later refresh has superseded.
+
 ### 4.2 Roll-up coloring rules
 | Color | Meaning | Trigger |
 |---|---|---|
@@ -195,6 +202,7 @@ a red dot from an eclipse power sag. The operator drills in to tell them apart.
 Newest-first list, each line = `time · asset · physical reading · [status]` from
 `telemetry.subsystem_log` + `political_consequence` + inject messages. Lines are **symptoms** (C1).
 Clicking an alarm **deep-links**: selects the asset and opens the relevant subsystem graph in D.
+✅ *Implemented*: alarm lines are clickable and open the asset's telemetry drill-down.
 
 ---
 
@@ -561,11 +569,15 @@ the target first," with a **[Task sensor]** shortcut).
 `engage`/`sc.engage_kinetic`, any debris-generating or high-`escalation_weight` effect → a confirm
 modal stating the consequence in doctrinal terms ("Debris-generating strike. Political cost: HIGH.
 Debris may threaten your own LEO assets.") with **Confirm / Cancel**. Routine planning has **no**
-confirm (P5, reduce friction).
+confirm (P5, reduce friction). ✅ *Implemented* for the kinetic `engage` verb (the only irreversible
+engine effect today); the confirm gate is keyed by verb so further escalatory verbs slot in as the
+catalog's space-control verbs gain engine handlers.
 
 ### 12.4 Keyboard & accessibility
 - `j/k` next/prev asset; `w` jump to next window; `c` compose; `t` task; `g` graph; `space` (White)
-  pause/step. Tab order follows the region grid A→E.
+  pause/step. Tab order follows the region grid A→E. ✅ *Implemented*: `j/k` cycle the selected
+  actor, `c` focuses the compose menu, `g` opens its telemetry drill-down (shortcuts ignored while a
+  text field/select is focused).
 - Not color-only: status carries shape/label too (●/▲/■ + text). High-contrast mode toggle. ARIA
   labels on every gauge/graph.
 
@@ -598,7 +610,7 @@ windows, AAR snapshot) — no new server models required beyond what exists.
 
 | Panel | Endpoint(s) | Cadence |
 |---|---|---|
-| Fleet rail / SOH | `GET /view/{cell}` (+ `/godview` for White), `/windows/{cell}/{asset}` | on tick + on action |
+| Fleet rail / SOH | `GET /view/{cell}` (+ `/godview` for White), `/next_contacts/{cell}` (countdown), `/windows/{cell}/{asset}` | on tick + on action |
 | World view (2D/3D) | `GET /scene/{cell}` | on tick |
 | Pass-timeline ribbon | `GET /windows/{cell}/{asset}` | on select + horizon advance |
 | Bus & payload cards | `GET /telemetry/{cell}/{asset}` | on tick |
@@ -666,18 +678,33 @@ DECISION › Task sensor
 Layered so each phase is shippable and testable against the existing API:
 
 1. **P-UI-1 Console frame** — region grid (A–E), seat chip, selection model, fleet rail with SOH dot +
-   countdown, alarm feed. (Consumes `/view`, `/windows`, `/alarms`.)
+   countdown, alarm feed. (Consumes `/view`, `/windows`, `/alarms`.) ✅ *fleet rail + countdown +
+   alarm badge + filter + deep-link done* (region detach/seat-chip cosmetics remain).
 2. **P-UI-2 Bus console** — six subsystem cards + parameter rows + sparklines; command buttons wired to
-   `/order` with the button-state contract; disabled reasons.
+   `/order` with the button-state contract; disabled reasons. ⚙️ *blocked on engine verbs* — the
+   monitoring half (parameter rows + status + graphs) ships via the drill-down, but the per-card
+   command buttons need the `13-...` catalog verbs (`eps.*`, `adcs.*`, `tcs.*`, `cdh.*`, `comms.*`),
+   which have **no engine handlers** today; building them now would be dead buttons, so they wait on
+   an engine-side verb→effect pass.
 3. **P-UI-3 Telemetry graphs** — graph tab with overlay/ghost-nominal/pass-correlation shading.
-4. **P-UI-4 Payload consoles** — one component, mission-type content packs (SATCOM/ISR/SIGINT/SDA/
-   space-control/PNT/MW/Weather).
-5. **P-UI-5 Command queue + compose + consequence-confirm** — full lifecycle + cancel.
-6. **P-UI-6 Tasking rail** — intent/sensor/priority + contention surfacing.
-7. **P-UI-7 Recovery strip + White control panel + AAR scrubber polish.**
-8. **P-UI-8 Accessibility & presentation mode; keyboard; multi-display reflow.**
+   ✅ *graphs + compare-to-nominal done*; overlay (two-param) + pass-correlation shading remain.
+4. **P-UI-4 Payload consoles** — one component, mission-type content packs. ⚙️ *blocked on engine
+   verbs* (same as P-UI-2: SATCOM/ISR/SIGINT/SDA/space-control/PNT/MW/Weather verbs lack handlers).
+5. **P-UI-5 Command queue + compose + consequence-confirm** — full lifecycle + cancel. ✅ *done*
+   (queue + cancel + live dry-run preview + pre-disable + kinetic consequence-confirm).
+6. **P-UI-6 Tasking rail** — intent/sensor/priority + contention surfacing. ◻️ *partial*: the
+   `observe` compose path tasks sensors with contention handling in the engine; a dedicated
+   intent/priority rail UI remains.
+7. **P-UI-7 Recovery strip + White control panel + AAR scrubber polish.** ◻️ *partial*: White time/
+   inject/save-load controls + the AAR scrubber ship; the safe-mode recovery strip remains.
+8. **P-UI-8 Accessibility & presentation mode; keyboard; multi-display reflow.** ◻️ *partial*:
+   `j/k/c/g` keyboard nav ships; presentation mode + multi-display reflow remain.
 
-Each phase is **backend-complete already** — these are front-end builds over existing endpoints.
+Most phases are **backend-complete** and built as front-end work over existing endpoints; the
+**exception is P-UI-2 / P-UI-4**, whose per-subsystem/per-payload **command buttons require new
+engine verb handlers** (the catalog verbs beyond the six core actions `jam/engage/observe/maneuver/
+downlink/cyber`). Those are an engine workstream, not a UI one, and are deferred to avoid shipping
+non-functional controls.
 
 ## 17. Acceptance criteria (sample, per surface)
 - **Monitoring:** a degrading subsystem turns the fleet dot yellow→red and an operator can reach the

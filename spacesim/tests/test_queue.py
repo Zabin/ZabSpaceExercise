@@ -50,6 +50,18 @@ def test_windows_ahead_returns_upcoming_passes_by_channel():
     assert mgr.windows_ahead("red", "ISR-EO-1") is None          # fog
 
 
+def test_next_contacts_matches_pass_timeline_and_respects_fog():
+    mgr = _mgr()
+    nc = mgr.next_contacts("blue")
+    assert "ISR-EO-1" in nc["next"]
+    # The fleet-rail countdown value is exactly the first window in the asset's pass timeline.
+    wa = mgr.windows_ahead("blue", "ISR-EO-1")
+    assert nc["next"]["ISR-EO-1"] == wa["windows"][0]["start"]
+    assert nc["next"]["ISR-EO-1"] >= nc["now"]
+    # Fog: Red's fleet rail never lists a Blue satellite.
+    assert "ISR-EO-1" not in mgr.next_contacts("red")["next"]
+
+
 def test_inject_list_exposes_vignette_injects():
     mgr = SessionManager(load_vignette("multi-domain-taiwan"), seed=1)
     mgr.start()

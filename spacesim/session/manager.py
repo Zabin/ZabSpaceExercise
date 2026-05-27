@@ -169,6 +169,20 @@ class SessionManager:
         wins.sort(key=lambda w: w["start"])
         return {"asset": asset_id, "now": now, "horizon_s": horizon_s, "windows": wins[:limit]}
 
+    def next_contacts(self, cell: str) -> dict:
+        """Per own-satellite time of the next command/telemetry contact — the fleet-rail countdown (§4.1).
+
+        One fog-filtered call the UI can make per tick instead of N per-asset window queries; reuses
+        the same AccessProvider path as ``windows_ahead`` so the value matches the pass timeline.
+        """
+        nxt: dict[str, Optional[int]] = {}
+        for aid, a in self.sim.world.assets.items():
+            if a.orbit is None or not self._owns(cell, aid):
+                continue
+            wa = self.windows_ahead(cell, aid)
+            nxt[aid] = wa["windows"][0]["start"] if wa and wa["windows"] else None
+        return {"now": self.sim.clock.now, "next": nxt}
+
     def list_injects(self) -> list[dict]:
         return [{"id": i.id, "label": i.label, "trigger": (i.trigger or {}).get("type", "manual")}
                 for i in self.vignette.injects]

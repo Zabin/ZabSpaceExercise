@@ -163,6 +163,12 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=404, detail="no windows for this asset (fog/ownership)")
         return r
 
+    @app.get("/api/sessions/{sid}/next_contacts/{cell}")
+    def next_contacts(sid: str, cell: str) -> dict:
+        """Fleet-rail countdown: next command/telemetry contact time per own satellite."""
+        _require(sid)
+        return api.next_contacts(sid, cell)
+
     @app.get("/api/sessions/{sid}/injects")
     def injects_list(sid: str) -> list:
         _require(sid)

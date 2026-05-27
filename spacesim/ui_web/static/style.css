@@ -86,6 +86,10 @@ canvas:active { cursor: grabbing; }
 .preview { margin: 6px 0 2px; font-size: 12px; min-height: 1.2em; }
 .preview.ok { color: var(--green); }
 .preview.bad { color: var(--yellow); }
+.chip { padding: 2px 9px; font-size: 11px; border-radius: 10px; }
+.chip.active { background: #2f5fb0; border-color: #5a8fe0; }
+.badge { background: #5a2424; color: #e06a6a; border: 1px solid #5a2424; border-radius: 8px; padding: 0 6px; font-size: 11px; }
+#fleet-filter { margin-bottom: 6px; }
 .qrow { display: flex; align-items: center; gap: 8px; padding: 3px 6px; border-top: 1px solid #1b2531; font-size: 12px; }
 .qrow span:first-child { flex: 1; }
 .qrow.cancelled { opacity: .5; text-decoration: line-through; }

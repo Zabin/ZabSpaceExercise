@@ -48,7 +48,13 @@
 
     <section class="panel">
       <h2>Fleet SOH rollup (own assets)</h2>
-      <table id="assets"><thead><tr><th>SOH</th><th>ID</th><th>Kind</th><th>Health</th><th>Bus</th></tr></thead><tbody></tbody></table>
+      <div id="fleet-filter" class="ctrl">
+        <button class="chip active" data-filter="all">All</button>
+        <button class="chip" data-filter="bus-red">Bus-red</button>
+        <button class="chip" data-filter="attack">Under-attack</button>
+        <button class="chip" data-filter="safed">Safed</button>
+      </div>
+      <table id="assets"><thead><tr><th>SOH</th><th>ID</th><th>Kind</th><th>Next</th><th>Power</th><th>Bus</th><th>⚠</th></tr></thead><tbody></tbody></table>
       <h2>Tracks (custody)</h2>
       <table id="tracks"><thead><tr><th>Object</th><th>Conf</th><th>Char.</th><th>Class</th></tr></thead><tbody></tbody></table>
       <h2>Perceived effects</h2>

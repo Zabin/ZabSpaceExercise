@@ -7,6 +7,18 @@ let ASSETS = {};           // id -> {kind, owner} for the current view (assets +
 let DEFAULT_STATION = "GS-NORTH";
 const mapCam = { lon: 0, lat: 0, zoom: 1, tracks: true, grid: true, map: true };
 let DRILL = { asset: null, param: null };
+let FLEET_FILTER = "all";
+let NEXT = {};   // asset id -> next-contact sim-time (µs) for the fleet-rail countdown
+let ALARMS = []; // latest alarm feed (shared by the fleet badge + the alarm list)
+
+// Format a next-contact countdown; color amber < 5 min, red < 1 min (P1 — imminent windows draw the eye).
+function countdown(now, t) {
+  if (t == null) return { txt: "—", cls: "muted" };
+  const s = Math.max(0, Math.round((t - now) / 1e6));
+  if (s === 0) return { txt: "live", cls: "green" };
+  const txt = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  return { txt, cls: s < 60 ? "red" : s < 300 ? "yellow" : "" };
+}
 
 const $ = (id) => document.getElementById(id);
 const api = {
@@ -130,9 +142,18 @@ async function previewOrder() {
   }
 }
 
+// Verbs that are irreversible / escalatory get a deliberate consequence confirm (§12.3, P5).
+const CONSEQUENCE = {
+  engage: "Kinetic, debris-generating strike. Political cost: HIGH. Debris may threaten your own LEO assets.",
+};
+
 async function issueOrder() {
   const body = composeBody();
   if (!body) { $("order-result").textContent = "Invalid params JSON"; return; }
+  const consequence = CONSEQUENCE[body.action];
+  if (consequence && !window.confirm(`${consequence}\n\nProceed with ${body.action} on ${body.target || "target"}?`)) {
+    $("order-result").textContent = "cancelled (consequence not confirmed)"; return;
+  }
   const ack = await api.post(`/api/sessions/${SID}/order`, body);
   $("order-result").textContent = ack.ok
     ? `${ack.status} · ${ack.delivery_path || "—"} · window ${ack.earliest_window ? iso(ack.earliest_window[0]) : "n/a"}`
@@ -153,30 +174,38 @@ function onActionChange() {
   previewOrder();
 }
 
+let REFRESH_SEQ = 0;
 async function refresh() {
   if (!SID) return;
-  let assets, tracks, effects, messages, objectives;
+  // Supersede guard: a later refresh (e.g. after a cell switch) makes any in-flight earlier one
+  // abort before it writes, so a slow godview fetch can't clobber the new cell's fog-filtered view.
+  const my = ++REFRESH_SEQ;
+  const stale = () => my !== REFRESH_SEQ;
+  let assets, tracks, effects, messages, objectives, now;
   if (CELL === "white") {
     const g = await api.get(`/api/sessions/${SID}/godview`);
-    $("now").textContent = iso(g.now);
+    now = g.now;
     assets = Object.values(g.assets); tracks = g.tracks;
     effects = (g.active_effects || []).map((e) => ({ target: e.target, symptom: e.outcome, attributed: true }));
     messages = g.messages || []; objectives = await api.get(`/api/sessions/${SID}/objectives`);
     Object.values(g.sensors || {}).forEach((s) => assets.push(s));
   } else {
     const v = await api.get(`/api/sessions/${SID}/view/${CELL}`);
-    $("now").textContent = iso(v.now);
+    now = v.now;
     assets = v.own_assets.concat(v.own_sensors); tracks = v.known_tracks;
     effects = v.visible_effects; messages = v.messages; objectives = v.objectives;
   }
+  if (stale()) return;
+  $("now").textContent = iso(now);
   ASSETS = {}; assets.forEach((a) => ASSETS[a.id] = { kind: a.kind, owner: a.owner });
   const station = assets.find((a) => a.kind === "ground_station"); if (station) DEFAULT_STATION = station.id;
 
-  $("assets").querySelector("tbody").innerHTML = assets.map((a) => {
-    const bus = a.bus_state ? a.bus_state.mode : "—"; const bc = bus === "safe_mode" ? "red" : "";
-    const soh = rollup(a.bus_state);
-    return `<tr data-asset="${a.id}" style="cursor:pointer"><td class="${soh}">●</td><td>${a.id}</td><td>${a.kind}</td><td>${a.health || "—"}</td><td class="${bc}">${bus}</td></tr>`;
-  }).join("");
+  // Fleet rail: next-contact countdown + power gauge + alarm badge (§4.1), with a filter bar (§4).
+  NEXT = (await api.get(`/api/sessions/${SID}/next_contacts/${CELL}`).catch(() => ({ next: {} }))).next || {};
+  ALARMS = await api.get(`/api/sessions/${SID}/alarms/${CELL}`).catch(() => []);
+  if (stale()) return;
+  const alarmCount = {}; ALARMS.forEach((a) => { if (a.asset && a.asset !== "—") alarmCount[a.asset] = (alarmCount[a.asset] || 0) + 1; });
+  renderFleet(assets, alarmCount, now);
   $("tracks").querySelector("tbody").innerHTML = tracks.map((t) =>
     `<tr><td>${t.object}</td><td>${(+t.confidence).toFixed(2)}</td><td>${t.characterized}</td><td>${t.classification}</td></tr>`).join("");
   $("effects").innerHTML = effects.map((e) => `<li>${e.target}: ${e.symptom} ${e.attributed ? "(attributed)" : "(source unknown)"}</li>`).join("");
@@ -191,7 +220,9 @@ async function refresh() {
   onActorChange();
 
   // Viewers.
-  SCENE = await api.get(`/api/sessions/${SID}/scene/${CELL === "white" ? "blue" : CELL}`);
+  const scene = await api.get(`/api/sessions/${SID}/scene/${CELL === "white" ? "blue" : CELL}`);
+  if (stale()) return;
+  SCENE = scene;
   window.Globe && Globe.render(SCENE);
   if (DRILL.asset) openDrill(DRILL.asset);
   ["g-focus", "m-focus"].forEach((id) => {
@@ -214,11 +245,35 @@ function rollup(bus) {
   return subs.reduce((w, s) => (s && rank[s.status] > rank[w] ? s.status : w), "green");
 }
 
-async function renderAlarms() {
-  const al = await api.get(`/api/sessions/${SID}/alarms/${CELL}`).catch(() => []);
-  $("alarms").innerHTML = al.length
-    ? al.map((a) => `<li class="red">${a.asset}: ${a.text}</li>`).join("")
+function fleetPasses(a, soh, bus, alarms) {     // does asset pass the active fleet filter?
+  if (FLEET_FILTER === "bus-red") return soh === "red";
+  if (FLEET_FILTER === "safed") return bus === "safe_mode";
+  if (FLEET_FILTER === "attack") return alarms > 0;
+  return true;
+}
+
+function renderFleet(assets, alarmCount, now) {
+  const rows = assets.map((a) => {
+    const bus = a.bus_state ? a.bus_state.mode : "—", bc = bus === "safe_mode" ? "red" : "";
+    const soh = rollup(a.bus_state), n = alarmCount[a.id] || 0;
+    if (!fleetPasses(a, soh, bus, n)) return "";
+    const cd = countdown(now, NEXT[a.id]);
+    const soc = a.bus_state ? Math.round(a.bus_state.power.battery_soc * 100) + "%" : "—";
+    const badge = n ? `<span class="badge">⚠${n}</span>` : "";
+    return `<tr data-asset="${a.id}" style="cursor:pointer"><td class="${soh}">●</td><td>${a.id}</td><td>${a.kind}</td>`
+      + `<td class="${cd.cls}">${cd.txt}</td><td>${soc}</td><td class="${bc}">${bus}</td><td>${badge}</td></tr>`;
+  }).join("");
+  $("assets").querySelector("tbody").innerHTML = rows || `<tr><td colspan="7" class="muted">no assets match filter</td></tr>`;
+}
+
+function renderAlarms() {
+  // Reuses the feed fetched in refresh(); clicking an alarm deep-links to the asset's drill-down (§4.3).
+  $("alarms").innerHTML = ALARMS.length
+    ? ALARMS.map((a, i) => `<li class="red alarm-line" data-asset="${a.asset}" data-i="${i}" style="cursor:pointer">${a.asset}: ${a.text}</li>`).join("")
     : "<li class='muted'>(no alarms)</li>";
+  document.querySelectorAll("#alarms .alarm-line").forEach((li) => li.onclick = () => {
+    const aid = li.dataset.asset; if (aid && aid !== "—") openDrill(aid);
+  });
 }
 
 async function saveSession() {
@@ -349,5 +404,24 @@ window.addEventListener("DOMContentLoaded", () => {
   $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);
   document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => step(+b.dataset.step));
   document.querySelectorAll(".cell").forEach((b) => b.onclick = () => setCell(b.dataset.cell));
+  document.querySelectorAll("#fleet-filter .chip").forEach((b) => b.onclick = () => {
+    FLEET_FILTER = b.dataset.filter;
+    document.querySelectorAll("#fleet-filter .chip").forEach((c) => c.classList.toggle("active", c === b));
+    if (SID) refresh();
+  });
+  document.addEventListener("keydown", onShortcut);
   setCell("white"); loadVignettes();
 });
+
+// Keyboard shortcuts (§12.4): j/k step the selected actor, c focuses compose, g graphs it. Ignored in fields.
+function onShortcut(e) {
+  if (/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
+  const sel = $("o-actor"), opts = [...sel.options];
+  if (e.key === "j" || e.key === "k") {
+    if (!opts.length) return;
+    let i = opts.findIndex((o) => o.value === sel.value);
+    i = (i + (e.key === "j" ? 1 : opts.length - 1)) % opts.length;
+    sel.value = opts[i].value; onActorChange();
+  } else if (e.key === "c") { sel.focus(); }
+  else if (e.key === "g" && sel.value) { openDrill(sel.value); }
+}

@@ -91,6 +91,9 @@ class InProcessSession:
     def windows_ahead(self, session: str, cell: str, asset: str):
         return self._sessions[session].windows_ahead(cell, asset)
 
+    def next_contacts(self, session: str, cell: str) -> dict:
+        return self._sessions[session].next_contacts(cell)
+
     def list_injects(self, session: str) -> list:
         return self._sessions[session].list_injects()
 
