@@ -324,8 +324,13 @@ async function openDrill(assetId) {
 async function drawParam(param) {
   if (!DRILL_DB[param]) param = Object.keys(DRILL_DB)[0];
   DRILL.param = param;
-  const series = await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${DRILL.asset}/${param}?n=120`);
-  window.Graph && Graph.draw($("drill-graph"), series, DRILL_DB[param]);
+  const base = `/api/sessions/${SID}/telemetry/${CELL}/${DRILL.asset}/${param}`;
+  const series = await api.get(`${base}?n=120`);
+  // Compare-to-nominal (§5.3): overlay the clean baseline so an attack signature reads as deviation.
+  const ghost = $("drill-nominal")?.checked
+    ? await api.get(`${base}?n=120&nominal=1`).catch(() => null)
+    : null;
+  window.Graph && Graph.draw($("drill-graph"), series, DRILL_DB[param], ghost);
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -341,6 +346,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("aar-slider").oninput = (e) => aarAt(e.target.value);
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
   $("o-target").oninput = previewOrder; $("o-params").oninput = previewOrder;
+  $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);
   document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => step(+b.dataset.step));
   document.querySelectorAll(".cell").forEach((b) => b.onclick = () => setCell(b.dataset.cell));
   setCell("white"); loadVignettes();

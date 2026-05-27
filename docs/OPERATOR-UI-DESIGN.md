@@ -242,6 +242,11 @@ The troubleshooting heart. For any parameter: a line graph (`graph.js`) of the s
 - **Time window** — last 30 min / 1 h / since-start / custom (maps to `t0,t1`).
 - **Overlay** — plot two parameters together (e.g. `rx_power_dbm` vs `cn0_dbhz`) to compare signatures.
 - **Compare-to-nominal** — ghost a clean baseline so the deviation is obvious (helps trainees).
+  ✅ *Implemented*: the series endpoint takes `&nominal=1`, returning the same seeded baseline+noise
+  with **no attack term** (`telemetry.sample(..., nominal=True)`, still read-time/replay-safe); the
+  drill-down's "compare to nominal" toggle overlays it as a faint dashed ghost under the live trace,
+  so a jam/cyber/DE signature reads as the gap between the two lines — the diagnosis stays the
+  operator's (C1).
 
 Because the series is **read-time, seeded, and replay-safe** (`telemetry.py`), the graph is identical
 on every view and during AAR scrub — no new state.
@@ -597,7 +602,7 @@ windows, AAR snapshot) — no new server models required beyond what exists.
 | World view (2D/3D) | `GET /scene/{cell}` | on tick |
 | Pass-timeline ribbon | `GET /windows/{cell}/{asset}` | on select + horizon advance |
 | Bus & payload cards | `GET /telemetry/{cell}/{asset}` | on tick |
-| Telemetry graph | `GET /telemetry/{cell}/{asset}/{param}?t0&t1&n` | on open / window change |
+| Telemetry graph | `GET /telemetry/{cell}/{asset}/{param}?t0&t1&n` (+`&nominal=1` for the compare ghost) | on open / window change |
 | Command compose | `POST /order/validate` (dry-run preview/pre-disable), `POST /order` (+ `/cancel`) | on edit / on action |
 | Command queue | `GET /orders/{cell}` | on tick + on action |
 | Tasking | `POST /order` (action=observe), `/windows`, `/scene` | on action |

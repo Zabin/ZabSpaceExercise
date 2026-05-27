@@ -70,6 +70,36 @@ def test_ew_jam_signature_raises_rx_power_and_recovers():
     assert _val(w, "rx_power_dbm", minutes(50)) < nominal_rx + 5    # back to nominal after the window
 
 
+def test_nominal_series_strips_attack_signature_for_compare_overlay():
+    """The 'compare-to-nominal' ghost (§5.3) is baseline+noise with no attack term.
+
+    Under jamming the real RX power climbs far above its nominal trace during the window, while the
+    nominal series stays in-band — so the deviation the operator overlays is the signature itself.
+    """
+    w = _world()
+    w.active_effects.append(ActiveEffect(target="SAT", outcome="deny", start=0, end=minutes(40),
+                                         category="electronic_warfare"))
+    real = tel.sample(w, "SAT", "rx_power_dbm", minutes(20), SEED)["value"]
+    ghost = tel.sample(w, "SAT", "rx_power_dbm", minutes(20), SEED, nominal=True)["value"]
+    assert real > ghost + 15                                   # attack term is visible as deviation
+    # The nominal trace matches a never-attacked world's normal trace (only baseline+noise remain).
+    clean = tel.sample(_world(), "SAT", "rx_power_dbm", minutes(20), SEED)["value"]
+    assert ghost == clean
+    # Outside the jam window the real and nominal traces converge.
+    assert abs(tel.sample(w, "SAT", "rx_power_dbm", minutes(50), SEED)["value"]
+               - tel.sample(w, "SAT", "rx_power_dbm", minutes(50), SEED, nominal=True)["value"]) < 5
+
+
+def test_nominal_series_is_deterministic_and_read_only():
+    w = _world()
+    w.active_effects.append(ActiveEffect(target="SAT", outcome="deny", start=0, end=minutes(40),
+                                         category="electronic_warfare"))
+    before = w.model_dump_json()
+    s1 = tel.series(w, "SAT", "cn0_dbhz", 0, minutes(60), 40, SEED, nominal=True)
+    s2 = tel.series(_world(), "SAT", "cn0_dbhz", 0, minutes(60), 40, SEED, nominal=True)
+    assert s1 == s2 and w.model_dump_json() == before
+
+
 def test_cyber_signature_ramps_fsw_errors_under_safe_mode():
     w = _world()
     enter_safe_mode(w.assets["SAT"].bus_state, now=0, cause="cyber")

@@ -188,9 +188,10 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}/{param}")
     def telemetry_series(sid: str, cell: str, asset: str, param: str,
-                         t0: Optional[int] = None, t1: Optional[int] = None, n: int = 120) -> dict:
+                         t0: Optional[int] = None, t1: Optional[int] = None, n: int = 120,
+                         nominal: bool = False) -> dict:
         _require(sid)
-        r = api.get_series(sid, cell, asset, param, t0=t0, t1=t1, n=n)
+        r = api.get_series(sid, cell, asset, param, t0=t0, t1=t1, n=n, nominal=nominal)
         if r is None:
             raise HTTPException(status_code=404, detail="no such telemetry series")
         return r

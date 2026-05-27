@@ -152,18 +152,24 @@ def _attack_term(asset, world, spec: ParamSpec, t: int, flags, onset) -> float:
     return 0.0
 
 
-def sample(world, asset_id: str, param_id: str, t: int, seed: int) -> dict:
-    """Physical value + limit status of one parameter at time ``t`` (read-only)."""
+def sample(world, asset_id: str, param_id: str, t: int, seed: int, nominal: bool = False) -> dict:
+    """Physical value + limit status of one parameter at time ``t`` (read-only).
+
+    ``nominal=True`` returns the clean baseline+noise with **no attack term** — the "what it should
+    look like" ghost the troubleshooting overlay draws so deviation under attack is obvious (§5.3).
+    A destroyed asset still has a nominal trace (loss-of-signal is an attack symptom, not nominal).
+    """
     spec = PARAMS[param_id]
     asset = world.assets.get(asset_id)
     if asset is None:
         return {"param": param_id, "value": None, "status": "los", "unit": spec.unit}
-    if getattr(asset, "health", "nominal") == "destroyed":
+    if getattr(asset, "health", "nominal") == "destroyed" and not nominal:
         return {"param": param_id, "value": None, "status": "los", "unit": spec.unit}
 
-    flags, onset = _active(world, asset_id, t)
     val = _baseline(asset, spec, t) + _noise(seed, asset_id, param_id, t) * spec.amp
-    val += _attack_term(asset, world, spec, t, flags, onset)
+    if not nominal:
+        flags, onset = _active(world, asset_id, t)
+        val += _attack_term(asset, world, spec, t, flags, onset)
 
     if spec.unit == "frac":
         val = max(0.0, min(1.0, val))
@@ -176,14 +182,15 @@ def sample(world, asset_id: str, param_id: str, t: int, seed: int) -> dict:
     return {"param": param_id, "value": round(val, 6), "status": status, "unit": spec.unit}
 
 
-def series(world, asset_id: str, param_id: str, t0: int, t1: int, n: int, seed: int) -> list[dict]:
+def series(world, asset_id: str, param_id: str, t0: int, t1: int, n: int, seed: int,
+           nominal: bool = False) -> list[dict]:
     if n < 2:
         n = 2
     step = (t1 - t0) / (n - 1)
     out = []
     for i in range(n):
         t = int(t0 + i * step)
-        s = sample(world, asset_id, param_id, t, seed)
+        s = sample(world, asset_id, param_id, t, seed, nominal=nominal)
         out.append({"t": t, "value": s["value"], "status": s["status"]})
     return out
 

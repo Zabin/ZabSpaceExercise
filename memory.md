@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 7 — 106 tests green.** Implemented end-to-end:
+**Backend feature-complete through Phase 7 — 108 tests green.** Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -218,6 +218,16 @@ test first, implement to green, and add a regression test for every resolved fin
   pre-disables with the reason + tooltip, invalid-JSON guarded locally. **106 tests green** (+5:
   `test_validate_order.py` — dry-run is side-effect-free & replay-identical, matches `issue`, surfaces
   reasons, enforces ownership fog, unknown-station→no_window). pyflakes clean.
+- **2026-05-27:** Continued the operator-UI build with the troubleshooting heart (§5.3 / §9):
+  **compare-to-nominal**. `telemetry.sample/series` gained `nominal=True` → returns the clean
+  seeded baseline+noise with **no attack term** (still read-time/replay-safe; destroyed asset keeps
+  a nominal trace since LOS is itself a symptom). Threaded through `get_series`/`InProcessSession`
+  and the series endpoint as `&nominal=1`; `graph.js` draws an optional faint dashed **ghost** under
+  the live trace; the drill-down has a "compare to nominal" toggle. So a jam/cyber/DE signature reads
+  as the gap between the two lines, cause still unlabeled (C1). **108 tests green** (+2: nominal
+  strips the signature for the overlay & matches a never-attacked trace; nominal sampling is
+  deterministic + read-only). Browser-verified wiring (toggle fires `nominal=1`, ghost renders, no
+  console errors); the deviation magnitude itself is unit-proven.
 - **Still open (deferred / v1.1+):** browser GUI **unverified headless** (needs a human or
   browser-driver to confirm visuals; backend covered). Sat caps ≤24/≤3/48 not yet validated at
   content load. Posture/defense command persistence (`def.harden`, `def.set_threat_warning`).

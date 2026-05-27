@@ -265,14 +265,15 @@ class SessionManager:
         }
 
     def get_series(self, cell: str, asset_id: str, param: str,
-                   t0=None, t1=None, n: int = 120):
+                   t0=None, t1=None, n: int = 120, nominal: bool = False):
         if not self._owns(cell, asset_id) or param not in telemetry.PARAMS:
             return None
         now = self.sim.clock.now
         t1 = now if t1 is None else int(t1)
         t0 = max(self.ctx.start_epoch, now - 3600 * 1_000_000) if t0 is None else int(t0)
-        return {"asset": asset_id, "param": param,
-                "points": telemetry.series(self.sim.world, asset_id, param, t0, t1, n, self.sim._seed)}
+        return {"asset": asset_id, "param": param, "nominal": nominal,
+                "points": telemetry.series(self.sim.world, asset_id, param, t0, t1, n,
+                                           self.sim._seed, nominal=nominal)}
 
     def get_godview(self) -> WorldState:
         return self.sim.world
