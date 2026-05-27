@@ -267,6 +267,16 @@ test first, implement to green, and add a regression test for every resolved fin
   `isr.schedule_collection` (set `payload.collecting`, gated by `can_collect` → storage fills). Payload
   type-gating generalized to a set (`isr_eo`/`isr_sar`). UI offers them by payload type. **122 tests
   green** (+5). All extend the same `apply_command` dispatch.
+- **2026-05-27:** UI-plan completion pass. **P-UI-2 bus console**: the subsystem drill-down now
+  doubles as the bus/payload console — each subsystem card (power/attitude/thermal/propulsion/cdh/
+  comms/payload) shows its telemetry chips (→ graph) **and its command-verb buttons**; clicking a verb
+  loads it into the compose form and runs the dry-run preview/pre-disable. Verbs grouped by subsystem
+  via `VERB_SUBSYSTEM`; payload verbs appear only on the matching payload type. **P-UI-8**: added a
+  high-contrast **presentation-mode** toggle (body.present) for projector/White-Cell use (keyboard nav
+  already shipped). Browser-verified (cards show the right verbs, card-click → compose+preview,
+  present toggles, no console errors). **Remaining UI polish:** two-param graph overlay + pass-
+  correlation shading (P-UI-3), dedicated tasking rail (P-UI-6; `observe` compose already works),
+  safe-mode recovery strip (P-UI-7), multi-display reflow (P-UI-8), inline sparklines / six-across grid.
 - **Still open (deferred / v1.1+):** browser GUI **unverified headless** (needs a human or
   browser-driver to confirm visuals; backend covered). Sat caps ≤24/≤3/48 not yet validated at
   content load. Posture/defense command persistence (`def.harden`, `def.set_threat_warning`).

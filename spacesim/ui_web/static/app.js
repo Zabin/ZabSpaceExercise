@@ -395,12 +395,37 @@ async function openDrill(assetId) {
   DRILL_DB = {};
   Object.values(tele.subsystems).forEach((arr) => arr.forEach((p) => (DRILL_DB[p.id] = p)));
   $("drill-title").textContent = `${assetId} — bus ${tele.bus_mode || "—"}`;
-  $("drill-params").innerHTML = Object.entries(tele.subsystems).map(([sub, params]) =>
-    `<div class="sub"><b>${sub}</b> ` + params.map((p) =>
-      `<span class="pchip ${p.status}" data-param="${p.id}">${p.label} ${p.value ?? "LOS"}</span>`).join(" ") + "</div>").join("");
+  // Each subsystem card carries its parameter chips (→ graph) and its command verbs (→ compose).
+  const a = ASSETS[assetId] || {};
+  $("drill-params").innerHTML = Object.entries(tele.subsystems).map(([sub, params]) => {
+    const chips = params.map((p) =>
+      `<span class="pchip ${p.status}" data-param="${p.id}">${p.label} ${p.value ?? "LOS"}</span>`).join(" ");
+    const verbs = verbsForSubsystem(a, sub).map((v) =>
+      `<button class="vbtn" data-verb="${v}" data-actor="${assetId}">${v}</button>`).join(" ");
+    return `<div class="sub"><b>${sub}</b> ${chips}${verbs ? `<div class="vbtns">${verbs}</div>` : ""}</div>`;
+  }).join("");
   $("drill-log").textContent = (tele.log || []).join("\n") || "(all nominal)";
   document.querySelectorAll("#drill-params .pchip").forEach((c) => c.onclick = () => drawParam(c.dataset.param));
+  document.querySelectorAll("#drill-params .vbtn").forEach((b) => b.onclick = () => loadVerb(b.dataset.actor, b.dataset.verb));
   drawParam(DRILL.param && DRILL_DB[DRILL.param] ? DRILL.param : "rx_power_dbm");
+}
+
+// Which command verbs belong on which telemetry-subsystem card (§5.1 cards carry their own buttons).
+const VERB_SUBSYSTEM = {
+  "eps.shed_load": "power", "eps.restore_load": "power", "eps.set_charge_mode": "power",
+  "adcs.set_mode": "attitude", "cdh.dump_storage": "cdh",
+  "satcom.mitigate_interference": "payload", "satcom.shift_users": "payload",
+  "isr.collect_now": "payload", "isr.schedule_collection": "payload",
+};
+function verbsForSubsystem(a, sub) {
+  return actionsFor(a).filter((v) => v.includes(".") && VERB_SUBSYSTEM[v] === sub);
+}
+
+// Load a subsystem-card verb into the compose form and preview it (operator reviews, then Issues).
+function loadVerb(actor, verb) {
+  $("o-actor").value = actor; onActorChange();   // repopulates actions for this asset
+  $("o-action").value = verb; onActionChange();   // sets param template + runs dry-run preview
+  $("o-action").scrollIntoView({ block: "center" });
 }
 async function drawParam(param) {
   if (!DRILL_DB[param]) param = Object.keys(DRILL_DB)[0];
@@ -428,6 +453,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
   $("o-target").oninput = previewOrder; $("o-params").oninput = previewOrder;
   $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);
+  $("present").onchange = (e) => document.body.classList.toggle("present", e.target.checked);
   document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => step(+b.dataset.step));
   document.querySelectorAll(".cell").forEach((b) => b.onclick = () => setCell(b.dataset.cell));
   document.querySelectorAll("#fleet-filter .chip").forEach((b) => b.onclick = () => {

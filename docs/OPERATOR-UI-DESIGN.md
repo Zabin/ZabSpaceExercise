@@ -681,15 +681,17 @@ Layered so each phase is shippable and testable against the existing API:
 1. **P-UI-1 Console frame** — region grid (A–E), seat chip, selection model, fleet rail with SOH dot +
    countdown, alarm feed. (Consumes `/view`, `/windows`, `/alarms`.) ✅ *fleet rail + countdown +
    alarm badge + filter + deep-link done* (region detach/seat-chip cosmetics remain).
-2. **P-UI-2 Bus console** — six subsystem cards + parameter rows + sparklines; command buttons wired to
-   `/order` with the button-state contract; disabled reasons. ◻️ *first verbs live; cards remain* — an
-   engine **`command` action** now executes a real, deterministic, replay-safe batch of catalog verbs
-   (`eps.shed_load`/`eps.restore_load`, `adcs.set_mode`, `satcom.mitigate_interference`/`shift_users`),
-   each gated like an uplink/stored command and observable in SOH/telemetry (e.g. anti-jam shrinks the
-   RX-power jam signature; shed-load slows the eclipse SoC sag). They appear as live, dry-run-validated
-   verbs in the command menu (payload verbs shown only on the matching payload type). The remaining
-   catalog verbs (`tcs.*`, `cdh.*`, `comms.*`, full payload sets) extend the same `buscommands.apply_command`
-   dispatch; laying out the six-card grid is the leftover UI piece.
+2. **P-UI-2 Bus console** — subsystem cards + parameter rows; command buttons wired to `/order` with
+   the button-state contract; disabled reasons. ✅ *cards + per-card command buttons done* — the
+   subsystem drill-down groups telemetry by subsystem (power/attitude/thermal/propulsion/cdh/comms/
+   payload), each card showing its parameter chips (→ graph) **and its command verbs as buttons** that
+   load the verb into the compose form with the live dry-run preview/pre-disable. The verbs are real:
+   an engine **`command` action** executes a deterministic, replay-safe catalog batch (EPS shed/restore/
+   charge-mode, `adcs.set_mode`, `cdh.dump_storage`, `satcom.mitigate_interference`/`shift_users`,
+   `isr.collect_now`/`schedule_collection`), each gated like an uplink/stored command and observable in
+   SOH/telemetry (anti-jam shrinks the RX-power jam signature; shed-load slows the eclipse SoC sag;
+   collect fills storage). Remaining: more catalog verbs (`tcs.*`, `comms.*`, full payload sets) extend
+   the same `buscommands.apply_command` dispatch; inline sparklines + a fixed six-across grid are cosmetic.
 3. **P-UI-3 Telemetry graphs** — graph tab with overlay/ghost-nominal/pass-correlation shading.
    ✅ *graphs + compare-to-nominal done*; overlay (two-param) + pass-correlation shading remain.
 4. **P-UI-4 Payload consoles** — one component, mission-type content packs. ⚙️ *blocked on engine
@@ -701,8 +703,9 @@ Layered so each phase is shippable and testable against the existing API:
    intent/priority rail UI remains.
 7. **P-UI-7 Recovery strip + White control panel + AAR scrubber polish.** ◻️ *partial*: White time/
    inject/save-load controls + the AAR scrubber ship; the safe-mode recovery strip remains.
-8. **P-UI-8 Accessibility & presentation mode; keyboard; multi-display reflow.** ◻️ *partial*:
-   `j/k/c/g` keyboard nav ships; presentation mode + multi-display reflow remain.
+8. **P-UI-8 Accessibility & presentation mode; keyboard; multi-display reflow.** ◻️ *mostly done*:
+   `j/k/c/g` keyboard nav + a high-contrast **presentation-mode** toggle ship; multi-display reflow
+   (detachable region B/C+D to a second screen) remains.
 
 Most phases are **backend-complete** and built as front-end work over existing endpoints. The
 **catalog verbs** beyond the six core actions (`jam/engage/observe/maneuver/downlink/cyber`) are an
