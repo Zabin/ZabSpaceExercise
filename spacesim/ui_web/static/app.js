@@ -30,6 +30,24 @@ const PARAM_TEMPLATE = {
   observe: () => ({ intent: "characterize" }),
 };
 
+// Plain-language tooltips for the engine's own validator reason strings (OPERATOR-UI-DESIGN.md §12.2).
+// Keys mirror OrderSystem._validate verbatim so UI and engine never drift.
+const REASON_TIPS = {
+  no_window: "No access window in the planning horizon — wait for the next pass.",
+  no_command_station: "No command path — set a ground station ('via') or a stored-program time.",
+  no_downlink_station: "No downlink station — set a ground station ('via').",
+  roe_kinetic_not_authorized: "ROE does not authorize kinetic effects.",
+  roe_cyber_not_authorized: "ROE does not authorize cyber effects.",
+  no_weapons_quality_track: "No weapons-quality track — task a sensor to characterize the target first.",
+  no_ammo: "No munitions remaining on this effector.",
+  insufficient_delta_v: "Insufficient delta-v for this maneuver.",
+  not_owner: "This asset belongs to another cell.",
+  no_such_asset: "Unknown asset.",
+  no_such_sensor: "Unknown sensor.",
+  sensor_contended: "Sensor is busy — it can service this only at a later window.",
+  unknown_action: "Action not supported for this asset.",
+};
+
 async function loadVignettes() {
   const list = await api.get("/api/vignettes");
   $("vignette").innerHTML = list.map((v) => `<option value="${v.id}">${v.title}</option>`).join("");
@@ -84,11 +102,38 @@ function setCell(c) {
   refresh();
 }
 
-async function issueOrder() {
-  let params; try { params = JSON.parse($("o-params").value || "{}"); } catch { $("order-result").textContent = "Invalid params JSON"; return; }
-  const actor = $("o-actor").value;
+// Build the order body from the compose form, or null if params JSON is invalid / no actor.
+function composeBody() {
+  let params; try { params = JSON.parse($("o-params").value || "{}"); } catch { return null; }
+  const actor = $("o-actor").value; if (!actor) return null;
   const cell = CELL === "white" ? (ASSETS[actor]?.owner || "blue") : CELL;
-  const ack = await api.post(`/api/sessions/${SID}/order`, { cell, actor, action: $("o-action").value, target: $("o-target")?.value || null, params });
+  return { cell, actor, action: $("o-action").value, target: $("o-target")?.value || null, params };
+}
+
+// Plan-first "why can't I?" preview (P4 / §12): dry-run the composed order on every edit and
+// pre-disable Issue with the validator's reason — without mutating session state.
+async function previewOrder() {
+  const btn = $("issue"), out = $("o-preview");
+  if (!SID || !out) return;
+  const body = composeBody();
+  if (!body) { btn.disabled = true; btn.title = "Fix params JSON"; out.className = "preview bad"; out.textContent = "✗ invalid params JSON"; return; }
+  let ack; try { ack = await api.post(`/api/sessions/${SID}/order/validate`, body); } catch { return; }
+  if (ack.ok) {
+    btn.disabled = false; btn.title = "";
+    out.className = "preview ok";
+    out.textContent = `✓ will queue · ${ack.delivery_path || "—"} · window ${ack.earliest_window ? iso(ack.earliest_window[0]) : "n/a"}`;
+  } else {
+    const tip = REASON_TIPS[ack.reason] || ack.reason;
+    btn.disabled = true; btn.title = tip;
+    out.className = "preview bad";
+    out.textContent = `✗ ${tip}`;
+  }
+}
+
+async function issueOrder() {
+  const body = composeBody();
+  if (!body) { $("order-result").textContent = "Invalid params JSON"; return; }
+  const ack = await api.post(`/api/sessions/${SID}/order`, body);
   $("order-result").textContent = ack.ok
     ? `${ack.status} · ${ack.delivery_path || "—"} · window ${ack.earliest_window ? iso(ack.earliest_window[0]) : "n/a"}`
     : `REJECTED: ${ack.reason}`;
@@ -105,6 +150,7 @@ function onActorChange() {
 }
 function onActionChange() {
   const tmpl = PARAM_TEMPLATE[$("o-action").value]; if (tmpl) $("o-params").value = JSON.stringify(tmpl());
+  previewOrder();
 }
 
 async function refresh() {
@@ -294,6 +340,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("loadfile").onchange = (e) => e.target.files[0] && loadSaveFile(e.target.files[0]);
   $("aar-slider").oninput = (e) => aarAt(e.target.value);
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
+  $("o-target").oninput = previewOrder; $("o-params").oninput = previewOrder;
   document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => step(+b.dataset.step));
   document.querySelectorAll(".cell").forEach((b) => b.onclick = () => setCell(b.dataset.cell));
   setCell("white"); loadVignettes();

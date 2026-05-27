@@ -529,11 +529,20 @@ The single contract every control obeys, so implementation is mechanical.
 ```
 control:        <verb or action>
 visible_if:     role matches command_db.roles AND asset kind supports verb
-enabled_if:     all gates plausibly satisfiable now-or-at-next-window
+enabled_if:     dry-run accepts it — POST /order/validate returns ok (window/path), else disabled
 on_activate:    open params form → choose delivery → Plan (POST /order) | Execute now
 result:         queued (with window+path) | rejected (reason shown inline)
 disabled_tip:   the validator reason string (P4) — never a silent disabled control
 ```
+
+**`enabled_if` is computed, not guessed.** The console **dry-runs** the composed order against
+`POST /order/validate` (a read-only mirror of `/order`: it runs `OrderSystem.dry_run` →
+`_validate` + window/delivery-path search, scheduling and registering **nothing**, mutating no
+session state, replay-safe like `/scene` and `/telemetry`). The response is the same `OrderAck`
+`/order` returns — `{ok, status, earliest_window, delivery_path, reason}` — so the button's enabled
+state and window preview always match what issuing would do, and the disabled tooltip is the
+engine's own reason string. ✅ *Implemented* (P-UI-1 enabler): `dry_run`/`validate_order` +
+`/order/validate`, with the front-end compose form previewing on every edit.
 
 ### 12.2 Disabled-state reasons (authoritative strings)
 Surface the engine's own reasons verbatim so UI and engine never drift:
@@ -589,7 +598,7 @@ windows, AAR snapshot) — no new server models required beyond what exists.
 | Pass-timeline ribbon | `GET /windows/{cell}/{asset}` | on select + horizon advance |
 | Bus & payload cards | `GET /telemetry/{cell}/{asset}` | on tick |
 | Telemetry graph | `GET /telemetry/{cell}/{asset}/{param}?t0&t1&n` | on open / window change |
-| Command compose | `POST /order` (+ `/cancel`) | on action |
+| Command compose | `POST /order/validate` (dry-run preview/pre-disable), `POST /order` (+ `/cancel`) | on edit / on action |
 | Command queue | `GET /orders/{cell}` | on tick + on action |
 | Tasking | `POST /order` (action=observe), `/windows`, `/scene` | on action |
 | Alarm feed | `GET /alarms/{cell}` | on tick |

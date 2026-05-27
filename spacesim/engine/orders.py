@@ -99,32 +99,48 @@ class OrderSystem:
         self._order_counter += 1
         order.id = f"ord-{self._order_counter}"
         self.orders[order.id] = order
+        self._plan(order, commit=True)
+        return order
+
+    def dry_run(self, order: Order) -> Order:
+        """Validate + compute window/delivery path **without** scheduling, registering, or booking.
+
+        Read-only mirror of ``issue`` for the UI's "why can't I?" pre-disabled buttons and window
+        preview (`OPERATOR-UI-DESIGN.md` §12). Touches no engine state — no RNG, no event log, no
+        order registry, no sensor bookings — so it is replay-safe like ``scene``/``telemetry``.
+        """
+        order.issued_at = self.sim.clock.now
+        self._plan(order, commit=False)
+        return order
+
+    def _plan(self, order: Order, commit: bool) -> None:
+        """Shared planner: validate, choose window + delivery path, and (if ``commit``) schedule."""
         ok, reason = self._validate(order)
         if not ok:
             order.status, order.fail_reason = "rejected", reason
-            return order
+            return
 
         channel = ACTION_CHANNEL[order.action]
         if channel is None:
-            self._queue_cyber(order)
-            return order
-
+            self._plan_cyber(order, commit)
+            return
         if order.action == "observe":
-            return self._issue_collection(order)
+            self._plan_collection(order, commit)
+            return
         if order.action == "maneuver":
-            return self._issue_command(order)
+            self._plan_command(order, commit)
+            return
 
         win = self._next_window(order, channel)
         if win is None:
             order.status, order.fail_reason = "rejected", "no_window"
-            return order
-
+            return
         order.earliest_window = (win.start, win.end)
         order.delivery_path = "ground_uplink"  # jam/engage/downlink gate on a single access window
         order.status = "queued"
-        kind, data = self._exec_payload(order, win)
-        self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
-        return order
+        if commit:
+            kind, data = self._exec_payload(order, win)
+            self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
     def cancel(self, order_id: str) -> bool:
         """Cancel a still-queued order; the scheduled event is skipped (never logged → replay-safe)."""
@@ -138,7 +154,7 @@ class OrderSystem:
     def _ap(self) -> AccessProvider:
         return AccessProvider(scene_from_world(self.world), propagator=self.prop, config=self.access_config)
 
-    def _issue_command(self, order: Order) -> Order:
+    def _plan_command(self, order: Order, commit: bool) -> None:
         """Plan a satellite command across the three delivery paths, choosing the earliest."""
         now = self.sim.clock.now
         ap = self._ap()
@@ -160,14 +176,14 @@ class OrderSystem:
 
         if not choices:
             order.status, order.fail_reason = "rejected", "no_window"
-            return order
+            return
         path, win = min(choices, key=lambda pw: pw[1].start)
         order.delivery_path = path
         order.earliest_window = (win.start, win.end)
         order.status = "queued"
-        kind, data = self._exec_payload(order, win)
-        self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
-        return order
+        if commit:
+            kind, data = self._exec_payload(order, win)
+            self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
     def _best_isl_window(self, ap: AccessProvider, cell: str, actor: str, now: int) -> Optional[AccessWindow]:
         best: Optional[AccessWindow] = None
@@ -179,7 +195,7 @@ class OrderSystem:
                 best = wins[0]
         return best
 
-    def _issue_collection(self, order: Order) -> Order:
+    def _plan_collection(self, order: Order, commit: bool) -> None:
         """Sensor tasking: pick a sensor (or 'auto'), respect contention, queue at the window."""
         now = self.sim.clock.now
         ap = self._ap()
@@ -196,16 +212,16 @@ class OrderSystem:
         if chosen is None:
             order.status = "rejected"
             order.fail_reason = "sensor_contended" if sensor_ids else "no_window"
-            return order
+            return
         sid, win = chosen
         order.actor = sid
         order.delivery_path = "sensor_collect"
         order.earliest_window = (win.start, win.end)
         order.status = "queued"
-        self._sensor_bookings.setdefault(sid, []).append((win.start, win.end))
-        kind, data = self._exec_payload(order, win)
-        self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
-        return order
+        if commit:
+            self._sensor_bookings.setdefault(sid, []).append((win.start, win.end))
+            kind, data = self._exec_payload(order, win)
+            self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
     def _candidate_sensors(self, order: Order) -> list[str]:
         if order.actor and order.actor != "auto":
@@ -347,7 +363,12 @@ class OrderSystem:
             "cost": float(np.linalg.norm(dv)),
         }
 
-    def _queue_cyber(self, order: Order) -> None:
+    def _plan_cyber(self, order: Order, commit: bool) -> None:
+        order.status = "queued"
+        order.earliest_window = None       # cyber is not pass-gated (resolves now, against posture)
+        order.delivery_path = "cyber"
+        if not commit:
+            return
         p = order.params
         effect = EffectInstance(
             template=p.get("template", "cyber"),
@@ -367,8 +388,6 @@ class OrderSystem:
             persistence_bonus=p.get("persistence_bonus", 1.0),
             window_start=self.sim.clock.now,
         )
-        order.status = "queued"
-        order.earliest_window = None
         self.sim.schedule(self.sim.clock.now, "execute_effect", {"effect": effect.model_dump()}, actor=order.cell, tag=order.id)
 
     # -- handlers (run inside the deterministic event loop) --------------------

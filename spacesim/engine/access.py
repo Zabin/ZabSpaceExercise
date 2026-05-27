@@ -93,6 +93,9 @@ class AccessProvider:
         key = (actor, target, channel, t0, horizon)
         if key in self._cache:
             return self._cache[key]
+        if not self._endpoints_present(actor, target, channel):
+            self._cache[key] = []          # unknown id (e.g. a station that doesn't exist) → no access
+            return []
         access_fn, quality_fn = self._predicate(actor, target, channel)
         step = self._step_for(actor, target, channel)
         raw = _find_windows(access_fn, quality_fn, t0, horizon, step, self.cfg.edge_refine_s)
@@ -102,6 +105,23 @@ class AccessProvider:
         ]
         self._cache[key] = out
         return out
+
+    def _endpoints_present(self, actor: str, target: str, channel: str) -> bool:
+        """Both endpoints must exist in the scene for the channel, else there is simply no access.
+
+        Guards every caller (orders' window search, scene, AAR) from a ``KeyError`` when an id is
+        missing — e.g. a command planned ``via`` a station that isn't in the force.
+        """
+        sites, sats, sensors = self.scene.sites, self.scene.satellites, self.scene.sensors
+        if channel in (COMMAND_UPLINK, TELEMETRY_DOWNLINK):
+            return (actor in sites and target in sats) or (target in sites and actor in sats)
+        if channel in (JAM_FOOTPRINT, WEAPON_ENGAGEMENT):
+            return actor in sites and target in sats
+        if channel == SENSOR_OBSERVATION:
+            return actor in sensors and target in sats
+        if channel in (RPO_PROXIMITY, ISL_LINK):
+            return actor in sats and target in sats
+        return False
 
     # -- predicate construction per channel ------------------------------------
     def _predicate(self, actor: str, target: str, channel: str) -> tuple[Callable[[int], bool], Callable[[int], float]]:

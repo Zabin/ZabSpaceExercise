@@ -138,6 +138,13 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         order = Order(cell=req.cell, actor=req.actor, action=req.action, target=req.target, params=req.params)
         return api.issue_order(sid, req.cell, order)
 
+    @app.post("/api/sessions/{sid}/order/validate")
+    def validate_order(sid: str, req: OrderRequest) -> OrderAck:
+        """Dry-run an order: accepted (window/path) or rejected (reason), mutating no session state."""
+        _require(sid)
+        order = Order(cell=req.cell, actor=req.actor, action=req.action, target=req.target, params=req.params)
+        return api.validate_order(sid, req.cell, order)
+
     @app.get("/api/sessions/{sid}/orders/{cell}")
     def list_orders(sid: str, cell: str) -> list:
         _require(sid)

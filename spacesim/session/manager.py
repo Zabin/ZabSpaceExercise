@@ -83,6 +83,20 @@ class SessionManager:
     def issue_order(self, cell: str, order: Order) -> OrderAck:
         order.cell = cell
         result = self.osys.issue(order)
+        return self._order_ack(result)
+
+    def validate_order(self, cell: str, order: Order) -> OrderAck:
+        """Dry-run an order for the UI: would it be accepted, with which window/path, or why not?
+
+        Read-only (no scheduling, no registry, no bookings) so the console can pre-disable buttons
+        and preview the scheduled window without mutating the session (`OPERATOR-UI-DESIGN.md` §12).
+        """
+        order.cell = cell
+        result = self.osys.dry_run(order)
+        return self._order_ack(result)
+
+    @staticmethod
+    def _order_ack(result: Order) -> OrderAck:
         return OrderAck(
             ok=result.status != "rejected",
             id=result.id,

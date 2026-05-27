@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 7 — 81 tests green.** Implemented end-to-end:
+**Backend feature-complete through Phase 7 — 106 tests green.** Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -202,6 +202,22 @@ test first, implement to green, and add a regression test for every resolved fin
   carries the subsolar point for day/night shading. Screenshot set expanded to 29 (adds 3D globe,
   White-Cell controls, command menu, and 12 walkthrough steps). User chose: own 3D viewer,
   manual-only tutorial, data-driven screenshots; CesiumJS not used.
+- **2026-05-27:** Reviewed `docs/OPERATOR-UI-DESIGN.md` for consistency — endpoints (§14),
+  validator reason strings (§12.2), and `cells.py`/`CellController.view` / `bus.overall_status`
+  references all match the code. Then began implementing the spec's most load-bearing un-built
+  element, the **§12 button-logic contract**: added `OrderSystem.dry_run()` — a read-only mirror of
+  `issue()` (extracted shared `_plan`/`_plan_command`/`_plan_collection`/`_plan_cyber` planners;
+  `commit=False` skips schedule/registry/booking) — plus `SessionManager.validate_order`,
+  `InProcessSession.validate_order`, and `POST /order/validate`. Front-end compose form now
+  **dry-runs on every edit** and pre-disables **Issue** with the engine's own reason string
+  (`REASON_TIPS` plain-language tooltips) + previews the scheduled window/delivery path. Fixed a
+  **pre-existing latent crash** this surfaced: `AccessProvider.windows` raised `KeyError` for an
+  unknown endpoint id (e.g. a command `via` a station not in the force) — now guarded
+  (`_endpoints_present`) to degrade to no-access for both `issue()` and `dry_run()`. Browser-verified
+  (Playwright/bundled Chromium): accept shows "✓ will queue · ground_uplink · window …", reject
+  pre-disables with the reason + tooltip, invalid-JSON guarded locally. **106 tests green** (+5:
+  `test_validate_order.py` — dry-run is side-effect-free & replay-identical, matches `issue`, surfaces
+  reasons, enforces ownership fog, unknown-station→no_window). pyflakes clean.
 - **Still open (deferred / v1.1+):** browser GUI **unverified headless** (needs a human or
   browser-driver to confirm visuals; backend covered). Sat caps ≤24/≤3/48 not yet validated at
   content load. Posture/defense command persistence (`def.harden`, `def.set_threat_warning`).

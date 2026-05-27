@@ -122,11 +122,14 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/orbit.py` — `OrbitState`, Kepler+J2 element↔state, regime classification.
 - `spacesim/engine/propagator.py` — `Propagator` seam: Kepler+J2 (fictional) / sgp4 (TLE).
 - `spacesim/engine/entities.py` — `Asset`/`AssetResources`, `GroundSite`, `Sensor`.
-- `spacesim/engine/access.py` — `AccessProvider` seam: all six channels + window caching.
+- `spacesim/engine/access.py` — `AccessProvider` seam: all six channels + window caching; unknown
+  endpoint ids (e.g. a command planned `via` a station not in the force) degrade to no-access, not a crash.
 - `spacesim/engine/custody.py` — `Track` (on-demand confidence decay) + weapons-quality gate.
 - `spacesim/engine/effects.py` — `EffectInstance`/`EffectResolver` seam (5 D's), `is_link_denied`.
 - `spacesim/engine/orders.py` — `Order` + `OrderSystem` (validate → window → execute), cyber
   exception, ISL/stored delivery, sensor tasking (auto-select + contention), order queue + cancel.
+  `dry_run()` is a read-only mirror of `issue()` (validate + window/delivery-path, but schedules/
+  registers/books nothing) → powers the UI's "why can't I?" pre-disabled buttons; replay-safe like `scene.py`.
 - `spacesim/engine/recovery.py` — `RecoverySystem`: multi-pass safe-mode recovery + re-safe-on-persistence.
 - `spacesim/engine/telemetry.py` — read-time seeded subsystem telemetry (graphs/logs) + attack
   signatures (jam→RX power, cyber→FSW errors, DE→SNR, power sag, kinetic→loss-of-signal). Pure,
@@ -134,12 +137,14 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/bus.py` — `BusState`/`PayloadState` SOH (limits, gating, safe mode, pass-gated view).
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
-- `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms),
+- `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
+  `validate_order` dry-run),
   `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`,
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
   `aar.py` (replay/scrub/branch-compare + `snapshot_at`).
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`) + `static/`
-  front end: `app.js` (command menu, 2D belief map, subsystem drill-down), `globe.js` (3D
+  front end: `app.js` (command menu with live dry-run preview + pre-disabled Issue, 2D belief map,
+  subsystem drill-down), `globe.js` (3D
   orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`
   (telemetry line graphs), `style.css`, `index.html`.
 - `tools/build_coastlines.py` — regenerates the committed `static/world.json` (low-res world map)

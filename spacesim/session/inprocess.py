@@ -78,6 +78,9 @@ class InProcessSession:
     def issue_order(self, session: str, cell: str, order: Order) -> OrderAck:
         return self._sessions[session].issue_order(cell, order)
 
+    def validate_order(self, session: str, cell: str, order: Order) -> OrderAck:
+        return self._sessions[session].validate_order(cell, order)
+
     def list_orders(self, session: str, cell: str) -> list:
         return self._sessions[session].list_orders(cell)
 
