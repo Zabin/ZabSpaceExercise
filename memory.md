@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 7 — 117 tests green.** Implemented end-to-end:
+**Backend feature-complete through Phase 7 — 122 tests green.** Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -261,6 +261,12 @@ test first, implement to green, and add a regression test for every resolved fin
   validation reasons incl. fog + safe-mode payload gating). Determinism + import-guard green; browser-
   verified the live verbs (offered, dry-run preview, queued). **Next verbs** (`tcs.*`/`cdh.*`/`comms.*`,
   full payload sets) extend the same dispatch; six-card bus grid layout is the remaining UI piece.
+- **2026-05-27:** Verb catalog **batch 2** (ISR mission loop + telemetry recovery, all observable):
+  `eps.set_charge_mode` (adds `power.charge_mode`; `advance_bus` scales charge ×1.5/0.5 fast/trickle),
+  `cdh.dump_storage` (`refresh_ground_view` → fresh SOH snapshot), `isr.collect_now`/
+  `isr.schedule_collection` (set `payload.collecting`, gated by `can_collect` → storage fills). Payload
+  type-gating generalized to a set (`isr_eo`/`isr_sar`). UI offers them by payload type. **122 tests
+  green** (+5). All extend the same `apply_command` dispatch.
 - **Still open (deferred / v1.1+):** browser GUI **unverified headless** (needs a human or
   browser-driver to confirm visuals; backend covered). Sat caps ≤24/≤3/48 not yet validated at
   content load. Posture/defense command persistence (`def.harden`, `def.set_threat_warning`).

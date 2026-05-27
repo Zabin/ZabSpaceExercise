@@ -51,6 +51,7 @@ class PowerState(BaseModel):
     charge_rate_per_s: float = 0.0   # SoC/s while sunlit
     drain_rate_per_s: float = 0.0    # SoC/s while in eclipse / under load
     loads_shed: bool = False         # non-critical loads shed (eps.shed_load) → reduced drain
+    charge_mode: Literal["nominal", "fast", "trickle"] = "nominal"   # eps.set_charge_mode → scales charge
 
 
 class AttitudeState(BaseModel):
@@ -159,7 +160,8 @@ def advance_bus(bus: BusState, payload: Optional[PayloadState], now: int, sunlit
     dt = max(0.0, (now - bus.last_update) / 1_000_000)
     bus.power.in_eclipse = not sunlit
     drain = bus.power.drain_rate_per_s * (0.4 if bus.power.loads_shed else 1.0)  # shed non-critical loads → slower sag
-    delta = (bus.power.charge_rate_per_s if sunlit else -drain) * dt
+    charge = bus.power.charge_rate_per_s * {"fast": 1.5, "trickle": 0.5}.get(bus.power.charge_mode, 1.0)
+    delta = (charge if sunlit else -drain) * dt
     bus.power.battery_soc = max(0.0, min(1.0, bus.power.battery_soc + delta))
     if payload is not None and payload.collecting and bus.mode == "nominal" and bus.cdh.storage_frac < 1.0:
         bus.cdh.storage_frac = min(1.0, bus.cdh.storage_frac + payload.collect_rate_per_s * dt)

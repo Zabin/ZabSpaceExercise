@@ -13,16 +13,22 @@ Verbs (this batch):
 
 from __future__ import annotations
 
-from spacesim.engine.bus import payload_available, recompute_status
+from spacesim.engine.bus import can_collect, payload_available, recompute_status, refresh_ground_view
 
-BUS_VERBS = {"eps.shed_load", "eps.restore_load", "adcs.set_mode"}
-PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users"}
+BUS_VERBS = {"eps.shed_load", "eps.restore_load", "eps.set_charge_mode",
+             "adcs.set_mode", "cdh.dump_storage"}
+PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users",
+                 "isr.collect_now", "isr.schedule_collection"}
 COMMAND_VERBS = BUS_VERBS | PAYLOAD_VERBS
 
-# Payload verbs are valid only on a payload of the matching mission type (FR-B2: the bus/payload fit).
-_PAYLOAD_TYPE_FOR = {"satcom.mitigate_interference": "satcom", "satcom.shift_users": "satcom"}
+# Payload verbs are valid only on a payload of a matching mission type (FR-B2: the bus/payload fit).
+_PAYLOAD_TYPES_FOR = {
+    "satcom.mitigate_interference": {"satcom"}, "satcom.shift_users": {"satcom"},
+    "isr.collect_now": {"isr_eo", "isr_sar"}, "isr.schedule_collection": {"isr_eo", "isr_sar"},
+}
 
 _ATTITUDE_MODES = ("nominal", "slew", "safe")
+_CHARGE_MODES = ("nominal", "fast", "trickle")
 
 
 def is_payload_verb(verb: str) -> bool:
@@ -57,6 +63,15 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         recompute_status(bus)
         return True, "loads_restored"
 
+    if verb == "eps.set_charge_mode":
+        if bus is None:
+            return False, "no_bus"
+        mode = params.get("mode", "nominal")
+        if mode not in _CHARGE_MODES:
+            mode = "nominal"
+        bus.power.charge_mode = mode
+        return True, f"charge_{mode}"
+
     if verb == "adcs.set_mode":
         if bus is None:
             return False, "no_bus"
@@ -67,6 +82,12 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         bus.attitude.pointing_ok = mode != "safe"
         return True, f"mode_{mode}"
 
+    if verb == "cdh.dump_storage":
+        if bus is None:
+            return False, "no_bus"
+        refresh_ground_view(bus, now)   # recover out-of-contact history: fresh SOH snapshot to the ground
+        return True, "telemetry_dumped"
+
     if verb in ("satcom.mitigate_interference", "satcom.shift_users"):
         p = a.payload_state
         if p is None:
@@ -74,6 +95,14 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         # Each application buys more anti-jam margin, capped — the jam signature shrinks but never vanishes.
         p.interference_mitigation = min(0.8, p.interference_mitigation + 0.4)
         return True, "interference_mitigated"
+
+    if verb in ("isr.collect_now", "isr.schedule_collection"):
+        if a.payload_state is None:
+            return False, "no_payload"
+        if bus is not None and not can_collect(bus):
+            return False, "cannot_collect"      # safed / power-red / storage full (bus gates payload)
+        a.payload_state.collecting = True        # fills onboard storage over the coming steps
+        return True, "collecting"
 
     return False, "unknown"
 
@@ -86,8 +115,8 @@ def can_issue(world, actor_id: str, verb: str) -> tuple[bool, str]:
     if a is None:
         return False, "no_such_asset"
     if is_payload_verb(verb):
-        need = _PAYLOAD_TYPE_FOR.get(verb)
-        if a.payload_state is None or (need is not None and a.payload_state.type != need):
+        need = _PAYLOAD_TYPES_FOR.get(verb)
+        if a.payload_state is None or (need is not None and a.payload_state.type not in need):
             return False, "no_payload_for_verb"
         if a.bus_state is not None and not payload_available(a.bus_state):
             return False, "payload_unavailable"   # the bus gates the payload (safe mode / power-red)

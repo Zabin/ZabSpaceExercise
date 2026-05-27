@@ -136,11 +136,12 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   signatures (jam→RX power, cyber→FSW errors, DE→SNR, power sag, kinetic→loss-of-signal). Pure,
   never mutates state/RNG (like `scene.py`). `sample/series(..., nominal=True)` drop the attack term
   → the clean baseline ghost the "compare to nominal" overlay draws (`&nominal=1` on the series endpoint).
-- `spacesim/engine/buscommands.py` — first real batch of catalog bus/payload verbs (`eps.shed_load`/
-  `eps.restore_load`, `adcs.set_mode`, `satcom.mitigate_interference`/`shift_users`); `apply_command`
-  mutates `BusState`/`PayloadState` inside the deterministic `execute_command` handler (replay-safe,
-  observable in SOH/telemetry), `can_issue` is the plan-time validator gate. Carried by the order
-  system's `command` action (uplink/stored delivery like `maneuver`).
+- `spacesim/engine/buscommands.py` — real catalog bus/payload verbs (EPS shed/restore/charge-mode,
+  `adcs.set_mode`, `cdh.dump_storage`, `satcom.mitigate_interference`/`shift_users`, `isr.collect_now`/
+  `schedule_collection`); `apply_command` mutates `BusState`/`PayloadState` inside the deterministic
+  `execute_command` handler (replay-safe, observable in SOH/telemetry), `can_issue` is the plan-time
+  validator gate (payload verbs gated by payload type + bus availability). Carried by the order
+  system's `command` action (uplink/stored delivery like `maneuver`). New verbs extend `apply_command`.
 - `spacesim/engine/bus.py` — `BusState`/`PayloadState` SOH (limits, gating, safe mode, pass-gated view).
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.

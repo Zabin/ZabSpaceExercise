@@ -43,9 +43,13 @@ const PARAM_TEMPLATE = {
   // Bus/payload verbs (action "command") — plan to the next command window like any uplink.
   "eps.shed_load": () => ({ via: DEFAULT_STATION }),
   "eps.restore_load": () => ({ via: DEFAULT_STATION }),
+  "eps.set_charge_mode": () => ({ via: DEFAULT_STATION, mode: "fast" }),
   "adcs.set_mode": () => ({ via: DEFAULT_STATION, mode: "nominal" }),
+  "cdh.dump_storage": () => ({ via: DEFAULT_STATION }),
   "satcom.mitigate_interference": () => ({ via: DEFAULT_STATION }),
   "satcom.shift_users": () => ({ via: DEFAULT_STATION }),
+  "isr.collect_now": () => ({ via: DEFAULT_STATION }),
+  "isr.schedule_collection": () => ({ via: DEFAULT_STATION }),
 };
 
 // Plain-language tooltips for the engine's own validator reason strings (OPERATOR-UI-DESIGN.md §12.2).
@@ -138,8 +142,9 @@ function composeBody() {
 function actionsFor(a) {
   const acts = (ACTIONS_BY_KIND[a.kind] || ["observe"]).slice();
   if (a.kind === "satellite") {
-    acts.push("eps.shed_load", "eps.restore_load", "adcs.set_mode");
+    acts.push("eps.shed_load", "eps.restore_load", "eps.set_charge_mode", "adcs.set_mode", "cdh.dump_storage");
     if (a.payload === "satcom") acts.push("satcom.mitigate_interference", "satcom.shift_users");
+    if (a.payload === "isr_eo" || a.payload === "isr_sar") acts.push("isr.collect_now", "isr.schedule_collection");
   }
   return acts;
 }

@@ -82,6 +82,53 @@ def test_mitigate_interference_shrinks_jam_signature():
     assert after > nominal             # ...but not fully gone (mitigation is capped)
 
 
+def test_set_charge_mode_scales_charging():
+    """eps.set_charge_mode 'fast' charges the battery faster while sunlit."""
+    def soc_after_sun(mode: str) -> float:
+        bus = BusState()
+        bus.power.battery_soc = 0.5
+        bus.power.charge_rate_per_s = 1e-4
+        apply_command(_one(bus), "SAT", "eps.set_charge_mode", {"mode": mode}, 0)
+        advance_bus(bus, None, minutes(30), sunlit=True)
+        return bus.power.battery_soc
+    assert soc_after_sun("fast") > soc_after_sun("nominal") > soc_after_sun("trickle")
+
+
+def test_dump_storage_refreshes_ground_view():
+    w = _one(BusState())
+    ok, label = apply_command(w, "SAT", "cdh.dump_storage", {}, minutes(5))
+    bus = w.assets["SAT"].bus_state
+    assert ok and label == "telemetry_dumped"
+    assert bus.ground_view is not None and bus.last_telemetry_time == minutes(5)
+
+
+def test_collect_now_starts_filling_storage():
+    bus = BusState()
+    w = WorldState(now=0)
+    w.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", bus_state=bus,
+                            payload_state=PayloadState(type="isr_eo", collect_rate_per_s=1e-4))
+    ok, label = apply_command(w, "SAT", "isr.collect_now", {}, 0)
+    assert ok and label == "collecting" and w.assets["SAT"].payload_state.collecting
+    advance_bus(bus, w.assets["SAT"].payload_state, minutes(10), sunlit=True)
+    assert bus.cdh.storage_frac > 0.0          # storage actually fills once collecting
+
+
+def test_collect_blocked_when_storage_full():
+    bus = BusState()
+    bus.cdh.storage_frac = 1.0
+    w = WorldState(now=0)
+    w.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", bus_state=bus,
+                            payload_state=PayloadState(type="isr_eo"))
+    ok, label = apply_command(w, "SAT", "isr.collect_now", {}, 0)
+    assert not ok and label == "cannot_collect"
+
+
+def test_isr_verb_rejected_on_satcom_payload():
+    mgr = _mgr()
+    mgr.world.assets["ISR-EO-1"].payload_state = PayloadState(type="satcom")
+    assert mgr.validate_order("blue", _cmd("ISR-EO-1", "isr.collect_now")).reason == "no_payload_for_verb"
+
+
 def test_lost_asset_command_fails_gracefully():
     w = _one(BusState())
     w.assets["SAT"].health = "destroyed"
