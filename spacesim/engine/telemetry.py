@@ -118,16 +118,23 @@ def _baseline(asset, spec: ParamSpec, t: int) -> float:
     return spec.nominal + 0.5 * spec.amp * math.sin(2 * math.pi * (t / _MICRO) / _ORBIT_S)
 
 
+def _mitigation(asset) -> float:
+    """SATCOM anti-jam in effect (0..1) — shrinks the jam signature (satcom.mitigate_interference)."""
+    p = getattr(asset, "payload_state", None)
+    return getattr(p, "interference_mitigation", 0.0) if p is not None else 0.0
+
+
 def _attack_term(asset, world, spec: ParamSpec, t: int, flags, onset) -> float:
     bus = getattr(asset, "bus_state", None)
     safed = bus is not None and bus.mode == "safe_mode"
     pid = spec.id
+    jam = 1.0 - _mitigation(asset)                    # operator anti-jam reduces the experienced jam
     if pid == "rx_power_dbm" and flags["jam"]:
-        return 28.0                                   # jammer energy raises measured RX power
+        return 28.0 * jam                             # jammer energy raises measured RX power
     if pid == "cn0_dbhz" and flags["jam"]:
-        return -14.0
+        return -14.0 * jam
     if pid == "ber":
-        return 8e-3 if flags["jam"] else 0.0
+        return 8e-3 * jam if flags["jam"] else 0.0
     if pid == "uplink_lock" and flags["jam"]:
         return -1.0 if _noise(0, asset.id, "lock", t) < 0 else 0.0   # intermittent lock
     if pid == "cpu_load_pct" and (flags["cyber"] or (safed and bus.safe_mode.cause == "cyber")):

@@ -128,6 +128,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/effects.py` — `EffectInstance`/`EffectResolver` seam (5 D's), `is_link_denied`.
 - `spacesim/engine/orders.py` — `Order` + `OrderSystem` (validate → window → execute), cyber
   exception, ISL/stored delivery, sensor tasking (auto-select + contention), order queue + cancel.
+  Actions: `jam/engage/observe/maneuver/downlink/cyber` + `command` (bus/payload verbs, see `buscommands.py`).
   `dry_run()` is a read-only mirror of `issue()` (validate + window/delivery-path, but schedules/
   registers/books nothing) → powers the UI's "why can't I?" pre-disabled buttons; replay-safe like `scene.py`.
 - `spacesim/engine/recovery.py` — `RecoverySystem`: multi-pass safe-mode recovery + re-safe-on-persistence.
@@ -135,6 +136,11 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   signatures (jam→RX power, cyber→FSW errors, DE→SNR, power sag, kinetic→loss-of-signal). Pure,
   never mutates state/RNG (like `scene.py`). `sample/series(..., nominal=True)` drop the attack term
   → the clean baseline ghost the "compare to nominal" overlay draws (`&nominal=1` on the series endpoint).
+- `spacesim/engine/buscommands.py` — first real batch of catalog bus/payload verbs (`eps.shed_load`/
+  `eps.restore_load`, `adcs.set_mode`, `satcom.mitigate_interference`/`shift_users`); `apply_command`
+  mutates `BusState`/`PayloadState` inside the deterministic `execute_command` handler (replay-safe,
+  observable in SOH/telemetry), `can_issue` is the plan-time validator gate. Carried by the order
+  system's `command` action (uplink/stored delivery like `maneuver`).
 - `spacesim/engine/bus.py` — `BusState`/`PayloadState` SOH (limits, gating, safe mode, pass-gated view).
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.

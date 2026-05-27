@@ -50,6 +50,7 @@ class PowerState(BaseModel):
     status: Status = "green"
     charge_rate_per_s: float = 0.0   # SoC/s while sunlit
     drain_rate_per_s: float = 0.0    # SoC/s while in eclipse / under load
+    loads_shed: bool = False         # non-critical loads shed (eps.shed_load) → reduced drain
 
 
 class AttitudeState(BaseModel):
@@ -95,6 +96,7 @@ class PayloadState(BaseModel):
     collecting: bool = False                  # ISR: actively filling onboard storage
     collect_rate_per_s: float = 0.0           # storage fraction added per second while collecting
     interference_level: float = 0.0           # SATCOM: how jamming is *experienced*
+    interference_mitigation: float = 0.0      # SATCOM: anti-jam/user-shift in effect (0..1), shrinks the jam signature
     last_effect_assessment: str = "unknown"   # space_control: unknown|likely|confirmed
     detail: dict = Field(default_factory=dict)
 
@@ -156,7 +158,8 @@ def advance_bus(bus: BusState, payload: Optional[PayloadState], now: int, sunlit
     """
     dt = max(0.0, (now - bus.last_update) / 1_000_000)
     bus.power.in_eclipse = not sunlit
-    delta = (bus.power.charge_rate_per_s if sunlit else -bus.power.drain_rate_per_s) * dt
+    drain = bus.power.drain_rate_per_s * (0.4 if bus.power.loads_shed else 1.0)  # shed non-critical loads → slower sag
+    delta = (bus.power.charge_rate_per_s if sunlit else -drain) * dt
     bus.power.battery_soc = max(0.0, min(1.0, bus.power.battery_soc + delta))
     if payload is not None and payload.collecting and bus.mode == "nominal" and bus.cdh.storage_frac < 1.0:
         bus.cdh.storage_frac = min(1.0, bus.cdh.storage_frac + payload.collect_rate_per_s * dt)

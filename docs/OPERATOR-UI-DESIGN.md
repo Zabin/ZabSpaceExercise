@@ -561,7 +561,8 @@ engine's own reason string. ✅ *Implemented* (P-UI-1 enabler): `dry_run`/`valid
 Surface the engine's own reasons verbatim so UI and engine never drift:
 `no_window`, `no_command_station`, `no_downlink_station`, `roe_kinetic_not_authorized`,
 `roe_cyber_not_authorized`, `no_weapons_quality_track`, `no_ammo`, `insufficient_delta_v`,
-`not_owner`, `no_such_asset`, `no_such_sensor`, `sensor_contended`. Each maps to a plain-language
+`not_owner`, `no_such_asset`, `no_such_sensor`, `sensor_contended`, and — for bus/payload `command`
+verbs — `unknown_command`, `no_payload_for_verb`, `payload_unavailable`. Each maps to a plain-language
 tooltip (e.g. `no_weapons_quality_track` → "No weapons-quality track — task a sensor to characterize
 the target first," with a **[Task sensor]** shortcut).
 
@@ -681,11 +682,14 @@ Layered so each phase is shippable and testable against the existing API:
    countdown, alarm feed. (Consumes `/view`, `/windows`, `/alarms`.) ✅ *fleet rail + countdown +
    alarm badge + filter + deep-link done* (region detach/seat-chip cosmetics remain).
 2. **P-UI-2 Bus console** — six subsystem cards + parameter rows + sparklines; command buttons wired to
-   `/order` with the button-state contract; disabled reasons. ⚙️ *blocked on engine verbs* — the
-   monitoring half (parameter rows + status + graphs) ships via the drill-down, but the per-card
-   command buttons need the `13-...` catalog verbs (`eps.*`, `adcs.*`, `tcs.*`, `cdh.*`, `comms.*`),
-   which have **no engine handlers** today; building them now would be dead buttons, so they wait on
-   an engine-side verb→effect pass.
+   `/order` with the button-state contract; disabled reasons. ◻️ *first verbs live; cards remain* — an
+   engine **`command` action** now executes a real, deterministic, replay-safe batch of catalog verbs
+   (`eps.shed_load`/`eps.restore_load`, `adcs.set_mode`, `satcom.mitigate_interference`/`shift_users`),
+   each gated like an uplink/stored command and observable in SOH/telemetry (e.g. anti-jam shrinks the
+   RX-power jam signature; shed-load slows the eclipse SoC sag). They appear as live, dry-run-validated
+   verbs in the command menu (payload verbs shown only on the matching payload type). The remaining
+   catalog verbs (`tcs.*`, `cdh.*`, `comms.*`, full payload sets) extend the same `buscommands.apply_command`
+   dispatch; laying out the six-card grid is the leftover UI piece.
 3. **P-UI-3 Telemetry graphs** — graph tab with overlay/ghost-nominal/pass-correlation shading.
    ✅ *graphs + compare-to-nominal done*; overlay (two-param) + pass-correlation shading remain.
 4. **P-UI-4 Payload consoles** — one component, mission-type content packs. ⚙️ *blocked on engine
@@ -700,11 +704,12 @@ Layered so each phase is shippable and testable against the existing API:
 8. **P-UI-8 Accessibility & presentation mode; keyboard; multi-display reflow.** ◻️ *partial*:
    `j/k/c/g` keyboard nav ships; presentation mode + multi-display reflow remain.
 
-Most phases are **backend-complete** and built as front-end work over existing endpoints; the
-**exception is P-UI-2 / P-UI-4**, whose per-subsystem/per-payload **command buttons require new
-engine verb handlers** (the catalog verbs beyond the six core actions `jam/engage/observe/maneuver/
-downlink/cyber`). Those are an engine workstream, not a UI one, and are deferred to avoid shipping
-non-functional controls.
+Most phases are **backend-complete** and built as front-end work over existing endpoints. The
+**catalog verbs** beyond the six core actions (`jam/engage/observe/maneuver/downlink/cyber`) are an
+engine workstream: a first batch (`eps.*`, `adcs.set_mode`, `satcom.*`) now has real handlers behind
+the `command` action and is live in the UI; the rest (`tcs.*`, `cdh.*`, `comms.*`, full payload sets)
+extend the same `buscommands.apply_command` dispatch and are added verb-by-verb (test-first) as each
+gets a faithful, observable effect — never shipped as dead buttons.
 
 ## 17. Acceptance criteria (sample, per surface)
 - **Monitoring:** a degrading subsystem turns the fleet dot yellow→red and an operator can reach the

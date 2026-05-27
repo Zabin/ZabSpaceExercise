@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 7 — 109 tests green.** Implemented end-to-end:
+**Backend feature-complete through Phase 7 — 117 tests green.** Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -243,6 +243,24 @@ test first, implement to green, and add a regression test for every resolved fin
   P-UI-2 bus-card & P-UI-4 payload-console *command buttons* need the `13-...` catalog verbs
   (`eps.*`/`adcs.*`/`satcom.*`/…) that have **no engine handlers** — deferred (an engine verb→effect
   workstream) rather than shipping dead buttons.
+- **2026-05-27:** Started the **engine verb→effect workstream** so the bus/payload command buttons
+  become real (unblocking P-UI-2/§6). New `spacesim/engine/buscommands.py` (`apply_command` +
+  `can_issue`) implements a first deterministic, observable batch: `eps.shed_load`/`eps.restore_load`
+  (adds `power.loads_shed` → `advance_bus` drains 0.4× when shed, so SoC sags slower), `adcs.set_mode`
+  (sets attitude mode/pointing), `satcom.mitigate_interference`/`shift_users` (adds
+  `payload_state.interference_mitigation` 0..1, capped 0.8; telemetry's jam terms now scale by
+  `1−mitigation`, so anti-jam **shrinks the RX-power/CN0/BER signature** — the central troubleshooting
+  loop, and it pairs with compare-to-nominal). Wired through the order system as a new **`command`
+  action** (uplink/stored delivery via `_plan_command`, re-validated at the `execute_command` handler,
+  logged → replay-safe). New validator reasons `unknown_command`/`no_payload_for_verb`/
+  `payload_unavailable` (payload verbs gated by payload **type** + bus availability). UI: the command
+  menu offers the verbs (bus verbs on satellites; payload verbs only on the matching payload type),
+  composed as `action:"command", params.verb`, with the same dry-run pre-disable + tooltips.
+  **117 tests green** (+8 `test_bus_commands.py`: shed slows drain, restore undoes, set_mode, mitigation
+  shrinks the jam signature but not below nominal, lost-asset graceful, order executes + replay-safe,
+  validation reasons incl. fog + safe-mode payload gating). Determinism + import-guard green; browser-
+  verified the live verbs (offered, dry-run preview, queued). **Next verbs** (`tcs.*`/`cdh.*`/`comms.*`,
+  full payload sets) extend the same dispatch; six-card bus grid layout is the remaining UI piece.
 - **Still open (deferred / v1.1+):** browser GUI **unverified headless** (needs a human or
   browser-driver to confirm visuals; backend covered). Sat caps ≤24/≤3/48 not yet validated at
   content load. Posture/defense command persistence (`def.harden`, `def.set_threat_warning`).

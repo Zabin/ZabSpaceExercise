@@ -28,6 +28,7 @@ from spacesim.engine.access import (
     WEAPON_ENGAGEMENT,
 )
 from spacesim.engine.bus import downlink_storage
+from spacesim.engine.buscommands import apply_command, can_issue
 from spacesim.engine.custody import Track, WEAPONS_QUALITY_THRESHOLD, observe
 from spacesim.engine.effects import EffectInstance, ModerateEffectResolver, is_link_denied
 from spacesim.engine.propagator import ModeratePropagator
@@ -38,6 +39,7 @@ ACTION_CHANNEL = {
     "engage": WEAPON_ENGAGEMENT,
     "observe": SENSOR_OBSERVATION,
     "maneuver": COMMAND_UPLINK,
+    "command": COMMAND_UPLINK,   # bus/payload verbs (eps.*, adcs.*, satcom.*) — uplink/stored delivery
     "downlink": TELEMETRY_DOWNLINK,
     "cyber": None,  # not window-gated
 }
@@ -92,6 +94,7 @@ class OrderSystem:
         sim.register_handler("execute_maneuver", self._h_maneuver)
         sim.register_handler("execute_observe", self._h_observe)
         sim.register_handler("execute_downlink", self._h_downlink)
+        sim.register_handler("execute_command", self._h_command)
 
     # -- issue pipeline --------------------------------------------------------
     def issue(self, order: Order) -> Order:
@@ -127,7 +130,7 @@ class OrderSystem:
         if order.action == "observe":
             self._plan_collection(order, commit)
             return
-        if order.action == "maneuver":
+        if order.action in ("maneuver", "command"):
             self._plan_command(order, commit)
             return
 
@@ -271,6 +274,13 @@ class OrderSystem:
             if "via" not in order.params and "stored_at" not in order.params:
                 return False, "no_command_station"
 
+        if order.action == "command":
+            ok, reason = can_issue(self.world, order.actor, order.params.get("verb", ""))
+            if not ok:
+                return False, reason
+            if "via" not in order.params and "stored_at" not in order.params:
+                return False, "no_command_station"
+
         if order.action == "downlink" and "via" not in order.params:
             return False, "no_downlink_station"
 
@@ -354,6 +364,9 @@ class OrderSystem:
                 "actor": order.actor,
                 "delivers": p.get("delivers", "imagery_delivered"),
             }
+
+        if order.action == "command":
+            return "execute_command", {"actor": order.actor, "verb": p.get("verb"), "params": dict(p)}
 
         # maneuver
         dv = list(np.asarray(p.get("dv", [0, 0, 0]), dtype=float))
@@ -442,6 +455,13 @@ class OrderSystem:
             downlink_storage(actor.bus_state, 1.0)
         world.effect_log.append({"t": world.now, "template": "downlink", "target": payload["actor"],
                                  "achieved": "delivered", "success": True})
+
+    def _h_command(self, world: WorldState, payload: dict, rng) -> None:
+        """Apply a bus/payload verb at its window (re-validates at execute time, like the others)."""
+        ok, label = apply_command(world, payload["actor"], payload.get("verb") or "",
+                                   payload.get("params", {}), world.now)
+        world.effect_log.append({"t": world.now, "template": payload.get("verb"),
+                                 "target": payload["actor"], "achieved": label, "success": ok})
 
     def _h_observe(self, world: WorldState, payload: dict, rng) -> None:
         track = world.track_for(payload["cell"], payload["object"])

@@ -40,6 +40,12 @@ const PARAM_TEMPLATE = {
   engage: () => ({}),
   cyber: () => ({ access_vector: "ground_modem", outcome: "safe_mode", success_prob: 1.0 }),
   observe: () => ({ intent: "characterize" }),
+  // Bus/payload verbs (action "command") — plan to the next command window like any uplink.
+  "eps.shed_load": () => ({ via: DEFAULT_STATION }),
+  "eps.restore_load": () => ({ via: DEFAULT_STATION }),
+  "adcs.set_mode": () => ({ via: DEFAULT_STATION, mode: "nominal" }),
+  "satcom.mitigate_interference": () => ({ via: DEFAULT_STATION }),
+  "satcom.shift_users": () => ({ via: DEFAULT_STATION }),
 };
 
 // Plain-language tooltips for the engine's own validator reason strings (OPERATOR-UI-DESIGN.md §12.2).
@@ -58,6 +64,9 @@ const REASON_TIPS = {
   no_such_sensor: "Unknown sensor.",
   sensor_contended: "Sensor is busy — it can service this only at a later window.",
   unknown_action: "Action not supported for this asset.",
+  unknown_command: "Command verb not supported.",
+  no_payload_for_verb: "This asset's payload can't run that command.",
+  payload_unavailable: "Payload unavailable — bus is safed or power-red (clear that first).",
 };
 
 async function loadVignettes() {
@@ -119,7 +128,20 @@ function composeBody() {
   let params; try { params = JSON.parse($("o-params").value || "{}"); } catch { return null; }
   const actor = $("o-actor").value; if (!actor) return null;
   const cell = CELL === "white" ? (ASSETS[actor]?.owner || "blue") : CELL;
-  return { cell, actor, action: $("o-action").value, target: $("o-target")?.value || null, params };
+  let action = $("o-action").value;
+  // A dotted verb (eps.shed_load, satcom.*) is a bus/payload command carried by the "command" action.
+  if (action.includes(".")) { params = { ...params, verb: action }; action = "command"; }
+  return { cell, actor, action, target: $("o-target")?.value || null, params };
+}
+
+// Verbs offered for an asset: kind-based core actions + bus verbs for satellites + payload verbs by type.
+function actionsFor(a) {
+  const acts = (ACTIONS_BY_KIND[a.kind] || ["observe"]).slice();
+  if (a.kind === "satellite") {
+    acts.push("eps.shed_load", "eps.restore_load", "adcs.set_mode");
+    if (a.payload === "satcom") acts.push("satcom.mitigate_interference", "satcom.shift_users");
+  }
+  return acts;
 }
 
 // Plan-first "why can't I?" preview (P4 / §12): dry-run the composed order on every edit and
@@ -163,9 +185,8 @@ async function issueOrder() {
 
 function onActorChange() {
   const id = $("o-actor").value, a = ASSETS[id] || {};
-  $("actor-info").textContent = a.kind ? `${a.kind} · ${a.owner}` : "";
-  const acts = ACTIONS_BY_KIND[a.kind] || ["observe"];
-  $("o-action").innerHTML = acts.map((x) => `<option>${x}</option>`).join("");
+  $("actor-info").textContent = a.kind ? `${a.kind} · ${a.owner}${a.payload ? " · " + a.payload : ""}` : "";
+  $("o-action").innerHTML = actionsFor(a).map((x) => `<option>${x}</option>`).join("");
   onActionChange();
   if (SID && id) drawRibbon(id);
 }
@@ -197,7 +218,7 @@ async function refresh() {
   }
   if (stale()) return;
   $("now").textContent = iso(now);
-  ASSETS = {}; assets.forEach((a) => ASSETS[a.id] = { kind: a.kind, owner: a.owner });
+  ASSETS = {}; assets.forEach((a) => ASSETS[a.id] = { kind: a.kind, owner: a.owner, payload: a.payload_state ? a.payload_state.type : null });
   const station = assets.find((a) => a.kind === "ground_station"); if (station) DEFAULT_STATION = station.id;
 
   // Fleet rail: next-contact countdown + power gauge + alarm badge (§4.1), with a filter bar (§4).
