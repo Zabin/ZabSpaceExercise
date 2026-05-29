@@ -229,13 +229,13 @@ class SSNSystem:
         ap = self._ap()
         now = self.sim.clock.now
         horizon = now + MAX_WAIT_S[req.priority] * 1_000_000
-        best: Optional[tuple[str, int, int]] = None
+        best: Optional[tuple[str, int, int, float]] = None
         for sid in eligible:
             for w in ap.windows(sid, req.target, SENSOR_OBSERVATION, now, horizon):
                 if self._contended(sid, w.start, w.end):
                     continue
                 if best is None or w.start < best[1]:
-                    best = (sid, w.start, w.end)
+                    best = (sid, w.start, w.end, float(w.quality))
                 break
         if best is None:
             req.state, req.fail_reason = "FAILED", "no_coverage_within_sla"
@@ -244,7 +244,7 @@ class SSNSystem:
             self.requests[req.id] = req
             return SSNAck(ok=False, id=req.id, reason="no_coverage_within_sla", state="FAILED")
 
-        sid, start, end = best
+        sid, start, end, quality = best
         delay_s = PROCESSING_DELAY_S[req.priority]
         if net.affiliation == "coalition":
             delay_s = int(delay_s * COALITION_DELAY_MULTIPLIER)
@@ -262,8 +262,9 @@ class SSNSystem:
         self._inflight[cell] = self._inflight.get(cell, 0) + 1
 
         # Two deterministic events tagged with the request id (cancel-before-collect skips both).
+        # Window quality rides on the payload so a poor (grazing) pass yields a weaker product (§8).
         self.sim.schedule(start, "ssn_collect",
-                          {"req": req.id, "target": req.target, "intent": req.intent},
+                          {"req": req.id, "target": req.target, "intent": req.intent, "quality": quality},
                           actor=cell, tag=req.id)
         self.sim.schedule(req.product_at, "ssn_deliver",
                           {"req": req.id, "cell": cell, "target": req.target, "intent": req.intent},
@@ -325,6 +326,7 @@ class SSNSystem:
             return
         world.ssn_staged[rid] = {
             "orbit": obj.orbit.model_dump() if obj.orbit is not None else None,
+            "quality": float(payload.get("quality", 1.0)),
         }
         req = self.requests.get(rid)
         if req is not None:
@@ -348,9 +350,12 @@ class SSNSystem:
             world.tracks.append(track)
         # Characterize products land high-confidence (the SSN delivers a finished assessment, not a
         # series of cuts); track/search add modest gain so custody still wants follow-on requests.
-        gain = 0.95 if intent == "characterize" else 0.5
-        quality = min(1.0, track.current_confidence(world.now) + gain)
-        observe(track, world.now, quality=quality,
+        # Window quality scales the gain (§8 — a grazing pass yields a weaker product).
+        base = 0.95 if intent == "characterize" else 0.5
+        wq = float(staged.get("quality", 1.0))
+        gain = base * (0.5 + 0.5 * wq)
+        confidence = min(1.0, track.current_confidence(world.now) + gain)
+        observe(track, world.now, quality=confidence,
                 characterizes=(intent == "characterize"), classification=None)
         if staged.get("orbit") is not None:
             track.state_estimate = OrbitState.model_validate(staged["orbit"])

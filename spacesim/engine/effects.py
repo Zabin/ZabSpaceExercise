@@ -97,6 +97,8 @@ class ModerateEffectResolver:
         if effect.intended_outcome == "safe_mode":
             # §6.1 susceptibility: base × WC dial × (1 − hardening) × persistence, clamped.
             hardening = float(getattr(target, "hardening", 0.0)) if target is not None else 0.0
+            if target is not None and target.payload_state is not None and target.payload_state.hardened:
+                hardening = min(1.0, hardening + 0.5)     # def.harden operator-commanded boost
             p = min(0.98, p * effect.sm_susceptibility * (1.0 - hardening) * effect.persistence_bonus)
         # Draw first (keeps the RNG sequence stable regardless of branch), then branch.
         roll = rng.random()

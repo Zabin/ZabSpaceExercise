@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 7 — 141 tests green.** Implemented end-to-end:
+**Backend feature-complete through Phase 7 — 144 tests green.** Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -334,6 +334,18 @@ test first, implement to green, and add a regression test for every resolved fin
   Browser-verified: SSN mode on V7 shows "✓ coalition · global · 10 sensors for LEO" coverage,
   submission returns SCHEDULED with SBO + collect/product times, queue renders, switching to
   Red cell shows "✗ no network" because Red dispersion defaults to off.
+- **2026-05-27:** SSN polish + posture bite. **(a)** SSN window quality scales the delivered
+  product gain — a grazing pass yields a measurably weaker track (`SSN-DESIGN.md` §8 / §17
+  follow-on). The window's `quality` is captured at submit, rides on the `ssn_collect` payload,
+  and lands on `world.ssn_staged`; `_h_deliver` scales `base × (0.5 + 0.5·quality)`. **(b)** SSN
+  requests now survive `save_state`/`from_state`: persisted as `vars(req)`, rebuilt into
+  `self.ssn.requests` with `_inflight` counters and sensor bookings reconstructed from
+  `SCHEDULED` rows; `_counter` resumes at the max id. **(c)** `def.harden` now bites at the
+  resolver — `ModerateEffectResolver` adds `+0.5` to the effective hardening when
+  `payload_state.hardened` is set, cutting the safe-mode probability. **144 tests green** (+3
+  `test_ssn.py`: window quality scales confidence, save/resume preserves in-flight requests +
+  delivers post-resume, hardening reduces safe-mode incidence ≥6/20 trials at success_prob=1.0).
+  FUTURE-WORK.md §5 + §7 updated to reflect what's now done.
 - **Still open (deferred / v1.1+):** consolidated into **`docs/FUTURE-WORK.md`** (single source
   of truth) and `00-BUILD-SPECIFICATION.md` §3.2 (explicit v1 non-goals). The browser GUI is
   still unverified-headless; that and the remaining catalog-verb gaps, multiplayer transport,

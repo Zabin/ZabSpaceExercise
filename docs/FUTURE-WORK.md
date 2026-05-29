@@ -71,10 +71,11 @@ Each one follows the same pattern: a small mutation in `apply_command`, a regres
 
 ## 5. Bus, payload, and recovery refinements
 
-- **Posture-command persistence beyond a tick.** `def.harden`, `def.set_threat_warning`, and
-  `def.frequency_hop` are implemented as boolean state mutations; richer modelling (e.g. hardening
-  reducing safe-mode susceptibility on the actual effect resolver) is a follow-on. The fields are
-  in place (`payload_state.hardened`, `asset.threat_warning`, `comms.freq_hopping`).
+- **Posture-command persistence beyond a tick.** ✅ `def.harden` now reduces the safe-mode
+  probability at the effect resolver (operator-commanded hardening adds 0.5 to the asset's
+  `hardening` for the susceptibility computation, on top of any vignette baseline).
+  `def.frequency_hop` already scales the comms jam term in telemetry. `def.set_threat_warning`
+  remains informational (no resolver impact yet).
 - **EW / bus-stress safe-mode inducement** (vs. the cyber path that is exercised today). The
   resolver already supports `outcome: safe_mode`; vignettes don't drive it via EW yet.
 - **Per-step recovery deep-links.** The recovery strip surfaces a single Patch action and a free-
@@ -90,21 +91,19 @@ Each one follows the same pattern: a small mutation in `apply_command`, a regres
 constellations ≤3 sats. The caps are documented but **not enforced at vignette load**; future
 work: validate caps in `content/vignette.build_world` with a clear rejection.
 
-## 7. Mock Space Surveillance Network (SSN) — ✅ implemented (open follow-ons remain)
+## 7. Mock Space Surveillance Network (SSN) — ✅ implemented
 
 The per-cell mock SSN is built per `docs/SSN-DESIGN.md` (engine + session + API + UI + V2/V7/V8
-vignette opt-in + acceptance tests). The open items from that doc's §17 remain:
+vignette opt-in + acceptance tests). Of the doc's §17 open items, **quality model fidelity** and
+**save/resume of in-flight requests** are now implemented (window `quality` scales the delivered
+gain so a grazing pass yields a measurably weaker product; SSN requests serialize in
+`save_state` and rebuild bookings/in-flight counters on `from_state`). Remaining:
 
 - **Cost / collection-budget** for priority/immediate (force triage). Recommended as a later
   balance dial.
-- **Quality model fidelity:** map the access-window `quality` value to a product-confidence
-  curve per regime so a grazing pass yields a measurably weaker product.
 - **Commercial / third-party feeds** — a neutral commercial provider both cells can buy from
   (extends the per-cell model).
 - **Auto-cueing organic → SSN** — let an organic detection auto-cue an SSN characterize request.
-- **Save/resume of in-flight SSN requests** — today they survive a rewind via `_rebind` clearing
-  + replay, but explicit JSON persistence in `save_state`/`from_state` is not yet wired
-  (orders are; SSN requests are not).
 
 ## 8. UI polish / minor
 

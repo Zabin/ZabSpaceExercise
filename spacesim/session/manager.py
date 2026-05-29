@@ -281,6 +281,7 @@ class SessionManager:
             "pending": [{"t": ev.t, "kind": ev.kind, "actor": ev.actor, "payload": ev.payload, "tag": ev.tag}
                         for ev in self.sim.scheduler.pending()],
             "orders": [vars(o) for o in self.osys.orders.values()],
+            "ssn_requests": [vars(r) for r in self.ssn.requests.values()],
         }
 
     @classmethod
@@ -298,6 +299,16 @@ class SessionManager:
             mgr.osys.orders[o.id] = o
         nums = [int(o.id.split("-")[1]) for o in mgr.osys.orders.values() if o.id.startswith("ord-")]
         mgr.osys._order_counter = max(nums, default=0)
+        # SSN requests: rebuild the registry, in-flight counters, and sensor bookings from saved state.
+        for rd in state.get("ssn_requests", []):
+            r = SSNRequest(**rd)
+            mgr.ssn.requests[r.id] = r
+            if r.state == "SCHEDULED":
+                mgr.ssn._inflight[r.cell] = mgr.ssn._inflight.get(r.cell, 0) + 1
+                if r.assigned_sensor and r.collect_at is not None and r.product_at is not None:
+                    mgr.ssn._bookings.setdefault(r.assigned_sensor, []).append((r.collect_at, r.product_at))
+        rnums = [int(r.id.split("-")[1]) for r in mgr.ssn.requests.values() if r.id.startswith("ssn-")]
+        mgr.ssn._counter = max(rnums, default=0)
         mgr.started = state.get("started", False)
         return mgr
 

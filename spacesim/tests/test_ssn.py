@@ -142,6 +142,74 @@ def test_cancel_before_collect_is_replay_safe():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
+def test_window_quality_scales_product_confidence():
+    """A grazing-pass collection (low window quality) delivers a measurably lower-confidence track.
+
+    Two separate cells each deliver one request on a fresh world; the high-quality cell's track
+    lands at higher confidence than the low-quality cell's.
+    """
+    from spacesim.engine.orbit import OrbitState
+    from spacesim.engine.simulation import Simulation
+    from spacesim.engine.ssn import SSNNetwork, SSNRequest, SSNSystem
+    confidences = {}
+    for cell, quality in (("blue", 1.0), ("red", 0.1)):
+        w = WorldState(now=minutes(1))
+        w.assets["TGT"] = _leo_target(0)
+        sim = Simulation(w, seed=0)
+        ssn = SSNSystem(sim, {cell: SSNNetwork(cell=cell, affiliation="national",
+                                               dispersion="global", sensors=[], concurrency=2)})
+        rid = "ssn-only"
+        ssn.requests[rid] = SSNRequest(id=rid, cell=cell, intent="track", target="TGT",
+                                       regime="LEO", priority="priority", state="SCHEDULED",
+                                       assigned_sensor="s", collect_at=0, product_at=0)
+        w.ssn_staged[rid] = {"orbit": OrbitState(a_m=7e6, e=0.0, i_deg=0.0, raan_deg=0.0,
+                                                 argp_deg=0.0, ta_deg=0.0, epoch=0).model_dump(),
+                             "quality": quality}
+        ssn._h_deliver(w, {"req": rid, "cell": cell, "target": "TGT", "intent": "track"}, sim.rng)
+        confidences[cell] = next(t for t in w.tracks if t.owner == cell).confidence
+    assert confidences["blue"] > confidences["red"] + 0.1
+
+
+def test_ssn_requests_survive_save_resume():
+    """An in-flight SSN request survives save/resume; its scheduled events still fire."""
+    # Use a vignette that already has Blue SSN configured (V7 → Blue global) so from_state, which
+    # rebuilds the world from the vignette, sees the same network.
+    mgr = SessionManager(load_vignette("sda-custody-hunt"), seed=1)
+    mgr.start()
+    ack = mgr.submit_ssn_request("blue", "characterize", "RED-OBJ", "LEO", "priority")
+    assert ack.ok and ack.state == "SCHEDULED"
+    saved = mgr.save_state()
+    mgr2 = SessionManager.from_state(saved)
+    assert mgr2.list_ssn_requests("blue")[0]["id"] == ack.id
+    mgr2.advance_to(ack.product_at + 1)
+    assert any(t.owner == "blue" and t.object == "RED-OBJ" for t in mgr2.world.tracks)
+
+
+def test_harden_reduces_safe_mode_probability():
+    """def.harden (payload_state.hardened) is observable at the effect resolver: p drops."""
+    from spacesim.engine.bus import BusState, PayloadState
+    from spacesim.engine.effects import EffectInstance, ModerateEffectResolver
+    from spacesim.engine.simulation import Simulation
+    def _world(hardened: bool):
+        w = WorldState(now=0)
+        w.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", bus_state=BusState(),
+                                payload_state=PayloadState(type="isr_eo", hardened=hardened))
+        return w
+    resolver = ModerateEffectResolver()
+    eff = EffectInstance(category="cyber", target="SAT", access_vector="ground_modem",
+                         requires="none", intended_outcome="safe_mode", success_prob=1.0,
+                         sm_susceptibility=1.0, persistence_bonus=1.0)
+    safed = 0
+    for seed in range(20):
+        w = _world(hardened=True)
+        resolver.resolve(eff, w, Simulation(w, seed).rng)
+        if w.assets["SAT"].bus_state.mode == "safe_mode":
+            safed += 1
+    # Hardening cuts the probability in half (1 − 0.5 = 0.5), so ≤14/20 of trials should safe;
+    # the unhardened baseline at the same seeds would safe close to 20/20.
+    assert safed <= 14, f"hardening expected to reduce safe-mode incidence; got {safed}/20"
+
+
 def test_characterize_via_ssn_unlocks_engage_gate():
     """An SSN characterize that yields a weapons-quality track unlocks a previously-blocked engage."""
     mgr = _mgr_with_network("global")
