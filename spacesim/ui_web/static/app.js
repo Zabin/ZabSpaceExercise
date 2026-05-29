@@ -8,8 +8,10 @@ let DEFAULT_STATION = "GS-NORTH";
 const mapCam = { lon: 0, lat: 0, zoom: 1, tracks: true, grid: true, map: true };
 let DRILL = { asset: null, param: null };
 let FLEET_FILTER = "all";
-let NEXT = {};   // asset id -> next-contact sim-time (µs) for the fleet-rail countdown
-let ALARMS = []; // latest alarm feed (shared by the fleet badge + the alarm list)
+let NEXT = {};            // asset id -> next-contact sim-time (µs) for the fleet-rail countdown
+let ALARMS = [];          // latest alarm feed (shared by the fleet badge + the alarm list)
+let EFFECT_WINDOWS = [];  // active-effect time spans on own assets (graph shading, §9.1)
+let NOW = 0;              // current sim time captured each refresh (for stale-banner + shading)
 
 // Format a next-contact countdown; color amber < 5 min, red < 1 min (P1 — imminent windows draw the eye).
 function countdown(now, t) {
@@ -50,6 +52,7 @@ const PARAM_TEMPLATE = {
   "satcom.shift_users": () => ({ via: DEFAULT_STATION }),
   "isr.collect_now": () => ({ via: DEFAULT_STATION }),
   "isr.schedule_collection": () => ({ via: DEFAULT_STATION }),
+  "def.patch_cyber": () => ({ via: DEFAULT_STATION, vector: "ground_modem" }),
 };
 
 // Plain-language tooltips for the engine's own validator reason strings (OPERATOR-UI-DESIGN.md §12.2).
@@ -145,6 +148,7 @@ function actionsFor(a) {
     acts.push("eps.shed_load", "eps.restore_load", "eps.set_charge_mode", "adcs.set_mode", "cdh.dump_storage");
     if (a.payload === "satcom") acts.push("satcom.mitigate_interference", "satcom.shift_users");
     if (a.payload === "isr_eo" || a.payload === "isr_sar") acts.push("isr.collect_now", "isr.schedule_collection");
+    if ((a.cyber_vulns || []).length) acts.push("def.patch_cyber");      // defender's root-cause fix
   }
   return acts;
 }
@@ -207,23 +211,33 @@ async function refresh() {
   // abort before it writes, so a slow godview fetch can't clobber the new cell's fog-filtered view.
   const my = ++REFRESH_SEQ;
   const stale = () => my !== REFRESH_SEQ;
-  let assets, tracks, effects, messages, objectives, now;
+  let assets, tracks, effects, messages, objectives, now, ewin;
   if (CELL === "white") {
     const g = await api.get(`/api/sessions/${SID}/godview`);
     now = g.now;
     assets = Object.values(g.assets); tracks = g.tracks;
     effects = (g.active_effects || []).map((e) => ({ target: e.target, symptom: e.outcome, attributed: true }));
+    ewin = (g.active_effects || []).map((e) => ({ target: e.target, category: e.category || "", start: e.start, end: e.end, attributed: true }));
     messages = g.messages || []; objectives = await api.get(`/api/sessions/${SID}/objectives`);
     Object.values(g.sensors || {}).forEach((s) => assets.push(s));
   } else {
     const v = await api.get(`/api/sessions/${SID}/view/${CELL}`);
     now = v.now;
     assets = v.own_assets.concat(v.own_sensors); tracks = v.known_tracks;
-    effects = v.visible_effects; messages = v.messages; objectives = v.objectives;
+    effects = v.visible_effects; ewin = v.effect_windows || [];
+    messages = v.messages; objectives = v.objectives;
   }
   if (stale()) return;
+  NOW = now;
   $("now").textContent = iso(now);
-  ASSETS = {}; assets.forEach((a) => ASSETS[a.id] = { kind: a.kind, owner: a.owner, payload: a.payload_state ? a.payload_state.type : null });
+  EFFECT_WINDOWS = ewin;
+  ASSETS = {}; assets.forEach((a) => ASSETS[a.id] = {
+    kind: a.kind, owner: a.owner,
+    payload: a.payload_state ? a.payload_state.type : null,
+    payload_health: a.payload_state ? a.payload_state.health : null,
+    last_tel: a.bus_state ? a.bus_state.last_telemetry_time : null,
+    cyber_vulns: a.cyber_vulnerabilities || [],
+  });
   const station = assets.find((a) => a.kind === "ground_station"); if (station) DEFAULT_STATION = station.id;
 
   // Fleet rail: next-contact countdown + power gauge + alarm badge (§4.1), with a filter bar (§4).
@@ -275,6 +289,7 @@ function fleetPasses(a, soh, bus, alarms) {     // does asset pass the active fl
   if (FLEET_FILTER === "bus-red") return soh === "red";
   if (FLEET_FILTER === "safed") return bus === "safe_mode";
   if (FLEET_FILTER === "attack") return alarms > 0;
+  if (FLEET_FILTER === "payload") return a.payload_state && a.payload_state.health && a.payload_state.health !== "green";
   return true;
 }
 
@@ -394,7 +409,22 @@ async function openDrill(assetId) {
   catch { $("drill-title").textContent = `${assetId} — no telemetry (fog / not your asset)`; $("drill-params").innerHTML = ""; return; }
   DRILL_DB = {};
   Object.values(tele.subsystems).forEach((arr) => arr.forEach((p) => (DRILL_DB[p.id] = p)));
-  $("drill-title").textContent = `${assetId} — bus ${tele.bus_mode || "—"}`;
+  // Pass-gated telemetry semantics (§5.4): show "as-of HH:MM:SS" / stale-since when out of contact.
+  const lt = ASSETS[assetId]?.last_tel || 0;
+  const ageS = lt > 0 ? Math.max(0, Math.round((NOW - lt) / 1e6)) : null;
+  const staleTag = (ageS != null && ageS > 60)
+    ? ` · <span class="muted">stale since ${iso(lt)} (${Math.floor(ageS / 60)}m)</span>`
+    : (ageS != null ? ` · <span class="muted">as-of ${iso(lt)}</span>` : "");
+  $("drill-title").innerHTML = `${assetId} — bus ${tele.bus_mode || "—"}${staleTag}`;
+  // Populate the overlay-param selector for this asset's params (Compare-to-nominal toggled separately).
+  const overlaySel = $("drill-overlay");
+  if (overlaySel) {
+    const prev = overlaySel.value;
+    const opts = ['<option value="">(no overlay)</option>'].concat(
+      Object.values(tele.subsystems).flat().map((p) => `<option value="${p.id}">${p.label}</option>`));
+    overlaySel.innerHTML = opts.join("");
+    if (prev) overlaySel.value = prev;
+  }
   // Each subsystem card carries its parameter chips (→ graph) and its command verbs (→ compose).
   const a = ASSETS[assetId] || {};
   $("drill-params").innerHTML = Object.entries(tele.subsystems).map(([sub, params]) => {
@@ -420,23 +450,40 @@ async function renderRecovery(assetId, busMode) {
   const done = st.confirmed;   // confirmation is the first pass; later steps complete on finish
   const steps = st.steps.map((s, i) =>
     `<span class="rstep ${done && i === 0 ? "ok" : ""}">${i + 1}.${s}</span>`).join(" → ");
+  // Any unpatched cyber vulnerability on this safed asset → surface a one-click deep-link to
+  // def.patch_cyber pre-filled with the vector, so the operator can clear the root cause and make
+  // recovery stick. The op may patch pre-emptively (before diagnosis) or after the re-safe.
+  const cyberVuln = (ASSETS[assetId]?.cyber_vulns || []).find((v) => !v.patched) || null;
+  const patchLink = cyberVuln
+    ? ` <button class="vbtn" id="rec-patch" data-vector="${cyberVuln.vector}">Patch (def.patch_cyber)</button>`
+    : "";
   const blocked = st.blocked_reason
     ? `<div class="red">⚠ ${st.blocked_reason} — remove the root cause (patch the vector / kill the jammer), then recover again.</div>`
     : "";
   strip.innerHTML = `<div class="recovery">
     <b class="red">SAFE MODE</b> · diagnosis: ${st.diagnosis} · passes ${st.passes_used}/${st.passes_needed}
-    <button class="vbtn" id="rec-begin" data-asset="${assetId}">Begin recovery</button>
+    <button class="vbtn" id="rec-begin" data-asset="${assetId}">Begin recovery</button>${patchLink}
     <div class="rsteps">${steps}</div>${blocked}</div>`;
   $("rec-begin").onclick = async () => {
     const r = await api.post(`/api/sessions/${SID}/recovery/${CELL}/${assetId}`, { via: DEFAULT_STATION });
     $("rec-begin").textContent = r.ok ? `recovery scheduled (${r.passes_used} pass${r.passes_used > 1 ? "es" : ""})` : `cannot start: ${r.reason}`;
+  };
+  const patchBtn = $("rec-patch");
+  if (patchBtn) patchBtn.onclick = () => {
+    loadVerb(assetId, "def.patch_cyber");
+    try {
+      const p = JSON.parse($("o-params").value);
+      p.vector = patchBtn.dataset.vector;
+      $("o-params").value = JSON.stringify(p);
+      previewOrder();
+    } catch { /* template already correct */ }
   };
 }
 
 // Which command verbs belong on which telemetry-subsystem card (§5.1 cards carry their own buttons).
 const VERB_SUBSYSTEM = {
   "eps.shed_load": "power", "eps.restore_load": "power", "eps.set_charge_mode": "power",
-  "adcs.set_mode": "attitude", "cdh.dump_storage": "cdh",
+  "adcs.set_mode": "attitude", "cdh.dump_storage": "cdh", "def.patch_cyber": "cdh",
   "satcom.mitigate_interference": "payload", "satcom.shift_users": "payload",
   "isr.collect_now": "payload", "isr.schedule_collection": "payload",
 };
@@ -459,7 +506,14 @@ async function drawParam(param) {
   const ghost = $("drill-nominal")?.checked
     ? await api.get(`${base}?n=120&nominal=1`).catch(() => null)
     : null;
-  window.Graph && Graph.draw($("drill-graph"), series, DRILL_DB[param], ghost);
+  // Two-param overlay (§5.3): plot a second parameter alongside, normalized for shape comparison.
+  const overlayParam = $("drill-overlay")?.value;
+  const overlay = overlayParam && overlayParam !== param
+    ? await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${DRILL.asset}/${overlayParam}?n=120`).catch(() => null)
+    : null;
+  // Pass-correlation shading (§9.1): the hostile-effect time spans on this asset within the window.
+  const windows = EFFECT_WINDOWS.filter((w) => w.target === DRILL.asset);
+  window.Graph && Graph.draw($("drill-graph"), series, DRILL_DB[param], ghost, { overlay, windows });
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -476,6 +530,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
   $("o-target").oninput = previewOrder; $("o-params").oninput = previewOrder;
   $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);
+  $("drill-overlay").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("present").onchange = (e) => document.body.classList.toggle("present", e.target.checked);
   document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => step(+b.dataset.step));
   document.querySelectorAll(".cell").forEach((b) => b.onclick = () => setCell(b.dataset.cell));

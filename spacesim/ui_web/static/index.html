@@ -52,6 +52,7 @@
       <div id="fleet-filter" class="ctrl">
         <button class="chip active" data-filter="all">All</button>
         <button class="chip" data-filter="bus-red">Bus-red</button>
+        <button class="chip" data-filter="payload">Payload-degraded</button>
         <button class="chip" data-filter="attack">Under-attack</button>
         <button class="chip" data-filter="safed">Safed</button>
       </div>
@@ -134,6 +135,7 @@
       <div>
         <div class="ctrl" style="margin-bottom:6px">
           <label class="toggle"><input id="drill-nominal" type="checkbox"> compare to nominal</label>
+          <label class="toggle">overlay <select id="drill-overlay"><option value="">(no overlay)</option></select></label>
         </div>
         <canvas id="drill-graph" width="540" height="200"></canvas>
         <h3>Subsystem log (symptoms — diagnose the cause yourself)</h3>

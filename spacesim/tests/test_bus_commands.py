@@ -129,6 +129,30 @@ def test_isr_verb_rejected_on_satcom_payload():
     assert mgr.validate_order("blue", _cmd("ISR-EO-1", "isr.collect_now")).reason == "no_payload_for_verb"
 
 
+def test_patch_cyber_lets_recovery_stick():
+    """def.patch_cyber removes a cyber root cause so the next recovery attempt actually sticks."""
+    from spacesim.engine.bus import enter_safe_mode
+    mgr = _mgr()
+    sat = mgr.world.assets["ISR-EO-1"]
+    sat.cyber_vulnerabilities = [{"vector": "ground_modem", "patchable": True, "patched": False}]
+    enter_safe_mode(sat.bus_state, now=mgr.sim.clock.now, cause="cyber")
+    mgr.sim._initial_state = mgr.world.model_dump()  # baseline AFTER safing so replay is consistent
+    mgr.recovery.difficulty = "quick"
+    # Without a patch, recovery re-safes.
+    res = mgr.begin_recovery("blue", "ISR-EO-1")
+    mgr.advance_to(res["finish_at"] + 1)
+    assert mgr.world.assets["ISR-EO-1"].bus_state.safe_mode.blocked_reason  # re-safed
+    # Patch the vector (defender's defensive verb), then recover again → sticks.
+    ack = mgr.issue_order("blue", _cmd("ISR-EO-1", "def.patch_cyber", vector="ground_modem"))
+    assert ack.ok
+    mgr.advance_to(ack.earliest_window[1] + 1)
+    assert mgr.world.assets["ISR-EO-1"].cyber_vulnerabilities[0]["patched"] is True
+    res2 = mgr.begin_recovery("blue", "ISR-EO-1")
+    mgr.advance_to(res2["finish_at"] + 1)
+    assert mgr.world.assets["ISR-EO-1"].bus_state.mode == "nominal"
+    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
+
+
 def test_lost_asset_command_fails_gracefully():
     w = _one(BusState())
     w.assets["SAT"].health = "destroyed"

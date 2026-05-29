@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 7 — 128 tests green.** Implemented end-to-end:
+**Backend feature-complete through Phase 7 — 129 tests green.** Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -290,6 +290,19 @@ test first, implement to green, and add a regression test for every resolved fin
   **Remaining UI polish:** two-param graph overlay + pass-correlation shading (P-UI-3), dedicated
   tasking rail (P-UI-6), multi-display reflow (P-UI-8); `def.patch_cyber` verb (engine) for the
   per-step recovery deep-link.
+- **2026-05-27:** **UI plan finishing pass + remaining-work checklist (§16.1).** Added
+  **`def.patch_cyber`** verb so the operator can clear the cyber root cause and make recovery stick
+  (closes the attack→diagnose→recover loop end-to-end). Telemetry graph gained **pass-correlation
+  shading** (hostile-effect time spans from a new fog-respecting `CellView.effect_windows`) and a
+  **two-param overlay** (normalized second trace from a per-asset parameter selector). Drill-down
+  shows a **stale-since / as-of** banner from the asset's `last_telemetry_time`. Fleet filter gained
+  a **Payload-degraded** chip. Recovery strip surfaces a **Patch (def.patch_cyber)** deep-link
+  pre-filled with the asset's first unpatched vector. **129 tests green** (+1
+  `test_patch_cyber_lets_recovery_stick` — recovery re-safes without patch, sticks after patch,
+  replay-identical). pyflakes clean, browser-verified the full cyber→safe→symptoms+overlay+shading-
+  capable→recovery+patch loop on training-basics. Documented the explicit **remaining-work
+  checklist** in `OPERATOR-UI-DESIGN.md` §16.1 (tasking rail, role selector, inline sparklines,
+  multi-display reflow, the rest of the catalog verbs, broader consequence-confirm).
 - **Still open (deferred / v1.1+):** browser GUI **unverified headless** (needs a human or
   browser-driver to confirm visuals; backend covered). Sat caps ≤24/≤3/48 not yet validated at
   content load. Posture/defense command persistence (`def.harden`, `def.set_threat_warning`).

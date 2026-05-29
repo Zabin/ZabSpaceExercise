@@ -21,12 +21,19 @@ class CellController:
         known_tracks = [t.model_dump() for t in world.tracks if t.owner == cell]
 
         visible_effects = []
+        effect_windows = []
         for ae in world.active_effects:
             if own_owner.get(ae.target) == cell:
                 visible_effects.append({
                     "target": ae.target,
                     "symptom": ae.outcome,
                     # Source is withheld unless the effect is overtly attributable.
+                    "attributed": ae.attribution == "overt",
+                })
+                # Time spans for pass-correlation shading on the telemetry graph (§9.1) — own assets only.
+                effect_windows.append({
+                    "target": ae.target, "category": getattr(ae, "category", ""),
+                    "start": ae.start, "end": ae.end,
                     "attributed": ae.attribution == "overt",
                 })
 
@@ -39,6 +46,7 @@ class CellController:
             own_sensors=own_sensors,
             known_tracks=known_tracks,
             visible_effects=visible_effects,
+            effect_windows=effect_windows,
             messages=messages,
             objectives=objectives or {},
         )

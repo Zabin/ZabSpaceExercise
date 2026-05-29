@@ -136,9 +136,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   signatures (jam→RX power, cyber→FSW errors, DE→SNR, power sag, kinetic→loss-of-signal). Pure,
   never mutates state/RNG (like `scene.py`). `sample/series(..., nominal=True)` drop the attack term
   → the clean baseline ghost the "compare to nominal" overlay draws (`&nominal=1` on the series endpoint).
-- `spacesim/engine/buscommands.py` — real catalog bus/payload verbs (EPS shed/restore/charge-mode,
-  `adcs.set_mode`, `cdh.dump_storage`, `satcom.mitigate_interference`/`shift_users`, `isr.collect_now`/
-  `schedule_collection`); `apply_command` mutates `BusState`/`PayloadState` inside the deterministic
+- `spacesim/engine/buscommands.py` — real catalog bus/payload/defense verbs (EPS shed/restore/charge-
+  mode, `adcs.set_mode`, `cdh.dump_storage`, `satcom.mitigate_interference`/`shift_users`,
+  `isr.collect_now`/`schedule_collection`, `def.patch_cyber` for the recovery-loop root-cause fix);
+  `apply_command` mutates `BusState`/`PayloadState`/`cyber_vulnerabilities` inside the deterministic
   `execute_command` handler (replay-safe, observable in SOH/telemetry), `can_issue` is the plan-time
   validator gate (payload verbs gated by payload type + bus availability). Carried by the order
   system's `command` action (uplink/stored delivery like `maneuver`). New verbs extend `apply_command`.

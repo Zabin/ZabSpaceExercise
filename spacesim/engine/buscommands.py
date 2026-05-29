@@ -19,7 +19,8 @@ BUS_VERBS = {"eps.shed_load", "eps.restore_load", "eps.set_charge_mode",
              "adcs.set_mode", "cdh.dump_storage"}
 PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users",
                  "isr.collect_now", "isr.schedule_collection"}
-COMMAND_VERBS = BUS_VERBS | PAYLOAD_VERBS
+DEFENSE_VERBS = {"def.patch_cyber"}
+COMMAND_VERBS = BUS_VERBS | PAYLOAD_VERBS | DEFENSE_VERBS
 
 # Payload verbs are valid only on a payload of a matching mission type (FR-B2: the bus/payload fit).
 _PAYLOAD_TYPES_FOR = {
@@ -103,6 +104,14 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
             return False, "cannot_collect"      # safed / power-red / storage full (bus gates payload)
         a.payload_state.collecting = True        # fills onboard storage over the coming steps
         return True, "collecting"
+
+    if verb == "def.patch_cyber":
+        # Defender removes a cyber root cause: patch the matching vulnerability so recovery sticks.
+        vector = params.get("vector")
+        for v in getattr(a, "cyber_vulnerabilities", []):
+            if vector is None or v.get("vector") == vector:
+                v["patched"] = True
+        return True, "patched"
 
     return False, "unknown"
 

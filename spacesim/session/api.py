@@ -34,6 +34,7 @@ class CellView(BaseModel):
     own_sensors: list[dict] = Field(default_factory=list)
     known_tracks: list[dict] = Field(default_factory=list)     # belief about other-side objects
     visible_effects: list[dict] = Field(default_factory=list)  # symptoms on own assets (attribution-limited)
+    effect_windows: list[dict] = Field(default_factory=list)   # start/end of active effects on own assets (for graph shading)
     messages: list[dict] = Field(default_factory=list)
     objectives: dict = Field(default_factory=dict)
 

@@ -3,18 +3,32 @@
 // the trace colored by the current point's status. No dependencies.
 window.Graph = (function () {
   const COL = { green: "#6fcf6f", yellow: "#e0c24a", red: "#e06a6a", los: "#7a8aa0" };
-  // `ghost` (optional) is the nominal "what it should look like" series drawn faint for comparison.
-  function draw(canvas, series, spec, ghost) {
+  // Time-axis line graph with optional faint dashed `ghost` (nominal), an optional second `overlay`
+  // series (normalized to the same plot for shape comparison), and optional `windows` time spans
+  // shaded behind everything to correlate the trace with hostile-effect intervals (§9.1).
+  function draw(canvas, series, spec, ghost, opts) {
+    opts = opts || {};
+    const overlay = opts.overlay, windows = opts.windows || [];
     const x = canvas.getContext("2d"), W = canvas.width, H = canvas.height;
     x.fillStyle = "#0a0f15"; x.fillRect(0, 0, W, H);
     const pts = (series.points || []).filter((p) => p.value !== null);
     const gpts = ((ghost && ghost.points) || []).filter((p) => p.value !== null);
+    const opts2 = ((overlay && overlay.points) || []).filter((p) => p.value !== null);
     if (!pts.length) { x.fillStyle = "#7a8aa0"; x.font = "12px monospace"; x.fillText("loss of signal", 12, H / 2); return; }
     const vals = pts.map((p) => p.value).concat(gpts.map((p) => p.value)).concat([spec.soft, spec.hard]);
     let lo = Math.min(...vals), hi = Math.max(...vals); if (hi === lo) hi = lo + 1;
     const pad = (hi - lo) * 0.1; lo -= pad; hi += pad;
-    const px = (i, len) => 36 + i / ((len || pts.length) - 1 || 1) * (W - 48);
+    // Time-axis bounds drawn from the live series (graphs the same window the operator asked for).
+    const t0 = pts[0].t, t1 = pts[pts.length - 1].t || (t0 + 1);
+    const px = (t) => 36 + (t - t0) / (t1 - t0) * (W - 48);
     const py = (v) => H - 18 - (v - lo) / (hi - lo) * (H - 30);
+    // Pass-correlation shading: each effect window that overlaps the visible range gets a faint band.
+    for (const w of windows) {
+      const a = Math.max(t0, w.start), z = Math.min(t1, w.end || t1);
+      if (z <= a) continue;
+      x.fillStyle = w.attributed ? "rgba(224,106,106,0.10)" : "rgba(224,194,74,0.10)";
+      x.fillRect(px(a), 12, Math.max(2, px(z) - px(a)), H - 30);
+    }
     // limit lines
     x.setLineDash([4, 3]);
     for (const [lim, c] of [[spec.soft, "#e0c24a"], [spec.hard, "#e06a6a"]]) {
@@ -23,17 +37,28 @@ window.Graph = (function () {
     // nominal ghost (faint, dashed) — drawn under the live trace
     if (gpts.length) {
       x.setLineDash([3, 3]); x.strokeStyle = "rgba(159,176,192,0.55)"; x.lineWidth = 1; x.beginPath();
-      gpts.forEach((p, i) => (i ? x.lineTo(px(i, gpts.length), py(p.value)) : x.moveTo(px(i, gpts.length), py(p.value))));
+      gpts.forEach((p, i) => (i ? x.lineTo(px(p.t), py(p.value)) : x.moveTo(px(p.t), py(p.value))));
+      x.stroke();
+    }
+    // overlay trace (second parameter) — normalized so shape/correlation is visible across scales.
+    if (opts2.length) {
+      const ov = opts2.map((p) => p.value);
+      const olo = Math.min(...ov), ohi = Math.max(...ov), span = (ohi - olo) || 1;
+      const opy = (v) => H - 18 - (v - olo) / span * (H - 30);
+      x.setLineDash([1, 3]); x.strokeStyle = "#9bd3ff"; x.lineWidth = 1; x.beginPath();
+      opts2.forEach((p, i) => (i ? x.lineTo(px(p.t), opy(p.value)) : x.moveTo(px(p.t), opy(p.value))));
       x.stroke();
     }
     x.setLineDash([]);
     // live trace
     x.strokeStyle = COL[pts[pts.length - 1].status] || "#9fb0c0"; x.lineWidth = 1.5; x.beginPath();
-    pts.forEach((p, i) => (i ? x.lineTo(px(i), py(p.value)) : x.moveTo(px(i), py(p.value))));
+    pts.forEach((p, i) => (i ? x.lineTo(px(p.t), py(p.value)) : x.moveTo(px(p.t), py(p.value))));
     x.stroke();
     x.fillStyle = "#9fb0c0"; x.font = "11px monospace";
     x.fillText(`${spec.label} (${spec.unit})`, 36, 12);
-    if (gpts.length) { x.fillStyle = "rgba(159,176,192,0.7)"; x.fillText("- - nominal", W - 92, 12); }
+    let legendX = W - 110;
+    if (opts2.length) { x.fillStyle = "#9bd3ff"; x.fillText(`···${overlay.param}`, legendX, 12); legendX -= 110; }
+    if (gpts.length) { x.fillStyle = "rgba(159,176,192,0.7)"; x.fillText("- - nominal", legendX, 12); }
     x.fillStyle = "#9fb0c0";
     x.fillText(hi.toPrecision(3), 2, 14); x.fillText(lo.toPrecision(3), 2, H - 6);
   }
