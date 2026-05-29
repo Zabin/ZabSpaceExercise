@@ -278,7 +278,7 @@ swapping, genuine wall clock.**
   "AI-Red aggressiveness," this v1 means **White-Cell-driven scripted behavior**: the parameter
   scales the *pre-scripted* injects/plans the facilitator runs for an unseated or
   facilitator-played cell (e.g., how many jammers activate, whether kinetic is authorized). A
-  genuine autonomous opponent is a documented **v2 seam** (`08-build-roadmap.md` Phase 8), not a
+  genuine autonomous opponent is a documented **v2 seam** (`docs/FUTURE-WORK.md` §1), not a
   v1 deliverable. Vignette text and the parameter tooltips shall be worded accordingly.
 
 ---
@@ -476,21 +476,23 @@ appending to a new log** — design these reads/writes now even though the UI is
 
 ## 10. Milestones & acceptance criteria
 
-The build sequence is detailed in `08-build-roadmap.md`; this section states the **milestone
-gates and acceptance criteria** that declare each milestone done. Requirement tags trace to §5/§9.
+This section is the **authoritative phase plan** — it consolidates the previously separate
+`08-build-roadmap.md` (now retired). It states the **milestone gates, acceptance criteria, and
+current status** for each milestone. Requirement tags trace to §5/§9; remaining items live in
+`docs/FUTURE-WORK.md`.
 
-| Milestone | Delivers | Acceptance criteria (gate) |
-|---|---|---|
-| **M0 Skeleton** | Repo, test harness, CI-style local checks, data loaders | Project builds; a trivial vignette JSON loads and validates; lint/test pipeline runs. |
-| **M1 Deterministic core** | Clock, world state, action log, state hashing | **NFR-3** property test passes: replay reproduces identical hashes across a random action sequence. (FR-E1/E2, FR-L1) |
-| **M2 Orbits & windows** | Propagator + AccessProvider (moderate) | For a known TLE + station, computed pass times match a reference (Skyfield) within tolerance; all six channel windows compute. (FR-E3/E4) |
-| **M3 Effects & SDA** | EffectResolver, TrackCatalog, custody decay, cyber exception | Jam denies a link in its footprint window; kinetic spawns debris + political consequence; cyber resolves outside any pass; custody decays/resets; weapons-quality gate blocks an under-tracked engagement. (FR-E6/E7/E8) |
-| **M3.5 Bus & payload** | BusState SOH, payload gating, pass-gated telemetry, safe-mode induce | Battery drains in eclipse → red alarm; cyber induces safe mode per susceptibility dial; safe-mode discovered only at next pass via stored-telemetry dump; full storage blocks ISR collect. (FR-B1–B5) |
-| **M4 Session & one vignette (headless)** | SessionManager, CellController/fog, RoleRegistry, in-process API | Scripted test plays **Vignette 1** to a win condition, then **rewinds and branches**; fog verified (Red cannot read Blue hidden state via API); roles scope asset access. (FR-W3/W6, OR-1/2, FR-E7) |
-| **M4.5 Planning, tasking & recovery (headless)** | PlannedActivity scheduler, ISL/stored paths, sensor tasking, safe-mode recovery | Command queues to next pass *or* sooner via ISL; sensor tasking shrinks uncertainty and unlocks a gated engagement; multi-pass safe-mode recovery with **re-safe on persistent root cause**, then success after patch; `quick` dial → one-pass recovery. (FR-P1–P4, FR-B5) |
-| **M5 GUI** | PyQt app: White Cell console, role-scoped operator console, **2D ECI + RIC**, SOH/telemetry, timeline, queue, inject panel, classification banner, scenario builder, hot-seat blank/handoff | A facilitator runs **Vignette 1 entirely from the GUI**: builds/loads it, assigns roles by checkbox, starts the **wall clock**, hot-seat-swaps Blue↔Red with screen blank, plans a command into a future pass, tasks a sensor, watches a jam degrade ISR and a satellite enter and recover from safe mode — with every disabled control explaining itself and the RIC view showing a relative approach. (FR-W1/2/4/5, FR-S1–S3, OR-1–6, UR, **the demo DoD below**) |
-| **M6 Content** | Remaining 7 vignettes as JSON; scenario-builder validation polish | All 8 vignettes load, pass validation, and are playable; a White Cell user authors a new simple vignette in-app and saves valid JSON. (FR-S1–S3) |
-| **M7 Logging & v2 seams** | Action-log persistence; documented seams for replay/AAR/CSV/branch-to-live, 3D, networking, constellation aggregation | Action log written at exercise end and proven sufficient to deterministically reconstruct the run offline; seam docs/scaffolds exist (no full v2 build). (FR-L1/L2, §3.2) |
+| Milestone | Delivers | Acceptance criteria (gate) | Status |
+|---|---|---|---|
+| **M0 Skeleton** | Repo, test harness, CI-style local checks, data loaders | Project builds; a trivial vignette JSON loads and validates; lint/test pipeline runs. | ✅ done |
+| **M1 Deterministic core** | Clock, world state, action log, state hashing | **NFR-3** property test passes: replay reproduces identical hashes across a random action sequence. (FR-E1/E2, FR-L1) | ✅ done (`test_determinism.py` is the permanent gate) |
+| **M2 Orbits & windows** | Propagator + AccessProvider (moderate) | For a known TLE + station, computed pass times match a reference (Skyfield) within tolerance; all six channel windows compute. (FR-E3/E4) | ✅ done (Skyfield-validated <1° agreement; all six channels + ISL) |
+| **M3 Effects & SDA** | EffectResolver, TrackCatalog, custody decay, cyber exception | Jam denies a link in its footprint window; kinetic spawns debris + political consequence; cyber resolves outside any pass; custody decays/resets; weapons-quality gate blocks an under-tracked engagement. (FR-E6/E7/E8) | ✅ done |
+| **M3.5 Bus & payload** | BusState SOH, payload gating, pass-gated telemetry, safe-mode induce | Battery drains in eclipse → red alarm; cyber induces safe mode per susceptibility dial; safe-mode discovered only at next pass via stored-telemetry dump; full storage blocks ISR collect. (FR-B1–B5) | ✅ done |
+| **M4 Session & one vignette (headless)** | SessionManager, CellController/fog, RoleRegistry, in-process API | Scripted test plays **Vignette 1** to a win condition, then **rewinds and branches**; fog verified (Red cannot read Blue hidden state via API); roles scope asset access. (FR-W3/W6, OR-1/2, FR-E7) | ✅ done |
+| **M4.5 Planning, tasking & recovery (headless)** | PlannedActivity scheduler, ISL/stored paths, sensor tasking, safe-mode recovery | Command queues to next pass *or* sooner via ISL; sensor tasking shrinks uncertainty and unlocks a gated engagement; multi-pass safe-mode recovery with **re-safe on persistent root cause**, then success after patch; `quick` dial → one-pass recovery. (FR-P1–P4, FR-B5) | ✅ done |
+| **M5 GUI** | Web app: White Cell console, role-scoped operator console, **2D map + 3D globe**, SOH/telemetry, timeline, queue, inject panel, classification banner, hot-seat handoff | A facilitator runs **Vignette 1 entirely from the GUI**: loads it, switches cells, plans a command into a future pass, tasks a sensor, watches a jam degrade ISR and a satellite enter and recover from safe mode — with every disabled control explaining itself. (FR-W1/2/4/5, FR-S1–S3, OR-1–6, UR, **the demo DoD below**) | ✅ done (FastAPI + browser; backend paths test-covered; browser visual rendering unverified-headless — see `FUTURE-WORK.md` §8) |
+| **M6 Content** | Remaining 7 vignettes as YAML; scenario tooling | All 8 vignettes load, pass validation, and are playable; real-TLE asset addition works; Red doctrine profiles selectable. (FR-S1–S3) | ✅ done (all 8 vignettes + TLE force-add + Red doctrine presets `china_integrated`/`russia_ew_first`/`generic`) |
+| **M7 Logging, AAR & v2 seams** | Action-log persistence; AAR replay; documented seams for high fidelity, networking, constellation aggregation | Action log written at exercise end and proven sufficient to deterministically reconstruct the run offline; AAR scrubber + branch comparison; seam docs/scaffolds exist (no full v2 build). (FR-L1/L2, §3.2) | ◻️ partial — action log + AAR scrubber + branch compare ✅; the **high-fidelity propagator swap** and **LAN multiplayer transport** seam-proofs (formerly Phase 8) are scaffolded only — see `FUTURE-WORK.md` §1, §2, §4. |
 
 ### 10.1 Definition of Done — first demo (single named scenario)
 **Vignette 1 "LEO ISR Denial," 2 Blue seats + 2 Red seats + 1 White, hot-seat on one laptop:**
@@ -502,6 +504,22 @@ the payload stop, **confirms safe mode at the next pass**, runs a recovery, and 
 **re-safed** until the root cause is addressed. Seats hand off via **screen blank**; White Cell
 **pauses** once for a timeout and **rewinds** once to re-run a decision. The action log is
 written at the end. **If all of that works from the GUI, v1 is a success.**
+
+### 10.2 v1 definition-of-done — checklist
+
+The seven gates the v1 PME tool must meet (consolidated from the retired roadmap):
+
+1. Deterministic engine with exact rewind/undo/branch (`test_determinism.py` permanent gate). ✅
+2. Moderate-fidelity orbits + all six access-window channels + TLE. ✅
+3. Full order/effect/cyber/custody model with the five-D's resolver and debris/escalation. ✅
+4. Session layer with fog-of-war and the in-process `SessionAPI`. ✅
+5. A working UI: world map + 3D globe, pass timelines, countdowns, order queue, fleet rail,
+   subsystem drill-down with command-verb buttons, recovery strip, and the full White-Cell
+   surface (time travel, injects, AAR scrubber). ✅ — see §16.
+6. All eight vignettes loadable and tunable; fictional defaults plus real-TLE asset addition. ✅
+7. **Clean seams** proven for high fidelity and LAN multiplayer. ◻️ scaffolded (engine/UI
+   separation enforced by the import-guard test, `SessionAPI` Protocol exists), full
+   seam-proofs in `FUTURE-WORK.md` §1 & §2.
 
 ---
 
@@ -701,7 +719,7 @@ computation does not block the event loop; memory stable over a 2-hour run.
 
 ## 16. Phased schedule & effort
 
-Sequencing follows `08-build-roadmap.md`; this is the milestone-level view with relative effort
+Sequencing follows §10 above; this is the milestone-level view with relative effort
 (S/M/L) and dependencies. (No calendar dates — single maintainer, user-driven pace.)
 
 | Phase / Milestone | Effort | Depends on | Key output |

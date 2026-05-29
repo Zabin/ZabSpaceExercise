@@ -1,4 +1,4 @@
-"""Red doctrine profiles — selectable AI-Red behavior presets (``08-build-roadmap.md`` P6).
+"""Red doctrine profiles — selectable AI-Red behavior presets (``00-BUILD-SPECIFICATION.md`` §10 M6).
 
 A light behavior layer that issues doctrine-flavored orders for Red assets through the same
 OrderSystem a human Red cell would use (so it is fully constrained by windows, ROE, and custody):

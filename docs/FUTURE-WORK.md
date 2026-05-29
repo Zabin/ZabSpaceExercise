@@ -9,7 +9,7 @@ Items are grouped by area, each with a short rationale and pointers into the cod
 a future implementer can pick any one up without scanning history. Anything not listed here is
 either implemented or covered by an existing in-scope ticket.
 
-## 1. Multiplayer & networking (P8 / `08-build-roadmap.md`)
+## 1. Multiplayer & networking (M7 seam, formerly Phase 8)
 
 - **LAN multiplayer cell separation.** The session layer already routes every interaction through
   a `SessionAPI` and the engine is UI-agnostic; the seam exists but is exercised only in-process.
@@ -64,7 +64,7 @@ Each one follows the same pattern: a small mutation in `apply_command`, a regres
   shapes per object type for joint-/coalition-use credibility.
 - **Δv "years of life" panel.** Dedicated propulsion sub-tab spelled out by
   `14-delta-v-economy.md` — the data exists in `AssetResources.delta_v_ms`, the panel does not.
-- **Full CesiumJS 3D globe.** The v1.1 follow-on referenced in `08-build-roadmap.md`. The
+- **Full CesiumJS 3D globe.** The v1.1 follow-on referenced in `00-BUILD-SPECIFICATION.md` §10 M5. The
   self-contained orthographic globe (`ui_web/static/globe.js`) covers the v1 requirement; a
   Cesium variant adds higher-fidelity rendering for projector / White-Cell display.
 - **Constellation/grouped fleet-rail badges.** Tied to the constellation-aggregation item above.

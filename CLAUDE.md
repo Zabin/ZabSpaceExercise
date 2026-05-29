@@ -23,7 +23,7 @@ Remaining: P5.5 full CesiumJS 3D globe (v1.1) and P8 (fidelity/multiplayer seam 
 1. `00-BUILD-SPECIFICATION.md` — the binding v1 spec. **On any conflict, the build spec wins.**
 2. `01-architecture-overview.md` + `04-data-model.md` — the architecture and data contract.
 3. `01-research/` files (`01`–`06`) — *why* the rules are what they are.
-4. `08-build-roadmap.md` — phased build sequence (the plan of record).
+4. `00-BUILD-SPECIFICATION.md` §10 — the consolidated phase plan (M0–M7) with current status. Deferred items live in `docs/FUTURE-WORK.md`.
 5. Remaining design docs (`03`,`05`–`07`,`09`–`15`) and `02-vignettes/` as each phase needs them.
 
 ## Tech stack (leading recommendation — confirm at Phase 0)
@@ -70,7 +70,7 @@ spacesim/
 - Orbital fidelity: **moderate** (Keplerian + J2, TLE via Skyfield), behind interfaces
   (`Propagator`, `AccessProvider`, `EffectResolver`) so a high-fidelity model drops in later.
 
-## Build phases (from `08-build-roadmap.md`)
+## Build phases (consolidated in `00-BUILD-SPECIFICATION.md` §10)
 
 - **P0** Skeleton + import guard.
 - **P1** Deterministic core (`WorldState`, `SimClock`, `Scheduler`, `EventLog`, `Snapshot`, seeded

@@ -99,4 +99,4 @@ future then costs a transport adapter, not a rewrite.
 - What each cell can see/do: `05-cell-interfaces.md`
 - Time travel & vignette control: `06-white-cell-controls.md`
 - The API contract & network seam: `07-api-and-networking.md`
-- Build order: `08-build-roadmap.md`
+- Build order: `00-BUILD-SPECIFICATION.md` §10

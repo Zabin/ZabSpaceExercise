@@ -76,7 +76,6 @@ space-control-sim/
     ├── 05-cell-interfaces.md          Red/Blue/White UX and permitted actions
     ├── 06-white-cell-controls.md      Vignette selection, time travel, injects
     ├── 07-api-and-networking.md       Client–server contract (future)
-    ├── 08-build-roadmap.md            Phased milestones (expanded in 00-BUILD-SPECIFICATION)
     ├── 09-gui-principles.md           UX for semi-technical CAF space operators
     ├── 10-sda-3d-viewer.md            3D viewer of the cell's SDA belief (v1.1)
     ├── 11-command-planning-and-tasking.md  Plan-first commanding (pass/ISL) + sensor tasking
@@ -90,9 +89,10 @@ space-control-sim/
 
 1. **Read `03-software-design/00-BUILD-SPECIFICATION.md` first** — the binding ~20-page
    project-start spec (confirmed decisions, scope, requirements, architecture, data formats, UI,
-   milestones M0–M8 with acceptance criteria, traceability, risks). Where it and an older design
-   note disagree, the build spec wins for v1. Then read `08-build-roadmap.md` for the milestone
-   narrative — it sequences the work for a **single-machine Python build** with a clear seam for
+   milestones M0–M7 with acceptance criteria + current status, traceability, risks). Where it
+   and an older design note disagree, the build spec wins for v1. The build sequence is
+   consolidated in BUILD-SPEC §10; deferred / v2 items live in `docs/FUTURE-WORK.md`. It sets
+   up a **single-machine Python build** with a clear seam for
    later LAN multiplayer.
 2. Treat `04-data-model.md` and `03-simulation-engine.md` as the contract. The "moderate
    fidelity" math lives behind interfaces named in those files so a high-fidelity module
