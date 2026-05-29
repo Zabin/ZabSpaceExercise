@@ -74,6 +74,10 @@ vignette:
     - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
     - {id: ops_fidelity, label: "Ops Fidelity", type: enum, options: [tactical, realistic, full_ttc], default: realistic}
     - {id: landing_window_start_s, label: "Landing Window (s)", type: int, default: 5400}
+    - {id: ssn_blue_dispersion, label: "Blue SSN dispersion", type: enum,
+       options: [off, sparse, regional, global, proliferated], default: proliferated}
+    - {id: ssn_red_dispersion,  label: "Red SSN dispersion",  type: enum,
+       options: [off, sparse, regional, global, proliferated], default: regional}
   injects:
     - id: commercial_imagery_leak
       label: "Commercial SAR imagery reveals the surface group"

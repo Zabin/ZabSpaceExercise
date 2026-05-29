@@ -65,3 +65,4 @@ class Sensor(BaseModel):
     elevation_mask_deg: float = 5.0
     needs_lighting: bool = False         # optical: target sunlit + site in darkness
     max_range_m: Optional[float] = None  # None = unlimited (geometry only)
+    network: bool = False                # SSN member (request-only, not directly taskable)

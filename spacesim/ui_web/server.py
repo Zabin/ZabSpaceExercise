@@ -74,6 +74,17 @@ class RecoveryRequest(BaseModel):
     via: str
 
 
+class SSNRequestBody(BaseModel):
+    intent: str
+    target: str
+    regime: str
+    priority: str = "priority"
+
+
+class SSNCancelBody(BaseModel):
+    request_id: str
+
+
 def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     api = api or InProcessSession()
     app = FastAPI(title="Space Control & Orbital Warfare Exercise Simulator")
@@ -186,6 +197,32 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Schedule the multi-pass safe-mode recovery chain over command-uplink windows."""
         _require(sid)
         return api.begin_recovery(sid, cell, asset, req.via)
+
+    # ---- SSN (mock Space Surveillance Network) -------------------------------
+    @app.post("/api/sessions/{sid}/ssn/{cell}/request")
+    def ssn_submit(sid: str, cell: str, body: SSNRequestBody) -> dict:
+        """Submit an SSN collection request — accepted (scheduled) or FAILED with reason."""
+        _require(sid)
+        ack = api.submit_ssn_request(sid, cell, body.intent, body.target, body.regime, body.priority)
+        return {"ok": ack.ok, "id": ack.id, "reason": ack.reason, "state": ack.state,
+                "assigned_sensor": ack.assigned_sensor,
+                "collect_at": ack.collect_at, "product_at": ack.product_at}
+
+    @app.get("/api/sessions/{sid}/ssn/{cell}/requests")
+    def ssn_list(sid: str, cell: str) -> list:
+        _require(sid)
+        return api.list_ssn_requests(sid, cell)
+
+    @app.post("/api/sessions/{sid}/ssn/{cell}/cancel")
+    def ssn_cancel(sid: str, cell: str, body: SSNCancelBody) -> Ack:
+        _require(sid)
+        ok = api.cancel_ssn_request(sid, cell, body.request_id)
+        return Ack(ok=ok)
+
+    @app.get("/api/sessions/{sid}/ssn/{cell}/coverage")
+    def ssn_coverage(sid: str, cell: str, regime: str) -> dict:
+        _require(sid)
+        return api.ssn_coverage(sid, cell, regime)
 
     @app.get("/api/sessions/{sid}/injects")
     def injects_list(sid: str) -> list:

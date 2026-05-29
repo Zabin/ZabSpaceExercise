@@ -68,6 +68,10 @@
 
     <section class="panel">
       <h2>Tasking (sensor)</h2>
+      <div id="task-mode" class="ctrl" style="margin-bottom:6px">
+        <button class="chip active" data-tmode="organic">Organic</button>
+        <button class="chip" data-tmode="ssn">SSN request</button>
+      </div>
       <div class="ctrl">
         <label>Intent <select id="task-intent">
           <option value="search">Search</option>
@@ -75,7 +79,12 @@
           <option value="characterize" selected>Characterize</option>
           <option value="cue">Cue</option>
         </select></label>
-        <label>Sensor <select id="task-sensor"><option value="auto">auto</option></select></label>
+        <label id="task-sensor-wrap">Sensor <select id="task-sensor"><option value="auto">auto</option></select></label>
+        <label id="task-regime-wrap" style="display:none">Regime <select id="task-regime">
+          <option value="LEO">LEO</option><option value="MEO">MEO</option>
+          <option value="GEO">GEO</option><option value="HEO">HEO</option>
+          <option value="cislunar">cislunar</option>
+        </select></label>
         <label>Target <input id="task-target" placeholder="(track id)" style="width:8em" /></label>
         <label>Priority <select id="task-priority">
           <option value="routine">routine</option>
@@ -84,7 +93,10 @@
         </select></label>
         <button id="task-plan">Plan collection</button>
       </div>
+      <div id="task-coverage" class="preview"></div>
       <pre id="task-result" class="muted">—</pre>
+      <h3>SSN requests</h3>
+      <div id="ssn-queue" class="muted">(empty)</div>
     </section>
 
     <section class="panel">

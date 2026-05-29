@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 7 — 132 tests green.** Implemented end-to-end:
+**Backend feature-complete through Phase 7 — 141 tests green.** Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -316,6 +316,24 @@ test first, implement to green, and add a regression test for every resolved fin
   verified role filter (18→15 bus / 3 payload), sparklines (18 canvases), detached viewer (2nd
   window with belief scene). `OPERATOR-UI-DESIGN.md` §16.1 now states the v1 plan is complete; v2
   strategic items (constellation aggregation, APP-6 symbology, Δv panel) explicitly out of scope.
+- **2026-05-27:** **Mock SSN (`docs/SSN-DESIGN.md`) implemented end-to-end.** New
+  `spacesim/engine/ssn.py` (≈250 lines): per-cell `SSNNetwork` instantiated from a dispersion
+  preset (`sparse`/`regional`/`global`/`proliferated`) with deterministic site lat/lons + sensor
+  mix + space-based observers; `SSNSystem` does the hybrid-turnaround resolution (earliest viable
+  window inside the priority SLA × processing delay; coalition multiplier; saturation surcharge)
+  and registers two replay-safe handlers (`ssn_collect` stages on `world.ssn_staged`,
+  `ssn_deliver` applies a Track update + feed message). Cancel-before-collect tag-skips both
+  events (replay byte-identical). New `Sensor.network` flag; `build_world` instantiates each
+  enabled network; `SessionManager.submit_ssn_request`/`list_ssn_requests`/`cancel_ssn_request`/
+  `ssn_coverage`; four `/api/sessions/{sid}/ssn/...` endpoints. UI: tasking rail gains an Organic
+  vs SSN-request toggle, regime selector, coverage preview line (driven by `/ssn/.../coverage`),
+  and an SSN-requests queue with cancel. Vignettes V2 (Blue=regional), V7 (Blue=global), V8
+  (Blue=proliferated / Red=regional) opt in; default off elsewhere. **141 tests green** (+9
+  `test_ssn.py` covering the §15 acceptance bullets: coverage matrix, hybrid turnaround,
+  coalition delay, fog, replay-identity, cancel-replay-safety, custody → engage gate unlock).
+  Browser-verified: SSN mode on V7 shows "✓ coalition · global · 10 sensors for LEO" coverage,
+  submission returns SCHEDULED with SBO + collect/product times, queue renders, switching to
+  Red cell shows "✗ no network" because Red dispersion defaults to off.
 - **Still open (deferred / v1.1+):** consolidated into **`docs/FUTURE-WORK.md`** (single source
   of truth) and `00-BUILD-SPECIFICATION.md` §3.2 (explicit v1 non-goals). The browser GUI is
   still unverified-headless; that and the remaining catalog-verb gaps, multiplayer transport,

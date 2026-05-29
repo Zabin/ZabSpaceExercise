@@ -77,6 +77,7 @@ class VignetteContext:
     fog_of_war: str = "realistic_sda"
     objectives: dict = field(default_factory=dict)
     red_doctrine_profile: str = "generic"
+    ssn_networks: dict = field(default_factory=dict)   # cell -> SSNNetwork (only populated if vignette opts in)
 
 
 def list_vignettes() -> list[dict]:
@@ -132,6 +133,14 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
         sensor = Sensor.model_validate(spec)
         world.sensors[sensor.id] = sensor
 
+    # SSN per-cell networks (opt-in via vignette params; off by default) — `docs/SSN-DESIGN.md`.
+    ssn_networks: dict = {}
+    from spacesim.engine.ssn import instantiate_network as _ssn_instantiate
+    for cell, key in (("blue", "ssn_blue_dispersion"), ("red", "ssn_red_dispersion")):
+        net = _ssn_instantiate(world, cell, str(params.get(key, "off")))
+        if net is not None:
+            ssn_networks[cell] = net
+
     roe = {
         "kinetic_authorized": bool(params.get("red_kinetic_authorized", False)),
         "cyber_authorized": bool(params.get("cyber_authorized", params.get("red_cyber_authorized", False))),
@@ -146,6 +155,7 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
         fog_of_war=str(params.get("fog_of_war", "realistic_sda")),
         objectives=vignette.objectives,
         red_doctrine_profile=str(params.get("red_doctrine_profile", vignette.red_doctrine_profile)),
+        ssn_networks=ssn_networks,
     )
     return world, ctx
 

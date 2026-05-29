@@ -20,6 +20,7 @@ from spacesim.engine.orbit import OrbitState
 from spacesim.engine.orders import Order, OrderSystem, scene_from_world
 from spacesim.engine.recovery import RecoverySystem
 from spacesim.engine.simulation import Simulation
+from spacesim.engine.ssn import SSNRequest, SSNSystem
 from spacesim.engine.world import WorldState
 from spacesim.session.api import OrderAck
 from spacesim.session.cells import CellController
@@ -42,6 +43,8 @@ class SessionManager:
             root_cause_persists=bool(self.ctx.param_values.get("safe_mode_root_cause_persists", True)),
             access_config=self.osys.access_config,
         )
+        # Mock SSN — per-cell networks, request-tasked. Constructed always (empty dict if vignette opted out).
+        self.ssn = SSNSystem(self.sim, dict(self.ctx.ssn_networks), access_config=self.osys.access_config)
         self.started = False
         self.horizon = self.ctx.start_epoch + int(self.vignette.estimated_duration_min * 60 * 4 * 1_000_000)
 
@@ -85,6 +88,12 @@ class SessionManager:
         self.osys.world = self.sim.world
         self.osys.orders.clear()           # queued events were dropped by the rewind
         self.osys._sensor_bookings.clear()
+        # SSN requests + bookings + in-flight counters are all gone with the rewind too.
+        self.ssn.requests.clear()
+        self.ssn._bookings.clear()
+        for c in self.ssn._inflight:
+            self.ssn._inflight[c] = 0
+        self.ssn._counter = 0
 
     # -- intents ---------------------------------------------------------------
     def issue_order(self, cell: str, order: Order) -> OrderAck:
@@ -234,6 +243,22 @@ class SessionManager:
             if res.get("ok"):
                 return {**res, "via": station}
         return {"ok": False, "reason": "no_pass"}
+
+    # -- SSN (mock Space Surveillance Network — docs/SSN-DESIGN.md) -----------
+    def submit_ssn_request(self, cell: str, intent: str, target: str, regime: str,
+                           priority: str = "priority"):
+        """Submit a per-cell SSN request — returns the SSNAck (assigned sensor + collect/product times)."""
+        req = SSNRequest(id="", cell=cell, intent=intent, target=target, regime=regime, priority=priority)
+        return self.ssn.submit_request(cell, req)
+
+    def list_ssn_requests(self, cell: str) -> list[dict]:
+        return self.ssn.list_requests(cell)
+
+    def cancel_ssn_request(self, cell: str, rid: str) -> bool:
+        return self.ssn.cancel_request(cell, rid)
+
+    def ssn_coverage(self, cell: str, regime: str) -> dict:
+        return self.ssn.coverage(cell, regime)
 
     def list_injects(self) -> list[dict]:
         return [{"id": i.id, "label": i.label, "trigger": (i.trigger or {}).get("type", "manual")}

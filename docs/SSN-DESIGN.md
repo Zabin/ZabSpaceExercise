@@ -1,7 +1,12 @@
 # Mock Space Surveillance Network (SSN) — Design Plan
 
-**Document type:** Feature design plan (to be implemented later to augment the tool)
-**Status:** Proposal — design only; no engine/UI code in this document
+**Document type:** Feature design plan
+**Status:** ✅ **Implemented** — see `spacesim/engine/ssn.py` (SSNNetwork / SSNSystem / dispersion
+presets + coverage), `spacesim/session/manager.py` (`submit_ssn_request`/`list_ssn_requests`/
+`cancel_ssn_request`/`ssn_coverage`), `spacesim/ui_web/server.py` (`/api/sessions/{sid}/ssn/...`),
+the tasking-rail SSN mode in `spacesim/ui_web/static/app.js`, the V2/V7/V8 vignette opt-ins, and
+the acceptance tests in `spacesim/tests/test_ssn.py`. Below is the original design doc, retained
+for the rationale; the build follows it. Open questions in §17 remain.
 **Audience:** Claude Code (implementer), White Cell facilitators, reviewers
 **Companions:** `11-command-planning-and-tasking.md` (Part B sensor tasking — esp. *shared/coalition
 feeds*), `07-sda-custody-hunt.md` (the SDA vignette), `05-cell-interfaces.md`, `09-gui-principles.md`,

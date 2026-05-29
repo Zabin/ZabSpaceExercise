@@ -213,19 +213,72 @@ const CONSEQUENCE = {
   cyber: "Cyber effect. Covert but escalatory; ROE-gated; persistence and re-safe risk if root cause persists.",
 };
 
-// Dedicated tasking rail (§7.4, P-UI-6): intent/sensor/priority compose for the observe action.
+// Dedicated tasking rail (§7.4, P-UI-6): Organic posts /order with action=observe; SSN posts
+// /ssn/{cell}/request and shows the cell's SSN request queue + a coverage preview line.
+let TASK_MODE = "organic";
+
 async function planTask() {
-  const intent = $("task-intent").value, sensor = $("task-sensor").value;
   const target = $("task-target").value || $("o-target").value;
   if (!SID || !target) { $("task-result").textContent = "Pick a target (track id)."; return; }
   const cell = CELL === "white" ? "blue" : CELL;
-  const body = { cell, actor: sensor, action: "observe", target,
-                 params: { intent, priority: $("task-priority").value } };
+  if (TASK_MODE === "ssn") {
+    const body = { intent: $("task-intent").value, target, regime: $("task-regime").value,
+                   priority: $("task-priority").value };
+    const ack = await api.post(`/api/sessions/${SID}/ssn/${cell}/request`, body);
+    $("task-result").textContent = ack.ok
+      ? `${ack.state} · ${ack.assigned_sensor} · collect ${iso(ack.collect_at)} → product ${iso(ack.product_at)}`
+      : `FAILED: ${ack.reason}`;
+    await renderSsnQueue(cell);
+    return;
+  }
+  const body = { cell, actor: $("task-sensor").value, action: "observe", target,
+                 params: { intent: $("task-intent").value, priority: $("task-priority").value } };
   const ack = await api.post(`/api/sessions/${SID}/order`, body);
   $("task-result").textContent = ack.ok
     ? `${ack.status} · ${ack.delivery_path || "—"} · window ${ack.earliest_window ? iso(ack.earliest_window[0]) : "n/a"}`
     : `REJECTED: ${ack.reason}`;
   await refresh();
+}
+
+async function ssnCoverage() {
+  if (!SID || TASK_MODE !== "ssn") { $("task-coverage").textContent = ""; return; }
+  const cell = CELL === "white" ? "blue" : CELL;
+  const regime = $("task-regime").value;
+  try {
+    const c = await api.get(`/api/sessions/${SID}/ssn/${cell}/coverage?regime=${regime}`);
+    if (!c.sensors || !c.sensors.length) {
+      $("task-coverage").className = "preview bad";
+      $("task-coverage").textContent = `✗ ${cell.toUpperCase()}-SSN has no eligible sensor for ${regime} (no network or wrong phenomenology).`;
+    } else {
+      $("task-coverage").className = "preview ok";
+      $("task-coverage").textContent = `✓ ${c.affiliation || ""} · ${c.dispersion || ""} · ${c.sensors.length} eligible sensor(s) for ${regime} (concurrency ${c.concurrency || "?"}).`;
+    }
+  } catch { $("task-coverage").textContent = ""; }
+}
+
+async function renderSsnQueue(cell) {
+  if (!SID) return;
+  const list = await api.get(`/api/sessions/${SID}/ssn/${cell}/requests`).catch(() => []);
+  if (!list.length) { $("ssn-queue").innerHTML = "<span class='muted'>(empty)</span>"; return; }
+  $("ssn-queue").innerHTML = list.map((r) => {
+    const cancel = r.state === "SCHEDULED"
+      ? `<button class="vbtn" data-rid="${r.id}">✕</button>` : "";
+    const win = r.collect_at ? `collect ${iso(r.collect_at)} → product ${iso(r.product_at)}` : (r.reason || "");
+    return `<div class="qrow ${r.state.toLowerCase()}"><span>${r.id} ${r.intent} ${r.target} ${r.regime} ${r.priority}</span><span>${r.state}</span><span>${win}</span>${cancel}</div>`;
+  }).join("");
+  document.querySelectorAll("#ssn-queue .vbtn").forEach((b) => b.onclick = async () => {
+    await api.post(`/api/sessions/${SID}/ssn/${cell}/cancel`, { request_id: b.dataset.rid });
+    renderSsnQueue(cell);
+  });
+}
+
+function setTaskMode(m) {
+  TASK_MODE = m;
+  document.querySelectorAll("#task-mode .chip").forEach((c) => c.classList.toggle("active", c.dataset.tmode === m));
+  $("task-sensor-wrap").style.display = (m === "ssn") ? "none" : "";
+  $("task-regime-wrap").style.display = (m === "ssn") ? "" : "none";
+  $("task-coverage").textContent = "";
+  if (m === "ssn" && SID) { ssnCoverage(); renderSsnQueue(CELL === "white" ? "blue" : CELL); }
 }
 
 // Multi-display reflow (§3.3 / P-UI-8): pop the 3D globe + 2D map into a second window for
@@ -319,6 +372,7 @@ async function refresh() {
     payload_health: a.payload_state ? a.payload_state.health : null,
     last_tel: a.bus_state ? a.bus_state.last_telemetry_time : null,
     cyber_vulns: a.cyber_vulnerabilities || [],
+    network: !!a.network,    // SSN sensors are request-only (filtered from organic pickers)
   });
   const station = assets.find((a) => a.kind === "ground_station"); if (station) DEFAULT_STATION = station.id;
 
@@ -334,17 +388,17 @@ async function refresh() {
   $("messages").innerHTML = messages.map((m) => `<li>${m.text}</li>`).join("");
   $("objectives").textContent = JSON.stringify(objectives, null, 2);
 
-  // Command menu: populate actor list (own assets + sensors that can act).
-  const actorIds = assets.filter((a) => ACTIONS_BY_KIND[a.kind]).map((a) => a.id);
+  // Command menu: populate actor list (own assets + sensors that can act; network sensors excluded).
+  const actorIds = assets.filter((a) => ACTIONS_BY_KIND[a.kind] && !a.network).map((a) => a.id);
   const prev = $("o-actor").value;
   $("o-actor").innerHTML = actorIds.map((i) => `<option>${i}</option>`).join("");
   if (actorIds.includes(prev)) $("o-actor").value = prev;
   onActorChange();
-  // Tasking rail sensor picker (P-UI-6): own sensors + auto.
+  // Tasking rail sensor picker (P-UI-6): own organic sensors + auto (network sensors are SSN-only).
   const tsel = $("task-sensor");
   if (tsel) {
     const cur = tsel.value;
-    const sids = assets.filter((a) => a.kind && a.kind.startsWith("ground_") || a.kind === "space_based").map((a) => a.id);
+    const sids = assets.filter((a) => !a.network && ((a.kind && a.kind.startsWith("ground_")) || a.kind === "space_based")).map((a) => a.id);
     tsel.innerHTML = `<option value="auto">auto</option>` + sids.map((i) => `<option>${i}</option>`).join("");
     if (cur && (cur === "auto" || sids.includes(cur))) tsel.value = cur;
   }
@@ -365,6 +419,7 @@ async function refresh() {
   renderQueue();
   renderAlarms();
   refreshAAR();
+  if (TASK_MODE === "ssn") { ssnCoverage(); renderSsnQueue(CELL === "white" ? "blue" : CELL); }
 }
 
 function rollup(bus) {
@@ -636,6 +691,8 @@ window.addEventListener("DOMContentLoaded", () => {
   $("present").onchange = (e) => document.body.classList.toggle("present", e.target.checked);
   $("detach").onclick = detachViewers;
   $("task-plan").onclick = planTask;
+  document.querySelectorAll("#task-mode .chip").forEach((b) => b.onclick = () => setTaskMode(b.dataset.tmode));
+  $("task-regime").onchange = ssnCoverage;
   document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => step(+b.dataset.step));
   document.querySelectorAll(".cell").forEach((b) => b.onclick = () => setCell(b.dataset.cell));
   document.querySelectorAll("#fleet-filter .chip").forEach((b) => b.onclick = () => {

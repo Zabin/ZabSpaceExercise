@@ -100,6 +100,20 @@ class InProcessSession:
     def begin_recovery(self, session: str, cell: str, asset: str, via: str) -> dict:
         return self._sessions[session].begin_recovery(cell, asset, via)
 
+    # SSN
+    def submit_ssn_request(self, session: str, cell: str, intent: str, target: str,
+                           regime: str, priority: str = "priority"):
+        return self._sessions[session].submit_ssn_request(cell, intent, target, regime, priority)
+
+    def list_ssn_requests(self, session: str, cell: str) -> list:
+        return self._sessions[session].list_ssn_requests(cell)
+
+    def cancel_ssn_request(self, session: str, cell: str, rid: str) -> bool:
+        return self._sessions[session].cancel_ssn_request(cell, rid)
+
+    def ssn_coverage(self, session: str, cell: str, regime: str) -> dict:
+        return self._sessions[session].ssn_coverage(cell, regime)
+
     def list_injects(self, session: str) -> list:
         return self._sessions[session].list_injects()
 

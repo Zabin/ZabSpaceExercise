@@ -132,6 +132,12 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `dry_run()` is a read-only mirror of `issue()` (validate + window/delivery-path, but schedules/
   registers/books nothing) → powers the UI's "why can't I?" pre-disabled buttons; replay-safe like `scene.py`.
 - `spacesim/engine/recovery.py` — `RecoverySystem`: multi-pass safe-mode recovery + re-safe-on-persistence.
+- `spacesim/engine/ssn.py` — mock Space Surveillance Network (per `docs/SSN-DESIGN.md`): per-cell
+  `SSNNetwork`s instantiated from a dispersion preset (`sparse`/`regional`/`global`/`proliferated`),
+  hybrid-turnaround request resolution (earliest viable window inside the priority SLA + processing
+  delay; coalition vs. national affiliation), and two deterministic handlers (`ssn_collect` /
+  `ssn_deliver`) that stage on `world.ssn_staged` and deliver into the requester's `TrackCatalog`.
+  Replay-safe; cancel-before-collect tag-skips both events.
 - `spacesim/engine/telemetry.py` — read-time seeded subsystem telemetry (graphs/logs) + attack
   signatures (jam→RX power, cyber→FSW errors, DE→SNR, power sag, kinetic→loss-of-signal). Pure,
   never mutates state/RNG (like `scene.py`). `sample/series(..., nominal=True)` drop the attack term

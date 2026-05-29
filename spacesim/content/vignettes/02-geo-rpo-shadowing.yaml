@@ -35,4 +35,8 @@ vignette:
     - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: china_integrated}
     - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
     - {id: landing_window_start_s, label: "Decision Window (s)", type: int, default: 7200}
+    - {id: ssn_blue_dispersion, label: "Blue SSN dispersion", type: enum,
+       options: [off, sparse, regional, global, proliferated], default: regional}
+    - {id: ssn_red_dispersion,  label: "Red SSN dispersion",  type: enum,
+       options: [off, sparse, regional, global, proliferated], default: off}
   injects: []

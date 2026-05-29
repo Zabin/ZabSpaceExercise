@@ -90,17 +90,21 @@ Each one follows the same pattern: a small mutation in `apply_command`, a regres
 constellations ≤3 sats. The caps are documented but **not enforced at vignette load**; future
 work: validate caps in `content/vignette.build_world` with a clear rejection.
 
-## 7. Mock Space Surveillance Network (SSN)
+## 7. Mock Space Surveillance Network (SSN) — ✅ implemented (open follow-ons remain)
 
-The full design for a per-cell mock SSN — dispersion presets, hybrid request/turnaround model,
-per-vignette opt-in — lives in `docs/SSN-DESIGN.md`. It is a proposal only; nothing in the
-engine, session, or UI is wired to it. Implementation would augment Vignettes 7 and 8 per its
-opt-in plan and likely needs:
+The per-cell mock SSN is built per `docs/SSN-DESIGN.md` (engine + session + API + UI + V2/V7/V8
+vignette opt-in + acceptance tests). The open items from that doc's §17 remain:
 
-- A `Network` content layer alongside assets (sensors grouped by network membership).
-- New endpoints / order action for `request_collection_from_network` distinct from per-sensor
-  `observe`.
-- Vignette opt-in flag and dispersion-preset enum.
+- **Cost / collection-budget** for priority/immediate (force triage). Recommended as a later
+  balance dial.
+- **Quality model fidelity:** map the access-window `quality` value to a product-confidence
+  curve per regime so a grazing pass yields a measurably weaker product.
+- **Commercial / third-party feeds** — a neutral commercial provider both cells can buy from
+  (extends the per-cell model).
+- **Auto-cueing organic → SSN** — let an organic detection auto-cue an SSN characterize request.
+- **Save/resume of in-flight SSN requests** — today they survive a rewind via `_rebind` clearing
+  + replay, but explicit JSON persistence in `save_state`/`from_state` is not yet wired
+  (orders are; SSN requests are not).
 
 ## 8. UI polish / minor
 

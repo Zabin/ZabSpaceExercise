@@ -30,6 +30,7 @@ class WorldState(BaseModel):
     consequences: list[dict] = Field(default_factory=list)   # political consequences raised
     messages: list[dict] = Field(default_factory=list)       # injects/alerts addressed to cells
     mission: dict = Field(default_factory=dict)              # vignette-level objective flags
+    ssn_staged: dict = Field(default_factory=dict)           # SSN: rid → staged measurement at collect; popped at deliver
 
     # Generic scratch state used by the Phase-1 determinism harness.
     entities: dict[str, dict] = Field(default_factory=dict)

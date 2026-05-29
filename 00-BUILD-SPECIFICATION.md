@@ -1009,7 +1009,8 @@ replay-identical). Verbs not listed here either remain on their existing core ac
 | Telemetry graph (+ ghost, overlay) | `GET /telemetry/{cell}/{asset}/{param}?t0&t1&n` (+`&nominal=1`) | on open / window / toggle |
 | Command compose (preview + issue + cancel) | `POST /order/validate`, `POST /order`, `POST /cancel` | on edit / on action |
 | Command queue | `GET /orders/{cell}` | on tick + on action |
-| Tasking rail | `POST /order` (action=`observe`) | on action |
+| Tasking rail (Organic) | `POST /order` (action=`observe`) | on action |
+| Tasking rail (SSN) | `POST /ssn/{cell}/request`, `GET /ssn/{cell}/requests`, `POST /ssn/{cell}/cancel`, `GET /ssn/{cell}/coverage?regime=` | on edit / on tick / on action |
 | Alarm feed | `GET /alarms/{cell}` | on tick |
 | Recovery strip | `GET /recovery/{cell}/{asset}`, `POST /recovery/{cell}/{asset}` | on safe-mode + on action |
 | Objectives / event log | `GET /objectives`, `/eventlog` | on tick |
