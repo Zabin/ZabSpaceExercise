@@ -22,7 +22,6 @@ open a theme index, then the one module you need. Structure & rationale:
 - [`FUTURE-WORK.md`](FUTURE-WORK.md) — the single-source v1.1+ TODO (deferred items).
 - [`manual/INDEX.md`](manual/INDEX.md) — generated UI screenshots (`tools/render_manual.py`); the
   training modules embed these.
-- `screenshots/` — a small set of legacy belief-scene captures.
 
 ## Root-level guides (not under `docs/`)
 
