@@ -1,7 +1,7 @@
 """Dry-run order validation (`OrderSystem.dry_run` / `SessionManager.validate_order`).
 
 Powers the operator console's "why can't I?" pre-disabled buttons + window preview
-(`00-BUILD-SPECIFICATION.md` §16.9). The contract: a dry-run returns the *same* accept/reject verdict,
+(`docs/build-spec/07-operator-console.md` §16.9). The contract: a dry-run returns the *same* accept/reject verdict,
 window, and delivery path that issuing would, while mutating **no** session state — so the UI can
 probe every candidate command on each tick without polluting the queue or breaking replay.
 """

@@ -10,7 +10,7 @@ Conventions used here:
 - `command_db` entries are drawn from `13-operator-command-catalog.md` (verbs are authoritative).
 - `telemetry_db` limits and delta-v figures follow `06-bus-and-payload-operations.md` and
   `14-delta-v-economy.md`.
-- Format is JSON (matches the vignette file format in `00-BUILD-SPECIFICATION.md` §8). Comments
+- Format is JSON (matches the vignette file format in `../build-spec/03-architecture-and-data.md` §8). Comments
   are shown as `"_comment"` keys since JSON has no comments; Claude Code may strip them.
 
 Templates define **defaults**; a vignette's asset instance overrides only what differs (orbit/

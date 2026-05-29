@@ -14,7 +14,9 @@ tasking (ISL/stored delivery, sensor tasking + contention, safe-mode recovery ch
 layer (FastAPI over the SessionAPI + browser front end) · **P5.5** render-from-custody belief scene
 (`/scene`) + 2D map · **P6** all eight vignettes as YAML + TLE force-add + Red doctrine presets +
 data-driven objectives · **P7** capstone Vignette 8 + AAR (read-only replay/scrub, branch compare).
-Plus `docs/manual/` (13 data-driven UI screenshots + INDEX) and `docs/TRAINING-MANUAL.md`.
+Plus `docs/manual/` (13 data-driven UI screenshots + INDEX) and the training manual
+(`docs/training/`). All prose docs are modular under `docs/`, routed by `docs/INDEX.md` (see the
+2026-05-29 log entry and `docs/DOCUMENTATION-PLAN.md`).
 
 **Caveat:** the browser GUI is *unverified headless* (no browser installable); every backend path
 (endpoints, fog, objectives, scene, AAR) is test-covered, and the screenshots are faithful
@@ -360,3 +362,18 @@ test first, implement to green, and add a regression test for every resolved fin
   fidelity, catalog gaps, UI strategic, refinements, sat caps, SSN, UI polish, larger).
   `docs/OPERATOR-UI-DESIGN.md` is now a one-screen redirect stub; nothing references it for
   authoritative content. `CLAUDE.md` updated to point at the new locations.
+- **2026-05-29:** **Documentation information-architecture refactor** (see
+  `docs/DOCUMENTATION-PLAN.md`). Split the two monoliths into single-topic modules optimized for
+  Claude Code reference: `00-BUILD-SPECIFICATION.md` (1,200+ lines) → eight modules under
+  `docs/build-spec/` (the Part 3/Part 4 duplicate §16/§17 numbering resolved; console=§16 in
+  `07-operator-console.md`, SSN=§17 in `08-ssn.md`); `docs/TRAINING-MANUAL.md` (500+ lines) → nine
+  modules under `docs/training/`. Moved the flat root corpus into themed dirs via `git mv`:
+  `docs/design/` (01–15), `docs/research/` (01–06 doctrine/primers), `docs/vignettes/` (00–08) —
+  realizing the `01-research/`/`02-vignettes/`/`03-software-design/` companion dirs the spec always
+  named. Added a master `docs/INDEX.md` + one `INDEX.md` per theme as routers. Rewired the explicit
+  path refs (CLAUDE.md reading order + code map, README doc map, FUTURE-WORK, four `.py` docstrings
+  citing `§16.9`/`§10`); the lone clickable link (README→training) updated. Only one clickable
+  markdown link existed repo-wide, so the moves broke no links — bare prose mentions still resolve
+  by filename, with the indexes carrying authoritative paths. Removed the retired
+  `OPERATOR-UI-DESIGN.md` stub (routing now lives in the indexes). Docs-only + docstring text;
+  no engine/behavior change.

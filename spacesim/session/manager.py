@@ -105,7 +105,7 @@ class SessionManager:
         """Dry-run an order for the UI: would it be accepted, with which window/path, or why not?
 
         Read-only (no scheduling, no registry, no bookings) so the console can pre-disable buttons
-        and preview the scheduled window without mutating the session (`00-BUILD-SPECIFICATION.md` §16.9).
+        and preview the scheduled window without mutating the session (`docs/build-spec/07-operator-console.md` §16.9).
         """
         order.cell = cell
         result = self.osys.dry_run(order)

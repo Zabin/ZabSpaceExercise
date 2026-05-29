@@ -2,7 +2,7 @@
 
 Consolidated list of capabilities **not** included in v1 — moved here from the now-merged
 `docs/OPERATOR-UI-DESIGN.md` (UI plan) and `memory.md`'s rolling "still open" notes. The
-v1 spec lives in `00-BUILD-SPECIFICATION.md` (with the operator console in §16); this file is
+v1 spec lives in `build-spec/INDEX.md` (the operator console in `build-spec/07-operator-console.md`); this file is
 the single source of truth for "what's deliberately not built."
 
 Items are grouped by area, each with a short rationale and pointers into the code or research so
@@ -33,7 +33,7 @@ either implemented or covered by an existing in-scope ticket.
 
 ## 3. Catalog verb gaps (extends `buscommands.apply_command`)
 
-The implemented verbs are listed in `00-BUILD-SPECIFICATION.md` §16.11. Remaining catalog verbs
+The implemented verbs are listed in `build-spec/07-operator-console.md` §16.11. Remaining catalog verbs
 from `13-operator-command-catalog.md` that have **no engine handler** yet:
 
 - **Bus**: `cdh.load_stored_program`, `cdh.reset_subsystem`, `comms.point_antenna`,
@@ -55,7 +55,7 @@ Each one follows the same pattern: a small mutation in `apply_command`, a regres
 `spacesim/tests/test_bus_commands.py`, an entry in the UI's `PARAM_TEMPLATE` / `actionsFor` /
 `VERB_SUBSYSTEM` / `VERB_ROLE`. None require architectural work.
 
-## 4. UI strategic items (out of v1 scope, per `00-BUILD-SPECIFICATION.md` §3.2)
+## 4. UI strategic items (out of v1 scope, per `build-spec/01-context-and-scope.md` §3.2)
 
 - **Constellation aggregation (v2).** Manage ≥3 sats as a group from a single panel. The current
   per-asset drill-down is the right unit for v1's ≤24-sat / ≤3-per-constellation cap.
@@ -64,7 +64,7 @@ Each one follows the same pattern: a small mutation in `apply_command`, a regres
   shapes per object type for joint-/coalition-use credibility.
 - **Δv "years of life" panel.** Dedicated propulsion sub-tab spelled out by
   `14-delta-v-economy.md` — the data exists in `AssetResources.delta_v_ms`, the panel does not.
-- **Full CesiumJS 3D globe.** The v1.1 follow-on referenced in `00-BUILD-SPECIFICATION.md` §10 M5. The
+- **Full CesiumJS 3D globe.** The v1.1 follow-on referenced in `build-spec/04-nfr-milestones-and-risks.md` §10 M5. The
   self-contained orthographic globe (`ui_web/static/globe.js`) covers the v1 requirement; a
   Cesium variant adds higher-fidelity rendering for projector / White-Cell display.
 - **Constellation/grouped fleet-rail badges.** Tied to the constellation-aggregation item above.
@@ -87,13 +87,13 @@ Each one follows the same pattern: a small mutation in `apply_command`, a regres
 
 ## 6. Sat / fleet caps validation
 
-`00-BUILD-SPECIFICATION.md` declares ≤24 satellites for v1 with a hard ceiling of 48, and
+`build-spec/01-context-and-scope.md` declares ≤24 satellites for v1 with a hard ceiling of 48, and
 constellations ≤3 sats. The caps are documented but **not enforced at vignette load**; future
 work: validate caps in `content/vignette.build_world` with a clear rejection.
 
 ## 7. Mock Space Surveillance Network (SSN) — ✅ implemented
 
-The per-cell mock SSN is fully implemented per `00-BUILD-SPECIFICATION.md` §17 (engine + session +
+The per-cell mock SSN is fully implemented per `build-spec/08-ssn.md` §17 (engine + session +
 API + UI + V2/V7/V8 vignette opt-in + acceptance tests; quality model and save/resume included).
 Remaining items not carried into v1:
 
