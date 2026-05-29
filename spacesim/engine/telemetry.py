@@ -119,9 +119,15 @@ def _baseline(asset, spec: ParamSpec, t: int) -> float:
 
 
 def _mitigation(asset) -> float:
-    """SATCOM anti-jam in effect (0..1) — shrinks the jam signature (satcom.mitigate_interference)."""
+    """Anti-jam in effect (0..1) — shrinks the jam signature. Sources: satcom.mitigate_interference
+    raises ``payload_state.interference_mitigation``; def.frequency_hop on the bus comms adds 0.5
+    more margin (defensive parity). Capped at 0.9."""
     p = getattr(asset, "payload_state", None)
-    return getattr(p, "interference_mitigation", 0.0) if p is not None else 0.0
+    bus = getattr(asset, "bus_state", None)
+    mit = getattr(p, "interference_mitigation", 0.0) if p is not None else 0.0
+    if bus is not None and getattr(bus.comms, "freq_hopping", False):
+        mit = min(0.9, mit + 0.5)
+    return mit
 
 
 def _attack_term(asset, world, spec: ParamSpec, t: int, flags, onset) -> float:

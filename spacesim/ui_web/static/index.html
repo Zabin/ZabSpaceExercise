@@ -31,6 +31,7 @@
       <input id="loadfile" type="file" accept=".json,application/json" style="display:none" />
     </div>
     <label class="toggle"><input id="present" type="checkbox"> present</label>
+    <button id="detach">Detach viewers</button>
     <span class="banner">UNCLASSIFIED // TRAINING</span>
   </header>
 
@@ -66,7 +67,34 @@
     </section>
 
     <section class="panel">
+      <h2>Tasking (sensor)</h2>
+      <div class="ctrl">
+        <label>Intent <select id="task-intent">
+          <option value="search">Search</option>
+          <option value="track">Track</option>
+          <option value="characterize" selected>Characterize</option>
+          <option value="cue">Cue</option>
+        </select></label>
+        <label>Sensor <select id="task-sensor"><option value="auto">auto</option></select></label>
+        <label>Target <input id="task-target" placeholder="(track id)" style="width:8em" /></label>
+        <label>Priority <select id="task-priority">
+          <option value="routine">routine</option>
+          <option value="priority" selected>priority</option>
+          <option value="immediate">immediate</option>
+        </select></label>
+        <button id="task-plan">Plan collection</button>
+      </div>
+      <pre id="task-result" class="muted">—</pre>
+    </section>
+
+    <section class="panel">
       <h2>Satellite command</h2>
+      <div id="role-filter" class="ctrl" style="margin-bottom:6px">
+        <button class="chip active" data-role="all">All</button>
+        <button class="chip" data-role="bus">Bus</button>
+        <button class="chip" data-role="payload">Payload</button>
+        <button class="chip" data-role="sda">SDA</button>
+      </div>
       <label>Actor <select id="o-actor"></select></label>
       <div id="actor-info" class="toggle"></div>
       <label>Action <select id="o-action"></select></label>

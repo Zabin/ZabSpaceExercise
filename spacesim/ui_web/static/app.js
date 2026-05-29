@@ -53,7 +53,32 @@ const PARAM_TEMPLATE = {
   "isr.collect_now": () => ({ via: DEFAULT_STATION }),
   "isr.schedule_collection": () => ({ via: DEFAULT_STATION }),
   "def.patch_cyber": () => ({ via: DEFAULT_STATION, vector: "ground_modem" }),
+  "cdh.clear_fault": () => ({ via: DEFAULT_STATION }),
+  "tcs.set_mode": () => ({ via: DEFAULT_STATION, mode: "operational" }),
+  "tcs.set_heater": () => ({ via: DEFAULT_STATION, on: true }),
+  "comms.enable_isl": () => ({ via: DEFAULT_STATION, on: true }),
+  "comms.config_link": () => ({ via: DEFAULT_STATION, data_rate_kbps: 2048 }),
+  "def.frequency_hop": () => ({ via: DEFAULT_STATION, on: true }),
+  "def.harden": () => ({ via: DEFAULT_STATION, on: true }),
+  "def.set_threat_warning": () => ({ via: DEFAULT_STATION, on: true }),
+  "sigint.task_collection": () => ({ via: DEFAULT_STATION }),
+  "wx.schedule_collection": () => ({ via: DEFAULT_STATION }),
 };
+
+// Verb roles for the §1.2 role selector — drives the Bus/Payload/SDA/All filter on the command menu.
+const VERB_ROLE = {
+  downlink: "bus", maneuver: "bus", observe: "sda",
+  "eps.shed_load": "bus", "eps.restore_load": "bus", "eps.set_charge_mode": "bus",
+  "adcs.set_mode": "bus", "cdh.dump_storage": "bus", "cdh.clear_fault": "bus",
+  "tcs.set_mode": "bus", "tcs.set_heater": "bus",
+  "comms.enable_isl": "bus", "comms.config_link": "bus",
+  "satcom.mitigate_interference": "payload", "satcom.shift_users": "payload",
+  "isr.collect_now": "payload", "isr.schedule_collection": "payload",
+  "sigint.task_collection": "payload", "wx.schedule_collection": "payload",
+  "def.patch_cyber": "bus", "def.frequency_hop": "bus",
+  "def.harden": "payload", "def.set_threat_warning": "bus",
+};
+let ROLE_FILTER = "all";
 
 // Plain-language tooltips for the engine's own validator reason strings (OPERATOR-UI-DESIGN.md §12.2).
 // Keys mirror OrderSystem._validate verbatim so UI and engine never drift.
@@ -145,11 +170,20 @@ function composeBody() {
 function actionsFor(a) {
   const acts = (ACTIONS_BY_KIND[a.kind] || ["observe"]).slice();
   if (a.kind === "satellite") {
-    acts.push("eps.shed_load", "eps.restore_load", "eps.set_charge_mode", "adcs.set_mode", "cdh.dump_storage");
+    acts.push("eps.shed_load", "eps.restore_load", "eps.set_charge_mode",
+              "adcs.set_mode",
+              "cdh.dump_storage", "cdh.clear_fault",
+              "tcs.set_mode", "tcs.set_heater",
+              "comms.enable_isl", "comms.config_link",
+              "def.frequency_hop", "def.harden", "def.set_threat_warning");
     if (a.payload === "satcom") acts.push("satcom.mitigate_interference", "satcom.shift_users");
     if (a.payload === "isr_eo" || a.payload === "isr_sar") acts.push("isr.collect_now", "isr.schedule_collection");
+    if (a.payload === "sigint") acts.push("sigint.task_collection");
+    if (a.payload === "weather") acts.push("wx.schedule_collection");
     if ((a.cyber_vulns || []).length) acts.push("def.patch_cyber");      // defender's root-cause fix
   }
+  // Role filter (§1.2): All shows everything; Bus/Payload/SDA narrow by VERB_ROLE.
+  if (ROLE_FILTER !== "all") return acts.filter((v) => (VERB_ROLE[v] || "bus") === ROLE_FILTER);
   return acts;
 }
 
@@ -176,7 +210,55 @@ async function previewOrder() {
 // Verbs that are irreversible / escalatory get a deliberate consequence confirm (§12.3, P5).
 const CONSEQUENCE = {
   engage: "Kinetic, debris-generating strike. Political cost: HIGH. Debris may threaten your own LEO assets.",
+  cyber: "Cyber effect. Covert but escalatory; ROE-gated; persistence and re-safe risk if root cause persists.",
 };
+
+// Dedicated tasking rail (§7.4, P-UI-6): intent/sensor/priority compose for the observe action.
+async function planTask() {
+  const intent = $("task-intent").value, sensor = $("task-sensor").value;
+  const target = $("task-target").value || $("o-target").value;
+  if (!SID || !target) { $("task-result").textContent = "Pick a target (track id)."; return; }
+  const cell = CELL === "white" ? "blue" : CELL;
+  const body = { cell, actor: sensor, action: "observe", target,
+                 params: { intent, priority: $("task-priority").value } };
+  const ack = await api.post(`/api/sessions/${SID}/order`, body);
+  $("task-result").textContent = ack.ok
+    ? `${ack.status} · ${ack.delivery_path || "—"} · window ${ack.earliest_window ? iso(ack.earliest_window[0]) : "n/a"}`
+    : `REJECTED: ${ack.reason}`;
+  await refresh();
+}
+
+// Multi-display reflow (§3.3 / P-UI-8): pop the 3D globe + 2D map into a second window for
+// projector / dual-screen setups. The detached window reads its initial scene via postMessage and
+// re-fetches on a slow tick so it stays in sync — no engine change, no shared state.
+function detachViewers() {
+  const w = window.open("", "viewers", "width=1100,height=720");
+  if (!w) return;
+  w.document.title = "spacesim viewers";
+  w.document.body.style.cssText = "margin:0;background:#0a0f15;color:#9fb0c0;font-family:monospace";
+  w.document.body.innerHTML = `<canvas id="d-globe" width="560" height="400" style="background:#0a0f15"></canvas>
+    <canvas id="d-map" width="560" height="400" style="background:#0a0f15"></canvas>
+    <div id="d-status" style="position:absolute;top:8px;right:12px;font-size:11px;opacity:.6">detached · syncing…</div>`;
+  const tick = async () => {
+    if (w.closed) return;
+    try {
+      const sc = await api.get(`/api/sessions/${SID}/scene/${CELL === "white" ? "blue" : CELL}`);
+      // Draw a minimal 2D belief layer using the primary's WorldMap projection.
+      const ctx = w.document.getElementById("d-map").getContext("2d");
+      ctx.fillStyle = "#0a0f15"; ctx.fillRect(0, 0, 560, 400);
+      ctx.fillStyle = "#9fb0c0"; ctx.font = "10px monospace";
+      sc.assets.forEach((a) => {
+        const x = (a.lon_deg + 180) / 360 * 560, y = (90 - a.lat_deg) / 180 * 400;
+        ctx.fillStyle = a.owner === "blue" ? "#5a8fe0" : a.owner === "red" ? "#e06a6a" : "#9fb0c0";
+        ctx.fillRect(x - 2, y - 2, 4, 4);
+        ctx.fillStyle = "#9fb0c0"; ctx.fillText(a.id, x + 4, y + 3);
+      });
+      w.document.getElementById("d-status").textContent = `detached · ${iso(sc.now)} · ${sc.assets.length} assets`;
+    } catch { /* primary may have unloaded */ }
+    setTimeout(tick, 2000);
+  };
+  tick();
+}
 
 async function issueOrder() {
   const body = composeBody();
@@ -258,6 +340,14 @@ async function refresh() {
   $("o-actor").innerHTML = actorIds.map((i) => `<option>${i}</option>`).join("");
   if (actorIds.includes(prev)) $("o-actor").value = prev;
   onActorChange();
+  // Tasking rail sensor picker (P-UI-6): own sensors + auto.
+  const tsel = $("task-sensor");
+  if (tsel) {
+    const cur = tsel.value;
+    const sids = assets.filter((a) => a.kind && a.kind.startsWith("ground_") || a.kind === "space_based").map((a) => a.id);
+    tsel.innerHTML = `<option value="auto">auto</option>` + sids.map((i) => `<option>${i}</option>`).join("");
+    if (cur && (cur === "auto" || sids.includes(cur))) tsel.value = cur;
+  }
 
   // Viewers.
   const scene = await api.get(`/api/sessions/${SID}/scene/${CELL === "white" ? "blue" : CELL}`);
@@ -429,11 +519,19 @@ async function openDrill(assetId) {
   const a = ASSETS[assetId] || {};
   $("drill-params").innerHTML = Object.entries(tele.subsystems).map(([sub, params]) => {
     const chips = params.map((p) =>
-      `<span class="pchip ${p.status}" data-param="${p.id}">${p.label} ${p.value ?? "LOS"}</span>`).join(" ");
+      `<span class="pchip ${p.status}" data-param="${p.id}">${p.label} ${p.value ?? "LOS"}` +
+      ` <canvas class="spark" data-param="${p.id}" width="48" height="12"></canvas></span>`).join(" ");
     const verbs = verbsForSubsystem(a, sub).map((v) =>
       `<button class="vbtn" data-verb="${v}" data-actor="${assetId}">${v}</button>`).join(" ");
     return `<div class="sub"><b>${sub}</b> ${chips}${verbs ? `<div class="vbtns">${verbs}</div>` : ""}</div>`;
   }).join("");
+  // Tiny inline sparklines (§5.1) — one short series per param chip; ignore failures silently.
+  document.querySelectorAll("#drill-params .spark").forEach(async (cv) => {
+    try {
+      const s = await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${assetId}/${cv.dataset.param}?n=30`);
+      window.Graph && Graph.spark(cv, s, DRILL_DB[cv.dataset.param]);
+    } catch { /* offline param — silent */ }
+  });
   $("drill-log").textContent = (tele.log || []).join("\n") || "(all nominal)";
   document.querySelectorAll("#drill-params .pchip").forEach((c) => c.onclick = () => drawParam(c.dataset.param));
   document.querySelectorAll("#drill-params .vbtn").forEach((b) => b.onclick = () => loadVerb(b.dataset.actor, b.dataset.verb));
@@ -483,9 +581,13 @@ async function renderRecovery(assetId, busMode) {
 // Which command verbs belong on which telemetry-subsystem card (§5.1 cards carry their own buttons).
 const VERB_SUBSYSTEM = {
   "eps.shed_load": "power", "eps.restore_load": "power", "eps.set_charge_mode": "power",
-  "adcs.set_mode": "attitude", "cdh.dump_storage": "cdh", "def.patch_cyber": "cdh",
+  "adcs.set_mode": "attitude",
+  "tcs.set_mode": "thermal", "tcs.set_heater": "thermal",
+  "cdh.dump_storage": "cdh", "cdh.clear_fault": "cdh", "def.patch_cyber": "cdh",
+  "comms.enable_isl": "comms", "comms.config_link": "comms", "def.frequency_hop": "comms",
   "satcom.mitigate_interference": "payload", "satcom.shift_users": "payload",
   "isr.collect_now": "payload", "isr.schedule_collection": "payload",
+  "sigint.task_collection": "payload", "wx.schedule_collection": "payload", "def.harden": "payload",
 };
 function verbsForSubsystem(a, sub) {
   return actionsFor(a).filter((v) => v.includes(".") && VERB_SUBSYSTEM[v] === sub);
@@ -532,12 +634,19 @@ window.addEventListener("DOMContentLoaded", () => {
   $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("drill-overlay").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("present").onchange = (e) => document.body.classList.toggle("present", e.target.checked);
+  $("detach").onclick = detachViewers;
+  $("task-plan").onclick = planTask;
   document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => step(+b.dataset.step));
   document.querySelectorAll(".cell").forEach((b) => b.onclick = () => setCell(b.dataset.cell));
   document.querySelectorAll("#fleet-filter .chip").forEach((b) => b.onclick = () => {
     FLEET_FILTER = b.dataset.filter;
     document.querySelectorAll("#fleet-filter .chip").forEach((c) => c.classList.toggle("active", c === b));
     if (SID) refresh();
+  });
+  document.querySelectorAll("#role-filter .chip").forEach((b) => b.onclick = () => {
+    ROLE_FILTER = b.dataset.role;
+    document.querySelectorAll("#role-filter .chip").forEach((c) => c.classList.toggle("active", c === b));
+    onActorChange();    // re-derive the action list under the new role filter
   });
   document.addEventListener("keydown", onShortcut);
   setCell("white"); loadVignettes();

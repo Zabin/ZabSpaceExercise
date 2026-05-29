@@ -62,6 +62,8 @@ class AttitudeState(BaseModel):
 
 class ThermalState(BaseModel):
     status: Status = "green"
+    mode: Literal["nominal", "survival", "operational"] = "operational"
+    heater_on: bool = False
 
 
 class PropulsionState(BaseModel):
@@ -79,6 +81,9 @@ class CommsState(BaseModel):
     uplink_lock: bool = False
     downlink_lock: bool = False
     status: Status = "green"
+    isl_enabled: bool = False
+    data_rate_kbps: int = 1024
+    freq_hopping: bool = False               # def.frequency_hop → reduces experienced jam
 
 
 class SafeModeState(BaseModel):
@@ -99,6 +104,7 @@ class PayloadState(BaseModel):
     interference_level: float = 0.0           # SATCOM: how jamming is *experienced*
     interference_mitigation: float = 0.0      # SATCOM: anti-jam/user-shift in effect (0..1), shrinks the jam signature
     last_effect_assessment: str = "unknown"   # space_control: unknown|likely|confirmed
+    hardened: bool = False                    # def.harden → lowers effect/safe-mode susceptibility
     detail: dict = Field(default_factory=dict)
 
 

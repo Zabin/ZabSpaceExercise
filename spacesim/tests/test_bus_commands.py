@@ -129,6 +129,52 @@ def test_isr_verb_rejected_on_satcom_payload():
     assert mgr.validate_order("blue", _cmd("ISR-EO-1", "isr.collect_now")).reason == "no_payload_for_verb"
 
 
+def test_batch3_verbs_mutate_observably():
+    """Each batch-3 verb produces a real, observable mutation; clear_fault undoes a safe fsw_mode."""
+    w = _one(BusState())
+    apply_command(w, "SAT", "tcs.set_mode", {"mode": "survival"}, 0)
+    assert w.assets["SAT"].bus_state.thermal.mode == "survival"
+    apply_command(w, "SAT", "tcs.set_heater", {"on": True}, 0)
+    assert w.assets["SAT"].bus_state.thermal.heater_on is True
+    apply_command(w, "SAT", "comms.enable_isl", {"on": True}, 0)
+    assert w.assets["SAT"].bus_state.comms.isl_enabled is True
+    apply_command(w, "SAT", "comms.config_link", {"data_rate_kbps": 2048}, 0)
+    assert w.assets["SAT"].bus_state.comms.data_rate_kbps == 2048
+    apply_command(w, "SAT", "def.frequency_hop", {"on": True}, 0)
+    assert w.assets["SAT"].bus_state.comms.freq_hopping is True
+    apply_command(w, "SAT", "def.set_threat_warning", {"on": True}, 0)
+    assert w.assets["SAT"].threat_warning is True
+    # clear_fault returns fsw_mode to nominal when the bus isn't still safed (recompute would re-safe).
+    w.assets["SAT"].bus_state.cdh.fsw_mode = "safe"
+    apply_command(w, "SAT", "cdh.clear_fault", {}, 0)
+    assert w.assets["SAT"].bus_state.cdh.fsw_mode == "nominal"
+
+
+def test_frequency_hop_shrinks_jam_signature_in_telemetry():
+    """def.frequency_hop on the bus reduces the jam term scaling like a payload mitigation does."""
+    w = _one(BusState())                            # SAT with BusState (no payload)
+    w.now = minutes(20)
+    w.active_effects.append(ActiveEffect(target="SAT", outcome="deny", start=0, end=minutes(40),
+                                         category="electronic_warfare"))
+    before = tel.sample(w, "SAT", "rx_power_dbm", minutes(20), SEED)["value"]
+    apply_command(w, "SAT", "def.frequency_hop", {"on": True}, minutes(20))
+    after = tel.sample(w, "SAT", "rx_power_dbm", minutes(20), SEED)["value"]
+    assert after < before - 8                        # signature shrinks (operator counters the jam)
+
+
+def test_sigint_and_weather_payload_gates():
+    """Sigint/weather verbs require a payload of the matching type, like ISR/SATCOM."""
+    w = _one(BusState())
+    w.assets["SAT"].payload_state = PayloadState(type="isr_eo")
+    from spacesim.engine.buscommands import can_issue
+    assert can_issue(w, "SAT", "sigint.task_collection") == (False, "no_payload_for_verb")
+    assert can_issue(w, "SAT", "wx.schedule_collection") == (False, "no_payload_for_verb")
+    w.assets["SAT"].payload_state = PayloadState(type="sigint")
+    assert can_issue(w, "SAT", "sigint.task_collection")[0] is True
+    w.assets["SAT"].payload_state = PayloadState(type="weather")
+    assert can_issue(w, "SAT", "wx.schedule_collection")[0] is True
+
+
 def test_patch_cyber_lets_recovery_stick():
     """def.patch_cyber removes a cyber root cause so the next recovery attempt actually sticks."""
     from spacesim.engine.bus import enter_safe_mode

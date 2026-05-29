@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 7 — 129 tests green.** Implemented end-to-end:
+**Backend feature-complete through Phase 7 — 132 tests green.** Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -303,6 +303,19 @@ test first, implement to green, and add a regression test for every resolved fin
   capable→recovery+patch loop on training-basics. Documented the explicit **remaining-work
   checklist** in `OPERATOR-UI-DESIGN.md` §16.1 (tasking rail, role selector, inline sparklines,
   multi-display reflow, the rest of the catalog verbs, broader consequence-confirm).
+- **2026-05-27:** **All v1 UI-plan items now implemented.** Engine batch 3 verbs:
+  `cdh.clear_fault`, `tcs.set_mode`/`tcs.set_heater`, `comms.enable_isl`/`comms.config_link`,
+  `def.frequency_hop` (scales the jam term in telemetry — observable parity with satcom mitigation),
+  `def.harden`, `def.set_threat_warning`, `sigint.task_collection`, `wx.schedule_collection`. UI
+  finishing: **role selector** (All/Bus/Payload/SDA chips filter `actionsFor` via `VERB_ROLE`),
+  **inline sparklines** on every subsystem param chip (`Graph.spark`), **dedicated tasking rail**
+  (intent/sensor/target/priority panel posting `observe`), **multi-display reflow** (Detach viewers
+  pops a second window rendering the cell's belief scene on a slow tick), **broader consequence-
+  confirm** (`cyber` added to `CONSEQUENCE`). **132 tests green** (+3: batch-3 mutations,
+  frequency-hop shrinks the jam signature, sigint/wx payload gating); pyflakes clean; browser-
+  verified role filter (18→15 bus / 3 payload), sparklines (18 canvases), detached viewer (2nd
+  window with belief scene). `OPERATOR-UI-DESIGN.md` §16.1 now states the v1 plan is complete; v2
+  strategic items (constellation aggregation, APP-6 symbology, Δv panel) explicitly out of scope.
 - **Still open (deferred / v1.1+):** browser GUI **unverified headless** (needs a human or
   browser-driver to confirm visuals; backend covered). Sat caps ≤24/≤3/48 not yet validated at
   content load. Posture/defense command persistence (`def.harden`, `def.set_threat_warning`).

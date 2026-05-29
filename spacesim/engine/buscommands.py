@@ -16,20 +16,26 @@ from __future__ import annotations
 from spacesim.engine.bus import can_collect, payload_available, recompute_status, refresh_ground_view
 
 BUS_VERBS = {"eps.shed_load", "eps.restore_load", "eps.set_charge_mode",
-             "adcs.set_mode", "cdh.dump_storage"}
+             "adcs.set_mode", "cdh.dump_storage", "cdh.clear_fault",
+             "tcs.set_mode", "tcs.set_heater",
+             "comms.enable_isl", "comms.config_link"}
 PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users",
-                 "isr.collect_now", "isr.schedule_collection"}
-DEFENSE_VERBS = {"def.patch_cyber"}
+                 "isr.collect_now", "isr.schedule_collection",
+                 "sigint.task_collection", "wx.schedule_collection"}
+DEFENSE_VERBS = {"def.patch_cyber", "def.frequency_hop", "def.harden", "def.set_threat_warning"}
 COMMAND_VERBS = BUS_VERBS | PAYLOAD_VERBS | DEFENSE_VERBS
 
 # Payload verbs are valid only on a payload of a matching mission type (FR-B2: the bus/payload fit).
 _PAYLOAD_TYPES_FOR = {
     "satcom.mitigate_interference": {"satcom"}, "satcom.shift_users": {"satcom"},
     "isr.collect_now": {"isr_eo", "isr_sar"}, "isr.schedule_collection": {"isr_eo", "isr_sar"},
+    "sigint.task_collection": {"sigint"},
+    "wx.schedule_collection": {"weather"},
 }
 
 _ATTITUDE_MODES = ("nominal", "slew", "safe")
 _CHARGE_MODES = ("nominal", "fast", "trickle")
+_THERMAL_MODES = ("nominal", "survival", "operational")
 
 
 def is_payload_verb(verb: str) -> bool:
@@ -112,6 +118,60 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
             if vector is None or v.get("vector") == vector:
                 v["patched"] = True
         return True, "patched"
+
+    if verb == "cdh.clear_fault":
+        if bus is None: return False, "no_bus"
+        bus.cdh.fsw_mode = "nominal"
+        recompute_status(bus)
+        return True, "fault_cleared"
+
+    if verb == "tcs.set_mode":
+        if bus is None: return False, "no_bus"
+        mode = params.get("mode", "operational")
+        if mode not in _THERMAL_MODES: mode = "operational"
+        bus.thermal.mode = mode
+        return True, f"thermal_{mode}"
+
+    if verb == "tcs.set_heater":
+        if bus is None: return False, "no_bus"
+        bus.thermal.heater_on = bool(params.get("on", True))
+        return True, "heater_on" if bus.thermal.heater_on else "heater_off"
+
+    if verb == "comms.enable_isl":
+        if bus is None: return False, "no_bus"
+        bus.comms.isl_enabled = bool(params.get("on", True))
+        return True, "isl_enabled" if bus.comms.isl_enabled else "isl_disabled"
+
+    if verb == "comms.config_link":
+        if bus is None: return False, "no_bus"
+        rate = int(params.get("data_rate_kbps", bus.comms.data_rate_kbps))
+        bus.comms.data_rate_kbps = max(64, min(rate, 16384))
+        return True, f"link_{bus.comms.data_rate_kbps}kbps"
+
+    if verb == "def.frequency_hop":
+        if bus is None: return False, "no_bus"
+        bus.comms.freq_hopping = bool(params.get("on", True))
+        return True, "freq_hopping_on" if bus.comms.freq_hopping else "freq_hopping_off"
+
+    if verb == "def.harden":
+        if a.payload_state is None: return False, "no_payload"
+        a.payload_state.hardened = bool(params.get("on", True))
+        return True, "hardened" if a.payload_state.hardened else "unhardened"
+
+    if verb == "def.set_threat_warning":
+        a.threat_warning = bool(params.get("on", True))     # informational posture (no engine gate)
+        return True, "threat_warning_on" if a.threat_warning else "threat_warning_off"
+
+    if verb == "sigint.task_collection":
+        if a.payload_state is None: return False, "no_payload"
+        a.payload_state.collecting = True
+        return True, "tasked"
+
+    if verb == "wx.schedule_collection":
+        if a.payload_state is None: return False, "no_payload"
+        if bus is not None and not can_collect(bus): return False, "cannot_collect"
+        a.payload_state.collecting = True
+        return True, "scheduled"
 
     return False, "unknown"
 

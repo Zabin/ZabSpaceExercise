@@ -40,6 +40,7 @@ class Asset(BaseModel):
     isl_capable: bool = False          # can relay commands to peers via crosslink
     isl_peers: list[str] = Field(default_factory=list)
     stored_program: bool = True        # accepts time/condition-triggered onboard commands
+    threat_warning: bool = False       # def.set_threat_warning posture (informational)
 
     def as_ground_site(self) -> "GroundSite":
         if self.location is None:

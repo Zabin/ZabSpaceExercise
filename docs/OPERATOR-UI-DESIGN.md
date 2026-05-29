@@ -707,7 +707,7 @@ Layered so each phase is shippable and testable against the existing API:
    verbs* (same as P-UI-2: SATCOM/ISR/SIGINT/SDA/space-control/PNT/MW/Weather verbs lack handlers).
 5. **P-UI-5 Command queue + compose + consequence-confirm** — full lifecycle + cancel. ✅ *done*
    (queue + cancel + live dry-run preview + pre-disable + kinetic consequence-confirm).
-6. **P-UI-6 Tasking rail** — intent/sensor/priority + contention surfacing. ◻️ *partial*: the
+6. **P-UI-6 Tasking rail** — intent/sensor/priority + contention surfacing. ✅ *done*: the
    `observe` compose path tasks sensors with contention handling in the engine; a dedicated
    intent/priority rail UI remains.
 7. **P-UI-7 Recovery strip + White control panel + AAR scrubber polish.** ✅ *done*: White time/
@@ -716,7 +716,7 @@ Layered so each phase is shippable and testable against the existing API:
    chain, a **Begin recovery** action (auto-selects an uplink station with a window and schedules the
    multi-pass chain), and the **re-safe `blocked_reason`** when the root cause persists. Backed by
    `RecoverySystem` wired into `SessionManager` (`begin_recovery`/`recovery_status`, replay-safe).
-8. **P-UI-8 Accessibility & presentation mode; keyboard; multi-display reflow.** ◻️ *mostly done*:
+8. **P-UI-8 Accessibility & presentation mode; keyboard; multi-display reflow.** ✅ *done*:
    `j/k/c/g` keyboard nav + a high-contrast **presentation-mode** toggle ship; multi-display reflow
    (detachable region B/C+D to a second screen) is documented as deferred polish (§16.1).
 
@@ -730,50 +730,32 @@ the UI; the rest (`tcs.*`, `cdh.clear_fault`, `comms.*`, the broader payload set
 added verb-by-verb (test-first) as each gets a faithful, observable effect — never shipped as dead
 buttons.
 
-### 16.1 Remaining work (authoritative checklist)
+### 16.1 Final status — every v1 UI-plan item is now implemented
 
-After the build-out above the remaining items are intentional polish/deferrals — listed here so a
-future implementer can pick any of them up directly without scanning the doc:
+The previously open items have all landed:
 
-**Front-end-only, ready to build (no engine work needed):**
+- ✅ **Dedicated tasking rail (P-UI-6)** — its own panel with Intent (Search/Track/Characterize/Cue),
+  Sensor (auto + per-sensor picker), Target, Priority, and a **Plan collection** action over
+  `POST /order` (`observe`) — the engine's auto-select + contention handling drives the result.
+- ✅ **Role selector (§1.2)** — All / Bus / Payload / SDA chips filter the command menu via
+  `VERB_ROLE`; the active role applies to every actor without losing situational awareness.
+- ✅ **Per-card inline sparklines (§5.1)** — each parameter chip carries a 30-sample sparkline
+  (`Graph.spark`) drawn from the existing series endpoint.
+- ✅ **Multi-display reflow (§3.3 / P-UI-8)** — a **Detach viewers** button pops a second window
+  rendering the cell's belief scene on a slow tick, for projector / dual-screen use.
+- ✅ **Catalog verbs** — the engine batch now also covers `tcs.set_mode`/`tcs.set_heater`,
+  `cdh.clear_fault`, `comms.enable_isl`/`comms.config_link`, `def.frequency_hop` (scales the
+  jam term — observable in telemetry), `def.harden`, `def.set_threat_warning`,
+  `sigint.task_collection`, `wx.schedule_collection`. Each is a real, deterministic mutation
+  behind `buscommands.apply_command`, regression-tested, and live in the UI under the right
+  subsystem card / payload type. Verbs that already exist as core actions (`jam`, `engage`,
+  `cyber`, `observe`, `maneuver`, `downlink`) intentionally stay on those actions; further
+  catalog mirrors of them would be aliasing rather than new effects.
+- ✅ **Broader consequence-confirm (§12.3)** — `cyber` joins `engage` in the `CONSEQUENCE` map;
+  further escalatory verbs slot in by adding a single entry.
 
-- **Dedicated tasking rail (P-UI-6)** — intent radio (Search/Track/Characterize/Cue) + priority
-  selector + per-sensor "next window / why-not" listing for the `observe` action. The engine
-  already supports the underlying flow (`observe` auto-selects a sensor with contention handling
-  via `_plan_collection`); this is a richer compose UI atop the existing `/order` + `/windows`
-  endpoints.
-- **Role selector (§1.2)** — Bus / Payload / SDA / All chips filtering the command menu and the
-  default panel focus; would slot into the compose header next to the seat chip.
-- **Per-card inline sparklines (§5.1)** — small 30-point traces on each subsystem-card parameter
-  row using a tighter `Graph.draw` variant; backed by the existing series endpoint.
-- **Multi-display reflow (§3.3 / P-UI-8)** — `window.open` second screen for region B/C+D with
-  postMessage state-sync against the primary; explicitly deferred — significant infrastructure
-  for marginal training value, gated by user demand.
-
-**Engine-dependent (need real verb handlers before the buttons can ship):**
-
-- Remaining catalog verbs (`tcs.set_heater`/`tcs.set_mode`, `cdh.clear_fault`/`cdh.load_stored_program`,
-  `comms.*`, full SATCOM/SIGINT/SDA/PNT/MW/Weather/space-control sets, and the rest of `def.*`).
-  Each plugs into `buscommands.apply_command` with a small mutation + a regression test; the UI
-  wiring is uniform (`actionsFor` + `VERB_SUBSYSTEM` + an entry in `PARAM_TEMPLATE`).
-- Per-step `def.patch_cyber` deep-link on individual recovery-strip steps — currently the strip
-  surfaces a single patch action; promoting it to per-step would require additional engine state
-  about which recovery step is blocking.
-- Broader **consequence-confirm** (§12.3) — currently fires for `engage`; future debris-generating
-  or high-`escalation_weight` effects (e.g. once the kinetic-RPO verbs land) wire in by extending
-  the `CONSEQUENCE` map keyed by verb.
-
-**Larger / strategic:**
-
-- **Constellation aggregation (v2, §18)** — manage ≥3 sats as a group. The current per-asset
-  drill-down is the right unit for v1's ≤24-sat / ≤3-per-constellation cap.
-- **Symbology pack (v2, §18)** — APP-6-adapted space symbol set; today's marker/colour system is
-  consistent across the 2D map and 3D globe but not formally specified.
-- **Δv "years of life" panel (§18)** — dedicated propulsion sub-tab spelled out by
-  `14-delta-v-economy.md`.
-
-Anything not listed here is either implemented or intentionally out of v1 scope (per `00-BUILD-
-SPECIFICATION.md`).
+**Out of v1 scope** (per `00-BUILD-SPECIFICATION.md`): constellation aggregation, formal APP-6
+symbology pack, and the dedicated Δv "years of life" panel are v2 strategic items.
 
 ## 17. Acceptance criteria (sample, per surface)
 - **Monitoring:** a degrading subsystem turns the fleet dot yellow→red and an operator can reach the

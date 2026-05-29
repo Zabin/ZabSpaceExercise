@@ -62,5 +62,20 @@ window.Graph = (function () {
     x.fillStyle = "#9fb0c0";
     x.fillText(hi.toPrecision(3), 2, 14); x.fillText(lo.toPrecision(3), 2, H - 6);
   }
-  return { draw };
+  // Tiny inline sparkline for a subsystem-card parameter row (§5.1). No axis labels.
+  function spark(canvas, series, spec) {
+    const x = canvas.getContext("2d"), W = canvas.width, H = canvas.height;
+    x.clearRect(0, 0, W, H);
+    const pts = (series.points || []).filter((p) => p.value !== null);
+    if (pts.length < 2) return;
+    const ys = pts.map((p) => p.value);
+    let lo = Math.min(...ys), hi = Math.max(...ys); if (hi === lo) hi = lo + 1;
+    const py = (v) => H - 2 - (v - lo) / (hi - lo) * (H - 4);
+    const px = (i) => 1 + i / (pts.length - 1) * (W - 2);
+    x.strokeStyle = COL[pts[pts.length - 1].status] || "#9fb0c0"; x.lineWidth = 1;
+    x.beginPath();
+    pts.forEach((p, i) => (i ? x.lineTo(px(i), py(p.value)) : x.moveTo(px(i), py(p.value))));
+    x.stroke();
+  }
+  return { draw, spark };
 })();
