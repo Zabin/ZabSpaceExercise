@@ -93,11 +93,9 @@ work: validate caps in `content/vignette.build_world` with a clear rejection.
 
 ## 7. Mock Space Surveillance Network (SSN) — ✅ implemented
 
-The per-cell mock SSN is built per `docs/SSN-DESIGN.md` (engine + session + API + UI + V2/V7/V8
-vignette opt-in + acceptance tests). Of the doc's §17 open items, **quality model fidelity** and
-**save/resume of in-flight requests** are now implemented (window `quality` scales the delivered
-gain so a grazing pass yields a measurably weaker product; SSN requests serialize in
-`save_state` and rebuild bookings/in-flight counters on `from_state`). Remaining:
+The per-cell mock SSN is fully implemented per `00-BUILD-SPECIFICATION.md` §17 (engine + session +
+API + UI + V2/V7/V8 vignette opt-in + acceptance tests; quality model and save/resume included).
+Remaining items not carried into v1:
 
 - **Cost / collection-budget** for priority/immediate (force triage). Recommended as a later
   balance dial.

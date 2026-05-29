@@ -132,7 +132,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `dry_run()` is a read-only mirror of `issue()` (validate + window/delivery-path, but schedules/
   registers/books nothing) → powers the UI's "why can't I?" pre-disabled buttons; replay-safe like `scene.py`.
 - `spacesim/engine/recovery.py` — `RecoverySystem`: multi-pass safe-mode recovery + re-safe-on-persistence.
-- `spacesim/engine/ssn.py` — mock Space Surveillance Network (per `docs/SSN-DESIGN.md`): per-cell
+- `spacesim/engine/ssn.py` — mock Space Surveillance Network (per `00-BUILD-SPECIFICATION.md` §17): per-cell
   `SSNNetwork`s instantiated from a dispersion preset (`sparse`/`regional`/`global`/`proliferated`),
   hybrid-turnaround request resolution (earliest viable window inside the priority SLA + processing
   delay; coalition vs. national affiliation), and two deterministic handlers (`ssn_collect` /
@@ -176,9 +176,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `00-BUILD-SPECIFICATION.md` §16; deferred / v2 items live in `docs/FUTURE-WORK.md`.
 - `docs/FUTURE-WORK.md` — single-source TODO list (v1.1+): remaining catalog-verb gaps,
   multiplayer transport, constellation aggregation, APP-6 symbology pack, Δv panel, full Cesium
-  globe, SSN proposal pointer, and other deferred items.
-- `docs/SSN-DESIGN.md` — ~10-page plan for a mock Space Surveillance Network: per-cell
-  national/coalition networks, four dispersion presets, global + LEO→GEO coverage, hybrid turnaround
-  (window + processing delay), request→product flow; per-vignette opt-in (V7/V8). Design only;
-  referenced from `FUTURE-WORK.md` §7.
+  globe, and other deferred items.
+- `docs/SSN-DESIGN.md` — **retired**; the authoritative SSN spec is in
+  `00-BUILD-SPECIFICATION.md` §17; open items are in `docs/FUTURE-WORK.md` §7.
   Run: `uvicorn spacesim.ui_web.server:app` then open http://127.0.0.1:8000/.
