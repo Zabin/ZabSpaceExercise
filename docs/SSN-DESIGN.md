@@ -5,7 +5,7 @@
 **Audience:** Claude Code (implementer), White Cell facilitators, reviewers
 **Companions:** `11-command-planning-and-tasking.md` (Part B sensor tasking — esp. *shared/coalition
 feeds*), `07-sda-custody-hunt.md` (the SDA vignette), `05-cell-interfaces.md`, `09-gui-principles.md`,
-`OPERATOR-UI-DESIGN.md` (tasking rail).
+`00-BUILD-SPECIFICATION.md` §16.7 (tasking rail).
 **Implemented surfaces reused:** `spacesim/engine/access.py` (`AccessProvider`, `sensor_observation`
 channel), `spacesim/engine/entities.py` (`Sensor`), `spacesim/engine/custody.py` (`Track`, decay),
 `spacesim/engine/orders.py` (`observe` execution + contention), `spacesim/session/{manager,scene}.py`,
@@ -301,7 +301,7 @@ and the fog boundary — so the deterministic guarantees and tests already in pl
 
 ## 12. UI integration (augments the operator console)
 
-In the **Tasking rail** (`OPERATOR-UI-DESIGN.md` §7.4) add a toggle: **Organic** vs **SSN request**.
+In the **Tasking rail** (`00-BUILD-SPECIFICATION.md` §16.7) add a toggle: **Organic** vs **SSN request**.
 When SSN is selected:
 
 ```

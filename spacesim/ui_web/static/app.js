@@ -80,7 +80,7 @@ const VERB_ROLE = {
 };
 let ROLE_FILTER = "all";
 
-// Plain-language tooltips for the engine's own validator reason strings (OPERATOR-UI-DESIGN.md §12.2).
+// Plain-language tooltips for the engine's own validator reason strings (00-BUILD-SPECIFICATION.md §16.9).
 // Keys mirror OrderSystem._validate verbatim so UI and engine never drift.
 const REASON_TIPS = {
   no_window: "No access window in the planning horizon — wait for the next pass.",

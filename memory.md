@@ -316,9 +316,17 @@ test first, implement to green, and add a regression test for every resolved fin
   verified role filter (18→15 bus / 3 payload), sparklines (18 canvases), detached viewer (2nd
   window with belief scene). `OPERATOR-UI-DESIGN.md` §16.1 now states the v1 plan is complete; v2
   strategic items (constellation aggregation, APP-6 symbology, Δv panel) explicitly out of scope.
-- **Still open (deferred / v1.1+):** browser GUI **unverified headless** (needs a human or
-  browser-driver to confirm visuals; backend covered). Sat caps ≤24/≤3/48 not yet validated at
-  content load. Posture/defense command persistence (`def.harden`, `def.set_threat_warning`).
-  EW/bus-stress safe-mode inducement (only cyber exercised). Contention booking registry not
-  rewind-safe. `Order` is an engine dataclass crossing the API in-process — make it a serializable
-  pydantic message at the network transport. Full CesiumJS 3D globe (v1.1). **P8** seam proofs.
+- **Still open (deferred / v1.1+):** consolidated into **`docs/FUTURE-WORK.md`** (single source
+  of truth) and `00-BUILD-SPECIFICATION.md` §3.2 (explicit v1 non-goals). The browser GUI is
+  still unverified-headless; that and the remaining catalog-verb gaps, multiplayer transport,
+  constellation aggregation, APP-6 symbology, Δv panel, full Cesium globe, SSN proposal, and the
+  open items above (sat caps validation, posture persistence depth, EW safe-mode inducement,
+  contention rewind, `Order` serialisation) all live there now.
+- **2026-05-27:** Documentation reorganisation. Merged the implemented operator-UI design into
+  `00-BUILD-SPECIFICATION.md` §16 (12 subsections: users/roles, principles, screen architecture,
+  fleet rail, subsystem drill-down, command compose, tasking + recovery, per-cell consoles,
+  button-state contract + reason strings, catalog verbs, data/API binding, accessibility) and
+  consolidated all deferred items into **`docs/FUTURE-WORK.md`** (9 sections: multiplayer,
+  fidelity, catalog gaps, UI strategic, refinements, sat caps, SSN, UI polish, larger).
+  `docs/OPERATOR-UI-DESIGN.md` is now a one-screen redirect stub; nothing references it for
+  authoritative content. `CLAUDE.md` updated to point at the new locations.

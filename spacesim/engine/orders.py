@@ -109,7 +109,7 @@ class OrderSystem:
         """Validate + compute window/delivery path **without** scheduling, registering, or booking.
 
         Read-only mirror of ``issue`` for the UI's "why can't I?" pre-disabled buttons and window
-        preview (`OPERATOR-UI-DESIGN.md` §12). Touches no engine state — no RNG, no event log, no
+        preview (`00-BUILD-SPECIFICATION.md` §16.9). Touches no engine state — no RNG, no event log, no
         order registry, no sensor bookings — so it is replay-safe like ``scene``/``telemetry``.
         """
         order.issued_at = self.sim.clock.now
