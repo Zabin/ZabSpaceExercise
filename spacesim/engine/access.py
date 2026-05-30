@@ -172,12 +172,41 @@ class AccessProvider:
 
     def _ground_sat_predicate(self, site: GroundSite, sat: OrbitState, mask_deg: float):
         refract = self.cfg.atmospheric_refraction
-        def elevation(t: int) -> float:
-            r, _ = self.prop.rv(sat, t)
-            el, _, _ = look_angles(site.location, r, t)
-            return _refracted_elevation(el) if refract else el
+        # FUTURE-WORK §10.C.12 — per-azimuth mask table (terrain-aware horizon).
+        table = getattr(site, "mask_table", None) or []
+        def site_mask(az_deg: float) -> float:
+            if not table:
+                return mask_deg
+            az = az_deg % 360.0
+            for entry in table:
+                raw_min = float(entry.get("az_min", 0))
+                raw_max = float(entry.get("az_max", 360))
+                # Full-circle entry (e.g. {az_min:0, az_max:360}) always matches.
+                if raw_max - raw_min >= 359.999:
+                    return float(entry.get("mask_deg", mask_deg))
+                a0, a1 = raw_min % 360.0, raw_max % 360.0
+                if a0 <= a1:
+                    if a0 <= az < a1:
+                        return float(entry.get("mask_deg", mask_deg))
+                else:  # wrap-around window (e.g. 350°..10°)
+                    if az >= a0 or az < a1:
+                        return float(entry.get("mask_deg", mask_deg))
+            return mask_deg
 
-        return (lambda t: elevation(t) >= mask_deg, lambda t: max(0.0, elevation(t)) / 90.0)
+        def elevation_and_az(t: int) -> tuple[float, float]:
+            r, _ = self.prop.rv(sat, t)
+            el, az, _ = look_angles(site.location, r, t)
+            return (_refracted_elevation(el) if refract else el), az
+
+        def in_window(t: int) -> bool:
+            el, az = elevation_and_az(t)
+            return el >= site_mask(az)
+
+        def quality(t: int) -> float:
+            el, _ = elevation_and_az(t)
+            return max(0.0, el) / 90.0
+
+        return (in_window, quality)
 
     def _weapon_predicate(self, launch: GroundSite, sat: OrbitState):
         def metrics(t: int) -> tuple[float, float]:

@@ -26,10 +26,10 @@ from spacesim.engine.rng import SeededRng
 if TYPE_CHECKING:
     from spacesim.engine.world import WorldState
 
-Outcome = Literal["deceive", "disrupt", "deny", "degrade", "destroy", "safe_mode", "none"]
+Outcome = Literal["deceive", "disrupt", "deny", "degrade", "destroy", "safe_mode", "spoof", "none"]
 Category = Literal["direct_ascent", "co_orbital", "electronic_warfare", "directed_energy", "cyber"]
 
-REVERSIBLE_LINK_OUTCOMES = {"deceive", "disrupt", "deny"}
+REVERSIBLE_LINK_OUTCOMES = {"deceive", "disrupt", "deny", "spoof"}
 
 
 class EffectInstance(BaseModel):
@@ -143,6 +143,10 @@ class ModerateEffectResolver:
                     template=effect.template,
                 )
             )
+            # FUTURE-WORK §10.D.16 — denying a CIVILIAN link raises a political consequence.
+            if target is not None and getattr(target, "civilian", False) and achieved in {"deny", "disrupt", "spoof"}:
+                side.append({"type": "political_consequence", "severity": "medium",
+                             "cause": f"civilian_collateral_{effect.template}", "target": effect.target})
 
         conf = {"overt": 0.95, "ambiguous": 0.5, "covert": 0.15}[effect.attribution]
         side.append({"type": "attribution_signal", "to": _victim_cell(world, effect), "confidence": conf})
@@ -173,5 +177,17 @@ def _victim_cell(world: "WorldState", effect: EffectInstance) -> str:
 def is_link_denied(world: "WorldState", target_id: str, t: int) -> bool:
     return any(
         ae.target == target_id and ae.outcome in {"deny", "disrupt"} and ae.start <= t <= ae.end
+        for ae in world.active_effects
+    )
+
+
+def is_link_spoofed(world: "WorldState", target_id: str, t: int) -> bool:
+    """FUTURE-WORK §10.C.14 — distinct from is_link_denied: the link stays up but the
+    content (GPS fix, SATCOM uplink) is corrupt. Telemetry shows nominal RX power but
+    an integrity flag goes red. The operator must detect spoofing through the integrity
+    signal, not through link-loss symptoms.
+    """
+    return any(
+        ae.target == target_id and ae.outcome == "spoof" and ae.start <= t <= ae.end
         for ae in world.active_effects
     )

@@ -58,6 +58,8 @@ PARAMS: dict[str, ParamSpec] = {p.id: p for p in [
     ParamSpec("ber", "comms", "Bit error rate", "ratio", 1e-6, 0.0, 1e-4, 1e-3, True),
     ParamSpec("uplink_lock", "comms", "Uplink lock", "bool", 1.0, 0.0, 0.5, 0.5, False),
     ParamSpec("snr_db", "payload", "Payload SNR", "dB", 30.0, 0.8, 15.0, 8.0, False),
+    # FUTURE-WORK §10.C.14 — integrity_flag = 1.0 nominal, drops toward 0 under spoof.
+    ParamSpec("integrity_flag", "payload", "Integrity flag", "01", 1.0, 0.0, 0.7, 0.3, False),
 ]}
 
 _MICRO = 1_000_000
@@ -81,13 +83,15 @@ def _noise(seed: int, asset: str, param: str, t: int) -> float:
 
 def _active(world, asset_id: str, t: int):
     """Flags + onset times for attacks currently affecting the asset (read from active_effects)."""
-    flags = {"jam": False, "cyber": False, "de": False}
+    flags = {"jam": False, "cyber": False, "de": False, "spoof": False}
     onset = {}
     for ae in world.active_effects:
         if ae.target != asset_id or not (ae.start <= t <= ae.end):
             continue
         if ae.category == "electronic_warfare" and ae.outcome in ("deny", "disrupt"):
             flags["jam"] = True; onset.setdefault("jam", ae.start)
+        elif ae.outcome == "spoof":      # FUTURE-WORK §10.C.14 — spoof is distinct from jam
+            flags["spoof"] = True; onset.setdefault("spoof", ae.start)
         elif ae.category == "cyber":
             flags["cyber"] = True; onset.setdefault("cyber", ae.start)
         elif ae.category == "directed_energy":
@@ -162,6 +166,9 @@ def _attack_term(asset, world, spec: ParamSpec, t: int, flags, onset) -> float:
         return 12.0
     if pid == "attitude_error_deg" and safed:
         return 2.5                                    # slew to sun-point
+    # FUTURE-WORK §10.C.14 — spoof shows ONLY on integrity_flag (link symptoms stay nominal).
+    if pid == "integrity_flag" and flags.get("spoof"):
+        return -0.9                                   # 1.0 nominal → ~0.1 under active spoof
     return 0.0
 
 

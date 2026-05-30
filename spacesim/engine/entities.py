@@ -38,15 +38,22 @@ class Asset(BaseModel):
     bus_state: Optional[BusState] = None
     payload_state: Optional[PayloadState] = None
     group: Optional[str] = None         # constellation / formation identifier (≤3 sats per group)
+    civilian: bool = False              # FUTURE-WORK §10.D.16 — denying a civilian link raises political cost
     isl_capable: bool = False          # can relay commands to peers via crosslink
     isl_peers: list[str] = Field(default_factory=list)
     stored_program: bool = True        # accepts time/condition-triggered onboard commands
     threat_warning: bool = False       # def.set_threat_warning posture (informational)
 
+    # FUTURE-WORK §10.C.12 — terrain-aware horizon: optional per-azimuth mask table.
+    # Each entry: {az_min, az_max, mask_deg}. Azimuths in [0, 360); mask wins by first match.
+    mask_table: list[dict] = Field(default_factory=list)
+
     def as_ground_site(self) -> "GroundSite":
         if self.location is None:
             raise ValueError(f"asset {self.id} has no location")
-        return GroundSite(id=self.id, location=self.location, elevation_mask_deg=self.elevation_mask_deg)
+        return GroundSite(id=self.id, location=self.location,
+                          elevation_mask_deg=self.elevation_mask_deg,
+                          mask_table=list(self.mask_table))
 
 
 class GroundSite(BaseModel):
@@ -55,6 +62,7 @@ class GroundSite(BaseModel):
     id: str
     location: GeoPoint
     elevation_mask_deg: float = 5.0
+    mask_table: list[dict] = Field(default_factory=list)  # see Asset.mask_table
 
 
 class Sensor(BaseModel):
