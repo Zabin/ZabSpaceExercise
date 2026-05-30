@@ -31,6 +31,8 @@
       <input id="loadfile" type="file" accept=".json,application/json" style="display:none" />
     </div>
     <label class="toggle"><input id="present" type="checkbox"> present</label>
+    <label class="toggle" title="Projector / White-Cell mode — hides compose form, larger fonts"><input id="projector" type="checkbox"> projector</label>
+    <label class="toggle" title="Color-blind safe palette (Okabe-Ito)"><input id="cb" type="checkbox"> cb-safe</label>
     <button id="detach">Detach viewers</button>
     <span class="banner">UNCLASSIFIED // TRAINING</span>
   </header>
@@ -99,7 +101,7 @@
       <div id="ssn-queue" class="muted">(empty)</div>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="order-panel">
       <h2>Satellite command</h2>
       <div id="role-filter" class="ctrl" style="margin-bottom:6px">
         <button class="chip active" data-role="all">All</button>
@@ -114,7 +116,10 @@
       <label style="display:flex">Params
         <input id="o-params" style="flex:1" value='{"via":"GS-NORTH"}' /></label>
       <button id="issue" class="primary">Issue order</button>
+      <button id="save-playbook" title="Save the current order as a named playbook">★ Save preset</button>
       <div id="o-preview" class="preview"></div>
+      <h3>Playbooks</h3>
+      <div id="playbook-list" class="playbook-list muted">(no presets saved)</div>
       <h3>Result</h3>
       <pre id="order-result">—</pre>
       <h3>Pass timeline (next 6 h)</h3>
@@ -157,16 +162,24 @@
     </div>
   </section>
 
-  <section class="panel" style="margin:0 12px 14px">
+  <section class="panel" id="aar-panel" style="margin:0 12px 14px">
     <h2>After-action review — scrub the deterministic timeline</h2>
-    <div class="ctrl"><input id="aar-slider" type="range" min="0" max="0" value="0" style="flex:1" /><span id="aar-label" class="muted"></span></div>
+    <div class="ctrl">
+      <input id="aar-slider" type="range" min="0" max="0" value="0" style="flex:1" />
+      <span id="aar-label" class="muted"></span>
+      <button id="bookmark-add" title="Pin this sim moment to revisit later">📌 Bookmark</button>
+      <a id="aar-csv" href="#" target="_blank">⬇ CSV</a>
+      <a id="aar-json" href="#" target="_blank">⬇ JSON</a>
+    </div>
+    <h3>Bookmarks</h3>
+    <div id="bookmark-list" class="bookmark-list muted">(no bookmarks)</div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:8px">
       <div><h3>Objectives at this point</h3><pre id="aar-obj">—</pre></div>
       <div><h3>Assets at this point</h3><pre id="aar-assets">—</pre></div>
     </div>
   </section>
 
-  <section class="panel" style="margin:0 12px 14px">
+  <section class="panel" id="drill-panel" style="margin:0 12px 14px">
     <h2>Subsystem drill-down — telemetry &amp; logs (click a fleet row, then a parameter)</h2>
     <div id="drill-title" class="toggle">select an asset above…</div>
     <div id="recovery-strip"></div>
@@ -183,6 +196,8 @@
       </div>
     </div>
   </section>
+
+  <div id="tooltip" class="tip" style="display:none"></div>
 
   <script src="/world.js"></script>
   <script src="/graph.js"></script>

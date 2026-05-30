@@ -162,6 +162,7 @@ function setCell(c) {
   CELL = c;
   document.body.setAttribute("data-cell", c);    // drives --cell-accent across panels/borders/rows
   document.querySelectorAll(".cell").forEach((b) => b.classList.toggle("active", b.dataset.cell === c));
+  if (window.redrawAll) redrawAll();            // re-tint own-asset markers immediately
   refresh();
 }
 
@@ -494,6 +495,7 @@ async function refreshAAR() {
   if (!snap) return;
   const sl = $("aar-slider"); sl.max = snap.n_events; if (+sl.value > snap.n_events) sl.value = snap.n_events;
   aarAt(sl.value);
+  if (window.refreshAarLinks) refreshAarLinks();      // §10.E.20 — keep CSV/JSON download href live
 }
 async function aarAt(seq) {
   const snap = await api.get(`/api/sessions/${SID}/aar/at?seq=${seq}`).catch(() => null);
@@ -518,12 +520,18 @@ function drawMap() {
     for (let lon = -180; lon <= 180; lon += 30) { x.beginPath(); x.moveTo(PX(lon), 0); x.lineTo(PX(lon), c.height); x.stroke(); }
     for (let lat = -90; lat <= 90; lat += 30) { x.beginPath(); x.moveTo(0, PY(lat)); x.lineTo(c.width, PY(lat)); x.stroke(); }
   }
-  x.fillStyle = "#6fcf6f";
+  // §10.C.10 — terminator overlay (computed from sun_lat/lon already in SceneView).
+  if (SCENE.sun_lat_deg != null && window.drawTerminator) {
+    window.drawTerminator(x, c, PX, PY, SCENE.sun_lat_deg, SCENE.sun_lon_deg);
+  }
+  // §10.A.1 — own-asset marker color tracks the active cell's accent.
+  const accent = window.cellAccent ? cellAccent() : "#6fcf6f";
+  x.fillStyle = accent;
   SCENE.assets.forEach((a) => {
     const px = PX(a.lon_deg), py = PY(a.lat_deg);
     if (a.on_orbit) { x.beginPath(); x.moveTo(px, py - 5); x.lineTo(px - 5, py + 4); x.lineTo(px + 5, py + 4); x.closePath(); x.fill(); }
     else x.fillRect(px - 4, py - 4, 8, 8);
-    x.fillStyle = "#9fb0c0"; x.font = "11px monospace"; x.fillText(a.id, px + 7, py + 3); x.fillStyle = "#6fcf6f";
+    x.fillStyle = "#9fb0c0"; x.font = "11px monospace"; x.fillText(a.id, px + 7, py + 3); x.fillStyle = accent;
   });
   if (mapCam.tracks) SCENE.tracks.forEach((t) => {
     const px = PX(t.lon_deg), py = PY(t.lat_deg), r = Math.max(4, Math.min(40, t.uncertainty_km / 18));
@@ -586,12 +594,18 @@ async function openDrill(assetId) {
   const a = ASSETS[assetId] || {};
   $("drill-params").innerHTML = Object.entries(tele.subsystems).map(([sub, params]) => {
     const chips = params.map((p) =>
-      `<span class="pchip ${p.status}" data-param="${p.id}">${p.label} ${p.value ?? "LOS"}` +
+      `<span class="pchip ${p.status}" data-param="${p.id}" data-acronym="${(p.label || "").split(" ")[0]}">${p.label} ${p.value ?? "LOS"}` +
       ` <canvas class="spark" data-param="${p.id}" width="48" height="12"></canvas></span>`).join(" ");
     const verbs = verbsForSubsystem(a, sub).map((v) =>
       `<button class="vbtn" data-verb="${v}" data-actor="${assetId}">${v}</button>`).join(" ");
-    return `<div class="sub"><b>${sub}</b> ${chips}${verbs ? `<div class="vbtns">${verbs}</div>` : ""}</div>`;
+    return `<div class="sub"><b data-acronym="${sub.toUpperCase()}">${sub}</b> ${chips}${verbs ? `<div class="vbtns">${verbs}</div>` : ""}</div>`;
   }).join("");
+  // §10.A.4 — diff-pulse: if a value changed since the last drill render, flash that pchip.
+  document.querySelectorAll("#drill-params .pchip").forEach((chip) => {
+    const pid = chip.dataset.param;
+    const par = Object.values(tele.subsystems).flat().find((p) => p.id === pid);
+    if (par) window.maybePulse && maybePulse(chip, assetId + ":" + pid, par.value);
+  });
   // Tiny inline sparklines (§5.1) — one short series per param chip; ignore failures silently.
   document.querySelectorAll("#drill-params .spark").forEach(async (cv) => {
     try {
@@ -735,3 +749,224 @@ function onShortcut(e) {
   } else if (e.key === "c") { sel.focus(); }
   else if (e.key === "g" && sel.value) { openDrill(sel.value); }
 }
+
+// ===================================================================
+// FUTURE-WORK §10 implementations (frontend)
+// ===================================================================
+
+// §10.A.1 — Read the active cell's accent from CSS, exposed to globe.js / map drawing.
+window.cellAccent = function () {
+  const v = getComputedStyle(document.body).getPropertyValue("--cell-accent").trim();
+  return v || "#6fcf6f";
+};
+
+// Lightweight redraw used by toggles that don't change session state.
+window.redrawAll = function () {
+  if (SCENE) {
+    if (window.Globe) Globe.render(SCENE);
+    if (typeof drawMap === "function") drawMap();
+  }
+};
+
+// §10.A.2, §10.A.3 — Color-blind + projector toggles, persisted in localStorage.
+function applyToggle(id, cls) {
+  const cb = $(id); if (!cb) return;
+  const stored = localStorage.getItem("toggle:" + id) === "1";
+  cb.checked = stored;
+  document.body.classList.toggle(cls, stored);
+  cb.addEventListener("change", () => {
+    document.body.classList.toggle(cls, cb.checked);
+    localStorage.setItem("toggle:" + id, cb.checked ? "1" : "0");
+    if (window.redrawAll) redrawAll();
+  });
+}
+
+// §10.A.4 — Diff-highlight: track previous numeric values per asset+param, pulse on change.
+const PREV_VALUES = {};
+window.maybePulse = function (cell, key, value) {
+  const prev = PREV_VALUES[key];
+  PREV_VALUES[key] = value;
+  if (prev !== undefined && prev !== value && cell) {
+    cell.classList.remove("diff-pulse"); void cell.offsetWidth;   // restart the animation
+    cell.classList.add("diff-pulse");
+  }
+};
+
+// §10.A.5, §10.E.19 — Tooltip on hover for [data-asset-ref] and [data-acronym]. One shared element.
+const ACRONYMS = {
+  SOH: "State of Health — the health rollup across all bus/payload subsystems.",
+  RPO: "Rendezvous & Proximity Operations — co-orbital approach to inspect or threaten.",
+  ISL: "Inter-Satellite Link — crosslink between two satellites; bypasses ground passes.",
+  AAR: "After-Action Review — deterministic replay/scrub of a finished exercise.",
+  SSN: "Space Surveillance Network — the SDA enterprise that fulfills request-based custody.",
+  SDA: "Space Domain Awareness — knowing what is on orbit, where, and what it's doing.",
+  EW:  "Electronic Warfare — jamming / spoofing of RF links (reversible).",
+  ROE: "Rules of Engagement — what the cell is authorized to do (kinetic / cyber).",
+  TT: "Tracking, Telemetry & Commanding — the ground/sat command/control link.",
+  TTC: "TT&C — Tracking, Telemetry & Commanding.",
+  PNT: "Positioning, Navigation, Timing — GPS-class service.",
+  ISR: "Intelligence, Surveillance & Reconnaissance — imaging / SIGINT collection.",
+  GEO: "Geostationary orbit (~35,786 km altitude).",
+  LEO: "Low Earth Orbit (~200–2,000 km altitude).",
+  MEO: "Medium Earth Orbit (~2,000–35,786 km altitude).",
+  HVA: "High-Value Asset — the satellite Red wants to neutralize.",
+  PME: "Professional Military Education — the audience for this simulator.",
+  UEWR: "Upgraded Early Warning Radar (e.g. Cape Cod SFS, Fylingdales).",
+  ECCM: "Electronic Counter-Countermeasures — defenses against jamming (e.g. frequency hopping).",
+  "Δv": "Delta-v — change in orbital velocity; the maneuver budget that gates asset lifetime.",
+  FSW: "Flight Software — the on-orbit computer software that controls the satellite.",
+  CDH: "Command & Data Handling — the on-board computer subsystem.",
+  EPS: "Electrical Power Subsystem — solar arrays + battery.",
+  ADCS: "Attitude Determination & Control Subsystem — pointing.",
+  TCS: "Thermal Control Subsystem — heaters / radiators.",
+};
+let _tipEl = null;
+function tipEl() { return _tipEl || ($("tooltip"));}
+function hideTip() { const t = tipEl(); if (t) t.style.display = "none"; }
+function showTip(html, ev) {
+  const t = tipEl(); if (!t) return;
+  t.innerHTML = html; t.style.display = "block";
+  const x = ev.clientX + 14, y = ev.clientY + 14;
+  t.style.left = x + "px"; t.style.top = y + "px";
+}
+document.addEventListener("mouseover", (e) => {
+  const acr = e.target.closest("[data-acronym]");
+  if (acr) {
+    const k = acr.dataset.acronym;
+    const def = ACRONYMS[k] || ACRONYMS[k.toUpperCase()];
+    if (def) showTip(`<b>${k}</b> — ${def}`, e);
+    return;
+  }
+  const ref = e.target.closest("[data-asset-ref]");
+  if (ref) {
+    const id = ref.dataset.assetRef;
+    const a = (SCENE && SCENE.assets.find((x) => x.id === id)) || null;
+    if (a) {
+      const soh = a.bus_state ? a.bus_state.mode : "—";
+      const soc = a.bus_state ? Math.round(a.bus_state.power.battery_soc * 100) + "%" : "—";
+      showTip(`<b>${a.id}</b><br>kind: ${a.kind}<br>bus: ${soh} · SoC: ${soc}`, e);
+    }
+  }
+});
+document.addEventListener("mousemove", (e) => {
+  const t = tipEl(); if (!t || t.style.display === "none") return;
+  t.style.left = (e.clientX + 14) + "px"; t.style.top = (e.clientY + 14) + "px";
+});
+document.addEventListener("mouseout", (e) => {
+  if (e.target.closest && (e.target.closest("[data-acronym]") || e.target.closest("[data-asset-ref]"))) hideTip();
+});
+
+// §10.B.7 — Order presets / playbooks. Saved in localStorage scoped to vignette id.
+function pbKey() { const v = $("vignette")?.value; return "playbooks:" + (v || "default"); }
+function pbList() { try { return JSON.parse(localStorage.getItem(pbKey()) || "[]"); } catch { return []; } }
+function pbSave(items) { localStorage.setItem(pbKey(), JSON.stringify(items)); renderPlaybooks(); }
+function renderPlaybooks() {
+  const div = $("playbook-list"); if (!div) return;
+  const items = pbList();
+  if (!items.length) { div.className = "playbook-list muted"; div.textContent = "(no presets saved)"; return; }
+  div.className = "playbook-list";
+  div.innerHTML = items.map((p, i) =>
+    `<span class="playbook-chip" data-i="${i}">${p.name}<span class="x" data-del="${i}">✕</span></span>`).join("");
+  div.querySelectorAll(".playbook-chip").forEach((c) => {
+    c.addEventListener("click", (e) => {
+      if (e.target.classList.contains("x")) {
+        const items = pbList(); items.splice(+e.target.dataset.del, 1); pbSave(items);
+      } else {
+        const p = pbList()[+c.dataset.i];
+        $("o-actor").value = p.actor; onActorChange();
+        $("o-action").value = p.action; onActionChange();
+        $("o-target").value = p.target || "";
+        $("o-params").value = p.params;
+        previewOrder();
+      }
+    });
+  });
+}
+
+// §10.B.9 — Scene-moment bookmarks. Saved in localStorage scoped to vignette id.
+function bmKey() { const v = $("vignette")?.value; return "bookmarks:" + (v || "default"); }
+function bmList() { try { return JSON.parse(localStorage.getItem(bmKey()) || "[]"); } catch { return []; } }
+function bmSave(items) { localStorage.setItem(bmKey(), JSON.stringify(items)); renderBookmarks(); }
+function renderBookmarks() {
+  const div = $("bookmark-list"); if (!div) return;
+  const items = bmList();
+  if (!items.length) { div.className = "bookmark-list muted"; div.textContent = "(no bookmarks)"; return; }
+  div.className = "bookmark-list";
+  div.innerHTML = items.map((b, i) => {
+    const dt = new Date(b.t / 1000).toISOString().substring(11, 19);
+    return `<span class="bookmark-chip" data-i="${i}">${b.name} <span class="muted">${dt}</span><span class="x" data-del="${i}">✕</span></span>`;
+  }).join("");
+  div.querySelectorAll(".bookmark-chip").forEach((c) => {
+    c.addEventListener("click", async (e) => {
+      if (e.target.classList.contains("x")) {
+        const items = bmList(); items.splice(+e.target.dataset.del, 1); bmSave(items);
+      } else {
+        const b = bmList()[+c.dataset.i];
+        if (!SID) return;
+        await api.post(`/api/sessions/${SID}/rewind`, { t: b.t });
+        refresh();
+      }
+    });
+  });
+}
+
+// §10.C.10 — Day/night terminator overlay on the 2D map. Shades the night side using sun_lat/lon.
+window.drawTerminator = function (ctx, c, PX, PY, sunLat, sunLon) {
+  // For each longitude, the terminator latitude is:  lat_t = atan(-cos(lon - sunLon) / tan(sunLat))
+  // (vanishes when sin(sunLat) = 0; treat the equator case specially).
+  if (sunLat == null || sunLon == null) return;
+  const slat = sunLat * Math.PI / 180, tlat = Math.tan(slat || 1e-9);
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.30)";
+  ctx.beginPath();
+  let firstX = null, lastX = null;
+  for (let lon = -180; lon <= 180; lon += 2) {
+    const arg = (lon - sunLon) * Math.PI / 180;
+    const latT = Math.atan(-Math.cos(arg) / tlat) * 180 / Math.PI;
+    const x = PX(lon), y = PY(latT);
+    if (lon === -180) { ctx.moveTo(x, y); firstX = x; }
+    else ctx.lineTo(x, y);
+    lastX = x;
+  }
+  // Close the polygon along whichever pole the night side wraps to.
+  const nightTop = sunLat < 0;   // if sun is south, the north pole is in night
+  const polY = nightTop ? 0 : c.height;
+  ctx.lineTo(lastX, polY); ctx.lineTo(firstX, polY); ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+};
+
+// Persisted toggles + initial render of playbooks/bookmarks.
+addEventListener("DOMContentLoaded", () => {
+  applyToggle("projector", "projector");
+  applyToggle("cb", "cb");
+  const sp = $("save-playbook");
+  if (sp) sp.addEventListener("click", () => {
+    const body = composeBody(); if (!body) return;
+    const name = prompt("Name this preset:", `${body.action} ${body.actor}`);
+    if (!name) return;
+    const items = pbList();
+    items.push({ name, actor: body.actor, action: body.action, target: body.target || "", params: $("o-params").value });
+    pbSave(items);
+  });
+  const bma = $("bookmark-add");
+  if (bma) bma.addEventListener("click", () => {
+    if (!SCENE) return;
+    const t = SCENE.now;
+    const name = prompt("Bookmark name:", "decision");
+    if (!name) return;
+    const items = bmList(); items.push({ name, t }); bmSave(items);
+  });
+  renderPlaybooks(); renderBookmarks();
+});
+
+// Wire AAR export links to the current session.
+function refreshAarLinks() {
+  const csv = $("aar-csv"), js = $("aar-json");
+  if (csv && SID) csv.href = `/api/sessions/${SID}/aar/export.csv`;
+  if (js && SID) js.href = `/api/sessions/${SID}/aar/export.json`;
+}
+// Re-render playbooks/bookmarks whenever the vignette selection changes.
+addEventListener("DOMContentLoaded", () => {
+  const v = $("vignette"); if (v) v.addEventListener("change", () => { renderPlaybooks(); renderBookmarks(); });
+});

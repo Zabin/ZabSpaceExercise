@@ -108,6 +108,51 @@ body.present { font-size: 16px; }
 body.present .panel { background: #0b1118; border-color: #3a4a5c; }
 body.present .pchip, body.present .vbtn, body.present .chip { font-size: 13px; }
 body.present .muted { color: #b8c4d4; }
+
+/* FUTURE-WORK §10.A.3 — Projector mode: hide compose form, enlarge fonts, fewer chrome cues. */
+body.projector { font-size: 17px; }
+body.projector .panel { padding: 14px; }
+body.projector #order-panel, body.projector #aar-panel, body.projector #drill-panel { display: none; }
+body.projector canvas { min-height: 480px; }
+body.projector main { grid-template-columns: 360px 1fr 380px; }
+
+/* FUTURE-WORK §10.A.2 — Color-blind / high-contrast palette (Okabe-Ito).
+   Activated by body.cb; swaps green/yellow/red status hues for color-blind-safe ones. */
+body.cb {
+  --green: #009E73;     /* bluish green */
+  --yellow: #F0E442;    /* yellow (unchanged but defined explicitly) */
+  --red: #D55E00;       /* vermilion */
+  --accent: #56B4E9;    /* sky blue */
+  --accent2: #0072B2;   /* blue */
+}
+
+/* FUTURE-WORK §10.A.4 — Diff-highlight pulse on a telemetry value that just changed.
+   The .diff-pulse class is added by JS for ~600 ms whenever a cell's value updates. */
+@keyframes diff-pulse {
+  0%   { background: var(--cell-accent-soft); }
+  100% { background: transparent; }
+}
+.diff-pulse { animation: diff-pulse .6s ease-out; }
+
+/* FUTURE-WORK §10.A.5 — Inline asset preview tooltip (also reused by acronym tooltips §10.E.19). */
+.tip {
+  position: absolute; z-index: 200; pointer-events: none;
+  background: #0d141c; color: var(--text); border: 1px solid var(--cell-accent);
+  border-radius: 6px; padding: 6px 9px; font-size: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.5); max-width: 280px;
+}
+.tip b { color: var(--cell-accent); }
+[data-acronym] { border-bottom: 1px dotted var(--muted); cursor: help; }
+
+/* FUTURE-WORK §10.B.7 / §10.B.9 — Playbook + bookmark chips list. */
+.playbook-list, .bookmark-list { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
+.playbook-chip, .bookmark-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--cell-accent-soft); border: 1px solid var(--cell-accent);
+  border-radius: 10px; padding: 1px 8px; font-size: 11px; cursor: pointer;
+}
+.playbook-chip .x, .bookmark-chip .x { color: var(--muted); margin-left: 4px; cursor: pointer; }
+.playbook-chip:hover, .bookmark-chip:hover { background: var(--cell-accent); color: #0c1014; }
 .recovery { margin: 6px 0; padding: 8px; border: 1px solid #5a2424; border-radius: 6px; background: #160d0d; font-size: 12px; }
 .rsteps { margin-top: 6px; color: var(--muted); }
 .rstep { white-space: nowrap; }
