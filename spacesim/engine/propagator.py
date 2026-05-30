@@ -57,6 +57,28 @@ class ModeratePropagator:
         return pts
 
 
+class HighFidelityPropagator:
+    """Stub for the P8 high-fidelity propagator seam (FUTURE-WORK §2 / build-spec/04 §10 M8).
+
+    Drop-in replacement for ``ModeratePropagator`` — same ``Propagator`` Protocol, higher physics:
+    - Numerical integration (RK4/RK78) with solar-radiation pressure, atmospheric drag, luni-solar.
+    - Full SGP4/SDP4 via Orekit or poliastro for TLE assets, with precise TEME→ECI conversion.
+    - Sub-metre orbit determination precision for conjunction screening.
+
+    To activate: pass an instance to ``AccessProvider``, ``OrderSystem``, ``BusSystem``, and
+    ``SceneBuilder`` instead of ``ModeratePropagator``.  The engine is otherwise unchanged.
+    """
+
+    def state_at(self, orbit: OrbitState, t: int) -> ECIState:  # noqa: D102
+        raise NotImplementedError("HighFidelityPropagator is a seam stub — implement the body")
+
+    def apply_impulse(self, orbit: OrbitState, dv_eci: np.ndarray, t: int) -> OrbitState:  # noqa: D102
+        raise NotImplementedError("HighFidelityPropagator is a seam stub — implement the body")
+
+    def ground_track(self, orbit: OrbitState, t0: int, t1: int, step_s: float) -> list[GeoPoint]:  # noqa: D102
+        raise NotImplementedError("HighFidelityPropagator is a seam stub — implement the body")
+
+
 def _tle_rv(orbit: OrbitState, t: int) -> tuple[np.ndarray, np.ndarray]:
     from sgp4.api import Satrec  # lazy: optional dependency
 

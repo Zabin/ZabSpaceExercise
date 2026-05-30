@@ -11,15 +11,33 @@ either implemented or covered by an existing in-scope ticket.
 
 ## 1. Multiplayer & networking (M7 seam, formerly Phase 8)
 
+The transport seam is scaffolded: `spacesim/session/ws_session.py` defines `WebSocketSession`
+with the same method signatures as `InProcessSession`. Swap the import in `server.py` to activate.
+
 - **LAN multiplayer cell separation.** The session layer already routes every interaction through
   a `SessionAPI` and the engine is UI-agnostic; the seam exists but is exercised only in-process.
-  Swapping `InProcessSession` for a WebSocket transport finishes P8 from the roadmap.
+  Swapping `InProcessSession` for the `WebSocketSession` stub (with bodies implemented over
+  WebSockets or HTTP-RPC) finishes P8 from the roadmap. Stub at `spacesim/session/ws_session.py`.
 - **Push deltas instead of polling.** `get_eventlog(since_seq)` already expresses the contract;
   the front end currently re-fetches view/scene/telemetry per tick. A push channel is the natural
   upgrade once the transport above lands.
 - **`Order` as a serializable transport message.** Today `Order` is an engine dataclass passed
   through the in-process boundary. Moving it to pydantic at the API surface (with the engine
   dataclass kept internal) is a pre-req for the network transport.
+
+**Transport seam interface** (every method must be implemented over the wire):
+```
+list_vignettes() → list[dict]
+load_vignette(vignette_id, overrides, seed) → str            # returns session id
+start(session) / step(session, dt) / advance_to(session, t) / rewind_to(session, t)
+issue_order(session, cell, order) → OrderAck
+validate_order(session, cell, order) → OrderAck              # dry-run; read-only
+get_view(session, cell) → CellView                           # fog applied server-side
+get_scene(session, cell) / get_telemetry / get_series        # read-only; fog applied
+get_eventlog(session, since_seq) → list                      # push-delta anchor
+objectives(session) / aar_report / aar_snapshot_at           # after-action reads
+save(session) → dict / load_save(state) → str                # persistence
+```
 
 ## 2. Orbital / effects fidelity
 
