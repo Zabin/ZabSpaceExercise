@@ -88,11 +88,12 @@ that sim-time (deterministic replay makes this exact).
   viewer reads the same `Track` objects; only their `uncertainty` field gets richer.
 
 ## 7. Tech notes
-- **Web stack:** CesiumJS is the natural fit — globe, orbits, time-dynamic entities, and
-  coverage volumes are first-class; it consumes the engine's track/position stream over
-  WebSocket. (Three.js is a lower-level fallback.)
-- **Desktop stack:** a `pyqtgraph`/OpenGL or `vispy`-based globe, or embed Cesium in a
-  webview. More work than the web path — another point in favor of the web UI for v1.
+- **Web stack:** a self-contained orthographic canvas globe (`spacesim/ui_web/static/globe.js`)
+  consumes the engine's track/position stream — no external 3D library, no network deps. Coastlines
+  and borders come from a committed offline `world.json`. The same `drawWorld` helper is shared
+  with the 2D map (`world.js`).
+- **Desktop stack:** a `pyqtgraph`/OpenGL or `vispy`-based globe would mirror the web canvas globe.
+  More work than the web path — another point in favor of the web UI for v1.
 - The viewer is a **pure consumer** of engine state: it never computes truth, only draws the
   belief stream the session sends it (already filtered by the per-cell fog-of-war layer in
   `07-api-and-networking.md`). This keeps the "no cheating" guarantee structural, not

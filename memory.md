@@ -20,8 +20,8 @@ Plus `docs/manual/` (13 data-driven UI screenshots + INDEX) and the training man
 
 **Caveat:** the browser GUI is *unverified headless* (no browser installable); every backend path
 (endpoints, fog, objectives, scene, AAR) is test-covered, and the screenshots are faithful
-data-driven renderings, not browser captures. **Remaining:** P5.5 full CesiumJS 3D globe (v1.1);
-**P8** — document/scaffold the high-fidelity and LAN-multiplayer seam proofs. Invariants in `CLAUDE.md`.
+data-driven renderings, not browser captures. **Remaining:** **P8** — document/scaffold the
+high-fidelity and LAN-multiplayer seam proofs. Invariants in `CLAUDE.md`.
 
 ### Earlier (P4.5) summary
 **P4.5** adds the planning &
@@ -60,7 +60,7 @@ rewind/undo/branch and a future LAN-multiplayer swap.
   wording is noted but not followed; JSON could be added trivially behind the same loader if needed.
 - **3D viewer scope — AMBIGUITY:** build-spec defers the full globe to v1.1, but roadmap Phase 5.5
   and `10-sda-3d-viewer.md` build belief-state 3D *during* v1. Resolve as: v1 = belief-state
-  filtering/rendering proof; v1.1 = full CesiumJS globe UI.
+  filtering/rendering proof using a self-contained orthographic globe.
 
 ## Review findings to resolve as the relevant phase is reached
 
@@ -101,7 +101,8 @@ Each gets a **regression test** when fixed (test-driven workflow).
 - **[RESOLVED P6] TLE force-add:** `SessionManager.add_tle` validates (format + sgp4) and adds a real
   named satellite that propagates and generates passes (`POST /force/tle`).
 - **[RESOLVED P5.5] Belief render:** `session/scene.py` `build_scene` is the render-from-custody
-  stream (own assets + tracks with growing uncertainty); 2D canvas map consumes it; Cesium 3D = v1.1.
+  stream (own assets + tracks with growing uncertainty); 2D canvas map + self-contained
+  orthographic 3D globe (`ui_web/static/globe.js`) consume it.
 - **[RESOLVED P7] AAR:** `session/aar.py` — deterministic read-only replay (`state_at`/`objectives_at`),
   decision timeline `report`, and `compare_branches`.
 
@@ -203,7 +204,7 @@ test first, implement to green, and add a regression test for every resolved fin
   zoom/pan/center/layer controls; the command panel filters actions by asset kind. `SceneView` now
   carries the subsolar point for day/night shading. Screenshot set expanded to 29 (adds 3D globe,
   White-Cell controls, command menu, and 12 walkthrough steps). User chose: own 3D viewer,
-  manual-only tutorial, data-driven screenshots; CesiumJS not used.
+  manual-only tutorial, data-driven screenshots.
 - **2026-05-27:** Reviewed `docs/OPERATOR-UI-DESIGN.md` for consistency — endpoints (§14),
   validator reason strings (§12.2), and `cells.py`/`CellController.view` / `bus.overall_status`
   references all match the code. Then began implementing the spec's most load-bearing un-built
@@ -351,7 +352,7 @@ test first, implement to green, and add a regression test for every resolved fin
 - **Still open (deferred / v1.1+):** consolidated into **`docs/FUTURE-WORK.md`** (single source
   of truth) and `00-BUILD-SPECIFICATION.md` §3.2 (explicit v1 non-goals). The browser GUI is
   still unverified-headless; that and the remaining catalog-verb gaps, multiplayer transport,
-  constellation aggregation, APP-6 symbology, Δv panel, full Cesium globe, SSN proposal, and the
+  constellation aggregation, APP-6 symbology, Δv panel, SSN proposal, and the
   open items above (sat caps validation, posture persistence depth, EW safe-mode inducement,
   contention rewind, `Order` serialisation) all live there now.
 - **2026-05-27:** Documentation reorganisation. Merged the implemented operator-UI design into

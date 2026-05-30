@@ -25,7 +25,7 @@ leaving the final call to Claude Code. Nothing here is binding except the princi
   WebSocket. In v1 it talks to the engine in-process.
 - **Front end:** a single-page app (plain JS/Svelte/React — Claude Code's choice) with:
   - a **2D world map** with ground tracks, footprints, and ground stations (Leaflet/D3, or a
-    canvas), plus an optional simple **3D globe** (CesiumJS) later;
+    canvas), plus a self-contained orthographic **3D globe**;
   - per-asset **pass-timeline ribbons** and **next-contact countdowns**;
   - the White Cell control panel.
 - **Why recommended:** the future LAN-multiplayer story is *trivial* with a web stack — the
@@ -46,7 +46,7 @@ identical either way.
 
 ## Mapping / visualization libraries (whichever UI)
 - 2D ground tracks & footprints: D3 or Leaflet (web) / `pyqtgraph` (desktop).
-- 3D globe (optional, later): CesiumJS (web) — excellent for orbital visualization.
+- 3D globe: self-contained orthographic canvas globe (`ui_web/static/globe.js`), no external deps.
 - Orbit/coverage geometry comes from the engine; the UI only draws what the engine computes.
 
 ## Dependencies to avoid in the engine

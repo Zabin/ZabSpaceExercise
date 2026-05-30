@@ -82,9 +82,6 @@ Each one follows the same pattern: a small mutation in `apply_command`, a regres
   shapes per object type for joint-/coalition-use credibility.
 - **Δv "years of life" panel.** Dedicated propulsion sub-tab spelled out by
   `14-delta-v-economy.md` — the data exists in `AssetResources.delta_v_ms`, the panel does not.
-- **Full CesiumJS 3D globe.** The v1.1 follow-on referenced in `build-spec/04-nfr-milestones-and-risks.md` §10 M5. The
-  self-contained orthographic globe (`ui_web/static/globe.js`) covers the v1 requirement; a
-  Cesium variant adds higher-fidelity rendering for projector / White-Cell display.
 - **Constellation/grouped fleet-rail badges.** Tied to the constellation-aggregation item above.
 
 ## 5. Bus, payload, and recovery refinements

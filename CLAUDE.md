@@ -18,7 +18,7 @@ scene + 2D map (P5.5), all **eight vignettes** as YAML + TLE force-add + Red doc
 and the **capstone Vignette 8 + AAR replay** (P7: read-only replay/scrub, branch comparison,
 campaign summary). Code under `spacesim/`; content is YAML; UI stack = **web**. The browser GUI is
 unverified headless, but every backend path (endpoints, fog, objectives, AAR) is test-covered.
-Remaining: P5.5 full CesiumJS 3D globe (v1.1) and P8 (fidelity/multiplayer seam proofs).
+Remaining: P8 (fidelity/multiplayer seam proofs).
 
 ## Authoritative source & reading order
 
@@ -89,7 +89,7 @@ spacesim/
   fog-of-war. *(Note: this header is missing in the roadmap — its bullets are appended to P3.5.)*
 - **P4.5** Planning & tasking scheduler + safe-mode recovery chain. ✓
 - **P5** UI over the API (FastAPI + web). ✓ (backend tested; browser GUI unverified headless)
-  **P5.5** Render-from-custody belief scene + 2D map. ✓ (full Cesium 3D globe is the v1.1 follow-on)
+  **P5.5** Render-from-custody belief scene + 2D map + self-contained orthographic 3D globe. ✓
 - **P6** Vignettes 2–7 (data) + TLE force-add + Red doctrine profiles. ✓ (all 8 vignette files load/run)
 - **P7** Capstone Vignette 8 + AAR replay (read-only replay/scrub, branch compare). ✓
   **P8** Document/scaffold fidelity & multiplayer seams.
@@ -185,6 +185,6 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `tools/render_manual.py`). The v1 operator-console spec is `docs/build-spec/07-operator-console.md`;
   the SSN spec is `docs/build-spec/08-ssn.md`.
 - `docs/FUTURE-WORK.md` — single-source TODO list (v1.1+): remaining catalog-verb gaps,
-  multiplayer transport, constellation aggregation, APP-6 symbology pack, Δv panel, full Cesium
-  globe, and other deferred items.
+  multiplayer transport, constellation aggregation, APP-6 symbology pack, Δv panel, and other
+  deferred items.
   Run: `uvicorn spacesim.ui_web.server:app` then open http://127.0.0.1:8000/.
