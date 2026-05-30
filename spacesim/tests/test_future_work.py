@@ -270,3 +270,26 @@ def test_non_civilian_link_denial_does_not_raise_consequence():
     side = [s for s in outcome.side_effects if s.get("type") == "political_consequence"
             and "civilian_collateral" in s.get("cause", "")]
     assert side == []
+
+
+# ---------------------------------------------------------------------------
+# §10.D.17 vignette inspector — /api/vignettes/{id}/source endpoint
+# ---------------------------------------------------------------------------
+
+def test_vignette_source_endpoint_returns_yaml():
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from spacesim.ui_web.server import create_app
+    c = TestClient(create_app())
+    r = c.get("/api/vignettes/leo-isr-denial/source")
+    assert r.status_code == 200
+    assert "vignette:" in r.text and "leo-isr-denial" in r.text
+
+
+def test_vignette_source_endpoint_404s_unknown_id():
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from spacesim.ui_web.server import create_app
+    c = TestClient(create_app())
+    r = c.get("/api/vignettes/nope-not-a-vignette/source")
+    assert r.status_code == 404

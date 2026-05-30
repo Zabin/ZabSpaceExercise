@@ -98,6 +98,14 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def list_vignettes() -> list[dict]:
         return api.list_vignettes()
 
+    @app.get("/api/vignettes/{vid}/source", response_class=PlainTextResponse)
+    def vignette_source(vid: str) -> str:
+        """Return the raw YAML of a vignette (FUTURE-WORK §10.D.17 vignette inspector)."""
+        for v in api.list_vignettes():
+            if v["id"] == vid:
+                return Path(v["path"]).read_text()
+        raise HTTPException(status_code=404, detail=f"vignette {vid!r} not found")
+
     @app.post("/api/sessions")
     def load(req: LoadRequest) -> dict:
         sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed)

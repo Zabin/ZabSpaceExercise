@@ -1125,3 +1125,60 @@ addEventListener("DOMContentLoaded", () => {
   $("coachmark-back").addEventListener("click", () => { if (--COACH_I < 0) COACH_I = 0; coachShow(); });
   $("coachmark-close").addEventListener("click", coachClose);
 });
+
+// §10.E.18 — Per-vignette tutorial panel. Reads the vignette's per-cell `tutorial` script and
+// renders it as an ordered list scoped to the active cell (the script lives in the YAML).
+async function tutorialOpen() {
+  const panel = $("tutorial-panel"); if (!panel) return;
+  if (!SID) { panel.classList.add("open"); $("tutorial-steps").innerHTML = "<li>(load a vignette first)</li>"; return; }
+  // The vignette YAML is fetched via /api/vignettes/{id}/source; parse the per-cell steps.
+  const vid = $("vignette") ? $("vignette").value : "";
+  try {
+    const yaml = await fetch(`/api/vignettes/${vid}/source`).then((r) => r.text());
+    const cellKey = CELL === "white" ? "blue" : CELL;
+    const re = new RegExp(`tutorial:\\s*\\n([\\s\\S]*?)(?=\\n\\w|$)`);
+    const m = re.exec(yaml); const block = m ? m[1] : "";
+    const sectionRe = new RegExp(`\\s+${cellKey}:\\s*\\n([\\s\\S]*?)(?=\\n  \\w|$)`);
+    const sm = sectionRe.exec(block);
+    const section = sm ? sm[1] : "";
+    const steps = section.split(/\n\s+- /).slice(1).map((s) => {
+      const title = (s.match(/title:\s*["']?([^"\n]+)["']?/) || [, "(untitled)"])[1];
+      const action = (s.match(/action:\s*["']?([^"\n]+)["']?/) || [, ""])[1];
+      return `<li><b>${title}</b><br><span class="muted">${action}</span></li>`;
+    });
+    $("tutorial-title").textContent = `Tutorial — ${cellKey} cell`;
+    $("tutorial-steps").innerHTML = steps.length ? steps.join("") : "<li>(no tutorial defined for this cell)</li>";
+  } catch { $("tutorial-steps").innerHTML = "<li>(failed to load vignette source)</li>"; }
+  panel.classList.add("open");
+}
+function tutorialClose() { const p = $("tutorial-panel"); if (p) p.classList.remove("open"); }
+addEventListener("DOMContentLoaded", () => {
+  const tb = $("tutorial"); if (tb) tb.addEventListener("click", () => {
+    const p = $("tutorial-panel"); if (!p) return;
+    p.classList.contains("open") ? tutorialClose() : tutorialOpen();
+  });
+  const tc = $("tutorial-close"); if (tc) tc.addEventListener("click", tutorialClose);
+});
+
+// §10.D.17 — Vignette inspector. Pulls the raw YAML and shows it in a modal; "Download YAML"
+// streams it as a file so trainers can fork a scenario by hand.
+async function inspectorOpen() {
+  const wrap = $("inspector-wrap"); if (!wrap) return;
+  const vid = $("vignette") ? $("vignette").value : "";
+  $("inspector-id").textContent = vid || "(no vignette selected)";
+  try {
+    const yaml = await fetch(`/api/vignettes/${vid}/source`).then((r) => r.text());
+    $("inspector-yaml").textContent = yaml;
+    $("inspector-download").onclick = () => {
+      const blob = new Blob([yaml], { type: "text/yaml" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+      a.download = `${vid}.yaml`; a.click(); URL.revokeObjectURL(a.href);
+    };
+  } catch { $("inspector-yaml").textContent = "(failed to load vignette source)"; }
+  wrap.classList.add("open");
+}
+addEventListener("DOMContentLoaded", () => {
+  const ib = $("inspect-vignette"); if (ib) ib.addEventListener("click", inspectorOpen);
+  const ic = $("inspector-close"); if (ic) ic.addEventListener("click", () => $("inspector-wrap").classList.remove("open"));
+  const iw = $("inspector-wrap"); if (iw) iw.addEventListener("click", (e) => { if (e.target === iw) iw.classList.remove("open"); });
+});

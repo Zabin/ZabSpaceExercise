@@ -33,6 +33,8 @@
     <label class="toggle"><input id="present" type="checkbox"> present</label>
     <label class="toggle" title="Projector / White-Cell mode — hides compose form, larger fonts"><input id="projector" type="checkbox"> projector</label>
     <label class="toggle" title="Color-blind safe palette (Okabe-Ito)"><input id="cb" type="checkbox"> cb-safe</label>
+    <button id="tutorial" title="Toggle the vignette's tutorial coachmark panel">Tutorial</button>
+    <button id="inspect-vignette" title="Inspect or fork the loaded vignette (YAML)">Inspect</button>
     <button id="detach">Detach viewers</button>
     <span class="banner">UNCLASSIFIED // TRAINING</span>
   </header>
@@ -225,6 +227,24 @@
     <div class="palette">
       <input id="palette-input" placeholder="Type a command: 'select ISR-EO-1', 'advance 10m', 'inject patch_modem', 'select blue'…" autocomplete="off" />
       <ul id="palette-list"></ul>
+    </div>
+  </div>
+
+  <div id="tutorial-panel" role="dialog" aria-label="Vignette tutorial">
+    <span class="close" id="tutorial-close">✕</span>
+    <h3 id="tutorial-title">Tutorial</h3>
+    <ol id="tutorial-steps"></ol>
+  </div>
+
+  <div id="inspector-wrap" role="dialog" aria-label="Vignette inspector">
+    <div id="inspector">
+      <h3>Vignette inspector — <span id="inspector-id" class="muted"></span></h3>
+      <pre id="inspector-yaml">—</pre>
+      <div class="row">
+        <button id="inspector-download">⬇ Download YAML</button>
+        <span class="grow" style="flex:1"></span>
+        <button id="inspector-close">Close</button>
+      </div>
     </div>
   </div>
 

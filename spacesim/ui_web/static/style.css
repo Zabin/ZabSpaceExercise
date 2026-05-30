@@ -176,6 +176,21 @@ body.cb {
 .palette li.active, .palette li:hover { background: var(--cell-accent-soft); }
 .palette li .tag { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
 
+/* FUTURE-WORK §10.D.17 — Vignette inspector modal. */
+#inspector-wrap {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 250;
+  display: none; align-items: center; justify-content: center;
+}
+#inspector-wrap.open { display: flex; }
+#inspector {
+  width: min(780px, 92vw); max-height: 80vh; background: #0d141c;
+  border: 1px solid var(--cell-accent); border-radius: 10px; padding: 12px;
+  display: flex; flex-direction: column;
+}
+#inspector h3 { margin: 0 0 8px; }
+#inspector pre { flex: 1; overflow: auto; min-height: 200px; max-height: 60vh; font-size: 11px; }
+#inspector .row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+
 /* FUTURE-WORK §10.B.8 — multi-asset batch selection: hi-lit fleet rows. */
 tr.batched td { box-shadow: inset 3px 0 0 var(--cell-accent), inset 0 0 0 9999px var(--cell-accent-soft); }
 #batch-bar { display: flex; gap: 6px; align-items: center; padding: 4px 0; font-size: 12px; }
