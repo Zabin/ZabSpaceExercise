@@ -463,6 +463,7 @@ function renderFleet(assets, alarmCount, now) {
       + `<td class="${cd.cls}">${cd.txt}</td><td>${soc}</td><td class="${bc}">${bus}</td><td>${badge}</td></tr>`;
   }).join("");
   $("assets").querySelector("tbody").innerHTML = rows || `<tr><td colspan="7" class="muted">no assets match filter</td></tr>`;
+  if (window.batchRender) batchRender();    // re-apply .batched class after the rows re-render
 }
 
 function renderAlarms() {
@@ -1049,3 +1050,78 @@ addEventListener("DOMContentLoaded", () => {
 // Helpers used by the palette (extracted from the existing toolbar handlers).
 async function stepBy(s) { if (!SID) return; await api.post(`/api/sessions/${SID}/advance`, { t: (SCENE ? SCENE.now : 0) + s * 1_000_000 }); refresh(); }
 async function rewindTo(t) { if (!SID) return; await api.post(`/api/sessions/${SID}/rewind`, { t }); refresh(); }
+
+// §10.B.8 — Multi-asset batch selection. Shift-click a fleet row to toggle; "Issue to all" runs
+// the current compose against each batched asset (substituting actor).
+const BATCH = new Set();
+function batchRender() {
+  const bar = $("batch-bar"); if (!bar) return;
+  bar.classList.toggle("empty", BATCH.size === 0);
+  $("batch-count").textContent = BATCH.size;
+  $("batch-list").textContent = [...BATCH].join(", ");
+  document.querySelectorAll("#assets tbody tr[data-asset]").forEach((tr) => {
+    tr.classList.toggle("batched", BATCH.has(tr.dataset.asset));
+  });
+}
+addEventListener("DOMContentLoaded", () => {
+  const a = $("assets");
+  if (a) a.addEventListener("click", (e) => {
+    const tr = e.target.closest("tr[data-asset]");
+    if (!tr || !e.shiftKey) return;
+    if (BATCH.has(tr.dataset.asset)) BATCH.delete(tr.dataset.asset);
+    else BATCH.add(tr.dataset.asset);
+    e.preventDefault(); e.stopPropagation();
+    batchRender();
+  });
+  const bi = $("batch-issue");
+  if (bi) bi.addEventListener("click", async () => {
+    const body = composeBody(); if (!body || BATCH.size === 0) return;
+    const results = [];
+    for (const id of BATCH) {
+      const b = { ...body, actor: id };
+      try { results.push({ id, ack: await api.post(`/api/sessions/${SID}/order`, b) }); }
+      catch (err) { results.push({ id, ack: { ok: false, reason: String(err) } }); }
+    }
+    $("order-result").textContent = results.map((r) => `${r.id}: ${r.ack.ok ? "OK " + r.ack.status : "✗ " + (r.ack.reason || "")}`).join("\n");
+    refresh();
+  });
+  const bc = $("batch-clear");
+  if (bc) bc.addEventListener("click", () => { BATCH.clear(); batchRender(); });
+});
+
+// §10.E.18 — Coachmark tour. A small scripted overlay that walks the trainee through the UI.
+const COACH_STEPS = [
+  { sel: "#cells", title: "Pick your cell", body: "Switch between White (facilitator), Blue, and Red. The whole UI re-tints to your cell's color so you always know whose console you're driving." },
+  { sel: "#assets", title: "Fleet rail", body: "Your assets and their state-of-health (SOH) in one glance. Click a row to drill down; <b>shift-click</b> to add it to the multi-asset batch." },
+  { sel: "#order-panel", title: "Compose a command", body: "Pick an actor, an action, and parameters. The plan-time preview tells you whether the order would be accepted and why." },
+  { sel: "#save-playbook", title: "Save it as a playbook", body: "Reusable orders (★ Save preset) are stored per vignette and recallable with one click." },
+  { sel: "#aar-panel", title: "After-action review", body: "Scrub the deterministic timeline, jump to a bookmarked moment, and download the AAR as CSV/JSON for downstream analysis." },
+  { sel: "#drill-panel", title: "Telemetry drill-down", body: "Symptoms not verdicts: each chip is a physical signal. Diagnose the cause yourself from the patterns." },
+  { sel: ".banner", title: "You're done", body: "Press <b>Ctrl/Cmd-K</b> any time to open the command palette. Good luck, operator." },
+];
+let COACH_I = 0;
+function coachOpen() { $("coachmark-wrap").classList.add("on"); COACH_I = 0; coachShow(); }
+function coachClose() { $("coachmark-wrap").classList.remove("on"); }
+function coachShow() {
+  const step = COACH_STEPS[COACH_I]; if (!step) { coachClose(); return; }
+  const el = document.querySelector(step.sel); if (!el) { COACH_I++; return coachShow(); }
+  const r = el.getBoundingClientRect();
+  const hole = $("coachmark-hole");
+  hole.style.left = (r.left - 4) + "px"; hole.style.top = (r.top - 4) + "px";
+  hole.style.width = (r.width + 8) + "px"; hole.style.height = (r.height + 8) + "px";
+  const tip = $("coachmark-tip");
+  const tipTop = Math.min(window.innerHeight - 200, r.bottom + 12);
+  const tipLeft = Math.min(window.innerWidth - 360, Math.max(8, r.left));
+  tip.style.left = tipLeft + "px"; tip.style.top = tipTop + "px";
+  $("coachmark-title").textContent = step.title;
+  $("coachmark-body").innerHTML = step.body;
+  $("coachmark-step").textContent = `${COACH_I + 1} / ${COACH_STEPS.length}`;
+  $("coachmark-back").disabled = COACH_I === 0;
+  $("coachmark-next").textContent = COACH_I === COACH_STEPS.length - 1 ? "Done" : "Next →";
+}
+addEventListener("DOMContentLoaded", () => {
+  const cs = $("coach-start"); if (cs) cs.addEventListener("click", coachOpen);
+  $("coachmark-next").addEventListener("click", () => { if (++COACH_I >= COACH_STEPS.length) coachClose(); else coachShow(); });
+  $("coachmark-back").addEventListener("click", () => { if (--COACH_I < 0) COACH_I = 0; coachShow(); });
+  $("coachmark-close").addEventListener("click", coachClose);
+});

@@ -424,6 +424,16 @@ class SessionManager:
                                            "text": f"{eff['target']}: outage {'cleared' if asset.health == 'nominal' else 'declared (' + eff.get('cause', 'unspecified') + ')'}",
                                            "t": world.now})
             elif kind == "space_weather":
+                # FUTURE-WORK §10.C.11: storm severity scales eclipse drain in advance_bus.
+                # severity ∈ {none, minor, severe}; "clear" alias resets to none.
+                sev = eff.get("severity", "minor")
+                if sev == "clear":
+                    sev = "none"
+                world.space_weather["severity"] = sev
+                world.messages.append({"to": ["white", "blue", "red"],
+                                       "text": f"Space weather: severity={sev}",
+                                       "t": world.now})
+            elif kind == "space_weather":
                 # FUTURE-WORK §10.C.11: solar / geomagnetic storm. severity scales eclipse drain
                 # and is surfaced to telemetry signatures (FSW errors climb in 'severe').
                 sev = str(eff.get("severity", "none"))

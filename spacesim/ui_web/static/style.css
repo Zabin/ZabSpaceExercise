@@ -175,6 +175,27 @@ body.cb {
 }
 .palette li.active, .palette li:hover { background: var(--cell-accent-soft); }
 .palette li .tag { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+
+/* FUTURE-WORK §10.B.8 — multi-asset batch selection: hi-lit fleet rows. */
+tr.batched td { box-shadow: inset 3px 0 0 var(--cell-accent), inset 0 0 0 9999px var(--cell-accent-soft); }
+#batch-bar { display: flex; gap: 6px; align-items: center; padding: 4px 0; font-size: 12px; }
+#batch-bar.empty { display: none; }
+
+/* FUTURE-WORK §10.E.18 — coachmark overlay (light spotlight + tooltip near a target). */
+.coachmark-wrap {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 250;
+  display: none; pointer-events: none;
+}
+.coachmark-wrap.on { display: block; pointer-events: auto; }
+.coachmark-tip {
+  position: absolute; background: #0d141c; color: var(--text);
+  border: 2px solid var(--cell-accent); border-radius: 8px; padding: 10px 14px;
+  font-size: 13px; max-width: 340px; box-shadow: 0 12px 36px rgba(0,0,0,.6);
+}
+.coachmark-tip h4 { margin: 0 0 4px; font-size: 13px; color: var(--cell-accent); }
+.coachmark-tip .nav { margin-top: 8px; display: flex; gap: 6px; justify-content: space-between; }
+.coachmark-hole { position: absolute; border: 2px solid var(--cell-accent); border-radius: 6px;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.55); pointer-events: none; }
 .recovery { margin: 6px 0; padding: 8px; border: 1px solid #5a2424; border-radius: 6px; background: #160d0d; font-size: 12px; }
 .rsteps { margin-top: 6px; color: var(--muted); }
 .rstep { white-space: nowrap; }
