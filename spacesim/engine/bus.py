@@ -95,6 +95,11 @@ class SafeModeState(BaseModel):
     defender_diagnosis: str = "unknown"      # unknown|suspected_attack|fault|<subsystem>
     passes_used: int = 0
     blocked_reason: Optional[str] = None     # e.g. "root cause persists: unpatched ground_modem"
+    # FUTURE-WORK §5: per-step recovery deep-links so the recovery strip can highlight progress.
+    # Steps are tracked deterministically by the RecoverySystem handlers; the operator can see
+    # which step is "current" (next to run) vs "done" or "blocked".
+    current_step: str = "establish_contact"  # establish_contact|dump_telemetry|diagnose|patch|re_enable|done|blocked
+    steps_done: list[str] = []
 
 
 class PayloadState(BaseModel):

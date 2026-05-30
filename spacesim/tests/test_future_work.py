@@ -293,3 +293,112 @@ def test_vignette_source_endpoint_404s_unknown_id():
     c = TestClient(create_app())
     r = c.get("/api/vignettes/nope-not-a-vignette/source")
     assert r.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# §5 per-step recovery deep-links
+# ---------------------------------------------------------------------------
+
+def test_recovery_steps_advance_through_chain():
+    """A full recovery confirms first-pass steps and ends with current_step='done'."""
+    from spacesim.engine.bus import enter_safe_mode
+    mgr = SessionManager(load_vignette("training-basics"), seed=1)
+    mgr.start()
+    # Put ISR-EO-1 into safe mode with a cyber cause (already patched to allow recovery).
+    sat = mgr.world.assets["ISR-EO-1"]
+    enter_safe_mode(sat.bus_state, mgr.world.now, cause="cyber")
+    # Mark the vulnerability patched so root_cause_unresolved is False at finish.
+    for v in sat.cyber_vulnerabilities:
+        v["patched"] = True
+    # Initial state: no steps done; first step is establish_contact.
+    sm = sat.bus_state.safe_mode
+    assert sm.current_step == "establish_contact"
+    assert sm.steps_done == []
+    # Run recovery; advance enough to consume both confirm + finish events.
+    res = mgr.begin_recovery("blue", "ISR-EO-1", "GS-TRN")
+    assert res.get("ok"), res
+    mgr.advance_to(res["finish_at"] + 1)
+    sm2 = mgr.world.assets["ISR-EO-1"].bus_state.safe_mode
+    # Recovery completed cleanly: current_step is 'done' and steps_done covers all stages.
+    assert sm2.current_step == "done"
+    assert "establish_contact" in sm2.steps_done
+    assert "dump_telemetry" in sm2.steps_done
+    assert "patch" in sm2.steps_done
+    assert "re_enable" in sm2.steps_done
+
+
+def test_recovery_blocked_when_root_cause_persists():
+    """Unpatched cyber vuln → recovery finishes 'blocked', not 'done'."""
+    from spacesim.engine.bus import enter_safe_mode
+    mgr = SessionManager(load_vignette("training-basics"), seed=1)
+    mgr.start()
+    sat = mgr.world.assets["ISR-EO-1"]
+    enter_safe_mode(sat.bus_state, mgr.world.now, cause="cyber")
+    # Leave the vulnerability unpatched.
+    res = mgr.begin_recovery("blue", "ISR-EO-1", "GS-TRN")
+    assert res.get("ok")
+    mgr.advance_to(res["finish_at"] + 1)
+    sm = mgr.world.assets["ISR-EO-1"].bus_state.safe_mode
+    assert sm.current_step == "blocked"
+    assert sm.blocked_reason is not None
+
+
+# ---------------------------------------------------------------------------
+# §5 EW safe-mode inducement (vs. the cyber path already exercised)
+# ---------------------------------------------------------------------------
+
+def test_ew_safe_mode_routes_cause_as_ew():
+    """An EW (electronic_warfare) effect with outcome=safe_mode safes the bus with cause='ew'."""
+    from spacesim.engine.effects import EffectInstance, ModerateEffectResolver
+    from spacesim.engine.rng import SeededRng
+    mgr = SessionManager(load_vignette("training-basics"), seed=1)
+    mgr.start()
+    eff = EffectInstance(template="ew_safe", category="electronic_warfare", segment="link",
+                          actor="JAM-TRN", target="ISR-EO-1",
+                          reversible=True, attribution="ambiguous",
+                          requires="jam_footprint", intended_outcome="safe_mode",
+                          success_prob=1.0, sm_susceptibility=1.0, persistence_bonus=1.0,
+                          window_start=mgr.world.now)
+    ModerateEffectResolver().resolve(eff, mgr.world, SeededRng(7))
+    sm = mgr.world.assets["ISR-EO-1"].bus_state.safe_mode
+    assert sm.active is True
+    assert sm.cause == "ew"
+
+
+# ---------------------------------------------------------------------------
+# §7 SSN auto-cue (organic → SSN characterize)
+# ---------------------------------------------------------------------------
+
+def test_auto_cue_files_ssn_characterize_after_organic_observe():
+    """Organic observe with intermediate confidence auto-files an SSN characterize request."""
+    from spacesim.engine.orders import Order
+    # sda-custody-hunt declares ssn_blue_dispersion so the override takes effect.
+    mgr = SessionManager(load_vignette("sda-custody-hunt"),
+                         overrides={"ssn_auto_cue": True}, seed=1)
+    mgr.start()
+    assert mgr.osys.auto_cue_ssn is mgr.ssn
+    # Issue a search-only observe (characterizes=False) so the resulting track stays uncharacterized.
+    obs = Order(cell="blue", actor="BLUE-RADAR-1", action="observe",
+                target="RED-OBJ", params={"intent": "track", "gain": 0.6,
+                                           "characterizes": False, "classification": None})
+    ack = mgr.issue_order("blue", obs)
+    assert ack.ok, ack.reason
+    mgr.advance_to(ack.earliest_window[1] + 1)
+    chars = [r for r in mgr.ssn.requests.values() if r.target == "RED-OBJ" and r.intent == "characterize"]
+    assert chars, "no SSN characterize request auto-cued"
+
+
+def test_auto_cue_disabled_by_default():
+    """With ssn_auto_cue unset, no SSN request is filed automatically."""
+    from spacesim.engine.orders import Order
+    mgr = SessionManager(load_vignette("sda-custody-hunt"), seed=1)
+    mgr.start()
+    assert mgr.osys.auto_cue_ssn is None    # opt-in only
+    obs = Order(cell="blue", actor="BLUE-RADAR-1", action="observe",
+                target="RED-OBJ", params={"intent": "track", "gain": 0.6,
+                                           "characterizes": False, "classification": None})
+    ack = mgr.issue_order("blue", obs)
+    if ack.ok:
+        mgr.advance_to(ack.earliest_window[1] + 1)
+    chars = [r for r in mgr.ssn.requests.values() if r.target == "RED-OBJ"]
+    assert chars == []

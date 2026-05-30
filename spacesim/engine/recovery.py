@@ -68,6 +68,12 @@ class RecoverySystem:
         sm.defender_confirmed = True
         sm.defender_diagnosis = "suspected_attack" if sm.cause in ("cyber", "ew") else (sm.cause or "fault")
         refresh_ground_view(sat.bus_state, world.now)  # stored telemetry dump confirms it
+        # FUTURE-WORK §5: step deep-links — first contact completes establish_contact + dump_telemetry.
+        if "establish_contact" not in sm.steps_done:
+            sm.steps_done.append("establish_contact")
+        if "dump_telemetry" not in sm.steps_done:
+            sm.steps_done.append("dump_telemetry")
+        sm.current_step = "diagnose"
 
     def _h_finish(self, world: WorldState, payload: dict, rng) -> None:
         sat = world.assets.get(payload["sat"])
@@ -77,12 +83,20 @@ class RecoverySystem:
         sm.passes_used += int(payload["passes_used"])
         if payload.get("root_cause_persists") and self._root_cause_unresolved(sat):
             sm.blocked_reason = f"root cause persists ({sm.cause})"  # re-safed: stays in safe mode
+            sm.current_step = "blocked"
             world.effect_log.append({"t": world.now, "template": "recovery", "target": sat.id,
                                      "achieved": "re_safed", "success": False})
             return
         passes = sm.passes_used
+        steps = list(sm.steps_done)
+        # Recovery complete: all standard steps applied.
+        for s in ("patch", "re_enable"):
+            if s not in steps:
+                steps.append(s)
         exit_safe_mode(sat.bus_state)
         sat.bus_state.safe_mode.passes_used = passes  # preserve for inspection
+        sat.bus_state.safe_mode.steps_done = steps
+        sat.bus_state.safe_mode.current_step = "done"
         world.effect_log.append({"t": world.now, "template": "recovery", "target": sat.id,
                                  "achieved": "recovered", "success": True})
 

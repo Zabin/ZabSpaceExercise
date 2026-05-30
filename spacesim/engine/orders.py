@@ -89,6 +89,10 @@ class OrderSystem:
         self.access_config = access_config
         self.horizon = int(horizon_s * 1_000_000)
         self.wq_threshold = wq_threshold
+        # FUTURE-WORK §7: SSN auto-cue. When set (by SessionManager), an organic observe that
+        # yields a track below the characterization threshold automatically files an SSN
+        # characterize request via the per-cell network. None disables auto-cueing.
+        self.auto_cue_ssn = None       # set externally to an SSNSystem instance
         self._sensor_bookings: dict[str, list[tuple[int, int]]] = {}  # contention: one task at a time
         self.orders: dict[str, Order] = {}   # issued orders by id (for the queue + cancellation)
         self._order_counter = 0
@@ -486,3 +490,19 @@ class OrderSystem:
         obj = world.assets.get(payload["object"])
         if obj is not None and obj.orbit is not None:
             track.state_estimate = obj.orbit.model_copy(deep=True)
+        # FUTURE-WORK §7: organic detection auto-cues an SSN characterize request when the track
+        # has some confidence but hasn't been characterized yet. Deterministic: submit_request
+        # schedules ssn_collect/ssn_deliver events that replay exactly.
+        if (self.auto_cue_ssn is not None and obj is not None and obj.orbit is not None
+                and not track.characterized and 0.3 < track.confidence < 0.85):
+            from spacesim.engine.orbit import classify_regime
+            from spacesim.engine.ssn import SSNRequest
+            regime = classify_regime(obj.orbit.a_m, obj.orbit.e, obj.orbit.i_deg)
+            already = any(r.cell == payload["cell"] and r.target == payload["object"]
+                          and r.intent == "characterize"
+                          and r.state in ("DRAFT", "SCHEDULED", "COLLECTED")
+                          for r in self.auto_cue_ssn.requests.values())
+            if not already:
+                req = SSNRequest(id="", cell=payload["cell"], intent="characterize",
+                                 target=payload["object"], regime=regime, priority="priority")
+                self.auto_cue_ssn.submit_request(payload["cell"], req)

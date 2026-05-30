@@ -45,6 +45,13 @@ class SessionManager:
         )
         # Mock SSN — per-cell networks, request-tasked. Constructed always (empty dict if vignette opted out).
         self.ssn = SSNSystem(self.sim, dict(self.ctx.ssn_networks), access_config=self.osys.access_config)
+        # FUTURE-WORK §7: organic→SSN auto-cueing. Opt-in via parameter ssn_auto_cue (vignette
+        # default OR session override accepted, since not every vignette declares the dial).
+        ssn_auto = bool(self.ctx.param_values.get("ssn_auto_cue", False))
+        if not ssn_auto and overrides is not None:
+            ssn_auto = bool(overrides.get("ssn_auto_cue", False))
+        if ssn_auto and self.ctx.ssn_networks:
+            self.osys.auto_cue_ssn = self.ssn
         self.started = False
         self.horizon = self.ctx.start_epoch + int(self.vignette.estimated_duration_min * 60 * 4 * 1_000_000)
 
