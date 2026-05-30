@@ -233,3 +233,16 @@ This list is the v1 → v1.1+ TODO. When picking an item, prefer:
 4. Items in §1 (multiplayer transport) — the highest-architectural-leverage upgrade.
 
 Anything else is best gated by user demand or a paying engagement.
+##User added Future work
+1. orbital paths in 3D view
+2. ground traces in 2D view
+3. blue accents around headings on blue cell screens
+4. red accents around headings on red cell screens
+5. white accents around headings on white cell screens
+6. add a screen blank button to allow handoff between cells. it should blur the screen and bring up a handover heading
+7. expand the install guide with a target audience of someone that has not used python before
+8. generate a logo for this tool and integrate it into docs and the UI
+9. add on-hover tool tips for all buttons
+10. add help menus and screens
+11. ensure the UI is robust to users zooming in browsers
+12. ensure it is stable in multiple common browsers
