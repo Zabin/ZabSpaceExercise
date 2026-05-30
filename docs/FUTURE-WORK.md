@@ -105,9 +105,10 @@ Remaining items not carried into v1:
 
 ## 8. UI polish / minor
 
-- **Browser-GUI verification harness.** The UI is currently unverified-headless; the test suite
-  pins every backend path and Playwright-driven smoke runs verify wiring end-to-end, but a human
-  has not exercised the visuals.
+- **Browser-GUI verification harness.** Backend API smoke tests (scene, telemetry param list,
+  telemetry series count, fog cross-cell, dry-run, SSN session) are now in `test_web.py`. The
+  remaining gap is DOM/render smoke: Playwright for Python (`@pytest.mark.e2e`, opt-in) to verify
+  that the 2D map, 3D globe, and telemetry graph canvas actually draw — not yet implemented.
 - **Stronger seat-chip / role-switcher visual treatment.** The role-filter chips (All/Bus/
   Payload/SDA) ship, but a richer "seat chip" combining cell + role per the original §1.2 of the
   UI plan would clarify hot-seat handoffs in PME.
