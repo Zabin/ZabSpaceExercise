@@ -63,20 +63,29 @@ const PARAM_TEMPLATE = {
   "def.set_threat_warning": () => ({ via: DEFAULT_STATION, on: true }),
   "sigint.task_collection": () => ({ via: DEFAULT_STATION }),
   "wx.schedule_collection": () => ({ via: DEFAULT_STATION }),
+  // Stage B verbs
+  "cdh.reset_subsystem": () => ({ via: DEFAULT_STATION }),
+  "adcs.desaturate": () => ({ via: DEFAULT_STATION }),
+  "comms.point_antenna": () => ({ via: DEFAULT_STATION, mode: "earth" }),
+  "isr.set_mode": () => ({ via: DEFAULT_STATION, mode: "wide" }),
+  "pnt.set_integrity": () => ({ via: DEFAULT_STATION, mode: "standard" }),
+  "def.maneuver_evade": () => ({ via: DEFAULT_STATION, dv_cost: 5.0 }),
 };
 
 // Verb roles for the §1.2 role selector — drives the Bus/Payload/SDA/All filter on the command menu.
 const VERB_ROLE = {
   downlink: "bus", maneuver: "bus", observe: "sda",
   "eps.shed_load": "bus", "eps.restore_load": "bus", "eps.set_charge_mode": "bus",
-  "adcs.set_mode": "bus", "cdh.dump_storage": "bus", "cdh.clear_fault": "bus",
+  "adcs.set_mode": "bus", "adcs.desaturate": "bus",
+  "cdh.dump_storage": "bus", "cdh.clear_fault": "bus", "cdh.reset_subsystem": "bus",
   "tcs.set_mode": "bus", "tcs.set_heater": "bus",
-  "comms.enable_isl": "bus", "comms.config_link": "bus",
+  "comms.enable_isl": "bus", "comms.config_link": "bus", "comms.point_antenna": "bus",
   "satcom.mitigate_interference": "payload", "satcom.shift_users": "payload",
-  "isr.collect_now": "payload", "isr.schedule_collection": "payload",
+  "isr.collect_now": "payload", "isr.schedule_collection": "payload", "isr.set_mode": "payload",
   "sigint.task_collection": "payload", "wx.schedule_collection": "payload",
+  "pnt.set_integrity": "payload",
   "def.patch_cyber": "bus", "def.frequency_hop": "bus",
-  "def.harden": "payload", "def.set_threat_warning": "bus",
+  "def.harden": "payload", "def.set_threat_warning": "bus", "def.maneuver_evade": "bus",
 };
 let ROLE_FILTER = "all";
 
@@ -171,15 +180,16 @@ function actionsFor(a) {
   const acts = (ACTIONS_BY_KIND[a.kind] || ["observe"]).slice();
   if (a.kind === "satellite") {
     acts.push("eps.shed_load", "eps.restore_load", "eps.set_charge_mode",
-              "adcs.set_mode",
-              "cdh.dump_storage", "cdh.clear_fault",
+              "adcs.set_mode", "adcs.desaturate",
+              "cdh.dump_storage", "cdh.clear_fault", "cdh.reset_subsystem",
               "tcs.set_mode", "tcs.set_heater",
-              "comms.enable_isl", "comms.config_link",
-              "def.frequency_hop", "def.harden", "def.set_threat_warning");
+              "comms.enable_isl", "comms.config_link", "comms.point_antenna",
+              "def.frequency_hop", "def.harden", "def.set_threat_warning", "def.maneuver_evade");
     if (a.payload === "satcom") acts.push("satcom.mitigate_interference", "satcom.shift_users");
-    if (a.payload === "isr_eo" || a.payload === "isr_sar") acts.push("isr.collect_now", "isr.schedule_collection");
+    if (a.payload === "isr_eo" || a.payload === "isr_sar") acts.push("isr.collect_now", "isr.schedule_collection", "isr.set_mode");
     if (a.payload === "sigint") acts.push("sigint.task_collection");
     if (a.payload === "weather") acts.push("wx.schedule_collection");
+    if (a.payload === "pnt") acts.push("pnt.set_integrity");
     if ((a.cyber_vulns || []).length) acts.push("def.patch_cyber");      // defender's root-cause fix
   }
   // Role filter (§1.2): All shows everything; Bus/Payload/SDA narrow by VERB_ROLE.
@@ -636,13 +646,15 @@ async function renderRecovery(assetId, busMode) {
 // Which command verbs belong on which telemetry-subsystem card (§5.1 cards carry their own buttons).
 const VERB_SUBSYSTEM = {
   "eps.shed_load": "power", "eps.restore_load": "power", "eps.set_charge_mode": "power",
-  "adcs.set_mode": "attitude",
+  "adcs.set_mode": "attitude", "adcs.desaturate": "attitude",
   "tcs.set_mode": "thermal", "tcs.set_heater": "thermal",
-  "cdh.dump_storage": "cdh", "cdh.clear_fault": "cdh", "def.patch_cyber": "cdh",
-  "comms.enable_isl": "comms", "comms.config_link": "comms", "def.frequency_hop": "comms",
+  "cdh.dump_storage": "cdh", "cdh.clear_fault": "cdh", "cdh.reset_subsystem": "cdh", "def.patch_cyber": "cdh",
+  "comms.enable_isl": "comms", "comms.config_link": "comms", "comms.point_antenna": "comms", "def.frequency_hop": "comms",
   "satcom.mitigate_interference": "payload", "satcom.shift_users": "payload",
-  "isr.collect_now": "payload", "isr.schedule_collection": "payload",
+  "isr.collect_now": "payload", "isr.schedule_collection": "payload", "isr.set_mode": "payload",
   "sigint.task_collection": "payload", "wx.schedule_collection": "payload", "def.harden": "payload",
+  "pnt.set_integrity": "payload",
+  "def.maneuver_evade": "propulsion",
 };
 function verbsForSubsystem(a, sub) {
   return actionsFor(a).filter((v) => v.includes(".") && VERB_SUBSYSTEM[v] === sub);

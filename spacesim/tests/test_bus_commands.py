@@ -237,3 +237,152 @@ def test_payload_verb_blocked_in_safe_mode():
     a.payload_state = PayloadState(type="satcom")
     enter_safe_mode(a.bus_state, now=mgr.sim.clock.now, cause="cyber")
     assert mgr.validate_order("blue", _cmd("ISR-EO-1", "satcom.mitigate_interference")).reason == "payload_unavailable"
+
+
+# -- Stage B: new catalog verbs -----------------------------------------------
+
+def _sat_with_payload(payload_type: str = "isr_eo", dv: float = 50.0):
+    from spacesim.engine.entities import AssetResources
+    w = WorldState(now=0)
+    w.assets["SAT"] = Asset(
+        id="SAT", owner="blue", kind="satellite",
+        bus_state=BusState(),
+        payload_state=PayloadState(type=payload_type),
+        resources=AssetResources(delta_v_ms=dv),
+    )
+    return w
+
+
+def test_cdh_reset_subsystem_exits_fault_state():
+    w = _sat_with_payload()
+    bus = w.assets["SAT"].bus_state
+    bus.cdh.fsw_mode = "safe"
+    bus.attitude.mode = "safe"
+    bus.attitude.pointing_ok = False
+    ok, label = apply_command(w, "SAT", "cdh.reset_subsystem", {}, 0)
+    assert ok and label == "subsystem_reset"
+    assert bus.cdh.fsw_mode == "nominal"
+    assert bus.attitude.mode == "nominal"
+    assert bus.attitude.pointing_ok is True
+
+
+def test_cdh_reset_subsystem_replay_safe():
+    mgr = _mgr()
+    ack = mgr.issue_order("blue", _cmd("ISR-EO-1", "cdh.reset_subsystem"))
+    assert ack.ok
+    mgr.advance_to(ack.earliest_window[1] + 1)
+    assert any(e["template"] == "cdh.reset_subsystem" and e["success"] for e in mgr.world.effect_log)
+    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
+
+
+def test_adcs_desaturate_restores_pointing():
+    w = _sat_with_payload()
+    bus = w.assets["SAT"].bus_state
+    bus.attitude.mode = "slew"
+    bus.attitude.pointing_ok = False
+    bus.attitude.status = "yellow"
+    ok, label = apply_command(w, "SAT", "adcs.desaturate", {}, 0)
+    assert ok and label == "desaturated"
+    assert bus.attitude.mode == "nominal"
+    assert bus.attitude.pointing_ok is True
+    assert bus.attitude.status == "green"
+
+
+def test_adcs_desaturate_replay_safe():
+    mgr = _mgr()
+    ack = mgr.issue_order("blue", _cmd("ISR-EO-1", "adcs.desaturate"))
+    assert ack.ok
+    mgr.advance_to(ack.earliest_window[1] + 1)
+    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
+
+
+def test_comms_point_antenna_sets_mode():
+    w = _sat_with_payload()
+    ok, label = apply_command(w, "SAT", "comms.point_antenna", {"mode": "tracking"}, 0)
+    assert ok and label == "antenna_tracking"
+    assert w.assets["SAT"].bus_state.comms.antenna_mode == "tracking"
+
+
+def test_comms_point_antenna_unknown_mode_defaults_to_nominal():
+    w = _sat_with_payload()
+    ok, label = apply_command(w, "SAT", "comms.point_antenna", {"mode": "bogus"}, 0)
+    assert ok and w.assets["SAT"].bus_state.comms.antenna_mode == "nominal"
+
+
+def test_comms_point_antenna_replay_safe():
+    mgr = _mgr()
+    ack = mgr.issue_order("blue", _cmd("ISR-EO-1", "comms.point_antenna", mode="zenith"))
+    assert ack.ok
+    mgr.advance_to(ack.earliest_window[1] + 1)
+    assert mgr.world.assets["ISR-EO-1"].bus_state.comms.antenna_mode == "zenith"
+    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
+
+
+def test_isr_set_mode_changes_payload_mode():
+    w = _sat_with_payload("isr_eo")
+    ok, label = apply_command(w, "SAT", "isr.set_mode", {"mode": "narrow"}, 0)
+    assert ok and label == "isr_mode_narrow"
+    assert w.assets["SAT"].payload_state.mode == "narrow"
+
+
+def test_isr_set_mode_standby_stops_collecting():
+    w = _sat_with_payload("isr_eo")
+    w.assets["SAT"].payload_state.collecting = True
+    ok, label = apply_command(w, "SAT", "isr.set_mode", {"mode": "standby"}, 0)
+    assert ok and w.assets["SAT"].payload_state.collecting is False
+
+
+def test_isr_set_mode_replay_safe():
+    mgr = _mgr()
+    ack = mgr.issue_order("blue", _cmd("ISR-EO-1", "isr.set_mode", mode="wide"))
+    assert ack.ok
+    mgr.advance_to(ack.earliest_window[1] + 1)
+    assert mgr.world.assets["ISR-EO-1"].payload_state.mode == "wide"
+    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
+
+
+def test_pnt_set_integrity_changes_mode():
+    w = _sat_with_payload("pnt")
+    ok, label = apply_command(w, "SAT", "pnt.set_integrity", {"mode": "protected"}, 0)
+    assert ok and label == "integrity_protected"
+    assert w.assets["SAT"].payload_state.integrity_mode == "protected"
+
+
+def test_pnt_set_integrity_wrong_payload_rejected():
+    w = _sat_with_payload("isr_eo")
+    # isr asset should fail can_issue for pnt.set_integrity
+    from spacesim.engine.buscommands import can_issue
+    ok, reason = can_issue(w, "SAT", "pnt.set_integrity")
+    assert not ok and reason == "no_payload_for_verb"
+
+
+def test_def_maneuver_evade_consumes_dv_and_sets_flag():
+    w = _sat_with_payload(dv=50.0)
+    ok, label = apply_command(w, "SAT", "def.maneuver_evade", {"dv_cost": 10.0}, 0)
+    assert ok and label == "evasion_burn_executed"
+    assert abs(w.assets["SAT"].resources.delta_v_ms - 40.0) < 1e-6
+    assert w.assets["SAT"].payload_state.evasion_active is True
+
+
+def test_def_maneuver_evade_rejected_when_dv_insufficient():
+    w = _sat_with_payload(dv=0.5)
+    ok, label = apply_command(w, "SAT", "def.maneuver_evade", {"dv_cost": 5.0}, 0)
+    assert not ok and label == "insufficient_delta_v"
+
+
+def test_def_maneuver_evade_can_issue_gate():
+    from spacesim.engine.buscommands import can_issue
+    w = _sat_with_payload(dv=0.0)
+    ok, reason = can_issue(w, "SAT", "def.maneuver_evade")
+    assert not ok and reason == "insufficient_delta_v"
+
+
+def test_def_maneuver_evade_replay_safe():
+    # ISR-EO-1 starts with 80.0 m/s Δv in training-basics; evasion costs 5.0 by default.
+    mgr = _mgr()
+    ack = mgr.issue_order("blue", _cmd("ISR-EO-1", "def.maneuver_evade", dv_cost=5.0))
+    assert ack.ok
+    mgr.advance_to(ack.earliest_window[1] + 1)
+    assert mgr.world.assets["ISR-EO-1"].payload_state.evasion_active is True
+    assert abs(mgr.world.assets["ISR-EO-1"].resources.delta_v_ms - 75.0) < 1e-6
+    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()

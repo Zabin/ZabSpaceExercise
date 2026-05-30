@@ -84,6 +84,7 @@ class CommsState(BaseModel):
     isl_enabled: bool = False
     data_rate_kbps: int = 1024
     freq_hopping: bool = False               # def.frequency_hop → reduces experienced jam
+    antenna_mode: str = "nominal"            # comms.point_antenna: nominal|earth|zenith|tracking
 
 
 class SafeModeState(BaseModel):
@@ -105,6 +106,9 @@ class PayloadState(BaseModel):
     interference_mitigation: float = 0.0      # SATCOM: anti-jam/user-shift in effect (0..1), shrinks the jam signature
     last_effect_assessment: str = "unknown"   # space_control: unknown|likely|confirmed
     hardened: bool = False                    # def.harden → lowers effect/safe-mode susceptibility
+    mode: str = "nominal"                     # isr.set_mode: wide|narrow|standby|nominal; pnt.set_integrity: standard|protected|degraded
+    integrity_mode: str = "standard"          # pnt.set_integrity: standard|protected|degraded
+    evasion_active: bool = False              # def.maneuver_evade: set while evasion burn is live
     detail: dict = Field(default_factory=dict)
 
 
