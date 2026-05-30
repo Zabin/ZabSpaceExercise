@@ -142,12 +142,94 @@ Remaining items not carried into v1:
 - **PME instrumentation / facilitator scoring.** Hooks for measuring decision latency, custody
   loss, etc., to feed back into White-Cell adjudication.
 
+## 10. Twenty UX & realism upgrades (brainstormed)
+
+These are *additive* enhancements — none of them duplicate items in §1–§9 above. Numbered for
+reference, grouped by theme.
+
+### 10.A UX & visual (5)
+
+1. **Cell-color theming propagation.** ✅ *Seeded:* `body[data-cell]` now drives a `--cell-accent`
+   that tints panel left borders, h2 underlines, the toolbar bottom border, and table hover/select
+   states. Remaining work: also tint own-asset markers on the 2D map and 3D globe with the cell's
+   accent (instead of hardcoded green), and add a discreet "you are driving the ⟨BLUE⟩ console"
+   text chip in the toolbar so the seat is unambiguous at a glance.
+2. **Color-blind / high-contrast palette swap.** A `body.contrast-cb` modifier that replaces the
+   default green/yellow/red SOH palette with a colour-blind-safe set (Wong / Okabe-Ito), and bumps
+   global font weight. Persisted in localStorage like the existing presentation-mode toggle.
+3. **Compact "projector mode" preset.** A White-Cell-friendly layout that maximises the 2D map +
+   3D globe, hides the order-compose form, and enlarges the fleet-rail SOH glyphs. Distinct from
+   the existing `body.present` (which is a font-size bump only).
+4. **Diff highlight on recently-changed telemetry.** Cells whose value crossed a soft/hard limit
+   in the last 5 s pulse briefly (no audio, just a subtle background flash). Helps the operator
+   notice an attack signature mid-conversation without staring at the panel.
+5. **Inline asset preview tooltip.** Hovering an asset ID *anywhere in the UI* (effect log, AAR,
+   order queue, recovery strip) pops a 3-line SOH micro-card so the operator doesn't need to scroll
+   the fleet to context-check.
+
+### 10.B Workflow & ergonomics (4)
+
+6. **Command palette (Cmd-K / Ctrl-K).** A keyboard-driven quick-action menu: "downlink ISR-EO-1",
+   "select RED-INSP", "advance 10 min", "fire inject patch_modem". Searches all assets, actions,
+   injects, and parameters in one fuzzy box. Sidesteps deep menu navigation for power users.
+7. **Order presets / playbooks.** Save a composed order (action + actor + params) as a named
+   preset; bring it back with one click. The "downlink-via-GS-PRIME" sequence an operator runs
+   eight times an exercise becomes a one-button action.
+8. **Multi-asset selection for batch orders.** Shift-click in the fleet rail to select multiple
+   sats, then issue the same command to all of them (e.g. `def.set_threat_warning on=true` to a
+   whole constellation). Composes naturally with the constellation-aggregation work in §4.
+9. **Scene-moment bookmarks.** Pin "this is the H-hour decision point" at a specific sim time and
+   jump back via the AAR scrubber later. Distinct from the rewind primitive — bookmarks survive
+   across replay branches.
+
+### 10.C Realism & physics (5)
+
+10. **Day/night terminator overlay.** The engine already exposes `sun_lat_deg` / `sun_lon_deg` in
+    `SceneView`; the 2D map and globe should draw the actual terminator curve (not just shade the
+    far side as the globe does today). Critical for eclipse-aware SoC planning.
+11. **Space-weather / solar-storm injects.** A new inject type that globally scales SoC drain,
+    raises FSW error rates, and shrinks comms link margin for a configurable window. Real
+    geomagnetic storms are a recurring operations driver.
+12. **Variable elevation masks (terrain-aware horizon).** Per-site mask tables that capture
+    mountains/buildings on a ground station's local horizon. Today every site uses a single mask
+    degree value; real sites have masks that vary by azimuth.
+13. **Atmospheric refraction near the horizon.** Bend angle correction (~0.5° at the horizon) so
+    the apparent elevation at the start/end of a pass is realistic. Small effect but materially
+    changes very-low-elevation pass durations.
+14. **GNSS spoofing distinct from jamming.** Today the engine collapses both into a "deny" link
+    effect. A `spoof` outcome would leave the link UP but with a corrupted position fix — the
+    operator sees telemetry stay green while users in the spoofed region report bad PNT.
+
+### 10.D Doctrine & content (3)
+
+15. **Ground-station outage injects.** Cable cut, antenna damage, commercial-power loss —
+    temporarily takes a Blue ground station offline. Today the only way to deny a downlink is to
+    jam it; real exercises lose stations to maintenance and sabotage too.
+16. **Civilian / commercial bystander assets.** Neutral SATCOM customers, commercial GNSS users
+    whose telemetry degrades when Red jams Blue's birds. Visualises the collateral cost of
+    "harmless reversible" jamming and gives the White Cell a tool to escalate political pressure.
+17. **In-browser vignette editor.** Fork an existing vignette, drag a ground station to a new lat/
+    lon on the 2D map, tweak parameters, save back. Lowers the bar for instructors to author
+    bespoke scenarios without YAML editing.
+
+### 10.E Pedagogy & accessibility (3)
+
+18. **Coachmark / tutorial overlay.** Live coachmarks pointing at UI elements as the trainee runs
+    a `learn-*` vignette tutorial. Today the tutorial step script drives the manual + screenshots
+    but is invisible in the live UI; coachmarks bridge the gap.
+19. **Acronym glossary tooltips.** Hover any acronym (`SOH`, `RPO`, `ISL`, `EUWR`, `Δv`,
+    `cn0_dbhz`) for a one-line definition. Trainees stop having to alt-tab to a glossary doc.
+20. **AAR CSV / JSON export.** One-click download of the AAR report (decisions, objectives,
+    branch comparisons, custody timelines) as machine-readable files for downstream PME analysis
+    or paper-write-up. Today the AAR is HTML-only inside the session.
+
 ---
 
 This list is the v1 → v1.1+ TODO. When picking an item, prefer:
 1. Items in §3 (catalog-verb gaps) — they are small, test-first, and uniformly wired.
 2. Items in §5 (posture persistence / recovery deep-links) — small engine refinements with
    immediate pedagogical value.
-3. Items in §1 (multiplayer transport) — the highest-architectural-leverage upgrade.
+3. Items in §10.B (command palette, presets, bookmarks) — high UX leverage for low risk.
+4. Items in §1 (multiplayer transport) — the highest-architectural-leverage upgrade.
 
 Anything else is best gated by user demand or a paying engagement.

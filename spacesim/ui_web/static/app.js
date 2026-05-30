@@ -160,6 +160,7 @@ async function drawRibbon(actor) {
 
 function setCell(c) {
   CELL = c;
+  document.body.setAttribute("data-cell", c);    // drives --cell-accent across panels/borders/rows
   document.querySelectorAll(".cell").forEach((b) => b.classList.toggle("active", b.dataset.cell === c));
   refresh();
 }
@@ -456,7 +457,8 @@ function renderFleet(assets, alarmCount, now) {
     const cd = countdown(now, NEXT[a.id]);
     const soc = a.bus_state ? Math.round(a.bus_state.power.battery_soc * 100) + "%" : "—";
     const badge = n ? `<span class="badge">⚠${n}</span>` : "";
-    return `<tr data-asset="${a.id}" style="cursor:pointer"><td class="${soh}">●</td><td>${a.id}</td><td>${a.kind}</td>`
+    const sel = DRILL.asset === a.id ? " selected" : "";   // cell-accent highlight for the drilled row
+    return `<tr data-asset="${a.id}" class="${sel.trim()}" style="cursor:pointer"><td class="${soh}">●</td><td>${a.id}</td><td>${a.kind}</td>`
       + `<td class="${cd.cls}">${cd.txt}</td><td>${soc}</td><td class="${bc}">${bus}</td><td>${badge}</td></tr>`;
   }).join("");
   $("assets").querySelector("tbody").innerHTML = rows || `<tr><td colspan="7" class="muted">no assets match filter</td></tr>`;
