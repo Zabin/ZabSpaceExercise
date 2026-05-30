@@ -21,9 +21,9 @@ with the same method signatures as `InProcessSession`. Swap the import in `serve
 - **Push deltas instead of polling.** `get_eventlog(since_seq)` already expresses the contract;
   the front end currently re-fetches view/scene/telemetry per tick. A push channel is the natural
   upgrade once the transport above lands.
-- **`Order` as a serializable transport message.** Today `Order` is an engine dataclass passed
-  through the in-process boundary. Moving it to pydantic at the API surface (with the engine
-  dataclass kept internal) is a pre-req for the network transport.
+- ✅ **`Order` as a serializable transport message.** Engine keeps `Order` as a dataclass;
+  the API surface uses the pydantic `OrderRequest` (`ui_web/server.py`). The wire-side model
+  is in place; the network transport itself remains future work.
 
 **Transport seam interface** (every method must be implemented over the wire):
 ```
@@ -51,60 +51,64 @@ save(session) → dict / load_save(state) → str                # persistence
 
 ## 3. Catalog verb gaps (extends `buscommands.apply_command`)
 
-The implemented verbs are listed in `build-spec/07-operator-console.md` §16.11. Remaining catalog verbs
-from `13-operator-command-catalog.md` that have **no engine handler** yet:
+The implemented verbs are listed in `build-spec/07-operator-console.md` §16.11. After batches 5a
++ earlier B-series the implemented set now also includes: `cdh.reset_subsystem`,
+`cdh.load_stored_program`, `comms.point_antenna`, `comms.set_crypto`, `eps.select_bus`,
+`adcs.desaturate`, `isr.set_mode`, `isr.prioritize_downlink`, `isr.assess_quality`,
+`sigint.set_band`, `satcom.report_interference`, `pnt.set_integrity`, `pnt.report_status`,
+`wx.downlink`, `def.maneuver_evade`, `def.escort_posture`.
 
-- **Bus**: `cdh.load_stored_program`, `cdh.reset_subsystem`, `comms.point_antenna`,
-  `comms.set_crypto`, `prop.collision_avoid`, `prop.cancel_burn` (queue is implemented; an explicit
-  cancel-by-verb is not), `eps.select_bus`, `adcs.desaturate`, `adcs.point_payload` (the existing
-  attitude mode covers the common case).
-- **Payload**: `isr.set_mode`, `isr.prioritize_downlink`, `isr.calibrate`, `isr.assess_quality`,
-  `sigint.set_band` / `sigint.geolocate` / `sigint.downlink`, `sda.task_search` / `sda.task_track`
-  / `sda.task_characterize` / `sda.cue` / `sda.downlink` (today's `observe` action with `intent`
-  covers the SDA loop), `satcom.set_transponder` / `satcom.set_frequency_plan` /
-  `satcom.reconfigure_beam` / `satcom.report_interference`, `pnt.set_integrity` /
-  `pnt.report_status`, `mw.set_sensor_mode` / `mw.report_alerts`, `wx.downlink`.
-- **Defense / space control**: `def.maneuver_evade` (would consume Δv like `prop.maneuver`),
-  `def.escort_posture`, `def.disperse`, `def.patch_cyber` is implemented; remaining `sc.*` verbs
-  largely duplicate the existing `jam`/`engage`/`cyber`/`observe` order actions and are
-  intentionally not re-wired as command verbs to avoid aliasing.
+Remaining catalog verbs from `13-operator-command-catalog.md` that have **no engine handler**:
 
-Each one follows the same pattern: a small mutation in `apply_command`, a regression test in
+- **Bus**: `prop.collision_avoid` (needs the conjunction service in §2),
+  `prop.cancel_burn` (queue cancel exists; an explicit cancel-by-verb is not wired),
+  `adcs.point_payload` (the existing attitude mode covers the common case).
+- **Payload**: `isr.calibrate`, `sigint.geolocate`, `sigint.downlink`,
+  `sda.task_search` / `sda.task_track` / `sda.task_characterize` / `sda.cue` / `sda.downlink`
+  (today's `observe` action with `intent` covers the SDA loop),
+  `satcom.set_transponder` / `satcom.set_frequency_plan` / `satcom.reconfigure_beam`,
+  `mw.set_sensor_mode` / `mw.report_alerts`.
+- **Defense / space control**: `def.disperse`; remaining `sc.*` verbs largely duplicate
+  `jam` / `engage` / `cyber` / `observe` and are intentionally not re-wired as command verbs.
+
+Each follows the same pattern: a small mutation in `apply_command`, a regression test in
 `spacesim/tests/test_bus_commands.py`, an entry in the UI's `PARAM_TEMPLATE` / `actionsFor` /
-`VERB_SUBSYSTEM` / `VERB_ROLE`. None require architectural work.
+`VERB_SUBSYSTEM`. None require architectural work.
 
 ## 4. UI strategic items (out of v1 scope, per `build-spec/01-context-and-scope.md` §3.2)
 
 - **Constellation aggregation (v2).** Manage ≥3 sats as a group from a single panel. The current
   per-asset drill-down is the right unit for v1's ≤24-sat / ≤3-per-constellation cap.
-- **Formal APP-6-adapted space-symbology pack.** Today's marker/colour system is consistent
-  across the 2D map and 3D globe but not formally specified; a future pack would standardize
-  shapes per object type for joint-/coalition-use credibility.
-- **Δv "years of life" panel.** Dedicated propulsion sub-tab spelled out by
-  `14-delta-v-economy.md` — the data exists in `AssetResources.delta_v_ms`, the panel does not.
+- ✅ **APP-6-adapted space-symbology pack.** `ui_web/static/symbology.js` maps asset kind +
+  payload type to canonical marker shapes (triangle ISR, square SATCOM, diamond PNT, plus SDA,
+  inverted-triangle SIGINT, star jammer, etc.) shared by the 2D map and 3D globe.
+- ✅ **Δv "years of life" panel.** New `<table id="deltav">` in the fleet panel; refresh shows
+  Δv reserves + a years-of-life estimate (≈15 m/s/yr station-keeping rate).
 - **Constellation/grouped fleet-rail badges.** Tied to the constellation-aggregation item above.
 
 ## 5. Bus, payload, and recovery refinements
 
-- **Posture-command persistence beyond a tick.** ✅ `def.harden` now reduces the safe-mode
-  probability at the effect resolver (operator-commanded hardening adds 0.5 to the asset's
-  `hardening` for the susceptibility computation, on top of any vignette baseline).
-  `def.frequency_hop` already scales the comms jam term in telemetry. `def.set_threat_warning`
-  remains informational (no resolver impact yet).
-- **EW / bus-stress safe-mode inducement** (vs. the cyber path that is exercised today). The
-  resolver already supports `outcome: safe_mode`; vignettes don't drive it via EW yet.
-- **Per-step recovery deep-links.** The recovery strip surfaces a single Patch action and a free-
-  text blocked-reason; promoting it to per-step (`establish_contact` / `dump_telemetry` / ... )
-  needs additional engine state about which step is currently blocking.
-- **Contention bookings rewind-safety.** `OrderSystem._sensor_bookings` is cleared on rewind
-  along with the order registry. Future work: persist the bookings in the eventlog so they
-  reconstruct on `replay()` identically without manual rebind.
+- **Posture-command persistence beyond a tick.** ✅ `def.harden` reduces the safe-mode
+  probability at the effect resolver (+0.5 to the asset's `hardening` for the susceptibility
+  computation, on top of any vignette baseline). `def.frequency_hop` already scales the comms
+  jam term in telemetry. `def.set_threat_warning` remains informational (no resolver impact yet).
+- ✅ **EW / bus-stress safe-mode inducement.** Engine resolver routes EW (electronic_warfare)
+  + outcome=safe_mode to `enter_safe_mode(cause="ew")`; pinned by
+  `test_ew_safe_mode_routes_cause_as_ew`. Vignette content opt-in is the next lever.
+- ✅ **Per-step recovery deep-links.** `SafeModeState.current_step` +
+  `SafeModeState.steps_done` track progress through
+  `establish_contact → dump_telemetry → diagnose → patch → re_enable → done`, with `blocked`
+  set when the root cause persists. The UI strip can surface them directly.
+- ✅ **Contention bookings rewind-safety.** `_sensor_bookings` is now reconstructed from the
+  truncated eventlog after rewind (batch A2). Order events carry `sensor_id` + `window_end` so
+  replay produces identical bookings without manual rebind.
 
-## 6. Sat / fleet caps validation
+## 6. Sat / fleet caps validation — ✅ implemented
 
-`build-spec/01-context-and-scope.md` declares ≤24 satellites for v1 with a hard ceiling of 48, and
-constellations ≤3 sats. The caps are documented but **not enforced at vignette load**; future
-work: validate caps in `content/vignette.build_world` with a clear rejection.
+`build-spec/01-context-and-scope.md` declares ≤24 satellites for v1 with a hard ceiling of 48,
+and constellations ≤3 sats. Enforced at vignette load: `content/vignette.build_world` raises
+`ValueError` with a clear message if either cap is exceeded. Pinned by tests in
+`spacesim/tests/test_content.py` (batch A1).
 
 ## 7. Mock Space Surveillance Network (SSN) — ✅ implemented
 
@@ -116,7 +120,10 @@ Remaining items not carried into v1:
   balance dial.
 - **Commercial / third-party feeds** — a neutral commercial provider both cells can buy from
   (extends the per-cell model).
-- **Auto-cueing organic → SSN** — let an organic detection auto-cue an SSN characterize request.
+- ✅ **Auto-cueing organic → SSN.** `OrderSystem.auto_cue_ssn` (set by `SessionManager` when
+  the `ssn_auto_cue` parameter / override is on) deterministically files an SSN characterize
+  request after an organic observe yields an uncharacterized track in the 0.3-0.85 confidence
+  band. Pinned by `test_auto_cue_files_ssn_characterize_after_organic_observe`.
 
 ## 8. UI polish / minor
 
@@ -124,21 +131,26 @@ Remaining items not carried into v1:
   telemetry series count, fog cross-cell, dry-run, SSN session) are now in `test_web.py`. The
   remaining gap is DOM/render smoke: Playwright for Python (`@pytest.mark.e2e`, opt-in) to verify
   that the 2D map, 3D globe, and telemetry graph canvas actually draw — not yet implemented.
-- **Stronger seat-chip / role-switcher visual treatment.** The role-filter chips (All/Bus/
-  Payload/SDA) ship, but a richer "seat chip" combining cell + role per the original §1.2 of the
-  UI plan would clarify hot-seat handoffs in PME.
+- ✅ **Seat-chip visual treatment.** Cell-color theming (§10.A.1) drives `--cell-accent`
+  across panel borders, toolbar bottom border, h2 underlines, table hover/select, AND the
+  own-asset markers on the 2D map + 3D globe — every surface re-tints when the operator
+  switches seats. The "BLU/RED/WHI" toolbar chip is unambiguous at a glance.
 - **Region detach v2.** The current Detach viewers pops a slow-tick belief-scene window; a full
   multi-display reflow (independent region A/B/C/D detach with shared selection state) requires
   postMessage state-sync and is deferred.
-- **Two-trace overlay normalisation legend.** The overlay trace is normalised for shape
-  comparison; surfacing the second-trace y-scale explicitly is a polish task.
+- ✅ **Two-trace overlay normalisation legend.** `Graph.draw` now prints the OVERLAY's true
+  y-scale on the right edge in sky-blue (matching the overlay trace) so the operator can decode
+  the normalized second trace in absolute units.
 
 ## 9. Larger / strategic
 
 - **Coalition / shared SDA feed.** Lower-control external tracks rendered alongside the cell's
   own custody — pairs with SSN above.
-- **Replay branching UI.** The engine supports rewind/undo and branch comparison
-  (`session/aar.py`); a richer branch-tree UI is a v2 nicety.
+- ✅ **Replay branching UI.** AAR panel has a Branches subsection: "+ Save current branch"
+  fetches `/aar` and stores it in localStorage scoped by vignette; the chip list shows saved
+  branches; selecting two + "Compare selected" runs the same diff shape as
+  `session.aar.compare_branches()` (events_a/b + objective flips) client-side. A richer
+  branch-tree visualization remains a v2 nicety.
 - **PME instrumentation / facilitator scoring.** Hooks for measuring decision latency, custody
   loss, etc., to feed back into White-Cell adjudication.
 
@@ -213,16 +225,28 @@ are noted under "still open".
 
 ---
 
-This list is the v1 → v1.1+ TODO. When picking an item, prefer:
-1. Items in §3 (catalog-verb gaps) — they are small, test-first, and uniformly wired.
-2. Items in §5 (posture persistence / recovery deep-links) — small engine refinements with
-   immediate pedagogical value.
-3. Items in §1 (multiplayer transport) — the highest-architectural-leverage upgrade.
+This list is the v1 → v1.1+ TODO. After batches 5a-5d the remaining open work is:
 
-(§10 has shipped — all 20 items are done; only the full WYSIWYG vignette editor under
-§10.D.17 is still partially open.)
+1. **§1 LAN multiplayer transport + push-delta channel** — highest architectural leverage.
+   `WebSocketSession` stub exists; `OrderRequest` pydantic surface exists. Need: WebSocket
+   server, push-delta event stream, client transport swap.
+2. **§2 high-fidelity propagator + conjunction screening** — drop-in behind the existing
+   `Propagator` Protocol; would unlock `prop.collision_avoid` in §3.
+3. **§4 constellation aggregation** — manage ≥3 sats as a group from a single panel.
+4. **§8 Region detach v2** — multi-display reflow with postMessage state sync.
+5. **§8 Playwright DOM/render smoke tests** — currently opt-in; gap is the harness itself.
+6. **§9 coalition / shared SDA feed**, **PME instrumentation** — strategic, deferred.
+7. **§3 remaining catalog verbs** — small, test-first, uniformly wired.
+8. **§7 SSN cost/budget + commercial feed** — balance dial, third-party data layer.
+9. **§10.D.17 full WYSIWYG vignette editor** — inspector + download shipped; drag-drop
+   author + save-back is deferred.
 
-Anything else is best gated by user demand or a paying engagement.
+(§10 has shipped — 20/20 items. §6 sat-caps validation is enforced at load. §5 recovery
+deep-links, EW safe-mode, contention-rewind safety all shipped. §1 transport-message shipped
+as `OrderRequest`. §4 APP-6 symbology + Δv panel shipped. §8 seat-chip + two-trace legend
+shipped. §9 replay-branching UI shipped. §7 organic→SSN auto-cue shipped.)
+
+Anything outside the list above is best gated by user demand or a paying engagement.
 
 ## User added Future work
 1. orbital paths in 3D view
