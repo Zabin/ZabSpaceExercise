@@ -9,21 +9,23 @@ vignette:
   red_doctrine_profile: china_integrated
   start_epoch_utc: "2030-03-15T06:00:00Z"
   blue_forces:
+    # BLUE-HVA at GEO sub-point ≈ -156° lon (over central Pacific) — visible from Maui AMOS/GEODSS.
     - id: BLUE-HVA
       kind: satellite
-      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 0, argp_deg: 0, ta_deg: 0.0}
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 114, argp_deg: 0, ta_deg: 0.0}
       resources: {delta_v_ms: 60.0}
       bus_state: {power: {battery_soc: 0.95}}
   red_forces:
     - id: RED-INSP
       kind: satellite
-      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 0, argp_deg: 0, ta_deg: 0.6}
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 114, argp_deg: 0, ta_deg: 0.6}
       resources: {delta_v_ms: 200.0}
   sensors:
+    # BLUE-OPT = GEODSS Maui (AMOS, Haleakalā) — canonical Pacific GEO optical SDA.
     - id: BLUE-OPT
       owner: blue
       kind: ground_optical
-      location: {lat_deg: 35.0, lon_deg: 0.0}
+      location: {lat_deg: 20.71, lon_deg: -156.26}
       needs_lighting: true
   objectives:
     blue:

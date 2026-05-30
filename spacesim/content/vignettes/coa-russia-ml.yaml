@@ -23,21 +23,25 @@ vignette:
       orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 45, argp_deg: 0, ta_deg: 0.0}
       payload_state: {type: satcom}
       bus_state: {power: {battery_soc: 0.95}}
+    # GS-EUROPE = RAF Oakhanger (UK Skynet / NATO SATCOM ground node).
     - id: GS-EUROPE
       kind: ground_station
-      location: {lat_deg: 50.0, lon_deg: 30.0, alt_m: 0.0}
+      location: {lat_deg: 51.12, lon_deg: -0.89, alt_m: 0.0}
       elevation_mask_deg: 5.0
   red_forces:
+    # RED-JAM-TIRADA = Kaliningrad / Baltiysk (Tirada-2 SATCOM jammer reference location).
     - id: RED-JAM-TIRADA
       kind: jammer
-      location: {lat_deg: 48.0, lon_deg: 35.0}         # SATCOM uplink/downlink jam
+      location: {lat_deg: 54.71, lon_deg: 20.51}
       elevation_mask_deg: 0.0
+    # RED-JAM-BYLINA = Dzhankoy area, Crimea (reported Pole-21 / Bylina GNSS-jam deployment).
     - id: RED-JAM-BYLINA
       kind: jammer
-      location: {lat_deg: 52.0, lon_deg: 40.0}         # GNSS jam
+      location: {lat_deg: 45.71, lon_deg: 34.39}
       elevation_mask_deg: 0.0
   sensors:
-    - {id: BLUE-RADAR-EU, owner: blue, kind: ground_radar, location: {lat_deg: 50.0, lon_deg: 25.0}}
+    # BLUE-RADAR-EU = RAF Fylingdales (UEWR phased-array) — UK SDA flagship.
+    - {id: BLUE-RADAR-EU, owner: blue, kind: ground_radar, location: {lat_deg: 54.36, lon_deg: -0.67}}
   objectives:
     blue:
       - {id: pnt_avail, desc: "PNT service operational at end of window",

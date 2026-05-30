@@ -33,16 +33,18 @@ vignette:
       resources: {delta_v_ms: 100.0}                # Δv reserves for the debris-avoidance maneuver
       payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
       bus_state: {power: {battery_soc: 0.90}}
+    # GS-NORTH = Kourou (CSG/CNES, French Guiana) — equatorial ISR early-pass downlink.
     - id: GS-NORTH
       kind: ground_station
-      location: {lat_deg: 14.74, lon_deg: -56.54, alt_m: 0.0}
+      location: {lat_deg: 5.24, lon_deg: -52.77, alt_m: 0.0}
       elevation_mask_deg: 5.0
   red_forces:
     - id: RED-SDA-PASSIVE
       kind: satellite
       orbit: {a_m: 7000000.0, e: 0.0, i_deg: 90.0, raan_deg: 50, argp_deg: 0, ta_deg: 0.0}
   sensors:
-    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 14.74, lon_deg: -56.54}}
+    # BLUE-RADAR = Caribbean SDA radar (notional Antigua/Curaçao) co-located with GS-NORTH pass area.
+    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 12.10, lon_deg: -68.93}}
   objectives:
     blue:
       - {id: isr_b_survives, desc: "ISR-B survives the debris-corridor window",

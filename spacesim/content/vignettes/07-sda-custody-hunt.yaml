@@ -15,8 +15,10 @@ vignette:
       orbit: {a_m: 7178137.0, e: 0.0, i_deg: 63.4, raan_deg: 80, argp_deg: 0, ta_deg: 0.0}
       resources: {delta_v_ms: 150.0}
   sensors:
-    - {id: BLUE-RADAR-1, owner: blue, kind: ground_radar, location: {lat_deg: 30.0, lon_deg: 0.0}}
-    - {id: BLUE-OPT-1, owner: blue, kind: ground_optical, location: {lat_deg: 50.0, lon_deg: 30.0}, needs_lighting: true}
+    # BLUE-RADAR-1 = Eglin AFB AN/FPS-85 — dedicated SSN phased-array radar, FL.
+    - {id: BLUE-RADAR-1, owner: blue, kind: ground_radar, location: {lat_deg: 30.57, lon_deg: -86.21}}
+    # BLUE-OPT-1 = GEODSS Det 1 (Socorro, White Sands NM) — primary optical SDA, contended with radar.
+    - {id: BLUE-OPT-1, owner: blue, kind: ground_optical, location: {lat_deg: 33.82, lon_deg: -106.66}, needs_lighting: true}
   objectives:
     blue:
       - {id: maintain_custody, desc: "Maintain custody of the hostile object", metric: {kind: custody, side: blue, object: RED-OBJ, min_conf: 0.5}}

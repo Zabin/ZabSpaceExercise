@@ -19,43 +19,47 @@ vignette:
     space_weather: nominal
 
   blue_forces:
+    # raan_deg chosen so the early ascending pass crosses Diego Garcia (GS-NORTH) within minutes.
     - id: ISR-EO-1
       kind: satellite
-      orbit: {source: kepler, a_m: 6978137.0, e: 0.0, i_deg: 97.8, raan_deg: 0.0, argp_deg: 0.0, ta_deg: 0.0}
+      orbit: {source: kepler, a_m: 6978137.0, e: 0.0, i_deg: 97.8, raan_deg: 342.0, argp_deg: 0.0, ta_deg: 0.0}
       resources: {delta_v_ms: 80.0, power_w: 1500.0}
       payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
       bus_state:
         power: {battery_soc: 0.9, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}
-    # Positioned under the ISR sat's early ascending pass so Blue gets a downlink window soon.
+    # GS-NORTH = Al Dhafra AFB, UAE — major US Air Force base, Middle East theater downlink.
     - id: GS-NORTH
       kind: ground_station
-      location: {lat_deg: 22.22, lon_deg: 92.42, alt_m: 0.0}
+      location: {lat_deg: 24.25, lon_deg: 54.55, alt_m: 0.0}
       elevation_mask_deg: 5.0
+    # GS-EAST = Diego Garcia (AFSCN REEF), BIOT — Indo-Pacific secondary downlink.
     - id: GS-EAST
       kind: ground_station
-      location: {lat_deg: 33.28, lon_deg: 89.73, alt_m: 0.0}
+      location: {lat_deg: -7.41, lon_deg: 72.45, alt_m: 0.0}
       elevation_mask_deg: 5.0
 
   red_forces:
+    # RED-SURF = Woody Island (Yongxing, Paracels) — PLA militarized island in SCS.
     - id: RED-SURF
       kind: terrestrial_force
-      location: {lat_deg: 10.0, lon_deg: 125.0, alt_m: 0.0}
-    # Co-located with GS-NORTH (mask 0 → its jam footprint opens slightly before the
-    # downlink window), so Red can deny Blue's downlink during the same pass.
+      location: {lat_deg: 16.83, lon_deg: 112.34, alt_m: 0.0}
+    # JAM-NORTH = Bandar Abbas, Iran — Iranian Navy HQ (~430 km from Al Dhafra; shared LEO footprint).
     - id: JAM-NORTH
       kind: jammer
-      location: {lat_deg: 22.22, lon_deg: 92.42, alt_m: 0.0}
+      location: {lat_deg: 27.13, lon_deg: 56.21, alt_m: 0.0}
       elevation_mask_deg: 0.0
+    # RED-ASAT = Korla SSA radar / SC-19 DA-ASAT test region, Xinjiang.
     - id: RED-ASAT
       kind: interceptor
-      location: {lat_deg: 12.0, lon_deg: 123.0, alt_m: 0.0}
+      location: {lat_deg: 41.64, lon_deg: 86.24, alt_m: 0.0}
       resources: {ammo: 1}
 
   sensors:
+    # BLUE-RADAR = Eglin AFB AN/FPS-85 — dedicated SSN phased-array, supports Indo-Pacific custody.
     - id: BLUE-RADAR
       owner: blue
       kind: ground_radar
-      location: {lat_deg: 12.0, lon_deg: 120.0, alt_m: 0.0}
+      location: {lat_deg: 30.57, lon_deg: -86.21, alt_m: 0.0}
       elevation_mask_deg: 5.0
 
   objectives:

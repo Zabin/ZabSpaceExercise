@@ -30,14 +30,16 @@ vignette:
       orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 140, argp_deg: 0, ta_deg: 0.0}
       payload_state: {type: satcom}
       bus_state: {power: {battery_soc: 0.92}}
+    # GS-WESTPAC = Andersen AFB AFSCN GTS, Guam — western Pacific Blue node.
     - id: GS-WESTPAC
       kind: ground_station
-      location: {lat_deg: 24.0, lon_deg: 145.0, alt_m: 0.0}
+      location: {lat_deg: 13.62, lon_deg: 144.86, alt_m: 0.0}
       elevation_mask_deg: 5.0
   red_forces:
+    # RED-JAM-COASTAL = Woody Island (Yongxing, Paracels) — reported PLA EW deployment.
     - id: RED-JAM-COASTAL
       kind: jammer
-      location: {lat_deg: 25.0, lon_deg: 120.0}
+      location: {lat_deg: 16.83, lon_deg: 112.34}
       elevation_mask_deg: 0.0
     - id: RED-CYBER
       kind: cyber_unit
@@ -46,8 +48,10 @@ vignette:
       orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.1, raan_deg: 140, argp_deg: 0, ta_deg: 0.5}
       resources: {delta_v_ms: 50.0}
   sensors:
-    - {id: BLUE-RADAR-WP, owner: blue, kind: ground_radar, location: {lat_deg: 24.0, lon_deg: 145.0}}
-    - {id: BLUE-OPTICAL-WP, owner: blue, kind: ground_optical, location: {lat_deg: 19.5, lon_deg: 155.0}, needs_lighting: true}
+    # BLUE-RADAR-WP = Andersen AFB Guam (AFSCN GTS co-located SDA).
+    - {id: BLUE-RADAR-WP, owner: blue, kind: ground_radar, location: {lat_deg: 13.62, lon_deg: 144.86}}
+    # BLUE-OPTICAL-WP = GEODSS Maui (AMOS, Haleakalā) — Pacific GEO optical SDA.
+    - {id: BLUE-OPTICAL-WP, owner: blue, kind: ground_optical, location: {lat_deg: 20.71, lon_deg: -156.26}, needs_lighting: true}
   objectives:
     blue:
       - {id: isr_delivers, desc: "ISR product delivered before window close",

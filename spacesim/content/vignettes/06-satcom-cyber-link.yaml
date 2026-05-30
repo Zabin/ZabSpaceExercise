@@ -20,7 +20,8 @@ vignette:
     - id: RED-CYBER
       kind: cyber_unit
   sensors:
-    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 35.0, lon_deg: 0.0}}
+    # BLUE-RADAR = Cape Cod SFS (PAVE PAWS UEWR), MA — strategic SDA radar.
+    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 41.75, lon_deg: -70.54}}
   objectives:
     blue:
       - {id: keep_service, desc: "Keep SATCOM service up", metric: {kind: asset_operational, target: BLUE-SATCOM, by_s: 3600}}

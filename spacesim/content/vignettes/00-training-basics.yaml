@@ -20,23 +20,25 @@ vignette:
       cyber_vulnerabilities: [{vector: ground_modem, patchable: true, patched: false}]
       payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
       bus_state: {power: {battery_soc: 0.9, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
-    # Ground station + sensor positioned under the ISR sat's early pass so windows open in minutes.
+    # GS-TRN = Kourou (CSG/CNES, French Guiana) — realistic equatorial training downlink site.
     - id: GS-TRN
       kind: ground_station
-      location: {lat_deg: 14.74, lon_deg: -56.54, alt_m: 0.0}
+      location: {lat_deg: 5.24, lon_deg: -52.77, alt_m: 0.0}
       elevation_mask_deg: 5.0
 
   red_forces:
     - id: RED-TGT
       kind: satellite
       orbit: {a_m: 6938137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 10.0}
-    # Jammer co-located with the Blue station (mask 0) → it can deny the downlink during the pass.
+    # JAM-TRN ≈ co-located mobile threat ~25 km from Kourou (same horizon, same pass footprint).
     - id: JAM-TRN
       kind: jammer
-      location: {lat_deg: 14.74, lon_deg: -56.54, alt_m: 0.0}
+      location: {lat_deg: 5.05, lon_deg: -52.65, alt_m: 0.0}
       elevation_mask_deg: 0.0
     - id: RED-CYBER
       kind: cyber_unit
+    # Training OPFOR — notional South-American exercise area (not a real DA-ASAT site; the
+    # training scenario abstracts the kinetic threat for instructional purposes).
     - id: RED-ASAT
       kind: interceptor
       location: {lat_deg: 0.0, lon_deg: -67.23, alt_m: 0.0}
@@ -44,7 +46,9 @@ vignette:
       resources: {ammo: 1}
 
   sensors:
-    - {id: RADAR-TRN, owner: blue, kind: ground_radar, location: {lat_deg: 7.87, lon_deg: -60.98}}
+    # RADAR-TRN = forward Caribbean SDA radar (notional Antigua/Curaçao siting near Kourou pass).
+    - {id: RADAR-TRN, owner: blue, kind: ground_radar, location: {lat_deg: 12.10, lon_deg: -68.93}}
+    # RED-RDR = training OPFOR SDA (notional, paired with the OPFOR ASAT FOB).
     - {id: RED-RDR, owner: red, kind: ground_radar, location: {lat_deg: 0.0, lon_deg: -67.23}}
 
   objectives:

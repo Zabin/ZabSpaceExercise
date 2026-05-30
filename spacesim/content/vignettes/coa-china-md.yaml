@@ -31,29 +31,34 @@ vignette:
       orbit: {a_m: 26560000.0, e: 0.0, i_deg: 55.0, raan_deg: 100, argp_deg: 0, ta_deg: 0.0}
       payload_state: {type: pnt}
       bus_state: {power: {battery_soc: 0.95}}
+    # GS-WP = Andersen AFB AFSCN GTS, Guam — western Pacific Blue node.
     - id: GS-WP
       kind: ground_station
-      location: {lat_deg: 24.0, lon_deg: 145.0, alt_m: 0.0}
+      location: {lat_deg: 13.62, lon_deg: 144.86, alt_m: 0.0}
       elevation_mask_deg: 5.0
   red_forces:
+    # RED-ASAT = Jiuquan SLC (SC-19 / DN-series DA-ASAT test history).
     - id: RED-ASAT
       kind: interceptor
-      location: {lat_deg: 39.0, lon_deg: 112.0}      # land-based DA-ASAT site
+      location: {lat_deg: 40.96, lon_deg: 100.29}
       elevation_mask_deg: 0.0
       resources: {ammo: 2}                            # two interceptors in MD
     - id: RED-SJ-INSPECTOR                            # closes BLUE-ISR-PRIMARY (LEO inspector)
       kind: satellite
       orbit: {a_m: 6938137.0, e: 0.0, i_deg: 51.6, raan_deg: 110, argp_deg: 0, ta_deg: 1.5}
       resources: {delta_v_ms: 40.0}
+    # RED-JAM-PNT = Woody Island (Yongxing, Paracels) — reported PLA EW deployment for theater PNT denial.
     - id: RED-JAM-PNT
       kind: jammer
-      location: {lat_deg: 25.0, lon_deg: 120.0}
+      location: {lat_deg: 16.83, lon_deg: 112.34}
       elevation_mask_deg: 0.0
     - id: RED-CYBER
       kind: cyber_unit
   sensors:
-    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 24.0, lon_deg: 145.0}}
-    - {id: BLUE-OPTICAL, owner: blue, kind: ground_optical, location: {lat_deg: 19.5, lon_deg: 155.0}, needs_lighting: true}
+    # BLUE-RADAR = Andersen AFB Guam (AFSCN GTS co-located SDA).
+    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 13.62, lon_deg: 144.86}}
+    # BLUE-OPTICAL = GEODSS Maui (AMOS, Haleakalā) — Pacific GEO optical SDA.
+    - {id: BLUE-OPTICAL, owner: blue, kind: ground_optical, location: {lat_deg: 20.71, lon_deg: -156.26}, needs_lighting: true}
   objectives:
     blue:
       - {id: any_isr, desc: "At least one Blue ISR product delivered",

@@ -14,13 +14,15 @@ vignette:
       orbit: {a_m: 6978137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 0.0}
       bus_state: {power: {battery_soc: 0.95}}
   red_forces:
+    # RED-ASAT = Plesetsk Cosmodrome (PL-19 Nudol DA-ASAT test launches — canonical Russian site).
     - id: RED-ASAT
       kind: interceptor
-      location: {lat_deg: 0.0, lon_deg: 97.0}
+      location: {lat_deg: 62.93, lon_deg: 40.57}
       elevation_mask_deg: 10.0
       resources: {ammo: 1}
   sensors:
-    - {id: RED-RADAR, owner: red, kind: ground_radar, location: {lat_deg: 0.0, lon_deg: 97.0}}
+    # RED-RADAR = Don-2N (Pushkino) — Russia's primary ABM/SSA battle-management radar.
+    - {id: RED-RADAR, owner: red, kind: ground_radar, location: {lat_deg: 56.17, lon_deg: 37.77}}
   objectives:
     blue:
       - {id: avoid_debris, desc: "Survive without a debris-generating strike", metric: {kind: no_debris, by_s: 3600}}

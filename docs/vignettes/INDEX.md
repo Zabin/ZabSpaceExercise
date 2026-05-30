@@ -17,6 +17,7 @@ the YAML files in `spacesim/content/vignettes/`. The library architecture lives 
 |---|---|
 | [00-vignette-framework](00-vignette-framework.md) | Vignette framework & parameter schema. |
 | [00-LIBRARY-ARCHITECTURE](00-LIBRARY-ARCHITECTURE.md) | Four-track library design, registry, authoring rules. |
+| [GROUND-INFRASTRUCTURE](GROUND-INFRASTRUCTURE.md) | Realistic open-source coordinates for ground stations, sensors, jammers, DA-ASAT sites. |
 
 ## Original 8 vignettes (design notes)
 

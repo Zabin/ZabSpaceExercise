@@ -23,21 +23,25 @@ vignette:
       orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 50, argp_deg: 0, ta_deg: 0.0}
       payload_state: {type: satcom}
       bus_state: {power: {battery_soc: 0.95}}
+    # GS-GULF = Al Yah (Yahsat / coalition teleport) — Al Ain, UAE.
     - id: GS-GULF
       kind: ground_station
-      location: {lat_deg: 25.0, lon_deg: 55.0, alt_m: 0.0}
+      location: {lat_deg: 24.21, lon_deg: 55.74, alt_m: 0.0}
       elevation_mask_deg: 5.0
   red_forces:
+    # RED-MOBILE-JAM-1 = Bandar Abbas (Iranian Navy HQ, EW-equipped vessels), Strait of Hormuz.
     - id: RED-MOBILE-JAM-1
       kind: jammer
-      location: {lat_deg: 27.0, lon_deg: 56.0}        # near Hormuz, mobile
+      location: {lat_deg: 27.13, lon_deg: 56.21}
       elevation_mask_deg: 0.0
+    # RED-MOBILE-JAM-2 = Isfahan area (IRGC inland EW position).
     - id: RED-MOBILE-JAM-2
       kind: jammer
-      location: {lat_deg: 29.5, lon_deg: 52.5}        # inland backup
+      location: {lat_deg: 32.65, lon_deg: 51.67}
       elevation_mask_deg: 0.0
   sensors:
-    - {id: BLUE-RADAR-GULF, owner: blue, kind: ground_radar, location: {lat_deg: 25.0, lon_deg: 55.0}}
+    # BLUE-RADAR-GULF = Al Yah teleport SDA (co-located coalition radar, notional).
+    - {id: BLUE-RADAR-GULF, owner: blue, kind: ground_radar, location: {lat_deg: 24.21, lon_deg: 55.74}}
   objectives:
     blue:
       - {id: pnt_op, desc: "PNT operational at end of window",

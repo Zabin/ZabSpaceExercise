@@ -10,15 +10,17 @@ vignette:
   estimated_duration_min: 120
   start_epoch_utc: "2030-03-15T06:00:00Z"
   blue_forces:
+    # ISR-EO-1: raan chosen so the early ascending pass crosses Diego Garcia.
     - id: ISR-EO-1
       kind: satellite
-      orbit: {a_m: 6978137.0, e: 0.0, i_deg: 97.8, raan_deg: 0, argp_deg: 0, ta_deg: 0.0}
+      orbit: {a_m: 6978137.0, e: 0.0, i_deg: 97.8, raan_deg: 342, argp_deg: 0, ta_deg: 0.0}
       resources: {delta_v_ms: 80.0}
       payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
       bus_state: {power: {battery_soc: 0.9, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+    # SATCOM-1 at GEO sub-point ≈ +150° E (Western Pacific) — Taiwan theater + visible from Maui AMOS.
     - id: SATCOM-1
       kind: satellite
-      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 0, argp_deg: 0, ta_deg: 30.0}
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 60, argp_deg: 0, ta_deg: 30.0}
       cyber_posture: low
       cyber_vulnerabilities: [{vector: ground_modem, patchable: true, patched: false}]
       payload_state: {type: satcom}
@@ -27,34 +29,41 @@ vignette:
       kind: satellite
       orbit: {a_m: 26560000.0, e: 0.0, i_deg: 55.0, raan_deg: 0, argp_deg: 0, ta_deg: 0.0}
       bus_state: {power: {battery_soc: 0.95}}
+    # GS-NORTH = Al Dhafra AFB, UAE — Middle East theater Blue downlink.
     - id: GS-NORTH
       kind: ground_station
-      location: {lat_deg: 22.22, lon_deg: 92.42}
+      location: {lat_deg: 24.25, lon_deg: 54.55}
+    # GS-EAST = Andersen AFB AFSCN GTS, Guam — Western Pacific Blue downlink.
     - id: GS-EAST
       kind: ground_station
-      location: {lat_deg: 33.28, lon_deg: 89.73}
+      location: {lat_deg: 13.62, lon_deg: 144.86}
   red_forces:
+    # RED-SURF = Woody Island (Yongxing, Paracels) — PLA militarized base in the South China Sea.
     - id: RED-SURF
       kind: terrestrial_force
-      location: {lat_deg: 24.0, lon_deg: 121.0}
+      location: {lat_deg: 16.83, lon_deg: 112.34}
+    # JAM-NORTH = Bandar Abbas, Iran — Iranian Navy HQ (axis-aligned in capstone; ~430 km from Al Dhafra).
     - id: JAM-NORTH
       kind: jammer
-      location: {lat_deg: 22.22, lon_deg: 92.42}
+      location: {lat_deg: 27.13, lon_deg: 56.21}
       elevation_mask_deg: 0.0
     - id: RED-CYBER
       kind: cyber_unit
     - id: RED-INSP
       kind: satellite
-      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 0, argp_deg: 0, ta_deg: 30.6}
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 60, argp_deg: 0, ta_deg: 30.6}
       resources: {delta_v_ms: 200.0}
+    # RED-ASAT = Jiuquan SLC (SC-19 / DN-series DA-ASAT test history).
     - id: RED-ASAT
       kind: interceptor
-      location: {lat_deg: 0.0, lon_deg: 97.0}
+      location: {lat_deg: 40.96, lon_deg: 100.29}
       elevation_mask_deg: 10.0
       resources: {ammo: 1}
   sensors:
-    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 22.0, lon_deg: 92.0}}
-    - {id: BLUE-OPT, owner: blue, kind: ground_optical, location: {lat_deg: 35.0, lon_deg: 0.0}, needs_lighting: true}
+    # BLUE-RADAR = Eglin AFB AN/FPS-85 — dedicated SSN phased-array, supports Indo-Pacific custody.
+    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 30.57, lon_deg: -86.21}}
+    # BLUE-OPT = GEODSS Maui (AMOS, Haleakalā) — Pacific GEO optical SDA, sees the SATCOM-1 sub-point.
+    - {id: BLUE-OPT, owner: blue, kind: ground_optical, location: {lat_deg: 20.71, lon_deg: -156.26}, needs_lighting: true}
   objectives:
     blue:
       - {id: deliver_isr, desc: "Deliver imagery before the landing window", metric: {kind: deliver_before}}

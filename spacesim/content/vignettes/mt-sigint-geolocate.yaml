@@ -34,17 +34,20 @@ vignette:
       resources: {delta_v_ms: 40.0}
       payload_state: {type: sigint, collect_rate_per_s: 0.001}
       bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0002}}
+    # GS-MIDLAT = Vandenberg SFB (AFSCN RTS), CA — mid-latitude US downlink for SIGINT products.
     - id: GS-MIDLAT
       kind: ground_station
-      location: {lat_deg: 40.0, lon_deg: -120.0, alt_m: 0.0}
+      location: {lat_deg: 34.74, lon_deg: -120.57, alt_m: 0.0}
       elevation_mask_deg: 5.0
   red_forces:
-    - id: RED-EMITTER                              # the SIGINT target
+    # RED-EMITTER = notional PLAN naval emitter near Yulin Naval Base (Hainan).
+    - id: RED-EMITTER
       kind: ground_station
-      location: {lat_deg: 25.0, lon_deg: 140.0}
+      location: {lat_deg: 18.23, lon_deg: 109.70}
       elevation_mask_deg: 0.0
   sensors:
-    - {id: BLUE-OPTICAL, owner: blue, kind: ground_optical, location: {lat_deg: 35.0, lon_deg: -115.0}, needs_lighting: true}
+    # BLUE-OPTICAL = GEODSS Det 1 (Socorro, White Sands NM) — optical SDA for constellation custody.
+    - {id: BLUE-OPTICAL, owner: blue, kind: ground_optical, location: {lat_deg: 33.82, lon_deg: -106.66}, needs_lighting: true}
   objectives:
     blue:
       - {id: characterize_emitter, desc: "Build characterized track on RED-EMITTER",

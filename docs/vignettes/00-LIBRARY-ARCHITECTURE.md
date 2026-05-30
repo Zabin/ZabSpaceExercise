@@ -189,6 +189,10 @@ When adding a vignette, follow these rules (encoded in the loader + tests):
    per-cell step scripts (≥5 steps each) drives the manual walkthrough renderer.
 6. **Coordinate naming convention.** IDs use kebab-case; asset IDs use ALL-CAPS-WITH-HYPHENS;
    the prefix on the vignette ID indicates the track (`mt-`, `coa-`, `learn-`, `nv-`).
+7. **Realistic ground placement.** Ground stations, jammers, DA-ASAT sites, and sensors must use
+   real-world coordinates from open sources — see [GROUND-INFRASTRUCTURE](GROUND-INFRASTRUCTURE.md).
+   Validated by `test_vignette_library.test_known_site_coords_match_canonical` and the
+   "no origin / no ocean dead-zone" sanity tests.
 
 ---
 
