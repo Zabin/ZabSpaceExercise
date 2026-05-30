@@ -396,6 +396,21 @@ async function refresh() {
   renderFleet(assets, alarmCount, now);
   $("tracks").querySelector("tbody").innerHTML = tracks.map((t) =>
     `<tr><td>${t.object}</td><td>${(+t.confidence).toFixed(2)}</td><td>${t.characterized}</td><td>${t.classification}</td></tr>`).join("");
+  // FUTURE-WORK §4 Δv-economy panel: assets with non-zero Δv reserves shown with years-of-life
+  // estimate at ~15 m/s/yr (typical LEO station-keeping budget). Helps the operator weigh
+  // maneuver decisions against lifetime cost.
+  const dv = $("deltav"); if (dv) {
+    const rows = assets.filter((a) => a.resources && a.resources.delta_v_ms > 0).map((a) => {
+      const dvms = +a.resources.delta_v_ms;
+      const years = (dvms / 15).toFixed(1);
+      const soc = a.bus_state ? Math.round(a.bus_state.power.battery_soc * 100) + "%" : "—";
+      const tip = `<span data-asset-ref="${a.id}">${a.id}</span>`;
+      const lifeClass = dvms < 15 ? "red" : (dvms < 45 ? "yellow" : "green");
+      return `<tr><td>${tip}</td><td>${dvms.toFixed(1)}</td><td>${soc}</td><td class="${lifeClass}">${years}</td></tr>`;
+    });
+    dv.querySelector("tbody").innerHTML = rows.length ? rows.join("")
+      : "<tr><td colspan=4 class='muted'>(no maneuver-capable assets)</td></tr>";
+  }
   $("effects").innerHTML = effects.map((e) => `<li>${e.target}: ${e.symptom} ${e.attributed ? "(attributed)" : "(source unknown)"}</li>`).join("");
   $("messages").innerHTML = messages.map((m) => `<li>${m.text}</li>`).join("");
   $("objectives").textContent = JSON.stringify(objectives, null, 2);
@@ -967,9 +982,10 @@ function refreshAarLinks() {
   if (csv && SID) csv.href = `/api/sessions/${SID}/aar/export.csv`;
   if (js && SID) js.href = `/api/sessions/${SID}/aar/export.json`;
 }
-// Re-render playbooks/bookmarks whenever the vignette selection changes.
+// Re-render playbooks/bookmarks/branches whenever the vignette selection changes.
 addEventListener("DOMContentLoaded", () => {
-  const v = $("vignette"); if (v) v.addEventListener("change", () => { renderPlaybooks(); renderBookmarks(); });
+  const v = $("vignette"); if (v) v.addEventListener("change", () => { renderPlaybooks(); renderBookmarks(); renderBranches(); });
+  renderBranches();
 });
 
 // §10.B.6 — Command palette (Cmd-K / Ctrl-K). Fuzzy menu over assets, time-advances, cells, injects.
@@ -1124,6 +1140,51 @@ addEventListener("DOMContentLoaded", () => {
   $("coachmark-next").addEventListener("click", () => { if (++COACH_I >= COACH_STEPS.length) coachClose(); else coachShow(); });
   $("coachmark-back").addEventListener("click", () => { if (--COACH_I < 0) COACH_I = 0; coachShow(); });
   $("coachmark-close").addEventListener("click", coachClose);
+});
+
+// FUTURE-WORK §9 — Replay branches. Save the current AAR report as a named branch (localStorage,
+// scoped by vignette), then compare two branches client-side using the same diff shape that
+// session/aar.py compare_branches() returns (events_a/b + objective flips).
+function brKey() { const v = $("vignette")?.value; return "branches:" + (v || "default"); }
+function brList() { try { return JSON.parse(localStorage.getItem(brKey()) || "[]"); } catch { return []; } }
+function brSave(items) { localStorage.setItem(brKey(), JSON.stringify(items)); renderBranches(); }
+function renderBranches() {
+  const div = $("branch-list"); if (!div) return;
+  const items = brList();
+  if (!items.length) { div.className = "bookmark-list muted"; div.textContent = "(no branches)"; return; }
+  div.className = "bookmark-list";
+  div.innerHTML = items.map((b, i) =>
+    `<span class="bookmark-chip" data-i="${i}"><input type="checkbox" data-i="${i}" />${b.name} <span class="muted">${b.report.n_events} events</span><span class="x" data-del="${i}">✕</span></span>`).join("");
+  div.querySelectorAll(".x").forEach((x) => x.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const items = brList(); items.splice(+e.target.dataset.del, 1); brSave(items);
+  }));
+}
+function compareBranches() {
+  const checked = [...document.querySelectorAll("#branch-list input[type=checkbox]:checked")].map((c) => +c.dataset.i);
+  const items = brList();
+  if (checked.length !== 2) { $("branch-diff").textContent = "(select exactly 2 branches)"; return; }
+  const a = items[checked[0]].report, b = items[checked[1]].report;
+  const flips = {};
+  for (const side of ["blue", "red"]) {
+    const ao = (a.final_objectives || {})[side] || {}, bo = (b.final_objectives || {})[side] || {};
+    for (const oid of new Set([...Object.keys(ao), ...Object.keys(bo)])) {
+      if (ao[oid] !== bo[oid]) flips[`${side}.${oid}`] = { a: ao[oid], b: bo[oid] };
+    }
+  }
+  $("branch-diff").textContent = JSON.stringify({
+    events_a: a.n_events, events_b: b.n_events, objective_flips: flips
+  }, null, 2);
+}
+addEventListener("DOMContentLoaded", () => {
+  const bs = $("branch-save"); if (bs) bs.addEventListener("click", async () => {
+    if (!SID) return;
+    const report = await api.get(`/api/sessions/${SID}/aar`).catch(() => null);
+    if (!report) return;
+    const name = prompt("Branch name:", `branch-${brList().length + 1}`); if (!name) return;
+    const items = brList(); items.push({ name, report }); brSave(items);
+  });
+  const bc = $("branch-compare"); if (bc) bc.addEventListener("click", compareBranches);
 });
 
 // §10.E.18 — Per-vignette tutorial panel. Reads the vignette's per-cell `tutorial` script and

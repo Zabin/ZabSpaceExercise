@@ -41,10 +41,12 @@ window.Graph = (function () {
       x.stroke();
     }
     // overlay trace (second parameter) — normalized so shape/correlation is visible across scales.
+    let overlayLo = null, overlayHi = null;
     if (opts2.length) {
       const ov = opts2.map((p) => p.value);
-      const olo = Math.min(...ov), ohi = Math.max(...ov), span = (ohi - olo) || 1;
-      const opy = (v) => H - 18 - (v - olo) / span * (H - 30);
+      overlayLo = Math.min(...ov); overlayHi = Math.max(...ov);
+      const span = (overlayHi - overlayLo) || 1;
+      const opy = (v) => H - 18 - (v - overlayLo) / span * (H - 30);
       x.setLineDash([1, 3]); x.strokeStyle = "#9bd3ff"; x.lineWidth = 1; x.beginPath();
       opts2.forEach((p, i) => (i ? x.lineTo(px(p.t), opy(p.value)) : x.moveTo(px(p.t), opy(p.value))));
       x.stroke();
@@ -61,6 +63,15 @@ window.Graph = (function () {
     if (gpts.length) { x.fillStyle = "rgba(159,176,192,0.7)"; x.fillText("- - nominal", legendX, 12); }
     x.fillStyle = "#9fb0c0";
     x.fillText(hi.toPrecision(3), 2, 14); x.fillText(lo.toPrecision(3), 2, H - 6);
+    // FUTURE-WORK §8 — surface the OVERLAY's true y-scale on the right edge so the operator
+    // doesn't have to guess what the normalized second trace means in absolute terms.
+    if (opts2.length && overlayHi !== null) {
+      x.fillStyle = "#9bd3ff";
+      x.textAlign = "right";
+      x.fillText(overlayHi.toPrecision(3), W - 2, 14);
+      x.fillText(overlayLo.toPrecision(3), W - 2, H - 6);
+      x.textAlign = "left";
+    }
   }
   // Tiny inline sparkline for a subsystem-card parameter row (§5.1). No axis labels.
   function spark(canvas, series, spec) {

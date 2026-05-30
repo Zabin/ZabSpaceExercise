@@ -62,6 +62,9 @@
         <button class="chip" data-filter="safed">Safed</button>
       </div>
       <table id="assets"><thead><tr><th>SOH</th><th>ID</th><th>Kind</th><th>Next</th><th>Power</th><th>Bus</th><th>⚠</th></tr></thead><tbody></tbody></table>
+      <h2>Δv reserves & lifetime</h2>
+      <table id="deltav"><thead><tr><th>Asset</th><th>Δv (m/s)</th><th>SoC</th><th>Years*</th></tr></thead><tbody></tbody></table>
+      <div class="muted" style="font-size:11px">*Years of station-keeping at ≈15 m/s/yr (typical LEO maintenance budget)</div>
       <h2>Tracks (custody)</h2>
       <table id="tracks"><thead><tr><th>Object</th><th>Conf</th><th>Char.</th><th>Class</th></tr></thead><tbody></tbody></table>
       <h2>Perceived effects</h2>
@@ -183,6 +186,10 @@
     </div>
     <h3>Bookmarks</h3>
     <div id="bookmark-list" class="bookmark-list muted">(no bookmarks)</div>
+    <h3>Branches (compare two runs)</h3>
+    <div class="ctrl"><button id="branch-save">＋ Save current branch</button><button id="branch-compare">Compare selected</button></div>
+    <div id="branch-list" class="bookmark-list muted">(no branches)</div>
+    <pre id="branch-diff" class="muted">—</pre>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:8px">
       <div><h3>Objectives at this point</h3><pre id="aar-obj">—</pre></div>
       <div><h3>Assets at this point</h3><pre id="aar-assets">—</pre></div>
