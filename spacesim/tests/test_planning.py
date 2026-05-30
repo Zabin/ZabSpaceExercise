@@ -105,3 +105,39 @@ def test_sensor_contention_serializes_tasks_onto_later_windows():
     assert first.status == "queued" and second.status == "queued"
     # A sensor does one thing at a time: the second task is pushed to a later, non-overlapping pass.
     assert second.earliest_window[0] >= first.earliest_window[1]
+
+
+def test_sensor_bookings_reconstructed_after_rewind():
+    """Bookings for executed observe events are restored from the eventlog after a rewind.
+
+    Without reconstruction, rewinding past an executed observe would clear the booking and
+    allow a second observe to be booked in the same window, violating sensor contention.
+    """
+    from spacesim.session.manager import SessionManager
+    from spacesim.content.vignette import load_vignette, build_world
+
+    vig = load_vignette("leo-isr-denial")
+    world, ctx = build_world(vig)
+    mgr = SessionManager(vig, seed=42)
+    mgr.start()
+
+    # Find a sensor owned by blue and any orbital asset to observe.
+    sid = next(s for s, sensor in mgr.world.sensors.items() if sensor.owner == "blue")
+    target = next(a for a, asset in mgr.world.assets.items() if asset.orbit is not None)
+
+    obs = Order(cell="blue", actor=sid, action="observe", target=target, params={"intent": "track"})
+    ack = mgr.issue_order("blue", obs)
+    assert ack.ok, f"observe rejected: {ack.reason}"
+    win_start, win_end = ack.earliest_window
+
+    # Advance past the observation window so the event fires and enters the eventlog.
+    mgr.sim.advance_to(win_end + 1)
+    assert any(e.kind == "execute_observe" for e in mgr.sim.eventlog.entries)
+
+    # Rewind to just before the window ended (the event is still in the kept eventlog).
+    mgr.rewind_to(win_start + 1)
+
+    # The booking must be reconstructed: the sensor should be contended for that window.
+    bookings = mgr.osys._sensor_bookings.get(sid, [])
+    assert any(b0 <= win_start and b1 >= win_end for (b0, b1) in bookings), \
+        f"booking for [{win_start}, {win_end}] not restored; got {bookings}"

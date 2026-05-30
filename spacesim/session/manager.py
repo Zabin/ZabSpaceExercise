@@ -88,6 +88,13 @@ class SessionManager:
         self.osys.world = self.sim.world
         self.osys.orders.clear()           # queued events were dropped by the rewind
         self.osys._sensor_bookings.clear()
+        # Rebuild sensor bookings from executed observe events still in the (truncated) eventlog.
+        for entry in self.sim.eventlog.entries:
+            if entry.kind == "execute_observe":
+                sid = entry.payload.get("sensor_id")
+                win_end = entry.payload.get("window_end")
+                if sid and win_end:
+                    self.osys._sensor_bookings.setdefault(sid, []).append((entry.sim_time, win_end))
         # SSN requests + bookings + in-flight counters are all gone with the rewind too.
         self.ssn.requests.clear()
         self.ssn._bookings.clear()

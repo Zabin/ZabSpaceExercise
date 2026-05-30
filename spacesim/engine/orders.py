@@ -224,6 +224,8 @@ class OrderSystem:
         if commit:
             self._sensor_bookings.setdefault(sid, []).append((win.start, win.end))
             kind, data = self._exec_payload(order, win)
+            data["sensor_id"] = sid          # persisted in eventlog for booking reconstruction
+            data["window_end"] = win.end     # on rewind/replay
             self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
     def _candidate_sensors(self, order: Order) -> list[str]:
