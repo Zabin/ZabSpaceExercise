@@ -233,7 +233,8 @@ This list is the v1 → v1.1+ TODO. When picking an item, prefer:
 4. Items in §1 (multiplayer transport) — the highest-architectural-leverage upgrade.
 
 Anything else is best gated by user demand or a paying engagement.
-##User added Future work
+
+## User added Future work
 1. orbital paths in 3D view
 2. ground traces in 2D view
 3. blue accents around headings on blue cell screens
