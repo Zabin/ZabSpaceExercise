@@ -133,6 +133,21 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
         sensor = Sensor.model_validate(spec)
         world.sensors[sensor.id] = sensor
 
+    # Enforce v1 satellite caps (build-spec/01-context-and-scope.md §3.1)
+    orbital = [a for a in world.assets.values() if a.orbit is not None]
+    if len(orbital) > 24:
+        raise ValueError(
+            f"vignette '{vignette.id}': {len(orbital)} orbital assets exceed the ≤24 satellite cap"
+        )
+    from collections import Counter
+    group_counts = Counter(a.group for a in orbital if a.group)
+    over = {g: n for g, n in group_counts.items() if n > 3}
+    if over:
+        detail = ", ".join(f"{g}={n}" for g, n in over.items())
+        raise ValueError(
+            f"vignette '{vignette.id}': constellation(s) exceed the ≤3 satellite cap: {detail}"
+        )
+
     # SSN per-cell networks (opt-in via vignette params; off by default) — `docs/SSN-DESIGN.md`.
     ssn_networks: dict = {}
     from spacesim.engine.ssn import instantiate_network as _ssn_instantiate
