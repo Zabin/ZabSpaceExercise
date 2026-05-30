@@ -49,14 +49,14 @@ window.Globe = (function () {
     for (let lon = -180; lon < 180; lon += 30) seg((t) => [t, lon], -90, 90);
     for (let lat = -60; lat <= 60; lat += 30) seg((t) => [lat, t], -180, 180);
     if (!scene) return;
-    // Own assets — color matches the active cell accent (§10.A.1).
+    // Own assets — color matches the active cell accent (§10.A.1); APP-6 shapes via Symbology (§4).
     const accent = window.cellAccent ? window.cellAccent() : "#6fcf6f";
     scene.assets.forEach((a) => {
       const p = project(a.lat_deg, a.lon_deg, (a.alt_m || 0) / 1000);
       if (!p.front) return;
       ctx.fillStyle = accent;
-      if (a.on_orbit) { ctx.beginPath(); ctx.moveTo(p.x, p.y - 5); ctx.lineTo(p.x - 5, p.y + 4); ctx.lineTo(p.x + 5, p.y + 4); ctx.closePath(); ctx.fill(); }
-      else { ctx.fillRect(p.x - 4, p.y - 4, 8, 8); }
+      if (window.Symbology) Symbology.draw(ctx, p.x, p.y, a, { r: 5 });
+      else { if (a.on_orbit) { ctx.beginPath(); ctx.moveTo(p.x, p.y - 5); ctx.lineTo(p.x - 5, p.y + 4); ctx.lineTo(p.x + 5, p.y + 4); ctx.closePath(); ctx.fill(); } else ctx.fillRect(p.x - 4, p.y - 4, 8, 8); }
       ctx.fillStyle = "#9fb0c0"; ctx.font = "11px monospace"; ctx.fillText(a.id, p.x + 7, p.y + 3);
     });
     // Tracks (belief) with uncertainty ring.

@@ -541,12 +541,13 @@ function drawMap() {
     window.drawTerminator(x, c, PX, PY, SCENE.sun_lat_deg, SCENE.sun_lon_deg);
   }
   // §10.A.1 — own-asset marker color tracks the active cell's accent.
+  // §4 APP-6 symbology — payload-specific shapes via Symbology.draw().
   const accent = window.cellAccent ? cellAccent() : "#6fcf6f";
   x.fillStyle = accent;
   SCENE.assets.forEach((a) => {
     const px = PX(a.lon_deg), py = PY(a.lat_deg);
-    if (a.on_orbit) { x.beginPath(); x.moveTo(px, py - 5); x.lineTo(px - 5, py + 4); x.lineTo(px + 5, py + 4); x.closePath(); x.fill(); }
-    else x.fillRect(px - 4, py - 4, 8, 8);
+    if (window.Symbology) Symbology.draw(x, px, py, a, { r: 5 });
+    else { if (a.on_orbit) { x.beginPath(); x.moveTo(px, py - 5); x.lineTo(px - 5, py + 4); x.lineTo(px + 5, py + 4); x.closePath(); x.fill(); } else x.fillRect(px - 4, py - 4, 8, 8); }
     x.fillStyle = "#9fb0c0"; x.font = "11px monospace"; x.fillText(a.id, px + 7, py + 3); x.fillStyle = accent;
   });
   if (mapCam.tracks) SCENE.tracks.forEach((t) => {
