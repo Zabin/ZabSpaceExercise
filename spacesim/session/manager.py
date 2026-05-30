@@ -413,3 +413,13 @@ class SessionManager:
                     for v in asset.cyber_vulnerabilities:
                         if v.get("vector") == eff.get("vector"):
                             v["patched"] = True
+            elif kind == "gs_outage":
+                # FUTURE-WORK §10.D.15: ground-station outage (cable cut, power loss, antenna damage).
+                # The site is marked `health=degraded` so AccessProvider skips it for the inject window.
+                # `restore` clears the outage; downstream effect: order validation rejects "no_window".
+                asset = world.assets.get(eff["target"])
+                if asset is not None and getattr(asset, "kind", "") == "ground_station":
+                    asset.health = "degraded" if eff.get("restore") is not True else "nominal"
+                    world.messages.append({"to": ["white", "blue", "red"],
+                                           "text": f"{eff['target']}: outage {'cleared' if asset.health == 'nominal' else 'declared (' + eff.get('cause', 'unspecified') + ')'}",
+                                           "t": world.now})

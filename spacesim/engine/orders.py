@@ -61,9 +61,12 @@ class Order:
 
 
 def scene_from_world(world: WorldState) -> Scene:
+    # Ground stations whose health is "degraded" (gs_outage inject) are excluded — no command
+    # uplink / downlink path through them until the outage is cleared.
     return Scene(
         satellites={i: a.orbit for i, a in world.assets.items() if a.orbit is not None},
-        sites={i: a.as_ground_site() for i, a in world.assets.items() if a.location is not None},
+        sites={i: a.as_ground_site() for i, a in world.assets.items()
+               if a.location is not None and a.health != "degraded"},
         sensors=dict(world.sensors),
     )
 

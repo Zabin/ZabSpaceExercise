@@ -66,6 +66,21 @@ class AccessConfig:
     isl_max_range_m: float = 60_000e3   # max crosslink range (allows LEO<->relay geometry)
     sample_step_s: float = 20.0         # base sampling step (auto-refined for short LEO passes)
     edge_refine_s: float = 1.0          # bisection precision for window edges
+    atmospheric_refraction: bool = False  # FUTURE-WORK §10.C.13: Saemundsson bend angle on elevation
+
+
+def _refracted_elevation(h_true_deg: float) -> float:
+    """Apparent elevation with Saemundsson refraction (~0.5° lift at horizon, vanishes by ~20°).
+
+    Bennett/Saemundsson formula:  R(h) = 1.02 / tan((h + 10.3/(h + 5.11))°) arcminutes.
+    The result is added to the true elevation; only meaningful below ~10° (negligible aloft).
+    """
+    if h_true_deg < -1.0:
+        return h_true_deg          # well below horizon — refraction undefined / negligible
+    import math
+    inner = (h_true_deg + 10.3 / (h_true_deg + 5.11))
+    R_arcmin = 1.02 / math.tan(math.radians(inner))
+    return h_true_deg + R_arcmin / 60.0
 
 
 class AccessProvider:
@@ -156,10 +171,11 @@ class AccessProvider:
         return self.scene.sites[target], self.scene.satellites[actor]
 
     def _ground_sat_predicate(self, site: GroundSite, sat: OrbitState, mask_deg: float):
+        refract = self.cfg.atmospheric_refraction
         def elevation(t: int) -> float:
             r, _ = self.prop.rv(sat, t)
             el, _, _ = look_angles(site.location, r, t)
-            return el
+            return _refracted_elevation(el) if refract else el
 
         return (lambda t: elevation(t) >= mask_deg, lambda t: max(0.0, elevation(t)) / 90.0)
 

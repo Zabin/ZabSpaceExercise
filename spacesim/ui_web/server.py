@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -286,6 +287,19 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def aar_snapshot_at(sid: str, seq: Optional[int] = None) -> dict:
         _require(sid)
         return api.aar_snapshot_at(sid, seq)
+
+    @app.get("/api/sessions/{sid}/aar/export.csv", response_class=PlainTextResponse)
+    def aar_export_csv(sid: str) -> str:
+        """Download the AAR as CSV for downstream PME analysis (FUTURE-WORK §10.E.20)."""
+        from spacesim.session.aar import export_csv
+        _require(sid)
+        return export_csv(api.aar_report(sid))
+
+    @app.get("/api/sessions/{sid}/aar/export.json")
+    def aar_export_json(sid: str) -> dict:
+        """Download the AAR as JSON (FUTURE-WORK §10.E.20). Mirrors /aar but pinned filename."""
+        _require(sid)
+        return api.aar_report(sid).model_dump()
 
     @app.get("/api/sessions/{sid}/alarms/{cell}")
     def alarms(sid: str, cell: str) -> list:

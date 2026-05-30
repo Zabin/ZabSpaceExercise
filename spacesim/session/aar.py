@@ -115,3 +115,32 @@ def compare_branches(report_a: AARReport, report_b: AARReport) -> dict:
         "events_b": report_b.n_events,
         "objective_flips": flips,
     }
+
+
+def export_csv(rep: AARReport) -> str:
+    """Render an AARReport as a CSV string for downstream analysis (FUTURE-WORK §10.E.20).
+
+    Three sections, separated by blank lines:
+      META         vignette, final_time, n_events
+      TIMELINE     seq, sim_time, kind, actor, summary
+      OBJECTIVES   side, id, met
+    """
+    import csv
+    import io
+
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(["section", "key", "value"])
+    w.writerow(["META", "vignette", rep.vignette])
+    w.writerow(["META", "final_time", rep.final_time])
+    w.writerow(["META", "n_events", rep.n_events])
+    w.writerow([])
+    w.writerow(["TIMELINE", "seq", "sim_time", "kind", "actor", "summary"])
+    for e in rep.timeline:
+        w.writerow(["TIMELINE", e.seq, e.sim_time, e.kind, e.actor, e.summary])
+    w.writerow([])
+    w.writerow(["OBJECTIVES", "side", "id", "met"])
+    for side, objs in rep.final_objectives.items():
+        for oid, met in objs.items():
+            w.writerow(["OBJECTIVES", side, oid, met])
+    return buf.getvalue()
