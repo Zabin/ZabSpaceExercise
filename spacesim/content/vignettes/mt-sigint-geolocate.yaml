@@ -1,0 +1,67 @@
+vignette:
+  id: mt-sigint-geolocate
+  title: "Mission Trial: SIGINT Geolocation"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "SIGINT geolocation is multi-pass: three look angles converge a TDOA/FDOA solution."
+    - "A SIGINT sat is a passive listener — Red rarely jams it but cyber/RPO are still options."
+    - "Tasking the SIGINT payload is a sigint.task_collection verb, not isr.collect_now."
+  doctrinal_basis: [orbital_warfare]
+  red_doctrine_profile: generic
+  estimated_duration_min: 45
+  start_epoch_utc: "2030-05-12T10:00:00Z"
+  geography:
+    theater: "Open ocean; emitter of interest at sea"
+  blue_forces:
+    - id: SIGINT-1
+      kind: satellite
+      orbit: {a_m: 7178137.0, e: 0.0, i_deg: 63.4, raan_deg: 100, argp_deg: 0, ta_deg: 0.0}
+      group: SIGINT-CON
+      resources: {delta_v_ms: 40.0}
+      payload_state: {type: sigint, collect_rate_per_s: 0.001}
+      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0002}}
+    - id: SIGINT-2
+      kind: satellite
+      orbit: {a_m: 7178137.0, e: 0.0, i_deg: 63.4, raan_deg: 100, argp_deg: 0, ta_deg: 120.0}
+      group: SIGINT-CON
+      resources: {delta_v_ms: 40.0}
+      payload_state: {type: sigint, collect_rate_per_s: 0.001}
+      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0002}}
+    - id: SIGINT-3
+      kind: satellite
+      orbit: {a_m: 7178137.0, e: 0.0, i_deg: 63.4, raan_deg: 100, argp_deg: 0, ta_deg: 240.0}
+      group: SIGINT-CON
+      resources: {delta_v_ms: 40.0}
+      payload_state: {type: sigint, collect_rate_per_s: 0.001}
+      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0002}}
+    - id: GS-MIDLAT
+      kind: ground_station
+      location: {lat_deg: 40.0, lon_deg: -120.0, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+  red_forces:
+    - id: RED-EMITTER                              # the SIGINT target
+      kind: ground_station
+      location: {lat_deg: 25.0, lon_deg: 140.0}
+      elevation_mask_deg: 0.0
+  sensors:
+    - {id: BLUE-OPTICAL, owner: blue, kind: ground_optical, location: {lat_deg: 35.0, lon_deg: -115.0}, needs_lighting: true}
+  objectives:
+    blue:
+      - {id: characterize_emitter, desc: "Build characterized track on RED-EMITTER",
+         metric: {kind: characterized, side: blue, object: RED-EMITTER}}
+      - {id: preserve_constellation, desc: "All 3 SIGINT sats operational at end of window",
+         metric: {kind: asset_operational, target: SIGINT-1, by_s: 3600}}
+    red:
+      - {id: deny_characterization, desc: "Prevent Blue from characterizing the emitter",
+         metric: {kind: deny_custody, side: blue, object: RED-EMITTER, min_conf: 0.7, by_s: 3600}}
+  parameters:
+    - {id: red_ew_intensity, label: "Red EW Intensity", type: enum, options: [none, harassment, sustained, total], default: none}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: generic}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Window (s)", type: int, default: 3600}
+  injects:
+    - id: emitter_silent
+      label: "Emitter goes silent for 10 min (EMCON)"
+      trigger: {type: manual}
+      effects:
+        - {type: message, to: [blue, white], text: "RED-EMITTER ceased transmission; SIGINT passes during this window will yield nothing."}

@@ -1,0 +1,63 @@
+vignette:
+  id: coa-misc-iran-ml
+  title: "Misc ML (Iran): Regional EW Spoiler"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "Non-spacefaring adversaries still contest Blue's space-enabled operations from the ground."
+    - "Regional EW (GPS jam, SATCOM jam) is cheap, mobile, and politically deniable."
+    - "Blue cannot 'shoot the jammer' — counter is custody (SSN), shifting users, hardening."
+  doctrinal_basis: [electromagnetic_warfare]
+  red_doctrine_profile: russia_ew_first      # closest active profile that leads with EW
+  estimated_duration_min: 45
+  start_epoch_utc: "2030-11-08T12:00:00Z"
+  geography:
+    theater: "Persian Gulf / Strait of Hormuz; Blue forces operating near disputed waters"
+  blue_forces:
+    - id: BLUE-PNT
+      kind: satellite
+      orbit: {a_m: 26560000.0, e: 0.0, i_deg: 55.0, raan_deg: 60, argp_deg: 0, ta_deg: 0.0}
+      payload_state: {type: pnt}
+      bus_state: {power: {battery_soc: 0.95}}
+    - id: BLUE-SATCOM
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 50, argp_deg: 0, ta_deg: 0.0}
+      payload_state: {type: satcom}
+      bus_state: {power: {battery_soc: 0.95}}
+    - id: GS-GULF
+      kind: ground_station
+      location: {lat_deg: 25.0, lon_deg: 55.0, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+  red_forces:
+    - id: RED-MOBILE-JAM-1
+      kind: jammer
+      location: {lat_deg: 27.0, lon_deg: 56.0}        # near Hormuz, mobile
+      elevation_mask_deg: 0.0
+    - id: RED-MOBILE-JAM-2
+      kind: jammer
+      location: {lat_deg: 29.5, lon_deg: 52.5}        # inland backup
+      elevation_mask_deg: 0.0
+  sensors:
+    - {id: BLUE-RADAR-GULF, owner: blue, kind: ground_radar, location: {lat_deg: 25.0, lon_deg: 55.0}}
+  objectives:
+    blue:
+      - {id: pnt_op, desc: "PNT operational at end of window",
+         metric: {kind: asset_operational, target: BLUE-PNT, by_s: 2700}}
+      - {id: satcom_op, desc: "SATCOM operational at end of window",
+         metric: {kind: asset_operational, target: BLUE-SATCOM, by_s: 2700}}
+    red:
+      - {id: deny_pnt, desc: "Deny PNT over the gulf",
+         metric: {kind: link_denied, target: BLUE-PNT}}
+      - {id: deny_satcom, desc: "Deny SATCOM over the gulf",
+         metric: {kind: link_denied, target: BLUE-SATCOM}}
+  parameters:
+    - {id: red_ew_intensity, label: "Red EW Intensity", type: enum, options: [none, harassment, sustained, total], default: sustained}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: russia_ew_first}
+    - {id: red_kinetic_authorized, label: "Red Kinetic Authorized", type: bool, default: false}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Window (s)", type: int, default: 2700}
+  injects:
+    - id: jammer_moves
+      label: "Mobile jammer relocates (SSN custody decays)"
+      trigger: {type: manual}
+      effects:
+        - {type: message, to: [blue, white], text: "RED-MOBILE-JAM-1 has moved — last known custody is stale; request fresh SSN observation."}

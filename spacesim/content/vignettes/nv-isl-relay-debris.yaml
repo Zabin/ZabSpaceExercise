@@ -1,0 +1,64 @@
+vignette:
+  id: nv-isl-relay-debris
+  title: "Novel: ISL Relay + Debris-Corridor Maneuver"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "An asset out of LOS of any Blue ground station can still be commanded via ISL crosslink."
+    - "Debris-corridor advisories arrive as injects; Blue must plan a maneuver consuming Δv."
+    - "The ISL-relayed command path is selected automatically when it beats the ground-uplink window."
+  doctrinal_basis: [orbital_warfare]
+  red_doctrine_profile: generic
+  estimated_duration_min: 30
+  start_epoch_utc: "2030-12-04T03:00:00Z"
+  geography:
+    theater: "Single Blue ground station + two LEO ISR sats, only one in view at a time"
+  blue_forces:
+    # ISR-A is in early-pass view of GS-NORTH — direct uplink is available.
+    - id: ISR-A
+      kind: satellite
+      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 0.0}
+      group: ISR-CONST
+      isl_capable: true
+      isl_peers: [ISR-B]
+      resources: {delta_v_ms: 100.0}
+      payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
+      bus_state: {power: {battery_soc: 0.90}}
+    # ISR-B is over the far side of the Earth — no GS-NORTH window for ~40+ min; relay via ISR-A.
+    - id: ISR-B
+      kind: satellite
+      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 180.0}
+      group: ISR-CONST
+      isl_capable: true
+      isl_peers: [ISR-A]
+      resources: {delta_v_ms: 100.0}                # Δv reserves for the debris-avoidance maneuver
+      payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
+      bus_state: {power: {battery_soc: 0.90}}
+    - id: GS-NORTH
+      kind: ground_station
+      location: {lat_deg: 14.74, lon_deg: -56.54, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+  red_forces:
+    - id: RED-SDA-PASSIVE
+      kind: satellite
+      orbit: {a_m: 7000000.0, e: 0.0, i_deg: 90.0, raan_deg: 50, argp_deg: 0, ta_deg: 0.0}
+  sensors:
+    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 14.74, lon_deg: -56.54}}
+  objectives:
+    blue:
+      - {id: isr_b_survives, desc: "ISR-B survives the debris-corridor window",
+         metric: {kind: asset_survived, target: ISR-B, by_s: 1800}}
+      - {id: isr_b_op, desc: "ISR-B remains operational at end of window",
+         metric: {kind: asset_operational, target: ISR-B, by_s: 1800}}
+    red:
+      - {id: track_blue, desc: "Build custody on the ISR constellation",
+         metric: {kind: custody, side: red, object: ISR-A, min_conf: 0.5}}
+  parameters:
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: generic}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Window (s)", type: int, default: 1800}
+  injects:
+    - id: debris_advisory
+      label: "Debris-corridor advisory for ISR-B (predicted conjunction)"
+      trigger: {type: time, at_sim_s: 300}
+      effects:
+        - {type: message, to: [blue, white], text: "Conjunction advisory: ISR-B predicted within 1 km of cataloged debris in 12 min. Plan a Δv maneuver via ISL relay (ISR-A is the only Blue asset in GS-NORTH view)."}

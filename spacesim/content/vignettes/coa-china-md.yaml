@@ -1,0 +1,85 @@
+vignette:
+  id: coa-china-md
+  title: "China MD: Decisive Counterspace Strike"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "Late-crisis A2/AD finale: kinetic + RPO + cyber + EW concurrent — Blue must triage."
+    - "Decisive moment means accepting debris and political cost: kinetic is no longer reserved."
+    - "Triage is the lesson: which mission survives? Pick winners; some assets WILL be lost."
+  doctrinal_basis: [orbital_warfare, electromagnetic_warfare, cyber]
+  red_doctrine_profile: china_integrated
+  estimated_duration_min: 75
+  start_epoch_utc: "2030-10-01T06:00:00Z"
+  geography:
+    theater: "Taiwan strait + Western Pacific; decisive A2/AD phase"
+  blue_forces:
+    - id: BLUE-ISR-PRIMARY
+      kind: satellite
+      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 110, argp_deg: 0, ta_deg: 0.0}
+      resources: {delta_v_ms: 80.0}
+      payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
+      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+    - id: BLUE-SATCOM-PRIMARY
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 130, argp_deg: 0, ta_deg: 0.0}
+      cyber_posture: low
+      cyber_vulnerabilities: [{vector: ground_modem, patchable: true, patched: false}]
+      payload_state: {type: satcom}
+      bus_state: {power: {battery_soc: 0.95}}
+    - id: BLUE-PNT
+      kind: satellite
+      orbit: {a_m: 26560000.0, e: 0.0, i_deg: 55.0, raan_deg: 100, argp_deg: 0, ta_deg: 0.0}
+      payload_state: {type: pnt}
+      bus_state: {power: {battery_soc: 0.95}}
+    - id: GS-WP
+      kind: ground_station
+      location: {lat_deg: 24.0, lon_deg: 145.0, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+  red_forces:
+    - id: RED-ASAT
+      kind: interceptor
+      location: {lat_deg: 39.0, lon_deg: 112.0}      # land-based DA-ASAT site
+      elevation_mask_deg: 0.0
+      resources: {ammo: 2}                            # two interceptors in MD
+    - id: RED-SJ-INSPECTOR                            # closes BLUE-ISR-PRIMARY (LEO inspector)
+      kind: satellite
+      orbit: {a_m: 6938137.0, e: 0.0, i_deg: 51.6, raan_deg: 110, argp_deg: 0, ta_deg: 1.5}
+      resources: {delta_v_ms: 40.0}
+    - id: RED-JAM-PNT
+      kind: jammer
+      location: {lat_deg: 25.0, lon_deg: 120.0}
+      elevation_mask_deg: 0.0
+    - id: RED-CYBER
+      kind: cyber_unit
+  sensors:
+    - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 24.0, lon_deg: 145.0}}
+    - {id: BLUE-OPTICAL, owner: blue, kind: ground_optical, location: {lat_deg: 19.5, lon_deg: 155.0}, needs_lighting: true}
+  objectives:
+    blue:
+      - {id: any_isr, desc: "At least one Blue ISR product delivered",
+         metric: {kind: deliver_before, flag: imagery_delivered, by_s: 2700}}
+      - {id: pnt_op, desc: "BLUE-PNT operational",
+         metric: {kind: asset_operational, target: BLUE-PNT, by_s: 2700}}
+      - {id: satcom_op, desc: "BLUE-SATCOM-PRIMARY operational",
+         metric: {kind: asset_operational, target: BLUE-SATCOM-PRIMARY, by_s: 2700}}
+    red:
+      - {id: kill_isr, desc: "Destroy BLUE-ISR-PRIMARY",
+         metric: {kind: asset_destroyed, target: BLUE-ISR-PRIMARY}}
+      - {id: deny_pnt, desc: "Deny PNT over theater",
+         metric: {kind: link_denied, target: BLUE-PNT}}
+      - {id: safe_satcom, desc: "Drop SATCOM into safe mode",
+         metric: {kind: asset_safed, target: BLUE-SATCOM-PRIMARY}}
+  parameters:
+    - {id: red_kinetic_authorized, label: "Red Kinetic Authorized", type: bool, default: true}
+    - {id: cyber_authorized, label: "Cyber Authorized", type: bool, default: true}
+    - {id: red_ew_intensity, label: "Red EW Intensity", type: enum, options: [none, harassment, sustained, total], default: total}
+    - {id: safe_mode_susceptibility, label: "Safe-Mode Susceptibility", type: enum, options: [robust, realistic, fragile], default: realistic}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: china_integrated}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Window (s)", type: int, default: 2700}
+  injects:
+    - id: decisive_warning
+      label: "Strategic Indicator: Red has authorized kinetic strikes"
+      trigger: {type: time, at_sim_s: 120}
+      effects:
+        - {type: message, to: [blue, red, white], text: "Red leadership has authorized kinetic counterspace. Triage: not all assets will survive."}

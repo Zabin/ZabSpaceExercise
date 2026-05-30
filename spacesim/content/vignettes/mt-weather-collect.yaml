@@ -1,0 +1,54 @@
+vignette:
+  id: mt-weather-collect
+  title: "Mission Trial: Weather Collection"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "Routine weather collection is a cadence problem: SoC, eclipse, storage, and downlink timing."
+    - "Weather satellites are rarely directly targeted, but bus health still gates the mission."
+    - "Storage fills if downlinks are missed; the bus gates the payload (cannot_collect when full)."
+  doctrinal_basis: [orbital_warfare]
+  red_doctrine_profile: generic
+  estimated_duration_min: 30
+  start_epoch_utc: "2030-06-01T00:00:00Z"
+  geography:
+    theater: "Mid-latitude continental coverage; hurricane season"
+  blue_forces:
+    - id: WX-1
+      kind: satellite
+      orbit: {a_m: 7178137.0, e: 0.0, i_deg: 98.7, raan_deg: 0, argp_deg: 0, ta_deg: 0.0}
+      resources: {delta_v_ms: 30.0}
+      payload_state: {type: weather, collect_rate_per_s: 0.003}
+      bus_state: {power: {battery_soc: 0.80, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+    - id: GS-WX-PRIMARY
+      kind: ground_station
+      location: {lat_deg: 38.0, lon_deg: -77.0, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+    - id: GS-WX-BACKUP
+      kind: ground_station
+      location: {lat_deg: 64.0, lon_deg: -147.0, alt_m: 0.0}     # polar — gets more passes
+      elevation_mask_deg: 5.0
+  red_forces:
+    - id: RED-SDA-PASSIVE                          # red doctrine = generic, so this just builds tracks
+      kind: satellite
+      orbit: {a_m: 7000000.0, e: 0.0, i_deg: 90.0, raan_deg: 50, argp_deg: 0, ta_deg: 0.0}
+  sensors:
+    - {id: BLUE-WX-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 38.0, lon_deg: -77.0}}
+  objectives:
+    blue:
+      - {id: deliver_wx, desc: "Deliver at least one weather product per orbit cycle",
+         metric: {kind: deliver_before, flag: imagery_delivered, by_s: 3600}}
+      - {id: wx_op, desc: "WX-1 operational at end of window",
+         metric: {kind: asset_operational, target: WX-1, by_s: 3600}}
+    red:
+      - {id: track_blue, desc: "Build custody on WX-1 (passive surveillance)",
+         metric: {kind: custody, side: red, object: WX-1, min_conf: 0.5}}
+  parameters:
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: generic}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Window (s)", type: int, default: 3600}
+  injects:
+    - id: hurricane_advisory
+      label: "Hurricane forming; surge collection requested"
+      trigger: {type: time, at_sim_s: 900}
+      effects:
+        - {type: message, to: [blue, white], text: "Tropical cyclone in formation; joint commander requests surge collection cadence over the basin."}
