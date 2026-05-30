@@ -970,3 +970,82 @@ function refreshAarLinks() {
 addEventListener("DOMContentLoaded", () => {
   const v = $("vignette"); if (v) v.addEventListener("change", () => { renderPlaybooks(); renderBookmarks(); });
 });
+
+// §10.B.6 — Command palette (Cmd-K / Ctrl-K). Fuzzy menu over assets, time-advances, cells, injects.
+const PALETTE = {
+  // Each entry: {label, tag, run: fn}
+  items: () => {
+    const items = [];
+    items.push({ label: "switch to Blue cell",  tag: "cell",  run: () => setCell("blue") });
+    items.push({ label: "switch to Red cell",   tag: "cell",  run: () => setCell("red") });
+    items.push({ label: "switch to White cell", tag: "cell",  run: () => setCell("white") });
+    items.push({ label: "advance +1 min",       tag: "time",  run: () => stepBy(60) });
+    items.push({ label: "advance +10 min",      tag: "time",  run: () => stepBy(600) });
+    items.push({ label: "advance +1 hour",      tag: "time",  run: () => stepBy(3600) });
+    items.push({ label: "rewind to start",      tag: "time",  run: () => rewindTo(0) });
+    items.push({ label: "export AAR (CSV)",     tag: "aar",   run: () => SID && (location.href = `/api/sessions/${SID}/aar/export.csv`) });
+    items.push({ label: "export AAR (JSON)",    tag: "aar",   run: () => SID && (location.href = `/api/sessions/${SID}/aar/export.json`) });
+    items.push({ label: "toggle projector mode", tag: "view", run: () => { const cb = $("projector"); cb.checked = !cb.checked; cb.dispatchEvent(new Event("change")); }});
+    items.push({ label: "toggle cb-safe palette", tag: "view", run: () => { const cb = $("cb"); cb.checked = !cb.checked; cb.dispatchEvent(new Event("change")); }});
+    // Assets from the cell's view.
+    if (SCENE) {
+      SCENE.assets.forEach((a) => {
+        items.push({
+          label: `select asset ${a.id}`, tag: "asset",
+          run: () => { $("o-actor").value = a.id; onActorChange(); openDrill(a.id); }
+        });
+        items.push({
+          label: `focus globe on ${a.id}`, tag: "globe",
+          run: () => window.Globe && Globe.focusOn(a.id),
+        });
+      });
+    }
+    // Active injects from the white-cell dropdown.
+    const isel = $("inject-sel");
+    if (isel) [...isel.options].forEach((o) => {
+      if (o.value) items.push({ label: `fire inject ${o.value}`, tag: "inject", run: () => { isel.value = o.value; $("fire-inject").click(); } });
+    });
+    return items;
+  },
+  filter: "", cursor: 0,
+};
+
+function paletteOpen() { $("palette-wrap").classList.add("open"); $("palette-input").value = ""; PALETTE.filter = ""; PALETTE.cursor = 0; paletteRender(); $("palette-input").focus(); }
+function paletteClose() { $("palette-wrap").classList.remove("open"); }
+function paletteMatches() {
+  const q = PALETTE.filter.toLowerCase().split(/\s+/).filter(Boolean);
+  return PALETTE.items().filter((it) => q.every((t) => (it.label + " " + it.tag).toLowerCase().includes(t))).slice(0, 24);
+}
+function paletteRender() {
+  const ms = paletteMatches();
+  if (PALETTE.cursor >= ms.length) PALETTE.cursor = Math.max(0, ms.length - 1);
+  $("palette-list").innerHTML = ms.map((it, i) =>
+    `<li data-i="${i}" class="${i === PALETTE.cursor ? "active" : ""}">${it.label}<span class="tag">${it.tag}</span></li>`).join("");
+  document.querySelectorAll("#palette-list li").forEach((li) => {
+    li.addEventListener("click", () => { paletteRun(+li.dataset.i); });
+  });
+}
+function paletteRun(i) {
+  const ms = paletteMatches(); if (!ms[i]) return;
+  paletteClose(); ms[i].run();
+}
+addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+    e.preventDefault();
+    $("palette-wrap").classList.contains("open") ? paletteClose() : paletteOpen();
+    return;
+  }
+  if (!$("palette-wrap").classList.contains("open")) return;
+  if (e.key === "Escape") paletteClose();
+  else if (e.key === "ArrowDown") { e.preventDefault(); PALETTE.cursor++; paletteRender(); }
+  else if (e.key === "ArrowUp")   { e.preventDefault(); PALETTE.cursor--; paletteRender(); }
+  else if (e.key === "Enter")     { e.preventDefault(); paletteRun(PALETTE.cursor); }
+});
+addEventListener("DOMContentLoaded", () => {
+  const pin = $("palette-input"); if (pin) pin.addEventListener("input", () => { PALETTE.filter = pin.value; PALETTE.cursor = 0; paletteRender(); });
+  const wrap = $("palette-wrap"); if (wrap) wrap.addEventListener("click", (e) => { if (e.target === wrap) paletteClose(); });
+});
+
+// Helpers used by the palette (extracted from the existing toolbar handlers).
+async function stepBy(s) { if (!SID) return; await api.post(`/api/sessions/${SID}/advance`, { t: (SCENE ? SCENE.now : 0) + s * 1_000_000 }); refresh(); }
+async function rewindTo(t) { if (!SID) return; await api.post(`/api/sessions/${SID}/rewind`, { t }); refresh(); }

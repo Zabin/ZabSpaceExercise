@@ -31,6 +31,9 @@ class WorldState(BaseModel):
     messages: list[dict] = Field(default_factory=list)       # injects/alerts addressed to cells
     mission: dict = Field(default_factory=dict)              # vignette-level objective flags
     ssn_staged: dict = Field(default_factory=dict)           # SSN: rid → staged measurement at collect; popped at deliver
+    # FUTURE-WORK §10.C.11 — space-weather environmental state. severity ∈ {none, minor, severe};
+    # when active, advance_bus scales eclipse drain so fleets in eclipse degrade faster.
+    space_weather: dict = Field(default_factory=lambda: {"severity": "none"})
 
     # Generic scratch state used by the Phase-1 determinism harness.
     entities: dict[str, dict] = Field(default_factory=dict)

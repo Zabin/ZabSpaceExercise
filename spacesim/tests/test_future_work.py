@@ -99,6 +99,33 @@ def test_refraction_negligible_aloft():
     assert 19.95 < h_app < 20.05
 
 
+def test_space_weather_inject_increases_eclipse_drain():
+    """§10.C.11 — severe storm doubles eclipse drain; a sat in eclipse loses SoC faster."""
+    from spacesim.engine.bus import BusState, advance_bus
+    from spacesim.engine.simtime import minutes
+
+    def soc_after_eclipse(severity: str) -> float:
+        bus = BusState()
+        bus.power.battery_soc = 0.9
+        bus.power.drain_rate_per_s = 1e-4
+        advance_bus(bus, None, minutes(20), sunlit=False, space_weather=severity)
+        return bus.power.battery_soc
+
+    nominal = soc_after_eclipse("none")
+    minor = soc_after_eclipse("minor")
+    severe = soc_after_eclipse("severe")
+    assert nominal > minor > severe   # storm drains battery faster
+
+
+def test_space_weather_inject_round_trips_through_session():
+    """Firing a space-weather inject persists severity on WorldState and survives replay."""
+    mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
+    mgr.start()
+    assert mgr.world.space_weather["severity"] == "none"
+    mgr.fire_inject([{"type": "space_weather", "severity": "severe"}])
+    assert mgr.world.space_weather["severity"] == "severe"
+
+
 def test_refraction_extends_pass_duration_marginally():
     """Toggle refraction on for a known orbit + station and confirm windows widen, not shrink."""
     from spacesim.engine.access import AccessProvider

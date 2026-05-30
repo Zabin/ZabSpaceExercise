@@ -44,10 +44,12 @@ class BusSystem:
         return is_sunlit(r, t)
 
     def _h_tick(self, world: WorldState, payload: dict, rng) -> None:
+        sw = str(world.space_weather.get("severity", "none"))
         for asset in world.assets.values():
             if asset.bus_state is None:
                 continue
-            advance_bus(asset.bus_state, asset.payload_state, world.now, self._sunlit(world, asset, world.now))
+            advance_bus(asset.bus_state, asset.payload_state, world.now,
+                        self._sunlit(world, asset, world.now), space_weather=sw)
 
     def _h_contact(self, world: WorldState, payload: dict, rng) -> None:
         asset = world.assets.get(payload["asset"])

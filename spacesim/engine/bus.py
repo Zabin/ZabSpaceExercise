@@ -161,15 +161,18 @@ def downlink_storage(bus: BusState, fraction: float = 1.0) -> None:
     recompute_status(bus)
 
 
-def advance_bus(bus: BusState, payload: Optional[PayloadState], now: int, sunlit: bool) -> None:
+def advance_bus(bus: BusState, payload: Optional[PayloadState], now: int, sunlit: bool,
+                space_weather: str = "none") -> None:
     """Evolve the bus over the elapsed sim time: battery charge/drain and ISR storage fill.
 
-    Pure function of (state, time, lighting) — deterministic and replay-safe. ``sunlit`` is
-    supplied by the caller (computed from orbit geometry + Sun direction in busmodel.py).
+    Pure function of (state, time, lighting, environment) — deterministic and replay-safe.
+    ``sunlit`` is supplied by the caller (computed from orbit geometry + Sun direction in busmodel.py).
+    ``space_weather`` ∈ {"none", "minor", "severe"} scales eclipse drain (FUTURE-WORK §10.C.11).
     """
     dt = max(0.0, (now - bus.last_update) / 1_000_000)
     bus.power.in_eclipse = not sunlit
-    drain = bus.power.drain_rate_per_s * (0.4 if bus.power.loads_shed else 1.0)  # shed non-critical loads → slower sag
+    storm_mult = {"none": 1.0, "minor": 1.3, "severe": 2.0}.get(space_weather, 1.0)
+    drain = bus.power.drain_rate_per_s * (0.4 if bus.power.loads_shed else 1.0) * storm_mult
     charge = bus.power.charge_rate_per_s * {"fast": 1.5, "trickle": 0.5}.get(bus.power.charge_mode, 1.0)
     delta = (charge if sunlit else -drain) * dt
     bus.power.battery_soc = max(0.0, min(1.0, bus.power.battery_soc + delta))

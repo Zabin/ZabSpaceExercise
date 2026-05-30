@@ -153,6 +153,28 @@ body.cb {
 }
 .playbook-chip .x, .bookmark-chip .x { color: var(--muted); margin-left: 4px; cursor: pointer; }
 .playbook-chip:hover, .bookmark-chip:hover { background: var(--cell-accent); color: #0c1014; }
+
+/* FUTURE-WORK §10.B.6 — Command palette (Cmd-K / Ctrl-K). */
+.palette-wrap {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300;
+  display: none; align-items: flex-start; justify-content: center; padding-top: 12vh;
+}
+.palette-wrap.open { display: flex; }
+.palette {
+  width: min(640px, 90vw); background: #0d141c; border: 1px solid var(--cell-accent);
+  border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.6); padding: 8px;
+}
+.palette input {
+  width: 100%; background: #0a0f15; border: 1px solid var(--cell-accent); color: var(--text);
+  border-radius: 6px; padding: 8px 12px; font-size: 15px; outline: none;
+}
+.palette ul { list-style: none; margin: 6px 0 0; padding: 0; max-height: 50vh; overflow-y: auto; }
+.palette li {
+  padding: 7px 12px; border-radius: 5px; cursor: pointer; font-size: 13px;
+  display: flex; justify-content: space-between; gap: 12px;
+}
+.palette li.active, .palette li:hover { background: var(--cell-accent-soft); }
+.palette li .tag { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
 .recovery { margin: 6px 0; padding: 8px; border: 1px solid #5a2424; border-radius: 6px; background: #160d0d; font-size: 12px; }
 .rsteps { margin-top: 6px; color: var(--muted); }
 .rstep { white-space: nowrap; }
