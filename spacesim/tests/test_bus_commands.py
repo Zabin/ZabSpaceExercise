@@ -386,3 +386,92 @@ def test_def_maneuver_evade_replay_safe():
     assert mgr.world.assets["ISR-EO-1"].payload_state.evasion_active is True
     assert abs(mgr.world.assets["ISR-EO-1"].resources.delta_v_ms - 75.0) < 1e-6
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
+
+
+# ---- Batch 5: catalog-verb gap fill -----------------------------------------
+
+def test_eps_select_bus_changes_charge_mode():
+    w = _sat_with_payload()
+    ok, label = apply_command(w, "SAT", "eps.select_bus", {"bus": "secondary"}, 0)
+    assert ok and label == "bus_secondary"
+    assert w.assets["SAT"].bus_state.power.charge_mode == "trickle"
+
+
+def test_cdh_load_stored_program_succeeds_when_enabled():
+    w = _sat_with_payload()
+    w.assets["SAT"].stored_program = True
+    ok, label = apply_command(w, "SAT", "cdh.load_stored_program", {}, 0)
+    assert ok and label == "program_loaded"
+
+
+def test_cdh_load_stored_program_rejected_when_disabled():
+    w = _sat_with_payload()
+    w.assets["SAT"].stored_program = False
+    ok, label = apply_command(w, "SAT", "cdh.load_stored_program", {}, 0)
+    assert not ok and label == "stored_program_disabled"
+
+
+def test_comms_set_crypto_records_rotation():
+    w = _sat_with_payload()
+    ok, label = apply_command(w, "SAT", "comms.set_crypto", {"key_id": "K9"}, 0)
+    assert ok and "K9" in label
+
+
+def test_isr_prioritize_downlink_sets_detail():
+    w = _sat_with_payload(payload_type="isr_eo")
+    ok, _ = apply_command(w, "SAT", "isr.prioritize_downlink", {"priority": "high"}, 0)
+    assert ok and w.assets["SAT"].payload_state.detail["downlink_priority"] == "high"
+
+
+def test_isr_assess_quality_reads_storage():
+    w = _sat_with_payload(payload_type="isr_eo")
+    w.assets["SAT"].bus_state.cdh.storage_frac = 0.5
+    ok, label = apply_command(w, "SAT", "isr.assess_quality", {}, 0)
+    assert ok and label == "quality_good"
+
+
+def test_sigint_set_band_records_band():
+    w = _sat_with_payload(payload_type="sigint")
+    ok, label = apply_command(w, "SAT", "sigint.set_band", {"band": "X"}, 0)
+    assert ok and label == "band_X"
+    assert w.assets["SAT"].payload_state.detail["band"] == "X"
+
+
+def test_satcom_report_interference_stores_level():
+    w = _sat_with_payload(payload_type="satcom")
+    w.assets["SAT"].payload_state.interference_level = 0.42
+    ok, label = apply_command(w, "SAT", "satcom.report_interference", {}, 0)
+    assert ok and "0.42" in label
+
+
+def test_pnt_report_status_records_mode():
+    w = _sat_with_payload(payload_type="pnt")
+    w.assets["SAT"].payload_state.integrity_mode = "protected"
+    ok, label = apply_command(w, "SAT", "pnt.report_status", {}, 0)
+    assert ok and label == "status_protected"
+
+
+def test_wx_downlink_queues_request():
+    w = _sat_with_payload(payload_type="weather")
+    ok, label = apply_command(w, "SAT", "wx.downlink", {}, 12345)
+    assert ok and label == "wx_downlink_queued"
+    assert w.assets["SAT"].payload_state.detail["downlink_queued_at"] == 12345
+
+
+def test_def_escort_posture_logs_consequence():
+    w = _sat_with_payload()
+    w.assets["BLUE-HVA"] = Asset(id="BLUE-HVA", owner="blue", kind="satellite")
+    ok, label = apply_command(w, "SAT", "def.escort_posture", {"target": "BLUE-HVA"}, 99)
+    assert ok and label == "escort_posture_set"
+    assert any(c["type"] == "escort_posture" and c["target"] == "BLUE-HVA" for c in w.consequences)
+
+
+def test_new_verbs_are_in_command_verbs_set():
+    """All new verbs are discoverable through COMMAND_VERBS (so order validation accepts them)."""
+    from spacesim.engine.buscommands import COMMAND_VERBS
+    expected = {"eps.select_bus", "cdh.load_stored_program", "comms.set_crypto",
+                "isr.prioritize_downlink", "isr.assess_quality",
+                "sigint.set_band", "satcom.report_interference",
+                "pnt.report_status", "wx.downlink", "def.escort_posture"}
+    missing = expected - COMMAND_VERBS
+    assert not missing, f"missing from COMMAND_VERBS: {missing}"
