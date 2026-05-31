@@ -37,6 +37,10 @@ FB = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"
 BG = (14, 17, 22); PANEL = (20, 26, 34); BORDER = (38, 48, 64)
 TEXT = (215, 221, 227); MUTED = (159, 176, 192)
 GREEN = (111, 207, 111); YELLOW = (224, 194, 74); RED = (224, 106, 106); BLUEc = (90, 150, 230)
+# Cell-accent palette mirrors style.css body[data-cell="..."] (FW user-added #3/#4/#5).
+CELL_ACCENT = {"white": (138, 150, 173), "blue": (90, 143, 224), "red": (224, 122, 122), None: BORDER}
+# Active cell threaded by canvas() into panel() so h2 headings tint correctly per screenshot.
+_ACTIVE_CELL = [None]
 f12 = ImageFont.truetype(F, 12); f13 = ImageFont.truetype(F, 13)
 f13b = ImageFont.truetype(FB, 13); f16b = ImageFont.truetype(FB, 16)
 W, H = 1200, 720
@@ -72,21 +76,33 @@ def draw_world(d, project, maxjump=None):
 
 def canvas(cell, subtitle):
     img = Image.new("RGB", (W, H), BG); d = ImageDraw.Draw(img)
-    d.rectangle([0, 0, W, 36], fill=(17, 22, 29)); d.line([0, 36, W, 36], fill=BORDER)
-    d.text((14, 9), "Space Control & Orbital Warfare Exercise Simulator", font=f16b, fill=TEXT)
+    accent = CELL_ACCENT[cell] if cell in CELL_ACCENT else BORDER
+    _ACTIVE_CELL[0] = cell
+    d.rectangle([0, 0, W, 36], fill=(17, 22, 29))
+    # FW user-added #11/#12 — cell-accent toolbar underline (mirrors web CSS).
+    d.line([0, 36, W, 36], fill=accent, width=2)
+    # FW user-added #8 — inline-SVG logo equivalent: small Earth + orbit + sat glyph in 24×24.
+    cx, cy, r = 16, 18, 9
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(10, 20, 36), outline=accent)
+    d.ellipse([cx - r - 4, cy - 4, cx + r + 4, cy + 4], outline=accent)
+    d.polygon([(cx + r + 3, cy - 6), (cx + r, cy - 2), (cx + r + 6, cy - 2)], fill=accent)
+    d.text((34, 9), "Space Control & Orbital Warfare Exercise Simulator", font=f16b, fill=TEXT)
     d.text((W - 360, 9), "UNCLASSIFIED // TRAINING", font=f13b, fill=GREEN)
     if cell:
         chip = {"white": (90, 100, 120), "blue": (60, 110, 200), "red": (200, 80, 80)}[cell]
         d.rounded_rectangle([W - 150, 6, W - 110, 26], radius=4, fill=chip)
         d.text((W - 145, 9), cell.upper()[:3], font=f13b, fill=(255, 255, 255))
-    d.text((14, 44), subtitle, font=f13, fill=MUTED)
+    d.text((34, 44), subtitle, font=f13, fill=MUTED)
     return img, d
 
 
 def panel(d, x, y, w, h, title):
+    accent = CELL_ACCENT[_ACTIVE_CELL[0]] if _ACTIVE_CELL[0] in CELL_ACCENT else BORDER
     d.rounded_rectangle([x, y, x + w, y + h], radius=6, fill=PANEL, outline=BORDER)
-    d.text((x + 12, y + 9), title, font=f16b, fill=TEXT)
-    d.line([x + 12, y + 31, x + w - 12, y + 31], fill=BORDER)
+    # FW user-added #3/#4/#5 — left-side cell accent bar + tinted h2 underline.
+    d.line([x + 1, y + 1, x + 1, y + h - 1], fill=accent, width=3)
+    d.text((x + 12, y + 9), title, font=f16b, fill=accent)
+    d.line([x + 12, y + 31, x + w - 12, y + 31], fill=accent, width=2)
     return x + 12, y + 40
 
 
@@ -130,12 +146,27 @@ def draw_map(d, x, y, w, h, scene, title):
     def P(lon, lat):
         return mx + (lon + 180) / 360 * mw, my + (90 - lat) / 180 * mh
     draw_world(d, lambda lon, lat: P(lon, lat), maxjump=mw * 0.5)
+    # FW user-added #2 — ground tracks: dim polyline for each orbital asset's projected sub-points.
+    track_col = (110, 124, 142)
+    for a in scene.assets:
+        track = getattr(a, "track", None) or []
+        if not a.on_orbit or len(track) < 2:
+            continue
+        prev = None
+        run = []
+        for pt in track:
+            X, Y = P(pt[1], pt[0])
+            if prev is not None and abs(X - prev[0]) > mw * 0.5:
+                if len(run) > 1: d.line(run, fill=track_col)
+                run = []
+            run.append((X, Y)); prev = (X, Y)
+        if len(run) > 1: d.line(run, fill=track_col)
+    # Cell-accent for own-asset markers (matches the live UI).
+    accent = CELL_ACCENT[_ACTIVE_CELL[0]] if _ACTIVE_CELL[0] in CELL_ACCENT else GREEN
+    if accent == BORDER: accent = GREEN
     for a in scene.assets:
         px, py = P(a.lon_deg, a.lat_deg)
-        if a.on_orbit:
-            d.polygon([(px, py - 5), (px - 5, py + 4), (px + 5, py + 4)], fill=GREEN)
-        else:
-            d.rectangle([px - 4, py - 4, px + 4, py + 4], fill=GREEN)
+        _app6_marker(d, px, py, a, accent)
         d.text((px + 7, py - 5), a.id, font=f12, fill=MUTED)
     for t in scene.tracks:
         px, py = P(t.lon_deg, t.lat_deg)
@@ -144,6 +175,44 @@ def draw_map(d, x, y, w, h, scene, title):
         d.ellipse([px - r, py - r, px + r, py + r], outline=col)
         d.ellipse([px - 2, py - 2, px + 2, py + 2], fill=col)
         d.text((px + 6, py - 16), f"{t.object} ±{t.uncertainty_km}km", font=f12, fill=MUTED)
+
+
+def _app6_marker(d, px, py, a, accent):
+    """APP-6-adapted marker shapes (mirrors ui_web/static/symbology.js, FW §4)."""
+    kind = getattr(a, "kind", "satellite")
+    # Asset may not expose payload directly — best-effort sniff from the .kind enum.
+    payload = ""
+    detail = getattr(a, "id", "").lower()
+    if "satcom" in detail or "comm" in detail: payload = "satcom"
+    elif "pnt" in detail or "gnss" in detail: payload = "pnt"
+    elif "sigint" in detail: payload = "sigint"
+    elif "wx" in detail or "weath" in detail: payload = "weather"
+    elif "sda" in detail or "radar" in detail: payload = "sda"
+    r = 5
+    if kind == "ground_station":
+        d.rectangle([px - r, py - r, px + r, py + r], fill=accent); return
+    if kind == "jammer":   # 5-pt star
+        pts = []
+        for i in range(10):
+            ang = math.radians(i * 36 - 90); rr = r * (0.5 if i % 2 else 1.0)
+            pts.append((px + rr * math.cos(ang), py + rr * math.sin(ang)))
+        d.polygon(pts, fill=accent); return
+    if kind == "interceptor":
+        d.polygon([(px, py - r), (px + r, py), (px, py + r), (px - r, py)], fill=accent)
+        d.rectangle([px - 1, py - r * 2, px + 1, py - r], fill=accent); return
+    if payload == "satcom":
+        d.rectangle([px - r, py - r, px + r, py + r], fill=accent); return
+    if payload == "pnt":
+        d.polygon([(px, py - r), (px + r, py), (px, py + r), (px - r, py)], fill=accent); return
+    if payload == "sigint":
+        d.polygon([(px, py + r), (px - r, py - r * 0.8), (px + r, py - r * 0.8)], fill=accent); return
+    if payload == "weather":
+        d.ellipse([px - r, py - r, px + r, py + r], fill=accent); return
+    if payload == "sda":
+        d.rectangle([px - r, py - 1, px + r, py + 1], fill=accent)
+        d.rectangle([px - 1, py - r, px + 1, py + r], fill=accent); return
+    # Default (ISR or generic orbital): triangle.
+    d.polygon([(px, py - r), (px - r, py + r * 0.8), (px + r, py + r * 0.8)], fill=accent)
 
 
 def save(img, name, caption):
@@ -460,14 +529,28 @@ def draw_globe(img, d, x, y, w, h, scene, title, cam):
         seg(lambda t, L=lon: (t, L), -90, 90)
     for lat in range(-60, 61, 30):
         seg(lambda t, L=lat: (L, t), -180, 180)
+    # FW user-added #1 — orbital paths on the globe (own assets only).
+    accent = CELL_ACCENT[_ACTIVE_CELL[0]] if _ACTIVE_CELL[0] in CELL_ACCENT else GREEN
+    if accent == BORDER: accent = GREEN
+    track_col = (110, 124, 142)
+    for a in scene.assets:
+        track = getattr(a, "track", None) or []
+        if not a.on_orbit or len(track) < 2:
+            continue
+        prev = None
+        for pt in track:
+            px, py, fr = proj(pt[0], pt[1], (pt[2] or 0) / 1000)
+            if prev and prev[2] and fr:
+                sd.line([prev[0], prev[1], px, py], fill=track_col)
+            prev = (px, py, fr)
     for a in scene.assets:
         px, py, fr = proj(a.lat_deg, a.lon_deg, (a.alt_m or 0) / 1000)
         if not fr:
             continue
         if a.on_orbit:
-            sd.polygon([(px, py - 6), (px - 6, py + 5), (px + 6, py + 5)], fill=GREEN)
+            sd.polygon([(px, py - 6), (px - 6, py + 5), (px + 6, py + 5)], fill=accent)
         else:
-            sd.rectangle([px - 4, py - 4, px + 4, py + 4], fill=GREEN)
+            sd.rectangle([px - 4, py - 4, px + 4, py + 4], fill=accent)
         sd.text((px + 8, py - 5), a.id, font=f12, fill=(200, 214, 226))
     for t in scene.tracks:
         px, py, fr = proj(t.lat_deg, t.lon_deg, (t.alt_m or 0) / 1000)
