@@ -52,7 +52,7 @@ def world_data():
     global _WORLD
     if _WORLD is None:
         p = Path(__file__).resolve().parent.parent / "spacesim" / "ui_web" / "static" / "world.json"
-        _WORLD = json.loads(p.read_text()) if p.exists() else {"coast": [], "borders": []}
+        _WORLD = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"coast": [], "borders": []}
     return _WORLD
 
 
@@ -953,7 +953,7 @@ def write_index():
           "install a browser, so these paint the web UI's panels from genuine fog-filtered state).\n"]
     for name, cap in INDEX:
         md.append(f"- **{name}** — {cap}")
-    (OUT / "INDEX.md").write_text("\n".join(md) + "\n")
+    (OUT / "INDEX.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     print("wrote INDEX.md")
 
 

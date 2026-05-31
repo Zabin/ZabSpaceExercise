@@ -89,7 +89,7 @@ class InProcessSession:
                 self._inject_library_cache = []
             else:
                 try:
-                    doc = yaml.safe_load(path.read_text()) or {}
+                    doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
                     self._inject_library_cache = [
                         {"id": i.get("id"), "label": i.get("label", i.get("id", "")),
                          "trigger": (i.get("trigger") or {}).get("type", "manual"),

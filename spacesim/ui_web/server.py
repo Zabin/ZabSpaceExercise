@@ -137,7 +137,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Return the raw YAML of a vignette (FUTURE-WORK §10.D.17 vignette inspector)."""
         for v in api.list_vignettes():
             if v["id"] == vid:
-                return Path(v["path"]).read_text()
+                return Path(v["path"]).read_text(encoding="utf-8")
         raise HTTPException(status_code=404, detail=f"vignette {vid!r} not found")
 
     @app.post("/api/sessions")

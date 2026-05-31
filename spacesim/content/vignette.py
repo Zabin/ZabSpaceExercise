@@ -87,7 +87,7 @@ class VignetteContext:
 def list_vignettes() -> list[dict]:
     out = []
     for path in sorted(VIGNETTE_DIR.glob("*.yaml")):
-        data = yaml.safe_load(path.read_text())["vignette"]
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))["vignette"]
         out.append({"id": data["id"], "title": data.get("title", data["id"]), "path": str(path)})
     return out
 
@@ -101,12 +101,12 @@ def load_vignette(path_or_id: str) -> Vignette:
         else:  # resolve by the vignette's declared id (filenames are numbered, ids are not)
             path = None
             for p in sorted(VIGNETTE_DIR.glob("*.yaml")):
-                if yaml.safe_load(p.read_text())["vignette"]["id"] == path_or_id:
+                if yaml.safe_load(p.read_text(encoding="utf-8"))["vignette"]["id"] == path_or_id:
                     path = p
                     break
             if path is None:
                 raise FileNotFoundError(f"no vignette with id or path {path_or_id!r}")
-    data = yaml.safe_load(path.read_text())
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
     return Vignette.model_validate(data["vignette"])
 
 
