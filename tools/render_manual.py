@@ -1862,6 +1862,91 @@ def s_ref_drill():
               "UI reference §13 — Subsystem drill-down: parameter chips + nominal/overlay toggles + graph + per-verb buttons + recovery strip.")
 
 
+def s_ref_activity():
+    """Annotated screenshot of the per-cell Gantt timeline (white-cell example)."""
+    img, d = canvas("white", "UI reference — Cell activity timeline (White-cell view shows all three lanes)")
+    # Top: control row
+    cx, cy = panel(d, 12, 66, W - 24, 60, "Cell activity timeline")
+    d.text((cx, cy + 4),       "Past window: [30 min ▾]", font=f12, fill=TEXT); callout(d, cx + 80, cy + 12, 1)
+    d.text((cx + 200, cy + 4), "Future window: [2 h ▾]",   font=f12, fill=TEXT); callout(d, cx + 280, cy + 12, 2)
+    # Gantt canvas region
+    gx, gy = panel(d, 12, 144, W - 24, 240, "Gantt (past · present · scheduled)")
+    GW = W - 48; GH = 200
+    g_left = gx; g_right = gx + GW; g_top = gy; g_bot = gy + GH
+    d.rectangle([g_left, g_top, g_right, g_bot], fill=(8,12,18), outline=BORDER)
+    # X axis grid + ticks
+    for k in range(5):
+        x = g_left + (k + 1) * GW // 6
+        d.line([x, g_top, x, g_bot], fill=(28,38,52))
+        d.text((x + 2, g_top + 4), f"+{(k+1)*40}m", font=f12, fill=MUTED)
+    # NOW line
+    nowx = g_left + GW // 3
+    d.line([nowx, g_top - 6, nowx, g_bot + 6], fill=GREEN, width=2)
+    d.text((nowx - 12, g_bot + 4), "NOW", font=f12b, fill=GREEN); callout(d, nowx + 4, g_top - 12, 3)
+    # Three lanes — blue, red, neutral
+    lane_h = (GH - 8) // 3
+    lane_labels = [("BLUE", (90, 143, 224)), ("RED", (224, 122, 122)), ("NEUTRAL", (155, 170, 190))]
+    for li, (lbl, col) in enumerate(lane_labels):
+        ly = g_top + 4 + li * lane_h
+        d.rectangle([g_left, ly, g_right, ly + lane_h - 2], fill=(20, 26, 34))
+        d.text((g_left + 6, ly + 6), lbl, font=f12b, fill=col)
+    callout(d, g_left + 30, g_top + 30, 4)            # lane label
+    callout(d, g_left + 30, g_top + 30 + lane_h, 4)
+    callout(d, g_left + 30, g_top + 30 + 2 * lane_h, 4)
+
+    # Sample bars — Blue lane
+    bly = g_top + 4 + 0 * lane_h + 30
+    # executed past
+    d.rectangle([nowx - 200, bly, nowx - 130, bly + 14], fill=(90,143,224,200))
+    d.text((nowx - 195, bly + 2), "downlink", font=f12, fill=(10,15,21)); callout(d, nowx - 165, bly - 12, 5)
+    # active straddles now
+    d.rectangle([nowx - 30, bly + 22, nowx + 60, bly + 36], fill=(90,143,224,200))
+    d.rectangle([nowx - 30, bly + 22, nowx + 60, bly + 36], outline=GREEN, width=2)
+    d.text((nowx - 25, bly + 24), "observe", font=f12, fill=(10,15,21)); callout(d, nowx + 15, bly + 8, 6)
+    # queued future (dashed)
+    d.text((nowx + 100, bly + 24), "[queued: maneuver — dashed outline]", font=f12, fill=(90,143,224))
+    callout(d, nowx + 230, bly + 10, 7)
+
+    # Red lane — cancelled bar
+    rly = g_top + 4 + 1 * lane_h + 22
+    d.rectangle([nowx - 180, rly, nowx - 90, rly + 14], fill=(120,120,120,80))
+    d.line([nowx - 180, rly + 7, nowx - 90, rly + 7], fill=(180,180,180), width=1)
+    d.text((nowx - 175, rly + 2), "(cancelled)", font=f12, fill=MUTED); callout(d, nowx - 130, rly - 12, 8)
+    # Rejected marker (×)
+    d.line([nowx - 60, rly, nowx - 46, rly + 14], fill=RED, width=2)
+    d.line([nowx - 46, rly, nowx - 60, rly + 14], fill=RED, width=2)
+    callout(d, nowx - 38, rly - 12, 9)
+
+    # Neutral lane — scheduled inject marker
+    nly = g_top + 4 + 2 * lane_h + 22
+    d.rectangle([nowx + 60, nly, nowx + 130, nly + 14], outline=(155,170,190), width=1)
+    d.text((nowx + 65, nly + 2), "inject", font=f12, fill=(155,170,190)); callout(d, nowx + 95, nly - 12, 10)
+
+    # Click-to-detail line
+    d.text((gx, g_bot + 22), "Click a bar → ▼", font=f12, fill=MUTED)
+    d.rectangle([gx + 130, g_bot + 16, gx + 900, g_bot + 38], fill=(20,26,34), outline=BORDER)
+    d.text((gx + 138, g_bot + 21), "BLUE · ISR-EO-1 · observe → RED-TGT · active · 14:32:10 → 14:37:10 · ground_uplink",
+           font=f12, fill=TEXT); callout(d, gx + 500, g_bot + 8, 11)
+
+    lx, ly = panel(d, 12, 444, W - 24, 220, "Legend (`10-ui-reference.md` §15)")
+    legend(d, lx, ly, W - 48, 190, "Activity timeline controls + visual encoding", [
+        (1,  "Past window — 10 min / 30 min / 1 h / 3 h"),
+        (2,  "Future window — 30 min / 1 h / 2 h / 6 h"),
+        (3,  "NOW vertical line — bright green, marks the current sim time"),
+        (4,  "Lane label — one lane per cell (BLUE / RED / NEUTRAL).  Fog-of-war: Blue cell sees only BLUE lane; Red sees only RED; White sees all three."),
+        (5,  "Executed bar — filled cell-coloured rectangle (the past)"),
+        (6,  "Active bar — filled + bright-green outline (straddles NOW)"),
+        (7,  "Queued / scheduled bar — dashed cell-coloured outline (future)"),
+        (8,  "Cancelled bar — grey strikethrough"),
+        (9,  "Rejected order — red × marker at issued_at (no window)"),
+        (10, "Scheduled inject — dashed neutral-coloured rectangle"),
+        (11, "Click any bar → detail line shows cell · actor · action · status · window · delivery path"),
+    ])
+    save(img, "ref-15-activity.png",
+         "UI reference §15 — Cell activity timeline: per-cell Gantt of past + present + scheduled orders, "
+         "with status-encoded bars and fog-of-war filtering.")
+
+
 def s_ref_modals_keys():
     img, d = canvas(None, "UI reference — Modals, overlays, keyboard & mouse")
     # Modals legend
@@ -1950,6 +2035,7 @@ def main():
     s_ref_map()
     s_ref_aar()
     s_ref_drill()
+    s_ref_activity()
     s_ref_modals_keys()
     write_index()
 

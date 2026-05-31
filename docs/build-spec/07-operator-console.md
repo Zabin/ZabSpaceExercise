@@ -303,6 +303,7 @@ replay-identical). Verbs not listed here either remain on their existing core ac
 | Verb assistants (FW §11.A) | `POST /maneuver/compute`, `/jam/compute`, `/engage/compute`, `/cyber/compute`, `/sigint/compute` | on slider edit |
 | Conjunction panel (FW §11.C.14) | `GET /conjunctions/{cell}` + `POST /order` with `verb: prop.collision_avoid` | on tick / on action |
 | Coaching panel (FW §11.D.17) | `GET /coaching/{cell}` | on tick |
+| Cell activity Gantt | `GET /activity/{cell}?past_window_s&future_window_s` | on tick / on window-control change |
 | AAR | `GET /aar`, `/aar/at?seq=`, `/aar/objectives?seq=` | on scrub |
 | Save / resume | `GET /save`, `POST /load_save` | on action |
 
@@ -353,6 +354,36 @@ fire-by-id dropdown:
   save/resume and through AAR scrub. The HTTP body is `{inject:{effects:[…]}, at_sim_t:<µs>}`.
 - **`spawn_debris` handler** appends a `DebrisField` with `{regime, altitude_km, n_fragments}`
   to `world.debris`, raising the conjunction-screening surface for downstream planning.
+
+### 16.13.1 Cell activity Gantt timeline (per-cell, fog-respecting)
+
+A full-width Gantt panel sits between the viewers and the AAR panel, rendering **past +
+present + scheduled** activity for the active cell.  Data is server-side fog-filtered:
+
+- `cell == "white"` → three lanes (BLUE, RED, NEUTRAL).  Every order, every active effect,
+  every scheduled inject across the exercise.
+- `cell ∈ {blue, red}` → a single lane.  Only orders issued by that cell + active effects
+  on its own assets.
+
+**Status encoding** (server-computed, client-rendered):
+
+| Status | Source | Visual |
+|---|---|---|
+| `executed` | `Order.status == "executed"` | solid cell-coloured rectangle |
+| `active` | `start ≤ now ≤ end` for any queued order | solid + bright-green outline |
+| `queued` | `Order.status == "queued"` with future window | dashed cell-coloured outline |
+| `cancelled` | `Order.status == "cancelled"` | grey strikethrough |
+| `rejected` | `Order.status == "rejected"` | red `×` marker (no window) |
+| `scheduled` | `sim.scheduler.pending()` with `kind == "inject"` | dashed neutral outline |
+
+The bar's start/end span the order's `earliest_window`; rejected orders use a 60-second
+nominal marker around `issued_at`.  Clicking a bar prints
+`cell · actor · action · status · window · delivery_path` into a detail line below the canvas.
+
+Endpoint: `GET /api/sessions/{sid}/activity/{cell}?past_window_s&future_window_s`.  The
+default display window is `[NOW - 30 min, NOW + 2 h]`; selectors let the operator widen to
+`[-3 h, +6 h]`.  Read-only and replay-safe (no engine mutation), so White Cell can leave the
+panel open during scrubbing or branching without disturbing the live session.
 
 ### 16.14 Conjunction screening + coaching (FW §11.C.14 + §11.D.17 — shipped)
 

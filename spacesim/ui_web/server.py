@@ -250,6 +250,18 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.preview_consequence(sid, req.cell, req.action, req.target or "", req.params or {})
 
+    @app.get("/api/sessions/{sid}/activity/{cell}")
+    def cell_activity(sid: str, cell: str,
+                       past_window_s: int = 1800,
+                       future_window_s: int = 7200) -> dict:
+        """Cell activity Gantt feed: past + present + scheduled rows for the cell.
+
+        White sees all cells (blue / red / neutral); Blue and Red see only their own
+        orders and own-asset active effects (fog-of-war respected at this seam).
+        """
+        _require(sid)
+        return api.cell_activity(sid, cell, past_window_s, future_window_s)
+
     @app.get("/api/sessions/{sid}/coaching/{cell}")
     def coaching(sid: str, cell: str) -> list[dict]:
         """FW §11.D.17 — White-Cell coaching notes visible to this cell at world.now."""

@@ -180,6 +180,129 @@ class InProcessSession:
         except (ValueError, Exception) as exc:
             return {"error": str(exc)}
 
+    def cell_activity(self, session: str, cell: str,
+                       past_window_s: int = 1800,
+                       future_window_s: int = 7200) -> dict:
+        """Cell activity Gantt feed: past + present + scheduled activity for one cell.
+
+        Cell scope (fog-of-war):
+          - cell == "white": activity from all three cells (blue + red + neutral) in
+            separate lanes plus scheduled injects.
+          - cell == "blue" / "red": only that cell's own orders + own active effects.
+
+        Source data (engine-deterministic, read-only):
+          - osys.orders.values()        — issued orders (past, queued, cancelled, rejected)
+          - sim.scheduler.pending()     — future scheduled events (injects, deliveries)
+          - world.active_effects        — currently-active effects (start/end)
+
+        Returns:
+            {
+              now: int,                         # current sim time (µs UTC)
+              t_start: int, t_end: int,         # display window
+              cells: ["blue","red","neutral"],  # lanes present (single-cell views drop the others)
+              activities: [
+                { kind, cell, actor, action, target?, start, end, status, label }
+              ]
+            }
+        kind: "order" | "inject" | "effect"
+        status: "executed" | "queued" | "cancelled" | "rejected" | "active" | "scheduled"
+        """
+        mgr = self._sessions[session]
+        now = mgr.world.now
+        t_start = now - past_window_s * 1_000_000
+        t_end = now + future_window_s * 1_000_000
+
+        def _own_asset(actor_id: str, target_cell: str) -> bool:
+            a = mgr.world.assets.get(actor_id) or mgr.world.sensors.get(actor_id)
+            return a is not None and getattr(a, "owner", None) == target_cell
+
+        activities: list[dict] = []
+
+        # 1) Orders (past, queued, cancelled, rejected).
+        for o in mgr.osys.orders.values():
+            if cell != "white" and o.cell != cell:
+                continue
+            label = f"{o.actor} {o.action}" + (f" → {o.target}" if o.target else "")
+            if o.earliest_window is not None:
+                start, end = o.earliest_window
+            else:
+                # Cyber / rejected orders: no window. Show as a marker around issued_at.
+                start = o.issued_at or now
+                end = start + 60_000_000   # 60 s nominal marker width
+            # Skip bars completely outside the display window
+            if end < t_start or start > t_end:
+                continue
+            status = o.status
+            if status == "queued" and start <= now <= end:
+                status = "active"   # the bar straddles now → currently executing
+            activities.append({
+                "kind": "order",
+                "cell": o.cell,
+                "actor": o.actor,
+                "action": o.action,
+                "target": o.target,
+                "start": int(start),
+                "end": int(end),
+                "status": status,
+                "label": label,
+                "delivery_path": o.delivery_path,
+            })
+
+        # 2) Scheduled non-order events (injects).  Skip bus ticks and per-order execute_*
+        #    events (already represented by their order above).
+        order_tags = {o.id for o in mgr.osys.orders.values()}
+        for ev in mgr.sim.scheduler.pending():
+            if ev.kind != "inject":
+                continue
+            if ev.tag and ev.tag in order_tags:
+                continue
+            if ev.t < t_start or ev.t > t_end:
+                continue
+            ev_cell = ev.actor if ev.actor in ("blue", "red", "white", "neutral") else "white"
+            if cell != "white" and ev_cell not in (cell, "white"):
+                continue
+            n_eff = len((ev.payload or {}).get("effects", []) or [])
+            activities.append({
+                "kind": "inject",
+                "cell": ev_cell,
+                "actor": "white-cell",
+                "action": "inject",
+                "target": None,
+                "start": int(ev.t),
+                "end": int(ev.t + 60_000_000),
+                "status": "scheduled",
+                "label": f"inject ({n_eff} effects)",
+                "delivery_path": None,
+            })
+
+        # 3) Active effects — currently in progress on own assets (cell scope).
+        for eff in mgr.world.active_effects:
+            target_asset = mgr.world.assets.get(eff.target)
+            target_owner = getattr(target_asset, "owner", None)
+            if cell != "white" and target_owner != cell:
+                continue
+            if eff.end < t_start or eff.start > t_end:
+                continue
+            activities.append({
+                "kind": "effect",
+                "cell": target_owner or "neutral",
+                "actor": eff.target,
+                "action": eff.category or eff.template or "effect",
+                "target": eff.target,
+                "start": int(eff.start),
+                "end": int(eff.end),
+                "status": "active" if eff.start <= now <= eff.end else "scheduled",
+                "label": f"{eff.template or eff.category} → {eff.target} ({eff.outcome})",
+                "delivery_path": None,
+            })
+
+        # Sort by start time so the renderer can stack bars deterministically.
+        activities.sort(key=lambda a: (a["cell"], a["start"], a["actor"]))
+
+        cells = ["blue", "red", "neutral"] if cell == "white" else [cell]
+        return {"now": now, "t_start": t_start, "t_end": t_end,
+                "cells": cells, "activities": activities}
+
     def preview_consequence(self, session: str, cell: str, action: str, target: str,
                               params: dict) -> dict:
         """Estimate the political-cost / escalation risk of an action *before* commit.

@@ -360,6 +360,36 @@
     </div>
   </section>
 
+  <!-- Per-cell activity Gantt timeline (past / present / scheduled).
+       Fog-of-war: White sees all three cells; Blue/Red see only their own. -->
+  <section class="panel" id="activity-panel" style="margin:0 12px 14px">
+    <h2>Cell activity timeline — past · present · scheduled</h2>
+    <div class="ctrl" style="font-size:11px">
+      <label>Past window
+        <select id="activity-past">
+          <option value="600">10 min</option>
+          <option value="1800" selected>30 min</option>
+          <option value="3600">1 h</option>
+          <option value="10800">3 h</option>
+        </select>
+      </label>
+      <label>Future window
+        <select id="activity-future">
+          <option value="1800">30 min</option>
+          <option value="3600">1 h</option>
+          <option value="7200" selected>2 h</option>
+          <option value="21600">6 h</option>
+        </select>
+      </label>
+      <span class="muted">Click a bar to copy its order id.</span>
+    </div>
+    <canvas id="activity-canvas" width="1176" height="160" style="display:block;width:100%;margin-top:6px;background:#070b10;border:1px solid var(--border)"></canvas>
+    <div id="activity-legend" class="muted" style="font-size:11px;margin-top:4px">
+      Status colours: ▮ executed · ▮ active (straddles now) · ▮ queued · ▮ scheduled · ▮ cancelled · ✗ rejected
+    </div>
+    <pre id="activity-detail" class="muted" style="font-size:11px;margin-top:4px;min-height:14px">—</pre>
+  </section>
+
   <section class="panel" id="aar-panel" style="margin:0 12px 14px">
     <h2>After-action review — scrub the deterministic timeline</h2>
     <div class="ctrl">

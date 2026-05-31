@@ -27,6 +27,7 @@ per cell, server-side.
 | `GET /api/sessions/{sid}/windows/{cell}/{asset}` | Upcoming passes (pass-timeline ribbon — cmd/tlm/obs lanes) |
 | `GET /api/sessions/{sid}/conjunctions/{cell}` | Upcoming close approaches (filtered by ownership) |
 | `GET /api/sessions/{sid}/coaching/{cell}` | Coaching notes from `vignette.coaching` due-now for this cell |
+| `GET /api/sessions/{sid}/activity/{cell}?past_window_s&future_window_s` | Per-cell Gantt feed (past · present · scheduled). White=all cells; Blue/Red=own only |
 | `GET /api/sessions/{sid}/injects` | List the vignette's injects |
 | `POST /api/sessions/{sid}/force/tle` `{id, owner, line1, line2}` | Add a real satellite by TLE |
 | `POST /api/sessions/{sid}/red_step` | AI-Red issues one doctrine round |

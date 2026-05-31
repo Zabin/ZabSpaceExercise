@@ -26,6 +26,7 @@ module is the reference.
 | §10.12 | After-action review (AAR) | [`ref-12-aar.png`](../manual/ref-12-aar.png) |
 | §10.13 | Subsystem drill-down | [`ref-13-drill.png`](../manual/ref-13-drill.png) |
 | §10.14 | Modals, keyboard & mouse | [`ref-14-modals-keys.png`](../manual/ref-14-modals-keys.png) |
+| §10.15 | Cell activity timeline | [`ref-15-activity.png`](../manual/ref-15-activity.png) |
 
 ---
 
@@ -325,6 +326,67 @@ log under the graph is read-only.
 | 3D globe canvas | Drag = rotate · wheel = zoom |
 | AAR scrubber | Drag the slider thumb to scrub event-by-event |
 | Fleet row | Click = open drill-down · shift+click = batch toggle |
+
+---
+
+### 10.15 Cell activity timeline (per-cell Gantt — past · present · scheduled)
+
+![Activity timeline reference](../manual/ref-15-activity.png)
+
+Each cell gets a Gantt-style ribbon showing what *that* cell has done, is doing, and has
+scheduled. **Fog-of-war applies at the API boundary:**
+
+- **White Cell** sees three lanes: BLUE, RED, NEUTRAL — every order, every active effect,
+  every scheduled inject.
+- **Blue Cell** sees only the BLUE lane — only its own orders and effects on its own assets.
+- **Red Cell** sees only the RED lane — same fog-of-war contract.
+
+The data feed is `GET /api/sessions/{sid}/activity/{cell}` — read-only, replay-safe, derived
+from `osys.orders`, `world.active_effects`, and `sim.scheduler.pending()`.
+
+| # | Control | Type | Effect / valid values |
+|---|---|---|---|
+| 1 | Past window | dropdown | **10 min / 30 min / 1 h / 3 h** — how far back to show. |
+| 2 | Future window | dropdown | **30 min / 1 h / 2 h / 6 h** — how far ahead to show. |
+| 3 | NOW vertical line | read-only | Bright-green line at the current sim time. |
+| 4 | Lane label | read-only | One lane per visible cell (BLUE / RED / NEUTRAL for White; single lane for Blue or Red). |
+| 5 | Executed bar | read-only | Filled cell-coloured rectangle. The order completed during this window. |
+| 6 | Active bar | read-only | Filled + bright-green outline. The order's window straddles NOW (currently executing). |
+| 7 | Queued / scheduled bar | read-only | Dashed cell-coloured outline. The order is waiting for its window. |
+| 8 | Cancelled bar | read-only | Grey strikethrough. The order was cancelled before firing. |
+| 9 | Rejected marker | read-only | Red **×**. The order was rejected at issue (no window). |
+| 10 | Scheduled inject | read-only | Dashed neutral-coloured rectangle at the inject's `at_sim_t`. |
+| 11 | Bar click | mouse | Shows `cell · actor · action · status · window · delivery_path` in the detail line below. |
+
+Bars within a lane are stacked vertically per **actor** (asset id) so a single satellite's
+activity reads as one row; multiple satellites stack within the same cell lane.
+
+**Status semantics (engine source of truth):**
+
+| Status | Meaning | Source |
+|---|---|---|
+| `executed` | Order has fired (`Order.status == "executed"`) | `osys.orders` |
+| `active` | The bar's window contains NOW | computed at request time |
+| `queued` | Order has a future window but has not fired yet | `osys.orders` |
+| `cancelled` | Cancelled before firing (`POST /cancel`) | `osys.orders` |
+| `rejected` | Rejected at issue (`Order.status == "rejected"`) | `osys.orders` |
+| `scheduled` | Future inject in `sim.scheduler.pending()` | scheduler |
+
+**Endpoint:** `GET /api/sessions/{sid}/activity/{cell}?past_window_s=<int>&future_window_s=<int>`
+returns
+```json
+{
+  "now": <µs UTC>,
+  "t_start": <µs UTC>, "t_end": <µs UTC>,
+  "cells": ["blue", "red", "neutral"],
+  "activities": [
+    {"kind": "order"|"inject"|"effect", "cell": "blue"|"red"|"neutral",
+     "actor": "<asset id>", "action": "<verb>", "target": "<id>|null",
+     "start": <µs>, "end": <µs>, "status": "...", "label": "...",
+     "delivery_path": "<path>|null"}
+  ]
+}
+```
 
 ---
 

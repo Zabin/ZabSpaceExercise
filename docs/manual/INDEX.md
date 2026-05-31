@@ -58,4 +58,5 @@ install a browser, so these paint the web UI's panels from genuine fog-filtered 
 - **ref-11-map.png** — UI reference §11 — 2D belief map: zoom / center / map / tracks / grid / Reset + drag-to-pan + wheel-to-zoom.
 - **ref-12-aar.png** — UI reference §12 — AAR: scrubber + bookmarks + CSV/JSON download + branch save/compare.
 - **ref-13-drill.png** — UI reference §13 — Subsystem drill-down: parameter chips + nominal/overlay toggles + graph + per-verb buttons + recovery strip.
+- **ref-15-activity.png** — UI reference §15 — Cell activity timeline: per-cell Gantt of past + present + scheduled orders, with status-encoded bars and fog-of-war filtering.
 - **ref-14-modals-keys.png** — UI reference §14 — Modals & overlays + keyboard shortcuts + mouse / canvas interactions.

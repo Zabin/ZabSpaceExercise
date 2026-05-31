@@ -769,8 +769,146 @@ async function refresh() {
   refreshAAR();
   renderConjunctions();   // FW §11.C.14
   renderCoaching();       // FW §11.D.17
+  renderActivity();       // per-cell Gantt timeline
   if (TASK_MODE === "ssn") { ssnCoverage(); renderSsnQueue(CELL === "white" ? "blue" : CELL); }
 }
+
+// ---------------------------------------------------------------------------
+// Cell activity Gantt timeline (past / present / scheduled).
+// Fog-of-war is server-side: White sees all three cells, Blue/Red see only own.
+// ---------------------------------------------------------------------------
+let ACTIVITY = null;
+
+async function renderActivity() {
+  const c = $("activity-canvas"); if (!c || !SID) return;
+  const past = parseInt($("activity-past")?.value || "1800", 10);
+  const future = parseInt($("activity-future")?.value || "7200", 10);
+  let data;
+  try {
+    data = await api.get(`/api/sessions/${SID}/activity/${CELL}?past_window_s=${past}&future_window_s=${future}`);
+  } catch { return; }
+  ACTIVITY = data;
+  drawActivityGantt();
+}
+
+// Cell colour map (matches the cell-accent palette in style.css).
+const ACTIVITY_CELL_COLOR = {
+  blue:    { fill: "rgba(90,143,224,0.85)",  ring: "#5a8fe0" },
+  red:     { fill: "rgba(224,122,122,0.85)", ring: "#e07a7a" },
+  neutral: { fill: "rgba(155,170,190,0.80)", ring: "#9faabd" },
+};
+const ACTIVITY_HITBOX = [];   // populated by drawActivityGantt for click-to-detail
+
+function drawActivityGantt() {
+  const c = $("activity-canvas"); if (!c || !ACTIVITY) return;
+  const ctx = c.getContext("2d");
+  const W = c.width, H = c.height;
+  ctx.fillStyle = "#070b10"; ctx.fillRect(0, 0, W, H);
+  ACTIVITY_HITBOX.length = 0;
+
+  const { now, t_start, t_end, cells, activities } = ACTIVITY;
+  const span = Math.max(1, t_end - t_start);
+  const LEFT = 60, RIGHT = 12, TOP = 22, BOT = 18;
+  const X = (t) => LEFT + (t - t_start) / span * (W - LEFT - RIGHT);
+  // Hourly tick marks
+  ctx.strokeStyle = "#1b2531"; ctx.lineWidth = 1;
+  const oneHour = 3600 * 1_000_000;
+  const firstTick = Math.ceil(t_start / oneHour) * oneHour;
+  ctx.font = "10px monospace"; ctx.fillStyle = "#7a8aa0";
+  for (let t = firstTick; t <= t_end; t += oneHour) {
+    const x = X(t);
+    ctx.beginPath(); ctx.moveTo(x, TOP - 4); ctx.lineTo(x, H - BOT + 4); ctx.stroke();
+    ctx.fillText(iso(t).slice(11, 16), x + 2, TOP - 8);
+  }
+  // "Now" vertical line — bright green
+  const nowX = X(now);
+  ctx.strokeStyle = "#6fcf6f"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(nowX, TOP - 6); ctx.lineTo(nowX, H - BOT + 6); ctx.stroke();
+  ctx.fillStyle = "#6fcf6f"; ctx.font = "10px monospace";
+  ctx.fillText("NOW", nowX - 12, H - 4);
+
+  // Lane layout: one lane per cell.  Stack bars inside each lane vertically.
+  const laneCount = cells.length;
+  const laneH = (H - TOP - BOT) / Math.max(1, laneCount);
+  cells.forEach((cell, ci) => {
+    const yLane = TOP + ci * laneH;
+    // Lane background + label
+    ctx.fillStyle = "rgba(255,255,255,0.02)";
+    ctx.fillRect(LEFT, yLane, W - LEFT - RIGHT, laneH - 2);
+    ctx.fillStyle = ACTIVITY_CELL_COLOR[cell]?.ring || "#9faabd";
+    ctx.font = "12px monospace";
+    ctx.fillText(cell.toUpperCase(), 8, yLane + 14);
+    // Group bars by actor inside the lane → sub-rows
+    const cellRows = activities.filter((a) => a.cell === cell);
+    const actors = [...new Set(cellRows.map((a) => a.actor))];
+    actors.forEach((actor, ai) => {
+      const subY = yLane + 18 + ai * 18;
+      if (subY + 14 > yLane + laneH - 2) return;   // ran out of room
+      ctx.fillStyle = "#9faabd"; ctx.font = "10px monospace";
+      ctx.fillText(actor.slice(0, 12), 8, subY + 10);
+      cellRows.filter((a) => a.actor === actor).forEach((a) => {
+        const x0 = Math.max(LEFT, X(a.start));
+        const x1 = Math.min(W - RIGHT, X(a.end));
+        const w = Math.max(2, x1 - x0);
+        drawActivityBar(ctx, x0, subY + 2, w, 12, a, cell);
+        ACTIVITY_HITBOX.push({ x: x0, y: subY + 2, w, h: 12, a });
+      });
+    });
+  });
+}
+
+function drawActivityBar(ctx, x, y, w, h, a, cell) {
+  const col = ACTIVITY_CELL_COLOR[cell] || ACTIVITY_CELL_COLOR.neutral;
+  switch (a.status) {
+    case "executed":
+      ctx.fillStyle = col.fill; ctx.fillRect(x, y, w, h); break;
+    case "active":
+      ctx.fillStyle = col.fill; ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = "#6fcf6f"; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h); break;
+    case "queued":
+    case "scheduled":
+      ctx.strokeStyle = col.ring; ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]); ctx.strokeRect(x, y, w, h); ctx.setLineDash([]); break;
+    case "cancelled":
+      ctx.fillStyle = "rgba(120,120,120,0.30)"; ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = "rgba(180,180,180,0.6)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, y + h / 2); ctx.lineTo(x + w, y + h / 2); ctx.stroke(); break;
+    case "rejected":
+      ctx.strokeStyle = "#e06a6a"; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y); ctx.lineTo(x + w, y + h);
+      ctx.moveTo(x + w, y); ctx.lineTo(x, y + h);
+      ctx.stroke(); break;
+    default:
+      ctx.fillStyle = col.fill; ctx.fillRect(x, y, w, h);
+  }
+  // Action label inside the bar if it fits
+  if (w > 60) {
+    ctx.fillStyle = "#0a0f15"; ctx.font = "10px monospace";
+    ctx.fillText(a.action.slice(0, Math.floor(w / 7)), x + 4, y + 9);
+  }
+}
+
+// Click-to-detail: print the matched bar's metadata into #activity-detail.
+addEventListener("DOMContentLoaded", () => {
+  const c = $("activity-canvas"); if (!c) return;
+  c.addEventListener("click", (e) => {
+    const rect = c.getBoundingClientRect();
+    const scaleX = c.width / rect.width;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * (c.height / rect.height);
+    const hit = ACTIVITY_HITBOX.find((b) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
+    const el = $("activity-detail"); if (!el) return;
+    if (!hit) { el.textContent = "—"; return; }
+    const a = hit.a;
+    el.textContent = `${a.cell.toUpperCase()} · ${a.actor} · ${a.action}` +
+      (a.target ? ` → ${a.target}` : "") +
+      ` · ${a.status} · ${iso(a.start)} → ${iso(a.end)}` +
+      (a.delivery_path ? ` · ${a.delivery_path}` : "");
+  });
+  $("activity-past") && $("activity-past").addEventListener("change", renderActivity);
+  $("activity-future") && $("activity-future").addEventListener("change", renderActivity);
+});
 
 // FW §11.C.14 — conjunction screening panel.  Each entry shows the two objects,
 // range/time-to-CA, and an "Evade" button that fires the prop.collision_avoid verb.

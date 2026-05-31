@@ -76,6 +76,31 @@ Three actions open a **mode-specific assistant** with a live preview *before* th
 ![ISR beam-mode picker](../manual/36-isr-beam-modes.png)
 ![Jam preview](../manual/37-jam-preview.png)
 
+### Per-cell activity timeline (Gantt)
+
+A full-width Gantt panel between the viewers and the AAR shows **past, present, and scheduled**
+activity for the current cell. The fog-of-war contract is enforced server-side:
+
+- **White Cell** sees three lanes — BLUE, RED, NEUTRAL — every order, every active effect,
+  every scheduled inject across the exercise.
+- **Blue / Red** see only their own lane — own orders and effects on own assets.
+
+Bars are colour-coded per cell and status-coded by style:
+
+- ▮ solid filled — executed (past)
+- ▮ solid + green outline — active (window straddles NOW)
+- ▮ dashed outline — queued / scheduled (future)
+- ▮ grey strikethrough — cancelled
+- ✗ red marker — rejected at issue
+- ▮ dashed neutral — scheduled inject (from the white-cell builder)
+
+Click any bar to print `cell · actor · action · status · window · delivery_path` in the detail
+line below the canvas. Past- and future-window selectors let you zoom from 10 min back to 6 h
+ahead. See [`10-ui-reference.md §10.15`](10-ui-reference.md#1015-cell-activity-timeline-per-cell-gantt--past--present--scheduled)
+for the full control table.
+
+![Cell activity timeline](../manual/ref-15-activity.png)
+
 ### Consequence preview & conjunction screening
 
 Every order body is dry-run through `POST /preview/consequence` as the operator types: a single
