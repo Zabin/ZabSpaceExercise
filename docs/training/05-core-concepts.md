@@ -11,11 +11,27 @@ a satellite three ways and the tool picks the soonest: a **ground-station uplink
 ![ISL command planning](../manual/06-planning-isl.png)
 
 Every issued order lands in the **command queue** with its scheduled window and delivery path, and
-a queued order is **cancellable** until it uplinks. The per-asset **pass-timeline ribbon** shows
-when each upcoming command-uplink and telemetry-downlink window opens, so you can plan against
-real geometry:
+a queued order is **cancellable** until it uplinks. The per-asset **pass-timeline ribbon** now shows
+three lanes (**cmd** / **tlm** / **obs**) so you can also see when sensor-observation windows open
+against the same satellites you're trying to track:
 
 ![Command queue & pass timeline](../manual/32-command-queue.png)
+
+### Live previews before commit (consequence + verb assistants)
+
+Three patterns let you see what an order will do *before* you fire it:
+
+1. **Dry-run validity preview** — the existing green ✓ / red ✗ line under the compose form
+   ("will queue · ground_uplink · window 14:32:10").
+2. **Live consequence preview** — a second line showing **severity** (LOW/MED/HIGH), escalation
+   weight, reversibility, debris risk, and attribution. Tries to translate "what happens
+   politically" into one glance.
+3. **Verb-specific assistants** with full numeric previews — see §3.7 in the interface module.
+
+For maneuvers, the assistant accepts six entry modes; for ISR, a beam mode plus look angle; for
+jamming, a modulation/power/bandwidth set with an on-map footprint preview.
+
+![Live consequence preview](../manual/38-consequence-preview.png)
 
 ### SDA sensor tasking → custody → unlock
 You don't know the sky for free — you **task scarce sensors** to detect, track, and characterize
@@ -106,6 +122,36 @@ The AAR **scrubber** lets you drag along the event log and read the exact world 
 point (objectives, asset states, debris) — read-only, so it never disturbs the live session:
 
 ![AAR scrubber](../manual/33-aar-scrubber.png)
+
+### Conjunctions & collision avoidance
+
+`world.conjunctions` lists upcoming close approaches (range / time-to-CA) — populated either by a
+`conjunction_warning` inject (White Cell) or by future on-demand screening. The **Conjunctions**
+sidebar shows them with a per-row **Evade** button that fires the `prop.collision_avoid` verb on
+your own asset; the verb consumes a small Δv budget and queues to the next command-uplink window.
+
+![Conjunction screening](../manual/39-conjunction-panel.png)
+
+### Realism extras (`engine/perturbations.py`, `engine/sun.py`)
+
+The deterministic core ships pure-function building blocks that future or experimental
+propagators can compose on top of the moderate (Kepler+J2) baseline:
+
+- **Atmospheric drag** — `atmospheric_density()` (12-row exponential 0–1000 km),
+  `drag_acceleration()` with a rotating-atmosphere relative velocity, `secular_drag_decay()`
+  for multi-day altitude-loss estimates.
+- **Higher zonals + 3rd-body** — `j3_acceleration()`, `j4_acceleration()`,
+  `third_body_acceleration()` with `MU_SUN` / `MU_MOON` constants.
+- **Solar radiation pressure** — `srp_acceleration()` takes per-asset area, mass, reflectivity,
+  and an **eclipse fraction** so SRP fades smoothly through the penumbra.
+- **Penumbra / Earth shadow** — `sun.eclipse_fraction()` returns `[0, 1]` with linear
+  umbra↔penumbra interpolation; the legacy binary `is_sunlit()` is retained.
+- **Thermal model** — `ThermalState` carries `temp_c`, `temp_low_c/high_c`, `heater_watts`,
+  `radiator_capacity_w`, `survival_trigger_minutes` so future bus models can drive temperature
+  off real heating/cooling inputs.
+
+All of these are read-only helpers today; they make the high-fidelity propagator seam
+(`HighFidelityPropagator` stub) cheap to fill in later.
 
 ### Save & resume
 **Save** (toolbar) writes a complete snapshot — history, the order queue, and pending events — to a

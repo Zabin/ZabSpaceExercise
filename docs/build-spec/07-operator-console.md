@@ -130,6 +130,49 @@ currently `engage` ("kinetic, debris-generating; political cost HIGH") and `cybe
 but escalatory; ROE-gated; re-safe risk"). The form refuses to post without an explicit
 acknowledgement.
 
+**Live consequence preview** (FW §11.D.18, shipped). A second `#consequence-preview` line lives
+under the validity preview and updates as the operator types. It calls
+`POST /preview/consequence` with the full Order body and returns
+`{severity, escalation_w, reversible, debris_risk, attribution, civilian_risk, notes}`. The
+client styles the line by severity (`low` muted, `medium` yellow, `high` red); civilian-target
+denial automatically bumps severity by one tier. The preview is advisory — final ROE gating
+remains server-side.
+
+#### 16.6.1 Verb-specific composition assistants (FW §11.A — shipped)
+
+For complex verbs the compose form switches in a mode-specific assistant with a live preview
+*before* the order is queued. All previews are read-only — they call a `/compute` endpoint on the
+session API, never mutate state, and pre-fill `o-params` only when the operator clicks **Issue**.
+
+- **`maneuver`** — six entry modes (ECI / LVLH / finite_burn / target_coe / hohmann /
+  plane_change) backed by `engine/maneuver.py`. The preview returns
+  `{dv, cost, new_orbit, second_burn?, duration_s?}`; the UI shows Δv, the new-orbit elements,
+  and the second-burn line where Hohmann applies.
+- **`observe`** (ISR) — beam-mode picker for EO/SAR/SDA with a 0–45° look-angle slider and a
+  per-pass duration. Backed by `engine/isr.py` (`BEAM_MODES` table). Effective gain =
+  `base × gain_factor × cos(look)`; SoC drain = `power_factor × duration / 300 s`. A
+  4-corner footprint polygon stores on the resulting `Track.last_footprint` and renders dashed
+  teal on the 2-D map after the collection window fires.
+- **`jam`** — modulation × power × bandwidth picker backed by `engine/jam.py`. Posts to
+  `POST /jam/compute` for a live `{modulation, power_w, effective_radius_km, footprint_polygon,
+  success_prob, detectability, attribution_default, power_draw_w, center}` preview; the orange
+  dashed footprint renders on the 2-D map until the operator changes action.
+- **`engage`** — `POST /engage/compute` returns `{closing_geometry, salvo_n, interceptor_dv_ms,
+  kill_probability, debris}`. Operator picks salvo and interceptor Δv.
+- **`cyber`** — `POST /cyber/compute` returns `{vector, payload, target_posture, success_prob,
+  detect_prob, attribution_default, reversible, escalation_weight, intended_outcome, patchable,
+  min_persistence_h}` derived from `engine/cyber.py`'s `VECTORS × PAYLOADS` database.
+- **`sigint`** — `POST /sigint/compute` returns expected geolocation error scaling by
+  `√dwell × √N collectors × atmospheric loss`.
+
+#### 16.6.2 Multi-asset batch (FW §11.C.13 — shipped)
+
+The `#batch-bar` carries the legacy shift-click batch (asset rows toggle into the batch set) plus
+four fleet-subset helpers: **All own**, **ISR sats**, **SATCOM**, **Same group**. Each
+predicate-fills the batch from `ASSETS` filtered by `owner == active cell` and the helper's
+condition (`payload startswith "isr"`, `payload == "satcom"`, or `group ==` the actor's group).
+The existing **Issue to all** path then posts the current compose body once per batched asset.
+
 ### 16.7 Tasking rail and safe-mode recovery strip
 
 The **tasking rail** is its own panel with `Intent` (Search / Track / Characterize / Cue) +
@@ -254,7 +297,12 @@ replay-identical). Verbs not listed here either remain on their existing core ac
 | Alarm feed | `GET /alarms/{cell}` | on tick |
 | Recovery strip | `GET /recovery/{cell}/{asset}`, `POST /recovery/{cell}/{asset}` | on safe-mode + on action |
 | Objectives / event log | `GET /objectives`, `/eventlog` | on tick |
-| White control panel | `POST /param`, `/start`, time routes, `/inject`, `GET /injects` | on action |
+| White control panel | `POST /param`, `/start`, time routes, `/inject` (with `at_sim_t`), `GET /injects`, `GET /inject_library` | on action |
+| Inject builder (FW §11.D.19) | `GET /inject_library`, `POST /inject {inject:{effects:[]}, at_sim_t}` | on action |
+| Consequence preview (FW §11.D.18) | `POST /preview/consequence` | on compose edit |
+| Verb assistants (FW §11.A) | `POST /maneuver/compute`, `/jam/compute`, `/engage/compute`, `/cyber/compute`, `/sigint/compute` | on slider edit |
+| Conjunction panel (FW §11.C.14) | `GET /conjunctions/{cell}` + `POST /order` with `verb: prop.collision_avoid` | on tick / on action |
+| Coaching panel (FW §11.D.17) | `GET /coaching/{cell}` | on tick |
 | AAR | `GET /aar`, `/aar/at?seq=`, `/aar/objectives?seq=` | on scrub |
 | Save / resume | `GET /save`, `POST /load_save` | on action |
 
@@ -269,9 +317,54 @@ player cell's view) is fixed with a supersede token (`REFRESH_SEQ`).
   is usable on poor projectors and for colour-vision-deficient operators.
 - **Presentation mode.** A high-contrast, larger-type body class (`body.present`) is toggled
   from the toolbar for projector / PME use.
+- **Three persisted palette/text toggles (FW §11.D.20 — shipped):**
+  - **`cb-safe`** — Okabe-Ito colorblind-safe palette (deuteranopia + protanopia safe).
+  - **`hi-contrast`** — WCAG-AAA contrast (`body.hi-contrast`): pure black background, pure white
+    borders/text, yellow/cyan accents. Borders override to `#ffffff` site-wide for low-vision use.
+  - **`large-text`** — bumps base font to 17 px and pads buttons/inputs for projector / low-vision.
+  Each toggle persists in `localStorage` via the existing `applyToggle()` path and is also
+  exposed in the `⌘K` command palette ("toggle cb-safe palette", "toggle high-contrast mode",
+  "toggle large-text mode").
 - **Multi-display reflow.** A toolbar **Detach viewers** action pops a second window rendering
   the cell's belief scene on a slow tick — sufficient for a second-screen setup. A full
   multi-region detach with shared selection state is in `FUTURE-WORK.md` §8.
+- **Time-display block (FW user request).** The header's clock area is split into two rows:
+  the canonical **UTC** clock (everything the engine touches is UTC microseconds) and a
+  selectable **local timezone** row (Eastern default; Central / Mountain / Pacific /
+  London / Paris / Tokyo / UTC-only). The timezone selector re-renders instantly via
+  `Intl.DateTimeFormat` — no server round-trip — and the choice persists in `localStorage`.
+
+### 16.13 Inject library + builder (FW §11.D.19 — shipped)
+
+White-Cell injects gained a reusable **library** + an in-page **builder** alongside the legacy
+fire-by-id dropdown:
+
+- **Library** lives at `spacesim/content/inject_library.yaml`. Five templates ship:
+  `debris_field_500km`, `gnss_jam_regional`, `rpo_ambiguous`, `gs_outage_diego_garcia`,
+  `space_weather_severe`. Each is a valid `Inject` whose `effects` use only handlers that
+  exist in `manager._h_inject` (`message`, `reveal_asset`, `political_consequence`,
+  `patch_cyber_vuln`, `gs_outage`, `space_weather`, `conjunction_warning`, plus the new
+  `spawn_debris` handler).
+- **Builder UI** is a `<details>` panel below the Fire row: template picker → JSON editor →
+  schedule selector (**Now** / **+ seconds from now** / **Absolute UTC** — pasted from the UTC
+  clock literal) → **Schedule / fire** button → result line.
+- **Replay-safe scheduling** — `fire_inject(at_sim_t=…)` (manager) clamps past timestamps to
+  `now`, schedules future ones through `sim.scheduler` so they replay byte-identical on
+  save/resume and through AAR scrub. The HTTP body is `{inject:{effects:[…]}, at_sim_t:<µs>}`.
+- **`spawn_debris` handler** appends a `DebrisField` with `{regime, altitude_km, n_fragments}`
+  to `world.debris`, raising the conjunction-screening surface for downstream planning.
+
+### 16.14 Conjunction screening + coaching (FW §11.C.14 + §11.D.17 — shipped)
+
+- **Conjunctions sidebar** reads `GET /api/sessions/{sid}/conjunctions/{cell}` and renders one
+  row per upcoming close approach with object A / object B / range / time-to-CA. When the
+  active cell owns one of the objects, the row carries an **Evade** button that posts a
+  `command` order with `verb: prop.collision_avoid` for the owned asset. The verb consumes a
+  small Δv budget and queues to the next command-uplink window.
+- **Coaching sidebar** reads `GET /coaching/{cell}` and renders the
+  `vignette.coaching: list[{at_sim_t?, cell, title, body}]` notes whose `cell` matches the active
+  cell (or is `white` = visible to all) and whose `at_sim_t` is `None` or `≤ world.now`. Useful
+  for facilitator pointers like "discuss this delay in the AAR".
 
 ---
 

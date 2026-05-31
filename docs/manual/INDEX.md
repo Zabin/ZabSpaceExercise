@@ -37,3 +37,11 @@ install a browser, so these paint the web UI's panels from genuine fog-filtered 
 - **32-command-queue.png** — Command queue (cancellable) and the per-asset pass-timeline ribbon.
 - **33-aar-scrubber.png** — AAR timeline scrubber (state at any event) + save/resume note.
 - **34-alarms-soh.png** — Fleet SOH rollup (per-asset dot) and the alarms/event feed.
+- **35-maneuver-assistant.png** — Maneuver assistant: six entry modes (ECI, LVLH, finite burn, target COE, Hohmann, plane change) with live Δv preview before commit.
+- **36-isr-beam-modes.png** — ISR beam-mode picker: payload + mode picks swath / resolution / power / duty, with live effective gain and SOC-drain preview.
+- **37-jam-preview.png** — Jam assistant: modulation × power × bandwidth picker with effective-radius and footprint preview before commit.
+- **38-consequence-preview.png** — Live consequence preview: severity / escalation / reversibility / attribution surfaced before the operator commits.
+- **39-conjunction-panel.png** — Conjunction-screening sidebar: each row carries range, time-to-CA, and a one-click [Evade] button that fires prop.collision_avoid for the own asset.
+- **40-inject-builder.png** — White-Cell inject builder: library template picker + JSON editor + Now/+seconds/absolute-UTC scheduler with replay-safe future-dated firing.
+- **41-accessibility-toggles.png** — Accessibility palettes: standard / Okabe-Ito colorblind-safe / WCAG-AAA high-contrast, plus a large-text toggle. All persist in localStorage and are command-palette accessible.
+- **42-local-time.png** — Time-display block: UTC clock (canonical) above a selectable local-time row (Eastern default; Central/Mountain/Pacific/London/Paris/Tokyo/UTC-only options).

@@ -41,6 +41,25 @@ Grouped by capability. Each is testable; acceptance criteria in §10 map back to
   and its White-Cell dials per `12-safe-mode-loop.md`.
 
 ### 5.3 Command planning & sensor tasking (FR-P)
+
+**Plan-first composition assistants (FW §11.A — shipped).** For complex verbs the compose form
+opens a mode-specific assistant with a live read-only preview *before* the order is queued. All
+assistants call a `/compute` endpoint on the session API that mutates no state:
+
+- `maneuver` — six entry modes (ECI / LVLH / finite-burn / target-COE / Hohmann / plane-change)
+  return `{dv, cost, new_orbit, second_burn?, duration_s?}`.
+- `observe` (ISR) — beam mode × look angle × duration return effective gain + SOC drain + a
+  4-corner ground footprint stored on the resulting `Track.last_footprint`.
+- `jam` — modulation × power × bandwidth return effective denial radius + footprint polygon +
+  adjusted success probability + detectability + default attribution.
+- `engage` — closing geometry + salvo Pₖ + debris-cone estimate.
+- `cyber` — vector × payload × posture × dwell return success/detect probability + attribution.
+- `sigint` — band × intercept mode × dwell × N collectors return geolocation 1-σ error.
+
+A **live consequence preview** alongside the existing dry-run validity preview shows
+`{severity, escalation_w, reversible, debris_risk, attribution, civilian_risk}` for every order
+the operator composes (FW §11.D.18).
+
 - **FR-P1** Operators shall **plan commands** that execute at the earliest valid window (or a
   chosen future window), via **ground uplink**, **ISL relay** (when geometry/peer permit), or
   **stored program**; commands are editable/cancellable until uplink.
@@ -67,6 +86,10 @@ Grouped by capability. Each is testable; acceptance criteria in §10 map back to
 - **FR-W3** White Cell shall control **wall-clock time**: run at a selectable multiplier,
   **pause**, **fast-forward**, and **rewind** (rewind via deterministic replay).
 - **FR-W4** White Cell shall fire **injects** (scripted or manual) of the supported effect types.
+  Injects may be fired **immediately** or **scheduled for a future sim time** (`at_sim_t`); a
+  reusable **inject library** (`spacesim/content/inject_library.yaml`) provides templates the
+  facilitator can edit-then-fire from the operator console (FW §11.D.19). Future-dated injects
+  are scheduled through the deterministic event log and replay byte-identical on save/resume.
 - **FR-W5** White Cell shall set the **classification banner** (UNCLASSIFIED//EXERCISE or
   UNCLASSIFIED//TRAINING), shown on every screen and exported file.
 - **FR-W6** White Cell shall have a **god-view** (ground truth + both cells' belief) and the

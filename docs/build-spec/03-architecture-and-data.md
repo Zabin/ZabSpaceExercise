@@ -29,6 +29,9 @@ process/network boundary without rewriting the engine.
 │  - Clock  - World state (ground truth)  - per-cell TrackCatalog │
 │  - Propagator*  - AccessProvider*  - EffectResolver*  (*seams)  │
 │  - BusModel / PayloadModel  - SafeModeModel  - Scheduler        │
+│  - Verb-preview helpers (pure, read-only):                      │
+│      maneuver.py · isr.py · jam.py · engage.py · cyber.py       │
+│      sigint.py · perturbations.py · sun.eclipse_fraction        │
 ├─────────────────────────────────────────────────────────────┤
 │  Content & data                                                │
 │  - Vignette JSON   - asset/effect/sensor templates (YAML/JSON) │

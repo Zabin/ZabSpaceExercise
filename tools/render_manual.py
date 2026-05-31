@@ -929,6 +929,300 @@ def write_index():
     print("wrote INDEX.md")
 
 
+def s_maneuver_assistant():
+    """FW §11.A — Maneuver mode assistant (six entry modes with live Δv preview)."""
+    img, d = canvas("blue", "Maneuver mode assistant — six entry modes with live Δv preview")
+    mx, my = panel(d, 12, 66, 580, 360, "Maneuver mode picker")
+    rows = [
+        [("eci",          BLUEc), ("Δv [x, y, z] in ECI (m/s)",                 TEXT)],
+        [("lvlh",         BLUEc), ("Radial / Along-track / Normal frame",       TEXT)],
+        [("finite_burn",  BLUEc), ("Direction + magnitude + duration",          TEXT)],
+        [("target_coe",   BLUEc), ("Target orbit elements (a/e/i/RAAN/ω)",      TEXT)],
+        [("hohmann",      BLUEc), ("2-burn altitude transfer (Δv₁ + Δv₂)",      TEXT)],
+        [("plane_change", BLUEc), ("Rodrigues rotation by Δi (deg)",            TEXT)],
+    ]
+    table(d, mx, my, ["MODE", "MEANING"], rows, [160, 380], lh=24)
+    px, py = panel(d, 608, 66, W - 620, 360, "Live preview (LVLH, Δv_T = 10 m/s)")
+    py = kv(d, px, py, [
+        ("Cost",          "10.000 m/s",                       GREEN),
+        ("Δv (ECI)",      "[0.000, 9.998, -0.058] m/s",        TEXT),
+        ("New orbit",     "a 6843 km · e 0.0014 · i 51.6°",   BLUEc),
+        ("Alt range",     "468–477 km (LEO)",                 MUTED),
+        ("Second burn",   "—",                                MUTED),
+    ], kw=120)
+    py += 6
+    d.text((px, py),     "POST /api/sessions/{sid}/maneuver/compute  →  read-only preview", font=f12, fill=MUTED)
+    d.text((px, py + 16), "Operator scrubs sliders → preview updates live → Issue order pre-fills dv.", font=f12, fill=MUTED)
+    save(img, "35-maneuver-assistant.png",
+         "Maneuver assistant: six entry modes (ECI, LVLH, finite burn, target COE, Hohmann, plane change) "
+         "with live Δv preview before commit.")
+
+
+def s_isr_beam_modes():
+    """FW §11.A.6 + ISR expansion — beam-mode picker with footprint preview."""
+    from spacesim.engine.isr import BEAM_MODES
+    img, d = canvas("blue", "ISR collection — beam mode + look angle + footprint preview")
+    tx, ty = panel(d, 12, 66, 700, 340, "Beam mode database (EO / SAR / SDA)")
+    rows = []
+    for ptype in ("isr_eo", "isr_sar"):
+        for mode, mp in BEAM_MODES[ptype].items():
+            rows.append([
+                (ptype.upper().replace("ISR_", ""), BLUEc),
+                (mode,                              TEXT),
+                (f"{mp['swath_km']:>5g} km",         MUTED),
+                (f"{mp['resolution_m']:>4g} m",      MUTED),
+                (f"×{mp['power_factor']:.1f}",       YELLOW),
+                (f"{int(mp['duty_cycle']*100)}%",    GREEN),
+            ])
+    table(d, tx, ty, ["PAYLOAD", "MODE", "SWATH", "RES", "POWER", "DUTY"], rows,
+          [100, 130, 100, 80, 90, 80], lh=20)
+
+    px, py = panel(d, 728, 66, W - 740, 340, "Task panel — stripmap, 15° look")
+    py = kv(d, px, py, [
+        ("Sensor",      "ISR-EO-1",       TEXT),
+        ("Beam mode",   "stripmap",       BLUEc),
+        ("Look angle",  "15°",            YELLOW),
+        ("Duration",    "300 s",          TEXT),
+        ("Eff. gain",   "0.97",           GREEN),
+        ("SOC drain",   "0.058",          MUTED),
+    ], kw=110)
+    py += 8
+    d.text((px, py),     "Footprint polygon (4 corners) appears on the 2-D", font=f12, fill=MUTED)
+    d.text((px, py + 16), "map after the collection window fires — dashed teal.", font=f12, fill=MUTED)
+
+    save(img, "36-isr-beam-modes.png",
+         "ISR beam-mode picker: payload + mode picks swath / resolution / power / duty, with live "
+         "effective gain and SOC-drain preview.")
+
+
+def s_jam_preview():
+    """FW §11.A.1 — Jam parameter assistant with footprint preview."""
+    img, d = canvas("blue", "Jam command — modulation × power × bandwidth → footprint preview")
+    tx, ty = panel(d, 12, 66, 480, 340, "Modulation database")
+    rows = [
+        [("barrage",   BLUEc), ("broadband noise · easy to detect",  TEXT), ("eff 1.0",  GREEN)],
+        [("spot",      BLUEc), ("narrow notch at freq_center",       TEXT), ("eff 0.95", GREEN)],
+        [("sweep",     BLUEc), ("hopping noise · agile victims",     TEXT), ("eff 0.7",  YELLOW)],
+        [("deceptive", BLUEc), ("replays victim signal · OVERT",     RED),  ("eff 1.3",  GREEN)],
+    ]
+    table(d, tx, ty, ["MOD", "DESCRIPTION", "EFF"], rows, [110, 280, 80], lh=24)
+
+    px, py = panel(d, 508, 66, W - 520, 340, "Live preview")
+    py = kv(d, px, py, [
+        ("Modulation",  "spot",        BLUEc),
+        ("Power",       "200 W",       TEXT),
+        ("Eff. radius", "75.0 km",     YELLOW),
+        ("P(success)",  "0.86",        GREEN),
+        ("Detect risk", "50%",         MUTED),
+        ("Attribution", "ambiguous",   TEXT),
+        ("Power draw",  "140 W",       MUTED),
+    ], kw=120)
+    py += 6
+    d.text((px, py),     "POST /api/sessions/{sid}/jam/compute → orange dashed", font=f12, fill=MUTED)
+    d.text((px, py + 16), "footprint polygon on the 2-D map (centered on jammer).", font=f12, fill=MUTED)
+    save(img, "37-jam-preview.png",
+         "Jam assistant: modulation × power × bandwidth picker with effective-radius and "
+         "footprint preview before commit.")
+
+
+def s_consequence_preview():
+    """FW §11.D.18 — live consequence preview for every action."""
+    img, d = canvas("blue", "Live consequence preview — escalation / attribution / reversibility before commit")
+    tx, ty = panel(d, 12, 66, W - 24, 340, "Severity per action (target: own civilian / red military)")
+    rows = [
+        [("observe",            BLUEc), ("LOW",    GREEN),  ("esc 1",  TEXT), ("reversible",   GREEN), ("ambiguous", TEXT)],
+        [("downlink",           BLUEc), ("LOW",    GREEN),  ("esc 0",  TEXT), ("reversible",   GREEN), ("ambiguous", TEXT)],
+        [("jam (spot)",         BLUEc), ("LOW",    GREEN),  ("esc 3",  TEXT), ("reversible",   GREEN), ("ambiguous", TEXT)],
+        [("jam (deceptive)",    BLUEc), ("MED",    YELLOW), ("esc 3",  TEXT), ("reversible",   GREEN), ("OVERT",     RED)],
+        [("cyber (data_exfil)", BLUEc), ("MED",    YELLOW), ("esc 2",  TEXT), ("reversible",   GREEN), ("covert",    TEXT)],
+        [("cyber (WIPER)",      BLUEc), ("HIGH",   RED),    ("esc 6",  TEXT), ("IRREVERSIBLE", RED),   ("covert",    TEXT)],
+        [("maneuver",           BLUEc), ("LOW",    GREEN),  ("esc 1",  TEXT), ("reversible",   GREEN), ("overt",     TEXT)],
+        [("engage (kinetic)",   BLUEc), ("HIGH",   RED),    ("esc 8",  TEXT), ("IRREVERSIBLE", RED),   ("OVERT",     RED)],
+    ]
+    table(d, tx, ty, ["ACTION", "SEV", "ESC", "REVERSIBLE?", "ATTRIBUTION"], rows,
+          [200, 80, 100, 200, 200], lh=26)
+    nx, ny = panel(d, 12, 420, W - 24, 240, "Notes & guidance")
+    lines(d, nx, ny, [
+        ("• The consequence-preview line updates every time the operator changes action / target / params.", MUTED),
+        ("• Civilian targets bump LOW → MED automatically (denying a civilian link raises political cost).", MUTED),
+        ("• Wiper / kinetic / debris-generating actions trip the orange (MED) or red (HIGH) badge.", MUTED),
+        ("• Issue button stays enabled; the preview is advisory — final ROE gating is server-side.", MUTED),
+        ("", TEXT),
+        ("Endpoint: POST /api/sessions/{sid}/preview/consequence  (request: full Order body)", BLUEc),
+        ("Returns:  {severity, escalation_w, reversible, debris_risk, attribution, civilian_risk, notes}", BLUEc),
+    ])
+    save(img, "38-consequence-preview.png",
+         "Live consequence preview: severity / escalation / reversibility / attribution surfaced "
+         "before the operator commits.")
+
+
+def s_conjunction_panel():
+    """FW §11.C.14 — conjunction screening + one-click evade."""
+    img, d = canvas("blue", "Conjunction screening — upcoming close approaches + one-click evade")
+    tx, ty = panel(d, 12, 66, W - 24, 320, "Conjunctions (next 1 h)")
+    rows = [
+        [("BLUE-COMSAT-1",  BLUEc), ("UNKNOWN-RPO",  RED),    ("18.5 km",  YELLOW), ("CA in 10:00",  TEXT), ("[Evade]",  GREEN)],
+        [("ISR-EO-1",       BLUEc), ("DEBRIS-A1",    MUTED),  ("42.0 km",  TEXT),   ("CA in 24:18",  TEXT), ("[Evade]",  GREEN)],
+        [("ISR-EO-2",       BLUEc), ("DEBRIS-A1",    MUTED),  ("88.4 km",  TEXT),   ("CA in 26:05",  TEXT), ("[Evade]",  GREEN)],
+    ]
+    table(d, tx, ty, ["OWN ASSET", "OTHER", "RANGE", "TIME-TO-CA", "ACTION"], rows,
+          [220, 220, 130, 200, 130], lh=28)
+
+    nx, ny = panel(d, 12, 400, W - 24, 260, "How it works")
+    lines(d, nx, ny, [
+        ("• Data source: world.conjunctions (loaded from `conjunction_warning` injects or screening).", MUTED),
+        ("• Endpoint:    GET /api/sessions/{sid}/conjunctions/{cell}  → list filtered by ownership.", MUTED),
+        ("• Evade button issues a `command` order with verb `prop.collision_avoid`.", MUTED),
+        ("• The order queues to the next command-uplink window for the affected satellite.", MUTED),
+        ("• Replay-safe: the verb mutates world.conjunctions deterministically (eventlog-recorded).", MUTED),
+        ("", TEXT),
+        ("Recommended White-Cell injects: `conjunction_warning` or the library's `rpo_ambiguous`.", BLUEc),
+    ])
+    save(img, "39-conjunction-panel.png",
+         "Conjunction-screening sidebar: each row carries range, time-to-CA, and a one-click "
+         "[Evade] button that fires prop.collision_avoid for the own asset.")
+
+
+def s_inject_builder():
+    """FW §11.D.19 — White-Cell inject library + builder with timestamp scheduler."""
+    img, d = canvas("white", "White-Cell inject builder — library + JSON editor + Now/+N s/absolute UTC scheduler")
+    lx, ly = panel(d, 12, 66, 460, 340, "Inject library (5 templates)")
+    rows = [
+        [("debris_field_500km",     BLUEc), ("Unattributed breakup at 500 km",     TEXT)],
+        [("gnss_jam_regional",      BLUEc), ("Localized GNSS jamming advisory",    TEXT)],
+        [("rpo_ambiguous",          BLUEc), ("Unannounced satellite approach",     TEXT)],
+        [("gs_outage_diego_garcia", BLUEc), ("Ground station DG-EAST uplink down", TEXT)],
+        [("space_weather_severe",   BLUEc), ("Severe geomagnetic storm",           TEXT)],
+    ]
+    table(d, lx, ly, ["ID", "LABEL"], rows, [220, 220], lh=26)
+    d.text((lx, ly + 165), "GET /api/sessions/{sid}/inject_library", font=f12, fill=MUTED)
+
+    bx, by = panel(d, 488, 66, W - 500, 340, "Builder — \"Severe geomagnetic storm\" loaded")
+    by = kv(d, bx, by, [
+        ("Template",  "space_weather_severe", BLUEc),
+        ("Effects",   "[{type: space_weather, severity: severe},",  TEXT),
+        ("",          " {type: message, to: [white, blue, red],",   TEXT),
+        ("",          "  text: \"Geomag storm advisory ...\"}]",    TEXT),
+    ], kw=100)
+    by += 8
+    d.text((bx, by),       "Schedule:", font=f13b, fill=MUTED); by += 18
+    d.text((bx, by),       "  ○ Now (immediate)", font=f13, fill=TEXT); by += 16
+    d.text((bx, by),       "  ● + seconds from now: 60", font=f13, fill=GREEN); by += 16
+    d.text((bx, by),       "  ○ Absolute UTC", font=f13, fill=MUTED); by += 22
+    d.text((bx, by),       "[ Schedule / fire ]", font=f13b, fill=GREEN); by += 18
+    d.text((bx, by),       "✓ scheduled for 2030-01-01T00:01:00Z (2 effects)", font=f12, fill=GREEN)
+
+    nx, ny = panel(d, 12, 420, W - 24, 240, "How it works (replay-safe)")
+    lines(d, nx, ny, [
+        ("• Templates load from spacesim/content/inject_library.yaml (5 reusable patterns).", MUTED),
+        ("• White Cell picks a template → JSON editor pre-fills → adjusts any field → schedules.", MUTED),
+        ("• Now: fires immediately through the event log.  Future: schedules through sim.scheduler.", MUTED),
+        ("• POST /api/sessions/{sid}/inject  with {inject:{effects:[...]}, at_sim_t:<µs UTC>}.", MUTED),
+        ("• Past timestamps clamp to \"now\" (no backwards time travel).", MUTED),
+        ("• Eventlog-recorded → byte-identical on save/resume + AAR scrub.", MUTED),
+        ("", TEXT),
+        ("New handler: spawn_debris  (appends to world.debris with regime + altitude + n_fragments).", BLUEc),
+    ])
+    save(img, "40-inject-builder.png",
+         "White-Cell inject builder: library template picker + JSON editor + "
+         "Now/+seconds/absolute-UTC scheduler with replay-safe future-dated firing.")
+
+
+def s_accessibility_toggles():
+    """FW §11.D.20 — accessibility palette toggles."""
+    img, d = canvas("blue", "Accessibility — three toggles for colorblind / high-contrast / large-text use")
+    # Three side-by-side sample panels showing each palette
+    pw = (W - 48) // 3
+    sx0 = 12
+
+    # Standard
+    sx, sy = panel(d, sx0, 66, pw, 280, "Standard palette")
+    sy = kv(d, sx, sy, [("Accent", "#4fae7f", (79,174,127)),
+                         ("Accent2","#3f7fd0", (63,127,208)),
+                         ("Green",  "#6fcf6f", GREEN),
+                         ("Yellow", "#e0c24a", YELLOW),
+                         ("Red",    "#e06a6a", RED)], kw=80)
+
+    # Colorblind-safe (Okabe-Ito) — pre-existing
+    sx2 = sx0 + pw + 12
+    sx, sy = panel(d, sx2, 66, pw, 280, "cb-safe (Okabe-Ito)")
+    sy = kv(d, sx, sy, [("Accent", "#56B4E9", (86,180,233)),
+                         ("Accent2","#0072B2", (0,114,178)),
+                         ("Green",  "#009E73", (0,158,115)),
+                         ("Yellow", "#F0E442", (240,228,66)),
+                         ("Red",    "#D55E00", (213,94,0))], kw=80)
+
+    # High-contrast (new, FW §11.D.20)
+    sx3 = sx0 + 2 * (pw + 12)
+    # Draw black-bg sample
+    d.rounded_rectangle([sx3, 66, sx3 + pw, 66 + 280], radius=6, fill=(0, 0, 0), outline=(255, 255, 255))
+    d.line([sx3 + 1, 67, sx3 + 1, 66 + 279], fill=(255, 255, 0), width=3)
+    d.text((sx3 + 12, 75), "hi-contrast (WCAG-AAA)", font=f16b, fill=(255, 255, 0))
+    d.line([sx3 + 12, 97, sx3 + pw - 12, 97], fill=(255, 255, 0), width=2)
+    yy = 106
+    for k, v, col in [("Bg",       "#000000", (255,255,255)),
+                       ("Text",    "#ffffff", (255,255,255)),
+                       ("Accent",  "#ffff00", (255,255,0)),
+                       ("Accent2", "#00ffff", (0,255,255)),
+                       ("Green",   "#00ff80", (0,255,128)),
+                       ("Red",     "#ff4040", (255,64,64))]:
+        d.text((sx3 + 12, yy), k, font=f13, fill=(200,200,200))
+        d.text((sx3 + 92, yy), v, font=f13b, fill=col); yy += 22
+
+    # Footer notes
+    nx, ny = panel(d, 12, 360, W - 24, 300, "Toggles & persistence")
+    lines(d, nx, ny, [
+        ("Three header toggles, persisted in localStorage via the existing applyToggle path:", MUTED),
+        ("  • cb        — Okabe-Ito palette (deuteranopia + protanopia safe; pre-existing)", BLUEc),
+        ("  • hc        — high-contrast WCAG-AAA palette (black bg, white borders, yellow/cyan accents)", GREEN),
+        ("  • bigtext   — 17 px base font + larger button hit areas (projector / low-vision)", YELLOW),
+        ("", TEXT),
+        ("All three are accessible from the ⌘K command palette as well:", MUTED),
+        ("  - \"toggle cb-safe palette\"", BLUEc),
+        ("  - \"toggle high-contrast mode\"", BLUEc),
+        ("  - \"toggle large-text mode\"", BLUEc),
+    ])
+    save(img, "41-accessibility-toggles.png",
+         "Accessibility palettes: standard / Okabe-Ito colorblind-safe / WCAG-AAA high-contrast, "
+         "plus a large-text toggle. All persist in localStorage and are command-palette accessible.")
+
+
+def s_local_time():
+    """Local time selector — split UTC + selectable local timezone."""
+    img, d = canvas("blue", "Time display — UTC for logic; selectable local timezone for operator convenience")
+    cx, cy = panel(d, 12, 66, 580, 240, "Header time block")
+    cy = kv(d, cx, cy, [
+        ("UTC",       "2030-01-01T00:15:42Z",                  GREEN),
+        ("Local",     "[Eastern ▾]  2029-12-31 19:15:42 EST",  TEXT),
+    ], kw=80)
+    cy += 14
+    d.text((cx, cy), "Selectable zones: Eastern (default), Central, Mountain, Pacific,", font=f12, fill=MUTED)
+    d.text((cx, cy + 16), "London, Paris/Berlin, Tokyo, UTC-only.", font=f12, fill=MUTED)
+
+    nx, ny = panel(d, 608, 66, W - 620, 240, "Important")
+    lines(d, nx, ny, [
+        ("• Engine logic, saves, eventlog, and AAR snapshots remain in UTC microseconds.", MUTED),
+        ("• Local time is a convenience render only — no server round-trip.", MUTED),
+        ("• Switching zones re-renders instantly via Intl.DateTimeFormat.", MUTED),
+        ("• Stored in localStorage so the operator's choice survives a reload.", MUTED),
+    ])
+
+    fx, fy = panel(d, 12, 320, W - 24, 340, "Why this matters in PME")
+    lines(d, fx, fy, [
+        ("Operators often think in their home timezone while the simulator runs in UTC.", TEXT),
+        ("Splitting the display means:", MUTED),
+        ("  • No risk of UTC↔local conversion errors leaking into logs / saves / AAR.", MUTED),
+        ("  • Operators can quickly translate \"next pass in 12 min\" to a wall-clock time without math.", MUTED),
+        ("  • All scheduling fields (inject `at_sim_t`, AAR scrubber) stay UTC-canonical.", MUTED),
+        ("", TEXT),
+        ("Tip: the inject builder's \"absolute UTC\" field also accepts a UTC literal so the", BLUEc),
+        ("operator can paste a time from the UTC clock row without conversion.", BLUEc),
+    ])
+    save(img, "42-local-time.png",
+         "Time-display block: UTC clock (canonical) above a selectable local-time row (Eastern default; "
+         "Central/Mountain/Pacific/London/Paris/Tokyo/UTC-only options).")
+
+
 def main():
     s_gallery()
     m = SessionManager(load_vignette("leo-isr-denial"), seed=1); m.start()
@@ -954,6 +1248,15 @@ def main():
     s_queue_timeline()
     s_aar_scrubber()
     s_alarms_soh()
+    # FW §11 batch 11 — UX & realism upgrade screenshots.
+    s_maneuver_assistant()
+    s_isr_beam_modes()
+    s_jam_preview()
+    s_consequence_preview()
+    s_conjunction_panel()
+    s_inject_builder()
+    s_accessibility_toggles()
+    s_local_time()
     write_index()
 
 

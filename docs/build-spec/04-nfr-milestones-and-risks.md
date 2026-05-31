@@ -81,6 +81,23 @@ The seven gates the v1 PME tool must meet (consolidated from the retired roadmap
    separation enforced by the import-guard test, `SessionAPI` Protocol exists), full
    seam-proofs in `FUTURE-WORK.md` §1 & §2.
 
+### 10.3 Post-v1 increments shipped on the v1 branch
+
+The v1 surface continued to grow on the same branch after the initial DoD. Two batches landed:
+
+**Batch 11 — Twenty UX & realism upgrades** (`FUTURE-WORK.md` §11, all ✅). Six verb-expansion
+modules in the ISR/maneuver pattern (jam, engage, cyber, downlink, satcom, sigint) — each ships
+a pure compute helper in `engine/<verb>.py` + an order-pipeline wiring + a read-only
+`/api/.../<verb>/compute` preview endpoint. Five realism extensions in `engine/perturbations.py`
+(atmospheric drag, J3/J4 zonals, third-body Sun/Moon, SRP) plus penumbra in `engine/sun.py` and
+expanded `ThermalState`. Five workflow / UX additions (multi-asset batch helpers, conjunction
+screening + one-click evade, three-lane pass-timeline ribbon). Four pedagogy / accessibility
+items (coaching panel, live consequence preview, inject library + builder, accessibility
+palette toggles).
+
+The implementation is captured in screenshots `35-…` through `42-…` under `docs/manual/`, and
+the operator-console binding is documented in §§16.6.1–16.6.2, 16.12, and 16.13–16.14.
+
 ---
 
 ## 11. Risks & mitigations

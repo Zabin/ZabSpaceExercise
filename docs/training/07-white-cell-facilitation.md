@@ -19,6 +19,41 @@ byte-exact thanks to the deterministic core.
 patch vulnerabilities, raise political consequences, or message a cell. Fire one with the
 **Fire inject…** button or `POST /inject`.
 
+**Inject library + builder.** Beyond the per-vignette injects, the White-Cell panel ships a
+five-template **library** (`debris_field_500km`, `gnss_jam_regional`, `rpo_ambiguous`,
+`gs_outage_diego_garcia`, `space_weather_severe`) and a small builder UI:
+
+1. **Build / schedule inject** disclosure opens an inline form.
+2. Pick a template → its effects JSON loads in the editor → adjust any field.
+3. Choose schedule: **Now** (immediate), **+ N seconds from now**, or **Absolute UTC**
+   (paste-from-UTC-clock).
+4. **Schedule / fire** posts to `POST /api/sessions/{sid}/inject` with `at_sim_t` set.
+
+Future-dated injects are scheduled deterministically through the event log — they replay
+byte-identical on save/resume and through the AAR scrub. Past timestamps clamp to "now"; no
+backwards time travel.
+
+![White-Cell inject builder](../manual/40-inject-builder.png)
+
+```bash
+# Schedule a severe space-weather storm to fire 60 s from now
+curl -X POST http://127.0.0.1:8000/api/sessions/<SID>/inject -H 'Content-Type: application/json' -d '{
+  "inject": {"effects": [
+    {"type": "space_weather", "severity": "severe"},
+    {"type": "message", "to": ["white","blue","red"], "text": "Geomag storm advisory"}
+  ]},
+  "at_sim_t": 1893456060000000
+}'
+```
+
+The library lives at `spacesim/content/inject_library.yaml` — add new entries there and they show
+up in the dropdown on next session load.
+
+**Coaching notes.** A vignette can carry an optional `coaching: list[{at_sim_t?, cell, title, body}]`
+field. The Coaching sidebar surfaces notes whose target cell matches the active cell (or
+`white` = visible to all) and whose `at_sim_t` is in the past. Use these for "discuss this decision
+in the AAR" pointers without breaking the player's screen.
+
 **`ops_fidelity`.** `tactical` collapses each satellite's bus to a single health bar (focus on
 space-control decisions); `realistic` (default) shows the SOH parameters; `full_ttc` adds detailed
 subsystem telemetry for TT&C-operator training.
