@@ -8,6 +8,15 @@
 </head>
 <body data-cell="white">
   <header class="toolbar">
+    <svg id="logo" viewBox="0 0 64 64" width="28" height="28" role="img" aria-label="Space Control logo" style="color: var(--cell-accent)">
+      <circle cx="32" cy="36" r="18" fill="#0a1424" stroke="currentColor" stroke-width="1.4" opacity="0.95" />
+      <path d="M22 32 q4 -5 9 -3 q3 4 -1 7 q-5 3 -8 -4 z" fill="currentColor" opacity="0.35" />
+      <path d="M38 41 q3 -4 7 -1 q1 4 -3 5 q-5 1 -4 -4 z" fill="currentColor" opacity="0.30" />
+      <ellipse cx="32" cy="36" rx="28" ry="11" fill="none" stroke="currentColor" stroke-width="1.4"
+               opacity="0.75" transform="rotate(-20 32 36)" />
+      <g transform="translate(54 22) rotate(20)"><polygon points="0,-4 -4,3 4,3" fill="currentColor" /></g>
+      <rect x="12" y="49" width="3" height="3" fill="currentColor" opacity="0.85" />
+    </svg>
     <span class="title">Space Control &amp; Orbital Warfare</span>
     <label>Vignette <select id="vignette"></select></label>
     <label>Seed <input id="seed" type="number" value="1" style="width:4.5em" /></label>
@@ -35,6 +44,8 @@
     <label class="toggle" title="Color-blind safe palette (Okabe-Ito)"><input id="cb" type="checkbox"> cb-safe</label>
     <button id="tutorial" title="Toggle the vignette's tutorial coachmark panel">Tutorial</button>
     <button id="inspect-vignette" title="Inspect or fork the loaded vignette (YAML)">Inspect</button>
+    <button id="handover-btn" title="Blank/blur the screen to hand off the console between operators">⏸ Handover</button>
+    <button id="help-btn" title="Open the help panel — keyboard shortcuts, glossary, troubleshooting">? Help</button>
     <button id="detach">Detach viewers</button>
     <span class="banner">UNCLASSIFIED // TRAINING</span>
   </header>
@@ -234,6 +245,48 @@
     <div class="palette">
       <input id="palette-input" placeholder="Type a command: 'select ISR-EO-1', 'advance 10m', 'inject patch_modem', 'select blue'…" autocomplete="off" />
       <ul id="palette-list"></ul>
+    </div>
+  </div>
+
+  <!-- User-added FW #6: hand-off screen-blank overlay -->
+  <div id="handover" role="dialog" aria-label="Handover">
+    <h1 id="handover-title">Handing off</h1>
+    <div class="who" id="handover-who">Pass the console to the next operator</div>
+    <button id="handover-resume">Resume</button>
+  </div>
+
+  <!-- User-added FW #10: help panel (also reused by FW #9 tooltip glossary) -->
+  <div id="help-wrap" role="dialog" aria-label="Help">
+    <div id="help">
+      <h3>Help &amp; reference</h3>
+      <h4>Keyboard shortcuts</h4>
+      <ul>
+        <li><b>Ctrl/Cmd-K</b> — open the command palette</li>
+        <li><b>j</b> / <b>k</b> — cycle through actor select</li>
+        <li><b>c</b> — focus the compose form</li>
+        <li><b>g</b> — graph the selected asset's telemetry</li>
+        <li><b>Esc</b> — close the palette / coachmark</li>
+      </ul>
+      <h4>Workflow</h4>
+      <ul>
+        <li>Click a fleet row to drill down. <b>Shift-click</b> to add to a multi-asset batch.</li>
+        <li>Compose an order, then ★ Save preset to keep it as a one-click playbook.</li>
+        <li>Pin a moment with 📌 Bookmark to jump back via the AAR scrubber.</li>
+        <li>⏸ Handover blanks the screen for hot-seat handoffs between operators.</li>
+        <li>Inspect opens the YAML so trainers can fork the scenario.</li>
+      </ul>
+      <h4>Acronyms</h4>
+      <ul>
+        <li><b>SOH</b> — State of Health (bus/payload rollup)</li>
+        <li><b>RPO</b> — Rendezvous &amp; Proximity Operations</li>
+        <li><b>ISL</b> — Inter-Satellite Link (crosslink)</li>
+        <li><b>SSN</b> — Space Surveillance Network</li>
+        <li><b>SDA</b> — Space Domain Awareness</li>
+        <li><b>EW</b> — Electronic Warfare</li>
+        <li><b>ROE</b> — Rules of Engagement</li>
+        <li><b>Δv</b> — Delta-v (maneuver budget)</li>
+      </ul>
+      <div style="display:flex; justify-content:flex-end; gap:8px"><button id="help-close">Close</button></div>
     </div>
   </div>
 

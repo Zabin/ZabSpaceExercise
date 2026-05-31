@@ -542,7 +542,25 @@ function drawMap() {
   }
   // §10.A.1 — own-asset marker color tracks the active cell's accent.
   // §4 APP-6 symbology — payload-specific shapes via Symbology.draw().
+  // User-added FW #2 — ground tracks: dim polyline of the sub-satellite path for the next orbit.
   const accent = window.cellAccent ? cellAccent() : "#6fcf6f";
+  if (mapCam.tracks !== false) {
+    x.strokeStyle = "rgba(159,176,192,0.35)"; x.lineWidth = 1;
+    SCENE.assets.forEach((a) => {
+      if (!a.on_orbit || !a.track || a.track.length < 2) return;
+      x.beginPath();
+      let lastX = null;
+      a.track.forEach((p, i) => {
+        const X = PX(p[1]), Y = PY(p[0]);
+        // Break the polyline when the sub-point wraps across the antimeridian.
+        if (lastX !== null && Math.abs(X - lastX) > c.width * 0.5) { x.stroke(); x.beginPath(); x.moveTo(X, Y); }
+        else if (i === 0) x.moveTo(X, Y);
+        else x.lineTo(X, Y);
+        lastX = X;
+      });
+      x.stroke();
+    });
+  }
   x.fillStyle = accent;
   SCENE.assets.forEach((a) => {
     const px = PX(a.lon_deg), py = PY(a.lat_deg);
@@ -1243,4 +1261,58 @@ addEventListener("DOMContentLoaded", () => {
   const ib = $("inspect-vignette"); if (ib) ib.addEventListener("click", inspectorOpen);
   const ic = $("inspector-close"); if (ic) ic.addEventListener("click", () => $("inspector-wrap").classList.remove("open"));
   const iw = $("inspector-wrap"); if (iw) iw.addEventListener("click", (e) => { if (e.target === iw) iw.classList.remove("open"); });
+});
+
+// ===================================================================
+// User-added future work (FUTURE-WORK.md §"User added Future work")
+// ===================================================================
+
+// #6 — Hand-off screen blank between operators. Click ⏸ Handover, the screen blurs and a big
+// headline appears until the next operator clicks Resume.
+addEventListener("DOMContentLoaded", () => {
+  const btn = $("handover-btn"), wrap = $("handover"), resume = $("handover-resume");
+  if (!btn || !wrap) return;
+  btn.addEventListener("click", () => {
+    const nextCell = CELL === "blue" ? "RED" : CELL === "red" ? "BLUE" : "WHITE";
+    $("handover-title").textContent = `HANDING OFF → ${nextCell}`;
+    $("handover-who").textContent = `Pass the keyboard to the ${nextCell} operator and click Resume.`;
+    wrap.classList.add("open");
+  });
+  if (resume) resume.addEventListener("click", () => wrap.classList.remove("open"));
+});
+
+// #9 — Tooltips for ALL buttons that don't already have a title=. Reads the button's text and
+// derives a 1-line description from the existing ACRONYMS dict or a short fallback.
+const BUTTON_HINTS = {
+  "Load": "Load the selected vignette as a new session",
+  "Start": "Start the loaded session (sim clock begins ticking)",
+  "+1m": "Advance simulation time by 1 minute",
+  "+10m": "Advance simulation time by 10 minutes",
+  "+1h": "Advance simulation time by 1 hour",
+  "⟲ Rewind": "Rewind to t=0 and replay the eventlog",
+  "Save": "Download the current session state as JSON",
+  "Issue order": "Submit the composed order (validates first — see preview)",
+  "★ Save preset": "Save the current compose form as a named playbook (FW §10.B.7)",
+  "Plan collection": "Submit a sensor-tasking (or SSN) request for the selected target",
+  "Fire": "Fire the selected inject (White-Cell only)",
+  "Compare selected": "Diff two saved AAR branches (FW §9 replay branching)",
+  "＋ Save current branch": "Snapshot the live AAR as a named branch in localStorage",
+  "📌 Bookmark": "Pin the current sim time as a bookmark (jump back later)",
+  "⏸ Handover": "Blank/blur the screen for hot-seat handoff",
+  "? Help": "Open the help panel",
+};
+addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("button").forEach((b) => {
+    if (b.title) return;
+    const label = (b.textContent || "").trim();
+    if (BUTTON_HINTS[label]) b.title = BUTTON_HINTS[label];
+  });
+});
+
+// #10 — Help panel toggle.
+addEventListener("DOMContentLoaded", () => {
+  const open = $("help-btn"), wrap = $("help-wrap"), close = $("help-close");
+  if (open) open.addEventListener("click", () => wrap.classList.add("open"));
+  if (close) close.addEventListener("click", () => wrap.classList.remove("open"));
+  if (wrap) wrap.addEventListener("click", (e) => { if (e.target === wrap) wrap.classList.remove("open"); });
 });

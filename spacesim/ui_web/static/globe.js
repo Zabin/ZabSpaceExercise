@@ -49,6 +49,20 @@ window.Globe = (function () {
     for (let lon = -180; lon < 180; lon += 30) seg((t) => [t, lon], -90, 90);
     for (let lat = -60; lat <= 60; lat += 30) seg((t) => [lat, t], -180, 180);
     if (!scene) return;
+    // User-added FW #1 — orbital paths: dim polyline projected at the asset's altitude.
+    ctx.strokeStyle = "rgba(159,176,192,0.4)"; ctx.lineWidth = 1;
+    scene.assets.forEach((a) => {
+      if (!a.on_orbit || !a.track || a.track.length < 2) return;
+      ctx.beginPath();
+      let prev = null;
+      a.track.forEach((p) => {
+        const proj = project(p[0], p[1], (p[2] || 0) / 1000);
+        if (prev && prev.front && proj.front) ctx.lineTo(proj.x, proj.y);
+        else ctx.moveTo(proj.x, proj.y);
+        prev = proj;
+      });
+      ctx.stroke();
+    });
     // Own assets — color matches the active cell accent (§10.A.1); APP-6 shapes via Symbology (§4).
     const accent = window.cellAccent ? window.cellAccent() : "#6fcf6f";
     scene.assets.forEach((a) => {

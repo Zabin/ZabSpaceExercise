@@ -510,3 +510,32 @@ def test_commercial_costs_double_against_budget():
                                                      target="RED-OBJ", regime="MEO",
                                                      priority="routine", network="commercial"))
     assert not ack.ok and ack.reason == "budget_exhausted"
+
+
+# ---------------------------------------------------------------------------
+# User-added FW #1/#2 — orbital paths in scene
+# ---------------------------------------------------------------------------
+
+def test_scene_render_asset_carries_ground_track():
+    """build_scene includes a non-empty 60-point track for each orbital own-asset."""
+    from spacesim.session.scene import build_scene
+    mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
+    mgr.start()
+    scene = build_scene(mgr.world, "blue")
+    orbital = [a for a in scene.assets if a.on_orbit]
+    assert orbital, "expected at least one orbital asset"
+    for a in orbital:
+        assert 50 <= len(a.track) <= 60
+        for pt in a.track:
+            assert -90 <= pt[0] <= 90 and -180 <= pt[1] <= 180 and pt[2] >= 0
+
+
+def test_scene_ground_asset_has_empty_track():
+    """Ground stations / jammers (non-orbital) carry no track points."""
+    from spacesim.session.scene import build_scene
+    mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
+    mgr.start()
+    scene = build_scene(mgr.world, "blue")
+    for a in scene.assets:
+        if not a.on_orbit:
+            assert a.track == []

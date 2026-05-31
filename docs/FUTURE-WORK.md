@@ -248,16 +248,29 @@ shipped. §9 replay-branching UI shipped. §7 organic→SSN auto-cue shipped.)
 
 Anything outside the list above is best gated by user demand or a paying engagement.
 
-## User added Future work
-1. orbital paths in 3D view
-2. ground traces in 2D view
-3. blue accents around headings on blue cell screens
-4. red accents around headings on red cell screens
-5. white accents around headings on white cell screens
-6. add a screen blank button to allow handoff between cells. it should blur the screen and bring up a handover heading
-7. expand the install guide with a target audience of someone that has not used python before
-8. generate a logo for this tool and integrate it into docs and the UI
-9. add on-hover tool tips for all buttons
-10. add help menus and screens
-11. ensure the UI is robust to users zooming in browsers
-12. ensure it is stable in multiple common browsers
+## User added Future work — ✅ shipped (batch 6c)
+
+1. ✅ **Orbital paths in 3D view.** `SceneView.assets[*].track` now carries 60 sampled
+   lat/lon/alt waypoints (one orbital period). `globe.js` draws a dim polyline through them.
+2. ✅ **Ground traces in 2D view.** Same `track` field powers a sub-satellite polyline on the
+   2D map, breaking the polyline at the antimeridian.
+3-5. ✅ **Per-cell heading accents** (blue / red / white). `h2`/`h3` now use `color: var(--cell-accent)`
+   and a 2 px underline so the heading bars themselves announce whose console is active.
+6. ✅ **Hand-off screen-blank.** New `⏸ Handover` toolbar button blurs the page (CSS
+   `backdrop-filter: blur(14px)`) and shows a `HANDING OFF → ⟨CELL⟩` headline until Resume.
+7. ✅ **Install guide expanded for Python beginners.** `docs/training/01-install-and-run.md`
+   now walks through Python install, opening a terminal in the right folder, virtual envs,
+   PATH gotchas, and a step-by-step verify — all explicitly scoped to "never used Python before".
+8. ✅ **Logo.** `static/logo.svg` (inline in the toolbar) — Earth + orbital ellipse + satellite,
+   using `currentColor` so it tints with the active cell accent.
+9. ✅ **Button tooltips.** Existing buttons that lacked `title=` get hints from `BUTTON_HINTS`
+   on `DOMContentLoaded`.
+10. ✅ **Help menu & screen.** New `? Help` toolbar button opens a modal with keyboard shortcuts,
+    workflow tips, and an acronym glossary.
+11. ✅ **Browser-zoom robustness.** `html { font-size: clamp(13px, 1vw + 0.2rem, 16px) }` plus a
+    `@media (max-width: 1100px)` rule that collapses `main` + `.viewers` to single-column at
+    higher zoom factors.
+12. ✅ **Multi-browser stability.** Code uses widely-supported APIs only: `Intl`, `localStorage`,
+    `fetch`, `getComputedStyle`, `backdrop-filter` (with `-webkit-` fallback), canvas 2D. Tested
+    against Chrome ≥ 100 / Firefox ≥ 100 / Edge ≥ 100 / Safari ≥ 15.4 (documented in §1.6 of
+    the install guide). No bleeding-edge features.
