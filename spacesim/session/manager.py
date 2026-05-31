@@ -440,6 +440,15 @@ class SessionManager:
                 world.messages.append({"to": ["white", "blue", "red"],
                                        "text": f"Space weather: severity={sev}",
                                        "t": world.now})
+            elif kind == "conjunction_warning":
+                # FUTURE-WORK §2: pre-load a conjunction advisory so prop.collision_avoid
+                # has something to react to. Effect carries {a, b, range_km, t_close}.
+                world.conjunctions.append({"a": eff.get("a"), "b": eff.get("b"),
+                                            "range_km": float(eff.get("range_km", 1.0)),
+                                            "t_close": int(eff.get("t_close", world.now))})
+                world.messages.append({"to": ["white", "blue"],
+                                       "text": f"Conjunction warning: {eff.get('a')}↔{eff.get('b')} @ {eff.get('range_km', '?')} km",
+                                       "t": world.now})
             elif kind == "space_weather":
                 # FUTURE-WORK §10.C.11: solar / geomagnetic storm. severity scales eclipse drain
                 # and is surfaced to telemetry signatures (FSW errors climb in 'severe').

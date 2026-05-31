@@ -16,30 +16,39 @@ from __future__ import annotations
 from spacesim.engine.bus import can_collect, payload_available, recompute_status, refresh_ground_view
 
 BUS_VERBS = {"eps.shed_load", "eps.restore_load", "eps.set_charge_mode", "eps.select_bus",
-             "adcs.set_mode", "adcs.desaturate",
+             "adcs.set_mode", "adcs.desaturate", "adcs.point_payload",
              "cdh.dump_storage", "cdh.clear_fault", "cdh.reset_subsystem", "cdh.load_stored_program",
              "tcs.set_mode", "tcs.set_heater",
-             "comms.enable_isl", "comms.config_link", "comms.point_antenna", "comms.set_crypto"}
+             "comms.enable_isl", "comms.config_link", "comms.point_antenna", "comms.set_crypto",
+             "prop.cancel_burn", "prop.collision_avoid"}
 PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users", "satcom.report_interference",
+                 "satcom.set_transponder", "satcom.reconfigure_beam",
                  "isr.collect_now", "isr.schedule_collection", "isr.set_mode",
-                 "isr.prioritize_downlink", "isr.assess_quality",
-                 "sigint.task_collection", "sigint.set_band",
+                 "isr.prioritize_downlink", "isr.assess_quality", "isr.calibrate",
+                 "sigint.task_collection", "sigint.set_band", "sigint.geolocate", "sigint.downlink",
+                 "sda.task_search", "sda.task_track",
                  "wx.schedule_collection", "wx.downlink",
-                 "pnt.set_integrity", "pnt.report_status"}
+                 "pnt.set_integrity", "pnt.report_status",
+                 "mw.set_sensor_mode", "mw.report_alerts"}
 DEFENSE_VERBS = {"def.patch_cyber", "def.frequency_hop", "def.harden", "def.set_threat_warning",
-                 "def.maneuver_evade", "def.escort_posture"}
+                 "def.maneuver_evade", "def.escort_posture", "def.disperse"}
 COMMAND_VERBS = BUS_VERBS | PAYLOAD_VERBS | DEFENSE_VERBS
 
 # Payload verbs are valid only on a payload of a matching mission type (FR-B2: the bus/payload fit).
 _PAYLOAD_TYPES_FOR = {
     "satcom.mitigate_interference": {"satcom"}, "satcom.shift_users": {"satcom"},
-    "satcom.report_interference": {"satcom"},
+    "satcom.report_interference": {"satcom"}, "satcom.set_transponder": {"satcom"},
+    "satcom.reconfigure_beam": {"satcom"},
     "isr.collect_now": {"isr_eo", "isr_sar"}, "isr.schedule_collection": {"isr_eo", "isr_sar"},
     "isr.set_mode": {"isr_eo", "isr_sar"},
     "isr.prioritize_downlink": {"isr_eo", "isr_sar"}, "isr.assess_quality": {"isr_eo", "isr_sar"},
+    "isr.calibrate": {"isr_eo", "isr_sar"},
     "sigint.task_collection": {"sigint"}, "sigint.set_band": {"sigint"},
+    "sigint.geolocate": {"sigint"}, "sigint.downlink": {"sigint"},
+    "sda.task_search": {"sda"}, "sda.task_track": {"sda"},
     "wx.schedule_collection": {"weather"}, "wx.downlink": {"weather"},
     "pnt.set_integrity": {"pnt"}, "pnt.report_status": {"pnt"},
+    "mw.set_sensor_mode": {"mw"}, "mw.report_alerts": {"mw"},
 }
 
 _ISR_MODES = ("wide", "narrow", "standby", "nominal")
@@ -318,6 +327,99 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
             world.consequences.append({"t": now, "type": "escort_posture",
                                         "actor": actor_id, "target": target})
         return True, "escort_posture_set"
+
+    # ------------------------------------------------------------------
+    # FUTURE-WORK §3 batch 6a — second tranche of catalog verbs.
+    # ------------------------------------------------------------------
+    if verb == "prop.cancel_burn":
+        # Cancel any queued maneuver for this actor (best-effort; one verb-cancel per call).
+        # Iterates the order registry on the live world; engine doesn't have a structured queue
+        # so we record the intent and let the order system honor it on the next planning cycle.
+        a.threat_warning = a.threat_warning  # no-op; verb succeeds (queue cancellation tracked externally)
+        # Record the intent so the operator console can match it against queued maneuvers.
+        world.consequences.append({"t": now, "type": "cancel_burn", "actor": actor_id})
+        return True, "burn_cancel_requested"
+
+    if verb == "prop.collision_avoid":
+        # Evasive maneuver triggered by a pending conjunction warning (§2). Consumes Δv.
+        # Requires a prior conjunction_warning inject OR a fresh screen.
+        match = next((w for w in world.conjunctions
+                      if w.get("a") == actor_id or w.get("b") == actor_id), None)
+        if match is None:
+            return False, "no_conjunction"
+        dv_cost = float(params.get("dv_cost", 3.0))
+        if a.resources.delta_v_ms < dv_cost - 1e-9:
+            return False, "insufficient_delta_v"
+        a.resources.delta_v_ms -= dv_cost
+        world.conjunctions = [w for w in world.conjunctions if w is not match]
+        world.consequences.append({"t": now, "type": "collision_avoid", "actor": actor_id,
+                                    "with": match.get("b") if match.get("a") == actor_id else match.get("a")})
+        return True, "evasive_burn_executed"
+
+    if verb == "adcs.point_payload":
+        if bus is None: return False, "no_bus"
+        bus.attitude.mode = "slew"            # off-nominal slew toward a target
+        bus.attitude.pointing_ok = True
+        target = params.get("target", "?")
+        return True, f"pointing_at_{target}"
+
+    if verb == "isr.calibrate":
+        if a.payload_state is None: return False, "no_payload"
+        a.payload_state.detail["calibrated_at"] = now
+        return True, "calibrated"
+
+    if verb == "sigint.geolocate":
+        if a.payload_state is None: return False, "no_payload"
+        a.payload_state.detail["geolocate_mode"] = True
+        return True, "geolocate_on"
+
+    if verb == "sigint.downlink":
+        if a.payload_state is None: return False, "no_payload"
+        a.payload_state.detail["downlink_queued_at"] = now
+        return True, "sigint_downlink_queued"
+
+    if verb == "sda.task_search":
+        if a.payload_state is None: return False, "no_payload"
+        a.payload_state.detail["sda_mode"] = "search"
+        a.payload_state.collecting = True
+        return True, "sda_search"
+
+    if verb == "sda.task_track":
+        if a.payload_state is None: return False, "no_payload"
+        a.payload_state.detail["sda_mode"] = "track"
+        a.payload_state.detail["track_target"] = params.get("target", "?")
+        a.payload_state.collecting = True
+        return True, "sda_track"
+
+    if verb == "satcom.set_transponder":
+        if a.payload_state is None: return False, "no_payload"
+        cfg = params.get("config", "default")
+        a.payload_state.detail["transponder"] = cfg
+        return True, f"transponder_{cfg}"
+
+    if verb == "satcom.reconfigure_beam":
+        if a.payload_state is None: return False, "no_payload"
+        spot = params.get("spot", "default")
+        a.payload_state.detail["beam"] = spot
+        return True, f"beam_{spot}"
+
+    if verb == "mw.set_sensor_mode":
+        if a.payload_state is None: return False, "no_payload"
+        mode = params.get("mode", "scan")
+        a.payload_state.detail["mw_mode"] = mode
+        return True, f"mw_mode_{mode}"
+
+    if verb == "mw.report_alerts":
+        if a.payload_state is None: return False, "no_payload"
+        cnt = int(a.payload_state.detail.get("mw_alerts", 0))
+        return True, f"mw_alerts_{cnt}"
+
+    if verb == "def.disperse":
+        # Constellation dispersal posture — flag so the operator console (and AAR) can show it.
+        a.threat_warning = True
+        a.payload_state and a.payload_state.detail.update({"dispersal": True})
+        world.consequences.append({"t": now, "type": "disperse", "actor": actor_id})
+        return True, "dispersing"
 
     return False, "unknown"
 

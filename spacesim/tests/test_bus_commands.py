@@ -475,3 +475,68 @@ def test_new_verbs_are_in_command_verbs_set():
                 "pnt.report_status", "wx.downlink", "def.escort_posture"}
     missing = expected - COMMAND_VERBS
     assert not missing, f"missing from COMMAND_VERBS: {missing}"
+
+
+# ---- Batch 6a: second tranche (catalog verbs + conjunction integration) -----
+
+def test_batch6_verbs_registered():
+    """All batch-6 verbs land in COMMAND_VERBS."""
+    from spacesim.engine.buscommands import COMMAND_VERBS
+    expected = {"prop.cancel_burn", "prop.collision_avoid", "adcs.point_payload",
+                "isr.calibrate", "sigint.geolocate", "sigint.downlink",
+                "sda.task_search", "sda.task_track",
+                "satcom.set_transponder", "satcom.reconfigure_beam",
+                "mw.set_sensor_mode", "mw.report_alerts", "def.disperse"}
+    missing = expected - COMMAND_VERBS
+    assert not missing, f"missing: {missing}"
+
+
+def test_adcs_point_payload_slews_attitude():
+    w = _sat_with_payload()
+    ok, label = apply_command(w, "SAT", "adcs.point_payload", {"target": "RED-INSP"}, 0)
+    assert ok and "RED-INSP" in label
+    assert w.assets["SAT"].bus_state.attitude.mode == "slew"
+
+
+def test_isr_calibrate_records_timestamp():
+    w = _sat_with_payload("isr_eo")
+    ok, _ = apply_command(w, "SAT", "isr.calibrate", {}, 12345)
+    assert ok
+    assert w.assets["SAT"].payload_state.detail["calibrated_at"] == 12345
+
+
+def test_sda_task_track_records_target():
+    w = _sat_with_payload("sda")
+    ok, _ = apply_command(w, "SAT", "sda.task_track", {"target": "X"}, 0)
+    assert ok
+    assert w.assets["SAT"].payload_state.detail["track_target"] == "X"
+    assert w.assets["SAT"].payload_state.collecting is True
+
+
+def test_satcom_reconfigure_beam_sets_spot():
+    w = _sat_with_payload("satcom")
+    ok, label = apply_command(w, "SAT", "satcom.reconfigure_beam", {"spot": "AOR1"}, 0)
+    assert ok and label == "beam_AOR1"
+
+
+def test_prop_collision_avoid_requires_pending_warning():
+    w = _sat_with_payload(dv=50.0)
+    ok, reason = apply_command(w, "SAT", "prop.collision_avoid", {}, 0)
+    assert not ok and reason == "no_conjunction"
+
+
+def test_prop_collision_avoid_consumes_dv_and_clears_warning():
+    w = _sat_with_payload(dv=50.0)
+    w.conjunctions.append({"a": "SAT", "b": "DEBRIS-1", "range_km": 1.0, "t_close": 100})
+    ok, label = apply_command(w, "SAT", "prop.collision_avoid", {"dv_cost": 3.0}, 0)
+    assert ok and label == "evasive_burn_executed"
+    assert abs(w.assets["SAT"].resources.delta_v_ms - 47.0) < 1e-6
+    assert w.conjunctions == []   # warning consumed
+
+
+def test_def_disperse_sets_flags():
+    w = _sat_with_payload("satcom")
+    ok, _ = apply_command(w, "SAT", "def.disperse", {}, 7)
+    assert ok
+    assert w.assets["SAT"].threat_warning is True
+    assert w.assets["SAT"].payload_state.detail.get("dispersal") is True

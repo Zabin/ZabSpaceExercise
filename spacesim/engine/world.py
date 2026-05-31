@@ -34,6 +34,9 @@ class WorldState(BaseModel):
     # FUTURE-WORK §10.C.11 — space-weather environmental state. severity ∈ {none, minor, severe};
     # when active, advance_bus scales eclipse drain so fleets in eclipse degrade faster.
     space_weather: dict = Field(default_factory=lambda: {"severity": "none"})
+    # FUTURE-WORK §2 — pending conjunction warnings. Each entry: {a, b, range_km, t_close}.
+    # Pre-loaded via `conjunction_warning` inject; consumed by the prop.collision_avoid verb.
+    conjunctions: list[dict] = Field(default_factory=list)
 
     # Generic scratch state used by the Phase-1 determinism harness.
     entities: dict[str, dict] = Field(default_factory=dict)

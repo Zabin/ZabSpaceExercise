@@ -402,3 +402,47 @@ def test_auto_cue_disabled_by_default():
         mgr.advance_to(ack.earliest_window[1] + 1)
     chars = [r for r in mgr.ssn.requests.values() if r.target == "RED-OBJ"]
     assert chars == []
+
+
+# ---------------------------------------------------------------------------
+# §2 conjunction screening + conjunction_warning inject
+# ---------------------------------------------------------------------------
+
+def test_predict_conjunctions_finds_close_pair():
+    """Two satellites in nearly-identical orbits should show up as a conjunction."""
+    from spacesim.engine.conjunction import predict_conjunctions
+    from spacesim.engine.propagator import ModeratePropagator
+    mgr = SessionManager(load_vignette("co-orbital-threat-escort"), seed=1)
+    mgr.start()
+    out = predict_conjunctions(mgr.world, ModeratePropagator(), horizon_s=600.0,
+                               step_s=15.0, threshold_km=200.0)
+    assert any({o["a"], o["b"]} <= {"BLUE-HVA", "BLUE-ESCORT", "RED-COORB"} for o in out)
+
+
+def test_conjunction_warning_inject_populates_world_conjunctions():
+    """Firing a conjunction_warning inject appends to WorldState.conjunctions."""
+    mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
+    mgr.start()
+    mgr.fire_inject([{"type": "conjunction_warning", "a": "ISR-EO-1", "b": "DEBRIS-X",
+                      "range_km": 0.7, "t_close": mgr.world.now + 600 * 1_000_000}])
+    assert any(c["a"] == "ISR-EO-1" and c["b"] == "DEBRIS-X" for c in mgr.world.conjunctions)
+
+
+def test_prop_collision_avoid_through_session_and_replay():
+    """The full path: warning → verb queued → executed → Δv consumed → replay-safe."""
+    from spacesim.engine.orders import Order
+    mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
+    mgr.start()
+    # ISR-EO-1 starts with 80.0 m/s in leo-isr-denial; consume 4.0 via collision-avoid burn.
+    initial_dv = mgr.world.assets["ISR-EO-1"].resources.delta_v_ms
+    mgr.fire_inject([{"type": "conjunction_warning", "a": "ISR-EO-1", "b": "DEBRIS-X",
+                      "range_km": 0.5, "t_close": mgr.world.now + 60 * 1_000_000}])
+    cmd = Order(cell="blue", actor="ISR-EO-1", action="command", target=None,
+                params={"via": "GS-NORTH", "verb": "prop.collision_avoid", "dv_cost": 4.0})
+    ack = mgr.issue_order("blue", cmd)
+    assert ack.ok, ack.reason
+    mgr.advance_to(ack.earliest_window[1] + 1)
+    assert abs(mgr.world.assets["ISR-EO-1"].resources.delta_v_ms - (initial_dv - 4.0)) < 1e-6
+    assert mgr.world.conjunctions == []     # warning consumed by the evasive burn
+    # Replay equality: the deterministic chain reproduces the state byte-identically.
+    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
