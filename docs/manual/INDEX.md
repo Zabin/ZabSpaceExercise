@@ -45,3 +45,17 @@ install a browser, so these paint the web UI's panels from genuine fog-filtered 
 - **40-inject-builder.png** — White-Cell inject builder: library template picker + JSON editor + Now/+seconds/absolute-UTC scheduler with replay-safe future-dated firing.
 - **41-accessibility-toggles.png** — Accessibility palettes: standard / Okabe-Ito colorblind-safe / WCAG-AAA high-contrast, plus a large-text toggle. All persist in localStorage and are command-palette accessible.
 - **42-local-time.png** — Time-display block: UTC clock (canonical) above a selectable local-time row (Eastern default; Central/Mountain/Pacific/London/Paris/Tokyo/UTC-only options).
+- **ref-01-header.png** — UI reference §1 — header / toolbar: 23 always-visible controls (vignette load, cell switcher, time, presets, accessibility, modal triggers).
+- **ref-02-cell-time.png** — UI reference §2 — Cell & Time sidebar: clock, timezone selector, objectives, messages, coaching, conjunctions.
+- **ref-03-injects.png** — UI reference §3 — Injects panel: fire-by-id row + 10-control builder (template / editor / schedule).
+- **ref-04-fleet.png** — UI reference §4 — Fleet rail: 5 filter chips + clickable rows (click=drill, shift-click=batch).
+- **ref-05-tasking.png** — UI reference §5 — Tasking panel: 2 mode chips + intent/sensor/regime/target/priority + ISR beam-mode trio + SSN queue.
+- **ref-06-compose.png** — UI reference §6 — Satellite command: 13 compose-form controls (role chip → actor/action/target/params → previews → issue → presets → ribbon → queue).
+- **ref-07-maneuver.png** — UI reference §7 — Maneuver assistant: 6 entry modes + Compute Δv → preview before commit.
+- **ref-08-jam.png** — UI reference §8 — Jam assistant: modulation × power × bandwidth → effective-radius + footprint preview.
+- **ref-09-batch.png** — UI reference §9 — Batch bar: shift-click batch + 4 fleet-subset helpers + Issue-to-all / Clear.
+- **ref-10-globe.png** — UI reference §10 — 3D globe viewer: zoom / tilt / zoom-to / map / spin / Reset + drag-to-rotate + wheel-to-zoom.
+- **ref-11-map.png** — UI reference §11 — 2D belief map: zoom / center / map / tracks / grid / Reset + drag-to-pan + wheel-to-zoom.
+- **ref-12-aar.png** — UI reference §12 — AAR: scrubber + bookmarks + CSV/JSON download + branch save/compare.
+- **ref-13-drill.png** — UI reference §13 — Subsystem drill-down: parameter chips + nominal/overlay toggles + graph + per-verb buttons + recovery strip.
+- **ref-14-modals-keys.png** — UI reference §14 — Modals & overlays + keyboard shortcuts + mouse / canvas interactions.

@@ -42,7 +42,7 @@ CELL_ACCENT = {"white": (138, 150, 173), "blue": (90, 143, 224), "red": (224, 12
 # Active cell threaded by canvas() into panel() so h2 headings tint correctly per screenshot.
 _ACTIVE_CELL = [None]
 f12 = ImageFont.truetype(F, 12); f13 = ImageFont.truetype(F, 13)
-f13b = ImageFont.truetype(FB, 13); f16b = ImageFont.truetype(FB, 16)
+f12b = ImageFont.truetype(FB, 12); f13b = ImageFont.truetype(FB, 13); f16b = ImageFont.truetype(FB, 16)
 W, H = 1200, 720
 PROP = ModeratePropagator()
 INDEX: list[tuple[str, str]] = []
@@ -220,6 +220,34 @@ def save(img, name, caption):
     img.save(OUT / name)
     INDEX.append((name, caption))
     print("wrote", name)
+
+
+# ---------------------------------------------------------------------------
+# Callout helpers for the UI-reference module (FW §11 follow-up — annotated
+# panel screenshots with numbered red circles cross-referenced from docs/training/10-ui-reference.md).
+# ---------------------------------------------------------------------------
+CALLOUT_FILL = (224, 64, 64); CALLOUT_TEXT = (255, 255, 255); CALLOUT_R = 10
+
+
+def callout(d, x, y, n):
+    """Numbered red circle at (x, y) — center coordinates."""
+    d.ellipse([x - CALLOUT_R, y - CALLOUT_R, x + CALLOUT_R, y + CALLOUT_R],
+              fill=CALLOUT_FILL, outline=(255, 255, 255), width=2)
+    s = str(n)
+    # Crude centering — DejaVuSansMono digits are roughly 7 px wide × 11 px tall at f12
+    cw = 6 if len(s) == 1 else 10
+    d.text((x - cw // 2, y - 7), s, font=f12, fill=CALLOUT_TEXT)
+
+
+def legend(d, x, y, w, h, title, rows):
+    """Small numbered legend panel (rows = [(n, label), ...])."""
+    d.rounded_rectangle([x, y, x + w, y + h], radius=6, fill=PANEL, outline=BORDER)
+    d.text((x + 10, y + 8), title, font=f13b, fill=MUTED)
+    yy = y + 28
+    for n, label in rows:
+        callout(d, x + 20, yy + 6, n)
+        d.text((x + 36, yy + 1), label, font=f12, fill=TEXT); yy += 18
+    return yy
 
 
 def asset_rows(assets):
@@ -1223,6 +1251,657 @@ def s_local_time():
          "Central/Mountain/Pacific/London/Paris/Tokyo/UTC-only options).")
 
 
+# ---------------------------------------------------------------------------
+# UI-reference annotated screenshots (FW follow-up).  Each function renders a
+# schematic of one panel with numbered red callouts that the corresponding
+# table in docs/training/10-ui-reference.md cross-references row-for-row.
+# ---------------------------------------------------------------------------
+
+def _ref_save(img, fname, caption):
+    save(img, fname, caption)
+
+
+def s_ref_header():
+    img, d = canvas(None, "UI reference — header / toolbar (always visible)")
+    # Re-paint the toolbar with sample controls, wrapped to two rows so all 23 fit
+    tx, ty = panel(d, 12, 66, W - 24, 140, "Header — every control (laid out in two rows for legibility)")
+    row1 = [
+        ("Vignette", 110), ("Seed", 50), ("Load", 50), ("Start", 55),
+        ("White", 50), ("Blue", 45), ("Red", 45),
+        ("+1m", 40), ("+10m", 50), ("+1h", 40),
+        ("⟲ Rewind", 80), ("Save", 50), ("Load file", 75),
+    ]
+    row2 = [
+        ("present", 65), ("projector", 75), ("cb-safe", 60), ("hi-contrast", 80),
+        ("large-text", 75), ("Tutorial", 65), ("Inspect", 60),
+        ("⏸ Handover", 90), ("? Help", 55), ("Detach", 55),
+    ]
+    coord = []
+    for row_y_offset, row in [(8, row1), (62, row2)]:
+        x = tx
+        y0 = ty + row_y_offset
+        for lbl, w in row:
+            d.rounded_rectangle([x, y0, x + w, y0 + 26], radius=4, fill=(30, 38, 50), outline=BORDER)
+            d.text((x + 6, y0 + 7), lbl, font=f12, fill=TEXT)
+            coord.append((x + w // 2, y0 + 13))
+            x += w + 6
+    for i, (cx, cy) in enumerate(coord, 1):
+        callout(d, cx, cy - 22, i)
+    # Legend
+    lx, ly = panel(d, 12, 218, W - 24, 460, "Legend (cross-ref `10-ui-reference.md` §1)")
+    rows = [
+        (1,  "Vignette dropdown — pick scenario from the library"),
+        (2,  "Seed — deterministic RNG seed (any non-negative integer)"),
+        (3,  "Load — create the session (must precede Start)"),
+        (4,  "Start — begin the exercise (enabled after Load)"),
+        (5,  "White cell button — facilitator god-view"),
+        (6,  "Blue cell button — player view (fog-of-war)"),
+        (7,  "Red cell button — player view (fog-of-war)"),
+        (8,  "+1 minute step"),
+        (9,  "+10 minute step"),
+        (10, "+1 hour step"),
+        (11, "Rewind to t=0 (deterministic replay)"),
+        (12, "Save — download the session as JSON"),
+        (13, "Load file — resume from a JSON save"),
+        (14, "present — presentation-mode body class"),
+        (15, "projector — projector body class (larger fonts; hides compose)"),
+        (16, "cb-safe — Okabe-Ito colorblind-safe palette"),
+        (17, "hi-contrast — WCAG-AAA palette (black bg, white borders)"),
+        (18, "large-text — 17 px base + larger button hit areas"),
+        (19, "Tutorial — open the vignette's coachmark tour"),
+        (20, "Inspect — open the YAML inspector modal"),
+        (21, "⏸ Handover — blur the screen for hot-seat handoff"),
+        (22, "? Help — open the help modal"),
+        (23, "Detach viewers — pop globe + map into a 2nd window"),
+    ]
+    legend(d, lx, ly, W - 48, 420, "Header controls", rows)
+    _ref_save(img, "ref-01-header.png",
+              "UI reference §1 — header / toolbar: 23 always-visible controls (vignette load, cell switcher, time, presets, accessibility, modal triggers).")
+
+
+def s_ref_cell_time():
+    img, d = canvas("blue", "UI reference — Cell & Time sidebar panel")
+    px, py = panel(d, 12, 66, W - 24, 360, "Cell & Time")
+    # Clock block
+    d.text((px, py),       "UTC:",   font=f13, fill=MUTED); callout(d, px - 4,  py + 8, 1)
+    d.text((px + 50, py),  "2030-01-01T00:15:42Z", font=f13b, fill=GREEN)
+    d.text((px, py + 22),  "[Eastern ▾]", font=f13b, fill=TEXT); callout(d, px + 60, py + 30, 2)
+    d.text((px + 110, py + 22), "2029-12-31 19:15:42 EST", font=f13, fill=TEXT); callout(d, px + 200, py + 30, 3)
+    d.text((px, py + 50),  "session abc1234", font=f12, fill=MUTED); callout(d, px - 4, py + 58, 4)
+    # Objectives block
+    d.text((px, py + 80),  "Objectives", font=f13b, fill=MUTED); callout(d, px - 4, py + 88, 5)
+    d.text((px, py + 100), "  blue.image_target: pending", font=f12, fill=TEXT)
+    d.text((px, py + 116), "  blue.return_to_safe: MET",   font=f12, fill=GREEN)
+    # Messages
+    d.text((px, py + 142), "Messages", font=f13b, fill=MUTED); callout(d, px - 4, py + 150, 6)
+    d.text((px, py + 162), "  • SDA: unknown closing on BLUE-COMSAT-1", font=f12, fill=TEXT)
+    # Coaching
+    d.text((px, py + 188), "Coaching", font=f13b, fill=MUTED); callout(d, px - 4, py + 196, 7)
+    d.text((px, py + 208), "  • Discuss the delayed downlink in AAR", font=f12, fill=BLUEc)
+    # Conjunctions
+    d.text((px, py + 234), "Conjunctions", font=f13b, fill=MUTED); callout(d, px - 4, py + 242, 8)
+    d.text((px, py + 254), "  BLUE-COMSAT-1 ↔ UNKNOWN-RPO  18.5 km  CA 10:00  [Evade]", font=f12, fill=TEXT)
+
+    lx, ly = panel(d, 12, 440, W - 24, 220, "Legend (`10-ui-reference.md` §2)")
+    legend(d, lx, ly, W - 48, 180, "Cell & Time controls", [
+        (1, "UTC clock — canonical sim time"),
+        (2, "Timezone selector — Eastern / Central / Mountain / Pacific / London / Paris/Berlin / Tokyo / UTC-only"),
+        (3, "Local time — read-only, follows the selector"),
+        (4, "Session label — read-only id"),
+        (5, "Objectives — current mission flags per cell"),
+        (6, "Messages — inbox for this cell"),
+        (7, "Coaching — facilitator notes due-now for this cell"),
+        (8, "Conjunctions — upcoming close approaches; per-row Evade button"),
+    ])
+    _ref_save(img, "ref-02-cell-time.png",
+              "UI reference §2 — Cell & Time sidebar: clock, timezone selector, objectives, messages, coaching, conjunctions.")
+
+
+def s_ref_injects():
+    img, d = canvas("white", "UI reference — Injects panel (White Cell)")
+    px, py = panel(d, 12, 66, W - 24, 460, "Injects (White Cell)")
+    # Fire row
+    d.rounded_rectangle([px, py, px + 200, py + 24], radius=4, fill=(30,38,50), outline=BORDER)
+    d.text((px + 6, py + 6), "patch_modem ▾", font=f12, fill=TEXT); callout(d, px - 4, py + 12, 1)
+    d.rounded_rectangle([px + 210, py, px + 260, py + 24], radius=4, fill=GREEN, outline=BORDER)
+    d.text((px + 222, py + 6), "Fire", font=f12b, fill=(0,0,0)); callout(d, px + 270, py + 12, 2)
+    # Builder
+    d.text((px, py + 40), "▼  Build / schedule inject", font=f13b, fill=BLUEc); callout(d, px - 4, py + 48, 3)
+    bx = px + 16; by = py + 70
+    d.text((bx, by), "Template: [space_weather_severe ▾]", font=f12, fill=TEXT); callout(d, bx - 22, by + 6, 4)
+    d.text((bx + 320, by), "[Load]", font=f12b, fill=GREEN); callout(d, bx + 360, by + 6, 5)
+    d.text((bx, by + 24), "Effects:", font=f12, fill=MUTED); callout(d, bx - 22, by + 30, 6)
+    d.rounded_rectangle([bx, by + 42, bx + 700, by + 130], radius=4, fill=(10,16,22), outline=BORDER)
+    d.text((bx + 6, by + 48), "[{\"type\":\"space_weather\",\"severity\":\"severe\"},", font=f12, fill=TEXT)
+    d.text((bx + 6, by + 64), " {\"type\":\"message\",\"to\":[\"white\",\"blue\",\"red\"],",  font=f12, fill=TEXT)
+    d.text((bx + 6, by + 80), "  \"text\":\"Geomag storm advisory\"}]",                       font=f12, fill=TEXT)
+    d.text((bx, by + 150), "Schedule: [+ seconds from now ▾]", font=f12, fill=TEXT); callout(d, bx - 22, by + 156, 7)
+    d.text((bx + 320, by + 150), "+s: [60]", font=f12, fill=TEXT); callout(d, bx + 372, by + 156, 8)
+    d.text((bx + 450, by + 150), "UTC: [2030-01-01T00:01:00]", font=f12, fill=MUTED); callout(d, bx + 605, by + 156, 9)
+    d.rounded_rectangle([bx, by + 180, bx + 160, by + 206], radius=4, fill=GREEN, outline=BORDER)
+    d.text((bx + 8, by + 186), "Schedule / fire", font=f12b, fill=(0,0,0)); callout(d, bx + 170, by + 193, 10)
+
+    lx, ly = panel(d, 12, 540, W - 24, 130, "Legend (`10-ui-reference.md` §3)")
+    legend(d, lx, ly, W - 48, 90, "Injects panel controls", [
+        (1, "Inject dropdown — vignette-defined injects"),
+        (2, "Fire — immediate, no scheduling"),
+        (3, "Build / schedule inject — disclosure that opens the builder below"),
+        (4, "Template — 5 library entries + (custom)"),
+        (5, "Load — pre-fill the editor from the template"),
+        (6, "Effects — JSON list editor; any handler in manager._h_inject"),
+        (7, "Schedule mode — Now / +seconds / Absolute UTC"),
+        (8, "+s — relative offset (when Schedule=+s)"),
+        (9, "UTC — datetime-local (when Schedule=absolute)"),
+        (10, "Schedule / fire — submit; past timestamps clamp to now"),
+    ])
+    _ref_save(img, "ref-03-injects.png",
+              "UI reference §3 — Injects panel: fire-by-id row + 10-control builder (template / editor / schedule).")
+
+
+def s_ref_fleet():
+    img, d = canvas("blue", "UI reference — Fleet rail")
+    px, py = panel(d, 12, 66, W - 24, 360, "Fleet SOH rollup (own assets)")
+    # Filter chips
+    chips_x = px; chips_y = py
+    for i, (lbl, w) in enumerate([("All",40),("Bus-red",70),("Payload-degraded",125),("Under-attack",100),("Safed",60)]):
+        d.rounded_rectangle([chips_x, chips_y, chips_x + w, chips_y + 24], radius=12,
+                            fill=(80,120,180) if i == 0 else (30,38,50), outline=BORDER)
+        d.text((chips_x + 8, chips_y + 6), lbl, font=f12, fill=TEXT)
+        chips_x += w + 6
+    callout(d, px - 6, py + 12, 1)
+    # Fleet table
+    ty = py + 40
+    rows = [
+        ("ISR-EO-1",   "satellite", "nominal", GREEN,  "10:32",  ""),
+        ("ISR-EO-2",   "satellite", "degraded",YELLOW, "10:48", "[batch]"),
+        ("ISR-SAR-1",  "satellite", "nominal", GREEN,  "10:55",  ""),
+        ("COMSAT-1",   "satellite", "safed",   RED,    "—",      ""),
+        ("RADAR-N",    "ground",    "nominal", GREEN,  "—",      ""),
+    ]
+    headers = ["ID", "KIND", "HEALTH", "NEXT", ""]
+    table(d, px, ty, headers, [[(c, col) for c, col in
+                                 [(r[0], TEXT), (r[1], MUTED), (r[2], r[3]), (r[4], BLUEc), (r[5], YELLOW)]] for r in rows],
+          [180, 130, 110, 90, 80], lh=26)
+    callout(d, px + 50, ty + 30, 2)
+    callout(d, px + 50, ty + 60, 3)
+
+    lx, ly = panel(d, 12, 440, W - 24, 200, "Legend (`10-ui-reference.md` §4)")
+    legend(d, lx, ly, W - 48, 160, "Fleet rail controls", [
+        (1, "Filter chips — All / Bus-red / Payload-degraded / Under-attack / Safed"),
+        (2, "Row click — open the Subsystem drill-down for that asset"),
+        (3, "Shift-click — toggle the row into the multi-asset batch (see §9)"),
+    ])
+    _ref_save(img, "ref-04-fleet.png",
+              "UI reference §4 — Fleet rail: 5 filter chips + clickable rows (click=drill, shift-click=batch).")
+
+
+def s_ref_tasking():
+    img, d = canvas("blue", "UI reference — Tasking (sensor)")
+    px, py = panel(d, 12, 66, W - 24, 320, "Tasking (sensor)")
+    # Mode chips
+    cx = px
+    for i, lbl in enumerate(["Organic", "SSN request"]):
+        d.rounded_rectangle([cx, py, cx + (60 if i == 0 else 100), py + 24], radius=12,
+                            fill=(80,120,180) if i == 0 else (30,38,50), outline=BORDER)
+        d.text((cx + 6, py + 6), lbl, font=f12, fill=TEXT)
+        cx += (60 if i == 0 else 100) + 6
+    callout(d, px - 6, py + 12, 1)
+    # Row 1
+    y1 = py + 40
+    fields1 = [("Intent: [characterize ▾]", 200, 2), ("Sensor: [auto ▾]", 160, 3),
+               ("Regime: [LEO ▾]", 150, 4), ("Target: [RED-TGT]", 170, 5)]
+    cx = px
+    for lbl, w, n in fields1:
+        d.rounded_rectangle([cx, y1, cx + w, y1 + 22], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((cx + 6, y1 + 5), lbl, font=f12, fill=TEXT); callout(d, cx + w // 2, y1 - 8, n)
+        cx += w + 6
+    # Row 2
+    y2 = y1 + 32
+    fields2 = [("Priority: [priority ▾]", 180, 6)]
+    cx = px
+    for lbl, w, n in fields2:
+        d.rounded_rectangle([cx, y2, cx + w, y2 + 22], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((cx + 6, y2 + 5), lbl, font=f12, fill=TEXT); callout(d, cx + w // 2, y2 - 8, n)
+        cx += w + 6
+    d.rounded_rectangle([cx, y2, cx + 130, y2 + 22], radius=4, fill=GREEN, outline=BORDER)
+    d.text((cx + 8, y2 + 5), "Plan collection", font=f12b, fill=(0,0,0)); callout(d, cx + 65, y2 - 8, 7)
+    # Row 3 (ISR params)
+    y3 = y2 + 32
+    fields3 = [("Mode: [stripmap ▾]", 170, 8), ("Look angle: ▬▬▬● 15°", 200, 9), ("Duration (s): [300]", 170, 10)]
+    cx = px
+    for lbl, w, n in fields3:
+        d.rounded_rectangle([cx, y3, cx + w, y3 + 22], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((cx + 6, y3 + 5), lbl, font=f12, fill=TEXT); callout(d, cx + w // 2, y3 - 8, n)
+        cx += w + 6
+    # Coverage / SSN queue
+    y4 = y3 + 38
+    d.text((px, y4), "✓ coalition · global · 8 eligible sensors (concurrency 3)", font=f12, fill=GREEN)
+    callout(d, px - 6, y4 + 8, 11)
+    y5 = y4 + 24
+    d.text((px, y5), "SSN queue: ssn-1  characterize  RED-TGT  GEO  priority  SCHEDULED  [✕]", font=f12, fill=TEXT)
+    callout(d, px - 6, y5 + 8, 12)
+
+    lx, ly = panel(d, 12, 400, W - 24, 240, "Legend (`10-ui-reference.md` §5)")
+    legend(d, lx, ly, W - 48, 200, "Tasking controls", [
+        (1, "Mode chips — Organic / SSN request"),
+        (2, "Intent — search / track / characterize / cue"),
+        (3, "Sensor — auto or pick an own sensor (Organic only)"),
+        (4, "Regime — LEO / MEO / GEO / HEO / cislunar (SSN only)"),
+        (5, "Target — track id"),
+        (6, "Priority — routine / priority / immediate"),
+        (7, "Plan collection — submit the order or SSN request"),
+        (8, "Beam mode — auto + 6 named modes (EO/SAR-specific)"),
+        (9, "Look angle — 0–45° off-nadir slider"),
+        (10, "Duration — 30–3600 s per collection"),
+        (11, "Coverage line — read-only feasibility hint"),
+        (12, "SSN queue rows — per-row [✕] cancel button"),
+    ])
+    _ref_save(img, "ref-05-tasking.png",
+              "UI reference §5 — Tasking panel: 2 mode chips + intent/sensor/regime/target/priority + ISR beam-mode trio + SSN queue.")
+
+
+def s_ref_compose():
+    img, d = canvas("blue", "UI reference — Satellite command (compose)")
+    px, py = panel(d, 12, 66, W - 24, 380, "Satellite command")
+    # Role chips
+    cx = px
+    for i, lbl in enumerate(["All","Bus","Payload","SDA"]):
+        w = 50 + (10 if lbl == "Payload" else 0)
+        d.rounded_rectangle([cx, py, cx + w, py + 22], radius=12,
+                            fill=(80,120,180) if i == 0 else (30,38,50), outline=BORDER)
+        d.text((cx + 6, py + 5), lbl, font=f12, fill=TEXT)
+        cx += w + 6
+    callout(d, px - 6, py + 10, 1)
+    # Fields
+    y1 = py + 36
+    fields = [("Actor: [ISR-EO-1 ▾]", 200, 2),
+              ("Action: [observe ▾]",  170, 3),
+              ("Target: [RED-TGT]",    180, 4),
+              ("Params: {\"intent\":\"characterize\"}", 320, 5)]
+    cx = px
+    for lbl, w, n in fields:
+        d.rounded_rectangle([cx, y1, cx + w, y1 + 22], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((cx + 6, y1 + 5), lbl, font=f12, fill=TEXT); callout(d, cx + w // 2, y1 - 8, n)
+        cx += w + 6
+    # Preview lines
+    y2 = y1 + 40
+    d.text((px, y2),       "✓ will queue · ground_uplink · window 14:32:10",      font=f12, fill=GREEN);  callout(d, px - 6, y2 + 6, 6)
+    d.text((px, y2 + 18),  "⚠ LOW · esc 1 · reversible · debris none · ambiguous", font=f12, fill=MUTED); callout(d, px - 6, y2 + 24, 7)
+    # Buttons
+    y3 = y2 + 50
+    d.rounded_rectangle([px, y3, px + 110, y3 + 28], radius=4, fill=BLUEc, outline=BORDER)
+    d.text((px + 18, y3 + 8), "Issue order", font=f13b, fill=(0,0,0)); callout(d, px + 55, y3 - 8, 8)
+    d.rounded_rectangle([px + 120, y3, px + 240, y3 + 28], radius=4, fill=(30,38,50), outline=BORDER)
+    d.text((px + 130, y3 + 8), "★ Save preset", font=f12b, fill=YELLOW); callout(d, px + 180, y3 - 8, 9)
+    d.rounded_rectangle([px + 530, y3, px + 670, y3 + 28], radius=4, fill=(30,38,50), outline=BORDER)
+    d.text((px + 540, y3 + 8), "? Coachmark tour", font=f12, fill=BLUEc); callout(d, px + 600, y3 - 8, 10)
+    # Playbook list, ribbon, queue
+    y4 = y3 + 48
+    d.text((px, y4),       "Playbooks: ★ \"daily downlink\"  ★ \"defensive maneuver\"", font=f12, fill=TEXT); callout(d, px - 6, y4 + 6, 11)
+    y5 = y4 + 28
+    d.text((px, y5),       "[cmd  ▮▮  ▮      ]", font=f12, fill=GREEN)
+    d.text((px, y5 + 14),  "[tlm        ▮▮   ]", font=f12, fill=BLUEc)
+    d.text((px, y5 + 28),  "[obs   ▮   ▮▮    ]", font=f12, fill=YELLOW); callout(d, px - 6, y5 + 14, 12)
+    y6 = y5 + 60
+    d.text((px, y6), "Queue: ord-3 ISR-EO-1 observe RED-TGT  ground_uplink  queued  [✕]", font=f12, fill=TEXT)
+    callout(d, px - 6, y6 + 6, 13)
+
+    lx, ly = panel(d, 12, 460, W - 24, 200, "Legend (`10-ui-reference.md` §6)")
+    legend(d, lx, ly, W - 48, 160, "Satellite command controls", [
+        (1, "Role filter chips — All / Bus / Payload / SDA"),
+        (2, "Actor — own assets (filtered by role chip)"),
+        (3, "Action — legal actions for the actor's kind"),
+        (4, "Target — string (track id, station id, …)"),
+        (5, "Params — JSON; pre-filled per action; live dry-run"),
+        (6, "Validity preview — ✓ queue / ✗ reason (read-only)"),
+        (7, "Consequence preview — severity / esc / reversible / attr"),
+        (8, "Issue order — primary submit"),
+        (9, "★ Save preset — store the current order as a playbook"),
+        (10, "? Coachmark tour — start the in-page walkthrough"),
+        (11, "Playbook list — saved presets, click to re-load"),
+        (12, "Pass-timeline ribbon — cmd / tlm / obs lanes, next 6 h"),
+        (13, "Queue rows — per-row cancel button"),
+    ])
+    _ref_save(img, "ref-06-compose.png",
+              "UI reference §6 — Satellite command: 13 compose-form controls (role chip → actor/action/target/params → previews → issue → presets → ribbon → queue).")
+
+
+def s_ref_maneuver():
+    img, d = canvas("blue", "UI reference — Maneuver assistant (Action=maneuver)")
+    px, py = panel(d, 12, 66, W - 24, 380, "Maneuver assistant — mode + fields + Compute")
+    # Mode dropdown
+    d.rounded_rectangle([px, py, px + 250, py + 24], radius=4, fill=(30,38,50), outline=BORDER)
+    d.text((px + 6, py + 6), "Maneuver mode: [lvlh ▾]", font=f12, fill=TEXT); callout(d, px - 6, py + 12, 1)
+    # ECI row
+    y = py + 36
+    d.text((px, y), "ECI:",  font=f13b, fill=BLUEc)
+    for i, lbl in enumerate(["Δv X [0]", "Δv Y [5]", "Δv Z [0]"]):
+        d.rounded_rectangle([px + 60 + i*110, y - 4, px + 150 + i*110, y + 16], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((px + 66 + i*110, y - 1), lbl, font=f12, fill=TEXT)
+    callout(d, px - 6, y + 6, 2)
+    # LVLH
+    y = py + 64
+    d.text((px, y), "LVLH:", font=f13b, fill=BLUEc)
+    for i, lbl in enumerate(["R [0]", "T [5]", "N [0]"]):
+        d.rounded_rectangle([px + 60 + i*90, y - 4, px + 130 + i*90, y + 16], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((px + 66 + i*90, y - 1), lbl, font=f12, fill=TEXT)
+    callout(d, px - 6, y + 6, 3)
+    # finite_burn
+    y = py + 92
+    d.text((px, y), "Finite:", font=f13b, fill=BLUEc)
+    for i, lbl in enumerate(["DirR [0]","DirT [1]","DirN [0]","mag [5]","dur [60]"]):
+        d.rounded_rectangle([px + 60 + i*92, y - 4, px + 140 + i*92, y + 16], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((px + 66 + i*92, y - 1), lbl, font=f12, fill=TEXT)
+    callout(d, px - 6, y + 6, 4)
+    # target_coe
+    y = py + 120
+    d.text((px, y), "T-COE:", font=f13b, fill=BLUEc)
+    for i, lbl in enumerate(["a","e","i","RAAN","ω"]):
+        d.rounded_rectangle([px + 60 + i*90, y - 4, px + 130 + i*90, y + 16], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((px + 66 + i*90, y - 1), lbl + " [keep]", font=f12, fill=MUTED)
+    callout(d, px - 6, y + 6, 5)
+    # hohmann
+    y = py + 148
+    d.text((px, y), "Hohmann:", font=f13b, fill=BLUEc)
+    d.rounded_rectangle([px + 78, y - 4, px + 240, y + 16], radius=4, fill=(30,38,50), outline=BORDER)
+    d.text((px + 84, y - 1), "target alt (km) [600]", font=f12, fill=TEXT)
+    callout(d, px - 6, y + 6, 6)
+    # plane_change
+    y = py + 176
+    d.text((px, y), "Plane chg:", font=f13b, fill=BLUEc)
+    d.rounded_rectangle([px + 78, y - 4, px + 220, y + 16], radius=4, fill=(30,38,50), outline=BORDER)
+    d.text((px + 84, y - 1), "Δi (deg) [5]", font=f12, fill=TEXT)
+    callout(d, px - 6, y + 6, 7)
+    # Compute + result
+    y = py + 220
+    d.rounded_rectangle([px, y, px + 160, y + 28], radius=4, fill=GREEN, outline=BORDER)
+    d.text((px + 12, y + 8), "Compute Δv →", font=f12b, fill=(0,0,0)); callout(d, px + 80, y - 8, 8)
+    d.text((px + 180, y + 8), "Δv = 5.00 m/s · → a 6843 km · e 0.0014 · i 51.6° (LEO)", font=f12, fill=GREEN)
+    callout(d, px + 180, y + 32, 9)
+
+    lx, ly = panel(d, 12, 460, W - 24, 200, "Legend (`10-ui-reference.md` §7)")
+    legend(d, lx, ly, W - 48, 160, "Maneuver assistant controls", [
+        (1, "Maneuver mode — eci / lvlh / finite_burn / target_coe / hohmann / plane_change"),
+        (2, "ECI mode — Δv [x,y,z] m/s in inertial frame"),
+        (3, "LVLH mode — Radial / Along-track / Normal (m/s) in orbit frame"),
+        (4, "Finite-burn — direction + magnitude + duration (s, informational)"),
+        (5, "Target-COE — a/e/i/RAAN/ω; blank=keep current; matches velocity at same true anomaly"),
+        (6, "Hohmann — target altitude (km); 2-burn preview shows second burn"),
+        (7, "Plane-change — Δi (deg, signed); Rodrigues rotation about r̂"),
+        (8, "Compute Δv → — POST /maneuver/compute (read-only)"),
+        (9, "Cost / new-orbit / second-burn preview — read-only result line"),
+    ])
+    _ref_save(img, "ref-07-maneuver.png",
+              "UI reference §7 — Maneuver assistant: 6 entry modes + Compute Δv → preview before commit.")
+
+
+def s_ref_jam():
+    img, d = canvas("blue", "UI reference — Jam assistant (Action=jam)")
+    px, py = panel(d, 12, 66, W - 24, 280, "Jam assistant — modulation + parameters + footprint preview")
+    fields = [
+        ("Modulation: [spot ▾]", 200, 1),
+        ("Power (W) [200]",       150, 2),
+        ("BW (kHz) [1000]",       150, 3),
+        ("Victim BW (kHz) [1000]",180, 4),
+        ("Base P_s [0.9]",        140, 5),
+    ]
+    cx = px
+    for lbl, w, n in fields:
+        d.rounded_rectangle([cx, py, cx + w, py + 24], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((cx + 6, py + 6), lbl, font=f12, fill=TEXT); callout(d, cx + w // 2, py - 8, n)
+        cx += w + 6
+    y2 = py + 50
+    d.rounded_rectangle([px, y2, px + 170, y2 + 28], radius=4, fill=GREEN, outline=BORDER)
+    d.text((px + 8, y2 + 8), "Preview footprint", font=f12b, fill=(0,0,0)); callout(d, px + 80, y2 - 8, 6)
+    d.text((px + 190, y2 + 8), "spot · r 75 km · Ps 0.86", font=f12, fill=GREEN); callout(d, px + 240, y2 + 32, 7)
+    d.text((px, y2 + 50), "radius ≈ 75.0 km · P(success) 0.86 · draw 140 W · detect 50% · attr ambiguous", font=f12, fill=TEXT)
+
+    lx, ly = panel(d, 12, 360, W - 24, 200, "Legend (`10-ui-reference.md` §8)")
+    legend(d, lx, ly, W - 48, 160, "Jam assistant controls", [
+        (1, "Modulation — barrage / spot / sweep / deceptive"),
+        (2, "Power — transmit power in watts (drives effective radius)"),
+        (3, "BW — jammer bandwidth in kHz"),
+        (4, "Victim BW — target signal bandwidth in kHz"),
+        (5, "Base P_s — operator's base success probability (0–1)"),
+        (6, "Preview footprint — POST /jam/compute; renders orange dashed polygon on the 2-D map"),
+        (7, "Summary / result line — radius, Ps, draw, detect, attribution"),
+    ])
+    _ref_save(img, "ref-08-jam.png",
+              "UI reference §8 — Jam assistant: modulation × power × bandwidth → effective-radius + footprint preview.")
+
+
+def s_ref_batch():
+    img, d = canvas("blue", "UI reference — Batch bar + fleet-subset helpers")
+    px, py = panel(d, 12, 66, W - 24, 220, "Batch bar")
+    d.text((px, py), "Batch (3): ISR-EO-1, ISR-EO-2, ISR-SAR-1", font=f12, fill=TEXT)
+    callout(d, px - 6, py + 6, 1)
+    d.rounded_rectangle([px + 480, py - 4, px + 600, py + 24], radius=4, fill=GREEN, outline=BORDER)
+    d.text((px + 492, py + 4), "Issue to all", font=f12b, fill=(0,0,0)); callout(d, px + 540, py - 14, 2)
+    d.rounded_rectangle([px + 610, py - 4, px + 680, py + 24], radius=4, fill=(30,38,50), outline=BORDER)
+    d.text((px + 626, py + 4), "Clear", font=f12b, fill=YELLOW); callout(d, px + 644, py - 14, 3)
+    # Fleet-subset row
+    y2 = py + 40
+    d.text((px, y2 - 4), "Apply to subset:", font=f12, fill=MUTED)
+    cx = px + 120
+    for lbl, w in [("All own",70),("ISR sats",80),("SATCOM",75),("Same group",100)]:
+        d.rounded_rectangle([cx, y2 - 4, cx + w, y2 + 20], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((cx + 6, y2 + 1), lbl, font=f12, fill=TEXT)
+        cx += w + 6
+    callout(d, px + 110, y2 - 14, 4)
+
+    lx, ly = panel(d, 12, 300, W - 24, 200, "Legend (`10-ui-reference.md` §9)")
+    legend(d, lx, ly, W - 48, 160, "Batch bar controls", [
+        (1, "Batch list — read-only; shift-click fleet rows to add/remove"),
+        (2, "Issue to all — POSTs the current compose body once per batched asset"),
+        (3, "Clear — empty the batch"),
+        (4, "Fleet-subset helpers — All own / ISR sats / SATCOM / Same group (predicate-fill)"),
+    ])
+    _ref_save(img, "ref-09-batch.png",
+              "UI reference §9 — Batch bar: shift-click batch + 4 fleet-subset helpers + Issue-to-all / Clear.")
+
+
+def s_ref_globe():
+    img, d = canvas("blue", "UI reference — 3D globe viewer")
+    px, py = panel(d, 12, 66, 700, 340, "3D globe")
+    # toolbar row
+    cx = px
+    for i, lbl in enumerate(["＋","－","tilt ▬▬●▬", "zoom-to [ISR-EO-1 ▾]","map ✓","spin ☐","Reset"]):
+        w = 40 if lbl in ("＋","－") else (110 if "tilt" in lbl else (180 if "zoom" in lbl else 70))
+        d.rounded_rectangle([cx, py, cx + w, py + 22], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((cx + 6, py + 5), lbl, font=f12, fill=TEXT)
+        callout(d, cx + w // 2, py - 8, i + 1)
+        cx += w + 6
+    # Globe sketch
+    cx0, cy0, R = px + 320, py + 180, 90
+    d.ellipse([cx0 - R, cy0 - R, cx0 + R, cy0 + R], fill=(10,20,40), outline=BLUEc, width=2)
+    d.ellipse([cx0 - R - 18, cy0 - 4, cx0 + R + 18, cy0 + 4], outline=YELLOW, width=1)
+    d.text((cx0 - 50, cy0 + R + 10), "drag = rotate · wheel = zoom", font=f12, fill=MUTED)
+    callout(d, cx0 - 70, cy0 - 50, 7)
+    callout(d, cx0 + 80, cy0 + 30, 8)
+
+    lx, ly = panel(d, 728, 66, W - 740, 340, "Legend (`10-ui-reference.md` §10)")
+    legend(d, lx, ly, W - 760, 300, "3D globe controls", [
+        (1, "＋ — zoom in"),
+        (2, "－ — zoom out"),
+        (3, "tilt — slider (–80° to +80°)"),
+        (4, "zoom-to — dropdown of own assets + tracks"),
+        (5, "map — toggle the world coastline + border overlay"),
+        (6, "spin — toggle auto-rotation"),
+        (7, "drag — rotate"),
+        (8, "wheel — zoom"),
+        (None, ""),
+        (None, "Reset — restore the default camera (no callout shown here)"),
+    ])
+    _ref_save(img, "ref-10-globe.png",
+              "UI reference §10 — 3D globe viewer: zoom / tilt / zoom-to / map / spin / Reset + drag-to-rotate + wheel-to-zoom.")
+
+
+def s_ref_map():
+    img, d = canvas("blue", "UI reference — 2D belief map viewer")
+    px, py = panel(d, 12, 66, 700, 340, "2D belief map")
+    cx = px
+    for i, lbl in enumerate(["＋","－","center [ISR-EO-1 ▾]","map ✓","tracks ✓","grid ✓","Reset"]):
+        w = 40 if lbl in ("＋","－") else (180 if "center" in lbl else 75)
+        d.rounded_rectangle([cx, py, cx + w, py + 22], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((cx + 6, py + 5), lbl, font=f12, fill=TEXT)
+        callout(d, cx + w // 2, py - 8, i + 1)
+        cx += w + 6
+    # Map sketch
+    mx0, my0, MW, MH = px + 60, py + 60, 560, 230
+    d.rectangle([mx0, my0, mx0 + MW, my0 + MH], fill=(8,12,18), outline=BORDER)
+    for k in range(-90, 91, 30):
+        ly_ = my0 + MH // 2 - int(k / 90.0 * MH // 2)
+        d.line([mx0, ly_, mx0 + MW, ly_], fill=(28,38,52))
+    d.text((mx0 + 8, my0 + MH - 18), "drag = pan · wheel = zoom", font=f12, fill=MUTED)
+    callout(d, mx0 + 200, my0 + 120, 7)
+    callout(d, mx0 + 360, my0 + 200, 8)
+
+    lx, ly = panel(d, 728, 66, W - 740, 340, "Legend (`10-ui-reference.md` §11)")
+    legend(d, lx, ly, W - 760, 300, "2D map controls", [
+        (1, "＋ — zoom in"),
+        (2, "－ — zoom out"),
+        (3, "center — dropdown of own assets + tracks"),
+        (4, "map — coastlines + country borders overlay"),
+        (5, "tracks — toggle uncertainty rings + track labels"),
+        (6, "grid — 30°-spaced lat/lon graticule"),
+        (7, "drag — pan"),
+        (8, "wheel — zoom"),
+        (None, ""),
+        (None, "Reset — restore the default camera (no callout shown here)"),
+    ])
+    _ref_save(img, "ref-11-map.png",
+              "UI reference §11 — 2D belief map: zoom / center / map / tracks / grid / Reset + drag-to-pan + wheel-to-zoom.")
+
+
+def s_ref_aar():
+    img, d = canvas("white", "UI reference — After-action review (AAR)")
+    px, py = panel(d, 12, 66, W - 24, 320, "After-action review")
+    # Slider row
+    d.line([px, py + 12, px + 700, py + 12], fill=BORDER, width=3)
+    d.ellipse([px + 480 - 6, py + 12 - 6, px + 480 + 6, py + 12 + 6], fill=GREEN)
+    callout(d, px + 360, py - 4, 1)
+    # Bookmark + downloads
+    d.rounded_rectangle([px + 720, py - 2, px + 830, py + 26], radius=4, fill=(30,38,50), outline=BORDER)
+    d.text((px + 728, py + 6), "📌 Bookmark", font=f12, fill=YELLOW); callout(d, px + 775, py - 14, 2)
+    d.text((px + 850, py + 6),  "⬇ CSV", font=f12b, fill=BLUEc); callout(d, px + 870, py - 14, 3)
+    d.text((px + 910, py + 6),  "⬇ JSON", font=f12b, fill=BLUEc); callout(d, px + 930, py - 14, 3)
+    # Bookmark list
+    y2 = py + 50
+    d.text((px, y2), "Bookmarks:  ★ before-engage (t=0:14:08)   ★ first-jam (t=0:21:33)", font=f12, fill=TEXT)
+    callout(d, px - 6, y2 + 6, 4)
+    # Branches
+    y3 = y2 + 28
+    d.rounded_rectangle([px, y3, px + 220, y3 + 26], radius=4, fill=(30,38,50), outline=BORDER)
+    d.text((px + 10, y3 + 6), "＋ Save current branch", font=f12, fill=GREEN); callout(d, px + 110, y3 - 14, 5)
+    d.rounded_rectangle([px + 232, y3, px + 410, y3 + 26], radius=4, fill=(30,38,50), outline=BORDER)
+    d.text((px + 244, y3 + 6), "Compare selected", font=f12, fill=BLUEc); callout(d, px + 320, y3 - 14, 6)
+    d.text((px, y3 + 40), "Branches:  ☐ baseline   ☑ alt-evade   ☐ no-cyber", font=f12, fill=TEXT)
+    callout(d, px - 6, y3 + 46, 7)
+
+    lx, ly = panel(d, 12, 400, W - 24, 240, "Legend (`10-ui-reference.md` §12)")
+    legend(d, lx, ly, W - 48, 200, "AAR controls", [
+        (1, "Scrubber — range slider over event sequence (read-only replay)"),
+        (2, "📌 Bookmark — pin the current sim moment"),
+        (3, "⬇ CSV / ⬇ JSON — download the AAR report"),
+        (4, "Bookmark list — clickable to jump back"),
+        (5, "＋ Save current branch — name the live world for later comparison"),
+        (6, "Compare selected — diff two saved branches"),
+        (7, "Branch list — check boxes select a pair to compare"),
+    ])
+    _ref_save(img, "ref-12-aar.png",
+              "UI reference §12 — AAR: scrubber + bookmarks + CSV/JSON download + branch save/compare.")
+
+
+def s_ref_drill():
+    img, d = canvas("blue", "UI reference — Subsystem drill-down")
+    px, py = panel(d, 12, 66, W - 24, 380, "Subsystem drill-down — ISR-EO-1 (bus + payload + telemetry + recovery)")
+    # Parameter chips
+    chips = ["battery_soc","temp_c","rx_power_dbm","cn0_dbhz","cmd_reject_count","fsw_error_count"]
+    cx = px
+    for c in chips:
+        d.rounded_rectangle([cx, py, cx + 120, py + 22], radius=10, fill=(30,38,50), outline=BORDER)
+        d.text((cx + 6, py + 5), c, font=f12, fill=BLUEc)
+        cx += 126
+    callout(d, px + 60, py - 10, 1)
+    # Toggles
+    y2 = py + 38
+    d.text((px, y2), "[☐ compare to nominal]", font=f12, fill=TEXT); callout(d, px + 80, y2 + 6, 2)
+    d.text((px + 200, y2), "overlay: [battery_soc ▾]", font=f12, fill=TEXT); callout(d, px + 310, y2 + 6, 3)
+    # Graph rectangle
+    gx, gy, GW, GH = px, y2 + 30, 540, 180
+    d.rectangle([gx, gy, gx + GW, gy + GH], fill=(8,12,18), outline=BORDER)
+    for k in range(1, 5):
+        d.line([gx, gy + k * GH // 5, gx + GW, gy + k * GH // 5], fill=(28,38,52))
+    d.text((gx + 8, gy + GH - 18), "telemetry graph (read-only)", font=f12, fill=MUTED)
+    callout(d, gx + 270, gy + 90, 4)
+    # Verb buttons on the right
+    vx = px + 560; vy = y2 + 30
+    for i, vb in enumerate(["eps.shed_load","comms.config_link","def.patch_cyber","cdh.clear_fault"]):
+        d.rounded_rectangle([vx, vy + i*32, vx + 200, vy + 24 + i*32], radius=4, fill=(30,38,50), outline=BORDER)
+        d.text((vx + 8, vy + 6 + i*32), vb, font=f12, fill=GREEN)
+    callout(d, vx + 100, vy - 10, 5)
+    # Recovery strip
+    rx, ry = panel(d, 12, 460, W - 24, 100, "Recovery strip (when safed)")
+    d.text((rx, ry), "Diagnosis: cyber  ·  passes used 0/3", font=f12, fill=YELLOW)
+    d.rounded_rectangle([rx, ry + 24, rx + 160, ry + 50], radius=4, fill=GREEN, outline=BORDER)
+    d.text((rx + 18, ry + 30), "Begin recovery", font=f12b, fill=(0,0,0)); callout(d, rx + 78, ry + 60, 6)
+    d.rounded_rectangle([rx + 180, ry + 24, rx + 360, ry + 50], radius=4, fill=(30,38,50), outline=BORDER)
+    d.text((rx + 190, ry + 30), "Patch (def.patch_cyber)", font=f12, fill=BLUEc); callout(d, rx + 270, ry + 60, 7)
+
+    lx, ly = panel(d, 12, 580, W - 24, 90, "Legend (`10-ui-reference.md` §13)")
+    legend(d, lx, ly, W - 48, 56, "Drill-down controls", [
+        (1, "Parameter chips — click to graph that parameter"),
+        (2, "compare to nominal — toggle the ghost baseline overlay"),
+        (3, "overlay — pick a second parameter to overlay on the graph"),
+        (4, "Graph canvas — read-only line graph (60-pt rolling)"),
+        (5, "Verb buttons — one-click load the command into the compose form"),
+        (6, "Begin recovery — start the multi-pass safe-mode chain"),
+        (7, "Patch (def.patch_cyber) — load the patch-cyber command pre-filled"),
+    ])
+    _ref_save(img, "ref-13-drill.png",
+              "UI reference §13 — Subsystem drill-down: parameter chips + nominal/overlay toggles + graph + per-verb buttons + recovery strip.")
+
+
+def s_ref_modals_keys():
+    img, d = canvas(None, "UI reference — Modals, overlays, keyboard & mouse")
+    # Modals legend
+    px, py = panel(d, 12, 66, (W - 36) // 2, 360, "Modals & overlays")
+    rows = [
+        ("Command palette",  "⌘K / Ctrl+K opens.  Text input + result list."),
+        ("",                 "↑/↓ navigate · Enter run · Esc close."),
+        ("Handover overlay", "⏸ Handover button blurs screen; Resume to return."),
+        ("Help modal",       "? Help opens; Close to dismiss."),
+        ("Tutorial panel",   "Tutorial button opens; click steps to progress; ✕ close."),
+        ("Coachmark tour",   "? Coachmark tour starts; Back / Next / ✕ Close."),
+        ("Vignette inspector","Inspect opens YAML; ⬇ Download YAML · Close."),
+    ]
+    yy = py
+    for lbl, body in rows:
+        d.text((px, yy), lbl, font=f13b, fill=BLUEc); d.text((px + 180, yy), body, font=f12, fill=TEXT); yy += 22
+    # Keyboard shortcuts legend
+    kx, ky = panel(d, 24 + (W - 36) // 2, 66, (W - 36) // 2, 360, "Keyboard & mouse")
+    krows = [
+        ("j / k",         "cycle through actor select"),
+        ("c",             "focus the compose form"),
+        ("g",             "graph the selected actor's telemetry"),
+        ("⌘K / Ctrl-K",   "open command palette"),
+        ("Esc",           "close palette / coachmark / handover"),
+        ("↑ / ↓",         "navigate palette items"),
+        ("Enter",         "run highlighted palette item"),
+        ("Shift+click",   "toggle a fleet row into the batch"),
+        ("",              ""),
+        ("Map / globe drag",    "pan (map) / rotate (globe)"),
+        ("Map / globe wheel",   "zoom"),
+        ("AAR scrubber drag",   "scrub the event log"),
+        ("Fleet row click",     "open Subsystem drill-down"),
+    ]
+    yy = ky
+    for lbl, body in krows:
+        d.text((kx, yy), lbl, font=f13b, fill=GREEN); d.text((kx + 170, yy), body, font=f12, fill=TEXT); yy += 22
+    _ref_save(img, "ref-14-modals-keys.png",
+              "UI reference §14 — Modals & overlays + keyboard shortcuts + mouse / canvas interactions.")
+
+
 def main():
     s_gallery()
     m = SessionManager(load_vignette("leo-isr-denial"), seed=1); m.start()
@@ -1257,6 +1936,21 @@ def main():
     s_inject_builder()
     s_accessibility_toggles()
     s_local_time()
+    # UI reference module — 14 annotated panels (docs/training/10-ui-reference.md).
+    s_ref_header()
+    s_ref_cell_time()
+    s_ref_injects()
+    s_ref_fleet()
+    s_ref_tasking()
+    s_ref_compose()
+    s_ref_maneuver()
+    s_ref_jam()
+    s_ref_batch()
+    s_ref_globe()
+    s_ref_map()
+    s_ref_aar()
+    s_ref_drill()
+    s_ref_modals_keys()
     write_index()
 
 

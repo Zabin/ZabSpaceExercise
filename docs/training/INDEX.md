@@ -25,6 +25,7 @@ observe, or attack when an access window permits.
 | [07-white-cell-facilitation](07-white-cell-facilitation.md) | Running an exercise as White Cell. |
 | [08-http-api-reference](08-http-api-reference.md) | The HTTP API surface for clients/integration. |
 | [09-troubleshooting-and-glossary](09-troubleshooting-and-glossary.md) | Common issues + glossary. |
+| [10-ui-reference](10-ui-reference.md) | Exhaustive UI reference — every control, dropdown, input, keyboard shortcut, and mouse interaction across all 14 panels, with annotated screenshots. |
 
 ## See also
 

@@ -1,5 +1,9 @@
 [← Training index](INDEX.md) · [↑ Docs index](../INDEX.md)
 
+> **Reference companion.** This module is a narrative tour. For a complete enumeration of every
+> control, dropdown, slider, and keyboard shortcut — with annotated screenshots — see
+> [`10-ui-reference.md`](10-ui-reference.md).
+
 ## 3. The interface at a glance
 
 The tool is built around three **cells**, selected with the buttons at the top:
