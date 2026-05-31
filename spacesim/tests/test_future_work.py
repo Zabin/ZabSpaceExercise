@@ -446,3 +446,67 @@ def test_prop_collision_avoid_through_session_and_replay():
     assert mgr.world.conjunctions == []     # warning consumed by the evasive burn
     # Replay equality: the deterministic chain reproduces the state byte-identically.
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
+
+
+# ---------------------------------------------------------------------------
+# §7 SSN budget triage + commercial third-party feed
+# ---------------------------------------------------------------------------
+
+def test_ssn_budget_exhaustion_rejects_request():
+    """Once the cell's budget is spent, further requests reject with budget_exhausted."""
+    from spacesim.engine.ssn import SSNRequest
+    mgr = SessionManager(load_vignette("sda-custody-hunt"),
+                         overrides={"ssn_blue_budget": 10}, seed=1)
+    mgr.start()
+    # priority costs 7 — first request consumes most of the budget; second priority fails.
+    ack1 = mgr.ssn.submit_request("blue", SSNRequest(id="", cell="blue", intent="characterize",
+                                                      target="RED-OBJ", regime="MEO",
+                                                      priority="priority"))
+    assert ack1.ok, ack1.reason
+    ack2 = mgr.ssn.submit_request("blue", SSNRequest(id="", cell="blue", intent="characterize",
+                                                      target="RED-OBJ", regime="MEO",
+                                                      priority="priority"))
+    assert not ack2.ok and ack2.reason == "budget_exhausted"
+
+
+def test_ssn_budget_unlimited_when_not_set():
+    """With no budget configured, the legacy unlimited-tasking behaviour stays."""
+    from spacesim.engine.ssn import SSNRequest
+    mgr = SessionManager(load_vignette("sda-custody-hunt"), seed=1)
+    mgr.start()
+    assert mgr.ssn.budgets is None
+    for _ in range(5):
+        ack = mgr.ssn.submit_request("blue", SSNRequest(id="", cell="blue", intent="characterize",
+                                                         target="RED-OBJ", regime="MEO",
+                                                         priority="priority"))
+        # Either ok or some other domain reason — never the new budget reason.
+        if not ack.ok:
+            assert ack.reason != "budget_exhausted"
+
+
+def test_ssn_commercial_network_instantiated_and_routable():
+    """ssn_commercial_dispersion adds a 'commercial' network usable by either cell."""
+    from spacesim.engine.ssn import SSNRequest
+    mgr = SessionManager(load_vignette("sda-custody-hunt"),
+                         overrides={"ssn_commercial_dispersion": "regional"}, seed=1)
+    mgr.start()
+    assert "commercial" in mgr.ssn.networks
+    # Blue routes a request through the commercial network — should not collide with blue's own.
+    ack = mgr.ssn.submit_request("blue", SSNRequest(id="", cell="blue", intent="characterize",
+                                                     target="RED-OBJ", regime="MEO",
+                                                     priority="routine", network="commercial"))
+    assert ack.ok, ack.reason
+
+
+def test_commercial_costs_double_against_budget():
+    """A commercial-network request costs 2× the priority's base PRIORITY_COST."""
+    from spacesim.engine.ssn import SSNRequest, PRIORITY_COST
+    mgr = SessionManager(load_vignette("sda-custody-hunt"),
+                         overrides={"ssn_blue_budget": PRIORITY_COST["routine"] * 2 - 1,
+                                    "ssn_commercial_dispersion": "regional"}, seed=1)
+    mgr.start()
+    # Commercial routine costs 2*2 = 4; budget is 3 → rejects.
+    ack = mgr.ssn.submit_request("blue", SSNRequest(id="", cell="blue", intent="characterize",
+                                                     target="RED-OBJ", regime="MEO",
+                                                     priority="routine", network="commercial"))
+    assert not ack.ok and ack.reason == "budget_exhausted"

@@ -44,7 +44,34 @@ class SessionManager:
             access_config=self.osys.access_config,
         )
         # Mock SSN — per-cell networks, request-tasked. Constructed always (empty dict if vignette opted out).
-        self.ssn = SSNSystem(self.sim, dict(self.ctx.ssn_networks), access_config=self.osys.access_config)
+        # FUTURE-WORK §7 — optional per-cell collection budget. Vignette params:
+        #   ssn_blue_budget / ssn_red_budget (int); None = unlimited (legacy default).
+        ssn_budgets = None
+        bbudget = self.ctx.param_values.get("ssn_blue_budget")
+        rbudget = self.ctx.param_values.get("ssn_red_budget")
+        if overrides is not None:
+            bbudget = overrides.get("ssn_blue_budget", bbudget)
+            rbudget = overrides.get("ssn_red_budget", rbudget)
+        if bbudget is not None or rbudget is not None:
+            ssn_budgets = {}
+            if bbudget is not None: ssn_budgets["blue"] = int(bbudget)
+            if rbudget is not None: ssn_budgets["red"] = int(rbudget)
+        # FUTURE-WORK §7 — third-party / commercial SSN feed. Vignette param
+        # ssn_commercial_dispersion (off|sparse|regional|global|proliferated) opts in.
+        ssn_nets = dict(self.ctx.ssn_networks)
+        ccdisp = self.ctx.param_values.get("ssn_commercial_dispersion", "off")
+        if overrides is not None:
+            ccdisp = overrides.get("ssn_commercial_dispersion", ccdisp)
+        if str(ccdisp) not in ("off", ""):
+            from spacesim.engine.ssn import instantiate_network as _ssn_instantiate
+            # Network is keyed "commercial" (so submit_request finds it via req.network); sensors
+            # themselves are owned 'neutral' since Sensor.owner is Literal[blue|red|neutral].
+            cnet = _ssn_instantiate(self.world, "commercial", str(ccdisp),
+                                     affiliation="commercial", sensor_owner="neutral")
+            if cnet is not None:
+                ssn_nets["commercial"] = cnet
+        self.ssn = SSNSystem(self.sim, ssn_nets,
+                              access_config=self.osys.access_config, budgets=ssn_budgets)
         # FUTURE-WORK §7: organic→SSN auto-cueing. Opt-in via parameter ssn_auto_cue (vignette
         # default OR session override accepted, since not every vignette declares the dial).
         ssn_auto = bool(self.ctx.param_values.get("ssn_auto_cue", False))

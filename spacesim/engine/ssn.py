@@ -37,6 +37,10 @@ _CONCURRENCY = {"sparse": 1, "regional": 2, "global": 3, "proliferated": 5}
 # Hybrid SLA: max-wait per priority (seconds); processing/dissemination delay per priority.
 MAX_WAIT_S       = {"immediate": 900, "priority": 3600, "routine": 21600}
 PROCESSING_DELAY_S = {"immediate": 120, "priority": 600, "routine": 1800}
+# FUTURE-WORK §7 — per-priority "cost" (collection-budget units). Forces White-Cell triage
+# when the budget is finite; defaults are tuned so a 100-unit budget covers ~5 immediate /
+# ~15 priority / ~50 routine requests over a session.
+PRIORITY_COST    = {"immediate": 20, "priority": 7, "routine": 2}
 COALITION_DELAY_MULTIPLIER = 1.5         # coalition queues a partner-shared product (§7.1)
 
 # Sensor type → regimes the SSN deems eligible (`SSN-DESIGN.md` §5 matrix). Ground radar is
@@ -100,6 +104,9 @@ class SSNRequest:
     product_at: Optional[int] = None
     state: str = "DRAFT"                      # DRAFT | SCHEDULED | COLLECTED | DELIVERED | CANCELLED | FAILED
     fail_reason: Optional[str] = None
+    # FUTURE-WORK §7 — route through a non-organic network (e.g. "commercial"). When empty,
+    # uses the cell's own network (legacy default). When set, looks up self.networks[network].
+    network: str = ""
 
 
 @dataclass
@@ -120,11 +127,13 @@ def _network_prefix(cell: str) -> str:
 
 
 def instantiate_network(world: WorldState, cell: str, dispersion: str,
-                        affiliation: str = "") -> Optional[SSNNetwork]:
+                        affiliation: str = "",
+                        sensor_owner: Optional[str] = None) -> Optional[SSNNetwork]:
     """Generate the network's sensors into ``world.sensors`` and return its ``SSNNetwork``.
 
     ``dispersion=='off'`` returns ``None``. Affiliations default per the design: Blue → coalition,
-    Red → national.
+    Red → national. ``sensor_owner`` lets the commercial network use ``neutral`` sensors while
+    keeping the network keyed by ``cell="commercial"`` (FUTURE-WORK §7).
     """
     if dispersion in (None, "off", ""):
         return None
@@ -132,17 +141,18 @@ def instantiate_network(world: WorldState, cell: str, dispersion: str,
         return None
     aff = affiliation or ("coalition" if cell == "blue" else "national")
     prefix = _network_prefix(cell)
+    own = sensor_owner if sensor_owner is not None else cell
     sensor_ids: list[str] = []
 
     for i, (lat, lon) in enumerate(_radar_sites(dispersion), start=1):
         sid = f"{prefix}-RDR-{i}"
-        world.sensors[sid] = Sensor(id=sid, owner=cell, kind="ground_radar",
+        world.sensors[sid] = Sensor(id=sid, owner=own, kind="ground_radar",
                                     location=GeoPoint(lat_deg=lat, lon_deg=lon, alt_m=0.0),
                                     network=True)
         sensor_ids.append(sid)
     for i, (lat, lon) in enumerate(_optical_sites(dispersion), start=1):
         sid = f"{prefix}-OPT-{i}"
-        world.sensors[sid] = Sensor(id=sid, owner=cell, kind="ground_optical",
+        world.sensors[sid] = Sensor(id=sid, owner=own, kind="ground_optical",
                                     location=GeoPoint(lat_deg=lat, lon_deg=lon, alt_m=0.0),
                                     needs_lighting=True, network=True)
         sensor_ids.append(sid)
@@ -157,7 +167,7 @@ def instantiate_network(world: WorldState, cell: str, dispersion: str,
         i_deg = 28.0 if is_cislunar else 0.0
         orbit = OrbitState(a_m=a_m, e=e, i_deg=i_deg, raan_deg=raan_deg,
                            argp_deg=0.0, ta_deg=0.0, epoch=world.now)
-        world.sensors[sid] = Sensor(id=sid, owner=cell, kind="space_based", orbit=orbit, network=True)
+        world.sensors[sid] = Sensor(id=sid, owner=own, kind="space_based", orbit=orbit, network=True)
         sensor_ids.append(sid)
 
     concurrency = max(1, _CONCURRENCY[dispersion] - (1 if aff == "coalition" else 0))
@@ -170,7 +180,8 @@ def instantiate_network(world: WorldState, cell: str, dispersion: str,
 class SSNSystem:
     """Per-cell SSN — submission resolution + deterministic ``ssn_collect``/``ssn_deliver`` events."""
 
-    def __init__(self, sim, networks: dict[str, SSNNetwork], access_config=None) -> None:
+    def __init__(self, sim, networks: dict[str, SSNNetwork], access_config=None,
+                 budgets: Optional[dict[str, int]] = None) -> None:
         self.sim = sim
         self.networks = networks                                  # cell -> SSNNetwork
         self.requests: dict[str, SSNRequest] = {}
@@ -179,6 +190,9 @@ class SSNSystem:
         self.access_config = access_config
         self._bookings: dict[str, list[tuple[int, int]]] = {}     # sensor_id -> [(start, end)]
         self._inflight: dict[str, int] = {c: 0 for c in networks}
+        # FUTURE-WORK §7 — collection-budget triage. None = unlimited (current default).
+        # Otherwise: per-cell remaining budget units, decremented by PRIORITY_COST on submit.
+        self.budgets: Optional[dict[str, int]] = dict(budgets) if budgets is not None else None
         sim.register_handler("ssn_collect", self._h_collect)
         sim.register_handler("ssn_deliver", self._h_deliver)
 
@@ -206,7 +220,11 @@ class SSNSystem:
 
     def submit_request(self, cell: str, req: SSNRequest) -> SSNAck:
         """Hybrid resolution + deterministic scheduling. Read-only on failure paths."""
-        net = self.networks.get(cell)
+        # FUTURE-WORK §7 — third-party / commercial network routing. If req.network is set
+        # (e.g. "commercial"), use that network's sensors instead of the cell's organic SSN.
+        # Falls back to the cell's own network when unset (legacy behaviour).
+        net_key = req.network or cell
+        net = self.networks.get(net_key)
         if net is None:
             return SSNAck(ok=False, reason="no_network")
         if req.regime not in {"LEO", "MEO", "GEO", "HEO", "cislunar"}:
@@ -215,6 +233,13 @@ class SSNSystem:
             return SSNAck(ok=False, reason="bad_priority")
         if req.target not in self.world.assets:
             return SSNAck(ok=False, reason="no_such_target")
+        # FUTURE-WORK §7 — collection-budget triage. Commercial requests cost 2× as much.
+        if self.budgets is not None:
+            cost = PRIORITY_COST[req.priority] * (2 if req.network == "commercial" else 1)
+            remaining = self.budgets.get(cell, 0)
+            if cost > remaining:
+                return SSNAck(ok=False, reason="budget_exhausted")
+            self.budgets[cell] = remaining - cost
 
         req.submitted_at = self.sim.clock.now
         eligible = self._eligible(net, req.regime)
