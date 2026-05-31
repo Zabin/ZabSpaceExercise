@@ -133,6 +133,37 @@ body.cb {
   --accent2: #0072B2;   /* blue */
 }
 
+/* High-contrast palette — boosts contrast for low-vision use without changing layout. */
+body.hi-contrast {
+  --bg: #000;
+  --panel: #0a0a0a;
+  --border: #ffffff;
+  --text: #ffffff;
+  --muted: #d0d0d0;
+  --accent: #ffff00;
+  --accent2: #00ffff;
+  --green: #00ff80;
+  --yellow: #ffff00;
+  --red: #ff4040;
+}
+body.hi-contrast .panel,
+body.hi-contrast select,
+body.hi-contrast input,
+body.hi-contrast button {
+  border-color: #ffffff !important;
+}
+
+/* Large-text mode — bumps base font size + button hit areas. */
+body.large-text {
+  font-size: 17px;
+}
+body.large-text button,
+body.large-text select,
+body.large-text input {
+  padding: 4px 8px;
+  font-size: 1em;
+}
+
 /* FUTURE-WORK §10.A.4 — Diff-highlight pulse on a telemetry value that just changed.
    The .diff-pulse class is added by JS for ~600 ms whenever a cell's value updates. */
 @keyframes diff-pulse {

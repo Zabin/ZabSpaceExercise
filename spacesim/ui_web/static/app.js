@@ -408,6 +408,12 @@ function onActionChange() {
   const isMnvr = action === "maneuver";
   $("mnvr-panel") && ($("mnvr-panel").style.display = isMnvr ? "" : "none");
   if (isMnvr) mnvrModeChange();
+  // Show/hide the jam parameter assistant.
+  const isJam = action === "jam";
+  $("jam-panel") && ($("jam-panel").style.display = isJam ? "" : "none");
+  if (isJam) jamSummaryUpdate();
+  // Clear any prior jam preview footprint
+  if (!isJam && window.JAM_PREVIEW) { JAM_PREVIEW = null; if (typeof drawMap === "function") drawMap(); }
   previewOrder();
 }
 
@@ -511,6 +517,64 @@ async function computeManeuver() {
   // Load the computed dv into o-params so the order system will use it
   const via = mp.via || "GS-NORTH";
   $("o-params").value = JSON.stringify({ dv: res.dv, via });
+  previewOrder();
+}
+
+// -- Jam parameter assistant --------------------------------------------------
+
+// Cached preview footprint drawn on the 2-D map until the user changes action/actor.
+let JAM_PREVIEW = null;
+
+function jamGatherParams() {
+  return {
+    modulation: $("jam-mod")?.value || "barrage",
+    power_w: parseFloat($("jam-power")?.value || "100"),
+    bandwidth_hz: parseFloat($("jam-bw")?.value || "1000") * 1000,
+    victim_bandwidth_hz: parseFloat($("jam-vbw")?.value || "1000") * 1000,
+    success_prob: parseFloat($("jam-pbase")?.value || "0.9"),
+  };
+}
+
+function jamSummaryUpdate() {
+  const mp = jamGatherParams();
+  const el = $("jam-summary");
+  if (el) el.textContent = `${mp.modulation} · ${mp.power_w}W · BW ${(mp.bandwidth_hz / 1000)|0}/${(mp.victim_bandwidth_hz / 1000)|0} kHz`;
+}
+
+async function computeJam() {
+  if (!SID) { $("jam-result").textContent = "No active session."; return; }
+  const actor = $("o-actor").value;
+  if (!actor) { $("jam-result").textContent = "Select a jammer first."; return; }
+  const cell = CELL === "white" ? (ASSETS[actor]?.owner || "blue") : CELL;
+  const mp = jamGatherParams();
+  let res;
+  try { res = await api.post(`/api/sessions/${SID}/jam/compute`, { cell, actor, params: mp }); }
+  catch { $("jam-result").textContent = "Server error"; return; }
+
+  if (res.error) {
+    $("jam-result").innerHTML = `<span style="color:var(--red)">${res.error}</span>`;
+    JAM_PREVIEW = null;
+    if (typeof drawMap === "function") drawMap();
+    return;
+  }
+
+  const html = `<span class="ok">radius ≈ ${res.effective_radius_km} km · P<sub>s</sub> = ${res.success_prob}\n` +
+               `draw ${res.power_draw_w} W · detect ${(res.detectability*100)|0}% · attr ${res.attribution_default}</span>`;
+  $("jam-result").innerHTML = html;
+  $("jam-summary").textContent = `${res.modulation} · r${res.effective_radius_km}km · Ps${res.success_prob}`;
+
+  // Cache for the map overlay
+  JAM_PREVIEW = {
+    polygon: res.footprint_polygon,
+    center: res.center,
+    radius_km: res.effective_radius_km,
+    modulation: res.modulation,
+  };
+  if (typeof drawMap === "function") drawMap();
+
+  // Pre-fill the order params so the issued jam uses these settings
+  const cur = (() => { try { return JSON.parse($("o-params").value || "{}"); } catch { return {}; } })();
+  $("o-params").value = JSON.stringify({ ...cur, ...mp });
   previewOrder();
 }
 
@@ -740,6 +804,30 @@ function drawMap() {
     x.fillStyle = x.strokeStyle; x.beginPath(); x.arc(px, py, 2, 0, 2 * Math.PI); x.fill();
     x.fillStyle = "#9fb0c0"; x.fillText(`${t.object} ±${t.uncertainty_km}km`, px + 6, py - 6);
   });
+  // Jam preview footprint (read-only overlay, cleared when action != jam)
+  if (window.JAM_PREVIEW && JAM_PREVIEW.polygon && JAM_PREVIEW.polygon.length > 2) {
+    x.save();
+    x.strokeStyle = "rgba(255,120,80,0.85)";
+    x.fillStyle   = "rgba(255,120,80,0.10)";
+    x.lineWidth = 1.5;
+    x.setLineDash([6, 4]);
+    x.beginPath();
+    JAM_PREVIEW.polygon.forEach((c, i) => {
+      const px_ = PX(c[1]), py_ = PY(c[0]);
+      if (i === 0) x.moveTo(px_, py_); else x.lineTo(px_, py_);
+    });
+    x.closePath(); x.fill(); x.stroke();
+    x.setLineDash([]);
+    if (JAM_PREVIEW.center) {
+      const cx = PX(JAM_PREVIEW.center.lon_deg);
+      const cy = PY(JAM_PREVIEW.center.lat_deg);
+      x.fillStyle = "rgba(255,120,80,0.95)";
+      x.beginPath(); x.arc(cx, cy, 3, 0, 2*Math.PI); x.fill();
+      x.font = "10px monospace";
+      x.fillText(`jam ${JAM_PREVIEW.modulation} r${JAM_PREVIEW.radius_km}km`, cx + 5, cy - 4);
+    }
+    x.restore();
+  }
   // ISR collection footprints — translucent filled polygon + label with beam mode
   if (mapCam.tracks !== false && SCENE.footprints && SCENE.footprints.length) {
     SCENE.footprints.forEach((fp) => {
@@ -1176,6 +1264,8 @@ window.drawTerminator = function (ctx, c, PX, PY, sunLat, sunLon) {
 addEventListener("DOMContentLoaded", () => {
   applyToggle("projector", "projector");
   applyToggle("cb", "cb");
+  applyToggle("hc", "hi-contrast");
+  applyToggle("bigtext", "large-text");
   const sp = $("save-playbook");
   if (sp) sp.addEventListener("click", () => {
     const body = composeBody(); if (!body) return;
@@ -1224,6 +1314,8 @@ const PALETTE = {
     items.push({ label: "export AAR (JSON)",    tag: "aar",   run: () => SID && (location.href = `/api/sessions/${SID}/aar/export.json`) });
     items.push({ label: "toggle projector mode", tag: "view", run: () => { const cb = $("projector"); cb.checked = !cb.checked; cb.dispatchEvent(new Event("change")); }});
     items.push({ label: "toggle cb-safe palette", tag: "view", run: () => { const cb = $("cb"); cb.checked = !cb.checked; cb.dispatchEvent(new Event("change")); }});
+    items.push({ label: "toggle high-contrast mode", tag: "view", run: () => { const hc = $("hc"); hc.checked = !hc.checked; hc.dispatchEvent(new Event("change")); }});
+    items.push({ label: "toggle large-text mode", tag: "view", run: () => { const bt = $("bigtext"); bt.checked = !bt.checked; bt.dispatchEvent(new Event("change")); }});
     // Assets from the cell's view.
     if (SCENE) {
       SCENE.assets.forEach((a) => {
@@ -1533,5 +1625,15 @@ addEventListener("DOMContentLoaded", () => {
   ].forEach((id) => {
     const el = $(id);
     if (el) el.addEventListener("change", computeManeuver);
+  });
+});
+
+// Jam parameter assistant listeners.
+addEventListener("DOMContentLoaded", () => {
+  const computeBtn = $("jam-compute");
+  if (computeBtn) computeBtn.addEventListener("click", computeJam);
+  ["jam-mod", "jam-power", "jam-bw", "jam-vbw", "jam-pbase"].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener("change", jamSummaryUpdate);
   });
 });

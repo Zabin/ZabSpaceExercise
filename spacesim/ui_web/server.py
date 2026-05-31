@@ -78,6 +78,12 @@ class ManeuverComputeRequest(BaseModel):
     params: dict = {}
 
 
+class JamComputeRequest(BaseModel):
+    cell: str
+    actor: str
+    params: dict = {}    # modulation, power_w, bandwidth_hz, victim_bandwidth_hz, success_prob
+
+
 class RecoveryRequest(BaseModel):
     via: str
 
@@ -186,6 +192,12 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Compute an ECI impulse from a higher-level maneuver description (read-only)."""
         _require(sid)
         return api.compute_maneuver(sid, req.cell, req.actor, req.mode, req.params)
+
+    @app.post("/api/sessions/{sid}/jam/compute")
+    def jam_compute(sid: str, req: JamComputeRequest) -> dict:
+        """Preview a jam order's effective radius, success probability, and footprint."""
+        _require(sid)
+        return api.compute_jam(sid, req.cell, req.actor, req.params)
 
     @app.post("/api/sessions/{sid}/cancel")
     def cancel_order(sid: str, req: CancelRequest) -> Ack:

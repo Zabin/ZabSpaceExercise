@@ -42,6 +42,8 @@
     <label class="toggle"><input id="present" type="checkbox"> present</label>
     <label class="toggle" title="Projector / White-Cell mode — hides compose form, larger fonts"><input id="projector" type="checkbox"> projector</label>
     <label class="toggle" title="Color-blind safe palette (Okabe-Ito)"><input id="cb" type="checkbox"> cb-safe</label>
+    <label class="toggle" title="High-contrast mode — increases text contrast for low-vision use"><input id="hc" type="checkbox"> hi-contrast</label>
+    <label class="toggle" title="Large-text mode — bumps base font size for projector/low-vision use"><input id="bigtext" type="checkbox"> large-text</label>
     <button id="tutorial" title="Toggle the vignette's tutorial coachmark panel">Tutorial</button>
     <button id="inspect-vignette" title="Inspect or fork the loaded vignette (YAML)">Inspect</button>
     <button id="handover-btn" title="Blank/blur the screen to hand off the console between operators">⏸ Handover</button>
@@ -222,6 +224,30 @@
           <span id="mnvr-cost" class="muted" style="align-self:center"></span>
         </div>
         <div id="mnvr-result" class="mnvr-result"></div>
+      </div>
+
+      <!-- Jam parameter assistant (shown only when action = jam) -->
+      <div id="jam-panel" style="display:none">
+        <hr style="border-color:rgba(255,255,255,0.1);margin:6px 0">
+        <div class="mnvr-fields">
+          <label>Modulation
+            <select id="jam-mod">
+              <option value="barrage">Barrage</option>
+              <option value="spot">Spot</option>
+              <option value="sweep">Sweep</option>
+              <option value="deceptive">Deceptive</option>
+            </select>
+          </label>
+          <label>Power (W)<input id="jam-power" type="number" step="10" min="1" value="100"></label>
+          <label>BW (kHz)<input id="jam-bw" type="number" step="100" min="0" value="1000"></label>
+          <label>Victim BW (kHz)<input id="jam-vbw" type="number" step="100" min="0" value="1000"></label>
+          <label>Base P<sub>s</sub><input id="jam-pbase" type="number" step="0.05" min="0" max="1" value="0.9"></label>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button id="jam-compute">Preview footprint</button>
+          <span id="jam-summary" class="muted" style="align-self:center"></span>
+        </div>
+        <div id="jam-result" class="mnvr-result"></div>
       </div>
 
       <div id="batch-bar" class="empty">

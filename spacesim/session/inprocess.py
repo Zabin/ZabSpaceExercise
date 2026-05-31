@@ -155,6 +155,56 @@ class InProcessSession:
         except (ValueError, Exception) as exc:
             return {"error": str(exc)}
 
+    def compute_jam(self, session: str, cell: str, actor: str, params: dict) -> dict:
+        """Preview a jam order's effective radius, success probability, and footprint.
+
+        Read-only: no state mutation.  Returns:
+            {modulation, power_w, effective_radius_km, footprint_polygon,
+             success_prob, detectability, power_draw_w, attribution_default}
+        """
+        from spacesim.engine.jam import (
+            effective_radius_km, effective_success_prob, jam_footprint_polygon,
+            modulation_params, power_draw_w,
+        )
+        from spacesim.engine.geometry import eci_to_ecef, ecef_to_geodetic
+
+        mgr = self._sessions[session]
+        asset = mgr.world.assets.get(actor)
+        if asset is None:
+            return {"error": f"asset {actor!r} not found"}
+        modulation = params.get("modulation", "barrage")
+        power_w = float(params.get("power_w", 100.0))
+        bandwidth_hz = float(params.get("bandwidth_hz", 1e6))
+        victim_bw_hz = float(params.get("victim_bandwidth_hz", 1e6))
+        base_prob = float(params.get("success_prob", 0.9))
+
+        mp, resolved = modulation_params(modulation)
+        radius_km = effective_radius_km(power_w, modulation)
+        adj_prob = effective_success_prob(base_prob, modulation, bandwidth_hz, victim_bw_hz)
+
+        # Footprint at the jammer's ground position (if it has one) or its sub-satellite point.
+        if asset.location is not None:
+            lat, lon = asset.location.lat_deg, asset.location.lon_deg
+        elif asset.orbit is not None:
+            r, _ = mgr.osys.prop.rv(asset.orbit, mgr.world.now)
+            g = ecef_to_geodetic(eci_to_ecef(r, mgr.world.now))
+            lat, lon = g.lat_deg, g.lon_deg
+        else:
+            lat, lon = 0.0, 0.0
+        footprint = jam_footprint_polygon(lat, lon, radius_km)
+
+        return {
+            "modulation": resolved,
+            "power_w": round(power_w, 1),
+            "effective_radius_km": round(radius_km, 2),
+            "footprint_polygon": footprint,
+            "success_prob": round(adj_prob, 3),
+            "detectability": mp["detectability"],
+            "power_draw_w": round(power_draw_w(power_w, modulation), 1),
+            "attribution_default": mp["attribution_bias"],
+            "center": {"lat_deg": round(lat, 4), "lon_deg": round(lon, 4)},
+        }
+
     # -- after-action review ---------------------------------------------------
     def aar_report(self, session: str):
         return aar.report(self._sessions[session])

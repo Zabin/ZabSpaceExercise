@@ -312,6 +312,22 @@ class OrderSystem:
     def _exec_payload(self, order: Order, win: AccessWindow) -> tuple[str, dict]:
         p = order.params
         if order.action == "jam":
+            from spacesim.engine.jam import (
+                effective_success_prob as _jam_prob,
+                modulation_params as _jam_mod,
+                power_draw_w as _jam_power,
+            )
+            modulation = p.get("modulation")
+            power_w = float(p.get("power_w", 100.0))
+            bandwidth_hz = float(p.get("bandwidth_hz", 1e6))
+            victim_bw_hz = float(p.get("victim_bandwidth_hz", 1e6))
+            base_prob = float(p.get("success_prob", 0.9))
+            adj_prob = _jam_prob(base_prob, modulation, bandwidth_hz, victim_bw_hz)
+            mod_params, resolved_mod = _jam_mod(modulation)
+            # Deceptive jamming is overt by default — overrides operator attribution choice
+            # unless they explicitly override.
+            default_attr = mod_params["attribution_bias"]
+            attribution = p.get("attribution", default_attr)
             effect = EffectInstance(
                 template=p.get("template", "ew_jam"),
                 category="electronic_warfare",
@@ -319,17 +335,18 @@ class OrderSystem:
                 actor=order.actor,
                 target=order.target or "",
                 reversible=True,
-                attribution=p.get("attribution", "ambiguous"),
+                attribution=attribution,
                 escalation_weight=p.get("escalation_weight", 3),
                 requires=JAM_FOOTPRINT,
                 intended_outcome=p.get("outcome", "deny"),
-                success_prob=p.get("success_prob", 0.9),
+                success_prob=adj_prob,
                 window_start=win.start,
                 window_end=win.end,
             )
             return "execute_effect", {
                 "effect": effect.model_dump(),
-                "consume": {"actor": order.actor, "power_w": p.get("power_cost", 0.0)},
+                "consume": {"actor": order.actor,
+                            "power_w": p.get("power_cost", _jam_power(power_w, modulation))},
             }
 
         if order.action == "engage":
