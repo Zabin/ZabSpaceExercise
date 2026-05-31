@@ -359,13 +359,57 @@ class OrderSystem:
             intent = p.get("intent", "track")
             # characterize resolves type/intent; search/track refine the state estimate.
             characterizes = p.get("characterizes", intent == "characterize")
+
+            # ISR beam-mode parameters: beam_mode, look_angle, duration, start_offset
+            beam_mode_req = p.get("beam_mode")
+            look_angle_deg = float(p.get("look_angle_deg", 0.0))
+            duration_s = float(p.get("duration_s", 300.0))
+
+            # Resolve actor: assets (satellites) and sensors share the same order channel.
+            # Space-based ISR sats are often dual-registered: an Asset for bus/power, a Sensor
+            # for the observe access window.  We check assets first for payload type + orbit,
+            # and fall back to the sensor's orbit if no asset match exists.
+            actor_asset = self.world.assets.get(order.actor)
+            actor_sensor = self.world.sensors.get(order.actor)
+            actor_orbit = ((actor_asset.orbit if actor_asset else None)
+                           or (actor_sensor.orbit if actor_sensor else None))
+            # Derive payload type: asset payload_state → sensor kind heuristic → default EO
+            if actor_asset and actor_asset.payload_state:
+                payload_type = actor_asset.payload_state.type
+            elif actor_sensor:
+                payload_type = "isr_eo" if actor_sensor.needs_lighting else "isr_sar"
+            else:
+                payload_type = "isr_eo"
+            from spacesim.engine.isr import (
+                beam_params as _bp, effective_gain as _eg, footprint_polygon, ground_heading_deg,
+            )
+            bp, resolved_mode = _bp(payload_type, beam_mode_req)
+            base_gain = float(p.get("gain", 1.0))
+            gain = _eg(base_gain, look_angle_deg, bp)
+
+            # Compute footprint polygon from the actor's current orbit position + heading.
+            footprint: Optional[list] = None
+            if actor_orbit is not None:
+                from spacesim.engine.geometry import eci_to_ecef, ecef_to_geodetic
+                r, _ = self.prop.rv(actor_orbit, self.world.now)
+                geo = ecef_to_geodetic(eci_to_ecef(r, self.world.now))
+                heading = ground_heading_deg(actor_orbit, self.world.now, self.prop)
+                footprint = footprint_polygon(
+                    geo.lat_deg, geo.lon_deg, geo.alt_m, heading, bp, look_angle_deg,
+                )
+
             return "execute_observe", {
                 "cell": order.cell,
                 "object": order.target,
                 "intent": intent,
-                "gain": p.get("gain", 1.0),       # confidence added per report (toward 1.0)
+                "gain": gain,
                 "characterizes": characterizes,
                 "classification": p.get("classification"),
+                "actor": order.actor,
+                "beam_mode": resolved_mode,
+                "look_angle_deg": look_angle_deg,
+                "duration_s": duration_s,
+                "footprint": footprint,
             }
 
         if order.action == "downlink":
@@ -490,6 +534,29 @@ class OrderSystem:
         obj = world.assets.get(payload["object"])
         if obj is not None and obj.orbit is not None:
             track.state_estimate = obj.orbit.model_copy(deep=True)
+
+        # Store the collection footprint for map rendering.
+        if payload.get("footprint"):
+            track.last_footprint = payload["footprint"]
+            track.last_beam_mode = payload.get("beam_mode", "stripmap")
+            track.last_collection_t = world.now
+
+        # Apply battery drain to the collecting asset if it has a bus state.
+        # A space-based sensor may be dual-registered as an Asset (same ID) for bus tracking.
+        actor_id = payload.get("actor")
+        if actor_id:
+            actor = world.assets.get(actor_id)
+            if actor and actor.bus_state:
+                from spacesim.engine.isr import beam_params as _bp, soc_drain as _drain
+                payload_type = (actor.payload_state.type
+                                if actor.payload_state else "isr_eo")
+                bp, _ = _bp(payload_type, payload.get("beam_mode"))
+                drain = _drain(bp, float(payload.get("duration_s", 300.0)))
+                actor.bus_state.power.battery_soc = max(
+                    0.0, min(1.0, actor.bus_state.power.battery_soc - drain)
+                )
+                from spacesim.engine.bus import recompute_status
+                recompute_status(actor.bus_state)
         # FUTURE-WORK §7: organic detection auto-cues an SSN characterize request when the track
         # has some confidence but hasn't been characterized yet. Deterministic: submit_request
         # schedules ssn_collect/ssn_deliver events that replay exactly.

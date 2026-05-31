@@ -282,3 +282,6 @@ tr.batched td { box-shadow: inset 3px 0 0 var(--cell-accent), inset 0 0 0 9999px
 .mnvr-result .ok { color: var(--accent); }
 .mnvr-result .second { color: var(--yellow); margin-top: 3px; }
 #mnvr-cost { font-size: 12px; font-weight: bold; color: var(--cell-accent); }
+#task-isr-info { color: var(--muted); font-size: 11px; }
+#task-isr-params label { gap: 4px; }
+#task-look-val { font-size: 11px; color: var(--muted); min-width: 2.2em; display: inline-block; }

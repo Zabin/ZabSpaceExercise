@@ -43,6 +43,13 @@ class RenderTrack(BaseModel):
     classification: str
 
 
+class CollectionFootprint(BaseModel):
+    target: str
+    corners: list[list[float]]   # 4 × [lat_deg, lon_deg]
+    beam_mode: str = "stripmap"
+    t: int = 0                   # sim time of collection (µs)
+
+
 class SceneView(BaseModel):
     cell: str
     now: int
@@ -50,6 +57,7 @@ class SceneView(BaseModel):
     sun_lon_deg: float = 0.0
     assets: list[RenderAsset] = Field(default_factory=list)
     tracks: list[RenderTrack] = Field(default_factory=list)
+    footprints: list[CollectionFootprint] = Field(default_factory=list)
 
 
 _PROP = ModeratePropagator()
@@ -89,15 +97,22 @@ def build_scene(world, cell: str) -> SceneView:
                                       lon_deg=a.location.lon_deg, alt_m=a.location.alt_m, on_orbit=False))
 
     tracks: list[RenderTrack] = []
+    footprints: list[CollectionFootprint] = []
     for t in world.tracks:
-        if t.owner != cell or t.state_estimate is None:
+        if t.owner != cell:
             continue
-        g = _geo(t.state_estimate, now)
-        tracks.append(RenderTrack(
-            object=t.object, lat_deg=g.lat_deg, lon_deg=g.lon_deg, alt_m=g.alt_m,
-            confidence=round(t.current_confidence(now), 3),
-            uncertainty_km=round(t.current_uncertainty_km(now), 2),
-            characterized=t.characterized, classification=t.classification,
-        ))
+        if t.state_estimate is not None:
+            g = _geo(t.state_estimate, now)
+            tracks.append(RenderTrack(
+                object=t.object, lat_deg=g.lat_deg, lon_deg=g.lon_deg, alt_m=g.alt_m,
+                confidence=round(t.current_confidence(now), 3),
+                uncertainty_km=round(t.current_uncertainty_km(now), 2),
+                characterized=t.characterized, classification=t.classification,
+            ))
+        if t.last_footprint:
+            footprints.append(CollectionFootprint(
+                target=t.object, corners=t.last_footprint,
+                beam_mode=t.last_beam_mode, t=t.last_collection_t,
+            ))
     return SceneView(cell=cell, now=now, sun_lat_deg=sun_lat, sun_lon_deg=sun_lon,
-                     assets=assets, tracks=tracks)
+                     assets=assets, tracks=tracks, footprints=footprints)

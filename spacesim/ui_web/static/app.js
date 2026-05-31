@@ -28,6 +28,21 @@ const api = {
   async post(p, b) { const r = await fetch(p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) }); if (!r.ok) throw new Error(await r.text()); return r.json(); },
 };
 const iso = (m) => m == null ? "—" : new Date(m / 1000).toISOString().replace(".000Z", "Z");
+// Convert sim microseconds to a local time string in the currently selected timezone.
+function localTimeStr(micros) {
+  if (micros == null) return "—";
+  const tzEl = document.getElementById("tz-select");
+  const tz = tzEl ? tzEl.value : "America/New_York";
+  if (tz === "UTC") return "";   // "UTC only" — nothing extra to show
+  try {
+    return new Date(micros / 1000).toLocaleString("en-US", {
+      timeZone: tz, hour12: false,
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+    }) + " " + new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "short" })
+        .formatToParts(new Date(micros / 1000)).find((p) => p.type === "timeZoneName")?.value;
+  } catch { return ""; }
+}
 
 // Legal actions per asset kind (from 05-cell-interfaces.md) + a starting parameter template.
 const ACTIONS_BY_KIND = {
@@ -251,8 +266,18 @@ async function planTask() {
     await renderSsnQueue(cell);
     return;
   }
-  const body = { cell, actor: $("task-sensor").value, action: "observe", target,
-                 params: { intent: $("task-intent").value, priority: $("task-priority").value } };
+  // Build ISR collection params
+  const beamMode = $("task-beam-mode") && $("task-beam-mode").value;
+  const lookAngle = $("task-look-angle") ? parseFloat($("task-look-angle").value) : 0;
+  const duration = $("task-duration") ? parseFloat($("task-duration").value) : 300;
+  const params = {
+    intent: $("task-intent").value,
+    priority: $("task-priority").value,
+    ...(beamMode ? { beam_mode: beamMode } : {}),
+    look_angle_deg: lookAngle,
+    duration_s: duration,
+  };
+  const body = { cell, actor: $("task-sensor").value, action: "observe", target, params };
   const ack = await api.post(`/api/sessions/${SID}/order`, body);
   $("task-result").textContent = ack.ok
     ? `${ack.status} · ${ack.delivery_path || "—"} · window ${ack.earliest_window ? iso(ack.earliest_window[0]) : "n/a"}`
@@ -297,8 +322,30 @@ function setTaskMode(m) {
   document.querySelectorAll("#task-mode .chip").forEach((c) => c.classList.toggle("active", c.dataset.tmode === m));
   $("task-sensor-wrap").style.display = (m === "ssn") ? "none" : "";
   $("task-regime-wrap").style.display = (m === "ssn") ? "" : "none";
+  if ($("task-isr-params")) $("task-isr-params").style.display = (m === "ssn") ? "none" : "";
   $("task-coverage").textContent = "";
   if (m === "ssn" && SID) { ssnCoverage(); renderSsnQueue(CELL === "white" ? "blue" : CELL); }
+}
+
+// ISR beam mode info table: swath, resolution, power, duty cycle for quick reference
+const ISR_BEAM_INFO = {
+  wide_area:   { swath: "100/500 km", res: "10/25 m",  power: "low",  duty: "30/10%" },
+  stripmap:    { swath: "30/25 km",   res: "3/3 m",    power: "med",  duty: "40/15%" },
+  spotlight:   { swath: "5/4 km",     res: "0.5/0.3 m",power: "high", duty: "50/8%"  },
+  scan:        { swath: "400 km",     res: "30 m",      power: "low",  duty: "25%"    },
+  fine:        { swath: "10 km",      res: "1 m",       power: "high", duty: "12%"    },
+  polarimetric:{ swath: "30 km",      res: "5 m",       power: "high", duty: "20%"    },
+};
+
+function updateIsrInfo() {
+  const el = $("task-isr-info"); if (!el) return;
+  const mode = $("task-beam-mode") && $("task-beam-mode").value;
+  const look = $("task-look-angle") && parseFloat($("task-look-angle").value);
+  if ($("task-look-val")) $("task-look-val").textContent = look + "°";
+  const info = mode && ISR_BEAM_INFO[mode];
+  if (!info) { el.textContent = ""; return; }
+  const penalty = look > 0 ? ` · ${Math.round(Math.cos(look * Math.PI / 180) * 100)}% gain at ${look}° look` : "";
+  el.textContent = `swath ${info.swath} · res ${info.res} · power ${info.power} · duty ${info.duty}${penalty}`;
 }
 
 // Multi-display reflow (§3.3 / P-UI-8): pop the 3D globe + 2D map into a second window for
@@ -493,6 +540,8 @@ async function refresh() {
   if (stale()) return;
   NOW = now;
   $("now").textContent = iso(now);
+  const localEl = document.getElementById("now-local");
+  if (localEl) localEl.textContent = localTimeStr(now);
   EFFECT_WINDOWS = ewin;
   ASSETS = {}; assets.forEach((a) => ASSETS[a.id] = {
     kind: a.kind, owner: a.owner,
@@ -691,6 +740,33 @@ function drawMap() {
     x.fillStyle = x.strokeStyle; x.beginPath(); x.arc(px, py, 2, 0, 2 * Math.PI); x.fill();
     x.fillStyle = "#9fb0c0"; x.fillText(`${t.object} ±${t.uncertainty_km}km`, px + 6, py - 6);
   });
+  // ISR collection footprints — translucent filled polygon + label with beam mode
+  if (mapCam.tracks !== false && SCENE.footprints && SCENE.footprints.length) {
+    SCENE.footprints.forEach((fp) => {
+      if (!fp.corners || fp.corners.length < 3) return;
+      x.save();
+      x.strokeStyle = "rgba(100,220,255,0.70)";
+      x.fillStyle   = "rgba(100,220,255,0.08)";
+      x.lineWidth = 1.5;
+      x.setLineDash([4, 3]);
+      x.beginPath();
+      fp.corners.forEach((c, i) => {
+        const px_ = PX(c[1]), py_ = PY(c[0]);
+        if (i === 0) x.moveTo(px_, py_); else x.lineTo(px_, py_);
+      });
+      x.closePath();
+      x.fill();
+      x.stroke();
+      x.setLineDash([]);
+      // Label at the centroid
+      const cLat = fp.corners.reduce((s, c) => s + c[0], 0) / fp.corners.length;
+      const cLon = fp.corners.reduce((s, c) => s + c[1], 0) / fp.corners.length;
+      x.fillStyle = "rgba(100,220,255,0.8)";
+      x.font = "10px monospace";
+      x.fillText(`${fp.target} [${fp.beam_mode}]`, PX(cLon) + 2, PY(cLat) - 3);
+      x.restore();
+    });
+  }
 }
 
 function initMapControls() {
@@ -874,6 +950,13 @@ window.addEventListener("DOMContentLoaded", () => {
   $("task-plan").onclick = planTask;
   document.querySelectorAll("#task-mode .chip").forEach((b) => b.onclick = () => setTaskMode(b.dataset.tmode));
   $("task-regime").onchange = ssnCoverage;
+  if ($("task-beam-mode")) $("task-beam-mode").onchange = updateIsrInfo;
+  if ($("task-look-angle")) $("task-look-angle").oninput = updateIsrInfo;
+  const tzSel = document.getElementById("tz-select");
+  if (tzSel) tzSel.onchange = () => {
+    const localEl = document.getElementById("now-local");
+    if (localEl) localEl.textContent = localTimeStr(NOW);
+  };
   document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => step(+b.dataset.step));
   document.querySelectorAll(".cell").forEach((b) => b.onclick = () => setCell(b.dataset.cell));
   document.querySelectorAll("#fleet-filter .chip").forEach((b) => b.onclick = () => {

@@ -53,7 +53,20 @@
   <main>
     <section class="panel">
       <h2>Cell &amp; Time</h2>
-      <div class="clock">Sim time: <b id="now">—</b></div>
+      <div class="clock">UTC: <b id="now">—</b></div>
+      <div class="clock">
+        <select id="tz-select" style="font-size:11px;padding:1px 3px">
+          <option value="America/New_York" selected>Eastern</option>
+          <option value="America/Chicago">Central</option>
+          <option value="America/Denver">Mountain</option>
+          <option value="America/Los_Angeles">Pacific</option>
+          <option value="Europe/London">London</option>
+          <option value="Europe/Paris">Paris/Berlin</option>
+          <option value="Asia/Tokyo">Tokyo</option>
+          <option value="UTC">UTC only</option>
+        </select>
+        <b id="now-local">—</b>
+      </div>
       <div id="session" class="toggle"></div>
       <h3>Objectives</h3>
       <pre id="objectives">—</pre>
@@ -111,6 +124,28 @@
         </select></label>
         <button id="task-plan">Plan collection</button>
       </div>
+      <!-- ISR collection parameters — shown for organic mode only -->
+      <div id="task-isr-params" class="ctrl" style="margin-top:4px">
+        <label id="task-beam-wrap">Mode
+          <select id="task-beam-mode">
+            <option value="">auto</option>
+            <option value="wide_area">Wide area</option>
+            <option value="stripmap">Stripmap</option>
+            <option value="spotlight">Spotlight</option>
+            <option value="scan">Scan / EO</option>
+            <option value="fine">Fine / SAR</option>
+            <option value="polarimetric">Polarimetric</option>
+          </select>
+        </label>
+        <label>Look&nbsp;angle
+          <input id="task-look-angle" type="range" min="0" max="45" step="1" value="0" style="width:70px;vertical-align:middle">
+          <span id="task-look-val">0°</span>
+        </label>
+        <label>Duration&nbsp;(s)
+          <input id="task-duration" type="number" min="30" max="3600" value="300" step="30" style="width:56px">
+        </label>
+      </div>
+      <div id="task-isr-info" class="preview" style="font-size:11px;margin-top:2px"></div>
       <div id="task-coverage" class="preview"></div>
       <pre id="task-result" class="muted">—</pre>
       <h3>SSN requests</h3>

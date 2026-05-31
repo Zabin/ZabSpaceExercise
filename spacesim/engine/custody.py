@@ -38,6 +38,9 @@ class Track(BaseModel):
     uncertainty: TrackUncertainty = Field(default_factory=TrackUncertainty)
     uncertainty_at_obs: TrackUncertainty = Field(default_factory=TrackUncertainty)
     source: str = "own_sensor"
+    last_footprint: Optional[list[list[float]]] = None   # 4 × [lat_deg, lon_deg] from last ISR collect
+    last_beam_mode: str = "stripmap"
+    last_collection_t: int = 0
 
     def current_confidence(self, now: int, half_life_s: float = DEFAULT_HALF_LIFE_S) -> float:
         dt = max(0.0, (now - self.last_observation) / 1_000_000)
