@@ -540,3 +540,44 @@ def test_def_disperse_sets_flags():
     assert ok
     assert w.assets["SAT"].threat_warning is True
     assert w.assets["SAT"].payload_state.detail.get("dispersal") is True
+
+
+# -- final catalog-verb fill --------------------------------------------------
+def test_satcom_set_frequency_plan_records_plan():
+    w = _sat_with_payload("satcom")
+    ok, label = apply_command(w, "SAT", "satcom.set_frequency_plan", {"plan": "alt-A"}, 0)
+    assert ok and label == "freq_plan_alt-A"
+    assert w.assets["SAT"].payload_state.detail["frequency_plan"] == "alt-A"
+
+
+def test_sda_task_characterize_sets_mode_and_target():
+    w = _sat_with_payload("sda")
+    ok, label = apply_command(w, "SAT", "sda.task_characterize", {"target": "RSO-7"}, 0)
+    assert ok and label == "sda_characterize"
+    p = w.assets["SAT"].payload_state
+    assert p.detail["sda_mode"] == "characterize"
+    assert p.detail["char_target"] == "RSO-7"
+    assert p.collecting is True
+
+
+def test_sda_cue_records_target():
+    w = _sat_with_payload("sda")
+    ok, label = apply_command(w, "SAT", "sda.cue", {"target": "RSO-9"}, 0)
+    assert ok and label == "sda_cued"
+    assert w.assets["SAT"].payload_state.detail["sda_cue"] == "RSO-9"
+
+
+def test_sda_downlink_queues_at_now():
+    w = _sat_with_payload("sda")
+    ok, label = apply_command(w, "SAT", "sda.downlink", {}, 4242)
+    assert ok and label == "sda_downlink_queued"
+    assert w.assets["SAT"].payload_state.detail["downlink_queued_at"] == 4242
+
+
+def test_payload_type_gates_block_wrong_payload():
+    # An ISR payload cannot run a satcom or SDA verb (payload-type fit check).
+    from spacesim.engine.buscommands import can_issue
+    w = _sat_with_payload("isr_eo")
+    for verb in ("satcom.set_frequency_plan", "sda.task_characterize", "sda.cue", "sda.downlink"):
+        ok, reason = can_issue(w, "SAT", verb)
+        assert not ok and reason == "no_payload_for_verb", verb

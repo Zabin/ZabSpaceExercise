@@ -22,11 +22,11 @@ BUS_VERBS = {"eps.shed_load", "eps.restore_load", "eps.set_charge_mode", "eps.se
              "comms.enable_isl", "comms.config_link", "comms.point_antenna", "comms.set_crypto",
              "prop.cancel_burn", "prop.collision_avoid"}
 PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users", "satcom.report_interference",
-                 "satcom.set_transponder", "satcom.reconfigure_beam",
+                 "satcom.set_transponder", "satcom.reconfigure_beam", "satcom.set_frequency_plan",
                  "isr.collect_now", "isr.schedule_collection", "isr.set_mode",
                  "isr.prioritize_downlink", "isr.assess_quality", "isr.calibrate",
                  "sigint.task_collection", "sigint.set_band", "sigint.geolocate", "sigint.downlink",
-                 "sda.task_search", "sda.task_track",
+                 "sda.task_search", "sda.task_track", "sda.task_characterize", "sda.cue", "sda.downlink",
                  "wx.schedule_collection", "wx.downlink",
                  "pnt.set_integrity", "pnt.report_status",
                  "mw.set_sensor_mode", "mw.report_alerts"}
@@ -46,6 +46,8 @@ _PAYLOAD_TYPES_FOR = {
     "sigint.task_collection": {"sigint"}, "sigint.set_band": {"sigint"},
     "sigint.geolocate": {"sigint"}, "sigint.downlink": {"sigint"},
     "sda.task_search": {"sda"}, "sda.task_track": {"sda"},
+    "sda.task_characterize": {"sda"}, "sda.cue": {"sda"}, "sda.downlink": {"sda"},
+    "satcom.set_frequency_plan": {"satcom"},
     "wx.schedule_collection": {"weather"}, "wx.downlink": {"weather"},
     "pnt.set_integrity": {"pnt"}, "pnt.report_status": {"pnt"},
     "mw.set_sensor_mode": {"mw"}, "mw.report_alerts": {"mw"},
@@ -420,6 +422,32 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         a.payload_state and a.payload_state.detail.update({"dispersal": True})
         world.consequences.append({"t": now, "type": "disperse", "actor": actor_id})
         return True, "dispersing"
+
+    # ------------------------------------------------------------------
+    # Final catalog-verb fill — completes §3 of FUTURE-WORK.md.
+    # ------------------------------------------------------------------
+    if verb == "satcom.set_frequency_plan":
+        if a.payload_state is None: return False, "no_payload"
+        plan = params.get("plan", "default")
+        a.payload_state.detail["frequency_plan"] = plan
+        return True, f"freq_plan_{plan}"
+
+    if verb == "sda.task_characterize":
+        if a.payload_state is None: return False, "no_payload"
+        a.payload_state.detail["sda_mode"] = "characterize"
+        a.payload_state.detail["char_target"] = params.get("target", "?")
+        a.payload_state.collecting = True
+        return True, "sda_characterize"
+
+    if verb == "sda.cue":
+        if a.payload_state is None: return False, "no_payload"
+        a.payload_state.detail["sda_cue"] = params.get("target", "?")
+        return True, "sda_cued"
+
+    if verb == "sda.downlink":
+        if a.payload_state is None: return False, "no_payload"
+        a.payload_state.detail["downlink_queued_at"] = now
+        return True, "sda_downlink_queued"
 
     return False, "unknown"
 

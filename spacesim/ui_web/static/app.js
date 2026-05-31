@@ -70,6 +70,11 @@ const PARAM_TEMPLATE = {
   "isr.set_mode": () => ({ via: DEFAULT_STATION, mode: "wide" }),
   "pnt.set_integrity": () => ({ via: DEFAULT_STATION, mode: "standard" }),
   "def.maneuver_evade": () => ({ via: DEFAULT_STATION, dv_cost: 5.0 }),
+  // Final catalog-verb fill
+  "satcom.set_frequency_plan": () => ({ via: DEFAULT_STATION, plan: "default" }),
+  "sda.task_characterize": () => ({ via: DEFAULT_STATION, target: "TGT-1" }),
+  "sda.cue": () => ({ via: DEFAULT_STATION, target: "TGT-1" }),
+  "sda.downlink": () => ({ via: DEFAULT_STATION }),
 };
 
 // Verb roles for the §1.2 role selector — drives the Bus/Payload/SDA/All filter on the command menu.
@@ -86,6 +91,8 @@ const VERB_ROLE = {
   "pnt.set_integrity": "payload",
   "def.patch_cyber": "bus", "def.frequency_hop": "bus",
   "def.harden": "payload", "def.set_threat_warning": "bus", "def.maneuver_evade": "bus",
+  "satcom.set_frequency_plan": "payload",
+  "sda.task_characterize": "sda", "sda.cue": "sda", "sda.downlink": "sda",
 };
 let ROLE_FILTER = "all";
 
@@ -187,7 +194,8 @@ function actionsFor(a) {
               "tcs.set_mode", "tcs.set_heater",
               "comms.enable_isl", "comms.config_link", "comms.point_antenna",
               "def.frequency_hop", "def.harden", "def.set_threat_warning", "def.maneuver_evade");
-    if (a.payload === "satcom") acts.push("satcom.mitigate_interference", "satcom.shift_users");
+    if (a.payload === "satcom") acts.push("satcom.mitigate_interference", "satcom.shift_users", "satcom.set_frequency_plan");
+    if (a.payload === "sda") acts.push("sda.task_characterize", "sda.cue", "sda.downlink");
     if (a.payload === "isr_eo" || a.payload === "isr_sar") acts.push("isr.collect_now", "isr.schedule_collection", "isr.set_mode");
     if (a.payload === "sigint") acts.push("sigint.task_collection");
     if (a.payload === "weather") acts.push("wx.schedule_collection");
@@ -702,9 +710,11 @@ const VERB_SUBSYSTEM = {
   "cdh.dump_storage": "cdh", "cdh.clear_fault": "cdh", "cdh.reset_subsystem": "cdh", "def.patch_cyber": "cdh",
   "comms.enable_isl": "comms", "comms.config_link": "comms", "comms.point_antenna": "comms", "def.frequency_hop": "comms",
   "satcom.mitigate_interference": "payload", "satcom.shift_users": "payload",
+  "satcom.set_frequency_plan": "payload",
   "isr.collect_now": "payload", "isr.schedule_collection": "payload", "isr.set_mode": "payload",
   "sigint.task_collection": "payload", "wx.schedule_collection": "payload", "def.harden": "payload",
   "pnt.set_integrity": "payload",
+  "sda.task_characterize": "payload", "sda.cue": "payload", "sda.downlink": "payload",
   "def.maneuver_evade": "propulsion",
 };
 function verbsForSubsystem(a, sub) {

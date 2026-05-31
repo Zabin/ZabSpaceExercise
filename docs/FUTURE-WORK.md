@@ -58,22 +58,15 @@ The implemented verbs are listed in `build-spec/07-operator-console.md` §16.11.
 `sigint.set_band`, `satcom.report_interference`, `pnt.set_integrity`, `pnt.report_status`,
 `wx.downlink`, `def.maneuver_evade`, `def.escort_posture`.
 
-Remaining catalog verbs from `13-operator-command-catalog.md` that have **no engine handler**:
-
-- **Bus**: `prop.collision_avoid` (needs the conjunction service in §2),
-  `prop.cancel_burn` (queue cancel exists; an explicit cancel-by-verb is not wired),
-  `adcs.point_payload` (the existing attitude mode covers the common case).
-- **Payload**: `isr.calibrate`, `sigint.geolocate`, `sigint.downlink`,
-  `sda.task_search` / `sda.task_track` / `sda.task_characterize` / `sda.cue` / `sda.downlink`
-  (today's `observe` action with `intent` covers the SDA loop),
-  `satcom.set_transponder` / `satcom.set_frequency_plan` / `satcom.reconfigure_beam`,
-  `mw.set_sensor_mode` / `mw.report_alerts`.
-- **Defense / space control**: `def.disperse`; remaining `sc.*` verbs largely duplicate
-  `jam` / `engage` / `cyber` / `observe` and are intentionally not re-wired as command verbs.
-
-Each follows the same pattern: a small mutation in `apply_command`, a regression test in
-`spacesim/tests/test_bus_commands.py`, an entry in the UI's `PARAM_TEMPLATE` / `actionsFor` /
-`VERB_SUBSYSTEM`. None require architectural work.
+✅ **All catalog verbs from `13-operator-command-catalog.md` now have engine handlers.**
+The previously-missing verbs were shipped across batches 5b–6b: `prop.collision_avoid`,
+`prop.cancel_burn`, `adcs.point_payload`, `isr.calibrate`, `sigint.geolocate`, `sigint.downlink`,
+`sda.task_search` / `sda.task_track` / `sda.task_characterize` / `sda.cue` / `sda.downlink`,
+`satcom.set_transponder` / `satcom.set_frequency_plan` / `satcom.reconfigure_beam`,
+`mw.set_sensor_mode` / `mw.report_alerts`, `def.disperse`. Each is gated by `can_issue`
+(payload-type fit) and exercised by a regression test in `spacesim/tests/test_bus_commands.py`.
+Remaining `sc.*` "space control" verbs intentionally duplicate `jam`/`engage`/`cyber`/`observe`
+and are not re-wired as command verbs.
 
 ## 4. UI strategic items (out of v1 scope, per `build-spec/01-context-and-scope.md` §3.2)
 
@@ -236,7 +229,7 @@ This list is the v1 → v1.1+ TODO. After batches 5a-5d the remaining open work 
 4. **§8 Region detach v2** — multi-display reflow with postMessage state sync.
 5. **§8 Playwright DOM/render smoke tests** — currently opt-in; gap is the harness itself.
 6. **§9 coalition / shared SDA feed**, **PME instrumentation** — strategic, deferred.
-7. **§3 remaining catalog verbs** — small, test-first, uniformly wired.
+7. ✅ **§3 catalog verbs** — complete; all `13-operator-command-catalog.md` verbs now wired.
 8. **§7 SSN cost/budget + commercial feed** — balance dial, third-party data layer.
 9. **§10.D.17 full WYSIWYG vignette editor** — inspector + download shipped; drag-drop
    author + save-back is deferred.
