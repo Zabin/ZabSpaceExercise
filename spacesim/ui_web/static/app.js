@@ -133,8 +133,18 @@ const REASON_TIPS = {
 };
 
 async function loadVignettes() {
-  const list = await api.get("/api/vignettes");
-  $("vignette").innerHTML = list.map((v) => `<option value="${v.id}">${v.title}</option>`).join("");
+  const sel = $("vignette");
+  try {
+    const list = await api.get("/api/vignettes");
+    if (!list || !list.length) {
+      sel.innerHTML = '<option value="" disabled selected>(no vignettes found — check server)</option>';
+      return;
+    }
+    sel.innerHTML = list.map((v) => `<option value="${v.id}">${v.title}</option>`).join("");
+  } catch (e) {
+    sel.innerHTML = '<option value="" disabled selected>(failed to load — is the server running?)</option>';
+    console.error("loadVignettes failed:", e);
+  }
 }
 async function loadSession() {
   SID = (await api.post("/api/sessions", { vignette_id: $("vignette").value, seed: +$("seed").value })).session;
