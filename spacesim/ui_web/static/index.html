@@ -131,6 +131,64 @@
       <label>Target <input id="o-target" placeholder="(e.g. RED-TGT)" style="width:10em" /></label>
       <label style="display:flex">Params
         <input id="o-params" style="flex:1" value='{"via":"GS-NORTH"}' /></label>
+
+      <!-- Maneuver mode assistant (shown only when action = maneuver) -->
+      <div id="mnvr-panel" style="display:none">
+        <hr style="border-color:rgba(255,255,255,0.1);margin:6px 0">
+        <label>Maneuver mode
+          <select id="mnvr-mode">
+            <option value="eci">ECI impulse [x, y, z]</option>
+            <option value="lvlh">LVLH / RTN frame</option>
+            <option value="finite_burn">Finite burn (dir + mag + duration)</option>
+            <option value="target_coe">Target orbit (COEs)</option>
+            <option value="hohmann">Hohmann transfer</option>
+            <option value="plane_change">Plane change (Δi)</option>
+          </select>
+        </label>
+
+        <div id="mnvr-eci" class="mnvr-fields">
+          <label>Δv X<input id="mnvr-eci-x" type="number" step="0.1" value="0" title="ECI X m/s"></label>
+          <label>Δv Y<input id="mnvr-eci-y" type="number" step="0.1" value="5" title="ECI Y m/s"></label>
+          <label>Δv Z<input id="mnvr-eci-z" type="number" step="0.1" value="0" title="ECI Z m/s"></label>
+        </div>
+
+        <div id="mnvr-lvlh" class="mnvr-fields" style="display:none">
+          <label>Radial (R)<input id="mnvr-lvlh-r" type="number" step="0.1" value="0" title="Radial m/s"></label>
+          <label>Along-track (T)<input id="mnvr-lvlh-t" type="number" step="0.1" value="5" title="Along-track m/s"></label>
+          <label>Normal (N)<input id="mnvr-lvlh-n" type="number" step="0.1" value="0" title="Normal m/s"></label>
+        </div>
+
+        <div id="mnvr-finite-burn" class="mnvr-fields" style="display:none">
+          <label>Dir R<input id="mnvr-fb-r" type="number" step="0.01" value="0" title="Thrust direction R (normalised)"></label>
+          <label>Dir T<input id="mnvr-fb-t" type="number" step="0.01" value="1" title="Thrust direction T (normalised)"></label>
+          <label>Dir N<input id="mnvr-fb-n" type="number" step="0.01" value="0" title="Thrust direction N (normalised)"></label>
+          <label>Magnitude (m/s)<input id="mnvr-fb-mag" type="number" step="0.1" value="5" title="Total Δv m/s"></label>
+          <label>Duration (s)<input id="mnvr-fb-dur" type="number" step="1" value="60" title="Burn duration s (informational)"></label>
+        </div>
+
+        <div id="mnvr-target-coe" class="mnvr-fields" style="display:none">
+          <label>a (km)<input id="mnvr-coe-a" type="number" step="1" placeholder="(keep)" title="Target semi-major axis km"></label>
+          <label>e<input id="mnvr-coe-e" type="number" step="0.001" min="0" placeholder="(keep)" title="Target eccentricity"></label>
+          <label>i (deg)<input id="mnvr-coe-i" type="number" step="0.1" placeholder="(keep)" title="Target inclination deg"></label>
+          <label>RAAN (deg)<input id="mnvr-coe-raan" type="number" step="0.1" placeholder="(keep)" title="Target RAAN deg"></label>
+          <label>ω (deg)<input id="mnvr-coe-argp" type="number" step="0.1" placeholder="(keep)" title="Target arg-of-perigee deg"></label>
+        </div>
+
+        <div id="mnvr-hohmann" class="mnvr-fields" style="display:none">
+          <label>Target altitude (km)<input id="mnvr-hoh-alt" type="number" step="10" value="600" title="Target circular altitude km"></label>
+        </div>
+
+        <div id="mnvr-plane-change" class="mnvr-fields" style="display:none">
+          <label>Δ inclination (deg)<input id="mnvr-pc-di" type="number" step="0.1" value="5" title="Inclination change deg (signed)"></label>
+        </div>
+
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button id="mnvr-compute">Compute Δv →</button>
+          <span id="mnvr-cost" class="muted" style="align-self:center"></span>
+        </div>
+        <div id="mnvr-result" class="mnvr-result"></div>
+      </div>
+
       <div id="batch-bar" class="empty">
         <span>Batch (<span id="batch-count">0</span>):</span>
         <span id="batch-list" class="muted"></span>

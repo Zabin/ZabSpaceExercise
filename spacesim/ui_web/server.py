@@ -71,6 +71,13 @@ class CancelRequest(BaseModel):
     order_id: str
 
 
+class ManeuverComputeRequest(BaseModel):
+    cell: str
+    actor: str
+    mode: str          # eci | lvlh | finite_burn | target_coe | hohmann | plane_change
+    params: dict = {}
+
+
 class RecoveryRequest(BaseModel):
     via: str
 
@@ -173,6 +180,12 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def list_orders(sid: str, cell: str) -> list:
         _require(sid)
         return api.list_orders(sid, cell)
+
+    @app.post("/api/sessions/{sid}/maneuver/compute")
+    def maneuver_compute(sid: str, req: ManeuverComputeRequest) -> dict:
+        """Compute an ECI impulse from a higher-level maneuver description (read-only)."""
+        _require(sid)
+        return api.compute_maneuver(sid, req.cell, req.actor, req.mode, req.params)
 
     @app.post("/api/sessions/{sid}/cancel")
     def cancel_order(sid: str, req: CancelRequest) -> Ack:

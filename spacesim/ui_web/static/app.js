@@ -355,7 +355,115 @@ function onActorChange() {
   if (SID && id) drawRibbon(id);
 }
 function onActionChange() {
-  const tmpl = PARAM_TEMPLATE[$("o-action").value]; if (tmpl) $("o-params").value = JSON.stringify(tmpl());
+  const action = $("o-action").value;
+  const tmpl = PARAM_TEMPLATE[action]; if (tmpl) $("o-params").value = JSON.stringify(tmpl());
+  // Show/hide the maneuver mode assistant.
+  const isMnvr = action === "maneuver";
+  $("mnvr-panel") && ($("mnvr-panel").style.display = isMnvr ? "" : "none");
+  if (isMnvr) mnvrModeChange();
+  previewOrder();
+}
+
+// -- Maneuver mode assistant --------------------------------------------------
+
+const MNVR_FIELD_IDS = {
+  eci: ["mnvr-eci"],
+  lvlh: ["mnvr-lvlh"],
+  finite_burn: ["mnvr-finite-burn"],
+  target_coe: ["mnvr-target-coe"],
+  hohmann: ["mnvr-hohmann"],
+  plane_change: ["mnvr-plane-change"],
+};
+
+function mnvrModeChange() {
+  const mode = $("mnvr-mode")?.value || "eci";
+  Object.values(MNVR_FIELD_IDS).flat().forEach((id) => {
+    const el = $(id); if (el) el.style.display = "none";
+  });
+  (MNVR_FIELD_IDS[mode] || []).forEach((id) => {
+    const el = $(id); if (el) el.style.display = "";
+  });
+  $("mnvr-result") && ($("mnvr-result").innerHTML = "");
+  $("mnvr-cost") && ($("mnvr-cost").textContent = "");
+}
+
+function mnvrGatherParams() {
+  const mode = $("mnvr-mode")?.value || "eci";
+  const via = (() => { try { return JSON.parse($("o-params").value || "{}").via || "GS-NORTH"; } catch { return "GS-NORTH"; } })();
+  if (mode === "eci") {
+    return { mode, via,
+      dv: [numVal("mnvr-eci-x"), numVal("mnvr-eci-y"), numVal("mnvr-eci-z")] };
+  }
+  if (mode === "lvlh") {
+    return { mode, via,
+      dv_r: numVal("mnvr-lvlh-r"), dv_t: numVal("mnvr-lvlh-t"), dv_n: numVal("mnvr-lvlh-n") };
+  }
+  if (mode === "finite_burn") {
+    return { mode, via,
+      direction_r: numVal("mnvr-fb-r"), direction_t: numVal("mnvr-fb-t"), direction_n: numVal("mnvr-fb-n"),
+      magnitude_ms: numVal("mnvr-fb-mag"), duration_s: numVal("mnvr-fb-dur") };
+  }
+  if (mode === "target_coe") {
+    const p = { mode, via };
+    const aEl = $("mnvr-coe-a"); if (aEl?.value !== "") p.a_km = numVal("mnvr-coe-a");
+    const eEl = $("mnvr-coe-e"); if (eEl?.value !== "") p.e = numVal("mnvr-coe-e");
+    const iEl = $("mnvr-coe-i"); if (iEl?.value !== "") p.i_deg = numVal("mnvr-coe-i");
+    const rEl = $("mnvr-coe-raan"); if (rEl?.value !== "") p.raan_deg = numVal("mnvr-coe-raan");
+    const wEl = $("mnvr-coe-argp"); if (wEl?.value !== "") p.argp_deg = numVal("mnvr-coe-argp");
+    return p;
+  }
+  if (mode === "hohmann") {
+    return { mode, via, target_alt_km: numVal("mnvr-hoh-alt") };
+  }
+  if (mode === "plane_change") {
+    return { mode, via, delta_i_deg: numVal("mnvr-pc-di") };
+  }
+  return { mode, via };
+}
+
+function numVal(id) {
+  const el = $(id); return el ? parseFloat(el.value) || 0 : 0;
+}
+
+async function computeManeuver() {
+  if (!SID) { $("mnvr-result").textContent = "No active session."; return; }
+  const actor = $("o-actor").value;
+  if (!actor) { $("mnvr-result").textContent = "Select an asset first."; return; }
+  const cell = CELL === "white" ? (ASSETS[actor]?.owner || "blue") : CELL;
+  const mp = mnvrGatherParams();
+  const body = { cell, actor, mode: mp.mode, params: mp };
+  let res;
+  try { res = await api.post(`/api/sessions/${SID}/maneuver/compute`, body); }
+  catch { $("mnvr-result").textContent = "Server error"; return; }
+
+  if (res.error) {
+    $("mnvr-result").innerHTML = `<span style="color:var(--red)">${res.error}</span>`;
+    $("mnvr-cost").textContent = "";
+    return;
+  }
+
+  // Show cost
+  $("mnvr-cost").textContent = `Δv = ${res.cost.toFixed(2)} m/s`;
+
+  // Build preview text
+  const o = res.new_orbit || {};
+  const orbitStr = o.a_km
+    ? `→ a=${o.a_km} km  e=${o.e}  i=${o.i_deg}°  ` +
+      `alt ${o.alt_periapsis_km}–${o.alt_apoapsis_km} km  (${o.regime || "?"})`
+    : "";
+  let html = `<span class="ok">dv = [${res.dv.map((x) => x.toFixed(3)).join(", ")}] m/s\n${orbitStr}</span>`;
+  if (res.second_burn) {
+    const sb = res.second_burn;
+    html += `\n<span class="second">2nd burn: ${sb.note}</span>`;
+  }
+  if (res.duration_s) {
+    html += `\n<span>burn duration: ${res.duration_s} s (informational)</span>`;
+  }
+  $("mnvr-result").innerHTML = html;
+
+  // Load the computed dv into o-params so the order system will use it
+  const via = mp.via || "GS-NORTH";
+  $("o-params").value = JSON.stringify({ dv: res.dv, via });
   previewOrder();
 }
 
@@ -1325,4 +1433,22 @@ addEventListener("DOMContentLoaded", () => {
   if (open) open.addEventListener("click", () => wrap.classList.add("open"));
   if (close) close.addEventListener("click", () => wrap.classList.remove("open"));
   if (wrap) wrap.addEventListener("click", (e) => { if (e.target === wrap) wrap.classList.remove("open"); });
+});
+
+// Maneuver mode assistant listeners.
+addEventListener("DOMContentLoaded", () => {
+  const modeSelect = $("mnvr-mode");
+  if (modeSelect) modeSelect.addEventListener("change", mnvrModeChange);
+  const computeBtn = $("mnvr-compute");
+  if (computeBtn) computeBtn.addEventListener("click", computeManeuver);
+  // Re-compute on field change so the preview stays live.
+  ["mnvr-eci-x","mnvr-eci-y","mnvr-eci-z",
+   "mnvr-lvlh-r","mnvr-lvlh-t","mnvr-lvlh-n",
+   "mnvr-fb-r","mnvr-fb-t","mnvr-fb-n","mnvr-fb-mag","mnvr-fb-dur",
+   "mnvr-coe-a","mnvr-coe-e","mnvr-coe-i","mnvr-coe-raan","mnvr-coe-argp",
+   "mnvr-hoh-alt","mnvr-pc-di",
+  ].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener("change", computeManeuver);
+  });
 });

@@ -140,6 +140,21 @@ class InProcessSession:
     def objectives(self, session: str) -> dict:
         return self._sessions[session].objectives()
 
+    # -- maneuver mode computation (read-only) ---------------------------------
+    def compute_maneuver(self, session: str, cell: str, actor: str,
+                         mode: str, params: dict) -> dict:
+        mgr = self._sessions[session]
+        asset = mgr.world.assets.get(actor)
+        if asset is None:
+            return {"error": f"asset {actor!r} not found"}
+        if asset.orbit is None:
+            return {"error": f"asset {actor!r} has no orbit (ground asset?)"}
+        from spacesim.engine.maneuver import compute_maneuver as _cm
+        try:
+            return _cm(asset.orbit, mode, params, mgr.world.now, mgr.osys.prop)
+        except (ValueError, Exception) as exc:
+            return {"error": str(exc)}
+
     # -- after-action review ---------------------------------------------------
     def aar_report(self, session: str):
         return aar.report(self._sessions[session])
