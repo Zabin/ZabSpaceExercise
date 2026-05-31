@@ -1,0 +1,59 @@
+vignette:
+  id: mt-isr-sar
+  title: "Mission Trial: SAR ISR"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "SAR is all-weather and day/night — it succeeds when EO would fail (clouds, eclipse)."
+    - "SAR products are larger; downlink scheduling matters more than for EO."
+    - "Dazzle and lighting attacks that would degrade EO do not affect SAR."
+  doctrinal_basis: [orbital_warfare]
+  red_doctrine_profile: russia_ew_first
+  estimated_duration_min: 30
+  start_epoch_utc: "2030-04-10T22:00:00Z"  # local night over the target — would defeat EO
+  geography:
+    theater: "Arctic littoral; persistent cloud, polar night"
+  blue_forces:
+    - id: SAR-1
+      kind: satellite
+      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 98.0, raan_deg: 270, argp_deg: 0, ta_deg: 0.0}
+      resources: {delta_v_ms: 60.0}
+      payload_state: {type: isr_sar, collect_rate_per_s: 0.004}      # SAR fills storage faster (larger products)
+      bus_state: {power: {battery_soc: 0.85, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+    # GS-POLAR = SvalSat (Svalbard Satellite Station, KSAT) — canonical polar-orbit downlink.
+    - id: GS-POLAR
+      kind: ground_station
+      location: {lat_deg: 78.23, lon_deg: 15.39, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+  red_forces:
+    # RED-JAM = notional Russian Northern Fleet EW position (Olenya AB / Kola Peninsula vicinity).
+    - id: RED-JAM
+      kind: jammer
+      location: {lat_deg: 68.15, lon_deg: 33.46}
+      elevation_mask_deg: 0.0
+    # RED-DAZZLE = notional Kola Peninsula DE position (listed for SAR-vs-EO contrast).
+    - id: RED-DAZZLE
+      kind: directed_energy
+      location: {lat_deg: 67.55, lon_deg: 33.40}
+  sensors:
+    # BLUE-RADAR-POLAR = Globus II/III (Vardø, Norway) — US/Norwegian X-band SSA radar.
+    - {id: BLUE-RADAR-POLAR, owner: blue, kind: ground_radar, location: {lat_deg: 70.37, lon_deg: 31.13}}
+  objectives:
+    blue:
+      - {id: collect_sar, desc: "Collect a SAR product over the target despite weather/night",
+         metric: {kind: deliver_before, flag: imagery_delivered, by_s: 5400}}
+      - {id: survive, desc: "SAR satellite operational at end of window",
+         metric: {kind: asset_operational, target: SAR-1, by_s: 5400}}
+    red:
+      - {id: deny_downlink, desc: "Jam the polar downlink to deny the SAR product",
+         metric: {kind: deny_delivery, flag: imagery_delivered, by_s: 5400}}
+  parameters:
+    - {id: red_ew_intensity, label: "Red EW Intensity", type: enum, options: [none, harassment, sustained, total], default: harassment}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: russia_ew_first}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Window (s)", type: int, default: 5400}
+  injects:
+    - id: cloud_advisory
+      label: "Met advisory: full cloud cover over target"
+      trigger: {type: time, at_sim_s: 600}
+      effects:
+        - {type: message, to: [blue, white], text: "Cloud cover 10/10 over target — EO would be useless here; SAR penetrates."}

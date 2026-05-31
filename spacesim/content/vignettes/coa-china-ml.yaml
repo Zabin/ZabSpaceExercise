@@ -1,0 +1,82 @@
+vignette:
+  id: coa-china-ml
+  title: "China ML: Early Integrated Disruption"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "PLA SSF doctrine: seize the initiative at opening of conflict with integrated jam + cyber + RPO."
+    - "No kinetic — reserved for escalation. Reversible effects keep ambiguity and escalation control."
+    - "Blue must sustain THREE simultaneous mission streams under distributed pressure."
+  doctrinal_basis: [orbital_warfare, electromagnetic_warfare, cyber]
+  red_doctrine_profile: china_integrated
+  estimated_duration_min: 60
+  start_epoch_utc: "2030-09-15T22:00:00Z"
+  geography:
+    theater: "Western Pacific; Taiwan-opening scenario; first 30 minutes of conflict"
+  blue_forces:
+    - id: BLUE-ISR
+      kind: satellite
+      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 100, argp_deg: 0, ta_deg: 0.0}
+      payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
+      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+    - id: BLUE-SATCOM
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 120, argp_deg: 0, ta_deg: 0.0}
+      cyber_posture: low
+      cyber_vulnerabilities: [{vector: ground_modem, patchable: true, patched: false}]
+      payload_state: {type: satcom}
+      bus_state: {power: {battery_soc: 0.95}}
+    - id: BLUE-GEO-COMM
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 140, argp_deg: 0, ta_deg: 0.0}
+      payload_state: {type: satcom}
+      bus_state: {power: {battery_soc: 0.92}}
+    # GS-WESTPAC = Andersen AFB AFSCN GTS, Guam — western Pacific Blue node.
+    - id: GS-WESTPAC
+      kind: ground_station
+      location: {lat_deg: 13.62, lon_deg: 144.86, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+  red_forces:
+    # RED-JAM-COASTAL = Woody Island (Yongxing, Paracels) — reported PLA EW deployment.
+    - id: RED-JAM-COASTAL
+      kind: jammer
+      location: {lat_deg: 16.83, lon_deg: 112.34}
+      elevation_mask_deg: 0.0
+    - id: RED-CYBER
+      kind: cyber_unit
+    - id: RED-SJ-INSPECTOR                       # Shijian-class GEO inspector posturing toward BLUE-GEO-COMM
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.1, raan_deg: 140, argp_deg: 0, ta_deg: 0.5}
+      resources: {delta_v_ms: 50.0}
+  sensors:
+    # BLUE-RADAR-WP = Andersen AFB Guam (AFSCN GTS co-located SDA).
+    - {id: BLUE-RADAR-WP, owner: blue, kind: ground_radar, location: {lat_deg: 13.62, lon_deg: 144.86}}
+    # BLUE-OPTICAL-WP = GEODSS Maui (AMOS, Haleakalā) — Pacific GEO optical SDA.
+    - {id: BLUE-OPTICAL-WP, owner: blue, kind: ground_optical, location: {lat_deg: 20.71, lon_deg: -156.26}, needs_lighting: true}
+  objectives:
+    blue:
+      - {id: isr_delivers, desc: "ISR product delivered before window close",
+         metric: {kind: deliver_before, flag: imagery_delivered, by_s: 1800}}
+      - {id: satcom_op, desc: "BLUE-SATCOM operational",
+         metric: {kind: asset_operational, target: BLUE-SATCOM, by_s: 1800}}
+      - {id: geo_custody, desc: "Maintain custody on the Shijian inspector",
+         metric: {kind: custody, side: blue, object: RED-SJ-INSPECTOR, min_conf: 0.5}}
+    red:
+      - {id: deny_isr, desc: "Deny ISR delivery",
+         metric: {kind: deny_delivery, flag: imagery_delivered, by_s: 1800}}
+      - {id: safe_satcom, desc: "Drop SATCOM into safe mode",
+         metric: {kind: asset_safed, target: BLUE-SATCOM}}
+      - {id: rpo_close, desc: "Close inspector to within 50 km of BLUE-GEO-COMM",
+         metric: {kind: proximity, a: RED-SJ-INSPECTOR, b: BLUE-GEO-COMM, max_km: 50.0}}
+  parameters:
+    - {id: red_ew_intensity, label: "Red EW Intensity", type: enum, options: [none, harassment, sustained, total], default: sustained}
+    - {id: cyber_authorized, label: "Cyber Authorized", type: bool, default: true}
+    - {id: red_kinetic_authorized, label: "Red Kinetic Authorized", type: bool, default: false}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: china_integrated}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Window (s)", type: int, default: 1800}
+  injects:
+    - id: h_hour
+      label: "H-hour: PLA integrated counterspace package commences"
+      trigger: {type: time, at_sim_s: 60}
+      effects:
+        - {type: message, to: [blue, red, white], text: "H-hour. Integrated jam/cyber/RPO package commencing. All Blue mission streams under simultaneous pressure."}

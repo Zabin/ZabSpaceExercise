@@ -1,0 +1,67 @@
+vignette:
+  id: coa-russia-ml
+  title: "Russia ML: Sustained EW Campaign"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "Russian doctrine leads with deniable, reversible electromagnetic attack (Tirada/Pole/Bylina)."
+    - "Sustained jamming has no political ceiling and no debris — it is the workhorse counterspace tool."
+    - "Blue defenses: frequency-hop, request SSN custody on jammer footprint, shift users."
+  doctrinal_basis: [electromagnetic_warfare]
+  red_doctrine_profile: russia_ew_first
+  estimated_duration_min: 60
+  start_epoch_utc: "2030-07-04T08:00:00Z"
+  geography:
+    theater: "Eastern Europe / Black Sea; Blue forces operating across Russian EW arc"
+  blue_forces:
+    - id: BLUE-PNT
+      kind: satellite
+      orbit: {a_m: 26560000.0, e: 0.0, i_deg: 55.0, raan_deg: 30, argp_deg: 0, ta_deg: 0.0}    # MEO GPS-class
+      payload_state: {type: pnt}
+      bus_state: {power: {battery_soc: 0.95}}
+    - id: BLUE-SATCOM
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 45, argp_deg: 0, ta_deg: 0.0}
+      payload_state: {type: satcom}
+      bus_state: {power: {battery_soc: 0.95}}
+    # GS-EUROPE = RAF Oakhanger (UK Skynet / NATO SATCOM ground node).
+    - id: GS-EUROPE
+      kind: ground_station
+      location: {lat_deg: 51.12, lon_deg: -0.89, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+  red_forces:
+    # RED-JAM-TIRADA = Kaliningrad / Baltiysk (Tirada-2 SATCOM jammer reference location).
+    - id: RED-JAM-TIRADA
+      kind: jammer
+      location: {lat_deg: 54.71, lon_deg: 20.51}
+      elevation_mask_deg: 0.0
+    # RED-JAM-BYLINA = Dzhankoy area, Crimea (reported Pole-21 / Bylina GNSS-jam deployment).
+    - id: RED-JAM-BYLINA
+      kind: jammer
+      location: {lat_deg: 45.71, lon_deg: 34.39}
+      elevation_mask_deg: 0.0
+  sensors:
+    # BLUE-RADAR-EU = RAF Fylingdales (UEWR phased-array) — UK SDA flagship.
+    - {id: BLUE-RADAR-EU, owner: blue, kind: ground_radar, location: {lat_deg: 54.36, lon_deg: -0.67}}
+  objectives:
+    blue:
+      - {id: pnt_avail, desc: "PNT service operational at end of window",
+         metric: {kind: asset_operational, target: BLUE-PNT, by_s: 3600}}
+      - {id: satcom_avail, desc: "SATCOM operational at end of window",
+         metric: {kind: asset_operational, target: BLUE-SATCOM, by_s: 3600}}
+    red:
+      - {id: deny_pnt, desc: "Deny PNT in the theater",
+         metric: {kind: link_denied, target: BLUE-PNT}}
+      - {id: deny_satcom, desc: "Deny SATCOM in the theater",
+         metric: {kind: link_denied, target: BLUE-SATCOM}}
+  parameters:
+    - {id: red_ew_intensity, label: "Red EW Intensity", type: enum, options: [none, harassment, sustained, total], default: sustained}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: russia_ew_first}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: red_kinetic_authorized, label: "Red Kinetic Authorized", type: bool, default: false}
+    - {id: landing_window_start_s, label: "Window (s)", type: int, default: 3600}
+  injects:
+    - id: ew_escalation
+      label: "Red escalates EW from harassment to total"
+      trigger: {type: manual}
+      effects:
+        - {type: message, to: [blue, white], text: "Red EW intensity escalated to TOTAL — expect persistent denial across SATCOM and PNT."}

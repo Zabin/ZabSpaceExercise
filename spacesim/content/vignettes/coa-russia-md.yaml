@@ -1,0 +1,84 @@
+vignette:
+  id: coa-russia-md
+  title: "Russia MD: DA-ASAT + Cyber Surprise"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "Russian MD COA: a kinetic Nudol-class DA-ASAT strike with debris consequences."
+    - "Cyber attack on a SATCOM modem runs concurrently — Blue cannot focus on just one threat."
+    - "Debris policy decisions are part of the exercise: accept debris vs. force political ceiling."
+  doctrinal_basis: [orbital_warfare, cyber, electromagnetic_warfare]
+  red_doctrine_profile: china_integrated         # closest active profile that prefers cyber + kinetic mix
+  estimated_duration_min: 60
+  start_epoch_utc: "2030-08-21T14:00:00Z"
+  geography:
+    theater: "Global; multi-domain strategic crisis"
+  blue_forces:
+    - id: BLUE-ISR-LEO
+      kind: satellite
+      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 0.0}
+      resources: {delta_v_ms: 100.0}             # Δv reserves needed for evasion
+      payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
+      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+    - id: BLUE-SATCOM
+      kind: satellite
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 60, argp_deg: 0, ta_deg: 0.0}
+      cyber_posture: low
+      cyber_vulnerabilities: [{vector: ground_modem, patchable: true, patched: false}]
+      payload_state: {type: satcom}
+      bus_state: {power: {battery_soc: 0.95}}
+    # GS-PRIME = Schriever SFB (AFSCN master control node), Colorado.
+    - id: GS-PRIME
+      kind: ground_station
+      location: {lat_deg: 38.81, lon_deg: -104.53, alt_m: 0.0}
+      elevation_mask_deg: 5.0
+  red_forces:
+    # RED-NUDOL = Plesetsk Cosmodrome (PL-19 Nudol DA-ASAT test launches — canonical).
+    - id: RED-NUDOL
+      kind: interceptor
+      location: {lat_deg: 62.93, lon_deg: 40.57}
+      elevation_mask_deg: 0.0
+      resources: {ammo: 1}
+    - id: RED-CYBER
+      kind: cyber_unit
+    # RED-JAM = Kaliningrad / Baltiysk (Tirada/Pole-21 reference location).
+    - id: RED-JAM
+      kind: jammer
+      location: {lat_deg: 54.71, lon_deg: 20.51}
+      elevation_mask_deg: 0.0
+  sensors:
+    # BLUE-RADAR-W = Cape Cod SFS (PAVE PAWS UEWR), MA.
+    - {id: BLUE-RADAR-W, owner: blue, kind: ground_radar, location: {lat_deg: 41.75, lon_deg: -70.54}}
+    # BLUE-RADAR-E = RAF Fylingdales (UEWR), UK — eastern coverage of trans-Atlantic threat.
+    - {id: BLUE-RADAR-E, owner: blue, kind: ground_radar, location: {lat_deg: 54.36, lon_deg: -0.67}}
+  objectives:
+    blue:
+      - {id: isr_survives, desc: "BLUE-ISR-LEO survives the kinetic threat window",
+         metric: {kind: asset_survived, target: BLUE-ISR-LEO, by_s: 1800}}
+      - {id: satcom_op, desc: "BLUE-SATCOM operational despite cyber pressure",
+         metric: {kind: asset_operational, target: BLUE-SATCOM, by_s: 3600}}
+      - {id: no_debris, desc: "Avoid debris-generating kinetic event",
+         metric: {kind: no_debris, by_s: 3600}}
+    red:
+      - {id: destroy_isr, desc: "Destroy BLUE-ISR-LEO with the Nudol",
+         metric: {kind: asset_destroyed, target: BLUE-ISR-LEO}}
+      - {id: safe_satcom, desc: "Drop BLUE-SATCOM into safe mode via the modem",
+         metric: {kind: asset_safed, target: BLUE-SATCOM}}
+  parameters:
+    - {id: red_kinetic_authorized, label: "Red Kinetic Authorized", type: bool, default: true}
+    - {id: cyber_authorized, label: "Cyber Authorized", type: bool, default: true}
+    - {id: safe_mode_susceptibility, label: "Safe-Mode Susceptibility", type: enum, options: [robust, realistic, fragile], default: realistic}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: china_integrated}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Window (s)", type: int, default: 3600}
+  injects:
+    - id: nudol_alert
+      label: "Strategic Warning: Russian DA-ASAT spin-up detected"
+      trigger: {type: time, at_sim_s: 300}
+      effects:
+        - {type: message, to: [blue, white], text: "OSINT + national-technical means: Plesetsk Nudol launcher in active spin-up posture."}
+    - id: patch_modem
+      label: "Blue patches the SATCOM modem vulnerability"
+      trigger: {type: manual}
+      effects:
+        - {type: patch_cyber_vuln, target: BLUE-SATCOM, vector: ground_modem}
+        - {type: message, to: [blue, white], text: "Modem vulnerability patched; re-safing should stop."}

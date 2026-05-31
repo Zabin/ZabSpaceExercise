@@ -1,0 +1,91 @@
+# Inject library (FW §11.D.19)
+# ----------------------------------------------------------------------------
+# Reference catalog of reusable inject templates surfaced through the
+# White-Cell inject builder (UI: Inject library → pick → edit → fire).
+#
+# Each entry is a valid Inject (spacesim/content/vignette.py:Inject):
+#   id            — stable identifier
+#   label         — short human description shown in the dropdown
+#   trigger       — { type: "time", at_sim_s: <seconds since vignette start> }
+#                    or { type: "manual" } for fire-on-demand
+#   effects       — list of effect dicts; each `type` field maps to a handler in
+#                   spacesim/session/manager.py:_h_inject.  Supported types:
+#                     message, reveal_asset, political_consequence,
+#                     patch_cyber_vuln, gs_outage, space_weather,
+#                     conjunction_warning, spawn_debris (added in FW §11.D.19).
+#
+# Operators load the library via GET /api/sessions/{sid}/inject_library,
+# pick an entry, edit any field, and fire with POST /api/sessions/{sid}/inject
+# (immediate) or POST /api/sessions/{sid}/inject_schedule with at_sim_t.
+#
+# Five reference patterns:
+
+injects:
+
+  # 1. Debris-creation event — drops a new DebrisField into world.debris,
+  #    raising the conjunction-risk surface for downstream planning.
+  - id: debris_field_500km
+    label: "Unattributed breakup at 500 km creates a new debris field"
+    trigger: { type: manual }
+    effects:
+      - type: spawn_debris
+        regime: LEO
+        altitude_km: 500
+        n_fragments: 1200
+        message: "TLE 99001 catastrophic event — 1.2k tracked fragments"
+
+  # 2. Localized GNSS jamming advisory — uses messaging + conjunction_warning
+  #    surfaces to flag the impacted area; downstream effect resolution is
+  #    handled by the active_effects path on operator response.
+  - id: gnss_jam_regional
+    label: "Localized GNSS jamming advisory over operating area"
+    trigger: { type: manual }
+    effects:
+      - type: message
+        to: [blue]
+        text: "PNT degradation reported in operating area — fix expected slip 8–12 m"
+      - type: message
+        to: [white]
+        text: "WHITE: localized GNSS jam injected; resolve as active_effect if cell engages"
+
+  # 3. RPO encounter with ambiguous attribution — issues a conjunction warning
+  #    backed by a reveal_asset so the cell sees an inbound track.
+  - id: rpo_ambiguous
+    label: "Unannounced satellite approach (RPO, attribution ambiguous)"
+    trigger: { type: manual }
+    effects:
+      - type: reveal_asset
+        to: blue
+        target: UNKNOWN-RPO
+      - type: conjunction_warning
+        a: BLUE-COMSAT-1
+        b: UNKNOWN-RPO
+        range_km: 18.5
+        t_close: 0     # placeholder — UI builder rewrites to (now + 10 min)
+      - type: message
+        to: [blue]
+        text: "SDA: unidentified object closing on BLUE-COMSAT-1 at 18 km"
+
+  # 4. Partial ground-station outage — one station drops capability.
+  - id: gs_outage_diego_garcia
+    label: "Ground station DG-EAST loses uplink"
+    trigger: { type: manual }
+    effects:
+      - type: gs_outage
+        target: DG-EAST
+        cause: power_loss
+      - type: message
+        to: [blue]
+        text: "GS DG-EAST uplink down — diversity site or ISL relay required"
+
+  # 5. Space-weather storm — raises space_weather.severity for eclipse-amplified
+  #    battery drain on every LEO sat in eclipse for the duration.
+  - id: space_weather_severe
+    label: "Severe geomagnetic storm — heightened eclipse drain"
+    trigger: { type: manual }
+    effects:
+      - type: space_weather
+        severity: severe
+      - type: message
+        to: [white, blue, red]
+        text: "Geomag storm advisory — eclipse drain elevated, watch SoC margins"

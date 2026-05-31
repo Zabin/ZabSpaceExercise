@@ -1,0 +1,36 @@
+vignette:
+  id: sda-custody-hunt
+  title: "SDA Custody Hunt"
+  classification: UNCLASSIFIED-TRAINING
+  learning_objectives:
+    - "Custody decays between looks; scarce sensors force prioritization (contention)."
+    - "Red wins by breaking custody — deception, dispersal, or suppressing the sensor."
+  doctrinal_basis: [sda]
+  red_doctrine_profile: china_integrated
+  start_epoch_utc: "2030-03-15T06:00:00Z"
+  blue_forces: []
+  red_forces:
+    - id: RED-OBJ
+      kind: satellite
+      orbit: {a_m: 7178137.0, e: 0.0, i_deg: 63.4, raan_deg: 80, argp_deg: 0, ta_deg: 0.0}
+      resources: {delta_v_ms: 150.0}
+  sensors:
+    # BLUE-RADAR-1 = Eglin AFB AN/FPS-85 — dedicated SSN phased-array radar, FL.
+    - {id: BLUE-RADAR-1, owner: blue, kind: ground_radar, location: {lat_deg: 30.57, lon_deg: -86.21}}
+    # BLUE-OPT-1 = GEODSS Det 1 (Socorro, White Sands NM) — primary optical SDA, contended with radar.
+    - {id: BLUE-OPT-1, owner: blue, kind: ground_optical, location: {lat_deg: 33.82, lon_deg: -106.66}, needs_lighting: true}
+  objectives:
+    blue:
+      - {id: maintain_custody, desc: "Maintain custody of the hostile object", metric: {kind: custody, side: blue, object: RED-OBJ, min_conf: 0.5}}
+    red:
+      - {id: break_custody, desc: "Break Blue's custody by the deadline", metric: {kind: deny_custody, side: blue, object: RED-OBJ, min_conf: 0.5, by_s: 5400}}
+  parameters:
+    - {id: blue_sensor_count, label: "Blue Sensors", type: int, min: 1, max: 4, default: 2}
+    - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: china_integrated}
+    - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
+    - {id: landing_window_start_s, label: "Hunt Window (s)", type: int, default: 5400}
+    - {id: ssn_blue_dispersion, label: "Blue SSN dispersion", type: enum,
+       options: [off, sparse, regional, global, proliferated], default: global}
+    - {id: ssn_red_dispersion,  label: "Red SSN dispersion",  type: enum,
+       options: [off, sparse, regional, global, proliferated], default: off}
+  injects: []

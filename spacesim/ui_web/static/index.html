@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Space Control &amp; Orbital Warfare Exercise Simulator</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body data-cell="white">
+  <header class="toolbar">
+    <svg id="logo" viewBox="0 0 64 64" width="28" height="28" role="img" aria-label="Space Control logo" style="color: var(--cell-accent)">
+      <circle cx="32" cy="36" r="18" fill="#0a1424" stroke="currentColor" stroke-width="1.4" opacity="0.95" />
+      <path d="M22 32 q4 -5 9 -3 q3 4 -1 7 q-5 3 -8 -4 z" fill="currentColor" opacity="0.35" />
+      <path d="M38 41 q3 -4 7 -1 q1 4 -3 5 q-5 1 -4 -4 z" fill="currentColor" opacity="0.30" />
+      <ellipse cx="32" cy="36" rx="28" ry="11" fill="none" stroke="currentColor" stroke-width="1.4"
+               opacity="0.75" transform="rotate(-20 32 36)" />
+      <g transform="translate(54 22) rotate(20)"><polygon points="0,-4 -4,3 4,3" fill="currentColor" /></g>
+      <rect x="12" y="49" width="3" height="3" fill="currentColor" opacity="0.85" />
+    </svg>
+    <span class="title">Space Control &amp; Orbital Warfare</span>
+    <label>Vignette <select id="vignette"></select></label>
+    <label>Seed <input id="seed" type="number" value="1" style="width:4.5em" /></label>
+    <button id="load" class="primary">Load</button>
+    <button id="start" disabled>Start</button>
+    <span class="spacer"></span>
+    <div class="ctrl" id="cells">
+      <button class="cell" data-cell="white">White</button>
+      <button class="cell" data-cell="blue">Blue</button>
+      <button class="cell" data-cell="red">Red</button>
+    </div>
+    <div class="ctrl">
+      <button class="icon" data-step="60">+1m</button>
+      <button class="icon" data-step="600">+10m</button>
+      <button class="icon" data-step="3600">+1h</button>
+      <button id="rewind">⟲ Rewind</button>
+    </div>
+    <div class="ctrl">
+      <button id="save">Save</button>
+      <button id="loadbtn">Load</button>
+      <input id="loadfile" type="file" accept=".json,application/json" style="display:none" />
+    </div>
+    <label class="toggle"><input id="present" type="checkbox"> present</label>
+    <label class="toggle" title="Projector / White-Cell mode — hides compose form, larger fonts"><input id="projector" type="checkbox"> projector</label>
+    <label class="toggle" title="Color-blind safe palette (Okabe-Ito)"><input id="cb" type="checkbox"> cb-safe</label>
+    <label class="toggle" title="High-contrast mode — increases text contrast for low-vision use"><input id="hc" type="checkbox"> hi-contrast</label>
+    <label class="toggle" title="Large-text mode — bumps base font size for projector/low-vision use"><input id="bigtext" type="checkbox"> large-text</label>
+    <button id="tutorial" title="Toggle the vignette's tutorial coachmark panel">Tutorial</button>
+    <button id="inspect-vignette" title="Inspect or fork the loaded vignette (YAML)">Inspect</button>
+    <button id="handover-btn" title="Blank/blur the screen to hand off the console between operators">⏸ Handover</button>
+    <button id="help-btn" title="Open the help panel — keyboard shortcuts, glossary, troubleshooting">? Help</button>
+    <button id="detach">Detach viewers</button>
+    <span class="banner">UNCLASSIFIED // TRAINING</span>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Cell &amp; Time</h2>
+      <div class="clock">UTC: <b id="now">—</b></div>
+      <div class="clock">
+        <select id="tz-select" style="font-size:11px;padding:1px 3px">
+          <option value="America/New_York" selected>Eastern</option>
+          <option value="America/Chicago">Central</option>
+          <option value="America/Denver">Mountain</option>
+          <option value="America/Los_Angeles">Pacific</option>
+          <option value="Europe/London">London</option>
+          <option value="Europe/Paris">Paris/Berlin</option>
+          <option value="Asia/Tokyo">Tokyo</option>
+          <option value="UTC">UTC only</option>
+        </select>
+        <b id="now-local">—</b>
+      </div>
+      <div id="session" class="toggle"></div>
+      <h3>Objectives</h3>
+      <pre id="objectives">—</pre>
+      <h3>Messages</h3>
+      <ul id="messages"></ul>
+      <!-- FW §11.D.17 — coaching notes from the vignette's `coaching:` list. -->
+      <h3>Coaching</h3>
+      <div id="coaching-list" class="muted">(no notes)</div>
+      <!-- FW §11.C.14 — upcoming conjunctions + one-click collision-avoid. -->
+      <h3>Conjunctions</h3>
+      <div id="conjunction-list" class="muted">(no conjunction warnings)</div>
+      <h3>Injects (White Cell)</h3>
+      <!-- Quick-fire row: pre-loaded vignette injects fire immediately on click. -->
+      <div class="ctrl">
+        <select id="inject-sel"></select>
+        <button id="fire-inject" title="Fire the selected vignette inject immediately">Fire</button>
+      </div>
+      <!-- FW §11.D.19 — Inject library + builder.  Pick a template, edit any field,
+           set a schedule (now or future timestamp), then fire. -->
+      <details id="inject-builder" style="margin-top:6px">
+        <summary style="cursor:pointer;font-size:12px"><b>Build / schedule inject</b> (library + timestamp)</summary>
+        <div class="ctrl" style="margin-top:4px">
+          <label>Template
+            <select id="inject-lib"><option value="">(custom)</option></select>
+          </label>
+          <button id="inject-lib-load" class="vbtn" title="Load template into the editor below">Load</button>
+        </div>
+        <div class="ctrl" style="margin-top:4px;align-items:flex-start">
+          <label style="flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:2px">
+            <span>Effects (JSON list)</span>
+            <textarea id="inject-effects" rows="6" style="width:100%;font-family:monospace;font-size:11px"
+              placeholder='[{"type":"message","to":["blue"],"text":"…"}]'></textarea>
+          </label>
+        </div>
+        <div class="ctrl" style="margin-top:4px;flex-wrap:wrap">
+          <label>Schedule
+            <select id="inject-when">
+              <option value="now" selected>Now (immediate)</option>
+              <option value="rel">+ seconds from now</option>
+              <option value="abs">Absolute UTC</option>
+            </select>
+          </label>
+          <label id="inject-rel-wrap" style="display:none">+s
+            <input id="inject-rel-s" type="number" step="1" min="0" value="60" style="width:80px">
+          </label>
+          <label id="inject-abs-wrap" style="display:none">UTC
+            <input id="inject-abs-utc" type="datetime-local" step="1" style="width:200px">
+          </label>
+          <button id="inject-build-fire" class="primary" style="font-size:12px">Schedule / fire</button>
+        </div>
+        <pre id="inject-build-result" class="muted" style="font-size:11px;margin-top:4px">—</pre>
+      </details>
+    </section>
+
+    <section class="panel">
+      <h2>Fleet SOH rollup (own assets)</h2>
+      <div id="fleet-filter" class="ctrl">
+        <button class="chip active" data-filter="all">All</button>
+        <button class="chip" data-filter="bus-red">Bus-red</button>
+        <button class="chip" data-filter="payload">Payload-degraded</button>
+        <button class="chip" data-filter="attack">Under-attack</button>
+        <button class="chip" data-filter="safed">Safed</button>
+      </div>
+      <table id="assets"><thead><tr><th>SOH</th><th>ID</th><th>Kind</th><th>Next</th><th>Power</th><th>Bus</th><th>⚠</th></tr></thead><tbody></tbody></table>
+      <h2>Δv reserves & lifetime</h2>
+      <table id="deltav"><thead><tr><th>Asset</th><th>Δv (m/s)</th><th>SoC</th><th>Years*</th></tr></thead><tbody></tbody></table>
+      <div class="muted" style="font-size:11px">*Years of station-keeping at ≈15 m/s/yr (typical LEO maintenance budget)</div>
+      <h2>Tracks (custody)</h2>
+      <table id="tracks"><thead><tr><th>Object</th><th>Conf</th><th>Char.</th><th>Class</th></tr></thead><tbody></tbody></table>
+      <h2>Perceived effects</h2>
+      <ul id="effects"></ul>
+      <h2>Alarms</h2>
+      <ul id="alarms"></ul>
+    </section>
+
+    <section class="panel">
+      <h2>Tasking (sensor)</h2>
+      <div id="task-mode" class="ctrl" style="margin-bottom:6px">
+        <button class="chip active" data-tmode="organic">Organic</button>
+        <button class="chip" data-tmode="ssn">SSN request</button>
+      </div>
+      <div class="ctrl">
+        <label>Intent <select id="task-intent">
+          <option value="search">Search</option>
+          <option value="track">Track</option>
+          <option value="characterize" selected>Characterize</option>
+          <option value="cue">Cue</option>
+        </select></label>
+        <label id="task-sensor-wrap">Sensor <select id="task-sensor"><option value="auto">auto</option></select></label>
+        <label id="task-regime-wrap" style="display:none">Regime <select id="task-regime">
+          <option value="LEO">LEO</option><option value="MEO">MEO</option>
+          <option value="GEO">GEO</option><option value="HEO">HEO</option>
+          <option value="cislunar">cislunar</option>
+        </select></label>
+        <label>Target <input id="task-target" placeholder="(track id)" style="width:8em" /></label>
+        <label>Priority <select id="task-priority">
+          <option value="routine">routine</option>
+          <option value="priority" selected>priority</option>
+          <option value="immediate">immediate</option>
+        </select></label>
+        <button id="task-plan">Plan collection</button>
+      </div>
+      <!-- ISR collection parameters — shown for organic mode only -->
+      <div id="task-isr-params" class="ctrl" style="margin-top:4px">
+        <label id="task-beam-wrap">Mode
+          <select id="task-beam-mode">
+            <option value="">auto</option>
+            <option value="wide_area">Wide area</option>
+            <option value="stripmap">Stripmap</option>
+            <option value="spotlight">Spotlight</option>
+            <option value="scan">Scan / EO</option>
+            <option value="fine">Fine / SAR</option>
+            <option value="polarimetric">Polarimetric</option>
+          </select>
+        </label>
+        <label>Look&nbsp;angle
+          <input id="task-look-angle" type="range" min="0" max="45" step="1" value="0" style="width:70px;vertical-align:middle">
+          <span id="task-look-val">0°</span>
+        </label>
+        <label>Duration&nbsp;(s)
+          <input id="task-duration" type="number" min="30" max="3600" value="300" step="30" style="width:56px">
+        </label>
+      </div>
+      <div id="task-isr-info" class="preview" style="font-size:11px;margin-top:2px"></div>
+      <div id="task-coverage" class="preview"></div>
+      <pre id="task-result" class="muted">—</pre>
+      <h3>SSN requests</h3>
+      <div id="ssn-queue" class="muted">(empty)</div>
+    </section>
+
+    <section class="panel" id="order-panel">
+      <h2>Satellite command</h2>
+      <div id="role-filter" class="ctrl" style="margin-bottom:6px">
+        <button class="chip active" data-role="all">All</button>
+        <button class="chip" data-role="bus">Bus</button>
+        <button class="chip" data-role="payload">Payload</button>
+        <button class="chip" data-role="sda">SDA</button>
+      </div>
+      <label>Actor <select id="o-actor"></select></label>
+      <div id="actor-info" class="toggle"></div>
+      <label>Action <select id="o-action"></select></label>
+      <label>Target <input id="o-target" placeholder="(e.g. RED-TGT)" style="width:10em" /></label>
+      <label style="display:flex">Params
+        <input id="o-params" style="flex:1" value='{"via":"GS-NORTH"}' /></label>
+
+      <!-- Maneuver mode assistant (shown only when action = maneuver) -->
+      <div id="mnvr-panel" style="display:none">
+        <hr style="border-color:rgba(255,255,255,0.1);margin:6px 0">
+        <label>Maneuver mode
+          <select id="mnvr-mode">
+            <option value="eci">ECI impulse [x, y, z]</option>
+            <option value="lvlh">LVLH / RTN frame</option>
+            <option value="finite_burn">Finite burn (dir + mag + duration)</option>
+            <option value="target_coe">Target orbit (COEs)</option>
+            <option value="hohmann">Hohmann transfer</option>
+            <option value="plane_change">Plane change (Δi)</option>
+          </select>
+        </label>
+
+        <div id="mnvr-eci" class="mnvr-fields">
+          <label>Δv X<input id="mnvr-eci-x" type="number" step="0.1" value="0" title="ECI X m/s"></label>
+          <label>Δv Y<input id="mnvr-eci-y" type="number" step="0.1" value="5" title="ECI Y m/s"></label>
+          <label>Δv Z<input id="mnvr-eci-z" type="number" step="0.1" value="0" title="ECI Z m/s"></label>
+        </div>
+
+        <div id="mnvr-lvlh" class="mnvr-fields" style="display:none">
+          <label>Radial (R)<input id="mnvr-lvlh-r" type="number" step="0.1" value="0" title="Radial m/s"></label>
+          <label>Along-track (T)<input id="mnvr-lvlh-t" type="number" step="0.1" value="5" title="Along-track m/s"></label>
+          <label>Normal (N)<input id="mnvr-lvlh-n" type="number" step="0.1" value="0" title="Normal m/s"></label>
+        </div>
+
+        <div id="mnvr-finite-burn" class="mnvr-fields" style="display:none">
+          <label>Dir R<input id="mnvr-fb-r" type="number" step="0.01" value="0" title="Thrust direction R (normalised)"></label>
+          <label>Dir T<input id="mnvr-fb-t" type="number" step="0.01" value="1" title="Thrust direction T (normalised)"></label>
+          <label>Dir N<input id="mnvr-fb-n" type="number" step="0.01" value="0" title="Thrust direction N (normalised)"></label>
+          <label>Magnitude (m/s)<input id="mnvr-fb-mag" type="number" step="0.1" value="5" title="Total Δv m/s"></label>
+          <label>Duration (s)<input id="mnvr-fb-dur" type="number" step="1" value="60" title="Burn duration s (informational)"></label>
+        </div>
+
+        <div id="mnvr-target-coe" class="mnvr-fields" style="display:none">
+          <label>a (km)<input id="mnvr-coe-a" type="number" step="1" placeholder="(keep)" title="Target semi-major axis km"></label>
+          <label>e<input id="mnvr-coe-e" type="number" step="0.001" min="0" placeholder="(keep)" title="Target eccentricity"></label>
+          <label>i (deg)<input id="mnvr-coe-i" type="number" step="0.1" placeholder="(keep)" title="Target inclination deg"></label>
+          <label>RAAN (deg)<input id="mnvr-coe-raan" type="number" step="0.1" placeholder="(keep)" title="Target RAAN deg"></label>
+          <label>ω (deg)<input id="mnvr-coe-argp" type="number" step="0.1" placeholder="(keep)" title="Target arg-of-perigee deg"></label>
+        </div>
+
+        <div id="mnvr-hohmann" class="mnvr-fields" style="display:none">
+          <label>Target altitude (km)<input id="mnvr-hoh-alt" type="number" step="10" value="600" title="Target circular altitude km"></label>
+        </div>
+
+        <div id="mnvr-plane-change" class="mnvr-fields" style="display:none">
+          <label>Δ inclination (deg)<input id="mnvr-pc-di" type="number" step="0.1" value="5" title="Inclination change deg (signed)"></label>
+        </div>
+
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button id="mnvr-compute">Compute Δv →</button>
+          <span id="mnvr-cost" class="muted" style="align-self:center"></span>
+        </div>
+        <div id="mnvr-result" class="mnvr-result"></div>
+      </div>
+
+      <!-- Jam parameter assistant (shown only when action = jam) -->
+      <div id="jam-panel" style="display:none">
+        <hr style="border-color:rgba(255,255,255,0.1);margin:6px 0">
+        <div class="mnvr-fields">
+          <label>Modulation
+            <select id="jam-mod">
+              <option value="barrage">Barrage</option>
+              <option value="spot">Spot</option>
+              <option value="sweep">Sweep</option>
+              <option value="deceptive">Deceptive</option>
+            </select>
+          </label>
+          <label>Power (W)<input id="jam-power" type="number" step="10" min="1" value="100"></label>
+          <label>BW (kHz)<input id="jam-bw" type="number" step="100" min="0" value="1000"></label>
+          <label>Victim BW (kHz)<input id="jam-vbw" type="number" step="100" min="0" value="1000"></label>
+          <label>Base P<sub>s</sub><input id="jam-pbase" type="number" step="0.05" min="0" max="1" value="0.9"></label>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button id="jam-compute">Preview footprint</button>
+          <span id="jam-summary" class="muted" style="align-self:center"></span>
+        </div>
+        <div id="jam-result" class="mnvr-result"></div>
+      </div>
+
+      <div id="batch-bar" class="empty">
+        <span>Batch (<span id="batch-count">0</span>):</span>
+        <span id="batch-list" class="muted"></span>
+        <span class="grow"></span>
+        <button id="batch-issue">Issue to all</button>
+        <button id="batch-clear">Clear</button>
+      </div>
+      <!-- FW §11.C.13 — multi-asset batch helper: apply the current compose form to a fleet subset -->
+      <div class="ctrl" style="font-size:11px;margin-top:4px">
+        <span class="muted">Apply to subset:</span>
+        <button id="fleet-apply-all" class="vbtn" title="Apply current compose form to every own asset">All own</button>
+        <button id="fleet-apply-isr" class="vbtn" title="Apply to all ISR satellites (EO+SAR)">ISR sats</button>
+        <button id="fleet-apply-comsat" class="vbtn" title="Apply to all SATCOM satellites">SATCOM</button>
+        <button id="fleet-apply-group" class="vbtn" title="Apply to every member of the selected asset's constellation group">Same group</button>
+      </div>
+      <!-- FW §11.D.18 — live consequence preview before commit -->
+      <div id="consequence-preview" class="preview" style="font-size:11px"></div>
+      <button id="issue" class="primary">Issue order</button>
+      <button id="save-playbook" title="Save the current order as a named playbook">★ Save preset</button>
+      <button id="coach-start" title="Walk through the UI" style="float:right">? Coachmark tour</button>
+      <div id="o-preview" class="preview"></div>
+      <h3>Playbooks</h3>
+      <div id="playbook-list" class="playbook-list muted">(no presets saved)</div>
+      <h3>Result</h3>
+      <pre id="order-result">—</pre>
+      <h3>Pass timeline (next 6 h)</h3>
+      <canvas id="ribbon" width="336" height="44"></canvas>
+      <h3>Command queue</h3>
+      <div id="queue"></div>
+    </section>
+  </main>
+
+  <section class="viewers">
+    <div class="panel">
+      <div class="viewer-head">
+        <strong>3D globe</strong><span class="grow"></span>
+        <div class="ctrl">
+          <button class="icon" id="g-zoom-in">＋</button>
+          <button class="icon" id="g-zoom-out">－</button>
+          <label>tilt<input id="g-tilt" type="range" min="-80" max="80" value="20" style="width:90px"></label>
+          <label>zoom-to<select id="g-focus"></select></label>
+          <label class="toggle"><input id="g-map" type="checkbox" checked> map</label>
+          <label class="toggle"><input id="g-auto" type="checkbox"> spin</label>
+          <button id="g-reset">Reset</button>
+        </div>
+      </div>
+      <canvas id="globe" width="520" height="360"></canvas>
+    </div>
+    <div class="panel">
+      <div class="viewer-head">
+        <strong>2D belief map</strong><span class="grow"></span>
+        <div class="ctrl">
+          <button class="icon" id="m-zoom-in">＋</button>
+          <button class="icon" id="m-zoom-out">－</button>
+          <label>center<select id="m-focus"></select></label>
+          <label class="toggle"><input id="m-map" type="checkbox" checked> map</label>
+          <label class="toggle"><input id="m-tracks" type="checkbox" checked> tracks</label>
+          <label class="toggle"><input id="m-grid" type="checkbox" checked> grid</label>
+          <button id="m-reset">Reset</button>
+        </div>
+      </div>
+      <canvas id="map" width="520" height="360"></canvas>
+    </div>
+  </section>
+
+  <!-- Per-cell activity Gantt timeline (past / present / scheduled).
+       Fog-of-war: White sees all three cells; Blue/Red see only their own. -->
+  <section class="panel" id="activity-panel" style="margin:0 12px 14px">
+    <h2>Cell activity timeline — past · present · scheduled</h2>
+    <div class="ctrl" style="font-size:11px">
+      <label>Past window
+        <select id="activity-past">
+          <option value="600">10 min</option>
+          <option value="1800" selected>30 min</option>
+          <option value="3600">1 h</option>
+          <option value="10800">3 h</option>
+        </select>
+      </label>
+      <label>Future window
+        <select id="activity-future">
+          <option value="1800">30 min</option>
+          <option value="3600">1 h</option>
+          <option value="7200" selected>2 h</option>
+          <option value="21600">6 h</option>
+        </select>
+      </label>
+      <span class="muted">Click a bar to copy its order id.</span>
+    </div>
+    <canvas id="activity-canvas" width="1176" height="160" style="display:block;width:100%;margin-top:6px;background:#070b10;border:1px solid var(--border)"></canvas>
+    <div id="activity-legend" class="muted" style="font-size:11px;margin-top:4px">
+      Status colours: ▮ executed · ▮ active (straddles now) · ▮ queued · ▮ scheduled · ▮ cancelled · ✗ rejected
+    </div>
+    <pre id="activity-detail" class="muted" style="font-size:11px;margin-top:4px;min-height:14px">—</pre>
+  </section>
+
+  <section class="panel" id="aar-panel" style="margin:0 12px 14px">
+    <h2>After-action review — scrub the deterministic timeline</h2>
+    <div class="ctrl">
+      <input id="aar-slider" type="range" min="0" max="0" value="0" style="flex:1" />
+      <span id="aar-label" class="muted"></span>
+      <button id="bookmark-add" title="Pin this sim moment to revisit later">📌 Bookmark</button>
+      <a id="aar-csv" href="#" target="_blank">⬇ CSV</a>
+      <a id="aar-json" href="#" target="_blank">⬇ JSON</a>
+    </div>
+    <h3>Bookmarks</h3>
+    <div id="bookmark-list" class="bookmark-list muted">(no bookmarks)</div>
+    <h3>Branches (compare two runs)</h3>
+    <div class="ctrl"><button id="branch-save">＋ Save current branch</button><button id="branch-compare">Compare selected</button></div>
+    <div id="branch-list" class="bookmark-list muted">(no branches)</div>
+    <pre id="branch-diff" class="muted">—</pre>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:8px">
+      <div><h3>Objectives at this point</h3><pre id="aar-obj">—</pre></div>
+      <div><h3>Assets at this point</h3><pre id="aar-assets">—</pre></div>
+    </div>
+  </section>
+
+  <section class="panel" id="drill-panel" style="margin:0 12px 14px">
+    <h2>Subsystem drill-down — telemetry &amp; logs (click a fleet row, then a parameter)</h2>
+    <div id="drill-title" class="toggle">select an asset above…</div>
+    <div id="recovery-strip"></div>
+    <div style="display:grid; grid-template-columns: 1fr 540px; gap:12px; margin-top:8px">
+      <div id="drill-params"></div>
+      <div>
+        <div class="ctrl" style="margin-bottom:6px">
+          <label class="toggle"><input id="drill-nominal" type="checkbox"> compare to nominal</label>
+          <label class="toggle">overlay <select id="drill-overlay"><option value="">(no overlay)</option></select></label>
+        </div>
+        <canvas id="drill-graph" width="540" height="200"></canvas>
+        <h3>Subsystem log (symptoms — diagnose the cause yourself)</h3>
+        <pre id="drill-log">—</pre>
+      </div>
+    </div>
+  </section>
+
+  <div id="tooltip" class="tip" style="display:none"></div>
+
+  <div id="coachmark-wrap" class="coachmark-wrap" role="dialog" aria-label="Coachmark tour">
+    <div id="coachmark-hole" class="coachmark-hole"></div>
+    <div id="coachmark-tip" class="coachmark-tip">
+      <h4 id="coachmark-title">Welcome</h4>
+      <div id="coachmark-body">…</div>
+      <div class="nav">
+        <button id="coachmark-back">← Back</button>
+        <span id="coachmark-step" class="muted"></span>
+        <button id="coachmark-next">Next →</button>
+        <button id="coachmark-close">✕ Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="palette-wrap" class="palette-wrap" role="dialog" aria-label="Command palette">
+    <div class="palette">
+      <input id="palette-input" placeholder="Type a command: 'select ISR-EO-1', 'advance 10m', 'inject patch_modem', 'select blue'…" autocomplete="off" />
+      <ul id="palette-list"></ul>
+    </div>
+  </div>
+
+  <!-- User-added FW #6: hand-off screen-blank overlay -->
+  <div id="handover" role="dialog" aria-label="Handover">
+    <h1 id="handover-title">Handing off</h1>
+    <div class="who" id="handover-who">Pass the console to the next operator</div>
+    <button id="handover-resume">Resume</button>
+  </div>
+
+  <!-- User-added FW #10: help panel (also reused by FW #9 tooltip glossary) -->
+  <div id="help-wrap" role="dialog" aria-label="Help">
+    <div id="help">
+      <h3>Help &amp; reference</h3>
+      <p style="font-size:12px;color:var(--muted);margin:4px 0 8px">
+        Full UI reference (every control, dropdown, shortcut) lives in the training manual:
+        <code>docs/training/10-ui-reference.md</code>.
+      </p>
+      <h4>Keyboard shortcuts</h4>
+      <ul>
+        <li><b>Ctrl/Cmd-K</b> — open the command palette</li>
+        <li><b>j</b> / <b>k</b> — cycle through actor select</li>
+        <li><b>c</b> — focus the compose form</li>
+        <li><b>g</b> — graph the selected asset's telemetry</li>
+        <li><b>Esc</b> — close the palette / coachmark</li>
+      </ul>
+      <h4>Workflow</h4>
+      <ul>
+        <li>Click a fleet row to drill down. <b>Shift-click</b> to add to a multi-asset batch.</li>
+        <li>Compose an order, then ★ Save preset to keep it as a one-click playbook.</li>
+        <li>Pin a moment with 📌 Bookmark to jump back via the AAR scrubber.</li>
+        <li>⏸ Handover blanks the screen for hot-seat handoffs between operators.</li>
+        <li>Inspect opens the YAML so trainers can fork the scenario.</li>
+      </ul>
+      <h4>Acronyms</h4>
+      <ul>
+        <li><b>SOH</b> — State of Health (bus/payload rollup)</li>
+        <li><b>RPO</b> — Rendezvous &amp; Proximity Operations</li>
+        <li><b>ISL</b> — Inter-Satellite Link (crosslink)</li>
+        <li><b>SSN</b> — Space Surveillance Network</li>
+        <li><b>SDA</b> — Space Domain Awareness</li>
+        <li><b>EW</b> — Electronic Warfare</li>
+        <li><b>ROE</b> — Rules of Engagement</li>
+        <li><b>Δv</b> — Delta-v (maneuver budget)</li>
+      </ul>
+      <div style="display:flex; justify-content:flex-end; gap:8px"><button id="help-close">Close</button></div>
+    </div>
+  </div>
+
+  <div id="tutorial-panel" role="dialog" aria-label="Vignette tutorial">
+    <span class="close" id="tutorial-close">✕</span>
+    <h3 id="tutorial-title">Tutorial</h3>
+    <ol id="tutorial-steps"></ol>
+  </div>
+
+  <div id="inspector-wrap" role="dialog" aria-label="Vignette inspector">
+    <div id="inspector">
+      <h3>Vignette inspector — <span id="inspector-id" class="muted"></span></h3>
+      <pre id="inspector-yaml">—</pre>
+      <div class="row">
+        <button id="inspector-download">⬇ Download YAML</button>
+        <span class="grow" style="flex:1"></span>
+        <button id="inspector-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/world.js"></script>
+  <script src="/symbology.js"></script>
+  <script src="/graph.js"></script>
+  <script src="/globe.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

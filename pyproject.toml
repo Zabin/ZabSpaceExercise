@@ -1,0 +1,28 @@
+[project]
+name = "spacesim"
+version = "0.1.0"
+description = "Space Control & Orbital Warfare Exercise Simulator (PME wargaming tool)"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0",
+    "numpy>=1.24",
+    "sgp4>=2.20",       # TLE propagation for real named satellites
+]
+
+[project.optional-dependencies]
+content = ["pyyaml>=6.0"]
+ui = ["fastapi>=0.110", "uvicorn>=0.27"]
+# Build-time only: regenerate the committed static/world.json via tools/build_coastlines.py.
+mapdata = ["basemap", "basemap-data"]
+# skyfield is an independent reference in the Phase-2 tests; httpx powers the FastAPI TestClient;
+# pillow renders the UI preview images in tools/render_screens.py.
+dev = ["pytest>=7.0", "hypothesis>=6.0", "skyfield>=1.45", "fastapi>=0.110", "httpx>=0.27", "pillow>=10.0"]
+
+[tool.pytest.ini_options]
+# Make the repo root importable so tests can `import spacesim...`.
+pythonpath = ["."]
+testpaths = ["spacesim/tests"]
+addopts = "-q"
+
+[tool.setuptools.packages.find]
+include = ["spacesim*"]
