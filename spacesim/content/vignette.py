@@ -63,6 +63,10 @@ class Vignette(BaseModel):
     # Optional guided-walkthrough script: {"blue": [step,...], "red": [step,...]} where each step is
     # {n, title, when, action, actor, target, params, expect}. Drives the manual + its screenshots.
     tutorial: dict = Field(default_factory=dict)
+    # FW §11.D.17 — White-Cell coaching notes: facilitator pop-ups keyed to time/event seq.
+    # Each note: {at_sim_t: int microseconds | null, cell: "blue"|"red"|"white",
+    #             title: str, body: str}.  Surfaced in the Coaching panel; ignored by the engine.
+    coaching: list[dict] = Field(default_factory=list)
 
 
 @dataclass

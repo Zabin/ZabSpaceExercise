@@ -48,6 +48,7 @@ class UndoRequest(BaseModel):
 
 class InjectRequest(BaseModel):
     inject: Any  # inject id (str) or {effects:[...]}
+    at_sim_t: Optional[int] = None   # FW §11.D.19: optional future-dated scheduling (µs UTC)
 
 
 class TleRequest(BaseModel):
@@ -82,6 +83,26 @@ class JamComputeRequest(BaseModel):
     cell: str
     actor: str
     params: dict = {}    # modulation, power_w, bandwidth_hz, victim_bandwidth_hz, success_prob
+
+
+class EngageComputeRequest(BaseModel):
+    cell: str
+    actor: str
+    target: str
+    params: dict = {}   # success_prob, salvo_n, interceptor_dv_ms
+
+
+class CyberComputeRequest(BaseModel):
+    cell: str
+    actor: str
+    target: str
+    params: dict = {}   # vector, payload, dwell_s, persistence_h
+
+
+class SigintComputeRequest(BaseModel):
+    cell: str
+    actor: str
+    params: dict = {}   # band, intercept_mode, dwell_s, n_collectors
 
 
 class RecoveryRequest(BaseModel):
@@ -157,7 +178,13 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     @app.post("/api/sessions/{sid}/inject")
     def inject(sid: str, req: InjectRequest) -> Ack:
         _require(sid)
-        return api.fire_inject(sid, req.inject)
+        return api.fire_inject(sid, req.inject, at_sim_t=req.at_sim_t)
+
+    @app.get("/api/sessions/{sid}/inject_library")
+    def inject_library_list(sid: str) -> list:
+        """FW §11.D.19 — return the reusable inject templates with their effects payload."""
+        _require(sid)
+        return api.inject_library()
 
     @app.post("/api/sessions/{sid}/force/tle")
     def add_tle(sid: str, req: TleRequest) -> Ack:
@@ -198,6 +225,51 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Preview a jam order's effective radius, success probability, and footprint."""
         _require(sid)
         return api.compute_jam(sid, req.cell, req.actor, req.params)
+
+    @app.post("/api/sessions/{sid}/engage/compute")
+    def engage_compute(sid: str, req: EngageComputeRequest) -> dict:
+        """Preview an engage order: closing geometry, Pₖ, debris cone (read-only)."""
+        _require(sid)
+        return api.compute_engage(sid, req.cell, req.actor, req.target, req.params)
+
+    @app.post("/api/sessions/{sid}/cyber/compute")
+    def cyber_compute(sid: str, req: CyberComputeRequest) -> dict:
+        """Preview a cyber order: success/detect prob, attribution, payload effect."""
+        _require(sid)
+        return api.compute_cyber(sid, req.cell, req.actor, req.target, req.params)
+
+    @app.post("/api/sessions/{sid}/sigint/compute")
+    def sigint_compute(sid: str, req: SigintComputeRequest) -> dict:
+        """Preview a SIGINT collection: geolocation accuracy + power draw."""
+        _require(sid)
+        return api.compute_sigint(sid, req.cell, req.actor, req.params)
+
+    @app.post("/api/sessions/{sid}/preview/consequence")
+    def preview_consequence(sid: str, req: OrderRequest) -> dict:
+        """FW §11.D.18 — political-cost / escalation preview before order commit."""
+        _require(sid)
+        return api.preview_consequence(sid, req.cell, req.action, req.target or "", req.params or {})
+
+    @app.get("/api/sessions/{sid}/coaching/{cell}")
+    def coaching(sid: str, cell: str) -> list[dict]:
+        """FW §11.D.17 — White-Cell coaching notes visible to this cell at world.now."""
+        _require(sid)
+        return api.coaching_notes(sid, cell)
+
+    @app.get("/api/sessions/{sid}/conjunctions/{cell}")
+    def conjunctions(sid: str, cell: str) -> list[dict]:
+        """FW §11.C.14 — upcoming close-approach warnings.  Filtered to assets the cell owns."""
+        _require(sid)
+        mgr = api._sessions[sid]
+        out = []
+        for c in list(mgr.world.conjunctions):
+            a_owner = (mgr.world.assets.get(c.get("a", "")) or
+                       type("X", (), {"owner": None})).owner
+            b_owner = (mgr.world.assets.get(c.get("b", "")) or
+                       type("X", (), {"owner": None})).owner
+            if cell in ("white",) or cell in (a_owner, b_owner):
+                out.append({**c, "now": mgr.world.now})
+        return out
 
     @app.post("/api/sessions/{sid}/cancel")
     def cancel_order(sid: str, req: CancelRequest) -> Ack:

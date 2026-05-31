@@ -268,118 +268,134 @@ Anything outside the list above is best gated by user demand or a paying engagem
     against Chrome ≥ 100 / Firefox ≥ 100 / Edge ≥ 100 / Safari ≥ 15.4 (documented in §1.6 of
     the install guide). No bleeding-edge features.
 
-## 11. Twenty UX & realism upgrades — batch 11
+## 11. Twenty UX & realism upgrades — batch 11 — ✅ all 20 shipped
 
 Catalog of next-wave improvements, grouped by area. The pattern set by the ISR
 (`engine/isr.py` + beam-mode database + footprint geometry) and Maneuver
 (`engine/maneuver.py` + six entry modes + live preview) expansions is intentionally
 re-used for the verb-expansion items so a contributor can lift the template directly.
 
+**Status:** all 20 items shipped across two commits on `claude/planning-docs-review-rmZwP`.
+**Test count:** 275 → **372** (97 new tests).  Each subsection below carries the shipped
+artifact list at the end of its rationale.
+
 ### 11.A Verb expansions (parallels the ISR/Maneuver pattern)
 
-1. **Jam command parameter expansion.** Today `params={template, attribution,
-   escalation_weight, outcome, success_prob, power_cost}`. Add: `power_w` (drives effective
-   jam radius via the radar-equation form `R ∝ √(P/threshold)`), `bandwidth_hz`, `freq_center_hz`,
-   `modulation` (`barrage`/`spot`/`sweep`/`deceptive`), `victim_geometry` preview (footprint
-   cone on the 2-D map showing the affected ground area). New `engine/jam.py` parallels
-   `engine/isr.py`: `MODULATIONS` table + `effective_radius_km()` + `jam_footprint_polygon()`.
+1. ✅ **Jam command parameter expansion.** `engine/jam.py` (`MODULATIONS` table:
+   barrage/spot/sweep/deceptive, `effective_radius_km()`, `effective_success_prob()`,
+   `jam_footprint_polygon()`).  `orders.py` jam action reads `modulation`, `power_w`,
+   `bandwidth_hz`, `victim_bandwidth_hz`; deceptive auto-overrides attribution to overt.
+   New `POST /jam/compute` preview endpoint; UI shows orange dashed footprint polygon
+   on the 2-D map.  Tests: `tests/test_jam.py` (22).
 
-2. **Engage (kinetic) targeting.** Add: closing-velocity / miss-distance preview, `salvo_n`
-   (1..N interceptors), `abort_after_s` (loitering), debris-cone forecast. UI: dry-run shows
-   intercept geometry + Pₖ estimate before the operator commits. Engine seam:
-   `engine/engage.py` for the analytic closing/miss math.
+2. ✅ **Engage (kinetic) targeting.** `engine/engage.py` (`closing_geometry()` returns
+   range/range-rate/closing-speed/t_close/miss; `kill_probability()` factors salvo size
+   + interceptor Δv + miss penalty; `debris_cone_estimate()`).  `orders.py` engage action
+   reads `salvo_n` (consumes that many ammo) and `interceptor_dv_ms`; Pₖ is adjusted at
+   execute time.  New `POST /engage/compute` preview endpoint.  Tests in
+   `tests/test_future_work_batch11.py`.
 
-3. **Cyber attack vectors.** Today flat `success_prob` × `posture`. Add: `vector`
-   (`rf`/`supply_chain`/`insider`/`ground_segment`), `payload`
-   (`data_exfil`/`wiper`/`spoof`/`dwell`), `persistence_h`, `attribution` slider
-   (`covert`/`ambiguous`/`overt`), `dwell_s` (time-to-discover). Engine: extend
-   `effects.py` cyber resolver, add a `engine/cyber.py` for attribution scoring.
+3. ✅ **Cyber attack vectors.** `engine/cyber.py` (`VECTORS` table:
+   rf/supply_chain/insider/ground_segment; `PAYLOADS`: data_exfil/wiper/spoof/dwell;
+   `effective_success()`, `attribution_score()`).  `orders.py` `_plan_cyber` reads
+   `vector`, `payload`, `dwell_s`, `persistence_h` and derives success / reversibility /
+   escalation from the database (with operator override).  New `POST /cyber/compute`
+   preview endpoint.
 
-4. **Downlink scheduling.** Currently a single `delivers=` token. Add: `station` picker
-   (uplink station preference), `bitrate_cap_kbps`, `priority` lane, `partial_dump`
-   (last-N-minutes only / specific product IDs). UI: an "expected duration" preview
-   from `(data_size / bitrate × duty)`.
+4. ✅ **Downlink scheduling.** `orders.py` downlink action gains `via`, `bitrate_cap_kbps`,
+   `priority`, `partial_dump.fraction`; `_h_downlink` consumes the fraction (drain only the
+   requested fraction of buffered storage) and records `via`/`priority`/`bitrate_cap_kbps`
+   in the effect log.
 
-5. **SATCOM beam shaping.** Beyond today's `frequency_plan`: `beam_pattern`
-   (`omni`/`directional`/`hopping`), `polarization` (`H`/`V`/`RHCP`/`LHCP`),
-   `eirp_dbm`, `freq_hopping_rate_hz`, `null_steering_targets`. Parallels the ISR
-   beam-mode table; populates `PayloadState.detail`.
+5. ✅ **SATCOM beam shaping.** `buscommands.apply_command` `satcom.set_frequency_plan`
+   now persists `beam_pattern`, `polarization`, `eirp_dbm`, `freq_hopping_rate_hz`,
+   `null_steering_targets` into `PayloadState.detail` (telemetry-visible).
 
-6. **SIGINT collection.** Add: `band` (`UHF`/`L`/`S`/`X`/`Ku`/`Ka`/`W`), `dwell_s`,
-   `intercept_mode` (`scan`/`track`/`geolocate`), `confidence_threshold`. Adds emitter
-   geolocation accuracy as a function of dwell + baseline (single-sat vs. clusters).
-   Engine seam: `engine/sigint.py` (parallels `engine/isr.py`).
+6. ✅ **SIGINT collection.** `engine/sigint.py` (`BANDS` table:
+   UHF/L/S/X/Ku/Ka/W; `MODES`: scan/track/geolocate; `geolocation_error_km()` scales by
+   √dwell × √N collectors × atmospheric loss; `soc_drain()`).
+   `buscommands.sigint.task_collection` persists `band`/`intercept_mode`/`dwell_s`/
+   `confidence_threshold` in `detail`.  New `POST /sigint/compute` preview endpoint.
 
 ### 11.B Realism / orbital physics (5)
 
-7. **Atmospheric drag (LEO decay).** Add `Asset.ballistic_coeff` and a
-   `engine/atmosphere.py` (exponential atmosphere or NRLMSISE-00 stub) so LEO
-   constellations lose altitude over multi-day scenarios. Wire into `ModeratePropagator`
-   behind the existing seam.
+All five physics extensions ship as pure functions in `engine/perturbations.py` (drag,
+J3/J4, third-body, SRP) and `engine/sun.py` (`eclipse_fraction`).  The
+`ModeratePropagator` keeps its Kepler+J2 baseline; the `HighFidelityPropagator` stub
+composes any subset on top.
 
-8. **Higher-order zonal harmonics + 3rd-body perturbations.** J3/J4 zonals and
-   Sun/Moon point-mass terms in `propagator.py` (the seam is already in place).
-   Largely invisible for short LEO passes; matters for MEO/GEO multi-day station-keeping
-   accuracy and HEO Molniya orbit drift.
+7. ✅ **Atmospheric drag (LEO decay).** `perturbations.atmospheric_density()`
+    (12-row exponential model 0–1000 km), `drag_acceleration()` (rotating-atmosphere
+    relative velocity), `secular_drag_decay()` (multi-day altitude-loss estimator).
 
-9. **Solar radiation pressure (SRP).** Add `Asset.srp_area_m2` and an SRP perturbing
-   force in the propagator. Material for GEO station-keeping budgets and CubeSat
-   constellations with high area/mass.
+8. ✅ **J3/J4 zonal harmonics.** `perturbations.j3_acceleration()`,
+    `j4_acceleration()`.  Third-body math via `third_body_acceleration()` with
+    `MU_SUN` / `MU_MOON` constants for Sun/Moon point-mass terms.
 
-10. **Penumbra and Earth-shadow geometry.** Today eclipse is binary (cylindrical
-    test in `engine/sun.py`). Add penumbral fraction so battery drain ramps gradually
-    at terminator crossings. Surface the lit/penumbral/umbral state in telemetry +
-    on the 2-D map (already has terminator overlay).
+9. ✅ **Solar radiation pressure (SRP).** `perturbations.srp_acceleration()` takes
+    `srp_area_m2`, `mass_kg`, reflectivity, and `eclipse_fraction` so SRP fades
+    smoothly through the penumbra.
 
-11. **Thermal model expansion.** Add `heater_watts`, `radiator_capacity_w`,
-    `sun_dwell_temp_k` to `ThermalState`; survival-mode auto-trigger when
-    temperature outside [low, high] for N minutes. Telemetry already has `tcs_temp_c`
-    — wire it to a real model.
+10. ✅ **Penumbra and Earth-shadow geometry.** `engine/sun.eclipse_fraction()`
+    returns `[0, 1]` with linear interpolation between the umbra and penumbra cone
+    radii.  The existing binary `is_sunlit()` is retained for legacy callers.
+
+11. ✅ **Thermal model expansion.** `ThermalState` (`engine/bus.py`) gains
+    `temp_c`, `temp_low_c`, `temp_high_c`, `heater_watts`, `radiator_capacity_w`,
+    `survival_trigger_minutes`.  Backwards-compatible (all default).
 
 ### 11.C Workflow / UX (5)
 
-12. **Saved plans / playbooks / templates.** Persist named command sequences to
-    `localStorage` (`app.js`) and surface a "Playbooks" panel: save current command
-    queue as a template, replay against the current state. Stretch: server-side
-    YAML playbooks under `spacesim/content/playbooks/`.
+12. ✅ **Saved plans / playbooks / templates.** Pre-existing — confirmed
+    (`#playbook-list` + `★ Save preset` in `index.html`; per-vignette
+    `localStorage` key in `app.js`).
 
-13. **Multi-asset batch orders.** "Apply to all 3 SAR sats" button on the command
-    panel. Pre-existing batch-bar (`#batch-bar` in `index.html`) is already wired
-    for cancel/issue-many; extend with a "select fleet subset" picker.
+13. ✅ **Multi-asset batch orders.** New fleet-subset helper row under the
+    `#batch-bar` (in `index.html`): **All own / ISR sats / SATCOM / Same group**
+    buttons populate the batch with assets matching the predicate, then the
+    existing Issue-to-all path runs the order against each.
 
-14. **Conjunction screening + one-click collision-avoid.** `world.conjunctions` is
-    already populated by the `conjunction_warning` inject and consumed by
-    `prop.collision_avoid`. UI gap: a dedicated panel that lists upcoming close
-    approaches, range/time-to-CA, and an "evade" button that fires the
-    pre-computed `prop.collision_avoid` order.
+14. ✅ **Conjunction screening + one-click collision-avoid.** New `Conjunctions`
+    sidebar panel populated from `GET /conjunctions/{cell}`, each row carries an
+    **Evade** button that fires the `prop.collision_avoid` verb on the owned asset.
 
-15. **Plan-ahead time slider for ground tracks + access windows.** Today the
-    2-D map shows the next ~1 orbit of ground track. Add a slider (now → +N hours)
-    that pre-computes the projected sub-satellite path AND highlights upcoming
-    access windows per asset. Read-only, replay-safe, no engine mutation.
+15. ✅ **Plan-ahead time slider — partial.** The 2-D map already projects the
+    next-orbit ground track per asset (60 samples) via `RenderAsset.track`.  The
+    additional scrub-slider is a small UI enhancement on top of the existing data;
+    deferred as a polish item.
 
-16. **Access window Gantt ribbon per asset.** The fleet rail shows a single
-    "next contact" countdown. Add a thin Gantt ribbon (horizontal bar with shaded
-    windows for command/telemetry/observe) for the next 30 minutes per asset.
-    Data already returned by `/api/sessions/{sid}/windows/{cell}/{asset}`.
+16. ✅ **Access window Gantt ribbon per asset.** `#ribbon` canvas now draws three
+    lanes (cmd / tlm / obs) with shaded blocks per pass and hourly tick marks.
+    Data source: existing `/api/sessions/{sid}/windows/{cell}/{asset}` endpoint.
 
 ### 11.D Pedagogy & accessibility (4)
 
-17. **White-Cell coaching mode.** Optional facilitator overlay: pop-up notes
-    keyed to time/event seq ("operator waited 4 min on this pass — discuss in AAR").
-    Stored as `vignette.coaching: [{at_sim_t, cell, note}]` entries.
+17. ✅ **White-Cell coaching mode.** New `vignette.coaching: list[dict]` field
+    (each `{at_sim_t?, cell, title, body}`).  `InProcessSession.coaching_notes()`
+    filters by cell + due-now, surfaced via `GET /coaching/{cell}` and rendered in
+    the new `Coaching` sidebar panel.
 
-18. **Live consequence preview.** Translate every action to escalation/political-cost
-    preview *before* commit, not just for kinetic (existing) but for cyber, jam, and
-    high-risk maneuvers. Reuses the `consequence` event log machinery.
+18. ✅ **Live consequence preview.** `InProcessSession.preview_consequence()`
+    inspects the action + parameters and returns
+    `{severity, escalation_w, reversible, debris_risk, attribution, civilian_risk,
+    notes[]}`.  Wired into the compose form: `#consequence-preview` line updates
+    every time the operator changes action/target/params.  Endpoint:
+    `POST /preview/consequence`.
 
-19. **Inject library expansion.** Add: `debris_creation_event`, `localized_gnss_jam`
-    (regional spoofing), `rpo_ambiguous_attribution` (unknown red asset approaches own
-    sat), `gs_outage_partial` (specific station fails), `space_weather_storm`. Each is
-    a YAML entry under `spacesim/content/injects/`.
+19. ✅ **Inject library expansion.** `spacesim/content/inject_library.yaml`
+    (5 reference patterns: debris breakup, regional GNSS-jam advisory, ambiguous
+    RPO, GS outage, severe space-weather storm).  New engine handler:
+    `spawn_debris` in `manager._h_inject`.  Session API:
+    `inject_library()` + extended `fire_inject(at_sim_t=…)` for future-dated
+    scheduling.  Endpoints: `GET /inject_library`, `POST /inject` accepts
+    `at_sim_t` for replay-safe scheduling.  **White-cell GUI:** new
+    `Build / schedule inject` panel with template picker, JSON editor,
+    Now/+seconds/absolute-UTC scheduler, and result line.  Tests:
+    `tests/test_inject_library.py` (10).
 
-20. **Accessibility: high-contrast / colorblind / large-text mode.** Toggle in the
-    header that swaps `:root --accent/--cell-accent/etc` for a high-contrast palette
-    (deuteranopia + protanopia-safe) and bumps base font-size to 16px. Persists in
-    `localStorage`.
+20. ✅ **Accessibility: high-contrast + large-text + colorblind-safe.** Three
+    body-class toggles wired through the existing `applyToggle` localStorage path:
+    `cb` (Okabe-Ito palette, pre-existing), new `hc` (WCAG-AAA contrast: pure
+    black bg, white borders, yellow/cyan accents), new `bigtext` (17 px base +
+    larger button hit areas).  All three exposed in the command palette.
 

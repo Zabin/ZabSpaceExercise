@@ -64,6 +64,13 @@ class ThermalState(BaseModel):
     status: Status = "green"
     mode: Literal["nominal", "survival", "operational"] = "operational"
     heater_on: bool = False
+    # FW §11.B.11 — extended thermal model.
+    temp_c: float = 20.0                       # current bus temperature (°C)
+    temp_low_c: float = -20.0                  # survival-mode trigger when below this
+    temp_high_c: float = 40.0                  # survival-mode trigger when above this
+    heater_watts: float = 0.0                  # commanded heater power (W)
+    radiator_capacity_w: float = 0.0           # heat-shed capacity (W); 0 disables the model
+    survival_trigger_minutes: float = 5.0      # how long out-of-band before auto-survival
 
 
 class PropulsionState(BaseModel):

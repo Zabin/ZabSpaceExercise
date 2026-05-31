@@ -350,6 +350,14 @@ class OrderSystem:
             }
 
         if order.action == "engage":
+            from spacesim.engine.engage import kill_probability
+            salvo_n = int(p.get("salvo_n", 1))
+            interceptor_dv = float(p.get("interceptor_dv_ms", 200.0))
+            base_pk = float(p.get("success_prob", 0.9))
+            # Miss-distance is not knowable at planning; assume zero for the executed shot
+            # (the closing-geometry preview is read-only and lives in the session API).
+            adj_pk = kill_probability(base_pk, miss_km=0.0,
+                                       interceptor_dv_ms=interceptor_dv, salvo_n=salvo_n)
             effect = EffectInstance(
                 template=p.get("template", "da_asat"),
                 category="direct_ascent",
@@ -363,13 +371,13 @@ class OrderSystem:
                 escalation_weight=p.get("escalation_weight", 8),
                 requires=WEAPON_ENGAGEMENT,
                 intended_outcome="destroy",
-                success_prob=p.get("success_prob", 0.9),
+                success_prob=adj_pk,
                 window_start=win.start,
                 window_end=win.end,
             )
             return "execute_effect", {
                 "effect": effect.model_dump(),
-                "consume": {"actor": order.actor, "ammo": 1},
+                "consume": {"actor": order.actor, "ammo": max(1, salvo_n)},
             }
 
         if order.action == "observe":
@@ -430,9 +438,16 @@ class OrderSystem:
             }
 
         if order.action == "downlink":
+            # FW §11.A.4 — extended params: station (via), bitrate_cap_kbps, priority lane,
+            # partial_dump (last_n_minutes / product_ids).  All optional; defaults preserve
+            # legacy single-token "delivers" behaviour.
             return "execute_downlink", {
                 "actor": order.actor,
                 "delivers": p.get("delivers", "imagery_delivered"),
+                "via": p.get("via"),
+                "bitrate_cap_kbps": p.get("bitrate_cap_kbps"),
+                "priority": p.get("priority", "routine"),
+                "partial_dump": p.get("partial_dump"),
             }
 
         if order.action == "command":
@@ -453,20 +468,35 @@ class OrderSystem:
         if not commit:
             return
         p = order.params
+        # Cyber vector/payload parameters (FW §11.A.3): vector → success probability + attribution,
+        # payload → reversibility + escalation weight.  Operator overrides win if explicitly set.
+        from spacesim.engine.cyber import (
+            effective_success as _cyb_succ, payload_params as _cyb_pl, vector_params as _cyb_vec,
+        )
+        vector = p.get("vector")
+        payload_name = p.get("payload")
+        target_asset = self.world.assets.get(order.target or "")
+        target_posture = target_asset.cyber_posture if target_asset else "medium"
+        dwell_s = float(p.get("dwell_s", 0.0))
+        base_prob = float(p.get("success_prob", 0.7))
+        vp, resolved_vec = _cyb_vec(vector)
+        pp, resolved_pl = _cyb_pl(payload_name)
+        succ = _cyb_succ(vector, target_posture, dwell_s) if vector else base_prob
+        attribution = p.get("attribution", vp["attribution_bias"] if vector else "covert")
         effect = EffectInstance(
             template=p.get("template", "cyber"),
             category="cyber",
             segment=p.get("segment", "link"),
             actor=order.actor,
             target=order.target or "",
-            reversible=p.get("reversible", True),
-            attribution="covert",
-            escalation_weight=p.get("escalation_weight", 4),
+            reversible=p.get("reversible", pp["reversible"] if payload_name else True),
+            attribution=attribution,
+            escalation_weight=p.get("escalation_weight", pp["escalation_weight"] if payload_name else 4),
             requires="none",
-            intended_outcome=p.get("outcome", "deny"),
-            success_prob=p.get("success_prob", 0.7),
-            access_vector=p.get("access_vector"),
-            persistence_s=p.get("persistence_s", 3600.0),
+            intended_outcome=p.get("outcome", pp["intended_outcome"] if payload_name else "deny"),
+            success_prob=succ,
+            access_vector=p.get("access_vector") or (resolved_vec if vector else None),
+            persistence_s=p.get("persistence_s", 3600.0 * max(1.0, p.get("persistence_h", 1.0))),
             sm_susceptibility=p.get("sm_susceptibility", 1.0),
             persistence_bonus=p.get("persistence_bonus", 1.0),
             window_start=self.sim.clock.now,
@@ -521,10 +551,22 @@ class OrderSystem:
             return
         world.mission[flag] = True
         world.mission[f"{flag}_at"] = world.now
+        # FW §11.A.4 — partial_dump drains storage proportional to the requested fraction
+        # of buffered product (defaults to a full dump).
+        partial = payload.get("partial_dump") or {}
+        frac = 1.0
+        if isinstance(partial, dict) and partial.get("fraction") is not None:
+            try:
+                frac = max(0.0, min(1.0, float(partial["fraction"])))
+            except (TypeError, ValueError):
+                frac = 1.0
         if actor is not None and actor.bus_state is not None:
-            downlink_storage(actor.bus_state, 1.0)
+            downlink_storage(actor.bus_state, frac)
         world.effect_log.append({"t": world.now, "template": "downlink", "target": payload["actor"],
-                                 "achieved": "delivered", "success": True})
+                                 "achieved": "delivered", "success": True,
+                                 "via": payload.get("via"), "priority": payload.get("priority"),
+                                 "bitrate_cap_kbps": payload.get("bitrate_cap_kbps"),
+                                 "fraction": frac})
 
     def _h_command(self, world: WorldState, payload: dict, rng) -> None:
         """Apply a bus/payload verb at its window (re-validates at execute time, like the others)."""

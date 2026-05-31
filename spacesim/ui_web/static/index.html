@@ -74,8 +74,53 @@
       <pre id="objectives">—</pre>
       <h3>Messages</h3>
       <ul id="messages"></ul>
+      <!-- FW §11.D.17 — coaching notes from the vignette's `coaching:` list. -->
+      <h3>Coaching</h3>
+      <div id="coaching-list" class="muted">(no notes)</div>
+      <!-- FW §11.C.14 — upcoming conjunctions + one-click collision-avoid. -->
+      <h3>Conjunctions</h3>
+      <div id="conjunction-list" class="muted">(no conjunction warnings)</div>
       <h3>Injects (White Cell)</h3>
-      <div class="ctrl"><select id="inject-sel"></select><button id="fire-inject">Fire</button></div>
+      <!-- Quick-fire row: pre-loaded vignette injects fire immediately on click. -->
+      <div class="ctrl">
+        <select id="inject-sel"></select>
+        <button id="fire-inject" title="Fire the selected vignette inject immediately">Fire</button>
+      </div>
+      <!-- FW §11.D.19 — Inject library + builder.  Pick a template, edit any field,
+           set a schedule (now or future timestamp), then fire. -->
+      <details id="inject-builder" style="margin-top:6px">
+        <summary style="cursor:pointer;font-size:12px"><b>Build / schedule inject</b> (library + timestamp)</summary>
+        <div class="ctrl" style="margin-top:4px">
+          <label>Template
+            <select id="inject-lib"><option value="">(custom)</option></select>
+          </label>
+          <button id="inject-lib-load" class="vbtn" title="Load template into the editor below">Load</button>
+        </div>
+        <div class="ctrl" style="margin-top:4px;align-items:flex-start">
+          <label style="flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:2px">
+            <span>Effects (JSON list)</span>
+            <textarea id="inject-effects" rows="6" style="width:100%;font-family:monospace;font-size:11px"
+              placeholder='[{"type":"message","to":["blue"],"text":"…"}]'></textarea>
+          </label>
+        </div>
+        <div class="ctrl" style="margin-top:4px;flex-wrap:wrap">
+          <label>Schedule
+            <select id="inject-when">
+              <option value="now" selected>Now (immediate)</option>
+              <option value="rel">+ seconds from now</option>
+              <option value="abs">Absolute UTC</option>
+            </select>
+          </label>
+          <label id="inject-rel-wrap" style="display:none">+s
+            <input id="inject-rel-s" type="number" step="1" min="0" value="60" style="width:80px">
+          </label>
+          <label id="inject-abs-wrap" style="display:none">UTC
+            <input id="inject-abs-utc" type="datetime-local" step="1" style="width:200px">
+          </label>
+          <button id="inject-build-fire" class="primary" style="font-size:12px">Schedule / fire</button>
+        </div>
+        <pre id="inject-build-result" class="muted" style="font-size:11px;margin-top:4px">—</pre>
+      </details>
     </section>
 
     <section class="panel">
@@ -257,6 +302,16 @@
         <button id="batch-issue">Issue to all</button>
         <button id="batch-clear">Clear</button>
       </div>
+      <!-- FW §11.C.13 — multi-asset batch helper: apply the current compose form to a fleet subset -->
+      <div class="ctrl" style="font-size:11px;margin-top:4px">
+        <span class="muted">Apply to subset:</span>
+        <button id="fleet-apply-all" class="vbtn" title="Apply current compose form to every own asset">All own</button>
+        <button id="fleet-apply-isr" class="vbtn" title="Apply to all ISR satellites (EO+SAR)">ISR sats</button>
+        <button id="fleet-apply-comsat" class="vbtn" title="Apply to all SATCOM satellites">SATCOM</button>
+        <button id="fleet-apply-group" class="vbtn" title="Apply to every member of the selected asset's constellation group">Same group</button>
+      </div>
+      <!-- FW §11.D.18 — live consequence preview before commit -->
+      <div id="consequence-preview" class="preview" style="font-size:11px"></div>
       <button id="issue" class="primary">Issue order</button>
       <button id="save-playbook" title="Save the current order as a named playbook">★ Save preset</button>
       <button id="coach-start" title="Walk through the UI" style="float:right">? Coachmark tour</button>

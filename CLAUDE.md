@@ -157,8 +157,32 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   validator gate (payload verbs gated by payload type + bus availability). Carried by the order
   system's `command` action (uplink/stored delivery like `maneuver`). New verbs extend `apply_command`.
 - `spacesim/engine/bus.py` — `BusState`/`PayloadState` SOH (limits, gating, safe mode, pass-gated view).
+  `ThermalState` carries `temp_c`/`heater_watts`/`radiator_capacity_w` (FW §11.B.11).
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
+- `spacesim/engine/maneuver.py` — pure compute for six manoeuvre entry modes
+  (eci / lvlh / finite_burn / target_coe / hohmann / plane_change).
+- `spacesim/engine/isr.py` — ISR beam-mode database (EO/SAR/SDA), `effective_gain()`,
+  `soc_drain()`, footprint polygon + ground-heading helpers.
+- `spacesim/engine/jam.py` — jam modulation database (barrage/spot/sweep/deceptive),
+  `effective_radius_km()`, `effective_success_prob()`, footprint polygon (FW §11.A.1).
+- `spacesim/engine/engage.py` — kinetic-engagement math (closing geometry, salvo Pₖ,
+  debris-cone estimate; FW §11.A.2).
+- `spacesim/engine/cyber.py` — cyber `VECTORS` × `PAYLOADS` database + `effective_success()`
+  + `attribution_score()` (FW §11.A.3).
+- `spacesim/engine/sigint.py` — SIGINT bands/modes + `geolocation_error_km()` scaling by
+  √dwell × √N collectors × atmospheric loss (FW §11.A.6).
+- `spacesim/engine/perturbations.py` — drag, J3/J4, third-body (Sun/Moon), SRP perturbations
+  and `secular_drag_decay()` (FW §11.B.7-9); pure functions composed by future high-fidelity
+  propagators.
+- `spacesim/engine/sun.py` — `sun_unit_eci`, binary `is_sunlit()`, smooth `eclipse_fraction()`
+  (umbra/penumbra interpolation; FW §11.B.10).
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
+  `Vignette.coaching` is a list of `{at_sim_t?, cell, title, body}` notes (FW §11.D.17).
+- `spacesim/content/inject_library.yaml` — five reusable white-cell inject templates
+  (debris breakup, GNSS-jam advisory, ambiguous RPO, GS outage, geomagnetic storm).
+  Loaded via `InProcessSession.inject_library()`; surfaced in the white-cell GUI's
+  **Build / schedule inject** panel with editable JSON + Now/+seconds/absolute-UTC scheduler
+  (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
   `validate_order` dry-run, `next_contacts` fleet countdown, `begin_recovery`/`recovery_status`
   wiring `RecoverySystem` for the safe-mode recovery strip),

@@ -368,11 +368,23 @@ class SessionManager:
                 out.append({"asset": "—", "text": f"political consequence: {cons.get('cause', '')} ({cons.get('severity', '')})"})
         return out
 
-    def fire_inject(self, inject) -> None:
+    def fire_inject(self, inject, at_sim_t: Optional[int] = None) -> None:
+        """Fire an inject immediately, or schedule it for ``at_sim_t`` (microseconds, abs sim time).
+
+        ``inject`` may be a list of effects, a dict with ``{"effects": [...]}``, or an id string
+        resolved against the loaded vignette.  When ``at_sim_t`` is set and > current sim time,
+        the inject is scheduled deterministically through the event log so it replays exactly.
+        """
         effects = inject if isinstance(inject, list) else self._inject_effects(inject)
         now = self.sim.clock.now
-        self.sim.schedule(now, "inject", {"effects": effects})
-        self.sim.advance_to(now)  # apply + log immediately (so it replays through the event log)
+        requested = int(at_sim_t) if at_sim_t is not None else now
+        when = max(now, requested)   # past timestamps clamp to "now" (no backwards time travel)
+        if when > now:
+            # FW §11.D.19 — future-dated inject: schedule deterministically (replay-safe).
+            self.sim.schedule(when, "inject", {"effects": effects})
+            return
+        self.sim.schedule(when, "inject", {"effects": effects})
+        self.sim.advance_to(when)  # apply + log immediately (so it replays through the event log)
         self.world = self.sim.world
 
     def _inject_effects(self, inject) -> list:
@@ -483,5 +495,20 @@ class SessionManager:
                 if sev not in ("none", "minor", "severe"):
                     sev = "minor"
                 world.space_weather = {"severity": sev}
-                world.messages.append({"to": ["white", "blue", "red"],
-                                       "text": f"Space weather advisory: severity={sev}", "t": world.now})
+            elif kind == "spawn_debris":
+                # FW §11.D.19 — inject-library debris event.  Records a new DebrisField
+                # so downstream conjunction screening surfaces the elevated risk.  Region
+                # is opaque to the engine; the UI / next conjunction tick consumes it.
+                from spacesim.engine.effects import DebrisField
+                world.debris.append(DebrisField(
+                    created_at=world.now,
+                    source=str(eff.get("source", "inject")),
+                    region={
+                        "regime": eff.get("regime"),
+                        "altitude_km": eff.get("altitude_km"),
+                        "n_fragments": int(eff.get("n_fragments", 0)),
+                    },
+                ))
+                if eff.get("message"):
+                    world.messages.append({"to": ["white", "blue", "red"],
+                                            "text": str(eff["message"]), "t": world.now})

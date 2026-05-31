@@ -248,8 +248,14 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         return True, "evasion_burn_executed"
 
     if verb == "sigint.task_collection":
+        # FW §11.A.6 — extended params: band, intercept_mode (scan/track/geolocate),
+        # dwell_s, confidence_threshold.  Persists in payload_state.detail for telemetry.
         if a.payload_state is None: return False, "no_payload"
         a.payload_state.collecting = True
+        d = a.payload_state.detail
+        for key in ("band", "intercept_mode", "dwell_s", "confidence_threshold"):
+            if key in params and params[key] is not None:
+                d[key] = params[key]
         return True, "tasked"
 
     if verb == "wx.schedule_collection":
@@ -427,9 +433,16 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
     # Final catalog-verb fill — completes §3 of FUTURE-WORK.md.
     # ------------------------------------------------------------------
     if verb == "satcom.set_frequency_plan":
+        # FW §11.A.5 — beam-shaping params: plan, beam_pattern, polarization, eirp_dbm,
+        # freq_hopping_rate_hz, null_steering_targets.  All optional; any subset persists in detail.
         if a.payload_state is None: return False, "no_payload"
         plan = params.get("plan", "default")
-        a.payload_state.detail["frequency_plan"] = plan
+        d = a.payload_state.detail
+        d["frequency_plan"] = plan
+        for key in ("beam_pattern", "polarization", "eirp_dbm",
+                    "freq_hopping_rate_hz", "null_steering_targets"):
+            if key in params and params[key] is not None:
+                d[key] = params[key]
         return True, f"freq_plan_{plan}"
 
     if verb == "sda.task_characterize":

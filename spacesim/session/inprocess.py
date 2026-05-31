@@ -6,6 +6,7 @@ network transport will later wrap — the method bodies stay; only the call mech
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Optional
 
 from spacesim.content.vignette import list_vignettes, load_vignette
@@ -71,9 +72,33 @@ class InProcessSession:
     def red_doctrine_step(self, session: str) -> list[OrderAck]:
         return RedDoctrine(self._sessions[session]).step()
 
-    def fire_inject(self, session: str, inject) -> Ack:
-        self._sessions[session].fire_inject(inject)
+    def fire_inject(self, session: str, inject, at_sim_t: Optional[int] = None) -> Ack:
+        self._sessions[session].fire_inject(inject, at_sim_t=at_sim_t)
         return Ack()
+
+    def inject_library(self) -> list[dict]:
+        """FW §11.D.19 — return the reusable inject templates from content/inject_library.yaml.
+
+        Returns the same shape as ``list_injects()`` plus the full ``effects`` payload so the
+        UI's white-cell inject builder can prefill its form.  Cached after first load.
+        """
+        if getattr(self, "_inject_library_cache", None) is None:
+            import yaml
+            path = Path(__file__).resolve().parent.parent / "content" / "inject_library.yaml"
+            if not path.exists():
+                self._inject_library_cache = []
+            else:
+                try:
+                    doc = yaml.safe_load(path.read_text()) or {}
+                    self._inject_library_cache = [
+                        {"id": i.get("id"), "label": i.get("label", i.get("id", "")),
+                         "trigger": (i.get("trigger") or {}).get("type", "manual"),
+                         "effects": i.get("effects") or []}
+                        for i in (doc.get("injects") or [])
+                    ]
+                except Exception:
+                    self._inject_library_cache = []
+        return list(self._inject_library_cache)
 
     def issue_order(self, session: str, cell: str, order: Order) -> OrderAck:
         return self._sessions[session].issue_order(cell, order)
@@ -154,6 +179,189 @@ class InProcessSession:
             return _cm(asset.orbit, mode, params, mgr.world.now, mgr.osys.prop)
         except (ValueError, Exception) as exc:
             return {"error": str(exc)}
+
+    def preview_consequence(self, session: str, cell: str, action: str, target: str,
+                              params: dict) -> dict:
+        """Estimate the political-cost / escalation risk of an action *before* commit.
+
+        Returns:
+            severity        — "low" | "medium" | "high"
+            escalation_w    — numeric escalation weight (0..10)
+            reversible      — whether the effect can be rolled back
+            debris_risk     — "none" | "low" | "high"
+            attribution     — default attribution disposition (overt/ambiguous/covert)
+            civilian_risk   — boolean (denying a civilian link raises cost)
+            notes           — list of short human strings for the UI to display
+        """
+        mgr = self._sessions[session]
+        params = params or {}
+        # Defaults
+        escalation = int(params.get("escalation_weight", {
+            "jam": 3, "engage": 8, "observe": 1, "downlink": 0, "cyber": 4,
+            "command": 1, "maneuver": 1,
+        }.get(action, 1)))
+        reversible = action not in ("engage",)
+        debris_risk = "high" if action == "engage" else "none"
+        attribution = {
+            "engage": "overt", "jam": "ambiguous", "cyber": "covert",
+            "observe": "ambiguous", "downlink": "ambiguous",
+            "command": "covert", "maneuver": "overt",
+        }.get(action, "ambiguous")
+        notes: list[str] = []
+        # Civilian risk
+        target_asset = mgr.world.assets.get(target or "")
+        civilian = bool(target_asset and getattr(target_asset, "civilian", False))
+        if civilian:
+            notes.append("Target is a civilian asset — denial raises political cost.")
+        # Cyber-specific overrides
+        if action == "cyber":
+            from spacesim.engine.cyber import payload_params, vector_params
+            vp, _ = vector_params(params.get("vector"))
+            pp, _ = payload_params(params.get("payload"))
+            escalation = int(params.get("escalation_weight", pp["escalation_weight"]))
+            reversible = pp["reversible"]
+            attribution = vp["attribution_bias"]
+            if pp["intended_outcome"] == "destroy":
+                notes.append("Wiper payload is irreversible — destruction of state.")
+        # Jam-specific overrides
+        if action == "jam":
+            from spacesim.engine.jam import modulation_params
+            mp, _ = modulation_params(params.get("modulation"))
+            attribution = mp["attribution_bias"]
+            if attribution == "overt":
+                notes.append("Deceptive jam is highly attributable.")
+        if escalation >= 7 or debris_risk == "high":
+            severity = "high"
+        elif escalation >= 4:
+            severity = "medium"
+        else:
+            severity = "low"
+        if civilian and severity == "low":
+            severity = "medium"
+        return {
+            "action": action, "target": target,
+            "severity": severity,
+            "escalation_w": escalation,
+            "reversible": reversible,
+            "debris_risk": debris_risk,
+            "attribution": attribution,
+            "civilian_risk": civilian,
+            "notes": notes,
+        }
+
+    def coaching_notes(self, session: str, cell: str) -> list[dict]:
+        """Return the coaching notes from the loaded vignette that are due-now and visible to cell.
+
+        A note is visible when its target cell matches the requesting cell (or is "white" /
+        unspecified, in which case all cells see it) AND its at_sim_t is null OR is ≤ world.now.
+        """
+        mgr = self._sessions[session]
+        v = getattr(mgr, "vignette", None)
+        if v is None:
+            return []
+        notes = list(getattr(v, "coaching", []) or [])
+        now = mgr.world.now
+        out: list[dict] = []
+        for n in notes:
+            target_cell = n.get("cell") or "white"
+            if target_cell not in ("white", cell):
+                continue
+            at = n.get("at_sim_t")
+            if at is not None and int(at) > now:
+                continue
+            out.append(n)
+        return out
+
+    def compute_engage(self, session: str, cell: str, actor: str, target: str,
+                        params: dict) -> dict:
+        """Preview a kinetic engage order: closing geometry + Pₖ + debris cone (read-only)."""
+        from spacesim.engine.engage import (
+            closing_geometry, debris_cone_estimate, kill_probability,
+        )
+        import numpy as np
+        mgr = self._sessions[session]
+        a = mgr.world.assets.get(actor)
+        b = mgr.world.assets.get(target)
+        if a is None or b is None:
+            return {"error": "actor or target not found"}
+        if a.orbit is None or b.orbit is None:
+            return {"error": "engage preview requires both actor and target in orbit"}
+        ra, va = mgr.osys.prop.rv(a.orbit, mgr.world.now)
+        rb, vb = mgr.osys.prop.rv(b.orbit, mgr.world.now)
+        geom = closing_geometry(np.asarray(ra), np.asarray(va),
+                                 np.asarray(rb), np.asarray(vb))
+        base_pk = float(params.get("success_prob", 0.9))
+        salvo_n = int(params.get("salvo_n", 1))
+        interceptor_dv = float(params.get("interceptor_dv_ms", 200.0))
+        pk = kill_probability(base_pk, miss_km=geom["miss_km"],
+                              interceptor_dv_ms=interceptor_dv, salvo_n=salvo_n)
+        debris = debris_cone_estimate(geom["miss_km"], geom["closing_speed_kms"])
+        return {
+            "actor": actor, "target": target,
+            **geom,
+            "salvo_n": salvo_n,
+            "interceptor_dv_ms": interceptor_dv,
+            "kill_probability": pk,
+            "debris": debris,
+        }
+
+    def compute_cyber(self, session: str, cell: str, actor: str, target: str,
+                       params: dict) -> dict:
+        """Preview a cyber order: success prob × detect prob × attribution + payload effect."""
+        from spacesim.engine.cyber import (
+            attribution_score, effective_success, payload_params, vector_params,
+        )
+        mgr = self._sessions[session]
+        b = mgr.world.assets.get(target)
+        target_posture = b.cyber_posture if b else "medium"
+        vector = params.get("vector")
+        payload_name = params.get("payload")
+        dwell_s = float(params.get("dwell_s", 0.0))
+        persistence_h = float(params.get("persistence_h", 1.0))
+        vp, vname = vector_params(vector)
+        pp, pname = payload_params(payload_name)
+        succ = effective_success(vector, target_posture, dwell_s)
+        attr = attribution_score(vector, dwell_s, persistence_h)
+        return {
+            "vector": vname, "payload": pname,
+            "target_posture": target_posture,
+            "success_prob": round(succ, 3),
+            "detect_prob": attr["detect_prob"],
+            "attribution_default": attr["attribution_bias"],
+            "reversible": pp["reversible"],
+            "escalation_weight": pp["escalation_weight"],
+            "intended_outcome": pp["intended_outcome"],
+            "patchable": vp["patchable"],
+            "min_persistence_h": vp["min_persistence_h"],
+        }
+
+    def compute_sigint(self, session: str, cell: str, actor: str, params: dict) -> dict:
+        """Preview a SIGINT collection: expected geolocation accuracy + power draw."""
+        from spacesim.engine.sigint import (
+            band_params, geolocation_error_km, mode_params, soc_drain,
+        )
+        mgr = self._sessions[session]
+        a = mgr.world.assets.get(actor)
+        if a is None:
+            return {"error": f"asset {actor!r} not found"}
+        band = params.get("band", "L")
+        mode = params.get("intercept_mode", "track")
+        dwell_s = float(params.get("dwell_s", mode_params(mode)[0]["dwell_s_default"]))
+        n_collectors = int(params.get("n_collectors", 1))
+        bp, bname = band_params(band)
+        mp, mname = mode_params(mode)
+        err = geolocation_error_km(band, mode, dwell_s, n_collectors)
+        drain = soc_drain(mode, dwell_s)
+        return {
+            "band": bname, "intercept_mode": mname,
+            "dwell_s": dwell_s,
+            "n_collectors": n_collectors,
+            "geolocation_error_km": err,
+            "soc_drain": round(drain, 4),
+            "freq_ghz": bp["freq_ghz"],
+            "atmos_loss_db": bp["atmos_loss_db"],
+            "power_factor": mp["power_factor"],
+        }
 
     def compute_jam(self, session: str, cell: str, actor: str, params: dict) -> dict:
         """Preview a jam order's effective radius, success probability, and footprint.

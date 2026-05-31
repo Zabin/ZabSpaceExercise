@@ -141,6 +141,7 @@ async function loadSession() {
   $("session").textContent = "session " + SID; $("start").disabled = false;
   const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
   $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
+  await loadInjectLibrary();
   await refresh();
 }
 const start = async () => { await api.post(`/api/sessions/${SID}/start`); await refresh(); };
@@ -149,6 +150,75 @@ const rewind = async () => { await api.post(`/api/sessions/${SID}/rewind`, { t: 
 async function fireInject() {
   const id = $("inject-sel").value; if (!id || id === "(none)") return;
   await api.post(`/api/sessions/${SID}/inject`, { inject: id }); await refresh();
+}
+
+// ---- FW §11.D.19 — Inject library + builder (White Cell) -----------------
+let INJECT_LIBRARY = [];
+
+async function loadInjectLibrary() {
+  if (!SID) return;
+  try { INJECT_LIBRARY = await api.get(`/api/sessions/${SID}/inject_library`); }
+  catch { INJECT_LIBRARY = []; }
+  const sel = $("inject-lib"); if (!sel) return;
+  sel.innerHTML = '<option value="">(custom)</option>' +
+    INJECT_LIBRARY.map((i, idx) => `<option value="${idx}">${i.label || i.id}</option>`).join("");
+}
+
+function loadInjectTemplate() {
+  const sel = $("inject-lib"); if (!sel) return;
+  const idx = sel.value;
+  const ta = $("inject-effects"); if (!ta) return;
+  if (idx === "") { ta.value = '[\n  {"type": "message", "to": ["blue"], "text": "…"}\n]'; return; }
+  const item = INJECT_LIBRARY[+idx]; if (!item) return;
+  ta.value = JSON.stringify(item.effects || [], null, 2);
+  $("inject-build-result").textContent = `Loaded "${item.label}" — edit JSON, set schedule, then fire.`;
+}
+
+function injectScheduleAt() {
+  const mode = $("inject-when").value;
+  if (mode === "now") return null;
+  if (mode === "rel") {
+    const dt_s = parseFloat($("inject-rel-s").value || "0");
+    if (!isFinite(dt_s) || dt_s < 0) return null;
+    return (NOW || 0) + Math.round(dt_s * 1_000_000);
+  }
+  if (mode === "abs") {
+    const v = $("inject-abs-utc").value;
+    if (!v) return null;
+    // datetime-local is in local timezone — treat as UTC literal so the operator's intent is exact
+    const ms = Date.parse(v + "Z");
+    if (isNaN(ms)) return null;
+    return ms * 1000;
+  }
+  return null;
+}
+
+async function fireBuiltInject() {
+  const out = $("inject-build-result");
+  if (!SID) { out.textContent = "No active session."; return; }
+  const raw = $("inject-effects").value.trim();
+  let effects;
+  try { effects = JSON.parse(raw); }
+  catch (err) { out.style.color = "var(--red)"; out.textContent = "✗ effects JSON invalid: " + err.message; return; }
+  if (!Array.isArray(effects)) { out.style.color = "var(--red)"; out.textContent = "✗ effects must be a JSON list"; return; }
+  const at = injectScheduleAt();
+  const body = { inject: { effects }, at_sim_t: at };
+  try {
+    await api.post(`/api/sessions/${SID}/inject`, body);
+    out.style.color = "var(--accent)";
+    out.textContent = at ? `✓ scheduled for ${iso(at)} (${effects.length} effect${effects.length === 1 ? "" : "s"})`
+                          : `✓ fired immediately (${effects.length} effect${effects.length === 1 ? "" : "s"})`;
+    await refresh();
+  } catch (err) {
+    out.style.color = "var(--red)";
+    out.textContent = "✗ server error: " + (err.message || err);
+  }
+}
+
+function onInjectWhenChange() {
+  const mode = $("inject-when").value;
+  $("inject-rel-wrap").style.display = mode === "rel" ? "" : "none";
+  $("inject-abs-wrap").style.display = mode === "abs" ? "" : "none";
 }
 
 async function renderQueue() {
@@ -170,14 +240,21 @@ async function drawRibbon(actor) {
   const wa = await api.get(`/api/sessions/${SID}/windows/${CELL}/${actor}`).catch(() => null);
   if (!wa || !wa.windows.length) { x.fillStyle = "#7a8aa0"; x.font = "11px monospace"; x.fillText("no passes / not a satellite", 8, 26); return; }
   const span = wa.horizon_s * 1e6, now = wa.now;
-  const lane = { command_uplink: 6, telemetry_downlink: 24 };
-  const col = { command_uplink: "#6fcf6f", telemetry_downlink: "#5a96e6" };
-  x.strokeStyle = "#1b2531"; for (let f = 0; f <= 6; f++) { const px = f / 6 * c.width; x.beginPath(); x.moveTo(px, 0); x.lineTo(px, c.height); x.stroke(); }
+  // FW §11.C.16 — Gantt ribbon: three lanes (command / telemetry / sensor_observation),
+  // shaded blocks per window, vertical "now" line, hourly tick labels.
+  const lane = { command_uplink: 6, telemetry_downlink: 18, sensor_observation: 30 };
+  const col  = { command_uplink: "#6fcf6f", telemetry_downlink: "#5a96e6", sensor_observation: "#e6c95a" };
+  x.strokeStyle = "#1b2531";
+  const hours = Math.max(1, Math.round(wa.horizon_s / 3600));
+  for (let f = 0; f <= hours; f++) { const px = f / hours * c.width; x.beginPath(); x.moveTo(px, 0); x.lineTo(px, c.height); x.stroke(); }
   wa.windows.forEach((w) => {
     const x0 = (w.start - now) / span * c.width, x1 = (w.end - now) / span * c.width;
-    x.fillStyle = col[w.channel] || "#888"; x.fillRect(x0, lane[w.channel] || 14, Math.max(2, x1 - x0), 12);
+    x.fillStyle = col[w.channel] || "#888";
+    x.fillRect(x0, lane[w.channel] || 14, Math.max(2, x1 - x0), 10);
   });
-  x.fillStyle = "#9fb0c0"; x.font = "10px monospace"; x.fillText("uplink", 2, 16); x.fillText("downlink", 2, 34);
+  // Lane labels
+  x.fillStyle = "#9fb0c0"; x.font = "10px monospace";
+  x.fillText("cmd", 2, 15); x.fillText("tlm", 2, 27); x.fillText("obs", 2, 39);
 }
 
 function setCell(c) {
@@ -240,6 +317,21 @@ async function previewOrder() {
     out.className = "preview bad";
     out.textContent = `✗ ${tip}`;
   }
+  // FW §11.D.18 — live consequence preview alongside the validity preview.
+  renderConsequencePreview(body);
+}
+
+async function renderConsequencePreview(body) {
+  const el = $("consequence-preview"); if (!el) return;
+  if (!body || !body.action) { el.textContent = ""; return; }
+  let res; try {
+    res = await api.post(`/api/sessions/${SID}/preview/consequence`, body);
+  } catch { el.textContent = ""; return; }
+  const sev = res.severity || "low";
+  const sevColor = { high: "var(--red)", medium: "var(--yellow)", low: "var(--muted)" }[sev];
+  el.style.color = sevColor;
+  const notesStr = (res.notes && res.notes.length) ? " · " + res.notes.join(" · ") : "";
+  el.textContent = `⚠ ${sev.toUpperCase()} · esc ${res.escalation_w} · ${res.reversible ? "reversible" : "irreversible"} · debris ${res.debris_risk} · attr ${res.attribution}${notesStr}`;
 }
 
 // Verbs that are irreversible / escalatory get a deliberate consequence confirm (§12.3, P5).
@@ -675,7 +767,54 @@ async function refresh() {
   renderQueue();
   renderAlarms();
   refreshAAR();
+  renderConjunctions();   // FW §11.C.14
+  renderCoaching();       // FW §11.D.17
   if (TASK_MODE === "ssn") { ssnCoverage(); renderSsnQueue(CELL === "white" ? "blue" : CELL); }
+}
+
+// FW §11.C.14 — conjunction screening panel.  Each entry shows the two objects,
+// range/time-to-CA, and an "Evade" button that fires the prop.collision_avoid verb.
+async function renderConjunctions() {
+  const el = $("conjunction-list"); if (!el) return;
+  const cell = CELL === "white" ? "white" : CELL;
+  let list = [];
+  try { list = await api.get(`/api/sessions/${SID}/conjunctions/${cell}`); } catch { list = []; }
+  if (!list.length) { el.className = "muted"; el.textContent = "(no conjunction warnings)"; return; }
+  el.className = "";
+  el.innerHTML = list.map((c, i) => {
+    const tca = c.t_close ? new Date(c.t_close / 1000).toISOString().slice(11, 19) : "?";
+    const own = (ASSETS[c.a] || ASSETS[c.b]);
+    const evadeBtn = own
+      ? `<button class="vbtn" data-evade="${ASSETS[c.a] ? c.a : c.b}">Evade</button>`
+      : "";
+    return `<div class="qrow"><span><b>${c.a}</b> ↔ <b>${c.b}</b></span>
+      <span>${c.range_km != null ? c.range_km.toFixed(1) + " km" : "?"}</span>
+      <span>CA ${tca}</span>${evadeBtn}</div>`;
+  }).join("");
+  el.querySelectorAll(".vbtn[data-evade]").forEach((b) => b.onclick = async () => {
+    const actor = b.dataset.evade;
+    const o = { cell: ASSETS[actor]?.owner || cell, actor,
+                action: "command", target: null,
+                params: { verb: "prop.collision_avoid" } };
+    try {
+      const ack = await api.post(`/api/sessions/${SID}/order`, o);
+      b.textContent = ack.ok ? "Queued" : "REJECT";
+    } catch { b.textContent = "ERR"; }
+    setTimeout(refresh, 600);
+  });
+}
+
+// FW §11.D.17 — coaching notes panel.
+async function renderCoaching() {
+  const el = $("coaching-list"); if (!el) return;
+  const cell = CELL === "white" ? "white" : CELL;
+  let notes = [];
+  try { notes = await api.get(`/api/sessions/${SID}/coaching/${cell}`); } catch { notes = []; }
+  if (!notes.length) { el.className = "muted"; el.textContent = "(no notes)"; return; }
+  el.className = "";
+  el.innerHTML = notes.map((n) =>
+    `<div class="qrow"><span><b>${n.title || "(note)"}</b><br><span class="muted">${n.body || ""}</span></span></div>`
+  ).join("");
 }
 
 function rollup(bus) {
@@ -732,6 +871,7 @@ async function loadSaveFile(file) {
   $("session").textContent = "session " + SID; $("start").disabled = false;
   const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
   $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
+  await loadInjectLibrary();
   await refresh();
 }
 
@@ -1025,6 +1165,11 @@ window.addEventListener("DOMContentLoaded", () => {
   $("assets").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-asset]"); if (tr) openDrill(tr.dataset.asset); });
   $("load").onclick = loadSession; $("start").onclick = start; $("rewind").onclick = rewind;
   $("fire-inject").onclick = fireInject; $("issue").onclick = issueOrder;
+  // FW §11.D.19 — inject builder
+  if ($("inject-lib-load")) $("inject-lib-load").onclick = loadInjectTemplate;
+  if ($("inject-lib")) $("inject-lib").onchange = loadInjectTemplate;
+  if ($("inject-when")) $("inject-when").onchange = onInjectWhenChange;
+  if ($("inject-build-fire")) $("inject-build-fire").onclick = fireBuiltInject;
   $("save").onclick = () => SID && saveSession();
   $("loadbtn").onclick = () => $("loadfile").click();
   $("loadfile").onchange = (e) => e.target.files[0] && loadSaveFile(e.target.files[0]);
@@ -1334,6 +1479,18 @@ const PALETTE = {
     if (isel) [...isel.options].forEach((o) => {
       if (o.value) items.push({ label: `fire inject ${o.value}`, tag: "inject", run: () => { isel.value = o.value; $("fire-inject").click(); } });
     });
+    // FW §11.D.19 — library entries surface as palette commands too.
+    INJECT_LIBRARY.forEach((lib, idx) => {
+      items.push({
+        label: `inject lib: ${lib.label || lib.id}`,
+        tag: "inject",
+        run: () => {
+          const det = $("inject-builder"); if (det) det.open = true;
+          $("inject-lib").value = String(idx);
+          loadInjectTemplate();
+        },
+      });
+    });
     return items;
   },
   filter: "", cursor: 0,
@@ -1415,6 +1572,29 @@ addEventListener("DOMContentLoaded", () => {
   });
   const bc = $("batch-clear");
   if (bc) bc.addEventListener("click", () => { BATCH.clear(); batchRender(); });
+
+  // FW §11.C.13 — fleet-subset batch helpers.  Each populates BATCH with assets
+  // matching a predicate, then renders so the user can confirm and Issue-to-all.
+  const own = () => Object.entries(ASSETS).filter(([id, a]) =>
+    a.owner === (CELL === "white" ? "blue" : CELL));
+  function selectSubset(pred) {
+    BATCH.clear();
+    own().forEach(([id, a]) => { if (pred(id, a)) BATCH.add(id); });
+    batchRender();
+  }
+  const fa = $("fleet-apply-all");
+  if (fa) fa.onclick = () => selectSubset(() => true);
+  const fi = $("fleet-apply-isr");
+  if (fi) fi.onclick = () => selectSubset((id, a) => (a.payload || "").startsWith("isr"));
+  const fc = $("fleet-apply-comsat");
+  if (fc) fc.onclick = () => selectSubset((id, a) => a.payload === "satcom");
+  const fg = $("fleet-apply-group");
+  if (fg) fg.onclick = () => {
+    const actor = $("o-actor").value;
+    const grp = actor && ASSETS[actor] && ASSETS[actor].group;
+    if (!grp) { $("order-result").textContent = "Select an asset with a group first."; return; }
+    selectSubset((id, a) => a.group === grp);
+  };
 });
 
 // §10.E.18 — Coachmark tour. A small scripted overlay that walks the trainee through the UI.
