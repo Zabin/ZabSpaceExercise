@@ -737,6 +737,7 @@ async function refresh() {
   if (stale()) return;
   NOW = now;
   $("now").textContent = iso(now);
+  const nowHdr = $("now-header"); if (nowHdr) nowHdr.textContent = iso(now);
   const localEl = document.getElementById("now-local");
   if (localEl) localEl.textContent = localTimeStr(now);
   EFFECT_WINDOWS = ewin;

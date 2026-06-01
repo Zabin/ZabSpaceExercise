@@ -8,16 +8,13 @@
 </head>
 <body data-cell="white">
   <header class="toolbar">
-    <svg id="logo" viewBox="0 0 32 32" width="28" height="28" role="img" aria-label="Space Control logo" style="color: var(--cell-accent)">
-      <!-- planet body -->
-      <circle cx="16" cy="17" r="8" fill="currentColor" opacity="0.22"/>
-      <circle cx="16" cy="17" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
-      <!-- orbital ring -->
-      <ellipse cx="16" cy="17" rx="15" ry="5.5" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(-28 16 17)"/>
-      <!-- satellite -->
-      <polygon points="0,-3 -2.5,2 2.5,2" fill="currentColor" transform="translate(28,7) rotate(-28)"/>
+    <svg id="logo" viewBox="0 0 24 24" width="26" height="26" fill="none" role="img" aria-label="Space Control logo" style="color:var(--cell-accent);flex-shrink:0">
+      <circle cx="12" cy="12" r="5.5" fill="currentColor" fill-opacity="0.45" stroke="currentColor" stroke-width="1.5"/>
+      <ellipse cx="12" cy="12" rx="10.5" ry="3.5" stroke="currentColor" stroke-width="1.5" transform="rotate(-25 12 12)"/>
+      <circle cx="20.5" cy="5.5" r="1.8" fill="currentColor"/>
     </svg>
     <span class="title">Space Control &amp; Orbital Warfare</span>
+    <span id="now-header" style="font-size:11px;font-family:monospace;color:var(--muted);flex-shrink:0">—</span>
     <label class="white-only">Vignette <select id="vignette"><option value="" disabled selected>Loading…</option></select></label>
     <label class="white-only">Seed <input id="seed" type="number" value="1" style="width:4.5em" /></label>
     <button id="load" class="primary white-only">Load</button>
