@@ -18,10 +18,10 @@
       <rect x="12" y="49" width="3" height="3" fill="currentColor" opacity="0.85" />
     </svg>
     <span class="title">Space Control &amp; Orbital Warfare</span>
-    <label>Vignette <select id="vignette"><option value="" disabled selected>Loading…</option></select></label>
-    <label>Seed <input id="seed" type="number" value="1" style="width:4.5em" /></label>
-    <button id="load" class="primary">Load</button>
-    <button id="start" disabled>Start</button>
+    <label class="white-only">Vignette <select id="vignette"><option value="" disabled selected>Loading…</option></select></label>
+    <label class="white-only">Seed <input id="seed" type="number" value="1" style="width:4.5em" /></label>
+    <button id="load" class="primary white-only">Load</button>
+    <button id="start" class="white-only" disabled>Start</button>
     <span class="spacer"></span>
     <div class="ctrl" id="cells">
       <button class="cell" data-cell="white">White</button>
@@ -390,7 +390,7 @@
     <pre id="activity-detail" class="muted" style="font-size:11px;margin-top:4px;min-height:14px">—</pre>
   </section>
 
-  <section class="panel" id="aar-panel" style="margin:0 12px 14px">
+  <section class="panel white-only" id="aar-panel" style="margin:0 12px 14px">
     <h2>After-action review — scrub the deterministic timeline</h2>
     <div class="ctrl">
       <input id="aar-slider" type="range" min="0" max="0" value="0" style="flex:1" />

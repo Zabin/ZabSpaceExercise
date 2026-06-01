@@ -784,7 +784,11 @@ async function refresh() {
   if (stale()) return;
   SCENE = scene;
   window.Globe && Globe.render(SCENE);
-  if (DRILL.asset) openDrill(DRILL.asset);
+  if (DRILL.asset) {
+    const lt = ASSETS[DRILL.asset]?.last_tel || 0;
+    if (lt !== DRILL_LAST_TEL) openDrill(DRILL.asset);  // new telemetry arrived — full rebuild
+    else updateDrillTitle();                             // pass-gated: just age the stale badge
+  }
   ["g-focus", "m-focus"].forEach((id) => {
     const sel = $(id); if (!sel) return; const cur = sel.value;
     const ids = SCENE.assets.map((a) => a.id).concat(SCENE.tracks.map((t) => t.object));
@@ -1190,6 +1194,23 @@ function initMapControls() {
 
 // ---- subsystem drill-down (telemetry graphs + log; diagnose, don't get told) ----
 let DRILL_DB = {};
+let DRILL_LAST_TEL = 0;  // last_tel timestamp at the time of the last full drill render
+
+function _renderDrillTitle(assetId, lt, busMode) {
+  const ageS = lt > 0 ? Math.max(0, Math.round((NOW - lt) / 1e6)) : null;
+  const staleTag = (ageS != null && ageS > 60)
+    ? ` · <span class="muted">stale since ${iso(lt)} (${Math.floor(ageS / 60)}m)</span>`
+    : (ageS != null ? ` · <span class="muted">as-of ${iso(lt)}</span>` : "");
+  $("drill-title").innerHTML = `${assetId} — bus ${busMode}${staleTag}`;
+}
+
+function updateDrillTitle() {
+  if (!DRILL.asset) return;
+  const lt = ASSETS[DRILL.asset]?.last_tel || 0;
+  const titleEl = $("drill-title");
+  _renderDrillTitle(DRILL.asset, lt, titleEl.dataset.busMode || "—");
+}
+
 async function openDrill(assetId) {
   DRILL.asset = assetId;
   let tele;
@@ -1197,13 +1218,11 @@ async function openDrill(assetId) {
   catch { $("drill-title").textContent = `${assetId} — no telemetry (fog / not your asset)`; $("drill-params").innerHTML = ""; return; }
   DRILL_DB = {};
   Object.values(tele.subsystems).forEach((arr) => arr.forEach((p) => (DRILL_DB[p.id] = p)));
-  // Pass-gated telemetry semantics (§5.4): show "as-of HH:MM:SS" / stale-since when out of contact.
   const lt = ASSETS[assetId]?.last_tel || 0;
-  const ageS = lt > 0 ? Math.max(0, Math.round((NOW - lt) / 1e6)) : null;
-  const staleTag = (ageS != null && ageS > 60)
-    ? ` · <span class="muted">stale since ${iso(lt)} (${Math.floor(ageS / 60)}m)</span>`
-    : (ageS != null ? ` · <span class="muted">as-of ${iso(lt)}</span>` : "");
-  $("drill-title").innerHTML = `${assetId} — bus ${tele.bus_mode || "—"}${staleTag}`;
+  DRILL_LAST_TEL = lt;
+  const titleEl = $("drill-title");
+  titleEl.dataset.busMode = tele.bus_mode || "—";
+  _renderDrillTitle(assetId, lt, tele.bus_mode || "—");
   // Populate the overlay-param selector for this asset's params (Compare-to-nominal toggled separately).
   const overlaySel = $("drill-overlay");
   if (overlaySel) {

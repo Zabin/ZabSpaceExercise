@@ -10,6 +10,7 @@
 body[data-cell="white"] { --cell-accent: #8a96ad; --cell-accent-soft: rgba(138, 150, 173, 0.10); }
 body[data-cell="blue"]  { --cell-accent: #5a8fe0; --cell-accent-soft: rgba(90, 143, 224, 0.10); }
 body[data-cell="red"]   { --cell-accent: #e07a7a; --cell-accent-soft: rgba(224, 122, 122, 0.10); }
+body:not([data-cell="white"]) .white-only { display: none !important; }
 * { box-sizing: border-box; }
 body { margin: 0; background: radial-gradient(1200px 600px at 70% -10%, #16202c, var(--bg)); color: var(--text); }
 
