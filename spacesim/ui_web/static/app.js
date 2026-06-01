@@ -264,8 +264,8 @@ async function renderQueue() {
 
 async function drawRibbon(actor) {
   const c = $("ribbon"), x = c.getContext("2d");
-  x.fillStyle = "#0a0f15"; x.fillRect(0, 0, c.width, c.height);
   const wa = await api.get(`/api/sessions/${SID}/windows/${CELL}/${actor}`).catch(() => null);
+  x.fillStyle = "#0a0f15"; x.fillRect(0, 0, c.width, c.height);
   if (!wa || !wa.windows.length) { x.fillStyle = "#7a8aa0"; x.font = "11px monospace"; x.fillText("no passes / not a satellite", 8, 26); return; }
   const span = wa.horizon_s * 1e6, now = wa.now;
   // FW §11.C.16 — Gantt ribbon: three lanes (command / telemetry / sensor_observation),
