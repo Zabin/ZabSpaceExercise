@@ -1965,13 +1965,17 @@ addEventListener("DOMContentLoaded", () => {
 addEventListener("DOMContentLoaded", () => {
   const btn = $("handover-btn"), wrap = $("handover"), resume = $("handover-resume");
   if (!btn || !wrap) return;
+  let pendingCell = null;
   btn.addEventListener("click", () => {
-    const nextCell = CELL === "blue" ? "RED" : CELL === "red" ? "BLUE" : "WHITE";
-    $("handover-title").textContent = `HANDING OFF → ${nextCell}`;
-    $("handover-who").textContent = `Pass the keyboard to the ${nextCell} operator and click Resume.`;
+    pendingCell = CELL === "blue" ? "red" : CELL === "red" ? "blue" : "white";
+    $("handover-title").textContent = `HANDING OFF → ${pendingCell.toUpperCase()}`;
+    $("handover-who").textContent = `Pass the keyboard to the ${pendingCell.toUpperCase()} operator and click Resume.`;
     wrap.classList.add("open");
   });
-  if (resume) resume.addEventListener("click", () => wrap.classList.remove("open"));
+  if (resume) resume.addEventListener("click", () => {
+    wrap.classList.remove("open");
+    if (pendingCell) { setCell(pendingCell); pendingCell = null; }
+  });
 });
 
 // #9 — Tooltips for ALL buttons that don't already have a title=. Reads the button's text and
