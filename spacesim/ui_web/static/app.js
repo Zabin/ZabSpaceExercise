@@ -518,13 +518,16 @@ async function issueOrder() {
 function onActorChange() {
   const id = $("o-actor").value, a = ASSETS[id] || {};
   $("actor-info").textContent = a.kind ? `${a.kind} · ${a.owner}${a.payload ? " · " + a.payload : ""}` : "";
+  const prevAction = $("o-action").value;
   $("o-action").innerHTML = actionsFor(a).map((x) => `<option>${x}</option>`).join("");
-  onActionChange();
+  if (prevAction && [...$("o-action").options].some((o) => o.value === prevAction))
+    $("o-action").value = prevAction;
+  onActionChange(prevAction !== $("o-action").value);  // only reset params if action changed
   if (SID && id) drawRibbon(id);
 }
-function onActionChange() {
+function onActionChange(resetParams = true) {
   const action = $("o-action").value;
-  const tmpl = PARAM_TEMPLATE[action]; if (tmpl) $("o-params").value = JSON.stringify(tmpl());
+  const tmpl = PARAM_TEMPLATE[action]; if (resetParams && tmpl) $("o-params").value = JSON.stringify(tmpl());
   // Show/hide the maneuver mode assistant.
   const isMnvr = action === "maneuver";
   $("mnvr-panel") && ($("mnvr-panel").style.display = isMnvr ? "" : "none");
@@ -768,9 +771,13 @@ async function refresh() {
   // Command menu: populate actor list (own assets + sensors that can act; network sensors excluded).
   const actorIds = assets.filter((a) => ACTIONS_BY_KIND[a.kind] && !a.network).map((a) => a.id);
   const prev = $("o-actor").value;
-  $("o-actor").innerHTML = actorIds.map((i) => `<option>${i}</option>`).join("");
-  if (actorIds.includes(prev)) $("o-actor").value = prev;
-  onActorChange();
+  const prevList = [...$("o-actor").options].map((o) => o.value).join(",");
+  const newList = actorIds.join(",");
+  if (prevList !== newList) {
+    $("o-actor").innerHTML = actorIds.map((i) => `<option>${i}</option>`).join("");
+    if (actorIds.includes(prev)) $("o-actor").value = prev;
+    onActorChange();
+  }
   // Tasking rail sensor picker (P-UI-6): own organic sensors + auto (network sensors are SSN-only).
   const tsel = $("task-sensor");
   if (tsel) {
