@@ -289,6 +289,7 @@ function setCell(c) {
   CELL = c;
   document.body.setAttribute("data-cell", c);    // drives --cell-accent across panels/borders/rows
   document.querySelectorAll(".cell").forEach((b) => b.classList.toggle("active", b.dataset.cell === c));
+  document.querySelectorAll(".white-only").forEach((el) => { el.style.display = c === "white" ? "" : "none"; });
   if (window.redrawAll) redrawAll();            // re-tint own-asset markers immediately
   refresh();
 }
