@@ -1808,12 +1808,16 @@ function coachClose() { $("coachmark-wrap").classList.remove("on"); }
 function coachShow() {
   const step = COACH_STEPS[COACH_I]; if (!step) { coachClose(); return; }
   const el = document.querySelector(step.sel); if (!el) { COACH_I++; return coachShow(); }
+  // Scroll target into view first so getBoundingClientRect returns on-screen coords.
+  el.scrollIntoView({ behavior: "instant", block: "nearest", inline: "nearest" });
   const r = el.getBoundingClientRect();
   const hole = $("coachmark-hole");
   hole.style.left = (r.left - 4) + "px"; hole.style.top = (r.top - 4) + "px";
   hole.style.width = (r.width + 8) + "px"; hole.style.height = (r.height + 8) + "px";
   const tip = $("coachmark-tip");
-  const tipTop = Math.min(window.innerHeight - 200, r.bottom + 12);
+  // Place tip below target when room allows, above otherwise.
+  const spaceBelow = window.innerHeight - r.bottom;
+  const tipTop = spaceBelow >= 180 ? r.bottom + 12 : Math.max(8, r.top - 180);
   const tipLeft = Math.min(window.innerWidth - 360, Math.max(8, r.left));
   tip.style.left = tipLeft + "px"; tip.style.top = tipTop + "px";
   $("coachmark-title").textContent = step.title;
@@ -1827,6 +1831,10 @@ addEventListener("DOMContentLoaded", () => {
   $("coachmark-next").addEventListener("click", () => { if (++COACH_I >= COACH_STEPS.length) coachClose(); else coachShow(); });
   $("coachmark-back").addEventListener("click", () => { if (--COACH_I < 0) COACH_I = 0; coachShow(); });
   $("coachmark-close").addEventListener("click", coachClose);
+  // Click on backdrop (outside the tip box) closes the tour.
+  $("coachmark-wrap").addEventListener("click", (e) => { if (!$("coachmark-tip").contains(e.target)) coachClose(); });
+  // Escape closes the tour.
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("coachmark-wrap").classList.contains("on")) { e.stopPropagation(); coachClose(); } });
 });
 
 // FUTURE-WORK §9 — Replay branches. Save the current AAR report as a named branch (localStorage,
