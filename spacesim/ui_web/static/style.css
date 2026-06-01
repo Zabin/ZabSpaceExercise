@@ -24,6 +24,36 @@ header.toolbar {
 }
 header .title { font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
 #logo { flex-shrink: 0; }
+.now-header {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px; color: var(--cell-accent); flex-shrink: 0;
+  padding: 2px 8px; border: 1px solid var(--cell-accent-soft); border-radius: 4px;
+  background: rgba(0,0,0,0.25); letter-spacing: .3px;
+}
+/* Dropdown wrap + popup panel for the consolidated toolbar Settings menu. */
+.menu-wrap { position: relative; flex-shrink: 0; }
+.menu-pop {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 30;
+  background: linear-gradient(180deg, #18222e, #11171f);
+  border: 1px solid var(--border); border-top: 2px solid var(--cell-accent);
+  border-radius: 8px; padding: 6px; min-width: 220px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.menu-pop[hidden] { display: none; }
+.menu-pop .menu-section { display: flex; flex-direction: column; gap: 2px; padding: 4px 0; }
+.menu-pop .menu-section + .menu-section { border-top: 1px solid #1b2531; margin-top: 2px; }
+.menu-pop .menu-head {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .6px;
+  color: var(--cell-accent); padding: 2px 8px; opacity: .85;
+}
+.menu-pop .menu-item {
+  display: flex; align-items: center; gap: 8px; justify-content: flex-start;
+  background: transparent; border: 1px solid transparent; color: var(--text);
+  padding: 6px 8px; border-radius: 5px; font-size: 13px; text-align: left;
+  margin: 0;
+}
+.menu-pop .menu-item:hover { background: var(--cell-accent-soft); border-color: var(--cell-accent-soft); }
 header .banner { color: var(--green); font-weight: 700; letter-spacing: 1px; margin-left: auto; }
 header .spacer { flex: 1; }
 

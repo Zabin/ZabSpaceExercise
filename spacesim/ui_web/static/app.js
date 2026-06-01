@@ -1408,6 +1408,13 @@ window.addEventListener("DOMContentLoaded", () => {
     onActorChange();    // re-derive the action list under the new role filter
   });
   document.addEventListener("keydown", onShortcut);
+  // Toolbar Settings dropdown: open on click, close on outside-click or Escape.
+  const settingsBtn = $("settings-btn"), settingsMenu = $("settings-menu");
+  if (settingsBtn && settingsMenu) {
+    settingsBtn.addEventListener("click", (e) => { e.stopPropagation(); settingsMenu.hidden = !settingsMenu.hidden; });
+    document.addEventListener("click", (e) => { if (!settingsMenu.hidden && !settingsMenu.contains(e.target) && e.target !== settingsBtn) settingsMenu.hidden = true; });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !settingsMenu.hidden) settingsMenu.hidden = true; });
+  }
   setCell("white"); loadVignettes();
 });
 
