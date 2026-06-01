@@ -12,7 +12,8 @@ let NEXT = {};            // asset id -> next-contact sim-time (µs) for the fle
 let ALARMS = [];          // latest alarm feed (shared by the fleet badge + the alarm list)
 let EFFECT_WINDOWS = [];  // active-effect time spans on own assets (graph shading, §9.1)
 let NOW = 0;              // current sim time captured each refresh (for stale-banner + shading)
-let REALTIME_LOOP = null; // setInterval handle when real-time clock is running
+let REALTIME_GEN = 0;     // generation counter; bumped on stop so in-flight ticks abandon themselves
+let REALTIME_ON = false;  // whether the real-time clock loop should keep ticking
 let LAST_TICK_WALL = 0;   // Date.now() at the last real-time tick
 
 // Format a next-contact countdown; color amber < 5 min, red < 1 min (P1 — imminent windows draw the eye).
@@ -158,19 +159,27 @@ async function loadSession() {
   await refresh();
 }
 function startRealtimeClock() {
-  if (REALTIME_LOOP) return;
+  if (REALTIME_ON) return;
+  REALTIME_ON = true;
   LAST_TICK_WALL = Date.now();
-  REALTIME_LOOP = setInterval(async () => {
-    if (!SID) return;
+  const myGen = REALTIME_GEN;
+  // Chained setTimeout (not setInterval) so we never have more than one /step in flight.
+  const tick = async () => {
+    if (!REALTIME_ON || myGen !== REALTIME_GEN || !SID) return;
     const now = Date.now();
     const elapsed_s = (now - LAST_TICK_WALL) / 1000;
     LAST_TICK_WALL = now;
-    await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: elapsed_s });
-    refresh();
-  }, 1000);
+    try {
+      await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: elapsed_s });
+      if (REALTIME_ON && myGen === REALTIME_GEN) await refresh();
+    } catch { /* swallow — next tick will re-sync */ }
+    if (REALTIME_ON && myGen === REALTIME_GEN) setTimeout(tick, 1000);
+  };
+  setTimeout(tick, 1000);
 }
 function stopRealtimeClock() {
-  if (REALTIME_LOOP) { clearInterval(REALTIME_LOOP); REALTIME_LOOP = null; }
+  REALTIME_ON = false;
+  REALTIME_GEN++;   // any in-flight callback's myGen no longer matches; it abandons its refresh
 }
 const start = async () => { await api.post(`/api/sessions/${SID}/start`); startRealtimeClock(); await refresh(); };
 const step = async (dt) => { await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: dt }); await refresh(); };
