@@ -98,6 +98,8 @@ internet connection or ephemeris download is required.
 Start the web server from the repository root (with your virtual environment activated, if any):
 
 ```bash
+python3 -m spacesim.ui_web              # uses spacesim.config.yaml (default: 127.0.0.1:8000)
+# or, equivalently:
 uvicorn spacesim.ui_web.server:app
 ```
 
@@ -105,6 +107,20 @@ Then open **http://127.0.0.1:8000/** in a browser. You should see the dark missi
 with the `UNCLASSIFIED // TRAINING` banner. The UI works in any current desktop browser
 (Chrome ≥ 100, Firefox ≥ 100, Edge ≥ 100, Safari ≥ 15.4); see
 [§9 troubleshooting](09-troubleshooting-and-glossary.md) if you hit a rendering issue.
+
+**Changing the port.** Edit `spacesim.config.yaml` at the repository root:
+
+```yaml
+server:
+  host: 127.0.0.1   # use 0.0.0.0 to expose on a LAN
+  port: 8000        # change this if 8000 is taken
+  reload: false     # auto-reload on code change (dev only)
+```
+
+Then re-run `python3 -m spacesim.ui_web`. Point the browser at the matching port. Set
+`SPACESIM_CONFIG=/path/to/other.yaml` to load a different file. If you prefer the `uvicorn` CLI,
+pass `--port N --host H` directly — the config file is only read by the `python3 -m spacesim.ui_web`
+launcher.
 
 Press **Ctrl-K** (or **⌘-K** on macOS) any time to open the command palette — the fastest way to
 navigate.

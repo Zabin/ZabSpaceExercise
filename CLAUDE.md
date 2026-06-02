@@ -111,12 +111,18 @@ is the canonical permanent gate.
 
 ```bash
 pip install pydantic numpy sgp4 pyyaml pytest hypothesis skyfield fastapi uvicorn httpx
-uvicorn spacesim.ui_web.server:app                              # single-machine: serve at http://127.0.0.1:8000/
-uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload      # LAN multiplayer: bind to host IP, share URL
+python3 -m spacesim.ui_web                                       # reads host/port/reload from spacesim.config.yaml (defaults 127.0.0.1:8000)
+uvicorn spacesim.ui_web.server:app                               # equivalent if you prefer uvicorn's CLI
+uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload       # LAN multiplayer: bind to host IP, share URL
 python3 -m pytest                                                # runs the whole suite (testpaths = spacesim/tests)
 python3 -m pytest spacesim/tests/test_determinism.py             # the Phase-1 determinism gate
 python3 -m pytest spacesim/tests/test_import_guard.py            # the Phase-0 engine guardrails
 ```
+
+**Server config.** Host, port, and reload come from `spacesim.config.yaml` at the repo root
+(loaded by `spacesim/config.py`). Override the path with `SPACESIM_CONFIG=/some/path.yaml`. The
+`uvicorn …` CLI form still works for one-off overrides; `python3 -m spacesim.ui_web` is the
+config-driven launcher.
 
 **Multiplayer workflow.** White loads + starts a session → URL becomes `…/#sess-N` (shareable).
 Open that URL in another tab or LAN machine, click **Blue** or **Red**. The server-side clock

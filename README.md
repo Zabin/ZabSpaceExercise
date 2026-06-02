@@ -18,7 +18,7 @@ military education (PME) wargaming tool for space control and orbital warfare.
 ```bash
 pip install pydantic numpy sgp4 pyyaml fastapi uvicorn      # runtime deps
 pip install pytest hypothesis skyfield httpx                # to run the tests
-uvicorn spacesim.ui_web.server:app                          # then open http://127.0.0.1:8000/
+python3 -m spacesim.ui_web                                  # serves on the host/port from spacesim.config.yaml
 python3 -m pytest                                           # run the full test suite
 ```
 
