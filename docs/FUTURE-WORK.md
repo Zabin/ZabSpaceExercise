@@ -9,35 +9,64 @@ Items are grouped by area, each with a short rationale and pointers into the cod
 a future implementer can pick any one up without scanning history. Anything not listed here is
 either implemented or covered by an existing in-scope ticket.
 
-## 1. Multiplayer & networking (M7 seam, formerly Phase 8)
+## 1. Multiplayer & networking — ✅ shipped (M8 / former Phase 8)
 
-The transport seam is scaffolded: `spacesim/session/ws_session.py` defines `WebSocketSession`
-with the same method signatures as `InProcessSession`. Swap the import in `server.py` to activate.
+LAN multiplayer is **live** via HTTP polling against the existing FastAPI server. White loads +
+starts a session; Blue and Red join by opening the shareable URL (`/#sess-N`) in their own tab
+or on another LAN machine pointed at the host. Every browser/tab hits the same
+`InProcessSession`; fog-of-war is enforced server-side at the `CellController` / `SessionAPI`
+boundary just as for the in-process case.
 
-- **LAN multiplayer cell separation.** The session layer already routes every interaction through
-  a `SessionAPI` and the engine is UI-agnostic; the seam exists but is exercised only in-process.
-  Swapping `InProcessSession` for the `WebSocketSession` stub (with bodies implemented over
-  WebSockets or HTTP-RPC) finishes P8 from the roadmap. Stub at `spacesim/session/ws_session.py`.
-- **Push deltas instead of polling.** `get_eventlog(since_seq)` already expresses the contract;
-  the front end currently re-fetches view/scene/telemetry per tick. A push channel is the natural
-  upgrade once the transport above lands.
-- ✅ **`Order` as a serializable transport message.** Engine keeps `Order` as a dataclass;
-  the API surface uses the pydantic `OrderRequest` (`ui_web/server.py`). The wire-side model
-  is in place; the network transport itself remains future work.
+How it works (Parts A–E of the LAN-multiplayer plan):
+- **Server-authoritative lazy clock.** `SessionManager` owns `(wall_anchor, sim_anchor, rate)` +
+  an `RLock`. `set_clock(running, rate)` arms or disarms it; `catch_up()` advances sim time to
+  the wall-derived target under the lock; every read endpoint calls `catch_up` first. Result: N
+  polling tabs advance the sim *exactly once* regardless of N. Engine stays untouched — the
+  anchor lives in the session layer, never read by `spacesim/engine/`.
+- **Per-session RLock.** `InProcessSession._locked(sid)` context-manager wraps every mutation
+  (`start / step / advance_to / rewind_to / undo_last / fire_inject / issue_order / cancel_order
+  / begin_recovery / submit_ssn_request / set_clock / add_tle / red_doctrine_step`). Reads are
+  serialized through `catch_up` so concurrent tabs can't tear state. Pinned by the
+  `ThreadPoolExecutor` lock-safety test in `test_web.py`.
+- **Discovery + join.** `GET /api/sessions` returns every live session
+  `{sid, vignette_id, title, started, now, running}`. The client puts the SID in
+  `location.hash`, the URL is the share link, and `joinSessionFromHash()` at boot makes the
+  joining tab default to the **Blue** cell (override via `?cell=`).
+- **Client poll loop.** `startRealtimeClock()` is now a pure 1.5s `refresh()` poll — no
+  client-side `/step`. The server clock is paused / resumed from the White-only **⏸ Pause / ▶
+  Resume** toolbar button (`POST /api/sessions/{sid}/clock`). Re-anchored on rewind / undo /
+  manual time-jump so the wall clock can't snap the sim back where it was.
+- **Pop-out windows (Part E).** Each pop-out is just another tab that joins the same session,
+  carrying `?layout=…` (and optional `?cell=…`) in the URL. Tokens: `globe`, `map`,
+  `globe+map`, `fleet`, `order`, `aar`. Boot-time `applyLayoutCull()` hides every panel not in
+  the layout's keep-set, `body.popout` strips the toolbar to essentials, and the pop-out reuses
+  the full polished panels — the old ad-hoc `detachViewers()` canvas popup was deleted.
 
-**Transport seam interface** (every method must be implemented over the wire):
+Endpoints added:
 ```
-list_vignettes() → list[dict]
-load_vignette(vignette_id, overrides, seed) → str            # returns session id
-start(session) / step(session, dt) / advance_to(session, t) / rewind_to(session, t)
-issue_order(session, cell, order) → OrderAck
-validate_order(session, cell, order) → OrderAck              # dry-run; read-only
-get_view(session, cell) → CellView                           # fog applied server-side
-get_scene(session, cell) / get_telemetry / get_series        # read-only; fog applied
-get_eventlog(session, since_seq) → list                      # push-delta anchor
-objectives(session) / aar_report / aar_snapshot_at           # after-action reads
-save(session) → dict / load_save(state) → str                # persistence
+GET  /api/sessions                              # discovery: list every live session
+POST /api/sessions/{sid}/clock {running, rate}  # arm/disarm server-authoritative clock
+GET  /api/sessions/{sid}/clock                  # current state
 ```
+
+Tests (8 new in `test_web.py`):
+- lazy-clock is monotonic and matches wall delta,
+- 3 concurrent reads at the same wall time advance the sim **once**,
+- pause freezes and resume re-anchors,
+- rewind re-anchors (no fast-forward by elapsed wall time),
+- `/api/sessions` lists live sessions with correct fields,
+- ThreadPool of mixed mutations/reads is lock-safe (save + AAR still succeed),
+- the `target > now` guard makes equal-wall reads a no-op (no `ValueError`),
+- resumed sessions load paused (so they don't silently fast-forward the save gap).
+
+Still open (deferred / nice-to-have):
+- ✅ ~~`Order` as a serializable transport message.~~ Shipped via pydantic `OrderRequest`.
+- **Push deltas instead of polling.** `get_eventlog(since_seq)` is the natural push-delta anchor;
+  the current 1.5s poll is fine for human-watched exercises but a WebSocket / SSE upgrade would
+  cut latency. Not blocking — the polling architecture is the supported v1 transport.
+- **Per-cell auth tokens.** Cell selection is trust-based today (any tab can pick any cell);
+  matches the cooperative facilitator-run PME model. A token gate is documented as LAN-use-only
+  hardening if a tenancy or hostile-side concern emerges.
 
 ## 2. Orbital / effects fidelity
 
@@ -128,9 +157,12 @@ Remaining items not carried into v1:
   across panel borders, toolbar bottom border, h2 underlines, table hover/select, AND the
   own-asset markers on the 2D map + 3D globe — every surface re-tints when the operator
   switches seats. The "BLU/RED/WHI" toolbar chip is unambiguous at a glance.
-- **Region detach v2.** The current Detach viewers pops a slow-tick belief-scene window; a full
-  multi-display reflow (independent region A/B/C/D detach with shared selection state) requires
-  postMessage state-sync and is deferred.
+- ✅ **Region detach v2 / multi-monitor pop-outs.** Shipped via the Part-E pop-out system: each
+  pop-out is a layout-culled view of the real app that joins the same session over HTTP, so
+  state sync is automatic (server is the single source of truth — no postMessage IPC needed).
+  Layouts: globe, map, globe+map, fleet, order, aar. Each pop-out can carry its own `?cell=`
+  override, so a White operator on three monitors can show Blue's fog filter on monitor 2 while
+  keeping the godview on monitor 1.
 - ✅ **Two-trace overlay normalisation legend.** `Graph.draw` now prints the OVERLAY's true
   y-scale on the right edge in sky-blue (matching the overlay trace) so the operator can decode
   the normalized second trace in absolute units.
@@ -218,15 +250,17 @@ are noted under "still open".
 
 ---
 
-This list is the v1 → v1.1+ TODO. After batches 5a-5d the remaining open work is:
+This list is the v1 → v1.1+ TODO. After the LAN-multiplayer batch the remaining open work is:
 
-1. **§1 LAN multiplayer transport + push-delta channel** — highest architectural leverage.
-   `WebSocketSession` stub exists; `OrderRequest` pydantic surface exists. Need: WebSocket
-   server, push-delta event stream, client transport swap.
+1. ✅ **§1 LAN multiplayer transport** — shipped via HTTP polling: server-authoritative lazy
+   clock + per-session RLock + discovery endpoint + join-by-hash + Part-E pop-out windows.
+   See §1 for the full Parts A–E breakdown. Push-delta channel (SSE/WebSocket) and per-cell
+   auth tokens remain optional follow-ups.
 2. **§2 high-fidelity propagator + conjunction screening** — drop-in behind the existing
    `Propagator` Protocol; would unlock `prop.collision_avoid` in §3.
 3. **§4 constellation aggregation** — manage ≥3 sats as a group from a single panel.
-4. **§8 Region detach v2** — multi-display reflow with postMessage state sync.
+4. ✅ **§8 Region detach v2** — shipped via the Part-E pop-out architecture (layout-culled
+   joining tabs; server is single source of truth so no postMessage state sync needed).
 5. **§8 Playwright DOM/render smoke tests** — currently opt-in; gap is the harness itself.
 6. **§9 coalition / shared SDA feed**, **PME instrumentation** — strategic, deferred.
 7. ✅ **§3 catalog verbs** — complete; all `13-operator-command-catalog.md` verbs now wired.

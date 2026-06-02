@@ -286,12 +286,31 @@ def s_cell(cell, mgr, name, sub):
     table(d, ix, iy, ["ID", "KIND", "HEALTH", "BUS"], asset_rows(assets),
           [150, 160, 110, 110])
     ox, oy = panel(d, 588, 66, W - 600, 200, "Objectives")
-    pairs = []
+    # Render objectives as colored status rows (mirrors the new web UI — ✓ met / ✗ unmet, with
+    # a coloured left-border accent and a dim/bright text contrast).
     full = mgr.objectives()
-    for side in ("blue", "red"):
-        for oid, met in full.get(side, {}).items():
-            pairs.append((f"{side}.{oid}", "MET" if met else "pending", GREEN if met else MUTED))
-    kv(d, ox, oy, pairs, kw=240)
+    sides = ("blue", "red") if cell == "white" else ((cell,) if cell in ("blue", "red") else ())
+    cur_y = oy
+    for side in sides:
+        if cell == "white":
+            d.text((ox, cur_y), side.upper(), font=f12b, fill=MUTED); cur_y += 16
+        items = full.get(side, {})
+        if not items:
+            d.text((ox, cur_y), "(no objectives)", font=f12, fill=MUTED); cur_y += 22; continue
+        for oid, met in items.items():
+            row_h = 20
+            d.rectangle([ox, cur_y, ox + W - 600 - 18, cur_y + row_h], fill=(15, 22, 32))
+            d.line([ox, cur_y, ox, cur_y + row_h], fill=(GREEN if met else RED), width=3)
+            d.text((ox + 9, cur_y + 3), "✓" if met else "✗",
+                   font=f13b, fill=(GREEN if met else RED))
+            pretty = " ".join(
+                w.upper() if (i > 0 and len(w) <= 4) else w.capitalize()
+                for i, w in enumerate(oid.split("_")) if w
+            )
+            d.text((ox + 28, cur_y + 3), pretty, font=f13,
+                   fill=(TEXT if met else MUTED))
+            cur_y += row_h + 2
+        cur_y += 4
     tx, ty = panel(d, 588, 278, W - 600, 148, "Custody tracks (belief)")
     if tracks:
         table(d, tx, ty, ["OBJECT", "CONF", "CHAR", "CLASS"],

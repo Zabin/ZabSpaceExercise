@@ -34,31 +34,68 @@ module is the reference.
 
 ![Header reference](../manual/ref-01-header.png)
 
+The toolbar is the only persistent UI strip. White-cell-only controls (everything that mutates
+the session — Pause/Resume, Rewind, time-step jumps, the Session menu) are hidden when the
+operator switches to Blue or Red.
+
+**Toolbar buttons (left to right):**
+
 | # | Control | Type | Effect / valid values |
 |---|---|---|---|
-| 1 | Vignette | dropdown | Pick a scenario from the library before Load. |
-| 2 | Seed | number | Deterministic RNG seed (any non-negative integer; default 1). |
-| 3 | Load | button | `POST /api/sessions` → creates the session id. Must precede Start. |
-| 4 | Start | button | `POST /api/sessions/{sid}/start`. Disabled until Load. |
-| 5 | White | button | Switch to facilitator god-view (sees ground truth). |
-| 6 | Blue | button | Switch to Blue cell (fog-of-war: own assets + own custody only). |
-| 7 | Red | button | Switch to Red cell (fog-of-war: own assets + own custody only). |
-| 8 | +1m | button | `POST /step` with `dt_sim_s=60`. |
-| 9 | +10m | button | `POST /step` with `dt_sim_s=600`. |
-| 10 | +1h | button | `POST /step` with `dt_sim_s=3600`. |
-| 11 | ⟲ Rewind | button | `POST /rewind` to t=0. Deterministic replay re-derives state. |
-| 12 | Save | button | `GET /save` → download session JSON. |
-| 13 | Load file | button + file input | `POST /load_save` from a saved JSON. |
-| 14 | present | checkbox | Body class `present` (presentation mode, persisted). |
-| 15 | projector | checkbox | Body class `projector` (larger fonts, hides compose form). |
-| 16 | cb-safe | checkbox | Body class `cb` (Okabe-Ito colorblind-safe palette). |
-| 17 | hi-contrast | checkbox | Body class `hi-contrast` (WCAG-AAA palette: black bg, white borders). |
-| 18 | large-text | checkbox | Body class `large-text` (17 px base + larger button hit areas). |
-| 19 | Tutorial | button | Open the vignette's tutorial coachmark panel. |
-| 20 | Inspect | button | Open the vignette YAML inspector modal. |
-| 21 | ⏸ Handover | button | Blur the screen + show handoff overlay (hot-seat switching). |
-| 22 | ? Help | button | Open the help modal (shortcuts + glossary + workflow tips). |
-| 23 | Detach viewers | button | Pop the 3D globe + 2D map into a separate window. |
+| 1 | Logo + title | label | Tints with the active cell accent. |
+| 2 | UTC clock | label | Live sim-UTC time (server-authoritative). |
+| 3 | Session summary chip | label (white-only) | `<vignette> · <sid> · loaded \| ▶ running` once a session is loaded. |
+| 4 | White / Blue / Red | buttons | Switch the operator's seat (client-side `data-cell` swap; fog-of-war is enforced server-side). |
+| 5 | ⏸ Pause / ▶ Resume | button (white-only) | `POST /api/sessions/{sid}/clock {running}` — drives the server-authoritative clock for **every** connected tab. |
+| 6 | +1m / +10m / +1h | buttons (white-only) | `POST /step` for manual sim-time jumps. Server re-anchors so the wall clock doesn't snap the jump back. |
+| 7 | ⟲ Rewind | button (white-only) | `POST /rewind` to t=0. Deterministic replay re-derives state byte-identical; the server re-anchors the clock at the rewound moment. |
+| 8 | ⏸ Handover | button | Blur the screen + show "HANDING OFF" overlay (hot-seat seat-swap between cells). |
+| 9 | 📋 Session ▾ | menu (white-only) | See §10.1.1 below. |
+| 10 | ▦ View ▾ | menu | See §10.1.2 below. |
+| 11 | ⚙ Settings ▾ | menu | See §10.1.3 below. |
+| 12 | UNCLASSIFIED // TRAINING | banner | Always-visible classification marking. |
+
+The three dropdown menus share the same wiring: click to open, click outside or press
+**Esc** to close, opening one closes the others.
+
+#### 10.1.1 Session menu (white-only)
+
+| Section | Item | Effect |
+|---|---|---|
+| Vignette | Vignette dropdown | Pick a scenario from the library before Load. |
+| Vignette | Seed input | Deterministic RNG seed (any non-negative integer; default 1). |
+| Vignette | **Load** button | `POST /api/sessions` → creates the session id. The page URL gets `#sess-N` appended so it can be shared. |
+| Vignette | **▶ Start** button | `POST /api/sessions/{sid}/start` + arms the server clock. Disabled until Load. |
+
+#### 10.1.2 View menu
+
+| Section | Item | Effect |
+|---|---|---|
+| Display mode | Presentation mode | Body class `present` (hides facilitator controls during demo). |
+| Display mode | Projector mode | Body class `projector` (larger fonts, hides compose form for a White-Cell projector). |
+| Display mode | Color-blind safe | Body class `cb` (Okabe-Ito palette). |
+| Display mode | High contrast | Body class `hi-contrast` (WCAG-AAA palette). |
+| Display mode | Large text | Body class `large-text` (17 px base + larger hit areas). |
+| Pop out (multi-screen) | 3D globe | Open `/?layout=globe&cell=<current>#<sid>` in a new window — that window joins the same session and shows only the 3D globe panel. |
+| Pop out | 2D belief map | Same pattern with `layout=map`. |
+| Pop out | Globe + Map | `layout=globe+map` (both viewers side-by-side). |
+| Pop out | Fleet & telemetry | `layout=fleet` — fleet rail + drill-down. |
+| Pop out | Order compose | `layout=order` — compose form + activity timeline. |
+| Pop out | AAR timeline | `layout=aar` — AAR scrubber. |
+
+Pop-out windows reuse the polished panels — there is no separate "viewer" surface. Each
+pop-out polls the server at 1.5 s like any other tab, so closing the parent doesn't kill them.
+
+#### 10.1.3 Settings menu
+
+| Section | Item | Effect |
+|---|---|---|
+| Session | ⬇ Save session | `GET /save` → download session JSON. |
+| Session | ⬆ Load session | File picker + `POST /load_save` (the loaded session starts paused — White must Resume). |
+| Tools | ? Coachmark tour | Walk the UI itself with a spotlight tip. |
+| Tools | Tutorial panel | Per-vignette tutorial steps for the active cell. |
+| Tools | Inspect vignette YAML | Open the vignette YAML inspector modal. |
+| Tools | ? Help | Open the help modal (shortcuts + glossary + workflow tips). |
 
 ---
 
@@ -72,7 +109,7 @@ module is the reference.
 | 2 | Timezone selector | dropdown | Eastern (default) / Central / Mountain / Pacific / London / Paris/Berlin / Tokyo / UTC-only. |
 | 3 | Local time | read-only | Renders NOW in the selected zone via `Intl.DateTimeFormat`. |
 | 4 | Session label | read-only | The active session id. |
-| 5 | Objectives | read-only `<pre>` | Per-cell mission flags + MET/pending status. |
+| 5 | Objectives | read-only color-coded list | Per-cell mission objectives, one row each. `✓` (green, bright text, green left-border) when met; `✗` (red mark, dim text, red left-border) when unmet. Blue/Red see only their own side (fog-of-war); White sees both sides with `blue` / `red` group labels. Object ids are prettified (`deliver_isr` → "Deliver ISR"). |
 | 6 | Messages | read-only `<ul>` | Inbox for this cell (sorted newest first). |
 | 7 | Coaching | read-only list | `GET /coaching/{cell}` — facilitator notes due-now for this cell. |
 | 8 | Conjunctions | list + Evade buttons | `GET /conjunctions/{cell}` — each row carries a per-asset Evade button. |

@@ -52,7 +52,8 @@ current status** for each milestone. Requirement tags trace to §5/§9; remainin
 | **M4.5 Planning, tasking & recovery (headless)** | PlannedActivity scheduler, ISL/stored paths, sensor tasking, safe-mode recovery | Command queues to next pass *or* sooner via ISL; sensor tasking shrinks uncertainty and unlocks a gated engagement; multi-pass safe-mode recovery with **re-safe on persistent root cause**, then success after patch; `quick` dial → one-pass recovery. (FR-P1–P4, FR-B5) | ✅ done |
 | **M5 GUI** | Web app: White Cell console, role-scoped operator console, **2D map + 3D globe**, SOH/telemetry, timeline, queue, inject panel, classification banner, hot-seat handoff | A facilitator runs **Vignette 1 entirely from the GUI**: loads it, switches cells, plans a command into a future pass, tasks a sensor, watches a jam degrade ISR and a satellite enter and recover from safe mode — with every disabled control explaining itself. (FR-W1/2/4/5, FR-S1–S3, OR-1–6, UR, **the demo DoD below**) | ✅ done (FastAPI + browser; backend paths test-covered; browser visual rendering unverified-headless — see `FUTURE-WORK.md` §8) |
 | **M6 Content** | Remaining 7 vignettes as YAML; scenario tooling | All 8 vignettes load, pass validation, and are playable; real-TLE asset addition works; Red doctrine profiles selectable. (FR-S1–S3) | ✅ done (all 8 vignettes + TLE force-add + Red doctrine presets `china_integrated`/`russia_ew_first`/`generic`) |
-| **M7 Logging, AAR & v2 seams** | Action-log persistence; AAR replay; documented seams for high fidelity, networking, constellation aggregation | Action log written at exercise end and proven sufficient to deterministically reconstruct the run offline; AAR scrubber + branch comparison; seam docs/scaffolds exist (no full v2 build). (FR-L1/L2, §3.2) | ◻️ partial — action log + AAR scrubber + branch compare ✅; the **high-fidelity propagator swap** (`HighFidelityPropagator` stub in `engine/propagator.py`) and **LAN multiplayer transport** (`WebSocketSession` stub in `session/ws_session.py`) are scaffolded with full interface docs — see `FUTURE-WORK.md` §1, §2, §4. |
+| **M7 Logging, AAR & v2 seams** | Action-log persistence; AAR replay; documented seams for high fidelity, networking, constellation aggregation | Action log written at exercise end and proven sufficient to deterministically reconstruct the run offline; AAR scrubber + branch comparison; seam docs/scaffolds exist (no full v2 build). (FR-L1/L2, §3.2) | ◻️ partial — action log + AAR scrubber + branch compare ✅; the **high-fidelity propagator swap** (`HighFidelityPropagator` stub in `engine/propagator.py`) is scaffolded with full interface docs; LAN multiplayer shipped in M8 — see `FUTURE-WORK.md` §1, §2, §4. |
+| **M8 LAN multiplayer transport** | Multi-tab / LAN cooperative play over the existing FastAPI server; server-authoritative clock; per-session locking; session discovery + join; multi-monitor pop-out windows | White starts a session → URL becomes `…/#sess-N`; Blue and Red open the same URL (same machine or LAN), pick a cell; sim clock advances exactly **once** regardless of tab count (lazy `catch_up` on every read under an `RLock`); pop-out windows (`?layout=…`) join the same session and show only the requested panel(s). | ✅ done — Parts A–E shipped: `SessionManager` wall-anchor + `RLock`; `InProcessSession._locked` wraps all mutations; `GET /api/sessions`, `POST/GET /api/sessions/{sid}/clock`; client poll-loop replaces client-side `/step`; Pop-out submenu in View menu. 8 new tests in `test_web.py` (lazy advance / multi-reader idempotence / pause / rewind re-anchor / discovery / lock-safety / no-op guard / resumed-paused). See `FUTURE-WORK.md` §1 for the full breakdown. |
 
 ### 10.1 Definition of Done — first demo (single named scenario)
 **Vignette 1 "LEO ISR Denial," 2 Blue seats + 2 Red seats + 1 White, hot-seat on one laptop:**
@@ -77,9 +78,12 @@ The seven gates the v1 PME tool must meet (consolidated from the retired roadmap
    subsystem drill-down with command-verb buttons, recovery strip, and the full White-Cell
    surface (time travel, injects, AAR scrubber). ✅ — see §16.
 6. All eight vignettes loadable and tunable; fictional defaults plus real-TLE asset addition. ✅
-7. **Clean seams** proven for high fidelity and LAN multiplayer. ◻️ scaffolded (engine/UI
-   separation enforced by the import-guard test, `SessionAPI` Protocol exists), full
-   seam-proofs in `FUTURE-WORK.md` §1 & §2.
+7. **Clean seams** proven for high fidelity and LAN multiplayer.
+   - LAN multiplayer: ✅ **shipped** via HTTP polling against the existing FastAPI server —
+     server-authoritative lazy clock, per-session `RLock`, session discovery, join-by-URL-hash,
+     and multi-monitor pop-out windows. See M8 above and `FUTURE-WORK.md` §1.
+   - High fidelity: ◻️ scaffolded (engine/UI separation enforced by the import-guard test,
+     `Propagator` Protocol exists), full propagator-swap seam in `FUTURE-WORK.md` §2.
 
 ### 10.3 Post-v1 increments shipped on the v1 branch
 

@@ -14,7 +14,6 @@ let EFFECT_WINDOWS = [];  // active-effect time spans on own assets (graph shadi
 let NOW = 0;              // current sim time captured each refresh (for stale-banner + shading)
 let REALTIME_GEN = 0;     // generation counter; bumped on stop so in-flight ticks abandon themselves
 let REALTIME_ON = false;  // whether the real-time clock loop should keep ticking
-let LAST_TICK_WALL = 0;   // Date.now() at the last real-time tick
 
 // Format a next-contact countdown; color amber < 5 min, red < 1 min (P1 — imminent windows draw the eye).
 function countdown(now, t) {

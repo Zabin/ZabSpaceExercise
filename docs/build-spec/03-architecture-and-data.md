@@ -49,8 +49,11 @@ process/network boundary without rewriting the engine.
   `02-tech-stack-recommendation.md`; the desktop path is preferred for D2/D3.)
 - **No paid dependencies** (D8): all libraries open-source; STK-like look achieved with custom
   2D rendering and NATO symbology, not STK.
-- **In-process SessionAPI mirrors a future network API** so v2 LAN multiplayer is an
-  infrastructure change, not an engine rewrite.
+- **In-process `SessionAPI` doubles as the network API.** LAN multiplayer ships against the
+  existing FastAPI server: every browser tab (single-machine or LAN) hits the same
+  `InProcessSession` via HTTP polling under a per-session `RLock`, with the wall-anchor lazy
+  clock on `SessionManager` advancing sim time once regardless of polling-tab count. The
+  multiplayer seam is now in production, not deferred — see `FUTURE-WORK.md` §1.
 
 ### 7.3 The 2D views (v1 mandatory)
 - **ECI view:** inertial frame — orbits as closed paths, sub-satellite ground track on a 2D

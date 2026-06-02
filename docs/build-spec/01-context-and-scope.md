@@ -52,7 +52,9 @@ operational art of contesting the domain.
   upgradeable — see `04-orbital-mechanics-primer.md`).
 - Not a classified system or intelligence product; all content is unclassified training
   material with fictional default assets.
-- Not a networked multiplayer system in v1 (single machine, hot-seat).
+- Single-machine hot-seat **and** LAN cooperative both supported (one FastAPI server, N browser
+  tabs / machines polling it; fog-of-war enforced server-side at the `SessionAPI` boundary —
+  see `FUTURE-WORK.md` §1). Not a dedicated-server architecture and not internet-public.
 - Not a real satellite control system; it simulates the *experience*, not real spacecraft.
 
 ---
@@ -100,7 +102,7 @@ the outgoing user blanks the screen during handoff (see §6).
 ### 3.2 Deferred (explicit non-goals for v1)
 | Deferred item | Target | Why deferred |
 |---|---|---|
-| Networked / LAN multiplayer, dedicated server | v2+ | User wants single-machine hot-seat first |
+| ~~LAN multiplayer~~ | ✅ shipped in M8 | HTTP polling against the single FastAPI server; per-session RLock + server-authoritative lazy clock; no separate dedicated-server architecture |
 | **3D globe viewer** | v1.1 | 2D ECI+RIC sufficient to start; 3D is high-effort |
 | **Replay UI & automated AAR / CSV export** | v2 | Log now, build the viewer later; design the seam |
 | **Replay→live "branch to live play"** (also the save story) | v2 | Depends on replay infrastructure |

@@ -6,19 +6,22 @@ rationale are in [`docs/DOCUMENTATION-PLAN.md`](docs/DOCUMENTATION-PLAN.md).
 
 ## What this is
 
-A single-machine, hot-seat **professional military education (PME) wargaming tool** for space
-control and orbital warfare. A White Cell facilitator runs an exercise; Red and Blue cells command
-fleets of space/ground assets as bus and payload operators, constrained by orbital geometry
-(you can only command, observe, or attack when access windows permit). Most effects are reversible
-(EW/cyber/proximity), not kinetic.
+A **professional military education (PME) wargaming tool** for space control and orbital
+warfare. A White Cell facilitator runs an exercise; Red and Blue cells command fleets of
+space/ground assets as bus and payload operators, constrained by orbital geometry (you can only
+command, observe, or attack when access windows permit). Most effects are reversible
+(EW/cyber/proximity), not kinetic. Runs single-machine hot-seat *and* multi-tab / LAN
+cooperative — every browser tab points at one FastAPI server, fog-of-war is enforced server-side
+at the `SessionAPI` / `CellController` boundary.
 
-**Status: backend feature-complete through Phase 7 (81 tests green).** Deterministic engine
+**Status: backend feature-complete through Phase 8 (392 tests green).** Deterministic engine
 (P0–P4.5), the web layer (P5, FastAPI + browser front end), the render-from-custody belief
-scene + 2D map (P5.5), all **eight vignettes** as YAML + TLE force-add + Red doctrine presets (P6),
-and the **capstone Vignette 8 + AAR replay** (P7: read-only replay/scrub, branch comparison,
-campaign summary). Code under `spacesim/`; content is YAML; UI stack = **web**. The browser GUI is
-unverified headless, but every backend path (endpoints, fog, objectives, AAR) is test-covered.
-Remaining: P8 (fidelity/multiplayer seam proofs).
+scene + 2D map (P5.5), all **eight vignettes** as YAML + TLE force-add + Red doctrine presets
+(P6), the **capstone Vignette 8 + AAR replay** (P7), and the **LAN multiplayer transport** (P8:
+server-authoritative lazy clock + per-session RLock + session discovery + join-by-hash URL +
+multi-monitor pop-out windows). Code under `spacesim/`; content is YAML; UI stack = **web**.
+The browser GUI is unverified headless, but every backend path (endpoints, fog, objectives,
+AAR, multiplayer clock + locking) is test-covered.
 
 ## Authoritative source & reading order
 
@@ -92,7 +95,9 @@ spacesim/
   **P5.5** Render-from-custody belief scene + 2D map + self-contained orthographic 3D globe. ✓
 - **P6** Vignettes 2–7 (data) + TLE force-add + Red doctrine profiles. ✓ (all 8 vignette files load/run)
 - **P7** Capstone Vignette 8 + AAR replay (read-only replay/scrub, branch compare). ✓
-  **P8** Document/scaffold fidelity & multiplayer seams.
+- **P8** LAN multiplayer transport + multi-monitor pop-outs. ✓ (server-authoritative lazy clock
+  + per-session RLock + `/api/sessions` discovery + join-by-URL-hash + Pop-out submenu opens
+  layout-culled tabs that join the same session — see `docs/FUTURE-WORK.md` §1).
 
 ## Test-driven workflow (mandatory)
 
@@ -106,11 +111,19 @@ is the canonical permanent gate.
 
 ```bash
 pip install pydantic numpy sgp4 pyyaml pytest hypothesis skyfield fastapi uvicorn httpx
-uvicorn spacesim.ui_web.server:app            # serve the web UI at http://127.0.0.1:8000/
-python3 -m pytest                              # runs the whole suite (testpaths = spacesim/tests)
-python3 -m pytest spacesim/tests/test_determinism.py    # the Phase-1 determinism gate
-python3 -m pytest spacesim/tests/test_import_guard.py   # the Phase-0 engine guardrails
+uvicorn spacesim.ui_web.server:app                              # single-machine: serve at http://127.0.0.1:8000/
+uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload      # LAN multiplayer: bind to host IP, share URL
+python3 -m pytest                                                # runs the whole suite (testpaths = spacesim/tests)
+python3 -m pytest spacesim/tests/test_determinism.py             # the Phase-1 determinism gate
+python3 -m pytest spacesim/tests/test_import_guard.py            # the Phase-0 engine guardrails
 ```
+
+**Multiplayer workflow.** White loads + starts a session → URL becomes `…/#sess-N` (shareable).
+Open that URL in another tab or LAN machine, click **Blue** or **Red**. The server-side clock
+advances exactly once regardless of tab count (lazy catch_up on every read). White-only ⏸ Pause /
+▶ Resume toolbar button drives `/api/sessions/{sid}/clock` for all connected clients. **Pop-out
+windows** (View → Pop out submenu) join the same session at `?layout=<token>&cell=<cell>` so a
+single facilitator can spread globe / map / fleet / order / AAR across multiple monitors.
 
 The import-guard is a plain pytest test (`test_import_guard.py`), not import-linter — it AST-scans
 `spacesim/engine/` for forbidden imports, wall-clock reads, and any `random` use outside `rng.py`.
@@ -185,8 +198,13 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
   `validate_order` dry-run, `next_contacts` fleet countdown, `begin_recovery`/`recovery_status`
-  wiring `RecoverySystem` for the safe-mode recovery strip),
-  `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`,
+  wiring `RecoverySystem` for the safe-mode recovery strip; **multiplayer:** server-authoritative
+  lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /
+  catch_up / clock_state`, re-anchor on `start/rewind/undo/advance` so the wall clock can't snap
+  the sim back),
+  `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`
+  (**multiplayer:** `_locked(sid)` cm wraps every mutation; every read pass-through calls
+  `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added),
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
   `aar.py` (replay/scrub/branch-compare + `snapshot_at`).
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`) + `static/`

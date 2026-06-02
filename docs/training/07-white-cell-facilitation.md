@@ -2,6 +2,19 @@
 
 ## 8. White Cell facilitation
 
+**Hot-seat vs. LAN cooperative.** White can run a session two ways:
+
+- **Hot-seat (single browser):** White loads a vignette and presses Start, then uses the cell
+  buttons to switch seats between turns. The ⏸ Handover button blurs the screen between cells.
+- **LAN cooperative (multi-tab / multi-machine):** White loads + starts the session, copies the
+  URL (`…/#sess-N`), and shares it. Each player opens that URL — same machine in another tab,
+  or another LAN box pointed at the host — and picks their cell. The server-authoritative
+  clock advances exactly once regardless of tab count. White retains time control: only the
+  White tab sees ⏸ Pause / ▶ Resume and the +1m/+10m/+1h jumps.
+
+See [§1.2.1 multi-tab and LAN](01-install-and-run.md#21-multi-tab-and-lan-multiplayer) for the
+host-binding command (`--host 0.0.0.0`) and pop-out windows (View ▾ → Pop out).
+
 **Parameters (dials).** Every vignette exposes typed parameters with safe defaults — force levels,
 authorities/ROE (e.g. `red_kinetic_authorized`), Red behavior (`red_doctrine_profile`,
 `red_ew_intensity`), environment (`landing_window_start_s`), and fidelity/fog (`fog_of_war`,

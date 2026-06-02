@@ -113,4 +113,36 @@ navigate.
 > in-process Python API and the HTTP API — see [§9](#9-http-api-reference) and the
 > *headless walkthrough* at the end of [§4](#4-your-first-exercise).
 
+### 2.1 Multi-tab and LAN multiplayer
+
+The same server supports **multiple cells on multiple tabs (or machines on a LAN)**. The pattern:
+
+1. **White facilitator** opens `http://127.0.0.1:8000/`, clicks **Session ▾** → picks a
+   vignette → **Load**, then **▶ Start**. The URL changes to something like `/#sess-1` — that
+   is the shareable join link.
+2. **Each player** opens that same URL in their own tab (or another LAN machine pointed at the
+   host IP — see below). They click their cell button (**Blue** or **Red**). Their tab
+   automatically joins `sess-1` and starts polling.
+3. The **server-authoritative clock** advances exactly once regardless of how many tabs are
+   polling. White's ⏸ Pause / ▶ Resume button drives it for everyone. Manual +1m / +10m / +1h
+   jumps are White-only too.
+
+To run across a LAN, bind to the host IP instead of loopback:
+
+```bash
+uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload
+```
+
+Then Blue and Red browse to `http://<host-LAN-IP>:8000/#sess-1`. There's no separate
+"multiplayer build" — the same FastAPI server, the same fog-of-war boundary, and the same UI
+handle both single-machine and LAN cooperative play. **Trust model:** any tab can pick any cell
+(White can't lock cells); appropriate for a facilitator-run PME exercise on a private LAN, not
+for hostile-side gaming.
+
+**Multi-monitor pop-outs.** Open **View ▾ → Pop out (multi-screen)** and pick one of the
+preset layouts (3D globe, 2D map, Globe + Map, Fleet & telemetry, Order compose, AAR
+timeline). Each pop-out is a new window that joins the same session and shows only the
+requested panels — drag it to a second monitor. Pop-outs keep working even if the parent tab
+closes, since they all talk directly to the server.
+
 ---

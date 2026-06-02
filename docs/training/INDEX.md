@@ -2,11 +2,17 @@
 
 [↑ Docs index](../INDEX.md)
 
-A first-time guide to **installing, running, and facilitating** an exercise. No prior setup of the
-tool is assumed. The simulator is a single-machine, hot-seat professional military education (PME)
-wargame: a **White Cell** facilitator runs a scenario while **Red** and **Blue** cells command
-fleets of space and ground assets — constrained by orbital geometry, where you can only command,
-observe, or attack when an access window permits.
+A first-time guide to **installing, running, and facilitating** an exercise. No prior setup of
+the tool is assumed. The simulator is a professional military education (PME) wargame: a **White
+Cell** facilitator runs a scenario while **Red** and **Blue** cells command fleets of space and
+ground assets — constrained by orbital geometry, where you can only command, observe, or attack
+when an access window permits.
+
+The tool runs both **single-machine hot-seat** (one browser, one operator switching cells with
+the toolbar Cell buttons) **and LAN cooperative** (one White facilitator hosts a session; Blue,
+Red, and additional pop-out viewers join the same URL from other tabs or LAN machines). Both
+modes share the same fog-of-war, the same server-authoritative clock, and the same UI — there
+is no separate "multiplayer build." See module 01 for the workflow.
 
 > **About the screenshots:** the images embedded in these modules are faithful renderings of the
 > web UI's panels, generated from real session data by `tools/render_manual.py` (stored in
