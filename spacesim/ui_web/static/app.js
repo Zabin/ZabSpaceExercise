@@ -149,11 +149,23 @@ async function loadVignettes() {
     console.error("loadVignettes failed:", e);
   }
 }
+// Update the small toolbar session summary chip ("vignette · sess-N · ▶" etc.).
+function updateSessionSummary(vignetteLabel, started) {
+  const el = $("session-summary"); if (!el) return;
+  if (!SID) { el.hidden = true; el.textContent = ""; return; }
+  el.hidden = false;
+  const tag = started ? "▶ running" : "loaded";
+  el.textContent = `${vignetteLabel || ""} · ${SID} · ${tag}`.replace(/^ · /, "");
+}
+
 async function loadSession() {
   stopRealtimeClock();
-  SID = (await api.post("/api/sessions", { vignette_id: $("vignette").value, seed: +$("seed").value })).session;
+  const vselect = $("vignette");
+  const vlabel = vselect && vselect.selectedOptions[0] ? vselect.selectedOptions[0].textContent : vselect.value;
+  SID = (await api.post("/api/sessions", { vignette_id: vselect.value, seed: +$("seed").value })).session;
   location.hash = SID;   // multiplayer: shareable URL — Blue/Red tabs open this to join
   $("session").textContent = "session " + SID; $("start").disabled = false;
+  updateSessionSummary(vlabel, false);
   const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
   $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
   await loadInjectLibrary();
@@ -171,6 +183,7 @@ async function joinSessionFromHash() {
     SID = hashSid;
     $("session").textContent = "session " + SID;
     $("start").disabled = !!found.started;
+    updateSessionSummary(found.title || found.vignette_id, found.started);
     const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
     $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
     await loadInjectLibrary();
@@ -1152,6 +1165,7 @@ async function loadSaveFile(file) {
   SID = (await api.post("/api/sessions/load_save", state)).session;
   location.hash = SID;   // multiplayer: resumed session is also shareable
   $("session").textContent = "session " + SID; $("start").disabled = false;
+  updateSessionSummary(state.vignette_id || "resumed", state.started);
   const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
   $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
   await loadInjectLibrary();
@@ -1515,6 +1529,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // Toolbar dropdown menus (View + Settings). Each pair shares the same open/close pattern;
   // opening one closes the others, plus outside-click + Escape close any open menu.
   const menus = [
+    { btn: $("session-btn"),  menu: $("session-menu") },
     { btn: $("view-btn"),     menu: $("view-menu") },
     { btn: $("settings-btn"), menu: $("settings-menu") },
   ].filter((m) => m.btn && m.menu);

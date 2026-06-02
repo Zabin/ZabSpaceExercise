@@ -15,10 +15,7 @@
     </svg>
     <span class="title">Space Control &amp; Orbital Warfare</span>
     <span id="now-header" class="now-header">—</span>
-    <label class="white-only">Vignette <select id="vignette"><option value="" disabled selected>Loading…</option></select></label>
-    <label class="white-only">Seed <input id="seed" type="number" value="1" style="width:4.5em" /></label>
-    <button id="load" class="primary white-only">Load</button>
-    <button id="start" class="white-only" disabled>Start</button>
+    <span id="session-summary" class="session-summary white-only" hidden></span>
     <span class="spacer"></span>
     <div class="ctrl" id="cells">
       <button class="cell" data-cell="white">White</button>
@@ -33,6 +30,24 @@
       <button id="rewind">⟲ Rewind</button>
     </div>
     <button id="handover-btn" title="Blank/blur the screen to hand off the console between operators">⏸ Handover</button>
+    <div class="menu-wrap white-only">
+      <button id="session-btn" title="Pick a vignette, load it, and start the session">📋 Session ▾</button>
+      <div id="session-menu" class="menu-pop" hidden>
+        <div class="menu-section">
+          <div class="menu-head">Vignette</div>
+          <label class="menu-item-inline">Vignette
+            <select id="vignette"><option value="" disabled selected>Loading…</option></select>
+          </label>
+          <label class="menu-item-inline">Seed
+            <input id="seed" type="number" value="1" style="width:5em">
+          </label>
+          <div class="menu-item-row">
+            <button id="load" class="primary">Load</button>
+            <button id="start" disabled>▶ Start</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="menu-wrap">
       <button id="view-btn" title="Display modes and pop-out windows">▦ View ▾</button>
       <div id="view-menu" class="menu-pop" hidden>
