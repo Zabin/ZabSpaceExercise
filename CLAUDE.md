@@ -224,6 +224,11 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   from `basemap-data` (offline; coarse fallback if unavailable). `tools/render_manual.py` draws it.
 - `spacesim/content/vignettes/00-training-basics.yaml` — guided tutorial vignette with a per-cell
   `tutorial` step script (≥5 steps each); drives the manual walkthrough + its screenshots.
+- **All eight numbered vignettes carry a per-cell `tutorial:` block** (how each cell completes its
+  objectives, move by move). Surfaced structurally via `GET /api/vignettes/{id}/tutorial` in the
+  in-UI **Tutorial panel** (View ▾) and mirrored in `docs/training/11-vignette-playbooks.md`. The
+  achievable objective-flips are verified by `spacesim/tests/test_vignette_tutorials.py`; ROE /
+  weapons-quality / command-station gates that block the rest are documented in each block's `expect`.
 - **Docs are modular under `docs/`** — routed by `docs/INDEX.md` (structure & rationale in
   `docs/DOCUMENTATION-PLAN.md`). Themes: `docs/build-spec/` (the binding spec, 8 modules),
   `docs/training/` (user manual, 9 modules), `docs/design/`, `docs/research/`, `docs/vignettes/`,

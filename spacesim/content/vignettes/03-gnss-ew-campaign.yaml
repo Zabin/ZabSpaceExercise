@@ -33,3 +33,24 @@ vignette:
     - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
     - {id: landing_window_start_s, label: "Campaign Window (s)", type: int, default: 3600}
   injects: []
+  tutorial:
+    blue:
+      - {n: 1, title: "Review the constellation member", when: "at start", action: review,
+         expect: "BLUE-GNSS in MEO; maintain_service for 1 h pending (PNT stays up)"}
+      - {n: 2, title: "Monitor the link health", when: "BLUE-RADAR tracks the bird",
+         action: observe, actor: BLUE-RADAR, target: BLUE-GNSS, params: {intent: track},
+         expect: "a health track so you can read the jamming signature"}
+      - {n: 3, title: "Hold service to the deadline", when: "+ advance to +1 h",
+         action: advance, params: {dt_s: 3601},
+         expect: "if the link is up at the deadline, maintain_service MET"}
+      - {n: 4, title: "Understand the limits", when: "throughout", action: review,
+         expect: "MEO is effectively safe from kinetic — the fight is electromagnetic and local to the user bubble"}
+    red:
+      - {n: 1, title: "Review the jammer", when: "at start", action: review,
+         expect: "RED-JAM (GNSS downlink jammer); deny_pnt pending (link_denied)"}
+      - {n: 2, title: "Jam the PNT link", when: "issue now — RED-JAM covers the user bubble",
+         action: jam, actor: RED-JAM, target: BLUE-GNSS, params: {success_prob: 1.0, outcome: deny},
+         expect: "BLUE-GNSS link denied in the bubble; deny_pnt MET"}
+      - {n: 3, title: "Sustain the denial", when: "+ advance through the campaign window",
+         action: advance, params: {dt_s: 3601},
+         expect: "PNT stays denied locally and reversibly — no satellite is destroyed"}

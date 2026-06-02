@@ -33,6 +33,8 @@ function countdown(now, t) {
 }
 
 const $ = (id) => document.getElementById(id);
+// Minimal HTML-escape for text interpolated into innerHTML (tutorial steps, etc.).
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const api = {
   async get(p) { const r = await fetch(p); if (!r.ok) throw new Error(await r.text()); return r.json(); },
   async post(p, b) { const r = await fetch(p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) }); if (!r.ok) throw new Error(await r.text()); return r.json(); },
@@ -2156,24 +2158,24 @@ addEventListener("DOMContentLoaded", () => {
 async function tutorialOpen() {
   const panel = $("tutorial-panel"); if (!panel) return;
   if (!SID) { panel.classList.add("open"); $("tutorial-steps").innerHTML = "<li>(load a vignette first)</li>"; return; }
-  // The vignette YAML is fetched via /api/vignettes/{id}/source; parse the per-cell steps.
+  // Structured per-cell tutorial from the API (parsed server-side by pydantic — no fragile
+  // YAML scraping, so blue/red steps stay separate). White sees Blue's script.
   const vid = $("vignette") ? $("vignette").value : "";
+  const cellKey = CELL === "white" ? "blue" : CELL;
+  $("tutorial-title").textContent = `Tutorial — ${cellKey} cell`;
   try {
-    const yaml = await fetch(`/api/vignettes/${vid}/source`).then((r) => r.text());
-    const cellKey = CELL === "white" ? "blue" : CELL;
-    const re = new RegExp(`tutorial:\\s*\\n([\\s\\S]*?)(?=\\n\\w|$)`);
-    const m = re.exec(yaml); const block = m ? m[1] : "";
-    const sectionRe = new RegExp(`\\s+${cellKey}:\\s*\\n([\\s\\S]*?)(?=\\n  \\w|$)`);
-    const sm = sectionRe.exec(block);
-    const section = sm ? sm[1] : "";
-    const steps = section.split(/\n\s+- /).slice(1).map((s) => {
-      const title = (s.match(/title:\s*["']?([^"\n]+)["']?/) || [, "(untitled)"])[1];
-      const action = (s.match(/action:\s*["']?([^"\n]+)["']?/) || [, ""])[1];
-      return `<li><b>${title}</b><br><span class="muted">${action}</span></li>`;
+    const tut = await api.get(`/api/vignettes/${vid}/tutorial`);
+    const steps = (tut[cellKey] || []).map((s) => {
+      const cmd = s.actor
+        ? `${s.action} · ${s.actor}${s.target ? " → " + s.target : ""}` +
+          (s.params ? " " + JSON.stringify(s.params) : "")
+        : s.action;
+      const when = s.when ? `<span class="muted"> — ${esc(s.when)}</span>` : "";
+      const expect = s.expect ? `<br><span class="muted">↳ ${esc(s.expect)}</span>` : "";
+      return `<li><b>${esc(s.title || "(untitled)")}</b>${when}<br><code>${esc(cmd)}</code>${expect}</li>`;
     });
-    $("tutorial-title").textContent = `Tutorial — ${cellKey} cell`;
     $("tutorial-steps").innerHTML = steps.length ? steps.join("") : "<li>(no tutorial defined for this cell)</li>";
-  } catch { $("tutorial-steps").innerHTML = "<li>(failed to load vignette source)</li>"; }
+  } catch { $("tutorial-steps").innerHTML = "<li>(no tutorial available for this vignette)</li>"; }
   panel.classList.add("open");
 }
 function tutorialClose() { const p = $("tutorial-panel"); if (p) p.classList.remove("open"); }

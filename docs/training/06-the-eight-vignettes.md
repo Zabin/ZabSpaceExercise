@@ -15,4 +15,8 @@
 
 Each is a YAML data file in `spacesim/content/vignettes/` — copy one to author your own.
 
+**How does each cell actually win?** See [§11 vignette playbooks](11-vignette-playbooks.md) for a
+move-by-move tutorial per vignette (both cells), or open **View ▾ → Tutorial panel** in the app for
+the same script scoped to your current cell.
+
 ---

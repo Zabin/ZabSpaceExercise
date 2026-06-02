@@ -92,3 +92,32 @@ vignette:
       effects:
         - {type: reveal_asset, target: RED-SURF, to: blue}
         - {type: message, to: [blue, white], text: "OSINT leak: commercial SAR shows the surface group."}
+  # Player tutorial — surfaced in the in-UI Tutorial panel (View ▾ → Tutorial panel) and
+  # docs/training/11-vignette-playbooks.md. Verified-issuable steps; see test_vignette_tutorials.py.
+  tutorial:
+    blue:
+      - {n: 1, title: "Review the order of battle", when: "at start", action: review,
+         expect: "ISR-EO-1 + GS-NORTH/GS-EAST; deliver_isr pending (deadline +3 h)"}
+      - {n: 2, title: "Build the SDA picture", when: "BLUE-RADAR sees the surface group",
+         action: observe, actor: BLUE-RADAR, target: RED-SURF, params: {intent: characterize, classification: hostile},
+         expect: "characterized track on RED-SURF (the commercial-imagery inject confirms it at +45 min)"}
+      - {n: 3, title: "Plan the imagery downlink", when: "queues to the next GS-NORTH pass",
+         action: downlink, actor: ISR-EO-1, params: {via: GS-NORTH},
+         expect: "queued via ground_uplink with a scheduled window"}
+      - {n: 4, title: "Advance to the downlink window", when: "+10 min until the order executes",
+         action: advance, params: {to: order_window},
+         expect: "imagery delivered before the landing window; deliver_isr MET"}
+      - {n: 5, title: "Confirm and keep a backup", when: "after delivery", action: review,
+         expect: "deliver_isr MET; route via GS-EAST if GS-NORTH is jammed"}
+    red:
+      - {n: 1, title: "Review own assets", when: "at start", action: review,
+         expect: "downlink jammer JAM-NORTH, surface group, interceptor (kinetic OFF by default)"}
+      - {n: 2, title: "Jam the downlink", when: "during Blue's GS-NORTH pass",
+         action: jam, actor: JAM-NORTH, target: ISR-EO-1, params: {success_prob: 1.0, outcome: deny},
+         expect: "the downlink window is denied — a Blue downlink here fails"}
+      - {n: 3, title: "Hold the denial past the deadline", when: "+ advance past the +3 h window",
+         action: advance, params: {dt_s: 10801},
+         expect: "nothing delivered in time; deny_isr MET with a reversible effect"}
+      - {n: 4, title: "Attempt a kinetic strike (ROE check)", when: "any pass",
+         action: engage, actor: RED-ASAT, target: ISR-EO-1, params: {},
+         expect: "REJECTED — roe_kinetic_not_authorized; White-Cell must set red_kinetic_authorized"}

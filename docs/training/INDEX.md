@@ -32,6 +32,7 @@ is no separate "multiplayer build." See module 01 for the workflow.
 | [08-http-api-reference](08-http-api-reference.md) | The HTTP API surface for clients/integration. |
 | [09-troubleshooting-and-glossary](09-troubleshooting-and-glossary.md) | Common issues + glossary. |
 | [10-ui-reference](10-ui-reference.md) | Exhaustive UI reference — every control, dropdown, input, keyboard shortcut, and mouse interaction across all 14 panels, with annotated screenshots. |
+| [11-vignette-playbooks](11-vignette-playbooks.md) | Per-vignette tutorials — how **each cell** completes its objectives, move by move (verified against the engine), with the window / weapons-quality / ROE gates called out. |
 
 ## See also
 

@@ -149,6 +149,16 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
                 return Path(v["path"]).read_text(encoding="utf-8")
         raise HTTPException(status_code=404, detail=f"vignette {vid!r} not found")
 
+    @app.get("/api/vignettes/{vid}/tutorial")
+    def vignette_tutorial(vid: str) -> dict:
+        """Structured per-cell player tutorial for the in-UI Tutorial panel — parsed by pydantic,
+        not regex-scraped from YAML, so blue/red steps never bleed into each other."""
+        from spacesim.content.vignette import load_vignette
+        try:
+            return load_vignette(vid).tutorial or {}
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"vignette {vid!r} not found")
+
     @app.post("/api/sessions")
     def load(req: LoadRequest) -> dict:
         sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed)

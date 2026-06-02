@@ -36,6 +36,18 @@ def test_unknown_session_is_404():
     assert c.get("/api/sessions/nope/view/blue").status_code == 404
 
 
+def test_vignette_tutorial_endpoint_returns_separated_cells():
+    c = _client()
+    r = c.get("/api/vignettes/leo-isr-denial/tutorial")
+    assert r.status_code == 200
+    tut = r.json()
+    # Structured per-cell steps; blue and red never bleed together.
+    assert tut["blue"][0]["title"] == "Review the order of battle"
+    assert tut["red"][0]["title"] == "Review own assets"
+    assert len(tut["blue"]) == 5 and len(tut["red"]) == 4
+    assert c.get("/api/vignettes/does-not-exist/tutorial").status_code == 404
+
+
 def test_fog_of_war_applied_server_side():
     c = _client()
     sid = _new_session(c)

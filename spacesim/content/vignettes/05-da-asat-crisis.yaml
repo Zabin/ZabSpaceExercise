@@ -42,3 +42,28 @@ vignette:
       effects:
         - {type: political_consequence, severity: high, cause: da_asat}
         - {type: message, to: [white, red], text: "International condemnation; debris threatens the regime."}
+  tutorial:
+    blue:
+      - {n: 1, title: "Review the target", when: "at start", action: review,
+         expect: "BLUE-SAT in LEO; avoid_debris by +1 h pending (no_debris)"}
+      - {n: 2, title: "Hold without provoking", when: "+ advance to +1 h",
+         action: advance, params: {dt_s: 3601},
+         expect: "if no kinetic strike occurs, avoid_debris MET"}
+      - {n: 3, title: "Evade (if enabled)", when: "with a TT&C command uplink",
+         action: maneuver, actor: BLUE-SAT, params: {dv: [0.0, 5.0, 0.0]},
+         expect: "shift out of the predicted intercept corridor — needs a command station"}
+    red:
+      - {n: 1, title: "Review the interceptor", when: "at start", action: review,
+         expect: "RED-ASAT (1x round; kinetic AUTHORIZED here) + RED-RADAR; destroy_sat pending"}
+      - {n: 2, title: "Build a weapons-quality track", when: "RED-RADAR sees BLUE-SAT",
+         action: observe, actor: RED-RADAR, target: BLUE-SAT, params: {intent: characterize, classification: hostile},
+         expect: "characterized track, confidence >= 0.8 — the weapons-quality gate for engage"}
+      - {n: 3, title: "Advance to the track", when: "+10 min to the collection",
+         action: advance, params: {to: order_window},
+         expect: "RED-RADAR returns a weapons-quality track on BLUE-SAT"}
+      - {n: 4, title: "Engage with the ASAT", when: "at the intercept window",
+         action: engage, actor: RED-ASAT, target: BLUE-SAT, params: {success_prob: 1.0},
+         expect: "queued — kinetic is authorized in this vignette"}
+      - {n: 5, title: "Assess the consequences", when: "after intercept",
+         action: advance, params: {to: order_window},
+         expect: "BLUE-SAT destroyed; destroy_sat MET — but a debris field forms and the un_condemnation inject fires (debris threatens Red too)"}

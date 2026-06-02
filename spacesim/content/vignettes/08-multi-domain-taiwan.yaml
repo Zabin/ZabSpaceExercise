@@ -100,3 +100,34 @@ vignette:
       effects:
         - {type: patch_cyber_vuln, target: SATCOM-1, vector: ground_modem}
         - {type: message, to: [blue, white], text: "SATCOM modem patched."}
+  tutorial:
+    blue:
+      - {n: 1, title: "Triage three missions", when: "at start", action: review,
+         expect: "deliver_isr + keep_satcom + custody_inspector all pending — you can't do everything at once"}
+      - {n: 2, title: "Queue the imagery downlink", when: "ISR-EO-1 over GS-NORTH",
+         action: downlink, actor: ISR-EO-1, params: {via: GS-NORTH},
+         expect: "queued via ground_uplink — beat the +90 min window (JAM-NORTH will try to deny it)"}
+      - {n: 3, title: "Hold custody of the GEO inspector", when: "BLUE-OPT lit pass on RED-INSP",
+         action: observe, actor: BLUE-OPT, target: RED-INSP, params: {intent: characterize, classification: hostile},
+         expect: "characterized track; re-task before the 30-min half-life to keep custody_inspector"}
+      - {n: 4, title: "Protect SATCOM", when: "BLUE-RADAR watches SATCOM-1",
+         action: observe, actor: BLUE-RADAR, target: SATCOM-1, params: {intent: track},
+         expect: "watch for RED-CYBER safing the modem; the patch comes via the White-Cell patch_modem inject"}
+      - {n: 5, title: "Advance and assess", when: "+ advance to +90 min",
+         action: advance, params: {to: order_window},
+         expect: "deliver_isr MET if the downlink beat the jam; keep_satcom / custody_inspector held if defended"}
+    red:
+      - {n: 1, title: "Synchronize the denial", when: "at start", action: review,
+         expect: "jam ISR + cyber SATCOM + shadow the GEO bird — coordinate across domains"}
+      - {n: 2, title: "Jam the imagery downlink", when: "during Blue's GS-NORTH pass",
+         action: jam, actor: JAM-NORTH, target: ISR-EO-1, params: {success_prob: 1.0, outcome: deny},
+         expect: "denies the downlink window; deny_isr if Blue can't re-route to GS-EAST"}
+      - {n: 3, title: "Cyber the SATCOM modem", when: "any time — off-pass",
+         action: cyber, actor: RED-CYBER, target: SATCOM-1, params: {access_vector: ground_modem, outcome: safe_mode, success_prob: 1.0, sm_susceptibility: 1.0},
+         expect: "SATCOM-1 drops to safe mode; disable_satcom MET until Blue patches"}
+      - {n: 4, title: "Shadow the GEO inspector", when: "Red-doctrine / White-Cell closing burns",
+         action: maneuver, actor: RED-INSP, params: {dv: [0.0, 2.0, 0.0]},
+         expect: "close within 100 km of SATCOM-1 for shadow_hva — needs a Red command-uplink path"}
+      - {n: 5, title: "Hold and assess", when: "+ advance to +90 min",
+         action: advance, params: {dt_s: 5401},
+         expect: "deny_isr + disable_satcom MET if sustained; kinetic ASAT stays OFF unless White-Cell authorizes"}

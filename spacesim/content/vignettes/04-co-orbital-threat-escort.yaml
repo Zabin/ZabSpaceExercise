@@ -38,3 +38,24 @@ vignette:
     - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
     - {id: landing_window_start_s, label: "Threat Window (s)", type: int, default: 3600}
   injects: []
+  tutorial:
+    blue:
+      - {n: 1, title: "Review HVA + escort", when: "at start", action: review,
+         expect: "BLUE-HVA + BLUE-ESCORT in LEO; hva_survives by +1 h pending"}
+      - {n: 2, title: "Track the co-orbital threat", when: "BLUE-RADAR sees RED-COORB",
+         action: observe, actor: BLUE-RADAR, target: RED-COORB, params: {intent: characterize, classification: hostile},
+         expect: "characterized track on the approaching threat"}
+      - {n: 3, title: "Hold to the deadline", when: "+ advance to +1 h",
+         action: advance, params: {dt_s: 3601},
+         expect: "RED-COORB has no kinetic ROE and no organic safing path — hva_survives MET"}
+      - {n: 4, title: "Active defense (if enabled)", when: "with a TT&C command uplink",
+         action: maneuver, actor: BLUE-HVA, params: {dv: [0.0, 5.0, 0.0]},
+         expect: "evade or interpose the escort — needs a command station (White-Cell can add one)"}
+    red:
+      - {n: 1, title: "Review the co-orbital", when: "at start", action: review,
+         expect: "RED-COORB (300 m/s Δv); neutralize_hva (asset_safed) pending"}
+      - {n: 2, title: "Close on the HVA", when: "Red-doctrine / White-Cell closing burns",
+         action: maneuver, actor: RED-COORB, params: {dv: [0.0, 3.0, 0.0]},
+         expect: "aggressive RPO toward BLUE-HVA — needs a Red command-uplink path"}
+      - {n: 3, title: "Pressure, don't destroy", when: "throughout", action: review,
+         expect: "without White-Cell kinetic ROE + a weapons-quality track, neutralize_hva can't complete — the lesson is restraint"}

@@ -42,3 +42,29 @@ vignette:
     - {id: ssn_red_dispersion,  label: "Red SSN dispersion",  type: enum,
        options: [off, sparse, regional, global, proliferated], default: off}
   injects: []
+  tutorial:
+    blue:
+      - {n: 1, title: "Review the GEO picture", when: "at start", action: review,
+         expect: "BLUE-HVA in GEO; maintain_custody of RED-INSP pending (min_conf 0.5)"}
+      - {n: 2, title: "Get an optical track", when: "BLUE-OPT has a lit pass on RED-INSP",
+         action: observe, actor: BLUE-OPT, target: RED-INSP, params: {intent: characterize, classification: hostile},
+         expect: "characterized track on RED-INSP; confidence resets to 1.0"}
+      - {n: 3, title: "Advance to the look", when: "+10 min to the collection",
+         action: advance, params: {to: order_window},
+         expect: "maintain_custody MET while the track is fresh"}
+      - {n: 4, title: "Re-task before custody decays", when: "before the 30-min confidence half-life",
+         action: observe, actor: BLUE-OPT, target: RED-INSP, params: {intent: track},
+         expect: "confidence resets again — custody held through the decision window"}
+      - {n: 5, title: "Read the intent", when: "as RED-INSP closes", action: review,
+         expect: "inspection vs. threat is ambiguous; custody informs the escalation call"}
+    red:
+      - {n: 1, title: "Review the inspector", when: "at start", action: review,
+         expect: "RED-INSP (200 m/s Δv); close_approach within 100 km of BLUE-HVA pending"}
+      - {n: 2, title: "Plan around Blue's lit window", when: "GEODSS needs darkness on the target",
+         action: review,
+         expect: "close when BLUE-OPT can't see (terminator) to break custody between looks"}
+      - {n: 3, title: "Close on the high-value asset", when: "Red-doctrine / White-Cell closing burns",
+         action: maneuver, actor: RED-INSP, params: {dv: [0.0, 2.0, 0.0]},
+         expect: "co-orbital closing toward BLUE-HVA — needs a Red command-uplink path; else White-Cell adjudicates"}
+      - {n: 4, title: "Confirm the shadow", when: "range <= 100 km", action: review,
+         expect: "close_approach MET — but a Blue that kept custody can maneuver away"}

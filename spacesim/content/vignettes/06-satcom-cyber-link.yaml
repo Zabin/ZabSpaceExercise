@@ -41,3 +41,25 @@ vignette:
       effects:
         - {type: patch_cyber_vuln, target: BLUE-SATCOM, vector: ground_modem}
         - {type: message, to: [blue, white], text: "Modem vulnerability patched; re-safing should stop."}
+  tutorial:
+    blue:
+      - {n: 1, title: "Review the SATCOM bird", when: "at start", action: review,
+         expect: "BLUE-SATCOM in GEO with an unpatched ground_modem vuln; keep_service for 1 h pending"}
+      - {n: 2, title: "Watch for the exploit", when: "BLUE-RADAR monitors health",
+         action: observe, actor: BLUE-RADAR, target: BLUE-SATCOM, params: {intent: track},
+         expect: "a track to spot the safe-mode drop if Red cybers the modem"}
+      - {n: 3, title: "Remove the root cause", when: "White-Cell fires the patch_modem inject",
+         action: review,
+         expect: "no organic command station here — the modem patch comes via the White-Cell patch_modem inject; recovery only sticks once patched"}
+      - {n: 4, title: "Hold service to the deadline", when: "+ advance to +1 h",
+         action: advance, params: {dt_s: 3601},
+         expect: "if SATCOM is operational at the deadline, keep_service MET"}
+    red:
+      - {n: 1, title: "Review the cyber unit", when: "at start", action: review,
+         expect: "RED-CYBER; disable_satcom (asset_safed) pending — cyber is NOT window-gated"}
+      - {n: 2, title: "Exploit the modem off-pass", when: "any time — no pass required",
+         action: cyber, actor: RED-CYBER, target: BLUE-SATCOM, params: {access_vector: ground_modem, outcome: safe_mode, success_prob: 1.0, sm_susceptibility: 1.0},
+         expect: "BLUE-SATCOM drops to safe mode; disable_satcom MET"}
+      - {n: 3, title: "Persist until patched", when: "+ advance through the window",
+         action: advance, params: {dt_s: 3601},
+         expect: "with root-cause-persists on, the bird re-safes after any recovery until Blue patches the vector"}

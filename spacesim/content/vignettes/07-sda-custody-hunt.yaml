@@ -34,3 +34,30 @@ vignette:
     - {id: ssn_red_dispersion,  label: "Red SSN dispersion",  type: enum,
        options: [off, sparse, regional, global, proliferated], default: off}
   injects: []
+  tutorial:
+    blue:
+      - {n: 1, title: "Review the scarce sensors", when: "at start", action: review,
+         expect: "BLUE-RADAR-1 + BLUE-OPT-1 (contended); maintain_custody of RED-OBJ pending (min_conf 0.5)"}
+      - {n: 2, title: "Characterize the object", when: "BLUE-RADAR-1 has a pass",
+         action: observe, actor: BLUE-RADAR-1, target: RED-OBJ, params: {intent: characterize, classification: hostile},
+         expect: "characterized track on RED-OBJ; confidence 1.0"}
+      - {n: 3, title: "Advance to the look", when: "+10 min to the collection",
+         action: advance, params: {to: order_window},
+         expect: "maintain_custody MET while fresh"}
+      - {n: 4, title: "Re-task before the half-life", when: "confidence halves every 30 min",
+         action: observe, actor: BLUE-OPT-1, target: RED-OBJ, params: {intent: track},
+         expect: "the optical look (needs lighting) refreshes confidence — prioritize the scarce sensors"}
+      - {n: 5, title: "Sustain to the deadline", when: "through +90 min", action: review,
+         expect: "keep confidence >= 0.5 at +90 min to win the hunt"}
+    red:
+      - {n: 1, title: "Review the evader", when: "at start", action: review,
+         expect: "RED-OBJ (150 m/s Δv); break_custody by +90 min pending (deny_custody)"}
+      - {n: 2, title: "Force a custody lapse", when: "exploit sensor contention",
+         action: review,
+         expect: "if Blue can't re-task before the 30-min half-life, confidence decays below 0.5"}
+      - {n: 3, title: "Evade between looks", when: "Red-doctrine / White-Cell maneuvers",
+         action: maneuver, actor: RED-OBJ, params: {dv: [0.0, 5.0, 0.0]},
+         expect: "a burn timed outside a pass enlarges the uncertainty volume — needs a Red command-uplink path"}
+      - {n: 4, title: "Run out the clock", when: "+ advance to +90 min",
+         action: advance, params: {dt_s: 5401},
+         expect: "custody below 0.5 at the deadline -> break_custody MET"}
