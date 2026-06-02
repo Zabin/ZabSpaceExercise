@@ -14,6 +14,14 @@ let EFFECT_WINDOWS = [];  // active-effect time spans on own assets (graph shadi
 let NOW = 0;              // current sim time captured each refresh (for stale-banner + shading)
 let REALTIME_GEN = 0;     // generation counter; bumped on stop so in-flight ticks abandon themselves
 let REALTIME_ON = false;  // whether the real-time clock loop should keep ticking
+// Local 1Hz clock interpolation between server polls (every ~1.5s) so the displayed UTC ticks
+// each second instead of jumping every poll. Set on each successful refresh; the ticker reads
+// them and extrapolates: display = LAST_REFRESH_SERVER_NOW + (Date.now() - LAST_REFRESH_WALL_MS).
+let LAST_REFRESH_WALL_MS = 0;
+let LAST_REFRESH_SERVER_NOW = null;
+let SERVER_CLOCK_RUNNING_CACHED = false;
+let CLOCK_TICKER = null;
+const NET_STALE_MS = 4000;  // after 4s with no successful poll, show the "no updates" warning
 
 // Format a next-contact countdown; color amber < 5 min, red < 1 min (P1 — imminent windows draw the eye).
 function countdown(now, t) {
@@ -29,7 +37,9 @@ const api = {
   async get(p) { const r = await fetch(p); if (!r.ok) throw new Error(await r.text()); return r.json(); },
   async post(p, b) { const r = await fetch(p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) }); if (!r.ok) throw new Error(await r.text()); return r.json(); },
 };
-const iso = (m) => m == null ? "—" : new Date(m / 1000).toISOString().replace(".000Z", "Z");
+// Drop sub-second precision so the displayed clock never shows .xxx ms — sim time advances
+// per-event but the readouts here are operator-grade, not millisecond-precise.
+const iso = (m) => m == null ? "—" : new Date(m / 1000).toISOString().replace(/\.\d{3}Z$/, "Z");
 // Convert sim microseconds to a local time string in the currently selected timezone.
 function localTimeStr(micros) {
   if (micros == null) return "—";
@@ -200,14 +210,51 @@ function startRealtimeClock() {
     if (!REALTIME_ON || myGen !== REALTIME_GEN || !SID) return;
     try {
       if (REALTIME_ON && myGen === REALTIME_GEN) await refresh();
-    } catch { /* swallow — next tick will re-sync */ }
+    } catch { /* swallow — next tick will re-sync; the staleness watcher will surface persistent failures */ }
     if (REALTIME_ON && myGen === REALTIME_GEN) setTimeout(tick, 1500);
   };
   setTimeout(tick, 1000);
+  startClockTicker();
 }
 function stopRealtimeClock() {
   REALTIME_ON = false;
   REALTIME_GEN++;   // any in-flight callback's myGen no longer matches; it abandons its refresh
+  stopClockTicker();
+}
+
+// 1Hz local interpolation of the displayed clock. The poll loop hits the server at ~1.5s; this
+// ticker advances the readout each second from the last server-anchored sim-now + wall elapsed.
+// It also raises the "no updates from server" warning if a refresh hasn't landed for NET_STALE_MS.
+function startClockTicker() {
+  if (CLOCK_TICKER) return;
+  CLOCK_TICKER = setInterval(updateClockDisplay, 1000);
+}
+function stopClockTicker() {
+  if (CLOCK_TICKER) { clearInterval(CLOCK_TICKER); CLOCK_TICKER = null; }
+  const warn = $("net-stale"); if (warn) warn.hidden = true;
+}
+function updateClockDisplay() {
+  if (LAST_REFRESH_SERVER_NOW == null) return;
+  const elapsedMs = Date.now() - LAST_REFRESH_WALL_MS;
+  // Server is paused → display the last anchored sim time; otherwise extrapolate.
+  const displayMicros = SERVER_CLOCK_RUNNING_CACHED
+    ? LAST_REFRESH_SERVER_NOW + elapsedMs * 1000
+    : LAST_REFRESH_SERVER_NOW;
+  const txt = iso(displayMicros);
+  const n1 = $("now"); if (n1) n1.textContent = txt;
+  const n2 = $("now-header"); if (n2) n2.textContent = txt;
+  const nl = $("now-local"); if (nl) nl.textContent = localTimeStr(displayMicros);
+  // Staleness warning: persistent poll failures (network down, server stopped) leave the
+  // operator looking at a frozen clock — surface it so they know the readout is no longer live.
+  const warn = $("net-stale");
+  if (warn) {
+    if (elapsedMs > NET_STALE_MS) {
+      warn.hidden = false;
+      warn.textContent = `⚠ no updates from server (${Math.floor(elapsedMs / 1000)}s)`;
+    } else {
+      warn.hidden = true;
+    }
+  }
 }
 const start = async () => {
   await api.post(`/api/sessions/${SID}/start`);            // server.start() auto-arms the clock
@@ -793,18 +840,22 @@ async function refresh() {
   }
   if (stale()) return;
   NOW = now;
-  $("now").textContent = iso(now);
-  const nowHdr = $("now-header"); if (nowHdr) nowHdr.textContent = iso(now);
-  // Multiplayer: keep the Pause/Resume label in sync with the server clock state. Cheap GET
-  // every refresh() — the server returns {running, rate, now} from cached anchor fields.
-  const clockBtn = $("clock-toggle");
-  if (clockBtn && SID) {
+  // Anchor the 1Hz interpolated ticker on this fresh sample; updateClockDisplay() paints the
+  // readouts each second (and re-paints immediately here via the call below) — no need to set
+  // textContent twice with identical strings.
+  LAST_REFRESH_SERVER_NOW = now;
+  LAST_REFRESH_WALL_MS = Date.now();
+  // Multiplayer: cache the server clock state for the interpolated ticker AND keep the white-only
+  // Pause/Resume button in sync. Cheap GET every refresh() — the server returns {running, rate,
+  // now} from cached anchor fields.
+  if (SID) {
     api.get(`/api/sessions/${SID}/clock`).then((s) => {
-      clockBtn.textContent = s.running ? "⏸ Pause" : "▶ Resume";
+      SERVER_CLOCK_RUNNING_CACHED = !!s.running;
+      const clockBtn = $("clock-toggle");
+      if (clockBtn) clockBtn.textContent = s.running ? "⏸ Pause" : "▶ Resume";
     }).catch(() => {});
   }
-  const localEl = document.getElementById("now-local");
-  if (localEl) localEl.textContent = localTimeStr(now);
+  updateClockDisplay();
   EFFECT_WINDOWS = ewin;
   ASSETS = {}; assets.forEach((a) => ASSETS[a.id] = {
     kind: a.kind, owner: a.owner,

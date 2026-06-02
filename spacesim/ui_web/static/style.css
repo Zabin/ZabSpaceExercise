@@ -44,6 +44,11 @@ body.popout #globe, body.popout #map { width: 100% !important; height: calc(100v
   padding: 2px 8px; border: 1px solid var(--cell-accent-soft); border-radius: 4px;
   background: rgba(0,0,0,0.25); letter-spacing: .3px;
 }
+.net-stale {
+  font-size: 12px; padding: 2px 8px; border-radius: 4px; flex-shrink: 0;
+  color: #1a1a1a; background: var(--yellow, #f0c050); border: 1px solid #b89028;
+  font-weight: 600; letter-spacing: .3px;
+}
 /* Dropdown wrap + popup panel for the consolidated toolbar Settings menu. */
 .menu-wrap { position: relative; flex-shrink: 0; }
 .menu-pop {
