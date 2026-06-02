@@ -824,6 +824,11 @@ async function refresh() {
   renderFleet(assets, alarmCount, now);
   $("tracks").querySelector("tbody").innerHTML = tracks.map((t) =>
     `<tr><td>${t.object}</td><td>${(+t.confidence).toFixed(2)}</td><td>${t.characterized}</td><td>${t.classification}</td></tr>`).join("");
+  // Target autocomplete: own assets + every known-track object id (with classification hint).
+  // This is what Red/Blue can legally target — the fog-of-war boundary already filtered the
+  // input data, so we just surface the ids the cell can see. Free-text entry still works for
+  // White's god-view picks or for typing an id that hasn't been characterised yet.
+  populateTargetOptions(assets, tracks);
   // FUTURE-WORK §4 Δv-economy panel: assets with non-zero Δv reserves shown with years-of-life
   // estimate at ~15 m/s/yr (typical LEO station-keeping budget). Helps the operator weigh
   // maneuver decisions against lifetime cost.
@@ -1125,6 +1130,28 @@ function fleetPasses(a, soh, bus, alarms) {     // does asset pass the active fl
   if (FLEET_FILTER === "attack") return alarms > 0;
   if (FLEET_FILTER === "payload") return a.payload_state && a.payload_state.health && a.payload_state.health !== "green";
   return true;
+}
+
+// Build the shared <datalist> backing the Target inputs in the compose form and the tasking
+// rail. Lists own assets/sensors and every track the cell has on objects (the only ids the
+// fog-of-war boundary actually exposes). The label after the id surfaces classification +
+// characterisation so Red/Blue can tell hostile vs neutral at a glance.
+function populateTargetOptions(assets, tracks) {
+  const dl = $("target-options");
+  if (!dl) return;
+  const opts = [];
+  (assets || []).forEach((a) => {
+    if (!a.id) return;
+    const tag = a.owner && a.owner !== CELL ? a.owner : "own";
+    opts.push(`<option value="${a.id}">${tag} · ${a.kind || ""}</option>`);
+  });
+  (tracks || []).forEach((t) => {
+    if (!t.object) return;
+    const cls = t.classification || "unknown";
+    const ch = t.characterized ? "characterised" : "uncertain";
+    opts.push(`<option value="${t.object}">${cls} · ${ch}</option>`);
+  });
+  dl.innerHTML = opts.join("");
 }
 
 function renderFleet(assets, alarmCount, now) {
