@@ -34,28 +34,15 @@
     </div>
     <button id="handover-btn" title="Blank/blur the screen to hand off the console between operators">⏸ Handover</button>
     <div class="menu-wrap">
-      <button id="settings-btn" title="Settings, files, views, tools">⚙ Settings ▾</button>
-      <div id="settings-menu" class="menu-pop" hidden>
+      <button id="view-btn" title="Display modes and pop-out windows">▦ View ▾</button>
+      <div id="view-menu" class="menu-pop" hidden>
         <div class="menu-section">
-          <div class="menu-head">Session</div>
-          <button id="save" class="menu-item">⬇ Save session</button>
-          <button id="loadbtn" class="menu-item">⬆ Load session</button>
-          <input id="loadfile" type="file" accept=".json,application/json" style="display:none" />
-        </div>
-        <div class="menu-section">
-          <div class="menu-head">View</div>
+          <div class="menu-head">Display mode</div>
           <label class="menu-item"><input id="present" type="checkbox"> Presentation mode</label>
           <label class="menu-item" title="Projector / White-Cell mode — hides compose form, larger fonts"><input id="projector" type="checkbox"> Projector mode</label>
           <label class="menu-item" title="Color-blind safe palette (Okabe-Ito)"><input id="cb" type="checkbox"> Color-blind safe</label>
           <label class="menu-item" title="High-contrast mode — increases text contrast for low-vision use"><input id="hc" type="checkbox"> High contrast</label>
           <label class="menu-item" title="Large-text mode — bumps base font size for projector/low-vision use"><input id="bigtext" type="checkbox"> Large text</label>
-        </div>
-        <div class="menu-section">
-          <div class="menu-head">Tools</div>
-          <button id="coach-start" class="menu-item">? Coachmark tour</button>
-          <button id="tutorial" class="menu-item">Tutorial panel</button>
-          <button id="inspect-vignette" class="menu-item">Inspect vignette YAML</button>
-          <button id="help-btn" class="menu-item" title="Open the help panel — keyboard shortcuts, glossary, troubleshooting">? Help</button>
         </div>
         <div class="menu-section">
           <div class="menu-head">Pop out (multi-screen)</div>
@@ -65,6 +52,24 @@
           <button class="menu-item popout-btn" data-layout="fleet">▢ Fleet &amp; telemetry</button>
           <button class="menu-item popout-btn" data-layout="order">▢ Order compose</button>
           <button class="menu-item popout-btn" data-layout="aar">▢ AAR timeline</button>
+        </div>
+      </div>
+    </div>
+    <div class="menu-wrap">
+      <button id="settings-btn" title="Session files and tools">⚙ Settings ▾</button>
+      <div id="settings-menu" class="menu-pop" hidden>
+        <div class="menu-section">
+          <div class="menu-head">Session</div>
+          <button id="save" class="menu-item">⬇ Save session</button>
+          <button id="loadbtn" class="menu-item">⬆ Load session</button>
+          <input id="loadfile" type="file" accept=".json,application/json" style="display:none" />
+        </div>
+        <div class="menu-section">
+          <div class="menu-head">Tools</div>
+          <button id="coach-start" class="menu-item">? Coachmark tour</button>
+          <button id="tutorial" class="menu-item">Tutorial panel</button>
+          <button id="inspect-vignette" class="menu-item">Inspect vignette YAML</button>
+          <button id="help-btn" class="menu-item" title="Open the help panel — keyboard shortcuts, glossary, troubleshooting">? Help</button>
         </div>
       </div>
     </div>

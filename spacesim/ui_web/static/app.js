@@ -1508,13 +1508,28 @@ window.addEventListener("DOMContentLoaded", () => {
     onActorChange();    // re-derive the action list under the new role filter
   });
   document.addEventListener("keydown", onShortcut);
-  // Toolbar Settings dropdown: open on click, close on outside-click or Escape.
-  const settingsBtn = $("settings-btn"), settingsMenu = $("settings-menu");
-  if (settingsBtn && settingsMenu) {
-    settingsBtn.addEventListener("click", (e) => { e.stopPropagation(); settingsMenu.hidden = !settingsMenu.hidden; });
-    document.addEventListener("click", (e) => { if (!settingsMenu.hidden && !settingsMenu.contains(e.target) && e.target !== settingsBtn) settingsMenu.hidden = true; });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !settingsMenu.hidden) settingsMenu.hidden = true; });
+  // Toolbar dropdown menus (View + Settings). Each pair shares the same open/close pattern;
+  // opening one closes the others, plus outside-click + Escape close any open menu.
+  const menus = [
+    { btn: $("view-btn"),     menu: $("view-menu") },
+    { btn: $("settings-btn"), menu: $("settings-menu") },
+  ].filter((m) => m.btn && m.menu);
+  for (const m of menus) {
+    m.btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = m.menu.hidden;
+      menus.forEach((o) => { o.menu.hidden = true; });
+      m.menu.hidden = !open;
+    });
   }
+  document.addEventListener("click", (e) => {
+    menus.forEach((m) => {
+      if (!m.menu.hidden && !m.menu.contains(e.target) && e.target !== m.btn) m.menu.hidden = true;
+    });
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") menus.forEach((m) => { m.menu.hidden = true; });
+  });
   // Multiplayer init: if URL hash names a live session, join it (Blue default for joiners);
   // otherwise stay on white-cell load screen. Pop-out windows carry ?layout=… and ?cell=… and
   // are culled to the requested panels before any rendering.
