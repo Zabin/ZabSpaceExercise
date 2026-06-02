@@ -1,6 +1,9 @@
 """FastAPI server over the in-process SessionAPI.
 
-Run: ``uvicorn spacesim.ui_web.server:app --reload`` then open http://127.0.0.1:8000/.
+Run: ``python3 -m spacesim.ui_web`` — reads host/port/reload from
+``spacesim.config.yaml`` at the repo root (defaults to 127.0.0.1:8000).
+The bare ``uvicorn spacesim.ui_web.server:app`` CLI also works but ignores
+the YAML; pass ``--host``/``--port`` directly to override.
 Everything the UI does goes through these endpoints; the browser never touches the engine.
 """
 
