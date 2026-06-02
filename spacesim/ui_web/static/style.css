@@ -281,6 +281,25 @@ body.large-text input {
   display: none; align-items: center; justify-content: center;
 }
 #inspector-wrap.open { display: flex; }
+
+/* Tutorial side drawer — hidden by default; .open slides it into view. */
+#tutorial-panel {
+  position: fixed; top: 60px; right: 16px; width: min(380px, 92vw);
+  max-height: calc(100vh - 80px); overflow: auto;
+  background: #0d141c; border: 1px solid var(--cell-accent); border-radius: 10px;
+  padding: 12px 14px 14px; z-index: 240;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.45);
+  display: none;
+}
+#tutorial-panel.open { display: block; }
+#tutorial-panel h3 { margin: 0 0 8px; color: var(--cell-accent); }
+#tutorial-panel .close {
+  position: absolute; top: 6px; right: 10px; cursor: pointer;
+  color: var(--muted); font-size: 14px; user-select: none;
+}
+#tutorial-panel .close:hover { color: var(--text); }
+#tutorial-panel ol { margin: 4px 0 0 18px; padding: 0; font-size: 12px; line-height: 1.45; }
+#tutorial-panel li { margin-bottom: 6px; }
 #inspector {
   width: min(780px, 92vw); max-height: 80vh; background: #0d141c;
   border: 1px solid var(--cell-accent); border-radius: 10px; padding: 12px;
