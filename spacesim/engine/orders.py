@@ -94,6 +94,7 @@ class OrderSystem:
         # characterize request via the per-cell network. None disables auto-cueing.
         self.auto_cue_ssn = None       # set externally to an SSNSystem instance
         self._sensor_bookings: dict[str, list[tuple[int, int]]] = {}  # contention: one task at a time
+        self._order_sensor: dict[str, tuple[str, int, int]] = {}     # order_id → (sensor_id, start, end)
         self.orders: dict[str, Order] = {}   # issued orders by id (for the queue + cancellation)
         self._order_counter = 0
 
@@ -159,6 +160,15 @@ class OrderSystem:
             return False
         self.sim.cancel(order_id)
         o.status = "cancelled"
+        # Release the sensor slot so it can be rebooked immediately.
+        booking = self._order_sensor.pop(order_id, None)
+        if booking:
+            sensor_id, start, end = booking
+            bookings = self._sensor_bookings.get(sensor_id, [])
+            try:
+                bookings.remove((start, end))
+            except ValueError:
+                pass
         return True
 
     def _ap(self) -> AccessProvider:
@@ -230,6 +240,7 @@ class OrderSystem:
         order.status = "queued"
         if commit:
             self._sensor_bookings.setdefault(sid, []).append((win.start, win.end))
+            self._order_sensor[order.id] = (sid, win.start, win.end)
             kind, data = self._exec_payload(order, win)
             data["sensor_id"] = sid          # persisted in eventlog for booking reconstruction
             data["window_end"] = win.end     # on rewind/replay

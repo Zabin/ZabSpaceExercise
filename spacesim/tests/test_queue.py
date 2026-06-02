@@ -40,6 +40,36 @@ def test_cancel_prevents_execution_and_is_replay_safe():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
+def test_cancel_observe_frees_sensor_for_rebooking():
+    """Cancelling an observe order must release the sensor booking so the same slot can be reused."""
+    mgr = _mgr()
+    # RADAR-TRN is the Blue ground sensor in training-basics.
+    ack1 = mgr.issue_order("blue", Order(cell="blue", actor="RADAR-TRN", action="observe",
+                                         target="RED-TGT", params={}))
+    assert ack1.status == "queued", ack1.reason
+    first_oid = ack1.id
+    first_window = mgr.osys.orders[first_oid].earliest_window
+    assert first_window is not None
+
+    # The booking must be present before cancel.
+    assert any(first_window in bk for bk in mgr.osys._sensor_bookings.values())
+
+    # Cancel — booking must be removed.
+    assert mgr.cancel_order("blue", first_oid) is True
+    for bk_list in mgr.osys._sensor_bookings.values():
+        assert first_window not in bk_list
+
+    # After cancel, re-issuing the same observe must succeed (not be contended).
+    ack2 = mgr.issue_order("blue", Order(cell="blue", actor="RADAR-TRN", action="observe",
+                                         target="RED-TGT", params={}))
+    assert ack2.status == "queued", f"sensor still contended after cancel: {ack2.reason}"
+    assert ack2.earliest_window == first_window   # wins the same slot
+
+    # list_orders exposes issued_at field.
+    rows = mgr.list_orders("blue")
+    assert all("issued_at" in r for r in rows)
+
+
 def test_windows_ahead_returns_upcoming_passes_by_channel():
     mgr = _mgr()
     wa = mgr.windows_ahead("blue", "ISR-EO-1")

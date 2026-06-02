@@ -352,11 +352,17 @@ function onInjectWhenChange() {
 }
 
 async function renderQueue() {
+  const QUEUE_TTL_US = 5 * 60 * 1_000_000;   // drop completed/cancelled after 5 min sim time
   const orders = await api.get(`/api/sessions/${SID}/orders/${CELL}`).catch(() => []);
-  $("queue").innerHTML = orders.length ? orders.map((o) => {
+  const visible = orders.filter((o) => {
+    if (o.status !== "executed" && o.status !== "cancelled") return true;
+    const t = o.window ? o.window[1] : (o.issued_at || 0);
+    return NOW > 0 && (NOW - t) < QUEUE_TTL_US;
+  });
+  $("queue").innerHTML = visible.length ? visible.map((o) => {
     const w = o.window ? iso(o.window[0]).slice(11, 19) : "—";
     const cancel = o.status === "queued" ? `<button class="icon" data-oid="${o.id}">✕</button>` : "";
-    return `<div class="qrow ${o.status}"><span>${o.actor} ${o.action} ${o.target || ""}</span>` +
+    return `<div class="qrow ${o.status}"><span>${esc(o.actor)} ${esc(o.action)} ${esc(o.target || "")}</span>` +
            `<span class="muted">${o.status} · ${o.delivery_path || ""} · ${w}</span>${cancel}</div>`;
   }).join("") : "<div class='muted'>(empty)</div>";
   document.querySelectorAll("#queue [data-oid]").forEach((b) => b.onclick = async () => {
@@ -980,7 +986,8 @@ function drawActivityGantt() {
   ctx.fillStyle = "#070b10"; ctx.fillRect(0, 0, W, H);
   ACTIVITY_HITBOX.length = 0;
 
-  const { now, t_start, t_end, cells, activities } = ACTIVITY;
+  const { now, t_start, t_end, cells } = ACTIVITY;
+  const activities = ACTIVITY.activities.filter((a) => a.status !== "cancelled");
   const span = Math.max(1, t_end - t_start);
   const LEFT = 60, RIGHT = 12, TOP = 22, BOT = 18;
   const X = (t) => LEFT + (t - t_start) / span * (W - LEFT - RIGHT);

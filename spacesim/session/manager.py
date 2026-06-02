@@ -187,6 +187,7 @@ class SessionManager:
         self.osys.world = self.sim.world
         self.osys.orders.clear()           # queued events were dropped by the rewind
         self.osys._sensor_bookings.clear()
+        self.osys._order_sensor.clear()
         # Rebuild sensor bookings from executed observe events still in the (truncated) eventlog.
         for entry in self.sim.eventlog.entries:
             if entry.kind == "execute_observe":
@@ -261,7 +262,8 @@ class SessionManager:
                 status = "executed"
             out.append({"id": o.id, "cell": o.cell, "actor": o.actor, "action": o.action,
                         "target": o.target, "status": status, "delivery_path": o.delivery_path,
-                        "window": o.earliest_window, "reason": o.fail_reason})
+                        "window": o.earliest_window, "reason": o.fail_reason,
+                        "issued_at": o.issued_at})
         return out
 
     def cancel_order(self, cell: str, order_id: str) -> bool:
