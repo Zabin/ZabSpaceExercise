@@ -1021,26 +1021,32 @@ function prettyObjectiveId(id) {
     .join(" ");
 }
 
-// Render the per-side objectives status as a colored list rather than raw JSON. Blue/Red see
-// only their own side; White sees both. Met rows are green-accented, unmet rows are dim+red.
+// Render the per-side objectives status as a colored list rather than raw JSON. Two shapes:
+//   White (/objectives endpoint): nested {blue: {id: bool}, red: {id: bool}}
+//   Blue/Red (CellView.objectives): flat per-cell {id: bool} — fog-filtered by the server.
+// Met rows are green-accented; unmet rows are dim+red.
 function renderObjectives(objectives) {
   const el = $("objectives");
   if (!el) return;
-  const sides = CELL === "white" ? ["blue", "red"] : [CELL].filter((c) => c === "blue" || c === "red");
-  if (sides.length === 0) { el.innerHTML = "<div class='obj-empty'>(no objectives for this cell)</div>"; return; }
+  const row = (id, met) => {
+    const cls = met ? "met" : "unmet";
+    const mark = met ? "✓" : "✗";
+    return `<div class="obj-row ${cls}"><span class="obj-mark">${mark}</span><span class="obj-id">${prettyObjectiveId(id)}</span></div>`;
+  };
+  const entries = Object.entries(objectives || {});
+  if (entries.length === 0) { el.innerHTML = "<div class='obj-empty'>(no objectives)</div>"; return; }
+  // Heuristic: if every value is a plain object (not bool), this is the nested {side: {...}} shape.
+  const nested = entries.every(([, v]) => v && typeof v === "object" && !Array.isArray(v));
   const parts = [];
-  for (const side of sides) {
-    const entries = Object.entries((objectives && objectives[side]) || {});
-    if (CELL === "white") parts.push(`<div class="obj-side">${side}</div>`);
-    if (!entries.length) {
-      parts.push("<div class='obj-empty'>(no objectives)</div>");
-      continue;
+  if (nested) {
+    for (const [side, sideObj] of entries) {
+      parts.push(`<div class="obj-side">${side}</div>`);
+      const sideEntries = Object.entries(sideObj || {});
+      if (!sideEntries.length) parts.push("<div class='obj-empty'>(no objectives)</div>");
+      else for (const [id, met] of sideEntries) parts.push(row(id, met));
     }
-    for (const [id, met] of entries) {
-      const cls = met ? "met" : "unmet";
-      const mark = met ? "✓" : "✗";
-      parts.push(`<div class="obj-row ${cls}"><span class="obj-mark">${mark}</span><span class="obj-id">${prettyObjectiveId(id)}</span></div>`);
-    }
+  } else {
+    for (const [id, met] of entries) parts.push(row(id, met));
   }
   el.innerHTML = parts.join("");
 }
