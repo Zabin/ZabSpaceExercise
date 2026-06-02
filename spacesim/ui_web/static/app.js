@@ -152,28 +152,44 @@ async function loadVignettes() {
 async function loadSession() {
   stopRealtimeClock();
   SID = (await api.post("/api/sessions", { vignette_id: $("vignette").value, seed: +$("seed").value })).session;
+  location.hash = SID;   // multiplayer: shareable URL — Blue/Red tabs open this to join
   $("session").textContent = "session " + SID; $("start").disabled = false;
   const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
   $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
   await loadInjectLibrary();
   await refresh();
 }
+
+// Multiplayer: try to join the session named in location.hash. Returns true if it joined.
+async function joinSessionFromHash() {
+  const hashSid = (location.hash || "").replace(/^#/, "");
+  if (!hashSid) return false;
+  try {
+    const sessions = await api.get("/api/sessions");
+    const found = sessions.find((s) => s.sid === hashSid);
+    if (!found) return false;
+    SID = hashSid;
+    $("session").textContent = "session " + SID;
+    $("start").disabled = !!found.started;
+    const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
+    $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
+    await loadInjectLibrary();
+    return true;
+  } catch (e) { console.warn("join-by-hash failed:", e); return false; }
+}
+
+// Multiplayer: server owns the real-time clock. The client just polls refresh() at ~1.5s so it
+// observes the server's advanced clock + other tabs' actions. No more /step from the client.
 function startRealtimeClock() {
   if (REALTIME_ON) return;
   REALTIME_ON = true;
-  LAST_TICK_WALL = Date.now();
   const myGen = REALTIME_GEN;
-  // Chained setTimeout (not setInterval) so we never have more than one /step in flight.
   const tick = async () => {
     if (!REALTIME_ON || myGen !== REALTIME_GEN || !SID) return;
-    const now = Date.now();
-    const elapsed_s = (now - LAST_TICK_WALL) / 1000;
-    LAST_TICK_WALL = now;
     try {
-      await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: elapsed_s });
       if (REALTIME_ON && myGen === REALTIME_GEN) await refresh();
     } catch { /* swallow — next tick will re-sync */ }
-    if (REALTIME_ON && myGen === REALTIME_GEN) setTimeout(tick, 1000);
+    if (REALTIME_ON && myGen === REALTIME_GEN) setTimeout(tick, 1500);
   };
   setTimeout(tick, 1000);
 }
@@ -181,9 +197,25 @@ function stopRealtimeClock() {
   REALTIME_ON = false;
   REALTIME_GEN++;   // any in-flight callback's myGen no longer matches; it abandons its refresh
 }
-const start = async () => { await api.post(`/api/sessions/${SID}/start`); startRealtimeClock(); await refresh(); };
+const start = async () => {
+  await api.post(`/api/sessions/${SID}/start`);            // server.start() auto-arms the clock
+  startRealtimeClock();                                     // begin client poll loop
+  await refresh();
+};
+// Manual time-jump (White +1m/+10m/+1h): server re-anchors after advance_to.
 const step = async (dt) => { await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: dt }); await refresh(); };
-const rewind = async () => { stopRealtimeClock(); await api.post(`/api/sessions/${SID}/rewind`, { t: 0 }); await refresh(); };
+const rewind = async () => {
+  stopRealtimeClock();
+  await api.post(`/api/sessions/${SID}/rewind`, { t: 0 });
+  startRealtimeClock();   // server re-anchors on rewind; resume poll loop
+  await refresh();
+};
+// White-only Start/Pause toggle that drives the server clock.
+async function setServerClock(running) {
+  if (!SID) return;
+  await api.post(`/api/sessions/${SID}/clock`, { running });
+  await refresh();
+}
 async function fireInject() {
   const id = $("inject-sel").value; if (!id || id === "(none)") return;
   await api.post(`/api/sessions/${SID}/inject`, { inject: id }); await refresh();
@@ -478,36 +510,45 @@ function updateIsrInfo() {
   el.textContent = `swath ${info.swath} · res ${info.res} · power ${info.power} · duty ${info.duty}${penalty}`;
 }
 
-// Multi-display reflow (§3.3 / P-UI-8): pop the 3D globe + 2D map into a second window for
-// projector / dual-screen setups. The detached window reads its initial scene via postMessage and
-// re-fetches on a slow tick so it stays in sync — no engine change, no shared state.
-function detachViewers() {
-  const w = window.open("", "viewers", "width=1100,height=720");
-  if (!w) return;
-  w.document.title = "spacesim viewers";
-  w.document.body.style.cssText = "margin:0;background:#0a0f15;color:#9fb0c0;font-family:monospace";
-  w.document.body.innerHTML = `<canvas id="d-globe" width="560" height="400" style="background:#0a0f15"></canvas>
-    <canvas id="d-map" width="560" height="400" style="background:#0a0f15"></canvas>
-    <div id="d-status" style="position:absolute;top:8px;right:12px;font-size:11px;opacity:.6">detached · syncing…</div>`;
-  const tick = async () => {
-    if (w.closed) return;
-    try {
-      const sc = await api.get(`/api/sessions/${SID}/scene/${CELL === "white" ? "blue" : CELL}`);
-      // Draw a minimal 2D belief layer using the primary's WorldMap projection.
-      const ctx = w.document.getElementById("d-map").getContext("2d");
-      ctx.fillStyle = "#0a0f15"; ctx.fillRect(0, 0, 560, 400);
-      ctx.fillStyle = "#9fb0c0"; ctx.font = "10px monospace";
-      sc.assets.forEach((a) => {
-        const x = (a.lon_deg + 180) / 360 * 560, y = (90 - a.lat_deg) / 180 * 400;
-        ctx.fillStyle = a.owner === "blue" ? "#5a8fe0" : a.owner === "red" ? "#e06a6a" : "#9fb0c0";
-        ctx.fillRect(x - 2, y - 2, 4, 4);
-        ctx.fillStyle = "#9fb0c0"; ctx.fillText(a.id, x + 4, y + 3);
-      });
-      w.document.getElementById("d-status").textContent = `detached · ${iso(sc.now)} · ${sc.assets.length} assets`;
-    } catch { /* primary may have unloaded */ }
-    setTimeout(tick, 2000);
-  };
-  tick();
+// Multi-screen pop-outs (Part E of LAN-multiplayer plan). A pop-out is just another tab that
+// joins the same session (URL hash carries SID, ?cell=... carries the cell, ?layout=... carries
+// the panel list). The opened window loads the full app, polls like any other client, and the
+// layout-cull at boot hides every panel not requested. No postMessage / IPC needed — the server
+// is the single source of truth.
+//
+// Maps each layout token to the IDs of panels to KEEP visible. Multiple tokens can be combined
+// with "+" (e.g. layout=globe+map shows both viewers side-by-side).
+const LAYOUT_PANELS = {
+  full:    ["*"],   // sentinel: keep everything
+  globe:   ["globe-panel", "cell-time-panel"],
+  map:     ["map-panel", "cell-time-panel"],
+  "globe+map": ["globe-panel", "map-panel", "cell-time-panel"],
+  fleet:   ["fleet-panel", "drill-panel", "cell-time-panel"],
+  order:   ["order-panel", "activity-panel", "cell-time-panel"],
+  aar:     ["aar-panel", "cell-time-panel"],
+};
+
+function popOut(layoutToken) {
+  if (!SID) return;
+  const url = `/?layout=${encodeURIComponent(layoutToken)}&cell=${CELL}#${SID}`;
+  window.open(url, `popout-${layoutToken}-${Date.now()}`, "width=900,height=700");
+}
+
+function applyLayoutCull() {
+  const params = new URLSearchParams(location.search);
+  const layout = params.get("layout") || "full";
+  if (layout === "full") return;
+  const keep = new Set();
+  layout.split("+").forEach((tok) => (LAYOUT_PANELS[tok] || []).forEach((id) => keep.add(id)));
+  if (keep.size === 0) return;
+  // Hide every top-level panel/section not in the keep set.
+  document.querySelectorAll("main > section, .viewers, section.panel").forEach((el) => {
+    if (!el.id) return;
+    if (!keep.has(el.id)) el.hidden = true;
+  });
+  // Mark body so the toolbar can shrink to essentials + a compact one-window layout.
+  document.body.classList.add("popout");
+  document.body.dataset.layout = layout;
 }
 
 async function issueOrder() {
@@ -738,6 +779,14 @@ async function refresh() {
   NOW = now;
   $("now").textContent = iso(now);
   const nowHdr = $("now-header"); if (nowHdr) nowHdr.textContent = iso(now);
+  // Multiplayer: keep the Pause/Resume label in sync with the server clock state. Cheap GET
+  // every refresh() — the server returns {running, rate, now} from cached anchor fields.
+  const clockBtn = $("clock-toggle");
+  if (clockBtn && SID) {
+    api.get(`/api/sessions/${SID}/clock`).then((s) => {
+      clockBtn.textContent = s.running ? "⏸ Pause" : "▶ Resume";
+    }).catch(() => {});
+  }
   const localEl = document.getElementById("now-local");
   if (localEl) localEl.textContent = localTimeStr(now);
   EFFECT_WINDOWS = ewin;
@@ -1057,10 +1106,13 @@ async function loadSaveFile(file) {
   const state = JSON.parse(await file.text());
   stopRealtimeClock();
   SID = (await api.post("/api/sessions/load_save", state)).session;
+  location.hash = SID;   // multiplayer: resumed session is also shareable
   $("session").textContent = "session " + SID; $("start").disabled = false;
   const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
   $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
   await loadInjectLibrary();
+  // Resumed sessions intentionally load with the server clock PAUSED so they don't fast-forward
+  // the wall-time gap since the save. White clicks Start (or the Resume button) to re-arm.
   if (state.started) startRealtimeClock();
   await refresh();
 }
@@ -1369,6 +1421,13 @@ window.addEventListener("DOMContentLoaded", () => {
   initMapControls();
   $("assets").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-asset]"); if (tr) openDrill(tr.dataset.asset); });
   $("load").onclick = loadSession; $("start").onclick = start; $("rewind").onclick = rewind;
+  // Multiplayer: Pause/Resume drives the server-authoritative clock for ALL connected tabs.
+  const clockBtn = $("clock-toggle");
+  if (clockBtn) clockBtn.onclick = async () => {
+    if (!SID) return;
+    const st = await api.get(`/api/sessions/${SID}/clock`);
+    await setServerClock(!st.running);
+  };
   $("fire-inject").onclick = fireInject; $("issue").onclick = issueOrder;
   // FW §11.D.19 — inject builder
   if ($("inject-lib-load")) $("inject-lib-load").onclick = loadInjectTemplate;
@@ -1384,7 +1443,8 @@ window.addEventListener("DOMContentLoaded", () => {
   $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("drill-overlay").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("present").onchange = (e) => document.body.classList.toggle("present", e.target.checked);
-  $("detach").onclick = detachViewers;
+  // Pop-out submenu: each button opens a new window joined to the same session at the layout token.
+  document.querySelectorAll(".popout-btn").forEach((b) => b.onclick = () => popOut(b.dataset.layout));
   $("task-plan").onclick = planTask;
   document.querySelectorAll("#task-mode .chip").forEach((b) => b.onclick = () => setTaskMode(b.dataset.tmode));
   $("task-regime").onchange = ssnCoverage;
@@ -1415,7 +1475,22 @@ window.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", (e) => { if (!settingsMenu.hidden && !settingsMenu.contains(e.target) && e.target !== settingsBtn) settingsMenu.hidden = true; });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !settingsMenu.hidden) settingsMenu.hidden = true; });
   }
-  setCell("white"); loadVignettes();
+  // Multiplayer init: if URL hash names a live session, join it (Blue default for joiners);
+  // otherwise stay on white-cell load screen. Pop-out windows carry ?layout=… and ?cell=… and
+  // are culled to the requested panels before any rendering.
+  applyLayoutCull();
+  (async () => {
+    const joined = await joinSessionFromHash();
+    if (joined) {
+      const cellQ = new URLSearchParams(location.search).get("cell");
+      setCell(cellQ === "white" || cellQ === "blue" || cellQ === "red" ? cellQ : "blue");
+      await refresh();
+      startRealtimeClock();
+    } else {
+      setCell("white");
+      await loadVignettes();
+    }
+  })();
 });
 
 // Keyboard shortcuts (§12.4): j/k step the selected actor, c focuses compose, g graphs it. Ignored in fields.

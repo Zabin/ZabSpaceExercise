@@ -24,6 +24,20 @@ header.toolbar {
 }
 header .title { font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
 #logo { flex-shrink: 0; }
+/* Pop-out windows (Part E of LAN multiplayer plan): collapse the toolbar to bare essentials
+   and stretch the surviving panel(s) to fill the viewport for a multi-screen workflow. */
+body.popout header.toolbar { padding: 4px 10px; gap: 8px; }
+body.popout header.toolbar > .ctrl,
+body.popout header.toolbar > .menu-wrap,
+body.popout header.toolbar > #handover-btn,
+body.popout header.toolbar > .toggle,
+body.popout header.toolbar > #help-btn,
+body.popout header.toolbar > #tutorial,
+body.popout header.toolbar > #present,
+body.popout header.toolbar > #inspect-vignette { display: none !important; }
+body.popout main { grid-template-columns: 1fr; padding: 8px; gap: 8px; }
+body.popout .viewers { grid-template-columns: 1fr; padding: 0 8px 8px; gap: 8px; }
+body.popout #globe, body.popout #map { width: 100% !important; height: calc(100vh - 140px) !important; }
 .now-header {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   font-size: 12px; color: var(--cell-accent); flex-shrink: 0;

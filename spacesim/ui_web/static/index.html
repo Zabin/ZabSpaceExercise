@@ -25,7 +25,8 @@
       <button class="cell" data-cell="blue">Blue</button>
       <button class="cell" data-cell="red">Red</button>
     </div>
-    <div class="ctrl">
+    <div class="ctrl white-only">
+      <button id="clock-toggle" title="Pause / resume the server-authoritative real-time clock">⏸ Pause</button>
       <button class="icon" data-step="60">+1m</button>
       <button class="icon" data-step="600">+10m</button>
       <button class="icon" data-step="3600">+1h</button>
@@ -54,8 +55,16 @@
           <button id="coach-start" class="menu-item">? Coachmark tour</button>
           <button id="tutorial" class="menu-item">Tutorial panel</button>
           <button id="inspect-vignette" class="menu-item">Inspect vignette YAML</button>
-          <button id="detach" class="menu-item">Detach viewers</button>
           <button id="help-btn" class="menu-item" title="Open the help panel — keyboard shortcuts, glossary, troubleshooting">? Help</button>
+        </div>
+        <div class="menu-section">
+          <div class="menu-head">Pop out (multi-screen)</div>
+          <button class="menu-item popout-btn" data-layout="globe">▢ 3D globe</button>
+          <button class="menu-item popout-btn" data-layout="map">▢ 2D belief map</button>
+          <button class="menu-item popout-btn" data-layout="globe+map">▢ Globe + Map</button>
+          <button class="menu-item popout-btn" data-layout="fleet">▢ Fleet &amp; telemetry</button>
+          <button class="menu-item popout-btn" data-layout="order">▢ Order compose</button>
+          <button class="menu-item popout-btn" data-layout="aar">▢ AAR timeline</button>
         </div>
       </div>
     </div>
@@ -63,7 +72,7 @@
   </header>
 
   <main>
-    <section class="panel">
+    <section class="panel" id="cell-time-panel">
       <h2>Cell &amp; Time</h2>
       <div class="clock">UTC: <b id="now">—</b></div>
       <div class="clock">
@@ -133,7 +142,7 @@
       </details>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="fleet-panel">
       <h2>Fleet SOH rollup (own assets)</h2>
       <div id="fleet-filter" class="ctrl">
         <button class="chip active" data-filter="all">All</button>
@@ -336,8 +345,8 @@
     </section>
   </main>
 
-  <section class="viewers">
-    <div class="panel">
+  <section class="viewers" id="viewers-panel">
+    <div class="panel" id="globe-panel">
       <div class="viewer-head">
         <strong>3D globe</strong><span class="grow"></span>
         <div class="ctrl">
@@ -352,7 +361,7 @@
       </div>
       <canvas id="globe" width="520" height="360"></canvas>
     </div>
-    <div class="panel">
+    <div class="panel" id="map-panel">
       <div class="viewer-head">
         <strong>2D belief map</strong><span class="grow"></span>
         <div class="ctrl">

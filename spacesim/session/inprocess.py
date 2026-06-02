@@ -6,8 +6,9 @@ network transport will later wrap — the method bodies stay; only the call mech
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional
+from typing import Iterator, Optional
 
 from spacesim.content.vignette import list_vignettes, load_vignette
 from spacesim.engine.orders import Order
@@ -22,6 +23,43 @@ class InProcessSession:
         self._sessions: dict[str, SessionManager] = {}
         self._counter = 0
 
+    # -- multiplayer plumbing --------------------------------------------------
+    # Every mutation is wrapped with the session's RLock; every read first calls
+    # catch_up() so the lazy server-authoritative clock advances under the lock.
+    # See docs/build-spec/04 §M8 (LAN multiplayer seam).
+    @contextmanager
+    def _locked(self, session: str) -> Iterator[SessionManager]:
+        mgr = self._sessions[session]
+        with mgr._lock:
+            yield mgr
+
+    def catch_up(self, session: str) -> None:
+        """Server-authoritative clock tick: advance sim to wall-now under the session lock."""
+        self._sessions[session].catch_up()
+
+    def set_clock(self, session: str, running: bool, rate: float = 1.0) -> dict:
+        with self._locked(session) as mgr:
+            mgr.set_clock(running, rate=rate)
+            return mgr.clock_state()
+
+    def clock_state(self, session: str) -> dict:
+        with self._locked(session) as mgr:
+            mgr._catch_up_locked()
+            return mgr.clock_state()
+
+    def list_sessions(self) -> list[dict]:
+        out = []
+        for sid, mgr in self._sessions.items():
+            out.append({
+                "sid": sid,
+                "vignette_id": mgr.vignette.id,
+                "title": mgr.vignette.title,
+                "started": mgr.started,
+                "now": mgr.sim.clock.now,
+                "running": mgr._clock_running,
+            })
+        return out
+
     # -- lifecycle -------------------------------------------------------------
     def list_vignettes(self) -> list[dict]:
         return list_vignettes()
@@ -34,46 +72,56 @@ class InProcessSession:
         return sid
 
     def set_parameter(self, session: str, param_id: str, value) -> Ack:
-        mgr = self._sessions[session]
-        if mgr.started:
-            return Ack(ok=False, reason="cannot change parameters after start")
-        overrides = dict(mgr.ctx.param_values)
-        overrides[param_id] = value
-        self._sessions[session] = SessionManager(mgr.vignette, overrides=overrides, seed=mgr.sim._seed)
+        # Pre-start parameter swap replaces the manager. Hold the OLD manager's lock while
+        # constructing + swapping; the new manager has its own fresh lock.
+        with self._locked(session) as mgr:
+            if mgr.started:
+                return Ack(ok=False, reason="cannot change parameters after start")
+            overrides = dict(mgr.ctx.param_values)
+            overrides[param_id] = value
+            self._sessions[session] = SessionManager(mgr.vignette, overrides=overrides, seed=mgr.sim._seed)
         return Ack()
 
     def start(self, session: str) -> Ack:
-        self._sessions[session].start()
+        with self._locked(session) as mgr:
+            mgr.start()
         return Ack()
 
     # -- time control ----------------------------------------------------------
     def step(self, session: str, dt_sim_s: float) -> Ack:
-        self._sessions[session].step(dt_sim_s)
+        with self._locked(session) as mgr:
+            mgr.step(dt_sim_s)
         return Ack()
 
     def advance_to(self, session: str, t: int) -> Ack:
-        self._sessions[session].advance_to(t)
+        with self._locked(session) as mgr:
+            mgr.advance_to(t)
         return Ack()
 
     def rewind_to(self, session: str, t: int) -> Ack:
-        self._sessions[session].rewind_to(t)
+        with self._locked(session) as mgr:
+            mgr.rewind_to(t)
         return Ack()
 
     def undo_last(self, session: str, n: int = 1) -> Ack:
-        self._sessions[session].undo_last(n)
+        with self._locked(session) as mgr:
+            mgr.undo_last(n)
         return Ack()
 
     # -- injects & orders ------------------------------------------------------
     def add_tle(self, session: str, asset_id: str, line1: str, line2: str,
                 owner: str = "blue", kind: str = "satellite") -> Ack:
-        ok, reason = self._sessions[session].add_tle(asset_id, line1, line2, owner=owner, kind=kind)
+        with self._locked(session) as mgr:
+            ok, reason = mgr.add_tle(asset_id, line1, line2, owner=owner, kind=kind)
         return Ack(ok=ok, reason=reason)
 
     def red_doctrine_step(self, session: str) -> list[OrderAck]:
-        return RedDoctrine(self._sessions[session]).step()
+        with self._locked(session) as mgr:
+            return RedDoctrine(mgr).step()
 
     def fire_inject(self, session: str, inject, at_sim_t: Optional[int] = None) -> Ack:
-        self._sessions[session].fire_inject(inject, at_sim_t=at_sim_t)
+        with self._locked(session) as mgr:
+            mgr.fire_inject(inject, at_sim_t=at_sim_t)
         return Ack()
 
     def inject_library(self) -> list[dict]:
@@ -101,42 +149,56 @@ class InProcessSession:
         return list(self._inject_library_cache)
 
     def issue_order(self, session: str, cell: str, order: Order) -> OrderAck:
-        return self._sessions[session].issue_order(cell, order)
+        with self._locked(session) as mgr:
+            return mgr.issue_order(cell, order)
 
     def validate_order(self, session: str, cell: str, order: Order) -> OrderAck:
-        return self._sessions[session].validate_order(cell, order)
+        # dry-run is read-only but still touches order-system state; lock anyway for safety.
+        with self._locked(session) as mgr:
+            mgr._catch_up_locked()
+            return mgr.validate_order(cell, order)
 
     def list_orders(self, session: str, cell: str) -> list:
+        self.catch_up(session)
         return self._sessions[session].list_orders(cell)
 
     def cancel_order(self, session: str, cell: str, order_id: str) -> Ack:
-        ok = self._sessions[session].cancel_order(cell, order_id)
+        with self._locked(session) as mgr:
+            ok = mgr.cancel_order(cell, order_id)
         return Ack(ok=ok, reason="" if ok else "order not found / not cancellable")
 
     def windows_ahead(self, session: str, cell: str, asset: str):
+        self.catch_up(session)
         return self._sessions[session].windows_ahead(cell, asset)
 
     def next_contacts(self, session: str, cell: str) -> dict:
+        self.catch_up(session)
         return self._sessions[session].next_contacts(cell)
 
     def recovery_status(self, session: str, cell: str, asset: str):
+        self.catch_up(session)
         return self._sessions[session].recovery_status(cell, asset)
 
     def begin_recovery(self, session: str, cell: str, asset: str, via: str) -> dict:
-        return self._sessions[session].begin_recovery(cell, asset, via)
+        with self._locked(session) as mgr:
+            return mgr.begin_recovery(cell, asset, via)
 
     # SSN
     def submit_ssn_request(self, session: str, cell: str, intent: str, target: str,
                            regime: str, priority: str = "priority"):
-        return self._sessions[session].submit_ssn_request(cell, intent, target, regime, priority)
+        with self._locked(session) as mgr:
+            return mgr.submit_ssn_request(cell, intent, target, regime, priority)
 
     def list_ssn_requests(self, session: str, cell: str) -> list:
+        self.catch_up(session)
         return self._sessions[session].list_ssn_requests(cell)
 
     def cancel_ssn_request(self, session: str, cell: str, rid: str) -> bool:
-        return self._sessions[session].cancel_ssn_request(cell, rid)
+        with self._locked(session) as mgr:
+            return mgr.cancel_ssn_request(cell, rid)
 
     def ssn_coverage(self, session: str, cell: str, regime: str) -> dict:
+        self.catch_up(session)
         return self._sessions[session].ssn_coverage(cell, regime)
 
     def list_injects(self, session: str) -> list:
@@ -144,30 +206,38 @@ class InProcessSession:
 
     # -- reads -----------------------------------------------------------------
     def get_view(self, session: str, cell: str) -> CellView:
+        self.catch_up(session)
         return self._sessions[session].get_view(cell)
 
     def get_scene(self, session: str, cell: str):
+        self.catch_up(session)
         return self._sessions[session].get_scene(cell)
 
     def get_telemetry(self, session: str, cell: str, asset: str):
+        self.catch_up(session)
         return self._sessions[session].get_telemetry(cell, asset)
 
     def get_series(self, session: str, cell: str, asset: str, param: str, t0=None, t1=None,
                    n: int = 120, nominal: bool = False):
+        self.catch_up(session)
         return self._sessions[session].get_series(cell, asset, param, t0=t0, t1=t1, n=n, nominal=nominal)
 
     def get_godview(self, session: str):
+        self.catch_up(session)
         return self._sessions[session].get_godview()
 
     def get_eventlog(self, session: str, since_seq: int = 0) -> list:
+        self.catch_up(session)
         return self._sessions[session].get_eventlog(since_seq)
 
     def objectives(self, session: str) -> dict:
+        self.catch_up(session)
         return self._sessions[session].objectives()
 
     # -- maneuver mode computation (read-only) ---------------------------------
     def compute_maneuver(self, session: str, cell: str, actor: str,
                          mode: str, params: dict) -> dict:
+        self.catch_up(session)
         mgr = self._sessions[session]
         asset = mgr.world.assets.get(actor)
         if asset is None:
@@ -207,6 +277,7 @@ class InProcessSession:
         kind: "order" | "inject" | "effect"
         status: "executed" | "queued" | "cancelled" | "rejected" | "active" | "scheduled"
         """
+        self.catch_up(session)   # multiplayer: surface the live now in the Gantt
         mgr = self._sessions[session]
         now = mgr.world.now
         t_start = now - past_window_s * 1_000_000
@@ -316,6 +387,7 @@ class InProcessSession:
             civilian_risk   — boolean (denying a civilian link raises cost)
             notes           — list of short human strings for the UI to display
         """
+        self.catch_up(session)
         mgr = self._sessions[session]
         params = params or {}
         # Defaults
@@ -378,6 +450,7 @@ class InProcessSession:
         A note is visible when its target cell matches the requesting cell (or is "white" /
         unspecified, in which case all cells see it) AND its at_sim_t is null OR is ≤ world.now.
         """
+        self.catch_up(session)
         mgr = self._sessions[session]
         v = getattr(mgr, "vignette", None)
         if v is None:
@@ -398,6 +471,7 @@ class InProcessSession:
     def compute_engage(self, session: str, cell: str, actor: str, target: str,
                         params: dict) -> dict:
         """Preview a kinetic engage order: closing geometry + Pₖ + debris cone (read-only)."""
+        self.catch_up(session)
         from spacesim.engine.engage import (
             closing_geometry, debris_cone_estimate, kill_probability,
         )
@@ -431,6 +505,7 @@ class InProcessSession:
     def compute_cyber(self, session: str, cell: str, actor: str, target: str,
                        params: dict) -> dict:
         """Preview a cyber order: success prob × detect prob × attribution + payload effect."""
+        self.catch_up(session)
         from spacesim.engine.cyber import (
             attribution_score, effective_success, payload_params, vector_params,
         )
@@ -460,6 +535,7 @@ class InProcessSession:
 
     def compute_sigint(self, session: str, cell: str, actor: str, params: dict) -> dict:
         """Preview a SIGINT collection: expected geolocation accuracy + power draw."""
+        self.catch_up(session)
         from spacesim.engine.sigint import (
             band_params, geolocation_error_km, mode_params, soc_drain,
         )
@@ -493,6 +569,7 @@ class InProcessSession:
             {modulation, power_w, effective_radius_km, footprint_polygon,
              success_prob, detectability, power_draw_w, attribution_default}
         """
+        self.catch_up(session)
         from spacesim.engine.jam import (
             effective_radius_km, effective_success_prob, jam_footprint_polygon,
             modulation_params, power_draw_w,
@@ -538,6 +615,7 @@ class InProcessSession:
 
     # -- after-action review ---------------------------------------------------
     def aar_report(self, session: str):
+        self.catch_up(session)
         return aar.report(self._sessions[session])
 
     def aar_objectives_at(self, session: str, seq=None) -> dict:
@@ -547,11 +625,15 @@ class InProcessSession:
         return aar.snapshot_at(self._sessions[session], seq)
 
     def alarms(self, session: str, cell: str) -> list:
+        self.catch_up(session)
         return self._sessions[session].alarms(cell)
 
     # -- save / resume ---------------------------------------------------------
     def save(self, session: str) -> dict:
-        return self._sessions[session].save_state()
+        # Snapshot under lock so an in-flight mutation can't tear the state.
+        with self._locked(session) as mgr:
+            mgr._catch_up_locked()
+            return mgr.save_state()
 
     def load_save(self, state: dict) -> str:
         self._counter += 1

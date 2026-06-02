@@ -116,6 +116,12 @@ class SSNRequestBody(BaseModel):
     priority: str = "priority"
 
 
+class ClockRequest(BaseModel):
+    """Server-authoritative real-time clock control (multiplayer)."""
+    running: bool
+    rate: float = 1.0
+
+
 class SSNCancelBody(BaseModel):
     request_id: str
 
@@ -144,6 +150,22 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def load(req: LoadRequest) -> dict:
         sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed)
         return {"session": sid}
+
+    @app.get("/api/sessions")
+    def list_sessions() -> list[dict]:
+        """Multiplayer discovery: list every live session so other tabs/machines can join one."""
+        return api.list_sessions()
+
+    @app.post("/api/sessions/{sid}/clock")
+    def set_clock(sid: str, req: ClockRequest) -> dict:
+        """Arm/disarm the server-authoritative real-time clock (multiplayer)."""
+        _require(sid)
+        return api.set_clock(sid, req.running, req.rate)
+
+    @app.get("/api/sessions/{sid}/clock")
+    def get_clock(sid: str) -> dict:
+        _require(sid)
+        return api.clock_state(sid)
 
     @app.post("/api/sessions/{sid}/param")
     def set_parameter(sid: str, req: ParamRequest) -> Ack:
@@ -272,6 +294,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def conjunctions(sid: str, cell: str) -> list[dict]:
         """FW §11.C.14 — upcoming close-approach warnings.  Filtered to assets the cell owns."""
         _require(sid)
+        api.catch_up(sid)   # multiplayer: server-clock catch_up before reading world
         mgr = api._sessions[sid]
         out = []
         for c in list(mgr.world.conjunctions):

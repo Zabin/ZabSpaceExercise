@@ -148,3 +148,156 @@ def test_ssn_endpoint_available():
     c.post(f"/api/sessions/{sid}/start")
     r = c.get(f"/api/sessions/{sid}/view/blue")
     assert r.status_code == 200   # session started cleanly with SSN enabled
+
+
+# ---------------------------------------------------------------------------
+# Multiplayer (Part A–D): server-authoritative lazy clock + per-session lock +
+# discovery endpoint + clock control. See plan §M8 / Parts A–D.
+# ---------------------------------------------------------------------------
+
+
+def _patch_wall(monkeypatch, value: float) -> None:
+    """Patch the wall clock the SessionManager reads (manager._time.time)."""
+    from spacesim.session import manager as _m
+    monkeypatch.setattr(_m._time, "time", lambda: value)
+
+
+def test_lazy_clock_advances_on_read(monkeypatch):
+    c = _client()
+    _patch_wall(monkeypatch, 1000.0)
+    sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
+    c.post(f"/api/sessions/{sid}/start")   # auto-arms the clock at wall=1000
+    now0 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    _patch_wall(monkeypatch, 1010.0)        # +10s wall
+    now1 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    _patch_wall(monkeypatch, 1030.0)        # +30s wall
+    now2 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    assert now1 - now0 == 10 * 1_000_000
+    assert now2 - now0 == 30 * 1_000_000   # monotonic
+
+
+def test_lazy_clock_idempotent_for_multi_reader(monkeypatch):
+    """Three concurrent reads at one fixed wall time advance sim ONCE, not N times."""
+    c = _client()
+    _patch_wall(monkeypatch, 2000.0)
+    sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
+    c.post(f"/api/sessions/{sid}/start")
+    now0 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    _patch_wall(monkeypatch, 2010.0)        # +10s wall, frozen for all 3 reads
+    # Simulate 3 tabs polling at the same wall instant.
+    nows = [
+        c.get(f"/api/sessions/{sid}/view/white").json()["now"],
+        c.get(f"/api/sessions/{sid}/view/blue").json()["now"],
+        c.get(f"/api/sessions/{sid}/view/red").json()["now"],
+    ]
+    # All three see the same sim time, and that sim time is +10s of start — NOT +30s.
+    assert nows[0] == nows[1] == nows[2]
+    assert nows[0] - now0 == 10 * 1_000_000
+
+
+def test_clock_pause_freezes_then_resumes(monkeypatch):
+    c = _client()
+    _patch_wall(monkeypatch, 5000.0)
+    sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
+    c.post(f"/api/sessions/{sid}/start")
+    now0 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    _patch_wall(monkeypatch, 5010.0)
+    now_running = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    assert now_running - now0 == 10 * 1_000_000
+    # Pause.
+    state = c.post(f"/api/sessions/{sid}/clock", json={"running": False}).json()
+    assert state["running"] is False
+    paused_at = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    _patch_wall(monkeypatch, 5025.0)        # +15s wall while paused
+    after_paused = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    assert after_paused == paused_at        # sim frozen
+    # Resume — re-anchors at the current wall.
+    c.post(f"/api/sessions/{sid}/clock", json={"running": True})
+    _patch_wall(monkeypatch, 5030.0)        # +5s after resume
+    after_resume = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    assert after_resume - paused_at == 5 * 1_000_000
+
+
+def test_rewind_re_anchors_clock(monkeypatch):
+    """After rewind, the wall clock must not 'snap forward' the sim by the elapsed wall time."""
+    c = _client()
+    _patch_wall(monkeypatch, 7000.0)
+    sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
+    c.post(f"/api/sessions/{sid}/start")
+    start_now = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    _patch_wall(monkeypatch, 7030.0)        # run +30s of wall time
+    advanced = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    assert advanced - start_now == 30 * 1_000_000
+    # Rewind sets sim.clock.now back; re-anchor must reset wall_anchor to wall=now and
+    # sim_anchor to the new sim time. So +5s of further wall time should yield +5s of sim.
+    c.post(f"/api/sessions/{sid}/rewind", json={"t": 0})
+    after_rewind = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    _patch_wall(monkeypatch, 7035.0)        # +5s after rewind
+    after_5s = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    # Must advance by exactly 5s relative to the rewound point — NOT by the 35s of total wall.
+    assert after_5s - after_rewind == 5 * 1_000_000
+
+
+def test_session_discovery_lists_sessions():
+    c = _client()
+    s1 = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
+    s2 = c.post("/api/sessions", json={"vignette_id": "training-basics", "seed": 2}).json()["session"]
+    c.post(f"/api/sessions/{s1}/start")
+    listing = c.get("/api/sessions").json()
+    by_sid = {s["sid"]: s for s in listing}
+    assert s1 in by_sid and s2 in by_sid
+    assert by_sid[s1]["vignette_id"] == "leo-isr-denial"
+    assert by_sid[s1]["started"] is True
+    assert by_sid[s2]["started"] is False
+    assert by_sid[s1]["running"] is True
+    assert by_sid[s2]["running"] is False
+    assert "now" in by_sid[s1] and "title" in by_sid[s1]
+
+
+def test_concurrent_reads_and_writes_lock_safe():
+    """ThreadPool hammers mutations + reads on one session; state stays consistent."""
+    import concurrent.futures as cf
+    c = _client()
+    sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
+    c.post(f"/api/sessions/{sid}/start")
+    # Pause the clock so wall-time noise doesn't mask the lock test.
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
+
+    def step():       return c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 1.0}).status_code
+    def view_b():     return c.get(f"/api/sessions/{sid}/view/blue").status_code
+    def view_w():     return c.get(f"/api/sessions/{sid}/view/white").status_code
+    def godview():    return c.get(f"/api/sessions/{sid}/godview").status_code
+    def alarms():     return c.get(f"/api/sessions/{sid}/alarms/blue").status_code
+
+    tasks = [step, view_b, view_w, godview, alarms] * 8
+    with cf.ThreadPoolExecutor(max_workers=8) as ex:
+        results = list(ex.map(lambda f: f(), tasks))
+    assert all(r == 200 for r in results)
+    # State remains coherent: save + AAR succeed (would raise on torn state).
+    assert c.get(f"/api/sessions/{sid}/save").status_code == 200
+    assert c.get(f"/api/sessions/{sid}/aar").status_code == 200
+
+
+def test_advance_guard_no_op_at_same_wall_time(monkeypatch):
+    """Two consecutive reads at the SAME patched wall time → second is a no-op, no ValueError."""
+    c = _client()
+    _patch_wall(monkeypatch, 9000.0)
+    sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
+    c.post(f"/api/sessions/{sid}/start")
+    _patch_wall(monkeypatch, 9010.0)        # +10s
+    n1 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    # Same wall time, second read: catch_up sees target == current, must be a no-op.
+    n2 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
+    assert n1 == n2
+
+
+def test_resumed_session_loads_paused():
+    """A saved + resumed session starts with the clock paused (anchor cleared)."""
+    c = _client()
+    sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
+    c.post(f"/api/sessions/{sid}/start")
+    state = c.get(f"/api/sessions/{sid}/save").json()
+    sid2 = c.post("/api/sessions/load_save", json=state).json()["session"]
+    listing = {s["sid"]: s for s in c.get("/api/sessions").json()}
+    assert listing[sid2]["started"] is True
+    assert listing[sid2]["running"] is False   # resumed paused — must not silently fast-forward

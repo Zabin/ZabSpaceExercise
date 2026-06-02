@@ -8,6 +8,8 @@ Players send *intents*; the manager validates and mutates state — never the ot
 
 from __future__ import annotations
 
+import threading
+import time as _time
 from typing import Optional
 
 from spacesim.content.vignette import Vignette, build_world, evaluate_objectives
@@ -81,11 +83,19 @@ class SessionManager:
             self.osys.auto_cue_ssn = self.ssn
         self.started = False
         self.horizon = self.ctx.start_epoch + int(self.vignette.estimated_duration_min * 60 * 4 * 1_000_000)
+        # Multiplayer/server-clock state. NOT engine state — never read by spacesim/engine/, so
+        # determinism + import-guard stay intact. RLock so nested locked calls can't deadlock.
+        self._lock = threading.RLock()
+        self._clock_running = False
+        self._wall_anchor: Optional[float] = None   # epoch seconds (time.time())
+        self._sim_anchor: Optional[int] = None      # sim microseconds at the wall anchor
+        self._rate = 1.0                             # sim seconds per wall second
 
     # -- lifecycle -------------------------------------------------------------
     def start(self) -> None:
         self.started = True
         self._arm_schedule(self.sim.clock.now)
+        self.set_clock(True)   # auto-start real-time clock (matches "Start begins ticking" UX)
 
     def _arm_schedule(self, from_t: int) -> None:
         """(Re)queue bus ticks and scripted time-injects after ``from_t`` — also used after a
@@ -105,16 +115,71 @@ class SessionManager:
     def advance_to(self, t: int) -> None:
         self.sim.advance_to(t)
         self.world = self.sim.world
+        # Re-anchor so a manual jump doesn't get instantly "undone" by a stale wall-clock anchor.
+        if self._clock_running:
+            self._wall_anchor = _time.time()
+            self._sim_anchor = self.sim.clock.now
+
+    # -- server-authoritative real-time clock (multiplayer) -------------------
+    def set_clock(self, running: bool, rate: float = 1.0) -> None:
+        """Arm or disarm the wall-clock anchor used by ``catch_up``.
+
+        Pausing folds the elapsed real time into the sim first, so the clock freezes at the
+        correct sim instant. Resuming starts a fresh anchor from the current sim time.
+        """
+        if running:
+            self._wall_anchor = _time.time()
+            self._sim_anchor = self.sim.clock.now
+            self._rate = float(rate)
+            self._clock_running = True
+        else:
+            self._catch_up_locked()
+            self._clock_running = False
+            self._wall_anchor = None
+            self._sim_anchor = None
+
+    def _catch_up_locked(self) -> None:
+        """Advance the sim to the wall-derived target. No-op if not running or target<=now.
+
+        Caller must already hold ``self._lock``. Safe because ``sim.advance_to`` raises only
+        when target<current; the explicit guard against ``sim.clock.now`` makes a stale or
+        equal wall reading a true no-op.
+        """
+        if not self._clock_running or self._wall_anchor is None:
+            return
+        elapsed = _time.time() - self._wall_anchor
+        target = self._sim_anchor + int(elapsed * self._rate * 1_000_000)
+        if target > self.sim.clock.now:
+            self.sim.advance_to(target)
+            self.world = self.sim.world
+
+    def catch_up(self) -> None:
+        with self._lock:
+            self._catch_up_locked()
+
+    def clock_state(self) -> dict:
+        return {
+            "running": self._clock_running,
+            "rate": self._rate,
+            "now": self.sim.clock.now,
+        }
 
     def rewind_to(self, t: int) -> None:
         self.sim.rewind_to(t)
         self._rebind()
         if self.started:
             self._arm_schedule(t)
+        # Re-anchor at the rewound time so the wall clock can't snap the sim back to where it was.
+        if self._clock_running:
+            self._wall_anchor = _time.time()
+            self._sim_anchor = self.sim.clock.now
 
     def undo_last(self, n: int = 1) -> None:
         self.sim.undo_last(n)
         self._rebind()
+        if self._clock_running:
+            self._wall_anchor = _time.time()
+            self._sim_anchor = self.sim.clock.now
 
     def _rebind(self) -> None:
         # After a replay-based rewind the world object is fresh; repoint live references at it.
