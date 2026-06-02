@@ -86,6 +86,82 @@ this teaches escalation restraint (White Cell can enable it with the `red_kineti
 
 ![Red step 6](../manual/29-train-red-6.png)
 
+### Blue — recover from the cyber attack
+
+Red's cyber on `ground_modem` flipped `ISR-EO-1` into **safe mode**: the payload is off, the bus
+survives, the orbit is unchanged. Reversible effects are only operationally meaningful if the
+defender can clear them, so the recovery loop is the second half of the lesson. **Switch back to
+Blue** (or reload the session and run Red's steps again as White Cell, then switch) and walk
+through the procedure below in order. The order matters: skip the patch and recovery will
+re-safe the satellite on the next pass.
+
+**Step 7 — Discover it on the next telemetry contact.** Click **Blue**, then click `ISR-EO-1` in
+the fleet rail. The badge turned **red**, the bus mode reads `safe_mode`, and the drill-down
+shows the `cdh.faults` log line that flagged the modem. Cyber is **not** window-gated, so the
+attack landed when Red issued it — but you only **see** it when the next downlink contact
+returns telemetry. The fleet rollup dot turns red as soon as that telemetry lands.
+
+![Safe-mode recovery strip](../manual/10-safe-mode-recovery.png)
+
+**Step 8 — Patch the vulnerability FIRST.** In the recovery strip, click **Patch (def.patch_cyber)**
+(or compose it manually: Actor `ISR-EO-1`, Action `command`, Params
+`{"verb":"def.patch_cyber","vector":"ground_modem","via":"GS-TRN"}`). *When:* queues to the next
+command-uplink pass and executes there. *Result:* the matching entry in `ISR-EO-1`'s
+`cyber_vulnerabilities` flips `patched: true`. **This is the root cause — the cyber attack
+exploited an unpatched modem; until you patch it, the access vector is still open and the
+attacker's stored access keeps re-safing the satellite.**
+
+> If you skip this step and start recovery first, the engine will mark the asset
+> `re-safed: root cause persists (cyber)` after the recovery passes finish — recovery is
+> **deterministically** reverted because the vulnerability is still open. The recovery strip
+> shows a red warning explaining what to remove before retrying.
+
+**Step 9 — Begin recovery.** Click **Begin recovery** in the recovery strip (or
+`POST /api/sessions/{sid}/recovery/blue/ISR-EO-1 {"via":"GS-TRN"}`). The engine schedules
+**two `realistic`-difficulty passes** over the next command-uplink windows: pass 1 confirms the
+diagnosis (`establish_contact` + `dump_telemetry`), pass 2 applies the `patch` + `re_enable`
+steps and exits safe mode. The recovery strip updates after each pass — chips fill in left to
+right as `confirmed → diagnose → patch → re_enable → done`.
+
+The number of passes is the safe-mode-loop §6.3 model: `base × recovery_difficulty`
+(`quick`=1, `realistic`=2, `punishing`=3). White Cell can change this with the
+`recovery_difficulty` vignette dial.
+
+**Step 10 — Advance through the recovery passes.** Click **+10m** until the clock crosses the
+second pass. *Result:* `ISR-EO-1` exits safe mode, the badge turns green, the payload is back
+online, and the `effect_log` records `{achieved: "recovered", success: true}`. If you patched in
+step 8, recovery sticks. If you didn't, you'll see a red `⚠ root cause persists` row instead —
+patch and run **Begin recovery** again.
+
+**Step 11 — Re-attempt the mission (optional).** With the satellite recovered, re-issue the
+downlink from Blue step 3 (`downlink via GS-TRN`) and advance to the window. If you do this
+*before* the original delivery deadline expired, `deliver_isr` flips back to MET — a complete
+recovery, not just a survived attack. This is the contrast the AAR draws: a successful Red
+attack against a slow defender vs. a survived attack against a fast one, byte-identical from
+the same starting state.
+
+> **In a single block, the whole recovery in Python:**
+>
+> ```python
+> from spacesim.engine.orders import Order
+> # Step 8 — patch the modem vulnerability (queues to next GS-TRN command pass)
+> api.issue_order(sid, "blue", Order(
+>     cell="blue", actor="ISR-EO-1", action="command",
+>     params={"verb": "def.patch_cyber", "vector": "ground_modem", "via": "GS-TRN"}))
+> # Step 9 — schedule the multi-pass recovery chain
+> r = api.begin_recovery(sid, "blue", "ISR-EO-1", via="GS-TRN")
+> # Step 10 — advance past the second (final) pass and confirm
+> api.advance_to(sid, r["finish_at"] + 1)
+> bus = api.get_view(sid, "blue").own_assets[0]["bus_state"]
+> assert bus["mode"] == "nominal" and not bus["safe_mode"]["active"]
+> ```
+
+The lesson: cyber is the only effect category that bypasses access windows on attack, but
+**recovery still costs passes**. A defender who patches eagerly and starts recovery on the
+first telemetry contact wins back the asset in two passes (~one orbit at LEO); a defender who
+skips the patch loses two passes to a re-safe and starts over. That asymmetry — and the
+operator's choice in it — is what the vignette is teaching.
+
 > **Watch it in 3D.** Throughout, the **3D globe** (drag to rotate, **tilt**, **zoom**, **zoom-to**
 > an asset) and the **2D belief map** (zoom / pan / center / layer toggles) render only the active
 > cell's belief — own assets known, hostile objects as uncertainty volumes.
