@@ -127,6 +127,21 @@ pre { background: #0a0f15; padding: 8px; border-radius: 6px; overflow-x: auto; w
 .clock { font-size: 17px; margin: 8px 0; }
 .clock b { color: var(--accent); }
 .green { color: var(--green); } .yellow { color: var(--yellow); } .red { color: var(--red); }
+/* Objectives status list — color-coded met/unmet rows in the Cell & Time panel. */
+.objectives { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.objectives .obj-side { color: var(--muted); font-size: 11px; text-transform: uppercase;
+  letter-spacing: .5px; margin: 4px 0 2px; }
+.objectives .obj-row { display: flex; align-items: center; gap: 6px; padding: 3px 6px;
+  border-left: 2px solid var(--border); background: var(--panel2); border-radius: 3px; }
+.objectives .obj-row.met { border-left-color: var(--green); }
+.objectives .obj-row.unmet { border-left-color: var(--red); }
+.objectives .obj-mark { width: 14px; text-align: center; font-weight: 700; }
+.objectives .obj-row.met .obj-mark { color: var(--green); }
+.objectives .obj-row.unmet .obj-mark { color: var(--red); }
+.objectives .obj-id { color: var(--text); }
+.objectives .obj-row.met .obj-id { color: var(--text); }
+.objectives .obj-row.unmet .obj-id { color: var(--muted); }
+.objectives .obj-empty { color: var(--muted); font-style: italic; }
 ul { margin: 4px 0; padding-left: 18px; } li { margin: 2px 0; }
 
 /* Viewer control bars */

@@ -825,7 +825,7 @@ async function refresh() {
   }
   $("effects").innerHTML = effects.map((e) => `<li>${e.target}: ${e.symptom} ${e.attributed ? "(attributed)" : "(source unknown)"}</li>`).join("");
   $("messages").innerHTML = messages.map((m) => `<li>${m.text}</li>`).join("");
-  $("objectives").textContent = JSON.stringify(objectives, null, 2);
+  renderObjectives(objectives);
 
   // Command menu: populate actor list (own assets + sensors that can act; network sensors excluded).
   const actorIds = assets.filter((a) => ACTIONS_BY_KIND[a.kind] && !a.network).map((a) => a.id);
@@ -1011,6 +1011,40 @@ addEventListener("DOMContentLoaded", () => {
 
 // FW §11.C.14 — conjunction screening panel.  Each entry shows the two objects,
 // range/time-to-CA, and an "Evade" button that fires the prop.collision_avoid verb.
+// Pretty-print an objective id: "deliver_isr" → "Deliver ISR", "keep_custody" → "Keep custody".
+// Treats short trailing tokens (≤4 chars) as acronyms (ISR, EW, SDA, GS) and uppercases them.
+function prettyObjectiveId(id) {
+  const parts = String(id || "").split("_").filter(Boolean);
+  if (!parts.length) return "(unnamed)";
+  return parts
+    .map((p, i) => (p.length <= 4 && i > 0 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1)))
+    .join(" ");
+}
+
+// Render the per-side objectives status as a colored list rather than raw JSON. Blue/Red see
+// only their own side; White sees both. Met rows are green-accented, unmet rows are dim+red.
+function renderObjectives(objectives) {
+  const el = $("objectives");
+  if (!el) return;
+  const sides = CELL === "white" ? ["blue", "red"] : [CELL].filter((c) => c === "blue" || c === "red");
+  if (sides.length === 0) { el.innerHTML = "<div class='obj-empty'>(no objectives for this cell)</div>"; return; }
+  const parts = [];
+  for (const side of sides) {
+    const entries = Object.entries((objectives && objectives[side]) || {});
+    if (CELL === "white") parts.push(`<div class="obj-side">${side}</div>`);
+    if (!entries.length) {
+      parts.push("<div class='obj-empty'>(no objectives)</div>");
+      continue;
+    }
+    for (const [id, met] of entries) {
+      const cls = met ? "met" : "unmet";
+      const mark = met ? "✓" : "✗";
+      parts.push(`<div class="obj-row ${cls}"><span class="obj-mark">${mark}</span><span class="obj-id">${prettyObjectiveId(id)}</span></div>`);
+    }
+  }
+  el.innerHTML = parts.join("");
+}
+
 async function renderConjunctions() {
   const el = $("conjunction-list"); if (!el) return;
   const cell = CELL === "white" ? "white" : CELL;
