@@ -132,7 +132,7 @@ ul { margin: 4px 0; padding-left: 18px; } li { margin: 2px 0; }
 /* Viewer control bars */
 .viewer-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
 .viewer-head .grow { flex: 1; }
-.ctrl { display: inline-flex; gap: 4px; align-items: center; }
+.ctrl { display: inline-flex; gap: 4px; align-items: center; flex-wrap: wrap; row-gap: 4px; max-width: 100%; }
 .ctrl label { color: var(--muted); font-size: 12px; margin: 0 2px 0 8px; }
 canvas { width: 100%; border: 1px solid var(--border); border-radius: 6px; background: #070b10; display: block; cursor: grab; }
 canvas:active { cursor: grabbing; }
