@@ -871,6 +871,7 @@ async function refresh() {
     const lt = ASSETS[DRILL.asset]?.last_tel || 0;
     if (lt !== DRILL_LAST_TEL) openDrill(DRILL.asset);  // new telemetry arrived — full rebuild
     else updateDrillTitle();                             // pass-gated: just age the stale badge
+    renderOrbitalElements(DRILL.asset);                  // COEs refresh every poll (post-maneuver visible within ~1.5s)
   }
   ["g-focus", "m-focus"].forEach((id) => {
     const sel = $(id); if (!sel) return; const cur = sel.value;
@@ -1338,11 +1339,35 @@ function updateDrillTitle() {
   _renderDrillTitle(DRILL.asset, lt, titleEl.dataset.busMode || "—");
 }
 
+// Classical orbital elements for the selected asset, sourced from the scene
+// (no extra fetch). Called on drill open AND on every poll refresh so the
+// block reflects post-maneuver elements within ~1.5s of execution.
+function renderOrbitalElements(assetId) {
+  const host = $("drill-orbit");
+  if (!host) return;
+  const ra = SCENE && SCENE.assets && SCENE.assets.find((a) => a.id === assetId);
+  if (!ra || !ra.on_orbit || ra.a_km == null) { host.innerHTML = ""; return; }
+  const fmt = (v, d) => (v == null ? "—" : Number(v).toFixed(d));
+  host.innerHTML =
+    `<h3>Orbital elements</h3>` +
+    `<div class="coes">` +
+      `<span><b>a</b> ${fmt(ra.a_km, 1)} km</span>` +
+      `<span><b>period</b> ${fmt(ra.period_min, 1)} min</span>` +
+      `<span><b>e</b> ${fmt(ra.e, 4)}</span>` +
+      `<span><b>i</b> ${fmt(ra.i_deg, 2)}°</span>` +
+      `<span><b>Ω</b> ${fmt(ra.raan_deg, 2)}°</span>` +
+      `<span><b>ω</b> ${fmt(ra.argp_deg, 2)}°</span>` +
+      `<span><b>ν</b> ${fmt(ra.ta_deg, 2)}°</span>` +
+      `<span><b>alt</b> ${fmt(ra.alt_m / 1000, 1)} km</span>` +
+      (ra.regime ? `<span class="muted">${ra.regime}</span>` : "") +
+    `</div>`;
+}
+
 async function openDrill(assetId) {
   DRILL.asset = assetId;
   let tele;
   try { tele = await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${assetId}`); }
-  catch { $("drill-title").textContent = `${assetId} — no telemetry (fog / not your asset)`; $("drill-params").innerHTML = ""; return; }
+  catch { $("drill-title").textContent = `${assetId} — no telemetry (fog / not your asset)`; $("drill-params").innerHTML = ""; renderOrbitalElements(assetId); return; }
   DRILL_DB = {};
   Object.values(tele.subsystems).forEach((arr) => arr.forEach((p) => (DRILL_DB[p.id] = p)));
   const lt = ASSETS[assetId]?.last_tel || 0;
@@ -1386,6 +1411,7 @@ async function openDrill(assetId) {
   document.querySelectorAll("#drill-params .pchip").forEach((c) => c.onclick = () => drawParam(c.dataset.param));
   document.querySelectorAll("#drill-params .vbtn").forEach((b) => b.onclick = () => loadVerb(b.dataset.actor, b.dataset.verb));
   renderRecovery(assetId, tele.bus_mode);
+  renderOrbitalElements(assetId);
   drawParam(DRILL.param && DRILL_DB[DRILL.param] ? DRILL.param : "rx_power_dbm");
 }
 

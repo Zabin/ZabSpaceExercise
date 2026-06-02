@@ -14,7 +14,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from spacesim.engine.geometry import ecef_to_geodetic, eci_to_ecef
-from spacesim.engine.orbit import classify_regime
+from spacesim.engine.orbit import classify_regime, period_s
 from spacesim.engine.propagator import ModeratePropagator
 from spacesim.engine.sun import sun_unit_eci
 
@@ -30,6 +30,16 @@ class RenderAsset(BaseModel):
     # User-added FW #1/#2 — ground track (sub-satellite path) over the next ~one orbit period.
     # Each entry: [lat_deg, lon_deg, alt_m]. Empty for ground assets.
     track: list[list[float]] = Field(default_factory=list)
+    # Classical Orbital Elements at the current scene time — surfaced so the UI can show
+    # "Orbital elements" for a selected satellite without a second round-trip. None for
+    # ground assets and TLE sources where Keplerian elements aren't held directly.
+    a_km: Optional[float] = None
+    e: Optional[float] = None
+    i_deg: Optional[float] = None
+    raan_deg: Optional[float] = None
+    argp_deg: Optional[float] = None
+    ta_deg: Optional[float] = None
+    period_min: Optional[float] = None
 
 
 class RenderTrack(BaseModel):
@@ -83,15 +93,22 @@ def build_scene(world, cell: str) -> SceneView:
             # User-added FW #1/#2 — sample the next-orbit ground track for the 2D map AND the
             # orbital arc (lat/lon/alt) for the 3D globe. ~90 min for LEO, ~24 h for GEO; cap to
             # 60 samples for payload size and pick the step accordingly.
-            period_s = 90 * 60 if (regime in ("LEO", "LEO_SSO") or (a.orbit.a_m or 0) < 8e6) else \
-                       12 * 3600 if regime == "MEO" else 24 * 3600
-            step_s = max(60.0, period_s / 60.0)
+            track_period = 90 * 60 if (regime in ("LEO", "LEO_SSO") or (a.orbit.a_m or 0) < 8e6) else \
+                           12 * 3600 if regime == "MEO" else 24 * 3600
+            step_s = max(60.0, track_period / 60.0)
             pts: list[list[float]] = []
             for i in range(1, 61):
                 gp = _geo(a.orbit, now + int(i * step_s * 1_000_000))
                 pts.append([round(gp.lat_deg, 3), round(gp.lon_deg, 3), round(gp.alt_m, 1)])
-            assets.append(RenderAsset(id=a.id, kind=a.kind, lat_deg=g.lat_deg, lon_deg=g.lon_deg,
-                                      alt_m=g.alt_m, regime=regime, on_orbit=True, track=pts))
+            a_km = round(a.orbit.a_m / 1000.0, 2) if a.orbit.a_m is not None else None
+            per_min = round(period_s(a.orbit.a_m) / 60.0, 2) if a.orbit.a_m is not None else None
+            assets.append(RenderAsset(
+                id=a.id, kind=a.kind, lat_deg=g.lat_deg, lon_deg=g.lon_deg,
+                alt_m=g.alt_m, regime=regime, on_orbit=True, track=pts,
+                a_km=a_km, e=a.orbit.e, i_deg=a.orbit.i_deg,
+                raan_deg=a.orbit.raan_deg, argp_deg=a.orbit.argp_deg,
+                ta_deg=a.orbit.ta_deg, period_min=per_min,
+            ))
         elif a.location is not None:
             assets.append(RenderAsset(id=a.id, kind=a.kind, lat_deg=a.location.lat_deg,
                                       lon_deg=a.location.lon_deg, alt_m=a.location.alt_m, on_orbit=False))
