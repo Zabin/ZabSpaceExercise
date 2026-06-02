@@ -518,14 +518,16 @@ function updateIsrInfo() {
 //
 // Maps each layout token to the IDs of panels to KEEP visible. Multiple tokens can be combined
 // with "+" (e.g. layout=globe+map shows both viewers side-by-side).
+// globe-panel and map-panel are children of viewers-panel, so the outer wrapper must be kept
+// whenever either viewer is requested; individual inner panels are also culled separately.
 const LAYOUT_PANELS = {
-  full:    ["*"],   // sentinel: keep everything
-  globe:   ["globe-panel", "cell-time-panel"],
-  map:     ["map-panel", "cell-time-panel"],
-  "globe+map": ["globe-panel", "map-panel", "cell-time-panel"],
-  fleet:   ["fleet-panel", "drill-panel", "cell-time-panel"],
-  order:   ["order-panel", "activity-panel", "cell-time-panel"],
-  aar:     ["aar-panel", "cell-time-panel"],
+  full:        ["*"],
+  globe:       ["viewers-panel", "globe-panel", "cell-time-panel"],
+  map:         ["viewers-panel", "map-panel",   "cell-time-panel"],
+  "globe+map": ["viewers-panel", "globe-panel", "map-panel", "cell-time-panel"],
+  fleet:       ["fleet-panel", "drill-panel", "cell-time-panel"],
+  order:       ["order-panel", "activity-panel", "cell-time-panel"],
+  aar:         ["aar-panel", "cell-time-panel"],
 };
 
 function popOut(layoutToken) {
@@ -541,12 +543,14 @@ function applyLayoutCull() {
   const keep = new Set();
   layout.split("+").forEach((tok) => (LAYOUT_PANELS[tok] || []).forEach((id) => keep.add(id)));
   if (keep.size === 0) return;
-  // Hide every top-level panel/section not in the keep set.
-  document.querySelectorAll("main > section, .viewers, section.panel").forEach((el) => {
-    if (!el.id) return;
+  // Hide top-level direct children of main that aren't in the keep set.
+  document.querySelectorAll("main > [id]").forEach((el) => {
     if (!keep.has(el.id)) el.hidden = true;
   });
-  // Mark body so the toolbar can shrink to essentials + a compact one-window layout.
+  // Hide individual viewer sub-panels (globe-panel / map-panel inside viewers-panel).
+  document.querySelectorAll("#viewers-panel > [id]").forEach((el) => {
+    if (!keep.has(el.id)) el.hidden = true;
+  });
   document.body.classList.add("popout");
   document.body.dataset.layout = layout;
 }
