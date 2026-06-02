@@ -314,13 +314,14 @@ The **Same group** helper requires an Actor already selected and uses its `group
 
 | # | Control | Type | Effect / valid values |
 |---|---|---|---|
-| 1 | Parameter chips | clickable chips | Click to graph that telemetry parameter. |
-| 2 | compare to nominal | checkbox | Overlay the clean baseline (`?nominal=1`). |
-| 3 | overlay | dropdown | Pick a second parameter to overlay on the graph. |
-| 4 | Graph canvas | read-only | 60-pt rolling line graph from `GET /telemetry/{cell}/{asset}/{param}`. |
-| 5 | Verb buttons | per-subsystem cards | One-click load the command verb into the compose form. |
-| 6 | Begin recovery | button | (Recovery strip) `POST /recovery/{cell}/{asset}` — start the multi-pass chain. |
-| 7 | Patch (def.patch_cyber) | button | (Recovery strip) Load the patch-cyber command pre-filled with the first unpatched vector. |
+| 1 | Orbital elements | read-only strip | a / e / i / Ω / ω / ν + period for the selected satellite, from the scene; refreshes on every poll so a maneuver's new orbit shows within ~1.5 s. Hidden for ground assets. |
+| 2 | Parameter chips | clickable chips | Click to graph that telemetry parameter. |
+| 3 | compare to nominal | checkbox | Overlay the clean baseline (`?nominal=1`). |
+| 4 | overlay | dropdown | Pick a second parameter to overlay on the graph. |
+| 5 | Graph canvas | read-only | 60-pt rolling line graph from `GET /telemetry/{cell}/{asset}/{param}`. |
+| 6 | Verb buttons | per-subsystem cards | One-click load the command verb into the compose form. |
+| 7 | Begin recovery | button | (Recovery strip) `POST /recovery/{cell}/{asset}` — start the multi-pass chain. |
+| 8 | Patch (def.patch_cyber) | button | (Recovery strip) Load the patch-cyber command pre-filled with the first unpatched vector. |
 
 The recovery strip appears only when the selected asset's bus is in safe mode. The subsystem
 log under the graph is read-only.

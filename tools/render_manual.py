@@ -1833,7 +1833,24 @@ def s_ref_aar():
 
 def s_ref_drill():
     img, d = canvas("blue", "UI reference — Subsystem drill-down")
-    px, py = panel(d, 12, 66, W - 24, 380, "Subsystem drill-down — ISR-EO-1 (bus + payload + telemetry + recovery)")
+    px, py = panel(d, 12, 66, W - 24, 408, "Subsystem drill-down — ISR-EO-1 (orbital elements + bus + payload + telemetry + recovery)")
+    # Orbital elements (COE) strip — real values from the leo-isr-denial scene, matching the
+    # live drill-down's "Orbital elements" block.
+    _coe_m = SessionManager(load_vignette("leo-isr-denial"), seed=1); _coe_m.start()
+    _ra = next(a for a in _coe_m.get_scene("blue").assets if a.id == "ISR-EO-1")
+    d.text((px, py), "Orbital elements", font=f12b, fill=MUTED)
+    coes = [("a", f"{_ra.a_km:.1f} km"), ("period", f"{_ra.period_min:.1f} min"), ("e", f"{_ra.e:.4f}"),
+            ("i", f"{_ra.i_deg:.2f}°"), ("Ω", f"{_ra.raan_deg:.2f}°"),
+            ("ω", f"{_ra.argp_deg:.2f}°"), ("ν", f"{_ra.ta_deg:.2f}°")]
+    ex = px + 130
+    for lab, val in coes:
+        txt = f"{lab} {val}"
+        wpx = int(d.textlength(txt, font=f12)) + 14
+        d.rounded_rectangle([ex, py - 2, ex + wpx, py + 20], radius=5, fill=(17,23,31), outline=BORDER)
+        d.text((ex + 7, py + 3), txt, font=f12, fill=TEXT)
+        ex += wpx + 6
+    callout(d, px + 60, py - 12, 1)
+    py += 30
     # Parameter chips
     chips = ["battery_soc","temp_c","rx_power_dbm","cn0_dbhz","cmd_reject_count","fsw_error_count"]
     cx = px
@@ -1841,44 +1858,45 @@ def s_ref_drill():
         d.rounded_rectangle([cx, py, cx + 120, py + 22], radius=10, fill=(30,38,50), outline=BORDER)
         d.text((cx + 6, py + 5), c, font=f12, fill=BLUEc)
         cx += 126
-    callout(d, px + 60, py - 10, 1)
+    callout(d, px + 60, py - 10, 2)
     # Toggles
     y2 = py + 38
-    d.text((px, y2), "[☐ compare to nominal]", font=f12, fill=TEXT); callout(d, px + 80, y2 + 6, 2)
-    d.text((px + 200, y2), "overlay: [battery_soc ▾]", font=f12, fill=TEXT); callout(d, px + 310, y2 + 6, 3)
+    d.text((px, y2), "[☐ compare to nominal]", font=f12, fill=TEXT); callout(d, px + 80, y2 + 6, 3)
+    d.text((px + 200, y2), "overlay: [battery_soc ▾]", font=f12, fill=TEXT); callout(d, px + 310, y2 + 6, 4)
     # Graph rectangle
-    gx, gy, GW, GH = px, y2 + 30, 540, 180
+    gx, gy, GW, GH = px, y2 + 30, 540, 170
     d.rectangle([gx, gy, gx + GW, gy + GH], fill=(8,12,18), outline=BORDER)
     for k in range(1, 5):
         d.line([gx, gy + k * GH // 5, gx + GW, gy + k * GH // 5], fill=(28,38,52))
     d.text((gx + 8, gy + GH - 18), "telemetry graph (read-only)", font=f12, fill=MUTED)
-    callout(d, gx + 270, gy + 90, 4)
+    callout(d, gx + 270, gy + 85, 5)
     # Verb buttons on the right
     vx = px + 560; vy = y2 + 30
     for i, vb in enumerate(["eps.shed_load","comms.config_link","def.patch_cyber","cdh.clear_fault"]):
         d.rounded_rectangle([vx, vy + i*32, vx + 200, vy + 24 + i*32], radius=4, fill=(30,38,50), outline=BORDER)
         d.text((vx + 8, vy + 6 + i*32), vb, font=f12, fill=GREEN)
-    callout(d, vx + 100, vy - 10, 5)
+    callout(d, vx + 100, vy - 10, 6)
     # Recovery strip
-    rx, ry = panel(d, 12, 460, W - 24, 100, "Recovery strip (when safed)")
+    rx, ry = panel(d, 12, 488, W - 24, 96, "Recovery strip (when safed)")
     d.text((rx, ry), "Diagnosis: cyber  ·  passes used 0/3", font=f12, fill=YELLOW)
     d.rounded_rectangle([rx, ry + 24, rx + 160, ry + 50], radius=4, fill=GREEN, outline=BORDER)
-    d.text((rx + 18, ry + 30), "Begin recovery", font=f12b, fill=(0,0,0)); callout(d, rx + 78, ry + 60, 6)
+    d.text((rx + 18, ry + 30), "Begin recovery", font=f12b, fill=(0,0,0)); callout(d, rx + 78, ry + 60, 7)
     d.rounded_rectangle([rx + 180, ry + 24, rx + 360, ry + 50], radius=4, fill=(30,38,50), outline=BORDER)
-    d.text((rx + 190, ry + 30), "Patch (def.patch_cyber)", font=f12, fill=BLUEc); callout(d, rx + 270, ry + 60, 7)
+    d.text((rx + 190, ry + 30), "Patch (def.patch_cyber)", font=f12, fill=BLUEc); callout(d, rx + 270, ry + 60, 8)
 
-    lx, ly = panel(d, 12, 580, W - 24, 90, "Legend (`10-ui-reference.md` §13)")
-    legend(d, lx, ly, W - 48, 56, "Drill-down controls", [
-        (1, "Parameter chips — click to graph that parameter"),
-        (2, "compare to nominal — toggle the ghost baseline overlay"),
-        (3, "overlay — pick a second parameter to overlay on the graph"),
-        (4, "Graph canvas — read-only line graph (60-pt rolling)"),
-        (5, "Verb buttons — one-click load the command into the compose form"),
-        (6, "Begin recovery — start the multi-pass safe-mode chain"),
-        (7, "Patch (def.patch_cyber) — load the patch-cyber command pre-filled"),
+    lx, ly = panel(d, 12, 600, W - 24, 96, "Legend (`10-ui-reference.md` §13)")
+    legend(d, lx, ly, W - 48, 62, "Drill-down controls", [
+        (1, "Orbital elements — a/e/i/Ω/ω/ν + period; refreshes after every maneuver"),
+        (2, "Parameter chips — click to graph that parameter"),
+        (3, "compare to nominal — toggle the ghost baseline overlay"),
+        (4, "overlay — pick a second parameter to overlay on the graph"),
+        (5, "Graph canvas — read-only line graph (60-pt rolling)"),
+        (6, "Verb buttons — one-click load the command into the compose form"),
+        (7, "Begin recovery — start the multi-pass safe-mode chain"),
+        (8, "Patch (def.patch_cyber) — load the patch-cyber command pre-filled"),
     ])
     _ref_save(img, "ref-13-drill.png",
-              "UI reference §13 — Subsystem drill-down: parameter chips + nominal/overlay toggles + graph + per-verb buttons + recovery strip.")
+              "UI reference §13 — Subsystem drill-down: orbital elements + parameter chips + nominal/overlay toggles + graph + per-verb buttons + recovery strip.")
 
 
 def s_ref_activity():
