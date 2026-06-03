@@ -1281,14 +1281,15 @@ async function aarAt(seq) {
 function drawMap() {
   if (!SCENE) return;
   const c = $("map"), x = c.getContext("2d");
-  x.fillStyle = "#070b10"; x.fillRect(0, 0, c.width, c.height);
+  // Brighter ocean fill so coastlines + grid have something to register against on dark monitors.
+  x.fillStyle = "#0e2740"; x.fillRect(0, 0, c.width, c.height);
   const PX = (lon) => c.width / 2 + (lon - mapCam.lon) * (c.width / 360) * mapCam.zoom;
   const PY = (lat) => c.height / 2 - (lat - mapCam.lat) * (c.height / 180) * mapCam.zoom;
   if (mapCam.map && window.WorldMap && WorldMap.ready()) {
-    WorldMap.draw(x, (lon, lat) => ({ x: PX(lon), y: PY(lat), front: true }), { maxJump: c.width * 0.5 });
+    WorldMap.draw(x, (lon, lat) => ({ x: PX(lon), y: PY(lat), front: true }), { maxJump: c.width * 0.5, coastWidth: 1.3 });
   }
   if (mapCam.grid) {
-    x.strokeStyle = "#1b2531";
+    x.strokeStyle = "rgba(140,180,215,0.45)"; x.lineWidth = 1;
     for (let lon = -180; lon <= 180; lon += 30) { x.beginPath(); x.moveTo(PX(lon), 0); x.lineTo(PX(lon), c.height); x.stroke(); }
     for (let lat = -90; lat <= 90; lat += 30) { x.beginPath(); x.moveTo(0, PY(lat)); x.lineTo(c.width, PY(lat)); x.stroke(); }
   }
@@ -1301,7 +1302,7 @@ function drawMap() {
   // User-added FW #2 — ground tracks: dim polyline of the sub-satellite path for the next orbit.
   const accent = window.cellAccent ? cellAccent() : "#6fcf6f";
   if (mapCam.tracks !== false) {
-    x.strokeStyle = "rgba(159,176,192,0.35)"; x.lineWidth = 1;
+    x.strokeStyle = "rgba(210,225,245,0.65)"; x.lineWidth = 1.2;
     SCENE.assets.forEach((a) => {
       if (!a.on_orbit || !a.track || a.track.length < 2) return;
       x.beginPath();
@@ -1322,14 +1323,15 @@ function drawMap() {
     const px = PX(a.lon_deg), py = PY(a.lat_deg);
     if (window.Symbology) Symbology.draw(x, px, py, a, { r: 5 });
     else { if (a.on_orbit) { x.beginPath(); x.moveTo(px, py - 5); x.lineTo(px - 5, py + 4); x.lineTo(px + 5, py + 4); x.closePath(); x.fill(); } else x.fillRect(px - 4, py - 4, 8, 8); }
-    x.fillStyle = "#9fb0c0"; x.font = "11px monospace"; x.fillText(a.id, px + 7, py + 3); x.fillStyle = accent;
+    x.fillStyle = "#e6edf7"; x.font = "11px monospace"; x.fillText(a.id, px + 7, py + 3); x.fillStyle = accent;
   });
   if (mapCam.tracks) SCENE.tracks.forEach((t) => {
     const px = PX(t.lon_deg), py = PY(t.lat_deg), r = Math.max(4, Math.min(40, t.uncertainty_km / 18));
-    x.strokeStyle = t.characterized ? "#e0c24a" : "#e06a6a";
+    x.strokeStyle = t.characterized ? "#ffd35a" : "#ff8585";
+    x.lineWidth = 1.5;
     x.beginPath(); x.arc(px, py, r, 0, 2 * Math.PI); x.stroke();
-    x.fillStyle = x.strokeStyle; x.beginPath(); x.arc(px, py, 2, 0, 2 * Math.PI); x.fill();
-    x.fillStyle = "#9fb0c0"; x.fillText(`${t.object} ±${t.uncertainty_km}km`, px + 6, py - 6);
+    x.fillStyle = x.strokeStyle; x.beginPath(); x.arc(px, py, 2.5, 0, 2 * Math.PI); x.fill();
+    x.fillStyle = "#e6edf7"; x.fillText(`${t.object} ±${t.uncertainty_km}km`, px + 6, py - 6);
   });
   // Jam preview footprint (read-only overlay, cleared when action != jam)
   if (window.JAM_PREVIEW && JAM_PREVIEW.polygon && JAM_PREVIEW.polygon.length > 2) {
@@ -1858,23 +1860,27 @@ window.drawTerminator = function (ctx, c, PX, PY, sunLat, sunLon) {
   // (vanishes when sin(sunLat) = 0; treat the equator case specially).
   if (sunLat == null || sunLon == null) return;
   const slat = sunLat * Math.PI / 180, tlat = Math.tan(slat || 1e-9);
-  ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.30)";
-  ctx.beginPath();
-  let firstX = null, lastX = null;
+  const pts = [];
   for (let lon = -180; lon <= 180; lon += 2) {
     const arg = (lon - sunLon) * Math.PI / 180;
     const latT = Math.atan(-Math.cos(arg) / tlat) * 180 / Math.PI;
-    const x = PX(lon), y = PY(latT);
-    if (lon === -180) { ctx.moveTo(x, y); firstX = x; }
-    else ctx.lineTo(x, y);
-    lastX = x;
+    pts.push([PX(lon), PY(latT)]);
   }
-  // Close the polygon along whichever pole the night side wraps to.
+  const firstX = pts[0][0], lastX = pts[pts.length - 1][0];
   const nightTop = sunLat < 0;   // if sun is south, the north pole is in night
   const polY = nightTop ? 0 : c.height;
+  ctx.save();
+  // Filled night side — darker so it reads as a distinct hemisphere on dim monitors.
+  ctx.fillStyle = "rgba(0,0,12,0.55)";
+  ctx.beginPath();
+  pts.forEach(([px, py], i) => i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py));
   ctx.lineTo(lastX, polY); ctx.lineTo(firstX, polY); ctx.closePath();
   ctx.fill();
+  // Bright terminator curve itself — high-contrast delimiter the eye can lock on.
+  ctx.strokeStyle = "rgba(255,220,140,0.85)"; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  pts.forEach(([px, py], i) => i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py));
+  ctx.stroke();
   ctx.restore();
 };
 

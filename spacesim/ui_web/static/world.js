@@ -10,8 +10,8 @@ window.WorldMap = (function () {
     if (!loading) loading = fetch("/world.json").then((r) => r.json()).then((d) => (data = d));
     return loading;
   }
-  function _set(ctx, segs, project, style, maxJump) {
-    ctx.strokeStyle = style; ctx.lineWidth = 1;
+  function _set(ctx, segs, project, style, maxJump, width) {
+    ctx.strokeStyle = style; ctx.lineWidth = width || 1;
     for (const seg of segs) {
       let started = false, lx = 0, ly = 0;
       ctx.beginPath();
@@ -28,8 +28,8 @@ window.WorldMap = (function () {
   function draw(ctx, project, opts) {
     if (!data) return;
     const o = opts || {};
-    _set(ctx, data.coast, project, o.coast || "#2c4a63", o.maxJump);
-    if (o.borders !== false) _set(ctx, data.borders, project, o.border || "#22384b", o.maxJump);
+    _set(ctx, data.coast, project, o.coast || "#7aa8d0", o.maxJump, o.coastWidth || 1.2);
+    if (o.borders !== false) _set(ctx, data.borders, project, o.border || "#5077a0", o.maxJump, o.borderWidth || 1);
   }
   return { load, draw, ready: () => !!data };
 })();
