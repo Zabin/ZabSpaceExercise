@@ -188,6 +188,8 @@ class SessionManager:
         self.osys.orders.clear()           # queued events were dropped by the rewind
         self.osys._sensor_bookings.clear()
         self.osys._order_sensor.clear()
+        self.osys._pass_bookings.clear()
+        self.osys._order_pass.clear()
         # Rebuild sensor bookings from executed observe events still in the (truncated) eventlog.
         for entry in self.sim.eventlog.entries:
             if entry.kind == "execute_observe":

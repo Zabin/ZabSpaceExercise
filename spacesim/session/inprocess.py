@@ -290,12 +290,25 @@ class InProcessSession:
         activities: list[dict] = []
 
         # 1) Orders (past, queued, cancelled, rejected).
+        from spacesim.engine.orders import BAR_DURATION_S
         for o in mgr.osys.orders.values():
             if cell != "white" and o.cell != cell:
                 continue
             label = f"{o.actor} {o.action}" + (f" → {o.target}" if o.target else "")
             if o.earliest_window is not None:
-                start, end = o.earliest_window
+                win_start, win_end = o.earliest_window
+                # Clamp bar to a realistic action duration so the Gantt reflects how
+                # long the actual uplink/collection/dump takes, not the whole pass.
+                if o.action == "observe":
+                    dur_us = int(float(o.params.get("duration_s", 300)) * 1_000_000)
+                else:
+                    dur_s = BAR_DURATION_S.get(o.action)
+                    dur_us = dur_s * 1_000_000 if dur_s is not None else None
+                if dur_us is not None:
+                    bar_end = min(win_end, win_start + dur_us)
+                else:
+                    bar_end = win_end
+                start, end = win_start, bar_end
             else:
                 # Cyber / rejected orders: no window. Show as a marker around issued_at.
                 start = o.issued_at or now

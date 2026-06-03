@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from spacesim.content.vignette import load_vignette
-from spacesim.engine.orders import Order
+from spacesim.engine.orders import MAX_COMMANDS_PER_PASS, Order
 from spacesim.session.manager import SessionManager
 
 
@@ -68,6 +68,36 @@ def test_cancel_observe_frees_sensor_for_rebooking():
     # list_orders exposes issued_at field.
     rows = mgr.list_orders("blue")
     assert all("issued_at" in r for r in rows)
+
+
+def test_pass_capacity_limits_commands_per_window():
+    """At most MAX_COMMANDS_PER_PASS commands can be queued for the same access window."""
+    mgr = _mgr()
+    # Queue MAX commands — all should be accepted into the same earliest window.
+    accepted = []
+    for _ in range(MAX_COMMANDS_PER_PASS):
+        ack = mgr.issue_order("blue", Order(cell="blue", actor="ISR-EO-1", action="command",
+                                            params={"via": "GS-TRN", "verb": "cdh.dump_storage"}))
+        assert ack.status == "queued", f"expected queued, got {ack.reason}"
+        accepted.append(ack)
+    # Verify they all share the same window (same pass slot).
+    wins = [mgr.osys.orders[a.id].earliest_window for a in accepted]
+    assert all(w == wins[0] for w in wins), "all queued commands should target the same pass"
+
+    # One more — must either be rejected (pass_capacity_full) or pushed to the NEXT window.
+    overflow = mgr.issue_order("blue", Order(cell="blue", actor="ISR-EO-1", action="command",
+                                             params={"via": "GS-TRN", "verb": "cdh.dump_storage"}))
+    if overflow.status == "rejected":
+        assert overflow.reason == "pass_capacity_full"
+    else:
+        # Accepted into a later window — must not share the first window.
+        assert mgr.osys.orders[overflow.id].earliest_window != wins[0]
+
+    # After cancelling one accepted order, the slot opens and the overflow window resets.
+    mgr.cancel_order("blue", accepted[0].id)
+    key = (mgr.osys.orders[accepted[0].id].cell, wins[0][0])  # won't be in _order_pass anymore
+    # Pass booking decremented: capacity below MAX again.
+    assert mgr.osys._pass_bookings.get(("ISR-EO-1", wins[0][0]), 0) == MAX_COMMANDS_PER_PASS - 1
 
 
 def test_windows_ahead_returns_upcoming_passes_by_channel():

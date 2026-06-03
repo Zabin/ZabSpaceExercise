@@ -1063,9 +1063,11 @@ function drawActivityBar(ctx, x, y, w, h, a, cell) {
     default:
       ctx.fillStyle = col.fill; ctx.fillRect(x, y, w, h);
   }
-  // Action label inside the bar if it fits
-  if (w > 60) {
-    ctx.fillStyle = "#0a0f15"; ctx.font = "10px monospace";
+  // Label: dark text on filled bars (executed/active/default); bright on outlined future bars.
+  if (w > 40) {
+    const unfilled = a.status === "queued" || a.status === "scheduled";
+    ctx.fillStyle = unfilled ? "#d6e8ff" : "#0a0f15";
+    ctx.font = "10px monospace";
     ctx.fillText(a.action.slice(0, Math.floor(w / 7)), x + 4, y + 9);
   }
 }

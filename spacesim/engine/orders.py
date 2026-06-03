@@ -44,6 +44,23 @@ ACTION_CHANNEL = {
     "cyber": None,  # not window-gated
 }
 
+# How many command/maneuver uplinks a single asset can accept in one access window.
+# Reflects realistic uplink-command budget: ACK + parameter upload takes ~30–60 s each;
+# a typical 5–10 min LEO pass fits 4–6 commands with margin. GEO passes are longer but
+# the same ceiling keeps the exercise planning realistic.
+MAX_COMMANDS_PER_PASS = 4
+
+# Realistic bar widths for the Gantt chart (in seconds).  "None" means use the full window.
+BAR_DURATION_S: dict = {
+    "command":  120,   # uplink + ACK
+    "maneuver": 120,   # uplink + ACK
+    "downlink": 360,   # 6-min data dump
+    "jam":      None,  # continuous for the window
+    "engage":   120,   # target acquisition + engagement
+    "cyber":     60,   # instantaneous, shown as a 1-min marker
+    "observe":  None,  # use duration_s param (default 300 s) — handled per-order
+}
+
 
 @dataclass
 class Order:
@@ -95,6 +112,8 @@ class OrderSystem:
         self.auto_cue_ssn = None       # set externally to an SSNSystem instance
         self._sensor_bookings: dict[str, list[tuple[int, int]]] = {}  # contention: one task at a time
         self._order_sensor: dict[str, tuple[str, int, int]] = {}     # order_id → (sensor_id, start, end)
+        self._pass_bookings: dict[tuple[str, int], int] = {}         # (actor_id, win_start) → count
+        self._order_pass: dict[str, tuple[str, int]] = {}            # order_id → pass key (for cancel)
         self.orders: dict[str, Order] = {}   # issued orders by id (for the queue + cancellation)
         self._order_counter = 0
 
@@ -169,6 +188,10 @@ class OrderSystem:
                 bookings.remove((start, end))
             except ValueError:
                 pass
+        # Release the per-pass command slot.
+        pass_key = self._order_pass.pop(order_id, None)
+        if pass_key:
+            self._pass_bookings[pass_key] = max(0, self._pass_bookings.get(pass_key, 1) - 1)
         return True
 
     def _ap(self) -> AccessProvider:
@@ -185,23 +208,35 @@ class OrderSystem:
             t = int(stored_at)
             choices.append(("stored_program", AccessWindow(channel="stored", actor=order.actor,
                                                            target=order.actor, start=t, end=t, quality=1.0)))
+
         via = order.params.get("via")
+        gs_windows_exist = False
         if via is not None:
-            g = ap.windows(via, order.actor, COMMAND_UPLINK, now, now + self.horizon)
-            if g:
-                choices.append(("ground_uplink", g[0]))
+            gs_wins = ap.windows(via, order.actor, COMMAND_UPLINK, now, now + self.horizon)
+            gs_windows_exist = bool(gs_wins)
+            for w in gs_wins:
+                if self._pass_bookings.get((order.actor, w.start), 0) < MAX_COMMANDS_PER_PASS:
+                    choices.append(("ground_uplink", w))
+                    break
+
         isl = self._best_isl_window(ap, order.cell, order.actor, now)
         if isl is not None:
             choices.append(("isl_relay", isl))
 
         if not choices:
-            order.status, order.fail_reason = "rejected", "no_window"
+            # Distinguish "windows exist but all full" from "no window at all".
+            reason = "pass_capacity_full" if gs_windows_exist else "no_window"
+            order.status, order.fail_reason = "rejected", reason
             return
         path, win = min(choices, key=lambda pw: pw[1].start)
         order.delivery_path = path
         order.earliest_window = (win.start, win.end)
         order.status = "queued"
         if commit:
+            if path != "stored_program":
+                key = (order.actor, win.start)
+                self._pass_bookings[key] = self._pass_bookings.get(key, 0) + 1
+                self._order_pass[order.id] = key
             kind, data = self._exec_payload(order, win)
             self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
@@ -210,9 +245,11 @@ class OrderSystem:
         for rid, relay in self.world.assets.items():
             if rid == actor or relay.owner != cell or not relay.isl_capable or relay.orbit is None:
                 continue
-            wins = ap.windows(rid, actor, ISL_LINK, now, now + self.horizon)
-            if wins and (best is None or wins[0].start < best.start):
-                best = wins[0]
+            for w in ap.windows(rid, actor, ISL_LINK, now, now + self.horizon):
+                if self._pass_bookings.get((actor, w.start), 0) < MAX_COMMANDS_PER_PASS:
+                    if best is None or w.start < best.start:
+                        best = w
+                    break
         return best
 
     def _plan_collection(self, order: Order, commit: bool) -> None:
