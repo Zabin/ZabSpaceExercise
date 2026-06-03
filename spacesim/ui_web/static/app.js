@@ -881,8 +881,47 @@ async function refresh() {
   if (stale()) return;
   const alarmCount = {}; ALARMS.forEach((a) => { if (a.asset && a.asset !== "—") alarmCount[a.asset] = (alarmCount[a.asset] || 0) + 1; });
   renderFleet(assets, alarmCount, now);
-  $("tracks").querySelector("tbody").innerHTML = tracks.map((t) =>
-    `<tr><td>${t.object}</td><td>${(+t.confidence).toFixed(2)}</td><td>${t.characterized}</td><td>${t.classification}</td></tr>`).join("");
+  const tbody = $("tracks").querySelector("tbody");
+  tbody.innerHTML = tracks.map((t) => {
+    const s = t.state_estimate;
+    const kep = s && s.source === "kepler" && s.a_m != null;
+    // Period: T = 2π√(a³/μ), μ_earth = 3.986e14 m³/s²
+    const period_min = kep ? (2 * Math.PI * Math.sqrt(Math.pow(s.a_m, 3) / 3.986e14) / 60) : null;
+    const coeHint = kep ? `<span class="coe-toggle-hint">▸</span>` : "—";
+    const obsTime = t.last_observation ? iso(t.last_observation).replace("T", " ").replace(/\.\d+Z/, "Z") : "—";
+    const coeBlock = kep ? `
+      <tr class="track-coe-row">
+        <td colspan="5">
+          <div class="track-coe">
+            <span class="track-coe-label">Observed</span><span>${obsTime}</span>
+            <span class="track-coe-label">a</span><span>${(s.a_m / 1000).toFixed(1)} km</span>
+            <span class="track-coe-label">e</span><span>${(+s.e).toFixed(4)}</span>
+            <span class="track-coe-label">i</span><span>${(+s.i_deg).toFixed(2)}°</span>
+            <span class="track-coe-label">Ω</span><span>${(+s.raan_deg).toFixed(2)}°</span>
+            <span class="track-coe-label">ω</span><span>${(+s.argp_deg).toFixed(2)}°</span>
+            <span class="track-coe-label">ν</span><span>${(+s.ta_deg).toFixed(2)}°</span>
+            <span class="track-coe-label">T</span><span>${period_min.toFixed(1)} min</span>
+            <span class="track-coe-label">Regime</span><span>${s.regime || "—"}</span>
+          </div>
+        </td>
+      </tr>` : "";
+    return `<tr class="track-main${kep ? " track-expandable" : ""}" title="${kep ? "Click to show orbital elements at observation time" : ""}">
+      <td>${esc(t.object)}</td><td>${(+t.confidence).toFixed(2)}</td><td>${t.characterized}</td><td>${esc(t.classification)}</td><td>${coeHint}</td>
+    </tr>${coeBlock}`;
+  }).join("");
+  // Toggle COE sub-rows on click.
+  tbody.querySelectorAll("tr.track-expandable").forEach((row) => {
+    row.addEventListener("click", () => {
+      const next = row.nextElementSibling;
+      if (next && next.classList.contains("track-coe-row")) {
+        const open = next.style.display !== "none" && next.style.display !== "";
+        next.style.display = open ? "none" : "";
+        row.querySelector(".coe-toggle-hint").textContent = open ? "▸" : "▾";
+      }
+    });
+  });
+  // Collapse all COE rows on first render so the table stays compact.
+  tbody.querySelectorAll("tr.track-coe-row").forEach((r) => { r.style.display = "none"; });
   // Target autocomplete: own assets + every known-track object id (with classification hint).
   // This is what Red/Blue can legally target — the fog-of-war boundary already filtered the
   // input data, so we just surface the ids the cell can see. Free-text entry still works for
