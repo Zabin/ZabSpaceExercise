@@ -17,9 +17,25 @@ three accessibility toggles (**cb-safe**, **hi-contrast**, **large-text**) — s
 
 ### The scenario picker
 
-White Cell starts by choosing a scenario from the **vignette library** (eight are bundled):
+White Cell starts by choosing a scenario from the **vignette library** (19 are bundled — the
+canonical 8 numbered scenarios plus a training onboarding scenario and four expansion tracks;
+see [§7 the vignette library](06-the-eight-vignettes.md)):
 
 ![Vignette picker](../manual/01-vignette-picker.png)
+
+### Mission brief — read this first
+
+Every vignette ships a per-cell **`intro_brief`** block that surfaces on session load in the
+**Mission brief panel** (top of the main column). It auto-opens the first time you load a
+session, then remembers your collapse state per session in `localStorage`.
+
+The brief carries: situation · mission · friendly forces · threat picture · deadline · rules of
+engagement · success criteria · tool tips — plus live objective rows with countdown and ROE
+chips. Open it again any time from **View ▾ → Mission brief**.
+
+White Cell sees both Blue and Red briefs side-by-side. Blue and Red see only their own brief —
+fog-of-war is honoured at authoring time: Blue's brief doesn't reveal Red's hidden dispositions
+and vice versa.
 
 ### White Cell god-view
 

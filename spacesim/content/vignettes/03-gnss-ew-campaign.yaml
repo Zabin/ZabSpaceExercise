@@ -54,3 +54,24 @@ vignette:
       - {n: 3, title: "Sustain the denial", when: "+ advance through the campaign window",
          action: advance, params: {dt_s: 3601},
          expect: "PNT stays denied locally and reversibly — no satellite is destroyed"}
+
+  intro_brief:
+    blue:
+      situation: "Eastern Europe theater, March 2030. Russian doctrine prioritizes electromagnetic warfare as the first move. A regional GNSS-denial campaign is anticipated against forward forces relying on space-based PNT."
+      mission: "Maintain operational service from BLUE-GNSS for the +1 h campaign window. PNT denial here is LOCAL to a ground bubble around the jammer — the satellite itself is not damaged. The lesson: MEO is effectively kinetically safe; the fight is electromagnetic and local."
+      friendly_forces: "BLUE-GNSS (single MEO PNT bird). BLUE-RADAR (Eglin) for health tracking."
+      threat_picture: "RED-JAM (Kaliningrad area ground EW). Footprint covers a regional user bubble — affects ground PNT receivers, not the satellite bus."
+      deadline_note: "T+1 h (3600 s). The objective measures asset_operational at the deadline."
+      roe_note: "No kinetic option needed. BLUE-GNSS stays nominal unless its bus is attacked (it isn't here)."
+      success_criteria: "maintain_service MET: BLUE-GNSS not in safe-mode or destroyed at T+1 h."
+      tool_tips: "Mostly passive: monitor BLUE-GNSS SOH and advance time. The teaching point is that the satellite remains healthy — Red's denial is LOCAL to ground users, not satellite-wide. The 2D map shows the GNSS sub-satellite path; the Order panel won't have useful Blue actions here."
+    red:
+      situation: "Eastern Europe theater, March 2030. Russian EW-first doctrine. Your unit's task is to deny Blue PNT service to forward-deployed forces in a regional ground bubble for the +1 h campaign window."
+      mission: "Jam the BLUE-GNSS downlink within the bubble for the full +1 h window. This is reversible-by-design — when you stop transmitting, service is restored. MEO is too high for kinetic options anyway."
+      friendly_forces: "RED-JAM (Kaliningrad GNSS-band ground jammer)."
+      threat_picture: "BLUE-GNSS (single MEO PNT bird). BLUE-RADAR (Eglin) can track the satellite but cannot stop your jam."
+      deadline_note: "Sustain denial through T+1 h."
+      roe_note: "No kinetic this vignette. MEO is doctrinally safe from direct ascent. Reversible electronic denial is the only available effect."
+      success_criteria: "deny_pnt MET: link_denied on BLUE-GNSS throughout the window."
+      tool_tips: "Action: jam · actor: RED-JAM · target: BLUE-GNSS · params: {outcome: deny, success_prob: 1.0}. Then advance through the hour. The Activity Gantt (bottom) shows the jam slot."
+

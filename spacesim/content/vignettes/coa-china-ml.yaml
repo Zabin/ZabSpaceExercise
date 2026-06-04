@@ -80,3 +80,22 @@ vignette:
       trigger: {type: time, at_sim_s: 60}
       effects:
         - {type: message, to: [blue, red, white], text: "H-hour. Integrated jam/cyber/RPO package commencing. All Blue mission streams under simultaneous pressure."}
+  intro_brief:
+    blue:
+      situation: "Western Pacific, Taiwan opening crisis (first 30 minutes of conflict). Integrated PLA SSF jam + cyber + RPO attack expected concurrently."
+      mission: "Hold isr_delivers (one downlink), satcom_op (SATCOM operational), geo_custody (track RED-SJ-INSPECTOR) through T+60 min."
+      friendly_forces: "BLUE-ISR (LEO imager), BLUE-SATCOM (GEO comms), BLUE-GEO-COMM (GEO HVA). GS-WESTPAC. BLUE-RADAR-WP + BLUE-OPTICAL-WP sensors."
+      threat_picture: "RED-JAM-COASTAL (ISR downlink jam), RED-CYBER (SATCOM), RED-SJ-INSPECTOR (GEO shadow)."
+      deadline_note: "T+60 min."
+      roe_note: "Red kinetic OFF. Cyber ON for Red."
+      success_criteria: "All three concurrent objectives at the deadline."
+      tool_tips: "Cyber will land off-pass — watch BLUE-SATCOM safe-mode alarms. Task BLUE-OPTICAL-WP on RED-SJ-INSPECTOR to maintain the GEO custody objective."
+    red:
+      situation: "PLA SSF: seize the initiative in the opening minutes of conflict with integrated jam + cyber + RPO. No kinetic this scenario — the lesson is doctrine, not damage."
+      mission: "deny_isr (Blue downlink jammed), safe_satcom (cyber-safe-mode the GEO bird), rpo_close (close inspector inside 100 km of BLUE-GEO-COMM) by T+60 min."
+      friendly_forces: "RED-JAM-COASTAL (jammer), RED-CYBER (cyber unit), RED-SJ-INSPECTOR (GEO inspector, 150 m/s Δv)."
+      threat_picture: "Blue has ISR, SATCOM, GEO comms HVA, plus optical + radar sensors."
+      deadline_note: "All three by T+60 min."
+      roe_note: "Kinetic OFF. Cyber AUTHORIZED. Inspector closing burns adjudicated."
+      success_criteria: "Sustain all three concurrent denials."
+      tool_tips: "Cyber first (off-pass, fires now). Jam during Blue's downlink pass. Inspector closing burns are White-Cell adjudicated when no Red ground station exists."

@@ -67,6 +67,13 @@ class Vignette(BaseModel):
     # Each note: {at_sim_t: int microseconds | null, cell: "blue"|"red"|"white",
     #             title: str, body: str}.  Surfaced in the Coaching panel; ignored by the engine.
     coaching: list[dict] = Field(default_factory=list)
+    # Per-cell mission brief shown above Objectives when the session starts.  Fog-of-war is
+    # honored at authoring time — `blue` may not reveal hidden Red dispositions, and `red` may
+    # not reveal Blue's deadline.  Each block: {situation, mission, friendly_forces,
+    # threat_picture, deadline_note, roe_note, success_criteria, tool_tips} — any of which may
+    # be omitted.  When absent, the UI auto-generates a fallback from title + theater +
+    # objectives + learning_objectives.
+    intro_brief: dict = Field(default_factory=dict)
 
 
 @dataclass

@@ -196,6 +196,36 @@ tr.track-coe-row td { background: #0c1620; padding: 4px 10px 6px 20px !important
 .pchip:hover { border-color: var(--accent2); }
 .pchip.green { color: var(--green); } .pchip.yellow { color: var(--yellow); border-color: #5a4a1e; }
 .pchip.red { color: var(--red); border-color: #5a2424; } .pchip.los { color: #7a8aa0; }
+
+/* Mission brief panel — surfaces vignette intro_brief.{cell} + live deadlines + ROE. */
+.brief-panel { margin: 8px 12px; border-left: 4px solid var(--cell-accent, #5a8fe0); }
+.brief-panel h2 { display: flex; align-items: center; gap: 8px; cursor: default; }
+.brief-toggle { background: transparent; border: 1px solid var(--border); color: var(--text);
+  width: 22px; height: 22px; border-radius: 4px; cursor: pointer; padding: 0; font-size: 12px; }
+.brief-toggle:hover { border-color: var(--accent2); }
+.brief-panel.collapsed .brief-body { display: none; }
+.brief-body { padding: 8px 4px; }
+.brief-cell { padding: 4px 0; }
+.brief-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .brief-grid { grid-template-columns: 1fr; } }
+.brief-cell-blue { border-left: 3px solid #5a8fe0; padding-left: 10px; }
+.brief-cell-red { border-left: 3px solid #e07a7a; padding-left: 10px; }
+.brief-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px; color: var(--muted);
+  padding-bottom: 6px; border-bottom: 1px dashed var(--border); margin-bottom: 8px; }
+.brief-meta b { color: var(--text); font-weight: normal; }
+.brief-doctrine { font-size: 12px; color: var(--muted); margin: 4px 0 8px; }
+.brief-text { display: grid; grid-template-columns: 140px 1fr; gap: 4px 12px; margin: 0; font-size: 13px; }
+.brief-text dt { color: var(--muted); font-weight: bold; }
+.brief-text dd { margin: 0; line-height: 1.35; }
+.brief-objectives, .brief-learn { margin-top: 8px; font-size: 12px; }
+.brief-objectives ul, .brief-learn ul { margin: 4px 0 0 18px; padding: 0; }
+.brief-objectives li.obj-live b { color: #ffd35a; }
+.brief-objectives li.obj-expired { color: var(--muted); }
+.brief-objectives li.obj-expired b { color: var(--muted); }
+.roe-chip { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px;
+  font-family: monospace; margin-right: 2px; }
+.roe-chip.on  { background: rgba(255, 211, 90, 0.18); color: #ffd35a; border: 1px solid #5a4a1e; }
+.roe-chip.off { background: rgba(122, 138, 160, 0.15); color: #9faabd; border: 1px solid #2a3646; }
 .muted { color: var(--muted); }
 .preview { margin: 6px 0 2px; font-size: 12px; min-height: 1.2em; }
 .preview.ok { color: var(--green); }

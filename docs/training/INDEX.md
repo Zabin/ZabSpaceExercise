@@ -14,6 +14,11 @@ Red, and additional pop-out viewers join the same URL from other tabs or LAN mac
 modes share the same fog-of-war, the same server-authoritative clock, and the same UI — there
 is no separate "multiplayer build." See module 01 for the workflow.
 
+> **First-time operator?** When you load a session, the **Mission brief panel** auto-opens at
+> the top of the main column. It carries the per-cell situation, mission, friendly forces,
+> threat picture, deadline countdown, ROE, success criteria, and tool tips — read it before
+> doing anything else. Open it again any time from **View ▾ → Mission brief**.
+
 > **About the screenshots:** the images embedded in these modules are faithful renderings of the
 > web UI's panels, generated from real session data by `tools/render_manual.py` (stored in
 > [`../manual/`](../manual/INDEX.md)). They show exactly what each panel reports.

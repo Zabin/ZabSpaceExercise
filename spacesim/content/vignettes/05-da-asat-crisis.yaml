@@ -67,3 +67,24 @@ vignette:
       - {n: 5, title: "Assess the consequences", when: "after intercept",
          action: advance, params: {to: order_window},
          expect: "BLUE-SAT destroyed; destroy_sat MET — but a debris field forms and the un_condemnation inject fires (debris threatens Red too)"}
+
+  intro_brief:
+    blue:
+      situation: "LEO, March 2030. A direct-ascent ASAT capability has been declared operational by Red. National command has lifted Red's kinetic ROE for the exercise. Your operating bird BLUE-SAT is the most likely first target."
+      mission: "Keep BLUE-SAT operational and the debris field empty for the +1 h window. The lesson here is NOT to win the engagement — it's that there is no clean kinetic answer, and a successful Red strike creates debris that denies the regime to everyone."
+      friendly_forces: "BLUE-SAT (LEO operational satellite). No Blue sensor on the threat — characterization comes from external SDA."
+      threat_picture: "RED-ASAT (direct-ascent, 1× round, kinetic AUTHORIZED this vignette). RED-RADAR for their tracking. If Red builds a weapons-quality track on you and the intercept window aligns, engagement succeeds."
+      deadline_note: "T+1 h (3600 s). avoid_debris is measured at the deadline."
+      roe_note: "Red kinetic IS authorized this vignette (unique among the 8). You have no kinetic counter."
+      success_criteria: "avoid_debris MET: no debris in world at T+1 h. (Note: a successful Red engagement creates debris and BOTH cells lose.)"
+      tool_tips: "If a TT&C uplink exists, evasive maneuver (action: maneuver, dv: [0,5,0]) is the only defensive move. Mostly: advance time and observe — the teaching is consequence assessment, not winning."
+    red:
+      situation: "LEO, March 2030. Mission tasking authorizes a direct-ascent ASAT engagement against the Blue operational LEO bird (BLUE-SAT). Political authority for the kinetic option has been granted — but consequences are observed."
+      mission: "Build a weapons-quality track on BLUE-SAT via RED-RADAR, then engage with RED-ASAT during the intercept window. The lesson: the strike succeeds, but the debris field creates a UN condemnation and denies the regime to YOUR future operations too."
+      friendly_forces: "RED-ASAT (direct-ascent, 1× round). RED-RADAR for SDA."
+      threat_picture: "BLUE-SAT (single LEO operational bird, no kinetic counter-options)."
+      deadline_note: "Engage before T+1 h."
+      roe_note: "Kinetic is AUTHORIZED here (red_kinetic_authorized=true). Weapons-quality track is REQUIRED — track confidence ≥ 0.8 AND characterized. observe RED-RADAR → BLUE-SAT until characterized, then engage."
+      success_criteria: "destroy_sat MET: BLUE-SAT health=destroyed. Side effect: debris_present + un_condemnation inject."
+      tool_tips: "Two-step: (1) observe · RED-RADAR → BLUE-SAT · {intent: characterize, classification: hostile} — wait for confidence ≥ 0.8. (2) engage · RED-ASAT → BLUE-SAT. The Order panel's dry-run will reject engage with no_weapons_quality_track until step 1 succeeds."
+

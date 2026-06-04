@@ -4,12 +4,16 @@
 
 The scenario library: a parameter **framework**, the original eight authored vignettes, and a
 **four-track library expansion** (mission-set trials, Red COA library, expanded learning stream,
-novel concepts) — 19 vignettes total. These are the design documents; the runnable scenarios are
-the YAML files in `spacesim/content/vignettes/`. The library architecture lives in
-[00-LIBRARY-ARCHITECTURE](00-LIBRARY-ARCHITECTURE.md).
+novel concepts) — 19 vignettes total. These are the framework + architecture references; the
+runnable scenarios are the YAML files in `spacesim/content/vignettes/`.
 
-> **Start here:** read [00-LIBRARY-ARCHITECTURE](00-LIBRARY-ARCHITECTURE.md) for the four-track
-> design, then dive into individual vignette design notes below.
+> **The YAML is canonical.** Each vignette YAML now carries an `intro_brief: {blue, red}` block
+> that is the authoritative scenario premise, OoB, ROE, and success criteria — surfaced in the
+> in-tool **Mission brief** panel (View ▾ → Mission brief, auto-opens on first session load).
+> Operator-facing per-cell playbooks live in
+> [`../training/11-vignette-playbooks.md`](../training/11-vignette-playbooks.md). The previous
+> stub design notes (`01-leo-isr-denial.md` … `08-multi-domain-taiwan.md`) were stale May-2024
+> drafts that did not match the implemented YAMLs and have been removed.
 
 ## Framework & architecture
 
@@ -19,31 +23,52 @@ the YAML files in `spacesim/content/vignettes/`. The library architecture lives 
 | [00-LIBRARY-ARCHITECTURE](00-LIBRARY-ARCHITECTURE.md) | Four-track library design, registry, authoring rules. |
 | [GROUND-INFRASTRUCTURE](GROUND-INFRASTRUCTURE.md) | Realistic open-source coordinates for ground stations, sensors, jammers, DA-ASAT sites. |
 
-## Original 8 vignettes (design notes)
+## All 19 runnable vignettes
 
-| Doc | Scenario |
-|---|---|
-| [01-leo-isr-denial](01-leo-isr-denial.md) | V1 — LEO ISR denial. |
-| [02-geo-rpo-shadowing](02-geo-rpo-shadowing.md) | V2 — GEO RPO shadowing. |
-| [03-gnss-ew-campaign](03-gnss-ew-campaign.md) | V3 — GNSS / PNT electronic warfare campaign. |
-| [04-co-orbital-threat-escort](04-co-orbital-threat-escort.md) | V4 — co-orbital threat & active escort defense. |
-| [05-da-asat-crisis](05-da-asat-crisis.md) | V5 — direct-ascent ASAT crisis & escalation. |
-| [06-satcom-cyber-link](06-satcom-cyber-link.md) | V6 — SATCOM cyber & link interdiction. |
-| [07-sda-custody-hunt](07-sda-custody-hunt.md) | V7 — SDA custody hunt. |
-| [08-multi-domain-taiwan](08-multi-domain-taiwan.md) | V8 — multi-domain integrated campaign (capstone). |
+The canonical authoring source is the YAML; the operator-facing brief is the YAML's
+`intro_brief.{cell}` (Mission brief panel) and the playbook is
+[`../training/11-vignette-playbooks.md`](../training/11-vignette-playbooks.md).
 
-## Library expansion — new vignettes (YAML only; design notes inline in each YAML)
+### Track — the original 8 (numbered)
 
-| ID | Track | Title |
+| ID | Title | Notes |
 |---|---|---|
-| `mt-isr-sar` | A — mission-set trial | Mission Trial: SAR ISR |
-| `mt-sigint-geolocate` | A — mission-set trial | Mission Trial: SIGINT Geolocation |
-| `mt-weather-collect` | A — mission-set trial | Mission Trial: Weather Collection |
-| `coa-russia-ml` | B — Red COA | Russia ML: Sustained EW Campaign |
-| `coa-russia-md` | B — Red COA | Russia MD: DA-ASAT + Cyber Surprise |
-| `coa-china-ml` | B — Red COA | China ML: Early Integrated Disruption |
-| `coa-china-md` | B — Red COA | China MD: Decisive Counterspace Strike |
-| `coa-misc-iran-ml` | B — Red COA | Misc ML (Iran): Regional EW Spoiler |
-| `learn-intermediate-recovery` | C — learning | Learning: Safe-Mode Recovery |
-| `nv-isl-relay-debris` | D — novel | Novel: ISL Relay + Debris-Corridor Maneuver |
+| `training-basics` | Training: Basics | Onboarding — learn the UI before the eight. |
+| `leo-isr-denial` | V1 — LEO ISR Denial | Pass-window gating, reversible denial. |
+| `geo-rpo-shadowing` | V2 — GEO RPO Shadowing | Custody decay, ambiguous intent. |
+| `gnss-ew-campaign` | V3 — GNSS / PNT EW Campaign | MEO kinetically safe; local PNT bubble. |
+| `co-orbital-threat-escort` | V4 — Co-Orbital Threat & Escort | Active escort defense. |
+| `da-asat-crisis` | V5 — DA-ASAT Crisis | Kinetic + debris consequence + UN condemnation. |
+| `satcom-cyber-link` | V6 — SATCOM Cyber & Link | Off-pass cyber + recovery loop. |
+| `sda-custody-hunt` | V7 — SDA Custody Hunt | Sensor contention; break_custody Red. |
+| `multi-domain-taiwan` | V8 — Multi-Domain Capstone | Three concurrent objectives — triage. |
 
+### Track A — mission-set trials
+
+| ID | Title |
+|---|---|
+| `mt-isr-sar` | Mission Trial: SAR ISR |
+| `mt-sigint-geolocate` | Mission Trial: SIGINT Geolocation |
+| `mt-weather-collect` | Mission Trial: Weather Collection |
+
+### Track B — Red COA library
+
+| ID | Title |
+|---|---|
+| `coa-russia-ml` | Russia ML: Sustained EW Campaign |
+| `coa-russia-md` | Russia MD: DA-ASAT + Cyber Surprise |
+| `coa-china-ml` | China ML: Early Integrated Disruption |
+| `coa-china-md` | China MD: Decisive Counterspace Strike |
+| `coa-misc-iran-ml` | Misc ML (Iran): Regional EW Spoiler |
+
+### Track C — learning stream
+
+| ID | Title |
+|---|---|
+| `learn-intermediate-recovery` | Learning: Safe-Mode Recovery |
+
+### Track D — novel concepts
+
+| ID | Title |
+|---|---|
+| `nv-isl-relay-debris` | Novel: ISL Relay + Debris-Corridor Maneuver |

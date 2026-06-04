@@ -131,3 +131,24 @@ vignette:
       - {n: 5, title: "Hold and assess", when: "+ advance to +90 min",
          action: advance, params: {dt_s: 5401},
          expect: "deny_isr + disable_satcom MET if sustained; kinetic ASAT stays OFF unless White-Cell authorizes"}
+
+  intro_brief:
+    blue:
+      situation: "Western Pacific theatre, March 2030. A multi-domain Red campaign is anticipated across ISR denial, SATCOM cyber, and GEO proximity. THREE objectives run concurrently in a +90 min watch window — you CANNOT do everything, prioritise."
+      mission: "Deliver ISR (deliver_isr), keep SATCOM operational (keep_satcom), and maintain a track on the GEO inspector (track_inspector) — concurrently. The capstone teaches multi-domain tradeoffs: you will have to drop one to save the other two."
+      friendly_forces: "ISR-EO-1 (LEO imager). SATCOM-1 (GEO SATCOM, unpatched ground_modem). GNSS-1 (MEO PNT). BLUE-OPT (Maui optical sensor)."
+      threat_picture: "JAM-NORTH (downlink jammer for ISR-EO-1). RED-CYBER (will exploit SATCOM-1 modem vuln off-pass). RED-INSP (GEO shadow). RED-ASAT (kinetic gated OFF by default but visible — DO NOT plan around losing the bird unless White authorises Red kinetic)."
+      deadline_note: "T+90 min (5400 s). All three objectives evaluated at the deadline."
+      roe_note: "Red kinetic OFF by default (red_kinetic_authorized=false). Cyber ROE on for Red (cyber_authorized=true)."
+      success_criteria: "Up to three of: deliver_isr, keep_satcom (asset_operational on SATCOM-1), track_inspector (custody on RED-INSP). Prioritise; full sweep is not the expected outcome."
+      tool_tips: "Open the Tutorial panel — it walks Blue through prioritisation. Recovery for SATCOM-1 (after cyber) requires the White-Cell patch_modem inject — there's no Blue command station for SATCOM-1 here. ISR-EO-1 has a downlink route via available stations; queue it early to ride out a possible jam."
+    red:
+      situation: "Western Pacific theatre, March 2030. Three concurrent Red campaigns: jam Blue's ISR downlink, cyber the SATCOM bird, and shadow the GEO comms asset with the inspector. The capstone is multi-domain pressure."
+      mission: "Concurrently deny Blue's ISR delivery, drop SATCOM-1 to safe mode, and close RED-INSP inside 100 km of SATCOM-1 — all by T+90 min."
+      friendly_forces: "JAM-NORTH (downlink jammer). RED-CYBER (off-pass cyber). RED-INSP (GEO inspector, 200 m/s Δv). RED-ASAT (visible but kinetic OFF — bait)."
+      threat_picture: "Blue has ISR-EO-1, SATCOM-1 (unpatched modem), GNSS-1, BLUE-OPT (sensor)."
+      deadline_note: "All three objectives evaluated at T+90 min."
+      roe_note: "Cyber AUTHORIZED. Kinetic NOT authorized — engage will be rejected for RED-ASAT."
+      success_criteria: "deny_isr + disable_satcom + shadow_hva. RED-INSP closing burns are doctrine/White-Cell adjudicated (no Red ground TT&C station)."
+      tool_tips: "Fire-and-forget the cyber early (action: cyber · actor: RED-CYBER · target: SATCOM-1). Plan the jam for Blue's downlink window (action: jam · actor: JAM-NORTH · target: ISR-EO-1). Closing burns for RED-INSP escalate via White Cell."
+

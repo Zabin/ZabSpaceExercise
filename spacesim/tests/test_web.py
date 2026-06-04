@@ -48,6 +48,33 @@ def test_vignette_tutorial_endpoint_returns_separated_cells():
     assert c.get("/api/vignettes/does-not-exist/tutorial").status_code == 404
 
 
+def test_session_brief_returns_per_cell_blocks():
+    """Mission brief endpoint must return per-cell intro_brief + ROE + enriched objectives."""
+    c = _client()
+    sid = _new_session(c)
+    blue = c.get(f"/api/sessions/{sid}/brief/blue").json()
+    assert blue["cell"] == "blue"
+    assert blue["title"] == "LEO ISR Denial"
+    # intro_brief fields must be present (authored in YAML).
+    for key in ("situation", "mission", "friendly_forces", "threat_picture",
+                "deadline_note", "roe_note", "success_criteria", "tool_tips"):
+        assert key in blue["text"], f"missing {key} in blue brief"
+    # ROE must reflect the vignette (kinetic OFF in vignette 1).
+    assert blue["roe"]["kinetic_authorized"] is False
+    # Enriched objectives must include desc + countdown.
+    assert any(o["id"] == "deliver_isr" and o["desc"] and o["remaining_s"] > 0
+               for o in blue["objectives"])
+
+    # Red sees its own brief, not Blue's (cell field correct).
+    red = c.get(f"/api/sessions/{sid}/brief/red").json()
+    assert red["cell"] == "red"
+    assert red["text"]["mission"] != blue["text"]["mission"]
+
+    # White sees both.
+    white = c.get(f"/api/sessions/{sid}/brief/white").json()
+    assert "blue" in white and "red" in white
+
+
 def test_fog_of_war_applied_server_side():
     c = _client()
     sid = _new_session(c)

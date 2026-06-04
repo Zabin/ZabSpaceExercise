@@ -945,6 +945,7 @@ async function refresh() {
   $("effects").innerHTML = effects.map((e) => `<li>${e.target}: ${e.symptom} ${e.attributed ? "(attributed)" : "(source unknown)"}</li>`).join("");
   $("messages").innerHTML = messages.map((m) => `<li>${m.text}</li>`).join("");
   renderObjectives(objectives);
+  renderBrief();
 
   // Command menu: populate actor list (own assets + sensors that can act; network sensors excluded).
   const actorIds = assets.filter((a) => ACTIONS_BY_KIND[a.kind] && !a.network).map((a) => a.id);
@@ -2239,6 +2240,111 @@ addEventListener("DOMContentLoaded", () => {
     p.classList.contains("open") ? tutorialClose() : tutorialOpen();
   });
   const tc = $("tutorial-close"); if (tc) tc.addEventListener("click", tutorialClose);
+});
+
+// ---------------------------------------------------------------------------
+// Mission brief panel — first thing a new operator should read.  Pulls the
+// per-cell brief from /api/sessions/{sid}/brief/{cell} which combines static
+// vignette intro_brief.{cell} text with live ROE + objective deadlines.
+// Auto-opens on first session load (localStorage flag); collapsible thereafter.
+// ---------------------------------------------------------------------------
+let LAST_BRIEF_SID = null;       // suppress re-fetching every poll
+async function renderBrief() {
+  const body = $("brief-body");
+  const titleEl = $("brief-vignette-title");
+  if (!body) return;
+  if (!SID) {
+    body.innerHTML = "<div class='muted'>(load a vignette to see the mission brief)</div>";
+    if (titleEl) titleEl.textContent = "";
+    return;
+  }
+  // Re-fetch on every refresh so deadline countdowns + ROE stay live.
+  let brief;
+  try { brief = await api.get(`/api/sessions/${SID}/brief/${CELL}`); }
+  catch { body.innerHTML = "<div class='muted'>(brief unavailable)</div>"; return; }
+
+  const fmtRemaining = (s) => {
+    if (s == null || s < 0) return "expired";
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    return h > 0 ? `${h}h ${String(m).padStart(2, "0")}m` : `${m}m ${String(ss).padStart(2, "0")}s`;
+  };
+
+  // White sees both cells; Blue/Red see their own.
+  const renderCell = (b) => {
+    const t = b.text || {};
+    const block = (label, text) => text ? `<dt>${label}</dt><dd>${esc(text)}</dd>` : "";
+    const lo = (b.learning_objectives || []).map((x) => `<li>${esc(x)}</li>`).join("");
+    const objs = (b.objectives || []).map((o) => {
+      const stale = o.remaining_s <= 0;
+      const cls = stale ? "obj-expired" : "obj-live";
+      return `<li class="${cls}"><b>${esc(o.id)}</b> — ${esc(o.desc || "(no description)")}` +
+             ` <span class="muted">T-${fmtRemaining(o.remaining_s)}</span></li>`;
+    }).join("");
+    const roe = b.roe || {};
+    const roeChips = [
+      `<span class="roe-chip ${roe.kinetic_authorized ? "on" : "off"}">kinetic ${roe.kinetic_authorized ? "ON" : "OFF"}</span>`,
+      `<span class="roe-chip ${roe.cyber_authorized ? "on" : "off"}">cyber ${roe.cyber_authorized ? "ON" : "OFF"}</span>`,
+    ].join(" ");
+    const doctrine = b.red_doctrine_profile && b.cell === "red"
+      ? `<div class="brief-doctrine"><b>Red doctrine:</b> ${esc(b.red_doctrine_profile)}</div>`
+      : "";
+    return `
+      <div class="brief-cell brief-cell-${b.cell}">
+        <div class="brief-meta">
+          <span><b>Theater:</b> ${esc(b.theater || "—")}</span>
+          <span><b>Start:</b> ${esc((b.start_epoch_utc || "").replace("T", " ").replace("Z", " UTC"))}</span>
+          <span><b>Duration:</b> ~${b.estimated_duration_min || "?"} min</span>
+          <span><b>ROE:</b> ${roeChips}</span>
+        </div>
+        ${doctrine}
+        <dl class="brief-text">
+          ${block("Situation", t.situation)}
+          ${block("Mission", t.mission)}
+          ${block("Friendly forces", t.friendly_forces)}
+          ${block("Threat picture", t.threat_picture)}
+          ${block("Deadline", t.deadline_note)}
+          ${block("Rules of engagement", t.roe_note)}
+          ${block("Success criteria", t.success_criteria)}
+          ${block("Tool tips", t.tool_tips)}
+        </dl>
+        <div class="brief-objectives"><b>Objectives</b><ul>${objs || "<li class='muted'>(none)</li>"}</ul></div>
+        ${lo ? `<div class="brief-learn"><b>Learning objectives</b><ul>${lo}</ul></div>` : ""}
+      </div>`;
+  };
+
+  if (CELL === "white" && brief.blue && brief.red) {
+    body.innerHTML = `<div class="brief-grid">${renderCell(brief.blue)}${renderCell(brief.red)}</div>`;
+    if (titleEl) titleEl.textContent = "(white sees both cells)";
+  } else {
+    body.innerHTML = renderCell(brief);
+    if (titleEl) titleEl.textContent = brief.title ? `— ${brief.title}` : "";
+  }
+
+  // Auto-open the brief on the first encounter of this session, then remember the user's choice.
+  if (SID !== LAST_BRIEF_SID) {
+    LAST_BRIEF_SID = SID;
+    const dismissedKey = `brief-dismissed-${SID}`;
+    if (!localStorage.getItem(dismissedKey)) {
+      $("brief-panel").classList.remove("collapsed");
+      $("brief-toggle").textContent = "▾";
+    }
+  }
+}
+function toggleBrief() {
+  const panel = $("brief-panel");
+  if (!panel) return;
+  const collapsed = panel.classList.toggle("collapsed");
+  $("brief-toggle").textContent = collapsed ? "▸" : "▾";
+  if (SID) localStorage.setItem(`brief-dismissed-${SID}`, collapsed ? "1" : "");
+}
+addEventListener("DOMContentLoaded", () => {
+  const bt = $("brief-toggle"); if (bt) bt.addEventListener("click", toggleBrief);
+  const bo = $("brief-open"); if (bo) bo.addEventListener("click", () => {
+    const p = $("brief-panel"); if (!p) return;
+    p.classList.remove("collapsed");
+    $("brief-toggle").textContent = "▾";
+    p.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 });
 
 // §10.D.17 — Vignette inspector. Pulls the raw YAML and shows it in a modal; "Download YAML"

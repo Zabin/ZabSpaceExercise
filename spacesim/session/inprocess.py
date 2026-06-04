@@ -234,6 +234,51 @@ class InProcessSession:
         self.catch_up(session)
         return self._sessions[session].objectives()
 
+    def session_brief(self, session: str, cell: str) -> dict:
+        """Per-cell mission brief + ROE + deadline status, surfaced in the UI's brief panel.
+
+        Combines static vignette `intro_brief.{cell}` text with live runtime state (current
+        sim time, computed deadline, ROE booleans).  White sees both cells' briefs.
+        """
+        self.catch_up(session)
+        mgr = self._sessions[session]
+        v = mgr.vignette
+        ctx = mgr.ctx
+        now = mgr.world.now
+
+        def _cell_brief(c: str) -> dict:
+            text = v.intro_brief.get(c, {}) if isinstance(v.intro_brief, dict) else {}
+            # Per-objective deadline: use metric.by_s if set, else ctx.landing_deadline.
+            objs_out = []
+            for obj in v.objectives.get(c, []):
+                metric = obj.get("metric", {}) or {}
+                deadline_us = ctx.start_epoch + int(float(metric["by_s"]) * 1_000_000) \
+                    if "by_s" in metric else ctx.landing_deadline
+                objs_out.append({
+                    "id": obj.get("id"),
+                    "desc": obj.get("desc", ""),
+                    "metric_kind": metric.get("kind", ""),
+                    "deadline": int(deadline_us),
+                    "remaining_s": max(0, (int(deadline_us) - now) // 1_000_000),
+                })
+            return {
+                "cell": c,
+                "title": v.title,
+                "theater": (v.geography or {}).get("theater", ""),
+                "start_epoch_utc": v.start_epoch_utc,
+                "estimated_duration_min": v.estimated_duration_min,
+                "red_doctrine_profile": ctx.red_doctrine_profile,
+                "learning_objectives": list(v.learning_objectives),
+                "text": text,             # situation/mission/etc — from the YAML intro_brief.{cell}
+                "objectives": objs_out,   # enriched with desc + deadline
+                "roe": dict(ctx.roe),     # {kinetic_authorized, cyber_authorized}
+                "now": now,
+            }
+
+        if cell == "white":
+            return {"now": now, "blue": _cell_brief("blue"), "red": _cell_brief("red")}
+        return _cell_brief(cell)
+
     # -- maneuver mode computation (read-only) ---------------------------------
     def compute_maneuver(self, session: str, cell: str, actor: str,
                          mode: str, params: dict) -> dict:

@@ -68,3 +68,22 @@ vignette:
       trigger: {type: manual}
       effects:
         - {type: message, to: [blue, white], text: "RED-EMITTER ceased transmission; SIGINT passes during this window will yield nothing."}
+  intro_brief:
+    blue:
+      situation: "Open ocean — a sea-based emitter of interest must be characterized. SIGINT geolocation is a MULTI-PASS problem: three look angles converge via TDOA/FDOA on the emitter location."
+      mission: "Characterize RED-EMITTER (characterize_emitter) using your three-bird SIGINT constellation, while keeping the constellation alive (preserve_constellation), by T+45 min."
+      friendly_forces: "SIGINT-1, SIGINT-2, SIGINT-3 (3-bird constellation), GS-MIDLAT, BLUE-OPTICAL."
+      threat_picture: "RED-EMITTER (the target — passive RF emitter)."
+      deadline_note: "T+45 min (2700 s)."
+      roe_note: "Doctrinal: no kinetic. The mission is intelligence collection."
+      success_criteria: "Characterized track on RED-EMITTER + all three birds alive at the deadline."
+      tool_tips: "Task each SIGINT bird on RED-EMITTER through its access window. Geolocation error scales as 1/√(N collectors × dwell time)."
+    red:
+      situation: "Mission trial: prevent Blue from characterizing the emitter. Passive presence — your only move is to time the emitter's pattern around Blue's access windows."
+      mission: "deny_characterization through T+45 min."
+      friendly_forces: "RED-EMITTER (RF emitter)."
+      threat_picture: "Blue 3-bird SIGINT constellation + GS-MIDLAT + an optical sensor."
+      deadline_note: "T+45 min."
+      roe_note: "Passive only."
+      success_criteria: "Block characterization on RED-EMITTER (confidence < threshold + not characterized at deadline)."
+      tool_tips: "Mostly observational — advance time. The emitter's signature is what Blue collects on."

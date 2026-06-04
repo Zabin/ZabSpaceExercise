@@ -65,3 +65,22 @@ vignette:
       trigger: {type: manual}
       effects:
         - {type: message, to: [blue, white], text: "RED-MOBILE-JAM-1 has moved — last known custody is stale; request fresh SSN observation."}
+  intro_brief:
+    blue:
+      situation: "Persian Gulf / Strait of Hormuz. A non-spacefaring adversary fields mobile EW units that contest your space-enabled operations from the ground."
+      mission: "Keep PNT (pnt_op) and SATCOM (satcom_op) operational during the +45 min watch."
+      friendly_forces: "BLUE-PNT (MEO PNT), BLUE-SATCOM (GEO comms), GS-GULF, BLUE-RADAR-GULF."
+      threat_picture: "RED-MOBILE-JAM-1 and -2 (two mobile EW vehicles, regional bubble)."
+      deadline_note: "T+45 min (2700 s)."
+      roe_note: "No kinetic in either direction. The fight is electromagnetic."
+      success_criteria: "Both BLUE-PNT and BLUE-SATCOM remain operational at the deadline."
+      tool_tips: "Mostly passive — the jam is local to a ground bubble and the satellites stay healthy. Watch the link-state indicators."
+    red:
+      situation: "Regional EW spoiler doctrine. You operate mobile ground jammers from dispersed sites."
+      mission: "deny_pnt and deny_satcom in the local bubble for the +45 min window."
+      friendly_forces: "RED-MOBILE-JAM-1 (jammer), RED-MOBILE-JAM-2 (jammer)."
+      threat_picture: "Blue has MEO PNT + GEO SATCOM and limited ground-station coverage."
+      deadline_note: "Sustain denial through T+45 min."
+      roe_note: "No kinetic this vignette — reversible EW only."
+      success_criteria: "Both denials sustained at the deadline."
+      tool_tips: "Queue jam from each mobile unit on its corresponding Blue link, then advance the clock."

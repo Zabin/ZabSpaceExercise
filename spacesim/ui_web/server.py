@@ -159,6 +159,13 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail=f"vignette {vid!r} not found")
 
+    @app.get("/api/sessions/{sid}/brief/{cell}")
+    def session_brief(sid: str, cell: str) -> dict:
+        """Per-cell mission brief: situation, mission, friendly forces, threat picture, deadline,
+        ROE, success criteria, tool tips.  Pulls vignette.intro_brief.{cell} + runtime objective
+        deadlines + computed ROE.  White sees both cells."""
+        return api.session_brief(sid, cell)
+
     @app.post("/api/sessions")
     def load(req: LoadRequest) -> dict:
         sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed)

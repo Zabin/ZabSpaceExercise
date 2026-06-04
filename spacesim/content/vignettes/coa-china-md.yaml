@@ -88,3 +88,22 @@ vignette:
       trigger: {type: time, at_sim_s: 120}
       effects:
         - {type: message, to: [blue, red, white], text: "Red leadership has authorized kinetic counterspace. Triage: not all assets will survive."}
+  intro_brief:
+    blue:
+      situation: "Taiwan Strait + Western Pacific, late-crisis A2/AD phase. Red leadership has authorized concurrent kinetic + RPO + cyber + EW counter-space attacks. Triage: not all of your space assets will survive."
+      mission: "Keep at least one ISR delivering (any_isr), PNT operational (pnt_op), and SATCOM operational (satcom_op) through the +75 min window."
+      friendly_forces: "BLUE-ISR-PRIMARY (LEO imager), BLUE-SATCOM-PRIMARY (GEO comms), BLUE-PNT (MEO PNT). GS-WP (Western Pacific ground station). BLUE-RADAR + BLUE-OPTICAL sensors."
+      threat_picture: "RED-ASAT (direct-ascent, kinetic ON), RED-SJ-INSPECTOR (GEO shadow), RED-JAM-PNT (PNT jammer), RED-CYBER (cyber). All in play simultaneously."
+      deadline_note: "T+75 min (4500 s). Each objective evaluated at the deadline."
+      roe_note: "Red kinetic AUTHORIZED. Plan for asset losses; the lesson is triage, not full sweep."
+      success_criteria: "Hold any_isr + pnt_op + satcom_op at the deadline. Expect to drop one."
+      tool_tips: "Open the Activity Gantt (bottom) to see all three concurrent Red lines. Patch the SATCOM modem (White-Cell patch_modem) before cyber lands. Maneuver BLUE-ISR-PRIMARY to evade if intercept geometry is visible."
+    red:
+      situation: "PLA SSF doctrine in the decisive A2/AD phase. Leadership has authorized concurrent kinetic + RPO + cyber + EW. Mission: destroy Blue's ISR, deny Blue PNT, and force Blue SATCOM into safe mode."
+      mission: "kill_isr (destroy BLUE-ISR-PRIMARY), deny_pnt (link_denied on BLUE-PNT), safe_satcom (BLUE-SATCOM-PRIMARY in safe mode), all by T+75 min."
+      friendly_forces: "RED-ASAT (1× direct-ascent, kinetic AUTHORIZED), RED-SJ-INSPECTOR (GEO shadow), RED-JAM-PNT (PNT jammer), RED-CYBER (cyber unit)."
+      threat_picture: "Blue has primary ISR, SATCOM, PNT birds plus sensors. The capstone of Red doctrine — full integrated counter-space."
+      deadline_note: "All three objectives by T+75 min."
+      roe_note: "Kinetic ON, cyber ON. Maximum doctrinal latitude — and maximum political cost on debris."
+      success_criteria: "Three concurrent denials. Track the debris consequence — a successful kinetic strike creates the un_condemnation inject."
+      tool_tips: "Sequence: cyber first (no window), then queue jam for the PNT user bubble, then build weapons-quality track on BLUE-ISR-PRIMARY (observe RED-RADAR) before engage. Engage requires confidence ≥ 0.8 + characterized."

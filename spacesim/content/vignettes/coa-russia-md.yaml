@@ -82,3 +82,22 @@ vignette:
       effects:
         - {type: patch_cyber_vuln, target: BLUE-SATCOM, vector: ground_modem}
         - {type: message, to: [blue, white], text: "Modem vulnerability patched; re-safing should stop."}
+  intro_brief:
+    blue:
+      situation: "Global strategic crisis. Russian leadership has authorized a Nudol-class DA-ASAT strike on a Blue LEO bird, concurrent with a SATCOM cyber attack."
+      mission: "Survive: BLUE-ISR-LEO must not be destroyed (isr_survives), BLUE-SATCOM must stay operational (satcom_op), and the LEO regime must remain debris-free (no_debris) at T+60 min."
+      friendly_forces: "BLUE-ISR-LEO, BLUE-SATCOM (GEO), GS-PRIME. Two radars: BLUE-RADAR-W + BLUE-RADAR-E."
+      threat_picture: "RED-NUDOL (Russian direct-ascent, kinetic ON), RED-CYBER (SATCOM), RED-JAM."
+      deadline_note: "T+60 min (3600 s)."
+      roe_note: "Red kinetic AUTHORIZED. You have no kinetic counter — evade or accept loss."
+      success_criteria: "All three survival objectives at the deadline."
+      tool_tips: "If you can build characterization on RED-NUDOL and see intercept geometry, maneuver BLUE-ISR-LEO via TT&C uplink. Otherwise the bird may be lost — that is the strategic lesson."
+    red:
+      situation: "Russian MD COA: kinetic Nudol strike + cyber surprise. Demonstrate capability across two domains."
+      mission: "destroy_isr (kill BLUE-ISR-LEO) and safe_satcom (BLUE-SATCOM in safe mode) by T+60 min."
+      friendly_forces: "RED-NUDOL (DA-ASAT, 1× round), RED-CYBER, RED-JAM."
+      threat_picture: "Blue has primary ISR + GEO SATCOM + ground stations + two-sided radar coverage."
+      deadline_note: "T+60 min."
+      roe_note: "Kinetic AUTHORIZED, cyber AUTHORIZED."
+      success_criteria: "Both denials at the deadline. Track debris consequence and political cost."
+      tool_tips: "Build weapons-quality track on BLUE-ISR-LEO (observe) before engage. Cyber first (fires now), then engage when characterized."

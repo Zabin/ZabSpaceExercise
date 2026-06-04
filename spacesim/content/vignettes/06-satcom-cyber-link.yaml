@@ -63,3 +63,24 @@ vignette:
       - {n: 3, title: "Persist until patched", when: "+ advance through the window",
          action: advance, params: {dt_s: 3601},
          expect: "with root-cause-persists on, the bird re-safes after any recovery until Blue patches the vector"}
+
+  intro_brief:
+    blue:
+      situation: "GEO comms theatre, March 2030. Threat reporting indicates a Red cyber unit has discovered an unpatched ground-modem vulnerability on our BLUE-SATCOM bird. Exploitation could come at any time — cyber is NOT pass-gated."
+      mission: "Keep BLUE-SATCOM operational (out of safe mode) for the +1 h watch window. Root-cause recovery requires PATCHING the vector, not just resetting the bird — a reset alone leaves the vulnerability open."
+      friendly_forces: "BLUE-SATCOM (GEO communications, exposed cyber_vulnerabilities: [ground_modem unpatched])."
+      threat_picture: "RED-CYBER (cyber unit, ground_modem access vector). Cyber resolves off-pass against your defensive posture and the vulnerability state — there's no access window to interdict."
+      deadline_note: "T+1 h (3600 s). The objective measures asset_operational at the deadline."
+      roe_note: "No kinetic option. Cyber-vs-cyber is the doctrinal frame."
+      success_criteria: "keep_service MET: BLUE-SATCOM not in safe mode at T+1 h."
+      tool_tips: "This vignette has NO Blue ground station for direct uplink — the recovery loop requires the White-Cell patch_modem inject. Watch for BLUE-SATCOM dropping to safe mode in the Alarms panel, then ask White to fire patch_modem. After patch, re-issue any required restoration commands."
+    red:
+      situation: "GEO comms theatre, March 2030. Mission tasking: cyber-disable a Blue GEO SATCOM bird (BLUE-SATCOM) by exploiting an unpatched ground-modem vulnerability. Cyber is not pass-gated — fire when ready."
+      mission: "Drop BLUE-SATCOM into safe mode (asset_safed) via the ground_modem vector and keep it there until T+1 h. If Blue resets but doesn't patch the vector, re-exploit."
+      friendly_forces: "RED-CYBER (cyber unit, no ground station required)."
+      threat_picture: "BLUE-SATCOM (GEO SATCOM, cyber_vulnerabilities ground_modem). Blue lacks an organic patch path — they need a White-Cell patch_modem inject."
+      deadline_note: "Keep BLUE-SATCOM in safe mode at T+1 h."
+      roe_note: "Cyber ROE is enabled by default (cyber_authorized=true). No window required, no kinetic involved."
+      success_criteria: "disable_satcom MET: BLUE-SATCOM in safe mode at T+1 h."
+      tool_tips: "Action: cyber · actor: RED-CYBER · target: BLUE-SATCOM · params: {access_vector: ground_modem, outcome: safe_mode, success_prob: 1.0, sm_susceptibility: 1.0}. Fires immediately. Advance through the hour; re-cyber if Blue restores the bird without patching the vector."
+

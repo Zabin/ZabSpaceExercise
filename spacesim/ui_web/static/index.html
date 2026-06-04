@@ -61,6 +61,11 @@
           <label class="menu-item" title="Large-text mode — bumps base font size for projector/low-vision use"><input id="bigtext" type="checkbox"> Large text</label>
         </div>
         <div class="menu-section">
+          <div class="menu-head">Briefing &amp; tutorial</div>
+          <button id="brief-open" class="menu-item" title="Mission brief: situation, objectives, ROE, success criteria">📋 Mission brief</button>
+          <button id="tutorial" class="menu-item" title="Per-cell step-by-step playbook">▶ Tutorial panel</button>
+        </div>
+        <div class="menu-section">
           <div class="menu-head">Pop out (multi-screen)</div>
           <button class="menu-item popout-btn" data-layout="globe">3D globe</button>
           <button class="menu-item popout-btn" data-layout="map">2D belief map</button>
@@ -83,7 +88,6 @@
         <div class="menu-section">
           <div class="menu-head">Tools</div>
           <button id="coach-start" class="menu-item">? Coachmark tour</button>
-          <button id="tutorial" class="menu-item">Tutorial panel</button>
           <button id="inspect-vignette" class="menu-item">Inspect vignette YAML</button>
           <button id="help-btn" class="menu-item" title="Open the help panel — keyboard shortcuts, glossary, troubleshooting">? Help</button>
         </div>
@@ -93,6 +97,15 @@
   </header>
 
   <main>
+    <!-- Mission brief panel: situation / objectives / ROE / success criteria. Auto-opens
+         on first session load; collapsible thereafter (state persisted in localStorage). -->
+    <section class="panel brief-panel" id="brief-panel">
+      <h2>
+        <button id="brief-toggle" class="brief-toggle" title="Collapse / expand the brief">▾</button>
+        Mission brief <span id="brief-vignette-title" class="muted"></span>
+      </h2>
+      <div id="brief-body" class="brief-body">(load a vignette to see the mission brief)</div>
+    </section>
     <section class="panel" id="cell-time-panel">
       <h2>Cell &amp; Time</h2>
       <div class="clock">UTC: <b id="now">—</b></div>
