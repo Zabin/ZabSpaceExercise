@@ -6,7 +6,8 @@ fast-forward, rewind, and undo), and injecting events. These are powers **only**
 
 ## 1. Vignette selection & tuning (pre-game and live)
 
-1. **Browse** the vignette library (the eight in `02-vignettes/`, plus any added later). Each
+1. **Browse** the vignette library — 19 scenarios in `spacesim/content/vignettes/` covering the
+   canonical 8 numbered, the training-basics onboarding, and the four-track expansion. Each
    shows title, domains, learning objectives, and estimated duration.
 2. **Select** a vignette → the engine loads its data file (forces, objectives, parameters,
    injects).

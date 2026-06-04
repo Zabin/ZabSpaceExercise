@@ -75,7 +75,7 @@ vignette:
       friendly_forces: "BLUE-SAT (LEO operational satellite). No Blue sensor on the threat — characterization comes from external SDA."
       threat_picture: "RED-ASAT (direct-ascent, 1× round, kinetic AUTHORIZED this vignette). RED-RADAR for their tracking. If Red builds a weapons-quality track on you and the intercept window aligns, engagement succeeds."
       deadline_note: "T+1 h (3600 s). avoid_debris is measured at the deadline."
-      roe_note: "Red kinetic IS authorized this vignette (unique among the 8). You have no kinetic counter."
+      roe_note: "Red kinetic IS authorized this vignette (unique among the canonical 8 numbered scenarios). You have no kinetic counter."
       success_criteria: "avoid_debris MET: no debris in world at T+1 h. (Note: a successful Red engagement creates debris and BOTH cells lose.)"
       tool_tips: "If a TT&C uplink exists, evasive maneuver (action: maneuver, dv: [0,5,0]) is the only defensive move. Mostly: advance time and observe — the teaching is consequence assessment, not winning."
     red:

@@ -14,10 +14,12 @@ command, observe, or attack when access windows permit). Most effects are revers
 cooperative — every browser tab points at one FastAPI server, fog-of-war is enforced server-side
 at the `SessionAPI` / `CellController` boundary.
 
-**Status: backend feature-complete through Phase 8 (392 tests green).** Deterministic engine
+**Status: backend feature-complete through Phase 8 (419 tests green).** Deterministic engine
 (P0–P4.5), the web layer (P5, FastAPI + browser front end), the render-from-custody belief
-scene + 2D map (P5.5), all **eight vignettes** as YAML + TLE force-add + Red doctrine presets
-(P6), the **capstone Vignette 8 + AAR replay** (P7), and the **LAN multiplayer transport** (P8:
+scene + 2D map (P5.5), the full **19-vignette library** (the canonical 8 numbered + the
+training-basics onboarding + 5 Red COA + 3 mission-set + 1 learning + 1 novel) as YAML +
+TLE force-add + Red doctrine presets (P6 + library expansion), the **capstone Vignette 8 +
+AAR replay** (P7), and the **LAN multiplayer transport** (P8:
 server-authoritative lazy clock + per-session RLock + session discovery + join-by-hash URL +
 multi-monitor pop-out windows). Code under `spacesim/`; content is YAML; UI stack = **web**.
 The browser GUI is unverified headless, but every backend path (endpoints, fog, objectives,
@@ -93,7 +95,8 @@ spacesim/
 - **P4.5** Planning & tasking scheduler + safe-mode recovery chain. ✓
 - **P5** UI over the API (FastAPI + web). ✓ (backend tested; browser GUI unverified headless)
   **P5.5** Render-from-custody belief scene + 2D map + self-contained orthographic 3D globe. ✓
-- **P6** Vignettes 2–7 (data) + TLE force-add + Red doctrine profiles. ✓ (all 8 vignette files load/run)
+- **P6** Vignettes 2–7 (data) + TLE force-add + Red doctrine profiles. ✓ (all 19 vignette files
+  load/run: 8 canonical + training-basics + 5 COA + 3 mission-set + 1 learning + 1 novel)
 - **P7** Capstone Vignette 8 + AAR replay (read-only replay/scrub, branch compare). ✓
 - **P8** LAN multiplayer transport + multi-monitor pop-outs. ✓ (server-authoritative lazy clock
   + per-session RLock + `/api/sessions` discovery + join-by-URL-hash + Pop-out submenu opens
@@ -224,8 +227,13 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   from `basemap-data` (offline; coarse fallback if unavailable). `tools/render_manual.py` draws it.
 - `spacesim/content/vignettes/00-training-basics.yaml` — guided tutorial vignette with a per-cell
   `tutorial` step script (≥5 steps each); drives the manual walkthrough + its screenshots.
-- **All eight numbered vignettes carry a per-cell `tutorial:` block** (how each cell completes its
-  objectives, move by move). Surfaced structurally via `GET /api/vignettes/{id}/tutorial` in the
+- **All 19 vignettes carry a per-cell `intro_brief:` block** (situation, mission, friendly forces,
+  threat picture, deadline note, ROE note, success criteria, tool tips). Surfaced in the
+  **Mission brief panel** at the top of `<main>` via `GET /api/sessions/{sid}/brief/{cell}` (combined
+  with live ROE + objective deadlines + countdown). Auto-opens on first session load;
+  collapse state persisted per-session in `localStorage`. White sees both cells side-by-side.
+- **The 8 canonical numbered vignettes also carry a per-cell `tutorial:` block** (how each cell
+  completes its objectives, move by move). Surfaced via `GET /api/vignettes/{id}/tutorial` in the
   in-UI **Tutorial panel** (View ▾) and mirrored in `docs/training/11-vignette-playbooks.md`. The
   achievable objective-flips are verified by `spacesim/tests/test_vignette_tutorials.py`; ROE /
   weapons-quality / command-station gates that block the rest are documented in each block's `expect`.

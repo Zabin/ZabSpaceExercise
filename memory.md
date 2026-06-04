@@ -12,7 +12,9 @@ five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 sessi
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
 tasking (ISL/stored delivery, sensor tasking + contention, safe-mode recovery chain) · **P5** web
 layer (FastAPI over the SessionAPI + browser front end) · **P5.5** render-from-custody belief scene
-(`/scene`) + 2D map · **P6** all eight vignettes as YAML + TLE force-add + Red doctrine presets +
+(`/scene`) + 2D map · **P6** all **19 vignettes** as YAML (the canonical 8 numbered + training-basics
++ 5 Red COA + 3 mission-set + 1 learning + 1 novel) + per-cell `intro_brief` blocks surfaced in the
+in-tool Mission brief panel + TLE force-add + Red doctrine presets +
 data-driven objectives · **P7** capstone Vignette 8 + AAR (read-only replay/scrub, branch compare).
 Plus `docs/manual/` (13 data-driven UI screenshots + INDEX) and the training manual
 (`docs/training/`). All prose docs are modular under `docs/`, routed by `docs/INDEX.md` (see the

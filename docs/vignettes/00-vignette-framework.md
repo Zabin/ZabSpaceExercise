@@ -3,7 +3,9 @@
 A **vignette** is a self-contained scenario the White Cell selects and tunes. Vignettes are
 **data files** (YAML/JSON) loaded by the engine — never hard-coded — so new ones can be
 authored without touching the simulator. This file defines the common structure and the
-parameters White Cell can modify. Each of the eight vignette files conforms to this schema.
+parameters White Cell can modify. Each of the 19 vignette files (the canonical 8 numbered
+scenarios plus the training-basics onboarding and the four-track library expansion) conforms
+to this schema.
 
 ## Authoring philosophy
 
@@ -197,19 +199,22 @@ tree (keep it shallow — 2–3 levels — for a single-sitting exercise). Becau
 deterministic, White Cell can **rewind to a fork and let the cell try a different branch** — the
 core "learn from your choice" mechanic and the seed of the v2 branch-to-live replay feature.
 
-## The eight vignettes in this package
+## The 19 vignettes in this package
 
-| # | File | Primary domains | Teaches |
-|---|---|---|---|
-| 1 | `01-leo-isr-denial.md` | Orbital, EW, DE | LEO pass windows; reversible vs. kinetic |
-| 2 | `02-geo-rpo-shadowing.md` | Orbital (RPO) | Ambiguous intent; escort vs. shadow in GEO |
-| 3 | `03-gnss-ew-campaign.md` | EW | Local/reversible PNT denial; MEO is kinetically safe |
-| 4 | `04-co-orbital-threat-escort.md` | Orbital | Active defense: escort, maneuver-to-evade |
-| 5 | `05-da-asat-crisis.md` | Orbital (kinetic) | Escalation, debris, attribution, political cost |
-| 6 | `06-satcom-cyber-link.md` | Cyber, EW | Ground/link segment; cyber acts outside passes |
-| 7 | `07-sda-custody-hunt.md` | SDA | Custody decay; suppression of counterspace targeting |
-| 8 | `08-multi-domain-taiwan.md` | All | Integrated campaign; space enabling joint fires |
+The runnable scenarios are the YAML files in `spacesim/content/vignettes/`. Each carries its
+own `intro_brief: {blue, red}` block (situation, mission, friendly forces, threat picture,
+deadline, ROE, success criteria, tool tips) — that brief is the canonical operator-facing
+description, surfaced in the in-tool Mission brief panel. For the full library catalogue and
+"what each vignette teaches," see [INDEX.md](INDEX.md) and
+[`../training/06-the-eight-vignettes.md`](../training/06-the-eight-vignettes.md).
 
-Each file below gives the narrative, learning objectives, OOB sketch, the key tunable
-parameters, sample injects, and victory conditions — enough for Claude Code to encode it as
-a data file and for White Cell to understand what each dial does.
+In summary:
+
+- **Canonical 8 numbered** (`01-leo-isr-denial` … `08-multi-domain-taiwan`) — the original
+  teaching set, covering LEO pass windows, GEO RPO, GNSS EW, co-orbital, DA-ASAT,
+  SATCOM cyber, SDA custody, and a multi-domain capstone.
+- **Training onboarding** (`training-basics`) — minimum-viable fleet to learn the UI.
+- **Track A — mission-set trials** (3: SAR, SIGINT, weather).
+- **Track B — Red COA library** (5: Russia ML/MD, China ML/MD, Iran ML).
+- **Track C — learning stream** (1: safe-mode recovery).
+- **Track D — novel concepts** (1: ISL relay + debris corridor).

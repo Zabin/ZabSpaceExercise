@@ -262,7 +262,7 @@ def asset_rows(assets):
 
 # ---------------------------------------------------------------------------
 def s_gallery():
-    img, d = canvas(None, "Vignette picker — the eight selectable scenarios (White Cell menu)")
+    img, d = canvas(None, "Vignette picker — the 19-vignette scenario library (White Cell menu)")
     ix, iy = panel(d, 12, 66, W - 24, 600, "Scenario library")
     rows = []
     for v in list_vignettes():
@@ -270,7 +270,7 @@ def s_gallery():
         rows.append([(vig.id, BLUEc), (vig.title, TEXT), (", ".join(vig.doctrinal_basis)[:46], MUTED),
                      (vig.red_doctrine_profile, YELLOW)])
     table(d, ix, iy, ["ID", "TITLE", "DOMAINS", "RED DOCTRINE"], rows, [220, 240, 380, 180], lh=22)
-    save(img, "01-vignette-picker.png", "Vignette picker / scenario library (all eight vignettes).")
+    save(img, "01-vignette-picker.png", "Vignette picker / scenario library (all 19 vignettes).")
 
 
 def s_cell(cell, mgr, name, sub):

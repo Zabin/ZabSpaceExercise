@@ -118,7 +118,7 @@ vignette:
       deadline_note: "T+1 h (3600 s)."
       roe_note: "Red kinetic OFF. Cyber OFF for both sides by default."
       success_criteria: "Both deliver_isr AND keep_custody met by T+1 h."
-      tool_tips: "Use this vignette to learn the UI before the eight scenario vignettes. Tutorial panel (View ▾) has a step-by-step. The minimum viable Blue play: observe RED-TGT with RADAR-TRN → downlink via GS-TRN → advance time."
+      tool_tips: "Use this vignette to learn the UI before the canonical 8 numbered scenarios or any of the expansion-track vignettes. Tutorial panel (View ▾) has a step-by-step. The minimum viable Blue play: observe RED-TGT with RADAR-TRN → downlink via GS-TRN → advance time."
     red:
       situation: "Training: practice the reversible-effects toolkit (jam, cyber) against a Blue trainee. Kinetic is OFF so you cannot solve via ASAT."
       mission: "Deny Blue's imagery (deny_isr) and ideally drop the bird to safe mode (disable_isr) before T+1 h."

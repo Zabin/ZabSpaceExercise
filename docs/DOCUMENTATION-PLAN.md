@@ -61,7 +61,7 @@ docs/
 │   ├── INDEX.md
 │   └── 01-doctrine-western … 06-bus-and-payload-operations.md
 │
-├── vignettes/                   ← scenario library (framework + 8 vignettes)
+├── vignettes/                   ← scenario library (framework + 19 vignettes)
 │   ├── INDEX.md
 │   └── 00-vignette-framework … 08-multi-domain-taiwan.md
 │

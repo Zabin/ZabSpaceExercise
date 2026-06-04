@@ -6,7 +6,9 @@ military education (PME) wargaming tool for space control and orbital warfare.
 
 > **Status:** Backend feature-complete through Phase 7 (deterministic engine, orbits & access
 > windows, effects/cyber/custody, bus & safe mode, the session layer with fog-of-war, planning &
-> tasking, the FastAPI web layer, the belief scene + 2D map, all eight vignettes, and AAR replay).
+> tasking, the FastAPI web layer, the belief scene + 2D map, the full 19-vignette library
+> (8 canonical + training-basics + 5 Red COA + 3 mission-set + 1 learning + 1 novel), and AAR
+> replay).
 > 81 tests pass. The chosen stack is **Python + FastAPI/web**.
 >
 > **New here?** Read the **[training manual](docs/training/INDEX.md)** to install, run, and
@@ -65,7 +67,7 @@ space-control-sim/
     ├── training/                user manual, 9 modules (INDEX.md)
     ├── design/                  architecture & design corpus (INDEX.md)
     ├── research/                doctrine & domain primers (INDEX.md)
-    ├── vignettes/               scenario library: framework + 8 vignettes (INDEX.md)
+    ├── vignettes/               scenario library: framework + 19 vignettes (INDEX.md)
     └── manual/                  generated UI screenshots
 ```
 
