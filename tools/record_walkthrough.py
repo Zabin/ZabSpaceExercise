@@ -262,7 +262,7 @@ def run() -> None:
         out_gif,
         save_all=True,
         append_images=images[1:],
-        duration=600,  # ms per frame
+        duration=1700,  # ms per frame — slow enough to read the captions (no size cost)
         loop=0,
         optimize=True,
     )
