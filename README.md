@@ -5,6 +5,12 @@ A White Cell facilitator runs a scenario while **Red** and **Blue** cells comman
 and ground assets, constrained by orbital geometry — you can only command, observe, or attack when
 an access window permits.
 
+![Walkthrough](docs/manual/walkthrough.gif)
+
+> 30-second tour. Higher-quality WebM: [`docs/manual/walkthrough.webm`](docs/manual/walkthrough.webm).
+> Regenerate with `python3 tools/record_walkthrough.py` (requires a running server +
+> Playwright Chromium).
+
 > **Status:** Backend feature-complete through Phase 8. Deterministic engine (P0–P4.5), FastAPI web
 > layer (P5), belief scene + 2D map (P5.5), the full **19-vignette library** (P6), capstone
 > Vignette 8 + AAR replay (P7), and **LAN multiplayer transport** (P8 — server-authoritative lazy
