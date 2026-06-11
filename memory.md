@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 7 — 144 tests green.** Implemented end-to-end:
+**Backend feature-complete through Phase 8 — 419 tests green** (as of Jun 2026 audit). Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -156,7 +156,8 @@ test first, implement to green, and add a regression test for every resolved fin
   `isl_max_range_m`) via a cell-owned `isl_capable` relay. Sensor reports raise confidence
   incrementally (default gain 1.0; characterize gated by intent). Safe-mode recovery sized by
   difficulty (quick=1/realistic=2/punishing=3 passes); re-safe if the cause persists.
-- **2026-05-25:** Phases 5.5/6/7 — belief scene (`/scene`) + 2D map; all eight vignettes as YAML with
+- **2026-05-25:** Phases 5.5/6/7 — belief scene (`/scene`) + 2D map; all eight canonical
+  vignettes as YAML (later expanded to the 19-vignette library; see the 2026-06 audit entry below) with
   data-driven objective metrics; TLE force-add; `RedDoctrine` presets; capstone V8 + AAR
   (read-only replay/scrub/branch-compare). Refactor pass: `effects.py` uses a `TYPE_CHECKING`
   import for `WorldState` (pyflakes-clean, no runtime cycle); dead branches/imports removed.
