@@ -10,7 +10,7 @@ glossary. Reading order for a new implementer:
 
 1. This PSD §1–§6 (context, scope, decisions, requirements).
 2. `01-architecture-overview.md` and `04-data-model.md` (the contract).
-3. The research files in `01-research/` (why the rules are what they are).
+3. The research files in `../research/` (why the rules are what they are).
 4. This PSD §7–§12 (architecture detail, milestones, acceptance, risk).
 5. The vignettes and remaining design files as needed during each phase.
 
@@ -97,7 +97,7 @@ the outgoing user blanks the screen during handoff (see §6).
   build time** and manual TLE entry fallback.
 - **Action logging** of all events (the data substrate for v2 replay/AAR), even though the
   replay UI itself is v2.
-- The eight specified vignettes (`02-vignettes/`) plus the ability to author more.
+- The eight specified vignettes (`../vignettes/`) plus the ability to author more.
 
 ### 3.2 Deferred (explicit non-goals for v1)
 | Deferred item | Target | Why deferred |

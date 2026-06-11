@@ -48,7 +48,7 @@ docs/
 │   ├── 03-first-exercise.md
 │   ├── 04-guided-vignette.md
 │   ├── 05-core-concepts.md
-│   ├── 06-the-eight-vignettes.md
+│   ├── 06-the-vignette-library.md
 │   ├── 07-white-cell-facilitation.md
 │   ├── 08-http-api-reference.md
 │   └── 09-troubleshooting-and-glossary.md

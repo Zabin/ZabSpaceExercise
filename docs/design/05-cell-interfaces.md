@@ -23,7 +23,7 @@ Both operational cells work from the same core layout; only ownership and visibi
    readouts (SATCOM transponder/interference, ISR collection queue/storage/downlink, SIGINT/SDA
    tasking & custody, space-control effector status), each color-coded against soft/hard limits.
    Crucially, this shows the **last pass-gated snapshot with its timestamp** — between contacts
-   it may be stale, and the operator knows it. (See `01-research/06-bus-and-payload-operations.md`.)
+   it may be stale, and the operator knows it. (See `../research/06-bus-and-payload-operations.md`.)
 5. **Order / pass-plan panel** — context-sensitive list of commands legal *for the selected
    asset right now or at its next window*, drawn from the asset's command database. Orders are
    assembled into a **pass plan**, validated before release, and show **when they will execute**

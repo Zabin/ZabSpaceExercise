@@ -206,7 +206,7 @@ own `intro_brief: {blue, red}` block (situation, mission, friendly forces, threa
 deadline, ROE, success criteria, tool tips) — that brief is the canonical operator-facing
 description, surfaced in the in-tool Mission brief panel. For the full library catalogue and
 "what each vignette teaches," see [INDEX.md](INDEX.md) and
-[`../training/06-the-eight-vignettes.md`](../training/06-the-eight-vignettes.md).
+[`../training/06-the-vignette-library.md`](../training/06-the-vignette-library.md).
 
 In summary:
 

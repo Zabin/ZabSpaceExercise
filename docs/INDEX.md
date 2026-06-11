@@ -29,7 +29,10 @@ open a theme index, then the one module you need. Structure & rationale:
 - `../CLAUDE.md` — durable agent guide: invariants, code map, build/test commands.
 - `../memory.md` — rolling design-decision log.
 
-## Theme-directory mapping (for the Build Spec's "companion documents")
+## Theme-directory mapping (historical note)
 
-The Build Spec refers to companions in `01-research/`, `02-vignettes/`, `03-software-design/`.
-Those are now realized as `docs/research/`, `docs/vignettes/`, and `docs/design/` respectively.
+Earlier drafts of the Build Spec referred to companions in `01-research/`,
+`02-vignettes/`, and `03-software-design/`. Those legacy paths were rewritten
+during the Jun 2026 audit (see [`AUDIT-2026-06.md`](AUDIT-2026-06.md) §B3) and
+now resolve as `docs/research/`, `docs/vignettes/`, and `docs/design/`. Any
+remaining `01-research/` reference in committed prose is a regression.

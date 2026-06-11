@@ -6,8 +6,8 @@ guaranteed one-click effect with no counterplay, it would dominate the game and 
 kinetic/co-orbital lessons. This document specifies the **full loop** — how an attacker induces
 it, how a defender *detects, diagnoses, and recovers*, and the **White Cell dials** that make
 the whole thing tunable rather than baked in. It builds on
-`01-research/06-bus-and-payload-operations.md`, `04-data-model.md`, and the cyber/EW effects in
-`01-research/03-counterspace-taxonomy.md`.
+`../research/06-bus-and-payload-operations.md`, `04-data-model.md`, and the cyber/EW effects in
+`../research/03-counterspace-taxonomy.md`.
 
 ## 1. Design goals
 1. **Reversible but costly.** Safe mode should cost the attacker something to induce and the
