@@ -13,3 +13,4 @@ mechanics; the [build spec](../build-spec/INDEX.md) remains authoritative for wh
 | [04-orbital-mechanics-primer](04-orbital-mechanics-primer.md) | Orbital mechanics primer — the sim's physics of access. |
 | [05-mission-types-and-counters](05-mission-types-and-counters.md) | Satellite mission types & their counters. |
 | [06-bus-and-payload-operations](06-bus-and-payload-operations.md) | Satellite bus & payload operations — how operators actually fly satellites. |
+| [07-legal-norms-and-roe](07-legal-norms-and-roe.md) | Treaty law (OST), LOAC in space, the 2022 ASAT-test moratorium, and how the sim maps law to ROE. |

@@ -124,6 +124,20 @@ systems, and the command path — to intercept, corrupt, hijack, or deny.
 
 ---
 
+### A note on orbital nuclear ASAT / EMP (out-of-scope for v1)
+
+A nuclear-detonation-in-orbit weapon (publicly reported as a Russian development
+program; see `02-doctrine-non-western.md`) does not fit any of the five
+categories above as an *effect template*: it is **indiscriminate** (damages
+friendly, neutral, and adversary satellites alike), **not window-gated** (a
+detonation in LEO degrades the LEO regime for *everyone* for months to years
+via radiation-belt pumping and SGEMP), and so cannot be balanced against
+gameplay-style escalation choices. The simulator deliberately excludes it from
+the effect catalog for v1; the canonical Vignette 5 (DA-ASAT crisis) already
+teaches the "denial-of-the-regime-to-both-sides" lesson at a smaller, tractable
+scale. White Cell may discuss it as an injected geopolitical event without it
+being a player-issuable order.
+
 ## Effect × Mission-type matrix (which counters bite which targets)
 
 | Target mission ↓ / Effect → | DA-ASAT | Co-orbital/RPO | EW jam/spoof | Directed energy | Cyber |
@@ -146,5 +160,6 @@ systems, and the command path — to intercept, corrupt, hijack, or deny.
 - Secure World Foundation, *Global Counterspace Capabilities* (2025, 2026) — five-category
   taxonomy and program details.
 - USSF *Space Warfighting* (2025) — segment model and reversibility framing.
-- CSIS *Extending the Battlespace to Space* (2025) — Viasat/Ukraine EW & cyber cases.
+- CSIS *Space Threat Assessment 2025* and the *Extending the Battlespace to Space* chapter
+  (2025) — Viasat/Ukraine EW & cyber cases.
 - NSSA Space Threat Fact Sheet (2025); SpaceNews; Breaking Defense reporting (2025).

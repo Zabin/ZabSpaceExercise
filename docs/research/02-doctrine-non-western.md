@@ -11,7 +11,7 @@ logic and the named programs that should inform Red asset templates.
 ### Organizational frame
 - China created the **PLA Strategic Support Force (PLASSF)** in 2015 to integrate space,
   cyber, and electromagnetic warfare; in **April 2024** it was reorganized and the space
-  mission now sits under the **PLA Aerospace Force (PLAASF)**, reporting directly to the
+  mission now sits under the **PLA Aerospace Force (PLA ASF)**, reporting directly to the
   Central Military Commission.
 - The **PLA Rocket Force** historically controls operationally deployed direct-ascent ASAT
   weapons, while the space organization leads doctrine and on-orbit systems.
@@ -66,21 +66,33 @@ ISR) on which precision warfare depends. In practice, Russia's *most used* count
 tools are non-kinetic EW.
 
 ### Named capabilities (Red asset templates, publicly reported)
-- **Direct-ascent ASAT — "Nudol" (14Ts033/A-235 complex):** Tested repeatedly; in Nov 2021
-  destroyed a defunct Russian satellite (Tselina-D) in LEO, again generating tracked debris.
+- **Direct-ascent ASAT — "Nudol" (14Ts033, sometimes associated with the A-235 ABM
+  modernization):** Tested repeatedly; in Nov 2021 destroyed a defunct Russian satellite
+  (Tselina-D) in LEO, again generating tracked debris.
 - **Co-orbital — "Burevestnik" program, supported by "Nivelir" tracking:** Inspector/
-  interceptor concepts; **Luch / Luch-2 ("Olymp")** satellites conduct sustained RPO and
-  close approaches near foreign GEO satellites — useful both for SIGINT collection and as
-  latent co-orbital threats. "Nesting-doll" sats that eject sub-satellites have been
+  interceptor concepts; **Luch/Olymp-K (2014) and Olymp-K-2 / "Luch-5X" (2023)** conduct
+  sustained RPO and close approaches near foreign GEO satellites — useful both for SIGINT
+  collection and as latent co-orbital threats. "Nesting-doll" sats that eject sub-satellites have been
   observed in LEO near US assets.
+- **Orbital nuclear ASAT (emerging, distinct category):** US, Atlantic Council, and SWF
+  open reporting (2024–2026) assesses that Russia is pursuing a **nuclear-detonation-in-orbit
+  weapon**, with the Kosmos-2553 (Feb 2022) launch widely reported as a development /
+  testbed platform. A high-altitude nuclear burst in LEO would induce trapped-radiation
+  belts and persistent EMP/SGEMP effects that would damage or destroy *most* unhardened
+  LEO satellites — friendly, neutral, and adversary alike. This is **indiscriminate, not
+  window-gated, and ends the space domain for everyone** for months to years; see the
+  taxonomy note in `03-counterspace-taxonomy.md` for v1-scope rationale.
 - **Directed energy — "Peresvet":** Ground-based laser deployed to strategic missile
   divisions from 2018; assessed able to dazzle/blind optical reconnaissance sensors (likely
   not structurally destructive). "Sokol-Eshelon" airborne laser concept also reported.
 - **Electronic warfare (the workhorse):** Mobile systems such as **Tirada-2** (SATCOM
-  uplink/downlink jamming), **Bylina/Pole-21** and **R-330Zh "Zhitel"** (GNSS jamming/
-  suppression). Used pervasively in Ukraine to jam and spoof GPS and degrade Western
-  precision munitions and drones, and reportedly to interfere with commercial SATCOM and SAR
-  imaging. This is the single most operationally validated counterspace pattern in the data.
+  uplink/downlink jamming) and **Pole-21** / **R-330Zh "Zhitel"** (GNSS jamming/
+  suppression). **Bylina (RB-109A)** is an *automated EW command-and-control* system that
+  coordinates jammers like the above; the dedicated SATCOM-jamming variant is
+  **Bylina-MM** — distinct from RB-109A and easily confused with it in open sources. Used
+  pervasively in Ukraine to jam and spoof GPS and degrade Western precision munitions and
+  drones, and reportedly to interfere with commercial SATCOM and SAR imaging. This is the
+  single most operationally validated counterspace pattern in the data.
 
 > **Red Cell behavioral signature (Russia):** Lead with pervasive, deniable EW (GNSS/SATCOM
 > jam & spoof) integrated with ground maneuver; persistent GEO RPO shadowing for intelligence
@@ -110,7 +122,8 @@ tools are non-kinetic EW.
   China's Ambitions to Dominate Space* (2025).
 - ASPI *The Strategist*; CNA, *Deterring China's Use of Force in the Space Domain* (2025).
 - Secure World Foundation, *Global Counterspace Capabilities* (2025, 2026).
-- Atlantic Council, *Countering Russian Escalation in Space* (2026); CSIS, *Extending the
-  Battlespace to Space* (2025); Chatham House, *Advanced Military Technology in Russia*
-  (2021); *The Space Review* on Burevestnik/Peresvet (2020); NSSA Space Threat Fact Sheet
+- Atlantic Council, *Countering Russian Escalation in Space* (2026); CSIS, *Space Threat
+  Assessment 2025* and *Extending the Battlespace to Space* (chapter, 2025); Chatham House,
+  *Advanced Military Technology in Russia* (2021); *The Space Review* on
+  Burevestnik/Peresvet (2020); USSF (HQ Space Force Intelligence) *Space Threat Fact Sheet*
   (2025).

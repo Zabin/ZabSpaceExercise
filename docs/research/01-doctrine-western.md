@@ -25,8 +25,8 @@ Superiority has dimensions the sim can model as victory conditions:
 - **Persistent vs. temporary** — time is no longer a strategic factor vs. control for a
   specific window.
 - **Supremacy** = general + persistent. **Denial** = you cannot use the domain freely but
-  you can stop the other side from using it either (mutual denial is a valid, sometimes
-  acceptable, end state — e.g., a debris field).
+  you can stop the other side from using it either (CSO Saltzman public remarks have
+  framed mutual denial as a potentially acceptable end state — e.g., a debris field).
 
 > **Sim implication:** Don't score only "kills." Score *control of an orbital regime over a
 > time window for a purpose.* A vignette can be won by temporary local denial without
@@ -106,8 +106,12 @@ Reversible/non-reversible and kinetic/non-kinetic are first-class attributes of 
 offensive action. This gives the sim a natural **escalation ladder** and a debris model:
 
 ```
-Interfere (reversible) → Degrade → Deny → Damage → Destroy (debris-generating)
+Deceive (reversible) → Disrupt → Deny → Degrade → Destroy (debris-generating)
 ```
+
+These are the **five D's** the sim uses end-to-end (see
+`../research/03-counterspace-taxonomy.md`, `../build-spec/01-context-and-scope.md`,
+and `spacesim/engine/effects.py`).
 
 > **Sim implication:** Every weapon/effect carries `{reversibility, kinetic?, debris_risk,
 > escalation_weight}`. White Cell can score "responsible" play and trigger international/
@@ -132,7 +136,7 @@ Interfere (reversible) → Degrade → Deny → Damage → Destroy (debris-gener
 
 ## Sources
 
-- USSF, *Space Warfighting: A Framework for Planners* (Mar 2025).
+- USSF, *Space Warfighting: A Framework for Planners* (10 Apr 2025).
 - USSF, *Space Force Doctrine Document 1* (Apr 2025).
 - Air & Space Forces Magazine; Breaking Defense; DefenseScoop; USNI News reporting on the
   2025 framework (Apr 2025).

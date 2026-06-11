@@ -69,9 +69,9 @@ encrypted.)
 
 ### 2.1 SATCOM (communications)
 - **What the operator does:** manages **transponders/beams** — power levels, frequency plans,
-  bandwidth allocation, and (on modern *flexible/software-defined payloads* like ESA's
-  Quantum class) **reconfigures coverage, power, and frequency on orbit** to follow demand or
-  move to a new slot.
+  bandwidth allocation, and (on modern *flexible/software-defined payloads* like
+  Eutelsat Quantum, an ESA/Eutelsat/Airbus partnership) **reconfigures coverage, power, and
+  frequency on orbit** to follow demand or move to a new slot.
 - **Monitors:** transponder power/temperature, carrier/interference levels, link utilization,
   and — critically — **interference sources** (the SATCOM operator's daily fight is finding and
   mitigating interference, intentional or not).

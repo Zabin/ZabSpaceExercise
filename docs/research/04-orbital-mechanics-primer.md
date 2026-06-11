@@ -18,8 +18,8 @@ The single most important design rule:
 | Regime | Altitude | Period | Pass behavior | Typical missions | Reachable by |
 |---|---|---|---|---|---|
 | **LEO** | ~300–2,000 km | ~90 min | Short passes (~5–12 min), many per day, ground track shifts each orbit | ISR, some SATCOM, weather | everything |
-| **MEO** | ~8,000–20,000 km | ~6–12 h | Long passes, slow geometry | GNSS/PNT | EW/cyber mostly; kinetic hard |
-| **GEO** | ~35,786 km | 24 h | **Effectively fixed** over a longitude; always in view of its region | SATCOM, missile warning, some ISR | EW/cyber/RPO/DE; kinetic very hard |
+| **MEO** | ~2,000–35,786 km (GNSS cluster ~19,100–23,222 km) | ~6–14 h | Long passes, slow geometry | GNSS/PNT | EW/cyber mostly; kinetic hard |
+| **GEO** | ~35,786 km | 23 h 56 m (sidereal) | **Effectively fixed** over a longitude; always in view of its region | SATCOM, missile warning, some ISR | EW/cyber/RPO/DE; kinetic very hard |
 | **HEO** | elliptical | ~12 h | Long dwell near apogee over high latitudes | Missile warning, polar comms | EW/cyber/RPO |
 | **Cislunar** | beyond GEO | days+ | Specialized | SDA, future | (future/high-fidelity) |
 
@@ -76,8 +76,10 @@ access_window:
 The goal is *believable* pass times and geometry, not mission-planning accuracy.
 
 - **Orbit representation:** classical Keplerian elements per satellite
-  `{a, e, i, RAAN, argP, true_anomaly, epoch}`. Accept TLEs and convert; store generic
-  fictional elements by default.
+  `{a, e, i, RAAN, argP, true_anomaly, epoch}` for fictional / generic assets. For
+  TLE-sourced assets, sgp4 is used directly via the `Propagator` seam
+  (`spacesim/engine/propagator.py`); the elements are not back-converted to
+  Keplerian, so SGP4 perturbation effects are preserved for real-satellite scenarios.
 - **Propagation:** two-body Keplerian propagation plus **J2 nodal precession** (so RAAN
   drifts and Sun-synchronous orbits behave, which matters for ISR pass timing). This is the
   cheap model that still produces correct *pass cadence and ground-track drift* — the things
@@ -93,8 +95,14 @@ The goal is *believable* pass times and geometry, not mission-planning accuracy.
 - **Lighting:** simple cylindrical Earth-shadow model for eclipse (power) and a Sun-position
   model for optical observation/dazzle constraints.
 
-### Deliberately deferred to high fidelity (behind the interface)
-- SGP4/SDP4 with full perturbations; numerical propagators.
+### Implemented in v1 and deliberately deferred to high fidelity (behind the interface)
+
+The propagator seam in `engine/propagator.py` admits two implementations:
+**(a) Keplerian + J2** for fictional assets (the rest of this section), and
+**(b) sgp4** for any TLE-sourced asset, which gives standard SGP4 perturbation
+behaviour out of the box. Beyond that, deferred for v1:
+
+- General full-perturbation numerical propagators (Cowell / Encke).
 - True RF link budgets (EIRP, G/T, path loss, rain fade) instead of the `quality` proxy.
 - Continuous-thrust (electric) maneuvers; precise Lambert-solver intercepts.
 - Atmospheric drag decay, solar radiation pressure, third-body lunar/solar.
