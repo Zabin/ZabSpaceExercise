@@ -12,10 +12,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import FastAPI, HTTPException
+import re
+
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from spacesim.engine.orders import Order
 from spacesim.session.api import Ack, CellView, OrderAck
@@ -23,6 +25,16 @@ from spacesim.session.inprocess import InProcessSession
 from spacesim.session.scene import SceneView
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+
+# Audit Jun 2026 §D2 — server-side validation for client-supplied identifiers
+# that flow into rendered DOM, eventlog payloads, and the YAML loader.
+_ID_RE = re.compile(r"^[A-Za-z0-9_.\-]{1,64}$")
+
+
+def _validate_id(value: str, *, field: str) -> str:
+    if not isinstance(value, str) or not _ID_RE.match(value):
+        raise ValueError(f"{field} must match {_ID_RE.pattern}")
+    return value
 
 
 # -- request bodies ------------------------------------------------------------
@@ -61,6 +73,11 @@ class TleRequest(BaseModel):
     owner: str = "blue"
     kind: str = "satellite"
 
+    @field_validator("id")
+    @classmethod
+    def _id_charset(cls, v: str) -> str:
+        return _validate_id(v, field="TleRequest.id")
+
 
 class OrderRequest(BaseModel):
     cell: str
@@ -68,6 +85,21 @@ class OrderRequest(BaseModel):
     action: str
     target: Optional[str] = None
     params: dict = {}
+
+    @field_validator("actor")
+    @classmethod
+    def _actor_charset(cls, v: str) -> str:
+        # Allow "auto" as the sentinel for sensor-auto-select.
+        if v == "auto":
+            return v
+        return _validate_id(v, field="OrderRequest.actor")
+
+    @field_validator("target")
+    @classmethod
+    def _target_charset(cls, v: Optional[str]) -> Optional[str]:
+        if v is None or v == "":
+            return v
+        return _validate_id(v, field="OrderRequest.target")
 
 
 class CancelRequest(BaseModel):
@@ -314,17 +346,18 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def conjunctions(sid: str, cell: str) -> list[dict]:
         """FW §11.C.14 — upcoming close-approach warnings.  Filtered to assets the cell owns."""
         _require(sid)
-        api.catch_up(sid)   # multiplayer: server-clock catch_up before reading world
-        mgr = api._sessions[sid]
-        out = []
-        for c in list(mgr.world.conjunctions):
-            a_owner = (mgr.world.assets.get(c.get("a", "")) or
-                       type("X", (), {"owner": None})).owner
-            b_owner = (mgr.world.assets.get(c.get("b", "")) or
-                       type("X", (), {"owner": None})).owner
-            if cell in ("white",) or cell in (a_owner, b_owner):
-                out.append({**c, "now": mgr.world.now})
-        return out
+        # Audit Jun 2026 §D10 — hold the session lock through the iteration so a
+        # concurrent mutation can't raise ``dict changed size during iteration``.
+        with api._locked_read(sid) as mgr:
+            out = []
+            for c in list(mgr.world.conjunctions):
+                a_owner = (mgr.world.assets.get(c.get("a", "")) or
+                           type("X", (), {"owner": None})).owner
+                b_owner = (mgr.world.assets.get(c.get("b", "")) or
+                           type("X", (), {"owner": None})).owner
+                if cell in ("white",) or cell in (a_owner, b_owner):
+                    out.append({**c, "now": mgr.world.now})
+            return out
 
     @app.post("/api/sessions/{sid}/cancel")
     def cancel_order(sid: str, req: CancelRequest) -> Ack:
@@ -410,7 +443,9 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}/{param}")
     def telemetry_series(sid: str, cell: str, asset: str, param: str,
-                         t0: Optional[int] = None, t1: Optional[int] = None, n: int = 120,
+                         t0: Optional[int] = None, t1: Optional[int] = None,
+                         # Audit Jun 2026 §D6 — bound n to prevent CPU/memory DoS.
+                         n: int = Query(120, ge=2, le=2000),
                          nominal: bool = False) -> dict:
         _require(sid)
         r = api.get_series(sid, cell, asset, param, t0=t0, t1=t1, n=n, nominal=nominal)

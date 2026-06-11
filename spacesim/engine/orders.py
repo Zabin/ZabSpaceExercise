@@ -170,7 +170,32 @@ class OrderSystem:
         order.status = "queued"
         if commit:
             kind, data = self._exec_payload(order, win)
+            data["__order_id"] = order.id  # threaded through so handlers can release bookings
             self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
+
+    def _release_bookings_on_execute(self, order_id: Optional[str]) -> None:
+        """Pop pass / sensor booking entries for an order that just executed.
+
+        Symmetric with cancel() so the booking dicts don't grow without bound
+        across a long-running session. Safe to call with a missing/unknown id.
+        """
+        if not order_id:
+            return
+        pass_key = self._order_pass.pop(order_id, None)
+        if pass_key:
+            count = max(0, self._pass_bookings.get(pass_key, 1) - 1)
+            if count == 0:
+                self._pass_bookings.pop(pass_key, None)
+            else:
+                self._pass_bookings[pass_key] = count
+        sensor_booking = self._order_sensor.pop(order_id, None)
+        if sensor_booking:
+            sensor_id, start, end = sensor_booking
+            bookings = self._sensor_bookings.get(sensor_id, [])
+            try:
+                bookings.remove((start, end))
+            except ValueError:
+                pass
 
     def cancel(self, order_id: str) -> bool:
         """Cancel a still-queued order; the scheduled event is skipped (never logged → replay-safe)."""
@@ -238,6 +263,7 @@ class OrderSystem:
                 self._pass_bookings[key] = self._pass_bookings.get(key, 0) + 1
                 self._order_pass[order.id] = key
             kind, data = self._exec_payload(order, win)
+            data["__order_id"] = order.id
             self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
     def _best_isl_window(self, ap: AccessProvider, cell: str, actor: str, now: int) -> Optional[AccessWindow]:
@@ -281,6 +307,7 @@ class OrderSystem:
             kind, data = self._exec_payload(order, win)
             data["sensor_id"] = sid          # persisted in eventlog for booking reconstruction
             data["window_end"] = win.end     # on rewind/replay
+            data["__order_id"] = order.id
             self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
     def _candidate_sensors(self, order: Order) -> list[str]:
@@ -576,6 +603,7 @@ class OrderSystem:
                     actor.resources.power_w -= float(cons["power_w"])
 
     def _h_maneuver(self, world: WorldState, payload: dict, rng) -> None:
+        self._release_bookings_on_execute(payload.get("__order_id"))
         actor = world.assets.get(payload["actor"])
         if actor is None or actor.orbit is None:
             return
@@ -618,12 +646,14 @@ class OrderSystem:
 
     def _h_command(self, world: WorldState, payload: dict, rng) -> None:
         """Apply a bus/payload verb at its window (re-validates at execute time, like the others)."""
+        self._release_bookings_on_execute(payload.get("__order_id"))
         ok, label = apply_command(world, payload["actor"], payload.get("verb") or "",
                                    payload.get("params", {}), world.now)
         world.effect_log.append({"t": world.now, "template": payload.get("verb"),
                                  "target": payload["actor"], "achieved": label, "success": ok})
 
     def _h_observe(self, world: WorldState, payload: dict, rng) -> None:
+        self._release_bookings_on_execute(payload.get("__order_id"))
         track = world.track_for(payload["cell"], payload["object"])
         if track is None:
             track = Track(object=payload["object"], owner=payload["cell"], last_observation=world.now, confidence=0.0)

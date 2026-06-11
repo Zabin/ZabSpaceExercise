@@ -39,7 +39,7 @@ is the first thing a new operator should read.
 
 | ID | Title | Teaches |
 |---|---|---|
-| `coa-russia-ml` | Russia ML — Sustained EW | Reversible deniable EW from Tirada/Bylina |
+| `coa-russia-ml` | Russia ML — Sustained EW | Reversible deniable EW from Tirada-2 (SATCOM) and Pole-21 (GNSS); RB-109A Bylina coordinates |
 | `coa-russia-md` | Russia MD — DA-ASAT + Cyber | Nudol-class kinetic with cyber surprise |
 | `coa-china-ml` | China ML — Early Integrated Disruption | PLA SSF jam + cyber + RPO opening |
 | `coa-china-md` | China MD — Decisive Counterspace Strike | Late-crisis A2/AD: kinetic + RPO + cyber + EW |

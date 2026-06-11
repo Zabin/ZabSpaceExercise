@@ -90,6 +90,13 @@ class SessionManager:
         self._wall_anchor: Optional[float] = None   # epoch seconds (time.time())
         self._sim_anchor: Optional[int] = None      # sim microseconds at the wall anchor
         self._rate = 1.0                             # sim seconds per wall second
+        # Audit Jun 2026 §F2 — clock-lag watchdog. The 24/48-satellite "cap" is
+        # not an engine limit; it was sized for typical White-Cell hardware.
+        # User-authored vignettes can carry more, but if catch_up() takes long
+        # enough that the wall clock outruns the sim repeatedly, the hardware
+        # is insufficient for this scenario and White Cell needs to know.
+        self._catch_up_lag_history: list[float] = []  # last few catch_up wall-cost samples (s)
+        self._clock_lag_warning: Optional[dict] = None  # surfaced by clock_state()
 
     # -- lifecycle -------------------------------------------------------------
     def start(self) -> None:
@@ -144,14 +151,57 @@ class SessionManager:
         Caller must already hold ``self._lock``. Safe because ``sim.advance_to`` raises only
         when target<current; the explicit guard against ``sim.clock.now`` makes a stale or
         equal wall reading a true no-op.
+
+        Audit Jun 2026 §F2 — instrument the advance with a wall-cost sample so
+        the watchdog can detect hardware-insufficient sessions.
         """
         if not self._clock_running or self._wall_anchor is None:
             return
-        elapsed = _time.time() - self._wall_anchor
-        target = self._sim_anchor + int(elapsed * self._rate * 1_000_000)
+        elapsed_before = _time.time() - self._wall_anchor
+        target = self._sim_anchor + int(elapsed_before * self._rate * 1_000_000)
         if target > self.sim.clock.now:
+            wall_before = _time.time()
             self.sim.advance_to(target)
             self.world = self.sim.world
+            wall_cost = _time.time() - wall_before
+            sim_advanced_s = (self.sim.clock.now - (target - int(elapsed_before * self._rate * 1_000_000) + self._sim_anchor + 0)) / 1e6
+            # We measured wall_cost s of compute to advance the sim ahead.
+            # If wall_cost >= ~0.5 * (catch-up interval), the next tick will
+            # consistently fall further behind real time.
+            self._record_catch_up_lag(wall_cost, target_us=target)
+
+    def _record_catch_up_lag(self, wall_cost_s: float, target_us: int) -> None:
+        """Audit Jun 2026 §F2 — clock-lag watchdog.
+
+        Keeps a short ring of recent ``advance_to`` wall-cost samples. If the
+        recent average exceeds a threshold (i.e. we're spending most of the
+        polling window catching up), set a warning the UI will surface to
+        White Cell so they know the scenario is too heavy for the hardware.
+        """
+        self._catch_up_lag_history.append(wall_cost_s)
+        # Keep last 8 samples (~12 s of poll history at the default 1.5 s tick).
+        if len(self._catch_up_lag_history) > 8:
+            self._catch_up_lag_history.pop(0)
+        if len(self._catch_up_lag_history) < 4:
+            return
+        avg = sum(self._catch_up_lag_history) / len(self._catch_up_lag_history)
+        # Threshold: catch_up consistently >300 ms means we're using >20 % of a
+        # 1.5 s poll just advancing — about to fall behind real time.
+        if avg > 0.3:
+            asset_count = len(self.world.assets) if self.world is not None else 0
+            self._clock_lag_warning = {
+                "severity": "high" if avg > 0.8 else "medium",
+                "avg_wall_cost_s": round(avg, 3),
+                "asset_count": asset_count,
+                "message": (
+                    f"Server clock lag — average catch_up wall cost {avg:.2f}s "
+                    f"with {asset_count} assets. Hardware insufficient for this "
+                    f"scenario; consider a smaller fleet, slower rate, or a "
+                    f"more capable host."
+                ),
+            }
+        else:
+            self._clock_lag_warning = None
 
     def catch_up(self) -> None:
         with self._lock:
@@ -162,6 +212,8 @@ class SessionManager:
             "running": self._clock_running,
             "rate": self._rate,
             "now": self.sim.clock.now,
+            # Audit Jun 2026 §F2 — None when healthy, dict when lagging.
+            "lag_warning": self._clock_lag_warning,
         }
 
     def rewind_to(self, t: int) -> None:

@@ -72,8 +72,10 @@ spacesim/
 
 ## Key facts
 
-- Largest v1 scenario: **≤24 satellites** (hard ceiling 48); **constellations ≤3 sats**, each
-  operated/monitored individually.
+- Sample-vignette sizing: **~24 satellites** as a soft guideline for typical White-Cell
+  hardware (no engine-enforced cap — user vignettes may scale up). The
+  **clock-lag watchdog** in `SessionManager._record_catch_up_lag` warns White Cell when
+  the hardware can't keep up. **Constellations ≤3 sats**, each operated/monitored individually.
 - **Six access channels:** `command_uplink`, `telemetry_downlink`, `sensor_observation`,
   `jam_footprint`, `weapon_engagement`, `rpo_proximity`.
 - **Five effect categories → five D's:** deceive / disrupt / deny / degrade / destroy. **Cyber is
@@ -133,6 +135,17 @@ advances exactly once regardless of tab count (lazy catch_up on every read). Whi
 ▶ Resume toolbar button drives `/api/sessions/{sid}/clock` for all connected clients. **Pop-out
 windows** (View → Pop out submenu) join the same session at `?layout=<token>&cell=<cell>` so a
 single facilitator can spread globe / map / fleet / order / AAR across multiple monitors.
+
+**LAN trust model (load-bearing).** The cell selector (`White` / `Blue` / `Red`) is **client-side
+trust** — there is no per-cell authentication. The fog-of-war filter is applied by
+`SessionAPI` / `CellController` to every cell-scoped response, but the no-cell ground-truth
+endpoints (`/godview`, `/eventlog`, `/save`, `/aar*`, `/objectives`) deliberately expose ground
+truth without a cell binding. **Deploy only on a trusted LAN with cooperative participants.** A
+hostile participant on the LAN can read another cell's belief state through `/scene/{cell}` or
+`/telemetry/{cell}/...` by sending the other cell's name in the URL. This is by design for the
+v1 PME training context (everyone in the room is on the same team learning together) and is
+documented as the explicit trust boundary; see `docs/AUDIT-2026-06.md` §D5 / §F1. Hardening
+options (per-cell tokens) are tracked in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
 
 The import-guard is a plain pytest test (`test_import_guard.py`), not import-linter — it AST-scans
 `spacesim/engine/` for forbidden imports, wall-clock reads, and any `random` use outside `rng.py`.

@@ -19,6 +19,14 @@ from spacesim.session.redai import RedDoctrine
 
 
 class InProcessSession:
+    # Audit Jun 2026 §D7 — bound the live-session table so a hostile client
+    # can't grow it without limit by spamming /api/sessions. Soft cap; sessions
+    # are LRU-evicted in load_vignette() when full.
+    MAX_LIVE_SESSIONS = 32
+    # Audit Jun 2026 §D7 — refuse a load_save payload whose eventlog would
+    # require an enormous replay (compute / memory amplifier; unauthenticated).
+    MAX_EVENTLOG_REPLAY_ENTRIES = 100_000
+
     def __init__(self) -> None:
         self._sessions: dict[str, SessionManager] = {}
         self._counter = 0
@@ -36,6 +44,20 @@ class InProcessSession:
     def catch_up(self, session: str) -> None:
         """Server-authoritative clock tick: advance sim to wall-now under the session lock."""
         self._sessions[session].catch_up()
+
+    @contextmanager
+    def _locked_read(self, session: str) -> Iterator[SessionManager]:
+        """Audit Jun 2026 §D10 — hold the session lock across catch_up + read so
+        a concurrent mutation cannot mutate live dicts/lists mid-iteration
+        (``RuntimeError: dictionary changed size during iteration``).
+
+        Use in place of ``self.catch_up(session); return self._sessions[session].xxx(...)``
+        which releases the lock between the two calls.
+        """
+        mgr = self._sessions[session]
+        with mgr._lock:
+            mgr._catch_up_locked()
+            yield mgr
 
     def set_clock(self, session: str, running: bool, rate: float = 1.0) -> dict:
         with self._locked(session) as mgr:
@@ -64,8 +86,17 @@ class InProcessSession:
     def list_vignettes(self) -> list[dict]:
         return list_vignettes()
 
+    def _evict_if_full(self) -> None:
+        # Audit Jun 2026 §D7 — LRU-evict the oldest session when the cap is hit.
+        # Dict insertion order in Python 3.7+ is stable, so the first key is the
+        # oldest one still alive.
+        while len(self._sessions) >= self.MAX_LIVE_SESSIONS:
+            oldest_sid = next(iter(self._sessions))
+            self._sessions.pop(oldest_sid, None)
+
     def load_vignette(self, vignette_id: str, overrides: Optional[dict] = None, seed: int = 0) -> str:
         vignette = load_vignette(vignette_id)
+        self._evict_if_full()
         self._counter += 1
         sid = f"sess-{self._counter}"
         self._sessions[sid] = SessionManager(vignette, overrides=overrides, seed=seed)
@@ -159,8 +190,8 @@ class InProcessSession:
             return mgr.validate_order(cell, order)
 
     def list_orders(self, session: str, cell: str) -> list:
-        self.catch_up(session)
-        return self._sessions[session].list_orders(cell)
+        with self._locked_read(session) as mgr:
+            return mgr.list_orders(cell)
 
     def cancel_order(self, session: str, cell: str, order_id: str) -> Ack:
         with self._locked(session) as mgr:
@@ -168,16 +199,16 @@ class InProcessSession:
         return Ack(ok=ok, reason="" if ok else "order not found / not cancellable")
 
     def windows_ahead(self, session: str, cell: str, asset: str):
-        self.catch_up(session)
-        return self._sessions[session].windows_ahead(cell, asset)
+        with self._locked_read(session) as mgr:
+            return mgr.windows_ahead(cell, asset)
 
     def next_contacts(self, session: str, cell: str) -> dict:
-        self.catch_up(session)
-        return self._sessions[session].next_contacts(cell)
+        with self._locked_read(session) as mgr:
+            return mgr.next_contacts(cell)
 
     def recovery_status(self, session: str, cell: str, asset: str):
-        self.catch_up(session)
-        return self._sessions[session].recovery_status(cell, asset)
+        with self._locked_read(session) as mgr:
+            return mgr.recovery_status(cell, asset)
 
     def begin_recovery(self, session: str, cell: str, asset: str, via: str) -> dict:
         with self._locked(session) as mgr:
@@ -190,49 +221,49 @@ class InProcessSession:
             return mgr.submit_ssn_request(cell, intent, target, regime, priority)
 
     def list_ssn_requests(self, session: str, cell: str) -> list:
-        self.catch_up(session)
-        return self._sessions[session].list_ssn_requests(cell)
+        with self._locked_read(session) as mgr:
+            return mgr.list_ssn_requests(cell)
 
     def cancel_ssn_request(self, session: str, cell: str, rid: str) -> bool:
         with self._locked(session) as mgr:
             return mgr.cancel_ssn_request(cell, rid)
 
     def ssn_coverage(self, session: str, cell: str, regime: str) -> dict:
-        self.catch_up(session)
-        return self._sessions[session].ssn_coverage(cell, regime)
+        with self._locked_read(session) as mgr:
+            return mgr.ssn_coverage(cell, regime)
 
     def list_injects(self, session: str) -> list:
         return self._sessions[session].list_injects()
 
     # -- reads -----------------------------------------------------------------
     def get_view(self, session: str, cell: str) -> CellView:
-        self.catch_up(session)
-        return self._sessions[session].get_view(cell)
+        with self._locked_read(session) as mgr:
+            return mgr.get_view(cell)
 
     def get_scene(self, session: str, cell: str):
-        self.catch_up(session)
-        return self._sessions[session].get_scene(cell)
+        with self._locked_read(session) as mgr:
+            return mgr.get_scene(cell)
 
     def get_telemetry(self, session: str, cell: str, asset: str):
-        self.catch_up(session)
-        return self._sessions[session].get_telemetry(cell, asset)
+        with self._locked_read(session) as mgr:
+            return mgr.get_telemetry(cell, asset)
 
     def get_series(self, session: str, cell: str, asset: str, param: str, t0=None, t1=None,
                    n: int = 120, nominal: bool = False):
-        self.catch_up(session)
-        return self._sessions[session].get_series(cell, asset, param, t0=t0, t1=t1, n=n, nominal=nominal)
+        with self._locked_read(session) as mgr:
+            return mgr.get_series(cell, asset, param, t0=t0, t1=t1, n=n, nominal=nominal)
 
     def get_godview(self, session: str):
-        self.catch_up(session)
-        return self._sessions[session].get_godview()
+        with self._locked_read(session) as mgr:
+            return mgr.get_godview()
 
     def get_eventlog(self, session: str, since_seq: int = 0) -> list:
-        self.catch_up(session)
-        return self._sessions[session].get_eventlog(since_seq)
+        with self._locked_read(session) as mgr:
+            return mgr.get_eventlog(since_seq)
 
     def objectives(self, session: str) -> dict:
-        self.catch_up(session)
-        return self._sessions[session].objectives()
+        with self._locked_read(session) as mgr:
+            return mgr.objectives()
 
     def session_brief(self, session: str, cell: str) -> dict:
         """Per-cell mission brief + ROE + deadline status, surfaced in the UI's brief panel.
@@ -683,8 +714,8 @@ class InProcessSession:
         return aar.snapshot_at(self._sessions[session], seq)
 
     def alarms(self, session: str, cell: str) -> list:
-        self.catch_up(session)
-        return self._sessions[session].alarms(cell)
+        with self._locked_read(session) as mgr:
+            return mgr.alarms(cell)
 
     # -- save / resume ---------------------------------------------------------
     def save(self, session: str) -> dict:
@@ -694,6 +725,15 @@ class InProcessSession:
             return mgr.save_state()
 
     def load_save(self, state: dict) -> str:
+        # Audit Jun 2026 §D7 — bound the eventlog so a hostile load_save can't
+        # force an unbounded replay.
+        eventlog = (state or {}).get("eventlog") or []
+        if isinstance(eventlog, list) and len(eventlog) > self.MAX_EVENTLOG_REPLAY_ENTRIES:
+            raise ValueError(
+                f"eventlog has {len(eventlog)} entries; limit is "
+                f"{self.MAX_EVENTLOG_REPLAY_ENTRIES}"
+            )
+        self._evict_if_full()
         self._counter += 1
         sid = f"sess-{self._counter}"
         self._sessions[sid] = SessionManager.from_state(state)

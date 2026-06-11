@@ -154,7 +154,7 @@ async function loadVignettes() {
       sel.innerHTML = '<option value="" disabled selected>(no vignettes found — check server)</option>';
       return;
     }
-    sel.innerHTML = list.map((v) => `<option value="${v.id}">${v.title}</option>`).join("");
+    sel.innerHTML = list.map((v) => `<option value="${esc(v.id)}">${esc(v.title)}</option>`).join("");
   } catch (e) {
     sel.innerHTML = '<option value="" disabled selected>(failed to load — is the server running?)</option>';
     console.error("loadVignettes failed:", e);
@@ -196,7 +196,7 @@ async function joinSessionFromHash() {
     $("start").disabled = !!found.started;
     updateSessionSummary(found.title || found.vignette_id, found.started);
     const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
-    $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
+    $("inject-sel").innerHTML = injects.map((i) => `<option value="${esc(i.id)}">${esc(i.label)}</option>`).join("") || "<option>(none)</option>";
     await loadInjectLibrary();
     return true;
   } catch (e) { console.warn("join-by-hash failed:", e); return false; }
@@ -935,15 +935,16 @@ async function refresh() {
       const dvms = +a.resources.delta_v_ms;
       const years = (dvms / 15).toFixed(1);
       const soc = a.bus_state ? Math.round(a.bus_state.power.battery_soc * 100) + "%" : "—";
-      const tip = `<span data-asset-ref="${a.id}">${a.id}</span>`;
+      const aid = esc(a.id);
+      const tip = `<span data-asset-ref="${aid}">${aid}</span>`;
       const lifeClass = dvms < 15 ? "red" : (dvms < 45 ? "yellow" : "green");
       return `<tr><td>${tip}</td><td>${dvms.toFixed(1)}</td><td>${soc}</td><td class="${lifeClass}">${years}</td></tr>`;
     });
     dv.querySelector("tbody").innerHTML = rows.length ? rows.join("")
       : "<tr><td colspan=4 class='muted'>(no maneuver-capable assets)</td></tr>";
   }
-  $("effects").innerHTML = effects.map((e) => `<li>${e.target}: ${e.symptom} ${e.attributed ? "(attributed)" : "(source unknown)"}</li>`).join("");
-  $("messages").innerHTML = messages.map((m) => `<li>${m.text}</li>`).join("");
+  $("effects").innerHTML = effects.map((e) => `<li>${esc(e.target)}: ${esc(e.symptom)} ${e.attributed ? "(attributed)" : "(source unknown)"}</li>`).join("");
+  $("messages").innerHTML = messages.map((m) => `<li>${esc(m.text)}</li>`).join("");
   renderObjectives(objectives);
   renderBrief();
 
@@ -1296,7 +1297,7 @@ async function loadSaveFile(file) {
   $("session").textContent = "session " + SID; $("start").disabled = false;
   updateSessionSummary(state.vignette_id || "resumed", state.started);
   const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
-  $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
+  $("inject-sel").innerHTML = injects.map((i) => `<option value="${esc(i.id)}">${esc(i.label)}</option>`).join("") || "<option>(none)</option>";
   await loadInjectLibrary();
   // Resumed sessions intentionally load with the server clock PAUSED so they don't fast-forward
   // the wall-time gap since the save. White clicks Start (or the Resume button) to re-arm.

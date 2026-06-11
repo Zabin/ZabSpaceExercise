@@ -94,26 +94,61 @@ class VignetteContext:
 def list_vignettes() -> list[dict]:
     out = []
     for path in sorted(VIGNETTE_DIR.glob("*.yaml")):
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))["vignette"]
-        out.append({"id": data["id"], "title": data.get("title", data["id"]), "path": str(path)})
+        # Audit Jun 2026 §B/E - tolerate one malformed file rather than 500ing
+        # the whole listing endpoint.
+        try:
+            raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict) or "vignette" not in raw:
+                continue
+            data = raw["vignette"]
+            if not isinstance(data, dict) or "id" not in data:
+                continue
+            out.append({"id": data["id"], "title": data.get("title", data["id"]), "path": str(path)})
+        except (yaml.YAMLError, OSError):
+            continue
     return out
 
 
 def load_vignette(path_or_id: str) -> Vignette:
-    path = Path(path_or_id)
-    if not path.exists():
-        candidate = VIGNETTE_DIR / f"{path_or_id}.yaml"
-        if candidate.exists():
-            path = candidate
-        else:  # resolve by the vignette's declared id (filenames are numbered, ids are not)
-            path = None
-            for p in sorted(VIGNETTE_DIR.glob("*.yaml")):
-                if yaml.safe_load(p.read_text(encoding="utf-8"))["vignette"]["id"] == path_or_id:
-                    path = p
-                    break
-            if path is None:
-                raise FileNotFoundError(f"no vignette with id or path {path_or_id!r}")
+    """Load a vignette by its declared id.
+
+    Audit Jun 2026 §D4 hardening: only basenames are accepted; any input
+    containing path separators, parent-directory traversal, an absolute-path
+    marker, or non-`[A-Za-z0-9_.-]` characters is rejected without touching the
+    filesystem. The resolved path is then re-checked to live inside
+    ``VIGNETTE_DIR`` (defence in depth against symlink/normalisation tricks).
+    """
+    if not isinstance(path_or_id, str) or not path_or_id:
+        raise ValueError("vignette id must be a non-empty string")
+    if "/" in path_or_id or "\\" in path_or_id or ".." in path_or_id:
+        raise ValueError(f"vignette id contains path separators or traversal: {path_or_id!r}")
+    if path_or_id.startswith(("~", ".")):
+        raise ValueError(f"vignette id may not start with '~' or '.': {path_or_id!r}")
+    # Lock the charset — same as web-layer TleRequest.id / OrderRequest.actor.
+    import re as _re
+    if not _re.fullmatch(r"[A-Za-z0-9_.\-]{1,128}", path_or_id):
+        raise ValueError(f"vignette id has disallowed characters: {path_or_id!r}")
+
+    candidate = (VIGNETTE_DIR / f"{path_or_id}.yaml").resolve()
+    vignette_root = VIGNETTE_DIR.resolve()
+    if vignette_root not in candidate.parents:
+        raise ValueError(f"vignette path escapes VIGNETTE_DIR: {candidate}")
+    if candidate.exists():
+        path = candidate
+    else:  # resolve by the vignette's declared id (filenames are numbered, ids are not)
+        path = None
+        for p in sorted(VIGNETTE_DIR.glob("*.yaml")):
+            data_inner = yaml.safe_load(p.read_text(encoding="utf-8"))
+            if not isinstance(data_inner, dict) or "vignette" not in data_inner:
+                continue
+            if data_inner["vignette"].get("id") == path_or_id:
+                path = p
+                break
+        if path is None:
+            raise FileNotFoundError(f"no vignette with id {path_or_id!r}")
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or "vignette" not in data:
+        raise ValueError(f"malformed vignette file (missing 'vignette' key): {path.name}")
     return Vignette.model_validate(data["vignette"])
 
 

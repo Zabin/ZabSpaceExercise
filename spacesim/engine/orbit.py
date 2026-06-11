@@ -54,12 +54,16 @@ def classify_regime(a_m: float, e: float, i_deg: float) -> Regime:
         if 95.0 <= i_deg <= 104.0:
             return "LEO_SSO"
         return "LEO"
-    if 33_000e3 <= a_m - 0 <= 37_000e3 or 34_000e3 <= apogee <= 37_000e3:
+    # GEO: semi-major axis ≈ 42,164 km (altitude ≈ 35,786 km).
+    # GEO inclined / GEO transfer orbits with apogee in the GEO band also classify here.
+    if 41_000e3 <= a_m <= 43_000e3 or 35_000e3 <= apogee <= 37_000e3:
         return "GEO"
     return "MEO"
 
 
 def period_s(a_m: float) -> float:
+    if a_m <= 0:
+        return float("nan")
     return 2.0 * math.pi * math.sqrt(a_m ** 3 / MU_EARTH)
 
 

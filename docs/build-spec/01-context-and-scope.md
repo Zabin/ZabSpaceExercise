@@ -82,8 +82,13 @@ the outgoing user blanks the screen during handoff (see §6).
 - Moderate-fidelity orbital model: Keplerian + J2, pass/access-window computation, impulsive
   maneuvers, eclipse/lighting (`04-orbital-mechanics-primer.md`).
 - **2D visualization in ECI and RIC frames** (3D globe deferred to v1.1).
-- Up to **~24 satellites total** across cells in the largest v1 scenario (deliberately under the
-  48 ceiling), with **constellations of at most 3 satellites**, each operated and monitored
+- Up to **~24 satellites total** in Claude-authored sample vignettes — a soft sizing
+  guideline matched to typical White-Cell facilitator hardware, not an engine cap (see
+  audit Jun 2026 §F2). User-authored vignettes may scale beyond this for capable hosts; the
+  engine has no enforced limit. The server-side **clock-lag watchdog** (
+  `SessionManager._record_catch_up_lag`) warns White Cell when the wall clock outruns the
+  sim for sustained intervals — that is the operational test of "is this scenario too big
+  for the host?". **Constellations of at most 3 satellites**, each operated and monitored
   **individually**.
 - Bus + payload operations model with **state of health**, alarms, **safe mode** and its
   detection/recovery loop (`06-bus-and-payload-operations.md`, `12-safe-mode-loop.md`).
