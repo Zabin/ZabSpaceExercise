@@ -67,9 +67,12 @@ const ACTIONS_BY_KIND = {
 const PARAM_TEMPLATE = {
   downlink: () => ({ via: DEFAULT_STATION }),
   maneuver: () => ({ dv: [0, 5, 0], via: DEFAULT_STATION }),
-  jam: () => ({ success_prob: 1.0, outcome: "deny" }),
-  engage: () => ({}),
-  cyber: () => ({ access_vector: "ground_modem", outcome: "safe_mode", success_prob: 1.0 }),
+  // Audit 2026-06 Commands §C2 — jam/engage/cyber no longer accept success_prob;
+  // Pₛ derives from physical params + defender state. The form template seeds the
+  // physical inputs the operator IS allowed to choose.
+  jam: () => ({ modulation: "barrage", power_w: 200.0 }),
+  engage: () => ({ interceptor_class: "mrbm_kkv", salvo_n: 1 }),
+  cyber: () => ({ vector: "ground_modem", payload: "seize_c2" }),
   observe: () => ({ intent: "characterize" }),
   // Bus/payload verbs (action "command") — plan to the next command window like any uplink.
   "eps.shed_load": () => ({ via: DEFAULT_STATION }),
@@ -90,20 +93,25 @@ const PARAM_TEMPLATE = {
   "def.frequency_hop": () => ({ via: DEFAULT_STATION, on: true }),
   "def.harden": () => ({ via: DEFAULT_STATION, on: true }),
   "def.set_threat_warning": () => ({ via: DEFAULT_STATION, on: true }),
-  "sigint.task_collection": () => ({ via: DEFAULT_STATION }),
+  "sigint.task_collection": () => ({ via: DEFAULT_STATION, band: "X", intercept_mode: "geolocate", dwell_s: 600 }),
   "wx.schedule_collection": () => ({ via: DEFAULT_STATION }),
   // Stage B verbs
   "cdh.reset_subsystem": () => ({ via: DEFAULT_STATION }),
   "adcs.desaturate": () => ({ via: DEFAULT_STATION }),
-  "comms.point_antenna": () => ({ via: DEFAULT_STATION, mode: "earth" }),
   "isr.set_mode": () => ({ via: DEFAULT_STATION, mode: "wide" }),
-  "pnt.set_integrity": () => ({ via: DEFAULT_STATION, mode: "standard" }),
   "def.maneuver_evade": () => ({ via: DEFAULT_STATION, dv_cost: 5.0 }),
+  // Realism-research-recommended verbs (Phase D §15):
+  "pnt.flex_power": () => ({ via: DEFAULT_STATION, on: true, signal: "M-code" }),
+  "pnt.set_health_flag": () => ({ via: DEFAULT_STATION, healthy: false }),
+  "mw.add_stare_area": () => ({ via: DEFAULT_STATION, center: [0.0, 0.0], revisit_s: 30 }),
+  "satcom.geolocate_interference": () => ({ via: DEFAULT_STATION, dwell_s: 600 }),
+  "wx.request_sector": () => ({ via: DEFAULT_STATION, center: [0.0, 0.0], cadence_s: 60 }),
   // Final catalog-verb fill
   "satcom.set_frequency_plan": () => ({ via: DEFAULT_STATION, plan: "default" }),
+  "satcom.reconfigure_beam": () => ({ via: DEFAULT_STATION, spot: "default" }),
   "sda.task_characterize": () => ({ via: DEFAULT_STATION, target: "TGT-1" }),
-  "sda.cue": () => ({ via: DEFAULT_STATION, target: "TGT-1" }),
-  "sda.downlink": () => ({ via: DEFAULT_STATION }),
+  "sda.task_search": () => ({ via: DEFAULT_STATION }),
+  "sda.task_track": () => ({ via: DEFAULT_STATION, target: "TGT-1" }),
 };
 
 // Verb roles for the §1.2 role selector — drives the Bus/Payload/SDA/All filter on the command menu.
@@ -113,15 +121,17 @@ const VERB_ROLE = {
   "adcs.set_mode": "bus", "adcs.desaturate": "bus",
   "cdh.dump_storage": "bus", "cdh.clear_fault": "bus", "cdh.reset_subsystem": "bus",
   "tcs.set_mode": "bus", "tcs.set_heater": "bus",
-  "comms.enable_isl": "bus", "comms.config_link": "bus", "comms.point_antenna": "bus",
+  "comms.enable_isl": "bus", "comms.config_link": "bus",
   "satcom.mitigate_interference": "payload", "satcom.shift_users": "payload",
+  "satcom.geolocate_interference": "payload", "satcom.reconfigure_beam": "payload",
   "isr.collect_now": "payload", "isr.schedule_collection": "payload", "isr.set_mode": "payload",
   "sigint.task_collection": "payload", "wx.schedule_collection": "payload",
-  "pnt.set_integrity": "payload",
+  "wx.request_sector": "payload", "mw.add_stare_area": "payload",
+  "pnt.flex_power": "payload", "pnt.set_health_flag": "payload",
   "def.patch_cyber": "bus", "def.frequency_hop": "bus",
   "def.harden": "payload", "def.set_threat_warning": "bus", "def.maneuver_evade": "bus",
   "satcom.set_frequency_plan": "payload",
-  "sda.task_characterize": "sda", "sda.cue": "sda", "sda.downlink": "sda",
+  "sda.task_search": "sda", "sda.task_track": "sda", "sda.task_characterize": "sda",
 };
 let ROLE_FILTER = "all";
 
@@ -421,12 +431,17 @@ function actionsFor(a) {
               "adcs.set_mode", "adcs.desaturate",
               "cdh.dump_storage", "cdh.clear_fault", "cdh.reset_subsystem",
               "tcs.set_mode", "tcs.set_heater",
-              "comms.enable_isl", "comms.config_link", "comms.point_antenna",
+              "comms.enable_isl", "comms.config_link",
               "def.frequency_hop", "def.harden", "def.set_threat_warning", "def.maneuver_evade");
-    if (a.payload === "satcom") acts.push("satcom.mitigate_interference", "satcom.shift_users", "satcom.set_frequency_plan");
-    if (a.payload === "sda") acts.push("sda.task_characterize", "sda.cue", "sda.downlink");
+    if (a.payload === "satcom") acts.push("satcom.mitigate_interference", "satcom.shift_users",
+                                          "satcom.set_frequency_plan", "satcom.reconfigure_beam",
+                                          "satcom.geolocate_interference");
+    if (a.payload === "sda") acts.push("sda.task_search", "sda.task_track", "sda.task_characterize");
     if (a.payload === "isr_eo" || a.payload === "isr_sar") acts.push("isr.collect_now", "isr.schedule_collection", "isr.set_mode");
     if (a.payload === "sigint") acts.push("sigint.task_collection");
+    if (a.payload === "weather") acts.push("wx.schedule_collection", "wx.request_sector");
+    if (a.payload === "mw") acts.push("mw.add_stare_area");
+    if (a.payload === "pnt") acts.push("pnt.flex_power", "pnt.set_health_flag");
     if (a.payload === "weather") acts.push("wx.schedule_collection");
     if (a.payload === "pnt") acts.push("pnt.set_integrity");
     if ((a.cyber_vulns || []).length) acts.push("def.patch_cyber");      // defender's root-cause fix
@@ -657,6 +672,13 @@ function onActionChange(resetParams = true) {
   const isJam = action === "jam";
   $("jam-panel") && ($("jam-panel").style.display = isJam ? "" : "none");
   if (isJam) jamSummaryUpdate();
+  // Audit 2026-06 Commands §M4 — engage and cyber assistant panels (Phase C step 1).
+  const isEng = action === "engage";
+  $("engage-panel") && ($("engage-panel").style.display = isEng ? "" : "none");
+  if (isEng) engageSummaryUpdate();
+  const isCyber = action === "cyber";
+  $("cyber-panel") && ($("cyber-panel").style.display = isCyber ? "" : "none");
+  if (isCyber) cyberSummaryUpdate();
   // Clear any prior jam preview footprint
   if (!isJam && window.JAM_PREVIEW) { JAM_PREVIEW = null; if (typeof drawMap === "function") drawMap(); }
   previewOrder();
@@ -771,12 +793,14 @@ async function computeManeuver() {
 let JAM_PREVIEW = null;
 
 function jamGatherParams() {
+  // Audit 2026-06 Commands §C2 — Pₛ derives from modulation × power × bandwidth coverage
+  // (defender state cuts it further at the resolver). The operator no longer types a
+  // base success probability; the assistant panel surfaces the computed Pₛ as read-only.
   return {
     modulation: $("jam-mod")?.value || "barrage",
     power_w: parseFloat($("jam-power")?.value || "100"),
     bandwidth_hz: parseFloat($("jam-bw")?.value || "1000") * 1000,
     victim_bandwidth_hz: parseFloat($("jam-vbw")?.value || "1000") * 1000,
-    success_prob: parseFloat($("jam-pbase")?.value || "0.9"),
   };
 }
 
@@ -818,6 +842,66 @@ async function computeJam() {
   if (typeof drawMap === "function") drawMap();
 
   // Pre-fill the order params so the issued jam uses these settings
+  const cur = (() => { try { return JSON.parse($("o-params").value || "{}"); } catch { return {}; } })();
+  $("o-params").value = JSON.stringify({ ...cur, ...mp });
+  previewOrder();
+}
+
+// -- Engage parameter assistant (Audit 2026-06 Commands §M2) ------------------
+
+function engageGatherParams() {
+  return {
+    interceptor_class: $("engage-class")?.value || "mrbm_kkv",
+    salvo_n: parseInt($("engage-salvo")?.value || "1", 10),
+  };
+}
+
+function engageSummaryUpdate() {
+  const mp = engageGatherParams();
+  const el = $("engage-summary");
+  if (el) el.textContent = `${mp.interceptor_class} · salvo ${mp.salvo_n}`;
+  // Pre-fill the order params so the engage form picks up the assistant's choice.
+  const cur = (() => { try { return JSON.parse($("o-params").value || "{}"); } catch { return {}; } })();
+  $("o-params").value = JSON.stringify({ ...cur, ...mp });
+  previewOrder();
+}
+
+async function computeEngage() {
+  if (!SID) { $("engage-result").textContent = "No active session."; return; }
+  const actor = $("o-actor").value;
+  const target = $("o-target").value;
+  if (!actor || !target) { $("engage-result").textContent = "Select actor + target."; return; }
+  const cell = CELL === "white" ? (ASSETS[actor]?.owner || "red") : CELL;
+  const mp = engageGatherParams();
+  let res;
+  try {
+    res = await api.post(`/api/sessions/${SID}/engage/compute`,
+                         { cell, actor, target, params: mp });
+  } catch { $("engage-result").textContent = "Server error"; return; }
+  if (res.error) {
+    $("engage-result").innerHTML = `<span style="color:var(--red)">${esc(res.error)}</span>`;
+    return;
+  }
+  const pk = res.pk_estimate ?? res.success_prob ?? "—";
+  const reach = res.in_reach === false ? " · OUT OF REACH" : "";
+  $("engage-result").innerHTML =
+    `<span class="ok">P<sub>k</sub> ≈ ${pk}${reach} · target alt ${res.target_alt_km ?? "—"} km</span>`;
+}
+
+// -- Cyber parameter assistant (Audit 2026-06 Commands §C2) -------------------
+
+function cyberGatherParams() {
+  return {
+    vector: $("cyber-vector")?.value || "ground_modem",
+    payload: $("cyber-payload")?.value || "seize_c2",
+    dwell_s: parseFloat($("cyber-dwell")?.value || "0"),
+  };
+}
+
+function cyberSummaryUpdate() {
+  const mp = cyberGatherParams();
+  const el = $("cyber-summary");
+  if (el) el.textContent = `${mp.vector} · ${mp.payload} · dwell ${mp.dwell_s}s`;
   const cur = (() => { try { return JSON.parse($("o-params").value || "{}"); } catch { return {}; } })();
   $("o-params").value = JSON.stringify({ ...cur, ...mp });
   previewOrder();
@@ -1592,13 +1676,15 @@ const VERB_SUBSYSTEM = {
   "adcs.set_mode": "attitude", "adcs.desaturate": "attitude",
   "tcs.set_mode": "thermal", "tcs.set_heater": "thermal",
   "cdh.dump_storage": "cdh", "cdh.clear_fault": "cdh", "cdh.reset_subsystem": "cdh", "def.patch_cyber": "cdh",
-  "comms.enable_isl": "comms", "comms.config_link": "comms", "comms.point_antenna": "comms", "def.frequency_hop": "comms",
+  "comms.enable_isl": "comms", "comms.config_link": "comms", "def.frequency_hop": "comms",
   "satcom.mitigate_interference": "payload", "satcom.shift_users": "payload",
-  "satcom.set_frequency_plan": "payload",
+  "satcom.set_frequency_plan": "payload", "satcom.reconfigure_beam": "payload",
+  "satcom.geolocate_interference": "payload",
   "isr.collect_now": "payload", "isr.schedule_collection": "payload", "isr.set_mode": "payload",
-  "sigint.task_collection": "payload", "wx.schedule_collection": "payload", "def.harden": "payload",
-  "pnt.set_integrity": "payload",
-  "sda.task_characterize": "payload", "sda.cue": "payload", "sda.downlink": "payload",
+  "sigint.task_collection": "payload", "wx.schedule_collection": "payload",
+  "wx.request_sector": "payload", "mw.add_stare_area": "payload", "def.harden": "payload",
+  "pnt.flex_power": "payload", "pnt.set_health_flag": "payload",
+  "sda.task_search": "payload", "sda.task_track": "payload", "sda.task_characterize": "payload",
   "def.maneuver_evade": "propulsion",
 };
 function verbsForSubsystem(a, sub) {
@@ -2447,12 +2533,22 @@ addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Jam parameter assistant listeners.
+// Jam / engage / cyber parameter assistant listeners (Audit 2026-06 Commands §M4).
 addEventListener("DOMContentLoaded", () => {
-  const computeBtn = $("jam-compute");
-  if (computeBtn) computeBtn.addEventListener("click", computeJam);
-  ["jam-mod", "jam-power", "jam-bw", "jam-vbw", "jam-pbase"].forEach((id) => {
+  const jamBtn = $("jam-compute");
+  if (jamBtn) jamBtn.addEventListener("click", computeJam);
+  ["jam-mod", "jam-power", "jam-bw", "jam-vbw"].forEach((id) => {
     const el = $(id);
     if (el) el.addEventListener("change", jamSummaryUpdate);
+  });
+  const engBtn = $("engage-compute");
+  if (engBtn) engBtn.addEventListener("click", computeEngage);
+  ["engage-class", "engage-salvo"].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener("change", engageSummaryUpdate);
+  });
+  ["cyber-vector", "cyber-payload", "cyber-dwell"].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener("change", cyberSummaryUpdate);
   });
 });

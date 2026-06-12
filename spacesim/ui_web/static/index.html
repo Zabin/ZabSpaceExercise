@@ -341,13 +341,77 @@
           <label>Power (W)<input id="jam-power" type="number" step="10" min="1" value="100"></label>
           <label>BW (kHz)<input id="jam-bw" type="number" step="100" min="0" value="1000"></label>
           <label>Victim BW (kHz)<input id="jam-vbw" type="number" step="100" min="0" value="1000"></label>
-          <label>Base P<sub>s</sub><input id="jam-pbase" type="number" step="0.05" min="0" max="1" value="0.9"></label>
+        </div>
+        <div class="muted" style="margin-top:4px;font-size:11px">
+          Audit 2026-06 Commands &sect;C2 — P<sub>s</sub> is derived from modulation &times; power &times; bandwidth coverage; defender frequency-hop / mitigation cut it further at the resolver. Compute below for the read-only estimate.
         </div>
         <div style="display:flex;gap:6px;margin-top:6px">
           <button id="jam-compute">Preview footprint</button>
           <span id="jam-summary" class="muted" style="align-self:center"></span>
         </div>
         <div id="jam-result" class="mnvr-result"></div>
+      </div>
+
+      <!-- Engage parameter assistant (shown only when action = engage). Audit 2026-06
+           Commands §M2: interceptor_class enum sourced from the four open-source
+           DA-ASAT test records; Pₖ derived from class × altitude reach × salvo. -->
+      <div id="engage-panel" style="display:none">
+        <hr style="border-color:rgba(255,255,255,0.1);margin:6px 0">
+        <div class="mnvr-fields">
+          <label>Interceptor class
+            <select id="engage-class">
+              <option value="bmd_adapted">BMD-adapted (SM-3-class, &le;600 km)</option>
+              <option value="mrbm_kkv" selected>MRBM KKV (SC-19 / Shakti class, &le;1000 km)</option>
+              <option value="abm_heavy">ABM heavy (Nudol class, &le;2000 km)</option>
+              <option value="coorbital">Co-orbital grappler (SJ-21 class, any alt)</option>
+            </select>
+          </label>
+          <label>Salvo n<input id="engage-salvo" type="number" step="1" min="1" max="20" value="1"></label>
+        </div>
+        <div class="muted" style="margin-top:4px;font-size:11px">
+          P<sub>k</sub> derives from interceptor class &times; target altitude reach (hard cap)
+          &times; salvo with correlated-failure floor. Defender <code>def.maneuver_evade</code>
+          halves it at the resolver.
+        </div>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button id="engage-compute">Preview P<sub>k</sub></button>
+          <span id="engage-summary" class="muted" style="align-self:center"></span>
+        </div>
+        <div id="engage-result" class="mnvr-result"></div>
+      </div>
+
+      <!-- Cyber parameter assistant (shown only when action = cyber). Audit 2026-06
+           Commands §C2: vector + payload mandatory; Pₛ derived from vector × posture × dwell. -->
+      <div id="cyber-panel" style="display:none">
+        <hr style="border-color:rgba(255,255,255,0.1);margin:6px 0">
+        <div class="mnvr-fields">
+          <label>Vector
+            <select id="cyber-vector">
+              <option value="rf">RF (uplink injection)</option>
+              <option value="supply_chain">Supply chain</option>
+              <option value="insider">Insider</option>
+              <option value="ground_segment">Ground segment</option>
+              <option value="ground_modem" selected>Ground modem (Viasat-style)</option>
+            </select>
+          </label>
+          <label>Payload
+            <select id="cyber-payload">
+              <option value="data_exfil">Data exfil</option>
+              <option value="wiper">Wiper (non-reversible)</option>
+              <option value="spoof">Spoof</option>
+              <option value="dwell">Dwell (persistence)</option>
+              <option value="seize_c2" selected>Seize C2 (safe-mode push)</option>
+            </select>
+          </label>
+          <label>Dwell (s)<input id="cyber-dwell" type="number" step="60" min="0" value="0"></label>
+        </div>
+        <div class="muted" style="margin-top:4px;font-size:11px">
+          P<sub>s</sub> = vector base &times; target cyber posture &times; dwell bonus.
+          Patched vulnerabilities close the vector (P<sub>s</sub> = 0). The <code>seize_c2</code>
+          payload models the Viasat KA-SAT pattern (legitimate management commands push the
+          target into safe mode).
+        </div>
+        <div id="cyber-summary" class="muted" style="margin-top:6px"></div>
       </div>
 
       <div id="batch-bar" class="empty">

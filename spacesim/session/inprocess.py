@@ -559,10 +559,17 @@ class InProcessSession:
 
     def compute_engage(self, session: str, cell: str, actor: str, target: str,
                         params: dict) -> dict:
-        """Preview a kinetic engage order: closing geometry + Pₖ + debris cone (read-only)."""
+        """Preview a kinetic engage order: closing geometry + Pₖ + debris cone (read-only).
+
+        Audit 2026-06 Commands §M2 — Pₖ derives from the INTERCEPTORS database
+        (interceptor_class × target altitude reach × salvo with correlated-failure floor).
+        Operator-typed `success_prob` is ignored (the engine's execution path also ignores
+        it; this preview matches that contract).
+        """
         self.catch_up(session)
         from spacesim.engine.engage import (
             closing_geometry, debris_cone_estimate, kill_probability,
+            kill_probability_from_class, INTERCEPTORS,
         )
         import numpy as np
         mgr = self._sessions[session]
@@ -576,20 +583,49 @@ class InProcessSession:
         rb, vb = mgr.osys.prop.rv(b.orbit, mgr.world.now)
         geom = closing_geometry(np.asarray(ra), np.asarray(va),
                                  np.asarray(rb), np.asarray(vb))
-        base_pk = float(params.get("success_prob", 0.9))
         salvo_n = int(params.get("salvo_n", 1))
-        interceptor_dv = float(params.get("interceptor_dv_ms", 200.0))
-        pk = kill_probability(base_pk, miss_km=geom["miss_km"],
-                              interceptor_dv_ms=interceptor_dv, salvo_n=salvo_n)
-        debris = debris_cone_estimate(geom["miss_km"], geom["closing_speed_kms"])
-        return {
+        target_alt_km = max(0.0, (b.orbit.a_m - 6_378_137.0) / 1000.0)
+
+        result = {
             "actor": actor, "target": target,
             **geom,
             "salvo_n": salvo_n,
-            "interceptor_dv_ms": interceptor_dv,
-            "kill_probability": pk,
-            "debris": debris,
+            "target_alt_km": round(target_alt_km, 1),
         }
+
+        if "interceptor_class" in params:
+            cls = params["interceptor_class"]
+            spec = INTERCEPTORS.get(cls)
+            max_alt = spec["max_alt_km"] if spec else None
+            in_reach = max_alt is None or target_alt_km <= max_alt
+            pk = kill_probability_from_class(
+                cls, target_alt_km=target_alt_km, salvo_n=salvo_n,
+                miss_km=geom["miss_km"],
+            )
+            result.update({
+                "interceptor_class": cls,
+                "pk_estimate": pk,
+                "in_reach": in_reach,
+                "debris": debris_cone_estimate(
+                    geom["miss_km"], geom["closing_speed_kms"],
+                    target_alt_km=target_alt_km,
+                ),
+            })
+        else:
+            # Legacy path (interceptor_dv_ms / base_pk): retained for back-compat callers.
+            base_pk = float(params.get("success_prob", 0.9))
+            interceptor_dv = float(params.get("interceptor_dv_ms", 200.0))
+            pk = kill_probability(base_pk, miss_km=geom["miss_km"],
+                                  interceptor_dv_ms=interceptor_dv, salvo_n=salvo_n)
+            result.update({
+                "interceptor_dv_ms": interceptor_dv,
+                "kill_probability": pk,
+                "debris": debris_cone_estimate(
+                    geom["miss_km"], geom["closing_speed_kms"],
+                    target_alt_km=target_alt_km,
+                ),
+            })
+        return result
 
     def compute_cyber(self, session: str, cell: str, actor: str, target: str,
                        params: dict) -> dict:
