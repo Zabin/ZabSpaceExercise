@@ -29,6 +29,12 @@ VECTORS: dict[str, dict] = {
                        "detect_rate": 0.20, "min_persistence_h": 1.0},
     "ground_segment": {"base_success": 0.45, "attribution_bias": "ambiguous", "patchable": True,
                        "detect_rate": 0.30, "min_persistence_h": 2.0},
+    # Audit 2026-06 Commands §C2 — the canonical ground-segment intrusion as the vignette
+    # library uses it: an open VPN / management-plane misconfiguration on a SATCOM modem
+    # gateway (the Viasat KA-SAT pattern). Distinct from the broader `ground_segment` so
+    # the existing vuln-dict strings keep working without a rename across 19 vignettes.
+    "ground_modem":   {"base_success": 0.50, "attribution_bias": "ambiguous", "patchable": True,
+                       "detect_rate": 0.30, "min_persistence_h": 2.0},
 }
 
 PAYLOADS: dict[str, dict] = {
@@ -36,6 +42,11 @@ PAYLOADS: dict[str, dict] = {
     "wiper":      {"reversible": False, "escalation_weight": 6, "intended_outcome": "destroy"},
     "spoof":      {"reversible": True,  "escalation_weight": 3, "intended_outcome": "deceive"},
     "dwell":      {"reversible": True,  "escalation_weight": 2, "intended_outcome": "degrade"},
+    # Audit 2026-06 Commands §13 — Viasat-style "issue legitimate management commands
+    # from a compromised ground/TT&C segment." The attacker doesn't damage anything,
+    # they make the spacecraft safe itself. High escalation; reversible (the safe-mode
+    # recovery chain lifts it).
+    "seize_c2":   {"reversible": True,  "escalation_weight": 5, "intended_outcome": "safe_mode"},
 }
 
 POSTURE_FACTORS = {"low": 1.25, "medium": 1.00, "high": 0.65}

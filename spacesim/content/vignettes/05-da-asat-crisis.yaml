@@ -62,7 +62,7 @@ vignette:
          action: advance, params: {to: order_window},
          expect: "RED-RADAR returns a weapons-quality track on BLUE-SAT"}
       - {n: 4, title: "Engage with the ASAT", when: "at the intercept window",
-         action: engage, actor: RED-ASAT, target: BLUE-SAT, params: {success_prob: 1.0},
+         action: engage, actor: RED-ASAT, target: BLUE-SAT, params: {interceptor_class: mrbm_kkv},
          expect: "queued — kinetic is authorized in this vignette"}
       - {n: 5, title: "Assess the consequences", when: "after intercept",
          action: advance, params: {to: order_window},

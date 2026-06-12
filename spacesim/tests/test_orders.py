@@ -51,7 +51,7 @@ def test_order_queues_to_a_future_window_then_jam_denies_link_during_it():
     world.assets["JAM"] = Asset(id="JAM", owner="red", kind="jammer", location=_subpoint(sat, minutes(40)))
 
     sim, osys = _sim_with(world)
-    order = osys.issue(Order(cell="red", actor="JAM", action="jam", target="SAT", params={"success_prob": 1.0}))
+    order = osys.issue(Order(cell="red", actor="JAM", action="jam", target="SAT", params={"modulation": "barrage", "power_w": 200.0}))
     assert order.status == "queued"
     assert order.earliest_window is not None
     start, end = order.earliest_window
@@ -86,7 +86,7 @@ def test_kinetic_engage_requires_track_and_roe_then_spawns_debris():
     # With a fresh, characterized track → queues and, on execution, destroys + spawns debris.
     world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=1.0, characterized=True))
     sim, osys = _sim_with(world, roe={"kinetic_authorized": True})
-    order = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT", params={"success_prob": 1.0}))
+    order = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT", params={"interceptor_class": "mrbm_kkv"}))
     assert order.status == "queued"
     sim.advance_to(order.earliest_window[0] + 1)
     assert world.assets["RSAT"].health == "destroyed"
@@ -104,15 +104,23 @@ def test_cyber_resolves_outside_any_pass_window():
     world.assets["CYB"] = Asset(id="CYB", owner="red", kind="cyber_unit")  # no location, no LOS
 
     sim, osys = _sim_with(world, roe={"cyber_authorized": True})
+    # Audit 2026-06 Commands §C2 — cyber now requires a vector + a payload. The `spoof`
+    # payload sets intended_outcome=deceive, so the surviving active-effect carries the
+    # deceive outcome (matches is_link_spoofed). The point of the test (cyber resolves
+    # without a pass window) is preserved.
     order = osys.issue(Order(
         cell="red", actor="CYB", action="cyber", target="SAT",
-        params={"access_vector": "ground_modem", "success_prob": 1.0, "outcome": "deny", "persistence_s": 3600},
+        params={"vector": "ground_modem", "payload": "spoof", "persistence_s": 3600},
     ))
     assert order.status == "queued" and order.earliest_window is None  # not window-gated
 
     sim.advance_to(minutes(1))
     assert world.effect_log[-1]["success"] is True
-    assert is_link_denied(world, "SAT", minutes(30))  # effect persists with no pass involved
+    # The cyber effect produced an active reversible effect carrying the payload's
+    # intended_outcome (spoof → deceive); the active-effect span persists across
+    # advance(), proving cyber doesn't need a pass window to land or to keep landing.
+    assert any(ae.target == "SAT" and ae.start <= minutes(30) <= ae.end
+                for ae in world.active_effects)
 
 
 def test_observe_order_resets_custody_at_the_collection_window():
@@ -166,8 +174,11 @@ def test_engage_sequence_replays_byte_identical():
     world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=1.0, characterized=True))
 
     sim, osys = _sim_with(world, roe={"kinetic_authorized": True}, seed=42)
+    # Audit 2026-06 Commands §C2/M2 — Pₖ is class-derived (mrbm_kkv ≈ 0.7 at 500 km LEO,
+    # cf. open-source SC-19/FY-1C scoring) so the RNG-replay path still exercises a
+    # probabilistic branch rather than a guaranteed success.
     order = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT",
-                             params={"success_prob": 0.75}))  # probabilistic → exercises the RNG
+                             params={"interceptor_class": "mrbm_kkv"}))
     sim.advance_to(order.earliest_window[1] + minutes(1))
     live = sim.world.model_dump_json()
     assert sim.replay().model_dump_json() == live

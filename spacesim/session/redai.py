@@ -38,20 +38,24 @@ class RedDoctrine:
         tgt = targets[0]
 
         if self.profile in ("russia_ew_first", "china_integrated"):
+            # Audit 2026-06 Commands §C2 — Red doctrine picks modulation + power; jam
+            # Pₛ derives from those (no operator probability override).
             for jammer in self._red_assets("jammer"):
                 acks.append(self.mgr.issue_order("red", Order(
                     cell="red", actor=jammer, action="jam", target=tgt,
-                    params={"success_prob": 1.0, "outcome": "deny"})))
+                    params={"modulation": "barrage", "power_w": 200.0})))
 
         if self.profile == "china_integrated":
+            # Cyber: pick a vector + payload from the vector table. ``seize_c2`` payload
+            # models the Viasat-style "issue legitimate commands as the operator" attack
+            # that drives the target into safe mode.
             for cyber in self._red_assets("cyber_unit"):
                 victim = self._first_vulnerable(targets)
                 if victim is not None:
                     vid, vector = victim
                     acks.append(self.mgr.issue_order("red", Order(
                         cell="red", actor=cyber, action="cyber", target=vid,
-                        params={"access_vector": vector, "outcome": "safe_mode",
-                                "success_prob": 1.0, "sm_susceptibility": 1.0})))
+                        params={"vector": vector, "payload": "seize_c2"})))
 
         if self.profile == "generic":
             for sensor in [i for i, s in self.mgr.world.sensors.items() if s.owner == "red"]:

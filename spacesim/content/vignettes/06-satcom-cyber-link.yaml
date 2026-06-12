@@ -58,7 +58,7 @@ vignette:
       - {n: 1, title: "Review the cyber unit", when: "at start", action: review,
          expect: "RED-CYBER; disable_satcom (asset_safed) pending — cyber is NOT window-gated"}
       - {n: 2, title: "Exploit the modem off-pass", when: "any time — no pass required",
-         action: cyber, actor: RED-CYBER, target: BLUE-SATCOM, params: {access_vector: ground_modem, outcome: safe_mode, success_prob: 1.0, sm_susceptibility: 1.0},
+         action: cyber, actor: RED-CYBER, target: BLUE-SATCOM, params: {vector: ground_modem, payload: seize_c2},
          expect: "BLUE-SATCOM drops to safe mode; disable_satcom MET"}
       - {n: 3, title: "Persist until patched", when: "+ advance through the window",
          action: advance, params: {dt_s: 3601},
@@ -82,5 +82,5 @@ vignette:
       deadline_note: "Keep BLUE-SATCOM in safe mode at T+1 h."
       roe_note: "Cyber ROE is enabled by default (cyber_authorized=true). No window required, no kinetic involved."
       success_criteria: "disable_satcom MET: BLUE-SATCOM in safe mode at T+1 h."
-      tool_tips: "Action: cyber · actor: RED-CYBER · target: BLUE-SATCOM · params: {access_vector: ground_modem, outcome: safe_mode, success_prob: 1.0, sm_susceptibility: 1.0}. Fires immediately. Advance through the hour; re-cyber if Blue restores the bird without patching the vector."
+      tool_tips: "Action: cyber · actor: RED-CYBER · target: BLUE-SATCOM · params: {vector: ground_modem, payload: seize_c2}. Vector + payload derive Pₛ from cyber.VECTORS × cyber.PAYLOADS; the payload seize_c2 models the Viasat-style 'issue legitimate management commands' attack that drives the target into safe mode. Fires immediately. Advance through the hour; re-cyber if Blue restores the bird without patching the vector."
 

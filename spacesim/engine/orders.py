@@ -10,6 +10,7 @@ can act outside any pass.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -348,8 +349,14 @@ class OrderSystem:
             if track is None or not track.is_weapons_quality(self.sim.clock.now, self.wq_threshold):
                 return False, "no_weapons_quality_track"
 
-        if order.action == "cyber" and not self.roe.get("cyber_authorized", False):
-            return False, "roe_cyber_not_authorized"
+        if order.action == "cyber":
+            if not self.roe.get("cyber_authorized", False):
+                return False, "roe_cyber_not_authorized"
+            # Audit 2026-06 Commands §C2 — `vector` is mandatory. The legacy raw
+            # base_prob fallback path is removed; cyber Pₛ now always derives from
+            # vector × posture × dwell.
+            if not order.params.get("vector"):
+                return False, "no_cyber_vector"
 
         if order.action == "maneuver":
             dv = np.asarray(order.params.get("dv", [0, 0, 0]), dtype=float)
@@ -387,6 +394,11 @@ class OrderSystem:
     def _exec_payload(self, order: Order, win: AccessWindow) -> tuple[str, dict]:
         p = order.params
         if order.action == "jam":
+            # Audit 2026-06 Commands §C2 — Pₛ is fully derived from physical inputs
+            # (modulation × power × bandwidth coverage). The operator no longer types
+            # success_prob; the resolver then applies defender modifiers (frequency_hop,
+            # interference_mitigation — Phase A §C1). A legacy `success_prob` in params
+            # is parsed for save-file back-compat but ignored.
             from spacesim.engine.jam import (
                 effective_success_prob as _jam_prob,
                 modulation_params as _jam_mod,
@@ -396,24 +408,25 @@ class OrderSystem:
             power_w = float(p.get("power_w", 100.0))
             bandwidth_hz = float(p.get("bandwidth_hz", 1e6))
             victim_bw_hz = float(p.get("victim_bandwidth_hz", 1e6))
-            base_prob = float(p.get("success_prob", 0.9))
+            # Base Pₛ from a power-scaled curve; doubling power above the 100 W reference
+            # asymptotes to a near-certain raw threshold (defender state knocks it down).
+            base_prob = min(0.98, 0.6 + 0.3 * math.sqrt(max(0.0, power_w) / 100.0))
             adj_prob = _jam_prob(base_prob, modulation, bandwidth_hz, victim_bw_hz)
             mod_params, resolved_mod = _jam_mod(modulation)
-            # Deceptive jamming is overt by default — overrides operator attribution choice
-            # unless they explicitly override.
-            default_attr = mod_params["attribution_bias"]
-            attribution = p.get("attribution", default_attr)
+            # Deceptive jamming is overt-once-detected; all other modulations carry the
+            # modulation's default attribution_bias. Operators do not override.
+            attribution = mod_params["attribution_bias"]
             effect = EffectInstance(
-                template=p.get("template", "ew_jam"),
+                template="ew_jam",
                 category="electronic_warfare",
                 segment="link",
                 actor=order.actor,
                 target=order.target or "",
                 reversible=True,
                 attribution=attribution,
-                escalation_weight=p.get("escalation_weight", 3),
+                escalation_weight=3,
                 requires=JAM_FOOTPRINT,
-                intended_outcome=p.get("outcome", "deny"),
+                intended_outcome="deny",
                 success_prob=adj_prob,
                 window_start=win.start,
                 window_end=win.end,
@@ -421,21 +434,32 @@ class OrderSystem:
             return "execute_effect", {
                 "effect": effect.model_dump(),
                 "consume": {"actor": order.actor,
-                            "power_w": p.get("power_cost", _jam_power(power_w, modulation))},
+                            "power_w": _jam_power(power_w, modulation)},
             }
 
         if order.action == "engage":
-            from spacesim.engine.engage import kill_probability
+            # Audit 2026-06 Commands §M2 — Pₖ from INTERCEPTORS database (4 classes
+            # sourced from the four open-source DA-ASAT test records). The operator
+            # picks an interceptor_class enum and a salvo size; the engine derives
+            # Pₖ from the class × target altitude × salvo. Defender evasion (Phase A
+            # §C1) cuts Pₖ in the resolver.
+            from spacesim.engine.engage import kill_probability_from_class
             salvo_n = int(p.get("salvo_n", 1))
-            interceptor_dv = float(p.get("interceptor_dv_ms", 200.0))
-            base_pk = float(p.get("success_prob", 0.9))
-            # Miss-distance is not knowable at planning; assume zero for the executed shot
-            # (the closing-geometry preview is read-only and lives in the session API).
-            adj_pk = kill_probability(base_pk, miss_km=0.0,
-                                       interceptor_dv_ms=interceptor_dv, salvo_n=salvo_n)
+            interceptor_class = p.get("interceptor_class") or "mrbm_kkv"
+            # Target altitude derived from the world, not operator input.
+            tgt_asset = self.world.assets.get(order.target or "")
+            tgt_alt_km = 500.0  # default mid-LEO if unknown (won't pass weapons-quality
+                                # gate without a real target anyway)
+            if tgt_asset is not None and tgt_asset.orbit is not None:
+                # Periapsis altitude as a conservative reach test.
+                from spacesim.engine.orbit import classify_regime
+                tgt_alt_km = max(0.0, (tgt_asset.orbit.a_m - 6_378_137.0) / 1000.0)
+            adj_pk = kill_probability_from_class(
+                interceptor_class, target_alt_km=tgt_alt_km, salvo_n=salvo_n,
+            )
             effect = EffectInstance(
-                template=p.get("template", "da_asat"),
-                category="direct_ascent",
+                template=f"da_asat_{interceptor_class}",
+                category="direct_ascent" if interceptor_class != "coorbital" else "co_orbital",
                 segment="orbital",
                 actor=order.actor,
                 target=order.target or "",
@@ -443,7 +467,7 @@ class OrderSystem:
                 kinetic=True,
                 debris_risk="high",
                 attribution="overt",
-                escalation_weight=p.get("escalation_weight", 8),
+                escalation_weight=8,
                 requires=WEAPON_ENGAGEMENT,
                 intended_outcome="destroy",
                 success_prob=adj_pk,
@@ -457,8 +481,10 @@ class OrderSystem:
 
         if order.action == "observe":
             intent = p.get("intent", "track")
-            # characterize resolves type/intent; search/track refine the state estimate.
-            characterizes = p.get("characterizes", intent == "characterize")
+            # Audit 2026-06 Commands §C3 — `characterizes` is now derived from the
+            # operator's `intent`; the explicit override is removed (it let the operator
+            # mark the target characterized without actually running a characterize pass).
+            characterizes = (intent == "characterize")
 
             # ISR beam-mode parameters: beam_mode, look_angle, duration, start_offset
             beam_mode_req = p.get("beam_mode")
@@ -484,7 +510,13 @@ class OrderSystem:
                 beam_params as _bp, effective_gain as _eg, footprint_polygon, ground_heading_deg,
             )
             bp, resolved_mode = _bp(payload_type, beam_mode_req)
-            base_gain = float(p.get("gain", 1.0))
+            # Audit 2026-06 Commands §C3 — base gain is clamped to [0, 1]: the operator
+            # may deliberately request a *less*-confident observation (search-only
+            # sweeps, distant looks) but cannot type a value above 1.0 to fast-track
+            # custody. Beam parameters + look angle still modulate the effective gain
+            # through isr.effective_gain.
+            requested_gain = float(p.get("gain", 1.0))
+            base_gain = max(0.0, min(1.0, requested_gain))
             gain = _eg(base_gain, look_angle_deg, bp)
 
             # Compute footprint polygon from the actor's current orbit position + heading.
@@ -504,7 +536,9 @@ class OrderSystem:
                 "intent": intent,
                 "gain": gain,
                 "characterizes": characterizes,
-                "classification": p.get("classification"),
+                # Audit 2026-06 Commands §C3 — classification is never operator-set; it
+                # accumulates from the observation outcome instead.
+                "classification": None,
                 "actor": order.actor,
                 "beam_mode": resolved_mode,
                 "look_angle_deg": look_angle_deg,
@@ -543,8 +577,10 @@ class OrderSystem:
         if not commit:
             return
         p = order.params
-        # Cyber vector/payload parameters (FW §11.A.3): vector → success probability + attribution,
-        # payload → reversibility + escalation weight.  Operator overrides win if explicitly set.
+        # Audit 2026-06 Commands §C2 — cyber Pₛ fully derived from vector × posture × dwell.
+        # `vector` is mandatory (validator enforces). Payload table fixes reversibility /
+        # escalation / intended_outcome. Operator overrides on success_prob / attribution /
+        # outcome / reversible / escalation_weight / sm_susceptibility are removed.
         from spacesim.engine.cyber import (
             effective_success as _cyb_succ, payload_params as _cyb_pl, vector_params as _cyb_vec,
         )
@@ -553,27 +589,32 @@ class OrderSystem:
         target_asset = self.world.assets.get(order.target or "")
         target_posture = target_asset.cyber_posture if target_asset else "medium"
         dwell_s = float(p.get("dwell_s", 0.0))
-        base_prob = float(p.get("success_prob", 0.7))
         vp, resolved_vec = _cyb_vec(vector)
         pp, resolved_pl = _cyb_pl(payload_name)
-        succ = _cyb_succ(vector, target_posture, dwell_s) if vector else base_prob
-        attribution = p.get("attribution", vp["attribution_bias"] if vector else "covert")
+        succ = _cyb_succ(vector, target_posture, dwell_s)
+        # Safe-mode susceptibility stays a White-Cell / scripted dial (not operator-typed
+        # — the order form will not surface it). Persistence is a physical input on the
+        # payload, defaulted from the payload's `min_persistence_h`.
+        persistence_h = float(p.get("persistence_h", vp.get("min_persistence_h", 1.0)))
         effect = EffectInstance(
-            template=p.get("template", "cyber"),
+            template="cyber",
             category="cyber",
             segment=p.get("segment", "link"),
             actor=order.actor,
             target=order.target or "",
-            reversible=p.get("reversible", pp["reversible"] if payload_name else True),
-            attribution=attribution,
-            escalation_weight=p.get("escalation_weight", pp["escalation_weight"] if payload_name else 4),
+            reversible=pp["reversible"],
+            attribution=vp["attribution_bias"],
+            escalation_weight=pp["escalation_weight"],
             requires="none",
-            intended_outcome=p.get("outcome", pp["intended_outcome"] if payload_name else "deny"),
+            intended_outcome=pp["intended_outcome"],
             success_prob=succ,
-            access_vector=p.get("access_vector") or (resolved_vec if vector else None),
-            persistence_s=p.get("persistence_s", 3600.0 * max(1.0, p.get("persistence_h", 1.0))),
-            sm_susceptibility=p.get("sm_susceptibility", 1.0),
-            persistence_bonus=p.get("persistence_bonus", 1.0),
+            # Preserve the operator's raw vector string so the vuln-dict match in
+            # _effective_probability finds the target's matching access vector. The
+            # cyber.VECTORS lookup above was for the Pₛ math only.
+            access_vector=vector,
+            persistence_s=3600.0 * max(1.0, persistence_h),
+            sm_susceptibility=float(p.get("sm_susceptibility", 1.0)),
+            persistence_bonus=float(p.get("persistence_bonus", 1.0)),
             window_start=self.sim.clock.now,
         )
         self.sim.schedule(self.sim.clock.now, "execute_effect", {"effect": effect.model_dump()}, actor=order.cell, tag=order.id)

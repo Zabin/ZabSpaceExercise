@@ -49,7 +49,7 @@ vignette:
       - {n: 1, title: "Review the jammer", when: "at start", action: review,
          expect: "RED-JAM (GNSS downlink jammer); deny_pnt pending (link_denied)"}
       - {n: 2, title: "Jam the PNT link", when: "issue now — RED-JAM covers the user bubble",
-         action: jam, actor: RED-JAM, target: BLUE-GNSS, params: {success_prob: 1.0, outcome: deny},
+         action: jam, actor: RED-JAM, target: BLUE-GNSS, params: {modulation: barrage, power_w: 200.0},
          expect: "BLUE-GNSS link denied in the bubble; deny_pnt MET"}
       - {n: 3, title: "Sustain the denial", when: "+ advance through the campaign window",
          action: advance, params: {dt_s: 3601},
@@ -73,5 +73,5 @@ vignette:
       deadline_note: "Sustain denial through T+1 h."
       roe_note: "No kinetic this vignette. MEO is doctrinally safe from direct ascent. Reversible electronic denial is the only available effect."
       success_criteria: "deny_pnt MET: link_denied on BLUE-GNSS throughout the window."
-      tool_tips: "Action: jam · actor: RED-JAM · target: BLUE-GNSS · params: {outcome: deny, success_prob: 1.0}. Then advance through the hour. The Activity Gantt (bottom) shows the jam slot."
+      tool_tips: "Action: jam · actor: RED-JAM · target: BLUE-GNSS · params: {modulation: barrage, power_w: 200.0}. Pₛ derives from modulation × power × bandwidth coverage; defender frequency-hop / mitigation cut it further at the resolver. Then advance through the hour. The Activity Gantt (bottom) shows the jam slot."
 

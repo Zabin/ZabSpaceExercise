@@ -60,7 +60,7 @@ def test_blue_delivers_imagery_then_rewind_lets_red_deny_it():
 
     # --- Branch B: Red jams the downlink first; Blue's delivery is blocked → Red denies. ---
     api.issue_order(sid, "red", Order(cell="red", actor="JAM-NORTH", action="jam",
-                                      target="ISR-EO-1", params={"success_prob": 1.0, "outcome": "deny"}))
+                                      target="ISR-EO-1", params={"modulation": "barrage", "power_w": 200.0}))
     api.issue_order(sid, "blue", Order(cell="blue", actor="ISR-EO-1", action="downlink",
                                        params={"via": "GS-NORTH"}))
     api.advance_to(sid, start + 800 * 1_000_000)

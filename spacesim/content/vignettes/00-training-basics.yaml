@@ -96,11 +96,11 @@ vignette:
          action: observe, actor: RED-RDR, target: ISR-EO-1, params: {intent: track},
          expect: "custody on ISR-EO-1"}
       - {n: 3, title: "Jam the downlink", when: "during the GS-TRN pass",
-         action: jam, actor: JAM-TRN, target: ISR-EO-1, params: {success_prob: 1.0, outcome: deny},
+         action: jam, actor: JAM-TRN, target: ISR-EO-1, params: {modulation: barrage, power_w: 200.0},
          expect: "link denied during the footprint window"}
       - {n: 4, title: "Cyber the modem (off-pass)", when: "any time — cyber isn't window-gated",
          action: cyber, actor: RED-CYBER, target: ISR-EO-1,
-         params: {access_vector: ground_modem, outcome: safe_mode, success_prob: 1.0, sm_susceptibility: 1.0},
+         params: {vector: ground_modem, payload: seize_c2},
          expect: "ISR-EO-1 enters safe mode; disable_isr MET"}
       - {n: 5, title: "Advance and assess", when: "+10 min, past the delivery window",
          action: advance, params: {dt_s: 3601},

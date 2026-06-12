@@ -43,7 +43,7 @@ panel.
 4. **+10m** until it executes → **`deliver_isr` MET**. If `GS-NORTH` is jammed, re-route `{via: GS-EAST}`.
 
 **Red — deny it reversibly.**
-1. `JAM-NORTH` → **jam** `ISR-EO-1` `{success_prob: 1.0, outcome: deny}` during Blue's `GS-NORTH` pass — the downlink window is denied.
+1. `JAM-NORTH` → **jam** `ISR-EO-1` `{modulation: barrage, power_w: 200.0}` during Blue's `GS-NORTH` pass — the downlink window is denied. (Pₛ derives from modulation × power × bandwidth coverage; defender `def.frequency_hop` and `satcom.mitigate_interference` cut it further at the resolver — Audit 2026-06 Commands §C1.)
 2. **+10m** past the +3 h deadline → **`deny_isr` MET**.
 3. `RED-ASAT` → **engage** `ISR-EO-1` → **REJECTED (`roe_kinetic_not_authorized`)**: kinetic is off by default. *Teaching point:* the disproportionate option is the one the rules deny you.
 
@@ -78,7 +78,7 @@ panel.
 2. **+10m** to the +1 h deadline. If the link is up, **`maintain_service` MET**. *Reality check:* MEO is effectively safe from kinetic — the fight is electromagnetic and **local to the user bubble**, so there's no satellite to "save," only a link to keep clean.
 
 **Red — deny PNT.**
-1. `RED-JAM` → **jam** `BLUE-GNSS` `{success_prob: 1.0, outcome: deny}` — denies the link in the bubble → **`deny_pnt` MET**.
+1. `RED-JAM` → **jam** `BLUE-GNSS` `{modulation: barrage, power_w: 200.0}` — denies the link in the bubble → **`deny_pnt` MET**.
 2. **+10m** to sustain it. The denial is local and **reversible** — nothing is destroyed.
 
 ---
@@ -115,7 +115,7 @@ panel.
 **Red — execute the intercept.** *(This is the one vignette where kinetic is on by default.)*
 1. `RED-RADAR` → **observe** `BLUE-SAT` `{intent: characterize, classification: hostile}` — builds a **weapons-quality** track (confidence ≥ 0.8).
 2. **+10m** to the look so the track lands.
-3. `RED-ASAT` → **engage** `BLUE-SAT` `{success_prob: 1.0}` — **queued** (kinetic authorized).
+3. `RED-ASAT` → **engage** `BLUE-SAT` `{interceptor_class: mrbm_kkv}` — **queued** (kinetic authorized). Pₖ derives from the `INTERCEPTORS` database (4 classes sourced from the four open-source DA-ASAT test records; Audit 2026-06 Commands §M2). Target altitude is a hard reach cap; defender `def.maneuver_evade` halves Pₖ.
 4. **+10m** past intercept → **`destroy_sat` MET**, **but** a debris field forms, `avoid_debris` flips to failed, and the `un_condemnation` inject fires. *Teaching point:* the strike works and is **irreversible** — debris denies the regime to both sides.
 
 ---
@@ -133,7 +133,7 @@ panel.
 3. **+10m** to +1 h. If SATCOM is operational, **`keep_service` MET**.
 
 **Red — exploit the modem.**
-1. `RED-CYBER` → **cyber** `BLUE-SATCOM` `{access_vector: ground_modem, outcome: safe_mode, success_prob: 1.0}` — **off-pass, any time**. The bird drops to safe mode → **`disable_satcom` MET**.
+1. `RED-CYBER` → **cyber** `BLUE-SATCOM` `{vector: ground_modem, payload: seize_c2}` — **off-pass, any time**. Pₛ derives from vector × posture × dwell; the `seize_c2` payload models the Viasat-style "issue legitimate management commands" attack that drives the target into safe mode → **`disable_satcom` MET**.
 2. With `root_cause_persists` on, it **re-safes** after any recovery until Blue patches the vector.
 
 ---
@@ -173,8 +173,8 @@ everything, so triage. Deadline +90 min.
 4. **+10m** and assess: `deliver_isr` MET if the downlink beat the jam; `keep_satcom` / `custody_inspector` held if defended.
 
 **Red — synchronize the denial.**
-1. **ISR:** `JAM-NORTH` → **jam** `ISR-EO-1` `{success_prob: 1.0, outcome: deny}` during the `GS-NORTH` pass.
-2. **SATCOM:** `RED-CYBER` → **cyber** `SATCOM-1` `{access_vector: ground_modem, outcome: safe_mode, success_prob: 1.0}` — off-pass → **`disable_satcom` MET**.
+1. **ISR:** `JAM-NORTH` → **jam** `ISR-EO-1` `{modulation: barrage, power_w: 200.0}` during the `GS-NORTH` pass.
+2. **SATCOM:** `RED-CYBER` → **cyber** `SATCOM-1` `{vector: ground_modem, payload: seize_c2}` — off-pass → **`disable_satcom` MET**.
 3. **GEO shadow:** `RED-INSP` → **maneuver** within 100 km of `SATCOM-1` for `shadow_hva` (needs a Red command-uplink path / doctrine).
 4. **+10m** and hold: `deny_isr` + `disable_satcom` MET if sustained. Kinetic ASAT stays **off** unless White-Cell authorizes — escalation is a deliberate facilitator choice.
 

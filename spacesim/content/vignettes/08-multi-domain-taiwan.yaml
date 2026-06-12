@@ -120,10 +120,10 @@ vignette:
       - {n: 1, title: "Synchronize the denial", when: "at start", action: review,
          expect: "jam ISR + cyber SATCOM + shadow the GEO bird — coordinate across domains"}
       - {n: 2, title: "Jam the imagery downlink", when: "during Blue's GS-NORTH pass",
-         action: jam, actor: JAM-NORTH, target: ISR-EO-1, params: {success_prob: 1.0, outcome: deny},
+         action: jam, actor: JAM-NORTH, target: ISR-EO-1, params: {modulation: barrage, power_w: 200.0},
          expect: "denies the downlink window; deny_isr if Blue can't re-route to GS-EAST"}
       - {n: 3, title: "Cyber the SATCOM modem", when: "any time — off-pass",
-         action: cyber, actor: RED-CYBER, target: SATCOM-1, params: {access_vector: ground_modem, outcome: safe_mode, success_prob: 1.0, sm_susceptibility: 1.0},
+         action: cyber, actor: RED-CYBER, target: SATCOM-1, params: {vector: ground_modem, payload: seize_c2},
          expect: "SATCOM-1 drops to safe mode; disable_satcom MET until Blue patches"}
       - {n: 4, title: "Shadow the GEO inspector", when: "Red-doctrine / White-Cell closing burns",
          action: maneuver, actor: RED-INSP, params: {dv: [0.0, 2.0, 0.0]},

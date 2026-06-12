@@ -62,7 +62,7 @@ def test_01_blue_delivers_and_red_denies():
 
     mgr = _mgr("leo-isr-denial")
     jam = _issue(mgr, "red", actor="JAM-NORTH", action="jam", target="ISR-EO-1",
-                 params={"success_prob": 1.0, "outcome": "deny"})
+                 params={"modulation": "barrage", "power_w": 200.0})
     assert jam.status == "queued"
     mgr.advance_to(mgr.ctx.landing_deadline + 1)
     assert mgr.objectives()["red"]["deny_isr"] is True
@@ -87,7 +87,7 @@ def test_03_blue_keeps_pnt_and_red_denies():
 
     mgr = _mgr("gnss-ew-campaign")
     jam = _issue(mgr, "red", actor="RED-JAM", action="jam", target="BLUE-GNSS",
-                 params={"success_prob": 1.0, "outcome": "deny"})
+                 params={"modulation": "barrage", "power_w": 200.0})
     assert jam.status == "queued"
     mgr.advance_to(jam.earliest_window[0] + 1)
     assert mgr.objectives()["red"]["deny_pnt"] is True
@@ -112,7 +112,7 @@ def test_05_red_destroys_with_weapons_quality_track():
     tr = mgr.world.track_for("red", "BLUE-SAT")
     assert tr is not None and tr.is_weapons_quality(mgr.world.now)  # the engage gate
     eng = _issue(mgr, "red", actor="RED-ASAT", action="engage", target="BLUE-SAT",
-                 params={"success_prob": 1.0})
+                 params={"interceptor_class": "mrbm_kkv"})
     assert eng.status == "queued" and eng.earliest_window
     mgr.advance_to(eng.earliest_window[1] + 1)
     assert mgr.objectives()["red"]["destroy_sat"] is True
@@ -123,8 +123,7 @@ def test_05_red_destroys_with_weapons_quality_track():
 def test_06_red_safes_satcom_off_pass():
     mgr = _mgr("satcom-cyber-link")
     cy = _issue(mgr, "red", actor="RED-CYBER", action="cyber", target="BLUE-SATCOM",
-                params={"access_vector": "ground_modem", "outcome": "safe_mode",
-                        "success_prob": 1.0, "sm_susceptibility": 1.0})
+                params={"vector": "ground_modem", "payload": "seize_c2"})
     assert cy.status == "queued" and cy.earliest_window is None  # cyber is not window-gated
     mgr.advance_to(mgr.world.now + 60_000_000)
     assert mgr.objectives()["red"]["disable_satcom"] is True
@@ -152,8 +151,7 @@ def test_08_capstone_blue_isr_and_red_cyber():
                 params={"intent": "characterize", "classification": "hostile"})
     assert ob.status == "queued"
     cy = _issue(mgr, "red", actor="RED-CYBER", action="cyber", target="SATCOM-1",
-                params={"access_vector": "ground_modem", "outcome": "safe_mode",
-                        "success_prob": 1.0, "sm_susceptibility": 1.0})
+                params={"vector": "ground_modem", "payload": "seize_c2"})
     assert cy.status == "queued" and cy.earliest_window is None
     mgr.advance_to(mgr.world.now + 60_000_000)
     assert mgr.objectives()["red"]["disable_satcom"] is True

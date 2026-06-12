@@ -29,6 +29,7 @@ PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users", "satcom.r
                  "sda.task_search", "sda.task_track", "sda.task_characterize", "sda.cue", "sda.downlink",
                  "wx.schedule_collection", "wx.downlink",
                  "pnt.set_integrity", "pnt.report_status",
+                 "pnt.flex_power", "pnt.set_health_flag",
                  "mw.set_sensor_mode", "mw.report_alerts"}
 DEFENSE_VERBS = {"def.patch_cyber", "def.frequency_hop", "def.harden", "def.set_threat_warning",
                  "def.maneuver_evade", "def.escort_posture", "def.disperse"}
@@ -50,6 +51,7 @@ _PAYLOAD_TYPES_FOR = {
     "satcom.set_frequency_plan": {"satcom"},
     "wx.schedule_collection": {"weather"}, "wx.downlink": {"weather"},
     "pnt.set_integrity": {"pnt"}, "pnt.report_status": {"pnt"},
+    "pnt.flex_power": {"pnt"}, "pnt.set_health_flag": {"pnt"},
     "mw.set_sensor_mode": {"mw"}, "mw.report_alerts": {"mw"},
 }
 
@@ -229,6 +231,9 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         return True, f"isr_mode_{mode}"
 
     if verb == "pnt.set_integrity":
+        # Legacy verb retained for save-file back-compat (Audit 2026-06 Commands §M3).
+        # New scenarios should use pnt.flex_power / pnt.set_health_flag, which model
+        # the two real PNT operator actions; this verb just records the requested mode.
         p = a.payload_state
         if p is None:
             return False, "no_payload"
@@ -237,6 +242,44 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
             mode = "standard"
         p.integrity_mode = mode
         return True, f"integrity_{mode}"
+
+    if verb == "pnt.flex_power":
+        # IS-GPS-200E flex power: MCS reallocates SV transmit power between P(Y) and
+        # M-code to raise mil-signal power in jamming environments. Block IIIF adds
+        # Regional Military Protection (regional M-code spot beam).
+        # Realism research §6 / docs/research/05-mission-types-and-counters.md §4.
+        p = a.payload_state
+        if p is None:
+            return False, "no_payload"
+        on = bool(params.get("on", True))
+        signal = params.get("signal", "M-code")
+        if signal not in ("M-code", "PY"):
+            signal = "M-code"
+        p.detail["flex_power_on"] = on
+        p.detail["flex_power_signal"] = signal
+        if "region" in params and params["region"]:
+            p.detail["flex_power_region"] = params["region"]
+        # The protective effect is encoded as integrity_mode so the existing telemetry /
+        # objective surface (which already reads integrity_mode for spoof-resistance
+        # tests) sees the operator's action without growing the typed model.
+        p.integrity_mode = "protected" if on else "standard"
+        return True, "flex_power_on" if on else "flex_power_off"
+
+    if verb == "pnt.set_health_flag":
+        # 2 SOPS MCS sets an SV health flag and broadcasts the change to users via NANU.
+        # Healthy=False simulates marking the SV unusable until the operator restores it.
+        p = a.payload_state
+        if p is None:
+            return False, "no_payload"
+        healthy = bool(params.get("healthy", True))
+        sv_id = params.get("sv_id", actor_id)
+        p.detail["sv_healthy"] = healthy
+        # NANU-style consequence so AAR and White-Cell can see the broadcast.
+        world.consequences.append({"t": now, "type": "nanu", "actor": actor_id,
+                                    "sv_id": sv_id, "healthy": healthy})
+        # Health flag affects users' integrity perception.
+        p.integrity_mode = "standard" if healthy else "degraded"
+        return True, "sv_healthy" if healthy else "sv_unhealthy"
 
     if verb == "def.maneuver_evade":
         dv_cost = float(params.get("dv_cost", 5.0))
