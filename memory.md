@@ -6,7 +6,7 @@ log.** Update it as work progresses.
 
 ## Status
 
-**Backend feature-complete through Phase 8 — 419 tests green** (as of Jun 2026 audit). Implemented end-to-end:
+**Backend feature-complete through Phase 8; commands-layer audit done Jun 2026 — 469 tests green, 3 skipped** (`docs/AUDIT-2026-06-COMMANDS.md` for the full findings + decisions). Implemented end-to-end:
 P0/P1 deterministic core · P2 orbits + six access channels (Skyfield-validated) · P3 orders +
 five-D effects + cyber + custody · P3.5 bus/payload SOH + safe mode · P4 session layer
 (SessionManager / CellController fog / in-process SessionAPI) + Vignette 1 · P4.5 planning &
@@ -116,6 +116,34 @@ test first, implement to green, and add a regression test for every resolved fin
 
 ## Decision log
 
+- **2026-06-12 (Commands Audit):** `Order.params.success_prob` is now **ignored** for jam /
+  engage / cyber — the engine derives Pₛ from physical inputs + defender state (cyber-vector
+  path was already this way; jam / engage caught up). The `EffectInstance.success_prob` *field*
+  is preserved so the baked-payload save/AAR-replay contract stays byte-identical. Defender-side
+  flags (`bus.comms.freq_hopping`, `payload.interference_mitigation`, `payload.evasion_active`)
+  are now multiplicative modifiers in `effects.py:_effective_probability` — fixes the headline
+  C1 bug where defensive verbs only changed telemetry, not roll basis.
+- **2026-06-12 (Commands Audit):** `engine/engage.py` gains an `INTERCEPTORS` database
+  (`bmd_adapted` / `mrbm_kkv` / `abm_heavy` / `coorbital`) sourced from the four open-source
+  DA-ASAT test records; Pₖ derives from class × hard-altitude reach × salvo-with-correlated-
+  failure-floor. Legacy `kill_probability(base_pk, …)` retained for back-compat callers.
+- **2026-06-12 (Commands Audit):** Cyber `vector` parameter is now **mandatory** at order
+  validation (validator rejects with `no_cyber_vector`); the raw-`base_prob` fallback path is
+  removed. Added cyber `seize_c2` payload (Viasat-style legitimate-command attack →
+  `intended_outcome: safe_mode`) and `ground_modem` to `cyber.VECTORS` as a first-class entry.
+- **2026-06-12 (Commands Audit):** Cut 14 Dead/Cosmetic verbs from `buscommands.COMMAND_VERBS`
+  (`comms.point_antenna`, `comms.set_crypto`, `isr.assess_quality`, `isr.calibrate`,
+  `sigint.set_band`, `sigint.geolocate`, `sigint.downlink`, `sda.cue`, `sda.downlink`,
+  `wx.downlink`, `mw.set_sensor_mode`, `mw.report_alerts`, `satcom.report_interference`,
+  `satcom.set_transponder`); added 3 realism-research verbs (`mw.add_stare_area`,
+  `satcom.geolocate_interference`, `wx.request_sector`) and 2 new PNT verbs (`pnt.flex_power`,
+  `pnt.set_health_flag`, replacing the fictional `pnt.set_integrity`). Full rationale in
+  `docs/AUDIT-2026-06-COMMANDS.md`.
+- **2026-06-12 (Commands Audit):** Order-form UI gained `#engage-panel` / `#cyber-panel`
+  assistant panels and a declarative `VERB_FORM_SCHEMA` shape-template renderer
+  (`renderVerbForm()` / `updateOParamsFromVerbForm()`) covering ~25 catalog verbs. The
+  free-text JSON params textbox is retained collapsed under an "Advanced" `<details>` so power
+  users / future verbs always have an escape hatch.
 - **2026-05-24:** Sim time is stored as **integer microseconds since the Unix epoch** (not float)
   so replay is byte-identical; ISO-8601 only at the serialization/display boundary (`simtime.py`).
 - **2026-05-24:** Import guard implemented as a **pytest AST scan** (`test_import_guard.py`) rather

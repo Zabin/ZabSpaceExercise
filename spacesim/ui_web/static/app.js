@@ -651,6 +651,189 @@ async function issueOrder() {
   await refresh();
 }
 
+// -- Declarative shape-class form templates (Audit 2026-06 Commands §M4 Phase C step 2) -------
+// Each entry is a list of fields. Field shape:
+//   { key, type: "enum"|"bool"|"number"|"text"|"latlon", label, default, options?, min?, max?, step?, help? }
+// `via` is auto-prepended as a station picker when the action goes through a window. Verbs not
+// listed here fall back to the JSON escape hatch (#o-params), so coverage is additive.
+const VERB_FORM_SCHEMA = {
+  // -- Bus verbs ------------------------------------------------------------
+  "eps.set_charge_mode": [
+    { key: "mode", type: "enum", label: "Charge mode",
+      options: ["nominal", "fast", "trickle"], default: "fast" },
+  ],
+  "eps.select_bus": [
+    { key: "bus", type: "enum", label: "Power bus",
+      options: ["primary", "secondary"], default: "primary" },
+  ],
+  "adcs.set_mode": [
+    { key: "mode", type: "enum", label: "Attitude mode",
+      options: ["nominal", "slew", "safe"], default: "nominal" },
+  ],
+  "tcs.set_mode": [
+    { key: "mode", type: "enum", label: "Thermal mode",
+      options: ["nominal", "operational", "survival"], default: "operational" },
+  ],
+  "tcs.set_heater": [
+    { key: "on", type: "bool", label: "Heater on", default: true },
+  ],
+  "comms.enable_isl": [
+    { key: "on", type: "bool", label: "ISL on", default: true },
+  ],
+  "comms.config_link": [
+    { key: "data_rate_kbps", type: "number", label: "Data rate (kbps)",
+      default: 2048, min: 64, max: 16384, step: 64 },
+  ],
+  "adcs.point_payload": [
+    { key: "target", type: "text", label: "Slew target id", default: "" },
+  ],
+  "def.frequency_hop": [
+    { key: "on", type: "bool", label: "Hopping on", default: true,
+      help: "Audit §C1: reduces incoming jam Pₛ at the resolver to 40% residual." },
+  ],
+  "def.harden": [
+    { key: "on", type: "bool", label: "Harden payload", default: true,
+      help: "Engages on top of design-time hardening for the safe-mode roll." },
+  ],
+  "def.set_threat_warning": [
+    { key: "on", type: "bool", label: "Threat warning on", default: true },
+  ],
+  "def.maneuver_evade": [
+    { key: "dv_cost", type: "number", label: "Δv cost (m/s)",
+      default: 5.0, min: 1.0, max: 50.0, step: 0.5,
+      help: "Audit §C1: evasion_active halves kinetic Pₖ for fly-out window." },
+  ],
+  "def.patch_cyber": [
+    { key: "vector", type: "enum", label: "Vector to patch",
+      options: ["", "rf", "ground_modem", "ground_segment", "insider", "supply_chain"],
+      default: "ground_modem",
+      help: "Empty patches every vulnerability; named vector closes that single access path." },
+  ],
+  "def.escort_posture": [
+    { key: "target", type: "text", label: "Escort target id", default: "" },
+  ],
+  // -- Payload verbs --------------------------------------------------------
+  "isr.set_mode": [
+    { key: "mode", type: "enum", label: "ISR mode",
+      options: ["nominal", "wide", "narrow", "standby"], default: "wide" },
+  ],
+  "isr.prioritize_downlink": [
+    { key: "priority", type: "enum", label: "Priority",
+      options: ["routine", "high", "urgent"], default: "high" },
+  ],
+  "sigint.task_collection": [
+    { key: "band", type: "enum", label: "Band",
+      options: ["UHF", "L", "S", "X", "Ku", "Ka", "W"], default: "X" },
+    { key: "intercept_mode", type: "enum", label: "Intercept mode",
+      options: ["scan", "track", "geolocate"], default: "geolocate" },
+    { key: "dwell_s", type: "number", label: "Dwell (s)",
+      default: 600, min: 1, max: 7200, step: 30 },
+  ],
+  "sda.task_track": [
+    { key: "target", type: "text", label: "Track target id", default: "" },
+  ],
+  "sda.task_characterize": [
+    { key: "target", type: "text", label: "Characterize target id", default: "" },
+  ],
+  "satcom.set_frequency_plan": [
+    { key: "plan", type: "text", label: "Plan id", default: "default",
+      help: "Optional beam_pattern/polarization/eirp_dbm in advanced JSON." },
+  ],
+  "satcom.reconfigure_beam": [
+    { key: "spot", type: "text", label: "Beam spot id", default: "default" },
+  ],
+  // -- Realism §15 additions (Phase D) ---------------------------------------
+  "pnt.flex_power": [
+    { key: "on", type: "bool", label: "Flex power on", default: true },
+    { key: "signal", type: "enum", label: "Signal",
+      options: ["M-code", "PY"], default: "M-code",
+      help: "IS-GPS-200E flex power — raise mil signal power in jammed regions." },
+  ],
+  "pnt.set_health_flag": [
+    { key: "healthy", type: "bool", label: "SV healthy", default: false,
+      help: "Setting unhealthy auto-broadcasts a NANU consequence event." },
+    { key: "sv_id", type: "text", label: "SV id (optional)", default: "" },
+  ],
+  "mw.add_stare_area": [
+    { key: "center", type: "latlon", label: "AOI center", default: [0.0, 0.0] },
+    { key: "revisit_s", type: "enum", label: "Revisit",
+      options: ["10", "30", "60"], default: "30",
+      help: "SBIRS step-stare cadence (seconds between AOI revisits)." },
+  ],
+  "satcom.geolocate_interference": [
+    { key: "dwell_s", type: "number", label: "Dwell (s)",
+      default: 600, min: 60, max: 3600, step: 60,
+      help: "MAJE-style geoloc; CEP scales as 50 km / (dwell / 600 s)." },
+  ],
+  "wx.request_sector": [
+    { key: "center", type: "latlon", label: "Sector center", default: [0.0, 0.0] },
+    { key: "cadence_s", type: "enum", label: "Cadence",
+      options: ["30", "60"], default: "60",
+      help: "GOES-R MDS request cadence (30 s mesoscale or 60 s default)." },
+  ],
+};
+
+function _esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c])); }
+
+function renderVerbForm(action) {
+  const wrap = $("verb-form"); if (!wrap) return;
+  const schema = VERB_FORM_SCHEMA[action];
+  if (!schema) { wrap.style.display = "none"; wrap.innerHTML = ""; return; }
+  // Build inputs. via is auto-prepended unless the verb is cyber/jam/engage (their own panels).
+  const html = [];
+  html.push(`<label>via <input id="vf-via" type="text" value="${_esc(DEFAULT_STATION)}" style="width:8em"></label>`);
+  for (const f of schema) {
+    const id = `vf-${f.key}`;
+    if (f.type === "enum") {
+      const opts = f.options.map((o) => `<option value="${_esc(o)}"${o === f.default ? " selected" : ""}>${_esc(o)}</option>`).join("");
+      html.push(`<label>${_esc(f.label)} <select id="${id}">${opts}</select></label>`);
+    } else if (f.type === "bool") {
+      html.push(`<label><input id="${id}" type="checkbox"${f.default ? " checked" : ""}> ${_esc(f.label)}</label>`);
+    } else if (f.type === "number") {
+      const min = f.min != null ? ` min="${f.min}"` : "";
+      const max = f.max != null ? ` max="${f.max}"` : "";
+      const step = f.step != null ? ` step="${f.step}"` : "";
+      html.push(`<label>${_esc(f.label)} <input id="${id}" type="number" value="${f.default}"${min}${max}${step}></label>`);
+    } else if (f.type === "text") {
+      html.push(`<label>${_esc(f.label)} <input id="${id}" type="text" value="${_esc(f.default)}" style="width:10em"></label>`);
+    } else if (f.type === "latlon") {
+      const [lat, lon] = f.default;
+      html.push(`<label>${_esc(f.label)} lat <input id="${id}-lat" type="number" step="0.5" value="${lat}" style="width:5em"></label>`);
+      html.push(`<label>lon <input id="${id}-lon" type="number" step="0.5" value="${lon}" style="width:5em"></label>`);
+    }
+    if (f.help) html.push(`<span class="muted" style="font-size:11px;flex-basis:100%">${_esc(f.help)}</span>`);
+  }
+  wrap.innerHTML = html.join("");
+  wrap.style.display = "";
+  // Wire each input to update #o-params and trigger preview on change.
+  wrap.querySelectorAll("input,select").forEach((el) => {
+    el.addEventListener("change", () => updateOParamsFromVerbForm(action));
+    el.addEventListener("input", () => updateOParamsFromVerbForm(action));
+  });
+  updateOParamsFromVerbForm(action);
+}
+
+function updateOParamsFromVerbForm(action) {
+  const schema = VERB_FORM_SCHEMA[action]; if (!schema) return;
+  const params = { via: $("vf-via")?.value || DEFAULT_STATION };
+  for (const f of schema) {
+    const id = `vf-${f.key}`;
+    if (f.type === "enum") {
+      const v = $(id)?.value; if (v) params[f.key] = (f.options.every((o) => /^\d+$/.test(o))) ? parseInt(v, 10) : v;
+    } else if (f.type === "bool") {
+      params[f.key] = !!$(id)?.checked;
+    } else if (f.type === "number") {
+      const v = parseFloat($(id)?.value); if (!Number.isNaN(v)) params[f.key] = v;
+    } else if (f.type === "text") {
+      const v = $(id)?.value; if (v) params[f.key] = v;
+    } else if (f.type === "latlon") {
+      params[f.key] = [parseFloat($(`${id}-lat`)?.value || "0"), parseFloat($(`${id}-lon`)?.value || "0")];
+    }
+  }
+  if ($("o-params")) $("o-params").value = JSON.stringify(params);
+  previewOrder();
+}
+
 function onActorChange() {
   const id = $("o-actor").value, a = ASSETS[id] || {};
   $("actor-info").textContent = a.kind ? `${a.kind} · ${a.owner}${a.payload ? " · " + a.payload : ""}` : "";
@@ -664,6 +847,9 @@ function onActorChange() {
 function onActionChange(resetParams = true) {
   const action = $("o-action").value;
   const tmpl = PARAM_TEMPLATE[action]; if (resetParams && tmpl) $("o-params").value = JSON.stringify(tmpl());
+  // Audit 2026-06 Commands §M4 Phase C step 2 — declarative shape-class form.
+  // Verbs in VERB_FORM_SCHEMA show typed inputs; others fall through to JSON.
+  if (resetParams) renderVerbForm(action);
   // Show/hide the maneuver mode assistant.
   const isMnvr = action === "maneuver";
   $("mnvr-panel") && ($("mnvr-panel").style.display = isMnvr ? "" : "none");

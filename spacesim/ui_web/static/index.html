@@ -266,8 +266,18 @@
       <div id="actor-info" class="toggle"></div>
       <label>Action <select id="o-action"></select></label>
       <label>Target <input id="o-target" list="target-options" placeholder="(known track id or own asset)" style="width:12em" /></label>
-      <label style="display:flex">Params
-        <input id="o-params" style="flex:1" value='{"via":"GS-NORTH"}' /></label>
+
+      <!-- Audit 2026-06 Commands §M4 (Phase C step 2) — declarative form panel.
+           Populated by renderVerbForm() in app.js from VERB_FORM_SCHEMA. When a verb
+           has no schema entry, the form falls back to the JSON escape hatch below. -->
+      <div id="verb-form" class="mnvr-fields" style="display:none"></div>
+
+      <label style="display:flex">
+        <details style="flex:1" id="json-params-wrap">
+          <summary style="cursor:pointer;color:var(--muted);font-size:11px">Advanced (raw JSON params)</summary>
+          <input id="o-params" style="flex:1;width:100%" value='{"via":"GS-NORTH"}' />
+        </details>
+      </label>
 
       <!-- Maneuver mode assistant (shown only when action = maneuver) -->
       <div id="mnvr-panel" style="display:none">

@@ -14,7 +14,7 @@ command, observe, or attack when access windows permit). Most effects are revers
 cooperative — every browser tab points at one FastAPI server, fog-of-war is enforced server-side
 at the `SessionAPI` / `CellController` boundary.
 
-**Status: backend feature-complete through Phase 8 (419 tests green).** Deterministic engine
+**Status: backend feature-complete through Phase 8; commands-layer audit completed Jun 2026 (469 tests green, 3 skipped).** Deterministic engine
 (P0–P4.5), the web layer (P5, FastAPI + browser front end), the render-from-custody belief
 scene + 2D map (P5.5), the full **19-vignette library** (the canonical 8 numbered + the
 training-basics onboarding + 5 Red COA + 3 mission-set + 1 learning + 1 novel) as YAML +
