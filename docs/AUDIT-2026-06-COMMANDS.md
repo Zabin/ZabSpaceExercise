@@ -373,8 +373,27 @@ RNG roll itself is unchanged — only its threshold is.
 shape-class templates. Existing maneuver/jam panels stay as-is. JSON escape hatch retained
 collapsed by default for power users.
 
-**Phase D — Dead/Cosmetic cleanup per F1 decision.** Either deletions, rewirings, or UI
-hide-only — depends on F1.
+**Phase D — Dead/Cosmetic cleanup per F1 decision.** ✓ implemented (F1 = rewire + cut).
+
+  Cuts (14 verbs deleted from `buscommands.py` + their unit tests):
+  `comms.point_antenna`, `comms.set_crypto`, `isr.assess_quality`, `isr.calibrate`,
+  `sigint.set_band`, `sigint.geolocate`, `sigint.downlink`, `sda.cue`, `sda.downlink`,
+  `wx.downlink`, `mw.set_sensor_mode`, `mw.report_alerts`, `satcom.report_interference`,
+  `satcom.set_transponder`.
+
+  Adds (3 realism verbs from research §15):
+  - `satcom.geolocate_interference` — MAJE-style detect → identify → geolocate of an
+    in-band interferer; CEP scales with dwell. Logs a `consequences` event for AAR.
+  - `wx.request_sector` — GOES-R mesoscale domain sector request (AOI center + cadence).
+  - `mw.add_stare_area` — SBIRS step-stare AOI tasking (center + revisit rate).
+
+  Rewires (Cosmetic → Live, completed in Phase A):
+  - `def.frequency_hop`, `satcom.mitigate_interference`/`shift_users`,
+    `def.maneuver_evade` — all now multiplied into `_effective_probability`.
+
+  Kept as posture/readout (acceptable Cosmetic):
+  - `def.set_threat_warning`, `def.disperse`, `def.escort_posture`, `pnt.report_status`,
+    `prop.cancel_burn`, `pnt.set_integrity` (back-compat shim).
 
 **Phase E — Tests (test-first as per `docs/AUDIT-2026-06.md` precedent).**
 - Property tests for each defender modifier (monotonicity in [0,1]).

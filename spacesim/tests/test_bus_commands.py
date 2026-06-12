@@ -296,26 +296,7 @@ def test_adcs_desaturate_replay_safe():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
-def test_comms_point_antenna_sets_mode():
-    w = _sat_with_payload()
-    ok, label = apply_command(w, "SAT", "comms.point_antenna", {"mode": "tracking"}, 0)
-    assert ok and label == "antenna_tracking"
-    assert w.assets["SAT"].bus_state.comms.antenna_mode == "tracking"
 
-
-def test_comms_point_antenna_unknown_mode_defaults_to_nominal():
-    w = _sat_with_payload()
-    ok, label = apply_command(w, "SAT", "comms.point_antenna", {"mode": "bogus"}, 0)
-    assert ok and w.assets["SAT"].bus_state.comms.antenna_mode == "nominal"
-
-
-def test_comms_point_antenna_replay_safe():
-    mgr = _mgr()
-    ack = mgr.issue_order("blue", _cmd("ISR-EO-1", "comms.point_antenna", mode="zenith"))
-    assert ack.ok
-    mgr.advance_to(ack.earliest_window[1] + 1)
-    assert mgr.world.assets["ISR-EO-1"].bus_state.comms.antenna_mode == "zenith"
-    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
 def test_isr_set_mode_changes_payload_mode():
@@ -411,11 +392,6 @@ def test_cdh_load_stored_program_rejected_when_disabled():
     assert not ok and label == "stored_program_disabled"
 
 
-def test_comms_set_crypto_records_rotation():
-    w = _sat_with_payload()
-    ok, label = apply_command(w, "SAT", "comms.set_crypto", {"key_id": "K9"}, 0)
-    assert ok and "K9" in label
-
 
 def test_isr_prioritize_downlink_sets_detail():
     w = _sat_with_payload(payload_type="isr_eo")
@@ -423,25 +399,7 @@ def test_isr_prioritize_downlink_sets_detail():
     assert ok and w.assets["SAT"].payload_state.detail["downlink_priority"] == "high"
 
 
-def test_isr_assess_quality_reads_storage():
-    w = _sat_with_payload(payload_type="isr_eo")
-    w.assets["SAT"].bus_state.cdh.storage_frac = 0.5
-    ok, label = apply_command(w, "SAT", "isr.assess_quality", {}, 0)
-    assert ok and label == "quality_good"
 
-
-def test_sigint_set_band_records_band():
-    w = _sat_with_payload(payload_type="sigint")
-    ok, label = apply_command(w, "SAT", "sigint.set_band", {"band": "X"}, 0)
-    assert ok and label == "band_X"
-    assert w.assets["SAT"].payload_state.detail["band"] == "X"
-
-
-def test_satcom_report_interference_stores_level():
-    w = _sat_with_payload(payload_type="satcom")
-    w.assets["SAT"].payload_state.interference_level = 0.42
-    ok, label = apply_command(w, "SAT", "satcom.report_interference", {}, 0)
-    assert ok and "0.42" in label
 
 
 def test_pnt_report_status_records_mode():
@@ -450,12 +408,6 @@ def test_pnt_report_status_records_mode():
     ok, label = apply_command(w, "SAT", "pnt.report_status", {}, 0)
     assert ok and label == "status_protected"
 
-
-def test_wx_downlink_queues_request():
-    w = _sat_with_payload(payload_type="weather")
-    ok, label = apply_command(w, "SAT", "wx.downlink", {}, 12345)
-    assert ok and label == "wx_downlink_queued"
-    assert w.assets["SAT"].payload_state.detail["downlink_queued_at"] == 12345
 
 
 def test_def_escort_posture_logs_consequence():
@@ -467,12 +419,16 @@ def test_def_escort_posture_logs_consequence():
 
 
 def test_new_verbs_are_in_command_verbs_set():
-    """All new verbs are discoverable through COMMAND_VERBS (so order validation accepts them)."""
+    """Verbs that survived the Audit 2026-06 Commands Phase D cut are still registered.
+    The Dead/Cosmetic verbs (comms.set_crypto / isr.assess_quality / sigint.set_band /
+    satcom.report_interference / wx.downlink) were removed; new realism verbs added."""
     from spacesim.engine.buscommands import COMMAND_VERBS
-    expected = {"eps.select_bus", "cdh.load_stored_program", "comms.set_crypto",
-                "isr.prioritize_downlink", "isr.assess_quality",
-                "sigint.set_band", "satcom.report_interference",
-                "pnt.report_status", "wx.downlink", "def.escort_posture"}
+    expected = {"eps.select_bus", "cdh.load_stored_program",
+                "isr.prioritize_downlink",
+                "pnt.report_status", "def.escort_posture",
+                # Phase D additions (realism research §15):
+                "mw.add_stare_area", "satcom.geolocate_interference", "wx.request_sector",
+                "pnt.flex_power", "pnt.set_health_flag"}
     missing = expected - COMMAND_VERBS
     assert not missing, f"missing from COMMAND_VERBS: {missing}"
 
@@ -480,13 +436,13 @@ def test_new_verbs_are_in_command_verbs_set():
 # ---- Batch 6a: second tranche (catalog verbs + conjunction integration) -----
 
 def test_batch6_verbs_registered():
-    """All batch-6 verbs land in COMMAND_VERBS."""
+    """Batch-6 verbs that survived the Phase-D Dead/Cosmetic cut are still registered.
+    Removed: isr.calibrate, sigint.geolocate, sigint.downlink, satcom.set_transponder,
+    mw.set_sensor_mode, mw.report_alerts (no consumers or replaced by realism §15 verbs)."""
     from spacesim.engine.buscommands import COMMAND_VERBS
     expected = {"prop.cancel_burn", "prop.collision_avoid", "adcs.point_payload",
-                "isr.calibrate", "sigint.geolocate", "sigint.downlink",
                 "sda.task_search", "sda.task_track",
-                "satcom.set_transponder", "satcom.reconfigure_beam",
-                "mw.set_sensor_mode", "mw.report_alerts", "def.disperse"}
+                "satcom.reconfigure_beam", "def.disperse"}
     missing = expected - COMMAND_VERBS
     assert not missing, f"missing: {missing}"
 
@@ -497,12 +453,6 @@ def test_adcs_point_payload_slews_attitude():
     assert ok and "RED-INSP" in label
     assert w.assets["SAT"].bus_state.attitude.mode == "slew"
 
-
-def test_isr_calibrate_records_timestamp():
-    w = _sat_with_payload("isr_eo")
-    ok, _ = apply_command(w, "SAT", "isr.calibrate", {}, 12345)
-    assert ok
-    assert w.assets["SAT"].payload_state.detail["calibrated_at"] == 12345
 
 
 def test_sda_task_track_records_target():
@@ -560,24 +510,12 @@ def test_sda_task_characterize_sets_mode_and_target():
     assert p.collecting is True
 
 
-def test_sda_cue_records_target():
-    w = _sat_with_payload("sda")
-    ok, label = apply_command(w, "SAT", "sda.cue", {"target": "RSO-9"}, 0)
-    assert ok and label == "sda_cued"
-    assert w.assets["SAT"].payload_state.detail["sda_cue"] == "RSO-9"
-
-
-def test_sda_downlink_queues_at_now():
-    w = _sat_with_payload("sda")
-    ok, label = apply_command(w, "SAT", "sda.downlink", {}, 4242)
-    assert ok and label == "sda_downlink_queued"
-    assert w.assets["SAT"].payload_state.detail["downlink_queued_at"] == 4242
 
 
 def test_payload_type_gates_block_wrong_payload():
     # An ISR payload cannot run a satcom or SDA verb (payload-type fit check).
     from spacesim.engine.buscommands import can_issue
     w = _sat_with_payload("isr_eo")
-    for verb in ("satcom.set_frequency_plan", "sda.task_characterize", "sda.cue", "sda.downlink"):
+    for verb in ("satcom.set_frequency_plan", "sda.task_characterize", "sda.task_track"):
         ok, reason = can_issue(w, "SAT", verb)
         assert not ok and reason == "no_payload_for_verb", verb
