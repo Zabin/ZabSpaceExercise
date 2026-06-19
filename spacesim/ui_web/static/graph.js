@@ -74,18 +74,32 @@ window.Graph = (function () {
     }
   }
   // Tiny inline sparkline for a subsystem-card parameter row (§5.1). No axis labels.
+  // The sparkline and the large drill-down graph must be visually CONNECTED — they draw the
+  // same read-time-seeded series over the same window. To make that obvious, the sparkline
+  // shares the large graph's policies: (1) the y-range folds in the soft/hard limit lines
+  // (so a trace that reads flat in the big graph also reads flat here, instead of being
+  // auto-stretched to fill the box), and (2) the x-axis is time-based, not sample-ordinal
+  // (audit Jun 2026 §graphs).
   function spark(canvas, series, spec) {
     const x = canvas.getContext("2d"), W = canvas.width, H = canvas.height;
     x.clearRect(0, 0, W, H);
     const pts = (series.points || []).filter((p) => p.value !== null);
     if (pts.length < 2) return;
-    const ys = pts.map((p) => p.value);
+    const lims = spec ? [spec.soft, spec.hard].filter((v) => v != null) : [];
+    const ys = pts.map((p) => p.value).concat(lims);
     let lo = Math.min(...ys), hi = Math.max(...ys); if (hi === lo) hi = lo + 1;
+    const t0 = pts[0].t, t1 = pts[pts.length - 1].t || (t0 + 1);
     const py = (v) => H - 2 - (v - lo) / (hi - lo) * (H - 4);
-    const px = (i) => 1 + i / (pts.length - 1) * (W - 2);
+    const px = (t) => 1 + (t1 > t0 ? (t - t0) / (t1 - t0) : 0) * (W - 2);
+    // Faint soft-limit line so the sparkline carries the same context as the large graph.
+    if (spec && spec.soft != null) {
+      x.strokeStyle = "rgba(224,194,74,0.35)"; x.lineWidth = 1; x.setLineDash([2, 2]);
+      x.beginPath(); x.moveTo(0, py(spec.soft)); x.lineTo(W, py(spec.soft)); x.stroke();
+      x.setLineDash([]);
+    }
     x.strokeStyle = COL[pts[pts.length - 1].status] || "#9fb0c0"; x.lineWidth = 1;
     x.beginPath();
-    pts.forEach((p, i) => (i ? x.lineTo(px(i), py(p.value)) : x.moveTo(px(i), py(p.value))));
+    pts.forEach((p, i) => (i ? x.lineTo(px(p.t), py(p.value)) : x.moveTo(px(p.t), py(p.value))));
     x.stroke();
   }
   return { draw, spark };

@@ -173,20 +173,26 @@ def downlink_storage(bus: BusState, fraction: float = 1.0) -> None:
     recompute_status(bus)
 
 
-def advance_bus(bus: BusState, payload: Optional[PayloadState], now: int, sunlit: bool,
+def advance_bus(bus: BusState, payload: Optional[PayloadState], now: int, sunlit: float,
                 space_weather: str = "none") -> None:
     """Evolve the bus over the elapsed sim time: battery charge/drain and ISR storage fill.
 
     Pure function of (state, time, lighting, environment) — deterministic and replay-safe.
-    ``sunlit`` is supplied by the caller (computed from orbit geometry + Sun direction in busmodel.py).
+    ``sunlit`` is the *lit fraction* in [0, 1] supplied by the caller (orbit geometry + Sun
+    direction in busmodel.py). A ``bool`` is also accepted (True→1.0, False→0.0) for the unit
+    tests and legacy callers. A tick that straddles the terminator blends charge and drain by
+    the lit fraction rather than binary-switching — so the battery curve ramps smoothly through
+    penumbra instead of stepping off a cliff (audit Jun 2026 §TT&C FIX 2; FW §11.B.10).
     ``space_weather`` ∈ {"none", "minor", "severe"} scales eclipse drain (FUTURE-WORK §10.C.11).
     """
     dt = max(0.0, (now - bus.last_update) / 1_000_000)
-    bus.power.in_eclipse = not sunlit
+    lit = max(0.0, min(1.0, float(sunlit)))
+    bus.power.in_eclipse = lit < 0.5
     storm_mult = {"none": 1.0, "minor": 1.3, "severe": 2.0}.get(space_weather, 1.0)
     drain = bus.power.drain_rate_per_s * (0.4 if bus.power.loads_shed else 1.0) * storm_mult
     charge = bus.power.charge_rate_per_s * {"fast": 1.5, "trickle": 0.5}.get(bus.power.charge_mode, 1.0)
-    delta = (charge if sunlit else -drain) * dt
+    # Blend by lit fraction: full sun charges, full umbra drains, penumbra is a weighted mix.
+    delta = (charge * lit - drain * (1.0 - lit)) * dt
     bus.power.battery_soc = max(0.0, min(1.0, bus.power.battery_soc + delta))
     if payload is not None and payload.collecting and bus.mode == "nominal" and bus.cdh.storage_frac < 1.0:
         bus.cdh.storage_frac = min(1.0, bus.cdh.storage_frac + payload.collect_rate_per_s * dt)
@@ -222,6 +228,7 @@ def soh_snapshot(bus: BusState) -> dict:
         "cdh": bus.cdh.status,
         "comms": bus.comms.status,
         "battery_soc": bus.power.battery_soc,
+        "in_eclipse": bus.power.in_eclipse,
         "storage_frac": bus.cdh.storage_frac,
         "safe_mode_active": bus.safe_mode.active,
         "safe_mode_entered_at": bus.safe_mode.entered_at,

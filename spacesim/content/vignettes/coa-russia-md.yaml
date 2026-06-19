@@ -18,7 +18,7 @@ vignette:
       orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 0.0}
       resources: {delta_v_ms: 100.0}             # Δv reserves needed for evasion
       payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
-      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}}
     - id: BLUE-SATCOM
       kind: satellite
       orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 60, argp_deg: 0, ta_deg: 0.0}

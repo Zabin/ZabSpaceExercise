@@ -265,7 +265,12 @@
       <label>Actor <select id="o-actor"></select></label>
       <div id="actor-info" class="toggle"></div>
       <label>Action <select id="o-action"></select></label>
-      <label>Target <input id="o-target" list="target-options" placeholder="(known track id or own asset)" style="width:12em" /></label>
+      <label>Target
+        <select id="o-target-pick" title="Valid targets the other cell exposes — known enemy tracks (Blue/Red) or all adversary assets (White)">
+          <option value="">(pick a known target…)</option>
+        </select>
+      </label>
+      <label>or id <input id="o-target" list="target-options" placeholder="(track id or own asset)" style="width:10em" /></label>
 
       <!-- Audit 2026-06 Commands §M4 (Phase C step 2) — declarative form panel.
            Populated by renderVerbForm() in app.js from VERB_FORM_SCHEMA. When a verb

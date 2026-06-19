@@ -19,21 +19,21 @@ vignette:
       group: SIGINT-CON
       resources: {delta_v_ms: 40.0}
       payload_state: {type: sigint, collect_rate_per_s: 0.001}
-      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0002}}
+      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}}
     - id: SIGINT-2
       kind: satellite
       orbit: {a_m: 7178137.0, e: 0.0, i_deg: 63.4, raan_deg: 100, argp_deg: 0, ta_deg: 120.0}
       group: SIGINT-CON
       resources: {delta_v_ms: 40.0}
       payload_state: {type: sigint, collect_rate_per_s: 0.001}
-      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0002}}
+      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}}
     - id: SIGINT-3
       kind: satellite
       orbit: {a_m: 7178137.0, e: 0.0, i_deg: 63.4, raan_deg: 100, argp_deg: 0, ta_deg: 240.0}
       group: SIGINT-CON
       resources: {delta_v_ms: 40.0}
       payload_state: {type: sigint, collect_rate_per_s: 0.001}
-      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0002}}
+      bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}}
     # GS-MIDLAT = Vandenberg SFB (AFSCN RTS), CA — mid-latitude US downlink for SIGINT products.
     - id: GS-MIDLAT
       kind: ground_station

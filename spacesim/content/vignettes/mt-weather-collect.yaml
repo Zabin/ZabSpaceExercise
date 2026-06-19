@@ -18,7 +18,7 @@ vignette:
       orbit: {a_m: 7178137.0, e: 0.0, i_deg: 98.7, raan_deg: 0, argp_deg: 0, ta_deg: 0.0}
       resources: {delta_v_ms: 30.0}
       payload_state: {type: weather, collect_rate_per_s: 0.003}
-      bus_state: {power: {battery_soc: 0.80, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+      bus_state: {power: {battery_soc: 0.80, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}}
     # GS-WX-PRIMARY = Wallops Flight Facility / NOAA NSOF (Suitland) — US weather downlink.
     - id: GS-WX-PRIMARY
       kind: ground_station

@@ -842,6 +842,7 @@ function onActorChange() {
   if (prevAction && [...$("o-action").options].some((o) => o.value === prevAction))
     $("o-action").value = prevAction;
   onActionChange(prevAction !== $("o-action").value);  // only reset params if action changed
+  populateTargetPicker();   // valid targets depend on the actor's owning side
   if (SID && id) drawRibbon(id);
 }
 function onActionChange(resetParams = true) {
@@ -1509,22 +1510,82 @@ function fleetPasses(a, soh, bus, alarms) {     // does asset pass the active fl
 // rail. Lists own assets/sensors and every track the cell has on objects (the only ids the
 // fog-of-war boundary actually exposes). The label after the id surfaces classification +
 // characterisation so Red/Blue can tell hostile vs neutral at a glance.
+// Latest target data cached so the actor-aware target dropdown can rebuild when the
+// operator changes actor/action without another network round-trip.
+let TARGET_ASSETS = [];
+let TARGET_TRACKS = [];
+
 function populateTargetOptions(assets, tracks) {
+  TARGET_ASSETS = assets || [];
+  TARGET_TRACKS = tracks || [];
   const dl = $("target-options");
-  if (!dl) return;
-  const opts = [];
-  (assets || []).forEach((a) => {
-    if (!a.id) return;
-    const tag = a.owner && a.owner !== CELL ? a.owner : "own";
-    opts.push(`<option value="${a.id}">${tag} · ${a.kind || ""}</option>`);
-  });
-  (tracks || []).forEach((t) => {
+  if (dl) {
+    const opts = [];
+    (assets || []).forEach((a) => {
+      if (!a.id) return;
+      const tag = a.owner && a.owner !== CELL ? a.owner : "own";
+      opts.push(`<option value="${esc(a.id)}">${esc(tag)} · ${esc(a.kind || "")}</option>`);
+    });
+    (tracks || []).forEach((t) => {
+      if (!t.object) return;
+      const cls = t.classification || "unknown";
+      const ch = t.characterized ? "characterised" : "uncertain";
+      opts.push(`<option value="${esc(t.object)}">${esc(cls)} · ${esc(ch)}</option>`);
+    });
+    dl.innerHTML = opts.join("");
+  }
+  populateTargetPicker();
+}
+
+// Build the "valid targets in the other cell" <select>. Fog-of-war correct:
+//  - Blue/Red see their known_tracks (the only enemy objects they've identified) plus any
+//    non-own asset their view exposes.
+//  - White (god view) sees every asset; we list those NOT owned by the selected actor's owner,
+//    grouped by owner — so a White operator driving a Blue asset is offered Red targets, etc.
+// Ground stations / sensors are never offered as offensive targets.
+function populateTargetPicker() {
+  const sel = $("o-target-pick");
+  if (!sel) return;
+  const actor = $("o-actor") ? $("o-actor").value : "";
+  const actorOwner = (ASSETS[actor] && ASSETS[actor].owner) || (CELL !== "white" ? CELL : null);
+  const TARGETABLE = new Set(["satellite", "space_based", "interceptor", "directed_energy"]);
+  const seen = new Set();
+  const byOwner = {};   // owner -> [{id, label}]
+  const add = (id, owner, label) => {
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+    const grp = owner || "unknown";
+    (byOwner[grp] = byOwner[grp] || []).push({ id, label });
+  };
+  // Known enemy tracks (these are objects the cell has custody/belief on — always valid targets).
+  (TARGET_TRACKS || []).forEach((t) => {
     if (!t.object) return;
     const cls = t.classification || "unknown";
-    const ch = t.characterized ? "characterised" : "uncertain";
-    opts.push(`<option value="${t.object}">${cls} · ${ch}</option>`);
+    const ch = t.characterized ? "char" : "uncertain";
+    add(t.object, t.owner || "track", `${t.object} — ${cls} · ${ch}`);
   });
-  dl.innerHTML = opts.join("");
+  // Assets the view exposes that are not the actor's own side and are physically targetable.
+  (TARGET_ASSETS || []).forEach((a) => {
+    if (!a.id || !TARGETABLE.has(a.kind)) return;
+    if (actorOwner && a.owner === actorOwner) return;   // not your own side
+    add(a.id, a.owner, `${a.id} — ${a.owner || "?"} · ${a.kind}`);
+  });
+  const prev = sel.value;
+  const groups = Object.keys(byOwner).sort();
+  let html = `<option value="">(pick a known target…)</option>`;
+  if (!groups.length) {
+    html += `<option value="" disabled>no known enemy targets yet — build custody first</option>`;
+  } else if (groups.length === 1) {
+    html += byOwner[groups[0]].map((o) => `<option value="${esc(o.id)}">${esc(o.label)}</option>`).join("");
+  } else {
+    html += groups.map((g) =>
+      `<optgroup label="${esc(g)} targets">` +
+      byOwner[g].map((o) => `<option value="${esc(o.id)}">${esc(o.label)}</option>`).join("") +
+      `</optgroup>`).join("");
+  }
+  sel.innerHTML = html;
+  // Preserve the operator's current pick if it's still a valid option.
+  if (prev && seen.has(prev)) sel.value = prev;
 }
 
 function renderFleet(assets, alarmCount, now) {
@@ -1802,10 +1863,12 @@ async function openDrill(assetId) {
     const par = Object.values(tele.subsystems).flat().find((p) => p.id === pid);
     if (par) window.maybePulse && maybePulse(chip, assetId + ":" + pid, par.value);
   });
-  // Tiny inline sparklines (§5.1) — one short series per param chip; ignore failures silently.
+  // Tiny inline sparklines (§5.1) — one series per param chip; ignore failures silently.
+  // Same n (120) and same default window as the large drill-down graph so the two are the
+  // same curve at the same resolution — only the size differs (audit Jun 2026 §graphs).
   document.querySelectorAll("#drill-params .spark").forEach(async (cv) => {
     try {
-      const s = await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${assetId}/${cv.dataset.param}?n=30`);
+      const s = await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${assetId}/${cv.dataset.param}?n=120`);
       window.Graph && Graph.spark(cv, s, DRILL_DB[cv.dataset.param]);
     } catch { /* offline param — silent */ }
   });
@@ -1927,6 +1990,10 @@ window.addEventListener("DOMContentLoaded", () => {
   $("aar-slider").oninput = (e) => aarAt(e.target.value);
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
   $("o-target").oninput = previewOrder; $("o-params").oninput = previewOrder;
+  // Picking a valid target from the dropdown fills the free-text id and previews.
+  $("o-target-pick").onchange = (e) => {
+    if (e.target.value) { $("o-target").value = e.target.value; previewOrder(); }
+  };
   $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("drill-overlay").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("present").onchange = (e) => document.body.classList.toggle("present", e.target.checked);
