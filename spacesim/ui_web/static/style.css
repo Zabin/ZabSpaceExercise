@@ -124,6 +124,27 @@ main { display: grid; grid-template-columns: 320px 1fr 360px; gap: 12px; padding
   box-shadow: 0 1px 0 rgba(255,255,255,.02) inset, 0 6px 18px rgba(0,0,0,.25);
 }
 .viewers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 12px 14px; }
+
+/* ---- Panel manager: movable / scalable / closeable panels (panels.js) ---- */
+.panel-managed { position: relative; }
+.panel-handle { cursor: move; }
+.panel-tools { float: right; margin-left: auto; display: inline-flex; gap: 2px; align-items: center; }
+.panel-tools button {
+  background: transparent; border: 1px solid transparent; color: var(--muted);
+  font-size: 12px; line-height: 1; padding: 1px 4px; border-radius: 4px; cursor: pointer;
+}
+.panel-tools button:hover { color: var(--text); border-color: var(--border); background: var(--cell-accent-soft); }
+.panel-tools .panel-grip { cursor: move; }
+/* The viewer sub-panels carry the tools inside their flex header — keep them on the line. */
+.viewer-head .panel-tools { float: none; }
+/* A floated panel lifts out of the grid flow; the native resize handle scales it. */
+.panel-floating {
+  resize: both; overflow: auto;
+  min-width: 240px; min-height: 120px;
+  max-width: 96vw; max-height: 92vh;
+  box-shadow: 0 10px 40px rgba(0,0,0,.55), 0 0 0 1px var(--cell-accent) inset;
+}
+.panel-floating::-webkit-resizer { background: var(--cell-accent-soft); }
 /* User-added FW #3/#4/#5 — heading accent: text + underline picks up the active cell color so
    the h2 bars themselves clearly announce whose console is active. */
 h2 {
