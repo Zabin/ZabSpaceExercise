@@ -433,3 +433,869 @@ composes any subset on top.
     black bg, white borders, yellow/cyan accents), new `bigtext` (17 px base +
     larger button hit areas).  All three exposed in the command palette.
 
+## 12. Research corpus expansion — 10× roadmap (planned, not yet authorized)
+
+The research corpus at `docs/research/` is the documented basis for every realism claim in
+the simulator — every Pₖ tier in `engine/engage.py:INTERCEPTORS`, every modulation
+effectiveness in `engine/jam.py:MODULATIONS`, every cyber vector base-success in
+`engine/cyber.py:VECTORS`, every doctrine profile branch in `session/redai.py`, every COA in
+`docs/vignettes/`. The corpus is what makes the simulator a PME tool rather than a stylized
+game. This section is the long-form plan for a 10× expansion — what 10× means concretely
+(§12.1, §12.2), the five orthogonal levers that compose to a 10× multiplier (§12.3), the six
+content tracks and ~18 new files needed (§12.4), and tier-by-tier concrete literature-review
+and analysis tasks (§12.5). It is the long version of the short plan that used to live at
+`docs/research/EXPANSION-PLAN.md` (now folded in here as the single source of truth).
+
+**Status: planned. Not yet authorized.** The reviewer's sign-off list lives at §12.8.
+
+### 12.1 Why this matters now — project context for the expansion
+
+The simulator has matured rapidly over the last six months. The June 2026 audit pass
+(`docs/AUDIT-2026-06.md`) reviewed every layer of the project for completeness, accuracy,
+and quality and produced concrete remediation across research, documentation, tests, and
+code. The follow-on commands audit (`docs/AUDIT-2026-06-COMMANDS.md`) replaced the
+`success_prob` operator override with derived probabilities, introduced the four-class
+`INTERCEPTORS` database (`bmd_adapted` / `mrbm_kkv` / `abm_heavy` / `coorbital`) sourced from
+the open-source DA-ASAT test record (SC-19, Burnt Frost, Mission Shakti, Nudol), and cut 14
+Dead/Cosmetic verbs while adding three realism verbs (`mw.add_stare_area`,
+`satcom.geolocate_interference`, `wx.request_sector`). The TT&C audit
+(`docs/AUDIT-2026-06-UI-TTC.md`) discovered that the vignette power rates drove a ~63%
+depth-of-discharge sawtooth every orbit and recalibrated them to a realistic ~21% DoD. Each
+of those changes rests on assertions about how real systems actually work — and yet the
+`docs/research/` corpus that should *be* that body of evidence carries **zero cited URLs**
+across its 1,152 lines (verified by `grep -c http docs/research/*.md`).
+
+The audit-driven realism work *did* find and use citations — the agent reports that
+produced the INTERCEPTORS database cited SWF Global Counterspace 2025, CSIS Space Threat
+Assessment 2025, NASA HUSIR/Goldstone Cosmos-1408 debris observations, the IISS Nudol
+analysis, CRS RS22652, and several primary-source ASAT test records. Those citations were
+folded into engine code comments and into the audit docs, but **not** back into the research
+corpus. So we have an unusual mismatch: the engine's numbers are well-sourced (cite an
+inline file:line in the relevant `engine/*.py` module and you can trace to the source), but
+the research files that should be the canonical source-of-truth still read as one
+single-session knowledge dump. This roadmap fixes that asymmetry while also expanding the
+corpus to cover the topics the project has grown into needing.
+
+A PME tool earns its credibility by being defensible in front of subject-matter experts:
+USSF Guardians, NRO historians, USSPACECOM JAGs, doctrine analysts at CSIS / SWF / IISS,
+operator alumni from NSpOC / 2 SOPS / 18 SDS / 53 SOPS. Every claim about Russian EW
+doctrine, every named PLA SSF capability, every interceptor's altitude reach, every
+debris-persistence regime, every legal interpretation of OST Article IV — must be
+traceable to an open-source primary or near-primary citation, ideally with both a live URL
+and a Wayback snapshot. We are not there. This roadmap is the path to getting there.
+
+A second dimension matters: the simulator's *breadth* has outgrown the research's breadth.
+We now have 19 vignettes spanning four pedagogical tracks (canonical / mission-set / Red
+COA / learning), `engine/sigint.py` and `engine/cyber.py` and `engine/engage.py` per-domain
+databases that have no corresponding deep-dive research file, the SSN model
+(`engine/ssn.py`) with no corresponding research on real SSN tasking practice, and a
+growing FUTURE-WORK list of v1.1+ engine work (GNSS spoof distinct from jam, coalition SDA
+catalog, mega-constellation resilience, frequency-hop ECCM) that lacks research
+underpinning. The corpus needs new tracks (commercial proliferation, emerging tech,
+incident-record catalog) and many new files. The 7-file / 1,152-line baseline is simply
+not enough corpus for the simulator it has become.
+
+### 12.2 Baseline accounting — what we are 10×-ing
+
+The current corpus, audited file-by-file:
+
+- `01-doctrine-western.md` (144 lines, 0 URLs) — USAF / USSF doctrine summary; covers
+  Spacepower, AFDP 3-14, the three counterspace mission areas, allied doctrine. Solid
+  primer but no citations.
+- `02-doctrine-non-western.md` (129 lines, 0 URLs) — China + Russia at ~50 lines each;
+  named PLA and VKS capabilities listed without sources; no India / Iran / DPRK /
+  France / UK / Israel / Japan coverage.
+- `03-counterspace-taxonomy.md` (165 lines, 0 URLs) — the five D's taxonomy, mapped to
+  engine `Outcome` literals. Per-effect descriptions of DA-ASAT, co-orbital, EW, DE,
+  cyber. Out-of-scope-for-v1 note on nuclear/EMP.
+- `04-orbital-mechanics-primer.md` (145 lines, 0 URLs) — regime physics, access windows,
+  the moderate-fidelity model, what operators see. Tight; could grow per-fidelity-tier
+  validation discussion.
+- `05-mission-types-and-counters.md` (132 lines, 0 URLs) — nine mission types in ~10–15
+  lines each. The realism research called this "in better shape than its piecemeal
+  history suggests" but it needs depth, especially on the commercial-tasking APIs that
+  the realism research used (Maxar, Planet, Capella).
+- `06-bus-and-payload-operations.md` (270 lines, 0 URLs) — the longest file; covers
+  bus subsystems, SOH, payload ops per type, operator interfaces. Eutelsat Quantum
+  citation was added in the June 2026 audit but as a comment line, not a hyperlinked
+  source.
+- `07-legal-norms-and-roe.md` (151 lines, 0 URLs) — OST, LOAC in space, the 2022
+  destructive-DA-ASAT test moratorium, ROE design pattern. Cleanest file structurally;
+  needs treaty-text hyperlinks and UNGA resolution citations.
+
+Total: **1,152 lines, 0 URLs**, 7 topic files plus an INDEX. Roughly 30 named systems
+without inline cites; roughly 50 numeric claims (altitudes, ranges, dates, counts)
+without inline cites. The Sources subsections at the foot of each file *do* name source
+families (CSIS, SWF, AU Space Primer, etc.) but as text not links.
+
+The 10× target is precise:
+
+| Metric | Today | 10× target | Delta |
+|---|---:|---:|---:|
+| Files | 7 + INDEX | 25 + INDEX + this roadmap | +18 |
+| Total lines | 1,152 | ~11,500 | ~10×, +10,350 |
+| Cited URLs | 0 | ≥500 | from zero |
+| Primary sources named | ~30 (text only) | ≥250 (hyperlinked + dated) | ~8× |
+| Mission types with deep-dive | 9 at ≤30 lines | ≥15 at ≥200 lines | depth + breadth |
+| Adversary actors at deep-dive | 2 (CN, RU) at ~50 lines | 9 at ≥150 lines | breadth |
+| Per-engine-module cross-refs | 13 references *to* research from code | ≥80 bidirectional refs | ~6× |
+| Date-stamped facts | 0 with explicit dates | every numeric claim dated | from zero |
+| Annual-review markers | none | every file carries `last_reviewed:` | from zero |
+
+The "tenfold" is therefore not "one file ten times longer." It is the product of five
+orthogonal expansions (§12.3): depth ~1.5×, breadth ~2×, citation density ~2× (a
+multiplicative effect from zero to dense), bidirectional cross-linking ~1.5×, currency
+maintenance ~1× (constant but newly enabled). 1.5 × 2 × 2 × 1.5 × 1 ≈ 9×, plus a Tier 4
+forward-looking track gets to a defensible 10×.
+
+### 12.3 The five expansion levers
+
+#### 12.3.1 Lever 1 — Depth (1.5×)
+
+Depth means going from a primer paragraph on a system to a paragraph plus a sub-section
+that an operator or doctrine analyst would recognize as substantive. Today's
+`03-counterspace-taxonomy.md` §1 covers DA-ASAT in about a dozen lines, naming SC-19 /
+Nudol / SM-3 / PDV without elaborating on their respective programs, test histories, or
+the geopolitical context that surrounded each test. A depth expansion would discuss the
+SC-19 program's evolution from a midcourse-defense interceptor into a counterspace
+weapon; the political signaling of the 2007 FY-1C test (and the resulting ~3,000+
+tracked-fragment debris event that remains in orbit); the 2008 Burnt Frost / USA-193
+context (a satellite reentry safety pretext used to demonstrate latent capability); the
+2019 Mission Shakti test as deliberately calibrated to minimize persistent debris
+(283 km altitude → months-to-years decay); and the 2021 Nudol / Cosmos 1408 test that
+produced 1,789 tracked fragments at 480 km and triggered the 2022 destructive-test
+moratorium that `07-legal-norms-and-roe.md` discusses. Each of those expansions feeds the
+engine's `INTERCEPTORS` Pₖ table (`engine/engage.py`) and the
+`debris_cone_estimate(persistence)` regime (the audit-introduced field), which is the
+cross-link that closes Lever 4 (§12.3.4).
+
+Depth applies similarly across the corpus. `06-bus-and-payload-operations.md` should
+grow per-bus-class (Lockheed A2100, Boeing 702, Airbus E3000, SSL/Maxar 1300, modern
+software-defined platforms) with named power-system architectures, the moments-of-inertia
+ranges that drive desaturation cadence, and the typical battery DoD targets that justify
+the audit's recalibration (the realistic 15-25% DoD range that the audit cited but did
+not yet add to research). `04-orbital-mechanics-primer.md` should add a per-fidelity-tier
+validation discussion: the Kepler+J2 errors against SGP4 catalogs, SGP4's known accuracy
+envelope (typically km-class at 1 day, growing nonlinearly), and the published
+high-precision orbit determination performance against TLE. Depth, in short, is each
+existing topic file extended with the per-system, per-program, per-incident specificity
+that a doctrinal SME would actually recognize.
+
+Depth's 1.5× contribution to the 10× target is conservative. The reason it is not larger
+is that not every existing file needs to grow uniformly; `07-legal-norms-and-roe.md` is
+already nearly the right depth and primarily needs treaty-text hyperlinks (Lever 3, not
+Lever 1). The depth growth is concentrated in the doctrine, taxonomy, and
+operations files where the current treatment reads as a survey.
+
+#### 12.3.2 Lever 2 — Breadth (2×)
+
+Breadth means adding files that cover topics the current corpus does not address at all.
+The most glaring gap is per-actor coverage outside CN/RU: India's DRDO and Mission Shakti
+program, Iran's Islamic Revolutionary Guard Corps Aerospace Branch (with documented
+GPS-jamming and SATCOM-jamming campaigns over the Strait of Hormuz), North Korea's NADA
+and its observed cyber operations against satellite ground infrastructure, allied actors
+like France's CSO program and the dedicated *Commandement de l'Espace*, Israel's Ofeq
+program and the Yahalom unit's SIGINT work, Japan's space situational awareness mission
+under the JASDF. Each of those actors is a credible Red doctrine profile or a coalition
+Blue partner in `session/redai.py` and the COA vignettes, and the simulator's
+`coa-misc-iran-ml` vignette already implies an Iran-shaped Red without the corresponding
+research depth.
+
+A second breadth axis: counterspace systems by class. `03-counterspace-taxonomy.md` is a
+single file covering five effect categories; a per-class deep-dive would split into
+DA-ASAT systems, co-orbital and RPO systems, EW systems, directed-energy systems, and
+cyber systems. Each per-class file would name specific systems (Tirada-2 SATCOM jam,
+Pole-21 GNSS jam, Bylina C2, Tobol SDA jammer, Krasukha-4 radar EW for the EW file; SJ-21
+/ SJ-15 GEO tug, Burevestnik co-orbital, Olymp-K / Luch-2 GEO observers, USA-270 series
+for the co-orbital file), trace each to public statements / sanctions records /
+think-tank assessments, and discuss the engagement parameters the engine uses for each.
+This breadth axis is where the realism research's already-paid effort yields the most
+value — that research already produced per-system citations; folding them into per-class
+files makes them findable.
+
+A third breadth axis: cross-cutting topics with no current file. Commercial space
+proliferation (Starlink V2, Kuiper, OneWeb) changes the threat calculus by adding
+thousands of hardened-by-numbers targets and a non-state actor (SpaceX) into the
+strategic mix; allied SDA fusion (Five Eyes SST, the UCSD Vandenberg pipeline) changes
+the custody picture; the operational ground segment (AFSCN, NASA Space Network, AWS
+Ground Station booking economics) is the un-sexy infrastructure where most real attacks
+land. None of those have a research file. The proposed taxonomy (§12.4) adds files for
+each. Breadth's 2× contribution is the largest single lever and the easiest to author —
+greenfield writing per topic is faster than reworking existing files.
+
+#### 12.3.3 Lever 3 — Citation density (~2×, effectively ∞× from zero)
+
+Citation density is the difference between "Russia leads with electronic warfare" as a
+sentence and the same sentence with a hyperlink to the SWF 2025 Global Counterspace
+Capabilities Report's Russia chapter, a hyperlink to the CSIS Space Threat Assessment
+2025's EW section, and an inline date-stamped paragraph mentioning Tirada-2's first
+documented operational use. The corpus today has none of that. Adding ~500 hyperlinked
+citations across ~11,500 lines is a citation roughly every ~23 lines, which is the right
+density for a PME / doctrine reference: dense enough to be defensible, not so dense it
+reads like a bibliography.
+
+Citation density also means citation *integrity*: every external URL gets a Wayback
+Machine snapshot beside it (URL rot is real — the SWF reports have moved several times,
+the CSIS reports occasionally 404, and government publication portals reorganize), and
+every citation carries the date of access. This is the methodology that the
+`10-sources-and-methodology.md` deliverable (Tier 1 first output) will codify. A
+secondary citation-density move is to use *primary* sources where they exist — for
+treaty law, link the UN treaty text directly; for the 2022 moratorium, link the State
+Department announcement and the UNGA resolution that followed; for ASAT test records,
+link the contemporaneous CelesTrak / 18SDS catalog entries and the Jonathan McDowell
+log; for doctrine claims, link the actual doctrinal publication (AFDP 3-14, Joint Pub
+3-14, etc.) rather than think-tank summaries of it.
+
+The 2× contribution looks conservative against an "∞× from zero" reality. The reason
+it's bounded at 2× is that depth and breadth are doing most of the line-count work; the
+citation density is a *quality* multiplier on those lines. A 11,500-line corpus with 500
+citations is dramatically more credible than the same 11,500 lines with zero — but the
+*lines* themselves come from depth and breadth, not from the citations.
+
+#### 12.3.4 Lever 4 — Cross-linking with code (1.5×)
+
+The audit-driven realism work created an asymmetry: engine modules know which research
+they cite (the agent reports left footprints in module docstrings — for instance
+`engine/engage.py:INTERCEPTORS` mentions "the four open-source DA-ASAT test records"),
+but the research files do not know which engine code they justify. Closing that loop is
+Lever 4: every engine module that hard-codes numbers gets a single docstring line
+pointing at the research section that sources those numbers, and every research section
+that justifies engine parameters gets a single line back pointing at the code. This is
+not just a citation-style nicety; it is the mechanism that lets a future audit catch
+"the research says X but the code does Y" drift before it ships, and lets a PME
+instructor explaining a vignette outcome point at "this Pₖ comes from this database
+which comes from this research section which cites this 2007 NASA report on the FY-1C
+debris event."
+
+The bidirectional cross-link convention will be:
+
+- Research file: a `Used by:` line at the bottom of every section that names the engine
+  module(s) and the database/constant(s) it sources. Example: in
+  `03a-da-asat-systems.md` under "SC-19 / FY-1C 2007", a `Used by:
+  engine/engage.py:INTERCEPTORS["mrbm_kkv"], engine/engage.py:debris_cone_estimate`
+  closing line.
+- Engine module: a single `# Source: docs/research/<file>#<anchor>` comment beside the
+  hard-coded value. Example, on the `mrbm_kkv` line in `engine/engage.py:INTERCEPTORS`,
+  a comment naming the research file.
+
+This convention is the single most enduring artifact of the expansion. Code reviewers
+checking a future PR that changes `INTERCEPTORS["mrbm_kkv"]["base_pk"]` from 0.70 to
+0.85 will be able to follow the comment to the research file and verify that the
+research still supports the change. Conversely, a future expansion of the SC-19 research
+section will be able to find the engine code that depends on its claims and propose
+matched updates. The 1.5× contribution to the 10× target reflects that this work is a
+small line-count delta but a large credibility delta.
+
+#### 12.3.5 Lever 5 — Currency and refresh cadence (1×, ongoing)
+
+The fifth lever does not directly multiply line count or citation count; it preserves
+the multiplier the other four levers create. A 11,500-line corpus with 500 citations is
+worthless 36 months after authoring if the doctrine references are stale, half the URLs
+404, and named systems have been replaced. The methodology file
+(`10-sources-and-methodology.md`) will mandate per-file `last_reviewed: YYYY-MM-DD`
+frontmatter and an annual review workflow. Files older than 12 months get a "stale"
+banner at the top until they pass a review pass; a `/loop` invocation (see the
+keybindings / loop skill) can be set to flag stale files monthly.
+
+The 1× contribution to the 10× math is the discipline that *prevents* the corpus from
+silently halving its value over time. It is also the lever that protects the
+cross-linking from rotting: if a research section is updated, the bidirectional links
+let the maintainer know which engine modules to re-verify. Currency is the closest thing
+the corpus has to a unit-test suite.
+
+### 12.4 The six content tracks
+
+The 25 target files organize into six thematic tracks. Each track gets its own subsection
+here; the per-file deep dive lives in the per-tier task list at §12.5.
+
+#### 12.4.1 Track A — Doctrine (5 files; was 2)
+
+Doctrine is the *why* behind every Red and Blue action. The current corpus has two
+doctrine files — Western (`01`) and a single non-Western file lumping China and Russia
+together (`02`). The track expands to five files: the two existing files get depth
+expansion (Lever 1) for the actors they already cover, and three new files split out
+deep-dives:
+
+- `02a-china-deep-dive.md` — the PLA SSF→ASF transition (the April 2024 PLA reorganization
+  that dissolved the SSF and created the Aerospace Force, the Cyberspace Force, and the
+  Information Support Force), Strategic Support Force history, integrated SoS
+  ("System-of-Systems") doctrine, the 36th Test Base and its role in DA-ASAT
+  development, the Network Information Coordination System concept.
+- `02b-russia-deep-dive.md` — VKS (Aerospace Forces) organization, RVSN (Strategic Rocket
+  Forces) overlap with counterspace, Roscosmos military integration, the EW Troops
+  (РЭБ войска) and their named systems (Bylina, Tirada-2, Pole-21), Tobol's role as a
+  dual-use SDA jammer, and the post-2022 doctrinal shift toward "destructive but
+  deniable" counterspace under sanctions.
+- `02c-emerging-actors.md` — India (DRDO and Mission Shakti, the conscious
+  debris-minimization design choice), Iran (IRGC ASB observed jamming over the Gulf,
+  the recent space-launch normalization), DPRK (NADA, observed cyber operations against
+  satellite ground infrastructure), Israel (Ofeq program, Yahalom SIGINT unit), and
+  rising commercial counterspace actors (the "renegade SpaceX" scenario that several
+  doctrine analysts have begun discussing).
+
+The two existing files get depth expansion to cover named systems, organizational
+charts, and the strategic logic that drives each actor's counterspace posture. The track
+expansion supports the simulator's COA library and `session/redai.py` doctrine profiles
+directly: every existing or planned Red doctrine profile traces to a file in this track,
+and the track gives the COA author the substrate to write doctrinally-coherent vignettes
+without re-researching from scratch. This is the single biggest leverage point for
+expanding the vignette library beyond the existing 19.
+
+#### 12.4.2 Track B — Counterspace effects and systems (7 files; was 1)
+
+Track B is the largest expansion, splitting today's single
+`03-counterspace-taxonomy.md` (the five D's) into seven files:
+
+- `03-counterspace-taxonomy.md` (expanded, ~3×) — the spine: the five D's, mapped to
+  engine `Outcome` literals, cross-linked to per-system files below. The single file
+  any user opens first to navigate the track.
+- `03a-da-asat-systems.md` (new) — per-system: SC-19/DN-3 (CN), Nudol/A-235 (RU),
+  SM-3 (US BMD-adapted), PDV-Mk2 (IN), with per-system altitude reach, salvo
+  configuration, seeker type, and test history. Sources the engine's
+  `INTERCEPTORS` database directly.
+- `03b-coorbital-rpo.md` (new) — per-system: SJ-21/SJ-15 (CN tug behavior, the 2022
+  Beidou-G2 relocation episode), Burevestnik (RU), Olymp-K and Luch-2 (RU GEO
+  observers), the USA-270 series, GSSAP RPO operations, MEV-1 / MEV-2 commercial
+  servicing precedents. Sources `engine/engage.py`'s `coorbital` interceptor class.
+- `03c-ew-jamming.md` (new) — the realism research already drafted much of this:
+  CCS Block 10.2 (the only acknowledged US offensive counterspace system),
+  Tirada-2/Pole-21/Bylina, Tobol, AEHF/Milstar ECCM design, processing-gain
+  fundamentals, J/S analysis. Sources `engine/jam.py:MODULATIONS` and the
+  defender-modifier multipliers introduced by the audit (`_FREQ_HOP_RESIDUAL`,
+  `interference_mitigation`).
+- `03d-directed-energy.md` (new) — Soviet/Russian Sokol-Eshelon laser dazzle program,
+  Peresvet, reported Chinese Zimu-1 program, optical hardening (MgF₂ coatings),
+  shutter / safe-payload defensive verbs. Anchors the engine's directed-energy
+  outcome category and the proposed `isr.shutter_sensor` verb from the audit follow-ups.
+- `03e-cyber.md` (new) — Viasat KA-SAT (the canonical case): full incident reconstruction
+  from primary Viasat statements, SPARTA TTPs, the AcidRain wiper analysis from
+  SentinelOne, the EU/UK/US attribution timeline. Plus other historical incidents
+  (ROSAT 1998, NASA TDRS attacks, supply-chain compromises). Sources
+  `engine/cyber.py:VECTORS` and the `seize_c2` payload introduced by the audit.
+- `03f-nuclear-emp.md` (new) — Starfish Prime 1962, the Soviet K-3/4/5 high-altitude
+  tests, modern EMP modeling literature, OST Article IV's nuclear-weapon prohibition
+  in orbit. Deferred for v1 per `03-counterspace-taxonomy.md` but documented here
+  for v2 (and for the 2024 Russian-FOBS / nuclear-counterspace discussion that the
+  doctrinal community is actively debating).
+
+Track B's value to the engine is direct: each per-system file is the citation source for
+a specific engine database or numeric constant. The cross-linking convention (Lever 4)
+makes that explicit.
+
+#### 12.4.3 Track C — Orbital mechanics and physics (3 files; was 1)
+
+Track C exists to back the simulator's "moderate fidelity" claim and to give the
+fidelity ladder a defensible foundation. The existing `04-orbital-mechanics-primer.md`
+gets depth expansion, and two new files split out specialty topics:
+
+- `04-orbital-mechanics-primer.md` (expanded) — regimes, access windows, the fidelity
+  ladder, what the operator sees. Adds inline cites on every Keplerian-element claim,
+  on the J2 secular precession rates, on the SGP4 / TEME convention, and on the GMST
+  rotation accuracy.
+- `04a-propagator-fidelity.md` (new) — the propagator validation discussion the
+  simulator has informally claimed but never documented: Kepler+J2 vs SGP4 vs
+  high-precision (numeric integration with full perturbation set). Validation against
+  the Skyfield reference test that the codebase already runs, against published SGP4
+  accuracy assessments, and against the published high-precision OD performance against
+  TLE. Names the simulator's chosen tier and its known errors, so a future high-fidelity
+  PR has a documented baseline to beat.
+- `04b-debris-and-conjunction.md` (new) — NASA ORDEM 3.x model overview, ESA MASTER
+  comparison, Cosmos 1408 debris evolution analyses (NASA HUSIR/Goldstone observations,
+  CelesTrak catalog growth), Burnt Frost reentry timeline (247 km → all reentered
+  within months) vs FY-1C persistence (865 km debris still in catalog in 2026 — the
+  decadal persistence the audit cited). Sources the engine's
+  `debris_cone_estimate(persistence)` regime that the audit introduced. Critical
+  reference for any future `prop.collision_avoid` work and for the FUTURE-WORK
+  conjunction-screening primitive.
+
+Track C's 3-file size is small but the credibility return is high. The simulator's
+"moderate fidelity" claim is the most-quoted claim in the build spec; backing it with a
+validation discussion is overdue.
+
+#### 12.4.4 Track D — Mission sets (4 files; was 1)
+
+Track D pulls the per-mission depth out of today's single
+`05-mission-types-and-counters.md` and into per-mission deep-dives:
+
+- `05-mission-types-and-counters.md` (kept, scoped down) — the summary index that
+  navigates to the per-mission files. Keeps the "Effect × Mission-type matrix" table
+  that closes the file today; that table is heavily cited in the commands audit.
+- `05a-isr-eo-sar.md` (new) — Maxar/Planet/Capella commercial tasking APIs (already
+  the citation backbone of the audit's realism research), NRO program history (KH-1
+  through KH-13 publicly-released material, the NRO open-source historical archive),
+  NIIRS scoring, sun-synchronous orbit geometry, NRO/NGA TPED (Tasking, Processing,
+  Exploitation, Dissemination) workflow. Critical for the `isr_eo` / `isr_sar` payload
+  types and the engine's `BEAM_MODES` database.
+- `05b-satcom-pnt.md` (new) — WGS/MUOS/AEHF on the SATCOM side (with citations to
+  53 SOPS / 4 SOPS public material and the WGS MAJE upgrade docs that the audit's new
+  `satcom.geolocate_interference` verb depends on), Iridium and the commercial side,
+  GPS Block IIIF flex power (IS-GPS-200E and the GAO M-code report that the audit's
+  new `pnt.flex_power` verb depends on), Galileo PRS, GLONASS, BeiDou. Sources the
+  `pnt` payload type and the audit's new PNT verbs.
+- `05c-sigint-mw-wx-sda.md` (new) — NRO SIGINT historical material (Trumpet / Mercury /
+  Mentor public material), SBIRS scanner+starer ops and the audit's `mw.add_stare_area`
+  verb (sourced from 2 SWS / Buckley public material), GOES-R MDS request flow
+  (NOAA OSPO process docs, sources the audit's `wx.request_sector` verb), 18/19 SDS
+  SSN tasking. A four-mission-in-one file kept tight by the per-mission summaries
+  living in `05`.
+
+Track D's value to PME instruction is that a SATCOM-focused exercise has *one* document
+to assign the trainees; the same for ISR-focused exercises or SDA-focused exercises.
+
+#### 12.4.5 Track E — Operations, legal, history (4 files; was 2)
+
+Track E expands the operations-and-context layer:
+
+- `06-bus-and-payload-operations.md` (expanded) — the existing 270-line "how operators
+  actually fly satellites" deep-dive, expanded with operator console references
+  (SCOS-2000, L3Harris InControl, Aerospace TOR-2013-00293, RTI DDS in modern ground
+  systems), per-bus-class architectures, and per-payload-class detailed ops flows.
+- `06a-ground-segment.md` (new) — AFSCN architecture and history, NASA Space Network
+  / TDRSS, AWS Ground Station booking model (already cited in the audit), commercial
+  GS providers (KSAT, ATLAS, Viasat-RTE), GS site selection rationale (the polar
+  high-cadence requirement, the equatorial low-elevation requirement), and the
+  ground-segment-as-attack-surface theme (Viasat KA-SAT, the LinkedIn-published
+  insider compromise of NASA TDRS, the Bell-Hardware-Fault SOPS incidents). Cross-
+  references heavily into Track B (`03e-cyber.md`).
+- `07-legal-norms-and-roe.md` (expanded) — OST treaty text inline-linked, LOAC
+  in-space scholarship (Schmitt's *Tallinn Manual* references for cyber, the
+  *Woomera Manual* and *MILAMOS Manual* drafts), the 2022 destructive-DA-ASAT
+  moratorium full text and the UNGA Resolution 77/41 that followed, UNGA OEWG /
+  GGE on PAROS state.
+- `07a-incident-record.md` (new) — the PME instructor's reference shelf: a catalog of
+  named on-orbit and counterspace incidents, each entry containing date, attribution
+  status (confirmed / suspected / disputed), summary, primary-source citation, and
+  the engine-relevant lesson. Entries: FY-1C 2007, Burnt Frost 2008, Mission Shakti
+  2019, Nudol 2021, Viasat KA-SAT 2022, the Iran-vs-Eutelsat 2009 satellite jamming
+  campaign, the SJ-21 / Beidou-G2 relocation, USA-193 deorbit context, the GPS
+  Selective Availability era for historical PNT context. This file is what a
+  facilitator hands to a Red team to seed their planning.
+
+#### 12.4.6 Track F — Cross-cutting and forward-looking (3 files; was 0)
+
+Track F is greenfield content that the project has grown into needing:
+
+- `08-commercial-and-allied.md` (new) — commercial proliferation (Starlink V2,
+  Kuiper, OneWeb), how thousands of small hardened-by-numbers targets change the
+  targeting calculus; the allied SDA fusion picture (Five Eyes SST, the UCSD
+  Vandenberg pipeline, France's CSO partnership, Japan's SDA contribution); the
+  emerging "non-state actor" question (SpaceX as a wartime decision-maker —
+  Starlink Ukraine).
+- `09-emerging-tech.md` (new) — optical ISLs (Starlink Gen 2, Kuiper, USSF Tranche 1),
+  software-defined payloads (Eutelsat Quantum, the audit-cited test of in-orbit
+  reconfigurability), on-orbit refueling (Northrop MEV, the upcoming SPRINT-class
+  RPO programs), manufactured-in-space concepts. Sources for the v1.1 and v2
+  engine work tracked elsewhere in this `FUTURE-WORK.md`.
+- `10-sources-and-methodology.md` (new) — the canonical source list with hyperlinks
+  and access dates: SWF Global Counterspace Capabilities (annual), CSIS Space Threat
+  Assessment (annual), AU Space Primer (chapter list), NRO openly-released history,
+  Jonathan McDowell's *Space Reports*, CelesTrak / 18 SDS catalog, treaty repositories
+  (UN OOSA, ICRC for LOAC). The methodology file is *Tier 1's first deliverable*
+  because it sets the citation convention that every later file follows.
+
+### 12.5 Four tiers — concrete lit-review and analysis tasks
+
+The four tiers prioritize Tier 1 (citation backfill of existing files + methodology) as
+required to make today's corpus defensible, then build outward. Each tier subsection
+below lists per-file concrete literature-review tasks and concrete analysis tasks.
+Literature-review tasks name the specific source families to consult; analysis tasks name
+the specific engine code, vignettes, or audit findings the file must reconcile with.
+
+#### 12.5.1 Tier 1 — Citation backfill + methodology (highest priority)
+
+Tier 1 covers nine files: the eight existing files of the corpus (citation backfill +
+modest depth expansion) plus the new `10-sources-and-methodology.md` as the first
+deliverable.
+
+**File 1.0 — `10-sources-and-methodology.md` (NEW, FIRST DELIVERABLE).**
+- Lit-review tasks: (a) compile the canonical source list — SWF Global Counterspace
+  Capabilities Report (annual, current edition is 2025), CSIS Space Threat Assessment
+  (annual, 2025), Secure World Foundation publications archive, Air University Space
+  Primer (current edition), NRO Center for the Study of National Reconnaissance public
+  releases, Jonathan McDowell's *Space Reports* and personal log, CelesTrak orbital
+  catalog snapshots, 18/19 SDS public space catalog, UN Office for Outer Space Affairs
+  treaty repository, the ICRC LOAC databases. (b) Test each URL against the current
+  state of the web; record any 404s or moves. (c) Add a Wayback Machine snapshot URL
+  beside every live URL. Analysis tasks: (a) define the citation-style convention (inline
+  hyperlinks at the claim site, plus a per-section `Sources` subsection — the convention
+  used by Wikipedia's higher-quality articles); (b) define the `last_reviewed:`
+  frontmatter convention and the stale-banner threshold (12 months); (c) define the
+  source-quality tiers (peer-reviewed > government/think-tank > journalism > advocacy);
+  (d) define the cross-linking convention from §12.3.4. Output: ~400 lines.
+
+**File 1.1 — `01-doctrine-western.md` (existing, ~3× expansion).** Lit-review tasks:
+(a) cite USSF Spacepower (Capstone) doctrine; (b) cite AFDP 3-14 Space Operations
+publicly-released material; (c) cite Joint Publication 3-14 Space Operations
+publicly-released material; (d) cite STARCOM curriculum public material; (e) cite the
+2024 SDPP (Space Domain Awareness Policy) where applicable; (f) cite allied doctrine
+publicly available (NATO AJP-3.3, AUS Space Power Manual, JP Space Domain Mission Concept,
+UK Joint Doctrine Note 1/22). Analysis tasks: (a) reconcile each cited claim with the
+engine's `Outcome` mapping in `engine/effects.py`; (b) link each section to the
+COA-vignette-pattern it supports; (c) add `Used by:` cross-link lines.
+
+**File 1.2 — `02-doctrine-non-western.md` (existing, ~3× expansion of CN/RU treatment).**
+Lit-review tasks: (a) for China, cite CASI (China Aerospace Studies Institute) public
+reports, the 2024 PLA reorganization analyses (post-April 2024), Andrew Erickson's
+publicly-available PLA Navy/Space work, the SWF China chapter; (b) for Russia, cite the
+SWF Russia chapter, the CSIS Russia counterspace assessments, Bart Hendrickx's
+Russian-space analyses, the IISS Military Balance Russia chapter. Analysis tasks:
+(a) reconcile each named system with the engine's COA library (`coa-russia-ml`,
+`coa-russia-md`, `coa-china-ml`, `coa-china-md`); (b) reconcile each named system with
+the `russia_ew_first` and `china_integrated` Red doctrine profiles in
+`session/redai.py`; (c) add `Used by:` lines.
+
+**File 1.3 — `03-counterspace-taxonomy.md` (existing, ~3× expansion).** Lit-review tasks:
+(a) for each of the five D's, cite the canonical doctrinal reference (USAF AFDP 3-14
+explicitly defines the five-D scheme); (b) cite the SWF Global Counterspace per-category
+overviews; (c) cite the CSIS taxonomy in Space Threat Assessment 2025. Analysis tasks:
+(a) reconcile each D with the corresponding `Outcome` literal in `engine/effects.py`
+(`deceive`, `disrupt`, `deny`, `degrade`, `destroy`); (b) reconcile each D with the
+corresponding category in `engine/effects.py:Category` (`direct_ascent`, `co_orbital`,
+`electronic_warfare`, `directed_energy`, `cyber`); (c) write the navigation index
+to the per-class files (Track B, Tier 3).
+
+**File 1.4 — `04-orbital-mechanics-primer.md` (existing, ~2× expansion).** Lit-review
+tasks: (a) cite the canonical Vallado *Fundamentals of Astrodynamics* sections for
+Keplerian elements and J2; (b) cite the original Brouwer-Lyddane mean-element theory
+reference for J2 secular rates; (c) cite the SGP4 source paper (Hoots & Roehrich,
+1980 and the 2006 Vallado SGP4 revisitation); (d) cite Skyfield's published precision
+claims for cross-reference. Analysis tasks: (a) reconcile the cited claims with
+`engine/propagator.py`'s implementation seam; (b) document the known accuracy envelope
+of the moderate-fidelity tier with reference to the existing Skyfield test in
+`spacesim/tests/`; (c) add `Used by:` lines pointing at `propagator.py`, `orbit.py`,
+`geometry.py`.
+
+**File 1.5 — `05-mission-types-and-counters.md` (existing, ~1.5× — depth shifts to
+per-mission Track D files in Tier 2).** Lit-review tasks: (a) for each of the nine
+mission types, cite at least the SWF chapter that names the systems; (b) cite the
+per-mission commercial tasking API where applicable (Maxar, Planet, Capella for ISR;
+HawkEye 360 for SIGINT; commercial weather providers). Analysis tasks: (a) update the
+mission-set × counter matrix with the audit's verb cuts and additions; (b) add
+`Used by:` lines pointing at `engine/buscommands.py`'s `_PAYLOAD_TYPES_FOR` map and the
+engine's per-domain databases.
+
+**File 1.6 — `06-bus-and-payload-operations.md` (existing, ~2× expansion).** Lit-review
+tasks: (a) cite the SCOS-2000 / L3Harris InControl / Aerospace TOR-2013-00293 references
+already named at the foot of the file; (b) cite the per-bus-class platform pages
+(Lockheed A2100, Boeing 702, Airbus E3000); (c) cite NASA-STD-7009 / ECSS-E-ST-70 for the
+operator-procedure perspective; (d) cite the realistic DoD-per-orbit literature that the
+TT&C audit (`docs/AUDIT-2026-06-UI-TTC.md`) referenced when recalibrating power rates.
+Analysis tasks: (a) reconcile claims with `engine/bus.py` and the recently-calibrated
+power rates in every vignette; (b) document the operator-loop-driven structure
+(contact → pass-plan → dump → review) that the engine's `bus_tick` / `refresh_ground_view`
+implements; (c) add `Used by:` lines.
+
+**File 1.7 — `07-legal-norms-and-roe.md` (existing, ~2× expansion).** Lit-review tasks:
+(a) inline-link the OST treaty text from UNOOSA; (b) inline-link the Registration and
+Liability Conventions; (c) cite the *Tallinn Manual 2.0* for cyber-in-space LOAC; (d) cite
+the *Woomera Manual* and *MILAMOS Manual* drafts where they exist; (e) cite the 2022
+US declaration on the DA-ASAT moratorium (State Department release) and UNGA Resolution
+77/41 (2022); (f) cite the OEWG (Open-Ended Working Group on PAROS) and the GGE state.
+Analysis tasks: (a) reconcile each treaty / norm claim with the engine's ROE flags
+(`roe_kinetic_authorized`, `roe_cyber_authorized`); (b) document the
+"reversible-effects-first" pattern as a doctrinal choice with sources; (c) add
+`Used by:` lines pointing at `session/manager.py`'s ROE handling.
+
+**File 1.8 — `INDEX.md` (existing, regenerated).** Trivial deliverable — re-generate the
+index to cover the post-expansion taxonomy. Output: ~50 lines.
+
+Tier 1 total: ~3,500 lines added across nine files, ~250 citations introduced. Tier 1's
+completion is the gating event for Tiers 2-4 because it locks the methodology.
+
+#### 12.5.2 Tier 2 — Per-mission and per-actor deep-dives
+
+Tier 2 covers six new files: the three per-mission files of Track D and the three
+per-actor files of Track A.
+
+**File 2.1 — `05a-isr-eo-sar.md`.** Lit-review tasks: (a) cite the Maxar tasking-guide
+public docs, Planet Tasking API public docs, Capella tasking API public docs (already
+heavily cited in the audit); (b) cite the NRO Center for the Study of National
+Reconnaissance KH-program historical releases; (c) cite published NIIRS scoring guides;
+(d) cite NRO/NGA TPED workflow references where publicly available; (e) cite the
+Sun-synchronous orbit primer references (J2-secular-precession-driven). Analysis tasks:
+(a) reconcile per-payload-class claims with `engine/isr.py:BEAM_MODES`; (b) document
+the commercial-vs-government tasking timeline difference (commercial tasking is
+days-to-hours, government can be minutes); (c) add `Used by:` cross-links. Output: ~700
+lines.
+
+**File 2.2 — `05b-satcom-pnt.md`.** Lit-review tasks: (a) cite 53 SOPS / 4 SOPS public
+fact sheets, the WGS MAJE upgrade public material (already cited in the audit), AEHF
+and Milstar publicly-available anti-jam material; (b) cite GPS interface specifications
+(IS-GPS-200E for flex power, IS-GPS-705 for L1C); (c) cite the GAO M-code report (the
+audit's source for `pnt.flex_power`); (d) cite the Galileo PRS public material, GLONASS
+status pages, BeiDou public roadmap. Analysis tasks: (a) reconcile per-system claims
+with the engine's `pnt` and `satcom` payload types and the audit's new PNT verbs
+(`pnt.flex_power`, `pnt.set_health_flag`); (b) reconcile the SATCOM section with
+`satcom.geolocate_interference` and the existing `satcom.set_frequency_plan`
+infrastructure; (c) document the 2 SOPS / 19 SOPS / 4 SOPS organizational split and the
+NANU process; (d) add `Used by:` lines. Output: ~700 lines.
+
+**File 2.3 — `05c-sigint-mw-wx-sda.md`.** Lit-review tasks: (a) cite NRO public SIGINT
+material (Trumpet, Mercury, Mentor programs that are publicly acknowledged); (b) cite
+2 SWS and SBIRS scanner+starer public material (the audit's source for
+`mw.add_stare_area`); (c) cite NOAA OSPO process docs for GOES-R MDS requests (the
+audit's source for `wx.request_sector`); (d) cite 18 SDS / 19 SDS SSN tasking public
+material. Analysis tasks: (a) reconcile per-mission claims with the engine's `sigint`
+/ `mw` / `weather` / `sda` payload types; (b) reconcile the SDA section with
+`engine/ssn.py`'s mock SSN model; (c) document the AU Space Primer SSN tasking-category
+scheme that already informs `engine/ssn.py`'s priority-SLA model; (d) add `Used by:`
+lines. Output: ~700 lines.
+
+**File 2.4 — `02a-china-deep-dive.md`.** Lit-review tasks: (a) cite the April 2024 PLA
+reorganization analyses (CASI, RAND, CSIS — multiple sources because the reorganization
+is still being interpreted); (b) cite the CSIS Space Threat Assessment China chapter,
+SWF Global Counterspace China chapter, IISS *Military Balance* China chapter; (c) cite
+Andrew Erickson's publicly-available work on PLA force structure; (d) cite the State
+Department / DoD China Military Power Report space sections. Analysis tasks: (a)
+reconcile per-system claims with `coa-china-ml.yaml` and `coa-china-md.yaml`;
+(b) reconcile the `china_integrated` Red doctrine profile (`session/redai.py`) with the
+SoS doctrine in this file; (c) tie the 36th Test Base discussion to the
+`INTERCEPTORS["mrbm_kkv"]` source (SC-19 is mrbm_kkv class); (d) add `Used by:` lines.
+Output: ~600 lines.
+
+**File 2.5 — `02b-russia-deep-dive.md`.** Lit-review tasks: (a) cite Bart Hendrickx's
+public Russian-space analyses (the canonical accessible Russian-space scholarship);
+(b) cite SWF Russia chapter, CSIS Russia chapter, IISS *Military Balance* Russia chapter;
+(c) cite the publicly-acknowledged 2024 Russian co-orbital nuclear-counterspace
+discussion (Burevestnik-derived speculation; Schmitt's commentary); (d) cite the EW
+Troops doctrinal publications where available. Analysis tasks: (a) reconcile per-system
+claims with `coa-russia-ml.yaml` and `coa-russia-md.yaml`; (b) reconcile the
+`russia_ew_first` Red doctrine profile (`session/redai.py`); (c) tie the Nudol discussion
+to the `INTERCEPTORS["abm_heavy"]` source; (d) add `Used by:` lines. Output: ~600 lines.
+
+**File 2.6 — `02c-emerging-actors.md`.** Lit-review tasks: (a) for India, cite the DRDO
+Mission Shakti press releases and the 2019 SWF / CSIS post-test analyses; (b) for Iran,
+cite the documented Strait of Hormuz GPS-jamming campaigns (open-source maritime
+reporting), IRGC ASB structural overviews; (c) for DPRK, cite the NADA structural
+overview and the publicly-attributed cyber operations (Lazarus Group / Bureau 121's
+satellite-adjacent operations); (d) for Israel, cite the publicly-acknowledged Yahalom
+and Ofeq program material; (e) for the SpaceX-as-non-state-actor discussion, cite the
+publicly-discussed Starlink-Ukraine episodes and Walter Isaacson's Musk biography
+passages on the same. Analysis tasks: (a) reconcile each actor with the corresponding
+COA vignette where one exists (`coa-misc-iran-ml.yaml`) and identify which actors lack
+a COA file (potential v1.1 vignettes); (b) add `Used by:` lines. Output: ~700 lines.
+
+Tier 2 total: ~3,000 lines across six files, ~120 new citations.
+
+#### 12.5.3 Tier 3 — Counterspace systems and physics
+
+Tier 3 covers eight new files: the six counterspace-system files of Track B (excluding
+the spine which Tier 1 handles) and the two physics files of Track C.
+
+**File 3.1 — `03a-da-asat-systems.md`.** Lit-review tasks: (a) for SC-19/DN-3, cite the
+NASA / SWF FY-1C debris analyses, the IISS contemporaneous reporting, the CRS RS22652
+report; (b) for Nudol/A-235, cite Jonathan McDowell's Nudol page, IISS analysis, NASA
+HUSIR/Goldstone observations; (c) for SM-3, cite the Operation Burnt Frost public DoD
+material; (d) for PDV-Mk2, cite the Indian DRDO Mission Shakti public material and the
+post-test debris analyses; (e) anchor each test with a primary date-stamped citation
+plus a Wayback snapshot. Analysis tasks: (a) author the per-system table that becomes
+the inline source for `engine/engage.py:INTERCEPTORS`; (b) cross-reference the audit's
+discussion (`docs/AUDIT-2026-06-COMMANDS.md` §M2 and the realism research §14) and
+ensure the file is the canonical replacement for that discussion; (c) add bidirectional
+`Used by:` / `# Source:` cross-links. Output: ~700 lines.
+
+**File 3.2 — `03b-coorbital-rpo.md`.** Lit-review tasks: (a) for SJ-21 / SJ-15, cite the
+CSIS *Dancing Lights in Space* analysis and the 2022 Beidou-G2 relocation public
+reporting; (b) for Burevestnik, cite Bart Hendrickx's analyses and the publicly-acknowledged
+co-orbital sub-satellite ejection pattern; (c) for Olymp-K / Luch, cite the CSIS GEO RPO
+analyses and the Eutelsat / Intelsat operational complaints; (d) for USA-270, cite the
+publicly-acknowledged GSSAP material; (e) for the OOS reference precedents, cite MEV-1 /
+MEV-2 (Northrop public material). Analysis tasks: (a) author the per-system table sourcing
+the `INTERCEPTORS["coorbital"]` parameters; (b) document the dual-use nature of OOS
+versus counterspace; (c) add `Used by:` lines. Output: ~700 lines.
+
+**File 3.3 — `03c-ew-jamming.md`.** Lit-review tasks: (a) for CCS Block 10.2, cite the
+USSF / Space Delta 3 public material that the audit already cited; (b) for Tirada-2 /
+Pole-21 / Bylina, cite Bart Hendrickx and the SWF Russia chapter (already audit-cited);
+(c) for Tobol, cite the SWF Tobol entry; (d) for AEHF / Milstar ECCM, cite the
+publicly-available program-office material; (e) for processing-gain fundamentals, cite
+the canonical EW textbooks (Adamy, *EW 101* through *EW 104*) where citable. Analysis
+tasks: (a) author the J/S analysis that grounds `engine/jam.py:effective_success_prob`;
+(b) document the modulation database's source basis (the four-modulation taxonomy is
+canonical EW practice); (c) document the defender-modifier multipliers introduced by the
+audit (`_FREQ_HOP_RESIDUAL = 0.4`) with their processing-gain source; (d) add
+`Used by:` lines. Output: ~700 lines.
+
+**File 3.4 — `03d-directed-energy.md`.** Lit-review tasks: (a) cite the Sokol-Eshelon
+historical material and the contemporary Peresvet public material; (b) cite the reported
+Chinese Zimu-1 program (multiple analyst attributions, multi-source); (c) cite the optical
+hardening literature (MgF₂ coatings, Brewster-angle considerations); (d) cite the canonical
+DE-vs-satellite analyses (the David Wright / Laura Grego work on optical dazzle).
+Analysis tasks: (a) reconcile the engine's DE category with the audit's recommended
+`isr.shutter_sensor` verb (currently a planned addition); (b) document the
+"dazzle-degrade-destroy" gradient that DE supports; (c) add `Used by:` lines. Output:
+~600 lines.
+
+**File 3.5 — `03e-cyber.md`.** Lit-review tasks: (a) for Viasat KA-SAT, cite Viasat's
+own incident overview, the SentinelOne AcidRain analysis, the EU/UK/US attribution
+statements (each separately dated); (b) cite the SPARTA framework public material;
+(c) cite historical incidents (ROSAT 1998 publications, NASA TDRS attack analyses); (d)
+cite the publicly-acknowledged supply-chain compromises (the recent Solar Winds /
+satellite-adjacent cases). Analysis tasks: (a) author the per-incident table that
+sources `engine/cyber.py:VECTORS` (`ground_modem` exists explicitly because of Viasat —
+the file makes this clear); (b) document the `seize_c2` payload (`engine/cyber.py:PAYLOADS`)
+as the Viasat-style attack model; (c) add `Used by:` lines. Output: ~700 lines.
+
+**File 3.6 — `03f-nuclear-emp.md`.** Lit-review tasks: (a) for Starfish Prime, cite the
+publicly-available DOE / DTRA historical material; (b) for the Soviet K-3/4/5 tests,
+cite the Hendrickx historical analyses; (c) for modern EMP modeling, cite the EMP
+Commission reports (publicly available); (d) for the 2024 Russian co-orbital nuclear
+counterspace discussion, cite the publicly-available analytic responses (Schmitt, CSIS).
+Analysis tasks: (a) document why this category is deferred for v1
+(`03-counterspace-taxonomy.md` already flags it); (b) document what v2 work would need
+to include nuclear-EMP; (c) anchor the OST Article IV interpretation. Output: ~500 lines.
+
+**File 3.7 — `04a-propagator-fidelity.md`.** Lit-review tasks: (a) cite the canonical
+references for Kepler+J2 errors against SGP4 (Vallado revisitation, Hoots papers);
+(b) cite the SGP4-vs-numerical-integration accuracy literature; (c) cite Skyfield's
+own published accuracy claims; (d) cite the existing Skyfield test in
+`spacesim/tests/`. Analysis tasks: (a) author the per-fidelity-tier accuracy table;
+(b) document the simulator's chosen tier ("moderate") and its known errors; (c) add
+`Used by:` lines pointing at `engine/propagator.py` and `engine/orbit.py`. Output: ~500
+lines.
+
+**File 3.8 — `04b-debris-and-conjunction.md`.** Lit-review tasks: (a) cite the NASA ORDEM
+3.x model overview; (b) cite the ESA MASTER overview; (c) cite the Cosmos 1408 debris
+evolution analyses (NASA HUSIR/Goldstone, the audit's existing citation); (d) cite the
+Burnt Frost reentry timeline (DoD public material); (e) cite FY-1C debris persistence
+(NASA ODPO bulletins). Analysis tasks: (a) author the altitude-vs-persistence table that
+sources the audit's `debris_cone_estimate(persistence)` regime; (b) document the
+conjunction-screening model that future `prop.collision_avoid` work will need; (c) add
+`Used by:` lines. Output: ~600 lines.
+
+Tier 3 total: ~5,000 lines across eight files, ~150 new citations.
+
+#### 12.5.4 Tier 4 — Operations, legal, history, forward-looking
+
+Tier 4 covers five new files: Track E's two new files (`06a-ground-segment.md`,
+`07a-incident-record.md`) and all three Track F files.
+
+**File 4.1 — `06a-ground-segment.md`.** Lit-review tasks: (a) cite the AFSCN architecture
+public material; (b) cite NASA Space Network / TDRSS public material (the Space Network
+Users' Guide); (c) cite the AWS Ground Station documentation (already audit-cited);
+(d) cite commercial GS provider material (KSAT, ATLAS, Viasat-RTE). Analysis tasks:
+(a) document GS site selection rationale; (b) anchor the ground-segment-as-attack-surface
+theme with cross-references to `03e-cyber.md`; (c) add `Used by:` lines. Output: ~500
+lines.
+
+**File 4.2 — `07a-incident-record.md`.** Lit-review tasks: (a) for each cataloged
+incident, identify the primary-source citation and a corroborating secondary source;
+(b) for attribution claims, cite the formal attribution statements (state announcements,
+Tallinn-style legal opinions where applicable). Analysis tasks: (a) per entry, identify
+the engine-relevant lesson (what the simulator demonstrates about that incident pattern);
+(b) cross-link each entry to the relevant Track B and Track A files; (c) format as a
+catalog (date / actor / target / effect / attribution / primary source / engine lesson);
+(d) add `Used by:` lines. Output: ~700 lines.
+
+**File 4.3 — `08-commercial-and-allied.md`.** Lit-review tasks: (a) for proliferation,
+cite the Starlink V2 / Kuiper / OneWeb public material and the publicly-acknowledged
+constellation roadmaps; (b) for allied SDA, cite Five Eyes SST public material, the
+USSPACECOM / 18 SDS public combined-operations material, the French CSO public material,
+Japan's SDA contribution material; (c) for the non-state-actor question, cite Walter
+Isaacson's Musk biography passages, the publicly-acknowledged Starlink-Ukraine episodes,
+and the analyst commentary that followed. Analysis tasks: (a) document how proliferation
+changes the Pₖ math and the targeting calculus (a single-shot DA-ASAT becomes
+militarily-inadequate against 12,000 LEO satellites); (b) cross-link to FUTURE-WORK
+items on mega-constellation resilience; (c) add `Used by:` lines. Output: ~500 lines.
+
+**File 4.4 — `09-emerging-tech.md`.** Lit-review tasks: (a) for optical ISLs, cite the
+Starlink Gen 2 public claims, the USSF Tranche 1 transport-layer material; (b) for
+software-defined payloads, cite the Eutelsat Quantum public material (already audit-cited);
+(c) for on-orbit refueling, cite Northrop MEV-1/MEV-2 public material and the SPRINT
+program where citable; (d) for manufactured-in-space, cite the recent
+Made-In-Space/Redwire and Varda public material. Analysis tasks: (a) cross-link each
+emerging tech to the relevant v1.1+ FUTURE-WORK items (mega-constellation resilience,
+GNSS spoof vs jam, coalition SDA, frequency-hop ECCM); (b) document what each emerging
+tech would require of the engine to model; (c) add `Used by:` lines. Output: ~500 lines.
+
+**File 4.5 — `08-commercial-and-allied.md` and `09-emerging-tech.md` shared workflow.**
+These two files have significant lit-review overlap (constellation proliferation appears
+in both); the agent producing them should consult the methodology file's source list and
+share lookups.
+
+Tier 4 total: ~2,200 lines across four primary new files (plus the noted shared workflow),
+~80 new citations.
+
+### 12.6 Workflow, methodology, quality bar
+
+Workflow: research is naturally parallelizable. Within a tier, files are independent and
+can be authored concurrently by separate agent invocations. The recommended pattern is
+the `deep-research` skill (configured in this repository) invoked per file with a tightly
+scoped brief from §12.5 — one invocation drafts one file. After each tier completes,
+two follow-on passes run: (i) a code cross-linking pass that adds the bidirectional
+`# Source:` / `Used by:` comments per Lever 4, executed by a single agent invocation
+that walks the engine modules and matches them to the new research file anchors;
+(ii) an adversarial verification pass that picks a random sample of cited claims and
+re-checks them against the cited source, executed by a separate agent invocation with
+read-only tools, with findings written to `docs/research/REVIEW-LOG.md`. The
+verification pass is the closest thing the corpus has to a test suite.
+
+Methodology: `10-sources-and-methodology.md` (the first Tier 1 deliverable) is the
+canonical reference. It defines: linked-citation format (inline link at claim site + a
+per-section `Sources` subsection), source-quality tiers (peer-reviewed >
+government/think-tank > journalism > advocacy), date-stamping convention (every claim
+that names a real event carries the event date inline), annual-review-marker syntax
+(`last_reviewed: YYYY-MM-DD` in frontmatter, with a stale-banner threshold of 12
+months), and the cross-linking convention from Lever 4. Every later file follows this
+convention without re-defining it.
+
+Quality bar (per-file checklist, used by every authoring agent and every reviewer):
+(a) Frontmatter `last_reviewed:` + `primary_sources_consulted:` count; (b) every
+numerical claim (m/s, kg, $, year, Pₖ, dB) inline-cites at the claim site; (c) every
+named system inline-cites at first mention; (d) every doctrinal assertion cites a
+primary doctrine source or a published assessment (CSIS, SWF, IISS) — not Wikipedia
+alone; (e) `### Sources` subsection at the end of every major section with
+bullet-pointed URLs + Wayback snapshots + access dates; (f) bidirectional `Used by:`
+cross-link lines per Lever 4; (g) no claim depends on a single source unless that
+source is the primary one (the doctrine document itself or the test record itself);
+(h) single-source claims are flagged inline. The reviewer agent in the verification
+pass checks (a)-(h) per file.
+
+### 12.7 Cost, sequencing, risks
+
+Cost (rough, agent-token-based): Tier 1's ~3,500 lines + 250 citations costs ~10 agent
+invocations (one per file) at ~50–100k subagent tokens each plus 2 follow-on passes
+(code cross-link, verification) at ~50k each. Tier 2's ~3,000 lines + 120 citations
+costs ~6 invocations at ~80k each plus the same 2 follow-on passes. Tier 3's ~5,000 lines
++ 150 citations costs ~8 invocations at ~80k each plus the 2 follow-on passes. Tier 4's
+~2,200 lines + 80 citations costs ~5 invocations at ~60k each plus the 2 follow-on
+passes. Total: ~29 authoring invocations + 8 follow-on passes ≈ ~37 agent invocations
+across 4 tiers, ~2-3 million subagent tokens total.
+
+Sequencing: Tier 1 first (lock the methodology and backfill the existing corpus).
+Tiers 2 and 3 can run in parallel as soon as Tier 1 lands the methodology file; the
+6 + 8 = 14 files are independent. Tier 4 follows once Tiers 2-3 land because some
+Tier 4 content cross-references Tier 2-3 files. Each tier commits and pushes
+incrementally so the corpus is usable mid-expansion. Recommended sprint structure:
+Sprint 1 = Tier 1, Sprint 2 = Tiers 2 + 3 in parallel, Sprint 3 = Tier 4 + final
+verification pass + final cross-link pass.
+
+Risks: (i) **Source rot.** URLs to government / think-tank sites move or 404 over a
+2-3 year horizon. Mitigation: Wayback snapshots beside every live URL (mandated by the
+methodology file). (ii) **Classification line.** This is a PME tool — every source
+must be unclassified and open. Mitigation: the methodology file enumerates which
+categories of content are out of bounds (CDR/SAP/SCI references); the verification
+pass spot-checks. (iii) **Attribution claims.** Some named systems rest on a small
+number of analyst assessments. Mitigation: multi-source where possible; flag
+single-source claims inline (quality-bar criterion h). (iv) **Scope creep into design
+docs.** Research is `why`, build-spec is `what is built`, design is `how it is built`.
+Mitigation: reviewers reject content that drifts into spec/design territory. (v) **PME
+audience drift.** The corpus must remain accessible to a USSF Guardian operator audience
+without becoming an academic monograph. Mitigation: the existing `06-bus-and-payload-operations.md`
+voice is the model; the verification pass checks tone-consistency.
+
+### 12.8 Sign-off and the next step
+
+Before authorizing Sprint 1 (Tier 1, methodology + citation backfill), the reviewer
+confirms: (a) the file taxonomy in §12.4 covers the topics the PME audience cares about
+(anything missing or redundant?); (b) the four-tier prioritization is the right order
+(Tier 1 first is the strong recommendation, but Tiers 2-4 are reorderable); (c) the
+per-file quality bar in §12.6 is the right bar (anything to add or relax?); (d) the
+methodology-first sequence in §12.6 is acceptable, or production should start in
+parallel with methodology; (e) the cost / sequencing in §12.7 is acceptable (~37 agent
+invocations total, sprinted over 3 working sessions).
+
+Once authorized, the next step is to invoke the `deep-research` skill with the §12.5.1
+brief for `10-sources-and-methodology.md` (File 1.0). That file's completion enables
+the eight Tier 1 file-rewrites to run in parallel.
+
