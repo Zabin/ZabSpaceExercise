@@ -901,6 +901,99 @@ below lists per-file concrete literature-review tasks and concrete analysis task
 Literature-review tasks name the specific source families to consult; analysis tasks name
 the specific engine code, vignettes, or audit findings the file must reconcile with.
 
+#### 12.5.0 Authoring cadence — one subsection per `deep-research` invocation
+
+The June 2026 Tier 1 Sprint 1 attempt (commit `b39c24f`) revealed the load-bearing
+constraint on this expansion: the `deep-research` skill fans out aggressively per
+invocation, and a single "rewrite this whole file" brief blew the subagent token
+budget in three of four attempted file-level invocations (only `03-counterspace-
+taxonomy.md` landed; `04-orbital-mechanics-primer.md`, `05-mission-types-and-counters.md`,
+and `06-bus-and-payload-operations.md` hit limits before producing usable content).
+
+The fix — adopted as the binding cadence for the rest of the expansion — is to invoke
+`deep-research` **one subsection at a time**. Per-file work decomposes into a sequence
+of small, checkpointed steps:
+
+1. **Decompose the target file into subsections.** Use the
+   `03-counterspace-taxonomy.md` exemplar as the structural model: a file typically
+   carries an intro + 6–10 numbered `##` sections + a cross-references closer. Each
+   `##` section is a discrete authoring unit.
+2. **Per subsection:** invoke a single `deep-research` agent with a tight brief covering
+   only that subsection's lit-review tasks (named source families to consult, specific
+   claims that need inline citations, named systems that need date-stamping) and that
+   subsection's analysis tasks (which engine module the section sources, which
+   `Used by:` cross-link line to close with). Budget ≤ 20k subagent tokens per
+   invocation — small enough that the fan-out has no room to runaway.
+3. **Document findings immediately.** The agent returns the subsection's markdown.
+   Append it to the file under construction (or to a per-file
+   `working/<file-id>/<section-id>.md` if the file isn't yet ready to assemble),
+   commit the increment with a one-line message
+   (`docs(research): <file>#<section> — <one-line summary>`), push.
+4. **Move to the next subsection.** No batching: each subsection lands and pushes
+   before the next is scoped.
+5. **Final integration pass.** When all subsections of a file have landed, run a
+   single integration pass (no agent — done in the main session) that:
+   regenerates `### Sources` at the foot of each `##` section from the inline cites,
+   verifies cross-section consistency (every `Used by:` line names a real engine
+   module; every forward-reference to another file exists), and runs the per-file
+   quality-bar checklist from §12.6. Commit the integration pass as
+   `docs(research): <file> — integration pass`.
+6. **Verification pass per tier.** Once all files in a tier have landed, spawn one
+   adversarial verification agent that picks a random sample of 20 cited claims across
+   the tier's files and re-checks them against the cited sources (per the methodology
+   file's §5.3). Findings go into `docs/research/REVIEW-LOG.md`. Any `✗ unsupported`
+   finding is a blocker for tier merge.
+
+The advantage of this cadence is that each invocation has bounded scope (one
+subsection's worth of claims, typically 5–10 inline citations), bounded token cost
+(≤20k subagent tokens), and a small blast radius if it fails (one subsection's worth
+of work, ~60 lines, not a whole file). Progress is fully checkpointed in git: a
+mid-file failure leaves landed subsections committed and the next subsection still
+queued, and any reviewer can read the file as it stands at any commit. The trade-off
+is more total agent invocations per file (~6–10 instead of 1) but each is small.
+
+**Why the methodology file did not need this cadence.** `10-sources-and-methodology.md`
+was the first Tier 1 deliverable and was authored directly in the main session
+(commit `968c4be`) without `deep-research` because it defines convention rather than
+synthesizing external claims; it carries zero external citations by design (§9 of
+that file).
+
+**Why `03-counterspace-taxonomy.md` did not need this cadence either.** The
+`03-counterspace-taxonomy.md` agent completed before hitting limits (the one wave-1
+success); its 821-line / 147-URL output is the structural exemplar every later file
+follows. The per-subsection cadence is for the files that *come after*.
+
+**The per-subsection brief template.** When invoking `deep-research` for a single
+subsection, the brief should fill in this skeleton:
+
+```
+You are writing ONE subsection of <docs/research/FILE.md> — the §N "<TITLE>"
+subsection. Read docs/research/10-sources-and-methodology.md for the citation
+convention and docs/research/03-counterspace-taxonomy.md as the structural exemplar.
+
+DO NOT MODIFY EXISTING FILES. Produce the markdown for this subsection only.
+
+Subsection scope (~50–120 lines): <one-paragraph scope statement>.
+
+Required claims to cite (each inline-linked at the claim site, with Wayback snapshot):
+  - <claim 1>: cite <source family>
+  - <claim 2>: cite <source family>
+  - ...
+
+Engine cross-links (close with a `Used by:` line):
+  - <engine module>: <constant or function this subsection sources>
+
+Quality bar: every numerical claim cited; every named system date-stamped at first
+mention; per-section ### Sources subsection at the foot; no Wikipedia-only citations.
+
+Output: markdown ready to append to FILE.md under §N. Target ≤120 lines.
+```
+
+The brief is intentionally small so the agent does not have room to fan out
+unproductively. The remainder of §12.5.1–12.5.4 lists the per-file subsections each
+file will be decomposed into; the per-subsection brief is filled in at execution time
+from those lists.
+
 #### 12.5.1 Tier 1 — Citation backfill + methodology (highest priority)
 
 Tier 1 covers nine files: the eight existing files of the corpus (citation backfill +
@@ -1001,6 +1094,178 @@ index to cover the post-expansion taxonomy. Output: ~50 lines.
 
 Tier 1 total: ~3,500 lines added across nine files, ~250 citations introduced. Tier 1's
 completion is the gating event for Tiers 2-4 because it locks the methodology.
+
+##### Tier 1 per-subsection decomposition (the §12.5.0 cadence applied)
+
+Each Tier 1 file is decomposed into the subsections below. Each subsection is a single
+`deep-research` invocation per §12.5.0 — the per-subsection brief is built at execution
+time from the file-level lit-review list (above) and the subsection scope (below). The
+exemplar structure is `03-counterspace-taxonomy.md` (commit `b39c24f`): intro paragraph
++ numbered `##` subsections + a closing `## Cross-references`. Subsection IDs use
+`File-N.M.K` notation so commits and the per-section REVIEW-LOG can reference them
+unambiguously.
+
+**File 1.1 — `01-doctrine-western.md` (~3× expansion to ~430 lines, ~50 inline cites):**
+
+- §1.1.1 *The core logic: superiority → control → counterspace.* Doctrinal frame from
+  USSF Spacepower Capstone (2020) and AFDP 3-14. Inline cite the Capstone definitions
+  of "space superiority" and "space control." ~50 lines, ~5 cites. `Used by:`
+  `engine/effects.py:Category`, `docs/build-spec/03-architecture-and-data.md`.
+- §1.1.2 *The three counterspace mission areas (map to sim effects).* OCS / DCS / SDA
+  mapping to `engine/effects.py` outcomes. Inline cite AFDP 3-14 §2 and Joint Pub 3-14
+  publicly-released material. ~60 lines, ~6 cites. `Used by:` `engine/effects.py`,
+  `content/vignettes/`.
+- §1.1.3 *Offensive actions (the Red/Blue offensive menu).* 5-D ordering, reversible-first
+  preference, named US offensive systems (CCS Block 10.2 cross-reference). ~70 lines,
+  ~8 cites. `Used by:` `engine/orders.py`, the COA library.
+- §1.1.4 *Defensive actions (the Red/Blue defensive menu).* Cross-domain protection,
+  frequency-hop, hardening, RPO posture. ~60 lines, ~6 cites. `Used by:`
+  `engine/buscommands.py` `def.*` verbs, `engine/effects.py:_FREQ_HOP_RESIDUAL`.
+- §1.1.5 *Cross-cutting functions the sim must represent.* Custody / weapons-quality
+  track / attribution. ~60 lines, ~6 cites. `Used by:` `engine/custody.py`,
+  `engine/sigint.py:attribution_score`.
+- §1.1.6 *Responsible counterspace & escalation.* Reversibility-first doctrine, 2022
+  moratorium framing (cross-link to §1.7 of `07-legal-norms-and-roe.md`). ~50 lines,
+  ~6 cites. `Used by:` `engine/effects.py:political_consequence`,
+  `engine/effects.py:Outcome="destroy"`.
+- §1.1.7 *Allied doctrine.* NATO AJP-3.3, AUS Space Power Manual, UK JDN 1/22, JP Space
+  Domain Mission Concept. ~50 lines, ~8 cites. `Used by:` future coalition-SDA work in
+  `FUTURE-WORK §9`.
+- §1.1.8 *Cross-references.* No new content — anchor links to other research files.
+  Done as part of the integration pass, not a `deep-research` invocation.
+
+**File 1.2 — `02-doctrine-non-western.md` (~3× expansion to ~390 lines, ~45 inline
+cites). Note: depth on each actor moves to Tier 2 deep-dive files; this file stays at
+the spine level.**
+
+- §1.2.1 *PLA — organizational frame (post-April-2024 reorganization).* The PLA SSF→ASF
+  / CSF / ISF split. CASI public reports + RAND analyses. ~50 lines, ~8 cites.
+  Cross-link to Tier 2's `02a-china-deep-dive.md`. `Used by:` `session/redai.py:china_integrated`.
+- §1.2.2 *PLA — strategic logic (space as US enabler, therefore target).* Erickson +
+  CASI sourcing. ~40 lines, ~5 cites.
+- §1.2.3 *PLA — named capabilities (Red asset templates).* SC-19/DN-3, Shijian series,
+  Yaogan SIGINT, GSSAP-equivalents. ~60 lines, ~10 cites. `Used by:`
+  `engine/engage.py:INTERCEPTORS["mrbm_kkv"]`, COA vignettes.
+- §1.2.4 *VKS — organizational frame.* VKS / VKO / RVSN / Roscosmos military
+  integration. SWF Russia chapter. ~40 lines, ~5 cites.
+- §1.2.5 *VKS — strategic logic (hedge, offset, disrupt).* Hendrickx + SWF +
+  CSIS sourcing. ~40 lines, ~5 cites.
+- §1.2.6 *VKS — named capabilities.* Nudol/A-235, Tirada-2, Pole-21, Bylina, Tobol,
+  Peresvet, Luch/Olymp-K, Burevestnik/Nivelir. ~80 lines, ~12 cites. `Used by:`
+  `engine/engage.py:INTERCEPTORS["abm_heavy"]`, `engine/jam.py:MODULATIONS`,
+  `engine/effects.py:Category="directed_energy"`.
+- §1.2.7 *What this means for the Red Cell (sim implication).* ML/MD COA pairing rationale.
+  ~40 lines, ~3 cites. `Used by:` `content/vignettes/coa-*`, `docs/vignettes/00-LIBRARY-ARCHITECTURE.md`.
+- §1.2.8 *Cross-references.* Integration pass.
+
+**File 1.4 — `04-orbital-mechanics-primer.md` (~2× expansion to ~290 lines, ~30 inline
+cites). Note: 37 verified URLs already exist from the prior subagent run (preserved in
+the agent task transcript referenced from commit `b39c24f`).**
+
+- §1.4.1 *Orbital regimes (sets which actions are even possible).* LEO/MEO/GEO/HEO/
+  cislunar. Cite NASA NSSDC + ESA "Types of orbits" + AU Space Primer. ~60 lines, ~6 cites.
+  `Used by:` `engine/orbit.py:classify_regime`, `engine/engage.py:INTERCEPTORS["max_alt_km"]`.
+- §1.4.2 *The access window — the central game mechanic.* Six access channels.
+  Cite CelesTrak TLE format docs, ITU-R P.681, Vallado for geometry. ~70 lines, ~8 cites.
+  `Used by:` `engine/access.py` (all six channels), `engine/orders.py`.
+- §1.4.3 *Moderate-fidelity propagation model (Kepler+J2 / SGP4 / Skyfield).* Cite Vallado
+  *Fundamentals* 4th ed., Brouwer 1959 + Lyddane 1963, Hoots & Roehrich 1980, Vallado
+  2006 SGP4 revisitation. ~60 lines, ~8 cites. `Used by:` `engine/propagator.py`,
+  `engine/perturbations.py`. Forward-link to Tier 3's `04a-propagator-fidelity.md`.
+- §1.4.4 *Time and the timeline (sim-UTC int-microseconds).* Cite IERS Conventions 2010
+  TN 36, NIST UTC explainers, USNO leap-second material. ~40 lines, ~5 cites.
+  `Used by:` `engine/simtime.py`, `engine/clock.py`.
+- §1.4.5 *Eclipse and lighting (penumbra-aware).* Cite Vallado §5.3 cylindrical shadow,
+  USNO sidereal time, Curtis OMfES, NASA Landsat SSO geometry. ~40 lines, ~5 cites.
+  `Used by:` `engine/sun.py:eclipse_fraction`, `engine/busmodel._sunlit` (audit fix).
+- §1.4.6 *What the operator sees (turning physics into UX).* Access ribbon, horizons,
+  the +1m/+10m/+1h cadence. No new external cites; cross-link to UI. ~30 lines.
+  `Used by:` `ui_web/static/app.js` ribbon + activity timeline.
+- §1.4.7 *Cross-references.* Integration pass.
+
+**File 1.5 — `05-mission-types-and-counters.md` (~1.5× expansion to ~210 lines, ~40
+inline cites). Note: per-mission depth lives in Tier 2 files — this file stays at index
+level.**
+
+- §1.5.1 *How to read this (intro + the row taxonomy).* ~20 lines, ~3 cites.
+- §1.5.2 *Per-mission summaries (one paragraph each, ~15 lines × 9 missions = 135
+  lines).* Eight `deep-research` invocations, one per mission type (ISR-EO, ISR-SAR,
+  SIGINT, GNSS/PNT, SATCOM, MW, weather, SDA, OOS/RPO). Each cites: SWF chapter + one
+  primary operator-org source + one commercial-API source where applicable. Each
+  closes with an engine-mapping line and forward-link to the Tier 2 deep-dive.
+  ~9 invocations × ~15 lines each. `Used by:` `engine/buscommands.py:_PAYLOAD_TYPES_FOR`
+  and the per-domain databases (`isr.py`, `sigint.py`, `jam.py`, `cyber.py`,
+  `engage.py`).
+- §1.5.3 *Ground & link segment targets.* Cross-link to `03e-cyber.md` (Viasat) and
+  AWS Ground Station booking material. ~30 lines, ~5 cites.
+- §1.5.4 *Effect × mission-type matrix.* The matrix from `03-counterspace-taxonomy.md`
+  §2 (reused with attribution to the spine file). ~20 lines.
+- §1.5.5 *Cross-references.* Integration pass.
+
+**File 1.6 — `06-bus-and-payload-operations.md` (~2× expansion to ~540 lines, ~70 inline
+cites). Note: this file sources the TT&C audit's power-rate recalibration, so the
+calibration subsection is the highest-priority single subsection in Tier 1.**
+
+- §1.6.1 *Core bus subsystems (EPS, ADCS, CDH, TCS, comms, propulsion).* Cite Wertz &
+  Larson *Space Mission Engineering* 4th ed., NASA-STD-7009, NASA-STD-8729.1A,
+  Aerospace TOR-2013-00293, ECSS-E-ST-70-series. ~80 lines, ~10 cites. `Used by:`
+  `engine/bus.py` (per-subsystem dataclasses).
+- §1.6.2 *State of Health (SOH) and "safe mode."* SCOS-2000 + L3Harris InControl ops
+  material. ~50 lines, ~5 cites. `Used by:` `engine/bus.py:SafeModeState`,
+  `engine/recovery.py`.
+- §1.6.3 *The contact-driven operator reality.* Pre-pass / in-pass / post-pass loop.
+  Cite NASA SCAN, ESA SCOS-2000 user guides. ~50 lines, ~5 cites. `Used by:`
+  `engine/busmodel.py:_h_contact`, `engine/bus.py:refresh_ground_view`.
+- §1.6.4 *Power calibration (NEW, sources the TT&C audit recalibration).* Cite Patel
+  *Spacecraft Power Systems*, Larson/Wertz SMAD power chapter, NASA-HDBK-4002A,
+  real-LEO performance reports for the 15–25% DoD/orbit range that justifies the audit's
+  0.0001 SoC/s drain rate. ~70 lines, ~10 cites. `Used by:` `engine/bus.py:advance_bus`,
+  every vignette's `power.drain_rate_per_s`, `docs/AUDIT-2026-06-UI-TTC.md`.
+- §1.6.5 *Payload ops — SATCOM.* WGS MAJE + AEHF/Milstar anti-jam + Eutelsat Quantum.
+  ~50 lines, ~8 cites. `Used by:` `engine/buscommands.py:satcom.*` verbs.
+- §1.6.6 *Payload ops — ISR (EO/IR + SAR).* Maxar / Planet / Capella tasking APIs.
+  ~50 lines, ~8 cites. `Used by:` `engine/isr.py:BEAM_MODES`, `engine/buscommands.py:isr.*`.
+- §1.6.7 *Payload ops — SIGINT / SDA / Space-control / PNT / MW / Weather (combined,
+  brief).* ~80 lines, ~12 cites total. `Used by:` `engine/sigint.py`, `engine/buscommands.py`
+  (the audit's new verbs `mw.add_stare_area`, `satcom.geolocate_interference`,
+  `wx.request_sector`, `pnt.flex_power`).
+- §1.6.8 *Real operator interfaces.* SCOS-2000, RTI DDS, modern ground systems.
+  ~40 lines, ~5 cites.
+- §1.6.9 *Live modeling gaps (the three TT&C audit follow-ups).* Dead `power_w` field,
+  `propellant_frac` ↔ `delta_v_ms` decoupling, thermal integrator not wired. Each item
+  cites the relevant standards + the audit doc. ~40 lines, ~6 cites.
+- §1.6.10 *How this maps into the simulator.* No new external cites; integration pass.
+
+**File 1.7 — `07-legal-norms-and-roe.md` (~2× expansion to ~300 lines, ~30 inline cites):**
+
+- §1.7.1 *The treaty floor (OST 1967, Registration 1976, Liability 1972).* Inline-link
+  treaty texts from UNOOSA. ~60 lines, ~8 cites. `Used by:` `session/manager.py` ROE
+  defaults, `docs/AUDIT-2026-06-COMMANDS.md` §M2 framing.
+- §1.7.2 *LOAC applied to space.* *Tallinn Manual 2.0* for cyber-in-space, *Woomera
+  Manual* and *MILAMOS Manual* drafts. ~50 lines, ~6 cites. `Used by:` ROE chip text in
+  `content/vignettes/intro_brief/roe_note`.
+- §1.7.3 *The 2022 destructive-DA-ASAT test moratorium.* State Department release,
+  UNGA Resolution 77/41 full text, SWF tracker, the 36 states that have joined as of
+  2024. ~50 lines, ~8 cites. `Used by:` `engine/effects.py:Outcome="destroy"` political
+  cost, `engine/engage.py:INTERCEPTORS` (the test record).
+- §1.7.4 *Norms and CBMs under negotiation.* OEWG, GGE on PAROS, UNGA Resolution 75/36
+  ("Reducing space threats through norms"). ~40 lines, ~5 cites.
+- §1.7.5 *ROE design pattern (how the sim maps law to play).* Reversible-effects-first,
+  `roe_kinetic_authorized` and `roe_cyber_authorized` gates, escalation-cost telemetry.
+  No new external cites; cross-link to engine. ~40 lines, ~3 cites. `Used by:`
+  `session/manager.py` ROE handling, `engine/orders.py` validation gates.
+- §1.7.6 *Cross-references.* Integration pass.
+
+**File 1.8 — `INDEX.md`.** Single integration-pass deliverable; no `deep-research`
+invocation required.
+
+**Subsection count for Tier 1.** The Tier 1 files decompose into ~45 `deep-research`
+invocations (vs. ~10 file-level invocations under the failed cadence): File 1.1 = 7
+invocations, File 1.2 = 7, File 1.4 = 6, File 1.5 = 12 (the 9 per-mission summaries
+are individually small), File 1.6 = 9, File 1.7 = 5, plus 5 integration passes (one per
+file, done in main session). The increase in invocation count is intentional — small
+scoped invocations are what made wave 1's `03-counterspace-taxonomy.md` invocation
+succeed; small scope per invocation is the load-bearing constraint.
 
 #### 12.5.2 Tier 2 — Per-mission and per-actor deep-dives
 
@@ -1218,16 +1483,56 @@ Tier 4 total: ~2,200 lines across four primary new files (plus the noted shared 
 
 ### 12.6 Workflow, methodology, quality bar
 
-Workflow: research is naturally parallelizable. Within a tier, files are independent and
-can be authored concurrently by separate agent invocations. The recommended pattern is
-the `deep-research` skill (configured in this repository) invoked per file with a tightly
-scoped brief from §12.5 — one invocation drafts one file. After each tier completes,
-two follow-on passes run: (i) a code cross-linking pass that adds the bidirectional
-`# Source:` / `Used by:` comments per Lever 4, executed by a single agent invocation
-that walks the engine modules and matches them to the new research file anchors;
-(ii) an adversarial verification pass that picks a random sample of cited claims and
-re-checks them against the cited source, executed by a separate agent invocation with
-read-only tools, with findings written to `docs/research/REVIEW-LOG.md`. The
+Workflow (**revised after Sprint 1 results — see §12.5.0**): the binding cadence is
+**one `deep-research` invocation per subsection**, iterated sequentially per file, with
+a commit and push after each subsection's markdown lands. The pre-Sprint-1 cadence
+("one invocation per file, files in parallel within a tier") proved unworkable —
+three of four file-level invocations exhausted their token budget before producing
+content because `deep-research` fans out aggressively per invocation and a
+file-sized brief leaves room for the fan-out to runaway. The per-subsection cadence
+caps each invocation at ~20k subagent tokens with a scope small enough that the
+fan-out has no room to bloat: a typical subsection brief asks for ~5–10 cited claims
+and ~50–120 lines of markdown.
+
+The per-tier sequence is therefore:
+
+1. **Per file, per subsection:** spawn a single `deep-research` invocation with the
+   per-subsection brief assembled from the §12.5.X tier task list (file-level
+   lit-review tasks) and the per-subsection scope (file-level decomposition table).
+   The brief template is in §12.5.0.
+2. **Document immediately.** The agent returns ~50–120 lines of cited markdown.
+   Append to the file under construction (or to a per-subsection staging file if the
+   file is not yet ready to assemble linearly), commit with
+   `docs(research): <file>#<section> — <one-line summary>`, push.
+3. **Move to the next subsection.** Sequential — no batching. This is the trade-off
+   for reliability: total elapsed time per file is longer, but token cost per
+   invocation is bounded and progress is fully checkpointed in git.
+4. **Per file: integration pass.** After all subsections of a file have landed (~5–10
+   commits), run a main-session integration pass that (a) reorders subsections into
+   their final §1.X.Y order, (b) regenerates the `### Sources` subsection at the foot
+   of each `##` section from the inline cites, (c) verifies every `Used by:` line
+   names a real engine module, (d) runs the per-file quality-bar checklist
+   (§12.6 — below). Commit as `docs(research): <file> — integration pass`.
+5. **Per tier: code cross-linking pass.** After all files in a tier have landed, run
+   one `general-purpose` agent invocation that walks every engine module that
+   hard-codes numbers, matches the constant to its sourcing research-file anchor, and
+   adds `# Source: docs/research/<file>#<anchor>` comments. Commit as
+   `docs(research): tier <N> — engine cross-link pass`.
+6. **Per tier: adversarial verification pass.** A separate `general-purpose` agent
+   with read-only tools picks a random sample of 20 cited claims from the tier's
+   files, fetches each cited source, and confirms the claim is supported. Findings
+   land in `docs/research/REVIEW-LOG.md` with file:line refs and per-claim verdicts
+   (`✓ supported`, `⚠ partial`, `✗ unsupported`). Any `✗ unsupported` is a blocker
+   for tier merge until the offending claim is re-cited or removed.
+
+Within a tier, **files** are still independent — multiple files can be in progress
+concurrently as long as each is following its own per-subsection sequence. The
+constraint that matters is "one invocation per subsection," not "one file at a time."
+A reasonable concurrency profile is 2 files in flight at any moment, alternating
+subsection invocations between them. Going wider than that risks unverifiable parallel
+context.
+
+The
 verification pass is the closest thing the corpus has to a test suite.
 
 Methodology: `10-sources-and-methodology.md` (the first Tier 1 deliverable) is the
@@ -1253,22 +1558,34 @@ pass checks (a)-(h) per file.
 
 ### 12.7 Cost, sequencing, risks
 
-Cost (rough, agent-token-based): Tier 1's ~3,500 lines + 250 citations costs ~10 agent
-invocations (one per file) at ~50–100k subagent tokens each plus 2 follow-on passes
-(code cross-link, verification) at ~50k each. Tier 2's ~3,000 lines + 120 citations
-costs ~6 invocations at ~80k each plus the same 2 follow-on passes. Tier 3's ~5,000 lines
-+ 150 citations costs ~8 invocations at ~80k each plus the 2 follow-on passes. Tier 4's
-~2,200 lines + 80 citations costs ~5 invocations at ~60k each plus the 2 follow-on
-passes. Total: ~29 authoring invocations + 8 follow-on passes ≈ ~37 agent invocations
-across 4 tiers, ~2-3 million subagent tokens total.
+Cost (rough, agent-token-based, **revised per §12.5.0**): the per-subsection cadence
+trades fewer-large invocations for more-smaller invocations. Total token cost is
+similar; total invocation count goes up ~3×, but each invocation is bounded at
+≤20k subagent tokens (vs. ~50–100k under the failed file-level cadence), so any
+single failure costs at most one subsection's worth of work.
 
-Sequencing: Tier 1 first (lock the methodology and backfill the existing corpus).
-Tiers 2 and 3 can run in parallel as soon as Tier 1 lands the methodology file; the
-6 + 8 = 14 files are independent. Tier 4 follows once Tiers 2-3 land because some
-Tier 4 content cross-references Tier 2-3 files. Each tier commits and pushes
-incrementally so the corpus is usable mid-expansion. Recommended sprint structure:
-Sprint 1 = Tier 1, Sprint 2 = Tiers 2 + 3 in parallel, Sprint 3 = Tier 4 + final
-verification pass + final cross-link pass.
+| Tier | Lines target | Citations | `deep-research` invocations | Integration passes | Code-link + verification |
+|---|---:|---:|---:|---:|---:|
+| Tier 1 | ~3,500 | ~250 | ~45 (subsection-level) | 5 (one per existing file) | 2 (one each) |
+| Tier 2 | ~3,000 | ~120 | ~40 (each new file decomposed into ~7 subsections) | 6 (one per new file) | 2 |
+| Tier 3 | ~5,000 | ~150 | ~55 (eight new files × ~7 subsections) | 8 (one per new file) | 2 |
+| Tier 4 | ~2,200 | ~80 | ~30 (five new files × ~6 subsections) | 5 (one per new file) | 2 |
+| **Total** | **~13,700** | **~600** | **~170 authoring invocations** | **~24 integration passes** | **~8 follow-on passes** |
+
+Total: ~170 `deep-research` invocations + ~24 integration passes (main session, no
+agent) + ~8 cross-link/verification passes (`general-purpose` agents). Per-invocation
+budget: ≤20k subagent tokens. Total estimated subagent cost: ~3–4 million tokens,
+similar magnitude to the file-level estimate but spread across many small bounded
+invocations. The integration-pass count is high but they require no subagent tokens —
+they are main-session work consolidating the per-subsection drafts.
+
+Sequencing (revised): Tier 1 first (already 2 of 9 files landed: `10-sources-and-methodology.md`
+and `03-counterspace-taxonomy.md`). Tiers 2 and 3 can begin as soon as Tier 1's
+methodology and the spine files (`03`, `05`) have landed. Tier 4 follows. Each tier
+commits and pushes per-subsection so the corpus is usable at every commit boundary.
+Recommended pacing under the new cadence: rather than "Sprint 1 = Tier 1 in one
+session," plan ~10–15 subsection commits per working session (1–2 files of progress),
+across roughly 12–15 working sessions for the full expansion.
 
 Risks: (i) **Source rot.** URLs to government / think-tank sites move or 404 over a
 2-3 year horizon. Mitigation: Wayback snapshots beside every live URL (mandated by the
@@ -1284,18 +1601,42 @@ audience drift.** The corpus must remain accessible to a USSF Guardian operator 
 without becoming an academic monograph. Mitigation: the existing `06-bus-and-payload-operations.md`
 voice is the model; the verification pass checks tone-consistency.
 
-### 12.8 Sign-off and the next step
+### 12.8 Status and the next concrete step
 
-Before authorizing Sprint 1 (Tier 1, methodology + citation backfill), the reviewer
-confirms: (a) the file taxonomy in §12.4 covers the topics the PME audience cares about
-(anything missing or redundant?); (b) the four-tier prioritization is the right order
-(Tier 1 first is the strong recommendation, but Tiers 2-4 are reorderable); (c) the
-per-file quality bar in §12.6 is the right bar (anything to add or relax?); (d) the
-methodology-first sequence in §12.6 is acceptable, or production should start in
-parallel with methodology; (e) the cost / sequencing in §12.7 is acceptable (~37 agent
-invocations total, sprinted over 3 working sessions).
+**Status as of 2026-06-12 (Sprint 1 mid-flight):**
+- ✅ File 1.0 — `10-sources-and-methodology.md` landed (commit `968c4be`, 363 lines).
+  Methodology gating-deliverable complete.
+- ✅ File 1.3 — `03-counterspace-taxonomy.md` landed (commit `b39c24f`, 821 lines,
+  147 inline cited URLs). Structural exemplar for every later file.
+- 🟡 Files 1.1, 1.2, 1.4, 1.5, 1.6, 1.7, 1.8 pending — to be authored under the
+  per-subsection cadence introduced in §12.5.0 and detailed per file in §12.5.1.
 
-Once authorized, the next step is to invoke the `deep-research` skill with the §12.5.1
-brief for `10-sources-and-methodology.md` (File 1.0). That file's completion enables
-the eight Tier 1 file-rewrites to run in parallel.
+**Cadence revision (this commit):** the per-subsection workflow in §12.5.0 / §12.6 /
+§12.7 supersedes the original "one invocation per file, files in parallel within a
+tier" plan. The revision is driven by Sprint 1 results: three of four file-level
+`deep-research` invocations exhausted token budget before producing content. The new
+cadence caps each invocation at ~20k subagent tokens with a scope (~5–10 cited claims,
+~50–120 lines of markdown) small enough that fan-out has no room to bloat.
+
+**Next concrete step.** Begin File 1.4 — `04-orbital-mechanics-primer.md` — at
+subsection §1.4.1 (*Orbital regimes*). Invoke `deep-research` with a brief assembled
+from the §12.5.0 template, the §12.5.1 File-1.4 lit-review list, and the per-subsection
+scope (LEO/MEO/GEO/HEO/cislunar overview; cite NASA NSSDC + ESA "Types of orbits" + AU
+Space Primer; ~60 lines, ~6 cites; close with `Used by: engine/orbit.py:classify_regime,
+engine/engage.py:INTERCEPTORS["max_alt_km"]`). The wave-1 sub-agent for File 1.4
+produced a verified 37-URL canonical source list (Vallado Microcosm Press, CelesTrak
+SGP4 papers, NASA NSSDC fact sheets, IERS Conventions, Skyfield, NGA WGS-84,
+Brouwer-Lyddane ADS abstracts) — that list is the seed corpus for File 1.4's six
+subsections and reduces the per-subsection `deep-research` invocation's web-search
+fan-out.
+
+**Reviewer sign-off (if revisiting authorization):** (a) the file taxonomy in §12.4
+covers the topics the PME audience cares about — anything missing or redundant?
+(b) the four-tier prioritization is the right order — Tier 1 first is the strong
+recommendation, but Tiers 2-4 are reorderable; (c) the per-file quality bar in §12.6
+is the right bar — anything to add or relax? (d) the per-subsection cadence in §12.5.0
+is acceptable — or should we attempt a different orchestration (e.g. wider
+parallelism)? (e) the revised cost in §12.7 is acceptable — ~170 small invocations
+across ~12–15 working sessions vs. the original ~37 large invocations across 3
+sessions.
 
