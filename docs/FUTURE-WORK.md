@@ -1603,32 +1603,52 @@ voice is the model; the verification pass checks tone-consistency.
 
 ### 12.8 Status and the next concrete step
 
-**Status as of 2026-06-12 (Sprint 1 mid-flight):**
+**Status as of 2026-06-21 (Sprint 2 mid-flight):**
 - ✅ File 1.0 — `10-sources-and-methodology.md` landed (commit `968c4be`, 363 lines).
-  Methodology gating-deliverable complete.
 - ✅ File 1.3 — `03-counterspace-taxonomy.md` landed (commit `b39c24f`, 821 lines,
-  147 inline cited URLs). Structural exemplar for every later file.
-- 🟡 Files 1.1, 1.2, 1.4, 1.5, 1.6, 1.7, 1.8 pending — to be authored under the
-  per-subsection cadence introduced in §12.5.0 and detailed per file in §12.5.1.
+  147 inline cited URLs). Structural exemplar.
+- ✅ File 1.4 — `04-orbital-mechanics-primer.md` landed (commits `dde9739..14c2454`,
+  822 lines, 204 cited URLs incl. the §2 access-taxonomy expansion to 25 permutations
+  across 7 categories). Six staged subsections + per-file integration pass.
+- ✅ File 1.6 — `06-bus-and-payload-operations.md` landed (commit `6c17e04`, 674 lines,
+  99 cited URLs). Ten staged subsections (§1.6.1 bus subsystems / §1.6.2 SOH+safe mode /
+  §1.6.3 contact loop / §1.6.4 power calibration / §1.6.5 SATCOM ops / §1.6.6 ISR ops /
+  §1.6.7 combined SIGINT/SDA/Space-control/PNT/MW/Weather / §1.6.8 operator interfaces /
+  §1.6.9 live modeling gaps / §1.6.10 simulator mapping) + integration pass. Sources
+  the audit power-rate recalibration end-to-end.
+- ✅ File 1.7 — `07-legal-norms-and-roe.md` landed (commits `469c8e8..cd37fe2`, 795
+  lines, 106 cited URLs). Five staged subsections (§1.7.1 treaty floor / §1.7.2 LOAC /
+  §1.7.3 2022 DA-ASAT moratorium / §1.7.4 CBMs / §1.7.5 ROE design pattern) +
+  integration pass.
+- 🟡 Files 1.1, 1.2, 1.5, 1.8 pending — to be authored under the per-subsection
+  cadence introduced in §12.5.0.
 
-**Cadence revision (this commit):** the per-subsection workflow in §12.5.0 / §12.6 /
-§12.7 supersedes the original "one invocation per file, files in parallel within a
-tier" plan. The revision is driven by Sprint 1 results: three of four file-level
-`deep-research` invocations exhausted token budget before producing content. The new
-cadence caps each invocation at ~20k subagent tokens with a scope (~5–10 cited claims,
-~50–120 lines of markdown) small enough that fan-out has no room to bloat.
+**Cadence revision (Sprint 1 → Sprint 2):** the per-subsection workflow in §12.5.0 /
+§12.6 / §12.7 supersedes the original "one invocation per file, files in parallel
+within a tier" plan. Sprint 2 confirmed the new cadence works at scale: 4 files
+landed (5+10+6+5 = 26 subsection invocations) with no single invocation exhausting
+token budget. Average per-subsection cost ~50k subagent tokens, well under the
+budget cap.
 
-**Next concrete step.** Begin File 1.4 — `04-orbital-mechanics-primer.md` — at
-subsection §1.4.1 (*Orbital regimes*). Invoke `deep-research` with a brief assembled
-from the §12.5.0 template, the §12.5.1 File-1.4 lit-review list, and the per-subsection
-scope (LEO/MEO/GEO/HEO/cislunar overview; cite NASA NSSDC + ESA "Types of orbits" + AU
-Space Primer; ~60 lines, ~6 cites; close with `Used by: engine/orbit.py:classify_regime,
-engine/engage.py:INTERCEPTORS["max_alt_km"]`). The wave-1 sub-agent for File 1.4
-produced a verified 37-URL canonical source list (Vallado Microcosm Press, CelesTrak
-SGP4 papers, NASA NSSDC fact sheets, IERS Conventions, Skyfield, NGA WGS-84,
-Brouwer-Lyddane ADS abstracts) — that list is the seed corpus for File 1.4's six
-subsections and reduces the per-subsection `deep-research` invocation's web-search
-fan-out.
+**Next concrete step.** Begin File 1.5 — `05-mission-types-and-counters.md` — at
+the first per-mission subsection. The file decomposes into 12 short subsections
+(9 per-mission summaries + 3 cross-cutting); start with §1.5.1 (mission catalogue
+overview, ~30 lines, ~3 cites), then iterate through the 9 mission-type summaries.
+Alternative: File 1.1 (`01-doctrine-western.md`, 7 subsections covering USSF Space
+Capstone Publication 1, AFDP 3-14, JP 3-14, NATO AJP-3.3, etc.) is the next-biggest
+deliverable and could be parallelized with File 1.5 — both are ready under the
+established cadence.
+
+**Per-tier follow-on passes deferred to end-of-tier:**
+- Code cross-link pass — once Tier 1 lands, scan engine modules for the `Used by:`
+  back-references and add `# Source:` comments at the named symbols pointing to the
+  research file + subsection that grounded the design choice. Targets every engine
+  module named in Files 1.4 + 1.6 + 1.7's `Used by:` paragraphs.
+- Adversarial verification pass — review every cited URL for primary-source quality,
+  flag Tier D (Wikipedia) as standalone-source violations, swap to Tier A/B where
+  feasible. Writes findings to `docs/research/REVIEW-LOG.md` (to be created).
+  Known item: File 1.6 §7.1 has one Wikipedia link (Orion/Mentor SIGINT class) that
+  needs Tier A/B replacement.
 
 **Reviewer sign-off (if revisiting authorization):** (a) the file taxonomy in §12.4
 covers the topics the PME audience cares about — anything missing or redundant?
