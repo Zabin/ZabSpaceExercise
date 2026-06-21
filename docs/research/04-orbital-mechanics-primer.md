@@ -106,24 +106,149 @@ LEO / LEO_SSO / MEO / GEO / HEO / CISLUNAR literal split); [`engine/engage.py:IN
 
 The simulator's single load-bearing primitive is the **access window**: a half-open interval `[t_start, t_end]` during which some asset A can perform some operation X against some target B because the geometry permits it. Outside the window the order does not execute — it queues, or it fails the validate step in [`engine/orders.py`](../../spacesim/engine/orders.py), or it sits unresolved until the next valid pass. The window is not a UI affordance; it is a **physical fact** derived from the actor's orbit, the target's orbit (or ground location), an elevation mask, a lighting predicate, and a range or closing-rate test. The canonical reference for the pass-geometry math the windows derive from is Vallado's [*Fundamentals of Astrodynamics and Applications*, 4th ed. (Microcosm Press)](https://microcosmpress.com/publishing/fundamentals-of-astrodynamics-and-applications-fourth-edition/) — the topocentric look-angle, ground-track, and rise-set treatments in Vallado §4.4 and §11 are what every operational pass-prediction tool descends from. The simulator builds windows by sampling a boolean access predicate on a sub-stepped clock then bisecting the edges to ~1 s precision (see [`engine/access.py:_find_windows`](../../spacesim/engine/access.py)), caching per `(actor, target, channel)` and invalidating on every maneuver.
 
-There are **six channels**, each a different question the engine asks of geometry. Five are window-gated; the sixth (cyber) is the deliberate exception covered in [`03-counterspace-taxonomy.md` §7](03-counterspace-taxonomy.md). The five window-gated channels are literals on [`engine/access.py`](../../spacesim/engine/access.py):
+The **access taxonomy is much larger than the engine encodes**. Many doctrinally- and physically-distinct permutations alias onto a small set of access predicates because the *gating* physics is shared even when the *resolved effect* differs: a ground-launched RF photon climbing through the same atmosphere on the same elevation slant is doing the same access check whether it carries a command, a jam waveform, or a spoofed PNT signal — what differs is the resolver branch, not the predicate. This subsection enumerates the full set of physically-distinct permutations grouped by platform (ground / sea / air / space), direction (transmit / receive), mode (passive / active), and target (space asset / ground asset / RF receiver / EO optic / bus structure / orbital track). §2.8 below maps each permutation to the engine's six gating channels (plus the relay-path `isl_link`) and names which permutations are aliased, which are out-of-scope-for-v1, and which sit on the FUTURE-WORK queue.
 
-| Channel | Engine literal | Gating physics | Dominant reference |
+### 2.1 Communication links (TT&C + SATCOM data)
+
+The "talk to the satellite" / "satellite talks to me" / "satellites talk to each other" axis. All three are **active** by definition (someone has to transmit) and gated by elevation-mask + slant-path link-budget physics characterized by [ITU-R Recommendation P.681](https://www.itu.int/rec/R-REC-P.681/en) (land/maritime mobile-satellite propagation) and [ITU-R Recommendation S.484-3](https://www.itu.int/rec/R-REC-S.484/en) (geostationary station-keeping geometry).
+
+- **2.1.1 Uplink — ground TX → space RX.** Operator console at a TT&C ground station radiates an RF command at the satellite's receive antenna; or a SATCOM user terminal radiates at a transponder. Predicate: the satellite is above the ground site's `elevation_mask_deg` (5°–10° floor; rooftop / mountain-shadowed sites can be higher), atmospheric absorption budget closes at the chosen frequency, and the satellite's antenna pattern includes the ground site's azimuth. Operational examples on the TT&C side: the [AFSCN](https://www.afspc.af.mil/About-Us/Fact-Sheets/Display/Article/249018/air-force-satellite-control-network/) and [NASA Space Network](https://esc.gsfc.nasa.gov/space-communications/SN) ground-station catalogs; on the SATCOM-user side, every WGS / AEHF / Inmarsat / Iridium uplink ([USSF 53rd SOPS WGS fact sheet](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/3743145/53rd-space-operations-squadron/)). Engine: `command_uplink` literal; both TT&C operator uplinks and SATCOM user uplinks alias onto this single predicate because the gating physics is identical.
+
+- **2.1.2 Downlink — space TX → ground RX.** Satellite radiates telemetry or mission data; ground site demodulates. Predicate: same horizon math as 2.1.1 (the engine reuses `_ground_sat_predicate` for both directions), with the downlink frequency's atmospheric and rain-fade budget closing at the elevation slant. Operational examples: TT&C telemetry from every operator's ground catalog; SATCOM mission-data delivery (Maxar Direct-to-Customer, [AWS Ground Station](https://aws.amazon.com/ground-station/) commercial relay). Engine: `telemetry_downlink` literal; user downlinks alias onto this predicate.
+
+- **2.1.3 Crosslink / inter-satellite link (ISL) — space TX → space RX.** Two satellites communicate directly without a ground hop. Predicate: line-of-sight between the two satellites (no Earth-occlusion) plus optical pointing or RF antenna pattern coverage; closing rate slow enough for the modem lock-time. Operational examples: the Tranche 1 Transport Layer's optical ISL constellation ([SDA T1TL Block 1 program](https://www.sda.mil/transport/)), Starlink Gen-2 optical ISL ([SpaceX Starlink technical info](https://www.spacex.com/updates/)), Iridium NEXT's Ka-band ISL. Engine: `isl_link` literal — present as a non-gating relay-path channel, used by [`engine/orders.py`](../../spacesim/engine/orders.py) for stored-delivery routing.
+
+### 2.2 Passive sensing
+
+The "I detect, I don't transmit" axis. Passive sensing leaves no electromagnetic signature for the target to detect, which is exactly its operational appeal — but it inherits whatever lighting / emission geometry nature provides.
+
+#### Optical (target reflects sunlight, observer reads visible / IR)
+
+- **2.2.1 Ground optical → space target (passive ground-based SDA).** Telescope at a fixed site observes a satellite. Predicate: target above the sensor's `min_elevation_deg`, target **sunlit** (satellite is outside Earth's shadow at sim time `t`, per [`engine/sun.py:eclipse_fraction`](../../spacesim/engine/sun.py)), observer **dark** (Sun is below the local horizon by `twilight_deg = −6°`, the civil-twilight floor codified in the [USNO Astronomical Almanac](https://aa.usno.navy.mil/faq/sun_approx) Sun-position approximation), and clear-line-of-sight (sky-clear-of-cloud). Operational examples: USSF [GEODSS](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/2197691/ground-based-electro-optical-deep-space-surveillance/) (Ground-Based Electro-Optical Deep Space Surveillance), MIT Lincoln Lab AMOS at Maui, commercial networks like [ExoAnalytic](https://exoanalytic.com/). Engine: `sensor_observation` literal with `needs_lighting=True` on the sensor record.
+
+- **2.2.2 Space optical → space target (passive space-based SDA).** Satellite observes another satellite optically. Same lighting predicate as 2.2.1 — target must be sunlit relative to the observer — but the observer is itself orbiting, so observer-dark depends on the observer's own eclipse state rather than the ground twilight floor. Operational examples: [GSSAP](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/2197772/geosynchronous-space-situational-awareness-program/) near the GEO belt, the Space Based Space Surveillance (SBSS) Block 10 satellite ([USSF SBSS fact sheet](https://www.afspc.af.mil/About-Us/Fact-Sheets/Display/Article/249024/space-based-space-surveillance-block-10/)). Engine: aliased to `sensor_observation` with the observer's own eclipse_fraction substituted for the ground twilight test.
+
+- **2.2.3 Space optical → ground target (passive EO ISR imaging).** Satellite optical payload images the Earth. Predicate: target above the satellite's slant horizon (the satellite's `look_angle_deg` to the target, typically capped at ≤45° off-nadir per [Maxar tasking guide](https://developers.maxar.com/docs/tasking/guides/tasking-guide)), target sunlit at the target's local time, and cloud-free at the target. Operational examples: Maxar WorldView, [Planet Tasking API](https://developers.planet.com/docs/tasking/), [Capella SAR](https://support.capellaspace.com/what-are-capellas-tasking-parameters) for the closely-related SAR case (SAR is active RF, listed in §2.3.3). Engine: `sensor_observation` with a target-cloud-cover and target-sunlit predicate; the look-angle / off-nadir gate is implemented in [`engine/isr.py`](../../spacesim/engine/isr.py).
+
+#### RF (target emits, observer reads — passive SIGINT)
+
+- **2.2.4 Ground RF → space TX emitter (passive SIGINT of satellite downlinks).** Ground receiver listens to a satellite's downlink without transmitting. Predicate: satellite is above the ground site's `elevation_mask_deg` (same horizon physics as §2.1) and is actively transmitting on the receiver's tuned band. Operational examples: commercial signal-of-opportunity tracking such as [LeoLabs](https://leolabs.space/) RF interferometry against transponders, [Kratos](https://www.kratosdefense.com/products/space/satellite-communications) ground-station catalogs. Engine: aliased to `sensor_observation` with `needs_lighting=False` and an emit-frequency filter; passive-vs-active SIGINT is not currently distinguished as a separate channel.
+
+- **2.2.5 Space RF → space TX emitter (passive SIGINT of satellite emissions in orbit).** A space-based SIGINT bird listens to another satellite's emissions in orbit (uplink, downlink, or crosslink RF leakage). Predicate: line-of-sight between the two satellites + the target is actively transmitting in the receiver's band. Operational examples: NRO Mercury / Mentor / Trumpet historical SIGINT GEO birds ([NRO Center for the Study of National Reconnaissance public releases](https://www.nro.gov/History/NRO-History/)), commercial [HawkEye 360](https://www.he360.com/) cluster geolocation. Engine: not currently modeled as a separate channel; would alias to `sensor_observation` with space-to-space geometry.
+
+- **2.2.6 Space RF → ground TX emitter (the classical SIGINT bird).** Space-based receiver listens to a ground emitter — radar, comm, missile-telemetry RF — and geolocates it via Doppler / TDOA / FDOA across a cluster. Predicate: emitter is within the receiver's footprint (the satellite's antenna pattern projected to the surface) and is actively transmitting. The geolocation accuracy scales with √dwell × √N collectors, per the open-source TDOA/FDOA literature and the [`engine/sigint.py:geolocation_error_km`](../../spacesim/engine/sigint.py) model. Operational examples: HawkEye 360 commercial RF geolocation; military equivalents reported in [SWF 2025 Global Counterspace](https://swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report) per-actor SIGINT chapters. Engine: aliased to `sensor_observation` with the space-to-ground footprint geometry of [`engine/isr.py:footprint_polygon`](../../spacesim/engine/isr.py).
+
+#### Doppler / range-rate (target emits or reflects, observer measures carrier shift)
+
+- **2.2.7 Ground passive Doppler → space target.** Ground receiver measures the Doppler shift on a satellite's downlink (or on a known reference signal scattered off the satellite) and derives range-rate. Predicate: same horizon math as §2.1; the satellite must be transmitting (or reflecting a known signal — sometimes a third-party broadcast such as terrestrial DTV is used as the illuminator). Operational examples: LeoLabs RF interferometry, NRL's research on passive Doppler against GNSS-illuminated targets, the long-standing radio-amateur Doppler-from-downlink approach documented by [AMSAT](https://www.amsat.org/). Engine: aliased to `sensor_observation` with a range-rate quantity flag; passive-Doppler-only SDA is not currently a distinct engine channel.
+
+- **2.2.8 Space passive Doppler → space target.** Satellite measures Doppler shift on another satellite's downlink or reflection. Predicate: line-of-sight + target emission or reflective illumination. Engine: not currently modeled as a separate channel; future SDA work.
+
+### 2.3 Active sensing
+
+The "I transmit a probe and read the echo" axis. Active sensing reveals the sensor's location and intent (the emission is detectable), but it provides cooperative-target-quality range data and works against non-emitting targets that passive sensing cannot see.
+
+#### Radar (RF probe → RF echo)
+
+- **2.3.1 Ground radar → space target (active SSN radar).** Ground-based radar transmits, satellite reflects, ground reads the echo. Predicate: satellite above the radar's elevation mask, target inside the radar's range-velocity envelope (the largest fielded VHF/UHF arrays like [AN/FPS-85](https://www.afspc.af.mil/About-Us/Fact-Sheets/Article/249020/an-fps-85-phased-array-radar/) at Eglin track to GEO; [Cobra Dane](https://www.afspc.af.mil/About-Us/Fact-Sheets/Article/249033/cobra-dane/) at Shemya covers the Pacific catalog; [Globus II](https://celestrak.org/columns/v04n01/) at Vardø is the dedicated GEO custody radar). The 18th SDS catalog is curated from fused outputs across this network ([USSF 18 SDS fact sheet](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/3740012/18th-space-defense-squadron/)). Engine: aliased to `sensor_observation` with `needs_lighting=False` (radar works through cloud and night).
+
+- **2.3.2 Space radar → space target (active space-based SDA).** Satellite carries a small radar and probes another satellite's range / velocity. Predicate: line-of-sight + emit/receive within the radar's range cell. Operational examples: limited fielding; the [Tranche 1 Tracking Layer](https://www.sda.mil/tracking/) and various proposed inspector-class satellites carry radar but the catalog of operational systems is small. Engine: not currently modeled.
+
+- **2.3.3 Space radar → ground target (active SAR ISR imaging).** Satellite SAR illuminates a ground target and resolves an image from the chirp returns. Predicate: target inside the satellite's slant range-azimuth swath (off-nadir between the SAR's minimum and maximum incidence angles, typically ~20°–40° for [Capella](https://support.capellaspace.com/what-are-capellas-tasking-parameters)), squint inside the SAR's design envelope (±30° for Capella), satellite at the correct point in its track. Operational examples: Capella, ICEYE, Umbra commercial constellations; the legacy NRO Onyx / Lacrosse / Topaz lineage on the military side ([NRO Center for the Study of National Reconnaissance](https://www.nro.gov/History/NRO-History/)). Engine: `sensor_observation` with the SAR-specific beam-mode database in [`engine/isr.py:BEAM_MODES["isr_sar"]`](../../spacesim/engine/isr.py) (stripmap / spotlight / fine / wide_area / polarimetric); off-nadir gates the predicate.
+
+#### Laser ranging (laser pulse → retroreflector echo)
+
+- **2.3.4 Ground laser → space retroreflector (Satellite Laser Ranging).** Ground SLR station fires a short laser pulse at a satellite's corner-cube retroreflector, times the round-trip, derives sub-cm range. Predicate: satellite above the SLR site's elevation mask, satellite carries a retroreflector, observer dark (visible-spectrum laser; works at night and twilight), atmosphere transmissive. Operational examples: the [International Laser Ranging Service (ILRS)](https://ilrs.gsfc.nasa.gov/) coordinates ~40 ground stations against ~100 LRA-equipped satellites; NASA's [Goddard SLR](https://cddis.nasa.gov/Techniques/SLR/SLR_overview.html) is the canonical reference. Used for the most-precise OD for LAGEOS-class, GRACE-FO, and reference satellites. Engine: not currently modeled — sub-cm range precision is below the simulator's "moderate fidelity" envelope; would be a high-fidelity-tier addition.
+
+- **2.3.5 Space laser → space target.** Satellite-mounted laser ranges a second satellite. Predicate: line-of-sight + target carries either a retroreflector or a cooperative laser-comm terminal. Operational examples: very limited fielding; future operational concepts include laser-ranging between elements of distributed constellations. Engine: not currently modeled.
+
+### 2.4 EW / Jamming (offensive RF)
+
+The "I transmit noise / false signal to deny / corrupt the receiver" axis. All entries are active and the predicate is the receiver's horizon to the transmitter (whether the receiver is on a satellite, on a ground site, or on a user handset). Doctrinal framing: [USSF Space Doctrine Publication 3-104, *Electromagnetic Spectrum Operations*, 19 September 2025](https://www.starcom.spaceforce.mil/Portals/2/SDP%203-104%20Electromagnetic%20Spectrum%20Operations%2019%20September%202025%20(2).pdf); per-system inventory: [SWF 2025 Global Counterspace](https://swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report) and [CSIS Space Threat Assessment 2025](https://csis-website-prod.s3.amazonaws.com/s3fs-public/2025-04/250425_Swope_Space_Threat.pdf).
+
+#### Jamming
+
+- **2.4.1 Uplink jamming — ground TX → space RX.** Ground jammer radiates noise into the satellite's receive band; the satellite's transponder cannot lock on the legitimate uplink. **Wide blast radius** — denies the entire user base served by that transponder, not just one ground site. Operational example: [USSF Counter Communications System Block 10.2 (CCS Block 10.2)](https://www.spaceforce.mil/News/Article/2113447/counter-communications-system-block-102-achieves-ioc-ready-for-the-warfighter/), declared IOC 9 March 2020 — explicitly the Space Force's "first offensive weapon system" and **uplink-only** by design. Russian equivalents in the [Tirada-2](https://www.kyivpost.com/post/26469) and Bylina program lines per [SWF 2025 Russia chapter](https://swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report). Engine: `jam_footprint` literal with the ground jammer's horizon predicate; the engine's `jam.link_target` parameter (per [`docs/AUDIT-2026-06-COMMANDS.md` §N9](../AUDIT-2026-06-COMMANDS.md)) selects uplink-vs-downlink-vs-crosslink scope.
+
+- **2.4.2 Downlink jamming (local) — ground TX → ground RX.** Ground jammer radiates into a user-receiver's band; the user can't hear the satellite. **Local effect** (a GPS-denied bubble over a city, a SATCOM-denied bubble over an operating area), but **wide deployment** (every user in the bubble is denied). The canonical large-scale fielding is the Russian [Pole-21](https://tass.com/defense/1088451) networked GNSS-jam node — dozens of nodes deployed on cellular masts form a regional GNSS-denial network, first observed in occupied Luhansk in early 2019 per [SWF 2025 Russia chapter](https://swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report). Engine: `jam_footprint` with the user-bubble centered on the jammer site; the ground-to-ground geometry is the jammer's RF horizon to the user receiver (limited by terrain).
+
+- **2.4.3 Crosslink jamming — ground or space TX → space RX (ISL band).** Jammer radiates into the band a constellation's ISL uses; ISL doesn't close. Predicate: jammer-to-victim-satellite horizon (ground case) or line-of-sight (space case). Engine: aliased to `jam_footprint` with the victim's ISL receive band as the target; current vignettes do not exercise this case.
+
+- **2.4.4 Space-borne downlink jam — space TX → ground RX.** A satellite radiates into a user's downlink band. Predicate: user is inside the satellite's antenna footprint and the satellite is at the correct point in its orbit. Operational examples: theoretical / future; the only acknowledged operational systems are ground-based. Engine: not currently modeled as a separate channel; would alias to `jam_footprint` with a space-borne emitter.
+
+- **2.4.5 Space-borne uplink jam — space TX → space RX.** One satellite jams another satellite's receiver. Predicate: line-of-sight + emit/receive band match. Engine: not currently modeled; future.
+
+#### Spoofing (false signal, not noise)
+
+- **2.4.6 GNSS spoofing (user-side) — ground TX → ground / mobile RX.** Ground spoofer broadcasts a false GNSS constellation; user receivers lock onto the false signal and report a corrupted PNT solution. Predicate: spoofer is within RF horizon of the user receiver (terrestrial line-of-sight). Operational examples: the 2024 GPS spoofing incidents in the Black Sea, eastern Mediterranean, and around Kaliningrad cataloged in [CSIS STA 2025](https://csis-website-prod.s3.amazonaws.com/s3fs-public/2025-04/250425_Swope_Space_Threat.pdf). Engine: not currently a separate channel — the cyber `spoof` payload in [`engine/cyber.py:PAYLOADS`](../../spacesim/engine/cyber.py) covers the operational case at a higher abstraction level.
+
+- **2.4.7 Command-link spoofing — ground TX → space RX.** Adversary radiates a forged uplink command into the satellite's receive band, attempting to issue legitimate-looking commands. Predicate: same horizon as 2.1.1 + the adversary possesses (or has compromised) the satellite's command-authentication scheme. Operational examples: cyber-adjacent. Engine: handled by [`engine/cyber.py`](../../spacesim/engine/cyber.py) with the `seize_c2` payload and the `rf` access vector — not a separate access window because cyber is the deliberate exception (§2 above).
+
+### 2.5 Directed Energy (DEW)
+
+The "I deposit photons or electrons into the target to damage it" axis. DEW differs from jamming in that the receiver doesn't need to be tuned to a specific band — the energy is deposited as heat, photoelectrons, or sensor saturation. Doctrinal framing and per-system inventory: [SWF 2025 Global Counterspace](https://swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report); per-class historical analyst material: [Bart Hendrickx, "Peresvet"](https://www.thespacereview.com/article/3967/1) (The Space Review, 2021) and [Breaking Defense, "Don't be dazzled by Russia's laser weapons claims"](https://breakingdefense.com/2022/05/dont-be-dazzled-by-russias-laser-weapons-claims-experts/).
+
+#### Counter-optical (laser dazzles / scars EO sensor focal-plane)
+
+- **2.5.1 Ground laser → space EO sensor optics.** Ground laser is pointed at a passing ISR satellite's optical aperture; the focal-plane array is dazzled (temporarily blinded) or scarred (permanent damage). Predicate: target above the laser site's elevation mask, observer-dark not required (the laser punches through), atmosphere transmissive at the laser wavelength, target's optic is pointed at the laser (look-at geometry). Operational examples: Russian [Peresvet](https://www.thespacereview.com/article/3967/1) mobile laser (announced 1 March 2018, full service December 2019), Chinese ground-based laser facilities in Xinjiang per [SWF 2025 China chapter](https://swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report). Engine: not currently a separate channel — DE effects use `sensor_observation` line-of-sight gating with a degraded-payload outcome resolved by [`engine/effects.py:Category="directed_energy"`](../../spacesim/engine/effects.py).
+
+- **2.5.2 Space laser → space EO sensor.** Satellite-mounted laser is pointed at another satellite's optical aperture. Predicate: line-of-sight + target's optic look-at geometry. Operational examples: theoretical / future; no acknowledged fielded systems. Engine: not currently modeled; the future-work case is in [FUTURE-WORK.md §2](../FUTURE-WORK.md).
+
+#### Counter-RF (high-power microwave damages RF receiver electronics)
+
+- **2.5.3 Ground HPM → space bus RF front-end.** Ground HPM transmitter deposits high-power RF energy into the satellite's receive band; the LNA or downconverter is damaged. Predicate: target above the HPM site's elevation mask, RF energy density at the target above the bus's damage threshold. Operational examples: US [AFRL Counter-electronics High-Power Microwave Advanced Missile Project (CHAMP)](https://afresearchlab.com/) (the airborne variant), various ground-based research programs; SWF 2025 names no operationally-fielded ground-based counter-satellite HPM. Engine: not currently modeled as a separate channel.
+
+- **2.5.4 Space HPM → space bus RF.** Satellite-mounted HPM damages another satellite's electronics. Predicate: line-of-sight + power-density-at-target. Engine: not currently modeled.
+
+#### Counter-bus (laser delivers thermal / structural damage)
+
+- **2.5.5 Ground high-power laser → space bus.** Beyond-Peresvet-class laser energy deposits thermal load directly into bus structure (solar arrays, radiators, MLI). Predicate: target above the laser site's elevation mask, atmosphere transmissive, sustained dwell time. Operational examples: theoretical / future; no acknowledged fielded operational systems at the power level required for structural damage. The Russian Sokol-Eshelon historical program and Chinese ground-based facilities per SWF 2025 are at the dazzle/degrade power level, not structural-damage. Engine: not currently modeled.
+
+- **2.5.6 Space high-power laser → space bus.** Satellite-mounted laser delivers structural damage. Engine: not currently modeled.
+
+### 2.6 Kinetic engagement
+
+The "I deliver mass at high velocity to the target" axis. Per-system depth lives in [`03-counterspace-taxonomy.md` §3](03-counterspace-taxonomy.md) (DA-ASAT) and §4 (co-orbital).
+
+- **2.6.1 Ground-launched DA-ASAT → space target.** Interceptor launches from a fixed ground site, climbs to the target's orbital track, hits at hypervelocity. Predicate: launch site has line-of-sight to the target above `interceptor_mask_deg` (10°) **and** the target altitude is below the interceptor class's `max_alt_km` ceiling (engine literal in [`engine/engage.py:INTERCEPTORS`](../../spacesim/engine/engage.py): `bmd_adapted: 600 km`, `mrbm_kkv: 1000 km`, `abm_heavy: 2000 km`). Operational examples: SC-19 / DN-3 (FY-1C, 11 January 2007), Nudol / PL-19 (Cosmos-1408, 15 November 2021), PDV Mk-II (Microsat-R, 27 March 2019). Engine: `weapon_engagement` literal.
+
+- **2.6.2 Sea-launched DA-ASAT → space target.** Interceptor launches from a sea platform. Same predicate as 2.6.1, with the launch position floating. Canonical operational example: Operation Burnt Frost (USA-193, 21 February 2008), [SM-3](https://www.lockheedmartin.com/en-us/products/standard-missile-3-sm-3.html) fired from USS *Lake Erie* (CG-70). Engine: aliased to `weapon_engagement` with the launch site treated as a mobile ground site at the ship's position; the simulator does not currently route sea-launched interceptors through a maritime-position channel.
+
+- **2.6.3 Air-launched DA-ASAT → space target.** Interceptor launches from an aircraft platform. Same predicate, with the launch position at altitude (which trades booster size for available reach). Historical example: the [F-15 / ASM-135 ASAT test on Solwind P78-1 (13 September 1985)](https://www.nro.gov/History/NRO-History/) — the only US ground/air-launched DA-ASAT to actually intercept a satellite before Burnt Frost. Modern theoretical concepts include air-launched smallsat-killer variants. Engine: not currently modeled; would alias to `weapon_engagement` with an air-mobile launch position.
+
+- **2.6.4 Space-launched kinetic kill vehicle → space target (co-orbital intercept).** A co-orbital satellite releases a kinetic projectile (or itself impacts) at hypervelocity. Predicate: phasing into the target's orbital regime (over days-to-weeks) + close-approach geometry — gated by RPO custody, not endgame homing. Operational examples: Russian Burevestnik / Nivelir "nesting-doll" 2017–2020 sequence (Kosmos-2542 / 2543 / 2535) per [SWF Russian Co-orbital ASAT Testing Fact Sheet, June 2025](https://www.swfound.org/publications-and-reports/russian-co-orbital-anti-satellite-testing-fact-sheet); analyst attribution of the per-projectile claim rests on a small community (see [`03-counterspace-taxonomy.md` §4](03-counterspace-taxonomy.md)). Engine: `weapon_engagement` with the `coorbital` interceptor class (no `max_alt_km` ceiling) and the §2.7 RPO predicate gating phasing.
+
+- **2.6.5 Space-launched projectile → ground target (Fractional Orbital Bombardment, FOBS).** A satellite-borne projectile is de-orbited onto a ground target. Predicate: the de-orbit burn window + ground-impact geometry. The Soviet 1968 FOBS deployment ([NRO history](https://www.nro.gov/History/NRO-History/)) and the 2021 Chinese FOBS test are widely-discussed in open-source analysis. **Treaty problem:** orbital deployment of WMD-class payloads is prohibited by [Outer Space Treaty Article IV](https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html) per [`07-legal-norms-and-roe.md` §1](07-legal-norms-and-roe.md). Engine: not currently modeled and explicitly out-of-scope for v1.
+
+### 2.7 RPO / co-orbital proximity (orbital, no transmission required)
+
+- **2.7.1 Space → space close-approach.** Two satellites' relative range falls below an SDA "close-approach" threshold. **No transmission required** — the access predicate is pure orbital geometry. Predicate: relative range below `rpo_threshold_m` (engine default **50 km** — the standard SDA close-approach tripwire used in the [USSF GSSAP fact sheet](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/2197772/geosynchronous-space-situational-awareness-program/) and commercial-SDA tracking literature including [CSIS Aerospace *Unusual Behavior in GEO: Luch/Olymp-K*](https://aerospace.csis.org/data/unusual-behavior-in-geo-olymp-k/)), with closing rate modeled per Clohessy-Wiltshire treatment in Vallado §6. Operational examples: GSSAP inspection passes, Luch/Olymp-K co-locations (~5 km separations reported), SJ-21 / Beidou-2 G2 docked tug operation January 2022 ([SpaceNews](https://spacenews.com/chinas-shijian-21-spacecraft-docked-with-and-towed-a-dead-satellite/)). Engine: `rpo_proximity` literal.
+
+### 2.8 How the engine collapses these onto six channels (plus the ISL relay)
+
+The simulator's `engine/access.py` exposes **six gating channels** + one relay-path channel. The table below maps the ~25 distinct permutations enumerated in §2.1–§2.7 onto those seven engine literals. **"Aliased"** means the engine reuses the same predicate as another permutation — the resolver branch differs but the gating physics is identical. **"Out-of-scope"** means the permutation is doctrinally / physically real but not modeled in v1 (most are queued in [`FUTURE-WORK.md` §2](../FUTURE-WORK.md)).
+
+| Engine literal | Implements directly | Aliases (same predicate, different resolved effect) | Out-of-scope (research-aware, not yet modeled) |
 |---|---|---|---|
-| Command uplink | `command_uplink` | Ground site → satellite RF link gated by the site's `elevation_mask_deg` (default **5°**, configurable per site) | [ITU-R Recommendation P.681](https://www.itu.int/rec/R-REC-P.681/en) on land/maritime mobile-satellite propagation, which establishes the elevation-angle dependence of slant-path loss and multipath; the operational 5–10° floor across most ground-station catalogs follows from the link-budget margin this implies. |
-| Telemetry downlink | `telemetry_downlink` | Same physics as `command_uplink` — same elevation mask, same site, opposite link direction | Same as above; both directions share the geometric and atmospheric path so the engine reuses [`_ground_sat_predicate`](../../spacesim/engine/access.py) for both. |
-| Sensor observation | `sensor_observation` | Sensor sees target above its `min_elevation_deg`, with **target-sunlit + observer-dark** lighting for optical sensors (`twilight_deg = −6°`) | Vallado §4.4 topocentric look-angles + the analytic Sun-direction / cylindrical-shadow test in [`engine/sun.py`](../../spacesim/engine/sun.py). Lighting follows the civil-twilight convention codified in the [USNO Astronomical Almanac](https://aa.usno.navy.mil/faq/sun_approx) Sun-position approximation. |
-| Jam footprint | `jam_footprint` | Ground jammer's RF horizon to the victim satellite, with a configurable `jam_mask_deg` (default **5°**) — the satellite must be above the jammer's mask for the uplink jam to close | Same horizon physics as command uplink; the mask floor is lower than a typical ground-station mask because EW operators trade signal margin for footprint extension. |
-| Weapon engagement | `weapon_engagement` | Launch site has line-of-sight to the target above `interceptor_mask_deg` (**10°**) **and** target altitude is below `interceptor_max_alt_m` (**2,000 km**) — the interceptor's altitude ceiling intersecting the target's track | The four-test DA-ASAT record in [`03-counterspace-taxonomy.md` §3](03-counterspace-taxonomy.md) — Burnt Frost at ~247 km, SC-19 / FY-1C at ~865 km, Microsat-R at ~283 km, Cosmos-1408 at ~480 km — all sit inside this envelope. |
-| RPO proximity | `rpo_proximity` | Two satellites' relative range falls below `rpo_threshold_m` (**50 km** default) — orbital intercept geometry, not ground geometry | Closing-rate / Clohessy-Wiltshire treatment in Vallado §6; the 50 km threshold is the standard SDA "close-approach" tripwire used in the [USSF GSSAP](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/2197772/geosynchronous-space-situational-awareness-program/) and commercial-SDA tracking literature. |
+| `command_uplink` | 2.1.1 (TT&C uplink) | 2.1.1 (SATCOM user uplink), 2.4.7 (command-link spoofing) | — |
+| `telemetry_downlink` | 2.1.2 (TT&C downlink) | 2.1.2 (SATCOM user downlink) | — |
+| `sensor_observation` | 2.2.1 (ground optical → space), 2.2.3 (space optical → ground EO ISR), 2.3.1 (ground radar → space), 2.3.3 (space SAR → ground) | 2.2.2 (space optical → space), 2.2.4–2.2.6 (passive RF SIGINT, all three platform combinations), 2.2.7 (passive Doppler), 2.5.1 (DE counter-optical line-of-sight) | 2.2.8 (space passive Doppler), 2.3.2 (space radar → space), 2.3.4–2.3.5 (laser ranging), 2.5.2 (space DE → space optic) |
+| `jam_footprint` | 2.4.1 (uplink jam), 2.4.2 (downlink jam, local) | 2.4.3 (crosslink jam from ground), 2.4.6 (GNSS spoof — partial: ground horizon to user) | 2.4.4 (space-borne downlink jam), 2.4.5 (space-borne uplink jam), 2.4.3 from space, 2.5.3–2.5.6 (counter-RF HPM and counter-bus laser) |
+| `weapon_engagement` | 2.6.1 (ground DA-ASAT), 2.6.4 (co-orbital intercept) | 2.6.2 (sea-launched), 2.6.3 (air-launched) | 2.6.5 (FOBS — explicitly out for OST Art. IV reasons per [`07-legal-norms-and-roe.md` §1](07-legal-norms-and-roe.md)) |
+| `rpo_proximity` | 2.7.1 (space-space close approach) | — | — |
+| `isl_link` (relay, not gating) | 2.1.3 (ISL) | — | — |
 
-A seventh literal — `isl_link` — exists in [`engine/access.py`](../../spacesim/engine/access.py) but is a relay-path channel, not a gating channel; see the comment beside the literal.
+The engine's collapsing rule is consistent: **wherever the gating physics is shared, the predicate is shared and the effect resolver branches on category** (the `Outcome` and `Category` literals in [`engine/effects.py`](../../spacesim/engine/effects.py), per [`03-counterspace-taxonomy.md` §1](03-counterspace-taxonomy.md)). This keeps the six-channel API stable while still allowing the resolver to discriminate between, say, an uplink command and an uplink jam at the same site against the same satellite — both pass the same `command_uplink` predicate, but the effect path (success → telemetry-delivery vs. success → ActiveEffect-with-deny-outcome) is different.
+
+The out-of-scope entries above are not bugs; they are **deliberate v1 scope choices** that the FUTURE-WORK queue and the per-class research files ([`03a-da-asat-systems.md`](03a-da-asat-systems.md), [`03b-coorbital-rpo.md`](03b-coorbital-rpo.md), [`03c-ew-jamming.md`](03c-ew-jamming.md), [`03d-directed-energy.md`](03d-directed-energy.md)) will source per-channel when those Tier 3 deliverables land. The role of *this* file is to enumerate the full taxonomy so that any future channel addition can cite this section as the doctrinal-and-physical justification rather than re-deriving it.
+
+### Closing pedagogical claim
 
 Every channel is fed the same orbital state. In the operational case that state arrives as a **Two-Line Element set** (TLE), the NORAD GP-element-set format documented by [CelesTrak](https://celestrak.org/NORAD/documentation/tle-fmt.php); the simulator's TLE force-add path routes TLEs through Skyfield/SGP4 into the [`SGP4Propagator`](../../spacesim/engine/propagator.py) seam, and from there into every channel predicate above without modification. Fictional vignettes route the same `OrbitState` through the Kepler+J2 [`ModeratePropagator`](../../spacesim/engine/propagator.py). The choice of propagator is invisible to `access.py` — the channel predicates only see ECI position-velocity at a sim time.
 
 The pedagogical claim that **"you can only act in a window"** is the simulator's most load-bearing teaching point, and it comes straight from doctrine. The USSF *Spacepower* capstone publication ([Space Capstone Publication, June 2020](https://media.defense.gov/2022/Jan/19/2002924102/-1/-1/0/DOCTRINE%20FACT%20SHEET%20-%20HIERARCHY%20AND%20NUMBERING.DOCX.PDF)) frames space operations as fundamentally **premeditated**: the operator plans the command, the tasking, the jam burst, the engagement *before* the window opens, then waits for geometry to enable execution. This is why [`engine/orders.py`](../../spacesim/engine/orders.py)'s `OrderSystem` is a *plan-then-execute* state machine — every action verb (downlink, jam, observe, engage, maneuver, command) carries a `via` endpoint and a planned execution time, the validate step checks that the relevant channel will have a window before that time, and the executor fires the handler only when `world.now` enters the window. The trainee discovers, vignette by vignette, that **fleet design and window timing are the same skill** — a force that can't reach its target in the next 90 minutes can't act in the next 90 minutes, full stop. The cyber exception (`access_vector` + `success_prob` + `persistence`, no window gate; see [`03-counterspace-taxonomy.md` §7](03-counterspace-taxonomy.md)) is doctrinally significant precisely because it is the one verb the trainee can fire *outside* a window — which is also why it carries the highest attribution-ambiguity and lowest reversibility-of-evidence cost in the engine's scoring.
 
-Used by: [`engine/access.py`](../../spacesim/engine/access.py) (the six channel literals `COMMAND_UPLINK`, `TELEMETRY_DOWNLINK`, `SENSOR_OBSERVATION`, `JAM_FOOTPRINT`, `WEAPON_ENGAGEMENT`, `RPO_PROXIMITY`, plus the `ISL_LINK` relay-path channel); [`engine/orders.py`](../../spacesim/engine/orders.py) (the window-gated validate/execute state machine that every action verb except `cyber` traverses); [`engine/geometry.py`](../../spacesim/engine/geometry.py) (topocentric look-angle math — `look_angles`, `elevation_from_unit_dir` — that every ground-station predicate calls).
+Used by: [`engine/access.py`](../../spacesim/engine/access.py) (the six channel literals `COMMAND_UPLINK`, `TELEMETRY_DOWNLINK`, `SENSOR_OBSERVATION`, `JAM_FOOTPRINT`, `WEAPON_ENGAGEMENT`, `RPO_PROXIMITY`, plus the `ISL_LINK` relay-path channel); [`engine/orders.py`](../../spacesim/engine/orders.py) (the window-gated validate/execute state machine that every action verb except `cyber` traverses); [`engine/geometry.py`](../../spacesim/engine/geometry.py) (topocentric look-angle math — `look_angles`, `elevation_from_unit_dir` — that every ground-station predicate calls); [`engine/isr.py`](../../spacesim/engine/isr.py) (the per-payload-type beam-mode + footprint database that gates §2.2.3 and §2.3.3); [`engine/sigint.py`](../../spacesim/engine/sigint.py) (the geolocation-error model that scores §2.2.6); [`engine/engage.py:INTERCEPTORS`](../../spacesim/engine/engage.py) (the per-interceptor-class altitude ceiling that gates §2.6.1–§2.6.4).
 
 ### Sources
 
@@ -132,6 +257,9 @@ Used by: [`engine/access.py`](../../spacesim/engine/access.py) (the six channel 
   · accessed 2026-06-12.
 - *ITU-R Recommendation P.681* (propagation data required for the design of Earth-space land mobile telecommunication systems) — [live](https://www.itu.int/rec/R-REC-P.681/en)
   · [snapshot](https://web.archive.org/web/2026*/https://www.itu.int/rec/R-REC-P.681/en)
+  · accessed 2026-06-12.
+- *ITU-R Recommendation S.484-3* (geostationary orbit station-keeping geometry) — [live](https://www.itu.int/rec/R-REC-S.484/en)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.itu.int/rec/R-REC-S.484/en)
   · accessed 2026-06-12.
 - *USNO Astronomical Almanac, "Approximate Solar Coordinates"* — [live](https://aa.usno.navy.mil/faq/sun_approx)
   · [snapshot](https://web.archive.org/web/2026*/https://aa.usno.navy.mil/faq/sun_approx)
@@ -142,8 +270,110 @@ Used by: [`engine/access.py`](../../spacesim/engine/access.py) (the six channel 
 - *USSF Doctrine Hierarchy Fact Sheet* (Space Capstone Publication, June 2020) — [live](https://media.defense.gov/2022/Jan/19/2002924102/-1/-1/0/DOCTRINE%20FACT%20SHEET%20-%20HIERARCHY%20AND%20NUMBERING.DOCX.PDF)
   · [snapshot](https://web.archive.org/web/2024*/https://media.defense.gov/2022/Jan/19/2002924102/-1/-1/0/DOCTRINE%20FACT%20SHEET%20-%20HIERARCHY%20AND%20NUMBERING.DOCX.PDF)
   · accessed 2026-06-12.
-- *USSF GSSAP fact sheet* — [live](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/2197772/geosynchronous-space-situational-awareness-program/)
+- *Space Doctrine Publication 3-104, Electromagnetic Spectrum Operations* (STARCOM, 19 September 2025) — [live](https://www.starcom.spaceforce.mil/Portals/2/SDP%203-104%20Electromagnetic%20Spectrum%20Operations%2019%20September%202025%20(2).pdf)
+  · [snapshot](https://web.archive.org/web/2026*/https://www.starcom.spaceforce.mil/Portals/2/SDP%203-104%20Electromagnetic%20Spectrum%20Operations%2019%20September%202025%20(2).pdf)
+  · accessed 2026-06-12.
+- *USSF GSSAP fact sheet* (space-based optical SDA in the GEO belt) — [live](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/2197772/geosynchronous-space-situational-awareness-program/)
   · [snapshot](https://web.archive.org/web/2024*/https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/2197772/geosynchronous-space-situational-awareness-program/)
+  · accessed 2026-06-12.
+- *USSF GEODSS fact sheet* (Ground-Based Electro-Optical Deep Space Surveillance) — [live](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/2197691/ground-based-electro-optical-deep-space-surveillance/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/2197691/ground-based-electro-optical-deep-space-surveillance/)
+  · accessed 2026-06-12.
+- *USSF SBSS fact sheet* (Space Based Space Surveillance Block 10) — [live](https://www.afspc.af.mil/About-Us/Fact-Sheets/Display/Article/249024/space-based-space-surveillance-block-10/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.afspc.af.mil/About-Us/Fact-Sheets/Display/Article/249024/space-based-space-surveillance-block-10/)
+  · accessed 2026-06-12.
+- *USSF AN/FPS-85 fact sheet* (canonical ground SSN phased-array radar) — [live](https://www.afspc.af.mil/About-Us/Fact-Sheets/Article/249020/an-fps-85-phased-array-radar/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.afspc.af.mil/About-Us/Fact-Sheets/Article/249020/an-fps-85-phased-array-radar/)
+  · accessed 2026-06-12.
+- *USSF Cobra Dane fact sheet* — [live](https://www.afspc.af.mil/About-Us/Fact-Sheets/Article/249033/cobra-dane/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.afspc.af.mil/About-Us/Fact-Sheets/Article/249033/cobra-dane/)
+  · accessed 2026-06-12.
+- *USSF 18 SDS fact sheet* (catalog custodian) — [live](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/3740012/18th-space-defense-squadron/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/3740012/18th-space-defense-squadron/)
+  · accessed 2026-06-12.
+- *USSF 53rd Space Operations Squadron / WGS payload-management fact sheet* — [live](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/3743145/53rd-space-operations-squadron/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/3743145/53rd-space-operations-squadron/)
+  · accessed 2026-06-12.
+- *USSF Counter Communications System Block 10.2 IOC announcement* (9 March 2020 — uplink-only offensive RF jam) — [live](https://www.spaceforce.mil/News/Article/2113447/counter-communications-system-block-102-achieves-ioc-ready-for-the-warfighter/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.spaceforce.mil/News/Article/2113447/counter-communications-system-block-102-achieves-ioc-ready-for-the-warfighter/)
+  · accessed 2026-06-12.
+- *AFSCN fact sheet* (Air Force Satellite Control Network — ground-station catalog) — [live](https://www.afspc.af.mil/About-Us/Fact-Sheets/Display/Article/249018/air-force-satellite-control-network/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.afspc.af.mil/About-Us/Fact-Sheets/Display/Article/249018/air-force-satellite-control-network/)
+  · accessed 2026-06-12.
+- *NASA Space Network (TDRSS)* — [live](https://esc.gsfc.nasa.gov/space-communications/SN)
+  · [snapshot](https://web.archive.org/web/2024*/https://esc.gsfc.nasa.gov/space-communications/SN)
+  · accessed 2026-06-12.
+- *AWS Ground Station* (commercial pay-per-minute ground-station relay) — [live](https://aws.amazon.com/ground-station/)
+  · [snapshot](https://web.archive.org/web/2024*/https://aws.amazon.com/ground-station/)
+  · accessed 2026-06-12.
+- *SDA Tranche 1 Transport Layer* (optical-ISL operational constellation) — [live](https://www.sda.mil/transport/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.sda.mil/transport/)
+  · accessed 2026-06-12.
+- *International Laser Ranging Service (ILRS), NASA Goddard* — [live](https://ilrs.gsfc.nasa.gov/)
+  · [snapshot](https://web.archive.org/web/2024*/https://ilrs.gsfc.nasa.gov/)
+  · accessed 2026-06-12.
+- *Maxar tasking guide* (commercial ISR tasking with off-nadir limits) — [live](https://developers.maxar.com/docs/tasking/guides/tasking-guide)
+  · [snapshot](https://web.archive.org/web/2024*/https://developers.maxar.com/docs/tasking/guides/tasking-guide)
+  · accessed 2026-06-12.
+- *Planet Tasking API* — [live](https://developers.planet.com/docs/tasking/)
+  · [snapshot](https://web.archive.org/web/2024*/https://developers.planet.com/docs/tasking/)
+  · accessed 2026-06-12.
+- *Capella SAR tasking parameters* — [live](https://support.capellaspace.com/what-are-capellas-tasking-parameters)
+  · [snapshot](https://web.archive.org/web/2024*/https://support.capellaspace.com/what-are-capellas-tasking-parameters)
+  · accessed 2026-06-12.
+- *HawkEye 360* (commercial passive RF geolocation cluster) — [live](https://www.he360.com/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.he360.com/)
+  · accessed 2026-06-12.
+- *LeoLabs* (commercial radar + RF SDA) — [live](https://leolabs.space/)
+  · [snapshot](https://web.archive.org/web/2024*/https://leolabs.space/)
+  · accessed 2026-06-12.
+- *SWF 2025 Global Counterspace Capabilities Report* (per-actor inventory of EW, DEW, kinetic, cyber systems) — [live](https://swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report)
+  · [snapshot](https://web.archive.org/web/2026*/https://swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report)
+  · accessed 2026-06-12.
+- *CSIS Space Threat Assessment 2025* (GNSS spoof incidents 2024, EW per-actor) — [live](https://csis-website-prod.s3.amazonaws.com/s3fs-public/2025-04/250425_Swope_Space_Threat.pdf)
+  · [snapshot](https://web.archive.org/web/2026*/https://csis-website-prod.s3.amazonaws.com/s3fs-public/2025-04/250425_Swope_Space_Threat.pdf)
+  · accessed 2026-06-12.
+- *Bart Hendrickx, "Peresvet: a Russian mobile laser system to dazzle enemy satellites"* (The Space Review, 2021 — counter-EO DE per-system) — [live](https://www.thespacereview.com/article/3967/1)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.thespacereview.com/article/3967/1)
+  · accessed 2026-06-12.
+- *Breaking Defense, "Don't be dazzled by Russia's laser weapons claims: Experts"* (counter-analyst review of Peresvet capability) — [live](https://breakingdefense.com/2022/05/dont-be-dazzled-by-russias-laser-weapons-claims-experts/)
+  · [snapshot](https://web.archive.org/web/2024*/https://breakingdefense.com/2022/05/dont-be-dazzled-by-russias-laser-weapons-claims-experts/)
+  · accessed 2026-06-12.
+- *TASS, "Latest jamming system arrives for electronic warfare troops"* (Pole-21 GNSS-denial deployment) — [live](https://tass.com/defense/1088451)
+  · [snapshot](https://web.archive.org/web/2024*/https://tass.com/defense/1088451)
+  · accessed 2026-06-12.
+- *Kyiv Post, "Ukrainian Special Ops Report Destruction of Russian 'Tirada-2' Satcom Jamming System"* (May 2024) — [live](https://www.kyivpost.com/post/26469)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.kyivpost.com/post/26469)
+  · accessed 2026-06-12.
+- *SWF Russian Co-orbital Anti-satellite Testing Fact Sheet* (June 2025; Nivelir / Burevestnik per-projectile attribution) — [live](https://www.swfound.org/publications-and-reports/russian-co-orbital-anti-satellite-testing-fact-sheet)
+  · [snapshot](https://web.archive.org/web/2025*/https://www.swfound.org/publications-and-reports/russian-co-orbital-anti-satellite-testing-fact-sheet)
+  · accessed 2026-06-12.
+- *CSIS Aerospace Security, "Unusual Behavior in GEO: Luch/Olymp-K"* — [live](https://aerospace.csis.org/data/unusual-behavior-in-geo-olymp-k/)
+  · [snapshot](https://web.archive.org/web/2025*/https://aerospace.csis.org/data/unusual-behavior-in-geo-olymp-k/)
+  · accessed 2026-06-12.
+- *SpaceNews, "China's Shijian-21 spacecraft docked with and towed a dead satellite"* (27 January 2022 — co-orbital tug case) — [live](https://spacenews.com/chinas-shijian-21-spacecraft-docked-with-and-towed-a-dead-satellite/)
+  · [snapshot](https://web.archive.org/web/2024*/https://spacenews.com/chinas-shijian-21-spacecraft-docked-with-and-towed-a-dead-satellite/)
+  · accessed 2026-06-12.
+- *UNOOSA Outer Space Treaty* (Article IV WMD-in-orbit prohibition that bears on §2.6.5 FOBS) — [live](https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.unoosa.org/oosa/en/ourwork/spacelaw/treaties/outerspacetreaty.html)
+  · accessed 2026-06-12.
+- *Lockheed Martin SM-3 product page* (sea-launched DA-ASAT Burnt Frost variant) — [live](https://www.lockheedmartin.com/en-us/products/standard-missile-3-sm-3.html)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.lockheedmartin.com/en-us/products/standard-missile-3-sm-3.html)
+  · accessed 2026-06-12.
+- *NRO Center for the Study of National Reconnaissance public releases* (NRO program history including F-15 / ASM-135 ASAT test and FOBS history) — [live](https://www.nro.gov/History/NRO-History/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.nro.gov/History/NRO-History/)
+  · accessed 2026-06-12.
+- *AMSAT* (radio-amateur Doppler-from-downlink reference) — [live](https://www.amsat.org/)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.amsat.org/)
+  · accessed 2026-06-12.
+- *Kratos satellite communications ground systems* (commercial ground-station catalog supporting passive SIGINT use case) — [live](https://www.kratosdefense.com/products/space/satellite-communications)
+  · [snapshot](https://web.archive.org/web/2024*/https://www.kratosdefense.com/products/space/satellite-communications)
+  · accessed 2026-06-12.
+- *AFRL CHAMP airborne HPM program reference* — [live](https://afresearchlab.com/)
+  · [snapshot](https://web.archive.org/web/2024*/https://afresearchlab.com/)
+  · accessed 2026-06-12.
+- *NASA SLR Goddard overview* (Satellite Laser Ranging Service) — [live](https://cddis.nasa.gov/Techniques/SLR/SLR_overview.html)
+  · [snapshot](https://web.archive.org/web/2024*/https://cddis.nasa.gov/Techniques/SLR/SLR_overview.html)
   · accessed 2026-06-12.
 
 ---
