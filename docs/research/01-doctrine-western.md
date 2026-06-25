@@ -157,14 +157,14 @@ At the link layer, the canonical anti-jam primitive is **frequency-hopping sprea
 | Passive measure | Doctrinal description (Space Warfighting Framework, 2025) | Engine encoding |
 | --- | --- | --- |
 | Threat warning | Rapid communication of indications of enemy space or space-enabled attacks. | `def.set_threat_warning` verb in `DEFENSE_VERBS`; surfaces in alarm rail. |
-| Military deception | Increases adversary uncertainty about location/intent of friendly assets. | White-cell inject + posture flag (future-work resilience pack). |
+| Military deception | Increases adversary uncertainty about location/intent of friendly assets. | `def.set_deception_mode` verb (added Sprint 2 from this research); `PayloadState.deception_active` flag in `bus.py`. |
 | Hardening | Component-level shielding lowers susceptibility to EW/DE/cyber effects. | `def.harden` verb; `BusState.hardened` toggle (see `bus.py:120`). |
 | Dispersal | Spatial separation reduces single-shot exposure across the constellation. | `def.disperse` verb; ground-segment vignette posture. |
 | Disaggregation | Separation of dissimilar capabilities onto separate platforms or payloads. | Vignette-level force design (bus + payload split in `entities.py`). |
 | Mobility | Frequent movement within the enemy's decision cycle complicates targeting. | `def.maneuver_evade`; `_EVASION_RESIDUAL = 0.4` in `effects.py`. |
 | Redundancy / proliferation | Distribution and proliferation across many small spacecraft vs. one exquisite. | Constellation force-add (≤3 sats per constellation, `vignette.py`). |
 
-The Red/Blue defensive menu in the simulator is therefore the union of (a) the four explicit `def.*` verbs in [`DEFENSE_VERBS`](../../spacesim/engine/buscommands.py) — `def.patch_cyber`, `def.frequency_hop`, `def.harden`, `def.set_threat_warning` (plus `def.maneuver_evade`, `def.escort_posture`, `def.disperse`) — and (b) the bus-posture toggles they flip in [`BusState`](../../spacesim/engine/bus.py) (`freq_hopping`, `hardened`). The frequency-hop primitive's residual is encoded as `_FREQ_HOP_RESIDUAL = 0.4` in [`effects.py`](../../spacesim/engine/effects.py) — i.e., a hopping link still takes 40% of the nominal jam effectiveness, matching the FHSS literature's "resistant but not immune unless TRANSEC is held" framing.
+The Red/Blue defensive menu in the simulator is therefore the union of (a) the explicit `def.*` verbs in [`DEFENSE_VERBS`](../../spacesim/engine/buscommands.py) — `def.patch_cyber`, `def.frequency_hop`, `def.harden`, `def.set_threat_warning`, `def.maneuver_evade`, `def.escort_posture`, `def.disperse`, `def.set_deception_mode` — and (b) the bus-posture toggles they flip in [`BusState`](../../spacesim/engine/bus.py) (`freq_hopping`, `hardened`) and on [`PayloadState`](../../spacesim/engine/bus.py) (`deception_active`). The frequency-hop primitive's residual is encoded as `_FREQ_HOP_RESIDUAL = 0.4` in [`effects.py`](../../spacesim/engine/effects.py) — i.e., a hopping link still takes 40% of the nominal jam effectiveness, matching the FHSS literature's "resistant but not immune unless TRANSEC is held" framing.
 
 Used by: `../../spacesim/engine/buscommands.py` (`DEFENSE_VERBS` at line 44), `../../spacesim/engine/effects.py` (`_FREQ_HOP_RESIDUAL`, line 99), `../../spacesim/engine/bus.py` (`freq_hopping`, `hardened` posture flags).
 

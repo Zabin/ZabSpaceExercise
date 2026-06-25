@@ -640,7 +640,7 @@ The 15-25 % depth-of-discharge per-orbit target documented in §4 (sourced to La
 ### 10.5 Payload verbs → buscommands catalogue
 Each payload-type subsection in §5 (SATCOM), §6 (ISR), and §7 (SIGINT/SDA/Space-control/PNT/MW/Weather) anchors a slice of the verb catalogue in [`engine/buscommands.py`](../../spacesim/engine/buscommands.py):
 
-- SATCOM verbs (`satcom.mitigate_interference`, `satcom.shift_users`, `satcom.geolocate_interference`) → §5 (WGS+MAJE, AEHF, Quantum, anti-jam techniques).
+- SATCOM verbs (`satcom.mitigate_interference`, `satcom.shift_users`, `satcom.geolocate_interference`, `satcom.null_steer` — the last added Sprint 2 from §5.5 below for the angle-specific N-1-capped beam-nulling distinct from the FHSS + broad-antijam `mitigate_interference`) → §5 (WGS+MAJE, AEHF, Quantum, anti-jam techniques).
 - ISR verbs (`isr.collect_now`, `isr.schedule_collection`, `isr.set_mode`) → §6 (TPED workflow, NIIRS scoring, EO vs. SAR, commercial tasking timelines). The beam-mode dictionary [`engine/isr.py:BEAM_MODES`](../../spacesim/engine/isr.py) and the [`effective_gain`](../../spacesim/engine/isr.py) + [`soc_drain`](../../spacesim/engine/isr.py) helpers encode the per-mode scaling.
 - PNT verb (`pnt.flex_power`) → §7.4 (IS-GPS-200 + GAO M-code report + GPS Modernization Fact Sheet).
 - Missile-warning verb (`mw.add_stare_area`) → §7.5 (USSF SBIRS + SSC Next-Gen OPIR + GAO).
