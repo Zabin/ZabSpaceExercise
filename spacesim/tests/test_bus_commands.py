@@ -519,3 +519,99 @@ def test_payload_type_gates_block_wrong_payload():
     for verb in ("satcom.set_frequency_plan", "sda.task_characterize", "sda.task_track"):
         ok, reason = can_issue(w, "SAT", verb)
         assert not ok and reason == "no_payload_for_verb", verb
+
+
+# -- Research-corpus gap fill: def.set_deception_mode + satcom.null_steer -----
+#
+# Both verbs source claims in the research corpus that the existing catalog
+# did not yet implement:
+#  * def.set_deception_mode — File 1.1 §4 seven-passive-defense-measures
+#    table flags "Military deception" as a `(future-work resilience pack)`
+#    gap.  USSF Space Warfighting Framework (10 Apr 2025) §3.2 names it as
+#    the 2nd of seven passive defenses.
+#  * satcom.null_steer — File 1.6 §5.5 cites USPTO 12,537,566: "the number
+#    of undesirable sources that can be nulled equals one less than the
+#    number of digital receivers".  This is a distinct technique from
+#    interference_mitigation (FHSS+broad anti-jam); null-steering is
+#    angle-specific and has a hard cap.
+
+
+def test_def_set_deception_mode_toggles_payload_flag():
+    """def.set_deception_mode raises a payload-side posture flag observable in telemetry."""
+    w = _sat_with_payload("isr_eo")
+    ok, label = apply_command(w, "SAT", "def.set_deception_mode", {"on": True}, 0)
+    assert ok and label == "deception_on"
+    assert w.assets["SAT"].payload_state.deception_active is True
+    ok, label = apply_command(w, "SAT", "def.set_deception_mode", {"on": False}, 0)
+    assert ok and label == "deception_off"
+    assert w.assets["SAT"].payload_state.deception_active is False
+
+
+def test_def_set_deception_mode_requires_payload():
+    """Defensive verb still needs a payload to flip the flag against."""
+    w = _one(BusState())     # no payload
+    ok, reason = apply_command(w, "SAT", "def.set_deception_mode", {"on": True}, 0)
+    assert not ok and reason == "no_payload"
+
+
+def test_def_set_deception_mode_in_verb_set():
+    """def.set_deception_mode is registered in DEFENSE_VERBS and can_issue accepts it."""
+    from spacesim.engine.buscommands import DEFENSE_VERBS, COMMAND_VERBS, can_issue
+    assert "def.set_deception_mode" in DEFENSE_VERBS
+    assert "def.set_deception_mode" in COMMAND_VERBS
+    w = _sat_with_payload("isr_eo")
+    ok, _ = can_issue(w, "SAT", "def.set_deception_mode")
+    assert ok is True
+
+
+def test_satcom_null_steer_records_targets_under_cap():
+    """satcom.null_steer adds jammer targets to the null list, capped at receiver_count - 1."""
+    w = _sat_with_payload("satcom")
+    # Default receiver_count is 4 → can null at most 3 simultaneously.
+    ok, label = apply_command(w, "SAT", "satcom.null_steer",
+                              {"target": "JAM-A", "receiver_count": 4}, 0)
+    assert ok and label.startswith("nulled_")
+    p = w.assets["SAT"].payload_state
+    assert "JAM-A" in p.detail["null_targets"]
+    # Two more nulls still fit under the 4-1 = 3 cap.
+    apply_command(w, "SAT", "satcom.null_steer", {"target": "JAM-B"}, 0)
+    apply_command(w, "SAT", "satcom.null_steer", {"target": "JAM-C"}, 0)
+    assert len(p.detail["null_targets"]) == 3
+
+
+def test_satcom_null_steer_rejects_over_cap():
+    """The N-1 cap rejects the fourth simultaneous null on a 4-receiver chain."""
+    w = _sat_with_payload("satcom")
+    for tgt in ("J1", "J2", "J3"):
+        apply_command(w, "SAT", "satcom.null_steer", {"target": tgt, "receiver_count": 4}, 0)
+    ok, reason = apply_command(w, "SAT", "satcom.null_steer",
+                               {"target": "J4", "receiver_count": 4}, 0)
+    assert not ok and reason == "null_cap_reached"
+
+
+def test_satcom_null_steer_payload_type_gate():
+    """Null-steering requires a satcom payload; ISR cannot use it."""
+    from spacesim.engine.buscommands import can_issue
+    w = _sat_with_payload("isr_eo")
+    ok, reason = can_issue(w, "SAT", "satcom.null_steer")
+    assert not ok and reason == "no_payload_for_verb"
+
+
+def test_satcom_null_steer_replay_safe():
+    """Null-steering through the order pipeline is replay-byte-identical.
+
+    Uses coa-russia-ml.yaml because it ships with a Blue SATCOM asset (BLUE-SATCOM
+    at GEO 0deg/0.05inc); training-basics carries only an ISR-EO bird.
+    """
+    mgr = SessionManager(load_vignette("coa-russia-ml"), seed=1)
+    mgr.start()
+    ack = mgr.issue_order("blue", Order(cell="blue", actor="BLUE-SATCOM",
+                                        action="command", target=None,
+                                        params={"via": "GS-EUROPE", "verb": "satcom.null_steer",
+                                                "target": "HOSTILE-JAM-1"}))
+    assert ack.ok, ack.reason
+    mgr.advance_to(ack.earliest_window[1] + 1)
+    p = mgr.world.assets["BLUE-SATCOM"].payload_state
+    assert "HOSTILE-JAM-1" in p.detail["null_targets"]
+    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
+

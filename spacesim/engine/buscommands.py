@@ -33,6 +33,7 @@ BUS_VERBS = {"eps.shed_load", "eps.restore_load", "eps.set_charge_mode", "eps.se
 PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users",
                  "satcom.reconfigure_beam", "satcom.set_frequency_plan",
                  "satcom.geolocate_interference",
+                 "satcom.null_steer",
                  "isr.collect_now", "isr.schedule_collection", "isr.set_mode",
                  "isr.prioritize_downlink",
                  "sigint.task_collection",
@@ -42,7 +43,8 @@ PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users",
                  "pnt.flex_power", "pnt.set_health_flag",
                  "mw.add_stare_area"}
 DEFENSE_VERBS = {"def.patch_cyber", "def.frequency_hop", "def.harden", "def.set_threat_warning",
-                 "def.maneuver_evade", "def.escort_posture", "def.disperse"}
+                 "def.maneuver_evade", "def.escort_posture", "def.disperse",
+                 "def.set_deception_mode"}
 COMMAND_VERBS = BUS_VERBS | PAYLOAD_VERBS | DEFENSE_VERBS
 
 # Payload verbs are valid only on a payload of a matching mission type (FR-B2: the bus/payload fit).
@@ -50,6 +52,7 @@ _PAYLOAD_TYPES_FOR = {
     "satcom.mitigate_interference": {"satcom"}, "satcom.shift_users": {"satcom"},
     "satcom.reconfigure_beam": {"satcom"}, "satcom.set_frequency_plan": {"satcom"},
     "satcom.geolocate_interference": {"satcom"},
+    "satcom.null_steer": {"satcom"},
     "isr.collect_now": {"isr_eo", "isr_sar"}, "isr.schedule_collection": {"isr_eo", "isr_sar"},
     "isr.set_mode": {"isr_eo", "isr_sar"},
     "isr.prioritize_downlink": {"isr_eo", "isr_sar"},
@@ -455,6 +458,42 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         a.payload_state and a.payload_state.detail.update({"dispersal": True})
         world.consequences.append({"t": now, "type": "disperse", "actor": actor_id})
         return True, "dispersing"
+
+    if verb == "def.set_deception_mode":
+        # Military deception — passive defense #2 in the USSF Space Warfighting
+        # Framework (10 Apr 2025) seven-measure menu, documented in
+        # docs/research/01-doctrine-western.md §4.  Surfaces as a payload-side
+        # posture flag observable in telemetry; the downstream effect-resolver
+        # change (which would lower adversary custody confidence + raise
+        # attribution ambiguity) is left as a separate change.
+        if a.payload_state is None:
+            return False, "no_payload"
+        a.payload_state.deception_active = bool(params.get("on", True))
+        return True, "deception_on" if a.payload_state.deception_active else "deception_off"
+
+    if verb == "satcom.null_steer":
+        # Adaptive beam-nulling against a named jammer.  USPTO 12,537,566
+        # (cited in docs/research/06-bus-and-payload-operations.md §5.5):
+        # "the number of undesirable sources that can be nulled equals one
+        # less than the number of digital receivers".  Distinct from
+        # satcom.mitigate_interference (broad anti-jam): null-steer is
+        # angle-specific, target-named, and has a hard N-1 cap.
+        p = a.payload_state
+        if p is None:
+            return False, "no_payload"
+        target = params.get("target")
+        if not target:
+            return False, "no_target"
+        n_rx = int(params.get("receiver_count", 4))
+        cap = max(0, n_rx - 1)
+        targets = list(p.detail.get("null_targets", []))
+        if target in targets:
+            return True, f"nulled_{target}"   # idempotent
+        if len(targets) >= cap:
+            return False, "null_cap_reached"
+        targets.append(target)
+        p.detail["null_targets"] = targets
+        return True, f"nulled_{target}"
 
     # ------------------------------------------------------------------
     # Final catalog-verb fill — completes §3 of FUTURE-WORK.md.

@@ -121,6 +121,7 @@ class PayloadState(BaseModel):
     mode: str = "nominal"                     # isr.set_mode: wide|narrow|standby|nominal; pnt.set_integrity: standard|protected|degraded
     integrity_mode: str = "standard"          # pnt.set_integrity: standard|protected|degraded
     evasion_active: bool = False              # def.maneuver_evade: set while evasion burn is live
+    deception_active: bool = False            # def.set_deception_mode: USSF SWF Apr 2025 §3.2 passive measure #2
     detail: dict = Field(default_factory=dict)
 
 
