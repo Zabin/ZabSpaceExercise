@@ -1,144 +1,289 @@
+---
+last_reviewed: 2026-06-12
+primary_sources_consulted: 48
+status: stable
+---
+
 # Western Space Control & Orbital Warfare Doctrine
 
-This file summarizes US and allied doctrine so the simulator's action set, victory
-conditions, and White Cell language match how Western space forces actually frame the
-fight. The governing US documents are *Space Force Doctrine Document 1* (SFDD-1, 2025) and
-*Space Warfighting: A Framework for Planners* (2025).
+[← Research index](INDEX.md) · [↑ Docs index](../INDEX.md) · methodology: [`10-sources-and-methodology.md`](10-sources-and-methodology.md)
 
-## 1. The core logic: superiority → control → counterspace
+This file grounds the simulator's action set, victory conditions, and White-Cell
+language in current US and allied space-warfare doctrine. The order matches the
+doctrinal flow: §1 the superiority → control → counterspace logical hierarchy, §2
+the three counterspace mission areas mapped to the engine's effect categories, §3
+the offensive menu (5-D + three sub-types + the publicly-acknowledged US offensive
+system), §4 the defensive menu (active vs. passive + the seven passive measures),
+§5 the cross-cutting enabling functions (lines of communication, manoeuvre, SDA,
+custody, attribution, C2), §6 the responsible-counterspace + escalation-cost frame
+that the 2022 DA-ASAT moratorium operationalises, and §7 the allied-doctrine
+surface (NATO + UK + Australia + Japan + France + Canada) that the simulator's
+Blue-coalition flavour rests on. Each section carries inline-cited primary sources
+at the claim site plus a per-section Sources block; §8 at the foot consolidates
+cross-references to the rest of the corpus. The 2025 USSF doctrine refresh
+(*Space Force Doctrine Document 1* + *Space Warfighting: A Framework for Planners*,
+both 10 April 2025) is the most-recent canonical anchor and is cited throughout.
 
-US doctrine builds a clean hierarchy the simulator should mirror in its scoring:
+---
 
-- **Space superiority** is the objective: the degree of control that lets friendly forces
-  operate at a time and place of their choosing without prohibitive interference, while
-  denying the same to the adversary. It is *both* protecting friendly space capabilities
-  *and* protecting friendly terrestrial forces from space-enabled attack.
-- **Space control** is the core function that produces superiority — "the activities
-  required to contest and control the space domain."
-- **Counterspace operations** are the offensive and defensive actions that make up space
-  control. They are conducted across three **segments**: orbital, link, and terrestrial.
+## 1. The core logic — superiority → control → counterspace
 
-Superiority has dimensions the sim can model as victory conditions:
+The U.S. Space Force's doctrinal stack is a three-level chain: **counterspace operations** produce **space control**, and space control is what generates the end-state of **space superiority**. The simulator's victory conditions and White Cell vocabulary sit directly on this hierarchy.
 
-- **General vs. local** — control everywhere your interests lie vs. control in a bounded
-  region/orbital regime.
-- **Persistent vs. temporary** — time is no longer a strategic factor vs. control for a
-  specific window.
-- **Supremacy** = general + persistent. **Denial** = you cannot use the domain freely but
-  you can stop the other side from using it either (CSO Saltzman public remarks have
-  framed mutual denial as a potentially acceptable end state — e.g., a debris field).
+The foundational definition comes from the 2020 *Space Capstone Publication — Spacepower*, the USSF's first articulation of an independent spacepower theory: space superiority is [the degree of control that allows friendly forces to operate at a time and place of their choosing without prohibitive interference, while denying the same to the adversary](https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20CAPSTONE%20PUBLICATION_10%20AUG%202020.PDF). The Capstone names [**space control** as the core competency that produces that condition](https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20CAPSTONE%20PUBLICATION_10%20AUG%202020.PDF) — i.e., superiority is the end-state, control is the function, and counterspace operations are the missions that execute control.
 
-> **Sim implication:** Don't score only "kills." Score *control of an orbital regime over a
-> time window for a purpose.* A vignette can be won by temporary local denial without
-> destroying anything.
+Underneath control sits the **counterspace mission architecture**. AFDP 3-14 and the joint space publications carve the target environment into [three mission segments — orbital, link, and terrestrial](https://www.doctrine.af.mil/Portals/61/documents/AFDP_3-14/AFDP%203-14%20Space%20Support.pdf): the **orbital segment** (space systems on orbit), the **link segment** (the RF/optical paths that connect them, attacked through electromagnetic-spectrum fires), and the **terrestrial segment** (ground stations, antennas, networks, end-user devices, and TT&C/PED centers). This is the same three-axis target taxonomy reused by the 2025 Warfighting Framework, which re-binned the *operational* mission areas as **orbital warfare, electromagnetic warfare, and cyberspace warfare** without changing the underlying segment geometry ([Breaking Defense, 17 Apr 2025](https://breakingdefense.com/2025/04/space-forces-new-warfighting-framework-says-space-superiority-is-basis-of-us-military-power/)).
 
-## 2. The three counterspace mission areas (map directly to sim effects)
+The 2025 refresh is significant. On **10 April 2025** the USSF published [*Space Warfighting — A Framework for Planners*](https://www.spaceforce.mil/Portals/2/Documents/SAF_2025/Space_Warfighting_-_A_Framework_for_Planners_BLK2_(final_20250410).pdf), the service's first detailed guide to "warfare in, from, and to space" and an explicit lexicon for joint planners. Coverage in [USNI News (23 Apr 2025)](https://news.usni.org/2025/04/23/u-s-space-forces-space-warfighting-framework) and [Air & Space Forces Magazine](https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/) frames it as the document that finally connects space control to a concrete catalog of offensive and defensive counterspace options.
 
-| Mission area | Segment | Sim effect family |
-|---|---|---|
-| **Orbital warfare** | Orbital | RPO, escort, pursuit/rendezvous, kinetic/non-kinetic orbital strike |
-| **Electromagnetic warfare** | Link | Jamming, spoofing, dazzling, uplink/downlink interdiction |
-| **Cyberspace warfare** | Link / Terrestrial | Network attack on TT&C, ground stations, mission data |
+Critically, the framework treats superiority as **scoped and bounded**, not absolute. It introduces two dimensions: a **spatial** axis of *general* superiority (across all orbital regimes) vs. *local* superiority (in a specific regime or volume), and a **temporal** axis of *persistent* vs. *temporary* superiority ([Air & Space Forces Magazine coverage](https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/); analyst summary at [Sirotin Intelligence](https://www.sirotinintelligence.com/space-superiority-doctrine-emerges-analyzing-the-us-space-forces-space-warfighting-framework-and-global-implications/)). CSO Gen. B. Chance Saltzman's public framing of [**"mutual denial"**](https://breakingdefense.com/2024/10/space-forces-new-lexicon-move-to-define-concepts-courts-concerns/) — protect what you have, deny the adversary what they have — makes the two-sided nature of this end-state explicit and admits stable, less-than-total outcomes as legitimate.
 
-## 3. Offensive actions (the Red/Blue offensive menu)
+**Simulator implication.** Because doctrine treats superiority as *control of a regime, over a time window, for a purpose*, the simulator's scoring layer must not collapse to a kill-count. Vignette objectives should resolve as "did Blue hold weapons-quality custody / commanding / sensor access over regime *R* during window *W* sufficient to enable purpose *P*?" — with the five reversible-leaning effect categories ([engine/effects.py:Category](../../spacesim/engine/effects.py)) and the achieved-outcome enum ([engine/effects.py:Outcome](../../spacesim/engine/effects.py)) feeding that judgment rather than driving it.
 
-From the *Framework for Planners*:
+### Sources
 
-- **Orbital Strike** — destroy/disrupt/degrade adversary space platforms in orbit. Kinetic
-  or non-kinetic, reversible or non-reversible. Two delivery modes the sim must distinguish:
-  - **Pursuit** — must rendezvous with the target before weapons employment (needs an
-    intercept trajectory and a closing window).
-  - **Standoff** — space- or terrestrial-based long-range fires that strike without first
-    rendezvousing.
-- **Space Link Interdiction** — disrupt/deny/degrade the adversary's critical links via
-  **electromagnetic attack** or **cyber-network attack**. Non-kinetic only.
-- **Terrestrial Strike** — strike launch vehicles, ground stations, C2 nodes, antennas,
-  and ground-based SDA sensors in the land/air/maritime domains. This is how a player
-  attacks the *ground segment* — often the cheapest counterspace effect.
+- *Space Capstone Publication — Spacepower (10 Aug 2020)* — [live](https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20CAPSTONE%20PUBLICATION_10%20AUG%202020.PDF) · [snapshot](https://web.archive.org/web/2026*/https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20CAPSTONE%20PUBLICATION_10%20AUG%202020.PDF) · accessed 2026-06-12.
+- *Space Warfighting — A Framework for Planners (10 Apr 2025)* — [live](https://www.spaceforce.mil/Portals/2/Documents/SAF_2025/Space_Warfighting_-_A_Framework_for_Planners_BLK2_(final_20250410).pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.spaceforce.mil/Portals/2/Documents/SAF_2025/Space_Warfighting_-_A_Framework_for_Planners_BLK2_(final_20250410).pdf) · accessed 2026-06-12.
+- *AFDP 3-14, Space Support* — [live](https://www.doctrine.af.mil/Portals/61/documents/AFDP_3-14/AFDP%203-14%20Space%20Support.pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.doctrine.af.mil/Portals/61/documents/AFDP_3-14/AFDP%203-14%20Space%20Support.pdf) · accessed 2026-06-12.
+- *Space Force's new "warfighting framework" says "space superiority" is basis of US military power (Breaking Defense, 17 Apr 2025)* — [live](https://breakingdefense.com/2025/04/space-forces-new-warfighting-framework-says-space-superiority-is-basis-of-us-military-power/) · [snapshot](https://web.archive.org/web/2026*/https://breakingdefense.com/2025/04/space-forces-new-warfighting-framework-says-space-superiority-is-basis-of-us-military-power/) · accessed 2026-06-12.
+- *U.S. Space Force's "Space Warfighting" Framework (USNI News, 23 Apr 2025)* — [live](https://news.usni.org/2025/04/23/u-s-space-forces-space-warfighting-framework) · [snapshot](https://web.archive.org/web/2026*/https://news.usni.org/2025/04/23/u-s-space-forces-space-warfighting-framework) · accessed 2026-06-12.
+- *New Doc Spells Out How USSF Will Use Space Control to Gain Space Superiority (Air & Space Forces Magazine)* — [live](https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/) · [snapshot](https://web.archive.org/web/2026*/https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/) · accessed 2026-06-12.
+- *Space Force's new "lexicon": Move to define concepts wins praise, courts concerns (Breaking Defense, Oct 2024)* — [live](https://breakingdefense.com/2024/10/space-forces-new-lexicon-move-to-define-concepts-courts-concerns/) · [snapshot](https://web.archive.org/web/2026*/https://breakingdefense.com/2024/10/space-forces-new-lexicon-move-to-define-concepts-courts-concerns/) · accessed 2026-06-12.
 
-## 4. Defensive actions (the Red/Blue defensive menu)
+Used by: vignette objective grammar (regime × window × purpose) and White Cell scoring — wires the doctrinal chain into [engine/effects.py:Category](../../spacesim/engine/effects.py) and [engine/effects.py:Outcome](../../spacesim/engine/effects.py).
+## 2. The three counterspace mission areas (map to simulator effects)
 
-**Active space defense** — direct action against ongoing/imminent attacks:
+Western space-control doctrine partitions counterspace into **three mission areas** — orbital
+warfare, electromagnetic warfare, and cyberspace warfare — delivered against **three segments**
+— orbital, link, and terrestrial. The Air Force codifies the mission-area split in [AFDP 3-14
+*Space Support* (1 April 2025)](https://www.doctrine.af.mil/Portals/61/documents/AFDP_3-14/AFDP%203-14%20Space%20Support.pdf)
+(retitled from *Counterspace Operations* when the mission migrated to the USSF). The joint
+frame sits one tier above: the 23 August 2023 rewrite of [JP 3-14 *Joint Space
+Operations*](https://breakingdefense.com/2023/10/exclusive-new-joint-force-space-doctrine-clarifies-space-commands-offensive-defensive-ops/)
+normalizes space as a warfighting domain and distinguishes "direct" fires against adversary
+spacecraft, ground stations, and the links between them — the same three-segment surface AFDP
+3-14 attacks through three mission areas (JP 3-14 itself is limited-distribution; see the
+public [jcs.mil 3-0 Operations Series](https://www.jcs.mil/Doctrine/Joint-Doctrine-Pubs/3-0-Operations-Series/) catalog).
 
-- **Escort** — dedicated space-to-space protection of a friendly satellite; area or point
-  defense.
-- **Counterattack** — reactive strike on a force that has shown hostile act/intent
-  (terrestrial, orbital, or link counterattack).
-- **Suppression of Adversary Counterspace Targeting** — deny the adversary the
-  weapons-quality targeting data it needs during an engagement (e.g., blind its SDA).
+The USSF's [*Space Warfighting — A Framework for Planners* (10 April 2025)](https://defensescoop.com/2025/04/17/space-force-warfighting-framework/)
+restructures the **offensive** menu under those mission areas into three named actions —
+**orbital strike**, **space link interdiction**, and **terrestrial strike** — corresponding
+one-to-one with the three segments where effects land ([Air & Space Forces Magazine
+summary](https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/)).
+The segment vocabulary itself comes from the [USSF *Space Capstone Publication: Spacepower*
+(10 Aug 2020)](https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20CAPSTONE%20PUBLICATION_10%20AUG%202020.PDF),
+which identifies orbital, link, and terrestrial as the three components of any space-system
+architecture. [CSIS *Space Threat Assessment 2025*](https://www.csis.org/analysis/space-threat-assessment-2025)
+groups counterspace tools into kinetic, non-kinetic, electronic, and cyber — a four-bucket
+weapons taxonomy the simulator collapses into the three doctrinal mission areas by treating
+kinetic and non-kinetic-physical as the orbital-warfare bucket.
 
-**Passive space defense** — survivability built into design and operations (these are
-*posture settings* the sim should let a defender toggle, each with a cost/benefit):
+### Mapping to the simulator
 
-| Measure | In-sim effect |
-|---|---|
-| Threat warning | Faster reaction; shrinks attacker surprise |
-| Military deception | Degrades attacker's custody/targeting confidence |
-| Hardening | Raises kill threshold vs. EMP/radiation/physical |
-| Dispersal | Forces attacker to search more locations |
-| Disaggregation | Splitting functions across platforms; one kill ≠ full loss |
-| Mobility | Maneuver out of an engagement; complicates targeting |
-| Redundancy / proliferation | Many small sats instead of one exquisite asset |
+The engine encodes the offensive menu as
+[`engine/effects.py:Category`](../../spacesim/engine/effects.py) =
+`{direct_ascent, co_orbital, electronic_warfare, directed_energy, cyber}` with an explicit
+[`segment` field](../../spacesim/engine/effects.py) on every `EffectInstance` (`orbital` /
+`link` / `terrestrial`). Outcomes resolve to the five D's via
+[`engine/effects.py:Outcome`](../../spacesim/engine/effects.py)
+(`deceive / disrupt / deny / degrade / destroy`). Window-gating lives in
+[`engine/access.py`](../../spacesim/engine/access.py) with six channels
+(`COMMAND_UPLINK`, `TELEMETRY_DOWNLINK`, `SENSOR_OBSERVATION`, `JAM_FOOTPRINT`,
+`WEAPON_ENGAGEMENT`, `RPO_PROXIMITY`); cyber is the documented exception — not gated by an
+access window, instead resolving against `{access_vector, success_prob, persistence, patchable}`
+per `CLAUDE.md`.
 
-> **Sim implication:** Passive defenses are the Blue Cell's pre-game loadout choices and
-> in-game posture toggles. They cost fuel, money, or capability and change the probabilities
-> the engine resolves against.
+| Mission area (AFDP 3-14)  | USSF offensive action (Apr 2025) | Segment delivered into | `Category`                              | Gating access channel(s)              |
+| ------------------------- | -------------------------------- | ---------------------- | --------------------------------------- | ------------------------------------- |
+| Orbital warfare           | Orbital strike                   | Orbital                | `direct_ascent`, `co_orbital`, `directed_energy` | `weapon_engagement`, `rpo_proximity`  |
+| Electromagnetic warfare   | Space link interdiction          | Link                   | `electronic_warfare`                    | `jam_footprint`                       |
+| Cyberspace warfare        | (cyber effects on terrestrial/link nodes) | Terrestrial / link | `cyber`                                 | *none — cyber exception*              |
+| (Joint kinetic, all services) | Terrestrial strike           | Terrestrial            | `direct_ascent` (when space-launched)   | `weapon_engagement` (ground targeting) |
 
+**Used by:** §1.1.3 (five-D outcome lexicon), §1.2 (segment-by-segment threat catalog), and
+the effect-template schema in [`spacesim/content/`](../../spacesim/content/) vignettes that
+populate `EffectInstance.category` + `segment`.
+
+### Sources
+
+- [AFDP 3-14 *Space Support* PDF (1 April 2025, doctrine.af.mil)](https://www.doctrine.af.mil/Portals/61/documents/AFDP_3-14/AFDP%203-14%20Space%20Support.pdf)
+- [JCS Doctrine — 3-0 Operations Series (catalog page for JP 3-14)](https://www.jcs.mil/Doctrine/Joint-Doctrine-Pubs/3-0-Operations-Series/)
+- [Breaking Defense — JP 3-14 2023 rewrite explainer](https://breakingdefense.com/2023/10/exclusive-new-joint-force-space-doctrine-clarifies-space-commands-offensive-defensive-ops/)
+- [DefenseScoop — Space Warfighting Framework release (17 April 2025)](https://defensescoop.com/2025/04/17/space-force-warfighting-framework/)
+- [Air & Space Forces Magazine — orbital strike / space link interdiction / terrestrial strike](https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/)
+- [USSF Space Capstone Publication "Spacepower" (10 Aug 2020, media.defense.gov)](https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20CAPSTONE%20PUBLICATION_10%20AUG%202020.PDF)
+- [CSIS Space Threat Assessment 2025 (kinetic / non-kinetic / electronic / cyber taxonomy)](https://www.csis.org/analysis/space-threat-assessment-2025)
+## 3. Offensive actions — the Red/Blue offensive menu
+
+Offensive space control is the use-of-force half of space superiority — the verbs Red and Blue cells issue to deny, degrade, or destroy an adversary's space capability. US doctrine organises that menu along two axes: a **five-D severity ladder** (Deceive → Disrupt → Deny → Degrade → Destroy) and a **three-target taxonomy** (orbital, link, ground). Both come from open USSF/USAF publications and bound what the engine has to model.
+
+**The five-D ordering.** The USSF Space Capstone Publication *Spacepower* (Aug 2020) is the canonical source for the five-D ladder as the "offensive space control" mission set, framing it as a graduated menu from non-attributable deception through irreversible destruction ([SCP, "Spacepower" pp. 38–39](https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20CAPSTONE%20PUBLICATION_10%20AUG%202020.PDF)). The 2025 *Space Warfighting: A Framework for Planners* re-asserts the same five categories and ties them to specific targeting effects ([Space Warfighting Framework, Apr 2025](https://csps.aerospace.org/sites/default/files/2025-10/USSF%20Space_Warfighting_A%20Framework%20for%20Planners%20(final_20250410).pdf)).
+
+**Reversible-first preference.** The 2025 framework explicitly orders planners to prefer reversible, non-kinetic effects whenever they meet the commander's objective — both to control escalation and to avoid the long-lived debris fields a kinetic engagement would create. Reporting on the framework calls this "Competitive Endurance" applied to targeting ([Air & Space Forces Magazine, Apr 2025](https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/); [Breaking Defense, Apr 2025](https://breakingdefense.com/2025/04/space-forces-new-warfighting-framework-says-space-superiority-is-basis-of-us-military-power/)).
+
+**Orbital Strike — pursuit vs. standoff.** The framework distinguishes *pursuit* orbital strike (a co-orbital chaser closing to short range — RPO-derived kinetic, grappling, or directed-energy effects) from *standoff* orbital strike (engaging from another orbit or from the ground, e.g. direct-ascent ASAT or long-range DEW). AFDP 3-14 carries the same target categories under "offensive space control" ([AFDP 3-14, *Space Support*, 1 Apr 2025](https://www.doctrine.af.mil/Portals/61/documents/AFDP_3-14/AFDP%203-14%20Space%20Support.pdf)).
+
+**Space Link Interdiction.** Attacks against the RF and cyber links between segments — uplink/downlink jamming, spoofing, and network intrusion. AFDP 3-14 lists EW and cyber as the two principal link-interdiction families; the CSIS *Space Threat Assessment 2024* catalogues operational examples (Russian Tobol/Kalinka uplink jammers, PRC GNSS spoofing) and confirms link interdiction is now the most-used counterspace mode in active conflicts ([CSIS Space Threat Assessment 2024](https://aerospace.csis.org/wp-content/uploads/2024/04/240417_Swope_SpaceThreatAssessment_2024.pdf)).
+
+**Terrestrial Strike.** Attacks against ground stations, mission-control nodes, and user terminals — by kinetic, EW, or cyber means. The SCP names "ground segment" as one of three offensive-target sets ([SCP](https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20CAPSTONE%20PUBLICATION_10%20AUG%202020.PDF)). The canonical real-world case is the 24 Feb 2022 Viasat KA-SAT *AcidRain* wiper, which bricked tens of thousands of modems across Europe and is the most-cited modern example of terrestrial-segment cyberattack with operational space effect ([CSIS, "The Cyberattack on Viasat's KA-SAT Network"](https://www.csis.org/analysis/cyberattack-viasats-ka-sat-network)).
+
+**The only publicly-acknowledged US offensive counterspace system.** L3Harris's **Counter Communications System (CCS) Block 10.2** — a deployable ground-based SATCOM uplink jammer — remains the sole offensive counterspace weapon the United States has publicly fielded. It reached IOC in March 2020 with explicitly **reversible** effects, and the enterprise now numbers sixteen transportable systems operated by USSF and ANG units; its successor *Meadowlands* transferred to USSF in April 2025 ([USSF News, 2020 IOC](https://www.spaceforce.mil/News/Article/2113447/counter-communications-system-block-102-achieves-ioc-ready-for-the-warfighter/); [Breaking Defense, Apr 2025 — Meadowlands](https://breakingdefense.com/2025/04/space-force-takes-ownership-of-first-meadowlands-satellite-jammer/); [SWF *Global Counterspace Capabilities 2024*, US section](https://swfound.org/media/207827/swf_global_counterspace_capabilities_2024_en_es.pdf)).
+
+**Engine mapping.** The five-D ladder is encoded directly as [`engine/effects.py:Category`](../../spacesim/engine/effects.py) (`deceive`/`disrupt`/`deny`/`degrade`/`destroy`); the three target sub-types decompose into action verbs on [`engine/orders.py:OrderSystem.issue`](../../spacesim/engine/orders.py) — `engage` (orbital/terrestrial kinetic, with the standoff-vs-pursuit split realised by the interceptor table in [`engine/engage.py:INTERCEPTORS`](../../spacesim/engine/engage.py)), `jam` (link interdiction, parameterised by [`engine/jam.py`](../../spacesim/engine/jam.py)'s modulation database), `cyber` (link or ground intrusion, against [`engine/cyber.py:VECTORS`](../../spacesim/engine/cyber.py)), plus `observe`/`maneuver`/`command` for the supporting verbs. The COA library in §1.2 (forward) maps each Red/Blue COA card to one of these (action, category) pairs.
+
+### Sources
+
+- *Space Capstone Publication — Spacepower* (USSF, Aug 2020) — [live](https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20CAPSTONE%20PUBLICATION_10%20AUG%202020.PDF) · [snapshot](https://web.archive.org/web/2026*/https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20CAPSTONE%20PUBLICATION_10%20AUG%202020.PDF) · accessed 2026-06-12.
+- *Space Warfighting: A Framework for Planners* (USSF, 10 Apr 2025) — [live](https://csps.aerospace.org/sites/default/files/2025-10/USSF%20Space_Warfighting_A%20Framework%20for%20Planners%20(final_20250410).pdf) · [snapshot](https://web.archive.org/web/2026*/https://csps.aerospace.org/sites/default/files/2025-10/USSF%20Space_Warfighting_A%20Framework%20for%20Planners%20(final_20250410).pdf) · accessed 2026-06-12.
+- *AFDP 3-14, Space Support* (USAF, 1 Apr 2025) — [live](https://www.doctrine.af.mil/Portals/61/documents/AFDP_3-14/AFDP%203-14%20Space%20Support.pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.doctrine.af.mil/Portals/61/documents/AFDP_3-14/AFDP%203-14%20Space%20Support.pdf) · accessed 2026-06-12.
+- *Space Threat Assessment 2024* (CSIS Aerospace) — [live](https://aerospace.csis.org/wp-content/uploads/2024/04/240417_Swope_SpaceThreatAssessment_2024.pdf) · [snapshot](https://web.archive.org/web/2026*/https://aerospace.csis.org/wp-content/uploads/2024/04/240417_Swope_SpaceThreatAssessment_2024.pdf) · accessed 2026-06-12.
+- *The Cyberattack on Viasat's KA-SAT Network* (CSIS, 2022) — [live](https://www.csis.org/analysis/cyberattack-viasats-ka-sat-network) · [snapshot](https://web.archive.org/web/2026*/https://www.csis.org/analysis/cyberattack-viasats-ka-sat-network) · accessed 2026-06-12.
+- *Global Counterspace Capabilities 2024* (Secure World Foundation) — [live](https://swfound.org/media/207827/swf_global_counterspace_capabilities_2024_en_es.pdf) · [snapshot](https://web.archive.org/web/2026*/https://swfound.org/media/207827/swf_global_counterspace_capabilities_2024_en_es.pdf) · accessed 2026-06-12.
+- *Counter Communications System Block 10.2 achieves IOC* (USSF News, 2020) — [live](https://www.spaceforce.mil/News/Article/2113447/counter-communications-system-block-102-achieves-ioc-ready-for-the-warfighter/) · [snapshot](https://web.archive.org/web/2026*/https://www.spaceforce.mil/News/Article/2113447/counter-communications-system-block-102-achieves-ioc-ready-for-the-warfighter/) · accessed 2026-06-12.
+- *Space Force takes ownership of first Meadowlands satellite jammer* (Breaking Defense, Apr 2025) — [live](https://breakingdefense.com/2025/04/space-force-takes-ownership-of-first-meadowlands-satellite-jammer/) · [snapshot](https://web.archive.org/web/2026*/https://breakingdefense.com/2025/04/space-force-takes-ownership-of-first-meadowlands-satellite-jammer/) · accessed 2026-06-12.
+- *New Doc Spells Out How USSF Will Use Space Control* (Air & Space Forces Magazine, Apr 2025) — [live](https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/) · [snapshot](https://web.archive.org/web/2026*/https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/) · accessed 2026-06-12.
+
+Used by: §1.2 COA library (offensive cards map (action, category) to (`engine/orders.py:OrderSystem.issue`, `engine/effects.py:Category`)); §3 effect-resolver design ([`../../spacesim/engine/effects.py`](../../spacesim/engine/effects.py)); §4 weapons catalogues ([`../../spacesim/engine/engage.py`](../../spacesim/engine/engage.py), [`../../spacesim/engine/jam.py`](../../spacesim/engine/jam.py), [`../../spacesim/engine/cyber.py`](../../spacesim/engine/cyber.py)); vignette Red doctrine presets in `session/redai.py`.
+## 4. Defensive actions — the Red/Blue defensive menu
+
+Western space doctrine splits defense into two halves. The USSF [*Space Capstone Publication: Spacepower* (Aug 2020)](https://www.spaceforce.mil/portals/1/space%20capstone%20publication_10%20aug%202020.pdf) frames "defensive operations [as] passive, such as ensuring spacecraft maneuverability or building large constellations; or active measures to destroy, nullify, or reduce the effectiveness of threats" — the canonical active/passive split that both cells choose between when their bus is illuminated, jammed, or maneuvered against. The [USSF *Space Warfighting — A Framework for Planners* (10 Apr 2025)](https://www.spaceforce.mil/Portals/2/Documents/SAF_2025/Space_Warfighting_-_A_Framework_for_Planners_BLK2_(final_20250410).pdf) refines the active half into three named primitives: **escort**, **counterattack**, and **suppression of adversary counterspace targeting**.
+
+**Escort** is "options to escort friendly satellites on orbit" — a dedicated space-to-space protector providing area or point defense to a high-value asset, [as the Framework explicitly enumerates](https://www.satellitetoday.com/government-military/2025/04/18/space-force-outlines-elements-of-space-warfighting-in-first-framework/). **Counterattack** is the "reactive measures taken to disrupt, deny, degrade, or destroy space forces that have demonstrated hostile action or hostile intent." **Suppression of adversary counterspace targeting** denies "the adversary's ability to collect or disseminate weapons-quality targeting data during an orbital engagement" — operationally, that means blinding the adversary SDA / SSN tasking that feeds its kill chain ([USNI summary](https://news.usni.org/2025/04/23/u-s-space-forces-space-warfighting-framework/)). This is exactly the weapons-quality-track gate the simulator's custody system already models — defense here is to keep the adversary *below* that gate during the fly-out window.
+
+**Passive Space Defense** consists, per the Framework, of seven measures: **threat warning, military deception, hardening, dispersal, disaggregation, mobility, and redundancy/proliferation** ([Via Satellite summary, citing the Framework verbatim](https://www.satellitetoday.com/government-military/2025/04/18/space-force-outlines-elements-of-space-warfighting-in-first-framework/)). CSIS's [*Space Threat Assessment 2024*](https://aerospace.csis.org/wp-content/uploads/2024/04/240417_Swope_SpaceThreatAssessment_2024.pdf) tracks the same taxonomy in its annual review of how operators protect systems "from counterspace weapons, including active and passive defenses, strategy and policy measures." The Aerospace Corporation's complementary [resilience white paper](https://aerospace.org/paper/resilience-space-systems-white-paper) and ["Resilient Space"](https://aerospace.org/article/resilient-space-real-star-wars) program offer the matched architecture lens — six characteristics (disaggregation, distribution, diversification, protection, proliferation, deception) — for designing the bus posture before it ever flies.
+
+At the link layer, the canonical anti-jam primitive is **frequency-hopping spread spectrum (FHSS)**: "spread-spectrum signals are highly resistant to deliberate jamming unless the adversary has knowledge of the frequency-hopping pattern," with hopsets keyed by a shared TRANSEC secret ([IEEE Xplore, *Satellite applications of spread spectrum frequency hopping techniques*](https://ieeexplore.ieee.org/document/64241); [IEEE *Code-Aware Anti-Jamming Method for FHSS Systems*](https://ieeexplore.ieee.org/iel8/10636307/10636354/10636420.pdf)). That is the residual-effectiveness model the simulator's jam resolver applies when a target has flipped the hopping bit.
+
+| Passive measure | Doctrinal description (Space Warfighting Framework, 2025) | Engine encoding |
+| --- | --- | --- |
+| Threat warning | Rapid communication of indications of enemy space or space-enabled attacks. | `def.set_threat_warning` verb in `DEFENSE_VERBS`; surfaces in alarm rail. |
+| Military deception | Increases adversary uncertainty about location/intent of friendly assets. | White-cell inject + posture flag (future-work resilience pack). |
+| Hardening | Component-level shielding lowers susceptibility to EW/DE/cyber effects. | `def.harden` verb; `BusState.hardened` toggle (see `bus.py:120`). |
+| Dispersal | Spatial separation reduces single-shot exposure across the constellation. | `def.disperse` verb; ground-segment vignette posture. |
+| Disaggregation | Separation of dissimilar capabilities onto separate platforms or payloads. | Vignette-level force design (bus + payload split in `entities.py`). |
+| Mobility | Frequent movement within the enemy's decision cycle complicates targeting. | `def.maneuver_evade`; `_EVASION_RESIDUAL = 0.4` in `effects.py`. |
+| Redundancy / proliferation | Distribution and proliferation across many small spacecraft vs. one exquisite. | Constellation force-add (≤3 sats per constellation, `vignette.py`). |
+
+The Red/Blue defensive menu in the simulator is therefore the union of (a) the four explicit `def.*` verbs in [`DEFENSE_VERBS`](../../spacesim/engine/buscommands.py) — `def.patch_cyber`, `def.frequency_hop`, `def.harden`, `def.set_threat_warning` (plus `def.maneuver_evade`, `def.escort_posture`, `def.disperse`) — and (b) the bus-posture toggles they flip in [`BusState`](../../spacesim/engine/bus.py) (`freq_hopping`, `hardened`). The frequency-hop primitive's residual is encoded as `_FREQ_HOP_RESIDUAL = 0.4` in [`effects.py`](../../spacesim/engine/effects.py) — i.e., a hopping link still takes 40% of the nominal jam effectiveness, matching the FHSS literature's "resistant but not immune unless TRANSEC is held" framing.
+
+Used by: `../../spacesim/engine/buscommands.py` (`DEFENSE_VERBS` at line 44), `../../spacesim/engine/effects.py` (`_FREQ_HOP_RESIDUAL`, line 99), `../../spacesim/engine/bus.py` (`freq_hopping`, `hardened` posture flags).
+
+### Sources
+- *Space Capstone Publication: Spacepower (USSF, Aug 2020)* — [live](https://www.spaceforce.mil/portals/1/space%20capstone%20publication_10%20aug%202020.pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.spaceforce.mil/portals/1/space%20capstone%20publication_10%20aug%202020.pdf) · accessed 2026-06-12.
+- *Space Warfighting — A Framework for Planners (USSF, 10 Apr 2025)* — [live](https://www.spaceforce.mil/Portals/2/Documents/SAF_2025/Space_Warfighting_-_A_Framework_for_Planners_BLK2_(final_20250410).pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.spaceforce.mil/Portals/2/Documents/SAF_2025/Space_Warfighting_-_A_Framework_for_Planners_BLK2_(final_20250410).pdf) · accessed 2026-06-12.
+- *Space Force Outlines Elements of Space Warfighting In First Framework (Via Satellite, Apr 2025)* — [live](https://www.satellitetoday.com/government-military/2025/04/18/space-force-outlines-elements-of-space-warfighting-in-first-framework/) · [snapshot](https://web.archive.org/web/2026*/https://www.satellitetoday.com/government-military/2025/04/18/space-force-outlines-elements-of-space-warfighting-in-first-framework/) · accessed 2026-06-12.
+- *U.S. Space Force's "Space Warfighting" Framework (USNI News, 23 Apr 2025)* — [live](https://news.usni.org/2025/04/23/u-s-space-forces-space-warfighting-framework/) · [snapshot](https://web.archive.org/web/2026*/https://news.usni.org/2025/04/23/u-s-space-forces-space-warfighting-framework/) · accessed 2026-06-12.
+- *Space Threat Assessment 2024 (Swope & Bingen, CSIS Aerospace Security Project)* — [live](https://aerospace.csis.org/wp-content/uploads/2024/04/240417_Swope_SpaceThreatAssessment_2024.pdf) · [snapshot](https://web.archive.org/web/2026*/https://aerospace.csis.org/wp-content/uploads/2024/04/240417_Swope_SpaceThreatAssessment_2024.pdf) · accessed 2026-06-12.
+- *Resilience of Space Systems White Paper (The Aerospace Corporation)* — [live](https://aerospace.org/paper/resilience-space-systems-white-paper) · [snapshot](https://web.archive.org/web/2026*/https://aerospace.org/paper/resilience-space-systems-white-paper) · accessed 2026-06-12.
+- *Resilient Space: The Real Star Wars (The Aerospace Corporation)* — [live](https://aerospace.org/article/resilient-space-real-star-wars) · [snapshot](https://web.archive.org/web/2026*/https://aerospace.org/article/resilient-space-real-star-wars) · accessed 2026-06-12.
+- *Satellite applications of spread spectrum frequency hopping techniques (IEEE Xplore)* — [live](https://ieeexplore.ieee.org/document/64241) · [snapshot](https://web.archive.org/web/2026*/https://ieeexplore.ieee.org/document/64241) · accessed 2026-06-12.
+- *Code-Aware Anti-Jamming Method for FHSS Systems (IEEE Xplore)* — [live](https://ieeexplore.ieee.org/iel8/10636307/10636354/10636420.pdf) · [snapshot](https://web.archive.org/web/2026*/https://ieeexplore.ieee.org/iel8/10636307/10636354/10636420.pdf) · accessed 2026-06-12.
 ## 5. Cross-cutting functions the sim must represent
 
-The *Framework* names enabling functions that become sim subsystems:
+The USSF [*Space Warfighting: A Framework for Planners* (Apr 2025)](https://www.spaceforce.mil/Portals/2/Documents/SAF_2025/Space_Warfighting_-_A_Framework_for_Planners_BLK2_(final_20250410).pdf) names the enabling functions that bind offence and defence: **communications, movement and manoeuvre, intelligence/SDA, targeting, and command and control**. The sim renders each as a concrete engine surface — channels, propagators, custody objects, and the order pipeline.
 
-- **Lines of communication** — orbits, launch trajectories, and the comm links between
-  ground and space. Controlling these is the real prize.
-- **Movement and maneuver** — repositioning, RPO, changing orbits, frequency hopping,
-  shifting customers between satellites. Maneuver costs **delta-v / fuel**, a hard limit the
-  sim must track per asset.
-- **Space Domain Awareness (SDA), intelligence, and attribution** — you cannot target what
-  you cannot find and characterize. **Custody** (knowing where a thing is right now) and
-  **attribution** (knowing who did what) are explicit game states.
-- **Command and Control** — decentralized execution; tasked units get latitude. Maps to the
-  delegation model between White Cell intent and Red/Blue execution.
+**Lines of communication.** The 2020 [Space Capstone Publication "Spacepower"](https://www.spaceforce.mil/portals/1/space%20capstone%20publication_10%20aug%202020.pdf) frames LOCs as the physical thoroughfares of the domain: "in the orbital segment, lines of communication include but are not limited to launch trajectories, orbits, and communications links to and from terrestrial nodes". The SCP also defines a *Key Orbital Trajectory* as "any orbit from which a spacecraft can support users, collect information, defend other assets, or engage the adversary" — LEO/MEO/GEO/SSO are the basic forms ([SCP, p. 31-ish key terrain discussion](https://www.spaceforce.mil/portals/1/space%20capstone%20publication_10%20aug%202020.pdf); summarized [37th TRW](https://www.37trw.af.mil/News/Article-Display/Article/2308736/space-force-releases-1st-doctrine-defines-spacepower-as-distinct-form-of-milita/)). The sim's six [`engine/access.py`](../../spacesim/engine/access.py) channels (`command_uplink`, `telemetry_downlink`, `sensor_observation`, `jam_footprint`, `weapon_engagement`, `rpo_proximity`) instantiate exactly these LOCs as window-gated, geometry-bound things you can contest.
 
-## 6. "Responsible" counterspace & escalation
+**Movement and manoeuvre.** The Framework treats manoeuvre as a first-class warfighting verb — the document "defines baseline concepts for space operations — from command and control to space domain awareness to 'movement and manoeuvre'" ([Air & Space Forces Magazine, 17 Apr 2025](https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/); confirmed [USNI News, 23 Apr 2025](https://news.usni.org/2025/04/23/u-s-space-forces-space-warfighting-framework)). Unlike air manoeuvre, every burn is paid in propellant: delta-v is the binding budget constraint and physics-of-spaceflight is the explicit space-specific consideration the Framework calls out. The sim encodes this in [`engine/maneuver.py`](../../spacesim/engine/maneuver.py) — six entry modes (ECI, LVLH, finite-burn, target-COE, Hohmann, plane-change) that all draw against an asset's stored Δv reserve.
 
-Doctrine stresses **avoiding long-lived debris** and keeping actions proportionate.
-Reversible/non-reversible and kinetic/non-kinetic are first-class attributes of every
-offensive action. This gives the sim a natural **escalation ladder** and a debris model:
+**SDA, intelligence, and the find-fix-track chain.** The Framework names "communication, maneuver, intelligence, command and control, and targeting" as the functions every counterspace operation requires ([USNI summary](https://news.usni.org/2025/04/23/u-s-space-forces-space-warfighting-framework)). SDA is the prerequisite to all of them: you cannot target what you cannot find and characterize. The sim's [`engine/custody.py:Track`](../../spacesim/engine/custody.py) is a custody object whose confidence decays between observations and shrinks on report — the deterministic accounting of a doctrinal find/fix/track chain.
 
-```
-Deceive (reversible) → Disrupt → Deny → Degrade → Destroy (debris-generating)
-```
+**Weapons-quality custody as the orbital-engagement gate.** The Framework defines "Suppression of Adversary Counterspace Targeting" as denying "the adversary's ability to collect or disseminate weapons-quality targeting data during an orbital engagement" ([Via Satellite, 18 Apr 2025](https://www.satellitetoday.com/government-military/2025/04/18/space-force-outlines-elements-of-space-warfighting-in-first-framework/); [Framework PDF](https://www.spaceforce.mil/Portals/2/Documents/SAF_2025/Space_Warfighting_-_A_Framework_for_Planners_BLK2_(final_20250410).pdf)). That phrase — *weapons-quality targeting data during an orbital engagement* — is the doctrinal anchor for [`engine/custody.py:Track.is_weapons_quality()`](../../spacesim/engine/custody.py) (line 53): an engagement order in [`engine/orders.py:OrderSystem.issue`](../../spacesim/engine/orders.py) refuses to schedule until the firing cell's `TrackCatalog` carries a track above the confidence threshold.
 
-These are the **five D's** the sim uses end-to-end (see
-`../research/03-counterspace-taxonomy.md`, `../build-spec/01-context-and-scope.md`,
-and `spacesim/engine/effects.py`).
+**Attribution as a design problem.** CSIS [*Space Threat Assessment 2024*](https://aerospace.csis.org/wp-content/uploads/2024/04/240417_Swope_SpaceThreatAssessment_2024.pdf) and the Secure World Foundation [*Global Counterspace Capabilities Report*](https://www.swfound.org/publications-and-reports/2026-global-counterspace-capabilities-report) both catalog the asymmetry: kinetic counterspace "come[s] with immediate attribution and guaranteed political fallout", while cyber and EW are "deniable" and live in "zones of legal ambiguity where intent, effects, and attribution are contested" ([Chatham House, 2025](https://www.chathamhouse.org/2025/05/securing-space-based-assets-nato-members-cyberattacks/03-evolution-space-policies-nato-and)). RAND's [*Framework of Deterrence in Space Operations*](https://www.rand.org/pubs/research_reports/RRA820-1.html) notes that "the challenges associated with deterring cyberattacks often parallel those for deterring space asset attacks: attribution, credibility, proportionality of response, and the ability to control escalation". The sim renders this as [`engine/cyber.py:attribution_score`](../../spacesim/engine/cyber.py) (line 75) — a per-vector probability that varies with dwell, tradecraft, and posture, so Blue's response options are gated by *forensic confidence*, not perfect knowledge.
 
-> **Sim implication:** Every weapon/effect carries `{reversibility, kinetic?, debris_risk,
-> escalation_weight}`. White Cell can score "responsible" play and trigger international/
-> political consequences when a player crosses thresholds.
+**Command and control.** The SCP treats C2 as the connective tissue; [USSF SDP 6-0 *Mission Command* (Nov 2024)](https://csps.aerospace.org/sites/default/files/2025-10/USSF%20SDP%206-0%20Mission%20Command%20(Nov%202024).pdf) is explicit: "distributed control, decentralized execution, and delegation of authorities are essential characteristics of C2 under mission command" — commanders provide intent and "delegate planning and execution responsibilities to the lowest appropriate level". [Joint Publication 3-14 *Space Operations*](https://www.jcs.mil/doctrine/joint-doctrine-pubs/3-0-operations-series/) carries the same logic into the joint force. The sim's White-Cell-intent → Red/Blue-cell-execution split, dispatched through [`engine/orders.py:OrderSystem.issue`](../../spacesim/engine/orders.py), is the mission-command pattern: the facilitator sets objectives and injects; cell operators choose timing, asset, and window inside those bounds.
 
-## 7. Allied doctrine (lighter touch, for Blue coalition flavor)
+### Sources
 
-- **United Kingdom** — UK Space Command (est. 2021); national space strategy emphasizes SDA,
-  protect-and-defend, and operating as part of a coalition. Conducts cooperative RPO with
-  the US.
-- **France** — *Commandement de l'Espace* (CDE); a 2019 Space Defence Strategy that
-  explicitly contemplates active defense, including reported plans for on-orbit
-  "bodyguard"/patrol satellites and dazzling lasers (EGIDE/FLAMHE concepts). France conducts
-  cooperative RPO with the US.
-- **NATO** — declared space an operational domain (2019); coordinates through a Space Centre
-  at Ramstein. NATO's role in the sim is coalition SDA sharing and political escalation
-  thresholds rather than independent weapons.
+- *Space Capstone Publication: Spacepower* (USSF, 10 Aug 2020) — [live](https://www.spaceforce.mil/portals/1/space%20capstone%20publication_10%20aug%202020.pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.spaceforce.mil/portals/1/space%20capstone%20publication_10%20aug%202020.pdf) · accessed 2026-06-12.
+- *Space Warfighting: A Framework for Planners* (USSF, Apr 2025) — [live](https://www.spaceforce.mil/Portals/2/Documents/SAF_2025/Space_Warfighting_-_A_Framework_for_Planners_BLK2_(final_20250410).pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.spaceforce.mil/Portals/2/Documents/SAF_2025/Space_Warfighting_-_A_Framework_for_Planners_BLK2_(final_20250410).pdf) · accessed 2026-06-12.
+- "New Doc Spells Out How USSF Will Use Space Control to Gain Space Superiority" (Air & Space Forces Magazine, 17 Apr 2025) — [live](https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/) · [snapshot](https://web.archive.org/web/2026*/https://www.airandspaceforces.com/new-doc-spells-out-how-ussf-will-use-space-control-to-gain-space-superiority/) · accessed 2026-06-12.
+- "U.S. Space Force's 'Space Warfighting' Framework" (USNI News, 23 Apr 2025) — [live](https://news.usni.org/2025/04/23/u-s-space-forces-space-warfighting-framework) · [snapshot](https://web.archive.org/web/2026*/https://news.usni.org/2025/04/23/u-s-space-forces-space-warfighting-framework) · accessed 2026-06-12.
+- "Space Force Outlines Elements of Space Warfighting In First Framework" (Via Satellite, 18 Apr 2025) — [live](https://www.satellitetoday.com/government-military/2025/04/18/space-force-outlines-elements-of-space-warfighting-in-first-framework/) · [snapshot](https://web.archive.org/web/2026*/https://www.satellitetoday.com/government-military/2025/04/18/space-force-outlines-elements-of-space-warfighting-in-first-framework/) · accessed 2026-06-12.
+- *Space Threat Assessment 2024* (CSIS Aerospace Security Project, Apr 2024) — [live](https://aerospace.csis.org/wp-content/uploads/2024/04/240417_Swope_SpaceThreatAssessment_2024.pdf) · [snapshot](https://web.archive.org/web/2026*/https://aerospace.csis.org/wp-content/uploads/2024/04/240417_Swope_SpaceThreatAssessment_2024.pdf) · accessed 2026-06-12.
+- *A Framework of Deterrence in Space Operations* (RAND, RR-A820-1) — [live](https://www.rand.org/pubs/research_reports/RRA820-1.html) · [snapshot](https://web.archive.org/web/2026*/https://www.rand.org/pubs/research_reports/RRA820-1.html) · accessed 2026-06-12.
+- *Space Doctrine Publication 6-0: Mission Command* (USSF, Nov 2024) — [live](https://csps.aerospace.org/sites/default/files/2025-10/USSF%20SDP%206-0%20Mission%20Command%20(Nov%202024).pdf) · [snapshot](https://web.archive.org/web/2026*/https://csps.aerospace.org/sites/default/files/2025-10/USSF%20SDP%206-0%20Mission%20Command%20(Nov%202024).pdf) · accessed 2026-06-12.
+- *Joint Publication 3-14: Space Operations* (Joint Chiefs of Staff) — [live](https://www.jcs.mil/doctrine/joint-doctrine-pubs/3-0-operations-series/) · [snapshot](https://web.archive.org/web/2026*/https://www.jcs.mil/doctrine/joint-doctrine-pubs/3-0-operations-series/) · accessed 2026-06-12.
 
-> **Sim implication:** Coalition partners are best modeled as *shared SDA feeds and political
-> constraints* on the Blue side, plus a small number of allied assets, rather than full
-> independent factions in v1.
+Used by: This subsection maps cross-cutting doctrinal functions onto the engine. *Lines of communication* → the six channels in [`../../spacesim/engine/access.py`](../../spacesim/engine/access.py). *Movement and manoeuvre* → the six entry modes in [`../../spacesim/engine/maneuver.py`](../../spacesim/engine/maneuver.py) drawing against asset Δv. *SDA and weapons-quality custody* → [`../../spacesim/engine/custody.py`](../../spacesim/engine/custody.py) (`Track.is_weapons_quality`, line 53) gating engagements in [`../../spacesim/engine/orders.py`](../../spacesim/engine/orders.py) (`OrderSystem.issue`). *Attribution* → [`../../spacesim/engine/cyber.py`](../../spacesim/engine/cyber.py) (`attribution_score`, line 75). *Command and control* → the White-Cell → Red/Blue delegation pipeline implemented through `OrderSystem.issue` and the session-layer `CellController` fog-of-war boundary.
+## 6. Responsible counterspace & escalation
 
-## Sources
+US space doctrine increasingly treats *responsible* counterspace — reversible, debris-avoiding, signal-bearing effects — as a war-winning preference, not a humanitarian afterthought. The USSF [*Space Capstone Publication: Spacepower* (Aug 2020)](https://www.spaceforce.mil/portals/1/space%20capstone%20publication_10%20aug%202020.pdf) is the doctrinal anchor: it names the **five-D ladder of counterspace effects — deceive, disrupt, deny, degrade, destroy** — and frames domain stewardship as a *military* imperative, because long-lived orbital debris from kinetic action degrades the very environment U.S. forces depend on. That stewardship logic is what makes the bottom of the ladder (deceive / disrupt / deny) the operational default and the top (destroy) the option of last resort.
 
-- USSF, *Space Warfighting: A Framework for Planners* (10 Apr 2025).
-- USSF, *Space Force Doctrine Document 1* (Apr 2025).
-- Air & Space Forces Magazine; Breaking Defense; DefenseScoop; USNI News reporting on the
-  2025 framework (Apr 2025).
-- Secure World Foundation, *Global Counterspace Capabilities* (2025, 2026) for allied
-  programs.
+The canonical real-world expression came at **Vandenberg Space Force Base on 18 April 2022**, when Vice President Kamala Harris announced a unilateral U.S. commitment not to conduct destructive direct-ascent ASAT (DA-ASAT) tests — explicitly motivated by the [Russian 15 November 2021 Cosmos 1408 strike that forced the ISS crew to shelter](https://www.csis.org/analysis/when-elephants-fight-outer-space) as the station passed through the ~1,500-fragment debris cloud every ~90 minutes. Harris [told the Vandenberg audience](https://www.vandenberg.spaceforce.mil/News/Article-Display/Article/3004297/vice-president-kamala-harris-announces-ban-on-anti-satellite-weapons-tests-duri/): *"the United States commits not to conduct destructive direct-ascent anti-satellite missile testing. Simply put: these tests are dangerous, and we will not conduct them. We are the first nation to make such a commitment. And today, on behalf of the United States of America, I call on all nations to join us."*
+
+The cascade was fast. On **7 December 2022 the UN General Assembly adopted Resolution 77/41**, *"Destructive direct-ascent anti-satellite missile testing,"* by **155–9–9**, calling on all states to commit not to conduct such tests ([UN Digital Library record](https://digitallibrary.un.org/record/3997622?ln=en); [UN First Committee press release GA/DIS/3703](https://press.un.org/en/2022/gadis3703.doc.htm)). The "no" votes — China, Russia, Belarus, Iran, Cuba, Nicaragua, Syria, Bolivia, CAR — and the abstentions of India and Pakistan map directly onto the doctrinal split this research file treats in [§02-doctrine-non-western](02-doctrine-non-western.md): the moratorium is a Western-bloc instrument, and the resisters are the same actors with active DA-ASAT programs. Secure World Foundation's [*Multilateral Space Security Initiatives* tracker](https://www.swfound.org/publications-and-reports/multilateral-space-security-initiatives) and the companion [*2025 Global Counterspace Capabilities* assessment](https://www.swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report) record **38 states committed to the moratorium as of November 2024**, alongside continued counterspace activity by twelve states.
+
+The escalation logic underneath is the war-winning argument. CSIS Aerospace Security Project's [*Space Threat Assessment 2025*](https://www.csis.org/analysis/space-threat-assessment-2025) and Malekos Smith's [*"When Elephants Fight in Outer Space"*](https://www.csis.org/analysis/when-elephants-fight-outer-space) treat destructive counterspace as **anti-strategic on three axes**: (a) debris is a *commons harm* that endangers all spacefaring nations — Cosmos 1408 raised Kessler-syndrome risk by an estimated 5% and "even a fleck of paint can cause critical damage" at orbital closing speeds; (b) kinetic effects *compress decision time* and undermine crisis stability — once a debris cloud exists, the attacker cannot recall it and the defender cannot localise blame; (c) destructive use *costs political capital* — the international backlash against Russia 2021 (Cosmos 1408) and India 2019 (Mission Shakti) is the empirical baseline. The full legal-norms treatment — Outer Space Treaty 1967, Liability Convention 1972, and the UNGA 77/41 negotiating record — lives in [`07-legal-norms-and-roe.md` §3](07-legal-norms-and-roe.md); this section sources the *doctrinal preference* that frames why the engine treats `destroy` as the most expensive rung.
+
+In the simulator, that preference is a numeric dial, not a slogan. [`engine/effects.py:political_consequence`](../../spacesim/engine/effects.py) tags each resolved effect with a severity-weighted political cost that scales with `Outcome` — `destroy` carries the highest charge, `deceive`/`disrupt`/`deny` essentially none — so a Blue commander who climbs the five-D ladder pays a measurable AAR-visible cost. [`engine/engage.py:INTERCEPTORS`](../../spacesim/engine/engage.py) is the matching reach table for the DA-ASAT inventory the moratorium addresses (SM-3, GBI, ASM-135, DN-3, Nudol, PL-19, Mission Shakti); selecting a kinetic engagement against an on-orbit target therefore both passes through the `INTERCEPTORS` geometry check *and* triggers the `political_consequence` dial, which is exactly the doctrinal trade the 2022 moratorium makes explicit at the strategic level.
+
+Used by: [`../../spacesim/engine/effects.py`](../../spacesim/engine/effects.py) (`political_consequence` side-effects, `Outcome` enum), [`../../spacesim/engine/engage.py`](../../spacesim/engine/engage.py) (`INTERCEPTORS` DA-ASAT reach table); cross-link [`07-legal-norms-and-roe.md`](07-legal-norms-and-roe.md) §3.
+
+### Sources
+- *Space Capstone Publication: Spacepower (USSF, Aug 2020)* — [live](https://www.spaceforce.mil/portals/1/space%20capstone%20publication_10%20aug%202020.pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.spaceforce.mil/portals/1/space%20capstone%20publication_10%20aug%202020.pdf) · accessed 2026-06-12.
+- *Vice President Kamala Harris Announces Ban on Anti-Satellite Weapons Tests During Vandenberg Visit (Vandenberg SFB, 18 Apr 2022)* — [live](https://www.vandenberg.spaceforce.mil/News/Article-Display/Article/3004297/vice-president-kamala-harris-announces-ban-on-anti-satellite-weapons-tests-duri/) · [snapshot](https://web.archive.org/web/2026*/https://www.vandenberg.spaceforce.mil/News/Article-Display/Article/3004297/vice-president-kamala-harris-announces-ban-on-anti-satellite-weapons-tests-duri/) · accessed 2026-06-12.
+- *UN General Assembly Resolution 77/41 — "Destructive direct-ascent anti-satellite missile testing" (7 Dec 2022)* — [live](https://digitallibrary.un.org/record/3997622?ln=en) · [snapshot](https://web.archive.org/web/2026*/https://digitallibrary.un.org/record/3997622?ln=en) · accessed 2026-06-12.
+- *First Committee press release GA/DIS/3703 (UN, 2022)* — [live](https://press.un.org/en/2022/gadis3703.doc.htm) · [snapshot](https://web.archive.org/web/2026*/https://press.un.org/en/2022/gadis3703.doc.htm) · accessed 2026-06-12.
+- *Multilateral Space Security Initiatives — DA-ASAT moratorium tracker (Secure World Foundation)* — [live](https://www.swfound.org/publications-and-reports/multilateral-space-security-initiatives) · [snapshot](https://web.archive.org/web/2026*/https://www.swfound.org/publications-and-reports/multilateral-space-security-initiatives) · accessed 2026-06-12.
+- *Global Counterspace Capabilities 2025: An Open Source Assessment (Secure World Foundation, Apr 2025)* — [live](https://www.swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report) · [snapshot](https://web.archive.org/web/2026*/https://www.swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report) · accessed 2026-06-12.
+- *When Elephants Fight in Outer Space (Malekos Smith, CSIS Aerospace Security Project, Jan 2022)* — [live](https://www.csis.org/analysis/when-elephants-fight-outer-space) · [snapshot](https://web.archive.org/web/2026*/https://www.csis.org/analysis/when-elephants-fight-outer-space) · accessed 2026-06-12.
+- *Space Threat Assessment 2025 (Swope & Bingen, CSIS Aerospace Security Project, Apr 2025)* — [live](https://www.csis.org/analysis/space-threat-assessment-2025) · [snapshot](https://web.archive.org/web/2026*/https://www.csis.org/analysis/space-threat-assessment-2025) · accessed 2026-06-12.
+## 7. Allied doctrine — NATO and major partners
+
+Every major US ally has published its own space-warfare doctrine. The simulator's Blue coalition is rarely just "US + generic ally" — UK, French, Australian, Japanese, and Canadian cells each bring distinct ROE defaults, SDA-sharing posture, and political-cost gates. This subsection maps each to the engine seams that already exist.
+
+### 7.1 NATO
+
+NATO declared space its fifth operational domain at the [December 2019 London Leaders' Meeting](https://www.nato.int/en/about-us/official-texts-and-resources/official-texts/2019/12/04/london-declaration), preceded by the [November 2019 Foreign Ministers' decision](https://www.nato.int/cps/en/natohq/news_171028.htm) and the June 2019 [overarching Space Policy](https://www.nato.int/en/about-us/official-texts-and-resources/official-texts/2019/06/27/natos-overarching-space-policy). The keystone doctrinal artefact is [AJP-3.3 *Allied Joint Doctrine for Air and Space Operations*](https://www.coemed.org/files/stanags/01_AJP/AJP-3.3_EDB_V1_E_3700.pdf) (Edition C), republished by UK MOD as [AJP-3.3B](https://www.gov.uk/government/publications/allied-joint-doctrine-for-air-and-space-operations-ajp-33b). The London Declaration's "no weapons in space" pledge is the escalation ceiling for a NATO-flagged Blue cell — kinetic ASAT verbs should carry a high `political_consequence` weight.
+
+### 7.2 United Kingdom
+
+The UK's keystone is [Joint Doctrine Publication (JDP) 0-40 *UK Space Power*](https://www.gov.uk/government/publications/uk-space-power-jdp-0-40) (First Edition, October 2022; [full PDF](https://assets.publishing.service.gov.uk/media/653a5261e6c968000daa9b8a/JDP_0_40_UK_Space_Power_web.pdf)). JDP 0-40 superseded the space chapters of JDP 0-30 — there is no separately published "JDN 1/22"; the 2022 doctrine is JDP 0-40. It emphasises "responsible behaviour" and Five-Eyes SDA sharing — model as high-confidence coalition tracks fed into the UK cell's `CellController` view.
+
+### 7.3 Australia
+
+The RAAF / Defence Space Command published the [*Space Power eManual* ("Lightspeed" edition, v1.0a)](https://www.airforce.gov.au/sites/default/files/2022-09/213304_space_power_emanual_v1.0a%5B1%5D.pdf) in 2022, [launched at the 2022 Air and Space Power Conference](https://airpower.airforce.gov.au/news/APM-SPM-Launch). Australia's "complexity inversion" framing maps to a Blue cell that is small-force but deeply networked into US SDA — model as a high-value ISR asset plus full read-access to the US `TrackCatalog`.
+
+### 7.4 Japan
+
+Japan's foundational document is the December 2022 [*Defense Buildup Program*](https://www.mod.go.jp/j/policy/agenda/guideline/plan/pdf/program_en.pdf), operationalised by the July 2025 [*Space Domain Defense Guidelines*](https://www.mod.go.jp/en/images/outline_space-domain-defense-guidelines_20250807.pdf) with four pillars: SSA, SATCOM assurance, mission assurance, and adversary C3 disruption. The [Space Operations Squadron](https://www.japan.go.jp/kizuna/2024/08/protecting_space_security.html) is JSDF's first space unit. Japan defaults to defensive postures — SSA collection + satcom hardening verbs available, kinetic ASAT not in the playbook.
+
+### 7.5 France
+
+France published its [*Stratégie spatiale de défense*](https://www.vie-publique.fr/files/rapport/pdf/194000642.pdf) in July 2019 and stood up the [Commandement de l'Espace (CDE)](https://www.defense.gouv.fr/air/actualites/commandement-lespace-5-ans-au-service-du-spatial-militaire) on 3 September 2019. CSIS Aerospace Security's [*Evolution of French Space Security*](https://aerospace.csis.org/wp-content/uploads/2024/04/240314_Young_French_Space.pdf) (Young, 2024) notes France's strategy explicitly reserves the right to active defence including patrolling nano-satellites and dazzling lasers. France is the only NATO ally whose doctrine authorises non-kinetic counterspace effects in peacetime — model with `jam`, `cyber`, and `rpo_proximity` unlocked at lower `political_consequence` than the UK or Canadian default.
+
+### 7.6 Canada
+
+Canada's keystone is the [*Pan-Domain Force Employment Concept*](https://www.canada.ca/en/department-national-defence/corporate/reports-publications/departmental-plans/departmental-plan-2024-25/planned-results/future-force-design.html), operationalised by the [*Pan-Domain Command & Control (PDC2) Concept Paper*](https://www.canada.ca/en/department-national-defence/corporate/reports-publications/pan-domain-command-control.html) (endorsed by CDS in [January 2025](https://www.canada.ca/en/department-national-defence/maple-leaf/defence/2025/01/adapting-changing-world-pan-domain-command-control-concept-pdc2.html)). CAF recognises five domains including space; Canada's posture is NORAD-integrated SDA rather than independent counterspace — model the Canadian cell as a NORAD-shared `TrackCatalog` view with no offensive verbs enabled.
+
+### 7.7 Pedagogical mapping
+
+The simulator does not need full independent Blue factions per ally. Cheapest faithful model: (a) one `CellController` per ally sharing a coalition `TrackCatalog` modulated by national caveats encoded as fog-of-war filters, (b) the vignette YAML `owner` field on each asset (NATO / GBR / AUS / JPN / FRA / CAN) tagged with a per-doctrine ROE preset, and (c) per-owner multipliers on `political_consequence` so a French laser-dazzle carries less in-game cost than a French kinetic engagement.
+
+### Sources
+
+- *London Declaration (4 Dec 2019)* — [live](https://www.nato.int/en/about-us/official-texts-and-resources/official-texts/2019/12/04/london-declaration) · [snapshot](https://web.archive.org/web/2026*/https://www.nato.int/en/about-us/official-texts-and-resources/official-texts/2019/12/04/london-declaration) · accessed 2026-06-12.
+- *NATO Foreign Ministers recognize space as operational domain (20 Nov 2019)* — [live](https://www.nato.int/cps/en/natohq/news_171028.htm) · [snapshot](https://web.archive.org/web/2026*/https://www.nato.int/cps/en/natohq/news_171028.htm) · accessed 2026-06-12.
+- *AJP-3.3 Allied Joint Doctrine for Air and Space Operations (Ed. C)* — [live](https://www.coemed.org/files/stanags/01_AJP/AJP-3.3_EDB_V1_E_3700.pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.coemed.org/files/stanags/01_AJP/AJP-3.3_EDB_V1_E_3700.pdf) · accessed 2026-06-12.
+- *JDP 0-40 UK Space Power (First Edition, Oct 2022)* — [live](https://assets.publishing.service.gov.uk/media/653a5261e6c968000daa9b8a/JDP_0_40_UK_Space_Power_web.pdf) · [snapshot](https://web.archive.org/web/2026*/https://assets.publishing.service.gov.uk/media/653a5261e6c968000daa9b8a/JDP_0_40_UK_Space_Power_web.pdf) · accessed 2026-06-12.
+- *Australian Defence Space Power eManual v1.0a (2022)* — [live](https://www.airforce.gov.au/sites/default/files/2022-09/213304_space_power_emanual_v1.0a%5B1%5D.pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.airforce.gov.au/sites/default/files/2022-09/213304_space_power_emanual_v1.0a%5B1%5D.pdf) · accessed 2026-06-12.
+- *Japan MOD Outline of Space Domain Defense Guidelines (July 2025)* — [live](https://www.mod.go.jp/en/images/outline_space-domain-defense-guidelines_20250807.pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.mod.go.jp/en/images/outline_space-domain-defense-guidelines_20250807.pdf) · accessed 2026-06-12.
+- *France Stratégie spatiale de défense (July 2019)* — [live](https://www.vie-publique.fr/files/rapport/pdf/194000642.pdf) · [snapshot](https://web.archive.org/web/2026*/https://www.vie-publique.fr/files/rapport/pdf/194000642.pdf) · accessed 2026-06-12.
+- *CSIS Aerospace Security — Evolution of French Space Security (Young, 2024)* — [live](https://aerospace.csis.org/wp-content/uploads/2024/04/240314_Young_French_Space.pdf) · [snapshot](https://web.archive.org/web/2026*/https://aerospace.csis.org/wp-content/uploads/2024/04/240314_Young_French_Space.pdf) · accessed 2026-06-12.
+- *Canada Pan-Domain Command & Control (PDC2) Concept Paper* — [live](https://www.canada.ca/en/department-national-defence/corporate/reports-publications/pan-domain-command-control.html) · [snapshot](https://web.archive.org/web/2026*/https://www.canada.ca/en/department-national-defence/corporate/reports-publications/pan-domain-command-control.html) · accessed 2026-06-12.
+
+Used by: Coalition partner modelling in `../../spacesim/session/manager.py` (`CellController` fog-of-war boundary, per-cell `TrackCatalog` views for shared SDA), `../../spacesim/engine/effects.py` (`political_consequence` per-owner multipliers for ROE-default behaviour), and the vignette YAML `owner` field consumed by `../../spacesim/content/vignette.py` when building Blue forces with NATO / GBR / AUS / JPN / FRA / CAN flagged assets.
+
+---
+
+## 8. Cross-references
+
+- **Engine modules sourced by this file.** [`engine/effects.py`](../../spacesim/engine/effects.py) (§1 — `Category`, `Outcome`, `political_consequence` consumed by the five-D ladder and the destroy-cost dial; §6 — political-consequence dial gated by reversibility-first doctrine); [`engine/orders.py:OrderSystem.issue`](../../spacesim/engine/orders.py) (§2/§3 — orders pipeline for the offensive menu, §5 — delegation pipeline for command-and-control); [`engine/access.py`](../../spacesim/engine/access.py) (§2 — six access channels matching the three segments, §5 — lines of communication); [`engine/maneuver.py`](../../spacesim/engine/maneuver.py) (§5 — six manoeuvre entry modes); [`engine/custody.py:Track`](../../spacesim/engine/custody.py) (§5 — `is_weapons_quality()` at line 53; the SDA-gate for engagement orders); [`engine/cyber.py:attribution_score`](../../spacesim/engine/cyber.py) (§5 — line 75; cyber-attribution math under the doctrine of "deniable" link-segment effects); [`engine/jam.py`](../../spacesim/engine/jam.py) (§3 — Space Link Interdiction electromagnetic-attack modulation); [`engine/cyber.py:VECTORS`](../../spacesim/engine/cyber.py) (§3 — Space Link Interdiction cyber-attack access vectors); [`engine/engage.py:INTERCEPTORS`](../../spacesim/engine/engage.py) (§3 — DA-ASAT reach table, §6 — the destroy-class entry the moratorium taxes); [`engine/buscommands.py:DEFENSE_VERBS`](../../spacesim/engine/buscommands.py) (§4 — `def.patch_cyber`, `def.frequency_hop`, `def.harden`, `def.set_threat_warning` at line 44); [`engine/effects.py:_FREQ_HOP_RESIDUAL`](../../spacesim/engine/effects.py) (§4 — line 99; the residual jam effectiveness after frequency-hop defence).
+- **Session and content surfaces sourced by this file.** [`session/manager.py:CellController`](../../spacesim/session/manager.py) (§7 — the fog-of-war boundary that filters per-cell SDA views, including coalition-partner feeds); vignette `owner` field (§7 — coalition-partner asset labelling); vignette `roe_kinetic_authorized` + `roe_cyber_authorized` ROE gates (§6 — moratorium operationalised as ROE defaults).
+- **Sibling primer files.** [`02-doctrine-non-western.md`](02-doctrine-non-western.md) (the parallel treatment for Russia / China / India / Iran / DPRK / regional actors — the "no" votes on UNGA 77/41 and the actors with active DA-ASAT programs documented in §1.1.6 above); [`03-counterspace-taxonomy.md`](03-counterspace-taxonomy.md) (the five effect categories that §2 maps mission areas onto, with per-effect success-probability math); [`04-orbital-mechanics-primer.md`](04-orbital-mechanics-primer.md) (the regime reachability rules that determine which §3 offensive options can hit which targets); [`05-mission-types-and-counters.md`](05-mission-types-and-counters.md) (the asset catalogue that §2 mission areas operate against); [`06-bus-and-payload-operations.md`](06-bus-and-payload-operations.md) (the operator workflow that §5 cross-cutting functions encode); [`07-legal-norms-and-roe.md`](07-legal-norms-and-roe.md) (the deeper legal-substrate treatment of OST 1967, Liability 1972, Registration 1976, and the UNGA 77/41 negotiating record that §6 references).
+- **Vignettes that exercise this file's content.** Every vignette under [`spacesim/content/vignettes/`](../../spacesim/content/vignettes/) implements an instance of the §3 offensive menu (jam / cyber / engage / observe / maneuver / command actions) and the §4 defensive menu (the `def.*` posture verbs); the [`content/vignettes/00-training-basics.yaml`](../../spacesim/content/vignettes/00-training-basics.yaml) walkthrough teaches the §5 lines-of-communication + manoeuvre + SDA loop; [`content/vignettes/learn-intermediate-recovery.yaml`](../../spacesim/content/vignettes/learn-intermediate-recovery.yaml) exercises the §4 active-defence recovery chain.
+- **Forward-references to Tier 2/3 deep-dives.** Per-actor doctrine deep-dives in [`01a-doctrine-us-allies.md`](01a-doctrine-us-allies.md) (NATO + UK + AUS + JP + FR + CA at higher fidelity), [`02a-doctrine-china.md`](02a-doctrine-china.md), [`02b-doctrine-russia.md`](02b-doctrine-russia.md) — queued in [`FUTURE-WORK.md` §12.5.2](../FUTURE-WORK.md#1252-tier-2--per-mission-and-per-actor-deep-dives). Per-mission deep-dives extending the §2 mission-area-to-effect-family mapping live in [`05a-isr-eo-sar.md`](05a-isr-eo-sar.md), [`05b-satcom-pnt.md`](05b-satcom-pnt.md), [`05c-sda-and-orbital-warfare.md`](05c-sda-and-orbital-warfare.md).
+
+*Last reviewed: 2026-06-12. Pending review: every 12 months from `last_reviewed`.*
