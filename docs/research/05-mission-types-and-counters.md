@@ -35,7 +35,7 @@ Publication*](https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20C
 ("Spacepower") doctrine of preferring reversible effects (deceive / disrupt / deny /
 degrade) before destructive ones — the five D's grounded in
 [`03-counterspace-taxonomy.md` §1](03-counterspace-taxonomy.md). The 2022 destructive
-DA-ASAT moratorium ([UN General Assembly Resolution 77/41](https://digitallibrary.un.org/record/3995412)
+DA-ASAT moratorium ([UN General Assembly Resolution 77/41](https://digitallibrary.un.org/record/3997622)
 + [SWF DA-ASAT test tracker](https://swfound.org/media/207225/swf_anti-satellite_weapons_2024.pdf))
 puts kinetic counters at the bottom of every list as a policy floor as well as a
 realism one.
@@ -63,7 +63,7 @@ realism one.
   Space Capstone Publication](https://media.defense.gov/2020/Aug/10/2002476466/-1/-1/0/SPACE%20CAPSTONE%20PUBLICATION_10%20AUG%202020.PDF)
   recognises CCD as a terrestrial counter to overhead ISR); (5) **co-orbital
   inspection / shadow** — pre-positioned to threaten the bird; (6) DA-ASAT, with
-  high political cost from the [UNGA 77/41 moratorium](https://digitallibrary.un.org/record/3995412).
+  high political cost from the [UNGA 77/41 moratorium](https://digitallibrary.un.org/record/3997622).
 - **Engine mapping:** asset template `type: ISR_EO`; payload-ops verbs
   `isr.collect_now`, `isr.schedule_collection`, `isr.set_mode` in
   [`engine/buscommands.py:PAYLOAD_VERBS`](../../spacesim/engine/buscommands.py);
