@@ -13,10 +13,11 @@ Five tiers; each has its own index enumerating every topic with ID, scope, depen
 | R200 | Decision Sciences | [R200-index.md](R200-index.md) | ✅ Done |
 | R300 | Military Analysis | [R300-index.md](R300-index.md) | ✅ Done |
 | R400 | Research Methods | [R400-index.md](R400-index.md) | ✅ Done |
-| R500 | Future Operations | [R500-index.md](R500-index.md) | ⛔ Planned |
+| R500 | Future Operations | [R500-index.md](R500-index.md) | ✅ Done |
 
 **Authoring order:** per [`MSTR-007`](../../master/MSTR-007-research-philosophy.md) §6, each
 tier's index is authored before its topic documents, and R100 (most directly tied to the
 simulator's actual subsystems) is the priority tier for full authoring. Bulk-authoring of
-R200-R500 was authorized by the user ("all tiers"); R100, R200, R300, and R400 are now fully
-authored. R500 remains to be authored.
+R200-R500 was authorized by the user ("all tiers"). **All five tiers (R100-R500, 68 topics total)
+are now fully authored**, completing the research encyclopedia. Phase 4 (Feature Specifications)
+is next.
