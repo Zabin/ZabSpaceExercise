@@ -9,8 +9,8 @@ Five tiers; each has its own index enumerating every topic with ID, scope, depen
 
 | Tier | Subject | Index | Status |
 |---|---|---|---|
-| R100 | Space Operations Foundation | [R100-index.md](R100-index.md) | 🚧 In progress |
-| R200 | Decision Sciences | [R200-index.md](R200-index.md) | ⛔ Planned |
+| R100 | Space Operations Foundation | [R100-index.md](R100-index.md) | ✅ Done |
+| R200 | Decision Sciences | [R200-index.md](R200-index.md) | ✅ Done |
 | R300 | Military Analysis | [R300-index.md](R300-index.md) | ⛔ Planned |
 | R400 | Research Methods | [R400-index.md](R400-index.md) | ⛔ Planned |
 | R500 | Future Operations | [R500-index.md](R500-index.md) | ⛔ Planned |
