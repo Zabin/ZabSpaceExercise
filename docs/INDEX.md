@@ -1,8 +1,10 @@
 # Documentation Index
 
 Master router for the project's prose docs. Each theme is a directory with its own `INDEX.md`;
-open a theme index, then the one module you need. Structure & rationale:
-[`DOCUMENTATION-PLAN.md`](DOCUMENTATION-PLAN.md).
+open a theme index, then the one module you need. Structure & rationale (legacy five-theme corpus):
+[`DOCUMENTATION-PLAN.md`](DOCUMENTATION-PLAN.md). Full tree incl. the documentation-driven-development
+expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implementations/`,
+`architecture/`, `scenarios/`): [`master/MSTR-005-documentation-map.md`](master/MSTR-005-documentation-map.md).
 
 > **Authority:** on any conflict the **Build Spec** wins — enter it at
 > [`build-spec/INDEX.md`](build-spec/INDEX.md).
@@ -11,6 +13,8 @@ open a theme index, then the one module you need. Structure & rationale:
 
 | Theme | What's in it | Start here |
 |---|---|---|
+| **Master** | Program-defining documents (vision, architecture principles, educational philosophy, glossary, doc map, governance, research philosophy) — read MSTR-001 first. | [`master/INDEX.md`](master/INDEX.md) |
+| **Domains** | Capability frameworks (training, assessment, White Cell, research, validation, governance, human factors, AI integration, doctrine development) that generate Feature Specifications. | [`domains/INDEX.md`](domains/INDEX.md) |
 | **Build Spec** | The binding v1 specification — context, requirements, architecture, milestones, operator console, SSN. | [`build-spec/INDEX.md`](build-spec/INDEX.md) |
 | **Training** | User-facing manual — install, run, first exercise, facilitation, API, troubleshooting. | [`training/INDEX.md`](training/INDEX.md) |
 | **Design** | Architecture & design corpus (the *how*) — engine, data model, interfaces, UI, catalog, Δv. | [`design/INDEX.md`](design/INDEX.md) |
