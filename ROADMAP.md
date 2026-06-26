@@ -172,6 +172,35 @@ need an explicit go-ahead before work begins, per `RT-FUTURE` §12.1.
 > See `RT-FUTURE` §12.5.0 — a "rewrite the whole file" brief blew the token budget in 3 of 4
 > attempts under the old cadence.
 
+## Theme: Feature Specifications (the *what* — `docs/features/`)
+
+Phase 4 of the documentation-driven-development expansion (MSTR-005 §4 chain: Training Objective →
+Domain → Research → **Feature Specification** → Implementation Package → Code → Tests). Each
+`FS-xxx` describes what a capability must do, with no implementation detail (MSTR-005 §5 rule 4).
+Router: [`features/feature-index.md`](docs/features/feature-index.md).
+
+| ID | Document | Path | Owning domain | Status |
+|---|---|---|---|---|
+| FS-00 | Feature index | `features/feature-index.md` | — | ✅ |
+| FS-101 | Mission Planning | `features/FS-101-mission-planning.md` | DOM-001 | ✅ |
+| FS-102 | Command Scheduling | `features/FS-102-command-scheduling.md` | (R103-grounded) | ✅ |
+| FS-103 | Custody Management | `features/FS-103-custody-management.md` | DOM-009 | ✅ |
+| FS-104 | SDA Tasking | `features/FS-104-sda-tasking.md` | DOM-009 | ✅ |
+| FS-105 | Spacecraft Operations | `features/FS-105-spacecraft-operations.md` | DOM-001, DOM-007 | ✅ |
+| FS-106 | White Cell Dashboard | `features/FS-106-white-cell-dashboard.md` | DOM-003 | ✅ |
+| FS-107 | After Action Review | `features/FS-107-after-action-review.md` | DOM-001, DOM-003 | ✅ |
+| FS-108 | Inject Authoring *(candidate)* | `features/FS-108-inject-authoring.md` | DOM-003 | 🅿️ Scoped, not authorized |
+| FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | DOM-002 | ✅ |
+| FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | 🅿️ Scoped, not authorized |
+| FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | DOM-004, DOM-005 | ✅ |
+
+FS-108 and FS-202 are intentionally lighter-weight stubs (not full specs) — both are marked
+"(candidate)" in their owning domain document and require explicit user authorization (MSTR-006 §3)
+before promotion to a full spec or any Implementation Package work.
+
+**Next:** Phase 5 (Implementation Packages, `docs/implementations/`) and Phase 6-8 (Consistency/
+Dependency/Traceability review, MSTR-006 §7) remain pending — not started, not authorized.
+
 ## Theme: Training manual (`docs/training/`)
 
 | ID | Document | Path | Depends on | Status |
