@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Stable
 > **Dependencies:** MSTR-001, MSTR-005
-> **Referenced By:** DOM-006, all FS-*, all IMP-*, `ROADMAP.md`
+> **Referenced By:** DOM-006, DOM-008, all FS-*, all IMP-*, `ROADMAP.md`
 > **Produces:** the authoring/versioning/authorization rules every document and package must follow
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** [`docs/FUTURE-WORK.md`](../FUTURE-WORK.md) §12.5.0 (authoring-cadence precedent),

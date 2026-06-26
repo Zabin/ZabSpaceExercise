@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Stable
 > **Dependencies:** MSTR-001
-> **Referenced By:** all DOM-*, all FS-*, all IMP-*, `docs/architecture/`
+> **Referenced By:** MSTR-007, all DOM-*, all FS-*, all IMP-*, `docs/architecture/`
 > **Produces:** the constraints every Feature Specification and Implementation Package must satisfy
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** [`docs/design/01-architecture-overview.md`](../design/01-architecture-overview.md),

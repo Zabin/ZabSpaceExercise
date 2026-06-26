@@ -3,10 +3,11 @@
 > **Document ID:** FS-301
 > **Version:** 1.0
 > **Status:** ✅ Done *(spec only — the underlying capability remains a documented gap per [DOM-004](../domains/DOM-004-research-framework.md) §5;
-> no Implementation Package exists yet, and any human-subjects element requires separate
+> [IMP-301A](../implementations/IMP-301A-research-analytics.md) exists as a design-only package per `MSTR-006` §3 — it is not an
+> implementation-authorizing document, and any human-subjects element requires separate
 > authorization + IRB/ethics process per [DOM-004](../domains/DOM-004-research-framework.md) §6)*
 > **Dependencies:** [DOM-004](../domains/DOM-004-research-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md) §7, [DOM-002](../domains/DOM-002-assessment-framework.md) §4
-> **Referenced By:** [DOM-004](../domains/DOM-004-research-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md), [DOM-002](../domains/DOM-002-assessment-framework.md)
+> **Referenced By:** [DOM-004](../domains/DOM-004-research-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md), [DOM-002](../domains/DOM-002-assessment-framework.md), [IMP-301A](../implementations/IMP-301A-research-analytics.md)
 > **Produces:** structured multi-run/cohort export of [FS-201](FS-201-competency-assessment.md)'s measurement dimensions
 > **Feature Mapping:** FS-301 (this document)
 > **Related Topics:** [FS-201](FS-201-competency-assessment.md) (the per-exercise instrument this feature exports at scale)

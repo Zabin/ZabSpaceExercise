@@ -199,8 +199,8 @@ FS-108 and FS-202 are intentionally lighter-weight stubs (not full specs) — bo
 before promotion to a full spec or any Implementation Package work.
 
 **Next:** Phase 5 (Implementation Packages, `docs/implementations/`) is complete (below). Phase 6-8
-(Consistency/Dependency/Traceability review, MSTR-006 §7) remains pending — not started, not
-authorized.
+(Consistency/Dependency/Traceability review, MSTR-006 §7) is also complete (see the dedicated
+theme section below).
 
 ## Theme: Implementation Packages (the *how* — `docs/implementations/`)
 
@@ -228,8 +228,67 @@ work not authorized by this documentation per MSTR-006 §3). Router:
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3).
 
-**Next:** Phase 6-8 (Consistency/Dependency/Traceability review, MSTR-006 §7) remains pending — not
-started, not authorized.
+**Next:** Phase 6-8 (Consistency/Dependency/Traceability review, MSTR-006 §7) is complete (below).
+
+## Theme: Phase 6-8 review (Consistency / Dependency / Traceability, MSTR-006 §7)
+
+Scope: every document under `docs/master/`, `docs/domains/`, `docs/research/encyclopedia/`,
+`docs/features/`, `docs/implementations/`, `docs/architecture/`, `docs/scenarios/` (MSTR-006 §5).
+
+**Phase 6 — Consistency.** Scanned all 115 in-scope content documents (excludes the 13 `INDEX.md`/
+tier-index router files, see open question below) for the required 7-field metadata block. All 115
+have a complete block with a valid MSTR-006 §2 status symbol. No duplicate Document IDs. Two stale
+status-claim wordings fixed (mechanical, not a judgment call — the text was simply out of date
+after Phase 5 added the packages it was denying existed):
+- `FS-201` / `FS-301`: each said "no Implementation Package exists yet"; this became false once
+  IMP-201A/IMP-301A were authored in Phase 5. Reworded to state the package exists as design-only
+  per MSTR-006 §3, not implementation-authorizing.
+- `DOM-002`: said "no FS/IMP exist yet"; FS-201/FS-301/IMP-201A/IMP-301A all exist as documents.
+  Reworded to "FS-201/FS-301 and their design-only IMP-201A/IMP-301A packages exist, but no code
+  implements assessment in the simulator today" — preserving the true claim (no code) while fixing
+  the false one (no documents).
+
+**Phase 7 — Dependency.** Cross-checked every `Dependencies`/`Referenced By`/`Produces` ID against
+the actual corpus: zero references to a nonexistent ID. Reconciled `Dependencies`/`Referenced By`
+bidirectionally (MSTR-005 §5's "best-effort... reconciled at Phase 8" note) and found 12 genuine
+one-directional gaps, all mechanical (the citing document's claim was correct; the cited document's
+back-reference was simply never added) — fixed directly, no judgment call involved:
+- `FS-101`/`FS-102`/`FS-103`/`FS-104`/`FS-105`/`FS-106`/`FS-107` each gained their `IMP-xxxA`/`B`
+  package in `Referenced By` (the IMP packages' `Dependencies` already correctly cited the FS).
+- `FS-201` gained `IMP-201A` and `FS-202`; `FS-301` gained `IMP-301A`.
+- `DOM-002` gained `FS-107` (which cites DOM-002 §6); `DOM-003` gained `FS-107` (same).
+- `MSTR-001` gained `MSTR-004`; `MSTR-002` gained `MSTR-007`; `MSTR-005` gained `MSTR-006`;
+  `MSTR-006` gained `DOM-008` — each was already a real, stated `Dependencies` entry in the citing
+  document, just missing from the cited document's back-reference list.
+
+**Phase 8 — Traceability.** Walked the MSTR-005 §4 chain (Training Objective → Domain → Research →
+FS → IMP → Code → Tests) for all 11 Feature Specifications:
+- FS-101 through FS-107: every leg present. Each IMP package's code citations resolve to real files
+  in `spacesim/` (verified by path existence check); each has at least one corresponding test module
+  under `spacesim/tests/` (e.g. FS-101→`test_orders.py`/`test_validate_order.py`, FS-103→
+  `test_custody.py`, FS-105→`test_bus.py`/`test_bus_commands.py`, FS-107→`test_aar.py`).
+- FS-108/FS-202: chain stops at FS (🅿️ Scoped, not authorized) — no IMP, no code, no tests. Expected
+  per MSTR-006 §3; not a defect.
+- FS-201/FS-301: chain reaches IMP-201A/IMP-301A (design-only) and stops there — no code, no tests.
+  Expected per their own Status annotations; not a defect.
+
+> **Open question:** `docs/architecture/` and `docs/scenarios/` are both empty (no files, no git
+> history) despite MSTR-006 §5 listing them as in-scope directories for the metadata-block
+> requirement. This corpus's actual architecture/scenario content instead lives under
+> `docs/design/` and `docs/vignettes/` (per `docs/INDEX.md`'s theme table, which does not list
+> `architecture/`/`scenarios/` at all). Per MSTR-006 §6, this is flagged rather than silently
+> resolved: it is unclear whether (a) `docs/architecture/`/`docs/scenarios/` are aspirational
+> MSTR-006 §5 scope not yet populated and should eventually receive content, (b) MSTR-005/MSTR-006
+> should be corrected to drop these two paths in favor of the `design/`/`vignettes/` names actually
+> in use, or (c) something else. Left for the user to decide; no document was edited to resolve it.
+
+> **Open question:** the 13 router/index files (`*/INDEX.md`, `R100-index.md` ... `R500-index.md`,
+> `features/feature-index.md`) carry no metadata block at all, while MSTR-006 §5 says "every
+> document in `master/`, `domains/`, ... opens with" the 7-field block. All 13 are internally
+> consistent with each other (100% omit it, none partially comply), suggesting an unstated but
+> consistently-applied convention that router/navigation pages are exempt. Flagged rather than
+> silently resolved per MSTR-006 §6 — either MSTR-006 §5 should be amended to state the router
+> exemption explicitly, or all 13 files should gain a block. No file was edited to resolve it.
 
 ## Theme: Training manual (`docs/training/`)
 

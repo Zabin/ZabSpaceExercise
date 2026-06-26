@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), [DOM-002](../domains/DOM-002-assessment-framework.md) §6
-> **Referenced By:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), [DOM-002](../domains/DOM-002-assessment-framework.md)
+> **Referenced By:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), [DOM-002](../domains/DOM-002-assessment-framework.md), [IMP-107A](../implementations/IMP-107A-after-action-review.md)
 > **Produces:** the replay/snapshot surface [FS-201](FS-201-competency-assessment.md)'s "belief-truth divergence" dimension reads from
 > **Feature Mapping:** FS-107 (this document)
 > **Related Topics:** [FS-106](FS-106-white-cell-dashboard.md) (White-only controls that invoke this instrument), [FS-201](FS-201-competency-assessment.md)

@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [DOM-001](../domains/DOM-001-training-framework.md), [R101](../research/encyclopedia/R101-orbital-mechanics-for-operations.md), [R112](../research/encyclopedia/R112-propulsion-and-maneuver-planning.md), [R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md)
-> **Referenced By:** [R101](../research/encyclopedia/R101-orbital-mechanics-for-operations.md), [R112](../research/encyclopedia/R112-propulsion-and-maneuver-planning.md), [R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md), [R311](../research/encyclopedia/R311-course-of-action-analysis.md)
+> **Referenced By:** [R101](../research/encyclopedia/R101-orbital-mechanics-for-operations.md), [R112](../research/encyclopedia/R112-propulsion-and-maneuver-planning.md), [R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md), [R311](../research/encyclopedia/R311-course-of-action-analysis.md), [IMP-101A](../implementations/IMP-101A-mission-planning.md)
 > **Produces:** the planning surface consumed by [FS-105](FS-105-spacecraft-operations.md) once a plan is committed
 > **Feature Mapping:** FS-101 (this document)
 > **Related Topics:** [DOM-001](../domains/DOM-001-training-framework.md) §7, [R311](../research/encyclopedia/R311-course-of-action-analysis.md) (course-of-action analysis, candidate future scope)

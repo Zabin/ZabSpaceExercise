@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** 🚧 In progress (most mechanics shipped; framework formalizes existing capability + states gaps)
 > **Dependencies:** MSTR-001, MSTR-003
-> **Referenced By:** DOM-001, DOM-009, FS-106, FS-108 (candidate)
+> **Referenced By:** DOM-001, DOM-009, FS-106, FS-107, FS-108 (candidate)
 > **Produces:** FS-106 White Cell Dashboard, FS-108 (candidate) Inject Authoring
 > **Feature Mapping:** FS-106, FS-107
 > **Related Topics:** [`docs/training/07-white-cell-facilitation.md`](../training/07-white-cell-facilitation.md),

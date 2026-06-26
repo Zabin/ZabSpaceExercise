@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ♻️ Living (update whenever a directory or tier is added)
 > **Dependencies:** MSTR-001
-> **Referenced By:** `docs/INDEX.md`, `ROADMAP.md`, all DOM-*, all FS-*, all IMP-*
+> **Referenced By:** `docs/INDEX.md`, `ROADMAP.md`, MSTR-006, all DOM-*, all FS-*, all IMP-*
 > **Produces:** the routing rules every new document must follow
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** [`docs/DOCUMENTATION-PLAN.md`](../DOCUMENTATION-PLAN.md) (legacy five-theme rationale),

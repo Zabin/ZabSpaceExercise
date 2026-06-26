@@ -7,7 +7,7 @@
 > [R110](../research/encyclopedia/R110-communications.md), [R111](../research/encyclopedia/R111-power-and-thermal-operations.md), [R112](../research/encyclopedia/R112-propulsion-and-maneuver-planning.md), [R113](../research/encyclopedia/R113-attitude-determination-and-control.md), [R114](../research/encyclopedia/R114-command-and-data-handling.md), [R115](../research/encyclopedia/R115-electronic-warfare-in-space-operations.md), [R116](../research/encyclopedia/R116-cyber-operations-against-space-systems.md),
 > [R117](../research/encyclopedia/R117-directed-energy-and-kinetic-effects.md), [R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md), [R303](../research/encyclopedia/R303-deterrence-theory.md), [R304](../research/encyclopedia/R304-escalation-dynamics.md)
 > **Referenced By:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-007](../domains/DOM-007-human-factors-framework.md), all of [R103](../research/encyclopedia/R103-satellite-command-and-control.md)/[R106](../research/encyclopedia/R106-mission-operations.md)-[R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md) (each names FS-105 as a direct or
-> co-direct consumer)
+> co-direct consumer), [IMP-105A](../implementations/IMP-105A-spacecraft-operations-bus-payload.md), [IMP-105B](../implementations/IMP-105B-spacecraft-operations-effects-console.md)
 > **Produces:** the executed-state surface consumed by [FS-107](FS-107-after-action-review.md) (AAR replay) and [FS-201](FS-201-competency-assessment.md) (assessment data)
 > **Feature Mapping:** FS-105 (this document)
 > **Related Topics:** [FS-101](FS-101-mission-planning.md) (the planning surface that feeds this console), [FS-102](FS-102-command-scheduling.md) (the execution

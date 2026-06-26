@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Stable
 > **Dependencies:** none (this is the root document)
-> **Referenced By:** MSTR-002, MSTR-003, MSTR-005, MSTR-006, MSTR-007, all DOM-*, all FS-*
+> **Referenced By:** MSTR-002, MSTR-003, MSTR-004, MSTR-005, MSTR-006, MSTR-007, all DOM-*, all FS-*
 > **Produces:** the mandate for DOM-001..009 and the entire downstream documentation tree
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** [`MSTR-002`](MSTR-002-architecture-principles.md), [`MSTR-003`](MSTR-003-educational-philosophy.md),

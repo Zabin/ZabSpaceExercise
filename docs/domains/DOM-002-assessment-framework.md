@@ -2,9 +2,10 @@
 
 > **Document ID:** DOM-002
 > **Version:** 1.0
-> **Status:** ⛔ Planned (framework specified; no FS/IMP exist yet — assessment is not implemented in the simulator today)
+> **Status:** ⛔ Planned (framework specified; FS-201/FS-301 and their design-only IMP-201A/IMP-301A
+> packages exist, but no code implements assessment in the simulator today)
 > **Dependencies:** MSTR-001, MSTR-003, DOM-001
-> **Referenced By:** DOM-005, DOM-007, FS-201, FS-301
+> **Referenced By:** DOM-005, DOM-007, FS-201, FS-301, FS-107
 > **Produces:** FS-201 Competency Assessment, FS-202 (candidate) Rubric Authoring, FS-301 Research Analytics
 > **Feature Mapping:** FS-201, FS-301
 > **Related Topics:** R206 (bounded rationality), R207 (cognitive bias), R401-R413 (research methods), DOM-005 (Validation)
