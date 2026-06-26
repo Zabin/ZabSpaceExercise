@@ -4,11 +4,11 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** R407, R409
+> **Referenced By:** [R407](R407-monte-carlo-methods.md), [R409](R409-verification.md)
 > **Produces:** the documentation-discipline vocabulary that makes a model's assumptions auditable rather than implicit in code
 > **Feature Mapping:** every `engine/` subsystem (`Propagator`, `AccessProvider`, `EffectResolver`, the doctrine presets in `redai.py`), DOM-005 (Validation Framework), DOM-009 (Doctrine Development Framework)
-> **Related Topics:** R409 (Verification — confirming a model matches its own spec, the next step
-> after this topic's documentation discipline), R410 (Validation), DOM-009 (Doctrine Development
+> **Related Topics:** [R409](R409-verification.md) (Verification — confirming a model matches its own spec, the next step
+> after this topic's documentation discipline), [R410](R410-validation.md) (Validation), DOM-009 (Doctrine Development
 > Framework — the doctrine-to-parameter translation this topic's assumption-documentation discipline
 > directly supports)
 
@@ -20,12 +20,12 @@ Every subsystem in `engine/` is a model: the propagator is a model of orbital mo
 engage modules are models of effect resolution, a `redai.py` doctrine preset is a model of adversary
 decision-making. This topic gives the vocabulary for documenting a model's assumptions and
 limitations explicitly, so a future implementer extending it knows what the model does and does not
-claim to represent — the precondition for both verification (R409) and validation (R410).
+claim to represent — the precondition for both verification ([R409](R409-verification.md)) and validation ([R410](R410-validation.md)).
 
 ## 2. Concepts
 
 **Every model rests on simplifying assumptions; the discipline is stating them, not avoiding them.**
-No model is the real phenomenon — `engine/propagator.py`'s Keplerian+J2 fidelity already deliberately
+No model is the real phenomenon — [`engine/propagator.py`](../../../spacesim/engine/propagator.py)'s Keplerian+J2 fidelity already deliberately
 omits J3/J4 and atmospheric drag (handled separately in `perturbations.py`, behind a seam for future
 high-fidelity drop-in per CLAUDE.md) — the documentation discipline is stating which simplifications
 were made and why, not pretending the model is complete.
@@ -33,7 +33,7 @@ were made and why, not pretending the model is complete.
 **A model's scope of validity: where it is expected to hold and where it breaks down.** A model
 calibrated for one regime can give silently wrong answers outside it (e.g. a Keplerian+J2 propagator
 in deep LEO with significant drag, or a Red doctrine preset calibrated for one strategic posture
-applied to a scenario assuming a different one, R312) — documenting scope of validity prevents a
+applied to a scenario assuming a different one, [R312](R312-space-strategy.md)) — documenting scope of validity prevents a
 future implementer from extending a model past the regime it was actually built for without
 realizing it.
 
@@ -65,7 +65,7 @@ its valid regime and getting a silently wrong answer rather than an explicit war
   equivalent explicit statement.
 - **A new `redai.py` doctrine preset's modeling assumptions (which strategic posture, what
   information access, what aggressiveness calibration) should be documented alongside the preset**,
-  per R312's strategic-culture concept and DOM-009's translation-pipeline requirement — not left
+  per [R312](R312-space-strategy.md)'s strategic-culture concept and DOM-009's translation-pipeline requirement — not left
   inferable only from reading the parameter values.
 - **Resist adding a vignette-specific special case to engine logic; route it through content data
   instead** — per CLAUDE.md's "content is data" invariant, this is this topic's parsimony principle
@@ -79,5 +79,5 @@ consumers.
 
 ## 6. Related Topics
 
-R409 (Verification, the next step after assumption documentation), R410 (Validation), DOM-009
+[R409](R409-verification.md) (Verification, the next step after assumption documentation), [R410](R410-validation.md) (Validation), DOM-009
 (Doctrine Development Framework).

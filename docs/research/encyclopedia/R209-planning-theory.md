@@ -3,12 +3,12 @@
 > **Document ID:** R209
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R202, R206
-> **Referenced By:** R106, R311, R507
+> **Dependencies:** [R202](R202-decision-theory.md), [R206](R206-bounded-rationality.md)
+> **Referenced By:** [R106](R106-mission-operations.md), [R311](R311-course-of-action-analysis.md), [R507](R507-autonomous-planning-systems.md)
 > **Produces:** the vocabulary for plan revision underlying `OrderSystem`'s plan/cancel/replace model
 > **Feature Mapping:** FS-101 (Mission Planning)
-> **Related Topics:** R106 (Mission Operations — the concrete plan/task/execute/assess loop), R202
-> (Decision Theory), R208 (OODA Loops — the cycle planning sits inside), R507 (Autonomous Planning
+> **Related Topics:** [R106](R106-mission-operations.md) (Mission Operations — the concrete plan/task/execute/assess loop), [R202](R202-decision-theory.md)
+> (Decision Theory), [R208](R208-ooda-loops.md) (OODA Loops — the cycle planning sits inside), [R507](R507-autonomous-planning-systems.md) (Autonomous Planning
 > Systems)
 
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
@@ -27,17 +27,17 @@ a *revisable* plan, not a rigid one, is the correct model under partial informat
 (a commitment to a course of action, made now, to be executed later) from a prediction (a claim
 about what will happen) — issuing an `Order` commits to *attempting* an action at the next valid
 window; it does not predict the window will be exactly as currently modeled, especially if intervening
-events (a maneuver invalidating cached windows, R120 §2) change the geometry.
+events (a maneuver invalidating cached windows, [R120](R120-access-window-and-geometry-planning.md) §2) change the geometry.
 
 **Plan revision must be cheap, or operators will under-plan.** If canceling or replacing a
 committed plan is costly or impossible, decision-makers rationally avoid committing to plans at all,
 which defeats the plan-first model's purpose. `OrderSystem`'s replay-safe tag-cancel (cancel-before-
-execute leaves no trace in the eventlog, R103/R118) is the concrete mechanism keeping plan revision
+execute leaves no trace in the eventlog, [R103](R103-satellite-command-and-control.md)/[R118](R118-space-surveillance-networks.md)) is the concrete mechanism keeping plan revision
 cheap, consistent with this principle.
 
 **Hierarchical planning: nested levels of commitment.** Mission-level intent (the vignette's
 objectives) constrains operational-level plans (which targets/windows to pursue) which constrain
-tactical-level orders (the specific `Order` issued) — R305 (Mission Analysis, Tier R300) covers the
+tactical-level orders (the specific `Order` issued) — [R305](R305-mission-analysis.md) (Mission Analysis, Tier [R300](R300-index.md)) covers the
 intent-translation step; this topic covers the structural fact that plans at different grains have
 different revision costs and time horizons.
 
@@ -57,13 +57,13 @@ gap this topic formalizes between plan-as-prediction and plan-as-revisable-commi
 ## 4. Implementation Guidance
 
 - **A new order type must support the same cancel-before-execute revision path as existing
-  actions** — per R118's guidance, an order type that can't be cleanly cancelled before its window
+  actions** — per [R118](R118-space-surveillance-networks.md)'s guidance, an order type that can't be cleanly cancelled before its window
   reintroduces a planning-revision cost the rest of the engine deliberately avoids.
 - **A future "contingency" or "if-then" order feature (candidate, not yet built) should be modeled as
   an explicit branch point in the plan, not as conditional logic hidden inside a single order** —
   keeping branch points explicit and visible is what makes them debrief-able in the AAR per MSTR-003
   §6.
-- **Don't let a future autonomous planning assistant (R507) silently re-plan on the operator's
+- **Don't let a future autonomous planning assistant ([R507](R507-autonomous-planning-systems.md)) silently re-plan on the operator's
   behalf when conditions change** — per DOM-008 §4, surfacing "this plan's window assumption no
   longer holds, reconsider" is advisory; automatically substituting a new plan is not.
 
@@ -74,5 +74,5 @@ cheap-revision property this topic identifies as load-bearing.
 
 ## 6. Related Topics
 
-R106 (Mission Operations, the concrete loop), R202 (Decision Theory), R208 (OODA Loops, the cycle
-planning sits inside), R507 (Autonomous Planning Systems, the forward-looking extension).
+[R106](R106-mission-operations.md) (Mission Operations, the concrete loop), [R202](R202-decision-theory.md) (Decision Theory), [R208](R208-ooda-loops.md) (OODA Loops, the cycle
+planning sits inside), [R507](R507-autonomous-planning-systems.md) (Autonomous Planning Systems, the forward-looking extension).

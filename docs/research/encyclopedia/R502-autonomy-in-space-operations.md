@@ -3,13 +3,13 @@
 > **Document ID:** R502
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R501
-> **Referenced By:** R507, R508
+> **Dependencies:** [R501](R501-human-ai-teaming.md)
+> **Referenced By:** [R507](R507-autonomous-planning-systems.md), [R508](R508-future-command-and-control.md)
 > **Produces:** the real-world autonomy-levels vocabulary for any future bus/payload autonomous-mode feature
 > **Feature Mapping:** any future autonomous bus/payload behavior feature (e.g. autonomous safe-mode recovery beyond the existing `RecoverySystem`, autonomous collision avoidance)
-> **Related Topics:** R501 (Human-AI Teaming, the general framing), `engine/recovery.py`
+> **Related Topics:** [R501](R501-human-ai-teaming.md) (Human-AI Teaming, the general framing), [`engine/recovery.py`](../../../spacesim/engine/recovery.py)
 > (`RecoverySystem`, the existing deterministic-rule-based autonomy this topic's levels classify),
-> R507 (Autonomous Planning Systems), R508 (Future Command and Control)
+> [R507](R507-autonomous-planning-systems.md) (Autonomous Planning Systems), [R508](R508-future-command-and-control.md) (Future Command and Control)
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -50,10 +50,10 @@ available, more consequential, more reversible) is more often left at lower auto
 in the loop — this distinction is the basis for evaluating where a future autonomy feature in this
 simulator should sit on the spectrum.
 
-**Autonomy and the trust-calibration problem (R501) compound at the spacecraft level.** An operator
+**Autonomy and the trust-calibration problem ([R501](R501-human-ai-teaming.md)) compound at the spacecraft level.** An operator
 who doesn't understand what their own asset's safe-mode autonomy will or won't do under a given fault
 condition is poorly equipped to predict their own asset's behavior — this is a distinct, asset-level
-instance of the legibility concern R501 raises at the advisor level.
+instance of the legibility concern [R501](R501-human-ai-teaming.md) raises at the advisor level.
 
 ## 3. Operational Context
 
@@ -81,10 +81,10 @@ behavior in existing real-world practice rather than inventing new territory.
 
 ## 5. Feature Mapping
 
-Any future autonomous bus/payload behavior feature is the direct consumer; `engine/recovery.py`'s
+Any future autonomous bus/payload behavior feature is the direct consumer; [`engine/recovery.py`](../../../spacesim/engine/recovery.py)'s
 existing `RecoverySystem` is the current rule-based-autonomy precedent.
 
 ## 6. Related Topics
 
-R501 (Human-AI Teaming), `engine/recovery.py` (`RecoverySystem`), R507 (Autonomous Planning
-Systems), R508 (Future Command and Control).
+[R501](R501-human-ai-teaming.md) (Human-AI Teaming), [`engine/recovery.py`](../../../spacesim/engine/recovery.py) (`RecoverySystem`), [R507](R507-autonomous-planning-systems.md) (Autonomous Planning
+Systems), [R508](R508-future-command-and-control.md) (Future Command and Control).

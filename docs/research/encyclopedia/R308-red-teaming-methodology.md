@@ -3,11 +3,11 @@
 > **Document ID:** R308
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R307
+> **Dependencies:** [R307](R307-wargaming-theory.md)
 > **Referenced By:** DOM-003, DOM-008
 > **Produces:** the doctrinal justification for "Red must be genuinely adversarial" (DOM-003 §7, DOM-008 §3)
 > **Feature Mapping:** FS-106 (White Cell Dashboard), Red doctrine presets (`redai.py`)
-> **Related Topics:** R307 (Wargaming Theory), R203 (Game Theory), DOM-003 §7 (the direct consumer),
+> **Related Topics:** [R307](R307-wargaming-theory.md) (Wargaming Theory), [R203](R203-game-theory.md) (Game Theory), DOM-003 §7 (the direct consumer),
 > DOM-008 §3 (Red AI design principles)
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
@@ -35,7 +35,7 @@ Blue win a given vignette has compromised this independence.
 
 **Red teaming is not the same as worst-case adversary modeling.** A red team plays a *doctrinally
 plausible* adversary, calibrated to real-world tactics/capability, not an omniscient, maximally
-optimal one (R203 already makes this point from the game-theory side) — a Red preset that is
+optimal one ([R203](R203-game-theory.md) already makes this point from the game-theory side) — a Red preset that is
 unbeatable or that has god-view-derived information is not red-teaming, it's an unfair obstacle, and
 fails the methodology in the opposite direction from passivity.
 
@@ -75,5 +75,5 @@ FS-106 (White Cell Dashboard) and `redai.py` doctrine-preset design are the dire
 
 ## 6. Related Topics
 
-R307 (Wargaming Theory, the broader validity context), R203 (Game Theory, why Red should be
+[R307](R307-wargaming-theory.md) (Wargaming Theory, the broader validity context), [R203](R203-game-theory.md) (Game Theory, why Red should be
 doctrinally-credible rather than optimal), DOM-003 §7, DOM-008 §3.

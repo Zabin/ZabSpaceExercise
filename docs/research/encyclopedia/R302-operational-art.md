@@ -3,12 +3,12 @@
 > **Document ID:** R302
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R301
-> **Referenced By:** R305, R309, R310
+> **Dependencies:** [R301](R301-campaign-design.md)
+> **Referenced By:** [R305](R305-mission-analysis.md), [R309](R309-center-of-gravity-analysis.md), [R310](R310-effects-based-operations.md)
 > **Produces:** the vocabulary for the tactics↔strategy connective layer a vignette's objectives should reflect
 > **Feature Mapping:** vignette authoring (`docs/scenarios/`)
-> **Related Topics:** R301 (Campaign Design), R309 (Center of Gravity Analysis), R310 (Effects-Based
-> Operations), R305 (Mission Analysis)
+> **Related Topics:** [R301](R301-campaign-design.md) (Campaign Design), [R309](R309-center-of-gravity-analysis.md) (Center of Gravity Analysis), [R310](R310-effects-based-operations.md) (Effects-Based
+> Operations), [R305](R305-mission-analysis.md) (Mission Analysis)
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -26,7 +26,7 @@ arbitrarily.
 objective they're meant to serve.** It answers "why this sequence of tactical objectives, and not
 some other sequence, advances the strategic goal" — distinct from tactics (how to execute a given
 action, the engine-mechanics layer this simulator already models in detail) and strategy (what
-overall end is sought, R312).
+overall end is sought, [R312](R312-space-strategy.md)).
 
 **Lines of operation and lines of effort.** A line of operation connects actions in physical/
 geographic space toward an objective (e.g. a sequence of access windows building toward sustained
@@ -38,11 +38,11 @@ were chosen as they were.
 
 **Operational reach and culmination.** A force's operational reach is the distance/duration over
 which it can sustain effective operations before culminating (running out of resources/momentum) —
-in this simulator's terms, this maps to Δv/SoC/ammo/storage budgets (R111, R112, R118's
+in this simulator's terms, this maps to Δv/SoC/ammo/storage budgets ([R111](R111-power-and-thermal-operations.md), [R112](R112-propulsion-and-maneuver-planning.md), [R118](R118-space-surveillance-networks.md)'s
 `PRIORITY_COST`) imposing a real culmination point on a sustained operation, not an abstract notion.
 
 **Tempo.** The rate of operations relative to the adversary's ability to respond — directly related
-to R208's OODA-loop tightness, but at the operational rather than individual-decision level: a
+to [R208](R208-ooda-loops.md)'s OODA-loop tightness, but at the operational rather than individual-decision level: a
 campaign-level tempo advantage means consistently outpacing Red's adaptation across many tactical
 exchanges, not just one.
 
@@ -77,6 +77,6 @@ operational-art tooling.
 
 ## 6. Related Topics
 
-R301 (Campaign Design, the multi-operation context), R309 (Center of Gravity), R310 (Effects-Based
-Operations), R305 (Mission Analysis, the intent-translation step that produces tactical objectives
+[R301](R301-campaign-design.md) (Campaign Design, the multi-operation context), [R309](R309-center-of-gravity-analysis.md) (Center of Gravity), [R310](R310-effects-based-operations.md) (Effects-Based
+Operations), [R305](R305-mission-analysis.md) (Mission Analysis, the intent-translation step that produces tactical objectives
 from operational-art reasoning).

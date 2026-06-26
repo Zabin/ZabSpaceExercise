@@ -3,11 +3,11 @@
 > **Document ID:** R104
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R102, R109
-> **Referenced By:** R118, R119, FS-104
-> **Produces:** implementation constraints for `engine/orders.py` (`_plan_collection`, `_sensor_bookings`)
+> **Dependencies:** [R102](R102-space-domain-awareness.md), [R109](R109-sensor-operations.md)
+> **Referenced By:** [R118](R118-space-surveillance-networks.md), [R119](R119-space-situational-data-fusion.md), FS-104
+> **Produces:** implementation constraints for [`engine/orders.py`](../../../spacesim/engine/orders.py) (`_plan_collection`, `_sensor_bookings`)
 > **Feature Mapping:** FS-104 (SDA Tasking)
-> **Related Topics:** R102 (SDA), R109 (Sensor Operations), R118 (Space Surveillance Networks)
+> **Related Topics:** [R102](R102-space-domain-awareness.md) (SDA), [R109](R109-sensor-operations.md) (Sensor Operations), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -31,7 +31,7 @@ search to that one asset. A new feature that adds tasking should preserve both m
 need the explicit-control path as much as the convenience path.
 
 **Two distinct contention/SLA systems exist side by side.** Organic sensor tasking (this topic) is
-windowed and first-come-first-served via `_sensor_bookings`; the SSN (R118) is a separate
+windowed and first-come-first-served via `_sensor_bookings`; the SSN ([R118](R118-space-surveillance-networks.md)) is a separate
 priority/SLA-queued system (`immediate`/`priority`/`routine` with `MAX_WAIT_S`/`PROCESSING_DELAY_S`)
 for off-board collection requests. They are not the same resource pool — don't conflate "the sensor
 is free" with "an SSN slot is free."
@@ -47,7 +47,7 @@ indefinitely.
 Real collection management is the unglamorous daily work of SDA operations: competing requests for
 scarce, finite sensor time, prioritized against mission value, with explicit SLAs for how long a
 request can wait before it's considered failed. The simulator's `_contended` check and the SSN's
-priority-cost budget (R118) exist to make operators feel that scarcity as a planning constraint,
+priority-cost budget ([R118](R118-space-surveillance-networks.md)) exist to make operators feel that scarcity as a planning constraint,
 not an artificial difficulty dial.
 
 ## 4. Implementation Guidance
@@ -59,7 +59,7 @@ not an artificial difficulty dial.
   — a tasking feature that doesn't release on cancel leaks capacity that can never be reclaimed for
   the rest of the session.
 - **Don't let a new feature "jump the queue."** If a feature needs priority tasking, model it as a
-  new SSN-style priority tier (R118) with its own published SLA, not as a side channel that bypasses
+  new SSN-style priority tier ([R118](R118-space-surveillance-networks.md)) with its own published SLA, not as a side channel that bypasses
   `_contended`.
 - **Auto-cueing logic (escalation from organic to SSN) should stay confidence-band-gated**, not
   triggered on every observation — an unconditional auto-cue would flood the SSN request queue and
@@ -67,10 +67,10 @@ not an artificial difficulty dial.
 
 ## 5. Feature Mapping
 
-FS-104 (SDA Tasking) is the direct consumer. R118 (SSN) is the parallel off-board collection system;
-R119 (Data Fusion) consumes the combined output of both.
+FS-104 (SDA Tasking) is the direct consumer. [R118](R118-space-surveillance-networks.md) (SSN) is the parallel off-board collection system;
+[R119](R119-space-situational-data-fusion.md) (Data Fusion) consumes the combined output of both.
 
 ## 6. Related Topics
 
-R102 (SDA — the chain stage this tasking advances), R109 (Sensor Operations — the modalities being
-tasked), R118 (SSN — the off-board collection counterpart with its own SLA model).
+[R102](R102-space-domain-awareness.md) (SDA — the chain stage this tasking advances), [R109](R109-sensor-operations.md) (Sensor Operations — the modalities being
+tasked), [R118](R118-space-surveillance-networks.md) (SSN — the off-board collection counterpart with its own SLA model).

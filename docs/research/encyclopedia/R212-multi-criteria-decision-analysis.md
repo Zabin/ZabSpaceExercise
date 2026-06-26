@@ -3,11 +3,11 @@
 > **Document ID:** R212
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R202
-> **Referenced By:** R311
+> **Dependencies:** [R202](R202-decision-theory.md)
+> **Referenced By:** [R311](R311-course-of-action-analysis.md)
 > **Produces:** the scoring vocabulary a future COA-comparison feature would need
 > **Feature Mapping:** FS-101 (Mission Planning), candidate future COA-comparison feature
-> **Related Topics:** R202 (Decision Theory), R214 (Utility Theory), R311 (Course of Action Analysis —
+> **Related Topics:** [R202](R202-decision-theory.md) (Decision Theory), [R214](R214-utility-theory.md) (Utility Theory), [R311](R311-course-of-action-analysis.md) (Course of Action Analysis —
 > the military-specific application this topic underlies)
 
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
@@ -17,7 +17,7 @@
 No engine feature today formally scores competing courses of action against multiple criteria — an
 operator weighs Δv cost, custody confidence, ROE risk, and time pressure informally, in their head.
 This topic gives the implementer the formal MCDA vocabulary needed *if* a future COA-comparison
-feature (R311's military-specific framing) is ever built, so it is built on a real method rather than
+feature ([R311](R311-course-of-action-analysis.md)'s military-specific framing) is ever built, so it is built on a real method rather than
 an ad hoc weighted sum invented from scratch.
 
 ## 2. Concepts
@@ -42,12 +42,12 @@ judgment call), at the cost of not always producing a single ranked winner.
 
 **Sensitivity of the ranking to the weighting scheme is itself information.** A genuinely robust
 "best" option should rank highly across a range of plausible weightings; an option that's only best
-under one specific weighting is fragile — this is R408's sensitivity-analysis method applied to a
+under one specific weighting is fragile — this is [R408](R408-sensitivity-analysis.md)'s sensitivity-analysis method applied to a
 decision-support context rather than a model-validation context.
 
 ## 3. Operational Context
 
-Real course-of-action comparison in military planning (R311's "decision matrix" / COA comparison
+Real course-of-action comparison in military planning ([R311](R311-course-of-action-analysis.md)'s "decision matrix" / COA comparison
 step) is a textbook MCDA application — criteria like casualties risk, resource cost, time, and
 political risk are explicitly non-commensurable, and staff planning doctrine teaches weighted
 decision matrices and sensitivity checks as a standard tool, with the same caveats about weight-
@@ -58,7 +58,7 @@ sensitivity this topic raises.
 - **A future COA-comparison feature must let the operator see and adjust the weighting, not present
   a single computed "best" option as ground truth** — per DOM-008 §4, a fixed hidden weighting that
   resolves the comparison *for* the trainee crosses from decision support into decision-making.
-- **If implementing weighted-sum scoring, run the sensitivity check from §2/R408 before presenting
+- **If implementing weighted-sum scoring, run the sensitivity check from §2/[R408](R408-sensitivity-analysis.md) before presenting
   any ranking as robust** — and surface that sensitivity to the operator (e.g. "Option A wins under
   most reasonable weightings; Option B wins only if Δv is weighted very heavily") rather than hiding
   it.
@@ -72,5 +72,5 @@ A candidate future COA-comparison feature under FS-101 (Mission Planning) is the
 
 ## 6. Related Topics
 
-R202 (Decision Theory), R214 (Utility Theory, the value-function question MCDA depends on), R311
+[R202](R202-decision-theory.md) (Decision Theory), [R214](R214-utility-theory.md) (Utility Theory, the value-function question MCDA depends on), [R311](R311-course-of-action-analysis.md)
 (Course of Action Analysis, the doctrinal/military-specific framing).

@@ -3,18 +3,18 @@
 > **Document ID:** R211
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R206
+> **Dependencies:** [R206](R206-bounded-rationality.md)
 > **Referenced By:** DOM-002
 > **Produces:** the vocabulary distinguishing a competent shortcut from a tradecraft gap in DOM-002's rubric
 > **Feature Mapping:** FS-201 (Competency Assessment)
-> **Related Topics:** R206 (Bounded Rationality — the theory this topic's mechanism implements), R207
-> (Cognitive Biases — the failure mode when a heuristic misfires), R202 (Decision Theory)
+> **Related Topics:** [R206](R206-bounded-rationality.md) (Bounded Rationality — the theory this topic's mechanism implements), [R207](R207-cognitive-biases.md)
+> (Cognitive Biases — the failure mode when a heuristic misfires), [R202](R202-decision-theory.md) (Decision Theory)
 
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
 
-R206 establishes that boundedly-rational operators satisfice rather than optimize; this topic gives
+[R206](R206-bounded-rationality.md) establishes that boundedly-rational operators satisfice rather than optimize; this topic gives
 the implementer the mechanism — specific heuristics — so a future assessment feature can recognize
 *which* heuristic an operator is applying and judge whether it was a reasonable choice given the
 situation, rather than scoring all non-optimal play as undifferentiated error.
@@ -24,8 +24,8 @@ situation, rather than scoring all non-optimal play as undifferentiated error.
 **Satisficing: stop searching once an option clears an acceptability bar.** Rather than enumerating
 and ranking every possible window/target/configuration, an operator who finds an access window that
 is "good enough" (adequate elevation, sufficient Δv margin) and commits, rather than continuing to
-search for a theoretically superior option, is satisficing — and per R206, this is the realistic,
-often correct, model of operator behavior under genuine time pressure (R120's SLA-bound windows).
+search for a theoretically superior option, is satisficing — and per [R206](R206-bounded-rationality.md), this is the realistic,
+often correct, model of operator behavior under genuine time pressure ([R120](R120-access-window-and-geometry-planning.md)'s SLA-bound windows).
 
 **Recognition-primed decision-making (RPD).** Experienced operators under time pressure often skip
 explicit option-comparison entirely, recognizing a situation as a familiar pattern and acting on the
@@ -35,15 +35,15 @@ shortcut indicating inexperience — a future assessment rubric should be able t
 pattern-matched, correct" (RPD-consistent expert behavior) from "fast, careless, wrong."
 
 **The representativeness heuristic.** Judging probability by similarity to a known pattern rather
-than by base rates — relevant to custody/attribution judgments (R102, R116): an ambiguous RPO
+than by base rates — relevant to custody/attribution judgments ([R102](R102-space-domain-awareness.md), [R116](R116-cyber-operations-against-space-systems.md)): an ambiguous RPO
 approach that "looks like" a known hostile pattern may be over-weighted as hostile even if the
-actual base rate of hostile RPO in the scenario is low. Distinct from confirmation bias (R207): this
+actual base rate of hostile RPO in the scenario is low. Distinct from confirmation bias ([R207](R207-cognitive-biases.md)): this
 is a pattern-matching shortcut, not motivated reasoning from a prior belief.
 
 **Anchoring-and-adjustment as a deliberate planning heuristic, not just a bias.** Starting from a
 known reference point (a previous vignette's typical access-window cadence, a doctrine preset's
 expected aggressiveness) and adjusting from there is a legitimate, efficient planning heuristic when
-the anchor is a reasonable prior — it becomes the R207 bias only when the adjustment is
+the anchor is a reasonable prior — it becomes the [R207](R207-cognitive-biases.md) bias only when the adjustment is
 insufficient given new, more diagnostic evidence.
 
 ## 3. Operational Context
@@ -58,7 +58,7 @@ optimization.
 
 - **A DOM-002 rubric should be able to credit fast, pattern-consistent decisions as competent
   (RPD-consistent) rather than only crediting slow, deliberate option-comparison** — a "time-to-
-  decision" metric (R208, DOM-002 §4) read in isolation would penalize exactly the expert behavior
+  decision" metric ([R208](R208-ooda-loops.md), DOM-002 §4) read in isolation would penalize exactly the expert behavior
   this topic identifies as often optimal.
 - **A future tutorial/coaching-note feature (already present per `Vignette.coaching`) can
   legitimately teach a named heuristic explicitly** (e.g. "in this scenario, satisficing on the
@@ -67,7 +67,7 @@ optimization.
 - **Don't build an assessment metric that infers "representativeness heuristic misfire" from
   outcome alone** — distinguishing a reasonable pattern-match from a base-rate-neglect error
   requires knowing the actual scenario base rate, which the engine has (ground truth) but the
-  trainee didn't; score the *process* (R206), and only an AAR-level facilitator judgment, not an
+  trainee didn't; score the *process* ([R206](R206-bounded-rationality.md)), and only an AAR-level facilitator judgment, not an
   automated metric, should attempt to characterize which heuristic was in play.
 
 ## 5. Feature Mapping
@@ -76,5 +76,5 @@ FS-201 (Competency Assessment) is the direct consumer.
 
 ## 6. Related Topics
 
-R206 (Bounded Rationality, the theory), R207 (Cognitive Biases, the failure mode), R202 (Decision
+[R206](R206-bounded-rationality.md) (Bounded Rationality, the theory), [R207](R207-cognitive-biases.md) (Cognitive Biases, the failure mode), [R202](R202-decision-theory.md) (Decision
 Theory, the idealized contrast case).

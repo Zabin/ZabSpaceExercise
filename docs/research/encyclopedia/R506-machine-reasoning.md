@@ -3,12 +3,12 @@
 > **Document ID:** R506
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R503
-> **Referenced By:** R507
+> **Dependencies:** [R503](R503-ai-decision-support.md)
+> **Referenced By:** [R507](R507-autonomous-planning-systems.md)
 > **Produces:** the symbolic-vs-sub-symbolic vocabulary for evaluating any future "smarter Red" or planning-assistance proposal against this engine's determinism invariant
 > **Feature Mapping:** any future `redai.py` enhancement or planning-assistance feature proposing reasoning beyond the current rule-based doctrine presets
-> **Related Topics:** R503 (AI Decision Support), `engine/redai.py` (the existing rule-based
-> reasoning this topic contrasts with more sophisticated approaches), R507 (Autonomous Planning
+> **Related Topics:** [R503](R503-ai-decision-support.md) (AI Decision Support), `engine/redai.py` (the existing rule-based
+> reasoning this topic contrasts with more sophisticated approaches), [R507](R507-autonomous-planning-systems.md) (Autonomous Planning
 > Systems), DOM-008 §3/§5
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
@@ -47,7 +47,7 @@ behavior pattern, feeding into the existing rule-based decision presets) would i
 determinism/legibility concerns of whichever layer actually drives the decision.
 
 **The reasoning-approach choice is independent of the Human-AI-teaming and decision-support
-constraints (R501/R503).** Choosing symbolic over sub-symbolic reasoning is a determinism/legibility
+constraints ([R501](R501-human-ai-teaming.md)/[R503](R503-ai-decision-support.md)).** Choosing symbolic over sub-symbolic reasoning is a determinism/legibility
 question (DOM-008 §3); the advisor-not-decider constraint (DOM-008 §4) is a decision-authority
 question — a future proposal could in principle satisfy one without the other, and both should be
 checked independently.
@@ -75,7 +75,7 @@ military AI systems).
   rule extension and should explicitly flag, rather than silently implement, any proposal that would
   require relaxing determinism for a sub-symbolic approach.
 - **Evaluate the reasoning-approach question (this topic) and the decision-authority question
-  (DOM-008 §4/R503) independently** for any future AI-related proposal — satisfying one does not
+  (DOM-008 §4/[R503](R503-ai-decision-support.md)) independently** for any future AI-related proposal — satisfying one does not
   imply the other.
 
 ## 5. Feature Mapping
@@ -85,4 +85,4 @@ Any future `redai.py` enhancement or planning-assistance feature is the direct c
 
 ## 6. Related Topics
 
-R503 (AI Decision Support), `engine/redai.py`, R507 (Autonomous Planning Systems), DOM-008 §3/§5.
+[R503](R503-ai-decision-support.md) (AI Decision Support), `engine/redai.py`, [R507](R507-autonomous-planning-systems.md) (Autonomous Planning Systems), DOM-008 §3/§5.

@@ -4,11 +4,11 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** R402, R411
+> **Referenced By:** [R402](R402-hypotheses-and-variables.md), [R411](R411-human-subjects-research.md)
 > **Produces:** the vocabulary for isolating one variable's effect on an outcome when evaluating a vignette, Red preset, or assessment instrument change
 > **Feature Mapping:** DOM-005 (Validation Framework), any future feature-effectiveness study (e.g. "does the new fleet-rail alarm badge actually improve time-to-decision")
-> **Related Topics:** R402 (Hypotheses and Variables — the next step after a controlled design),
-> R407 (Monte Carlo Methods — the seeded-repetition mechanism that supplies a control's repeatability
+> **Related Topics:** [R402](R402-hypotheses-and-variables.md) (Hypotheses and Variables — the next step after a controlled design),
+> [R407](R407-monte-carlo-methods.md) (Monte Carlo Methods — the seeded-repetition mechanism that supplies a control's repeatability
 > in this simulator), DOM-005 (Validation Framework)
 
 [↑ Tier R400 index](R400-index.md) · [Encyclopedia index](INDEX.md)
@@ -33,7 +33,7 @@ variables drifting uncontrolled.
 operators/sessions under different conditions (more realistic, more confound-prone — operator skill
 varies); a within-subjects design compares the same operator's repeated runs under different
 conditions (controls for skill, but vulnerable to a learning-effect confound across repeated runs of
-similar content) — this simulator's seeded determinism (`SeededRng`, `engine/rng.py`) makes a
+similar content) — this simulator's seeded determinism (`SeededRng`, [`engine/rng.py`](../../../spacesim/engine/rng.py)) makes a
 within-subjects design unusually feasible: the same seed reproduces an identical Red/environment
 behavior across two runs that differ only in the feature being tested.
 
@@ -73,7 +73,7 @@ military OR analysts rarely have access to.
   in any study design — a difficulty-affecting YAML change between "before" and "after" runs
   invalidates a same-seed comparison's controlled-comparison claim.
 - **A future feature-effectiveness study design document should state its design type** (between-
-  vs. within-subjects, randomized vs. not) explicitly, per R402's hypothesis-and-variable vocabulary,
+  vs. within-subjects, randomized vs. not) explicitly, per [R402](R402-hypotheses-and-variables.md)'s hypothesis-and-variable vocabulary,
   rather than leaving the comparison's structure implicit.
 
 ## 5. Feature Mapping
@@ -82,5 +82,5 @@ DOM-005 (Validation Framework) and any future feature-effectiveness study are th
 
 ## 6. Related Topics
 
-R402 (Hypotheses and Variables, the next step), R407 (Monte Carlo Methods, this simulator's
+[R402](R402-hypotheses-and-variables.md) (Hypotheses and Variables, the next step), [R407](R407-monte-carlo-methods.md) (Monte Carlo Methods, this simulator's
 seeded-repetition control mechanism), DOM-005 (Validation Framework).

@@ -3,11 +3,11 @@
 > **Document ID:** R116
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R103
-> **Referenced By:** R115, FS-105
-> **Produces:** implementation constraints for `engine/cyber.py`, the cyber exception in `engine/orders.py`
+> **Dependencies:** [R103](R103-satellite-command-and-control.md)
+> **Referenced By:** [R115](R115-electronic-warfare-in-space-operations.md), FS-105
+> **Produces:** implementation constraints for [`engine/cyber.py`](../../../spacesim/engine/cyber.py), the cyber exception in [`engine/orders.py`](../../../spacesim/engine/orders.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
-> **Related Topics:** R103 (Satellite C2 — the chain cyber bypasses), R115 (Electronic Warfare — the
+> **Related Topics:** [R103](R103-satellite-command-and-control.md) (Satellite C2 — the chain cyber bypasses), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic Warfare — the
 > window-gated contrast), MSTR-002 §2 invariant (the five-D taxonomy's stated cyber exception)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
@@ -43,7 +43,7 @@ spacecraft), which is `reversible` (the safe-mode recovery chain lifts it) but h
 
 **Attribution is a scored property, not a fixed label.** `attribution_score()` exists because
 attribution in cyber is graded (covert/ambiguous/overt by vector bias, modified by detection), not
-binary — directly analogous to custody confidence (R105) and DoD escalation discipline (DOM-002):
+binary — directly analogous to custody confidence ([R105](R105-custody-theory.md)) and DoD escalation discipline (DOM-002):
 cyber attribution is itself an uncertain quantity an analyst assesses, not a ground-truth flag the
 engine simply reveals.
 
@@ -84,5 +84,5 @@ the operator that cyber resolves immediately against posture, not at a future ac
 
 ## 6. Related Topics
 
-R103 (the C2 chain cyber's `seize_c2` payload exploits), R115 (Electronic Warfare — the
+[R103](R103-satellite-command-and-control.md) (the C2 chain cyber's `seize_c2` payload exploits), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic Warfare — the
 window-gated contrast case), MSTR-002 (the five-D taxonomy's explicit cyber exception).

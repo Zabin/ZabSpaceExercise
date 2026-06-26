@@ -4,10 +4,10 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** R206, R207, R208, DOM-007
-> **Produces:** the perception/memory/attention vocabulary underlying R206/R207/DOM-007
+> **Referenced By:** [R206](R206-bounded-rationality.md), [R207](R207-cognitive-biases.md), [R208](R208-ooda-loops.md), DOM-007
+> **Produces:** the perception/memory/attention vocabulary underlying [R206](R206-bounded-rationality.md)/[R207](R207-cognitive-biases.md)/DOM-007
 > **Feature Mapping:** FS-101 (Mission Planning), DOM-007 (Human Factors)
-> **Related Topics:** R206 (Bounded Rationality), R207 (Cognitive Biases), DOM-007 (Human Factors
+> **Related Topics:** [R206](R206-bounded-rationality.md) (Bounded Rationality), [R207](R207-cognitive-biases.md) (Cognitive Biases), DOM-007 (Human Factors
 > Framework — the UI-facing consumer of this topic's perception/attention vocabulary)
 
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
@@ -18,7 +18,7 @@ The operator console (fleet rail, command menu, 2D map, telemetry graphs) is a p
 attention-management interface, not just a data display — how an operator notices a degraded
 station, an expiring access window, or a confidence band crossing the weapons-quality threshold is a
 cognitive-psychology question before it is a UI-design question. This topic gives the implementer
-the substrate vocabulary (perception, attention, working memory) that R206/R207/DOM-007 build on.
+the substrate vocabulary (perception, attention, working memory) that [R206](R206-bounded-rationality.md)/[R207](R207-cognitive-biases.md)/DOM-007 build on.
 
 ## 2. Concepts
 
@@ -36,7 +36,7 @@ operator to notice a state change by continuously re-scanning a dashboard.
 
 **Recognition vs. recall.** Recognition (seeing an option and judging it familiar/correct) is
 cognitively cheaper than recall (generating the option from memory). A command menu listing
-available actions with live dry-run preview (per R103/R120's "see before you commit" pattern)
+available actions with live dry-run preview (per [R103](R103-satellite-command-and-control.md)/[R120](R120-access-window-and-geometry-planning.md)'s "see before you commit" pattern)
 leans on recognition; a hypothetical command-line-only interface would force recall, a strictly
 higher cognitive load for no operational benefit.
 
@@ -75,6 +75,6 @@ being added.
 
 ## 6. Related Topics
 
-R206 (Bounded Rationality, the decision-making layer built on this perceptual substrate), R207
+[R206](R206-bounded-rationality.md) (Bounded Rationality, the decision-making layer built on this perceptual substrate), [R207](R207-cognitive-biases.md)
 (Cognitive Biases, systematic perceptual/judgment distortions), DOM-007 (Human Factors Framework, the
 UI-facing application of this topic).

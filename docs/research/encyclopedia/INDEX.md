@@ -16,8 +16,8 @@ Five tiers; each has its own index enumerating every topic with ID, scope, depen
 | R500 | Future Operations | [R500-index.md](R500-index.md) | ✅ Done |
 
 **Authoring order:** per [`MSTR-007`](../../master/MSTR-007-research-philosophy.md) §6, each
-tier's index is authored before its topic documents, and R100 (most directly tied to the
-simulator's actual subsystems) is the priority tier for full authoring. Bulk-authoring of
-R200-R500 was authorized by the user ("all tiers"). **All five tiers (R100-R500, 68 topics total)
-are now fully authored**, completing the research encyclopedia. Phase 4 (Feature Specifications)
-is next.
+tier's index is authored before its topic documents, and [R100](R100-index.md) (most directly tied
+to the simulator's actual subsystems) is the priority tier for full authoring. Bulk-authoring of
+[R200](R200-index.md)-[R500](R500-index.md) was authorized by the user ("all tiers"). **All five
+tiers ([R100](R100-index.md)-[R500](R500-index.md), 68 topics total) are now fully authored**,
+completing the research encyclopedia. Phase 4 (Feature Specifications) is next.

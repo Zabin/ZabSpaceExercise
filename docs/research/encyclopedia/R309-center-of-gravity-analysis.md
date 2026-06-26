@@ -3,12 +3,12 @@
 > **Document ID:** R309
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R302
-> **Referenced By:** R310
+> **Dependencies:** [R302](R302-operational-art.md)
+> **Referenced By:** [R310](R310-effects-based-operations.md)
 > **Produces:** the vocabulary for identifying what a vignette's design is actually testing an operator's ability to protect or attack
 > **Feature Mapping:** vignette authoring (`docs/scenarios/`)
-> **Related Topics:** R302 (Operational Art), R310 (Effects-Based Operations — the direct consumer of
-> this topic's COG concept), R301 (Campaign Design)
+> **Related Topics:** [R302](R302-operational-art.md) (Operational Art), [R310](R310-effects-based-operations.md) (Effects-Based Operations — the direct consumer of
+> this topic's COG concept), [R301](R301-campaign-design.md) (Campaign Design)
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -31,9 +31,9 @@ might be a specific SDA/custody-denial capability rather than a weapons platform
 **Critical capabilities, critical requirements, critical vulnerabilities (the CC/CR/CV chain).** A
 COG's critical capabilities are what it can do that matters; its critical requirements are the
 conditions/resources needed for those capabilities to function (e.g. a ground station's uplink
-access, R107); its critical vulnerabilities are the specific exploitable weaknesses in those
+access, [R107](R107-ground-segment-operations.md)); its critical vulnerabilities are the specific exploitable weaknesses in those
 requirements (e.g. an undefended ground segment, the doctrinal basis for the `ground_modem`/
-`seize_c2` cyber vector, R116). This chain is the formal reasoning path from "what matters" to "what
+`seize_c2` cyber vector, [R116](R116-cyber-operations-against-space-systems.md)). This chain is the formal reasoning path from "what matters" to "what
 should an effect category actually target."
 
 **COG analysis differs for the attacker and the defender of the same system.** Blue's own COG
@@ -60,7 +60,7 @@ step in the entire planning process.
   arbitrary.
 - **A vignette's `objectives` block should be checkable against the CC/CR/CV chain**: does
   completing the objective actually deny a critical requirement of the opposing side's COG, or is it
-  a plausible-sounding but doctrinally disconnected task? Use R305's essential-task framing alongside
+  a plausible-sounding but doctrinally disconnected task? Use [R305](R305-mission-analysis.md)'s essential-task framing alongside
   this check.
 - **A deception-themed vignette (deliberately mismatched apparent vs. real COG) should be tagged as
   such in author-facing notes**, distinguishing intentional design from an unintentional COG-target
@@ -72,6 +72,6 @@ Vignette authoring (`docs/scenarios/`) is the direct consumer.
 
 ## 6. Related Topics
 
-R302 (Operational Art, the broader connective layer), R310 (Effects-Based Operations, which uses COG
-identification as its starting point), R301 (Campaign Design, where COG can shift across a
+[R302](R302-operational-art.md) (Operational Art, the broader connective layer), [R310](R310-effects-based-operations.md) (Effects-Based Operations, which uses COG
+identification as its starting point), [R301](R301-campaign-design.md) (Campaign Design, where COG can shift across a
 multi-vignette sequence).

@@ -3,11 +3,11 @@
 > **Document ID:** R117
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R105
+> **Dependencies:** [R105](R105-custody-theory.md)
 > **Referenced By:** FS-105
-> **Produces:** implementation constraints for `engine/engage.py`, `WEAPON_ENGAGEMENT` access channel
+> **Produces:** implementation constraints for [`engine/engage.py`](../../../spacesim/engine/engage.py), `WEAPON_ENGAGEMENT` access channel
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
-> **Related Topics:** R105 (Custody Theory — the weapons-quality gate this category requires), R101
+> **Related Topics:** [R105](R105-custody-theory.md) (Custody Theory — the weapons-quality gate this category requires), [R101](R101-orbital-mechanics-for-operations.md)
 > (Orbital Mechanics — regime as a reachability gate), MSTR-002 (kinetic effects are the one
 > irreversible category)
 
@@ -25,7 +25,7 @@ the implementer the `engage.py` model so a new kinetic-adjacent feature respects
 **Engagement requires the full precondition stack, not just an access window.** `_validate` for
 `order.action == "engage"` checks, in order: ROE (`roe.get("kinetic_authorized")`), ammo
 (`actor.resources.ammo >= 1`), and a **weapons-quality** track (`track.is_weapons_quality(...)`) —
-the single highest bar in the engine, per R105's threshold-not-synonym distinction. A track that
+the single highest bar in the engine, per [R105](R105-custody-theory.md)'s threshold-not-synonym distinction. A track that
 merely exists (any confidence) does not pass.
 
 **Pₖ is derived from interceptor class, target altitude, and salvo size — not operator-typed.**
@@ -37,7 +37,7 @@ preventing an operator from gaming Pₖ by misreporting target altitude.
 **Closing geometry is computed read-only for operator preview before commitment.**
 `engage.closing_geometry` (range, range-rate, closing speed, time-to-closest-approach, predicted
 miss distance) is a pure function used to show the operator what's about to happen — the same
-"see before you commit" pattern as `dry_run()` (R103), but specific to the geometric consequences of
+"see before you commit" pattern as `dry_run()` ([R103](R103-satellite-command-and-control.md)), but specific to the geometric consequences of
 a one-way irreversible action.
 
 **Debris risk is a declared property of the effect, not a derived physics simulation.**
@@ -49,7 +49,7 @@ assessment), not a simulated fragmentation/propagation model. Don't assume a fea
 **Reachability is gated by regime, before Pₖ math ever runs.** `AccessProvider._weapon_predicate`
 enforces `interceptor_max_alt_m` (default 2,000 km — LEO-only reach by default) and
 `interceptor_mask_deg` — a ground-based interceptor sized for LEO genuinely cannot reach a GEO
-target regardless of ammo/custody/ROE; this is R101's regime-as-reachability-gate principle applied
+target regardless of ammo/custody/ROE; this is [R101](R101-orbital-mechanics-for-operations.md)'s regime-as-reachability-gate principle applied
 concretely to this effect category.
 
 ## 3. Operational Context
@@ -65,10 +65,10 @@ as the one category with `reversible=False`.
 
 - **A new kinetic or directed-energy effect must derive its success/kill probability from a
   declared, auditable database** (like the four-class `INTERCEPTORS` table), never an
-  operator-typed number — this mirrors the same audit-driven fix applied to jam (R115) and engage.
+  operator-typed number — this mirrors the same audit-driven fix applied to jam ([R115](R115-electronic-warfare-in-space-operations.md)) and engage.
 - **Never relax the weapons-quality gate for a new engagement-like feature** — if a feature needs a
   lower-confidence-bar engagement type, it must say so explicitly as a new, distinctly-named
-  confidence tier (R105 §4), not silently read raw detection confidence.
+  confidence tier ([R105](R105-custody-theory.md) §4), not silently read raw detection confidence.
 - **Preserve the regime-reachability check (`interceptor_max_alt_m`/`interceptor_mask_deg`) for any
   new interceptor class** — don't bypass `AccessProvider._weapon_predicate` with a parallel
   reachability rule.
@@ -83,5 +83,5 @@ preserve the existing consequence-confirm UX pattern for irreversible actions.
 
 ## 6. Related Topics
 
-R105 (the weapons-quality gate this category's defining precondition), R101 (regime as a
+[R105](R105-custody-theory.md) (the weapons-quality gate this category's defining precondition), [R101](R101-orbital-mechanics-for-operations.md) (regime as a
 reachability gate), MSTR-002 (the five-D taxonomy and its one irreversible exception).

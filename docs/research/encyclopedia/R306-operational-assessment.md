@@ -3,11 +3,11 @@
 > **Document ID:** R306
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R310
+> **Dependencies:** [R310](R310-effects-based-operations.md)
 > **Referenced By:** DOM-002
 > **Produces:** the doctrinal vocabulary distinguishing output/performance/effect measures the existing objective-flip model conflates
 > **Feature Mapping:** FS-201 (Competency Assessment)
-> **Related Topics:** R310 (Effects-Based Operations), DOM-002 §3 ("why binary objective-flip is
+> **Related Topics:** [R310](R310-effects-based-operations.md) (Effects-Based Operations), DOM-002 §3 ("why binary objective-flip is
 > insufficient" — the exact gap this topic names doctrinally)
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
@@ -27,11 +27,11 @@ executed as planned" (a binary, output-level check — did the engagement order 
 footprint cover the target); a MOE asks "did the task achieve the intended operational effect"
 (did the engagement actually deny the adversary capability, did the jam meaningfully degrade
 adversary SDA). The engine's current objective-flip is closer to a MOP than a MOE — it confirms a
-task-level condition was met, not that the deeper operational effect (R310) was achieved.
+task-level condition was met, not that the deeper operational effect ([R310](R310-effects-based-operations.md)) was achieved.
 
 **Measures of Outcome.** A further level beyond MOE: did the overall campaign/strategic objective
 advance, independent of whether any single operation's MOE was met (an operation can meet its MOE
-and still not advance the strategic outcome if circumstances changed). Relevant to R301's campaign-
+and still not advance the strategic outcome if circumstances changed). Relevant to [R301](R301-campaign-design.md)'s campaign-
 level framing: a mission-set's overall success is an outcome-level judgment, not reducible to any one
 vignette's objective-flip.
 
@@ -57,11 +57,11 @@ simulator's objective-flip model.
   dimension would be a MOE, and the two should be reported and labeled distinctly, not blended into
   one score (consistent with DOM-002 §5's rubric-not-single-score principle).
 - **A vignette's `objectives` block (the engine's literal flip-condition) should be understood and
-  documented as an MOP-level proxy for a MOE the vignette designer actually cares about** — per R305,
+  documented as an MOP-level proxy for a MOE the vignette designer actually cares about** — per [R305](R305-mission-analysis.md),
   a vignette author should be able to state the intended MOE an objective is a proxy for, so a future
   assessment feature inherits that traceability rather than treating the flip condition as
   self-justifying.
-- **Don't build a single "mission effectiveness" score by averaging MOPs** — per R310/EBO reasoning,
+- **Don't build a single "mission effectiveness" score by averaging MOPs** — per [R310](R310-effects-based-operations.md)/EBO reasoning,
   effects don't aggregate linearly from task completions; a future composite metric needs its own
   explicit model, not an unweighted average dressed up as effectiveness.
 
@@ -71,5 +71,5 @@ FS-201 (Competency Assessment) is the direct consumer.
 
 ## 6. Related Topics
 
-R310 (Effects-Based Operations, the cascading-effects model MOE is built on), DOM-002 §3 (the
+[R310](R310-effects-based-operations.md) (Effects-Based Operations, the cascading-effects model MOE is built on), DOM-002 §3 (the
 engineering-level statement of the gap this topic formalizes).

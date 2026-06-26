@@ -3,11 +3,11 @@
 > **Document ID:** R203
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R202
-> **Referenced By:** R213, R303, R304, R308
+> **Dependencies:** [R202](R202-decision-theory.md)
+> **Referenced By:** [R213](R213-signaling-theory.md), [R303](R303-deterrence-theory.md), [R304](R304-escalation-dynamics.md), [R308](R308-red-teaming-methodology.md)
 > **Produces:** the strategic-interaction vocabulary behind Red/Blue asymmetric play
 > **Feature Mapping:** FS-105 (Spacecraft Operations), DOM-003 (White Cell — Red posture design)
-> **Related Topics:** R202 (Decision Theory), R213 (Signaling Theory), R303 (Deterrence Theory), R308
+> **Related Topics:** [R202](R202-decision-theory.md) (Decision Theory), [R213](R213-signaling-theory.md) (Signaling Theory), [R303](R303-deterrence-theory.md) (Deterrence Theory), [R308](R308-red-teaming-methodology.md)
 > (Red Teaming Methodology), DOM-008 §3 (Red AI design principles)
 
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
@@ -18,7 +18,7 @@ Red and Blue are not solving independent optimization problems — each cell's b
 the other's (anticipated) action, and Red's behavior is itself parameterized doctrine (`redai.py`
 presets), not a fixed environment. This topic gives the implementer the minimal game-theory
 vocabulary needed to reason about that interaction correctly, distinct from single-agent decision
-theory (R202).
+theory ([R202](R202-decision-theory.md)).
 
 ## 2. Concepts
 
@@ -50,7 +50,7 @@ probability distribution over Red's possible objectives rather than a known type
 Real space-control competition is explicitly strategic in the game-theoretic sense: an adversary's
 counterspace posture is itself a response to perceived defensive capability, and escalation/de-
 escalation moves are read as signals about future intent, not just isolated actions — this is the
-foundation both R213 (Signaling Theory) and R303/R304 (Deterrence/Escalation) build on.
+foundation both [R213](R213-signaling-theory.md) (Signaling Theory) and [R303](R303-deterrence-theory.md)/[R304](R304-escalation-dynamics.md) (Deterrence/Escalation) build on.
 
 ## 4. Implementation Guidance
 
@@ -59,7 +59,7 @@ foundation both R213 (Signaling Theory) and R303/R304 (Deterrence/Escalation) bu
   assessment feature can reason about *why* a preset behaves as it does, not just *that* it does.
 - **Don't design Red AI to perfectly best-respond to Blue's actual (not doctrine-typical) play** —
   per DOM-008 §3, this would make Red an optimal adversary rather than a credible doctrinal one,
-  defeating the pedagogical purpose (R308).
+  defeating the pedagogical purpose ([R308](R308-red-teaming-methodology.md)).
 - **A future "Red intent" assessment or hint feature must stay within DOM-008 §4's advisor-only
   constraint** — surfacing a probability distribution over Red's likely objective is acceptable;
   resolving the ambiguity *for* the player is not.
@@ -72,6 +72,6 @@ environment.
 
 ## 6. Related Topics
 
-R202 (Decision Theory, the single-agent foundation this topic extends), R213 (Signaling Theory),
-R303 (Deterrence Theory), R308 (Red Teaming Methodology, the doctrinal justification for why Red
+[R202](R202-decision-theory.md) (Decision Theory, the single-agent foundation this topic extends), [R213](R213-signaling-theory.md) (Signaling Theory),
+[R303](R303-deterrence-theory.md) (Deterrence Theory), [R308](R308-red-teaming-methodology.md) (Red Teaming Methodology, the doctrinal justification for why Red
 must be genuinely adversarial rather than optimal).

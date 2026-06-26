@@ -4,17 +4,17 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** R304, R312, DOM-009
+> **Referenced By:** [R304](R304-escalation-dynamics.md), [R312](R312-space-strategy.md), DOM-009
 > **Produces:** the doctrinal vocabulary behind ROE-gated kinetic authorization as a deterrence-preserving design
 > **Feature Mapping:** FS-105 (Spacecraft Operations), vignette ROE design
-> **Related Topics:** R304 (Escalation Dynamics), R213 (Signaling Theory), R312 (Space Strategy),
-> `research/07-legal-norms-and-roe.md`
+> **Related Topics:** [R304](R304-escalation-dynamics.md) (Escalation Dynamics), [R213](R213-signaling-theory.md) (Signaling Theory), [R312](R312-space-strategy.md) (Space Strategy),
+> [`research/07-legal-norms-and-roe.md`](../07-legal-norms-and-roe.md)
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
 
-ROE in this simulator gates the highest-stakes capability (kinetic engagement, R117) behind explicit
+ROE in this simulator gates the highest-stakes capability (kinetic engagement, [R117](R117-directed-energy-and-kinetic-effects.md)) behind explicit
 authorization (`roe.get("kinetic_authorized")`) — this topic supplies the doctrinal theory of *why*
 real ROE design treats kinetic authorization this way: deterrence requires credible restraint as
 much as credible capability, and an ROE-design feature should reflect that, not just gate capability
@@ -38,7 +38,7 @@ problem than the initial deterrence posture the vignette opens with.
 
 **Credibility as the central deterrence variable.** A threat that is not believed to be both capable
 and resolute fails to deter, regardless of its objective strength — this is the doctrinal link to
-R213 (Signaling Theory): a Blue capability that is real but never credibly signaled (e.g. a kinetic
+[R213](R213-signaling-theory.md) (Signaling Theory): a Blue capability that is real but never credibly signaled (e.g. a kinetic
 capability Red has no reason to believe Blue would actually use) deters less than the same capability
 paired with credible signaling, which is why ROE/escalation posture is itself part of deterrence
 design, not just a legal constraint layered on top.
@@ -79,6 +79,6 @@ FS-105 (Spacecraft Operations) and vignette ROE design are the direct consumers.
 
 ## 6. Related Topics
 
-R304 (Escalation Dynamics, the dynamic process this topic's static postures interact with), R213
-(Signaling Theory, the credibility mechanism), R312 (Space Strategy), `research/07-legal-norms-and-
+[R304](R304-escalation-dynamics.md) (Escalation Dynamics, the dynamic process this topic's static postures interact with), [R213](R213-signaling-theory.md)
+(Signaling Theory, the credibility mechanism), [R312](R312-space-strategy.md) (Space Strategy), `research/07-legal-norms-and-
 roe.md` (the existing ROE/legal mapping this topic's doctrine informs).

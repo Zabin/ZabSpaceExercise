@@ -3,18 +3,18 @@
 > **Document ID:** R304
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R303
-> **Referenced By:** R312
+> **Dependencies:** [R303](R303-deterrence-theory.md)
+> **Referenced By:** [R312](R312-space-strategy.md)
 > **Produces:** the doctrinal basis for the kinetic consequence-confirm gate and `escalation_weight` fields
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
-> **Related Topics:** R303 (Deterrence Theory), R213 (Signaling Theory), R117 (Directed Energy and
-> Kinetic Effects — the gate this topic justifies), R116 §2 (`PAYLOADS`' `escalation_weight` field)
+> **Related Topics:** [R303](R303-deterrence-theory.md) (Deterrence Theory), [R213](R213-signaling-theory.md) (Signaling Theory), [R117](R117-directed-energy-and-kinetic-effects.md) (Directed Energy and
+> Kinetic Effects — the gate this topic justifies), [R116](R116-cyber-operations-against-space-systems.md) §2 (`PAYLOADS`' `escalation_weight` field)
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
 
-R117's kinetic consequence-confirm dialog and `cyber.py`'s `PAYLOADS` table's `escalation_weight`
+[R117](R117-directed-energy-and-kinetic-effects.md)'s kinetic consequence-confirm dialog and `cyber.py`'s `PAYLOADS` table's `escalation_weight`
 field both encode a judgment about how much a given action escalates a conflict — this topic supplies
 the doctrinal theory behind escalation as a graded, manageable dynamic, so a new effect category's
 escalation properties are assigned with real doctrinal reasoning rather than an arbitrary number.
@@ -30,7 +30,7 @@ kinetic as a high, qualitatively different rung) rather than a flat "hostile act
 **Horizontal vs. vertical escalation.** Vertical escalation increases the *intensity* of action
 within the same domain (a stronger jam, a kinetic strike instead of EW); horizontal escalation
 expands the *scope* to a new domain or new set of targets (a cyber action against ground
-infrastructure when the conflict had been purely on-orbit) — relevant to R505 (Multi-Domain
+infrastructure when the conflict had been purely on-orbit) — relevant to [R505](R505-multi-domain-operations.md) (Multi-Domain
 Operations) and to how a vignette inject escalates: changing intensity is a different doctrinal move
 than changing scope, and a White Cell inject should be designed knowing which kind it represents.
 
@@ -43,7 +43,7 @@ alone requires the consequence-confirm gate.
 
 **Inadvertent escalation.** Real crises have escalated not from deliberate intent but from
 miscommunication, misperceived intent, or an action's escalatory signal being read more aggressively
-than intended (R213) — a pedagogically valuable vignette design pattern is one where Blue's own
+than intended ([R213](R213-signaling-theory.md)) — a pedagogically valuable vignette design pattern is one where Blue's own
 reasonable-seeming action (mis-signaled) provokes a Red escalation Blue didn't intend, since this
 is a realistic and instructive failure mode distinct from "Red was just more aggressive."
 
@@ -60,7 +60,7 @@ structured as a graduated ladder rather than a flat list.
 - **A new effect category's escalation properties must be assigned by explicit doctrinal reasoning**
   (where does it sit on the ladder, is it vertical or horizontal escalation relative to existing
   categories, does it preserve an off-ramp) — mirroring the audited, declared-not-typed pattern
-  R115-R117 already establish for probability fields; `escalation_weight` deserves the same rigor.
+  [R115](R115-electronic-warfare-in-space-operations.md)-[R117](R117-directed-energy-and-kinetic-effects.md) already establish for probability fields; `escalation_weight` deserves the same rigor.
 - **A vignette inject designed to test escalation discipline should be explicit (in author-facing
   notes, not necessarily to the trainee) about whether it represents deliberate or inadvertent
   escalation** — these test different competencies (restraint under deliberate provocation vs.
@@ -78,6 +78,6 @@ new effect category's escalation tagging trace to this topic.
 
 ## 6. Related Topics
 
-R303 (Deterrence Theory, the static posture this dynamic process interacts with), R213 (Signaling
-Theory, the interpretive mechanism behind inadvertent escalation), R117 (the one no-off-ramp
-category), R116 §2 (`escalation_weight`, the concrete data field).
+[R303](R303-deterrence-theory.md) (Deterrence Theory, the static posture this dynamic process interacts with), [R213](R213-signaling-theory.md) (Signaling
+Theory, the interpretive mechanism behind inadvertent escalation), [R117](R117-directed-energy-and-kinetic-effects.md) (the one no-off-ramp
+category), [R116](R116-cyber-operations-against-space-systems.md) §2 (`escalation_weight`, the concrete data field).

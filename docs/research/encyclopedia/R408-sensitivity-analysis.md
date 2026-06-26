@@ -3,12 +3,12 @@
 > **Document ID:** R408
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R407
-> **Referenced By:** R404, R405
+> **Dependencies:** [R407](R407-monte-carlo-methods.md)
+> **Referenced By:** [R404](R404-measurement-theory.md), [R405](R405-uncertainty-analysis.md)
 > **Produces:** the technique DOM-005 §5 names for checking an assessment instrument's "sensitivity to manipulation"
 > **Feature Mapping:** DOM-005 §5 (instrument validation), Red-preset and vignette-difficulty calibration
-> **Related Topics:** R407 (Monte Carlo Methods — the batch mechanism sensitivity analysis sweeps
-> across), R404 (Measurement Theory — the instrument-validation use of this technique), R405
+> **Related Topics:** [R407](R407-monte-carlo-methods.md) (Monte Carlo Methods — the batch mechanism sensitivity analysis sweeps
+> across), [R404](R404-measurement-theory.md) (Measurement Theory — the instrument-validation use of this technique), [R405](R405-uncertainty-analysis.md)
 > (Uncertainty Analysis — parameter uncertainty, the complementary concern to sampling uncertainty)
 
 [↑ Tier R400 index](R400-index.md) · [Encyclopedia index](INDEX.md)
@@ -24,7 +24,7 @@ find which of a model's parameters actually matter.
 ## 2. Concepts
 
 **Sensitivity analysis: vary one input, hold others fixed, observe the output's response.** This is
-the controlled-comparison method (R401) applied specifically to a model's input parameters rather
+the controlled-comparison method ([R401](R401-experimental-design-and-controls.md)) applied specifically to a model's input parameters rather
 than to an experimental treatment — sweeping a single doctrine-preset parameter (e.g. an
 aggressiveness dial) across its range while holding the vignette and seed fixed shows how much that
 one parameter actually drives the outcome.
@@ -58,7 +58,7 @@ recurring failure mode in real training-evaluation programs.
 
 ## 4. Implementation Guidance
 
-- **Apply R407's Monte Carlo batch mechanism while sweeping one parameter at a time to perform
+- **Apply [R407](R407-monte-carlo-methods.md)'s Monte Carlo batch mechanism while sweeping one parameter at a time to perform
   sensitivity analysis on a `redai.py` preset's tunable parameters** — this identifies which
   parameters most need careful, doctrine-grounded calibration (DOM-009) vs. which are low-stakes.
 - **Before trusting a new DOM-002 measurement dimension or future assessment-instrument item, run
@@ -75,5 +75,5 @@ DOM-005 §5 (instrument validation) and `redai.py` preset calibration work are t
 
 ## 6. Related Topics
 
-R407 (Monte Carlo Methods, the batch mechanism this technique sweeps across), R404 (Measurement
-Theory), R405 (Uncertainty Analysis, the complementary parameter-uncertainty concern).
+[R407](R407-monte-carlo-methods.md) (Monte Carlo Methods, the batch mechanism this technique sweeps across), [R404](R404-measurement-theory.md) (Measurement
+Theory), [R405](R405-uncertainty-analysis.md) (Uncertainty Analysis, the complementary parameter-uncertainty concern).

@@ -3,11 +3,11 @@
 > **Document ID:** R108
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R106
+> **Dependencies:** [R106](R106-mission-operations.md)
 > **Referenced By:** FS-105
 > **Produces:** implementation constraints for any future constellation-aggregation feature
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
-> **Related Topics:** R106 (Mission Operations), `docs/FUTURE-WORK.md` (constellation aggregation, deferred)
+> **Related Topics:** [R106](R106-mission-operations.md) (Mission Operations), `docs/FUTURE-WORK.md` (constellation aggregation, deferred)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -68,5 +68,5 @@ fleet-aggregation feature would need its own FS entry, not a silent extension of
 
 ## 6. Related Topics
 
-R106 (Mission Operations — the per-satellite loop constellation operations compose from),
+[R106](R106-mission-operations.md) (Mission Operations — the per-satellite loop constellation operations compose from),
 `docs/FUTURE-WORK.md` (the authoritative deferred-work entry for constellation aggregation).

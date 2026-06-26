@@ -3,12 +3,12 @@
 > **Document ID:** R505
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R504
+> **Dependencies:** [R504](R504-future-space-warfare-concepts.md)
 > **Referenced By:** —
 > **Produces:** forward-looking context for whether/how this simulator's space-only scope might one day model effects flowing to/from other domains
 > **Feature Mapping:** any future cross-domain vignette concept (e.g. a space-effect with a documented cyber- or terrestrial-domain trigger/consequence)
-> **Related Topics:** R504 (Future Space Warfare Concepts), R310 (Effects-Based Operations — the
-> cascading-effects vocabulary this topic's cross-domain effects would need), R302 (Operational
+> **Related Topics:** [R504](R504-future-space-warfare-concepts.md) (Future Space Warfare Concepts), [R310](R310-effects-based-operations.md) (Effects-Based Operations — the
+> cascading-effects vocabulary this topic's cross-domain effects would need), [R302](R302-operational-art.md) (Operational
 > Art — lines of operation, the connective concept across domains)
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
@@ -42,8 +42,8 @@ significant scope expansion that should not be undertaken implicitly through vig
 pressure.
 
 **Cyber is the one channel already partially cross-domain.** The existing `cyber` action (not
-window-gated, `engine/cyber.py`) already models an attack vector (`access_vector`) that in reality
-often originates terrestrially (a compromised ground-segment supply chain, ties to R116's
+window-gated, [`engine/cyber.py`](../../../spacesim/engine/cyber.py)) already models an attack vector (`access_vector`) that in reality
+often originates terrestrially (a compromised ground-segment supply chain, ties to [R116](R116-cyber-operations-against-space-systems.md)'s
 `ground_modem`/`seize_c2` vector) — this is the existing engine feature closest to genuine
 cross-domain modeling, and any future MDO-themed vignette content should build on this existing
 mechanic rather than inventing a new one.
@@ -82,4 +82,4 @@ consumer; no mechanical cross-domain feature exists or is currently authorized.
 
 ## 6. Related Topics
 
-R504 (Future Space Warfare Concepts), R310 (Effects-Based Operations), R302 (Operational Art).
+[R504](R504-future-space-warfare-concepts.md) (Future Space Warfare Concepts), [R310](R310-effects-based-operations.md) (Effects-Based Operations), [R302](R302-operational-art.md) (Operational Art).

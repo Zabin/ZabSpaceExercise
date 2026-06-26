@@ -3,13 +3,13 @@
 > **Document ID:** R407
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R403, R406
-> **Referenced By:** R405, R408
+> **Dependencies:** [R403](R403-statistics-foundations.md), [R406](R406-modeling-practices.md)
+> **Referenced By:** [R405](R405-uncertainty-analysis.md), [R408](R408-sensitivity-analysis.md)
 > **Produces:** the seeded-repetition methodology DOM-005 §6 names as "the validation workhorse" for this simulator
 > **Feature Mapping:** DOM-005 (Validation Framework §6), any future feature-effectiveness or balance study (Red preset tuning, vignette difficulty calibration)
-> **Related Topics:** R403 (Statistics Foundations), R405 (Uncertainty Analysis — the bound this
-> method's output should be reported with), R408 (Sensitivity Analysis — frequently run as a
-> parameter sweep across Monte Carlo batches), `engine/rng.py` (`SeededRng`, the mechanism that
+> **Related Topics:** [R403](R403-statistics-foundations.md) (Statistics Foundations), [R405](R405-uncertainty-analysis.md) (Uncertainty Analysis — the bound this
+> method's output should be reported with), [R408](R408-sensitivity-analysis.md) (Sensitivity Analysis — frequently run as a
+> parameter sweep across Monte Carlo batches), [`engine/rng.py`](../../../spacesim/engine/rng.py) (`SeededRng`, the mechanism that
 > makes this method exact and reproducible in this codebase)
 
 [↑ Tier R400 index](R400-index.md) · [Encyclopedia index](INDEX.md)
@@ -20,7 +20,7 @@ DOM-005 §6 names Monte Carlo methods as the validation workhorse for fidelity a
 this simulator, while explicitly warning that the engine's own determinism must never be relaxed "to
 sample variability" — variation must instead be driven externally, across seeds. This topic supplies
 the Monte Carlo vocabulary and explains exactly how that external-seed-sweep pattern is meant to
-work, given `engine/rng.py`'s `SeededRng`.
+work, given [`engine/rng.py`](../../../spacesim/engine/rng.py)'s `SeededRng`.
 
 ## 2. Concepts
 
@@ -44,7 +44,7 @@ meaningfully) as more runs were added, rather than reporting a result from an ar
 **Monte Carlo as a balance-tuning tool, distinct from a single illustrative playtest.** A single
 hand-played session shows one possible trajectory; a Monte Carlo sweep across many seeds shows the
 range of what's typical vs. what's a rare outlier — this distinction matters directly for Red-preset
-tuning (R308's "don't tune Red to validate one intended solution path" warning): a preset that
+tuning ([R308](R308-red-teaming-methodology.md)'s "don't tune Red to validate one intended solution path" warning): a preset that
 performs reasonably across a Monte Carlo sweep's range is more credibly calibrated than one tuned to
 win or lose one specific hand-played run.
 
@@ -65,10 +65,10 @@ real-world stochastic simulators achieve.
 - **Never propose relaxing engine determinism "to get sample variability" — drive variability
   externally by sweeping the seed input**, per DOM-005 §6's explicit constraint; this is the one
   non-negotiable rule this topic exists to operationalize.
-- **Report a Monte Carlo result with an uncertainty bound (R405), not a bare point estimate**, and
+- **Report a Monte Carlo result with an uncertainty bound ([R405](R405-uncertainty-analysis.md)), not a bare point estimate**, and
   state the batch size it's based on.
 - **Use a Monte Carlo sweep, not a single tuned run, to evaluate whether a new/revised `redai.py`
-  preset is doctrinally credible across the range of likely scenario states** — per R308's caution
+  preset is doctrinally credible across the range of likely scenario states** — per [R308](R308-red-teaming-methodology.md)'s caution
   against tuning Red to one intended solution path.
 
 ## 5. Feature Mapping
@@ -78,5 +78,5 @@ work inherits this methodology.
 
 ## 6. Related Topics
 
-R403 (Statistics Foundations), R405 (Uncertainty Analysis), R408 (Sensitivity Analysis), `engine/
+[R403](R403-statistics-foundations.md) (Statistics Foundations), [R405](R405-uncertainty-analysis.md) (Uncertainty Analysis), [R408](R408-sensitivity-analysis.md) (Sensitivity Analysis), `engine/
 rng.py`'s `SeededRng` (the mechanism this method depends on).

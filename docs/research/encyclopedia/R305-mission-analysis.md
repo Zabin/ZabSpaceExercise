@@ -3,11 +3,11 @@
 > **Document ID:** R305
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R301
-> **Referenced By:** R311
+> **Dependencies:** [R301](R301-campaign-design.md)
+> **Referenced By:** [R311](R311-course-of-action-analysis.md)
 > **Produces:** the vocabulary for translating a vignette's narrative intent into its concrete `objectives` block
 > **Feature Mapping:** vignette authoring (`docs/scenarios/`)
-> **Related Topics:** R301 (Campaign Design), R302 (Operational Art), R311 (Course of Action
+> **Related Topics:** [R301](R301-campaign-design.md) (Campaign Design), [R302](R302-operational-art.md) (Operational Art), [R311](R311-course-of-action-analysis.md) (Course of Action
 > Analysis), DOM-009 (the translation pipeline this topic's output feeds)
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
@@ -71,5 +71,5 @@ process this topic's vocabulary feeds.
 
 ## 6. Related Topics
 
-R301 (Campaign Design, the multi-vignette context), R302 (Operational Art), R311 (Course of Action
+[R301](R301-campaign-design.md) (Campaign Design, the multi-vignette context), [R302](R302-operational-art.md) (Operational Art), [R311](R311-course-of-action-analysis.md) (Course of Action
 Analysis, comparing options before commitment to a mission-analysis-derived task), DOM-009.

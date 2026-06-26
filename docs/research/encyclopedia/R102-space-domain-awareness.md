@@ -3,11 +3,11 @@
 > **Document ID:** R102
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R101
-> **Referenced By:** R104, R105, R109, R118, R119, FS-104
-> **Produces:** implementation constraints for `engine/custody.py`, SSN dispersion model
+> **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
+> **Referenced By:** [R104](R104-collection-management.md), [R105](R105-custody-theory.md), [R109](R109-sensor-operations.md), [R118](R118-space-surveillance-networks.md), [R119](R119-space-situational-data-fusion.md), FS-104
+> **Produces:** implementation constraints for [`engine/custody.py`](../../../spacesim/engine/custody.py), SSN dispersion model
 > **Feature Mapping:** FS-104 (SDA Tasking)
-> **Related Topics:** R105 (Custody Theory), R118 (Space Surveillance Networks), R119 (Data Fusion)
+> **Related Topics:** [R105](R105-custody-theory.md) (Custody Theory), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks), [R119](R119-space-situational-data-fusion.md) (Data Fusion)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -21,8 +21,8 @@ sensors, custody, or the SSN correctly.
 ## 2. Scope
 
 Covers: the SDA task chain (detect → track → characterize → attribute) and how each stage maps to
-an engine concept. Does **not** cover: the confidence-decay mechanics of an individual track (R105
-owns that) or the SSN's specific dispersion/turnaround model (R118).
+an engine concept. Does **not** cover: the confidence-decay mechanics of an individual track ([R105](R105-custody-theory.md)
+owns that) or the SSN's specific dispersion/turnaround model ([R118](R118-space-surveillance-networks.md)).
 
 ## 3. Concepts
 
@@ -35,7 +35,7 @@ owns that) or the SSN's specific dispersion/turnaround model (R118).
 4. **Attribute** — the object is associated with an owner/operator and, for hostile-context
    objects, an intent assessment.
 
-**Mapping to the engine.** `Track` (R105) is principally the *track* stage's data structure, with
+**Mapping to the engine.** `Track` ([R105](R105-custody-theory.md)) is principally the *track* stage's data structure, with
 confidence decay modeling the reality that an un-refreshed track's positional certainty degrades
 over time. *Detect* is the sensor-observation access channel firing. *Characterize* and *attribute*
 are currently lighter-weight in the engine (largely vignette-authored ground truth revealed at
@@ -50,8 +50,8 @@ data filter, it's "show me only what this cell's SDA chain has actually produced
 
 Real-world SDA is resource-constrained and adversarial: sensors are scarce, tasking competes across
 many objects of interest, and a sophisticated actor may deliberately complicate detection/tracking
-(maneuvering, deploying decoys). The simulator's collection-management contention (R104) and the
-SSN's coverage/dispersion model (R118) exist to make this resource scarcity *felt* by the operator,
+(maneuvering, deploying decoys). The simulator's collection-management contention ([R104](R104-collection-management.md)) and the
+SSN's coverage/dispersion model ([R118](R118-space-surveillance-networks.md)) exist to make this resource scarcity *felt* by the operator,
 not just stated.
 
 ## 5. Implementation Guidance
@@ -61,7 +61,7 @@ not just stated.
   attribution-level information from a bare detection event is a fog-of-war leak even if it never
   touches `/godview` directly.
 - **If you add characterization/attribution depth**, model it as additional `Track` fields/states
-  gated by sustained custody (consistent with R105's confidence-decay model), not as a one-shot
+  gated by sustained custody (consistent with [R105](R105-custody-theory.md)'s confidence-decay model), not as a one-shot
   reveal — this preserves the "custody must be earned and maintained" lesson (MSTR-003 §4).
 - **SDA outputs should always flow through the existing custody/track structures**, never as a
   parallel ad hoc "this cell now knows X" flag — parallel state is how fog-of-war boundaries quietly
@@ -74,6 +74,6 @@ terms of which SDA chain stage(s) it advances and for which cell.
 
 ## 7. Related Topics
 
-R105 (Custody Theory — the track-stage data structure), R109 (Sensor Operations — the
-detect-stage mechanics), R118 (SSN — a structured, multi-actor detect/track source), R119 (Data
+[R105](R105-custody-theory.md) (Custody Theory — the track-stage data structure), [R109](R109-sensor-operations.md) (Sensor Operations — the
+detect-stage mechanics), [R118](R118-space-surveillance-networks.md) (SSN — a structured, multi-actor detect/track source), [R119](R119-space-situational-data-fusion.md) (Data
 Fusion — combining multiple SDA sources into one custody picture).

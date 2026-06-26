@@ -3,11 +3,11 @@
 > **Document ID:** R105
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R102
-> **Referenced By:** R104, R109, R115, R116, R117, R119, DOM-002, FS-103
-> **Produces:** implementation constraints for `engine/custody.py`
+> **Dependencies:** [R102](R102-space-domain-awareness.md)
+> **Referenced By:** [R104](R104-collection-management.md), [R109](R109-sensor-operations.md), [R115](R115-electronic-warfare-in-space-operations.md), [R116](R116-cyber-operations-against-space-systems.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R119](R119-space-situational-data-fusion.md), DOM-002, FS-103
+> **Produces:** implementation constraints for [`engine/custody.py`](../../../spacesim/engine/custody.py)
 > **Feature Mapping:** FS-103 (Custody Management)
-> **Related Topics:** R102 (SDA), MSTR-004 Glossary (custody, weapons-quality track), DOM-002 §4 (custody quality as an assessment dimension)
+> **Related Topics:** [R102](R102-space-domain-awareness.md) (SDA), MSTR-004 Glossary (custody, weapons-quality track), DOM-002 §4 (custody quality as an assessment dimension)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -35,7 +35,7 @@ turn exactly on this distinction.
 
 **Custody must be actively maintained.** Confidence decays without refresh; a single detection does
 not grant permanent custody. This is the structural reason a cell must keep tasking sensors against
-an object of interest rather than "set and forget" — it is what makes collection management (R104)
+an object of interest rather than "set and forget" — it is what makes collection management ([R104](R104-collection-management.md))
 a real, continuous resource-allocation problem instead of a one-time setup cost.
 
 **Custody is per-cell.** Red and Blue maintain entirely independent `TrackCatalog`s on the same
@@ -58,7 +58,7 @@ the highest bar."
   weapons-quality gate computed at decision time.** Caching an engageability boolean (rather than
   recomputing confidence on demand) reintroduces exactly the staleness bug the on-demand decay
   design exists to prevent.
-- **A new sensor modality or SSN source (R109, R118) should feed into the existing `Track`
+- **A new sensor modality or SSN source ([R109](R109-sensor-operations.md), [R118](R118-space-surveillance-networks.md)) should feed into the existing `Track`
   structure**, contributing to confidence/refresh, rather than creating a parallel "this cell knows
   about X" channel.
 - **Any new effect category that requires custody as a precondition must specify which confidence
@@ -70,12 +70,12 @@ the highest bar."
 
 ## 5. Feature Mapping
 
-FS-103 (Custody Management) is the direct owner. R104 (Collection Management), R115-R117 (effect
+FS-103 (Custody Management) is the direct owner. [R104](R104-collection-management.md) (Collection Management), [R115](R115-electronic-warfare-in-space-operations.md)-[R117](R117-directed-energy-and-kinetic-effects.md) (effect
 categories with custody preconditions), and DOM-002 (assessment) are all downstream consumers of
 this model.
 
 ## 6. Related Topics
 
-R102 (SDA — the broader chain custody's *track* stage sits inside), R119 (Data Fusion — combining
+[R102](R102-space-domain-awareness.md) (SDA — the broader chain custody's *track* stage sits inside), [R119](R119-space-situational-data-fusion.md) (Data Fusion — combining
 multiple sources to raise one custody confidence value), MSTR-004 (Glossary — canonical one-line
 definitions of "custody" and "weapons-quality track").

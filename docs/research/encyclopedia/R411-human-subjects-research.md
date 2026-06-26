@@ -3,11 +3,11 @@
 > **Document ID:** R411
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R401
+> **Dependencies:** [R401](R401-experimental-design-and-controls.md)
 > **Referenced By:** —
 > **Produces:** the ethics/consent vocabulary applying to any future collection of trainee performance data beyond a single session
 > **Feature Mapping:** any future analytics feature persisting per-trainee data across sessions, DOM-002 (Assessment Framework) if extended to longitudinal trainee tracking
-> **Related Topics:** R401 (Experimental Design and Controls), R413 (Data Analysis and Reporting),
+> **Related Topics:** [R401](R401-experimental-design-and-controls.md) (Experimental Design and Controls), [R413](R413-data-analysis-and-reporting.md) (Data Analysis and Reporting),
 > DOM-002 (Assessment Framework — currently single-session scoped, not yet a longitudinal
 > trainee-tracking system)
 
@@ -79,5 +79,5 @@ looking guidance rather than a description of an existing gap.
 
 ## 6. Related Topics
 
-R401 (Experimental Design and Controls), R413 (Data Analysis and Reporting), DOM-002 (Assessment
+[R401](R401-experimental-design-and-controls.md) (Experimental Design and Controls), [R413](R413-data-analysis-and-reporting.md) (Data Analysis and Reporting), DOM-002 (Assessment
 Framework).

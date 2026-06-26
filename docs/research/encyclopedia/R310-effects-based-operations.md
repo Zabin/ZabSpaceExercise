@@ -3,12 +3,12 @@
 > **Document ID:** R310
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R309
-> **Referenced By:** R306
-> **Produces:** the cascading-effects vocabulary R306 (Operational Assessment)'s MOE concept depends on
+> **Dependencies:** [R309](R309-center-of-gravity-analysis.md)
+> **Referenced By:** [R306](R306-operational-assessment.md)
+> **Produces:** the cascading-effects vocabulary [R306](R306-operational-assessment.md) (Operational Assessment)'s MOE concept depends on
 > **Feature Mapping:** vignette authoring, FS-201 (Competency Assessment, forward-looking)
-> **Related Topics:** R309 (Center of Gravity Analysis), R306 (Operational Assessment), the five-D's
-> taxonomy (`research/03-counterspace-taxonomy.md`, MSTR-002 §2 invariant 3)
+> **Related Topics:** [R309](R309-center-of-gravity-analysis.md) (Center of Gravity Analysis), [R306](R306-operational-assessment.md) (Operational Assessment), the five-D's
+> taxonomy ([`research/03-counterspace-taxonomy.md`](../03-counterspace-taxonomy.md), MSTR-002 §2 invariant 3)
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -33,18 +33,18 @@ prescribing a specific tool.
 **Direct, indirect (cascading), and systemic effects.** A direct effect is the immediate, intended
 consequence of an action (a jam denies a specific sensor pass); an indirect/cascading effect is a
 downstream consequence the direct effect causes (denying that sensor pass delays Red's custody
-build-up, which delays a Red engagement decision, R208); a systemic effect is the aggregate
+build-up, which delays a Red engagement decision, [R208](R208-ooda-loops.md)); a systemic effect is the aggregate
 consequence across the whole operational system (Red's overall SDA confidence degrades across
 multiple denied passes). The engine currently models direct effects explicitly (the effect resolver)
 and indirect/systemic effects only implicitly, through their downstream mechanical consequences
-(R306's MOE/MOP distinction is the assessment-side version of this same gap).
+([R306](R306-operational-assessment.md)'s MOE/MOP distinction is the assessment-side version of this same gap).
 
 **The EBO critique: cascading effects are hard to predict and can be over-claimed.** EBO doctrine has
 been substantially critiqued in real military practice for overestimating planners' ability to
 predict second- and third-order effects in complex adversarial systems — a caution directly relevant
 to vignette design and to any future assessment feature: don't claim a vignette's objective "proves"
 a specific cascading effect occurred just because the direct effect (the objective flip) succeeded;
-R306's MOP/MOE distinction is the concrete safeguard against this over-claim.
+[R306](R306-operational-assessment.md)'s MOP/MOE distinction is the concrete safeguard against this over-claim.
 
 ## 3. Operational Context
 
@@ -64,7 +64,7 @@ walked back.
   the vignette is deliberately teaching a specific tool's mechanics (e.g. an onboarding vignette).
 - **Don't let any future assessment feature claim a flipped objective demonstrates a cascading/
   systemic effect beyond what was directly measured** — per the EBO critique, report only the direct,
-  measured effect (R306's MOP/MOE framing) and explicitly flag any inferred cascading claim as
+  measured effect ([R306](R306-operational-assessment.md)'s MOP/MOE framing) and explicitly flag any inferred cascading claim as
   inferred, not measured.
 - **If a future feature models genuine cascading consequences (e.g. Red's subsequent custody
   picture degrading after a sustained jam campaign), implement it as an explicit, documented state
@@ -79,6 +79,6 @@ caution for any future effectiveness-scoring dimension.
 
 ## 6. Related Topics
 
-R309 (Center of Gravity Analysis, the targeting input to EBO), R306 (Operational Assessment, the
+[R309](R309-center-of-gravity-analysis.md) (Center of Gravity Analysis, the targeting input to EBO), [R306](R306-operational-assessment.md) (Operational Assessment, the
 measurement-side application of the MOP/MOE distinction this topic motivates), the five-D's taxonomy
-(`research/03-counterspace-taxonomy.md`).
+([`research/03-counterspace-taxonomy.md`](../03-counterspace-taxonomy.md)).

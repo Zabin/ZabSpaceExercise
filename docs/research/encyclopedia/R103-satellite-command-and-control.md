@@ -3,11 +3,11 @@
 > **Document ID:** R103
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R101
-> **Referenced By:** R106, R107, R113, R114, R116, FS-102, FS-105
-> **Produces:** implementation constraints for `engine/orders.py`, `engine/buscommands.py`
+> **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
+> **Referenced By:** [R106](R106-mission-operations.md), [R107](R107-ground-segment-operations.md), [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R116](R116-cyber-operations-against-space-systems.md), FS-102, FS-105
+> **Produces:** implementation constraints for [`engine/orders.py`](../../../spacesim/engine/orders.py), [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py)
 > **Feature Mapping:** FS-102 (Command Scheduling), FS-105 (Spacecraft Operations)
-> **Related Topics:** R106 (Mission Operations), R114 (Command and Data Handling), MSTR-002 §2 invariant 4 (plan-first)
+> **Related Topics:** [R106](R106-mission-operations.md) (Mission Operations), [R114](R114-command-and-data-handling.md) (Command and Data Handling), MSTR-002 §2 invariant 4 (plan-first)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -68,7 +68,7 @@ scheduling UI must reflect the real validate→window→execute→confirm latenc
 
 ## 6. Related Topics
 
-R106 (Mission Operations — the broader workflow C2 sits inside), R114 (Command and Data Handling —
-onboard storage/dump, the stored-delivery counterpart), R116 (Cyber Operations — the doctrinal
+[R106](R106-mission-operations.md) (Mission Operations — the broader workflow C2 sits inside), [R114](R114-command-and-data-handling.md) (Command and Data Handling —
+onboard storage/dump, the stored-delivery counterpart), [R116](R116-cyber-operations-against-space-systems.md) (Cyber Operations — the doctrinal
 exception to window-gated C2), MSTR-002 §5 (replay-safety, relevant to why `dry_run()` must not
 mutate state).

@@ -3,18 +3,18 @@
 > **Document ID:** R120
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R101
-> **Referenced By:** R102, R103, R104, R107, R109, R110, R115, R117, R118, FS-101, FS-105
-> **Produces:** implementation constraints for `engine/access.py`
+> **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
+> **Referenced By:** [R102](R102-space-domain-awareness.md), [R103](R103-satellite-command-and-control.md), [R104](R104-collection-management.md), [R107](R107-ground-segment-operations.md), [R109](R109-sensor-operations.md), [R110](R110-communications.md), [R115](R115-electronic-warfare-in-space-operations.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R118](R118-space-surveillance-networks.md), FS-101, FS-105
+> **Produces:** implementation constraints for [`engine/access.py`](../../../spacesim/engine/access.py)
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations)
-> **Related Topics:** R101 (Orbital Mechanics — the geometry this topic gates on), MSTR-002 §4 (the
+> **Related Topics:** [R101](R101-orbital-mechanics-for-operations.md) (Orbital Mechanics — the geometry this topic gates on), MSTR-002 §4 (the
 > seam principle — `AccessProvider` as a substitutable interface), MSTR-002 §5 (sub-step the clock)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
 
-Access windows are the single mechanism underneath all six gating channels — every other R100
+Access windows are the single mechanism underneath all six gating channels — every other [R100](R100-index.md)
 topic that mentions "window" is ultimately deferring to `AccessProvider`. This topic gives the
 implementer the actual window-finding algorithm (sample, detect transition, bisect the edge) so a
 new channel or fidelity tier is added correctly rather than by approximation.
@@ -24,7 +24,7 @@ new channel or fidelity tier is added correctly rather than by approximation.
 **Six gating channels plus one non-gating relay channel share one predicate-and-quality pattern.**
 `COMMAND_UPLINK`, `TELEMETRY_DOWNLINK`, `SENSOR_OBSERVATION`, `JAM_FOOTPRINT`, `WEAPON_ENGAGEMENT`,
 `RPO_PROXIMITY` are the six gating channels (FR-E4); `ISL_LINK` is a seventh, used only for relay
-delivery (R103's stored/ISL path), not one of the six doctrinal channels. Every channel resolves to
+delivery ([R103](R103-satellite-command-and-control.md)'s stored/ISL path), not one of the six doctrinal channels. Every channel resolves to
 an `(access_fn, quality_fn)` pair via `AccessProvider._predicate`.
 
 **Windows are found by sampling, then bisecting the edges — not by closed-form geometry.**
@@ -44,7 +44,7 @@ that without requiring the whole simulation to run at a uniformly fine step.
 **Missing endpoints degrade to "no access," never an exception.** `_endpoints_present` returns
 `False` for any actor/target id not present in the `Scene` for that channel's required entity types
 — a command planned `via` a station that doesn't exist (or has dropped out of the scene, e.g. a
-degraded ground site, R107) produces an empty window list, not a `KeyError`. This is the concrete
+degraded ground site, [R107](R107-ground-segment-operations.md)) produces an empty window list, not a `KeyError`. This is the concrete
 implementation of "denied, not crashed" (MSTR-002 §6) at the access layer specifically.
 
 **Windows are cached per `(actor, target, channel, t0, horizon)` and invalidated on maneuver.**
@@ -56,7 +56,7 @@ geometry that no longer holds. A new state-mutating action that changes orbital 
 **Quality is a 0..1 proxy, not a guarantee of effect success.** Each predicate pair also returns a
 `quality_fn` (elevation/90°, or 1 − range/threshold) used for window peak-quality reporting (e.g. UI
 Gantt charts) — quality is a *geometric* goodness proxy, completely separate from the
-physically-derived success probabilities R115-R117 compute for the effect itself.
+physically-derived success probabilities [R115](R115-electronic-warfare-in-space-operations.md)-[R117](R117-directed-energy-and-kinetic-effects.md) compute for the effect itself.
 
 ## 3. Operational Context
 
@@ -75,12 +75,12 @@ software, which is exactly the failure mode `_step_for`'s adaptive stepping exis
   effect) must call `AccessProvider.invalidate()`** for the affected actor — omitting this
   reintroduces exactly the stale-window class of bug the cache-invalidation design exists to
   prevent.
-- **A higher-fidelity propagator (the anticipated third tier, R101 §3) must still satisfy this same
+- **A higher-fidelity propagator (the anticipated third tier, [R101](R101-orbital-mechanics-for-operations.md) §3) must still satisfy this same
   predicate/window interface** — `AccessProvider` is itself one of the documented seams (MSTR-002
   §4); a new fidelity tier extends `Propagator`, not `AccessProvider`'s algorithm.
 - **Treat `quality` as a UI/preview signal only** — never feed window `quality` directly into an
   effect's success probability; that conflation would blur the access-geometry layer with the
-  effect-resolution layer R115-R117 deliberately keep separate.
+  effect-resolution layer [R115](R115-electronic-warfare-in-space-operations.md)-[R117](R117-directed-energy-and-kinetic-effects.md) deliberately keep separate.
 
 ## 5. Feature Mapping
 
@@ -90,6 +90,6 @@ continuous-access assumption.
 
 ## 6. Related Topics
 
-R101 (the orbital state this topic samples), MSTR-002 §4-5 (the seam and sub-stepping principles
-this module is the concrete implementation of), and every other R100 effect-category topic
-(R109/R110/R115/R117) which all consume this module's windows as their gating precondition.
+[R101](R101-orbital-mechanics-for-operations.md) (the orbital state this topic samples), MSTR-002 §4-5 (the seam and sub-stepping principles
+this module is the concrete implementation of), and every other [R100](R100-index.md) effect-category topic
+([R109](R109-sensor-operations.md)/[R110](R110-communications.md)/[R115](R115-electronic-warfare-in-space-operations.md)/[R117](R117-directed-energy-and-kinetic-effects.md)) which all consume this module's windows as their gating precondition.

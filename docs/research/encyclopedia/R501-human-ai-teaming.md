@@ -4,11 +4,11 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** R502, R503, R509
+> **Referenced By:** [R502](R502-autonomy-in-space-operations.md), [R503](R503-ai-decision-support.md), [R509](R509-ai-integration-patterns.md)
 > **Produces:** the vocabulary for how a human operator and an AI advisor would share a decision loop, framing DOM-008 §4's "advisor not decider" constraint
 > **Feature Mapping:** any future in-world AI decision-support feature (🅿️ pending authorization per DOM-008 §4)
-> **Related Topics:** R210 (Decision Support Systems — the 4-level spectrum this topic's teaming
-> models map onto), DOM-008 (AI Integration Framework — §4's advisor-only constraint), R503 (AI
+> **Related Topics:** [R210](R210-decision-support-systems.md) (Decision Support Systems — the 4-level spectrum this topic's teaming
+> models map onto), DOM-008 (AI Integration Framework — §4's advisor-only constraint), [R503](R503-ai-decision-support.md) (AI
 > Decision Support)
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
@@ -33,7 +33,7 @@ being asked but never acts; a delegate-level AI takes autonomous action within a
 teammate level, explicitly ruling out delegate-level autonomous decision-making for the trainee.
 
 **Trust calibration: neither over-trusting nor under-trusting the AI partner.** Over-trust
-(automation bias, R210) leads an operator to accept an AI recommendation without independent
+(automation bias, [R210](R210-decision-support-systems.md)) leads an operator to accept an AI recommendation without independent
 verification even when it's wrong; under-trust leads to ignoring a genuinely useful recommendation —
 calibrated trust requires the AI's confidence/uncertainty to be genuinely legible to the operator, not
 just its bottom-line recommendation.
@@ -48,14 +48,14 @@ authority constraint.
 **Workload and attention allocation.** A well-designed human-AI team allocates the AI to tasks that
 reduce the human's workload at exactly the moments cognitive load is highest, rather than adding a new
 information stream to monitor at all times — a future advisor feature should be evaluated against
-whether it reduces or adds to the trainee's attentional burden (R205's working-memory limits).
+whether it reduces or adds to the trainee's attentional burden ([R205](R205-cognitive-psychology-foundations.md)'s working-memory limits).
 
 ## 3. Operational Context
 
 Human-AI teaming research (from aviation automation studies through more recent military
 human-machine-teaming doctrine) is the active research base most directly relevant to any future
 in-world AI assistance in this simulator, and has documented both classes of failure (over-trust/
-automation bias, R210; under-trust/disuse) extensively enough that any future advisor-feature design
+automation bias, [R210](R210-decision-support-systems.md); under-trust/disuse) extensively enough that any future advisor-feature design
 should treat avoiding both as a first-class design requirement, not an afterthought.
 
 ## 4. Implementation Guidance
@@ -81,5 +81,5 @@ authorization).
 
 ## 6. Related Topics
 
-R210 (Decision Support Systems, the 4-level spectrum), DOM-008 (AI Integration Framework §4), R503
+[R210](R210-decision-support-systems.md) (Decision Support Systems, the 4-level spectrum), DOM-008 (AI Integration Framework §4), [R503](R503-ai-decision-support.md)
 (AI Decision Support, the direct downstream elaboration).

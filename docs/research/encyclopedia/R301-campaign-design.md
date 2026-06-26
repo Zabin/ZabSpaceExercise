@@ -4,10 +4,10 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** R302, R305, R312, DOM-009
+> **Referenced By:** [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md), DOM-009
 > **Produces:** the structural vocabulary behind multi-vignette mission-set progression
 > **Feature Mapping:** FS-106 (White Cell Dashboard), vignette authoring (`docs/scenarios/`)
-> **Related Topics:** R302 (Operational Art), R305 (Mission Analysis), R312 (Space Strategy), DOM-001
+> **Related Topics:** [R302](R302-operational-art.md) (Operational Art), [R305](R305-mission-analysis.md) (Mission Analysis), [R312](R312-space-strategy.md) (Space Strategy), DOM-001
 > §4 (vignette progression), DOM-009 (doctrine-to-content translation)
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
@@ -28,7 +28,7 @@ makes a sequence a campaign is that an outcome in one operation plausibly change
 conditions or objectives of the next (e.g. a Blue cell that loses custody of a key asset in
 mission-set vignette 1 should plausibly face a harder SDA picture in vignette 2).
 
-**Center of gravity persists across a campaign even as tactical situations change (R309).** A
+**Center of gravity persists across a campaign even as tactical situations change ([R309](R309-center-of-gravity-analysis.md)).** A
 campaign-design document should identify the *strategic* objective threading through the sequence
 (e.g. "maintain assured access to a specific orbital regime") distinct from each vignette's local,
 tactical objectives — this is the throughline DOM-009's translation pipeline needs in order to keep a
@@ -71,5 +71,5 @@ needs to see the sequence); a future campaign-progression feature would be new F
 
 ## 6. Related Topics
 
-R302 (Operational Art, the tactics-to-strategy connective layer within one operation), R305 (Mission
-Analysis), R312 (Space Strategy, the strategic end a campaign serves), DOM-009 (translation pipeline).
+[R302](R302-operational-art.md) (Operational Art, the tactics-to-strategy connective layer within one operation), [R305](R305-mission-analysis.md) (Mission
+Analysis), [R312](R312-space-strategy.md) (Space Strategy, the strategic end a campaign serves), DOM-009 (translation pipeline).

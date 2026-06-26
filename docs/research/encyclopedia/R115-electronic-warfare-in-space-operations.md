@@ -3,12 +3,12 @@
 > **Document ID:** R115
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R110
-> **Referenced By:** R117, FS-105
-> **Produces:** implementation constraints for `engine/jam.py`, `JAM_FOOTPRINT` access channel
+> **Dependencies:** [R110](R110-communications.md)
+> **Referenced By:** [R117](R117-directed-energy-and-kinetic-effects.md), FS-105
+> **Produces:** implementation constraints for [`engine/jam.py`](../../../spacesim/engine/jam.py), `JAM_FOOTPRINT` access channel
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
-> **Related Topics:** R110 (Communications — the thing EW denies), MSTR-002 (the five-D effect
-> taxonomy: EW is `deny`/`disrupt`/`degrade`, never `destroy`), R116 (Cyber Operations — the doctrinal
+> **Related Topics:** [R110](R110-communications.md) (Communications — the thing EW denies), MSTR-002 (the five-D effect
+> taxonomy: EW is `deny`/`disrupt`/`degrade`, never `destroy`), [R116](R116-cyber-operations-against-space-systems.md) (Cyber Operations — the doctrinal
 > contrast of window-gated vs. not)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
@@ -40,7 +40,7 @@ operator-supplied `success_prob` is parsed for save-file back-compat only and ot
 **Jamming is gated by the `jam_footprint` access channel, exactly like other ground-based effects.**
 `AccessProvider._weapon_predicate`-style gating via `_ground_sat_predicate` with `jam_mask_deg`
 means a jammer must have geometric access (elevation above mask) to the victim, just like a command
-uplink — EW is window-gated, the explicit doctrinal contrast with cyber (R116).
+uplink — EW is window-gated, the explicit doctrinal contrast with cyber ([R116](R116-cyber-operations-against-space-systems.md)).
 
 **Defensive postures reduce the *experienced* effect, not the underlying probability database.**
 `def.frequency_hop` and `satcom.mitigate_interference`/`shift_users` act on the defender's side
@@ -65,7 +65,7 @@ cost of needing prior signal intercept and certain attribution once caught.
   (`effectiveness`, `radius_factor`, `attribution_bias`, `detectability`, `power_factor`) — don't
   special-case a new modulation in the resolver instead.
 - **EW effects remain window-gated through `JAM_FOOTPRINT`** — do not give a new EW capability a
-  cyber-style "resolves anywhere, anytime" path; that exception is reserved for cyber (R116) by
+  cyber-style "resolves anywhere, anytime" path; that exception is reserved for cyber ([R116](R116-cyber-operations-against-space-systems.md)) by
   explicit doctrine.
 - **Defensive mitigation should modify the resolver's outcome, not the jam-math module** — keep
   `jam.py` a pure, defender-agnostic computation of the attack's raw potency.
@@ -78,6 +78,6 @@ a single "jam" button.
 
 ## 6. Related Topics
 
-R110 (Communications — what EW denies, and the defensive postures that mitigate it), R116 (Cyber
+[R110](R110-communications.md) (Communications — what EW denies, and the defensive postures that mitigate it), [R116](R116-cyber-operations-against-space-systems.md) (Cyber
 Operations — the doctrinal not-window-gated exception), MSTR-002 (the five-D taxonomy EW operates
 within).

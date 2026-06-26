@@ -3,22 +3,22 @@
 > **Document ID:** R204
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R201
-> **Referenced By:** R104, R210, R212
-> **Produces:** the vocabulary for "value of a collection request" underlying R104's tasking-priority logic
+> **Dependencies:** [R201](R201-probability-and-bayesian-reasoning.md)
+> **Referenced By:** [R104](R104-collection-management.md), [R210](R210-decision-support-systems.md), [R212](R212-multi-criteria-decision-analysis.md)
+> **Produces:** the vocabulary for "value of a collection request" underlying [R104](R104-collection-management.md)'s tasking-priority logic
 > **Feature Mapping:** FS-104 (SDA Tasking)
-> **Related Topics:** R201 (Probability), R104 (Collection Management — the tasking-priority system this
-> topic's value-of-information concept justifies), R118 (Space Surveillance Networks)
+> **Related Topics:** [R201](R201-probability-and-bayesian-reasoning.md) (Probability), [R104](R104-collection-management.md) (Collection Management — the tasking-priority system this
+> topic's value-of-information concept justifies), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks)
 
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
 
-`PRIORITY_COST` (R118 §2) forces an operator to treat collection requests as a scarce, valuable
+`PRIORITY_COST` ([R118](R118-space-surveillance-networks.md) §2) forces an operator to treat collection requests as a scarce, valuable
 resource rather than a free query — that scarcity is only a sound design if "some collection
 requests are worth more than others" is a meaningful claim. This topic gives the implementer the
 formal vocabulary (information content, value of information) for why that claim holds, distinct
-from the probability formalism (R201) it's built on.
+from the probability formalism ([R201](R201-probability-and-bayesian-reasoning.md)) it's built on.
 
 ## 2. Concepts
 
@@ -34,14 +34,14 @@ the engine should implement.
 bit of reduced uncertainty matters — VoI asks: would this observation change which action the
 decision-maker would take? A confirmatory SSN request that wouldn't change Blue's plan either way
 has low VoI even if it's "informative" in the raw Shannon sense; `_h_observe`'s auto-cue threshold
-(confidence 0.3-0.85, R104 §2) is implicitly a VoI heuristic: outside that band, more observation
+(confidence 0.3-0.85, [R104](R104-collection-management.md) §2) is implicitly a VoI heuristic: outside that band, more observation
 either wouldn't change the custody classification (already too low or already weapons-quality) or
 would change it only marginally.
 
 **Channel capacity as a metaphor for sensor/SSN throughput limits.** The `_CONCURRENCY` cap per SSN
-dispersion preset (R118 §2) and per-sensor contention (`_sensor_bookings`, R104 §2) are real
+dispersion preset ([R118](R118-space-surveillance-networks.md) §2) and per-sensor contention (`_sensor_bookings`, [R104](R104-collection-management.md) §2) are real
 operational throughput constraints — information-theoretically, a bounded "channel" through which
-only so many observations can be collected per unit time, motivating *prioritization* (R118's
+only so many observations can be collected per unit time, motivating *prioritization* ([R118](R118-space-surveillance-networks.md)'s
 `PRIORITY_COST`) over an unconstrained request model.
 
 ## 3. Operational Context
@@ -57,7 +57,7 @@ intelligence collection plans explicitly rank requests by decision relevance, no
   a pending decision), not raw information-content terms** — a UI surfacing "request value" should
   ask the operator what decision the request supports, mirroring real collection-management
   practice, not present an abstract entropy number.
-- **The auto-cue confidence band (R104 §2) is a tuned VoI heuristic, not an arbitrary threshold** —
+- **The auto-cue confidence band ([R104](R104-collection-management.md) §2) is a tuned VoI heuristic, not an arbitrary threshold** —
   if it is ever retuned, retune it against "does observation in this band change the
   weapons-quality determination," not against an unrelated criterion.
 - **Don't conflate "more sensors/SSN dispersion" with "always better information"** — per channel-
@@ -72,6 +72,6 @@ in this topic's VoI vocabulary.
 
 ## 6. Related Topics
 
-R201 (Probability, the formalism VoI is built on), R104 (Collection Management, the concrete
-tasking-contention system this topic justifies), R118 (Space Surveillance Networks, the throughput-
+[R201](R201-probability-and-bayesian-reasoning.md) (Probability, the formalism VoI is built on), [R104](R104-collection-management.md) (Collection Management, the concrete
+tasking-contention system this topic justifies), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks, the throughput-
 constrained "channel").

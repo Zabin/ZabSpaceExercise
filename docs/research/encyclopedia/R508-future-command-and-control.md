@@ -3,18 +3,18 @@
 > **Document ID:** R508
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R502, R507
+> **Dependencies:** [R502](R502-autonomy-in-space-operations.md), [R507](R507-autonomous-planning-systems.md)
 > **Referenced By:** —
 > **Produces:** forward-looking context for how the simulator's existing CellController/SessionAPI architecture would need to evolve if a future C2 concept (distributed, autonomy-integrated) were ever modeled
 > **Feature Mapping:** any future LAN-multiplayer or session-architecture evolution touching `spacesim/session/`
-> **Related Topics:** R502 (Autonomy in Space Operations), R507 (Autonomous Planning Systems), the
+> **Related Topics:** [R502](R502-autonomy-in-space-operations.md) (Autonomy in Space Operations), [R507](R507-autonomous-planning-systems.md) (Autonomous Planning Systems), the
 > existing `spacesim/session/` architecture (`SessionManager`, `CellController`, `SessionAPI`) this
 > topic's future-C2 concepts would have to extend
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
 
 **DOM-008 §6 tag:** neither in-world AI nor coding-agent practice directly — forward-looking
-architectural context informed by R502/R507's AI-adjacent concepts.
+architectural context informed by [R502](R502-autonomy-in-space-operations.md)/[R507](R507-autonomous-planning-systems.md)'s AI-adjacent concepts.
 
 ## 1. Purpose
 
@@ -28,18 +28,18 @@ concept wanted to model a degraded or distributed-C2 scenario explicitly.
 ## 2. Concepts
 
 **Centralized vs. distributed/resilient C2.** Centralized C2 concentrates decision authority at one
-node (vulnerable to that node's loss — a clean real-world COG, R309); distributed/resilient C2
+node (vulnerable to that node's loss — a clean real-world COG, [R309](R309-center-of-gravity-analysis.md)); distributed/resilient C2
 spreads decision authority so the system degrades gracefully if any single node is lost — the
-existing engine's `ground_modem`/`seize_c2` cyber vector (R116) and the COG framing (R309) already
+existing engine's `ground_modem`/`seize_c2` cyber vector ([R116](R116-cyber-operations-against-space-systems.md)) and the COG framing ([R309](R309-center-of-gravity-analysis.md)) already
 implicitly model the *vulnerability* of centralized C2; a future vignette explicitly themed around
 this tradeoff (Blue choosing centralized vs. distributed C2 architecture as a design decision within
 the scenario) does not exist today.
 
 **C2 architectures anticipating AI/autonomy integration.** Future C2 doctrine increasingly assumes
-some nodes in the C2 architecture are autonomous decision-makers (R507) rather than purely human —
-this raises a structural question distinct from any single autonomous-feature's design (R501-R507):
+some nodes in the C2 architecture are autonomous decision-makers ([R507](R507-autonomous-planning-systems.md)) rather than purely human —
+this raises a structural question distinct from any single autonomous-feature's design ([R501](R501-human-ai-teaming.md)-[R507](R507-autonomous-planning-systems.md)):
 who/what is authorized to issue an order, and does the existing engine's `Order`/`OrderSystem`
-(`engine/orders.py`) model assume a human always originates an order, or could a future autonomous
+([`engine/orders.py`](../../../spacesim/engine/orders.py)) model assume a human always originates an order, or could a future autonomous
 node originate one within the same system.
 
 **The existing `SessionManager`/`CellController`/`SessionAPI` architecture as today's C2 model.**
@@ -54,8 +54,8 @@ session architecture.
 **Resilience and graceful degradation as a doctrinal concept, distinct from this engine's own
 infrastructure resilience.** Real C2 resilience doctrine (surviving node loss without total mission
 failure) is a candidate *content* theme (a vignette modeling Blue's ground-segment C2 node being
-denied, R116/R309, and testing whether Blue's remaining force can still accomplish the mission) — this
-is achievable today using existing mechanics (cyber/jam denial of a ground station, R107) without any
+denied, [R116](R116-cyber-operations-against-space-systems.md)/[R309](R309-center-of-gravity-analysis.md), and testing whether Blue's remaining force can still accomplish the mission) — this
+is achievable today using existing mechanics (cyber/jam denial of a ground station, [R107](R107-ground-segment-operations.md)) without any
 new engine feature; the distinction is doctrinal framing of existing capability, not new capability.
 
 ## 3. Operational Context
@@ -69,15 +69,15 @@ in-fiction C2 architecture as a teachable doctrinal theme," two things easy to c
 ## 4. Implementation Guidance
 
 - **A vignette wanting to teach the centralized-vs-distributed-C2 resilience tradeoff can do so today
-  using existing mechanics** (a ground-segment C2 node denial via cyber/jam, R107/R116, testing
+  using existing mechanics** (a ground-segment C2 node denial via cyber/jam, [R107](R107-ground-segment-operations.md)/[R116](R116-cyber-operations-against-space-systems.md), testing
   whether Blue's force degrades gracefully) — this requires vignette-authoring and doctrinal framing,
   not a new engine feature.
 - **Do not conflate the engine's own session architecture (`SessionManager`/`CellController`/
   `SessionAPI`) with an in-fiction C2 concept a vignette is teaching** — the former is this project's
   infrastructure design (appropriately centralized for a training tool); the latter is scenario
   content.
-- **If a future feature ever lets an autonomous in-world entity (R507) originate an `Order`, check
-  whether `engine/orders.py`'s `OrderSystem` model implicitly assumes a human originator** and
+- **If a future feature ever lets an autonomous in-world entity ([R507](R507-autonomous-planning-systems.md)) originate an `Order`, check
+  whether [`engine/orders.py`](../../../spacesim/engine/orders.py)'s `OrderSystem` model implicitly assumes a human originator** and
   document the assumption explicitly before building on top of it.
 
 ## 5. Feature Mapping
@@ -87,5 +87,5 @@ themed around C2-resilience doctrine, are the consumers; no specific feature is 
 
 ## 6. Related Topics
 
-R502 (Autonomy in Space Operations), R507 (Autonomous Planning Systems), `spacesim/session/`'s
+[R502](R502-autonomy-in-space-operations.md) (Autonomy in Space Operations), [R507](R507-autonomous-planning-systems.md) (Autonomous Planning Systems), `spacesim/session/`'s
 existing architecture.

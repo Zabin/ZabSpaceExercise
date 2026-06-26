@@ -3,12 +3,12 @@
 > **Document ID:** R409
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R406
-> **Referenced By:** R410
+> **Dependencies:** [R406](R406-modeling-practices.md)
+> **Referenced By:** [R410](R410-validation.md)
 > **Produces:** the formal vocabulary for the verification work DOM-005 §3 already says is strong in this codebase (pytest, the determinism property test)
 > **Feature Mapping:** the entire `spacesim/tests/` suite, DOM-005 §3
-> **Related Topics:** R406 (Modeling Practices — the documented assumptions verification checks
-> against), R410 (Validation — the distinct, comparatively weaker discipline DOM-005 identifies as
+> **Related Topics:** [R406](R406-modeling-practices.md) (Modeling Practices — the documented assumptions verification checks
+> against), [R410](R410-validation.md) (Validation — the distinct, comparatively weaker discipline DOM-005 identifies as
 > this project's actual gap), DOM-005 (Validation Framework)
 
 [↑ Tier R400 index](R400-index.md) · [Encyclopedia index](INDEX.md)
@@ -18,15 +18,15 @@
 DOM-005 §3 distinguishes verification (already strong in this codebase: pytest, the determinism
 property test) from validation (the comparative gap). This topic supplies the formal verification
 vocabulary, both to name precisely what the existing strong test suite is already doing well and to
-make the boundary with R410's validation explicit, since conflating the two is exactly the mistake
+make the boundary with [R410](R410-validation.md)'s validation explicit, since conflating the two is exactly the mistake
 DOM-005 warns against.
 
 ## 2. Concepts
 
 **Verification: does the implementation match its own specification.** Verification asks "did we
-build the thing right" — i.e., does `engine/orbit.py`'s Kepler+J2 implementation correctly compute
+build the thing right" — i.e., does [`engine/orbit.py`](../../../spacesim/engine/orbit.py)'s Kepler+J2 implementation correctly compute
 what the documented Kepler+J2 equations specify, independent of whether Kepler+J2 itself is a good
-model of reality (that second question is validation, R410). The Phase-1 determinism property test is
+model of reality (that second question is validation, [R410](R410-validation.md)). The Phase-1 determinism property test is
 a verification test in this precise sense: it checks the implementation satisfies its own stated
 contract `(initial_state, eventlog, seed) → byte-identical state`, not whether that contract is a
 good representation of any external reality.
@@ -62,11 +62,11 @@ implementation, is the source of error — DOM-005 names this exact gap for this
   spec before implementation, exactly the existing pattern.
 - **When writing a verification test, state explicitly what specification it is checking against**
   (a documented formula, an architectural invariant, a previously-fixed bug's expected behavior) —
-  this keeps the test's scope (verification) visibly distinct from a validation claim (R410) it
+  this keeps the test's scope (verification) visibly distinct from a validation claim ([R410](R410-validation.md)) it
   should not be conflated with.
 - **Do not treat a green test suite as evidence of real-world fidelity** — per DOM-005 §3, a passing
   verification suite establishes the implementation matches its spec, not that the spec is a good
-  model of the real phenomenon; that separate claim requires R410's validation work.
+  model of the real phenomenon; that separate claim requires [R410](R410-validation.md)'s validation work.
 
 ## 5. Feature Mapping
 
@@ -74,6 +74,6 @@ The `spacesim/tests/` suite and DOM-005 §3 are the direct consumers.
 
 ## 6. Related Topics
 
-R406 (Modeling Practices, the documented assumptions verification checks against), R410 (Validation,
+[R406](R406-modeling-practices.md) (Modeling Practices, the documented assumptions verification checks against), [R410](R410-validation.md) (Validation,
 the distinct and comparatively weaker discipline this project still needs), DOM-005 (Validation
 Framework).

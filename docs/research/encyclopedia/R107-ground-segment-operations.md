@@ -3,11 +3,11 @@
 > **Document ID:** R107
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R101, R103
-> **Referenced By:** R110, R118, FS-105
-> **Produces:** implementation constraints for `engine/entities.py` (`GroundSite`), `engine/access.py`
+> **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md), [R103](R103-satellite-command-and-control.md)
+> **Referenced By:** [R110](R110-communications.md), [R118](R118-space-surveillance-networks.md), FS-105
+> **Produces:** implementation constraints for [`engine/entities.py`](../../../spacesim/engine/entities.py) (`GroundSite`), [`engine/access.py`](../../../spacesim/engine/access.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
-> **Related Topics:** R101 (Orbital Mechanics — the geometry ground contact depends on), R103 (Satellite C2), R110 (Communications)
+> **Related Topics:** [R101](R101-orbital-mechanics-for-operations.md) (Orbital Mechanics — the geometry ground contact depends on), [R103](R103-satellite-command-and-control.md) (Satellite C2), [R110](R110-communications.md) (Communications)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -33,7 +33,7 @@ entry (with wrap-around band support) rather than assuming a uniform horizon —
 **A degraded ground station drops out of the access scene entirely.** `scene_from_world` excludes
 any asset acting as a site whose `health == "degraded"` from `Scene.sites` — an outage (e.g. the
 `gs_outage` inject template) doesn't lower a probability, it removes the station's command/downlink
-path until the outage clears. This is the same "denied, not crashed" doctrine R103 describes for
+path until the outage clears. This is the same "denied, not crashed" doctrine [R103](R103-satellite-command-and-control.md) describes for
 command validation, applied to infrastructure.
 
 **Atmospheric refraction is an optional, not default, correction.** `AccessConfig.atmospheric_refraction`
@@ -69,6 +69,6 @@ through the same uplink/downlink access windows the operator console already sho
 
 ## 6. Related Topics
 
-R101 (the orbital geometry feeding `look_angles`), R103 (the C2 chain the ground segment delivers),
-R110 (Communications — the link-quality side of the same ground contact), R118 (SSN — ground-based
+[R101](R101-orbital-mechanics-for-operations.md) (the orbital geometry feeding `look_angles`), [R103](R103-satellite-command-and-control.md) (the C2 chain the ground segment delivers),
+[R110](R110-communications.md) (Communications — the link-quality side of the same ground contact), [R118](R118-space-surveillance-networks.md) (SSN — ground-based
 sensor sites use the same `GroundSite`/elevation-mask machinery).

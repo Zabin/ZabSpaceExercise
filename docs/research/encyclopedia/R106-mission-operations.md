@@ -3,11 +3,11 @@
 > **Document ID:** R106
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R103
-> **Referenced By:** R108, FS-101, FS-105, FS-106
-> **Produces:** implementation constraints for the operator-console workflow (`ui_web/static/app.js`, `session/api.py`)
+> **Dependencies:** [R103](R103-satellite-command-and-control.md)
+> **Referenced By:** [R108](R108-constellation-operations.md), FS-101, FS-105, FS-106
+> **Produces:** implementation constraints for the operator-console workflow (`ui_web/static/app.js`, [`session/api.py`](../../../spacesim/session/api.py))
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations), FS-106 (White Cell Dashboard)
-> **Related Topics:** R103 (Satellite C2), MSTR-003 §2 (plan-execute as the unit of learning), DOM-001 (Training Framework)
+> **Related Topics:** [R103](R103-satellite-command-and-control.md) (Satellite C2), MSTR-003 §2 (plan-execute as the unit of learning), DOM-001 (Training Framework)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -21,7 +21,7 @@ existing operational rhythm instead of inventing a parallel one.
 ## 2. Concepts
 
 **The operations loop has four recurring beats.** (1) *Plan* — the operator reviews current SOH,
-custody, and access-window forecasts and decides what to attempt next; `dry_run()` (R103) supports
+custody, and access-window forecasts and decides what to attempt next; `dry_run()` ([R103](R103-satellite-command-and-control.md)) supports
 this beat without committing anything. (2) *Task* — the operator issues orders (commands, sensor
 tasking, maneuvers) that queue for their windows. (3) *Execute* — the deterministic event loop fires
 queued orders at their windows; the operator cannot accelerate this. (4) *Assess* — fresh telemetry,
@@ -69,6 +69,6 @@ cross-cell vantage point.
 
 ## 6. Related Topics
 
-R103 (Satellite C2 — the mechanics the "task" beat drives), MSTR-003 §2 (the pedagogical argument
+[R103](R103-satellite-command-and-control.md) (Satellite C2 — the mechanics the "task" beat drives), MSTR-003 §2 (the pedagogical argument
 for why plan-execute is the right unit of learning), DOM-001 (Training Framework — how the loop maps
 to training objectives).

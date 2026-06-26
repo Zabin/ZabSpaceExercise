@@ -3,19 +3,19 @@
 > **Document ID:** R114
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R103
-> **Referenced By:** R109, FS-105
-> **Produces:** implementation constraints for `engine/bus.py` (`CdhState`), `engine/buscommands.py` (`cdh.*`)
+> **Dependencies:** [R103](R103-satellite-command-and-control.md)
+> **Referenced By:** [R109](R109-sensor-operations.md), FS-105
+> **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py) (`CdhState`), [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py) (`cdh.*`)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
-> **Related Topics:** R103 (Satellite C2 — the stored-delivery/dump counterpart), R111 (Power and
-> Thermal Operations), R109 (Sensor Operations — the storage that collection fills)
+> **Related Topics:** [R103](R103-satellite-command-and-control.md) (Satellite C2 — the stored-delivery/dump counterpart), [R111](R111-power-and-thermal-operations.md) (Power and
+> Thermal Operations), [R109](R109-sensor-operations.md) (Sensor Operations — the storage that collection fills)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
 
-Command and Data Handling (C&DH) is the onboard-storage gate that ties collection (R109) to
-downlink (R103) — a satellite that fills its storage buffer cannot collect further until a downlink
+Command and Data Handling (C&DH) is the onboard-storage gate that ties collection ([R109](R109-sensor-operations.md)) to
+downlink ([R103](R103-satellite-command-and-control.md)) — a satellite that fills its storage buffer cannot collect further until a downlink
 drains it. This topic gives the implementer the `CdhState` model so new collection or downlink
 features respect the storage gate consistently.
 
@@ -40,7 +40,7 @@ Don't conflate "dump telemetry" (an SOH-visibility verb) with "dump storage" (a 
 **`fsw_mode` is the flight-software fault flag distinct from bus-wide safe mode.** `cdh.fsw_mode`
 (`nominal`/`safe`) is set to `safe` by `enter_safe_mode` but can also be cleared independently via
 `cdh.clear_fault`/`cdh.reset_subsystem` — a subsystem-level fault recovery path distinct from the
-multi-pass `RecoverySystem` safe-mode chain (R106-adjacent), useful for transient FSW faults that
+multi-pass `RecoverySystem` safe-mode chain ([R106](R106-mission-operations.md)-adjacent), useful for transient FSW faults that
 don't require the full recovery sequence.
 
 ## 3. Operational Context
@@ -74,5 +74,5 @@ visibly respect the storage gate in the operator console.
 
 ## 6. Related Topics
 
-R103 (the downlink delivery path C&DH gates), R109 (the collection that fills storage), R111
+[R103](R103-satellite-command-and-control.md) (the downlink delivery path C&DH gates), [R109](R109-sensor-operations.md) (the collection that fills storage), [R111](R111-power-and-thermal-operations.md)
 (the broader bus SOH model C&DH's storage limit-checking pattern mirrors).

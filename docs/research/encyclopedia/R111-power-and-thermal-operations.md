@@ -3,9 +3,9 @@
 > **Document ID:** R111
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R101, R103
-> **Referenced By:** R113, R114, DOM-007, FS-105
-> **Produces:** implementation constraints for `engine/bus.py`, `engine/busmodel.py`
+> **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md), [R103](R103-satellite-command-and-control.md)
+> **Referenced By:** [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), DOM-007, FS-105
+> **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py), [`engine/busmodel.py`](../../../spacesim/engine/busmodel.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [`docs/AUDIT-2026-06-UI-TTC.md`](../../AUDIT-2026-06-UI-TTC.md) §2 (the precedent worked example),
 > DOM-005 §4 (fidelity-claim validation method), DOM-007 §4 (causality must be surfaced)
@@ -23,7 +23,7 @@ exists to make that lesson available to the next implementer rather than buried 
 ## 2. Concepts
 
 **Charge/drain as a continuous balance, not a step function.** `advance_bus(sunlit)` (now taking a
-*lit fraction* rather than a boolean — see R101 §3) blends `charge·lit − drain·(1−lit)`. Battery
+*lit fraction* rather than a boolean — see [R101](R101-orbital-mechanics-for-operations.md) §3) blends `charge·lit − drain·(1−lit)`. Battery
 state-of-charge (SoC) is the integral of this balance over the orbit, so its behavior is highly
 sensitive to the *relative* magnitude of charge vs. drain rates, not just their individual values.
 
@@ -75,6 +75,6 @@ FS-105 (Spacecraft Operations) is the direct consumer. DOM-007 (causality surfac
 
 ## 6. Related Topics
 
-`AUDIT-2026-06-UI-TTC.md` §2 (the full incident writeup this topic distills), R101 §3 (the
-eclipse-fraction model this subsystem consumes), R113 (ADCS — pointing affects array
+`AUDIT-2026-06-UI-TTC.md` §2 (the full incident writeup this topic distills), [R101](R101-orbital-mechanics-for-operations.md) §3 (the
+eclipse-fraction model this subsystem consumes), [R113](R113-attitude-determination-and-control.md) (ADCS — pointing affects array
 illumination, a coupling not yet modeled), DOM-007 §4 (causality-must-be-surfaced UI principle).

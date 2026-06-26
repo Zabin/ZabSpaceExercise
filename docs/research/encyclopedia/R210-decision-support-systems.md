@@ -3,11 +3,11 @@
 > **Document ID:** R210
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R202
-> **Referenced By:** R503, DOM-008
+> **Dependencies:** [R202](R202-decision-theory.md)
+> **Referenced By:** [R503](R503-ai-decision-support.md), DOM-008
 > **Produces:** the design vocabulary behind DOM-008 §4's "advisor, not decider" constraint
 > **Feature Mapping:** FS-301 (Research Analytics, candidate AI-advisor scope)
-> **Related Topics:** R202 (Decision Theory), R503 (AI Decision Support — the forward-looking
+> **Related Topics:** [R202](R202-decision-theory.md) (Decision Theory), [R503](R503-ai-decision-support.md) (AI Decision Support — the forward-looking
 > application), DOM-008 §4 (the standing constraint this topic justifies)
 
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
@@ -43,7 +43,7 @@ one that surfaces only a conclusion, independent of accuracy.
 
 **Decision aids can be evaluated for net effect on decision quality, not just accuracy.** A highly
 accurate recommendation engine can still degrade an operator's learning (by inducing automation bias
-or short-circuiting the OODA Orient stage, R208) even while "helping" in the narrow sense of correct
+or short-circuiting the OODA Orient stage, [R208](R208-ooda-loops.md)) even while "helping" in the narrow sense of correct
 suggestions — DOM-005's validation framework, if ever applied to a future AI-advisor feature, should
 measure trainee skill development over time, not just recommendation accuracy.
 
@@ -72,5 +72,5 @@ topic's taxonomy is the gate any such proposal must pass through first.
 
 ## 6. Related Topics
 
-R202 (Decision Theory, the underlying recommendation logic), R503 (AI Decision Support, this
+[R202](R202-decision-theory.md) (Decision Theory, the underlying recommendation logic), [R503](R503-ai-decision-support.md) (AI Decision Support, this
 topic's forward-looking elaboration), DOM-008 §4 (the standing constraint operationalized here).

@@ -3,12 +3,12 @@
 > **Document ID:** R413
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R403, R412
+> **Dependencies:** [R403](R403-statistics-foundations.md), [R412](R412-survey-and-assessment-instrument-design.md)
 > **Referenced By:** —
 > **Produces:** the vocabulary for turning collected exercise data (eventlog, AAR, DOM-002 dimensions, future survey instruments) into a defensible finding rather than a raw data dump
 > **Feature Mapping:** AAR (`spacesim/session/aar.py`), any future cross-session analytics/reporting feature, DOM-002 (Assessment Framework)
-> **Related Topics:** R403 (Statistics Foundations), R412 (Survey and Assessment Instrument
-> Design — a frequent input to this topic's reporting), R405 (Uncertainty Analysis — uncertainty
+> **Related Topics:** [R403](R403-statistics-foundations.md) (Statistics Foundations), [R412](R412-survey-and-assessment-instrument-design.md) (Survey and Assessment Instrument
+> Design — a frequent input to this topic's reporting), [R405](R405-uncertainty-analysis.md) (Uncertainty Analysis — uncertainty
 > reporting as part of a defensible finding)
 
 [↑ Tier R400 index](R400-index.md) · [Encyclopedia index](INDEX.md)
@@ -30,7 +30,7 @@ data.
 
 **Distinguishing description from inference, and inference from recommendation.** Three distinct
 claim types should not be blurred together in a single sentence: "the data shows X" (description),
-"X suggests Y is generally true" (inference, requiring R401/R402's controlled-comparison rigor to
+"X suggests Y is generally true" (inference, requiring [R401](R401-experimental-design-and-controls.md)/[R402](R402-hypotheses-and-variables.md)'s controlled-comparison rigor to
 support), and "therefore do Z" (a recommendation, requiring additional judgment about goals/tradeoffs
 beyond what the data alone establishes) — a debrief report that moves from raw description straight
 to a confident recommendation, skipping the inference step's required rigor, is doing more than its
@@ -46,8 +46,8 @@ series, or a cherry-picked time window can misrepresent an honest underlying dat
 analytics dashboard reporting DOM-002 trends across sessions should use consistent, non-misleading
 axis scales and should show the full available data range rather than a flattering excerpt.
 
-**Reporting uncertainty and limitations alongside the finding, not as a footnote.** Per R405's
-uncertainty-reporting discipline and R401's confound-awareness, a defensible report states its
+**Reporting uncertainty and limitations alongside the finding, not as a footnote.** Per [R405](R405-uncertainty-analysis.md)'s
+uncertainty-reporting discipline and [R401](R401-experimental-design-and-controls.md)'s confound-awareness, a defensible report states its
 sample size, the comparison's control quality, and any known confounds in the same breath as its
 headline finding, not buried in fine print.
 
@@ -63,7 +63,7 @@ that this topic's discipline is the standard corrective for.
 
 - **Any future AAR-derived debrief writeup or cross-session report should state its evidentiary
   basis explicitly** (which sessions, which DOM-002 dimensions, what sample size) alongside any
-  headline finding, per R403/R405.
+  headline finding, per [R403](R403-statistics-foundations.md)/[R405](R405-uncertainty-analysis.md).
 - **Keep description, inference, and recommendation visibly distinct in any report** — a finding
   that moves to a recommendation should explicitly flag the additional judgment involved, not present
   the recommendation as if the data alone compelled it.
@@ -81,5 +81,5 @@ direct consumers.
 
 ## 6. Related Topics
 
-R403 (Statistics Foundations), R412 (Survey and Assessment Instrument Design), R405 (Uncertainty
+[R403](R403-statistics-foundations.md) (Statistics Foundations), [R412](R412-survey-and-assessment-instrument-design.md) (Survey and Assessment Instrument Design), [R405](R405-uncertainty-analysis.md) (Uncertainty
 Analysis).

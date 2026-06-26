@@ -3,17 +3,17 @@
 > **Document ID:** R110
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R101
-> **Referenced By:** R107, R115, FS-105
-> **Produces:** implementation constraints for `engine/bus.py` (`CommsState`), `engine/jam.py`
+> **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
+> **Referenced By:** [R107](R107-ground-segment-operations.md), [R115](R115-electronic-warfare-in-space-operations.md), FS-105
+> **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py) (`CommsState`), [`engine/jam.py`](../../../spacesim/engine/jam.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
-> **Related Topics:** R107 (Ground Segment Operations), R115 (Electronic Warfare), R103 (Satellite C2)
+> **Related Topics:** [R107](R107-ground-segment-operations.md) (Ground Segment Operations), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic Warfare), [R103](R103-satellite-command-and-control.md) (Satellite C2)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
 
-Communications is the channel-and-link layer underneath the C2 chain (R103) and the thing an
+Communications is the channel-and-link layer underneath the C2 chain ([R103](R103-satellite-command-and-control.md)) and the thing an
 electronic-warfare effect actually denies — this topic gives the `CommsState` model and its
 relationship to jamming so a new comms feature (a new link type, a new anti-jam posture) is wired
 into the existing denial/mitigation pipeline rather than around it.
@@ -28,15 +28,15 @@ into the existing denial/mitigation pipeline rather than around it.
 `PayloadState.interference_level`; `satcom.mitigate_interference`/`satcom.shift_users` raise
 `interference_mitigation` (capped at 0.8, applied incrementally per command) which "shrinks the jam
 signature but never vanishes" — communications denial and defense are both continuous quantities,
-mirroring the custody-confidence and power-balance pattern elsewhere in the engine (R105, R111).
+mirroring the custody-confidence and power-balance pattern elsewhere in the engine ([R105](R105-custody-theory.md), [R111](R111-power-and-thermal-operations.md)).
 
 **`is_link_denied` is the actual gate a downlink checks at execution time.** `_h_downlink` re-checks
 link denial at the execution moment (not at planning time) before delivering product — consistent
-with the re-validate-at-execute pattern R103 §2 describes for commands generally: state can change
+with the re-validate-at-execute pattern [R103](R103-satellite-command-and-control.md) §2 describes for commands generally: state can change
 between issuance and the window actually arriving.
 
 **Frequency hopping is a defensive posture, not a different channel.** `def.frequency_hop` sets
-`bus.comms.freq_hopping`, which (per the jam-effectiveness math, R115) reduces the *experienced*
+`bus.comms.freq_hopping`, which (per the jam-effectiveness math, [R115](R115-electronic-warfare-in-space-operations.md)) reduces the *experienced*
 jam impact without changing which access channel (`jam_footprint`) or window applies — defense
 changes the outcome probability, not the geometry gate.
 
@@ -58,7 +58,7 @@ built to let an operator practice.
 - **Re-validate link state at execution time for any new comms-gated action**, matching
   `_h_downlink`'s pattern, rather than trusting the state at planning time.
 - **Don't let a new feature bypass `is_link_denied`** to "just deliver" data — that is precisely the
-  kind of parallel state R102/R105 warn against for fog-of-war-adjacent mechanisms.
+  kind of parallel state [R102](R102-space-domain-awareness.md)/[R105](R105-custody-theory.md) warn against for fog-of-war-adjacent mechanisms.
 
 ## 5. Feature Mapping
 
@@ -67,6 +67,6 @@ through the existing bus subsystem panel, not a bespoke comms screen.
 
 ## 6. Related Topics
 
-R107 (Ground Segment Operations — the physical endpoint of uplink/downlink), R115 (Electronic
-Warfare — the threat this topic's defenses respond to), R103 (Satellite C2 — the chain
+[R107](R107-ground-segment-operations.md) (Ground Segment Operations — the physical endpoint of uplink/downlink), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic
+Warfare — the threat this topic's defenses respond to), [R103](R103-satellite-command-and-control.md) (Satellite C2 — the chain
 communications carries).

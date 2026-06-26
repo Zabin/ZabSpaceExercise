@@ -3,12 +3,12 @@
 > **Document ID:** R405
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** R403
+> **Dependencies:** [R403](R403-statistics-foundations.md)
 > **Referenced By:** —
 > **Produces:** the vocabulary for reporting a derived metric's uncertainty rather than a bare point estimate
-> **Feature Mapping:** DOM-005 (Validation Framework), any future analytics feature deriving a summary statistic from a Monte Carlo sweep (R407)
-> **Related Topics:** R403 (Statistics Foundations), R407 (Monte Carlo Methods — the typical source
-> of the sample this topic's uncertainty bounds are computed over), R408 (Sensitivity Analysis —
+> **Feature Mapping:** DOM-005 (Validation Framework), any future analytics feature deriving a summary statistic from a Monte Carlo sweep ([R407](R407-monte-carlo-methods.md))
+> **Related Topics:** [R403](R403-statistics-foundations.md) (Statistics Foundations), [R407](R407-monte-carlo-methods.md) (Monte Carlo Methods — the typical source
+> of the sample this topic's uncertainty bounds are computed over), [R408](R408-sensitivity-analysis.md) (Sensitivity Analysis —
 > a complementary technique addressing input uncertainty rather than sampling uncertainty)
 
 [↑ Tier R400 index](R400-index.md) · [Encyclopedia index](INDEX.md)
@@ -24,15 +24,15 @@ hidden behind a single confident-looking number.
 
 **A point estimate is a single best-guess number; an uncertainty bound expresses how much that
 number could plausibly be off.** A confidence interval (e.g. "62% ± 8%, based on N=40 runs") is the
-standard way of expressing this — the width of the interval shrinks as sample size (N, R407's number
-of seeded runs) grows, which is the formal reason a small-N claim (R403) should be treated
+standard way of expressing this — the width of the interval shrinks as sample size (N, [R407](R407-monte-carlo-methods.md)'s number
+of seeded runs) grows, which is the formal reason a small-N claim ([R403](R403-statistics-foundations.md)) should be treated
 cautiously.
 
 **Sources of uncertainty: sampling uncertainty vs. parameter uncertainty.** Sampling uncertainty
 comes from having only a finite number of runs (more Monte Carlo seeds shrinks it); parameter
 uncertainty comes from not knowing the "true" value of an input the model depends on (e.g. a doctrine
-preset's exact aggressiveness calibration) — Monte Carlo (R407) addresses the first; sensitivity
-analysis (R408) addresses the second by testing how much the output changes if the uncertain
+preset's exact aggressiveness calibration) — Monte Carlo ([R407](R407-monte-carlo-methods.md)) addresses the first; sensitivity
+analysis ([R408](R408-sensitivity-analysis.md)) addresses the second by testing how much the output changes if the uncertain
 parameter is varied.
 
 **Propagating uncertainty through a derived calculation.** If a reported metric is computed by
@@ -43,7 +43,7 @@ acknowledging this compounds DOM-002 §5's caution against composite scores with
 distinct uncertainty-hiding problem.
 
 **Distinguishing precision from accuracy.** A result can be reported with many decimal places
-(looking precise) while still being inaccurate (wrong, due to a bias or confound, R401) — false
+(looking precise) while still being inaccurate (wrong, due to a bias or confound, [R401](R401-experimental-design-and-controls.md)) — false
 precision (e.g. reporting "61.73% win rate" from a 20-run sample) misleads a reader into more
 confidence than the underlying sample supports.
 
@@ -58,7 +58,7 @@ were definitive.
 
 ## 4. Implementation Guidance
 
-- **Any future feature reporting a derived metric from a Monte Carlo sweep (R407) should report an
+- **Any future feature reporting a derived metric from a Monte Carlo sweep ([R407](R407-monte-carlo-methods.md)) should report an
   uncertainty bound (e.g. a confidence interval) alongside the point estimate**, not the point
   estimate alone — and should state the N (number of seeded runs) the bound is based on.
 - **A composite metric combining several DOM-002 dimensions should propagate, not hide, the combined
@@ -75,5 +75,5 @@ consumers.
 
 ## 6. Related Topics
 
-R403 (Statistics Foundations), R407 (Monte Carlo Methods, the typical uncertainty source), R408
+[R403](R403-statistics-foundations.md) (Statistics Foundations), [R407](R407-monte-carlo-methods.md) (Monte Carlo Methods, the typical uncertainty source), [R408](R408-sensitivity-analysis.md)
 (Sensitivity Analysis, the complementary technique for parameter rather than sampling uncertainty).

@@ -4,10 +4,10 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** R308, DOM-003
+> **Referenced By:** [R308](R308-red-teaming-methodology.md), DOM-003
 > **Produces:** the validity vocabulary behind what conclusions a White-Cell-run exercise can responsibly support
 > **Feature Mapping:** FS-106 (White Cell Dashboard), DOM-003
-> **Related Topics:** R308 (Red Teaming Methodology), DOM-003 (White Cell Framework, the direct
+> **Related Topics:** [R308](R308-red-teaming-methodology.md) (Red Teaming Methodology), DOM-003 (White Cell Framework, the direct
 > consumer), DOM-005 (Validation Framework)
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
@@ -34,7 +34,7 @@ wargame whose purpose is insight-generation for *trainees* (practicing judgment,
 distinct from analytical wargaming whose purpose is generating *generalizable findings* for force-
 design or doctrine decisions. DOM-004/DOM-005's research-use extension would, if pursued, need to
 explicitly state which mode a given study is operating in, since the validity standards differ
-sharply (an analytical claim needs the rigor R401-R413 describe; a PME insight does not, but also
+sharply (an analytical claim needs the rigor [R401](R401-experimental-design-and-controls.md)-[R413](R413-data-analysis-and-reporting.md) describe; a PME insight does not, but also
 shouldn't be oversold as one).
 
 **The facilitator's intervention changes what the game can validly demonstrate.** Every White Cell
@@ -67,7 +67,7 @@ as predictive when they were never designed to be."
   in *this* run, with the bounded claim that is actually defensible, not an inflated one.
 - **A future research-use feature (FS-301, DOM-004) studying exercise outcomes across many runs must
   explicitly declare whether it's making an insight-generation claim (PME-appropriate) or an
-  analytical claim (requiring R401-R413's full rigor)** — and must not silently upgrade the former
+  analytical claim (requiring [R401](R401-experimental-design-and-controls.md)-[R413](R413-data-analysis-and-reporting.md)'s full rigor)** — and must not silently upgrade the former
   into the latter.
 - **White Cell facilitation guidance (DOM-003) should explicitly note that heavy intervention,
   while pedagogically valid, narrows what a given run's outcome can be used to claim** — a feature
@@ -80,5 +80,5 @@ DOM-003 (White Cell Framework) and FS-106 (White Cell Dashboard) are the direct 
 
 ## 6. Related Topics
 
-R308 (Red Teaming Methodology, the adversarial-design half of wargaming validity), DOM-003 (the
+[R308](R308-red-teaming-methodology.md) (Red Teaming Methodology, the adversarial-design half of wargaming validity), DOM-003 (the
 direct consumer), DOM-005 (Validation Framework, the rigor standard for any analytical claim).

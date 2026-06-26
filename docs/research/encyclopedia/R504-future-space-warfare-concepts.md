@@ -4,16 +4,16 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** R505
+> **Referenced By:** [R505](R505-multi-domain-operations.md)
 > **Produces:** forward-looking context for whether/how a future counterspace capability beyond the existing five-D's taxonomy might be added
-> **Feature Mapping:** any future vignette or capability addition extending beyond `research/03-counterspace-taxonomy.md`'s current five-D's scope
-> **Related Topics:** `research/03-counterspace-taxonomy.md` (the five-D's taxonomy this topic looks
-> beyond), R310 (Effects-Based Operations), R505 (Multi-Domain Operations)
+> **Feature Mapping:** any future vignette or capability addition extending beyond [`research/03-counterspace-taxonomy.md`](../03-counterspace-taxonomy.md)'s current five-D's scope
+> **Related Topics:** [`research/03-counterspace-taxonomy.md`](../03-counterspace-taxonomy.md) (the five-D's taxonomy this topic looks
+> beyond), [R310](R310-effects-based-operations.md) (Effects-Based Operations), [R505](R505-multi-domain-operations.md) (Multi-Domain Operations)
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
 
 **DOM-008 §6 tag:** neither in-world AI nor coding-agent practice directly — this topic is forward-
-looking doctrinal context for future vignette/capability content, included in R500 for its
+looking doctrinal context for future vignette/capability content, included in [R500](R500-index.md) for its
 "future operations" relevance rather than its AI content.
 
 ## 1. Purpose
@@ -35,7 +35,7 @@ naive "is this kinetic or not" binary (the engine's `reversible` flag) may not c
 deliberate design work.
 
 **Proliferated/disaggregated constellation warfare.** Real-world shift toward large proliferated
-LEO constellations (versus a small number of high-value GEO assets) changes the COG calculus (R309)
+LEO constellations (versus a small number of high-value GEO assets) changes the COG calculus ([R309](R309-center-of-gravity-analysis.md))
 substantially — a single-satellite loss matters far less when a constellation has hundreds of
 near-identical nodes, which shifts the meaningful COG toward ground infrastructure, inter-satellite
 links, or the constellation's command architecture rather than any single space vehicle.
@@ -68,7 +68,7 @@ existing taxonomy alone.
   categories, check whether it actually fits** — per the directed-energy example above, a capability
   that straddles reversible/irreversible by design may need a new modeling approach (e.g. a graduated
   dose-dependent effect) rather than a forced binary classification.
-- **A future proliferated-constellation vignette should reconsider its COG analysis (R309)
+- **A future proliferated-constellation vignette should reconsider its COG analysis ([R309](R309-center-of-gravity-analysis.md))
   explicitly** rather than reusing a single-high-value-asset COG framing by default — ground
   infrastructure or C2 architecture is the more doctrinally plausible COG for this concept.
 - **A future on-orbit-servicing-themed vignette concept should build on the existing "ambiguous RPO"
@@ -85,5 +85,5 @@ consumer; none of these concepts is currently implemented.
 
 ## 6. Related Topics
 
-`research/03-counterspace-taxonomy.md`, R310 (Effects-Based Operations), R505 (Multi-Domain
+[`research/03-counterspace-taxonomy.md`](../03-counterspace-taxonomy.md), [R310](R310-effects-based-operations.md) (Effects-Based Operations), [R505](R505-multi-domain-operations.md) (Multi-Domain
 Operations).
