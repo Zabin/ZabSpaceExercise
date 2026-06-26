@@ -198,8 +198,38 @@ FS-108 and FS-202 are intentionally lighter-weight stubs (not full specs) — bo
 "(candidate)" in their owning domain document and require explicit user authorization (MSTR-006 §3)
 before promotion to a full spec or any Implementation Package work.
 
-**Next:** Phase 5 (Implementation Packages, `docs/implementations/`) and Phase 6-8 (Consistency/
-Dependency/Traceability review, MSTR-006 §7) remain pending — not started, not authorized.
+**Next:** Phase 5 (Implementation Packages, `docs/implementations/`) is complete (below). Phase 6-8
+(Consistency/Dependency/Traceability review, MSTR-006 §7) remains pending — not started, not
+authorized.
+
+## Theme: Implementation Packages (the *how* — `docs/implementations/`)
+
+Phase 5 of the documentation-driven-development expansion (MSTR-005 §4 chain: ... → Feature
+Specification → **Implementation Package** → Code → Tests). Each `IMP-xxxA` describes architecture,
+data model, state machines, and test/migration plan in prose/pseudocode, never literal committed
+code (MSTR-006 §8). Two situations per package: as-built (documents existing, test-covered code,
+FS-101 through FS-107) vs. forward design (FS-201/FS-301, capability not yet implemented, coding
+work not authorized by this documentation per MSTR-006 §3). Router:
+[`implementations/INDEX.md`](docs/implementations/INDEX.md).
+
+| ID | Document | Path | FS | Situation | Status |
+|---|---|---|---|---|---|
+| IMP-00 | Implementation index | `implementations/INDEX.md` | — | — | ✅ |
+| IMP-101A | Mission Planning — dry-run preview & window/Δv display | `implementations/IMP-101A-mission-planning.md` | FS-101 | As-built | ✅ |
+| IMP-102A | Command Scheduling — Order/OrderSystem lifecycle | `implementations/IMP-102A-command-scheduling.md` | FS-102 | As-built | ✅ |
+| IMP-103A | Custody Management — Track confidence model | `implementations/IMP-103A-custody-management.md` | FS-103 | As-built | ✅ |
+| IMP-104A | SDA Tasking — sensor tasking & SSN request lifecycle | `implementations/IMP-104A-sda-tasking.md` | FS-104 | As-built | ✅ |
+| IMP-105A | Spacecraft Operations — bus/payload command & telemetry | `implementations/IMP-105A-spacecraft-operations-bus-payload.md` | FS-105 | As-built | ✅ |
+| IMP-105B | Spacecraft Operations — effect resolution & console UX | `implementations/IMP-105B-spacecraft-operations-effects-console.md` | FS-105 | As-built | ✅ |
+| IMP-106A | White Cell Dashboard — session/inject/clock control plane | `implementations/IMP-106A-white-cell-dashboard.md` | FS-106 | As-built | ✅ |
+| IMP-107A | After Action Review — replay/scrub/branch-compare | `implementations/IMP-107A-after-action-review.md` | FS-107 | As-built | ✅ |
+| IMP-201A | Competency Assessment — rubric computation design | `implementations/IMP-201A-competency-assessment.md` | FS-201 | Forward design | ⛔ Planned (design only) |
+| IMP-301A | Research Analytics — multi-run export design | `implementations/IMP-301A-research-analytics.md` | FS-301 | Forward design | ⛔ Planned (design only) |
+
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3).
+
+**Next:** Phase 6-8 (Consistency/Dependency/Traceability review, MSTR-006 §7) remains pending — not
+started, not authorized.
 
 ## Theme: Training manual (`docs/training/`)
 
