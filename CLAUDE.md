@@ -2,7 +2,9 @@
 
 Durable project guide for Claude Code. Read this first, then the docs in the order below. All
 prose docs live under `docs/`, routed by [`docs/INDEX.md`](docs/INDEX.md); the structure and its
-rationale are in [`docs/DOCUMENTATION-PLAN.md`](docs/DOCUMENTATION-PLAN.md).
+rationale are in [`docs/DOCUMENTATION-PLAN.md`](docs/DOCUMENTATION-PLAN.md). For "what documents
+exist, what's left to write, and what depends on what," check [`ROADMAP.md`](ROADMAP.md) first —
+keep it current as you finish or start documentation work.
 
 ## What this is
 

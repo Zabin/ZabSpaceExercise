@@ -19,6 +19,9 @@ open a theme index, then the one module you need. Structure & rationale:
 
 ## Cross-cutting & generated
 
+- [`../ROADMAP.md`](../ROADMAP.md) — the single authoritative tracker of every document this
+  project produces: IDs, dependencies, and completion status. Start here to see what's done, in
+  progress, or still planned without re-deriving it from the directories below.
 - [`FUTURE-WORK.md`](FUTURE-WORK.md) — the single-source v1.1+ TODO (deferred items).
 - [`manual/INDEX.md`](manual/INDEX.md) — generated UI screenshots (`tools/render_manual.py`); the
   training modules embed these.
