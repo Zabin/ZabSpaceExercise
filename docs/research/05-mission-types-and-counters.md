@@ -356,5 +356,6 @@ Asset-template loading is driven by [`engine/buscommands.py:_PAYLOAD_TYPES_FOR`]
   [`engine/ssn.py`](../../spacesim/engine/ssn.py) (SDA mock catalogue);
   [`engine/maneuver.py`](../../spacesim/engine/maneuver.py) (RPO Δv-fight handlers);
   [`engine/access.py`](../../spacesim/engine/access.py) (the access channels every counter routes through).
+- **Research encyclopedia.** [`encyclopedia/R104-collection-management.md`](encyclopedia/R104-collection-management.md) and [`encyclopedia/R109-sensor-operations.md`](encyclopedia/R109-sensor-operations.md) (the implementation-focused counterparts to §2's ISR/SIGINT/SDA mission entries); [`encyclopedia/R102-space-domain-awareness.md`](encyclopedia/R102-space-domain-awareness.md) (§2.8's SDA mission entry); [`encyclopedia/R110-communications.md`](encyclopedia/R110-communications.md) (§2.4/§2.5's PNT/SATCOM link-denial counters).
 
 *Last reviewed: 2026-06-12. Pending review: every 12 months from `last_reviewed`.*

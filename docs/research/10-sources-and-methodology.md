@@ -360,4 +360,18 @@ territory.
 This file consults no external sources directly — it defines convention. The canonical
 source registry in §7 lists the sources the rest of the corpus consults.
 
+---
+
+## 10. Cross-references
+
+- **Sibling primer files.** This convention governs all eight content files in this
+  corpus ([`01-doctrine-western.md`](01-doctrine-western.md) through
+  [`07-legal-norms-and-roe.md`](07-legal-norms-and-roe.md)); each one's `### Sources`
+  subsections and `Used by:` lines follow the format defined in §1 and §4 here.
+- **Research encyclopedia.** [`encyclopedia/R406-modeling-practices.md`](encyclopedia/R406-modeling-practices.md),
+  [`encyclopedia/R409-verification.md`](encyclopedia/R409-verification.md), and
+  [`encyclopedia/R410-validation.md`](encyclopedia/R410-validation.md) for the
+  research-methods-tier counterparts to this file's source-tiering (§2) and verification-pass
+  (§5) conventions.
+
 *Last reviewed: 2026-06-12. Pending review: every 12 months from `last_reviewed`.*

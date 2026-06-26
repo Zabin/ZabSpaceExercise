@@ -817,5 +817,6 @@ schema this YAML maps to); [`content/vignette.py`](../../spacesim/content/vignet
   — the commands-layer audit that produced the interceptor-class model (§M2), the
   defender-side modifiers (§C1), and the `ground_modem` cyber vector (§C2) cited
   throughout.
+- **Research encyclopedia.** [`encyclopedia/R310-effects-based-operations.md`](encyclopedia/R310-effects-based-operations.md) (this file's five-D taxonomy is its cited engine-mapping source); [`encyclopedia/R115-electronic-warfare-in-space-operations.md`](encyclopedia/R115-electronic-warfare-in-space-operations.md), [`encyclopedia/R116-cyber-operations-against-space-systems.md`](encyclopedia/R116-cyber-operations-against-space-systems.md), [`encyclopedia/R117-directed-energy-and-kinetic-effects.md`](encyclopedia/R117-directed-energy-and-kinetic-effects.md) (the implementation-focused counterparts to §5/§7/§3-4); [`encyclopedia/R504-future-space-warfare-concepts.md`](encyclopedia/R504-future-space-warfare-concepts.md) (forward-looking extensions beyond this file's current five-D scope).
 
 *Last reviewed: 2026-06-12. Pending review: every 12 months from `last_reviewed`.*

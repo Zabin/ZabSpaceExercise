@@ -1620,24 +1620,32 @@ voice is the model; the verification pass checks tone-consistency.
   lines, 106 cited URLs). Five staged subsections (§1.7.1 treaty floor / §1.7.2 LOAC /
   §1.7.3 2022 DA-ASAT moratorium / §1.7.4 CBMs / §1.7.5 ROE design pattern) +
   integration pass.
-- 🟡 Files 1.1, 1.2, 1.5, 1.8 pending — to be authored under the per-subsection
-  cadence introduced in §12.5.0.
+- ✅ File 1.1 — `01-doctrine-western.md` landed (commit `a4c5780`, 289 lines, 48
+  cited URLs; follow-up `6e65e8b` added §1.1.6 responsible-counterspace coverage).
+- ✅ File 1.2 — `02-doctrine-non-western.md` landed (commit `25b3b17`, 217 lines,
+  57 cited URLs).
+- ✅ File 1.5 — `05-mission-types-and-counters.md` landed (commit `2794958`, 360
+  lines, 61 cited URLs).
+- ✅ File 1.8 — `research/INDEX.md` regenerated with the missing
+  `10-sources-and-methodology.md` row.
+
+**Tier 1 is complete.** All 9 files (1.0–1.7 + 1.8) are landed. Every one of the 8
+content files now carries a reciprocal "Research encyclopedia" cross-reference
+bullet in its Cross-references section, linking forward to the matching R1xx/R2xx/
+R3xx/R4xx encyclopedia topics — completing the bidirectional merge between the
+doctrine-primer corpus and the R100-R500 encyclopedia. The stale scratch draft
+`research/working/07/1.7.5-roe-design-pattern.md` (superseded once File 1.7
+integrated it) has been deleted.
 
 **Cadence revision (Sprint 1 → Sprint 2):** the per-subsection workflow in §12.5.0 /
 §12.6 / §12.7 supersedes the original "one invocation per file, files in parallel
-within a tier" plan. Sprint 2 confirmed the new cadence works at scale: 4 files
-landed (5+10+6+5 = 26 subsection invocations) with no single invocation exhausting
-token budget. Average per-subsection cost ~50k subagent tokens, well under the
-budget cap.
+within a tier" plan. Sprint 2 confirmed the new cadence works at scale: all 8
+content files landed with no single invocation exhausting token budget. Average
+per-subsection cost ~50k subagent tokens, well under the budget cap.
 
-**Next concrete step.** Begin File 1.5 — `05-mission-types-and-counters.md` — at
-the first per-mission subsection. The file decomposes into 12 short subsections
-(9 per-mission summaries + 3 cross-cutting); start with §1.5.1 (mission catalogue
-overview, ~30 lines, ~3 cites), then iterate through the 9 mission-type summaries.
-Alternative: File 1.1 (`01-doctrine-western.md`, 7 subsections covering USSF Space
-Capstone Publication 1, AFDP 3-14, JP 3-14, NATO AJP-3.3, etc.) is the next-biggest
-deliverable and could be parallelized with File 1.5 — both are ready under the
-established cadence.
+**Next concrete step.** Tier 1 is done. Tiers 2-4 (per-mission/per-actor deep-dives,
+counterspace-systems-and-physics, ops/legal/history) remain scoped but **not yet
+authorized** — see §12.1 for the authorization gate before starting any Tier 2+ file.
 
 **Per-tier follow-on passes deferred to end-of-tier:**
 - Code cross-link pass — once Tier 1 lands, scan engine modules for the `Used by:`

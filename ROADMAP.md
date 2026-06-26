@@ -97,15 +97,14 @@ with — not a build order. The **Build Spec wins on any conflict** regardless o
 | ID | Document | Path | Depends on | Status |
 |---|---|---|---|---|
 | RS-00 | Research index | `research/INDEX.md` | RS-01…RS-07, RS-1.0 | ✅ |
-| RS-01 | Western doctrine | `research/01-doctrine-western.md` | — | 🚧 *(Tier 1 citation backfill pending — see RS-1.1)* |
-| RS-02 | Non-Western doctrine | `research/02-doctrine-non-western.md` | RS-01 | 🚧 *(Tier 1 citation backfill pending — see RS-1.2)* |
-| RS-03 | Counterspace taxonomy (the 5 D's) | `research/03-counterspace-taxonomy.md` | RS-01, RS-02 | ✅ *(Tier 1 expansion landed, commit `b39c24f`, 821 lines / 147 cites — see RS-1.3)* |
-| RS-04 | Orbital mechanics primer | `research/04-orbital-mechanics-primer.md` | — | ✅ *(Tier 1 expansion landed, commits `dde9739..14c2454`, 822 lines / 204 cites — see RS-1.4)* |
-| RS-05 | Mission types & their counters | `research/05-mission-types-and-counters.md` | RS-03, RS-04 | 🚧 *(Tier 1 citation backfill pending — see RS-1.5; next concrete step per §12.8)* |
-| RS-06 | Bus & payload operations | `research/06-bus-and-payload-operations.md` | RS-04 | ✅ *(Tier 1 expansion landed, commit `6c17e04`, 674 lines / 99 cites — see RS-1.6)* |
-| RS-07 | Legal norms & ROE | `research/07-legal-norms-and-roe.md` | RS-03 | ✅ *(Tier 1 expansion landed, commits `469c8e8..cd37fe2`, 795 lines / 106 cites — see RS-1.7)* |
-| RS-10 | Sources & methodology (citation convention for the whole corpus) | `research/10-sources-and-methodology.md` | — | ✅ *(landed first, commit `968c4be`, 363 lines — see RS-1.0)* |
-| RS-WORK | Staging drafts for in-flight subsections (scratch, not canonical) | `research/working/07/1.7.5-roe-design-pattern.md` | — | ♻️ *(superseded once its parent file lands; safe to delete after RS-07 integration — already landed, this draft is stale and can be removed)* |
+| RS-01 | Western doctrine | `research/01-doctrine-western.md` | — | ✅ *(Tier 1 expansion landed, commit `a4c5780`, 289 lines / 48 cites — see RS-1.1; cross-linked to encyclopedia)* |
+| RS-02 | Non-Western doctrine | `research/02-doctrine-non-western.md` | RS-01 | ✅ *(Tier 1 expansion landed, commit `25b3b17`, 217 lines / 57 cites — see RS-1.2; cross-linked to encyclopedia)* |
+| RS-03 | Counterspace taxonomy (the 5 D's) | `research/03-counterspace-taxonomy.md` | RS-01, RS-02 | ✅ *(Tier 1 expansion landed, commit `b39c24f`, 821 lines / 147 cites — see RS-1.3; cross-linked to encyclopedia)* |
+| RS-04 | Orbital mechanics primer | `research/04-orbital-mechanics-primer.md` | — | ✅ *(Tier 1 expansion landed, commits `dde9739..14c2454`, 822 lines / 204 cites — see RS-1.4; cross-linked to encyclopedia)* |
+| RS-05 | Mission types & their counters | `research/05-mission-types-and-counters.md` | RS-03, RS-04 | ✅ *(Tier 1 expansion landed, commit `2794958`, 360 lines / 61 cites — see RS-1.5; cross-linked to encyclopedia)* |
+| RS-06 | Bus & payload operations | `research/06-bus-and-payload-operations.md` | RS-04 | ✅ *(Tier 1 expansion landed, commit `6c17e04`, 674 lines / 99 cites — see RS-1.6; cross-linked to encyclopedia)* |
+| RS-07 | Legal norms & ROE | `research/07-legal-norms-and-roe.md` | RS-03 | ✅ *(Tier 1 expansion landed, commits `469c8e8..cd37fe2`, 795 lines / 106 cites — see RS-1.7; cross-linked to encyclopedia)* |
+| RS-10 | Sources & methodology (citation convention for the whole corpus) | `research/10-sources-and-methodology.md` | — | ✅ *(landed first, commit `968c4be`, 363 lines — see RS-1.0; cross-linked to encyclopedia)* |
 
 ### 🅿️ Planned: research corpus 10× expansion (`RT-FUTURE` §12 — scoped, not yet authorized)
 
@@ -121,14 +120,14 @@ need an explicit go-ahead before work begins, per `RT-FUTURE` §12.1.
 | ID | Document | Path | Depends on | Status |
 |---|---|---|---|---|
 | RS-1.0 | Sources & methodology — citation convention, first deliverable | `research/10-sources-and-methodology.md` | — | ✅ Landed (commit `968c4be`) |
-| RS-1.1 | `01-doctrine-western.md` ~3× expansion (USSF Spacepower, AFDP 3-14, JP 3-14, allied doctrine) | same file, in place | RS-1.0 | ⛔ Planned — next-biggest deliverable per §12.8 |
-| RS-1.2 | `02-doctrine-non-western.md` ~3× expansion (CASI, post-2024 PLA reorg, Hendrickx) | same file, in place | RS-1.0, RS-1.1 | ⛔ Planned |
+| RS-1.1 | `01-doctrine-western.md` ~3× expansion (USSF Spacepower, AFDP 3-14, JP 3-14, allied doctrine) | same file, in place | RS-1.0 | ✅ Landed (commit `a4c5780`) |
+| RS-1.2 | `02-doctrine-non-western.md` ~3× expansion (CASI, post-2024 PLA reorg, Hendrickx) | same file, in place | RS-1.0, RS-1.1 | ✅ Landed (commit `25b3b17`) |
 | RS-1.3 | `03-counterspace-taxonomy.md` ~3× expansion | same file, in place | RS-1.0 | ✅ Landed (commit `b39c24f`) — structural exemplar for the rest of the cadence |
 | RS-1.4 | `04-orbital-mechanics-primer.md` ~2× expansion | same file, in place | RS-1.0 | ✅ Landed (commits `dde9739..14c2454`) |
-| RS-1.5 | `05-mission-types-and-counters.md` ~1.5× (depth deferred to Tier 2 Track D) | same file, in place | RS-1.0, RS-1.3 | ⛔ Planned — **next concrete step** per §12.8 (start at §1.5.1, 12 subsections) |
+| RS-1.5 | `05-mission-types-and-counters.md` ~1.5× (depth deferred to Tier 2 Track D) | same file, in place | RS-1.0, RS-1.3 | ✅ Landed (commit `2794958`) |
 | RS-1.6 | `06-bus-and-payload-operations.md` ~2× expansion | same file, in place | RS-1.0 | ✅ Landed (commit `6c17e04`) |
 | RS-1.7 | `07-legal-norms-and-roe.md` ~2× expansion | same file, in place | RS-1.0, RS-1.3 | ✅ Landed (commits `469c8e8..cd37fe2`) |
-| RS-1.8 | `research/INDEX.md` regenerated for post-expansion taxonomy | `research/INDEX.md` | RS-1.0…RS-1.7 | ⛔ Planned — trivial, do last in Tier 1 |
+| RS-1.8 | `research/INDEX.md` regenerated for post-expansion taxonomy | `research/INDEX.md` | RS-1.0…RS-1.7 | ✅ Landed — added the missing `10-sources-and-methodology.md` row |
 
 **Tier 2 — per-mission and per-actor deep-dives (6 new files):**
 

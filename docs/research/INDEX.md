@@ -14,6 +14,7 @@ mechanics; the [build spec](../build-spec/INDEX.md) remains authoritative for wh
 | [05-mission-types-and-counters](05-mission-types-and-counters.md) | Satellite mission types & their counters. |
 | [06-bus-and-payload-operations](06-bus-and-payload-operations.md) | Satellite bus & payload operations — how operators actually fly satellites. |
 | [07-legal-norms-and-roe](07-legal-norms-and-roe.md) | Treaty law (OST), LOAC in space, the 2022 ASAT-test moratorium, and how the sim maps law to ROE. |
+| [10-sources-and-methodology](10-sources-and-methodology.md) | Citation convention, source-quality tiers, and review cadence for this corpus. |
 
 ## Research encyclopedia (R100-R500)
 
