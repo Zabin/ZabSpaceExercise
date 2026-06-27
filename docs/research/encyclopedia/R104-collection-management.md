@@ -8,6 +8,8 @@
 > **Produces:** implementation constraints for [`engine/orders.py`](../../../spacesim/engine/orders.py) (`_plan_collection`, `_sensor_bookings`)
 > **Feature Mapping:** FS-104 (SDA Tasking)
 > **Related Topics:** [R102](R102-space-domain-awareness.md) (SDA), [R109](R109-sensor-operations.md) (Sensor Operations), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -18,9 +20,21 @@ the right time" — it is a continuous resource-allocation problem, not a one-ti
 topic gives the implementation model behind `OrderSystem._plan_collection`/`_contended` so a new
 sensor or tasking feature respects existing contention rather than quietly bypassing it.
 
-## 2. Concepts
+## 2. Scope
 
-**Tasking is contended, not infinite.** `OrderSystem._sensor_bookings` records one task at a time
+Covers: sensor-tasking contention (`_sensor_bookings`/`_contended`), auto vs. named-sensor tasking,
+and the organic-tasking/SSN-tasking boundary. Does **not** cover: the SDA task-chain stages
+themselves ([R102](R102-space-domain-awareness.md)), sensor modality physics ([R109](R109-sensor-operations.md)), or the SSN's own
+priority/SLA mechanics ([R118](R118-space-surveillance-networks.md)).
+
+## 3. Concepts
+
+**Tasking is contended, not infinite.** Real collection management is doctrinally framed around
+Collection Management Authority prioritizing and validating competing collection requirements
+against scarce assets, and Priority Intelligence Requirements that "focus the employment of
+limited intelligence assets and resources against competing demands"
+([JP 2-01, *Joint and National Intelligence Support to Military Operations*](https://irp.fas.org/doddir/dod/jp2_01.pdf)
+([Wayback](https://web.archive.org/web/2026/https://irp.fas.org/doddir/dod/jp2_01.pdf))). `OrderSystem._sensor_bookings` records one task at a time
 per sensor as `(start, end)` intervals; `_contended()` rejects an order whose proposed window
 overlaps an existing booking on the same sensor. A sensor cannot be tasked against two targets at
 once — this is the structural reason collection planning is a real scheduling problem.
@@ -42,7 +56,13 @@ confidence in `(0.3, 0.85)` that isn't yet characterized — modeling the real-w
 escalating a marginal detection to a higher-capability asset rather than re-tasking the same sensor
 indefinitely.
 
-## 3. Operational Context
+### Sources
+
+- *JP 2-01, Joint and National Intelligence Support to Military Operations* — [live](https://irp.fas.org/doddir/dod/jp2_01.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://irp.fas.org/doddir/dod/jp2_01.pdf)
+  · accessed 2026-06-27.
+
+## 4. Operational Context
 
 Real collection management is the unglamorous daily work of SDA operations: competing requests for
 scarce, finite sensor time, prioritized against mission value, with explicit SLAs for how long a
@@ -50,7 +70,7 @@ request can wait before it's considered failed. The simulator's `_contended` che
 priority-cost budget ([R118](R118-space-surveillance-networks.md)) exist to make operators feel that scarcity as a planning constraint,
 not an artificial difficulty dial.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A new sensor modality must register its bookings in `_sensor_bookings`** (or the SSN-equivalent
   request queue) — a parallel ad hoc availability tracker would let two orders silently double-book
@@ -65,12 +85,12 @@ not an artificial difficulty dial.
   triggered on every observation — an unconditional auto-cue would flood the SSN request queue and
   defeat its own scarcity model.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-104 (SDA Tasking) is the direct consumer. [R118](R118-space-surveillance-networks.md) (SSN) is the parallel off-board collection system;
 [R119](R119-space-situational-data-fusion.md) (Data Fusion) consumes the combined output of both.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R102](R102-space-domain-awareness.md) (SDA — the chain stage this tasking advances), [R109](R109-sensor-operations.md) (Sensor Operations — the modalities being
 tasked), [R118](R118-space-surveillance-networks.md) (SSN — the off-board collection counterpart with its own SLA model).
