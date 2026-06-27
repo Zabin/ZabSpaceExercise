@@ -64,6 +64,43 @@ def test_order_queues_to_a_future_window_then_jam_denies_link_during_it():
     assert not is_link_denied(world, "SAT", end + minutes(5))  # link recovers after the window
 
 
+def test_jam_link_target_scopes_which_link_is_denied():
+    """AUDIT-2026-06-COMMANDS.md §N9 — jam.link_target ∈ {uplink, downlink, crosslink}.
+
+    CCS Block 10.2 is uplink-only by design: an uplink-scoped jam must not deny the
+    downlink action, and a downlink-scoped jam must not register as an uplink denial.
+    Defaults to "downlink" for back-compat with callers that omit the param.
+    """
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", orbit=sat)
+    world.assets["JAM"] = Asset(id="JAM", owner="red", kind="jammer", location=_subpoint(sat, minutes(40)))
+
+    sim, osys = _sim_with(world)
+    order = osys.issue(Order(cell="red", actor="JAM", action="jam", target="SAT",
+                              params={"modulation": "barrage", "power_w": 200.0, "link_target": "uplink"}))
+    start, _end = order.earliest_window
+    sim.advance_to(start + 1)
+    assert world.active_effects and world.active_effects[-1].link_target == "uplink"
+    assert is_link_denied(world, "SAT", start + 1, link="uplink")
+    assert not is_link_denied(world, "SAT", start + 1, link="downlink")
+
+
+def test_jam_link_target_defaults_to_downlink():
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", orbit=sat)
+    world.assets["JAM"] = Asset(id="JAM", owner="red", kind="jammer", location=_subpoint(sat, minutes(40)))
+
+    sim, osys = _sim_with(world)
+    order = osys.issue(Order(cell="red", actor="JAM", action="jam", target="SAT",
+                              params={"modulation": "barrage", "power_w": 200.0}))
+    start, _end = order.earliest_window
+    sim.advance_to(start + 1)
+    assert world.active_effects[-1].link_target == "downlink"
+    assert is_link_denied(world, "SAT", start + 1, link="downlink")
+
+
 def test_kinetic_engage_requires_track_and_roe_then_spawns_debris():
     sat = _leo()
     world = WorldState(now=0)

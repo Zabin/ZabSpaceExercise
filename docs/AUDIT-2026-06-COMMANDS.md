@@ -291,11 +291,17 @@ byte-identically because the resolver reads what's already in the dumped payload
 - **N7.** Jam attribution label `deceptive: attribution_bias="overt"` reads backwards at first
   glance — deceptive jamming is *hard to detect* but *unambiguous once detected*. Document or
   rename.
-- **N8.** Missing realistic verbs identified by research §15: `pnt.flex_power`,
-  `pnt.set_health_flag`, `mw.add_stare_area`, `satcom.geolocate_interference`,
-  `wx.request_sector`, `prop.station_keep`, `isr.shutter_sensor`, cyber payload `seize_c2`.
-- **N9.** Missing realistic order-action parameter: `jam.link_target ∈ {uplink, downlink,
-  crosslink}` — doctrinally the most important jamming choice (CCS Block 10.2 is *uplink-only*).
+- **N8.** ~~Missing realistic verbs identified by research §15~~ — **closed.** All eight now
+  implemented in `buscommands.py`: `pnt.flex_power`, `pnt.set_health_flag`, `mw.add_stare_area`,
+  `satcom.geolocate_interference`, `wx.request_sector`, `prop.station_keep`, `isr.shutter_sensor`,
+  and cyber payload `seize_c2` (the last is a `cyber.PAYLOADS` entry consumed by the `cyber` order
+  action, not a bus/payload verb). Test coverage: `spacesim/tests/test_bus_commands.py`.
+- **N9.** ~~Missing realistic order-action parameter~~ — **closed.** `jam.params.link_target ∈
+  {uplink, downlink, crosslink}` (default `downlink`, back-compat) now scopes `EffectInstance` /
+  `ActiveEffect`; `is_link_denied(world, target, t, link=...)` takes an optional `link` filter so
+  the `downlink` action only checks the `downlink`-scoped jam — an uplink-only jam (CCS Block
+  10.2-style) no longer phantom-denies mission-data delivery. Test coverage:
+  `spacesim/tests/test_orders.py::test_jam_link_target_*`.
 - **N10.** Style consistency: any new form controls (`<select>`, `<input type=number>`,
   `<input type=checkbox>`) must inherit the focus-ring / contrast fixes applied in the prior
   audit (`style.css` D-class fixes); the existing maneuver/jam panels already comply.
