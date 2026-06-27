@@ -106,6 +106,35 @@ with — not a build order. The **Build Spec wins on any conflict** regardless o
 | RS-07 | Legal norms & ROE | `research/07-legal-norms-and-roe.md` | RS-03 | ✅ *(Tier 1 expansion landed, commits `469c8e8..cd37fe2`, 795 lines / 106 cites — see RS-1.7; cross-linked to encyclopedia)* |
 | RS-10 | Sources & methodology (citation convention for the whole corpus) | `research/10-sources-and-methodology.md` | — | ✅ *(landed first, commit `968c4be`, 363 lines — see RS-1.0; cross-linked to encyclopedia)* |
 
+### Research encyclopedia (`research/encyclopedia/`, R100-R500, 68 topics + 5 tier indexes)
+
+> **Tracking gap fixed in this revision.** This file claims to be "the single authoritative
+> tracker for every document this project produces" (top of file), but until now it carried zero
+> per-tier rows for the encyclopedia — only the `(cross-linked to encyclopedia)` parenthetical on
+> RS-01…RS-10 above. The encyclopedia's own `INDEX.md`/`R*00-index.md` files were the only place
+> tracking it, and they claimed "✅ Done" / "fully authored" without ever applying RS-10's citation
+> convention to themselves. Both gaps are fixed below.
+
+| ID | Document | Path | Depends on | Status |
+|---|---|---|---|---|
+| RE-00 | Encyclopedia index | `research/encyclopedia/INDEX.md` | RE-100…RE-500 | 🚧 *(re-audited this revision; flips tier status table from ✅ to 🚧, documents the two systemic defects below)* |
+| RE-100 | Tier R100 — Space Operations Foundation (20 topics + 2 new planned) | `research/encyclopedia/R100-index.md` | RS-04, RS-05, RS-06 | 🚧 *(20/20 authored; 18/20 missing mandatory §2 Scope (MSTR-007 §4.2); 0/20 cite-compliant per RS-10; 2 new `⛔ Planned` rows added — R121 `telemetry.py`, R122 `recovery.py` — per the MSTR-007 §7 coverage gap)* |
+| RE-200 | Tier R200 — Decision Sciences (14 topics) | `research/encyclopedia/R200-index.md` | MSTR-003 | 🚧 *(14/14 authored; 14/14 missing §2 Scope; 0/14 cite-compliant)* |
+| RE-300 | Tier R300 — Military Analysis (12 topics) | `research/encyclopedia/R300-index.md` | RS-01, RS-02, RS-07 | 🚧 *(12/12 authored; 12/12 missing §2 Scope; 0/12 cite-compliant — doctrinal/legal claims in this tier are the highest-stakes uncited content in the corpus)* |
+| RE-400 | Tier R400 — Research Methods (13 topics) | `research/encyclopedia/R400-index.md` | DOM-002, DOM-005 | 🚧 *(13/13 authored; 13/13 missing §2 Scope; 0/13 cite-compliant)* |
+| RE-500 | Tier R500 — Future Operations (9 topics) | `research/encyclopedia/R500-index.md` | DOM-008 | 🚧 *(9/9 authored; 9/9 missing §2 Scope; 0/9 cite-compliant)* |
+
+**Status:** structurally drafted, not done. Across all 68 topics: 66 are missing the mandatory §2
+Scope section (only R101/R102 have one) and all 68 are entirely uncited — zero `### Sources`
+subsections, zero inline URLs, zero YAML `last_reviewed`/`primary_sources_consulted` frontmatter,
+despite RS-10 (`research/10-sources-and-methodology.md`) stating its convention "applies to every
+file in this corpus." No `Used by:`/`# Source:` bidirectional cross-links exist between the
+encyclopedia and `spacesim/engine/` either (RS-10 §4), unlike the RS-01…RS-07 primers. The prior
+Phase 6-8 review (below) checked metadata-block presence and dependency consistency and passed the
+encyclopedia on both — it never checked citation compliance, which is how this sat unflagged.
+Remediation (Scope sections + citations + R121/R122) is **not yet authorized or scheduled** — flag
+for the user to decide priority against Phase 4 (Feature Specifications).
+
 ### 🅿️ Planned: research corpus 10× expansion (`RT-FUTURE` §12 — scoped, not yet authorized)
 
 A 25-target-file expansion across four priority tiers, organized into six content tracks
