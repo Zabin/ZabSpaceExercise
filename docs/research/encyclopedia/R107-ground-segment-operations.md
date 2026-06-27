@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md), [R103](R103-satellite-command-and-control.md)
-> **Referenced By:** [R110](R110-communications.md), [R118](R118-space-surveillance-networks.md), FS-105
+> **Referenced By:** [R110](R110-communications.md), [R118](R118-space-surveillance-networks.md), [R128](R128-ground-network-contact-scheduling.md), FS-105
 > **Produces:** implementation constraints for [`engine/entities.py`](../../../spacesim/engine/entities.py) (`GroundSite`), [`engine/access.py`](../../../spacesim/engine/access.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R101](R101-orbital-mechanics-for-operations.md) (Orbital Mechanics — the geometry ground contact depends on), [R103](R103-satellite-command-and-control.md) (Satellite C2), [R110](R110-communications.md) (Communications)
@@ -91,4 +91,6 @@ through the same uplink/downlink access windows the operator console already sho
 
 [R101](R101-orbital-mechanics-for-operations.md) (the orbital geometry feeding `look_angles`), [R103](R103-satellite-command-and-control.md) (the C2 chain the ground segment delivers),
 [R110](R110-communications.md) (Communications — the link-quality side of the same ground contact), [R118](R118-space-surveillance-networks.md) (SSN — ground-based
-sensor sites use the same `GroundSite`/elevation-mask machinery).
+sensor sites use the same `GroundSite`/elevation-mask machinery), [R128](R128-ground-network-contact-scheduling.md) (Ground-Network Contact
+Scheduling — the multi-mission contention layer a future fidelity increase would add above this
+topic's per-station model).

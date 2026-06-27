@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
-> **Referenced By:** [R106](R106-mission-operations.md), [R107](R107-ground-segment-operations.md), [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R116](R116-cyber-operations-against-space-systems.md), FS-102, FS-105
+> **Referenced By:** [R106](R106-mission-operations.md), [R107](R107-ground-segment-operations.md), [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R116](R116-cyber-operations-against-space-systems.md), [R123](R123-command-and-telemetry-console-software.md), [R124](R124-ccsds-telemetry-and-telecommand-standards.md), [R126](R126-flight-rules-and-contingency-procedures.md), FS-102, FS-105
 > **Produces:** implementation constraints for [`engine/orders.py`](../../../spacesim/engine/orders.py), [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py)
 > **Feature Mapping:** FS-102 (Command Scheduling), FS-105 (Spacecraft Operations)
 > **Related Topics:** [R106](R106-mission-operations.md) (Mission Operations), [R114](R114-command-and-data-handling.md) (Command and Data Handling), MSTR-002 §2 invariant 4 (plan-first)
@@ -94,5 +94,7 @@ scheduling UI must reflect the real validate→window→execute→confirm latenc
 
 [R106](R106-mission-operations.md) (Mission Operations — the broader workflow C2 sits inside), [R114](R114-command-and-data-handling.md) (Command and Data Handling —
 onboard storage/dump, the stored-delivery counterpart), [R116](R116-cyber-operations-against-space-systems.md) (Cyber Operations — the doctrinal
-exception to window-gated C2), MSTR-002 §5 (replay-safety, relevant to why `dry_run()` must not
+exception to window-gated C2), [R123](R123-command-and-telemetry-console-software.md) (the console software that constructs these commands),
+[R124](R124-ccsds-telemetry-and-telecommand-standards.md) (the real protocol layer beneath this abstraction), [R126](R126-flight-rules-and-contingency-procedures.md)
+(the flight-rule precedent for ROE), MSTR-002 §5 (replay-safety, relevant to why `dry_run()` must not
 mutate state).

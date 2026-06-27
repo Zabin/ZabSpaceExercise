@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R114](R114-command-and-data-handling.md), [R116](R116-cyber-operations-against-space-systems.md)
-> **Referenced By:** FS-105
+> **Referenced By:** [R126](R126-flight-rules-and-contingency-procedures.md), FS-105
 > **Produces:** implementation constraints for [`engine/recovery.py`](../../../spacesim/engine/recovery.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R114](R114-command-and-data-handling.md) (Command and Data Handling — `cdh.clear_fault`, the lighter path this topic
@@ -133,4 +133,5 @@ must keep populating these fields rather than introducing a parallel progress re
 
 [R114](R114-command-and-data-handling.md) (the `SafeModeState`/`cdh.clear_fault` structures this topic's heavier path coexists with),
 [R116](R116-cyber-operations-against-space-systems.md) (the cyber-vulnerability persistence check `_root_cause_unresolved` consumes), [R103](R103-satellite-command-and-control.md) (the
-command-uplink access windows recovery passes are scheduled against).
+command-uplink access windows recovery passes are scheduled against), [R126](R126-flight-rules-and-contingency-procedures.md) (the real
+flight-rule/contingency-procedure document class this step chain is grounded against).

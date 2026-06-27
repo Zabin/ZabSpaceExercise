@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R103](R103-satellite-command-and-control.md)
-> **Referenced By:** [R108](R108-constellation-operations.md), FS-101, FS-105, FS-106
+> **Referenced By:** [R108](R108-constellation-operations.md), [R125](R125-flight-operations-team-roles.md), FS-101, FS-105, FS-106
 > **Produces:** implementation constraints for the operator-console workflow (`ui_web/static/app.js`, [`session/api.py`](../../../spacesim/session/api.py))
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations), FS-106 (White Cell Dashboard)
 > **Related Topics:** [R103](R103-satellite-command-and-control.md) (Satellite C2), MSTR-003 §2 (plan-execute as the unit of learning), DOM-001 (Training Framework)
@@ -94,6 +94,7 @@ cross-cell vantage point.
 
 ## 7. Related Topics
 
-[R103](R103-satellite-command-and-control.md) (Satellite C2 — the mechanics the "task" beat drives), MSTR-003 §2 (the pedagogical argument
-for why plan-execute is the right unit of learning), DOM-001 (Training Framework — how the loop maps
-to training objectives).
+[R103](R103-satellite-command-and-control.md) (Satellite C2 — the mechanics the "task" beat drives), [R125](R125-flight-operations-team-roles.md) (Flight Operations Team
+Roles — the real multi-seat organization this single-operator loop compresses), MSTR-003 §2 (the
+pedagogical argument for why plan-execute is the right unit of learning), DOM-001 (Training
+Framework — how the loop maps to training objectives).

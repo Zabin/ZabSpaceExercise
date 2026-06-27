@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R102](R102-space-domain-awareness.md)
-> **Referenced By:** [R104](R104-collection-management.md), [R109](R109-sensor-operations.md), [R115](R115-electronic-warfare-in-space-operations.md), [R116](R116-cyber-operations-against-space-systems.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R119](R119-space-situational-data-fusion.md), DOM-002, FS-103
+> **Referenced By:** [R104](R104-collection-management.md), [R109](R109-sensor-operations.md), [R115](R115-electronic-warfare-in-space-operations.md), [R116](R116-cyber-operations-against-space-systems.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R119](R119-space-situational-data-fusion.md), [R127](R127-conjunction-assessment-and-collision-avoidance.md), DOM-002, FS-103
 > **Produces:** implementation constraints for [`engine/custody.py`](../../../spacesim/engine/custody.py)
 > **Feature Mapping:** FS-103 (Custody Management)
 > **Related Topics:** [R102](R102-space-domain-awareness.md) (SDA), MSTR-004 Glossary (custody, weapons-quality track), DOM-002 §4 (custody quality as an assessment dimension)

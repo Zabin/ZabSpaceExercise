@@ -37,7 +37,7 @@ should have at least one topic here an implementer extending it would read first
 | [R127](R127-conjunction-assessment-and-collision-avoidance.md) | Conjunction Assessment and Collision Avoidance Operations | Real CA/COLA operations (18th SDS conjunction screening, CARA, maneuver decision thresholds) grounding custody-driven collision-avoidance maneuver planning. | [R102](R102-space-domain-awareness.md), [R105](R105-custody-theory.md), [R112](R112-propulsion-and-maneuver-planning.md) | ✅ Done |
 | [R128](R128-ground-network-contact-scheduling.md) | Ground-Network Contact Scheduling and Conflict Resolution | Real multi-mission ground-network scheduling (DSN/AFSCN-style contention, conflict resolution) grounding `AccessProvider`-window-based contact allocation realism. | [R107](R107-ground-segment-operations.md), [R118](R118-space-surveillance-networks.md) | ✅ Done |
 
-**Status: closed.** All 22 R100 topics have substantive §1 Purpose/§2 Scope/§3 Concepts/§4
+**Status: closed.** All 28 R100 topics have substantive §1 Purpose/§2 Scope/§3 Concepts/§4
 Operational Context/§5 Implementation Guidance/§6 Feature Mapping/§7 Related Topics content, and a
 remediation pass (2026-06-27) resolved the two systemic defects a prior MSTR-007 re-check had found:
 
@@ -55,3 +55,13 @@ read first — that gap is now closed by fully-authored [R121](R121-telemetry-lo
 [R122](R122-safe-mode-recovery.md), each following the same seven-section shape and citation convention. Tiers
 [R200](R200-index.md)-[R500](R500-index.md) had the same two systemic defects as of this tier's prior re-check — see
 their own index files for their remediation status.
+
+A second authoring pass (2026-06-27) added six further topics, [R123](R123-command-and-telemetry-console-software.md)-[R128](R128-ground-network-contact-scheduling.md), grounding the
+real-world precedent behind `spacesim`'s command/console layer and several operational procedures
+the simulator abstracts: real T&C console software and command catalogs ([R123](R123-command-and-telemetry-console-software.md)), the CCSDS
+TC/COP-1 protocol standards beneath command validation ([R124](R124-ccsds-telemetry-and-telecommand-standards.md)), real flight-operations-team
+console-position organization ([R125](R125-flight-operations-team-roles.md)), real flight-rule/contingency-procedure documents grounding
+ROE and the recovery chain ([R126](R126-flight-rules-and-contingency-procedures.md)), real conjunction-assessment/collision-avoidance practice
+([R127](R127-conjunction-assessment-and-collision-avoidance.md)), and real multi-mission ground-network contact scheduling ([R128](R128-ground-network-contact-scheduling.md)). Each follows the
+same seven-section shape and citation convention, with bidirectional cross-links added to every
+existing topic each new one grounds or extends.
