@@ -8,6 +8,8 @@
 > **Produces:** implementation constraints for any future constellation-aggregation feature
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R106](R106-mission-operations.md) (Mission Operations), `docs/FUTURE-WORK.md` (constellation aggregation, deferred)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 0 (Tier C only — see §3 Sources)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -18,7 +20,14 @@ satellites rather than an aggregated fleet object. This topic exists so a future
 multi-satellite coordination understands why that choice was made and doesn't silently reintroduce
 fleet-level abstractions the engine doesn't have.
 
-## 2. Concepts
+## 2. Scope
+
+Covers: why the simulator deliberately omits a fleet-level constellation aggregation primitive, and
+what the clock-lag watchdog actually gates instead. Does **not** cover: the per-satellite operations
+loop constellation operations compose from ([R106](R106-mission-operations.md)), or any future aggregation feature's design
+(tracked only as a `docs/FUTURE-WORK.md` deferred item, not specified here).
+
+## 3. Concepts
 
 **Constellations are capped at ≤3 satellites by sizing guideline, each operated individually.**
 CLAUDE.md's "Key facts" fixes this as the soft guideline for the sample vignette library: there is
@@ -38,16 +47,32 @@ capability (`docs/FUTURE-WORK.md`), not a missing bug.
 ~24-satellite soft guideline for typical sessions — this is a performance signal about total asset
 count across the force, not a constellation-specific gate.
 
-## 3. Operational Context
+## 4. Operational Context
 
-Real constellation operations (e.g. a GPS or remote-sensing constellation) genuinely do use
-fleet-level tools — batch tasking, constellation-wide health dashboards — that this simulator does
-not yet model. The ≤3-sat, individually-operated guideline is a deliberate v1 scoping choice to keep
-operator cognitive load and implementation surface bounded while still letting a vignette author
-depict a small constellation's *operational character* (e.g. plane-spacing, revisit cadence)
-through ordinary per-satellite orders.
+*Single source (vendor/analyst).* Real constellation operations (e.g. a GPS or remote-sensing
+constellation) genuinely do use fleet-level tools — batch tasking, constellation-wide health
+dashboards, and automated prioritized scheduling across the fleet ([Cognitive Space, "Satellite
+Constellation Management: Challenges and Solutions"](https://www.cognitivespace.com/blog/satellite-constellation-management/)
+([Wayback](https://web.archive.org/web/2026/https://www.cognitivespace.com/blog/satellite-constellation-management/));
+[a.i. solutions, "Managing Constellations: A Flight Dynamics Perspective"](https://ai-solutions.com/newsroom/managing-constellations-a-flight-dynamics-perspective/)
+([Wayback](https://web.archive.org/web/2026/https://ai-solutions.com/newsroom/managing-constellations-a-flight-dynamics-perspective/)))
+— that this simulator does not yet model. These are vendor/analyst sources, not a doctrine or
+government Tier-A reference; the claim is corroborated across two independent vendor sources but
+neither is a primary operator disclosure. The ≤3-sat, individually-operated guideline is a
+deliberate v1 scoping choice to keep operator cognitive load and implementation surface bounded
+while still letting a vignette author depict a small constellation's *operational character* (e.g.
+plane-spacing, revisit cadence) through ordinary per-satellite orders.
 
-## 4. Implementation Guidance
+### Sources
+
+- *Cognitive Space, "Satellite Constellation Management: Challenges and Solutions"* — [live](https://www.cognitivespace.com/blog/satellite-constellation-management/)
+  · [snapshot](https://web.archive.org/web/2026/https://www.cognitivespace.com/blog/satellite-constellation-management/)
+  · accessed 2026-06-27.
+- *a.i. solutions, "Managing Constellations: A Flight Dynamics Perspective"* — [live](https://ai-solutions.com/newsroom/managing-constellations-a-flight-dynamics-perspective/)
+  · [snapshot](https://web.archive.org/web/2026/https://ai-solutions.com/newsroom/managing-constellations-a-flight-dynamics-perspective/)
+  · accessed 2026-06-27.
+
+## 5. Implementation Guidance
 
 - **Do not invent a parallel "fleet" or "constellation" engine entity** to implement a
   constellation-flavored feature — compose it from existing per-`Asset` primitives unless and until
@@ -61,12 +86,12 @@ through ordinary per-satellite orders.
 - **Treat the clock-lag watchdog, not a constellation cap, as the authoritative scaling signal**
   when deciding whether a vignette's asset count is too large for typical hardware.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-105 (Spacecraft Operations) is the consumer for any constellation-flavored vignette; a future
 fleet-aggregation feature would need its own FS entry, not a silent extension of FS-105.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R106](R106-mission-operations.md) (Mission Operations — the per-satellite loop constellation operations compose from),
 `docs/FUTURE-WORK.md` (the authoritative deferred-work entry for constellation aggregation).
