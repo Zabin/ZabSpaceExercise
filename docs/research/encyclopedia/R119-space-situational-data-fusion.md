@@ -8,6 +8,8 @@
 > **Produces:** implementation constraints for [`engine/custody.py`](../../../spacesim/engine/custody.py) (`Track.source`), the SSN→TrackCatalog delivery path
 > **Feature Mapping:** FS-104 (SDA Tasking)
 > **Related Topics:** [R105](R105-custody-theory.md) (Custody Theory), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks), [R102](R102-space-domain-awareness.md) (Space Domain Awareness)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -19,7 +21,14 @@ must later be reconciled. This topic exists so a future feature implementing ric
 fusion (confidence-weighted combination, conflicting-source arbitration) understands the current
 single-track-per-object-per-cell model it would be extending.
 
-## 2. Concepts
+## 2. Scope
+
+Covers: the current last-observation-wins fusion rule, `Track.source` provenance, and the
+auto-cue-is-sequencing-not-fusion distinction. Does **not** cover: the confidence-decay model fusion
+would extend ([R105](R105-custody-theory.md)), or the SSN request lifecycle producing one of the two current sources
+([R118](R118-space-surveillance-networks.md)).
+
+## 3. Concepts
 
 **Fusion today is "last observation wins," not multi-source weighting.** `observe()` ([R105](R105-custody-theory.md))
 unconditionally resets `confidence`/`last_observation`/`uncertainty` to the new report's values —
@@ -47,16 +56,27 @@ concurrent measurements into one improved estimate). Don't mistake the auto-cue 
 multi-source fusion; it produces a second, later observation of the same object, which then
 overwrites via the same last-observation-wins rule.
 
-## 3. Operational Context
+## 4. Operational Context
 
 Real SDA data fusion combines multiple, often heterogeneous sources (radar, optical, SIGINT, SSN
 partner products) into a single best estimate, typically weighting by source reliability and
-recency rather than simply taking the latest report — the simulator's current "most recent
-observation wins" model is a deliberate v1 simplification of this real, harder problem, sufficient
-because each individual observation already resets confidence to a meaningful value via its own
-`quality` parameter.
+recency rather than simply taking the latest report, following the multi-level JDL-style fusion
+process (source preprocessing through situation refinement) used in real tracking/fusion systems,
+where sensor redundancy improves track quality only if the fusion logic correctly weights each
+source's reliability and resolves conflicting inputs rather than naively overwriting
+([Koch, *Target Tracking and Data Fusion for Ground Situational Awareness*, NATO STO-EN-SET-191](https://publications.sto.nato.int/publications/STO%20Educational%20Notes/STO-EN-SET-191-2014/EN-SET-191-2014-04.pdf)
+([Wayback](https://web.archive.org/web/2026/https://publications.sto.nato.int/publications/STO%20Educational%20Notes/STO-EN-SET-191-2014/EN-SET-191-2014-04.pdf))) —
+the simulator's current "most recent observation wins" model is a deliberate v1 simplification of
+this real, harder problem, sufficient because each individual observation already resets confidence
+to a meaningful value via its own `quality` parameter.
 
-## 4. Implementation Guidance
+### Sources
+
+- *Koch, Target Tracking and Data Fusion for Ground Situational Awareness, NATO STO-EN-SET-191* — [live](https://publications.sto.nato.int/publications/STO%20Educational%20Notes/STO-EN-SET-191-2014/EN-SET-191-2014-04.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://publications.sto.nato.int/publications/STO%20Educational%20Notes/STO-EN-SET-191-2014/EN-SET-191-2014-04.pdf)
+  · accessed 2026-06-27.
+
+## 5. Implementation Guidance
 
 - **Don't assume confidence-weighted multi-source fusion exists today** — any feature claiming to
   "fuse" two sources should explicitly state whether it means sequencing (one source cues another,
@@ -72,12 +92,12 @@ because each individual observation already resets confidence to a meaningful va
   one cell's organic detection improve the other cell's track; fusion combines *a single cell's*
   multiple sources, never crosses the cell boundary.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-104 (SDA Tasking) is the direct consumer — a richer fusion feature would extend, not replace,
 the existing tasking UI's track-confidence display.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R105](R105-custody-theory.md) (the `Track`/confidence-decay structure fusion would extend), [R118](R118-space-surveillance-networks.md) (SSN — one of the two
 current sources writing into the same track), [R102](R102-space-domain-awareness.md) (the SDA chain and its fog-of-war-boundary
