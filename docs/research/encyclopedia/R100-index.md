@@ -36,6 +36,7 @@ should have at least one topic here an implementer extending it would read first
 | [R126](R126-flight-rules-and-contingency-procedures.md) | Flight Rules and Contingency Procedures | Real flight-rule/contingency-procedure documents (NASA/ESA-style "if X, then Y" rule books) grounding ROE constraints and the recovery-chain procedure model. | [R103](R103-satellite-command-and-control.md), [R122](R122-safe-mode-recovery.md) | ✅ Done |
 | [R127](R127-conjunction-assessment-and-collision-avoidance.md) | Conjunction Assessment and Collision Avoidance Operations | Real CA/COLA operations (18th SDS conjunction screening, CARA, maneuver decision thresholds) grounding custody-driven collision-avoidance maneuver planning. | [R102](R102-space-domain-awareness.md), [R105](R105-custody-theory.md), [R112](R112-propulsion-and-maneuver-planning.md) | ✅ Done |
 | [R128](R128-ground-network-contact-scheduling.md) | Ground-Network Contact Scheduling and Conflict Resolution | Real multi-mission ground-network scheduling (DSN/AFSCN-style contention, conflict resolution) grounding `AccessProvider`-window-based contact allocation realism. | [R107](R107-ground-segment-operations.md), [R118](R118-space-surveillance-networks.md) | ✅ Done |
+| R129 | SIGINT Collection and Geolocation Accuracy | `engine/sigint.py`'s band/intercept-mode database (scan/track/geolocate) and the √dwell × √N-collector geolocation-error model — no R1xx topic currently grounds this against real ELINT/SIGINT collection or multilateration/TDOA geolocation practice. | [R109](R109-sensor-operations.md), [R104](R104-collection-management.md) | ⛔ Planned |
 
 **Status: closed.** All 28 R100 topics have substantive §1 Purpose/§2 Scope/§3 Concepts/§4
 Operational Context/§5 Implementation Guidance/§6 Feature Mapping/§7 Related Topics content, and a
@@ -65,3 +66,14 @@ ROE and the recovery chain ([R126](R126-flight-rules-and-contingency-procedures.
 ([R127](R127-conjunction-assessment-and-collision-avoidance.md)), and real multi-mission ground-network contact scheduling ([R128](R128-ground-network-contact-scheduling.md)). Each follows the
 same seven-section shape and citation convention, with bidirectional cross-links added to every
 existing topic each new one grounds or extends.
+
+**Re-audit (2026-06-27, code-vs-encyclopedia coverage pass).** Re-walking every `spacesim/engine/`
+module against this tier (not just the `CLAUDE.md` Code map list) found one further engine
+subsystem with implemented, user-facing behavior but no R1xx topic grounding it:
+`engine/sigint.py` (the SIGINT band/mode database and the √dwell × √N-collector geolocation-error
+formula reachable via `buscommands.sigint.task_collection` and the planned `POST /sigint/compute`
+preview endpoint — see `docs/FUTURE-WORK.md` §11.A). The doctrine primers
+([`research/02`](../02-doctrine-non-western.md), [`research/05`](../05-mission-types-and-counters.md))
+mention SIGINT only in passing (mission-type taxonomy, non-Western programs) and never cite or
+justify the specific accuracy model the code implements. Tracked as new `⛔ Planned` row
+**R129** above pending authoring.
