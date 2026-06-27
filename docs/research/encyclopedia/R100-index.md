@@ -36,7 +36,7 @@ should have at least one topic here an implementer extending it would read first
 | [R126](R126-flight-rules-and-contingency-procedures.md) | Flight Rules and Contingency Procedures | Real flight-rule/contingency-procedure documents (NASA/ESA-style "if X, then Y" rule books) grounding ROE constraints and the recovery-chain procedure model. | [R103](R103-satellite-command-and-control.md), [R122](R122-safe-mode-recovery.md) | ✅ Done |
 | [R127](R127-conjunction-assessment-and-collision-avoidance.md) | Conjunction Assessment and Collision Avoidance Operations | Real CA/COLA operations (18th SDS conjunction screening, CARA, maneuver decision thresholds) grounding custody-driven collision-avoidance maneuver planning. | [R102](R102-space-domain-awareness.md), [R105](R105-custody-theory.md), [R112](R112-propulsion-and-maneuver-planning.md) | ✅ Done |
 | [R128](R128-ground-network-contact-scheduling.md) | Ground-Network Contact Scheduling and Conflict Resolution | Real multi-mission ground-network scheduling (DSN/AFSCN-style contention, conflict resolution) grounding `AccessProvider`-window-based contact allocation realism. | [R107](R107-ground-segment-operations.md), [R118](R118-space-surveillance-networks.md) | ✅ Done |
-| R129 | SIGINT Collection and Geolocation Accuracy | `engine/sigint.py`'s band/intercept-mode database (scan/track/geolocate) and the √dwell × √N-collector geolocation-error model — no R1xx topic currently grounds this against real ELINT/SIGINT collection or multilateration/TDOA geolocation practice. | [R109](R109-sensor-operations.md), [R104](R104-collection-management.md) | ⛔ Planned |
+| [R129](R129-sigint-collection-and-geolocation-accuracy.md) | SIGINT Collection and Geolocation Accuracy | `engine/sigint.py`'s band/intercept-mode database (scan/track/geolocate) and the √dwell × √N-collector geolocation-error model, grounded against real ELINT/SIGINT collection and multilateration/TDOA geolocation practice (POPPY/PARCAE, TDOA accuracy). | [R109](R109-sensor-operations.md), [R104](R104-collection-management.md) | ✅ Done |
 | [R130](R130-downlink-operations-and-data-return.md) | Downlink Operations and Data Return | `engine/orders.py`'s `downlink` action verb (`execute_downlink`'s `bitrate_cap_kbps`/`priority`/`partial_dump`) — the one order-verb type R103/R107/R114 each explicitly disclaimed covering; grounded against real priority-lane downlink scheduling, link-budget-bounded bitrate, and CFDP-style selective dump. | [R103](R103-satellite-command-and-control.md), [R114](R114-command-and-data-handling.md) | ✅ Done |
 
 **Status: closed.** All 28 R100 topics have substantive §1 Purpose/§2 Scope/§3 Concepts/§4
@@ -76,8 +76,9 @@ formula reachable via `buscommands.sigint.task_collection` and the planned `POST
 preview endpoint — see `docs/FUTURE-WORK.md` §11.A). The doctrine primers
 ([`research/02`](../02-doctrine-non-western.md), [`research/05`](../05-mission-types-and-counters.md))
 mention SIGINT only in passing (mission-type taxonomy, non-Western programs) and never cite or
-justify the specific accuracy model the code implements. Tracked as new `⛔ Planned` row
-**R129** above pending authoring.
+justify the specific accuracy model the code implements. **R129** (above) now closes this gap,
+grounding `BANDS`/`MODES` against the ELINT/COMINT taxonomy and `geolocation_error_km()`'s
+dwell/collector-count scaling against the POPPY/PARCAE TDOA multilateration precedent.
 
 **Action-verb coverage check (2026-06-27).** `engine/orders.py` defines seven order-verb action
 types (`jam`/`engage`/`observe`/`maneuver`/`downlink`/`cyber`/`command`, per `CLAUDE.md`'s
