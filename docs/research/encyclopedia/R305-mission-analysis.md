@@ -1,7 +1,7 @@
 # R305 — Mission Analysis
 
 > **Document ID:** R305
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R301](R301-campaign-design.md)
 > **Referenced By:** [R311](R311-course-of-action-analysis.md)
@@ -9,6 +9,8 @@
 > **Feature Mapping:** vignette authoring (`docs/scenarios/`)
 > **Related Topics:** [R301](R301-campaign-design.md) (Campaign Design), [R302](R302-operational-art.md) (Operational Art), [R311](R311-course-of-action-analysis.md) (Course of Action
 > Analysis), DOM-009 (the translation pipeline this topic's output feeds)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -20,28 +22,46 @@ custody on asset X") faithfully represent the vignette's higher narrative intent
 constellation"). This topic gives a vignette author the formal mission-analysis vocabulary to do that
 translation deliberately rather than by intuition alone.
 
-## 2. Concepts
+## 2. Scope
 
-**Commander's intent vs. specified/implied tasks.** Mission analysis doctrine distinguishes a
-higher commander's *intent* (the desired end state, often stated narratively) from the *specified
-tasks* explicitly ordered and the *implied tasks* necessary to accomplish the intent but not
-explicitly stated. A vignette's `intro_brief` mission statement is the intent; its `objectives` block
-is the specified tasks — and a well-designed vignette should make sure the specified, checkable
-objectives actually imply accomplishing the stated intent, not merely correlate with it.
+Covers: commander's intent vs. specified/implied tasks, constraints vs. restraints, and essential
+vs. supporting tasks, as the formal mission-analysis step that precedes course-of-action development.
+Does **not** cover: comparing multiple candidate plans once tasks are identified (that is
+[R311](R311-course-of-action-analysis.md), Course of Action Analysis) or the campaign-level context
+a mission analysis sits inside (that is [R301](R301-campaign-design.md)).
 
-**Constraints and restraints.** A constraint is a required action ("must maintain command uplink to
-station X"); a restraint is a prohibited action ("must not engage without ROE authorization"). ROE
+## 3. Concepts
+
+**Commander's intent vs. specified/implied tasks.** [JP 5-0, *Joint
+Planning*](https://www.jcs.mil/Doctrine/Joint-Doctrine-Pubs/5-0-Planning-Series/) (validated
+2020-12-01) frames mission analysis as the step that distinguishes a higher commander's *intent*
+(the desired end state, often stated narratively) from the *specified tasks* explicitly ordered and
+the *implied tasks* necessary to accomplish the intent but not explicitly stated. A vignette's
+`intro_brief` mission statement is the intent; its `objectives` block is the specified tasks — and a
+well-designed vignette should make sure the specified, checkable objectives actually imply
+accomplishing the stated intent, not merely correlate with it.
+
+**Constraints and restraints.** Mission-analysis doctrine ([JP 5-0](https://www.jcs.mil/Doctrine/Joint-Doctrine-Pubs/5-0-Planning-Series/)
+§III.2) distinguishes a *constraint* — a required action ("must maintain command uplink to station
+X") — from a *restraint* — a prohibited action ("must not engage without ROE authorization"). ROE
 blocks and ammo/Δv resource limits in a vignette are restraints in this formal sense; access-window
 and custody requirements that must be satisfied to act are constraints — useful vocabulary for DOM-
 009's doctrine-translation step when documenting *why* a vignette's ROE block reads the way it does.
 
-**Essential tasks.** Among all implied tasks, the essential ones are those without which the mission
-fails even if every other task succeeds — identifying the essential task(s) in a vignette design is
-what determines which `objectives` entries should actually gate "mission success" vs. which are
-secondary/bonus objectives, a distinction the engine's flat objective-flip model (DOM-002 §3) doesn't
-currently make but that vignette *design* should reason about even before any engine support exists.
+**Essential tasks.** Among all implied tasks, JP 5-0 identifies the essential ones as those without
+which the mission fails even if every other task succeeds — identifying the essential task(s) in a
+vignette design is what determines which `objectives` entries should actually gate "mission success"
+vs. which are secondary/bonus objectives, a distinction the engine's flat objective-flip model
+(DOM-002 §3) doesn't currently make but that vignette *design* should reason about even before any
+engine support exists.
 
-## 3. Operational Context
+### Sources
+
+- *JP 5-0, Joint Planning* (Joint Chiefs of Staff, validated 2020-12-01) — [live](https://www.jcs.mil/Doctrine/Joint-Doctrine-Pubs/5-0-Planning-Series/)
+  · [snapshot](https://web.archive.org/web/2026/https://www.jcs.mil/Doctrine/Joint-Doctrine-Pubs/5-0-Planning-Series/)
+  · accessed 2026-06-27.
+
+## 4. Operational Context
 
 Real mission analysis (the formal MDMP "Mission Analysis" step) is precisely this translation
 discipline — turning a higher commander's narrative intent into a concrete, checkable task list while
@@ -49,7 +69,7 @@ explicitly separating essential from supporting tasks and constraints from restr
 deliberately and documented, not left as an unstated judgment call by whoever happens to write the
 operations order.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A vignette author should be able to point to which `objectives` entries are essential
   (mission-defining) vs. supporting**, even if the engine doesn't yet distinguish them mechanically —
@@ -64,12 +84,12 @@ operations order.
   revision history** — per DOM-009 §5's doctrine-review-cadence guidance, a revision to either should
   prompt a check that the other still matches.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 Vignette authoring (`docs/scenarios/`) is the direct consumer; DOM-009's translation pipeline is the
 process this topic's vocabulary feeds.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R301](R301-campaign-design.md) (Campaign Design, the multi-vignette context), [R302](R302-operational-art.md) (Operational Art), [R311](R311-course-of-action-analysis.md) (Course of Action
 Analysis, comparing options before commitment to a mission-analysis-derived task), DOM-009.
