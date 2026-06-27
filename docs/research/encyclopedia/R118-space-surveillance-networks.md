@@ -4,10 +4,14 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R102](R102-space-domain-awareness.md)
-> **Referenced By:** [R104](R104-collection-management.md), [R119](R119-space-situational-data-fusion.md), FS-104
+> **Referenced By:** [R104](R104-collection-management.md), [R119](R119-space-situational-data-fusion.md), [R128](R128-ground-network-contact-scheduling.md), FS-104
 > **Produces:** implementation constraints for [`engine/ssn.py`](../../../spacesim/engine/ssn.py)
 > **Feature Mapping:** FS-104 (SDA Tasking)
-> **Related Topics:** [R102](R102-space-domain-awareness.md) (Space Domain Awareness), [R104](R104-collection-management.md) (Collection Management), [R119](R119-space-situational-data-fusion.md) (Data Fusion)
+> **Related Topics:** [R102](R102-space-domain-awareness.md) (Space Domain Awareness), [R104](R104-collection-management.md) (Collection Management), [R119](R119-space-situational-data-fusion.md) (Data Fusion),
+[R128](R128-ground-network-contact-scheduling.md) (Ground-Network Contact Scheduling — the real DSN-style contention pattern this topic's
+SLA/concurrency-cap model also draws on)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -18,13 +22,30 @@ The SSN is a mock, per-cell off-board collection enterprise distinct from organi
 implementer the `ssn.py` model so a new SSN-adjacent feature (a new preset, a new request type)
 fits the existing request-lifecycle and fog-of-war scoping.
 
-## 2. Concepts
+## 2. Scope
+
+Covers: the per-cell `SSNNetwork`/dispersion-preset model, the hybrid-turnaround SLA, and
+coalition-vs-national economics. Does **not** cover: the SDA chain stage SSN products advance
+([R102](R102-space-domain-awareness.md)), or organic sensor tasking itself ([R104](R104-collection-management.md)/[R109](R109-sensor-operations.md)).
+
+## 3. Concepts
 
 **Each cell owns an independent `SSNNetwork`, instantiated from a dispersion preset.** Presets
 (`sparse`/`regional`/`global`/`proliferated`) fix site count/spread for radar and optical ground
 sites plus a count of `space_based` sensors, and a per-preset concurrency cap (`_CONCURRENCY`:
 1/2/3/5) — more dispersed networks can run more requests at once, modeling real capacity scaling
-with sensor count.
+with sensor count, mirroring the real U.S. Space Surveillance Network's globally-dispersed mix of
+phased-array radars (e.g. Space Fence, Kwajalein) and electro-optical telescope sites (GEODSS, four
+detachments worldwide) commanded as a single global sensor enterprise by the 18th Space Defense
+Squadron
+([U.S. Space Force, *18th Space Defense Squadron Fact Sheet*](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/3740012/18th-space-defense-squadron/)
+([Wayback](https://web.archive.org/web/2026/https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/3740012/18th-space-defense-squadron/))).
+
+### Sources
+
+- *U.S. Space Force, 18th Space Defense Squadron Fact Sheet* — [live](https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/3740012/18th-space-defense-squadron/)
+  · [snapshot](https://web.archive.org/web/2026/https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/3740012/18th-space-defense-squadron/)
+  · accessed 2026-06-27.
 
 **Requests resolve via the existing `AccessProvider`, not a new geometry model.** `submit_request`
 picks the earliest viable window inside the priority's SLA using the same access-window machinery
@@ -55,7 +76,7 @@ an SSN request before its `ssn_collect` event fires uses the scheduler's tag-can
 events never get logged, so replay reproduces exactly the same outcome as if the cancelled request
 had never been submitted.
 
-## 3. Operational Context
+## 4. Operational Context
 
 Real SSN-style collection enterprises are exactly this: a finite, geographically-dispersed sensor
 network serving competing requests under priority-tiered SLAs, with collection and
@@ -63,7 +84,7 @@ processing/dissemination as genuinely separate steps that take real wall-clock-e
 the simulator's dispersion presets and hybrid-turnaround model exist to make the *enterprise-level*
 collection-management problem (not just single-sensor tasking) a real planning constraint.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A new dispersion preset must define both site layouts and a concurrency cap**, consistent with
   the existing four-preset table — don't add an unbounded-concurrency preset, which would erase the
@@ -78,12 +99,12 @@ collection-management problem (not just single-sensor tasking) a real planning c
   schedule pair** — collapsing them into one event loses the collected-vs-delivered distinction this
   topic's §2 explicitly models.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-104 (SDA Tasking) is the direct consumer — any SSN-facing UI must surface the priority/SLA
 tradeoff and the collected-vs-delivered distinction, not present requests as instant.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R102](R102-space-domain-awareness.md) (the SDA chain SSN requests advance), [R104](R104-collection-management.md) (the organic-tasking counterpart and the
 auto-cue bridge between them), [R119](R119-space-situational-data-fusion.md) (Data Fusion — combining SSN products with organic tracks).

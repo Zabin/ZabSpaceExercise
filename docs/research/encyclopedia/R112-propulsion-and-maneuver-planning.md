@@ -4,11 +4,13 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
-> **Referenced By:** [R111](R111-power-and-thermal-operations.md), [R117](R117-directed-energy-and-kinetic-effects.md), FS-101, FS-105
+> **Referenced By:** [R111](R111-power-and-thermal-operations.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R127](R127-conjunction-assessment-and-collision-avoidance.md), FS-101, FS-105
 > **Produces:** implementation constraints for [`engine/maneuver.py`](../../../spacesim/engine/maneuver.py), [`engine/entities.py`](../../../spacesim/engine/entities.py) (`AssetResources`)
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations)
 > **Related Topics:** [R101](R101-orbital-mechanics-for-operations.md) (Orbital Mechanics), [R111](R111-power-and-thermal-operations.md) (Power and Thermal — the sibling decoupled-field
 > note on `propellant_frac`), [R117](R117-directed-energy-and-kinetic-effects.md) (Directed Energy and Kinetic Effects — evasion burns)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -19,7 +21,14 @@ costs a finite, trackable resource, and the six entry modes in [`engine/maneuver
 operator can express a maneuver intent in whichever frame is operationally natural without the
 engine losing the pure-function, replay-safe property every order execution depends on.
 
-## 2. Concepts
+## 2. Scope
+
+Covers: the six maneuver-entry-mode reduction to a single ECI Δv vector, Δv as a metered resource,
+and the deferred-second-burn model. Does **not** cover: the orbital mechanics a burn perturbs
+([R101](R101-orbital-mechanics-for-operations.md)), or kinetic-engagement evasion geometry that consumes the same Δv budget
+([R117](R117-directed-energy-and-kinetic-effects.md)).
+
+## 3. Concepts
 
 **All six entry modes reduce to one ECI impulse vector.** `compute_maneuver` translates
 `eci`/`lvlh`/`finite_burn`/`target_coe`/`hohmann`/`plane_change` parameterizations into the single
@@ -35,21 +44,31 @@ describes for commands generally.
 **`hohmann` returns a deferred second burn, not two simultaneous burns.** The Hohmann entry mode
 computes the first burn and a `second_burn` dict describing the apoapsis circularization the
 operator must separately plan and issue as its own order — modeling that a real two-burn transfer
-is genuinely two C2 events separated by a coast arc, not an atomic operation.
+is genuinely two C2 events separated by a coast arc, not an atomic operation, consistent with how
+operational two-burn transfers (e.g. LEO-to-GEO, ~2.4 km/s raise burn + ~1.5 km/s circularization
+burn) are planned and executed as separate, independently re-validated events
+([NASA, *Using the Two-Burn Escape Maneuver for Fast Transfers*, NTRS 20100033146](https://ntrs.nasa.gov/api/citations/20100033146/downloads/20100033146.pdf)
+([Wayback](https://web.archive.org/web/2026/https://ntrs.nasa.gov/api/citations/20100033146/downloads/20100033146.pdf))).
 
 **The propellant gauge is currently a known decoupled field.** `PropulsionState.propellant_frac`
 does not move when `resources.delta_v_ms` is spent on a burn — this is documented in [R111](R111-power-and-thermal-operations.md) §2 as a
 lower-priority follow-up, not a silent bug to route around. A maneuver-planning feature should be
 aware its Δv math is correct even though the propellant *display* is currently inert.
 
-## 3. Operational Context
+### Sources
+
+- *NASA, Using the Two-Burn Escape Maneuver for Fast Transfers, NTRS 20100033146* — [live](https://ntrs.nasa.gov/api/citations/20100033146/downloads/20100033146.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://ntrs.nasa.gov/api/citations/20100033146/downloads/20100033146.pdf)
+  · accessed 2026-06-27.
+
+## 4. Operational Context
 
 Real maneuver planning is fundamentally Δv-budget management: every burn, evasive or planned,
 draws down a finite consumable that cannot be replenished on-orbit, so operators plan maneuvers
 against a lifetime Δv ledger, not per-maneuver in isolation — exactly what tracking
 `delta_v_ms` across the whole mission (rather than resetting it) is meant to teach.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **Any new maneuver-planning UI must go through `compute_maneuver`**, not hand-roll a Δv vector —
   this keeps all six entry modes consistent and pure (no state mutation in the planning layer).
@@ -63,12 +82,12 @@ against a lifetime Δv ledger, not per-maneuver in isolation — exactly what tr
   Δv-consuming order type (e.g. `def.maneuver_evade` in `buscommands.py` already follows this
   pattern).
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-101 (Mission Planning) and FS-105 (Spacecraft Operations) both depend on accurate Δv-economy
 modeling for any new maneuver-adjacent feature.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R101](R101-orbital-mechanics-for-operations.md) (the orbital mechanics maneuvers act on), [R111](R111-power-and-thermal-operations.md) §2 (the decoupled propellant-gauge follow-up),
 [R117](R117-directed-energy-and-kinetic-effects.md) (kinetic engagement evasion burns reuse the same Δv-resource model).

@@ -9,6 +9,8 @@
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations)
 > **Related Topics:** [`docs/research/04-orbital-mechanics-primer.md`](../04-orbital-mechanics-primer.md) (full derivations),
 > [`docs/research/04a-propagator-fidelity.md`](../04a-propagator-fidelity.md), [R120](R120-access-window-and-geometry-planning.md) (Access Window and Geometry Planning)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 3
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -36,10 +38,18 @@ to phase there. This is why regime classification is a first-class, early gate i
 pipeline rather than a derived display value.
 
 **Fidelity ladder.** Two propagators exist behind the `Propagator` seam (MSTR-002 §4): Kepler+J2
-for fictional orbits (fast, deterministic, sufficient for invented vignette assets), and `sgp4` via
-Skyfield for real TLE-derived orbits (force-added real objects). Both satisfy the determinism
-invariant — no propagator may read wall-clock time or unseeded RNG. A third, higher-fidelity
-numerical propagator is anticipated ([R501](R501-human-ai-teaming.md)-adjacent forward-looking hook) but does not exist yet;
+for fictional orbits (fast, deterministic, sufficient for invented vignette assets, following the
+secular-J2 treatment in [Vallado, *Fundamentals of Astrodynamics and Applications*](https://celestrak.org/software/vallado-sw.php)),
+and the SGP4 model — originally specified in [Hoots & Roehrich, *Spacetrack Report No. 3* (1980-12)](https://celestrak.org/NORAD/documentation/spacetrk.pdf)
+([Wayback](https://web.archive.org/web/2026/https://celestrak.org/NORAD/documentation/spacetrk.pdf))
+and revisited for modern precision in [Vallado, Crawford, Hujsak & Kelso, "Revisiting Spacetrack
+Report #3" (AIAA 2006-6753)](https://celestrak.org/publications/AIAA/2006-6753/AIAA-2006-6753-Rev3.pdf)
+([Wayback](https://web.archive.org/web/2026/https://celestrak.org/publications/AIAA/2006-6753/AIAA-2006-6753-Rev3.pdf))
+— via the [Skyfield](https://rhodesmill.org/skyfield/) ([Wayback](https://web.archive.org/web/2026/https://rhodesmill.org/skyfield/))
+Python library for real TLE-derived orbits (force-added real objects, sourced from
+[CelesTrak](https://celestrak.org/) ([Wayback](https://web.archive.org/web/2026/https://celestrak.org/))).
+Both satisfy the determinism invariant — no propagator may read wall-clock time or unseeded RNG. A
+third, higher-fidelity numerical propagator is anticipated but does not exist yet;
 [`engine/perturbations.py`](../../../spacesim/engine/perturbations.py)'s drag/J3/J4/third-body/SRP functions are pure functions *staged* for that
 future propagator, not yet wired into either current tier.
 
@@ -51,8 +61,28 @@ representations accumulate rounding error across a long replay that integer time
 **Sun/eclipse model.** [`engine/sun.py`](../../../spacesim/engine/sun.py) provides both a binary `is_sunlit()` and a smooth
 `eclipse_fraction()` (umbra/penumbra interpolation). The smooth version exists specifically because
 a binary sunlit/eclipsed model produces a visible discontinuity ("cliff") in power-tick behavior at
-the terminator — see [R111](R111-power-and-thermal-operations.md) §4 for the consequence this had for the power model before the Jun 2026
-fix.
+the terminator — consistent with the cylindrical-shadow umbra/penumbra geometry in
+[Vallado, *Fundamentals of Astrodynamics and Applications*](https://celestrak.org/software/vallado-sw.php),
+ch. 5 (shadow/eclipse determination) — see [R111](R111-power-and-thermal-operations.md) §4 for the
+consequence this had for the power model before the Jun 2026 fix.
+
+### Sources
+
+- *Hoots & Roehrich, Spacetrack Report No. 3* (1980-12) — [live](https://celestrak.org/NORAD/documentation/spacetrk.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://celestrak.org/NORAD/documentation/spacetrk.pdf)
+  · accessed 2026-06-27.
+- *Vallado, Crawford, Hujsak & Kelso, "Revisiting Spacetrack Report #3", AIAA 2006-6753* — [live](https://celestrak.org/publications/AIAA/2006-6753/AIAA-2006-6753-Rev3.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://celestrak.org/publications/AIAA/2006-6753/AIAA-2006-6753-Rev3.pdf)
+  · accessed 2026-06-27.
+- *Skyfield documentation (Brandon Rhodes)* — [live](https://rhodesmill.org/skyfield/)
+  · [snapshot](https://web.archive.org/web/2026/https://rhodesmill.org/skyfield/)
+  · accessed 2026-06-27.
+- *CelesTrak orbital catalog* — [live](https://celestrak.org/)
+  · [snapshot](https://web.archive.org/web/2026/https://celestrak.org/)
+  · accessed 2026-06-27.
+- *Vallado, Fundamentals of Astrodynamics and Applications* (software/reference page) — [live](https://celestrak.org/software/vallado-sw.php)
+  · [snapshot](https://web.archive.org/web/2026/https://celestrak.org/software/vallado-sw.php)
+  · accessed 2026-06-27.
 
 ## 4. Operational Context
 

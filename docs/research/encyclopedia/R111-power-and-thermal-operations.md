@@ -9,6 +9,8 @@
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [`docs/AUDIT-2026-06-UI-TTC.md`](../../AUDIT-2026-06-UI-TTC.md) §2 (the precedent worked example),
 > DOM-005 §4 (fidelity-claim validation method), DOM-007 §4 (causality must be surfaced)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -20,7 +22,14 @@ project has direct, documented experience of an implementation getting the *oper
 wrong despite passing its own unit-level checks (the Jun 2026 power-calibration bug). This topic
 exists to make that lesson available to the next implementer rather than buried in an audit report.
 
-## 2. Concepts
+## 2. Scope
+
+Covers: the `advance_bus` charge/drain balance, depth-of-discharge (DoD) as the operationally
+meaningful quantity, and the documented dead/decoupled-field bug class. Does **not** cover: the
+eclipse-fraction geometry feeding `sunlit` ([R101](R101-orbital-mechanics-for-operations.md) §3), ADCS pointing's effect on array
+illumination ([R113](R113-attitude-determination-and-control.md)), or sensor-collection power drain itself ([R109](R109-sensor-operations.md)).
+
+## 3. Concepts
 
 **Charge/drain as a continuous balance, not a step function.** `advance_bus(sunlit)` (now taking a
 *lit fraction* rather than a boolean — see [R101](R101-orbital-mechanics-for-operations.md) §3) blends `charge·lit − drain·(1−lit)`. Battery
@@ -29,9 +38,13 @@ sensitive to the *relative* magnitude of charge vs. drain rates, not just their 
 
 **Depth of discharge (DoD) is the operationally meaningful quantity, not raw SoC.** A bus cycling
 between 1.00 and 0.37 every orbit (63% DoD) — the original miscalibrated baseline — is 3-4× deeper
-than a realistic LEO bus, even though the underlying integration math (`advance_bus`) was completely
-correct. **A correct integrator can still produce operationally wrong behavior if its input
-constants are wrong.** This is the single most important fact this topic exists to convey.
+than a realistic LEO bus, where NASA cell-qualification testing for satellite/orbiter applications
+targets 20-40% DoD per 90-minute orbit cycle to meet multi-year cycle-life requirements
+([NASA, *Performance and Comparison of Lithium-Ion Batteries*, NTRS 20080008855](https://ntrs.nasa.gov/api/citations/20080008855/downloads/20080008855.pdf)
+([Wayback](https://web.archive.org/web/2026/https://ntrs.nasa.gov/api/citations/20080008855/downloads/20080008855.pdf))),
+even though the underlying integration math (`advance_bus`) was completely correct. **A correct
+integrator can still produce operationally wrong behavior if its input constants are wrong.** This
+is the single most important fact this topic exists to convey.
 
 **Eclipse drives drain causally, and that causality must be visible.** `soh_snapshot` exposing
 `in_eclipse` exists because a falling SoC number with no visible cause is operationally
@@ -42,14 +55,22 @@ is never read (the model uses `charge_rate_per_s` instead); `propulsion.propella
 decoupled from `resources.delta_v_ms` (burning Δv never moves the propellant gauge). These are
 **documented, lower-priority follow-ups**, not regressions to silently work around — see §5.
 
-## 3. Operational Context
+### Sources
 
-Real LEO bus power budgets are designed around a target DoD (commonly far shallower than 60%+, to
-preserve battery cycle life) and an eclipse fraction that varies with orbit inclination/altitude and
-season. Operators monitor SoC trend *relative to the orbit's eclipse geometry*, not as an isolated
-number — exactly the causal-legibility requirement in DOM-007 §4.
+- *NASA, Performance and Comparison of Lithium-Ion Batteries for Future NASA Missions and Aerospace
+  Applications, NTRS 20080008855* — [live](https://ntrs.nasa.gov/api/citations/20080008855/downloads/20080008855.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://ntrs.nasa.gov/api/citations/20080008855/downloads/20080008855.pdf)
+  · accessed 2026-06-27.
 
-## 4. Implementation Guidance
+## 4. Operational Context
+
+Real LEO bus power budgets are designed around a target DoD (per NASA cell-qualification practice,
+commonly 20-40%, well shallower than 60%+, to preserve battery cycle life across 5-7 year missions
+running ~5,000-16 cycles/year from 30-40-minute eclipses) and an eclipse fraction that varies with
+orbit inclination/altitude and season. Operators monitor SoC trend *relative to the orbit's eclipse
+geometry*, not as an isolated number — exactly the causal-legibility requirement in DOM-007 §4.
+
+## 5. Implementation Guidance
 
 - **Before tuning a charge/drain constant, compute the resulting steady-state DoD over a full orbit
   and sanity-check it against a realistic LEO range** — this is the concrete DOM-005 §4 validation
@@ -68,12 +89,12 @@ number — exactly the causal-legibility requirement in DOM-007 §4.
   by `advance_bus` (`temp_c` is static at 20°C) — a feature that reads these fields today is reading
   inert placeholders, not live state; check before assuming.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-105 (Spacecraft Operations) is the direct consumer. DOM-007 (causality surfacing) and DOM-005
 (fidelity validation method) both apply directly to any future power/thermal work.
 
-## 6. Related Topics
+## 7. Related Topics
 
 `AUDIT-2026-06-UI-TTC.md` §2 (the full incident writeup this topic distills), [R101](R101-orbital-mechanics-for-operations.md) §3 (the
 eclipse-fraction model this subsystem consumes), [R113](R113-attitude-determination-and-control.md) (ADCS — pointing affects array

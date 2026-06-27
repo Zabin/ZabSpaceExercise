@@ -8,6 +8,8 @@
 > **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py) (`CommsState`), [`engine/jam.py`](../../../spacesim/engine/jam.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R107](R107-ground-segment-operations.md) (Ground Segment Operations), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic Warfare), [R103](R103-satellite-command-and-control.md) (Satellite C2)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -18,7 +20,13 @@ electronic-warfare effect actually denies — this topic gives the `CommsState` 
 relationship to jamming so a new comms feature (a new link type, a new anti-jam posture) is wired
 into the existing denial/mitigation pipeline rather than around it.
 
-## 2. Concepts
+## 2. Scope
+
+Covers: the `CommsState` link model, continuous interference/mitigation mechanics, and execution-
+time link-denial re-validation. Does **not** cover: jam-effectiveness math itself ([R115](R115-electronic-warfare-in-space-operations.md)), the
+ground-segment physical endpoint ([R107](R107-ground-segment-operations.md)), or the C2 chain communications carries ([R103](R103-satellite-command-and-control.md)).
+
+## 3. Concepts
 
 **Link state is bus-side, not link-side, data.** `CommsState` (`uplink_lock`, `downlink_lock`,
 `isl_enabled`, `data_rate_kbps`, `freq_hopping`, `antenna_mode`) lives on the satellite's `BusState`
@@ -36,11 +44,23 @@ with the re-validate-at-execute pattern [R103](R103-satellite-command-and-contro
 between issuance and the window actually arriving.
 
 **Frequency hopping is a defensive posture, not a different channel.** `def.frequency_hop` sets
-`bus.comms.freq_hopping`, which (per the jam-effectiveness math, [R115](R115-electronic-warfare-in-space-operations.md)) reduces the *experienced*
+`bus.comms.freq_hopping`, modeling the same frequency-hopping spread-spectrum (FHSS) anti-jam
+technique used in protected military satcom waveforms such as the Protected Tactical Waveform,
+which improves rejection of jamming signals at the cost of not eliminating a sufficiently
+sophisticated reactive jammer's effect entirely
+([DTIC, *Robust Satellite Communications Under Hostile Interference*, ADA614712](https://apps.dtic.mil/sti/tr/pdf/ADA614712.pdf)
+([Wayback](https://web.archive.org/web/2026/https://apps.dtic.mil/sti/tr/pdf/ADA614712.pdf))) —
+which (per the jam-effectiveness math, [R115](R115-electronic-warfare-in-space-operations.md)) reduces the *experienced*
 jam impact without changing which access channel (`jam_footprint`) or window applies — defense
 changes the outcome probability, not the geometry gate.
 
-## 3. Operational Context
+### Sources
+
+- *DTIC, Robust Satellite Communications Under Hostile Interference, ADA614712* — [live](https://apps.dtic.mil/sti/tr/pdf/ADA614712.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://apps.dtic.mil/sti/tr/pdf/ADA614712.pdf)
+  · accessed 2026-06-27.
+
+## 4. Operational Context
 
 Real satellite communications planning treats link margin, interference, and anti-jam posture as
 continuously managed quantities, not a binary "comms up/down" — operators trade data rate,
@@ -48,7 +68,7 @@ frequency agility, and beam configuration against a contested RF environment in 
 exactly what `interference_level`/`interference_mitigation`/`freq_hopping`/`data_rate_kbps` are
 built to let an operator practice.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A new link type (e.g. optical crosslink) should extend `CommsState`**, not introduce a separate
   comms-health structure outside `BusState` — comms health must stay part of the unified SOH model.
@@ -60,12 +80,12 @@ built to let an operator practice.
 - **Don't let a new feature bypass `is_link_denied`** to "just deliver" data — that is precisely the
   kind of parallel state [R102](R102-space-domain-awareness.md)/[R105](R105-custody-theory.md) warn against for fog-of-war-adjacent mechanisms.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-105 (Spacecraft Operations) is the direct consumer — any new comms-posture command must surface
 through the existing bus subsystem panel, not a bespoke comms screen.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R107](R107-ground-segment-operations.md) (Ground Segment Operations — the physical endpoint of uplink/downlink), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic
 Warfare — the threat this topic's defenses respond to), [R103](R103-satellite-command-and-control.md) (Satellite C2 — the chain

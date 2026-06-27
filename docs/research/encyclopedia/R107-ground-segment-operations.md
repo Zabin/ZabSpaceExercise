@@ -4,10 +4,12 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md), [R103](R103-satellite-command-and-control.md)
-> **Referenced By:** [R110](R110-communications.md), [R118](R118-space-surveillance-networks.md), FS-105
+> **Referenced By:** [R110](R110-communications.md), [R118](R118-space-surveillance-networks.md), [R128](R128-ground-network-contact-scheduling.md), FS-105
 > **Produces:** implementation constraints for [`engine/entities.py`](../../../spacesim/engine/entities.py) (`GroundSite`), [`engine/access.py`](../../../spacesim/engine/access.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R101](R101-orbital-mechanics-for-operations.md) (Orbital Mechanics — the geometry ground contact depends on), [R103](R103-satellite-command-and-control.md) (Satellite C2), [R110](R110-communications.md) (Communications)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -18,7 +20,13 @@ The ground segment is the physical anchor for two of the six access channels (`c
 balance dial. This topic gives an implementer the `GroundSite` model so new ground-segment features
 (a new station type, an outage mechanic, a terrain-aware mask) compose correctly with `access.py`.
 
-## 2. Concepts
+## 2. Scope
+
+Covers: the `GroundSite` elevation-mask/refraction model and station-health gating of access
+windows. Does **not** cover: the orbital geometry feeding `look_angles` ([R101](R101-orbital-mechanics-for-operations.md)), the C2 chain a
+ground contact delivers ([R103](R103-satellite-command-and-control.md)), or link-quality/jamming on that contact ([R110](R110-communications.md)).
+
+## 3. Concepts
 
 **A ground site gates by elevation, not just line-of-sight.** `AccessProvider._ground_sat_predicate`
 requires the satellite's elevation above the site's horizon to exceed `elevation_mask_deg` (or a
@@ -37,11 +45,23 @@ path until the outage clears. This is the same "denied, not crashed" doctrine [R
 command validation, applied to infrastructure.
 
 **Atmospheric refraction is an optional, not default, correction.** `AccessConfig.atmospheric_refraction`
-gates whether `_refracted_elevation` (Bennett/Saemundsson formula) is applied — a ~0.5° lift at the
+gates whether `_refracted_elevation` (the Bennett/Sæmundsson empirical refraction formula —
+[Sæmundsson, "Astronomical Refraction," *Sky and Telescope* 72:70 (1986-07)](https://www.scribd.com/document/240955446/1-s2-0-008366569390113X-main-pdf),
+as adjusted and reproduced in [Meeus, *Astronomical Algorithms*, 2nd ed., ch. 16](https://airmass.org/notes)
+([Wayback](https://web.archive.org/web/2026/https://airmass.org/notes))) is applied — a ~0.5° lift at the
 horizon that vanishes by ~20° elevation. Off by default; a vignette wanting higher ground-segment
 fidelity can enable it without changing the predicate's structure.
 
-## 3. Operational Context
+### Sources
+
+- *Sæmundsson, "Astronomical Refraction," Sky and Telescope 72:70* (1986-07) — [live](https://www.scribd.com/document/240955446/1-s2-0-008366569390113X-main-pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://www.scribd.com/document/240955446/1-s2-0-008366569390113X-main-pdf)
+  · accessed 2026-06-27.
+- *airmass.org, Description of methods and algorithms (summarizing Meeus, Astronomical Algorithms ch. 16)* — [live](https://airmass.org/notes)
+  · [snapshot](https://web.archive.org/web/2026/https://airmass.org/notes)
+  · accessed 2026-06-27.
+
+## 4. Operational Context
 
 Real ground segments are a hard operational constraint, not a convenience: a station's usable
 contact window is bounded by both geometry (elevation mask, often terrain-driven) and
@@ -49,7 +69,7 @@ availability (maintenance, weather, host-nation agreements). Losing a station to
 common real-world anomaly category, and the simulator's `gs_outage` inject exists specifically to
 let White Cell rehearse that.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A new station type (e.g. a mobile or shipborne terminal) should still produce a `GroundSite`**
   consumed by the existing `_ground_sat_predicate` — don't build a parallel access predicate for a
@@ -62,13 +82,15 @@ let White Cell rehearse that.
 - **Don't add refraction-style corrections as always-on** — follow the `AccessConfig` pattern of an
   explicit, vignette-level fidelity toggle so existing baselines aren't silently changed.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-105 (Spacecraft Operations) is the direct consumer — any new station/outage feature must reflect
 through the same uplink/downlink access windows the operator console already shows.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R101](R101-orbital-mechanics-for-operations.md) (the orbital geometry feeding `look_angles`), [R103](R103-satellite-command-and-control.md) (the C2 chain the ground segment delivers),
 [R110](R110-communications.md) (Communications — the link-quality side of the same ground contact), [R118](R118-space-surveillance-networks.md) (SSN — ground-based
-sensor sites use the same `GroundSite`/elevation-mask machinery).
+sensor sites use the same `GroundSite`/elevation-mask machinery), [R128](R128-ground-network-contact-scheduling.md) (Ground-Network Contact
+Scheduling — the multi-mission contention layer a future fidelity increase would add above this
+topic's per-station model).
