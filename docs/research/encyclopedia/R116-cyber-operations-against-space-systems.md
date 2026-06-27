@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R103](R103-satellite-command-and-control.md)
-> **Referenced By:** [R115](R115-electronic-warfare-in-space-operations.md), FS-105
+> **Referenced By:** [R115](R115-electronic-warfare-in-space-operations.md), [R122](R122-safe-mode-recovery.md), FS-105
 > **Produces:** implementation constraints for [`engine/cyber.py`](../../../spacesim/engine/cyber.py), the cyber exception in [`engine/orders.py`](../../../spacesim/engine/orders.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R103](R103-satellite-command-and-control.md) (Satellite C2 — the chain cyber bypasses), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic Warfare — the

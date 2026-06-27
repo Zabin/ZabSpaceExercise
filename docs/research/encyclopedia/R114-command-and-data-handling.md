@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R103](R103-satellite-command-and-control.md)
-> **Referenced By:** [R109](R109-sensor-operations.md), FS-105
+> **Referenced By:** [R109](R109-sensor-operations.md), [R122](R122-safe-mode-recovery.md), FS-105
 > **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py) (`CdhState`), [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py) (`cdh.*`)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R103](R103-satellite-command-and-control.md) (Satellite C2 — the stored-delivery/dump counterpart), [R111](R111-power-and-thermal-operations.md) (Power and

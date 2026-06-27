@@ -29,24 +29,23 @@ should have at least one topic here an implementer extending it would read first
 | [R119](R119-space-situational-data-fusion.md) | Space Situational Data Fusion | Combining multiple sensor/SSN inputs into a single custody picture. | [R105](R105-custody-theory.md), [R118](R118-space-surveillance-networks.md) | ✅ Done |
 | [R120](R120-access-window-and-geometry-planning.md) | Access Window and Geometry Planning | The six access channels, window caching, sub-stepped scheduling. | [R101](R101-orbital-mechanics-for-operations.md) | ✅ Done |
 | [R121](R121-telemetry-logging-and-attack-signatures.md) | Telemetry, Logging, and Attack-Signature Modeling | `engine/telemetry.py`'s read-time seeded SOH telemetry + per-effect attack signatures (jam→RX power, cyber→FSW errors, DE→SNR, kinetic→LOS) and the nominal-baseline overlay. | [R103](R103-satellite-command-and-control.md) | ✅ Done |
-| [R122](R122-safe-mode-recovery.md) | Safe-Mode Recovery | `engine/recovery.py`'s `RecoverySystem`: multi-pass safe-mode recovery, re-safe-on-persistence, and how it differs from the lighter-weight `cdh.clear_fault` path. | [R114](R114-command-and-data-handling.md), [R116](R116-cyber-operations-against-space-systems.md) | ⛔ Planned — `RecoverySystem` is only name-dropped inside R114/R116 today, not covered as its own subject; gap found per MSTR-007 §7 coverage check. |
+| [R122](R122-safe-mode-recovery.md) | Safe-Mode Recovery | `engine/recovery.py`'s `RecoverySystem`: multi-pass safe-mode recovery, re-safe-on-persistence, and how it differs from the lighter-weight `cdh.clear_fault` path. | [R114](R114-command-and-data-handling.md), [R116](R116-cyber-operations-against-space-systems.md) | ✅ Done |
 
-**Status: incomplete, not done.** All 20 authored R100 topics have substantive §1/§3/§4/§5/§6/§7
-content, but a full re-check against MSTR-007 found two systemic defects that the original "✅
-Done" status missed:
+**Status: closed.** All 22 R100 topics have substantive §1 Purpose/§2 Scope/§3 Concepts/§4
+Operational Context/§5 Implementation Guidance/§6 Feature Mapping/§7 Related Topics content, and a
+remediation pass (2026-06-27) resolved the two systemic defects a prior MSTR-007 re-check had found:
 
-1. **18 of 20 topics (all but R101/R102) omit the mandatory §2 Scope section** (MSTR-007 §4.2) —
-   they jump from "1. Purpose" straight to a "2. Concepts" section, with no boundary-against-
-   neighboring-topics content anywhere in the document.
-2. **All 20 topics are entirely uncited** — zero `### Sources` subsections, zero inline URLs, zero
-   YAML `last_reviewed`/`primary_sources_consulted` frontmatter. `docs/research/10-sources-and-
-   methodology.md` states its citation convention "applies to every file in this corpus"
-   (`docs/research/`, which includes this tier), and the existing `01-07` primers comply (48-204
-   citations each) — the encyclopedia never went through that pass.
+1. **§2 Scope sections.** All 20 originally-authored topics (R101-R120) now carry the mandatory §2
+   Scope section (MSTR-007 §4.2) stating what each topic covers and explicitly excludes against its
+   neighbors, in addition to R101/R102 which already had one.
+2. **Citations.** All 20 originally-authored topics now carry at least one inline-cited claim plus a
+   `### Sources` subsection (live URL + Wayback snapshot + accessed date) and `Last Reviewed` /
+   `Primary Sources Consulted` frontmatter, per `docs/research/10-sources-and-methodology.md`'s
+   citation convention.
 
 Per MSTR-007 §7's coverage test (walk `CLAUDE.md`'s Code map against the tier), `engine/
-telemetry.py` and `engine/recovery.py` also have no topic an implementer extending them would read
-first — tracked above as new `⛔ Planned` rows R121/R122 rather than silently left out. Tier R100
-is **not** closed pending a remediation pass (Scope sections + citations + R121/R122). Tiers
-[R200](R200-index.md)-[R500](R500-index.md) have the same two systemic defects — see their own
-index files.
+telemetry.py` and `engine/recovery.py` previously had no topic an implementer extending them would
+read first — that gap is now closed by fully-authored [R121](R121-telemetry-logging-and-attack-signatures.md) and
+[R122](R122-safe-mode-recovery.md), each following the same seven-section shape and citation convention. Tiers
+[R200](R200-index.md)-[R500](R500-index.md) had the same two systemic defects as of this tier's prior re-check — see
+their own index files for their remediation status.
