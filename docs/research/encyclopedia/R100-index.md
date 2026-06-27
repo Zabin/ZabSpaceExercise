@@ -37,6 +37,7 @@ should have at least one topic here an implementer extending it would read first
 | [R127](R127-conjunction-assessment-and-collision-avoidance.md) | Conjunction Assessment and Collision Avoidance Operations | Real CA/COLA operations (18th SDS conjunction screening, CARA, maneuver decision thresholds) grounding custody-driven collision-avoidance maneuver planning. | [R102](R102-space-domain-awareness.md), [R105](R105-custody-theory.md), [R112](R112-propulsion-and-maneuver-planning.md) | ✅ Done |
 | [R128](R128-ground-network-contact-scheduling.md) | Ground-Network Contact Scheduling and Conflict Resolution | Real multi-mission ground-network scheduling (DSN/AFSCN-style contention, conflict resolution) grounding `AccessProvider`-window-based contact allocation realism. | [R107](R107-ground-segment-operations.md), [R118](R118-space-surveillance-networks.md) | ✅ Done |
 | R129 | SIGINT Collection and Geolocation Accuracy | `engine/sigint.py`'s band/intercept-mode database (scan/track/geolocate) and the √dwell × √N-collector geolocation-error model — no R1xx topic currently grounds this against real ELINT/SIGINT collection or multilateration/TDOA geolocation practice. | [R109](R109-sensor-operations.md), [R104](R104-collection-management.md) | ⛔ Planned |
+| [R130](R130-downlink-operations-and-data-return.md) | Downlink Operations and Data Return | `engine/orders.py`'s `downlink` action verb (`execute_downlink`'s `bitrate_cap_kbps`/`priority`/`partial_dump`) — the one order-verb type R103/R107/R114 each explicitly disclaimed covering; grounded against real priority-lane downlink scheduling, link-budget-bounded bitrate, and CFDP-style selective dump. | [R103](R103-satellite-command-and-control.md), [R114](R114-command-and-data-handling.md) | ✅ Done |
 
 **Status: closed.** All 28 R100 topics have substantive §1 Purpose/§2 Scope/§3 Concepts/§4
 Operational Context/§5 Implementation Guidance/§6 Feature Mapping/§7 Related Topics content, and a
@@ -77,3 +78,18 @@ preview endpoint — see `docs/FUTURE-WORK.md` §11.A). The doctrine primers
 mention SIGINT only in passing (mission-type taxonomy, non-Western programs) and never cite or
 justify the specific accuracy model the code implements. Tracked as new `⛔ Planned` row
 **R129** above pending authoring.
+
+**Action-verb coverage check (2026-06-27).** `engine/orders.py` defines seven order-verb action
+types (`jam`/`engage`/`observe`/`maneuver`/`downlink`/`cyber`/`command`, per `CLAUDE.md`'s
+Code map). Checking each against this tier: `jam`→[R115](R115-electronic-warfare-in-space-operations.md),
+`engage`→[R117](R117-directed-energy-and-kinetic-effects.md), `cyber`→[R116](R116-cyber-operations-against-space-systems.md),
+`maneuver`→[R112](R112-propulsion-and-maneuver-planning.md), `observe`→[R109](R109-sensor-operations.md),
+and `command`→[R103](R103-satellite-command-and-control.md) (the generic validate→window→execute
+pipeline every verb, including the bus/payload catalog dispatch, runs through) each already had a
+dedicated topic. `downlink` did not: [R103](R103-satellite-command-and-control.md),
+[R107](R107-ground-segment-operations.md), and [R114](R114-command-and-data-handling.md) each
+explicitly scope themselves *away* from the downlink action's own delivery/scheduling mechanics
+(uplink-only, ground-site-model-only, storage-buffer-only respectively), leaving it the one verb
+with no topic an implementer extending `execute_downlink` would read first. Closed by newly
+authored **[R130](R130-downlink-operations-and-data-return.md)**, with all seven action verbs now
+covered.
