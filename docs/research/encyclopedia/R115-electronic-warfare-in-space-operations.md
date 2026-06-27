@@ -10,6 +10,8 @@
 > **Related Topics:** [R110](R110-communications.md) (Communications — the thing EW denies), MSTR-002 (the five-D effect
 > taxonomy: EW is `deny`/`disrupt`/`degrade`, never `destroy`), [R116](R116-cyber-operations-against-space-systems.md) (Cyber Operations — the doctrinal
 > contrast of window-gated vs. not)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -20,15 +22,36 @@ footprint are derived from power/modulation/bandwidth inputs rather than an oper
 probability — and this topic gives the implementer the `jam.py` model behind it so a new EW feature
 computes consistently with the existing one.
 
-## 2. Concepts
+## 2. Scope
+
+Covers: the `MODULATIONS` effectiveness/detectability/attribution tradeoff, the derive-from-physical-
+inputs success-probability rule, and the window-gated-vs-cyber doctrinal contrast. Does **not**
+cover: the link/interference state EW denies ([R110](R110-communications.md)), or the five-D taxonomy EW operates within
+at the doctrine level (MSTR-002).
+
+## 3. Concepts
 
 **Modulation choice trades effectiveness against detectability and attribution.** The
 `MODULATIONS` database (`barrage`/`spot`/`sweep`/`deceptive`) each carry `effectiveness`,
 `radius_factor`, `attribution_bias`, `detectability`, and `power_factor` — `deceptive` is the most
 effective (1.30×) and least detectable (0.20) but is `overt`-attributed once discovered (it
 requires intercepting the victim's own signal first), while `barrage` is blunt, easily detected
-(0.90), but only `ambiguous`-attributed. There is no free "best" choice — every modulation is a
-distinct point on an effectiveness/detectability/attribution tradeoff surface.
+(0.90), but only `ambiguous`-attributed. This mirrors the real noise-jamming taxonomy: spot jamming
+concentrates full power on one frequency (high power-per-Hz, easily defeated by a frequency-agile
+victim), sweep jamming shifts that same full-power spot across frequencies in quick succession, and
+barrage jamming spreads power across the whole band simultaneously at the cost of per-frequency
+power density, while deceptive jamming intercepts and replays a modified version of the victim's own
+signal rather than overpowering it
+([DTIC, *Effects of Jamming on Radars*, ADA380927](https://apps.dtic.mil/sti/tr/pdf/ADA380927.pdf)
+([Wayback](https://web.archive.org/web/2026/https://apps.dtic.mil/sti/tr/pdf/ADA380927.pdf))).
+There is no free "best" choice — every modulation is a distinct point on an
+effectiveness/detectability/attribution tradeoff surface.
+
+### Sources
+
+- *DTIC, Effects of Jamming on Radars, ADA380927* — [live](https://apps.dtic.mil/sti/tr/pdf/ADA380927.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://apps.dtic.mil/sti/tr/pdf/ADA380927.pdf)
+  · accessed 2026-06-27.
 
 **Success probability is fully derived from physical inputs, not operator-typed.** Per the Jun 2026
 Commands audit (§C2), `OrderSystem._exec_payload`'s jam branch computes a `base_prob` from a
@@ -48,7 +71,7 @@ uplink — EW is window-gated, the explicit doctrinal contrast with cyber ([R116
 the attacker's computed `adj_prob` represents the attack's raw potency; the resolver, not the jam
 math, is where defender posture knocks it down.
 
-## 3. Operational Context
+## 4. Operational Context
 
 Real electronic warfare against satellite links is exactly this kind of engineering tradeoff:
 power, modulation sophistication, and bandwidth coverage against a link's actual occupied spectrum
@@ -56,7 +79,7 @@ determine denial effectiveness, while modulation choice independently determines
 attributable the jamming is — sophisticated deceptive jamming buys effectiveness and stealth at the
 cost of needing prior signal intercept and certain attribution once caught.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A new jamming feature must derive success from physical inputs through `jam.effective_success_prob`**,
   never accept an operator-typed probability — this was an explicit, audited fix (Jun 2026 §C2);
@@ -70,13 +93,13 @@ cost of needing prior signal intercept and certain attribution once caught.
 - **Defensive mitigation should modify the resolver's outcome, not the jam-math module** — keep
   `jam.py` a pure, defender-agnostic computation of the attack's raw potency.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-105 (Spacecraft Operations) is the direct consumer — any EW-adjacent UI should expose the
 modulation tradeoff (effectiveness vs. detectability vs. attribution) explicitly, not collapse it to
 a single "jam" button.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R110](R110-communications.md) (Communications — what EW denies, and the defensive postures that mitigate it), [R116](R116-cyber-operations-against-space-systems.md) (Cyber
 Operations — the doctrinal not-window-gated exception), MSTR-002 (the five-D taxonomy EW operates
