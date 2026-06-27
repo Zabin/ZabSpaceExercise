@@ -9,6 +9,8 @@
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations)
 > **Related Topics:** [R101](R101-orbital-mechanics-for-operations.md) (Orbital Mechanics — the geometry this topic gates on), MSTR-002 §4 (the
 > seam principle — `AccessProvider` as a substitutable interface), MSTR-002 §5 (sub-step the clock)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -19,7 +21,14 @@ topic that mentions "window" is ultimately deferring to `AccessProvider`. This t
 implementer the actual window-finding algorithm (sample, detect transition, bisect the edge) so a
 new channel or fidelity tier is added correctly rather than by approximation.
 
-## 2. Concepts
+## 2. Scope
+
+Covers: the seven access channels' shared predicate-and-quality pattern, the sample-then-bisect
+window-finding algorithm and its adaptive step sizing, and window caching/invalidation. Does **not**
+cover: the orbital propagation feeding the predicates ([R101](R101-orbital-mechanics-for-operations.md)), or the per-channel effect math
+that consumes a found window ([R109](R109-sensor-operations.md)/[R110](R110-communications.md)/[R115](R115-electronic-warfare-in-space-operations.md)/[R117](R117-directed-energy-and-kinetic-effects.md)).
+
+## 3. Concepts
 
 **Six gating channels plus one non-gating relay channel share one predicate-and-quality pattern.**
 `COMMAND_UPLINK`, `TELEMETRY_DOWNLINK`, `SENSOR_OBSERVATION`, `JAM_FOOTPRINT`, `WEAPON_ENGAGEMENT`,
@@ -33,13 +42,29 @@ an `(access_fn, quality_fn)` pair via `AccessProvider._predicate`.
 transition calls `_bisect_edge` to refine the boundary to within `edge_refine_s` (default 1 s). This
 sample-then-bisect approach is what lets one algorithm serve every channel's very different
 predicate shapes (elevation mask, range threshold, line-of-sight) without per-channel closed-form
-solutions.
+solutions — the same coarse-sample-then-refine strategy used in published satellite-visibility
+algorithms, which interpolate a sampled elevation-angle series and solve for the zero-crossing
+(rise/set) times rather than inverting the orbit geometry analytically
+([Long et al., *Rapid Satellite-to-Site Visibility Determination Based on Self-Adaptive
+Interpolation Technique*, arXiv:1611.02402](https://arxiv.org/abs/1611.02402)
+([Wayback](https://web.archive.org/web/2026/https://arxiv.org/pdf/1611.02402))).
 
 **Step size adapts to the shortest relevant orbital period, never a fixed global constant.**
 `_step_for` computes step size from `min(periods)` of the satellites involved — this is the
 concrete mechanism behind MSTR-002 §5's "sub-step the clock" invariant: a naive fixed large step at
 high time-acceleration would skip a short LEO pass entirely; per-channel adaptive stepping prevents
-that without requiring the whole simulation to run at a uniformly fine step.
+that without requiring the whole simulation to run at a uniformly fine step. The same self-adaptive
+principle — varying step/interpolation density with how fast the geometry changes rather than a
+fixed global sampling rate — is what the cited self-adaptive interpolation technique uses to keep
+visibility-window endpoints accurate without sampling every orbit at the finest possible resolution
+(Long et al., arXiv:1611.02402, *op. cit.*).
+
+### Sources
+
+- *Long, M. et al., Rapid Satellite-to-Site Visibility Determination Based on Self-Adaptive
+  Interpolation Technique, arXiv:1611.02402* — [live](https://arxiv.org/abs/1611.02402)
+  · [snapshot](https://web.archive.org/web/2026/https://arxiv.org/pdf/1611.02402)
+  · accessed 2026-06-27.
 
 **Missing endpoints degrade to "no access," never an exception.** `_endpoints_present` returns
 `False` for any actor/target id not present in the `Scene` for that channel's required entity types
@@ -58,7 +83,7 @@ geometry that no longer holds. A new state-mutating action that changes orbital 
 Gantt charts) — quality is a *geometric* goodness proxy, completely separate from the
 physically-derived success probabilities [R115](R115-electronic-warfare-in-space-operations.md)-[R117](R117-directed-energy-and-kinetic-effects.md) compute for the effect itself.
 
-## 3. Operational Context
+## 4. Operational Context
 
 Real mission planning is fundamentally access-window planning: every operational action — command,
 collection, jamming, engagement, proximity operations — is only possible during specific,
@@ -66,7 +91,7 @@ geometrically-determined intervals that must be found computationally (not read 
 naive fixed time-step search genuinely does miss short LEO passes in real orbital-mechanics
 software, which is exactly the failure mode `_step_for`'s adaptive stepping exists to prevent.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A new access channel must be added through `_predicate`/`_endpoints_present`/`_step_for`**,
   reusing `_find_windows`/`_bisect_edge` — never hand-roll a separate window-search loop for a new
@@ -82,13 +107,13 @@ software, which is exactly the failure mode `_step_for`'s adaptive stepping exis
   effect's success probability; that conflation would blur the access-geometry layer with the
   effect-resolution layer [R115](R115-electronic-warfare-in-space-operations.md)-[R117](R117-directed-energy-and-kinetic-effects.md) deliberately keep separate.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-101 (Mission Planning) and FS-105 (Spacecraft Operations) both depend on this topic — any new
 planning UI surfacing windows must reflect genuine sampled/bisected geometry, not an idealized
 continuous-access assumption.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R101](R101-orbital-mechanics-for-operations.md) (the orbital state this topic samples), MSTR-002 §4-5 (the seam and sub-stepping principles
 this module is the concrete implementation of), and every other [R100](R100-index.md) effect-category topic
