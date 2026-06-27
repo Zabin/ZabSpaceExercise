@@ -8,6 +8,8 @@
 > **Produces:** implementation constraints for [`engine/custody.py`](../../../spacesim/engine/custody.py), SSN dispersion model
 > **Feature Mapping:** FS-104 (SDA Tasking)
 > **Related Topics:** [R105](R105-custody-theory.md) (Custody Theory), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks), [R119](R119-space-situational-data-fusion.md) (Data Fusion)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -26,7 +28,12 @@ owns that) or the SSN's specific dispersion/turnaround model ([R118](R118-space-
 
 ## 3. Concepts
 
-**The SDA task chain.** Real SDA work is commonly decomposed into four stages:
+**The SDA task chain.** [Space Doctrine Publication 3-100, *Space Domain Awareness* (USSF, 2023-11)](https://www.starcom.spaceforce.mil/Portals/2/SDP%203-100%20SDA%20Executive%20Summary.pdf)
+([Wayback](https://web.archive.org/web/2026/https://www.starcom.spaceforce.mil/Portals/2/SDP%203-100%20SDA%20Executive%20Summary.pdf))
+formally adopted "Space Domain Awareness" in place of the older "Space Situational Awareness"
+(SSA) term to capture a broader scope — not just detecting and tracking objects but characterizing
+and attributing them, including adversary intent — and decomposes the work into four stages
+the simulator's task chain mirrors:
 
 1. **Detect** — an object is observed at all (a sensor pass produces a measurement).
 2. **Track** — repeated detections are associated into a continuous trajectory estimate.
@@ -40,6 +47,12 @@ confidence decay modeling the reality that an un-refreshed track's positional ce
 over time. *Detect* is the sensor-observation access channel firing. *Characterize* and *attribute*
 are currently lighter-weight in the engine (largely vignette-authored ground truth revealed at
 appropriate custody levels) — a documented current simplification, not a missing feature; see §5.
+
+### Sources
+
+- *Space Doctrine Publication 3-100, Space Domain Awareness* (USSF, 2023-11) — [live](https://www.starcom.spaceforce.mil/Portals/2/SDP%203-100%20SDA%20Executive%20Summary.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://www.starcom.spaceforce.mil/Portals/2/SDP%203-100%20SDA%20Executive%20Summary.pdf)
+  · accessed 2026-06-27.
 
 **Why this matters for fog-of-war.** A cell's entire belief state is the accumulated output of this
 chain applied through *their own* sensors/SSN access — this is precisely what makes the
