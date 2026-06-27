@@ -41,3 +41,46 @@ vignette:
       effects:
         - {type: patch_cyber_vuln, target: BLUE-SATCOM, vector: ground_modem}
         - {type: message, to: [blue, white], text: "Modem vulnerability patched; re-safing should stop."}
+  tutorial:
+    blue:
+      - {n: 1, title: "Review the SATCOM bird", when: "at start", action: review,
+         expect: "BLUE-SATCOM in GEO with an unpatched ground_modem vuln; keep_service for 1 h pending"}
+      - {n: 2, title: "Watch for the exploit", when: "BLUE-RADAR monitors health",
+         action: observe, actor: BLUE-RADAR, target: BLUE-SATCOM, params: {intent: track},
+         expect: "a track to spot the safe-mode drop if Red cybers the modem"}
+      - {n: 3, title: "Remove the root cause", when: "White-Cell fires the patch_modem inject",
+         action: review,
+         expect: "no organic command station here — the modem patch comes via the White-Cell patch_modem inject; recovery only sticks once patched"}
+      - {n: 4, title: "Hold service to the deadline", when: "+ advance to +1 h",
+         action: advance, params: {dt_s: 3601},
+         expect: "if SATCOM is operational at the deadline, keep_service MET"}
+    red:
+      - {n: 1, title: "Review the cyber unit", when: "at start", action: review,
+         expect: "RED-CYBER; disable_satcom (asset_safed) pending — cyber is NOT window-gated"}
+      - {n: 2, title: "Exploit the modem off-pass", when: "any time — no pass required",
+         action: cyber, actor: RED-CYBER, target: BLUE-SATCOM, params: {vector: ground_modem, payload: seize_c2},
+         expect: "BLUE-SATCOM drops to safe mode; disable_satcom MET"}
+      - {n: 3, title: "Persist until patched", when: "+ advance through the window",
+         action: advance, params: {dt_s: 3601},
+         expect: "with root-cause-persists on, the bird re-safes after any recovery until Blue patches the vector"}
+
+  intro_brief:
+    blue:
+      situation: "GEO comms theatre, March 2030. Threat reporting indicates a Red cyber unit has discovered an unpatched ground-modem vulnerability on our BLUE-SATCOM bird. Exploitation could come at any time — cyber is NOT pass-gated."
+      mission: "Keep BLUE-SATCOM operational (out of safe mode) for the +1 h watch window. Root-cause recovery requires PATCHING the vector, not just resetting the bird — a reset alone leaves the vulnerability open."
+      friendly_forces: "BLUE-SATCOM (GEO communications, exposed cyber_vulnerabilities: [ground_modem unpatched])."
+      threat_picture: "RED-CYBER (cyber unit, ground_modem access vector). Cyber resolves off-pass against your defensive posture and the vulnerability state — there's no access window to interdict."
+      deadline_note: "T+1 h (3600 s). The objective measures asset_operational at the deadline."
+      roe_note: "No kinetic option. Cyber-vs-cyber is the doctrinal frame."
+      success_criteria: "keep_service MET: BLUE-SATCOM not in safe mode at T+1 h."
+      tool_tips: "This vignette has NO Blue ground station for direct uplink — the recovery loop requires the White-Cell patch_modem inject. Watch for BLUE-SATCOM dropping to safe mode in the Alarms panel, then ask White to fire patch_modem. After patch, re-issue any required restoration commands."
+    red:
+      situation: "GEO comms theatre, March 2030. Mission tasking: cyber-disable a Blue GEO SATCOM bird (BLUE-SATCOM) by exploiting an unpatched ground-modem vulnerability. Cyber is not pass-gated — fire when ready."
+      mission: "Drop BLUE-SATCOM into safe mode (asset_safed) via the ground_modem vector and keep it there until T+1 h. If Blue resets but doesn't patch the vector, re-exploit."
+      friendly_forces: "RED-CYBER (cyber unit, no ground station required)."
+      threat_picture: "BLUE-SATCOM (GEO SATCOM, cyber_vulnerabilities ground_modem). Blue lacks an organic patch path — they need a White-Cell patch_modem inject."
+      deadline_note: "Keep BLUE-SATCOM in safe mode at T+1 h."
+      roe_note: "Cyber ROE is enabled by default (cyber_authorized=true). No window required, no kinetic involved."
+      success_criteria: "disable_satcom MET: BLUE-SATCOM in safe mode at T+1 h."
+      tool_tips: "Action: cyber · actor: RED-CYBER · target: BLUE-SATCOM · params: {vector: ground_modem, payload: seize_c2}. Vector + payload derive Pₛ from cyber.VECTORS × cyber.PAYLOADS; the payload seize_c2 models the Viasat-style 'issue legitimate management commands' attack that drives the target into safe mode. Fires immediately. Advance through the hour; re-cyber if Blue restores the bird without patching the vector."
+

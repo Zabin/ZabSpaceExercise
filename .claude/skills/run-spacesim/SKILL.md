@@ -42,14 +42,20 @@ Expected output (and a 1400-wide full-page PNG at the `--shot` path):
 
 ```
 OK  vignette=training-basics cell=blue
-    sim-time='2030-03-15T06:30:00Z'  fleet_rows=3  actor_options=2
+    sim-time='2030-03-15T06:30:01Z'  fleet_rows=3  actor_options=2
+    features={'panel_tools': 10, 'panels_menu': True, 'target_picker': True, 'sparklines': 19}
     screenshot -> /tmp/spacesim-ui.png
 ```
 
-The driver loads the vignette → clicks Start → steps sim time 3× (+10 min) → switches cell →
-clicks the first fleet row to populate the telemetry drill-down → screenshots full page. It
-reads back `sim-time`, fleet row count, and actor-option count to prove real data rendered
-(not an error page). Options:
+The driver opens the `Session ▾` menu (the vignette picker, Load and Start live there since the
+toolbar refactor), loads the vignette → clicks Start → presses Escape to close the menu so the
+toolbar buttons aren't overlaid → steps sim time 3× (+10 min) **while still on White** (the
++10m buttons are in the `white-only` group and disappear after the cell switch) → switches to
+the requested cell → clicks the first fleet row to populate the telemetry drill-down →
+screenshots full page. It reads back `sim-time`, fleet row count, actor-option count, AND a
+post-audit `features` probe (panel-manager tool bars + Panels menu section + valid-target
+picker + sparklines present) so a drift between the live UI and the driver fails loudly with
+zero counts instead of a confusing screenshot. Options:
 
 ```bash
 python3 .claude/skills/run-spacesim/driver.py --vignette leo-isr-denial --cell red --shot /tmp/spacesim-red.png
@@ -89,7 +95,7 @@ windows, view/scene/telemetry, godview, eventlog, objectives, aar, alarms, save/
 ## Test
 
 ```bash
-python3 -m pytest                  # 101 passed (~45s); testpaths = spacesim/tests
+python3 -m pytest                  # 473 passed, 3 skipped (~95s); testpaths = spacesim/tests
 python3 -m pytest spacesim/tests/test_determinism.py    # the canonical determinism gate
 ```
 
@@ -109,6 +115,13 @@ python3 -m pytest spacesim/tests/test_determinism.py    # the canonical determin
 - **The front end is canvas-rendered** (globe, map, telemetry graphs). There's little semantic
   DOM inside the canvases, so assert on the surrounding controls (`#now`, `#assets tbody tr`,
   `#o-actor option`) and verify visuals from the screenshot, as the driver does.
+- **Toolbar buttons live behind a Session ▾ menu pop-up.** The vignette picker, Load and Start
+  are inside `#session-menu` and are `hidden` until you click `#session-btn`. The menu pop also
+  overlays the cell-selector / +10m buttons at common viewport widths, so close it (press
+  Escape — the app's keydown handler closes any open menu) before clicking other toolbar
+  controls. The driver does both.
+- **The +10m / Pause / Rewind buttons are `white-only`.** They are hidden when the cell isn't
+  White. Advance sim time before switching cell, or switch back to White to drive them.
 - **`step` sub-steps the clock**; stepping `dt_sim_s` past short LEO passes still resolves
   intermediate scheduled events. Expect `sim-time` to advance by exactly the step you asked.
 - The engine is deterministic: same `(vignette, seed)` → identical run. Vary `--vignette`/

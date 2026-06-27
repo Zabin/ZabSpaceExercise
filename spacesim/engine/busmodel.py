@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from spacesim.engine.bus import advance_bus, downlink_storage, refresh_ground_view
 from spacesim.engine.propagator import ModeratePropagator
-from spacesim.engine.sun import is_sunlit
+from spacesim.engine.sun import eclipse_fraction
 from spacesim.engine.world import WorldState
 
 
@@ -37,11 +37,13 @@ class BusSystem:
             self.sim.schedule(t, "bus_tick")
             t += step
 
-    def _sunlit(self, world: WorldState, asset, t: int) -> bool:
+    def _sunlit(self, world: WorldState, asset, t: int) -> float:
+        """Lit fraction in [0, 1] (penumbra-aware) so the power tick ramps smoothly
+        through terminator crossings instead of binary-switching."""
         if asset.orbit is None:
-            return True
+            return 1.0
         r, _ = self.prop.rv(asset.orbit, t)
-        return is_sunlit(r, t)
+        return eclipse_fraction(r, t)
 
     def _h_tick(self, world: WorldState, payload: dict, rng) -> None:
         sw = str(world.space_weather.get("severity", "none"))

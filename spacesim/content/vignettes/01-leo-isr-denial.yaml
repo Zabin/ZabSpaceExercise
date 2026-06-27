@@ -26,7 +26,7 @@ vignette:
       resources: {delta_v_ms: 80.0, power_w: 1500.0}
       payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
       bus_state:
-        power: {battery_soc: 0.9, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}
+        power: {battery_soc: 0.9, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}
     # GS-NORTH = Al Dhafra AFB, UAE — major US Air Force base, Middle East theater downlink.
     - id: GS-NORTH
       kind: ground_station
@@ -92,3 +92,52 @@ vignette:
       effects:
         - {type: reveal_asset, target: RED-SURF, to: blue}
         - {type: message, to: [blue, white], text: "OSINT leak: commercial SAR shows the surface group."}
+  # Player tutorial — surfaced in the in-UI Tutorial panel (View ▾ → Tutorial panel) and
+  # docs/training/11-vignette-playbooks.md. Verified-issuable steps; see test_vignette_tutorials.py.
+  tutorial:
+    blue:
+      - {n: 1, title: "Review the order of battle", when: "at start", action: review,
+         expect: "ISR-EO-1 + GS-NORTH/GS-EAST; deliver_isr pending (deadline +3 h)"}
+      - {n: 2, title: "Build the SDA picture", when: "BLUE-RADAR sees the surface group",
+         action: observe, actor: BLUE-RADAR, target: RED-SURF, params: {intent: characterize, classification: hostile},
+         expect: "characterized track on RED-SURF (the commercial-imagery inject confirms it at +45 min)"}
+      - {n: 3, title: "Plan the imagery downlink", when: "queues to the next GS-NORTH pass",
+         action: downlink, actor: ISR-EO-1, params: {via: GS-NORTH},
+         expect: "queued via ground_uplink with a scheduled window"}
+      - {n: 4, title: "Advance to the downlink window", when: "+10 min until the order executes",
+         action: advance, params: {to: order_window},
+         expect: "imagery delivered before the landing window; deliver_isr MET"}
+      - {n: 5, title: "Confirm and keep a backup", when: "after delivery", action: review,
+         expect: "deliver_isr MET; route via GS-EAST if GS-NORTH is jammed"}
+    red:
+      - {n: 1, title: "Review own assets", when: "at start", action: review,
+         expect: "downlink jammer JAM-NORTH, surface group, interceptor (kinetic OFF by default)"}
+      - {n: 2, title: "Jam the downlink", when: "during Blue's GS-NORTH pass",
+         action: jam, actor: JAM-NORTH, target: ISR-EO-1, params: {modulation: barrage, power_w: 200.0},
+         expect: "the downlink window is denied — a Blue downlink here fails"}
+      - {n: 3, title: "Hold the denial past the deadline", when: "+ advance past the +3 h window",
+         action: advance, params: {dt_s: 10801},
+         expect: "nothing delivered in time; deny_isr MET with a reversible effect"}
+      - {n: 4, title: "Attempt a kinetic strike (ROE check)", when: "any pass",
+         action: engage, actor: RED-ASAT, target: ISR-EO-1, params: {},
+         expect: "REJECTED — roe_kinetic_not_authorized; White-Cell must set red_kinetic_authorized"}
+
+  intro_brief:
+    blue:
+      situation: "Indo-Pacific theater, March 2030. Tensions are elevated over a Red-aligned militarized island in the South China Sea (RED-SURF, Woody Island). National command requires confirmed overhead imagery of the surface group before the +3 h landing-window deadline."
+      mission: "Image RED-SURF with ISR-EO-1, then downlink the product to a friendly ground station before the deadline. The collect and the downlink are TWO separate access-window problems — you must plan both."
+      friendly_forces: "ISR-EO-1 (polar LEO, Sun-synchronous) — single optical bird. GS-NORTH (Al Dhafra AFB, UAE) and GS-EAST (Diego Garcia, BIOT) — your two downlink stations. BLUE-RADAR (Eglin AFB) — your SDA radar."
+      threat_picture: "Red is expected to attempt a downlink jam at GS-NORTH (the closest station to their EW assets). Direct-ascent ASAT capability is theatre-present but kinetic engagement of your bird is gated OFF by ROE; expect reversible effects first."
+      deadline_note: "T+3 h (10800 s) from session start. Watch the deliver_isr objective countdown."
+      roe_note: "Red kinetic ASAT is DISABLED by default (red_kinetic_authorized=false). Blue has no kinetic option this vignette."
+      success_criteria: "deliver_isr MET: imagery delivered AND time-of-delivery ≤ +3 h."
+      tool_tips: "Tutorial panel (View ▾) walks each move. Fleet rail (left) → click ISR-EO-1 → see next ground-station pass. Order panel (right) → action: downlink, via: GS-NORTH or GS-EAST. If GS-NORTH is jammed, re-issue via GS-EAST."
+    red:
+      situation: "Indo-Pacific theater, March 2030. A Red-aligned surface group is operating from Woody Island. A Blue ISR satellite (ISR-EO-1) overflies the area on a Sun-synchronous polar orbit and will likely attempt to image the group within the next pass cycle."
+      mission: "Deny Blue confirmation of the surface group until the +3 h landing-window deadline passes. The lesson: reversible denial (link jam, dazzle) is doctrine — kinetic engagement carries political cost and is gated off here."
+      friendly_forces: "JAM-NORTH (Bandar Abbas) — GS-NORTH downlink jammer, regional footprint. RED-SURF (Woody Island) — the surface group Blue wants to image. RED-ASAT (Korla) — 1× direct-ascent round, kinetic ROE DISABLED."
+      threat_picture: "Blue has ISR-EO-1 (polar LEO imager) plus two ground stations (GS-NORTH UAE, GS-EAST Diego Garcia). JAM-NORTH covers GS-NORTH only — if Blue reroutes to GS-EAST you have no organic answer this vignette."
+      deadline_note: "Hold denial past T+3 h. After the deadline, deny_isr MET regardless of subsequent imagery."
+      roe_note: "Kinetic engagement is REJECTED (roe_kinetic_not_authorized). White Cell can flip red_kinetic_authorized to enable it for the consequence lesson."
+      success_criteria: "deny_isr MET: no imagery delivered before T+3 h."
+      tool_tips: "Action: jam · actor: JAM-NORTH · target: ISR-EO-1. The dry-run preview tells you the earliest window. The Gantt timeline (bottom) shows past + future passes; queue the jam to fire during Blue's downlink pass."

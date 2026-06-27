@@ -34,3 +34,51 @@ vignette:
     - {id: ssn_red_dispersion,  label: "Red SSN dispersion",  type: enum,
        options: [off, sparse, regional, global, proliferated], default: off}
   injects: []
+  tutorial:
+    blue:
+      - {n: 1, title: "Review the scarce sensors", when: "at start", action: review,
+         expect: "BLUE-RADAR-1 + BLUE-OPT-1 (contended); maintain_custody of RED-OBJ pending (min_conf 0.5)"}
+      - {n: 2, title: "Characterize the object", when: "BLUE-RADAR-1 has a pass",
+         action: observe, actor: BLUE-RADAR-1, target: RED-OBJ, params: {intent: characterize, classification: hostile},
+         expect: "characterized track on RED-OBJ; confidence 1.0"}
+      - {n: 3, title: "Advance to the look", when: "+10 min to the collection",
+         action: advance, params: {to: order_window},
+         expect: "maintain_custody MET while fresh"}
+      - {n: 4, title: "Re-task before the half-life", when: "confidence halves every 30 min",
+         action: observe, actor: BLUE-OPT-1, target: RED-OBJ, params: {intent: track},
+         expect: "the optical look (needs lighting) refreshes confidence — prioritize the scarce sensors"}
+      - {n: 5, title: "Sustain to the deadline", when: "through +90 min", action: review,
+         expect: "keep confidence >= 0.5 at +90 min to win the hunt"}
+    red:
+      - {n: 1, title: "Review the evader", when: "at start", action: review,
+         expect: "RED-OBJ (150 m/s Δv); break_custody by +90 min pending (deny_custody)"}
+      - {n: 2, title: "Force a custody lapse", when: "exploit sensor contention",
+         action: review,
+         expect: "if Blue can't re-task before the 30-min half-life, confidence decays below 0.5"}
+      - {n: 3, title: "Evade between looks", when: "Red-doctrine / White-Cell maneuvers",
+         action: maneuver, actor: RED-OBJ, params: {dv: [0.0, 5.0, 0.0]},
+         expect: "a burn timed outside a pass enlarges the uncertainty volume — needs a Red command-uplink path"}
+      - {n: 4, title: "Run out the clock", when: "+ advance to +90 min",
+         action: advance, params: {dt_s: 5401},
+         expect: "custody below 0.5 at the deadline -> break_custody MET"}
+
+  intro_brief:
+    blue:
+      situation: "LEO, March 2030. A Red object of interest (RED-OBJ) has been intermittently characterized. National command requires sustained custody — but our two sensors are CONTENDED (each can service one target at a time)."
+      mission: "Maintain confidence ≥ 0.5 on RED-OBJ for the +90 min window. The lesson: SDA is finite — sensor contention forces tasking priorities and confidence decays half-life is 30 min."
+      friendly_forces: "BLUE-RADAR (ground radar) + BLUE-OPT-1 (Maui optical, needs darkness). Note: NO Blue satellites this vignette — your order panel will have NO actor for satellite commands; you can only task SENSORS."
+      threat_picture: "RED-OBJ (LEO bus, 100 m/s Δv reserve)."
+      deadline_note: "T+90 min (5400 s). Confidence halves every 30 min without observation."
+      roe_note: "No kinetic option. The fight is custody."
+      success_criteria: "custody MET: track confidence on RED-OBJ ≥ 0.5 at T+90 min."
+      tool_tips: "Action: observe · actor: BLUE-RADAR OR BLUE-OPT-1 · target: RED-OBJ. Alternate between sensors to beat the half-life. The Tracks (custody) table shows current confidence (decays continuously between observations)."
+    red:
+      situation: "LEO, March 2030. Mission tasking: break Blue's custody hold on RED-OBJ. Blue has two sensors but they're contended — your job is to maneuver between looks so that no single sensor window catches you cleanly."
+      mission: "Stay below confidence 0.5 in Blue's track at T+90 min. The lesson: SDA contention is a finite resource — exploit it by timing burns outside sensor windows."
+      friendly_forces: "RED-OBJ (LEO bus, 100 m/s Δv). No Red ground TT&C station — burns are White-Cell / Red-doctrine adjudicated."
+      threat_picture: "BLUE-RADAR + BLUE-OPT-1 (contended). BLUE-OPT-1 needs darkness to see you."
+      deadline_note: "Run out the clock to T+90 min with confidence below 0.5."
+      roe_note: "No kinetic this vignette. Maneuvering and timing are the entire game."
+      success_criteria: "break_custody MET: Blue's confidence on RED-OBJ < 0.5 at T+90 min."
+      tool_tips: "Mostly passive: advance time. Burns are White-Cell adjudicated this vignette. The lesson plays out organically — Blue often can't keep up with the half-life across two contended sensors."
+

@@ -92,8 +92,7 @@ def test_bus_evolution_runs_through_event_loop_and_replays_identically():
 
     bus_sys.schedule_ticks(period_s=300, until=hours(3))
     order = osys.issue(Order(cell="blue", actor="CYB", action="cyber", target="SAT",
-                             params={"access_vector": "ground_modem", "outcome": "safe_mode",
-                                     "success_prob": 1.0, "sm_susceptibility": 1.0}))
+                             params={"vector": "ground_modem", "payload": "seize_c2"}))
     assert order.status == "queued"
 
     sim.advance_to(hours(3))

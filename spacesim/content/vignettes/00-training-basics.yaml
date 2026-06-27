@@ -19,7 +19,7 @@ vignette:
       cyber_posture: low
       cyber_vulnerabilities: [{vector: ground_modem, patchable: true, patched: false}]
       payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
-      bus_state: {power: {battery_soc: 0.9, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+      bus_state: {power: {battery_soc: 0.9, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}}
     # GS-TRN = Kourou (CSG/CNES, French Guiana) — realistic equatorial training downlink site.
     - id: GS-TRN
       kind: ground_station
@@ -96,11 +96,11 @@ vignette:
          action: observe, actor: RED-RDR, target: ISR-EO-1, params: {intent: track},
          expect: "custody on ISR-EO-1"}
       - {n: 3, title: "Jam the downlink", when: "during the GS-TRN pass",
-         action: jam, actor: JAM-TRN, target: ISR-EO-1, params: {success_prob: 1.0, outcome: deny},
+         action: jam, actor: JAM-TRN, target: ISR-EO-1, params: {modulation: barrage, power_w: 200.0},
          expect: "link denied during the footprint window"}
       - {n: 4, title: "Cyber the modem (off-pass)", when: "any time — cyber isn't window-gated",
          action: cyber, actor: RED-CYBER, target: ISR-EO-1,
-         params: {access_vector: ground_modem, outcome: safe_mode, success_prob: 1.0, sm_susceptibility: 1.0},
+         params: {vector: ground_modem, payload: seize_c2},
          expect: "ISR-EO-1 enters safe mode; disable_isr MET"}
       - {n: 5, title: "Advance and assess", when: "+10 min, past the delivery window",
          action: advance, params: {dt_s: 3601},
@@ -108,3 +108,23 @@ vignette:
       - {n: 6, title: "Attempt a kinetic strike (ROE check)", when: "any pass",
          action: engage, actor: RED-ASAT, target: ISR-EO-1, params: {},
          expect: "REJECTED — kinetic ASAT not authorized in this vignette"}
+
+  intro_brief:
+    blue:
+      situation: "Training environment. A single ISR satellite and ground station have been provisioned to teach the core operator loop: monitor SOH, task a sensor, plan a command at the next window, advance time, observe execution."
+      mission: "Deliver imagery once (deliver_isr) and keep custody on the Red target (keep_custody) before T+1 h."
+      friendly_forces: "ISR-EO-1 (LEO imager). GS-TRN (training ground station). RADAR-TRN (training radar sensor)."
+      threat_picture: "RED-TGT (target), JAM-TRN (jammer), RED-CYBER (cyber), RED-ASAT (kinetic — gated OFF)."
+      deadline_note: "T+1 h (3600 s)."
+      roe_note: "Red kinetic OFF. Cyber OFF for both sides by default."
+      success_criteria: "Both deliver_isr AND keep_custody met by T+1 h."
+      tool_tips: "Use this vignette to learn the UI before the canonical 8 numbered scenarios or any of the expansion-track vignettes. Tutorial panel (View ▾) has a step-by-step. The minimum viable Blue play: observe RED-TGT with RADAR-TRN → downlink via GS-TRN → advance time."
+    red:
+      situation: "Training: practice the reversible-effects toolkit (jam, cyber) against a Blue trainee. Kinetic is OFF so you cannot solve via ASAT."
+      mission: "Deny Blue's imagery (deny_isr) and ideally drop the bird to safe mode (disable_isr) before T+1 h."
+      friendly_forces: "JAM-TRN (jammer), RED-CYBER (cyber), RED-TGT (target), RED-ASAT (kinetic OFF)."
+      threat_picture: "Blue has ISR-EO-1 + GS-TRN. Jam GS-TRN during Blue's downlink pass to deny delivery."
+      deadline_note: "T+1 h."
+      roe_note: "Kinetic OFF. Cyber gated by cyber_authorized parameter."
+      success_criteria: "deny_isr (no delivery) and/or disable_isr (BLUE-SAT safed)."
+      tool_tips: "Two paths: (1) jam · JAM-TRN → ISR-EO-1 during the Blue downlink pass; (2) cyber · RED-CYBER → ISR-EO-1 to safe-mode the bird (cyber must be authorized)."

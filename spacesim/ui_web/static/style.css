@@ -10,6 +10,7 @@
 body[data-cell="white"] { --cell-accent: #8a96ad; --cell-accent-soft: rgba(138, 150, 173, 0.10); }
 body[data-cell="blue"]  { --cell-accent: #5a8fe0; --cell-accent-soft: rgba(90, 143, 224, 0.10); }
 body[data-cell="red"]   { --cell-accent: #e07a7a; --cell-accent-soft: rgba(224, 122, 122, 0.10); }
+body:not([data-cell="white"]) .white-only { display: none !important; }
 * { box-sizing: border-box; }
 body { margin: 0; background: radial-gradient(1200px 600px at 70% -10%, #16202c, var(--bg)); color: var(--text); }
 
@@ -21,9 +22,72 @@ header.toolbar {
   box-shadow: 0 1px 0 var(--cell-accent-soft);
   position: sticky; top: 0; z-index: 10;
 }
-header .title { font-weight: 700; letter-spacing: .3px; }
+header .title { font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
+#logo { flex-shrink: 0; }
+/* Pop-out windows (Part E of LAN multiplayer plan): collapse the toolbar to bare essentials
+   and stretch the surviving panel(s) to fill the viewport for a multi-screen workflow. */
+body.popout header.toolbar { padding: 4px 10px; gap: 8px; }
+body.popout header.toolbar > .ctrl,
+body.popout header.toolbar > .menu-wrap,
+body.popout header.toolbar > #handover-btn,
+body.popout header.toolbar > .toggle,
+body.popout header.toolbar > #help-btn,
+body.popout header.toolbar > #tutorial,
+body.popout header.toolbar > #present,
+body.popout header.toolbar > #inspect-vignette { display: none !important; }
+body.popout main { grid-template-columns: 1fr; padding: 8px; gap: 8px; }
+body.popout .viewers { grid-template-columns: 1fr; padding: 0 8px 8px; gap: 8px; }
+body.popout #globe, body.popout #map { width: 100% !important; height: calc(100vh - 140px) !important; }
+.now-header {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px; color: var(--cell-accent); flex-shrink: 0;
+  padding: 2px 8px; border: 1px solid var(--cell-accent-soft); border-radius: 4px;
+  background: rgba(0,0,0,0.25); letter-spacing: .3px;
+}
+.net-stale {
+  font-size: 12px; padding: 2px 8px; border-radius: 4px; flex-shrink: 0;
+  color: #1a1a1a; background: var(--yellow, #f0c050); border: 1px solid #b89028;
+  font-weight: 600; letter-spacing: .3px;
+}
+/* Dropdown wrap + popup panel for the consolidated toolbar Settings menu. */
+.menu-wrap { position: relative; flex-shrink: 0; }
+.menu-pop {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 30;
+  background: linear-gradient(180deg, #18222e, #11171f);
+  border: 1px solid var(--border); border-top: 2px solid var(--cell-accent);
+  border-radius: 8px; padding: 6px; min-width: 220px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.menu-pop[hidden] { display: none; }
+.menu-pop .menu-section { display: flex; flex-direction: column; gap: 2px; padding: 4px 0; }
+.menu-pop .menu-section + .menu-section { border-top: 1px solid #1b2531; margin-top: 2px; }
+.menu-pop .menu-head {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .6px;
+  color: var(--cell-accent); padding: 2px 8px; opacity: .85;
+}
+.menu-pop .menu-item {
+  display: flex; align-items: center; gap: 8px; justify-content: flex-start;
+  background: transparent; border: 1px solid transparent; color: var(--text);
+  padding: 6px 8px; border-radius: 5px; font-size: 13px; text-align: left;
+  margin: 0;
+}
+.menu-pop .menu-item:hover { background: var(--cell-accent-soft); border-color: var(--cell-accent-soft); }
+/* Inline label+control row inside a menu (used by the Session menu's Vignette/Seed inputs). */
+.menu-pop .menu-item-inline {
+  display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+  font-size: 12px; color: var(--muted);
+}
+.menu-pop .menu-item-inline select { min-width: 180px; }
+.menu-pop .menu-item-row { display: flex; gap: 6px; padding: 6px 8px 4px; }
+.menu-pop .menu-item-row button { flex: 1; }
 header .banner { color: var(--green); font-weight: 700; letter-spacing: 1px; margin-left: auto; }
 header .spacer { flex: 1; }
+.session-summary {
+  font-size: 12px; color: var(--muted); opacity: 0.85;
+  padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px;
+}
 
 /* Buttons */
 button {
@@ -60,6 +124,27 @@ main { display: grid; grid-template-columns: 320px 1fr 360px; gap: 12px; padding
   box-shadow: 0 1px 0 rgba(255,255,255,.02) inset, 0 6px 18px rgba(0,0,0,.25);
 }
 .viewers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 12px 14px; }
+
+/* ---- Panel manager: movable / scalable / closeable panels (panels.js) ---- */
+.panel-managed { position: relative; }
+.panel-handle { cursor: move; }
+.panel-tools { float: right; margin-left: auto; display: inline-flex; gap: 2px; align-items: center; }
+.panel-tools button {
+  background: transparent; border: 1px solid transparent; color: var(--muted);
+  font-size: 12px; line-height: 1; padding: 1px 4px; border-radius: 4px; cursor: pointer;
+}
+.panel-tools button:hover { color: var(--text); border-color: var(--border); background: var(--cell-accent-soft); }
+.panel-tools .panel-grip { cursor: move; }
+/* The viewer sub-panels carry the tools inside their flex header — keep them on the line. */
+.viewer-head .panel-tools { float: none; }
+/* A floated panel lifts out of the grid flow; the native resize handle scales it. */
+.panel-floating {
+  resize: both; overflow: auto;
+  min-width: 240px; min-height: 120px;
+  max-width: 96vw; max-height: 92vh;
+  box-shadow: 0 10px 40px rgba(0,0,0,.55), 0 0 0 1px var(--cell-accent) inset;
+}
+.panel-floating::-webkit-resizer { background: var(--cell-accent-soft); }
 /* User-added FW #3/#4/#5 — heading accent: text + underline picks up the active cell color so
    the h2 bars themselves clearly announce whose console is active. */
 h2 {
@@ -81,12 +166,27 @@ pre { background: #0a0f15; padding: 8px; border-radius: 6px; overflow-x: auto; w
 .clock { font-size: 17px; margin: 8px 0; }
 .clock b { color: var(--accent); }
 .green { color: var(--green); } .yellow { color: var(--yellow); } .red { color: var(--red); }
+/* Objectives status list — color-coded met/unmet rows in the Cell & Time panel. */
+.objectives { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.objectives .obj-side { color: var(--muted); font-size: 11px; text-transform: uppercase;
+  letter-spacing: .5px; margin: 4px 0 2px; }
+.objectives .obj-row { display: flex; align-items: center; gap: 6px; padding: 3px 6px;
+  border-left: 2px solid var(--border); background: var(--panel2); border-radius: 3px; }
+.objectives .obj-row.met { border-left-color: var(--green); }
+.objectives .obj-row.unmet { border-left-color: var(--red); }
+.objectives .obj-mark { width: 14px; text-align: center; font-weight: 700; }
+.objectives .obj-row.met .obj-mark { color: var(--green); }
+.objectives .obj-row.unmet .obj-mark { color: var(--red); }
+.objectives .obj-id { color: var(--text); }
+.objectives .obj-row.met .obj-id { color: var(--text); }
+.objectives .obj-row.unmet .obj-id { color: var(--muted); }
+.objectives .obj-empty { color: var(--muted); font-style: italic; }
 ul { margin: 4px 0; padding-left: 18px; } li { margin: 2px 0; }
 
 /* Viewer control bars */
 .viewer-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
 .viewer-head .grow { flex: 1; }
-.ctrl { display: inline-flex; gap: 4px; align-items: center; }
+.ctrl { display: inline-flex; gap: 4px; align-items: center; flex-wrap: wrap; row-gap: 4px; max-width: 100%; }
 .ctrl label { color: var(--muted); font-size: 12px; margin: 0 2px 0 8px; }
 canvas { width: 100%; border: 1px solid var(--border); border-radius: 6px; background: #070b10; display: block; cursor: grab; }
 canvas:active { cursor: grabbing; }
@@ -94,11 +194,59 @@ canvas:active { cursor: grabbing; }
 .toggle input { vertical-align: middle; }
 .sub { margin: 4px 0; }
 .sub b { color: var(--muted); text-transform: uppercase; font-size: 11px; letter-spacing: .5px; margin-right: 6px; }
+.drill-orbit { margin: 6px 0 2px; }
+.drill-orbit h3 { margin: 6px 0 4px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.drill-orbit .coes { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; }
+.drill-orbit .coes span { padding: 2px 7px; border: 1px solid #2a3646; border-radius: 5px; background: #11171f; }
+.drill-orbit .coes b { color: var(--muted); margin-right: 4px; font-weight: normal; }
+/* Track (custody) table — expandable COE sub-row */
+tr.track-expandable { cursor: pointer; }
+tr.track-expandable:hover { background: rgba(90,143,224,0.06); }
+.coe-toggle-hint { font-size: 10px; color: var(--muted); }
+tr.track-coe-row td { background: #0c1620; padding: 4px 10px 6px 20px !important; }
+.track-coe {
+  display: grid; grid-template-columns: auto 1fr auto 1fr auto 1fr auto 1fr auto 1fr;
+  gap: 2px 6px; font-size: 11px; font-family: monospace; align-items: baseline;
+}
+.track-coe-label { color: var(--muted); text-align: right; white-space: nowrap; }
+@media (max-width: 900px) {
+  .track-coe { grid-template-columns: auto 1fr auto 1fr; }
+}
 .pchip { display: inline-block; margin: 2px; padding: 2px 7px; border-radius: 5px; font-size: 12px; cursor: pointer;
   border: 1px solid #2a3646; background: #11171f; }
 .pchip:hover { border-color: var(--accent2); }
 .pchip.green { color: var(--green); } .pchip.yellow { color: var(--yellow); border-color: #5a4a1e; }
 .pchip.red { color: var(--red); border-color: #5a2424; } .pchip.los { color: #7a8aa0; }
+
+/* Mission brief panel — surfaces vignette intro_brief.{cell} + live deadlines + ROE. */
+.brief-panel { margin: 8px 12px; border-left: 4px solid var(--cell-accent, #5a8fe0); }
+.brief-panel h2 { display: flex; align-items: center; gap: 8px; cursor: default; }
+.brief-toggle { background: transparent; border: 1px solid var(--border); color: var(--text);
+  width: 22px; height: 22px; border-radius: 4px; cursor: pointer; padding: 0; font-size: 12px; }
+.brief-toggle:hover { border-color: var(--accent2); }
+.brief-panel.collapsed .brief-body { display: none; }
+.brief-body { padding: 8px 4px; }
+.brief-cell { padding: 4px 0; }
+.brief-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .brief-grid { grid-template-columns: 1fr; } }
+.brief-cell-blue { border-left: 3px solid #5a8fe0; padding-left: 10px; }
+.brief-cell-red { border-left: 3px solid #e07a7a; padding-left: 10px; }
+.brief-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px; color: var(--muted);
+  padding-bottom: 6px; border-bottom: 1px dashed var(--border); margin-bottom: 8px; }
+.brief-meta b { color: var(--text); font-weight: normal; }
+.brief-doctrine { font-size: 12px; color: var(--muted); margin: 4px 0 8px; }
+.brief-text { display: grid; grid-template-columns: 140px 1fr; gap: 4px 12px; margin: 0; font-size: 13px; }
+.brief-text dt { color: var(--muted); font-weight: bold; }
+.brief-text dd { margin: 0; line-height: 1.35; }
+.brief-objectives, .brief-learn { margin-top: 8px; font-size: 12px; }
+.brief-objectives ul, .brief-learn ul { margin: 4px 0 0 18px; padding: 0; }
+.brief-objectives li.obj-live b { color: #ffd35a; }
+.brief-objectives li.obj-expired { color: var(--muted); }
+.brief-objectives li.obj-expired b { color: var(--muted); }
+.roe-chip { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px;
+  font-family: monospace; margin-right: 2px; }
+.roe-chip.on  { background: rgba(255, 211, 90, 0.18); color: #ffd35a; border: 1px solid #5a4a1e; }
+.roe-chip.off { background: rgba(122, 138, 160, 0.15); color: #9faabd; border: 1px solid #2a3646; }
 .muted { color: var(--muted); }
 .preview { margin: 6px 0 2px; font-size: 12px; min-height: 1.2em; }
 .preview.ok { color: var(--green); }
@@ -220,6 +368,25 @@ body.large-text input {
   display: none; align-items: center; justify-content: center;
 }
 #inspector-wrap.open { display: flex; }
+
+/* Tutorial side drawer — hidden by default; .open slides it into view. */
+#tutorial-panel {
+  position: fixed; top: 60px; right: 16px; width: min(380px, 92vw);
+  max-height: calc(100vh - 80px); overflow: auto;
+  background: #0d141c; border: 1px solid var(--cell-accent); border-radius: 10px;
+  padding: 12px 14px 14px; z-index: 240;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.45);
+  display: none;
+}
+#tutorial-panel.open { display: block; }
+#tutorial-panel h3 { margin: 0 0 8px; color: var(--cell-accent); }
+#tutorial-panel .close {
+  position: absolute; top: 6px; right: 10px; cursor: pointer;
+  color: var(--muted); font-size: 14px; user-select: none;
+}
+#tutorial-panel .close:hover { color: var(--text); }
+#tutorial-panel ol { margin: 4px 0 0 18px; padding: 0; font-size: 12px; line-height: 1.45; }
+#tutorial-panel li { margin-bottom: 6px; }
 #inspector {
   width: min(780px, 92vw); max-height: 80vh; background: #0d141c;
   border: 1px solid var(--cell-accent); border-radius: 10px; padding: 12px;

@@ -20,7 +20,7 @@ vignette:
       cyber_posture: low
       cyber_vulnerabilities: [{vector: ground_modem, patchable: true, patched: false}]
       payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
-      bus_state: {power: {battery_soc: 0.85, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+      bus_state: {power: {battery_soc: 0.85, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}}
     # GS-LEARN = Kourou (CSG/CNES, French Guiana) — equatorial training downlink site.
     - id: GS-LEARN
       kind: ground_station
@@ -72,3 +72,22 @@ vignette:
       - {n: 3, title: "Re-fire when ready", action: "If Blue does not patch the vulnerability, fire again — the bus will re-safe."}
       - {n: 4, title: "Concede when patched", action: "Once Blue patches the modem, the exploit no longer works; the round is over."}
       - {n: 5, title: "After action", action: "Review the AAR to see how many safe-mode entries you achieved."}
+  intro_brief:
+    blue:
+      situation: "Training scenario for the recovery loop. A Red cyber unit has dropped your ISR bird into safe mode via an unpatched ground-modem vulnerability. You must diagnose, recover, and PATCH the vector — a reset alone won't hold."
+      mission: "Return ISR-EO-LEARN to operational (recover_to_nominal) before T+45 min."
+      friendly_forces: "ISR-EO-LEARN (the affected ISR bird), GS-LEARN (your TT&C uplink), BLUE-RADAR-LEARN."
+      threat_picture: "RED-CYBER (off-pass cyber). If you reset without patching the vector, the bird re-safes on the next contact."
+      deadline_note: "T+45 min (2700 s)."
+      roe_note: "Cyber only. The lesson is the recovery LOOP: telemetry diagnosis → reset → root-cause patch."
+      success_criteria: "ISR-EO-LEARN not in safe mode at T+45 min."
+      tool_tips: "Open the Telemetry drill-down on the bird. CPU load + FSW error spike = cyber signature (not jam, not DE). Sequence: cdh.clear_fault → cdh.reset_subsystem → def.patch_cyber. Without the patch, RED-CYBER will re-exploit and you lose the deadline."
+    red:
+      situation: "Training: practice persistent cyber. Blue must learn to root-cause-patch, not just reset."
+      mission: "keep_safed: keep ISR-EO-LEARN in safe mode at T+45 min."
+      friendly_forces: "RED-CYBER (off-pass cyber unit)."
+      threat_picture: "Blue has the bird + one ground station + a radar."
+      deadline_note: "T+45 min."
+      roe_note: "Cyber AUTHORIZED. No kinetic."
+      success_criteria: "Re-cyber after any Blue restoration that doesn't patch the vector."
+      tool_tips: "Fire cyber early. Watch for Blue's clean restore: if def.patch_cyber doesn't appear in the order log, re-exploit. If it does, the lesson is over."

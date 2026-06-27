@@ -10,6 +10,7 @@ can act outside any pass.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -42,6 +43,23 @@ ACTION_CHANNEL = {
     "command": COMMAND_UPLINK,   # bus/payload verbs (eps.*, adcs.*, satcom.*) — uplink/stored delivery
     "downlink": TELEMETRY_DOWNLINK,
     "cyber": None,  # not window-gated
+}
+
+# How many command/maneuver uplinks a single asset can accept in one access window.
+# Reflects realistic uplink-command budget: ACK + parameter upload takes ~30–60 s each;
+# a typical 5–10 min LEO pass fits 4–6 commands with margin. GEO passes are longer but
+# the same ceiling keeps the exercise planning realistic.
+MAX_COMMANDS_PER_PASS = 4
+
+# Realistic bar widths for the Gantt chart (in seconds).  "None" means use the full window.
+BAR_DURATION_S: dict = {
+    "command":  120,   # uplink + ACK
+    "maneuver": 120,   # uplink + ACK
+    "downlink": 360,   # 6-min data dump
+    "jam":      None,  # continuous for the window
+    "engage":   120,   # target acquisition + engagement
+    "cyber":     60,   # instantaneous, shown as a 1-min marker
+    "observe":  None,  # use duration_s param (default 300 s) — handled per-order
 }
 
 
@@ -94,6 +112,9 @@ class OrderSystem:
         # characterize request via the per-cell network. None disables auto-cueing.
         self.auto_cue_ssn = None       # set externally to an SSNSystem instance
         self._sensor_bookings: dict[str, list[tuple[int, int]]] = {}  # contention: one task at a time
+        self._order_sensor: dict[str, tuple[str, int, int]] = {}     # order_id → (sensor_id, start, end)
+        self._pass_bookings: dict[tuple[str, int], int] = {}         # (actor_id, win_start) → count
+        self._order_pass: dict[str, tuple[str, int]] = {}            # order_id → pass key (for cancel)
         self.orders: dict[str, Order] = {}   # issued orders by id (for the queue + cancellation)
         self._order_counter = 0
 
@@ -150,7 +171,32 @@ class OrderSystem:
         order.status = "queued"
         if commit:
             kind, data = self._exec_payload(order, win)
+            data["__order_id"] = order.id  # threaded through so handlers can release bookings
             self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
+
+    def _release_bookings_on_execute(self, order_id: Optional[str]) -> None:
+        """Pop pass / sensor booking entries for an order that just executed.
+
+        Symmetric with cancel() so the booking dicts don't grow without bound
+        across a long-running session. Safe to call with a missing/unknown id.
+        """
+        if not order_id:
+            return
+        pass_key = self._order_pass.pop(order_id, None)
+        if pass_key:
+            count = max(0, self._pass_bookings.get(pass_key, 1) - 1)
+            if count == 0:
+                self._pass_bookings.pop(pass_key, None)
+            else:
+                self._pass_bookings[pass_key] = count
+        sensor_booking = self._order_sensor.pop(order_id, None)
+        if sensor_booking:
+            sensor_id, start, end = sensor_booking
+            bookings = self._sensor_bookings.get(sensor_id, [])
+            try:
+                bookings.remove((start, end))
+            except ValueError:
+                pass
 
     def cancel(self, order_id: str) -> bool:
         """Cancel a still-queued order; the scheduled event is skipped (never logged → replay-safe)."""
@@ -159,6 +205,19 @@ class OrderSystem:
             return False
         self.sim.cancel(order_id)
         o.status = "cancelled"
+        # Release the sensor slot so it can be rebooked immediately.
+        booking = self._order_sensor.pop(order_id, None)
+        if booking:
+            sensor_id, start, end = booking
+            bookings = self._sensor_bookings.get(sensor_id, [])
+            try:
+                bookings.remove((start, end))
+            except ValueError:
+                pass
+        # Release the per-pass command slot.
+        pass_key = self._order_pass.pop(order_id, None)
+        if pass_key:
+            self._pass_bookings[pass_key] = max(0, self._pass_bookings.get(pass_key, 1) - 1)
         return True
 
     def _ap(self) -> AccessProvider:
@@ -175,24 +234,37 @@ class OrderSystem:
             t = int(stored_at)
             choices.append(("stored_program", AccessWindow(channel="stored", actor=order.actor,
                                                            target=order.actor, start=t, end=t, quality=1.0)))
+
         via = order.params.get("via")
+        gs_windows_exist = False
         if via is not None:
-            g = ap.windows(via, order.actor, COMMAND_UPLINK, now, now + self.horizon)
-            if g:
-                choices.append(("ground_uplink", g[0]))
+            gs_wins = ap.windows(via, order.actor, COMMAND_UPLINK, now, now + self.horizon)
+            gs_windows_exist = bool(gs_wins)
+            for w in gs_wins:
+                if self._pass_bookings.get((order.actor, w.start), 0) < MAX_COMMANDS_PER_PASS:
+                    choices.append(("ground_uplink", w))
+                    break
+
         isl = self._best_isl_window(ap, order.cell, order.actor, now)
         if isl is not None:
             choices.append(("isl_relay", isl))
 
         if not choices:
-            order.status, order.fail_reason = "rejected", "no_window"
+            # Distinguish "windows exist but all full" from "no window at all".
+            reason = "pass_capacity_full" if gs_windows_exist else "no_window"
+            order.status, order.fail_reason = "rejected", reason
             return
         path, win = min(choices, key=lambda pw: pw[1].start)
         order.delivery_path = path
         order.earliest_window = (win.start, win.end)
         order.status = "queued"
         if commit:
+            if path != "stored_program":
+                key = (order.actor, win.start)
+                self._pass_bookings[key] = self._pass_bookings.get(key, 0) + 1
+                self._order_pass[order.id] = key
             kind, data = self._exec_payload(order, win)
+            data["__order_id"] = order.id
             self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
     def _best_isl_window(self, ap: AccessProvider, cell: str, actor: str, now: int) -> Optional[AccessWindow]:
@@ -200,9 +272,11 @@ class OrderSystem:
         for rid, relay in self.world.assets.items():
             if rid == actor or relay.owner != cell or not relay.isl_capable or relay.orbit is None:
                 continue
-            wins = ap.windows(rid, actor, ISL_LINK, now, now + self.horizon)
-            if wins and (best is None or wins[0].start < best.start):
-                best = wins[0]
+            for w in ap.windows(rid, actor, ISL_LINK, now, now + self.horizon):
+                if self._pass_bookings.get((actor, w.start), 0) < MAX_COMMANDS_PER_PASS:
+                    if best is None or w.start < best.start:
+                        best = w
+                    break
         return best
 
     def _plan_collection(self, order: Order, commit: bool) -> None:
@@ -230,9 +304,11 @@ class OrderSystem:
         order.status = "queued"
         if commit:
             self._sensor_bookings.setdefault(sid, []).append((win.start, win.end))
+            self._order_sensor[order.id] = (sid, win.start, win.end)
             kind, data = self._exec_payload(order, win)
             data["sensor_id"] = sid          # persisted in eventlog for booking reconstruction
             data["window_end"] = win.end     # on rewind/replay
+            data["__order_id"] = order.id
             self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
     def _candidate_sensors(self, order: Order) -> list[str]:
@@ -273,8 +349,14 @@ class OrderSystem:
             if track is None or not track.is_weapons_quality(self.sim.clock.now, self.wq_threshold):
                 return False, "no_weapons_quality_track"
 
-        if order.action == "cyber" and not self.roe.get("cyber_authorized", False):
-            return False, "roe_cyber_not_authorized"
+        if order.action == "cyber":
+            if not self.roe.get("cyber_authorized", False):
+                return False, "roe_cyber_not_authorized"
+            # Audit 2026-06 Commands §C2 — `vector` is mandatory. The legacy raw
+            # base_prob fallback path is removed; cyber Pₛ now always derives from
+            # vector × posture × dwell.
+            if not order.params.get("vector"):
+                return False, "no_cyber_vector"
 
         if order.action == "maneuver":
             dv = np.asarray(order.params.get("dv", [0, 0, 0]), dtype=float)
@@ -312,6 +394,11 @@ class OrderSystem:
     def _exec_payload(self, order: Order, win: AccessWindow) -> tuple[str, dict]:
         p = order.params
         if order.action == "jam":
+            # Audit 2026-06 Commands §C2 — Pₛ is fully derived from physical inputs
+            # (modulation × power × bandwidth coverage). The operator no longer types
+            # success_prob; the resolver then applies defender modifiers (frequency_hop,
+            # interference_mitigation — Phase A §C1). A legacy `success_prob` in params
+            # is parsed for save-file back-compat but ignored.
             from spacesim.engine.jam import (
                 effective_success_prob as _jam_prob,
                 modulation_params as _jam_mod,
@@ -321,24 +408,25 @@ class OrderSystem:
             power_w = float(p.get("power_w", 100.0))
             bandwidth_hz = float(p.get("bandwidth_hz", 1e6))
             victim_bw_hz = float(p.get("victim_bandwidth_hz", 1e6))
-            base_prob = float(p.get("success_prob", 0.9))
+            # Base Pₛ from a power-scaled curve; doubling power above the 100 W reference
+            # asymptotes to a near-certain raw threshold (defender state knocks it down).
+            base_prob = min(0.98, 0.6 + 0.3 * math.sqrt(max(0.0, power_w) / 100.0))
             adj_prob = _jam_prob(base_prob, modulation, bandwidth_hz, victim_bw_hz)
             mod_params, resolved_mod = _jam_mod(modulation)
-            # Deceptive jamming is overt by default — overrides operator attribution choice
-            # unless they explicitly override.
-            default_attr = mod_params["attribution_bias"]
-            attribution = p.get("attribution", default_attr)
+            # Deceptive jamming is overt-once-detected; all other modulations carry the
+            # modulation's default attribution_bias. Operators do not override.
+            attribution = mod_params["attribution_bias"]
             effect = EffectInstance(
-                template=p.get("template", "ew_jam"),
+                template="ew_jam",
                 category="electronic_warfare",
                 segment="link",
                 actor=order.actor,
                 target=order.target or "",
                 reversible=True,
                 attribution=attribution,
-                escalation_weight=p.get("escalation_weight", 3),
+                escalation_weight=3,
                 requires=JAM_FOOTPRINT,
-                intended_outcome=p.get("outcome", "deny"),
+                intended_outcome="deny",
                 success_prob=adj_prob,
                 window_start=win.start,
                 window_end=win.end,
@@ -346,21 +434,32 @@ class OrderSystem:
             return "execute_effect", {
                 "effect": effect.model_dump(),
                 "consume": {"actor": order.actor,
-                            "power_w": p.get("power_cost", _jam_power(power_w, modulation))},
+                            "power_w": _jam_power(power_w, modulation)},
             }
 
         if order.action == "engage":
-            from spacesim.engine.engage import kill_probability
+            # Audit 2026-06 Commands §M2 — Pₖ from INTERCEPTORS database (4 classes
+            # sourced from the four open-source DA-ASAT test records). The operator
+            # picks an interceptor_class enum and a salvo size; the engine derives
+            # Pₖ from the class × target altitude × salvo. Defender evasion (Phase A
+            # §C1) cuts Pₖ in the resolver.
+            from spacesim.engine.engage import kill_probability_from_class
             salvo_n = int(p.get("salvo_n", 1))
-            interceptor_dv = float(p.get("interceptor_dv_ms", 200.0))
-            base_pk = float(p.get("success_prob", 0.9))
-            # Miss-distance is not knowable at planning; assume zero for the executed shot
-            # (the closing-geometry preview is read-only and lives in the session API).
-            adj_pk = kill_probability(base_pk, miss_km=0.0,
-                                       interceptor_dv_ms=interceptor_dv, salvo_n=salvo_n)
+            interceptor_class = p.get("interceptor_class") or "mrbm_kkv"
+            # Target altitude derived from the world, not operator input.
+            tgt_asset = self.world.assets.get(order.target or "")
+            tgt_alt_km = 500.0  # default mid-LEO if unknown (won't pass weapons-quality
+                                # gate without a real target anyway)
+            if tgt_asset is not None and tgt_asset.orbit is not None:
+                # Periapsis altitude as a conservative reach test.
+                from spacesim.engine.orbit import classify_regime
+                tgt_alt_km = max(0.0, (tgt_asset.orbit.a_m - 6_378_137.0) / 1000.0)
+            adj_pk = kill_probability_from_class(
+                interceptor_class, target_alt_km=tgt_alt_km, salvo_n=salvo_n,
+            )
             effect = EffectInstance(
-                template=p.get("template", "da_asat"),
-                category="direct_ascent",
+                template=f"da_asat_{interceptor_class}",
+                category="direct_ascent" if interceptor_class != "coorbital" else "co_orbital",
                 segment="orbital",
                 actor=order.actor,
                 target=order.target or "",
@@ -368,7 +467,7 @@ class OrderSystem:
                 kinetic=True,
                 debris_risk="high",
                 attribution="overt",
-                escalation_weight=p.get("escalation_weight", 8),
+                escalation_weight=8,
                 requires=WEAPON_ENGAGEMENT,
                 intended_outcome="destroy",
                 success_prob=adj_pk,
@@ -382,8 +481,10 @@ class OrderSystem:
 
         if order.action == "observe":
             intent = p.get("intent", "track")
-            # characterize resolves type/intent; search/track refine the state estimate.
-            characterizes = p.get("characterizes", intent == "characterize")
+            # Audit 2026-06 Commands §C3 — `characterizes` is now derived from the
+            # operator's `intent`; the explicit override is removed (it let the operator
+            # mark the target characterized without actually running a characterize pass).
+            characterizes = (intent == "characterize")
 
             # ISR beam-mode parameters: beam_mode, look_angle, duration, start_offset
             beam_mode_req = p.get("beam_mode")
@@ -409,7 +510,13 @@ class OrderSystem:
                 beam_params as _bp, effective_gain as _eg, footprint_polygon, ground_heading_deg,
             )
             bp, resolved_mode = _bp(payload_type, beam_mode_req)
-            base_gain = float(p.get("gain", 1.0))
+            # Audit 2026-06 Commands §C3 — base gain is clamped to [0, 1]: the operator
+            # may deliberately request a *less*-confident observation (search-only
+            # sweeps, distant looks) but cannot type a value above 1.0 to fast-track
+            # custody. Beam parameters + look angle still modulate the effective gain
+            # through isr.effective_gain.
+            requested_gain = float(p.get("gain", 1.0))
+            base_gain = max(0.0, min(1.0, requested_gain))
             gain = _eg(base_gain, look_angle_deg, bp)
 
             # Compute footprint polygon from the actor's current orbit position + heading.
@@ -429,7 +536,9 @@ class OrderSystem:
                 "intent": intent,
                 "gain": gain,
                 "characterizes": characterizes,
-                "classification": p.get("classification"),
+                # Audit 2026-06 Commands §C3 — classification is never operator-set; it
+                # accumulates from the observation outcome instead.
+                "classification": None,
                 "actor": order.actor,
                 "beam_mode": resolved_mode,
                 "look_angle_deg": look_angle_deg,
@@ -468,8 +577,10 @@ class OrderSystem:
         if not commit:
             return
         p = order.params
-        # Cyber vector/payload parameters (FW §11.A.3): vector → success probability + attribution,
-        # payload → reversibility + escalation weight.  Operator overrides win if explicitly set.
+        # Audit 2026-06 Commands §C2 — cyber Pₛ fully derived from vector × posture × dwell.
+        # `vector` is mandatory (validator enforces). Payload table fixes reversibility /
+        # escalation / intended_outcome. Operator overrides on success_prob / attribution /
+        # outcome / reversible / escalation_weight / sm_susceptibility are removed.
         from spacesim.engine.cyber import (
             effective_success as _cyb_succ, payload_params as _cyb_pl, vector_params as _cyb_vec,
         )
@@ -478,27 +589,32 @@ class OrderSystem:
         target_asset = self.world.assets.get(order.target or "")
         target_posture = target_asset.cyber_posture if target_asset else "medium"
         dwell_s = float(p.get("dwell_s", 0.0))
-        base_prob = float(p.get("success_prob", 0.7))
         vp, resolved_vec = _cyb_vec(vector)
         pp, resolved_pl = _cyb_pl(payload_name)
-        succ = _cyb_succ(vector, target_posture, dwell_s) if vector else base_prob
-        attribution = p.get("attribution", vp["attribution_bias"] if vector else "covert")
+        succ = _cyb_succ(vector, target_posture, dwell_s)
+        # Safe-mode susceptibility stays a White-Cell / scripted dial (not operator-typed
+        # — the order form will not surface it). Persistence is a physical input on the
+        # payload, defaulted from the payload's `min_persistence_h`.
+        persistence_h = float(p.get("persistence_h", vp.get("min_persistence_h", 1.0)))
         effect = EffectInstance(
-            template=p.get("template", "cyber"),
+            template="cyber",
             category="cyber",
             segment=p.get("segment", "link"),
             actor=order.actor,
             target=order.target or "",
-            reversible=p.get("reversible", pp["reversible"] if payload_name else True),
-            attribution=attribution,
-            escalation_weight=p.get("escalation_weight", pp["escalation_weight"] if payload_name else 4),
+            reversible=pp["reversible"],
+            attribution=vp["attribution_bias"],
+            escalation_weight=pp["escalation_weight"],
             requires="none",
-            intended_outcome=p.get("outcome", pp["intended_outcome"] if payload_name else "deny"),
+            intended_outcome=pp["intended_outcome"],
             success_prob=succ,
-            access_vector=p.get("access_vector") or (resolved_vec if vector else None),
-            persistence_s=p.get("persistence_s", 3600.0 * max(1.0, p.get("persistence_h", 1.0))),
-            sm_susceptibility=p.get("sm_susceptibility", 1.0),
-            persistence_bonus=p.get("persistence_bonus", 1.0),
+            # Preserve the operator's raw vector string so the vuln-dict match in
+            # _effective_probability finds the target's matching access vector. The
+            # cyber.VECTORS lookup above was for the Pₛ math only.
+            access_vector=vector,
+            persistence_s=3600.0 * max(1.0, persistence_h),
+            sm_susceptibility=float(p.get("sm_susceptibility", 1.0)),
+            persistence_bonus=float(p.get("persistence_bonus", 1.0)),
             window_start=self.sim.clock.now,
         )
         self.sim.schedule(self.sim.clock.now, "execute_effect", {"effect": effect.model_dump()}, actor=order.cell, tag=order.id)
@@ -528,6 +644,7 @@ class OrderSystem:
                     actor.resources.power_w -= float(cons["power_w"])
 
     def _h_maneuver(self, world: WorldState, payload: dict, rng) -> None:
+        self._release_bookings_on_execute(payload.get("__order_id"))
         actor = world.assets.get(payload["actor"])
         if actor is None or actor.orbit is None:
             return
@@ -570,12 +687,14 @@ class OrderSystem:
 
     def _h_command(self, world: WorldState, payload: dict, rng) -> None:
         """Apply a bus/payload verb at its window (re-validates at execute time, like the others)."""
+        self._release_bookings_on_execute(payload.get("__order_id"))
         ok, label = apply_command(world, payload["actor"], payload.get("verb") or "",
                                    payload.get("params", {}), world.now)
         world.effect_log.append({"t": world.now, "template": payload.get("verb"),
                                  "target": payload["actor"], "achieved": label, "success": ok})
 
     def _h_observe(self, world: WorldState, payload: dict, rng) -> None:
+        self._release_bookings_on_execute(payload.get("__order_id"))
         track = world.track_for(payload["cell"], payload["object"])
         if track is None:
             track = Track(object=payload["object"], owner=payload["cell"], last_observation=world.now, confidence=0.0)

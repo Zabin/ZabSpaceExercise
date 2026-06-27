@@ -67,13 +67,12 @@ def test_red_walkthrough_executes_and_denies():
 
     # Step 3 — jam the downlink (queues to the footprint window).
     jam = mgr.issue_order("red", Order(cell="red", actor="JAM-TRN", action="jam", target="ISR-EO-1",
-                                       params={"success_prob": 1.0, "outcome": "deny"}))
+                                       params={"modulation": "barrage", "power_w": 200.0}))
     assert jam.status == "queued"
 
     # Step 4 — cyber the modem off-pass → safe mode.
     cy = mgr.issue_order("red", Order(cell="red", actor="RED-CYBER", action="cyber", target="ISR-EO-1",
-                                      params={"access_vector": "ground_modem", "outcome": "safe_mode",
-                                              "success_prob": 1.0, "sm_susceptibility": 1.0}))
+                                      params={"vector": "ground_modem", "payload": "seize_c2"}))
     assert cy.status == "queued" and cy.earliest_window is None  # cyber is not window-gated
     mgr.advance_to(mgr.world.now + 60 * 1_000_000)
     assert mgr.world.assets["ISR-EO-1"].bus_state.mode == "safe_mode"

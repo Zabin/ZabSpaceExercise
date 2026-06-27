@@ -58,7 +58,7 @@ Asset:
     isl_capable: false            # can relay/receive via inter-satellite link
     isl_peers: []                 # asset ids it can crosslink with (geometry permitting)
     stored_program: true          # accepts time/condition-triggered onboard commands
-  bus_state:                      # live state-of-health (see 01-research/06); pass-gated to UI
+  bus_state:                      # live state-of-health (see ../research/06); pass-gated to UI
     power:      {battery_soc: 0.0..1.0, in_eclipse: false, status: green}
     attitude:   {pointing_ok: true, mode: nominal, status: green}  # mode: nominal|slew|safe
     thermal:    {status: green}
@@ -74,7 +74,7 @@ Asset:
       defender_diagnosis: unknown # unknown|suspected_attack|fault|<subsystem>
       recovery: {plan: [PlannedActivity...], step_index: 0, passes_used: 0, blocked_reason: null}
     last_telemetry_time: SimTime  # when ground last received FRESH soh (between passes = stale)
-  payload_state:                  # shape varies by payload type (see 01-research/06 §2)
+  payload_state:                  # shape varies by payload type (see ../research/06 §2)
     type: satcom|isr_eo|isr_sar|sigint|sda|space_control|pnt|missile_warning|weather
     health: green                 # green|yellow|red
     detail: {...}                 # type-specific: transponders / collection_queue / tasking / effector
@@ -87,7 +87,7 @@ Each asset **template** also carries a `telemetry_db` (every SOH/payload paramet
 and soft/hard alarm limits — drives the UI displays and alarms) and a `command_db` (legal
 commands, their arguments, and pre-release constraints — the authoritative list of what the
 order panel may offer). These mirror the real telemetry/command databases at the heart of
-mission-control software (see `01-research/06-bus-and-payload-operations.md` §3).
+mission-control software (see `../research/06-bus-and-payload-operations.md` §3).
 
 ### Ground stations & sensors
 ```yaml
@@ -120,7 +120,7 @@ low-control sensor that periodically injects external `Track` updates. See
 
 ## 4. Effects & weapons (templates → instances)
 
-Effect templates come from `01-research/03-counterspace-taxonomy.md`. An **EffectInstance** is a
+Effect templates come from `../research/03-counterspace-taxonomy.md`. An **EffectInstance** is a
 template applied by an actor to a target:
 
 ```yaml
@@ -172,7 +172,7 @@ subsystems read this gate before allowing an engagement. The viewer renders this
 solidness/ghosting and an uncertainty volume derived from `confidence` and `uncertainty`.
 
 ## 6. Vignette, parameter, inject (content schema)
-Defined in `02-vignettes/00-vignette-framework.md`; summarized here as the loadable shape:
+Defined in `../vignettes/00-vignette-framework.md`; summarized here as the loadable shape:
 ```yaml
 Vignette:
   id, title, classification, learning_objectives[], doctrinal_basis[]

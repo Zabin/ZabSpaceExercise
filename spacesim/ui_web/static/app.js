@@ -12,6 +12,16 @@ let NEXT = {};            // asset id -> next-contact sim-time (µs) for the fle
 let ALARMS = [];          // latest alarm feed (shared by the fleet badge + the alarm list)
 let EFFECT_WINDOWS = [];  // active-effect time spans on own assets (graph shading, §9.1)
 let NOW = 0;              // current sim time captured each refresh (for stale-banner + shading)
+let REALTIME_GEN = 0;     // generation counter; bumped on stop so in-flight ticks abandon themselves
+let REALTIME_ON = false;  // whether the real-time clock loop should keep ticking
+// Local 1Hz clock interpolation between server polls (every ~1.5s) so the displayed UTC ticks
+// each second instead of jumping every poll. Set on each successful refresh; the ticker reads
+// them and extrapolates: display = LAST_REFRESH_SERVER_NOW + (Date.now() - LAST_REFRESH_WALL_MS).
+let LAST_REFRESH_WALL_MS = 0;
+let LAST_REFRESH_SERVER_NOW = null;
+let SERVER_CLOCK_RUNNING_CACHED = false;
+let CLOCK_TICKER = null;
+const NET_STALE_MS = 4000;  // after 4s with no successful poll, show the "no updates" warning
 
 // Format a next-contact countdown; color amber < 5 min, red < 1 min (P1 — imminent windows draw the eye).
 function countdown(now, t) {
@@ -23,11 +33,15 @@ function countdown(now, t) {
 }
 
 const $ = (id) => document.getElementById(id);
+// Minimal HTML-escape for text interpolated into innerHTML (tutorial steps, etc.).
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const api = {
   async get(p) { const r = await fetch(p); if (!r.ok) throw new Error(await r.text()); return r.json(); },
   async post(p, b) { const r = await fetch(p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) }); if (!r.ok) throw new Error(await r.text()); return r.json(); },
 };
-const iso = (m) => m == null ? "—" : new Date(m / 1000).toISOString().replace(".000Z", "Z");
+// Drop sub-second precision so the displayed clock never shows .xxx ms — sim time advances
+// per-event but the readouts here are operator-grade, not millisecond-precise.
+const iso = (m) => m == null ? "—" : new Date(m / 1000).toISOString().replace(/\.\d{3}Z$/, "Z");
 // Convert sim microseconds to a local time string in the currently selected timezone.
 function localTimeStr(micros) {
   if (micros == null) return "—";
@@ -53,9 +67,12 @@ const ACTIONS_BY_KIND = {
 const PARAM_TEMPLATE = {
   downlink: () => ({ via: DEFAULT_STATION }),
   maneuver: () => ({ dv: [0, 5, 0], via: DEFAULT_STATION }),
-  jam: () => ({ success_prob: 1.0, outcome: "deny" }),
-  engage: () => ({}),
-  cyber: () => ({ access_vector: "ground_modem", outcome: "safe_mode", success_prob: 1.0 }),
+  // Audit 2026-06 Commands §C2 — jam/engage/cyber no longer accept success_prob;
+  // Pₛ derives from physical params + defender state. The form template seeds the
+  // physical inputs the operator IS allowed to choose.
+  jam: () => ({ modulation: "barrage", power_w: 200.0 }),
+  engage: () => ({ interceptor_class: "mrbm_kkv", salvo_n: 1 }),
+  cyber: () => ({ vector: "ground_modem", payload: "seize_c2" }),
   observe: () => ({ intent: "characterize" }),
   // Bus/payload verbs (action "command") — plan to the next command window like any uplink.
   "eps.shed_load": () => ({ via: DEFAULT_STATION }),
@@ -76,20 +93,25 @@ const PARAM_TEMPLATE = {
   "def.frequency_hop": () => ({ via: DEFAULT_STATION, on: true }),
   "def.harden": () => ({ via: DEFAULT_STATION, on: true }),
   "def.set_threat_warning": () => ({ via: DEFAULT_STATION, on: true }),
-  "sigint.task_collection": () => ({ via: DEFAULT_STATION }),
+  "sigint.task_collection": () => ({ via: DEFAULT_STATION, band: "X", intercept_mode: "geolocate", dwell_s: 600 }),
   "wx.schedule_collection": () => ({ via: DEFAULT_STATION }),
   // Stage B verbs
   "cdh.reset_subsystem": () => ({ via: DEFAULT_STATION }),
   "adcs.desaturate": () => ({ via: DEFAULT_STATION }),
-  "comms.point_antenna": () => ({ via: DEFAULT_STATION, mode: "earth" }),
   "isr.set_mode": () => ({ via: DEFAULT_STATION, mode: "wide" }),
-  "pnt.set_integrity": () => ({ via: DEFAULT_STATION, mode: "standard" }),
   "def.maneuver_evade": () => ({ via: DEFAULT_STATION, dv_cost: 5.0 }),
+  // Realism-research-recommended verbs (Phase D §15):
+  "pnt.flex_power": () => ({ via: DEFAULT_STATION, on: true, signal: "M-code" }),
+  "pnt.set_health_flag": () => ({ via: DEFAULT_STATION, healthy: false }),
+  "mw.add_stare_area": () => ({ via: DEFAULT_STATION, center: [0.0, 0.0], revisit_s: 30 }),
+  "satcom.geolocate_interference": () => ({ via: DEFAULT_STATION, dwell_s: 600 }),
+  "wx.request_sector": () => ({ via: DEFAULT_STATION, center: [0.0, 0.0], cadence_s: 60 }),
   // Final catalog-verb fill
   "satcom.set_frequency_plan": () => ({ via: DEFAULT_STATION, plan: "default" }),
+  "satcom.reconfigure_beam": () => ({ via: DEFAULT_STATION, spot: "default" }),
   "sda.task_characterize": () => ({ via: DEFAULT_STATION, target: "TGT-1" }),
-  "sda.cue": () => ({ via: DEFAULT_STATION, target: "TGT-1" }),
-  "sda.downlink": () => ({ via: DEFAULT_STATION }),
+  "sda.task_search": () => ({ via: DEFAULT_STATION }),
+  "sda.task_track": () => ({ via: DEFAULT_STATION, target: "TGT-1" }),
 };
 
 // Verb roles for the §1.2 role selector — drives the Bus/Payload/SDA/All filter on the command menu.
@@ -99,15 +121,17 @@ const VERB_ROLE = {
   "adcs.set_mode": "bus", "adcs.desaturate": "bus",
   "cdh.dump_storage": "bus", "cdh.clear_fault": "bus", "cdh.reset_subsystem": "bus",
   "tcs.set_mode": "bus", "tcs.set_heater": "bus",
-  "comms.enable_isl": "bus", "comms.config_link": "bus", "comms.point_antenna": "bus",
+  "comms.enable_isl": "bus", "comms.config_link": "bus",
   "satcom.mitigate_interference": "payload", "satcom.shift_users": "payload",
+  "satcom.geolocate_interference": "payload", "satcom.reconfigure_beam": "payload",
   "isr.collect_now": "payload", "isr.schedule_collection": "payload", "isr.set_mode": "payload",
   "sigint.task_collection": "payload", "wx.schedule_collection": "payload",
-  "pnt.set_integrity": "payload",
+  "wx.request_sector": "payload", "mw.add_stare_area": "payload",
+  "pnt.flex_power": "payload", "pnt.set_health_flag": "payload",
   "def.patch_cyber": "bus", "def.frequency_hop": "bus",
   "def.harden": "payload", "def.set_threat_warning": "bus", "def.maneuver_evade": "bus",
   "satcom.set_frequency_plan": "payload",
-  "sda.task_characterize": "sda", "sda.cue": "sda", "sda.downlink": "sda",
+  "sda.task_search": "sda", "sda.task_track": "sda", "sda.task_characterize": "sda",
 };
 let ROLE_FILTER = "all";
 
@@ -133,20 +157,136 @@ const REASON_TIPS = {
 };
 
 async function loadVignettes() {
-  const list = await api.get("/api/vignettes");
-  $("vignette").innerHTML = list.map((v) => `<option value="${v.id}">${v.title}</option>`).join("");
+  const sel = $("vignette");
+  try {
+    const list = await api.get("/api/vignettes");
+    if (!list || !list.length) {
+      sel.innerHTML = '<option value="" disabled selected>(no vignettes found — check server)</option>';
+      return;
+    }
+    sel.innerHTML = list.map((v) => `<option value="${esc(v.id)}">${esc(v.title)}</option>`).join("");
+  } catch (e) {
+    sel.innerHTML = '<option value="" disabled selected>(failed to load — is the server running?)</option>';
+    console.error("loadVignettes failed:", e);
+  }
 }
+// Update the small toolbar session summary chip ("vignette · sess-N · ▶" etc.).
+function updateSessionSummary(vignetteLabel, started) {
+  const el = $("session-summary"); if (!el) return;
+  if (!SID) { el.hidden = true; el.textContent = ""; return; }
+  el.hidden = false;
+  const tag = started ? "▶ running" : "loaded";
+  el.textContent = `${vignetteLabel || ""} · ${SID} · ${tag}`.replace(/^ · /, "");
+}
+
 async function loadSession() {
-  SID = (await api.post("/api/sessions", { vignette_id: $("vignette").value, seed: +$("seed").value })).session;
+  stopRealtimeClock();
+  const vselect = $("vignette");
+  const vlabel = vselect && vselect.selectedOptions[0] ? vselect.selectedOptions[0].textContent : vselect.value;
+  SID = (await api.post("/api/sessions", { vignette_id: vselect.value, seed: +$("seed").value })).session;
+  location.hash = SID;   // multiplayer: shareable URL — Blue/Red tabs open this to join
   $("session").textContent = "session " + SID; $("start").disabled = false;
+  updateSessionSummary(vlabel, false);
   const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
   $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
   await loadInjectLibrary();
   await refresh();
 }
-const start = async () => { await api.post(`/api/sessions/${SID}/start`); await refresh(); };
+
+// Multiplayer: try to join the session named in location.hash. Returns true if it joined.
+async function joinSessionFromHash() {
+  const hashSid = (location.hash || "").replace(/^#/, "");
+  if (!hashSid) return false;
+  try {
+    const sessions = await api.get("/api/sessions");
+    const found = sessions.find((s) => s.sid === hashSid);
+    if (!found) return false;
+    SID = hashSid;
+    $("session").textContent = "session " + SID;
+    $("start").disabled = !!found.started;
+    updateSessionSummary(found.title || found.vignette_id, found.started);
+    const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
+    $("inject-sel").innerHTML = injects.map((i) => `<option value="${esc(i.id)}">${esc(i.label)}</option>`).join("") || "<option>(none)</option>";
+    await loadInjectLibrary();
+    return true;
+  } catch (e) { console.warn("join-by-hash failed:", e); return false; }
+}
+
+// Multiplayer: server owns the real-time clock. The client just polls refresh() at ~1.5s so it
+// observes the server's advanced clock + other tabs' actions. No more /step from the client.
+function startRealtimeClock() {
+  if (REALTIME_ON) return;
+  REALTIME_ON = true;
+  const myGen = REALTIME_GEN;
+  const tick = async () => {
+    if (!REALTIME_ON || myGen !== REALTIME_GEN || !SID) return;
+    try {
+      if (REALTIME_ON && myGen === REALTIME_GEN) await refresh();
+    } catch { /* swallow — next tick will re-sync; the staleness watcher will surface persistent failures */ }
+    if (REALTIME_ON && myGen === REALTIME_GEN) setTimeout(tick, 1500);
+  };
+  setTimeout(tick, 1000);
+  startClockTicker();
+}
+function stopRealtimeClock() {
+  REALTIME_ON = false;
+  REALTIME_GEN++;   // any in-flight callback's myGen no longer matches; it abandons its refresh
+  stopClockTicker();
+}
+
+// 1Hz local interpolation of the displayed clock. The poll loop hits the server at ~1.5s; this
+// ticker advances the readout each second from the last server-anchored sim-now + wall elapsed.
+// It also raises the "no updates from server" warning if a refresh hasn't landed for NET_STALE_MS.
+function startClockTicker() {
+  if (CLOCK_TICKER) return;
+  CLOCK_TICKER = setInterval(updateClockDisplay, 1000);
+}
+function stopClockTicker() {
+  if (CLOCK_TICKER) { clearInterval(CLOCK_TICKER); CLOCK_TICKER = null; }
+  const warn = $("net-stale"); if (warn) warn.hidden = true;
+}
+function updateClockDisplay() {
+  if (LAST_REFRESH_SERVER_NOW == null) return;
+  const elapsedMs = Date.now() - LAST_REFRESH_WALL_MS;
+  // Server is paused → display the last anchored sim time; otherwise extrapolate.
+  const displayMicros = SERVER_CLOCK_RUNNING_CACHED
+    ? LAST_REFRESH_SERVER_NOW + elapsedMs * 1000
+    : LAST_REFRESH_SERVER_NOW;
+  const txt = iso(displayMicros);
+  const n1 = $("now"); if (n1) n1.textContent = txt;
+  const n2 = $("now-header"); if (n2) n2.textContent = txt;
+  const nl = $("now-local"); if (nl) nl.textContent = localTimeStr(displayMicros);
+  // Staleness warning: persistent poll failures (network down, server stopped) leave the
+  // operator looking at a frozen clock — surface it so they know the readout is no longer live.
+  const warn = $("net-stale");
+  if (warn) {
+    if (elapsedMs > NET_STALE_MS) {
+      warn.hidden = false;
+      warn.textContent = `⚠ no updates from server (${Math.floor(elapsedMs / 1000)}s)`;
+    } else {
+      warn.hidden = true;
+    }
+  }
+}
+const start = async () => {
+  await api.post(`/api/sessions/${SID}/start`);            // server.start() auto-arms the clock
+  startRealtimeClock();                                     // begin client poll loop
+  await refresh();
+};
+// Manual time-jump (White +1m/+10m/+1h): server re-anchors after advance_to.
 const step = async (dt) => { await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: dt }); await refresh(); };
-const rewind = async () => { await api.post(`/api/sessions/${SID}/rewind`, { t: 0 }); await refresh(); };
+const rewind = async () => {
+  stopRealtimeClock();
+  await api.post(`/api/sessions/${SID}/rewind`, { t: 0 });
+  startRealtimeClock();   // server re-anchors on rewind; resume poll loop
+  await refresh();
+};
+// White-only Start/Pause toggle that drives the server clock.
+async function setServerClock(running) {
+  if (!SID) return;
+  await api.post(`/api/sessions/${SID}/clock`, { running });
+  await refresh();
+}
 async function fireInject() {
   const id = $("inject-sel").value; if (!id || id === "(none)") return;
   await api.post(`/api/sessions/${SID}/inject`, { inject: id }); await refresh();
@@ -222,11 +362,17 @@ function onInjectWhenChange() {
 }
 
 async function renderQueue() {
+  const QUEUE_TTL_US = 5 * 60 * 1_000_000;   // drop completed/cancelled after 5 min sim time
   const orders = await api.get(`/api/sessions/${SID}/orders/${CELL}`).catch(() => []);
-  $("queue").innerHTML = orders.length ? orders.map((o) => {
+  const visible = orders.filter((o) => {
+    if (o.status !== "executed" && o.status !== "cancelled") return true;
+    const t = o.window ? o.window[1] : (o.issued_at || 0);
+    return NOW > 0 && (NOW - t) < QUEUE_TTL_US;
+  });
+  $("queue").innerHTML = visible.length ? visible.map((o) => {
     const w = o.window ? iso(o.window[0]).slice(11, 19) : "—";
     const cancel = o.status === "queued" ? `<button class="icon" data-oid="${o.id}">✕</button>` : "";
-    return `<div class="qrow ${o.status}"><span>${o.actor} ${o.action} ${o.target || ""}</span>` +
+    return `<div class="qrow ${o.status}"><span>${esc(o.actor)} ${esc(o.action)} ${esc(o.target || "")}</span>` +
            `<span class="muted">${o.status} · ${o.delivery_path || ""} · ${w}</span>${cancel}</div>`;
   }).join("") : "<div class='muted'>(empty)</div>";
   document.querySelectorAll("#queue [data-oid]").forEach((b) => b.onclick = async () => {
@@ -236,8 +382,8 @@ async function renderQueue() {
 
 async function drawRibbon(actor) {
   const c = $("ribbon"), x = c.getContext("2d");
-  x.fillStyle = "#0a0f15"; x.fillRect(0, 0, c.width, c.height);
   const wa = await api.get(`/api/sessions/${SID}/windows/${CELL}/${actor}`).catch(() => null);
+  x.fillStyle = "#0a0f15"; x.fillRect(0, 0, c.width, c.height);
   if (!wa || !wa.windows.length) { x.fillStyle = "#7a8aa0"; x.font = "11px monospace"; x.fillText("no passes / not a satellite", 8, 26); return; }
   const span = wa.horizon_s * 1e6, now = wa.now;
   // FW §11.C.16 — Gantt ribbon: three lanes (command / telemetry / sensor_observation),
@@ -261,6 +407,7 @@ function setCell(c) {
   CELL = c;
   document.body.setAttribute("data-cell", c);    // drives --cell-accent across panels/borders/rows
   document.querySelectorAll(".cell").forEach((b) => b.classList.toggle("active", b.dataset.cell === c));
+  document.querySelectorAll(".white-only").forEach((el) => { el.style.display = c === "white" ? "" : "none"; });
   if (window.redrawAll) redrawAll();            // re-tint own-asset markers immediately
   refresh();
 }
@@ -284,12 +431,17 @@ function actionsFor(a) {
               "adcs.set_mode", "adcs.desaturate",
               "cdh.dump_storage", "cdh.clear_fault", "cdh.reset_subsystem",
               "tcs.set_mode", "tcs.set_heater",
-              "comms.enable_isl", "comms.config_link", "comms.point_antenna",
+              "comms.enable_isl", "comms.config_link",
               "def.frequency_hop", "def.harden", "def.set_threat_warning", "def.maneuver_evade");
-    if (a.payload === "satcom") acts.push("satcom.mitigate_interference", "satcom.shift_users", "satcom.set_frequency_plan");
-    if (a.payload === "sda") acts.push("sda.task_characterize", "sda.cue", "sda.downlink");
+    if (a.payload === "satcom") acts.push("satcom.mitigate_interference", "satcom.shift_users",
+                                          "satcom.set_frequency_plan", "satcom.reconfigure_beam",
+                                          "satcom.geolocate_interference");
+    if (a.payload === "sda") acts.push("sda.task_search", "sda.task_track", "sda.task_characterize");
     if (a.payload === "isr_eo" || a.payload === "isr_sar") acts.push("isr.collect_now", "isr.schedule_collection", "isr.set_mode");
     if (a.payload === "sigint") acts.push("sigint.task_collection");
+    if (a.payload === "weather") acts.push("wx.schedule_collection", "wx.request_sector");
+    if (a.payload === "mw") acts.push("mw.add_stare_area");
+    if (a.payload === "pnt") acts.push("pnt.flex_power", "pnt.set_health_flag");
     if (a.payload === "weather") acts.push("wx.schedule_collection");
     if (a.payload === "pnt") acts.push("pnt.set_integrity");
     if ((a.cyber_vulns || []).length) acts.push("def.patch_cyber");      // defender's root-cause fix
@@ -440,36 +592,49 @@ function updateIsrInfo() {
   el.textContent = `swath ${info.swath} · res ${info.res} · power ${info.power} · duty ${info.duty}${penalty}`;
 }
 
-// Multi-display reflow (§3.3 / P-UI-8): pop the 3D globe + 2D map into a second window for
-// projector / dual-screen setups. The detached window reads its initial scene via postMessage and
-// re-fetches on a slow tick so it stays in sync — no engine change, no shared state.
-function detachViewers() {
-  const w = window.open("", "viewers", "width=1100,height=720");
-  if (!w) return;
-  w.document.title = "spacesim viewers";
-  w.document.body.style.cssText = "margin:0;background:#0a0f15;color:#9fb0c0;font-family:monospace";
-  w.document.body.innerHTML = `<canvas id="d-globe" width="560" height="400" style="background:#0a0f15"></canvas>
-    <canvas id="d-map" width="560" height="400" style="background:#0a0f15"></canvas>
-    <div id="d-status" style="position:absolute;top:8px;right:12px;font-size:11px;opacity:.6">detached · syncing…</div>`;
-  const tick = async () => {
-    if (w.closed) return;
-    try {
-      const sc = await api.get(`/api/sessions/${SID}/scene/${CELL === "white" ? "blue" : CELL}`);
-      // Draw a minimal 2D belief layer using the primary's WorldMap projection.
-      const ctx = w.document.getElementById("d-map").getContext("2d");
-      ctx.fillStyle = "#0a0f15"; ctx.fillRect(0, 0, 560, 400);
-      ctx.fillStyle = "#9fb0c0"; ctx.font = "10px monospace";
-      sc.assets.forEach((a) => {
-        const x = (a.lon_deg + 180) / 360 * 560, y = (90 - a.lat_deg) / 180 * 400;
-        ctx.fillStyle = a.owner === "blue" ? "#5a8fe0" : a.owner === "red" ? "#e06a6a" : "#9fb0c0";
-        ctx.fillRect(x - 2, y - 2, 4, 4);
-        ctx.fillStyle = "#9fb0c0"; ctx.fillText(a.id, x + 4, y + 3);
-      });
-      w.document.getElementById("d-status").textContent = `detached · ${iso(sc.now)} · ${sc.assets.length} assets`;
-    } catch { /* primary may have unloaded */ }
-    setTimeout(tick, 2000);
-  };
-  tick();
+// Multi-screen pop-outs (Part E of LAN-multiplayer plan). A pop-out is just another tab that
+// joins the same session (URL hash carries SID, ?cell=... carries the cell, ?layout=... carries
+// the panel list). The opened window loads the full app, polls like any other client, and the
+// layout-cull at boot hides every panel not requested. No postMessage / IPC needed — the server
+// is the single source of truth.
+//
+// Maps each layout token to the IDs of panels to KEEP visible. Multiple tokens can be combined
+// with "+" (e.g. layout=globe+map shows both viewers side-by-side).
+// globe-panel and map-panel are children of viewers-panel, so the outer wrapper must be kept
+// whenever either viewer is requested; individual inner panels are also culled separately.
+const LAYOUT_PANELS = {
+  full:        ["*"],
+  globe:       ["viewers-panel", "globe-panel", "cell-time-panel"],
+  map:         ["viewers-panel", "map-panel",   "cell-time-panel"],
+  "globe+map": ["viewers-panel", "globe-panel", "map-panel", "cell-time-panel"],
+  fleet:       ["fleet-panel", "drill-panel", "cell-time-panel"],
+  order:       ["order-panel", "activity-panel", "cell-time-panel"],
+  aar:         ["aar-panel", "cell-time-panel"],
+};
+
+function popOut(layoutToken) {
+  if (!SID) return;
+  const url = `/?layout=${encodeURIComponent(layoutToken)}&cell=${CELL}#${SID}`;
+  window.open(url, `popout-${layoutToken}-${Date.now()}`, "width=900,height=700");
+}
+
+function applyLayoutCull() {
+  const params = new URLSearchParams(location.search);
+  const layout = params.get("layout") || "full";
+  if (layout === "full") return;
+  const keep = new Set();
+  layout.split("+").forEach((tok) => (LAYOUT_PANELS[tok] || []).forEach((id) => keep.add(id)));
+  if (keep.size === 0) return;
+  // Hide top-level direct children of main that aren't in the keep set.
+  document.querySelectorAll("main > [id]").forEach((el) => {
+    if (!keep.has(el.id)) el.hidden = true;
+  });
+  // Hide individual viewer sub-panels (globe-panel / map-panel inside viewers-panel).
+  document.querySelectorAll("#viewers-panel > [id]").forEach((el) => {
+    if (!keep.has(el.id)) el.hidden = true;
+  });
+  document.body.classList.add("popout");
+  document.body.dataset.layout = layout;
 }
 
 async function issueOrder() {
@@ -486,16 +651,206 @@ async function issueOrder() {
   await refresh();
 }
 
+// -- Declarative shape-class form templates (Audit 2026-06 Commands §M4 Phase C step 2) -------
+// Each entry is a list of fields. Field shape:
+//   { key, type: "enum"|"bool"|"number"|"text"|"latlon", label, default, options?, min?, max?, step?, help? }
+// `via` is auto-prepended as a station picker when the action goes through a window. Verbs not
+// listed here fall back to the JSON escape hatch (#o-params), so coverage is additive.
+const VERB_FORM_SCHEMA = {
+  // -- Bus verbs ------------------------------------------------------------
+  "eps.set_charge_mode": [
+    { key: "mode", type: "enum", label: "Charge mode",
+      options: ["nominal", "fast", "trickle"], default: "fast" },
+  ],
+  "eps.select_bus": [
+    { key: "bus", type: "enum", label: "Power bus",
+      options: ["primary", "secondary"], default: "primary" },
+  ],
+  "adcs.set_mode": [
+    { key: "mode", type: "enum", label: "Attitude mode",
+      options: ["nominal", "slew", "safe"], default: "nominal" },
+  ],
+  "tcs.set_mode": [
+    { key: "mode", type: "enum", label: "Thermal mode",
+      options: ["nominal", "operational", "survival"], default: "operational" },
+  ],
+  "tcs.set_heater": [
+    { key: "on", type: "bool", label: "Heater on", default: true },
+  ],
+  "comms.enable_isl": [
+    { key: "on", type: "bool", label: "ISL on", default: true },
+  ],
+  "comms.config_link": [
+    { key: "data_rate_kbps", type: "number", label: "Data rate (kbps)",
+      default: 2048, min: 64, max: 16384, step: 64 },
+  ],
+  "adcs.point_payload": [
+    { key: "target", type: "text", label: "Slew target id", default: "" },
+  ],
+  "def.frequency_hop": [
+    { key: "on", type: "bool", label: "Hopping on", default: true,
+      help: "Audit §C1: reduces incoming jam Pₛ at the resolver to 40% residual." },
+  ],
+  "def.harden": [
+    { key: "on", type: "bool", label: "Harden payload", default: true,
+      help: "Engages on top of design-time hardening for the safe-mode roll." },
+  ],
+  "def.set_threat_warning": [
+    { key: "on", type: "bool", label: "Threat warning on", default: true },
+  ],
+  "def.maneuver_evade": [
+    { key: "dv_cost", type: "number", label: "Δv cost (m/s)",
+      default: 5.0, min: 1.0, max: 50.0, step: 0.5,
+      help: "Audit §C1: evasion_active halves kinetic Pₖ for fly-out window." },
+  ],
+  "def.patch_cyber": [
+    { key: "vector", type: "enum", label: "Vector to patch",
+      options: ["", "rf", "ground_modem", "ground_segment", "insider", "supply_chain"],
+      default: "ground_modem",
+      help: "Empty patches every vulnerability; named vector closes that single access path." },
+  ],
+  "def.escort_posture": [
+    { key: "target", type: "text", label: "Escort target id", default: "" },
+  ],
+  // -- Payload verbs --------------------------------------------------------
+  "isr.set_mode": [
+    { key: "mode", type: "enum", label: "ISR mode",
+      options: ["nominal", "wide", "narrow", "standby"], default: "wide" },
+  ],
+  "isr.prioritize_downlink": [
+    { key: "priority", type: "enum", label: "Priority",
+      options: ["routine", "high", "urgent"], default: "high" },
+  ],
+  "sigint.task_collection": [
+    { key: "band", type: "enum", label: "Band",
+      options: ["UHF", "L", "S", "X", "Ku", "Ka", "W"], default: "X" },
+    { key: "intercept_mode", type: "enum", label: "Intercept mode",
+      options: ["scan", "track", "geolocate"], default: "geolocate" },
+    { key: "dwell_s", type: "number", label: "Dwell (s)",
+      default: 600, min: 1, max: 7200, step: 30 },
+  ],
+  "sda.task_track": [
+    { key: "target", type: "text", label: "Track target id", default: "" },
+  ],
+  "sda.task_characterize": [
+    { key: "target", type: "text", label: "Characterize target id", default: "" },
+  ],
+  "satcom.set_frequency_plan": [
+    { key: "plan", type: "text", label: "Plan id", default: "default",
+      help: "Optional beam_pattern/polarization/eirp_dbm in advanced JSON." },
+  ],
+  "satcom.reconfigure_beam": [
+    { key: "spot", type: "text", label: "Beam spot id", default: "default" },
+  ],
+  // -- Realism §15 additions (Phase D) ---------------------------------------
+  "pnt.flex_power": [
+    { key: "on", type: "bool", label: "Flex power on", default: true },
+    { key: "signal", type: "enum", label: "Signal",
+      options: ["M-code", "PY"], default: "M-code",
+      help: "IS-GPS-200E flex power — raise mil signal power in jammed regions." },
+  ],
+  "pnt.set_health_flag": [
+    { key: "healthy", type: "bool", label: "SV healthy", default: false,
+      help: "Setting unhealthy auto-broadcasts a NANU consequence event." },
+    { key: "sv_id", type: "text", label: "SV id (optional)", default: "" },
+  ],
+  "mw.add_stare_area": [
+    { key: "center", type: "latlon", label: "AOI center", default: [0.0, 0.0] },
+    { key: "revisit_s", type: "enum", label: "Revisit",
+      options: ["10", "30", "60"], default: "30",
+      help: "SBIRS step-stare cadence (seconds between AOI revisits)." },
+  ],
+  "satcom.geolocate_interference": [
+    { key: "dwell_s", type: "number", label: "Dwell (s)",
+      default: 600, min: 60, max: 3600, step: 60,
+      help: "MAJE-style geoloc; CEP scales as 50 km / (dwell / 600 s)." },
+  ],
+  "wx.request_sector": [
+    { key: "center", type: "latlon", label: "Sector center", default: [0.0, 0.0] },
+    { key: "cadence_s", type: "enum", label: "Cadence",
+      options: ["30", "60"], default: "60",
+      help: "GOES-R MDS request cadence (30 s mesoscale or 60 s default)." },
+  ],
+};
+
+function _esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c])); }
+
+function renderVerbForm(action) {
+  const wrap = $("verb-form"); if (!wrap) return;
+  const schema = VERB_FORM_SCHEMA[action];
+  if (!schema) { wrap.style.display = "none"; wrap.innerHTML = ""; return; }
+  // Build inputs. via is auto-prepended unless the verb is cyber/jam/engage (their own panels).
+  const html = [];
+  html.push(`<label>via <input id="vf-via" type="text" value="${_esc(DEFAULT_STATION)}" style="width:8em"></label>`);
+  for (const f of schema) {
+    const id = `vf-${f.key}`;
+    if (f.type === "enum") {
+      const opts = f.options.map((o) => `<option value="${_esc(o)}"${o === f.default ? " selected" : ""}>${_esc(o)}</option>`).join("");
+      html.push(`<label>${_esc(f.label)} <select id="${id}">${opts}</select></label>`);
+    } else if (f.type === "bool") {
+      html.push(`<label><input id="${id}" type="checkbox"${f.default ? " checked" : ""}> ${_esc(f.label)}</label>`);
+    } else if (f.type === "number") {
+      const min = f.min != null ? ` min="${f.min}"` : "";
+      const max = f.max != null ? ` max="${f.max}"` : "";
+      const step = f.step != null ? ` step="${f.step}"` : "";
+      html.push(`<label>${_esc(f.label)} <input id="${id}" type="number" value="${f.default}"${min}${max}${step}></label>`);
+    } else if (f.type === "text") {
+      html.push(`<label>${_esc(f.label)} <input id="${id}" type="text" value="${_esc(f.default)}" style="width:10em"></label>`);
+    } else if (f.type === "latlon") {
+      const [lat, lon] = f.default;
+      html.push(`<label>${_esc(f.label)} lat <input id="${id}-lat" type="number" step="0.5" value="${lat}" style="width:5em"></label>`);
+      html.push(`<label>lon <input id="${id}-lon" type="number" step="0.5" value="${lon}" style="width:5em"></label>`);
+    }
+    if (f.help) html.push(`<span class="muted" style="font-size:11px;flex-basis:100%">${_esc(f.help)}</span>`);
+  }
+  wrap.innerHTML = html.join("");
+  wrap.style.display = "";
+  // Wire each input to update #o-params and trigger preview on change.
+  wrap.querySelectorAll("input,select").forEach((el) => {
+    el.addEventListener("change", () => updateOParamsFromVerbForm(action));
+    el.addEventListener("input", () => updateOParamsFromVerbForm(action));
+  });
+  updateOParamsFromVerbForm(action);
+}
+
+function updateOParamsFromVerbForm(action) {
+  const schema = VERB_FORM_SCHEMA[action]; if (!schema) return;
+  const params = { via: $("vf-via")?.value || DEFAULT_STATION };
+  for (const f of schema) {
+    const id = `vf-${f.key}`;
+    if (f.type === "enum") {
+      const v = $(id)?.value; if (v) params[f.key] = (f.options.every((o) => /^\d+$/.test(o))) ? parseInt(v, 10) : v;
+    } else if (f.type === "bool") {
+      params[f.key] = !!$(id)?.checked;
+    } else if (f.type === "number") {
+      const v = parseFloat($(id)?.value); if (!Number.isNaN(v)) params[f.key] = v;
+    } else if (f.type === "text") {
+      const v = $(id)?.value; if (v) params[f.key] = v;
+    } else if (f.type === "latlon") {
+      params[f.key] = [parseFloat($(`${id}-lat`)?.value || "0"), parseFloat($(`${id}-lon`)?.value || "0")];
+    }
+  }
+  if ($("o-params")) $("o-params").value = JSON.stringify(params);
+  previewOrder();
+}
+
 function onActorChange() {
   const id = $("o-actor").value, a = ASSETS[id] || {};
   $("actor-info").textContent = a.kind ? `${a.kind} · ${a.owner}${a.payload ? " · " + a.payload : ""}` : "";
+  const prevAction = $("o-action").value;
   $("o-action").innerHTML = actionsFor(a).map((x) => `<option>${x}</option>`).join("");
-  onActionChange();
+  if (prevAction && [...$("o-action").options].some((o) => o.value === prevAction))
+    $("o-action").value = prevAction;
+  onActionChange(prevAction !== $("o-action").value);  // only reset params if action changed
+  populateTargetPicker();   // valid targets depend on the actor's owning side
   if (SID && id) drawRibbon(id);
 }
-function onActionChange() {
+function onActionChange(resetParams = true) {
   const action = $("o-action").value;
-  const tmpl = PARAM_TEMPLATE[action]; if (tmpl) $("o-params").value = JSON.stringify(tmpl());
+  const tmpl = PARAM_TEMPLATE[action]; if (resetParams && tmpl) $("o-params").value = JSON.stringify(tmpl());
+  // Audit 2026-06 Commands §M4 Phase C step 2 — declarative shape-class form.
+  // Verbs in VERB_FORM_SCHEMA show typed inputs; others fall through to JSON.
+  if (resetParams) renderVerbForm(action);
   // Show/hide the maneuver mode assistant.
   const isMnvr = action === "maneuver";
   $("mnvr-panel") && ($("mnvr-panel").style.display = isMnvr ? "" : "none");
@@ -504,6 +859,13 @@ function onActionChange() {
   const isJam = action === "jam";
   $("jam-panel") && ($("jam-panel").style.display = isJam ? "" : "none");
   if (isJam) jamSummaryUpdate();
+  // Audit 2026-06 Commands §M4 — engage and cyber assistant panels (Phase C step 1).
+  const isEng = action === "engage";
+  $("engage-panel") && ($("engage-panel").style.display = isEng ? "" : "none");
+  if (isEng) engageSummaryUpdate();
+  const isCyber = action === "cyber";
+  $("cyber-panel") && ($("cyber-panel").style.display = isCyber ? "" : "none");
+  if (isCyber) cyberSummaryUpdate();
   // Clear any prior jam preview footprint
   if (!isJam && window.JAM_PREVIEW) { JAM_PREVIEW = null; if (typeof drawMap === "function") drawMap(); }
   previewOrder();
@@ -618,12 +980,14 @@ async function computeManeuver() {
 let JAM_PREVIEW = null;
 
 function jamGatherParams() {
+  // Audit 2026-06 Commands §C2 — Pₛ derives from modulation × power × bandwidth coverage
+  // (defender state cuts it further at the resolver). The operator no longer types a
+  // base success probability; the assistant panel surfaces the computed Pₛ as read-only.
   return {
     modulation: $("jam-mod")?.value || "barrage",
     power_w: parseFloat($("jam-power")?.value || "100"),
     bandwidth_hz: parseFloat($("jam-bw")?.value || "1000") * 1000,
     victim_bandwidth_hz: parseFloat($("jam-vbw")?.value || "1000") * 1000,
-    success_prob: parseFloat($("jam-pbase")?.value || "0.9"),
   };
 }
 
@@ -670,6 +1034,66 @@ async function computeJam() {
   previewOrder();
 }
 
+// -- Engage parameter assistant (Audit 2026-06 Commands §M2) ------------------
+
+function engageGatherParams() {
+  return {
+    interceptor_class: $("engage-class")?.value || "mrbm_kkv",
+    salvo_n: parseInt($("engage-salvo")?.value || "1", 10),
+  };
+}
+
+function engageSummaryUpdate() {
+  const mp = engageGatherParams();
+  const el = $("engage-summary");
+  if (el) el.textContent = `${mp.interceptor_class} · salvo ${mp.salvo_n}`;
+  // Pre-fill the order params so the engage form picks up the assistant's choice.
+  const cur = (() => { try { return JSON.parse($("o-params").value || "{}"); } catch { return {}; } })();
+  $("o-params").value = JSON.stringify({ ...cur, ...mp });
+  previewOrder();
+}
+
+async function computeEngage() {
+  if (!SID) { $("engage-result").textContent = "No active session."; return; }
+  const actor = $("o-actor").value;
+  const target = $("o-target").value;
+  if (!actor || !target) { $("engage-result").textContent = "Select actor + target."; return; }
+  const cell = CELL === "white" ? (ASSETS[actor]?.owner || "red") : CELL;
+  const mp = engageGatherParams();
+  let res;
+  try {
+    res = await api.post(`/api/sessions/${SID}/engage/compute`,
+                         { cell, actor, target, params: mp });
+  } catch { $("engage-result").textContent = "Server error"; return; }
+  if (res.error) {
+    $("engage-result").innerHTML = `<span style="color:var(--red)">${esc(res.error)}</span>`;
+    return;
+  }
+  const pk = res.pk_estimate ?? res.success_prob ?? "—";
+  const reach = res.in_reach === false ? " · OUT OF REACH" : "";
+  $("engage-result").innerHTML =
+    `<span class="ok">P<sub>k</sub> ≈ ${pk}${reach} · target alt ${res.target_alt_km ?? "—"} km</span>`;
+}
+
+// -- Cyber parameter assistant (Audit 2026-06 Commands §C2) -------------------
+
+function cyberGatherParams() {
+  return {
+    vector: $("cyber-vector")?.value || "ground_modem",
+    payload: $("cyber-payload")?.value || "seize_c2",
+    dwell_s: parseFloat($("cyber-dwell")?.value || "0"),
+  };
+}
+
+function cyberSummaryUpdate() {
+  const mp = cyberGatherParams();
+  const el = $("cyber-summary");
+  if (el) el.textContent = `${mp.vector} · ${mp.payload} · dwell ${mp.dwell_s}s`;
+  const cur = (() => { try { return JSON.parse($("o-params").value || "{}"); } catch { return {}; } })();
+  $("o-params").value = JSON.stringify({ ...cur, ...mp });
+  previewOrder();
+}
+
 let REFRESH_SEQ = 0;
 async function refresh() {
   if (!SID) return;
@@ -695,9 +1119,22 @@ async function refresh() {
   }
   if (stale()) return;
   NOW = now;
-  $("now").textContent = iso(now);
-  const localEl = document.getElementById("now-local");
-  if (localEl) localEl.textContent = localTimeStr(now);
+  // Anchor the 1Hz interpolated ticker on this fresh sample; updateClockDisplay() paints the
+  // readouts each second (and re-paints immediately here via the call below) — no need to set
+  // textContent twice with identical strings.
+  LAST_REFRESH_SERVER_NOW = now;
+  LAST_REFRESH_WALL_MS = Date.now();
+  // Multiplayer: cache the server clock state for the interpolated ticker AND keep the white-only
+  // Pause/Resume button in sync. Cheap GET every refresh() — the server returns {running, rate,
+  // now} from cached anchor fields.
+  if (SID) {
+    api.get(`/api/sessions/${SID}/clock`).then((s) => {
+      SERVER_CLOCK_RUNNING_CACHED = !!s.running;
+      const clockBtn = $("clock-toggle");
+      if (clockBtn) clockBtn.textContent = s.running ? "⏸ Pause" : "▶ Resume";
+    }).catch(() => {});
+  }
+  updateClockDisplay();
   EFFECT_WINDOWS = ewin;
   ASSETS = {}; assets.forEach((a) => ASSETS[a.id] = {
     kind: a.kind, owner: a.owner,
@@ -715,8 +1152,52 @@ async function refresh() {
   if (stale()) return;
   const alarmCount = {}; ALARMS.forEach((a) => { if (a.asset && a.asset !== "—") alarmCount[a.asset] = (alarmCount[a.asset] || 0) + 1; });
   renderFleet(assets, alarmCount, now);
-  $("tracks").querySelector("tbody").innerHTML = tracks.map((t) =>
-    `<tr><td>${t.object}</td><td>${(+t.confidence).toFixed(2)}</td><td>${t.characterized}</td><td>${t.classification}</td></tr>`).join("");
+  const tbody = $("tracks").querySelector("tbody");
+  tbody.innerHTML = tracks.map((t) => {
+    const s = t.state_estimate;
+    const kep = s && s.source === "kepler" && s.a_m != null;
+    // Period: T = 2π√(a³/μ), μ_earth = 3.986e14 m³/s²
+    const period_min = kep ? (2 * Math.PI * Math.sqrt(Math.pow(s.a_m, 3) / 3.986e14) / 60) : null;
+    const coeHint = kep ? `<span class="coe-toggle-hint">▸</span>` : "—";
+    const obsTime = t.last_observation ? iso(t.last_observation).replace("T", " ").replace(/\.\d+Z/, "Z") : "—";
+    const coeBlock = kep ? `
+      <tr class="track-coe-row">
+        <td colspan="5">
+          <div class="track-coe">
+            <span class="track-coe-label">Observed</span><span>${obsTime}</span>
+            <span class="track-coe-label">a</span><span>${(s.a_m / 1000).toFixed(1)} km</span>
+            <span class="track-coe-label">e</span><span>${(+s.e).toFixed(4)}</span>
+            <span class="track-coe-label">i</span><span>${(+s.i_deg).toFixed(2)}°</span>
+            <span class="track-coe-label">Ω</span><span>${(+s.raan_deg).toFixed(2)}°</span>
+            <span class="track-coe-label">ω</span><span>${(+s.argp_deg).toFixed(2)}°</span>
+            <span class="track-coe-label">ν</span><span>${(+s.ta_deg).toFixed(2)}°</span>
+            <span class="track-coe-label">T</span><span>${period_min.toFixed(1)} min</span>
+            <span class="track-coe-label">Regime</span><span>${s.regime || "—"}</span>
+          </div>
+        </td>
+      </tr>` : "";
+    return `<tr class="track-main${kep ? " track-expandable" : ""}" title="${kep ? "Click to show orbital elements at observation time" : ""}">
+      <td>${esc(t.object)}</td><td>${(+t.confidence).toFixed(2)}</td><td>${t.characterized}</td><td>${esc(t.classification)}</td><td>${coeHint}</td>
+    </tr>${coeBlock}`;
+  }).join("");
+  // Toggle COE sub-rows on click.
+  tbody.querySelectorAll("tr.track-expandable").forEach((row) => {
+    row.addEventListener("click", () => {
+      const next = row.nextElementSibling;
+      if (next && next.classList.contains("track-coe-row")) {
+        const open = next.style.display !== "none" && next.style.display !== "";
+        next.style.display = open ? "none" : "";
+        row.querySelector(".coe-toggle-hint").textContent = open ? "▸" : "▾";
+      }
+    });
+  });
+  // Collapse all COE rows on first render so the table stays compact.
+  tbody.querySelectorAll("tr.track-coe-row").forEach((r) => { r.style.display = "none"; });
+  // Target autocomplete: own assets + every known-track object id (with classification hint).
+  // This is what Red/Blue can legally target — the fog-of-war boundary already filtered the
+  // input data, so we just surface the ids the cell can see. Free-text entry still works for
+  // White's god-view picks or for typing an id that hasn't been characterised yet.
+  populateTargetOptions(assets, tracks);
   // FUTURE-WORK §4 Δv-economy panel: assets with non-zero Δv reserves shown with years-of-life
   // estimate at ~15 m/s/yr (typical LEO station-keeping budget). Helps the operator weigh
   // maneuver decisions against lifetime cost.
@@ -725,23 +1206,29 @@ async function refresh() {
       const dvms = +a.resources.delta_v_ms;
       const years = (dvms / 15).toFixed(1);
       const soc = a.bus_state ? Math.round(a.bus_state.power.battery_soc * 100) + "%" : "—";
-      const tip = `<span data-asset-ref="${a.id}">${a.id}</span>`;
+      const aid = esc(a.id);
+      const tip = `<span data-asset-ref="${aid}">${aid}</span>`;
       const lifeClass = dvms < 15 ? "red" : (dvms < 45 ? "yellow" : "green");
       return `<tr><td>${tip}</td><td>${dvms.toFixed(1)}</td><td>${soc}</td><td class="${lifeClass}">${years}</td></tr>`;
     });
     dv.querySelector("tbody").innerHTML = rows.length ? rows.join("")
       : "<tr><td colspan=4 class='muted'>(no maneuver-capable assets)</td></tr>";
   }
-  $("effects").innerHTML = effects.map((e) => `<li>${e.target}: ${e.symptom} ${e.attributed ? "(attributed)" : "(source unknown)"}</li>`).join("");
-  $("messages").innerHTML = messages.map((m) => `<li>${m.text}</li>`).join("");
-  $("objectives").textContent = JSON.stringify(objectives, null, 2);
+  $("effects").innerHTML = effects.map((e) => `<li>${esc(e.target)}: ${esc(e.symptom)} ${e.attributed ? "(attributed)" : "(source unknown)"}</li>`).join("");
+  $("messages").innerHTML = messages.map((m) => `<li>${esc(m.text)}</li>`).join("");
+  renderObjectives(objectives);
+  renderBrief();
 
   // Command menu: populate actor list (own assets + sensors that can act; network sensors excluded).
   const actorIds = assets.filter((a) => ACTIONS_BY_KIND[a.kind] && !a.network).map((a) => a.id);
   const prev = $("o-actor").value;
-  $("o-actor").innerHTML = actorIds.map((i) => `<option>${i}</option>`).join("");
-  if (actorIds.includes(prev)) $("o-actor").value = prev;
-  onActorChange();
+  const prevList = [...$("o-actor").options].map((o) => o.value).join(",");
+  const newList = actorIds.join(",");
+  if (prevList !== newList) {
+    $("o-actor").innerHTML = actorIds.map((i) => `<option>${i}</option>`).join("");
+    if (actorIds.includes(prev)) $("o-actor").value = prev;
+    onActorChange();
+  }
   // Tasking rail sensor picker (P-UI-6): own organic sensors + auto (network sensors are SSN-only).
   const tsel = $("task-sensor");
   if (tsel) {
@@ -756,7 +1243,12 @@ async function refresh() {
   if (stale()) return;
   SCENE = scene;
   window.Globe && Globe.render(SCENE);
-  if (DRILL.asset) openDrill(DRILL.asset);
+  if (DRILL.asset) {
+    const lt = ASSETS[DRILL.asset]?.last_tel || 0;
+    if (lt !== DRILL_LAST_TEL) openDrill(DRILL.asset);  // new telemetry arrived — full rebuild
+    else updateDrillTitle();                             // pass-gated: just age the stale badge
+    renderOrbitalElements(DRILL.asset);                  // COEs refresh every poll (post-maneuver visible within ~1.5s)
+  }
   ["g-focus", "m-focus"].forEach((id) => {
     const sel = $(id); if (!sel) return; const cur = sel.value;
     const ids = SCENE.assets.map((a) => a.id).concat(SCENE.tracks.map((t) => t.object));
@@ -806,7 +1298,8 @@ function drawActivityGantt() {
   ctx.fillStyle = "#070b10"; ctx.fillRect(0, 0, W, H);
   ACTIVITY_HITBOX.length = 0;
 
-  const { now, t_start, t_end, cells, activities } = ACTIVITY;
+  const { now, t_start, t_end, cells } = ACTIVITY;
+  const activities = ACTIVITY.activities.filter((a) => a.status !== "cancelled");
   const span = Math.max(1, t_end - t_start);
   const LEFT = 60, RIGHT = 12, TOP = 22, BOT = 18;
   const X = (t) => LEFT + (t - t_start) / span * (W - LEFT - RIGHT);
@@ -882,9 +1375,11 @@ function drawActivityBar(ctx, x, y, w, h, a, cell) {
     default:
       ctx.fillStyle = col.fill; ctx.fillRect(x, y, w, h);
   }
-  // Action label inside the bar if it fits
-  if (w > 60) {
-    ctx.fillStyle = "#0a0f15"; ctx.font = "10px monospace";
+  // Label: dark text on filled bars (executed/active/default); bright on outlined future bars.
+  if (w > 40) {
+    const unfilled = a.status === "queued" || a.status === "scheduled";
+    ctx.fillStyle = unfilled ? "#d6e8ff" : "#0a0f15";
+    ctx.font = "10px monospace";
     ctx.fillText(a.action.slice(0, Math.floor(w / 7)), x + 4, y + 9);
   }
 }
@@ -912,6 +1407,46 @@ addEventListener("DOMContentLoaded", () => {
 
 // FW §11.C.14 — conjunction screening panel.  Each entry shows the two objects,
 // range/time-to-CA, and an "Evade" button that fires the prop.collision_avoid verb.
+// Pretty-print an objective id: "deliver_isr" → "Deliver ISR", "keep_custody" → "Keep custody".
+// Treats short trailing tokens (≤4 chars) as acronyms (ISR, EW, SDA, GS) and uppercases them.
+function prettyObjectiveId(id) {
+  const parts = String(id || "").split("_").filter(Boolean);
+  if (!parts.length) return "(unnamed)";
+  return parts
+    .map((p, i) => (p.length <= 4 && i > 0 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1)))
+    .join(" ");
+}
+
+// Render the per-side objectives status as a colored list rather than raw JSON. Two shapes:
+//   White (/objectives endpoint): nested {blue: {id: bool}, red: {id: bool}}
+//   Blue/Red (CellView.objectives): flat per-cell {id: bool} — fog-filtered by the server.
+// Met rows are green-accented; unmet rows are dim+red.
+function renderObjectives(objectives) {
+  const el = $("objectives");
+  if (!el) return;
+  const row = (id, met) => {
+    const cls = met ? "met" : "unmet";
+    const mark = met ? "✓" : "✗";
+    return `<div class="obj-row ${cls}"><span class="obj-mark">${mark}</span><span class="obj-id">${prettyObjectiveId(id)}</span></div>`;
+  };
+  const entries = Object.entries(objectives || {});
+  if (entries.length === 0) { el.innerHTML = "<div class='obj-empty'>(no objectives)</div>"; return; }
+  // Heuristic: if every value is a plain object (not bool), this is the nested {side: {...}} shape.
+  const nested = entries.every(([, v]) => v && typeof v === "object" && !Array.isArray(v));
+  const parts = [];
+  if (nested) {
+    for (const [side, sideObj] of entries) {
+      parts.push(`<div class="obj-side">${side}</div>`);
+      const sideEntries = Object.entries(sideObj || {});
+      if (!sideEntries.length) parts.push("<div class='obj-empty'>(no objectives)</div>");
+      else for (const [id, met] of sideEntries) parts.push(row(id, met));
+    }
+  } else {
+    for (const [id, met] of entries) parts.push(row(id, met));
+  }
+  el.innerHTML = parts.join("");
+}
+
 async function renderConjunctions() {
   const el = $("conjunction-list"); if (!el) return;
   const cell = CELL === "white" ? "white" : CELL;
@@ -971,6 +1506,88 @@ function fleetPasses(a, soh, bus, alarms) {     // does asset pass the active fl
   return true;
 }
 
+// Build the shared <datalist> backing the Target inputs in the compose form and the tasking
+// rail. Lists own assets/sensors and every track the cell has on objects (the only ids the
+// fog-of-war boundary actually exposes). The label after the id surfaces classification +
+// characterisation so Red/Blue can tell hostile vs neutral at a glance.
+// Latest target data cached so the actor-aware target dropdown can rebuild when the
+// operator changes actor/action without another network round-trip.
+let TARGET_ASSETS = [];
+let TARGET_TRACKS = [];
+
+function populateTargetOptions(assets, tracks) {
+  TARGET_ASSETS = assets || [];
+  TARGET_TRACKS = tracks || [];
+  const dl = $("target-options");
+  if (dl) {
+    const opts = [];
+    (assets || []).forEach((a) => {
+      if (!a.id) return;
+      const tag = a.owner && a.owner !== CELL ? a.owner : "own";
+      opts.push(`<option value="${esc(a.id)}">${esc(tag)} · ${esc(a.kind || "")}</option>`);
+    });
+    (tracks || []).forEach((t) => {
+      if (!t.object) return;
+      const cls = t.classification || "unknown";
+      const ch = t.characterized ? "characterised" : "uncertain";
+      opts.push(`<option value="${esc(t.object)}">${esc(cls)} · ${esc(ch)}</option>`);
+    });
+    dl.innerHTML = opts.join("");
+  }
+  populateTargetPicker();
+}
+
+// Build the "valid targets in the other cell" <select>. Fog-of-war correct:
+//  - Blue/Red see their known_tracks (the only enemy objects they've identified) plus any
+//    non-own asset their view exposes.
+//  - White (god view) sees every asset; we list those NOT owned by the selected actor's owner,
+//    grouped by owner — so a White operator driving a Blue asset is offered Red targets, etc.
+// Ground stations / sensors are never offered as offensive targets.
+function populateTargetPicker() {
+  const sel = $("o-target-pick");
+  if (!sel) return;
+  const actor = $("o-actor") ? $("o-actor").value : "";
+  const actorOwner = (ASSETS[actor] && ASSETS[actor].owner) || (CELL !== "white" ? CELL : null);
+  const TARGETABLE = new Set(["satellite", "space_based", "interceptor", "directed_energy"]);
+  const seen = new Set();
+  const byOwner = {};   // owner -> [{id, label}]
+  const add = (id, owner, label) => {
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+    const grp = owner || "unknown";
+    (byOwner[grp] = byOwner[grp] || []).push({ id, label });
+  };
+  // Known enemy tracks (these are objects the cell has custody/belief on — always valid targets).
+  (TARGET_TRACKS || []).forEach((t) => {
+    if (!t.object) return;
+    const cls = t.classification || "unknown";
+    const ch = t.characterized ? "char" : "uncertain";
+    add(t.object, t.owner || "track", `${t.object} — ${cls} · ${ch}`);
+  });
+  // Assets the view exposes that are not the actor's own side and are physically targetable.
+  (TARGET_ASSETS || []).forEach((a) => {
+    if (!a.id || !TARGETABLE.has(a.kind)) return;
+    if (actorOwner && a.owner === actorOwner) return;   // not your own side
+    add(a.id, a.owner, `${a.id} — ${a.owner || "?"} · ${a.kind}`);
+  });
+  const prev = sel.value;
+  const groups = Object.keys(byOwner).sort();
+  let html = `<option value="">(pick a known target…)</option>`;
+  if (!groups.length) {
+    html += `<option value="" disabled>no known enemy targets yet — build custody first</option>`;
+  } else if (groups.length === 1) {
+    html += byOwner[groups[0]].map((o) => `<option value="${esc(o.id)}">${esc(o.label)}</option>`).join("");
+  } else {
+    html += groups.map((g) =>
+      `<optgroup label="${esc(g)} targets">` +
+      byOwner[g].map((o) => `<option value="${esc(o.id)}">${esc(o.label)}</option>`).join("") +
+      `</optgroup>`).join("");
+  }
+  sel.innerHTML = html;
+  // Preserve the operator's current pick if it's still a valid option.
+  if (prev && seen.has(prev)) sel.value = prev;
+}
+
 function renderFleet(assets, alarmCount, now) {
   const rows = assets.map((a) => {
     const bus = a.bus_state ? a.bus_state.mode : "—", bc = bus === "safe_mode" ? "red" : "";
@@ -1005,11 +1622,17 @@ async function saveSession() {
 }
 async function loadSaveFile(file) {
   const state = JSON.parse(await file.text());
+  stopRealtimeClock();
   SID = (await api.post("/api/sessions/load_save", state)).session;
+  location.hash = SID;   // multiplayer: resumed session is also shareable
   $("session").textContent = "session " + SID; $("start").disabled = false;
+  updateSessionSummary(state.vignette_id || "resumed", state.started);
   const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
-  $("inject-sel").innerHTML = injects.map((i) => `<option value="${i.id}">${i.label}</option>`).join("") || "<option>(none)</option>";
+  $("inject-sel").innerHTML = injects.map((i) => `<option value="${esc(i.id)}">${esc(i.label)}</option>`).join("") || "<option>(none)</option>";
   await loadInjectLibrary();
+  // Resumed sessions intentionally load with the server clock PAUSED so they don't fast-forward
+  // the wall-time gap since the save. White clicks Start (or the Resume button) to re-arm.
+  if (state.started) startRealtimeClock();
   await refresh();
 }
 
@@ -1032,14 +1655,15 @@ async function aarAt(seq) {
 function drawMap() {
   if (!SCENE) return;
   const c = $("map"), x = c.getContext("2d");
-  x.fillStyle = "#070b10"; x.fillRect(0, 0, c.width, c.height);
+  // Brighter ocean fill so coastlines + grid have something to register against on dark monitors.
+  x.fillStyle = "#0e2740"; x.fillRect(0, 0, c.width, c.height);
   const PX = (lon) => c.width / 2 + (lon - mapCam.lon) * (c.width / 360) * mapCam.zoom;
   const PY = (lat) => c.height / 2 - (lat - mapCam.lat) * (c.height / 180) * mapCam.zoom;
   if (mapCam.map && window.WorldMap && WorldMap.ready()) {
-    WorldMap.draw(x, (lon, lat) => ({ x: PX(lon), y: PY(lat), front: true }), { maxJump: c.width * 0.5 });
+    WorldMap.draw(x, (lon, lat) => ({ x: PX(lon), y: PY(lat), front: true }), { maxJump: c.width * 0.5, coastWidth: 1.3 });
   }
   if (mapCam.grid) {
-    x.strokeStyle = "#1b2531";
+    x.strokeStyle = "rgba(140,180,215,0.45)"; x.lineWidth = 1;
     for (let lon = -180; lon <= 180; lon += 30) { x.beginPath(); x.moveTo(PX(lon), 0); x.lineTo(PX(lon), c.height); x.stroke(); }
     for (let lat = -90; lat <= 90; lat += 30) { x.beginPath(); x.moveTo(0, PY(lat)); x.lineTo(c.width, PY(lat)); x.stroke(); }
   }
@@ -1052,7 +1676,7 @@ function drawMap() {
   // User-added FW #2 — ground tracks: dim polyline of the sub-satellite path for the next orbit.
   const accent = window.cellAccent ? cellAccent() : "#6fcf6f";
   if (mapCam.tracks !== false) {
-    x.strokeStyle = "rgba(159,176,192,0.35)"; x.lineWidth = 1;
+    x.strokeStyle = "rgba(210,225,245,0.65)"; x.lineWidth = 1.2;
     SCENE.assets.forEach((a) => {
       if (!a.on_orbit || !a.track || a.track.length < 2) return;
       x.beginPath();
@@ -1073,14 +1697,15 @@ function drawMap() {
     const px = PX(a.lon_deg), py = PY(a.lat_deg);
     if (window.Symbology) Symbology.draw(x, px, py, a, { r: 5 });
     else { if (a.on_orbit) { x.beginPath(); x.moveTo(px, py - 5); x.lineTo(px - 5, py + 4); x.lineTo(px + 5, py + 4); x.closePath(); x.fill(); } else x.fillRect(px - 4, py - 4, 8, 8); }
-    x.fillStyle = "#9fb0c0"; x.font = "11px monospace"; x.fillText(a.id, px + 7, py + 3); x.fillStyle = accent;
+    x.fillStyle = "#e6edf7"; x.font = "11px monospace"; x.fillText(a.id, px + 7, py + 3); x.fillStyle = accent;
   });
   if (mapCam.tracks) SCENE.tracks.forEach((t) => {
     const px = PX(t.lon_deg), py = PY(t.lat_deg), r = Math.max(4, Math.min(40, t.uncertainty_km / 18));
-    x.strokeStyle = t.characterized ? "#e0c24a" : "#e06a6a";
+    x.strokeStyle = t.characterized ? "#ffd35a" : "#ff8585";
+    x.lineWidth = 1.5;
     x.beginPath(); x.arc(px, py, r, 0, 2 * Math.PI); x.stroke();
-    x.fillStyle = x.strokeStyle; x.beginPath(); x.arc(px, py, 2, 0, 2 * Math.PI); x.fill();
-    x.fillStyle = "#9fb0c0"; x.fillText(`${t.object} ±${t.uncertainty_km}km`, px + 6, py - 6);
+    x.fillStyle = x.strokeStyle; x.beginPath(); x.arc(px, py, 2.5, 0, 2 * Math.PI); x.fill();
+    x.fillStyle = "#e6edf7"; x.fillText(`${t.object} ±${t.uncertainty_km}km`, px + 6, py - 6);
   });
   // Jam preview footprint (read-only overlay, cleared when action != jam)
   if (window.JAM_PREVIEW && JAM_PREVIEW.polygon && JAM_PREVIEW.polygon.length > 2) {
@@ -1160,20 +1785,59 @@ function initMapControls() {
 
 // ---- subsystem drill-down (telemetry graphs + log; diagnose, don't get told) ----
 let DRILL_DB = {};
-async function openDrill(assetId) {
-  DRILL.asset = assetId;
-  let tele;
-  try { tele = await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${assetId}`); }
-  catch { $("drill-title").textContent = `${assetId} — no telemetry (fog / not your asset)`; $("drill-params").innerHTML = ""; return; }
-  DRILL_DB = {};
-  Object.values(tele.subsystems).forEach((arr) => arr.forEach((p) => (DRILL_DB[p.id] = p)));
-  // Pass-gated telemetry semantics (§5.4): show "as-of HH:MM:SS" / stale-since when out of contact.
-  const lt = ASSETS[assetId]?.last_tel || 0;
+let DRILL_LAST_TEL = 0;  // last_tel timestamp at the time of the last full drill render
+
+function _renderDrillTitle(assetId, lt, busMode) {
   const ageS = lt > 0 ? Math.max(0, Math.round((NOW - lt) / 1e6)) : null;
   const staleTag = (ageS != null && ageS > 60)
     ? ` · <span class="muted">stale since ${iso(lt)} (${Math.floor(ageS / 60)}m)</span>`
     : (ageS != null ? ` · <span class="muted">as-of ${iso(lt)}</span>` : "");
-  $("drill-title").innerHTML = `${assetId} — bus ${tele.bus_mode || "—"}${staleTag}`;
+  $("drill-title").innerHTML = `${assetId} — bus ${busMode}${staleTag}`;
+}
+
+function updateDrillTitle() {
+  if (!DRILL.asset) return;
+  const lt = ASSETS[DRILL.asset]?.last_tel || 0;
+  const titleEl = $("drill-title");
+  _renderDrillTitle(DRILL.asset, lt, titleEl.dataset.busMode || "—");
+}
+
+// Classical orbital elements for the selected asset, sourced from the scene
+// (no extra fetch). Called on drill open AND on every poll refresh so the
+// block reflects post-maneuver elements within ~1.5s of execution.
+function renderOrbitalElements(assetId) {
+  const host = $("drill-orbit");
+  if (!host) return;
+  const ra = SCENE && SCENE.assets && SCENE.assets.find((a) => a.id === assetId);
+  if (!ra || !ra.on_orbit || ra.a_km == null) { host.innerHTML = ""; return; }
+  const fmt = (v, d) => (v == null ? "—" : Number(v).toFixed(d));
+  host.innerHTML =
+    `<h3>Orbital elements</h3>` +
+    `<div class="coes">` +
+      `<span><b>a</b> ${fmt(ra.a_km, 1)} km</span>` +
+      `<span><b>period</b> ${fmt(ra.period_min, 1)} min</span>` +
+      `<span><b>e</b> ${fmt(ra.e, 4)}</span>` +
+      `<span><b>i</b> ${fmt(ra.i_deg, 2)}°</span>` +
+      `<span><b>Ω</b> ${fmt(ra.raan_deg, 2)}°</span>` +
+      `<span><b>ω</b> ${fmt(ra.argp_deg, 2)}°</span>` +
+      `<span><b>ν</b> ${fmt(ra.ta_deg, 2)}°</span>` +
+      `<span><b>alt</b> ${fmt(ra.alt_m / 1000, 1)} km</span>` +
+      (ra.regime ? `<span class="muted">${ra.regime}</span>` : "") +
+    `</div>`;
+}
+
+async function openDrill(assetId) {
+  DRILL.asset = assetId;
+  let tele;
+  try { tele = await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${assetId}`); }
+  catch { $("drill-title").textContent = `${assetId} — no telemetry (fog / not your asset)`; $("drill-params").innerHTML = ""; renderOrbitalElements(assetId); return; }
+  DRILL_DB = {};
+  Object.values(tele.subsystems).forEach((arr) => arr.forEach((p) => (DRILL_DB[p.id] = p)));
+  const lt = ASSETS[assetId]?.last_tel || 0;
+  DRILL_LAST_TEL = lt;
+  const titleEl = $("drill-title");
+  titleEl.dataset.busMode = tele.bus_mode || "—";
+  _renderDrillTitle(assetId, lt, tele.bus_mode || "—");
   // Populate the overlay-param selector for this asset's params (Compare-to-nominal toggled separately).
   const overlaySel = $("drill-overlay");
   if (overlaySel) {
@@ -1199,10 +1863,12 @@ async function openDrill(assetId) {
     const par = Object.values(tele.subsystems).flat().find((p) => p.id === pid);
     if (par) window.maybePulse && maybePulse(chip, assetId + ":" + pid, par.value);
   });
-  // Tiny inline sparklines (§5.1) — one short series per param chip; ignore failures silently.
+  // Tiny inline sparklines (§5.1) — one series per param chip; ignore failures silently.
+  // Same n (120) and same default window as the large drill-down graph so the two are the
+  // same curve at the same resolution — only the size differs (audit Jun 2026 §graphs).
   document.querySelectorAll("#drill-params .spark").forEach(async (cv) => {
     try {
-      const s = await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${assetId}/${cv.dataset.param}?n=30`);
+      const s = await api.get(`/api/sessions/${SID}/telemetry/${CELL}/${assetId}/${cv.dataset.param}?n=120`);
       window.Graph && Graph.spark(cv, s, DRILL_DB[cv.dataset.param]);
     } catch { /* offline param — silent */ }
   });
@@ -1210,6 +1876,7 @@ async function openDrill(assetId) {
   document.querySelectorAll("#drill-params .pchip").forEach((c) => c.onclick = () => drawParam(c.dataset.param));
   document.querySelectorAll("#drill-params .vbtn").forEach((b) => b.onclick = () => loadVerb(b.dataset.actor, b.dataset.verb));
   renderRecovery(assetId, tele.bus_mode);
+  renderOrbitalElements(assetId);
   drawParam(DRILL.param && DRILL_DB[DRILL.param] ? DRILL.param : "rx_power_dbm");
 }
 
@@ -1258,13 +1925,15 @@ const VERB_SUBSYSTEM = {
   "adcs.set_mode": "attitude", "adcs.desaturate": "attitude",
   "tcs.set_mode": "thermal", "tcs.set_heater": "thermal",
   "cdh.dump_storage": "cdh", "cdh.clear_fault": "cdh", "cdh.reset_subsystem": "cdh", "def.patch_cyber": "cdh",
-  "comms.enable_isl": "comms", "comms.config_link": "comms", "comms.point_antenna": "comms", "def.frequency_hop": "comms",
+  "comms.enable_isl": "comms", "comms.config_link": "comms", "def.frequency_hop": "comms",
   "satcom.mitigate_interference": "payload", "satcom.shift_users": "payload",
-  "satcom.set_frequency_plan": "payload",
+  "satcom.set_frequency_plan": "payload", "satcom.reconfigure_beam": "payload",
+  "satcom.geolocate_interference": "payload",
   "isr.collect_now": "payload", "isr.schedule_collection": "payload", "isr.set_mode": "payload",
-  "sigint.task_collection": "payload", "wx.schedule_collection": "payload", "def.harden": "payload",
-  "pnt.set_integrity": "payload",
-  "sda.task_characterize": "payload", "sda.cue": "payload", "sda.downlink": "payload",
+  "sigint.task_collection": "payload", "wx.schedule_collection": "payload",
+  "wx.request_sector": "payload", "mw.add_stare_area": "payload", "def.harden": "payload",
+  "pnt.flex_power": "payload", "pnt.set_health_flag": "payload",
+  "sda.task_search": "payload", "sda.task_track": "payload", "sda.task_characterize": "payload",
   "def.maneuver_evade": "propulsion",
 };
 function verbsForSubsystem(a, sub) {
@@ -1302,6 +1971,13 @@ window.addEventListener("DOMContentLoaded", () => {
   initMapControls();
   $("assets").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-asset]"); if (tr) openDrill(tr.dataset.asset); });
   $("load").onclick = loadSession; $("start").onclick = start; $("rewind").onclick = rewind;
+  // Multiplayer: Pause/Resume drives the server-authoritative clock for ALL connected tabs.
+  const clockBtn = $("clock-toggle");
+  if (clockBtn) clockBtn.onclick = async () => {
+    if (!SID) return;
+    const st = await api.get(`/api/sessions/${SID}/clock`);
+    await setServerClock(!st.running);
+  };
   $("fire-inject").onclick = fireInject; $("issue").onclick = issueOrder;
   // FW §11.D.19 — inject builder
   if ($("inject-lib-load")) $("inject-lib-load").onclick = loadInjectTemplate;
@@ -1314,10 +1990,15 @@ window.addEventListener("DOMContentLoaded", () => {
   $("aar-slider").oninput = (e) => aarAt(e.target.value);
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
   $("o-target").oninput = previewOrder; $("o-params").oninput = previewOrder;
+  // Picking a valid target from the dropdown fills the free-text id and previews.
+  $("o-target-pick").onchange = (e) => {
+    if (e.target.value) { $("o-target").value = e.target.value; previewOrder(); }
+  };
   $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("drill-overlay").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("present").onchange = (e) => document.body.classList.toggle("present", e.target.checked);
-  $("detach").onclick = detachViewers;
+  // Pop-out submenu: each button opens a new window joined to the same session at the layout token.
+  document.querySelectorAll(".popout-btn").forEach((b) => b.onclick = () => popOut(b.dataset.layout));
   $("task-plan").onclick = planTask;
   document.querySelectorAll("#task-mode .chip").forEach((b) => b.onclick = () => setTaskMode(b.dataset.tmode));
   $("task-regime").onchange = ssnCoverage;
@@ -1341,7 +2022,45 @@ window.addEventListener("DOMContentLoaded", () => {
     onActorChange();    // re-derive the action list under the new role filter
   });
   document.addEventListener("keydown", onShortcut);
-  setCell("white"); loadVignettes();
+  // Toolbar dropdown menus (View + Settings). Each pair shares the same open/close pattern;
+  // opening one closes the others, plus outside-click + Escape close any open menu.
+  const menus = [
+    { btn: $("session-btn"),  menu: $("session-menu") },
+    { btn: $("view-btn"),     menu: $("view-menu") },
+    { btn: $("settings-btn"), menu: $("settings-menu") },
+  ].filter((m) => m.btn && m.menu);
+  for (const m of menus) {
+    m.btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = m.menu.hidden;
+      menus.forEach((o) => { o.menu.hidden = true; });
+      m.menu.hidden = !open;
+    });
+  }
+  document.addEventListener("click", (e) => {
+    menus.forEach((m) => {
+      if (!m.menu.hidden && !m.menu.contains(e.target) && e.target !== m.btn) m.menu.hidden = true;
+    });
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") menus.forEach((m) => { m.menu.hidden = true; });
+  });
+  // Multiplayer init: if URL hash names a live session, join it (Blue default for joiners);
+  // otherwise stay on white-cell load screen. Pop-out windows carry ?layout=… and ?cell=… and
+  // are culled to the requested panels before any rendering.
+  applyLayoutCull();
+  (async () => {
+    const joined = await joinSessionFromHash();
+    if (joined) {
+      const cellQ = new URLSearchParams(location.search).get("cell");
+      setCell(cellQ === "white" || cellQ === "blue" || cellQ === "red" ? cellQ : "blue");
+      await refresh();
+      startRealtimeClock();
+    } else {
+      setCell("white");
+      await loadVignettes();
+    }
+  })();
 });
 
 // Keyboard shortcuts (§12.4): j/k step the selected actor, c focuses compose, g graphs it. Ignored in fields.
@@ -1523,23 +2242,27 @@ window.drawTerminator = function (ctx, c, PX, PY, sunLat, sunLon) {
   // (vanishes when sin(sunLat) = 0; treat the equator case specially).
   if (sunLat == null || sunLon == null) return;
   const slat = sunLat * Math.PI / 180, tlat = Math.tan(slat || 1e-9);
-  ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.30)";
-  ctx.beginPath();
-  let firstX = null, lastX = null;
+  const pts = [];
   for (let lon = -180; lon <= 180; lon += 2) {
     const arg = (lon - sunLon) * Math.PI / 180;
     const latT = Math.atan(-Math.cos(arg) / tlat) * 180 / Math.PI;
-    const x = PX(lon), y = PY(latT);
-    if (lon === -180) { ctx.moveTo(x, y); firstX = x; }
-    else ctx.lineTo(x, y);
-    lastX = x;
+    pts.push([PX(lon), PY(latT)]);
   }
-  // Close the polygon along whichever pole the night side wraps to.
+  const firstX = pts[0][0], lastX = pts[pts.length - 1][0];
   const nightTop = sunLat < 0;   // if sun is south, the north pole is in night
   const polY = nightTop ? 0 : c.height;
+  ctx.save();
+  // Filled night side — darker so it reads as a distinct hemisphere on dim monitors.
+  ctx.fillStyle = "rgba(0,0,12,0.55)";
+  ctx.beginPath();
+  pts.forEach(([px, py], i) => i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py));
   ctx.lineTo(lastX, polY); ctx.lineTo(firstX, polY); ctx.closePath();
   ctx.fill();
+  // Bright terminator curve itself — high-contrast delimiter the eye can lock on.
+  ctx.strokeStyle = "rgba(255,220,140,0.85)"; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  pts.forEach(([px, py], i) => i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py));
+  ctx.stroke();
   ctx.restore();
 };
 
@@ -1751,12 +2474,16 @@ function coachClose() { $("coachmark-wrap").classList.remove("on"); }
 function coachShow() {
   const step = COACH_STEPS[COACH_I]; if (!step) { coachClose(); return; }
   const el = document.querySelector(step.sel); if (!el) { COACH_I++; return coachShow(); }
+  // Scroll target into view first so getBoundingClientRect returns on-screen coords.
+  el.scrollIntoView({ behavior: "instant", block: "nearest", inline: "nearest" });
   const r = el.getBoundingClientRect();
   const hole = $("coachmark-hole");
   hole.style.left = (r.left - 4) + "px"; hole.style.top = (r.top - 4) + "px";
   hole.style.width = (r.width + 8) + "px"; hole.style.height = (r.height + 8) + "px";
   const tip = $("coachmark-tip");
-  const tipTop = Math.min(window.innerHeight - 200, r.bottom + 12);
+  // Place tip below target when room allows, above otherwise.
+  const spaceBelow = window.innerHeight - r.bottom;
+  const tipTop = spaceBelow >= 180 ? r.bottom + 12 : Math.max(8, r.top - 180);
   const tipLeft = Math.min(window.innerWidth - 360, Math.max(8, r.left));
   tip.style.left = tipLeft + "px"; tip.style.top = tipTop + "px";
   $("coachmark-title").textContent = step.title;
@@ -1770,6 +2497,10 @@ addEventListener("DOMContentLoaded", () => {
   $("coachmark-next").addEventListener("click", () => { if (++COACH_I >= COACH_STEPS.length) coachClose(); else coachShow(); });
   $("coachmark-back").addEventListener("click", () => { if (--COACH_I < 0) COACH_I = 0; coachShow(); });
   $("coachmark-close").addEventListener("click", coachClose);
+  // Click on backdrop (outside the tip box) closes the tour.
+  $("coachmark-wrap").addEventListener("click", (e) => { if (!$("coachmark-tip").contains(e.target)) coachClose(); });
+  // Escape closes the tour.
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("coachmark-wrap").classList.contains("on")) { e.stopPropagation(); coachClose(); } });
 });
 
 // FUTURE-WORK §9 — Replay branches. Save the current AAR report as a named branch (localStorage,
@@ -1822,24 +2553,24 @@ addEventListener("DOMContentLoaded", () => {
 async function tutorialOpen() {
   const panel = $("tutorial-panel"); if (!panel) return;
   if (!SID) { panel.classList.add("open"); $("tutorial-steps").innerHTML = "<li>(load a vignette first)</li>"; return; }
-  // The vignette YAML is fetched via /api/vignettes/{id}/source; parse the per-cell steps.
+  // Structured per-cell tutorial from the API (parsed server-side by pydantic — no fragile
+  // YAML scraping, so blue/red steps stay separate). White sees Blue's script.
   const vid = $("vignette") ? $("vignette").value : "";
+  const cellKey = CELL === "white" ? "blue" : CELL;
+  $("tutorial-title").textContent = `Tutorial — ${cellKey} cell`;
   try {
-    const yaml = await fetch(`/api/vignettes/${vid}/source`).then((r) => r.text());
-    const cellKey = CELL === "white" ? "blue" : CELL;
-    const re = new RegExp(`tutorial:\\s*\\n([\\s\\S]*?)(?=\\n\\w|$)`);
-    const m = re.exec(yaml); const block = m ? m[1] : "";
-    const sectionRe = new RegExp(`\\s+${cellKey}:\\s*\\n([\\s\\S]*?)(?=\\n  \\w|$)`);
-    const sm = sectionRe.exec(block);
-    const section = sm ? sm[1] : "";
-    const steps = section.split(/\n\s+- /).slice(1).map((s) => {
-      const title = (s.match(/title:\s*["']?([^"\n]+)["']?/) || [, "(untitled)"])[1];
-      const action = (s.match(/action:\s*["']?([^"\n]+)["']?/) || [, ""])[1];
-      return `<li><b>${title}</b><br><span class="muted">${action}</span></li>`;
+    const tut = await api.get(`/api/vignettes/${vid}/tutorial`);
+    const steps = (tut[cellKey] || []).map((s) => {
+      const cmd = s.actor
+        ? `${s.action} · ${s.actor}${s.target ? " → " + s.target : ""}` +
+          (s.params ? " " + JSON.stringify(s.params) : "")
+        : s.action;
+      const when = s.when ? `<span class="muted"> — ${esc(s.when)}</span>` : "";
+      const expect = s.expect ? `<br><span class="muted">↳ ${esc(s.expect)}</span>` : "";
+      return `<li><b>${esc(s.title || "(untitled)")}</b>${when}<br><code>${esc(cmd)}</code>${expect}</li>`;
     });
-    $("tutorial-title").textContent = `Tutorial — ${cellKey} cell`;
     $("tutorial-steps").innerHTML = steps.length ? steps.join("") : "<li>(no tutorial defined for this cell)</li>";
-  } catch { $("tutorial-steps").innerHTML = "<li>(failed to load vignette source)</li>"; }
+  } catch { $("tutorial-steps").innerHTML = "<li>(no tutorial available for this vignette)</li>"; }
   panel.classList.add("open");
 }
 function tutorialClose() { const p = $("tutorial-panel"); if (p) p.classList.remove("open"); }
@@ -1849,6 +2580,111 @@ addEventListener("DOMContentLoaded", () => {
     p.classList.contains("open") ? tutorialClose() : tutorialOpen();
   });
   const tc = $("tutorial-close"); if (tc) tc.addEventListener("click", tutorialClose);
+});
+
+// ---------------------------------------------------------------------------
+// Mission brief panel — first thing a new operator should read.  Pulls the
+// per-cell brief from /api/sessions/{sid}/brief/{cell} which combines static
+// vignette intro_brief.{cell} text with live ROE + objective deadlines.
+// Auto-opens on first session load (localStorage flag); collapsible thereafter.
+// ---------------------------------------------------------------------------
+let LAST_BRIEF_SID = null;       // suppress re-fetching every poll
+async function renderBrief() {
+  const body = $("brief-body");
+  const titleEl = $("brief-vignette-title");
+  if (!body) return;
+  if (!SID) {
+    body.innerHTML = "<div class='muted'>(load a vignette to see the mission brief)</div>";
+    if (titleEl) titleEl.textContent = "";
+    return;
+  }
+  // Re-fetch on every refresh so deadline countdowns + ROE stay live.
+  let brief;
+  try { brief = await api.get(`/api/sessions/${SID}/brief/${CELL}`); }
+  catch { body.innerHTML = "<div class='muted'>(brief unavailable)</div>"; return; }
+
+  const fmtRemaining = (s) => {
+    if (s == null || s < 0) return "expired";
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    return h > 0 ? `${h}h ${String(m).padStart(2, "0")}m` : `${m}m ${String(ss).padStart(2, "0")}s`;
+  };
+
+  // White sees both cells; Blue/Red see their own.
+  const renderCell = (b) => {
+    const t = b.text || {};
+    const block = (label, text) => text ? `<dt>${label}</dt><dd>${esc(text)}</dd>` : "";
+    const lo = (b.learning_objectives || []).map((x) => `<li>${esc(x)}</li>`).join("");
+    const objs = (b.objectives || []).map((o) => {
+      const stale = o.remaining_s <= 0;
+      const cls = stale ? "obj-expired" : "obj-live";
+      return `<li class="${cls}"><b>${esc(o.id)}</b> — ${esc(o.desc || "(no description)")}` +
+             ` <span class="muted">T-${fmtRemaining(o.remaining_s)}</span></li>`;
+    }).join("");
+    const roe = b.roe || {};
+    const roeChips = [
+      `<span class="roe-chip ${roe.kinetic_authorized ? "on" : "off"}">kinetic ${roe.kinetic_authorized ? "ON" : "OFF"}</span>`,
+      `<span class="roe-chip ${roe.cyber_authorized ? "on" : "off"}">cyber ${roe.cyber_authorized ? "ON" : "OFF"}</span>`,
+    ].join(" ");
+    const doctrine = b.red_doctrine_profile && b.cell === "red"
+      ? `<div class="brief-doctrine"><b>Red doctrine:</b> ${esc(b.red_doctrine_profile)}</div>`
+      : "";
+    return `
+      <div class="brief-cell brief-cell-${b.cell}">
+        <div class="brief-meta">
+          <span><b>Theater:</b> ${esc(b.theater || "—")}</span>
+          <span><b>Start:</b> ${esc((b.start_epoch_utc || "").replace("T", " ").replace("Z", " UTC"))}</span>
+          <span><b>Duration:</b> ~${b.estimated_duration_min || "?"} min</span>
+          <span><b>ROE:</b> ${roeChips}</span>
+        </div>
+        ${doctrine}
+        <dl class="brief-text">
+          ${block("Situation", t.situation)}
+          ${block("Mission", t.mission)}
+          ${block("Friendly forces", t.friendly_forces)}
+          ${block("Threat picture", t.threat_picture)}
+          ${block("Deadline", t.deadline_note)}
+          ${block("Rules of engagement", t.roe_note)}
+          ${block("Success criteria", t.success_criteria)}
+          ${block("Tool tips", t.tool_tips)}
+        </dl>
+        <div class="brief-objectives"><b>Objectives</b><ul>${objs || "<li class='muted'>(none)</li>"}</ul></div>
+        ${lo ? `<div class="brief-learn"><b>Learning objectives</b><ul>${lo}</ul></div>` : ""}
+      </div>`;
+  };
+
+  if (CELL === "white" && brief.blue && brief.red) {
+    body.innerHTML = `<div class="brief-grid">${renderCell(brief.blue)}${renderCell(brief.red)}</div>`;
+    if (titleEl) titleEl.textContent = "(white sees both cells)";
+  } else {
+    body.innerHTML = renderCell(brief);
+    if (titleEl) titleEl.textContent = brief.title ? `— ${brief.title}` : "";
+  }
+
+  // Auto-open the brief on the first encounter of this session, then remember the user's choice.
+  if (SID !== LAST_BRIEF_SID) {
+    LAST_BRIEF_SID = SID;
+    const dismissedKey = `brief-dismissed-${SID}`;
+    if (!localStorage.getItem(dismissedKey)) {
+      $("brief-panel").classList.remove("collapsed");
+      $("brief-toggle").textContent = "▾";
+    }
+  }
+}
+function toggleBrief() {
+  const panel = $("brief-panel");
+  if (!panel) return;
+  const collapsed = panel.classList.toggle("collapsed");
+  $("brief-toggle").textContent = collapsed ? "▸" : "▾";
+  if (SID) localStorage.setItem(`brief-dismissed-${SID}`, collapsed ? "1" : "");
+}
+addEventListener("DOMContentLoaded", () => {
+  const bt = $("brief-toggle"); if (bt) bt.addEventListener("click", toggleBrief);
+  const bo = $("brief-open"); if (bo) bo.addEventListener("click", () => {
+    const p = $("brief-panel"); if (!p) return;
+    p.classList.remove("collapsed");
+    $("brief-toggle").textContent = "▾";
+    p.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 });
 
 // §10.D.17 — Vignette inspector. Pulls the raw YAML and shows it in a modal; "Download YAML"
@@ -1883,13 +2719,17 @@ addEventListener("DOMContentLoaded", () => {
 addEventListener("DOMContentLoaded", () => {
   const btn = $("handover-btn"), wrap = $("handover"), resume = $("handover-resume");
   if (!btn || !wrap) return;
+  let pendingCell = null;
   btn.addEventListener("click", () => {
-    const nextCell = CELL === "blue" ? "RED" : CELL === "red" ? "BLUE" : "WHITE";
-    $("handover-title").textContent = `HANDING OFF → ${nextCell}`;
-    $("handover-who").textContent = `Pass the keyboard to the ${nextCell} operator and click Resume.`;
+    pendingCell = CELL === "blue" ? "red" : CELL === "red" ? "blue" : "white";
+    $("handover-title").textContent = `HANDING OFF → ${pendingCell.toUpperCase()}`;
+    $("handover-who").textContent = `Pass the keyboard to the ${pendingCell.toUpperCase()} operator and click Resume.`;
     wrap.classList.add("open");
   });
-  if (resume) resume.addEventListener("click", () => wrap.classList.remove("open"));
+  if (resume) resume.addEventListener("click", () => {
+    wrap.classList.remove("open");
+    if (pendingCell) { setCell(pendingCell); pendingCell = null; }
+  });
 });
 
 // #9 — Tooltips for ALL buttons that don't already have a title=. Reads the button's text and
@@ -1946,12 +2786,22 @@ addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Jam parameter assistant listeners.
+// Jam / engage / cyber parameter assistant listeners (Audit 2026-06 Commands §M4).
 addEventListener("DOMContentLoaded", () => {
-  const computeBtn = $("jam-compute");
-  if (computeBtn) computeBtn.addEventListener("click", computeJam);
-  ["jam-mod", "jam-power", "jam-bw", "jam-vbw", "jam-pbase"].forEach((id) => {
+  const jamBtn = $("jam-compute");
+  if (jamBtn) jamBtn.addEventListener("click", computeJam);
+  ["jam-mod", "jam-power", "jam-bw", "jam-vbw"].forEach((id) => {
     const el = $(id);
     if (el) el.addEventListener("change", jamSummaryUpdate);
+  });
+  const engBtn = $("engage-compute");
+  if (engBtn) engBtn.addEventListener("click", computeEngage);
+  ["engage-class", "engage-salvo"].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener("change", engageSummaryUpdate);
+  });
+  ["cyber-vector", "cyber-payload", "cyber-dwell"].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener("change", cyberSummaryUpdate);
   });
 });

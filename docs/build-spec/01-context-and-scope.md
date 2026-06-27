@@ -10,7 +10,7 @@ glossary. Reading order for a new implementer:
 
 1. This PSD §1–§6 (context, scope, decisions, requirements).
 2. `01-architecture-overview.md` and `04-data-model.md` (the contract).
-3. The research files in `01-research/` (why the rules are what they are).
+3. The research files in `../research/` (why the rules are what they are).
 4. This PSD §7–§12 (architecture detail, milestones, acceptance, risk).
 5. The vignettes and remaining design files as needed during each phase.
 
@@ -52,7 +52,9 @@ operational art of contesting the domain.
   upgradeable — see `04-orbital-mechanics-primer.md`).
 - Not a classified system or intelligence product; all content is unclassified training
   material with fictional default assets.
-- Not a networked multiplayer system in v1 (single machine, hot-seat).
+- Single-machine hot-seat **and** LAN cooperative both supported (one FastAPI server, N browser
+  tabs / machines polling it; fog-of-war enforced server-side at the `SessionAPI` boundary —
+  see `FUTURE-WORK.md` §1). Not a dedicated-server architecture and not internet-public.
 - Not a real satellite control system; it simulates the *experience*, not real spacecraft.
 
 ---
@@ -80,8 +82,13 @@ the outgoing user blanks the screen during handoff (see §6).
 - Moderate-fidelity orbital model: Keplerian + J2, pass/access-window computation, impulsive
   maneuvers, eclipse/lighting (`04-orbital-mechanics-primer.md`).
 - **2D visualization in ECI and RIC frames** (3D globe deferred to v1.1).
-- Up to **~24 satellites total** across cells in the largest v1 scenario (deliberately under the
-  48 ceiling), with **constellations of at most 3 satellites**, each operated and monitored
+- Up to **~24 satellites total** in Claude-authored sample vignettes — a soft sizing
+  guideline matched to typical White-Cell facilitator hardware, not an engine cap (see
+  audit Jun 2026 §F2). User-authored vignettes may scale beyond this for capable hosts; the
+  engine has no enforced limit. The server-side **clock-lag watchdog** (
+  `SessionManager._record_catch_up_lag`) warns White Cell when the wall clock outruns the
+  sim for sustained intervals — that is the operational test of "is this scenario too big
+  for the host?". **Constellations of at most 3 satellites**, each operated and monitored
   **individually**.
 - Bus + payload operations model with **state of health**, alarms, **safe mode** and its
   detection/recovery loop (`06-bus-and-payload-operations.md`, `12-safe-mode-loop.md`).
@@ -95,12 +102,12 @@ the outgoing user blanks the screen during handoff (see §6).
   build time** and manual TLE entry fallback.
 - **Action logging** of all events (the data substrate for v2 replay/AAR), even though the
   replay UI itself is v2.
-- The eight specified vignettes (`02-vignettes/`) plus the ability to author more.
+- The eight specified vignettes (`../vignettes/`) plus the ability to author more.
 
 ### 3.2 Deferred (explicit non-goals for v1)
 | Deferred item | Target | Why deferred |
 |---|---|---|
-| Networked / LAN multiplayer, dedicated server | v2+ | User wants single-machine hot-seat first |
+| ~~LAN multiplayer~~ | ✅ shipped in M8 | HTTP polling against the single FastAPI server; per-session RLock + server-authoritative lazy clock; no separate dedicated-server architecture |
 | **3D globe viewer** | v1.1 | 2D ECI+RIC sufficient to start; 3D is high-effort |
 | **Replay UI & automated AAR / CSV export** | v2 | Log now, build the viewer later; design the seam |
 | **Replay→live "branch to live play"** (also the save story) | v2 | Depends on replay infrastructure |

@@ -86,6 +86,19 @@ class EffectResolver(Protocol):
 
 _POSTURE_FACTOR = {"low": 1.25, "medium": 1.0, "high": 0.6}
 
+# Audit 2026-06 (Commands) §C1 — defender-side modifiers wired into the Pₛ/Pₖ math so
+# that defensive verbs actually defend. Magnitudes sourced from the realism research:
+#   - protected-waveform processing gain typically 20-30 dB → 0.4× residual jam success
+#     when frequency_hop is engaged (`docs/research/05-mission-types-and-counters.md`
+#     §5 SATCOM; Milstar/AEHF nulling antennas + frequency hopping).
+#   - SATCOM payload mitigation (filter/notch/user-shift) scales 0..0.8; full mitigation
+#     leaves 0.2 of the original jam residual.
+#   - Target maneuver during DA-ASAT fly-out is the dominant defensive modifier
+#     (`docs/research/05` §14 / open-source ASAT test record); evasion-active during
+#     engage drops kinetic Pₖ to 0.4 of base.
+_FREQ_HOP_RESIDUAL = 0.4
+_EVASION_RESIDUAL = 0.4
+
 
 class ModerateEffectResolver:
     def resolve(self, effect: EffectInstance, world: "WorldState", rng: SeededRng) -> EffectOutcome:
@@ -154,8 +167,9 @@ class ModerateEffectResolver:
 
     def _effective_probability(self, effect: EffectInstance, world: "WorldState") -> float:
         p = effect.success_prob
+        target = world.assets.get(effect.target)
+
         if effect.category == "cyber":
-            target = world.assets.get(effect.target)
             if target is not None:
                 for vuln in target.cyber_vulnerabilities:
                     if vuln.get("vector") == effect.access_vector:
@@ -166,6 +180,22 @@ class ModerateEffectResolver:
                     if effect.access_vector is not None:
                         return 0.0  # no matching access vector → no foothold
                 p *= _POSTURE_FACTOR.get(getattr(target, "cyber_posture", "medium"), 1.0)
+
+        # Audit 2026-06 §C1 — defender-side modifiers. Without these the trainee's
+        # frequency-hop / user-shift / evasion burns only change the telemetry display
+        # while the resolver's roll basis stays at the attacker's number.
+        if effect.category == "electronic_warfare" and target is not None:
+            bus = target.bus_state
+            if bus is not None and bus.comms.freq_hopping:
+                p *= _FREQ_HOP_RESIDUAL
+            payload = target.payload_state
+            if payload is not None and payload.interference_mitigation > 0.0:
+                p *= max(0.0, 1.0 - min(1.0, payload.interference_mitigation))
+        elif effect.kinetic and target is not None:
+            payload = target.payload_state
+            if payload is not None and payload.evasion_active:
+                p *= _EVASION_RESIDUAL
+
         return max(0.0, min(1.0, p))
 
 

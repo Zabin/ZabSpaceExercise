@@ -58,20 +58,39 @@ def drive(base: str, vignette: str, cell: str, shot: str) -> None:
         page.goto(base + "/", wait_until="networkidle")
         assert "Orbital Warfare" in page.title(), f"unexpected title: {page.title()!r}"
 
-        # Load the vignette and start the sim.
+        # Toolbar refactor: the vignette picker, Load and Start buttons live inside the
+        # Session ▾ menu pop-up. Open the menu so its controls become visible/clickable,
+        # then drive them. The menu auto-closes on outside-click (e.g. when we click a
+        # cell button later).
+        page.click("#session-btn")
+        page.wait_for_selector("#session-menu:not([hidden])", timeout=5000)
+        # Wait until the vignette list is populated (loadVignettes() runs async on boot).
+        page.wait_for_function(
+            "() => document.querySelectorAll('#vignette option:not([disabled])').length > 0",
+            timeout=10000,
+        )
         page.select_option("#vignette", vignette)
         page.click("#load")
         page.wait_for_function("() => !document.getElementById('start').disabled", timeout=10000)
         page.click("#start")
 
-        # Advance sim time so orbits move and the map/globe populate.
+        # Close the Session menu before reaching for toolbar buttons — the menu pop-up
+        # extends ~220px leftward from the Session ▾ button and at narrow viewports
+        # overlays the cell selector and the white-only +10m row. The app's keydown
+        # handler closes any open menu on Escape.
+        page.keyboard.press("Escape")
+        page.wait_for_selector("#session-menu", state="hidden", timeout=5000)
+
+        # Advance sim time WHILE STILL ON WHITE — the +10m buttons are in the
+        # `white-only` toolbar group and disappear after the cell switch. Doing this
+        # first guarantees the same +30 min of motion regardless of the requested cell.
         for _ in range(3):
             page.click("button[data-step='600']")
             page.wait_for_timeout(400)
 
-        # Switch to the requested cell view.
+        # Switch cell.
         page.click(f".cell[data-cell='{cell}']")
-        page.wait_for_timeout(600)
+        page.wait_for_timeout(400)
 
         # Drill into the first fleet row to exercise the telemetry panel, if any rows exist.
         rows = page.query_selector_all("#assets tbody tr")
@@ -83,11 +102,21 @@ def drive(base: str, vignette: str, cell: str, shot: str) -> None:
         now = page.text_content("#now") or ""
         n_assets = len(page.query_selector_all("#assets tbody tr"))
         n_actors = page.eval_on_selector_all("#o-actor option", "els => els.length")
+        # Verify post-audit features are present (panel manager + valid-target picker +
+        # connected thumbnail/large-graph sparklines). A missing feature means the driver
+        # and the live UI have drifted again.
+        feature = page.evaluate("""() => ({
+            panel_tools: document.querySelectorAll('.panel-tools').length,
+            panels_menu: !!document.getElementById('panels-section'),
+            target_picker: !!document.getElementById('o-target-pick'),
+            sparklines: document.querySelectorAll('#drill-params .spark').length,
+        })""")
         page.screenshot(path=shot, full_page=True)
         browser.close()
 
     print(f"OK  vignette={vignette} cell={cell}")
     print(f"    sim-time={now.strip()!r}  fleet_rows={n_assets}  actor_options={n_actors}")
+    print(f"    features={feature}")
     print(f"    screenshot -> {shot}")
 
 

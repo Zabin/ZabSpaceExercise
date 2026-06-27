@@ -64,3 +64,22 @@ vignette:
       trigger: {type: time, at_sim_s: 300}
       effects:
         - {type: message, to: [blue, white], text: "Conjunction advisory: ISR-B predicted within 1 km of cataloged debris in 12 min. Plan a Δv maneuver via ISL relay (ISR-A is the only Blue asset in GS-NORTH view)."}
+  intro_brief:
+    blue:
+      situation: "Novel teaching scenario. You operate two LEO ISR sats from a single ground station — only ONE bird is in view of GS-NORTH at a time. A debris conjunction warning has been issued against ISR-B, which is currently out of GS-NORTH LOS. You must command an evasive maneuver via ISR-A as an ISL relay."
+      mission: "Keep ISR-B alive (isr_b_survives) and operational (isr_b_op) through T+30 min."
+      friendly_forces: "ISR-A (LEO ISR, GS-NORTH visible), ISR-B (LEO ISR, currently NOT in GS-NORTH view), GS-NORTH, BLUE-RADAR."
+      threat_picture: "Cataloged debris on a +12 min conjunction with ISR-B. RED-SDA-PASSIVE watches but does not act."
+      deadline_note: "T+30 min (1800 s) — conjunction TCA at +12 min."
+      roe_note: "Peacetime op. No kinetic involved."
+      success_criteria: "ISR-B not destroyed + operational at the deadline."
+      tool_tips: "Issue maneuver · actor: ISR-B · params: {dv: [0,5,0], via: GS-NORTH} — the Order panel will pick ISL relay automatically when GS-NORTH lacks direct LOS. ISR-A acts as the relay bird; this is the cross-link delivery path lesson."
+    red:
+      situation: "Passive watch."
+      mission: "track_blue."
+      friendly_forces: "RED-SDA-PASSIVE."
+      threat_picture: "Two Blue ISR birds + GS-NORTH + BLUE-RADAR."
+      deadline_note: "T+30 min."
+      roe_note: "Passive only."
+      success_criteria: "Track held."
+      tool_tips: "No active play — advance the clock."

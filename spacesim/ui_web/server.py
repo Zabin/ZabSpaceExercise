@@ -1,6 +1,9 @@
 """FastAPI server over the in-process SessionAPI.
 
-Run: ``uvicorn spacesim.ui_web.server:app --reload`` then open http://127.0.0.1:8000/.
+Run: ``python3 -m spacesim.ui_web`` — reads host/port/reload from
+``spacesim.config.yaml`` at the repo root (defaults to 127.0.0.1:8000).
+The bare ``uvicorn spacesim.ui_web.server:app`` CLI also works but ignores
+the YAML; pass ``--host``/``--port`` directly to override.
 Everything the UI does goes through these endpoints; the browser never touches the engine.
 """
 
@@ -9,10 +12,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import FastAPI, HTTPException
+import re
+
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from spacesim.engine.orders import Order
 from spacesim.session.api import Ack, CellView, OrderAck
@@ -20,6 +25,16 @@ from spacesim.session.inprocess import InProcessSession
 from spacesim.session.scene import SceneView
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+
+# Audit Jun 2026 §D2 — server-side validation for client-supplied identifiers
+# that flow into rendered DOM, eventlog payloads, and the YAML loader.
+_ID_RE = re.compile(r"^[A-Za-z0-9_.\-]{1,64}$")
+
+
+def _validate_id(value: str, *, field: str) -> str:
+    if not isinstance(value, str) or not _ID_RE.match(value):
+        raise ValueError(f"{field} must match {_ID_RE.pattern}")
+    return value
 
 
 # -- request bodies ------------------------------------------------------------
@@ -58,6 +73,11 @@ class TleRequest(BaseModel):
     owner: str = "blue"
     kind: str = "satellite"
 
+    @field_validator("id")
+    @classmethod
+    def _id_charset(cls, v: str) -> str:
+        return _validate_id(v, field="TleRequest.id")
+
 
 class OrderRequest(BaseModel):
     cell: str
@@ -65,6 +85,21 @@ class OrderRequest(BaseModel):
     action: str
     target: Optional[str] = None
     params: dict = {}
+
+    @field_validator("actor")
+    @classmethod
+    def _actor_charset(cls, v: str) -> str:
+        # Allow "auto" as the sentinel for sensor-auto-select.
+        if v == "auto":
+            return v
+        return _validate_id(v, field="OrderRequest.actor")
+
+    @field_validator("target")
+    @classmethod
+    def _target_charset(cls, v: Optional[str]) -> Optional[str]:
+        if v is None or v == "":
+            return v
+        return _validate_id(v, field="OrderRequest.target")
 
 
 class CancelRequest(BaseModel):
@@ -116,6 +151,12 @@ class SSNRequestBody(BaseModel):
     priority: str = "priority"
 
 
+class ClockRequest(BaseModel):
+    """Server-authoritative real-time clock control (multiplayer)."""
+    running: bool
+    rate: float = 1.0
+
+
 class SSNCancelBody(BaseModel):
     request_id: str
 
@@ -137,13 +178,46 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Return the raw YAML of a vignette (FUTURE-WORK §10.D.17 vignette inspector)."""
         for v in api.list_vignettes():
             if v["id"] == vid:
-                return Path(v["path"]).read_text()
+                return Path(v["path"]).read_text(encoding="utf-8")
         raise HTTPException(status_code=404, detail=f"vignette {vid!r} not found")
+
+    @app.get("/api/vignettes/{vid}/tutorial")
+    def vignette_tutorial(vid: str) -> dict:
+        """Structured per-cell player tutorial for the in-UI Tutorial panel — parsed by pydantic,
+        not regex-scraped from YAML, so blue/red steps never bleed into each other."""
+        from spacesim.content.vignette import load_vignette
+        try:
+            return load_vignette(vid).tutorial or {}
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"vignette {vid!r} not found")
+
+    @app.get("/api/sessions/{sid}/brief/{cell}")
+    def session_brief(sid: str, cell: str) -> dict:
+        """Per-cell mission brief: situation, mission, friendly forces, threat picture, deadline,
+        ROE, success criteria, tool tips.  Pulls vignette.intro_brief.{cell} + runtime objective
+        deadlines + computed ROE.  White sees both cells."""
+        return api.session_brief(sid, cell)
 
     @app.post("/api/sessions")
     def load(req: LoadRequest) -> dict:
         sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed)
         return {"session": sid}
+
+    @app.get("/api/sessions")
+    def list_sessions() -> list[dict]:
+        """Multiplayer discovery: list every live session so other tabs/machines can join one."""
+        return api.list_sessions()
+
+    @app.post("/api/sessions/{sid}/clock")
+    def set_clock(sid: str, req: ClockRequest) -> dict:
+        """Arm/disarm the server-authoritative real-time clock (multiplayer)."""
+        _require(sid)
+        return api.set_clock(sid, req.running, req.rate)
+
+    @app.get("/api/sessions/{sid}/clock")
+    def get_clock(sid: str) -> dict:
+        _require(sid)
+        return api.clock_state(sid)
 
     @app.post("/api/sessions/{sid}/param")
     def set_parameter(sid: str, req: ParamRequest) -> Ack:
@@ -272,16 +346,18 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def conjunctions(sid: str, cell: str) -> list[dict]:
         """FW §11.C.14 — upcoming close-approach warnings.  Filtered to assets the cell owns."""
         _require(sid)
-        mgr = api._sessions[sid]
-        out = []
-        for c in list(mgr.world.conjunctions):
-            a_owner = (mgr.world.assets.get(c.get("a", "")) or
-                       type("X", (), {"owner": None})).owner
-            b_owner = (mgr.world.assets.get(c.get("b", "")) or
-                       type("X", (), {"owner": None})).owner
-            if cell in ("white",) or cell in (a_owner, b_owner):
-                out.append({**c, "now": mgr.world.now})
-        return out
+        # Audit Jun 2026 §D10 — hold the session lock through the iteration so a
+        # concurrent mutation can't raise ``dict changed size during iteration``.
+        with api._locked_read(sid) as mgr:
+            out = []
+            for c in list(mgr.world.conjunctions):
+                a_owner = (mgr.world.assets.get(c.get("a", "")) or
+                           type("X", (), {"owner": None})).owner
+                b_owner = (mgr.world.assets.get(c.get("b", "")) or
+                           type("X", (), {"owner": None})).owner
+                if cell in ("white",) or cell in (a_owner, b_owner):
+                    out.append({**c, "now": mgr.world.now})
+            return out
 
     @app.post("/api/sessions/{sid}/cancel")
     def cancel_order(sid: str, req: CancelRequest) -> Ack:
@@ -367,7 +443,9 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}/{param}")
     def telemetry_series(sid: str, cell: str, asset: str, param: str,
-                         t0: Optional[int] = None, t1: Optional[int] = None, n: int = 120,
+                         t0: Optional[int] = None, t1: Optional[int] = None,
+                         # Audit Jun 2026 §D6 — bound n to prevent CPU/memory DoS.
+                         n: int = Query(120, ge=2, le=2000),
                          nominal: bool = False) -> dict:
         _require(sid)
         r = api.get_series(sid, cell, asset, param, t0=t0, t1=t1, n=n, nominal=nominal)

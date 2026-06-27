@@ -91,7 +91,7 @@ library** and the choice between them is itself a White-Cell teaching point.
 ### Russia ML (`coa-russia-ml`) — sustained EW
 
 Lead with pervasive, deniable, reversible electromagnetic attack on PNT and SATCOM — the workhorse
-of Russian counterspace (Tirada-2, Pole-21, Bylina). No kinetic, no debris, no political ceiling.
+of Russian counterspace (Tirada-2 SATCOM jam, Pole-21 GNSS jam, RB-109A Bylina EW C2). No kinetic, no debris, no political ceiling.
 Blue's task: **sustain service through chronic interference** — frequency-hop, shift users, request
 SSN custody on the jammers.
 

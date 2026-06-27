@@ -56,11 +56,21 @@ def test_library_effects_use_supported_types():
 
 
 def test_library_is_cached():
-    """Repeat calls return the same in-memory list (cheap re-render)."""
+    """The cache attribute must be populated and survive across calls.
+
+    Audit Jun 2026 §E5 — the previous assertion ``a is not b or len(a) == len(b)``
+    was a tautology: the right side is trivially true when the left side is
+    false. The real caching contract is exercised by the dedicated test in
+    ``test_defensive_audit_2026.py`` (``test_inject_library_is_cached_for_real``);
+    here we just check the cache populates.
+    """
     api = InProcessSession()
-    a = api.inject_library()
-    b = api.inject_library()
-    assert a is not b or len(a) == len(b)   # cache may copy on read; either is fine
+    assert getattr(api, "_inject_library_cache", None) is None  # nothing cached yet
+    api.inject_library()
+    assert api._inject_library_cache is not None  # cache populated
+    obj = api._inject_library_cache
+    api.inject_library()
+    assert api._inject_library_cache is obj  # same object on repeat call
 
 
 # ---------------------------------------------------------------------------

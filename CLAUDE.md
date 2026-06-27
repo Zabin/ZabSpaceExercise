@@ -2,23 +2,30 @@
 
 Durable project guide for Claude Code. Read this first, then the docs in the order below. All
 prose docs live under `docs/`, routed by [`docs/INDEX.md`](docs/INDEX.md); the structure and its
-rationale are in [`docs/DOCUMENTATION-PLAN.md`](docs/DOCUMENTATION-PLAN.md).
+rationale are in [`docs/DOCUMENTATION-PLAN.md`](docs/DOCUMENTATION-PLAN.md). For "what documents
+exist, what's left to write, and what depends on what," check [`ROADMAP.md`](ROADMAP.md) first —
+keep it current as you finish or start documentation work.
 
 ## What this is
 
-A single-machine, hot-seat **professional military education (PME) wargaming tool** for space
-control and orbital warfare. A White Cell facilitator runs an exercise; Red and Blue cells command
-fleets of space/ground assets as bus and payload operators, constrained by orbital geometry
-(you can only command, observe, or attack when access windows permit). Most effects are reversible
-(EW/cyber/proximity), not kinetic.
+A **professional military education (PME) wargaming tool** for space control and orbital
+warfare. A White Cell facilitator runs an exercise; Red and Blue cells command fleets of
+space/ground assets as bus and payload operators, constrained by orbital geometry (you can only
+command, observe, or attack when access windows permit). Most effects are reversible
+(EW/cyber/proximity), not kinetic. Runs single-machine hot-seat *and* multi-tab / LAN
+cooperative — every browser tab points at one FastAPI server, fog-of-war is enforced server-side
+at the `SessionAPI` / `CellController` boundary.
 
-**Status: backend feature-complete through Phase 7 (81 tests green).** Deterministic engine
+**Status: backend feature-complete through Phase 8; commands-layer audit completed Jun 2026 (469 tests green, 3 skipped).** Deterministic engine
 (P0–P4.5), the web layer (P5, FastAPI + browser front end), the render-from-custody belief
-scene + 2D map (P5.5), all **eight vignettes** as YAML + TLE force-add + Red doctrine presets (P6),
-and the **capstone Vignette 8 + AAR replay** (P7: read-only replay/scrub, branch comparison,
-campaign summary). Code under `spacesim/`; content is YAML; UI stack = **web**. The browser GUI is
-unverified headless, but every backend path (endpoints, fog, objectives, AAR) is test-covered.
-Remaining: P8 (fidelity/multiplayer seam proofs).
+scene + 2D map (P5.5), the full **19-vignette library** (the canonical 8 numbered + the
+training-basics onboarding + 5 Red COA + 3 mission-set + 1 learning + 1 novel) as YAML +
+TLE force-add + Red doctrine presets (P6 + library expansion), the **capstone Vignette 8 +
+AAR replay** (P7), and the **LAN multiplayer transport** (P8:
+server-authoritative lazy clock + per-session RLock + session discovery + join-by-hash URL +
+multi-monitor pop-out windows). Code under `spacesim/`; content is YAML; UI stack = **web**.
+The browser GUI is unverified headless, but every backend path (endpoints, fog, objectives,
+AAR, multiplayer clock + locking) is test-covered.
 
 ## Authoritative source & reading order
 
@@ -67,8 +74,10 @@ spacesim/
 
 ## Key facts
 
-- Largest v1 scenario: **≤24 satellites** (hard ceiling 48); **constellations ≤3 sats**, each
-  operated/monitored individually.
+- Sample-vignette sizing: **~24 satellites** as a soft guideline for typical White-Cell
+  hardware (no engine-enforced cap — user vignettes may scale up). The
+  **clock-lag watchdog** in `SessionManager._record_catch_up_lag` warns White Cell when
+  the hardware can't keep up. **Constellations ≤3 sats**, each operated/monitored individually.
 - **Six access channels:** `command_uplink`, `telemetry_downlink`, `sensor_observation`,
   `jam_footprint`, `weapon_engagement`, `rpo_proximity`.
 - **Five effect categories → five D's:** deceive / disrupt / deny / degrade / destroy. **Cyber is
@@ -90,9 +99,12 @@ spacesim/
 - **P4.5** Planning & tasking scheduler + safe-mode recovery chain. ✓
 - **P5** UI over the API (FastAPI + web). ✓ (backend tested; browser GUI unverified headless)
   **P5.5** Render-from-custody belief scene + 2D map + self-contained orthographic 3D globe. ✓
-- **P6** Vignettes 2–7 (data) + TLE force-add + Red doctrine profiles. ✓ (all 8 vignette files load/run)
+- **P6** Vignettes 2–7 (data) + TLE force-add + Red doctrine profiles. ✓ (all 19 vignette files
+  load/run: 8 canonical + training-basics + 5 COA + 3 mission-set + 1 learning + 1 novel)
 - **P7** Capstone Vignette 8 + AAR replay (read-only replay/scrub, branch compare). ✓
-  **P8** Document/scaffold fidelity & multiplayer seams.
+- **P8** LAN multiplayer transport + multi-monitor pop-outs. ✓ (server-authoritative lazy clock
+  + per-session RLock + `/api/sessions` discovery + join-by-URL-hash + Pop-out submenu opens
+  layout-culled tabs that join the same session — see `docs/FUTURE-WORK.md` §1).
 
 ## Test-driven workflow (mandatory)
 
@@ -106,11 +118,36 @@ is the canonical permanent gate.
 
 ```bash
 pip install pydantic numpy sgp4 pyyaml pytest hypothesis skyfield fastapi uvicorn httpx
-uvicorn spacesim.ui_web.server:app            # serve the web UI at http://127.0.0.1:8000/
-python3 -m pytest                              # runs the whole suite (testpaths = spacesim/tests)
-python3 -m pytest spacesim/tests/test_determinism.py    # the Phase-1 determinism gate
-python3 -m pytest spacesim/tests/test_import_guard.py   # the Phase-0 engine guardrails
+python3 -m spacesim.ui_web                                       # reads host/port/reload from spacesim.config.yaml (defaults 127.0.0.1:8000)
+uvicorn spacesim.ui_web.server:app                               # equivalent if you prefer uvicorn's CLI
+uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload       # LAN multiplayer: bind to host IP, share URL
+python3 -m pytest                                                # runs the whole suite (testpaths = spacesim/tests)
+python3 -m pytest spacesim/tests/test_determinism.py             # the Phase-1 determinism gate
+python3 -m pytest spacesim/tests/test_import_guard.py            # the Phase-0 engine guardrails
 ```
+
+**Server config.** Host, port, and reload come from `spacesim.config.yaml` at the repo root
+(loaded by `spacesim/config.py`). Override the path with `SPACESIM_CONFIG=/some/path.yaml`. The
+`uvicorn …` CLI form still works for one-off overrides; `python3 -m spacesim.ui_web` is the
+config-driven launcher.
+
+**Multiplayer workflow.** White loads + starts a session → URL becomes `…/#sess-N` (shareable).
+Open that URL in another tab or LAN machine, click **Blue** or **Red**. The server-side clock
+advances exactly once regardless of tab count (lazy catch_up on every read). White-only ⏸ Pause /
+▶ Resume toolbar button drives `/api/sessions/{sid}/clock` for all connected clients. **Pop-out
+windows** (View → Pop out submenu) join the same session at `?layout=<token>&cell=<cell>` so a
+single facilitator can spread globe / map / fleet / order / AAR across multiple monitors.
+
+**LAN trust model (load-bearing).** The cell selector (`White` / `Blue` / `Red`) is **client-side
+trust** — there is no per-cell authentication. The fog-of-war filter is applied by
+`SessionAPI` / `CellController` to every cell-scoped response, but the no-cell ground-truth
+endpoints (`/godview`, `/eventlog`, `/save`, `/aar*`, `/objectives`) deliberately expose ground
+truth without a cell binding. **Deploy only on a trusted LAN with cooperative participants.** A
+hostile participant on the LAN can read another cell's belief state through `/scene/{cell}` or
+`/telemetry/{cell}/...` by sending the other cell's name in the URL. This is by design for the
+v1 PME training context (everyone in the room is on the same team learning together) and is
+documented as the explicit trust boundary; see `docs/AUDIT-2026-06.md` §D5 / §F1. Hardening
+options (per-cell tokens) are tracked in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
 
 The import-guard is a plain pytest test (`test_import_guard.py`), not import-linter — it AST-scans
 `spacesim/engine/` for forbidden imports, wall-clock reads, and any `random` use outside `rng.py`.
@@ -185,8 +222,13 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
   `validate_order` dry-run, `next_contacts` fleet countdown, `begin_recovery`/`recovery_status`
-  wiring `RecoverySystem` for the safe-mode recovery strip),
-  `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`,
+  wiring `RecoverySystem` for the safe-mode recovery strip; **multiplayer:** server-authoritative
+  lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /
+  catch_up / clock_state`, re-anchor on `start/rewind/undo/advance` so the wall clock can't snap
+  the sim back),
+  `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`
+  (**multiplayer:** `_locked(sid)` cm wraps every mutation; every read pass-through calls
+  `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added),
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
   `aar.py` (replay/scrub/branch-compare + `snapshot_at`).
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`) + `static/`
@@ -200,6 +242,16 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   from `basemap-data` (offline; coarse fallback if unavailable). `tools/render_manual.py` draws it.
 - `spacesim/content/vignettes/00-training-basics.yaml` — guided tutorial vignette with a per-cell
   `tutorial` step script (≥5 steps each); drives the manual walkthrough + its screenshots.
+- **All 19 vignettes carry a per-cell `intro_brief:` block** (situation, mission, friendly forces,
+  threat picture, deadline note, ROE note, success criteria, tool tips). Surfaced in the
+  **Mission brief panel** at the top of `<main>` via `GET /api/sessions/{sid}/brief/{cell}` (combined
+  with live ROE + objective deadlines + countdown). Auto-opens on first session load;
+  collapse state persisted per-session in `localStorage`. White sees both cells side-by-side.
+- **The 8 canonical numbered vignettes also carry a per-cell `tutorial:` block** (how each cell
+  completes its objectives, move by move). Surfaced via `GET /api/vignettes/{id}/tutorial` in the
+  in-UI **Tutorial panel** (View ▾) and mirrored in `docs/training/11-vignette-playbooks.md`. The
+  achievable objective-flips are verified by `spacesim/tests/test_vignette_tutorials.py`; ROE /
+  weapons-quality / command-station gates that block the rest are documented in each block's `expect`.
 - **Docs are modular under `docs/`** — routed by `docs/INDEX.md` (structure & rationale in
   `docs/DOCUMENTATION-PLAN.md`). Themes: `docs/build-spec/` (the binding spec, 8 modules),
   `docs/training/` (user manual, 9 modules), `docs/design/`, `docs/research/`, `docs/vignettes/`,

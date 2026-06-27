@@ -60,7 +60,7 @@ publicly known basing data — no classified material, no operational details.
 | Krona | Krona Zelenchukskaya (optical+radar SSA) | 43.65 | 41.43 | (available) |
 | Okno | Okno Nurek (optical SSA), Tajikistan | 38.27 | 69.27 | (available) |
 | Kaliningrad | Baltiysk / Kaliningrad (Tirada/Pole-21 reference) | 54.71 | 20.51 | `coa-russia-ml` (RED-JAM-TIRADA), `coa-russia-md` (RED-JAM), `03-gnss-ew-campaign` (RED-JAM) |
-| Dzhankoy | Dzhankoy area (reported Pole-21), Crimea | 45.71 | 34.39 | `coa-russia-ml` (RED-JAM-BYLINA) |
+| Dzhankoy | Dzhankoy area (reported Pole-21), Crimea | 45.71 | 34.39 | `coa-russia-ml` (RED-JAM-POLE) |
 | Khmeimim | Khmeimim Air Base (Krasukha/Tirada), Syria | 35.40 | 35.95 | (available) |
 | Voronezh-Armavir | Voronezh-DM (early-warning array), S. Russia | 44.92 | 40.99 | (available) |
 | Voronezh-Lekhtusi | Voronezh-M (early-warning array), NW Russia | 60.28 | 30.55 | (available) |

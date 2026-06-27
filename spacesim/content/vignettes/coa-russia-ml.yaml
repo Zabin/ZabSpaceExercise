@@ -3,7 +3,7 @@ vignette:
   title: "Russia ML: Sustained EW Campaign"
   classification: UNCLASSIFIED-TRAINING
   learning_objectives:
-    - "Russian doctrine leads with deniable, reversible electromagnetic attack (Tirada/Pole/Bylina)."
+    - "Russian doctrine leads with deniable, reversible electromagnetic attack (Tirada-2 SATCOM jam, Pole-21 GNSS jam, RB-109A Bylina EW C2)."
     - "Sustained jamming has no political ceiling and no debris — it is the workhorse counterspace tool."
     - "Blue defenses: frequency-hop, request SSN custody on jammer footprint, shift users."
   doctrinal_basis: [electromagnetic_warfare]
@@ -34,8 +34,8 @@ vignette:
       kind: jammer
       location: {lat_deg: 54.71, lon_deg: 20.51}
       elevation_mask_deg: 0.0
-    # RED-JAM-BYLINA = Dzhankoy area, Crimea (reported Pole-21 / Bylina GNSS-jam deployment).
-    - id: RED-JAM-BYLINA
+    # RED-JAM-POLE = Dzhankoy area, Crimea (reported Pole-21 GNSS-jam deployment).
+    - id: RED-JAM-POLE
       kind: jammer
       location: {lat_deg: 45.71, lon_deg: 34.39}
       elevation_mask_deg: 0.0
@@ -65,3 +65,22 @@ vignette:
       trigger: {type: manual}
       effects:
         - {type: message, to: [blue, white], text: "Red EW intensity escalated to TOTAL — expect persistent denial across SATCOM and PNT."}
+  intro_brief:
+    blue:
+      situation: "Eastern Europe / Black Sea. Russian doctrine leads with deniable, reversible electromagnetic attack — Tirada-2 against SATCOM links, Pole-21 against GNSS/PNT, with RB-109A Bylina coordinating across systems."
+      mission: "Hold pnt_avail (PNT available) and satcom_avail (SATCOM available) through T+60 min. PNT denial is LOCAL to the ground bubble — the satellite stays healthy."
+      friendly_forces: "BLUE-PNT (MEO), BLUE-SATCOM (GEO), GS-EUROPE, BLUE-RADAR-EU."
+      threat_picture: "RED-JAM-TIRADA (SATCOM jammer, Kaliningrad), RED-JAM-POLE (GNSS/PNT jammer, Dzhankoy). Reversible and deniable — no kinetic."
+      deadline_note: "T+60 min (3600 s)."
+      roe_note: "No kinetic. EW only."
+      success_criteria: "Both EW-survival objectives at the deadline."
+      tool_tips: "Watch the link-denied indicator. The teaching point: satellites are healthy; the user bubble is denied; routing around the bubble (ground rebroadcast) is the operational answer."
+    red:
+      situation: "Sustained EW campaign across the Russian arc. Tirada-2 (SATCOM) + Pole-21 (GNSS) deny Blue's links in the regional bubble without committing to escalation."
+      mission: "deny_pnt and deny_satcom in the bubble for T+60 min."
+      friendly_forces: "RED-JAM-TIRADA, RED-JAM-POLE."
+      threat_picture: "Blue MEO PNT + GEO SATCOM, EU ground station."
+      deadline_note: "Sustain denial through T+60 min."
+      roe_note: "No kinetic. Reversible EW exclusively."
+      success_criteria: "Both denials sustained at the deadline."
+      tool_tips: "Queue jam from each unit at its assigned link, advance the clock. Reversibility = political deniability."

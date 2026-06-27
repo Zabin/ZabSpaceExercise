@@ -8,6 +8,8 @@ Players send *intents*; the manager validates and mutates state — never the ot
 
 from __future__ import annotations
 
+import threading
+import time as _time
 from typing import Optional
 
 from spacesim.content.vignette import Vignette, build_world, evaluate_objectives
@@ -81,11 +83,26 @@ class SessionManager:
             self.osys.auto_cue_ssn = self.ssn
         self.started = False
         self.horizon = self.ctx.start_epoch + int(self.vignette.estimated_duration_min * 60 * 4 * 1_000_000)
+        # Multiplayer/server-clock state. NOT engine state — never read by spacesim/engine/, so
+        # determinism + import-guard stay intact. RLock so nested locked calls can't deadlock.
+        self._lock = threading.RLock()
+        self._clock_running = False
+        self._wall_anchor: Optional[float] = None   # epoch seconds (time.time())
+        self._sim_anchor: Optional[int] = None      # sim microseconds at the wall anchor
+        self._rate = 1.0                             # sim seconds per wall second
+        # Audit Jun 2026 §F2 — clock-lag watchdog. The 24/48-satellite "cap" is
+        # not an engine limit; it was sized for typical White-Cell hardware.
+        # User-authored vignettes can carry more, but if catch_up() takes long
+        # enough that the wall clock outruns the sim repeatedly, the hardware
+        # is insufficient for this scenario and White Cell needs to know.
+        self._catch_up_lag_history: list[float] = []  # last few catch_up wall-cost samples (s)
+        self._clock_lag_warning: Optional[dict] = None  # surfaced by clock_state()
 
     # -- lifecycle -------------------------------------------------------------
     def start(self) -> None:
         self.started = True
         self._arm_schedule(self.sim.clock.now)
+        self.set_clock(True)   # auto-start real-time clock (matches "Start begins ticking" UX)
 
     def _arm_schedule(self, from_t: int) -> None:
         """(Re)queue bus ticks and scripted time-injects after ``from_t`` — also used after a
@@ -105,16 +122,116 @@ class SessionManager:
     def advance_to(self, t: int) -> None:
         self.sim.advance_to(t)
         self.world = self.sim.world
+        # Re-anchor so a manual jump doesn't get instantly "undone" by a stale wall-clock anchor.
+        if self._clock_running:
+            self._wall_anchor = _time.time()
+            self._sim_anchor = self.sim.clock.now
+
+    # -- server-authoritative real-time clock (multiplayer) -------------------
+    def set_clock(self, running: bool, rate: float = 1.0) -> None:
+        """Arm or disarm the wall-clock anchor used by ``catch_up``.
+
+        Pausing folds the elapsed real time into the sim first, so the clock freezes at the
+        correct sim instant. Resuming starts a fresh anchor from the current sim time.
+        """
+        if running:
+            self._wall_anchor = _time.time()
+            self._sim_anchor = self.sim.clock.now
+            self._rate = float(rate)
+            self._clock_running = True
+        else:
+            self._catch_up_locked()
+            self._clock_running = False
+            self._wall_anchor = None
+            self._sim_anchor = None
+
+    def _catch_up_locked(self) -> None:
+        """Advance the sim to the wall-derived target. No-op if not running or target<=now.
+
+        Caller must already hold ``self._lock``. Safe because ``sim.advance_to`` raises only
+        when target<current; the explicit guard against ``sim.clock.now`` makes a stale or
+        equal wall reading a true no-op.
+
+        Audit Jun 2026 §F2 — instrument the advance with a wall-cost sample so
+        the watchdog can detect hardware-insufficient sessions.
+        """
+        if not self._clock_running or self._wall_anchor is None:
+            return
+        elapsed_before = _time.time() - self._wall_anchor
+        target = self._sim_anchor + int(elapsed_before * self._rate * 1_000_000)
+        if target > self.sim.clock.now:
+            wall_before = _time.time()
+            self.sim.advance_to(target)
+            self.world = self.sim.world
+            wall_cost = _time.time() - wall_before
+            sim_advanced_s = (self.sim.clock.now - (target - int(elapsed_before * self._rate * 1_000_000) + self._sim_anchor + 0)) / 1e6
+            # We measured wall_cost s of compute to advance the sim ahead.
+            # If wall_cost >= ~0.5 * (catch-up interval), the next tick will
+            # consistently fall further behind real time.
+            self._record_catch_up_lag(wall_cost, target_us=target)
+
+    def _record_catch_up_lag(self, wall_cost_s: float, target_us: int) -> None:
+        """Audit Jun 2026 §F2 — clock-lag watchdog.
+
+        Keeps a short ring of recent ``advance_to`` wall-cost samples. If the
+        recent average exceeds a threshold (i.e. we're spending most of the
+        polling window catching up), set a warning the UI will surface to
+        White Cell so they know the scenario is too heavy for the hardware.
+        """
+        self._catch_up_lag_history.append(wall_cost_s)
+        # Keep last 8 samples (~12 s of poll history at the default 1.5 s tick).
+        if len(self._catch_up_lag_history) > 8:
+            self._catch_up_lag_history.pop(0)
+        if len(self._catch_up_lag_history) < 4:
+            return
+        avg = sum(self._catch_up_lag_history) / len(self._catch_up_lag_history)
+        # Threshold: catch_up consistently >300 ms means we're using >20 % of a
+        # 1.5 s poll just advancing — about to fall behind real time.
+        if avg > 0.3:
+            asset_count = len(self.world.assets) if self.world is not None else 0
+            self._clock_lag_warning = {
+                "severity": "high" if avg > 0.8 else "medium",
+                "avg_wall_cost_s": round(avg, 3),
+                "asset_count": asset_count,
+                "message": (
+                    f"Server clock lag — average catch_up wall cost {avg:.2f}s "
+                    f"with {asset_count} assets. Hardware insufficient for this "
+                    f"scenario; consider a smaller fleet, slower rate, or a "
+                    f"more capable host."
+                ),
+            }
+        else:
+            self._clock_lag_warning = None
+
+    def catch_up(self) -> None:
+        with self._lock:
+            self._catch_up_locked()
+
+    def clock_state(self) -> dict:
+        return {
+            "running": self._clock_running,
+            "rate": self._rate,
+            "now": self.sim.clock.now,
+            # Audit Jun 2026 §F2 — None when healthy, dict when lagging.
+            "lag_warning": self._clock_lag_warning,
+        }
 
     def rewind_to(self, t: int) -> None:
         self.sim.rewind_to(t)
         self._rebind()
         if self.started:
             self._arm_schedule(t)
+        # Re-anchor at the rewound time so the wall clock can't snap the sim back to where it was.
+        if self._clock_running:
+            self._wall_anchor = _time.time()
+            self._sim_anchor = self.sim.clock.now
 
     def undo_last(self, n: int = 1) -> None:
         self.sim.undo_last(n)
         self._rebind()
+        if self._clock_running:
+            self._wall_anchor = _time.time()
+            self._sim_anchor = self.sim.clock.now
 
     def _rebind(self) -> None:
         # After a replay-based rewind the world object is fresh; repoint live references at it.
@@ -122,6 +239,9 @@ class SessionManager:
         self.osys.world = self.sim.world
         self.osys.orders.clear()           # queued events were dropped by the rewind
         self.osys._sensor_bookings.clear()
+        self.osys._order_sensor.clear()
+        self.osys._pass_bookings.clear()
+        self.osys._order_pass.clear()
         # Rebuild sensor bookings from executed observe events still in the (truncated) eventlog.
         for entry in self.sim.eventlog.entries:
             if entry.kind == "execute_observe":
@@ -196,7 +316,8 @@ class SessionManager:
                 status = "executed"
             out.append({"id": o.id, "cell": o.cell, "actor": o.actor, "action": o.action,
                         "target": o.target, "status": status, "delivery_path": o.delivery_path,
-                        "window": o.earliest_window, "reason": o.fail_reason})
+                        "window": o.earliest_window, "reason": o.fail_reason,
+                        "issued_at": o.issued_at})
         return out
 
     def cancel_order(self, cell: str, order_id: str) -> bool:

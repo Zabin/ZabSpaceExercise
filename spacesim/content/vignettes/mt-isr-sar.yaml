@@ -18,7 +18,7 @@ vignette:
       orbit: {a_m: 6928137.0, e: 0.0, i_deg: 98.0, raan_deg: 270, argp_deg: 0, ta_deg: 0.0}
       resources: {delta_v_ms: 60.0}
       payload_state: {type: isr_sar, collect_rate_per_s: 0.004}      # SAR fills storage faster (larger products)
-      bus_state: {power: {battery_soc: 0.85, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+      bus_state: {power: {battery_soc: 0.85, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}}
     # GS-POLAR = SvalSat (Svalbard Satellite Station, KSAT) — canonical polar-orbit downlink.
     - id: GS-POLAR
       kind: ground_station
@@ -57,3 +57,22 @@ vignette:
       trigger: {type: time, at_sim_s: 600}
       effects:
         - {type: message, to: [blue, white], text: "Cloud cover 10/10 over target — EO would be useless here; SAR penetrates."}
+  intro_brief:
+    blue:
+      situation: "Arctic littoral, persistent cloud cover and polar night. EO imaging is useless — SAR is the only sensor that works."
+      mission: "Collect SAR imagery (collect_sar) and keep the bird alive (survive) through T+30 min."
+      friendly_forces: "SAR-1 (LEO SAR imager), GS-POLAR, BLUE-RADAR-POLAR."
+      threat_picture: "RED-JAM (downlink jammer) + RED-DAZZLE (optical dazzler — wouldn't matter against SAR but contests the bird in general)."
+      deadline_note: "T+30 min (1800 s)."
+      roe_note: "No kinetic this vignette."
+      success_criteria: "SAR collect delivered + bird survives at the deadline."
+      tool_tips: "Action: observe · SAR-1 → target. SAR has its own beam-mode parameter — choose stripmap for area, spotlight for resolution. Downlink via GS-POLAR."
+    red:
+      situation: "Mission trial: contest Blue's polar SAR operation."
+      mission: "deny_downlink during Blue's GS-POLAR pass."
+      friendly_forces: "RED-JAM (downlink jammer), RED-DAZZLE (optical dazzler)."
+      threat_picture: "Blue SAR-1 + GS-POLAR. SAR is all-weather so dazzle alone is useless."
+      deadline_note: "T+30 min."
+      roe_note: "No kinetic. Reversible only."
+      success_criteria: "deny_downlink during the Blue downlink window."
+      tool_tips: "Jam GS-POLAR during the downlink pass. Dazzle would matter against EO; this is SAR — focus on the link."

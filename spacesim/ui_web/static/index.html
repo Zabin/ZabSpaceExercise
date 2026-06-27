@@ -8,52 +8,105 @@
 </head>
 <body data-cell="white">
   <header class="toolbar">
-    <svg id="logo" viewBox="0 0 64 64" width="28" height="28" role="img" aria-label="Space Control logo" style="color: var(--cell-accent)">
-      <circle cx="32" cy="36" r="18" fill="#0a1424" stroke="currentColor" stroke-width="1.4" opacity="0.95" />
-      <path d="M22 32 q4 -5 9 -3 q3 4 -1 7 q-5 3 -8 -4 z" fill="currentColor" opacity="0.35" />
-      <path d="M38 41 q3 -4 7 -1 q1 4 -3 5 q-5 1 -4 -4 z" fill="currentColor" opacity="0.30" />
-      <ellipse cx="32" cy="36" rx="28" ry="11" fill="none" stroke="currentColor" stroke-width="1.4"
-               opacity="0.75" transform="rotate(-20 32 36)" />
-      <g transform="translate(54 22) rotate(20)"><polygon points="0,-4 -4,3 4,3" fill="currentColor" /></g>
-      <rect x="12" y="49" width="3" height="3" fill="currentColor" opacity="0.85" />
+    <svg id="logo" viewBox="0 0 24 24" width="26" height="26" fill="none" role="img" aria-label="Space Control logo" style="color:var(--cell-accent);flex-shrink:0">
+      <circle cx="12" cy="12" r="5.5" fill="currentColor" fill-opacity="0.45" stroke="currentColor" stroke-width="1.5"/>
+      <ellipse cx="12" cy="12" rx="10.5" ry="3.5" stroke="currentColor" stroke-width="1.5" transform="rotate(-25 12 12)"/>
+      <circle cx="20.5" cy="5.5" r="1.8" fill="currentColor"/>
     </svg>
     <span class="title">Space Control &amp; Orbital Warfare</span>
-    <label>Vignette <select id="vignette"></select></label>
-    <label>Seed <input id="seed" type="number" value="1" style="width:4.5em" /></label>
-    <button id="load" class="primary">Load</button>
-    <button id="start" disabled>Start</button>
+    <span id="now-header" class="now-header">—</span>
+    <span id="net-stale" class="net-stale" hidden title="The browser hasn't received an update from the server recently — check the connection or whether the server is still running.">⚠ no updates from server</span>
+    <span id="session-summary" class="session-summary white-only" hidden></span>
     <span class="spacer"></span>
     <div class="ctrl" id="cells">
       <button class="cell" data-cell="white">White</button>
       <button class="cell" data-cell="blue">Blue</button>
       <button class="cell" data-cell="red">Red</button>
     </div>
-    <div class="ctrl">
+    <div class="ctrl white-only">
+      <button id="clock-toggle" title="Pause / resume the server-authoritative real-time clock">⏸ Pause</button>
       <button class="icon" data-step="60">+1m</button>
       <button class="icon" data-step="600">+10m</button>
       <button class="icon" data-step="3600">+1h</button>
       <button id="rewind">⟲ Rewind</button>
     </div>
-    <div class="ctrl">
-      <button id="save">Save</button>
-      <button id="loadbtn">Load</button>
-      <input id="loadfile" type="file" accept=".json,application/json" style="display:none" />
-    </div>
-    <label class="toggle"><input id="present" type="checkbox"> present</label>
-    <label class="toggle" title="Projector / White-Cell mode — hides compose form, larger fonts"><input id="projector" type="checkbox"> projector</label>
-    <label class="toggle" title="Color-blind safe palette (Okabe-Ito)"><input id="cb" type="checkbox"> cb-safe</label>
-    <label class="toggle" title="High-contrast mode — increases text contrast for low-vision use"><input id="hc" type="checkbox"> hi-contrast</label>
-    <label class="toggle" title="Large-text mode — bumps base font size for projector/low-vision use"><input id="bigtext" type="checkbox"> large-text</label>
-    <button id="tutorial" title="Toggle the vignette's tutorial coachmark panel">Tutorial</button>
-    <button id="inspect-vignette" title="Inspect or fork the loaded vignette (YAML)">Inspect</button>
     <button id="handover-btn" title="Blank/blur the screen to hand off the console between operators">⏸ Handover</button>
-    <button id="help-btn" title="Open the help panel — keyboard shortcuts, glossary, troubleshooting">? Help</button>
-    <button id="detach">Detach viewers</button>
+    <div class="menu-wrap white-only">
+      <button id="session-btn" title="Pick a vignette, load it, and start the session">📋 Session ▾</button>
+      <div id="session-menu" class="menu-pop" hidden>
+        <div class="menu-section">
+          <div class="menu-head">Vignette</div>
+          <label class="menu-item-inline">Vignette
+            <select id="vignette"><option value="" disabled selected>Loading…</option></select>
+          </label>
+          <label class="menu-item-inline">Seed
+            <input id="seed" type="number" value="1" style="width:5em">
+          </label>
+          <div class="menu-item-row">
+            <button id="load" class="primary">Load</button>
+            <button id="start" disabled>▶ Start</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="menu-wrap">
+      <button id="view-btn" title="Display modes and pop-out windows">▦ View ▾</button>
+      <div id="view-menu" class="menu-pop" hidden>
+        <div class="menu-section">
+          <div class="menu-head">Display mode</div>
+          <label class="menu-item"><input id="present" type="checkbox"> Presentation mode</label>
+          <label class="menu-item" title="Projector / White-Cell mode — hides compose form, larger fonts"><input id="projector" type="checkbox"> Projector mode</label>
+          <label class="menu-item" title="Color-blind safe palette (Okabe-Ito)"><input id="cb" type="checkbox"> Color-blind safe</label>
+          <label class="menu-item" title="High-contrast mode — increases text contrast for low-vision use"><input id="hc" type="checkbox"> High contrast</label>
+          <label class="menu-item" title="Large-text mode — bumps base font size for projector/low-vision use"><input id="bigtext" type="checkbox"> Large text</label>
+        </div>
+        <div class="menu-section">
+          <div class="menu-head">Briefing &amp; tutorial</div>
+          <button id="brief-open" class="menu-item" title="Mission brief: situation, objectives, ROE, success criteria">📋 Mission brief</button>
+          <button id="tutorial" class="menu-item" title="Per-cell step-by-step playbook">▶ Tutorial panel</button>
+        </div>
+        <div class="menu-section">
+          <div class="menu-head">Pop out (multi-screen)</div>
+          <button class="menu-item popout-btn" data-layout="globe">3D globe</button>
+          <button class="menu-item popout-btn" data-layout="map">2D belief map</button>
+          <button class="menu-item popout-btn" data-layout="globe+map">Globe + Map</button>
+          <button class="menu-item popout-btn" data-layout="fleet">Fleet &amp; telemetry</button>
+          <button class="menu-item popout-btn" data-layout="order">Order compose</button>
+          <button class="menu-item popout-btn" data-layout="aar">AAR timeline</button>
+        </div>
+      </div>
+    </div>
+    <div class="menu-wrap">
+      <button id="settings-btn" title="Session files and tools">⚙ Settings ▾</button>
+      <div id="settings-menu" class="menu-pop" hidden>
+        <div class="menu-section">
+          <div class="menu-head">Session</div>
+          <button id="save" class="menu-item">⬇ Save session</button>
+          <button id="loadbtn" class="menu-item">⬆ Load session</button>
+          <input id="loadfile" type="file" accept=".json,application/json" style="display:none" />
+        </div>
+        <div class="menu-section">
+          <div class="menu-head">Tools</div>
+          <button id="coach-start" class="menu-item">? Coachmark tour</button>
+          <button id="inspect-vignette" class="menu-item">Inspect vignette YAML</button>
+          <button id="help-btn" class="menu-item" title="Open the help panel — keyboard shortcuts, glossary, troubleshooting">? Help</button>
+        </div>
+      </div>
+    </div>
     <span class="banner">UNCLASSIFIED // TRAINING</span>
   </header>
 
   <main>
-    <section class="panel">
+    <!-- Mission brief panel: situation / objectives / ROE / success criteria. Auto-opens
+         on first session load; collapsible thereafter (state persisted in localStorage). -->
+    <section class="panel brief-panel" id="brief-panel">
+      <h2>
+        <button id="brief-toggle" class="brief-toggle" title="Collapse / expand the brief">▾</button>
+        Mission brief <span id="brief-vignette-title" class="muted"></span>
+      </h2>
+      <div id="brief-body" class="brief-body">(load a vignette to see the mission brief)</div>
+    </section>
+    <section class="panel" id="cell-time-panel">
       <h2>Cell &amp; Time</h2>
       <div class="clock">UTC: <b id="now">—</b></div>
       <div class="clock">
@@ -71,7 +124,7 @@
       </div>
       <div id="session" class="toggle"></div>
       <h3>Objectives</h3>
-      <pre id="objectives">—</pre>
+      <div id="objectives" class="objectives">—</div>
       <h3>Messages</h3>
       <ul id="messages"></ul>
       <!-- FW §11.D.17 — coaching notes from the vignette's `coaching:` list. -->
@@ -80,6 +133,7 @@
       <!-- FW §11.C.14 — upcoming conjunctions + one-click collision-avoid. -->
       <h3>Conjunctions</h3>
       <div id="conjunction-list" class="muted">(no conjunction warnings)</div>
+      <div class="white-only">
       <h3>Injects (White Cell)</h3>
       <!-- Quick-fire row: pre-loaded vignette injects fire immediately on click. -->
       <div class="ctrl">
@@ -121,9 +175,10 @@
         </div>
         <pre id="inject-build-result" class="muted" style="font-size:11px;margin-top:4px">—</pre>
       </details>
+      </div>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="fleet-panel">
       <h2>Fleet SOH rollup (own assets)</h2>
       <div id="fleet-filter" class="ctrl">
         <button class="chip active" data-filter="all">All</button>
@@ -137,14 +192,14 @@
       <table id="deltav"><thead><tr><th>Asset</th><th>Δv (m/s)</th><th>SoC</th><th>Years*</th></tr></thead><tbody></tbody></table>
       <div class="muted" style="font-size:11px">*Years of station-keeping at ≈15 m/s/yr (typical LEO maintenance budget)</div>
       <h2>Tracks (custody)</h2>
-      <table id="tracks"><thead><tr><th>Object</th><th>Conf</th><th>Char.</th><th>Class</th></tr></thead><tbody></tbody></table>
+      <table id="tracks"><thead><tr><th>Object</th><th>Conf</th><th>Char.</th><th>Class</th><th title="Click a row to expand orbital elements">COE</th></tr></thead><tbody></tbody></table>
       <h2>Perceived effects</h2>
       <ul id="effects"></ul>
       <h2>Alarms</h2>
       <ul id="alarms"></ul>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="tasking-panel">
       <h2>Tasking (sensor)</h2>
       <div id="task-mode" class="ctrl" style="margin-bottom:6px">
         <button class="chip active" data-tmode="organic">Organic</button>
@@ -163,7 +218,7 @@
           <option value="GEO">GEO</option><option value="HEO">HEO</option>
           <option value="cislunar">cislunar</option>
         </select></label>
-        <label>Target <input id="task-target" placeholder="(track id)" style="width:8em" /></label>
+        <label>Target <input id="task-target" list="target-options" placeholder="(known track id)" style="width:10em" /></label>
         <label>Priority <select id="task-priority">
           <option value="routine">routine</option>
           <option value="priority" selected>priority</option>
@@ -210,9 +265,24 @@
       <label>Actor <select id="o-actor"></select></label>
       <div id="actor-info" class="toggle"></div>
       <label>Action <select id="o-action"></select></label>
-      <label>Target <input id="o-target" placeholder="(e.g. RED-TGT)" style="width:10em" /></label>
-      <label style="display:flex">Params
-        <input id="o-params" style="flex:1" value='{"via":"GS-NORTH"}' /></label>
+      <label>Target
+        <select id="o-target-pick" title="Valid targets the other cell exposes — known enemy tracks (Blue/Red) or all adversary assets (White)">
+          <option value="">(pick a known target…)</option>
+        </select>
+      </label>
+      <label>or id <input id="o-target" list="target-options" placeholder="(track id or own asset)" style="width:10em" /></label>
+
+      <!-- Audit 2026-06 Commands §M4 (Phase C step 2) — declarative form panel.
+           Populated by renderVerbForm() in app.js from VERB_FORM_SCHEMA. When a verb
+           has no schema entry, the form falls back to the JSON escape hatch below. -->
+      <div id="verb-form" class="mnvr-fields" style="display:none"></div>
+
+      <label style="display:flex">
+        <details style="flex:1" id="json-params-wrap">
+          <summary style="cursor:pointer;color:var(--muted);font-size:11px">Advanced (raw JSON params)</summary>
+          <input id="o-params" style="flex:1;width:100%" value='{"via":"GS-NORTH"}' />
+        </details>
+      </label>
 
       <!-- Maneuver mode assistant (shown only when action = maneuver) -->
       <div id="mnvr-panel" style="display:none">
@@ -286,13 +356,77 @@
           <label>Power (W)<input id="jam-power" type="number" step="10" min="1" value="100"></label>
           <label>BW (kHz)<input id="jam-bw" type="number" step="100" min="0" value="1000"></label>
           <label>Victim BW (kHz)<input id="jam-vbw" type="number" step="100" min="0" value="1000"></label>
-          <label>Base P<sub>s</sub><input id="jam-pbase" type="number" step="0.05" min="0" max="1" value="0.9"></label>
+        </div>
+        <div class="muted" style="margin-top:4px;font-size:11px">
+          Audit 2026-06 Commands &sect;C2 — P<sub>s</sub> is derived from modulation &times; power &times; bandwidth coverage; defender frequency-hop / mitigation cut it further at the resolver. Compute below for the read-only estimate.
         </div>
         <div style="display:flex;gap:6px;margin-top:6px">
           <button id="jam-compute">Preview footprint</button>
           <span id="jam-summary" class="muted" style="align-self:center"></span>
         </div>
         <div id="jam-result" class="mnvr-result"></div>
+      </div>
+
+      <!-- Engage parameter assistant (shown only when action = engage). Audit 2026-06
+           Commands §M2: interceptor_class enum sourced from the four open-source
+           DA-ASAT test records; Pₖ derived from class × altitude reach × salvo. -->
+      <div id="engage-panel" style="display:none">
+        <hr style="border-color:rgba(255,255,255,0.1);margin:6px 0">
+        <div class="mnvr-fields">
+          <label>Interceptor class
+            <select id="engage-class">
+              <option value="bmd_adapted">BMD-adapted (SM-3-class, &le;600 km)</option>
+              <option value="mrbm_kkv" selected>MRBM KKV (SC-19 / Shakti class, &le;1000 km)</option>
+              <option value="abm_heavy">ABM heavy (Nudol class, &le;2000 km)</option>
+              <option value="coorbital">Co-orbital grappler (SJ-21 class, any alt)</option>
+            </select>
+          </label>
+          <label>Salvo n<input id="engage-salvo" type="number" step="1" min="1" max="20" value="1"></label>
+        </div>
+        <div class="muted" style="margin-top:4px;font-size:11px">
+          P<sub>k</sub> derives from interceptor class &times; target altitude reach (hard cap)
+          &times; salvo with correlated-failure floor. Defender <code>def.maneuver_evade</code>
+          halves it at the resolver.
+        </div>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button id="engage-compute">Preview P<sub>k</sub></button>
+          <span id="engage-summary" class="muted" style="align-self:center"></span>
+        </div>
+        <div id="engage-result" class="mnvr-result"></div>
+      </div>
+
+      <!-- Cyber parameter assistant (shown only when action = cyber). Audit 2026-06
+           Commands §C2: vector + payload mandatory; Pₛ derived from vector × posture × dwell. -->
+      <div id="cyber-panel" style="display:none">
+        <hr style="border-color:rgba(255,255,255,0.1);margin:6px 0">
+        <div class="mnvr-fields">
+          <label>Vector
+            <select id="cyber-vector">
+              <option value="rf">RF (uplink injection)</option>
+              <option value="supply_chain">Supply chain</option>
+              <option value="insider">Insider</option>
+              <option value="ground_segment">Ground segment</option>
+              <option value="ground_modem" selected>Ground modem (Viasat-style)</option>
+            </select>
+          </label>
+          <label>Payload
+            <select id="cyber-payload">
+              <option value="data_exfil">Data exfil</option>
+              <option value="wiper">Wiper (non-reversible)</option>
+              <option value="spoof">Spoof</option>
+              <option value="dwell">Dwell (persistence)</option>
+              <option value="seize_c2" selected>Seize C2 (safe-mode push)</option>
+            </select>
+          </label>
+          <label>Dwell (s)<input id="cyber-dwell" type="number" step="60" min="0" value="0"></label>
+        </div>
+        <div class="muted" style="margin-top:4px;font-size:11px">
+          P<sub>s</sub> = vector base &times; target cyber posture &times; dwell bonus.
+          Patched vulnerabilities close the vector (P<sub>s</sub> = 0). The <code>seize_c2</code>
+          payload models the Viasat KA-SAT pattern (legitimate management commands push the
+          target into safe mode).
+        </div>
+        <div id="cyber-summary" class="muted" style="margin-top:6px"></div>
       </div>
 
       <div id="batch-bar" class="empty">
@@ -314,7 +448,6 @@
       <div id="consequence-preview" class="preview" style="font-size:11px"></div>
       <button id="issue" class="primary">Issue order</button>
       <button id="save-playbook" title="Save the current order as a named playbook">★ Save preset</button>
-      <button id="coach-start" title="Walk through the UI" style="float:right">? Coachmark tour</button>
       <div id="o-preview" class="preview"></div>
       <h3>Playbooks</h3>
       <div id="playbook-list" class="playbook-list muted">(no presets saved)</div>
@@ -325,10 +458,13 @@
       <h3>Command queue</h3>
       <div id="queue"></div>
     </section>
+    <!-- Shared target list — populated in refresh(): own asset/sensor ids + characterised
+         known-track object ids (fog-of-war: red/blue only see what they've identified). -->
+    <datalist id="target-options"></datalist>
   </main>
 
-  <section class="viewers">
-    <div class="panel">
+  <section class="viewers" id="viewers-panel">
+    <div class="panel" id="globe-panel">
       <div class="viewer-head">
         <strong>3D globe</strong><span class="grow"></span>
         <div class="ctrl">
@@ -343,7 +479,7 @@
       </div>
       <canvas id="globe" width="520" height="360"></canvas>
     </div>
-    <div class="panel">
+    <div class="panel" id="map-panel">
       <div class="viewer-head">
         <strong>2D belief map</strong><span class="grow"></span>
         <div class="ctrl">
@@ -371,6 +507,8 @@
           <option value="1800" selected>30 min</option>
           <option value="3600">1 h</option>
           <option value="10800">3 h</option>
+          <option value="21600">6 h</option>
+          <option value="86400">24 h</option>
         </select>
       </label>
       <label>Future window
@@ -379,6 +517,8 @@
           <option value="3600">1 h</option>
           <option value="7200" selected>2 h</option>
           <option value="21600">6 h</option>
+          <option value="43200">12 h</option>
+          <option value="86400">24 h</option>
         </select>
       </label>
       <span class="muted">Click a bar to copy its order id.</span>
@@ -390,7 +530,7 @@
     <pre id="activity-detail" class="muted" style="font-size:11px;margin-top:4px;min-height:14px">—</pre>
   </section>
 
-  <section class="panel" id="aar-panel" style="margin:0 12px 14px">
+  <section class="panel white-only" id="aar-panel" style="margin:0 12px 14px">
     <h2>After-action review — scrub the deterministic timeline</h2>
     <div class="ctrl">
       <input id="aar-slider" type="range" min="0" max="0" value="0" style="flex:1" />
@@ -415,6 +555,7 @@
     <h2>Subsystem drill-down — telemetry &amp; logs (click a fleet row, then a parameter)</h2>
     <div id="drill-title" class="toggle">select an asset above…</div>
     <div id="recovery-strip"></div>
+    <div id="drill-orbit" class="drill-orbit"></div>
     <div style="display:grid; grid-template-columns: 1fr 540px; gap:12px; margin-top:8px">
       <div id="drill-params"></div>
       <div>
@@ -521,5 +662,6 @@
   <script src="/graph.js"></script>
   <script src="/globe.js"></script>
   <script src="/app.js"></script>
+  <script src="/panels.js"></script>
 </body>
 </html>

@@ -38,3 +38,45 @@ vignette:
     - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
     - {id: landing_window_start_s, label: "Threat Window (s)", type: int, default: 3600}
   injects: []
+  tutorial:
+    blue:
+      - {n: 1, title: "Review HVA + escort", when: "at start", action: review,
+         expect: "BLUE-HVA + BLUE-ESCORT in LEO; hva_survives by +1 h pending"}
+      - {n: 2, title: "Track the co-orbital threat", when: "BLUE-RADAR sees RED-COORB",
+         action: observe, actor: BLUE-RADAR, target: RED-COORB, params: {intent: characterize, classification: hostile},
+         expect: "characterized track on the approaching threat"}
+      - {n: 3, title: "Hold to the deadline", when: "+ advance to +1 h",
+         action: advance, params: {dt_s: 3601},
+         expect: "RED-COORB has no kinetic ROE and no organic safing path — hva_survives MET"}
+      - {n: 4, title: "Active defense (if enabled)", when: "with a TT&C command uplink",
+         action: maneuver, actor: BLUE-HVA, params: {dv: [0.0, 5.0, 0.0]},
+         expect: "evade or interpose the escort — needs a command station (White-Cell can add one)"}
+    red:
+      - {n: 1, title: "Review the co-orbital", when: "at start", action: review,
+         expect: "RED-COORB (300 m/s Δv); neutralize_hva (asset_safed) pending"}
+      - {n: 2, title: "Close on the HVA", when: "Red-doctrine / White-Cell closing burns",
+         action: maneuver, actor: RED-COORB, params: {dv: [0.0, 3.0, 0.0]},
+         expect: "aggressive RPO toward BLUE-HVA — needs a Red command-uplink path"}
+      - {n: 3, title: "Pressure, don't destroy", when: "throughout", action: review,
+         expect: "without White-Cell kinetic ROE + a weapons-quality track, neutralize_hva can't complete — the lesson is restraint"}
+
+  intro_brief:
+    blue:
+      situation: "LEO, March 2030. A Red co-orbital satellite has been observed maneuvering toward our high-value LEO asset (BLUE-HVA). Closing geometry suggests a posture demonstration rather than imminent attack — but intent is unclear."
+      mission: "Keep BLUE-HVA outside 50 km of RED-COORB for the +90 min watch window. Active defense (escort, maneuver-to-evade) is the right move IF you have command authority — otherwise the deterrent value is in the watch itself."
+      friendly_forces: "BLUE-HVA (LEO high-value asset). BLUE-ESCORT (co-orbital escort with Δv reserve). BLUE-RADAR (Eglin) for tracking. Note: this vignette ships NO Blue ground station — manoeuvres are not directly issuable."
+      threat_picture: "RED-COORB (Red co-orbital, 300 m/s Δv). Capable of multiple closing burns within a +90 min window."
+      deadline_note: "T+90 min (5400 s). Range threshold is 50 km."
+      roe_note: "No kinetic option. No command station — maneuver returns no_command_station. Custody-and-warning is the deliverable."
+      success_criteria: "evade MET: range(BLUE-HVA, RED-COORB) ≥ 50 km at T+90 min."
+      tool_tips: "Mostly observational this vignette. Task BLUE-RADAR on RED-COORB to maintain custody and watch the closing geometry on the 3D globe. White Cell adjudicates manoeuvres in this vignette."
+    red:
+      situation: "LEO, March 2030. Mission tasking is to demonstrate co-orbital threat against a Blue high-value LEO asset (BLUE-HVA) — pressure without destruction. Political objective: signal capability while staying below the kinetic threshold."
+      mission: "Close RED-COORB on BLUE-HVA to demonstrate proximity threat. Outright destruction is OFF the table this vignette — the teaching point is restraint."
+      friendly_forces: "RED-COORB (Red co-orbital threat, 300 m/s Δv reserve). No Red ground TT&C station — closing burns are White-Cell / Red-doctrine adjudicated."
+      threat_picture: "BLUE-HVA + BLUE-ESCORT in LEO. Blue can characterize you via BLUE-RADAR but has no organic maneuver-to-evade path in this vignette."
+      deadline_note: "Drive closing range below 50 km by T+90 min."
+      roe_note: "neutralize_hva CANNOT complete in this vignette — kinetic ROE is OFF, and there's no weapons-quality track gate to satisfy. This is intentional. The deliverable is the pressure, not the kill."
+      success_criteria: "neutralize_hva is RED's stated objective but is doctrine-gated off — by design, this vignette teaches restraint."
+      tool_tips: "Action: maneuver · actor: RED-COORB. If maneuver returns no_command_station, this vignette expects White-Cell adjudication. Closing geometry shows on the 3D globe (top right) — the visual is the point."
+

@@ -18,7 +18,7 @@ vignette:
       orbit: {a_m: 7178137.0, e: 0.0, i_deg: 98.7, raan_deg: 0, argp_deg: 0, ta_deg: 0.0}
       resources: {delta_v_ms: 30.0}
       payload_state: {type: weather, collect_rate_per_s: 0.003}
-      bus_state: {power: {battery_soc: 0.80, charge_rate_per_s: 0.0002, drain_rate_per_s: 0.0003}}
+      bus_state: {power: {battery_soc: 0.80, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}}
     # GS-WX-PRIMARY = Wallops Flight Facility / NOAA NSOF (Suitland) — US weather downlink.
     - id: GS-WX-PRIMARY
       kind: ground_station
@@ -55,3 +55,22 @@ vignette:
       trigger: {type: time, at_sim_s: 900}
       effects:
         - {type: message, to: [blue, white], text: "Tropical cyclone in formation; joint commander requests surge collection cadence over the basin."}
+  intro_brief:
+    blue:
+      situation: "Mid-latitude continental coverage, hurricane season. Routine weather collection is a CADENCE problem — SoC budget, eclipse passes, on-board storage, and downlink-window timing all interact."
+      mission: "Deliver weather product (deliver_wx) and keep WX-1 operational (wx_op) through T+30 min."
+      friendly_forces: "WX-1 (LEO weather imager), GS-WX-PRIMARY and GS-WX-BACKUP (two ground stations), BLUE-WX-RADAR."
+      threat_picture: "RED-SDA-PASSIVE (passive tracker — no action expected)."
+      deadline_note: "T+30 min (1800 s)."
+      roe_note: "Doctrinal: peacetime weather op. No kinetic."
+      success_criteria: "Delivered product + operational bird at deadline."
+      tool_tips: "Watch SoC: if too low entering eclipse, collection fails. Downlink at PRIMARY first; BACKUP is the fallback."
+    red:
+      situation: "Passive watch — observe Blue's cadence."
+      mission: "track_blue: maintain track on Blue assets."
+      friendly_forces: "RED-SDA-PASSIVE."
+      threat_picture: "Blue WX-1 + 2 ground stations + radar."
+      deadline_note: "T+30 min."
+      roe_note: "Passive. No interaction."
+      success_criteria: "Track held."
+      tool_tips: "No active play — advance the clock; the tracker stays nominal."

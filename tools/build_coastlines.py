@@ -70,7 +70,7 @@ def main():
         coast, borders = _fallback()
         src = "fallback"
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({"coast": coast, "borders": borders}, separators=(",", ":")))
+    OUT.write_text(json.dumps({"coast": coast, "borders": borders}, separators=(",", ":")), encoding="utf-8")
     pts = sum(len(s) for s in coast) + sum(len(s) for s in borders)
     print(f"wrote {OUT} from {src}: {len(coast)} coast + {len(borders)} border polylines, "
           f"{pts} points, {OUT.stat().st_size // 1024} KB")

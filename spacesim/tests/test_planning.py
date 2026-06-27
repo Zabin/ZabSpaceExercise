@@ -89,7 +89,7 @@ def test_task_then_custody_then_unlock_engagement():
     assert tr.is_weapons_quality(world.now)
 
     # Now the same engagement validates and queues.
-    ok = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT", params={"success_prob": 1.0}))
+    ok = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT", params={"interceptor_class": "mrbm_kkv"}))
     assert ok.status == "queued"
 
 

@@ -1,0 +1,12 @@
+# Server settings for the FastAPI UI.
+# Override any field; missing fields fall back to the defaults in spacesim/config.py.
+#
+# IMPORTANT: this file is ONLY read by  python3 -m spacesim.ui_web
+# The bare  uvicorn spacesim.ui_web.server:app  CLI ignores this file and uses
+# uvicorn's own defaults (port 8000). To change the port, either:
+#   • run  python3 -m spacesim.ui_web   (preferred — uses the values below), or
+#   • pass  --port N --host H  to the uvicorn CLI directly.
+server:
+  host: 127.0.0.1   # use 0.0.0.0 to expose on a LAN
+  port: 8000
+  reload: false     # auto-reload on code change (dev only)

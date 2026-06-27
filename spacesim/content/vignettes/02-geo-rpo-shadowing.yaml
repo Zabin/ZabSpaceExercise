@@ -42,3 +42,49 @@ vignette:
     - {id: ssn_red_dispersion,  label: "Red SSN dispersion",  type: enum,
        options: [off, sparse, regional, global, proliferated], default: off}
   injects: []
+  tutorial:
+    blue:
+      - {n: 1, title: "Review the GEO picture", when: "at start", action: review,
+         expect: "BLUE-HVA in GEO; maintain_custody of RED-INSP pending (min_conf 0.5)"}
+      - {n: 2, title: "Get an optical track", when: "BLUE-OPT has a lit pass on RED-INSP",
+         action: observe, actor: BLUE-OPT, target: RED-INSP, params: {intent: characterize, classification: hostile},
+         expect: "characterized track on RED-INSP; confidence resets to 1.0"}
+      - {n: 3, title: "Advance to the look", when: "+10 min to the collection",
+         action: advance, params: {to: order_window},
+         expect: "maintain_custody MET while the track is fresh"}
+      - {n: 4, title: "Re-task before custody decays", when: "before the 30-min confidence half-life",
+         action: observe, actor: BLUE-OPT, target: RED-INSP, params: {intent: track},
+         expect: "confidence resets again — custody held through the decision window"}
+      - {n: 5, title: "Read the intent", when: "as RED-INSP closes", action: review,
+         expect: "inspection vs. threat is ambiguous; custody informs the escalation call"}
+    red:
+      - {n: 1, title: "Review the inspector", when: "at start", action: review,
+         expect: "RED-INSP (200 m/s Δv); close_approach within 100 km of BLUE-HVA pending"}
+      - {n: 2, title: "Plan around Blue's lit window", when: "GEODSS needs darkness on the target",
+         action: review,
+         expect: "close when BLUE-OPT can't see (terminator) to break custody between looks"}
+      - {n: 3, title: "Close on the high-value asset", when: "Red-doctrine / White-Cell closing burns",
+         action: maneuver, actor: RED-INSP, params: {dv: [0.0, 2.0, 0.0]},
+         expect: "co-orbital closing toward BLUE-HVA — needs a Red command-uplink path; else White-Cell adjudicates"}
+      - {n: 4, title: "Confirm the shadow", when: "range <= 100 km", action: review,
+         expect: "close_approach MET — but a Blue that kept custody can maneuver away"}
+
+  intro_brief:
+    blue:
+      situation: "GEO belt, March 2030. A Red inspector satellite has been observed maneuvering near our high-value asset BLUE-HVA. Intent is ambiguous — routine inspection or shadow-and-shoot RPO setup. National command wants continuous custody."
+      mission: "Maintain a characterized track on RED-INSP with confidence ≥ 0.5 throughout the +90 min watch window. Custody confidence halves every 30 min without observation — you must re-task before decay."
+      friendly_forces: "BLUE-HVA (GEO communications) — protect, do not maneuver. BLUE-OPT (GEODSS-class optical, Maui) — your only sensor on RED-INSP. Note: optical needs DARKNESS at the sensor + sunlit target."
+      threat_picture: "RED-INSP (GEO inspector, 200 m/s Δv reserve) — capable of slow closing burns. If Red closes within 100 km it constitutes a shadow event."
+      deadline_note: "T+90 min (5400 s). custody decays continuously; pace your observations."
+      roe_note: "No kinetic option this vignette. Active defence requires Blue maneuver authority — not present here. Custody and warning are the deliverable."
+      success_criteria: "maintain_custody MET: track confidence on RED-INSP ≥ 0.5 at T+90 min."
+      tool_tips: "Action: observe · actor: BLUE-OPT · target: RED-INSP · params: {intent: characterize, classification: hostile}. Re-task every 25–28 min to stay ahead of half-life decay. Tracks (custody) table shows current confidence; expand a row to see the captured COE at observation time."
+    red:
+      situation: "GEO belt, March 2030. Mission tasking is to shadow a Blue high-value GEO communications asset (BLUE-HVA) and present an ambiguous intent — routine inspection or potential threat. The political objective is to demonstrate access without committing to action."
+      mission: "Close RED-INSP inside 100 km of BLUE-HVA before the +90 min window expires, while remaining inside the inspection-vs-threat ambiguity envelope."
+      friendly_forces: "RED-INSP (GEO inspector, 200 m/s Δv reserve). No Red ground TT&C station in this vignette — closing burns are White-Cell / Red-doctrine adjudicated."
+      threat_picture: "BLUE-OPT (Maui optical) needs darkness at the sensor to track you — time burns to coincide with Blue's lit window. BLUE-HVA itself has no manoeuvre authority here."
+      deadline_note: "Close within 100 km by T+90 min."
+      roe_note: "No kinetic this vignette. The lesson is custody-vs-shadowing ambiguity."
+      success_criteria: "close_approach MET: range(RED-INSP, BLUE-HVA) ≤ 100 km at any time before T+90 min."
+      tool_tips: "Action: maneuver · actor: RED-INSP · params: {dv: [0,2,0]} (lvlh y-axis). If maneuver returns no_command_station, this vignette expects White-Cell adjudication — call it in chat. The 3D globe (top right) shows the closing geometry visually."

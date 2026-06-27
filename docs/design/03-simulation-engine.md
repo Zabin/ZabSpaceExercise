@@ -2,7 +2,7 @@
 
 This is the heart of the system and the contract Claude Code should implement most carefully.
 It must be **deterministic**, **UI-agnostic**, and **fidelity-swappable**. Cross-reference the
-physics rationale in `01-research/04-orbital-mechanics-primer.md`.
+physics rationale in `../research/04-orbital-mechanics-primer.md`.
 
 ## 1. The simulation clock and event loop
 

@@ -25,32 +25,35 @@ window.Globe = (function () {
     if (!ctx) return;
     ctx.fillStyle = "#070b10"; ctx.fillRect(0, 0, cv.width, cv.height);
     const R = (cv.width / 2 - 18) * cam.zoom, cx = cv.width / 2, cy = cv.height / 2;
-    // Ocean disk.
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.fillStyle = "#0e2438"; ctx.fill();
-    ctx.strokeStyle = "#2a3646"; ctx.stroke();
-    // Day/night: soft highlight centered on the subsolar point if it's on the near side.
+    // Ocean disk — brighter cyan-blue so it reads on darker monitors.
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.fillStyle = "#163b5a"; ctx.fill();
+    ctx.strokeStyle = "#7896b6"; ctx.lineWidth = 1.5; ctx.stroke(); ctx.lineWidth = 1;
+    // Day/night: warmer, stronger subsolar highlight + dim night side for clear delimiter.
     if (scene) {
       const s = project(scene.sun_lat_deg, scene.sun_lon_deg, 0);
+      // Dim night side first (everything that isn't lit), then re-light around the subsolar point.
+      ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.clip();
+      ctx.fillStyle = "rgba(0,0,8,0.42)"; ctx.fillRect(0, 0, cv.width, cv.height);
       if (s.front) {
-        const g = ctx.createRadialGradient(s.x, s.y, 4, s.x, s.y, R * 1.3);
-        g.addColorStop(0, "rgba(120,150,170,.35)"); g.addColorStop(1, "rgba(120,150,170,0)");
-        ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.clip();
-        ctx.fillStyle = g; ctx.fillRect(0, 0, cv.width, cv.height); ctx.restore();
+        const g = ctx.createRadialGradient(s.x, s.y, 4, s.x, s.y, R * 1.25);
+        g.addColorStop(0, "rgba(255,235,180,0.55)"); g.addColorStop(1, "rgba(255,235,180,0)");
+        ctx.fillStyle = g; ctx.fillRect(0, 0, cv.width, cv.height);
       }
+      ctx.restore();
     }
     // Country map (coastlines + borders), clipped to the near side via the front flag.
     if (window.WorldMap && WorldMap.ready() && showMap) {
       ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.clip();
-      WorldMap.draw(ctx, (lon, lat) => { const p = project(lat, lon, 0); return { x: p.x, y: p.y, front: p.front }; }, {});
+      WorldMap.draw(ctx, (lon, lat) => { const p = project(lat, lon, 0); return { x: p.x, y: p.y, front: p.front }; }, { coastWidth: 1.4 });
       ctx.restore();
     }
-    // Graticule (near-side segments only).
-    ctx.strokeStyle = "rgba(60,90,120,.5)"; ctx.lineWidth = 1;
+    // Graticule (near-side segments only) — brighter so it reads against the ocean.
+    ctx.strokeStyle = "rgba(140,180,215,0.55)"; ctx.lineWidth = 1;
     for (let lon = -180; lon < 180; lon += 30) seg((t) => [t, lon], -90, 90);
     for (let lat = -60; lat <= 60; lat += 30) seg((t) => [lat, t], -180, 180);
     if (!scene) return;
-    // User-added FW #1 — orbital paths: dim polyline projected at the asset's altitude.
-    ctx.strokeStyle = "rgba(159,176,192,0.4)"; ctx.lineWidth = 1;
+    // User-added FW #1 — orbital paths: brighter polyline at the asset's altitude.
+    ctx.strokeStyle = "rgba(210,225,245,0.70)"; ctx.lineWidth = 1.2;
     scene.assets.forEach((a) => {
       if (!a.on_orbit || !a.track || a.track.length < 2) return;
       ctx.beginPath();
@@ -71,17 +74,17 @@ window.Globe = (function () {
       ctx.fillStyle = accent;
       if (window.Symbology) Symbology.draw(ctx, p.x, p.y, a, { r: 5 });
       else { if (a.on_orbit) { ctx.beginPath(); ctx.moveTo(p.x, p.y - 5); ctx.lineTo(p.x - 5, p.y + 4); ctx.lineTo(p.x + 5, p.y + 4); ctx.closePath(); ctx.fill(); } else ctx.fillRect(p.x - 4, p.y - 4, 8, 8); }
-      ctx.fillStyle = "#9fb0c0"; ctx.font = "11px monospace"; ctx.fillText(a.id, p.x + 7, p.y + 3);
+      ctx.fillStyle = "#d6e0ec"; ctx.font = "11px monospace"; ctx.fillText(a.id, p.x + 7, p.y + 3);
     });
     // Tracks (belief) with uncertainty ring.
     scene.tracks.forEach((t) => {
       const p = project(t.lat_deg, t.lon_deg, (t.alt_m || 0) / 1000);
       if (!p.front) return;
       const rr = Math.max(5, Math.min(40, t.uncertainty_km / 18));
-      ctx.strokeStyle = t.characterized ? "#e0c24a" : "#e06a6a";
+      ctx.strokeStyle = t.characterized ? "#ffd35a" : "#ff8585"; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.arc(p.x, p.y, rr, 0, 2 * Math.PI); ctx.stroke();
       ctx.fillStyle = ctx.strokeStyle; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, 2 * Math.PI); ctx.fill();
-      ctx.fillStyle = "#9fb0c0"; ctx.fillText(`${t.object} ±${t.uncertainty_km}km`, p.x + 6, p.y - 6);
+      ctx.fillStyle = "#d6e0ec"; ctx.fillText(`${t.object} ±${t.uncertainty_km}km`, p.x + 6, p.y - 6);
     });
   }
 

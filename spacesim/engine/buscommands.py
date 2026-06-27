@@ -19,38 +19,49 @@ BUS_VERBS = {"eps.shed_load", "eps.restore_load", "eps.set_charge_mode", "eps.se
              "adcs.set_mode", "adcs.desaturate", "adcs.point_payload",
              "cdh.dump_storage", "cdh.clear_fault", "cdh.reset_subsystem", "cdh.load_stored_program",
              "tcs.set_mode", "tcs.set_heater",
-             "comms.enable_isl", "comms.config_link", "comms.point_antenna", "comms.set_crypto",
+             "comms.enable_isl", "comms.config_link",
              "prop.cancel_burn", "prop.collision_avoid"}
-PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users", "satcom.report_interference",
-                 "satcom.set_transponder", "satcom.reconfigure_beam", "satcom.set_frequency_plan",
+# Audit 2026-06 Commands §M1 / Phase D — cut: isr.assess_quality, isr.calibrate (NIIRS is
+# computed by ground processing; realism §2), sigint.set_band / sigint.geolocate /
+# sigint.downlink (folded into sigint.task_collection + the downlink action), sda.cue /
+# sda.downlink / wx.downlink (no consumer; covered by the downlink action), satcom.
+# report_interference / satcom.set_transponder (no consumer; cosmetic),
+# mw.set_sensor_mode / mw.report_alerts (broken-loop + replaced by mw.add_stare_area
+# from realism §7). Comms cuts: comms.point_antenna / comms.set_crypto (no consumer or
+# model). Added: mw.add_stare_area, satcom.geolocate_interference, wx.request_sector
+# from realism research §15.
+PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users",
+                 "satcom.reconfigure_beam", "satcom.set_frequency_plan",
+                 "satcom.geolocate_interference",
+                 "satcom.null_steer",
                  "isr.collect_now", "isr.schedule_collection", "isr.set_mode",
-                 "isr.prioritize_downlink", "isr.assess_quality", "isr.calibrate",
-                 "sigint.task_collection", "sigint.set_band", "sigint.geolocate", "sigint.downlink",
-                 "sda.task_search", "sda.task_track", "sda.task_characterize", "sda.cue", "sda.downlink",
-                 "wx.schedule_collection", "wx.downlink",
+                 "isr.prioritize_downlink",
+                 "sigint.task_collection",
+                 "sda.task_search", "sda.task_track", "sda.task_characterize",
+                 "wx.schedule_collection", "wx.request_sector",
                  "pnt.set_integrity", "pnt.report_status",
-                 "mw.set_sensor_mode", "mw.report_alerts"}
+                 "pnt.flex_power", "pnt.set_health_flag",
+                 "mw.add_stare_area"}
 DEFENSE_VERBS = {"def.patch_cyber", "def.frequency_hop", "def.harden", "def.set_threat_warning",
-                 "def.maneuver_evade", "def.escort_posture", "def.disperse"}
+                 "def.maneuver_evade", "def.escort_posture", "def.disperse",
+                 "def.set_deception_mode"}
 COMMAND_VERBS = BUS_VERBS | PAYLOAD_VERBS | DEFENSE_VERBS
 
 # Payload verbs are valid only on a payload of a matching mission type (FR-B2: the bus/payload fit).
 _PAYLOAD_TYPES_FOR = {
     "satcom.mitigate_interference": {"satcom"}, "satcom.shift_users": {"satcom"},
-    "satcom.report_interference": {"satcom"}, "satcom.set_transponder": {"satcom"},
-    "satcom.reconfigure_beam": {"satcom"},
+    "satcom.reconfigure_beam": {"satcom"}, "satcom.set_frequency_plan": {"satcom"},
+    "satcom.geolocate_interference": {"satcom"},
+    "satcom.null_steer": {"satcom"},
     "isr.collect_now": {"isr_eo", "isr_sar"}, "isr.schedule_collection": {"isr_eo", "isr_sar"},
     "isr.set_mode": {"isr_eo", "isr_sar"},
-    "isr.prioritize_downlink": {"isr_eo", "isr_sar"}, "isr.assess_quality": {"isr_eo", "isr_sar"},
-    "isr.calibrate": {"isr_eo", "isr_sar"},
-    "sigint.task_collection": {"sigint"}, "sigint.set_band": {"sigint"},
-    "sigint.geolocate": {"sigint"}, "sigint.downlink": {"sigint"},
-    "sda.task_search": {"sda"}, "sda.task_track": {"sda"},
-    "sda.task_characterize": {"sda"}, "sda.cue": {"sda"}, "sda.downlink": {"sda"},
-    "satcom.set_frequency_plan": {"satcom"},
-    "wx.schedule_collection": {"weather"}, "wx.downlink": {"weather"},
+    "isr.prioritize_downlink": {"isr_eo", "isr_sar"},
+    "sigint.task_collection": {"sigint"},
+    "sda.task_search": {"sda"}, "sda.task_track": {"sda"}, "sda.task_characterize": {"sda"},
+    "wx.schedule_collection": {"weather"}, "wx.request_sector": {"weather"},
     "pnt.set_integrity": {"pnt"}, "pnt.report_status": {"pnt"},
-    "mw.set_sensor_mode": {"mw"}, "mw.report_alerts": {"mw"},
+    "pnt.flex_power": {"pnt"}, "pnt.set_health_flag": {"pnt"},
+    "mw.add_stare_area": {"mw"},
 }
 
 _ISR_MODES = ("wide", "narrow", "standby", "nominal")
@@ -207,15 +218,6 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
             bus.attitude.status = "green"
         return True, "desaturated"
 
-    if verb == "comms.point_antenna":
-        if bus is None:
-            return False, "no_bus"
-        mode = params.get("mode", "nominal")
-        if mode not in _ANTENNA_MODES:
-            mode = "nominal"
-        bus.comms.antenna_mode = mode
-        return True, f"antenna_{mode}"
-
     if verb == "isr.set_mode":
         p = a.payload_state
         if p is None:
@@ -229,6 +231,9 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         return True, f"isr_mode_{mode}"
 
     if verb == "pnt.set_integrity":
+        # Legacy verb retained for save-file back-compat (Audit 2026-06 Commands §M3).
+        # New scenarios should use pnt.flex_power / pnt.set_health_flag, which model
+        # the two real PNT operator actions; this verb just records the requested mode.
         p = a.payload_state
         if p is None:
             return False, "no_payload"
@@ -237,6 +242,44 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
             mode = "standard"
         p.integrity_mode = mode
         return True, f"integrity_{mode}"
+
+    if verb == "pnt.flex_power":
+        # IS-GPS-200E flex power: MCS reallocates SV transmit power between P(Y) and
+        # M-code to raise mil-signal power in jamming environments. Block IIIF adds
+        # Regional Military Protection (regional M-code spot beam).
+        # Realism research §6 / docs/research/05-mission-types-and-counters.md §4.
+        p = a.payload_state
+        if p is None:
+            return False, "no_payload"
+        on = bool(params.get("on", True))
+        signal = params.get("signal", "M-code")
+        if signal not in ("M-code", "PY"):
+            signal = "M-code"
+        p.detail["flex_power_on"] = on
+        p.detail["flex_power_signal"] = signal
+        if "region" in params and params["region"]:
+            p.detail["flex_power_region"] = params["region"]
+        # The protective effect is encoded as integrity_mode so the existing telemetry /
+        # objective surface (which already reads integrity_mode for spoof-resistance
+        # tests) sees the operator's action without growing the typed model.
+        p.integrity_mode = "protected" if on else "standard"
+        return True, "flex_power_on" if on else "flex_power_off"
+
+    if verb == "pnt.set_health_flag":
+        # 2 SOPS MCS sets an SV health flag and broadcasts the change to users via NANU.
+        # Healthy=False simulates marking the SV unusable until the operator restores it.
+        p = a.payload_state
+        if p is None:
+            return False, "no_payload"
+        healthy = bool(params.get("healthy", True))
+        sv_id = params.get("sv_id", actor_id)
+        p.detail["sv_healthy"] = healthy
+        # NANU-style consequence so AAR and White-Cell can see the broadcast.
+        world.consequences.append({"t": now, "type": "nanu", "actor": actor_id,
+                                    "sv_id": sv_id, "healthy": healthy})
+        # Health flag affects users' integrity perception.
+        p.integrity_mode = "standard" if healthy else "degraded"
+        return True, "sv_healthy" if healthy else "sv_unhealthy"
 
     if verb == "def.maneuver_evade":
         dv_cost = float(params.get("dv_cost", 5.0))
@@ -285,36 +328,10 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         recompute_status(bus)
         return True, "program_loaded"
 
-    if verb == "comms.set_crypto":
-        if bus is None: return False, "no_bus"
-        # We don't model crypto state explicitly; record the rotation in the bus' last_update tag
-        # via the comms.data_rate_kbps (no-op on rate) — observable as a successful command.
-        return True, f"crypto_key_{params.get('key_id', 'rotated')}"
-
     if verb == "isr.prioritize_downlink":
         if a.payload_state is None: return False, "no_payload"
         a.payload_state.detail["downlink_priority"] = params.get("priority", "high")
         return True, "downlink_prioritized"
-
-    if verb == "isr.assess_quality":
-        if a.payload_state is None: return False, "no_payload"
-        # Read-time best-effort: storage > 0 means there's something to assess; SNR-style stub.
-        storage = bus.cdh.storage_frac if bus is not None else 0.0
-        quality = "good" if storage > 0.2 else "thin"
-        a.payload_state.detail["last_quality"] = quality
-        return True, f"quality_{quality}"
-
-    if verb == "sigint.set_band":
-        if a.payload_state is None: return False, "no_payload"
-        band = params.get("band", "S")
-        a.payload_state.detail["band"] = band
-        return True, f"band_{band}"
-
-    if verb == "satcom.report_interference":
-        if a.payload_state is None: return False, "no_payload"
-        lvl = float(a.payload_state.interference_level)
-        a.payload_state.detail["last_interference_report"] = lvl
-        return True, f"interference_{lvl:.2f}"
 
     if verb == "pnt.report_status":
         if a.payload_state is None: return False, "no_payload"
@@ -322,10 +339,55 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         a.payload_state.detail["last_status_report"] = mode
         return True, f"status_{mode}"
 
-    if verb == "wx.downlink":
-        if a.payload_state is None: return False, "no_payload"
-        a.payload_state.detail["downlink_queued_at"] = now
-        return True, "wx_downlink_queued"
+    if verb == "satcom.geolocate_interference":
+        # Realism research §5 — the WGS MAJE / commercial interference-geolocation function.
+        # Detects, identifies, and geolocates an in-band interferer. Records the report as
+        # a consequence so AAR / White-Cell / friendly cells can see the geolocation cue.
+        p = a.payload_state
+        if p is None:
+            return False, "no_payload"
+        lvl = float(p.interference_level)
+        if lvl <= 0.05:
+            return False, "no_interference_detected"
+        # Geolocation precision (CEP km) scales with dwell time; reasonable defaults.
+        dwell_s = float(params.get("dwell_s", 600.0))
+        cep_km = round(50.0 / max(1.0, dwell_s / 600.0), 1)
+        p.detail["last_interference_geoloc_cep_km"] = cep_km
+        world.consequences.append({
+            "t": now, "type": "interference_geoloc", "actor": actor_id,
+            "interference_level": lvl, "cep_km": cep_km,
+        })
+        return True, f"geolocated_cep_{cep_km}km"
+
+    if verb == "wx.request_sector":
+        # Realism research §8 — GOES-R mesoscale domain sector (MDS) request. Forecaster
+        # picks an AOI center + cadence; the payload images that box at the requested rate.
+        p = a.payload_state
+        if p is None:
+            return False, "no_payload"
+        if bus is not None and not can_collect(bus):
+            return False, "cannot_collect"
+        center = params.get("center") or [0.0, 0.0]
+        cadence_s = int(params.get("cadence_s", 60))
+        if cadence_s not in (30, 60):
+            cadence_s = 60
+        p.detail["mds_center"] = list(center)
+        p.detail["mds_cadence_s"] = cadence_s
+        p.collecting = True
+        return True, f"sector_{cadence_s}s"
+
+    if verb == "mw.add_stare_area":
+        # Realism research §7 — SBIRS step-stare tasking: operator adds an AOI to the
+        # starer's revisit list. The scanner keeps doing full-disk strategic warning.
+        p = a.payload_state
+        if p is None:
+            return False, "no_payload"
+        center = params.get("center") or [0.0, 0.0]
+        revisit_s = int(params.get("revisit_s", 30))
+        areas = list(p.detail.get("mw_stare_areas", []))
+        areas.append({"center": list(center), "revisit_s": revisit_s})
+        p.detail["mw_stare_areas"] = areas
+        return True, f"stare_area_added_{revisit_s}s"
 
     if verb == "def.escort_posture":
         # Posture toward a high-value asset. Informational + recorded for AAR.
@@ -371,21 +433,6 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         target = params.get("target", "?")
         return True, f"pointing_at_{target}"
 
-    if verb == "isr.calibrate":
-        if a.payload_state is None: return False, "no_payload"
-        a.payload_state.detail["calibrated_at"] = now
-        return True, "calibrated"
-
-    if verb == "sigint.geolocate":
-        if a.payload_state is None: return False, "no_payload"
-        a.payload_state.detail["geolocate_mode"] = True
-        return True, "geolocate_on"
-
-    if verb == "sigint.downlink":
-        if a.payload_state is None: return False, "no_payload"
-        a.payload_state.detail["downlink_queued_at"] = now
-        return True, "sigint_downlink_queued"
-
     if verb == "sda.task_search":
         if a.payload_state is None: return False, "no_payload"
         a.payload_state.detail["sda_mode"] = "search"
@@ -399,28 +446,11 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         a.payload_state.collecting = True
         return True, "sda_track"
 
-    if verb == "satcom.set_transponder":
-        if a.payload_state is None: return False, "no_payload"
-        cfg = params.get("config", "default")
-        a.payload_state.detail["transponder"] = cfg
-        return True, f"transponder_{cfg}"
-
     if verb == "satcom.reconfigure_beam":
         if a.payload_state is None: return False, "no_payload"
         spot = params.get("spot", "default")
         a.payload_state.detail["beam"] = spot
         return True, f"beam_{spot}"
-
-    if verb == "mw.set_sensor_mode":
-        if a.payload_state is None: return False, "no_payload"
-        mode = params.get("mode", "scan")
-        a.payload_state.detail["mw_mode"] = mode
-        return True, f"mw_mode_{mode}"
-
-    if verb == "mw.report_alerts":
-        if a.payload_state is None: return False, "no_payload"
-        cnt = int(a.payload_state.detail.get("mw_alerts", 0))
-        return True, f"mw_alerts_{cnt}"
 
     if verb == "def.disperse":
         # Constellation dispersal posture — flag so the operator console (and AAR) can show it.
@@ -428,6 +458,42 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         a.payload_state and a.payload_state.detail.update({"dispersal": True})
         world.consequences.append({"t": now, "type": "disperse", "actor": actor_id})
         return True, "dispersing"
+
+    if verb == "def.set_deception_mode":
+        # Military deception — passive defense #2 in the USSF Space Warfighting
+        # Framework (10 Apr 2025) seven-measure menu, documented in
+        # docs/research/01-doctrine-western.md §4.  Surfaces as a payload-side
+        # posture flag observable in telemetry; the downstream effect-resolver
+        # change (which would lower adversary custody confidence + raise
+        # attribution ambiguity) is left as a separate change.
+        if a.payload_state is None:
+            return False, "no_payload"
+        a.payload_state.deception_active = bool(params.get("on", True))
+        return True, "deception_on" if a.payload_state.deception_active else "deception_off"
+
+    if verb == "satcom.null_steer":
+        # Adaptive beam-nulling against a named jammer.  USPTO 12,537,566
+        # (cited in docs/research/06-bus-and-payload-operations.md §5.5):
+        # "the number of undesirable sources that can be nulled equals one
+        # less than the number of digital receivers".  Distinct from
+        # satcom.mitigate_interference (broad anti-jam): null-steer is
+        # angle-specific, target-named, and has a hard N-1 cap.
+        p = a.payload_state
+        if p is None:
+            return False, "no_payload"
+        target = params.get("target")
+        if not target:
+            return False, "no_target"
+        n_rx = int(params.get("receiver_count", 4))
+        cap = max(0, n_rx - 1)
+        targets = list(p.detail.get("null_targets", []))
+        if target in targets:
+            return True, f"nulled_{target}"   # idempotent
+        if len(targets) >= cap:
+            return False, "null_cap_reached"
+        targets.append(target)
+        p.detail["null_targets"] = targets
+        return True, f"nulled_{target}"
 
     # ------------------------------------------------------------------
     # Final catalog-verb fill — completes §3 of FUTURE-WORK.md.
@@ -451,16 +517,6 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         a.payload_state.detail["char_target"] = params.get("target", "?")
         a.payload_state.collecting = True
         return True, "sda_characterize"
-
-    if verb == "sda.cue":
-        if a.payload_state is None: return False, "no_payload"
-        a.payload_state.detail["sda_cue"] = params.get("target", "?")
-        return True, "sda_cued"
-
-    if verb == "sda.downlink":
-        if a.payload_state is None: return False, "no_payload"
-        a.payload_state.detail["downlink_queued_at"] = now
-        return True, "sda_downlink_queued"
 
     return False, "unknown"
 

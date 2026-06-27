@@ -98,6 +98,8 @@ internet connection or ephemeris download is required.
 Start the web server from the repository root (with your virtual environment activated, if any):
 
 ```bash
+python3 -m spacesim.ui_web              # uses spacesim.config.yaml (default: 127.0.0.1:8000)
+# or, equivalently:
 uvicorn spacesim.ui_web.server:app
 ```
 
@@ -106,11 +108,57 @@ with the `UNCLASSIFIED // TRAINING` banner. The UI works in any current desktop 
 (Chrome ≥ 100, Firefox ≥ 100, Edge ≥ 100, Safari ≥ 15.4); see
 [§9 troubleshooting](09-troubleshooting-and-glossary.md) if you hit a rendering issue.
 
+**Changing the port.** Edit `spacesim.config.yaml` at the repository root:
+
+```yaml
+server:
+  host: 127.0.0.1   # use 0.0.0.0 to expose on a LAN
+  port: 8000        # change this if 8000 is taken
+  reload: false     # auto-reload on code change (dev only)
+```
+
+Then re-run `python3 -m spacesim.ui_web`. Point the browser at the matching port. Set
+`SPACESIM_CONFIG=/path/to/other.yaml` to load a different file. If you prefer the `uvicorn` CLI,
+pass `--port N --host H` directly — the config file is only read by the `python3 -m spacesim.ui_web`
+launcher.
+
 Press **Ctrl-K** (or **⌘-K** on macOS) any time to open the command palette — the fastest way to
 navigate.
 
 > Prefer a script or an air-gapped box with no browser? Every action is also available through the
 > in-process Python API and the HTTP API — see [§9](#9-http-api-reference) and the
 > *headless walkthrough* at the end of [§4](#4-your-first-exercise).
+
+### 2.1 Multi-tab and LAN multiplayer
+
+The same server supports **multiple cells on multiple tabs (or machines on a LAN)**. The pattern:
+
+1. **White facilitator** opens `http://127.0.0.1:8000/`, clicks **Session ▾** → picks a
+   vignette → **Load**, then **▶ Start**. The URL changes to something like `/#sess-1` — that
+   is the shareable join link.
+2. **Each player** opens that same URL in their own tab (or another LAN machine pointed at the
+   host IP — see below). They click their cell button (**Blue** or **Red**). Their tab
+   automatically joins `sess-1` and starts polling.
+3. The **server-authoritative clock** advances exactly once regardless of how many tabs are
+   polling. White's ⏸ Pause / ▶ Resume button drives it for everyone. Manual +1m / +10m / +1h
+   jumps are White-only too.
+
+To run across a LAN, bind to the host IP instead of loopback:
+
+```bash
+uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload
+```
+
+Then Blue and Red browse to `http://<host-LAN-IP>:8000/#sess-1`. There's no separate
+"multiplayer build" — the same FastAPI server, the same fog-of-war boundary, and the same UI
+handle both single-machine and LAN cooperative play. **Trust model:** any tab can pick any cell
+(White can't lock cells); appropriate for a facilitator-run PME exercise on a private LAN, not
+for hostile-side gaming.
+
+**Multi-monitor pop-outs.** Open **View ▾ → Pop out (multi-screen)** and pick one of the
+preset layouts (3D globe, 2D map, Globe + Map, Fleet & telemetry, Order compose, AAR
+timeline). Each pop-out is a new window that joins the same session and shows only the
+requested panels — drag it to a second monitor. Pop-outs keep working even if the parent tab
+closes, since they all talk directly to the server.
 
 ---

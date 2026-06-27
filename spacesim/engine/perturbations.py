@@ -91,17 +91,28 @@ def drag_acceleration(r_eci: np.ndarray, v_eci: np.ndarray, ballistic_coeff: flo
 
 
 def j3_acceleration(r_eci: np.ndarray) -> np.ndarray:
-    """J3 (pear-shaped) zonal perturbation acceleration (m/s²)."""
+    """J3 (pear-shaped) zonal perturbation acceleration (m/s²).
+
+    Uses the standard axisymmetric form per Vallado Eq. 8-30: the inner
+    polynomial is ``(7 sin³φ − 3 sin φ)`` (from the gradient of the J3 disturbing
+    potential, **not** the potential's own P₃ inner polynomial ``(5 sin³φ −
+    3 sin φ)``); the additional z-axis correction term has coefficient ``3/5``.
+
+    Pinned by ``test_perturbations_j3_reference_state`` to a Vallado worked
+    example (audit Jun 2026 corrected this from the prior ``5/3 sin³φ`` form
+    inherited from the P₃ polynomial).
+    """
     r_m = float(np.linalg.norm(r_eci))
     if r_m == 0:
         return np.zeros(3)
     x, y, z = float(r_eci[0]), float(r_eci[1]), float(r_eci[2])
     sin_phi = z / r_m
+    inner = 7.0 * sin_phi ** 3 - 3.0 * sin_phi
     factor = -2.5 * J3 * MU_EARTH * (R_EARTH_EQ ** 3) / (r_m ** 5)
-    ax = factor * (5 * sin_phi ** 3 - 3 * sin_phi) * (x / r_m)
-    ay = factor * (5 * sin_phi ** 3 - 3 * sin_phi) * (y / r_m)
-    az = factor * (5 * sin_phi ** 3 - 3 * sin_phi) * (z / r_m) - \
-         (J3 * MU_EARTH * (R_EARTH_EQ ** 3) / (r_m ** 4)) * (3 * sin_phi ** 2 - 0.4)
+    ax = factor * inner * (x / r_m)
+    ay = factor * inner * (y / r_m)
+    az = factor * inner * (z / r_m) - \
+         (J3 * MU_EARTH * (R_EARTH_EQ ** 3) / (r_m ** 4)) * (3.0 * sin_phi ** 2 - 0.6)
     return np.array([ax, ay, az])
 
 
