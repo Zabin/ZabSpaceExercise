@@ -8,6 +8,8 @@
 > **Produces:** implementation constraints for the operator-console workflow (`ui_web/static/app.js`, [`session/api.py`](../../../spacesim/session/api.py))
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations), FS-106 (White Cell Dashboard)
 > **Related Topics:** [R103](R103-satellite-command-and-control.md) (Satellite C2), MSTR-003 §2 (plan-execute as the unit of learning), DOM-001 (Training Framework)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -18,9 +20,23 @@ that everything else in the simulator (orders, custody, telemetry, AAR) exists t
 topic gives an implementer the shape of that loop so a new UI surface or workflow feature fits the
 existing operational rhythm instead of inventing a parallel one.
 
-## 2. Concepts
+## 2. Scope
 
-**The operations loop has four recurring beats.** (1) *Plan* — the operator reviews current SOH,
+Covers: the plan/task/execute/assess operator loop and how mission-brief/tutorial/coaching content
+anchors it. Does **not** cover: the C2 mechanics the task beat drives ([R103](R103-satellite-command-and-control.md)), or
+per-subsystem operational detail (R107-R114).
+
+## 3. Concepts
+
+**The operations loop has four recurring beats.** Real satellite mission operations centers run
+continuously on this cadence — mission planning determines tasking based on health constraints and
+access windows, command-and-control encodes/executes commands as "the engine of the ops center,"
+and the operations team continuously monitors telemetry to assess spacecraft health
+([NASA GSFC Mission Operations overview](https://solc.gsfc.nasa.gov/modules/missionops/mainMenu_textOnly.php)
+([Wayback](https://web.archive.org/web/2026/https://solc.gsfc.nasa.gov/modules/missionops/mainMenu_textOnly.php));
+[The Aerospace Corporation, *Mission Assurance Practices for Satellite Operations*, TOR-2013-00293](https://aerospace.org/sites/default/files/maiw/TOR-2013-00293.pdf)
+([Wayback](https://web.archive.org/web/2026/https://aerospace.org/sites/default/files/maiw/TOR-2013-00293.pdf))).
+The simulator's loop compresses this real cadence into four beats: (1) *Plan* — the operator reviews current SOH,
 custody, and access-window forecasts and decides what to attempt next; `dry_run()` ([R103](R103-satellite-command-and-control.md)) supports
 this beat without committing anything. (2) *Task* — the operator issues orders (commands, sensor
 tasking, maneuvers) that queue for their windows. (3) *Execute* — the deterministic event loop fires
@@ -41,14 +57,23 @@ concrete reference for "what does a normal operating cycle look like here."
 entries fire `{at_sim_t?, cell, title, body}` — timed to land at a specific point in an ongoing
 loop, reinforcing or correcting a planning decision while it's still actionable, not after the fact.
 
-## 3. Operational Context
+### Sources
+
+- *NASA GSFC, Mission Operations overview* — [live](https://solc.gsfc.nasa.gov/modules/missionops/mainMenu_textOnly.php)
+  · [snapshot](https://web.archive.org/web/2026/https://solc.gsfc.nasa.gov/modules/missionops/mainMenu_textOnly.php)
+  · accessed 2026-06-27.
+- *The Aerospace Corporation, Mission Assurance Practices for Satellite Operations, TOR-2013-00293* — [live](https://aerospace.org/sites/default/files/maiw/TOR-2013-00293.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://aerospace.org/sites/default/files/maiw/TOR-2013-00293.pdf)
+  · accessed 2026-06-27.
+
+## 4. Operational Context
 
 Real space operations centers run exactly this loop on a duty-shift cadence: a controller plans
 against the day's pass schedule, tasks commands/collections for the windows ahead, watches them
 execute, and assesses the resulting telemetry before the next planning cycle — the simulator's loop
 is a compressed, replayable version of that real rhythm, not an invented game mechanic.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A new operator-facing feature should declare which beat(s) of the loop it serves** (planning
   preview, tasking, execution visibility, or assessment) — a feature that doesn't fit any beat is
@@ -61,13 +86,13 @@ is a compressed, replayable version of that real rhythm, not an invented game me
 - **Coaching-note timing should be tied to `at_sim_t` or an event, not wall-clock** — consistent
   with the determinism invariant (MSTR-002 §1).
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-101 (Mission Planning) and FS-105 (Spacecraft Operations) are the direct consumers of the
 plan/task beats; FS-106 (White Cell Dashboard) is the consumer of the assess beat from White's
 cross-cell vantage point.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R103](R103-satellite-command-and-control.md) (Satellite C2 — the mechanics the "task" beat drives), MSTR-003 §2 (the pedagogical argument
 for why plan-execute is the right unit of learning), DOM-001 (Training Framework — how the loop maps
