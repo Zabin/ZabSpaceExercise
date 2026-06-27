@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
-> **Referenced By:** [R106](R106-mission-operations.md), [R107](R107-ground-segment-operations.md), [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R116](R116-cyber-operations-against-space-systems.md), [R123](R123-command-and-telemetry-console-software.md), [R124](R124-ccsds-telemetry-and-telecommand-standards.md), [R126](R126-flight-rules-and-contingency-procedures.md), FS-102, FS-105
+> **Referenced By:** [R106](R106-mission-operations.md), [R107](R107-ground-segment-operations.md), [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R116](R116-cyber-operations-against-space-systems.md), [R123](R123-command-and-telemetry-console-software.md), [R124](R124-ccsds-telemetry-and-telecommand-standards.md), [R126](R126-flight-rules-and-contingency-procedures.md), [R130](R130-downlink-operations-and-data-return.md), FS-102, FS-105
 > **Produces:** implementation constraints for [`engine/orders.py`](../../../spacesim/engine/orders.py), [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py)
 > **Feature Mapping:** FS-102 (Command Scheduling), FS-105 (Spacecraft Operations)
 > **Related Topics:** [R106](R106-mission-operations.md) (Mission Operations), [R114](R114-command-and-data-handling.md) (Command and Data Handling), MSTR-002 §2 invariant 4 (plan-first)
