@@ -407,6 +407,9 @@ class OrderSystem:
             modulation = p.get("modulation")
             power_w = float(p.get("power_w", 100.0))
             bandwidth_hz = float(p.get("bandwidth_hz", 1e6))
+            link_target = p.get("link_target", "downlink")
+            if link_target not in ("uplink", "downlink", "crosslink"):
+                link_target = "downlink"
             victim_bw_hz = float(p.get("victim_bandwidth_hz", 1e6))
             # Base Pₛ from a power-scaled curve; doubling power above the 100 W reference
             # asymptotes to a near-certain raw threshold (defender state knocks it down).
@@ -430,6 +433,7 @@ class OrderSystem:
                 success_prob=adj_prob,
                 window_start=win.start,
                 window_end=win.end,
+                link_target=link_target,
             )
             return "execute_effect", {
                 "effect": effect.model_dump(),
@@ -660,7 +664,7 @@ class OrderSystem:
     def _h_downlink(self, world: WorldState, payload: dict, rng) -> None:
         """Deliver collected product — unless the downlink is jammed at the execution moment."""
         actor = world.assets.get(payload["actor"])
-        denied = is_link_denied(world, payload["actor"], world.now)
+        denied = is_link_denied(world, payload["actor"], world.now, link="downlink")
         flag = payload["delivers"]
         if denied:
             world.effect_log.append({"t": world.now, "template": "downlink", "target": payload["actor"],

@@ -122,6 +122,7 @@ class PayloadState(BaseModel):
     integrity_mode: str = "standard"          # pnt.set_integrity: standard|protected|degraded
     evasion_active: bool = False              # def.maneuver_evade: set while evasion burn is live
     deception_active: bool = False            # def.set_deception_mode: USSF SWF Apr 2025 §3.2 passive measure #2
+    shutter_closed: bool = False              # isr.shutter_sensor: optics protected from laser dazzle/blinding; blocks collection
     detail: dict = Field(default_factory=dict)
 
 

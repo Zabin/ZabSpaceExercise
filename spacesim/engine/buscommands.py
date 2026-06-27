@@ -20,7 +20,7 @@ BUS_VERBS = {"eps.shed_load", "eps.restore_load", "eps.set_charge_mode", "eps.se
              "cdh.dump_storage", "cdh.clear_fault", "cdh.reset_subsystem", "cdh.load_stored_program",
              "tcs.set_mode", "tcs.set_heater",
              "comms.enable_isl", "comms.config_link",
-             "prop.cancel_burn", "prop.collision_avoid"}
+             "prop.cancel_burn", "prop.collision_avoid", "prop.station_keep"}
 # Audit 2026-06 Commands §M1 / Phase D — cut: isr.assess_quality, isr.calibrate (NIIRS is
 # computed by ground processing; realism §2), sigint.set_band / sigint.geolocate /
 # sigint.downlink (folded into sigint.task_collection + the downlink action), sda.cue /
@@ -28,8 +28,8 @@ BUS_VERBS = {"eps.shed_load", "eps.restore_load", "eps.set_charge_mode", "eps.se
 # report_interference / satcom.set_transponder (no consumer; cosmetic),
 # mw.set_sensor_mode / mw.report_alerts (broken-loop + replaced by mw.add_stare_area
 # from realism §7). Comms cuts: comms.point_antenna / comms.set_crypto (no consumer or
-# model). Added: mw.add_stare_area, satcom.geolocate_interference, wx.request_sector
-# from realism research §15.
+# model). Added: mw.add_stare_area, satcom.geolocate_interference, wx.request_sector,
+# prop.station_keep, isr.shutter_sensor from realism research §15 (§N8 closed).
 PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users",
                  "satcom.reconfigure_beam", "satcom.set_frequency_plan",
                  "satcom.geolocate_interference",
@@ -41,7 +41,8 @@ PAYLOAD_VERBS = {"satcom.mitigate_interference", "satcom.shift_users",
                  "wx.schedule_collection", "wx.request_sector",
                  "pnt.set_integrity", "pnt.report_status",
                  "pnt.flex_power", "pnt.set_health_flag",
-                 "mw.add_stare_area"}
+                 "mw.add_stare_area",
+                 "isr.shutter_sensor"}
 DEFENSE_VERBS = {"def.patch_cyber", "def.frequency_hop", "def.harden", "def.set_threat_warning",
                  "def.maneuver_evade", "def.escort_posture", "def.disperse",
                  "def.set_deception_mode"}
@@ -56,6 +57,7 @@ _PAYLOAD_TYPES_FOR = {
     "isr.collect_now": {"isr_eo", "isr_sar"}, "isr.schedule_collection": {"isr_eo", "isr_sar"},
     "isr.set_mode": {"isr_eo", "isr_sar"},
     "isr.prioritize_downlink": {"isr_eo", "isr_sar"},
+    "isr.shutter_sensor": {"isr_eo", "isr_sar"},
     "sigint.task_collection": {"sigint"},
     "sda.task_search": {"sda"}, "sda.task_track": {"sda"}, "sda.task_characterize": {"sda"},
     "wx.schedule_collection": {"weather"}, "wx.request_sector": {"weather"},
@@ -141,10 +143,23 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
     if verb in ("isr.collect_now", "isr.schedule_collection"):
         if a.payload_state is None:
             return False, "no_payload"
+        if a.payload_state.shutter_closed:
+            return False, "shuttered"           # optics protected from dazzle/blinding — can't collect
         if bus is not None and not can_collect(bus):
             return False, "cannot_collect"      # safed / power-red / storage full (bus gates payload)
         a.payload_state.collecting = True        # fills onboard storage over the coming steps
         return True, "collecting"
+
+    if verb == "isr.shutter_sensor":
+        # Closes the optical shutter against laser dazzle/blinding (docs/AUDIT-2026-06-COMMANDS.md
+        # §N8); while shut the sensor cannot collect, so an open shutter is required first.
+        p = a.payload_state
+        if p is None:
+            return False, "no_payload"
+        p.shutter_closed = bool(params.get("on", True))
+        if p.shutter_closed:
+            p.collecting = False
+        return True, "shutter_closed" if p.shutter_closed else "shutter_open"
 
     if verb == "def.patch_cyber":
         # Defender removes a cyber root cause: patch the matching vulnerability so recovery sticks.
@@ -425,6 +440,17 @@ def apply_command(world, actor_id: str, verb: str, params: dict, now: int) -> tu
         world.consequences.append({"t": now, "type": "collision_avoid", "actor": actor_id,
                                     "with": match.get("b") if match.get("a") == actor_id else match.get("a")})
         return True, "evasive_burn_executed"
+
+    if verb == "prop.station_keep":
+        # Routine drift-correction burn (ITU-R S.484-3 geostationary station-keeping
+        # geometry; docs/research/06-bus-and-payload-operations.md §6.5). Unlike
+        # prop.collision_avoid this is the periodic maintenance burn every bus performs
+        # — no conjunction precondition.
+        dv_cost = float(params.get("dv_cost", 0.5))
+        if a.resources.delta_v_ms < dv_cost - 1e-9:
+            return False, "insufficient_delta_v"
+        a.resources.delta_v_ms -= dv_cost
+        return True, "station_kept"
 
     if verb == "adcs.point_payload":
         if bus is None: return False, "no_bus"

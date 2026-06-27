@@ -615,3 +615,86 @@ def test_satcom_null_steer_replay_safe():
     assert "HOSTILE-JAM-1" in p.detail["null_targets"]
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
+
+# -- Research-corpus gap fill: prop.station_keep + isr.shutter_sensor ---------
+#
+# Both verbs are named in docs/AUDIT-2026-06-COMMANDS.md §N8 as realistic verbs
+# identified by the realism research (§15) but never wired into the catalog:
+#  * prop.station_keep — routine GEO/drift-correction burn (ITU-R S.484-3
+#    station-keeping geometry, docs/research/04-orbital-mechanics-primer.md
+#    §2.4 / docs/research/06-bus-and-payload-operations.md §6.5). Unlike
+#    prop.collision_avoid it needs no conjunction precondition — it is the
+#    routine "via-only" burn every GEO bus performs periodically.
+#  * isr.shutter_sensor — closes the optical shutter to protect the sensor
+#    from laser dazzle/blinding; while shut the sensor cannot collect.
+
+def test_prop_station_keep_consumes_delta_v():
+    """A routine station-keeping burn spends Δv and succeeds with no precondition."""
+    w = _sat_with_payload("isr_eo", dv=10.0)
+    ok, label = apply_command(w, "SAT", "prop.station_keep", {"dv_cost": 1.0}, 0)
+    assert ok and label == "station_kept"
+    assert w.assets["SAT"].resources.delta_v_ms == 9.0
+
+
+def test_prop_station_keep_insufficient_delta_v():
+    """Station-keeping fails cleanly when the Δv budget is exhausted."""
+    w = _sat_with_payload("isr_eo", dv=0.1)
+    ok, reason = apply_command(w, "SAT", "prop.station_keep", {"dv_cost": 1.0}, 0)
+    assert not ok and reason == "insufficient_delta_v"
+    assert w.assets["SAT"].resources.delta_v_ms == 0.1
+
+
+def test_prop_station_keep_in_verb_set():
+    from spacesim.engine.buscommands import BUS_VERBS, COMMAND_VERBS
+    assert "prop.station_keep" in BUS_VERBS
+    assert "prop.station_keep" in COMMAND_VERBS
+
+
+def test_isr_shutter_sensor_closes_and_blocks_collection():
+    """Closing the shutter sets the posture flag and stands down active collection."""
+    w = _sat_with_payload("isr_eo")
+    w.assets["SAT"].payload_state.collecting = True
+    ok, label = apply_command(w, "SAT", "isr.shutter_sensor", {"on": True}, 0)
+    assert ok and label == "shutter_closed"
+    p = w.assets["SAT"].payload_state
+    assert p.shutter_closed is True
+    assert p.collecting is False
+
+
+def test_isr_shutter_sensor_reopens():
+    w = _sat_with_payload("isr_eo")
+    apply_command(w, "SAT", "isr.shutter_sensor", {"on": True}, 0)
+    ok, label = apply_command(w, "SAT", "isr.shutter_sensor", {"on": False}, 0)
+    assert ok and label == "shutter_open"
+    assert w.assets["SAT"].payload_state.shutter_closed is False
+
+
+def test_isr_shutter_sensor_blocks_subsequent_collect_now():
+    """A shuttered sensor cannot be commanded to collect until the shutter reopens."""
+    w = _sat_with_payload("isr_eo")
+    apply_command(w, "SAT", "isr.shutter_sensor", {"on": True}, 0)
+    ok, reason = apply_command(w, "SAT", "isr.collect_now", {}, 0)
+    assert not ok and reason == "shuttered"
+
+
+def test_isr_shutter_sensor_payload_type_gate():
+    """Shutter control requires an ISR payload; satcom cannot use it."""
+    from spacesim.engine.buscommands import can_issue
+    w = _sat_with_payload("satcom")
+    ok, reason = can_issue(w, "SAT", "isr.shutter_sensor")
+    assert not ok and reason == "no_payload_for_verb"
+
+
+def test_prop_station_keep_and_shutter_sensor_replay_safe():
+    """Both new verbs through the order pipeline are replay-byte-identical."""
+    mgr = _mgr()
+    ack1 = mgr.issue_order("blue", _cmd("ISR-EO-1", "prop.station_keep", dv_cost=1.0))
+    assert ack1.ok, ack1.reason
+    mgr.advance_to(ack1.earliest_window[1] + 1)
+    ack2 = mgr.issue_order("blue", _cmd("ISR-EO-1", "isr.shutter_sensor", on=True))
+    assert ack2.ok, ack2.reason
+    mgr.advance_to(ack2.earliest_window[1] + 1)
+    p = mgr.world.assets["ISR-EO-1"].payload_state
+    assert p.shutter_closed is True
+    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
+

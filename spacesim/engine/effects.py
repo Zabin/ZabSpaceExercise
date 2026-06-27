@@ -45,6 +45,7 @@ class EffectInstance(BaseModel):
     escalation_weight: int = 0
     requires: str = "none"            # gating access channel (none for cyber)
     intended_outcome: Outcome = "deny"
+    link_target: Literal["uplink", "downlink", "crosslink"] = "downlink"  # jam scope (AUDIT-2026-06-COMMANDS.md §N9)
 
     # Resolution inputs:
     success_prob: float = 0.9             # base probability / base susceptibility for safe_mode
@@ -72,6 +73,7 @@ class ActiveEffect(BaseModel):
     attribution: str = "ambiguous"
     category: str = ""    # effect category (electronic_warfare/cyber/directed_energy/...) for diagnostics
     template: str = ""
+    link_target: Literal["uplink", "downlink", "crosslink"] = "downlink"  # jam scope (§N9)
 
 
 class DebrisField(BaseModel):
@@ -154,6 +156,7 @@ class ModerateEffectResolver:
                     attribution=effect.attribution,
                     category=effect.category,
                     template=effect.template,
+                    link_target=effect.link_target,
                 )
             )
             # FUTURE-WORK §10.D.16 — denying a CIVILIAN link raises a political consequence.
@@ -204,9 +207,13 @@ def _victim_cell(world: "WorldState", effect: EffectInstance) -> str:
     return target.owner if target is not None else "unknown"
 
 
-def is_link_denied(world: "WorldState", target_id: str, t: int) -> bool:
+def is_link_denied(world: "WorldState", target_id: str, t: int, link: Optional[str] = None) -> bool:
+    """``link`` scopes the check to a single channel (``uplink``/``downlink``/``crosslink``);
+    omitted, it matches any jammed link — back-compat for callers that predate §N9 scoping.
+    """
     return any(
         ae.target == target_id and ae.outcome in {"deny", "disrupt"} and ae.start <= t <= ae.end
+        and (link is None or ae.link_target == link)
         for ae in world.active_effects
     )
 
