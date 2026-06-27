@@ -133,39 +133,39 @@ need an explicit go-ahead before work begins, per `RT-FUTURE` §12.1.
 
 | ID | Document | Path (new) | Depends on | Status |
 |---|---|---|---|---|
-| RS-2.1 | ISR (EO/SAR) deep-dive — Maxar/Planet/Capella, NRO KH-program history, NIIRS, TPED | `research/05a-isr-eo-sar.md` | RS-1.5 | 🅿️ Scoped, not authorized |
-| RS-2.2 | SATCOM/PNT deep-dive — WGS/AEHF/Milstar, GPS IS-GPS-200E flex power, Galileo/GLONASS/BeiDou | `research/05b-satcom-pnt.md` | RS-1.5 | 🅿️ Scoped, not authorized |
-| RS-2.3 | SIGINT/MW/weather/SDA deep-dive — Trumpet/Mercury/Mentor, SBIRS, GOES-R MDS, SSN tasking | `research/05c-sigint-mw-wx-sda.md` | RS-1.5 | 🅿️ Scoped, not authorized |
-| RS-2.4 | China deep-dive — 2024 PLA SSF→ASF reorg, SoS doctrine, 36th Test Base | `research/02a-china-deep-dive.md` | RS-1.2 | 🅿️ Scoped, not authorized |
-| RS-2.5 | Russia deep-dive — VKS/RVSN, EW Troops (Bylina/Tirada-2/Pole-21), Tobol | `research/02b-russia-deep-dive.md` | RS-1.2 | 🅿️ Scoped, not authorized |
-| RS-2.6 | Emerging actors — India, Iran, DPRK, Israel, commercial counterspace | `research/02c-emerging-actors.md` | RS-1.2 | 🅿️ Scoped, not authorized |
+| RS-2.1 | ISR (EO/SAR) deep-dive — Maxar/Planet/Capella, NRO KH-program history, NIIRS, TPED | `research/05a-isr-eo-sar.md` | RS-1.5 | ⛔ Planned (authorized) |
+| RS-2.2 | SATCOM/PNT deep-dive — WGS/AEHF/Milstar, GPS IS-GPS-200E flex power, Galileo/GLONASS/BeiDou | `research/05b-satcom-pnt.md` | RS-1.5 | ⛔ Planned (authorized) |
+| RS-2.3 | SIGINT/MW/weather/SDA deep-dive — Trumpet/Mercury/Mentor, SBIRS, GOES-R MDS, SSN tasking | `research/05c-sigint-mw-wx-sda.md` | RS-1.5 | ⛔ Planned (authorized) |
+| RS-2.4 | China deep-dive — 2024 PLA SSF→ASF reorg, SoS doctrine, 36th Test Base | `research/02a-china-deep-dive.md` | RS-1.2 | ⛔ Planned (authorized) |
+| RS-2.5 | Russia deep-dive — VKS/RVSN, EW Troops (Bylina/Tirada-2/Pole-21), Tobol | `research/02b-russia-deep-dive.md` | RS-1.2 | ⛔ Planned (authorized) |
+| RS-2.6 | Emerging actors — India, Iran, DPRK, Israel, commercial counterspace | `research/02c-emerging-actors.md` | RS-1.2 | ⛔ Planned (authorized) |
 
 **Tier 3 — counterspace systems and physics (8 new files):**
 
 | ID | Document | Path (new) | Depends on | Status |
 |---|---|---|---|---|
-| RS-3.1 | DA-ASAT systems — SC-19/DN-3, Nudol/A-235, SM-3, PDV-Mk2 | `research/03a-da-asat-systems.md` | RS-1.3 | 🅿️ Scoped, not authorized |
-| RS-3.2 | Co-orbital/RPO systems — SJ-21/15, Burevestnik, Olymp-K/Luch-2, GSSAP, MEV-1/2 | `research/03b-coorbital-rpo.md` | RS-1.3 | 🅿️ Scoped, not authorized |
-| RS-3.3 | EW/jamming — CCS Block 10.2, Tirada-2/Pole-21/Bylina, Tobol, AEHF ECCM, J/S analysis | `research/03c-ew-jamming.md` | RS-1.3 | 🅿️ Scoped, not authorized |
-| RS-3.4 | Directed energy — Sokol-Eshelon, Peresvet, Zimu-1, optical hardening | `research/03d-directed-energy.md` | RS-1.3 | 🅿️ Scoped, not authorized |
-| RS-3.5 | Cyber — Viasat KA-SAT incident reconstruction, SPARTA TTPs, ROSAT/TDRS history | `research/03e-cyber.md` | RS-1.3 | 🅿️ Scoped, not authorized |
-| RS-3.6 | Nuclear/EMP — Starfish Prime, Soviet K-series tests, OST Art. IV (deferred to v2) | `research/03f-nuclear-emp.md` | RS-1.3 | 🅿️ Scoped, not authorized |
-| RS-3.7 | Propagator fidelity — Kepler+J2 vs SGP4 vs high-precision validation | `research/04a-propagator-fidelity.md` | RS-1.4 | 🅿️ Scoped, not authorized |
-| RS-3.8 | Debris & conjunction — NASA ORDEM/ESA MASTER, Cosmos 1408 vs FY-1C persistence | `research/04b-debris-and-conjunction.md` | RS-1.4 | 🅿️ Scoped, not authorized |
+| RS-3.1 | DA-ASAT systems — SC-19/DN-3, Nudol/A-235, SM-3, PDV-Mk2 | `research/03a-da-asat-systems.md` | RS-1.3 | ⛔ Planned (authorized) |
+| RS-3.2 | Co-orbital/RPO systems — SJ-21/15, Burevestnik, Olymp-K/Luch-2, GSSAP, MEV-1/2 | `research/03b-coorbital-rpo.md` | RS-1.3 | ⛔ Planned (authorized) |
+| RS-3.3 | EW/jamming — CCS Block 10.2, Tirada-2/Pole-21/Bylina, Tobol, AEHF ECCM, J/S analysis | `research/03c-ew-jamming.md` | RS-1.3 | ⛔ Planned (authorized) |
+| RS-3.4 | Directed energy — Sokol-Eshelon, Peresvet, Zimu-1, optical hardening | `research/03d-directed-energy.md` | RS-1.3 | ⛔ Planned (authorized) |
+| RS-3.5 | Cyber — Viasat KA-SAT incident reconstruction, SPARTA TTPs, ROSAT/TDRS history | `research/03e-cyber.md` | RS-1.3 | ⛔ Planned (authorized) |
+| RS-3.6 | Nuclear/EMP — Starfish Prime, Soviet K-series tests, OST Art. IV (deferred to v2) | `research/03f-nuclear-emp.md` | RS-1.3 | ⛔ Planned (authorized) |
+| RS-3.7 | Propagator fidelity — Kepler+J2 vs SGP4 vs high-precision validation | `research/04a-propagator-fidelity.md` | RS-1.4 | ⛔ Planned (authorized) |
+| RS-3.8 | Debris & conjunction — NASA ORDEM/ESA MASTER, Cosmos 1408 vs FY-1C persistence | `research/04b-debris-and-conjunction.md` | RS-1.4 | ⛔ Planned (authorized) |
 
 **Tier 4 — operations, legal, history, forward-looking (5 deliverables):**
 
 | ID | Document | Path (new) | Depends on | Status |
 |---|---|---|---|---|
-| RS-4.1 | Ground segment — AFSCN, TDRSS, AWS Ground Station, KSAT/ATLAS/Viasat-RTE | `research/06a-ground-segment.md` | RS-1.6 | 🅿️ Scoped, not authorized |
-| RS-4.2 | Incident record — dated catalog of named counterspace incidents (PME instructor reference) | `research/07a-incident-record.md` | RS-1.7, RS-3.x | 🅿️ Scoped, not authorized |
-| RS-4.3 | Commercial & allied — Starlink/Kuiper/OneWeb proliferation, Five Eyes SST, non-state actors | `research/08-commercial-and-allied.md` | RS-2.x | 🅿️ Scoped, not authorized |
-| RS-4.4 | Emerging tech — optical ISLs, software-defined payloads, on-orbit refueling | `research/09-emerging-tech.md` | RS-2.x | 🅿️ Scoped, not authorized |
-| RS-4.5 | (Shared lit-review workflow note for RS-4.3/RS-4.4 — overlapping proliferation research, not a standalone file) | — | RS-4.3, RS-4.4 | 🅿️ Scoped, not authorized |
+| RS-4.1 | Ground segment — AFSCN, TDRSS, AWS Ground Station, KSAT/ATLAS/Viasat-RTE | `research/06a-ground-segment.md` | RS-1.6 | ⛔ Planned (authorized) |
+| RS-4.2 | Incident record — dated catalog of named counterspace incidents (PME instructor reference) | `research/07a-incident-record.md` | RS-1.7, RS-3.x | ⛔ Planned (authorized) |
+| RS-4.3 | Commercial & allied — Starlink/Kuiper/OneWeb proliferation, Five Eyes SST, non-state actors | `research/08-commercial-and-allied.md` | RS-2.x | ⛔ Planned (authorized) |
+| RS-4.4 | Emerging tech — optical ISLs, software-defined payloads, on-orbit refueling | `research/09-emerging-tech.md` | RS-2.x | ⛔ Planned (authorized) |
+| RS-4.5 | (Shared lit-review workflow note for RS-4.3/RS-4.4 — overlapping proliferation research, not a standalone file) | — | RS-4.3, RS-4.4 | ⛔ Planned (authorized) |
 
-> **Don't start Tiers 2–4 without checking with the user first** — `RT-FUTURE` §12.1 explicitly
-> scopes this as "planned, not yet authorized." Tier 1 is in flight and pre-approved; treat RS-1.1
-> / RS-1.2 / RS-1.5 / RS-1.8 as the only currently-actionable research items.
+> **Tiers 2-4 are authorized.** Tier 1 (RS-1.0 through RS-1.8) is fully landed. Work proceeds one
+> tier at a time, per file, per the binding cadence below — see the "Open documentation work"
+> section near the foot of this file for live in-progress status.
 >
 > **Authoring cadence (binding for all of Tier 1+):** one `deep-research` subsection at a time,
 > ≤20k subagent tokens per invocation, integration pass per file, commit-and-push per subsection.
@@ -189,9 +189,9 @@ Router: [`features/feature-index.md`](docs/features/feature-index.md).
 | FS-105 | Spacecraft Operations | `features/FS-105-spacecraft-operations.md` | DOM-001, DOM-007 | ✅ |
 | FS-106 | White Cell Dashboard | `features/FS-106-white-cell-dashboard.md` | DOM-003 | ✅ |
 | FS-107 | After Action Review | `features/FS-107-after-action-review.md` | DOM-001, DOM-003 | ✅ |
-| FS-108 | Inject Authoring *(candidate)* | `features/FS-108-inject-authoring.md` | DOM-003 | 🅿️ Scoped, not authorized |
+| FS-108 | Inject Authoring *(candidate)* | `features/FS-108-inject-authoring.md` | DOM-003 | ⛔ Planned (authorized) |
 | FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | DOM-002 | ✅ |
-| FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | 🅿️ Scoped, not authorized |
+| FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | ⛔ Planned (authorized) |
 | FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | DOM-004, DOM-005 | ✅ |
 
 FS-108 and FS-202 are intentionally lighter-weight stubs (not full specs) — both are marked
@@ -267,7 +267,7 @@ FS → IMP → Code → Tests) for all 11 Feature Specifications:
   in `spacesim/` (verified by path existence check); each has at least one corresponding test module
   under `spacesim/tests/` (e.g. FS-101→`test_orders.py`/`test_validate_order.py`, FS-103→
   `test_custody.py`, FS-105→`test_bus.py`/`test_bus_commands.py`, FS-107→`test_aar.py`).
-- FS-108/FS-202: chain stops at FS (🅿️ Scoped, not authorized) — no IMP, no code, no tests. Expected
+- FS-108/FS-202: chain stops at FS (⛔ Planned (authorized)) — no IMP, no code, no tests. Expected
   per MSTR-006 §3; not a defect.
 - FS-201/FS-301: chain reaches IMP-201A/IMP-301A (design-only) and stops there — no code, no tests.
   Expected per their own Status annotations; not a defect.
@@ -341,16 +341,18 @@ way the test-driven workflow in `CLAUDE.md` treats code.
 
 ## Open documentation work (rolled up from the tables above)
 
-1. **RS-1.1, RS-1.2, RS-1.5, RS-1.8** — the four remaining Tier 1 research files. RS-1.5 is the
-   named "next concrete step" in `RT-FUTURE` §12.8; RS-1.1 can run in parallel. Use the
-   per-subsection `deep-research` cadence (§12.5.0), not a single whole-file invocation.
-2. **RS-2.x / RS-3.x / RS-4.x (19 files)** — fully scoped Tier 2–4 research expansion. **Ask the
-   user before starting** — explicitly "not yet authorized" per `RT-FUTURE` §12.1.
+1. ~~RS-1.1, RS-1.2, RS-1.5, RS-1.8~~ — **done.** All of Tier 1 (RS-1.0 through RS-1.8) actually
+   landed already (real commits, see the Research corpus theme table above); this rollup entry was
+   stale and is removed.
+2. **RS-2.x / RS-3.x / RS-4.x (19 files)** — Tier 2–4 research expansion. **Authorized** (per-tier,
+   in progress) — see the Research corpus theme table for per-file status. Using the per-subsection
+   `deep-research` cadence (§12.5.0), committed/pushed incrementally per subsection.
 3. **TR-12** — Playwright DOM/render smoke-test guide. Blocked on a committed e2e harness; the
-   commands/UI audits used ad hoc Playwright verification but didn't leave one behind.
+   commands/UI audits used ad hoc Playwright verification but didn't leave one behind. Authorized;
+   not yet started.
 4. **BS-04-REV / DS-07-REV** (optional, not assigned IDs above until someone starts them) — the
    build spec's milestone table and the API/networking design doc both predate the shipped P8
-   LAN-multiplayer polling implementation and could use a refresh pass.
+   LAN-multiplayer polling implementation and could use a refresh pass. Authorized; not yet started.
 
 Everything else in the documentation corpus is ✅ or ♻️ as of this writing. New planned docs go
 in the relevant theme table above with a fresh ID, not in a separate list — keep this file as the
