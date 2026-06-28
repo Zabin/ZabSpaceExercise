@@ -2,7 +2,7 @@
 
 [↑ Encyclopedia index](INDEX.md)
 
-Justifies White Cell and scenario design (DOM-003, DOM-009). 12 topics.
+Justifies White Cell and scenario design (DOM-003, DOM-009). 13 topics.
 
 | ID | Title | Scope (one line) | Depends on | Status |
 |---|---|---|---|---|
@@ -18,8 +18,12 @@ Justifies White Cell and scenario design (DOM-003, DOM-009). 12 topics.
 | [R310](R310-effects-based-operations.md) | Effects-Based Operations | Planning oriented around cascading effects, not direct output alone. | [R309](R309-center-of-gravity-analysis.md) | ✅ |
 | [R311](R311-course-of-action-analysis.md) | Course of Action Analysis | Comparing distinct options against criteria before commitment. | [R305](R305-mission-analysis.md) | ✅ |
 | [R312](R312-space-strategy.md) | Space Strategy | Strategic-level theory specific to the space domain. | [R301](R301-campaign-design.md), [R303](R303-deterrence-theory.md) | ✅ |
+| [R313](R313-land-operator-perspective.md) | Land Operator Perspective | Land-component command/staff mindset (mission command, IPB, targeting cycle, sustainment) as an analogy source for orbital ops. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | 🟡 |
 
-**Status: complete.** All 12 topics now carry the mandatory §2 Scope section (MSTR-007 §4.2) and
+**Status: 12 of 13 topics complete; R313 is a 🟡 draft pending citation verification** (this session's
+WebFetch had no network access — every test URL, including non-doctrine controls, returned HTTP 403
+— so R313's doctrine citations are unverified placeholders; see its own Sources section). All other
+12 topics carry the mandatory §2 Scope section (MSTR-007 §4.2) and
 are cited per `docs/research/10-sources-and-methodology.md`'s convention — each topic has at least
 one `### Sources` subsection (live URL + Wayback snapshot + accessed date) and inline citations at
 the doctrinal/legal/historical claim site, with [R303](R303-deterrence-theory.md)'s single
