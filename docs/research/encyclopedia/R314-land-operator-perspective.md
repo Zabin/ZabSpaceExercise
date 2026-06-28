@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** 🟡 Draft — citations unverified, see note below
 > **Dependencies:** [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md)
-> **Referenced By:** —
+> **Referenced By:** [R317](R317-space-operator-perspective.md)
 > **Produces:** the land-component command/staff vocabulary (mission command, IPB/recon-pull, the
 > D3A targeting cycle, sustainment-as-culmination, deception/EW discipline, battle rhythm) used as
 > an analogy source for orbital mission planning, vignette authoring, and Red doctrine design

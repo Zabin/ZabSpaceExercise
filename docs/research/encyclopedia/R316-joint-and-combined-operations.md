@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md)
-> **Referenced By:** [R102](R102-space-domain-awareness.md), [R108](R108-constellation-operations.md), [R119](R119-space-situational-data-fusion.md), [R208](R208-ooda-loops.md), DOM-003, DOM-009
+> **Referenced By:** [R102](R102-space-domain-awareness.md), [R108](R108-constellation-operations.md), [R119](R119-space-situational-data-fusion.md), [R208](R208-ooda-loops.md), [R317](R317-space-operator-perspective.md), DOM-003, DOM-009
 > **Produces:** the doctrinal vocabulary for multi-cell/multi-domain/multinational exercise design — coalition vignettes, joint-targeting-flavored COG/fires objectives, and any future cross-domain or allied-interoperability feature
 > **Feature Mapping:** vignette authoring (`docs/scenarios/`), DOM-003 (White Cell Framework — multi-cell command-relationship modeling), candidate future FS for coalition/multi-domain session design
 > **Related Topics:** [R301](R301-campaign-design.md) (Campaign Design), [R302](R302-operational-art.md) (Operational Art), [R305](R305-mission-analysis.md) (Mission Analysis), [R306](R306-operational-assessment.md)

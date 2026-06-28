@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R301](R301-campaign-design.md), [R303](R303-deterrence-theory.md), [R304](R304-escalation-dynamics.md)
-> **Referenced By:** —
+> **Referenced By:** [R317](R317-space-operator-perspective.md)
 > **Produces:** the cross-domain analogical vocabulary White Cell facilitators and vignette authors can use to
 > explain orbital-regime control, custody, and constellation employment in terms borrowed from a domain
 > (sea power) with a much longer doctrinal pedigree and a trainee-accessible intuition

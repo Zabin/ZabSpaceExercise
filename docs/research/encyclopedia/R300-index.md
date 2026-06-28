@@ -22,11 +22,12 @@ Justifies White Cell and scenario design (DOM-003, DOM-009). 16 topics.
 | [R314](R314-land-operator-perspective.md) | Land Operator Perspective | Land-component command/staff mindset (mission command, IPB, targeting cycle, sustainment) as an analogy source for orbital ops. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | 🟡 |
 | [R315](R315-air-operator-perspective.md) | Air Operator Perspective | How air forces think operationally (not aircraft tech); twenty air-ops concepts mapped to orbital-ops lessons. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md) | ✅ |
 | [R316](R316-joint-and-combined-operations.md) | Joint and Combined Operations Perspective | Joint command relationships, JPP, coalition/combined ops, MDO/JADC2, joint fires/targeting, and each domain's space dependencies. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | ✅ |
+| [R317](R317-space-operator-perspective.md) | Space Operator Perspective (Historical Evolution) | How the space operator's own mindset evolved — support era → warfighting domain → SDA → orbital-ops tradecraft → C2/autonomy → joint integration → decision-making → future trends. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md) | ✅ |
 
-**Status: 15 of 16 topics complete; R314 is a 🟡 draft pending citation verification** (that
+**Status: 16 of 17 topics complete; R314 is a 🟡 draft pending citation verification** (that
 session's WebFetch had no network access — every test URL, including non-doctrine controls,
 returned HTTP 403 — so R314's doctrine citations are unverified placeholders; see its own Sources
-section). All other 15 topics carry the mandatory §2 Scope section (MSTR-007 §4.2) and are cited
+section). All other 16 topics carry the mandatory §2 Scope section (MSTR-007 §4.2) and are cited
 per `docs/research/10-sources-and-methodology.md`'s convention — each topic has at least
 one `### Sources` subsection (live URL + Wayback snapshot + accessed date) and inline citations at
 the doctrinal/legal/historical claim site, with [R303](R303-deterrence-theory.md)'s single
@@ -51,8 +52,14 @@ for sea/land/air-style command tempo, custody-under-ambiguity, or tasking-cycle 
 tier's broadest-scope topic, added the same day to ground multi-domain/coalition vignette design
 and any future joint-force-structure feature without duplicating the operational-art/campaign-
 design/COG/EBO/assessment content the other 12 single-domain topics already own. See each topic's
-own §2 Scope for why it departs from the tier's usual single-concept shape. Last reviewed across
-the tier: 2026-06-28.
+own §2 Scope for why it departs from the tier's usual single-concept shape.
+[R317](R317-space-operator-perspective.md) (Space Operator Perspective, Historical Evolution) was
+added the same day as the domain's own counterpart to R313-R316 — where those four import another
+domain's mindset into orbital ops, R317 traces how the space operator's own mindset evolved across
+eight historical stages (support era → warfighting domain → SDA → orbital-ops tradecraft → C2/
+autonomy → joint integration → decision-making → future trends), closing the remaining gap: no
+prior R300 topic gave an implementer the space domain's own historical operator-mindset arc rather
+than a cross-domain analogy. Last reviewed across the tier: 2026-06-28.
 
 **ID-collision note (2026-06-28):** two independently authored topics were both committed as
 `R313` (Maritime Operator Perspective and Joint and Combined Operations Perspective) by separate
