@@ -234,7 +234,7 @@ gates; no level has been authored yet.
 | GDS-01 | Concept of Operations | `architecture/01-concept-of-operations.md` | build-spec/01, build-spec/04 §11, build-spec/05 §13-14, training/05, training/07 | ✅ Authored, merge gate closed |
 | GDS-02 | System Context | `architecture/02-system-context.md` | build-spec/01 | ✅ Authored, merge gate closed |
 | GDS-03 | Architecture | `architecture/03-architecture.md` | design/01 | ✅ Authored, merge gate closed |
-| GDS-04 | Domain Model | `architecture/04-domain-model.md` | design/04 (entity/relationship portion) | ⛔ Planned (scaffold only) |
+| GDS-04 | Domain Model | `architecture/04-domain-model.md` | design/04 (entity/relationship portion) | ✅ Authored, merge gate closed |
 | GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | build-spec/02 §5 | ⛔ Planned (scaffold only) |
 | GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | build-spec/04 §9 | ⛔ Planned (scaffold only) |
 | GDS-07 | Data Model | `architecture/07-data-model.md` | design/04 (schema portion) | ⛔ Planned (scaffold only) |
@@ -242,8 +242,8 @@ gates; no level has been authored yet.
 | GDS-09 | API Specification | `architecture/09-api-specification.md` | design/07 | ⛔ Planned (scaffold only) |
 | GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | *(net-new — no counterpart)* | ⛔ Planned (scaffold only) |
 
-**Next:** GDS-00 through GDS-03 are authored with merge gates closed. Author GDS-04
-(Domain Model, merging the entity/relationship portion of `design/04-data-model.md`) next, per the
+**Next:** GDS-00 through GDS-04 are authored with merge gates closed. Author GDS-05
+(Functional Requirements, merging `build-spec/02-requirements-and-operations.md` §5) next, per the
 gate.
 
 ## Theme: Feature Specifications (the *what* — `docs/features/`)
