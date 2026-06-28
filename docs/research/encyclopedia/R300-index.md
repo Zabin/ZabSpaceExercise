@@ -2,7 +2,7 @@
 
 [↑ Encyclopedia index](INDEX.md)
 
-Justifies White Cell and scenario design (DOM-003, DOM-009). 15 topics.
+Justifies White Cell and scenario design (DOM-003, DOM-009). 16 topics.
 
 | ID | Title | Scope (one line) | Depends on | Status |
 |---|---|---|---|---|
@@ -18,42 +18,45 @@ Justifies White Cell and scenario design (DOM-003, DOM-009). 15 topics.
 | [R310](R310-effects-based-operations.md) | Effects-Based Operations | Planning oriented around cascading effects, not direct output alone. | [R309](R309-center-of-gravity-analysis.md) | ✅ |
 | [R311](R311-course-of-action-analysis.md) | Course of Action Analysis | Comparing distinct options against criteria before commitment. | [R305](R305-mission-analysis.md) | ✅ |
 | [R312](R312-space-strategy.md) | Space Strategy | Strategic-level theory specific to the space domain. | [R301](R301-campaign-design.md), [R303](R303-deterrence-theory.md) | ✅ |
-| [R313](R313-joint-and-combined-operations.md) | Joint and Combined Operations Perspective | Joint command relationships, JPP, coalition/combined ops, MDO/JADC2, joint fires/targeting, and each domain's space dependencies. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | ✅ |
-
-**Status: complete.** All 13 topics now carry the mandatory §2 Scope section (MSTR-007 §4.2) and
-are cited per `docs/research/10-sources-and-methodology.md`'s convention — each topic has at least
 | [R313](R313-maritime-operator-perspective.md) | Maritime Operator Perspective | Naval sea control/denial, C2, sustainment, and escalation doctrine as analogical grounding for orbital ops and space force employment. | [R301](R301-campaign-design.md), [R303](R303-deterrence-theory.md), [R304](R304-escalation-dynamics.md) | ✅ |
 | [R314](R314-land-operator-perspective.md) | Land Operator Perspective | Land-component command/staff mindset (mission command, IPB, targeting cycle, sustainment) as an analogy source for orbital ops. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | 🟡 |
 | [R315](R315-air-operator-perspective.md) | Air Operator Perspective | How air forces think operationally (not aircraft tech); twenty air-ops concepts mapped to orbital-ops lessons. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md) | ✅ |
+| [R316](R316-joint-and-combined-operations.md) | Joint and Combined Operations Perspective | Joint command relationships, JPP, coalition/combined ops, MDO/JADC2, joint fires/targeting, and each domain's space dependencies. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | ✅ |
 
-**Status: 14 of 15 topics complete; R314 is a 🟡 draft pending citation verification** (that
+**Status: 15 of 16 topics complete; R314 is a 🟡 draft pending citation verification** (that
 session's WebFetch had no network access — every test URL, including non-doctrine controls,
 returned HTTP 403 — so R314's doctrine citations are unverified placeholders; see its own Sources
-section). All other 14 topics carry the mandatory §2 Scope section (MSTR-007 §4.2) and are cited
+section). All other 15 topics carry the mandatory §2 Scope section (MSTR-007 §4.2) and are cited
 per `docs/research/10-sources-and-methodology.md`'s convention — each topic has at least
 one `### Sources` subsection (live URL + Wayback snapshot + accessed date) and inline citations at
 the doctrinal/legal/historical claim site, with [R303](R303-deterrence-theory.md)'s single
-secondary-sourced claim and [R313](R313-joint-and-combined-operations.md) §3.12's single-source
+secondary-sourced claim and [R316](R316-joint-and-combined-operations.md) §3.12's single-source
 government-report claim flagged inline per the methodology's §3 single-source rule rather than
 mis-cited as primary. Grounded in DOM-003 (White Cell Framework — §7/§10's red-teaming and
-wargaming citations, plus [R313](R313-joint-and-combined-operations.md)'s command-relationship and
+wargaming citations, plus [R316](R316-joint-and-combined-operations.md)'s command-relationship and
 JPP vocabulary for any future multi-cell/coalition session design), DOM-009 (Doctrine Development
 Framework — the translation pipeline these topics' real-world doctrine ultimately feeds), and
 DOM-008 §3 (Red AI design principles, the direct consumer of
 [R303](R303-deterrence-theory.md)/[R308](R308-red-teaming-methodology.md)/[R312](R312-space-strategy.md)'s strategic-posture
-and red-teaming concepts). [R313](R313-joint-and-combined-operations.md) is the tier's broadest-scope
-topic, added to ground multi-domain/coalition vignette design and any future joint-force-structure
-feature without duplicating the operational-art/campaign-design/COG/EBO/assessment content the other
-12 topics already own. Last reviewed across the tier: 2026-06-28.
-wargaming citations), DOM-009 (Doctrine Development Framework — the translation pipeline these
-topics' real-world doctrine ultimately feeds), and DOM-008 §3 (Red AI design principles, the direct
-consumer of [R303](R303-deterrence-theory.md)/[R308](R308-red-teaming-methodology.md)/[R312](R312-space-strategy.md)'s strategic-posture
-and red-teaming concepts). [R313](R313-maritime-operator-perspective.md) (Maritime Operator
-Perspective), [R314](R314-land-operator-perspective.md) (Land Operator Perspective), and
+and red-teaming concepts).
+
+[R313](R313-maritime-operator-perspective.md) (Maritime Operator Perspective),
+[R314](R314-land-operator-perspective.md) (Land Operator Perspective), and
 [R315](R315-air-operator-perspective.md) (Air Operator Perspective) were all added 2026-06-28 as
-the tier's deliberate broad-survey exceptions — each maps a mature, doctrinally documented second
-domain's operational concepts onto orbital-operations lessons, closing the gap MSTR-007 §7's
-coverage test flags: no prior R300 topic gave an implementer a second-domain analogy for
-sea/land/air-style command tempo, custody-under-ambiguity, or tasking-cycle dynamics. See each
-topic's own §2 Scope for why it departs from the tier's usual single-concept shape. Last reviewed
-across the tier: 2026-06-28.
+the tier's deliberate broad-survey-by-domain exceptions — each maps a mature, doctrinally
+documented second domain's operational concepts onto orbital-operations lessons, closing the gap
+MSTR-007 §7's coverage test flags: no prior R300 topic gave an implementer a second-domain analogy
+for sea/land/air-style command tempo, custody-under-ambiguity, or tasking-cycle dynamics.
+[R316](R316-joint-and-combined-operations.md) (Joint and Combined Operations Perspective) is the
+tier's broadest-scope topic, added the same day to ground multi-domain/coalition vignette design
+and any future joint-force-structure feature without duplicating the operational-art/campaign-
+design/COG/EBO/assessment content the other 12 single-domain topics already own. See each topic's
+own §2 Scope for why it departs from the tier's usual single-concept shape. Last reviewed across
+the tier: 2026-06-28.
+
+**ID-collision note (2026-06-28):** two independently authored topics were both committed as
+`R313` (Maritime Operator Perspective and Joint and Combined Operations Perspective) by separate
+concurrent branches, each unaware of the other's choice of next-available ID. Resolved by
+renumbering Joint and Combined Operations Perspective to R316 (the next free ID after Air
+Operator Perspective's R315) and updating every cross-reference (`R301`, `R302`, `R305`, `R102`,
+`R108`, `R119`, `R208`) that pointed at the old `R313-joint-and-combined-operations.md` path.
