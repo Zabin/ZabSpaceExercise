@@ -4,7 +4,7 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R301](R301-campaign-design.md)
-> **Referenced By:** [R305](R305-mission-analysis.md), [R309](R309-center-of-gravity-analysis.md), [R310](R310-effects-based-operations.md), [R313](R313-joint-and-combined-operations.md)
+> **Referenced By:** [R305](R305-mission-analysis.md), [R309](R309-center-of-gravity-analysis.md), [R310](R310-effects-based-operations.md), [R316](R316-joint-and-combined-operations.md)
 > **Produces:** the vocabulary for the tactics↔strategy connective layer a vignette's objectives should reflect
 > **Feature Mapping:** vignette authoring (`docs/scenarios/`)
 > **Related Topics:** [R301](R301-campaign-design.md) (Campaign Design), [R309](R309-center-of-gravity-analysis.md) (Center of Gravity Analysis), [R310](R310-effects-based-operations.md) (Effects-Based
