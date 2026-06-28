@@ -1,7 +1,7 @@
 # GDS-03 — Architecture
 
 > **Document ID:** GDS-03
-> **Version:** 1.2
+> **Version:** 1.3
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-02
 > **Referenced By:** GDS-04
@@ -17,7 +17,13 @@
 > [`adr/ADR-0025-telemetry-scene-placement-split.md`](adr/ADR-0025-telemetry-scene-placement-split.md),
 > [`adr/ADR-0026-rlock-lan-scaling-ceiling.md`](adr/ADR-0026-rlock-lan-scaling-ceiling.md),
 > [`adr/ADR-0028-pyqt-build-spec-staleness.md`](adr/ADR-0028-pyqt-build-spec-staleness.md)
-> (Open Questions 1, 2, 3, 4 resolution)
+> (Open Questions 1, 2, 3, 4 resolution),
+> [`research/encyclopedia/R313-maritime-operator-perspective.md`](../research/encyclopedia/R313-maritime-operator-perspective.md),
+> [`research/encyclopedia/R315-air-operator-perspective.md`](../research/encyclopedia/R315-air-operator-perspective.md),
+> [`research/encyclopedia/R316-joint-and-combined-operations.md`](../research/encyclopedia/R316-joint-and-combined-operations.md),
+> [`research/encyclopedia/R317-space-operator-perspective.md`](../research/encyclopedia/R317-space-operator-perspective.md)
+> (reconciled — see "Research integration (R313–R317)" below),
+> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -415,6 +421,30 @@ their own — called out so a future reader does not look for a "determinism mod
 - **Plan-first commanding** (`CLAUDE.md` invariant 4) — enforced by §2.1's `OrderSystem` (validate
   → window → execute) and surfaced to operators by §2.4's dry-run preview; no subsystem allows an
   instant, window-independent ground/space command outside the cyber exception.
+- **Decision cycle** (new) — every domain's doctrine names a version of the same generic
+  observe/classify → decide → act → assess loop (D3A, F2T2EA, detect→track→characterize→engage;
+  `R313` §3.5/§3.6, `R315` §3.4/§3.5, `R316` §3.2, `R317` §3.3). The system's one shipped instance
+  is §2.1's custody/`Track` confidence-decay chain feeding the weapons-quality gate before an
+  `OrderSystem` effect — no separate "decision cycle module" exists; this entry exists so a future
+  reader recognizes the pattern instead of treating it as ad hoc to custody/track.
+
+## 5. Forward-looking architectural considerations (research-grounded, not built)
+
+**This section describes no existing subsystem.** Everything below is a candidate future
+extension, named because the operator-perspective research repeatedly identifies the same gap, not
+because any of it is scheduled, committed, or implied to exist by §1–§4 above. None of these
+appears in `design/01-architecture-overview.md`, `build-spec/03`, or any shipped code. A future
+feature that wants one of these would need its own `ADS-xxx` (per `architecture/INDEX.md` §2) and a
+real GDS-03 revision — this section is a placeholder for that future work, not a substitute for it.
+
+| Candidate component | What gap it would address | Research grounding |
+|---|---|---|
+| Decision Support / Assessment helper | Architecture-wide assessment/scoring has no owning subsystem today (GDS-01 Open Question 5, resolved by ADR-0029 as "out of scope for v1"); doctrine names MOE/MOP as the formal vocabulary for this gap | `R315` §3.14, `R316` §3.2 |
+| Autonomy Manager | AI-Red currently reads ground truth directly rather than through a `CellView` (GDS-01 Open Question 6, ADR-0024); space doctrine's own historical arc names autonomy/human-machine teaming as the live frontier | `R317` §3.5, §3.7–3.8 |
+| Command-relationship layer | No OPCON/TACON-equivalent concept exists for internal Blue/Red structure (see GDS-04 §3 for the conceptual sketch) | `R313` §3.2/§3.7, `R316` §3.1 |
+
+Each row above restates an Open Question already recorded in GDS-01/GDS-04 from the architecture
+angle; none is resolved here.
 
 ## Open Questions
 
@@ -446,6 +476,12 @@ their own — called out so a future reader does not look for a "determinism mod
    (≤16 total seats: 1–2 White, ≤6 Blue, ≤6 Red, ≤2 Observers) — no new load test was commissioned;
    the project owner adopted the already-documented sizing as the supported ceiling. See
    `architecture/adr/ADR-0026-rlock-lan-scaling-ceiling.md`.
+5. **Resilience under sustained denial (new).** §4's existing cross-cutting concerns cover a single
+   fault/safe-mode event (`RecoverySystem`) but not sustained, multi-front degradation — persistent
+   EW, comms-denied mission command, cyber-EW inseparability (the 2022 Viasat KA-SAT precedent) —
+   which doctrine treats as architecturally distinct from one fault (`R313` §3.7, `R314` §3.5,
+   `R315` §3.17/§3.19, `R317` §3.6). Whether this needs a distinct architectural concept beyond the
+   existing safe-mode/recovery chain is a design decision, not a documentation fix — left open.
 
 ---
 
@@ -475,6 +511,26 @@ consolidated, cross-document changelog.
   separately do not include cyber at all. No edit made; the original finding overstated the
   inconsistency once checked against this document's actual text.
 - Metadata — added a cross-reference to the architecture review; version bumped 1.0 → 1.1.
+
+## Research integration (R313–R317)
+
+Synthesized per [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md) §4.
+**Scope discipline:** the new §5 is explicitly forward-looking and changes no existing subsystem's
+description in §1–§4; every other change below is additive.
+
+- §4 — added a "Decision cycle" cross-cutting concern naming the generic observe/decide/act/assess
+  pattern the existing custody/track chain already instantiates (`R313`/`R315`/`R316`/`R317`;
+  gap-analysis finding 3.2).
+- Added new §5, "Forward-looking architectural considerations" — three candidate future components
+  (Decision Support/Assessment, Autonomy Manager, Command-relationship layer), each tied to a
+  specific research citation and explicitly marked not-built (gap-analysis finding 3.1). Restates,
+  from the architecture angle, Open Questions already recorded in GDS-01/GDS-04; resolves nothing
+  new.
+- Open Questions — added Open Question 5, resilience under sustained denial vs. the existing
+  single-fault safe-mode model (`R313`/`R314`/`R315`/`R317`; gap-analysis finding 3.3). Left open.
+- Metadata — added cross-references to R313/R315/R316/R317 and the gap-analysis document; version
+  bumped 1.2 → 1.3. Status remains `✅ Authored — merge gate closed`; explicitly-instructed
+  amendment, not a gate reopening, consistent with GDS-01/GDS-02's identical treatment.
 
 ## Merge gate (closed)
 

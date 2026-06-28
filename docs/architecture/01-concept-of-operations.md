@@ -1,7 +1,7 @@
 # GDS-01 — Concept of Operations
 
 > **Document ID:** GDS-01
-> **Version:** 1.2
+> **Version:** 1.3
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-00
 > **Referenced By:** GDS-02
@@ -17,7 +17,15 @@
 > reconciliation" below), [`adr/ADR-0024-ai-red-boundary-classification.md`](adr/ADR-0024-ai-red-boundary-classification.md),
 > [`adr/ADR-0026-rlock-lan-scaling-ceiling.md`](adr/ADR-0026-rlock-lan-scaling-ceiling.md),
 > [`adr/ADR-0029-assessment-scoring-workflow-ownership.md`](adr/ADR-0029-assessment-scoring-workflow-ownership.md)
-> (Open Questions 2, 5, 6 resolution)
+> (Open Questions 2, 5, 6 resolution),
+> [`research/encyclopedia/R313-maritime-operator-perspective.md`](../research/encyclopedia/R313-maritime-operator-perspective.md),
+> [`research/encyclopedia/R314-land-operator-perspective.md`](../research/encyclopedia/R314-land-operator-perspective.md)
+> (draft, citations unverified),
+> [`research/encyclopedia/R315-air-operator-perspective.md`](../research/encyclopedia/R315-air-operator-perspective.md),
+> [`research/encyclopedia/R316-joint-and-combined-operations.md`](../research/encyclopedia/R316-joint-and-combined-operations.md),
+> [`research/encyclopedia/R317-space-operator-perspective.md`](../research/encyclopedia/R317-space-operator-perspective.md)
+> (reconciled — see "Research integration (R313–R317)" below),
+> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -47,6 +55,14 @@ contesting the domain, while training:
 - weighing **counterspace effects** across the escalation ladder (deceive→disrupt→deny→degrade→
   destroy) with attention to reversibility, attribution, and debris;
 - **active/passive defense and recovery**, including safe-mode diagnosis and the recovery chain.
+
+The mechanics above are space's own instance of operational concepts that recur, under different
+names, across every other domain's doctrine: a generic **decision cycle** (observe/classify →
+decide → act → assess), **command by intent** rather than micromanagement, and **resilience**
+under sustained contested conditions rather than a single fault event. The custody/track
+confidence chain in §7 below is the simulator's one shipped instance of the decision-cycle
+pattern; the plan-first invariant (§10) is this system's instance of command-by-intent. See
+"Research integration (R313–R317)" below for the cross-domain grounding.
 
 ## 2. Intended users
 
@@ -141,6 +157,13 @@ Restated from `build-spec/05` §13.3–13.5:
   tunable parameter, fires a scheduled inject (e.g. a severe space-weather advisory), and narrates
   consequences for a physically legal but tactically unwise action rather than blocking it
   (`build-spec/01` §3.3 "Error handling").
+- **Cross-domain dependency (conceptual, not implemented):** every other military domain's
+  doctrine treats space support (PNT, SATCOM, ISR, missile warning) as a precondition for its own
+  operations, and a joint force depends on synchronized effects across domains rather than any one
+  domain acting alone (`R316` §3.1, §3.6). The simulator models exactly one domain (space) and does
+  not implement land/air/maritime components; this scenario is included to illustrate the kind of
+  joint dependency a future multi-domain extension would need to represent explicitly, not to claim
+  the system already does so.
 
 ## 7. Exercise lifecycle
 
@@ -296,7 +319,24 @@ invented:
    with human cells is required as future work, tracked in `FUTURE-WORK.md` §1 "AI-Red fog-of-war
    parity." AI-Red's permanently-internal boundary classification (Open Question 2 elsewhere in the
    ladder) is locked in separately and is not affected by this gap. See
-   `architecture/adr/ADR-0024-ai-red-boundary-classification.md`.
+   `architecture/adr/ADR-0024-ai-red-boundary-classification.md`. The space domain's own historical
+   arc independently names autonomy/human-machine teaming as the live frontier issue
+   (`R317` §3.7–3.8), corroborating that this gap is doctrinally significant, not just an
+   engineering nuisance.
+7. **Command-relationship layering (new).** Every other domain's research treats internal command
+   relationships (OPCON/TACON-equivalent: who has full command vs. who can only direct execution of
+   an assigned task) as load-bearing (`R313` §3.2/§3.7, `R314` §3.1, `R315` §3.8, `R316` §3.1). The
+   simulator's flat single-Blue-cell/single-Red-cell model has no such concept. `R316` §3.1
+   explicitly cautions against treating the existing flat model as a doctrinal claim that real
+   joint structure is flat. Left open — see the forward-looking sketch in `GDS-04` §3, not resolved
+   here.
+8. **Resilience under sustained denial (new).** The existing safe-mode mechanic (§7 above) models a
+   single fault event and its recovery chain. Doctrine across land, air, maritime, and space domains
+   treats sustained, contested-environment degradation (comms-denied mission command, persistent EW,
+   cyber-EW inseparability per the 2022 Viasat KA-SAT precedent) as a distinct, harder problem from a
+   single fault (`R313` §3.7, `R314` §3.5, `R315` §3.17/§3.19, `R317` §3.6). Whether/how the
+   simulator should eventually model sustained multi-front degradation rather than discrete fault
+   events is a design decision, not a documentation fix — left open.
 
 ---
 
@@ -315,6 +355,36 @@ for the consolidated, cross-document changelog.
   architecture-wide, not ConOps-specific (review §1 finding 1, §7 findings 1–2).
 - §13 — added Open Question 6, AI-Red epistemic parity with human cells (review §8 finding 3, new).
 - Metadata — added a cross-reference to the architecture review; version bumped 1.0 → 1.1.
+
+## Research integration (R313–R317)
+
+Five operator-perspective research documents
+([`R313`](../research/encyclopedia/R313-maritime-operator-perspective.md) Maritime,
+[`R314`](../research/encyclopedia/R314-land-operator-perspective.md) Land (draft, citations
+unverified),
+[`R315`](../research/encyclopedia/R315-air-operator-perspective.md) Air,
+[`R316`](../research/encyclopedia/R316-joint-and-combined-operations.md) Joint and Combined
+Operations, and
+[`R317`](../research/encyclopedia/R317-space-operator-perspective.md) Space Operator Perspective —
+Historical Evolution) were synthesized against this document per
+[`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md). **Scope discipline:**
+every change below is additive — naming an existing mechanic's doctrinal analog, adding an
+illustrative (not implemented) scenario, or adding a genuinely open question. No requirement,
+mechanic, or external-system claim changed.
+
+- §1 — added a paragraph naming the cross-domain decision-cycle/command-by-intent/resilience
+  concepts the existing mechanics already instantiate, citing R313–R317 (gap-analysis findings C1–C7).
+- §6 — added a cross-domain-dependency scenario, explicitly marked as illustrative/conceptual since
+  the simulator implements only the space domain (R316 §3.1/§3.6; gap-analysis finding 1.2).
+- §13 — added Open Question 7 (command-relationship layering, R313/R314/R315/R316; gap-analysis
+  finding 1.3) and Open Question 8 (resilience under sustained denial, R313/R314/R315/R317;
+  gap-analysis finding C6). Both left genuinely open — resolving either is a design decision.
+- §13 Open Question 6 — appended a corroborating citation to R317's autonomy/human-machine-teaming
+  framing (gap-analysis finding C7); the existing ADR-0024 resolution is unchanged.
+- Metadata — added cross-references to R313–R317 and the new gap-analysis document; version bumped
+  1.2 → 1.3. Status remains `✅ Authored — merge gate closed`; this update does not reopen the gate
+  recorded below, it amends the document in place under explicit instruction, consistent with the
+  precedent set by the prior architecture-review reconciliation.
 
 ## Merge gate (closed)
 
