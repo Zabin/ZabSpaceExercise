@@ -97,8 +97,9 @@ Operations), GDS-02 (System Context), GDS-03 (Architecture), and the research en
 distinct from both the sequential ladder in §1 and the per-cluster `ADS-xxx` in §2. Each
 `ADR-NNNN` carries Decision ID, Title, Context, Decision, Alternatives Considered, Rationale,
 Consequences, and a Status of `Accepted`, `Proposed`, or `Deferred`. See
-[`adr/INDEX.md`](adr/INDEX.md) for the full list (29 ADRs as of this writing: 23 recording
-settled decisions, 6 recording questions the ladder leaves genuinely open).
+[`adr/INDEX.md`](adr/INDEX.md) for the full list (29 ADRs as of this writing, all `Accepted`: 23
+were already settled when first authored; 6 (ADR-0024–0029) originally recorded Open Questions the
+ladder left genuinely open and were resolved afterward by explicit project-owner decision).
 
 ## Related
 

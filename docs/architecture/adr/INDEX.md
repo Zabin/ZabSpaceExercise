@@ -1,9 +1,11 @@
 # Architecture Decision Records (ADR) Index
 
-Router for `docs/architecture/adr/`. Each `ADR-NNNN` records one architectural decision already
-made (or, where the source documents leave it genuinely open, explicitly not yet made) in
+Router for `docs/architecture/adr/`. Each `ADR-NNNN` records one architectural decision made in
 `GDS-01` (Concept of Operations), `GDS-02` (System Context), `GDS-03` (Architecture), or the
 research encyclopedia (`docs/research/encyclopedia/`) those three ground their decisions against.
+Six of the 29 (ADR-0024–0029) originally recorded a source document's Open Question rather than a
+settled decision; all six have since been resolved by explicit project-owner decision — see
+"Scope and method" below.
 
 [↑ Architecture index](../INDEX.md) · [Docs index](../../INDEX.md)
 
@@ -11,10 +13,13 @@ research encyclopedia (`docs/research/encyclopedia/`) those three ground their d
 
 This is a **record of decisions already present in the corpus, not a place new decisions are
 invented**. Every ADR below traces to a specific section of GDS-01/02/03 (cited in its "Related"
-section) or to a build-spec/01 §4 "Decision D-number" the GDS documents already restate. Where a
-source document states an Open Question rather than a settled decision, the corresponding ADR is
-marked `Status: Proposed` or `Status: Deferred` and its "Decision" field states plainly that no
-decision has been made — see ADR-0024 through ADR-0029.
+section) or to a build-spec/01 §4 "Decision D-number" the GDS documents already restate. ADR-0024
+through ADR-0029 originally traced to a source document's Open Question rather than a settled
+decision and were marked `Status: Proposed`/`Deferred` with a "Decision" field stating plainly that
+no decision had been made yet. Per the project owner's direct resolution of all six (captured via
+`AskUserQuestion`), each now carries `Status: Accepted` and a concrete Decision/Rationale/
+Consequences — several of which authorize a follow-up edit to another document, tracked in that
+ADR's own "Consequences" section.
 
 ## Decisions
 
@@ -43,17 +48,24 @@ decision has been made — see ADR-0024 through ADR-0029.
 | [ADR-0021](ADR-0021-ai-red-session-layer-feature.md) | AI-Red is a session-layer feature | Accepted |
 | [ADR-0022](ADR-0022-save-file-ownership-split.md) | Save-file ownership split (session vs. content) | Accepted |
 | [ADR-0023](ADR-0023-one-directional-dependency-graph.md) | One-directional subsystem dependency graph | Accepted |
-| [ADR-0024](ADR-0024-ai-red-boundary-classification.md) | AI-Red's actor/boundary classification | Proposed (unresolved) |
-| [ADR-0025](ADR-0025-telemetry-scene-placement-split.md) | `telemetry.py` vs. `scene.py` subsystem placement | Deferred (unresolved) |
-| [ADR-0026](ADR-0026-rlock-lan-scaling-ceiling.md) | RLock/LAN-scaling contention ceiling | Deferred (unresolved) |
-| [ADR-0027](ADR-0027-scenario-authoring-boundary.md) | Scenario-authoring workflow's boundary actor/interface | Proposed (unresolved) |
-| [ADR-0028](ADR-0028-pyqt-build-spec-staleness.md) | PyQt build-spec staleness reconciliation | Deferred (unresolved) |
-| [ADR-0029](ADR-0029-assessment-scoring-workflow-ownership.md) | Assessment/scoring stakeholder workflow ownership | Proposed (unresolved) |
+| [ADR-0024](ADR-0024-ai-red-boundary-classification.md) | AI-Red stays permanently internal; epistemic parity is a tracked future-work gap | Accepted |
+| [ADR-0025](ADR-0025-telemetry-scene-placement-split.md) | Pure render/diagnostic helpers are placed by whether they require cell identity | Accepted |
+| [ADR-0026](ADR-0026-rlock-lan-scaling-ceiling.md) | The RLock design's stated ceiling is the existing ~16-participant LAN concurrency model | Accepted |
+| [ADR-0027](ADR-0027-scenario-authoring-boundary.md) | The in-app vignette builder is a distinct boundary-crossing interaction | Accepted |
+| [ADR-0028](ADR-0028-pyqt-build-spec-staleness.md) | `build-spec/03` §7.1/§7.2 rewritten to describe the shipped FastAPI + browser presentation | Accepted |
+| [ADR-0029](ADR-0029-assessment-scoring-workflow-ownership.md) | Raw AAR/event-log access is sufficient for the assessment-designer stakeholder | Accepted |
 
-ADR-0001 through ADR-0023 record decisions already settled and reflected in the shipped system.
-ADR-0024 through ADR-0029 record questions the source documents (GDS-01/02/03 and the
-architecture review) leave genuinely open — each one says so plainly in its own "Decision" field
-rather than inventing a resolution.
+ADR-0001 through ADR-0023 record decisions already settled and reflected in the shipped system at
+the time this ADR set was first authored. ADR-0024 through ADR-0029 originally recorded questions
+the source documents (GDS-01/02/03 and the architecture review) left genuinely open — each one
+said so plainly in its own "Decision" field rather than inventing a resolution. The project owner
+has since resolved all six via direct decisions (captured through `AskUserQuestion` and recorded in
+each ADR's updated Decision/Rationale/Consequences), so all 29 ADRs are now `Accepted`. The
+distinction worth preserving for traceability is not "settled vs. open" anymore, but *how* each was
+settled: ADR-0001–0023 were already implicit in the shipped system when authored; ADR-0024–0029
+required an explicit, separately-dated project-owner decision, several of which (ADR-0024,
+ADR-0027, ADR-0028) authorize concrete follow-up edits to other documents — see each ADR's
+"Consequences" section for what those follow-ups are and whether they have been completed.
 
 ## Related
 

@@ -1,10 +1,10 @@
-# ADR-0026 — RLock/LAN-scaling contention ceiling (unresolved)
+# ADR-0026 — RLock/LAN-scaling contention ceiling
 
 [↑ ADR index](INDEX.md)
 
 - **Decision ID:** ADR-0026
-- **Title:** No stated ceiling for per-session `RLock` contention under many concurrent LAN clients
-- **Status:** Deferred
+- **Title:** The per-session `RLock` design's stated ceiling is the existing ~16-participant LAN concurrency model
+- **Status:** Accepted
 
 ## Context
 
@@ -17,34 +17,42 @@ and the review itself).
 
 ## Decision
 
-**No decision has been made.** The `RLock`-per-session mechanism (ADR-0014) is accepted as the
-multiplayer-authority design, but no document states a concrete participant-count, tab-count, or
-contention ceiling at which it would need to change.
+The per-session `RLock` design's supported ceiling is **the existing documented LAN concurrency
+model**: up to 16 notional participants per `build-spec/01` §2 (1–2 White, up to 6 Blue, up to 6
+Red, up to 2 Observers). No new numeric ceiling is introduced beyond this — the project owner has
+chosen to adopt the already-documented participant count as the stated ceiling rather than commit
+to a separate load-test program right now.
 
 ## Alternatives Considered
 
-Not yet evaluated, since no sizing target has been set to evaluate against:
-
-- Establish an explicit LAN participant/tab-count ceiling (mirroring the existing ~24-satellite
-  single-host sizing guideline, ADR-0019) backed by load testing.
-- Replace the single per-session `RLock` with finer-grained locking (e.g. per-resource) if/when a
-  concrete contention problem is observed, rather than pre-optimizing without data.
-- Accept the current design as sufficient for the documented concurrency model (up to 16 notional
-  participants, `build-spec/01` §2) without further sizing work, on the basis that 16 RLock
-  acquisitions per session is unlikely to be a bottleneck — this has not been measured or decided.
+- Establish a new, explicit LAN participant/tab-count ceiling backed by load testing — **not
+  adopted now**: no load test has been run; the project owner chose to use the existing sizing
+  guideline instead of commissioning new measurement work.
+- Replace the single per-session `RLock` with finer-grained locking (e.g. per-resource) — **not
+  adopted**: no concrete contention problem has been observed at the documented concurrency model,
+  so pre-optimizing without data is not justified.
+- Declare no ceiling needed at all — **not adopted**: the project owner chose to state a concrete
+  ceiling rather than declare the question out of scope.
 
 ## Rationale
 
-Not applicable — resolving this requires a sizing decision (and likely a load test), which is
-outside the scope of a documentation reconciliation pass.
+`build-spec/01` §2 already constrains intended v1 usage to a small, cooperative LAN/hot-seat group
+(≤16 total seats). Adopting that existing, binding sizing constraint as the `RLock` design's
+supported ceiling avoids introducing a second, independent sizing claim that could drift from the
+build spec, and requires no new load-testing investment to state. If usage patterns are ever
+expected to exceed that ceiling, a load test (the deferred alternative above) would be the
+appropriate next step at that time — not before.
 
 ## Consequences
 
-Until resolved: LAN-cooperative deployments beyond the documented ~16-participant concurrency
-model (`build-spec/01` §2) have no stated guarantee of acceptable performance, and the clock-lag
-watchdog (ADR-0019's mechanism) only signals *sim*-clock lag, not lock-contention specifically.
+- LAN-cooperative deployments at or below the documented ~16-participant concurrency model
+  (`build-spec/01` §2) are within the `RLock` design's stated supported envelope.
+- Deployments intending to exceed that ceiling are explicitly out of the supported envelope until
+  a load test is run; this is now a stated boundary rather than a silent gap.
+- The clock-lag watchdog (ADR-0019's mechanism) still only signals *sim*-clock lag, not lock
+  contention specifically — that distinction remains unchanged by this decision.
 
 ## Related
 
 GDS-01 §13 Open Question 2; GDS-03 Open Question 4; `reviews/architecture-review.md` §6 findings
-1–2; ADR-0014, ADR-0019.
+1–2; ADR-0014, ADR-0019; `build-spec/01-context-and-scope.md` §2.

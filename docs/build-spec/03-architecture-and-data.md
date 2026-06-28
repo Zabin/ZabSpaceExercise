@@ -2,27 +2,37 @@
 
 ## 7. Architecture (v1)
 
-This section summarizes; `01-architecture-overview.md` holds the detailed seam design. The v1
-shape is a **single-process desktop application** with a strict internal boundary between a
-UI-agnostic engine and the GUI, so the future networked version (v2) can split them across a
-process/network boundary without rewriting the engine.
+> **As-built note (ADR-0028):** this section originally described a PyQt/PySide desktop GUI
+> planned at v1-design time. The shipped presentation is **FastAPI + browser**, per ADR-0008 and
+> [`architecture/03-architecture.md`](../architecture/03-architecture.md) (GDS-03). §7.1/§7.2 below
+> are rewritten to describe the as-built system directly; the PyQt description is retired.
+
+This section summarizes; `01-architecture-overview.md` holds the detailed seam design (also
+historical re: GUI choice — see the as-built note above). The v1 shape is a **single FastAPI
+server process** with a strict internal boundary between a UI-agnostic engine and the
+presentation layer; one or more browser clients (single-machine hot-seat or LAN) connect to that
+one process, fog-of-war filtered server-side at the `SessionAPI`/`CellController` boundary.
 
 ### 7.1 Layered structure
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  GUI (PyQt/PySide desktop, dockable panels, dark ops theme)    │
+│  Browser client (HTML/CSS/JS, no build step, no framework)    │
 │  - White Cell console      - Operator console (role-scoped)    │
-│  - 2D ECI view  - 2D RIC view   - SOH/telemetry  - timeline    │
-│  - scenario builder        - inject panel  - classification    │
+│  - 2D belief map  - 3D orthographic globe  - SOH/telemetry      │
+│  - in-app scenario builder  - inject panel  - classification    │
 ├─────────────────────────────────────────────────────────────┤
-│  SessionAPI (in-process call interface; future: network RPC)   │
-│  - submit_activity / cancel / task_sensor / set_time / inject  │
-│  - get_cell_view(role)  - get_white_view()  - load/build/save  │
+│  FastAPI server (`ui_web/server.py`) — HTTP polling per tab,    │
+│  the network seam every browser client talks to                │
+├─────────────────────────────────────────────────────────────┤
+│  SessionAPI (the single seam into the engine; also the          │
+│  in-process call interface FastAPI's handlers invoke)           │
+│  - issue_order / cancel / task_sensor / set_clock / inject       │
+│  - get_cell_view(role)  - get_white_view()  - load/build/save   │
 ├─────────────────────────────────────────────────────────────┤
 │  Session layer                                                 │
-│  - SessionManager (load/tune/start, clock, rewind via replay)  │
+│  - SessionManager (load/tune/start, lazy clock, rewind/replay)  │
 │  - CellController (role permissions + fog-of-war CellView)     │
-│  - RoleRegistry (seat→assets, bus/payload split)               │
+│  - per-session RLock (LAN multiplayer mutation serialization)  │
 │  - ActionLog (ordered, deterministic, persisted at end)        │
 ├─────────────────────────────────────────────────────────────┤
 │  Engine (deterministic, UI-agnostic, pure-Python)              │
@@ -34,26 +44,27 @@ process/network boundary without rewriting the engine.
 │      sigint.py · perturbations.py · sun.eclipse_fraction        │
 ├─────────────────────────────────────────────────────────────┤
 │  Content & data                                                │
-│  - Vignette JSON   - asset/effect/sensor templates (YAML/JSON) │
+│  - Vignette YAML   - asset/effect/sensor templates (YAML/JSON) │
 │  - bundled TLE snapshot  - Space-Track import (build-time only) │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ### 7.2 Why these technology choices
-- **Python engine:** mature astrodynamics ecosystem (Skyfield/Astropy/poliastro/sgp4) for the
-  moderate model now and the high-fidelity swap later; one language for engine + UI lowers
-  maintenance burden for a solo maintainer (Claude Code).
-- **PyQt/PySide desktop GUI:** runs offline on a stock government laptop with integrated
-  graphics; rich dockable-panel UX; 2D rendering via Qt Graphics/QML or a matplotlib-class
-  canvas — no GPU dependency for v1. (Detailed trade vs. a web/Electron stack in
-  `02-tech-stack-recommendation.md`; the desktop path is preferred for D2/D3.)
+- **Python engine:** mature astrodynamics ecosystem (Skyfield/sgp4) for the moderate model now and
+  the high-fidelity swap later; one language for engine + presentation server lowers maintenance
+  burden for a solo maintainer (Claude Code).
+- **FastAPI + browser presentation (supersedes the originally-planned PyQt/PySide desktop GUI,
+  ADR-0008):** the LAN-multiplayer seam comes nearly free — every browser tab (single-machine or
+  LAN) talks HTTP to the same server process under a per-session `RLock`, with no separate desktop
+  client to ship or update. 2D belief map and 3D orthographic globe are rendered in-browser
+  (canvas), no native GUI toolkit or GPU dependency. (Original trade discussion vs. desktop in
+  `02-tech-stack-recommendation.md`; superseded by ADR-0008.)
 - **No paid dependencies** (D8): all libraries open-source; STK-like look achieved with custom
-  2D rendering and NATO symbology, not STK.
-- **In-process `SessionAPI` doubles as the network API.** LAN multiplayer ships against the
-  existing FastAPI server: every browser tab (single-machine or LAN) hits the same
-  `InProcessSession` via HTTP polling under a per-session `RLock`, with the wall-anchor lazy
-  clock on `SessionManager` advancing sim time once regardless of polling-tab count. The
-  multiplayer seam is now in production, not deferred — see `FUTURE-WORK.md` §1.
+  2D/3D rendering and NATO-adapted symbology, not STK.
+- **`SessionAPI` as the single seam.** Every browser client (LAN or local) hits the same
+  `InProcessSession` via HTTP polling; the server-authoritative lazy clock on `SessionManager`
+  advances sim time exactly once regardless of polling-tab count. The multiplayer transport is in
+  production — see `FUTURE-WORK.md` §1.
 
 ### 7.3 The 2D views (v1 mandatory)
 - **ECI view:** inertial frame — orbits as closed paths, sub-satellite ground track on a 2D

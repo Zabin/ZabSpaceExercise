@@ -1,7 +1,7 @@
 # GDS-01 — Concept of Operations
 
 > **Document ID:** GDS-01
-> **Version:** 1.1
+> **Version:** 1.2
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-00
 > **Referenced By:** GDS-02
@@ -14,7 +14,10 @@
 > [`training/07-white-cell-facilitation.md`](../training/07-white-cell-facilitation.md),
 > [`CLAUDE.md`](../../CLAUDE.md) ("LAN trust model"), [`FUTURE-WORK.md`](../FUTURE-WORK.md),
 > [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
-> reconciliation" below)
+> reconciliation" below), [`adr/ADR-0024-ai-red-boundary-classification.md`](adr/ADR-0024-ai-red-boundary-classification.md),
+> [`adr/ADR-0026-rlock-lan-scaling-ceiling.md`](adr/ADR-0026-rlock-lan-scaling-ceiling.md),
+> [`adr/ADR-0029-assessment-scoring-workflow-ownership.md`](adr/ADR-0029-assessment-scoring-workflow-ownership.md)
+> (Open Questions 2, 5, 6 resolution)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -268,10 +271,11 @@ invented:
    operational picture (purpose/users/stakeholders/environment/workflow/lifecycle/modes/external
    systems/constraints/assumptions/risks) in one place. This document is therefore net-new
    synthesis, not a merge of an existing ConOps.
-2. **Sizing/performance ceiling for LAN-cooperative play** — the clock-lag watchdog is described
-   as "the operational test of is this scenario too big," but no document states a concrete
-   participant-count or tab-count ceiling for LAN mode specifically (as opposed to the ~24-satellite
-   single-host guideline). Left open.
+2. ~~Sizing/performance ceiling for LAN-cooperative play~~ — **resolved by ADR-0026.** The stated
+   ceiling is the existing `build-spec/01` §2 concurrency model (≤16 total seats: 1–2 White, ≤6
+   Blue, ≤6 Red, ≤2 Observers) — the project owner adopted the already-documented sizing as the
+   supported ceiling rather than commissioning a new load test. See
+   `architecture/adr/ADR-0026-rlock-lan-scaling-ceiling.md`.
 3. **Observer role granularity** — `build-spec/01` §2 states observers get "a designated cell view,
    White-Cell-set," but no document describes whether an observer can be reassigned mid-exercise
    or is fixed at session start. Left open.
@@ -279,20 +283,20 @@ invented:
    (`russia_ew_first`, `china_integrated`, `generic`) but no document in the operational corpus
    states guidance for *which* preset a White Cell facilitator should choose for a given training
    objective. This may belong in `docs/training/` rather than here; flagged, not resolved.
-5. **Assessment/scoring stakeholder workflow** — §3 names "researchers / assessment designers" as
-   a stakeholder, but v1 has no automated scoring (§10); how that stakeholder actually consumes
-   exercise output today (beyond raw AAR/event-log data) is not described in any operational
-   document reviewed. Likely answered by `docs/domains/DOM-002`/`DOM-004`/`DOM-005` rather than
-   this ConOps — out of this document's scope to resolve. **Confirmed still open by the
-   GDS-01–04 architecture review** (`reviews/architecture-review.md` §1 finding 1, §7 findings
-   1–2) — neither GDS-03's subsystem decomposition nor GDS-04's domain model was found to own this
-   workflow either, so the gap is architecture-wide, not specific to this document.
-6. **AI-Red's epistemic parity with human cells.** §2 and §8 describe AI-Red as a substitute for
-   human Red operators using the same operator capabilities, but no document states whether the
-   AI-Red doctrine preset (`redai.py`) reasons over the same fog-of-war-filtered Cell View a human
-   Red would see, or over ground truth. Raised by the architecture review
-   (`reviews/architecture-review.md` §8 finding 3) as a fairness-relevant question neither this
-   document nor GDS-02/GDS-04 currently answers either way.
+5. ~~Assessment/scoring stakeholder workflow~~ — **resolved by ADR-0029.** Raw AAR/event-log access
+   (replay/scrub/branch-compare, plus the existing CSV/JSON export at
+   `/api/sessions/{sid}/aar/export.{csv,json}`) is deemed sufficient for the "researchers /
+   assessment designers" stakeholder; researchers do their own downstream analysis externally on
+   this exported data. No new dedicated export/analysis interface or owning subsystem is
+   introduced, and the question is not scoped to a `docs/domains/` framework. See
+   `architecture/adr/ADR-0029-assessment-scoring-workflow-ownership.md`.
+6. ~~AI-Red's epistemic parity with human cells.~~ — **resolved by ADR-0024.** AI-Red's current
+   ground-truth access (`redai.py` reads `world` directly rather than through a fog-of-war-filtered
+   `CellView`) is recorded as a known gap, not accepted as deliberate design — filtered-view parity
+   with human cells is required as future work, tracked in `FUTURE-WORK.md` §1 "AI-Red fog-of-war
+   parity." AI-Red's permanently-internal boundary classification (Open Question 2 elsewhere in the
+   ladder) is locked in separately and is not affected by this gap. See
+   `architecture/adr/ADR-0024-ai-red-boundary-classification.md`.
 
 ---
 

@@ -1,7 +1,7 @@
 # GDS-03 — Architecture
 
 > **Document ID:** GDS-03
-> **Version:** 1.1
+> **Version:** 1.2
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-02
 > **Referenced By:** GDS-04
@@ -13,7 +13,11 @@
 > [`CLAUDE.md`](../../CLAUDE.md) ("Load-bearing invariants," "Code map"),
 > [GDS-02](02-system-context.md), [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md),
 > [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
-> reconciliation" below)
+> reconciliation" below), [`adr/ADR-0024-ai-red-boundary-classification.md`](adr/ADR-0024-ai-red-boundary-classification.md),
+> [`adr/ADR-0025-telemetry-scene-placement-split.md`](adr/ADR-0025-telemetry-scene-placement-split.md),
+> [`adr/ADR-0026-rlock-lan-scaling-ceiling.md`](adr/ADR-0026-rlock-lan-scaling-ceiling.md),
+> [`adr/ADR-0028-pyqt-build-spec-staleness.md`](adr/ADR-0028-pyqt-build-spec-staleness.md)
+> (Open Questions 1, 2, 3, 4 resolution)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -190,9 +194,12 @@ exercise.
 - **`scene.py`** — pure, read-only render-from-custody belief-scene computation (2D map + 3D
   globe inputs); like `telemetry.py`, never mutates state or consumes RNG, so it is replay-safe.
 - **`redai.py`** — AI-Red doctrine presets (`russia_ew_first`, `china_integrated`, `generic`) that
-  generate orders on Red's behalf through the same `SessionAPI` path a human Red would use — not
-  a privileged internal actor (GDS-02 §2 Open Question 2 still tracks AI-Red's longer-term actor
-  status; this document treats it as a session-layer feature, not an external one).
+  generate orders on Red's behalf — not a privileged internal actor, but its current
+  `_blue_satellites`/`_red_assets`/`_first_vulnerable` implementation reads `world` (ground truth)
+  directly rather than through `SessionAPI`/`CellView` like a human Red would. Per ADR-0024,
+  AI-Red's permanent-internal classification is locked in; this ground-truth-access gap is tracked
+  separately as a future-work item (`FUTURE-WORK.md` §1 "AI-Red fog-of-war parity"), not an open
+  boundary-classification question.
 - **`aar.py`** — After-Action Review: replay/scrub to any `EventLog` point, branch-compare,
   `snapshot_at`. Read-only against the engine; never the live session.
 
@@ -411,38 +418,34 @@ their own — called out so a future reader does not look for a "determinism mod
 
 ## Open Questions
 
-1. **PyQt alternative's status.** `build-spec/03-architecture-and-data.md` §7.1/§7.2 still
-   describes a PyQt/PySide desktop GUI as the v1-preferred presentation technology, written before
-   the web path (FastAPI + browser) was chosen and shipped. This document treats the web path as
-   the as-built, authoritative presentation subsystem (§2.4) and flags the build-spec passage as
-   stale rather than silently rewriting the binding spec — resolving the staleness in
-   `build-spec/03` itself is out of this document's authority (`MSTR-001` §7: build spec wins on
-   conflict; this is a flagged tension, not a unilateral correction).
-2. **AI-Red's subsystem placement.** §2.2 places `redai.py` inside the session layer because it
-   only ever acts through `SessionAPI`. GDS-02 §2 Open Question 2 left open whether a future
-   pluggable/external AI-Red (e.g. LLM-driven) would change its boundary classification — if that
-   happens, this document's §2.2 placement would need revisiting alongside GDS-02's. The
-   architecture review (`reviews/architecture-review.md` §1 finding 4, §8 finding 1) notes that
-   GDS-02 Open Question 2, this question, and a related gap in GDS-04 (AI-Red previously absent
-   from the Role Assignment entity's description) all independently flag the same underlying
-   placement question — corroborating evidence this is load-bearing for GDS-05, not three
-   unrelated gaps.
-3. **Whether telemetry/scene "pure render" helpers belong to the engine or the session layer.**
-   `telemetry.py` lives in `spacesim/engine/` (per `CLAUDE.md`'s code map) while the structurally
-   similar `scene.py` lives in `spacesim/session/`. Both are pure, read-only, replay-safe, and
-   render belief/diagnostic views rather than mutating state. This document followed the existing
-   file locations rather than reconciling them into one placement rule; left open as a possible
-   future code-organization cleanup, not a behavioral issue. The architecture review
-   (`reviews/architecture-review.md` §2 finding 2) independently reached the same flag from a
-   fresh read of GDS-03/GDS-04 — treated as corroborating weight that this is a real seam, not a
-   false positive.
-4. **No stated ceiling for per-session `RLock` contention under many concurrent LAN clients.**
-   §2.2's multiplayer-authority responsibility serializes every read/write through one lock per
-   session; neither this document nor GDS-01 §13 Open Question 2 (which this document inherits
-   without resolving) states where that serialization starts to matter. Raised by the architecture
-   review (`reviews/architecture-review.md` §6 findings 1–2) as a scaling question that has now
-   passed through three ladder levels unaddressed; left open here, since resolving it requires a
-   sizing decision, not a documentation fix.
+1. ~~PyQt alternative's status.~~ — **resolved by ADR-0028.** The project owner authorized a direct
+   rewrite of `build-spec/03-architecture-and-data.md` §7.1/§7.2 to describe the as-built FastAPI +
+   browser presentation (citing ADR-0008/this document), retiring the PyQt/PySide description as
+   historical rather than leaving it as a permanently flagged tension. That rewrite has been
+   carried out; `build-spec/03` §7.1/§7.2 now reads as as-built. See
+   `architecture/adr/ADR-0028-pyqt-build-spec-staleness.md`.
+2. ~~AI-Red's subsystem placement.~~ — **resolved by ADR-0024.** AI-Red's classification as a
+   permanently internal, session-layer feature (this document's §2.2 placement, ADR-0021) is locked
+   in — no future pluggable/external AI-Red is planned, so the placement does not need revisiting
+   on that account. A separate, narrower gap remains open: AI-Red's current ground-truth access
+   (it reads `world` directly rather than through a `CellView`) is tracked as a future-work item,
+   not a boundary-classification question — see `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" and
+   `architecture/adr/ADR-0024-ai-red-boundary-classification.md`.
+3. ~~Whether telemetry/scene "pure render" helpers belong to the engine or the session layer.~~ —
+   **resolved by ADR-0025.** The placement rule is: a pure render/diagnostic helper belongs in
+   `spacesim/engine/` if it is a function of `WorldState` + asset/object id alone (no cell-identity
+   parameter); it belongs in `spacesim/session/` if it requires a cell identity to determine what to
+   show (fog-of-war-aware). Checked against the actual code: `telemetry.py`'s `sample`/`series`/
+   `telemetry_db`/`subsystem_log` all take `(world, asset_id, ...)` with no cell parameter;
+   `scene.py`'s `build_scene(world, cell)` takes a `cell` parameter and explicitly renders
+   cell-relative belief. Both files already satisfy this rule under their current placement — no
+   file move was required. The rule is adopted prospectively for future helpers. See
+   `architecture/adr/ADR-0025-telemetry-scene-placement-split.md`.
+4. ~~No stated ceiling for per-session `RLock` contention under many concurrent LAN clients.~~ —
+   **resolved by ADR-0026.** The stated ceiling is the existing `build-spec/01` §2 concurrency model
+   (≤16 total seats: 1–2 White, ≤6 Blue, ≤6 Red, ≤2 Observers) — no new load test was commissioned;
+   the project owner adopted the already-documented sizing as the supported ceiling. See
+   `architecture/adr/ADR-0026-rlock-lan-scaling-ceiling.md`.
 
 ---
 

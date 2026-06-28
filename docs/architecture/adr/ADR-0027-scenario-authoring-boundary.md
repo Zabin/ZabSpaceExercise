@@ -1,10 +1,10 @@
-# ADR-0027 — Scenario-authoring workflow's boundary actor/interface (unresolved)
+# ADR-0027 — Scenario-authoring workflow's boundary actor/interface
 
 [↑ ADR index](INDEX.md)
 
 - **Decision ID:** ADR-0027
-- **Title:** Whether vignette authoring is an in-system UI feature or an external offline-editing step
-- **Status:** Proposed
+- **Title:** The in-app vignette builder is a distinct boundary-crossing interaction, separate from "load a file"
+- **Status:** Accepted
 
 ## Context
 
@@ -16,35 +16,38 @@ from simply 'loading a file.'" Raised by the architecture review (`reviews/archi
 
 ## Decision
 
-**No decision has been made.** Whether the in-app scenario builder is a first-class boundary
-interface in its own right (i.e. a distinct external-actor interaction pattern alongside "load a
-file"), or whether authoring is simply an offline editing step with no architectural distinction
-from loading, is unresolved. GDS-02 explicitly left this open "since resolving it means deciding
-whether authoring is in-system (a UI feature) or external (an offline editing step) — a real
-design question, not a documentation oversight to silently fix."
+The in-app scenario builder is a **distinct boundary-crossing interaction**, not merely a
+convenience UI layered on top of "load a file." White Cell's interactive, multi-step authoring
+session (building a vignette inside the running application) is recognized as its own
+boundary-crossing pattern in GDS-02, separate from the one-shot file-load interaction used when
+loading a pre-authored or hand-written vignette file.
 
 ## Alternatives Considered
 
-Not yet evaluated against each other, pending the underlying design decision:
-
-- Treat the in-app builder as a distinct boundary interaction (its own row in GDS-02 §2/§8),
-  since it has different data-flow characteristics (interactive multi-step authoring) than a
-  one-shot file load.
-- Treat authoring as out-of-system entirely (an offline step a facilitator does with any text/
-  YAML editor, with the in-app builder being merely a convenience UI on top of the same "load a
-  file" boundary interaction) — i.e. no new actor or interface needed.
+- Treat authoring as out-of-system entirely (an offline step with any text/YAML editor, with the
+  in-app builder being merely a convenience UI on the same "load a file" interaction) — **not
+  adopted**: the project owner chose to recognize the in-app builder as architecturally distinct.
+- Explicitly scope this to a domain framework (`docs/domains/`) rather than the architecture
+  ladder — **not adopted**: the project owner resolved this at the architecture-ladder level via
+  this ADR rather than deferring to a domain document.
 
 ## Rationale
 
-Not applicable — resolving this requires a design decision about how central the in-app builder
-is meant to be to the v1 user experience, not a documentation fix.
+The in-app builder is interactive and multi-step (it accumulates partial vignette state across a
+session before anything is "loaded"), which has materially different data-flow characteristics
+than a single inbound file read. Naming it as its own boundary interaction in GDS-02 makes that
+difference visible to anyone extending the builder or reasoning about the system's boundary,
+rather than leaving it folded indistinguishably into the "vignette file" input row.
 
 ## Consequences
 
-Until resolved: the system-context picture (GDS-02 §1–§9) is silent on whether the in-app builder
-deserves its own boundary-crossing description distinct from "vignette file load," which could
-under-specify requirements for anyone extending the builder.
+- GDS-02 §2 (External actors) and §8 (External interfaces) should be updated to add the in-app
+  scenario builder as its own boundary-crossing interaction for the White Cell actor, distinct
+  from the existing "vignette file" input row in §4/§6. This document records the decision; the
+  GDS-02 text update is the follow-up edit it authorizes.
+- Future requirements work (GDS-05) extending the in-app builder should treat it as a first-class
+  boundary interaction with its own requirements, not as an extension of file-load semantics.
 
 ## Related
 
-GDS-02 §1, §6, Open Question 4; GDS-01 §5; `reviews/architecture-review.md` §1 finding 2.
+GDS-02 §1, §2, §6, §8, Open Question 4; GDS-01 §5; `reviews/architecture-review.md` §1 finding 2.

@@ -1,10 +1,10 @@
-# ADR-0029 — Assessment/scoring stakeholder workflow ownership (unresolved)
+# ADR-0029 — Assessment/scoring stakeholder workflow ownership
 
 [↑ ADR index](INDEX.md)
 
 - **Decision ID:** ADR-0029
-- **Title:** No subsystem or domain object owns how the "researchers / assessment designers" stakeholder consumes exercise output
-- **Status:** Proposed
+- **Title:** Raw AAR/event-log access is sufficient for the "researchers / assessment designers" stakeholder; no new subsystem is needed
+- **Status:** Accepted
 
 ## Context
 
@@ -19,38 +19,38 @@ document."
 
 ## Decision
 
-**No decision has been made.** Manual adjudication (ADR-0017) covers the White Cell's in-the-
-moment adjudication need, but the separate question of how a researcher/assessment-designer
-stakeholder would systematically consume exercise output (beyond reading raw AAR/event-log data
-themselves) has no owning subsystem, domain object, or documented workflow anywhere in GDS-01
-through GDS-04.
+Raw AAR/event-log access (replay/scrub/branch-compare, plus the existing CSV/JSON export at
+`/api/sessions/{sid}/aar/export.{csv,json}`) is treated as **sufficient** for the "researchers /
+assessment designers" stakeholder's needs. Researchers do their own downstream analysis externally
+on this exported data; no new dedicated export/analysis interface or owning subsystem is
+introduced.
 
 ## Alternatives Considered
 
-Not yet evaluated, since no subsystem has been proposed to own this workflow:
-
-- Treat it as already satisfied by raw AAR/event-log access (no new subsystem needed; researchers
-  do their own analysis externally) — implicitly the current de facto position, but never stated
-  as a deliberate decision.
 - Introduce a dedicated export/analysis interface for assessment designers, distinct from both the
-  White Cell's adjudication view and the AAR replay UI.
-- Explicitly scope this to `docs/domains/DOM-002`/`DOM-004`/`DOM-005` as GDS-01 suggests, and treat
-  it as that domain framework's responsibility to resolve rather than the architecture ladder's.
+  White Cell's adjudication view and the AAR replay UI — **not adopted**: the project owner judged
+  the existing raw-data access path sufficient.
+- Explicitly scope this to `docs/domains/DOM-002`/`DOM-004`/`DOM-005` as GDS-01 suggested, treating
+  it as that domain framework's responsibility — **not adopted**: the project owner resolved the
+  question directly rather than handing it to a domain framework.
 
 ## Rationale
 
-Not applicable — this requires a design decision (does this stakeholder need a dedicated
-interface, or is raw log/AAR access sufficient?) that no document has made, and is explicitly
-named as likely belonging to a different documentation tier (`docs/domains/`) than the
-architecture ladder.
+The existing AAR replay/scrub/branch-compare and CSV/JSON export already give a researcher
+complete, ground-truth access to a session's full event history and objective outcomes. Building a
+dedicated analysis interface would duplicate that access without a stated unmet need driving it;
+the project owner chose not to speculatively build for a stakeholder need that is already
+addressable with existing exports.
 
 ## Consequences
 
-Until resolved: the "researchers / assessment designers" stakeholder entry in GDS-01 §3 names a
-need with no corresponding capability anywhere in the architecture — a stakeholder whose
-requirements are acknowledged but architecturally unaddressed.
+- The "researchers / assessment designers" stakeholder entry in GDS-01 §3 is now backed by a
+  concrete, named capability (AAR export) rather than left unaddressed.
+- If a concrete unmet need for assessment designers emerges later (e.g. a specific aggregate metric
+  AAR export doesn't capture), that would be a new, separate decision — this ADR does not preclude
+  revisiting the question, it closes the currently-open gap with the existing capability.
 
 ## Related
 
 GDS-01 §3, Open Question 5; `reviews/architecture-review.md` §1 finding 1, §7 findings 1–2;
-ADR-0017.
+ADR-0017; `session/aar.py`.

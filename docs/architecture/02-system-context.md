@@ -1,7 +1,7 @@
 # GDS-02 — System Context
 
 > **Document ID:** GDS-02
-> **Version:** 1.1
+> **Version:** 1.3
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-01
 > **Referenced By:** GDS-03
@@ -12,7 +12,9 @@
 > [`vignettes/GROUND-INFRASTRUCTURE.md`](../vignettes/GROUND-INFRASTRUCTURE.md),
 > [`CLAUDE.md`](../../CLAUDE.md) ("LAN trust model"), [GDS-01](01-concept-of-operations.md),
 > [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
-> reconciliation" below)
+> reconciliation" below), [`adr/ADR-0027-scenario-authoring-boundary.md`](adr/ADR-0027-scenario-authoring-boundary.md)
+> (Open Question 4 resolution), [`adr/ADR-0024-ai-red-boundary-classification.md`](adr/ADR-0024-ai-red-boundary-classification.md)
+> (Open Question 2 resolution)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -72,7 +74,8 @@ strictly as *boundary-crossing actors* rather than operational roles:
 
 | Actor | Crosses the boundary as | Direction |
 |---|---|---|
-| **White Cell facilitator** | Builds/loads vignettes, assigns seats, controls the clock, fires injects, adjudicates, runs AAR | Bidirectional (commands in, god-view + AAR out) |
+| **White Cell facilitator** | Loads a pre-authored vignette file, assigns seats, controls the clock, fires injects, adjudicates, runs AAR | Bidirectional (commands in, god-view + AAR out) |
+| **White Cell facilitator — in-app scenario builder** | A distinct, interactive multi-step authoring interaction (builds a vignette inside the running application) — recognized per ADR-0027 as architecturally separate from the one-shot vignette-file-load interaction above, since it accumulates partial vignette state across a session rather than reading one file in a single round trip | Bidirectional (iterative authoring input, vignette-definition output once saved) |
 | **Blue Cell operator** | Plans bus/payload commands, tasks sensors, reads SOH/telemetry | Bidirectional, scoped to Blue's `CellView` |
 | **Red Cell operator** | Same as Blue, plus offensive counterspace effects; may be replaced by the in-system **AI-Red** doctrine preset, which is *not* an external actor (it runs inside the session as a scripted decision process — see `training/05` "Red doctrine & AAR") | Bidirectional, scoped to Red's `CellView` |
 | **Observer** | Read-only consumer of god-view or a designated cell's view | Outbound only |
@@ -162,6 +165,11 @@ are GDS-09's concern):
   during a running exercise.
 - **Server ↔ local filesystem.** Vignette load, save/resume, and (implicitly) any exported AAR
   data are local file I/O, not a network interface.
+- **Browser ↔ server, in-app scenario builder.** A distinct interactive flow from plain vignette
+  load (per ADR-0027): White Cell exchanges multiple round trips with the server while
+  incrementally composing a vignette (force lay-down, parameters, injects, intro briefs) before a
+  single save/build action emits the vignette definition file. Multi-step and stateful across the
+  authoring session, unlike the one-shot file-load interaction above.
 - **No interface exists** to any LMS, identity provider, scoring service, or other third-party
   system in v1 (confirmed absence, per GDS-01 §9).
 
@@ -216,27 +224,26 @@ Three structural properties of these flows, carried from GDS-01 and the load-bea
    the engine. §1 above states this directly rather than as an inference. A future GDS level
    (e.g. GDS-03 architecture) may still want to call out SSN as a distinct internal subsystem with
    an external-service *flavor*, but its boundary placement is no longer open.
-2. **AI-Red's actor status.** AI-Red plays Red's role using a scripted doctrine preset run inside
-   the session (`training/05`). This document treats it as internal, not an external actor (§2),
-   because it has no existence outside the system process. If a future document treats AI-Red as
-   pluggable/replaceable by an external service (e.g. an LLM-driven Red), that would change this
-   classification — not resolved here, since no such design exists today. The architecture review
-   (`reviews/architecture-review.md` §1 finding 4, §8 finding 1) notes that this question, GDS-03
-   Open Question 2, and a related gap in GDS-04 (AI-Red previously absent from the Role Assignment
-   entity's description) all independently flag the same underlying placement question —
-   corroborating evidence this is load-bearing for GDS-05, not three unrelated gaps.
+2. ~~AI-Red's actor status.~~ — **resolved by ADR-0024.** AI-Red's classification as internal, not
+   an external actor (§2) — because it has no existence outside the system process — is locked in
+   permanently: no pluggable/external AI-Red (e.g. LLM-driven) is planned, so this classification
+   will not be revisited on that account. The architecture review's corroborating cross-reference
+   (this question, GDS-03 Open Question 2, and the related GDS-04 gap) is resolved by the same
+   decision across all three. A narrower, separate gap remains tracked as future work, not as an
+   open actor-classification question: AI-Red currently reads ground truth (`world`) directly
+   rather than through a fog-of-war-filtered `CellView` like a human Red operator would — see
+   `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" and
+   `architecture/adr/ADR-0024-ai-red-boundary-classification.md`.
 3. **Ground-site/sensor data provenance.** `vignettes/GROUND-INFRASTRUCTURE.md` documents
    real-world ground-station coordinates baked into vignette content. Whether these coordinates
    constitute a "data source" distinct from the vignette file itself (§4), or are simply vignette
    content with no separate external provenance, is not settled by any document reviewed. Treated
    here as part of the vignette file (§4), flagged as a borderline case.
-4. **Scenario-authoring workflow has no named actor or interface.** §1/§6 describe vignette files
-   crossing the boundary as input, and GDS-01 §5 step 1 describes White Cell "building or loading"
-   a vignette, but no document names the in-app builder (or hand-authoring) as a boundary-crossing
-   interaction distinct from simply "loading a file." Raised by the architecture review
-   (`reviews/architecture-review.md` §1 finding 2); left open here since resolving it means
-   deciding whether authoring is in-system (a UI feature) or external (an offline editing step) —
-   a real design question, not a documentation oversight to silently fix.
+4. ~~Scenario-authoring workflow has no named actor or interface.~~ — **resolved by ADR-0027.**
+   The in-app scenario builder is now named as its own boundary-crossing interaction in §2/§8
+   above, distinct from the one-shot vignette-file-load interaction. Raised by the architecture
+   review (`reviews/architecture-review.md` §1 finding 2); resolved per the project owner's
+   decision recorded in `architecture/adr/ADR-0027-scenario-authoring-boundary.md`.
 
 ---
 
