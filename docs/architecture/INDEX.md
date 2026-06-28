@@ -23,8 +23,8 @@ Both are produced by the `architecture-design-synthesis` skill
 | GDS-00 | Vision | `architecture/00-vision.md` | Project goals | `master/MSTR-001-program-vision.md` | ✅ Authored — merge gate closed (MSTR-001 stays authoritative; GDS-00 is a cited derivative restatement) |
 | GDS-01 | Concept of Operations | `architecture/01-concept-of-operations.md` | How users interact with the system | `build-spec/01-context-and-scope.md`, `build-spec/04` §11, `build-spec/05` §13–14, `training/05`, `training/07` (no single existing ConOps — net-new synthesis of scattered material) | ✅ Authored — merge gate closed (all source docs stay independently authoritative; GDS-01 is a consolidation layer above them) |
 | GDS-02 | System Context | `architecture/02-system-context.md` | External systems and interfaces | `build-spec/01-context-and-scope.md` | ✅ Authored — merge gate closed (build-spec/01 stays authoritative; GDS-02 is a boundary-focused extraction) |
-| GDS-03 | Architecture | `architecture/03-architecture.md` | High-level subsystem decomposition | `design/01-architecture-overview.md` | ⛔ Planned (scaffold only) |
-| GDS-04 | Domain Model | `architecture/04-domain-model.md` | Core entities and relationships | `design/04-data-model.md` (entity/relationship portion) | ⛔ Planned (scaffold only) |
+| GDS-03 | Architecture | `architecture/03-architecture.md` | High-level subsystem decomposition | `design/01-architecture-overview.md` | ✅ Authored — merge gate closed (design/01 and build-spec/03 §7-8 stay authoritative; GDS-03 is a subsystem-decomposition extraction restated against the as-built system) |
+| GDS-04 | Domain Model | `architecture/04-domain-model.md` | Core entities and relationships | `design/04-data-model.md` (entity/relationship portion) | ✅ Authored — merge gate closed (design/04-data-model.md stays authoritative for the schema; GDS-04 is a conceptual extraction, the schema portion remains GDS-07's merge target) |
 | GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | The authoritative specification | `build-spec/02-requirements-and-operations.md` §5 | ⛔ Planned (scaffold only) |
 | GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | Performance, reliability, security, usability | `build-spec/04-nfr-milestones-and-risks.md` §9 | ⛔ Planned (scaffold only) |
 | GDS-07 | Data Model | `architecture/07-data-model.md` | Persistent data structures | `design/04-data-model.md` (schema portion — same source file as GDS-04, different concern) | ⛔ Planned (scaffold only) |
@@ -40,9 +40,9 @@ both (a) authored and (b) has finished merging in whatever existing-corpus conte
 means for that level. Per the user's explicit instruction, this gate applies at every step of the
 top-to-bottom iteration the `architecture-design-synthesis` skill will run.
 
-**Progress:** GDS-00, GDS-01, and GDS-02 are authored with their merge gates closed (see their
-Status cells above and each document's own "Merge gate" section for the recorded decision). GDS-03
-(Architecture) is the next level to author.
+**Progress:** GDS-00 through GDS-04 are authored with their merge gates closed (see their
+Status cells above and each document's own "Merge gate" section for the recorded decision). GDS-05
+(Functional Requirements) is the next level to author.
 
 Where a level's "Merges from" column says no counterpart was identified, that is not a free pass —
 it means the authoring pass for that level must search the corpus itself before concluding there
@@ -89,6 +89,17 @@ No `ADS-xxx` has been authored yet. Add a row here (status `⛔ Planned`) before
 `ADS-xxx`, and mirror it in `ROADMAP.md`'s Architecture / Design Synthesis theme table, per the
 index-before-content convention used elsewhere in this corpus (e.g.
 `research-doctrine-exercises`'s workflow step 3).
+
+## 3. Architecture Decision Records (`docs/architecture/adr/`)
+
+A separate, flat record of individual architectural decisions extracted from GDS-01 (Concept of
+Operations), GDS-02 (System Context), GDS-03 (Architecture), and the research encyclopedia —
+distinct from both the sequential ladder in §1 and the per-cluster `ADS-xxx` in §2. Each
+`ADR-NNNN` carries Decision ID, Title, Context, Decision, Alternatives Considered, Rationale,
+Consequences, and a Status of `Accepted`, `Proposed`, or `Deferred`. See
+[`adr/INDEX.md`](adr/INDEX.md) for the full list (29 ADRs as of this writing, all `Accepted`: 23
+were already settled when first authored; 6 (ADR-0024–0029) originally recorded Open Questions the
+ladder left genuinely open and were resolved afterward by explicit project-owner decision).
 
 ## Related
 
