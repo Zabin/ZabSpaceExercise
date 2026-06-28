@@ -1,7 +1,7 @@
 # R306 — Operational Assessment
 
 > **Document ID:** R306
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R310](R310-effects-based-operations.md)
 > **Referenced By:** DOM-002
@@ -9,6 +9,8 @@
 > **Feature Mapping:** FS-201 (Competency Assessment)
 > **Related Topics:** [R310](R310-effects-based-operations.md) (Effects-Based Operations), DOM-002 §3 ("why binary objective-flip is
 > insufficient" — the exact gap this topic names doctrinally)
+> **Last Reviewed:** 2026-06-27
+> **Primary Sources Consulted:** 1
 
 [↑ Tier R300 index](R300-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -20,14 +22,26 @@ supplies the formal military-doctrine vocabulary (measures of performance vs. me
 effectiveness) for that exact distinction, so a future assessment feature is built on a recognized
 doctrinal framework rather than a bespoke one invented from scratch.
 
-## 2. Concepts
+## 2. Scope
 
-**Measures of Performance (MOP) vs. Measures of Effectiveness (MOE).** A MOP asks "was the task
-executed as planned" (a binary, output-level check — did the engagement order fire, did the jam
-footprint cover the target); a MOE asks "did the task achieve the intended operational effect"
-(did the engagement actually deny the adversary capability, did the jam meaningfully degrade
-adversary SDA). The engine's current objective-flip is closer to a MOP than a MOE — it confirms a
-task-level condition was met, not that the deeper operational effect ([R310](R310-effects-based-operations.md)) was achieved.
+Covers: the MOP/MOE/outcome hierarchy and assessment as a continuous process. Does **not** cover:
+the cascading-effects model MOE presupposes (that is [R310](R310-effects-based-operations.md),
+Effects-Based Operations) or the specific competency-assessment rubric design (FS-201 territory,
+out of scope for this doctrinal topic).
+
+## 3. Concepts
+
+**Measures of Performance (MOP) vs. Measures of Effectiveness (MOE).** Joint doctrine defines a MOP
+as a criterion used to assess friendly actions tied to measuring task accomplishment, and a MOE as a
+criterion used to assess changes in system behavior, capability, or operational environment tied to
+measuring attainment of an end state, achievement of an objective, or creation of an effect
+([JP 3-0, *Joint Operations*](https://irp.fas.org/doddir/dod/jp3_0.pdf), via the JP 3-0/5-0 family's
+assessment chapter). A MOP asks "was the task executed as planned" (a binary, output-level check —
+did the engagement order fire, did the jam footprint cover the target); a MOE asks "did the task
+achieve the intended operational effect" (did the engagement actually deny the adversary capability,
+did the jam meaningfully degrade adversary SDA). The engine's current objective-flip is closer to a
+MOP than a MOE — it confirms a task-level condition was met, not that the deeper operational effect
+([R310](R310-effects-based-operations.md)) was achieved.
 
 **Measures of Outcome.** A further level beyond MOE: did the overall campaign/strategic objective
 advance, independent of whether any single operation's MOE was met (an operation can meet its MOE
@@ -35,21 +49,27 @@ and still not advance the strategic outcome if circumstances changed). Relevant 
 level framing: a mission-set's overall success is an outcome-level judgment, not reducible to any one
 vignette's objective-flip.
 
-**Assessment as a continuous process, not an end-of-mission verdict.** Real operational assessment
-is conducted throughout an operation (are early indicators trending toward or away from the intended
-effect), not only as a final pass/fail — this is the doctrinal argument for why DOM-002's proposed
-measurement dimensions (custody quality, window discipline, etc., tracked across the exercise) are a
-more faithful assessment design than a single end-state check.
+**Assessment as a continuous process, not an end-of-mission verdict.** Joint assessment doctrine
+treats assessment as conducted throughout an operation (are early indicators trending toward or away
+from the intended effect), not only as a final pass/fail — this is the doctrinal argument for why
+DOM-002's proposed measurement dimensions (custody quality, window discipline, etc., tracked across
+the exercise) are a more faithful assessment design than a single end-state check.
 
-## 3. Operational Context
+### Sources
 
-Joint doctrine's MOP/MOE/MOI (measures of outcome/impact) framework exists precisely because
-"the task was completed" and "the operation achieved its purpose" are routinely different answers in
-real operations — assessment doctrine treats conflating them as a known, named failure mode, which
-is exactly the failure mode DOM-002 §3 independently rediscovered from first principles for this
-simulator's objective-flip model.
+- *JP 3-0, Joint Operations* (Joint Chiefs of Staff; assessment chapter, MOP/MOE definitions) — [live](https://irp.fas.org/doddir/dod/jp3_0.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://irp.fas.org/doddir/dod/jp3_0.pdf)
+  · accessed 2026-06-27.
 
-## 4. Implementation Guidance
+## 4. Operational Context
+
+Joint doctrine's MOP/MOE/outcome framework exists precisely because "the task was completed" and
+"the operation achieved its purpose" are routinely different answers in real operations — assessment
+doctrine treats conflating them as a known, named failure mode, which is exactly the failure mode
+DOM-002 §3 independently rediscovered from first principles for this simulator's objective-flip
+model.
+
+## 5. Implementation Guidance
 
 - **A future DOM-002-derived assessment feature should map its dimensions onto this MOP/MOE
   distinction explicitly** — e.g., "window discipline" and "custody quality" are closer to MOPs
@@ -65,11 +85,11 @@ simulator's objective-flip model.
   effects don't aggregate linearly from task completions; a future composite metric needs its own
   explicit model, not an unweighted average dressed up as effectiveness.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-201 (Competency Assessment) is the direct consumer.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R310](R310-effects-based-operations.md) (Effects-Based Operations, the cascading-effects model MOE is built on), DOM-002 §3 (the
 engineering-level statement of the gap this topic formalizes).
