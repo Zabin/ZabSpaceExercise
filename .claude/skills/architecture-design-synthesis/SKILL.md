@@ -1,14 +1,23 @@
 ---
 name: architecture-design-synthesis
-description: Synthesize a capability cluster's domain framework (DOM-xxx) and research grounding (research/encyclopedia R1xx-R5xx + research/01-07 primers) into a Design Synthesis document (ADS-xxx) under docs/architecture/ — the bridge between domain+research and a Feature Specification. Use when asked "what are the core concepts," "which mechanics are actually required," "which requirements conflict," "what assumptions must be made," "what is the minimum viable implementation," "what is deferred," or to produce/refresh an Executive Design Overview, System Architecture, Domain Model, User Stories, Functional/Non-functional Requirements, Constraints, Risks, Open Questions, or Decision Log for a capability before drafting or revising an FS-xxx. This produces design documents, not research documents — do not use it to add new doctrinal/orbital-mechanics claims (that's research-doctrine-exercises / research-ow-orbital-mechanics).
+description: Synthesize domain framework (DOM-xxx) and research grounding (research/encyclopedia R1xx-R5xx + research/01-07 primers) into Design Synthesis documents under docs/architecture/ — either the global, gated GDS-00...GDS-10 ladder (Vision -> ConOps -> System Context -> Architecture -> Domain Model -> Functional Requirements -> Non-functional Requirements -> Data Model -> UI Architecture -> API Specification -> Requirements Traceability Matrix) or a per-capability-cluster ADS-xxx document, the bridge between domain+research and a Feature Specification. Use when asked "what are the core concepts," "which mechanics are actually required," "which requirements conflict," "what assumptions must be made," "what is the minimum viable implementation," "what is deferred," to advance the next level of the GDS ladder, or to produce/refresh an Executive Design Overview, System Architecture, Domain Model, User Stories, Functional/Non-functional Requirements, Constraints, Risks, Open Questions, or Decision Log before drafting or revising an FS-xxx. This produces design documents, not research documents — do not use it to add new doctrinal/orbital-mechanics claims (that's research-doctrine-exercises / research-ow-orbital-mechanics).
 ---
 
 # Architecture / Design Synthesis
 
-Produces `docs/architecture/ADS-xxx-<slug>.md` — the **Design Synthesis** tier defined in
-[`MSTR-005`](../../../docs/master/MSTR-005-documentation-map.md) §3a/§4 and tracked in
-[`docs/architecture/INDEX.md`](../../../docs/architecture/INDEX.md). Read both before producing
-anything; this skill operationalizes them, it does not restate them.
+Produces two kinds of document under `docs/architecture/`, both defined in
+[`MSTR-005`](../../../docs/master/MSTR-005-documentation-map.md) §3a/§3b/§4 and tracked in
+[`docs/architecture/INDEX.md`](../../../docs/architecture/INDEX.md):
+
+1. **The global ladder (`GDS-00`…`GDS-10`)** — one instance for the whole project, strictly
+   sequential and gated. This is the primary, currently-active workflow: the ladder is scaffolded
+   with stub files and merge gates, and the next unauthored `GDS-NN` is the default thing to work
+   on when this skill is invoked without a more specific target. See "Workflow A" below.
+2. **Per-cluster `ADS-xxx`** — zero-or-more documents, one per capability cluster with real design
+   tension the ladder doesn't resolve at the system level. See "Workflow B" below.
+
+Read `MSTR-005` §3a/§3b and `architecture/INDEX.md` before producing anything; this skill
+operationalizes them, it does not restate them.
 
 ## What this is for (and what it is not)
 
@@ -43,68 +52,84 @@ multiple plausible architectures, or load-bearing assumptions nobody has written
 
 | Asset | Role |
 |---|---|
-| [`architecture/INDEX.md`](../../../docs/architecture/INDEX.md) + `ADS-xxx-*.md` | The Design Synthesis tier this skill authors. |
-| Grounding inputs | `docs/domains/DOM-xxx-*.md` (which framework owns the capability), `docs/research/encyclopedia/R1xx-R5xx` + `docs/research/01-07` primers (what domain knowledge constrains the design), `docs/build-spec/` (binding v1 spec — wins on any conflict), `docs/design/` (existing architecture for capabilities already built). |
-| Downstream consumer | `docs/features/FS-xxx-*.md` — the next stage in the chain; an `ADS-xxx`'s Decision Log and Functional Requirements should read as direct inputs to drafting or revising the corresponding FS-xxx. |
+| [`architecture/INDEX.md`](../../../docs/architecture/INDEX.md) + `00-vision.md`…`10-requirements-traceability-matrix.md` + `ADS-xxx-*.md` | The Design Synthesis tier this skill authors. |
+| Grounding inputs | `docs/domains/DOM-xxx-*.md`, `docs/research/encyclopedia/R1xx-R5xx` + `docs/research/01-07` primers, `docs/build-spec/` (binding v1 spec — wins on any conflict), `docs/design/`, `docs/training/`, `MSTR-001` — and, for the ladder specifically, the per-level "merges from" existing document named in `architecture/INDEX.md` §1. |
+| Downstream consumer | `docs/features/FS-xxx-*.md` — the next stage in the chain; both the ladder's `GDS-05`/`GDS-06` and a cluster's `ADS-xxx` Decision Log should read as direct inputs to drafting or revising an FS-xxx. |
 
-## Workflow
+## Workflow A — the global ladder (`GDS-00`…`GDS-10`)
+
+This is the default workflow: when invoked without a specific capability cluster named, advance
+the ladder.
+
+1. **Find the next unauthored level.** Read [`architecture/INDEX.md`](../../../docs/architecture/INDEX.md)
+   §1's table top to bottom; the first row still `⛔ Planned (scaffold only)` is the level to work
+   on. Levels must be done in order — do not jump ahead even if a later level looks easier or more
+   interesting.
+2. **Confirm the gate on the *previous* level is actually closed**, not just that its file exists.
+   Re-open the previous `GDS-NN`'s "Merge gate" checklist; every box must be checked and the
+   merge decision actually recorded in that document, not merely referenced. If it isn't, finish
+   that gate first — do not author the next level on top of an open gate.
+3. **Author the level's content**, replacing its stub body, using:
+   - The level's stated Purpose (already in the stub).
+   - The "Merges from" document(s) named in its own file and in `architecture/INDEX.md` §1 — pull
+     the actual content in, don't just cite it from a distance.
+   - Cross-cutting grounding as relevant: `CLAUDE.md` load-bearing invariants, `docs/build-spec/`
+     (wins on conflict), `docs/domains/`, `docs/research/` for any domain claim the level needs.
+4. **Close that level's merge gate**, checking off each box in its "Merge gate" section and
+   recording the actual merge decision (not just "done") — e.g. whether the existing document
+   becomes a pointer to this one, stays authoritative, or some other resolution.
+5. **Update the level's `Status`** to `✅` (or `🚧` if substantively drafted but the merge isn't
+   fully closed — in which case the *next* level still may not start) and flip the row in
+   `architecture/INDEX.md` §1 and `ROADMAP.md`'s "Global ladder" table together, so they never
+   drift.
+6. **Cross-link** — update the merged-from document's own metadata/cross-references if the merge
+   decision calls for it (e.g. `MSTR-001` pointing back to `GDS-00`).
+7. **Verify, then commit.** Commit as `docs(architecture): GDS-NN — <what changed>`.
+8. **Stop at the level just closed** — do not cascade into the next level in the same pass unless
+   explicitly asked to advance multiple levels; each level is a reviewable unit.
+
+### Quality gate (before flipping a `GDS-NN` to `✅`)
+
+- [ ] The stub's placeholder body has been replaced with real content addressing its stated Purpose.
+- [ ] Every box in that level's own "Merge gate" checklist is checked, with the actual decision
+      recorded in prose, not just a checked box.
+- [ ] No production code, no literal API/schema definitions where the level doesn't call for them
+      (e.g. `GDS-09` API Specification may sketch contracts; `GDS-00` Vision should not).
+- [ ] `architecture/INDEX.md` §1 and `ROADMAP.md`'s "Global ladder" table both updated, in sync.
+- [ ] The level does not silently contradict `docs/build-spec/` (`MSTR-001` §7 — build spec wins);
+      a real tension is an Open Question, not a unilateral resolution.
+
+## Workflow B — per-cluster `ADS-xxx`
+
+Use this when a specific capability cluster (not the whole system) has design tension the ladder
+doesn't resolve at the system level — see `MSTR-005` §3a.
 
 1. **Identify the capability cluster.** Which `DOM-xxx` owns it? Which `R-xxx` topics ground it?
-   Is there already an `FS-xxx` (even a stub/candidate) this synthesis would feed? Read all of them
-   before drafting anything — per `MSTR-006` §4, documents in this corpus are independently
-   retrievable, but that means *this* document must do the reading, not assume context.
-2. **Check existing coverage first.** Read [`architecture/INDEX.md`](../../../docs/architecture/INDEX.md)
-   — has this cluster already been synthesized? Is there a related `ADS-xxx` whose Decision Log
-   already settled part of this?
-3. **If a gap exists:** add a row to `architecture/INDEX.md`'s corpus table (status `⛔ Planned`)
-   and to `ROADMAP.md`'s Architecture / Design Synthesis theme table, before writing the document —
-   index-before-content, the same convention `research-doctrine-exercises` uses.
-4. **Draft the ten fixed sections** (`MSTR-005` §3a), in order:
-   1. Executive Design Overview — one paragraph: the cluster, the problem, the biggest design
-      tension this synthesis resolves.
-   2. System Architecture — seams/interfaces/data flow at the `design/01-architecture-overview.md`
-      level (engine/session/content/ui boundaries), never literal code (`MSTR-006` §8).
-   3. Domain Model — entities, relationships, invariants, independent of UI/API shape.
-   4. User Stories — cell-perspective ("as Blue/Red/White, I need to...") scenarios, traceable to a
-      vignette or training objective.
-   5. Functional Requirements — numbered, each citing the `DOM-xxx`/`R-xxx` source that justifies it.
-   6. Non-functional Requirements — which load-bearing invariants (`CLAUDE.md` §"Load-bearing
-      invariants": determinism, UI-agnostic engine, fog-of-war at the boundary, plan-first,
-      sub-stepped clock, content-as-data) constrain this cluster specifically.
-   7. Constraints — fixed boundaries not up for revision here (existing engine seams, the six
-      access channels, the five-D taxonomy, the cyber exception).
-   8. Risks — what could go wrong (scope creep into an adjacent FS's territory, an invariant
-      violation, an unstated assumption) and how this synthesis mitigates or flags each.
-   9. Open Questions — genuine ambiguity not resolved here, flagged per `MSTR-006` §6 rather than
-      silently decided — and escalated to the user if it changes scope or strategic direction.
-   10. Decision Log — the choices actually made among competing options, one line of rationale
-       each, so a later reader (or an `FS-xxx` author) sees what was considered and rejected.
-5. **Carry the required metadata block** (`MSTR-006` §5: Document ID, Version, Status, Dependencies,
-   Referenced By, Produces, Feature Mapping, Related Topics) — `Dependencies` lists the `DOM-xxx`/
-   `R-xxx` it synthesizes; `Produces` names the `FS-xxx` it feeds (or "candidate scope for a future
-   FS-xxx" if none exists yet).
-6. **Size discipline.** ~8-15 pages equivalent (`MSTR-006` §4). A synthesis that needs more room
-   should split into `ADS-xxxA`/`ADS-xxxB` rather than growing one oversized document.
-7. **Cross-link both directions** — add this `ADS-xxx` to the grounding `DOM-xxx`/`R-xxx` documents'
-   `Referenced By`, and to the downstream `FS-xxx`'s `Dependencies` if that document already exists.
-8. **Flip status to `✅`** once the quality gate below is satisfied; update `architecture/INDEX.md`
-   and `ROADMAP.md` together so they never drift.
-9. **Verify, then commit.** Commit as `docs(architecture): ADS-xxx — <what changed>`, consistent
-   with this branch's existing commit style.
+   Is there already an `FS-xxx` (even a stub/candidate) this synthesis would feed?
+2. **Check existing coverage first.** Read `architecture/INDEX.md` §2 — has this cluster already
+   been synthesized?
+3. **If a gap exists:** add a row to `architecture/INDEX.md` §2's corpus table (status
+   `⛔ Planned`) and to `ROADMAP.md`'s Architecture / Design Synthesis theme table, before writing
+   the document — index-before-content.
+4. **Draft the ten fixed sections** (`MSTR-005` §3a), in order: Executive Design Overview, System
+   Architecture, Domain Model, User Stories, Functional Requirements, Non-functional Requirements,
+   Constraints, Risks, Open Questions, Decision Log.
+5. **Carry the required metadata block** (`MSTR-006` §5) — `Dependencies` lists the `DOM-xxx`/
+   `R-xxx` it synthesizes; `Produces` names the `FS-xxx` it feeds.
+6. **Size discipline.** ~8-15 pages equivalent; split into `ADS-xxxA`/`ADS-xxxB` rather than one
+   oversized document.
+7. **Cross-link both directions**, flip status to `✅` once done, update `architecture/INDEX.md` §2
+   and `ROADMAP.md` together, commit as `docs(architecture): ADS-xxx — <what changed>`.
 
-## Quality gate (before calling an `ADS-xxx` done)
+### Quality gate (before calling an `ADS-xxx` done)
 
 - [ ] All ten sections present, in order, none reduced to a placeholder.
-- [ ] Every Functional Requirement traces to a specific `DOM-xxx`/`R-xxx` citation, not a generic
-      claim invented for this document.
-- [ ] Non-functional Requirements explicitly check against `CLAUDE.md`'s load-bearing invariants —
-      silence on an invariant that's actually relevant to this cluster is a gap, not an "N/A."
-- [ ] Open Questions are genuinely open (not a place to bury a decision that was actually made) —
-      decisions belong in the Decision Log.
-- [ ] No production code, no literal API/schema definitions (that's `IMP-xxx`'s job downstream).
-- [ ] Frontmatter `Dependencies`/`Referenced By`/`Produces` are bidirectionally consistent with the
-      `DOM-xxx`/`R-xxx`/`FS-xxx` documents it touches.
-- [ ] Added to `architecture/INDEX.md`'s corpus table and `ROADMAP.md`'s theme table, in sync.
+- [ ] Every Functional Requirement traces to a specific `DOM-xxx`/`R-xxx` citation.
+- [ ] Non-functional Requirements explicitly check against `CLAUDE.md`'s load-bearing invariants.
+- [ ] Open Questions are genuinely open; decisions belong in the Decision Log.
+- [ ] No production code, no literal API/schema definitions.
+- [ ] Frontmatter `Dependencies`/`Referenced By`/`Produces` bidirectionally consistent.
+- [ ] Added to `architecture/INDEX.md` §2's corpus table and `ROADMAP.md`'s theme table, in sync.
 - [ ] File length stays in the 8-15 page band; oversized syntheses get split.
 
 ## Gotchas
@@ -124,3 +149,12 @@ multiple plausible architectures, or load-bearing assumptions nobody has written
 - An `ADS-xxx`'s Decision Log is the load-bearing artifact for whoever drafts the downstream
   `FS-xxx` — if a decision isn't recorded there with its rationale, the synthesis effectively didn't
   happen.
+- Never skip a level in the global ladder, even if a later `GDS-NN` looks easier or more urgent —
+  the ladder is strictly sequential by design (`MSTR-005` §3b).
+- Never start `GDS-(N+1)` before `GDS-N`'s merge gate is **fully closed and the merge decision
+  recorded in prose** — a checked box with no recorded decision, or a merge gate left partially
+  open, means `GDS-N` is not actually done, regardless of whether its file exists and reads well.
+- The ladder is new, separate content layered on top of the existing corpus — it does not silently
+  supersede `MSTR-001`, `build-spec/`, or `design/`. Those stay authoritative until a given
+  `GDS-NN`'s merge step explicitly folds their content in and records that decision; don't treat a
+  `GDS-NN` file's mere existence as having already superseded its merge target.

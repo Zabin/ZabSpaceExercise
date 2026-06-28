@@ -145,6 +145,38 @@ established in its grounding `DOM-xxx`/`R-xxx` documents — it cites them, it d
 them. It is a **design document, not a research document**: its job is synthesis and decision, not
 new domain-knowledge claims.
 
+### 3b. The global Design Synthesis ladder (`architecture/GDS-00`…`GDS-10`)
+
+Distinct from the per-cluster `ADS-xxx` shape in §3a, `architecture/` also holds a single, global,
+strictly-sequential ladder spanning the whole project, scaffolded by user request and tracked in
+`architecture/INDEX.md` §1 and `ROADMAP.md`'s "Global ladder" table:
+
+| ID | Title | Purpose |
+|---|---|---|
+| GDS-00 | Vision | Project goals |
+| GDS-01 | Concept of Operations | How users interact with the system |
+| GDS-02 | System Context | External systems and interfaces |
+| GDS-03 | Architecture | High-level subsystem decomposition |
+| GDS-04 | Domain Model | Core entities and relationships |
+| GDS-05 | Functional Requirements | The authoritative specification |
+| GDS-06 | Non-functional Requirements | Performance, reliability, security, usability |
+| GDS-07 | Data Model | Persistent data structures |
+| GDS-08 | UI Architecture | Screens, navigation, workflows |
+| GDS-09 | API Specification | Service boundaries and contracts |
+| GDS-10 | Requirements Traceability Matrix | Maps requirements to features, tests, and implementation |
+
+**Gating rule (binding):** `GDS-(N+1)` may not be started until `GDS-N` is authored *and* has
+merged in whatever existing-corpus content overlaps it (per-document merge targets are listed in
+`architecture/INDEX.md` §1). The merge is part of "done," not follow-up cleanup — this is an
+explicit instruction, not a default convention like the rest of this corpus's looser
+cross-linking expectations (contrast MSTR-006 §5's "best-effort" `Referenced By`).
+
+This ladder is **new, separate content** — it does not silently replace `MSTR-001`, `build-spec/`,
+or `design/`, which stay authoritative until a given `GDS-NN`'s merge step explicitly folds their
+content in. It coexists with, and is a different granularity from, the per-cluster `ADS-xxx` shape
+in §3a: the ladder is one instance for the whole system; `ADS-xxx` is zero-or-more instances, one
+per capability cluster with real design tension the ladder doesn't resolve at the system level.
+
 ## 4. The traceability chain
 
 Every capability in this program should be expressible as an unbroken chain:

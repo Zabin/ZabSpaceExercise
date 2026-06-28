@@ -220,6 +220,31 @@ clusters with real design tension; small/uncontested features skip straight to `
 No `ADS-xxx` capability document has been authored yet — this row will grow as the
 `architecture-design-synthesis` skill is run against a capability cluster with real design tension.
 
+### Global ladder (`GDS-00`…`GDS-10`, scaffolded this revision, content not yet authored)
+
+A single, global, top-to-bottom design-synthesis ladder for the whole project, distinct from the
+per-cluster `ADS-xxx` table above. **Strictly gated**: `GDS-(N+1)` cannot start until `GDS-N` is
+authored *and* has merged in whatever existing-corpus content overlaps it (see
+`architecture/INDEX.md` §1's gating rule). Scaffolded as stub files with metadata blocks and merge
+gates; no level has been authored yet.
+
+| ID | Document | Path | Merges from | Status |
+|---|---|---|---|---|
+| GDS-00 | Vision | `architecture/00-vision.md` | MSTR-001 | ⛔ Planned (scaffold only) |
+| GDS-01 | Concept of Operations | `architecture/01-concept-of-operations.md` | *(none identified yet — verify during authoring)* | ⛔ Planned (scaffold only) |
+| GDS-02 | System Context | `architecture/02-system-context.md` | build-spec/01 | ⛔ Planned (scaffold only) |
+| GDS-03 | Architecture | `architecture/03-architecture.md` | design/01 | ⛔ Planned (scaffold only) |
+| GDS-04 | Domain Model | `architecture/04-domain-model.md` | design/04 (entity/relationship portion) | ⛔ Planned (scaffold only) |
+| GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | build-spec/02 §5 | ⛔ Planned (scaffold only) |
+| GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | build-spec/04 §9 | ⛔ Planned (scaffold only) |
+| GDS-07 | Data Model | `architecture/07-data-model.md` | design/04 (schema portion) | ⛔ Planned (scaffold only) |
+| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | design/09, design/05, design/10 | ⛔ Planned (scaffold only) |
+| GDS-09 | API Specification | `architecture/09-api-specification.md` | design/07 | ⛔ Planned (scaffold only) |
+| GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | *(net-new — no counterpart)* | ⛔ Planned (scaffold only) |
+
+**Next:** author GDS-00 first (per the gate, including its MSTR-001 merge) before any other GDS
+level may begin.
+
 ## Theme: Feature Specifications (the *what* — `docs/features/`)
 
 Phase 4 of the documentation-driven-development expansion (MSTR-005 §4 chain: Training Objective →
