@@ -67,6 +67,12 @@ Still open (deferred / nice-to-have):
 - **Per-cell auth tokens.** Cell selection is trust-based today (any tab can pick any cell);
   matches the cooperative facilitator-run PME model. A token gate is documented as LAN-use-only
   hardening if a tenancy or hostile-side concern emerges.
+- **AI-Red fog-of-war parity.** `session/redai.py`'s `RedDoctrine` currently reads
+  `self.mgr.world` (ground truth) directly when choosing doctrine-flavored orders — e.g. it can
+  target an unpatched cyber vulnerability on a Blue asset it would not actually have detected
+  through Red's own fog-of-war-filtered `CellView`. Per `docs/architecture/adr/ADR-0024`, this is
+  a tracked gap, not yet resolved: AI-Red should eventually read through a `CellView` like a
+  human Red operator. No code change scheduled yet.
 
 ## 2. Orbital / effects fidelity
 
