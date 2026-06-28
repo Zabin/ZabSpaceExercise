@@ -29,34 +29,44 @@ AAR, multiplayer clock + locking) is test-covered.
 
 ## Authoritative source & reading order
 
-The `docs/build-spec/` monolith is being **superseded, section by section, by the
-`docs/architecture/` GDS-00…GDS-10 ladder** as each level's merge gate closes (see
-[`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) §1 for the gating rule and per-level
-status). A build-spec section stays authoritative **only until** the GDS level that merges it
-closes its gate; once closed, the GDS document is authoritative and the build-spec section is
-retained on disk, unmodified, solely so existing tag/section citations (source-code docstrings,
-`04-nfr-milestones-and-risks.md` §10 acceptance criteria) keep resolving to readable text — it
-carries an explicit pointer to its replacement and must not be edited for new content.
+**`docs/architecture/` (the GDS-00…GDS-10 ladder) is the single authoritative architecture and
+requirements source for this project, effective immediately — it supersedes `docs/build-spec/` in
+its entirety.** This is a deliberate escalation, made by explicit project-owner instruction, beyond
+the prior rule (under which a build-spec module stayed authoritative only until its specific GDS
+level's own merge gate closed). The supersession is no longer gated module-by-module: build-spec is
+superseded as a whole, immediately, including for GDS levels that have not yet been authored.
 
-**Current supersession status:** `build-spec/02-requirements-and-operations.md` §5–6 (functional
-requirements + operations/hot-seat model) is superseded by
-[`docs/architecture/05-functional-requirements.md`](docs/architecture/05-functional-requirements.md)
-(GDS-05). All other build-spec modules remain authoritative until their corresponding GDS level's
-merge gate closes.
+**What this means where a GDS level is not yet authored.** Per
+[`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) §1, GDS-06 (Non-Functional
+Requirements) through GDS-10 (Requirements Traceability Matrix) are currently
+`⛔ Planned (scaffold only)` — there is no authored content at those levels yet. The corresponding
+`build-spec/` module may still be read as the only available descriptive text on that topic, but it
+is now **deprecated legacy reference, not a binding tie-breaker**. The old rule ("on any conflict,
+the build spec wins") no longer applies anywhere in this project. Where a topic has no authored GDS
+level yet, treat it as **not yet having an authoritative statement** — read the legacy build-spec
+text for orientation, but do not cite it as binding, and flag a gap rather than treating its
+wording as settled. Authoring GDS-06 through GDS-10 to close this gap is now a standing priority.
 
-1. [`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) — the GDS ladder; check each level's
-   Status cell to know whether to read it or its build-spec counterpart for binding text.
+**Current GDS-ladder status** (full table: [`docs/architecture/INDEX.md`](docs/architecture/INDEX.md)
+§1): GDS-00 through GDS-05 are authored with closed merge gates and are fully authoritative.
+GDS-06–GDS-10 are scaffold-only; their build-spec counterparts (`04-nfr-milestones-and-risks.md`
+§9, `design/04-data-model.md` schema portion, `design/09-gui-principles.md` +
+`05-cell-interfaces.md` + `10-sda-3d-viewer.md`, `design/07-api-and-networking.md`, none) are legacy
+reference only, per the rule above.
+
+1. [`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) — the GDS ladder; the authoritative
+   entry point for architecture and requirements, full stop.
 2. [`docs/architecture/05-functional-requirements.md`](docs/architecture/05-functional-requirements.md)
-   (GDS-05, authoritative) for functional/operational requirements, elaborated in full traceability
-   detail at [`docs/requirements/01-functional-requirements.md`](docs/requirements/01-functional-requirements.md).
-3. [`docs/build-spec/INDEX.md`](docs/build-spec/INDEX.md) — the binding spec for every module *not
-   yet superseded* by a closed GDS gate. **On any conflict with a not-yet-superseded module, the
-   build spec wins.**
-4. `docs/design/01-architecture-overview.md` + `docs/design/04-data-model.md` — the architecture
-   and data contract.
+   (GDS-05) for functional/operational requirements, elaborated in full traceability detail at
+   [`docs/requirements/01-functional-requirements.md`](docs/requirements/01-functional-requirements.md).
+3. For any topic with no authored GDS level yet, [`docs/build-spec/INDEX.md`](docs/build-spec/INDEX.md)
+   as **legacy, non-binding reference** pending migration into the GDS ladder.
+4. `docs/design/01-architecture-overview.md` + `docs/design/04-data-model.md` — architecture/data
+   reference pending their own GDS-03 (already merged)/GDS-07 (pending) migration.
 5. [`docs/research/INDEX.md`](docs/research/INDEX.md) (`01`–`06`) — *why* the rules are what they are.
 6. `docs/build-spec/04-nfr-milestones-and-risks.md` §10 — the consolidated phase plan (M0–M7) with
-   current status. Deferred items live in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
+   current status (legacy reference; not yet migrated to a GDS level). Deferred items live in
+   [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
 7. Remaining [`docs/design/`](docs/design/INDEX.md) docs and [`docs/vignettes/`](docs/vignettes/INDEX.md)
    as each phase needs them.
 

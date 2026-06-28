@@ -14,6 +14,16 @@ Router for `docs/architecture/`. Two things live here, at two different granular
 Both are produced by the `architecture-design-synthesis` skill
 (`.claude/skills/architecture-design-synthesis/`).
 
+> **This directory is now the single authoritative architecture/requirements source for the whole
+> project, superseding `docs/build-spec/` in its entirety**, per `CLAUDE.md`'s "Authoritative
+> source & reading order." This is a blanket declaration, not limited to levels whose merge gate
+> has already closed (GDS-00–05) — it also covers GDS-06–10 below even though they are still
+> scaffold-only: a not-yet-authored GDS level simply has no authoritative content yet, rather than
+> the corresponding build-spec module "winning" by default. The §1 gating rule below (sequential,
+> merge-gated *authoring* order) is a separate, still-binding process rule about how this ladder
+> gets written — it is not the mechanism by which authority transfers; authority transferred to
+> this directory as a whole already.
+
 [↑ Docs index](../INDEX.md) · [Documentation map](../master/MSTR-005-documentation-map.md) §3a
 
 ## 1. The global ladder (`GDS-00`…`GDS-10`)

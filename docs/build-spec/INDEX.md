@@ -2,16 +2,27 @@
 
 [↑ Docs index](../INDEX.md)
 
-The **binding v1 specification** (Project Start Document) for the Space Control & Orbital Warfare
-Exercise Simulator. **On any conflict, the build spec wins.** This was one monolith; it is now eight
-section modules. Section numbers (`§N`) are preserved so existing citations (incl. source-code
-docstrings that cite `§16.9` / `§10`) still resolve to a real heading.
+> **Superseded in its entirety.** Per `CLAUDE.md`'s "Authoritative source & reading order," the
+> `docs/architecture/` GDS-00…GDS-10 ladder is now the single authoritative architecture and
+> requirements source for this project — this supersedes the build spec as a whole, not just the
+> modules a closed GDS merge gate has already absorbed. Where a GDS level is authored (currently
+> GDS-00–05), read that GDS document, not this one. Where a GDS level is still scaffold-only
+> (GDS-06–10), the corresponding module below is **legacy, non-binding reference** only — useful for
+> orientation, not citable as "the build spec wins." This file and its modules are retained on disk,
+> unmodified, solely so existing tag/section citations (source-code docstrings, `04-nfr-milestones-
+> and-risks.md` §10 acceptance criteria) keep resolving to readable text.
 
-- **Status:** Baseline for v1 implementation · **Classification:** UNCLASSIFIED // TRAINING
+The former **binding v1 specification** (Project Start Document) for the Space Control & Orbital
+Warfare Exercise Simulator — see the supersession notice above. This was one monolith; it is now
+eight section modules. Section numbers (`§N`) are preserved so existing citations (incl.
+source-code docstrings that cite `§16.9` / `§10`) still resolve to a real heading.
+
+- **Status:** Legacy reference, superseded by `docs/architecture/` · **Classification:** UNCLASSIFIED // TRAINING
 - **Audience:** Claude Code (implementer & maintainer), White Cell facilitators, future maintainers
 - **Companion themes:** [`design/`](../design/INDEX.md) (software design), [`research/`](../research/INDEX.md),
-  [`vignettes/`](../vignettes/INDEX.md). This spec is the authoritative entry point; where it
-  references a companion file, that file holds the detailed design.
+  [`vignettes/`](../vignettes/INDEX.md). The GDS ladder under `docs/architecture/` is now the
+  authoritative entry point; this spec and the docs it references are legacy detail pending
+  migration.
 
 ## Modules
 
