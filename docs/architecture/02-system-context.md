@@ -1,7 +1,7 @@
 # GDS-02 — System Context
 
 > **Document ID:** GDS-02
-> **Version:** 1.3
+> **Version:** 1.4
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-01
 > **Referenced By:** GDS-03
@@ -14,7 +14,10 @@
 > [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
 > reconciliation" below), [`adr/ADR-0027-scenario-authoring-boundary.md`](adr/ADR-0027-scenario-authoring-boundary.md)
 > (Open Question 4 resolution), [`adr/ADR-0024-ai-red-boundary-classification.md`](adr/ADR-0024-ai-red-boundary-classification.md)
-> (Open Question 2 resolution)
+> (Open Question 2 resolution),
+> [`research/encyclopedia/R316-joint-and-combined-operations.md`](../research/encyclopedia/R316-joint-and-combined-operations.md)
+> (reconciled — see "Research integration (R313–R317)" below),
+> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -213,6 +216,25 @@ Three structural properties of these flows, carried from GDS-01 and the load-bea
 3. **Inbound flows from Space-Track are the only ones that can be entirely absent** without
    degrading the exercise — every other flow in the diagram is load-bearing for v1 operation.
 
+### Candidate future external systems (forward-looking — not current v1 scope)
+
+**This subsection does not change §9's current scope.** §9's diagram and structural properties
+above remain the complete v1 boundary; the "no other live external system is in scope for v1"
+statement in §9's table above stays true. The following is recorded only because the joint/coalition
+research (`R316`) explicitly names external systems a future multi-domain or coalition extension
+would need to integrate with, and the gap analysis judged it worth naming now rather than
+rediscovering later:
+
+| Candidate future external system | What it would do | Research grounding |
+|---|---|---|
+| Coalition/joint C2 interface | Exchange a subset of cell-scoped data with a partner force's own C2 system under an explicit, scoped relaxation of fog-of-war — never an ambient broadening of visibility | `R316` §3.3 (coalition vs. combined ops), §3.4 (joint C2 data sharing), §5 implementation guidance |
+| External mission-planning/ATO-equivalent feed | Import a pre-built tasking order (cf. air tasking order) rather than building one in-app | `R315` §3.4 (ATO), `R316` §3.2 (joint planning process) |
+| External intelligence/SDA data feed | Ingest third-party SDA or all-source intelligence products beyond the existing Space-Track TLE import | `R317` §3.3 (SDA evolution), `R316` §3.4 (intel fusion) |
+
+None of these is committed, scheduled, or implied to exist by any other part of this document.
+Each would require its own ADR and a GDS-02 revision (not a silent extension of the current
+table) before being treated as in-scope.
+
 ---
 
 ## Open Questions
@@ -244,6 +266,11 @@ Three structural properties of these flows, carried from GDS-01 and the load-bea
    above, distinct from the one-shot vignette-file-load interaction. Raised by the architecture
    review (`reviews/architecture-review.md` §1 finding 2); resolved per the project owner's
    decision recorded in `architecture/adr/ADR-0027-scenario-authoring-boundary.md`.
+5. **Coalition-partner actor (new).** `R316` §3.3 distinguishes "coalition" (shared objective,
+   distinct national C2 chains) from "combined" (integrated C2) operations — a distinction the
+   current Red/Blue/White actor model has no need to represent today, since v1 has no multi-force
+   concept at all. Whether a future coalition-training feature would need a new external actor here
+   (vs. simply more Blue/Red seats) is left open; see the candidate-future-systems table above.
 
 ---
 
@@ -261,6 +288,22 @@ consolidated, cross-document changelog.
 - Open Question 2 (AI-Red's actor status) — appended a cross-reference noting three ladder levels
   independently flag this question (review §1 finding 4, §8 finding 1).
 - Metadata — added a cross-reference to the architecture review; version bumped 1.0 → 1.1.
+
+## Research integration (R313–R317)
+
+Synthesized per [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md) §3.
+**Scope discipline:** every change below is additive and explicitly forward-looking where it
+touches external-system scope — none of it changes §9's stated current v1 boundary, which is
+binding per `build-spec/01` (`MSTR-001` §7 conflict rule).
+
+- Added "Candidate future external systems" subsection after §9, naming three systems a future
+  joint/coalition extension might integrate with, each tied to a specific `R316` citation and
+  explicitly marked not-current-scope (gap-analysis finding 2.1).
+- Added Open Question 5, whether a coalition-partner actor would be needed for a future feature
+  (`R316` §3.3; gap-analysis finding 2.2). Left open.
+- Metadata — added a cross-reference to `R316` and the gap-analysis document; version bumped
+  1.3 → 1.4. Status remains `✅ Authored — merge gate closed`; this is an explicitly-instructed
+  amendment, not a gate reopening, consistent with GDS-01's identical treatment.
 
 ## Merge gate (closed)
 

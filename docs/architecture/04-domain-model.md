@@ -1,7 +1,7 @@
 # GDS-04 — Domain Model
 
 > **Document ID:** GDS-04
-> **Version:** 1.1
+> **Version:** 1.2
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-03
 > **Referenced By:** GDS-05
@@ -15,7 +15,15 @@
 > [`research/06-bus-and-payload-operations.md`](../research/06-bus-and-payload-operations.md),
 > [`build-spec/08-ssn.md`](../build-spec/08-ssn.md) §17,
 > [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
-> reconciliation" below)
+> reconciliation" below),
+> [`research/encyclopedia/R313-maritime-operator-perspective.md`](../research/encyclopedia/R313-maritime-operator-perspective.md),
+> [`research/encyclopedia/R314-land-operator-perspective.md`](../research/encyclopedia/R314-land-operator-perspective.md)
+> (draft, citations unverified),
+> [`research/encyclopedia/R315-air-operator-perspective.md`](../research/encyclopedia/R315-air-operator-perspective.md),
+> [`research/encyclopedia/R316-joint-and-combined-operations.md`](../research/encyclopedia/R316-joint-and-combined-operations.md),
+> [`research/encyclopedia/R317-space-operator-perspective.md`](../research/encyclopedia/R317-space-operator-perspective.md)
+> (reconciled — see "Research integration (R313–R317)" below),
+> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -523,6 +531,42 @@ Three structural properties these diagrams encode, all carried from earlier ladd
 
 ---
 
+## 3. Forward-looking domain concepts (research-grounded, not yet implemented)
+
+**This section adds no entity to §1 and changes nothing in §2's diagrams.** It sketches, at the
+conceptual level only (no fields, no schema, no persistence — that remains GDS-07's job), three
+concepts the operator-perspective research repeatedly names as load-bearing for other domains and
+which the simulator's current flat, single-domain model has no representation of. Per `R316` §3.1's
+explicit caution, the existing model should not be read as a doctrinal claim that real command
+structure is this flat — these concepts are recorded so a future feature that needs them starts
+from a documented baseline instead of inventing one ad hoc.
+
+- **Command Relationship.** Real joint/coalition forces distinguish who has full command authority
+  over a unit (OPCON-equivalent) from who can only direct execution of an assigned task without
+  reassigning the unit (TACON-equivalent) (`R313` §3.2/§3.7, `R314` §3.1, `R316` §3.1). Today, a
+  Role Assignment (§1.10) is the only authority concept SpaceSim has, and it is uniform — every
+  Blue operator's relationship to their assigned Asset is identical in kind. A future feature
+  modeling internal Blue-side or coalition command tiers would need an explicit Command
+  Relationship concept layered above Role Assignment, not an assumption that the existing model
+  already represents one.
+- **Intent.** Mission-command doctrine separates a commander's intent (the desired end state and
+  the latitude subordinates have to achieve it) from the specific tasks issued to achieve it
+  (`R313` §3.7, `R314` §3.1, `R315` §3.8, `R316` §3.5). SpaceSim's Vignette (§1.1) carries
+  objectives and ROE but no separate Intent object distinct from the objectives themselves; AI-Red's
+  doctrine presets (`redai.py`) are the closest existing analog, encoding a behavioral disposition
+  rather than an explicit intent statement an operator could read.
+- **Decision Cycle.** The generic observe/classify → decide → act → assess loop named across every
+  domain's doctrine (`R313` §3.5/§3.6, `R315` §3.4/§3.5, `R316` §3.2, `R317` §3.3) is already
+  instantiated once, concretely, by the existing Custody/Track (§1.9) confidence-decay chain feeding
+  the weapons-quality gate before an Effect (§1.8). This is named here as a *pattern*, not a new
+  entity — a future feature with its own decision-cycle shape (e.g. a sensor-tasking-contention
+  workflow) should recognize it as an instance of this pattern rather than reinventing the
+  vocabulary.
+
+None of the three above is implemented, scheduled, or implied to be in scope by §1's entity list.
+
+---
+
 ## Open Questions
 
 1. **Whether "Effect" should be split into EffectInstance/EffectOutcome at this level.**
@@ -553,6 +597,17 @@ Three structural properties these diagrams encode, all carried from earlier ladd
    compatibility *across* builds. Raised by the architecture review
    (`reviews/architecture-review.md` §8 finding 4, new); left open here since it requires a
    versioning-policy decision, not a documentation fix.
+5. **SSN Request / Planned Activity supertype, corroborated cross-domain (appended).** `R313` §3.5's
+   ASW classification chain and `R317` §3.2's SDA detect→track→characterize→attribute chain are
+   additional cross-domain analogs for the same "operator asked for something, it arrived/resolved
+   later" shape Open Question 3 already names — corroborating that this is a generic pattern, not a
+   one-off. Does not change the disposition of Open Question 3, which remains unresolved.
+6. **Whether §3's forward-looking concepts should ever become real §1 entities (new).** §3 is
+   explicitly not-yet-implemented. No document states what would trigger promoting Command
+   Relationship, Intent, or Decision Cycle from §3's conceptual sketch into a real, schema-backed
+   §1 entity — presumably a concrete feature proposal and its own `ADS-xxx` (per `architecture/
+   INDEX.md` §2), but this is not written down anywhere. Left open so §3 does not quietly ossify
+   into unreviewed scope creep.
 
 ---
 
@@ -578,6 +633,24 @@ consolidated, cross-document changelog.
   Effect, Planned Activity) versus lowercase generic usage in GDS-01/GDS-02's operational prose is
   an intentional convention layering — formal naming at the architecture/domain-model altitude,
   descriptive prose at the ConOps/context altitude — not an inconsistency to fix.
+
+## Research integration (R313–R317)
+
+Synthesized per [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md) §5.
+**Scope discipline:** the new §3 is explicitly conceptual and not-yet-implemented; it adds no
+entity to §1 and changes neither §1's entity descriptions nor §2's diagrams. R314's content (draft,
+citations unverified) is used here only for terminology/analogy, not as a verified factual source.
+
+- Added new §3, "Forward-looking domain concepts" — Command Relationship, Intent, and Decision
+  Cycle, each sketched conceptually and tied to a specific research citation, explicitly marked not
+  implemented (gap-analysis finding 4.1).
+- Open Question 3 (SSN Request vs. Planned Activity) — appended corroborating cross-domain analogs
+  from `R313`/`R317` (gap-analysis finding 4.2); disposition unchanged, still unresolved.
+- Added Open Question 5 (corroboration, see above) and Open Question 6, whether/when §3's concepts
+  should be promoted to real §1 entities (gap-analysis finding 4.3). Both left open.
+- Metadata — added cross-references to R313–R317 and the gap-analysis document; version bumped
+  1.1 → 1.2. Status remains `✅ Authored — merge gate closed`; explicitly-instructed amendment, not
+  a gate reopening, consistent with GDS-01–03's identical treatment.
 
 ## Merge gate (closed)
 
