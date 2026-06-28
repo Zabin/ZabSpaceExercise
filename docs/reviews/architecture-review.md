@@ -246,4 +246,6 @@ documentation-currency gap rather than a structural one.
 [`GDS-04`](../architecture/04-domain-model.md) · [`docs/AUDIT-2026-06.md`](../AUDIT-2026-06.md)
 (implementation-level audit; this report is documentation-level) ·
 [`docs/FUTURE-WORK.md`](../FUTURE-WORK.md) (tracks the constellation-aggregation and per-cell-token
-deferrals referenced in §6/§4 above).
+deferrals referenced in §6/§4 above) ·
+[`architecture-review-changelog.md`](architecture-review-changelog.md) (the consolidated record of
+every documentation change made to GDS-01–04 in response to this report).

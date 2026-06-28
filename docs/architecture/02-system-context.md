@@ -1,7 +1,7 @@
 # GDS-02 — System Context
 
 > **Document ID:** GDS-02
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-01
 > **Referenced By:** GDS-03
@@ -10,7 +10,9 @@
 > **Related Topics:** [`build-spec/01-context-and-scope.md`](../build-spec/01-context-and-scope.md)
 > (merge source), [`build-spec/08-ssn.md`](../build-spec/08-ssn.md) §17,
 > [`vignettes/GROUND-INFRASTRUCTURE.md`](../vignettes/GROUND-INFRASTRUCTURE.md),
-> [`CLAUDE.md`](../../CLAUDE.md) ("LAN trust model"), [GDS-01](01-concept-of-operations.md)
+> [`CLAUDE.md`](../../CLAUDE.md) ("LAN trust model"), [GDS-01](01-concept-of-operations.md),
+> [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
+> reconciliation" below)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -192,6 +194,11 @@ Three structural properties of these flows, carried from GDS-01 and the load-bea
 
 1. **Fog-of-war is enforced at the flow's exit point**, not by the sender withholding data — the
    server filters every cell-scoped outbound flow through `CellView`/`SessionAPI` (GDS-01 §4, §10).
+   The no-cell god-view endpoints (`/godview`, `/eventlog`, `/save`, `/aar*`, `/objectives`) are the
+   deliberate, documented exception to this property — they are not cell-scoped flows at all, so
+   "every cell-scoped outbound flow" is filtered, but these flows are intentionally outside that
+   scope (GDS-01 §4, `CLAUDE.md` "LAN trust model"). A reader should not infer the boundary is
+   total; clarified per the architecture review (see "Review reconciliation" below).
 2. **The clock is single-owned.** Only the White Cell flow can advance/pause/rewind time; all other
    inbound flows are time-stamped against whatever the current sim time is, never advance it
    themselves.
@@ -213,14 +220,40 @@ Three structural properties of these flows, carried from GDS-01 and the load-bea
    the session (`training/05`). This document treats it as internal, not an external actor (§2),
    because it has no existence outside the system process. If a future document treats AI-Red as
    pluggable/replaceable by an external service (e.g. an LLM-driven Red), that would change this
-   classification — not resolved here, since no such design exists today.
+   classification — not resolved here, since no such design exists today. The architecture review
+   (`reviews/architecture-review.md` §1 finding 4, §8 finding 1) notes that this question, GDS-03
+   Open Question 2, and a related gap in GDS-04 (AI-Red previously absent from the Role Assignment
+   entity's description) all independently flag the same underlying placement question —
+   corroborating evidence this is load-bearing for GDS-05, not three unrelated gaps.
 3. **Ground-site/sensor data provenance.** `vignettes/GROUND-INFRASTRUCTURE.md` documents
    real-world ground-station coordinates baked into vignette content. Whether these coordinates
    constitute a "data source" distinct from the vignette file itself (§4), or are simply vignette
    content with no separate external provenance, is not settled by any document reviewed. Treated
    here as part of the vignette file (§4), flagged as a borderline case.
+4. **Scenario-authoring workflow has no named actor or interface.** §1/§6 describe vignette files
+   crossing the boundary as input, and GDS-01 §5 step 1 describes White Cell "building or loading"
+   a vignette, but no document names the in-app builder (or hand-authoring) as a boundary-crossing
+   interaction distinct from simply "loading a file." Raised by the architecture review
+   (`reviews/architecture-review.md` §1 finding 2); left open here since resolving it means
+   deciding whether authoring is in-system (a UI feature) or external (an offline editing step) —
+   a real design question, not a documentation oversight to silently fix.
 
 ---
+
+## Review reconciliation (architecture-review.md)
+
+In response to `docs/reviews/architecture-review.md`, the following documentation-only
+clarifications were made. No operational behavior, requirement, or feature changed — see
+[`reviews/architecture-review-changelog.md`](../reviews/architecture-review-changelog.md) for the
+consolidated, cross-document changelog.
+
+- §9 structural property 1 — appended the no-cell god-view endpoints as the documented exception
+  to "every cell-scoped outbound flow is filtered" (review §4 finding 1).
+- Open Questions — added Open Question 4, the missing scenario-authoring-workflow actor (review §1
+  finding 2, new).
+- Open Question 2 (AI-Red's actor status) — appended a cross-reference noting three ladder levels
+  independently flag this question (review §1 finding 4, §8 finding 1).
+- Metadata — added a cross-reference to the architecture review; version bumped 1.0 → 1.1.
 
 ## Merge gate (closed)
 

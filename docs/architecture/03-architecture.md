@@ -1,7 +1,7 @@
 # GDS-03 — Architecture
 
 > **Document ID:** GDS-03
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-02
 > **Referenced By:** GDS-04
@@ -11,7 +11,9 @@
 > (merge source), [`build-spec/03-architecture-and-data.md`](../build-spec/03-architecture-and-data.md)
 > §7 (binding v1 architecture summary), [`design/02-tech-stack-recommendation.md`](../design/02-tech-stack-recommendation.md),
 > [`CLAUDE.md`](../../CLAUDE.md) ("Load-bearing invariants," "Code map"),
-> [GDS-02](02-system-context.md), [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md)
+> [GDS-02](02-system-context.md), [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md),
+> [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
+> reconciliation" below)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -210,10 +212,15 @@ and observers; AAR replay output; save-file snapshots; clock state for multiplay
 vignette/save formats; the mock SSN (§2.3) as a request target for sensor tasking. No dependency
 on presentation — the session layer must remain servable by any future client, web or otherwise.
 
-**Ownership of data.** Sole owner of session-scoped state that is *not* `WorldState* itself: the
-`RLock`/clock-anchor fields, the `RoleRegistry` (seat→asset assignment), and the per-cell
-`CellView` projection logic. Does not own `WorldState` (the engine does) but is the only subsystem
-permitted to call into the engine to mutate it.
+**Ownership of data.** Sole owner of session-scoped state that is *not* `WorldState` itself: the
+`RLock`/clock-anchor fields, the seat→asset Role Assignment mapping (GDS-04 §1.10; implemented as
+`RoleRegistry`), and the per-cell `CellView` projection logic. Does not own `WorldState` (the engine
+does) but is the only subsystem permitted to call into the engine to mutate it. **Save-file
+ownership, clarified:** this subsystem owns the *act* of producing a save (serializing the current
+session state on demand or at session end); §2.5 Content & Data owns the resulting *on-disk file
+format* once written, identically to how it owns vignette file formats. Neither subsystem owns the
+other's half of this round trip (clarified per the architecture review — see "Review
+reconciliation" below).
 
 **Likely implementation technologies.** Plain Python (no framework) — `SessionManager`,
 `CellController`, `SessionAPI` are framework-free by design so they are not coupled to FastAPI
@@ -349,7 +356,10 @@ data shapes they expect (a one-directional, schema-level dependency, not a code 
 
 **Ownership of data.** Sole owner of the on-disk vignette/template/save/TLE-cache file formats.
 Once loaded into a `WorldState`, the engine (§2.1) owns the in-memory representation; this
-subsystem does not reach back into a running session.
+subsystem does not reach back into a running session. For save files specifically: this subsystem
+owns the *format* of the file on disk; the Session layer (§2.2) owns the act of producing/writing
+it — see §2.2's Ownership of data for the corresponding note (clarified per the architecture
+review — see "Review reconciliation" below).
 
 **Likely implementation technologies.** YAML + JSON on local disk, pydantic v2 schemas for
 validation, `httpx` for the optional Space-Track call — already decided and shipped.
@@ -386,7 +396,12 @@ their own — called out so a future reader does not look for a "determinism mod
   wall-clock reads, ordered `EventLog`); every other subsystem inherits it by only ever driving the
   engine through ordered, logged calls.
 - **Fog-of-war** (`CLAUDE.md` invariant 3) — enforced entirely within §2.2's `CellController`;
-  §2.1 has no concept of "cell," and §2.4 trusts §2.2's output verbatim.
+  §2.1 has no concept of "cell," and §2.4 trusts §2.2's output verbatim. This enforcement is total
+  for *cell-scoped* endpoints only — the no-cell god-view endpoints (`/godview`, `/eventlog`,
+  `/save`, `/aar*`, `/objectives`) deliberately bypass `CellController` filtering by design, not
+  by omission (GDS-02 §8, `CLAUDE.md` "LAN trust model"). A reader should not infer that *every*
+  path through §2.2 is fog-of-war-filtered — only the cell-scoped ones are (clarified per the
+  architecture review — see "Review reconciliation" below).
 - **Multiplayer authority** — a responsibility of §2.2's `SessionManager`/`inprocess.py`
   (lazy clock + `RLock`), not a separate transport subsystem; §2.4 is unaware it is one of
   possibly several connected clients.
@@ -406,15 +421,57 @@ their own — called out so a future reader does not look for a "determinism mod
 2. **AI-Red's subsystem placement.** §2.2 places `redai.py` inside the session layer because it
    only ever acts through `SessionAPI`. GDS-02 §2 Open Question 2 left open whether a future
    pluggable/external AI-Red (e.g. LLM-driven) would change its boundary classification — if that
-   happens, this document's §2.2 placement would need revisiting alongside GDS-02's.
+   happens, this document's §2.2 placement would need revisiting alongside GDS-02's. The
+   architecture review (`reviews/architecture-review.md` §1 finding 4, §8 finding 1) notes that
+   GDS-02 Open Question 2, this question, and a related gap in GDS-04 (AI-Red previously absent
+   from the Role Assignment entity's description) all independently flag the same underlying
+   placement question — corroborating evidence this is load-bearing for GDS-05, not three
+   unrelated gaps.
 3. **Whether telemetry/scene "pure render" helpers belong to the engine or the session layer.**
    `telemetry.py` lives in `spacesim/engine/` (per `CLAUDE.md`'s code map) while the structurally
    similar `scene.py` lives in `spacesim/session/`. Both are pure, read-only, replay-safe, and
    render belief/diagnostic views rather than mutating state. This document followed the existing
    file locations rather than reconciling them into one placement rule; left open as a possible
-   future code-organization cleanup, not a behavioral issue.
+   future code-organization cleanup, not a behavioral issue. The architecture review
+   (`reviews/architecture-review.md` §2 finding 2) independently reached the same flag from a
+   fresh read of GDS-03/GDS-04 — treated as corroborating weight that this is a real seam, not a
+   false positive.
+4. **No stated ceiling for per-session `RLock` contention under many concurrent LAN clients.**
+   §2.2's multiplayer-authority responsibility serializes every read/write through one lock per
+   session; neither this document nor GDS-01 §13 Open Question 2 (which this document inherits
+   without resolving) states where that serialization starts to matter. Raised by the architecture
+   review (`reviews/architecture-review.md` §6 findings 1–2) as a scaling question that has now
+   passed through three ladder levels unaddressed; left open here, since resolving it requires a
+   sizing decision, not a documentation fix.
 
 ---
+
+## Review reconciliation (architecture-review.md)
+
+In response to `docs/reviews/architecture-review.md`, the following documentation-only
+clarifications were made. No subsystem, interface, or feature changed — see
+[`reviews/architecture-review-changelog.md`](../reviews/architecture-review-changelog.md) for the
+consolidated, cross-document changelog.
+
+- §2.2 Ownership of data — fixed a stray typo (`` `WorldState* `` → `` `WorldState` ``); aligned
+  "`RoleRegistry`" terminology with GDS-04's formal "Role Assignment" entity name; added the
+  save-file ownership split clarification (review §2 finding 3, new).
+- §2.5 Ownership of data — added the corresponding save-file format/write-act split note (review
+  §2 finding 3).
+- §4 Fog-of-war cross-cutting concern — appended the no-cell god-view endpoint exception, so the
+  bullet no longer reads as a total boundary (review §4 finding 1, new).
+- Open Question 2 (AI-Red placement) — appended a cross-reference noting three ladder levels
+  independently flag this question (review §1 finding 4, §8 finding 1).
+- Open Question 3 (telemetry/scene split) — appended a note that the review independently reached
+  the same flag (review §2 finding 2).
+- Added Open Question 4, no stated `RLock`/LAN-scaling ceiling (review §6 findings 1–2).
+- **Checked and found not applicable:** the review's architectural-inconsistencies finding about
+  cyber being enumerated as a sixth access channel without its window-independence being flagged
+  inline — on re-reading, §2.1's responsibilities bullet already states the cyber exception
+  immediately adjacent to the five-D effect categories, and the six access channels listed
+  separately do not include cyber at all. No edit made; the original finding overstated the
+  inconsistency once checked against this document's actual text.
+- Metadata — added a cross-reference to the architecture review; version bumped 1.0 → 1.1.
 
 ## Merge gate (closed)
 

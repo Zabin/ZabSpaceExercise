@@ -1,7 +1,7 @@
 # GDS-01 — Concept of Operations
 
 > **Document ID:** GDS-01
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-00
 > **Referenced By:** GDS-02
@@ -12,7 +12,9 @@
 > [`build-spec/05-workflows-and-state-machines.md`](../build-spec/05-workflows-and-state-machines.md)
 > §13–14, [`training/05-core-concepts.md`](../training/05-core-concepts.md),
 > [`training/07-white-cell-facilitation.md`](../training/07-white-cell-facilitation.md),
-> [`CLAUDE.md`](../../CLAUDE.md) ("LAN trust model"), [`FUTURE-WORK.md`](../FUTURE-WORK.md)
+> [`CLAUDE.md`](../../CLAUDE.md) ("LAN trust model"), [`FUTURE-WORK.md`](../FUTURE-WORK.md),
+> [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
+> reconciliation" below)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -149,7 +151,7 @@ RUNNING ─(rewind)─▶ replays to earlier sim_time, continues  (deterministic
 Layered onto this, three further state machines an operator/facilitator experiences during a run
 (`build-spec/05` §14.1–14.3):
 
-- **Planned activity** (command or collection): `DRAFT → PLANNED → ACTIVE → EXECUTED` (commands)
+- **Planned Activity** (command or collection): `DRAFT → PLANNED → ACTIVE → EXECUTED` (commands)
   or `→ REPORTED` (collection); cancellable by the operator at any point before execution;
   re-validated at execute time against ownership/window/resources/ROE/track.
 - **Bus mode / safe mode:** `NOMINAL` → (fault/power/attitude/thermal/cyber/EW/bus-stress,
@@ -182,6 +184,10 @@ invariant 1).
   (`training/05` "Red doctrine & After-Action Review").
 - **AI-Red mode:** Red may be played by a doctrine-flavored AI preset (`russia_ew_first`,
   `china_integrated`, `generic`) instead of human Red operators (`training/05` same section).
+
+Both the hot-seat and LAN-cooperative modes above are served by the same underlying Session object
+(GDS-04 §1.14) — they differ only in how many browser clients are connected to it, not in the
+session model itself (clarified per the architecture review — see "Review reconciliation" below).
 
 ## 9. External systems
 
@@ -277,9 +283,34 @@ invented:
    a stakeholder, but v1 has no automated scoring (§10); how that stakeholder actually consumes
    exercise output today (beyond raw AAR/event-log data) is not described in any operational
    document reviewed. Likely answered by `docs/domains/DOM-002`/`DOM-004`/`DOM-005` rather than
-   this ConOps — out of this document's scope to resolve.
+   this ConOps — out of this document's scope to resolve. **Confirmed still open by the
+   GDS-01–04 architecture review** (`reviews/architecture-review.md` §1 finding 1, §7 findings
+   1–2) — neither GDS-03's subsystem decomposition nor GDS-04's domain model was found to own this
+   workflow either, so the gap is architecture-wide, not specific to this document.
+6. **AI-Red's epistemic parity with human cells.** §2 and §8 describe AI-Red as a substitute for
+   human Red operators using the same operator capabilities, but no document states whether the
+   AI-Red doctrine preset (`redai.py`) reasons over the same fog-of-war-filtered Cell View a human
+   Red would see, or over ground truth. Raised by the architecture review
+   (`reviews/architecture-review.md` §8 finding 3) as a fairness-relevant question neither this
+   document nor GDS-02/GDS-04 currently answers either way.
 
 ---
+
+## Review reconciliation (architecture-review.md)
+
+In response to `docs/reviews/architecture-review.md` (a principal-architect review of GDS-01–04),
+the following documentation-only clarifications were made. No operational behavior, requirement,
+or feature changed — see [`reviews/architecture-review-changelog.md`](../reviews/architecture-review-changelog.md)
+for the consolidated, cross-document changelog.
+
+- §7 — capitalized "Planned Activity" for consistency with its formal entity name in GDS-04 §1.7
+  (terminology fix, no content change).
+- §8 — added a clarifying note that hot-seat and LAN-cooperative modes share one Session object
+  (review §3 finding 3).
+- §13 — Open Question 5 (assessment/scoring) appended with confirmation that the gap is
+  architecture-wide, not ConOps-specific (review §1 finding 1, §7 findings 1–2).
+- §13 — added Open Question 6, AI-Red epistemic parity with human cells (review §8 finding 3, new).
+- Metadata — added a cross-reference to the architecture review; version bumped 1.0 → 1.1.
 
 ## Merge gate (closed)
 

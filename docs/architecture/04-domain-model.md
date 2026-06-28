@@ -1,7 +1,7 @@
 # GDS-04 — Domain Model
 
 > **Document ID:** GDS-04
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-03
 > **Referenced By:** GDS-05
@@ -13,7 +13,9 @@
 > [`research/04-orbital-mechanics-primer.md`](../research/04-orbital-mechanics-primer.md),
 > [`research/03-counterspace-taxonomy.md`](../research/03-counterspace-taxonomy.md),
 > [`research/06-bus-and-payload-operations.md`](../research/06-bus-and-payload-operations.md),
-> [`build-spec/08-ssn.md`](../build-spec/08-ssn.md) §17
+> [`build-spec/08-ssn.md`](../build-spec/08-ssn.md) §17,
+> [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
+> reconciliation" below)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -320,8 +322,11 @@ handoff.
 that role operates.
 
 **Relationships.** Belongs to exactly one Session; references one or more Assets; determines which
-Planned Activities a given human may legally issue (checked by the Session layer's permission
-logic, GDS-03 §2.2).
+Planned Activities a given human — or AI-Red acting on Red's behalf through the same Role
+Assignment (GDS-03 §2.2's `redai.py`) — may legally issue (checked by the Session layer's
+permission logic, GDS-03 §2.2). AI-Red was previously absent from this entity's description even
+though it exercises a Role Assignment exactly like a human would; clarified per the architecture
+review (see "Review reconciliation" below).
 
 **Lifecycle.** Created during the "assign seats" step (GDS-01 §5 step 2) → may be reassigned at
 runtime via hot-seat handoff → ends with the Session.
@@ -348,7 +353,10 @@ any messages/injects addressed to it.
 
 **Relationships.** Derived entirely from `WorldState` plus that cell's Tracks/Role Assignments by
 the Session layer's `CellController` (GDS-03 §2.2); consumed exclusively by the Operator Console
-(GDS-03 §2.4); White Cell's equivalent view is unfiltered god-view, not a Cell View.
+(GDS-03 §2.4); White Cell's equivalent view is unfiltered god-view, not a Cell View. This
+derivation is one-directional: Cell View reads Track state but never writes back to it — there is
+no path by which rendering a Cell View alters the Track data it was derived from (clarified per
+the architecture review — see "Review reconciliation" below).
 
 **Lifecycle.** Computed fresh on every read; never persisted as its own object — recomputing it
 identically from the same `WorldState`/Track inputs is the fog-of-war correctness property.
@@ -453,7 +461,9 @@ invariant 1 is about the log/seed/state triple, not the wall-clock driver).
 
 **Constraints.** Exactly one Session owns clock authority over its own `WorldState` regardless of
 how many browser clients are connected (`CLAUDE.md` invariant — single clock owner); only White
-Cell may advance/pause/rewind/branch a Session's clock.
+Cell may advance/pause/rewind/branch a Session's clock. Whether a Snapshot/save file produced by
+one build of the engine is expected to load under a later build is not addressed by this document
+or any reviewed document — flagged as a new Open Question below.
 
 ---
 
@@ -531,9 +541,43 @@ Three structural properties these diagrams encode, all carried from earlier ladd
    something and it arrived later," but the as-built system (`CLAUDE.md` "Code map") keeps SSN
    tasking on a separate path from the Planned-Activity/collection-task path used for ordinary
    sensor tasking. This document keeps them as two distinct entities, matching the as-built split,
-   rather than unifying them — flagged as a possible future simplification, not resolved here.
+   rather than unifying them — flagged as a possible future simplification, not resolved here. The
+   architecture review (`reviews/architecture-review.md` §2 finding 1) suggests this is worth
+   resolving by either naming the shared request/turnaround shape as an explicit supertype or
+   recording why it should not be one — left as a question for whoever next revises this document,
+   not resolved here.
+4. **Save-file/Snapshot version compatibility across engine builds is unaddressed.** §1.14 Session
+   names `Snapshot`/save files as persistent state, but no document in this corpus states whether a
+   save file produced by one build of the engine is expected to load under a later build —
+   distinct from the determinism guarantee, which is about replay *within* a build, not load
+   compatibility *across* builds. Raised by the architecture review
+   (`reviews/architecture-review.md` §8 finding 4, new); left open here since it requires a
+   versioning-policy decision, not a documentation fix.
 
 ---
+
+## Review reconciliation (architecture-review.md)
+
+In response to `docs/reviews/architecture-review.md`, the following documentation-only
+clarifications were made. No entity, relationship, or feature was added or removed — see
+[`reviews/architecture-review-changelog.md`](../reviews/architecture-review-changelog.md) for the
+consolidated, cross-document changelog.
+
+- §1.10 Role Assignment — clarified that AI-Red exercises a Role Assignment the same way a human
+  operator does, which this entity's description previously omitted (review §1 finding 4).
+- §1.11 Cell View — made the read-only, one-directional relationship to Track explicit (review §5
+  finding 2).
+- §1.14 Session — added a forward pointer from Constraints to the new save-file-versioning Open
+  Question (review §8 finding 4).
+- Open Question 3 (SSN Request vs. Planned Activity) — appended the review's supertype-naming
+  suggestion, left unresolved (review §2 finding 1).
+- Added Open Question 4, save-file/Snapshot version compatibility across engine builds (review §8
+  finding 4, new).
+- Metadata — added a cross-reference to the architecture review; version bumped 1.0 → 1.1.
+- **Terminology reviewed and left unchanged:** Title-Case formal entity names here (Track, Asset,
+  Effect, Planned Activity) versus lowercase generic usage in GDS-01/GDS-02's operational prose is
+  an intentional convention layering — formal naming at the architecture/domain-model altitude,
+  descriptive prose at the ConOps/context altitude — not an inconsistency to fix.
 
 ## Merge gate (closed)
 
