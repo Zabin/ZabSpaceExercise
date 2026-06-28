@@ -232,7 +232,7 @@ gates; no level has been authored yet.
 |---|---|---|---|---|
 | GDS-00 | Vision | `architecture/00-vision.md` | MSTR-001 | ✅ Authored, merge gate closed |
 | GDS-01 | Concept of Operations | `architecture/01-concept-of-operations.md` | build-spec/01, build-spec/04 §11, build-spec/05 §13-14, training/05, training/07 | ✅ Authored, merge gate closed |
-| GDS-02 | System Context | `architecture/02-system-context.md` | build-spec/01 | ⛔ Planned (scaffold only) |
+| GDS-02 | System Context | `architecture/02-system-context.md` | build-spec/01 | ✅ Authored, merge gate closed |
 | GDS-03 | Architecture | `architecture/03-architecture.md` | design/01 | ⛔ Planned (scaffold only) |
 | GDS-04 | Domain Model | `architecture/04-domain-model.md` | design/04 (entity/relationship portion) | ⛔ Planned (scaffold only) |
 | GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | build-spec/02 §5 | ⛔ Planned (scaffold only) |
@@ -242,8 +242,8 @@ gates; no level has been authored yet.
 | GDS-09 | API Specification | `architecture/09-api-specification.md` | design/07 | ⛔ Planned (scaffold only) |
 | GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | *(net-new — no counterpart)* | ⛔ Planned (scaffold only) |
 
-**Next:** GDS-00 and GDS-01 are authored with merge gates closed. Author GDS-02 (System Context,
-merging `build-spec/01-context-and-scope.md`) next, per the gate.
+**Next:** GDS-00, GDS-01, and GDS-02 are authored with merge gates closed. Author GDS-03
+(Architecture, merging `design/01-architecture-overview.md`) next, per the gate.
 
 ## Theme: Feature Specifications (the *what* — `docs/features/`)
 

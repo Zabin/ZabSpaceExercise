@@ -22,7 +22,7 @@ Both are produced by the `architecture-design-synthesis` skill
 |---|---|---|---|---|---|
 | GDS-00 | Vision | `architecture/00-vision.md` | Project goals | `master/MSTR-001-program-vision.md` | ✅ Authored — merge gate closed (MSTR-001 stays authoritative; GDS-00 is a cited derivative restatement) |
 | GDS-01 | Concept of Operations | `architecture/01-concept-of-operations.md` | How users interact with the system | `build-spec/01-context-and-scope.md`, `build-spec/04` §11, `build-spec/05` §13–14, `training/05`, `training/07` (no single existing ConOps — net-new synthesis of scattered material) | ✅ Authored — merge gate closed (all source docs stay independently authoritative; GDS-01 is a consolidation layer above them) |
-| GDS-02 | System Context | `architecture/02-system-context.md` | External systems and interfaces | `build-spec/01-context-and-scope.md` | ⛔ Planned (scaffold only) |
+| GDS-02 | System Context | `architecture/02-system-context.md` | External systems and interfaces | `build-spec/01-context-and-scope.md` | ✅ Authored — merge gate closed (build-spec/01 stays authoritative; GDS-02 is a boundary-focused extraction) |
 | GDS-03 | Architecture | `architecture/03-architecture.md` | High-level subsystem decomposition | `design/01-architecture-overview.md` | ⛔ Planned (scaffold only) |
 | GDS-04 | Domain Model | `architecture/04-domain-model.md` | Core entities and relationships | `design/04-data-model.md` (entity/relationship portion) | ⛔ Planned (scaffold only) |
 | GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | The authoritative specification | `build-spec/02-requirements-and-operations.md` §5 | ⛔ Planned (scaffold only) |
@@ -40,9 +40,9 @@ both (a) authored and (b) has finished merging in whatever existing-corpus conte
 means for that level. Per the user's explicit instruction, this gate applies at every step of the
 top-to-bottom iteration the `architecture-design-synthesis` skill will run.
 
-**Progress:** GDS-00 and GDS-01 are authored with their merge gates closed (see their Status cells
-above and each document's own "Merge gate" section for the recorded decision). GDS-02 (System
-Context) is the next level to author.
+**Progress:** GDS-00, GDS-01, and GDS-02 are authored with their merge gates closed (see their
+Status cells above and each document's own "Merge gate" section for the recorded decision). GDS-03
+(Architecture) is the next level to author.
 
 Where a level's "Merges from" column says no counterpart was identified, that is not a free pass —
 it means the authoring pass for that level must search the corpus itself before concluding there
