@@ -4,7 +4,7 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R301](R301-campaign-design.md)
-> **Referenced By:** [R311](R311-course-of-action-analysis.md)
+> **Referenced By:** [R311](R311-course-of-action-analysis.md), [R313](R313-joint-and-combined-operations.md)
 > **Produces:** the vocabulary for translating a vignette's narrative intent into its concrete `objectives` block
 > **Feature Mapping:** vignette authoring (`docs/scenarios/`)
 > **Related Topics:** [R301](R301-campaign-design.md) (Campaign Design), [R302](R302-operational-art.md) (Operational Art), [R311](R311-course-of-action-analysis.md) (Course of Action
