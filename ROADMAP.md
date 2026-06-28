@@ -201,6 +201,50 @@ need an explicit go-ahead before work begins, per `RT-FUTURE` §12.1.
 > See `RT-FUTURE` §12.5.0 — a "rewrite the whole file" brief blew the token budget in 3 of 4
 > attempts under the old cadence.
 
+## Theme: Architecture / Design Synthesis (the bridge — `docs/architecture/`)
+
+New tier, defined by this revision (see "Phase 6-8 review" open question below, now resolved).
+Sits between Domain+Research and Feature Specification in the `MSTR-005` §4 chain: Training
+Objective → Domain → Research → **Design Synthesis** → Feature Specification → Implementation
+Package → Code → Tests. Each `ADS-xxx` document has ten fixed sections (Executive Design Overview,
+System Architecture, Domain Model, User Stories, Functional Requirements, Non-functional
+Requirements, Constraints, Risks, Open Questions, Decision Log — `MSTR-005` §3a) and is produced by
+the `architecture-design-synthesis` skill. Optional per `MSTR-005` §4 — only used for capability
+clusters with real design tension; small/uncontested features skip straight to `FS-xxx`. Router:
+[`architecture/INDEX.md`](docs/architecture/INDEX.md).
+
+| ID | Document | Capability cluster | Owning domain | Status |
+|---|---|---|---|---|
+| ADS-00 | Architecture index | `architecture/INDEX.md` | — | ✅ |
+
+No `ADS-xxx` capability document has been authored yet — this row will grow as the
+`architecture-design-synthesis` skill is run against a capability cluster with real design tension.
+
+### Global ladder (`GDS-00`…`GDS-10`, scaffolded this revision, content not yet authored)
+
+A single, global, top-to-bottom design-synthesis ladder for the whole project, distinct from the
+per-cluster `ADS-xxx` table above. **Strictly gated**: `GDS-(N+1)` cannot start until `GDS-N` is
+authored *and* has merged in whatever existing-corpus content overlaps it (see
+`architecture/INDEX.md` §1's gating rule). Scaffolded as stub files with metadata blocks and merge
+gates; no level has been authored yet.
+
+| ID | Document | Path | Merges from | Status |
+|---|---|---|---|---|
+| GDS-00 | Vision | `architecture/00-vision.md` | MSTR-001 | ⛔ Planned (scaffold only) |
+| GDS-01 | Concept of Operations | `architecture/01-concept-of-operations.md` | *(none identified yet — verify during authoring)* | ⛔ Planned (scaffold only) |
+| GDS-02 | System Context | `architecture/02-system-context.md` | build-spec/01 | ⛔ Planned (scaffold only) |
+| GDS-03 | Architecture | `architecture/03-architecture.md` | design/01 | ⛔ Planned (scaffold only) |
+| GDS-04 | Domain Model | `architecture/04-domain-model.md` | design/04 (entity/relationship portion) | ⛔ Planned (scaffold only) |
+| GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | build-spec/02 §5 | ⛔ Planned (scaffold only) |
+| GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | build-spec/04 §9 | ⛔ Planned (scaffold only) |
+| GDS-07 | Data Model | `architecture/07-data-model.md` | design/04 (schema portion) | ⛔ Planned (scaffold only) |
+| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | design/09, design/05, design/10 | ⛔ Planned (scaffold only) |
+| GDS-09 | API Specification | `architecture/09-api-specification.md` | design/07 | ⛔ Planned (scaffold only) |
+| GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | *(net-new — no counterpart)* | ⛔ Planned (scaffold only) |
+
+**Next:** author GDS-00 first (per the gate, including its MSTR-001 merge) before any other GDS
+level may begin.
+
 ## Theme: Feature Specifications (the *what* — `docs/features/`)
 
 Phase 4 of the documentation-driven-development expansion (MSTR-005 §4 chain: Training Objective →
@@ -301,15 +345,18 @@ FS → IMP → Code → Tests) for all 11 Feature Specifications:
 - FS-201/FS-301: chain reaches IMP-201A/IMP-301A (design-only) and stops there — no code, no tests.
   Expected per their own Status annotations; not a defect.
 
-> **Open question:** `docs/architecture/` and `docs/scenarios/` are both empty (no files, no git
-> history) despite MSTR-006 §5 listing them as in-scope directories for the metadata-block
-> requirement. This corpus's actual architecture/scenario content instead lives under
-> `docs/design/` and `docs/vignettes/` (per `docs/INDEX.md`'s theme table, which does not list
-> `architecture/`/`scenarios/` at all). Per MSTR-006 §6, this is flagged rather than silently
-> resolved: it is unclear whether (a) `docs/architecture/`/`docs/scenarios/` are aspirational
-> MSTR-006 §5 scope not yet populated and should eventually receive content, (b) MSTR-005/MSTR-006
-> should be corrected to drop these two paths in favor of the `design/`/`vignettes/` names actually
-> in use, or (c) something else. Left for the user to decide; no document was edited to resolve it.
+> **Open question (`docs/architecture/` half resolved this revision):** at the time of the Phase
+> 6-8 review, `docs/architecture/` and `docs/scenarios/` were both empty (no files, no git history)
+> despite MSTR-006 §5 listing them as in-scope directories for the metadata-block requirement.
+> `docs/architecture/` is now resolved per option (a) — it was aspirational MSTR-006 §5 scope, now
+> given real content: the `ADS-xxx` Design Synthesis tier (`MSTR-005` §3a/§4,
+> `docs/architecture/INDEX.md`, the theme table above), produced by the
+> `architecture-design-synthesis` skill. It does not replace `docs/design/`, which stays the
+> detailed "how" for architecture that exists or is being built — `ADS-xxx` is upstream of that,
+> synthesizing domain+research inputs before a Feature Spec commits to a shape (`MSTR-005` §3a).
+> `docs/scenarios/` remains unresolved — still empty, still unclear whether it should eventually
+> receive content distinct from `docs/vignettes/`, or whether MSTR-005/MSTR-006 should drop that
+> path. Left for the user to decide; no document was edited to resolve the `scenarios/` half.
 
 > **Open question:** the 13 router/index files (`*/INDEX.md`, `R100-index.md` ... `R500-index.md`,
 > `features/feature-index.md`) carry no metadata block at all, while MSTR-006 §5 says "every

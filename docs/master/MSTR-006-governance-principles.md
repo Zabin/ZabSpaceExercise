@@ -63,6 +63,9 @@ files. Concretely:
   - Master documents: ~10-20 pages equivalent.
   - Domain documents: ~15-30 pages equivalent.
   - Research encyclopedia topics: ~3-8 pages equivalent — short and single-topic on purpose.
+  - Design Synthesis documents (`ADS-xxx`): ~8-15 pages equivalent across its ten fixed sections
+    (MSTR-005 §3a) — a synthesis that needs more room is a sign the capability cluster should be
+    split into two `ADS-xxx` documents, not one oversized one.
   - Feature Specifications: ~5-10 pages equivalent.
   - Implementation Packages: ~10-25 pages equivalent; **split a feature across multiple lettered
     packages** (`IMP-101A`, `IMP-101B`, ...) rather than writing one oversized package.
