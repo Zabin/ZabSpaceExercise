@@ -1,5 +1,14 @@
 [← Build Spec index](INDEX.md) · [↑ Docs index](../INDEX.md)
 
+> **Superseded.** §5–6 below are retained verbatim, unmodified, solely so existing tag citations
+> (source-code docstrings, `04-nfr-milestones-and-risks.md` §10 acceptance criteria) keep
+> resolving to readable text. The **authoritative** statement of these requirements is now
+> [`architecture/05-functional-requirements.md`](../architecture/05-functional-requirements.md)
+> (GDS-05) — see its "Merge gate" section for the decision record, and `CLAUDE.md`'s
+> "Authoritative source & reading order" for the project-wide rule update. Do not edit §5–6 below
+> to add new requirements; add them to GDS-05 and, if warranted, to
+> [`requirements/01-functional-requirements.md`](../requirements/01-functional-requirements.md).
+
 ## 5. Functional requirements
 
 Grouped by capability. Each is testable; acceptance criteria in §10 map back to these tags.

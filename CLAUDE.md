@@ -29,14 +29,35 @@ AAR, multiplayer clock + locking) is test-covered.
 
 ## Authoritative source & reading order
 
-1. [`docs/build-spec/INDEX.md`](docs/build-spec/INDEX.md) — the binding v1 spec (8 modules).
-   **On any conflict, the build spec wins.**
-2. `docs/design/01-architecture-overview.md` + `docs/design/04-data-model.md` — the architecture
+The `docs/build-spec/` monolith is being **superseded, section by section, by the
+`docs/architecture/` GDS-00…GDS-10 ladder** as each level's merge gate closes (see
+[`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) §1 for the gating rule and per-level
+status). A build-spec section stays authoritative **only until** the GDS level that merges it
+closes its gate; once closed, the GDS document is authoritative and the build-spec section is
+retained on disk, unmodified, solely so existing tag/section citations (source-code docstrings,
+`04-nfr-milestones-and-risks.md` §10 acceptance criteria) keep resolving to readable text — it
+carries an explicit pointer to its replacement and must not be edited for new content.
+
+**Current supersession status:** `build-spec/02-requirements-and-operations.md` §5–6 (functional
+requirements + operations/hot-seat model) is superseded by
+[`docs/architecture/05-functional-requirements.md`](docs/architecture/05-functional-requirements.md)
+(GDS-05). All other build-spec modules remain authoritative until their corresponding GDS level's
+merge gate closes.
+
+1. [`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) — the GDS ladder; check each level's
+   Status cell to know whether to read it or its build-spec counterpart for binding text.
+2. [`docs/architecture/05-functional-requirements.md`](docs/architecture/05-functional-requirements.md)
+   (GDS-05, authoritative) for functional/operational requirements, elaborated in full traceability
+   detail at [`docs/requirements/01-functional-requirements.md`](docs/requirements/01-functional-requirements.md).
+3. [`docs/build-spec/INDEX.md`](docs/build-spec/INDEX.md) — the binding spec for every module *not
+   yet superseded* by a closed GDS gate. **On any conflict with a not-yet-superseded module, the
+   build spec wins.**
+4. `docs/design/01-architecture-overview.md` + `docs/design/04-data-model.md` — the architecture
    and data contract.
-3. [`docs/research/INDEX.md`](docs/research/INDEX.md) (`01`–`06`) — *why* the rules are what they are.
-4. `docs/build-spec/04-nfr-milestones-and-risks.md` §10 — the consolidated phase plan (M0–M7) with
+5. [`docs/research/INDEX.md`](docs/research/INDEX.md) (`01`–`06`) — *why* the rules are what they are.
+6. `docs/build-spec/04-nfr-milestones-and-risks.md` §10 — the consolidated phase plan (M0–M7) with
    current status. Deferred items live in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
-5. Remaining [`docs/design/`](docs/design/INDEX.md) docs and [`docs/vignettes/`](docs/vignettes/INDEX.md)
+7. Remaining [`docs/design/`](docs/design/INDEX.md) docs and [`docs/vignettes/`](docs/vignettes/INDEX.md)
    as each phase needs them.
 
 ## Tech stack (leading recommendation — confirm at Phase 0)
