@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R206](R206-bounded-rationality.md)
-> **Referenced By:** DOM-002, MSTR-003
+> **Referenced By:** DOM-002, MSTR-003, [R313](R313-joint-and-combined-operations.md)
 > **Produces:** the formal name for the loop MSTR-003 §3 calls "structurally unavoidable" and the basis for DOM-002's time-to-decision metric
 > **Feature Mapping:** FS-101 (Mission Planning), FS-201 (Competency Assessment)
 > **Related Topics:** [R206](R206-bounded-rationality.md) (Bounded Rationality), [R106](R106-mission-operations.md) (Mission Operations — the concrete plan/task/

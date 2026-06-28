@@ -18,14 +18,21 @@ Justifies White Cell and scenario design (DOM-003, DOM-009). 12 topics.
 | [R310](R310-effects-based-operations.md) | Effects-Based Operations | Planning oriented around cascading effects, not direct output alone. | [R309](R309-center-of-gravity-analysis.md) | ✅ |
 | [R311](R311-course-of-action-analysis.md) | Course of Action Analysis | Comparing distinct options against criteria before commitment. | [R305](R305-mission-analysis.md) | ✅ |
 | [R312](R312-space-strategy.md) | Space Strategy | Strategic-level theory specific to the space domain. | [R301](R301-campaign-design.md), [R303](R303-deterrence-theory.md) | ✅ |
+| [R313](R313-joint-and-combined-operations.md) | Joint and Combined Operations Perspective | Joint command relationships, JPP, coalition/combined ops, MDO/JADC2, joint fires/targeting, and each domain's space dependencies. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | ✅ |
 
-**Status: complete.** All 12 topics now carry the mandatory §2 Scope section (MSTR-007 §4.2) and
+**Status: complete.** All 13 topics now carry the mandatory §2 Scope section (MSTR-007 §4.2) and
 are cited per `docs/research/10-sources-and-methodology.md`'s convention — each topic has at least
 one `### Sources` subsection (live URL + Wayback snapshot + accessed date) and inline citations at
 the doctrinal/legal/historical claim site, with [R303](R303-deterrence-theory.md)'s single
-secondary-sourced claim flagged inline per the methodology's §3 single-source rule rather than
+secondary-sourced claim and [R313](R313-joint-and-combined-operations.md) §3.12's single-source
+government-report claim flagged inline per the methodology's §3 single-source rule rather than
 mis-cited as primary. Grounded in DOM-003 (White Cell Framework — §7/§10's red-teaming and
-wargaming citations), DOM-009 (Doctrine Development Framework — the translation pipeline these
-topics' real-world doctrine ultimately feeds), and DOM-008 §3 (Red AI design principles, the direct
-consumer of [R303](R303-deterrence-theory.md)/[R308](R308-red-teaming-methodology.md)/[R312](R312-space-strategy.md)'s strategic-posture
-and red-teaming concepts). Last reviewed across the tier: 2026-06-27.
+wargaming citations, plus [R313](R313-joint-and-combined-operations.md)'s command-relationship and
+JPP vocabulary for any future multi-cell/coalition session design), DOM-009 (Doctrine Development
+Framework — the translation pipeline these topics' real-world doctrine ultimately feeds), and
+DOM-008 §3 (Red AI design principles, the direct consumer of
+[R303](R303-deterrence-theory.md)/[R308](R308-red-teaming-methodology.md)/[R312](R312-space-strategy.md)'s strategic-posture
+and red-teaming concepts). [R313](R313-joint-and-combined-operations.md) is the tier's broadest-scope
+topic, added to ground multi-domain/coalition vignette design and any future joint-force-structure
+feature without duplicating the operational-art/campaign-design/COG/EBO/assessment content the other
+12 topics already own. Last reviewed across the tier: 2026-06-28.

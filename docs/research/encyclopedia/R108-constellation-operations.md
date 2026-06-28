@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R106](R106-mission-operations.md)
-> **Referenced By:** FS-105
+> **Referenced By:** FS-105, [R313](R313-joint-and-combined-operations.md)
 > **Produces:** implementation constraints for any future constellation-aggregation feature
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R106](R106-mission-operations.md) (Mission Operations), `docs/FUTURE-WORK.md` (constellation aggregation, deferred)

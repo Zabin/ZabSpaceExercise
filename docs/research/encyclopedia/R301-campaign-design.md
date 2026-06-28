@@ -4,7 +4,7 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md), DOM-009
+> **Referenced By:** [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md), [R313](R313-joint-and-combined-operations.md), DOM-009
 > **Produces:** the structural vocabulary behind multi-vignette mission-set progression
 > **Feature Mapping:** FS-106 (White Cell Dashboard), vignette authoring (`docs/scenarios/`)
 > **Related Topics:** [R302](R302-operational-art.md) (Operational Art), [R305](R305-mission-analysis.md) (Mission Analysis), [R312](R312-space-strategy.md) (Space Strategy), DOM-001
