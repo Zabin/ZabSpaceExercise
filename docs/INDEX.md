@@ -15,6 +15,7 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 |---|---|---|
 | **Master** | Program-defining documents (vision, architecture principles, educational philosophy, glossary, doc map, governance, research philosophy) — read MSTR-001 first. | [`master/INDEX.md`](master/INDEX.md) |
 | **Domains** | Capability frameworks (training, assessment, White Cell, research, validation, governance, human factors, AI integration, doctrine development) that generate Feature Specifications. | [`domains/INDEX.md`](domains/INDEX.md) |
+| **Architecture** | Design Synthesis documents (`ADS-xxx`) — domain+research synthesized into architecture/domain-model/requirements/constraints/risks/decisions, upstream of a Feature Spec. | [`architecture/INDEX.md`](architecture/INDEX.md) |
 | **Features** | Feature Specifications (`FS-xxx`) — what each capability must do, with no implementation detail. | [`features/feature-index.md`](features/feature-index.md) |
 | **Implementations** | Implementation Packages (`IMP-xxxA`) — how each Feature Spec is (or would be) built, as-built docs for FS-101-107 and forward designs for FS-201/FS-301. | [`implementations/INDEX.md`](implementations/INDEX.md) |
 | **Build Spec** | The binding v1 specification — context, requirements, architecture, milestones, operator console, SSN. | [`build-spec/INDEX.md`](build-spec/INDEX.md) |

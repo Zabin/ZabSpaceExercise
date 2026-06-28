@@ -71,8 +71,10 @@ docs/
 │   ├── implementation-index.md
 │   └── IMP-101A-… .md
 │
-├── architecture/                  ← NEW: living architectural decision records / cross-cutting design notes
-│   └── (ADR-style notes that elaborate MSTR-002 for specific subsystems)
+├── architecture/                  ← NEW: ADS-xxx Design Synthesis documents (the bridge from
+│   │                                  Domain+Research into a Feature Specification)
+│   ├── INDEX.md
+│   └── ADS-xxx-<slug>.md          ← one per capability cluster; ten fixed sections (§3a)
 │
 ├── scenarios/                     ← NEW: scenario-design guidance distinct from the vignette *content* library
 │   └── (how to design a vignette to hit a training/assessment objective; the vignette files themselves stay in vignettes/)
@@ -101,9 +103,47 @@ The expansion does **not** duplicate or replace existing content. Specifically:
 - **`vignettes/` stays the content library** (the 19 YAML scenarios + framework doc). The new
   `scenarios/` directory is about *how to design* a vignette to hit a stated training/assessment
   objective (DOM-001/DOM-002 territory) — process guidance, not additional scenario content.
-- **`design/` stays the detailed "how."** New `architecture/` notes are narrower, decision-record-style
-  documents (why a specific seam/constraint was chosen) that elaborate `MSTR-002` for one subsystem
-  at a time, rather than restating `design/`'s broader walkthroughs.
+- **`design/` stays the detailed "how."** `architecture/` is upstream of that — it's where a
+  capability cluster's research and domain inputs get synthesized into a buildable shape *before*
+  a Feature Specification commits to one, not a record of a decision already made about an
+  existing subsystem. `design/` documents an architecture that exists or is being built; `ADS-xxx`
+  documents in `architecture/` are produced earlier, to decide what `design/` and `features/`
+  should say.
+
+### 3a. The Design Synthesis document shape (`architecture/ADS-xxx-*.md`)
+
+Each `ADS-xxx` synthesizes one capability cluster's `DOM-xxx` framework and its grounding
+`research/encyclopedia/` (R1xx-R5xx) + `research/01-07` primer citations into ten fixed sections,
+in this order:
+
+1. **Executive Design Overview** — one paragraph: what capability cluster this covers, what
+   problem it solves, and the single biggest design tension it resolves.
+2. **System Architecture** — the seams/interfaces/data flow this cluster needs, expressed at the
+   level `design/01-architecture-overview.md` and `04-data-model.md` already use (engine/session/
+   content/ui boundaries), not literal code.
+3. **Domain Model** — the entities, their relationships, and the invariants that must hold,
+   independent of any specific UI or API shape.
+4. **User Stories** — cell-perspective ("as Blue/Red/White, I need to...") scenarios the cluster
+   must support, traceable back to the vignette/training objective that motivates them.
+5. **Functional Requirements** — what the capability must do, numbered, each traceable to a
+   domain (`DOM-xxx`) or research (`R-xxx`) citation.
+6. **Non-functional Requirements** — performance, determinism, fog-of-war, replay-safety, and
+   other load-bearing invariants (`CLAUDE.md` §"Load-bearing invariants") that constrain this
+   cluster specifically.
+7. **Constraints** — fixed boundaries the design must work within (existing engine seams, the
+   plan-first invariant, the six access channels, the five-D taxonomy) that are not up for
+   revision in this synthesis.
+8. **Risks** — what could go wrong in implementation or design (scope creep, a conflated FS
+   boundary, an invariant violation) and how the synthesis mitigates or flags each.
+9. **Open Questions** — genuine ambiguities not resolved by this synthesis, per MSTR-006 §6
+   (flagged, not silently resolved).
+10. **Decision Log** — the choices this synthesis actually made among competing options, each with
+    a one-line rationale, so a later reader can see what was considered and rejected.
+
+An `ADS-xxx` never contains production code (MSTR-006 §8) and never duplicates citations already
+established in its grounding `DOM-xxx`/`R-xxx` documents — it cites them, it doesn't re-derive
+them. It is a **design document, not a research document**: its job is synthesis and decision, not
+new domain-knowledge claims.
 
 ## 4. The traceability chain
 
@@ -116,6 +156,9 @@ Domain Document      (DOM-00x — which framework owns this capability)
         ↓
 Research Documents   (R1xx-R5xx — what domain knowledge justifies the design)
         ↓
+Design Synthesis     (ADS-xxx — domain+research synthesized into an architecture, domain model,
+                       requirements, constraints, risks, and decisions — see §3a)
+        ↓
 Feature Specification (FS-xxx — what the capability must do, no implementation detail)
         ↓
 Implementation Package (IMP-xxxA/B/C — how it is built: data model, state machine, API, tests)
@@ -124,6 +167,13 @@ Code                 (spacesim/...)
         ↓
 Tests                (spacesim/tests/...)
 ```
+
+`ADS-xxx` is optional in the chain for small/uncontested features (a one-paragraph-scope FS like
+those already authored does not need a synthesis step first) — it earns its place when a
+capability cluster has real design tension: conflicting candidate requirements, multiple plausible
+architectures, or assumptions that need to be made explicit and recorded before an FS-xxx can
+commit to one shape. Skipping it is a judgment call, not a violation; an FS-xxx that does the
+synthesis work inline in its own §1-2 has just absorbed the ADS-xxx role into itself.
 
 Each document in the chain must carry, in its metadata block, the IDs of its immediate neighbors
 (`Dependencies`, `Referenced By`, `Produces`, `Feature Mapping`). Phase 8 (Traceability Review, see
@@ -138,7 +188,10 @@ Each document in the chain must carry, in its metadata block, the IDs of its imm
 4. Does it describe *what* a capability must do, with no implementation detail? → `features/`.
 5. Does it describe *how* to build a specific Feature Spec (data model, API, tests, migration)? →
    `implementations/`.
-6. Is it a narrow architectural decision elaborating MSTR-002 for one subsystem? → `architecture/`.
+6. Does it synthesize a capability cluster's domain+research inputs into an architecture, domain
+   model, requirements, constraints, risks, and decisions *before* a Feature Specification commits
+   to a shape? → `architecture/` as `ADS-xxx` (see §3a). Produced by the
+   `architecture-design-synthesis` skill.
 7. Is it process guidance for designing a vignette/scenario (not the scenario content itself)? →
    `scenarios/`.
 8. Otherwise: does it already have a home in `build-spec/`, `design/`, `research/01-07`,
