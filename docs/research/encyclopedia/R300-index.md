@@ -2,7 +2,7 @@
 
 [↑ Encyclopedia index](INDEX.md)
 
-Justifies White Cell and scenario design (DOM-003, DOM-009). 13 topics.
+Justifies White Cell and scenario design (DOM-003, DOM-009). 14 topics.
 
 | ID | Title | Scope (one line) | Depends on | Status |
 |---|---|---|---|---|
@@ -19,8 +19,9 @@ Justifies White Cell and scenario design (DOM-003, DOM-009). 13 topics.
 | [R311](R311-course-of-action-analysis.md) | Course of Action Analysis | Comparing distinct options against criteria before commitment. | [R305](R305-mission-analysis.md) | ✅ |
 | [R312](R312-space-strategy.md) | Space Strategy | Strategic-level theory specific to the space domain. | [R301](R301-campaign-design.md), [R303](R303-deterrence-theory.md) | ✅ |
 | [R313](R313-maritime-operator-perspective.md) | Maritime Operator Perspective | Naval sea control/denial, C2, sustainment, and escalation doctrine as analogical grounding for orbital ops and space force employment. | [R301](R301-campaign-design.md), [R303](R303-deterrence-theory.md), [R304](R304-escalation-dynamics.md) | ✅ |
+| [R314](R314-air-operator-perspective.md) | Air Operator Perspective | How air forces think operationally (not aircraft tech); twenty air-ops concepts mapped to orbital-ops lessons. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md) | ✅ |
 
-**Status: complete.** All 13 topics now carry the mandatory §2 Scope section (MSTR-007 §4.2) and
+**Status: complete (14 topics).** All topics now carry the mandatory §2 Scope section (MSTR-007 §4.2) and
 are cited per `docs/research/10-sources-and-methodology.md`'s convention — each topic has at least
 one `### Sources` subsection (live URL + Wayback snapshot + accessed date) and inline citations at
 the doctrinal/legal/historical claim site, with [R303](R303-deterrence-theory.md)'s single
@@ -29,7 +30,11 @@ mis-cited as primary. Grounded in DOM-003 (White Cell Framework — §7/§10's r
 wargaming citations), DOM-009 (Doctrine Development Framework — the translation pipeline these
 topics' real-world doctrine ultimately feeds), and DOM-008 §3 (Red AI design principles, the direct
 consumer of [R303](R303-deterrence-theory.md)/[R308](R308-red-teaming-methodology.md)/[R312](R312-space-strategy.md)'s strategic-posture
-and red-teaming concepts). [R313](R313-maritime-operator-perspective.md) was added 2026-06-28 as the
-tier's deliberate single broad-survey exception (24 named maritime operational concepts each mapped
-to an orbital analog) — see its own §2 Scope for why it departs from the tier's usual single-concept
-shape. Last reviewed across the tier: 2026-06-28.
+and red-teaming concepts). [R313](R313-maritime-operator-perspective.md) (Maritime Operator
+Perspective) and [R314](R314-air-operator-perspective.md) (Air Operator Perspective) were both added
+2026-06-28 as the tier's deliberate broad-survey exceptions — each maps a mature, doctrinally
+documented second domain's operational concepts (naval sea control/denial/sustainment; air tasking/
+dynamic-targeting/IADS) onto orbital-operations lessons, closing the gap MSTR-007 §7's coverage test
+flags: no prior R300 topic gave an implementer a second-domain analogy for netted-threat modeling,
+dynamic re-tasking, or multi-domain synchronization. See each topic's own §2 Scope for why it departs
+from the tier's usual single-concept shape. Last reviewed across the tier: 2026-06-28.
