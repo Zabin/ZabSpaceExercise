@@ -28,7 +28,11 @@ stops at the boundary and does not describe what happens inside it.
 SpaceSim is the **deterministic exercise engine + session layer + operator console**, run as a
 single FastAPI server process that one or more browser clients connect to (GDS-01 §4). Everything
 inside that boundary — the orbital/access/effects engine, the per-cell fog-of-war filtering, the
-in-app scenario builder, the AAR replay — is **in scope** for this document's "system" side.
+in-app scenario builder, the AAR replay, and the **mock Space Surveillance Network (SSN,
+`build-spec/08-ssn.md` §17)** — is **in scope** for this document's "system" side. The SSN's
+request-and-wait flavor reads like an external sensor-tasking service, but it is fully simulated
+inside the same process with no real external system behind it, so it sits inside the boundary,
+not across it (resolved; see "Merge gate" below — this was Open Question 1 in the prior revision).
 Everything else is **external**: the humans operating it, the files they load/save, the optional
 TLE-import network call, and the browsers/machines they connect from.
 
@@ -198,12 +202,13 @@ Three structural properties of these flows, carried from GDS-01 and the load-bea
 
 ## Open Questions
 
-1. **SSN (mock Space Surveillance Network) boundary placement.** `build-spec/08-ssn.md` §17
-   describes a per-cell `SSNNetwork` that operators "request and wait" against, structurally
-   resembling an external sensor-tasking service. It is, however, fully internal/simulated — no
-   real external system backs it. This document places it inside the system boundary (§1) on that
-   basis; flagged in case a future GDS level (e.g. GDS-03 architecture) wants to call out SSN as a
-   distinct internal subsystem with an external-service *flavor* rather than a true external actor.
+1. ~~SSN (mock Space Surveillance Network) boundary placement~~ — **resolved.** Confirmed: the
+   mock SSN is internal to SpaceSim. `build-spec/08-ssn.md` §17 describes a per-cell `SSNNetwork`
+   that operators "request and wait" against, structurally resembling an external sensor-tasking
+   service, but no real external system backs it — it runs inside the same process as the rest of
+   the engine. §1 above states this directly rather than as an inference. A future GDS level
+   (e.g. GDS-03 architecture) may still want to call out SSN as a distinct internal subsystem with
+   an external-service *flavor*, but its boundary placement is no longer open.
 2. **AI-Red's actor status.** AI-Red plays Red's role using a scripted doctrine preset run inside
    the session (`training/05`). This document treats it as internal, not an external actor (§2),
    because it has no existence outside the system process. If a future document treats AI-Red as
