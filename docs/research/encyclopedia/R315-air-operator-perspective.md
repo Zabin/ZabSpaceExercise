@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md)
-> **Referenced By:** —
+> **Referenced By:** [R317](R317-space-operator-perspective.md)
 > **Produces:** the air-domain analogy vocabulary that future space-C2 / dynamic-retasking / Red-IADS-style
 > feature work and vignette authoring can borrow from a domain with seventy years of doctrinal practice
 > **Feature Mapping:** future SSA-tasking-contention features, dynamic re-tasking UI work, Red AI
