@@ -510,13 +510,27 @@ Explicitly excluded from the numbered baseline above.
   - **Source documents:** `build-spec/01-context-and-scope.md` (decision log) — cited as the reason
     for exclusion.
 
+- **CNFR-06 — AI-Red epistemic parity / fairness as a quality attribute**
+  - **Description (candidate):** A requirement that AI-Red's read access be held to the same
+    fog-of-war fairness standard as a human Red operator's `CellView`-filtered access, or that the
+    asymmetry between them be measured/bounded.
+  - **Why excluded:** ADR-0024 explicitly accepts AI-Red's direct ground-truth read (INT-0015) as a
+    permanent, accepted v1 deviation and tracks remediation only as a future-work item
+    (`FUTURE-WORK.md` §1), not a v1 commitment. The skill's fixed 15-category NFR taxonomy also has
+    no Fairness-equivalent category to host a numbered NFR even where one might otherwise be
+    warranted. `requirements/01` FR-9110 already discloses this asymmetry qualitatively at the
+    functional-requirement level; this candidate records the same gap at the NFR/quality-attribute
+    level so it is not visible only on the FR side.
+  - **Source documents:** `architecture/adr/ADR-0024*.md`; `FUTURE-WORK.md` §1 "AI-Red fog-of-war
+    parity"; `requirements/01-functional-requirements.md` FR-9110 (cross-reference).
+
 ---
 
 ## Completion report
 
 - **Total NFR count (numbered baseline):** 23 (`NFR-1100` through `NFR-3300`, leaving numbering
   gaps for future insertion per category, consistent with `requirements/01`'s scheme).
-- **Candidate requirement count:** 5 (`CNFR-01`…`CNFR-05`).
+- **Candidate requirement count:** 6 (`CNFR-01`…`CNFR-06`).
 - **Categories with no derivable NFRs:** 1 of the 15 required categories — **Observability**
   (§9 above) — has no numbered NFR; its gap is recorded as `CNFR-01`. All other 14 categories
   (Performance, Scalability, Reliability, Availability, Maintainability, Extensibility, Security,
@@ -525,7 +539,10 @@ Explicitly excluded from the numbered baseline above.
 - **Open issues (flagged, not resolved in this document):**
   1. **GDS-05 OQ2 cross-reference (Availability):** NFR-1800 restates OR-6's "single exercise per
      process" framing as written, but GDS-05 already flags tension with the shipped multi-session
-     `/api/sessions` discovery endpoint. Not re-resolved here; see GDS-05's own Open Questions.
+     `/api/sessions` discovery endpoint. Not re-resolved here; see GDS-05's own Open Questions
+     (OQ2). Note: this is currently a one-directional cross-reference — NFR-1800 cites GDS-05 OQ2
+     by ID, but GDS-05 OQ2 does not cite this NFR back. Closing that converse direction requires
+     editing GDS-05 itself, which is outside this document's scope.
   2. **Security/accreditation tension (NFR-2200 vs. NFR-2300):** the "no practice that would block a
      later RMF/ITSG-33 review" language and the accepted unauthenticated LAN cell-selection
      boundary are both individually sourced and internally consistent, but sit in tension at a

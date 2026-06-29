@@ -656,7 +656,38 @@ Traceability Matrix — those are separate, not-yet-requested deliverables of th
 - **Source Documents:** GDS-04 §1.10 Role Assignment; build-spec/02 §5.3 FR-P5 (binding statement).
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0004
-- **Related Requirements:** FR-2410, FR-3110
+- **Related Requirements:** FR-2410, FR-3110, FR-3520
+
+#### FR-3520 — Role Assignment scoping: bus-only, payload-only, or both
+
+- **ID:** FR-3520
+- **Title:** Scope a Role Assignment to bus-only, payload-only, or both per Asset
+- **Description:** The system shall allow a Role Assignment to be scoped, per Asset or
+  constellation, to bus operation only, payload operation only, or both, and shall enforce that
+  scope as a system behavior in its own right, independent of the order-panel command filtering
+  that scope produces (FR-3510).
+- **Rationale:** GDS-05 OR-2 and GDS-04 §1.10 both state a Role Assignment "maps a seat to a role
+  (bus, payload, or both)"; FR-3510 describes only the UI-filtering *consequence* of this rule, not
+  the cardinality rule itself, leaving no leaf a tester could check to verify the rule is enforced
+  independent of its UI side effect (GDS-04 §1.10 Role Assignment; build-spec/02 §6 OR-2).
+- **Priority:** Must
+- **Inputs:** A Role Assignment creation/edit request specifying bus-only, payload-only, or both
+  for a given Asset.
+- **Outputs:** A Role Assignment record carrying the specified scope.
+- **Preconditions:** The requester holds the White Cell role (only White Cell may create/modify
+  Role Assignments, GDS-04 §1.10 Constraints).
+- **Postconditions:** A command outside a Role Assignment's scope (e.g., a payload-verb command
+  attempted under a bus-only scope) is rejected at execution time, whether or not it was also
+  filtered from the order panel.
+- **Acceptance Criteria:** Given a Role Assignment scoped to bus-only for Asset X, a payload-verb
+  command submitted directly for Asset X (bypassing the order panel) is rejected.
+- **Verification Method:** Test
+- **Dependencies:** None
+- **Source Documents:** GDS-05 "Operational Rules" OR-2; GDS-04 §1.10 Role Assignment;
+  build-spec/02 §6 OR-2 (binding statement).
+- **Related ADRs:** ADR-0004
+- **Related Interfaces:** INT-0004, INT-0006
+- **Related Requirements:** FR-3510
 
 ---
 
@@ -847,6 +878,32 @@ Traceability Matrix — those are separate, not-yet-requested deliverables of th
 - **Related Interfaces:** (none — absence of an interface)
 - **Related Requirements:** FR-7100, FR-7300
 
+#### FR-4720 — Adjust safe-mode dials and other live parameters mid-exercise
+
+- **ID:** FR-4720
+- **Title:** Adjust safe-mode dials and other live exercise parameters mid-exercise
+- **Description:** The system shall allow White Cell to adjust safe-mode threshold dials and other
+  live, White-Cell-configurable exercise parameters while a session is running, without requiring
+  a session restart.
+- **Rationale:** GDS-05 FR-W7 names this capability directly. "Other live parameters" is an
+  intentionally open-ended set — the specific parameters a White Cell control panel exposes are a
+  design matter for that panel, not a fixed list to be enumerated at the requirements layer — so
+  this leaf states the capability and its open-endedness explicitly rather than leaving the
+  catch-all phrase unaddressed (GDS-05 "White Cell control" FR-W7; build-spec/02 §5.4).
+- **Priority:** Must
+- **Inputs:** A White-Cell parameter-adjustment request against a running session.
+- **Outputs:** The updated parameter value, applied to the live session.
+- **Preconditions:** The requester holds the White Cell role; a running session exists.
+- **Postconditions:** No session restart is required for an adjusted parameter to take effect.
+- **Acceptance Criteria:** Given a running session, White Cell adjusting a safe-mode dial takes
+  effect on the next evaluation of that dial, with no session restart.
+- **Verification Method:** Demonstration
+- **Dependencies:** None
+- **Source Documents:** GDS-05 "White Cell control" FR-W7; build-spec/02 §5.4.
+- **Related ADRs:** (none directly)
+- **Related Interfaces:** INT-0002
+- **Related Requirements:** FR-4710
+
 ---
 
 ## FR-5000 — Scenario / Vignette Authoring
@@ -985,7 +1042,7 @@ Traceability Matrix — those are separate, not-yet-requested deliverables of th
 - **Dependencies:** FR-6110, FR-1510
 - **Source Documents:** GDS-04 §8 Fog-of-war view model; ICD INT-0007; ADR-0004.
 - **Related ADRs:** ADR-0004
-- **Related Interfaces:** INT-0007
+- **Related Interfaces:** INT-0006, INT-0007
 - **Related Requirements:** FR-6110, FR-1510, FR-4610
 
 #### FR-6220 — Documented no-cell ground-truth exception
@@ -1036,7 +1093,7 @@ Traceability Matrix — those are separate, not-yet-requested deliverables of th
 - **Dependencies:** FR-1110
 - **Source Documents:** GDS-01 §8; `CLAUDE.md` "Multiplayer workflow"; ADR-0014.
 - **Related ADRs:** ADR-0014, ADR-0026
-- **Related Interfaces:** INT-0001
+- **Related Interfaces:** INT-0001, INT-0006
 - **Related Requirements:** FR-1110, FR-4310
 
 #### FR-6320 — Per-session mutation locking
@@ -1087,7 +1144,7 @@ Traceability Matrix — those are separate, not-yet-requested deliverables of th
 - **Dependencies:** FR-6310
 - **Source Documents:** GDS-01 §8; ADR-0014.
 - **Related ADRs:** ADR-0014
-- **Related Interfaces:** INT-0001
+- **Related Interfaces:** INT-0001, INT-0006
 - **Related Requirements:** FR-6310
 
 ### FR-6500 — Observer read-only access
@@ -1113,8 +1170,37 @@ Traceability Matrix — those are separate, not-yet-requested deliverables of th
 - **Source Documents:** GDS-01 §2; GDS-02 §2 row 5; ICD INT-0005; build-spec/02 §6 OR-5 (binding
   statement).
 - **Related ADRs:** ADR-0004
-- **Related Interfaces:** INT-0005
+- **Related Interfaces:** INT-0005, INT-0006
 - **Related Requirements:** FR-6210
+
+### FR-6600 — Hot-seat hand-off and screen-blank menu
+
+#### FR-6610 — Screen-blank pending-handoff menu between hot-seat role changes
+
+- **ID:** FR-6610
+- **Title:** Blank sensitive content during a pending hot-seat role hand-off
+- **Description:** The system shall, when a hot-seat role change is pending (the current seat's
+  occupancy has ended and a new seat has not yet been selected), blank the previously displayed
+  cell's sensitive content and present a seat-selection menu, until a seat is selected.
+- **Rationale:** GDS-05 OR-3 requires a "blank screen / hand off" menu between hot-seat role
+  changes so a departing operator's belief state is not left visible to the next person at the
+  keyboard; this leaf closes GDS-05's own Open Question 1 (OQ1), which records that no FR leaf
+  previously covered this behavior (GDS-05 "Operational Rules" OR-3, OQ1; build-spec/02 §6 OR-3).
+- **Priority:** Must
+- **Inputs:** A hot-seat role-change/hand-off trigger (e.g., a seat-relinquish action).
+- **Outputs:** A seat-selection menu, with no prior cell's sensitive content visible.
+- **Preconditions:** An active session; a hot-seat role change is pending.
+- **Postconditions:** No previously displayed cell's sensitive content remains visible once the
+  hand-off menu is shown; the menu persists until a seat is selected.
+- **Acceptance Criteria:** Given a hot-seat hand-off from Red to Blue on the same browser, no
+  Red-cell data remains on screen once the hand-off menu is shown, and none reappears until a seat
+  is explicitly selected.
+- **Verification Method:** Demonstration
+- **Dependencies:** FR-6410
+- **Source Documents:** GDS-05 "Operational Rules" OR-3 (OQ1); build-spec/02 §6 OR-3.
+- **Related ADRs:** ADR-0004
+- **Related Interfaces:** INT-0001, INT-0006
+- **Related Requirements:** FR-6410, FR-6210
 
 ---
 
@@ -1171,7 +1257,37 @@ Traceability Matrix — those are separate, not-yet-requested deliverables of th
 - **Source Documents:** GDS-04 §1.14 Session "Persistent state"; ICD INT-0012; ADR-0022.
 - **Related ADRs:** ADR-0022
 - **Related Interfaces:** INT-0012
-- **Related Requirements:** FR-7110, FR-4410
+- **Related Requirements:** FR-7110, FR-4410, FR-7220
+
+#### FR-7220 — Save-file content/session ownership split
+
+- **ID:** FR-7220
+- **Title:** Distinguish and independently re-import a save file's content portion from its
+  session portion
+- **Description:** The system shall structure a save file such that its Vignette/content portion
+  (force lay-down, templates, and parameters as originally loaded) is distinguishable from, and
+  independently re-importable apart from, its Session/event-log portion (`WorldState` history,
+  `EventLog`, Snapshots, Role Assignments).
+- **Rationale:** ADR-0022 splits save-file ownership between the act of saving (Session Layer) and
+  the resulting on-disk content boundary (Content & Data); this leaf asserts that split as an
+  enforced, testable invariant rather than assumed background, closing ICD §7 issue 4's "ambiguous
+  ownership" flag at the requirements level (ADR-0022; ICD INT-0012, §7 issue 4).
+- **Priority:** Must
+- **Inputs:** A save file produced by FR-7210.
+- **Outputs:** A separately extractable content portion and session portion from the same save
+  file.
+- **Preconditions:** A save file produced per FR-7210.
+- **Postconditions:** The content portion of a save file can be loaded as a fresh vignette's
+  starting state without that save's session/event-log history; the two portions are never merged
+  into an undifferentiated blob.
+- **Acceptance Criteria:** Given a save file, the Vignette/content portion can be extracted and
+  loaded as a new session's starting vignette independent of the original session's event log.
+- **Verification Method:** Test
+- **Dependencies:** FR-7210
+- **Source Documents:** ADR-0022; ICD INT-0012, §7 issue 4.
+- **Related ADRs:** ADR-0022
+- **Related Interfaces:** INT-0011, INT-0012
+- **Related Requirements:** FR-7210
 
 ### FR-7300 — AAR replay, scrub, and branch-compare
 
@@ -1266,12 +1382,22 @@ Traceability Matrix — those are separate, not-yet-requested deliverables of th
   doctrine preset (`russia_ew_first`, `china_integrated`, or `generic`), issued through the same
   path a human Red operator's activities would take.
 - **Rationale:** AI-Red is a documented session-layer feature substituting for an unseated/
-  facilitator-played Red cell (GDS-01 §8; ADR-0021).
+  facilitator-played Red cell (GDS-01 §8; ADR-0021). Priority is Should, not Must, because a
+  vignette remains fully playable with a human-seated or facilitator-played Red cell; AI-Red is a
+  valuable convenience for under-staffed exercises, not a precondition for any vignette's
+  playability, unlike the Must-tier leaves it depends on (FR-3110, FR-3410). AI-Red's direct
+  ground-truth read (INT-0015) is also a named, accepted v1 trade-off against the fog-of-war-
+  filtered `CellView` a human Red operator uses — this epistemic asymmetry is intentionally not
+  remediated in v1 and remains a tracked future-work gap, not an oversight (ADR-0024;
+  `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity").
 - **Priority:** Should
 - **Inputs:** The configured doctrine preset; current `WorldState` (read directly — see Related
   Interfaces note below).
 - **Outputs:** Red-attributed Planned Activities, created exactly as if issued by a human.
-- **Preconditions:** Red's seat is configured to use an AI-Red preset.
+- **Preconditions:** Red's seat is configured to use an AI-Red preset rather than a human operator;
+  this configuration is mutually exclusive with a human operator concurrently occupying the same
+  Role Assignment — AI-Red substitutes for an unseated Red, it does not run as a parallel,
+  simultaneous source alongside a human-seated Red.
 - **Postconditions:** AI-Red-issued Planned Activities are indistinguishable, in the event log,
   from human-Red-issued activities of the same kind.
 - **Acceptance Criteria:** Given an AI-Red-controlled Red seat under the `china_integrated` preset,

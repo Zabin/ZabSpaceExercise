@@ -519,6 +519,12 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
   INT-0008, same as a human Red operator's Planned Activities.
 - **Frequency/timing:** Per Red decision cycle, doctrine-preset-driven.
 - **Preconditions:** Red's seat is configured to use an AI-Red preset rather than a human operator.
+  This precondition is mutually exclusive with a human operator concurrently occupying the same
+  Role Assignment for Red: AI-Red substitutes for an unseated Red, it does not run as a parallel,
+  simultaneous ground-truth-read source alongside a human-seated Red. Switching a seat's
+  configuration between AI-Red and human is a White-Cell-driven reconfiguration between sessions
+  or hot-seat hand-offs, not a concurrent dual-source arrangement (mirrors `requirements/01`
+  FR-9110 Preconditions).
 - **Postconditions:** Red Planned Activities are created exactly as if a human had issued them
   (GDS-03 §2.2 — AI-Red exercises a Role Assignment "exactly like a human would," GDS-04 §1.10).
 - **Error handling:** Not specified.
