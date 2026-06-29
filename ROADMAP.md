@@ -47,7 +47,11 @@ with — not a build order. The **Build Spec wins on any conflict** regardless o
 | AU-02 | Commands audit — order/verb realism, probability mechanics, form UX | `docs/AUDIT-2026-06-COMMANDS.md` | AU-01, DS-13 | ✅ |
 | AU-03 | UI + TT&C audit — panel layout, power model, telemetry, target picker | `docs/AUDIT-2026-06-UI-TTC.md` | AU-02 | ✅ |
 
-## Theme: Build Spec (binding v1 spec — `docs/build-spec/`)
+## Theme: Build Spec (legacy reference, superseded — `docs/build-spec/`)
+
+> **Superseded in its entirety by `docs/architecture/` (the GDS-00…GDS-10 ladder)**, per
+> `CLAUDE.md`'s "Authoritative source & reading order." No longer "binding v1 spec" — modules below
+> are legacy reference, citable for orientation only, not as a tie-breaker.
 
 | ID | Document | Path | Depends on | Status |
 |---|---|---|---|---|
@@ -235,16 +239,20 @@ gates; no level has been authored yet.
 | GDS-02 | System Context | `architecture/02-system-context.md` | build-spec/01 | ✅ Authored, merge gate closed |
 | GDS-03 | Architecture | `architecture/03-architecture.md` | design/01 | ✅ Authored, merge gate closed |
 | GDS-04 | Domain Model | `architecture/04-domain-model.md` | design/04 (entity/relationship portion) | ✅ Authored, merge gate closed |
-| GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | build-spec/02 §5 | ⛔ Planned (scaffold only) |
+| GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | build-spec/02 §5-6 | ✅ Authored, merge gate closed (supersedes build-spec/02 §5-6) |
 | GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | build-spec/04 §9 | ⛔ Planned (scaffold only) |
 | GDS-07 | Data Model | `architecture/07-data-model.md` | design/04 (schema portion) | ⛔ Planned (scaffold only) |
 | GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | design/09, design/05, design/10 | ⛔ Planned (scaffold only) |
 | GDS-09 | API Specification | `architecture/09-api-specification.md` | design/07 | ⛔ Planned (scaffold only) |
 | GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | *(net-new — no counterpart)* | ⛔ Planned (scaffold only) |
 
-**Next:** GDS-00 through GDS-04 are authored with merge gates closed. Author GDS-05
-(Functional Requirements, merging `build-spec/02-requirements-and-operations.md` §5) next, per the
-gate.
+**Next:** GDS-00 through GDS-05 are authored with merge gates closed. As of this revision, the
+entire `docs/architecture/` ladder is declared authoritative over `docs/build-spec/` **in full**,
+not just module-by-module as levels close their gates (see `CLAUDE.md` and `architecture/INDEX.md`
+for the supersession declaration). GDS-06–10 remain scaffold-only and now carry added urgency:
+until each is authored, its topic has no authoritative content at all (the corresponding
+build-spec module is legacy reference, not a binding fallback). Author GDS-06 (Non-functional
+Requirements, merging `build-spec/04-nfr-milestones-and-risks.md` §9) next, per the gate.
 
 ## Theme: Feature Specifications (the *what* — `docs/features/`)
 
