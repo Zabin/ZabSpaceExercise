@@ -4,7 +4,7 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R307](R307-wargaming-theory.md)
-> **Referenced By:** DOM-003, DOM-008
+> **Referenced By:** DOM-003, DOM-008, [R319](R319-red-behavior-validation-methodology.md)
 > **Produces:** the doctrinal justification for "Red must be genuinely adversarial" (DOM-003 §7, DOM-008 §3)
 > **Feature Mapping:** FS-106 (White Cell Dashboard), Red doctrine presets (`redai.py`)
 > **Related Topics:** [R307](R307-wargaming-theory.md) (Wargaming Theory), [R203](R203-game-theory.md) (Game Theory), DOM-003 §7 (the direct consumer),

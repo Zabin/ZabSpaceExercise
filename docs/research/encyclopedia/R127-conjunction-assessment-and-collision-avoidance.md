@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R102](R102-space-domain-awareness.md), [R105](R105-custody-theory.md), [R112](R112-propulsion-and-maneuver-planning.md)
-> **Referenced By:** FS-105
+> **Referenced By:** FS-105, [R131](R131-space-environment-and-space-weather-operations.md)
 > **Produces:** implementation constraints for [`engine/conjunction.py`](../../../spacesim/engine/conjunction.py) and the `prop.collision_avoid` verb in [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R102](R102-space-domain-awareness.md) (SDA — the tracking custody feeds conjunction screening), [R105](R105-custody-theory.md)
