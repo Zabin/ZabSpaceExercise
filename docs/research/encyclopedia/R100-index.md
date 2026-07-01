@@ -38,10 +38,18 @@ should have at least one topic here an implementer extending it would read first
 | [R128](R128-ground-network-contact-scheduling.md) | Ground-Network Contact Scheduling and Conflict Resolution | Real multi-mission ground-network scheduling (DSN/AFSCN-style contention, conflict resolution) grounding `AccessProvider`-window-based contact allocation realism. | [R107](R107-ground-segment-operations.md), [R118](R118-space-surveillance-networks.md) | ✅ Done |
 | [R129](R129-sigint-collection-and-geolocation-accuracy.md) | SIGINT Collection and Geolocation Accuracy | `engine/sigint.py`'s band/intercept-mode database (scan/track/geolocate) and the √dwell × √N-collector geolocation-error model, grounded against real ELINT/SIGINT collection and multilateration/TDOA geolocation practice (POPPY/PARCAE, TDOA accuracy). | [R109](R109-sensor-operations.md), [R104](R104-collection-management.md) | ✅ Done |
 | [R130](R130-downlink-operations-and-data-return.md) | Downlink Operations and Data Return | `engine/orders.py`'s `downlink` action verb (`execute_downlink`'s `bitrate_cap_kbps`/`priority`/`partial_dump`) — the one order-verb type R103/R107/R114 each explicitly disclaimed covering; grounded against real priority-lane downlink scheduling, link-budget-bounded bitrate, and CFDP-style selective dump. | [R103](R103-satellite-command-and-control.md), [R114](R114-command-and-data-handling.md) | ✅ Done |
+| [R131](R131-space-environment-and-space-weather-operations.md) | Space Environment and Space Weather Operations | Storm-driven drag/scintillation/SEU effects and the attack-vs-environment telemetry disambiguation problem. | [R110](R110-communications.md), [R111](R111-power-and-thermal-operations.md) | ✅ Done |
+| [R132](R132-proliferated-constellation-c2-and-mesh-operations.md) | Proliferated-Constellation C2 and Mesh Operations | What changes at real proliferated (tens-hundreds-sat) scale beyond the ≤3-sat model — research-first, no feature yet. | [R108](R108-constellation-operations.md), [R118](R118-space-surveillance-networks.md) | ✅ Done |
+| R133 | Space Logistics: Launch, Reconstitution, and Servicing Economics | Reconstitution timelines, refueling/servicing as Δv-economy extensions — closes GAP-05. | [R112](R112-propulsion-and-maneuver-planning.md) | ⛔ Planned |
+| R134 | PNT Warfare and Navigation-Denial Operations | GNSS interference/spoofing operational patterns behind the `pnt.*` command verbs — closes GAP-09. | [R109](R109-sensor-operations.md), [R110](R110-communications.md) | ⛔ Planned |
+| R135 | Ground Segment Operations as Contested Terrain | Cyber/physical attack surface of stations and networks, extending R107's cooperative-only treatment — closes GAP-12. | [R107](R107-ground-segment-operations.md), [R116](R116-cyber-operations-against-space-systems.md) | ⛔ Planned |
+| R136 | Cislunar and xGEO Operations | Custody/sensing regimes beyond GEO — research-first, closes GAP-04. | [R101](R101-orbital-mechanics-for-operations.md), [R102](R102-space-domain-awareness.md) | ⛔ Planned |
 
-**Status: closed.** All 28 R100 topics have substantive §1 Purpose/§2 Scope/§3 Concepts/§4
-Operational Context/§5 Implementation Guidance/§6 Feature Mapping/§7 Related Topics content, and a
-remediation pass (2026-06-27) resolved the two systemic defects a prior MSTR-007 re-check had found:
+**Status: 32 of 36 topics complete; R133-R136 are newly identified planned gaps (see below).** All
+32 authored topics (R101-R132) have substantive §1 Purpose/§2 Scope/§3 Concepts/§4 Operational
+Context/§5 Implementation Guidance/§6 Feature Mapping/§7 Related Topics content. A remediation pass
+(2026-06-27) resolved the two systemic defects a prior MSTR-007 re-check had found in the original
+20-topic set (R101-R120):
 
 1. **§2 Scope sections.** All 20 originally-authored topics (R101-R120) now carry the mandatory §2
    Scope section (MSTR-007 §4.2) stating what each topic covers and explicitly excludes against its
@@ -94,3 +102,20 @@ explicitly scope themselves *away* from the downlink action's own delivery/sched
 with no topic an implementer extending `execute_downlink` would read first. Closed by newly
 authored **[R130](R130-downlink-operations-and-data-return.md)**, with all seven action verbs now
 covered.
+
+**Strategic-review gap-closure pass (2026-07-01).** The Independent Strategic Review Board report
+([`docs/reviews/strategic-review-2026-07.md`](../../reviews/strategic-review-2026-07.md) Part 3)
+identified 13 research gaps against the full corpus; 7 fell within this tier's scope. Two —
+**GAP-01** (space environment/space-weather operations, no topic previously grounded the
+attack-vs-environment telemetry disambiguation problem) and **GAP-10** (proliferated-constellation
+C2/mesh operations, the flagship correction to the ≤3-sat sizing assumption) — are closed by newly
+authored **[R131](R131-space-environment-and-space-weather-operations.md)** and
+**[R132](R132-proliferated-constellation-c2-and-mesh-operations.md)** above, each following the
+same seven-section shape and citation convention. The remaining five in-tier gaps (space
+logistics/reconstitution, PNT warfare, ground-segment-as-contested-terrain, cislunar/xGEO, plus
+GAP-02's debris-persistence extension to [R117](R117-directed-energy-and-kinetic-effects.md) rather
+than a new topic) are recorded as `⛔ Planned` rows (`R133`-`R136`) per the index-before-content
+rule (MSTR-007 §6) rather than bulk-authored in the same pass — full resolution status, source
+leads, and the affected-architecture/requirements assessment for every gap (including the two
+outside this tier's scope) is tracked in
+[`docs/reviews/research-gap-resolution.md`](../../reviews/research-gap-resolution.md).
