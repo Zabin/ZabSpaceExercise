@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R203](R203-game-theory.md)
-> **Referenced By:** [R304](R304-escalation-dynamics.md), [R312](R312-space-strategy.md)
+> **Referenced By:** [R304](R304-escalation-dynamics.md), [R312](R312-space-strategy.md), [R318](R318-attribution-confidence-and-public-messaging.md)
 > **Produces:** the vocabulary behind why an action's "message," not just its physical effect, matters in escalation dynamics
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R203](R203-game-theory.md) (Game Theory), [R304](R304-escalation-dynamics.md) (Escalation Dynamics — the direct application), [R117](R117-directed-energy-and-kinetic-effects.md)

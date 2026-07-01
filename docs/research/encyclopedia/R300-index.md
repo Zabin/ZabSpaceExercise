@@ -2,7 +2,7 @@
 
 [↑ Encyclopedia index](INDEX.md)
 
-Justifies White Cell and scenario design (DOM-003, DOM-009). 16 topics.
+Justifies White Cell and scenario design (DOM-003, DOM-009). 20 topics.
 
 | ID | Title | Scope (one line) | Depends on | Status |
 |---|---|---|---|---|
@@ -23,11 +23,30 @@ Justifies White Cell and scenario design (DOM-003, DOM-009). 16 topics.
 | [R315](R315-air-operator-perspective.md) | Air Operator Perspective | How air forces think operationally (not aircraft tech); twenty air-ops concepts mapped to orbital-ops lessons. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md) | ✅ |
 | [R316](R316-joint-and-combined-operations.md) | Joint and Combined Operations Perspective | Joint command relationships, JPP, coalition/combined ops, MDO/JADC2, joint fires/targeting, and each domain's space dependencies. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | ✅ |
 | [R317](R317-space-operator-perspective.md) | Space Operator Perspective (Historical Evolution) | How the space operator's own mindset evolved — support era → warfighting domain → SDA → orbital-ops tradecraft → C2/autonomy → joint integration → decision-making → future trends. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md) | ✅ |
+| [R318](R318-attribution-confidence-and-public-messaging.md) | Attribution Confidence and Public Messaging in Space Incidents | The operational craft between detecting an ambiguous incident and choosing a response tier (silence/protest/public statement); grounds the already-computed-but-unconsumed `attribution_signal` side effect. | [R213](R213-signaling-theory.md), [R303](R303-deterrence-theory.md) | ✅ |
+| [R319](R319-red-behavior-validation-methodology.md) | Red Behavior Validation Methodology | A concrete fidelity-checking method for `redai.py`/AI-Red doctrine presets, extending R308's qualitative principle; grounds the future DOM-005 validation framework. | [R308](R308-red-teaming-methodology.md) | ✅ |
+| R320 | Commercial Space Actors and Strategic Ambiguity | Third-party/commercial-actor targeting ambiguity as a strategic-frame extension of R312 — closes GAP-03. | [R312](R312-space-strategy.md) | ⛔ Planned |
 
-**Status: 16 of 17 topics complete; R314 is a 🟡 draft pending citation verification** (that
+**Strategic-review gap-closure pass (2026-07-01).** The Independent Strategic Review Board report
+([`docs/reviews/strategic-review-2026-07.md`](../../reviews/strategic-review-2026-07.md) Part 3)
+identified 13 research gaps against the full corpus; 4 fell within this tier's scope. Two — **GAP-06**
+(attribution confidence and public-messaging craft, no prior topic covered the operational decision
+between R303/R304's theory and a real incident response) and **GAP-08** (Red-behavior validation
+methodology, R308 covered the qualitative principle but not a checkable fidelity method) — are
+closed by newly authored **[R318](R318-attribution-confidence-and-public-messaging.md)** and
+**[R319](R319-red-behavior-validation-methodology.md)** above. The remaining two in-tier gaps
+(commercial space actors/strategic ambiguity, an extension of R312; and distributed-simulation/
+exercise-interoperability standards, judged to sit at the boundary of this tier and systems
+architecture rather than cleanly in it) are recorded as `⛔ Planned` (`R320`) or flagged for
+architecture-tier follow-up rather than bulk-authored in the same pass — full resolution status for
+every gap (including the nine outside this tier's scope) is tracked in
+[`docs/reviews/research-gap-resolution.md`](../../reviews/research-gap-resolution.md).
+
+**Status: 18 of 20 topics complete; R314 is a 🟡 draft pending citation verification and R320 is
+⛔ Planned** (R314's issue: that
 session's WebFetch had no network access — every test URL, including non-doctrine controls,
 returned HTTP 403 — so R314's doctrine citations are unverified placeholders; see its own Sources
-section). All other 16 topics carry the mandatory §2 Scope section (MSTR-007 §4.2) and are cited
+section). All other 18 topics carry the mandatory §2 Scope section (MSTR-007 §4.2) and are cited
 per `docs/research/10-sources-and-methodology.md`'s convention — each topic has at least
 one `### Sources` subsection (live URL + Wayback snapshot + accessed date) and inline citations at
 the doctrinal/legal/historical claim site, with [R303](R303-deterrence-theory.md)'s single

@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R103](R103-satellite-command-and-control.md)
-> **Referenced By:** FS-105
+> **Referenced By:** FS-105, [R131](R131-space-environment-and-space-weather-operations.md)
 > **Produces:** implementation constraints for [`engine/telemetry.py`](../../../spacesim/engine/telemetry.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R103](R103-satellite-command-and-control.md) (Satellite Command and Control), [R111](R111-power-and-thermal-operations.md) (Power and Thermal Systems Operations — the bus SOH model telemetry samples from), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic Warfare — one of the four signatures), [R116](R116-cyber-operations-against-space-systems.md) (Cyber Operations — the cyber signature)

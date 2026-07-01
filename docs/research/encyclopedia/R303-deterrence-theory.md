@@ -4,7 +4,7 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** [R304](R304-escalation-dynamics.md), [R312](R312-space-strategy.md), DOM-009
+> **Referenced By:** [R304](R304-escalation-dynamics.md), [R312](R312-space-strategy.md), [R318](R318-attribution-confidence-and-public-messaging.md), DOM-009
 > **Produces:** the doctrinal vocabulary behind ROE-gated kinetic authorization as a deterrence-preserving design
 > **Feature Mapping:** FS-105 (Spacecraft Operations), vignette ROE design
 > **Related Topics:** [R304](R304-escalation-dynamics.md) (Escalation Dynamics), [R213](R213-signaling-theory.md) (Signaling Theory), [R312](R312-space-strategy.md) (Space Strategy),
