@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
-> **Referenced By:** [R111](R111-power-and-thermal-operations.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R127](R127-conjunction-assessment-and-collision-avoidance.md), FS-101, FS-105
+> **Referenced By:** [R111](R111-power-and-thermal-operations.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R127](R127-conjunction-assessment-and-collision-avoidance.md), [R133](R133-space-logistics-launch-reconstitution-and-servicing-economics.md), FS-101, FS-105
 > **Produces:** implementation constraints for [`engine/maneuver.py`](../../../spacesim/engine/maneuver.py), [`engine/entities.py`](../../../spacesim/engine/entities.py) (`AssetResources`)
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations)
 > **Related Topics:** [R101](R101-orbital-mechanics-for-operations.md) (Orbital Mechanics), [R111](R111-power-and-thermal-operations.md) (Power and Thermal — the sibling decoupled-field

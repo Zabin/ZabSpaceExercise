@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** none (foundational)
-> **Referenced By:** [R102](R102-space-domain-awareness.md), [R103](R103-satellite-command-and-control.md), [R107](R107-ground-segment-operations.md), [R108](R108-constellation-operations.md), [R109](R109-sensor-operations.md), [R110](R110-communications.md), [R112](R112-propulsion-and-maneuver-planning.md), [R120](R120-access-window-and-geometry-planning.md), FS-101, FS-105
+> **Referenced By:** [R102](R102-space-domain-awareness.md), [R103](R103-satellite-command-and-control.md), [R107](R107-ground-segment-operations.md), [R108](R108-constellation-operations.md), [R109](R109-sensor-operations.md), [R110](R110-communications.md), [R112](R112-propulsion-and-maneuver-planning.md), [R120](R120-access-window-and-geometry-planning.md), [R136](R136-cislunar-and-xgeo-operations.md), FS-101, FS-105
 > **Produces:** implementation constraints for [`engine/orbit.py`](../../../spacesim/engine/orbit.py), [`engine/propagator.py`](../../../spacesim/engine/propagator.py), [`engine/access.py`](../../../spacesim/engine/access.py)
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations)
 > **Related Topics:** [`docs/research/04-orbital-mechanics-primer.md`](../04-orbital-mechanics-primer.md) (full derivations),

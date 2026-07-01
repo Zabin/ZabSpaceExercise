@@ -9,7 +9,7 @@ Five tiers; each has its own index enumerating every topic with ID, scope, depen
 
 | Tier | Subject | Index | Status |
 |---|---|---|---|
-| R100 | Space Operations Foundation | [R100-index.md](R100-index.md) | ✅ Done (30/30 topics) |
+| R100 | Space Operations Foundation | [R100-index.md](R100-index.md) | ✅ Done (36/36 topics) |
 | R200 | Decision Sciences | [R200-index.md](R200-index.md) | 🚧 Incomplete |
 | R300 | Military Analysis | [R300-index.md](R300-index.md) | 🚧 Incomplete (15/16 — R314 draft) |
 | R400 | Research Methods | [R400-index.md](R400-index.md) | 🚧 Incomplete |
