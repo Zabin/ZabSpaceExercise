@@ -45,8 +45,18 @@ requires explicit user authorization — this index does not assume that authori
 
 ## Authoring note
 
-Each FS file below is grounded in: (a) its owning Domain Document's `Produces`/`Feature Mapping`
-frontmatter and any explicit "What this framework expects from FS-xxx" section, and (b) the
-research-encyclopedia topics whose own "Feature Mapping" section names that FS as a consumer. No FS
-file in this set introduces implementation detail (data models, API shapes, code) — that is
-Phase 5's job (`docs/implementations/`, not yet started or authorized).
+All FS files in this set follow the **`feature-specification` skill's 20-field template**
+(Feature ID → Title → Purpose → Scope → Requirements Implemented → User Workflows → System
+Behaviour → Subsystem Responsibilities → Interfaces Used → Data Model Changes → State Changes →
+Error Handling → Performance Considerations → Security Considerations → Acceptance Criteria →
+Verification Plan → Dependencies → Risks → Open Questions → Related ADRs → Related Interfaces).
+The `feature-specification` skill governs all new and existing FS-xxx authoring in this repository;
+the prior ad hoc per-section structure used in earlier drafts has been superseded in place — every
+file retains its existing path, Document ID, and MSTR-006 §5 metadata block.
+
+Each FS file is grounded in: (a) its owning Domain Document's `Produces`/`Feature Mapping`
+frontmatter and any explicit "What this framework expects from FS-xxx" section; (b) the
+research-encyclopedia topics whose own "Feature Mapping" section names that FS as a consumer; and
+(c) verified ADR and ICD interface cross-references cited in each file's Related ADRs and Related
+Interfaces fields. No FS file in this set introduces implementation detail (data models, API shapes,
+code) — that is Phase 5's job (`docs/implementations/`, not yet authorized).
