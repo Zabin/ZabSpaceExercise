@@ -4,7 +4,7 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R303](R303-deterrence-theory.md)
-> **Referenced By:** [R312](R312-space-strategy.md)
+> **Referenced By:** [R312](R312-space-strategy.md), [R318](R318-attribution-confidence-and-public-messaging.md)
 > **Produces:** the doctrinal basis for the kinetic consequence-confirm gate and `escalation_weight` fields
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R303](R303-deterrence-theory.md) (Deterrence Theory), [R213](R213-signaling-theory.md) (Signaling Theory), [R117](R117-directed-energy-and-kinetic-effects.md) (Directed Energy and
