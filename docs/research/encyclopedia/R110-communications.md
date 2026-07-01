@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
-> **Referenced By:** [R107](R107-ground-segment-operations.md), [R115](R115-electronic-warfare-in-space-operations.md), [R131](R131-space-environment-and-space-weather-operations.md), FS-105
+> **Referenced By:** [R107](R107-ground-segment-operations.md), [R115](R115-electronic-warfare-in-space-operations.md), [R131](R131-space-environment-and-space-weather-operations.md), [R134](R134-pnt-warfare-and-navigation-denial-operations.md), [R135](R135-ground-segment-operations-as-contested-terrain.md), FS-105
 > **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py) (`CommsState`), [`engine/jam.py`](../../../spacesim/engine/jam.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R107](R107-ground-segment-operations.md) (Ground Segment Operations), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic Warfare), [R103](R103-satellite-command-and-control.md) (Satellite C2)
