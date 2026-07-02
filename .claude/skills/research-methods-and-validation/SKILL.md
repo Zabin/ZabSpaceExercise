@@ -61,10 +61,9 @@ remediation backlog is open unless a genuine coverage gap blocks other work — 
 
 ### A. Remediation pass (the current priority — GAP-13)
 
-1. **Confirm sequencing.** If `research-future-operations` (R500) has not yet finished its own
-   GAP-13 remediation, that tier is the review's stated priority (fewer/more-speculative topics,
-   `docs/FUTURE-WORK.md` §13 R1) — check its tier index before assuming R400 is next, but proceed
-   with R400 if directed to or if R500 is already closed.
+1. **Sequencing confirmed.** `research-future-operations` (R500) closed its GAP-13 remediation
+   2026-07-02 (all 9 topics ✅, see `R500-index.md`) — R400 is now the GAP-13 priority per
+   `docs/FUTURE-WORK.md` §13 R1's sequencing.
 2. **Pick the next unremediated topic** from [`R400-index.md`](../../../docs/research/encyclopedia/R400-index.md)
    (any topic still marked `🚧`), in ID order unless directed otherwise.
 3. **Read the current file fully** before editing — the Purpose/Concepts/Operational
