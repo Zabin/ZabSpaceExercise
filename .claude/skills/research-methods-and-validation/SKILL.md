@@ -1,6 +1,6 @@
 ---
 name: research-methods-and-validation
-description: Produce, refresh, and — as the current primary job — remediate the R400-tier research-methods encyclopedia (experimental design, hypotheses/variables, statistics, measurement theory, uncertainty analysis, modeling practices, Monte Carlo, sensitivity analysis, verification, validation, human-subjects research, survey/instrument design, data analysis and reporting) that grounds assessment/validation work (DOM-002, DOM-005). Use when asked to research statistics/experiment-design/measurement/validation topics, to add/extend `docs/research/encyclopedia/R4xx-*` topics, to close the R400 sourcing/scope defect (GAP-13 — every topic is missing the mandatory §2 Scope section and carries zero citations), or to gather grounding facts before drafting an FS-xxx/IMP-xxx spec or assessment/validation feature that touches measurement, statistical claims, or model V&V. Not for novice statistics tutorials — those belong in `docs/training/`.
+description: Produce and refresh the R400-tier research-methods encyclopedia (experimental design, hypotheses/variables, statistics, measurement theory, uncertainty analysis, modeling practices, Monte Carlo, sensitivity analysis, verification, validation, human-subjects research, survey/instrument design, data analysis and reporting) that grounds assessment/validation work (DOM-002, DOM-005). Use when asked to research statistics/experiment-design/measurement/validation topics, to add/extend `docs/research/encyclopedia/R4xx-*` topics, or to gather grounding facts before drafting an FS-xxx/IMP-xxx spec or assessment/validation feature that touches measurement, statistical claims, or model V&V. Tier R400 closed its GAP-13 sourcing/scope remediation 2026-07-02 — this is now steady-state maintenance, not a remediation backlog. Not for novice statistics tutorials — those belong in `docs/training/`.
 ---
 
 # Research: Research Methods & Validation
@@ -14,9 +14,8 @@ Produces the **R400-tier encyclopedia** (`docs/research/encyclopedia/R401`–`R4
 (purpose, tier shape, authoring cadence) and
 [`docs/research/10-sources-and-methodology.md`](../../../docs/research/10-sources-and-methodology.md)
 (citation format, source-quality tiers, review cadence). Read both before producing anything —
-this skill does not restate them, it operationalizes them for this domain. Unlike the R100/R300
-tiers, R400 is **not yet closed** — see "Current state" below before assuming this is steady-state
-maintenance work.
+this skill does not restate them, it operationalizes them for this domain. Tier R400 is now
+**closed** (all 13 topics ✅, GAP-13 remediation complete 2026-07-02) — see "Current state" below.
 
 ## What this is for (and what it is not)
 
@@ -44,67 +43,46 @@ significant mean"), redirect to `docs/training/`; do not write that into the enc
 
 ## Current state (read this before choosing a workflow)
 
-**Tier R400 is structurally drafted but not done.** All 13 topics exist with substantive §1
-Purpose / Concepts / Operational Context / Implementation Guidance / Feature Mapping / Related
-Topics content and plausible-looking frontmatter (several individual files even self-report
-`Status: ✅ Done`) — but **every single topic is missing the mandatory §2 Scope section** (MSTR-007
-§4.2) and **carries zero citations**: no inline sourcing at any claim site, no `### Sources`
-subsections, no live-URL-plus-Wayback-snapshot pairs, per `docs/research/10-sources-and-
-methodology.md`. This is tracked as **GAP-13** in
-[`docs/FUTURE-WORK.md`](../../../docs/FUTURE-WORK.md) §13 (Recommendation R1), which says to close
-R500 first (fewer, more speculative topics) and R400 second. Treat every individual file's
-self-reported `✅ Done` as **stale and untrustworthy** — trust the tier index's `🚧 (no §2 Scope;
-uncited)` marker and the quality gate below instead. Do not add new R4xx topics while this
-remediation backlog is open unless a genuine coverage gap blocks other work — finish the 13 first.
+**Tier R400 is closed (all 13 topics ✅ per MSTR-007 §6/§7, GAP-13 remediation complete
+2026-07-02).** All 13 topics carry the mandatory §2 Scope section (MSTR-007 §4.2), inline citations
+at every substantive claim site, and a `### Sources` subsection on every `##` section (live URL +
+Wayback snapshot + accessed date, or a cited `spacesim/`/`docs/` file:line for claims about this
+project's own practice). This closed GAP-13 (tracked in
+[`docs/FUTURE-WORK.md`](../../../docs/FUTURE-WORK.md) §13, Recommendation R1) for this tier,
+completing the R500-then-R400 sequencing that recommendation specified. As with R100/R300, "closed"
+means *complete*, not *frozen* — do not bulk-author new topics by default; add a new `R4xx` row
+(`⛔ Planned` first, index-before-content) only on a genuine gap.
 
 ## Workflow
 
-### A. Remediation pass (the current priority — GAP-13)
+### A. New-topic / gap-fill pass (only on a genuine coverage gap)
 
-1. **Sequencing confirmed.** `research-future-operations` (R500) closed its GAP-13 remediation
-   2026-07-02 (all 9 topics ✅, see `R500-index.md`) — R400 is now the GAP-13 priority per
-   `docs/FUTURE-WORK.md` §13 R1's sequencing.
-2. **Pick the next unremediated topic** from [`R400-index.md`](../../../docs/research/encyclopedia/R400-index.md)
-   (any topic still marked `🚧`), in ID order unless directed otherwise.
-3. **Read the current file fully** before editing — the Purpose/Concepts/Operational
-   Context/Implementation Guidance/Feature Mapping/Related Topics content is already substantive;
-   the job is to add what's missing, not rewrite what's there, unless a claim turns out to be
-   uncitable (see Gotchas).
-4. **Insert a `## 2. Scope` section** immediately after Purpose, then renumber every following
-   section so the file matches the mandatory seven-part shape exactly: 1 Purpose, 2 Scope,
-   3 Concepts, 4 Operational Context, 5 Implementation Guidance, 6 Feature Mapping, 7 Related
-   Topics. Scope states what this topic covers and, explicitly, what it defers to a neighboring
-   R4xx topic or to DOM-002/DOM-005 (the boundary test from MSTR-007 §5) — e.g. R404 (Measurement
-   Theory) should explicitly *not* re-derive the statistical tests that are R403's job.
-5. **Research with tiered sources** (`10-sources-and-methodology.md` §2): prefer Tier A (primary —
+1. **Read the trigger context.** What FS-xxx/IMP-xxx spec or assessment/validation feature needs
+   grounding? Identify which `R4xx` topic(s) are implicated.
+2. **Check existing coverage first.** Read [`R400-index.md`](../../../docs/research/encyclopedia/R400-index.md)
+   and the relevant topic file(s) before assuming a gap exists.
+3. **If a gap exists:** add the row to `R400-index.md` (`⛔ Planned` status, ID, title, one-line
+   scope, dependencies) before writing the topic file — index-before-content (MSTR-007 §6).
+4. **Research with tiered sources** (`10-sources-and-methodology.md` §2): prefer Tier A (primary —
    the actual standard, textbook, or peer-reviewed paper; this project's own `test_determinism.py`
    and `AUDIT-2026-06-UI-TTC.md` where the claim is about *this simulator's* practice) and Tier B
    (NIST/ISO measurement standards, DoD/DOE V&V handbooks, government human-subjects guidance) over
    blog-post or Wikipedia-only summaries of statistical methods.
-6. **Add an inline citation at every substantive claim site** — a named statistical test, a named
-   standard (e.g. ISO 5725, NIST measurement-uncertainty guidance), a named methodology (e.g.
-   Sobol sensitivity indices, Latin hypercube sampling), a dated study or handbook edition. No
-   end-of-section-only citation dumps (methodology §1.1).
-7. **Add a `### Sources` subsection to every `##` section**: live URL + Wayback Machine snapshot +
-   accessed date (methodology §1.2). A section with no external claims (e.g. one that only
-   references this project's own code) can point its Sources subsection at the cited file:line
-   instead of an external URL.
-8. **Correct the frontmatter `Status` field** to `🚧` if it currently (falsely) reads `✅ Done`;
-   flip it to `✅ Done` only once this topic individually passes the quality gate below.
-9. **Update the row in `R400-index.md`** from `🚧 (no §2 Scope; uncited)` to `✅` once done, and
-   cross-check `Dependencies`/`Referenced By` are still bidirectionally accurate after the edit.
-10. **Once all 13 topics are `✅`**, rewrite `R400-index.md`'s tier-level status paragraph from
-    "incomplete, not done" to the closed-tier framing R100/R300 use, and update this skill's
-    "Current state" section accordingly (it will then read like a steady-state-maintenance skill).
-11. **Verify, then commit** as `docs(research): R4xx — <what changed>`, consistent with this
-    branch's existing commit style.
+5. **Write the topic file** following the mandatory seven-section shape (MSTR-007 §4: Purpose,
+   Scope, Concepts, Operational Context, Implementation Guidance, Feature Mapping, Related Topics).
+   Scope states what the topic covers and, explicitly, what it defers to a neighboring R4xx topic
+   or to DOM-002/DOM-005 (the boundary test from MSTR-007 §5) — e.g. R404 (Measurement Theory)
+   explicitly does not re-derive the statistical tests that are R403's job. Inline-cite every
+   substantive claim (a named statistical test, a named standard, a named methodology, a dated
+   study or handbook edition — no end-of-section-only citation dumps), and add a `### Sources`
+   subsection to every `##` section (live + Wayback + accessed date, or a cited file:line for
+   claims about this project's own practice).
+6. **Flip the index status** to `✅` once the topic satisfies the quality gate below, keeping
+   `Dependencies`/`Referenced By` bidirectionally accurate.
+7. **Verify, then commit** as `docs(research): R4xx — <what changed>`, consistent with this
+   branch's existing commit style.
 
-### B. Steady-state maintenance (once the tier is closed)
-
-The same three activities the closed R100/R300 tiers use — do not bulk-author new topics by
-default; add a new `R4xx` row (`⛔ Planned` first, index-before-content) only on a genuine gap
-(a new DOM-002/DOM-005 mechanism, or a new validation technique the simulator adopts with no
-grounding topic):
+### B. Steady-state maintenance
 
 1. **Pre-spec grounding** — before an FS-201/FS-301/validation-study spec is drafted, verify the
    relevant `R4xx` topic(s) already cover what's needed; fill the gap first if not.
@@ -135,16 +113,13 @@ grounding topic):
 
 ## Gotchas
 
-- **Don't trust a file's own `Status: ✅ Done` frontmatter line right now** — it predates the
-  sourcing/scope audit and is currently false for all 13 topics. Trust `R400-index.md` and the
-  quality gate above.
-- **Don't fabricate a citation to make the Sources requirement pass.** If a claim in the existing
-  text turns out to be uncitable to a real source, soften or cut the claim rather than inventing a
-  plausible-looking reference — inventing citations is exactly how this tier got into its current
-  state (drafted in one pass with no sourcing discipline).
-- `docs/FUTURE-WORK.md` §13 R1 sequences GAP-13 as **R500 first, R400 second** — if both this skill
-  and `research-future-operations` are being progressed together, don't race ahead of that order
-  without a reason to deviate.
+- **Tier R400 is closed** (all 13 topics ✅, GAP-13 remediation complete 2026-07-02) — a file's
+  `Status: ✅ Done` frontmatter is now trustworthy again; treat any topic reverting to `🚧` as a
+  real regression to fix, not a stale marker to ignore.
+- **Don't fabricate a citation to make the Sources requirement pass.** If a claim in a new topic
+  turns out to be uncitable to a real source, soften or cut the claim rather than inventing a
+  plausible-looking reference — inventing citations is exactly how this tier got into its
+  pre-remediation state (drafted in one pass with no sourcing discipline).
 - This simulator's own determinism (`SeededRng`, the Phase-1 property test) is an unusually strong
   Monte-Carlo/verification precedent most real-world systems don't have — R407/R409 should lean on
   it as a Tier A "primary source" in its own right, not just cite external Monte Carlo literature.
