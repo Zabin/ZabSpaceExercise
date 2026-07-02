@@ -8,7 +8,11 @@ than a settled decision; all six have since been resolved by explicit project-ow
 "Scope and method" below. Two further ADRs (ADR-0030–0031) were added in response to
 [`reviews/strategic-review-2026-07.md`](../../reviews/strategic-review-2026-07.md); see
 [`reviews/architecture-update.md`](../../reviews/architecture-update.md) for that review's full
-disposition.
+disposition. Two more (ADR-0032–0033) were added 2026-07 to resolve conflicts a `requirements-
+engineering` pass found between DOM-002/004 (Assessment/Research Frameworks) and ADR-0017/ADR-0029
+— see [`reviews/requirements-domain-backfill-report.md`](../../reviews/requirements-domain-backfill-report.md).
+**ADR-0033 is this corpus's first `Superseded` entry** (of `ADR-0029`) — see "Scope and method"
+below for why that milestone matters.
 
 [↑ Architecture index](../INDEX.md) · [Docs index](../../INDEX.md)
 
@@ -56,9 +60,11 @@ ADR's own "Consequences" section.
 | [ADR-0026](ADR-0026-rlock-lan-scaling-ceiling.md) | The RLock design's stated ceiling is the existing ~16-participant LAN concurrency model | Accepted |
 | [ADR-0027](ADR-0027-scenario-authoring-boundary.md) | The in-app vignette builder is a distinct boundary-crossing interaction | Accepted |
 | [ADR-0028](ADR-0028-pyqt-build-spec-staleness.md) | `build-spec/03` §7.1/§7.2 rewritten to describe the shipped FastAPI + browser presentation | Accepted |
-| [ADR-0029](ADR-0029-assessment-scoring-workflow-ownership.md) | Raw AAR/event-log access is sufficient for the assessment-designer stakeholder | Accepted |
+| [ADR-0029](ADR-0029-assessment-scoring-workflow-ownership.md) | Raw AAR/event-log access is sufficient for the assessment-designer stakeholder | **Superseded by ADR-0033** |
 | [ADR-0030](ADR-0030-ai-determinism-doctrine.md) | AI-determinism doctrine: non-deterministic components stay outside `engine/` | Accepted |
 | [ADR-0031](ADR-0031-governance-record-consistency.md) | Governance-record consistency: GDS-00 §7 correction; DOM-002/DOM-005 status gap acknowledged | Accepted |
+| [ADR-0032](ADR-0032-descriptive-rubric-not-automated-scoring.md) | Descriptive rubric-tier reporting carved out of ADR-0017's "no automated... assessment mechanism" (amends ADR-0017) | Accepted |
+| [ADR-0033](ADR-0033-dedicated-research-export-interface.md) | A dedicated multi-run/cohort research-export interface is authorized (supersedes ADR-0029) | Accepted |
 
 ADR-0001 through ADR-0023 record decisions already settled and reflected in the shipped system at
 the time this ADR set was first authored. ADR-0024 through ADR-0029 originally recorded questions
@@ -80,8 +86,20 @@ for that review's full disposition of all 24 recommendations). ADR-0030 states a
 (non-deterministic components stay outside `engine/`) that was already true by construction of
 ADR-0002/0003/0021 combined, made explicit to close a named assumption gap. ADR-0031 corrects one
 stale governance-record statement (GDS-00 §7) and explicitly declines to paper over a second,
-real gap (DOM-002/DOM-005 vs. FS-201/FS-301 status) rather than retrofitting it. All 31 ADRs are
-`Accepted`.
+real gap (DOM-002/DOM-005 vs. FS-201/FS-301 status) rather than retrofitting it.
+
+**ADR-0032 and ADR-0033** are a fourth category: the first two decisions in this corpus that amend
+or supersede a prior ADR's own Decision text, rather than adding a new, independent decision.
+Both arose from a `requirements-engineering` pass finding that `DOM-002`/`FS-201` and
+`DOM-004`/`FS-301` — Feature Specifications this corpus's own Feature Catalog and Feature Review
+had already flagged as gapped (`docs/feature-planning/05-feature-review.md` Finding F-01) —
+directly conflicted with `ADR-0017` and `ADR-0029` respectively. The project owner resolved both,
+asked directly per-conflict: `ADR-0032` **narrows** `ADR-0017` (a carve-out, not a reversal —
+`ADR-0017` remains `Accepted` and its core "no composite score, no automated win/loss" prohibition
+is unchanged); `ADR-0033` **supersedes** `ADR-0029` outright (the project owner chose to authorize
+the dedicated research-export interface `ADR-0029` had previously rejected, rather than work around
+it). `ADR-0033` is this corpus's first `Superseded` entry. Of 33 ADRs, 32 are `Accepted` and 1 is
+`Superseded`.
 
 ## Related
 
@@ -94,4 +112,6 @@ pre-existing Decision D1–D10 log several ADRs above restate or supersede),
 [`reviews/architecture-review.md`](../../reviews/architecture-review.md) (source of every
 unresolved-decision ADR's corroborating citations),
 [`reviews/strategic-review-2026-07.md`](../../reviews/strategic-review-2026-07.md) and
-[`reviews/architecture-update.md`](../../reviews/architecture-update.md) (source of ADR-0030–0031).
+[`reviews/architecture-update.md`](../../reviews/architecture-update.md) (source of ADR-0030–0031);
+[`reviews/requirements-domain-backfill-report.md`](../../reviews/requirements-domain-backfill-report.md)
+(source of ADR-0032–0033).

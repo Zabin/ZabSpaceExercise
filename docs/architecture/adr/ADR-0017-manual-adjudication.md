@@ -4,7 +4,10 @@
 
 - **Decision ID:** ADR-0017
 - **Title:** v1 has no automated scoring; White Cell adjudicates and narrates outcomes manually
-- **Status:** Accepted
+- **Status:** Accepted *(amended 2026-07 by [ADR-0032](ADR-0032-descriptive-rubric-not-automated-scoring.md)
+  — this ADR's Decision/Rationale/Consequences below are unchanged; ADR-0032 narrows the scope of
+  "assessment mechanism" below to carve out non-adjudicative, descriptive, non-aggregating
+  rubric-tier reporting. Read ADR-0032 alongside this ADR, not as a replacement for it.)*
 
 ## Context
 

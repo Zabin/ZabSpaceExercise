@@ -8,7 +8,8 @@
 > System Context), [`architecture/03-architecture.md`](../architecture/03-architecture.md) (GDS-03,
 > System Architecture), [`architecture/04-domain-model.md`](../architecture/04-domain-model.md)
 > (GDS-04, Domain Model), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001
-> through ADR-0031, all `Accepted`),
+> through ADR-0033, all `Accepted` except `ADR-0029`, `Superseded` by `ADR-0033` — neither new ADR
+> touches an ICD interface, so no ICD content changes as a result),
 > [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) (reconciled in two
 > passes — see "ICD change log" below), [`reviews/architecture-update.md`](../reviews/architecture-update.md).
 > **Inputs explicitly NOT treated as authoritative here** (see "ICD Issues Requiring Resolution"
