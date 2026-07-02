@@ -1,6 +1,8 @@
 # Functional Requirements Baseline
 
-> **Status:** Draft — first issue.
+> **Status:** Draft — amended (strategic-review reconciliation, 2026-07; no numbered FR added or
+> modified — see "Strategic review reconciliation" section near the end of this document and
+> [`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md)).
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -8,31 +10,39 @@
 > System Context), [`architecture/03-architecture.md`](../architecture/03-architecture.md) (GDS-03,
 > System Architecture), [`architecture/04-domain-model.md`](../architecture/04-domain-model.md)
 > (GDS-04, Domain Model), [`design/05-interface-control-document.md`](../design/05-interface-control-document.md)
-> (ICD), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001 through ADR-0029, all
-> `Accepted`).
+> (ICD), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001 through ADR-0031, all
+> `Accepted`), [`architecture/strategic-assumptions-register.md`](../architecture/strategic-assumptions-register.md)
+> (added 2026-07).
 > **Priority scale used throughout:** MoSCoW (Must / Should / Could / Won't).
 
 ## A note on a pre-existing requirement tag scheme — read before using this document
 
-`docs/build-spec/02-requirements-and-operations.md` §5–6 already contains a binding, shipped
-requirement-tag scheme: **FR-E1–E8** (engine), **FR-B1–B5** (bus/payload), **FR-P1–P6** (planning/
-tasking), **FR-W1–W7** (White Cell), **FR-S1–S3** (scenario builder), **FR-L1–L2** (logging), and
-**OR-1–OR8** (hot-seat operations). Per `CLAUDE.md`, the build spec "is the binding v1 spec — on any
-conflict the build spec wins." This document is **not** a second, competing requirements baseline:
-it is a hierarchical elaboration of the same underlying capabilities, re-derived independently from
-the GDS-01–04/ICD/ADR baseline named above (not from build-spec/02 itself, which is intentionally
-excluded from this pass's authoritative-input list), and **cross-referenced** to the corresponding
-build-spec tag(s) in each requirement's **Source Documents** field where a correspondence exists.
-Where this document's `FR-1xxx`-series requirement and a build-spec tag describe the same behavior,
-the build-spec tag remains the binding statement; this document adds the traceability scaffolding
-(Rationale, Acceptance Criteria, Dependencies, Related ADRs/Interfaces/Requirements) that the
-build-spec's terse tag list does not itself carry. Any apparent conflict between an `FR-1xxx`
-requirement below and its corresponding build-spec tag is **not** a finding for this document to
-resolve — see "Open issues" in the completion report for how this is flagged forward.
+`docs/build-spec/02-requirements-and-operations.md` §5–6 contains a legacy, pre-GDS requirement-tag
+scheme: **FR-E1–E8** (engine), **FR-B1–B5** (bus/payload), **FR-P1–P6** (planning/tasking),
+**FR-W1–W7** (White Cell), **FR-S1–S3** (scenario builder), **FR-L1–L2** (logging), and **OR-1–OR8**
+(hot-seat operations). **Corrected 2026-07 (was previously stated as "the build spec wins" —
+see `reviews/requirements-update-report.md`, which fixes this document to match the correction
+[`ADR-0031`](../architecture/adr/ADR-0031-governance-record-consistency.md) already made to the
+identically-stale language in `architecture/00-vision.md` §7):** per `CLAUDE.md`'s "Authoritative
+source & reading order" and `architecture/INDEX.md`'s blanket-supersession declaration,
+`docs/architecture/` (the GDS ladder) is authoritative over `docs/build-spec/` in its entirety,
+including for GDS-05 specifically (`architecture/05-functional-requirements.md`, `✅ Authored,
+merge gate closed`, per `ROADMAP.md`) — build-spec/02 §5–6 is **legacy reference only, not
+binding**. This document is **not** a second, competing requirements baseline: it is a hierarchical
+elaboration of the same underlying capabilities, re-derived independently from the GDS-01–04/ICD/ADR
+baseline named above (not from build-spec/02 itself, which is intentionally excluded from this
+pass's authoritative-input list), and **cross-referenced** to the corresponding build-spec tag(s) in
+each requirement's **Source Documents** field where a correspondence exists, purely for historical
+traceability — the build-spec tag carries no binding weight where it conflicts with this document,
+GDS-05, or any other authored GDS level.
 
-This document does not include Non-Functional Requirements, a Requirements Review, or a
-Traceability Matrix — those are separate, not-yet-requested deliverables of the
-`requirements-engineering` skill's full workflow.
+This document is accompanied by a Non-Functional Requirements baseline
+([`02-non-functional-requirements.md`](02-non-functional-requirements.md)) and a Requirements
+Traceability Matrix ([`03-requirements-traceability-matrix.md`](03-requirements-traceability-matrix.md));
+a separate standalone Requirements Review document was not produced for this baseline (see
+[`../reviews/requirements-review.md`](../reviews/requirements-review.md) and
+[`../reviews/requirements-baseline-review.md`](../reviews/requirements-baseline-review.md) for the
+review passes actually run against it).
 
 ---
 
@@ -1406,7 +1416,9 @@ Traceability Matrix — those are separate, not-yet-requested deliverables of th
 - **Verification Method:** Test
 - **Dependencies:** FR-3110, FR-3410
 - **Source Documents:** GDS-01 §8; GDS-03 §2.2 "Responsibilities"; ICD INT-0015; ADR-0021.
-- **Related ADRs:** ADR-0021, ADR-0024
+- **Related ADRs:** ADR-0021, ADR-0024, ADR-0030 *(added 2026-07: ADR-0030 generalizes the
+  determinism-placement rule ADR-0021 already applies to AI-Red specifically — see
+  `reviews/requirements-update-report.md`)*
 - **Related Interfaces:** INT-0008, INT-0015
 - **Related Requirements:** FR-3110, FR-3410
 
@@ -1463,10 +1475,106 @@ traceability matrix's baseline rows.
   unstated by any approved document — this may indicate a missing interface, not merely a missing
   requirement detail. **Source:** ICD §7 issue 10.
 
+**CR-12–CR-18 added 2026-07**, following `reviews/strategic-review-2026-07.md`'s disposition in
+`reviews/architecture-update.md`: each corresponds to a candidate component/concept that pass added
+to GDS-02/03/04 explicitly marked "not built, not scheduled, not committed" — the same evidentiary
+status as CR-01–CR-11 above, just newly named rather than newly built. See
+`reviews/requirements-update-report.md` for the full derivation.
+
+- **CR-12 — Proliferated-Constellation Aggregation Layer.** No layer/mesh-level tasking, health
+  rollup, or aggregated-custody construct exists for constellations larger than the ≤3-satellite cap
+  (ADR-0019); a proliferated architecture (tens to hundreds of objects) cannot be represented without
+  per-asset drill-down times N. A requirement committing the system to represent proliferated
+  constellations cannot be written today because no approved document commits to building this
+  layer — it is named only as a not-built, not-scheduled candidate component. **Source:** GDS-03 §5
+  "Proliferated-Constellation Aggregation Layer"; `strategic-review-2026-07.md` §6.3 R13, FC-06,
+  GAP-10; `FUTURE-WORK.md` §13.
+- **CR-13 — Coalition / Multi-Cell Generalization.** The Session/CellController model grants Role
+  Assignments against exactly Blue and Red (plus White/Observer); no releasability tiers, per-nation
+  ROE, or coalition SSN pooling exist for multiple Blue-side cells. A requirement to generalize
+  fog-of-war to N cells with asymmetric information-sharing policies cannot be written today because
+  no approved document commits to it. **Source:** GDS-03 §5 "Coalition / Multi-Cell
+  Generalization"; GDS-04 §3 "Coalition Cell / Multi-Blue Structure"; GDS-02 Open Question 5
+  (coalition-partner actor); `strategic-review-2026-07.md` §6.3 R14, FC-09; `FUTURE-WORK.md` §13.
+- **CR-14 — Commercial / Gray-Actor Class and purchasable SDA/comms services.** Asset ownership is
+  binary (`blue`/`red`/`neutral`, GDS-04 §1.2); no actor class exists for a commercial operator whose
+  custody data or SATCOM/imagery services either cell could lease, or whose assets present a
+  targeting/attribution dilemma distinct from a state actor's. A requirement to add a commercial SDA
+  feed to the mock SSN or a commercial actor class cannot be written today because no approved
+  document commits to either. **Source:** GDS-02 candidate future external systems table
+  ("Commercial SDA/services provider"); GDS-03 §5 "Commercial / Gray-Actor Class"; GDS-04 §3
+  "Commercial / Gray Actor"; [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md)
+  A3; `strategic-review-2026-07.md` §1.7, §6.2 R11, FC-10, GAP-03; `FUTURE-WORK.md` §7, §13.
+- **CR-15 — Campaign / Session-Persistence Container.** Session is the largest unit of persistent
+  state and ends at `ENDED(log written)` (GDS-04 §1.14); no entity represents state that survives
+  across Sessions (custody decay over weeks, Δv burn over months, co-orbital loitering). A
+  requirement for cross-session persistence or time-compression cannot be written today because no
+  approved document commits to it. **Source:** GDS-03 §5 "Campaign / Session-Persistence Container";
+  GDS-04 §3 "Campaign / Session-Persistence Container"; `strategic-review-2026-07.md` W7, §6.3 R15,
+  FC-13; `FUTURE-WORK.md` §13.
+- **CR-16 — Ground-Segment-as-Terrain Cyber Model.** Cyber effects resolve per-asset today
+  (ADR-0012's exception); ground stations, networks, and the C2 chain are modeled only as access
+  endpoints (GDS-04 §1.4), not as attackable/defendable objects whose compromise could falsify
+  telemetry or deny uplink independent of any single asset's own state. A requirement to model the
+  ground segment as contested terrain cannot be written today because no approved document commits
+  to it. **Source:** GDS-03 §5 "Ground-Segment-as-Terrain Cyber Model"; `strategic-review-2026-07.md`
+  §6.3 R17, FC-11, GAP-12; `FUTURE-WORK.md` §13.
+- **CR-17 — Persistent Debris / STM Environment Layer.** The debris-cone estimate
+  (`engine/engage.py`) is advisory only and `prop.collision_avoid` is unwired (`FUTURE-WORK.md` §2);
+  no persistent environment object represents debris continuing to exist and gate future Access
+  Windows after the Effect that created it resolves. A requirement for persistent, world-changing
+  debris consequence cannot be written today because no approved document commits to it. **Source:**
+  GDS-03 §5 "Persistent Debris / STM Environment Layer"; GDS-04 §3 "Persistent Debris / Environment
+  Object"; `strategic-review-2026-07.md` §6.3 R16, FC-08, GAP-02; `FUTURE-WORK.md` §2, §13.
+- **CR-18 — Facilitator / cross-session adjudication-consistency support.** GDS-01 §12's "Negative
+  training" risk row (added by the strategic-review reconciliation) names "facilitator/adjudication
+  drift across sessions with no consistency-support mechanism" as one of four unmitigated
+  negative-training candidates and states plainly "no mitigation implemented in v1." A requirement
+  for a consistency-support mechanism (checklist, rubric, cross-facilitator calibration aid) around
+  manual adjudication (ADR-0017) cannot be written today because no approved document commits to
+  building one — full treatment is explicitly deferred to DOM-005 (Validation Framework) once
+  authored, per [`ADR-0031`](../architecture/adr/ADR-0031-governance-record-consistency.md). The
+  risk row's other three named candidates are **not** duplicated here because each already has
+  baseline coverage: AI-Red's ground-truth-read exploitability is CR-01/CNFR-06; Δv-as-terminal-life
+  is FR-1310's own intentional, documented v1 scope (not a gap); the fixed five-D effect ontology is
+  FR-1410's own intentional, documented v1 scope, tracked as assumption A2 in the
+  [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md). **Source:**
+  GDS-01 §12 "Negative training" risk row; `strategic-review-2026-07.md` §4.5, §6.1 R6; ADR-0031.
+
 ---
+
+## Strategic review reconciliation (strategic-review-2026-07.md)
+
+In response to [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) and
+its disposition in [`reviews/architecture-update.md`](../reviews/architecture-update.md), this
+document was reviewed against the changed architecture-tier inputs (new ADR-0030/ADR-0031, the
+Strategic Assumptions Register, and the amended GDS-01/02/03/04/ICD sections). Full analysis in
+[`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md). Summary of what
+changed here:
+
+- **No numbered `FR-1xxx` baseline requirement was added, removed, or had its content modified.**
+  Every architecture-tier change from the strategic review lands as a not-built, not-scheduled
+  candidate component/concept (GDS-03 §5, GDS-04 §3) or a named-but-unmitigated risk (GDS-01 §12) —
+  neither rises to a committed, testable system behavior, so none crosses this document's own bar
+  for a numbered leaf (a candidate cannot be promoted to baseline within the same pass that names it).
+- Added **CR-12 through CR-18**, seven new Candidate Requirements mirroring the six new GDS-03 §5 /
+  GDS-04 §3 candidate components/concepts and the new GDS-01 §12 negative-training risk row, so the
+  requirements-tier documentation does not silently omit what the architecture tier now names.
+- Added `ADR-0030` to `FR-9110`'s Related ADRs (AI-Red is exactly the component ADR-0030's
+  determinism doctrine generalizes from).
+- Corrected the stale "build spec wins" language in the pre-existing-tag-scheme note above (it
+  independently duplicated the same stale claim [`ADR-0031`](../architecture/adr/ADR-0031-governance-record-consistency.md)
+  already fixed in `architecture/00-vision.md` §7) and the stale claim that no NFR baseline/matrix
+  exists.
+- Updated the Authoritative-inputs header's ADR range (`ADR-0029` → `ADR-0031`) and added the
+  Strategic Assumptions Register as a cited input.
 
 ## Next
 
-This document does not yet have a companion Non-Functional Requirements baseline, Requirements
-Review, or Traceability Matrix — those are separate deliverables of the `requirements-engineering`
-skill's full workflow, not produced in this pass.
+This document's companion Non-Functional Requirements baseline
+([`02-non-functional-requirements.md`](02-non-functional-requirements.md)) and Requirements
+Traceability Matrix ([`03-requirements-traceability-matrix.md`](03-requirements-traceability-matrix.md))
+already exist alongside it — see "Strategic review reconciliation" above for the most recent
+amendment to all three. GDS-10 (Requirements Traceability Matrix) remains the eventual
+architecture-tier authoring target this document's matrix does not substitute for
+(`architecture/INDEX.md` §1).
