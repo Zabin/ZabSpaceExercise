@@ -296,6 +296,10 @@ Router: [`features/feature-index.md`](docs/features/feature-index.md).
 | FS-109 | Multiplayer / LAN Session Transport | `features/FS-109-multiplayer-session-transport.md` | DOM-003 §6 | ✅ |
 | FS-110 | Save & Resume | `features/FS-110-save-and-resume.md` | DOM-003 §6 | ✅ |
 | FS-111 | AI-Red Doctrine Automation | `features/FS-111-ai-red-doctrine-automation.md` | DOM-009, DOM-008 | ✅ |
+| FS-112 | Classification Banner | `features/FS-112-classification-banner.md` | DOM-003 | ✅ (build unverified) |
+| FS-113 | Observer Read-Only Access | `features/FS-113-observer-read-only-access.md` | (no owning DOM) | ✅ (build unverified) |
+| FS-114 | Hot-Seat Hand-Off Screen-Blank Menu | `features/FS-114-hot-seat-handoff.md` | (no owning DOM) | ✅ (build unverified) |
+| FS-115 | Session Setup: Vignette Selection & Seat Assignment | `features/FS-115-session-setup.md` | DOM-003 | ✅ (build unverified) |
 | FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | DOM-002 | ✅ |
 | FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | ⛔ Planned (authorized) |
 | FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | DOM-004, DOM-005 | ✅ |
@@ -315,10 +319,20 @@ section flags this as an open follow-on task, not resolved by the split itself. 
 (FR-4110) and seat-to-role assignment (FR-4210) remain uncovered by any Feature Specification —
 confirmed, not newly introduced, by this split (see FS-106 v2.0's own Scope section).
 
+**F-02/F-10 closure (2026-07):** FS-112 (Classification Banner), FS-113 (Observer Read-Only
+Access), FS-114 (Hot-Seat Hand-Off Screen-Blank Menu), and FS-115 (Session Setup: Vignette
+Selection & Seat Assignment) newly authored — four Must-priority baselined FRs (FR-4510, FR-6510,
+FR-6610, FR-4110/FR-4210) that had zero presence in any prior `FS-xxx` document. Unlike the FS-106
+split, these four had no prior narrative description anywhere in the corpus to verify against —
+each document explicitly flags its own **build status as unverified** and is ready to hand to an
+Implementation Package if confirmed unbuilt, or needs only an RTM-citation closure if confirmed
+already shipped.
+
 **Next:** Phase 5 (Implementation Packages, `docs/implementations/`) is complete (below), but see
-the FS-106-split note above for its now-stale scope alignment. Phase 6-8 (Consistency/Dependency/
-Traceability review, MSTR-006 §7) is also complete (see the dedicated theme section below), predating
-this split.
+the FS-106-split note above for its now-stale scope alignment, and note FS-112/113/114/115 have no
+Implementation Package at all yet (pending the build-status verification above). Phase 6-8
+(Consistency/Dependency/Traceability review, MSTR-006 §7) is also complete (see the dedicated
+theme section below), predating both this split and these four new specs.
 
 ## Theme: Feature Planning — `feature-decomposition` skill output (`docs/feature-planning/`)
 
@@ -350,15 +364,14 @@ Requirements, Candidate NFRs, and the strategic review's Future Concepts/Gaps ar
 worked out in full in `05-feature-review.md`'s closing section.
 
 **Update (2026-07):** Finding F-03 (split `FS-106`) is done — see FS-106/FS-109/FS-110/FS-111 in the
-Feature Specifications theme above.
+Feature Specifications theme above. **Findings F-02 and F-10 are also done** — FS-112/FS-113/
+FS-114/FS-115 newly authored, each with build status explicitly flagged unverified.
 
-**Next:** author the three still-missing Feature Specifications for Classification Banner, Observer
-Read-Only Access, and Hot-Seat Hand-Off (Finding F-02) — doable against the already-approved
-baseline; reconcile `IMP-106A`/`IP-1060` against the FS-106 split (see that theme's note); author a
-Feature Specification for vignette selection/seat assignment (confirmed uncovered by the split, not
-part of F-02's original three); separately, run `requirements-engineering` to close the
-DOM-002/004/005 gap (Finding F-01) and to baseline as many Candidate Requirements as the project
-owner authorizes (Finding F-04), then re-run this skill's Step 0 incrementally against the delta.
+**Next:** reconcile `IMP-106A`/`IP-1060` against the FS-106 split, and verify build status for
+FS-112/113/114/115 against the actual `spacesim/` source tree (in progress); separately, run
+`requirements-engineering` to close the DOM-002/004/005 gap (Finding F-01) and to baseline as many
+Candidate Requirements as the project owner authorizes (Finding F-04), then re-run this skill's
+Step 0 incrementally against the delta.
 
 ## Theme: Implementation Packages (the *how* — `docs/implementation/packages/`, canonical; `docs/implementations/`, superseded)
 
