@@ -4,6 +4,16 @@
 [MSTR-005 Documentation Map](../master/MSTR-005-documentation-map.md) §4 (traceability chain) ·
 [MSTR-006 Governance Principles](../master/MSTR-006-governance-principles.md) §4, §8 (size discipline, code-boundary rule)
 
+> **Superseded in full.** This entire tier (`IMP-xxxA` IDs) has been re-derived, re-verified
+> against the current source tree, and re-published as the canonical `docs/implementation/packages/`
+> tier (`IP-xxxx` IDs) — see [`docs/implementation/packages/INDEX.md`](../implementation/packages/INDEX.md)
+> and [`docs/implementation/00-master-build-plan.md`](../implementation/00-master-build-plan.md).
+> These files are retained for historical reference and are not deleted (each carries its own
+> superseded-by banner pointing at its `IP-xxxx` successor), but they are no longer the document of
+> record. The forward-design packages (`IMP-201A`, `IMP-301A` → `IP-2010`, `IP-3010`) remain
+> exactly as un-authorized for implementation under their new IDs as they were under these —
+> supersession changes location and template, not authorization status (MSTR-006 §3).
+
 Implementation Packages (`IMP-xxxA/B/C`) describe **how** to build a specific Feature
 Specification — data model, state machine, algorithms, interfaces, test/migration plan — in
 prose, diagrams, and pseudocode-level detail, never as literal committed code (MSTR-006 §8 is a

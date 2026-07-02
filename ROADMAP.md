@@ -305,33 +305,54 @@ before promotion to a full spec or any Implementation Package work.
 (Consistency/Dependency/Traceability review, MSTR-006 §7) is also complete (see the dedicated
 theme section below).
 
-## Theme: Implementation Packages (the *how* — `docs/implementations/`)
+## Theme: Implementation Packages (the *how* — `docs/implementation/packages/`, canonical; `docs/implementations/`, superseded)
 
 Phase 5 of the documentation-driven-development expansion (MSTR-005 §4 chain: ... → Feature
-Specification → **Implementation Package** → Code → Tests). Each `IMP-xxxA` describes architecture,
-data model, state machines, and test/migration plan in prose/pseudocode, never literal committed
-code (MSTR-006 §8). Two situations per package: as-built (documents existing, test-covered code,
-FS-101 through FS-107) vs. forward design (FS-201/FS-301, capability not yet implemented, coding
-work not authorized by this documentation per MSTR-006 §3). Router:
-[`implementations/INDEX.md`](docs/implementations/INDEX.md).
+Specification → **Implementation Package** → Code → Tests). Each `IP-xxxx` describes architecture,
+data model, files, tasks, tests, Definition of Done, and rollback considerations in prose/
+pseudocode, never literal committed code (MSTR-006 §8). Two situations per package: as-built
+(documents existing, test-covered code, FS-101 through FS-107) vs. forward design (FS-201/FS-301,
+capability not yet implemented, coding work not authorized by this documentation per MSTR-006 §3).
+Router: [`implementation/packages/INDEX.md`](docs/implementation/packages/INDEX.md); sequencing/
+dependency-graph/critical-path in [`implementation/00-master-build-plan.md`](docs/implementation/00-master-build-plan.md).
+
+**Canonical tier as of this revision.** `docs/implementation/packages/` (`IP-xxxx` IDs) supersedes
+the prior `docs/implementations/` tier (`IMP-xxxA` IDs) in full — same underlying design content,
+re-derived and re-verified against the current source tree under a different template/ID
+scheme/location. The prior tier's files are retained (each carries a superseded-by banner) but are
+no longer the document of record; see the Master Build Plan's "Relationship to the prior
+`docs/implementations/` corpus" section for the full rationale.
 
 | ID | Document | Path | FS | Situation | Status |
 |---|---|---|---|---|---|
-| IMP-00 | Implementation index | `implementations/INDEX.md` | — | — | ✅ |
-| IMP-101A | Mission Planning — dry-run preview & window/Δv display | `implementations/IMP-101A-mission-planning.md` | FS-101 | As-built | ✅ |
-| IMP-102A | Command Scheduling — Order/OrderSystem lifecycle | `implementations/IMP-102A-command-scheduling.md` | FS-102 | As-built | ✅ |
-| IMP-103A | Custody Management — Track confidence model | `implementations/IMP-103A-custody-management.md` | FS-103 | As-built | ✅ |
-| IMP-104A | SDA Tasking — sensor tasking & SSN request lifecycle | `implementations/IMP-104A-sda-tasking.md` | FS-104 | As-built | ✅ |
-| IMP-105A | Spacecraft Operations — bus/payload command & telemetry | `implementations/IMP-105A-spacecraft-operations-bus-payload.md` | FS-105 | As-built | ✅ |
-| IMP-105B | Spacecraft Operations — effect resolution & console UX | `implementations/IMP-105B-spacecraft-operations-effects-console.md` | FS-105 | As-built | ✅ |
-| IMP-106A | White Cell Dashboard — session/inject/clock control plane | `implementations/IMP-106A-white-cell-dashboard.md` | FS-106 | As-built | ✅ |
-| IMP-107A | After Action Review — replay/scrub/branch-compare | `implementations/IMP-107A-after-action-review.md` | FS-107 | As-built | ✅ |
-| IMP-201A | Competency Assessment — rubric computation design | `implementations/IMP-201A-competency-assessment.md` | FS-201 | Forward design | ⛔ Planned (design only) |
-| IMP-301A | Research Analytics — multi-run export design | `implementations/IMP-301A-research-analytics.md` | FS-301 | Forward design | ⛔ Planned (design only) |
+| IMPL-PLAN-00 | Master Build Plan (sequence, critical path, dependency graph, parallel opportunities) | `implementation/00-master-build-plan.md` | — | — | ✅ |
+| IP-00 | Implementation Packages index | `implementation/packages/INDEX.md` | — | — | ✅ |
+| IP-1010 | Mission Planning — dry-run preview & window/Δv display | `implementation/packages/IP-1010-mission-planning.md` | FS-101 | As-built | ✅ VERIFIED |
+| IP-1020 | Command Scheduling — Order/OrderSystem lifecycle | `implementation/packages/IP-1020-command-scheduling.md` | FS-102 | As-built | ✅ VERIFIED |
+| IP-1030 | Custody Management — Track confidence model | `implementation/packages/IP-1030-custody-management.md` | FS-103 | As-built | ✅ VERIFIED |
+| IP-1040 | SDA Tasking — sensor tasking & SSN request lifecycle | `implementation/packages/IP-1040-sda-tasking.md` | FS-104 | As-built | ✅ VERIFIED |
+| IP-1050 | Spacecraft Operations — bus/payload command & telemetry | `implementation/packages/IP-1050-spacecraft-operations-bus-payload.md` | FS-105 | As-built | ✅ VERIFIED |
+| IP-1051 | Spacecraft Operations — effect resolution & console UX | `implementation/packages/IP-1051-spacecraft-operations-effects-console.md` | FS-105 | As-built | ✅ VERIFIED |
+| IP-1060 | White Cell Dashboard — session/inject/clock control plane | `implementation/packages/IP-1060-white-cell-dashboard.md` | FS-106 | As-built | ✅ VERIFIED |
+| IP-1070 | After Action Review — replay/scrub/branch-compare | `implementation/packages/IP-1070-after-action-review.md` | FS-107 | As-built | ✅ VERIFIED |
+| IP-2010 | Competency Assessment — rubric computation | `implementation/packages/IP-2010-competency-assessment.md` | FS-201 | Forward design | 🟡 READY (not authorized, MSTR-006 §3) |
+| IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🔴 BLOCKED (on IP-2010; also not authorized) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3).
 
+### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
+
+| ID | Document | Path | FS | Situation | Status |
+|---|---|---|---|---|---|
+| IMP-00 | Implementation index (now carries a supersession banner) | `implementations/INDEX.md` | — | — | ♻️ superseded |
+| IMP-101A…IMP-107A/B | (7 as-built packages) | `implementations/IMP-*.md` | FS-101–107 | As-built | ♻️ superseded by IP-1010…IP-1070/1051 |
+| IMP-201A | Competency Assessment — rubric computation design | `implementations/IMP-201A-competency-assessment.md` | FS-201 | Forward design | ♻️ superseded by IP-2010 |
+| IMP-301A | Research Analytics — multi-run export design | `implementations/IMP-301A-research-analytics.md` | FS-301 | Forward design | ♻️ superseded by IP-3010 |
+
 **Next:** Phase 6-8 (Consistency/Dependency/Traceability review, MSTR-006 §7) is complete (below).
+Re-running that review against the new `docs/implementation/packages/` tier (rather than assuming
+its findings carry over unchanged from the superseded `docs/implementations/` pass) is not yet
+done — flagged here as an open item, not silently assumed equivalent.
 
 ## Theme: Phase 6-8 review (Consistency / Dependency / Traceability, MSTR-006 §7)
 
