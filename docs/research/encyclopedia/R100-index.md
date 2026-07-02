@@ -40,13 +40,13 @@ should have at least one topic here an implementer extending it would read first
 | [R130](R130-downlink-operations-and-data-return.md) | Downlink Operations and Data Return | `engine/orders.py`'s `downlink` action verb (`execute_downlink`'s `bitrate_cap_kbps`/`priority`/`partial_dump`) — the one order-verb type R103/R107/R114 each explicitly disclaimed covering; grounded against real priority-lane downlink scheduling, link-budget-bounded bitrate, and CFDP-style selective dump. | [R103](R103-satellite-command-and-control.md), [R114](R114-command-and-data-handling.md) | ✅ Done |
 | [R131](R131-space-environment-and-space-weather-operations.md) | Space Environment and Space Weather Operations | Storm-driven drag/scintillation/SEU effects and the attack-vs-environment telemetry disambiguation problem. | [R110](R110-communications.md), [R111](R111-power-and-thermal-operations.md) | ✅ Done |
 | [R132](R132-proliferated-constellation-c2-and-mesh-operations.md) | Proliferated-Constellation C2 and Mesh Operations | What changes at real proliferated (tens-hundreds-sat) scale beyond the ≤3-sat model — research-first, no feature yet. | [R108](R108-constellation-operations.md), [R118](R118-space-surveillance-networks.md) | ✅ Done |
-| R133 | Space Logistics: Launch, Reconstitution, and Servicing Economics | Reconstitution timelines, refueling/servicing as Δv-economy extensions — closes GAP-05. | [R112](R112-propulsion-and-maneuver-planning.md) | ⛔ Planned |
-| R134 | PNT Warfare and Navigation-Denial Operations | GNSS interference/spoofing operational patterns behind the `pnt.*` command verbs — closes GAP-09. | [R109](R109-sensor-operations.md), [R110](R110-communications.md) | ⛔ Planned |
-| R135 | Ground Segment Operations as Contested Terrain | Cyber/physical attack surface of stations and networks, extending R107's cooperative-only treatment — closes GAP-12. | [R107](R107-ground-segment-operations.md), [R116](R116-cyber-operations-against-space-systems.md) | ⛔ Planned |
-| R136 | Cislunar and xGEO Operations | Custody/sensing regimes beyond GEO — research-first, closes GAP-04. | [R101](R101-orbital-mechanics-for-operations.md), [R102](R102-space-domain-awareness.md) | ⛔ Planned |
+| [R133](R133-space-logistics-launch-reconstitution-and-servicing-economics.md) | Space Logistics: Launch, Reconstitution, and Servicing Economics | Reconstitution timelines, refueling/servicing as Δv-economy extensions — closes GAP-05. | [R112](R112-propulsion-and-maneuver-planning.md) | ✅ Done |
+| [R134](R134-pnt-warfare-and-navigation-denial-operations.md) | PNT Warfare and Navigation-Denial Operations | GNSS interference/spoofing operational patterns behind the `pnt.*` command verbs — closes GAP-09. | [R109](R109-sensor-operations.md), [R110](R110-communications.md) | ✅ Done |
+| [R135](R135-ground-segment-operations-as-contested-terrain.md) | Ground Segment Operations as Contested Terrain | Cyber/physical attack surface of stations and networks, extending R107's cooperative-only treatment — closes GAP-12. | [R107](R107-ground-segment-operations.md), [R116](R116-cyber-operations-against-space-systems.md) | ✅ Done |
+| [R136](R136-cislunar-and-xgeo-operations.md) | Cislunar and xGEO Operations | Custody/sensing regimes beyond GEO — research-first, closes GAP-04. | [R101](R101-orbital-mechanics-for-operations.md), [R102](R102-space-domain-awareness.md) | ✅ Done |
 
-**Status: 32 of 36 topics complete; R133-R136 are newly identified planned gaps (see below).** All
-32 authored topics (R101-R132) have substantive §1 Purpose/§2 Scope/§3 Concepts/§4 Operational
+**Status: 36 of 36 topics complete — tier fully closed.** All
+36 authored topics (R101-R136) have substantive §1 Purpose/§2 Scope/§3 Concepts/§4 Operational
 Context/§5 Implementation Guidance/§6 Feature Mapping/§7 Related Topics content. A remediation pass
 (2026-06-27) resolved the two systemic defects a prior MSTR-007 re-check had found in the original
 20-topic set (R101-R120):
@@ -114,8 +114,30 @@ authored **[R131](R131-space-environment-and-space-weather-operations.md)** and
 same seven-section shape and citation convention. The remaining five in-tier gaps (space
 logistics/reconstitution, PNT warfare, ground-segment-as-contested-terrain, cislunar/xGEO, plus
 GAP-02's debris-persistence extension to [R117](R117-directed-energy-and-kinetic-effects.md) rather
-than a new topic) are recorded as `⛔ Planned` rows (`R133`-`R136`) per the index-before-content
+than a new topic) were recorded as `⛔ Planned` rows (`R133`-`R136`) per the index-before-content
 rule (MSTR-007 §6) rather than bulk-authored in the same pass — full resolution status, source
 leads, and the affected-architecture/requirements assessment for every gap (including the two
 outside this tier's scope) is tracked in
-[`docs/reviews/research-gap-resolution.md`](../../reviews/research-gap-resolution.md).
+[`docs/reviews/research-gap-resolution.md`](../../reviews/research-gap-resolution.md) (that report's
+own text is not updated by this pass, per its own closing instruction — the corpus's index is the
+mechanism for recording resolution).
+
+**Deferred-gap authoring pass (2026-07-01, same day).** The four gaps recorded as `⛔ Planned` above
+are now closed: **[R133](R133-space-logistics-launch-reconstitution-and-servicing-economics.md)**
+(GAP-05 — responsive-launch/reconstitution tempo per the Victus Nox 2023 demonstration and
+Northrop Grumman MEV-1/MEV-2 servicing-economics precedent), **[R134](R134-pnt-warfare-and-navigation-denial-operations.md)**
+(GAP-09 — GNSS jam-vs-spoof operational patterns grounding the `pnt.flex_power`/`pnt.set_health_flag`
+verbs against IS-GPS-200E flex power and real Baltic/Black Sea/Eastern-Mediterranean interference
+data), **[R135](R135-ground-segment-operations-as-contested-terrain.md)** (GAP-12 — the Viasat
+KA-SAT/AcidRain incident grounding `engine/cyber.py`'s `ground_segment`/`ground_modem` vectors, plus
+NIST IR 8401 and CISA's 2024 ground-segment zero-trust guidance), and **[R136](R136-cislunar-and-xgeo-operations.md)**
+(GAP-04 — the AFRL Oracle/CAPSTONE cislunar-SDA precedent and the CR3BP-vs-two-body structural
+distinction the `Propagator` seam would need for any future beyond-GEO regime). All four follow the
+same seven-section shape and citation convention as every other topic in this tier and carry
+bidirectional cross-links into their declared dependency topics
+([R101](R101-orbital-mechanics-for-operations.md), [R102](R102-space-domain-awareness.md),
+[R107](R107-ground-segment-operations.md), [R109](R109-sensor-operations.md), [R110](R110-communications.md),
+[R112](R112-propulsion-and-maneuver-planning.md), [R116](R116-cyber-operations-against-space-systems.md)).
+Tier R100 is now fully closed at 36/36 topics; `docs/reviews/research-gap-resolution.md` is left
+unmodified per its own closing instruction, since this index is the corpus's mechanism for recording
+gap resolution.
