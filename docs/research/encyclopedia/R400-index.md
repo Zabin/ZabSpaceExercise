@@ -6,11 +6,11 @@ Justifies assessment/validation work (DOM-002, DOM-005). 13 topics.
 
 | ID | Title | Scope (one line) | Depends on | Status |
 |---|---|---|---|---|
-| [R401](R401-experimental-design-and-controls.md) | Experimental Design and Controls | Isolating an effect by holding other variables constant. | — | 🚧 *(no §2 Scope; uncited)* |
-| [R402](R402-hypotheses-and-variables.md) | Hypotheses and Variables | Stating falsifiable predictions; independent/dependent/confound variables. | [R401](R401-experimental-design-and-controls.md) | 🚧 *(no §2 Scope; uncited)* |
-| [R403](R403-statistics-foundations.md) | Statistics Foundations | Descriptive/inferential statistics needed to read DOM-002 outputs. | — | 🚧 *(no §2 Scope; uncited)* |
-| [R404](R404-measurement-theory.md) | Measurement Theory | Scales of measurement, reliability vs. validity. | [R403](R403-statistics-foundations.md) | 🚧 *(no §2 Scope; uncited)* |
-| [R405](R405-uncertainty-analysis.md) | Uncertainty Analysis | Propagating and reporting uncertainty in a derived metric. | [R403](R403-statistics-foundations.md) | 🚧 *(no §2 Scope; uncited)* |
+| [R401](R401-experimental-design-and-controls.md) | Experimental Design and Controls | Isolating an effect by holding other variables constant. | — | ✅ |
+| [R402](R402-hypotheses-and-variables.md) | Hypotheses and Variables | Stating falsifiable predictions; independent/dependent/confound variables. | [R401](R401-experimental-design-and-controls.md) | ✅ |
+| [R403](R403-statistics-foundations.md) | Statistics Foundations | Descriptive/inferential statistics needed to read DOM-002 outputs. | — | ✅ |
+| [R404](R404-measurement-theory.md) | Measurement Theory | Scales of measurement, reliability vs. validity. | [R403](R403-statistics-foundations.md) | ✅ |
+| [R405](R405-uncertainty-analysis.md) | Uncertainty Analysis | Propagating and reporting uncertainty in a derived metric. | [R403](R403-statistics-foundations.md) | ✅ |
 | [R406](R406-modeling-practices.md) | Modeling Practices | Building and documenting a model so its assumptions are auditable. | — | 🚧 *(no §2 Scope; uncited)* |
 | [R407](R407-monte-carlo-methods.md) | Monte Carlo Methods | Repeated seeded simulation to characterize outcome distributions. | [R403](R403-statistics-foundations.md), [R406](R406-modeling-practices.md) | 🚧 *(no §2 Scope; uncited)* |
 | [R408](R408-sensitivity-analysis.md) | Sensitivity Analysis | Varying one input to see how much it moves an outcome. | [R407](R407-monte-carlo-methods.md) | 🚧 *(no §2 Scope; uncited)* |
