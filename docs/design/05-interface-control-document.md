@@ -1,6 +1,6 @@
 # Interface Control Document (ICD)
 
-> **Status:** Draft — first issue; amended 2026-07 (see "Strategic review reconciliation" below).
+> **Status:** Draft — first issue; amended 2026-07 in two passes (see "ICD change log" below).
 > **Inputs consumed (approved baseline only):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -9,8 +9,8 @@
 > System Architecture), [`architecture/04-domain-model.md`](../architecture/04-domain-model.md)
 > (GDS-04, Domain Model), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001
 > through ADR-0031, all `Accepted`),
-> [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) (reconciled — see
-> "Strategic review reconciliation" below), [`reviews/architecture-update.md`](../reviews/architecture-update.md).
+> [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) (reconciled in two
+> passes — see "ICD change log" below), [`reviews/architecture-update.md`](../reviews/architecture-update.md).
 > **Inputs explicitly NOT treated as authoritative here** (see "ICD Issues Requiring Resolution"
 > §1): `design/04-data-model.md` and `design/07-api-and-networking.md` — both are pre-GDS design
 > documents that describe wire-level/schema detail at a finer grain than anything in the approved
@@ -670,6 +670,12 @@ flowchart LR
     C3own -. "delivers into, does not own" .-> TRK
 ```
 
+**C4 (Operator Console) owns no persistent data** and is deliberately absent from the diagram above
+— not an omission. Per GDS-03 §2.4, C4 is a stateless presentation layer: every interface it
+participates in (INT-0001–0006) either renders a `CellView`/god-view it just read through INT-0006
+or forwards an intent it did not itself originate. Stated explicitly here so a reviewer scanning §6.3
+for every component's ownership box does not read C4's absence as a gap.
+
 ## 7. ICD Issues Requiring Resolution
 
 These are **identified, not resolved**, per this task's instruction. Several restate an Open
@@ -743,30 +749,99 @@ on — they are listed so a reviewer can triage them, not as a backlog this docu
     above addresses federation; this ICD's inventory is scoped entirely to the current single-server,
     HTTP-polling, LAN-cooperative boundary (GDS-02 §1). Flagged as a gap for a future ICD reviewer,
     not resolved here — see `reviews/architecture-update.md`'s disposition of R19/GAP-11.
+13. **Missing interface: research-export boundary (`FS-301`, shipped ✅) (new).**
+    [`features/FS-301-research-analytics.md`](../features/FS-301-research-analytics.md) — a shipped
+    feature, not a candidate future one — states in its own "Interfaces Used" and "Related
+    Interfaces" sections that no ICD interface names the boundary it crosses: a batch-orchestration
+    path that drives the engine through many seeded runs, and an outbound path carrying structured
+    per-run export records to the researcher's own analysis tooling. Neither destination matches an
+    existing external actor (C6–C12) or an existing interface's stated direction.
+    `strategic-review-2026-07.md` W2/GAP-07 names the assessment/research tier as the project's
+    least mature; this is that finding's concrete interface-level symptom — the tier's own shipped
+    export feature has no named boundary in this inventory. Not resolved here (naming one would
+    require inventing detail FS-301 itself declines to specify); flagged as a likely missing
+    interface (candidate `INT-0017`) for a future ICD revision.
+14. **Missing interface: competency-assessment longitudinal report boundary (`FS-201`, shipped ✅)
+    (new).** Similarly self-flagged in
+    [`features/FS-201-competency-assessment.md`](../features/FS-201-competency-assessment.md): the
+    rubric-tier scoring computation itself is a read against existing engine/session state, and
+    `ADR-0029` already settles that raw AAR/event-log access (i.e. INT-0014) is sufficient for the
+    assessment-designer stakeholder — no new interface needed for *that* half. What ADR-0029 does
+    **not** address, and what FS-201 itself still flags open, is the **cross-session longitudinal
+    record** the per-trainee report aggregates from — a persistent structure with no home in the
+    current save-file entity list (GDS-04) and no read/write path named among INT-0001–0016.
+    Flagged as a likely missing interface (candidate `INT-0018`), narrower than item 13's — the gap
+    here is specifically the longitudinal store, not the per-exercise scoring computation.
+15. **Data ownership: exported research/assessment data has no assigned owner (new).** Once either
+    item 13's per-run export record or item 14's cross-session trainee record leaves the Session
+    Layer's live state, no approved document assigns ownership, retention, or access-control
+    responsibility for it. This is distinct from the already-resolved save-file split (ADR-0022,
+    item 4): a save file's consumer is the Session Layer itself, on resume; an export/longitudinal
+    record's consumer is a researcher or instructor — an actor `GDS-02 §2` does not currently
+    enumerate at all. `strategic-review-2026-07.md` §4.2 finding 4 corroborates independently ("no
+    baseline document states who owns exercise-performance data, consent posture, or retention"),
+    and `FS-301`'s own Security Considerations section flags the same gap from the feature side. Not
+    resolved here.
+16. **Missing interfaces: stakeholder seats named by the Strategic Review have no corresponding
+    actor/interface entry (new).** `strategic-review-2026-07.md` §4.4 names several stakeholder
+    types absent from this inventory's C6–C12 actor list: a **Legal advisor (LEGAD)** seat for
+    ROE/attribution decisions, an **Intelligence cell** distinct from C7/C8 operators for
+    SSN+telemetry fusion, and **the accreditor** who would certify training validity (this last one
+    ties to item 13's gap — an accreditor is exactly who a named research-export interface would
+    serve). A fourth candidate, the **live OR-analyst** (the review's IN-09), is checked and found
+    *not* to be a gap: INT-0005 (Observer) already provides continuous, on-demand read access to
+    god-view or a cell's `CellView` during a running exercise, which appears to satisfy IN-09's
+    stated need. The first three have no existing seat, degraded or otherwise, and no approved
+    document (GDS-02 §2) names them even as future candidates. Not resolved here — adding these
+    actors is a GDS-02 question; this ICD could only add their interfaces after that.
+17. **Circular dependencies: re-checked against this pass's findings — none found (checked-and-cleared,
+    mirrors item 3).** Both candidate interfaces surfaced in items 13/14 are, by their own source
+    features' explicit statements, read-only against engine/session state (`FS-301`: "no state is
+    mutated... each run starts from a clean seeded initial state"; `FS-201`: "provably read-only...
+    consistent with the replay-safety principle"). Neither would introduce a structural dependency
+    running back from C1/C2 toward a new consumer's *code* — the same one-directional shape §3
+    principle 4 already requires of every existing interface. This finding is provisional: neither
+    candidate is a formally specified interface yet, so it should be re-verified if/when either is
+    actually named and built.
 
 ---
 
-## Strategic review reconciliation (strategic-review-2026-07.md)
+## ICD change log
 
-In response to [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md), the
-following changes were made. Full disposition of all 24 recommendations is in
-[`reviews/architecture-update.md`](../reviews/architecture-update.md); this section records only
-the changes landed in this document.
+Running log of every change made to this document in response to review activity, in response to
+[`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) (SRB-2026-07). Full
+disposition of all 24 of that review's recommendations across all six scoped architecture documents
+is in [`reviews/architecture-update.md`](../reviews/architecture-update.md); this log records only
+the changes landed in *this* document, across both passes.
 
-- §7 item 2 (INT-0001 authentication gap) — appended a cross-reference to recommendation R19
-  (document the distributed-use security growth path before the first multi-site request).
-- §7 — added new item 12: distributed simulation/exercise-interoperability federation (GAP-11) has
-  not been examined against any interface in this inventory; flagged for a future ICD reviewer, not
-  resolved here.
-- Metadata — added cross-references to the strategic review and its disposition document; ADR count
-  in the header updated from ADR-0029 to ADR-0031 to reflect the two new ADRs that review produced
-  (ADR-0030, ADR-0031). Status remains `Draft — first issue`; this ICD's own merge gate was already
-  open (unresolved items pending) before this amendment and remains open — this update adds to that
-  open list rather than closing it.
+| Pass | Triggered by | Section(s) changed | Change |
+|---|---|---|---|
+| 1 | R19 (via `reviews/architecture-update.md`) | §7 item 2 | Appended a cross-reference to recommendation R19 (document a distributed-use security growth path before the first multi-site request). |
+| 1 | GAP-11 (via `reviews/architecture-update.md`) | §7 item 12 (new) | Flagged distributed simulation/exercise-interoperability federation as not examined against any interface in this inventory. |
+| 1 | — | Header metadata | Added cross-references to the strategic review and its disposition document; ADR count updated ADR-0029 → ADR-0031 (ADR-0030/0031 are new from that review). |
+| 2 (this pass) | W2/GAP-07, corroborated by `features/FS-301-research-analytics.md`'s own self-flagged gap | §7 item 13 (new) | Flagged the research-export boundary (`FS-301`, shipped) as a likely missing interface — candidate `INT-0017`. |
+| 2 | W2, corroborated by `features/FS-201-competency-assessment.md`'s own self-flagged gap; cross-checked against `ADR-0029` | §7 item 14 (new) | Flagged the competency-assessment **longitudinal** report boundary (`FS-201`, shipped) as a likely missing interface — candidate `INT-0018` — narrower than item 13 since ADR-0029 already resolves the scoring-computation half. |
+| 2 | §4.2 finding 4; `FS-301`'s own Security Considerations | §7 item 15 (new) | Flagged that exported research/assessment data has no assigned owner, distinct from the already-resolved save-file ownership split (item 4 / ADR-0022). |
+| 2 | §4.4 (missing stakeholders) | §7 item 16 (new) | Flagged three stakeholder seats (LEGAD, Intelligence cell, Accreditor) with no actor/interface entry; recorded IN-09 (live OR-analyst) as already served by INT-0005 — checked, not a gap. |
+| 2 | Internal re-check prompted by items 13/14 | §7 item 17 (new) | Re-verified §3 principle 4 (one-directional dependency graph) against the two newly-flagged candidate interfaces — no circular dependency found; recorded as checked-and-cleared. |
+| 2 | Internal ownership review | §6.3 | Added an explicit statement that C4 (Operator Console) owns no persistent data — the ownership diagram previously omitted C4 entirely, which could otherwise be misread as an oversight rather than the deliberate "stateless presentation layer" fact GDS-03 §2.4 already establishes. |
+| 2 | — | Header metadata, this section | Status line and section header updated to reflect two amendment passes; no ADR/GDS document was touched in pass 2 (see scope note below). |
+
+**Scope note (pass 2):** this pass reviewed the Strategic Review specifically for interface
+concerns — interface ownership, missing interfaces, data ownership, interface contracts, and
+circular dependencies — narrower than `architecture-update.md`'s six-document disposition of all 24
+recommendations, which already covered this document's two pass-1 items (R19/GAP-11). No
+architecture document was modified in this pass; only this ICD. Where a finding pointed toward a
+genuine gap outside this document's authority (e.g. item 16's missing actors, which is a GDS-02
+question), it is recorded in §7 as **identified, not resolved**, per this document's own established
+convention — closing it belongs to `architecture-design-synthesis` (for a GDS-02 actor addition) or
+to the relevant `FS-201`/`FS-301` Implementation Package (for the interfaces items 13/14 candidate),
+not to this ICD. This ICD's own merge gate was already open before this amendment and remains open —
+both passes add to that open list rather than closing it.
 
 ## Merge gate
 
-- [ ] Reviewer disposition recorded for each of §7's twelve items (accept as-is / assign an owner /
+- [ ] Reviewer disposition recorded for each of §7's seventeen items (accept as-is / assign an owner /
   fold into a future ADR or GDS revision).
 - [ ] Confirmed against GDS-07/GDS-09 once either is authored — at that point several of §5's
   "Open questions" fields above should collapse into citations of the new baseline instead of
