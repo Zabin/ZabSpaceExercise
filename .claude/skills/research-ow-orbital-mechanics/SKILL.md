@@ -114,6 +114,7 @@ authoring:
   pointer plus consequences.
 - A single-source claim at any tier must be flagged inline per the methodology §3 — don't silently
   present a one-source number as settled fact.
-- This skill does not touch Tier R200/R400/R500 (decision sciences, research methods, future ops)
-  or Tier R300 (military analysis/doctrine/exercises) — those belong to
-  `research-doctrine-exercises` and any future decision-sciences/research-methods skill.
+- This skill does not touch Tier R200 (decision sciences, no skill yet), Tier R300 (military
+  analysis/doctrine/exercises — `research-doctrine-exercises`), Tier R400 (research methods —
+  `research-methods-and-validation`), or Tier R500 (future operations —
+  `research-future-operations`).

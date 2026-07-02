@@ -1686,9 +1686,10 @@ recommendation ID and the review's own priority/difficulty/placement — re-read
 first (noted inline).
 
 - **R1 — Close the encyclopedia sourcing/scope defect (GAP-13).** R500 first (zero citations, most
-  speculative claims); gate for citing the encyclopedia externally. Owner: `research-doctrine-
-  exercises`/`research-ow-orbital-mechanics` skills, tier by tier, following the existing §12
-  cadence discipline above.
+  speculative claims); gate for citing the encyclopedia externally. Owner: `research-future-
+  operations` (R500) then `research-methods-and-validation` (R400), following the existing §12
+  cadence discipline above. (R100/R300 are already closed under `research-ow-orbital-mechanics`/
+  `research-doctrine-exercises`; R200 has no dedicated skill yet.)
 - **R2 — Author GDS-06 (Non-functional Requirements) through GDS-10.** Already the ladder's own next
   scheduled step (`architecture/INDEX.md` §1); GDS-06 first, since "nearly every Part 2 concept
   [of the strategic review] turns on scale/performance/security envelopes that are currently
