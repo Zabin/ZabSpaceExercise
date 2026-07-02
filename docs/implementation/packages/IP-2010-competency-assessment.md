@@ -2,8 +2,12 @@
 
 > **Package ID:** IP-2010
 > **Version:** 1.0
-> **Status:** 🟡 READY *(design complete, all inputs already exist in shipped code — but **not**
-> authorized for implementation; see §"Definition of Done" and §"Risks")*
+> **Status:** 🔴 BLOCKED *(2026-07-02: user authorized MSTR-006 §3 forward-design go-ahead, but
+> implementation was then stopped before any code was written — this package's own "Related ADRs"
+> citation of ADR-0017 ("no automated scoring/assessment mechanism in v1," Accepted) is never
+> reconciled against this package's Objective of building exactly such a mechanism. See the
+> Blocking Report delivered to the user 2026-07-02 for the full analysis; design/spec text below is
+> otherwise unchanged.)*
 > **Dependencies:** FS-201, IP-1030 (custody data source), IP-1020/IP-1010 (window-discipline data
 > source), IP-1070 (belief-truth-divergence data source)
 > **Referenced By:** IP-3010 (the forward-design export package that would aggregate this package's

@@ -77,8 +77,8 @@ that continue to bind this tree ([MSTR-006](../master/MSTR-006-governance-princi
 | [IP-1051](packages/IP-1051-spacecraft-operations-effects-console.md) | FS-105 §3.2-4 Spacecraft Ops (effects) | As-built | ✅ VERIFIED | none |
 | [IP-1060](packages/IP-1060-white-cell-dashboard.md) | FS-106 White Cell Dashboard | As-built | ✅ VERIFIED | none |
 | [IP-1070](packages/IP-1070-after-action-review.md) | FS-107 After Action Review | As-built | ✅ VERIFIED | none |
-| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | 🟡 READY | authorization only (MSTR-006 §3) |
-| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔴 BLOCKED | IP-2010 → `COMPLETE`, **and** authorization (MSTR-006 §3) |
+| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | 🔴 BLOCKED | Unreconciled conflict with ADR-0017 (Accepted: "no automated scoring/assessment mechanism in v1") — see Blocking Report, 2026-07-02 |
+| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔴 BLOCKED | IP-2010 → `COMPLETE` (now also blocked, see above), **and** authorization (MSTR-006 §3) |
 
 8 of 10 packages are `VERIFIED` (the entire as-built surface — every shipped capability this pass
 covers is already implemented, tested, and re-confirmed against the current source tree). The
@@ -191,7 +191,8 @@ gated at each step by the MSTR-006 §3 authorization rule, not by any missing pr
 - **Parallel Work Opportunities:** 2 historical parallel waves among the (now-complete) as-built
   packages (3 packages, then 3 packages, running independently); **zero** parallel opportunities
   remain in the forward-design surface — `IP-2010` and `IP-3010` are strictly sequential
-- **Package Status:** 8 `VERIFIED`, 1 `READY` (`IP-2010`), 1 `BLOCKED` (`IP-3010`); 0 `NOT STARTED`,
+- **Package Status:** 8 `VERIFIED`, 0 `READY`, 2 `BLOCKED` (`IP-2010` — unreconciled ADR-0017
+  conflict, see Blocking Report 2026-07-02; `IP-3010` — depends on IP-2010); 0 `NOT STARTED`,
   0 `IN PROGRESS`, 0 `COMPLETE` (unverified)
 
 ### Risks requiring architectural attention
