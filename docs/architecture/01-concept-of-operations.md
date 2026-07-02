@@ -1,7 +1,7 @@
 # GDS-01 — Concept of Operations
 
 > **Document ID:** GDS-01
-> **Version:** 1.3
+> **Version:** 1.4
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-00
 > **Referenced By:** GDS-02
@@ -25,7 +25,12 @@
 > [`research/encyclopedia/R316-joint-and-combined-operations.md`](../research/encyclopedia/R316-joint-and-combined-operations.md),
 > [`research/encyclopedia/R317-space-operator-perspective.md`](../research/encyclopedia/R317-space-operator-perspective.md)
 > (reconciled — see "Research integration (R313–R317)" below),
-> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md)
+> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md),
+> [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) (reconciled — see
+> "Strategic review reconciliation" below),
+> [`reviews/architecture-update.md`](../reviews/architecture-update.md),
+> [`strategic-assumptions-register.md`](strategic-assumptions-register.md),
+> [`adr/ADR-0030-ai-determinism-doctrine.md`](adr/ADR-0030-ai-determinism-doctrine.md)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -282,6 +287,7 @@ operational picture, not the engineering one:
 | Space-Track unavailable or auth changes | Can't seed real TLEs for a session | Bundled snapshot + manual entry + Keplerian synthesis fallback; runtime never depends on network |
 | Wall-clock + heavy propagation stalls the UI | Sluggish exercise, breaks immersion at high time multipliers | Off-UI-thread propagation; window caching/precompute |
 | Adversarial LAN participant reads another cell's belief state | Breaks the fog-of-war training premise on an uncooperative LAN | Documented v1 trust boundary, not solved — deploy only on trusted cooperative LANs (`CLAUDE.md`) |
+| **Negative training** — the simulator confidently teaches a wrong lesson (new; `reviews/strategic-review-2026-07.md` §4.5) | The most dangerous failure of a trainer is not crashing; it is quietly mis-calibrating its graduates. Named candidates: AI-Red's ground-truth-read exploitability (ADR-0024's tracked gap — a *consistent* strawman players learn to exploit), Δv-as-terminal-life (§1.5 of the strategic review — teaches a lesson that would need to be *untaught* if servicing/refueling doctrine matures), the fixed five-D effect ontology (assumption A2, [register](strategic-assumptions-register.md)) presented as though settled, and facilitator/adjudication drift across sessions with no consistency-support mechanism | No mitigation implemented in v1; flagged here as a named risk class rather than left implicit. Full treatment (validation criteria, detection heuristics) belongs to DOM-005 (Validation Framework) once authored — see `reviews/architecture-update.md` disposition of recommendation R6 |
 
 ## 13. Open Questions
 
@@ -385,6 +391,35 @@ mechanic, or external-system claim changed.
   1.2 → 1.3. Status remains `✅ Authored — merge gate closed`; this update does not reopen the gate
   recorded below, it amends the document in place under explicit instruction, consistent with the
   precedent set by the prior architecture-review reconciliation.
+
+## Strategic review reconciliation (strategic-review-2026-07.md)
+
+In response to [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md), the
+following changes were made. Full disposition of all 24 recommendations (accepted/rejected/
+deferred) is in [`reviews/architecture-update.md`](../reviews/architecture-update.md); this section
+records only the changes landed in this document.
+
+- §12 Risks — added a **Negative training** risk row (review §4.5, recommendation R6), naming the
+  four candidates the review identified: AI-Red exploitability, Δv terminality, the fixed five-D
+  ontology, and adjudication drift. Full validation-criteria treatment is DOM-005's job once
+  authored (DOM-005 is `⛔` per `domains/INDEX.md` — not retroactively authored here, per
+  [`ADR-0031`](adr/ADR-0031-governance-record-consistency.md)'s reasoning for not rushing a
+  domain-framework stub).
+- Assumptions (§11) and Open Questions (§13) — the review's §1.3 register of hidden assumptions
+  (A1–A8) plus three new ones it named in §4.10 (A9–A11) are now consolidated in the new
+  [Strategic Assumptions Register](strategic-assumptions-register.md) (recommendation R3) rather
+  than duplicated inline here. §11/§13 are unchanged in substance; the register cross-references
+  them instead of restating them.
+- **Assumption A6 ("determinism and AI integration are compatible without a stated doctrine")** is
+  now **resolved** by [`ADR-0030`](adr/ADR-0030-ai-determinism-doctrine.md) (recommendation R4):
+  any non-deterministic component (AI advisory, AI-Red, future ML) must stay outside
+  `spacesim/engine/` and enter only via ordered, logged `SessionAPI` events — generalizing the rule
+  ADR-0021 already applies to AI-Red specifically. See the register's A6 row.
+- Metadata — added cross-references to the strategic review, its disposition document, the new
+  assumptions register, and ADR-0030; version bumped 1.3 → 1.4. Status remains
+  `✅ Authored — merge gate closed`; this is an explicitly-instructed amendment, not a gate
+  reopening, consistent with the precedent set by this document's own architecture-review and
+  R313–R317 reconciliation sections above.
 
 ## Merge gate (closed)
 

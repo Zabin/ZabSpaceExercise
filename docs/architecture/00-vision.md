@@ -1,14 +1,17 @@
 # GDS-00 — Vision
 
 > **Document ID:** GDS-00
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** MSTR-001
 > **Referenced By:** GDS-01
 > **Produces:** GDS-01
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** [`MSTR-001-program-vision.md`](../master/MSTR-001-program-vision.md) (merge
-> source — see "Merge gate" for the resolution), [`build-spec/01-context-and-scope.md`](../build-spec/01-context-and-scope.md)
+> source — see "Merge gate" for the resolution), [`build-spec/01-context-and-scope.md`](../build-spec/01-context-and-scope.md),
+> [`adr/ADR-0031-governance-record-consistency.md`](adr/ADR-0031-governance-record-consistency.md)
+> (§7 correction), [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md)
+> (§4.1 finding 1, §6.1 recommendation R5 — source of the §7 correction)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -132,12 +135,21 @@ The program succeeds when (MSTR-001 §5):
 
 ## 7. Relationship to the build spec
 
-[`docs/build-spec/`](../build-spec/INDEX.md) remains **binding** for v1: "on any conflict, the
-build spec wins." This master-document tree, and this ladder within it, does not supersede it — it
-surrounds it with the domain/research/feature/implementation scaffolding the build spec assumed
-but never formalized. Where this tree and the build spec appear to disagree, treat it as a signal
-that either (a) the build spec needs a revision note (tracked as a `BS-0x-REV` item in
-`ROADMAP.md`), or (b) the new document has mis-stated intent and should be corrected. (MSTR-001 §7.)
+**Corrected 2026-07 (ADR-0031) — supersedes this section's original text**, which read
+"`docs/build-spec/` remains binding for v1... on any conflict, the build spec wins" and had gone
+stale relative to a decision made elsewhere. As of `architecture/INDEX.md`'s blanket-supersession
+declaration (also restated in `CLAUDE.md` "Authoritative source & reading order"),
+[`docs/architecture/`](INDEX.md) — the GDS-00…GDS-10 ladder this document is the root of — is now
+the **single authoritative architecture/requirements source for the whole project, superseding
+`docs/build-spec/` in its entirety**. This supersession is a blanket declaration, not limited to
+GDS levels whose own merge gate has already closed: where a GDS level (currently GDS-06–10) has not
+yet been authored, its topic simply has **no authoritative statement yet** — the corresponding
+`build-spec/` module remains available as deprecated legacy reference for orientation only, never
+as a binding tie-breaker. Where this tree and the build spec appear to disagree on a topic a GDS
+level *has* authored, the GDS level wins; a genuine tension is a signal that `build-spec/` needs a
+revision note (tracked as a `BS-0x-REV` item in `ROADMAP.md`), not that the GDS level should defer
+to it. (`architecture/INDEX.md` §"This directory is now..."; `CLAUDE.md`; MSTR-001 §7's original
+statement is likewise superseded by this same declaration.)
 
 ## Merge gate (closed)
 
@@ -156,6 +168,20 @@ that either (a) the build spec needs a revision note (tracked as a `BS-0x-REV` i
 - [x] No content conflict was found between `MSTR-001` and any other vision-adjacent document
   (`build-spec/01-context-and-scope.md` §2–3, `CLAUDE.md` "What this is") during authoring — all
   three are consistent on mission, scope, and non-goals.
+
+## Strategic review reconciliation (strategic-review-2026-07.md)
+
+§7 was corrected per [`ADR-0031`](adr/ADR-0031-governance-record-consistency.md), itself written
+in response to [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md)
+§4.1 finding 1 / §6.1 recommendation R5: §7's prior text ("the build spec wins on any conflict")
+had gone stale relative to `architecture/INDEX.md`'s already-declared blanket supersession of
+`build-spec/` by this ladder. This is a text correction to match a decision already made
+elsewhere, not a new architectural decision — see ADR-0031 for the full reasoning, including why
+the companion DOM-002/DOM-005-vs-FS-201/FS-301 status inconsistency the same review finding named
+is *not* corrected here (it requires actual domain-framework authoring, tracked separately).
+Status remains `✅ Authored — merge gate closed`; this is an explicitly-instructed amendment, not
+a gate reopening, consistent with the precedent set by GDS-01–04's own reconciliation sections and
+by ADR-0028's equivalent direct correction of stale text in `build-spec/03` §7.1/§7.2.
 
 ## Next
 

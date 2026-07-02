@@ -1,6 +1,6 @@
 # Interface Control Document (ICD)
 
-> **Status:** Draft — first issue.
+> **Status:** Draft — first issue; amended 2026-07 (see "Strategic review reconciliation" below).
 > **Inputs consumed (approved baseline only):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -8,7 +8,9 @@
 > System Context), [`architecture/03-architecture.md`](../architecture/03-architecture.md) (GDS-03,
 > System Architecture), [`architecture/04-domain-model.md`](../architecture/04-domain-model.md)
 > (GDS-04, Domain Model), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001
-> through ADR-0029, all `Accepted`).
+> through ADR-0031, all `Accepted`),
+> [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) (reconciled — see
+> "Strategic review reconciliation" below), [`reviews/architecture-update.md`](../reviews/architecture-update.md).
 > **Inputs explicitly NOT treated as authoritative here** (see "ICD Issues Requiring Resolution"
 > §1): `design/04-data-model.md` and `design/07-api-and-networking.md` — both are pre-GDS design
 > documents that describe wire-level/schema detail at a finer grain than anything in the approved
@@ -685,6 +687,13 @@ on — they are listed so a reviewer can triage them, not as a backlog this docu
    but there is no per-connection authentication — the cell selector is client-side trust per
    ADR-0015. This is a documented, accepted v1 trust boundary, not an oversight, but it is worth
    flagging again at the interface level since INT-0001 and INT-0005 (Observer) both inherit it.
+   `strategic-review-2026-07.md` §4.2.3/§6.3 recommendation R19 corroborates this from a different
+   angle: it recommends documenting a distributed-use security growth path (threat model, token
+   design sketch, which endpoints would need binding) *before* the first multi-site/coalition
+   request, rather than making ad-hoc security decisions under delivery pressure when that request
+   arrives. Not actioned here — the growth-path document itself does not yet exist — but named so a
+   future reader of this gap knows the recommended next step and where it is tracked
+   (`FUTURE-WORK.md`, [architecture-update.md](../reviews/architecture-update.md) R19 disposition).
 3. **Bidirectional arrows vs. structural cycles.** §3 principle 4 states the dependency graph is
    one-directional (ADR-0023) and that bidirectional arrows in §6.1/§6.2 represent request/response
    traffic, not code-level circularity. Reviewed against GDS-03 §3's explicit dependency-graph
@@ -726,12 +735,38 @@ on — they are listed so a reviewer can triage them, not as a backlog this docu
     its own forward-looking interface entry now (as GDS-03 §5 does for forward-looking subsystems)
     or left entirely out of an ICD scoped to the as-built system is left to the reviewer — this
     document took the latter position (excluded it from §5) but flags the choice explicitly.
+12. **Distributed simulation / exercise-interoperability federation not examined (new).**
+    `strategic-review-2026-07.md` GAP-11 asks what a future federation standard (HLA/DIS/SISO) or
+    LVC integration would demand of INT-0006 (`SessionAPI`, the single seam), and whether an
+    eventlog-bridge federation model is compatible with determinism (invariant 1) — a question the
+    review explicitly recommends examining *before* any transport rework, not after. No interface
+    above addresses federation; this ICD's inventory is scoped entirely to the current single-server,
+    HTTP-polling, LAN-cooperative boundary (GDS-02 §1). Flagged as a gap for a future ICD reviewer,
+    not resolved here — see `reviews/architecture-update.md`'s disposition of R19/GAP-11.
 
 ---
 
+## Strategic review reconciliation (strategic-review-2026-07.md)
+
+In response to [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md), the
+following changes were made. Full disposition of all 24 recommendations is in
+[`reviews/architecture-update.md`](../reviews/architecture-update.md); this section records only
+the changes landed in this document.
+
+- §7 item 2 (INT-0001 authentication gap) — appended a cross-reference to recommendation R19
+  (document the distributed-use security growth path before the first multi-site request).
+- §7 — added new item 12: distributed simulation/exercise-interoperability federation (GAP-11) has
+  not been examined against any interface in this inventory; flagged for a future ICD reviewer, not
+  resolved here.
+- Metadata — added cross-references to the strategic review and its disposition document; ADR count
+  in the header updated from ADR-0029 to ADR-0031 to reflect the two new ADRs that review produced
+  (ADR-0030, ADR-0031). Status remains `Draft — first issue`; this ICD's own merge gate was already
+  open (unresolved items pending) before this amendment and remains open — this update adds to that
+  open list rather than closing it.
+
 ## Merge gate
 
-- [ ] Reviewer disposition recorded for each of §7's eleven items (accept as-is / assign an owner /
+- [ ] Reviewer disposition recorded for each of §7's twelve items (accept as-is / assign an owner /
   fold into a future ADR or GDS revision).
 - [ ] Confirmed against GDS-07/GDS-09 once either is authored — at that point several of §5's
   "Open questions" fields above should collapse into citations of the new baseline instead of
