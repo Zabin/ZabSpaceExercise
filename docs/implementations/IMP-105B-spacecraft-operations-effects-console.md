@@ -11,6 +11,15 @@
 
 [↑ Implementation index](INDEX.md) · [Docs index](../INDEX.md)
 
+> **Superseded.** This document's content has been re-derived, re-verified against the current
+> source tree, and re-published under the canonical `docs/implementation/packages/` tier as
+> [**IP-1051**](../implementation/packages/IP-1051-spacecraft-operations-effects-console.md). This
+> file is retained for historical reference and is not deleted, but
+> [`IP-1051`](../implementation/packages/IP-1051-spacecraft-operations-effects-console.md) is the
+> document of record going forward — see
+> [`docs/implementation/00-master-build-plan.md`](../implementation/00-master-build-plan.md)
+> §"Relationship to the prior `docs/implementations/` corpus."
+
 ## 1. Situation
 
 **As-built.** This is the second of FS-105's two lettered packages (per

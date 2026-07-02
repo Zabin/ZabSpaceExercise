@@ -11,6 +11,16 @@
 
 [↑ Implementation index](INDEX.md) · [Docs index](../INDEX.md)
 
+> **Superseded.** This document's content has been re-derived and re-published under the canonical
+> `docs/implementation/packages/` tier as
+> [**IP-3010**](../implementation/packages/IP-3010-research-analytics.md). This file is retained for
+> historical reference and is not deleted, but [`IP-3010`](../implementation/packages/IP-3010-research-analytics.md)
+> is the document of record going forward — see
+> [`docs/implementation/00-master-build-plan.md`](../implementation/00-master-build-plan.md)
+> §"Relationship to the prior `docs/implementations/` corpus." **This remains a forward-design,
+> not-yet-implemented, not-yet-authorized package under its new ID, additionally blocked on
+> IP-2010 (MSTR-006 §3) — superseding it does not change its authorization or blocking status.**
+
 ## 1. Situation
 
 **Forward design.** No purpose-built multi-run export layer exists in `spacesim/` today — per
