@@ -305,6 +305,41 @@ before promotion to a full spec or any Implementation Package work.
 (Consistency/Dependency/Traceability review, MSTR-006 §7) is also complete (see the dedicated
 theme section below).
 
+## Theme: Feature Planning — `feature-decomposition` skill output (`docs/feature-planning/`)
+
+New, 2026-07 — an audit of the document hierarchy found only 11 `FS-xxx` documents against a
+94-leaf-citation (49 unique baselined leaves) `docs/requirements/` corpus, with the RTM carrying no
+FR→FS column and every existing FS's own "Requirements Implemented" section reading "None
+identified." The `feature-decomposition` skill was run against the approved requirements baseline
+(`docs/requirements/01`–`03`) to produce a planning-grain Feature Catalog upstream of `FS-xxx`. Its
+`FEAT-xxxx` rows are a **different artifact** from this theme's own `FS-xxx` documents (see
+`docs/feature-planning/05-feature-review.md`'s mapping note) — not a replacement or renumbering.
+
+| ID | Document | Path | Status |
+|---|---|---|---|
+| — | Feature Planning index | `feature-planning/INDEX.md` | ✅ |
+| — | Release Plan | `feature-planning/01-release-plan.md` | ✅ |
+| — | Epic Catalog (`EP-1000`–`EP-9000`, 9 Epics) | `feature-planning/02-epic-catalog.md` | ✅ |
+| — | Feature Catalog (`FEAT-1100`–`FEAT-9100`, 36 Features) | `feature-planning/03-feature-catalog.md` | ✅ |
+| — | Feature Dependency Graph | `feature-planning/04-feature-dependency-graph.md` | ✅ |
+| — | Feature Review | `feature-planning/05-feature-review.md` | ✅ |
+
+**Key findings:** all 49 baselined FR + 23 baselined NFR leaves are traced to exactly one Feature
+each (36 total); three Features (Classification Banner, Observer Read-Only Access, Hot-Seat
+Hand-Off) have zero presence in any existing `FS-xxx` document, confirming the motivating audit;
+`FS-106-white-cell-dashboard.md` bundles ten catalog Features across three Epics and is flagged as
+oversized; DOM-002/004/005 (Assessment/Research/Validation) have shipped `FS-201`/`FS-301` with no
+corresponding FR/NFR baseline entry at all, a requirements-tier gap this catalog cannot close
+itself. The reconciliation of "36 Features today" against the ~50–80 expected once Candidate
+Requirements, Candidate NFRs, and the strategic review's Future Concepts/Gaps are baselined is
+worked out in full in `05-feature-review.md`'s closing section.
+
+**Next:** author the three missing Feature Specifications (Finding F-02) and split `FS-106`
+(Finding F-03) — both doable against the already-approved baseline; separately, run
+`requirements-engineering` to close the DOM-002/004/005 gap (Finding F-01) and to baseline as many
+Candidate Requirements as the project owner authorizes (Finding F-04), then re-run this skill's
+Step 0 incrementally against the delta.
+
 ## Theme: Implementation Packages (the *how* — `docs/implementation/packages/`, canonical; `docs/implementations/`, superseded)
 
 Phase 5 of the documentation-driven-development expansion (MSTR-005 §4 chain: ... → Feature
