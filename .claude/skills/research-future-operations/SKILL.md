@@ -1,6 +1,6 @@
 ---
 name: research-future-operations
-description: Produce, refresh, and — as the current primary job — remediate the R500-tier future-operations encyclopedia (human-AI teaming, autonomy in space operations, AI decision support, future space warfare concepts, multi-domain operations, machine reasoning, autonomous planning systems, future command and control, AI integration patterns) that grounds forward-looking AI/autonomy context (DOM-008). Use when asked to research AI/autonomy/future-C2/multi-domain topics, to add/extend `docs/research/encyclopedia/R5xx-*` topics, to close the R500 sourcing/scope defect (GAP-13 — every topic is missing the mandatory §2 Scope section and carries zero citations, the review's stated first priority since this tier is "zero citations, most speculative claims"), or to gather grounding facts before drafting an FS-xxx/IMP-xxx spec touching in-world AI, autonomy, or future C2. Not for novice AI tutorials — those belong in `docs/training/`.
+description: Produce and refresh the R500-tier future-operations encyclopedia (human-AI teaming, autonomy in space operations, AI decision support, future space warfare concepts, multi-domain operations, machine reasoning, autonomous planning systems, future command and control, AI integration patterns) that grounds forward-looking AI/autonomy context (DOM-008). Use when asked to research AI/autonomy/future-C2/multi-domain topics, to add/extend `docs/research/encyclopedia/R5xx-*` topics, or to gather grounding facts before drafting an FS-xxx/IMP-xxx spec touching in-world AI, autonomy, or future C2. Tier R500 closed its GAP-13 sourcing/scope remediation 2026-07-02 — this is now steady-state maintenance, not a remediation backlog. Not for novice AI tutorials — those belong in `docs/training/`.
 ---
 
 # Research: Future Operations
@@ -15,8 +15,8 @@ governing rules are
 (purpose, tier shape, authoring cadence) and
 [`docs/research/10-sources-and-methodology.md`](../../../docs/research/10-sources-and-methodology.md)
 (citation format, source-quality tiers, review cadence). Read both before producing anything —
-this skill does not restate them, it operationalizes them for this domain. Unlike the R100/R300
-tiers, R500 is **not yet closed** — see "Current state" below.
+this skill does not restate them, it operationalizes them for this domain. Tier R500 is now
+**closed** (all 9 topics ✅, GAP-13 remediation complete 2026-07-02) — see "Current state" below.
 
 ## What this is for (and what it is not)
 
@@ -45,63 +45,47 @@ capabilities or unsourced predictions presented as settled fact are not. If a re
 
 ## Current state (read this before choosing a workflow)
 
-**Tier R500 is structurally drafted but not done, and is the review's stated first-priority gap.**
-All 9 topics exist with substantive §1 Purpose / Concepts / Operational Context / Implementation
-Guidance / Feature Mapping / Related Topics content, and each one already carries the mandatory
-**"DOM-008 §6 tag"** line classifying it as in-world AI, coding-agent practice, both, or neither —
-but **every single topic is missing the mandatory §2 Scope section** (MSTR-007 §4.2) and **carries
-zero citations**: no inline sourcing at any claim site, no `### Sources` subsections, despite this
-tier making forward-looking claims about AI/autonomy precedent that would normally need Tier A-C
-sourcing more than any other tier, not less. This is tracked as **GAP-13** in
-[`docs/FUTURE-WORK.md`](../../../docs/FUTURE-WORK.md) §13 (Recommendation R1), which explicitly
-names R500 as **"first (zero citations, most speculative claims); gate for citing the encyclopedia
-externally."** Treat this tier as the priority remediation target ahead of R400. Do not add new
-R5xx topics while this remediation backlog is open — [`R509`](../../../docs/research/encyclopedia/R509-ai-integration-patterns.md)
-is already the intended capstone; finish the 9 first.
+**Tier R500 is closed (all 9 topics ✅ per MSTR-007 §6/§7, GAP-13 remediation complete 2026-07-02).**
+All 9 topics carry the mandatory §2 Scope section (MSTR-007 §4.2), inline citations at every
+substantive claim site, a `### Sources` subsection on every `##` section (live URL + Wayback
+snapshot + accessed date, or a cited `spacesim/session/redai.py`/`engine/recovery.py` file:line for
+present-tense in-world-AI claims), and the mandatory DOM-008 §6 tag line. This closed GAP-13
+(tracked in [`docs/FUTURE-WORK.md`](../../../docs/FUTURE-WORK.md) §13, Recommendation R1) for this
+tier; per that recommendation's sequencing, **R400 (Research Methods,
+`research-methods-and-validation`) is now the GAP-13 priority.** As with R100/R300, "closed" means
+*complete*, not *frozen* — do not bulk-author new topics by default; add a new `R5xx` row
+(`⛔ Planned` first, index-before-content) only on a genuine gap.
 
 ## Workflow
 
-### A. Remediation pass (the current priority — GAP-13, do this before R400)
+### A. New-topic / gap-fill pass (only on a genuine coverage gap)
 
-1. **Pick the next unremediated topic** from [`R500-index.md`](../../../docs/research/encyclopedia/R500-index.md)
-   (any topic still marked `🚧`), in ID order unless directed otherwise — R501 (Human-AI Teaming)
-   is the tier's dependency root, so remediating it first keeps `Referenced By` cross-links honest.
-2. **Read the current file fully**, including its DOM-008 §6 tag line — the substantive content is
-   already there; the job is adding Scope + citations, not rewriting the analysis, unless a claim
-   turns out to be uncitable (see Gotchas).
-3. **Insert a `## 2. Scope` section** immediately after Purpose, then renumber every following
-   section to the mandatory seven-part shape: 1 Purpose, 2 Scope, 3 Concepts, 4 Operational
-   Context, 5 Implementation Guidance, 6 Feature Mapping, 7 Related Topics — keep the DOM-008 §6
-   tag line where it currently sits, directly under the frontmatter/breadcrumb, before §1.
-   Scope states the boundary against neighboring R5xx topics and against DOM-008 itself (e.g. R502
-   Autonomy in Space Operations should explicitly defer the *doctrine* of autonomous engagement to
-   R300, and cover only the bus/payload autonomy-degree vocabulary).
+1. **Read the trigger context.** What FS-xxx/IMP-xxx spec or in-world-AI/autonomy/future-C2
+   proposal needs grounding? Identify which `R5xx` topic(s) are implicated.
+2. **Check existing coverage first.** Read [`R500-index.md`](../../../docs/research/encyclopedia/R500-index.md)
+   and the relevant topic file(s) before assuming a gap exists — [`R509`](../../../docs/research/encyclopedia/R509-ai-integration-patterns.md)
+   is the tier's capstone; a new topic should not duplicate its synthesis role.
+3. **If a gap exists:** add the row to `R500-index.md` (`⛔ Planned` status, ID, title, one-line
+   scope, dependencies) before writing the topic file — index-before-content (MSTR-007 §6).
 4. **Research with tiered sources** (`10-sources-and-methodology.md` §2): prefer Tier A/B —
    published human-automation-teaming studies (aviation automation research, e.g. FAA/NASA
-   human-factors reports), named military human-machine-teaming doctrine, peer-reviewed AI-planning
-   and machine-reasoning literature, and this project's own `spacesim/session/redai.py` where a
-   claim is about present-tense in-world AI. Flag any single-source or clearly speculative claim
-   inline as such (methodology §3) rather than presenting forward-looking material with false
-   settled-fact confidence — this matters more here than in any other tier.
-5. **Add an inline citation at every substantive claim site** — a named study, a named doctrine
-   publication, a named autonomy-level framework (e.g. SAE/DoD autonomy taxonomies), a dated
-   precedent system. No end-of-section-only citation dumps.
-6. **Add a `### Sources` subsection to every `##` section**: live URL + Wayback snapshot + accessed
-   date, or a cited `spacesim/session/redai.py` file:line for claims about the simulator's present
-   AI.
-7. **Correct the frontmatter `Status` field** to `🚧` if it currently (falsely) reads `✅ Done`;
-   flip to `✅ Done` only once the topic passes the quality gate below.
-8. **Update the row in `R500-index.md`** from `🚧 (no §2 Scope; uncited)` to `✅` once done, keeping
+   human-factors reports), named military human-machine-teaming doctrine (DARPA Mosaic Warfare,
+   DoD JADC2), peer-reviewed AI-planning and machine-reasoning literature, and this project's own
+   `spacesim/session/redai.py` where a claim is about present-tense in-world AI. Flag any
+   single-source or clearly speculative claim inline as such (methodology §3) rather than
+   presenting forward-looking material with false settled-fact confidence — this matters more here
+   than in any other tier.
+5. **Write the topic file** following the mandatory seven-section shape (MSTR-007 §4: Purpose,
+   Scope, Concepts, Operational Context, Implementation Guidance, Feature Mapping, Related Topics),
+   with the DOM-008 §6 tag line directly under the frontmatter/breadcrumb, before §1. Inline-cite
+   every substantive claim (a named study, a named doctrine publication, a named autonomy-level
+   framework, a dated precedent system — no end-of-section-only citation dumps), and add a
+   `### Sources` subsection to every `##` section.
+6. **Flip the index status** to `✅` once the topic satisfies the quality gate below, keeping
    `Dependencies`/`Referenced By` bidirectionally accurate.
-9. **Once all 9 topics are `✅`**, rewrite `R500-index.md`'s tier-level status paragraph to the
-   closed-tier framing R100/R300 use, and notify/hand off to `research-methods-and-validation` that
-   R400 is now the GAP-13 priority per the review's sequencing.
-10. **Verify, then commit** as `docs(research): R5xx — <what changed>`.
+7. **Verify, then commit** as `docs(research): R5xx — <what changed>`.
 
-### B. Steady-state maintenance (once the tier is closed)
-
-Same three activities as the closed R100/R300 tiers — do not bulk-author new topics by default;
-add a new `R5xx` row (`⛔ Planned` first, index-before-content) only on a genuine gap:
+### B. Steady-state maintenance
 
 1. **Pre-spec grounding** — before any future in-world-AI-advisor or future-C2 FS-xxx is drafted,
    verify the relevant `R5xx` topic(s) already cover what's needed against DOM-008 §4/§6.
@@ -133,13 +117,13 @@ add a new `R5xx` row (`⛔ Planned` first, index-before-content) only on a genui
 
 ## Gotchas
 
-- **This tier is the review's named first priority for GAP-13** (`docs/FUTURE-WORK.md` §13 R1) —
-  if only one of this skill or `research-methods-and-validation` is being run, run this one first.
-- **Don't trust a file's own `Status: ✅ Done` frontmatter line right now** — it predates the
-  sourcing/scope audit and is currently false for all 9 topics.
-- **Don't let a forward-looking topic slide into unsourced speculation dressed as fact.** This is
-  the single biggest risk in this tier specifically — "most speculative claims" per the review —
-  so a claim with no real source should read as clearly hypothetical, not confidently asserted.
+- **Tier R500 is closed** (all 9 topics ✅, GAP-13 remediation complete 2026-07-02) — a file's
+  `Status: ✅ Done` frontmatter is now trustworthy again; treat any topic reverting to `🚧` as a
+  real regression to fix, not a stale marker to ignore.
+- **Don't let a forward-looking topic slide into unsourced speculation dressed as fact.** This was
+  the single biggest risk in this tier during remediation — "most speculative claims" per the
+  review — and remains the standard for any new topic added under Workflow A: a claim with no real
+  source should read as clearly hypothetical, not confidently asserted.
 - **Never let this tier's forward-looking framing bleed into implying an in-world AI advisor
   feature is currently authorized or built.** Only `spacesim/session/redai.py` (Red doctrine
   presets) exists today; everything else in DOM-008 §4/§6 is 🅿️ pending.

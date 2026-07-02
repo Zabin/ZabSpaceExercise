@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R108](R108-constellation-operations.md), [R118](R118-space-surveillance-networks.md)
-> **Referenced By:** —
+> **Referenced By:** [R504](R504-future-space-warfare-concepts.md)
 > **Produces:** research grounding for any future constellation-aggregation Implementation Package
 > (deferred item, `docs/FUTURE-WORK.md` §4)
 > **Feature Mapping:** none yet — research-first per this topic's own scope (§2); the eventual

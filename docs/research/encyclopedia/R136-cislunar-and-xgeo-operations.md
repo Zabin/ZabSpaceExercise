@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md), [R102](R102-space-domain-awareness.md)
-> **Referenced By:** —
+> **Referenced By:** [R504](R504-future-space-warfare-concepts.md)
 > **Produces:** research grounding for any future cislunar/xGEO regime extension of
 > [`engine/propagator.py`](../../../spacesim/engine/propagator.py)'s `Propagator` seam and
 > [`engine/geometry.py`](../../../spacesim/engine/geometry.py)'s Earth-centric frames (deferred
