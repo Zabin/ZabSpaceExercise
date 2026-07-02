@@ -10,7 +10,7 @@ Five tiers; each has its own index enumerating every topic with ID, scope, depen
 | Tier | Subject | Index | Status |
 |---|---|---|---|
 | R100 | Space Operations Foundation | [R100-index.md](R100-index.md) | ✅ Done (36/36 topics) |
-| R200 | Decision Sciences | [R200-index.md](R200-index.md) | 🚧 Incomplete |
+| R200 | Decision Sciences | [R200-index.md](R200-index.md) | ✅ Done (14/14 topics) |
 | R300 | Military Analysis | [R300-index.md](R300-index.md) | 🚧 Incomplete (15/16 — R314 draft) |
 | R400 | Research Methods | [R400-index.md](R400-index.md) | 🚧 Incomplete |
 | R500 | Future Operations | [R500-index.md](R500-index.md) | 🚧 Incomplete |
@@ -39,9 +39,15 @@ would read first — closed by fully-authored R121/R122. A later code-vs-encyclo
 action verb lacked a dedicated topic — closed by R130. See [R100-index.md](R100-index.md) for the
 full per-topic detail.
 
-[R200](R200-index.md)-[R500](R500-index.md) still carry the original two defects (missing §2 Scope,
-no citations) — see each tier's own index file for status. None of the seven-section *content*
-quality (Purpose/Concepts/Operational Context/Implementation Guidance/Feature Mapping/Related
-Topics) is in question for those tiers either — this is a structural-completeness and sourcing
-finding, not a rewrite of the substance. Phase 4 (Feature Specifications) should not treat R200-R500
-as a finished dependency until their remediation pass lands.
+**R200 is now fully remediated and closed (2026-07-02)**: all 14 topics (R201-R214) carry §2 Scope,
+inline citations to the seminal source for each formalism (Bayes & Price 1763, Shannon 1948, Simon
+1955, Tversky & Kahneman 1974, Boyd's *A Discourse on Winning and Losing*, von Neumann & Morgenstern
+1944, and others — see [R200-index.md](R200-index.md) for the full per-topic source list), a
+`### Sources` subsection per cited section, and `Last Reviewed`/`Primary Sources Consulted`
+frontmatter. [R300](R300-index.md)-[R500](R500-index.md) still carry the original two defects
+(missing §2 Scope, no citations) — see each tier's own index file for status; R300 is a partial
+exception (18/20 topics already remediated in an earlier pass, per its own index). None of the
+seven-section *content* quality (Purpose/Concepts/Operational Context/Implementation Guidance/
+Feature Mapping/Related Topics) is in question for R300-R500 either — this is a structural-
+completeness and sourcing finding, not a rewrite of the substance. Phase 4 (Feature Specifications)
+should not treat R400/R500 as a finished dependency until their remediation pass lands.

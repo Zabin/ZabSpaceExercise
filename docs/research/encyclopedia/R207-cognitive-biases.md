@@ -11,6 +11,9 @@
 > baseline biases depart from), [R105](R105-custody-theory.md) (Custody Theory — where misjudgment of confidence is most
 > consequential), DOM-002 §9
 
+> **Last Reviewed:** 2026-07-02
+> **Primary Sources Consulted:** 1
+
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
@@ -21,7 +24,16 @@ catalogs the biases most relevant to SDA/custody/engagement decisions so a futur
 (DOM-002) does not mistake an expected, human-universal bias for a unique personal failing, per
 DOM-002 §9's explicit caution.
 
-## 2. Concepts
+## 2. Scope
+
+Covers the specific cognitive biases (confirmation, anchoring, overconfidence, recency/availability,
+escalation/sunk-cost) most relevant to SDA/custody/engagement judgment. Does **not** cover the
+perceptual substrate biases act on ([R205](R205-cognitive-psychology-foundations.md)), the normative
+Bayesian baseline biases depart from ([R201](R201-probability-and-bayesian-reasoning.md)), or the
+heuristic mechanisms that are adaptive rather than biased ([R211](R211-heuristics-and-satisficing.md),
+a related but distinct category).
+
+## 3. Concepts
 
 **Confirmation bias.** The tendency to weight new evidence as confirming a prior belief and
 discount disconfirming evidence — directly relevant to custody: an operator who has decided a track
@@ -32,7 +44,10 @@ updating toward uncertainty, the opposite of the Bayesian ideal ([R201](R201-pro
 adjustment afterward — an operator's first SSN product or first custody read can anchor their
 assessment even as fresher, more diagnostic organic observations arrive (relevant to [R119](R119-space-situational-data-fusion.md)'s
 last-observation-wins fusion model: the *engine* doesn't anchor, but the *operator reading the
-display* might, independent of the underlying data).
+display* might, independent of the underlying data). Anchoring and availability (below) are two of
+the three heuristics-turned-biases named in the field's founding study
+([Tversky, A. and Kahneman, D., "Judgment under Uncertainty: Heuristics and Biases," *Science* 185, 1974](https://www.science.org/doi/10.1126/science.185.4157.1124)
+([Wayback](https://web.archive.org/web/2026/https://www.science.org/doi/10.1126/science.185.4157.1124))).
 
 **Overconfidence / miscalibration.** Stated confidence systematically exceeding actual accuracy —
 relevant directly to the weapons-quality threshold ([R105](R105-custody-theory.md) §3): an operator who treats a borderline
@@ -51,7 +66,14 @@ relevant to kinetic engagement decisions ([R117](R117-directed-energy-and-kineti
 custody-building effort against a target may be biased toward following through even if circumstances
 have changed.
 
-## 3. Operational Context
+### Sources
+
+- *Tversky, A. and Kahneman, D., "Judgment under Uncertainty: Heuristics and Biases," Science*
+  185 (1974) — [live](https://www.science.org/doi/10.1126/science.185.4157.1124)
+  · [snapshot](https://web.archive.org/web/2026/https://www.science.org/doi/10.1126/science.185.4157.1124)
+  · accessed 2026-07-02.
+
+## 4. Operational Context
 
 Intelligence and operations literature treats these biases as well-documented, recurring failure
 modes in real SDA/targeting decision chains (the same biases drive real-world misidentification and
@@ -59,7 +81,7 @@ escalation incidents), which is exactly why structured analytic techniques (devi
 red-teaming per [R308](R308-red-teaming-methodology.md), explicit confidence-interval reporting per [R201](R201-probability-and-bayesian-reasoning.md)) exist as institutional
 counter-measures rather than relying on individual analyst discipline alone.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A DOM-002 rubric dimension must distinguish a biased-but-common error pattern from a
   competence gap** — e.g., scoring "engaged a track at exactly the confidence threshold under time
@@ -74,12 +96,12 @@ counter-measures rather than relying on individual analyst discipline alone.
   bias over-reaction; [R205](R205-cognitive-psychology-foundations.md)'s salience guidance and this topic's bias catalog should be checked
   together for any new alerting feature.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-201 (Competency Assessment) is the direct consumer — DOM-002's rubric design must consult this
 catalog before scoring any judgment-quality dimension.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R205](R205-cognitive-psychology-foundations.md) (the perceptual substrate biases act on), [R201](R201-probability-and-bayesian-reasoning.md) (the normative Bayesian baseline biases depart
 from), [R105](R105-custody-theory.md) (Custody Theory, the highest-stakes application), DOM-002 §9.

@@ -10,6 +10,9 @@
 > **Related Topics:** [R202](R202-decision-theory.md) (Decision Theory), [R503](R503-ai-decision-support.md) (AI Decision Support — the forward-looking
 > application), DOM-008 §4 (the standing constraint this topic justifies)
 
+> **Last Reviewed:** 2026-07-02
+> **Primary Sources Consulted:** 2
+
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
@@ -19,20 +22,32 @@ more specific about what that means in practice. This topic supplies the decisio
 literature's actual taxonomy of what a decision aid can do, so a future feature proposal can be
 checked against real categories rather than an underspecified word.
 
-## 2. Concepts
+## 2. Scope
+
+Covers the decision-support-systems literature's four-level taxonomy (data/information/
+recommendation/decision) and automation-bias risk, as the concrete vocabulary behind DOM-008 §4's
+advisor-only constraint. Does **not** cover the underlying recommendation logic a level-3 system
+would use ([R202](R202-decision-theory.md)), or the forward-looking AI-advisor application this
+topic's taxonomy gates ([R503](R503-ai-decision-support.md)).
+
+## 3. Concepts
 
 **The decision-support spectrum: data → information → recommendation → decision.** A system can
 stop at any of four levels: (1) present raw data (a telemetry graph); (2) present processed/filtered
 information (a custody confidence value, already a step above ground truth); (3) present a ranked
 recommendation among options (a future "suggested COA" feature); (4) make the decision itself
 (autonomous execution). DOM-008 §4's "advisor, not decider" line falls between (3) and (4) — level 3
-is acceptable with explicit design review, level 4 is 🅿️ pending authorization.
+is acceptable with explicit design review, level 4 is 🅿️ pending authorization
+([Keen, P. G. W. and Scott Morton, M. S., *Decision Support Systems: An Organizational Perspective*, 1978](https://dssresources.com/books/contents/keen78.html)
+([Wayback](https://web.archive.org/web/2026/https://dssresources.com/books/contents/keen78.html))).
 
 **A decision aid changes behavior even without deciding — the "automation bias" risk.** Well-
 documented finding: humans tend to over-trust a system's recommendation even when explicitly told
 it's advisory only, especially under time pressure — directly relevant to any future level-3
 feature in this simulator, since trainees are exactly the population (novice, time-pressured)
-most susceptible to this effect.
+most susceptible to this effect
+([Parasuraman, R. and Riley, V., "Humans and Automation: Use, Misuse, Disuse, Abuse," *Human Factors* 39, 1997](https://journals.sagepub.com/doi/10.1518/001872097778543886)
+([Wayback](https://web.archive.org/web/2026/https://journals.sagepub.com/doi/10.1518/001872097778543886))).
 
 **Transparency and explainability as a precondition for appropriate trust.** A decision aid that
 shows *why* it's recommending something (the underlying custody confidence, the access-window
@@ -47,14 +62,24 @@ or short-circuiting the OODA Orient stage, [R208](R208-ooda-loops.md)) even whil
 suggestions — DOM-005's validation framework, if ever applied to a future AI-advisor feature, should
 measure trainee skill development over time, not just recommendation accuracy.
 
-## 3. Operational Context
+### Sources
+
+- *Keen, P. G. W. and Scott Morton, M. S., Decision Support Systems: An Organizational Perspective* (1978) — [live](https://dssresources.com/books/contents/keen78.html)
+  · [snapshot](https://web.archive.org/web/2026/https://dssresources.com/books/contents/keen78.html)
+  · accessed 2026-07-02.
+- *Parasuraman, R. and Riley, V., "Humans and Automation: Use, Misuse, Disuse, Abuse," Human
+  Factors* 39 (1997) — [live](https://journals.sagepub.com/doi/10.1518/001872097778543886)
+  · [snapshot](https://web.archive.org/web/2026/https://journals.sagepub.com/doi/10.1518/001872097778543886)
+  · accessed 2026-07-02.
+
+## 4. Operational Context
 
 Military and aviation decision-support systems (targeting aids, collision-avoidance advisories) are
 designed around exactly this level-1-through-4 distinction, with explicit human-factors review for
 automation-bias risk before a system is certified to give recommendations rather than just data —
 this is precedent, not an invented constraint specific to this simulator.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **Any future AI-advisor Feature Specification must state which decision-support level (1-4) it
   occupies and must not exceed level 3 without explicit design review per DOM-008 §4/§6.**
@@ -65,12 +90,12 @@ this is precedent, not an invented constraint specific to this simulator.
   bias** (e.g., does trainee performance *without* the aid degrade after extended use *with* it) —
   not just whether the aid's own recommendations were accurate.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-301 (Research Analytics) is the most likely future home for any AI-advisor capability; this
 topic's taxonomy is the gate any such proposal must pass through first.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R202](R202-decision-theory.md) (Decision Theory, the underlying recommendation logic), [R503](R503-ai-decision-support.md) (AI Decision Support, this
 topic's forward-looking elaboration), DOM-008 §4 (the standing constraint operationalized here).
