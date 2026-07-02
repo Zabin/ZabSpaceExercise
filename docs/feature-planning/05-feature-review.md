@@ -54,15 +54,16 @@ the one remaining piece of both findings' remediation, not performed by this rev
   see `04-feature-dependency-graph.md`'s "Circular dependencies found" section and Finding F-05
   below.
 - **Candidate/non-baselined items:** 18 Candidate Requirements, 7 Candidate NFRs, 15 Strategic
-  Review Future Concepts, and 13 Strategic Review Gaps are deliberately **excluded** from every
-  Feature's `Included Requirements` — they are not approved, so this skill does not group them
-  (see Finding F-04).
+  Review Future Concepts, and 13 Strategic Review Gaps (count at original authoring time — now
+  21 Candidate Requirements following the DOM-002/004/005 backfill, see Finding F-01) are
+  deliberately **excluded** from every Feature's `Included Requirements` — they are not approved,
+  so this skill does not group them (see Finding F-04).
 
 ## Findings
 
 | # | Finding type | IDs involved | Description | Severity | Recommendation |
 |---|---|---|---|---|---|
-| F-01 | Architectural inconsistency / requirements-baseline gap | FS-201, FS-202, FS-301, DOM-002, DOM-004, DOM-005 | Three existing Feature Specifications (Competency Assessment, Rubric Authoring, Research Analytics) are grounded directly in Domain documents (DOM-002/004/005) but have **no corresponding FR-xxxx/NFR-xxxx leaf anywhere in `docs/requirements/`**. This Feature Catalog decomposes `docs/requirements/` exhaustively and correctly produces zero Features for assessment/research/validation capability — the gap is upstream, in the requirements baseline itself, not in this decomposition. | High | Run `requirements-engineering` against DOM-002/004/005 to backfill FR/NFR leaves for competency-assessment, rubric-computation, cohort-export, and validation-methodology capabilities before this catalog can represent them. Estimated yield: roughly 6–9 additional Features at this catalog's grain. |
+| F-01 | Architectural inconsistency / requirements-baseline gap — **RESOLVED 2026-07 (with a materially different outcome than expected)** | FS-201, FS-202, FS-301, DOM-002, DOM-004, DOM-005, CR-19, CR-20, CR-21 | Three existing Feature Specifications (Competency Assessment, Rubric Authoring, Research Analytics) were grounded directly in Domain documents (DOM-002/004/005) but had **no corresponding FR-xxxx/NFR-xxxx leaf anywhere in `docs/requirements/`**. Running `requirements-engineering` against DOM-002/004/005 found that this was not a clean backfill: DOM-002/FS-201's automated rubric computation conflicts with ADR-0017 (Accepted: no automated scoring/assessment mechanism in v1) and DOM-004/FS-301's dedicated research-export interface directly conflicts with ADR-0029 (Accepted: existing raw AAR/event-log export already deemed sufficient, a dedicated interface explicitly considered and rejected). | High | **Done, differently than recommended:** zero new baselined FR/NFR leaves — `CR-19`/`CR-20`/`CR-21` added to Candidate Requirements instead, since baselining either conflicting capability would contradict an Accepted ADR. DOM-005 yielded no new leaf at all (validation methodology, not a system capability — see `reviews/requirements-domain-backfill-report.md` §4). This corrects this row's own prior "roughly 6–9 additional Features" estimate, which did not anticipate either ADR conflict. |
 | F-02 | Missing Feature Specification — **RESOLVED 2026-07** | FEAT-4500 → FS-112, FEAT-6500 → FS-113, FEAT-6600 → FS-114 | Classification Banner, Observer Read-Only Access, and Hot-Seat Hand-Off Screen-Blank Menu each had a real, Must-priority baselined FR (FR-4510, FR-6510, FR-6610), but **zero presence in any of the 11 existing `FS-xxx` documents** and an `UNASSIGNED` Impl. Package citation in the RTM. This confirmed the original audit finding verbatim. | High | **Done:** FS-112/FS-113/FS-114 authored directly from the requirements baseline (no prior narrative to draw on). **Not yet done:** build-status verification against `ui_web/static/`, `session/`, and `session/aar.py` export paths — each new document flags this as its own top Open Question. |
 | F-03 | Feature too large (existing FS, not this catalog) — **RESOLVED 2026-07** | FS-106-white-cell-dashboard.md → FS-106 v2.0, FS-109, FS-110, FS-111 | The existing FS-106 document bundled **ten** of this catalog's 36 Features across **three different Epics** (EP-4000 White Cell Control, EP-6000 Multiplayer Transport, EP-7000 Save/Resume, EP-9000 AI-Red) — including two capabilities (multiplayer clock/locking, AI-Red) that each carry their own dedicated ADRs (ADR-0014/0026 for multiplayer; ADR-0021/0024/0030 for AI-Red) and their own source module (`session/inprocess.py`; `session/redai.py`). This was the single largest cohesion violation found. | High | **Done:** FS-106 narrowed to v2.0 (White Cell control-plane proper: clock-authority trigger/god-view/injects/adjudication); FS-109 (Multiplayer/LAN Transport, FEAT-6300/6400); FS-110 (Save/Resume, FEAT-7200); FS-111 (AI-Red, FEAT-9100) authored. **`IMP-106A`/`IP-1060` reconciliation is also done:** IP-1060 narrowed to v2.0; IP-1090/IP-1100/IP-1110 authored (reorganizing IP-1060 v1.0's already-verified code citations, no new verification performed); `00-master-build-plan.md`'s package table/dependency graph/summary stats updated; `IMP-106A` (frozen, superseded) gained a forward-pointer note only. |
 | F-04 | Missing Features (not yet approved — informational, not a defect) | CR-01–18, CNFR-01–07, FC-01–15, GAP-01–13 | The 18 Candidate Requirements, 7 Candidate NFRs, and the July-2026 Strategic Review's 15 Future Concepts / 13 Gaps are **correctly excluded** from this catalog per this skill's own constraint (only approved/baselined requirements are decomposed). Substantial overlap exists between these sets (e.g. FC-02/GAP-08 = CR-01/CNFR-06; FC-06/GAP-10 = CR-12; FC-09 = CR-13; FC-10/GAP-03 = CR-14; FC-13 = CR-15; FC-11/GAP-12 = CR-16; FC-08/GAP-02 = CR-17), so the unique count of not-yet-approved capability concepts is roughly **25 CR/CNFR-tier items + 8 FC items with no CR yet (FC-01, FC-03, FC-04, FC-05, FC-07, FC-12, FC-14, FC-15) + a handful of GAP-only research topics (GAP-01, GAP-06, GAP-07, GAP-09) that don't yet even have a candidate-requirement framing** — see the reconciliation arithmetic below. | Medium (informational) | This is the primary source of the gap between this catalog's 36 Features and the user's expected 50–80 — see "Reconciling the 50–80 expectation" below. Not resolved by this catalog; requires `requirements-engineering` (to baseline the CR/CNFR tier) and possibly `architecture-design-synthesis` first (for the FC items with no CR yet). |
@@ -83,20 +84,27 @@ for by Findings F-01 and F-04:
 | Source of additional Features once upstream work closes the gap | Estimated yield |
 |---|---|
 | **This catalog (approved FR/NFR baseline only)** | **36** |
-| DOM-002/004/005 backfilled into FR/NFR form (F-01) — competency assessment, rubric authoring, research analytics, validation methodology | ~6–9 |
-| 18 Candidate Requirements + 7 Candidate NFRs, once baselined by `requirements-engineering` (most map close to 1:1 with this catalog's grain; a few, like CR-01/CNFR-06, are one Feature not two) | ~20–22 |
+| DOM-002/004/005 backfilled into FR/NFR form (F-01) — **done: 0 baselined; 3 Candidate Requirements added instead (CR-19/20/21), blocked on ADR-0017/ADR-0029 conflicts** — those 3 are now counted in the row below, not here | 0 |
+| 21 Candidate Requirements + 7 Candidate NFRs, once baselined by `requirements-engineering` where the project owner resolves each one's blocking condition (most map close to 1:1 with this catalog's grain; a few, like CR-01/CNFR-06, are one Feature not two; CR-19/CR-20 additionally require an ADR-0017/ADR-0029 resolution first, not just an authorization) | ~23–25 |
 | 8 Strategic Review Future Concepts with no Candidate Requirement yet (FC-01, 03, 04, 05, 07, 12, 14, 15), once run through architecture/requirements authoring | ~8–10 |
 | Remaining Strategic Review Gaps with no CR/FC framing yet (GAP-01 space weather, GAP-06 attribution/messaging, GAP-07 training transfer, GAP-09 PNT warfare) | ~3–5 |
-| **Total once fully baselined** | **≈73–82** |
+| **Total once fully baselined** | **≈70–79** |
 
-This lands squarely inside the 50–80 range — confirming the original audit's instinct was correct,
-but the missing ~40 Features are **not missing decomposition work**, they are **missing upstream
-requirements/domain authoring** that this skill is explicitly not permitted to invent (per its own
-"SHALL NOT create new requirements" rule). The next concrete steps, in dependency order:
+This still lands squarely inside the 50–80 range — confirming the original audit's instinct was
+correct — but the path there is narrower than first estimated: DOM-002/004/005 contributed candidate
+requirements (now folded into the CR/CNFR row) rather than a clean, separate FR/NFR bloc, and two of
+those three candidates are blocked on an *architecture* decision (amend or accept ADR-0017/ADR-0029),
+not merely an *authorization* decision the way most of CR-01–18 are. The missing ~35–45 Features are
+**not missing decomposition work**, they are **missing upstream requirements/domain/architecture
+work** that this skill is explicitly not permitted to invent (per its own "SHALL NOT create new
+requirements" rule). The next concrete steps, in dependency order:
 
-1. Run `requirements-engineering` against DOM-002/DOM-004/DOM-005 to close Finding F-01.
-2. Run `requirements-engineering` to formally baseline (promote from Candidate to numbered) as many
-   of CR-01–18/CNFR-01–07 as the project owner authorizes.
+1. ~~Run `requirements-engineering` against DOM-002/DOM-004/DOM-005 to close Finding F-01.~~ **Done**
+   — see `reviews/requirements-domain-backfill-report.md`.
+2. Resolve the `CR-19`/`ADR-0017` and `CR-20`/`ADR-0029` conflicts (an architecture decision, not
+   an authorization) before either can be baselined; separately, run `requirements-engineering` to
+   formally baseline (promote from Candidate to numbered) as many of the now-21 `CR-01–21`/7
+   `CNFR-01–07` as the project owner authorizes.
 3. For the 8 Future Concepts with no Candidate Requirement yet, run `architecture-design-synthesis`
    first (several — FC-06, FC-09 — already have GDS-03/04 candidate-component treatment; FC-07
    cislunar and FC-15 human-machine-teaming instrumentation do not yet).

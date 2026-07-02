@@ -2,7 +2,10 @@
 
 > **Status:** Draft — amended (strategic-review reconciliation, 2026-07; no numbered NFR added or
 > modified — see "Strategic review reconciliation" section near the end of this document and
-> [`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md)).
+> [`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md)); further
+> amended (DOM-002/004/005 backfill, 2026-07; no numbered NFR added, no new Candidate NFR added —
+> see "DOM-002/004/005 backfill" section near the end of this document and
+> [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md)).
 > **Authoritative inputs:**
 > [`build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §9
 > (NFR-1…NFR-10 — the legacy, pre-GDS NFR tag scheme),
@@ -575,12 +578,33 @@ changed here:
 - Updated the Authoritative-inputs header's ADR range (`ADR-0029` → `ADR-0031`) and added the
   Strategic Assumptions Register as a cited input.
 
+## DOM-002/004/005 backfill (2026-07)
+
+In response to `docs/feature-planning/05-feature-review.md` Finding F-01, this document was
+reviewed against DOM-002 (Assessment Framework), DOM-004 (Research Framework), and DOM-005
+(Validation Framework) for any non-functional quality attribute these domains imply. Full analysis
+in [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md).
+Summary of what changed here:
+
+- **No numbered `NFR-1xxx` requirement was added, and no new Candidate NFR was added.** DOM-005 —
+  the domain document with the most plausible NFR-shaped content (validation methodology) — is
+  process/methodology guidance for how a *future* Implementation Package should reason about an
+  instrument's validity, not a system quality attribute this baseline can hold the running system
+  to. Its one statement with genuine system-behavior shape ("characterize typical behavior by
+  driving the engine across many seeds, never by relaxing determinism within a run," DOM-005 §6)
+  restates NFR-1500 (Determinism) applied externally rather than describing a new constraint —
+  adding a second NFR ID for the same invariant would be a duplicate, which this baseline's own
+  writing rules forbid. DOM-002/004's candidate capabilities (automated rubric computation,
+  dedicated research export) are functional in character and are addressed as `CR-19`/`CR-20` in
+  `01-functional-requirements.md`, not here.
+
 ## Completion report
 
 - **Total NFR count (numbered baseline):** 23 (`NFR-1100` through `NFR-3300`, leaving numbering
   gaps for future insertion per category, consistent with `requirements/01`'s scheme). Unchanged by
-  the 2026-07 strategic-review reconciliation pass.
-- **Candidate requirement count:** 7 (`CNFR-01`…`CNFR-07`).
+  the 2026-07 strategic-review reconciliation pass and by the 2026-07 DOM-002/004/005 backfill pass.
+- **Candidate requirement count:** 7 (`CNFR-01`…`CNFR-07`). Unchanged by the DOM-002/004/005
+  backfill pass — see that section above for why.
 - **Categories with no derivable NFRs:** 1 of the 15 required categories — **Observability**
   (§9 above) — has no numbered NFR; its gap is recorded as `CNFR-01`. All other 14 categories
   (Performance, Scalability, Reliability, Availability, Maintainability, Extensibility, Security,

@@ -27,6 +27,13 @@ requirements documents in full (every FR/NFR/Candidate leaf and its explicit fie
 > [`01-functional-requirements.md`](01-functional-requirements.md) and
 > [`02-non-functional-requirements.md`](02-non-functional-requirements.md) for the corresponding
 > sections in the two documents this matrix traces.
+>
+> **Further amended 2026-07** (DOM-002/004/005 backfill, closing `docs/feature-planning/
+> 05-feature-review.md` Finding F-01) to add rows for `CR-19`–`CR-21` and to close the Impl. Package
+> `UNASSIGNED` gap for `FR-4610`/`FR-4710`/`FR-4720` (via `IP-1060` v2.0) and `FR-7220` (via
+> `IP-1100`), both split from `IP-1060` v1.0 per Finding F-03. No baselined FR/NFR row was added. See
+> [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md)
+> for the full analysis.
 
 Every populated cell below is backed by an explicit, already-written field on the cited
 requirement leaf (its own "Related ADRs," "Related Interfaces," "Source Documents," or
@@ -117,9 +124,9 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-4310 | Pause / resume clock control | UNASSIGNED | ADR-0016 | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-4410 | Inject authoring / firing | UNASSIGNED | ADR-0005 | C4, C6, C1 | INT-0002, INT-0016 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-4510 | Observer view | UNASSIGNED | (none directly) | C4, C6, C12 | INT-0002, INT-0001 | UNASSIGNED | UNASSIGNED | `ui_web/server.py` |
-| FR-4610 | (manual adjudication / custody-adjacent leaf, ADR-0004) | UNASSIGNED | ADR-0004 | C4, C6, C2, C1 | INT-0002, INT-0007 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
-| FR-4710 | No automated scoring / manual adjudication | UNASSIGNED | ADR-0017, ADR-0029 | C4, C6 | (none — absence of an interface) | UNASSIGNED | UNASSIGNED | UNASSIGNED |
-| FR-4720 | Adjust safe-mode dials / live parameters mid-exercise *(new leaf, CHG-003)* | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-4610 | (manual adjudication / custody-adjacent leaf, ADR-0004) | UNASSIGNED | ADR-0004 | C4, C6, C2, C1 | INT-0002, INT-0007 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0)* |
+| FR-4710 | No automated scoring / manual adjudication | UNASSIGNED | ADR-0017, ADR-0029 | C4, C6 | (none — absence of an interface) | UNASSIGNED | UNASSIGNED | (inspection — no outbound interface returns a score field) *(closed 2026-07 via IP-1060 v2.0)* |
+| FR-4720 | Adjust safe-mode dials / live parameters mid-exercise *(new leaf, CHG-003)* | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0)* |
 | FR-5110 | Scenario builder | UNASSIGNED | ADR-0027 | C4, C6, C5 | INT-0003 | UNASSIGNED | UNASSIGNED | `content/vignette.py` |
 | FR-5210 | TLE force-add import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 | UNASSIGNED | UNASSIGNED | `content/` (TLE import) |
 | FR-5310 | Vignette loading | UNASSIGNED | ADR-0007 | C2, C5 | INT-0011 | UNASSIGNED | UNASSIGNED | `content/vignette.py` |
@@ -133,13 +140,13 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-6610 | Hot-seat hand-off / screen-blank menu *(new leaf, CHG-004)* | UNASSIGNED | ADR-0004 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-7110 | Event log | UNASSIGNED | ADR-0002 | C2, C1 | INT-0008, INT-0014 | UNASSIGNED | UNASSIGNED | `engine/eventlog.py` |
 | FR-7210 | Save / resume | UNASSIGNED | ADR-0022 | C2, C5, C11 | INT-0012 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
-| FR-7220 | Save-file content/session ownership split *(new leaf, CHG-007)* | UNASSIGNED | ADR-0022 | C2, C5, C11 | INT-0011, INT-0012 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-7220 | Save-file content/session ownership split *(new leaf, CHG-007)* | UNASSIGNED | ADR-0022 | C2, C5, C11 | INT-0011, INT-0012 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1100)* |
 | FR-7310 | AAR replay/scrub | UNASSIGNED | ADR-0002 | C2, C1 | INT-0014 | UNASSIGNED | UNASSIGNED | `session/aar.py` |
 | FR-7320 | AAR branch compare | UNASSIGNED | ADR-0002 | C2, C1 | INT-0014 | UNASSIGNED | UNASSIGNED | `session/aar.py` |
 | FR-8110 | Operator console (web UI over the API) | UNASSIGNED | ADR-0008 | C4, C12 | INT-0001 | UNASSIGNED | UNASSIGNED | `ui_web/server.py`, `ui_web/static/` |
 | FR-9110 | AI-Red substitution for unseated Red | UNASSIGNED | ADR-0021, ADR-0024 | C2, C1, C8 | INT-0008, INT-0015 | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" | UNASSIGNED | `session/redai.py` |
 
-### Candidate Requirements (CR-01–CR-18) — `CANDIDATE — NOT BASELINED`
+### Candidate Requirements (CR-01–CR-21) — `CANDIDATE — NOT BASELINED`
 
 Per the `requirements-engineering` skill's own discipline, Candidates get rows but most
 forward-trace columns are `UNASSIGNED` by definition (they describe unimplemented or
@@ -170,6 +177,19 @@ to a not-built GDS-02/03/04 candidate component/concept instead, so Arch. Compon
 | CR-16 | Ground-Segment-as-Terrain Cyber Model | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | `FUTURE-WORK.md` §13 | UNASSIGNED | UNASSIGNED |
 | CR-17 | Persistent Debris / STM Environment Layer | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | `FUTURE-WORK.md` §2, §13 | UNASSIGNED | UNASSIGNED |
 | CR-18 | Facilitator / cross-session adjudication-consistency support | UNASSIGNED | ADR-0031 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| CR-19 *(new 2026-07)* | Automated competency-assessment rubric computation | UNASSIGNED | ADR-0017 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| CR-20 | Dedicated multi-run/cohort research-export interface | UNASSIGNED | ADR-0029 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| CR-21 | Human-subjects research authorization/ethics boundary | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+
+`CR-19`–`CR-21`, added by the 2026-07 DOM-002/004/005 backfill pass (`docs/feature-planning/
+05-feature-review.md` Finding F-01), follow the same discipline as `CR-12`–`CR-18`: neither cites a
+research-encyclopedia topic (DOM-002/004 are domain documents, not encyclopedia entries, and the
+Research column is reserved for the latter) nor an Architecture Component (DOM-002/004/005 are not
+yet represented in the C1–C12 component list at all — a gap this matrix does not resolve by
+guessing one). `CR-19`/`CR-20` cite the Accepted ADR each conflicts with (`ADR-0017`, `ADR-0029`
+respectively); `CR-21` cites none, since it does not conflict with anything, it simply has no
+concrete feature yet to constrain. See `reviews/requirements-domain-backfill-report.md` for the
+full derivation.
 
 ---
 
@@ -254,7 +274,7 @@ and ADR-0031 (both new 2026-07) are included on the same basis.
 | ADR-0014 | FR-6310, FR-6320, FR-6410, NFR-1100, NFR-1400 |
 | ADR-0015 | FR-6220, NFR-2300 |
 | ADR-0016 | FR-1110, FR-4310 |
-| ADR-0017 | FR-4710, NFR-2600 |
+| ADR-0017 | FR-4710, NFR-2600, CR-19 *(added 2026-07, DOM-002/004/005 backfill)* |
 | ADR-0018 | FR-5210, NFR-3200, NFR-2200 |
 | ADR-0019 | NFR-1200, NFR-1300 |
 | ADR-0020 | NFR-1200, NFR-2900 |
@@ -263,7 +283,7 @@ and ADR-0031 (both new 2026-07) are included on the same basis.
 | ADR-0024 | FR-9110, CR-01, CNFR-06 |
 | ADR-0026 | FR-6310, FR-6320, NFR-1400 |
 | ADR-0027 | FR-5110 |
-| ADR-0029 | FR-4710 |
+| ADR-0029 | FR-4710, CR-20 *(added 2026-07, DOM-002/004/005 backfill)* |
 | ADR-0030 | FR-9110 *(added 2026-07, strategic-review reconciliation)* |
 | ADR-0031 | CR-18 *(added 2026-07, strategic-review reconciliation)* |
 | ADR-0001 | (no citing FR/NFR) |
@@ -393,7 +413,13 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `spacesim/tests/` | NFR-2800 |
 | Build/dependency manifest, `spacesim/` (whole tree) | NFR-2900 |
 | All subsystems (no single file) | NFR-2200 |
-| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4110, FR-4210, FR-4610, FR-4710, FR-4720, FR-6610, FR-7220, all Candidate Requirements (CR-01–CR-18), all Candidate NFRs (CNFR-01–CNFR-07) |
+| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4110, FR-4210, FR-6610, all Candidate Requirements (CR-01–CR-21), all Candidate NFRs (CNFR-01–CNFR-07) |
+
+*(FR-4610/FR-4710/FR-4720 closed 2026-07 via `IP-1060` v2.0; FR-7220 closed 2026-07 via `IP-1100` —
+both split from `IP-1060` v1.0 per Finding F-03 — see the master matrix rows above. FR-4110/FR-4210/
+FR-6610 remain `UNASSIGNED` here even though `FS-115`/`FS-114` now exist, because those two Feature
+Specifications explicitly flag their own build status as unverified — an FS existing is not the
+same evidence bar this index requires, per its own stated discipline.)*
 
 ## Strategic review reconciliation (strategic-review-2026-07.md)
 
@@ -417,6 +443,29 @@ matrix was extended to keep pace with `01-functional-requirements.md` and
   Strategic Assumptions Register as a read input.
 - **No baselined FR/NFR row (the numbered, non-Candidate master matrix) was added, removed, or
   altered.**
+
+## DOM-002/004/005 backfill (2026-07)
+
+In response to `docs/feature-planning/05-feature-review.md` Finding F-01, and following the same
+pass documented in `01-functional-requirements.md`'s and `02-non-functional-requirements.md`'s own
+"DOM-002/004/005 backfill" sections, this matrix was extended. Full analysis in
+[`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md).
+Summary:
+
+- Added master-matrix rows for **CR-19–CR-21** (Candidate Requirements section, renamed from
+  `CR-01–CR-18` to `CR-01–CR-21`). No new Candidate NFR was added (see `02`'s own reconciliation
+  section for why).
+- Added **CR-19** to the ADR-0017 reverse-index row and **CR-20** to the ADR-0029 reverse-index row
+  — both new Candidates cite the Accepted ADR their underlying capability conflicts with.
+- **Closed four pre-existing `UNASSIGNED` Impl. Package cells** as a direct side effect of this
+  session's separate `IMP-106A`/`IP-1060` reconciliation work (Finding F-03, not this pass's own
+  scope, but landed in the same session): `FR-4610`, `FR-4710`, `FR-4720` (now `session/manager.py`
+  via `IP-1060` v2.0) and `FR-7220` (now `session/manager.py` via `IP-1100`). Updated the
+  Implementation Package reverse index's `UNASSIGNED` bucket accordingly.
+- **No baselined FR/NFR row was added.** Every candidate capability DOM-002/004 describe conflicts
+  with an Accepted ADR (`ADR-0017`, `ADR-0029`) or lacks a concrete feature to constrain
+  (`CR-21`); DOM-005 yielded no new leaf, baseline or candidate, at all (methodology guidance, not
+  a system requirement — see `02`'s own reconciliation section).
 
 ## Related
 

@@ -271,6 +271,18 @@ the traceability matrix accordingly, and corrected stale pre-supersession "build
 language independently duplicated in `docs/requirements/01`/`02`'s own header notes (the same
 defect `ADR-0031` fixed in `architecture/00-vision.md` §7, but outside that document's scope).
 
+**DOM-002/004/005 backfill (2026-07):** a second follow-up requirements-tier pass, closing
+`docs/feature-planning/05-feature-review.md` Finding F-01, ran `requirements-engineering` against
+DOM-002 (Assessment)/DOM-004 (Research)/DOM-005 (Validation) — the three domains grounding
+FS-201/FS-202/FS-301 with no prior requirement at all. Found that DOM-002/FS-201's automated
+rubric computation conflicts with Accepted ADR-0017 (no automated scoring/assessment mechanism in
+v1) and DOM-004/FS-301's dedicated research-export interface directly conflicts with Accepted
+ADR-0029 (existing raw AAR/event-log export already deemed sufficient; a dedicated interface
+explicitly considered and rejected). **Zero new baselined `FR-1xxx`/`NFR-1xxx` requirements were
+added** — three new Candidate Requirements (`CR-19`–`CR-21`) were added instead, and DOM-005
+yielded no new leaf at all (validation methodology, not a system capability). Full analysis:
+[`reviews/requirements-domain-backfill-report.md`](docs/reviews/requirements-domain-backfill-report.md).
+
 | ID | Document | Path | Depends on | Status |
 |---|---|---|---|---|
 | RT-STRAT-REG | Strategic Assumptions Register | `architecture/strategic-assumptions-register.md` | GDS-01, ADR-0030 | ♻️ |
@@ -372,10 +384,15 @@ IP-1090/IP-1100/IP-1110 authored (see the Implementation Packages theme above). 
 verification for FS-112/113/114/115 against the actual `spacesim/` source tree remains open — no
 Implementation Package exists yet for any of the four pending it.
 
-**Next:** verify build status for FS-112/113/114/115; separately, run `requirements-engineering` to
-close the DOM-002/004/005 gap (Finding F-01) and to baseline as many Candidate Requirements as the
-project owner authorizes (Finding F-04), then re-run this skill's Step 0 incrementally against the
-delta.
+**Update (2026-07):** Finding F-01 is done — see the "DOM-002/004/005 backfill" paragraph under the
+Architecture / Design Synthesis theme above and `reviews/requirements-domain-backfill-report.md`.
+Outcome: zero new baselined FR/NFR; `CR-19`/`CR-20`/`CR-21` added instead, two of them blocked on
+an ADR-0017/ADR-0029 conflict this pass discovered rather than a simple authorization gate.
+
+**Next:** verify build status for FS-112/113/114/115; resolve the `CR-19`/`ADR-0017` and
+`CR-20`/`ADR-0029` conflicts (an architecture decision) before either can be baselined; separately,
+baseline as many of `CR-01–21`/`CNFR-01–07` as the project owner authorizes for the ones with no
+such blocker (Finding F-04), then re-run this skill's Step 0 incrementally against the delta.
 
 ## Theme: Implementation Packages (the *how* — `docs/implementation/packages/`, canonical; `docs/implementations/`, superseded)
 

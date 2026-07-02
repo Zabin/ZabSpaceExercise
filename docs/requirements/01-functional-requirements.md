@@ -2,7 +2,10 @@
 
 > **Status:** Draft — amended (strategic-review reconciliation, 2026-07; no numbered FR added or
 > modified — see "Strategic review reconciliation" section near the end of this document and
-> [`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md)).
+> [`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md)); further
+> amended (DOM-002/004/005 backfill, 2026-07; no numbered FR added — see "DOM-002/004/005 backfill"
+> section near the end of this document and
+> [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md)).
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -1481,6 +1484,57 @@ to GDS-02/03/04 explicitly marked "not built, not scheduled, not committed" — 
 status as CR-01–CR-11 above, just newly named rather than newly built. See
 `reviews/requirements-update-report.md` for the full derivation.
 
+**CR-19–CR-21 added 2026-07**, following a `requirements-engineering` pass against DOM-002
+(Assessment Framework), DOM-004 (Research Framework), and DOM-005 (Validation Framework) —
+closing `docs/feature-planning/05-feature-review.md` Finding F-01 (these domains ground shipped
+Feature Specifications FS-201/FS-202/FS-301 with zero corresponding requirement anywhere in this
+baseline). See "DOM-002/004/005 backfill" near the end of this document and
+`reviews/requirements-domain-backfill-report.md` for the full analysis; the bottom line is that
+**zero new leaves were added to the numbered baseline** — every candidate capability these domains
+describe either conflicts with an Accepted ADR, or is not yet concrete enough to write a testable
+requirement against.
+
+- **CR-19 — Automated competency-assessment rubric computation.** DOM-002 §§3–6 and FS-201
+  describe an always-available, automated computation of qualitative rubric tiers (custody
+  quality, window discipline, belief-truth divergence, …) per cell per exercise. This cannot be
+  written as a baselined FR today because it is in direct tension with two Accepted decisions:
+  ADR-0017 ("No automated scoring or assessment mechanism exists in v1... outcomes are adjudicated
+  and narrated by the White Cell facilitator") and FR-4710 above (already baselined: "the system
+  shall not compute or display an automated score or win/loss determination"). DOM-002 §5
+  deliberately designed the rubric to avoid a single composite score specifically to distinguish
+  "rubric-tier reporting" from "scoring/win-loss" — this may be a genuine, defensible distinction,
+  but no approved document reconciles it against ADR-0017's broader "no... assessment mechanism"
+  language, and `docs/implementation/packages/IP-2010-competency-assessment.md`'s own header
+  records this exact conflict as unreconciled (a "Blocking Report" was delivered directly to the
+  project owner 2026-07-02; it is not itself a persisted document this baseline can cite). A
+  requirement cannot be written until either ADR-0017 is amended to carve out non-adjudicative
+  descriptive measurement, or DOM-002/FS-201 is rescoped to fit within it. **Source:** DOM-002
+  §§3–6; FS-201 (Scope, System Behaviour); ADR-0017; FR-4710 (this document); `IP-2010`'s header
+  note.
+- **CR-20 — Dedicated multi-run/cohort research-export interface.** DOM-004 §5 and FS-301 describe
+  a purpose-built export/cohort-management layer (structured per-run records with condition-label
+  metadata, across many seeded runs) to close the stated gap that "a researcher today would have
+  to script directly against `eventlog`/`save` artifacts." This cannot be written as a baselined FR
+  today because it directly conflicts with an Accepted decision: ADR-0029 ("Raw AAR/event-log
+  access... plus the existing CSV/JSON export at `/api/sessions/{sid}/aar/export.{csv,json}`... is
+  treated as sufficient for the researchers/assessment-designers stakeholder... no new dedicated
+  export/analysis interface or owning subsystem is introduced"). ADR-0029's own Alternatives
+  Considered section explicitly names and rejects "introduce a dedicated export/analysis interface
+  for assessment designers" — precisely what FS-301 proposes. This is a clearer conflict than
+  CR-19's: no genuine distinction narrows it the way DOM-002 §5 narrows CR-19. A requirement cannot
+  be written until ADR-0029 is revisited or FS-301 is rescoped to the existing export path it
+  currently proposes to supersede. **Source:** DOM-004 §5; FS-301 (Scope, User Workflows); ADR-0029
+  (Decision, Alternatives Considered).
+- **CR-21 — Human-subjects research authorization/ethics boundary.** DOM-004 §6 states that any
+  future feature enabling human-subjects research (e.g., cross-institution de-identified trainee
+  data collection) requires separate authorization and the institution's own IRB/ethics process,
+  and "must not be assumed authorized merely because this framework describes the capability gap."
+  This is not in conflict with any ADR, but no approved document commits the system to *any*
+  concrete human-subjects-research feature today — CR-19/CR-20 above are themselves blocked, so
+  there is no built or committed capability yet for this boundary statement to constrain. A
+  requirement would be vacuous until a concrete human-subjects-research feature is proposed;
+  recorded here so the constraint is not silently forgotten if/when one is. **Source:** DOM-004 §6.
+
 - **CR-12 — Proliferated-Constellation Aggregation Layer.** No layer/mesh-level tasking, health
   rollup, or aggregated-custody construct exists for constellations larger than the ≤3-satellite cap
   (ADR-0019); a proliferated architecture (tens to hundreds of objects) cannot be represented without
@@ -1568,6 +1622,31 @@ changed here:
   exists.
 - Updated the Authoritative-inputs header's ADR range (`ADR-0029` → `ADR-0031`) and added the
   Strategic Assumptions Register as a cited input.
+
+## DOM-002/004/005 backfill (2026-07)
+
+In response to `docs/feature-planning/05-feature-review.md` Finding F-01 (three shipped Feature
+Specifications — FS-201, FS-202, FS-301 — grounded in Domain documents DOM-002/004/005 with zero
+corresponding requirement anywhere in this baseline), this document was reviewed against those
+three domain documents and their FS-201/FS-301 output. Full analysis in
+[`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md).
+Summary of what changed here:
+
+- **No numbered `FR-1xxx` baseline requirement was added.** Every candidate capability DOM-002/004
+  describe either directly conflicts with an Accepted ADR (ADR-0017 for DOM-002/FS-201's automated
+  rubric computation; ADR-0029 for DOM-004/FS-301's dedicated research-export interface) or is not
+  concrete enough to write a testable requirement against yet (DOM-004 §6's human-subjects
+  boundary, which has no concrete feature to constrain today). This is a materially different
+  outcome than the Feature Catalog's own prior estimate ("roughly 6–9 additional Features," per
+  `docs/feature-planning/05-feature-review.md` Finding F-01's original Recommendation) — that
+  estimate assumed a clean backfill and did not anticipate these two ADR conflicts, which only
+  surfaced during this pass. See the backfill report for the full reasoning, including why DOM-005
+  (Validation Framework) yields **zero** new leaves at all: it is validation-methodology guidance
+  (how to check an instrument's validity), not a new system capability, and its one arguably
+  system-level statement (Monte Carlo over seeds without relaxing determinism, §6) restates the
+  already-baselined NFR-1500 determinism invariant rather than adding a new one.
+- Added **CR-19 through CR-21**, three new Candidate Requirements — see the Candidate Requirements
+  section above.
 
 ## Next
 
