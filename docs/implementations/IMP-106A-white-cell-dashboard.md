@@ -18,6 +18,16 @@
 > is the document of record going forward — see
 > [`docs/implementation/00-master-build-plan.md`](../implementation/00-master-build-plan.md)
 > §"Relationship to the prior `docs/implementations/` corpus."
+>
+> **Further split, 2026-07:** the FS/IP tier this document's content was re-published under has
+> since been split further, per `docs/feature-planning/05-feature-review.md` Finding F-03. This
+> document's §4 (clock) and §5 (session administration/save-resume) and §6 (Red-doctrine) content
+> now corresponds to three additional documents of record —
+> [IP-1090](../implementation/packages/IP-1090-multiplayer-session-transport.md) (clock/locking
+> transport), [IP-1100](../implementation/packages/IP-1100-save-and-resume.md) (save/resume),
+> and [IP-1110](../implementation/packages/IP-1110-ai-red-doctrine-automation.md) (Red-doctrine
+> automation) — none of which existed when this file was superseded. This note is added without
+> otherwise altering this file's frozen historical content.
 
 ## 1. Situation
 

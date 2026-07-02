@@ -367,11 +367,15 @@ worked out in full in `05-feature-review.md`'s closing section.
 Feature Specifications theme above. **Findings F-02 and F-10 are also done** — FS-112/FS-113/
 FS-114/FS-115 newly authored, each with build status explicitly flagged unverified.
 
-**Next:** reconcile `IMP-106A`/`IP-1060` against the FS-106 split, and verify build status for
-FS-112/113/114/115 against the actual `spacesim/` source tree (in progress); separately, run
-`requirements-engineering` to close the DOM-002/004/005 gap (Finding F-01) and to baseline as many
-Candidate Requirements as the project owner authorizes (Finding F-04), then re-run this skill's
-Step 0 incrementally against the delta.
+**Update (2026-07):** `IMP-106A`/`IP-1060` reconciliation is done — IP-1060 narrowed to v2.0,
+IP-1090/IP-1100/IP-1110 authored (see the Implementation Packages theme above). Build-status
+verification for FS-112/113/114/115 against the actual `spacesim/` source tree remains open — no
+Implementation Package exists yet for any of the four pending it.
+
+**Next:** verify build status for FS-112/113/114/115; separately, run `requirements-engineering` to
+close the DOM-002/004/005 gap (Finding F-01) and to baseline as many Candidate Requirements as the
+project owner authorizes (Finding F-04), then re-run this skill's Step 0 incrementally against the
+delta.
 
 ## Theme: Implementation Packages (the *how* — `docs/implementation/packages/`, canonical; `docs/implementations/`, superseded)
 
@@ -379,8 +383,11 @@ Phase 5 of the documentation-driven-development expansion (MSTR-005 §4 chain: .
 Specification → **Implementation Package** → Code → Tests). Each `IP-xxxx` describes architecture,
 data model, files, tasks, tests, Definition of Done, and rollback considerations in prose/
 pseudocode, never literal committed code (MSTR-006 §8). Two situations per package: as-built
-(documents existing, test-covered code, FS-101 through FS-107) vs. forward design (FS-201/FS-301,
-capability not yet implemented, coding work not authorized by this documentation per MSTR-006 §3).
+(documents existing, test-covered code, FS-101 through FS-107, FS-109, FS-110, FS-111) vs. forward
+design (FS-201/FS-301, capability not yet implemented, coding work not authorized by this
+documentation per MSTR-006 §3). FS-112/113/114/115 (new 2026-07) have **no package yet** — each
+Feature Specification's own build status is unverified, pending confirmation before a package can
+be written either way.
 Router: [`implementation/packages/INDEX.md`](docs/implementation/packages/INDEX.md); sequencing/
 dependency-graph/critical-path in [`implementation/00-master-build-plan.md`](docs/implementation/00-master-build-plan.md).
 
@@ -401,12 +408,26 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1040 | SDA Tasking — sensor tasking & SSN request lifecycle | `implementation/packages/IP-1040-sda-tasking.md` | FS-104 | As-built | ✅ VERIFIED |
 | IP-1050 | Spacecraft Operations — bus/payload command & telemetry | `implementation/packages/IP-1050-spacecraft-operations-bus-payload.md` | FS-105 | As-built | ✅ VERIFIED |
 | IP-1051 | Spacecraft Operations — effect resolution & console UX | `implementation/packages/IP-1051-spacecraft-operations-effects-console.md` | FS-105 | As-built | ✅ VERIFIED |
-| IP-1060 | White Cell Dashboard — session/inject/clock control plane | `implementation/packages/IP-1060-white-cell-dashboard.md` | FS-106 | As-built | ✅ VERIFIED |
+| IP-1060 | White Cell Dashboard — god-view, inject, clock-authority trigger & adjudication *(v2.0, narrowed)* | `implementation/packages/IP-1060-white-cell-dashboard.md` | FS-106 v2.0 | As-built | ✅ VERIFIED |
 | IP-1070 | After Action Review — replay/scrub/branch-compare | `implementation/packages/IP-1070-after-action-review.md` | FS-107 | As-built | ✅ VERIFIED |
+| IP-1090 | Multiplayer / LAN Session Transport — lazy clock, mutation locking, hot-seat/LAN sharing | `implementation/packages/IP-1090-multiplayer-session-transport.md` | FS-109 | As-built | ✅ VERIFIED |
+| IP-1100 | Save & Resume — deterministic round trip & content/session split | `implementation/packages/IP-1100-save-and-resume.md` | FS-110 | As-built | ✅ VERIFIED |
+| IP-1110 | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | `implementation/packages/IP-1110-ai-red-doctrine-automation.md` | FS-111 | As-built | ✅ VERIFIED |
 | IP-2010 | Competency Assessment — rubric computation | `implementation/packages/IP-2010-competency-assessment.md` | FS-201 | Forward design | 🟡 READY (not authorized, MSTR-006 §3) |
 | IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🔴 BLOCKED (on IP-2010; also not authorized) |
 
-FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3).
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). FS-112/113/
+114/115 have no Implementation Package yet (build status unverified — see the Feature
+Specifications theme above).
+
+**IP-1090/IP-1100/IP-1110 are new (2026-07)**, split out of IP-1060 v1.0 per
+`docs/feature-planning/05-feature-review.md` Finding F-03, mirroring the FS-106 split — no new code
+verification was performed, these three packages reorganize `IP-1060` v1.0's already-verified
+citations under the new Feature boundaries. `docs/implementation/00-master-build-plan.md`'s package
+table, dependency graph, Wave-1 parallel-opportunity list, and summary statistics (13 packages,
+158-line average) have been updated accordingly. `docs/implementations/IMP-106A-white-cell-
+dashboard.md` (superseded, frozen historical content) gained a forward-pointer note to the three
+new packages without otherwise being altered.
 
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
