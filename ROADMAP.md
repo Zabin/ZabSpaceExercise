@@ -125,19 +125,18 @@ with — not a build order. The **Build Spec wins on any conflict** regardless o
 | RE-100 | Tier R100 — Space Operations Foundation (30 topics authored, 0 planned) | `research/encyclopedia/R100-index.md` | RS-04, RS-05, RS-06 | 🚧 *(30/30 authored topics closed — Scope sections + citations remediated, R121/R122 backfilled; **R130** (Downlink Operations and Data Return) authored to close the one `engine/orders.py` action verb (`downlink`) that R103/R107/R114 each explicitly disclaimed covering, so all seven order-verb actions now have a dedicated topic; **R129** (SIGINT Collection and Geolocation Accuracy) authored to close the 2026-06-27 code-vs-encyclopedia re-audit gap on `engine/sigint.py` (band/mode database + √dwell × √N geolocation-error model), grounded against POPPY/PARCAE TDOA multilateration precedent)* |
 | RE-200 | Tier R200 — Decision Sciences (14 topics) | `research/encyclopedia/R200-index.md` | MSTR-003 | 🚧 *(14/14 authored; 14/14 missing §2 Scope; 0/14 cite-compliant)* |
 | RE-300 | Tier R300 — Military Analysis (12 topics) | `research/encyclopedia/R300-index.md` | RS-01, RS-02, RS-07 | 🚧 *(12/12 authored; 12/12 missing §2 Scope; 0/12 cite-compliant — doctrinal/legal claims in this tier are the highest-stakes uncited content in the corpus)* |
-| RE-400 | Tier R400 — Research Methods (13 topics) | `research/encyclopedia/R400-index.md` | DOM-002, DOM-005 | 🚧 *(13/13 authored; 13/13 missing §2 Scope; 0/13 cite-compliant)* |
-| RE-500 | Tier R500 — Future Operations (9 topics) | `research/encyclopedia/R500-index.md` | DOM-008 | 🚧 *(9/9 authored; 9/9 missing §2 Scope; 0/9 cite-compliant)* |
+| RE-400 | Tier R400 — Research Methods (13 topics) | `research/encyclopedia/R400-index.md` | DOM-002, DOM-005 | ✅ *(13/13 authored; 13/13 have §2 Scope; 13/13 cite-compliant — GAP-13 closed 2026-07-02)* |
+| RE-500 | Tier R500 — Future Operations (9 topics) | `research/encyclopedia/R500-index.md` | DOM-008 | ✅ *(9/9 authored; 9/9 have §2 Scope; 9/9 cite-compliant — GAP-13 closed 2026-07-02)* |
 
-**Status:** structurally drafted, not done. Across all 68 topics: 66 are missing the mandatory §2
-Scope section (only R101/R102 have one) and all 68 are entirely uncited — zero `### Sources`
-subsections, zero inline URLs, zero YAML `last_reviewed`/`primary_sources_consulted` frontmatter,
-despite RS-10 (`research/10-sources-and-methodology.md`) stating its convention "applies to every
-file in this corpus." No `Used by:`/`# Source:` bidirectional cross-links exist between the
-encyclopedia and `spacesim/engine/` either (RS-10 §4), unlike the RS-01…RS-07 primers. The prior
-Phase 6-8 review (below) checked metadata-block presence and dependency consistency and passed the
-encyclopedia on both — it never checked citation compliance, which is how this sat unflagged.
-Remediation (Scope sections + citations + R121/R122) is **not yet authorized or scheduled** — flag
-for the user to decide priority against Phase 4 (Feature Specifications).
+**Status:** R400 and R500 (22 topics) closed GAP-13 remediation 2026-07-02 — both now carry the
+mandatory §2 Scope section and full inline-citation + `### Sources`-subsection coverage per RS-10
+(`research/10-sources-and-methodology.md`), grounded in Tier A/B sources (NIST standards, DoDI
+5000.61, the Belmont Report, ECSS/NASA/DARPA/DoD primary sources, and foundational peer-reviewed
+methods literature — see each tier index's closing status paragraph for the full source list). The
+remaining tiers' status above (RE-200, RE-300) may be stale relative to this revision — R300's own
+index (`R300-index.md`) already self-reports fully closed as of 2026-07-01/02, which this row has
+not been reconciled against; a full ROADMAP re-audit against each tier's own index remains
+outstanding and is not part of the R400/R500 GAP-13 remediation this revision covers.
 
 ### 🅿️ Planned: research corpus 10× expansion (`RT-FUTURE` §12 — scoped, not yet authorized)
 
