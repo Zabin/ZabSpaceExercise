@@ -10,6 +10,9 @@
 > **Related Topics:** [R202](R202-decision-theory.md) (Decision Theory), [R212](R212-multi-criteria-decision-analysis.md) (Multi-Criteria Decision Analysis — the applied
 > consumer of this topic's value-function concept)
 
+> **Last Reviewed:** 2026-07-02
+> **Primary Sources Consulted:** 1
+
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
@@ -19,13 +22,26 @@ against — utility theory is the formal account of what that value function is 
 simply the raw outcome magnitude. This topic exists so a future scoring or COA-comparison feature
 doesn't accidentally treat "value" as a free, self-evident quantity.
 
-## 2. Concepts
+## 2. Scope
+
+Covers utility theory's formal account of outcome value as a function distinct from raw magnitude,
+risk attitude as the shape of that function, and multi-attribute utility as the value-combination
+problem MCDA depends on. Does **not** cover the expected-value criterion utility plugs into
+([R202](R202-decision-theory.md)), or the applied multi-criteria scoring consumer
+([R212](R212-multi-criteria-decision-analysis.md)).
+
+## 3. Concepts
 
 **Utility is a function of outcome, not the outcome itself.** Two operators can value "losing one
 satellite" very differently depending on risk attitude, mission criticality, and stakes — utility
 theory formalizes outcome value as a function `u(outcome)`, distinct from a raw physical measure
 (Δv spent, satellites lost), precisely so that risk attitude can be made explicit rather than
-assumed away.
+assumed away. This is the axiomatic move von Neumann and Morgenstern formalized: any decision-maker
+whose preferences over uncertain outcomes ("lotteries") satisfy a small set of consistency axioms can
+be represented as maximizing the expectation of *some* utility function, which need not be linear in
+the raw outcome
+([Stanford Encyclopedia of Philosophy, "Normative Theories of Rational Choice: Expected Utility"](https://plato.stanford.edu/entries/rationality-normative-utility/)
+([Wayback](https://web.archive.org/web/2026/https://plato.stanford.edu/entries/rationality-normative-utility/))).
 
 **Risk aversion, risk neutrality, risk seeking — the shape of the utility curve.** A risk-averse
 utility function is concave (diminishing marginal value of gains, increasingly painful marginal
@@ -48,7 +64,14 @@ COA-comparison feature requires an explicit utility judgment (how costly is "hig
 relative to a given Δv expenditure), and that judgment should be stated, not silently embedded in a
 conversion constant.
 
-## 3. Operational Context
+### Sources
+
+- *Stanford Encyclopedia of Philosophy, "Normative Theories of Rational Choice: Expected Utility"*
+  (summarizing von Neumann, J. and Morgenstern, O., *Theory of Games and Economic Behavior*, 1944) — [live](https://plato.stanford.edu/entries/rationality-normative-utility/)
+  · [snapshot](https://web.archive.org/web/2026/https://plato.stanford.edu/entries/rationality-normative-utility/)
+  · accessed 2026-07-02.
+
+## 4. Operational Context
 
 Military and policy risk analysis routinely makes risk-attitude explicit (a force-protection
 posture is an explicit policy about risk aversion toward casualties, not a raw EV calculation),
@@ -56,7 +79,7 @@ exactly the same formal move utility theory describes — stating the risk attit
 than letting it default silently to risk-neutral EV-maximization, is standard practice precisely
 because the default is rarely the actually-intended posture.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **Any future feature that converts a declared severity tag (e.g. `debris_risk`) into a numeric
   score for ranking/comparison must state the conversion as an explicit utility judgment**, ideally
@@ -70,11 +93,11 @@ because the default is rarely the actually-intended posture.
   declared tag in `engage.py` ([R117](R117-directed-energy-and-kinetic-effects.md) §2); a utility conversion belongs only in a UI/analysis layer
   consuming that tag, never folded back into the resolver's probability math.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 A candidate future COA-comparison feature under FS-101 (Mission Planning) is the direct consumer.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R202](R202-decision-theory.md) (Decision Theory, the expected-value framework this topic's value function plugs into), [R212](R212-multi-criteria-decision-analysis.md)
 (Multi-Criteria Decision Analysis, the direct applied consumer).

@@ -10,6 +10,9 @@
 > **Related Topics:** [R206](R206-bounded-rationality.md) (Bounded Rationality), [R207](R207-cognitive-biases.md) (Cognitive Biases), DOM-007 (Human Factors
 > Framework — the UI-facing consumer of this topic's perception/attention vocabulary)
 
+> **Last Reviewed:** 2026-07-02
+> **Primary Sources Consulted:** 1
+
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
@@ -20,11 +23,20 @@ station, an expiring access window, or a confidence band crossing the weapons-qu
 cognitive-psychology question before it is a UI-design question. This topic gives the implementer
 the substrate vocabulary (perception, attention, working memory) that [R206](R206-bounded-rationality.md)/[R207](R207-cognitive-biases.md)/DOM-007 build on.
 
-## 2. Concepts
+## 2. Scope
+
+Covers the perception/attention/working-memory substrate (selective attention, change blindness,
+recognition-vs-recall, cognitive load) that operator-console design must respect. Does **not** cover
+the decision-making layer built on this substrate ([R206](R206-bounded-rationality.md), Bounded
+Rationality), systematic judgment distortions ([R207](R207-cognitive-biases.md), Cognitive Biases),
+or UI-specific implementation beyond the console (DOM-007, the direct consumer).
+
+## 3. Concepts
 
 **Selective attention and the limits of working memory.** Humans can attend to and hold only a
-small number of items in working memory at once (classically cited as roughly four to seven
-chunks). A fleet rail showing many satellites with simultaneous alarm badges, countdowns, and
+small number of items in working memory at once
+([Miller, G. A., "The Magical Number Seven, Plus or Minus Two," *Psychological Review* 63, 1956](https://pubmed.ncbi.nlm.nih.gov/13310704/)
+([Wayback](https://web.archive.org/web/2026/https://pubmed.ncbi.nlm.nih.gov/13310704/))). A fleet rail showing many satellites with simultaneous alarm badges, countdowns, and
 SoC/storage indicators is competing for this scarce resource — every additional always-visible
 indicator has a real attentional cost, not a free one.
 
@@ -46,7 +58,14 @@ performance on both relative to doing them separately — relevant to why time-p
 in vignettes (DOM-001's progression) should be a deliberate pedagogical lever, not an unintentional
 side effect of cluttered UI.
 
-## 3. Operational Context
+### Sources
+
+- *Miller, G. A., "The Magical Number Seven, Plus or Minus Two: Some Limits on Our Capacity for
+  Processing Information," Psychological Review* 63 (1956) — [live](https://pubmed.ncbi.nlm.nih.gov/13310704/)
+  · [snapshot](https://web.archive.org/web/2026/https://pubmed.ncbi.nlm.nih.gov/13310704/)
+  · accessed 2026-07-02.
+
+## 4. Operational Context
 
 Real operator consoles (mission control, SOC dashboards) are explicitly designed around these same
 constraints — alarm philosophy (what triggers a visible alert, how many can be active without
@@ -54,7 +73,7 @@ desensitizing the operator), display hierarchy (what's always visible vs. drill-
 recognition-over-recall interaction patterns are standard human-factors engineering practice in
 safety-critical operations, not space-sim-specific inventions.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A new always-visible UI indicator must be justified against working-memory limits** — adding it
   should mean removing or consolidating something else, or demonstrating it occupies a genuinely
@@ -67,13 +86,13 @@ safety-critical operations, not space-sim-specific inventions.
   pattern; a feature requiring an operator to remember a command's exact syntax/parameters from
   scratch reintroduces a real cognitive cost the rest of the console avoids.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-101 (Mission Planning) and DOM-007 (Human Factors Framework) are the direct consumers — any new
 console panel should be checked against this topic's attention/working-memory constraints before
 being added.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R206](R206-bounded-rationality.md) (Bounded Rationality, the decision-making layer built on this perceptual substrate), [R207](R207-cognitive-biases.md)
 (Cognitive Biases, systematic perceptual/judgment distortions), DOM-007 (Human Factors Framework, the

@@ -11,6 +11,9 @@
 > (Decision Theory), [R208](R208-ooda-loops.md) (OODA Loops — the cycle planning sits inside), [R507](R507-autonomous-planning-systems.md) (Autonomous Planning
 > Systems)
 
+> **Last Reviewed:** 2026-07-02
+> **Primary Sources Consulted:** 1
+
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
@@ -21,13 +24,25 @@ materialize as expected, observed by custody that may degrade, and is explicitly
 (`OrderSystem`'s tag-cancel). This topic gives the implementer the planning-theory vocabulary for why
 a *revisable* plan, not a rigid one, is the correct model under partial information.
 
-## 2. Concepts
+## 2. Scope
+
+Covers planning theory's distinction between a plan-as-commitment and a plan-as-prediction, cheap
+plan revision as a design requirement, hierarchical planning levels, and contingency/branch-point
+planning. Does **not** cover the intent-translation step from mission to plan
+([R305](R305-mission-analysis.md), Tier R300), the decision criteria used within a single planning
+step ([R202](R202-decision-theory.md)), or forward-looking autonomous planning ([R507](R507-autonomous-planning-systems.md)).
+
+## 3. Concepts
 
 **A plan is a commitment under uncertainty, not a prediction.** Planning theory distinguishes a plan
 (a commitment to a course of action, made now, to be executed later) from a prediction (a claim
 about what will happen) — issuing an `Order` commits to *attempting* an action at the next valid
 window; it does not predict the window will be exactly as currently modeled, especially if intervening
-events (a maneuver invalidating cached windows, [R120](R120-access-window-and-geometry-planning.md) §2) change the geometry.
+events (a maneuver invalidating cached windows, [R120](R120-access-window-and-geometry-planning.md) §2) change the geometry. Joint military
+planning doctrine draws the identical distinction between an operation plan (a living commitment
+subject to revision) and a forecast
+([Joint Chiefs of Staff, *Joint Publication 5-0, Joint Planning*, 2020](https://www.esd.whs.mil/Portals/54/Documents/FOID/Reading%20Room/Joint_Staff/18-F-1152_JP_5-0_Joint_Planning_2020.pdf)
+([Wayback](https://web.archive.org/web/2026/https://www.esd.whs.mil/Portals/54/Documents/FOID/Reading%20Room/Joint_Staff/18-F-1152_JP_5-0_Joint_Planning_2020.pdf))).
 
 **Plan revision must be cheap, or operators will under-plan.** If canceling or replacing a
 committed plan is costly or impossible, decision-makers rationally avoid committing to plans at all,
@@ -47,14 +62,20 @@ the AAR's branch-compare feature (P7) is the debrief-side mirror of this: it let
 what *would* have happened under an alternative branch, which is pedagogically most useful when
 compared against a plan that explicitly considered that branch versus one that didn't.
 
-## 3. Operational Context
+### Sources
+
+- *Joint Chiefs of Staff, Joint Publication 5-0, Joint Planning* (2020) — [live](https://www.esd.whs.mil/Portals/54/Documents/FOID/Reading%20Room/Joint_Staff/18-F-1152_JP_5-0_Joint_Planning_2020.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://www.esd.whs.mil/Portals/54/Documents/FOID/Reading%20Room/Joint_Staff/18-F-1152_JP_5-0_Joint_Planning_2020.pdf)
+  · accessed 2026-07-02.
+
+## 4. Operational Context
 
 Real operational planning (military, but also any plan-under-uncertainty domain like emergency
 response) treats a plan as a living, revisable commitment with named branch/decision points, not a
 fixed script — "no plan survives contact with the enemy" is the doctrinal aphorism for exactly the
 gap this topic formalizes between plan-as-prediction and plan-as-revisable-commitment.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A new order type must support the same cancel-before-execute revision path as existing
   actions** — per [R118](R118-space-surveillance-networks.md)'s guidance, an order type that can't be cleanly cancelled before its window
@@ -67,12 +88,12 @@ gap this topic formalizes between plan-as-prediction and plan-as-revisable-commi
   behalf when conditions change** — per DOM-008 §4, surfacing "this plan's window assumption no
   longer holds, reconsider" is advisory; automatically substituting a new plan is not.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-101 (Mission Planning) is the direct consumer — any planning UI enhancement should preserve the
 cheap-revision property this topic identifies as load-bearing.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R106](R106-mission-operations.md) (Mission Operations, the concrete loop), [R202](R202-decision-theory.md) (Decision Theory), [R208](R208-ooda-loops.md) (OODA Loops, the cycle
 planning sits inside), [R507](R507-autonomous-planning-systems.md) (Autonomous Planning Systems, the forward-looking extension).

@@ -4,7 +4,7 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R301](R301-campaign-design.md), [R303](R303-deterrence-theory.md)
-> **Referenced By:** [R317](R317-space-operator-perspective.md)
+> **Referenced By:** [R317](R317-space-operator-perspective.md), [R320](R320-commercial-space-actors-and-strategic-ambiguity.md)
 > **Produces:** the strategic-level vocabulary that [R301](R301-campaign-design.md)-[R311](R311-course-of-action-analysis.md)'s operational/tactical concepts ultimately serve
 > **Feature Mapping:** vignette authoring (`docs/scenarios/`), capstone Vignette 8 design
 > **Related Topics:** [R301](R301-campaign-design.md) (Campaign Design), [R303](R303-deterrence-theory.md) (Deterrence Theory), [R302](R302-operational-art.md) (Operational Art),

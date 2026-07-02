@@ -10,6 +10,9 @@
 > **Related Topics:** [R105](R105-custody-theory.md) (Custody Theory — the implementation this topic's formalism justifies), [R116](R116-cyber-operations-against-space-systems.md) §2 (attribution
 > scoring), [R204](R204-information-theory.md) (Information Theory), [R207](R207-cognitive-biases.md) (Cognitive Biases)
 
+> **Last Reviewed:** 2026-07-02
+> **Primary Sources Consulted:** 2
+
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
@@ -21,7 +24,17 @@ Bayesian updating) that those numbers are informal stand-ins for, so a new belie
 is designed consistently with the existing ones rather than inventing a new, incompatible notion of
 "confidence."
 
-## 2. Concepts
+## 2. Scope
+
+Covers the Bayesian interpretation of probability as a quantified degree of belief and Bayes' rule
+as the formal update mechanism — the vocabulary `Track.confidence` and cyber attribution scoring are
+informal stand-ins for. Does **not** cover the frequentist/classical-statistics apparatus used for
+aggregate model assessment ([R403](R403-statistics-foundations.md), [R405](R405-uncertainty-analysis.md)),
+the concrete `Track` confidence-decay implementation this topic formalizes but does not restate
+([R105](R105-custody-theory.md)), or the systematic ways real judgment departs from the Bayesian
+ideal ([R207](R207-cognitive-biases.md)).
+
+## 3. Concepts
 
 **Probability as degree of belief, not just frequency.** The Bayesian interpretation treats a
 probability as a *quantified belief state* of an observer with particular evidence, distinct from
@@ -33,7 +46,9 @@ Bayesian in this sense: it represents one cell's belief about one object's ident
 hypothesis) × P(hypothesis) / P(evidence)`. A new observation should *update* an existing belief
 multiplicatively (weighted by how diagnostic the evidence is), not simply replace it — this is the
 formal ideal that [R119](R119-space-situational-data-fusion.md) (Data Fusion) explicitly notes the engine does *not* yet implement
-(`observe()` is last-observation-wins, not Bayesian combination).
+(`observe()` is last-observation-wins, not Bayesian combination)
+([Bayes, T. and Price, R., "An Essay towards Solving a Problem in the Doctrine of Chances," 1763](https://royalsocietypublishing.org/doi/10.1098/rstl.1763.0053)
+([Wayback](https://web.archive.org/web/2026/https://royalsocietypublishing.org/doi/10.1098/rstl.1763.0053))).
 
 **Confidence decay is a temporal prior, not a likelihood update.** `Track.current_confidence()`'s
 half-life decay ([R105](R105-custody-theory.md) §2) models the Bayesian principle that a belief without fresh supporting
@@ -47,16 +62,28 @@ were would overstate confidence. A future genuine multi-source fusion feature ([
 this explicitly: don't naively multiply or average two correlated reports as if they were
 independent Bayesian updates.
 
-## 3. Operational Context
+## 4. Operational Context
 
 Real intelligence and SDA tradecraft is explicitly Bayesian: an analyst's stated confidence in a
 custody track or an attribution judgment is a degree-of-belief claim, revised as new sensor passes
 or SIGINT arrive, and explicitly distinguished from a frequency claim ("90% of objects like this are
 X") which is a different, often-confused statistical object. Intelligence Community tradecraft
 standards (e.g. analytic confidence levels) are a real-world instance of exactly this formalism
-applied to custody-like judgments.
+applied to custody-like judgments — ICD 203 explicitly requires analytic products to express and
+calibrate confidence rather than present a conclusion as a bare fact
+([ODNI, Intelligence Community Directive 203, "Analytic Standards"](https://www.dni.gov/files/documents/ICD/ICD-203.pdf)
+([Wayback](https://web.archive.org/web/2026/https://www.dni.gov/files/documents/ICD/ICD-203.pdf))).
 
-## 4. Implementation Guidance
+### Sources
+
+- *Bayes, T. and Price, R., "An Essay towards Solving a Problem in the Doctrine of Chances"* (1763) — [live](https://royalsocietypublishing.org/doi/10.1098/rstl.1763.0053)
+  · [snapshot](https://web.archive.org/web/2026/https://royalsocietypublishing.org/doi/10.1098/rstl.1763.0053)
+  · accessed 2026-07-02.
+- *ODNI, Intelligence Community Directive 203, "Analytic Standards"* — [live](https://www.dni.gov/files/documents/ICD/ICD-203.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://www.dni.gov/files/documents/ICD/ICD-203.pdf)
+  · accessed 2026-07-02.
+
+## 5. Implementation Guidance
 
 - **A new confidence-bearing field must say explicitly whether it represents a Bayesian belief
   state or a frequency/rate** — conflating the two (e.g., treating `detect_rate` in
@@ -71,12 +98,12 @@ applied to custody-like judgments.
   with the *custody* belief layer blurs two distinct probabilistic objects that [R102](R102-space-domain-awareness.md) §5 deliberately
   keeps separate.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-103 (Custody Management) and FS-104 (SDA Tasking) both depend on this topic for the formal
 meaning of the confidence numbers they display and task against.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R105](R105-custody-theory.md) (Custody Theory, the concrete implementation this topic formalizes), [R116](R116-cyber-operations-against-space-systems.md) §2 (attribution
 scoring, a sibling belief quantity), [R204](R204-information-theory.md) (Information Theory, the value of evidence that drives a

@@ -10,6 +10,9 @@
 > **Related Topics:** [R202](R202-decision-theory.md) (Decision Theory), [R214](R214-utility-theory.md) (Utility Theory), [R311](R311-course-of-action-analysis.md) (Course of Action Analysis —
 > the military-specific application this topic underlies)
 
+> **Last Reviewed:** 2026-07-02
+> **Primary Sources Consulted:** 1
+
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
@@ -20,13 +23,24 @@ This topic gives the implementer the formal MCDA vocabulary needed *if* a future
 feature ([R311](R311-course-of-action-analysis.md)'s military-specific framing) is ever built, so it is built on a real method rather than
 an ad hoc weighted sum invented from scratch.
 
-## 2. Concepts
+## 2. Scope
+
+Covers MCDA's core problem (non-commensurable criteria), weighted-sum scoring and its pitfalls,
+outranking methods, and weight-sensitivity as diagnostic information. Does **not** cover the
+single-criterion expected-value/utility formalism MCDA extends
+([R202](R202-decision-theory.md)/[R214](R214-utility-theory.md)), or the military-specific
+COA-comparison application ([R311](R311-course-of-action-analysis.md), Tier R300).
+
+## 3. Concepts
 
 **MCDA's core problem: comparing options that are good on different, non-commensurable axes.** A
 maneuver option that's cheap in Δv but exposes a weak custody window is not directly comparable to
 one that's Δv-expensive but custody-strong without an explicit method for trading the axes off — this
 is precisely the situation a Blue operator faces informally on every non-trivial planning decision in
-this simulator.
+this simulator. Formal MCDA methods exist precisely to make that trade-off explicit rather than
+implicit
+([Saaty, T. L., *The Analytic Hierarchy Process*, McGraw-Hill, 1980](https://archive.org/details/analytichierarch0000saat)
+([Wayback](https://web.archive.org/web/2026/https://archive.org/details/analytichierarch0000saat))).
 
 **Weighted-sum scoring and its pitfalls.** The simplest MCDA method — score each option on each
 criterion, multiply by a weight, sum — is transparent but brittle: results are sensitive to the
@@ -45,7 +59,13 @@ judgment call), at the cost of not always producing a single ranked winner.
 under one specific weighting is fragile — this is [R408](R408-sensitivity-analysis.md)'s sensitivity-analysis method applied to a
 decision-support context rather than a model-validation context.
 
-## 3. Operational Context
+### Sources
+
+- *Saaty, T. L., The Analytic Hierarchy Process* (McGraw-Hill, 1980) — [live](https://archive.org/details/analytichierarch0000saat)
+  · [snapshot](https://web.archive.org/web/2026/https://archive.org/details/analytichierarch0000saat)
+  · accessed 2026-07-02.
+
+## 4. Operational Context
 
 Real course-of-action comparison in military planning ([R311](R311-course-of-action-analysis.md)'s "decision matrix" / COA comparison
 step) is a textbook MCDA application — criteria like casualties risk, resource cost, time, and
@@ -53,12 +73,12 @@ political risk are explicitly non-commensurable, and staff planning doctrine tea
 decision matrices and sensitivity checks as a standard tool, with the same caveats about weight-
 sensitivity this topic raises.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A future COA-comparison feature must let the operator see and adjust the weighting, not present
   a single computed "best" option as ground truth** — per DOM-008 §4, a fixed hidden weighting that
   resolves the comparison *for* the trainee crosses from decision support into decision-making.
-- **If implementing weighted-sum scoring, run the sensitivity check from §2/[R408](R408-sensitivity-analysis.md) before presenting
+- **If implementing weighted-sum scoring, run the sensitivity check from §3/[R408](R408-sensitivity-analysis.md) before presenting
   any ranking as robust** — and surface that sensitivity to the operator (e.g. "Option A wins under
   most reasonable weightings; Option B wins only if Δv is weighted very heavily") rather than hiding
   it.
@@ -66,11 +86,11 @@ sensitivity this topic raises.
   documented justification** — per DOM-009 §4, legal/ROE norms are load-bearing, not a flavor
   variable to be casually monetized into the same units as fuel cost.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 A candidate future COA-comparison feature under FS-101 (Mission Planning) is the direct consumer.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R202](R202-decision-theory.md) (Decision Theory), [R214](R214-utility-theory.md) (Utility Theory, the value-function question MCDA depends on), [R311](R311-course-of-action-analysis.md)
 (Course of Action Analysis, the doctrinal/military-specific framing).

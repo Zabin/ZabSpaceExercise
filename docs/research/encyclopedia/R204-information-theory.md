@@ -10,6 +10,9 @@
 > **Related Topics:** [R201](R201-probability-and-bayesian-reasoning.md) (Probability), [R104](R104-collection-management.md) (Collection Management — the tasking-priority system this
 > topic's value-of-information concept justifies), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks)
 
+> **Last Reviewed:** 2026-07-02
+> **Primary Sources Consulted:** 1
+
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
@@ -20,7 +23,16 @@ requests are worth more than others" is a meaningful claim. This topic gives the
 formal vocabulary (information content, value of information) for why that claim holds, distinct
 from the probability formalism ([R201](R201-probability-and-bayesian-reasoning.md)) it's built on.
 
-## 2. Concepts
+## 2. Scope
+
+Covers Shannon information content and value-of-information (VoI) as the formal justification for
+treating collection requests as a scarce resource, plus channel capacity as a throughput metaphor.
+Does **not** cover the probability formalism VoI is built on ([R201](R201-probability-and-bayesian-reasoning.md)),
+the concrete SSN/sensor contention implementation this topic justifies but does not restate
+([R104](R104-collection-management.md)/[R118](R118-space-surveillance-networks.md)), or multi-criteria
+scoring of collection value against other costs ([R212](R212-multi-criteria-decision-analysis.md)).
+
+## 3. Concepts
 
 **Information content is inversely related to prior probability.** An observation that confirms
 something already near-certain (a high-confidence track with a fresh, expected pass) carries little
@@ -28,7 +40,9 @@ information; an observation that resolves a genuinely uncertain situation (an am
 approach, a low-confidence track near the weapons-quality threshold) carries much more. This is the
 intuitive content behind Shannon's `-log P(outcome)` information measure, without requiring the
 implementer to compute it explicitly — it is the *justification*, not necessarily a literal formula
-the engine should implement.
+the engine should implement
+([Shannon, C. E., "A Mathematical Theory of Communication," *Bell System Technical Journal* 27, 1948](https://pure.mpg.de/pubman/item/item_2383164_3/component/file_2383163/Shannon_Weaver_1949_Mathematical.pdf)
+([Wayback](https://web.archive.org/web/2026/https://pure.mpg.de/pubman/item/item_2383164_3/component/file_2383163/Shannon_Weaver_1949_Mathematical.pdf))).
 
 **Value of information (VoI) is decision-relevant information, not all information.** Not every
 bit of reduced uncertainty matters — VoI asks: would this observation change which action the
@@ -44,14 +58,20 @@ operational throughput constraints — information-theoretically, a bounded "cha
 only so many observations can be collected per unit time, motivating *prioritization* ([R118](R118-space-surveillance-networks.md)'s
 `PRIORITY_COST`) over an unconstrained request model.
 
-## 3. Operational Context
+### Sources
+
+- *Shannon, C. E., "A Mathematical Theory of Communication," Bell System Technical Journal* 27 (1948) — [live](https://pure.mpg.de/pubman/item/item_2383164_3/component/file_2383163/Shannon_Weaver_1949_Mathematical.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://pure.mpg.de/pubman/item/item_2383164_3/component/file_2383163/Shannon_Weaver_1949_Mathematical.pdf)
+  · accessed 2026-07-02.
+
+## 4. Operational Context
 
 Real collection management is fundamentally an information-economics problem: every tasking
 decision trades a scarce sensor/SSN slot against the question "what will I actually learn, and does
 it matter to a pending decision" — exactly the VoI framing, and the doctrinal reason real
 intelligence collection plans explicitly rank requests by decision relevance, not raw novelty.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **A future collection-priority feature should frame request value in VoI terms (will this change
   a pending decision), not raw information-content terms** — a UI surfacing "request value" should
@@ -65,12 +85,12 @@ intelligence collection plans explicitly rank requests by decision relevance, no
   high-VoI request waiting; a future SSN/sensor scheduling improvement should optimize for VoI-
   weighted throughput, not raw request count.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-104 (SDA Tasking) is the direct consumer — any tasking-priority UI improvement should be framed
 in this topic's VoI vocabulary.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R201](R201-probability-and-bayesian-reasoning.md) (Probability, the formalism VoI is built on), [R104](R104-collection-management.md) (Collection Management, the concrete
 tasking-contention system this topic justifies), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks, the throughput-

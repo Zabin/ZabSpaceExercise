@@ -19,13 +19,13 @@ Justifies White Cell and scenario design (DOM-003, DOM-009). 20 topics.
 | [R311](R311-course-of-action-analysis.md) | Course of Action Analysis | Comparing distinct options against criteria before commitment. | [R305](R305-mission-analysis.md) | ✅ |
 | [R312](R312-space-strategy.md) | Space Strategy | Strategic-level theory specific to the space domain. | [R301](R301-campaign-design.md), [R303](R303-deterrence-theory.md) | ✅ |
 | [R313](R313-maritime-operator-perspective.md) | Maritime Operator Perspective | Naval sea control/denial, C2, sustainment, and escalation doctrine as analogical grounding for orbital ops and space force employment. | [R301](R301-campaign-design.md), [R303](R303-deterrence-theory.md), [R304](R304-escalation-dynamics.md) | ✅ |
-| [R314](R314-land-operator-perspective.md) | Land Operator Perspective | Land-component command/staff mindset (mission command, IPB, targeting cycle, sustainment) as an analogy source for orbital ops. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | 🟡 |
+| [R314](R314-land-operator-perspective.md) | Land Operator Perspective | Land-component command/staff mindset (mission command, IPB, targeting cycle, sustainment) as an analogy source for orbital ops. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | ✅ |
 | [R315](R315-air-operator-perspective.md) | Air Operator Perspective | How air forces think operationally (not aircraft tech); twenty air-ops concepts mapped to orbital-ops lessons. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md) | ✅ |
 | [R316](R316-joint-and-combined-operations.md) | Joint and Combined Operations Perspective | Joint command relationships, JPP, coalition/combined ops, MDO/JADC2, joint fires/targeting, and each domain's space dependencies. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | ✅ |
 | [R317](R317-space-operator-perspective.md) | Space Operator Perspective (Historical Evolution) | How the space operator's own mindset evolved — support era → warfighting domain → SDA → orbital-ops tradecraft → C2/autonomy → joint integration → decision-making → future trends. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md) | ✅ |
 | [R318](R318-attribution-confidence-and-public-messaging.md) | Attribution Confidence and Public Messaging in Space Incidents | The operational craft between detecting an ambiguous incident and choosing a response tier (silence/protest/public statement); grounds the already-computed-but-unconsumed `attribution_signal` side effect. | [R213](R213-signaling-theory.md), [R303](R303-deterrence-theory.md) | ✅ |
 | [R319](R319-red-behavior-validation-methodology.md) | Red Behavior Validation Methodology | A concrete fidelity-checking method for `redai.py`/AI-Red doctrine presets, extending R308's qualitative principle; grounds the future DOM-005 validation framework. | [R308](R308-red-teaming-methodology.md) | ✅ |
-| R320 | Commercial Space Actors and Strategic Ambiguity | Third-party/commercial-actor targeting ambiguity as a strategic-frame extension of R312 — closes GAP-03. | [R312](R312-space-strategy.md) | ⛔ Planned |
+| [R320](R320-commercial-space-actors-and-strategic-ambiguity.md) | Commercial Space Actors and Strategic Ambiguity | Third-party/commercial-actor targeting ambiguity as a strategic-frame extension of R312 — closes GAP-03. | [R312](R312-space-strategy.md) | ✅ |
 
 **Strategic-review gap-closure pass (2026-07-01).** The Independent Strategic Review Board report
 ([`docs/reviews/strategic-review-2026-07.md`](../../reviews/strategic-review-2026-07.md) Part 3)
@@ -42,11 +42,18 @@ architecture-tier follow-up rather than bulk-authored in the same pass — full 
 every gap (including the nine outside this tier's scope) is tracked in
 [`docs/reviews/research-gap-resolution.md`](../../reviews/research-gap-resolution.md).
 
-**Status: 18 of 20 topics complete; R314 is a 🟡 draft pending citation verification and R320 is
-⛔ Planned** (R314's issue: that
-session's WebFetch had no network access — every test URL, including non-doctrine controls,
-returned HTTP 403 — so R314's doctrine citations are unverified placeholders; see its own Sources
-section). All other 18 topics carry the mandatory §2 Scope section (MSTR-007 §4.2) and are cited
+**Status: 20 of 20 topics complete — tier fully closed (2026-07-02).** R314's citation-verification
+gap is now closed: the prior session's `WebFetch` had no network access, so R314's 11 doctrine
+citations were unverified placeholders; a follow-up pass verified all 11 against live,
+publicly-accessible URLs via `WebSearch` and corrected one factual error found in the process
+(JP 3-13.4, Military Deception was misdated 2017-12-26 in the placeholder draft; the confirmed
+publication date is 2012-01-26). The last `⛔ Planned` gap, **[R320](R320-commercial-space-actors-and-strategic-ambiguity.md)**
+(Commercial Space Actors and Strategic Ambiguity, closing GAP-03), is now authored — grounded
+against the real 2022-present Starlink/Maxar/Planet Labs precedent, the 2022-10-26 Russian UN
+First Committee statement declaring Western commercial satellites "legitimate" retaliatory targets,
+and Additional Protocol I Article 52(2)'s binary military-objective test. All 20 authored topics now
+carry the mandatory §2 Scope section
+(MSTR-007 §4.2) and are cited
 per `docs/research/10-sources-and-methodology.md`'s convention — each topic has at least
 one `### Sources` subsection (live URL + Wayback snapshot + accessed date) and inline citations at
 the doctrinal/legal/historical claim site, with [R303](R303-deterrence-theory.md)'s single
