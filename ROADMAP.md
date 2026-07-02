@@ -254,6 +254,19 @@ until each is authored, its topic has no authoritative content at all (the corre
 build-spec module is legacy reference, not a binding fallback). Author GDS-06 (Non-functional
 Requirements, merging `build-spec/04-nfr-milestones-and-risks.md` §9) next, per the gate.
 
+**Strategic review disposition (2026-07):** [`reviews/strategic-review-2026-07.md`](docs/reviews/strategic-review-2026-07.md)
+was dispositioned in full by [`reviews/architecture-update.md`](docs/reviews/architecture-update.md)
+(new — see RT-FUTURE §13 for the deferred-recommendation tracking that produced). GDS-00 through
+GDS-04 each received a "Strategic review reconciliation" amendment (versions bumped, no merge gate
+reopened); two new ADRs were added (`ADR-0030` AI-determinism doctrine, `ADR-0031` governance-record
+consistency); a new living document,
+[`architecture/strategic-assumptions-register.md`](docs/architecture/strategic-assumptions-register.md)
+(RT-STRAT-REG, ♻️ Living), consolidates the review's A1–A11 assumption set.
+
+| ID | Document | Path | Depends on | Status |
+|---|---|---|---|---|
+| RT-STRAT-REG | Strategic Assumptions Register | `architecture/strategic-assumptions-register.md` | GDS-01, ADR-0030 | ♻️ |
+
 ## Theme: Feature Specifications (the *what* — `docs/features/`)
 
 Phase 4 of the documentation-driven-development expansion (MSTR-005 §4 chain: Training Objective →

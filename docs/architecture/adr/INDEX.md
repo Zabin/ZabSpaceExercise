@@ -3,9 +3,12 @@
 Router for `docs/architecture/adr/`. Each `ADR-NNNN` records one architectural decision made in
 `GDS-01` (Concept of Operations), `GDS-02` (System Context), `GDS-03` (Architecture), or the
 research encyclopedia (`docs/research/encyclopedia/`) those three ground their decisions against.
-Six of the 29 (ADR-0024–0029) originally recorded a source document's Open Question rather than a
-settled decision; all six have since been resolved by explicit project-owner decision — see
-"Scope and method" below.
+Six of the first 29 (ADR-0024–0029) originally recorded a source document's Open Question rather
+than a settled decision; all six have since been resolved by explicit project-owner decision — see
+"Scope and method" below. Two further ADRs (ADR-0030–0031) were added in response to
+[`reviews/strategic-review-2026-07.md`](../../reviews/strategic-review-2026-07.md); see
+[`reviews/architecture-update.md`](../../reviews/architecture-update.md) for that review's full
+disposition.
 
 [↑ Architecture index](../INDEX.md) · [Docs index](../../INDEX.md)
 
@@ -54,18 +57,31 @@ ADR's own "Consequences" section.
 | [ADR-0027](ADR-0027-scenario-authoring-boundary.md) | The in-app vignette builder is a distinct boundary-crossing interaction | Accepted |
 | [ADR-0028](ADR-0028-pyqt-build-spec-staleness.md) | `build-spec/03` §7.1/§7.2 rewritten to describe the shipped FastAPI + browser presentation | Accepted |
 | [ADR-0029](ADR-0029-assessment-scoring-workflow-ownership.md) | Raw AAR/event-log access is sufficient for the assessment-designer stakeholder | Accepted |
+| [ADR-0030](ADR-0030-ai-determinism-doctrine.md) | AI-determinism doctrine: non-deterministic components stay outside `engine/` | Accepted |
+| [ADR-0031](ADR-0031-governance-record-consistency.md) | Governance-record consistency: GDS-00 §7 correction; DOM-002/DOM-005 status gap acknowledged | Accepted |
 
 ADR-0001 through ADR-0023 record decisions already settled and reflected in the shipped system at
 the time this ADR set was first authored. ADR-0024 through ADR-0029 originally recorded questions
 the source documents (GDS-01/02/03 and the architecture review) left genuinely open — each one
 said so plainly in its own "Decision" field rather than inventing a resolution. The project owner
 has since resolved all six via direct decisions (captured through `AskUserQuestion` and recorded in
-each ADR's updated Decision/Rationale/Consequences), so all 29 ADRs are now `Accepted`. The
-distinction worth preserving for traceability is not "settled vs. open" anymore, but *how* each was
-settled: ADR-0001–0023 were already implicit in the shipped system when authored; ADR-0024–0029
-required an explicit, separately-dated project-owner decision, several of which (ADR-0024,
-ADR-0027, ADR-0028) authorize concrete follow-up edits to other documents — see each ADR's
-"Consequences" section for what those follow-ups are and whether they have been completed.
+each ADR's updated Decision/Rationale/Consequences). The distinction worth preserving for
+traceability is not "settled vs. open" anymore, but *how* each was settled: ADR-0001–0023 were
+already implicit in the shipped system when authored; ADR-0024–0029 required an explicit,
+separately-dated project-owner decision, several of which (ADR-0024, ADR-0027, ADR-0028) authorize
+concrete follow-up edits to other documents — see each ADR's "Consequences" section for what those
+follow-ups are and whether they have been completed.
+
+**ADR-0030 and ADR-0031** are a third category: neither a decision already implicit in the shipped
+system nor a resolved Open Question, but a decision made *in direct response to an external
+review* — [`reviews/strategic-review-2026-07.md`](../../reviews/strategic-review-2026-07.md)'s
+recommendations R4 and R5 respectively (see [`reviews/architecture-update.md`](../../reviews/architecture-update.md)
+for that review's full disposition of all 24 recommendations). ADR-0030 states a general rule
+(non-deterministic components stay outside `engine/`) that was already true by construction of
+ADR-0002/0003/0021 combined, made explicit to close a named assumption gap. ADR-0031 corrects one
+stale governance-record statement (GDS-00 §7) and explicitly declines to paper over a second,
+real gap (DOM-002/DOM-005 vs. FS-201/FS-301 status) rather than retrofitting it. All 31 ADRs are
+`Accepted`.
 
 ## Related
 
@@ -76,4 +92,6 @@ ADR-0027, ADR-0028) authorize concrete follow-up edits to other documents — se
 [`build-spec/01-context-and-scope.md`](../../build-spec/01-context-and-scope.md) §4 (the
 pre-existing Decision D1–D10 log several ADRs above restate or supersede),
 [`reviews/architecture-review.md`](../../reviews/architecture-review.md) (source of every
-unresolved-decision ADR's corroborating citations).
+unresolved-decision ADR's corroborating citations),
+[`reviews/strategic-review-2026-07.md`](../../reviews/strategic-review-2026-07.md) and
+[`reviews/architecture-update.md`](../../reviews/architecture-update.md) (source of ADR-0030–0031).

@@ -1,7 +1,7 @@
 # GDS-02 — System Context
 
 > **Document ID:** GDS-02
-> **Version:** 1.4
+> **Version:** 1.5
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-01
 > **Referenced By:** GDS-03
@@ -17,7 +17,9 @@
 > (Open Question 2 resolution),
 > [`research/encyclopedia/R316-joint-and-combined-operations.md`](../research/encyclopedia/R316-joint-and-combined-operations.md)
 > (reconciled — see "Research integration (R313–R317)" below),
-> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md)
+> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md),
+> [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) (reconciled —
+> see "Strategic review reconciliation" below), [`reviews/architecture-update.md`](../reviews/architecture-update.md)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -230,6 +232,7 @@ rediscovering later:
 | Coalition/joint C2 interface | Exchange a subset of cell-scoped data with a partner force's own C2 system under an explicit, scoped relaxation of fog-of-war — never an ambient broadening of visibility | `R316` §3.3 (coalition vs. combined ops), §3.4 (joint C2 data sharing), §5 implementation guidance |
 | External mission-planning/ATO-equivalent feed | Import a pre-built tasking order (cf. air tasking order) rather than building one in-app | `R315` §3.4 (ATO), `R316` §3.2 (joint planning process) |
 | External intelligence/SDA data feed | Ingest third-party SDA or all-source intelligence products beyond the existing Space-Track TLE import | `R317` §3.3 (SDA evolution), `R316` §3.4 (intel fusion) |
+| Commercial SDA/services provider (new) | Supply purchasable custody data (extending the mock SSN) or commercial SATCOM/imagery services either cell could lease — the assumption the current model has none of ([strategic-assumptions-register](strategic-assumptions-register.md) A3) | `strategic-review-2026-07.md` §1.7, §6.2 recommendation R11, GAP-03 |
 
 None of these is committed, scheduled, or implied to exist by any other part of this document.
 Each would require its own ADR and a GDS-02 revision (not a silent extension of the current
@@ -271,6 +274,9 @@ table) before being treated as in-scope.
    current Red/Blue/White actor model has no need to represent today, since v1 has no multi-force
    concept at all. Whether a future coalition-training feature would need a new external actor here
    (vs. simply more Blue/Red seats) is left open; see the candidate-future-systems table above.
+   `strategic-review-2026-07.md` §1.6/§4.7/§6.3 recommendation R14 independently names this as "the
+   most likely near-term sponsor ask the baseline cannot serve" — corroborating this question's
+   priority, not resolving it.
 
 ---
 
@@ -304,6 +310,26 @@ binding per `build-spec/01` (`MSTR-001` §7 conflict rule).
 - Metadata — added a cross-reference to `R316` and the gap-analysis document; version bumped
   1.3 → 1.4. Status remains `✅ Authored — merge gate closed`; this is an explicitly-instructed
   amendment, not a gate reopening, consistent with GDS-01's identical treatment.
+
+## Strategic review reconciliation (strategic-review-2026-07.md)
+
+In response to [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md), the
+following changes were made. Full disposition of all 24 recommendations is in
+[`reviews/architecture-update.md`](../reviews/architecture-update.md); this section records only
+the changes landed in this document. **Scope discipline, as with the R313–R317 integration above:**
+every change is additive and explicitly forward-looking — none changes §9's stated current v1
+boundary.
+
+- Candidate future external systems table — added a "Commercial SDA/services provider" row
+  (recommendation R11, the thin end of FC-10), citing assumption A3 in the new
+  [Strategic Assumptions Register](strategic-assumptions-register.md).
+- Open Question 5 (coalition-partner actor) — appended a corroborating citation to the strategic
+  review's R14/§4.7 finding that this is "the most likely near-term sponsor ask the baseline cannot
+  serve." Disposition unchanged, still unresolved.
+- Metadata — added cross-references to the strategic review and its disposition document; version
+  bumped 1.4 → 1.5. Status remains `✅ Authored — merge gate closed`; explicitly-instructed
+  amendment, not a gate reopening, consistent with this document's own prior reconciliation
+  sections.
 
 ## Merge gate (closed)
 

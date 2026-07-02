@@ -1674,3 +1674,64 @@ parallelism)? (e) the revised cost in §12.7 is acceptable — ~170 small invoca
 across ~12–15 working sessions vs. the original ~37 large invocations across 3
 sessions.
 
+## 13. Strategic review (2026-07) — deferred recommendations
+
+Source: [`reviews/strategic-review-2026-07.md`](reviews/strategic-review-2026-07.md), dispositioned
+in full by [`reviews/architecture-update.md`](reviews/architecture-update.md). That document is the
+authoritative disposition record (accepted/deferred, with rationale) for all 24 recommendations;
+this section is only the durable *tracking* home for the items marked "Accepted (deferred)" there,
+so they aren't lost between now and whenever someone picks one up. Each item below cites its
+recommendation ID and the review's own priority/difficulty/placement — re-read
+`architecture-update.md` before starting any of these, since several depend on another landing
+first (noted inline).
+
+- **R1 — Close the encyclopedia sourcing/scope defect (GAP-13).** R500 first (zero citations, most
+  speculative claims); gate for citing the encyclopedia externally. Owner: `research-doctrine-
+  exercises`/`research-ow-orbital-mechanics` skills, tier by tier, following the existing §12
+  cadence discipline above.
+- **R2 — Author GDS-06 (Non-functional Requirements) through GDS-10.** Already the ladder's own next
+  scheduled step (`architecture/INDEX.md` §1); GDS-06 first, since "nearly every Part 2 concept
+  [of the strategic review] turns on scale/performance/security envelopes that are currently
+  undefined."
+- **R8 — Headless Monte Carlo experimentation harness (IN-02/FC-14).** Near-zero engine work: a
+  batch runner + output schema over the existing deterministic seed/eventlog/FS-301-export seams.
+  Value High, Difficulty Low-medium per the review.
+- **R9 — Commission GAP-07 (training-transfer) research** to shape DOM-002/DOM-005 before they
+  harden (see `architecture-update.md` §3 for why this must land before those frameworks are
+  authored, not after).
+- **R10 — Counterfactual AAR (IN-01) + belief-vs-truth analytics (IN-06).** Flagship pedagogy
+  features for the next release; both are near-pure leverage of the existing determinism/fog-of-war
+  invariants, no new subsystem required.
+- **R11 — Commercial SDA feed for the mock SSN** (already scoped as §7 below) **+ one
+  commercial-entanglement vignette.** Architectural direction already acknowledged in GDS-02/03/04
+  (see `architecture-update.md`); this item is the implementation.
+- **R12 — Fund GAP-01 (space environment) research + an environment term** in the effect/telemetry
+  model, enabling the attack-vs-environment vignette class and an attack-signature-diagnosis drill
+  (IN-03).
+- **R13 — Proliferated-constellation program (FC-06 + GAP-10).** Research first, then engine-scale
+  validation, aggregation constructs, and a proliferated vignette family. High difficulty; flagship
+  correction to weakness W1 (fleet-scale assumptions).
+- **R14 — Coalition play (FC-09 + R316).** N-cell generalization with releasability filters and
+  per-nation ROE. Highest-likelihood external demand per the review; High difficulty.
+- **R15 — Campaign container + time compression (FC-13).** Also unblocks reconstitution (FC-04),
+  sub-threshold adversary behavior, and cohort progression (IN-10).
+- **R16 — Persistent debris + conjunction wiring (FC-08 + GAP-02).** Wires the currently-unwired
+  `prop.collision_avoid` verb (§2 above) into a persistent, world-changing consequence.
+- **R17 — Ground-segment-as-terrain cyber deepening (FC-11 + GAP-12).**
+- **R18 — Scenario generator (IN-07) + facilitator authoring UX (FS-108 promotion).** Attacks both
+  content decay and the White-Cell-hostile authoring gap together.
+- **R19 — Document the distributed-use security growth path** (threat model, token design sketch,
+  which endpoints would need binding) **before the first multi-site/coalition request**, alongside a
+  GAP-11 federation-compatibility study of the `SessionAPI` seam (see ICD §7 items 2 and 12).
+- **R20 — Human-AI teaming laboratory program (FC-01 + FC-15).** Long-Term Vision; research-first.
+  Revisit when FC-01 (AI-supported mission planning) is scheduled.
+- **R21 — AI-vs-AI doctrine exploration (IN-08).** Depends on R7 (AI-Red fog parity, already tracked
+  in §1 above) and R8 landing first.
+- **R22 — Cislunar research line (FC-07 + GAP-04).** Research-only; revisit implementation when
+  allied cislunar SDA concepts mature.
+- **R24 — Training-transfer longitudinal validation study.** Follow-through on R9; cohort tracking
+  (IN-10) against operational-performance criteria.
+
+Not tracked here (no action needed): R3–R7 and R23 were actioned directly as documentation changes
+in `architecture-update.md`; R7 was already fully tracked in §1 above before this review.
+

@@ -1,7 +1,7 @@
 # GDS-04 — Domain Model
 
 > **Document ID:** GDS-04
-> **Version:** 1.2
+> **Version:** 1.3
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-03
 > **Referenced By:** GDS-05
@@ -23,7 +23,9 @@
 > [`research/encyclopedia/R316-joint-and-combined-operations.md`](../research/encyclopedia/R316-joint-and-combined-operations.md),
 > [`research/encyclopedia/R317-space-operator-perspective.md`](../research/encyclopedia/R317-space-operator-perspective.md)
 > (reconciled — see "Research integration (R313–R317)" below),
-> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md)
+> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md),
+> [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) (reconciled —
+> see "Strategic review reconciliation" below), [`reviews/architecture-update.md`](../reviews/architecture-update.md)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -563,7 +565,29 @@ from a documented baseline instead of inventing one ad hoc.
   workflow) should recognize it as an instance of this pattern rather than reinventing the
   vocabulary.
 
-None of the three above is implemented, scheduled, or implied to be in scope by §1's entity list.
+- **Commercial / Gray Actor.** Today ownership is binary — every Asset (§1.2) is `blue`/`red`/
+  `neutral`, with no concept of a commercial operator whose services either cell might lease, or
+  whose assets present a targeting/attribution dilemma distinct from a state actor's (`strategic-
+  review-2026-07.md` §1.7, §6.2 R11). A future feature representing purchasable custody or
+  commercial-augmentation vignettes would need this as an explicit ownership/relationship kind, not
+  an assumption the existing `blue`/`red`/`neutral` enum already covers it.
+- **Coalition Cell / Multi-Blue Structure.** The Session (§1.14) grants Role Assignments against
+  exactly two cells (Blue, Red) plus White/Observer. Coalition operations need multiple Blue-side
+  cells with distinct national ROE and releasability policies over the same fog-of-war boundary
+  (`strategic-review-2026-07.md` §1.6, §4.7, §6.3 R14) — a generalization of Cell View (§1.11) and
+  Role Assignment (§1.10), not a new kind of either.
+- **Persistent Debris / Environment Object.** An Effect's (§1.8) debris risk is recorded as an
+  outcome attribute today, not a separate, persistent world object; nothing in §1 represents debris
+  as something that continues to exist and gate future Access Windows (§1.6) after the Effect that
+  created it resolves (`strategic-review-2026-07.md` §6.3 R16, FC-08, GAP-02).
+- **Campaign / Session-Persistence Container.** Session (§1.14) is the largest unit of persistent
+  state and ends at `ENDED(log written)`; no entity represents state that survives *across* Sessions
+  (custody decay over weeks, Δv burn over months) the way `strategic-review-2026-07.md` W7/§6.3 R15
+  (FC-13) describes.
+
+None of the concepts above is implemented, scheduled, or implied to be in scope by §1's entity
+list — including the four added by the strategic review integration, which are exactly as
+not-built as the three Command Relationship/Intent/Decision Cycle concepts already here.
 
 ---
 
@@ -651,6 +675,25 @@ citations unverified) is used here only for terminology/analogy, not as a verifi
 - Metadata — added cross-references to R313–R317 and the gap-analysis document; version bumped
   1.1 → 1.2. Status remains `✅ Authored — merge gate closed`; explicitly-instructed amendment, not
   a gate reopening, consistent with GDS-01–03's identical treatment.
+
+## Strategic review reconciliation (strategic-review-2026-07.md)
+
+In response to [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md), the
+following changes were made. Full disposition of all 24 recommendations is in
+[`reviews/architecture-update.md`](../reviews/architecture-update.md); this section records only
+the changes landed in this document. **Scope discipline, matching the R313–R317 integration
+above:** §3 is explicitly conceptual and not-yet-implemented; no entity in §1 or diagram in §2
+changed.
+
+- §3 — added four new forward-looking domain concepts (Commercial/Gray Actor, Coalition Cell/
+  Multi-Blue Structure, Persistent Debris/Environment Object, Campaign/Session-Persistence
+  Container), each tied to a specific `strategic-review-2026-07.md` recommendation/FC/GAP citation
+  and explicitly marked not-implemented — mirroring GDS-03 §5's parallel integration of the same
+  review.
+- Metadata — added cross-references to the strategic review and its disposition document; version
+  bumped 1.2 → 1.3. Status remains `✅ Authored — merge gate closed`; explicitly-instructed
+  amendment, not a gate reopening, consistent with this document's own prior reconciliation
+  sections.
 
 ## Merge gate (closed)
 

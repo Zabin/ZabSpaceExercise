@@ -1,7 +1,7 @@
 # GDS-03 — Architecture
 
 > **Document ID:** GDS-03
-> **Version:** 1.3
+> **Version:** 1.4
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-02
 > **Referenced By:** GDS-04
@@ -23,7 +23,10 @@
 > [`research/encyclopedia/R316-joint-and-combined-operations.md`](../research/encyclopedia/R316-joint-and-combined-operations.md),
 > [`research/encyclopedia/R317-space-operator-perspective.md`](../research/encyclopedia/R317-space-operator-perspective.md)
 > (reconciled — see "Research integration (R313–R317)" below),
-> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md)
+> [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md),
+> [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) (reconciled —
+> see "Strategic review reconciliation" below), [`reviews/architecture-update.md`](../reviews/architecture-update.md),
+> [`adr/ADR-0030-ai-determinism-doctrine.md`](adr/ADR-0030-ai-determinism-doctrine.md)
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -442,9 +445,18 @@ real GDS-03 revision — this section is a placeholder for that future work, not
 | Decision Support / Assessment helper | Architecture-wide assessment/scoring has no owning subsystem today (GDS-01 Open Question 5, resolved by ADR-0029 as "out of scope for v1"); doctrine names MOE/MOP as the formal vocabulary for this gap | `R315` §3.14, `R316` §3.2 |
 | Autonomy Manager | AI-Red currently reads ground truth directly rather than through a `CellView` (GDS-01 Open Question 6, ADR-0024); space doctrine's own historical arc names autonomy/human-machine teaming as the live frontier | `R317` §3.5, §3.7–3.8 |
 | Command-relationship layer | No OPCON/TACON-equivalent concept exists for internal Blue/Red structure (see GDS-04 §3 for the conceptual sketch) | `R313` §3.2/§3.7, `R316` §3.1 |
+| Proliferated-Constellation Aggregation Layer (new) | The ≤3-satellite constellation cap (ADR-0019) and per-asset operator console teach a boutique-fleet mental model; a layer/mesh-level tasking and health-rollup construct would be needed to represent proliferated architectures an order of magnitude larger without per-asset drill-down times N (`strategic-review-2026-07.md` W1, the review's highest-value single content-realism correction) | `strategic-review-2026-07.md` §6.3 R13, FC-06, GAP-10 |
+| Coalition / Multi-Cell Generalization (new) | The flat single-Blue-cell/single-Red-cell model has no releasability tiers, per-nation ROE, or coalition SSN pooling; generalizing the fog-of-war/`CellController` boundary (§2.2 above) to N cells with asymmetric information-sharing policies would be required | `strategic-review-2026-07.md` §6.3 R14, FC-09; `R316` §3.3 (coalition vs. combined) |
+| Commercial / Gray-Actor Class (new) | No actor class exists between Blue/Red/neutral for commercial SDA providers or commercial SATCOM/imagery either cell could lease or target — a distinct ownership/targeting-ambiguity concept from today's binary Blue/Red ownership (GDS-04 §1.2) | `strategic-review-2026-07.md` §1.7, §6.2 R11, FC-10, GAP-03 |
+| Campaign / Session-Persistence Container (new) | Session (GDS-04 §1.14) is a single 2-hour episode with no cross-session persistence; custody decay over weeks, co-orbital loitering over months, and Δv budgets over years are all invisible at the current scale | `strategic-review-2026-07.md` W7, §6.3 R15, FC-13 |
+| Ground-Segment-as-Terrain Cyber Model (new) | Cyber today resolves per-asset (ADR-0012's exception); ground stations, networks, and the C2 chain are treated only as access endpoints (GDS-04 §1.4), not as attackable/defendable objects whose compromise could falsify telemetry or deny uplink | `strategic-review-2026-07.md` §6.3 R17, FC-11, GAP-12 |
+| Persistent Debris / STM Environment Layer (new) | The debris-cone estimate (`engine/engage.py`) is advisory only; `prop.collision_avoid` is unwired (`FUTURE-WORK.md` §2); a persistent environment layer would make kinetic consequence world-changing and durable across the rest of a session rather than momentary | `strategic-review-2026-07.md` §6.3 R16, FC-08, GAP-02 |
 
 Each row above restates an Open Question already recorded in GDS-01/GDS-04 from the architecture
-angle; none is resolved here.
+angle, or a candidate component newly named by `strategic-review-2026-07.md` Part 2's Future
+Concepts; none is resolved here. Every new row above is explicitly **Future Release** or **Long-Term
+Vision** placement per that review's own §2 "Placement summary" — nothing here is scheduled or
+committed.
 
 ## Open Questions
 
@@ -531,6 +543,26 @@ description in §1–§4; every other change below is additive.
 - Metadata — added cross-references to R313/R315/R316/R317 and the gap-analysis document; version
   bumped 1.2 → 1.3. Status remains `✅ Authored — merge gate closed`; explicitly-instructed
   amendment, not a gate reopening, consistent with GDS-01/GDS-02's identical treatment.
+
+## Strategic review reconciliation (strategic-review-2026-07.md)
+
+In response to [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md), the
+following changes were made. Full disposition of all 24 recommendations is in
+[`reviews/architecture-update.md`](../reviews/architecture-update.md); this section records only
+the changes landed in this document. **Scope discipline, matching the R313–R317 integration
+above:** §5 is explicitly forward-looking and not-built; no existing subsystem's description in
+§1–§4 changed.
+
+- §5 — added six new candidate future components (Proliferated-Constellation Aggregation Layer,
+  Coalition/Multi-Cell Generalization, Commercial/Gray-Actor Class, Campaign/Session-Persistence
+  Container, Ground-Segment-as-Terrain Cyber Model, Persistent Debris/STM Environment Layer), each
+  tied to a specific `strategic-review-2026-07.md` recommendation/FC/GAP citation and explicitly
+  marked not-built, not-scheduled. These restate the review's Part 2 Future Concepts and Part 3
+  Research Gaps from the architecture angle; none is resolved or committed here.
+- Metadata — added cross-references to the strategic review, its disposition document, and
+  ADR-0030; version bumped 1.3 → 1.4. Status remains `✅ Authored — merge gate closed`;
+  explicitly-instructed amendment, not a gate reopening, consistent with this document's own prior
+  reconciliation sections.
 
 ## Merge gate (closed)
 
