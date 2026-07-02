@@ -1,9 +1,11 @@
 # Non-Functional Requirements Baseline
 
-> **Status:** Draft — first issue.
+> **Status:** Draft — amended (strategic-review reconciliation, 2026-07; no numbered NFR added or
+> modified — see "Strategic review reconciliation" section near the end of this document and
+> [`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md)).
 > **Authoritative inputs:**
 > [`build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §9
-> (NFR-1…NFR-10 — the binding, shipped NFR tag scheme),
+> (NFR-1…NFR-10 — the legacy, pre-GDS NFR tag scheme),
 > [`architecture/03-architecture.md`](../architecture/03-architecture.md) (GDS-03, System
 > Architecture), [`architecture/02-system-context.md`](../architecture/02-system-context.md)
 > (GDS-02, System Context), [`architecture/04-domain-model.md`](../architecture/04-domain-model.md)
@@ -11,8 +13,9 @@
 > (GDS-05), [`requirements/01-functional-requirements.md`](01-functional-requirements.md)
 > (FR-1xxx baseline), [`design/05-interface-control-document.md`](../design/05-interface-control-document.md)
 > (ICD), [`training/01-install-and-run.md`](../training/01-install-and-run.md) (configuration
-> surface), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001 through ADR-0029,
-> all `Accepted`).
+> surface), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001 through ADR-0031,
+> all `Accepted`), [`architecture/strategic-assumptions-register.md`](../architecture/strategic-assumptions-register.md)
+> (added 2026-07).
 > **Priority scale used throughout:** MoSCoW (Must / Should / Could / Won't), matching
 > `requirements/01-functional-requirements.md`.
 > **Field set used (per explicit instruction for this baseline — narrower than this skill's own
@@ -21,27 +24,36 @@
 
 ## A note on a pre-existing requirement tag scheme — read before using this document
 
-`docs/build-spec/04-nfr-milestones-and-risks.md` §9 already contains a binding, shipped
+`docs/build-spec/04-nfr-milestones-and-risks.md` §9 contains a legacy, pre-GDS
 non-functional-requirement tag scheme: **NFR-1** (Offline) through **NFR-10** (Classification
 hygiene). Per `CLAUDE.md`'s "Authoritative source & reading order," GDS-06 (Non-Functional
 Requirements) — the architecture-ladder level that would eventually supersede build-spec/04 §9 the
 way GDS-05 superseded build-spec/02 §5–6 — **has not been authored** (it remains
-`⛔ Planned (scaffold only)`, per `architecture/INDEX.md` §1). Build-spec/04 §9 therefore **remains
-the binding NFR statement**; this document does **not** supersede it.
+`⛔ Planned (scaffold only)`, per `architecture/INDEX.md` §1). **Corrected 2026-07** (see
+`reviews/requirements-update-report.md`): per `CLAUDE.md`'s current text, an unauthored GDS level's
+corresponding build-spec module is "deprecated legacy reference, not a binding tie-breaker" — the
+prior wording here ("Build-spec/04 §9 therefore remains the binding NFR statement") predates that
+blanket-supersession declaration and is corrected to match it, mirroring
+[`ADR-0031`](../architecture/adr/ADR-0031-governance-record-consistency.md)'s identical fix to
+`architecture/00-vision.md` §7. Build-spec/04 §9 is read here only because GDS-06 has authored
+nothing yet to read instead — not because it binds.
 
-This document is a hierarchical, traceable **elaboration** of that binding tag scheme, in the same
-non-competing relationship `requirements/01-functional-requirements.md` already holds with
-build-spec/02 §5 (see that document's own header note). Each `NFR-1xxx`-series requirement below is
-cross-referenced to its corresponding build-spec `NFR-N` tag in its **Source documents** field
-where a correspondence exists. Where this document and the build-spec tag describe the same
-quality attribute, **the build-spec tag remains the binding statement**; this document adds the
-traceability scaffolding (Rationale, Metric/verification method, Dependencies, Related ADRs) that
-the build-spec's terse tag list does not itself carry. Any apparent conflict between an `NFR-1xxx`
-requirement below and its corresponding build-spec tag is **not** a finding for this document to
-resolve — it is recorded under "Open issues" in the completion report.
+This document is a hierarchical, traceable **elaboration** of that legacy tag scheme, in the same
+non-competing relationship `requirements/01-functional-requirements.md` holds with build-spec/02 §5
+(see that document's own header note, also corrected 2026-07). Each `NFR-1xxx`-series requirement
+below is cross-referenced to its corresponding build-spec `NFR-N` tag in its **Source documents**
+field where a correspondence exists, for historical traceability only; the traceability scaffolding
+(Rationale, Metric/verification method, Dependencies, Related ADRs) this document adds is what the
+build-spec's terse tag list does not itself carry, not evidence the tag "binds." Any apparent
+conflict between an `NFR-1xxx` requirement below and its corresponding build-spec tag is **not** a
+finding for this document to resolve — it is recorded under "Open issues" in the completion report.
 
-This document does not include a Requirements Review or a Traceability Matrix — those are
-separate, not-yet-requested deliverables of the `requirements-engineering` skill's full workflow.
+This document is accompanied by a Requirements Traceability Matrix
+([`03-requirements-traceability-matrix.md`](03-requirements-traceability-matrix.md)); a separate
+standalone Requirements Review document was not produced for this baseline (see
+[`../reviews/requirements-review.md`](../reviews/requirements-review.md) and
+[`../reviews/requirements-baseline-review.md`](../reviews/requirements-baseline-review.md) for the
+review passes actually run against it).
 
 ---
 
@@ -524,13 +536,51 @@ Explicitly excluded from the numbered baseline above.
   - **Source documents:** `architecture/adr/ADR-0024*.md`; `FUTURE-WORK.md` §1 "AI-Red fog-of-war
     parity"; `requirements/01-functional-requirements.md` FR-9110 (cross-reference).
 
+- **CNFR-07 — Distributed-simulation / exercise-interoperability federation *(added 2026-07)***
+  - **Description (candidate):** A requirement that the system support, or be examined for
+    compatibility with, a federation standard (HLA/DIS/SISO) or LVC integration, so it could
+    participate in a larger joint or coalition exercise.
+  - **Why excluded:** No approved document commits to federation. ICD §7 item 12 (added by the
+    strategic-review reconciliation) states plainly that this "has not been examined against any
+    interface in this inventory" and is "flagged as a gap for a future ICD reviewer, not resolved
+    here." NFR-3300 above (Interoperability) currently states no external identity/LMS/scoring-
+    service integration exists or is planned "in v1" as a description of the system's current
+    boundary, not as a commitment to ever add federation; a GAP-11 compatibility study of the
+    `SessionAPI` seam (INT-0006) — recommended before any transport rework, per the review's own
+    R19 — has not been done.
+  - **Source documents:** `design/05-interface-control-document.md` §7 item 12; `strategic-review-2026-07.md`
+    GAP-11, §6.3 R19; [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md)
+    A9 (adjacent — LAN trust model); `FUTURE-WORK.md` §13 "R19."
+
 ---
+
+## Strategic review reconciliation (strategic-review-2026-07.md)
+
+In response to [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) and
+its disposition in [`reviews/architecture-update.md`](../reviews/architecture-update.md), this
+document was reviewed against the changed architecture-tier inputs. Full analysis in
+[`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md). Summary of what
+changed here:
+
+- **No numbered `NFR-1xxx` baseline requirement was added, removed, or had its content modified.**
+  The one architecture-tier change with a plausible NFR angle — ICD §7 item 12's new federation
+  gap (GAP-11/R19) — is an explicitly unexamined open question, not a committed quality attribute;
+  it does not cross this document's bar for a numbered leaf.
+- Added **CNFR-07**, a new Candidate Requirement for distributed-simulation/exercise-interoperability
+  federation, so the NFR-tier documentation does not silently omit the new ICD §7 item 12 gap.
+- Corrected the stale "build spec... remains the binding NFR statement" language in the
+  pre-existing-tag-scheme note above (it independently asserted a stronger claim than
+  `CLAUDE.md`'s current text supports for an unauthored GDS level) and the stale claim that no
+  Traceability Matrix exists.
+- Updated the Authoritative-inputs header's ADR range (`ADR-0029` → `ADR-0031`) and added the
+  Strategic Assumptions Register as a cited input.
 
 ## Completion report
 
 - **Total NFR count (numbered baseline):** 23 (`NFR-1100` through `NFR-3300`, leaving numbering
-  gaps for future insertion per category, consistent with `requirements/01`'s scheme).
-- **Candidate requirement count:** 6 (`CNFR-01`…`CNFR-06`).
+  gaps for future insertion per category, consistent with `requirements/01`'s scheme). Unchanged by
+  the 2026-07 strategic-review reconciliation pass.
+- **Candidate requirement count:** 7 (`CNFR-01`…`CNFR-07`).
 - **Categories with no derivable NFRs:** 1 of the 15 required categories — **Observability**
   (§9 above) — has no numbered NFR; its gap is recorded as `CNFR-01`. All other 14 categories
   (Performance, Scalability, Reliability, Availability, Maintainability, Extensibility, Security,

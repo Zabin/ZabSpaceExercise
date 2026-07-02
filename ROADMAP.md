@@ -261,6 +261,15 @@ reopened); two new ADRs were added (`ADR-0030` AI-determinism doctrine, `ADR-003
 consistency); a new living document,
 [`architecture/strategic-assumptions-register.md`](docs/architecture/strategic-assumptions-register.md)
 (RT-STRAT-REG, ♻️ Living), consolidates the review's A1–A11 assumption set.
+`architecture-update.md` itself left `docs/requirements/` untouched (out of its six-document
+scope, and no recommendation required a requirements-baseline change at that pass). A follow-up
+requirements-tier pass, [`reviews/requirements-update-report.md`](docs/reviews/requirements-update-report.md)
+(new), independently confirmed that finding — no numbered `FR-1xxx`/`NFR-1xxx` requirement was
+added or modified — but added seven Candidate Requirements (`CR-12`–`CR-18`) and one Candidate NFR
+(`CNFR-07`) mirroring the architecture tier's new not-built candidate components/concepts, updated
+the traceability matrix accordingly, and corrected stale pre-supersession "build spec wins"
+language independently duplicated in `docs/requirements/01`/`02`'s own header notes (the same
+defect `ADR-0031` fixed in `architecture/00-vision.md` §7, but outside that document's scope).
 
 | ID | Document | Path | Depends on | Status |
 |---|---|---|---|---|

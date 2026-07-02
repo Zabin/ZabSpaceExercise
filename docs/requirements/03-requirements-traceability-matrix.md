@@ -13,10 +13,20 @@ it is the `docs/requirements/`-side deliverable the project owner requested dire
 Inputs read in full to build this matrix: the research encyclopedia index
 ([`docs/research/encyclopedia/`](../research/encyclopedia/INDEX.md)), the GDS architecture ladder
 (`docs/architecture/00`–`05`), the ADR index
-([`docs/architecture/adr/INDEX.md`](../architecture/adr/INDEX.md), ADR-0001–ADR-0029, all
+([`docs/architecture/adr/INDEX.md`](../architecture/adr/INDEX.md), ADR-0001–ADR-0031, all
 `Accepted`), the Interface Control Document
 ([`docs/design/05-interface-control-document.md`](../design/05-interface-control-document.md)),
-and both requirements documents in full (every FR/NFR/Candidate leaf and its explicit fields).
+the [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md), and both
+requirements documents in full (every FR/NFR/Candidate leaf and its explicit fields).
+
+> **Amended 2026-07** (strategic-review reconciliation) to add rows for `CR-12`–`CR-18` and
+> `CNFR-07` and to update the ADR count above from `ADR-0029` to `ADR-0031`. No baselined FR/NFR row
+> was added, removed, or altered. See
+> [`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md) for the full
+> analysis and the "Strategic review reconciliation" section near the end of
+> [`01-functional-requirements.md`](01-functional-requirements.md) and
+> [`02-non-functional-requirements.md`](02-non-functional-requirements.md) for the corresponding
+> sections in the two documents this matrix traces.
 
 Every populated cell below is backed by an explicit, already-written field on the cited
 requirement leaf (its own "Related ADRs," "Related Interfaces," "Source Documents," or
@@ -129,12 +139,16 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-8110 | Operator console (web UI over the API) | UNASSIGNED | ADR-0008 | C4, C12 | INT-0001 | UNASSIGNED | UNASSIGNED | `ui_web/server.py`, `ui_web/static/` |
 | FR-9110 | AI-Red substitution for unseated Red | UNASSIGNED | ADR-0021, ADR-0024 | C2, C1, C8 | INT-0008, INT-0015 | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" | UNASSIGNED | `session/redai.py` |
 
-### Candidate Requirements (CR-01–CR-11) — `CANDIDATE — NOT BASELINED`
+### Candidate Requirements (CR-01–CR-18) — `CANDIDATE — NOT BASELINED`
 
 Per the `requirements-engineering` skill's own discipline, Candidates get rows but most
 forward-trace columns are `UNASSIGNED` by definition (they describe unimplemented or
 out-of-scope-for-v1 capabilities). Research/ADR columns reflect each Candidate's own explicit
-"Source" field; nothing here is inferred.
+"Source" field; nothing here is inferred. `CR-12`–`CR-18`, marked *(new 2026-07)*, follow
+`strategic-review-2026-07.md`'s disposition — none has an ICD interface, and only `CR-18` cites an
+ADR (`ADR-0031`, for the reasoning behind deferring its full treatment to DOM-005); the rest trace
+to a not-built GDS-02/03/04 candidate component/concept instead, so Arch. Component/Interface are
+`UNASSIGNED` rather than guessed against the C1–C12 list, consistent with `CR-04`/`CR-05` above.
 
 | Req ID | Title (abridged) | Research | ADR | Arch. Component | Interface | Future Feature | Test | Impl. Package |
 |---|---|---|---|---|---|---|---|---|
@@ -149,6 +163,13 @@ out-of-scope-for-v1 capabilities). Research/ADR columns reflect each Candidate's
 | CR-09 | Unified PlannedActivity/SSNRequest supertype | UNASSIGNED | (none cited) | C2, C3, C1 | INT-0009, INT-0010 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | CR-10 | AccessWindow persisted vs. derived | UNASSIGNED | (none cited) | C1 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | CR-11 | Partial vignette-authoring state ownership | UNASSIGNED | (none cited) | C5, C11 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| CR-12 *(new 2026-07)* | Proliferated-Constellation Aggregation Layer | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | `FUTURE-WORK.md` §13 | UNASSIGNED | UNASSIGNED |
+| CR-13 | Coalition / Multi-Cell Generalization | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | `FUTURE-WORK.md` §13 | UNASSIGNED | UNASSIGNED |
+| CR-14 | Commercial / Gray-Actor Class & purchasable SDA services | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | `FUTURE-WORK.md` §7, §13 | UNASSIGNED | UNASSIGNED |
+| CR-15 | Campaign / Session-Persistence Container | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | `FUTURE-WORK.md` §13 | UNASSIGNED | UNASSIGNED |
+| CR-16 | Ground-Segment-as-Terrain Cyber Model | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | `FUTURE-WORK.md` §13 | UNASSIGNED | UNASSIGNED |
+| CR-17 | Persistent Debris / STM Environment Layer | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | `FUTURE-WORK.md` §2, §13 | UNASSIGNED | UNASSIGNED |
+| CR-18 | Facilitator / cross-session adjudication-consistency support | UNASSIGNED | ADR-0031 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 
 ---
 
@@ -184,7 +205,7 @@ where the named subsystem maps onto one), not separately inferred.
 | NFR-3200 | TLE import with offline fallback | UNASSIGNED | ADR-0018 | C5, C4 | `content/` (TLE import), scenario builder UI | UNASSIGNED | UNASSIGNED |
 | NFR-3300 | Browser-only client, no external integration | UNASSIGNED | (none identified) | C4 | `ui_web/server.py` | UNASSIGNED | UNASSIGNED |
 
-### Candidate NFRs (CNFR-01–CNFR-06) — `CANDIDATE — NOT BASELINED`
+### Candidate NFRs (CNFR-01–CNFR-07) — `CANDIDATE — NOT BASELINED`
 
 | Req ID | Title (abridged) | Research | ADR | Arch. Component | Affected subsystems | Future Feature | Test |
 |---|---|---|---|---|---|---|---|
@@ -194,6 +215,7 @@ where the named subsystem maps onto one), not separately inferred.
 | CNFR-04 | (excluded candidate) | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | CNFR-05 | (excluded candidate) | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | CNFR-06 | AI-Red epistemic parity / fairness *(new candidate, CHG-010)* | UNASSIGNED | ADR-0024 | C8, C1 | INT-0015 (via FR-9110 cross-ref) | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" | UNASSIGNED |
+| CNFR-07 | Distributed-simulation / exercise-interoperability federation *(new 2026-07, strategic-review reconciliation)* | UNASSIGNED | (none cited) | C2 | INT-0006 (via ICD §7 item 12 cross-ref) | `FUTURE-WORK.md` §13 "R19" | UNASSIGNED |
 
 ---
 
@@ -212,7 +234,8 @@ REQ-002 / REQ-030, which already flags the related GDS-10/traceability-matrix st
 Built mechanically from each requirement's own "Related ADRs" field. ADRs with no entry below
 have zero numbered FR/NFR leaves citing them back (per ADR-0029 INDEX's own "Scope and method"
 note that every ADR traces to a GDS-01/02/03 section or build-spec/01 §4 decision, not
-necessarily to a numbered FR/NFR) — listed as `(no citing FR/NFR)` rather than omitted.
+necessarily to a numbered FR/NFR) — listed as `(no citing FR/NFR)` rather than omitted. ADR-0030
+and ADR-0031 (both new 2026-07) are included on the same basis.
 
 | ADR | Citing Requirement(s) |
 |---|---|
@@ -241,6 +264,8 @@ necessarily to a numbered FR/NFR) — listed as `(no citing FR/NFR)` rather than
 | ADR-0026 | FR-6310, FR-6320, NFR-1400 |
 | ADR-0027 | FR-5110 |
 | ADR-0029 | FR-4710 |
+| ADR-0030 | FR-9110 *(added 2026-07, strategic-review reconciliation)* |
+| ADR-0031 | CR-18 *(added 2026-07, strategic-review reconciliation)* |
 | ADR-0001 | (no citing FR/NFR) |
 | ADR-0023 | (no citing FR/NFR) |
 | ADR-0025 | (no citing FR/NFR) |
@@ -255,7 +280,7 @@ Related Interfaces field maps onto it via the derivation table.
 | Component | Citing Requirement(s) |
 |---|---|
 | C1 Simulation Engine | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-1510, FR-1520, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3120, FR-3220, FR-3310, FR-3410, FR-4410, FR-4610, FR-6210, FR-7110, FR-7220, FR-7310, FR-7320, FR-9110, NFR-1500, NFR-1700, NFR-2400, NFR-2600, NFR-2100, CR-01, CR-09, CR-10, CNFR-06 |
-| C2 Session/Application Layer | most FR-6xxx, FR-1xxx–FR-4xxx leaves citing INT-0006/0007/0008/0011/0012/0014 — see master matrix per-row |
+| C2 Session/Application Layer | most FR-6xxx, FR-1xxx–FR-4xxx leaves citing INT-0006/0007/0008/0011/0012/0014 — see master matrix per-row; also CNFR-07 (new 2026-07, via ICD §7 item 12 cross-ref) |
 | C3 Mock SSN | FR-1510, FR-3210, FR-3220, CR-09 |
 | C4 Operator Console | FR-2410, FR-3110, FR-3120, FR-3510, FR-3520, FR-4110–FR-4720, FR-5110, FR-6110–FR-6610, FR-8110, NFR-1100, NFR-1200, NFR-1400, NFR-2300, NFR-2700, NFR-3000, NFR-3100, NFR-3200, NFR-3300, CR-02, CR-03, CR-06 |
 | C5 Content & Data | FR-5110, FR-5210, FR-5310, FR-7210, FR-7220, NFR-1600, NFR-2000, NFR-2200, NFR-3200, CR-08, CR-11 |
@@ -279,7 +304,7 @@ mechanical, no inference.
 | INT-0003 | FR-5110 |
 | INT-0004 | FR-2410, FR-3110, FR-3120, FR-3510, FR-3520 |
 | INT-0005 | FR-6220, FR-6510, CR-06 |
-| INT-0006 | FR-3110, FR-3120, FR-3520, FR-6110, FR-6210, FR-6310, FR-6320, FR-6410, FR-6510, FR-6610 |
+| INT-0006 | FR-3110, FR-3120, FR-3520, FR-6110, FR-6210, FR-6310, FR-6320, FR-6410, FR-6510, FR-6610, CNFR-07 (via ICD §7 item 12 cross-ref, new 2026-07) |
 | INT-0007 | FR-1510, FR-1520, FR-2310, FR-4610, FR-6210 |
 | INT-0008 | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3310, FR-3410, FR-7110, FR-9110 |
 | INT-0009 | FR-3210, FR-3220, CR-09 |
@@ -294,16 +319,25 @@ mechanical, no inference.
 
 ## Reverse index — Requirement → Future Feature
 
-Only two entries exist anywhere in this matrix — every other requirement is `UNASSIGNED` because
-`docs/FUTURE-WORK.md` contains no FR-/NFR-/CNFR-/CR- ID citation anywhere (verified by grep); the
-two below are citable only because the requirement's *own* field names the future-work item.
+`docs/FUTURE-WORK.md` contains no FR-/NFR-/CNFR-/CR- ID citation anywhere (verified by grep); every
+entry below is citable only because the requirement's *own* field names the future-work item, not
+because `FUTURE-WORK.md` cites the requirement back. Seven of the eight entries below were added
+2026-07 (CR-12–CR-17, CNFR-07), when the strategic-review reconciliation pass added the
+`FUTURE-WORK.md` §13/§7/§2 cross-references those candidates' own Source fields now carry.
 
 | Requirement | Future Feature |
 |---|---|
 | FR-9110 | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" |
 | CNFR-06 | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" |
 | CR-01 | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" |
-| All other FR/NFR/CR/CNFR | `UNASSIGNED` |
+| CR-12 | `FUTURE-WORK.md` §13 (R13 — proliferated-constellation program) *(new 2026-07)* |
+| CR-13 | `FUTURE-WORK.md` §13 (R14 — coalition play) *(new 2026-07)* |
+| CR-14 | `FUTURE-WORK.md` §7 (mock-SSN commercial feed, already scoped), §13 (R11) *(new 2026-07)* |
+| CR-15 | `FUTURE-WORK.md` §13 (R15 — campaign container) *(new 2026-07)* |
+| CR-16 | `FUTURE-WORK.md` §13 (R17 — ground-segment cyber deepening) *(new 2026-07)* |
+| CR-17 | `FUTURE-WORK.md` §2 (unwired `prop.collision_avoid`), §13 (R16 — persistent debris) *(new 2026-07)* |
+| CNFR-07 | `FUTURE-WORK.md` §13 (R19 — distributed-use security growth path + GAP-11 study) *(new 2026-07)* |
+| All other FR/NFR/CR/CNFR (including CR-18) | `UNASSIGNED` |
 
 ## Reverse index — Requirement → Test
 
@@ -359,7 +393,30 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `spacesim/tests/` | NFR-2800 |
 | Build/dependency manifest, `spacesim/` (whole tree) | NFR-2900 |
 | All subsystems (no single file) | NFR-2200 |
-| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4110, FR-4210, FR-4610, FR-4710, FR-4720, FR-6610, FR-7220, all Candidate Requirements (CR-01–CR-11), all Candidate NFRs (CNFR-01–CNFR-06) |
+| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4110, FR-4210, FR-4610, FR-4710, FR-4720, FR-6610, FR-7220, all Candidate Requirements (CR-01–CR-18), all Candidate NFRs (CNFR-01–CNFR-07) |
+
+## Strategic review reconciliation (strategic-review-2026-07.md)
+
+In response to [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) and
+its disposition in [`reviews/architecture-update.md`](../reviews/architecture-update.md), this
+matrix was extended to keep pace with `01-functional-requirements.md` and
+`02-non-functional-requirements.md`'s own reconciliation passes. Full analysis in
+[`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md). Summary:
+
+- Added master-matrix rows for **CR-12–CR-18** and **CNFR-07** (both Candidate sections, renamed
+  from `CR-01–CR-11`/`CNFR-01–CNFR-06` to `CR-01–CR-18`/`CNFR-01–CNFR-07`).
+- Added **ADR-0030** and **ADR-0031** to the ADR → Requirement reverse index.
+- Added **CNFR-07** to the Architecture Component → Requirement (C2) and Interface → Requirement
+  (INT-0006) reverse indices, both via its own explicit ICD §7 item 12 cross-reference.
+- Extended the Requirement → Future Feature reverse index with **CR-12–CR-17** and **CNFR-07**
+  (each citable only via its own Source field's `FUTURE-WORK.md` citation, per this index's
+  existing discipline).
+- Added the new candidates to the Implementation Package reverse index's `UNASSIGNED` bucket
+  (honestly — none has shipped code).
+- Updated the "Method and discipline" section's ADR range (`ADR-0029` → `ADR-0031`) and added the
+  Strategic Assumptions Register as a read input.
+- **No baselined FR/NFR row (the numbered, non-Candidate master matrix) was added, removed, or
+  altered.**
 
 ## Related
 
