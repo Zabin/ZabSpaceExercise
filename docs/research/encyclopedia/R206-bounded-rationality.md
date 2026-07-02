@@ -11,6 +11,9 @@
 > realistic one), [R205](R205-cognitive-psychology-foundations.md) (Cognitive Psychology Foundations), [R211](R211-heuristics-and-satisficing.md) (Heuristics and Satisficing), DOM-002
 > §9 (explicit dependency on this topic)
 
+> **Last Reviewed:** 2026-07-02
+> **Primary Sources Consulted:** 1
+
 [↑ Tier R200 index](R200-index.md) · [Encyclopedia index](INDEX.md)
 
 ## 1. Purpose
@@ -20,13 +23,24 @@ realistic constraints, not idealized optimality" — an assessment rubric graded
 expected-value ideal would unfairly penalize realistic, competent play. This topic exists to give
 the implementer that realistic baseline.
 
-## 2. Concepts
+## 2. Scope
+
+Covers bounded rationality as a realistic decision-making model under real time/information/
+computation limits, satisficing as its behavioral signature, and procedural vs. substantive
+rationality as the assessment-relevant distinction. Does **not** cover the idealized expected-value
+baseline this topic replaces ([R202](R202-decision-theory.md)), the perceptual substrate the bounds
+operate on ([R205](R205-cognitive-psychology-foundations.md)), or the specific heuristic mechanisms
+satisficing uses ([R211](R211-heuristics-and-satisficing.md)).
+
+## 3. Concepts
 
 **Bounded rationality: decisions made under real limits on time, information, and computation.**
 Herbert Simon's core claim: human decision-makers do not (and structurally cannot) compute a true
 expected-value-optimal choice over all options; they operate within bounds set by available time,
 incomplete information, and finite cognitive capacity ([R205](R205-cognitive-psychology-foundations.md)) — and rational behavior must be judged
-relative to those bounds, not against an unconstrained ideal.
+relative to those bounds, not against an unconstrained ideal
+([Simon, H. A., "A Behavioral Model of Rational Choice," *Quarterly Journal of Economics* 69, 1955](https://iiif.library.cmu.edu/file/Simon_box00063_fld04838_bdl0001_doc0001/Simon_box00063_fld04838_bdl0001_doc0001.pdf)
+([Wayback](https://web.archive.org/web/2026/https://iiif.library.cmu.edu/file/Simon_box00063_fld04838_bdl0001_doc0001/Simon_box00063_fld04838_bdl0001_doc0001.pdf))).
 
 **The simulator imposes the same bounds the theory describes, not just simulates them.** Custody
 confidence decay forces action on incomplete information ([R105](R105-custody-theory.md)); access windows force decisions
@@ -47,14 +61,20 @@ was knowable at decision time) — DOM-002's "custody quality" and "window disci
 explicitly procedural-rationality measures, scoring the decision process the operator actually had
 access to, not whether the outcome was objectively best in hindsight.
 
-## 3. Operational Context
+### Sources
+
+- *Simon, H. A., "A Behavioral Model of Rational Choice," Quarterly Journal of Economics* 69 (1955) — [live](https://iiif.library.cmu.edu/file/Simon_box00063_fld04838_bdl0001_doc0001/Simon_box00063_fld04838_bdl0001_doc0001.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://iiif.library.cmu.edu/file/Simon_box00063_fld04838_bdl0001_doc0001/Simon_box00063_fld04838_bdl0001_doc0001.pdf)
+  · accessed 2026-07-02.
+
+## 4. Operational Context
 
 Real military and space-operations decision-making is the canonical bounded-rationality domain:
 time-critical targeting decisions, imperfect SDA pictures, and finite analyst bandwidth are exactly
 the constraints the theory was developed to describe, which is why operational doctrine emphasizes
 satisficing heuristics (rules of thumb, checklists, decision aids) over literal optimization.
 
-## 4. Implementation Guidance
+## 5. Implementation Guidance
 
 - **Any assessment rubric (DOM-002) must score procedural rationality (was the decision reasonable
   given the cell's actual belief state at the time), not substantive rationality (was it correct in
@@ -68,12 +88,12 @@ satisficing heuristics (rules of thumb, checklists, decision aids) over literal 
   — per MSTR-003 §2, manufacturing realistic bounded-decision practice is the entire point; removing
   the bounds removes the training value, not just the challenge.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 FS-201 (Competency Assessment) is the direct consumer — every DOM-002 dimension must be checked
 against this topic's procedural-rationality standard.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R202](R202-decision-theory.md) (Decision Theory, the idealized baseline this topic replaces), [R205](R205-cognitive-psychology-foundations.md) (the perceptual substrate
 the bounds operate on), [R211](R211-heuristics-and-satisficing.md) (Heuristics and Satisficing, the mechanism), DOM-002 (the rubric this
