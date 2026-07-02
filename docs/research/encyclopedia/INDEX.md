@@ -11,7 +11,7 @@ Five tiers; each has its own index enumerating every topic with ID, scope, depen
 |---|---|---|---|
 | R100 | Space Operations Foundation | [R100-index.md](R100-index.md) | ✅ Done (36/36 topics) |
 | R200 | Decision Sciences | [R200-index.md](R200-index.md) | ✅ Done (14/14 topics) |
-| R300 | Military Analysis | [R300-index.md](R300-index.md) | 🚧 Incomplete (15/16 — R314 draft) |
+| R300 | Military Analysis | [R300-index.md](R300-index.md) | ✅ Done (20/20 topics) |
 | R400 | Research Methods | [R400-index.md](R400-index.md) | 🚧 Incomplete |
 | R500 | Future Operations | [R500-index.md](R500-index.md) | 🚧 Incomplete |
 
@@ -44,10 +44,17 @@ inline citations to the seminal source for each formalism (Bayes & Price 1763, S
 1955, Tversky & Kahneman 1974, Boyd's *A Discourse on Winning and Losing*, von Neumann & Morgenstern
 1944, and others — see [R200-index.md](R200-index.md) for the full per-topic source list), a
 `### Sources` subsection per cited section, and `Last Reviewed`/`Primary Sources Consulted`
-frontmatter. [R300](R300-index.md)-[R500](R500-index.md) still carry the original two defects
-(missing §2 Scope, no citations) — see each tier's own index file for status; R300 is a partial
-exception (18/20 topics already remediated in an earlier pass, per its own index). None of the
-seven-section *content* quality (Purpose/Concepts/Operational Context/Implementation Guidance/
-Feature Mapping/Related Topics) is in question for R300-R500 either — this is a structural-
-completeness and sourcing finding, not a rewrite of the substance. Phase 4 (Feature Specifications)
-should not treat R400/R500 as a finished dependency until their remediation pass lands.
+frontmatter.
+
+**R300 is now also fully closed (2026-07-02, 20/20 topics)**: R314's 11 unverified doctrine-citation
+placeholders (blocked in an earlier session by no `WebFetch` network access) were verified against
+live URLs, correcting one factual error found in the process (JP 3-13.4 was misdated in the
+placeholder draft); the tier's last `⛔ Planned` gap, R320 (Commercial Space Actors and Strategic
+Ambiguity, closing GAP-03), was authored — see [R300-index.md](R300-index.md) for detail.
+
+[R400](R400-index.md)-[R500](R500-index.md) still carry the original two defects (missing §2 Scope,
+no citations) — see each tier's own index file for status. None of the seven-section *content*
+quality (Purpose/Concepts/Operational Context/Implementation Guidance/Feature Mapping/Related
+Topics) is in question for those tiers either — this is a structural-completeness and sourcing
+finding, not a rewrite of the substance. Phase 4 (Feature Specifications) should not treat R400/R500
+as a finished dependency until their remediation pass lands.
