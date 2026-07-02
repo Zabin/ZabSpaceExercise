@@ -5,7 +5,10 @@
 > [`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md)); further
 > amended (DOM-002/004/005 backfill, 2026-07; no numbered NFR added, no new Candidate NFR added —
 > see "DOM-002/004/005 backfill" section near the end of this document and
-> [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md)).
+> [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md));
+> further amended (`ADR-0032`/`ADR-0033` conflict resolution, 2026-07; `01-functional-requirements.md`
+> gained two new baselined FR leaves — `FR-10110`, `FR-10210` — this document gained none; the ADR
+> range below was updated).
 > **Authoritative inputs:**
 > [`build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §9
 > (NFR-1…NFR-10 — the legacy, pre-GDS NFR tag scheme),
@@ -16,8 +19,8 @@
 > (GDS-05), [`requirements/01-functional-requirements.md`](01-functional-requirements.md)
 > (FR-1xxx baseline), [`design/05-interface-control-document.md`](../design/05-interface-control-document.md)
 > (ICD), [`training/01-install-and-run.md`](../training/01-install-and-run.md) (configuration
-> surface), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001 through ADR-0031,
-> all `Accepted`), [`architecture/strategic-assumptions-register.md`](../architecture/strategic-assumptions-register.md)
+> surface), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001 through ADR-0033,
+> all `Accepted` except `ADR-0029`, `Superseded` by `ADR-0033`), [`architecture/strategic-assumptions-register.md`](../architecture/strategic-assumptions-register.md)
 > (added 2026-07).
 > **Priority scale used throughout:** MoSCoW (Must / Should / Could / Won't), matching
 > `requirements/01-functional-requirements.md`.
@@ -597,6 +600,17 @@ Summary of what changed here:
   writing rules forbid. DOM-002/004's candidate capabilities (automated rubric computation,
   dedicated research export) are functional in character and are addressed as `CR-19`/`CR-20` in
   `01-functional-requirements.md`, not here.
+
+## ADR-0017/ADR-0029 conflict resolution (2026-07)
+
+Following `ADR-0032`/`ADR-0033` (resolving the conflicts the backfill above found) and `CR-19`/
+`CR-20`'s subsequent promotion to `FR-10110`/`FR-10210` in `01-functional-requirements.md`, this
+document was reviewed for any non-functional quality attribute either new FR leaf implies. **No
+new NFR was added.** Both leaves' own Postconditions (no `WorldState` mutation, no aggregation;
+byte-identical seeded reproducibility) restate existing invariants (`NFR-1500` Determinism,
+the replay-safety principle already governing every read-only Feature in this baseline) rather
+than introducing a new one — consistent with this section's own reasoning above for why DOM-005
+itself yielded nothing.
 
 ## Completion report
 

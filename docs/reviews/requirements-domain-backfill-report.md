@@ -15,6 +15,16 @@
 > **No architecture was redesigned.** DOM-002/004/005, the ADR set, and FS-201/FS-301 are read as
 > fixed inputs; nothing in `docs/domains/`, `docs/architecture/`, or `docs/features/` was edited to
 > produce this report.
+>
+> **Update (2026-07): both §3 conflicts are now resolved.** Asked directly, the project owner chose
+> to (a) amend `ADR-0017` with a narrow carve-out rather than rescope or reject FS-201, and (b)
+> supersede `ADR-0029` outright rather than rescope FS-301 to the existing export path. See
+> [`ADR-0032`](../architecture/adr/ADR-0032-descriptive-rubric-not-automated-scoring.md) and
+> [`ADR-0033`](../architecture/adr/ADR-0033-dedicated-research-export-interface.md). `CR-19` and
+> `CR-20` (§5 below) are now promoted to `FR-10110`/`FR-10210` in `01-functional-requirements.md`.
+> The analysis in §3 below is left as originally written — it correctly describes the conflicts as
+> they stood before this update — rather than rewritten to look as though it always assumed this
+> outcome.
 
 [↑ Docs index](../INDEX.md) · [Feature Review](../feature-planning/05-feature-review.md)
 
@@ -136,9 +146,9 @@ source material doesn't commit to one.
 
 | ID | Title | Status | Source |
 |---|---|---|---|
-| CR-19 | Automated competency-assessment rubric computation | Candidate — not baselined | DOM-002 §§3–6; FS-201; ADR-0017; FR-4710 |
-| CR-20 | Dedicated multi-run/cohort research-export interface | Candidate — not baselined | DOM-004 §5; FS-301; ADR-0029 |
-| CR-21 | Human-subjects research authorization/ethics boundary | Candidate — not baselined | DOM-004 §6 |
+| CR-19 | Automated competency-assessment rubric computation | Candidate — not baselined *(**PROMOTED 2026-07 → FR-10110**, see Update note above)* | DOM-002 §§3–6; FS-201; ADR-0017; FR-4710 |
+| CR-20 | Dedicated multi-run/cohort research-export interface | Candidate — not baselined *(**PROMOTED 2026-07 → FR-10210**, see Update note above)* | DOM-004 §5; FS-301; ADR-0029 |
+| CR-21 | Human-subjects research authorization/ethics boundary | Candidate — not baselined (unaffected) | DOM-004 §6 |
 
 No `NFR-1xxx` or `CNFR-xx` ID was assigned (see §4).
 
@@ -161,20 +171,20 @@ No `NFR-1xxx` or `CNFR-xx` ID was assigned (see §4).
   correct its prior "roughly 6–9 additional Features" estimate, which did not anticipate the
   ADR-0017/ADR-0029 conflicts §3 above documents.
 
-## 7. What was deliberately not done
+## 7. What was deliberately not done (at the time of original authoring — see Update note above)
 
-- **ADR-0017 and ADR-0029 were not amended, reinterpreted, or narrowed.** Both remain Accepted, as
-  written. Resolving either conflict — by amending the ADR, or by rescoping DOM-002/FS-201 and
-  DOM-004/FS-301 to fit within them — is a decision for whoever owns the architecture record, per
-  this skill's own rule against unilateral conflict resolution.
-- **FS-201 and FS-301 were not rewritten or rescoped.** Their existing Scope/System Behaviour
-  sections are read as fixed inputs; if the project owner resolves §3's conflicts in a direction
-  that changes what either Feature Specification should say, that is separate, explicit follow-up
-  work against `docs/features/`, not something this pass performs by implication.
-- **`docs/implementation/packages/IP-2010-competency-assessment.md`'s own BLOCKED status was not
-  changed.** This report independently confirms the same conflict that package's header already
-  named; it does not unblock it, since the underlying ADR-0017 conflict is exactly as unresolved
-  after this pass as before it.
+- **ADR-0017 and ADR-0029 were not amended, reinterpreted, or narrowed *by this report*.** Both
+  remained Accepted, as written, at the time this report was first authored. Resolving either
+  conflict was correctly left to whoever owns the architecture record, per this skill's own rule
+  against unilateral conflict resolution — the project owner has since done so directly (`ADR-0032`,
+  `ADR-0033`), a separate, explicit follow-up action, not this report retroactively deciding for them.
+- **FS-201 and FS-301 were not rewritten or rescoped**, and still have not been — `ADR-0032`/
+  `ADR-0033` authorize FS-201/FS-301's *original* designs as written (a carve-out for FS-201, a
+  reversal of the rejection for FS-301), so no rescoping was needed once the ADR-tier conflict was
+  resolved in that direction.
+- **`docs/implementation/packages/IP-2010-competency-assessment.md`'s own BLOCKED status is
+  addressed separately** — see `docs/implementation/packages/IP-2010-competency-assessment.md`'s
+  own updated header for its post-`ADR-0032` status; this report does not itself edit that package.
 - **No architecture component (C1–C12) was assigned to CR-19/CR-20/CR-21.** DOM-002/004/005 are not
   yet represented in the C1–C12 component list at all (that list derives from `docs/design/05-
   interface-control-document.md`'s existing interfaces, none of which name an assessment/research

@@ -5,7 +5,12 @@
 > [`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md)); further
 > amended (DOM-002/004/005 backfill, 2026-07; no numbered FR added — see "DOM-002/004/005 backfill"
 > section near the end of this document and
-> [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md)).
+> [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md));
+> further amended (`ADR-0032`/`ADR-0033` conflict resolution, 2026-07; **two numbered FR leaves
+> added** — `FR-10110`, `FR-10210`, promoted from `CR-19`/`CR-20` — see "ADR-0017/ADR-0029 conflict
+> resolution" section near the end of this document).
+> **ADR range now ADR-0001 through ADR-0033** (32 `Accepted`, 1 `Superseded` — `ADR-0029` by
+> `ADR-0033`).
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -13,8 +18,8 @@
 > System Context), [`architecture/03-architecture.md`](../architecture/03-architecture.md) (GDS-03,
 > System Architecture), [`architecture/04-domain-model.md`](../architecture/04-domain-model.md)
 > (GDS-04, Domain Model), [`design/05-interface-control-document.md`](../design/05-interface-control-document.md)
-> (ICD), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001 through ADR-0031, all
-> `Accepted`), [`architecture/strategic-assumptions-register.md`](../architecture/strategic-assumptions-register.md)
+> (ICD), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001 through ADR-0033, all
+> `Accepted` except `ADR-0029`, `Superseded` by `ADR-0033`), [`architecture/strategic-assumptions-register.md`](../architecture/strategic-assumptions-register.md)
 > (added 2026-07).
 > **Priority scale used throughout:** MoSCoW (Must / Should / Could / Won't).
 
@@ -1427,6 +1432,107 @@ review passes actually run against it).
 
 ---
 
+## FR-10000 — Assessment & Research Instrumentation *(new 2026-07, DOM-002/004/005 backfill)*
+
+**Numbering note:** every leading digit 1–9 is already claimed by a top-level category above
+(FR-1000 Simulation Engine Core through FR-9000 AI-Red), so this category — added by the
+2026-07 DOM-002/004/005 backfill pass, once `ADR-0032`/`ADR-0033` resolved the conflicts that
+originally routed its content to `CR-19`/`CR-20` — extends the scheme to a 5-digit leaf ID rather
+than reuse or renumber an existing 4-digit bucket. See `reviews/requirements-domain-backfill-
+report.md` and `reviews/requirements-adr-conflict-resolution-report.md` for the full derivation.
+
+### FR-10100 — Competency assessment rubric
+
+#### FR-10110 — Automated non-aggregating competency rubric-tier computation
+
+- **ID:** FR-10110
+- **Title:** Compute per-dimension rubric-tier competency results without aggregating into a score
+- **Description:** The system shall compute, for each cell per exercise, a qualitative rubric-tier
+  result for each implemented measurement dimension (custody quality, window discipline, and
+  belief-truth divergence in the first iteration; resource economy, escalation discipline, and
+  time-to-decision deferred per FS-201's own stated scope), derived read-only from existing
+  eventlog/custody/order-log/AAR-snapshot state, and shall never aggregate these per-dimension
+  results into a single composite score, ranking, or win/loss determination.
+- **Rationale:** DOM-002 §§3–6 names this as the capability that replaces the engine's binary
+  objective-flip signal with a richer measurement of *how* a cell demonstrated a vignette's
+  intended competency; FS-201 elaborates it in full. `ADR-0032` carves this specific design —
+  non-adjudicative, non-aggregating, purely descriptive — out of `ADR-0017`'s "no automated
+  scoring or assessment mechanism" prohibition; `FR-4710`'s prohibition on a composite score/
+  win-loss determination is explicitly unaffected and remains the boundary this requirement must
+  not cross.
+- **Priority:** Should — valuable for facilitator debrief and longitudinal tracking, but (like
+  `FR-9110` AI-Red) not a precondition for any existing vignette's playability; every vignette
+  remains fully playable with only the pre-existing binary objective-flip signal.
+- **Inputs:** `Track` confidence history at time of action vs. decision (custody quality);
+  `OrderSystem` rejection rate / `dry_run()` usage pattern (window discipline); AAR's `snapshot_at()`
+  god-view/belief-view diff (belief-truth divergence).
+- **Outputs:** A rubric-tier result (one of a small set of qualitative tiers per dimension, e.g.
+  "speculative / adequate / disciplined" for custody quality) per implemented dimension, per cell,
+  per exercise.
+- **Preconditions:** A completed or in-progress exercise with eventlog, custody, order-log, and AAR
+  snapshot data available.
+- **Postconditions:** The computation produces no `WorldState` mutation; no per-dimension result is
+  ever aggregated into a single composite score, ranking, or win/loss determination.
+- **Acceptance Criteria:** Given a completed exercise, the per-cell per-exercise report presents
+  rubric-tier results for the three first-iteration dimensions side-by-side for both cells without
+  collapsing them into one number; the computation produces zero `WorldState` mutations across an
+  arbitrary number of invocations.
+- **Verification Method:** Test
+- **Dependencies:** FR-1510, FR-3410, FR-7310
+- **Source Documents:** DOM-002 §§3–6; FS-201 (Scope, System Behaviour, Acceptance Criteria);
+  ADR-0032.
+- **Related ADRs:** ADR-0017, ADR-0032
+- **Related Interfaces:** None — no ICD interface currently names this scoring/report boundary;
+  FS-201's own Open Questions flag the same gap. Left `UNASSIGNED` in the traceability matrix
+  rather than guessed.
+- **Related Requirements:** FR-4710 (the sibling prohibition this requirement must not cross),
+  FR-1510, FR-3410, FR-7310
+
+### FR-10200 — Research analytics export
+
+#### FR-10210 — Multi-run/cohort structured research-data export
+
+- **ID:** FR-10210
+- **Title:** Export structured, condition-labeled records across many seeded runs
+- **Description:** The system shall support batch execution of N seeded simulations of a given
+  vignette and shall export, for each run, a structured record containing the vignette identifier,
+  the seed, an experimenter-supplied condition label, and that run's `FR-10110` rubric-tier
+  results, without relaxing engine determinism to characterize run-to-run variability.
+- **Rationale:** DOM-004 §5 names this as the capability closing the stated gap that "a researcher
+  today would have to script directly against `eventlog`/`save` artifacts"; FS-301 elaborates it
+  in full. `ADR-0033` supersedes `ADR-0029` (which had previously rejected exactly this dedicated
+  export/analysis interface) to authorize it.
+- **Priority:** Should — valuable for instrument-grade research use, but not a precondition for
+  standard PME exercise play; no existing vignette or training workflow depends on it.
+- **Inputs:** A vignette identifier; a set/range of seeds; an experimenter-supplied condition
+  label; per-run `FR-10110` output.
+- **Outputs:** A structured multi-run export artifact — one record per run, each carrying its
+  vignette ID, seed, condition label, and `FR-10110` rubric-tier results.
+- **Preconditions:** `FR-10110` rubric computation is available for each run in the batch.
+- **Postconditions:** Each seeded run remains independently, byte-identically reproducible; no
+  non-determinism is introduced within or between runs to characterize variability — variability
+  is sampled by driving the engine across many seeds externally (DOM-005 §6), never by relaxing
+  `engine/`'s own determinism.
+- **Acceptance Criteria:** Given a batch of N seeded runs of the same vignette, the exported record
+  set contains exactly N entries, each tagged with its own seed/vignette-ID/condition label and
+  `FR-10110` output; re-running the same seed against the same vignette reproduces byte-identical
+  underlying state (verified via the existing determinism property test's own mechanism).
+- **Verification Method:** Test
+- **Dependencies:** FR-10110, FR-1120
+- **Source Documents:** DOM-004 §§4–6; FS-301 (Scope, System Behaviour); ADR-0033.
+- **Related ADRs:** ADR-0029 (superseded), ADR-0033
+- **Related Interfaces:** None — no ICD interface currently names this export boundary; FS-301's
+  own Open Questions flag the same gap. Left `UNASSIGNED` in the traceability matrix rather than
+  guessed.
+- **Related Requirements:** FR-10110, FR-1120
+
+**Explicitly not authorized by this category:** any human-subjects-research feature (cross-
+institution or de-identified trainee data collection) remains out of scope without separate
+authorization and the institution's own IRB/ethics process — `CR-21` records this boundary and is
+unaffected by `FR-10110`/`FR-10210`'s addition.
+
+---
+
 ## Candidate Requirements
 
 The following read as requirements but cannot be traced to a settled statement in this baseline's
@@ -1489,51 +1595,49 @@ status as CR-01–CR-11 above, just newly named rather than newly built. See
 closing `docs/feature-planning/05-feature-review.md` Finding F-01 (these domains ground shipped
 Feature Specifications FS-201/FS-202/FS-301 with zero corresponding requirement anywhere in this
 baseline). See "DOM-002/004/005 backfill" near the end of this document and
-`reviews/requirements-domain-backfill-report.md` for the full analysis; the bottom line is that
-**zero new leaves were added to the numbered baseline** — every candidate capability these domains
-describe either conflicts with an Accepted ADR, or is not yet concrete enough to write a testable
-requirement against.
+`reviews/requirements-domain-backfill-report.md` for the full analysis. **CR-19 and CR-20 were
+subsequently promoted to the numbered baseline** (see `## FR-10000` above) once the project owner
+resolved their blocking ADR conflicts via `ADR-0032`/`ADR-0033` — retained below, marked
+`PROMOTED`, for audit-trail continuity rather than deleted. **CR-21 remains a Candidate**, unaffected
+by that promotion.
 
-- **CR-19 — Automated competency-assessment rubric computation.** DOM-002 §§3–6 and FS-201
-  describe an always-available, automated computation of qualitative rubric tiers (custody
-  quality, window discipline, belief-truth divergence, …) per cell per exercise. This cannot be
-  written as a baselined FR today because it is in direct tension with two Accepted decisions:
+- **CR-19 — Automated competency-assessment rubric computation. `PROMOTED 2026-07 → FR-10110`,
+  once `ADR-0032` resolved the blocking conflict below.** DOM-002 §§3–6 and FS-201 describe an
+  always-available, automated computation of qualitative rubric tiers (custody quality, window
+  discipline, belief-truth divergence, …) per cell per exercise. This could not be written as a
+  baselined FR when first identified because it was in direct tension with two Accepted decisions:
   ADR-0017 ("No automated scoring or assessment mechanism exists in v1... outcomes are adjudicated
   and narrated by the White Cell facilitator") and FR-4710 above (already baselined: "the system
   shall not compute or display an automated score or win/loss determination"). DOM-002 §5
   deliberately designed the rubric to avoid a single composite score specifically to distinguish
-  "rubric-tier reporting" from "scoring/win-loss" — this may be a genuine, defensible distinction,
-  but no approved document reconciles it against ADR-0017's broader "no... assessment mechanism"
-  language, and `docs/implementation/packages/IP-2010-competency-assessment.md`'s own header
-  records this exact conflict as unreconciled (a "Blocking Report" was delivered directly to the
-  project owner 2026-07-02; it is not itself a persisted document this baseline can cite). A
-  requirement cannot be written until either ADR-0017 is amended to carve out non-adjudicative
-  descriptive measurement, or DOM-002/FS-201 is rescoped to fit within it. **Source:** DOM-002
-  §§3–6; FS-201 (Scope, System Behaviour); ADR-0017; FR-4710 (this document); `IP-2010`'s header
-  note.
-- **CR-20 — Dedicated multi-run/cohort research-export interface.** DOM-004 §5 and FS-301 describe
-  a purpose-built export/cohort-management layer (structured per-run records with condition-label
+  "rubric-tier reporting" from "scoring/win-loss" — the project owner resolved this by amending
+  ADR-0017 with a narrow carve-out (`ADR-0032`) rather than rescoping FS-201 or rejecting the
+  capability. **Source:** DOM-002 §§3–6; FS-201 (Scope, System Behaviour); ADR-0017; ADR-0032;
+  FR-4710 (this document); `IP-2010`'s header note.
+- **CR-20 — Dedicated multi-run/cohort research-export interface. `PROMOTED 2026-07 → FR-10210`,
+  once `ADR-0033` resolved the blocking conflict below.** DOM-004 §5 and FS-301 describe a
+  purpose-built export/cohort-management layer (structured per-run records with condition-label
   metadata, across many seeded runs) to close the stated gap that "a researcher today would have
-  to script directly against `eventlog`/`save` artifacts." This cannot be written as a baselined FR
-  today because it directly conflicts with an Accepted decision: ADR-0029 ("Raw AAR/event-log
-  access... plus the existing CSV/JSON export at `/api/sessions/{sid}/aar/export.{csv,json}`... is
-  treated as sufficient for the researchers/assessment-designers stakeholder... no new dedicated
-  export/analysis interface or owning subsystem is introduced"). ADR-0029's own Alternatives
-  Considered section explicitly names and rejects "introduce a dedicated export/analysis interface
-  for assessment designers" — precisely what FS-301 proposes. This is a clearer conflict than
-  CR-19's: no genuine distinction narrows it the way DOM-002 §5 narrows CR-19. A requirement cannot
-  be written until ADR-0029 is revisited or FS-301 is rescoped to the existing export path it
-  currently proposes to supersede. **Source:** DOM-004 §5; FS-301 (Scope, User Workflows); ADR-0029
-  (Decision, Alternatives Considered).
+  to script directly against `eventlog`/`save` artifacts." This could not be written as a
+  baselined FR when first identified because it directly conflicted with an Accepted decision:
+  ADR-0029 ("Raw AAR/event-log access... plus the existing CSV/JSON export at
+  `/api/sessions/{sid}/aar/export.{csv,json}`... is treated as sufficient for the researchers/
+  assessment-designers stakeholder... no new dedicated export/analysis interface or owning
+  subsystem is introduced"). ADR-0029's own Alternatives Considered section explicitly named and
+  rejected "introduce a dedicated export/analysis interface for assessment designers" — precisely
+  what FS-301 proposes. The project owner resolved this by superseding ADR-0029 outright
+  (`ADR-0033`), authorizing the dedicated interface FS-301 originally proposed. **Source:** DOM-004
+  §5; FS-301 (Scope, User Workflows); ADR-0029 (superseded); ADR-0033.
 - **CR-21 — Human-subjects research authorization/ethics boundary.** DOM-004 §6 states that any
   future feature enabling human-subjects research (e.g., cross-institution de-identified trainee
   data collection) requires separate authorization and the institution's own IRB/ethics process,
   and "must not be assumed authorized merely because this framework describes the capability gap."
   This is not in conflict with any ADR, but no approved document commits the system to *any*
-  concrete human-subjects-research feature today — CR-19/CR-20 above are themselves blocked, so
-  there is no built or committed capability yet for this boundary statement to constrain. A
-  requirement would be vacuous until a concrete human-subjects-research feature is proposed;
-  recorded here so the constraint is not silently forgotten if/when one is. **Source:** DOM-004 §6.
+  concrete human-subjects-research feature today — `FR-10110`/`FR-10210` (promoted from CR-19/CR-20
+  above) are structured-aggregate assessment/export capabilities, not a human-subjects research
+  program in the IRB sense, so this boundary remains unaddressed by their promotion. A requirement
+  would still be vacuous until a concrete human-subjects-research feature is proposed; recorded
+  here so the constraint is not silently forgotten if/when one is. **Source:** DOM-004 §6.
 
 - **CR-12 — Proliferated-Constellation Aggregation Layer.** No layer/mesh-level tasking, health
   rollup, or aggregated-custody construct exists for constellations larger than the ≤3-satellite cap
@@ -1647,6 +1751,34 @@ Summary of what changed here:
   already-baselined NFR-1500 determinism invariant rather than adding a new one.
 - Added **CR-19 through CR-21**, three new Candidate Requirements — see the Candidate Requirements
   section above.
+
+## ADR-0017/ADR-0029 conflict resolution — CR-19/CR-20 promotion (2026-07)
+
+Following direct project-owner decision (per explicit instruction: amend `ADR-0017` with a narrow
+carve-out for `CR-19`; supersede `ADR-0029` outright for `CR-20`), `ADR-0032` and `ADR-0033` were
+authored resolving both blocking conflicts the "DOM-002/004/005 backfill" pass above found. This
+is a same-baseline follow-up, not a new backfill pass — re-running this document's own Step 0
+against the two new ADRs, per this skill's own "we added an ADR — update the requirements" worked
+example. Summary of what changed here:
+
+- **Added a new top-level category, `## FR-10000` — Assessment & Research Instrumentation**, with
+  two new baselined leaves: **`FR-10110`** (automated non-aggregating competency rubric-tier
+  computation, promoted from `CR-19` now that `ADR-0032` narrows `ADR-0017`'s prohibition) and
+  **`FR-10210`** (multi-run/cohort structured research-data export, promoted from `CR-20` now that
+  `ADR-0033` supersedes `ADR-0029`). Both leaves cite `Should` priority — neither is a precondition
+  for any existing vignette's playability, the same reasoning `FR-9110` (AI-Red) already uses for
+  a valuable-but-optional capability.
+- **`CR-19` and `CR-20` are marked `PROMOTED` in place in the Candidate Requirements section**, not
+  deleted — the audit trail of why each was originally blocked, and how, is preserved. `CR-21`
+  remains an active Candidate, unaffected by either promotion (it addresses a human-subjects-
+  research boundary that neither `FR-10110` nor `FR-10210` — both structured-aggregate, non-
+  identifying capabilities — triggers).
+- **No existing baselined FR was modified.** `FR-4710` (no automated score/win-loss) is unchanged
+  and remains the boundary `FR-10110` must not cross, per `ADR-0032`'s own narrow-carve-out framing.
+- This category's numbering (`FR-10000`, five digits) is a deliberate, explicit extension of the
+  4-digit `FR-1000`–`FR-9110` scheme, not a renumbering of it — every leading digit 1–9 was already
+  claimed by an existing top-level category before this pass. See `## FR-10000`'s own numbering
+  note above.
 
 ## Next
 

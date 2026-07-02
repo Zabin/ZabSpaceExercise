@@ -13,8 +13,8 @@ it is the `docs/requirements/`-side deliverable the project owner requested dire
 Inputs read in full to build this matrix: the research encyclopedia index
 ([`docs/research/encyclopedia/`](../research/encyclopedia/INDEX.md)), the GDS architecture ladder
 (`docs/architecture/00`–`05`), the ADR index
-([`docs/architecture/adr/INDEX.md`](../architecture/adr/INDEX.md), ADR-0001–ADR-0031, all
-`Accepted`), the Interface Control Document
+([`docs/architecture/adr/INDEX.md`](../architecture/adr/INDEX.md), ADR-0001–ADR-0033, 32
+`Accepted` and 1 `Superseded` — `ADR-0029` by `ADR-0033`), the Interface Control Document
 ([`docs/design/05-interface-control-document.md`](../design/05-interface-control-document.md)),
 the [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md), and both
 requirements documents in full (every FR/NFR/Candidate leaf and its explicit fields).
@@ -34,6 +34,12 @@ requirements documents in full (every FR/NFR/Candidate leaf and its explicit fie
 > `IP-1100`), both split from `IP-1060` v1.0 per Finding F-03. No baselined FR/NFR row was added. See
 > [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md)
 > for the full analysis.
+>
+> **Further amended 2026-07** (`ADR-0032`/`ADR-0033` conflict resolution) to add master-matrix rows
+> for **`FR-10110`** and **`FR-10210`** (promoted from `CR-19`/`CR-20` once the project owner
+> resolved their blocking ADR conflicts) and to mark those two Candidate rows `PROMOTED` in place
+> rather than deleting them. Updated the ADR index range above to `ADR-0033` and its `Accepted`/
+> `Superseded` split.
 
 Every populated cell below is backed by an explicit, already-written field on the cited
 requirement leaf (its own "Related ADRs," "Related Interfaces," "Source Documents," or
@@ -145,6 +151,13 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-7320 | AAR branch compare | UNASSIGNED | ADR-0002 | C2, C1 | INT-0014 | UNASSIGNED | UNASSIGNED | `session/aar.py` |
 | FR-8110 | Operator console (web UI over the API) | UNASSIGNED | ADR-0008 | C4, C12 | INT-0001 | UNASSIGNED | UNASSIGNED | `ui_web/server.py`, `ui_web/static/` |
 | FR-9110 | AI-Red substitution for unseated Red | UNASSIGNED | ADR-0021, ADR-0024 | C2, C1, C8 | INT-0008, INT-0015 | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" | UNASSIGNED | `session/redai.py` |
+| FR-10110 *(new 2026-07, promoted from CR-19)* | Automated non-aggregating competency rubric-tier computation | UNASSIGNED | ADR-0017, ADR-0032 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-10210 *(new 2026-07, promoted from CR-20)* | Multi-run/cohort structured research-data export | UNASSIGNED | ADR-0029, ADR-0033 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+
+`FR-10110`/`FR-10210` carry `UNASSIGNED` Arch. Component/Interface/Test/Impl. Package cells
+honestly — neither capability has shipped code, an assigned C1–C12 component, or an ICD interface
+yet (both Feature Specs' own Open Questions flag the same interface gap). This is the expected
+state for a newly-promoted, not-yet-implemented requirement, not a guessed placeholder.
 
 ### Candidate Requirements (CR-01–CR-21) — `CANDIDATE — NOT BASELINED`
 
@@ -177,8 +190,8 @@ to a not-built GDS-02/03/04 candidate component/concept instead, so Arch. Compon
 | CR-16 | Ground-Segment-as-Terrain Cyber Model | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | `FUTURE-WORK.md` §13 | UNASSIGNED | UNASSIGNED |
 | CR-17 | Persistent Debris / STM Environment Layer | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | `FUTURE-WORK.md` §2, §13 | UNASSIGNED | UNASSIGNED |
 | CR-18 | Facilitator / cross-session adjudication-consistency support | UNASSIGNED | ADR-0031 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
-| CR-19 *(new 2026-07)* | Automated competency-assessment rubric computation | UNASSIGNED | ADR-0017 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
-| CR-20 | Dedicated multi-run/cohort research-export interface | UNASSIGNED | ADR-0029 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| CR-19 *(new 2026-07 — **PROMOTED to FR-10110**, see master matrix above)* | Automated competency-assessment rubric computation | UNASSIGNED | ADR-0017 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| CR-20 *(**PROMOTED to FR-10210**, see master matrix above)* | Dedicated multi-run/cohort research-export interface | UNASSIGNED | ADR-0029 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | CR-21 | Human-subjects research authorization/ethics boundary | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 
 `CR-19`–`CR-21`, added by the 2026-07 DOM-002/004/005 backfill pass (`docs/feature-planning/
@@ -274,7 +287,7 @@ and ADR-0031 (both new 2026-07) are included on the same basis.
 | ADR-0014 | FR-6310, FR-6320, FR-6410, NFR-1100, NFR-1400 |
 | ADR-0015 | FR-6220, NFR-2300 |
 | ADR-0016 | FR-1110, FR-4310 |
-| ADR-0017 | FR-4710, NFR-2600, CR-19 *(added 2026-07, DOM-002/004/005 backfill)* |
+| ADR-0017 | FR-4710, NFR-2600, FR-10110 *(added 2026-07: CR-19 promoted to FR-10110 once ADR-0032 resolved the conflict)* |
 | ADR-0018 | FR-5210, NFR-3200, NFR-2200 |
 | ADR-0019 | NFR-1200, NFR-1300 |
 | ADR-0020 | NFR-1200, NFR-2900 |
@@ -283,9 +296,11 @@ and ADR-0031 (both new 2026-07) are included on the same basis.
 | ADR-0024 | FR-9110, CR-01, CNFR-06 |
 | ADR-0026 | FR-6310, FR-6320, NFR-1400 |
 | ADR-0027 | FR-5110 |
-| ADR-0029 | FR-4710, CR-20 *(added 2026-07, DOM-002/004/005 backfill)* |
+| ADR-0029 *(Superseded by ADR-0033)* | FR-4710, FR-10210 *(added 2026-07: CR-20 promoted to FR-10210 once ADR-0033 superseded this ADR — retained here for historical traceability since FR-10210's own Related ADRs still cites ADR-0029 as the superseded decision)* |
 | ADR-0030 | FR-9110 *(added 2026-07, strategic-review reconciliation)* |
 | ADR-0031 | CR-18 *(added 2026-07, strategic-review reconciliation)* |
+| ADR-0032 *(new 2026-07)* | FR-10110 |
+| ADR-0033 *(new 2026-07)* | FR-10210 |
 | ADR-0001 | (no citing FR/NFR) |
 | ADR-0023 | (no citing FR/NFR) |
 | ADR-0025 | (no citing FR/NFR) |
@@ -413,7 +428,7 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `spacesim/tests/` | NFR-2800 |
 | Build/dependency manifest, `spacesim/` (whole tree) | NFR-2900 |
 | All subsystems (no single file) | NFR-2200 |
-| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4110, FR-4210, FR-6610, all Candidate Requirements (CR-01–CR-21), all Candidate NFRs (CNFR-01–CNFR-07) |
+| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4110, FR-4210, FR-6610, FR-10110, FR-10210 *(both new 2026-07, promoted from CR-19/CR-20 — not yet implemented, so honestly `UNASSIGNED` here despite being baselined)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
 
 *(FR-4610/FR-4710/FR-4720 closed 2026-07 via `IP-1060` v2.0; FR-7220 closed 2026-07 via `IP-1100` —
 both split from `IP-1060` v1.0 per Finding F-03 — see the master matrix rows above. FR-4110/FR-4210/
@@ -466,6 +481,27 @@ Summary:
   with an Accepted ADR (`ADR-0017`, `ADR-0029`) or lacks a concrete feature to constrain
   (`CR-21`); DOM-005 yielded no new leaf, baseline or candidate, at all (methodology guidance, not
   a system requirement — see `02`'s own reconciliation section).
+
+## ADR-0017/ADR-0029 conflict resolution — CR-19/CR-20 promotion (2026-07)
+
+Following direct project-owner decision, `ADR-0032` (amends `ADR-0017`) and `ADR-0033` (supersedes
+`ADR-0029`) resolved both blocking conflicts the backfill above found. This matrix was updated to
+match `01-functional-requirements.md`'s own promotion of `CR-19`→`FR-10110` and `CR-20`→`FR-10210`.
+Summary:
+
+- Added master-matrix rows for **`FR-10110`** and **`FR-10210`** (both `UNASSIGNED` on every
+  forward-trace column, honestly — neither has shipped code, an assigned architecture component,
+  or an ICD interface yet).
+- Marked the **`CR-19`** and **`CR-20`** Candidate rows `PROMOTED` in place rather than deleting
+  them, preserving the audit trail of why each was originally blocked.
+- Updated the **`ADR-0017`** reverse-index row to cite `FR-10110` (replacing its prior `CR-19`
+  citation) and the **`ADR-0029`** row to cite `FR-10210` (its `Superseded` status noted inline);
+  added new reverse-index rows for **`ADR-0032`** (→`FR-10110`) and **`ADR-0033`** (→`FR-10210`).
+- Updated the Implementation Package reverse index's `UNASSIGNED` bucket to include `FR-10110`/
+  `FR-10210` explicitly (baselined but not yet implemented) and to note `CR-19`/`CR-20`'s removal
+  from the still-Candidate list there.
+- Updated the "Method and discipline" section's ADR range (`ADR-0031` → `ADR-0033`) and its
+  `Accepted`/`Superseded` split.
 
 ## Related
 
