@@ -117,4 +117,5 @@ type) that has no topic an author would read first. The recurring invocation pat
   only in code comments or PR descriptions — the citation belongs in the `R3xx`/primer file, and the
   code/PR should point to it, not the other way around.
 - This skill does not touch Tier R100 (orbital mechanics/OW — `research-ow-orbital-mechanics`'s
-  scope) or Tiers R200/R400/R500 (decision sciences, research methods, future ops).
+  scope) or Tiers R200 (decision sciences, no skill yet), R400 (research methods —
+  `research-methods-and-validation`), or R500 (future operations — `research-future-operations`).
