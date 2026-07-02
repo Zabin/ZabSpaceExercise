@@ -278,26 +278,24 @@ docs/
 
 ## Gotchas
 
-- **This repository already has its own `FS-xxx` convention, living directly under
-  `docs/features/` (not under a `specifications/` subdirectory).** Per
-  `docs/master/MSTR-005-documentation-map.md` §4, those files (`FS-101-mission-planning.md` …
-  `FS-301-research-analytics.md`, indexed in `docs/features/feature-index.md`) are produced by a
-  **different existing chain**: Training Objective → Domain Document (`DOM-xxx`) → Research
-  (`R1xx-R5xx`) → Design Synthesis (`ADS-xxx`, via the `architecture-design-synthesis` skill) →
-  Feature Specification (`FS-xxx`) → Implementation Package. That chain does not run through a
-  Feature Catalog/Epic Catalog at all — it has no `feature-decomposition`-style planning layer
-  upstream of it.
-  This skill's output directory (`docs/features/specifications/`) is deliberately distinct from
-  that existing one, so the two do not collide on *location*. But **both conventions use the same
-  `FS-xxxx` ID prefix** — before assigning a new ID here, check both `docs/features/feature-index.md`
-  and any Feature Catalog (`docs/features/03-feature-catalog.md` or equivalent, if one exists in
-  this repo) to make sure the number isn't already claimed by the other chain. If this repository
-  has no Feature Catalog at all yet (true as of this writing — there is no
-  `feature-decomposition`-produced catalog in `docs/features/`), say so explicitly the first time
-  this skill is invoked here, and ask whether the intended input really is the existing
-  DOM/ADS-grounded Feature concept (in which case treat the relevant `DOM-xxx`/`ADS-xxx` documents
-  as the "approved Feature" input in place of a Feature Catalog row) or whether a Feature Catalog
-  needs to be produced first via `feature-decomposition`.
+- **This skill's 20-field template supersedes the prior ad hoc FS-xxx structure for all Feature
+  Specifications in this repository.** The existing 11 files (`FS-101-mission-planning.md` …
+  `FS-301-research-analytics.md`, under `docs/features/`) have been **rewritten in place** to the
+  new template — same file paths, same `FS-xxx` IDs, same MSTR-006 §5 metadata blocks, no
+  renumbering. The prior DOM→R→ADS→FS chain (Training Objective → Domain Document (`DOM-xxx`) →
+  Research → Design Synthesis (`ADS-xxx`) → Feature Spec → IMP) remains the upstream sourcing
+  chain for this repository's Feature concepts; this skill's template is now the governing format
+  for the FS stage of that chain, absorbing and replacing any prior ad hoc per-section structures.
+  The `docs/features/specifications/` subdirectory named in the Outputs section below is the
+  canonical write scope for **new** Feature Specifications going forward; it does not apply
+  retroactively to the absorbed 11 files, which remain at their existing paths.
+- **No Feature Catalog exists in this repository yet.** The repo has no `feature-decomposition`-
+  produced catalog in `docs/features/`. When invoked here for a new Feature Specification, treat
+  the relevant `DOM-xxx`/`ADS-xxx` documents as the "approved Feature" input in place of a Feature
+  Catalog row, and confirm this is the intended source before drafting.
+- **Check `docs/features/feature-index.md` before assigning a new `FS-xxxx` ID.** The 11 absorbed
+  files claim IDs 101–107 (FS-1xx), 108 (🅿️ candidate), 201, 202 (🅿️ candidate), and 301. New
+  IDs must not conflict with these.
 - **Don't let a spec re-derive what its Feature Catalog entry (or `DOM-xxx`/`ADS-xxx` equivalent)
   already decided.** `Purpose`, `Scope`, `Dependencies`, `Affected Subsystems/Interfaces`, and
   `Related ADRs` should be carried forward from the upstream entry, not re-litigated.
