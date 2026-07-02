@@ -11,9 +11,9 @@ Justifies assessment/validation work (DOM-002, DOM-005). 13 topics.
 | [R403](R403-statistics-foundations.md) | Statistics Foundations | Descriptive/inferential statistics needed to read DOM-002 outputs. | — | ✅ |
 | [R404](R404-measurement-theory.md) | Measurement Theory | Scales of measurement, reliability vs. validity. | [R403](R403-statistics-foundations.md) | ✅ |
 | [R405](R405-uncertainty-analysis.md) | Uncertainty Analysis | Propagating and reporting uncertainty in a derived metric. | [R403](R403-statistics-foundations.md) | ✅ |
-| [R406](R406-modeling-practices.md) | Modeling Practices | Building and documenting a model so its assumptions are auditable. | — | 🚧 *(no §2 Scope; uncited)* |
-| [R407](R407-monte-carlo-methods.md) | Monte Carlo Methods | Repeated seeded simulation to characterize outcome distributions. | [R403](R403-statistics-foundations.md), [R406](R406-modeling-practices.md) | 🚧 *(no §2 Scope; uncited)* |
-| [R408](R408-sensitivity-analysis.md) | Sensitivity Analysis | Varying one input to see how much it moves an outcome. | [R407](R407-monte-carlo-methods.md) | 🚧 *(no §2 Scope; uncited)* |
+| [R406](R406-modeling-practices.md) | Modeling Practices | Building and documenting a model so its assumptions are auditable. | — | ✅ |
+| [R407](R407-monte-carlo-methods.md) | Monte Carlo Methods | Repeated seeded simulation to characterize outcome distributions. | [R403](R403-statistics-foundations.md), [R406](R406-modeling-practices.md) | ✅ |
+| [R408](R408-sensitivity-analysis.md) | Sensitivity Analysis | Varying one input to see how much it moves an outcome. | [R407](R407-monte-carlo-methods.md) | ✅ |
 | [R409](R409-verification.md) | Verification | Confirming a model matches its own specification. | [R406](R406-modeling-practices.md) | 🚧 *(no §2 Scope; uncited)* |
 | [R410](R410-validation.md) | Validation | Confirming a model/instrument matches the real-world phenomenon it represents. | [R409](R409-verification.md) | 🚧 *(no §2 Scope; uncited)* |
 | [R411](R411-human-subjects-research.md) | Human Subjects Research | Ethics, consent, IRB-adjacent considerations for trainee data. | [R401](R401-experimental-design-and-controls.md) | 🚧 *(no §2 Scope; uncited)* |
