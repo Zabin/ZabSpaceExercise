@@ -1,7 +1,7 @@
 # R410 — Validation
 
 > **Document ID:** R410
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R409](R409-verification.md)
 > **Referenced By:** [R404](R404-measurement-theory.md), [R412](R412-survey-and-assessment-instrument-design.md)
@@ -10,6 +10,8 @@
 > **Related Topics:** [R409](R409-verification.md) (Verification — the distinct, comparatively strong discipline this topic
 > contrasts with), [R404](R404-measurement-theory.md) (Measurement Theory — instrument validation as a special case of this
 > topic), [R412](R412-survey-and-assessment-instrument-design.md) (Survey and Assessment Instrument Design)
+> **Last Reviewed:** 2026-07-02
+> **Primary Sources Consulted:** 0 new (extends R409's Boehm/Sargent citations to the validation half of their same distinction; this project's own AUDIT file as the worked precedent — see §3 Sources)
 
 [↑ Tier R400 index](R400-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -21,19 +23,34 @@ This topic supplies the formal validation vocabulary and methodology DOM-005's f
 grounded in the worked example DOM-005 §4 already cites: the `AUDIT-2026-06-UI-TTC.md` §2
 power-calibration bug.
 
-## 2. Concepts
+## 2. Scope
+
+Covers: the validation definition ("building the right thing"), face validity, ground-truth
+comparison, and the standing (never fully "done") nature of validation, grounded in this project's
+own worked precedent. Does **not** cover: verification itself, assumed established at
+[R409](R409-verification.md) (this topic is that document's direct counterpart, sharing its Boehm/
+Sargent sourcing); or the instrument-specific reliability/validity vocabulary
+([R404](R404-measurement-theory.md)'s narrower job, this topic's general case).
+
+## 3. Concepts
 
 **Validation: does the model/instrument represent the real-world phenomenon it claims to.**
-Validation asks "did we build the right thing" — a fully verified jam-effect formula (correctly
-implements its specified math, [R409](R409-verification.md)) can still be invalid if the specified formula itself doesn't
-match real-world EW jam behavior; validation is the check against the external phenomenon, not
-against the model's own internal spec.
+Continuing [R409](R409-verification.md) §3's citation of Barry Boehm's *Software Engineering
+Economics* (1981) and Robert Sargent's simulation V&V framework: where verification asks "are we
+building the product right," validation asks "are we building the right product" (Boehm) — or, in
+Sargent's simulation-specific terms, whether the model's assumptions and output behavior are
+"reasonable for its intended purpose" against the real problem entity, not just internally
+consistent. A fully verified jam-effect formula (correctly implements its specified math,
+[R409](R409-verification.md)) can still be invalid if the specified formula itself doesn't match
+real-world EW jam behavior; validation is the check against the external phenomenon, not against the
+model's own internal spec.
 
 **Face validity as the cheapest, weakest check.** Does the model/metric look, on inspection by a
 domain-knowledgeable reviewer, like it represents the claimed phenomenon — useful as a first filter,
 but easily fooled by a model that looks right but behaves wrong in an edge case, which is exactly
-what the `AUDIT-2026-06-UI-TTC.md` §2 bug was: a power-calibration formula that likely looked
-reasonable on inspection but produced a wrong result under specific conditions.
+what the [`AUDIT-2026-06-UI-TTC.md`](../../AUDIT-2026-06-UI-TTC.md) §2 bug was: a power-calibration
+formula that likely looked reasonable on inspection but produced a wrong result under specific
+conditions.
 
 **Validation against ground truth, where ground truth is available.** Where a real-world reference
 value exists (a known physical constant, a published real EW effectiveness figure, an expert SME
@@ -55,15 +72,30 @@ Unlike a verification test (binary pass/fail against a fixed spec), a validation
 should be revisited whenever the model's scope of use changes ([R406](R406-modeling-practices.md)) — a model validated for one
 regime is not automatically validated for an extended one.
 
-## 3. Operational Context
+### Sources
+
+- *This project's own worked validation precedent* —
+  [`docs/AUDIT-2026-06-UI-TTC.md`](../../AUDIT-2026-06-UI-TTC.md) §2 (the power-calibration bug DOM-005
+  §4 cites).
+- Uses the Boehm (1981) and Sargent V&V-framework citations already fully recorded at
+  [R409](R409-verification.md) §3's Sources subsection (Boehm's "building the right product"
+  framing; Sargent's operational-validity concept) — not re-derived here in full per MSTR-007 §5.
+
+## 4. Operational Context
 
 The verification/validation distinction is formalized in military modeling-and-simulation practice as
-VV&A (Verification, Validation, and Accreditation) precisely because a heavily-verified-but-
-unvalidated simulator can produce confident-looking but substantively wrong training conclusions —
-this is the exact failure mode DOM-005 names as this project's current risk, and the
-`AUDIT-2026-06-UI-TTC.md` precedent shows the risk is concrete, not hypothetical, for this codebase.
+VV&A (Verification, Validation, and Accreditation, per DoDI 5000.61, cited at [R406](R406-modeling-practices.md) §3) precisely
+because a heavily-verified-but-unvalidated simulator can produce confident-looking but substantively
+wrong training conclusions — this is the exact failure mode DOM-005 names as this project's current
+risk, and the `AUDIT-2026-06-UI-TTC.md` precedent shows the risk is concrete, not hypothetical, for
+this codebase.
 
-## 4. Implementation Guidance
+### Sources
+
+Uses the same sources cited inline in §3 (this project's own AUDIT file; the Boehm/Sargent citations
+carried from [R409](R409-verification.md)); no additional sources introduced in this section.
+
+## 5. Implementation Guidance
 
 - **Treat any future fidelity claim (a jam/cyber/engage formula's calibration, a propagator's
   accuracy) as requiring validation work distinct from and in addition to its existing verification
@@ -79,11 +111,11 @@ this is the exact failure mode DOM-005 names as this project's current risk, and
   (per [R406](R406-modeling-practices.md)) — e.g. a doctrine preset validated against one vignette's scenario state is not
   automatically validated against a substantially different one.
 
-## 5. Feature Mapping
+## 6. Feature Mapping
 
 DOM-005 (Validation Framework) in its entirety is the direct consumer.
 
-## 6. Related Topics
+## 7. Related Topics
 
 [R409](R409-verification.md) (Verification, the contrasting strong discipline), [R404](R404-measurement-theory.md) (Measurement Theory, instrument
 validation as a special case), [R412](R412-survey-and-assessment-instrument-design.md) (Survey and Assessment Instrument Design).
