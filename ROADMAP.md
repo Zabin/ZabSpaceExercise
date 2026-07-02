@@ -290,9 +290,12 @@ Router: [`features/feature-index.md`](docs/features/feature-index.md).
 | FS-103 | Custody Management | `features/FS-103-custody-management.md` | DOM-009 | ✅ |
 | FS-104 | SDA Tasking | `features/FS-104-sda-tasking.md` | DOM-009 | ✅ |
 | FS-105 | Spacecraft Operations | `features/FS-105-spacecraft-operations.md` | DOM-001, DOM-007 | ✅ |
-| FS-106 | White Cell Dashboard | `features/FS-106-white-cell-dashboard.md` | DOM-003 | ✅ |
+| FS-106 | White Cell Dashboard *(v2.0, narrowed)* | `features/FS-106-white-cell-dashboard.md` | DOM-003 | ✅ |
 | FS-107 | After Action Review | `features/FS-107-after-action-review.md` | DOM-001, DOM-003 | ✅ |
 | FS-108 | Inject Authoring *(candidate)* | `features/FS-108-inject-authoring.md` | DOM-003 | ⛔ Planned (authorized) |
+| FS-109 | Multiplayer / LAN Session Transport | `features/FS-109-multiplayer-session-transport.md` | DOM-003 §6 | ✅ |
+| FS-110 | Save & Resume | `features/FS-110-save-and-resume.md` | DOM-003 §6 | ✅ |
+| FS-111 | AI-Red Doctrine Automation | `features/FS-111-ai-red-doctrine-automation.md` | DOM-009, DOM-008 | ✅ |
 | FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | DOM-002 | ✅ |
 | FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | ⛔ Planned (authorized) |
 | FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | DOM-004, DOM-005 | ✅ |
@@ -301,9 +304,21 @@ FS-108 and FS-202 are intentionally lighter-weight stubs (not full specs) — bo
 "(candidate)" in their owning domain document and require explicit user authorization (MSTR-006 §3)
 before promotion to a full spec or any Implementation Package work.
 
-**Next:** Phase 5 (Implementation Packages, `docs/implementations/`) is complete (below). Phase 6-8
-(Consistency/Dependency/Traceability review, MSTR-006 §7) is also complete (see the dedicated
-theme section below).
+**FS-106 split (2026-07), per `docs/feature-planning/05-feature-review.md` Finding F-03:** v1.0
+bundled the White Cell facilitator UI with three architecturally distinct capabilities, each now
+its own document — FS-109 (multiplayer/LAN session transport, ADR-0014/0015/0026), FS-110
+(save/resume, ADR-0022), and FS-111 (AI-Red doctrine automation, ADR-0021/0024/0030). FS-106 v2.0
+retains god-view/view-as, inject authoring/firing, clock/pacing control authority (trigger surface
+only), and manual adjudication. **`IMP-106A`/`IP-1060` (below) were written against FS-106's prior,
+broader scope and have not yet been reconciled against this split** — each new document's own Risks
+section flags this as an open follow-on task, not resolved by the split itself. Vignette selection
+(FR-4110) and seat-to-role assignment (FR-4210) remain uncovered by any Feature Specification —
+confirmed, not newly introduced, by this split (see FS-106 v2.0's own Scope section).
+
+**Next:** Phase 5 (Implementation Packages, `docs/implementations/`) is complete (below), but see
+the FS-106-split note above for its now-stale scope alignment. Phase 6-8 (Consistency/Dependency/
+Traceability review, MSTR-006 §7) is also complete (see the dedicated theme section below), predating
+this split.
 
 ## Theme: Feature Planning — `feature-decomposition` skill output (`docs/feature-planning/`)
 
@@ -334,11 +349,16 @@ itself. The reconciliation of "36 Features today" against the ~50–80 expected 
 Requirements, Candidate NFRs, and the strategic review's Future Concepts/Gaps are baselined is
 worked out in full in `05-feature-review.md`'s closing section.
 
-**Next:** author the three missing Feature Specifications (Finding F-02) and split `FS-106`
-(Finding F-03) — both doable against the already-approved baseline; separately, run
-`requirements-engineering` to close the DOM-002/004/005 gap (Finding F-01) and to baseline as many
-Candidate Requirements as the project owner authorizes (Finding F-04), then re-run this skill's
-Step 0 incrementally against the delta.
+**Update (2026-07):** Finding F-03 (split `FS-106`) is done — see FS-106/FS-109/FS-110/FS-111 in the
+Feature Specifications theme above.
+
+**Next:** author the three still-missing Feature Specifications for Classification Banner, Observer
+Read-Only Access, and Hot-Seat Hand-Off (Finding F-02) — doable against the already-approved
+baseline; reconcile `IMP-106A`/`IP-1060` against the FS-106 split (see that theme's note); author a
+Feature Specification for vignette selection/seat assignment (confirmed uncovered by the split, not
+part of F-02's original three); separately, run `requirements-engineering` to close the
+DOM-002/004/005 gap (Finding F-01) and to baseline as many Candidate Requirements as the project
+owner authorizes (Finding F-04), then re-run this skill's Step 0 incrementally against the delta.
 
 ## Theme: Implementation Packages (the *how* — `docs/implementation/packages/`, canonical; `docs/implementations/`, superseded)
 

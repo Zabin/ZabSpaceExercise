@@ -4,9 +4,10 @@
 > **Version:** 1.0
 > **Status:** 🚧 In progress (most mechanics shipped; framework formalizes existing capability + states gaps)
 > **Dependencies:** MSTR-001, MSTR-003
-> **Referenced By:** DOM-001, DOM-009, FS-106, FS-107, FS-108 (candidate)
-> **Produces:** FS-106 White Cell Dashboard, FS-108 (candidate) Inject Authoring
-> **Feature Mapping:** FS-106, FS-107
+> **Referenced By:** DOM-001, DOM-009, FS-106, FS-107, FS-108 (candidate), FS-109, FS-110
+> **Produces:** FS-106 White Cell Dashboard, FS-108 (candidate) Inject Authoring, FS-109 Multiplayer
+> / LAN Session Transport, FS-110 Save & Resume
+> **Feature Mapping:** FS-106, FS-107, FS-109 (§6), FS-110 (§6)
 > **Related Topics:** [`docs/training/07-white-cell-facilitation.md`](../training/07-white-cell-facilitation.md),
 > [`docs/build-spec/07-operator-console.md`](../build-spec/07-operator-console.md), R307 (wargaming theory), R308 (red teaming)
 
@@ -68,6 +69,17 @@ pop-out window layout management are White Cell administrative capabilities. The
 infrastructure-adjacent but stay under DOM-003 (not DOM-006/DOM-008) because their design questions
 are facilitation questions first ("can I resume a multi-week course's exercise across sessions,"
 "can I spread the console across monitors for a classroom") rather than generic platform questions.
+
+**Update (2026-07):** the underlying mechanisms this section motivates are now specified in their
+own Feature Specifications — [FS-109](../features/FS-109-multiplayer-session-transport.md)
+(lazy clock, mutation locking, hot-seat/LAN session sharing) and
+[FS-110](../features/FS-110-save-and-resume.md) (save/resume, content/session ownership split) —
+split out of `FS-106` per `docs/feature-planning/05-feature-review.md` Finding F-03. This section's
+framing (a facilitation concern, not an infrastructure one) still grounds *why* those requirements
+exist and remains this domain's rationale for producing both documents; it does not mean the
+mechanisms themselves live inside a single White-Cell-only document, since they serve every
+connected cell equally. FS-109 itself flags this exact framing tension as an Open Question for
+whoever owns this domain document next.
 
 ## 7. White Cell as red-team enabler
 
