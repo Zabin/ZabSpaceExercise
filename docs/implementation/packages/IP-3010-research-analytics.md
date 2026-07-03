@@ -1,19 +1,23 @@
 # IP-3010 — Research Analytics: Multi-Run Export
 
 > **Package ID:** IP-3010
-> **Version:** 1.0
-> **Status:** 🔴 BLOCKED *(blocked on IP-2010 reaching COMPLETE; also not authorized for
-> implementation even once unblocked — see §"Definition of Done" and §"Risks". **Note added
-> 2026-07:** this package's Objective — a dedicated multi-run/cohort export interface — directly
-> conflicted with ADR-0029 ("no new dedicated export/analysis interface... is introduced," Accepted)
-> for the entire time this package existed at v1.0, without that conflict ever being recorded in
-> this header the way IP-2010's ADR-0017 conflict was — a documentation gap `docs/reviews/
-> requirements-domain-backfill-report.md` found independently. That conflict is now resolved:
+> **Version:** 1.1 (2026-07-03 — authorization obtained; see Status below.)
+> **Status:** 🟡 READY *(fully unblocked 2026-07-03, run #9. **IP-2010 → `COMPLETE`** cleared
+> 2026-07-03 (run #5) — this package's own `Dependencies` field requires `COMPLETE`, not `VERIFIED`,
+> and the Master Build Plan has consistently treated that sub-condition as satisfied since. **MSTR-006
+> §3 authorization obtained 2026-07-03** (project owner, via `00-pipeline-manager` run #9, batching
+> the standing `BL-0005` `NEEDS-USER` backlog item into that run's gate check) — the last of the five
+> gated packages in this plan to receive it. **Note added 2026-07:** this package's Objective — a
+> dedicated multi-run/cohort export interface — directly conflicted with ADR-0029 ("no new dedicated
+> export/analysis interface... is introduced," Accepted) for the entire time this package existed at
+> v1.0, without that conflict ever being recorded in this header the way IP-2010's ADR-0017 conflict
+> was — a documentation gap `docs/reviews/requirements-domain-backfill-report.md` found
+> independently. That conflict is now resolved:
 > [ADR-0033](../../architecture/adr/ADR-0033-dedicated-research-export-interface.md) supersedes
 > ADR-0029 and authorizes this package's design as written; the underlying capability is now also
-> baselined as [`FR-10210`](../../requirements/01-functional-requirements.md). This does not change
-> this package's `BLOCKED` status — it remains gated on IP-2010 reaching `COMPLETE` and on its own
-> separate MSTR-006 §3 authorization, both unrelated to the now-resolved ADR-0029 conflict.)*
+> baselined as [`FR-10210`](../../requirements/01-functional-requirements.md). Was 🔴 BLOCKED
+> *(blocked on IP-2010 reaching `COMPLETE` and on its own separate MSTR-006 §3 authorization, both
+> unrelated to the now-resolved ADR-0029 conflict).*)*
 > **Dependencies:** FS-301, IP-2010 (the per-exercise rubric output this package aggregates —
 > **hard blocking dependency**, not merely a design reference)
 > **Referenced By:** none yet
@@ -41,11 +45,12 @@ so instrument-grade research against SpaceSim does not require scripting directl
 the seed across runs, never from non-determinism inside `engine/`) and without reimplementing
 IP-2010's scoring.
 
-> **This is a forward-design package: the capability described here does not exist in `spacesim/`
-> today, and it is additionally blocked on IP-2010 (a separate not-yet-implemented package)
-> reaching `COMPLETE` before its own schema can be more than provisional.** Per MSTR-006 §3, this
-> document specifies a scoped design — it is not an authorization to write code, independent of the
-> blocking-dependency question.
+> **This was authored as a forward-design package: the capability described here does not yet exist
+> in `spacesim/`.** Both preconditions this package's own text originally named are now cleared:
+> `IP-2010` reached `COMPLETE` 2026-07-03 (run #5), and per MSTR-006 §3, this document's own
+> specification was not itself an authorization to write code — that separate, explicit user
+> go-ahead was obtained 2026-07-03 (run #9; see the Status field above). `IP-3010` is now `READY`
+> and eligible for `08-code-implementation`.
 
 ## Feature Reference
 
@@ -97,8 +102,8 @@ existing shipped module; it is purely additive, consuming IP-2010's scoring func
 
 ## Implementation Tasks
 
-**Not started — blocked on IP-2010, and separately not authorized (MSTR-006 §3).** The following is
-the proposed task sequence for when both the blocking dependency and authorization are resolved:
+**Not started — `READY` and authorized (2026-07-03, run #9); awaiting `08-code-implementation`.**
+The following is the proposed task sequence:
 
 1. Confirm IP-2010's scoring-function signatures/tier-value sets are `COMPLETE` and stable (this
    package's `RunRecord` schema is defined in terms of them; a schema change in IP-2010 after this
@@ -142,13 +147,14 @@ and authorized.)*
 
 ## Definition of Done
 
-*(Forward-looking gate — none of the following is currently true.)*
+*(Forward-looking gate — the two preconditions below are now satisfied; the rest awaits
+`08-code-implementation`.)*
 
-- [ ] **IP-2010 has reached `COMPLETE`** (hard precondition — this package's schema is otherwise
+- [x] **IP-2010 has reached `COMPLETE`** (hard precondition — this package's schema is otherwise
   provisional, per FS-301 §4's "export must read FS-201's already-computed rubric output, not
-  reimplement it" constraint).
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks, per
-  MSTR-006 §3, separate from and in addition to the above.
+  reimplement it" constraint). Cleared 2026-07-03, run #5.
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks, per
+  MSTR-006 §3, separate from and in addition to the above. Obtained 2026-07-03, run #9.
 - [ ] A batch run of N seeded simulations of vignette X produces N `RunRecord`s, each containing
   `vignette_id`, `seed`, `condition_label`, and IP-2010's rubric output for that run.
 - [ ] No non-determinism is introduced inside `engine/` to produce variability across runs.
@@ -171,21 +177,25 @@ and authorized.)*
 
 ## Dependencies
 
-- **Upstream:** IP-2010 (**hard blocking dependency** — this package cannot leave `BLOCKED` status
-  until IP-2010 is `COMPLETE`), `engine/simulation.py`'s existing seeded-replay machinery (already
-  shipped, no blocker).
+- **Upstream:** IP-2010 (**hard blocking dependency**, cleared 2026-07-03/run #5 — `IP-2010` is
+  `COMPLETE`, the threshold this package's own field states; not yet `VERIFIED`, see Risks below),
+  `engine/simulation.py`'s existing seeded-replay machinery (already shipped, no blocker).
 - **Downstream:** None currently planned.
 - **Build-sequencing:** This package is the second and final step of the critical path
-  IP-2010 → IP-3010 in the Master Build Plan.
+  IP-2010 → IP-3010 in the Master Build Plan; now `READY` and eligible for
+  `08-code-implementation`.
 
 ## Risks
 
-- **Blocking-dependency risk (primary):** any attempt to implement this package's `RunRecord` schema
-  in detail before IP-2010 lands would produce a schema that has to be revisited (or worse, diverges
-  silently) once IP-2010's actual output shape is finalized — the schema in §"Files to Create" is
-  explicitly provisional for this reason.
-- **Authorization risk:** independent of the blocking dependency, MSTR-006 §3 requires a separate
-  explicit user go-ahead before implementation begins.
+- **Blocking-dependency risk (residual, downgraded 2026-07-03):** this package's `RunRecord` schema
+  is defined against `IP-2010`'s actual, now-implemented output shape (`COMPLETE`, not yet
+  `VERIFIED`). If `IP-2010`'s own `09-package-verification` pass surfaces a material finding against
+  its scoring-function signatures or tier-value sets, this package's schema would need revisiting —
+  `08-code-implementation` should check `IP-2010`'s verification status (`COMPLETE` vs. `VERIFIED`)
+  before implementing, per Implementation Tasks item 1, rather than assuming `COMPLETE` remains a
+  stable foundation.
+- **Authorization risk (resolved 2026-07-03, run #9):** MSTR-006 §3's explicit, separate user
+  go-ahead is now on record (`docs/pipeline/pipeline-journal.md` run #9).
 - If any future revision of this package adds a human-subjects capability without triggering DOM-004
   §6's separate authorization and IRB/ethics process, it violates FS-301's explicit non-goal.
 - If the batch runner is implemented with any shared mutable state between seeded runs (e.g., a

@@ -395,8 +395,10 @@ baselined FR/NFR; `CR-19`/`CR-20`/`CR-21` added instead, two blocked on an ADR-0
 conflict this pass discovered. Stage 2 (direct project-owner decision, same session): `ADR-0032`
 narrows `ADR-0017`; `ADR-0033` supersedes `ADR-0029`; `CR-19`/`CR-20` promoted to baselined
 `FR-10110`/`FR-10210` (new Epic `EP-10000`, Features `FEAT-10100`/`FEAT-10200`, in the Feature
-Catalog above). `IP-2010` returned to `READY`; `IP-3010` remains `BLOCKED` on `IP-2010` reaching
-`COMPLETE` (unrelated to the now-resolved ADR conflict). `CR-21` remains an active Candidate.
+Catalog above). `IP-2010` returned to `READY`; `IP-3010` remained `BLOCKED` on `IP-2010` reaching
+`COMPLETE` (unrelated to the now-resolved ADR conflict) — as of this writing, both that dependency
+and `IP-3010`'s own MSTR-006 §3 authorization have since cleared (see the Implementation Packages
+theme below for current status). `CR-21` remains an active Candidate.
 `05-feature-review.md`'s own reconciliation table still showed FS-201/FS-301 mapping to
 "none — see Finding F-01" after this stage — a stale back-reference, since `FEAT-10100`/`FEAT-10200`
 now own exactly the requirements those two specs already implement. Fixed directly (mechanical,
@@ -413,12 +415,17 @@ was needed — the existing specs already fully describe what their new owning F
 Phase 5 of the documentation-driven-development expansion (MSTR-005 §4 chain: ... → Feature
 Specification → **Implementation Package** → Code → Tests). Each `IP-xxxx` describes architecture,
 data model, files, tasks, tests, Definition of Done, and rollback considerations in prose/
-pseudocode, never literal committed code (MSTR-006 §8). Situations per package: as-built,
-independently `VERIFIED` (FS-101 through FS-107, FS-109, FS-110, FS-111); as-built, `COMPLETE`
-pending verification (FS-114, and FS-115's FR-4110 slice); partially built / gap-closing forward
-design (FS-112); and fully forward design, capability not yet implemented, coding work not
-authorized by this documentation per MSTR-006 §3 (FS-201, FS-301, FS-113, and FS-115's FR-4210
-slice). FS-112/113/114/115 (new 2026-07) now have five packages between them —
+pseudocode, never literal committed code (MSTR-006 §8). Situations per package **at authoring
+time**: as-built, independently `VERIFIED` (FS-101 through FS-107, FS-109, FS-110, FS-111);
+as-built, `COMPLETE` pending verification (FS-114, and FS-115's FR-4110 slice); partially built /
+gap-closing forward design (FS-112); and fully forward design, capability not yet implemented,
+coding work not yet authorized by this documentation per MSTR-006 §3 (FS-201, FS-301, FS-113, and
+FS-115's FR-4210 slice). **All of these have since moved**: FS-115's FR-4110 slice (`IP-1150`) is
+now `VERIFIED`; FS-201/FS-113/FS-115's FR-4210 slice (`IP-2010`/`IP-1130`/`IP-1151`) were
+authorized and implemented (`COMPLETE`, pending their own `09-package-verification`); FS-301
+(`IP-3010`) was authorized (run #9) and is `READY`, not yet implemented — see the status table
+below for current, not authoring-time, status. FS-112/113/114/115 (new 2026-07) now have five
+packages between them —
 `IP-1120`/`IP-1130`/`IP-1140`/`IP-1150`/`IP-1151` — authored after a build-status verification
 pass found each Feature partially or fully built (see `docs/implementation/
 01-technical-work-breakdown.md` Tranche 1).
@@ -449,7 +456,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1100 | Save & Resume — deterministic round trip & content/session split | `implementation/packages/IP-1100-save-and-resume.md` | FS-110 | As-built | ✅ VERIFIED |
 | IP-1110 | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | `implementation/packages/IP-1110-ai-red-doctrine-automation.md` | FS-111 | As-built | ✅ VERIFIED |
 | IP-2010 | Competency Assessment — rubric computation | `implementation/packages/IP-2010-competency-assessment.md` | FS-201 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; `session/assessment.py` + `custody_confidence_at_decision` in `orders.py`/`custody.py`; awaiting `09-package-verification`) |
-| IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🔴 BLOCKED (**not authorized** — its IP-2010-reaching-COMPLETE dependency cleared 2026-07-03, but IP-2010 is COMPLETE, not yet VERIFIED, and IP-3010's own MSTR-006 §3 authorization is still outstanding) |
+| IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🟡 READY (**authorized 2026-07-03, run #9** — its IP-2010-reaching-COMPLETE dependency cleared 2026-07-03/run #5; IP-2010 is COMPLETE, not yet VERIFIED, which is the threshold IP-3010's own Dependencies field states) |
 | IP-1120 | Classification Banner — wire render/export path to the vignette's classification value | `implementation/packages/IP-1120-classification-banner.md` | FS-112 | Partially built (gap-closing) | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | IP-1130 | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | `implementation/packages/IP-1130-observer-read-only-access.md` | FS-113 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | IP-1140 | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | `implementation/packages/IP-1140-hot-seat-handoff.md` | FS-114 | As-built (documented spec divergence) | 🔵 COMPLETE (pending verification) |
@@ -478,10 +485,19 @@ Verification Report this project has produced) and flipped to `VERIFIED` — ful
 passed/3 skipped, both permanent gates green, and a stale RTM cell (`FR-4110`'s `Test`/`Impl.
 Package` columns) corrected. This cleared `IP-1120`/`IP-1151`'s sole blocking dependency; both
 flip `BLOCKED → READY` (already authorized above).
+
+**Implementation update (2026-07-03, runs #5–#8):** `IP-2010`, `IP-1120`, `IP-1130`, and `IP-1151`
+were all implemented (`READY → COMPLETE`), each pending its own `09-package-verification` pass.
+
+**Authorization update (2026-07-03, run #9):** `IP-3010` — the one package not authorized in the
+round above — was subsequently authorized. Its `IP-2010`-reaching-`COMPLETE` dependency had already
+cleared (run #5), so it flips `BLOCKED → READY` and is now the sole `READY` package awaiting
+`08-code-implementation`.
+
 `docs/implementation/00-master-build-plan.md`'s package table, dependency graph, parallel-
 opportunity list, critical-path note, and summary statistics have been updated accordingly (now
-18 packages total: 12 `VERIFIED`, 1 `COMPLETE` pending verification, 4 `READY` and authorized,
-1 `BLOCKED`).
+18 packages total: 12 `VERIFIED`, 5 `COMPLETE` pending verification, 1 `READY` and authorized
+(`IP-3010`), 0 `BLOCKED`).
 
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
