@@ -75,18 +75,29 @@ that continue to bind this tree ([MSTR-006](../master/MSTR-006-governance-princi
 | [IP-1040](packages/IP-1040-sda-tasking.md) | FS-104 SDA Tasking | As-built | ✅ VERIFIED | none |
 | [IP-1050](packages/IP-1050-spacecraft-operations-bus-payload.md) | FS-105 §3.1 Spacecraft Ops (bus/payload) | As-built | ✅ VERIFIED | none |
 | [IP-1051](packages/IP-1051-spacecraft-operations-effects-console.md) | FS-105 §3.2-4 Spacecraft Ops (effects) | As-built | ✅ VERIFIED | none |
-| [IP-1060](packages/IP-1060-white-cell-dashboard.md) | FS-106 White Cell Dashboard | As-built | ✅ VERIFIED | none |
+| [IP-1060](packages/IP-1060-white-cell-dashboard.md) | FS-106 White Cell Dashboard *(v2.0, narrowed)* | As-built | ✅ VERIFIED | none |
 | [IP-1070](packages/IP-1070-after-action-review.md) | FS-107 After Action Review | As-built | ✅ VERIFIED | none |
-| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | 🔴 BLOCKED | Unreconciled conflict with ADR-0017 (Accepted: "no automated scoring/assessment mechanism in v1") — see Blocking Report, 2026-07-02 |
-| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔴 BLOCKED | IP-2010 → `COMPLETE` (now also blocked, see above), **and** authorization (MSTR-006 §3) |
+| [IP-1090](packages/IP-1090-multiplayer-session-transport.md) | FS-109 Multiplayer / LAN Session Transport | As-built | ✅ VERIFIED | none |
+| [IP-1100](packages/IP-1100-save-and-resume.md) | FS-110 Save & Resume | As-built | ✅ VERIFIED | none |
+| [IP-1110](packages/IP-1110-ai-red-doctrine-automation.md) | FS-111 AI-Red Doctrine Automation | As-built | ✅ VERIFIED | none |
+| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | 🟡 READY | Was `BLOCKED` (Unreconciled conflict with ADR-0017, "no automated scoring/assessment mechanism in v1" — Blocking Report, 2026-07-02); **resolved 2026-07 by `ADR-0032`** (narrow carve-out); gated only on MSTR-006 §3 authorization again |
+| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔴 BLOCKED | IP-2010 → `COMPLETE`, **and** authorization (MSTR-006 §3); a separate, never-previously-recorded conflict with ADR-0029 is **resolved 2026-07 by `ADR-0033`** — does not change this package's blocking status |
 
-8 of 10 packages are `VERIFIED` (the entire as-built surface — every shipped capability this pass
+**Update (2026-07):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
+`docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code
+verification was performed — these three packages reorganize citations `IP-1060` v1.0 (and its
+superseded predecessor `IMP-106A`) already established, under the Feature boundaries FS-109/110/111
+now own. FS-112/113/114/115 (closing Findings F-02/F-10) have **no Implementation Package in this
+table** — each explicitly flags its own build status as unverified, unlike every package below,
+and authoring one is gated on that verification first (see `packages/INDEX.md`).
+
+11 of 13 packages are `VERIFIED` (the entire as-built surface — every shipped capability this pass
 covers is already implemented, tested, and re-confirmed against the current source tree). The
 remaining 2 are the project's only genuinely forward-looking Implementation Packages.
 
 ## Implementation sequence
 
-Because 8 of 10 packages describe already-shipped code, "sequence" here has two distinct readings,
+Because 11 of 13 packages describe already-shipped code, "sequence" here has two distinct readings,
 both given below: (a) the sequence in which the as-built packages' *code* was actually built
 (useful for onboarding/history), and (b) the sequence remaining *work* must follow (the only
 actionable sequencing question this plan poses going forward).
@@ -94,13 +105,20 @@ actionable sequencing question this plan poses going forward).
 ### (a) As-built dependency order (historical/onboarding reference)
 
 ```
-Wave 1 (no package-level dependency):     IP-1010   IP-1030   IP-1060
+Wave 1 (no package-level dependency):     IP-1010   IP-1030   IP-1060   IP-1090   IP-1100   IP-1110
 Wave 2 (depends only on Wave 1):          IP-1020 ← IP-1010
                                            IP-1040 ← IP-1030
                                            IP-1070 ← IP-1030
 Wave 3 (depends on Wave 1+2):             IP-1050 ← IP-1020
                                            IP-1051 ← IP-1030, IP-1010, IP-1020
 ```
+
+*(IP-1090/IP-1100/IP-1110 added 2026-07, split out of IP-1060 v1.0 — see Package status above. All
+three remain Wave 1: none of the other packages in this pass are their prerequisite, mirroring
+IP-1060's own original independence. IP-1070's own Dependencies field cites only IP-1030, unchanged
+by this split — IP-1100 (Save & Resume)'s own `Referenced By` field notes IP-1070 as a downstream
+*consumer* of a resumed session's event log, but that is not a stated package-level build
+dependency in IP-1070's own Dependencies field, so no new edge is added here on that basis.)*
 
 ### (b) Remaining work (the only actionable forward sequence)
 
@@ -133,12 +151,20 @@ IP-1060 (White Cell Dashboard) [independent — no downstream package]  IP-2010 
                                                                           │
                                                                           ▼
                                                                      IP-3010 (Research Analytics)
+
+IP-1090 (Multiplayer / LAN Transport) [independent — no downstream package in this pass]
+IP-1100 (Save & Resume)               [independent — no downstream package in this pass]
+IP-1110 (AI-Red Doctrine Automation)  [independent — no downstream package in this pass]
 ```
 
 Every edge above is drawn directly from the citing package's own **Dependencies** field (no edge is
-inferred beyond what each package document already states). `IP-1060` is the one package with no
-downstream consumer inside this pass's 10 packages (FS-108, the dashboard extension it would
-otherwise feed, is out of scope per §"Scope and exclusions").
+inferred beyond what each package document already states). `IP-1060`, `IP-1090`, `IP-1100`, and
+`IP-1110` are the four packages with no downstream consumer inside this pass's 13 packages
+(FS-108, the dashboard extension `IP-1060` would otherwise feed, is out of scope per
+§"Scope and exclusions"; IP-1090/1100/1110's only conceptual consumer, IP-1060 itself, cites them
+as the mechanism its own trigger surface sits on top of — a description, not a package-level
+build-order dependency `IP-1060`'s own `Dependencies` field asserts, so no edge is drawn for it
+here either, consistent with how this graph already treats every other such relationship).
 
 ## Critical path
 
@@ -159,41 +185,51 @@ gated at each step by the MSTR-006 §3 authorization rule, not by any missing pr
 
 ## Parallel implementation opportunities
 
-- **Among the as-built packages (historical):** Wave 1 (`IP-1010`, `IP-1030`, `IP-1060`) had zero
-  inter-package dependencies and could have been built by three independent workstreams in
-  parallel; Wave 2's three packages (`IP-1020`, `IP-1040`, `IP-1070`) likewise had no dependency on
-  each other, only on their respective Wave 1 predecessor. This is retrospective value only — all
-  eight packages are already `VERIFIED` — but it is the applicable precedent if any as-built package
-  ever needs a from-scratch rebuild (e.g., after a major refactor).
+- **Among the as-built packages (historical):** Wave 1 (`IP-1010`, `IP-1030`, `IP-1060`, `IP-1090`,
+  `IP-1100`, `IP-1110`) had zero inter-package dependencies and could have been built by six
+  independent workstreams in parallel; Wave 2's three packages (`IP-1020`, `IP-1040`, `IP-1070`)
+  likewise had no dependency on each other, only on their respective Wave 1 predecessor. This is
+  retrospective value only — all eleven as-built packages are already `VERIFIED` — but it is the
+  applicable precedent if any as-built package ever needs a from-scratch rebuild (e.g., after a
+  major refactor). *(IP-1090/IP-1100/IP-1110 added 2026-07 — see Package status above; they were
+  always independently buildable, this just wasn't visible while all three were undifferentiated
+  inside `IP-1060` v1.0.)*
 - **Among the remaining forward-design work:** there is **no parallel opportunity** — `IP-3010`'s
   schema is explicitly provisional until `IP-2010` lands (FS-301 §4's "must not reimplement FS-201's
   computation" constraint means the export schema is defined *in terms of* IP-2010's actual output
   shape, not merely its current sketch). The two packages must be authorized and executed
   sequentially, not concurrently.
-- **Independent of the critical path:** `IP-1060` (White Cell Dashboard) has no downstream consumer
-  in this pass and could always have been (and could still be, for any future rework) developed on
-  an entirely independent track from every other package.
+- **Independent of the critical path:** `IP-1060` (White Cell Dashboard), `IP-1090` (Multiplayer /
+  LAN Transport), `IP-1100` (Save & Resume), and `IP-1110` (AI-Red Doctrine Automation) have no
+  downstream consumer in this pass and could always have been (and could still be, for any future
+  rework) developed on entirely independent tracks from every other package and from each other.
 
 ## Summary
 
-- **Total Features (Feature Catalog):** 11 (`docs/features/feature-index.md`)
-- **Total Features covered by this plan:** 9 — FS-101 through FS-107, FS-201, FS-301
+- **Total Features (Feature Catalog):** 18 (`docs/features/feature-index.md`, up from 11 —
+  FS-109/110/111 split from FS-106, FS-112/113/114/115 newly authored, per
+  `docs/feature-planning/05-feature-review.md` Findings F-02/F-03/F-10)
+- **Total Features covered by this plan:** 12 — FS-101 through FS-107, FS-109, FS-110, FS-111,
+  FS-201, FS-301. FS-112/113/114/115 are **not yet covered by this plan** — each has no
+  Implementation Package pending its own build-status verification (see `packages/INDEX.md`).
 - **Features excluded (unauthorized candidates, MSTR-006 §3):** 2 — FS-108, FS-202
-- **Total Packages:** 10 (`packages/IP-1010` through `IP-3010`; FS-105 is the only Feature split
-  across two lettered-equivalent packages, `IP-1050`/`IP-1051`, per the size-discipline precedent
-  this corpus follows)
-- **Average Package Size:** 162 lines of Markdown per package (1,621 total lines across 10 package
-  files; range 144–200 lines) — comparable in depth to the prior `docs/implementations/` corpus's
+- **Total Packages:** 13 (`packages/IP-1010` through `IP-3010`, plus `IP-1090`/`IP-1100`/`IP-1110`
+  added 2026-07; FS-105 is the only Feature split across two lettered-equivalent packages,
+  `IP-1050`/`IP-1051`, per the size-discipline precedent this corpus follows)
+- **Average Package Size:** 158 lines of Markdown per package (2,048 total lines across 13 package
+  files; range 128–204 lines) — comparable in depth to the prior `docs/implementations/` corpus's
   packages, re-templated to this task's required 17-field structure
 - **Critical Path Length:** 4 packages (`IP-1010`/`IP-1030` → `IP-1020`/`IP-1070` → `IP-2010` →
   `IP-3010`); the *effective remaining* critical path (excluding already-`VERIFIED` work) is 2
-  packages: `IP-2010` → `IP-3010`
+  packages: `IP-2010` → `IP-3010`. `IP-1090`/`IP-1100`/`IP-1110` do not extend the critical path —
+  none has a downstream consumer in this pass (see Parallel implementation opportunities).
 - **Parallel Work Opportunities:** 2 historical parallel waves among the (now-complete) as-built
-  packages (3 packages, then 3 packages, running independently); **zero** parallel opportunities
+  packages (6 packages, then 3 packages, running independently); **zero** parallel opportunities
   remain in the forward-design surface — `IP-2010` and `IP-3010` are strictly sequential
-- **Package Status:** 8 `VERIFIED`, 0 `READY`, 2 `BLOCKED` (`IP-2010` — unreconciled ADR-0017
-  conflict, see Blocking Report 2026-07-02; `IP-3010` — depends on IP-2010); 0 `NOT STARTED`,
-  0 `IN PROGRESS`, 0 `COMPLETE` (unverified)
+- **Package Status:** 11 `VERIFIED`, 1 `READY` (`IP-2010` — ADR-0017 conflict resolved 2026-07 by
+  `ADR-0032`, gated only on authorization again), 1 `BLOCKED` (`IP-3010` — depends on IP-2010
+  reaching `COMPLETE`; its own separate ADR-0029 conflict resolved 2026-07 by `ADR-0033`);
+  0 `NOT STARTED`, 0 `IN PROGRESS`, 0 `COMPLETE` (unverified)
 
 ### Risks requiring architectural attention
 

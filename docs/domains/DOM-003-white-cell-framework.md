@@ -4,9 +4,10 @@
 > **Version:** 1.0
 > **Status:** 🚧 In progress (most mechanics shipped; framework formalizes existing capability + states gaps)
 > **Dependencies:** MSTR-001, MSTR-003
-> **Referenced By:** DOM-001, DOM-009, FS-106, FS-107, FS-108 (candidate)
-> **Produces:** FS-106 White Cell Dashboard, FS-108 (candidate) Inject Authoring
-> **Feature Mapping:** FS-106, FS-107
+> **Referenced By:** DOM-001, DOM-009, FS-106, FS-107, FS-108 (candidate), FS-109, FS-110, FS-112, FS-115
+> **Produces:** FS-106 White Cell Dashboard, FS-108 (candidate) Inject Authoring, FS-109 Multiplayer
+> / LAN Session Transport, FS-110 Save & Resume, FS-112 Classification Banner, FS-115 Session Setup
+> **Feature Mapping:** FS-106, FS-107, FS-109 (§6), FS-110 (§6), FS-112, FS-115 (new 2026-07 — §2 below)
 > **Related Topics:** [`docs/training/07-white-cell-facilitation.md`](../training/07-white-cell-facilitation.md),
 > [`docs/build-spec/07-operator-console.md`](../build-spec/07-operator-console.md), R307 (wargaming theory), R308 (red teaming)
 
@@ -21,9 +22,18 @@ domain document FS-106 (White Cell Dashboard) and future facilitation features m
 ## 2. Scope
 
 In scope: White Cell authority/visibility model, the inject mechanism, clock/pacing control,
-session administration (save/resume, multiplayer session discovery). Out of scope: the content of
-specific injects (that's vignette/scenario content, `docs/scenarios/` + `vignettes/`) and assessment
-reporting consumed by White Cell but owned by DOM-002.
+session administration (save/resume, multiplayer session discovery), **session setup (vignette
+selection/parameter tuning, seat-to-role assignment — added 2026-07, [FS-115](../features/FS-115-session-setup.md),
+per `docs/feature-planning/05-feature-review.md` Finding F-10) and the classification banner
+(added 2026-07, [FS-112](../features/FS-112-classification-banner.md))**. Out of scope: the content
+of specific injects (that's vignette/scenario content, `docs/scenarios/` + `vignettes/`) and
+assessment reporting consumed by White Cell but owned by DOM-002.
+
+**Note on the 2026-07 additions:** FS-115 and FS-112 were not previously named in this section
+despite both being real, Must-priority baselined requirements (FR-4110/FR-4210 and FR-4510/
+NFR-3100 respectively) — a gap discovered while splitting `FS-106` and confirmed by reading that
+document's actual v1.0 content rather than assuming it. This section is corrected to name them
+explicitly rather than leaving the gap implicit.
 
 ## 3. Authority and visibility model
 
@@ -68,6 +78,17 @@ pop-out window layout management are White Cell administrative capabilities. The
 infrastructure-adjacent but stay under DOM-003 (not DOM-006/DOM-008) because their design questions
 are facilitation questions first ("can I resume a multi-week course's exercise across sessions,"
 "can I spread the console across monitors for a classroom") rather than generic platform questions.
+
+**Update (2026-07):** the underlying mechanisms this section motivates are now specified in their
+own Feature Specifications — [FS-109](../features/FS-109-multiplayer-session-transport.md)
+(lazy clock, mutation locking, hot-seat/LAN session sharing) and
+[FS-110](../features/FS-110-save-and-resume.md) (save/resume, content/session ownership split) —
+split out of `FS-106` per `docs/feature-planning/05-feature-review.md` Finding F-03. This section's
+framing (a facilitation concern, not an infrastructure one) still grounds *why* those requirements
+exist and remains this domain's rationale for producing both documents; it does not mean the
+mechanisms themselves live inside a single White-Cell-only document, since they serve every
+connected cell equally. FS-109 itself flags this exact framing tension as an Open Question for
+whoever owns this domain document next.
 
 ## 7. White Cell as red-team enabler
 

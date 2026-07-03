@@ -2,12 +2,16 @@
 
 > **Package ID:** IP-2010
 > **Version:** 1.0
-> **Status:** 🔴 BLOCKED *(2026-07-02: user authorized MSTR-006 §3 forward-design go-ahead, but
-> implementation was then stopped before any code was written — this package's own "Related ADRs"
-> citation of ADR-0017 ("no automated scoring/assessment mechanism in v1," Accepted) is never
-> reconciled against this package's Objective of building exactly such a mechanism. See the
-> Blocking Report delivered to the user 2026-07-02 for the full analysis; design/spec text below is
-> otherwise unchanged.)*
+> **Status:** 🟡 READY *(unblocked 2026-07-02, later the same day: the blocking conflict — this
+> package's Objective building exactly the automated-assessment mechanism ADR-0017 read as
+> prohibiting — is resolved by [ADR-0032](../../architecture/adr/ADR-0032-descriptive-rubric-not-automated-scoring.md),
+> which carves out non-adjudicative, descriptive, non-aggregating rubric-tier reporting from
+> ADR-0017's "assessment mechanism" prohibition; the underlying capability is now also baselined as
+> [`FR-10110`](../../requirements/01-functional-requirements.md). **This does not, by itself,
+> re-authorize implementation** — per MSTR-006 §3, the prior 2026-07-02 go-ahead was interrupted by
+> the (now-resolved) conflict before any code was written, so a fresh, separate, explicit user
+> go-ahead is still required before any task in this package's "Implementation Tasks" section
+> begins. Design/spec text below is otherwise unchanged from v1.0.)*
 > **Dependencies:** FS-201, IP-1030 (custody data source), IP-1020/IP-1010 (window-discipline data
 > source), IP-1070 (belief-truth-divergence data source)
 > **Referenced By:** IP-3010 (the forward-design export package that would aggregate this package's
@@ -46,19 +50,20 @@ engine already unambiguously produces: **custody quality**, **window discipline*
 
 ## Requirements Covered
 
-FS-201's "Requirements Implemented" field reports no explicit FR/NFR citation, and the RTM's
-Implementation-Package reverse index lists FS-201 as `UNASSIGNED` (no file exists yet to cite). This
-package's proposed module would read from, and inherit the requirement obligations of, three
-upstream packages' already-covered requirements — restated here as the *data-source* requirements
-this design depends on, not a claim that FS-201 itself is FR-traced (that remains an open Phase 8
-item, MSTR-006 §7):
+**FR-10110** (automated non-aggregating competency rubric-tier computation, added 2026-07) is now
+the primary requirement this package implements — see `docs/features/FS-201-competency-
+assessment.md`'s own updated "Requirements Implemented" field. This package's proposed module also
+reads from, and inherits the requirement obligations of, three upstream packages' already-covered
+requirements, restated here as the *data-source* requirements this design depends on:
 
 | Req ID | Title (abridged) | Relevance to this package's design |
 |---|---|---|
+| FR-10110 | Automated non-aggregating competency rubric-tier computation | The requirement this package implements in full |
 | FR-1510 | Track confidence decay and reset | Source data for the custody-quality dimension (`Track.current_confidence()`) |
 | FR-1520 | Weapons-quality track gate | Source data for the custody-quality dimension (`is_weapons_quality()`) |
 | FR-3410 | Execute-time re-validation (rejection reasons) | Source data for the window-discipline dimension (`dry_run()`/`issue()` `(bool, str)` returns) |
 | FR-7310 | AAR replay/scrub | Source data for the belief-truth-divergence dimension (`aar.state_at()`) |
+| FR-4710 | No automated score/win-loss determination | The sibling prohibition this package's design must not cross (per ADR-0032's narrow carve-out) |
 | NFR-1500 | Determinism (engine-wide) | This package's scoring functions must remain pure/read-only to avoid violating it |
 
 ## Architecture Components

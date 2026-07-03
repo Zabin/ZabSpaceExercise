@@ -271,6 +271,18 @@ the traceability matrix accordingly, and corrected stale pre-supersession "build
 language independently duplicated in `docs/requirements/01`/`02`'s own header notes (the same
 defect `ADR-0031` fixed in `architecture/00-vision.md` §7, but outside that document's scope).
 
+**DOM-002/004/005 backfill (2026-07):** a second follow-up requirements-tier pass, closing
+`docs/feature-planning/05-feature-review.md` Finding F-01, ran `requirements-engineering` against
+DOM-002 (Assessment)/DOM-004 (Research)/DOM-005 (Validation) — the three domains grounding
+FS-201/FS-202/FS-301 with no prior requirement at all. Found that DOM-002/FS-201's automated
+rubric computation conflicts with Accepted ADR-0017 (no automated scoring/assessment mechanism in
+v1) and DOM-004/FS-301's dedicated research-export interface directly conflicts with Accepted
+ADR-0029 (existing raw AAR/event-log export already deemed sufficient; a dedicated interface
+explicitly considered and rejected). **Zero new baselined `FR-1xxx`/`NFR-1xxx` requirements were
+added** — three new Candidate Requirements (`CR-19`–`CR-21`) were added instead, and DOM-005
+yielded no new leaf at all (validation methodology, not a system capability). Full analysis:
+[`reviews/requirements-domain-backfill-report.md`](docs/reviews/requirements-domain-backfill-report.md).
+
 | ID | Document | Path | Depends on | Status |
 |---|---|---|---|---|
 | RT-STRAT-REG | Strategic Assumptions Register | `architecture/strategic-assumptions-register.md` | GDS-01, ADR-0030 | ♻️ |
@@ -290,9 +302,16 @@ Router: [`features/feature-index.md`](docs/features/feature-index.md).
 | FS-103 | Custody Management | `features/FS-103-custody-management.md` | DOM-009 | ✅ |
 | FS-104 | SDA Tasking | `features/FS-104-sda-tasking.md` | DOM-009 | ✅ |
 | FS-105 | Spacecraft Operations | `features/FS-105-spacecraft-operations.md` | DOM-001, DOM-007 | ✅ |
-| FS-106 | White Cell Dashboard | `features/FS-106-white-cell-dashboard.md` | DOM-003 | ✅ |
+| FS-106 | White Cell Dashboard *(v2.0, narrowed)* | `features/FS-106-white-cell-dashboard.md` | DOM-003 | ✅ |
 | FS-107 | After Action Review | `features/FS-107-after-action-review.md` | DOM-001, DOM-003 | ✅ |
 | FS-108 | Inject Authoring *(candidate)* | `features/FS-108-inject-authoring.md` | DOM-003 | ⛔ Planned (authorized) |
+| FS-109 | Multiplayer / LAN Session Transport | `features/FS-109-multiplayer-session-transport.md` | DOM-003 §6 | ✅ |
+| FS-110 | Save & Resume | `features/FS-110-save-and-resume.md` | DOM-003 §6 | ✅ |
+| FS-111 | AI-Red Doctrine Automation | `features/FS-111-ai-red-doctrine-automation.md` | DOM-009, DOM-008 | ✅ |
+| FS-112 | Classification Banner | `features/FS-112-classification-banner.md` | DOM-003 | ✅ (build unverified) |
+| FS-113 | Observer Read-Only Access | `features/FS-113-observer-read-only-access.md` | (no owning DOM) | ✅ (build unverified) |
+| FS-114 | Hot-Seat Hand-Off Screen-Blank Menu | `features/FS-114-hot-seat-handoff.md` | (no owning DOM) | ✅ (build unverified) |
+| FS-115 | Session Setup: Vignette Selection & Seat Assignment | `features/FS-115-session-setup.md` | DOM-003 | ✅ (build unverified) |
 | FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | DOM-002 | ✅ |
 | FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | ⛔ Planned (authorized) |
 | FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | DOM-004, DOM-005 | ✅ |
@@ -301,9 +320,82 @@ FS-108 and FS-202 are intentionally lighter-weight stubs (not full specs) — bo
 "(candidate)" in their owning domain document and require explicit user authorization (MSTR-006 §3)
 before promotion to a full spec or any Implementation Package work.
 
-**Next:** Phase 5 (Implementation Packages, `docs/implementations/`) is complete (below). Phase 6-8
+**FS-106 split (2026-07), per `docs/feature-planning/05-feature-review.md` Finding F-03:** v1.0
+bundled the White Cell facilitator UI with three architecturally distinct capabilities, each now
+its own document — FS-109 (multiplayer/LAN session transport, ADR-0014/0015/0026), FS-110
+(save/resume, ADR-0022), and FS-111 (AI-Red doctrine automation, ADR-0021/0024/0030). FS-106 v2.0
+retains god-view/view-as, inject authoring/firing, clock/pacing control authority (trigger surface
+only), and manual adjudication. **`IMP-106A`/`IP-1060` (below) were written against FS-106's prior,
+broader scope and have not yet been reconciled against this split** — each new document's own Risks
+section flags this as an open follow-on task, not resolved by the split itself. Vignette selection
+(FR-4110) and seat-to-role assignment (FR-4210) remain uncovered by any Feature Specification —
+confirmed, not newly introduced, by this split (see FS-106 v2.0's own Scope section).
+
+**F-02/F-10 closure (2026-07):** FS-112 (Classification Banner), FS-113 (Observer Read-Only
+Access), FS-114 (Hot-Seat Hand-Off Screen-Blank Menu), and FS-115 (Session Setup: Vignette
+Selection & Seat Assignment) newly authored — four Must-priority baselined FRs (FR-4510, FR-6510,
+FR-6610, FR-4110/FR-4210) that had zero presence in any prior `FS-xxx` document. Unlike the FS-106
+split, these four had no prior narrative description anywhere in the corpus to verify against —
+each document explicitly flags its own **build status as unverified** and is ready to hand to an
+Implementation Package if confirmed unbuilt, or needs only an RTM-citation closure if confirmed
+already shipped.
+
+**Next:** Phase 5 (Implementation Packages, `docs/implementations/`) is complete (below), but see
+the FS-106-split note above for its now-stale scope alignment, and note FS-112/113/114/115 have no
+Implementation Package at all yet (pending the build-status verification above). Phase 6-8
 (Consistency/Dependency/Traceability review, MSTR-006 §7) is also complete (see the dedicated
-theme section below).
+theme section below), predating both this split and these four new specs.
+
+## Theme: Feature Planning — `feature-decomposition` skill output (`docs/feature-planning/`)
+
+New, 2026-07 — an audit of the document hierarchy found only 11 `FS-xxx` documents against a
+94-leaf-citation (49 unique baselined leaves) `docs/requirements/` corpus, with the RTM carrying no
+FR→FS column and every existing FS's own "Requirements Implemented" section reading "None
+identified." The `feature-decomposition` skill was run against the approved requirements baseline
+(`docs/requirements/01`–`03`) to produce a planning-grain Feature Catalog upstream of `FS-xxx`. Its
+`FEAT-xxxx` rows are a **different artifact** from this theme's own `FS-xxx` documents (see
+`docs/feature-planning/05-feature-review.md`'s mapping note) — not a replacement or renumbering.
+
+| ID | Document | Path | Status |
+|---|---|---|---|
+| — | Feature Planning index | `feature-planning/INDEX.md` | ✅ |
+| — | Release Plan | `feature-planning/01-release-plan.md` | ✅ |
+| — | Epic Catalog (`EP-1000`–`EP-10000`, 10 Epics) | `feature-planning/02-epic-catalog.md` | ✅ |
+| — | Feature Catalog (`FEAT-1100`–`FEAT-10200`, 38 Features) | `feature-planning/03-feature-catalog.md` | ✅ |
+| — | Feature Dependency Graph | `feature-planning/04-feature-dependency-graph.md` | ✅ |
+| — | Feature Review | `feature-planning/05-feature-review.md` | ✅ |
+
+**Key findings:** all 49 baselined FR + 23 baselined NFR leaves are traced to exactly one Feature
+each (36 total); three Features (Classification Banner, Observer Read-Only Access, Hot-Seat
+Hand-Off) have zero presence in any existing `FS-xxx` document, confirming the motivating audit;
+`FS-106-white-cell-dashboard.md` bundles ten catalog Features across three Epics and is flagged as
+oversized; DOM-002/004/005 (Assessment/Research/Validation) have shipped `FS-201`/`FS-301` with no
+corresponding FR/NFR baseline entry at all, a requirements-tier gap this catalog cannot close
+itself. The reconciliation of "36 Features today" against the ~50–80 expected once Candidate
+Requirements, Candidate NFRs, and the strategic review's Future Concepts/Gaps are baselined is
+worked out in full in `05-feature-review.md`'s closing section.
+
+**Update (2026-07):** Finding F-03 (split `FS-106`) is done — see FS-106/FS-109/FS-110/FS-111 in the
+Feature Specifications theme above. **Findings F-02 and F-10 are also done** — FS-112/FS-113/
+FS-114/FS-115 newly authored, each with build status explicitly flagged unverified.
+
+**Update (2026-07):** `IMP-106A`/`IP-1060` reconciliation is done — IP-1060 narrowed to v2.0,
+IP-1090/IP-1100/IP-1110 authored (see the Implementation Packages theme above). Build-status
+verification for FS-112/113/114/115 against the actual `spacesim/` source tree remains open — no
+Implementation Package exists yet for any of the four pending it.
+
+**Update (2026-07):** Finding F-01 is **fully resolved, in two stages**. Stage 1 (`requirements-
+engineering` against DOM-002/004/005 — `reviews/requirements-domain-backfill-report.md`): zero new
+baselined FR/NFR; `CR-19`/`CR-20`/`CR-21` added instead, two blocked on an ADR-0017/ADR-0029
+conflict this pass discovered. Stage 2 (direct project-owner decision, same session): `ADR-0032`
+narrows `ADR-0017`; `ADR-0033` supersedes `ADR-0029`; `CR-19`/`CR-20` promoted to baselined
+`FR-10110`/`FR-10210` (new Epic `EP-10000`, Features `FEAT-10100`/`FEAT-10200`, in the Feature
+Catalog above). `IP-2010` returned to `READY`; `IP-3010` remains `BLOCKED` on `IP-2010` reaching
+`COMPLETE` (unrelated to the now-resolved ADR conflict). `CR-21` remains an active Candidate.
+
+**Next:** verify build status for FS-112/113/114/115; separately, baseline as many of the remaining
+`CR-01–18,21`/`CNFR-01–07` as the project owner authorizes for the ones with no ADR-level blocker
+(Finding F-04), then re-run this skill's Step 0 incrementally against the delta.
 
 ## Theme: Implementation Packages (the *how* — `docs/implementation/packages/`, canonical; `docs/implementations/`, superseded)
 
@@ -311,8 +403,11 @@ Phase 5 of the documentation-driven-development expansion (MSTR-005 §4 chain: .
 Specification → **Implementation Package** → Code → Tests). Each `IP-xxxx` describes architecture,
 data model, files, tasks, tests, Definition of Done, and rollback considerations in prose/
 pseudocode, never literal committed code (MSTR-006 §8). Two situations per package: as-built
-(documents existing, test-covered code, FS-101 through FS-107) vs. forward design (FS-201/FS-301,
-capability not yet implemented, coding work not authorized by this documentation per MSTR-006 §3).
+(documents existing, test-covered code, FS-101 through FS-107, FS-109, FS-110, FS-111) vs. forward
+design (FS-201/FS-301, capability not yet implemented, coding work not authorized by this
+documentation per MSTR-006 §3). FS-112/113/114/115 (new 2026-07) have **no package yet** — each
+Feature Specification's own build status is unverified, pending confirmation before a package can
+be written either way.
 Router: [`implementation/packages/INDEX.md`](docs/implementation/packages/INDEX.md); sequencing/
 dependency-graph/critical-path in [`implementation/00-master-build-plan.md`](docs/implementation/00-master-build-plan.md).
 
@@ -333,12 +428,26 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1040 | SDA Tasking — sensor tasking & SSN request lifecycle | `implementation/packages/IP-1040-sda-tasking.md` | FS-104 | As-built | ✅ VERIFIED |
 | IP-1050 | Spacecraft Operations — bus/payload command & telemetry | `implementation/packages/IP-1050-spacecraft-operations-bus-payload.md` | FS-105 | As-built | ✅ VERIFIED |
 | IP-1051 | Spacecraft Operations — effect resolution & console UX | `implementation/packages/IP-1051-spacecraft-operations-effects-console.md` | FS-105 | As-built | ✅ VERIFIED |
-| IP-1060 | White Cell Dashboard — session/inject/clock control plane | `implementation/packages/IP-1060-white-cell-dashboard.md` | FS-106 | As-built | ✅ VERIFIED |
+| IP-1060 | White Cell Dashboard — god-view, inject, clock-authority trigger & adjudication *(v2.0, narrowed)* | `implementation/packages/IP-1060-white-cell-dashboard.md` | FS-106 v2.0 | As-built | ✅ VERIFIED |
 | IP-1070 | After Action Review — replay/scrub/branch-compare | `implementation/packages/IP-1070-after-action-review.md` | FS-107 | As-built | ✅ VERIFIED |
+| IP-1090 | Multiplayer / LAN Session Transport — lazy clock, mutation locking, hot-seat/LAN sharing | `implementation/packages/IP-1090-multiplayer-session-transport.md` | FS-109 | As-built | ✅ VERIFIED |
+| IP-1100 | Save & Resume — deterministic round trip & content/session split | `implementation/packages/IP-1100-save-and-resume.md` | FS-110 | As-built | ✅ VERIFIED |
+| IP-1110 | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | `implementation/packages/IP-1110-ai-red-doctrine-automation.md` | FS-111 | As-built | ✅ VERIFIED |
 | IP-2010 | Competency Assessment — rubric computation | `implementation/packages/IP-2010-competency-assessment.md` | FS-201 | Forward design | 🟡 READY (not authorized, MSTR-006 §3) |
 | IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🔴 BLOCKED (on IP-2010; also not authorized) |
 
-FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3).
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). FS-112/113/
+114/115 have no Implementation Package yet (build status unverified — see the Feature
+Specifications theme above).
+
+**IP-1090/IP-1100/IP-1110 are new (2026-07)**, split out of IP-1060 v1.0 per
+`docs/feature-planning/05-feature-review.md` Finding F-03, mirroring the FS-106 split — no new code
+verification was performed, these three packages reorganize `IP-1060` v1.0's already-verified
+citations under the new Feature boundaries. `docs/implementation/00-master-build-plan.md`'s package
+table, dependency graph, Wave-1 parallel-opportunity list, and summary statistics (13 packages,
+158-line average) have been updated accordingly. `docs/implementations/IMP-106A-white-cell-
+dashboard.md` (superseded, frozen historical content) gained a forward-pointer note to the three
+new packages without otherwise being altered.
 
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 

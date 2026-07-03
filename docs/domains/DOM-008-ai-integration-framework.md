@@ -4,9 +4,14 @@
 > **Version:** 1.0
 > **Status:** 🚧 In progress
 > **Dependencies:** MSTR-001, MSTR-002, MSTR-006
-> **Referenced By:** DOM-003, DOM-009, FS-301, R501-R509
+> **Referenced By:** DOM-003, DOM-009, FS-111, FS-301, R501-R509
 > **Produces:** the constraints governing both (a) Red AI doctrine presets and (b) coding-LLM-agent use on this repository
-> **Feature Mapping:** N/A — cross-cutting; touches `redai.py`-derived features and the documentation-authoring process itself
+> **Feature Mapping:** N/A as this domain's own primary claim — cross-cutting; touches
+> `redai.py`-derived features and the documentation-authoring process itself. `FS-111` (AI-Red
+> Doctrine Automation, new 2026-07, split out of FS-106 per `docs/feature-planning/05-feature-
+> review.md` Finding F-03) is exactly the `redai.py`-derived feature this line anticipated — it
+> cites this domain as a related, cross-cutting input alongside its primary grounding in DOM-009,
+> not as this domain's own owned Feature.
 > **Related Topics:** [`spacesim/session/redai.py`](../../spacesim/session/redai.py) (code, referenced not duplicated),
 > R501-R509 (Future Operations tier), MSTR-006 (AI authoring constraints)
 

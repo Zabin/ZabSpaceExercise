@@ -4,9 +4,9 @@
 > **Version:** 1.0
 > **Status:** 🚧 In progress
 > **Dependencies:** MSTR-001, MSTR-003
-> **Referenced By:** DOM-003, DOM-006, DOM-008, FS-103, FS-104
-> **Produces:** the process by which research/doctrine content becomes vignette content (threat pictures, ROE, effect parameters)
-> **Feature Mapping:** FS-103 (Custody Management), FS-104 (SDA Tasking)
+> **Referenced By:** DOM-003, DOM-006, DOM-008, FS-103, FS-104, FS-111
+> **Produces:** the process by which research/doctrine content becomes vignette content (threat pictures, ROE, effect parameters); as of 2026-07, also the doctrine-preset translation `FS-111` (AI-Red Doctrine Automation) automates
+> **Feature Mapping:** FS-103 (Custody Management), FS-104 (SDA Tasking), FS-111 (AI-Red Doctrine Automation — new 2026-07, split out of FS-106 per `docs/feature-planning/05-feature-review.md` Finding F-03; a doctrine preset is doctrine translated into an executable Red-cell behavior profile, the same translation this domain already grounds for FS-103/FS-104)
 > **Related Topics:** [`docs/research/01-doctrine-western.md`](../research/01-doctrine-western.md),
 > [`docs/research/02-doctrine-non-western.md`](../research/02-doctrine-non-western.md), [`docs/research/03-counterspace-taxonomy.md`](../research/03-counterspace-taxonomy.md),
 > R301-R312 (Military Analysis tier)

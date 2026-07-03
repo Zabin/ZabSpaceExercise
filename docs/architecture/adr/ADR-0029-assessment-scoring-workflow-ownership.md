@@ -4,7 +4,10 @@
 
 - **Decision ID:** ADR-0029
 - **Title:** Raw AAR/event-log access is sufficient for the "researchers / assessment designers" stakeholder; no new subsystem is needed
-- **Status:** Accepted
+- **Status:** Superseded 2026-07 by [ADR-0033](ADR-0033-dedicated-research-export-interface.md)
+  *(this file is retained, unedited below, for historical reference — see ADR-0033 for the current
+  decision: a dedicated multi-run/cohort research-export interface is now authorized, reversing
+  this ADR's "no new dedicated export/analysis interface" Decision)*
 
 ## Context
 
