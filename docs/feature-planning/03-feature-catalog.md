@@ -898,6 +898,61 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 
 ---
 
+## Epic EP-10000 — Assessment & Research Instrumentation *(new 2026-07)*
+
+Added following `01-functional-requirements.md`'s `FR-10000` category (promoted from `CR-19`/`CR-20`
+once `ADR-0032`/`ADR-0033` resolved their blocking conflicts) — an incremental catalog update per
+this skill's own recommended usage ("re-run Step 0 against the delta... not a full regeneration"),
+not a re-decomposition of the whole baseline.
+
+### FEAT-10100 — Automated Non-Aggregating Competency Rubric Computation
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-10100 |
+| **Title** | Automated Non-Aggregating Competency Rubric Computation |
+| **Purpose** | Replace the engine's binary objective-flip signal with a richer, per-dimension qualitative measurement of how a cell demonstrated a vignette's intended competency, without ever collapsing dimensions into one score. |
+| **Description** | Computes rubric-tier results (custody quality, window discipline, belief-truth divergence in the first iteration) per cell per exercise, read-only over existing eventlog/custody/order-log/AAR-snapshot state; never aggregates into a composite score or win/loss determination. |
+| **Scope** | The computation and its non-aggregation guarantee. Does not cover rubric-tier *authoring* tooling (a separate, unauthorized candidate — `FS-202`) or the facilitator's own qualitative judgment mode (DOM-002 §6's "facilitator rubric," which requires no new engine feature). |
+| **Included Requirements** | FR-10110 |
+| **Excluded Requirements** | FR-4710 (the sibling "no automated score/win-loss" prohibition this Feature must not cross — owned by FEAT-4700) |
+| **Dependencies** | FEAT-1500 (custody), FEAT-3400 (execute-time re-validation/rejection data), FEAT-7300 (AAR snapshot diff) |
+| **Dependent Features** | FEAT-10200 |
+| **Affected Subsystems** | C1 Simulation Engine, C2 Session/Application Layer |
+| **Affected Interfaces** | None — no ICD interface currently names this boundary (FS-201's own Open Questions flag the same gap) |
+| **Related ADRs** | ADR-0017, ADR-0032 |
+| **User Value** | Gives a facilitator a richer debrief instrument than "did the cell win," and a trainer a longitudinal per-trainee competency signal. |
+| **Technical Value** | A read-only analytics layer reusing custody/order/AAR data other Features already produce, rather than a parallel measurement path. |
+| **Complexity** | Medium-High — three independently-derived dimensions, each with its own data source and tier scale. |
+| **Risk** | Was blocked on a direct conflict with `ADR-0017` until `ADR-0032`'s narrow carve-out (2026-07); any future extension that aggregates dimensions into one number falls back outside that carve-out and would need its own ADR. |
+| **Suggested Verification Strategy** | Given a completed exercise, the report presents rubric-tier results for the three first-iteration dimensions side-by-side per cell without collapsing them into one number; the computation produces zero `WorldState` mutations. |
+| **Open Questions** | Whether the rubric-tier result record needs a new Domain Model entity or extends `EventLog`/`SavedSession` is unresolved (FS-201's own Open Questions). |
+
+### FEAT-10200 — Multi-Run/Cohort Structured Research-Data Export
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-10200 |
+| **Title** | Multi-Run/Cohort Structured Research-Data Export |
+| **Purpose** | Let a researcher batch-run N seeded simulations of a vignette and export structured, condition-labeled per-run records, closing the gap that today requires scripting directly against raw `eventlog`/`save` artifacts. |
+| **Description** | Exports one structured record per seeded run (vignette ID, seed, condition label, `FEAT-10100` rubric-tier output), without relaxing engine determinism to characterize run-to-run variability. |
+| **Scope** | The batch-run/export mechanism. Does not cover statistical analysis of the exported data (the researcher's own responsibility) or any human-subjects-research feature (explicitly out of scope — `CR-21`, unaffected by this Feature). |
+| **Included Requirements** | FR-10210 |
+| **Excluded Requirements** | None adjacent. |
+| **Dependencies** | FEAT-10100, `FEAT-1100` (Deterministic Clock — replay/reproducibility) |
+| **Dependent Features** | None |
+| **Affected Subsystems** | C1 Simulation Engine, C2 Session/Application Layer |
+| **Affected Interfaces** | None — no ICD interface currently names this export boundary (FS-301's own Open Questions flag the same gap) |
+| **Related ADRs** | ADR-0029 (superseded), ADR-0033 |
+| **User Value** | Turns the platform into a usable instrument-grade research tool without requiring a researcher to script against raw artifacts. |
+| **Technical Value** | Reuses `FEAT-10100`'s per-run output and the engine's existing seeded-replay determinism rather than a parallel measurement or replay path. |
+| **Complexity** | Medium. |
+| **Risk** | Was blocked on a direct conflict with `ADR-0029` (which had explicitly considered and rejected this exact capability) until `ADR-0033` superseded it (2026-07) — the first ADR reversal, not merely a narrowing, in this catalog's history. |
+| **Suggested Verification Strategy** | Given a batch of N seeded runs of the same vignette, the exported record set contains exactly N entries, each tagged with its own seed/vignette-ID/condition label; re-running the same seed reproduces byte-identical underlying state. |
+| **Open Questions** | The exact export record schema is implied but not formally specified (FS-301's own Open Questions); whether it requires a new Domain Model entity is unresolved. |
+
+---
+
 ## Summary
 
 | Epic | Features | Count |
@@ -911,10 +966,13 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | EP-7000 Logging, Replay & AAR | FEAT-7100–7300 | 3 |
 | EP-8000 Operator Console Presentation | FEAT-8100 | 1 |
 | EP-9000 AI-Red | FEAT-9100 | 1 |
-| **Total** | | **36** |
+| EP-10000 Assessment & Research Instrumentation *(new 2026-07)* | FEAT-10100–10200 | 2 |
+| **Total** | | **38** |
 
-All 49 baselined FR leaves and all 23 baselined NFR leaves are each owned by exactly one Feature
-above (verified in `05-feature-review.md`). The 18 Candidate Requirements and 7 Candidate NFRs are
-deliberately **not** included in any Feature's `Included Requirements` — they are not yet an
-approved baseline to decompose (see `05-feature-review.md` for their disposition and what would be
+All 49 original baselined FR leaves, both new `FR-10000`-category leaves (`FR-10110`/`FR-10210`,
+promoted 2026-07 from `CR-19`/`CR-20`), and all 23 baselined NFR leaves are each owned by exactly
+one Feature above (verified in `05-feature-review.md`). The remaining 19 Candidate Requirements
+(`CR-01`–`CR-18`, `CR-21`) and 7 Candidate NFRs are deliberately **not** included in any Feature's
+`Included Requirements` — they are not yet an approved baseline to decompose (see
+`05-feature-review.md` for their disposition and what would be
 required to promote them).

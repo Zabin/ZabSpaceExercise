@@ -53,6 +53,8 @@
 | **FEAT-4500** Classification Banner | Must-priority per its FR, but this catalog's motivating audit found **zero** Feature Specification coverage anywhere in the existing corpus and an `UNASSIGNED` RTM citation — placed at Release 2 specifically to force a verification-then-documentation pass (confirm it is actually built, then close both the FS and RTM gaps) rather than let it continue riding silently inside another document. |
 | **FEAT-6500** Observer Read-Only Access | Must-priority per its FR, same treatment as FEAT-4500 — one of the two capabilities this catalog's motivating audit specifically flagged as having no Feature Specification anywhere. |
 | **FEAT-6600** Hot-Seat Hand-Off Screen-Blank Menu | Must-priority per its FR (closes GDS-05's own prior Open Question 1), same treatment — the second of the two audit-flagged gaps, and the deepest node on the catalog's critical path. |
+| **FEAT-10100** Automated Non-Aggregating Competency Rubric Computation *(new 2026-07)* | **Should**-priority, same reasoning pattern as FEAT-9100 — valuable but not a precondition for any vignette's playability. Additionally gated on `MSTR-006` §3 authorization (forward-design, not yet implemented) independent of its now-resolved `ADR-0017` conflict (`ADR-0032`). |
+| **FEAT-10200** Multi-Run/Cohort Structured Research-Data Export *(new 2026-07)* | **Should**-priority, depends on FEAT-10100 (same bucket, dependency-consistent). Additionally gated on `MSTR-006` §3 authorization and on `IP-2010` (FEAT-10100's implementation package) reaching `COMPLETE` first — its own now-resolved `ADR-0029` conflict (`ADR-0033`) does not remove either gate. |
 
 ### Future
 
@@ -100,10 +102,12 @@ FEAT-1200, FEAT-7100, FEAT-1100, FEAT-2100, FEAT-3100, FEAT-6200 — see the dep
 anything; this is a dependency-graph property, not a statement about priority or value)
 
 FEAT-1400, FEAT-2300, FEAT-2400, FEAT-2500, FEAT-3300, FEAT-3500, FEAT-4200, FEAT-4300, FEAT-4400,
-FEAT-4500, FEAT-4600, FEAT-4700, FEAT-5200, FEAT-6500, FEAT-6600, FEAT-7200, FEAT-7300, FEAT-8100,
-FEAT-9100. Several of these (e.g. FEAT-2500 Safe-Mode Loop, FEAT-6600 Hot-Seat Hand-Off) are
-Must-priority, high-value Features in their own right — "optional" here means only that no *sibling
-Feature's construction* is blocked by deferring them, not that the capability itself is low-value.
+FEAT-4500, FEAT-4600, FEAT-4700, FEAT-5200, FEAT-6500, FEAT-6600, FEAT-7200, FEAT-8100,
+FEAT-9100, FEAT-10200 *(new 2026-07)*. Several of these (e.g. FEAT-2500 Safe-Mode Loop, FEAT-6600
+Hot-Seat Hand-Off) are Must-priority, high-value Features in their own right — "optional" here
+means only that no *sibling Feature's construction* is blocked by deferring them, not that the
+capability itself is low-value. **FEAT-7300 removed from this list (2026-07):** it now has a
+dependent (`FEAT-10100`) and is no longer a leaf node in the dependency graph.
 
 ### Deferred
 

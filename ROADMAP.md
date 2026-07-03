@@ -360,8 +360,8 @@ identified." The `feature-decomposition` skill was run against the approved requ
 |---|---|---|---|
 | — | Feature Planning index | `feature-planning/INDEX.md` | ✅ |
 | — | Release Plan | `feature-planning/01-release-plan.md` | ✅ |
-| — | Epic Catalog (`EP-1000`–`EP-9000`, 9 Epics) | `feature-planning/02-epic-catalog.md` | ✅ |
-| — | Feature Catalog (`FEAT-1100`–`FEAT-9100`, 36 Features) | `feature-planning/03-feature-catalog.md` | ✅ |
+| — | Epic Catalog (`EP-1000`–`EP-10000`, 10 Epics) | `feature-planning/02-epic-catalog.md` | ✅ |
+| — | Feature Catalog (`FEAT-1100`–`FEAT-10200`, 38 Features) | `feature-planning/03-feature-catalog.md` | ✅ |
 | — | Feature Dependency Graph | `feature-planning/04-feature-dependency-graph.md` | ✅ |
 | — | Feature Review | `feature-planning/05-feature-review.md` | ✅ |
 
@@ -384,15 +384,18 @@ IP-1090/IP-1100/IP-1110 authored (see the Implementation Packages theme above). 
 verification for FS-112/113/114/115 against the actual `spacesim/` source tree remains open — no
 Implementation Package exists yet for any of the four pending it.
 
-**Update (2026-07):** Finding F-01 is done — see the "DOM-002/004/005 backfill" paragraph under the
-Architecture / Design Synthesis theme above and `reviews/requirements-domain-backfill-report.md`.
-Outcome: zero new baselined FR/NFR; `CR-19`/`CR-20`/`CR-21` added instead, two of them blocked on
-an ADR-0017/ADR-0029 conflict this pass discovered rather than a simple authorization gate.
+**Update (2026-07):** Finding F-01 is **fully resolved, in two stages**. Stage 1 (`requirements-
+engineering` against DOM-002/004/005 — `reviews/requirements-domain-backfill-report.md`): zero new
+baselined FR/NFR; `CR-19`/`CR-20`/`CR-21` added instead, two blocked on an ADR-0017/ADR-0029
+conflict this pass discovered. Stage 2 (direct project-owner decision, same session): `ADR-0032`
+narrows `ADR-0017`; `ADR-0033` supersedes `ADR-0029`; `CR-19`/`CR-20` promoted to baselined
+`FR-10110`/`FR-10210` (new Epic `EP-10000`, Features `FEAT-10100`/`FEAT-10200`, in the Feature
+Catalog above). `IP-2010` returned to `READY`; `IP-3010` remains `BLOCKED` on `IP-2010` reaching
+`COMPLETE` (unrelated to the now-resolved ADR conflict). `CR-21` remains an active Candidate.
 
-**Next:** verify build status for FS-112/113/114/115; resolve the `CR-19`/`ADR-0017` and
-`CR-20`/`ADR-0029` conflicts (an architecture decision) before either can be baselined; separately,
-baseline as many of `CR-01–21`/`CNFR-01–07` as the project owner authorizes for the ones with no
-such blocker (Finding F-04), then re-run this skill's Step 0 incrementally against the delta.
+**Next:** verify build status for FS-112/113/114/115; separately, baseline as many of the remaining
+`CR-01–18,21`/`CNFR-01–07` as the project owner authorizes for the ones with no ADR-level blocker
+(Finding F-04), then re-run this skill's Step 0 incrementally against the delta.
 
 ## Theme: Implementation Packages (the *how* — `docs/implementation/packages/`, canonical; `docs/implementations/`, superseded)
 

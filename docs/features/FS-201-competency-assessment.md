@@ -44,10 +44,13 @@ instrument-grade research ([FS-301](FS-301-research-analytics.md)).
 
 ## Requirements Implemented
 
-None identified — the FR-xxxx/NFR-xxxx requirements corpus (`docs/requirements/`) contains no
-explicit citation of this Feature ID. This is a traceability gap, not a deliberate
-non-applicability; closing it is Phase 8 traceability-review work (MSTR-006 §7), not something this
-rewrite may resolve by inference.
+**FR-10110** (automated non-aggregating competency rubric-tier computation) — added 2026-07,
+promoted from Candidate Requirement `CR-19` once `ADR-0032` resolved its conflict with `ADR-0017`.
+This closes this field's prior gap ("None identified") for the capability FS-201 exists to
+specify; `FR-10110`'s own Source Documents cite this Scope/System Behaviour/Acceptance Criteria
+directly. See `docs/reviews/requirements-domain-backfill-report.md` and
+`docs/requirements/01-functional-requirements.md`'s "ADR-0017/ADR-0029 conflict resolution"
+section for the full derivation.
 
 ## User Workflows
 
@@ -188,8 +191,8 @@ dependencies of FS-201.
 
 ## Open Questions
 
-- No FR-xxxx/NFR-xxxx in `docs/requirements/` explicitly cites FS-201; this is a traceability gap
-  for Phase 8 review (MSTR-006 §7), not a deliberate non-applicability.
+- ~~No FR-xxxx/NFR-xxxx in `docs/requirements/` explicitly cites FS-201~~ — **resolved 2026-07**:
+  `FR-10110` now cites this document directly (see Requirements Implemented above).
 - The source document does not assign a per-subsystem Subsystem Responsibilities table.
 - The source document does not specify a schema for the rubric-tier result record; whether it
   requires a new Domain Model entity or extends the existing `EventLog`/`SavedSession` is
@@ -204,10 +207,15 @@ dependencies of FS-201.
 ## Related ADRs
 
 ADR-0017 (manual adjudication; no automated scoring in v1) —
-`docs/architecture/adr/ADR-0017-manual-adjudication.md`;
+`docs/architecture/adr/ADR-0017-manual-adjudication.md`, **amended 2026-07 by ADR-0032**
+(`docs/architecture/adr/ADR-0032-descriptive-rubric-not-automated-scoring.md`), which carves this
+document's specific rubric-tier design out of ADR-0017's "assessment mechanism" prohibition — this
+is the ADR that authorizes FS-201's automated computation as designed;
 ADR-0029 (assessment-scoring-workflow-ownership: raw AAR/event-log access is sufficient for the
 assessment-designer stakeholder) —
-`docs/architecture/adr/ADR-0029-assessment-scoring-workflow-ownership.md`.
+`docs/architecture/adr/ADR-0029-assessment-scoring-workflow-ownership.md`, **superseded 2026-07 by
+ADR-0033** (not directly about this document's rubric computation, but historically cited here
+alongside ADR-0017 as an adjacent assessment/scoring-stakeholder decision).
 
 ## Related Interfaces
 

@@ -3,7 +3,17 @@
 > **Package ID:** IP-3010
 > **Version:** 1.0
 > **Status:** 🔴 BLOCKED *(blocked on IP-2010 reaching COMPLETE; also not authorized for
-> implementation even once unblocked — see §"Definition of Done" and §"Risks")*
+> implementation even once unblocked — see §"Definition of Done" and §"Risks". **Note added
+> 2026-07:** this package's Objective — a dedicated multi-run/cohort export interface — directly
+> conflicted with ADR-0029 ("no new dedicated export/analysis interface... is introduced," Accepted)
+> for the entire time this package existed at v1.0, without that conflict ever being recorded in
+> this header the way IP-2010's ADR-0017 conflict was — a documentation gap `docs/reviews/
+> requirements-domain-backfill-report.md` found independently. That conflict is now resolved:
+> [ADR-0033](../../architecture/adr/ADR-0033-dedicated-research-export-interface.md) supersedes
+> ADR-0029 and authorizes this package's design as written; the underlying capability is now also
+> baselined as [`FR-10210`](../../requirements/01-functional-requirements.md). This does not change
+> this package's `BLOCKED` status — it remains gated on IP-2010 reaching `COMPLETE` and on its own
+> separate MSTR-006 §3 authorization, both unrelated to the now-resolved ADR-0029 conflict.)*
 > **Dependencies:** FS-301, IP-2010 (the per-exercise rubric output this package aggregates —
 > **hard blocking dependency**, not merely a design reference)
 > **Referenced By:** none yet
@@ -43,13 +53,15 @@ IP-2010's scoring.
 
 ## Requirements Covered
 
-FS-301's "Requirements Implemented" field reports no explicit FR/NFR citation, and the RTM lists
-FS-301 as `UNASSIGNED` in the Implementation-Package reverse index. This package's proposed batch
-runner would depend on the following already-covered requirements as its architectural constraint
-set:
+**FR-10210** (multi-run/cohort structured research-data export, added 2026-07) is now the primary
+requirement this package implements — see `docs/features/FS-301-research-analytics.md`'s own
+updated "Requirements Implemented" field. This package's proposed batch runner also depends on the
+following already-covered requirements as its architectural constraint set:
 
 | Req ID | Title (abridged) | Relevance to this package's design |
 |---|---|---|
+| FR-10210 | Multi-run/cohort structured research-data export | The requirement this package implements in full |
+| FR-10110 | Automated non-aggregating competency rubric-tier computation (IP-2010) | Per-run output this package aggregates without reimplementing |
 | FR-1120 | Deterministic replay (byte-identical from state/eventlog/seed) | The batch runner's reproducibility property depends directly on this invariant — each seeded run must be independently reproducible |
 | NFR-1500 | Determinism (engine-wide) | This package must never relax determinism inside `engine/` to sample variability; variability comes only from varying the seed externally |
 | NFR-3200 | Offline-first runtime | Batch runs must not require network access (per ADR-0018) |

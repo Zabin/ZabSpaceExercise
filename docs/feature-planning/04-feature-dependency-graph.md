@@ -53,6 +53,11 @@ A second, shorter chain worth noting: **FEAT-1200 → FEAT-3100 → FEAT-3400 �
 AI-Red's dependency depth is driven entirely by reusing the human command path, not by any AI-Red-
 specific prerequisite.
 
+**Added 2026-07:** **FEAT-3400 → FEAT-10100 → FEAT-10200** (2 edges, via FEAT-1500/FEAT-7300 →
+FEAT-10100 as well) ties the critical path at depth 4 (`FEAT-7100 → FEAT-7300 → FEAT-10100 →
+FEAT-10200`) without exceeding it — Assessment & Research Instrumentation is co-critical with the
+existing FEAT-6600 chain, not schedule-extending.
+
 ## Blocking Features (highest fan-out)
 
 | Feature | Direct dependents | Why it's high-leverage |
@@ -140,6 +145,10 @@ graph TD
     subgraph EP9["EP-9000 AI-Red"]
         F9100["FEAT-9100 AI-Red Automation"]
     end
+    subgraph EP10["EP-10000 Assessment & Research (new 2026-07)"]
+        F10100["FEAT-10100 Competency Rubric Computation"]
+        F10200["FEAT-10200 Research Data Export"]
+    end
 
     F7100 --> F1100
     F1200 --> F1300
@@ -175,6 +184,11 @@ graph TD
     F7100 --> F7300
     F3100 --> F9100
     F3400 --> F9100
+    F1500 --> F10100
+    F3400 --> F10100
+    F7300 --> F10100
+    F10100 --> F10200
+    F1100 --> F10200
 ```
 
 *(Edges are drawn `prerequisite --> dependent`, i.e. arrow points from the Feature that must exist

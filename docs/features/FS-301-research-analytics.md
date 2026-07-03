@@ -56,10 +56,13 @@ both being called "research."
 
 ## Requirements Implemented
 
-None identified — the FR-xxxx/NFR-xxxx requirements corpus (`docs/requirements/`) contains no
-explicit citation of this Feature ID. This is a traceability gap, not a deliberate
-non-applicability; closing it is Phase 8 traceability-review work (MSTR-006 §7), not something this
-rewrite may resolve by inference.
+**FR-10210** (multi-run/cohort structured research-data export) — added 2026-07, promoted from
+Candidate Requirement `CR-20` once `ADR-0033` superseded `ADR-0029`'s prior rejection of a
+dedicated export interface. This closes this field's prior gap ("None identified") for the
+capability FS-301 exists to specify; `FR-10210`'s own Source Documents cite this Scope/System
+Behaviour directly. See `docs/reviews/requirements-domain-backfill-report.md` and
+`docs/requirements/01-functional-requirements.md`'s "ADR-0017/ADR-0029 conflict resolution"
+section for the full derivation.
 
 ## User Workflows
 
@@ -181,8 +184,8 @@ field.
 
 ## Open Questions
 
-- No FR-xxxx/NFR-xxxx in `docs/requirements/` explicitly cites FS-301; this is a traceability gap
-  for Phase 8 review (MSTR-006 §7), not a deliberate non-applicability.
+- ~~No FR-xxxx/NFR-xxxx in `docs/requirements/` explicitly cites FS-301~~ — **resolved 2026-07**:
+  `FR-10210` now cites this document directly (see Requirements Implemented above).
 - The source document does not assign a per-subsystem Subsystem Responsibilities table.
 - The per-run export record schema (vignette ID, seed, condition label, per-dimension rubric
   results) is implied but not formally specified; whether it requires a new Domain Model entity or
@@ -194,8 +197,9 @@ field.
 
 ## Related ADRs
 
-None identified — no ADR in `docs/architecture/adr/` explicitly names the research-export or
-instrument-grade research capability as a settled decision point. ADR-0002 (deterministic core)
+**ADR-0033** (`docs/architecture/adr/ADR-0033-dedicated-research-export-interface.md`, added
+2026-07) — supersedes `ADR-0029` to authorize the dedicated research-export interface this document
+specifies, resolving what was previously "none identified" here. `ADR-0002` (deterministic core)
 applies as a constraint on the batch-run mechanism, but does not name FS-301 specifically.
 
 ## Related Interfaces

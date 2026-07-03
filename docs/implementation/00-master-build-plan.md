@@ -80,8 +80,8 @@ that continue to bind this tree ([MSTR-006](../master/MSTR-006-governance-princi
 | [IP-1090](packages/IP-1090-multiplayer-session-transport.md) | FS-109 Multiplayer / LAN Session Transport | As-built | ✅ VERIFIED | none |
 | [IP-1100](packages/IP-1100-save-and-resume.md) | FS-110 Save & Resume | As-built | ✅ VERIFIED | none |
 | [IP-1110](packages/IP-1110-ai-red-doctrine-automation.md) | FS-111 AI-Red Doctrine Automation | As-built | ✅ VERIFIED | none |
-| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | 🔴 BLOCKED | Unreconciled conflict with ADR-0017 (Accepted: "no automated scoring/assessment mechanism in v1") — see Blocking Report, 2026-07-02 |
-| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔴 BLOCKED | IP-2010 → `COMPLETE` (now also blocked, see above), **and** authorization (MSTR-006 §3) |
+| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | 🟡 READY | Was `BLOCKED` (Unreconciled conflict with ADR-0017, "no automated scoring/assessment mechanism in v1" — Blocking Report, 2026-07-02); **resolved 2026-07 by `ADR-0032`** (narrow carve-out); gated only on MSTR-006 §3 authorization again |
+| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔴 BLOCKED | IP-2010 → `COMPLETE`, **and** authorization (MSTR-006 §3); a separate, never-previously-recorded conflict with ADR-0029 is **resolved 2026-07 by `ADR-0033`** — does not change this package's blocking status |
 
 **Update (2026-07):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code
@@ -226,9 +226,10 @@ gated at each step by the MSTR-006 §3 authorization rule, not by any missing pr
 - **Parallel Work Opportunities:** 2 historical parallel waves among the (now-complete) as-built
   packages (6 packages, then 3 packages, running independently); **zero** parallel opportunities
   remain in the forward-design surface — `IP-2010` and `IP-3010` are strictly sequential
-- **Package Status:** 11 `VERIFIED`, 0 `READY`, 2 `BLOCKED` (`IP-2010` — unreconciled ADR-0017
-  conflict, see Blocking Report 2026-07-02; `IP-3010` — depends on IP-2010); 0 `NOT STARTED`,
-  0 `IN PROGRESS`, 0 `COMPLETE` (unverified)
+- **Package Status:** 11 `VERIFIED`, 1 `READY` (`IP-2010` — ADR-0017 conflict resolved 2026-07 by
+  `ADR-0032`, gated only on authorization again), 1 `BLOCKED` (`IP-3010` — depends on IP-2010
+  reaching `COMPLETE`; its own separate ADR-0029 conflict resolved 2026-07 by `ADR-0033`);
+  0 `NOT STARTED`, 0 `IN PROGRESS`, 0 `COMPLETE` (unverified)
 
 ### Risks requiring architectural attention
 

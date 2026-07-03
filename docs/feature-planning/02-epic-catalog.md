@@ -126,6 +126,21 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 
 ---
 
+### EP-10000 — Assessment & Research Instrumentation *(new 2026-07)*
+
+| Field | Content |
+|---|---|
+| **Epic ID** | EP-10000 |
+| **Title** | Assessment & Research Instrumentation |
+| **Purpose** | Rubric-based competency measurement and multi-run/cohort research export — the capability area DOM-002 (Assessment) and DOM-004 (Research) ground, promoted from Candidate Requirements once their blocking ADR conflicts (`ADR-0017`, `ADR-0029`) were resolved by `ADR-0032`/`ADR-0033`. |
+| **Features Included** | FEAT-10100, FEAT-10200 |
+| **Subsystems** | C1 Simulation Engine, C2 Session/Application Layer |
+| **Estimated Scope** | Small in Feature count (two FR leaves), but each was blocked on a direct Accepted-ADR conflict until this session's project-owner decisions resolved them — the only Epic in this catalog whose very existence required an architecture-tier reversal (`FEAT-10200`) or narrowing (`FEAT-10100`), not merely a decomposition choice. |
+| **Risks** | `FEAT-10200` depends on `FEAT-10100`'s output; both remain `MSTR-006` §3 gated for implementation regardless of their ADR-tier resolution — a package being unblocked at the architecture tier is not an authorization to code (see `IP-2010`/`IP-3010`). |
+| **Dependencies** | EP-1000 (FEAT-10200 depends on the core deterministic clock for reproducibility) |
+
+---
+
 ## Summary
 
 | Epic | Features | Epic-level Dependencies |
@@ -139,8 +154,9 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | EP-7000 Logging, Replay & After-Action Review | 3 | (none outbound) |
 | EP-8000 Operator Console Presentation | 1 | (none) |
 | EP-9000 AI-Red | 1 | EP-3000 |
-| **Total** | **36** | |
+| EP-10000 Assessment & Research Instrumentation *(new 2026-07)* | 2 | EP-1000 |
+| **Total** | **38** | |
 
 Every Feature in `03-feature-catalog.md` appears in exactly one Epic's `Features Included` list
-above — cross-checked against the catalog's own Epic headers (36 Features total, matching the
+above — cross-checked against the catalog's own Epic headers (38 Features total, matching the
 catalog's Summary table).
