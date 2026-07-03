@@ -325,13 +325,16 @@ FR-6610 divergence).
    risk, not a technical one: a future session could mistake "fully specified" for "authorized" and
    begin coding against either package without the required go-ahead. Each package's own Definition
    of Done makes this explicit as its first, unchecked line item.
-2. **`IP-2010`'s "aware vs. unaware" divergence signal is an unresolved design question**, not an
-   implementation detail — `aar.py` as currently built does not derive a signal for whether a cell
-   *recognized* its belief was wrong, only *that* it diverged. Implementing a plausible-but-
-   unvalidated heuristic without flagging it as unvalidated (per DOM-005 §7's validation-disclosure
-   discipline) would misrepresent an unvalidated metric as settled — an architectural/methodological
-   risk that belongs to the assessment-framework domain (`DOM-002`), not to this build plan to
-   resolve.
+2. **`IP-2010`'s "aware vs. unaware" divergence signal — resolved 2026-07-03 (`IP-2010` v1.1,
+   `BL-0002`), one residual disclosure obligation remains.** The project owner chose to instrument
+   an explicit decision-time signal (`custody_confidence_at_decision`, captured in `orders.py`'s
+   `_exec_payload()` and read back by the scorer, never reconstructed post-hoc via `aar.state_at()`)
+   rather than a post-hoc heuristic. The aware/unaware split reuses the existing
+   `WEAPONS_QUALITY_THRESHOLD` as the "operator-visibly-marginal" band; per DOM-005 §7's
+   validation-disclosure discipline, `IP-2010`'s report surface must still disclose that this band
+   was calibrated for the engage hard-gate, not validated as a general perceptual/awareness
+   boundary — see `IP-2010`'s own Risks section for the full statement. This is now a build-ready
+   design, not an open architectural question.
 3. **Nine of eleven Feature Specifications carry a documented FR/NFR traceability gap.** Every FS-xxx
    this plan covers states, in its own "Requirements Implemented" field, that no FR-xxxx/NFR-xxxx
    explicitly cites it — confirmed independently against `docs/requirements/01-functional-
