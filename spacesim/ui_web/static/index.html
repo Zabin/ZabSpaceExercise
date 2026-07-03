@@ -22,6 +22,7 @@
       <button class="cell" data-cell="white">White</button>
       <button class="cell" data-cell="blue">Blue</button>
       <button class="cell" data-cell="red">Red</button>
+      <button class="cell" data-cell="observer" title="Read-only — White-Cell-designated view, no command ability">Observer</button>
     </div>
     <div class="ctrl white-only">
       <button id="clock-toggle" title="Pause / resume the server-authoritative real-time clock">⏸ Pause</button>
@@ -49,6 +50,16 @@
             <button id="load" class="primary">Load</button>
             <button id="start" disabled>▶ Start</button>
           </div>
+        </div>
+        <div class="menu-section">
+          <div class="menu-head">Observer</div>
+          <label class="menu-item-inline" title="What the read-only Observer seat sees (FR-6510) — reused unmodified from White's godview or the named cell's own fog-of-war view">View
+            <select id="observer-designation">
+              <option value="godview">Godview</option>
+              <option value="blue">Blue</option>
+              <option value="red">Red</option>
+            </select>
+          </label>
         </div>
       </div>
     </div>

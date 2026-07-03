@@ -158,6 +158,13 @@ class ClockRequest(BaseModel):
     rate: float = 1.0
 
 
+class ObserverViewRequest(BaseModel):
+    """IP-1130 — cell is the caller's own seat (must be "white"); designation is "godview" or a
+    cell name (the view the Observer seat will be served)."""
+    cell: str
+    designation: str
+
+
 class SSNCancelBody(BaseModel):
     request_id: str
 
@@ -169,6 +176,33 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def _require(sid: str) -> None:
         if sid not in api._sessions:
             raise HTTPException(status_code=404, detail=f"unknown session {sid}")
+
+    def _reject_observer(cell: Optional[str]) -> None:
+        """IP-1130 — structural rejection at the server boundary, independent of what the UI
+        offers: any request whose caller identifies itself as the Observer seat is refused before
+        it reaches SessionManager, whether or not that request came through the UI at all (FS-113
+        Security Considerations). Matches this repository's documented client-side-trust LAN model
+        (CLAUDE.md) — the caller asserts its own seat, the same way every cell/order carries its
+        own ``cell`` today; this adds no new authentication, only a new rejection rule."""
+        if cell == "observer":
+            raise HTTPException(status_code=403, detail="the Observer seat is read-only")
+
+    @app.post("/api/sessions/{sid}/observer/view")
+    def set_observer_view(sid: str, req: ObserverViewRequest) -> Ack:
+        _require(sid)
+        return api.set_observer_view(sid, req.cell, req.designation)
+
+    @app.get("/api/sessions/{sid}/observer/view")
+    def observer_view(sid: str) -> dict:
+        _require(sid)
+        return api.get_observer_view(sid).model_dump()
+
+    @app.get("/api/sessions/{sid}/observer/designation")
+    def observer_designation(sid: str) -> dict:
+        """So the client can fetch /godview or /view/{cell} directly (the exact same call every
+        other seat already makes) instead of parsing a merged response shape."""
+        _require(sid)
+        return {"designation": api.observer_designation(sid)}
 
     @app.get("/api/vignettes")
     def list_vignettes() -> list[dict]:
@@ -211,9 +245,9 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         return api.list_sessions()
 
     @app.post("/api/sessions/{sid}/clock")
-    def set_clock(sid: str, req: ClockRequest) -> dict:
+    def set_clock(sid: str, req: ClockRequest, cell: Optional[str] = None) -> dict:
         """Arm/disarm the server-authoritative real-time clock (multiplayer)."""
-        _require(sid)
+        _require(sid); _reject_observer(cell)
         return api.set_clock(sid, req.running, req.rate)
 
     @app.get("/api/sessions/{sid}/clock")
@@ -222,38 +256,38 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         return api.clock_state(sid)
 
     @app.post("/api/sessions/{sid}/param")
-    def set_parameter(sid: str, req: ParamRequest) -> Ack:
-        _require(sid)
+    def set_parameter(sid: str, req: ParamRequest, cell: Optional[str] = None) -> Ack:
+        _require(sid); _reject_observer(cell)
         return api.set_parameter(sid, req.param_id, req.value)
 
     @app.post("/api/sessions/{sid}/start")
-    def start(sid: str) -> Ack:
-        _require(sid)
+    def start(sid: str, cell: Optional[str] = None) -> Ack:
+        _require(sid); _reject_observer(cell)
         return api.start(sid)
 
     @app.post("/api/sessions/{sid}/step")
-    def step(sid: str, req: StepRequest) -> Ack:
-        _require(sid)
+    def step(sid: str, req: StepRequest, cell: Optional[str] = None) -> Ack:
+        _require(sid); _reject_observer(cell)
         return api.step(sid, req.dt_sim_s)
 
     @app.post("/api/sessions/{sid}/advance")
-    def advance(sid: str, req: TimeRequest) -> Ack:
-        _require(sid)
+    def advance(sid: str, req: TimeRequest, cell: Optional[str] = None) -> Ack:
+        _require(sid); _reject_observer(cell)
         return api.advance_to(sid, req.t)
 
     @app.post("/api/sessions/{sid}/rewind")
-    def rewind(sid: str, req: TimeRequest) -> Ack:
-        _require(sid)
+    def rewind(sid: str, req: TimeRequest, cell: Optional[str] = None) -> Ack:
+        _require(sid); _reject_observer(cell)
         return api.rewind_to(sid, req.t)
 
     @app.post("/api/sessions/{sid}/undo")
-    def undo(sid: str, req: UndoRequest) -> Ack:
-        _require(sid)
+    def undo(sid: str, req: UndoRequest, cell: Optional[str] = None) -> Ack:
+        _require(sid); _reject_observer(cell)
         return api.undo_last(sid, req.n)
 
     @app.post("/api/sessions/{sid}/inject")
-    def inject(sid: str, req: InjectRequest) -> Ack:
-        _require(sid)
+    def inject(sid: str, req: InjectRequest, cell: Optional[str] = None) -> Ack:
+        _require(sid); _reject_observer(cell)
         return api.fire_inject(sid, req.inject, at_sim_t=req.at_sim_t)
 
     @app.get("/api/sessions/{sid}/inject_library")
@@ -263,25 +297,25 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         return api.inject_library()
 
     @app.post("/api/sessions/{sid}/force/tle")
-    def add_tle(sid: str, req: TleRequest) -> Ack:
-        _require(sid)
+    def add_tle(sid: str, req: TleRequest, cell: Optional[str] = None) -> Ack:
+        _require(sid); _reject_observer(cell)
         return api.add_tle(sid, req.id, req.line1, req.line2, owner=req.owner, kind=req.kind)
 
     @app.post("/api/sessions/{sid}/red_step")
-    def red_step(sid: str) -> list[OrderAck]:
-        _require(sid)
+    def red_step(sid: str, cell: Optional[str] = None) -> list[OrderAck]:
+        _require(sid); _reject_observer(cell)
         return api.red_doctrine_step(sid)
 
     @app.post("/api/sessions/{sid}/order")
     def issue_order(sid: str, req: OrderRequest) -> OrderAck:
-        _require(sid)
+        _require(sid); _reject_observer(req.cell)
         order = Order(cell=req.cell, actor=req.actor, action=req.action, target=req.target, params=req.params)
         return api.issue_order(sid, req.cell, order)
 
     @app.post("/api/sessions/{sid}/order/validate")
     def validate_order(sid: str, req: OrderRequest) -> OrderAck:
         """Dry-run an order: accepted (window/path) or rejected (reason), mutating no session state."""
-        _require(sid)
+        _require(sid); _reject_observer(req.cell)
         order = Order(cell=req.cell, actor=req.actor, action=req.action, target=req.target, params=req.params)
         return api.validate_order(sid, req.cell, order)
 
@@ -293,37 +327,37 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     @app.post("/api/sessions/{sid}/maneuver/compute")
     def maneuver_compute(sid: str, req: ManeuverComputeRequest) -> dict:
         """Compute an ECI impulse from a higher-level maneuver description (read-only)."""
-        _require(sid)
+        _require(sid); _reject_observer(req.cell)
         return api.compute_maneuver(sid, req.cell, req.actor, req.mode, req.params)
 
     @app.post("/api/sessions/{sid}/jam/compute")
     def jam_compute(sid: str, req: JamComputeRequest) -> dict:
         """Preview a jam order's effective radius, success probability, and footprint."""
-        _require(sid)
+        _require(sid); _reject_observer(req.cell)
         return api.compute_jam(sid, req.cell, req.actor, req.params)
 
     @app.post("/api/sessions/{sid}/engage/compute")
     def engage_compute(sid: str, req: EngageComputeRequest) -> dict:
         """Preview an engage order: closing geometry, Pₖ, debris cone (read-only)."""
-        _require(sid)
+        _require(sid); _reject_observer(req.cell)
         return api.compute_engage(sid, req.cell, req.actor, req.target, req.params)
 
     @app.post("/api/sessions/{sid}/cyber/compute")
     def cyber_compute(sid: str, req: CyberComputeRequest) -> dict:
         """Preview a cyber order: success/detect prob, attribution, payload effect."""
-        _require(sid)
+        _require(sid); _reject_observer(req.cell)
         return api.compute_cyber(sid, req.cell, req.actor, req.target, req.params)
 
     @app.post("/api/sessions/{sid}/sigint/compute")
     def sigint_compute(sid: str, req: SigintComputeRequest) -> dict:
         """Preview a SIGINT collection: geolocation accuracy + power draw."""
-        _require(sid)
+        _require(sid); _reject_observer(req.cell)
         return api.compute_sigint(sid, req.cell, req.actor, req.params)
 
     @app.post("/api/sessions/{sid}/preview/consequence")
     def preview_consequence(sid: str, req: OrderRequest) -> dict:
         """FW §11.D.18 — political-cost / escalation preview before order commit."""
-        _require(sid)
+        _require(sid); _reject_observer(req.cell)
         return api.preview_consequence(sid, req.cell, req.action, req.target or "", req.params or {})
 
     @app.get("/api/sessions/{sid}/activity/{cell}")
@@ -363,7 +397,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions/{sid}/cancel")
     def cancel_order(sid: str, req: CancelRequest) -> Ack:
-        _require(sid)
+        _require(sid); _reject_observer(req.cell)
         return api.cancel_order(sid, req.cell, req.order_id)
 
     @app.get("/api/sessions/{sid}/windows/{cell}/{asset}")
@@ -391,14 +425,14 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     @app.post("/api/sessions/{sid}/recovery/{cell}/{asset}")
     def begin_recovery(sid: str, cell: str, asset: str, req: RecoveryRequest) -> dict:
         """Schedule the multi-pass safe-mode recovery chain over command-uplink windows."""
-        _require(sid)
+        _require(sid); _reject_observer(cell)
         return api.begin_recovery(sid, cell, asset, req.via)
 
     # ---- SSN (mock Space Surveillance Network) -------------------------------
     @app.post("/api/sessions/{sid}/ssn/{cell}/request")
     def ssn_submit(sid: str, cell: str, body: SSNRequestBody) -> dict:
         """Submit an SSN collection request — accepted (scheduled) or FAILED with reason."""
-        _require(sid)
+        _require(sid); _reject_observer(cell)
         ack = api.submit_ssn_request(sid, cell, body.intent, body.target, body.regime, body.priority)
         return {"ok": ack.ok, "id": ack.id, "reason": ack.reason, "state": ack.state,
                 "assigned_sensor": ack.assigned_sensor,
@@ -411,7 +445,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions/{sid}/ssn/{cell}/cancel")
     def ssn_cancel(sid: str, cell: str, body: SSNCancelBody) -> Ack:
-        _require(sid)
+        _require(sid); _reject_observer(cell)
         ok = api.cancel_ssn_request(sid, cell, body.request_id)
         return Ack(ok=ok)
 

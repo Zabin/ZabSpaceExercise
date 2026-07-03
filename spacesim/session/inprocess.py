@@ -30,6 +30,9 @@ class InProcessSession:
     def __init__(self) -> None:
         self._sessions: dict[str, SessionManager] = {}
         self._counter = 0
+        # IP-1130 — White-Cell-designated Observer view per session: "godview" or a cell name.
+        # UI-presentation state, not exercise state, so it lives here rather than on SessionManager.
+        self._observer_view: dict[str, str] = {}
 
     # -- multiplayer plumbing --------------------------------------------------
     # Every mutation is wrapped with the session's RLock; every read first calls
@@ -268,6 +271,30 @@ class InProcessSession:
     def get_godview(self, session: str):
         with self._locked_read(session) as mgr:
             return mgr.get_godview()
+
+    # -- Observer (IP-1130) -----------------------------------------------------
+    def set_observer_view(self, session: str, cell: str, designation: str) -> Ack:
+        """White-Cell-only: designate the Observer seat's view as "godview" or a named cell."""
+        if cell != "white":
+            return Ack(ok=False, reason="only White Cell may set the Observer's view designation")
+        self._observer_view[session] = designation
+        return Ack()
+
+    def get_observer_view(self, session: str):
+        """Read-only: dispatch to the existing, unmodified get_godview/get_view — no parallel
+        filtering implementation, so an Observer sees exactly what the designated audience sees
+        (FS-113's own System Behaviour). Defaults to "godview" until White Cell designates."""
+        designation = self.observer_designation(session)
+        if designation == "godview":
+            return self.get_godview(session)
+        return self.get_view(session, designation)
+
+    def observer_designation(self, session: str) -> str:
+        """The raw designation ("godview" or a cell name) — lets a client fetch the *same*
+        /godview or /view/{cell} endpoint it already uses for every other seat, rather than
+        parsing a merged response shape (no new client-side parsing path, mirrors the
+        no-parallel-implementation principle `get_observer_view` itself follows)."""
+        return self._observer_view.get(session, "godview")
 
     def get_eventlog(self, session: str, since_seq: int = 0) -> list:
         with self._locked_read(session) as mgr:

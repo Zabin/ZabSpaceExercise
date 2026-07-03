@@ -37,7 +37,16 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const api = {
   async get(p) { const r = await fetch(p); if (!r.ok) throw new Error(await r.text()); return r.json(); },
-  async post(p, b) { const r = await fetch(p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) }); if (!r.ok) throw new Error(await r.text()); return r.json(); },
+  // IP-1130 — every POST carries the caller's own current seat as a query param, so every mutating
+  // route's server-side Observer guard can see who's asking even for routes whose body has no
+  // "cell" field of its own (start/step/clock/etc.). Centralized here rather than touching every
+  // individual call site; routes that already read `cell` from the JSON body simply ignore it.
+  async post(p, b) {
+    const url = p + (p.includes("?") ? "&" : "?") + "cell=" + encodeURIComponent(CELL);
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
 };
 // Drop sub-second precision so the displayed clock never shows .xxx ms — sim time advances
 // per-event but the readouts here are operator-grade, not millisecond-precise.
@@ -423,6 +432,13 @@ function setCell(c) {
   document.body.setAttribute("data-cell", c);    // drives --cell-accent across panels/borders/rows
   document.querySelectorAll(".cell").forEach((b) => b.classList.toggle("active", b.dataset.cell === c));
   document.querySelectorAll(".white-only").forEach((el) => { el.style.display = c === "white" ? "" : "none"; });
+  // IP-1130 — Observer has no command ability whatsoever (FR-6510). This is a UX convenience only;
+  // the server-side guard on every mutating route is the actual enforcement (server.py's
+  // _reject_observer, exercised even for a request that bypasses this UI entirely).
+  const isObserver = c === "observer";
+  if ($("issue")) $("issue").disabled = isObserver;
+  document.querySelectorAll("#order-panel input, #order-panel select, #order-panel button")
+    .forEach((el) => { el.disabled = isObserver; });
   if (window.redrawAll) redrawAll();            // re-tint own-asset markers immediately
   refresh();
 }
@@ -1117,7 +1133,15 @@ async function refresh() {
   const my = ++REFRESH_SEQ;
   const stale = () => my !== REFRESH_SEQ;
   let assets, tracks, effects, messages, objectives, now, ewin;
-  if (CELL === "white") {
+  // IP-1130 — Observer has no fog-of-war view of its own; it reads whatever White Cell designated
+  // (godview or a named cell), fetched via the exact same /godview or /view/{cell} calls every
+  // other seat already makes below — no third, merged parsing path.
+  let effectiveCell = CELL;
+  if (CELL === "observer") {
+    const d = await api.get(`/api/sessions/${SID}/observer/designation`).catch(() => ({ designation: "godview" }));
+    effectiveCell = d.designation;
+  }
+  if (effectiveCell === "godview" || effectiveCell === "white") {
     const g = await api.get(`/api/sessions/${SID}/godview`);
     now = g.now;
     assets = Object.values(g.assets); tracks = g.tracks;
@@ -1126,7 +1150,7 @@ async function refresh() {
     messages = g.messages || []; objectives = await api.get(`/api/sessions/${SID}/objectives`);
     Object.values(g.sensors || {}).forEach((s) => assets.push(s));
   } else {
-    const v = await api.get(`/api/sessions/${SID}/view/${CELL}`);
+    const v = await api.get(`/api/sessions/${SID}/view/${effectiveCell}`);
     now = v.now;
     assets = v.own_assets.concat(v.own_sensors); tracks = v.known_tracks;
     effects = v.visible_effects; ewin = v.effect_windows || [];
@@ -2020,6 +2044,10 @@ window.addEventListener("DOMContentLoaded", () => {
   $("loadfile").onchange = (e) => e.target.files[0] && loadSaveFile(e.target.files[0]);
   $("aar-slider").oninput = (e) => aarAt(e.target.value);
   if ($("assessment-refresh")) $("assessment-refresh").onclick = refreshAssessment;
+  // IP-1130 — White Cell designates the read-only Observer seat's view.
+  if ($("observer-designation")) $("observer-designation").onchange = (e) => {
+    if (SID) api.post(`/api/sessions/${SID}/observer/view`, { cell: "white", designation: e.target.value });
+  };
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
   $("o-target").oninput = previewOrder; $("o-params").oninput = previewOrder;
   // Picking a valid target from the dropdown fills the free-text id and previews.
