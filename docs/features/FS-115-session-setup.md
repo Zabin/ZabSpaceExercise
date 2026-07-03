@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [DOM-003](../domains/DOM-003-white-cell-framework.md), [FS-105](FS-105-spacecraft-operations.md) (Role Assignment scope this Feature produces), `FEAT-5300` (vignette validation, not yet its own Feature Specification)
-> **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-4100`/`FEAT-4200`, [docs/feature-planning/05-feature-review.md](../feature-planning/05-feature-review.md) Finding F-10
+> **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-4100`/`FEAT-4200`, [docs/feature-planning/05-feature-review.md](../feature-planning/05-feature-review.md) Finding F-10, [IP-1150](../implementation/packages/IP-1150-vignette-selection.md) (FR-4110 slice), [IP-1151](../implementation/packages/IP-1151-seat-role-assignment.md) (FR-4210 slice)
 > **Produces:** the started, staffed Session that every other Feature Specification's workflows begin from
 > **Feature Mapping:** FS-115 (this document)
 > **Related Topics:** [FS-106](FS-106-white-cell-dashboard.md) (the in-session facilitator console this setup phase precedes), [FS-112](FS-112-classification-banner.md) (the banner set during this same scenario-build workflow)

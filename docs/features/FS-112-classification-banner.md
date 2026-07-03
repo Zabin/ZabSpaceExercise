@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [DOM-003](../domains/DOM-003-white-cell-framework.md), [FS-115](FS-115-session-setup.md)
-> **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-4500`, [docs/feature-planning/05-feature-review.md](../feature-planning/05-feature-review.md) Finding F-02
+> **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-4500`, [docs/feature-planning/05-feature-review.md](../feature-planning/05-feature-review.md) Finding F-02, [IP-1120](../implementation/packages/IP-1120-classification-banner.md)
 > **Produces:** the banner string rendered on every screen and embedded in every export
 > **Feature Mapping:** FS-112 (this document)
 > **Related Topics:** [FS-106](FS-106-white-cell-dashboard.md) (the White Cell dashboard this banner renders alongside), [FS-107](FS-107-after-action-review.md) (AAR exports this banner must be embedded in)

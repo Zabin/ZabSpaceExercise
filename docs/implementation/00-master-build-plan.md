@@ -9,8 +9,9 @@
 > **Referenced By:** `ROADMAP.md` (Theme: Implementation Packages)
 > **Produces:** the executable sequencing, dependency graph, and status ledger for every
 > Implementation Package in this pass
-> **Feature Mapping:** FS-101 through FS-107, FS-201, FS-301 (9 of 11 catalog entries; FS-108/
-> FS-202 excluded, see §"Scope and exclusions")
+> **Feature Mapping:** FS-101 through FS-107, FS-109, FS-110, FS-111, FS-112, FS-113, FS-114,
+> FS-115, FS-201, FS-301 (16 of 18 catalog entries; FS-108/FS-202 excluded, see §"Scope and
+> exclusions")
 > **Related Topics:** [`packages/INDEX.md`](packages/INDEX.md), [`docs/implementations/INDEX.md`](../implementations/INDEX.md) (the superseded prior corpus), [`.claude/skills/08-code-implementation/SKILL.md`](../../.claude/skills/08-code-implementation/SKILL.md) (the downstream skill that executes packages against this plan)
 
 [↑ Docs index](../INDEX.md) · [Packages index](packages/INDEX.md) · [Feature index](../features/feature-index.md)
@@ -30,14 +31,24 @@ approved Feature Specification's scope.
 
 ## Scope and exclusions
 
-The Feature Catalog ([`feature-index.md`](../features/feature-index.md)) lists 11 entries. This
-build plan covers the **9 approved** entries (FS-101–107, FS-201, FS-301). **FS-108** (Inject
-Authoring) and **FS-202** (Rubric Authoring) are explicitly excluded: both are marked
-"(candidate)" / 🅿️ *Scoped, not authorized* per [MSTR-006](../master/MSTR-006-governance-principles.md)
-§3 — the Feature Catalog's own governance rule is that no Implementation Package work may begin
-against an unauthorized Feature Specification. This mirrors the exclusion already applied by the
-prior `docs/implementations/` corpus (see §"Relationship to the prior corpus" below); it is not a
-new decision introduced by this plan.
+The Feature Catalog ([`feature-index.md`](../features/feature-index.md)) lists 18 entries (up from
+11 — FS-109/110/111 split from FS-106, FS-112/113/114/115 newly authored, per
+`docs/feature-planning/05-feature-review.md` Findings F-02/F-03/F-10). This build plan covers the
+**16 approved** entries (FS-101–107, FS-109, FS-110, FS-111, FS-112, FS-113, FS-114, FS-115,
+FS-201, FS-301). **FS-108** (Inject Authoring) and **FS-202** (Rubric Authoring) are explicitly
+excluded: both are marked "(candidate)" / 🅿️ *Scoped, not authorized* per
+[MSTR-006](../master/MSTR-006-governance-principles.md) §3 — the Feature Catalog's own governance
+rule is that no Implementation Package work may begin against an unauthorized Feature
+Specification. This mirrors the exclusion already applied by the prior `docs/implementations/`
+corpus (see §"Relationship to the prior corpus" below); it is not a new decision introduced by this
+plan.
+
+**FS-112/113/114/115 (2026-07 tranche):** these four were approved with their build status
+explicitly flagged unverified. `07-implementation-planning`'s Tranche 1
+([`01-technical-work-breakdown.md`](01-technical-work-breakdown.md)) performed that verification
+before authoring packages, and found each partially or fully built but diverging from its Feature
+Specification in some way — see the TWBS and each package's own header for the finding. None of the
+five resulting packages (`IP-1120`, `IP-1130`, `IP-1140`, `IP-1150`, `IP-1151`) is `VERIFIED`.
 
 ## Relationship to the prior `docs/implementations/` corpus
 
@@ -65,6 +76,15 @@ that continue to bind this tree ([MSTR-006](../master/MSTR-006-governance-princi
   **implementation work against either requires a separate, explicit user go-ahead**, independent
   of this plan's sequencing.
 
+**Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
+§3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in
+`docs/pipeline/pipeline-journal.md` run #2). `IP-3010` was **not** authorized this round — it
+remains gated on its own separate go-ahead in addition to `IP-2010` reaching `COMPLETE`, per
+MSTR-006 §3's rule that approval of one package never implies approval of a related one.
+`IP-1120`/`IP-1151` were, at authorization time, still functionally `BLOCKED` on `IP-1150` reaching
+`VERIFIED` — that gate cleared the same day (`VR-1150`, see Package status below), so both are now
+fully unblocked and `READY`.
+
 ## Package status
 
 | ID | Feature | Situation | Status | Blocking dependency |
@@ -80,20 +100,44 @@ that continue to bind this tree ([MSTR-006](../master/MSTR-006-governance-princi
 | [IP-1090](packages/IP-1090-multiplayer-session-transport.md) | FS-109 Multiplayer / LAN Session Transport | As-built | ✅ VERIFIED | none |
 | [IP-1100](packages/IP-1100-save-and-resume.md) | FS-110 Save & Resume | As-built | ✅ VERIFIED | none |
 | [IP-1110](packages/IP-1110-ai-red-doctrine-automation.md) | FS-111 AI-Red Doctrine Automation | As-built | ✅ VERIFIED | none |
-| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | 🟡 READY | Was `BLOCKED` (Unreconciled conflict with ADR-0017, "no automated scoring/assessment mechanism in v1" — Blocking Report, 2026-07-02); **resolved 2026-07 by `ADR-0032`** (narrow carve-out); gated only on MSTR-006 §3 authorization again |
-| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔴 BLOCKED | IP-2010 → `COMPLETE`, **and** authorization (MSTR-006 §3); a separate, never-previously-recorded conflict with ADR-0029 is **resolved 2026-07 by `ADR-0033`** — does not change this package's blocking status |
+| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | 🟡 READY *(authorized)* | Was `BLOCKED` (Unreconciled conflict with ADR-0017 — resolved 2026-07 by `ADR-0032`); **MSTR-006 §3 authorization obtained 2026-07-03** — no remaining blocker, ready for `08-code-implementation` |
+| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔴 BLOCKED *(not authorized)* | IP-2010 → `COMPLETE`, **and** authorization (MSTR-006 §3) — **not authorized** in the 2026-07-03 authorization round; a separate ADR-0029 conflict is resolved by `ADR-0033` but does not change this package's blocking status |
+| [IP-1120](packages/IP-1120-classification-banner.md) | FS-112 Classification Banner | Partially built (gap-closing) | 🟡 READY *(authorized)* | **Unblocked 2026-07-03** — `IP-1150` reached `VERIFIED` (`VR-1150`); no remaining blocker, ready for `08-code-implementation` |
+| [IP-1130](packages/IP-1130-observer-read-only-access.md) | FS-113 Observer Read-Only Access | Forward design | 🟡 READY *(authorized)* | **MSTR-006 §3 authorization obtained 2026-07-03** — no remaining blocker, ready for `08-code-implementation` |
+| [IP-1140](packages/IP-1140-hot-seat-handoff.md) | FS-114 Hot-Seat Hand-Off Screen-Blank Menu | As-built (documented spec divergence) | 🔵 COMPLETE | None — awaiting `09-package-verification`, which should also adjudicate the documented trigger/menu divergence from FR-6610 |
+| [IP-1150](packages/IP-1150-vignette-selection.md) | FS-115 §FR-4110 Vignette Selection & Parameter Tuning | As-built | ✅ VERIFIED | none — verified 2026-07-03, [`VR-1150`](verification/VR-1150-vignette-selection.md) |
+| [IP-1151](packages/IP-1151-seat-role-assignment.md) | FS-115 §FR-4210 Seat-to-Role Assignment | Forward design | 🟡 READY *(authorized)* | **Unblocked 2026-07-03** — `IP-1150` reached `VERIFIED` (`VR-1150`); no remaining blocker, ready for `08-code-implementation` |
 
-**Update (2026-07):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
+**Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code
 verification was performed — these three packages reorganize citations `IP-1060` v1.0 (and its
 superseded predecessor `IMP-106A`) already established, under the Feature boundaries FS-109/110/111
-now own. FS-112/113/114/115 (closing Findings F-02/F-10) have **no Implementation Package in this
-table** — each explicitly flags its own build status as unverified, unlike every package below,
-and authoring one is gated on that verification first (see `packages/INDEX.md`).
+now own.
 
-11 of 13 packages are `VERIFIED` (the entire as-built surface — every shipped capability this pass
-covers is already implemented, tested, and re-confirmed against the current source tree). The
-remaining 2 are the project's only genuinely forward-looking Implementation Packages.
+**Update (2026-07, tranche 2):** IP-1120/IP-1130/IP-1140/IP-1150/IP-1151 are new — the first
+Implementation Packages written against FS-112/113/114/115, after `07-implementation-planning`'s
+required build-status verification pass found each Feature partially or fully built (never
+`VERIFIED`, never fully unimplemented) — see
+[`01-technical-work-breakdown.md`](01-technical-work-breakdown.md) Tranche 1 for the verification
+findings and split rationale. FS-115 splits into `IP-1150` (as-built, FR-4110) and `IP-1151`
+(forward design, FR-4210), mirroring the `FS-105 → IP-1050`/`IP-1051` split precedent but split by
+build-status seam rather than subsystem seam.
+
+**Update (2026-07-03, verification):** `IP-1150` passed `09-package-verification`
+([`VR-1150`](verification/VR-1150-vignette-selection.md)) and flipped to `VERIFIED` — the first
+package verified through the formal `VR-xxxx` process (the original 11 as-built packages predate
+this convention). This cleared the sole blocking dependency for `IP-1120` and `IP-1151`, both of
+which flip `BLOCKED → READY` (both were already authorized 2026-07-03, so both are now fully
+unblocked and eligible for `08-code-implementation`). The verification also corrected a stale RTM
+cell: `FR-4110`'s `Test`/`Impl. Package` columns had been `UNASSIGNED` despite the code and tests
+existing.
+
+12 of 18 packages are now `VERIFIED` (the original 11 as-built + `IP-1150`, this plan's first
+package verified through the formal `VR-xxxx` process). 1 is `COMPLETE` (`IP-1140`, as-built,
+pending its own `09-package-verification` run). 4 are `READY` (`IP-2010`, `IP-1130`, `IP-1120`,
+`IP-1151` — all forward design, fully specified, and all four now authorized; `IP-1120`/`IP-1151`
+were unblocked by `IP-1150` reaching `VERIFIED`). 1 is `BLOCKED` (`IP-3010` — not authorized, and
+still depends on `IP-2010` reaching `COMPLETE`).
 
 ## Implementation sequence
 
@@ -123,14 +167,28 @@ dependency in IP-1070's own Dependencies field, so no new edge is added here on 
 ### (b) Remaining work (the only actionable forward sequence)
 
 ```
-IP-2010 (READY, blocked only on authorization)
+IP-2010 (READY, authorized 2026-07-03 — ready for 08-code-implementation)
    │  must reach COMPLETE before IP-3010's schema is more than provisional
    ▼
-IP-3010 (BLOCKED on IP-2010; also independently requires its own authorization)
+IP-3010 (BLOCKED on IP-2010 → COMPLETE; not authorized)
+
+IP-1150 (✅ VERIFIED 2026-07-03, VR-1150 — cleared)
+   │  unblocked IP-1120/IP-1151 the moment it reached VERIFIED
+   ├──► IP-1120 (READY, authorized 2026-07-03 — ready for 08-code-implementation)
+   └──► IP-1151 (READY, authorized 2026-07-03 — ready for 08-code-implementation)
+
+IP-1130 (READY, authorized 2026-07-03 — ready for 08-code-implementation)
+
+IP-1140 (COMPLETE, awaiting 09-package-verification only — no coding work remains unless
+         verification adjudicates the documented FR-6610 trigger/menu divergence and routes a
+         gap-closing package back through this pipeline)
 ```
 
-There is no other remaining sequencing question in this plan — every other package is already
-`VERIFIED`.
+This tranche's `IP-1150 → {IP-1120, IP-1151}` fan-out is fully cleared as of 2026-07-03 — all three
+are `VERIFIED`/`READY`. One sequencing thread remains in this plan: the pre-existing
+`IP-2010 → IP-3010` chain. `IP-1130` (coding) and `IP-1140` (verification) are each standalone,
+one-hop-from-done work with no sequencing dependency on anything else. Nothing else in this plan
+has open sequencing questions — every other package is already `VERIFIED`.
 
 ## Dependency graph
 
@@ -155,20 +213,28 @@ IP-1060 (White Cell Dashboard) [independent — no downstream package]  IP-2010 
 IP-1090 (Multiplayer / LAN Transport) [independent — no downstream package in this pass]
 IP-1100 (Save & Resume)               [independent — no downstream package in this pass]
 IP-1110 (AI-Red Doctrine Automation)  [independent — no downstream package in this pass]
+
+IP-1150 (Vignette Selection, FS-115 §FR-4110) ──┬──► IP-1120 (Classification Banner, FS-112)
+                                                  └──► IP-1151 (Seat-to-Role Assignment, FS-115 §FR-4210)
+
+IP-1130 (Observer Read-Only Access)   [independent — no downstream package in this pass]
+IP-1140 (Hot-Seat Hand-Off)           [independent — no downstream package in this pass]
 ```
 
 Every edge above is drawn directly from the citing package's own **Dependencies** field (no edge is
-inferred beyond what each package document already states). `IP-1060`, `IP-1090`, `IP-1100`, and
-`IP-1110` are the four packages with no downstream consumer inside this pass's 13 packages
-(FS-108, the dashboard extension `IP-1060` would otherwise feed, is out of scope per
-§"Scope and exclusions"; IP-1090/1100/1110's only conceptual consumer, IP-1060 itself, cites them
-as the mechanism its own trigger surface sits on top of — a description, not a package-level
+inferred beyond what each package document already states). `IP-1060`, `IP-1090`, `IP-1100`,
+`IP-1110`, `IP-1130`, and `IP-1140` are the six packages with no downstream consumer inside this
+pass's 18 packages (FS-108, the dashboard extension `IP-1060` would otherwise feed, is out of scope
+per §"Scope and exclusions"; IP-1090/1100/1110's only conceptual consumer, IP-1060 itself, cites
+them as the mechanism its own trigger surface sits on top of — a description, not a package-level
 build-order dependency `IP-1060`'s own `Dependencies` field asserts, so no edge is drawn for it
 here either, consistent with how this graph already treats every other such relationship).
+`IP-1150` is new to this pass and gains two downstream consumers, `IP-1120` and `IP-1151`, per
+those two packages' own `Dependencies` fields.
 
 ## Critical path
 
-**Critical path length: 4 packages**, and it is the *only* path in this graph with any remaining
+**Critical path length: 4 packages**, and it is the *longest* path in this graph with any remaining
 actionable work — every package on it except the last two hops is already `VERIFIED`:
 
 ```
@@ -182,6 +248,14 @@ package in this plan: it is the sole gate between "every upstream dependency alr
 all `VERIFIED`, the *effective* remaining critical path — the one with real, un-shipped work on it —
 is exactly the two-package chain in §"Implementation sequence (b)" above: **IP-2010 → IP-3010**,
 gated at each step by the MSTR-006 §3 authorization rule, not by any missing prerequisite.
+
+**Tranche 2 (FS-112–115)'s shorter, independent chain is now fully cleared (2026-07-03):**
+`IP-1150 → IP-1120` and `IP-1150 → IP-1151` were never on the critical path above (length 2 < 4),
+and `IP-1150` reaching `VERIFIED` (`VR-1150`) plus the same-day authorization round unblocked both
+— `IP-1120` and `IP-1151` are now `READY` for `08-code-implementation`, no remaining gate. `IP-1130`
+is likewise `READY` (authorized, no package-level dependency). `IP-1140` remains the tranche's one
+open item: it needs only a verification pass (and a possible adjudication of its documented
+FR-6610 divergence).
 
 ## Parallel implementation opportunities
 
@@ -203,33 +277,45 @@ gated at each step by the MSTR-006 §3 authorization rule, not by any missing pr
   LAN Transport), `IP-1100` (Save & Resume), and `IP-1110` (AI-Red Doctrine Automation) have no
   downstream consumer in this pass and could always have been (and could still be, for any future
   rework) developed on entirely independent tracks from every other package and from each other.
+- **Tranche 2 (FS-112–115):** `IP-1130` (Observer Read-Only Access) and `IP-1140` (Hot-Seat
+  Hand-Off) have no package-level dependency on anything in this tranche or elsewhere in this plan
+  and can be verified/implemented fully in parallel with each other and with `IP-1120`/`IP-1151`.
+  `IP-1150` reached `VERIFIED` 2026-07-03 (`VR-1150`), clearing the one gate `IP-1120`/`IP-1151`
+  had — the two are now themselves mutually independent and both `READY`, so `IP-1130`, `IP-1120`,
+  and `IP-1151` (all authorized, all `READY`) could all three proceed to `08-code-implementation`
+  in parallel today.
 
 ## Summary
 
 - **Total Features (Feature Catalog):** 18 (`docs/features/feature-index.md`, up from 11 —
   FS-109/110/111 split from FS-106, FS-112/113/114/115 newly authored, per
   `docs/feature-planning/05-feature-review.md` Findings F-02/F-03/F-10)
-- **Total Features covered by this plan:** 12 — FS-101 through FS-107, FS-109, FS-110, FS-111,
-  FS-201, FS-301. FS-112/113/114/115 are **not yet covered by this plan** — each has no
-  Implementation Package pending its own build-status verification (see `packages/INDEX.md`).
+- **Total Features covered by this plan:** 16 — FS-101 through FS-107, FS-109, FS-110, FS-111,
+  FS-112, FS-113, FS-114, FS-115, FS-201, FS-301. FS-112/113/114/115 were added 2026-07 (tranche 2)
+  after `07-implementation-planning`'s required build-status verification pass
+  (`01-technical-work-breakdown.md` Tranche 1) — see that document for what was found.
 - **Features excluded (unauthorized candidates, MSTR-006 §3):** 2 — FS-108, FS-202
-- **Total Packages:** 13 (`packages/IP-1010` through `IP-3010`, plus `IP-1090`/`IP-1100`/`IP-1110`
-  added 2026-07; FS-105 is the only Feature split across two lettered-equivalent packages,
-  `IP-1050`/`IP-1051`, per the size-discipline precedent this corpus follows)
-- **Average Package Size:** 158 lines of Markdown per package (2,048 total lines across 13 package
-  files; range 128–204 lines) — comparable in depth to the prior `docs/implementations/` corpus's
-  packages, re-templated to this task's required 17-field structure
+- **Total Packages:** 18 (`packages/IP-1010` through `IP-3010`, plus `IP-1090`/`IP-1100`/`IP-1110`
+  added 2026-07 tranche 1, plus `IP-1120`/`IP-1130`/`IP-1140`/`IP-1150`/`IP-1151` added 2026-07
+  tranche 2; FS-105 and FS-115 are the two Features split across two lettered-equivalent packages
+  each — `IP-1050`/`IP-1051` by subsystem seam, `IP-1150`/`IP-1151` by build-status seam — per the
+  size-discipline precedent this corpus follows)
 - **Critical Path Length:** 4 packages (`IP-1010`/`IP-1030` → `IP-1020`/`IP-1070` → `IP-2010` →
   `IP-3010`); the *effective remaining* critical path (excluding already-`VERIFIED` work) is 2
-  packages: `IP-2010` → `IP-3010`. `IP-1090`/`IP-1100`/`IP-1110` do not extend the critical path —
-  none has a downstream consumer in this pass (see Parallel implementation opportunities).
+  packages: `IP-2010` → `IP-3010`. `IP-1090`/`IP-1100`/`IP-1110`/`IP-1130`/`IP-1140` do not extend
+  the critical path — none has a downstream consumer in this pass. Tranche 2's `IP-1150 →
+  {IP-1120, IP-1151}` chain (never on the critical path) is now fully cleared (`IP-1150` reached
+  `VERIFIED` 2026-07-03).
 - **Parallel Work Opportunities:** 2 historical parallel waves among the (now-complete) as-built
   packages (6 packages, then 3 packages, running independently); **zero** parallel opportunities
-  remain in the forward-design surface — `IP-2010` and `IP-3010` are strictly sequential
-- **Package Status:** 11 `VERIFIED`, 1 `READY` (`IP-2010` — ADR-0017 conflict resolved 2026-07 by
-  `ADR-0032`, gated only on authorization again), 1 `BLOCKED` (`IP-3010` — depends on IP-2010
-  reaching `COMPLETE`; its own separate ADR-0029 conflict resolved 2026-07 by `ADR-0033`);
-  0 `NOT STARTED`, 0 `IN PROGRESS`, 0 `COMPLETE` (unverified)
+  remain in the pre-existing forward-design surface (`IP-2010`/`IP-3010` are strictly sequential).
+  Tranche 2 now has **three fully independent, authorized, `READY` packages** (`IP-1130`, `IP-1120`,
+  `IP-1151`) that could all proceed to `08-code-implementation` in parallel, plus `IP-1140` needing
+  only a verification pass.
+- **Package Status:** 12 `VERIFIED` (the original 11 as-built + `IP-1150`, verified 2026-07-03 via
+  `VR-1150`), 1 `COMPLETE` pending verification (`IP-1140`), 4 `READY` and authorized (`IP-2010`,
+  `IP-1130`, `IP-1120`, `IP-1151`), 1 `BLOCKED` (`IP-3010` — not authorized, depends on IP-2010
+  reaching `COMPLETE`); 0 `NOT STARTED`, 0 `IN PROGRESS`.
 
 ### Risks requiring architectural attention
 
@@ -268,6 +354,18 @@ gated at each step by the MSTR-006 §3 authorization rule, not by any missing pr
    separate authorization and the institution's own IRB/ethics process. This is restated once more
    here because it is the one non-goal in this plan whose violation would have consequences outside
    the engineering process (regulatory/ethical), not merely a defect to fix in code.
+6. **`IP-1140`'s shipped mechanism diverges from FR-6610's literal trigger/menu wording**, in the
+   highest-consequence-per-line-of-code Feature in the catalog (the one place fog-of-war is
+   enforced client-side, not server-side — see that package's own Risks). This is a verification
+   finding, not a design defect this plan resolves: `09-package-verification` should explicitly
+   adjudicate whether the manual-button/auto-cycle mechanism satisfies FR-6610's intent or needs a
+   gap-closing package routed back through this pipeline.
+7. **The Requirements Traceability Matrix carries a Title-column defect for `FR-4510`/`FR-6510`**
+   (each shows the other's — and a third, unrelated capability's — title), discovered while
+   authoring `IP-1120`/`IP-1130`. Both packages cite `01-functional-requirements.md`'s own
+   definitions (the RTM's authoritative source) rather than the RTM's restated titles, so this does
+   not affect either package's correctness — but the RTM itself should be corrected by whoever next
+   runs `04-requirements-engineering`.
 
 ## Related
 

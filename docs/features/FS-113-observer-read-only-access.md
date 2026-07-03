@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** (GDS-01 §2 / GDS-02 §2 row 5-grounded; no owning DOM), [ADR-0004](../architecture/adr/ADR-0004-fog-of-war-at-boundary.md)
-> **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-6500`, [docs/feature-planning/05-feature-review.md](../feature-planning/05-feature-review.md) Finding F-02
+> **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-6500`, [docs/feature-planning/05-feature-review.md](../feature-planning/05-feature-review.md) Finding F-02, [IP-1130](../implementation/packages/IP-1130-observer-read-only-access.md)
 > **Produces:** the read-only Observer seat interaction model
 > **Feature Mapping:** FS-113 (this document)
 > **Related Topics:** [FS-106](FS-106-white-cell-dashboard.md) (White Cell sets the Observer's view designation), fog-of-war filtering (`FEAT-6200` in the Feature Catalog — not yet its own Feature Specification)

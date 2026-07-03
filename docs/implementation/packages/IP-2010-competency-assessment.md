@@ -2,16 +2,17 @@
 
 > **Package ID:** IP-2010
 > **Version:** 1.0
-> **Status:** 🟡 READY *(unblocked 2026-07-02, later the same day: the blocking conflict — this
+> **Status:** 🟡 READY *(authorized, not yet started — unblocked 2026-07-02: the blocking conflict — this
 > package's Objective building exactly the automated-assessment mechanism ADR-0017 read as
 > prohibiting — is resolved by [ADR-0032](../../architecture/adr/ADR-0032-descriptive-rubric-not-automated-scoring.md),
 > which carves out non-adjudicative, descriptive, non-aggregating rubric-tier reporting from
 > ADR-0017's "assessment mechanism" prohibition; the underlying capability is now also baselined as
-> [`FR-10110`](../../requirements/01-functional-requirements.md). **This does not, by itself,
-> re-authorize implementation** — per MSTR-006 §3, the prior 2026-07-02 go-ahead was interrupted by
-> the (now-resolved) conflict before any code was written, so a fresh, separate, explicit user
-> go-ahead is still required before any task in this package's "Implementation Tasks" section
-> begins. Design/spec text below is otherwise unchanged from v1.0.)*
+> [`FR-10110`](../../requirements/01-functional-requirements.md). **MSTR-006 §3 authorization
+> obtained 2026-07-03** (project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2) —
+> this is the fresh, separate go-ahead the prior 2026-07-02 approval could not itself constitute
+> since it was interrupted by the (now-resolved) ADR-0017 conflict before any code was written.
+> `08-code-implementation` may now pick up this package. Design/spec text below is otherwise
+> unchanged from v1.0.)*
 > **Dependencies:** FS-201, IP-1030 (custody data source), IP-1020/IP-1010 (window-discipline data
 > source), IP-1070 (belief-truth-divergence data source)
 > **Referenced By:** IP-3010 (the forward-design export package that would aggregate this package's
@@ -40,9 +41,9 @@ engine already unambiguously produces: **custody quality**, **window discipline*
 **belief-truth divergence**. No composite single score is produced.
 
 > **This is a forward-design package: the capability described here does not exist in `spacesim/`
-> today.** Per MSTR-006 §3, this document specifies a fully scoped, build-ready design — it is not
-> itself an authorization to write code. A separate, explicit user go-ahead is required before any
-> task in this package's "Implementation Tasks" section begins.
+> today.** Per MSTR-006 §3, this document's own specification was not itself an authorization to
+> write code — that separate, explicit user go-ahead was obtained 2026-07-03 (see the Status field
+> above), and `08-code-implementation` may now begin the tasks below.
 
 ## Feature Reference
 
@@ -100,8 +101,8 @@ implements, without crossing any new named boundary.
 
 ## Implementation Tasks
 
-**Not started — not authorized (MSTR-006 §3).** The following is the proposed task sequence for
-when authorization is granted:
+**Not started — authorized (MSTR-006 §3, 2026-07-03).** The following is the proposed task
+sequence for `08-code-implementation`:
 
 1. Implement `score_custody_quality(mgr, cell) -> Literal["speculative", "adequate", "disciplined"]`
    — sample `Track.current_confidence()` at the moments the cell actually acted on a track (each
@@ -146,11 +147,10 @@ when authorization is granted:
 
 ## Definition of Done
 
-*(Forward-looking gate — none of the following is currently true; this package does not claim it
-is.)*
+*(Forward-looking gate — the authorization item below is now true; the rest is not yet.)*
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks, per
-  MSTR-006 §3 (a precondition for every other checklist item below, not a checklist item to skip).
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks, per
+  MSTR-006 §3 (2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).
 - [ ] `score_custody_quality`/`score_window_discipline`/`score_belief_truth_divergence` each return
   one of FS-201 §3's named tiers, never a numeric average.
 - [ ] The per-cell/per-exercise report presents all three dimensions side-by-side without collapsing
@@ -187,9 +187,10 @@ is.)*
 
 ## Risks
 
-- **Authorization risk (primary):** this package must not be implemented merely because it is fully
-  specified — MSTR-006 §3 requires an explicit, separate user go-ahead, which this document does not
-  constitute and must not be read as constituting.
+- **Authorization risk (resolved 2026-07-03):** this package was implemented-eligible only once an
+  explicit, separate user go-ahead was recorded (MSTR-006 §3) — this document's own specification
+  never constituted that authorization by itself; the go-ahead is now on record in the pipeline
+  journal.
 - The "aware vs. unaware" divergence signal (§"Implementation Tasks" item 6) is an unresolved design
   question; implementing a plausible-but-unvalidated heuristic without flagging it as such would
   misrepresent an unvalidated metric as settled.
