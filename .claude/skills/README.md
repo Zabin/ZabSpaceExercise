@@ -14,11 +14,18 @@ reconciled against the tree's real ledgers every run — the tree always wins), 
 step by invoking the owning skill, and stops at every human gate. Running a stage skill directly
 is always legitimate too — the manager's next `sync` picks up the change.
 
+**Nothing surfaced is forgotten:** every finding/recommendation an invoked skill reports is
+harvested by the manager into `docs/pipeline/backlog.md` at the end of the run, and every open
+backlog entry is triaged (given an explicit disposition — scheduled / deferred-with-trigger /
+needs-user / rejected) at the start of the next run, before the next step is chosen. New work
+enters the same backlog through `00-intake` (features, bugs, observations — classified, deduped,
+and routed to the pipeline stage where they belong), never by side-channel implementation.
+
 ## Stages
 
 | # | Skill | Produces | Where |
 |---|---|---|---|
-| 00 | `00-pipeline-manager` | Pipeline journal (position + run log) and one-step-per-run execution of the next stage; also `status`/`log`/`sync` modes | `docs/pipeline/`, chat |
+| 00 | `00-pipeline-manager` · `00-intake` | Manager: pipeline journal (position + run log), backlog harvest + triage, and one-step-per-run execution of the next stage (`status`/`triage`/`log`/`sync`/`run` modes). Intake: files new features/bugs/observations into the backlog with a recommended entry stage. | `docs/pipeline/`, chat |
 | 01 | `01-vision` | Program vision, GDS-00, strategic assumptions register | `docs/master/`, `docs/architecture/` |
 | 02 | `02-research-ow-orbital-mechanics` · `02-research-doctrine-exercises` · `02-research-methods-and-validation` · `02-research-future-operations` | Research encyclopedia tiers R100/R300/R400/R500 + primers | `docs/research/` |
 | 03 | `03-architecture-design-synthesis` | GDS-01…10 ladder (ConOps, System Context, Architecture, Domain Model, FR/NFR levels, Data Model, UI Architecture, API spec/ICD, RTM level), ADS-xxx, ADRs | `docs/architecture/` |
