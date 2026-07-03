@@ -125,7 +125,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-3410 | (order delivery path leaf, ADR-0005/0013) | UNASSIGNED | ADR-0005, ADR-0013 | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/orders.py` |
 | FR-3510 | Role-Assignment command-filtering consequence | UNASSIGNED | ADR-0004 | C4, C7, C8 | INT-0004 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-3520 | Role-Assignment scoping (bus/payload/both) *(new leaf, CHG-002)* | UNASSIGNED | ADR-0004 | C4, C7, C8, C2 | INT-0004, INT-0006 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
-| FR-4110 | White Cell exercise-control leaf | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-4110 | White Cell exercise-control leaf | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | `test_content.py::test_vignette_1_loads_and_builds_a_world`, `test_content.py::test_parameter_override_flows_into_roe`, `test_web.py::test_ssn_endpoint_available` *(closed 2026-07-03 via IP-1150, VR-1150)* | `IP-1150` *(closed 2026-07-03 via VR-1150)* |
 | FR-4210 | Seat-to-role assignment | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-4310 | Pause / resume clock control | UNASSIGNED | ADR-0016 | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-4410 | Inject authoring / firing | UNASSIGNED | ADR-0005 | C4, C6, C1 | INT-0002, INT-0016 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
@@ -412,13 +412,13 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `engine/eventlog.py` | FR-7110, NFR-2400, NFR-2500, NFR-2600 |
 | `engine/world.py` | NFR-2400 |
 | `engine/handlers.py` | NFR-2600 |
-| `session/manager.py` | FR-4310, FR-4410, FR-7210, FR-6310, NFR-1300, NFR-1800 |
+| `session/manager.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-4310, FR-4410, FR-7210, FR-6310, NFR-1300, NFR-1800 |
 | `session/api.py` | FR-6110, NFR-2300 |
 | `session/cells.py` | FR-6210, FR-6220 |
 | `session/inprocess.py` | FR-6320, FR-6410, NFR-1400 |
 | `session/aar.py` | FR-7310, FR-7320, NFR-2500, NFR-3100 |
 | `session/redai.py` | FR-9110 |
-| `content/vignette.py` | FR-5110, FR-5310, NFR-1600, NFR-2000 |
+| `content/vignette.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-5110, FR-5310, NFR-1600, NFR-2000 |
 | `content/vignettes/*.yaml` | NFR-2000 |
 | `content/` (TLE import) | FR-5210, NFR-3200 |
 | `ui_web/server.py` | FR-4510, FR-8110, NFR-1400, NFR-2300, NFR-2700, NFR-3300 |
@@ -428,13 +428,17 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `spacesim/tests/` | NFR-2800 |
 | Build/dependency manifest, `spacesim/` (whole tree) | NFR-2900 |
 | All subsystems (no single file) | NFR-2200 |
-| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4110, FR-4210, FR-6610, FR-10110, FR-10210 *(both new 2026-07, promoted from CR-19/CR-20 — not yet implemented, so honestly `UNASSIGNED` here despite being baselined)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
+| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4210, FR-6610, FR-10110, FR-10210 *(both new 2026-07, promoted from CR-19/CR-20 — not yet implemented, so honestly `UNASSIGNED` here despite being baselined)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
 
 *(FR-4610/FR-4710/FR-4720 closed 2026-07 via `IP-1060` v2.0; FR-7220 closed 2026-07 via `IP-1100` —
-both split from `IP-1060` v1.0 per Finding F-03 — see the master matrix rows above. FR-4110/FR-4210/
-FR-6610 remain `UNASSIGNED` here even though `FS-115`/`FS-114` now exist, because those two Feature
-Specifications explicitly flag their own build status as unverified — an FS existing is not the
-same evidence bar this index requires, per its own stated discipline.)*
+both split from `IP-1060` v1.0 per Finding F-03 — see the master matrix rows above. **FR-4110
+closed 2026-07-03 via `IP-1150`/`VR-1150`** — `09-package-verification` independently confirmed
+the implementation against the live tree, clearing the "FS existing is not the same evidence bar"
+caveat this note previously applied to it. FR-4210/FR-6610 remain `UNASSIGNED` here — `FS-115`'s
+FR-4210 slice (`IP-1151`) and `FS-114` (`IP-1140`) exist as Feature Specifications/packages but
+FR-4210 has no shipped code at all (forward design, not yet authorized-and-built) and FR-6610's
+package (`IP-1140`) has not yet been through its own `09-package-verification` pass — an FS/IP
+existing is not the same evidence bar this index requires, per its own stated discipline.)*
 
 ## Strategic review reconciliation (strategic-review-2026-07.md)
 
