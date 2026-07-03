@@ -26,9 +26,9 @@ skill's own stated rule for exactly this situation.
 | **FS-109 Multiplayer / LAN Session Transport** *(new 2026-07)* | FEAT-6300, FEAT-6400 | Split out of FS-106 v1.0 per Finding F-03 |
 | **FS-110 Save & Resume** *(new 2026-07)* | FEAT-7200 | Split out of FS-106 v1.0 per Finding F-03 |
 | **FS-111 AI-Red Doctrine Automation** *(new 2026-07)* | FEAT-9100 | Split out of FS-106 v1.0 per Finding F-03 |
-| FS-201 Competency Assessment | *(none — see Finding F-01)* | Not derivable from `docs/requirements/` at all |
-| FS-202 Rubric Authoring *(candidate, unauthorized)* | *(none — see Finding F-01)* | Same |
-| FS-301 Research Analytics | *(none — see Finding F-01)* | Same |
+| FS-201 Competency Assessment | FEAT-10100 | **Resolved 2026-07** — see Finding F-01 and the update note below |
+| FS-202 Rubric Authoring *(candidate, unauthorized)* | *(none — see Finding F-01)* | Rubric-authoring tooling itself was not baselined; only FS-201's own rubric-tier computation (FR-10110) was |
+| FS-301 Research Analytics | FEAT-10200 | **Resolved 2026-07** — see Finding F-01 and the update note below |
 
 **Update (2026-07): Findings F-02 and F-10 are now resolved.** FEAT-4500 (Classification Banner) →
 [FS-112](../features/FS-112-classification-banner.md); FEAT-6500 (Observer Read-Only Access) →
@@ -39,6 +39,18 @@ split from an existing document (unlike FS-109/110/111) — each explicitly flag
 status as unverified** in its Risks/Open Questions sections, since no prior FS-corpus narrative
 existed to confirm against. Verifying build status against the actual `spacesim/` source tree is
 the one remaining piece of both findings' remediation, not performed by this review.
+
+**Update (2026-07): Finding F-01 is now resolved, closing the last two `*(none)*` rows in the
+reconciliation table above.** Once `CR-19`/`CR-20` were promoted to baselined `FR-10110`/`FR-10210`
+and Epic `EP-10000` (Features `FEAT-10100`/`FEAT-10200`) was added to `03-feature-catalog.md`,
+[FS-201](../features/FS-201-competency-assessment.md) (whose own "Requirements Implemented" field
+already cites `FR-10110`) became `FEAT-10100`'s Feature Specification, and
+[FS-301](../features/FS-301-research-analytics.md) (already citing `FR-10210`) became `FEAT-10200`'s.
+No new `FS-xxx` document was authored for either — the existing specs already fully describe the
+capability their new owning Feature names, per this skill's "don't re-derive what the Feature
+Catalog entry already decided" rule; only this table's back-reference was stale. `FS-202` (Rubric
+Authoring) remains unmapped: it is a still-unauthorized candidate over FS-201's rubric-tier output,
+not itself a baselined requirement's Feature.
 
 ## Quality-gate verification
 
