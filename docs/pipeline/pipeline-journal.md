@@ -45,6 +45,11 @@
     convention and carry no `VR-xxxx` on disk — a standing gap, unchanged this run, not this
     increment's focus.
   - Stages 10–11 ⛔ never run.
+- **Backlog:** 5 open ([`backlog.md`](backlog.md), seeded 2026-07-03 by harvesting runs #1–#3's
+  findings out of this file's prose): `BL-0002` (NEEDS-USER — IP-2010's "aware vs. unaware"
+  design question, **due in the next step's gate check**), `BL-0003` (SCHEDULED — rides `09` on
+  IP-1140), `BL-0005` (NEEDS-USER — IP-3010 authorization, re-ask after IP-2010 `VERIFIED`),
+  `BL-0001`/`BL-0004` (DEFERRED with named triggers).
 - **Next step:** `08-code-implementation` on **IP-2010** — the highest-leverage of the four
   `READY`+authorized packages, since it sits on this plan's pre-existing critical path
   (`IP-2010 → IP-3010`) and is the only one of the four whose completion unblocks further work.

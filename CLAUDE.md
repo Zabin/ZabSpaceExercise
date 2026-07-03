@@ -146,9 +146,12 @@ All spec/doc/implementation work runs through the **numbered skill pipeline** in
 `07-implementation-planning` → `08-code-implementation` → `09-package-verification` →
 `10-integration-review` → `11-release-readiness`. `00-pipeline-manager` is the driver: it keeps a
 persistent journal at `docs/pipeline/pipeline-journal.md` (position + run log, reconciled against
-the tree's ledgers every run — the tree wins on disagreement), executes the next step by invoking
-the owning skill (one step per run), and stops at every human gate; `run-spacesim` is an
-unnumbered utility. Each skill writes
+the tree's ledgers every run — the tree wins on disagreement), harvests every invoked skill's
+findings into `docs/pipeline/backlog.md` and triages every open entry at the start of the next
+run, executes the next step by invoking the owning skill (one step per run), and stops at every
+human gate. `00-intake` is its stage-00 peer — new features/bugs/observations are filed into the
+same backlog (classified, deduped, routed to an entry stage), never implemented by side-channel;
+`run-spacesim` is an unnumbered utility. Each skill writes
 only its own output scope, routes findings to the owning stage instead of fixing them locally,
 and ends every run by saying in chat what changed, what it recommends, and which skill to run
 next. Only `08` writes production code; only `09` writes `VERIFIED`; a specified package is not an
