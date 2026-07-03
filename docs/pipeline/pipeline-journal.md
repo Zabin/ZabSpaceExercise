@@ -13,12 +13,15 @@
 
 ## Position
 
-- **Updated:** 2026-07-03 (run #8)
+- **Updated:** 2026-07-03 (run #9)
 - **Increment:** v1 baseline follow-through — closing the gaps the 2026-07 strategic review and
-  feature-planning pass opened (FS-112–115 packaged, four of five packages authorized; **all five
-  now implemented** — one independently verified, four `COMPLETE` pending verification. The user's
-  "complete outstanding 08 code implementation" request is now fully drained: **zero packages
-  remain `READY`** on the Master Build Plan).
+  feature-planning pass opened. All five of the MSTR-006 §3 gated packages (`IP-2010`, `IP-1130`,
+  `IP-1120`, `IP-1151`, `IP-3010`) are now authorized; `IP-3010` is the sole one not yet
+  implemented (`READY`, eligible for `08-code-implementation`). 13 of 18 packages are now
+  `VERIFIED` (this run added `IP-1140` via `VR-1140`); 4 remain `COMPLETE` pending their own
+  verification. `IP-1140`'s verification adjudicated its standing FR-6610 divergence as a genuine
+  High-severity product gap (not a documentation defect) — a fresh, ripe `NEEDS-USER` gate for the
+  next advance.
 - **Pipeline state:**
   - Stages 01–06 ✅ current for this increment: GDS-00…10 authored with closed gates
     (`docs/architecture/INDEX.md` §1); requirements baseline approved (`docs/requirements/`);
@@ -116,34 +119,53 @@
     finding, Medium severity, routed to `06-feature-specification`'s territory). **Zero packages
     remain `READY` on the Master Build Plan** — the user's "complete outstanding 08 code
     implementation" request is now fully drained.
-  - Stage 09 🚧 five gaps remain: `IP-1140` (Hot-Seat Hand-Off), `IP-2010` (Competency Assessment),
-    `IP-1120` (Classification Banner), `IP-1130` (Observer Read-Only Access), and `IP-1151`
-    (Seat-to-Role Assignment, new this run) are all `COMPLETE`, awaiting their own verification pass
-    (`IP-1140`'s should also adjudicate its documented FR-6610 trigger/menu divergence; `IP-2010`'s
-    should confirm `BL-0007`; `IP-1120`'s should confirm the package-doc drift fix and its two
-    documented task-text deviations; `IP-1130`'s should confirm the re-derived 22-route guard and
-    its two documented deviations; `IP-1151`'s should independently re-confirm the FS-105
-    non-consumption finding rather than re-deriving it from scratch, per the package's own
-    Verification Checklist note). The original 11 as-built packages (IP-1010…IP-1110) still predate
-    the VR-report convention and carry no `VR-xxxx` on disk — a standing gap, unchanged this run,
-    not this increment's focus.
+  - **MSTR-006 §3 authorization round, continued (run #9, gate resolved inline):** the recorded
+    next step (`09-package-verification`) had no gate of its own, but `BL-0005` (`IP-3010`
+    authorization) was ripe and cheap to batch in per this skill's own guidance — `AskUserQuestion`
+    put it to the project owner, who authorized `IP-3010`. Recorded in the package's own header,
+    Master Build Plan, `packages/INDEX.md`, `ROADMAP.md`. `IP-3010` flips `BLOCKED → READY` — the
+    last of the five gated packages to receive authorization, and the only one of the five not yet
+    implemented. Committed `2e1859f`, pushed (PR #45). `BL-0005` → `DONE`.
+  - Stage 09 ✅ second VR issued (run #9, same run): `09-package-verification` verified **IP-1140**
+    (Hot-Seat Hand-Off) — [`VR-1140`](../implementation/verification/VR-1140-hot-seat-handoff.md),
+    full suite 559 passed/3 skipped, both permanent gates green. Adjudicated the standing `BL-0003`
+    finding: **the shipped manual-button/auto-cycle mechanism does NOT satisfy FR-6610's full
+    intent** — the hard postcondition holds, but the missing automatic-trigger detection leaves a
+    real, unmitigated fog-of-war-leak risk in the one Feature with no server-side backstop.
+    `IP-1140` itself flipped `COMPLETE → VERIFIED` (it documented the gap accurately, no
+    overclaim). RTM `FR-6610` `Test`/`Impl. Package` cells (were `UNASSIGNED`) corrected. Updated
+    Master Build Plan (Risk item 6), `packages/INDEX.md`, `ROADMAP.md`. Committed `656901d`, pushed
+    (PR #45). Harvested 2 findings → `BL-0015` (**High**, `NEEDS-USER` — the adjudicated FR-6610
+    gap itself, requires the user's prioritization decision before a gap-closing package may be
+    scoped/authorized), `BL-0016` (Low, `DEFERRED` — stale line-number citations in `IP-1140`,
+    content confirmed correct). `BL-0003` → `DONE`.
+  - Stage 09 🚧 four gaps remain: `IP-2010` (Competency Assessment), `IP-1120` (Classification
+    Banner), `IP-1130` (Observer Read-Only Access), and `IP-1151` (Seat-to-Role Assignment) are all
+    `COMPLETE`, awaiting their own verification pass (`IP-2010`'s should confirm `BL-0007`;
+    `IP-1120`'s should confirm the package-doc drift fix and its two documented task-text
+    deviations; `IP-1130`'s should confirm the re-derived 22-route guard and its two documented
+    deviations; `IP-1151`'s should independently re-confirm the FS-105 non-consumption finding
+    rather than re-deriving it from scratch, per the package's own Verification Checklist note).
+    `IP-3010` is `READY`+authorized, awaiting `08-code-implementation`. The original 11 as-built
+    packages (IP-1010…IP-1110) still predate the VR-report convention and carry no `VR-xxxx` on
+    disk — a standing gap, unchanged this run, not this increment's focus.
   - Stages 10–11 ⛔ never run.
-- **Backlog:** 14 open ([`backlog.md`](backlog.md)): `BL-0014` is `NEW` this run (harvested from
-  `IP-1151`'s Implementation Summary Outstanding Issues), `DEFERRED` (Medium — routed to `06`, not
-  blocking). `BL-0013` harvested and `DONE` same run (fixed as part of `IP-1151`'s own scope).
-  `BL-0003`/`BL-0007` (SCHEDULED — ride `09` on `IP-1140`/`IP-2010` respectively), `BL-0005`
-  (NEEDS-USER — IP-3010 authorization, still not asked), `BL-0001`/`BL-0004`/`BL-0006`/`BL-0008`/
-  `BL-0010`/`BL-0011`/`BL-0012`/`BL-0014` (DEFERRED with named triggers, not yet ripe). `BL-0009`
-  `DONE`. No entry is due at the next step.
-- **Next step:** `09-package-verification` on any of the five `COMPLETE` packages
-  (`IP-1120`/`IP-1130`/`IP-1140`/`IP-1151`/`IP-2010`) — all equally available, no dependency
-  ordering between them; verification is now the only per-package work left in this increment
-  besides `IP-3010`'s standing authorization gate. Recommend starting with `IP-1151` or `IP-1130`
-  (most recently implemented, freshest in context) or `IP-1140` (oldest `COMPLETE`, longest
-  unverified).
-- **Open gates:** `IP-3010` still requires its own separate MSTR-006 §3 authorization — `BL-0005`
-  remains the standing, not-yet-asked `NEEDS-USER` item. PR
-  [#45](https://github.com/Zabin/ZabSpaceExercise/pull/45) (carries runs #4–#8's work) is open/draft
+- **Backlog:** 16 open ([`backlog.md`](backlog.md)): `BL-0015` (**NEW this run, High, NEEDS-USER**
+  — ripe for the very next gate check) and `BL-0016` (`NEW` this run, Low, `DEFERRED`) harvested
+  from `VR-1140`. `BL-0003`/`BL-0005` flipped `DONE` this run. `BL-0007` (SCHEDULED — rides `09` on
+  `IP-2010`), `BL-0001`/`BL-0004`/`BL-0006`/`BL-0008`/`BL-0010`/`BL-0011`/`BL-0012`/`BL-0014`/
+  `BL-0016` (DEFERRED with named triggers, not yet ripe). `BL-0009`/`BL-0013` `DONE`. **`BL-0015`
+  is due at the very next step** — its decision must be asked before any gap-closing package is
+  authored.
+- **Next step:** the next advance must first batch `BL-0015` into its gate check (ask whether to
+  authorize `07-implementation-planning` to scope a gap-closing package for `IP-1140`'s adjudicated
+  FR-6610 finding, or explicitly accept the risk with a named revisit trigger). After that decision,
+  proceed with whichever of `09-package-verification` (on any of `IP-2010`/`IP-1120`/`IP-1130`/
+  `IP-1151`) or `08-code-implementation` (on `IP-3010`, now `READY`+authorized) the user prefers —
+  all remain genuinely parallel, no dependency ordering between them.
+- **Open gates:** `BL-0015` (High, `NEEDS-USER`) — the `IP-1140`/FR-6610 gap-closing-package
+  prioritization decision, not yet asked. PR
+  [#45](https://github.com/Zabin/ZabSpaceExercise/pull/45) (carries runs #4–#9's work) is open/draft
   — being monitored for CI/review activity outside the pipeline-manager loop.
 
 ## Run log
@@ -161,3 +183,4 @@
 | 6 | 2026-07-03 | override (`run 08-code-implementation`, at user's explicit request to "complete outstanding 08 code implementation") | `08-code-implementation` | IP-1120 (lowest-ID of 3 eligible candidates) | Resolved one classification value in SessionManager, threaded through session-create response, list_sessions(), aar.export_csv/export_json, save_state/from_state (2 documented deviations from the package's literal task text, both within already-in-scope files); replaced hard-coded banner literal; added White-Cell override control. 12 new tests; full suite 519 passed/3 skipped (was 507/3); both permanent gates green. IP-1120 READY→COMPLETE. Also fixed: IP-1120's own package doc had drifted (still read BLOCKED after IP-1150 reached VERIFIED in run #3); a malformed NFR-3100 RTM row (missing Impl. Package column). Updated Master Build Plan/packages-INDEX/RTM(FR-4510,NFR-3100)/ROADMAP. Harvested 3 findings → BL-0008 (DEFERRED), BL-0009 (DONE, fixed same run), BL-0010 (DEFERRED, late-harvest from run #1). Committed `c87d77d`, pushed (PR #45). | `09-package-verification` on IP-1120 (or IP-2010/IP-1140, equally available); IP-1130/IP-1151 coding remain available in parallel |
 | 7 | 2026-07-03 | override (`run 08-code-implementation`, same "complete outstanding 08 code implementation" request) | `08-code-implementation` | IP-1130 (lower-ID of 2 remaining eligible candidates) | Added Observer seat: session/inprocess.py (set_observer_view/get_observer_view/observer_designation, dispatching unmodified to get_godview/get_view); ui_web/server.py's _reject_observer(cell) guard on 22 mutating routes, re-derived from the live route table (1 more than the package's own list: /preview/consequence); 10 cell-less routes gained a query param, centrally injected by app.js's api.post() wrapper. 28 new tests (parametrized across the full route table); full suite 547 passed/3 skipped (was 519/3); both permanent gates green. IP-1130 READY→COMPLETE. Also corrected a stale FR-6510 RTM citation (symptom of the same title-mismatch defect the package flagged). Updated Master Build Plan/packages-INDEX/RTM(FR-6510)/ROADMAP/CLAUDE.md. Harvested 2 findings → BL-0011 (DEFERRED, route-guard maintenance risk), BL-0012 (DEFERRED, late-harvest FR-6510 title mismatch from run #1). Committed `7ea81d9`, pushed (PR #45). | `09-package-verification` on IP-1130 (or IP-1120/IP-2010/IP-1140, equally available); IP-1151 is the last READY+authorized package remaining in the "complete outstanding 08" queue |
 | 8 | 2026-07-03 | override (`run 08-code-implementation`, same "complete outstanding 08 code implementation" request — last package in that queue) | `08-code-implementation` | IP-1151 (the last remaining READY+authorized candidate) | Added Vignette.roles_needed/RoleRequirement (additive, absent for all 19 existing vignettes); SessionManager.assign_role/_role_covers/staffing_report; InProcessSession.start() hard-gated on any unmet mandatory role; /roles/assign+/roles/staffing endpoints; White-Cell-only seat-assignment UI step. Fixed a pre-existing app.js bug (start() ignored the /start Ack's ok field) load-bearing to this package's own gate. 12 new tests; full suite 559 passed/3 skipped (was 547/3); both permanent gates green. IP-1151 READY→COMPLETE. Discovered and documented (not fixed, not this package's scope): the package's own text claimed its Role Assignment records were "already VERIFIED" as consumed by FS-105/IP-1050/IP-1051's command-filtering — checked against the live code and found false, no role-based command-authorization concept exists anywhere in the codebase. Documented in IP-1151's own Status/DoD/Verification-Checklist/Dependencies/Risks/Rollback-Considerations and Master Build Plan Risk item 8. Updated Master Build Plan/packages-INDEX/RTM(FR-4210)/ROADMAP/CLAUDE.md/data-model.md. Harvested 2 findings → BL-0013 (DONE, fixed same run), BL-0014 (DEFERRED, Medium, routed to 06 — the FS-105 consumer-doesn't-exist finding). Committed `9e3861a`, pushed (PR #45). Zero packages remain READY on the Master Build Plan. | `09-package-verification` on any of the five COMPLETE packages (IP-1120/IP-1130/IP-1140/IP-1151/IP-2010), all equally available; IP-3010's authorization gate (BL-0005) remains the only other open item |
+| 9 | 2026-07-03 | advance (gate resolved inline) | `09-package-verification` | IP-1140 (oldest COMPLETE, longest unverified — plus IP-3010's BL-0005 gate, batched in) | Gate check: BL-0005 (IP-3010 authorization) was ripe and cheap to batch even though the recorded next step (09-package-verification) had no gate of its own; `AskUserQuestion` offered 3 options, user chose "authorize IP-3010 now." Recorded in the package's own header, Master Build Plan, packages/INDEX.md, ROADMAP.md; IP-3010 BLOCKED→READY. Committed `2e1859f`, pushed (PR #45). BL-0005→DONE. Then invoked `09-package-verification` on IP-1140: full suite 559 passed/3 skipped, both permanent gates green; VR-1140 written (VERIFIED); RTM FR-6610 Test/Impl. Package cells (were UNASSIGNED) corrected; IP-1140 COMPLETE→VERIFIED. Adjudicated BL-0003: the shipped manual-button/auto-cycle mechanism does NOT satisfy FR-6610's full intent — a real, unmitigated fog-of-war-leak risk in the one Feature with no server-side backstop. Updated Master Build Plan (Risk item 6)/packages-INDEX/ROADMAP. Committed `656901d`, pushed (PR #45). Harvested 2 findings → BL-0015 (High, NEEDS-USER — the adjudicated FR-6610 gap itself), BL-0016 (Low, DEFERRED — stale line citations). BL-0003→DONE. | Batch BL-0015 into the next advance's gate check (ask whether to authorize a gap-closing package for IP-1140's FR-6610 finding, or explicitly accept the risk with a named trigger) before proceeding with 09-package-verification (IP-2010/IP-1120/IP-1130/IP-1151, all equally available) or 08-code-implementation on IP-3010 (now READY+authorized) |
