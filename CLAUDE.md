@@ -144,8 +144,11 @@ All spec/doc/implementation work runs through the **numbered skill pipeline** in
 `01-vision` → `02-research-*` (×4, parallel peers) → `03-architecture-design-synthesis` →
 `04-requirements-engineering` → `05-feature-decomposition` → `06-feature-specification` →
 `07-implementation-planning` → `08-code-implementation` → `09-package-verification` →
-`10-integration-review` → `11-release-readiness`. `00-pipeline-status` is the read-only navigator
-("where are we, what do I run next"); `run-spacesim` is an unnumbered utility. Each skill writes
+`10-integration-review` → `11-release-readiness`. `00-pipeline-manager` is the driver: it keeps a
+persistent journal at `docs/pipeline/pipeline-journal.md` (position + run log, reconciled against
+the tree's ledgers every run — the tree wins on disagreement), executes the next step by invoking
+the owning skill (one step per run), and stops at every human gate; `run-spacesim` is an
+unnumbered utility. Each skill writes
 only its own output scope, routes findings to the owning stage instead of fixing them locally,
 and ends every run by saying in chat what changed, what it recommends, and which skill to run
 next. Only `08` writes production code; only `09` writes `VERIFIED`; a specified package is not an

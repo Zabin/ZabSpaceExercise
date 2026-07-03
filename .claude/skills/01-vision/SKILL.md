@@ -51,7 +51,7 @@ artifacts and their owning skills; the fixes run through the pipeline in order.
 ## Pipeline position & completion summary (mandatory, every run)
 
 This skill is **Stage 01 — Vision**, the top of the documentation-driven-development pipeline (see
-[`.claude/skills/README.md`](../README.md); stages run in numeric order, and `00-pipeline-status`
+[`.claude/skills/README.md`](../README.md); stages run in numeric order, and `00-pipeline-manager`
 reports where the project currently stands). Upstream: only the user. Downstream: the
 `02-research-*` skills and `03-architecture-design-synthesis`.
 
@@ -66,7 +66,7 @@ summary containing exactly these three parts:
    invalidated downstream stage in numeric order (usually a `02-research-*` skill for new
    grounding needs, else `03-architecture-design-synthesis` to reconcile the affected GDS levels);
    after a clean consistency check, whatever stage the current increment is actually at — run
-   `00-pipeline-status` if that isn't already known.
+   `00-pipeline-manager` if that isn't already known.
 
 Never end a run without naming the next step — the pipeline is driven one stage at a time, and the
 user relies on each stage's summary to know what to invoke next.

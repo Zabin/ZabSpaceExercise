@@ -113,7 +113,7 @@ its `Requirements Covered` FR/NFRs and the Requirements Traceability Matrix
 
 This skill is **Stage 09 — Package Verification** of the documentation-driven-development pipeline
 (see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
-`00-pipeline-status` reports where the project currently stands). Upstream:
+`00-pipeline-manager` reports where the project currently stands). Upstream:
 `08-code-implementation`. Downstream: `10-integration-review` (once a release/epic's packages are
 all `VERIFIED`), or back to `08-code-implementation` for the next package.
 

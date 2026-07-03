@@ -71,7 +71,7 @@ what was actually exercised to earn the "clean," not just an absence of rows. Up
 
 This skill is **Stage 10 — Integration Review** of the documentation-driven-development pipeline
 (see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
-`00-pipeline-status` reports where the project currently stands). Upstream:
+`00-pipeline-manager` reports where the project currently stands). Upstream:
 `09-package-verification`. Downstream: `11-release-readiness`.
 
 End **every** invocation with a chat summary containing exactly these three parts:

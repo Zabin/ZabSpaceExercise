@@ -165,7 +165,7 @@ doesn't resolve at the system level — see `MSTR-005` §3a.
 
 This skill is **Stage 03 — Architecture & Design Synthesis** of the documentation-driven-development
 pipeline (see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
-`00-pipeline-status` reports where the project currently stands). Upstream: `01-vision` (which owns
+`00-pipeline-manager` reports where the project currently stands). Upstream: `01-vision` (which owns
 `GDS-00`/`MSTR-001` — this skill authors `GDS-01`…`GDS-10` and defers Vision-layer edits to it) and
 the `02-research-*` skills. Downstream: `04-requirements-engineering`.
 

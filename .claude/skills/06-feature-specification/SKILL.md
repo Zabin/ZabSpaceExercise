@@ -359,7 +359,7 @@ The specification is successful when:
 
 This skill is **Stage 06 — Feature Specification** of the documentation-driven-development pipeline
 (see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
-`00-pipeline-status` reports where the project currently stands). Upstream:
+`00-pipeline-manager` reports where the project currently stands). Upstream:
 `05-feature-decomposition`. Downstream: `07-implementation-planning`.
 
 End **every** invocation — new spec, spec update, or blocked stop — with a chat summary containing

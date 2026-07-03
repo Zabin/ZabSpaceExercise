@@ -308,7 +308,7 @@ filenames and `docs/requirements/` as the write target stay fixed regardless.
 
 This skill is **Stage 04 — Requirements Engineering** of the documentation-driven-development
 pipeline (see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
-`00-pipeline-status` reports where the project currently stands). Upstream:
+`00-pipeline-manager` reports where the project currently stands). Upstream:
 `03-architecture-design-synthesis`. Downstream: `05-feature-decomposition`.
 
 End **every** invocation — full baseline derivation, delta update, review-only pass, or blocked

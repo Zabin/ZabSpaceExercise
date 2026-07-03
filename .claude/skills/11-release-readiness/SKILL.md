@@ -76,7 +76,7 @@ the Integration Report(s) for this scope (`docs/reviews/integration-review-*.md`
 
 This skill is **Stage 11 — Release Readiness & Baseline Update**, the final stage of the
 documentation-driven-development pipeline (see [`.claude/skills/README.md`](../README.md); stages
-run in numeric order, and `00-pipeline-status` reports where the project currently stands).
+run in numeric order, and `00-pipeline-manager` reports where the project currently stands).
 Upstream: `10-integration-review`. Downstream: the next increment's planning.
 
 End **every** invocation with a chat summary containing exactly these three parts:
@@ -88,7 +88,7 @@ End **every** invocation with a chat summary containing exactly these three part
 3. **Next step** — say explicitly what to run next and why: on NO-GO, the highest-leverage
    blocking item's owning skill (usually `07-implementation-planning` →
    `08-code-implementation` → `09-package-verification`, then re-run `10-integration-review`);
-   on GO with baseline updated, the next increment — `00-pipeline-status` to survey the tree, then
+   on GO with baseline updated, the next increment — `00-pipeline-manager` to survey the tree, then
    typically `05-feature-decomposition`/`06-feature-specification` for the next release bucket, or
    `01-vision`/`02-research-*` if the increment changes direction.
 

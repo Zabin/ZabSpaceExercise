@@ -139,7 +139,7 @@ tier; per that recommendation's sequencing, **R400 (Research Methods,
 ## Pipeline position & completion summary (mandatory, every run)
 
 This skill is **Stage 02 — Research** of the documentation-driven-development pipeline (see
-[`.claude/skills/README.md`](../README.md); stages run in numeric order, and `00-pipeline-status`
+[`.claude/skills/README.md`](../README.md); stages run in numeric order, and `00-pipeline-manager`
 reports where the project currently stands). The four `02-research-*` skills are peers at the same
 stage — run whichever owns the tier the gap is in; they have no ordering among themselves.
 Upstream: `01-vision`. Downstream: `03-architecture-design-synthesis` (and whichever spec-authoring

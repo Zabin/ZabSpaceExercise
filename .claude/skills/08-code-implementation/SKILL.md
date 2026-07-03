@@ -507,7 +507,7 @@ The implementation run is successful when:
 
 This skill is **Stage 08 — Package Execution** of the documentation-driven-development pipeline
 (see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
-`00-pipeline-status` reports where the project currently stands). Upstream:
+`00-pipeline-manager` reports where the project currently stands). Upstream:
 `07-implementation-planning` (which authors the Master Build Plan and the `IP-xxxx` packages this
 skill executes). Downstream: `09-package-verification` (the only skill that may advance a package
 to `VERIFIED`).

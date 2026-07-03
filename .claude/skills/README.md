@@ -8,13 +8,17 @@ whichever owns the gap; they have no ordering among themselves. Unnumbered skill
 
 Every pipeline skill ends **every** run with a mandatory chat summary: what changed,
 recommendations (findings routed to their owning skill), and an explicit **Next step** naming the
-skill to run next. When you don't know where the pipeline stands, start with `00-pipeline-status`.
+skill to run next. The default way to drive the pipeline is `00-pipeline-manager`: it keeps a
+persistent journal at `docs/pipeline/pipeline-journal.md` (position + append-only run log,
+reconciled against the tree's real ledgers every run — the tree always wins), executes the next
+step by invoking the owning skill, and stops at every human gate. Running a stage skill directly
+is always legitimate too — the manager's next `sync` picks up the change.
 
 ## Stages
 
 | # | Skill | Produces | Where |
 |---|---|---|---|
-| 00 | `00-pipeline-status` | Status survey + next-step recommendation (read-only navigator) | chat |
+| 00 | `00-pipeline-manager` | Pipeline journal (position + run log) and one-step-per-run execution of the next stage; also `status`/`log`/`sync` modes | `docs/pipeline/`, chat |
 | 01 | `01-vision` | Program vision, GDS-00, strategic assumptions register | `docs/master/`, `docs/architecture/` |
 | 02 | `02-research-ow-orbital-mechanics` · `02-research-doctrine-exercises` · `02-research-methods-and-validation` · `02-research-future-operations` | Research encyclopedia tiers R100/R300/R400/R500 + primers | `docs/research/` |
 | 03 | `03-architecture-design-synthesis` | GDS-01…10 ladder (ConOps, System Context, Architecture, Domain Model, FR/NFR levels, Data Model, UI Architecture, API spec/ICD, RTM level), ADS-xxx, ADRs | `docs/architecture/` |

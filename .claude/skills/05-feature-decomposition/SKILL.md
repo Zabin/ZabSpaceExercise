@@ -522,7 +522,7 @@ The decomposition is successful when:
 
 This skill is **Stage 05 — Feature Decomposition** of the documentation-driven-development pipeline
 (see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
-`00-pipeline-status` reports where the project currently stands). Upstream:
+`00-pipeline-manager` reports where the project currently stands). Upstream:
 `04-requirements-engineering`. Downstream: `06-feature-specification`.
 
 End **every** invocation — full decomposition, delta update, standalone Feature Review, or blocked

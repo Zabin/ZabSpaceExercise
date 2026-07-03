@@ -157,7 +157,7 @@ implementation-theme rows, and commit as `docs(implementation): IP-xxxx — <wha
 
 This skill is **Stage 07 — Implementation Planning** of the documentation-driven-development
 pipeline (see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
-`00-pipeline-status` reports where the project currently stands). Upstream:
+`00-pipeline-manager` reports where the project currently stands). Upstream:
 `06-feature-specification`. Downstream: `08-code-implementation`.
 
 End **every** invocation — new packages, a plan update, or a blocked stop — with a chat summary
