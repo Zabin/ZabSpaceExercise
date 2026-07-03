@@ -5,8 +5,10 @@
 > **Status:** 🟡 BLOCKED *(on [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED` — this
 > package's Objective assumes vignette load/session-setup already works, which it functionally
 > does today, but per this plan's own READY-requires-VERIFIED-dependency rule a dependency that is
-> merely `COMPLETE` keeps a package `BLOCKED`, not `READY`. Independently, also **not authorized**
-> per MSTR-006 §3.)*
+> merely `COMPLETE` keeps a package `BLOCKED`, not `READY`. **MSTR-006 §3 authorization obtained
+> 2026-07-03** (project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2) — this
+> package is pre-cleared to start the moment `IP-1150` reaches `VERIFIED`; authorization does not
+> itself lift the `IP-1150` dependency gate.)*
 > **Dependencies:** FS-112, [IP-1150](IP-1150-vignette-selection.md) (vignette-selection/session-
 > setup workflow this Feature's banner-value setting is part of, per FS-112's own Dependencies field)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md)
@@ -145,8 +147,9 @@ None — every touch point already exists; this is a wiring/completion package.
 
 ## Definition of Done
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — a precondition for every item below.
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3, 2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2) — still
+  waits on [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED` before work may begin.
 - [ ] A session's on-screen banner reflects `Vignette.classification` (or a White-Cell override),
   not a hard-coded literal, on every screen.
 - [ ] A White-Cell-facing control exists to set/override the classification value at session setup.
@@ -180,8 +183,9 @@ None — every touch point already exists; this is a wiring/completion package.
 
 ## Risks
 
-- **Authorization risk (primary):** this package must not be implemented merely because it is
-  fully specified — MSTR-006 §3 requires an explicit, separate user go-ahead.
+- **Authorization risk (resolved 2026-07-03):** MSTR-006 §3's explicit, separate user go-ahead is
+  now on record in the pipeline journal — the remaining gate is functional (`IP-1150` → `VERIFIED`),
+  not authorization.
 - **Two-sources-of-truth risk if Implementation Task 2 is skipped:** if the UI render path and the
   export paths each independently re-derive the classification value (e.g. one reads the vignette
   default, the other reads a stale override), NFR-3100's "no export omits/contradicts the banner"

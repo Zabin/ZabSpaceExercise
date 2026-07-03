@@ -4,7 +4,10 @@
 > **Version:** 1.0
 > **Status:** 🔴 BLOCKED *(on [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED`, per
 > FR-4210's own stated Precondition — "A Vignette is loaded (FR-4110)" — and this plan's
-> READY-requires-VERIFIED-dependency rule; also independently **not authorized**, MSTR-006 §3)*
+> READY-requires-VERIFIED-dependency rule. **MSTR-006 §3 authorization obtained 2026-07-03**
+> (project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2) — this package is
+> pre-cleared to start the moment `IP-1150` reaches `VERIFIED`; authorization does not itself lift
+> the `IP-1150` dependency gate.)*
 > **Dependencies:** FS-115 (FR-4210 slice), [IP-1150](IP-1150-vignette-selection.md) (vignette must
 > be loaded first, per FR-4210's own Preconditions)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md)
@@ -42,9 +45,10 @@ specific Asset/constellation, informed by the vignette's declared `roles_needed`
 the exercise start while a mandatory `roles_needed` entry has no bound seat.
 
 > **This is a forward-design package: the capability described here does not exist in `spacesim/`
-> today.** Per MSTR-006 §3, this document specifies a fully scoped, build-ready design — it is not
-> itself an authorization to write code. A separate, explicit user go-ahead is required before any
-> task in this package's "Implementation Tasks" section begins.
+> today.** Per MSTR-006 §3, this document's own specification was not itself an authorization to
+> write code — that separate, explicit user go-ahead was obtained 2026-07-03 (see the Status field
+> above). Coding still waits on [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED`
+> (a functional gate, not an authorization gate).
 
 ## Feature Reference
 
@@ -152,11 +156,11 @@ authorized.)*
 
 ## Definition of Done
 
-*(Forward-looking gate — none of the following is currently true; this package does not claim it
-is.)*
+*(Forward-looking gate — the authorization item below is now true; the rest is not yet.)*
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — a precondition for every item below.
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3, 2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2) — still
+  waits on [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED` before work may begin.
 - [ ] `Vignette.roles_needed` exists and defaults to an empty/absent list (no breakage of the 19
   existing vignette YAML files, none of which declare it).
 - [ ] Seat-to-role assignment against a vignette's `roles_needed` produces Role Assignment records
@@ -196,8 +200,9 @@ is.)*
 
 ## Risks
 
-- **Authorization risk (primary):** this package must not be implemented merely because it is
-  fully specified — MSTR-006 §3 requires an explicit, separate user go-ahead.
+- **Authorization risk (resolved 2026-07-03):** MSTR-006 §3's explicit, separate user go-ahead is
+  now on record in the pipeline journal — the remaining gate is functional (`IP-1150` → `VERIFIED`),
+  not authorization.
 - **Backward-compatibility risk if Implementation Task 1 is done carelessly:** all 19 existing
   vignette YAML files declare no `roles_needed` — if the staffing gate does not treat an absent
   list as "nothing mandatory," every existing vignette becomes unstartable the moment this package

@@ -76,6 +76,14 @@ that continue to bind this tree ([MSTR-006](../master/MSTR-006-governance-princi
   **implementation work against either requires a separate, explicit user go-ahead**, independent
   of this plan's sequencing.
 
+**Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
+§3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in
+`docs/pipeline/pipeline-journal.md` run #2). `IP-3010` was **not** authorized this round — it
+remains gated on its own separate go-ahead in addition to `IP-2010` reaching `COMPLETE`, per
+MSTR-006 §3's rule that approval of one package never implies approval of a related one.
+Authorization does not lift any package's functional dependency gate: `IP-1120`/`IP-1151` still
+wait on `IP-1150` reaching `VERIFIED` before `08-code-implementation` may start either.
+
 ## Package status
 
 | ID | Feature | Situation | Status | Blocking dependency |
@@ -91,13 +99,13 @@ that continue to bind this tree ([MSTR-006](../master/MSTR-006-governance-princi
 | [IP-1090](packages/IP-1090-multiplayer-session-transport.md) | FS-109 Multiplayer / LAN Session Transport | As-built | ✅ VERIFIED | none |
 | [IP-1100](packages/IP-1100-save-and-resume.md) | FS-110 Save & Resume | As-built | ✅ VERIFIED | none |
 | [IP-1110](packages/IP-1110-ai-red-doctrine-automation.md) | FS-111 AI-Red Doctrine Automation | As-built | ✅ VERIFIED | none |
-| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | 🟡 READY | Was `BLOCKED` (Unreconciled conflict with ADR-0017, "no automated scoring/assessment mechanism in v1" — Blocking Report, 2026-07-02); **resolved 2026-07 by `ADR-0032`** (narrow carve-out); gated only on MSTR-006 §3 authorization again |
-| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔴 BLOCKED | IP-2010 → `COMPLETE`, **and** authorization (MSTR-006 §3); a separate, never-previously-recorded conflict with ADR-0029 is **resolved 2026-07 by `ADR-0033`** — does not change this package's blocking status |
-| [IP-1120](packages/IP-1120-classification-banner.md) | FS-112 Classification Banner | Partially built (gap-closing) | 🟡 BLOCKED | IP-1150 → `VERIFIED` (formal status rule), **and** authorization (MSTR-006 §3) |
-| [IP-1130](packages/IP-1130-observer-read-only-access.md) | FS-113 Observer Read-Only Access | Forward design | 🟡 READY | None but authorization (MSTR-006 §3) — the fog-of-war mechanism it reuses is already `VERIFIED` elsewhere |
+| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | 🟡 READY *(authorized)* | Was `BLOCKED` (Unreconciled conflict with ADR-0017 — resolved 2026-07 by `ADR-0032`); **MSTR-006 §3 authorization obtained 2026-07-03** — no remaining blocker, ready for `08-code-implementation` |
+| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔴 BLOCKED *(not authorized)* | IP-2010 → `COMPLETE`, **and** authorization (MSTR-006 §3) — **not authorized** in the 2026-07-03 authorization round; a separate ADR-0029 conflict is resolved by `ADR-0033` but does not change this package's blocking status |
+| [IP-1120](packages/IP-1120-classification-banner.md) | FS-112 Classification Banner | Partially built (gap-closing) | 🟡 BLOCKED *(authorized)* | **MSTR-006 §3 authorization obtained 2026-07-03**; still functionally blocked on IP-1150 → `VERIFIED` |
+| [IP-1130](packages/IP-1130-observer-read-only-access.md) | FS-113 Observer Read-Only Access | Forward design | 🟡 READY *(authorized)* | **MSTR-006 §3 authorization obtained 2026-07-03** — no remaining blocker, ready for `08-code-implementation` |
 | [IP-1140](packages/IP-1140-hot-seat-handoff.md) | FS-114 Hot-Seat Hand-Off Screen-Blank Menu | As-built (documented spec divergence) | 🔵 COMPLETE | None — awaiting `09-package-verification`, which should also adjudicate the documented trigger/menu divergence from FR-6610 |
 | [IP-1150](packages/IP-1150-vignette-selection.md) | FS-115 §FR-4110 Vignette Selection & Parameter Tuning | As-built | 🔵 COMPLETE | None — awaiting `09-package-verification` |
-| [IP-1151](packages/IP-1151-seat-role-assignment.md) | FS-115 §FR-4210 Seat-to-Role Assignment | Forward design | 🔴 BLOCKED | IP-1150 → `VERIFIED`, **and** authorization (MSTR-006 §3) |
+| [IP-1151](packages/IP-1151-seat-role-assignment.md) | FS-115 §FR-4210 Seat-to-Role Assignment | Forward design | 🔴 BLOCKED *(authorized)* | **MSTR-006 §3 authorization obtained 2026-07-03**; still functionally blocked on IP-1150 → `VERIFIED` |
 
 **Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code

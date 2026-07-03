@@ -2,9 +2,11 @@
 
 > **Package ID:** IP-1130
 > **Version:** 1.0
-> **Status:** 🟡 READY *(fully specified, no blocking package dependency — the fog-of-war filter
-> this package reuses is already shipped and exercised by every VERIFIED as-built package in this
-> plan; gated only on MSTR-006 §3 authorization, not on missing prerequisite work)*
+> **Status:** 🟡 READY *(authorized, not yet started — fully specified, no blocking package dependency — the
+> fog-of-war filter this package reuses is already shipped and exercised by every VERIFIED as-built
+> package in this plan. **MSTR-006 §3 authorization obtained 2026-07-03** (project owner, recorded
+> in `docs/pipeline/pipeline-journal.md` run #2) — `08-code-implementation` may now pick up this
+> package.)*
 > **Dependencies:** FS-113 (no `FS-xxx`/`IP-xxxx` hard prerequisite — see Dependencies below)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the read-only Observer seat interaction model
@@ -40,9 +42,9 @@ a specific cell's fog-of-war-filtered `CellView`, as White Cell designates) and 
 than merely by omitting the option from the UI.
 
 > **This is a forward-design package: the capability described here does not exist in `spacesim/`
-> today.** Per MSTR-006 §3, this document specifies a fully scoped, build-ready design — it is not
-> itself an authorization to write code. A separate, explicit user go-ahead is required before any
-> task in this package's "Implementation Tasks" section begins.
+> today.** Per MSTR-006 §3, this document's own specification was not itself an authorization to
+> write code — that separate, explicit user go-ahead was obtained 2026-07-03 (see the Status field
+> above), and `08-code-implementation` may now begin the tasks below.
 
 ## Feature Reference
 
@@ -104,8 +106,8 @@ need).
 
 ## Implementation Tasks
 
-**Not started — not authorized (MSTR-006 §3).** The following is the proposed task sequence for
-when authorization is granted:
+**Not started — authorized (MSTR-006 §3, 2026-07-03).** The following is the proposed task
+sequence for `08-code-implementation`:
 
 1. Add an Observer view-designation concept (god-view or a named cell) to session state, settable
    only by a White-Cell-seated caller.
@@ -152,11 +154,10 @@ authorized.)*
 
 ## Definition of Done
 
-*(Forward-looking gate — none of the following is currently true; this package does not claim it
-is.)*
+*(Forward-looking gate — the authorization item below is now true; the rest is not yet.)*
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — a precondition for every item below.
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3, 2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).
 - [ ] An Observer's designated view (god-view or a named cell) is served identically to how that
   view is already served to its native audience (White Cell for god-view, the cell's own operator
   for a `CellView`) — no divergent code path, no divergent filtering.
@@ -192,8 +193,8 @@ is.)*
 
 ## Risks
 
-- **Authorization risk (primary):** this package must not be implemented merely because it is
-  fully specified — MSTR-006 §3 requires an explicit, separate user go-ahead.
+- **Authorization risk (resolved 2026-07-03):** MSTR-006 §3's explicit, separate user go-ahead is
+  now on record in the pipeline journal.
 - **Enforcement-completeness risk:** the value of this Feature is entirely in *no* mutating route
   being missed. A route added after this package ships (or one this package's author overlooks)
   that forgets the Observer guard reopens the exact gap FR-6510 exists to close. The proposed test

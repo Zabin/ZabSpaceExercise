@@ -448,13 +448,13 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1090 | Multiplayer / LAN Session Transport — lazy clock, mutation locking, hot-seat/LAN sharing | `implementation/packages/IP-1090-multiplayer-session-transport.md` | FS-109 | As-built | ✅ VERIFIED |
 | IP-1100 | Save & Resume — deterministic round trip & content/session split | `implementation/packages/IP-1100-save-and-resume.md` | FS-110 | As-built | ✅ VERIFIED |
 | IP-1110 | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | `implementation/packages/IP-1110-ai-red-doctrine-automation.md` | FS-111 | As-built | ✅ VERIFIED |
-| IP-2010 | Competency Assessment — rubric computation | `implementation/packages/IP-2010-competency-assessment.md` | FS-201 | Forward design | 🟡 READY (not authorized, MSTR-006 §3) |
-| IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🔴 BLOCKED (on IP-2010; also not authorized) |
-| IP-1120 | Classification Banner — wire render/export path to the vignette's classification value | `implementation/packages/IP-1120-classification-banner.md` | FS-112 | Partially built (gap-closing) | 🟡 BLOCKED (on IP-1150 → VERIFIED; also not authorized) |
-| IP-1130 | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | `implementation/packages/IP-1130-observer-read-only-access.md` | FS-113 | Forward design | 🟡 READY (not authorized) |
+| IP-2010 | Competency Assessment — rubric computation | `implementation/packages/IP-2010-competency-assessment.md` | FS-201 | Forward design | 🟡 READY (**authorized 2026-07-03**, MSTR-006 §3) |
+| IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🔴 BLOCKED (on IP-2010; **not authorized**) |
+| IP-1120 | Classification Banner — wire render/export path to the vignette's classification value | `implementation/packages/IP-1120-classification-banner.md` | FS-112 | Partially built (gap-closing) | 🟡 BLOCKED (on IP-1150 → VERIFIED; **authorized 2026-07-03**) |
+| IP-1130 | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | `implementation/packages/IP-1130-observer-read-only-access.md` | FS-113 | Forward design | 🟡 READY (**authorized 2026-07-03**) |
 | IP-1140 | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | `implementation/packages/IP-1140-hot-seat-handoff.md` | FS-114 | As-built (documented spec divergence) | 🔵 COMPLETE (pending verification) |
 | IP-1150 | Session Setup: Vignette Selection & Parameter Tuning | `implementation/packages/IP-1150-vignette-selection.md` | FS-115 §FR-4110 | As-built | 🔵 COMPLETE (pending verification) |
-| IP-1151 | Session Setup: Seat-to-Role Assignment | `implementation/packages/IP-1151-seat-role-assignment.md` | FS-115 §FR-4210 | Forward design | 🔴 BLOCKED (on IP-1150 → VERIFIED; also not authorized) |
+| IP-1151 | Session Setup: Seat-to-Role Assignment | `implementation/packages/IP-1151-seat-role-assignment.md` | FS-115 §FR-4210 | Forward design | 🔴 BLOCKED (on IP-1150 → VERIFIED; **authorized 2026-07-03**) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3).
 
@@ -470,6 +470,12 @@ Packages against FS-112/113/114/115, following the build-status verification pas
 `docs/implementation/00-master-build-plan.md`'s package table, dependency graph, parallel-
 opportunity list, critical-path note, and summary statistics have been updated accordingly (now
 18 packages total: 11 `VERIFIED`, 2 `COMPLETE` pending verification, 2 `READY`, 3 `BLOCKED`).
+
+**Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
+§3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in
+`docs/pipeline/pipeline-journal.md` run #2); `IP-3010` was **not** authorized this round.
+Authorization does not change any package's READY/BLOCKED/COMPLETE status — `IP-1120`/`IP-1151`
+remain `BLOCKED` on `IP-1150` reaching `VERIFIED` regardless.
 
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 

@@ -52,13 +52,13 @@ unauthorized FS.
 | [IP-1090](IP-1090-multiplayer-session-transport.md) | Multiplayer / LAN Session Transport — lazy clock, mutation locking, hot-seat/LAN sharing | [FS-109](../../features/FS-109-multiplayer-session-transport.md) | As-built | ✅ VERIFIED |
 | [IP-1100](IP-1100-save-and-resume.md) | Save & Resume — deterministic round trip & content/session split | [FS-110](../../features/FS-110-save-and-resume.md) | As-built | ✅ VERIFIED |
 | [IP-1110](IP-1110-ai-red-doctrine-automation.md) | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | [FS-111](../../features/FS-111-ai-red-doctrine-automation.md) | As-built | ✅ VERIFIED |
-| [IP-2010](IP-2010-competency-assessment.md) | Competency Assessment — rubric computation | [FS-201](../../features/FS-201-competency-assessment.md) | Forward design | 🟡 READY (not authorized; briefly `BLOCKED` 2026-07-02 on an ADR-0017 conflict, resolved same-day by `ADR-0032` — see the package's own header) |
-| [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | 🔴 BLOCKED (on IP-2010; also not authorized; a separate ADR-0029 conflict — never previously recorded in this package's own header — is now resolved by `ADR-0033`, see the package's own header) |
-| [IP-1120](IP-1120-classification-banner.md) | Classification Banner — wire the render/export path to the vignette's classification value | [FS-112](../../features/FS-112-classification-banner.md) | Partially built (gap-closing) | 🟡 BLOCKED (on IP-1150 → VERIFIED; also not authorized) |
-| [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | 🟡 READY (not authorized) |
+| [IP-2010](IP-2010-competency-assessment.md) | Competency Assessment — rubric computation | [FS-201](../../features/FS-201-competency-assessment.md) | Forward design | 🟡 READY (**authorized 2026-07-03**; briefly `BLOCKED` 2026-07-02 on an ADR-0017 conflict, resolved same-day by `ADR-0032` — see the package's own header) |
+| [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | 🔴 BLOCKED (on IP-2010; **not authorized** — not selected in the 2026-07-03 authorization round; a separate ADR-0029 conflict — never previously recorded in this package's own header — is now resolved by `ADR-0033`, see the package's own header) |
+| [IP-1120](IP-1120-classification-banner.md) | Classification Banner — wire the render/export path to the vignette's classification value | [FS-112](../../features/FS-112-classification-banner.md) | Partially built (gap-closing) | 🟡 BLOCKED (on IP-1150 → VERIFIED; **authorized 2026-07-03**) |
+| [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | 🟡 READY (**authorized 2026-07-03**) |
 | [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence) | 🔵 COMPLETE (pending verification) |
 | [IP-1150](IP-1150-vignette-selection.md) | Session Setup: Vignette Selection & Parameter Tuning | [FS-115](../../features/FS-115-session-setup.md) §FR-4110 | As-built | 🔵 COMPLETE (pending verification) |
-| [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | 🔴 BLOCKED (on IP-1150 → VERIFIED; also not authorized) |
+| [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | 🔴 BLOCKED (on IP-1150 → VERIFIED; **authorized 2026-07-03**) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1090,
 IP-1100, IP-1110 are new (2026-07)**, split out of IP-1060 v1.0 per `docs/feature-planning/
@@ -68,7 +68,14 @@ first Implementation Packages written against FS-112/113/114/115 — see
 [`../01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) Tranche 1 for the
 build-status verification pass and split rationale each required. None is `VERIFIED`: `IP-1140`/
 `IP-1150` are as-built but `COMPLETE` pending `09-package-verification`; `IP-1120`/`IP-1130`/
-`IP-1151` are forward design (`READY`/`BLOCKED`) and none is authorized (MSTR-006 §3).
+`IP-1151` are forward design (`READY`/`BLOCKED`).
+
+**Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
+§3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in
+`docs/pipeline/pipeline-journal.md` run #2) — `IP-3010` was **not** authorized this round.
+Authorization is a separate axis from the `READY`/`BLOCKED`/`COMPLETE` status vocabulary above: an
+authorized package still shows its ordinary status (e.g. `IP-1120`/`IP-1151` remain `BLOCKED` on
+`IP-1150` reaching `VERIFIED` regardless of authorization).
 
 **Executing a package.** The `08-code-implementation` skill
 (`.claude/skills/08-code-implementation/SKILL.md`) is the next stage downstream of this tier: it
