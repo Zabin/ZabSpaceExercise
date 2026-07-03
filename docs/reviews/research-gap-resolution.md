@@ -9,8 +9,8 @@
 > content was written, per the classification the user requested: **already covered**,
 > **partially covered**, or **genuinely missing**. New encyclopedia entries were authored only for
 > genuinely-missing (or missing-at-the-relevant-depth) topics, using the two research skills whose
-> scope covers this corpus: `research-ow-orbital-mechanics` (R1xx tier) and
-> `research-doctrine-exercises` (R3xx tier). Gaps outside both skills' tier ownership, and gaps
+> scope covers this corpus: `02-research-ow-orbital-mechanics` (R1xx tier) and
+> `02-research-doctrine-exercises` (R3xx tier). Gaps outside both skills' tier ownership, and gaps
 > judged too large to responsibly bulk-author in one pass, are recorded as `⛔ Planned` index rows
 > (the corpus's own index-before-content convention, MSTR-007 §6) rather than left undocumented.
 > **Ground rules honored:** no file under `docs/architecture/`, `docs/requirements/`, `docs/adr/`,
@@ -225,7 +225,7 @@ was touched.
 ### GAP-07 — Training transfer & simulation-based learning effectiveness
 
 **Classification:** Genuinely missing, and explicitly **out of scope for both
-`research-ow-orbital-mechanics` (R1xx) and `research-doctrine-exercises` (R3xx)** — this gap
+`02-research-ow-orbital-mechanics` (R1xx) and `02-research-doctrine-exercises` (R3xx)** — this gap
 belongs to the R4xx (Research Methods) tier per MSTR-007 §3's tier table ("what justifies
 assessment/validation work, DOM-002/DOM-005"), which neither invoked skill owns. No R4xx-authoring
 skill exists in this project's `.claude/skills/` directory as of this pass.
@@ -242,7 +242,7 @@ skill exists in this project's `.claude/skills/` directory as of this pass.
 ### GAP-11 — Distributed simulation & exercise interoperability
 
 **Classification:** Genuinely missing, and judged to sit at the boundary between exercise design
-(`research-doctrine-exercises`'s nominal scope) and systems architecture rather than cleanly inside
+(`02-research-doctrine-exercises`'s nominal scope) and systems architecture rather than cleanly inside
 either. Federation standards (HLA/DIS/SISO), LVC integration patterns, and what they would demand
 of the `SessionAPI` seam are primarily an architecture/interface question — evaluating them well
 requires reading `docs/architecture/03-architecture.md` and `docs/architecture/09-api-specification.md`

@@ -835,7 +835,7 @@ recommendations, which already covered this document's two pass-1 items (R19/GAP
 architecture document was modified in this pass; only this ICD. Where a finding pointed toward a
 genuine gap outside this document's authority (e.g. item 16's missing actors, which is a GDS-02
 question), it is recorded in §7 as **identified, not resolved**, per this document's own established
-convention — closing it belongs to `architecture-design-synthesis` (for a GDS-02 actor addition) or
+convention — closing it belongs to `03-architecture-design-synthesis` (for a GDS-02 actor addition) or
 to the relevant `FS-201`/`FS-301` Implementation Package (for the interfaces items 13/14 candidate),
 not to this ICD. This ICD's own merge gate was already open before this amendment and remains open —
 both passes add to that open list rather than closing it.

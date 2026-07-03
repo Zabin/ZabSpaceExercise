@@ -15,7 +15,7 @@
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
 
-*This document follows the `feature-specification` skill's 20-field template. **Version 2.0
+*This document follows the `06-feature-specification` skill's 20-field template. **Version 2.0
 narrows this document's scope** per `docs/feature-planning/05-feature-review.md` Finding F-03: the
 prior v1.0 draft bundled the White Cell facilitator UI together with three architecturally distinct
 capabilities (multiplayer/LAN session transport, save/resume, and AI-Red doctrine automation), each

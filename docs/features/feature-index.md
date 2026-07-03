@@ -69,12 +69,12 @@ requires explicit user authorization — this index does not assume that authori
 
 ## Authoring note
 
-All FS files in this set follow the **`feature-specification` skill's 20-field template**
+All FS files in this set follow the **`06-feature-specification` skill's 20-field template**
 (Feature ID → Title → Purpose → Scope → Requirements Implemented → User Workflows → System
 Behaviour → Subsystem Responsibilities → Interfaces Used → Data Model Changes → State Changes →
 Error Handling → Performance Considerations → Security Considerations → Acceptance Criteria →
 Verification Plan → Dependencies → Risks → Open Questions → Related ADRs → Related Interfaces).
-The `feature-specification` skill governs all new and existing FS-xxx authoring in this repository;
+The `06-feature-specification` skill governs all new and existing FS-xxx authoring in this repository;
 the prior ad hoc per-section structure used in earlier drafts has been superseded in place — every
 file retains its existing path, Document ID, and MSTR-006 §5 metadata block.
 

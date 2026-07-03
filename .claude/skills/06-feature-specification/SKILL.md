@@ -1,5 +1,5 @@
 ---
-name: feature-specification
+name: 06-feature-specification
 description: Transform an approved Feature (a Feature Catalog entry, or this project's own DOM/ADS-grounded Feature concept) into a detailed technical design specification under docs/features/specifications/ — one FS-xxxx-name.md per Feature, ready to hand to an Implementation Package. Use when asked to "write the feature spec for FS-xxxx," "turn this approved feature into a design spec," "detail the system behavior/interfaces/data model for a feature," or to bridge an approved Feature Catalog/requirements baseline into implementation-ready detail. This skill performs no new requirements, no architecture redesign, no code, and does not modify the approved Feature it specifies — it is a pure elaboration step between an approved Feature and a downstream implementation package. Do not use it to decompose requirements into features (that belongs to feature-decomposition) or to make architecture decisions (that belongs to architecture-design-synthesis).
 ---
 
@@ -30,7 +30,7 @@ It SHALL NOT:
   gap.
 - **Modify approved Features.** This skill reads the Feature Catalog / approved Feature entry and
   never edits it. A Feature that looks mis-scoped, too large, or missing a dependency is a finding
-  to report upstream (to whoever owns `feature-decomposition`'s output), never something to
+  to report upstream (to whoever owns `05-feature-decomposition`'s output), never something to
   silently re-scope while writing its spec.
 
 It treats the following as **authoritative inputs**, never as something it edits or adds to:
@@ -61,15 +61,15 @@ Invoke this skill when:
 
 Do **not** invoke this skill when:
 
-- No Feature Catalog / approved Feature exists yet — run `feature-decomposition` first.
-- The requirements baseline backing the Feature isn't approved yet — run `requirements-engineering`
+- No Feature Catalog / approved Feature exists yet — run `05-feature-decomposition` first.
+- The requirements baseline backing the Feature isn't approved yet — run `04-requirements-engineering`
   first.
 - The request is to decompose requirements into features, size epics, or build a release plan —
-  that's `feature-decomposition`'s job, strictly upstream of this one.
+  that's `05-feature-decomposition`'s job, strictly upstream of this one.
 - The request is to write code, an implementation package, or tests for an already-specified
   Feature — that is downstream of this skill's output, not this skill's job.
 - The request is to change the architecture, add an interface, or add an ADR to make a Feature fit
-  — that's `architecture-design-synthesis` / the architecture owner's job; report the mismatch
+  — that's `03-architecture-design-synthesis` / the architecture owner's job; report the mismatch
   instead.
 
 ## Inputs
@@ -289,7 +289,7 @@ docs/
   The `docs/features/specifications/` subdirectory named in the Outputs section below is the
   canonical write scope for **new** Feature Specifications going forward; it does not apply
   retroactively to the absorbed 11 files, which remain at their existing paths.
-- **No Feature Catalog exists in this repository yet.** The repo has no `feature-decomposition`-
+- **No Feature Catalog exists in this repository yet.** The repo has no `05-feature-decomposition`-
   produced catalog in `docs/features/`. When invoked here for a new Feature Specification, treat
   the relevant `DOM-xxx`/`ADS-xxx` documents as the "approved Feature" input in place of a Feature
   Catalog row, and confirm this is the intended source before drafting.
@@ -354,3 +354,27 @@ The specification is successful when:
    themselves, and without the spec having made any of those decisions for them prematurely.
 5. **Non-interference** — the approved Feature (catalog entry or `DOM-xxx`/`ADS-xxx` source) is
    unchanged; this skill only adds a new, more detailed artifact downstream of it.
+
+## Pipeline position & completion summary (mandatory, every run)
+
+This skill is **Stage 06 — Feature Specification** of the documentation-driven-development pipeline
+(see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
+`00-pipeline-manager` reports where the project currently stands). Upstream:
+`05-feature-decomposition`. Downstream: `07-implementation-planning`.
+
+End **every** invocation — new spec, spec update, or blocked stop — with a chat summary containing
+exactly these three parts:
+
+1. **What changed** — the spec(s) produced or updated (paths), and the index entry added/updated.
+2. **Recommendations** — every Open Question the spec surfaced, with its owning upstream skill
+   (`03-architecture-design-synthesis` for architecture/interface gaps, `04-requirements-engineering`
+   for requirement gaps, `02-research-*` for domain-knowledge gaps), plus any mis-scoping finding
+   to report to `05-feature-decomposition`'s catalog owner.
+3. **Next step** — say explicitly what to run next and why: if Open Questions block
+   implementation-readiness, route them upstream first and re-invoke this skill to close them;
+   otherwise advance to `07-implementation-planning` to convert this spec into Implementation
+   Package(s) — or, if more features in the current release bucket still need specs, re-invoke this
+   skill for the next one and name it.
+
+Never end a run without naming the next step — the pipeline is driven one stage at a time, and the
+user relies on each stage's summary to know what to invoke next.

@@ -12,7 +12,7 @@
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
 
-*This document follows the `feature-specification` skill's 20-field template; it supersedes this file's prior ad hoc structure while retaining its existing Document ID, status, and metadata per MSTR-006 §5.*
+*This document follows the `06-feature-specification` skill's 20-field template; it supersedes this file's prior ad hoc structure while retaining its existing Document ID, status, and metadata per MSTR-006 §5.*
 
 ## Feature ID
 

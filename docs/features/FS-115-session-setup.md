@@ -11,7 +11,7 @@
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
 
-*This document follows the `feature-specification` skill's 20-field template. It is a **new**
+*This document follows the `06-feature-specification` skill's 20-field template. It is a **new**
 Feature Specification closing Finding F-10 in `docs/feature-planning/05-feature-review.md`,
 discovered while splitting `FS-106`: reading that document's actual v1.0 content showed it never
 covered vignette selection or seat assignment at session setup at all, despite both having real,

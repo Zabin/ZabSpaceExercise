@@ -1,5 +1,5 @@
 ---
-name: research-methods-and-validation
+name: 02-research-methods-and-validation
 description: Produce and refresh the R400-tier research-methods encyclopedia (experimental design, hypotheses/variables, statistics, measurement theory, uncertainty analysis, modeling practices, Monte Carlo, sensitivity analysis, verification, validation, human-subjects research, survey/instrument design, data analysis and reporting) that grounds assessment/validation work (DOM-002, DOM-005). Use when asked to research statistics/experiment-design/measurement/validation topics, to add/extend `docs/research/encyclopedia/R4xx-*` topics, or to gather grounding facts before drafting an FS-xxx/IMP-xxx spec or assessment/validation feature that touches measurement, statistical claims, or model V&V. Tier R400 closed its GAP-13 sourcing/scope remediation 2026-07-02 — this is now steady-state maintenance, not a remediation backlog. Not for novice statistics tutorials — those belong in `docs/training/`.
 ---
 
@@ -125,5 +125,31 @@ means *complete*, not *frozen* — do not bulk-author new topics by default; add
   it as a Tier A "primary source" in its own right, not just cite external Monte Carlo literature.
 - This skill does not touch Tier R100 (orbital mechanics/OW), R200 (decision sciences, no skill
   yet), R300 (doctrine/exercises), or R500 (future operations) — those belong to
-  `research-ow-orbital-mechanics`, a future decision-sciences skill, `research-doctrine-exercises`,
-  and `research-future-operations` respectively.
+  `02-research-ow-orbital-mechanics`, a future decision-sciences skill, `02-research-doctrine-exercises`,
+  and `02-research-future-operations` respectively.
+
+## Pipeline position & completion summary (mandatory, every run)
+
+This skill is **Stage 02 — Research** of the documentation-driven-development pipeline (see
+[`.claude/skills/README.md`](../README.md); stages run in numeric order, and `00-pipeline-manager`
+reports where the project currently stands). The four `02-research-*` skills are peers at the same
+stage — run whichever owns the tier the gap is in; they have no ordering among themselves.
+Upstream: `01-vision`. Downstream: `03-architecture-design-synthesis` (and whichever spec-authoring
+skill requested the grounding).
+
+End **every** invocation — full topic authoring, maintenance edit, or blocked stop — with a chat
+summary containing exactly these three parts:
+
+1. **What changed** — every encyclopedia topic/primer produced or updated (paths), every index
+   status flipped.
+2. **Recommendations** — remaining coverage gaps, citation-rot findings, single-source claims that
+   need a second source, and who owns each follow-up.
+3. **Next step** — say explicitly what to run next and why: if this run closed a grounding gap
+   requested by a downstream skill (`03-architecture-design-synthesis`,
+   `06-feature-specification`, `07-implementation-planning`), return to that skill and resume the
+   blocked artifact; if another research tier still has a gap for the current increment, name the
+   sibling `02-research-*` skill that owns it; otherwise advance to
+   `03-architecture-design-synthesis`.
+
+Never end a run without naming the next step — the pipeline is driven one stage at a time, and the
+user relies on each stage's summary to know what to invoke next.

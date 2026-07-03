@@ -13,7 +13,7 @@
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
 
-*This document follows the `feature-specification` skill's 20-field template. It is a **new**
+*This document follows the `06-feature-specification` skill's 20-field template. It is a **new**
 Feature Specification, split out of `FS-106-white-cell-dashboard.md` v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 — the prior v1.0 draft folded the
 automated Red-activity-generation mechanism (its own dedicated ADRs: ADR-0021, ADR-0024, ADR-0030,

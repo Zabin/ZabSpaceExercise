@@ -161,7 +161,7 @@ state for a newly-promoted, not-yet-implemented requirement, not a guessed place
 
 ### Candidate Requirements (CR-01–CR-21) — `CANDIDATE — NOT BASELINED`
 
-Per the `requirements-engineering` skill's own discipline, Candidates get rows but most
+Per the `04-requirements-engineering` skill's own discipline, Candidates get rows but most
 forward-trace columns are `UNASSIGNED` by definition (they describe unimplemented or
 out-of-scope-for-v1 capabilities). Research/ADR columns reflect each Candidate's own explicit
 "Source" field; nothing here is inferred. `CR-12`–`CR-18`, marked *(new 2026-07)*, follow

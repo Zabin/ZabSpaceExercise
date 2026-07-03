@@ -11,7 +11,7 @@
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
 
-*This document follows the `feature-specification` skill's 20-field template. It is a **new**
+*This document follows the `06-feature-specification` skill's 20-field template. It is a **new**
 Feature Specification, split out of `FS-106-white-cell-dashboard.md` v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 — the prior v1.0 draft bundled this
 mechanism (its own dedicated ADR-0022 and its own ICD issue closure, §7 issue 4) inside the White

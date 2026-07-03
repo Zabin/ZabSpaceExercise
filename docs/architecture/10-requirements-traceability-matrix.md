@@ -34,5 +34,5 @@ before this level is authored.
 
 ## Next
 
-Use the `architecture-design-synthesis` skill to author this document. This closes the global
+Use the `03-architecture-design-synthesis` skill to author this document. This closes the global
 ladder; no further GDS level follows.

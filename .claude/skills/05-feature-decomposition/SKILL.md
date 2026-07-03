@@ -1,5 +1,5 @@
 ---
-name: feature-decomposition
+name: 05-feature-decomposition
 description: Transform an approved requirements baseline (docs/research/, docs/architecture/, docs/requirements/ — Functional Requirements, Non-Functional Requirements, ICD, Traceability Matrix, ADRs) into an implementable Release Plan, Epic Catalog, Feature Catalog, Feature Dependency Graph, and Feature Review under docs/features/. Use when asked to "decompose the requirements into features," "build a feature catalog," "group requirements into epics," "plan releases/MVP/prototype scope," "build a feature dependency graph," or to bridge an approved systems-engineering baseline into software-engineering-sized implementation units. This skill performs no new research, no architecture redesign, no requirements authoring/editing, no implementation packages, and no code — it is a pure organization-and-planning step between an approved requirements baseline and downstream Feature Specifications (FS-xxx)/implementation. Do not use it to originate requirements (that belongs to requirements-engineering) or to make architecture decisions (that belongs to architecture-design-synthesis).
 ---
 
@@ -73,9 +73,9 @@ Invoke this skill when:
 Do **not** invoke this skill when:
 
 - No `docs/requirements/` baseline exists yet, or it has not been approved/baselined — run
-  `requirements-engineering` first.
+  `04-requirements-engineering` first.
 - The request is to write or revise architecture, ADRs, or requirements themselves — those belong
-  to `architecture-design-synthesis` / `requirements-engineering`.
+  to `03-architecture-design-synthesis` / `04-requirements-engineering`.
 - The request is to write a Feature Specification (`FS-xxx`) body, an implementation package, or
   code for a single already-identified feature — that is downstream of this skill's output, not
   this skill's job.
@@ -408,7 +408,7 @@ that Feature's `Open Questions` and flag it as a missing-architecture-detail fin
   input to sprint/milestone planning conversations, but keep that planning conversation itself
   outside this skill's output — the release plan states *which bucket*, not *which sprint*.
 - When a project already has its own architecture ladder with subsystem decomposition baked in (as
-  `architecture-design-synthesis` produces in GDS-03), always prefer aligning Epic and Feature
+  `03-architecture-design-synthesis` produces in GDS-03), always prefer aligning Epic and Feature
   boundaries to that decomposition over inventing a parallel one — a second, uncoordinated
   capability taxonomy is exactly the kind of architectural inconsistency Step 5 is meant to catch.
 
@@ -443,7 +443,7 @@ the write target stay fixed regardless.
   `feature-index.md` plus full `FS-101-mission-planning.md`-style documents — governed by a
   *different* chain documented in `docs/master/MSTR-005-documentation-map.md`: `docs/research/` +
   domain framework → `ADS-xxx` (Architecture Design Synthesis, produced by the
-  `architecture-design-synthesis` skill) → `FS-xxx` (a **full single-capability Feature
+  `03-architecture-design-synthesis` skill) → `FS-xxx` (a **full single-capability Feature
   Specification document**, the actual implementable spec) → `IMP-xxx` → code → tests. Those
   `FS-xxx` files are not this skill's catalog rows — they are downstream artifacts this skill's
   Feature Catalog entries point *forward* to, written later by a separate workflow.
@@ -517,3 +517,28 @@ The decomposition is successful when:
 5. **Stability under change** — when one requirement changes, only the directly-affected Feature
    (and its Epic/graph/release entries) need updating — the rest of the catalog remains valid
    without a full regeneration.
+
+## Pipeline position & completion summary (mandatory, every run)
+
+This skill is **Stage 05 — Feature Decomposition** of the documentation-driven-development pipeline
+(see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
+`00-pipeline-manager` reports where the project currently stands). Upstream:
+`04-requirements-engineering`. Downstream: `06-feature-specification`.
+
+End **every** invocation — full decomposition, delta update, standalone Feature Review, or blocked
+stop — with a chat summary containing exactly these three parts:
+
+1. **What changed** — which of the five deliverables were produced or updated (paths), and the
+   headline numbers (features, epics, release buckets, critical-path length).
+2. **Recommendations** — the Feature Review's key findings (unassigned/double-assigned
+   requirements, oversized features, dependency cycles) and who owns each; anything requiring a
+   requirements or architecture change goes upstream to `04-requirements-engineering` /
+   `03-architecture-design-synthesis`.
+3. **Next step** — say explicitly what to run next and why: if the Review surfaced Critical
+   findings, resolve them first and re-run the affected steps; otherwise advance to
+   `06-feature-specification`, naming the specific catalog entry to specify next (the
+   highest-priority release bucket's first unspecified, unblocked feature per
+   `01-release-plan.md` and the dependency graph).
+
+Never end a run without naming the next step — the pipeline is driven one stage at a time, and the
+user relies on each stage's summary to know what to invoke next.

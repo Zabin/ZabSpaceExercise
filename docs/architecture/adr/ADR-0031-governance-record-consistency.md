@@ -47,7 +47,7 @@ remedies:
    a new architectural decision.
 2. **The DOM-002/DOM-005 status inversion is acknowledged, not retroactively resolved.** This ADR
    does **not** author DOM-002 or DOM-005 (that is `docs/domains/` tier work, requires the
-   `architecture-design-synthesis`/domain-framework authoring process, and is explicitly out of
+   `03-architecture-design-synthesis`/domain-framework authoring process, and is explicitly out of
    scope for an architecture-document review pass). Nor does it change FS-201/FS-301's `✅ Done`
    status — both features are shipped, working, and correctly documented as such; retroactively
    marking them `🚧` would misdescribe the as-built system to correct a paperwork ordering problem.

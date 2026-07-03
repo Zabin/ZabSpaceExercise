@@ -11,8 +11,8 @@ Router for `docs/architecture/`. Two things live here, at two different granular
    sections) defined in `MSTR-005` §3a, used when one capability cluster needs its own deep-dive
    synthesis even after the global ladder exists. Unchanged from the prior revision; see §2 below.
 
-Both are produced by the `architecture-design-synthesis` skill
-(`.claude/skills/architecture-design-synthesis/`).
+Both are produced by the `03-architecture-design-synthesis` skill
+(`.claude/skills/03-architecture-design-synthesis/`).
 
 > **This directory is now the single authoritative architecture/requirements source for the whole
 > project, superseding `docs/build-spec/` in its entirety**, per `CLAUDE.md`'s "Authoritative
@@ -48,7 +48,7 @@ This ladder is **strictly sequential and gated**: `GDS-(N+1)` may not be started
 both (a) authored and (b) has finished merging in whatever existing-corpus content overlaps it
 (the "Merges from" column above). The merge is not optional cleanup — it is part of what "done"
 means for that level. Per the user's explicit instruction, this gate applies at every step of the
-top-to-bottom iteration the `architecture-design-synthesis` skill will run.
+top-to-bottom iteration the `03-architecture-design-synthesis` skill will run.
 
 **Progress:** GDS-00 through GDS-05 are authored with their merge gates closed (see their
 Status cells above and each document's own "Merge gate" section for the recorded decision). GDS-05
@@ -100,7 +100,7 @@ Constraints, Risks, Open Questions, Decision Log. Size discipline: ~8-15 pages e
 No `ADS-xxx` has been authored yet. Add a row here (status `⛔ Planned`) before authoring a new
 `ADS-xxx`, and mirror it in `ROADMAP.md`'s Architecture / Design Synthesis theme table, per the
 index-before-content convention used elsewhere in this corpus (e.g.
-`research-doctrine-exercises`'s workflow step 3).
+`02-research-doctrine-exercises`'s workflow step 3).
 
 ## 3. Architecture Decision Records (`docs/architecture/adr/`)
 
@@ -115,7 +115,7 @@ Open Questions the ladder left genuinely open and were resolved afterward by exp
 project-owner decision; 2 (ADR-0030–0031) were added in direct response to
 [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) — see
 [`reviews/architecture-update.md`](../reviews/architecture-update.md); 2 more (ADR-0032–0033) were
-added to resolve conflicts a `requirements-engineering` pass found between `DOM-002`/`004` and
+added to resolve conflicts a `04-requirements-engineering` pass found between `DOM-002`/`004` and
 `ADR-0017`/`ADR-0029` — see [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md).
 `ADR-0033` supersedes `ADR-0029`, this corpus's first `Superseded` entry).
 

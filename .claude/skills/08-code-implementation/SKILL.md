@@ -1,6 +1,6 @@
 ---
-name: code-implementation
-description: Implement exactly one approved, eligible Implementation Package end-to-end — write the source code and tests it describes, run the full test suite, fix defects this package's own changes introduced, update the documentation and traceability the package names, and advance that package's status on the Master Build Plan. Use when asked to "implement IP-xxxx," "pick up the next ready package and build it," "execute the next step of the Master Build Plan," or to turn one already-written Implementation Package into working, tested code. This is the first skill in the documentation-driven-development chain authorized to write or modify production source code — unlike the upstream planning/spec-authoring skills, which never touch code. It selects and implements exactly one package per invocation, never redesigns architecture, never edits requirements, never modifies the Feature Specification or Implementation Package it is executing, and never chooses work outside the Master Build Plan. Do not use it to convert Feature Specifications into Implementation Packages or to author a Master Build Plan (that's an upstream planning skill's job) or to independently re-verify/audit an already-COMPLETE package against the shipped code (that's a downstream verification skill's job, which alone may advance a package to VERIFIED).
+name: 08-code-implementation
+description: Implement exactly one approved, eligible Implementation Package end-to-end — write the source code and tests it describes, run the full test suite, fix defects this package's own changes introduced, update the documentation and traceability the package names, and advance that package's status on the Master Build Plan. Use when asked to "implement IP-xxxx," "pick up the next ready package and build it," "execute the next step of the Master Build Plan," or to turn one already-written Implementation Package into working, tested code. This is the first skill in the documentation-driven-development chain authorized to write or modify production source code — unlike the upstream planning/spec-authoring skills, which never touch code. It selects and implements exactly one package per invocation, never redesigns architecture, never edits requirements, never modifies the Feature Specification or Implementation Package it is executing, and never chooses work outside the Master Build Plan. Do not use it to convert Feature Specifications into Implementation Packages or to author a Master Build Plan (that's 07-implementation-planning's job) or to independently re-verify/audit an already-COMPLETE package against the shipped code (that's 09-package-verification's job, which alone may advance a package to VERIFIED).
 ---
 
 # Code Implementation
@@ -502,3 +502,26 @@ The implementation run is successful when:
 5. **Honesty under uncertainty** — a package that could not be safely implemented as written
    produced a clear, actionable Blocking Report instead of a plausible-looking but silently
    incorrect implementation.
+
+## Pipeline position & completion summary (mandatory, every run)
+
+This skill is **Stage 08 — Package Execution** of the documentation-driven-development pipeline
+(see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
+`00-pipeline-manager` reports where the project currently stands). Upstream:
+`07-implementation-planning` (which authors the Master Build Plan and the `IP-xxxx` packages this
+skill executes). Downstream: `09-package-verification` (the only skill that may advance a package
+to `VERIFIED`).
+
+The Implementation Summary (Step 11) already carries the run's factual record; in the same closing
+message, additionally state:
+
+1. **Recommendations** — every Outstanding Issue with its suggested owner (a follow-up package via
+   `07-implementation-planning`, an upstream artifact owner, or the user).
+2. **Next step** — say explicitly what to run next and why: after a package reaches `COMPLETE`,
+   the next step is always `09-package-verification` for that same package — never another
+   implementation run first, and never chained automatically by this run; after a Blocking Report,
+   the next step is whatever the report's "Required action"/"Recommended owner" names (usually
+   `07-implementation-planning` to repair the package, or the user for an authorization gate).
+
+Never end a run without naming the next step — the pipeline is driven one stage at a time, and the
+user relies on each stage's summary to know what to invoke next.

@@ -212,7 +212,7 @@ Objective → Domain → Research → **Design Synthesis** → Feature Specifica
 Package → Code → Tests. Each `ADS-xxx` document has ten fixed sections (Executive Design Overview,
 System Architecture, Domain Model, User Stories, Functional Requirements, Non-functional
 Requirements, Constraints, Risks, Open Questions, Decision Log — `MSTR-005` §3a) and is produced by
-the `architecture-design-synthesis` skill. Optional per `MSTR-005` §4 — only used for capability
+the `03-architecture-design-synthesis` skill. Optional per `MSTR-005` §4 — only used for capability
 clusters with real design tension; small/uncontested features skip straight to `FS-xxx`. Router:
 [`architecture/INDEX.md`](docs/architecture/INDEX.md).
 
@@ -221,7 +221,7 @@ clusters with real design tension; small/uncontested features skip straight to `
 | ADS-00 | Architecture index | `architecture/INDEX.md` | — | ✅ |
 
 No `ADS-xxx` capability document has been authored yet — this row will grow as the
-`architecture-design-synthesis` skill is run against a capability cluster with real design tension.
+`03-architecture-design-synthesis` skill is run against a capability cluster with real design tension.
 
 ### Global ladder (`GDS-00`…`GDS-10`, scaffolded this revision, content not yet authored)
 
@@ -272,7 +272,7 @@ language independently duplicated in `docs/requirements/01`/`02`'s own header no
 defect `ADR-0031` fixed in `architecture/00-vision.md` §7, but outside that document's scope).
 
 **DOM-002/004/005 backfill (2026-07):** a second follow-up requirements-tier pass, closing
-`docs/feature-planning/05-feature-review.md` Finding F-01, ran `requirements-engineering` against
+`docs/feature-planning/05-feature-review.md` Finding F-01, ran `04-requirements-engineering` against
 DOM-002 (Assessment)/DOM-004 (Research)/DOM-005 (Validation) — the three domains grounding
 FS-201/FS-202/FS-301 with no prior requirement at all. Found that DOM-002/FS-201's automated
 rubric computation conflicts with Accepted ADR-0017 (no automated scoring/assessment mechanism in
@@ -346,12 +346,12 @@ Implementation Package at all yet (pending the build-status verification above).
 (Consistency/Dependency/Traceability review, MSTR-006 §7) is also complete (see the dedicated
 theme section below), predating both this split and these four new specs.
 
-## Theme: Feature Planning — `feature-decomposition` skill output (`docs/feature-planning/`)
+## Theme: Feature Planning — `05-feature-decomposition` skill output (`docs/feature-planning/`)
 
 New, 2026-07 — an audit of the document hierarchy found only 11 `FS-xxx` documents against a
 94-leaf-citation (49 unique baselined leaves) `docs/requirements/` corpus, with the RTM carrying no
 FR→FS column and every existing FS's own "Requirements Implemented" section reading "None
-identified." The `feature-decomposition` skill was run against the approved requirements baseline
+identified." The `05-feature-decomposition` skill was run against the approved requirements baseline
 (`docs/requirements/01`–`03`) to produce a planning-grain Feature Catalog upstream of `FS-xxx`. Its
 `FEAT-xxxx` rows are a **different artifact** from this theme's own `FS-xxx` documents (see
 `docs/feature-planning/05-feature-review.md`'s mapping note) — not a replacement or renumbering.
@@ -517,7 +517,7 @@ FS → IMP → Code → Tests) for all 11 Feature Specifications:
 > `docs/architecture/` is now resolved per option (a) — it was aspirational MSTR-006 §5 scope, now
 > given real content: the `ADS-xxx` Design Synthesis tier (`MSTR-005` §3a/§4,
 > `docs/architecture/INDEX.md`, the theme table above), produced by the
-> `architecture-design-synthesis` skill. It does not replace `docs/design/`, which stays the
+> `03-architecture-design-synthesis` skill. It does not replace `docs/design/`, which stays the
 > detailed "how" for architecture that exists or is being built — `ADS-xxx` is upstream of that,
 > synthesizing domain+research inputs before a Feature Spec commits to a shape (`MSTR-005` §3a).
 > `docs/scenarios/` remains unresolved — still empty, still unclear whether it should eventually

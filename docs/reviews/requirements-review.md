@@ -14,8 +14,8 @@ production of this report.
 (INT-0001–INT-0016), the GDS architecture ladder
 ([`architecture/INDEX.md`](../architecture/INDEX.md), GDS-00 through GDS-05; GDS-06–GDS-10
 confirmed scaffold-only), all 29 ADRs ([`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md)),
-and the `requirements-engineering` skill definition
-(`.claude/skills/requirements-engineering/SKILL.md`) whose Step 1–2 outputs the FR/NFR documents
+and the `04-requirements-engineering` skill definition
+(`.claude/skills/04-requirements-engineering/SKILL.md`) whose Step 1–2 outputs the FR/NFR documents
 under review are.
 
 **Method:** Cross-reading the requirements baseline against its own stated traceability fields,
@@ -39,7 +39,7 @@ tracked elsewhere).
 
 ## 0. Skill-conformance check (new dimension, not in the task's ten but load-bearing for the rest)
 
-The `requirements-engineering` skill's own spec (SKILL.md "Outputs") names exactly four
+The `04-requirements-engineering` skill's own spec (SKILL.md "Outputs") names exactly four
 deliverables, in order, all under `docs/requirements/`: `01-functional-requirements.md`,
 `02-non-functional-requirements.md`, `03-requirements-review.md`,
 `04-requirements-traceability-matrix.md`. On disk, only the first two exist; `03` and `04` were
@@ -51,7 +51,7 @@ path instruction controls); see **REQ-001** below.
 
 | Issue ID | Severity | Description | Affected requirement(s) | Recommended resolution |
 |---|---|---|---|---|
-| **REQ-001** | Medium | The `requirements-engineering` skill's own contract names `docs/requirements/03-requirements-review.md` and `docs/requirements/04-requirements-traceability-matrix.md` as mandatory Step 3/4 deliverables. Neither exists. This document (at `docs/reviews/requirements-review.md`, per explicit task instruction) substantively fulfills Step 3's role but at a different path and name, and **Step 4 (the Requirements Traceability Matrix) has no equivalent anywhere** — GDS-10 is also scaffold-only (see REQ-002), so there is no traceability matrix in the entire repository in any location. | Whole FR/NFR baseline (no row-level forward traceability to Subsystem/Feature Spec/Implementation/Test exists anywhere) | Either (a) add `docs/requirements/04-requirements-traceability-matrix.md` per the skill's Step 4 template (one row per FR/NFR/candidate, `UNASSIGNED` where forward artifacts don't exist yet — explicitly the skill's own recommended honest state), or (b) treat GDS-10's eventual authoring as the matrix and record that decision in `architecture/INDEX.md`/`requirements/`'s cross-references so the skill's Step 4 isn't silently dropped. Either is acceptable; leaving it unaddressed is not, since "traceable requirements baseline" is the skill's stated purpose. |
+| **REQ-001** | Medium | The `04-requirements-engineering` skill's own contract names `docs/requirements/03-requirements-review.md` and `docs/requirements/04-requirements-traceability-matrix.md` as mandatory Step 3/4 deliverables. Neither exists. This document (at `docs/reviews/requirements-review.md`, per explicit task instruction) substantively fulfills Step 3's role but at a different path and name, and **Step 4 (the Requirements Traceability Matrix) has no equivalent anywhere** — GDS-10 is also scaffold-only (see REQ-002), so there is no traceability matrix in the entire repository in any location. | Whole FR/NFR baseline (no row-level forward traceability to Subsystem/Feature Spec/Implementation/Test exists anywhere) | Either (a) add `docs/requirements/04-requirements-traceability-matrix.md` per the skill's Step 4 template (one row per FR/NFR/candidate, `UNASSIGNED` where forward artifacts don't exist yet — explicitly the skill's own recommended honest state), or (b) treat GDS-10's eventual authoring as the matrix and record that decision in `architecture/INDEX.md`/`requirements/`'s cross-references so the skill's Step 4 isn't silently dropped. Either is acceptable; leaving it unaddressed is not, since "traceable requirements baseline" is the skill's stated purpose. |
 | **REQ-002** | High | GDS-10 (Requirements Traceability Matrix) is confirmed scaffold-only (`architecture/10-requirements-traceability-matrix.md` — two unchecked merge-gate boxes, no content). This is the terminal deliverable of the entire GDS ladder and the only place a formal requirement→architecture→ADR→interface→test matrix could live authoritatively. Its absence means every traceability claim in this corpus (FR "Related ADRs"/"Related Interfaces" fields, the ICD's "Related architecture components," ADR "Related" sections) is an **informal, scattered cross-reference**, not a verifiable matrix — there is no single artifact that can be queried to answer "is every FR covered by a test" or "is every ADR consumed by at least one FR." | Whole baseline; GDS-10 itself | Author GDS-10 (or the skill's Step 4 matrix per REQ-001) before the baseline is treated as implementation-ready. This is already CNFR/GDS-level tracked (architecture/INDEX.md marks GDS-10 ⛔ Planned) — this finding corroborates that the gap is also a *requirements*-traceability blocker, not only an architecture-ladder completeness gap. |
 
 ---
@@ -192,6 +192,6 @@ review is confirmed closed by ADR-0029 (REQ-070).
 [`docs/architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) ·
 [`docs/reviews/architecture-review.md`](architecture-review.md) (sibling review, GDS-01–04 only;
 cross-referenced throughout rather than duplicated) ·
-[`.claude/skills/requirements-engineering/SKILL.md`](../../.claude/skills/requirements-engineering/SKILL.md)
+[`.claude/skills/04-requirements-engineering/SKILL.md`](../../.claude/skills/04-requirements-engineering/SKILL.md)
 (the skill whose Step 1/2 outputs are this review's primary subject, and whose own Step 3/4 gap is
 REQ-001/002's basis).

@@ -192,7 +192,7 @@ Design Synthesis     (ADS-xxx — domain+research synthesized into an architectu
                        requirements, constraints, risks, and decisions — see §3a)
         ↓
 Feature Specification (FS-xxx — what the capability must do, no implementation detail;
-                       **all FS-xxx authoring, old and new, is governed by the `feature-specification`
+                       **all FS-xxx authoring, old and new, is governed by the `06-feature-specification`
                        skill and its 20-field template — this supersedes the prior ad hoc per-section
                        structure; existing FS files retain their paths, IDs, and MSTR-006 §5 metadata**)
         ↓
@@ -221,13 +221,13 @@ Each document in the chain must carry, in its metadata block, the IDs of its imm
 3. Is it domain knowledge a coding agent needs to implement correctly, written for that audience? →
    `research/encyclopedia/`, tiered R1xx-R5xx by subject (see MSTR-007 §3 for the tier definitions).
 4. Does it describe *what* a capability must do, with no implementation detail? → `features/`,
-   authored using the `feature-specification` skill's 20-field template.
+   authored using the `06-feature-specification` skill's 20-field template.
 5. Does it describe *how* to build a specific Feature Spec (data model, API, tests, migration)? →
    `implementations/`.
 6. Does it synthesize a capability cluster's domain+research inputs into an architecture, domain
    model, requirements, constraints, risks, and decisions *before* a Feature Specification commits
    to a shape? → `architecture/` as `ADS-xxx` (see §3a). Produced by the
-   `architecture-design-synthesis` skill.
+   `03-architecture-design-synthesis` skill.
 7. Is it process guidance for designing a vignette/scenario (not the scenario content itself)? →
    `scenarios/`.
 8. Otherwise: does it already have a home in `build-spec/`, `design/`, `research/01-07`,

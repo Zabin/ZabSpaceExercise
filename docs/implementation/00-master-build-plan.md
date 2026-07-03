@@ -11,7 +11,7 @@
 > Implementation Package in this pass
 > **Feature Mapping:** FS-101 through FS-107, FS-201, FS-301 (9 of 11 catalog entries; FS-108/
 > FS-202 excluded, see §"Scope and exclusions")
-> **Related Topics:** [`packages/INDEX.md`](packages/INDEX.md), [`docs/implementations/INDEX.md`](../implementations/INDEX.md) (the superseded prior corpus), [`.claude/skills/code-implementation/SKILL.md`](../../.claude/skills/code-implementation/SKILL.md) (the downstream skill that executes packages against this plan)
+> **Related Topics:** [`packages/INDEX.md`](packages/INDEX.md), [`docs/implementations/INDEX.md`](../implementations/INDEX.md) (the superseded prior corpus), [`.claude/skills/08-code-implementation/SKILL.md`](../../.claude/skills/08-code-implementation/SKILL.md) (the downstream skill that executes packages against this plan)
 
 [↑ Docs index](../INDEX.md) · [Packages index](packages/INDEX.md) · [Feature index](../features/feature-index.md)
 

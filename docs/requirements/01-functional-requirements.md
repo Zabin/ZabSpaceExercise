@@ -1590,7 +1590,7 @@ to GDS-02/03/04 explicitly marked "not built, not scheduled, not committed" — 
 status as CR-01–CR-11 above, just newly named rather than newly built. See
 `reviews/requirements-update-report.md` for the full derivation.
 
-**CR-19–CR-21 added 2026-07**, following a `requirements-engineering` pass against DOM-002
+**CR-19–CR-21 added 2026-07**, following a `04-requirements-engineering` pass against DOM-002
 (Assessment Framework), DOM-004 (Research Framework), and DOM-005 (Validation Framework) —
 closing `docs/feature-planning/05-feature-review.md` Finding F-01 (these domains ground shipped
 Feature Specifications FS-201/FS-202/FS-301 with zero corresponding requirement anywhere in this

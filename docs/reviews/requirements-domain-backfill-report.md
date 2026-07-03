@@ -9,7 +9,7 @@
 > **Scope:** `docs/requirements/01-functional-requirements.md`,
 > `docs/requirements/02-non-functional-requirements.md`,
 > `docs/requirements/03-requirements-traceability-matrix.md` — run with the
-> `requirements-engineering` skill against DOM-002 (Assessment Framework), DOM-004 (Research
+> `04-requirements-engineering` skill against DOM-002 (Assessment Framework), DOM-004 (Research
 > Framework), DOM-005 (Validation Framework), and their existing output (FS-201 Competency
 > Assessment, FS-202 Rubric Authoring [candidate], FS-301 Research Analytics).
 > **No architecture was redesigned.** DOM-002/004/005, the ADR set, and FS-201/FS-301 are read as

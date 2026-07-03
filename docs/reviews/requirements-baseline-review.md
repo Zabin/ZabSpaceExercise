@@ -100,7 +100,7 @@ incrementally rather than all at once up front.
   anywhere sampled.
 - **NFR-1100/NFR-1200** (UI responsiveness at 600× time multiplier; hardware-floor frame rate) carry
   **qualitative**, not numeric, acceptance criteria — correctly, per the
-  `requirements-engineering` skill's own rule ("if the inputs don't specify a number, don't
+  `04-requirements-engineering` skill's own rule ("if the inputs don't specify a number, don't
   manufacture one"). No source document (build-spec, GDS-03) commits to a numeric latency/frame-rate
   target. This is the honest state, not an authoring defect, but it does mean these two leaves are
   harder to fail a build against mechanically than a numeric SLA would be. Tracked as an open issue

@@ -11,7 +11,7 @@
 
 ## Context
 
-`docs/reviews/requirements-domain-backfill-report.md` §3.1 (produced by a `requirements-engineering`
+`docs/reviews/requirements-domain-backfill-report.md` §3.1 (produced by a `04-requirements-engineering`
 pass against DOM-002, the Assessment Framework, and its output `FS-201` Competency Assessment)
 found that FS-201's core capability — an always-available, automated computation of qualitative
 rubric tiers (custody quality, window discipline, belief-truth divergence, and three deferred
