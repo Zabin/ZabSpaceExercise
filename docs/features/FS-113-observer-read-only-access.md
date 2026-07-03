@@ -11,7 +11,7 @@
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
 
-*This document follows the `feature-specification` skill's 20-field template. It is a **new**
+*This document follows the `06-feature-specification` skill's 20-field template. It is a **new**
 Feature Specification closing Finding F-02 in `docs/feature-planning/05-feature-review.md`: this
 capability had a real, Must-priority baselined FR (FR-6510) but zero presence in any of the 11
 pre-existing `FS-xxx` documents. No `docs/domains/DOM-xxx` document names Observer as its own

@@ -11,7 +11,7 @@
 
 ## Context
 
-`docs/reviews/requirements-domain-backfill-report.md` §3.2 (produced by a `requirements-engineering`
+`docs/reviews/requirements-domain-backfill-report.md` §3.2 (produced by a `04-requirements-engineering`
 pass against DOM-004, the Research Framework, and its output `FS-301` Research Analytics) found
 that FS-301's core capability — a purpose-built export/cohort-management layer producing structured
 per-run records (vignette ID, seed, condition-label metadata, per-dimension rubric results) across

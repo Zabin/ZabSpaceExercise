@@ -10,7 +10,7 @@
 > `docs/requirements/03-requirements-traceability-matrix.md` — the three documents
 > `architecture-update.md` §5 explicitly left untouched ("`docs/requirements/` (GDS-05 and its
 > elaboration) — **not modified**, per instruction"). This report is that follow-up pass, run with
-> the `requirements-engineering` skill, per explicit instruction to determine whether any
+> the `04-requirements-engineering` skill, per explicit instruction to determine whether any
 > *accepted* recommendation requires a new Functional Requirement, a new Non-Functional
 > Requirement, a modification to an existing requirement, or a traceability update — and, if so,
 > to make it.
@@ -34,7 +34,7 @@ action at all, because its architecture-tier disposition already fully captures 
 not-built, not-scheduled candidate component/concept/risk that belongs in this baseline's existing
 **Candidate Requirements** mechanism — the same mechanism `docs/requirements/01` already used for
 eleven pre-existing gaps (`CR-01`–`CR-11`) before this review ever ran. Candidates are explicitly
-excluded from the numbered baseline by the `requirements-engineering` skill's own rule ("Never
+excluded from the numbered baseline by the `04-requirements-engineering` skill's own rule ("Never
 promote a candidate into the numbered tree within the same pass that names it"), so adding them is
 not a "new requirement" in the sense the task's question is really asking about — it is
 **traceability bookkeeping** that keeps the requirements-tier documentation from silently omitting
@@ -158,7 +158,7 @@ existing baselined FR/NFR's substantive content.
 All eight are added to their documents' existing `Candidate Requirements`/`Candidate NFRs`
 sections, marked `CANDIDATE — NOT BASELINED` in the traceability matrix, exactly like the
 pre-existing `CR-01`–`CR-11`/`CNFR-01`–`CNFR-06`. None is promoted to the numbered `FR-1xxx`/
-`NFR-1xxx` baseline — per the `requirements-engineering` skill's own rule, a candidate cannot be
+`NFR-1xxx` baseline — per the `04-requirements-engineering` skill's own rule, a candidate cannot be
 baselined in the same pass that names it, and in every one of these eight cases the architecture
 tier itself explicitly marked the underlying component/concept/risk as "not built, not scheduled,
 not committed" (GDS-03 §5's own header) or "no mitigation implemented in v1" (GDS-01 §12) — there is

@@ -1689,7 +1689,7 @@ first (noted inline).
   first (9/9 topics), then R400 (13/13 topics), per the planned sequencing. Both tiers now carry
   the mandatory §2 Scope section and full inline/`### Sources` citation coverage; see
   `R500-index.md`/`R400-index.md` for the closed-tier status and per-topic source list. (R100/R300
-  were already closed under `research-ow-orbital-mechanics`/`research-doctrine-exercises`; R200
+  were already closed under `02-research-ow-orbital-mechanics`/`02-research-doctrine-exercises`; R200
   still has no dedicated skill and remains the one uncited tier.)
 - **R2 — Author GDS-06 (Non-functional Requirements) through GDS-10.** Already the ladder's own next
   scheduled step (`architecture/INDEX.md` §1); GDS-06 first, since "nearly every Part 2 concept

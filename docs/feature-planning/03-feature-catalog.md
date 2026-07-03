@@ -5,7 +5,7 @@
 > `MSTR-005`'s Domain → Research → ADS → **FS-xxx** → IMP-xxx → code chain — see
 > `docs/features/feature-index.md`). This catalog is a **different, upstream artifact**: a
 > planning-grain decomposition of the approved requirements baseline, produced by the
-> `feature-decomposition` skill, which sits *between* `docs/requirements/` and the point where a
+> `05-feature-decomposition` skill, which sits *between* `docs/requirements/` and the point where a
 > `FS-xxx` document would be written. To avoid colliding with the existing `FS-xxx` ID space and
 > document type, this catalog's rows use the prefix **`FEAT-xxxx`** and live under
 > `docs/feature-planning/` (not `docs/features/`). A `FEAT-xxxx` row is a summary the project would

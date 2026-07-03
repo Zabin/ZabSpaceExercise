@@ -3,7 +3,7 @@
 [↑ Docs index](../INDEX.md) · [Requirements](../requirements/03-requirements-traceability-matrix.md) ·
 [Features (FS-xxx specs)](../features/feature-index.md)
 
-Output of the `feature-decomposition` skill run against the approved requirements baseline
+Output of the `05-feature-decomposition` skill run against the approved requirements baseline
 (`docs/requirements/01`/`02`/`03`). **Not the same artifact as `docs/features/`**: this directory's
 `FEAT-xxxx` rows are planning-grain catalog entries; `docs/features/`'s `FS-xxx` documents are full
 downstream Feature Specifications. See `05-feature-review.md`'s mapping note for how the two relate

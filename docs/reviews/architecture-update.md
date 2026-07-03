@@ -27,7 +27,7 @@ one of:
   change it implies has been made in this pass, scoped strictly to the six documents above.
 - **Accepted (deferred)** — the recommendation is agreed in principle, but its correct action is
   outside this pass's scope: new engine/UI capability (implementation, not documentation), research
-  authoring (a different skill's job — `research-doctrine-exercises`/`research-ow-orbital-mechanics`),
+  authoring (a different skill's job — `02-research-doctrine-exercises`/`02-research-ow-orbital-mechanics`),
   domain-framework authoring (`docs/domains/`, out of the six-document scope), or continuation of
   the GDS ladder's own already-scheduled sequential authoring (GDS-06–10, also out of scope). These
   are tracked so the acceptance is not lost, not silently implemented.
@@ -40,8 +40,8 @@ on both points before reading the recommendation is a rubber stamp.
 
 | # | Recommendation (abridged) | Disposition | Action taken / where tracked |
 |---|---|---|---|
-| R1 | Close the encyclopedia sourcing/scope defect (GAP-13), R500 first | Accepted (deferred) | Encyclopedia-wide labor task for `research-doctrine-exercises`/`research-ow-orbital-mechanics`, not an edit to the six scoped documents. Tracked in `FUTURE-WORK.md` §13 (new, added by this update) and the [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md) A10. |
-| R2 | Author GDS-06–10 (NFRs first) | Accepted (deferred) | Already the architecture ladder's own next scheduled step (`architecture/INDEX.md` §1: "GDS-06 is the next level to author") — this update does not pre-empt the `architecture-design-synthesis` skill's sequential workflow. Register entry A11 names the risk of leaving it open. |
+| R1 | Close the encyclopedia sourcing/scope defect (GAP-13), R500 first | Accepted (deferred) | Encyclopedia-wide labor task for `02-research-doctrine-exercises`/`02-research-ow-orbital-mechanics`, not an edit to the six scoped documents. Tracked in `FUTURE-WORK.md` §13 (new, added by this update) and the [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md) A10. |
+| R2 | Author GDS-06–10 (NFRs first) | Accepted (deferred) | Already the architecture ladder's own next scheduled step (`architecture/INDEX.md` §1: "GDS-06 is the next level to author") — this update does not pre-empt the `03-architecture-design-synthesis` skill's sequential workflow. Register entry A11 names the risk of leaving it open. |
 | R3 | Publish a strategic-assumptions register (A1–A8) as a living document | **Accepted (actioned)** | New [`architecture/strategic-assumptions-register.md`](../architecture/strategic-assumptions-register.md), cross-linked from GDS-01 §11/§13. Extended with three assumptions the review's own §4.10 named (A9–A11) that weren't in the original A1–A8 list. |
 | R4 | State the AI-determinism doctrine (A6) in one ADR | **Accepted (actioned)** | New [`ADR-0030`](../architecture/adr/ADR-0030-ai-determinism-doctrine.md). Resolves assumption A6 in the register. |
 | R5 | Reconcile DOM-002/DOM-005 status with FS-201/FS-301; fix GDS-00 §7's stale "build spec wins" language | **Accepted (actioned)**, split | The GDS-00 §7 language is corrected (a stale-text fix, precedent ADR-0028). The DOM-002/DOM-005 status gap is **acknowledged, not retroactively closed** — see §3 below for why closing it now would be worse than leaving it open. Both sub-decisions recorded in new [`ADR-0031`](../architecture/adr/ADR-0031-governance-record-consistency.md). |

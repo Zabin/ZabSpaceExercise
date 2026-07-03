@@ -29,5 +29,5 @@ Scaffold only. No content has been authored yet.
 
 ## Next
 
-Use the `architecture-design-synthesis` skill to author this document, then close the merge gate
+Use the `03-architecture-design-synthesis` skill to author this document, then close the merge gate
 above, before starting GDS-08.

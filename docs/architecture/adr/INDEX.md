@@ -90,7 +90,7 @@ real gap (DOM-002/DOM-005 vs. FS-201/FS-301 status) rather than retrofitting it.
 
 **ADR-0032 and ADR-0033** are a fourth category: the first two decisions in this corpus that amend
 or supersede a prior ADR's own Decision text, rather than adding a new, independent decision.
-Both arose from a `requirements-engineering` pass finding that `DOM-002`/`FS-201` and
+Both arose from a `04-requirements-engineering` pass finding that `DOM-002`/`FS-201` and
 `DOM-004`/`FS-301` — Feature Specifications this corpus's own Feature Catalog and Feature Review
 had already flagged as gapped (`docs/feature-planning/05-feature-review.md` Finding F-01) —
 directly conflicted with `ADR-0017` and `ADR-0029` respectively. The project owner resolved both,

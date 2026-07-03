@@ -1,5 +1,5 @@
 ---
-name: requirements-engineering
+name: 04-requirements-engineering
 description: Transform an approved architecture baseline (research/encyclopedia, Concept of Operations, System Context, Architecture, Domain Model, ADRs) into a traceable requirements baseline under docs/requirements/ — hierarchical Functional Requirements (FR-xxxx), Non-Functional Requirements (NFR-xxxx), a Requirements Review report, and a Requirements Traceability Matrix. Use when asked to "derive requirements from the architecture," "write functional/non-functional requirements," "build a traceability matrix," "review the requirements for conflicts/gaps/duplicates," or to turn an approved design into an implementation-ready requirements set. This skill performs no new research, no architecture redesign, and no implementation — it is a pure derivation-and-bookkeeping step between an approved architecture and downstream feature/implementation planning. Do not use it to originate domain knowledge (that belongs to research skills) or to make architecture decisions (that belongs to architecture/design-synthesis skills).
 ---
 
@@ -298,8 +298,31 @@ filenames and `docs/requirements/` as the write target stay fixed regardless.
 - Don't treat "the architecture didn't mention it" as license to add an NFR from general best
   practice — that is exactly what Candidate Requirements exists for.
 - If this skill is used in a project that already has its own GDS/ADS-style architecture ladder
-  with FR/NFR sections baked into it (as `architecture-design-synthesis` does in this repository),
+  with FR/NFR sections baked into it (as `03-architecture-design-synthesis` does in this repository),
   check whether those sections are meant to be the authoritative input *for* this skill (treat
   them as part of `docs/design/`) rather than producing a second, competing FR/NFR set — name the
   relationship explicitly in `03-requirements-review.md` rather than leaving two unreconciled
   baselines in the repo.
+
+## Pipeline position & completion summary (mandatory, every run)
+
+This skill is **Stage 04 — Requirements Engineering** of the documentation-driven-development
+pipeline (see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
+`00-pipeline-status` reports where the project currently stands). Upstream:
+`03-architecture-design-synthesis`. Downstream: `05-feature-decomposition`.
+
+End **every** invocation — full baseline derivation, delta update, review-only pass, or blocked
+stop — with a chat summary containing exactly these three parts:
+
+1. **What changed** — which of the four deliverables were produced or updated (paths), plus any
+   changelog entries added.
+2. **Recommendations** — the Requirements Review's key findings (conflicts, gaps, candidates) and
+   who owns each: architecture conflicts go to `03-architecture-design-synthesis`, missing domain
+   facts to the owning `02-research-*` skill, adjudication calls to the user.
+3. **Next step** — say explicitly what to run next and why: if the Review surfaced Critical/High
+   findings, resolve those upstream first and re-run the affected steps of this skill; once the
+   baseline is approved (findings adjudicated, candidates dispositioned), advance to
+   `05-feature-decomposition`.
+
+Never end a run without naming the next step — the pipeline is driven one stage at a time, and the
+user relies on each stage's summary to know what to invoke next.

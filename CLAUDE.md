@@ -137,6 +137,20 @@ spacesim/
   + per-session RLock + `/api/sessions` discovery + join-by-URL-hash + Pop-out submenu opens
   layout-culled tabs that join the same session — see `docs/FUTURE-WORK.md` §1).
 
+## The skill pipeline (documentation-driven development)
+
+All spec/doc/implementation work runs through the **numbered skill pipeline** in
+[`.claude/skills/README.md`](.claude/skills/README.md) — the number is the run order:
+`01-vision` → `02-research-*` (×4, parallel peers) → `03-architecture-design-synthesis` →
+`04-requirements-engineering` → `05-feature-decomposition` → `06-feature-specification` →
+`07-implementation-planning` → `08-code-implementation` → `09-package-verification` →
+`10-integration-review` → `11-release-readiness`. `00-pipeline-status` is the read-only navigator
+("where are we, what do I run next"); `run-spacesim` is an unnumbered utility. Each skill writes
+only its own output scope, routes findings to the owning stage instead of fixing them locally,
+and ends every run by saying in chat what changed, what it recommends, and which skill to run
+next. Only `08` writes production code; only `09` writes `VERIFIED`; a specified package is not an
+authorized one (MSTR-006 §3).
+
 ## Test-driven workflow (mandatory)
 
 Build every phase **test-first**: encode that phase's roadmap "**done when**" check as a failing

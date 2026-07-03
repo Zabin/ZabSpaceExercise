@@ -61,12 +61,12 @@ have no Implementation Package yet** — each of those Feature Specifications ex
 own build status as unverified, unlike the packages above (all confirmed against real file/line
 citations); authoring a package for any of them first requires that verification.
 
-**Executing a package.** The `code-implementation` skill
-(`.claude/skills/code-implementation/SKILL.md`) is the next stage downstream of this tier: it
+**Executing a package.** The `08-code-implementation` skill
+(`.claude/skills/08-code-implementation/SKILL.md`) is the next stage downstream of this tier: it
 selects exactly one `READY`-and-eligible package, implements it, and advances its status to
 `COMPLETE`. It never authors or edits a package (that remains this tier's job) and never advances a
 package past `COMPLETE` to `VERIFIED` (that belongs to a separate, not-yet-defined verification
-skill). Per this repository's MSTR-006 §3 rule, `code-implementation` treats `READY` status as
+skill). Per this repository's MSTR-006 §3 rule, `08-code-implementation` treats `READY` status as
 necessary but not sufficient for `IP-2010`/`IP-3010` specifically — both remain gated on a separate,
 explicit user go-ahead regardless of build-sequencing eligibility.
 

@@ -1,5 +1,5 @@
 ---
-name: research-doctrine-exercises
+name: 02-research-doctrine-exercises
 description: Produce or refresh expert-level, citation-grounded research on military doctrine (Western/non-Western counterspace doctrine, legal norms/ROE) and exercise/wargaming design (campaign design, operational art, deterrence/escalation, mission analysis, wargaming theory, red teaming, COG, EBO, COA analysis) to ground White Cell, Red AI, vignette, and scenario specs/features. Use when asked to research doctrine or wargaming-design topics, to add/extend `docs/research/encyclopedia/R3xx-*` topics, to refresh the `01/02/07` primers, or to gather grounding facts before drafting an FS-xxx/IMP-xxx spec or vignette/Red-doctrine-profile that touches White Cell rules, ROE, escalation, or exercise structure. Not for novice tutorials — those belong in `docs/training/`.
 ---
 
@@ -116,6 +116,32 @@ type) that has no topic an author would read first. The recurring invocation pat
 - Don't let Red AI posture or White Cell rule changes get justified by doctrine claims that exist
   only in code comments or PR descriptions — the citation belongs in the `R3xx`/primer file, and the
   code/PR should point to it, not the other way around.
-- This skill does not touch Tier R100 (orbital mechanics/OW — `research-ow-orbital-mechanics`'s
+- This skill does not touch Tier R100 (orbital mechanics/OW — `02-research-ow-orbital-mechanics`'s
   scope) or Tiers R200 (decision sciences, no skill yet), R400 (research methods —
-  `research-methods-and-validation`), or R500 (future operations — `research-future-operations`).
+  `02-research-methods-and-validation`), or R500 (future operations — `02-research-future-operations`).
+
+## Pipeline position & completion summary (mandatory, every run)
+
+This skill is **Stage 02 — Research** of the documentation-driven-development pipeline (see
+[`.claude/skills/README.md`](../README.md); stages run in numeric order, and `00-pipeline-status`
+reports where the project currently stands). The four `02-research-*` skills are peers at the same
+stage — run whichever owns the tier the gap is in; they have no ordering among themselves.
+Upstream: `01-vision`. Downstream: `03-architecture-design-synthesis` (and whichever spec-authoring
+skill requested the grounding).
+
+End **every** invocation — full topic authoring, maintenance edit, or blocked stop — with a chat
+summary containing exactly these three parts:
+
+1. **What changed** — every encyclopedia topic/primer produced or updated (paths), every index
+   status flipped.
+2. **Recommendations** — remaining coverage gaps, citation-rot findings, single-source claims that
+   need a second source, and who owns each follow-up.
+3. **Next step** — say explicitly what to run next and why: if this run closed a grounding gap
+   requested by a downstream skill (`03-architecture-design-synthesis`,
+   `06-feature-specification`, `07-implementation-planning`), return to that skill and resume the
+   blocked artifact; if another research tier still has a gap for the current increment, name the
+   sibling `02-research-*` skill that owns it; otherwise advance to
+   `03-architecture-design-synthesis`.
+
+Never end a run without naming the next step — the pipeline is driven one stage at a time, and the
+user relies on each stage's summary to know what to invoke next.

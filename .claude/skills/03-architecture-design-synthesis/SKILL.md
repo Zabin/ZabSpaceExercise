@@ -1,5 +1,5 @@
 ---
-name: architecture-design-synthesis
+name: 03-architecture-design-synthesis
 description: Synthesize domain framework (DOM-xxx) and research grounding (research/encyclopedia R1xx-R5xx + research/01-07 primers) into Design Synthesis documents under docs/architecture/ — either the global, gated GDS-00...GDS-10 ladder (Vision -> ConOps -> System Context -> Architecture -> Domain Model -> Functional Requirements -> Non-functional Requirements -> Data Model -> UI Architecture -> API Specification -> Requirements Traceability Matrix) or a per-capability-cluster ADS-xxx document, the bridge between domain+research and a Feature Specification. Use when asked "what are the core concepts," "which mechanics are actually required," "which requirements conflict," "what assumptions must be made," "what is the minimum viable implementation," "what is deferred," to advance the next level of the GDS ladder, or to produce/refresh an Executive Design Overview, System Architecture, Domain Model, User Stories, Functional/Non-functional Requirements, Constraints, Risks, Open Questions, or Decision Log before drafting or revising an FS-xxx. This produces design documents, not research documents — do not use it to add new doctrinal/orbital-mechanics claims (that's research-doctrine-exercises / research-ow-orbital-mechanics).
 ---
 
@@ -10,7 +10,9 @@ Produces two kinds of document under `docs/architecture/`, both defined in
 [`docs/architecture/INDEX.md`](../../../docs/architecture/INDEX.md):
 
 1. **The global ladder (`GDS-00`…`GDS-10`)** — one instance for the whole project, strictly
-   sequential and gated. This is the primary, currently-active workflow: the ladder is scaffolded
+   sequential and gated. (`GDS-00` Vision is the exception: it is owned by the `01-vision` skill
+   together with `MSTR-001` and the strategic-assumptions register — this skill authors `GDS-01`
+   onward and hands any Vision-layer edit a level needs to `01-vision` rather than making it here.) This is the primary, currently-active workflow: the ladder is scaffolded
    with stub files and merge gates, and the next unauthored `GDS-NN` is the default thing to work
    on when this skill is invoked without a more specific target. See "Workflow A" below.
 2. **Per-cluster `ADS-xxx`** — zero-or-more documents, one per capability cluster with real design
@@ -36,7 +38,7 @@ capability) and [`docs/research/`](../../../docs/research/INDEX.md) (both the `0
 the `encyclopedia/` R1xx-R5xx tiers) as **inputs**, never as something it adds to. If a synthesis
 reveals a genuine domain-knowledge gap (a doctrine question with no R3xx grounding, an orbital
 mechanics question with no R1xx grounding), that gap is handed to
-`research-doctrine-exercises`/`research-ow-orbital-mechanics` to close first — this skill does not
+`02-research-doctrine-exercises`/`02-research-ow-orbital-mechanics` to close first — this skill does not
 write research content itself.
 
 It produces **design documents, not research documents**: synthesis, decision, and explicit
@@ -135,7 +137,7 @@ doesn't resolve at the system level — see `MSTR-005` §3a.
 ## Gotchas
 
 - Don't let this skill become a backdoor for adding research content. A claim that needs a new
-  citation belongs in `research-doctrine-exercises`/`research-ow-orbital-mechanics` first; this
+  citation belongs in `02-research-doctrine-exercises`/`02-research-ow-orbital-mechanics` first; this
   skill cites, it doesn't originate domain knowledge.
 - Don't write an `ADS-xxx` for a feature that doesn't need one — per `MSTR-005` §4 this is optional,
   and a one-paragraph-scope feature absorbing the synthesis into its own `FS-xxx` §1-2 is the
@@ -158,3 +160,26 @@ doesn't resolve at the system level — see `MSTR-005` §3a.
   supersede `MSTR-001`, `build-spec/`, or `design/`. Those stay authoritative until a given
   `GDS-NN`'s merge step explicitly folds their content in and records that decision; don't treat a
   `GDS-NN` file's mere existence as having already superseded its merge target.
+
+## Pipeline position & completion summary (mandatory, every run)
+
+This skill is **Stage 03 — Architecture & Design Synthesis** of the documentation-driven-development
+pipeline (see [`.claude/skills/README.md`](../README.md); stages run in numeric order, and
+`00-pipeline-status` reports where the project currently stands). Upstream: `01-vision` (which owns
+`GDS-00`/`MSTR-001` — this skill authors `GDS-01`…`GDS-10` and defers Vision-layer edits to it) and
+the `02-research-*` skills. Downstream: `04-requirements-engineering`.
+
+End **every** invocation — a ladder level closed, an `ADS-xxx` authored, a maintenance edit, or a
+blocked stop — with a chat summary containing exactly these three parts:
+
+1. **What changed** — every GDS level/ADS document produced or updated (paths), every merge gate
+   closed, every index/ROADMAP status flipped.
+2. **Recommendations** — Open Questions raised, domain-knowledge gaps handed to `02-research-*`,
+   tensions with the legacy build-spec flagged, and who owns each follow-up.
+3. **Next step** — say explicitly what to run next and why: if a domain-knowledge gap blocked this
+   run, name the owning `02-research-*` skill, then re-invoke this skill; if more GDS levels remain
+   unauthored, re-invoke this skill for the next level (one level per pass); once the levels the
+   current increment needs are authored with closed gates, advance to `04-requirements-engineering`.
+
+Never end a run without naming the next step — the pipeline is driven one stage at a time, and the
+user relies on each stage's summary to know what to invoke next.

@@ -1,5 +1,5 @@
 ---
-name: research-future-operations
+name: 02-research-future-operations
 description: Produce and refresh the R500-tier future-operations encyclopedia (human-AI teaming, autonomy in space operations, AI decision support, future space warfare concepts, multi-domain operations, machine reasoning, autonomous planning systems, future command and control, AI integration patterns) that grounds forward-looking AI/autonomy context (DOM-008). Use when asked to research AI/autonomy/future-C2/multi-domain topics, to add/extend `docs/research/encyclopedia/R5xx-*` topics, or to gather grounding facts before drafting an FS-xxx/IMP-xxx spec touching in-world AI, autonomy, or future C2. Tier R500 closed its GAP-13 sourcing/scope remediation 2026-07-02 — this is now steady-state maintenance, not a remediation backlog. Not for novice AI tutorials — those belong in `docs/training/`.
 ---
 
@@ -52,7 +52,7 @@ snapshot + accessed date, or a cited `spacesim/session/redai.py`/`engine/recover
 present-tense in-world-AI claims), and the mandatory DOM-008 §6 tag line. This closed GAP-13
 (tracked in [`docs/FUTURE-WORK.md`](../../../docs/FUTURE-WORK.md) §13, Recommendation R1) for this
 tier; per that recommendation's sequencing, **R400 (Research Methods,
-`research-methods-and-validation`) is now the GAP-13 priority.** As with R100/R300, "closed" means
+`02-research-methods-and-validation`) is now the GAP-13 priority.** As with R100/R300, "closed" means
 *complete*, not *frozen* — do not bulk-author new topics by default; add a new `R5xx` row
 (`⛔ Planned` first, index-before-content) only on a genuine gap.
 
@@ -133,5 +133,31 @@ tier; per that recommendation's sequencing, **R400 (Research Methods,
   in-world-advisor discussion.
 - This skill does not touch Tier R100 (orbital mechanics/OW), R200 (decision sciences, no skill
   yet), R300 (doctrine/exercises), or R400 (research methods) — those belong to
-  `research-ow-orbital-mechanics`, a future decision-sciences skill, `research-doctrine-exercises`,
-  and `research-methods-and-validation` respectively.
+  `02-research-ow-orbital-mechanics`, a future decision-sciences skill, `02-research-doctrine-exercises`,
+  and `02-research-methods-and-validation` respectively.
+
+## Pipeline position & completion summary (mandatory, every run)
+
+This skill is **Stage 02 — Research** of the documentation-driven-development pipeline (see
+[`.claude/skills/README.md`](../README.md); stages run in numeric order, and `00-pipeline-status`
+reports where the project currently stands). The four `02-research-*` skills are peers at the same
+stage — run whichever owns the tier the gap is in; they have no ordering among themselves.
+Upstream: `01-vision`. Downstream: `03-architecture-design-synthesis` (and whichever spec-authoring
+skill requested the grounding).
+
+End **every** invocation — full topic authoring, maintenance edit, or blocked stop — with a chat
+summary containing exactly these three parts:
+
+1. **What changed** — every encyclopedia topic/primer produced or updated (paths), every index
+   status flipped.
+2. **Recommendations** — remaining coverage gaps, citation-rot findings, single-source claims that
+   need a second source, and who owns each follow-up.
+3. **Next step** — say explicitly what to run next and why: if this run closed a grounding gap
+   requested by a downstream skill (`03-architecture-design-synthesis`,
+   `06-feature-specification`, `07-implementation-planning`), return to that skill and resume the
+   blocked artifact; if another research tier still has a gap for the current increment, name the
+   sibling `02-research-*` skill that owns it; otherwise advance to
+   `03-architecture-design-synthesis`.
+
+Never end a run without naming the next step — the pipeline is driven one stage at a time, and the
+user relies on each stage's summary to know what to invoke next.
