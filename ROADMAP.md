@@ -341,10 +341,11 @@ Implementation Package if confirmed unbuilt, or needs only an RTM-citation closu
 already shipped.
 
 **Next:** Phase 5 (Implementation Packages, `docs/implementations/`) is complete (below), but see
-the FS-106-split note above for its now-stale scope alignment, and note FS-112/113/114/115 have no
-Implementation Package at all yet (pending the build-status verification above). Phase 6-8
-(Consistency/Dependency/Traceability review, MSTR-006 §7) is also complete (see the dedicated
-theme section below), predating both this split and these four new specs.
+the FS-106-split note above for its now-stale scope alignment. FS-112/113/114/115's build-status
+verification is now done and each has an Implementation Package
+(`IP-1120`/`IP-1130`/`IP-1140`/`IP-1150`/`IP-1151` — see the Implementation Packages theme below).
+Phase 6-8 (Consistency/Dependency/Traceability review, MSTR-006 §7) is also complete (see the
+dedicated theme section below), predating this split and these four new specs/packages.
 
 ## Theme: Feature Planning — `05-feature-decomposition` skill output (`docs/feature-planning/`)
 
@@ -380,9 +381,13 @@ Feature Specifications theme above. **Findings F-02 and F-10 are also done** —
 FS-114/FS-115 newly authored, each with build status explicitly flagged unverified.
 
 **Update (2026-07):** `IMP-106A`/`IP-1060` reconciliation is done — IP-1060 narrowed to v2.0,
-IP-1090/IP-1100/IP-1110 authored (see the Implementation Packages theme above). Build-status
-verification for FS-112/113/114/115 against the actual `spacesim/` source tree remains open — no
-Implementation Package exists yet for any of the four pending it.
+IP-1090/IP-1100/IP-1110 authored (see the Implementation Packages theme above).
+
+**Update (2026-07):** Build-status verification for FS-112/113/114/115 against the actual
+`spacesim/` source tree is **done** (`07-implementation-planning`'s Tranche 1,
+`docs/implementation/01-technical-work-breakdown.md`) — each Feature was found partially or fully
+built, none matching its spec exactly. Five packages now exist:
+`IP-1120`/`IP-1130`/`IP-1140`/`IP-1150`/`IP-1151` (see the Implementation Packages theme below).
 
 **Update (2026-07):** Finding F-01 is **fully resolved, in two stages**. Stage 1 (`requirements-
 engineering` against DOM-002/004/005 — `reviews/requirements-domain-backfill-report.md`): zero new
@@ -408,14 +413,18 @@ was needed — the existing specs already fully describe what their new owning F
 Phase 5 of the documentation-driven-development expansion (MSTR-005 §4 chain: ... → Feature
 Specification → **Implementation Package** → Code → Tests). Each `IP-xxxx` describes architecture,
 data model, files, tasks, tests, Definition of Done, and rollback considerations in prose/
-pseudocode, never literal committed code (MSTR-006 §8). Two situations per package: as-built
-(documents existing, test-covered code, FS-101 through FS-107, FS-109, FS-110, FS-111) vs. forward
-design (FS-201/FS-301, capability not yet implemented, coding work not authorized by this
-documentation per MSTR-006 §3). FS-112/113/114/115 (new 2026-07) have **no package yet** — each
-Feature Specification's own build status is unverified, pending confirmation before a package can
-be written either way.
+pseudocode, never literal committed code (MSTR-006 §8). Situations per package: as-built,
+independently `VERIFIED` (FS-101 through FS-107, FS-109, FS-110, FS-111); as-built, `COMPLETE`
+pending verification (FS-114, and FS-115's FR-4110 slice); partially built / gap-closing forward
+design (FS-112); and fully forward design, capability not yet implemented, coding work not
+authorized by this documentation per MSTR-006 §3 (FS-201, FS-301, FS-113, and FS-115's FR-4210
+slice). FS-112/113/114/115 (new 2026-07) now have five packages between them —
+`IP-1120`/`IP-1130`/`IP-1140`/`IP-1150`/`IP-1151` — authored after a build-status verification
+pass found each Feature partially or fully built (see `docs/implementation/
+01-technical-work-breakdown.md` Tranche 1).
 Router: [`implementation/packages/INDEX.md`](docs/implementation/packages/INDEX.md); sequencing/
-dependency-graph/critical-path in [`implementation/00-master-build-plan.md`](docs/implementation/00-master-build-plan.md).
+dependency-graph/critical-path in [`implementation/00-master-build-plan.md`](docs/implementation/00-master-build-plan.md);
+work-breakdown rationale in [`implementation/01-technical-work-breakdown.md`](docs/implementation/01-technical-work-breakdown.md).
 
 **Canonical tier as of this revision.** `docs/implementation/packages/` (`IP-xxxx` IDs) supersedes
 the prior `docs/implementations/` tier (`IMP-xxxA` IDs) in full — same underlying design content,
@@ -441,19 +450,26 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1110 | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | `implementation/packages/IP-1110-ai-red-doctrine-automation.md` | FS-111 | As-built | ✅ VERIFIED |
 | IP-2010 | Competency Assessment — rubric computation | `implementation/packages/IP-2010-competency-assessment.md` | FS-201 | Forward design | 🟡 READY (not authorized, MSTR-006 §3) |
 | IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🔴 BLOCKED (on IP-2010; also not authorized) |
+| IP-1120 | Classification Banner — wire render/export path to the vignette's classification value | `implementation/packages/IP-1120-classification-banner.md` | FS-112 | Partially built (gap-closing) | 🟡 BLOCKED (on IP-1150 → VERIFIED; also not authorized) |
+| IP-1130 | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | `implementation/packages/IP-1130-observer-read-only-access.md` | FS-113 | Forward design | 🟡 READY (not authorized) |
+| IP-1140 | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | `implementation/packages/IP-1140-hot-seat-handoff.md` | FS-114 | As-built (documented spec divergence) | 🔵 COMPLETE (pending verification) |
+| IP-1150 | Session Setup: Vignette Selection & Parameter Tuning | `implementation/packages/IP-1150-vignette-selection.md` | FS-115 §FR-4110 | As-built | 🔵 COMPLETE (pending verification) |
+| IP-1151 | Session Setup: Seat-to-Role Assignment | `implementation/packages/IP-1151-seat-role-assignment.md` | FS-115 §FR-4210 | Forward design | 🔴 BLOCKED (on IP-1150 → VERIFIED; also not authorized) |
 
-FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). FS-112/113/
-114/115 have no Implementation Package yet (build status unverified — see the Feature
-Specifications theme above).
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3).
 
-**IP-1090/IP-1100/IP-1110 are new (2026-07)**, split out of IP-1060 v1.0 per
+**IP-1090/IP-1100/IP-1110 are new (2026-07, tranche 1)**, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03, mirroring the FS-106 split — no new code
 verification was performed, these three packages reorganize `IP-1060` v1.0's already-verified
-citations under the new Feature boundaries. `docs/implementation/00-master-build-plan.md`'s package
-table, dependency graph, Wave-1 parallel-opportunity list, and summary statistics (13 packages,
-158-line average) have been updated accordingly. `docs/implementations/IMP-106A-white-cell-
+citations under the new Feature boundaries. `docs/implementations/IMP-106A-white-cell-
 dashboard.md` (superseded, frozen historical content) gained a forward-pointer note to the three
 new packages without otherwise being altered.
+
+**IP-1120/IP-1130/IP-1140/IP-1150/IP-1151 are new (2026-07, tranche 2)** — the first Implementation
+Packages against FS-112/113/114/115, following the build-status verification pass noted above.
+`docs/implementation/00-master-build-plan.md`'s package table, dependency graph, parallel-
+opportunity list, critical-path note, and summary statistics have been updated accordingly (now
+18 packages total: 11 `VERIFIED`, 2 `COMPLETE` pending verification, 2 `READY`, 3 `BLOCKED`).
 
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 

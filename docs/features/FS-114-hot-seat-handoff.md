@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** (GDS-05 "Operational Rules" OR-3-grounded; no owning DOM), [ADR-0004](../architecture/adr/ADR-0004-fog-of-war-at-boundary.md), [FS-109](FS-109-multiplayer-session-transport.md)
-> **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-6600`, [docs/feature-planning/05-feature-review.md](../feature-planning/05-feature-review.md) Finding F-02
+> **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-6600`, [docs/feature-planning/05-feature-review.md](../feature-planning/05-feature-review.md) Finding F-02, [IP-1140](../implementation/packages/IP-1140-hot-seat-handoff.md)
 > **Produces:** the screen-blank/seat-reselection menu shown during a pending hot-seat hand-off
 > **Feature Mapping:** FS-114 (this document)
 > **Related Topics:** [FS-109](FS-109-multiplayer-session-transport.md) (the one-Session-object hot-seat/LAN sharing mechanism this hand-off menu sits on top of)

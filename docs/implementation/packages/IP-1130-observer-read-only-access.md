@@ -1,0 +1,221 @@
+# IP-1130 — Observer Read-Only Access
+
+> **Package ID:** IP-1130
+> **Version:** 1.0
+> **Status:** 🟡 READY *(fully specified, no blocking package dependency — the fog-of-war filter
+> this package reuses is already shipped and exercised by every VERIFIED as-built package in this
+> plan; gated only on MSTR-006 §3 authorization, not on missing prerequisite work)*
+> **Dependencies:** FS-113 (no `FS-xxx`/`IP-xxxx` hard prerequisite — see Dependencies below)
+> **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md)
+> **Produces:** the read-only Observer seat interaction model
+> **Feature Reference:** [FS-113 — Observer Read-Only Access](../../features/FS-113-observer-read-only-access.md)
+> **Supersedes:** none — new package, first Implementation Package written against FS-113
+> **Related Topics:** [`spacesim/session/api.py`](../../../spacesim/session/api.py),
+> [`spacesim/session/cells.py`](../../../spacesim/session/cells.py),
+> [`spacesim/ui_web/server.py`](../../../spacesim/ui_web/server.py),
+> [`spacesim/ui_web/static/app.js`](../../../spacesim/ui_web/static/app.js)
+
+[↑ Master Build Plan](../00-master-build-plan.md) · [Packages index](INDEX.md) · [Docs index](../../INDEX.md)
+
+*This package was authored after `07-implementation-planning`'s required build-status verification
+pass (`docs/implementation/01-technical-work-breakdown.md` Tranche 1) confirmed FS-113 is **not
+built at all**: no "observer" seat/role concept exists anywhere in `session/`, `ui_web/server.py`,
+or `ui_web/static/app.js` — the cell selector is a fixed White/Blue/Red set
+(`ui_web/static/app.js:406` `setCell`, `index.html:2013` `.cell` buttons). This is a genuinely
+forward-looking design, not a documentation pass.*
+
+## Package ID
+
+IP-1130
+
+## Title
+
+Observer Read-Only Access
+
+## Objective
+
+Add a fourth, White-Cell-designated seat kind — Observer — whose session can only read (god-view or
+a specific cell's fog-of-war-filtered `CellView`, as White Cell designates) and can never mutate
+`WorldState`, with the rejection enforced at the `SessionAPI`/`ui_web/server.py` boundary rather
+than merely by omitting the option from the UI.
+
+> **This is a forward-design package: the capability described here does not exist in `spacesim/`
+> today.** Per MSTR-006 §3, this document specifies a fully scoped, build-ready design — it is not
+> itself an authorization to write code. A separate, explicit user go-ahead is required before any
+> task in this package's "Implementation Tasks" section begins.
+
+## Feature Reference
+
+[FS-113 — Observer Read-Only Access](../../features/FS-113-observer-read-only-access.md)
+
+## Requirements Covered
+
+| Req ID | Title (abridged) | How this package's design covers it |
+|---|---|---|
+| FR-6510 | Observer read-only view with no command ability | Introduces an Observer seat kind whose view is White-Cell-designated (god-view or a named cell's `CellController.view()` output, reused unmodified) and whose every mutating request — order issuance, sensor tasking, inject firing, clock control, etc. — is rejected at the server boundary independent of what the UI offers, per the "structural rejection, not UI-only restriction" language in FS-113's own System Behaviour. |
+
+## Architecture Components
+
+- **C2 Session / Application Layer** — `session/api.py` (`SessionAPI` protocol gains an
+  Observer-aware read path), `session/cells.py` (`CellController.view()` reused unmodified for the
+  cell-view-designation case).
+- **C4 Operator Console** — `ui_web/server.py` (the enforcement point: every mutating route
+  rejects an Observer-seated session before touching `SessionManager`), `ui_web/static/app.js`
+  (adds "Observer" as a selectable seat, hides/disables command controls when seated as Observer —
+  a UX convenience, not the enforcement mechanism).
+- **C9 Observer** — the new actor this package introduces, per
+  `docs/architecture/02-system-context.md` §2 row 5's existing Observer actor entry (already named
+  in the architecture, not yet realized in code).
+
+## Interfaces
+
+**INT-0005** (Observer ↔ Operator Console) — the Observer's own interaction surface, not yet
+implemented; this package is what implements it. **INT-0006** (Operator Console → Session Layer,
+the `SessionAPI` seam) — the path every attempted mutating request from an Observer-seated session
+routes through before being rejected.
+
+## Files to Create
+
+None proposed — this capability is small enough to fit as additions to existing files, not a new
+module (mirrors `IP-2010`'s own restraint principle of not creating structure the design doesn't
+need).
+
+## Files to Modify
+
+- `spacesim/session/api.py` *(proposed)* — a `get_observer_view(session, designation)` method (or
+  equivalent) on the `SessionAPI` protocol, where `designation` is either `"godview"` or a cell
+  name; internally dispatches to the existing `get_godview`/`get_view` methods unmodified.
+- `spacesim/session/manager.py` or `session/inprocess.py` *(proposed)* — a per-session Observer
+  view-designation field, settable only by a White-Cell-seated request, read by the new
+  `get_observer_view` path.
+- `spacesim/ui_web/server.py` *(proposed)* — (a) a White-Cell-only endpoint to set an Observer's
+  view designation; (b) an Observer-facing read endpoint dispatching to
+  `get_observer_view`/`CellController.view()`; (c) a guard at the top of every existing mutating
+  route (`/order`, `/order/validate`, `/step`, `/advance`, `/rewind`, `/undo`, `/inject`,
+  `/force/tle`, `/red_step`, `/maneuver/compute`, `/jam/compute`, `/engage/compute`,
+  `/cyber/compute`, `/sigint/compute`, `/cancel`, `/recovery/{cell}/{asset}`,
+  `/ssn/{cell}/request`, `/ssn/{cell}/cancel`, `/clock`, `/param`, `/start` — the full list at
+  `ui_web/server.py:201-410`) rejecting any request whose caller is seated as Observer, before the
+  request reaches `SessionManager`.
+- `spacesim/ui_web/static/app.js` *(proposed)* — add "Observer" to the seat/cell selector
+  (`app.js:406` `setCell` and the `.cell` button wiring at `index.html:2013`); when seated as
+  Observer, disable/hide command-issuing controls (UX only — the actual rejection happens
+  server-side per the point above, since a request bypassing the UI must be rejected identically).
+
+## Implementation Tasks
+
+**Not started — not authorized (MSTR-006 §3).** The following is the proposed task sequence for
+when authorization is granted:
+
+1. Add an Observer view-designation concept (god-view or a named cell) to session state, settable
+   only by a White-Cell-seated caller.
+2. Implement the Observer read path by dispatching to the existing, unmodified `get_godview`/
+   `CellController.view()` — no new fog-of-war logic; Observer access to a cell's view must be
+   pixel-identical to that cell's own operator's view (FS-113's own System Behaviour requirement).
+3. Add the server-side mutation-rejection guard to every existing mutating route, keyed on the
+   caller's seat being Observer — this must hold even for a request that never goes through the
+   `ui_web/static/` client (FS-113's Security Considerations: "must hold even against a request
+   that bypasses the UI entirely").
+4. Add "Observer" as a selectable seat client-side and disable/hide command controls when seated as
+   Observer (convenience layer over the server-side guarantee from task 3, not a substitute for it).
+5. **Explicitly do not implement** in this package: CR-06 (mid-exercise Observer reassignment, an
+   unbaselined candidate requirement per FS-113's own Open Questions) or a `docs/domains/`
+   framework document for Observer (a documentation-tier gap FS-113 itself flags, out of this
+   package's scope).
+
+## Tests to Add
+
+*(Proposed — none exist yet; write test-first per `CLAUDE.md`'s mandatory workflow once
+authorized.)*
+
+- `spacesim/tests/test_observer.py` *(new)* — one test per Acceptance Criterion:
+  - Given White Cell designates an Observer's view as a specific cell, the Observer's session
+    receives exactly that cell's `CellView` (byte-for-byte identical to what that cell's own
+    operator would receive for the same request).
+  - Given an Observer-seated session attempting to submit any command-kind or collection-kind
+    action (order issuance, sensor tasking, clock control, inject firing), the request is rejected
+    and no `WorldState` change occurs — parametrized across every mutating route this package's
+    Files to Modify section lists, not just one representative endpoint.
+  - Given an Observer-seated session attempting a mutating request that bypasses whatever
+    client-side disabling exists (i.e. calling the server route directly), the same rejection
+    applies — this is the test that actually exercises the "structural rejection, not UI-only"
+    requirement.
+
+## Documentation Updates
+
+- `ROADMAP.md` Implementation Packages theme — add this package's row.
+- `CLAUDE.md`'s Code Map — no new module is proposed; existing entries for `session/api.py`,
+  `session/cells.py`, `ui_web/server.py` already cover the touched files (no addition needed until
+  implementation reveals otherwise).
+- `docs/features/FS-113-observer-read-only-access.md`'s `Referenced By` metadata — add this package
+  (cross-link only).
+
+## Definition of Done
+
+*(Forward-looking gate — none of the following is currently true; this package does not claim it
+is.)*
+
+- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3) — a precondition for every item below.
+- [ ] An Observer's designated view (god-view or a named cell) is served identically to how that
+  view is already served to its native audience (White Cell for god-view, the cell's own operator
+  for a `CellView`) — no divergent code path, no divergent filtering.
+- [ ] Every existing mutating route rejects an Observer-seated caller, verified by a parametrized
+  test covering the full route list in Files to Modify, not a sample.
+- [ ] The rejection holds for a request that bypasses the client UI (direct route call).
+- [ ] No `WorldState` mutation occurs from any Observer-seated request in any test scenario.
+
+## Verification Checklist
+
+*(To be executed once implemented; not yet applicable.)*
+
+- [ ] `spacesim/tests/test_observer.py` exists, covers every mutating route, and is green.
+- [ ] `python3 -m pytest spacesim/tests/test_determinism.py` remains green (this package must not
+  introduce any code path that mutates `WorldState` for an Observer-seated request).
+- [ ] `python3 -m pytest spacesim/tests/test_import_guard.py` remains green.
+- [ ] Manual review confirms `get_observer_view`'s cell-view branch calls the same
+  `CellController.view()` function every existing cell-scoped endpoint uses — no parallel/forked
+  filtering implementation.
+- [ ] FS-113's Acceptance Criteria are each traceable to a specific test.
+
+## Dependencies
+
+- **Upstream:** The fog-of-war filter (`session/cells.py` `CellController.view()`) and god-view
+  (`get_godview`) mechanisms this package reuses are already shipped and exercised by multiple
+  `VERIFIED` as-built packages in this plan (e.g. `IP-1030`, `IP-1040`) — not themselves
+  represented as a standalone package (`FEAT-6200`, Fog-of-War Filtering at the Session Boundary,
+  is a Feature Catalog entry with no `FS-xxx`/`IP-xxxx` of its own yet, per FS-113's own
+  Dependencies field). This package has no blocking package-level dependency in this plan.
+- **Downstream:** None in this pass.
+- **Build-sequencing:** Independent of every other package in this tranche; could be built in
+  parallel with `IP-1120`/`IP-1140`/`IP-1150`/`IP-1151` if all were authorized simultaneously.
+
+## Risks
+
+- **Authorization risk (primary):** this package must not be implemented merely because it is
+  fully specified — MSTR-006 §3 requires an explicit, separate user go-ahead.
+- **Enforcement-completeness risk:** the value of this Feature is entirely in *no* mutating route
+  being missed. A route added after this package ships (or one this package's author overlooks)
+  that forgets the Observer guard reopens the exact gap FR-6510 exists to close. The proposed test
+  approach (parametrized across the full route list, re-derived from `ui_web/server.py`'s actual
+  route table at implementation time, not copied from this document's Files to Modify list which
+  may drift) is this package's primary mitigation.
+- **LAN trust model interaction:** per `CLAUDE.md`'s documented LAN trust model, the cell/seat
+  selector is client-side trust with no per-seat authentication — an Observer's *read* access to a
+  cell's belief state already has the same LAN-trust caveat every other cell-scoped endpoint has
+  (a hostile LAN participant could read Blue's view by requesting it, Observer-seated or not, per
+  `CLAUDE.md`'s documented trust boundary). This package does not change that trust model, and
+  should not be read as introducing a new one — it only adds the *write*-rejection Observer needs.
+- **RTM title-mismatch, routed upstream, not fixed here:** `docs/requirements/03-requirements-
+  traceability-matrix.md` row for `FR-6510` currently lists its Title column as "Multi-monitor
+  pop-out windows" — a copy/paste defect (the correct title, "Observer read-only view with no
+  command ability," is what `docs/requirements/01-functional-requirements.md:1170` — the RTM's own
+  source of truth — states). This does not block authoring this package, but is flagged for
+  whoever next touches the RTM (`04-requirements-engineering`'s territory).
+
+## Rollback Considerations
+
+Rollback surface: the new Observer-designation field, the new/modified endpoints, and the
+per-route guard additions. Removing the guard additions reverts every route to its current
+behavior; no existing seat's (White/Blue/Red) behavior is touched by this package, so rollback
+carries no risk to any already-`VERIFIED` capability. No save-file or eventlog schema is touched.

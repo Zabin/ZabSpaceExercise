@@ -27,8 +27,10 @@ Carried forward unchanged from the prior corpus's own framing (still accurate):
 
 | Situation | What the package does | Applies to |
 |---|---|---|
-| **Capability already implemented** | Documents the *actual* existing architecture against its Feature Spec — a retroactive as-built record, verified against real module/class/method names in `spacesim/`. Status `VERIFIED`. | FS-101 through FS-107, FS-109, FS-110, FS-111 |
-| **Capability not yet implemented** | Proposes a from-scratch design satisfying the Feature Spec's requirements — genuinely forward-looking, not yet built, and **not authorized for coding merely by being documented** (MSTR-006 §3). Status `READY` or `BLOCKED`. | FS-201, FS-301 |
+| **Capability already implemented, independently verified** | Documents the *actual* existing architecture against its Feature Spec — a retroactive as-built record, verified against real module/class/method names in `spacesim/`. Status `VERIFIED`. | FS-101 through FS-107, FS-109, FS-110, FS-111 |
+| **Capability already implemented, not yet independently verified** | Same as above, but authored by `07-implementation-planning` rather than confirmed by a separate `09-package-verification` pass — per that skill's own status vocabulary, enters at `COMPLETE`, not `VERIFIED`. | FS-114, FS-115 (FR-4110 slice, `IP-1150`) |
+| **Capability partially implemented (gap-closing)** | Documents what already exists, scopes the remaining gap as a build-ready forward design, and does not claim the Feature is closed. Status `READY` or `BLOCKED`, same authorization rule as a fully forward-design package. | FS-112 |
+| **Capability not yet implemented** | Proposes a from-scratch design satisfying the Feature Spec's requirements — genuinely forward-looking, not yet built, and **not authorized for coding merely by being documented** (MSTR-006 §3). Status `READY` or `BLOCKED`. | FS-201, FS-301, FS-113, FS-115 (FR-4210 slice, `IP-1151`) |
 
 FS-108 and FS-202 have no Implementation Package in this pass — both remain unauthorized
 "(candidate)" Feature Specs ([feature-index.md](../../features/feature-index.md)); per
@@ -52,14 +54,21 @@ unauthorized FS.
 | [IP-1110](IP-1110-ai-red-doctrine-automation.md) | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | [FS-111](../../features/FS-111-ai-red-doctrine-automation.md) | As-built | ✅ VERIFIED |
 | [IP-2010](IP-2010-competency-assessment.md) | Competency Assessment — rubric computation | [FS-201](../../features/FS-201-competency-assessment.md) | Forward design | 🟡 READY (not authorized; briefly `BLOCKED` 2026-07-02 on an ADR-0017 conflict, resolved same-day by `ADR-0032` — see the package's own header) |
 | [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | 🔴 BLOCKED (on IP-2010; also not authorized; a separate ADR-0029 conflict — never previously recorded in this package's own header — is now resolved by `ADR-0033`, see the package's own header) |
+| [IP-1120](IP-1120-classification-banner.md) | Classification Banner — wire the render/export path to the vignette's classification value | [FS-112](../../features/FS-112-classification-banner.md) | Partially built (gap-closing) | 🟡 BLOCKED (on IP-1150 → VERIFIED; also not authorized) |
+| [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | 🟡 READY (not authorized) |
+| [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence) | 🔵 COMPLETE (pending verification) |
+| [IP-1150](IP-1150-vignette-selection.md) | Session Setup: Vignette Selection & Parameter Tuning | [FS-115](../../features/FS-115-session-setup.md) §FR-4110 | As-built | 🔵 COMPLETE (pending verification) |
+| [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | 🔴 BLOCKED (on IP-1150 → VERIFIED; also not authorized) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1090,
 IP-1100, IP-1110 are new (2026-07)**, split out of IP-1060 v1.0 per `docs/feature-planning/
 05-feature-review.md` Finding F-03, mirroring the FS-106→FS-106/109/110/111 split — see IP-1060
-v2.0's own header note. **FS-112, FS-113, FS-114, FS-115 (new 2026-07, closing Findings F-02/F-10)
-have no Implementation Package yet** — each of those Feature Specifications explicitly flags its
-own build status as unverified, unlike the packages above (all confirmed against real file/line
-citations); authoring a package for any of them first requires that verification.
+v2.0's own header note. **IP-1120, IP-1130, IP-1140, IP-1150, IP-1151 are new (2026-07)**, the
+first Implementation Packages written against FS-112/113/114/115 — see
+[`../01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) Tranche 1 for the
+build-status verification pass and split rationale each required. None is `VERIFIED`: `IP-1140`/
+`IP-1150` are as-built but `COMPLETE` pending `09-package-verification`; `IP-1120`/`IP-1130`/
+`IP-1151` are forward design (`READY`/`BLOCKED`) and none is authorized (MSTR-006 §3).
 
 **Executing a package.** The `08-code-implementation` skill
 (`.claude/skills/08-code-implementation/SKILL.md`) is the next stage downstream of this tier: it
@@ -67,8 +76,8 @@ selects exactly one `READY`-and-eligible package, implements it, and advances it
 `COMPLETE`. It never authors or edits a package (that remains this tier's job) and never advances a
 package past `COMPLETE` to `VERIFIED` (that belongs to a separate, not-yet-defined verification
 skill). Per this repository's MSTR-006 §3 rule, `08-code-implementation` treats `READY` status as
-necessary but not sufficient for `IP-2010`/`IP-3010` specifically — both remain gated on a separate,
-explicit user go-ahead regardless of build-sequencing eligibility.
+necessary but not sufficient for `IP-2010`/`IP-3010`/`IP-1130` specifically — all three remain
+gated on a separate, explicit user go-ahead regardless of build-sequencing eligibility.
 
 ## Status legend
 
@@ -84,9 +93,14 @@ used because this tier's deliverable is an executable build plan, not a general 
 | COMPLETE | Implementation finished, tests passing, not yet independently re-verified. |
 | VERIFIED | Implementation finished, tested, and independently confirmed against the current source tree (this pass's as-built packages: file/line citations checked against the live `spacesim/` tree at authoring time). |
 
-**As-built packages are `VERIFIED`, not `COMPLETE`**, because this authoring pass read and confirmed
-every cited file/line reference against the current source tree rather than merely asserting the
-code exists.
+**The original 11 as-built packages (`IP-1010`…`IP-1110`) are `VERIFIED`, not `COMPLETE`**, because
+the pass that authored them read and confirmed every cited file/line reference against the current
+source tree rather than merely asserting the code exists — that pass combined what
+`07-implementation-planning` and `09-package-verification` now do as separate stages. **This
+tranche's two new as-built packages (`IP-1140`, `IP-1150`) follow the current, stricter separation
+instead**: `07-implementation-planning` confirmed the cited code exists, but only
+`09-package-verification` may write `VERIFIED` — both enter at `COMPLETE`, pending that
+independent pass.
 
 ## Authoring note
 
