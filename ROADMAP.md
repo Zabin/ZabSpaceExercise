@@ -392,6 +392,12 @@ narrows `ADR-0017`; `ADR-0033` supersedes `ADR-0029`; `CR-19`/`CR-20` promoted t
 `FR-10110`/`FR-10210` (new Epic `EP-10000`, Features `FEAT-10100`/`FEAT-10200`, in the Feature
 Catalog above). `IP-2010` returned to `READY`; `IP-3010` remains `BLOCKED` on `IP-2010` reaching
 `COMPLETE` (unrelated to the now-resolved ADR conflict). `CR-21` remains an active Candidate.
+`05-feature-review.md`'s own reconciliation table still showed FS-201/FS-301 mapping to
+"none — see Finding F-01" after this stage — a stale back-reference, since `FEAT-10100`/`FEAT-10200`
+now own exactly the requirements those two specs already implement. Fixed directly (mechanical,
+same class of fix as the Phase 7 dependency reconciliation below): the table now reads
+FS-201→FEAT-10100, FS-301→FEAT-10200, with an "Update (2026-07)" note explaining no new FS document
+was needed — the existing specs already fully describe what their new owning Feature names.
 
 **Next:** verify build status for FS-112/113/114/115; separately, baseline as many of the remaining
 `CR-01–18,21`/`CNFR-01–07` as the project owner authorizes for the ones with no ADR-level blocker
