@@ -151,13 +151,18 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-7320 | AAR branch compare | UNASSIGNED | ADR-0002 | C2, C1 | INT-0014 | UNASSIGNED | UNASSIGNED | `session/aar.py` |
 | FR-8110 | Operator console (web UI over the API) | UNASSIGNED | ADR-0008 | C4, C12 | INT-0001 | UNASSIGNED | UNASSIGNED | `ui_web/server.py`, `ui_web/static/` |
 | FR-9110 | AI-Red substitution for unseated Red | UNASSIGNED | ADR-0021, ADR-0024 | C2, C1, C8 | INT-0008, INT-0015 | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" | UNASSIGNED | `session/redai.py` |
-| FR-10110 *(new 2026-07, promoted from CR-19)* | Automated non-aggregating competency rubric-tier computation | UNASSIGNED | ADR-0017, ADR-0032 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-10110 *(new 2026-07, promoted from CR-19)* | Automated non-aggregating competency rubric-tier computation | R306, R310 | ADR-0017, ADR-0032 | C2, C1 | INT-0002 | UNASSIGNED | `tests/test_assessment.py`, `tests/test_orders.py` | `IP-2010` *(implemented 2026-07-03, COMPLETE, pending 09-package-verification)* |
 | FR-10210 *(new 2026-07, promoted from CR-20)* | Multi-run/cohort structured research-data export | UNASSIGNED | ADR-0029, ADR-0033 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 
-`FR-10110`/`FR-10210` carry `UNASSIGNED` Arch. Component/Interface/Test/Impl. Package cells
-honestly — neither capability has shipped code, an assigned C1–C12 component, or an ICD interface
-yet (both Feature Specs' own Open Questions flag the same interface gap). This is the expected
-state for a newly-promoted, not-yet-implemented requirement, not a guessed placeholder.
+`FR-10210` still carries `UNASSIGNED` Arch. Component/Interface/Test/Impl. Package cells
+honestly — that capability (`IP-3010`) has no shipped code, an assigned C1–C12 component, or an
+ICD interface yet (FS-301's own Open Questions flag the interface gap). This is the expected state
+for a newly-promoted, not-yet-implemented requirement, not a guessed placeholder. `FR-10110`'s
+cells were filled 2026-07-03 once `IP-2010` reached `COMPLETE` — Arch. Component/Interface follow
+that package's own Architecture Components/Interfaces fields exactly (no interface is invented;
+`INT-0002` is the pre-existing surface `IP-2010`'s report panel is hosted within, not a new ICD
+boundary — the interface gap FS-201's Open Questions flagged is a Phase 8 "should this get its own
+`INT-xxxx`" question, unaffected by this cell now being filled).
 
 ### Candidate Requirements (CR-01–CR-21) — `CANDIDATE — NOT BASELINED`
 
@@ -418,6 +423,7 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `session/inprocess.py` | FR-6320, FR-6410, NFR-1400 |
 | `session/aar.py` | FR-7310, FR-7320, NFR-2500, NFR-3100 |
 | `session/redai.py` | FR-9110 |
+| `session/assessment.py` | FR-10110 *(closed 2026-07-03 via `IP-2010`)* |
 | `content/vignette.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-5110, FR-5310, NFR-1600, NFR-2000 |
 | `content/vignettes/*.yaml` | NFR-2000 |
 | `content/` (TLE import) | FR-5210, NFR-3200 |
@@ -428,7 +434,7 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `spacesim/tests/` | NFR-2800 |
 | Build/dependency manifest, `spacesim/` (whole tree) | NFR-2900 |
 | All subsystems (no single file) | NFR-2200 |
-| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4210, FR-6610, FR-10110, FR-10210 *(both new 2026-07, promoted from CR-19/CR-20 — not yet implemented, so honestly `UNASSIGNED` here despite being baselined)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
+| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4210, FR-6610, FR-10210 *(new 2026-07, promoted from CR-20 — not yet implemented, so honestly `UNASSIGNED` here despite being baselined; FR-10110, promoted from CR-19 alongside it, closed 2026-07-03 via `IP-2010` — see `session/assessment.py` row above)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
 
 *(FR-4610/FR-4710/FR-4720 closed 2026-07 via `IP-1060` v2.0; FR-7220 closed 2026-07 via `IP-1100` —
 both split from `IP-1060` v1.0 per Finding F-03 — see the master matrix rows above. **FR-4110

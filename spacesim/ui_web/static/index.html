@@ -551,6 +551,16 @@
     </div>
   </section>
 
+  <section class="panel white-only" id="assessment-panel" style="margin:0 12px 14px">
+    <h2>Competency assessment — rubric, not a score</h2>
+    <div class="ctrl"><button id="assessment-refresh">🔄 Refresh</button></div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
+      <div><h3>Blue</h3><pre id="assessment-blue">—</pre></div>
+      <div><h3>Red</h3><pre id="assessment-red">—</pre></div>
+    </div>
+    <p id="assessment-disclosure" class="muted" style="font-size:11px">—</p>
+  </section>
+
   <section class="panel" id="drill-panel" style="margin:0 12px 14px">
     <h2>Subsystem drill-down — telemetry &amp; logs (click a fleet row, then a parameter)</h2>
     <div id="drill-title" class="toggle">select an asset above…</div>

@@ -1,23 +1,25 @@
 # IP-2010 — Competency Assessment: Rubric Computation
 
 > **Package ID:** IP-2010
-> **Version:** 1.1 (2026-07-03 — resolves BL-0002, the "aware vs. unaware" divergence-signal design
-> question, per the project owner's decision recorded in `docs/pipeline/pipeline-journal.md` run #4;
-> see "Files to Modify," Implementation Tasks items 3/6, Tests to Add, Definition of Done,
-> Verification Checklist, and Risks below. Design amendment only — no re-authorization required,
-> since it elaborates the same approved Objective/Feature Reference rather than introducing scope
-> beyond FS-201; Status/authorization fields below are unchanged from v1.0.)
-> **Status:** 🟡 READY *(authorized, not yet started — unblocked 2026-07-02: the blocking conflict — this
-> package's Objective building exactly the automated-assessment mechanism ADR-0017 read as
-> prohibiting — is resolved by [ADR-0032](../../architecture/adr/ADR-0032-descriptive-rubric-not-automated-scoring.md),
-> which carves out non-adjudicative, descriptive, non-aggregating rubric-tier reporting from
-> ADR-0017's "assessment mechanism" prohibition; the underlying capability is now also baselined as
+> **Version:** 1.2 (2026-07-03 — implemented by `08-code-implementation`; see Status below. v1.1
+> resolved BL-0002, the "aware vs. unaware" divergence-signal design question, per the project
+> owner's decision recorded in `docs/pipeline/pipeline-journal.md` run #4; see "Files to Modify,"
+> Implementation Tasks items 3/6, Tests to Add, Definition of Done, Verification Checklist, and
+> Risks below.)
+> **Status:** 🔵 COMPLETE *(implemented 2026-07-03 — `session/assessment.py` (new),
+> `custody_confidence_at_decision` capture in `engine/orders.py`'s `_exec_payload()` via a new
+> `engine/custody.py` helper, `session/inprocess.py` wrapper, `/api/sessions/{sid}/assessment`
+> endpoint + White Cell Dashboard panel. Full suite green (507 passed/3 skipped, up from 490/3 —
+> 17 new tests), both permanent gates (`test_determinism.py`, `test_import_guard.py`) green.
+> Entered `COMPLETE`, not `VERIFIED` — per this skill's rule, only `09-package-verification`'s own
+> independent pass may write `VERIFIED`. Was 🟡 READY *(authorized, unblocked 2026-07-02 — the
+> blocking conflict, this package's Objective building exactly the automated-assessment mechanism
+> ADR-0017 read as prohibiting, is resolved by
+> [ADR-0032](../../architecture/adr/ADR-0032-descriptive-rubric-not-automated-scoring.md), which
+> carves out non-adjudicative, descriptive, non-aggregating rubric-tier reporting from ADR-0017's
+> "assessment mechanism" prohibition; the underlying capability is baselined as
 > [`FR-10110`](../../requirements/01-functional-requirements.md). **MSTR-006 §3 authorization
-> obtained 2026-07-03** (project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2) —
-> this is the fresh, separate go-ahead the prior 2026-07-02 approval could not itself constitute
-> since it was interrupted by the (now-resolved) ADR-0017 conflict before any code was written.
-> `08-code-implementation` may now pick up this package, with its now-fully-resolved design
-> (v1.1) — no open design question remains on this package.)*
+> obtained 2026-07-03** (project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).)*)*
 > **Dependencies:** FS-201, IP-1030 (custody data source), IP-1020/IP-1010 (window-discipline data
 > source), IP-1070 (belief-truth-divergence data source)
 > **Referenced By:** IP-3010 (the forward-design export package that would aggregate this package's
@@ -45,10 +47,11 @@ exercise, across the three first-iteration dimensions FS-201 §3 scopes as deriv
 engine already unambiguously produces: **custody quality**, **window discipline**, and
 **belief-truth divergence**. No composite single score is produced.
 
-> **This is a forward-design package: the capability described here does not exist in `spacesim/`
-> today.** Per MSTR-006 §3, this document's own specification was not itself an authorization to
-> write code — that separate, explicit user go-ahead was obtained 2026-07-03 (see the Status field
-> above), and `08-code-implementation` may now begin the tasks below.
+> **This was authored as a forward-design package: the capability did not exist in `spacesim/` at
+> authoring time.** Per MSTR-006 §3, this document's own specification was not itself an
+> authorization to write code — that separate, explicit user go-ahead was obtained 2026-07-03 (see
+> the Status field above), and `08-code-implementation` has since implemented the tasks below
+> (2026-07-03, see Status).
 
 ## Feature Reference
 
@@ -212,24 +215,26 @@ sequence for `08-code-implementation`:
 
 ## Definition of Done
 
-*(Forward-looking gate — the authorization item below is now true; the rest is not yet.)*
+*(Implemented 2026-07-03 by `08-code-implementation` — every item below is now satisfied against
+the shipped code and tests; `09-package-verification` independently re-confirms this, per its own
+process, before the package may advance to `VERIFIED`.)*
 
 - [x] **Explicit user authorization obtained** for this package's Implementation Tasks, per
   MSTR-006 §3 (2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).
-- [ ] `score_custody_quality`/`score_window_discipline`/`score_belief_truth_divergence` each return
+- [x] `score_custody_quality`/`score_window_discipline`/`score_belief_truth_divergence` each return
   one of FS-201 §3's named tiers, never a numeric average.
-- [ ] The per-cell/per-exercise report presents all three dimensions side-by-side without collapsing
+- [x] The per-cell/per-exercise report presents all three dimensions side-by-side without collapsing
   to a composite number.
-- [ ] Deferred dimensions (resource economy, escalation discipline, time-to-decision) are absent
+- [x] Deferred dimensions (resource economy, escalation discipline, time-to-decision) are absent
   from the report, not substituted with a default.
-- [ ] Every scoring function is verified read-only (no `WorldState` mutation) by a dedicated test.
-- [ ] Each reported dimension's report surface discloses that it has not undergone a DOM-005 §5
+- [x] Every scoring function is verified read-only (no `WorldState` mutation) by a dedicated test.
+- [x] Each reported dimension's report surface discloses that it has not undergone a DOM-005 §5
   validity check beyond face validity (per FS-201's Validation Discipline requirement) — the report
   must not imply a validated metric.
-- [ ] `custody_confidence_at_decision` is populated on every `DECISION_KINDS` event whose order had
+- [x] `custody_confidence_at_decision` is populated on every `DECISION_KINDS` event whose order had
   a target the issuing cell held a track on, and is `None` on every event without one, verified by a
   dedicated test in `test_orders.py`.
-- [ ] `score_belief_truth_divergence`'s aware/unaware split reads the recorded
+- [x] `score_belief_truth_divergence`'s aware/unaware split reads the recorded
   `custody_confidence_at_decision` field only — never recomputes confidence via
   `aar.state_at()`/replay for this classification (the differentiating fixture in
   `test_assessment.py` proves this).

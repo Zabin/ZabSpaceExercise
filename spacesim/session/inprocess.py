@@ -13,7 +13,7 @@ from typing import Iterator, Optional
 from spacesim.content.vignette import list_vignettes, load_vignette
 from spacesim.engine.orders import Order
 from spacesim.session.api import Ack, CellView, OrderAck
-from spacesim.session import aar
+from spacesim.session import aar, assessment
 from spacesim.session.manager import SessionManager
 from spacesim.session.redai import RedDoctrine
 
@@ -748,6 +748,11 @@ class InProcessSession:
 
     def aar_snapshot_at(self, session: str, seq=None) -> dict:
         return aar.snapshot_at(self._sessions[session], seq)
+
+    # -- competency assessment (IP-2010) ----------------------------------------
+    def assessment_report(self, session: str) -> dict:
+        self.catch_up(session)
+        return assessment.assessment_report(self._sessions[session])
 
     def alarms(self, session: str, cell: str) -> list:
         with self._locked_read(session) as mgr:

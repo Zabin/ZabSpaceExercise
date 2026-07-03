@@ -281,7 +281,12 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   (**multiplayer:** `_locked(sid)` cm wraps every mutation; every read pass-through calls
   `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added),
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
-  `aar.py` (replay/scrub/branch-compare + `snapshot_at`).
+  `aar.py` (replay/scrub/branch-compare + `snapshot_at`),
+  `assessment.py` (IP-2010 — read-only competency-rubric scoring: `score_custody_quality`/
+  `score_window_discipline`/`score_belief_truth_divergence` + `assessment_report`, never a
+  composite score; belief-truth divergence classifies aware/unaware from `custody_confidence_at_decision`,
+  a new field `orders.py`'s `_exec_payload()` records at order-issue time via `custody.py`'s
+  `confidence_at_decision()` helper, read back verbatim — never recomputed via replay).
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`) + `static/`
   front end: `app.js` (command menu with live dry-run preview + pre-disabled Issue + kinetic
   consequence-confirm, fleet rail with next-contact countdown/SoC/alarm badge/filter + alarm

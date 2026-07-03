@@ -52,8 +52,8 @@ unauthorized FS.
 | [IP-1090](IP-1090-multiplayer-session-transport.md) | Multiplayer / LAN Session Transport — lazy clock, mutation locking, hot-seat/LAN sharing | [FS-109](../../features/FS-109-multiplayer-session-transport.md) | As-built | ✅ VERIFIED |
 | [IP-1100](IP-1100-save-and-resume.md) | Save & Resume — deterministic round trip & content/session split | [FS-110](../../features/FS-110-save-and-resume.md) | As-built | ✅ VERIFIED |
 | [IP-1110](IP-1110-ai-red-doctrine-automation.md) | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | [FS-111](../../features/FS-111-ai-red-doctrine-automation.md) | As-built | ✅ VERIFIED |
-| [IP-2010](IP-2010-competency-assessment.md) | Competency Assessment — rubric computation | [FS-201](../../features/FS-201-competency-assessment.md) | Forward design | 🟡 READY (**authorized 2026-07-03**; briefly `BLOCKED` 2026-07-02 on an ADR-0017 conflict, resolved same-day by `ADR-0032` — see the package's own header) |
-| [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | 🔴 BLOCKED (on IP-2010; **not authorized** — not selected in the 2026-07-03 authorization round; a separate ADR-0029 conflict — never previously recorded in this package's own header — is now resolved by `ADR-0033`, see the package's own header) |
+| [IP-2010](IP-2010-competency-assessment.md) | Competency Assessment — rubric computation | [FS-201](../../features/FS-201-competency-assessment.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`; briefly `BLOCKED` 2026-07-02 on an ADR-0017 conflict, resolved same-day by `ADR-0032` — see the package's own header) |
+| [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | 🔴 BLOCKED (**not authorized** — not selected in the 2026-07-03 authorization round; its `IP-2010 → COMPLETE` blocker cleared 2026-07-03; a separate ADR-0029 conflict — never previously recorded in this package's own header — is now resolved by `ADR-0033`, see the package's own header) |
 | [IP-1120](IP-1120-classification-banner.md) | Classification Banner — wire the render/export path to the vignette's classification value | [FS-112](../../features/FS-112-classification-banner.md) | Partially built (gap-closing) | 🟡 READY (**authorized 2026-07-03**; unblocked same day — see IP-1150) |
 | [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | 🟡 READY (**authorized 2026-07-03**) |
 | [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence) | 🔵 COMPLETE (pending verification) |
@@ -70,7 +70,9 @@ build-status verification pass and split rationale each required. **`IP-1150` is
 (2026-07-03, [`VR-1150`](../verification/VR-1150-vignette-selection.md) — the first package in
 this tranche, and the first in this plan, verified through the formal `09-package-verification`
 process). `IP-1140` remains as-built but `COMPLETE`, pending its own `09-package-verification` run;
-`IP-1120`/`IP-1130`/`IP-1151` are forward design, all `READY` and all authorized.
+`IP-1120`/`IP-1130`/`IP-1151` are forward design, all `READY` and all authorized. **`IP-2010` is
+now `COMPLETE`** (implemented 2026-07-03, `session/assessment.py` + `custody_confidence_at_decision`
+in `orders.py`/`custody.py`), pending its own `09-package-verification` run.
 
 **Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
 §3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in
@@ -84,10 +86,12 @@ regardless of being authorized — that gate cleared the same day (`VR-1150`), s
 (`.claude/skills/08-code-implementation/SKILL.md`) is the next stage downstream of this tier: it
 selects exactly one `READY`-and-eligible package, implements it, and advances its status to
 `COMPLETE`. It never authors or edits a package (that remains this tier's job) and never advances a
-package past `COMPLETE` to `VERIFIED` (that belongs to a separate, not-yet-defined verification
-skill). Per this repository's MSTR-006 §3 rule, `08-code-implementation` treats `READY` status as
-necessary but not sufficient for `IP-2010`/`IP-3010`/`IP-1130` specifically — all three remain
-gated on a separate, explicit user go-ahead regardless of build-sequencing eligibility.
+package past `COMPLETE` to `VERIFIED` (that belongs to `09-package-verification`). Per this
+repository's MSTR-006 §3 rule, `08-code-implementation` treats `READY` status as necessary but not
+sufficient for any forward-design package until a separate, explicit user go-ahead is on record —
+`IP-2010` received that go-ahead 2026-07-03 and has since been implemented (`COMPLETE`);
+`IP-3010`/`IP-1130` remain gated the same way (`IP-1130` is authorized and `READY`, awaiting
+`08-code-implementation`; `IP-3010` is not yet authorized at all).
 
 ## Status legend
 

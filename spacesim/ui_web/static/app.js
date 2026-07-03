@@ -609,7 +609,7 @@ const LAYOUT_PANELS = {
   "globe+map": ["viewers-panel", "globe-panel", "map-panel", "cell-time-panel"],
   fleet:       ["fleet-panel", "drill-panel", "cell-time-panel"],
   order:       ["order-panel", "activity-panel", "cell-time-panel"],
-  aar:         ["aar-panel", "cell-time-panel"],
+  aar:         ["aar-panel", "assessment-panel", "cell-time-panel"],
 };
 
 function popOut(layoutToken) {
@@ -1634,6 +1634,7 @@ async function loadSaveFile(file) {
   // the wall-time gap since the save. White clicks Start (or the Resume button) to re-arm.
   if (state.started) startRealtimeClock();
   await refresh();
+  refreshAssessment();  // IP-2010 — populate once on load; the panel's own button refreshes it later
 }
 
 async function refreshAAR() {
@@ -1649,6 +1650,21 @@ async function aarAt(seq) {
   $("aar-label").textContent = `event ${snap.seq} / ${snap.n_events} · ${iso(snap.now)} · debris ${snap.debris}`;
   $("aar-obj").textContent = JSON.stringify(snap.objectives, null, 2);
   $("aar-assets").textContent = snap.assets.map((a) => `${a.id}: ${a.health}${a.bus_mode ? " / " + a.bus_mode : ""}`).join("\n");
+}
+
+// IP-2010 — competency assessment rubric (custody quality / window discipline / belief-truth
+// divergence). Manual refresh, not polled every tick like the rest of refresh(): each dimension
+// replays the eventlog per decision, so it's a debrief-time report, not a live gauge.
+async function refreshAssessment() {
+  if (!SID) return;
+  const rep = await api.get(`/api/sessions/${SID}/assessment`).catch(() => null);
+  if (!rep) return;
+  const fmt = (side) => Object.entries(rep[side] || {})
+    .filter(([k]) => k !== "disclosure")
+    .map(([k, v]) => `${k}: ${v}`).join("\n") || "—";
+  $("assessment-blue").textContent = fmt("blue");
+  $("assessment-red").textContent = fmt("red");
+  $("assessment-disclosure").textContent = (rep.blue && rep.blue.disclosure) || (rep.red && rep.red.disclosure) || "";
 }
 
 // ---- 2D belief map with pan / zoom / center / layers ----
@@ -1988,6 +2004,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("loadbtn").onclick = () => $("loadfile").click();
   $("loadfile").onchange = (e) => e.target.files[0] && loadSaveFile(e.target.files[0]);
   $("aar-slider").oninput = (e) => aarAt(e.target.value);
+  if ($("assessment-refresh")) $("assessment-refresh").onclick = refreshAssessment;
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
   $("o-target").oninput = previewOrder; $("o-params").oninput = previewOrder;
   // Picking a valid target from the dropdown fills the free-text id and previews.

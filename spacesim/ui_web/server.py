@@ -496,6 +496,14 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.aar_report(sid).model_dump()
 
+    @app.get("/api/sessions/{sid}/assessment")
+    def assessment_report(sid: str) -> dict:
+        """Competency assessment rubric report (IP-2010, FS-201) — per-cell/per-exercise, both
+        cells side-by-side, never a composite score. A ground-truth, no-cell-binding endpoint like
+        /aar and /objectives (CLAUDE.md's LAN trust model note applies identically here)."""
+        _require(sid)
+        return api.assessment_report(sid)
+
     @app.get("/api/sessions/{sid}/alarms/{cell}")
     def alarms(sid: str, cell: str) -> list:
         _require(sid)
