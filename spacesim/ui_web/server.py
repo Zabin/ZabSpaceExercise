@@ -42,6 +42,7 @@ class LoadRequest(BaseModel):
     vignette_id: str
     overrides: dict = {}
     seed: int = 0
+    classification: Optional[str] = None  # IP-1120 — White-Cell override; None = vignette default
 
 
 class ParamRequest(BaseModel):
@@ -200,8 +201,9 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions")
     def load(req: LoadRequest) -> dict:
-        sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed)
-        return {"session": sid}
+        sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed,
+                                classification=req.classification)
+        return {"session": sid, "classification": api.classification(sid)}
 
     @app.get("/api/sessions")
     def list_sessions() -> list[dict]:

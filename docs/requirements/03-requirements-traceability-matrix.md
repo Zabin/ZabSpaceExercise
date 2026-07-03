@@ -129,7 +129,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-4210 | Seat-to-role assignment | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-4310 | Pause / resume clock control | UNASSIGNED | ADR-0016 | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-4410 | Inject authoring / firing | UNASSIGNED | ADR-0005 | C4, C6, C1 | INT-0002, INT-0016 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
-| FR-4510 | Observer view | UNASSIGNED | (none directly) | C4, C6, C12 | INT-0002, INT-0001 | UNASSIGNED | UNASSIGNED | `ui_web/server.py` |
+| FR-4510 | Observer view | UNASSIGNED | (none directly) | C4, C6, C12 | INT-0002, INT-0001 | UNASSIGNED | `tests/test_classification_banner.py`, `tests/test_web.py::test_load_response_carries_resolved_classification`, `tests/test_web.py::test_session_discovery_surfaces_classification_for_joining_tabs` | `IP-1120` *(implemented 2026-07-03, COMPLETE, pending 09-package-verification)* |
 | FR-4610 | (manual adjudication / custody-adjacent leaf, ADR-0004) | UNASSIGNED | ADR-0004 | C4, C6, C2, C1 | INT-0002, INT-0007 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0)* |
 | FR-4710 | No automated scoring / manual adjudication | UNASSIGNED | ADR-0017, ADR-0029 | C4, C6 | (none — absence of an interface) | UNASSIGNED | UNASSIGNED | (inspection — no outbound interface returns a score field) *(closed 2026-07 via IP-1060 v2.0)* |
 | FR-4720 | Adjust safe-mode dials / live parameters mid-exercise *(new leaf, CHG-003)* | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0)* |
@@ -239,7 +239,7 @@ where the named subsystem maps onto one), not separately inferred.
 | NFR-2800 | Test-driven gated build | UNASSIGNED | ADR-0002 | (all) | `spacesim/tests/` | UNASSIGNED | UNASSIGNED |
 | NFR-2900 | Windows-first portability | UNASSIGNED | ADR-0020 | (all) | Build/dependency manifest, `spacesim/` | UNASSIGNED | UNASSIGNED |
 | NFR-3000 | Accessible presentation | UNASSIGNED | (none identified) | C4 | `ui_web/static/` (app.js, style.css, globe.js) | UNASSIGNED | UNASSIGNED |
-| NFR-3100 | Classification banner | UNASSIGNED | (none identified) | C4, C2 | `ui_web/static/` (banner component), `session/aar.py` | UNASSIGNED | UNASSIGNED |
+| NFR-3100 | Classification banner | UNASSIGNED | (none identified) | C4, C2 | `ui_web/static/` (banner component), `session/aar.py` | UNASSIGNED | `tests/test_classification_banner.py`, `tests/test_web.py::test_aar_csv_export_embeds_classification_over_http`, `tests/test_web.py::test_save_export_embeds_classification_over_http` | `IP-1120` *(implemented 2026-07-03, COMPLETE, pending 09-package-verification)* |
 | NFR-3200 | TLE import with offline fallback | UNASSIGNED | ADR-0018 | C5, C4 | `content/` (TLE import), scenario builder UI | UNASSIGNED | UNASSIGNED |
 | NFR-3300 | Browser-only client, no external integration | UNASSIGNED | (none identified) | C4 | `ui_web/server.py` | UNASSIGNED | UNASSIGNED |
 
@@ -417,7 +417,7 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `engine/eventlog.py` | FR-7110, NFR-2400, NFR-2500, NFR-2600 |
 | `engine/world.py` | NFR-2400 |
 | `engine/handlers.py` | NFR-2600 |
-| `session/manager.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-4310, FR-4410, FR-7210, FR-6310, NFR-1300, NFR-1800 |
+| `session/manager.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-4310, FR-4410, FR-7210, FR-6310, NFR-1300, NFR-1800, FR-4510 *(closed 2026-07-03 via IP-1120)* |
 | `session/api.py` | FR-6110, NFR-2300 |
 | `session/cells.py` | FR-6210, FR-6220 |
 | `session/inprocess.py` | FR-6320, FR-6410, NFR-1400 |
@@ -427,8 +427,8 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `content/vignette.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-5110, FR-5310, NFR-1600, NFR-2000 |
 | `content/vignettes/*.yaml` | NFR-2000 |
 | `content/` (TLE import) | FR-5210, NFR-3200 |
-| `ui_web/server.py` | FR-4510, FR-8110, NFR-1400, NFR-2300, NFR-2700, NFR-3300 |
-| `ui_web/static/app.js` | FR-6510, FR-8110, NFR-3000 |
+| `ui_web/server.py` | FR-4510, FR-8110, NFR-1400, NFR-2300, NFR-2700, NFR-3300, NFR-3100 *(closed 2026-07-03 via IP-1120)* |
+| `ui_web/static/app.js` | FR-6510, FR-8110, NFR-3000, FR-4510 *(closed 2026-07-03 via IP-1120)*, NFR-3100 *(closed 2026-07-03 via IP-1120)* |
 | `ui_web/static/` (globe.js, world.js, graph.js, style.css) | NFR-1200, NFR-3000, NFR-3100 |
 | `spacesim/config.py` | NFR-2700 |
 | `spacesim/tests/` | NFR-2800 |

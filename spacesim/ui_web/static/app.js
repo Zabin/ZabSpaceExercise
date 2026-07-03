@@ -179,11 +179,25 @@ function updateSessionSummary(vignetteLabel, started) {
   el.textContent = `${vignetteLabel || ""} · ${SID} · ${tag}`.replace(/^ · /, "");
 }
 
+// IP-1120 — the banner is set once at Load and fixed for the session's lifetime (FR-4510); no
+// polling needed. Both the creating tab (loadSession) and a joining tab (joinSessionFromHash)
+// read it from the server (never re-derive it), per NFR-3100's single-source-of-truth guarantee.
+function setBanner(text) {
+  const el = $("banner");
+  if (el && text) el.textContent = text;
+}
+
 async function loadSession() {
   stopRealtimeClock();
   const vselect = $("vignette");
   const vlabel = vselect && vselect.selectedOptions[0] ? vselect.selectedOptions[0].textContent : vselect.value;
-  SID = (await api.post("/api/sessions", { vignette_id: vselect.value, seed: +$("seed").value })).session;
+  const classOverride = ($("classification-override") || {}).value || "";
+  const resp = await api.post("/api/sessions", {
+    vignette_id: vselect.value, seed: +$("seed").value,
+    classification: classOverride.trim() || undefined,
+  });
+  SID = resp.session;
+  setBanner(resp.classification);
   location.hash = SID;   // multiplayer: shareable URL — Blue/Red tabs open this to join
   $("session").textContent = "session " + SID; $("start").disabled = false;
   updateSessionSummary(vlabel, false);
@@ -205,6 +219,7 @@ async function joinSessionFromHash() {
     $("session").textContent = "session " + SID;
     $("start").disabled = !!found.started;
     updateSessionSummary(found.title || found.vignette_id, found.started);
+    setBanner(found.classification);   // IP-1120 — same resolved value the creating tab set
     const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
     $("inject-sel").innerHTML = injects.map((i) => `<option value="${esc(i.id)}">${esc(i.label)}</option>`).join("") || "<option>(none)</option>";
     await loadInjectLibrary();

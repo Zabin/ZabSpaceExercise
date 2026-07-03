@@ -42,6 +42,9 @@
           <label class="menu-item-inline">Seed
             <input id="seed" type="number" value="1" style="width:5em">
           </label>
+          <label class="menu-item-inline" title="White Cell override — set once at Load, fixed for the session's lifetime (FR-4510)">Classification
+            <input id="classification-override" type="text" placeholder="(vignette default)" style="width:12em">
+          </label>
           <div class="menu-item-row">
             <button id="load" class="primary">Load</button>
             <button id="start" disabled>▶ Start</button>
@@ -93,7 +96,7 @@
         </div>
       </div>
     </div>
-    <span class="banner">UNCLASSIFIED // TRAINING</span>
+    <span id="banner" class="banner">UNCLASSIFIED-TRAINING</span>
   </header>
 
   <main>

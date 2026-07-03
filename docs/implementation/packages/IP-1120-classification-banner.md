@@ -1,14 +1,23 @@
 # IP-1120 — Classification Banner
 
 > **Package ID:** IP-1120
-> **Version:** 1.0
-> **Status:** 🟡 BLOCKED *(on [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED` — this
-> package's Objective assumes vignette load/session-setup already works, which it functionally
-> does today, but per this plan's own READY-requires-VERIFIED-dependency rule a dependency that is
-> merely `COMPLETE` keeps a package `BLOCKED`, not `READY`. **MSTR-006 §3 authorization obtained
-> 2026-07-03** (project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2) — this
-> package is pre-cleared to start the moment `IP-1150` reaches `VERIFIED`; authorization does not
-> itself lift the `IP-1150` dependency gate.)*
+> **Version:** 1.1 (2026-07-03 — implemented by `08-code-implementation`; see Status below.
+> **Note:** the Status blockquote below still read `BLOCKED` as of the start of this implementation
+> run, even though `IP-1150` had already reached `VERIFIED` on 2026-07-03 during an earlier run
+> [run #3] — the Master Build Plan and `packages/INDEX.md` were correctly updated to `READY` at
+> that time, but this package's own header text was not refreshed to match. `08-code-implementation`
+> treated the Master Build Plan (the authoritative sequencing ledger) as controlling, proceeded on
+> that basis, and corrects this document's own stale text as routine status bookkeeping in this
+> same pass — not a design change.)
+> **Status:** 🔵 COMPLETE *(implemented 2026-07-03 — one resolved `classification` value now flows
+> from `Vignette.classification` (or a White-Cell override supplied at session setup) through
+> `session/manager.py` to the UI-facing session-create/discovery responses, `aar.export_csv`, and
+> `save_state`, replacing the prior hard-coded banner literal. Full suite green (519 passed/3
+> skipped, up from 507/3 — 12 new tests), both permanent gates (`test_determinism.py`,
+> `test_import_guard.py`) green. Entered `COMPLETE`, not `VERIFIED` — only `09-package-verification`
+> may write `VERIFIED`. Was 🟡 READY *(authorized 2026-07-03, unblocked the same day once
+> [IP-1150](IP-1150-vignette-selection.md) reached `VERIFIED` — MSTR-006 §3 authorization obtained
+> 2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).*)*
 > **Dependencies:** FS-112, [IP-1150](IP-1150-vignette-selection.md) (vignette-selection/session-
 > setup workflow this Feature's banner-value setting is part of, per FS-112's own Dependencies field)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md)
@@ -121,6 +130,29 @@ None — every touch point already exists; this is a wiring/completion package.
 6. Confirm no export path in `session/aar.py` or `session/manager.py` is missed — NFR-3100 is
    explicitly a no-omission rule, not a best-effort one.
 
+**Implementation notes (2026-07-03, added by `08-code-implementation`, two deliberate deviations
+from this section's literal text above — both within `session/manager.py`, an already-in-scope
+file, not a scope expansion):**
+
+- **Task 3's "session-state response `app.js` already polls"** turned out to be ambiguous once
+  actually implemented: `app.js`'s periodic `refresh()` loop uses `/godview` (White) or
+  `/view/{cell}` (Blue/Red/Observer) — both fog-filtered, frequently-repolled structures not
+  natural homes for a value FS-112 itself states is "fixed for its lifetime." A joining/pop-out tab
+  (`joinSessionFromHash()`) never calls either of those on join — it reads `GET /api/sessions`
+  (`list_sessions()`). Continuously re-polling a value that never changes would also have been
+  wasted work. The shipped design instead surfaces `classification` on the one-time
+  `POST /api/sessions` response (for the creating tab) **and** on `list_sessions()` (for a joining
+  tab) — both already read `SessionManager.classification`, the same single resolved value, so this
+  is a different *transport* choice than the sketch above, not a different *source of truth*.
+- **Task 6 / "Files to Modify"'s claim that `from_state` is "unaffected"** was not followed: without
+  restoring the saved `classification` key on resume, a saved-then-reloaded session would silently
+  revert to the vignette's default banner, contradicting FS-112's own "fixed for its lifetime"
+  System Behaviour and partly defeating the point of `save_state` embedding the value at all. This
+  package's own Rollback Considerations already anticipated `from_state` tolerating the key's
+  *absence* (old saves) — the shipped `from_state` does that (via `.get(...)`) while also restoring
+  it when present, which strictly implements DoD item "the call sites all read one resolved
+  value... never re-deriving it independently" more completely than the literal task text asked for.
+
 ## Tests to Add
 
 - `spacesim/tests/test_content.py` or a new `test_classification_banner.py` — a test asserting a
@@ -147,17 +179,30 @@ None — every touch point already exists; this is a wiring/completion package.
 
 ## Definition of Done
 
+*(Implemented 2026-07-03 by `08-code-implementation` — every item below is now satisfied against
+the shipped code and tests; `09-package-verification` independently re-confirms this before the
+package may advance to `VERIFIED`.)*
+
 - [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3, 2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2) — still
-  waits on [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED` before work may begin.
-- [ ] A session's on-screen banner reflects `Vignette.classification` (or a White-Cell override),
-  not a hard-coded literal, on every screen.
-- [ ] A White-Cell-facing control exists to set/override the classification value at session setup.
-- [ ] `aar.export_csv` embeds the session's active classification value; every other export path
-  `session/aar.py`/`session/manager.py` exposes does the same, with no omission.
-- [ ] `save_state`'s returned dict carries the active classification value.
-- [ ] The three call sites (UI render, `export_csv`, `save_state`) all read one resolved value from
-  `SessionManager`, never re-deriving it independently.
+  §3, 2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).
+  [IP-1150](IP-1150-vignette-selection.md) reached `VERIFIED` 2026-07-03 (run #3, `VR-1150`),
+  clearing the dependency gate this item used to note as still open.
+- [x] A session's on-screen banner reflects `Vignette.classification` (or a White-Cell override),
+  not a hard-coded literal, on every screen — set once from the server's resolved value (the
+  create response for the creating tab, `list_sessions()` for a joining/pop-out tab), matching
+  FR-4510's "fixed for its lifetime" semantics; no continuous re-polling needed since the value
+  never changes mid-session (see Implementation Tasks note below on this design choice).
+- [x] A White-Cell-facing control exists to set/override the classification value at session setup
+  (a text input in the same Session ▾ menu `IP-1150`'s vignette/seed controls live in).
+- [x] `aar.export_csv` embeds the session's active classification value (a new `AARReport.classification`
+  field, populated by `aar.report()`); `aar.export_json` (which dumps the same `AARReport`) picks it
+  up automatically, with no omission.
+- [x] `save_state`'s returned dict carries the active classification value; `from_state` restores it
+  on resume (an addition beyond the package's literal "from_state is unaffected" text — see
+  Implementation Tasks note below).
+- [x] The call sites (session-create response, `list_sessions()`, `export_csv`, `save_state`) all
+  read the one value `SessionManager.classification` resolves once at construction, never
+  re-deriving it independently.
 
 ## Verification Checklist
 
@@ -174,30 +219,35 @@ None — every touch point already exists; this is a wiring/completion package.
 ## Dependencies
 
 - **Upstream:** [IP-1150](IP-1150-vignette-selection.md) (the session-setup/vignette-load
-  mechanism this package's setup control extends) — `COMPLETE`, not yet `VERIFIED`; this package
-  stays formally `BLOCKED` until `IP-1150` clears `09-package-verification`, even though the
-  functional prerequisite (a vignette can already be loaded) already works today.
+  mechanism this package's setup control extends) — `VERIFIED` 2026-07-03 (`VR-1150`, run #3); this
+  package's dependency gate cleared that same day.
 - **Downstream:** None in this pass.
-- **Build-sequencing:** Should be sequenced after `IP-1150` reaches `VERIFIED`; not on this plan's
+- **Build-sequencing:** Sequenced after `IP-1150` reached `VERIFIED`, as planned; not on this plan's
   critical path (see `00-master-build-plan.md`).
 
 ## Risks
 
 - **Authorization risk (resolved 2026-07-03):** MSTR-006 §3's explicit, separate user go-ahead is
-  now on record in the pipeline journal — the remaining gate is functional (`IP-1150` → `VERIFIED`),
-  not authorization.
-- **Two-sources-of-truth risk if Implementation Task 2 is skipped:** if the UI render path and the
-  export paths each independently re-derive the classification value (e.g. one reads the vignette
-  default, the other reads a stale override), NFR-3100's "no export omits/contradicts the banner"
-  guarantee silently breaks. This is why the package insists on a single resolved value carried on
-  `SessionManager`, not three independent reads.
+  now on record in the pipeline journal, and `IP-1150` reached `VERIFIED` the same day — both
+  former gates are cleared; this package is now implemented (`COMPLETE`).
+- **Two-sources-of-truth risk (mitigated by design, not merely avoided):** `SessionManager.classification`
+  is resolved exactly once, at construction, and every reader (session-create response,
+  `list_sessions()`, `aar.export_csv`, `save_state`) reads that one attribute — including
+  `set_parameter()`'s pre-start manager-reconstruction path, which explicitly re-passes the current
+  `classification` forward (a case this Risk's original wording didn't call out by name, but which
+  the same failure mode applies to).
 - **RTM title-mismatch, routed upstream, not fixed here:** `docs/requirements/03-requirements-
   traceability-matrix.md` row for `FR-4510` currently lists its Title column as "Observer view" —
   a copy/paste defect (the correct title, "Classification banner set and displayed," is what
   `docs/requirements/01-functional-requirements.md:824` — the RTM's own source of truth — states).
   This does not block authoring this package (the FR's content, not the RTM's title-column
   restatement, is authoritative), but is flagged here for whoever next touches the RTM
-  (`04-requirements-engineering`'s territory, not this skill's to fix).
+  (`04-requirements-engineering`'s territory, not this skill's to fix) — left untouched by
+  `08-code-implementation` for the same reason (Test/Impl. Package cells only, per its own scope
+  discipline).
+- **`NFR-3100`'s own RTM row was separately malformed (missing its `Impl. Package` column
+  entirely), discovered while updating it — corrected as part of filling in this package's own
+  citation** (the same row, not a different one), not a broader RTM sweep.
 
 ## Rollback Considerations
 

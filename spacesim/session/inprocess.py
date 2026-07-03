@@ -79,6 +79,7 @@ class InProcessSession:
                 "started": mgr.started,
                 "now": mgr.sim.clock.now,
                 "running": mgr._clock_running,
+                "classification": mgr.classification,  # IP-1120 — so a joining tab's banner matches
             })
         return out
 
@@ -94,13 +95,20 @@ class InProcessSession:
             oldest_sid = next(iter(self._sessions))
             self._sessions.pop(oldest_sid, None)
 
-    def load_vignette(self, vignette_id: str, overrides: Optional[dict] = None, seed: int = 0) -> str:
+    def load_vignette(
+        self, vignette_id: str, overrides: Optional[dict] = None, seed: int = 0,
+        classification: Optional[str] = None,
+    ) -> str:
         vignette = load_vignette(vignette_id)
         self._evict_if_full()
         self._counter += 1
         sid = f"sess-{self._counter}"
-        self._sessions[sid] = SessionManager(vignette, overrides=overrides, seed=seed)
+        self._sessions[sid] = SessionManager(vignette, overrides=overrides, seed=seed,
+                                             classification=classification)
         return sid
+
+    def classification(self, session: str) -> str:
+        return self._sessions[session].classification
 
     def set_parameter(self, session: str, param_id: str, value) -> Ack:
         # Pre-start parameter swap replaces the manager. Hold the OLD manager's lock while
@@ -110,7 +118,11 @@ class InProcessSession:
                 return Ack(ok=False, reason="cannot change parameters after start")
             overrides = dict(mgr.ctx.param_values)
             overrides[param_id] = value
-            self._sessions[session] = SessionManager(mgr.vignette, overrides=overrides, seed=mgr.sim._seed)
+            # IP-1120 — carry the classification override forward; otherwise a pre-start parameter
+            # tweak would silently revert the banner to the vignette default (two-sources-of-truth
+            # risk this package's own Risks section names).
+            self._sessions[session] = SessionManager(mgr.vignette, overrides=overrides, seed=mgr.sim._seed,
+                                                      classification=mgr.classification)
         return Ack()
 
     def start(self, session: str) -> Ack:

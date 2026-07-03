@@ -32,8 +32,14 @@ BUS_TICK_PERIOD_S = 300.0
 
 
 class SessionManager:
-    def __init__(self, vignette: Vignette, overrides: Optional[dict] = None, seed: int = 0) -> None:
+    def __init__(
+        self, vignette: Vignette, overrides: Optional[dict] = None, seed: int = 0,
+        classification: Optional[str] = None,
+    ) -> None:
         self.vignette = vignette
+        # IP-1120 — resolved once, here, so the UI-facing read path and every export path
+        # (aar.export_csv, save_state) read this single value, never re-deriving it independently.
+        self.classification = classification or vignette.classification
         self.world, self.ctx = build_world(vignette, overrides)
         self.sim = Simulation(self.world, seed=seed)
         self.sim.register_handler("inject", self._h_inject)
@@ -436,6 +442,7 @@ class SessionManager:
         return {
             "vignette_id": self.vignette.id,
             "overrides": dict(self.ctx.param_values),
+            "classification": self.classification,
             "seed": self.sim._seed,
             "final_time": self.sim.clock.now,
             "started": self.started,
@@ -450,7 +457,8 @@ class SessionManager:
     def from_state(cls, state: dict) -> "SessionManager":
         from spacesim.content.vignette import load_vignette as _load
         from spacesim.engine.eventlog import EventLog
-        mgr = cls(_load(state["vignette_id"]), overrides=state.get("overrides"), seed=state["seed"])
+        mgr = cls(_load(state["vignette_id"]), overrides=state.get("overrides"), seed=state["seed"],
+                  classification=state.get("classification"))
         mgr.sim.eventlog = EventLog.model_validate(state["eventlog"])
         mgr.sim._rebuild(stop_time=state["final_time"])   # replay history → world + rng at save time
         mgr._rebind()
