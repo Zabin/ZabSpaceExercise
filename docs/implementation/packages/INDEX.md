@@ -56,7 +56,7 @@ unauthorized FS.
 | [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | 🟡 READY (**authorized 2026-07-03, run #9** — the last of the five gated packages to receive it; its `IP-2010 → COMPLETE` blocker cleared 2026-07-03/run #5; a separate ADR-0029 conflict — never previously recorded in this package's own header — is now resolved by `ADR-0033`, see the package's own header) |
 | [IP-1120](IP-1120-classification-banner.md) | Classification Banner — wire the render/export path to the vignette's classification value | [FS-112](../../features/FS-112-classification-banner.md) | Partially built (gap-closing) | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
-| [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence) | 🔵 COMPLETE (pending verification) |
+| [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, [`VR-1140`](../verification/VR-1140-hot-seat-handoff.md) — FR-6610's trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
 | [IP-1150](IP-1150-vignette-selection.md) | Session Setup: Vignette Selection & Parameter Tuning | [FS-115](../../features/FS-115-session-setup.md) §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, [`VR-1150`](../verification/VR-1150-vignette-selection.md)) |
 | [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`; one Definition-of-Done caveat — see the package's own header) |
 
@@ -69,7 +69,11 @@ first Implementation Packages written against FS-112/113/114/115 — see
 build-status verification pass and split rationale each required. **`IP-1150` is now `VERIFIED`**
 (2026-07-03, [`VR-1150`](../verification/VR-1150-vignette-selection.md) — the first package in
 this tranche, and the first in this plan, verified through the formal `09-package-verification`
-process). `IP-1140` remains as-built but `COMPLETE`, pending its own `09-package-verification` run.
+process). **`IP-1140` is also now `VERIFIED`** (2026-07-03, run #9,
+[`VR-1140`](../verification/VR-1140-hot-seat-handoff.md)) — its documented FR-6610 trigger/menu
+divergence was adjudicated during that pass and found **not** to satisfy FR-6610's full intent; a
+High-severity finding is now routed to `07-implementation-planning` for a gap-closing package,
+pending the user's explicit prioritization (see `VR-1140` and Master Build Plan Risk item 6).
 **`IP-2010` is now `COMPLETE`**
 (implemented 2026-07-03, `session/assessment.py` + `custody_confidence_at_decision` in
 `orders.py`/`custody.py`), pending its own `09-package-verification` run. **`IP-1120` is also now
@@ -123,10 +127,10 @@ used because this tier's deliverable is an executable build plan, not a general 
 the pass that authored them read and confirmed every cited file/line reference against the current
 source tree rather than merely asserting the code exists — that pass combined what
 `07-implementation-planning` and `09-package-verification` now do as separate stages. **This
-tranche's two new as-built packages (`IP-1140`, `IP-1150`) follow the current, stricter separation
-instead**: `07-implementation-planning` confirmed the cited code exists, but only
-`09-package-verification` may write `VERIFIED` — both enter at `COMPLETE`, pending that
-independent pass.
+tranche's two new as-built packages (`IP-1140`, `IP-1150`) followed the current, stricter separation
+instead**: `07-implementation-planning` confirmed the cited code exists, entering both at
+`COMPLETE`; both have since passed independent `09-package-verification` (`VR-1150`, `VR-1140`) and
+are now `VERIFIED`.
 
 ## Authoring note
 

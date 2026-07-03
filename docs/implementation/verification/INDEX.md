@@ -20,6 +20,7 @@ retroactively is a standing gap, not addressed by this index's creation.
 | ID | Package | Date | Result | Headline findings |
 |---|---|---|---|---|
 | [VR-1150](VR-1150-vignette-selection.md) | [IP-1150](../packages/IP-1150-vignette-selection.md) — Session Setup: Vignette Selection & Parameter Tuning | 2026-07-03 | ✅ VERIFIED | Full suite 490 passed/3 skipped, both permanent gates green. RTM `FR-4110` `Test`/`Impl. Package` cells were stale (`UNASSIGNED`) — corrected. One Low finding: the package's own "no zero-override test exists" claim was factually wrong (coverage already existed); no functional gap. |
+| [VR-1140](VR-1140-hot-seat-handoff.md) | [IP-1140](../packages/IP-1140-hot-seat-handoff.md) — Hot-Seat Hand-Off Screen-Blank Menu | 2026-07-03 | ✅ VERIFIED | Full suite 559 passed/3 skipped, both permanent gates green. RTM `FR-6610` `Test`/`Impl. Package` cells were stale (`UNASSIGNED`) — corrected. **`BL-0003` adjudicated: the shipped manual-button/auto-cycle mechanism does NOT satisfy FR-6610's full intent** — one High finding (the missing automatic-trigger detection is a real, unmitigated fog-of-war-leak risk in the catalog's one client-side-only-enforced Feature), routed to `07-implementation-planning` for a gap-closing package, pending the user's prioritization. One Low finding: stale line-number citations (content confirmed correct at new locations). |
 
 ## Related
 

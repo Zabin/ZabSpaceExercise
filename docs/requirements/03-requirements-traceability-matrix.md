@@ -143,7 +143,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-6320 | Per-session RLock | UNASSIGNED | ADR-0014, ADR-0026 | C4, C2 | INT-0006 | UNASSIGNED | UNASSIGNED | `session/inprocess.py` |
 | FR-6410 | Session discovery / join-by-hash | UNASSIGNED | ADR-0014 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | UNASSIGNED | `session/inprocess.py` |
 | FR-6510 | Multi-monitor pop-out windows | UNASSIGNED | ADR-0004 | C4, C9, C2 | INT-0005, INT-0006 | UNASSIGNED | `tests/test_observer.py` | `IP-1130` *(implemented 2026-07-03, COMPLETE, pending 09-package-verification)* |
-| FR-6610 | Hot-seat hand-off / screen-blank menu *(new leaf, CHG-004)* | UNASSIGNED | ADR-0004 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-6610 | Hot-seat hand-off / screen-blank menu *(new leaf, CHG-004)* | UNASSIGNED | ADR-0004 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | Demonstration (manual) — no automated test exists, consistent with FR-6610's own stated Verification Method; verified 2026-07-03 by static analysis of the CSS occlusion guarantee, see `VR-1140` | `IP-1140` *(closed 2026-07-03 via VR-1140 — hard postcondition only; trigger/menu literal wording adjudicated NOT satisfied, see VR-1140's Adjudication section)* |
 | FR-7110 | Event log | UNASSIGNED | ADR-0002 | C2, C1 | INT-0008, INT-0014 | UNASSIGNED | UNASSIGNED | `engine/eventlog.py` |
 | FR-7210 | Save / resume | UNASSIGNED | ADR-0022 | C2, C5, C11 | INT-0012 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-7220 | Save-file content/session ownership split *(new leaf, CHG-007)* | UNASSIGNED | ADR-0022 | C2, C5, C11 | INT-0011, INT-0012 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1100)* |
@@ -428,23 +428,25 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `content/vignettes/*.yaml` | NFR-2000 |
 | `content/` (TLE import) | FR-5210, NFR-3200 |
 | `ui_web/server.py` | FR-4510, FR-8110, NFR-1400, NFR-2300, NFR-2700, NFR-3300, NFR-3100 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |
-| `ui_web/static/app.js` | FR-6510, FR-8110, NFR-3000, FR-4510 *(closed 2026-07-03 via IP-1120)*, NFR-3100 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |
+| `ui_web/static/app.js` | FR-6510, FR-8110, NFR-3000, FR-4510 *(closed 2026-07-03 via IP-1120)*, NFR-3100 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)*, FR-6610 *(closed 2026-07-03 via IP-1140/VR-1140 — hard postcondition only, see VR-1140's Adjudication section)* |
 | `ui_web/static/` (globe.js, world.js, graph.js, style.css) | NFR-1200, NFR-3000, NFR-3100 |
 | `spacesim/config.py` | NFR-2700 |
 | `spacesim/tests/` | NFR-2800 |
 | Build/dependency manifest, `spacesim/` (whole tree) | NFR-2900 |
 | All subsystems (no single file) | NFR-2200 |
-| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4210, FR-6610, FR-10210 *(new 2026-07, promoted from CR-20 — not yet implemented, so honestly `UNASSIGNED` here despite being baselined; FR-10110, promoted from CR-19 alongside it, closed 2026-07-03 via `IP-2010` — see `session/assessment.py` row above)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
+| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-10210 *(new 2026-07, promoted from CR-20 — not yet implemented, so honestly `UNASSIGNED` here despite being baselined; FR-10110, promoted from CR-19 alongside it, closed 2026-07-03 via `IP-2010` — see `session/assessment.py` row above)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
 
 *(FR-4610/FR-4710/FR-4720 closed 2026-07 via `IP-1060` v2.0; FR-7220 closed 2026-07 via `IP-1100` —
 both split from `IP-1060` v1.0 per Finding F-03 — see the master matrix rows above. **FR-4110
-closed 2026-07-03 via `IP-1150`/`VR-1150`** — `09-package-verification` independently confirmed
-the implementation against the live tree, clearing the "FS existing is not the same evidence bar"
-caveat this note previously applied to it. FR-4210/FR-6610 remain `UNASSIGNED` here — `FS-115`'s
-FR-4210 slice (`IP-1151`) and `FS-114` (`IP-1140`) exist as Feature Specifications/packages but
-FR-4210 has no shipped code at all (forward design, not yet authorized-and-built) and FR-6610's
-package (`IP-1140`) has not yet been through its own `09-package-verification` pass — an FS/IP
-existing is not the same evidence bar this index requires, per its own stated discipline.)*
+closed 2026-07-03 via `IP-1150`/`VR-1150`, and FR-6610 closed 2026-07-03 via `IP-1140`/`VR-1140`**
+— `09-package-verification` independently confirmed each against the live tree, clearing the "FS/IP
+existing is not the same evidence bar" caveat this note previously applied to both. FR-6610's
+closure is a **hard-postcondition-only** closure: `VR-1140` adjudicated the trigger/menu literal
+wording as *not* satisfied and filed a High-severity finding for a future gap-closing package — see
+`VR-1140`'s own Adjudication section, not restated here. **FR-4210 was implemented 2026-07-03 via
+`IP-1151`** but remains `COMPLETE`, not yet `VERIFIED` — this reverse-index row now correctly
+excludes it (real implementing files exist, listed in the per-file rows above), but its primary row
+above still carries the "pending `09-package-verification`" caveat until that pass runs.)*
 
 ## Strategic review reconciliation (strategic-review-2026-07.md)
 

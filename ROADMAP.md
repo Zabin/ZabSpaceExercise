@@ -459,7 +459,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🟡 READY (**authorized 2026-07-03, run #9** — its IP-2010-reaching-COMPLETE dependency cleared 2026-07-03/run #5; IP-2010 is COMPLETE, not yet VERIFIED, which is the threshold IP-3010's own Dependencies field states) |
 | IP-1120 | Classification Banner — wire render/export path to the vignette's classification value | `implementation/packages/IP-1120-classification-banner.md` | FS-112 | Partially built (gap-closing) | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | IP-1130 | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | `implementation/packages/IP-1130-observer-read-only-access.md` | FS-113 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
-| IP-1140 | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | `implementation/packages/IP-1140-hot-seat-handoff.md` | FS-114 | As-built (documented spec divergence) | 🔵 COMPLETE (pending verification) |
+| IP-1140 | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | `implementation/packages/IP-1140-hot-seat-handoff.md` | FS-114 | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, `VR-1140` — FR-6610 trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
 | IP-1150 | Session Setup: Vignette Selection & Parameter Tuning | `implementation/packages/IP-1150-vignette-selection.md` | FS-115 §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, `VR-1150`) |
 | IP-1151 | Session Setup: Seat-to-Role Assignment | `implementation/packages/IP-1151-seat-role-assignment.md` | FS-115 §FR-4210 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 
@@ -494,9 +494,18 @@ round above — was subsequently authorized. Its `IP-2010`-reaching-`COMPLETE` d
 cleared (run #5), so it flips `BLOCKED → READY` and is now the sole `READY` package awaiting
 `08-code-implementation`.
 
+**Verification update (2026-07-03, run #9):** `IP-1140` passed `09-package-verification`
+([`VR-1140`](docs/implementation/verification/VR-1140-hot-seat-handoff.md)) and flipped to
+`VERIFIED` — full suite 559 passed/3 skipped, both permanent gates green, RTM `FR-6610` `Test`/
+`Impl. Package` cells (were `UNASSIGNED`) corrected. **The package's documented FR-6610
+trigger/menu divergence was adjudicated, not waived**: the shipped manual-button/auto-cycle
+mechanism does not satisfy FR-6610's full intent — a High-severity finding, routed to
+`07-implementation-planning` for a gap-closing package, pending the user's explicit
+prioritization.
+
 `docs/implementation/00-master-build-plan.md`'s package table, dependency graph, parallel-
 opportunity list, critical-path note, and summary statistics have been updated accordingly (now
-18 packages total: 12 `VERIFIED`, 5 `COMPLETE` pending verification, 1 `READY` and authorized
+18 packages total: 13 `VERIFIED`, 4 `COMPLETE` pending verification, 1 `READY` and authorized
 (`IP-3010`), 0 `BLOCKED`).
 
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
