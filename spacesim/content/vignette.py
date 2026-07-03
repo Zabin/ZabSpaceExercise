@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 import yaml
 from pydantic import BaseModel, Field
@@ -39,6 +39,15 @@ class Inject(BaseModel):
     trigger: dict = Field(default_factory=dict)
     effects: list[dict] = Field(default_factory=list)
     repeatable: bool = False
+
+
+class RoleRequirement(BaseModel):
+    """IP-1151 (FR-4210) — a seat/role staffing requirement a vignette may declare. Absent/empty
+    (every vignette shipped before this package) means no mandatory staffing requirement at all —
+    additive and backward-compatible by construction."""
+    asset_or_constellation: str
+    role: Literal["bus", "payload", "both"] = "both"
+    mandatory: bool = True
 
 
 class Vignette(BaseModel):
@@ -74,6 +83,10 @@ class Vignette(BaseModel):
     # be omitted.  When absent, the UI auto-generates a fallback from title + theater +
     # objectives + learning_objectives.
     intro_brief: dict = Field(default_factory=dict)
+    # IP-1151 (FR-4210) — declared seat/role staffing requirements, consumed by
+    # session/manager.py's Role Assignment registry + staffing gate. Empty/absent for every
+    # vignette shipped before this package (no mandatory staffing requirement).
+    roles_needed: list[RoleRequirement] = Field(default_factory=list)
 
 
 @dataclass

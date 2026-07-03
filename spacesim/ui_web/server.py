@@ -165,6 +165,15 @@ class ObserverViewRequest(BaseModel):
     designation: str
 
 
+class RoleAssignmentRequest(BaseModel):
+    """IP-1151 — cell is the caller's own seat (must be "white"); binds seat to
+    {asset_or_constellation, role} against the vignette's declared roles_needed."""
+    cell: str
+    seat: str
+    asset_or_constellation: str
+    role: str = "both"
+
+
 class SSNCancelBody(BaseModel):
     request_id: str
 
@@ -203,6 +212,19 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         other seat already makes) instead of parsing a merged response shape."""
         _require(sid)
         return {"designation": api.observer_designation(sid)}
+
+    @app.post("/api/sessions/{sid}/roles/assign")
+    def assign_role(sid: str, req: RoleAssignmentRequest) -> Ack:
+        """IP-1151 — White-Cell-only. Not itself listed among IP-1130's guarded routes (it postdates
+        that package), but the White-Cell-only check already excludes an Observer-seated caller the
+        same way it excludes Blue/Red, so no separate _reject_observer call is needed here."""
+        _require(sid)
+        return api.assign_role(sid, req.cell, req.seat, req.asset_or_constellation, req.role)
+
+    @app.get("/api/sessions/{sid}/roles/staffing")
+    def staffing_report(sid: str) -> list[dict]:
+        _require(sid)
+        return api.staffing_report(sid)
 
     @app.get("/api/vignettes")
     def list_vignettes() -> list[dict]:

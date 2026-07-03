@@ -1,13 +1,20 @@
 # IP-1151 — Session Setup: Seat-to-Role Assignment
 
 > **Package ID:** IP-1151
-> **Version:** 1.0
-> **Status:** 🔴 BLOCKED *(on [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED`, per
-> FR-4210's own stated Precondition — "A Vignette is loaded (FR-4110)" — and this plan's
-> READY-requires-VERIFIED-dependency rule. **MSTR-006 §3 authorization obtained 2026-07-03**
-> (project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2) — this package is
-> pre-cleared to start the moment `IP-1150` reaches `VERIFIED`; authorization does not itself lift
-> the `IP-1150` dependency gate.)*
+> **Version:** 1.1 (2026-07-03 — implemented by `08-code-implementation`; see Status below.)
+> **Status:** 🔵 COMPLETE *(implemented 2026-07-03 — `Vignette.roles_needed`/`RoleRequirement`
+> (additive, absent for all 19 existing vignettes), `SessionManager.assign_role`/`staffing_report`,
+> `InProcessSession.start()` hard-gated on any unmet mandatory entry (not merely advisory),
+> `/roles/assign`+`/roles/staffing` endpoints, a White-Cell-only seat-assignment UI step. Full
+> suite green (559 passed/3 skipped, up from 547/3 — 12 new tests), both permanent gates green,
+> all existing vignette-loading tests re-run and green. Entered `COMPLETE`, not `VERIFIED` — only
+> `09-package-verification` may write `VERIFIED`. **One Definition-of-Done item cannot be cleanly
+> checked: item 2's "consumable by FS-105's existing command-filtering mechanism" — this run found
+> no role-based command-filtering mechanism anywhere in the codebase to be consumed by; see Risks
+> below and the Master Build Plan's Risk item 8.** Was 🔴 BLOCKED *(on
+> [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED`, per FR-4210's own stated
+> Precondition — cleared 2026-07-03, run #3, `VR-1150`. **MSTR-006 §3 authorization obtained
+> 2026-07-03** (project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).)*)*
 > **Dependencies:** FS-115 (FR-4210 slice), [IP-1150](IP-1150-vignette-selection.md) (vignette must
 > be loaded first, per FR-4210's own Preconditions)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md)
@@ -44,11 +51,11 @@ Let White Cell bind each operator seat to one or more roles (bus, payload, or bo
 specific Asset/constellation, informed by the vignette's declared `roles_needed`, and refuse to let
 the exercise start while a mandatory `roles_needed` entry has no bound seat.
 
-> **This is a forward-design package: the capability described here does not exist in `spacesim/`
-> today.** Per MSTR-006 §3, this document's own specification was not itself an authorization to
-> write code — that separate, explicit user go-ahead was obtained 2026-07-03 (see the Status field
-> above). Coding still waits on [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED`
-> (a functional gate, not an authorization gate).
+> **This was authored as a forward-design package: the capability did not exist in `spacesim/` at
+> authoring time.** Per MSTR-006 §3, this document's own specification was not itself an
+> authorization to write code — that separate, explicit user go-ahead was obtained 2026-07-03 (see
+> the Status field above), and `08-code-implementation` has since implemented the tasks below
+> (2026-07-03, see Status).
 
 ## Feature Reference
 
@@ -116,16 +123,26 @@ when authorization is granted:
    gate exercise start on it being empty.
 4. Add the seat-assignment UI step and the unsatisfied-entry report surface, sequenced after
    vignette selection in the setup flow.
-5. **Explicitly resolve before implementation begins** (open design question, not yet answered):
-   the exact unsatisfied-`roles_needed` report format (FS-115's own Open Questions flags this as
-   unspecified in the requirements baseline), and behavior for an invalid parameter-override value
-   at vignette selection (a sibling open question that belongs to
-   [IP-1150](IP-1150-vignette-selection.md)'s scope if resolved, not this package's).
+5. **Resolved 2026-07-03 by `08-code-implementation`** (was an open design question): the
+   unsatisfied-`roles_needed` report format is a `list[dict]`, one entry per unmet mandatory
+   requirement, shaped identically to a `roles_needed` entry itself
+   (`{asset_or_constellation, role, mandatory}`) — a low-stakes implementation-level choice
+   (unlike, e.g., `IP-2010`'s `BL-0002` aware/unaware question), not escalated to the user, since
+   no genuinely different design philosophy was at stake, just a data shape. The sibling
+   parameter-override open question remains [IP-1150](IP-1150-vignette-selection.md)'s to resolve,
+   untouched here.
 6. **Explicitly do not implement** in this package: runtime enforcement of an assigned Role
    Assignment's scope once the exercise is running — that is
-   [FS-105](../../features/FS-105-spacecraft-operations.md)'s/`FEAT-3500`'s concern (already
-   `VERIFIED` via `IP-1050`/`IP-1051` for the *command-filtering* consequence of a Role Assignment;
-   this package only *produces* the Role Assignment record, per FS-115's own Scope boundary).
+   [FS-105](../../features/FS-105-spacecraft-operations.md)'s/`FEAT-3500`'s concern. **Correction
+   (2026-07-03, `08-code-implementation`): the parenthetical claim that this "already `VERIFIED`
+   via `IP-1050`/`IP-1051` for the *command-filtering* consequence of a Role Assignment" was
+   checked against the live code during implementation and found to be false** — no role-based
+   (bus/payload/both) command-authorization concept exists anywhere in `FS-105`, `IP-1050`,
+   `IP-1051`, `buscommands.py`, or `session/manager.py`; every existing command check is
+   `cell`-based (blue/red/white ownership), not role-based. This does not change this package's own
+   scope (it still only *produces* the Role Assignment record, per FS-115's own Scope boundary) —
+   but the record currently has no consumer at all. See Risks below and the Master Build Plan's
+   Risk item 8.
 
 ## Tests to Add
 
@@ -145,29 +162,40 @@ authorized.)*
 ## Documentation Updates
 
 - `ROADMAP.md` Implementation Packages theme — add this package's row.
-- `docs/features/FS-115-session-setup.md`'s `Referenced By` metadata — add this package (alongside
-  `IP-1150`, cross-link only).
-- `CLAUDE.md`'s Code Map — no new module proposed; no addition needed until implementation reveals
-  otherwise.
-- Vignette-authoring reference documentation (wherever the `Vignette` schema's fields are
-  documented for content authors, e.g. `docs/design/04-data-model.md` §6) should gain a
-  `roles_needed` entry once implemented — not performed by this package, which contains no code
-  changes.
+- `docs/features/FS-115-session-setup.md`'s `Referenced By` metadata — already present (added at
+  authoring time; verified unchanged).
+- `CLAUDE.md`'s Code Map — a brief addition made (`content/vignette.py`'s `RoleRequirement`,
+  `session/manager.py`'s `assign_role`/`staffing_report`), deviating from this field's original
+  "no addition needed" per that clause's own escape valve, mirroring `IP-1120`/`IP-1130`'s
+  precedent this same session.
+- Vignette-authoring reference documentation — `docs/design/04-data-model.md` §6 gained a
+  `RoleRequirement`/`roles_needed` entry, per this field's own instruction ("once implemented").
 
 ## Definition of Done
 
-*(Forward-looking gate — the authorization item below is now true; the rest is not yet.)*
+*(Implemented 2026-07-03 by `08-code-implementation` — every item below is now satisfied against
+the shipped code and tests, with one caveat on item 2 (see Status above and Risks below);
+`09-package-verification` independently re-confirms this before the package may advance to
+`VERIFIED`.)*
 
 - [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3, 2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2) — still
-  waits on [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED` before work may begin.
-- [ ] `Vignette.roles_needed` exists and defaults to an empty/absent list (no breakage of the 19
+  §3, 2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).
+  [IP-1150](IP-1150-vignette-selection.md) reached `VERIFIED` 2026-07-03 (run #3, `VR-1150`),
+  clearing the dependency gate this item used to note as still open.
+- [x] `Vignette.roles_needed` exists and defaults to an empty/absent list (no breakage of the 19
   existing vignette YAML files, none of which declare it).
-- [ ] Seat-to-role assignment against a vignette's `roles_needed` produces Role Assignment records
-  consumable by `FS-105`'s existing command-filtering mechanism.
-- [ ] An unmet mandatory `roles_needed` entry is reported as unsatisfied and hard-blocks exercise
-  start — not merely an advisory warning.
-- [ ] A vignette with no `roles_needed` declared is never blocked from starting by this mechanism.
+- [~] Seat-to-role assignment against a vignette's `roles_needed` produces Role Assignment records
+  (`SessionManager.role_assignments`, `{asset_or_constellation, role}` per seat) in a plausible,
+  self-consistent shape — **but "consumable by `FS-105`'s existing command-filtering mechanism" is
+  not satisfied as literally stated: no such mechanism exists in the shipped code** (see
+  Implementation Tasks item 6's correction and Risks below). The record is produced; nothing
+  currently reads it.
+- [x] An unmet mandatory `roles_needed` entry is reported as unsatisfied and hard-blocks exercise
+  start — not merely an advisory warning (`InProcessSession.start()` returns `Ack(ok=False, ...)`
+  before `SessionManager.start()` is ever called).
+- [x] A vignette with no `roles_needed` declared is never blocked from starting by this mechanism
+  (verified against `leo-isr-denial` and all 19 shipped vignettes via the re-run existing-vignette
+  tests).
 
 ## Verification Checklist
 
@@ -179,46 +207,77 @@ authorized.)*
 - [ ] Re-run every existing vignette-loading test (`spacesim/tests/test_content.py`,
   `spacesim/tests/test_vignette_tutorials.py`) and confirm none regresses from the additive
   `roles_needed` field.
-- [ ] Manual review confirms the produced Role Assignment record shape is actually consumable by
-  the existing `FS-105`/`IP-1050` command-filtering mechanism (FS-115's own Dependencies field
-  names `IP-1050`... actually `FS-105` as "the nearest downstream consumer" — confirm the
-  interface, don't assume it).
+- [ ] **Already checked by `08-code-implementation` (run #8), result: no, not merely unconfirmed.**
+  Manual review was to confirm the produced Role Assignment record shape is actually consumable by
+  the existing `FS-105`/`IP-1050` command-filtering mechanism — that search found **no such
+  mechanism exists at all** (every command check in the codebase is `cell`-based, not role-based).
+  `09-package-verification` should independently re-confirm this negative finding rather than
+  re-deriving it from scratch, and should not mark this checklist item satisfied.
 
 ## Dependencies
 
 - **Upstream:** [IP-1150](IP-1150-vignette-selection.md) (vignette must be loaded first — this
   package's `roles_needed` gate has nothing to validate against before a vignette is selected) —
-  `COMPLETE`, not yet `VERIFIED`; this package stays `BLOCKED` until `IP-1150` clears
-  `09-package-verification`, consistent with this plan's own READY-requires-VERIFIED rule (mirrors
-  how `IP-3010` stays `BLOCKED` on `IP-2010` reaching `COMPLETE`/`VERIFIED` in this same plan).
-- **Downstream:** [FS-105](../../features/FS-105-spacecraft-operations.md)/`IP-1050`/`IP-1051`
-  (already `VERIFIED`) are the consumers of the Role Assignment records this package would produce
-  — no code change proposed to those packages by this one; FS-115's own Scope explicitly excludes
-  runtime enforcement from this Feature.
-- **Build-sequencing:** Must follow `IP-1150` to `VERIFIED`; independent of `IP-1120`/`IP-1130`/
-  `IP-1140`.
+  `VERIFIED` 2026-07-03 (`VR-1150`, run #3); this package's dependency gate cleared that same day.
+- **Downstream:** **Corrected 2026-07-03 (`08-code-implementation`, run #8) — this claim was
+  checked against the live code and found false.** [FS-105](../../features/FS-105-spacecraft-operations.md)/
+  `IP-1050`/`IP-1051` do **not** currently consume Role Assignment records — no role-based
+  command-filtering mechanism exists in the shipped code today (command authorization is entirely
+  `cell`-based). The Role Assignment records this package produces have no consumer yet. FS-115's
+  own Scope still explicitly excludes runtime enforcement from this Feature, so this package's own
+  scope is unaffected — but the downstream relationship this field originally asserted does not
+  exist and should not be relied upon until a future package actually builds it.
+- **Build-sequencing:** Followed `IP-1150` to `VERIFIED`, as planned; independent of `IP-1120`/
+  `IP-1130`/`IP-1140`.
 
 ## Risks
 
 - **Authorization risk (resolved 2026-07-03):** MSTR-006 §3's explicit, separate user go-ahead is
-  now on record in the pipeline journal — the remaining gate is functional (`IP-1150` → `VERIFIED`),
-  not authorization.
-- **Backward-compatibility risk if Implementation Task 1 is done carelessly:** all 19 existing
-  vignette YAML files declare no `roles_needed` — if the staffing gate does not treat an absent
-  list as "nothing mandatory," every existing vignette becomes unstartable the moment this package
-  ships, a severe regression this package's design explicitly guards against (see Definition of
-  Done and Tests to Add).
-- **Report-format and downstream-consumption open questions are genuinely unresolved,** not
-  merely deferred detail — FS-115's own Open Questions flags the report format as unspecified in
-  the requirements baseline, and this package's own Verification Checklist calls out that the
-  produced Role Assignment record's actual consumability by `FS-105`'s mechanism should be
-  confirmed, not assumed, before this package is considered done.
-- **RTM `Impl. Package` column shows `FR-4210` as `UNASSIGNED`**, consistent with this package
-  filling that gap for the first time — no conflicting prior citation to reconcile.
+  now on record in the pipeline journal, and the package has since been implemented (`COMPLETE`).
+- **Backward-compatibility risk (mitigated, verified by test):** all 19 existing vignette YAML
+  files declare no `roles_needed` — the staffing gate treats an absent/empty list as "nothing
+  mandatory," verified by `test_existing_vignette_starts_without_any_role_assignment` and by
+  re-running every existing vignette-loading test with no regression.
+- **Report format — resolved 2026-07-03** (see Implementation Tasks item 5): a `list[dict]`
+  mirroring `roles_needed`'s own entry shape, a low-stakes implementation choice, not escalated.
+- **Downstream-consumption claim — resolved 2026-07-03, and the resolution is itself the finding:**
+  not merely confirmed-or-not as this package originally framed it, but affirmatively **false as
+  stated**. No role-based command-filtering mechanism exists anywhere in `FS-105`/`IP-1050`/
+  `IP-1051`/`buscommands.py`/`session/manager.py`. This is now the standing risk item (see
+  Dependencies above and the Master Build Plan's Risk item 8) — a future package would need to
+  actually build FS-105-side consumption if runtime role enforcement is still wanted; until then,
+  the Role Assignment record is produced but unused.
+- **RTM `Impl. Package` column for `FR-4210` was `UNASSIGNED`, now filled** (2026-07-03, `IP-1151`)
+  — no conflicting prior citation existed to reconcile.
 
 ## Rollback Considerations
 
-Since this package proposes an additive schema field (`roles_needed`, optional/absent-safe) and new
-registry/gate logic, rollback is low-complexity: removing the new field, registry, and gate fully
-reverts to the current unstaffed-start-allowed behavior, with no data-migration concern for any
-existing save file or vignette (none currently populate `roles_needed`).
+*(Updated 2026-07-03 to reflect what actually shipped, not just what was proposed.)*
+
+This package's schema field (`Vignette.roles_needed`, optional/absent-safe) and its registry/gate
+logic remain additive, so rollback stays low-complexity: reverting `content/vignette.py`'s
+`RoleRequirement`/`roles_needed` addition, `session/manager.py`'s `assign_role`/`_role_covers`/
+`staffing_report`, and the `InProcessSession.start()` staffing check fully restores the prior
+unstaffed-start-allowed behavior, with no data-migration concern for any existing save file or
+vignette (none of the 19 shipped vignettes populate `roles_needed`).
+
+The shipped surface is broader than originally proposed and rollback must cover all of it:
+- `spacesim/ui_web/server.py`'s `RoleAssignmentRequest` model and the `/roles/assign` +
+  `/roles/staffing` endpoints — reverting these has no effect on any other route (they are net-new,
+  not modifications of existing ones).
+- `spacesim/ui_web/static/app.js`'s seat-assignment wiring (`$("role-assign").onclick`,
+  `refreshStaffingReport()`) and `index.html`'s "Seat-to-role assignment" menu section — purely
+  additive UI; removing them leaves the rest of the session-menu unaffected.
+- The `start()` bug fix in `app.js` (the client previously ignored the `/start` Ack's `ok` field
+  entirely). **This fix is not separable from this package's gate**: without it, a refused
+  `Ack(ok=False, ...)` from the new server-side staffing gate would be silently swallowed by the
+  client, so a rollback that removes the server-side gate but leaves the client fix in place is
+  safe (the fix simply becomes dormant), while a rollback that removes the client fix but keeps the
+  server-side gate would silently break the UI's Start button. Roll back both together, or the
+  server-side gate alone with the client fix left in place — never the client fix alone.
+- `spacesim/tests/test_session_setup.py` (new file) would be deleted wholesale; no other test file
+  was modified by this package.
+
+No data-migration concern in any direction: `role_assignments` is in-memory `SessionManager` state,
+not persisted to `save_state()`/`from_state()`, so no existing save file encodes it and none would
+need migrating on rollback.

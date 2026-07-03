@@ -58,7 +58,7 @@ unauthorized FS.
 | [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence) | 🔵 COMPLETE (pending verification) |
 | [IP-1150](IP-1150-vignette-selection.md) | Session Setup: Vignette Selection & Parameter Tuning | [FS-115](../../features/FS-115-session-setup.md) §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, [`VR-1150`](../verification/VR-1150-vignette-selection.md)) |
-| [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | 🟡 READY (**authorized 2026-07-03**; unblocked same day — see IP-1150) |
+| [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`; one Definition-of-Done caveat — see the package's own header) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1090,
 IP-1100, IP-1110 are new (2026-07)**, split out of IP-1060 v1.0 per `docs/feature-planning/
@@ -69,8 +69,8 @@ first Implementation Packages written against FS-112/113/114/115 — see
 build-status verification pass and split rationale each required. **`IP-1150` is now `VERIFIED`**
 (2026-07-03, [`VR-1150`](../verification/VR-1150-vignette-selection.md) — the first package in
 this tranche, and the first in this plan, verified through the formal `09-package-verification`
-process). `IP-1140` remains as-built but `COMPLETE`, pending its own `09-package-verification` run;
-`IP-1151` is forward design, `READY` and authorized. **`IP-2010` is now `COMPLETE`**
+process). `IP-1140` remains as-built but `COMPLETE`, pending its own `09-package-verification` run.
+**`IP-2010` is now `COMPLETE`**
 (implemented 2026-07-03, `session/assessment.py` + `custody_confidence_at_decision` in
 `orders.py`/`custody.py`), pending its own `09-package-verification` run. **`IP-1120` is also now
 `COMPLETE`** (implemented 2026-07-03, one resolved `classification` value threaded through
@@ -78,7 +78,12 @@ process). `IP-1140` remains as-built but `COMPLETE`, pending its own `09-package
 `09-package-verification`. **`IP-1130` is also now `COMPLETE`** (implemented 2026-07-03, a
 server-side mutation-rejection guard on every mutating route plus a White-Cell-designated Observer
 read path in `session/inprocess.py`/`ui_web/server.py`/`ui_web/static/`), likewise pending
-`09-package-verification`.
+`09-package-verification`. **`IP-1151` is also now `COMPLETE`** (implemented 2026-07-03,
+`Vignette.roles_needed`/`RoleRequirement`, `SessionManager.assign_role`/`staffing_report`,
+`InProcessSession.start()` hard-gated on unmet mandatory roles, `/roles/assign`+`/roles/staffing`
+endpoints, White-Cell-only seat-assignment UI), likewise pending `09-package-verification` — with
+one open finding: no role-based command-filtering consumer exists yet in `FS-105`/`IP-1050`/
+`IP-1051` (see the package's own Risks section and Master Build Plan Risk item 8).
 
 **Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
 §3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in
@@ -95,9 +100,10 @@ selects exactly one `READY`-and-eligible package, implements it, and advances it
 package past `COMPLETE` to `VERIFIED` (that belongs to `09-package-verification`). Per this
 repository's MSTR-006 §3 rule, `08-code-implementation` treats `READY` status as necessary but not
 sufficient for any forward-design package until a separate, explicit user go-ahead is on record —
-`IP-2010`, `IP-1120`, and `IP-1130` all received that go-ahead 2026-07-03 and have since been
-implemented (`COMPLETE`); `IP-3010`/`IP-1151` remain gated the same way (`IP-1151` is authorized
-and `READY`, awaiting `08-code-implementation`; `IP-3010` is not yet authorized at all).
+`IP-2010`, `IP-1120`, `IP-1130`, and `IP-1151` all received that go-ahead 2026-07-03 and have since
+been implemented (`COMPLETE`); `IP-3010` remains gated the same way and is not yet authorized at
+all — it is the only package in this plan still `READY`-blocked on an unaddressed authorization
+gate.
 
 ## Status legend
 

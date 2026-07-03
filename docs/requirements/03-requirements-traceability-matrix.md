@@ -126,7 +126,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-3510 | Role-Assignment command-filtering consequence | UNASSIGNED | ADR-0004 | C4, C7, C8 | INT-0004 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-3520 | Role-Assignment scoping (bus/payload/both) *(new leaf, CHG-002)* | UNASSIGNED | ADR-0004 | C4, C7, C8, C2 | INT-0004, INT-0006 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-4110 | White Cell exercise-control leaf | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | `test_content.py::test_vignette_1_loads_and_builds_a_world`, `test_content.py::test_parameter_override_flows_into_roe`, `test_web.py::test_ssn_endpoint_available` *(closed 2026-07-03 via IP-1150, VR-1150)* | `IP-1150` *(closed 2026-07-03 via VR-1150)* |
-| FR-4210 | Seat-to-role assignment | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-4210 | Seat-to-role assignment | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | `tests/test_session_setup.py` | `IP-1151` *(implemented 2026-07-03, COMPLETE, pending 09-package-verification)* |
 | FR-4310 | Pause / resume clock control | UNASSIGNED | ADR-0016 | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-4410 | Inject authoring / firing | UNASSIGNED | ADR-0005 | C4, C6, C1 | INT-0002, INT-0016 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-4510 | Observer view | UNASSIGNED | (none directly) | C4, C6, C12 | INT-0002, INT-0001 | UNASSIGNED | `tests/test_classification_banner.py`, `tests/test_web.py::test_load_response_carries_resolved_classification`, `tests/test_web.py::test_session_discovery_surfaces_classification_for_joining_tabs` | `IP-1120` *(implemented 2026-07-03, COMPLETE, pending 09-package-verification)* |
@@ -417,18 +417,18 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `engine/eventlog.py` | FR-7110, NFR-2400, NFR-2500, NFR-2600 |
 | `engine/world.py` | NFR-2400 |
 | `engine/handlers.py` | NFR-2600 |
-| `session/manager.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-4310, FR-4410, FR-7210, FR-6310, NFR-1300, NFR-1800, FR-4510 *(closed 2026-07-03 via IP-1120)* |
+| `session/manager.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-4310, FR-4410, FR-7210, FR-6310, NFR-1300, NFR-1800, FR-4510 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |
 | `session/api.py` | FR-6110, NFR-2300 |
 | `session/cells.py` | FR-6210, FR-6220 |
 | `session/inprocess.py` | FR-6320, FR-6410, NFR-1400 |
 | `session/aar.py` | FR-7310, FR-7320, NFR-2500, NFR-3100 |
 | `session/redai.py` | FR-9110 |
 | `session/assessment.py` | FR-10110 *(closed 2026-07-03 via `IP-2010`)* |
-| `content/vignette.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-5110, FR-5310, NFR-1600, NFR-2000 |
+| `content/vignette.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-5110, FR-5310, NFR-1600, NFR-2000, FR-4210 *(closed 2026-07-03 via IP-1151)* |
 | `content/vignettes/*.yaml` | NFR-2000 |
 | `content/` (TLE import) | FR-5210, NFR-3200 |
-| `ui_web/server.py` | FR-4510, FR-8110, NFR-1400, NFR-2300, NFR-2700, NFR-3300, NFR-3100 *(closed 2026-07-03 via IP-1120)* |
-| `ui_web/static/app.js` | FR-6510, FR-8110, NFR-3000, FR-4510 *(closed 2026-07-03 via IP-1120)*, NFR-3100 *(closed 2026-07-03 via IP-1120)* |
+| `ui_web/server.py` | FR-4510, FR-8110, NFR-1400, NFR-2300, NFR-2700, NFR-3300, NFR-3100 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |
+| `ui_web/static/app.js` | FR-6510, FR-8110, NFR-3000, FR-4510 *(closed 2026-07-03 via IP-1120)*, NFR-3100 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |
 | `ui_web/static/` (globe.js, world.js, graph.js, style.css) | NFR-1200, NFR-3000, NFR-3100 |
 | `spacesim/config.py` | NFR-2700 |
 | `spacesim/tests/` | NFR-2800 |

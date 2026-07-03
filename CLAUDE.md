@@ -271,6 +271,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/sun.py` — `sun_unit_eci`, binary `is_sunlit()`, smooth `eclipse_fraction()`
   (umbra/penumbra interpolation; FW §11.B.10).
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
+  `RoleRequirement`/`Vignette.roles_needed` (IP-1151, FR-4210) — optional, additive staffing
+  requirements; absent for every vignette shipped before this package.
   `Vignette.coaching` is a list of `{at_sim_t?, cell, title, body}` notes (FW §11.D.17).
 - `spacesim/content/inject_library.yaml` — five reusable white-cell inject templates
   (debris breakup, GNSS-jam advisory, ambiguous RPO, GS outage, geomagnetic storm).
@@ -288,7 +290,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added;
   **IP-1130:** `set_observer_view`/`get_observer_view`/`observer_designation` — a fourth,
   White-Cell-designated read-only seat dispatching unmodified to `get_godview`/`get_view`, no
-  parallel filtering path),
+  parallel filtering path; **IP-1151:** `assign_role`/`staffing_report` — seat-to-role bindings
+  against a vignette's `roles_needed`, hard-gating `start()` on any unmet mandatory entry),
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
   `aar.py` (replay/scrub/branch-compare + `snapshot_at`),
   `assessment.py` (IP-2010 — read-only competency-rubric scoring: `score_custody_quality`/

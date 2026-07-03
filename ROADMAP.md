@@ -454,7 +454,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1130 | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | `implementation/packages/IP-1130-observer-read-only-access.md` | FS-113 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | IP-1140 | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | `implementation/packages/IP-1140-hot-seat-handoff.md` | FS-114 | As-built (documented spec divergence) | 🔵 COMPLETE (pending verification) |
 | IP-1150 | Session Setup: Vignette Selection & Parameter Tuning | `implementation/packages/IP-1150-vignette-selection.md` | FS-115 §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, `VR-1150`) |
-| IP-1151 | Session Setup: Seat-to-Role Assignment | `implementation/packages/IP-1151-seat-role-assignment.md` | FS-115 §FR-4210 | Forward design | 🟡 READY (**authorized 2026-07-03**; unblocked same day, see IP-1150) |
+| IP-1151 | Session Setup: Seat-to-Role Assignment | `implementation/packages/IP-1151-seat-role-assignment.md` | FS-115 §FR-4210 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3).
 

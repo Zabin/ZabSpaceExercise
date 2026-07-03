@@ -61,6 +61,26 @@
             </select>
           </label>
         </div>
+        <div class="menu-section">
+          <div class="menu-head" title="A vignette may declare mandatory seat/role staffing requirements (FR-4210) — Start is refused while any is unmet">Seat-to-role assignment</div>
+          <label class="menu-item-inline">Seat
+            <input id="role-seat" type="text" placeholder="e.g. blue-bus-op" style="width:10em">
+          </label>
+          <label class="menu-item-inline">Asset / constellation
+            <input id="role-asset" type="text" placeholder="asset id" style="width:10em">
+          </label>
+          <label class="menu-item-inline">Role
+            <select id="role-kind">
+              <option value="both">Both</option>
+              <option value="bus">Bus</option>
+              <option value="payload">Payload</option>
+            </select>
+          </label>
+          <div class="menu-item-row">
+            <button id="role-assign">Assign</button>
+          </div>
+          <pre id="staffing-report" class="muted" style="font-size:11px">—</pre>
+        </div>
       </div>
     </div>
     <div class="menu-wrap">

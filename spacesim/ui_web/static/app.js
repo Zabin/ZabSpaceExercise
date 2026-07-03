@@ -293,7 +293,11 @@ function updateClockDisplay() {
   }
 }
 const start = async () => {
-  await api.post(`/api/sessions/${SID}/start`);            // server.start() auto-arms the clock
+  // IP-1151 — Start is hard-blocked server-side while a mandatory role assignment is unmet; the
+  // Ack comes back HTTP 200 with ok:false (a rejected request, not a server error), so it must be
+  // checked explicitly rather than treated as success by default.
+  const ack = await api.post(`/api/sessions/${SID}/start`);
+  if (!ack.ok) { alert(ack.reason || "Start refused"); return; }
   startRealtimeClock();                                     // begin client poll loop
   await refresh();
 };
@@ -1674,6 +1678,7 @@ async function loadSaveFile(file) {
   if (state.started) startRealtimeClock();
   await refresh();
   refreshAssessment();  // IP-2010 — populate once on load; the panel's own button refreshes it later
+  refreshStaffingReport();  // IP-1151 — populate once on load; assignment actions refresh it after
 }
 
 async function refreshAAR() {
@@ -1689,6 +1694,18 @@ async function aarAt(seq) {
   $("aar-label").textContent = `event ${snap.seq} / ${snap.n_events} · ${iso(snap.now)} · debris ${snap.debris}`;
   $("aar-obj").textContent = JSON.stringify(snap.objectives, null, 2);
   $("aar-assets").textContent = snap.assets.map((a) => `${a.id}: ${a.health}${a.bus_mode ? " / " + a.bus_mode : ""}`).join("\n");
+}
+
+// IP-1151 — seat-to-role staffing report (unmet mandatory roles_needed entries). Refreshed on
+// session load and after each assignment, not polled continuously — it only changes in response
+// to a White-Cell assignment action, not to the passage of sim time.
+async function refreshStaffingReport() {
+  if (!SID) return;
+  const report = await api.get(`/api/sessions/${SID}/roles/staffing`).catch(() => null);
+  if (!report) return;
+  $("staffing-report").textContent = report.length
+    ? report.map((r) => `unmet: ${r.asset_or_constellation} / ${r.role}`).join("\n")
+    : "fully staffed (or this vignette declares no roles_needed)";
 }
 
 // IP-2010 — competency assessment rubric (custody quality / window discipline / belief-truth
@@ -2047,6 +2064,17 @@ window.addEventListener("DOMContentLoaded", () => {
   // IP-1130 — White Cell designates the read-only Observer seat's view.
   if ($("observer-designation")) $("observer-designation").onchange = (e) => {
     if (SID) api.post(`/api/sessions/${SID}/observer/view`, { cell: "white", designation: e.target.value });
+  };
+  // IP-1151 — White Cell binds a seat to {asset_or_constellation, role} against the vignette's
+  // declared roles_needed; Start is refused server-side while any mandatory entry is unmet.
+  if ($("role-assign")) $("role-assign").onclick = async () => {
+    if (!SID) return;
+    const seat = $("role-seat").value.trim(), asset = $("role-asset").value.trim();
+    if (!seat || !asset) return;
+    await api.post(`/api/sessions/${SID}/roles/assign`, {
+      cell: "white", seat, asset_or_constellation: asset, role: $("role-kind").value,
+    });
+    refreshStaffingReport();
   };
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
   $("o-target").oninput = previewOrder; $("o-params").oninput = previewOrder;

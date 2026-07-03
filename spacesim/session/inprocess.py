@@ -130,8 +130,27 @@ class InProcessSession:
 
     def start(self, session: str) -> Ack:
         with self._locked(session) as mgr:
+            # IP-1151 (FR-4210) — hard-block start on any unmet mandatory role assignment; this is
+            # a report, not merely an advisory warning (empty for every vignette that declares no
+            # roles_needed at all, i.e. every vignette shipped before this package).
+            report = mgr.staffing_report()
+            if report:
+                unmet = ", ".join(f"{r['asset_or_constellation']}/{r['role']}" for r in report)
+                return Ack(ok=False, reason=f"unstaffed mandatory role(s): {unmet}")
             mgr.start()
         return Ack()
+
+    # -- seat-to-role assignment (IP-1151) --------------------------------------
+    def assign_role(self, session: str, cell: str, seat: str, asset_or_constellation: str, role: str) -> Ack:
+        if cell != "white":
+            return Ack(ok=False, reason="only White Cell may assign seat-to-role bindings")
+        with self._locked(session) as mgr:
+            mgr.assign_role(seat, asset_or_constellation, role)
+        return Ack()
+
+    def staffing_report(self, session: str) -> list[dict]:
+        with self._locked_read(session) as mgr:
+            return mgr.staffing_report()
 
     # -- time control ----------------------------------------------------------
     def step(self, session: str, dt_sim_s: float) -> Ack:
