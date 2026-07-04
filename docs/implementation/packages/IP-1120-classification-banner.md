@@ -9,15 +9,21 @@
 > treated the Master Build Plan (the authoritative sequencing ledger) as controlling, proceeded on
 > that basis, and corrects this document's own stale text as routine status bookkeeping in this
 > same pass — not a design change.)
-> **Status:** 🔵 COMPLETE *(implemented 2026-07-03 — one resolved `classification` value now flows
+> **Status:** ✅ VERIFIED *(2026-07-04, [`VR-1120`](../verification/VR-1120-classification-banner.md)
+> — every Definition of Done/Verification Checklist item confirmed against the live tree; full
+> suite green (566 passed/3 skipped), both permanent gates green; RTM `FR-4510`/`NFR-3100`
+> `Impl. Package` cells updated. Both documented Implementation Tasks deviations confirmed
+> accurate, harmless, in-scope. One Low finding: the DoD text names a non-existent `aar.export_json`
+> function (actual path is a FastAPI route dumping the same model) — informational only. Was 🔵
+> COMPLETE *(implemented 2026-07-03 — one resolved `classification` value now flows
 > from `Vignette.classification` (or a White-Cell override supplied at session setup) through
 > `session/manager.py` to the UI-facing session-create/discovery responses, `aar.export_csv`, and
 > `save_state`, replacing the prior hard-coded banner literal. Full suite green (519 passed/3
 > skipped, up from 507/3 — 12 new tests), both permanent gates (`test_determinism.py`,
 > `test_import_guard.py`) green. Entered `COMPLETE`, not `VERIFIED` — only `09-package-verification`
-> may write `VERIFIED`. Was 🟡 READY *(authorized 2026-07-03, unblocked the same day once
+> may write `VERIFIED`.)* Was 🟡 READY *(authorized 2026-07-03, unblocked the same day once
 > [IP-1150](IP-1150-vignette-selection.md) reached `VERIFIED` — MSTR-006 §3 authorization obtained
-> 2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).*)*
+> 2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).*)*)*
 > **Dependencies:** FS-112, [IP-1150](IP-1150-vignette-selection.md) (vignette-selection/session-
 > setup workflow this Feature's banner-value setting is part of, per FS-112's own Dependencies field)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md)
