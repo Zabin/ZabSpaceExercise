@@ -13,15 +13,27 @@
 
 ## Position
 
-- **Updated:** 2026-07-04 (run #16)
-- **Increment:** two threads now active. **Thread A (v1 baseline follow-through):** the "iterate
-  through all `09-package-verification` passes" sweep completed at run #15 — all 18 packages
-  `VERIFIED`, `10-integration-review` unblocked and recommended next for that thread. **Thread B
-  (training-corpus elevation, opened outside the manager between runs #15-#16):** the user
-  directly elevated the training corpus to a co-equal product with the code (MSTR-001 §2;
-  vision/requirements/skills/manuals/learning-path all authored in two sessions not run through
-  this manager — reconciled into this journal for the first time this run, see below), then this
-  run (#16) closed the R600 research tier the elevation created.
+- **Updated:** 2026-07-04 (run #17)
+- **Increment:** two threads active. **Thread A (v1 baseline follow-through):** the 18-package
+  tranche's first `10-integration-review` ran this run (#17) — clean on functional grounds (no
+  Critical/High findings), three documentation/traceability-coherence findings filed. **Thread B
+  (training-corpus elevation):** unchanged this run except that Thread A's review surfaced a
+  concrete Thread-B-relevant finding (`BL-0029`) — still awaiting a `08-training-manual-authoring`
+  or `08-vignette-development` pass; not run this cycle since this run's single step went to
+  Thread A.
+- **Reconciliation note (run #16, preserved):** between runs #15 and #16, substantial pipeline-shaped work
+  landed **outside** the manager's own loop (the user worked directly with the relevant skills
+  across two other sessions, PRs #45 and #46, both merged to `main`): the "complete outstanding 08"
+  /"iterate through 09" work this journal already tracked (PR #45, run #15's own content), **and**
+  a second, previously-untracked increment (PR #46): per-cell training manuals (`training/12-14`)
+  + bidirectional traceability matrix (`training/15`), then the full training-corpus elevation —
+  `MSTR-001` §2/§5, `GDS-00`/`GDS-01` "Training-corpus elevation" sections, assumptions-register
+  **A12**, the **FR-11000** requirements family + **NFR §16**, four new pipeline skills
+  (`02-research-training-pedagogy`, `08-training-manual-authoring`, `08-vignette-development`,
+  `09-training-manual-review`), and `training/16-learning-path.md`. This journal is reconciled
+  against that reality now: the tree wins, and PR #46's own backlog entries (`BL-0025`-`BL-0027`,
+  filed directly to `docs/pipeline/backlog.md` outside a manager run) are adopted into this
+  journal's backlog tracking as of this run.
 - **Reconciliation note (run #16):** between runs #15 and #16, substantial pipeline-shaped work
   landed **outside** the manager's own loop (the user worked directly with the relevant skills
   across two other sessions, PRs #45 and #46, both merged to `main`): the "complete outstanding 08"
@@ -35,18 +47,65 @@
   against that reality now: the tree wins, and PR #46's own backlog entries (`BL-0025`-`BL-0027`,
   filed directly to `docs/pipeline/backlog.md` outside a manager run) are adopted into this
   journal's backlog tracking as of this run.
-- **Thread A pipeline state:** Stages 01-09 current (all 18 packages `VERIFIED` per run #15).
-  Stage 10 (`10-integration-review`) unblocked, not yet run — still this thread's recommended next
-  step. PR [#45](https://github.com/Zabin/ZabSpaceExercise/pull/45) merged to `main` (confirmed:
-  `main`'s tip is `096c09e`, the PR #45 merge commit).
-- **Thread B pipeline state (training corpus):**
+- **Thread A pipeline state:** Stages 01-09 current (all 18 packages `VERIFIED`). **Stage 10 ran
+  this run (#17):** `10-integration-review` reviewed the full 18-package tranche —
+  [`integration-review-18-package-tranche.md`](../reviews/integration-review-18-package-tranche.md).
+  Full suite 566 passed/3 skipped (no regression), both permanent gates green. **No Critical/High
+  findings** — the tranche composes cleanly at the interface/invariant/behavioral level. Three
+  documentation/traceability-coherence findings filed: `BL-0029` (Medium — 5 of 7 tranche-2/
+  forward-design features, `IP-1120`/`IP-1130`/`IP-1151`/`IP-2010`/`IP-3010`, have zero coverage in
+  the per-cell training manuals or `training/15` §15.1), `BL-0030` (Low — `IP-1150`'s own
+  package-doc header still reads `COMPLETE`, materializing `BL-0008`'s predicted drift a second
+  time), `BL-0031` (Low — `feature-index.md`'s FS-112–115 descriptions still say "build status
+  unverified"). Five ripe backlog items were spot-checked in the same pass: `BL-0004` reconfirmed
+  true (still no `VR-xxxx` for the 11 as-built packages — now `NEEDS-USER`, see Open gates),
+  `BL-0008`/`BL-0011`/`BL-0015` all resolved `DONE` (their spot-checks are complete; `BL-0008`'s
+  concrete instance carries forward as `BL-0030`), `BL-0027` concretized into `BL-0029`. **Stage
+  10 is clean on functional grounds — this thread is now eligible for `11-release-readiness`**,
+  with Finding 1 (`BL-0029`) worth resolving or explicitly accepting first per the review's own
+  conclusion. Committed (review skill's own commit `761d352`, separate from this journal/backlog
+  commit per convention), pushed to `claude/pipeline-skill-17v91q`.
+- **Thread B pipeline state (training corpus):** unchanged since run #16 — Stages 00-07 current,
+  Stage 02 (R600) closed run #16, Stages 08-11 (training side) still never run. `BL-0026` (Low,
+  `NEEDS-USER`, the per-cell-vs-task-oriented layout question) remains ripe and unbatched. This
+  run's Thread-A work added a second, more concrete Thread-B-relevant item: `BL-0029` (Medium,
+  `SCHEDULED` — names `08-training-manual-authoring` as the step to ride).
+- **Backlog:** 31 total. This run: `BL-0029`/`BL-0030`/`BL-0031` filed `NEW→SCHEDULED`/`DEFERRED`
+  (see above); `BL-0004` re-triaged `DEFERRED→NEEDS-USER` (ripe, reconfirmed, decision now due);
+  `BL-0008`/`BL-0011`/`BL-0015` → `DONE`; `BL-0027` → re-`DEFERRED` with its abstraction concretized
+  into `BL-0029`. Two `NEEDS-USER` entries now open across the two threads: `BL-0004` (Thread A —
+  retro-verify the 11 as-built packages or explicitly accept the evidence gap) and `BL-0026`
+  (Thread B — per-cell vs. task-oriented manual layout, Low). Neither is blocking — both are
+  available to batch into whichever thread's next gate check comes first.
+- **Next step:** two independent, genuinely parallel options across the two threads — **Thread A:**
+  `11-release-readiness` for this tranche (Stage 10 came back clean; `BL-0004`'s `NEEDS-USER`
+  question is cheap to batch into that stage's own gate check, since a release GO decision is
+  exactly the kind of stop where the evidence-completeness question belongs). **Thread B:**
+  `08-training-manual-authoring` on `BL-0029` (author the 5 missing feature sections + `training/15`
+  §15.1 rows), optionally resolving `BL-0026`'s layout question in the same pass. Both are
+  unblocked; no gate forces either over the other — the user's priority decides.
+- **Open gates:** none forcing an immediate stop, but two `NEEDS-USER` items are now ripe and ready
+  to batch into whichever thread runs next: `BL-0004` (Medium, Thread A — VR-evidence gap for the
+  11 as-built packages) and `BL-0026` (Low, Thread B — manual layout). PR #47 (run #16's work) is
+  merged; this run's own commit (`761d352`) has not yet been opened as a PR.
+
+---
+
+<!-- Run #16 Position detail preserved below for record; superseded by the reconciled Position
+     block above. -->
+
+- **Thread A pipeline state (as of run #16):** Stages 01-09 current (all 18 packages `VERIFIED`
+  per run #15). Stage 10 (`10-integration-review`) unblocked, not yet run — this thread's
+  recommended next step at the time. PR [#45](https://github.com/Zabin/ZabSpaceExercise/pull/45)
+  merged to `main` (confirmed: `main`'s tip is `096c09e`, the PR #45 merge commit).
+- **Thread B pipeline state (training corpus, as of run #16):**
   - Stage 00 (`00-intake`-equivalent) ✅ the owner's direct elevation instruction, worked outside
     this manager across two sessions, produced PR #46 (merged to `main`, tip `d74f1da`).
   - Stages 01-07 ✅ current for the elevation's own scope: vision (`MSTR-001`, `GDS-00`/`GDS-01`),
     R600 tier index (scaffolded, then this run authored), FR-11000/NFR §16 requirements baseline,
     the four new skills, and the manuals/learning-path artifacts themselves — all authored directly
     by the user's sessions, not by manager-driven stage invocations. No gap to close there.
-  - Stage 02 ✅ **this run (#16):** `02-research-training-pedagogy` invoked in override mode (`run
+  - Stage 02 ✅ run #16: `02-research-training-pedagogy` invoked in override mode (`run
     02-research-training-pedagogy`) at the user's explicit request ("Run the pipeline to author the
     R600 topics"), closing the one open item the elevation's own sessions had already flagged
     (backlog `BL-0025`). Authored all 8 planned topics (R601-R608) in dependency order, each with
@@ -63,32 +122,23 @@
     skill's own commit, separate from this journal/backlog commit per convention), pushed to
     `claude/skills-docs-hierarchy-gy1422` (branch restarted from `main` after PR #46 merged, per
     session convention for a merged designated branch).
-  - **`BL-0026` (the per-cell-vs-task-oriented manual layout design question) is now ripe** — its
-    named trigger ("after R606 authors") fired this run. Not batched into a gate stop this run
-    (Low severity, non-blocking, no current work depends on the answer) — surfaced in this run's
-    report for the user's own timing.
-  - Stages 08-11 (training side) ⛔ never run — `08-training-manual-authoring` (BL-0026, if the
-    user wants the restructuring explored) and `08-vignette-development` are both available next
-    for this thread; no gate blocks either.
-- **Backlog:** 28 total, 3 open+actionable this run's reconciliation touched: `BL-0025` → `DONE`
-  (this run), `BL-0026` → `NEEDS-USER` (ripe, not yet batched — see above), `BL-0028` → `NEW→DEFERRED`
-  this run (WebFetch-verification-pass gap, Medium, named trigger: a future unrestricted-WebFetch
-  session). `BL-0027` remains `DEFERRED` (trigger not yet fired). All 24 pre-existing entries
-  (`BL-0001`-`BL-0024`) unchanged from run #15's own accounting — see that run's row for detail;
-  none revisited this run since none of their triggers are training-corpus-related.
-- **Next step:** two independent, genuinely parallel options across the two threads —
-  **Thread A:** `10-integration-review` on the 18-package tranche (unblocked since run #15).
-  **Thread B:** either `02-research-training-pedagogy`'s open finding is closed (this run), so the
-  next Thread-B step is `08-training-manual-authoring` or `08-vignette-development` picking up
-  real training-artifact work (e.g., resolving `BL-0026`'s layout question, or extending the
-  learning path), or simply asking the user which thread to prioritize.
-- **Open gates:** none currently ripe for an immediate stop; `BL-0026` (Low, `NEEDS-USER`) is
-  available to batch into whichever thread's next gate check comes first. PR
-  [#45](https://github.com/Zabin/ZabSpaceExercise/pull/45) and
-  [#46](https://github.com/Zabin/ZabSpaceExercise/pull/46) are both merged — no open PR to monitor
-  from prior work; this run's own commit has not yet been opened as a PR (see report).
-
----
+  - `BL-0026` (the per-cell-vs-task-oriented manual layout design question) became ripe run #16 —
+    its named trigger ("after R606 authors") fired. Not batched into a gate stop that run (Low
+    severity, non-blocking, no current work depended on the answer).
+  - Stages 08-11 (training side) ⛔ never run as of run #16.
+- **Backlog (as of run #16):** 28 total, 3 open+actionable that run's reconciliation touched:
+  `BL-0025` → `DONE`, `BL-0026` → `NEEDS-USER` (ripe, not yet batched), `BL-0028` → `NEW→DEFERRED`
+  (WebFetch-verification-pass gap, Medium, named trigger: a future unrestricted-WebFetch session).
+  `BL-0027` remained `DEFERRED` (trigger not yet fired). All 24 pre-existing entries
+  (`BL-0001`-`BL-0024`) unchanged from run #15's own accounting.
+- **Next step recorded at run #16:** two independent, genuinely parallel options across the two
+  threads — Thread A: `10-integration-review` on the 18-package tranche; Thread B:
+  `08-training-manual-authoring` or `08-vignette-development` picking up real training-artifact
+  work, or asking the user which thread to prioritize.
+- **Open gates (as of run #16):** none currently ripe for an immediate stop; `BL-0026` (Low,
+  `NEEDS-USER`) available to batch into whichever thread's next gate check came first. PRs #45 and
+  #46 both merged; run #16's own commit had not yet been opened as a PR (subsequently merged as
+  PR #47, confirmed by run #17's reconciliation).
 
 <!-- Runs #0-#15 Position history preserved below for record; superseded by the reconciled
      Position block above. -->
@@ -339,3 +389,4 @@
 | 14 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1130 (independently re-derived from the tree; several runs + a compaction boundary separate implementation (run #7) from this verification) | Verified against the live tree: full suite 566 passed/3 skipped, both permanent gates green; VR-1130 written (VERIFIED); RTM FR-6510 cell updated; IP-1130 COMPLETE->VERIFIED. Investigated BL-0011's predicted route-guard maintenance-drift risk directly: both routes added since IP-1130 shipped (/roles/assign from IP-1151, IP-1130's own /observer/view POST) remain protected, via a stricter White-Cell-only allowlist check in inprocess.py rather than _reject_observer's denylist -- drift has not materialized. Harvested 1 finding -> BL-0023 (Low, DEFERRED -- test-coverage gap on the two newer routes, not a functional gap). Committed `826a61a`, pushed (PR #45). | `09-package-verification` on IP-1151, the sole remaining COMPLETE package -- continuing per the user's request to iterate through all |
 | 15 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs -- last package in the sweep) | `09-package-verification` | IP-1151 (independently re-derived from the tree; several runs + a compaction boundary separate implementation (run #8) from this verification) | Verified against the live tree: full suite 566 passed/3 skipped, both permanent gates green; VR-1151 written (VERIFIED); RTM FR-4210 cell updated; IP-1151 COMPLETE->VERIFIED. Independently re-derived BL-0014 (no role-based command-filtering consumer exists anywhere in the codebase) rather than re-citing it -- still true, unchanged since run #8. Harvested 1 finding -> BL-0024 (Low, DEFERRED -- assign_role's White-Cell-only gate untested against cell="observer" specifically, same family as BL-0023). Committed `12f9c8b`, pushed (PR #45). **All 18 packages in the Master Build Plan are now VERIFIED** (IP-1140 carries a standing user-accepted-risk note). This closes the "iterate through all 09-package-verification" sweep (runs #11-#15). | `10-integration-review` for the tranche -- every package has reached VERIFIED; open findings (BL-0006/BL-0008/BL-0010/BL-0012/BL-0014/BL-0015/BL-0016/BL-0019/BL-0020/BL-0023/BL-0024, all DEFERRED with named triggers) are backlog items for that review to spot-check, not blockers to starting it |
 | 16 | 2026-07-04 | override (`run 02-research-training-pedagogy`, at the user's explicit request "Run the pipeline to author the R600 topics") | `02-research-training-pedagogy` | R601-R608, the full R600 tier, dependency order | **First, reconciliation:** the training-corpus elevation (MSTR-001 §2/§5, GDS-00/GDS-01 sections, assumptions-register A12, FR-11000/NFR §16, four new skills, per-cell manuals, training/15-16) had landed on `main` across two prior sessions (PR #45 and PR #46, both merged) without ever running through this manager -- reconciled into this journal's Position block for the first time this run; backlog BL-0025/BL-0026/BL-0027 (filed directly to backlog.md by those sessions) adopted into tracking. Branch restarted from origin/main (its own prior PR #46 had merged). Then executed the override: authored all 8 R600 topics (R601 Instructional Systems Design, R602 Adult Learning Theory, R603 Simulation-Based Learning & Debriefing, R604 Cognitive Load & Scaffolding, R605 Learning-Path & Progression Design, R606 Minimalist & Procedural Documentation, R607 Assessment of Learning in Wargames, R608 Software Onboarding & Tutorial Design), each with §2 Scope, inline citations, Sources subsections, and frontmatter from the first draft. WebFetch was blocked by this session's egress policy (403 organizational-policy denial) for the whole pass -- citations rest on multi-source WebSearch corroboration, flagged transparently in every topic/index and as a new finding. Filled in RTM Research cells for the FR-11000 family + NFR-3600 (previously UNASSIGNED/"not yet citable"). Added R607 to R202/R208's Referenced By. Updated ROADMAP/CLAUDE.md/research INDEX. BL-0025 -> DONE. BL-0026 re-ripened (its "after R606 authors" trigger fired) -> re-dispositioned NEEDS-USER, not batched into a gate this run (Low, non-blocking). Harvested 1 new finding -> BL-0028 (Medium, DEFERRED -- the WebFetch-verification-pass gap, named trigger: a future unrestricted-WebFetch session). Committed (research skill's own commit), pushed to `claude/skills-docs-hierarchy-gy1422`. | Two parallel threads available: Thread A `10-integration-review` on the 18-VERIFIED-package tranche (unchanged from run #15); Thread B `08-training-manual-authoring` or `08-vignette-development` picking up real training-artifact work, including BL-0026's now-ripe layout question -- or ask the user which thread to prioritize |
+| 17 | 2026-07-04 | advance | `10-integration-review` | Full 18-package Master Build Plan tranche (IP-1010 through IP-3010), carrying 5 ripe backlog items (BL-0004, BL-0008, BL-0011, BL-0015, BL-0027) | First reconciliation: confirmed current branch (`claude/pipeline-skill-17v91q`) up to date with `main` tip `0e2aa13` (PR #47, run #16's work, already merged); no open PRs; no drift beyond what run #16 already recorded. Triaged backlog: 5 DEFERRED entries whose named "next 10-integration-review" trigger had fired were re-dispositioned SCHEDULED to ride this run. Gate check: no MSTR-006/release-GO/unadjudicated-Critical-High gate applied to invoking 10-integration-review itself; proceeded. Invoked `10-integration-review`: installed pytest deps, ran full suite (566 passed/3 skipped, no regression) and both permanent gates (14 passed) against commit `0e2aa13`. All 5 dimensions exercised: interface consistency (re-derived live 25-route table vs. test_observer.py's 21-entry table, BL-0011 reconfirmed clean), invariant sweep (permanent gates green), behavioral coherence (BL-0014 still the only instance, not re-derived a third time), traceability coherence (BL-0004 reconfirmed true; found IP-1150's own package-doc header still stale at COMPLETE, a second materialization of BL-0008's predicted drift), documentation coherence (found 5 of 7 tranche-2/forward-design features -- IP-1120/IP-1130/IP-1151/IP-2010/IP-3010 -- entirely absent from the per-cell training manuals and training/15 §15.1, concretizing BL-0027). Wrote `docs/reviews/integration-review-18-package-tranche.md`: no Critical/High findings, 1 Medium (training coverage gap) + 2 Low (package-doc/feature-index staleness). Updated ROADMAP.md's Implementation Packages theme with the review's outcome. Committed `761d352` (review skill's own commit), pushed. Harvested 3 new findings -> BL-0029 (Medium, SCHEDULED, rides 08-training-manual-authoring), BL-0030 (Low, DEFERRED), BL-0031 (Low, DEFERRED). Backlog spot-checks resolved: BL-0008/BL-0011/BL-0015 -> DONE; BL-0004 -> NEEDS-USER (ripe, reconfirmed, decision now due); BL-0027 -> DEFERRED (concretized into BL-0029). | Two parallel threads available: Thread A `11-release-readiness` for this tranche (Stage 10 came back clean; BL-0004's NEEDS-USER question is cheap to batch into that stage's own gate check); Thread B `08-training-manual-authoring` on BL-0029 (5 missing feature sections + traceability rows), optionally resolving BL-0026 in the same pass -- or ask the user which thread to prioritize |
