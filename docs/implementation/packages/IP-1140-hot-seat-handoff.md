@@ -8,11 +8,17 @@
 > trigger/menu divergence was adjudicated, not waived**: `09-package-verification` determined the
 > shipped manual-button/auto-cycle mechanism does **not** satisfy FR-6610's full intent — the
 > missing automatic-trigger detection is a real, unmitigated risk in the one Feature enforcing
-> fog-of-war client-side with no server backstop. Filed as a High-severity finding routed to
-> `07-implementation-planning` for a gap-closing package, pending the user's prioritization — see
-> `VR-1140`'s Adjudication section and the Master Build Plan's Risk item 6. This does not change
-> this package's own `VERIFIED` status: it accurately, non-overclaimingly documented exactly this
-> gap and asked for exactly this adjudication. Was 🔵 COMPLETE *(entered `COMPLETE`, not `VERIFIED`,
+> fog-of-war client-side with no server backstop. Filed as a High-severity finding (`BL-0015`),
+> routed to `07-implementation-planning` for a gap-closing package pending the user's
+> prioritization — see `VR-1140`'s Adjudication section and the Master Build Plan's Risk item 6.
+> **Risk-acceptance decision (2026-07-04, project owner, via `00-pipeline-manager`):** the user
+> explicitly accepted this risk rather than authorizing a gap-closing package now — "I accept the
+> risk of a cell not blanking the screen during handover as long as hot seat is an option." No
+> gap-closing package is authorized at this time; `BL-0015` closes `DEFERRED` with the revisit
+> trigger "if hot-seat mode's continued availability is ever reconsidered, or before the next
+> `10-integration-review`." This does not change this package's own `VERIFIED` status: it
+> accurately, non-overclaimingly documented exactly this gap and asked for exactly this
+> adjudication. Was 🔵 COMPLETE *(entered `COMPLETE`, not `VERIFIED`,
 > per this skill's rule that an as-built package may be born `VERIFIED` only after an actual
 > `09-package-verification` pass — the authoring pass confirmed the cited code exists, but was not
 > that independent pass).*)*
@@ -198,8 +204,13 @@ against a running session.
   does not satisfy FR-6610's intent and recommended, at minimum, an idle/visibility-based fallback
   trigger as defense-in-depth alongside the existing manual button (a full automatic
   seat-relinquish-detection redesign is a larger, separate scoping question). Routed to
-  `07-implementation-planning` for a gap-closing package; requires the user's explicit
-  prioritization/authorization before that package is built, per MSTR-006 §3.
+  `07-implementation-planning` for a gap-closing package; required the user's explicit
+  prioritization/authorization before that package could be built, per MSTR-006 §3.
+- **Risk accepted, 2026-07-04 (project owner):** rather than authorizing a gap-closing package now,
+  the project owner explicitly accepted this risk as a known limitation of hot-seat mode ("I accept
+  the risk of a cell not blanking the screen during handover as long as hot seat is an option"). No
+  further remediation is planned unless hot-seat mode's continued availability is reconsidered, or
+  the next `10-integration-review` re-raises it. `BL-0015` closed `DEFERRED` on that basis.
 
 ## Rollback Considerations
 

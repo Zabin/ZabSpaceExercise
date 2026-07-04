@@ -394,18 +394,19 @@ verification pass adjudicated its documented FR-6610 divergence as **not satisfi
    here because it is the one non-goal in this plan whose violation would have consequences outside
    the engineering process (regulatory/ethical), not merely a defect to fix in code.
 6. **`IP-1140`'s shipped mechanism diverges from FR-6610's literal trigger/menu wording — adjudicated
-   2026-07-03 (`VR-1140`, run #9): the divergence is NOT accepted as satisfying FR-6610's intent.**
-   In the highest-consequence-per-line-of-code Feature in the catalog (the one place fog-of-war is
-   enforced client-side, not server-side), the missing automatic-trigger detection leaves a real,
-   unmitigated failure mode: an operator who forgets to click ⏸ Handover before stepping away leaves
-   their cell's content on screen indefinitely with no system-side prompt. `IP-1140` itself is now
-   `VERIFIED` (it accurately, non-overclaimingly documented this exact gap and asked for exactly
-   this adjudication) — this is a **High-severity finding against the product**, not against that
-   package's honesty, routed to `07-implementation-planning` to scope a gap-closing package (at
-   minimum an idle/visibility-based fallback trigger as defense-in-depth). **Requires the user's
-   explicit prioritization/authorization before that gap-closing package is built or even
-   authored as a coding-eligible package**, per this plan's own severity-honesty discipline — a
-   High finding may not be silently deferred.
+   2026-07-03 (`VR-1140`, run #9): the divergence is NOT accepted as satisfying FR-6610's intent.
+   Risk explicitly accepted by the project owner 2026-07-04 (run #10) — no gap-closing package
+   authorized.** In the highest-consequence-per-line-of-code Feature in the catalog (the one place
+   fog-of-war is enforced client-side, not server-side), the missing automatic-trigger detection
+   leaves a real, unmitigated failure mode: an operator who forgets to click ⏸ Handover before
+   stepping away leaves their cell's content on screen indefinitely with no system-side prompt.
+   `IP-1140` itself is `VERIFIED` (it accurately, non-overclaimingly documented this exact gap and
+   asked for exactly this adjudication). Per this plan's own severity-honesty discipline, this
+   High-severity finding (`BL-0015`) could not be silently deferred — it was put to the project
+   owner, who explicitly accepted the risk ("I accept the risk of a cell not blanking the screen
+   during handover as long as hot seat is an option") rather than authorizing remediation now.
+   `BL-0015` closed `DEFERRED`, with a named revisit trigger: reconsider if hot-seat mode's
+   continued availability is ever reconsidered, or at the next `10-integration-review`.
 7. **The Requirements Traceability Matrix carries a Title-column defect for `FR-4510`/`FR-6510`**
    (each shows the other's — and a third, unrelated capability's — title), discovered while
    authoring `IP-1120`/`IP-1130`. Both packages cite `01-functional-requirements.md`'s own
