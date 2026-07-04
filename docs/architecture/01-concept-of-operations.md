@@ -450,6 +450,33 @@ records only the changes landed in this document.
   "no full interactive tutorial" assumption, since followed by an in-app tutorial panel), the gap
   is flagged inline (§11) rather than silently corrected in the source document.
 
+## Training-corpus elevation (2026-07-04)
+
+Per the same-dated owner decision recorded in [`00-vision.md`](00-vision.md) and `MSTR-001` §2,
+the concept of operations explicitly includes **how operators learn the tool**, not only how they
+use it. Three additions to the operational picture above:
+
+- **The learning path is an operational workflow.** The 19-vignette library is not a flat menu —
+  it is a **sequenced progression** (`docs/training/16-learning-path.md`): the training-basics
+  onboarding vignette (guided step scripts, both cells) → the canonical ladder 01–08 (one core
+  mechanic added per rung, culminating in the multi-domain capstone) → the specialized tracks
+  (Red COA, mission-set, learning, novel) for seat-specific depth. A facilitator assigns a rung to
+  match the trainee's level (§6 "Typical user scenarios" implicitly assumed a trained operator;
+  this names how they got there).
+- **Role-scoped manuals are operational reading.** Each seat has a procedure layer over the
+  shared training modules (`docs/training/` 12–14 as currently laid out — a seed layout;
+  FR-11000 governs the corpus's required properties, and the architecture/requirements, not this
+  section, dictate its future shape). Pre-exercise reading assignments are part of exercise
+  set-up (§5 step 1).
+- **Currency is part of the operation.** A vignette or manual that drifts from shipped behavior
+  actively mis-trains; the bidirectional traceability matrix
+  (`docs/training/15-manual-traceability.md`) plus the pipeline hooks (stages 08/09/10 and the
+  dedicated training skills) are the mechanism, and assumptions-register entry **A12** tracks the
+  residual risk that this remains procedural rather than automated.
+
+This is an explicitly-instructed amendment consistent with this document's existing
+reconciliation precedent; status remains `✅ Authored — merge gate closed`.
+
 ## Next
 
 `GDS-02` (System Context) may now begin.

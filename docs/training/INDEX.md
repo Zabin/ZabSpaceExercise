@@ -49,6 +49,7 @@ is no separate "multiplayer build." See module 01 for the workflow.
 | [13-blue-cell-manual](13-blue-cell-manual.md) | **Role-scoped manual — Blue cell.** The defender's procedure layer: fog-of-war, plan-first commanding, SDA custody, bus health, attack diagnosis, recovery, defensive maneuver, cyber. Sections `BLU-n`, cross-referenced in §15. |
 | [14-red-cell-manual](14-red-cell-manual.md) | **Role-scoped manual — Red cell.** The adversary's procedure layer: fog-of-war, plan-first commanding, SDA targeting, the five D's, cyber wildcard, own-force management, doctrine profiles. Sections `RED-n`, cross-referenced in §15. |
 | [15-manual-traceability](15-manual-traceability.md) | **Bidirectional cross-reference** feature ⇄ manual section, so any feature change routes to exactly the cell-manual sections that describe it (and vice versa). The seam that keeps the manuals cheap to maintain. |
+| [16-learning-path](16-learning-path.md) | **The vignette learning path** — the 19 vignettes sequenced from zero-knowledge onboarding through the canonical mechanics ladder into the mission-set/doctrine tracks, each rung linked to the manual modules to read first and its verified playbook. |
 
 ## See also
 

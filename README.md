@@ -17,12 +17,14 @@ an access window permits.
 > clock, per-session locking, session discovery, join-by-URL, multi-monitor pop-outs).
 > **419 tests pass.** Stack: **Python + FastAPI/web**.
 >
-> **New here?** Read the **[training manual](docs/training/INDEX.md)** to install, run, and drive
-> your first exercise, then jump to your **role-scoped manual** —
+> **New here?** Read the **[training manual](docs/training/INDEX.md)** to install and run, follow
+> the **[vignette learning path](docs/training/16-learning-path.md)** from onboarding through the
+> mission sets, and keep your **role-scoped manual** open —
 > [White Cell](docs/training/12-white-cell-manual.md) ·
 > [Blue cell](docs/training/13-blue-cell-manual.md) ·
-> [Red cell](docs/training/14-red-cell-manual.md). All docs are routed by
-> **[`docs/INDEX.md`](docs/INDEX.md)**; project conventions and invariants live in `CLAUDE.md`.
+> [Red cell](docs/training/14-red-cell-manual.md). The training corpus is a co-equal product with
+> the code (MSTR-001 §2). All docs are routed by **[`docs/INDEX.md`](docs/INDEX.md)**; project
+> conventions and invariants live in `CLAUDE.md`.
 
 ## Quick start
 
@@ -124,8 +126,9 @@ space-control-sim/
     ├── DOCUMENTATION-PLAN.md    information architecture & rationale
     ├── FUTURE-WORK.md           single-source v1.1+ TODO
     ├── build-spec/              ★ the binding v1 spec, 8 modules
-    ├── training/                user manual, 15 modules (install → UI → exercises → API → troubleshooting
-    │                            + role-scoped per-cell manuals: 12 White / 13 Blue / 14 Red + 15 traceability)
+    ├── training/                user manual, 16 modules (install → UI → exercises → API → troubleshooting
+    │                            + role-scoped per-cell manuals: 12 White / 13 Blue / 14 Red + 15 traceability
+    │                            + 16 vignette learning path). Co-equal product with the code (MSTR-001 §2).
     ├── design/                  architecture & design corpus
     ├── research/                doctrine & domain primers (PLA, VKS, USSF, EW, cyber, bus ops)
     ├── vignettes/               scenario library: framework + vignette index

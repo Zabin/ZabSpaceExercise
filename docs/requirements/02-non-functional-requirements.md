@@ -477,6 +477,67 @@ review passes actually run against it).
   - **Source documents:** `architecture/02-system-context.md` §2–§4
   - **Related ADRs:** None identified
 
+## 16. Training-artifact quality *(new 2026-07-04, training-corpus elevation)*
+
+Qualities of the training corpus itself — the manuals, learning path, and vignette
+briefs/tutorials elevated to co-equal product status by MSTR-001 §2 and the GDS-00/GDS-01
+"Training-corpus elevation (2026-07-04)" sections. Functional shape lives in the FR-11000 family;
+these are the *how well* constraints.
+
+- **NFR-3400 — Training-artifact accuracy (documents as-built behavior only)**
+  - **Description:** Every training artifact shall describe only shipped, as-built behavior —
+    never planned, removed, or aspirational behavior — and shall be updated (or explicitly
+    dispositioned as unaffected) in the same change set as any change to the behavior it
+    documents.
+  - **Rationale:** A trainer whose manual mis-states the tool actively harms the trainee; this is
+    the NFR face of FR-11410, and assumption A12 tracks the residual enforcement risk.
+  - **Metric or verification method:** Analysis — at stage 09/10 review, sampled manual sections
+    mapped (via `training/15`) to the change set match observed behavior; the vignette playbook
+    suite (`test_vignette_tutorials.py`) is green.
+  - **Priority:** Must
+  - **Affected subsystems:** `docs/training/`, `spacesim/content/vignettes/*.yaml` (briefs and
+    tutorial blocks)
+  - **Dependencies:** FR-11210, FR-11410
+  - **Source documents:** GDS-01 "Training-corpus elevation (2026-07-04)";
+    `strategic-assumptions-register.md` A12
+  - **Related ADRs:** None identified
+
+- **NFR-3500 — Modularity and retrievability of training modules**
+  - **Description:** Training modules shall stay single-topic and small enough to read whole
+    (~50–300 lines, the corpus-wide convention), routed by the theme index, so a reader (human or
+    agent) can open exactly the module they need; role-scoped content shall be reachable within
+    two links from the training index.
+  - **Rationale:** `DOCUMENTATION-PLAN.md` goals 1–2 applied to the corpus that now carries
+    requirement weight; MSTR-001 §3's independently-retrievable standard extended to the
+    operator-facing tier.
+  - **Metric or verification method:** Inspection — module line counts within the convention
+    (split when exceeded); every training INDEX row resolves; role manuals linked from the index
+    header.
+  - **Priority:** Should
+  - **Affected subsystems:** `docs/training/`
+  - **Dependencies:** None
+  - **Source documents:** `docs/DOCUMENTATION-PLAN.md` ("Keep modules small"); MSTR-001 §3
+  - **Related ADRs:** None identified
+
+- **NFR-3600 — Learner-appropriate presentation**
+  - **Description:** Training artifacts shall be written for the stated audience — semi-technical
+    operators, not developers: procedures phrased as operator actions (what to click/plan/read),
+    jargon introduced before use or linked to the glossary, and each vignette rung's brief
+    understandable without reading source code. Pedagogical choices (sequencing, scaffolding,
+    debrief structure) shall cite their R600 grounding once the corresponding topic is authored.
+  - **Rationale:** MSTR-003 (educational philosophy); the R600 tier exists precisely so
+    "teachable" is a researched property, not a vibe — this NFR becomes fully verifiable as R600
+    topics close (tier scaffolded 0/8 as of 2026-07-04).
+  - **Metric or verification method:** Inspection at `09-training-manual-review` passes —
+    audience check against MSTR-003; R600 citations present where the tier has authored topics;
+    glossary linkage for introduced terms.
+  - **Priority:** Should
+  - **Affected subsystems:** `docs/training/`, vignette `intro_brief`/`tutorial`/`coaching`
+    blocks
+  - **Dependencies:** NFR-3400
+  - **Source documents:** MSTR-003; `docs/research/encyclopedia/R600-index.md`
+  - **Related ADRs:** None identified
+
 ---
 
 ## Candidate Requirements

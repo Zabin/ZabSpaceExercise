@@ -183,6 +183,35 @@ Status remains `✅ Authored — merge gate closed`; this is an explicitly-instr
 a gate reopening, consistent with the precedent set by GDS-01–04's own reconciliation sections and
 by ADR-0028's equivalent direct correction of stale text in `build-spec/03` §7.1/§7.2.
 
+## Training-corpus elevation (2026-07-04)
+
+By explicit project-owner instruction, the **training corpus is elevated to a co-equal product
+with the code** at the vision level. `MSTR-001` §2 and §5 were amended in the same pass (this
+document remains a derivative restatement per the merge-gate decision above, so the substance is
+recorded once there and mirrored here):
+
+- The operator-facing manuals (`docs/training/`), the **vignette learning path** (the 19-vignette
+  library sequenced from the training-basics onboarding through the mission-set tracks,
+  `docs/training/16-learning-path.md`), and the in-app briefs/tutorials are requirement-bearing
+  engineering artifacts — not documentation exhaust.
+- They acquire their own grounding and governance: research tier **R600** (training pedagogy &
+  instructional design, `docs/research/encyclopedia/R600-index.md`), functional requirements
+  family **FR-11000**, an NFR section for training-artifact quality, and dedicated pipeline
+  stages (`02-research-training-pedagogy`, `08-training-manual-authoring`,
+  `08-vignette-development`, `09-training-manual-review`).
+- Success-vision consequence (MSTR-001 §5 item 5): a new operator can walk the learning path
+  unaided because vignettes name their manual modules, manual sections name their features
+  (`docs/training/15-manual-traceability.md`), and the pipeline that changes code keeps both
+  current.
+- **Downstream impact:** GDS-01 gains a learning-path ConOps note (same-dated section there);
+  GDS-05/the requirements baseline gains FR-11000 + the training NFR section; the strategic
+  assumptions register gains A12 (training-currency enforcement is procedural, not automated). The
+  manuals' current per-cell layout is a seed, not a mandate — layout follows the architecture and
+  requirements as they evolve.
+
+This is an explicitly-instructed amendment consistent with the reconciliation precedent above;
+status remains `✅ Authored — merge gate closed`.
+
 ## Next
 
 `GDS-01` (Concept of Operations) may now begin.

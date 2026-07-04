@@ -15,10 +15,16 @@ from its documentation:
 Every manual section already carries an inline **`> Sources:`** footer naming its backing code —
 this matrix is the inverse index that lets you start from the code instead. Keep both directions in
 sync: **when you add or renumber a manual section, add its row to §15.2 and add its ID to every
-feature row in §15.1 that it touches.** This upkeep rule is enforced by the pipeline hook in
-[`.claude/skills/08-code-implementation`](../../.claude/skills/README.md) (see §15.3).
+feature row in §15.1 that it touches.** This upkeep rule is enforced by the pipeline hooks in
+[`08-code-implementation`](../../.claude/skills/README.md) (code side) and the dedicated
+training-corpus skills `08-training-manual-authoring` / `08-vignette-development` /
+`09-training-manual-review` (see §15.3). The whole apparatus satisfies **FR-11120/FR-11210** of the
+requirements baseline (the training corpus is a co-equal product — MSTR-001 §2).
 
 Section IDs: `WCM-n` = White Cell manual, `BLU-n` = Blue cell manual, `RED-n` = Red cell manual.
+The **vignette learning path** ([`16-learning-path.md`](16-learning-path.md)) is the corpus's
+fourth traceable surface: it maps each vignette to the manual sections a trainee reads first and to
+its playbook — §15.4 records that linkage's maintenance rule.
 
 ### 15.1 Feature → manual sections (forward index)
 
@@ -61,6 +67,8 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Kinetic engagement + ROE gate | `engine/engage.py` | — | — | RED-5 |
 | RPO / co-orbital proximity | `engine/access.py` (`rpo_proximity`) | — | BLU-6 | RED-5 |
 | Per-cell playbooks / tutorial | `test_vignette_tutorials.py`, `/vignettes/{id}/tutorial` | WCM-2 | BLU-10 | RED-9 |
+| Vignette library (add/move/retire) | `content/vignettes/*.yaml` | WCM-2 | BLU-10 | RED-9 |
+| Learning-path sequence & rung linkage | `16-learning-path.md`, `content/vignettes/*.yaml` | WCM-2 | BLU-10 | RED-9 |
 
 ### 15.2 Manual section → backing features (reverse index)
 
@@ -125,5 +133,32 @@ The matrix is only useful if it stays current. Two mechanisms keep it so:
 
 If you change a feature in §15.1 and the manual section still reads correctly, no edit is needed —
 but confirm it, don't assume it.
+
+### 15.4 Vignette ⇄ learning-path linkage
+
+The learning path ([`16-learning-path.md`](16-learning-path.md)) is the fourth traceable surface,
+maintained by `08-vignette-development` and reviewed by `09-training-manual-review`:
+
+- **Every vignette appears on exactly one rung** (FR-11310). Add/move/retire a vignette →
+  its rung, its [§11 playbook](11-vignette-playbooks.md) entry, its
+  [§6 library](06-the-vignette-library.md) row, and any vignette count in README/CLAUDE.md move
+  in the same change set.
+- **Every rung links its manual prerequisites and playbook** (FR-11320) — those links resolve to
+  real sections here in the corpus. A renamed manual section that a rung's "Read first" points at
+  must update the rung too.
+- **The playbooks the rungs link to are machine-verified** by
+  `spacesim/tests/test_vignette_tutorials.py` (FR-11420) — that test is the one automated staleness
+  gate in the whole training corpus; keep it green when a vignette script changes.
+
+### 15.5 Requirements footing
+
+This apparatus is not just convention — it satisfies a requirements-baseline family:
+FR-11110 (role-scoped coverage), FR-11120 (source anchoring = the `> Sources:` footers),
+FR-11210 (this bidirectional index), FR-11310/FR-11320 (§15.4 learning-path linkage),
+FR-11410 (currency rides the changing package), FR-11420 (machine-verified playbooks), and
+NFR-3400–3600 (accuracy / modularity / learner-appropriate presentation). See
+[`docs/requirements/01-functional-requirements.md`](../requirements/01-functional-requirements.md)
+§FR-11000 and [`02-non-functional-requirements.md`](../requirements/02-non-functional-requirements.md)
+§16.
 
 ---

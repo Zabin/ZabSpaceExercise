@@ -16,8 +16,11 @@ mechanics; the [build spec](../build-spec/INDEX.md) remains authoritative for wh
 | [07-legal-norms-and-roe](07-legal-norms-and-roe.md) | Treaty law (OST), LOAC in space, the 2022 ASAT-test moratorium, and how the sim maps law to ROE. |
 | [10-sources-and-methodology](10-sources-and-methodology.md) | Citation convention, source-quality tiers, and review cadence for this corpus. |
 
-## Research encyclopedia (R100-R500)
+## Research encyclopedia (R100-R600)
 
 A separate, larger corpus for **coding-agent domain understanding** rather than doctrinal
 rationale — see [`MSTR-007`](../master/MSTR-007-research-philosophy.md) for the distinction.
-Start at [`encyclopedia/INDEX.md`](encyclopedia/INDEX.md).
+Start at [`encyclopedia/INDEX.md`](encyclopedia/INDEX.md). Tier **R600** (training pedagogy &
+instructional design, scaffolded 2026-07-04) grounds the training corpus itself — the manuals,
+the vignette learning path, and the AAR debrief practice — per the training-corpus elevation
+(MSTR-001 §2).
