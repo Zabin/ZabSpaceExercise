@@ -5,7 +5,7 @@
 A coding-agent-oriented knowledge corpus, distinct in purpose from the existing
 [`research/01-07`](../INDEX.md) doctrine/physics primers — see
 [`MSTR-007`](../../master/MSTR-007-research-philosophy.md) §2 and §5 for the exact relationship.
-Five tiers; each has its own index enumerating every topic with ID, scope, dependencies, and status.
+Six tiers; each has its own index enumerating every topic with ID, scope, dependencies, and status.
 
 | Tier | Subject | Index | Status |
 |---|---|---|---|
@@ -14,6 +14,7 @@ Five tiers; each has its own index enumerating every topic with ID, scope, depen
 | R300 | Military Analysis | [R300-index.md](R300-index.md) | ✅ Done (20/20 topics) |
 | R400 | Research Methods | [R400-index.md](R400-index.md) | 🚧 Incomplete |
 | R500 | Future Operations | [R500-index.md](R500-index.md) | 🚧 Incomplete |
+| R600 | Training Pedagogy & Instructional Design | [R600-index.md](R600-index.md) | ⛔ Scaffolded 2026-07-04 (0/8 topics) — grounds the training corpus elevated to co-equal product (MSTR-001 §2); owned by `02-research-training-pedagogy` |
 
 **Authoring order:** per [`MSTR-007`](../../master/MSTR-007-research-philosophy.md) §6, each
 tier's index is authored before its topic documents, and [R100](R100-index.md) (most directly tied

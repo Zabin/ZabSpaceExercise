@@ -141,10 +141,15 @@ spacesim/
 
 All spec/doc/implementation work runs through the **numbered skill pipeline** in
 [`.claude/skills/README.md`](.claude/skills/README.md) — the number is the run order:
-`01-vision` → `02-research-*` (×4, parallel peers) → `03-architecture-design-synthesis` →
-`04-requirements-engineering` → `05-feature-decomposition` → `06-feature-specification` →
-`07-implementation-planning` → `08-code-implementation` → `09-package-verification` →
-`10-integration-review` → `11-release-readiness`. `00-pipeline-manager` is the driver: it keeps a
+`01-vision` → `02-research-*` (×5, parallel peers — incl. `02-research-training-pedagogy` for the
+R600 tier) → `03-architecture-design-synthesis` → `04-requirements-engineering` →
+`05-feature-decomposition` → `06-feature-specification` → `07-implementation-planning` →
+`08-code-implementation` → `09-package-verification` → `10-integration-review` →
+`11-release-readiness`. The training corpus rides the same ladder through **stage peers**:
+`08-training-manual-authoring` and `08-vignette-development` (Stage 08 write-siblings of
+`08-code-implementation`, splitting the write surface — code / `docs/training/` / vignette YAML)
+and `09-training-manual-review` (Stage 09 sibling of `09-package-verification`).
+`00-pipeline-manager` is the driver: it keeps a
 persistent journal at `docs/pipeline/pipeline-journal.md` (position + run log, reconciled against
 the tree's ledgers every run — the tree wins on disagreement), harvests every invoked skill's
 findings into `docs/pipeline/backlog.md` and triages every open entry at the start of the next
@@ -154,8 +159,8 @@ same backlog (classified, deduped, routed to an entry stage), never implemented 
 `run-spacesim` is an unnumbered utility. Each skill writes
 only its own output scope, routes findings to the owning stage instead of fixing them locally,
 and ends every run by saying in chat what changed, what it recommends, and which skill to run
-next. Only `08` writes production code; only `09` writes `VERIFIED`; a specified package is not an
-authorized one (MSTR-006 §3).
+next. Only `08-code-implementation` writes `spacesim/` production code; only `09-package-verification`
+writes `VERIFIED`; a specified package is not an authorized one (MSTR-006 §3).
 
 ## Test-driven workflow (mandatory)
 
@@ -337,8 +342,30 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   weapons-quality / command-station gates that block the rest are documented in each block's `expect`.
 - **Docs are modular under `docs/`** — routed by `docs/INDEX.md` (structure & rationale in
   `docs/DOCUMENTATION-PLAN.md`). Themes: `docs/build-spec/` (the binding spec, 8 modules),
-  `docs/training/` (user manual, 9 modules), `docs/design/`, `docs/research/`, `docs/vignettes/`,
-  each with its own `INDEX.md`.
+  `docs/training/` (user manual, 16 modules — shared onboarding 01–11 plus the role-scoped
+  **per-cell manuals** 12 White / 13 Blue / 14 Red, their 15 traceability matrix, and the 16
+  vignette learning path), `docs/design/`, `docs/research/`, `docs/vignettes/`, each with its own
+  `INDEX.md`.
+- **Training corpus is a co-equal product with the code (owner decision 2026-07-04).** The manuals,
+  vignette learning path, and in-app briefs/tutorials are requirement-bearing artifacts, not doc
+  exhaust. Grounding: research tier **R600** (`docs/research/encyclopedia/R600-index.md`, scaffolded
+  0/8). Governance: **FR-11000** family + **NFR §16** (`docs/requirements/`). Production/review:
+  dedicated pipeline peers `02-research-training-pedagogy`, `08-training-manual-authoring`,
+  `08-vignette-development`, `09-training-manual-review` (the 08 peers split the write surface —
+  only `08-code-implementation` writes `spacesim/` Python). Rationale in MSTR-001 §2; ConOps note in
+  GDS-00/GDS-01 "Training-corpus elevation (2026-07-04)"; residual risk in assumptions-register A12.
+- **Per-cell training manuals + traceability (load-bearing for doc upkeep).** The three role-scoped
+  manuals (`docs/training/12-white-cell-manual.md` `WCM-n`, `13-blue-cell-manual.md` `BLU-n`,
+  `14-red-cell-manual.md` `RED-n`) are the facilitator/defender/adversary procedure layers over the
+  shared concept modules; the current per-cell layout is a seed that satisfies FR-11110's
+  role-scoped-*coverage* mandate, not a fixed structure (layout follows the requirements/architecture).
+  `docs/training/15-manual-traceability.md` is a **bidirectional** feature ⇄ manual-section index
+  (change a feature → §15.1 names the sections to update; edit a section → §15.2 + the inline
+  `> Sources:` footer names the backing code) and now also tracks the vignette⇄learning-path linkage
+  (§15.4). `docs/training/16-learning-path.md` sequences the 19 vignettes into a rung ladder, each
+  rung naming its manual prerequisites + verified playbook. Upkeep is wired into the pipeline: skill
+  `08-code-implementation`'s doc-update step, the dedicated training skills, and skill
+  `10-integration-review`'s doc-coherence dimension all consult §15.1 for feature-changing work.
 - `docs/training/` (first-time setup + guided walkthrough) and `docs/manual/` (UI screenshots incl.
   3D globe, command/system menus, and the step-by-step walkthrough; generated by
   `tools/render_manual.py`). The v1 operator-console spec is `docs/build-spec/07-operator-console.md`;

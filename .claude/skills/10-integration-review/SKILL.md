@@ -47,6 +47,10 @@ isn't, stop and report which, rather than reviewing around the hole.
    bidirectional and unbroken.
 5. **Documentation coherence** — `CLAUDE.md`'s code map and status line, the affected `INDEX.md`
    files, and the training/manual docs reflect the integrated result, not per-package snapshots.
+   Include the **per-cell training manuals**: for each user-facing feature this scope changed, use
+   `docs/training/15-manual-traceability.md` §15.1 to spot-check that the mapped White/Blue/Red
+   manual sections (and their `> Sources:` footers) were updated to match the shipped behavior — a
+   feature that moved but left its cell-manual section stale is a documentation-coherence finding.
 
 ## Output
 

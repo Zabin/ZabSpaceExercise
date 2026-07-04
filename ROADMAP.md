@@ -110,7 +110,7 @@ with — not a build order. The **Build Spec wins on any conflict** regardless o
 | RS-07 | Legal norms & ROE | `research/07-legal-norms-and-roe.md` | RS-03 | ✅ *(Tier 1 expansion landed, commits `469c8e8..cd37fe2`, 795 lines / 106 cites — see RS-1.7; cross-linked to encyclopedia)* |
 | RS-10 | Sources & methodology (citation convention for the whole corpus) | `research/10-sources-and-methodology.md` | — | ✅ *(landed first, commit `968c4be`, 363 lines — see RS-1.0; cross-linked to encyclopedia)* |
 
-### Research encyclopedia (`research/encyclopedia/`, R100-R500, 68 topics + 5 tier indexes)
+### Research encyclopedia (`research/encyclopedia/`, R100-R600, 68 authored + 8 planned topics + 6 tier indexes)
 
 > **Tracking gap fixed in this revision.** This file claims to be "the single authoritative
 > tracker for every document this project produces" (top of file), but until now it carried zero
@@ -127,6 +127,7 @@ with — not a build order. The **Build Spec wins on any conflict** regardless o
 | RE-300 | Tier R300 — Military Analysis (12 topics) | `research/encyclopedia/R300-index.md` | RS-01, RS-02, RS-07 | 🚧 *(12/12 authored; 12/12 missing §2 Scope; 0/12 cite-compliant — doctrinal/legal claims in this tier are the highest-stakes uncited content in the corpus)* |
 | RE-400 | Tier R400 — Research Methods (13 topics) | `research/encyclopedia/R400-index.md` | DOM-002, DOM-005 | ✅ *(13/13 authored; 13/13 have §2 Scope; 13/13 cite-compliant — GAP-13 closed 2026-07-02)* |
 | RE-500 | Tier R500 — Future Operations (9 topics) | `research/encyclopedia/R500-index.md` | DOM-008 | ✅ *(9/9 authored; 9/9 have §2 Scope; 9/9 cite-compliant — GAP-13 closed 2026-07-02)* |
+| RE-600 | Tier R600 — Training Pedagogy & Instructional Design (8 topics) | `research/encyclopedia/R600-index.md` | MSTR-001 §2, MSTR-003 | ⛔ *(scaffolded 2026-07-04: index authored, 0/8 topics; grounds the training corpus elevated to co-equal product; owned by `02-research-training-pedagogy`; must meet the full citation bar from first draft — never enters the uncited state R400/R500 were remediated out of)* |
 
 **Status:** R400 and R500 (22 topics) closed GAP-13 remediation 2026-07-02 — both now carry the
 mandatory §2 Scope section and full inline-citation + `### Sources`-subsection coverage per RS-10
@@ -656,7 +657,12 @@ FS → IMP → Code → Tests) for all 11 Feature Specifications:
 | TR-09 | Troubleshooting & glossary | `training/09-troubleshooting-and-glossary.md` | — | ✅ |
 | TR-10 | UI reference (all 14 panels) | `training/10-ui-reference.md` | BS-07, MAN-00 | ✅ |
 | TR-11 | Per-vignette playbooks — how each cell completes objectives, move by move, verified against the engine | `training/11-vignette-playbooks.md` | VG-IDX, TR-06 | ✅ |
-| TR-12 | Browser-GUI verification harness guide (Playwright e2e) | *not yet created* | TR-10 | ⛔ Planned — blocked on the harness itself existing; AU-03 confirms ad hoc Playwright verification was used for the panel-manager audit but no committed harness/doc exists yet |
+| TR-12 | Role-scoped **White Cell** manual (facilitator procedure layer; sections `WCM-n`) | `training/12-white-cell-manual.md` | TR-02, TR-05, TR-07, TR-15 | ✅ |
+| TR-13 | Role-scoped **Blue cell** manual (defender procedure layer; sections `BLU-n`) | `training/13-blue-cell-manual.md` | TR-02, TR-05, TR-15 | ✅ |
+| TR-14 | Role-scoped **Red cell** manual (adversary procedure layer; sections `RED-n`) | `training/14-red-cell-manual.md` | TR-02, TR-05, TR-15 | ✅ |
+| TR-15 | Per-cell manual **traceability matrix** — bidirectional feature ⇄ manual-section index; hooked into skills 08 (doc-update step) and 10 (doc-coherence dimension) | `training/15-manual-traceability.md` | TR-12, TR-13, TR-14 | ✅ |
+| TR-17 | **Vignette learning path** — 19 vignettes sequenced onboarding→ladder→mission-set/doctrine tracks; each rung linked to manual prerequisites + verified playbook (FR-11310/11320) | `training/16-learning-path.md` | TR-06, TR-11, TR-15 | ✅ |
+| TR-16 | Browser-GUI verification harness guide (Playwright e2e) | *not yet created* | TR-10 | ⛔ Planned — blocked on the harness itself existing; AU-03 confirms ad hoc Playwright verification was used for the panel-manager audit but no committed harness/doc exists yet |
 
 ## Theme: Vignette library (`docs/vignettes/`)
 

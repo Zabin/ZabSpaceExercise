@@ -192,6 +192,48 @@ rather than silently skipped or force-fitted.
 
 ---
 
+## Training-corpus elevation (2026-07-04) — new FR family + NFR section
+
+Unlike CHG-001–CHG-013 (edits responding to `requirements-review.md`), this batch responds to an
+**explicit project-owner decision** (recorded in `MSTR-001` §2 and the GDS-00/GDS-01
+"Training-corpus elevation (2026-07-04)" sections) elevating the training corpus — manuals,
+vignette learning path, briefs/tutorials — to a co-equal, requirement-bearing product with the
+code. Numbering stability maintained: a new top-level family after the existing highest
+(`FR-10000` → `FR-11000`), a new NFR section after the existing highest (§15 → §16,
+`NFR-3300` → `NFR-3400`–`NFR-3600`); no existing FR/NFR ID renumbered, removed, or altered.
+
+### CHG-014
+- **Previous state:** No functional requirements existed for the training corpus; manuals and the
+  vignette library's pedagogical sequencing were untracked by the baseline.
+- **New state:** `requirements/01` gains the `FR-11000 — Training Corpus & Learning Path` family:
+  `FR-11110` (role-scoped coverage), `FR-11120` (source anchoring), `FR-11210` (bidirectional
+  index), `FR-11310` (sequenced learning path), `FR-11320` (per-rung manual linkage), `FR-11410`
+  (currency rides the changing package), `FR-11420` (machine-verified playbooks — promoting the
+  existing `test_vignette_tutorials.py` practice to requirement status). The family's preamble
+  states explicitly that the current per-cell manual layout satisfies but is not mandated by
+  `FR-11110`.
+- **Reason:** Owner instruction 2026-07-04; MSTR-001 §2/§5 amendment in the same pass.
+- **Source review issue:** N/A — owner-directed baseline extension, not a review finding.
+
+### CHG-015
+- **Previous state:** No NFRs constrained training-artifact quality.
+- **New state:** `requirements/02` gains §16 "Training-artifact quality": `NFR-3400` (accuracy —
+  as-built behavior only), `NFR-3500` (modularity/retrievability), `NFR-3600`
+  (learner-appropriate presentation, R600-cited once that tier authors).
+- **Reason:** Same owner instruction; the *how well* face of CHG-014's family.
+- **Source review issue:** N/A — owner-directed baseline extension.
+
+### CHG-016
+- **Previous state:** The RTM carried no rows for training artifacts.
+- **New state:** `requirements/03` gains master-matrix rows for `FR-11110`–`FR-11420` and
+  `NFR-3400`–`NFR-3600`, with an explanatory note on how documentation-artifact rows populate
+  cells honestly (real doc paths in Impl. Package cells; `(none)`/`UNASSIGNED` for
+  component/interface cells no ICD entry models; R600 not citable until topics author).
+- **Reason:** Keep the matrix complete over the extended baseline in the same change set.
+- **Source review issue:** N/A — owner-directed baseline extension.
+
+---
+
 ## Findings deliberately left unactioned (with reason)
 
 These review findings were re-examined against the current document text and intentionally not

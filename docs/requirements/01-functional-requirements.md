@@ -1533,6 +1533,208 @@ unaffected by `FR-10110`/`FR-10210`'s addition.
 
 ---
 
+## FR-11000 — Training Corpus & Learning Path *(new 2026-07-04, training-corpus elevation)*
+
+> **Nature of this family.** Unlike FR-1000–FR-10000, whose objects are code behaviors, this
+> family's objects are **training artifacts** — manual modules, the vignette learning path, and
+> their traceability apparatus — elevated to requirement-bearing status by the project-owner
+> decision recorded in MSTR-001 §2 and GDS-00/GDS-01's "Training-corpus elevation (2026-07-04)"
+> sections. Verification is correspondingly Inspection/Analysis-heavy, with one Test-verified
+> leaf (FR-11420). The current per-cell manual layout (`training/12–14`) satisfies FR-11110 but
+> is **not mandated by it** — layout follows this baseline and the architecture, not the other
+> way around.
+
+### FR-11100 — Role-scoped operator manuals
+
+#### FR-11110 — Role-scoped manual coverage per seat
+
+- **ID:** FR-11110
+- **Title:** Provide role-scoped manual coverage for every seat
+- **Description:** The training corpus shall provide, for each operator role (White Cell
+  facilitator, Blue cell operator, Red cell operator), manual content scoped to that role that
+  covers every operator-visible capability the role can exercise, organized so a reader can serve
+  their seat without reading another role's procedures. The corpus layout is otherwise
+  unconstrained (role-scoped coverage may be met by per-cell modules, by role-tagged sections of
+  shared modules, or by another architecture-driven structure).
+- **Rationale:** MSTR-001 §2 (training corpus co-equal with code); MSTR-003 (audience-appropriate
+  instruction); GDS-01 "Training-corpus elevation" (role manuals are operational reading).
+- **Priority:** Must
+- **Inputs:** Shipped operator-visible behavior; the shared concept modules (`training/01–11`).
+- **Outputs:** Role-scoped manual content under `docs/training/`.
+- **Preconditions:** The capability being documented is shipped (manuals document as-built
+  behavior, never aspirations).
+- **Postconditions:** Every operator-visible capability maps to at least one role-scoped manual
+  location per role that can exercise it.
+- **Acceptance Criteria:** Given the feature→manual index (FR-11210), every row whose capability a
+  role can exercise names at least one manual location scoped to that role; no capability row
+  reads "—" for every role that can use it.
+- **Verification Method:** Inspection (via the FR-11210 index)
+- **Dependencies:** FR-11210
+- **Source Documents:** MSTR-001 §2, §5 item 5; GDS-00/GDS-01 "Training-corpus elevation
+  (2026-07-04)"; MSTR-003.
+- **Related ADRs:** None identified
+- **Related Interfaces:** None — documentation artifact
+- **Related Requirements:** FR-11210, FR-11410
+
+#### FR-11120 — Section-level source anchoring
+
+- **ID:** FR-11120
+- **Title:** Anchor every manual section to its backing features
+- **Description:** Every role-scoped manual section shall carry a machine-greppable source
+  anchor (the `> Sources:` footer convention) naming the code modules, endpoints, and/or shared
+  training modules whose behavior it documents.
+- **Rationale:** Source anchors are the ground truth from which the bidirectional index
+  (FR-11210) is derived; without them, staleness detection degenerates to re-reading everything.
+- **Priority:** Must
+- **Inputs:** The section's content and the shipped behavior it describes.
+- **Outputs:** A `> Sources:` footer per section.
+- **Preconditions:** None.
+- **Postconditions:** Grep for a code path returns every manual section documenting it.
+- **Acceptance Criteria:** Given any role-scoped manual section, its footer names at least one
+  backing source; given any footer entry that is a file path, that path exists in the tree.
+- **Verification Method:** Inspection
+- **Dependencies:** None
+- **Source Documents:** `training/15-manual-traceability.md` §15.3 (the convention, promoted here
+  to a requirement).
+- **Related ADRs:** None identified
+- **Related Interfaces:** None — documentation artifact
+- **Related Requirements:** FR-11210
+
+### FR-11200 — Bidirectional traceability
+
+#### FR-11210 — Feature ⇄ manual bidirectional index
+
+- **ID:** FR-11210
+- **Title:** Maintain a bidirectional feature ⇄ manual-section index
+- **Description:** The training corpus shall maintain a single index providing both directions of
+  lookup: feature/code-area → every manual location documenting it, and manual section → every
+  feature/code-area backing it. Both directions shall be updated together in any change that
+  affects either.
+- **Rationale:** The efficiency mechanism of the whole elevation: a feature change routes to
+  exactly the manual sections that must move with it, and a manual edit routes to the code that
+  must be re-checked (GDS-01 "Currency is part of the operation").
+- **Priority:** Must
+- **Inputs:** Section source anchors (FR-11120); the shipped feature set.
+- **Outputs:** `docs/training/15-manual-traceability.md` (current home; the location may move
+  with the corpus layout).
+- **Preconditions:** FR-11120 anchors exist.
+- **Postconditions:** Forward and reverse tables are mutually consistent.
+- **Acceptance Criteria:** Given any (feature row → section ID) pair in the forward index, the
+  reverse index lists that feature under that section, and vice versa; given a code path shipped
+  as user-facing, it appears in at least one forward-index row.
+- **Verification Method:** Inspection
+- **Dependencies:** FR-11120
+- **Source Documents:** MSTR-001 §5 item 5; `training/15-manual-traceability.md`.
+- **Related ADRs:** None identified
+- **Related Interfaces:** None — documentation artifact
+- **Related Requirements:** FR-11110, FR-11120, FR-11410
+
+### FR-11300 — Vignette learning path
+
+#### FR-11310 — Sequenced learning path over the vignette library
+
+- **ID:** FR-11310
+- **Title:** Sequence the vignette library as a learning path
+- **Description:** The training corpus shall present the vignette library as a sequenced learning
+  path from zero-knowledge onboarding to full mission-set competence: an entry rung (the guided
+  training-basics vignette), a core progression that introduces mechanics cumulatively (the
+  canonical ladder), and specialized tracks (Red COA, mission-set, learning, novel) positioned
+  after the core mechanics they assume. Every shipped vignette shall appear on exactly one rung.
+- **Rationale:** GDS-01 "The learning path is an operational workflow"; the provided vignettes
+  are designed to walk new users from basic intro to each satellite mission set (owner statement,
+  2026-07-04); R605 (progression design) grounds the rung structure once authored.
+- **Priority:** Must
+- **Inputs:** The shipped vignette library (`spacesim/content/vignettes/*.yaml`).
+- **Outputs:** `docs/training/16-learning-path.md` (current home).
+- **Preconditions:** None.
+- **Postconditions:** The path covers the library exactly (no unplaced vignette, no phantom rung).
+- **Acceptance Criteria:** Given the set of vignette YAMLs on disk and the set of vignettes named
+  on the path, the two sets are equal.
+- **Verification Method:** Inspection
+- **Dependencies:** FR-5000 family (vignette schema/library)
+- **Source Documents:** GDS-01 "Training-corpus elevation (2026-07-04)"; `training/06`.
+- **Related ADRs:** None identified
+- **Related Interfaces:** None — documentation artifact
+- **Related Requirements:** FR-11320, FR-11420
+
+#### FR-11320 — Per-rung manual linkage
+
+- **ID:** FR-11320
+- **Title:** Link every learning-path rung to its manual prerequisites and playbook
+- **Description:** Every learning-path rung shall name (a) the manual modules/sections a trainee
+  should read before attempting it, and (b) the per-vignette playbook entry that walks its
+  objectives, so the path, the manuals, and the playbooks form one connected graph.
+- **Rationale:** MSTR-001 §5 item 5 — the unaided-progression success criterion depends on the
+  linkage, not just the sequence.
+- **Priority:** Must
+- **Inputs:** FR-11310's path; the manual corpus; `training/11-vignette-playbooks.md`.
+- **Outputs:** Prerequisite and playbook links on every rung.
+- **Preconditions:** FR-11310.
+- **Postconditions:** No rung dead-ends (every named prerequisite and playbook anchor resolves).
+- **Acceptance Criteria:** Given any rung, its prerequisite links resolve to existing manual
+  locations and its playbook link resolves to that vignette's playbook entry.
+- **Verification Method:** Inspection
+- **Dependencies:** FR-11310, FR-11110
+- **Source Documents:** MSTR-001 §5 item 5; GDS-01 "Training-corpus elevation (2026-07-04)".
+- **Related ADRs:** None identified
+- **Related Interfaces:** None — documentation artifact
+- **Related Requirements:** FR-11210
+
+### FR-11400 — Currency on change
+
+#### FR-11410 — Training-artifact update rides the changing package
+
+- **ID:** FR-11410
+- **Title:** Update affected training artifacts in the same change set as the feature change
+- **Description:** Any change to operator-visible behavior shall update, in the same change set,
+  every training artifact the bidirectional index (FR-11210) maps to the changed code — manual
+  sections, learning-path rungs, and vignette briefs/tutorials — or shall record explicitly why
+  no artifact was affected.
+- **Rationale:** A stale manual in a trainer actively mis-trains (GDS-01 "Currency is part of
+  the operation"); assumption A12 tracks the residual risk of this being procedural.
+- **Priority:** Must
+- **Inputs:** The change set; the FR-11210 forward index.
+- **Outputs:** Updated training artifacts (or the recorded no-impact statement).
+- **Preconditions:** FR-11210 exists and covers the changed area.
+- **Postconditions:** No index-mapped artifact describes the pre-change behavior.
+- **Acceptance Criteria:** Given a merged feature-changing package, its Implementation Summary
+  names the training artifacts updated or states no-impact with the index lookup that supports
+  it.
+- **Verification Method:** Analysis (per-package, at stages 09/10)
+- **Dependencies:** FR-11210
+- **Source Documents:** GDS-00/GDS-01 "Training-corpus elevation (2026-07-04)";
+  `strategic-assumptions-register.md` A12; skills 08/10 (hook text).
+- **Related ADRs:** None identified
+- **Related Interfaces:** None — process requirement over documentation artifacts
+- **Related Requirements:** FR-11110, FR-11210, FR-11420
+
+#### FR-11420 — Machine-verified vignette playbooks
+
+- **ID:** FR-11420
+- **Title:** Keep every canonical-vignette playbook machine-verified against the engine
+- **Description:** Every per-vignette playbook whose moves the engine can execute shall be backed
+  by an automated test that drives those moves through the real engine and asserts the documented
+  objective flips, so the playbook cannot silently drift from shipped behavior.
+- **Rationale:** This is the one slice of training-artifact currency already enforced by a gate
+  rather than discipline (`spacesim/tests/test_vignette_tutorials.py`); promoting it to a
+  requirement prevents its quiet removal and names the pattern A12's review trigger would extend.
+- **Priority:** Must
+- **Inputs:** Vignette `tutorial:` blocks; the engine.
+- **Outputs:** Green playbook-verification tests in the standard suite.
+- **Preconditions:** The vignette carries a step script.
+- **Postconditions:** A playbook step the engine rejects fails the suite.
+- **Acceptance Criteria:** Given the standard test suite run, every canonical vignette's tutorial
+  steps execute against the engine and the documented objective flips are asserted.
+- **Verification Method:** Test
+- **Dependencies:** FR-5000 family, FR-11310
+- **Source Documents:** `spacesim/tests/test_vignette_tutorials.py` (existing practice, promoted);
+  `training/11-vignette-playbooks.md`.
+- **Related ADRs:** None identified
+- **Related Interfaces:** None
+- **Related Requirements:** FR-11410
+
+---
+
 ## Candidate Requirements
 
 The following read as requirements but cannot be traced to a settled statement in this baseline's

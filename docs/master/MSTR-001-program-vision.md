@@ -53,6 +53,16 @@ Concretely, this means:
   [`docs/domains/`](../domains/) §Traceability sections for the worked chains.
 - Documentation is **versioned, statused, and dependency-tracked** like code — see
   [`MSTR-006`](MSTR-006-governance-principles.md).
+- The **training corpus is a co-equal product with the code** (owner decision, 2026-07-04). The
+  operator-facing manuals (`docs/training/`), the vignette learning path, and the in-app
+  briefs/tutorials are requirement-bearing artifacts in their own right: grounded by their own
+  research tier (R600 — training pedagogy & instructional design), governed by their own
+  functional and non-functional requirements (FR-11000 family; NFR §16), and produced/reviewed by
+  their own pipeline stages (`02-research-training-pedagogy`, `08-training-manual-authoring`,
+  `08-vignette-development`, `09-training-manual-review`). A capability is not delivered when its
+  code verifies — it is delivered when the training artifacts that teach it are current. The
+  pedagogical stance itself lives in [`MSTR-003`](MSTR-003-educational-philosophy.md); this bullet
+  makes its artifacts first-class citizens of the engineering baseline.
 - The existing `docs/build-spec/`, `docs/design/`, `docs/research/`, `docs/training/`,
   `docs/vignettes/` corpus is **not replaced**. It is the load-bearing foundation this tree builds
   on top of and cross-references; see [`MSTR-005`](MSTR-005-documentation-map.md) §3 for exactly how
@@ -115,6 +125,12 @@ The program succeeds when:
 4. Every Feature Specification and Implementation Package can be traced backward to the training
    or research need that motivated it, and forward to the code and tests that satisfy it — closing
    the loop described in [`MSTR-005`](MSTR-005-documentation-map.md) §4.
+5. A brand-new operator can walk the **vignette learning path**
+   (`docs/training/16-learning-path.md`) unaided — from the training-basics onboarding vignette,
+   up the canonical ladder, into the mission-set tracks — because every vignette names the manual
+   modules that teach its concepts, every manual section names the features it documents
+   (`docs/training/15-manual-traceability.md`), and the same pipeline that changes the code keeps
+   both current.
 
 ## 6. Non-goals
 
