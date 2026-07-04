@@ -6,13 +6,22 @@
 > owner's decision recorded in `docs/pipeline/pipeline-journal.md` run #4; see "Files to Modify,"
 > Implementation Tasks items 3/6, Tests to Add, Definition of Done, Verification Checklist, and
 > Risks below.)
-> **Status:** 🔵 COMPLETE *(implemented 2026-07-03 — `session/assessment.py` (new),
+> **Status:** ✅ VERIFIED *(2026-07-04, [`VR-2010`](../verification/VR-2010-competency-assessment.md)
+> — every Definition of Done/Verification Checklist item this package itself claims confirmed
+> against the live tree; full suite green (566 passed/3 skipped), both permanent gates green; RTM
+> `FR-10110` cell updated. **Two Medium findings filed against FS-201 itself, not against this
+> package's honesty**: FS-201's own Acceptance Criteria include a longitudinal per-trainee report
+> (explicitly, knowingly deferred by this package's own Implementation Tasks item 5 — not a
+> surprise) and self-assessment/debrief-mode accessibility (not implemented, and not flagged
+> anywhere in this package's text as excluded — genuinely missed at authoring time). See `VR-2010`'s
+> Findings for the full reasoning and recommended routing. Was 🔵 COMPLETE *(implemented
+> 2026-07-03 — `session/assessment.py` (new),
 > `custody_confidence_at_decision` capture in `engine/orders.py`'s `_exec_payload()` via a new
 > `engine/custody.py` helper, `session/inprocess.py` wrapper, `/api/sessions/{sid}/assessment`
 > endpoint + White Cell Dashboard panel. Full suite green (507 passed/3 skipped, up from 490/3 —
 > 17 new tests), both permanent gates (`test_determinism.py`, `test_import_guard.py`) green.
 > Entered `COMPLETE`, not `VERIFIED` — per this skill's rule, only `09-package-verification`'s own
-> independent pass may write `VERIFIED`. Was 🟡 READY *(authorized, unblocked 2026-07-02 — the
+> independent pass may write `VERIFIED`.)* Was 🟡 READY *(authorized, unblocked 2026-07-02 — the
 > blocking conflict, this package's Objective building exactly the automated-assessment mechanism
 > ADR-0017 read as prohibiting, is resolved by
 > [ADR-0032](../../architecture/adr/ADR-0032-descriptive-rubric-not-automated-scoring.md), which
@@ -241,19 +250,25 @@ process, before the package may advance to `VERIFIED`.)*
 
 ## Verification Checklist
 
-*(To be executed once implemented; not yet applicable.)*
+*(Executed 2026-07-04 by `09-package-verification` —
+[`VR-2010`](../verification/VR-2010-competency-assessment.md).)*
 
-- [ ] `spacesim/tests/test_assessment.py` exists and is green.
-- [ ] `python3 -m pytest spacesim/tests/test_determinism.py` remains green after this module lands.
-- [ ] Manual review confirms no scoring function calls any `WorldState`-mutating engine handler.
-- [ ] FS-201's Acceptance Criteria (§"Acceptance Criteria" in the Feature Spec) are each traceable to
-  a specific test in `test_assessment.py`.
-- [ ] `spacesim/tests/test_orders.py`'s new `custody_confidence_at_decision` assertions are green,
+- [x] `spacesim/tests/test_assessment.py` exists and is green — 13 tests.
+- [x] `python3 -m pytest spacesim/tests/test_determinism.py` remains green after this module lands.
+- [x] Manual review confirms no scoring function calls any `WorldState`-mutating engine handler.
+- [~] FS-201's Acceptance Criteria (§"Acceptance Criteria" in the Feature Spec) are each traceable to
+  a specific test in `test_assessment.py`. **4 of 6 are; 2 are not** — the longitudinal per-trainee
+  report (already disclosed as out of scope by this package's own Implementation Tasks item 5) and
+  self-assessment/debrief-mode accessibility (not disclosed as excluded anywhere in this package —
+  see `VR-2010` Findings #1/#2). Filed as Medium findings against FS-201's scope, not against this
+  package's own honesty.
+- [x] `spacesim/tests/test_orders.py`'s new `custody_confidence_at_decision` assertions are green,
   and confirm no existing `_exec_payload()` return field or `custody.py` public signature changed
   shape (the "Cross-package note" in Files to Modify above — `IP-1030`/`IP-1020`/`IP-1010`/`IP-1051`
-  must not need re-verification as a result of this package).
-- [ ] Manual confirmation that `dry_run()` still performs zero eventlog/registry/booking writes
-  (the new helper is only reachable from `issue()`'s `commit=True` path).
+  remain correctly `VERIFIED`, no re-verification needed).
+- [x] Manual confirmation that `dry_run()` still performs zero eventlog/registry/booking writes
+  (the new helper is only reachable from `issue()`'s `commit=True` path) —
+  `test_dry_run_never_captures_custody_confidence` confirms this directly.
 
 ## Dependencies
 
@@ -261,12 +276,12 @@ process, before the package may advance to `VERIFIED`.)*
   rejection data, already shipped), IP-1070 (belief-truth-divergence mechanism, already shipped) —
   all three upstream dependencies are satisfied; this package's design is blocked on nothing except
   authorization.
-- **Downstream:** IP-3010 (Research Analytics) cannot be implemented in more than provisional detail
-  until this package's `RunRecord`-equivalent output shape is not just designed (already done, §
-  "Proposed shape" above) but actually implemented — IP-3010 is accordingly `BLOCKED` on this
-  package reaching `COMPLETE`, not merely `READY`.
-- **Build-sequencing:** This package is the critical-path predecessor to IP-3010 in the Master Build
-  Plan's dependency graph.
+- **Downstream:** IP-3010 (Research Analytics) was implemented (2026-07-04, run #10) against this
+  package's `assessment_report` output shape while this package was `COMPLETE`, not yet `VERIFIED`
+  — `VR-2010` confirmed the shape is unchanged, resolving `BL-0018` cleanly with no impact on
+  `IP-3010`'s already-shipped `RunRecord` schema.
+- **Build-sequencing:** This package was the critical-path predecessor to IP-3010 in the Master
+  Build Plan's dependency graph; both are now implemented.
 
 ## Risks
 
@@ -295,6 +310,15 @@ process, before the package may advance to `VERIFIED`.)*
   baselines would produce a metric that cannot be meaningfully scored.
 - Any implementation that mutates `WorldState` (even "temporarily") during scoring would violate the
   replay-safety invariant this entire design depends on.
+- **New findings (2026-07-04, `VR-2010`):** FS-201's own Acceptance Criteria are broader than what
+  this package built. (1) A longitudinal per-trainee report across exercises is entirely
+  unimplemented — already disclosed by this package's Implementation Tasks item 5, so not a
+  surprise, but worth recording that FS-201 itself (marked `✅ Done`) has an unimplemented
+  Acceptance Criterion. (2) Self-assessment/debrief-mode accessibility (Blue/Red operators viewing
+  their own rubric) is not implemented — the shipped panel is White-Cell-only (`index.html`'s
+  `white-only` CSS class) — and, unlike (1), this exclusion was never flagged anywhere in this
+  package's own text. Routed to `06-feature-specification` to reconcile FS-201's Acceptance
+  Criteria against what was actually built.
 
 ## Rollback Considerations
 

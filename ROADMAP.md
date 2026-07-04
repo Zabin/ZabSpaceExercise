@@ -455,7 +455,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1090 | Multiplayer / LAN Session Transport — lazy clock, mutation locking, hot-seat/LAN sharing | `implementation/packages/IP-1090-multiplayer-session-transport.md` | FS-109 | As-built | ✅ VERIFIED |
 | IP-1100 | Save & Resume — deterministic round trip & content/session split | `implementation/packages/IP-1100-save-and-resume.md` | FS-110 | As-built | ✅ VERIFIED |
 | IP-1110 | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | `implementation/packages/IP-1110-ai-red-doctrine-automation.md` | FS-111 | As-built | ✅ VERIFIED |
-| IP-2010 | Competency Assessment — rubric computation | `implementation/packages/IP-2010-competency-assessment.md` | FS-201 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; `session/assessment.py` + `custody_confidence_at_decision` in `orders.py`/`custody.py`; awaiting `09-package-verification`) |
+| IP-2010 | Competency Assessment — rubric computation | `implementation/packages/IP-2010-competency-assessment.md` | FS-201 | Forward design | ✅ VERIFIED (2026-07-04, `VR-2010` — two Medium findings against FS-201's own Acceptance Criteria scope, routed to `06-feature-specification`, not against this package) |
 | IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🔵 COMPLETE (implemented 2026-07-04, run #10 — new `spacesim/tools/` subpackage + `session/research_export.py`; awaiting `09-package-verification`) |
 | IP-1120 | Classification Banner — wire render/export path to the vignette's classification value | `implementation/packages/IP-1120-classification-banner.md` | FS-112 | Partially built (gap-closing) | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | IP-1130 | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | `implementation/packages/IP-1130-observer-read-only-access.md` | FS-113 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
@@ -511,9 +511,17 @@ pattern), reading `session/assessment.py`'s already-computed rubric output once 
 reimplementing it. 7 new tests; full suite 566 passed/3 skipped, both permanent gates green.
 Pending its own `09-package-verification` pass.
 
+**Verification update (2026-07-04, run #11):** `IP-2010` passed `09-package-verification`
+([`VR-2010`](docs/implementation/verification/VR-2010-competency-assessment.md)) and flipped to
+`VERIFIED` — full suite 566 passed/3 skipped, both permanent gates green, RTM `FR-10110` cell
+updated. **Two Medium findings**: FS-201's own Acceptance Criteria include a longitudinal
+per-trainee report (already disclosed as deferred by the package itself) and self-assessment/
+debrief-mode accessibility (not implemented, not flagged as excluded) — both routed to
+`06-feature-specification` to reconcile FS-201's stated scope against what was actually built.
+
 `docs/implementation/00-master-build-plan.md`'s package table, dependency graph, parallel-
 opportunity list, critical-path note, and summary statistics have been updated accordingly (now
-18 packages total: 13 `VERIFIED`, 5 `COMPLETE` pending verification, 0 `READY`, 0 `BLOCKED`).
+18 packages total: 14 `VERIFIED`, 4 `COMPLETE` pending verification, 0 `READY`, 0 `BLOCKED`).
 
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 

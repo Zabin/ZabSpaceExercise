@@ -110,7 +110,7 @@ package in this plan to reach that state.
 | [IP-1090](packages/IP-1090-multiplayer-session-transport.md) | FS-109 Multiplayer / LAN Session Transport | As-built | ✅ VERIFIED | none |
 | [IP-1100](packages/IP-1100-save-and-resume.md) | FS-110 Save & Resume | As-built | ✅ VERIFIED | none |
 | [IP-1110](packages/IP-1110-ai-red-doctrine-automation.md) | FS-111 AI-Red Doctrine Automation | As-built | ✅ VERIFIED | none |
-| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | 🔵 COMPLETE | **Implemented 2026-07-03** — `session/assessment.py` (three scoring functions + report), `custody_confidence_at_decision` captured in `orders.py`'s `_exec_payload()` via a new `custody.py` helper; full suite green (507 passed/3 skipped), both permanent gates green; awaiting `09-package-verification` |
+| [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | ✅ VERIFIED | **Verified 2026-07-04**, [`VR-2010`](verification/VR-2010-competency-assessment.md) — full suite 566 passed/3 skipped, both permanent gates green; RTM `FR-10110` updated. Two Medium findings against FS-201's own Acceptance Criteria scope (longitudinal per-trainee report, self-assessment-mode accessibility — see Risk item 9 below), not against this package's own claims |
 | [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔵 COMPLETE | **Implemented 2026-07-04 (run #10)** — new `spacesim/tools/` subpackage (`research_batch.run_batch()`, seeded-Monte-Carlo batch runner) + `session/research_export.py` (`RunRecord` + CSV/JSON export extending `aar.export_csv()`'s pattern); reads `session/assessment.py`'s `assessment_report` once per run, never reimplemented; 7 new tests; full suite green (566 passed/3 skipped), both permanent gates green; awaiting `09-package-verification` |
 | [IP-1120](packages/IP-1120-classification-banner.md) | FS-112 Classification Banner | Partially built (gap-closing) | 🔵 COMPLETE | **Implemented 2026-07-03** (run #6) — `session/manager.py`/`session/inprocess.py`/`session/aar.py`/`ui_web/server.py`/`ui_web/static/` all threaded to one resolved `classification` value; full suite green (519 passed/3 skipped), both permanent gates green; awaiting `09-package-verification` |
 | [IP-1130](packages/IP-1130-observer-read-only-access.md) | FS-113 Observer Read-Only Access | Forward design | 🔵 COMPLETE | **Implemented 2026-07-03** (run #7) — a server-side `_reject_observer` guard on all 22 mutating routes (re-derived from the live route table, one more than the package's own enumerated list — `/preview/consequence`), a White-Cell-only Observer view designation (`session/inprocess.py`), a new `observer/view`+`observer/designation` endpoint pair; full suite green (547 passed/3 skipped), both permanent gates green; awaiting `09-package-verification` |
@@ -150,13 +150,22 @@ waived:** the shipped manual-button/auto-cycle mechanism does **not** satisfy FR
 — a High-severity finding, routed to `07-implementation-planning` for a gap-closing package,
 pending the user's explicit prioritization (see Risk item 6 below, updated accordingly).
 
-13 of 18 packages are now `VERIFIED` (the original 11 as-built + `IP-1150` + `IP-1140`). 5 are
-`COMPLETE` (`IP-2010`, `IP-1120`, `IP-1130`, `IP-1151`, and now `IP-3010` — implemented
-2026-07-04, run #10 — all pending their own `09-package-verification`). 0 are `READY`, 0 are
-`BLOCKED`. **Every package in this plan has now either shipped or been implemented** — the only
-remaining forward motion in this plan is `09-package-verification` work (5 packages) plus
-`IP-1140`'s adjudicated High finding (a new, not-yet-authorized gap-closing package the user has
-explicitly decided not to pursue for now — see Risk item 6).
+**Update (2026-07-04, run #11 verification):** `IP-2010` passed `09-package-verification`
+([`VR-2010`](verification/VR-2010-competency-assessment.md)) and flipped to `VERIFIED` — full
+suite 566 passed/3 skipped, both permanent gates green, RTM `FR-10110` cell updated. `BL-0007`
+adjudicated (the `index.html` panel inclusion was appropriate scope). `BL-0018` resolved (no
+impact on `IP-3010`'s shipped schema). **Two Medium findings filed against FS-201's own Acceptance
+Criteria being broader than what `IP-2010` built** — a longitudinal per-trainee report (already
+disclosed as deferred by the package itself) and self-assessment/debrief-mode accessibility (not
+implemented, not flagged as excluded) — see Risk item 9 below.
+
+14 of 18 packages are now `VERIFIED` (the original 11 as-built + `IP-1150` + `IP-1140` +
+`IP-2010`). 4 are `COMPLETE` (`IP-1120`, `IP-1130`, `IP-1151`, `IP-3010` — all pending their own
+`09-package-verification`). 0 are `READY`, 0 are `BLOCKED`. **Every package in this plan has now
+either shipped or been implemented** — the only remaining forward motion in this plan is
+`09-package-verification` work (4 packages) plus `IP-1140`'s adjudicated High finding (a
+gap-closing package the user has explicitly decided not to pursue — Risk item 6) and `IP-2010`'s
+two new Medium findings (Risk item 9).
 
 ## Implementation sequence
 
@@ -340,13 +349,13 @@ verification pass adjudicated its documented FR-6610 divergence as **not satisfi
 - **Parallel Work Opportunities:** 2 historical parallel waves among the (now-complete) as-built
   packages (6 packages, then 3 packages, running independently); the pre-existing forward-design
   surface's sequential constraint (`IP-2010` before `IP-3010`) is fully resolved — both are now
-  `COMPLETE`. **Zero packages remain coding-eligible (`READY`)** —
-  `IP-2010`/`IP-1120`/`IP-1130`/`IP-1151`/`IP-3010` each need only a verification pass, all five
+  implemented, `IP-2010` also `VERIFIED`. **Zero packages remain coding-eligible (`READY`)** —
+  `IP-1120`/`IP-1130`/`IP-1151`/`IP-3010` each need only a verification pass, all four
   parallelizable with each other.
-- **Package Status:** 13 `VERIFIED` (the original 11 as-built + `IP-1150` + `IP-1140`, the latter
-  verified 2026-07-03 via `VR-1140`), 5 `COMPLETE` pending verification (`IP-2010`, `IP-1120`,
-  `IP-1130`, `IP-1151`, `IP-3010` — the last implemented 2026-07-04, run #10); 0 `READY`,
-  0 `BLOCKED`, 0 `NOT STARTED`, 0 `IN PROGRESS`.
+- **Package Status:** 14 `VERIFIED` (the original 11 as-built + `IP-1150` + `IP-1140` + `IP-2010`,
+  the last two verified 2026-07-03/2026-07-04 via `VR-1140`/`VR-2010`), 4 `COMPLETE` pending
+  verification (`IP-1120`, `IP-1130`, `IP-1151`, `IP-3010`); 0 `READY`, 0 `BLOCKED`,
+  0 `NOT STARTED`, 0 `IN PROGRESS`.
 
 ### Risks requiring architectural attention
 
@@ -433,6 +442,20 @@ verification pass adjudicated its documented FR-6610 divergence as **not satisfi
    cleanly satisfied; a future package (routed through `07-implementation-planning`, scoped against
    `FS-105`) would be needed to actually consume Role Assignment records for command filtering, if
    that enforcement is still wanted.
+9. **`IP-2010`'s verification (2026-07-04, `VR-2010`, run #11) found FS-201's own Acceptance
+   Criteria are broader than what `IP-2010` built** — two Medium findings against the *Feature
+   Specification's* claimed closure, not against `IP-2010`'s own honesty (it never claimed to
+   satisfy either). (a) FS-201 states "a longitudinal per-trainee report aggregates
+   dimension-by-dimension results across exercises" as an Acceptance Criterion — entirely
+   unimplemented, but this was already explicitly, knowingly deferred by `IP-2010`'s own
+   Implementation Tasks item 5 (flagged there as a future `IP-2011`-equivalent's job), so not a
+   surprise. (b) FS-201 states the report must be "accessible in all three assessment modes...
+   self-assessment/debrief (FS-107)" — the shipped panel is White-Cell-only
+   (`ui_web/static/index.html`'s `white-only` CSS class on `#assessment-panel`); Blue/Red operators
+   have no in-UI path to their own rubric. Unlike (a), this exclusion was never flagged anywhere in
+   `IP-2010`'s own text — it appears to have been missed at authoring time. Routed to
+   `06-feature-specification` to reconcile FS-201's Acceptance Criteria against what was actually
+   built, before any future package attempts to "close" FS-201 further.
 
 ## Related
 

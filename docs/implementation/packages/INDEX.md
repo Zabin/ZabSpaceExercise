@@ -52,7 +52,7 @@ unauthorized FS.
 | [IP-1090](IP-1090-multiplayer-session-transport.md) | Multiplayer / LAN Session Transport — lazy clock, mutation locking, hot-seat/LAN sharing | [FS-109](../../features/FS-109-multiplayer-session-transport.md) | As-built | ✅ VERIFIED |
 | [IP-1100](IP-1100-save-and-resume.md) | Save & Resume — deterministic round trip & content/session split | [FS-110](../../features/FS-110-save-and-resume.md) | As-built | ✅ VERIFIED |
 | [IP-1110](IP-1110-ai-red-doctrine-automation.md) | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | [FS-111](../../features/FS-111-ai-red-doctrine-automation.md) | As-built | ✅ VERIFIED |
-| [IP-2010](IP-2010-competency-assessment.md) | Competency Assessment — rubric computation | [FS-201](../../features/FS-201-competency-assessment.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`; briefly `BLOCKED` 2026-07-02 on an ADR-0017 conflict, resolved same-day by `ADR-0032` — see the package's own header) |
+| [IP-2010](IP-2010-competency-assessment.md) | Competency Assessment — rubric computation | [FS-201](../../features/FS-201-competency-assessment.md) | Forward design | ✅ VERIFIED (2026-07-04, [`VR-2010`](../verification/VR-2010-competency-assessment.md) — two Medium findings against FS-201's own Acceptance Criteria scope, not against this package; briefly `BLOCKED` 2026-07-02 on an ADR-0017 conflict, resolved same-day by `ADR-0032` — see the package's own header) |
 | [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-04, run #10 — new `spacesim/tools/` subpackage + `session/research_export.py`; awaiting `09-package-verification`) |
 | [IP-1120](IP-1120-classification-banner.md) | Classification Banner — wire the render/export path to the vignette's classification value | [FS-112](../../features/FS-112-classification-banner.md) | Partially built (gap-closing) | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
@@ -74,9 +74,11 @@ process). **`IP-1140` is also now `VERIFIED`** (2026-07-03, run #9,
 divergence was adjudicated during that pass and found **not** to satisfy FR-6610's full intent; a
 High-severity finding is now routed to `07-implementation-planning` for a gap-closing package,
 pending the user's explicit prioritization (see `VR-1140` and Master Build Plan Risk item 6).
-**`IP-2010` is now `COMPLETE`**
-(implemented 2026-07-03, `session/assessment.py` + `custody_confidence_at_decision` in
-`orders.py`/`custody.py`), pending its own `09-package-verification` run. **`IP-1120` is also now
+**`IP-2010` is now `VERIFIED`** (2026-07-04, run #11,
+[`VR-2010`](../verification/VR-2010-competency-assessment.md) —
+`session/assessment.py` + `custody_confidence_at_decision` in `orders.py`/`custody.py` confirmed
+against the live tree; two Medium findings filed against FS-201's own Acceptance Criteria scope,
+routed to `06-feature-specification`, not against this package). **`IP-1120` is also now
 `COMPLETE`** (implemented 2026-07-03, one resolved `classification` value threaded through
 `session/manager.py`/`inprocess.py`/`aar.py`/`ui_web/`), likewise pending
 `09-package-verification`. **`IP-1130` is also now `COMPLETE`** (implemented 2026-07-03, a
