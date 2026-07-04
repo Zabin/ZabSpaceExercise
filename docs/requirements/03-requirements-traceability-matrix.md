@@ -133,8 +133,8 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-2510 | Safe-mode / recovery chain | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/recovery.py` |
 | FR-3110 | Plan-first command issuance | UNASSIGNED | ADR-0005 | C4, C7, C8, C2, C1 | INT-0004, INT-0006, INT-0008 | UNASSIGNED | `spacesim/tests/test_validate_order.py`, `spacesim/tests/test_orders.py`, `spacesim/tests/test_queue.py` *(VR-1010's `_plan()`/`dry_run()` half + VR-1020's commit-side `issue()` half, both confirmed)* | `engine/orders.py` |
 | FR-3120 | Sensor tasking | UNASSIGNED | ADR-0005 | C4, C7, C8, C2 | INT-0004, INT-0006 | UNASSIGNED | UNASSIGNED | `engine/orders.py` |
-| FR-3210 | SSN collection request | UNASSIGNED | ADR-0010 | C2, C3 | INT-0009 | UNASSIGNED | UNASSIGNED | `engine/ssn.py` |
-| FR-3220 | SSN delivery | UNASSIGNED | ADR-0010 | C2, C3, C1 | INT-0009, INT-0010 | UNASSIGNED | UNASSIGNED | `engine/ssn.py` |
+| FR-3210 | SSN collection request | UNASSIGNED | ADR-0010 | C2, C3 | INT-0009 | UNASSIGNED | `spacesim/tests/test_ssn.py` *(VR-1040)* | `IP-1040` *(closed 2026-07-04 via VR-1040)* |
+| FR-3220 | SSN delivery | UNASSIGNED | ADR-0010 | C2, C3, C1 | INT-0009, INT-0010 | UNASSIGNED | `spacesim/tests/test_ssn.py` *(VR-1040)* | `IP-1040` *(closed 2026-07-04 via VR-1040)* |
 | FR-3310 | (order queue / cancel leaf) | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-3410 | (order delivery path leaf, ADR-0005/0013) | UNASSIGNED | ADR-0005, ADR-0013 | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_validate_order.py`, `spacesim/tests/test_orders.py`, `spacesim/tests/test_queue.py` *(VR-1010 + VR-1020, both confirmed — same rationale as `FR-3110`)* | `engine/orders.py` |
 | FR-3510 | Role-Assignment command-filtering consequence | UNASSIGNED | ADR-0004 | C4, C7, C8 | INT-0004 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
