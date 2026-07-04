@@ -30,6 +30,7 @@ class AAREvent(BaseModel):
 
 class AARReport(BaseModel):
     vignette: str
+    classification: str = ""  # IP-1120 — the session's active banner (NFR-3100: every export)
     final_time: int
     n_events: int
     timeline: list[AAREvent] = Field(default_factory=list)
@@ -94,6 +95,7 @@ def report(mgr) -> AARReport:
     ]
     return AARReport(
         vignette=mgr.vignette.id,
+        classification=mgr.classification,
         final_time=mgr.sim.clock.now,
         n_events=len(mgr.sim.eventlog.entries),
         timeline=timeline,
@@ -132,6 +134,7 @@ def export_csv(rep: AARReport) -> str:
     w = csv.writer(buf)
     w.writerow(["section", "key", "value"])
     w.writerow(["META", "vignette", rep.vignette])
+    w.writerow(["META", "classification", rep.classification])
     w.writerow(["META", "final_time", rep.final_time])
     w.writerow(["META", "n_events", rep.n_events])
     w.writerow([])

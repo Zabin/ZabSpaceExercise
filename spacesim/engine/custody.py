@@ -54,6 +54,27 @@ class Track(BaseModel):
         return self.characterized and self.current_confidence(now) >= threshold
 
 
+def confidence_at_decision(
+    tracks: list[Track], cell: str, target: Optional[str], now: int,
+) -> Optional[float]:
+    """Read-only: the issuing cell's live track confidence for ``target`` at decision time ``now``.
+
+    Mirrors ``WorldState.track_for`` but takes the track list directly rather than a ``WorldState``
+    (which already imports ``Track`` from this module, so importing it back here would cycle).
+    Returns ``None`` when there is no target or the cell holds no track on it. Used by
+    ``orders.py``'s ``_exec_payload`` to capture, at order-issue time, the same confidence number
+    ``scene.py``'s ``RenderTrack.confidence`` already surfaces live to the operator — the
+    decision-time signal ``session/assessment.py``'s belief-truth-divergence scoring reads back
+    (IP-2010 v1.1).
+    """
+    if not target:
+        return None
+    for tr in tracks:
+        if tr.owner == cell and tr.object == target:
+            return round(tr.current_confidence(now), 3)
+    return None
+
+
 def observe(
     track: Track,
     now: int,

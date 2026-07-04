@@ -32,8 +32,18 @@ BUS_TICK_PERIOD_S = 300.0
 
 
 class SessionManager:
-    def __init__(self, vignette: Vignette, overrides: Optional[dict] = None, seed: int = 0) -> None:
+    def __init__(
+        self, vignette: Vignette, overrides: Optional[dict] = None, seed: int = 0,
+        classification: Optional[str] = None,
+    ) -> None:
         self.vignette = vignette
+        # IP-1120 — resolved once, here, so the UI-facing read path and every export path
+        # (aar.export_csv, save_state) read this single value, never re-deriving it independently.
+        self.classification = classification or vignette.classification
+        # IP-1151 (FR-4210) — seat -> {asset_or_constellation, role} bindings, set by White Cell at
+        # session setup. Not itself gameplay/exercise state (no engine/WorldState involvement) —
+        # a pre-start staffing concern only, per FS-115's own Scope boundary.
+        self.role_assignments: dict[str, dict] = {}
         self.world, self.ctx = build_world(vignette, overrides)
         self.sim = Simulation(self.world, seed=seed)
         self.sim.register_handler("inject", self._h_inject)
@@ -97,6 +107,28 @@ class SessionManager:
         # is insufficient for this scenario and White Cell needs to know.
         self._catch_up_lag_history: list[float] = []  # last few catch_up wall-cost samples (s)
         self._clock_lag_warning: Optional[dict] = None  # surfaced by clock_state()
+
+    # -- seat-to-role assignment (IP-1151, FR-4210) -----------------------------
+    def assign_role(self, seat: str, asset_or_constellation: str, role: str) -> None:
+        self.role_assignments[seat] = {"asset_or_constellation": asset_or_constellation, "role": role}
+
+    @staticmethod
+    def _role_covers(assigned: str, required: str) -> bool:
+        """A "both" assignment covers any requirement; otherwise the roles must match exactly."""
+        return assigned == "both" or assigned == required
+
+    def staffing_report(self) -> list[dict]:
+        """Every mandatory ``roles_needed`` entry with no covering seat assignment. Empty for a
+        vignette that declares nothing (every vignette shipped before this package) — this method
+        must never itself block a start; ``InProcessSession.start()`` is what gates on it."""
+        return [
+            {"asset_or_constellation": req.asset_or_constellation, "role": req.role, "mandatory": req.mandatory}
+            for req in self.vignette.roles_needed
+            if req.mandatory and not any(
+                a["asset_or_constellation"] == req.asset_or_constellation and self._role_covers(a["role"], req.role)
+                for a in self.role_assignments.values()
+            )
+        ]
 
     # -- lifecycle -------------------------------------------------------------
     def start(self) -> None:
@@ -436,6 +468,7 @@ class SessionManager:
         return {
             "vignette_id": self.vignette.id,
             "overrides": dict(self.ctx.param_values),
+            "classification": self.classification,
             "seed": self.sim._seed,
             "final_time": self.sim.clock.now,
             "started": self.started,
@@ -450,7 +483,8 @@ class SessionManager:
     def from_state(cls, state: dict) -> "SessionManager":
         from spacesim.content.vignette import load_vignette as _load
         from spacesim.engine.eventlog import EventLog
-        mgr = cls(_load(state["vignette_id"]), overrides=state.get("overrides"), seed=state["seed"])
+        mgr = cls(_load(state["vignette_id"]), overrides=state.get("overrides"), seed=state["seed"],
+                  classification=state.get("classification"))
         mgr.sim.eventlog = EventLog.model_validate(state["eventlog"])
         mgr.sim._rebuild(stop_time=state["final_time"])   # replay history → world + rng at save time
         mgr._rebind()

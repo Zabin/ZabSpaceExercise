@@ -219,3 +219,90 @@ def test_engage_sequence_replays_byte_identical():
     sim.advance_to(order.earliest_window[1] + minutes(1))
     live = sim.world.model_dump_json()
     assert sim.replay().model_dump_json() == live
+
+
+# -- IP-2010 v1.1 (BL-0002) — custody_confidence_at_decision capture -------------------------
+
+def test_custody_confidence_at_decision_captured_for_targeted_actions():
+    """engage/observe orders against an owned track record the live confidence at issue time —
+    the same number scene.py's RenderTrack.confidence already surfaces to the operator."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["RSAT"] = Asset(id="RSAT", owner="red", kind="satellite", orbit=sat)
+    world.assets["INT"] = Asset(id="INT", owner="blue", kind="interceptor",
+                                location=_subpoint(sat, 0), resources=AssetResources(ammo=1))
+    track = Track(object="RSAT", owner="blue", last_observation=0, confidence=0.9, characterized=True)
+    world.tracks.append(track)
+
+    sim, osys = _sim_with(world, roe={"kinetic_authorized": True})
+    # Advance the clock a little first so current_confidence() has actually decayed from 0.9 —
+    # proves the captured value is a live read, not the raw stored `confidence` field — while
+    # staying inside the engage weapons-quality gate (>= 0.8) so the order is still accepted.
+    sim.clock.now = minutes(1)
+    world.now = minutes(1)
+    expected = track.current_confidence(minutes(1))
+    order = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT",
+                             params={"interceptor_class": "mrbm_kkv"}))
+    assert order.status == "queued"
+    sim.advance_to(order.earliest_window[1] + minutes(1))
+    entry = next(e for e in sim.eventlog.entries if e.kind == "execute_effect")
+    assert entry.payload["custody_confidence_at_decision"] == round(expected, 3)
+
+
+def test_custody_confidence_at_decision_none_without_target_or_track():
+    """downlink (no target concept) and an engage-like target with no owned track both record
+    None — the field must never be silently fabricated."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", orbit=sat)
+    world.assets["GS"] = Asset(id="GS", owner="blue", kind="ground_station", location=_subpoint(sat, 0))
+
+    sim, osys = _sim_with(world)
+    order = osys.issue(Order(cell="blue", actor="SAT", action="downlink", params={"via": "GS"}))
+    assert order.status == "queued"
+    sim.advance_to(order.earliest_window[0] + 1)
+    entry = next(e for e in sim.eventlog.entries if e.kind == "execute_downlink")
+    assert entry.payload["custody_confidence_at_decision"] is None
+
+
+def test_dry_run_never_captures_custody_confidence():
+    """dry_run() must stay a zero-footprint preview — it never reaches _exec_payload at all,
+    so it can't touch the new capture step either (no eventlog entry is produced to check)."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["RSAT"] = Asset(id="RSAT", owner="red", kind="satellite", orbit=sat)
+    world.assets["INT"] = Asset(id="INT", owner="blue", kind="interceptor",
+                                location=_subpoint(sat, 0), resources=AssetResources(ammo=1))
+    world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=1.0, characterized=True))
+
+    sim, osys = _sim_with(world, roe={"kinetic_authorized": True})
+    preview = osys.dry_run(Order(cell="blue", actor="INT", action="engage", target="RSAT",
+                                 params={"interceptor_class": "mrbm_kkv"}))
+    assert preview.status == "queued"
+    assert not sim.eventlog.entries       # zero eventlog writes
+    assert not osys.orders                # zero registry writes
+    assert not osys._sensor_bookings and not osys._pass_bookings   # zero booking writes
+
+
+def test_custody_confidence_at_decision_replays_byte_identically():
+    """The captured value is stored event-log data, not recomputed on replay — a dedicated
+    regression guard alongside test_engage_sequence_replays_byte_identical above."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["RSAT"] = Asset(id="RSAT", owner="red", kind="satellite", orbit=sat)
+    world.assets["INT"] = Asset(id="INT", owner="blue", kind="interceptor",
+                                location=_subpoint(sat, 0), resources=AssetResources(ammo=1))
+    world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=0.85, characterized=True))
+
+    sim, osys = _sim_with(world, roe={"kinetic_authorized": True}, seed=11)
+    osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT",
+                     params={"interceptor_class": "mrbm_kkv"}))
+    order = osys.orders[next(iter(osys.orders))]
+    sim.advance_to(order.earliest_window[1] + minutes(1))
+    before = [e.payload.get("custody_confidence_at_decision") for e in sim.eventlog.entries]
+    live = sim.world.model_dump_json()
+
+    replayed_sim = sim.replay()
+    after = [e.payload.get("custody_confidence_at_decision") for e in sim.eventlog.entries]
+    assert replayed_sim.model_dump_json() == live
+    assert before == after

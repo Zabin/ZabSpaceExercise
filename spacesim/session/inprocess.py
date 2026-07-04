@@ -13,7 +13,7 @@ from typing import Iterator, Optional
 from spacesim.content.vignette import list_vignettes, load_vignette
 from spacesim.engine.orders import Order
 from spacesim.session.api import Ack, CellView, OrderAck
-from spacesim.session import aar
+from spacesim.session import aar, assessment
 from spacesim.session.manager import SessionManager
 from spacesim.session.redai import RedDoctrine
 
@@ -30,6 +30,9 @@ class InProcessSession:
     def __init__(self) -> None:
         self._sessions: dict[str, SessionManager] = {}
         self._counter = 0
+        # IP-1130 — White-Cell-designated Observer view per session: "godview" or a cell name.
+        # UI-presentation state, not exercise state, so it lives here rather than on SessionManager.
+        self._observer_view: dict[str, str] = {}
 
     # -- multiplayer plumbing --------------------------------------------------
     # Every mutation is wrapped with the session's RLock; every read first calls
@@ -79,6 +82,7 @@ class InProcessSession:
                 "started": mgr.started,
                 "now": mgr.sim.clock.now,
                 "running": mgr._clock_running,
+                "classification": mgr.classification,  # IP-1120 — so a joining tab's banner matches
             })
         return out
 
@@ -94,13 +98,20 @@ class InProcessSession:
             oldest_sid = next(iter(self._sessions))
             self._sessions.pop(oldest_sid, None)
 
-    def load_vignette(self, vignette_id: str, overrides: Optional[dict] = None, seed: int = 0) -> str:
+    def load_vignette(
+        self, vignette_id: str, overrides: Optional[dict] = None, seed: int = 0,
+        classification: Optional[str] = None,
+    ) -> str:
         vignette = load_vignette(vignette_id)
         self._evict_if_full()
         self._counter += 1
         sid = f"sess-{self._counter}"
-        self._sessions[sid] = SessionManager(vignette, overrides=overrides, seed=seed)
+        self._sessions[sid] = SessionManager(vignette, overrides=overrides, seed=seed,
+                                             classification=classification)
         return sid
+
+    def classification(self, session: str) -> str:
+        return self._sessions[session].classification
 
     def set_parameter(self, session: str, param_id: str, value) -> Ack:
         # Pre-start parameter swap replaces the manager. Hold the OLD manager's lock while
@@ -110,13 +121,36 @@ class InProcessSession:
                 return Ack(ok=False, reason="cannot change parameters after start")
             overrides = dict(mgr.ctx.param_values)
             overrides[param_id] = value
-            self._sessions[session] = SessionManager(mgr.vignette, overrides=overrides, seed=mgr.sim._seed)
+            # IP-1120 — carry the classification override forward; otherwise a pre-start parameter
+            # tweak would silently revert the banner to the vignette default (two-sources-of-truth
+            # risk this package's own Risks section names).
+            self._sessions[session] = SessionManager(mgr.vignette, overrides=overrides, seed=mgr.sim._seed,
+                                                      classification=mgr.classification)
         return Ack()
 
     def start(self, session: str) -> Ack:
         with self._locked(session) as mgr:
+            # IP-1151 (FR-4210) — hard-block start on any unmet mandatory role assignment; this is
+            # a report, not merely an advisory warning (empty for every vignette that declares no
+            # roles_needed at all, i.e. every vignette shipped before this package).
+            report = mgr.staffing_report()
+            if report:
+                unmet = ", ".join(f"{r['asset_or_constellation']}/{r['role']}" for r in report)
+                return Ack(ok=False, reason=f"unstaffed mandatory role(s): {unmet}")
             mgr.start()
         return Ack()
+
+    # -- seat-to-role assignment (IP-1151) --------------------------------------
+    def assign_role(self, session: str, cell: str, seat: str, asset_or_constellation: str, role: str) -> Ack:
+        if cell != "white":
+            return Ack(ok=False, reason="only White Cell may assign seat-to-role bindings")
+        with self._locked(session) as mgr:
+            mgr.assign_role(seat, asset_or_constellation, role)
+        return Ack()
+
+    def staffing_report(self, session: str) -> list[dict]:
+        with self._locked_read(session) as mgr:
+            return mgr.staffing_report()
 
     # -- time control ----------------------------------------------------------
     def step(self, session: str, dt_sim_s: float) -> Ack:
@@ -256,6 +290,30 @@ class InProcessSession:
     def get_godview(self, session: str):
         with self._locked_read(session) as mgr:
             return mgr.get_godview()
+
+    # -- Observer (IP-1130) -----------------------------------------------------
+    def set_observer_view(self, session: str, cell: str, designation: str) -> Ack:
+        """White-Cell-only: designate the Observer seat's view as "godview" or a named cell."""
+        if cell != "white":
+            return Ack(ok=False, reason="only White Cell may set the Observer's view designation")
+        self._observer_view[session] = designation
+        return Ack()
+
+    def get_observer_view(self, session: str):
+        """Read-only: dispatch to the existing, unmodified get_godview/get_view — no parallel
+        filtering implementation, so an Observer sees exactly what the designated audience sees
+        (FS-113's own System Behaviour). Defaults to "godview" until White Cell designates."""
+        designation = self.observer_designation(session)
+        if designation == "godview":
+            return self.get_godview(session)
+        return self.get_view(session, designation)
+
+    def observer_designation(self, session: str) -> str:
+        """The raw designation ("godview" or a cell name) — lets a client fetch the *same*
+        /godview or /view/{cell} endpoint it already uses for every other seat, rather than
+        parsing a merged response shape (no new client-side parsing path, mirrors the
+        no-parallel-implementation principle `get_observer_view` itself follows)."""
+        return self._observer_view.get(session, "godview")
 
     def get_eventlog(self, session: str, since_seq: int = 0) -> list:
         with self._locked_read(session) as mgr:
@@ -748,6 +806,11 @@ class InProcessSession:
 
     def aar_snapshot_at(self, session: str, seq=None) -> dict:
         return aar.snapshot_at(self._sessions[session], seq)
+
+    # -- competency assessment (IP-2010) ----------------------------------------
+    def assessment_report(self, session: str) -> dict:
+        self.catch_up(session)
+        return assessment.assessment_report(self._sessions[session])
 
     def alarms(self, session: str, cell: str) -> list:
         with self._locked_read(session) as mgr:

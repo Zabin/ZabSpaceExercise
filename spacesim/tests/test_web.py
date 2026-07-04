@@ -293,6 +293,49 @@ def test_session_discovery_lists_sessions():
     assert "now" in by_sid[s1] and "title" in by_sid[s1]
 
 
+def test_load_response_carries_resolved_classification():
+    """IP-1120 — POST /api/sessions returns the resolved value (override or vignette default) so
+    the creating tab can set the banner from the create response, no extra round trip."""
+    c = _client()
+    default_resp = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()
+    assert default_resp["classification"]   # non-empty; equals the vignette's own default
+
+    override_resp = c.post("/api/sessions", json={
+        "vignette_id": "leo-isr-denial", "seed": 1, "classification": "UNCLASSIFIED//EXERCISE",
+    }).json()
+    assert override_resp["classification"] == "UNCLASSIFIED//EXERCISE"
+
+
+def test_session_discovery_surfaces_classification_for_joining_tabs():
+    """IP-1120 — a second tab joining via list_sessions() (join-by-hash) sees the same resolved
+    value the creating tab got, never re-deriving it."""
+    c = _client()
+    sid = c.post("/api/sessions", json={
+        "vignette_id": "leo-isr-denial", "seed": 1, "classification": "UNCLASSIFIED//EXERCISE",
+    }).json()["session"]
+    by_sid = {s["sid"]: s for s in c.get("/api/sessions").json()}
+    assert by_sid[sid]["classification"] == "UNCLASSIFIED//EXERCISE"
+
+
+def test_aar_csv_export_embeds_classification_over_http():
+    c = _client()
+    sid = c.post("/api/sessions", json={
+        "vignette_id": "leo-isr-denial", "seed": 1, "classification": "UNCLASSIFIED//EXERCISE",
+    }).json()["session"]
+    c.post(f"/api/sessions/{sid}/start")
+    csv_text = c.get(f"/api/sessions/{sid}/aar/export.csv").text
+    assert "UNCLASSIFIED//EXERCISE" in csv_text
+
+
+def test_save_export_embeds_classification_over_http():
+    c = _client()
+    sid = c.post("/api/sessions", json={
+        "vignette_id": "leo-isr-denial", "seed": 1, "classification": "UNCLASSIFIED//EXERCISE",
+    }).json()["session"]
+    saved = c.get(f"/api/sessions/{sid}/save").json()
+    assert saved["classification"] == "UNCLASSIFIED//EXERCISE"
+
+
 def test_concurrent_reads_and_writes_lock_safe():
     """ThreadPool hammers mutations + reads on one session; state stays consistent."""
     import concurrent.futures as cf

@@ -183,7 +183,22 @@ Vignette:
   escalation_thresholds: {...}
   parameters: [Parameter...]     # the White Cell dials (typed)
   injects: [Inject...]
+  roles_needed: [RoleRequirement...]  # IP-1151 (FR-4210) — optional; absent/empty means no
+                                       # mandatory staffing requirement (every vignette shipped
+                                       # before this package). See RoleRequirement below.
 ```
+
+```yaml
+RoleRequirement:                 # IP-1151 (FR-4210) — a seat/role staffing requirement
+  asset_or_constellation: str
+  role: bus | payload | both     # default "both"
+  mandatory: bool                # default true
+```
+A White-Cell-facing seat-assignment step (`session/manager.py`'s Role Assignment registry) binds
+seats to `{asset_or_constellation, role}` against a vignette's declared `roles_needed`; an unmet
+`mandatory` entry hard-blocks `Start` (`SessionManager.staffing_report()`, gated in
+`InProcessSession.start()`). Runtime enforcement of an assigned Role Assignment's scope is
+[FS-105](../features/FS-105-spacecraft-operations.md)'s concern, not produced by this schema.
 
 ## 6.5 Planned activities (commands & collection tasks share one scheduler)
 Both "command a satellite" and "task a sensor" are **planned activities** scheduled against

@@ -133,10 +133,10 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-3510 | Role-Assignment command-filtering consequence | UNASSIGNED | ADR-0004 | C4, C7, C8 | INT-0004 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-3520 | Role-Assignment scoping (bus/payload/both) *(new leaf, CHG-002)* | UNASSIGNED | ADR-0004 | C4, C7, C8, C2 | INT-0004, INT-0006 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-4110 | White Cell exercise-control leaf | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | `test_content.py::test_vignette_1_loads_and_builds_a_world`, `test_content.py::test_parameter_override_flows_into_roe`, `test_web.py::test_ssn_endpoint_available` *(closed 2026-07-03 via IP-1150, VR-1150)* | `IP-1150` *(closed 2026-07-03 via VR-1150)* |
-| FR-4210 | Seat-to-role assignment | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-4210 | Seat-to-role assignment | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | `tests/test_session_setup.py` | `IP-1151` *(closed 2026-07-04 via VR-1151)* |
 | FR-4310 | Pause / resume clock control | UNASSIGNED | ADR-0016 | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-4410 | Inject authoring / firing | UNASSIGNED | ADR-0005 | C4, C6, C1 | INT-0002, INT-0016 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
-| FR-4510 | Observer view | UNASSIGNED | (none directly) | C4, C6, C12 | INT-0002, INT-0001 | UNASSIGNED | UNASSIGNED | `ui_web/server.py` |
+| FR-4510 | Observer view | UNASSIGNED | (none directly) | C4, C6, C12 | INT-0002, INT-0001 | UNASSIGNED | `tests/test_classification_banner.py`, `tests/test_web.py::test_load_response_carries_resolved_classification`, `tests/test_web.py::test_session_discovery_surfaces_classification_for_joining_tabs` | `IP-1120` *(closed 2026-07-04 via VR-1120 — VERIFIED; Title column defect above re-confirmed present, tracked as BL-0010)* |
 | FR-4610 | (manual adjudication / custody-adjacent leaf, ADR-0004) | UNASSIGNED | ADR-0004 | C4, C6, C2, C1 | INT-0002, INT-0007 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0)* |
 | FR-4710 | No automated scoring / manual adjudication | UNASSIGNED | ADR-0017, ADR-0029 | C4, C6 | (none — absence of an interface) | UNASSIGNED | UNASSIGNED | (inspection — no outbound interface returns a score field) *(closed 2026-07 via IP-1060 v2.0)* |
 | FR-4720 | Adjust safe-mode dials / live parameters mid-exercise *(new leaf, CHG-003)* | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0)* |
@@ -149,8 +149,8 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-6310 | Server-authoritative lazy clock | UNASSIGNED | ADR-0014, ADR-0026 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-6320 | Per-session RLock | UNASSIGNED | ADR-0014, ADR-0026 | C4, C2 | INT-0006 | UNASSIGNED | UNASSIGNED | `session/inprocess.py` |
 | FR-6410 | Session discovery / join-by-hash | UNASSIGNED | ADR-0014 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | UNASSIGNED | `session/inprocess.py` |
-| FR-6510 | Multi-monitor pop-out windows | UNASSIGNED | ADR-0004 | C4, C9, C2 | INT-0005, INT-0006 | UNASSIGNED | UNASSIGNED | `ui_web/static/app.js` |
-| FR-6610 | Hot-seat hand-off / screen-blank menu *(new leaf, CHG-004)* | UNASSIGNED | ADR-0004 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-6510 | Multi-monitor pop-out windows | UNASSIGNED | ADR-0004 | C4, C9, C2 | INT-0005, INT-0006 | UNASSIGNED | `tests/test_observer.py` | `IP-1130` *(closed 2026-07-04 via VR-1130 — VERIFIED; Title column defect above re-confirmed present, tracked as BL-0012)* |
+| FR-6610 | Hot-seat hand-off / screen-blank menu *(new leaf, CHG-004)* | UNASSIGNED | ADR-0004 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | Demonstration (manual) — no automated test exists, consistent with FR-6610's own stated Verification Method; verified 2026-07-03 by static analysis of the CSS occlusion guarantee, see `VR-1140` | `IP-1140` *(closed 2026-07-03 via VR-1140 — hard postcondition only; trigger/menu literal wording adjudicated NOT satisfied, see VR-1140's Adjudication section)* |
 | FR-7110 | Event log | UNASSIGNED | ADR-0002 | C2, C1 | INT-0008, INT-0014 | UNASSIGNED | UNASSIGNED | `engine/eventlog.py` |
 | FR-7210 | Save / resume | UNASSIGNED | ADR-0022 | C2, C5, C11 | INT-0012 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-7220 | Save-file content/session ownership split *(new leaf, CHG-007)* | UNASSIGNED | ADR-0022 | C2, C5, C11 | INT-0011, INT-0012 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1100)* |
@@ -158,13 +158,19 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-7320 | AAR branch compare | UNASSIGNED | ADR-0002 | C2, C1 | INT-0014 | UNASSIGNED | UNASSIGNED | `session/aar.py` |
 | FR-8110 | Operator console (web UI over the API) | UNASSIGNED | ADR-0008 | C4, C12 | INT-0001 | UNASSIGNED | UNASSIGNED | `ui_web/server.py`, `ui_web/static/` |
 | FR-9110 | AI-Red substitution for unseated Red | UNASSIGNED | ADR-0021, ADR-0024 | C2, C1, C8 | INT-0008, INT-0015 | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" | UNASSIGNED | `session/redai.py` |
-| FR-10110 *(new 2026-07, promoted from CR-19)* | Automated non-aggregating competency rubric-tier computation | UNASSIGNED | ADR-0017, ADR-0032 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
-| FR-10210 *(new 2026-07, promoted from CR-20)* | Multi-run/cohort structured research-data export | UNASSIGNED | ADR-0029, ADR-0033 | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-10110 *(new 2026-07, promoted from CR-19)* | Automated non-aggregating competency rubric-tier computation | R306, R310 | ADR-0017, ADR-0032 | C2, C1 | INT-0002 | UNASSIGNED | `tests/test_assessment.py`, `tests/test_orders.py` | `IP-2010` *(closed 2026-07-04 via VR-2010 — VERIFIED; two Medium findings filed against FS-201's own Acceptance Criteria scope, not against this closure, see VR-2010)* |
+| FR-10210 *(new 2026-07, promoted from CR-20)* | Multi-run/cohort structured research-data export | UNASSIGNED | ADR-0029, ADR-0033 | C1, C2 | UNASSIGNED | UNASSIGNED | `tests/test_research_batch.py` | `IP-3010` *(closed 2026-07-04 via VR-3010 — VERIFIED)* |
 
-`FR-10110`/`FR-10210` carry `UNASSIGNED` Arch. Component/Interface/Test/Impl. Package cells
-honestly — neither capability has shipped code, an assigned C1–C12 component, or an ICD interface
-yet (both Feature Specs' own Open Questions flag the same interface gap). This is the expected
-state for a newly-promoted, not-yet-implemented requirement, not a guessed placeholder.
+`FR-10210`'s Interface cell remains honestly `UNASSIGNED` even after implementation — FS-301's own
+Open Questions flag that no ICD interface covers the research-export boundary (it is an
+offline/CLI-style utility, not a live session-facing seam), and `IP-3010`'s implementation
+confirms this: `run_batch()` is a plain importable function, not a route over any existing
+`INT-xxxx`. Arch. Component/Test/Impl. Package cells closed 2026-07-04 via `IP-3010`. `FR-10110`'s
+cells were filled 2026-07-03 once `IP-2010` reached `COMPLETE` — Arch. Component/Interface follow
+that package's own Architecture Components/Interfaces fields exactly (no interface is invented;
+`INT-0002` is the pre-existing surface `IP-2010`'s report panel is hosted within, not a new ICD
+boundary — the interface gap FS-201's Open Questions flagged is a Phase 8 "should this get its own
+`INT-xxxx`" question, unaffected by this cell now being filled).
 
 | FR-11110 *(new 2026-07-04, training-corpus elevation)* | Role-scoped manual coverage per seat | UNASSIGNED | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/12-white-cell-manual.md`, `docs/training/13-blue-cell-manual.md`, `docs/training/14-red-cell-manual.md` |
 | FR-11120 *(new 2026-07-04)* | Section-level source anchoring | UNASSIGNED | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/12-white-cell-manual.md`–`14-red-cell-manual.md` (`> Sources:` footers) |
@@ -258,7 +264,7 @@ where the named subsystem maps onto one), not separately inferred.
 | NFR-2800 | Test-driven gated build | UNASSIGNED | ADR-0002 | (all) | `spacesim/tests/` | UNASSIGNED | UNASSIGNED |
 | NFR-2900 | Windows-first portability | UNASSIGNED | ADR-0020 | (all) | Build/dependency manifest, `spacesim/` | UNASSIGNED | UNASSIGNED |
 | NFR-3000 | Accessible presentation | UNASSIGNED | (none identified) | C4 | `ui_web/static/` (app.js, style.css, globe.js) | UNASSIGNED | UNASSIGNED |
-| NFR-3100 | Classification banner | UNASSIGNED | (none identified) | C4, C2 | `ui_web/static/` (banner component), `session/aar.py` | UNASSIGNED | UNASSIGNED |
+| NFR-3100 | Classification banner | UNASSIGNED | (none identified) | C4, C2 | `ui_web/static/` (banner component), `session/aar.py` | UNASSIGNED | `tests/test_classification_banner.py`, `tests/test_web.py::test_aar_csv_export_embeds_classification_over_http`, `tests/test_web.py::test_save_export_embeds_classification_over_http` | `IP-1120` *(closed 2026-07-04 via VR-1120 — VERIFIED)* |
 | NFR-3200 | TLE import with offline fallback | UNASSIGNED | ADR-0018 | C5, C4 | `content/` (TLE import), scenario builder UI | UNASSIGNED | UNASSIGNED |
 | NFR-3300 | Browser-only client, no external integration | UNASSIGNED | (none identified) | C4 | `ui_web/server.py` | UNASSIGNED | UNASSIGNED |
 | NFR-3400 *(new 2026-07-04, training-corpus elevation)* | Training-artifact accuracy (as-built only) | UNASSIGNED | (none identified) | (none — documentation) | `docs/training/`, `spacesim/content/vignettes/*.yaml` | UNASSIGNED | `spacesim/tests/test_vignette_tutorials.py` (partial — playbook slice) |
@@ -439,33 +445,38 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `engine/eventlog.py` | FR-7110, NFR-2400, NFR-2500, NFR-2600 |
 | `engine/world.py` | NFR-2400 |
 | `engine/handlers.py` | NFR-2600 |
-| `session/manager.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-4310, FR-4410, FR-7210, FR-6310, NFR-1300, NFR-1800 |
+| `session/manager.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-4310, FR-4410, FR-7210, FR-6310, NFR-1300, NFR-1800, FR-4510 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |
 | `session/api.py` | FR-6110, NFR-2300 |
 | `session/cells.py` | FR-6210, FR-6220 |
 | `session/inprocess.py` | FR-6320, FR-6410, NFR-1400 |
 | `session/aar.py` | FR-7310, FR-7320, NFR-2500, NFR-3100 |
 | `session/redai.py` | FR-9110 |
-| `content/vignette.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-5110, FR-5310, NFR-1600, NFR-2000 |
+| `session/assessment.py` | FR-10110 *(closed 2026-07-03 via `IP-2010`)* |
+| `session/research_export.py` | FR-10210 *(closed 2026-07-04 via `IP-3010`)* |
+| `spacesim/tools/research_batch.py` | FR-10210 *(closed 2026-07-04 via `IP-3010`)* |
+| `content/vignette.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-5110, FR-5310, NFR-1600, NFR-2000, FR-4210 *(closed 2026-07-03 via IP-1151)* |
 | `content/vignettes/*.yaml` | NFR-2000 |
 | `content/` (TLE import) | FR-5210, NFR-3200 |
-| `ui_web/server.py` | FR-4510, FR-8110, NFR-1400, NFR-2300, NFR-2700, NFR-3300 |
-| `ui_web/static/app.js` | FR-6510, FR-8110, NFR-3000 |
+| `ui_web/server.py` | FR-4510, FR-8110, NFR-1400, NFR-2300, NFR-2700, NFR-3300, NFR-3100 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |
+| `ui_web/static/app.js` | FR-6510, FR-8110, NFR-3000, FR-4510 *(closed 2026-07-03 via IP-1120)*, NFR-3100 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)*, FR-6610 *(closed 2026-07-03 via IP-1140/VR-1140 — hard postcondition only, see VR-1140's Adjudication section)* |
 | `ui_web/static/` (globe.js, world.js, graph.js, style.css) | NFR-1200, NFR-3000, NFR-3100 |
 | `spacesim/config.py` | NFR-2700 |
 | `spacesim/tests/` | NFR-2800 |
 | Build/dependency manifest, `spacesim/` (whole tree) | NFR-2900 |
 | All subsystems (no single file) | NFR-2200 |
-| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4210, FR-6610, FR-10110, FR-10210 *(both new 2026-07, promoted from CR-19/CR-20 — not yet implemented, so honestly `UNASSIGNED` here despite being baselined)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
+| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
 
 *(FR-4610/FR-4710/FR-4720 closed 2026-07 via `IP-1060` v2.0; FR-7220 closed 2026-07 via `IP-1100` —
 both split from `IP-1060` v1.0 per Finding F-03 — see the master matrix rows above. **FR-4110
-closed 2026-07-03 via `IP-1150`/`VR-1150`** — `09-package-verification` independently confirmed
-the implementation against the live tree, clearing the "FS existing is not the same evidence bar"
-caveat this note previously applied to it. FR-4210/FR-6610 remain `UNASSIGNED` here — `FS-115`'s
-FR-4210 slice (`IP-1151`) and `FS-114` (`IP-1140`) exist as Feature Specifications/packages but
-FR-4210 has no shipped code at all (forward design, not yet authorized-and-built) and FR-6610's
-package (`IP-1140`) has not yet been through its own `09-package-verification` pass — an FS/IP
-existing is not the same evidence bar this index requires, per its own stated discipline.)*
+closed 2026-07-03 via `IP-1150`/`VR-1150`, and FR-6610 closed 2026-07-03 via `IP-1140`/`VR-1140`**
+— `09-package-verification` independently confirmed each against the live tree, clearing the "FS/IP
+existing is not the same evidence bar" caveat this note previously applied to both. FR-6610's
+closure is a **hard-postcondition-only** closure: `VR-1140` adjudicated the trigger/menu literal
+wording as *not* satisfied and filed a High-severity finding for a future gap-closing package — see
+`VR-1140`'s own Adjudication section, not restated here. **FR-4210 was implemented 2026-07-03 via
+`IP-1151`** but remains `COMPLETE`, not yet `VERIFIED` — this reverse-index row now correctly
+excludes it (real implementing files exist, listed in the per-file rows above), but its primary row
+above still carries the "pending `09-package-verification`" caveat until that pass runs.)*
 
 ## Strategic review reconciliation (strategic-review-2026-07.md)
 
