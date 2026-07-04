@@ -2,7 +2,16 @@
 
 > **Package ID:** IP-1151
 > **Version:** 1.1 (2026-07-03 — implemented by `08-code-implementation`; see Status below.)
-> **Status:** 🔵 COMPLETE *(implemented 2026-07-03 — `Vignette.roles_needed`/`RoleRequirement`
+> **Status:** ✅ VERIFIED *(2026-07-04, run #15, [`VR-1151`](../verification/VR-1151-seat-role-assignment.md)
+> — every Definition of Done and Verification Checklist item independently re-confirmed against
+> the live tree; full suite 566 passed/3 skipped, both permanent gates green. `BL-0014`'s negative
+> finding (no role-based command-filtering consumer exists anywhere in the codebase) was
+> independently re-derived, not merely re-cited, and is still true — `role_assignments` remains
+> read only by `staffing_report()`. One new Low finding (`BL-0024`): `assign_role`'s White-Cell-only
+> gate is tested against `cell="blue"`, not `cell="observer"` specifically — a test-coverage gap,
+> not a functional one. This closes the "iterate through all `09-package-verification`" sweep: all
+> 18 packages are now `VERIFIED` (`IP-1140` with a standing user-accepted-risk note). Was 🔵
+> COMPLETE *(implemented 2026-07-03 — `Vignette.roles_needed`/`RoleRequirement`
 > (additive, absent for all 19 existing vignettes), `SessionManager.assign_role`/`staffing_report`,
 > `InProcessSession.start()` hard-gated on any unmet mandatory entry (not merely advisory),
 > `/roles/assign`+`/roles/staffing` endpoints, a White-Cell-only seat-assignment UI step. Full
@@ -14,7 +23,7 @@
 > below and the Master Build Plan's Risk item 8.** Was 🔴 BLOCKED *(on
 > [IP-1150](IP-1150-vignette-selection.md) reaching `VERIFIED`, per FR-4210's own stated
 > Precondition — cleared 2026-07-03, run #3, `VR-1150`. **MSTR-006 §3 authorization obtained
-> 2026-07-03** (project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).)*)*
+> 2026-07-03** (project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).)*)*)*
 > **Dependencies:** FS-115 (FR-4210 slice), [IP-1150](IP-1150-vignette-selection.md) (vignette must
 > be loaded first, per FR-4210's own Preconditions)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md)
@@ -173,10 +182,10 @@ authorized.)*
 
 ## Definition of Done
 
-*(Implemented 2026-07-03 by `08-code-implementation` — every item below is now satisfied against
-the shipped code and tests, with one caveat on item 2 (see Status above and Risks below);
-`09-package-verification` independently re-confirms this before the package may advance to
-`VERIFIED`.)*
+*(Implemented 2026-07-03 by `08-code-implementation`; independently re-confirmed 2026-07-04 by
+`09-package-verification` — [`VR-1151`](../verification/VR-1151-seat-role-assignment.md) — every
+item below is confirmed against the shipped code and tests, with one caveat on item 2 (see Status
+above and Risks below, re-derived rather than re-cited by `VR-1151`).)*
 
 - [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
   §3, 2026-07-03, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #2).
@@ -199,20 +208,21 @@ the shipped code and tests, with one caveat on item 2 (see Status above and Risk
 
 ## Verification Checklist
 
-*(To be executed once implemented; not yet applicable.)*
+*(Executed 2026-07-04 by `09-package-verification` —
+[`VR-1151`](../verification/VR-1151-seat-role-assignment.md).)*
 
-- [ ] `spacesim/tests/test_session_setup.py` exists and is green.
-- [ ] `python3 -m pytest spacesim/tests/test_determinism.py` remains green (this package's staffing
-  gate must be a pre-start check, not something the deterministic core depends on).
-- [ ] Re-run every existing vignette-loading test (`spacesim/tests/test_content.py`,
-  `spacesim/tests/test_vignette_tutorials.py`) and confirm none regresses from the additive
-  `roles_needed` field.
-- [ ] **Already checked by `08-code-implementation` (run #8), result: no, not merely unconfirmed.**
-  Manual review was to confirm the produced Role Assignment record shape is actually consumable by
-  the existing `FS-105`/`IP-1050` command-filtering mechanism — that search found **no such
-  mechanism exists at all** (every command check in the codebase is `cell`-based, not role-based).
-  `09-package-verification` should independently re-confirm this negative finding rather than
-  re-deriving it from scratch, and should not mark this checklist item satisfied.
+- [x] `spacesim/tests/test_session_setup.py` exists and is green — 12 tests.
+- [x] `python3 -m pytest spacesim/tests/test_determinism.py` remains green (this package's staffing
+  gate is a pre-start check in `session/`/`ui_web/`, not part of the deterministic core).
+- [x] Re-run every existing vignette-loading test (`spacesim/tests/test_content.py`,
+  `spacesim/tests/test_vignette_tutorials.py`) — 35 total passed with `test_session_setup.py`, no
+  regression from the additive `roles_needed` field.
+- [x] **Independently re-derived by `09-package-verification` (`VR-1151`), result unchanged: no.**
+  Manual review confirms the produced Role Assignment record shape is **not** consumable by any
+  `FS-105`/`IP-1050` command-filtering mechanism, because no such mechanism exists at all — every
+  command check in the codebase is `cell`-based, not role-based (`role_assignments` is read only
+  by `staffing_report()`). This checklist item correctly remains unsatisfied as literally stated;
+  see `VR-1151`'s re-confirmation of `BL-0014`.
 
 ## Dependencies
 

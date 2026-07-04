@@ -116,7 +116,7 @@ package in this plan to reach that state.
 | [IP-1130](packages/IP-1130-observer-read-only-access.md) | FS-113 Observer Read-Only Access | Forward design | ✅ VERIFIED | **Verified 2026-07-04 (run #14)**, [`VR-1130`](verification/VR-1130-observer-read-only-access.md) — full suite 566 passed/3 skipped, both permanent gates green; RTM `FR-6510` updated; `BL-0011`'s predicted route-guard drift investigated and found not yet materialized |
 | [IP-1140](packages/IP-1140-hot-seat-handoff.md) | FS-114 Hot-Seat Hand-Off Screen-Blank Menu | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED | none — verified 2026-07-03, [`VR-1140`](verification/VR-1140-hot-seat-handoff.md); the FR-6610 trigger/menu divergence was adjudicated **not satisfied** (High finding, routed to `07-implementation-planning` for a gap-closing package pending user prioritization — see Risk item 6 below) |
 | [IP-1150](packages/IP-1150-vignette-selection.md) | FS-115 §FR-4110 Vignette Selection & Parameter Tuning | As-built | ✅ VERIFIED | none — verified 2026-07-03, [`VR-1150`](verification/VR-1150-vignette-selection.md) |
-| [IP-1151](packages/IP-1151-seat-role-assignment.md) | FS-115 §FR-4210 Seat-to-Role Assignment | Forward design | 🔵 COMPLETE | **Implemented 2026-07-03** (run #8) — `Vignette.roles_needed`/`RoleRequirement` (additive, absent for all 19 existing vignettes), `SessionManager.assign_role`/`staffing_report`, `InProcessSession.start()` hard-gated on any unmet mandatory entry, `/roles/assign`+`/roles/staffing` endpoints; full suite green (559 passed/3 skipped), both permanent gates green; awaiting `09-package-verification` — see also the Outstanding Issue about FS-105/IP-1050's claimed "existing command-filtering consumer," which this run found no evidence of in the code |
+| [IP-1151](packages/IP-1151-seat-role-assignment.md) | FS-115 §FR-4210 Seat-to-Role Assignment | Forward design | ✅ VERIFIED | **Verified 2026-07-04 (run #15)**, [`VR-1151`](verification/VR-1151-seat-role-assignment.md) — full suite 566 passed/3 skipped, both permanent gates green; RTM `FR-4210` updated. `BL-0014` (no role-based command-filtering consumer exists) independently re-derived, not merely re-cited — still true. One new Low finding (`BL-0024`): `assign_role`'s White-Cell-only gate untested against `cell="observer"` specifically |
 
 **Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code
@@ -180,13 +180,23 @@ materialized**: both mutating routes added since this package shipped (`IP-1151`
 stricter White-Cell-only allowlist check. One Low finding (a test-coverage gap, not a functional
 one — see `VR-1130`).
 
-17 of 18 packages are now `VERIFIED` (the original 11 as-built + `IP-1150` + `IP-1140` +
-`IP-2010` + `IP-3010` + `IP-1120` + `IP-1130`). 1 is `COMPLETE` (`IP-1151` — pending its own
-`09-package-verification`). 0 are `READY`, 0 are `BLOCKED`. **Every package in this plan has now
-either shipped or been implemented** — the only remaining forward motion in this plan is
-`09-package-verification` work (1 package) plus `IP-1140`'s adjudicated High finding (a
-gap-closing package the user has explicitly decided not to pursue — Risk item 6) and `IP-2010`'s
-two new Medium findings (Risk item 9).
+**Update (2026-07-04, run #15 verification):** `IP-1151` passed `09-package-verification`
+([`VR-1151`](verification/VR-1151-seat-role-assignment.md)) and flipped to `VERIFIED` — full suite
+566 passed/3 skipped, both permanent gates green, RTM `FR-4210` cell updated. `BL-0014` (no
+role-based command-filtering consumer exists for the Role Assignment records this package
+produces) was independently re-derived, not merely re-cited from the package's own text — still
+true. One new Low finding (`BL-0024`, same family as `BL-0023`): `assign_role`'s White-Cell-only
+gate is tested against `cell="blue"`, not `cell="observer"` specifically.
+
+**All 18 packages in this plan are now `VERIFIED`** (the original 11 as-built + `IP-1150` +
+`IP-1140` + `IP-2010` + `IP-3010` + `IP-1120` + `IP-1130` + `IP-1151`) — `IP-1140` carries a
+standing user-accepted-risk note (Risk item 6) rather than an outstanding remediation. 0 are
+`COMPLETE`, `READY`, `BLOCKED`, `NOT STARTED`, or `IN PROGRESS`. This closes the "iterate through
+all `09-package-verification`" sweep the user requested (runs #11–#15). The tranche's only
+open items are findings/backlog entries, not incomplete packages: `IP-1140`'s accepted risk (Risk
+item 6), `IP-2010`'s two Medium FS-201-scope findings (Risk item 9), and `IP-1151`'s own `BL-0014`
+(Medium, routed to `06-feature-specification`). The next stage-appropriate step for this tranche is
+`10-integration-review`.
 
 ## Implementation sequence
 
@@ -225,7 +235,7 @@ IP-3010 (✅ VERIFIED 2026-07-04, VR-3010 — cleared)
 IP-1150 (✅ VERIFIED 2026-07-03, VR-1150 — cleared)
    │  unblocked IP-1120/IP-1151 the moment it reached VERIFIED
    ├──► IP-1120 (✅ VERIFIED 2026-07-04, VR-1120 — cleared)
-   └──► IP-1151 (COMPLETE 2026-07-03, awaiting 09-package-verification — implemented, not yet VERIFIED)
+   └──► IP-1151 (✅ VERIFIED 2026-07-04, VR-1151 — cleared)
 
 IP-1130 (✅ VERIFIED 2026-07-04, VR-1130 — cleared)
 
@@ -234,15 +244,15 @@ IP-1140 (✅ VERIFIED 2026-07-03, VR-1140 — adjudicated: FR-6610's trigger/men
          package authorized, see Risk item 6)
 ```
 
-This tranche's `IP-1150 → {IP-1120, IP-1151}` fan-out is fully cleared as of 2026-07-03 — `IP-1120`
-is now `VERIFIED` (run #13) and `IP-1151` is implemented (`COMPLETE`). The pre-existing
-`IP-2010 → IP-3010` chain is now fully `VERIFIED` end-to-end (`VR-2010` run #11; `VR-3010` run
-#12). `IP-1130` is now `VERIFIED` too (`VR-1130`, run #14), and `IP-1140`/`IP-1120` are
-`VERIFIED`. **No package in this plan remains coding-eligible (`READY`)** — `IP-1151` (the sole
-remaining `COMPLETE` package) is one-hop-from-`VERIFIED` verification work with no
-sequencing dependency on anything else; a not-yet-scoped, not-yet-authorized gap-closing package
-for `IP-1140`'s adjudicated finding remains a possible future
-addition to this plan, not yet authored.
+This tranche's `IP-1150 → {IP-1120, IP-1151}` fan-out is fully cleared as of 2026-07-04 — `IP-1120`
+is `VERIFIED` (run #13) and `IP-1151` is now `VERIFIED` too (`VR-1151`, run #15). The pre-existing
+`IP-2010 → IP-3010` chain is fully `VERIFIED` end-to-end (`VR-2010` run #11; `VR-3010` run
+#12). `IP-1130` is `VERIFIED` (`VR-1130`, run #14), and `IP-1140`/`IP-1120` are
+`VERIFIED`. **Every package in this plan is now `VERIFIED`** — `IP-1140` carries a standing
+user-accepted-risk note (Risk item 6) rather than a gap-closing package; no package remains
+`COMPLETE`, `READY`, or `BLOCKED`. This tranche's remaining forward motion is entirely
+findings/backlog work (Risk items 6/9, and `IP-1151`'s own `BL-0014`), not incomplete packages —
+the next stage-appropriate step is `10-integration-review`.
 
 ## Dependency graph
 
@@ -307,12 +317,12 @@ governance note this plan previously flagged (Risk item 1, updated accordingly).
 **Tranche 2 (FS-112–115)'s shorter, independent chain is now fully cleared (2026-07-03):**
 `IP-1150 → IP-1120` and `IP-1150 → IP-1151` were never on the critical path above (length 2 < 4).
 `IP-1120` was implemented (run #6) and has since passed verification (`VERIFIED`, `VR-1120`, run
-#13); `IP-1151` remains `COMPLETE` (run #8), pending its own verification. `IP-1130` was
-implemented (run #7) and has since passed verification too (`VERIFIED`, `VR-1130`, run #14) — it
-had no package-level dependency at all. All five tranche 2 packages are now shipped or
-implemented; four are `VERIFIED` (`IP-1150`, `IP-1140` — whose verification pass adjudicated its
-documented FR-6610 divergence as **not satisfied**, see Risk item 6 below — `IP-1120`, `IP-1130`);
-`IP-1151` remains the tranche's sole open verification item.
+#13); `IP-1151` was implemented (run #8) and has since passed verification too (`VERIFIED`,
+`VR-1151`, run #15). `IP-1130` was implemented (run #7) and has since passed verification too
+(`VERIFIED`, `VR-1130`, run #14) — it had no package-level dependency at all. **All five tranche 2
+packages are now `VERIFIED`** (`IP-1150`, `IP-1140` — whose verification pass adjudicated its
+documented FR-6610 divergence as **not satisfied**, see Risk item 6 below — `IP-1120`, `IP-1130`,
+`IP-1151`). This tranche has no open verification items remaining.
 
 ## Parallel implementation opportunities
 
@@ -339,11 +349,10 @@ documented FR-6610 divergence as **not satisfied**, see Risk item 6 below — `I
   Hand-Off) had no package-level dependency on anything in this tranche or elsewhere in this plan
   and could be verified/implemented fully in parallel with each other and with `IP-1120`/`IP-1151`.
   `IP-1150` reached `VERIFIED` 2026-07-03 (`VR-1150`), clearing the one gate `IP-1120`/`IP-1151`
-  had. `IP-1120`, `IP-1130`, and `IP-1151` were implemented (`COMPLETE`, runs #6/#7/#8); `IP-1140`,
-  `IP-1120`, and `IP-1130` have since passed verification (`VERIFIED`, `VR-1140`/`VR-1120`/
-  `VR-1130`, runs #9/#13/#14) — every tranche 2 package is now either `VERIFIED` (`IP-1150`,
-  `IP-1140`, `IP-1120`, `IP-1130`) or `COMPLETE` (`IP-1151`), the sole remaining item, ready for
-  its own `09-package-verification` pass.
+  had. `IP-1120`, `IP-1130`, and `IP-1151` were implemented (`COMPLETE`, runs #6/#7/#8), then all
+  passed verification in turn (`VERIFIED`, `VR-1140`/`VR-1120`/`VR-1130`/`VR-1151`, runs
+  #9/#13/#14/#15). **Every tranche 2 package is now `VERIFIED`** (`IP-1150`, `IP-1140`, `IP-1120`,
+  `IP-1130`, `IP-1151`) — no package in this tranche remains open.
 
 ## Summary
 
@@ -364,16 +373,19 @@ documented FR-6610 divergence as **not satisfied**, see Risk item 6 below — `I
   `IP-3010`); this entire chain is now `VERIFIED` end-to-end (`VR-2010` run #11, `VR-3010` run #12).
   `IP-1090`/`IP-1100`/`IP-1110`/`IP-1130`/`IP-1140` do not extend the critical path — none has a
   downstream consumer in this pass. Tranche 2's `IP-1150 → {IP-1120, IP-1151}` chain (never on the
-  critical path) is now fully cleared (`IP-1150` reached `VERIFIED` 2026-07-03).
+  critical path) is now fully cleared (`IP-1150` reached `VERIFIED` 2026-07-03; `IP-1151` reached
+  `VERIFIED` 2026-07-04).
 - **Parallel Work Opportunities:** 2 historical parallel waves among the (now-complete) as-built
   packages (6 packages, then 3 packages, running independently); the pre-existing forward-design
   surface's sequential constraint (`IP-2010` before `IP-3010`) is fully resolved — both are now
-  `VERIFIED`. **Zero packages remain coding-eligible (`READY`)** — `IP-1151` is the sole remaining
-  package needing a verification pass.
-- **Package Status:** 17 `VERIFIED` (the original 11 as-built + `IP-1150` + `IP-1140` + `IP-2010` +
-  `IP-3010` + `IP-1120` + `IP-1130`, the last five verified 2026-07-03/2026-07-04 via
-  `VR-1140`/`VR-2010`/`VR-3010`/`VR-1120`/`VR-1130`), 1 `COMPLETE` pending verification
-  (`IP-1151`); 0 `READY`, 0 `BLOCKED`, 0 `NOT STARTED`, 0 `IN PROGRESS`.
+  `VERIFIED`. **Zero packages remain coding-eligible (`READY`)**, and zero remain `COMPLETE`
+  pending verification — every package in this plan has reached `VERIFIED`.
+- **Package Status:** **18 `VERIFIED`** (the original 11 as-built + `IP-1150` + `IP-1140` +
+  `IP-2010` + `IP-3010` + `IP-1120` + `IP-1130` + `IP-1151`, the last six verified
+  2026-07-03/2026-07-04 via `VR-1140`/`VR-2010`/`VR-3010`/`VR-1120`/`VR-1130`/`VR-1151`); 0
+  `COMPLETE`, 0 `READY`, 0 `BLOCKED`, 0 `NOT STARTED`, 0 `IN PROGRESS`. **Every package in this
+  plan is now `VERIFIED`** — the "iterate through all `09-package-verification`" sweep (runs
+  #11–#15) is complete.
 
 ### Risks requiring architectural attention
 
@@ -454,10 +466,14 @@ documented FR-6610 divergence as **not satisfied**, see Risk item 6 below — `I
    correctly shaped per its own schema, but **nothing in the shipped codebase currently reads it**.
    `IP-1151`'s own Verification Checklist already flagged this as unconfirmed ("confirm the
    interface, don't assume it") — run #8 confirms the interface does not exist, which is a stronger
-   finding than "unconfirmed." `09-package-verification` should not check this DoD item as
-   cleanly satisfied; a future package (routed through `07-implementation-planning`, scoped against
-   `FS-105`) would be needed to actually consume Role Assignment records for command filtering, if
-   that enforcement is still wanted.
+   finding than "unconfirmed." **Independently re-derived by `09-package-verification` (`VR-1151`,
+   run #15): still true, unchanged.** `role_assignments` remains read only by `staffing_report()`;
+   no file added since run #8 (`IP-1130`'s Observer seat, `IP-1120`'s classification banner,
+   `IP-2010`'s assessment scoring, `IP-3010`'s research batch runner) introduces role-based command
+   filtering. `IP-1151` is now `VERIFIED` with this DoD item correctly left unsatisfied as literally
+   stated (tracked as `BL-0014`, `DEFERRED`). A future package (routed through
+   `07-implementation-planning`, scoped against `FS-105`) would be needed to actually consume Role
+   Assignment records for command filtering, if that enforcement is still wanted.
 9. **`IP-2010`'s verification (2026-07-04, `VR-2010`, run #11) found FS-201's own Acceptance
    Criteria are broader than what `IP-2010` built** — two Medium findings against the *Feature
    Specification's* claimed closure, not against `IP-2010`'s own honesty (it never claimed to

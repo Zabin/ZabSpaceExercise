@@ -461,7 +461,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1130 | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | `implementation/packages/IP-1130-observer-read-only-access.md` | FS-113 | Forward design | ✅ VERIFIED (2026-07-04, run #14, `VR-1130` — `BL-0011`'s predicted route-guard drift investigated, not yet materialized) |
 | IP-1140 | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | `implementation/packages/IP-1140-hot-seat-handoff.md` | FS-114 | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, `VR-1140` — FR-6610 trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
 | IP-1150 | Session Setup: Vignette Selection & Parameter Tuning | `implementation/packages/IP-1150-vignette-selection.md` | FS-115 §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, `VR-1150`) |
-| IP-1151 | Session Setup: Seat-to-Role Assignment | `implementation/packages/IP-1151-seat-role-assignment.md` | FS-115 §FR-4210 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
+| IP-1151 | Session Setup: Seat-to-Role Assignment | `implementation/packages/IP-1151-seat-role-assignment.md` | FS-115 §FR-4210 | Forward design | ✅ VERIFIED (2026-07-04, run #15, `VR-1151` — `BL-0014`'s no-consumer finding independently re-derived, still true; one new Low finding) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3).
 
@@ -544,9 +544,24 @@ materialized. One new Low finding (a test-coverage gap: neither route has an exp
 `cell="observer"` rejection test, though the underlying enforcement is confirmed correct by
 reading).
 
-`docs/implementation/00-master-build-plan.md`'s package table, dependency graph, parallel-
-opportunity list, critical-path note, and summary statistics have been updated accordingly (now
-18 packages total: 17 `VERIFIED`, 1 `COMPLETE` pending verification, 0 `READY`, 0 `BLOCKED`).
+**Verification update (2026-07-04, run #15):** `IP-1151` passed `09-package-verification`
+([`VR-1151`](docs/implementation/verification/VR-1151-seat-role-assignment.md)) and flipped to
+`VERIFIED` — full suite 566 passed/3 skipped, both permanent gates green, RTM `FR-4210` cell
+updated. `BL-0014` (no role-based command-filtering consumer exists for the Role Assignment
+records this package produces) was independently re-derived directly against the current tree, not
+merely re-cited from the package's own text: `role_assignments` remains read only by
+`staffing_report()`, and nothing landed since the package's implementation (run #8) introduces
+role-based command authorization anywhere in the codebase — still true. One new Low finding, same
+family as `BL-0023`: `assign_role`'s White-Cell-only gate is tested against `cell="blue"`, not
+`cell="observer"` specifically.
+
+**This closes the "iterate through all `09-package-verification`" sweep the user requested (runs
+#11–#15).** `docs/implementation/00-master-build-plan.md`'s package table, dependency graph,
+parallel-opportunity list, critical-path note, and summary statistics have been updated accordingly
+(now 18 packages total: **18 `VERIFIED`**, 0 `COMPLETE`, 0 `READY`, 0 `BLOCKED` — every package in
+this plan has reached `VERIFIED`, with `IP-1140` carrying a standing user-accepted-risk note rather
+than an outstanding gap-closing package). The next stage-appropriate step for this tranche is
+`10-integration-review`.
 
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 

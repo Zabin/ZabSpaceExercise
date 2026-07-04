@@ -58,7 +58,7 @@ unauthorized FS.
 | [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | ✅ VERIFIED (2026-07-04, [`VR-1130`](../verification/VR-1130-observer-read-only-access.md) — `BL-0011`'s predicted drift investigated, not yet materialized) |
 | [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, [`VR-1140`](../verification/VR-1140-hot-seat-handoff.md) — FR-6610's trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
 | [IP-1150](IP-1150-vignette-selection.md) | Session Setup: Vignette Selection & Parameter Tuning | [FS-115](../../features/FS-115-session-setup.md) §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, [`VR-1150`](../verification/VR-1150-vignette-selection.md)) |
-| [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`; one Definition-of-Done caveat — see the package's own header) |
+| [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | ✅ VERIFIED (2026-07-04, run #15, `VR-1151` — one Definition-of-Done caveat re-confirmed, not resolved, see the package's own header) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1090,
 IP-1100, IP-1110 are new (2026-07)**, split out of IP-1060 v1.0 per `docs/feature-planning/
@@ -87,16 +87,19 @@ confirmed against the live tree; both documented implementation deviations confi
 mutation-rejection guard on every mutating route plus a White-Cell-designated Observer read path
 in `session/inprocess.py`/`ui_web/server.py`/`ui_web/static/` confirmed against the live tree;
 `BL-0011`'s predicted route-guard maintenance-drift risk investigated directly and found not yet
-materialized). **`IP-1151` is also now `COMPLETE`** (implemented 2026-07-03,
-`Vignette.roles_needed`/`RoleRequirement`, `SessionManager.assign_role`/`staffing_report`,
+materialized). **`IP-1151` is now `VERIFIED`** (2026-07-04, run #15,
+[`VR-1151`](../verification/VR-1151-seat-role-assignment.md) — `Vignette.roles_needed`/
+`RoleRequirement`, `SessionManager.assign_role`/`staffing_report`,
 `InProcessSession.start()` hard-gated on unmet mandatory roles, `/roles/assign`+`/roles/staffing`
-endpoints, White-Cell-only seat-assignment UI), likewise pending `09-package-verification` — with
-one open finding: no role-based command-filtering consumer exists yet in `FS-105`/`IP-1050`/
-`IP-1051` (see the package's own Risks section and Master Build Plan Risk item 8). **`IP-3010` is
+endpoints, White-Cell-only seat-assignment UI, all confirmed against the live tree. `BL-0014` (no
+role-based command-filtering consumer exists yet in `FS-105`/`IP-1050`/`IP-1051`) independently
+re-derived, not merely re-cited — still true (see the package's own Risks section and Master Build
+Plan Risk item 8); one new Low finding, `BL-0024`). **`IP-3010` is
 now `VERIFIED`** (2026-07-04, run #12, [`VR-3010`](../verification/VR-3010-research-analytics.md) —
 `spacesim/tools/` subpackage (`research_batch.run_batch()`) and `session/research_export.py`
 (`RunRecord` + CSV/JSON export) confirmed against the live tree; `BL-0018`/`BL-0017` re-confirmed,
-no new findings).
+no new findings). **Every package in this tier is now `VERIFIED`** — the "iterate through all
+`09-package-verification`" sweep (runs #11–#15) is complete.
 
 **Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
 §3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in
@@ -114,10 +117,10 @@ selects exactly one `READY`-and-eligible package, implements it, and advances it
 package past `COMPLETE` to `VERIFIED` (that belongs to `09-package-verification`). Per this
 repository's MSTR-006 §3 rule, `08-code-implementation` treats `READY` status as necessary but not
 sufficient for any forward-design package until a separate, explicit user go-ahead is on record —
-`IP-2010`, `IP-1120`, `IP-1130`, `IP-1151`, and `IP-3010` have all received that go-ahead and have
-since all been implemented (`COMPLETE`). **No package in this plan remains `READY`** — every
-package now has either shipped (`VERIFIED`) or been implemented (`COMPLETE`, pending
-`09-package-verification`).
+`IP-2010`, `IP-1120`, `IP-1130`, `IP-1151`, and `IP-3010` all received that go-ahead, were all
+implemented, and have since all passed `09-package-verification`. **No package in this plan
+remains `READY` or `COMPLETE`** — every package has reached `VERIFIED` (`IP-1140` carries a
+standing user-accepted-risk note rather than an outstanding gap-closing package).
 
 ## Status legend
 
