@@ -41,7 +41,7 @@ unauthorized FS.
 
 | ID | Title | FS | Situation | Status |
 |---|---|---|---|---|
-| [IP-1010](IP-1010-mission-planning.md) | Mission Planning — dry-run preview & window/Δv display | [FS-101](../../features/FS-101-mission-planning.md) | As-built | ✅ VERIFIED |
+| [IP-1010](IP-1010-mission-planning.md) | Mission Planning — dry-run preview & window/Δv display | [FS-101](../../features/FS-101-mission-planning.md) | As-built | ✅ VERIFIED ([`VR-1010`](../verification/VR-1010-mission-planning.md), 2026-07-04) |
 | [IP-1020](IP-1020-command-scheduling.md) | Command Scheduling — Order/OrderSystem lifecycle | [FS-102](../../features/FS-102-command-scheduling.md) | As-built | ✅ VERIFIED |
 | [IP-1030](IP-1030-custody-management.md) | Custody Management — Track confidence model | [FS-103](../../features/FS-103-custody-management.md) | As-built | ✅ VERIFIED |
 | [IP-1040](IP-1040-sda-tasking.md) | SDA Tasking — sensor tasking & SSN request lifecycle | [FS-104](../../features/FS-104-sda-tasking.md) | As-built | ✅ VERIFIED |
@@ -144,6 +144,14 @@ tranche's two new as-built packages (`IP-1140`, `IP-1150`) followed the current,
 instead**: `07-implementation-planning` confirmed the cited code exists, entering both at
 `COMPLETE`; both have since passed independent `09-package-verification` (`VR-1150`, `VR-1140`) and
 are now `VERIFIED`.
+
+**Retro-verification sweep (started 2026-07-04, run #18):** none of the 11 as-built packages ever
+had a formal `VR-xxxx` report — this was flagged as `BL-0004` and, per the project owner's explicit
+choice, is being closed retroactively, one package per `09-package-verification` invocation, ahead
+of `11-release-readiness` for the 18-package tranche. `IP-1010` is the first (`VR-1010` — VERIFIED,
+no functional discrepancies found). The remaining 10 (`IP-1020`, `IP-1030`, `IP-1040`, `IP-1050`,
+`IP-1051`, `IP-1060`, `IP-1070`, `IP-1090`, `IP-1100`, `IP-1110`) are unaffected until their own
+turn in the sweep.
 
 ## Authoring note
 

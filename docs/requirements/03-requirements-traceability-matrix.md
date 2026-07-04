@@ -120,8 +120,8 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-1120 | Determinism (`(state, eventlog, seed) → byte-identical`) | UNASSIGNED | ADR-0002 | C2, C1 | INT-0008, INT-0014 | UNASSIGNED | `spacesim/tests/test_determinism.py` | `engine/simulation.py` |
 | FR-1130 | (clock/scheduler leaf, ADR-0006) | UNASSIGNED | ADR-0006 | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-1210 | (propagation seam, ADR-0009) | UNASSIGNED | ADR-0009 | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/propagator.py` |
-| FR-1220 | (access provider, ADR-0011) | UNASSIGNED | ADR-0011 | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/access.py` |
-| FR-1310 | Asset `resources.delta_v_ms` validation | UNASSIGNED | (none directly — restates GDS-04 §3) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/entities.py` |
+| FR-1220 | (access provider, ADR-0011) | UNASSIGNED | ADR-0011 | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_access.py` *(VR-1010 — file is shared across multiple as-built packages, e.g. IP-1010/IP-1040/IP-1050/1051; single-package attribution left for a future `04` pass)* | `engine/access.py` |
+| FR-1310 | Asset `resources.delta_v_ms` validation | UNASSIGNED | (none directly — restates GDS-04 §3) | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_orders.py::test_maneuver_consumes_delta_v_and_changes_orbit`, `spacesim/tests/test_maneuver.py` *(VR-1010)* | `engine/entities.py` |
 | FR-1410 | Five-D effects resolution | UNASSIGNED | ADR-0012 | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/effects.py` |
 | FR-1420 | Cyber exception (non window-gated) | UNASSIGNED | ADR-0012 | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/effects.py`, `engine/cyber.py` |
 | FR-1510 | Custody/Track confidence decay | UNASSIGNED | ADR-0013 | C2, C1, C3 | INT-0007, INT-0010 | UNASSIGNED | UNASSIGNED | `engine/custody.py` |
@@ -131,12 +131,12 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-2310 | Bus evolution / telemetry-contact / downlink handlers | UNASSIGNED | ADR-0004 | C2, C1 | INT-0007, INT-0008 | UNASSIGNED | UNASSIGNED | `engine/busmodel.py` |
 | FR-2410 | Bus/payload command verbs | UNASSIGNED | (none directly) | C4, C7, C8, C2, C1 | INT-0004, INT-0008 | UNASSIGNED | UNASSIGNED | `engine/buscommands.py` |
 | FR-2510 | Safe-mode / recovery chain | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/recovery.py` |
-| FR-3110 | Plan-first command issuance | UNASSIGNED | ADR-0005 | C4, C7, C8, C2, C1 | INT-0004, INT-0006, INT-0008 | UNASSIGNED | UNASSIGNED | `engine/orders.py` |
+| FR-3110 | Plan-first command issuance | UNASSIGNED | ADR-0005 | C4, C7, C8, C2, C1 | INT-0004, INT-0006, INT-0008 | UNASSIGNED | `spacesim/tests/test_validate_order.py`, `spacesim/tests/test_orders.py` *(VR-1010 — `_plan()`/`dry_run()` half; `IP-1020`'s commit-side share of this same code path awaits its own retro-verification)* | `engine/orders.py` |
 | FR-3120 | Sensor tasking | UNASSIGNED | ADR-0005 | C4, C7, C8, C2 | INT-0004, INT-0006 | UNASSIGNED | UNASSIGNED | `engine/orders.py` |
 | FR-3210 | SSN collection request | UNASSIGNED | ADR-0010 | C2, C3 | INT-0009 | UNASSIGNED | UNASSIGNED | `engine/ssn.py` |
 | FR-3220 | SSN delivery | UNASSIGNED | ADR-0010 | C2, C3, C1 | INT-0009, INT-0010 | UNASSIGNED | UNASSIGNED | `engine/ssn.py` |
 | FR-3310 | (order queue / cancel leaf) | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
-| FR-3410 | (order delivery path leaf, ADR-0005/0013) | UNASSIGNED | ADR-0005, ADR-0013 | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/orders.py` |
+| FR-3410 | (order delivery path leaf, ADR-0005/0013) | UNASSIGNED | ADR-0005, ADR-0013 | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_validate_order.py`, `spacesim/tests/test_orders.py` *(VR-1010 — shared with `IP-1020`, same rationale as `FR-3110`)* | `engine/orders.py` |
 | FR-3510 | Role-Assignment command-filtering consequence | UNASSIGNED | ADR-0004 | C4, C7, C8 | INT-0004 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-3520 | Role-Assignment scoping (bus/payload/both) *(new leaf, CHG-002)* | UNASSIGNED | ADR-0004 | C4, C7, C8, C2 | INT-0004, INT-0006 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-4110 | White Cell exercise-control leaf | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | `test_content.py::test_vignette_1_loads_and_builds_a_world`, `test_content.py::test_parameter_override_flows_into_roe`, `test_web.py::test_ssn_endpoint_available` *(closed 2026-07-03 via IP-1150, VR-1150)* | `IP-1150` *(closed 2026-07-03 via VR-1150)* |
@@ -259,8 +259,8 @@ where the named subsystem maps onto one), not separately inferred.
 | NFR-1200 | Hardware-floor performance | UNASSIGNED | ADR-0019, ADR-0020 | C4 | `ui_web/static/` (globe.js, world.js, graph.js) | UNASSIGNED | UNASSIGNED |
 | NFR-1300 | Sizing soft guideline (~24 sats) | UNASSIGNED | ADR-0019 | C1, C2 | `engine/`, `session/` (clock-lag watchdog — `SessionManager._record_catch_up_lag`) | UNASSIGNED | UNASSIGNED |
 | NFR-1400 | LAN concurrency ceiling | UNASSIGNED | ADR-0026, ADR-0014 | C2, C4 | `session/inprocess.py` (`_locked` critical section), `ui_web/server.py` | UNASSIGNED | UNASSIGNED |
-| NFR-1500 | Determinism (engine-wide) | UNASSIGNED | ADR-0002 | C1 | `engine/` (all), `engine/eventlog.py`, `engine/simulation.py` | UNASSIGNED | `spacesim/tests/test_determinism.py` |
-| NFR-1600 | Robustness to invalid input | UNASSIGNED | (none identified) | C5, C1 | `content/vignette.py`, `engine/orders.py` | UNASSIGNED | UNASSIGNED |
+| NFR-1500 | Determinism (engine-wide) | UNASSIGNED | ADR-0002 | C1 | `engine/` (all), `engine/eventlog.py`, `engine/simulation.py` | UNASSIGNED | `spacesim/tests/test_determinism.py` | `engine/simulation.py` |
+| NFR-1600 | Robustness to invalid input | UNASSIGNED | (none identified) | C5, C1 | `content/vignette.py`, `engine/orders.py` | UNASSIGNED | `spacesim/tests/test_validate_order.py::test_dry_run_surfaces_rejection_reasons` *(VR-1010 — `engine/orders.py` half only; `content/vignette.py` half is a different package's scope)* | UNASSIGNED |
 | NFR-1700 | Sub-stepped clock | UNASSIGNED | ADR-0002 | C1 | `engine/clock.py` | UNASSIGNED | UNASSIGNED |
 | NFR-1800 | Single-sitting availability | UNASSIGNED | (none identified) | C2 | `session/` (SessionManager) | UNASSIGNED | UNASSIGNED |
 | NFR-1900 | UI-agnostic engine + 80% coverage | UNASSIGNED | ADR-0002, ADR-0007 | C1 | `engine/` (all), test suite | UNASSIGNED | `spacesim/tests/test_import_guard.py` |

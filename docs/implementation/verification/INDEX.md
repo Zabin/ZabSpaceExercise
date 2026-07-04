@@ -9,16 +9,18 @@ report re-derives every Definition-of-Done and Verification-Checklist item, ever
 Covered` ID, and a full test run against the live source tree — nothing is taken on the package's
 own word.
 
-**This index covers only packages verified through this VR-report process.** The original 11
-as-built packages (`IP-1010`…`IP-1110`) were marked `VERIFIED` by the pass that authored them
-(which combined what `07-implementation-planning`/`09-package-verification` now do as separate
-stages) and predate this convention — they carry no `VR-xxxx` report on disk. Closing that
-retroactively is a standing gap, not addressed by this index's creation.
+**This index originally covered only packages verified through this VR-report process, with the
+original 11 as-built packages (`IP-1010`…`IP-1110`) — marked `VERIFIED` by the pass that authored
+them, predating this convention — carrying no report on disk.** That gap (`BL-0004`) is now being
+closed retroactively: the project owner chose (run #18) to retro-verify all 11 ahead of
+`11-release-readiness` for the 18-package tranche, one package per `09-package-verification`
+invocation.
 
 ## Index
 
 | ID | Package | Date | Result | Headline findings |
 |---|---|---|---|---|
+| [VR-1010](VR-1010-mission-planning.md) | [IP-1010](../packages/IP-1010-mission-planning.md) — Mission Planning: Dry-Run Preview & Window/Δv Display | 2026-07-04 | ✅ VERIFIED | **First retro-verification of an as-built package (`BL-0004` sweep, 1 of 11).** Full suite 566 passed/3 skipped, both permanent gates green. Every DoD/Checklist item confirmed against the live tree. Filled 5 previously-`UNASSIGNED` RTM `Test` cells (`FR-3110`/`FR-3410`/`FR-1220`/`FR-1310`/`NFR-1600`) with real evidence; fixed a malformed `NFR-1500` row missing its `Impl. Package` column (same defect class as `BL-0009`). Four Low findings: drifted line citations in both reference files (content confirmed correct), and file-level (not package-level) `Impl. Package` attribution left open for `FR-3110`/`FR-3410`/`FR-1220` since those files are genuinely shared with other as-built packages still awaiting their own retro-verification. |
 | [VR-1150](VR-1150-vignette-selection.md) | [IP-1150](../packages/IP-1150-vignette-selection.md) — Session Setup: Vignette Selection & Parameter Tuning | 2026-07-03 | ✅ VERIFIED | Full suite 490 passed/3 skipped, both permanent gates green. RTM `FR-4110` `Test`/`Impl. Package` cells were stale (`UNASSIGNED`) — corrected. One Low finding: the package's own "no zero-override test exists" claim was factually wrong (coverage already existed); no functional gap. |
 | [VR-1140](VR-1140-hot-seat-handoff.md) | [IP-1140](../packages/IP-1140-hot-seat-handoff.md) — Hot-Seat Hand-Off Screen-Blank Menu | 2026-07-03 | ✅ VERIFIED | Full suite 559 passed/3 skipped, both permanent gates green. RTM `FR-6610` `Test`/`Impl. Package` cells were stale (`UNASSIGNED`) — corrected. **`BL-0003` adjudicated: the shipped manual-button/auto-cycle mechanism does NOT satisfy FR-6610's full intent** — one High finding (the missing automatic-trigger detection is a real, unmitigated fog-of-war-leak risk in the catalog's one client-side-only-enforced Feature), routed to `07-implementation-planning` for a gap-closing package; **the project owner subsequently accepted this risk (2026-07-04) rather than authorizing remediation.** One Low finding: stale line-number citations (content confirmed correct at new locations). |
 | [VR-2010](VR-2010-competency-assessment.md) | [IP-2010](../packages/IP-2010-competency-assessment.md) — Competency Assessment: Rubric Computation | 2026-07-04 | ✅ VERIFIED | Full suite 566 passed/3 skipped, both permanent gates green. RTM `FR-10110` cell updated to reflect `VERIFIED`. `BL-0007` adjudicated (the `index.html` panel-markup inclusion was appropriate scope, not creep). `BL-0018` resolved (no impact on `IP-3010`'s already-shipped schema). Two Medium findings: FS-201's own Acceptance Criteria are broader than what `IP-2010` built — a longitudinal per-trainee report (explicitly, knowingly deferred by the package itself) and self-assessment/debrief-mode accessibility (not implemented, and not flagged as excluded anywhere in the package). One Low finding: a documented, well-justified signature deviation in `confidence_at_decision` (avoids an import cycle). |
