@@ -142,7 +142,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-6310 | Server-authoritative lazy clock | UNASSIGNED | ADR-0014, ADR-0026 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-6320 | Per-session RLock | UNASSIGNED | ADR-0014, ADR-0026 | C4, C2 | INT-0006 | UNASSIGNED | UNASSIGNED | `session/inprocess.py` |
 | FR-6410 | Session discovery / join-by-hash | UNASSIGNED | ADR-0014 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | UNASSIGNED | `session/inprocess.py` |
-| FR-6510 | Multi-monitor pop-out windows | UNASSIGNED | ADR-0004 | C4, C9, C2 | INT-0005, INT-0006 | UNASSIGNED | `tests/test_observer.py` | `IP-1130` *(implemented 2026-07-03, COMPLETE, pending 09-package-verification)* |
+| FR-6510 | Multi-monitor pop-out windows | UNASSIGNED | ADR-0004 | C4, C9, C2 | INT-0005, INT-0006 | UNASSIGNED | `tests/test_observer.py` | `IP-1130` *(closed 2026-07-04 via VR-1130 — VERIFIED; Title column defect above re-confirmed present, tracked as BL-0012)* |
 | FR-6610 | Hot-seat hand-off / screen-blank menu *(new leaf, CHG-004)* | UNASSIGNED | ADR-0004 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | Demonstration (manual) — no automated test exists, consistent with FR-6610's own stated Verification Method; verified 2026-07-03 by static analysis of the CSS occlusion guarantee, see `VR-1140` | `IP-1140` *(closed 2026-07-03 via VR-1140 — hard postcondition only; trigger/menu literal wording adjudicated NOT satisfied, see VR-1140's Adjudication section)* |
 | FR-7110 | Event log | UNASSIGNED | ADR-0002 | C2, C1 | INT-0008, INT-0014 | UNASSIGNED | UNASSIGNED | `engine/eventlog.py` |
 | FR-7210 | Save / resume | UNASSIGNED | ADR-0022 | C2, C5, C11 | INT-0012 | UNASSIGNED | UNASSIGNED | `session/manager.py` |

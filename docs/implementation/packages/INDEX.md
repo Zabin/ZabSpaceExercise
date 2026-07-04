@@ -55,7 +55,7 @@ unauthorized FS.
 | [IP-2010](IP-2010-competency-assessment.md) | Competency Assessment — rubric computation | [FS-201](../../features/FS-201-competency-assessment.md) | Forward design | ✅ VERIFIED (2026-07-04, [`VR-2010`](../verification/VR-2010-competency-assessment.md) — two Medium findings against FS-201's own Acceptance Criteria scope, not against this package; briefly `BLOCKED` 2026-07-02 on an ADR-0017 conflict, resolved same-day by `ADR-0032` — see the package's own header) |
 | [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | ✅ VERIFIED (2026-07-04, [`VR-3010`](../verification/VR-3010-research-analytics.md) — `BL-0018`/`BL-0017` re-confirmed, no new findings) |
 | [IP-1120](IP-1120-classification-banner.md) | Classification Banner — wire the render/export path to the vignette's classification value | [FS-112](../../features/FS-112-classification-banner.md) | Partially built (gap-closing) | ✅ VERIFIED (2026-07-04, [`VR-1120`](../verification/VR-1120-classification-banner.md) — both documented deviations confirmed accurate, one Low informational finding) |
-| [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
+| [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | ✅ VERIFIED (2026-07-04, [`VR-1130`](../verification/VR-1130-observer-read-only-access.md) — `BL-0011`'s predicted drift investigated, not yet materialized) |
 | [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, [`VR-1140`](../verification/VR-1140-hot-seat-handoff.md) — FR-6610's trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
 | [IP-1150](IP-1150-vignette-selection.md) | Session Setup: Vignette Selection & Parameter Tuning | [FS-115](../../features/FS-115-session-setup.md) §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, [`VR-1150`](../verification/VR-1150-vignette-selection.md)) |
 | [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`; one Definition-of-Done caveat — see the package's own header) |
@@ -82,10 +82,12 @@ routed to `06-feature-specification`, not against this package). **`IP-1120` is 
 (2026-07-04, run #13, [`VR-1120`](../verification/VR-1120-classification-banner.md) — one resolved
 `classification` value threaded through `session/manager.py`/`inprocess.py`/`aar.py`/`ui_web/`
 confirmed against the live tree; both documented implementation deviations confirmed accurate).
-**`IP-1130` is also now `COMPLETE`** (implemented 2026-07-03, a
-server-side mutation-rejection guard on every mutating route plus a White-Cell-designated Observer
-read path in `session/inprocess.py`/`ui_web/server.py`/`ui_web/static/`), likewise pending
-`09-package-verification`. **`IP-1151` is also now `COMPLETE`** (implemented 2026-07-03,
+**`IP-1130` is now `VERIFIED`** (2026-07-04, run #14,
+[`VR-1130`](../verification/VR-1130-observer-read-only-access.md) — a server-side
+mutation-rejection guard on every mutating route plus a White-Cell-designated Observer read path
+in `session/inprocess.py`/`ui_web/server.py`/`ui_web/static/` confirmed against the live tree;
+`BL-0011`'s predicted route-guard maintenance-drift risk investigated directly and found not yet
+materialized). **`IP-1151` is also now `COMPLETE`** (implemented 2026-07-03,
 `Vignette.roles_needed`/`RoleRequirement`, `SessionManager.assign_role`/`staffing_report`,
 `InProcessSession.start()` hard-gated on unmet mandatory roles, `/roles/assign`+`/roles/staffing`
 endpoints, White-Cell-only seat-assignment UI), likewise pending `09-package-verification` — with

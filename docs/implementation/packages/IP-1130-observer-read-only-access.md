@@ -2,17 +2,26 @@
 
 > **Package ID:** IP-1130
 > **Version:** 1.1 (2026-07-03 — implemented by `08-code-implementation`; see Status below.)
-> **Status:** 🔵 COMPLETE *(implemented 2026-07-03 — a fourth, White-Cell-designated read-only seat.
+> **Status:** ✅ VERIFIED *(2026-07-04, [`VR-1130`](../verification/VR-1130-observer-read-only-access.md)
+> — every Definition of Done/Verification Checklist item confirmed against the live tree; full
+> suite green (566 passed/3 skipped), both permanent gates green; RTM `FR-6510` `Impl. Package`
+> cell updated. **`BL-0011`'s predicted route-guard maintenance-drift risk was investigated
+> directly and found not yet materialized**: `IP-1151`'s `/roles/assign` (added after this package
+> shipped) and this package's own `/observer/view` POST both reject Observer correctly, via a
+> stricter White-Cell-only allowlist check rather than `_reject_observer` — confirmed by reading
+> the code, not by trusting either package's own comment. One Low finding: neither route has an
+> explicit `cell="observer"` test. Was 🔵 COMPLETE *(implemented 2026-07-03 — a fourth,
+> White-Cell-designated read-only seat.
 > `_reject_observer(cell)` guards all 22 mutating routes (re-derived from the live route table at
 > implementation time per this package's own Risks note, not merely the 20 explicitly enumerated
 > below — the additional route is `/preview/consequence`, the same "preview/compute" class already
 > included); `get_observer_view`/`observer_designation` dispatch unmodified to `get_godview`/
 > `get_view`. Full suite green (547 passed/3 skipped, up from 519/3 — 28 new tests), both permanent
 > gates green. Entered `COMPLETE`, not `VERIFIED` — only `09-package-verification` may write
-> `VERIFIED`. Was 🟡 READY *(authorized, no blocking package dependency — the fog-of-war filter this
+> `VERIFIED`.)* Was 🟡 READY *(authorized, no blocking package dependency — the fog-of-war filter this
 > package reuses is already shipped and exercised by every `VERIFIED` as-built package in this plan.
 > **MSTR-006 §3 authorization obtained 2026-07-03** (project owner, recorded in
-> `docs/pipeline/pipeline-journal.md` run #2).)*)*
+> `docs/pipeline/pipeline-journal.md` run #2).)*)*)*)*
 > **Dependencies:** FS-113 (no `FS-xxx`/`IP-xxxx` hard prerequisite — see Dependencies below)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the read-only Observer seat interaction model
