@@ -13,13 +13,12 @@
 
 ## Position
 
-- **Updated:** 2026-07-04 (run #12)
+- **Updated:** 2026-07-04 (run #13)
 - **Increment:** v1 baseline follow-through — closing the gaps the 2026-07 strategic review and
   feature-planning pass opened. **Iterating through all remaining `09-package-verification`
-  passes** per the user's explicit request (runs #11-#12 so far). 15 of 18 packages are now
-  `VERIFIED` (this run added `IP-3010` via `VR-3010`, closing the `IP-2010 → IP-3010`
-  critical-path chain end-to-end); 3 remain `COMPLETE` pending their own verification (`IP-1120`,
-  `IP-1130`, `IP-1151`). Zero packages remain `READY` or `BLOCKED`.
+  passes** per the user's explicit request (runs #11-#13 so far). 16 of 18 packages are now
+  `VERIFIED` (this run added `IP-1120` via `VR-1120`); 2 remain `COMPLETE` pending their own
+  verification (`IP-1130`, `IP-1151`). Zero packages remain `READY` or `BLOCKED`.
 - **Pipeline state:**
   - Stages 01–06 ✅ current for this increment: GDS-00…10 authored with closed gates
     (`docs/architecture/INDEX.md` §1); requirements baseline approved (`docs/requirements/`);
@@ -179,25 +178,32 @@
     session, no compaction boundary). No new findings. `IP-3010` flipped `COMPLETE → VERIFIED`;
     RTM `FR-10210` cell updated. Committed `df388d1`, pushed (PR #45). The `IP-2010 → IP-3010`
     critical-path chain is now `VERIFIED` end-to-end.
-  - Stage 09 🚧 three gaps remain: `IP-1120` (Classification Banner), `IP-1130` (Observer Read-Only
-    Access), and `IP-1151` (Seat-to-Role Assignment) are all `COMPLETE`, awaiting their own
-    verification pass (`IP-1120`'s should confirm the package-doc drift fix and its two documented
-    task-text deviations; `IP-1130`'s should confirm the re-derived 22-route guard and its two
-    documented deviations; `IP-1151`'s should independently re-confirm the FS-105 non-consumption
-    finding). The original 11 as-built packages (IP-1010…IP-1110) still predate the VR-report
-    convention and carry no `VR-xxxx` on disk — a standing gap, unchanged this run, not this
-    increment's focus.
+  - Stage 09 ✅ fifth VR issued (run #13): `09-package-verification` verified **IP-1120**
+    (Classification Banner) — [`VR-1120`](../implementation/verification/VR-1120-classification-banner.md),
+    full suite 566 passed/3 skipped, both permanent gates green. Both documented Implementation
+    Tasks deviations (list_sessions() transport choice; from_state restoring classification)
+    confirmed accurate, harmless, in-scope. The run #6 package-doc drift fix and `NFR-3100` RTM
+    malformed-row fix both re-confirmed still accurate. RTM `FR-4510`/`NFR-3100` cells updated
+    (`FR-4510`'s pre-existing Title-column defect, `BL-0010`, re-confirmed present and correctly
+    left untouched). One Low finding (`BL-0022`, DONE — a DoD-text naming imprecision, informational
+    only). `IP-1120` flipped `COMPLETE → VERIFIED`. Committed `3d0a300`, pushed (PR #45).
+  - Stage 09 🚧 two gaps remain: `IP-1130` (Observer Read-Only Access) and `IP-1151`
+    (Seat-to-Role Assignment) are both `COMPLETE`, awaiting their own verification pass (`IP-1130`'s
+    should confirm the re-derived 22-route guard and its two documented deviations; `IP-1151`'s
+    should independently re-confirm the FS-105 non-consumption finding). The original 11 as-built
+    packages (IP-1010…IP-1110) still predate the VR-report convention and carry no `VR-xxxx` on
+    disk — a standing gap, unchanged this run, not this increment's focus.
   - Stages 10–11 ⛔ never run.
-- **Backlog:** 21 open ([`backlog.md`](backlog.md)): no new entries this run (`VR-3010` surfaced
-  no new findings). `BL-0001`/`BL-0004`/`BL-0006`/`BL-0008`/`BL-0010`/`BL-0011`/`BL-0012`/
+- **Backlog:** 22 open ([`backlog.md`](backlog.md)): `BL-0022` `NEW` this run (Low, `DONE` —
+  informational only). `BL-0001`/`BL-0004`/`BL-0006`/`BL-0008`/`BL-0010`/`BL-0011`/`BL-0012`/
   `BL-0014`/`BL-0015`/`BL-0016`/`BL-0019`/`BL-0020` (DEFERRED with named triggers, not yet ripe).
-  `BL-0007`/`BL-0009`/`BL-0013`/`BL-0017`/`BL-0018`/`BL-0021` `DONE`. No entry is due at the next
-  step.
-- **Next step:** `09-package-verification` on any of the three remaining `COMPLETE` packages
-  (`IP-1120`/`IP-1130`/`IP-1151`) — genuinely parallel, no dependency ordering between them.
-  Continuing per the user's request to iterate through all remaining verifications.
+  `BL-0007`/`BL-0009`/`BL-0013`/`BL-0017`/`BL-0018`/`BL-0021`/`BL-0022` `DONE`. No entry is due at
+  the next step.
+- **Next step:** `09-package-verification` on either of the two remaining `COMPLETE` packages
+  (`IP-1130`/`IP-1151`) — genuinely parallel, no dependency ordering between them. Continuing per
+  the user's request to iterate through all remaining verifications.
 - **Open gates:** none currently ripe. PR
-  [#45](https://github.com/Zabin/ZabSpaceExercise/pull/45) (carries runs #4–#12's work) is open/draft
+  [#45](https://github.com/Zabin/ZabSpaceExercise/pull/45) (carries runs #4–#13's work) is open/draft
   — being monitored for CI/review activity outside the pipeline-manager loop.
 
 ## Run log
@@ -219,3 +225,4 @@
 | 10 | 2026-07-04 | advance (gate resolved inline, chat-based due to a transient AskUserQuestion tool error) | `08-code-implementation` | IP-3010 (the sole READY+authorized candidate, this plan's last critical-path hop — plus BL-0015's risk-acceptance decision, batched in) | Gate check: BL-0015 (IP-1140's adjudicated FR-6610 finding) was ripe; AskUserQuestion failed with a tool-permission error, so the question was put to the user directly in chat. User chose "accept the risk" ("I accept the risk of a cell not blanking the screen during handover as long as hot seat is an option"). Recorded in IP-1140's own header/Risks and Master Build Plan Risk item 6; BL-0015 closed DEFERRED with a named trigger. Committed `ac89df5`, pushed (PR #45). Then invoked 08-code-implementation on IP-3010: new spacesim/tools/ subpackage (research_batch.run_batch()) + session/research_export.py (RunRecord + CSV/JSON export), reading assessment_report once per run. 7 new tests; full suite 566 passed/3 skipped (was 559/3); both permanent gates green. IP-3010 READY→COMPLETE. Updated Master Build Plan/packages-INDEX/RTM(FR-10210)/ROADMAP/CLAUDE.md/IMP-301A banner. Committed `e12d2a4`, pushed (PR #45). Harvested 2 findings → BL-0017 (DEFERRED, Low — imprecise tools/build_coastlines.py citation), BL-0018 (SCHEDULED, Low — rides 09 on IP-2010/IP-3010). Zero packages remain READY or BLOCKED on the Master Build Plan. | `09-package-verification` on IP-2010 first (recommended, so BL-0018 resolves cleanly before IP-3010's own verification pass), then IP-3010; IP-1120/IP-1130/IP-1151 verification remain equally available in parallel |
 | 11 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-2010 (recommended: upstream-findings-first, since IP-3010's schema was built against its pre-verification output shape) | Verified against the live tree: full suite 566 passed/3 skipped, both permanent gates green; VR-2010 written (VERIFIED); RTM FR-10110 cell updated; IP-2010 COMPLETE→VERIFIED. BL-0007 adjudicated (index.html panel inclusion appropriate). BL-0018 resolved (no impact on IP-3010's schema). Harvested 3 findings → BL-0019 (Medium, DEFERRED — FS-201's longitudinal per-trainee criterion unimplemented, already disclosed by IP-2010 itself), BL-0020 (Medium, DEFERRED — FS-201's self-assessment-mode accessibility criterion unimplemented, never disclosed), BL-0021 (Low, DONE — informational signature-deviation note). Committed `399bae2`, pushed (PR #45). | `09-package-verification` on any of IP-1120/IP-1130/IP-1151/IP-3010, all genuinely parallel — continuing per the user's request to iterate through all |
 | 12 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-3010 (closes out the IP-2010 -> IP-3010 critical-path chain now that IP-2010 is VERIFIED) | Verified against the live tree: full suite 566 passed/3 skipped (unchanged since run #10), both permanent gates green; VR-3010 written (VERIFIED); RTM FR-10210 cell updated; IP-3010 COMPLETE->VERIFIED. Re-confirmed BL-0018 (assessment_report's shape unchanged since VR-2010) and BL-0017 (spacesim/tools/ genuinely new + importable) directly against the current tree, not merely citing VR-2010. Stated the same-session independence caveat explicitly (implemented run #10, verified run #12, no compaction boundary). No new findings. Committed `df388d1`, pushed (PR #45). | `09-package-verification` on any of IP-1120/IP-1130/IP-1151, all genuinely parallel -- continuing per the user's request to iterate through all |
+| 13 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1120 (independently re-derived from the tree; several runs + a compaction boundary separate implementation (run #6) from this verification) | Verified against the live tree: full suite 566 passed/3 skipped, both permanent gates green; VR-1120 written (VERIFIED); RTM FR-4510/NFR-3100 cells updated; IP-1120 COMPLETE->VERIFIED. Both documented Implementation Tasks deviations confirmed accurate/harmless/in-scope. Run #6's package-doc drift fix and NFR-3100 RTM malformed-row fix both re-confirmed still accurate. Harvested 1 finding -> BL-0022 (Low, DONE -- DoD-text naming imprecision, informational only). Committed `3d0a300`, pushed (PR #45). | `09-package-verification` on either of IP-1130/IP-1151, both genuinely parallel -- continuing per the user's request to iterate through all |
