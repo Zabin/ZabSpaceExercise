@@ -45,7 +45,7 @@ unauthorized FS.
 | [IP-1020](IP-1020-command-scheduling.md) | Command Scheduling — Order/OrderSystem lifecycle | [FS-102](../../features/FS-102-command-scheduling.md) | As-built | ✅ VERIFIED ([`VR-1020`](../verification/VR-1020-command-scheduling.md), 2026-07-04) |
 | [IP-1030](IP-1030-custody-management.md) | Custody Management — Track confidence model | [FS-103](../../features/FS-103-custody-management.md) | As-built | ✅ VERIFIED ([`VR-1030`](../verification/VR-1030-custody-management.md), 2026-07-04) |
 | [IP-1040](IP-1040-sda-tasking.md) | SDA Tasking — sensor tasking & SSN request lifecycle | [FS-104](../../features/FS-104-sda-tasking.md) | As-built | ✅ VERIFIED ([`VR-1040`](../verification/VR-1040-sda-tasking.md), 2026-07-04) |
-| [IP-1050](IP-1050-spacecraft-operations-bus-payload.md) | Spacecraft Operations — bus/payload command & telemetry | [FS-105](../../features/FS-105-spacecraft-operations.md) §3.1 | As-built | ✅ VERIFIED |
+| [IP-1050](IP-1050-spacecraft-operations-bus-payload.md) | Spacecraft Operations — bus/payload command & telemetry | [FS-105](../../features/FS-105-spacecraft-operations.md) §3.1 | As-built | ✅ VERIFIED ([`VR-1050`](../verification/VR-1050-spacecraft-operations-bus-payload.md), 2026-07-04) |
 | [IP-1051](IP-1051-spacecraft-operations-effects-console.md) | Spacecraft Operations — effect resolution & console UX | [FS-105](../../features/FS-105-spacecraft-operations.md) §3.2-4 | As-built | ✅ VERIFIED |
 | [IP-1060](IP-1060-white-cell-dashboard.md) | White Cell Dashboard — god-view, inject, clock-authority trigger & adjudication *(v2.0, narrowed)* | [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.0 | As-built | ✅ VERIFIED |
 | [IP-1070](IP-1070-after-action-review.md) | After Action Review — replay/scrub/branch-compare | [FS-107](../../features/FS-107-after-action-review.md) | As-built | ✅ VERIFIED |
@@ -153,9 +153,10 @@ no functional discrepancies found). `IP-1020` is the second (`VR-1020` — VERIF
 finding that the package's claimed lifecycle-state names don't match the code, though the
 functional guarantee holds). `IP-1030` is the third (`VR-1030` — VERIFIED, no functional
 discrepancies, one Low citation-drift finding). `IP-1040` is the fourth (`VR-1040` — VERIFIED, no
-functional discrepancies, one Low citation-drift finding). The remaining 7 (`IP-1050`,
-`IP-1051`, `IP-1060`, `IP-1070`, `IP-1090`, `IP-1100`, `IP-1110`) are unaffected until their own
-turn in the sweep.
+functional discrepancies, one Low citation-drift finding). `IP-1050` is the fifth (`VR-1050` —
+VERIFIED, no functional discrepancies, one Low citation finding). The remaining 6 (`IP-1051`,
+`IP-1060`, `IP-1070`, `IP-1090`, `IP-1100`, `IP-1110`) are unaffected until their own turn in the
+sweep.
 
 ## Authoring note
 

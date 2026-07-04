@@ -126,10 +126,10 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-1420 | Cyber exception (non window-gated) | UNASSIGNED | ADR-0012 | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_orders.py::test_cyber_resolves_outside_any_pass_window` *(VR-1020 — orders.py's `_plan_cyber` routing half; `engine/effects.py`/`cyber.py`'s own resolution mechanism is a different package's territory)* | `engine/effects.py`, `engine/cyber.py` |
 | FR-1510 | Custody/Track confidence decay | UNASSIGNED | ADR-0013 | C2, C1, C3 | INT-0007, INT-0010 | UNASSIGNED | `spacesim/tests/test_custody.py` *(VR-1030)* | `IP-1030` *(closed 2026-07-04 via VR-1030)* |
 | FR-1520 | Weapons-quality gate | UNASSIGNED | ADR-0013 | C2, C1 | INT-0007 | UNASSIGNED | `spacesim/tests/test_custody.py`, `spacesim/tests/test_orders.py::test_kinetic_engage_requires_track_and_roe_then_spawns_debris` *(VR-1030)* | `IP-1030` *(closed 2026-07-04 via VR-1030)* |
-| FR-2110 | Bus state model | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/bus.py` |
-| FR-2210 | Payload state model | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/bus.py` |
+| FR-2110 | Bus state model | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_bus.py` *(VR-1050)* | `IP-1050` *(closed 2026-07-04 via VR-1050)* |
+| FR-2210 | Payload state model | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_bus.py` *(VR-1050)* | `IP-1050` *(closed 2026-07-04 via VR-1050)* |
 | FR-2310 | Bus evolution / telemetry-contact / downlink handlers | UNASSIGNED | ADR-0004 | C2, C1 | INT-0007, INT-0008 | UNASSIGNED | UNASSIGNED | `engine/busmodel.py` |
-| FR-2410 | Bus/payload command verbs | UNASSIGNED | (none directly) | C4, C7, C8, C2, C1 | INT-0004, INT-0008 | UNASSIGNED | UNASSIGNED | `engine/buscommands.py` |
+| FR-2410 | Bus/payload command verbs | UNASSIGNED | (none directly) | C4, C7, C8, C2, C1 | INT-0004, INT-0008 | UNASSIGNED | `spacesim/tests/test_bus_commands.py` *(VR-1050)* | `IP-1050` *(closed 2026-07-04 via VR-1050)* |
 | FR-2510 | Safe-mode / recovery chain | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/recovery.py` |
 | FR-3110 | Plan-first command issuance | UNASSIGNED | ADR-0005 | C4, C7, C8, C2, C1 | INT-0004, INT-0006, INT-0008 | UNASSIGNED | `spacesim/tests/test_validate_order.py`, `spacesim/tests/test_orders.py`, `spacesim/tests/test_queue.py` *(VR-1010's `_plan()`/`dry_run()` half + VR-1020's commit-side `issue()` half, both confirmed)* | `engine/orders.py` |
 | FR-3120 | Sensor tasking | UNASSIGNED | ADR-0005 | C4, C7, C8, C2 | INT-0004, INT-0006 | UNASSIGNED | UNASSIGNED | `engine/orders.py` |
