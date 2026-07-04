@@ -42,7 +42,7 @@ unauthorized FS.
 | ID | Title | FS | Situation | Status |
 |---|---|---|---|---|
 | [IP-1010](IP-1010-mission-planning.md) | Mission Planning — dry-run preview & window/Δv display | [FS-101](../../features/FS-101-mission-planning.md) | As-built | ✅ VERIFIED ([`VR-1010`](../verification/VR-1010-mission-planning.md), 2026-07-04) |
-| [IP-1020](IP-1020-command-scheduling.md) | Command Scheduling — Order/OrderSystem lifecycle | [FS-102](../../features/FS-102-command-scheduling.md) | As-built | ✅ VERIFIED |
+| [IP-1020](IP-1020-command-scheduling.md) | Command Scheduling — Order/OrderSystem lifecycle | [FS-102](../../features/FS-102-command-scheduling.md) | As-built | ✅ VERIFIED ([`VR-1020`](../verification/VR-1020-command-scheduling.md), 2026-07-04) |
 | [IP-1030](IP-1030-custody-management.md) | Custody Management — Track confidence model | [FS-103](../../features/FS-103-custody-management.md) | As-built | ✅ VERIFIED |
 | [IP-1040](IP-1040-sda-tasking.md) | SDA Tasking — sensor tasking & SSN request lifecycle | [FS-104](../../features/FS-104-sda-tasking.md) | As-built | ✅ VERIFIED |
 | [IP-1050](IP-1050-spacecraft-operations-bus-payload.md) | Spacecraft Operations — bus/payload command & telemetry | [FS-105](../../features/FS-105-spacecraft-operations.md) §3.1 | As-built | ✅ VERIFIED |
@@ -149,7 +149,9 @@ are now `VERIFIED`.
 had a formal `VR-xxxx` report — this was flagged as `BL-0004` and, per the project owner's explicit
 choice, is being closed retroactively, one package per `09-package-verification` invocation, ahead
 of `11-release-readiness` for the 18-package tranche. `IP-1010` is the first (`VR-1010` — VERIFIED,
-no functional discrepancies found). The remaining 10 (`IP-1020`, `IP-1030`, `IP-1040`, `IP-1050`,
+no functional discrepancies found). `IP-1020` is the second (`VR-1020` — VERIFIED, one Medium
+finding that the package's claimed lifecycle-state names don't match the code, though the
+functional guarantee holds). The remaining 9 (`IP-1030`, `IP-1040`, `IP-1050`,
 `IP-1051`, `IP-1060`, `IP-1070`, `IP-1090`, `IP-1100`, `IP-1110`) are unaffected until their own
 turn in the sweep.
 
