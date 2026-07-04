@@ -44,6 +44,9 @@ the same access window is Red's tempo problem.
 3. **Verb assistants** — `maneuver` (six modes, live Δv), `observe` (beam mode + look angle), `jam`
    (modulation/power/bandwidth with an on-map denial footprint).
 
+*See also: [BLU-3](13-blue-cell-manual.md#blu-3--previews-before-you-commit) — the same preview
+mechanics from Blue's side.*
+
 > **Sources:** `spacesim/engine/orders.py` `dry_run()` · `POST /preview/consequence` ·
 > `spacesim/engine/{maneuver,isr,jam}.py` · [`02-interface.md`](02-interface.md) §"Order-composition assistants"
 
@@ -54,6 +57,9 @@ Blue's assets; a good report raises track confidence and shrinks uncertainty unt
 **weapons-quality**, which **unlocks** the engagement actions the gate was blocking. Sensors do one
 thing at a time (contention pushes the second task to a later pass), and custody **decays** between
 looks — re-task before a firing window or the gate re-locks.
+
+*See also: [BLU-4](13-blue-cell-manual.md#blu-4--sda-task-sensors-build-custody-unlock-actions) —
+the same tasking→custody→unlock loop, applied to defense rather than targeting.*
 
 > **Sources:** `spacesim/engine/custody.py` (weapons-quality gate) · `spacesim/engine/access.py` ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"SDA sensor tasking"
@@ -82,6 +88,9 @@ against `{access_vector, success_prob, persistence, patchable}` subject to Blue'
 This is Red's fastest, hardest-to-attribute lever (the SATCOM/Viasat-style lesson): you can act
 between passes when Blue is watching the wrong timeline. A **persistent** unpatched vulnerability
 keeps re-safing the target through its recovery attempts.
+
+*See also: [BLU-9](13-blue-cell-manual.md#blu-9--cyber-cuts-both-ways) — the same mechanic from the
+defender's side.*
 
 > **Sources:** `spacesim/engine/cyber.py` (`VECTORS × PAYLOADS`, `attribution_score`) ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"Cyber — the off-pass exception"

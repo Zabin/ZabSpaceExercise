@@ -18,7 +18,16 @@ own fog-of-war picture. You own everything the players must not: the clock, the 
 parameters, injects, force changes, and the AAR. The cell selector is client-side trust (no
 per-cell login): the tool is built for a cooperative room, and you are the reason that works.
 
+**A fourth seat, Observer, is yours to designate.** From the **📋 Session ▾** menu's Observer
+section, set its **View** to Godview or a named cell (Blue/Red) — the Observer then sees exactly
+that view, byte-for-byte identical to its native audience, with zero command ability. Every
+mutating request from an Observer-seated session is rejected at the server, not merely hidden in
+the UI — the rejection holds even against a request that bypasses the browser client entirely.
+Use it to seat an extra trainee, an evaluator, or a second facilitator without giving them any way
+to affect the exercise.
+
 > **Sources:** `spacesim/session/manager.py` · `spacesim/session/controller.py` (fog boundary) ·
+> `spacesim/session/inprocess.py` (`set_observer_view`/`get_observer_view`, FR-6510) ·
 > [`02-interface.md`](02-interface.md) §3
 
 ### WCM-2 · Set up the exercise
@@ -30,13 +39,25 @@ per-cell login): the tool is built for a cooperative room, and you are the reaso
    `red_ew_intensity`), environment, and fidelity/fog (`fog_of_war`, `ops_fidelity`,
    `safe_mode_susceptibility`). `ops_fidelity` picks the training altitude: `tactical` collapses
    each bus to one health bar, `realistic` (default) shows SOH, `full_ttc` adds full subsystem
-   telemetry for TT&C-operator training.
-3. **Load → Start.** The **Mission brief panel** auto-opens; you see Blue's and Red's briefs
+   telemetry for TT&C-operator training. The same panel's **Classification** field overrides the
+   vignette's default banner text — set it once here; it is fixed for the session's lifetime and
+   carries into every screen, AAR export, and save file.
+3. **Assign seats to roles, if the vignette requires it.** Some vignettes declare mandatory
+   staffing (a named asset/constellation needs a bus, payload, or both operator seated before
+   Start is allowed). The **Seat-to-role assignment** section of the same menu lets you bind a
+   seat name to an asset/constellation and a role (Bus / Payload / Both); the **staffing report**
+   readout beneath it lists any mandatory requirement still unmet. Most vignettes declare none — no
+   assignment is needed and Start is never blocked by this step for them.
+4. **Load → Start.** The **Mission brief panel** auto-opens; you see Blue's and Red's briefs
    side-by-side (the players each see only their own). Confirm the ROE chips and objective
-   deadlines match your training intent before you let anyone act.
+   deadlines match your training intent before you let anyone act. If a mandatory seat-to-role
+   requirement from step 3 is still unmet, **Start** refuses with the unsatisfied entry named — it
+   is a hard gate, not a warning you can click through.
 
 > **Sources:** `spacesim/content/vignette.py` + `spacesim/content/vignettes/*.yaml` ·
-> `GET /api/sessions/{sid}/brief/{cell}` · [`07-white-cell-facilitation.md`](07-white-cell-facilitation.md)
+> `GET /api/sessions/{sid}/brief/{cell}` · `spacesim/session/manager.py` (`classification`,
+> `assign_role`/`staffing_report`, FR-4510/FR-4210) ·
+> [`07-white-cell-facilitation.md`](07-white-cell-facilitation.md)
 
 ### WCM-3 · Run the room: hot-seat and LAN
 
@@ -141,5 +162,41 @@ else, start at [`09-troubleshooting-and-glossary.md`](09-troubleshooting-and-glo
 
 > **Sources:** `spacesim/engine/simulation.py` (`SavedSession`) · `GET /api/sessions/{sid}/save` ·
 > `SessionManager._record_catch_up_lag`
+
+### WCM-11 · Competency assessment: rubric, not a score
+
+Below the AAR panel, the **Competency assessment** panel reads out three tier-based dimensions per
+cell — **custody quality**, **window discipline**, and **belief-truth divergence** — computed
+automatically from the exercise's own eventlog. Click **🔄 Refresh** any time after the exercise has
+generated enough activity to score. There is deliberately **no composite score**: the three tiers
+are shown side-by-side, and the disclosure line beneath them states plainly that the aware/unaware
+split on belief-truth divergence is a design choice (reusing the engage weapons-quality threshold as
+the "operator-visibly-marginal" band), not a validated psychometric boundary — read that disclosure
+before treating the tiers as more authoritative than they are. Two dimensions FS-201 originally
+scoped — a longitudinal per-trainee report across exercises, and self-assessment access for Blue/Red
+— are not implemented; this panel is White-Cell-only and covers only the current exercise (tracked
+as `BL-0019`/`BL-0020` in the pipeline backlog, not a bug — the panel does exactly what it discloses).
+
+> **Sources:** `spacesim/session/assessment.py` (`score_custody_quality`/`score_window_discipline`/
+> `score_belief_truth_divergence`/`assessment_report`) · `GET /api/sessions/{sid}/assessment` ·
+> [FS-201](../features/FS-201-competency-assessment.md) (FR-10110)
+
+### WCM-12 · Offline research batch exports
+
+Outside a live session, `spacesim/tools/research_batch.py`'s `run_batch(vignette_id, seeds,
+condition_label, n_steps_or_until)` runs the same deterministic engine headlessly across a list of
+seeds — one fresh session per seed, no shared state between runs — and returns one `RunRecord` per
+run: `vignette_id`, `seed`, `condition_label`, and that run's WCM-11 rubric output verbatim (never
+recomputed). `spacesim/session/research_export.py`'s `export_csv`/`export_json` flatten a batch of
+`RunRecord`s into one row per run for spreadsheet or statistical-tool import — the same pattern the
+AAR's own CSV export uses. This is a researcher/instructor tool for comparing conditions across many
+seeded runs (e.g. "does `red_ew_intensity: high` change Blue's custody-quality distribution"), not an
+in-session facilitator control — there is no UI panel for it; run it from a Python shell or a small
+driver script that imports `run_batch`. No trainee-identifying or cross-institution data is collected
+by design — only `vignette_id`/`seed`/`condition_label`/the rubric tiers.
+
+> **Sources:** `spacesim/tools/research_batch.py` (`run_batch`) ·
+> `spacesim/session/research_export.py` (`RunRecord`, `export_csv`/`export_json`) ·
+> [FS-301](../features/FS-301-research-analytics.md) (FR-10210)
 
 ---

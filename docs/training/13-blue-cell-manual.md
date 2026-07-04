@@ -47,6 +47,9 @@ Three assistants show what an order will do before you fire it:
    mode + look-angle + expected swath/resolution/power), `jam` (modulation/power/bandwidth with an
    on-map denial footprint).
 
+*See also: [RED-3](14-red-cell-manual.md#red-3--previews-before-you-commit) — the same preview
+mechanics from Red's side.*
+
 > **Sources:** `spacesim/engine/orders.py` `dry_run()` · `POST /preview/consequence` ·
 > `spacesim/engine/{maneuver,isr,jam}.py` · [`02-interface.md`](02-interface.md) §"Order-composition assistants"
 
@@ -59,6 +62,9 @@ Sensors do one thing at a time — task two collections at once and the second s
 (contention). Custody **decays** between looks; the belief map blooms the uncertainty volume until
 you re-task. This tasking→custody→unlock loop is Blue's core defensive discipline: know the sky
 before you commit.
+
+*See also: [RED-4](14-red-cell-manual.md#red-4--build-a-targeting-picture-with-sda) — the same
+tasking→custody→unlock loop, applied to targeting rather than defense.*
 
 > **Sources:** `spacesim/engine/custody.py` (`Track`, weapons-quality gate) ·
 > `spacesim/engine/access.py` (`sensor_observation`) · [`05-core-concepts.md`](05-core-concepts.md) §"SDA sensor tasking"
@@ -119,6 +125,9 @@ Cyber effects are **not** gated by orbital passes — off-pass, subject to the d
 whether the vulnerability is patched. As Blue this is the threat you can't see coming on the pass
 timeline *and* your fastest patch lever: harden posture and patch known vulnerabilities before Red
 exploits them.
+
+*See also: [RED-6](14-red-cell-manual.md#red-6--cyber-the-off-pass-wildcard) — the same mechanic
+from the attacker's side.*
 
 > **Sources:** `spacesim/engine/cyber.py` · [`05-core-concepts.md`](05-core-concepts.md) §"Cyber — the off-pass exception"
 
