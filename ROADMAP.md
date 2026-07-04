@@ -420,11 +420,11 @@ time**: as-built, independently `VERIFIED` (FS-101 through FS-107, FS-109, FS-11
 as-built, `COMPLETE` pending verification (FS-114, and FS-115's FR-4110 slice); partially built /
 gap-closing forward design (FS-112); and fully forward design, capability not yet implemented,
 coding work not yet authorized by this documentation per MSTR-006 §3 (FS-201, FS-301, FS-113, and
-FS-115's FR-4210 slice). **All of these have since moved**: FS-115's FR-4110 slice (`IP-1150`) is
-now `VERIFIED`; FS-201/FS-113/FS-115's FR-4210 slice (`IP-2010`/`IP-1130`/`IP-1151`) were
-authorized and implemented (`COMPLETE`, pending their own `09-package-verification`); FS-301
-(`IP-3010`) was authorized (run #9) and is `READY`, not yet implemented — see the status table
-below for current, not authoring-time, status. FS-112/113/114/115 (new 2026-07) now have five
+FS-115's FR-4210 slice). **All of these have since moved**: FS-115's FR-4110 slice (`IP-1150`) and
+FS-114 (`IP-1140`) are now `VERIFIED`; FS-201/FS-113/FS-115's FR-4210 slice/FS-301
+(`IP-2010`/`IP-1130`/`IP-1151`/`IP-3010`) were all authorized and implemented (`COMPLETE`, pending
+their own `09-package-verification`) — see the status table below for current, not authoring-time,
+status. FS-112/113/114/115 (new 2026-07) now have five
 packages between them —
 `IP-1120`/`IP-1130`/`IP-1140`/`IP-1150`/`IP-1151` — authored after a build-status verification
 pass found each Feature partially or fully built (see `docs/implementation/
@@ -456,7 +456,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1100 | Save & Resume — deterministic round trip & content/session split | `implementation/packages/IP-1100-save-and-resume.md` | FS-110 | As-built | ✅ VERIFIED |
 | IP-1110 | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | `implementation/packages/IP-1110-ai-red-doctrine-automation.md` | FS-111 | As-built | ✅ VERIFIED |
 | IP-2010 | Competency Assessment — rubric computation | `implementation/packages/IP-2010-competency-assessment.md` | FS-201 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; `session/assessment.py` + `custody_confidence_at_decision` in `orders.py`/`custody.py`; awaiting `09-package-verification`) |
-| IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🟡 READY (**authorized 2026-07-03, run #9** — its IP-2010-reaching-COMPLETE dependency cleared 2026-07-03/run #5; IP-2010 is COMPLETE, not yet VERIFIED, which is the threshold IP-3010's own Dependencies field states) |
+| IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🔵 COMPLETE (implemented 2026-07-04, run #10 — new `spacesim/tools/` subpackage + `session/research_export.py`; awaiting `09-package-verification`) |
 | IP-1120 | Classification Banner — wire render/export path to the vignette's classification value | `implementation/packages/IP-1120-classification-banner.md` | FS-112 | Partially built (gap-closing) | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | IP-1130 | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | `implementation/packages/IP-1130-observer-read-only-access.md` | FS-113 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | IP-1140 | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | `implementation/packages/IP-1140-hot-seat-handoff.md` | FS-114 | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, `VR-1140` — FR-6610 trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
@@ -491,8 +491,7 @@ were all implemented (`READY → COMPLETE`), each pending its own `09-package-ve
 
 **Authorization update (2026-07-03, run #9):** `IP-3010` — the one package not authorized in the
 round above — was subsequently authorized. Its `IP-2010`-reaching-`COMPLETE` dependency had already
-cleared (run #5), so it flips `BLOCKED → READY` and is now the sole `READY` package awaiting
-`08-code-implementation`.
+cleared (run #5), so it flips `BLOCKED → READY`.
 
 **Verification update (2026-07-03, run #9):** `IP-1140` passed `09-package-verification`
 ([`VR-1140`](docs/implementation/verification/VR-1140-hot-seat-handoff.md)) and flipped to
@@ -500,13 +499,21 @@ cleared (run #5), so it flips `BLOCKED → READY` and is now the sole `READY` pa
 `Impl. Package` cells (were `UNASSIGNED`) corrected. **The package's documented FR-6610
 trigger/menu divergence was adjudicated, not waived**: the shipped manual-button/auto-cycle
 mechanism does not satisfy FR-6610's full intent — a High-severity finding, routed to
-`07-implementation-planning` for a gap-closing package, pending the user's explicit
-prioritization.
+`07-implementation-planning` for a gap-closing package. **Risk-acceptance update (2026-07-04):**
+the project owner explicitly accepted this risk rather than authorizing a gap-closing package
+("I accept the risk of a cell not blanking the screen during handover as long as hot seat is an
+option") — no further remediation planned unless hot-seat mode's availability is reconsidered.
+
+**Implementation update (2026-07-04, run #10):** `IP-3010` was implemented (`READY → COMPLETE`) —
+a new `spacesim/tools/` subpackage (`research_batch.run_batch()`, seeded-Monte-Carlo batch runner)
+and `session/research_export.py` (`RunRecord` + CSV/JSON export extending `aar.export_csv()`'s
+pattern), reading `session/assessment.py`'s already-computed rubric output once per run, never
+reimplementing it. 7 new tests; full suite 566 passed/3 skipped, both permanent gates green.
+Pending its own `09-package-verification` pass.
 
 `docs/implementation/00-master-build-plan.md`'s package table, dependency graph, parallel-
 opportunity list, critical-path note, and summary statistics have been updated accordingly (now
-18 packages total: 13 `VERIFIED`, 4 `COMPLETE` pending verification, 1 `READY` and authorized
-(`IP-3010`), 0 `BLOCKED`).
+18 packages total: 13 `VERIFIED`, 5 `COMPLETE` pending verification, 0 `READY`, 0 `BLOCKED`).
 
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 

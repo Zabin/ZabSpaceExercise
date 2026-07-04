@@ -298,7 +298,18 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `score_window_discipline`/`score_belief_truth_divergence` + `assessment_report`, never a
   composite score; belief-truth divergence classifies aware/unaware from `custody_confidence_at_decision`,
   a new field `orders.py`'s `_exec_payload()` records at order-issue time via `custody.py`'s
-  `confidence_at_decision()` helper, read back verbatim — never recomputed via replay).
+  `confidence_at_decision()` helper, read back verbatim — never recomputed via replay),
+  `research_export.py` (IP-3010 — `RunRecord` pydantic schema: `vignette_id`/`seed`/
+  `condition_label` + IP-2010's `assessment_report` output verbatim, never reimplemented;
+  `export_csv`/`export_json` extend `aar.export_csv()`'s flattening pattern to a multi-run table).
+- `spacesim/tools/` (IP-3010 — first subpackage of its kind: offline/CLI-style utilities that
+  drive the deterministic engine externally, not through the live `ui_web`/`session` request
+  path) — `research_batch.py`'s `run_batch(vignette_id, seeds, condition_label,
+  n_steps_or_until)` constructs one fresh seeded `SessionManager` per seed (no shared mutable
+  state between runs), advances to `n_steps_or_until` sim-seconds (or the vignette's own
+  estimated-duration horizon if omitted), and reads `session/assessment.py`'s `assessment_report`
+  once per run. Distinct from the repo-root `tools/` directory (non-package build scripts like
+  `tools/build_coastlines.py`) — this one must be importable by `spacesim/tests/`.
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`;
   **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
   route table at implementation time, not merely IP-1130's own enumerated list, per that package's

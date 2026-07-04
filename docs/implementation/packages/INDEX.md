@@ -53,7 +53,7 @@ unauthorized FS.
 | [IP-1100](IP-1100-save-and-resume.md) | Save & Resume — deterministic round trip & content/session split | [FS-110](../../features/FS-110-save-and-resume.md) | As-built | ✅ VERIFIED |
 | [IP-1110](IP-1110-ai-red-doctrine-automation.md) | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | [FS-111](../../features/FS-111-ai-red-doctrine-automation.md) | As-built | ✅ VERIFIED |
 | [IP-2010](IP-2010-competency-assessment.md) | Competency Assessment — rubric computation | [FS-201](../../features/FS-201-competency-assessment.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`; briefly `BLOCKED` 2026-07-02 on an ADR-0017 conflict, resolved same-day by `ADR-0032` — see the package's own header) |
-| [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | 🟡 READY (**authorized 2026-07-03, run #9** — the last of the five gated packages to receive it; its `IP-2010 → COMPLETE` blocker cleared 2026-07-03/run #5; a separate ADR-0029 conflict — never previously recorded in this package's own header — is now resolved by `ADR-0033`, see the package's own header) |
+| [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-04, run #10 — new `spacesim/tools/` subpackage + `session/research_export.py`; awaiting `09-package-verification`) |
 | [IP-1120](IP-1120-classification-banner.md) | Classification Banner — wire the render/export path to the vignette's classification value | [FS-112](../../features/FS-112-classification-banner.md) | Partially built (gap-closing) | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, [`VR-1140`](../verification/VR-1140-hot-seat-handoff.md) — FR-6610's trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
@@ -87,7 +87,12 @@ read path in `session/inprocess.py`/`ui_web/server.py`/`ui_web/static/`), likewi
 `InProcessSession.start()` hard-gated on unmet mandatory roles, `/roles/assign`+`/roles/staffing`
 endpoints, White-Cell-only seat-assignment UI), likewise pending `09-package-verification` — with
 one open finding: no role-based command-filtering consumer exists yet in `FS-105`/`IP-1050`/
-`IP-1051` (see the package's own Risks section and Master Build Plan Risk item 8).
+`IP-1051` (see the package's own Risks section and Master Build Plan Risk item 8). **`IP-3010` is
+also now `COMPLETE`** (implemented 2026-07-04, run #10 — a new `spacesim/tools/` subpackage
+(`research_batch.run_batch()`, seeded-Monte-Carlo batch runner) and `session/research_export.py`
+(`RunRecord` + CSV/JSON export extending `aar.export_csv()`'s pattern), reading
+`session/assessment.py`'s `assessment_report` once per run), likewise pending
+`09-package-verification`.
 
 **Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
 §3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in
@@ -95,8 +100,8 @@ one open finding: no role-based command-filtering consumer exists yet in `FS-105
 Authorization is a separate axis from the `READY`/`BLOCKED`/`COMPLETE` status vocabulary above: at
 authorization time, `IP-1120`/`IP-1151` were still `BLOCKED` on `IP-1150` reaching `VERIFIED`
 regardless of being authorized — that gate cleared the same day (`VR-1150`), so both are now
-`READY`. **`IP-3010` was subsequently authorized too (2026-07-03, run #9)** — its `IP-2010 →
-COMPLETE` blocker had already cleared (run #5), so it is now also `READY`.
+`READY`. **`IP-3010` was subsequently authorized too (2026-07-03, run #9)**, and implemented
+2026-07-04 (run #10) — it is now `COMPLETE`.
 
 **Executing a package.** The `08-code-implementation` skill
 (`.claude/skills/08-code-implementation/SKILL.md`) is the next stage downstream of this tier: it
@@ -105,9 +110,10 @@ selects exactly one `READY`-and-eligible package, implements it, and advances it
 package past `COMPLETE` to `VERIFIED` (that belongs to `09-package-verification`). Per this
 repository's MSTR-006 §3 rule, `08-code-implementation` treats `READY` status as necessary but not
 sufficient for any forward-design package until a separate, explicit user go-ahead is on record —
-`IP-2010`, `IP-1120`, `IP-1130`, `IP-1151`, and now `IP-3010` have all received that go-ahead;
-`IP-3010` is the only one of the five not yet implemented — it is now the sole `READY` package in
-this plan, eligible for a future `08-code-implementation` run.
+`IP-2010`, `IP-1120`, `IP-1130`, `IP-1151`, and `IP-3010` have all received that go-ahead and have
+since all been implemented (`COMPLETE`). **No package in this plan remains `READY`** — every
+package now has either shipped (`VERIFIED`) or been implemented (`COMPLETE`, pending
+`09-package-verification`).
 
 ## Status legend
 
