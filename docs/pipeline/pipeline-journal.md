@@ -13,14 +13,13 @@
 
 ## Position
 
-- **Updated:** 2026-07-04 (run #18)
-- **Increment:** two threads active. **Thread A (v1 baseline follow-through):** run #17's
-  `10-integration-review` came back clean; the project owner then chose (gate check, run #18) to
-  retro-verify all 11 as-built packages (`BL-0004`) before `11-release-readiness` runs. **1 of 11
-  done** — `IP-1010` verified this run (`VR-1010`, clean). **Thread B (training-corpus
-  elevation):** unchanged this run except `BL-0026` was also resolved in the same gate check — the
-  owner chose to explore restructuring the per-cell manual layout (separate from `BL-0029`'s
-  content-gap work); not run this cycle since this run's single step went to Thread A.
+- **Updated:** 2026-07-04 (run #19)
+- **Increment:** two threads active. **Thread A (v1 baseline follow-through):** the `BL-0004`
+  retro-verification sweep continues — 1 of 11 as-built packages verified (`IP-1010`, run #18); 10
+  remain before `11-release-readiness` runs. Not touched this run (user explicitly switched to
+  Thread B). **Thread B (training-corpus elevation):** its first real artifact-execution run
+  happened this run (#19) — `08-training-manual-authoring` closed both outstanding Thread-B items,
+  `BL-0029` (coverage gap) and `BL-0026` (layout evaluation), in one pass.
 - **Reconciliation note (run #16, preserved):** between runs #15 and #16, substantial pipeline-shaped work
   landed **outside** the manager's own loop (the user worked directly with the relevant skills
   across two other sessions, PRs #45 and #46, both merged to `main`): the "complete outstanding 08"
@@ -34,68 +33,64 @@
   against that reality now: the tree wins, and PR #46's own backlog entries (`BL-0025`-`BL-0027`,
   filed directly to `docs/pipeline/backlog.md` outside a manager run) are adopted into this
   journal's backlog tracking as of this run.
-- **Thread A pipeline state:** Stages 01-09 current (all 18 packages `VERIFIED`). **Stage 10 ran
-  this run (#17):** `10-integration-review` reviewed the full 18-package tranche —
-  [`integration-review-18-package-tranche.md`](../reviews/integration-review-18-package-tranche.md).
-  Full suite 566 passed/3 skipped (no regression), both permanent gates green. **No Critical/High
-  findings** — the tranche composes cleanly at the interface/invariant/behavioral level. Three
-  documentation/traceability-coherence findings filed: `BL-0029` (Medium — 5 of 7 tranche-2/
-  forward-design features, `IP-1120`/`IP-1130`/`IP-1151`/`IP-2010`/`IP-3010`, have zero coverage in
-  the per-cell training manuals or `training/15` §15.1), `BL-0030` (Low — `IP-1150`'s own
-  package-doc header still reads `COMPLETE`, materializing `BL-0008`'s predicted drift a second
-  time), `BL-0031` (Low — `feature-index.md`'s FS-112–115 descriptions still say "build status
-  unverified"). Five ripe backlog items were spot-checked in the same pass: `BL-0004` reconfirmed
-  true (still no `VR-xxxx` for the 11 as-built packages — now `NEEDS-USER`, see Open gates),
-  `BL-0008`/`BL-0011`/`BL-0015` all resolved `DONE` (their spot-checks are complete; `BL-0008`'s
-  concrete instance carries forward as `BL-0030`), `BL-0027` concretized into `BL-0029`. **Stage
-  10 is clean on functional grounds — this thread is now eligible for `11-release-readiness`**,
-  with Finding 1 (`BL-0029`) worth resolving or explicitly accepting first per the review's own
-  conclusion. Committed (review skill's own commit `761d352`, separate from this journal/backlog
-  commit per convention), pushed to `claude/pipeline-skill-17v91q`.
-- **Thread B pipeline state (training corpus):** unchanged since run #16 — Stages 00-07 current,
-  Stage 02 (R600) closed run #16, Stages 08-11 (training side) still never run. Two items now
-  `SCHEDULED` for a future `08-training-manual-authoring` pass: `BL-0029` (Medium — author the 5
-  missing feature sections + `training/15` §15.1 rows) and `BL-0026` (Low — evaluate/propose a
-  task-oriented restructuring grounded in R606, **as a separate pass from `BL-0029`**, per the
-  owner's run #18 decision). Neither has been run yet this cycle.
-- **Gate resolved (run #18):** two `NEEDS-USER` questions batched into one `AskUserQuestion` stop
-  before invoking this run's step. `BL-0004`: the owner chose **"retro-verify all 11"** over
-  accepting the gap or deferring again — `09-package-verification` now runs against each of the 11
-  as-built packages in turn (one per advance run) before `11-release-readiness` runs for the
-  tranche. `BL-0026`: the owner chose **"explore restructuring"** — a dedicated
-  `08-training-manual-authoring` pass will evaluate a task-oriented cut, kept separate from
-  `BL-0029`'s content-gap authoring.
-- **Stage 09 ran this run (#18):** `09-package-verification` retro-verified **IP-1010** (Mission
-  Planning) — [`VR-1010`](../implementation/verification/VR-1010-mission-planning.md), the first
-  formal VR any of the 11 as-built packages has ever had. Full suite 566 passed/3 skipped, both
-  permanent gates green. Every Definition-of-Done/Verification-Checklist item confirmed against
-  the live tree — **no functional discrepancies found**, `IP-1010`'s `VERIFIED` claim (made without
-  a VR at authoring time) is now independently confirmed accurate. Filled 5 previously-`UNASSIGNED`
-  RTM `Test` cells (`FR-3110`/`FR-3410`/`FR-1220`/`FR-1310`/`NFR-1600`) and fixed a malformed
-  `NFR-1500` row missing its `Impl. Package` column (same defect class as `BL-0009`). Four Low
-  findings filed: drifted line citations in both reference files (`BL-0032`, content confirmed
-  correct at the new locations) and file-level (not package-level) RTM attribution left open for
-  `FR-3110`/`FR-3410`/`FR-1220` pending the other as-built packages' own retro-verification
-  (`BL-0033`); the `NFR-1500` fix itself closed clean (`BL-0034`, `DONE`). Committed (verification
-  skill's own commit `0526a2d`, separate from this journal/backlog commit), pushed to
-  `claude/pipeline-skill-17v91q`.
-- **Backlog:** 35 total. This run: `BL-0032`/`BL-0033` filed `NEW→DEFERRED`, `BL-0034` filed
-  `NEW→DONE` (fixed same pass); `BL-0004` re-triaged `NEEDS-USER→SCHEDULED` (decision made, 1/11
-  packages now done); `BL-0026` re-triaged `NEEDS-USER→SCHEDULED` (decision made). No `NEEDS-USER`
-  entries remain open.
-- **Next step:** `09-package-verification` on `IP-1020` (Command Scheduling) — the next as-built
-  package in the `BL-0004` retro-verification sweep, in ID order. 9 more will follow
-  (`IP-1030`, `IP-1040`, `IP-1050`, `IP-1051`, `IP-1060`, `IP-1070`, `IP-1090`, `IP-1100`, `IP-1110`)
-  before `11-release-readiness` runs for the 18-package tranche. Thread B's
-  `08-training-manual-authoring` (on `BL-0029` and/or `BL-0026`) remains available in parallel
-  whenever the user wants to switch threads.
-- **Open gates:** none. PR #48 (runs #17-#18's work) is open/draft, not yet merged — no CI
+- **Thread A pipeline state:** Stages 01-09 current (all 18 packages `VERIFIED`), Stage 10 clean
+  (`10-integration-review`, run #17). `BL-0004` retro-verification sweep: 1 of 11 as-built packages
+  done (`IP-1010`, `VR-1010`, run #18); 10 remain (`IP-1020`, `IP-1030`, `IP-1040`, `IP-1050`,
+  `IP-1051`, `IP-1060`, `IP-1070`, `IP-1090`, `IP-1100`, `IP-1110`) before `11-release-readiness`
+  runs for the tranche. Not touched this run.
+- **Thread B pipeline state (training corpus):** **Stage 08 ran for the first time this run
+  (#19):** `08-training-manual-authoring` closed both outstanding items in one pass —
+  1. **`BL-0029`** (Medium, coverage gap): authored manual coverage for all 5 previously-undocumented
+     tranche-2/forward-design features. `WCM-1` gained an Observer-seat paragraph; `WCM-2` gained a
+     classification-override sentence and a new seat-to-role-assignment step (with the hard-gate
+     behavior on Start); two new sections, `WCM-11` (Competency assessment) and `WCM-12` (Offline
+     research batch exports), cover the White Cell Dashboard rubric panel and the
+     `spacesim/tools/research_batch.py` CLI. `training/15` §15.1 gained 5 rows, §15.2 gained
+     `WCM-11`/`WCM-12` rows and updated `WCM-1`/`WCM-2`'s backing-code citations. `02-interface.md`'s
+     stale "three cells" framing was also fixed (now four, Observer included) since it was found
+     stale while verifying Observer's as-built behavior. `spacesim/tests/test_vignette_tutorials.py`
+     re-run green (16 passed), no regression.
+  2. **`BL-0026`** (Low, layout evaluation): delivered as a new `training/15` §15.6, judged against
+     [R606](../research/encyclopedia/R606-minimalist-and-procedural-documentation.md)'s
+     task-completion-speed criterion. **Recommendation: keep the per-cell layout** — it already
+     satisfies FR-11110 and R606 for the large majority of sections; a full restructuring is not
+     warranted by the evidence. Applied in the same pass: lightweight "see also" cross-links added
+     between the three genuinely mirror-image Blue/Red sections (`BLU-9`↔`RED-6` cyber,
+     `BLU-3`↔`RED-3` previews, `BLU-4`↔`RED-4` SDA) to capture R606's cross-cutting benefit without
+     a full restructuring's cost. §15.6 names an explicit revisit trigger, filed as `BL-0035`.
+
+  Both items committed together (training-manual-authoring skill's own commit `e966c47`, separate
+  from this journal/backlog commit per convention), pushed to `claude/pipeline-skill-17v91q`.
+  Per this skill's own convention, its recommended next step is `09-training-manual-review` on the
+  touched scope (`docs/training/02`, `12`, `13`, `14`, `15`, `INDEX`) — not yet run.
+- **Backlog:** 36 total. This run: `BL-0029`→`DONE`, `BL-0026`→`DONE`, one new entry filed —
+  `BL-0035` (Low, `DEFERRED` — the layout-evaluation's named revisit trigger, not ripe today). No
+  `NEEDS-USER` entries open on either thread.
+- **Next step:** two independent, genuinely parallel options across the two threads — **Thread A:**
+  `09-package-verification` on `IP-1020` (Command Scheduling), next in the `BL-0004` sweep.
+  **Thread B:** `09-training-manual-review` on this run's touched scope, per
+  `08-training-manual-authoring`'s own recommended next step — independent review of the new
+  sections' accuracy/traceability/coverage/pedagogy before this thread is considered current. Both
+  are unblocked; no gate forces either over the other.
+- **Open gates:** none. PR #48 (runs #17-#19's work) is open/draft, not yet merged — no CI
   configured in this repo; no review comments as of this run.
 
 ---
 
 <!-- Run #16 Position detail preserved below for record; superseded by the reconciled Position
      block above. -->
+
+- **Thread A pipeline state (as of run #17-#18):** `10-integration-review` (run #17) found the
+  18-package tranche clean on functional grounds — no Critical/High findings; three documentation/
+  traceability findings filed (`BL-0029`, `BL-0030`, `BL-0031`). The project owner then chose
+  (gate check, run #18) to retro-verify all 11 as-built packages (`BL-0004`) before
+  `11-release-readiness` runs, rather than accept the evidence gap or defer again;
+  `09-package-verification` retro-verified `IP-1010` the same run (`VR-1010` — clean, no functional
+  discrepancies; 4 Low findings `BL-0032`-`BL-0034`).
+- **Thread B pipeline state (as of run #16-#18):** the training-corpus elevation (see the
+  reconciliation note above) landed `training/12-16` outside this manager; run #16 closed the R600
+  research tier; run #18's gate check resolved `BL-0026` (the owner chose to explore restructuring,
+  kept separate from `BL-0029`'s content-gap work) alongside `BL-0004`.
 
 - **Thread A pipeline state (as of run #16):** Stages 01-09 current (all 18 packages `VERIFIED`
   per run #15). Stage 10 (`10-integration-review`) unblocked, not yet run — this thread's
@@ -394,3 +389,4 @@
 | 16 | 2026-07-04 | override (`run 02-research-training-pedagogy`, at the user's explicit request "Run the pipeline to author the R600 topics") | `02-research-training-pedagogy` | R601-R608, the full R600 tier, dependency order | **First, reconciliation:** the training-corpus elevation (MSTR-001 §2/§5, GDS-00/GDS-01 sections, assumptions-register A12, FR-11000/NFR §16, four new skills, per-cell manuals, training/15-16) had landed on `main` across two prior sessions (PR #45 and PR #46, both merged) without ever running through this manager -- reconciled into this journal's Position block for the first time this run; backlog BL-0025/BL-0026/BL-0027 (filed directly to backlog.md by those sessions) adopted into tracking. Branch restarted from origin/main (its own prior PR #46 had merged). Then executed the override: authored all 8 R600 topics (R601 Instructional Systems Design, R602 Adult Learning Theory, R603 Simulation-Based Learning & Debriefing, R604 Cognitive Load & Scaffolding, R605 Learning-Path & Progression Design, R606 Minimalist & Procedural Documentation, R607 Assessment of Learning in Wargames, R608 Software Onboarding & Tutorial Design), each with §2 Scope, inline citations, Sources subsections, and frontmatter from the first draft. WebFetch was blocked by this session's egress policy (403 organizational-policy denial) for the whole pass -- citations rest on multi-source WebSearch corroboration, flagged transparently in every topic/index and as a new finding. Filled in RTM Research cells for the FR-11000 family + NFR-3600 (previously UNASSIGNED/"not yet citable"). Added R607 to R202/R208's Referenced By. Updated ROADMAP/CLAUDE.md/research INDEX. BL-0025 -> DONE. BL-0026 re-ripened (its "after R606 authors" trigger fired) -> re-dispositioned NEEDS-USER, not batched into a gate this run (Low, non-blocking). Harvested 1 new finding -> BL-0028 (Medium, DEFERRED -- the WebFetch-verification-pass gap, named trigger: a future unrestricted-WebFetch session). Committed (research skill's own commit), pushed to `claude/skills-docs-hierarchy-gy1422`. | Two parallel threads available: Thread A `10-integration-review` on the 18-VERIFIED-package tranche (unchanged from run #15); Thread B `08-training-manual-authoring` or `08-vignette-development` picking up real training-artifact work, including BL-0026's now-ripe layout question -- or ask the user which thread to prioritize |
 | 17 | 2026-07-04 | advance | `10-integration-review` | Full 18-package Master Build Plan tranche (IP-1010 through IP-3010), carrying 5 ripe backlog items (BL-0004, BL-0008, BL-0011, BL-0015, BL-0027) | First reconciliation: confirmed current branch (`claude/pipeline-skill-17v91q`) up to date with `main` tip `0e2aa13` (PR #47, run #16's work, already merged); no open PRs; no drift beyond what run #16 already recorded. Triaged backlog: 5 DEFERRED entries whose named "next 10-integration-review" trigger had fired were re-dispositioned SCHEDULED to ride this run. Gate check: no MSTR-006/release-GO/unadjudicated-Critical-High gate applied to invoking 10-integration-review itself; proceeded. Invoked `10-integration-review`: installed pytest deps, ran full suite (566 passed/3 skipped, no regression) and both permanent gates (14 passed) against commit `0e2aa13`. All 5 dimensions exercised: interface consistency (re-derived live 25-route table vs. test_observer.py's 21-entry table, BL-0011 reconfirmed clean), invariant sweep (permanent gates green), behavioral coherence (BL-0014 still the only instance, not re-derived a third time), traceability coherence (BL-0004 reconfirmed true; found IP-1150's own package-doc header still stale at COMPLETE, a second materialization of BL-0008's predicted drift), documentation coherence (found 5 of 7 tranche-2/forward-design features -- IP-1120/IP-1130/IP-1151/IP-2010/IP-3010 -- entirely absent from the per-cell training manuals and training/15 §15.1, concretizing BL-0027). Wrote `docs/reviews/integration-review-18-package-tranche.md`: no Critical/High findings, 1 Medium (training coverage gap) + 2 Low (package-doc/feature-index staleness). Updated ROADMAP.md's Implementation Packages theme with the review's outcome. Committed `761d352` (review skill's own commit), pushed. Harvested 3 new findings -> BL-0029 (Medium, SCHEDULED, rides 08-training-manual-authoring), BL-0030 (Low, DEFERRED), BL-0031 (Low, DEFERRED). Backlog spot-checks resolved: BL-0008/BL-0011/BL-0015 -> DONE; BL-0004 -> NEEDS-USER (ripe, reconfirmed, decision now due); BL-0027 -> DEFERRED (concretized into BL-0029). | Two parallel threads available: Thread A `11-release-readiness` for this tranche (Stage 10 came back clean; BL-0004's NEEDS-USER question is cheap to batch into that stage's own gate check); Thread B `08-training-manual-authoring` on BL-0029 (5 missing feature sections + traceability rows), optionally resolving BL-0026 in the same pass -- or ask the user which thread to prioritize |
 | 18 | 2026-07-04 | advance (gate resolved via AskUserQuestion) | `09-package-verification` | IP-1010 (first of 11 as-built packages in the BL-0004 retro-verification sweep) | Reconciliation: confirmed PR #48 open/draft (run #17's work), no CI configured in this repo, no review comments, no drift. Chose Thread A (11-release-readiness track) over Thread B as this run's step. Gate check: BL-0004 (Thread A) and BL-0026 (Thread B) were both ripe NEEDS-USER entries; batched into one AskUserQuestion stop per "ask once, not five times." Owner chose "retro-verify all 11" for BL-0004 (not accept-the-gap or defer-again) and "explore restructuring" for BL-0026 (not keep-as-is or wait-for-BL-0029). This changed the plan: instead of 11-release-readiness, this run's step became 09-package-verification on the first as-built package. Invoked 09-package-verification on IP-1010 (lowest ID): full suite 566 passed/3 skipped (no regression), both permanent gates green, all DoD/Checklist items confirmed against the live tree -- no functional discrepancies, IP-1010's pre-existing VERIFIED claim now independently confirmed accurate for the first time. VR-1010 written. Filled 5 previously-UNASSIGNED RTM Test cells (FR-3110/FR-3410/FR-1220/FR-1310/NFR-1600) and fixed a malformed NFR-1500 row missing its Impl. Package column (same defect class as BL-0009). Updated Master Build Plan, packages/INDEX.md, verification/INDEX.md. Committed `0526a2d` (verification skill's own commit), pushed. Harvested 3 new findings -> BL-0032 (Low, DEFERRED -- drifted line citations), BL-0033 (Low, DEFERRED -- file-level RTM attribution shared with other as-built packages), BL-0034 (Low, DONE -- NFR-1500 row fixed same pass). BL-0004 -> SCHEDULED (1 of 11 done); BL-0026 -> SCHEDULED (restructuring pass to ride a future 08-training-manual-authoring invocation, separate from BL-0029). Also fixed a duplicated "Reconciliation note (run #16)" paragraph accidentally introduced into this journal's own Position block during run #17's edit -- self-correction, no ledger impact. | `09-package-verification` on IP-1020 (Command Scheduling), next in ID order in the BL-0004 sweep; 9 more as-built packages remain after that before 11-release-readiness runs for the tranche. Thread B's 08-training-manual-authoring (BL-0029 and/or BL-0026) remains available in parallel |
+| 19 | 2026-07-04 | override (`run 08-training-manual-authoring`, at the user's explicit request to switch to Thread B "to catch up with the rest of the pipeline items") | `08-training-manual-authoring` | BL-0029 (author 5 missing feature sections + traceability rows) and BL-0026 (layout evaluation), bundled into one invocation per the user's framing | Reconciliation: confirmed PR #48 still open/draft, clean tree, no drift since run #18; backlog matched the journal exactly. No gate applied (training-manual authoring is not MSTR-006 §3-gated, no release GO, no unadjudicated Critical/High, no open NEEDS-USER). Invoked 08-training-manual-authoring with both items as its target. Read all 5 tranche-2 packages' docs plus the live index.html/app.js/inprocess.py/server.py/research_batch.py source to verify as-built behavior before writing. Authored: WCM-1 (Observer seat paragraph), WCM-2 (classification-override sentence + new seat-to-role-assignment step with hard-gate behavior), new WCM-11 (Competency assessment) and WCM-12 (Offline research batch exports); fixed 02-interface.md's stale "three cells" framing (now four, Observer). Added training/15 §15.1 rows for all 5 features, §15.2 rows for WCM-11/12, updated WCM-1/WCM-2's backing-code citations. Delivered BL-0026's evaluation as new §15.6, grounded in R606's task-completion-speed criterion -- recommended keeping the per-cell layout (not restructuring), and added lightweight "see also" cross-links between the three genuinely mirror-image Blue/Red sections (BLU-9<->RED-6 cyber, BLU-3<->RED-3 previews, BLU-4<->RED-4 SDA) as the low-cost way to capture the cross-cutting benefit. Updated training/INDEX.md's module-12 description. Ran spacesim/tests/test_vignette_tutorials.py (16 passed, no regression) as the checkable slice. Committed `e966c47` (training-manual-authoring skill's own commit), pushed. Harvested: BL-0029 -> DONE, BL-0026 -> DONE, one new finding -> BL-0035 (Low, DEFERRED -- the layout evaluation's named revisit trigger). | Two parallel threads available: Thread A `09-package-verification` on IP-1020 (next in the BL-0004 sweep); Thread B `09-training-manual-review` on this run's touched scope, per 08-training-manual-authoring's own recommended next step -- or ask the user which thread to prioritize |
