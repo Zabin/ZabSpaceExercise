@@ -199,6 +199,12 @@ hostile participant on the LAN can read another cell's belief state through `/sc
 v1 PME training context (everyone in the room is on the same team learning together) and is
 documented as the explicit trust boundary; see `docs/AUDIT-2026-06.md` §D5 / §F1. Hardening
 options (per-cell tokens) are tracked in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
+**The Observer seat's mutation-rejection (IP-1130) is enforced at this same trust level, not a
+stronger one** — the server rejects any request asserting `cell=observer`, a real structural
+enforcement (it holds even for a request that bypasses the UI entirely), but the seat assertion
+itself is still client-side trust like every other cell: a hostile participant simply lying about
+`cell` bypasses it the same way they could already impersonate another cell today. This adds a new
+rejection rule, not a new authentication mechanism.
 
 The import-guard is a plain pytest test (`test_import_guard.py`), not import-linter — it AST-scans
 `spacesim/engine/` for forbidden imports, wall-clock reads, and any `random` use outside `rng.py`.
@@ -265,6 +271,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/sun.py` — `sun_unit_eci`, binary `is_sunlit()`, smooth `eclipse_fraction()`
   (umbra/penumbra interpolation; FW §11.B.10).
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
+  `RoleRequirement`/`Vignette.roles_needed` (IP-1151, FR-4210) — optional, additive staffing
+  requirements; absent for every vignette shipped before this package.
   `Vignette.coaching` is a list of `{at_sim_t?, cell, title, body}` notes (FW §11.D.17).
 - `spacesim/content/inject_library.yaml` — five reusable white-cell inject templates
   (debris breakup, GNSS-jam advisory, ambiguous RPO, GS outage, geomagnetic storm).
@@ -279,14 +287,38 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   the sim back),
   `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`
   (**multiplayer:** `_locked(sid)` cm wraps every mutation; every read pass-through calls
-  `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added),
+  `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added;
+  **IP-1130:** `set_observer_view`/`get_observer_view`/`observer_designation` — a fourth,
+  White-Cell-designated read-only seat dispatching unmodified to `get_godview`/`get_view`, no
+  parallel filtering path; **IP-1151:** `assign_role`/`staffing_report` — seat-to-role bindings
+  against a vignette's `roles_needed`, hard-gating `start()` on any unmet mandatory entry),
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
-  `aar.py` (replay/scrub/branch-compare + `snapshot_at`).
-- `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`) + `static/`
+  `aar.py` (replay/scrub/branch-compare + `snapshot_at`),
+  `assessment.py` (IP-2010 — read-only competency-rubric scoring: `score_custody_quality`/
+  `score_window_discipline`/`score_belief_truth_divergence` + `assessment_report`, never a
+  composite score; belief-truth divergence classifies aware/unaware from `custody_confidence_at_decision`,
+  a new field `orders.py`'s `_exec_payload()` records at order-issue time via `custody.py`'s
+  `confidence_at_decision()` helper, read back verbatim — never recomputed via replay),
+  `research_export.py` (IP-3010 — `RunRecord` pydantic schema: `vignette_id`/`seed`/
+  `condition_label` + IP-2010's `assessment_report` output verbatim, never reimplemented;
+  `export_csv`/`export_json` extend `aar.export_csv()`'s flattening pattern to a multi-run table).
+- `spacesim/tools/` (IP-3010 — first subpackage of its kind: offline/CLI-style utilities that
+  drive the deterministic engine externally, not through the live `ui_web`/`session` request
+  path) — `research_batch.py`'s `run_batch(vignette_id, seeds, condition_label,
+  n_steps_or_until)` constructs one fresh seeded `SessionManager` per seed (no shared mutable
+  state between runs), advances to `n_steps_or_until` sim-seconds (or the vignette's own
+  estimated-duration horizon if omitted), and reads `session/assessment.py`'s `assessment_report`
+  once per run. Distinct from the repo-root `tools/` directory (non-package build scripts like
+  `tools/build_coastlines.py`) — this one must be importable by `spacesim/tests/`.
+- `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`;
+  **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
+  route table at implementation time, not merely IP-1130's own enumerated list, per that package's
+  own Risks note — plus `/observer/view` + `/observer/designation`) + `static/`
   front end: `app.js` (command menu with live dry-run preview + pre-disabled Issue + kinetic
   consequence-confirm, fleet rail with next-contact countdown/SoC/alarm badge/filter + alarm
   deep-link, `j/k/c/g` keyboard nav, presentation mode, supersede-guarded refresh, 2D belief map,
-  subsystem drill-down whose cards carry per-subsystem telemetry + command-verb buttons), `globe.js` (3D
+  subsystem drill-down whose cards carry per-subsystem telemetry + command-verb buttons; `api.post`
+  attaches the caller's own seat as a `cell` query param to every mutating call), `globe.js` (3D
   orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`
   (telemetry line graphs), `style.css`, `index.html`.
 - `tools/build_coastlines.py` — regenerates the committed `static/world.json` (low-res world map)

@@ -22,6 +22,7 @@
       <button class="cell" data-cell="white">White</button>
       <button class="cell" data-cell="blue">Blue</button>
       <button class="cell" data-cell="red">Red</button>
+      <button class="cell" data-cell="observer" title="Read-only — White-Cell-designated view, no command ability">Observer</button>
     </div>
     <div class="ctrl white-only">
       <button id="clock-toggle" title="Pause / resume the server-authoritative real-time clock">⏸ Pause</button>
@@ -42,10 +43,43 @@
           <label class="menu-item-inline">Seed
             <input id="seed" type="number" value="1" style="width:5em">
           </label>
+          <label class="menu-item-inline" title="White Cell override — set once at Load, fixed for the session's lifetime (FR-4510)">Classification
+            <input id="classification-override" type="text" placeholder="(vignette default)" style="width:12em">
+          </label>
           <div class="menu-item-row">
             <button id="load" class="primary">Load</button>
             <button id="start" disabled>▶ Start</button>
           </div>
+        </div>
+        <div class="menu-section">
+          <div class="menu-head">Observer</div>
+          <label class="menu-item-inline" title="What the read-only Observer seat sees (FR-6510) — reused unmodified from White's godview or the named cell's own fog-of-war view">View
+            <select id="observer-designation">
+              <option value="godview">Godview</option>
+              <option value="blue">Blue</option>
+              <option value="red">Red</option>
+            </select>
+          </label>
+        </div>
+        <div class="menu-section">
+          <div class="menu-head" title="A vignette may declare mandatory seat/role staffing requirements (FR-4210) — Start is refused while any is unmet">Seat-to-role assignment</div>
+          <label class="menu-item-inline">Seat
+            <input id="role-seat" type="text" placeholder="e.g. blue-bus-op" style="width:10em">
+          </label>
+          <label class="menu-item-inline">Asset / constellation
+            <input id="role-asset" type="text" placeholder="asset id" style="width:10em">
+          </label>
+          <label class="menu-item-inline">Role
+            <select id="role-kind">
+              <option value="both">Both</option>
+              <option value="bus">Bus</option>
+              <option value="payload">Payload</option>
+            </select>
+          </label>
+          <div class="menu-item-row">
+            <button id="role-assign">Assign</button>
+          </div>
+          <pre id="staffing-report" class="muted" style="font-size:11px">—</pre>
         </div>
       </div>
     </div>
@@ -93,7 +127,7 @@
         </div>
       </div>
     </div>
-    <span class="banner">UNCLASSIFIED // TRAINING</span>
+    <span id="banner" class="banner">UNCLASSIFIED-TRAINING</span>
   </header>
 
   <main>
@@ -549,6 +583,16 @@
       <div><h3>Objectives at this point</h3><pre id="aar-obj">—</pre></div>
       <div><h3>Assets at this point</h3><pre id="aar-assets">—</pre></div>
     </div>
+  </section>
+
+  <section class="panel white-only" id="assessment-panel" style="margin:0 12px 14px">
+    <h2>Competency assessment — rubric, not a score</h2>
+    <div class="ctrl"><button id="assessment-refresh">🔄 Refresh</button></div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
+      <div><h3>Blue</h3><pre id="assessment-blue">—</pre></div>
+      <div><h3>Red</h3><pre id="assessment-red">—</pre></div>
+    </div>
+    <p id="assessment-disclosure" class="muted" style="font-size:11px">—</p>
   </section>
 
   <section class="panel" id="drill-panel" style="margin:0 12px 14px">

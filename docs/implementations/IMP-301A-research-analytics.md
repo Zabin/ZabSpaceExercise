@@ -17,9 +17,9 @@
 > historical reference and is not deleted, but [`IP-3010`](../implementation/packages/IP-3010-research-analytics.md)
 > is the document of record going forward — see
 > [`docs/implementation/00-master-build-plan.md`](../implementation/00-master-build-plan.md)
-> §"Relationship to the prior `docs/implementations/` corpus." **This remains a forward-design,
-> not-yet-implemented, not-yet-authorized package under its new ID, additionally blocked on
-> IP-2010 (MSTR-006 §3) — superseding it does not change its authorization or blocking status.**
+> §"Relationship to the prior `docs/implementations/` corpus." **Update (2026-07-04): `IP-3010`
+> has since been authorized (MSTR-006 §3, run #9) and implemented (`COMPLETE`, run #10) — see
+> `IP-3010`'s own header for current status; this historical file is not otherwise updated.**
 
 ## 1. Situation
 

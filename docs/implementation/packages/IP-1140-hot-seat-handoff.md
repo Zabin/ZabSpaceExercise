@@ -1,12 +1,27 @@
 # IP-1140 — Hot-Seat Hand-Off Screen-Blank Menu
 
 > **Package ID:** IP-1140
-> **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implementation exists and is in production use; entered `COMPLETE`, not
-> `VERIFIED`, per this skill's rule that an as-built package may be born `VERIFIED` only after an
-> actual `09-package-verification` pass — this authoring pass confirmed the cited code exists, but
-> is not that independent pass. A documented behavioral divergence from FR-6610's literal wording,
-> below, should be adjudicated during that verification.)*
+> **Version:** 1.1 (2026-07-03 — independently verified; see Status below.)
+> **Status:** ✅ VERIFIED *(2026-07-03, [`VR-1140`](../verification/VR-1140-hot-seat-handoff.md) —
+> the hard postcondition (no leaked content, persists until Resume) confirmed against the live tree;
+> full suite green (559 passed/3 skipped), both permanent gates green. **The documented FR-6610
+> trigger/menu divergence was adjudicated, not waived**: `09-package-verification` determined the
+> shipped manual-button/auto-cycle mechanism does **not** satisfy FR-6610's full intent — the
+> missing automatic-trigger detection is a real, unmitigated risk in the one Feature enforcing
+> fog-of-war client-side with no server backstop. Filed as a High-severity finding (`BL-0015`),
+> routed to `07-implementation-planning` for a gap-closing package pending the user's
+> prioritization — see `VR-1140`'s Adjudication section and the Master Build Plan's Risk item 6.
+> **Risk-acceptance decision (2026-07-04, project owner, via `00-pipeline-manager`):** the user
+> explicitly accepted this risk rather than authorizing a gap-closing package now — "I accept the
+> risk of a cell not blanking the screen during handover as long as hot seat is an option." No
+> gap-closing package is authorized at this time; `BL-0015` closes `DEFERRED` with the revisit
+> trigger "if hot-seat mode's continued availability is ever reconsidered, or before the next
+> `10-integration-review`." This does not change this package's own `VERIFIED` status: it
+> accurately, non-overclaimingly documented exactly this gap and asked for exactly this
+> adjudication. Was 🔵 COMPLETE *(entered `COMPLETE`, not `VERIFIED`,
+> per this skill's rule that an as-built package may be born `VERIFIED` only after an actual
+> `09-package-verification` pass — the authoring pass confirmed the cited code exists, but was not
+> that independent pass).*)*
 > **Dependencies:** FS-114, [IP-1090](IP-1090-multiplayer-session-transport.md) (the one-Session-
 > object hot-seat/LAN sharing mechanism this hand-off menu sits on top of, per FS-114's own
 > Dependencies field) — `VERIFIED`
@@ -137,13 +152,21 @@ against a running session.
 ## Verification Checklist
 
 - [x] `app.js:2717-2733`, `index.html:596-601` read and confirmed against the current tree.
-- [ ] `09-package-verification` should perform FS-114's Acceptance Criteria demonstration by hand:
+  **Corrected 2026-07-03 (`VR-1140`): these line numbers had drifted** — the code now lives at
+  `app.js:2805-2821`/`:2840` and `index.html:640-645` (content unchanged, citation stale from other
+  work landing above this block). See `VR-1140` Findings #2.
+- [x] `09-package-verification` should perform FS-114's Acceptance Criteria demonstration by hand:
   hand off from Red to Blue on the same browser, confirm no Red-cell data remains visible once the
-  overlay is shown, and confirm nothing reappears before Resume.
-- [ ] `09-package-verification` should explicitly adjudicate the two open Definition-of-Done items
+  overlay is shown, and confirm nothing reappears before Resume. **Done 2026-07-03 (`VR-1140`)** —
+  verified by static analysis of the CSS stacking context (`#handover`'s `z-index`/`position: fixed`
+  occlusion guarantee), dispositive for both Acceptance Criteria bullets; see `VR-1140`.
+- [x] `09-package-verification` should explicitly adjudicate the two open Definition-of-Done items
   above — either accept the manual-trigger/auto-cycle mechanism as satisfying FR-6610's intent (the
   hard postcondition, which is what carries the fog-of-war-leak consequence FS-114's Security
   Considerations flags, is met) or route a gap-closing package back through this pipeline.
+  **Adjudicated 2026-07-03 (`VR-1140`): NOT accepted as satisfying FR-6610's full intent** — routed
+  to `07-implementation-planning` for a gap-closing package as a High-severity finding, pending the
+  user's prioritization. See `VR-1140`'s own Adjudication section for the full reasoning.
 
 ## Dependencies
 
@@ -176,6 +199,18 @@ against a running session.
   candidate for prioritization if `09-package-verification` or the user elects to close the
   divergence, consistent with FS-114's own Open Questions note ("should likely be prioritized
   given the consequence profile").
+- **Adjudicated 2026-07-03 (`VR-1140`): this risk materialized as a formal High-severity finding,
+  not merely a documented possibility.** `09-package-verification` determined the manual-trigger gap
+  does not satisfy FR-6610's intent and recommended, at minimum, an idle/visibility-based fallback
+  trigger as defense-in-depth alongside the existing manual button (a full automatic
+  seat-relinquish-detection redesign is a larger, separate scoping question). Routed to
+  `07-implementation-planning` for a gap-closing package; required the user's explicit
+  prioritization/authorization before that package could be built, per MSTR-006 §3.
+- **Risk accepted, 2026-07-04 (project owner):** rather than authorizing a gap-closing package now,
+  the project owner explicitly accepted this risk as a known limitation of hot-seat mode ("I accept
+  the risk of a cell not blanking the screen during handover as long as hot seat is an option"). No
+  further remediation is planned unless hot-seat mode's continued availability is reconsidered, or
+  the next `10-integration-review` re-raises it. `BL-0015` closed `DEFERRED` on that basis.
 
 ## Rollback Considerations
 

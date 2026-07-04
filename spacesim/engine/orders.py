@@ -30,7 +30,12 @@ from spacesim.engine.access import (
 )
 from spacesim.engine.bus import downlink_storage
 from spacesim.engine.buscommands import apply_command, can_issue
-from spacesim.engine.custody import Track, WEAPONS_QUALITY_THRESHOLD, observe
+from spacesim.engine.custody import (
+    Track,
+    WEAPONS_QUALITY_THRESHOLD,
+    confidence_at_decision,
+    observe,
+)
 from spacesim.engine.effects import EffectInstance, ModerateEffectResolver, is_link_denied
 from spacesim.engine.propagator import ModeratePropagator
 from spacesim.engine.world import WorldState
@@ -393,6 +398,16 @@ class OrderSystem:
     # -- execution payloads ----------------------------------------------------
     def _exec_payload(self, order: Order, win: AccessWindow) -> tuple[str, dict]:
         p = order.params
+        # IP-2010 v1.1 (BL-0002) — capture the issuing cell's live track confidence for
+        # order.target at the sim-time the operator actually clicked Issue (order.issued_at),
+        # not the later window-open execution time. This is the same number scene.py's
+        # RenderTrack.confidence already displays to the operator; recorded here, once, into
+        # every DECISION_KINDS event's payload so session/assessment.py's belief-truth-divergence
+        # scorer can read it back verbatim instead of recomputing it via replay. None when the
+        # order has no target or the cell holds no track on it.
+        custody_confidence = confidence_at_decision(
+            self.world.tracks, order.cell, order.target, order.issued_at,
+        )
         if order.action == "jam":
             # Audit 2026-06 Commands §C2 — Pₛ is fully derived from physical inputs
             # (modulation × power × bandwidth coverage). The operator no longer types
@@ -439,6 +454,7 @@ class OrderSystem:
                 "effect": effect.model_dump(),
                 "consume": {"actor": order.actor,
                             "power_w": _jam_power(power_w, modulation)},
+                "custody_confidence_at_decision": custody_confidence,
             }
 
         if order.action == "engage":
@@ -481,6 +497,7 @@ class OrderSystem:
             return "execute_effect", {
                 "effect": effect.model_dump(),
                 "consume": {"actor": order.actor, "ammo": max(1, salvo_n)},
+                "custody_confidence_at_decision": custody_confidence,
             }
 
         if order.action == "observe":
@@ -548,6 +565,7 @@ class OrderSystem:
                 "look_angle_deg": look_angle_deg,
                 "duration_s": duration_s,
                 "footprint": footprint,
+                "custody_confidence_at_decision": custody_confidence,
             }
 
         if order.action == "downlink":
@@ -561,10 +579,14 @@ class OrderSystem:
                 "bitrate_cap_kbps": p.get("bitrate_cap_kbps"),
                 "priority": p.get("priority", "routine"),
                 "partial_dump": p.get("partial_dump"),
+                "custody_confidence_at_decision": custody_confidence,
             }
 
         if order.action == "command":
-            return "execute_command", {"actor": order.actor, "verb": p.get("verb"), "params": dict(p)}
+            return "execute_command", {
+                "actor": order.actor, "verb": p.get("verb"), "params": dict(p),
+                "custody_confidence_at_decision": custody_confidence,
+            }
 
         # maneuver
         dv = list(np.asarray(p.get("dv", [0, 0, 0]), dtype=float))
@@ -572,6 +594,7 @@ class OrderSystem:
             "actor": order.actor,
             "dv": dv,
             "cost": float(np.linalg.norm(dv)),
+            "custody_confidence_at_decision": custody_confidence,
         }
 
     def _plan_cyber(self, order: Order, commit: bool) -> None:

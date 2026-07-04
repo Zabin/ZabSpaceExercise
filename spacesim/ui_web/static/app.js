@@ -37,7 +37,16 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const api = {
   async get(p) { const r = await fetch(p); if (!r.ok) throw new Error(await r.text()); return r.json(); },
-  async post(p, b) { const r = await fetch(p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) }); if (!r.ok) throw new Error(await r.text()); return r.json(); },
+  // IP-1130 — every POST carries the caller's own current seat as a query param, so every mutating
+  // route's server-side Observer guard can see who's asking even for routes whose body has no
+  // "cell" field of its own (start/step/clock/etc.). Centralized here rather than touching every
+  // individual call site; routes that already read `cell` from the JSON body simply ignore it.
+  async post(p, b) {
+    const url = p + (p.includes("?") ? "&" : "?") + "cell=" + encodeURIComponent(CELL);
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
 };
 // Drop sub-second precision so the displayed clock never shows .xxx ms — sim time advances
 // per-event but the readouts here are operator-grade, not millisecond-precise.
@@ -179,11 +188,25 @@ function updateSessionSummary(vignetteLabel, started) {
   el.textContent = `${vignetteLabel || ""} · ${SID} · ${tag}`.replace(/^ · /, "");
 }
 
+// IP-1120 — the banner is set once at Load and fixed for the session's lifetime (FR-4510); no
+// polling needed. Both the creating tab (loadSession) and a joining tab (joinSessionFromHash)
+// read it from the server (never re-derive it), per NFR-3100's single-source-of-truth guarantee.
+function setBanner(text) {
+  const el = $("banner");
+  if (el && text) el.textContent = text;
+}
+
 async function loadSession() {
   stopRealtimeClock();
   const vselect = $("vignette");
   const vlabel = vselect && vselect.selectedOptions[0] ? vselect.selectedOptions[0].textContent : vselect.value;
-  SID = (await api.post("/api/sessions", { vignette_id: vselect.value, seed: +$("seed").value })).session;
+  const classOverride = ($("classification-override") || {}).value || "";
+  const resp = await api.post("/api/sessions", {
+    vignette_id: vselect.value, seed: +$("seed").value,
+    classification: classOverride.trim() || undefined,
+  });
+  SID = resp.session;
+  setBanner(resp.classification);
   location.hash = SID;   // multiplayer: shareable URL — Blue/Red tabs open this to join
   $("session").textContent = "session " + SID; $("start").disabled = false;
   updateSessionSummary(vlabel, false);
@@ -205,6 +228,7 @@ async function joinSessionFromHash() {
     $("session").textContent = "session " + SID;
     $("start").disabled = !!found.started;
     updateSessionSummary(found.title || found.vignette_id, found.started);
+    setBanner(found.classification);   // IP-1120 — same resolved value the creating tab set
     const injects = await api.get(`/api/sessions/${SID}/injects`).catch(() => []);
     $("inject-sel").innerHTML = injects.map((i) => `<option value="${esc(i.id)}">${esc(i.label)}</option>`).join("") || "<option>(none)</option>";
     await loadInjectLibrary();
@@ -269,7 +293,11 @@ function updateClockDisplay() {
   }
 }
 const start = async () => {
-  await api.post(`/api/sessions/${SID}/start`);            // server.start() auto-arms the clock
+  // IP-1151 — Start is hard-blocked server-side while a mandatory role assignment is unmet; the
+  // Ack comes back HTTP 200 with ok:false (a rejected request, not a server error), so it must be
+  // checked explicitly rather than treated as success by default.
+  const ack = await api.post(`/api/sessions/${SID}/start`);
+  if (!ack.ok) { alert(ack.reason || "Start refused"); return; }
   startRealtimeClock();                                     // begin client poll loop
   await refresh();
 };
@@ -408,6 +436,13 @@ function setCell(c) {
   document.body.setAttribute("data-cell", c);    // drives --cell-accent across panels/borders/rows
   document.querySelectorAll(".cell").forEach((b) => b.classList.toggle("active", b.dataset.cell === c));
   document.querySelectorAll(".white-only").forEach((el) => { el.style.display = c === "white" ? "" : "none"; });
+  // IP-1130 — Observer has no command ability whatsoever (FR-6510). This is a UX convenience only;
+  // the server-side guard on every mutating route is the actual enforcement (server.py's
+  // _reject_observer, exercised even for a request that bypasses this UI entirely).
+  const isObserver = c === "observer";
+  if ($("issue")) $("issue").disabled = isObserver;
+  document.querySelectorAll("#order-panel input, #order-panel select, #order-panel button")
+    .forEach((el) => { el.disabled = isObserver; });
   if (window.redrawAll) redrawAll();            // re-tint own-asset markers immediately
   refresh();
 }
@@ -609,7 +644,7 @@ const LAYOUT_PANELS = {
   "globe+map": ["viewers-panel", "globe-panel", "map-panel", "cell-time-panel"],
   fleet:       ["fleet-panel", "drill-panel", "cell-time-panel"],
   order:       ["order-panel", "activity-panel", "cell-time-panel"],
-  aar:         ["aar-panel", "cell-time-panel"],
+  aar:         ["aar-panel", "assessment-panel", "cell-time-panel"],
 };
 
 function popOut(layoutToken) {
@@ -1102,7 +1137,15 @@ async function refresh() {
   const my = ++REFRESH_SEQ;
   const stale = () => my !== REFRESH_SEQ;
   let assets, tracks, effects, messages, objectives, now, ewin;
-  if (CELL === "white") {
+  // IP-1130 — Observer has no fog-of-war view of its own; it reads whatever White Cell designated
+  // (godview or a named cell), fetched via the exact same /godview or /view/{cell} calls every
+  // other seat already makes below — no third, merged parsing path.
+  let effectiveCell = CELL;
+  if (CELL === "observer") {
+    const d = await api.get(`/api/sessions/${SID}/observer/designation`).catch(() => ({ designation: "godview" }));
+    effectiveCell = d.designation;
+  }
+  if (effectiveCell === "godview" || effectiveCell === "white") {
     const g = await api.get(`/api/sessions/${SID}/godview`);
     now = g.now;
     assets = Object.values(g.assets); tracks = g.tracks;
@@ -1111,7 +1154,7 @@ async function refresh() {
     messages = g.messages || []; objectives = await api.get(`/api/sessions/${SID}/objectives`);
     Object.values(g.sensors || {}).forEach((s) => assets.push(s));
   } else {
-    const v = await api.get(`/api/sessions/${SID}/view/${CELL}`);
+    const v = await api.get(`/api/sessions/${SID}/view/${effectiveCell}`);
     now = v.now;
     assets = v.own_assets.concat(v.own_sensors); tracks = v.known_tracks;
     effects = v.visible_effects; ewin = v.effect_windows || [];
@@ -1634,6 +1677,8 @@ async function loadSaveFile(file) {
   // the wall-time gap since the save. White clicks Start (or the Resume button) to re-arm.
   if (state.started) startRealtimeClock();
   await refresh();
+  refreshAssessment();  // IP-2010 — populate once on load; the panel's own button refreshes it later
+  refreshStaffingReport();  // IP-1151 — populate once on load; assignment actions refresh it after
 }
 
 async function refreshAAR() {
@@ -1649,6 +1694,33 @@ async function aarAt(seq) {
   $("aar-label").textContent = `event ${snap.seq} / ${snap.n_events} · ${iso(snap.now)} · debris ${snap.debris}`;
   $("aar-obj").textContent = JSON.stringify(snap.objectives, null, 2);
   $("aar-assets").textContent = snap.assets.map((a) => `${a.id}: ${a.health}${a.bus_mode ? " / " + a.bus_mode : ""}`).join("\n");
+}
+
+// IP-1151 — seat-to-role staffing report (unmet mandatory roles_needed entries). Refreshed on
+// session load and after each assignment, not polled continuously — it only changes in response
+// to a White-Cell assignment action, not to the passage of sim time.
+async function refreshStaffingReport() {
+  if (!SID) return;
+  const report = await api.get(`/api/sessions/${SID}/roles/staffing`).catch(() => null);
+  if (!report) return;
+  $("staffing-report").textContent = report.length
+    ? report.map((r) => `unmet: ${r.asset_or_constellation} / ${r.role}`).join("\n")
+    : "fully staffed (or this vignette declares no roles_needed)";
+}
+
+// IP-2010 — competency assessment rubric (custody quality / window discipline / belief-truth
+// divergence). Manual refresh, not polled every tick like the rest of refresh(): each dimension
+// replays the eventlog per decision, so it's a debrief-time report, not a live gauge.
+async function refreshAssessment() {
+  if (!SID) return;
+  const rep = await api.get(`/api/sessions/${SID}/assessment`).catch(() => null);
+  if (!rep) return;
+  const fmt = (side) => Object.entries(rep[side] || {})
+    .filter(([k]) => k !== "disclosure")
+    .map(([k, v]) => `${k}: ${v}`).join("\n") || "—";
+  $("assessment-blue").textContent = fmt("blue");
+  $("assessment-red").textContent = fmt("red");
+  $("assessment-disclosure").textContent = (rep.blue && rep.blue.disclosure) || (rep.red && rep.red.disclosure) || "";
 }
 
 // ---- 2D belief map with pan / zoom / center / layers ----
@@ -1988,6 +2060,22 @@ window.addEventListener("DOMContentLoaded", () => {
   $("loadbtn").onclick = () => $("loadfile").click();
   $("loadfile").onchange = (e) => e.target.files[0] && loadSaveFile(e.target.files[0]);
   $("aar-slider").oninput = (e) => aarAt(e.target.value);
+  if ($("assessment-refresh")) $("assessment-refresh").onclick = refreshAssessment;
+  // IP-1130 — White Cell designates the read-only Observer seat's view.
+  if ($("observer-designation")) $("observer-designation").onchange = (e) => {
+    if (SID) api.post(`/api/sessions/${SID}/observer/view`, { cell: "white", designation: e.target.value });
+  };
+  // IP-1151 — White Cell binds a seat to {asset_or_constellation, role} against the vignette's
+  // declared roles_needed; Start is refused server-side while any mandatory entry is unmet.
+  if ($("role-assign")) $("role-assign").onclick = async () => {
+    if (!SID) return;
+    const seat = $("role-seat").value.trim(), asset = $("role-asset").value.trim();
+    if (!seat || !asset) return;
+    await api.post(`/api/sessions/${SID}/roles/assign`, {
+      cell: "white", seat, asset_or_constellation: asset, role: $("role-kind").value,
+    });
+    refreshStaffingReport();
+  };
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
   $("o-target").oninput = previewOrder; $("o-params").oninput = previewOrder;
   // Picking a valid target from the dropdown fills the free-text id and previews.
