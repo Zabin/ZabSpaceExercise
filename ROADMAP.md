@@ -564,6 +564,17 @@ this plan has reached `VERIFIED`, with `IP-1140` carrying a standing user-accept
 than an outstanding gap-closing package). The next stage-appropriate step for this tranche is
 `10-integration-review`.
 
+**Integration review (2026-07-04):** [`reviews/integration-review-18-package-tranche.md`](docs/reviews/integration-review-18-package-tranche.md)
+reviewed all 18 packages as a set — full suite 566 passed/3 skipped, both permanent gates green,
+no Critical/High findings, no behavioral or interface divergence found. Three documentation/
+traceability-coherence findings: a Medium gap (5 of 7 tranche-2/forward-design features —
+`IP-1120`/`IP-1130`/`IP-1151`/`IP-2010`/`IP-3010` — have no coverage anywhere in the per-cell
+training manuals or `training/15-manual-traceability.md` §15.1, routed to
+`08-training-manual-authoring`), and two Low package-doc/feature-index staleness items (`IP-1150`'s
+own header still reads `COMPLETE`; `feature-index.md`'s FS-112–115 descriptions still say "build
+status unverified"), both routed to `07-implementation-planning`/`06-feature-specification`. This
+tranche is clear to proceed to `11-release-readiness` on functional grounds.
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
