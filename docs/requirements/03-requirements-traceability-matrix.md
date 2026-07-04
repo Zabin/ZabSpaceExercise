@@ -124,8 +124,8 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-1310 | Asset `resources.delta_v_ms` validation | UNASSIGNED | (none directly — restates GDS-04 §3) | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_orders.py::test_maneuver_consumes_delta_v_and_changes_orbit`, `spacesim/tests/test_maneuver.py` *(VR-1010)* | `engine/entities.py` |
 | FR-1410 | Five-D effects resolution | UNASSIGNED | ADR-0012 | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/effects.py` |
 | FR-1420 | Cyber exception (non window-gated) | UNASSIGNED | ADR-0012 | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_orders.py::test_cyber_resolves_outside_any_pass_window` *(VR-1020 — orders.py's `_plan_cyber` routing half; `engine/effects.py`/`cyber.py`'s own resolution mechanism is a different package's territory)* | `engine/effects.py`, `engine/cyber.py` |
-| FR-1510 | Custody/Track confidence decay | UNASSIGNED | ADR-0013 | C2, C1, C3 | INT-0007, INT-0010 | UNASSIGNED | UNASSIGNED | `engine/custody.py` |
-| FR-1520 | Weapons-quality gate | UNASSIGNED | ADR-0013 | C2, C1 | INT-0007 | UNASSIGNED | UNASSIGNED | `engine/custody.py` |
+| FR-1510 | Custody/Track confidence decay | UNASSIGNED | ADR-0013 | C2, C1, C3 | INT-0007, INT-0010 | UNASSIGNED | `spacesim/tests/test_custody.py` *(VR-1030)* | `IP-1030` *(closed 2026-07-04 via VR-1030)* |
+| FR-1520 | Weapons-quality gate | UNASSIGNED | ADR-0013 | C2, C1 | INT-0007 | UNASSIGNED | `spacesim/tests/test_custody.py`, `spacesim/tests/test_orders.py::test_kinetic_engage_requires_track_and_roe_then_spawns_debris` *(VR-1030)* | `IP-1030` *(closed 2026-07-04 via VR-1030)* |
 | FR-2110 | Bus state model | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/bus.py` |
 | FR-2210 | Payload state model | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/bus.py` |
 | FR-2310 | Bus evolution / telemetry-contact / downlink handlers | UNASSIGNED | ADR-0004 | C2, C1 | INT-0007, INT-0008 | UNASSIGNED | UNASSIGNED | `engine/busmodel.py` |
@@ -151,7 +151,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-5210 | TLE force-add import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 | UNASSIGNED | UNASSIGNED | `content/` (TLE import) |
 | FR-5310 | Vignette loading | UNASSIGNED | ADR-0007 | C2, C5 | INT-0011 | UNASSIGNED | UNASSIGNED | `content/vignette.py` |
 | FR-6110 | SessionAPI seam (base) | UNASSIGNED | ADR-0002, ADR-0003 | C4, C2 | INT-0006 | UNASSIGNED | UNASSIGNED | `session/api.py` |
-| FR-6210 | Fog-of-war filtering | UNASSIGNED | ADR-0004 | C4, C2, C1 | INT-0006, INT-0007 | UNASSIGNED | UNASSIGNED | `session/cells.py` |
+| FR-6210 | Fog-of-war filtering | UNASSIGNED | ADR-0004 | C4, C2, C1 | INT-0006, INT-0007 | UNASSIGNED | `spacesim/tests/test_scene.py` *(VR-1030 — `IP-1030`'s own `scene.py` custody-track filter contribution to this boundary; the boundary mechanism itself is `session/cells.py`'s, not this package's)* | `session/cells.py` |
 | FR-6220 | Observer fog-of-war view | UNASSIGNED | ADR-0004, ADR-0015 | C4, C12, C9 | INT-0001, INT-0005 | UNASSIGNED | UNASSIGNED | `session/cells.py` |
 | FR-6310 | Server-authoritative lazy clock | UNASSIGNED | ADR-0014, ADR-0026 | C4, C12, C2 | INT-0001, INT-0006 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-6320 | Per-session RLock | UNASSIGNED | ADR-0014, ADR-0026 | C4, C2 | INT-0006 | UNASSIGNED | UNASSIGNED | `session/inprocess.py` |
