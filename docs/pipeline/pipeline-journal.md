@@ -13,12 +13,13 @@
 
 ## Position
 
-- **Updated:** 2026-07-04 (run #14)
+- **Updated:** 2026-07-04 (run #15)
 - **Increment:** v1 baseline follow-through — closing the gaps the 2026-07 strategic review and
-  feature-planning pass opened. **Iterating through all remaining `09-package-verification`
-  passes** per the user's explicit request (runs #11-#14 so far). 17 of 18 packages are now
-  `VERIFIED` (this run added `IP-1130` via `VR-1130`); 1 remains `COMPLETE` pending its own
-  verification (`IP-1151`). Zero packages remain `READY` or `BLOCKED`.
+  feature-planning pass opened. **The "iterate through all `09-package-verification` passes"
+  sweep the user requested is now complete (runs #11-#15).** All 18 packages on the Master Build
+  Plan are `VERIFIED` (this run added `IP-1151` via `VR-1151`, the tranche's last remaining
+  `COMPLETE` package) — `IP-1140` carries a standing user-accepted-risk note (BL-0015) rather than
+  an outstanding gap-closing package. Zero packages remain `READY`, `BLOCKED`, or `COMPLETE`.
 - **Pipeline state:**
   - Stages 01–06 ✅ current for this increment: GDS-00…10 authored with closed gates
     (`docs/architecture/INDEX.md` §1); requirements baseline approved (`docs/requirements/`);
@@ -200,25 +201,39 @@
     `FR-6510` cell updated. One Low finding (`BL-0023`, DEFERRED — a test-coverage gap on the two
     newer routes, not a functional gap). `IP-1130` flipped `COMPLETE → VERIFIED`. Committed
     `826a61a`, pushed (PR #45).
-  - Stage 09 🚧 one gap remains: `IP-1151` (Seat-to-Role Assignment) is `COMPLETE`, awaiting its
-    own verification pass — it should independently re-confirm the FS-105 non-consumption finding
-    (`BL-0014`) already established at implementation time (run #8) rather than re-deriving it from
-    scratch. The original 11 as-built packages (IP-1010…IP-1110) still predate the VR-report
-    convention and carry no `VR-xxxx` on disk — a standing gap, unchanged this run, not this
-    increment's focus.
-  - Stages 10–11 ⛔ never run.
-- **Backlog:** 23 open ([`backlog.md`](backlog.md)): `BL-0023` `NEW` this run (Low, `DEFERRED` —
-  test-coverage gap on `/roles/assign`/`/observer/view`, no dedicated run justified today).
+  - Stage 09 ✅ seventh and final VR issued (run #15): `09-package-verification` verified
+    **IP-1151** (Seat-to-Role Assignment) — [`VR-1151`](../implementation/verification/VR-1151-seat-role-assignment.md),
+    full suite 566 passed/3 skipped, both permanent gates green. Independently re-derived `Vignette
+    .roles_needed`/`RoleRequirement`, `SessionManager.assign_role`/`staffing_report`, and
+    `InProcessSession.start()`'s hard staffing gate against the live tree. **`BL-0014` (no
+    role-based command-filtering consumer exists) independently re-derived, not merely re-cited —
+    still true**: `role_assignments` remains read only by `staffing_report()`; nothing landed since
+    implementation (run #8) introduces role-based command authorization. RTM `FR-4210` cell
+    updated. One Low finding (`BL-0024`, DEFERRED — same family as `BL-0023`: `assign_role`'s
+    White-Cell-only gate untested against `cell="observer"` specifically). `IP-1151` flipped
+    `COMPLETE → VERIFIED`. Committed `12f9c8b`, pushed (PR #45). **This closes the "iterate through
+    all `09-package-verification`" sweep — all 18 packages on the Master Build Plan are now
+    `VERIFIED`.**
+  - The original 11 as-built packages (IP-1010…IP-1110) still predate the VR-report convention and
+    carry no `VR-xxxx` on disk — a standing gap (`BL-0004`), unaffected by this sweep's completion.
+  - Stages 10–11 ⛔ never run. **`10-integration-review` is now unblocked** — every package this
+    tranche's scope covers has reached `VERIFIED`.
+- **Backlog:** 24 open ([`backlog.md`](backlog.md)): `BL-0024` `NEW` this run (Low, `DEFERRED` —
+  `assign_role`'s White-Cell-only gate untested against `cell="observer"` specifically, no
+  dedicated run justified today).
   `BL-0001`/`BL-0004`/`BL-0006`/`BL-0008`/`BL-0010`/`BL-0011`/`BL-0012`/`BL-0014`/`BL-0015`/
-  `BL-0016`/`BL-0019`/`BL-0020`/`BL-0023` (DEFERRED with named triggers, not yet ripe).
+  `BL-0016`/`BL-0019`/`BL-0020`/`BL-0023`/`BL-0024` (DEFERRED with named triggers, not yet ripe).
   `BL-0007`/`BL-0009`/`BL-0013`/`BL-0017`/`BL-0018`/`BL-0021`/`BL-0022` `DONE`. No entry is due at
-  the next step.
-- **Next step:** `09-package-verification` on **IP-1151** (Seat-to-Role Assignment) — the sole
-  remaining `COMPLETE` package. Once verified, all 18 packages in the Master Build Plan are either
-  `VERIFIED` or (`IP-1140`) `VERIFIED` with a standing accepted-risk note, and the tranche is fully
-  drained — the next-step options become `10-integration-review` for the release.
+  the next step, though `10-integration-review` (when run) is a natural point to spot-check several
+  DEFERRED entries at once (`BL-0004`'s as-built VR gap, `BL-0008`'s package-doc-drift class,
+  `BL-0011`/`BL-0023`/`BL-0024`'s route-guard test-coverage family).
+- **Next step:** `10-integration-review` for this tranche — every package the Master Build Plan
+  currently scopes (all 18) has reached `VERIFIED`. No further `08`/`09` work is outstanding; the
+  remaining open items are backlog findings (`BL-0006`/`BL-0008`/`BL-0010`/`BL-0012`/`BL-0014`/
+  `BL-0015`/`BL-0016`/`BL-0019`/`BL-0020`/`BL-0023`/`BL-0024`) for `10-integration-review` to
+  triage, not blockers to starting it.
 - **Open gates:** none currently ripe. PR
-  [#45](https://github.com/Zabin/ZabSpaceExercise/pull/45) (carries runs #4–#14's work) is open/draft
+  [#45](https://github.com/Zabin/ZabSpaceExercise/pull/45) (carries runs #4–#15's work) is open/draft
   — being monitored for CI/review activity outside the pipeline-manager loop.
 
 ## Run log
@@ -242,3 +257,4 @@
 | 12 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-3010 (closes out the IP-2010 -> IP-3010 critical-path chain now that IP-2010 is VERIFIED) | Verified against the live tree: full suite 566 passed/3 skipped (unchanged since run #10), both permanent gates green; VR-3010 written (VERIFIED); RTM FR-10210 cell updated; IP-3010 COMPLETE->VERIFIED. Re-confirmed BL-0018 (assessment_report's shape unchanged since VR-2010) and BL-0017 (spacesim/tools/ genuinely new + importable) directly against the current tree, not merely citing VR-2010. Stated the same-session independence caveat explicitly (implemented run #10, verified run #12, no compaction boundary). No new findings. Committed `df388d1`, pushed (PR #45). | `09-package-verification` on any of IP-1120/IP-1130/IP-1151, all genuinely parallel -- continuing per the user's request to iterate through all |
 | 13 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1120 (independently re-derived from the tree; several runs + a compaction boundary separate implementation (run #6) from this verification) | Verified against the live tree: full suite 566 passed/3 skipped, both permanent gates green; VR-1120 written (VERIFIED); RTM FR-4510/NFR-3100 cells updated; IP-1120 COMPLETE->VERIFIED. Both documented Implementation Tasks deviations confirmed accurate/harmless/in-scope. Run #6's package-doc drift fix and NFR-3100 RTM malformed-row fix both re-confirmed still accurate. Harvested 1 finding -> BL-0022 (Low, DONE -- DoD-text naming imprecision, informational only). Committed `3d0a300`, pushed (PR #45). | `09-package-verification` on either of IP-1130/IP-1151, both genuinely parallel -- continuing per the user's request to iterate through all |
 | 14 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1130 (independently re-derived from the tree; several runs + a compaction boundary separate implementation (run #7) from this verification) | Verified against the live tree: full suite 566 passed/3 skipped, both permanent gates green; VR-1130 written (VERIFIED); RTM FR-6510 cell updated; IP-1130 COMPLETE->VERIFIED. Investigated BL-0011's predicted route-guard maintenance-drift risk directly: both routes added since IP-1130 shipped (/roles/assign from IP-1151, IP-1130's own /observer/view POST) remain protected, via a stricter White-Cell-only allowlist check in inprocess.py rather than _reject_observer's denylist -- drift has not materialized. Harvested 1 finding -> BL-0023 (Low, DEFERRED -- test-coverage gap on the two newer routes, not a functional gap). Committed `826a61a`, pushed (PR #45). | `09-package-verification` on IP-1151, the sole remaining COMPLETE package -- continuing per the user's request to iterate through all |
+| 15 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs -- last package in the sweep) | `09-package-verification` | IP-1151 (independently re-derived from the tree; several runs + a compaction boundary separate implementation (run #8) from this verification) | Verified against the live tree: full suite 566 passed/3 skipped, both permanent gates green; VR-1151 written (VERIFIED); RTM FR-4210 cell updated; IP-1151 COMPLETE->VERIFIED. Independently re-derived BL-0014 (no role-based command-filtering consumer exists anywhere in the codebase) rather than re-citing it -- still true, unchanged since run #8. Harvested 1 finding -> BL-0024 (Low, DEFERRED -- assign_role's White-Cell-only gate untested against cell="observer" specifically, same family as BL-0023). Committed `12f9c8b`, pushed (PR #45). **All 18 packages in the Master Build Plan are now VERIFIED** (IP-1140 carries a standing user-accepted-risk note). This closes the "iterate through all 09-package-verification" sweep (runs #11-#15). | `10-integration-review` for the tranche -- every package has reached VERIFIED; open findings (BL-0006/BL-0008/BL-0010/BL-0012/BL-0014/BL-0015/BL-0016/BL-0019/BL-0020/BL-0023/BL-0024, all DEFERRED with named triggers) are backlog items for that review to spot-check, not blockers to starting it |
