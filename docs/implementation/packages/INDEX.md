@@ -53,7 +53,7 @@ unauthorized FS.
 | [IP-1100](IP-1100-save-and-resume.md) | Save & Resume — deterministic round trip & content/session split | [FS-110](../../features/FS-110-save-and-resume.md) | As-built | ✅ VERIFIED |
 | [IP-1110](IP-1110-ai-red-doctrine-automation.md) | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | [FS-111](../../features/FS-111-ai-red-doctrine-automation.md) | As-built | ✅ VERIFIED |
 | [IP-2010](IP-2010-competency-assessment.md) | Competency Assessment — rubric computation | [FS-201](../../features/FS-201-competency-assessment.md) | Forward design | ✅ VERIFIED (2026-07-04, [`VR-2010`](../verification/VR-2010-competency-assessment.md) — two Medium findings against FS-201's own Acceptance Criteria scope, not against this package; briefly `BLOCKED` 2026-07-02 on an ADR-0017 conflict, resolved same-day by `ADR-0032` — see the package's own header) |
-| [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-04, run #10 — new `spacesim/tools/` subpackage + `session/research_export.py`; awaiting `09-package-verification`) |
+| [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | ✅ VERIFIED (2026-07-04, [`VR-3010`](../verification/VR-3010-research-analytics.md) — `BL-0018`/`BL-0017` re-confirmed, no new findings) |
 | [IP-1120](IP-1120-classification-banner.md) | Classification Banner — wire the render/export path to the vignette's classification value | [FS-112](../../features/FS-112-classification-banner.md) | Partially built (gap-closing) | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | [IP-1130](IP-1130-observer-read-only-access.md) | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | [FS-113](../../features/FS-113-observer-read-only-access.md) | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, [`VR-1140`](../verification/VR-1140-hot-seat-handoff.md) — FR-6610's trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
@@ -90,11 +90,10 @@ read path in `session/inprocess.py`/`ui_web/server.py`/`ui_web/static/`), likewi
 endpoints, White-Cell-only seat-assignment UI), likewise pending `09-package-verification` — with
 one open finding: no role-based command-filtering consumer exists yet in `FS-105`/`IP-1050`/
 `IP-1051` (see the package's own Risks section and Master Build Plan Risk item 8). **`IP-3010` is
-also now `COMPLETE`** (implemented 2026-07-04, run #10 — a new `spacesim/tools/` subpackage
-(`research_batch.run_batch()`, seeded-Monte-Carlo batch runner) and `session/research_export.py`
-(`RunRecord` + CSV/JSON export extending `aar.export_csv()`'s pattern), reading
-`session/assessment.py`'s `assessment_report` once per run), likewise pending
-`09-package-verification`.
+now `VERIFIED`** (2026-07-04, run #12, [`VR-3010`](../verification/VR-3010-research-analytics.md) —
+`spacesim/tools/` subpackage (`research_batch.run_batch()`) and `session/research_export.py`
+(`RunRecord` + CSV/JSON export) confirmed against the live tree; `BL-0018`/`BL-0017` re-confirmed,
+no new findings).
 
 **Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
 §3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in

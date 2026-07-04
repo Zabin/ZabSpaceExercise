@@ -456,7 +456,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1100 | Save & Resume — deterministic round trip & content/session split | `implementation/packages/IP-1100-save-and-resume.md` | FS-110 | As-built | ✅ VERIFIED |
 | IP-1110 | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | `implementation/packages/IP-1110-ai-red-doctrine-automation.md` | FS-111 | As-built | ✅ VERIFIED |
 | IP-2010 | Competency Assessment — rubric computation | `implementation/packages/IP-2010-competency-assessment.md` | FS-201 | Forward design | ✅ VERIFIED (2026-07-04, `VR-2010` — two Medium findings against FS-201's own Acceptance Criteria scope, routed to `06-feature-specification`, not against this package) |
-| IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | 🔵 COMPLETE (implemented 2026-07-04, run #10 — new `spacesim/tools/` subpackage + `session/research_export.py`; awaiting `09-package-verification`) |
+| IP-3010 | Research Analytics — multi-run export | `implementation/packages/IP-3010-research-analytics.md` | FS-301 | Forward design | ✅ VERIFIED (2026-07-04, run #12, `VR-3010` — `BL-0018`/`BL-0017` re-confirmed, no new findings) |
 | IP-1120 | Classification Banner — wire render/export path to the vignette's classification value | `implementation/packages/IP-1120-classification-banner.md` | FS-112 | Partially built (gap-closing) | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | IP-1130 | Observer Read-Only Access — designated read-only seat, server-side mutation rejection | `implementation/packages/IP-1130-observer-read-only-access.md` | FS-113 | Forward design | 🔵 COMPLETE (implemented 2026-07-03; awaiting `09-package-verification`) |
 | IP-1140 | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | `implementation/packages/IP-1140-hot-seat-handoff.md` | FS-114 | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, `VR-1140` — FR-6610 trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
@@ -519,9 +519,16 @@ per-trainee report (already disclosed as deferred by the package itself) and sel
 debrief-mode accessibility (not implemented, not flagged as excluded) — both routed to
 `06-feature-specification` to reconcile FS-201's stated scope against what was actually built.
 
+**Verification update (2026-07-04, run #12):** `IP-3010` passed `09-package-verification`
+([`VR-3010`](docs/implementation/verification/VR-3010-research-analytics.md)) and flipped to
+`VERIFIED` — full suite 566 passed/3 skipped (unchanged), both permanent gates green, RTM
+`FR-10210` cell updated. `BL-0018` (schema-stability dependency on `IP-2010`) and `BL-0017`
+(imprecise `tools/` precedent citation) both re-confirmed against the current tree. No new
+findings. The `IP-2010 → IP-3010` critical-path chain is now `VERIFIED` end-to-end.
+
 `docs/implementation/00-master-build-plan.md`'s package table, dependency graph, parallel-
 opportunity list, critical-path note, and summary statistics have been updated accordingly (now
-18 packages total: 14 `VERIFIED`, 4 `COMPLETE` pending verification, 0 `READY`, 0 `BLOCKED`).
+18 packages total: 15 `VERIFIED`, 3 `COMPLETE` pending verification, 0 `READY`, 0 `BLOCKED`).
 
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 

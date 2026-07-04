@@ -111,7 +111,7 @@ package in this plan to reach that state.
 | [IP-1100](packages/IP-1100-save-and-resume.md) | FS-110 Save & Resume | As-built | ✅ VERIFIED | none |
 | [IP-1110](packages/IP-1110-ai-red-doctrine-automation.md) | FS-111 AI-Red Doctrine Automation | As-built | ✅ VERIFIED | none |
 | [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | ✅ VERIFIED | **Verified 2026-07-04**, [`VR-2010`](verification/VR-2010-competency-assessment.md) — full suite 566 passed/3 skipped, both permanent gates green; RTM `FR-10110` updated. Two Medium findings against FS-201's own Acceptance Criteria scope (longitudinal per-trainee report, self-assessment-mode accessibility — see Risk item 9 below), not against this package's own claims |
-| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | 🔵 COMPLETE | **Implemented 2026-07-04 (run #10)** — new `spacesim/tools/` subpackage (`research_batch.run_batch()`, seeded-Monte-Carlo batch runner) + `session/research_export.py` (`RunRecord` + CSV/JSON export extending `aar.export_csv()`'s pattern); reads `session/assessment.py`'s `assessment_report` once per run, never reimplemented; 7 new tests; full suite green (566 passed/3 skipped), both permanent gates green; awaiting `09-package-verification` |
+| [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | ✅ VERIFIED | **Verified 2026-07-04 (run #12)**, [`VR-3010`](verification/VR-3010-research-analytics.md) — full suite 566 passed/3 skipped, both permanent gates green; RTM `FR-10210` updated; `BL-0018`/`BL-0017` re-confirmed; no new findings |
 | [IP-1120](packages/IP-1120-classification-banner.md) | FS-112 Classification Banner | Partially built (gap-closing) | 🔵 COMPLETE | **Implemented 2026-07-03** (run #6) — `session/manager.py`/`session/inprocess.py`/`session/aar.py`/`ui_web/server.py`/`ui_web/static/` all threaded to one resolved `classification` value; full suite green (519 passed/3 skipped), both permanent gates green; awaiting `09-package-verification` |
 | [IP-1130](packages/IP-1130-observer-read-only-access.md) | FS-113 Observer Read-Only Access | Forward design | 🔵 COMPLETE | **Implemented 2026-07-03** (run #7) — a server-side `_reject_observer` guard on all 22 mutating routes (re-derived from the live route table, one more than the package's own enumerated list — `/preview/consequence`), a White-Cell-only Observer view designation (`session/inprocess.py`), a new `observer/view`+`observer/designation` endpoint pair; full suite green (547 passed/3 skipped), both permanent gates green; awaiting `09-package-verification` |
 | [IP-1140](packages/IP-1140-hot-seat-handoff.md) | FS-114 Hot-Seat Hand-Off Screen-Blank Menu | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED | none — verified 2026-07-03, [`VR-1140`](verification/VR-1140-hot-seat-handoff.md); the FR-6610 trigger/menu divergence was adjudicated **not satisfied** (High finding, routed to `07-implementation-planning` for a gap-closing package pending user prioritization — see Risk item 6 below) |
@@ -159,11 +159,17 @@ Criteria being broader than what `IP-2010` built** — a longitudinal per-traine
 disclosed as deferred by the package itself) and self-assessment/debrief-mode accessibility (not
 implemented, not flagged as excluded) — see Risk item 9 below.
 
-14 of 18 packages are now `VERIFIED` (the original 11 as-built + `IP-1150` + `IP-1140` +
-`IP-2010`). 4 are `COMPLETE` (`IP-1120`, `IP-1130`, `IP-1151`, `IP-3010` — all pending their own
+**Update (2026-07-04, run #12 verification):** `IP-3010` passed `09-package-verification`
+([`VR-3010`](verification/VR-3010-research-analytics.md)) and flipped to `VERIFIED` — full suite
+566 passed/3 skipped (unchanged since run #10), both permanent gates green, RTM `FR-10210` cell
+updated. `BL-0018` (schema-stability vs. `IP-2010`) and `BL-0017` (imprecise `tools/` precedent
+citation) both re-confirmed against the current tree. No new findings.
+
+15 of 18 packages are now `VERIFIED` (the original 11 as-built + `IP-1150` + `IP-1140` +
+`IP-2010` + `IP-3010`). 3 are `COMPLETE` (`IP-1120`, `IP-1130`, `IP-1151` — all pending their own
 `09-package-verification`). 0 are `READY`, 0 are `BLOCKED`. **Every package in this plan has now
 either shipped or been implemented** — the only remaining forward motion in this plan is
-`09-package-verification` work (4 packages) plus `IP-1140`'s adjudicated High finding (a
+`09-package-verification` work (3 packages) plus `IP-1140`'s adjudicated High finding (a
 gap-closing package the user has explicitly decided not to pursue — Risk item 6) and `IP-2010`'s
 two new Medium findings (Risk item 9).
 
@@ -195,11 +201,11 @@ dependency in IP-1070's own Dependencies field, so no new edge is added here on 
 ### (b) Remaining work (the only actionable forward sequence)
 
 ```
-IP-2010 (COMPLETE 2026-07-03, awaiting 09-package-verification — implemented, not yet VERIFIED)
-   │  IP-3010's schema-provisional blocker is satisfied by COMPLETE (its own Dependencies field's
-   │  stated threshold); IP-3010's own MSTR-006 §3 authorization obtained run #9
+IP-2010 (✅ VERIFIED 2026-07-04, VR-2010 — cleared)
+   │  IP-3010's schema-stability question (BL-0018) confirmed resolved by VR-2010, re-confirmed
+   │  again directly by VR-3010
    ▼
-IP-3010 (COMPLETE 2026-07-04, run #10, awaiting 09-package-verification — implemented, not yet VERIFIED)
+IP-3010 (✅ VERIFIED 2026-07-04, VR-3010 — cleared)
 
 IP-1150 (✅ VERIFIED 2026-07-03, VR-1150 — cleared)
    │  unblocked IP-1120/IP-1151 the moment it reached VERIFIED
@@ -215,10 +221,10 @@ IP-1140 (✅ VERIFIED 2026-07-03, VR-1140 — adjudicated: FR-6610's trigger/men
 
 This tranche's `IP-1150 → {IP-1120, IP-1151}` fan-out is fully cleared as of 2026-07-03 — both
 `IP-1120` and `IP-1151` are now implemented (`COMPLETE`). The pre-existing `IP-2010 → IP-3010`
-chain is now fully implemented end-to-end (`IP-2010` `COMPLETE` run #5; `IP-3010` `COMPLETE` run
-#10). `IP-1130` is now implemented (`COMPLETE`) too, and `IP-1140` is `VERIFIED`. **No package in
-this plan remains coding-eligible (`READY`)** — `IP-2010`/`IP-1120`/`IP-1130`/`IP-1151`/`IP-3010`
-(all `COMPLETE`) are each standalone, one-hop-from-`VERIFIED` verification work with no
+chain is now fully `VERIFIED` end-to-end (`VR-2010` run #11; `VR-3010` run #12). `IP-1130` is now
+implemented (`COMPLETE`), and `IP-1140` is `VERIFIED`. **No package in this plan remains
+coding-eligible (`READY`)** — `IP-1120`/`IP-1130`/`IP-1151` (all `COMPLETE`) are each standalone,
+one-hop-from-`VERIFIED` verification work with no
 sequencing dependency on anything else; a not-yet-scoped, not-yet-authorized gap-closing package
 for `IP-1140`'s adjudicated finding remains a possible future
 addition to this plan, not yet authored.
@@ -277,14 +283,11 @@ IP-1030 ──► IP-1070 ──► IP-2010 ──► IP-3010      (length 4, co
 
 Both four-hop chains converge at **IP-2010**, which was accordingly this plan's single
 highest-leverage package: it was the sole gate between "every upstream dependency already shipped"
-and "the entire forward-design surface of this catalog." **`IP-2010` reached `COMPLETE`
-2026-07-03** (implemented, pending `09-package-verification`), **`IP-3010` received its own
-MSTR-006 §3 authorization 2026-07-03 (run #9)**, and **`IP-3010` itself reached `COMPLETE`
-2026-07-04 (run #10)** — the critical path is now fully implemented end-to-end, with only
-`09-package-verification` remaining on its last two hops. A future planner could still tighten the
-bar to require `IP-2010` reach `VERIFIED` rather than merely `COMPLETE` before treating `IP-3010`'s
-implementation as built on safe ground (this package's own `Dependencies` field only requires
-`COMPLETE`, already satisfied) — flagged in Risk item 1 below.
+and "the entire forward-design surface of this catalog." **The entire critical path is now
+`VERIFIED` end-to-end**: `IP-2010` verified 2026-07-04 (run #11, `VR-2010`), `IP-3010` verified
+2026-07-04 (run #12, `VR-3010`) — `VR-3010` re-confirmed that `IP-2010`'s verification found no
+material change to the output shape `IP-3010`'s schema was built against, closing the one
+governance note this plan previously flagged (Risk item 1, updated accordingly).
 
 **Tranche 2 (FS-112–115)'s shorter, independent chain is now fully cleared (2026-07-03):**
 `IP-1150 → IP-1120` and `IP-1150 → IP-1151` were never on the critical path above (length 2 < 4).
@@ -305,12 +308,12 @@ verification pass adjudicated its documented FR-6610 divergence as **not satisfi
   major refactor). *(IP-1090/IP-1100/IP-1110 added 2026-07 — see Package status above; they were
   always independently buildable, this just wasn't visible while all three were undifferentiated
   inside `IP-1060` v1.0.)*
-- **Among the remaining forward-design work:** `IP-2010` landed `COMPLETE` 2026-07-03, so
-  `IP-3010`'s schema was no longer provisional-against-a-sketch (FS-301 §4's "must not reimplement
-  FS-201's computation" constraint satisfied by `IP-2010`'s actual, now-implemented output shape);
-  `IP-3010` received its own MSTR-006 §3 authorization 2026-07-03 (run #9) and was implemented
-  2026-07-04 (run #10) — it is now `COMPLETE`, independently of the five other packages awaiting
-  `09-package-verification`.
+- **Among the remaining forward-design work:** `IP-2010` and `IP-3010` are both now `VERIFIED`
+  (runs #11/#12) — `IP-3010`'s schema was confirmed to match `IP-2010`'s actual, verified output
+  shape (FS-301 §4's "must not reimplement FS-201's computation" constraint satisfied); `IP-3010`
+  received its own MSTR-006 §3 authorization 2026-07-03 (run #9), was implemented 2026-07-04
+  (run #10), and independently verified the same day (run #12) — the critical path's forward
+  motion is now fully closed out.
 - **Independent of the critical path:** `IP-1060` (White Cell Dashboard), `IP-1090` (Multiplayer /
   LAN Transport), `IP-1100` (Save & Resume), and `IP-1110` (AI-Red Doctrine Automation) have no
   downstream consumer in this pass and could always have been (and could still be, for any future
@@ -341,36 +344,33 @@ verification pass adjudicated its documented FR-6610 divergence as **not satisfi
   each — `IP-1050`/`IP-1051` by subsystem seam, `IP-1150`/`IP-1151` by build-status seam — per the
   size-discipline precedent this corpus follows)
 - **Critical Path Length:** 4 packages (`IP-1010`/`IP-1030` → `IP-1020`/`IP-1070` → `IP-2010` →
-  `IP-3010`); this entire chain is now implemented end-to-end (`IP-2010` `COMPLETE` run #5,
-  `IP-3010` `COMPLETE` run #10) — only `09-package-verification` remains on its last two hops.
+  `IP-3010`); this entire chain is now `VERIFIED` end-to-end (`VR-2010` run #11, `VR-3010` run #12).
   `IP-1090`/`IP-1100`/`IP-1110`/`IP-1130`/`IP-1140` do not extend the critical path — none has a
   downstream consumer in this pass. Tranche 2's `IP-1150 → {IP-1120, IP-1151}` chain (never on the
   critical path) is now fully cleared (`IP-1150` reached `VERIFIED` 2026-07-03).
 - **Parallel Work Opportunities:** 2 historical parallel waves among the (now-complete) as-built
   packages (6 packages, then 3 packages, running independently); the pre-existing forward-design
   surface's sequential constraint (`IP-2010` before `IP-3010`) is fully resolved — both are now
-  implemented, `IP-2010` also `VERIFIED`. **Zero packages remain coding-eligible (`READY`)** —
-  `IP-1120`/`IP-1130`/`IP-1151`/`IP-3010` each need only a verification pass, all four
-  parallelizable with each other.
-- **Package Status:** 14 `VERIFIED` (the original 11 as-built + `IP-1150` + `IP-1140` + `IP-2010`,
-  the last two verified 2026-07-03/2026-07-04 via `VR-1140`/`VR-2010`), 4 `COMPLETE` pending
-  verification (`IP-1120`, `IP-1130`, `IP-1151`, `IP-3010`); 0 `READY`, 0 `BLOCKED`,
+  `VERIFIED`. **Zero packages remain coding-eligible (`READY`)** —
+  `IP-1120`/`IP-1130`/`IP-1151` each need only a verification pass, all three parallelizable with
+  each other.
+- **Package Status:** 15 `VERIFIED` (the original 11 as-built + `IP-1150` + `IP-1140` + `IP-2010` +
+  `IP-3010`, the last three verified 2026-07-03/2026-07-04 via `VR-1140`/`VR-2010`/`VR-3010`),
+  3 `COMPLETE` pending verification (`IP-1120`, `IP-1130`, `IP-1151`); 0 `READY`, 0 `BLOCKED`,
   0 `NOT STARTED`, 0 `IN PROGRESS`.
 
 ### Risks requiring architectural attention
 
-1. **Authorization gate was the blocker, not design completeness, for `IP-2010` — now resolved for
-   `IP-3010` too, which has since been implemented.** `IP-2010` was `READY` with every upstream
-   dependency already `VERIFIED`, received its MSTR-006 §3 go-ahead 2026-07-03, and is now
-   `COMPLETE` (implemented, pending `09-package-verification`). `IP-3010` was in exactly the state
-   `IP-2010` was in — fully specified, its prerequisite work done (`IP-2010` reached `COMPLETE`)
-   — received its own
-   explicit, separate go-ahead per MSTR-006 §3 in run #9 (2026-07-03), and was implemented run #10
-   (2026-07-04) — now `COMPLETE`, pending `09-package-verification`. The residual governance note:
-   `IP-3010`'s own `Dependencies` field accepted `IP-2010` at `COMPLETE`, not `VERIFIED`, as the
-   threshold to build against — `09-package-verification` should confirm that bar held (rather than
-   assuming it) if `IP-2010`'s own eventual verification pass surfaces any material finding against
-   the scoring-function output shape `IP-3010`'s implementation was built against.
+1. **Authorization gate was the blocker, not design completeness, for `IP-2010` — resolved for
+   `IP-3010` too, and both are now fully `VERIFIED`, closing this risk out.** `IP-2010` was `READY`
+   with every upstream dependency already `VERIFIED`, received its MSTR-006 §3 go-ahead
+   2026-07-03, was implemented, and passed `09-package-verification` 2026-07-04 (`VR-2010`, run
+   #11). `IP-3010` followed the same path — authorized run #9, implemented run #10, verified run
+   #12 (`VR-3010`). The residual governance note this risk previously flagged (`IP-3010`'s own
+   `Dependencies` field accepted `IP-2010` at `COMPLETE`, not `VERIFIED`, as the threshold to build
+   against) is now moot: `VR-2010` confirmed `IP-2010`'s scoring-function output shape was
+   unchanged, and `VR-3010` independently re-confirmed that finding against the current tree. No
+   further action needed.
 2. **`IP-2010`'s "aware vs. unaware" divergence signal — resolved 2026-07-03 (`IP-2010` v1.1,
    `BL-0002`), one residual disclosure obligation remains.** The project owner chose to instrument
    an explicit decision-time signal (`custody_confidence_at_decision`, captured in `orders.py`'s

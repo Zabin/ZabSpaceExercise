@@ -1,12 +1,18 @@
 # IP-3010 — Research Analytics: Multi-Run Export
 
 > **Package ID:** IP-3010
-> **Version:** 1.2 (2026-07-04 — implemented; see Status below.)
-> **Status:** 🔵 COMPLETE *(implemented 2026-07-04, run #10 — new `spacesim/tools/` subpackage
+> **Version:** 1.3 (2026-07-04 — independently verified; see Status below.)
+> **Status:** ✅ VERIFIED *(2026-07-04, [`VR-3010`](../verification/VR-3010-research-analytics.md) —
+> every Definition of Done/Verification Checklist item confirmed against the live tree; full suite
+> green (566 passed/3 skipped), both permanent gates green; RTM `FR-10210` updated. `BL-0018`
+> re-confirmed resolved against the current tree; `BL-0017` confirmed accurate. No new findings.
+> Independence note: implemented run #10, verified run #12, same session — recorded explicitly in
+> `VR-3010` per this project's verification-skill's own disclosure rule. Was 🔵 COMPLETE
+> *(implemented 2026-07-04, run #10 — new `spacesim/tools/` subpackage
 > (`research_batch.run_batch()`, seeded-Monte-Carlo batch runner) + `session/research_export.py`
 > (`RunRecord` + CSV/JSON export). 7 new tests; full suite green (566 passed/3 skipped, up from
 > 559/3), both permanent gates green. Entered `COMPLETE`, not `VERIFIED` — only
-> `09-package-verification` may write `VERIFIED`. **MSTR-006 §3 authorization obtained 2026-07-03**
+> `09-package-verification` may write `VERIFIED`.)* **MSTR-006 §3 authorization obtained 2026-07-03**
 > (project owner, via `00-pipeline-manager` run #9, batching the standing `BL-0005` `NEEDS-USER`
 > backlog item into that run's gate check) — the last of the five gated packages in this plan to
 > receive it. **IP-2010 → `COMPLETE`** cleared 2026-07-03 (run #5) — this package's own
@@ -22,7 +28,7 @@
 > baselined as [`FR-10210`](../../requirements/01-functional-requirements.md). Was 🟡 READY *(fully
 > unblocked 2026-07-03, run #9), was 🔴 BLOCKED before that (blocked on IP-2010 reaching `COMPLETE`
 > and on its own separate MSTR-006 §3 authorization, both unrelated to the now-resolved ADR-0029
-> conflict).*)*
+> conflict).*)*)*
 > **Dependencies:** FS-301, IP-2010 (the per-exercise rubric output this package aggregates —
 > **hard blocking dependency**, not merely a design reference)
 > **Referenced By:** none yet
@@ -153,9 +159,9 @@ and authorized.)*
 
 ## Definition of Done
 
-*(Implemented 2026-07-04 by `08-code-implementation` — every item below is now satisfied against
-the shipped code and tests; `09-package-verification` independently re-confirms this before the
-package may advance to `VERIFIED`.)*
+*(Implemented 2026-07-04 by `08-code-implementation`; independently re-confirmed 2026-07-04 by
+`09-package-verification` — [`VR-3010`](../verification/VR-3010-research-analytics.md). Every item
+below holds against the live tree.)*
 
 - [x] **IP-2010 has reached `COMPLETE`** (hard precondition — this package's schema is otherwise
   provisional, per FS-301 §4's "export must read FS-201's already-computed rubric output, not
@@ -187,7 +193,9 @@ package may advance to `VERIFIED`.)*
 
 ## Verification Checklist
 
-*(Implemented 2026-07-04 — evidence below; `09-package-verification` re-confirms independently.)*
+*(Executed 2026-07-04 by `09-package-verification` —
+[`VR-3010`](../verification/VR-3010-research-analytics.md). Evidence below confirmed against the
+live tree, not merely the Implementation Summary.)*
 
 - [x] `spacesim/tests/test_research_batch.py` exists and is green — 7 tests, all passing.
 - [x] `python3 -m pytest spacesim/tests/test_determinism.py` remains green after this module
