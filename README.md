@@ -18,8 +18,11 @@ an access window permits.
 > **419 tests pass.** Stack: **Python + FastAPI/web**.
 >
 > **New here?** Read the **[training manual](docs/training/INDEX.md)** to install, run, and drive
-> your first exercise. All docs are routed by **[`docs/INDEX.md`](docs/INDEX.md)**; project
-> conventions and invariants live in `CLAUDE.md`.
+> your first exercise, then jump to your **role-scoped manual** —
+> [White Cell](docs/training/12-white-cell-manual.md) ·
+> [Blue cell](docs/training/13-blue-cell-manual.md) ·
+> [Red cell](docs/training/14-red-cell-manual.md). All docs are routed by
+> **[`docs/INDEX.md`](docs/INDEX.md)**; project conventions and invariants live in `CLAUDE.md`.
 
 ## Quick start
 
@@ -121,7 +124,8 @@ space-control-sim/
     ├── DOCUMENTATION-PLAN.md    information architecture & rationale
     ├── FUTURE-WORK.md           single-source v1.1+ TODO
     ├── build-spec/              ★ the binding v1 spec, 8 modules
-    ├── training/                user manual, 11 modules (install → UI → exercises → API → troubleshooting)
+    ├── training/                user manual, 15 modules (install → UI → exercises → API → troubleshooting
+    │                            + role-scoped per-cell manuals: 12 White / 13 Blue / 14 Red + 15 traceability)
     ├── design/                  architecture & design corpus
     ├── research/                doctrine & domain primers (PLA, VKS, USSF, EW, cyber, bus ops)
     ├── vignettes/               scenario library: framework + vignette index

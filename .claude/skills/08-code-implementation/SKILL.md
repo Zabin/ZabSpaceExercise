@@ -239,6 +239,18 @@ other module in this subsystem is listed in a central code map), follow that con
 the addition in the Implementation Summary — but do not go looking for unrelated documentation to
 "also" update.
 
+**Per-cell training manuals.** If this package changed a user-facing feature (a behavior an
+operator sees or drives), consult the feature→manual forward index in
+[`docs/training/15-manual-traceability.md`](../../../docs/training/15-manual-traceability.md) §15.1
+for the code you touched. Any cell-manual section it maps to
+([White](../../../docs/training/12-white-cell-manual.md) `WCM-n` /
+[Blue](../../../docs/training/13-blue-cell-manual.md) `BLU-n` /
+[Red](../../../docs/training/14-red-cell-manual.md) `RED-n`) is in scope for this package: update
+that section's prose *and* its `> Sources:` footer, and update the matching matrix row if the
+backing code moved. This is not "unrelated documentation" — the traceability matrix makes it part
+of the named `Documentation Updates` surface for any feature-changing package. Purely internal
+changes (no operator-visible behavior) with no §15.1 row need no manual edit.
+
 ### Step 9 — Update traceability
 
 Update whatever mechanism the repository uses to link a requirement to the code that implements
