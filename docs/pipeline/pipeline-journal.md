@@ -13,12 +13,13 @@
 
 ## Position
 
-- **Updated:** 2026-07-04 (run #27)
+- **Updated:** 2026-07-04 (run #28)
 - **Increment:** two threads active. **Thread A (v1 baseline follow-through):** iterating through
-  all remaining `BL-0004` retro-verifications per the user's request — **9 of 11 done** (`IP-1010`
+  all remaining `BL-0004` retro-verifications per the user's request — **10 of 11 done** (`IP-1010`
   run #18, `IP-1020` run #20, `IP-1030` run #21, `IP-1040` run #22, `IP-1050` run #23, `IP-1051`
-  run #24, `IP-1060` run #25, `IP-1070` run #26, `IP-1090` run #27); 2 remain. **Thread B
-  (training-corpus elevation):** `BL-0029`/`BL-0026` closed run #19; still outstanding.
+  run #24, `IP-1060` run #25, `IP-1070` run #26, `IP-1090` run #27, `IP-1100` run #28); **1
+  remains: `IP-1110`.** **Thread B (training-corpus elevation):** `BL-0029`/`BL-0026` closed run
+  #19; still outstanding.
 - **Reconciliation note (run #16, preserved):** between runs #15 and #16, substantial pipeline-shaped work
   landed **outside** the manager's own loop (the user worked directly with the relevant skills
   across two other sessions, PRs #45 and #46, both merged to `main`): the "complete outstanding 08"
@@ -33,23 +34,30 @@
   filed directly to `docs/pipeline/backlog.md` outside a manager run) are adopted into this
   journal's backlog tracking as of this run.
 - **Thread A pipeline state:** Stages 01-09 current (all 18 packages `VERIFIED`), Stage 10 clean
-  (run #17). `BL-0004` retro-verification sweep, 9 of 11 done: `IP-1010` (`VR-1010`, run #18,
+  (run #17). `BL-0004` retro-verification sweep, 10 of 11 done: `IP-1010` (`VR-1010`, run #18,
   clean), `IP-1020` (`VR-1020`, run #20, one Medium finding `BL-0036`), `IP-1030` (`VR-1030`, run
   #21, clean), `IP-1040` (`VR-1040`, run #22, clean), `IP-1050` (`VR-1050`, run #23, clean),
   `IP-1051` (`VR-1051`, run #24, clean), `IP-1060` (`VR-1060`, run #25, clean), `IP-1070`
-  (`VR-1070`, run #26, clean), `IP-1090` (`VR-1090`, run #27, clean). 2 remain: `IP-1100`,
-  `IP-1110`, before `11-release-readiness` runs for the tranche.
+  (`VR-1070`, run #26, clean), `IP-1090` (`VR-1090`, run #27, clean), `IP-1100` (`VR-1100`, run
+  #28, one Medium finding `BL-0045` — the package overclaims Role Assignments are persisted,
+  contradicting `IP-1151`'s own correct disclosure). 1 remains: `IP-1110`, before
+  `11-release-readiness` runs for the tranche.
 - **Thread B pipeline state (training corpus):** `BL-0029`/`BL-0026` closed run #19 (see history
   below for detail). `09-training-manual-review` on that scope (`docs/training/02`, `12`, `13`,
   `14`, `15`, `INDEX`) remains the outstanding step, not yet run.
-- **Backlog:** 45 total. This run: `BL-0044` (Low, `DEFERRED`) filed from `VR-1090`. `FR-6310`/
-  `FR-6320`/`FR-6410`'s RTM cells now cite `IP-1090` directly. No `NEEDS-USER` entries open on
+- **Backlog:** 48 total. This run: `BL-0045` (Medium, `DEFERRED`), `BL-0046`/`BL-0047` (Low,
+  `DEFERRED`) filed from `VR-1100`. `FR-7210`/`FR-7220`'s RTM cells now cite `IP-1100` directly. No
+  `NEEDS-USER` entries open on
   either thread.
 - **Next step:** continuing the user's "iterate through all level 09" instruction —
-  `09-package-verification` on `IP-1100` (Save & Resume), next in the `BL-0004` sweep, ID order.
-  Thread B's `09-training-manual-review` remains available whenever the user wants to switch back.
-- **Open gates:** none. PR #48 (runs #17-#27's work) is open/draft, not yet merged — no CI
-  configured in this repo; no review comments as of this run.
+  `09-package-verification` on `IP-1110` (AI-Red Doctrine Automation) — the **last** package in the
+  `BL-0004` sweep. Once it's verified, all 18 packages will have a formal `VR-xxxx` report and the
+  tranche is fully eligible for `11-release-readiness` (a gate the manager should raise then, since
+  it flips baseline records). Thread B's `09-training-manual-review` remains available in parallel.
+- **Open gates:** none yet, but the *next* advance after `IP-1110` closes the sweep should stop and
+  confirm before invoking `11-release-readiness` (release-GO-adjacent baseline flip). PR #48
+  (runs #17-#28's work) is open/draft, not yet merged — no CI configured in this repo; no review
+  comments as of this run.
 
 ---
 
@@ -385,3 +393,4 @@
 | 25 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1060 (White Cell Dashboard, 7th of 11 in the BL-0004 sweep) | Reconciliation: clean tree, no drift since run #24. Invoked 09-package-verification on IP-1060: confirmed get_godview() returns self.sim.world directly (unfiltered) while get_view()/get_scene() route through CellController.view()/build_scene() -- structurally separate, no shared code path. Confirmed fire_inject() resolves through exactly one sim.schedule() call site regardless of immediate-vs-scheduled mode. Grepped session/manager.py and ui_web/server.py for win_loss/winner/score fields -- zero hits, confirming no automated scoring interface exists. All 13 cited manager.py line numbers drifted by a uniform +32 or +34 -- a single-cause, file-wide shift (traced to one contiguous block, likely IP-1130's Observer-designation state or IP-1151's role registry, landing early in the file), unlike orders.py's multi-stage drift pattern this sweep found earlier. Full suite 566 passed/3 skipped (107s, environment variance), both permanent gates green, test_session.py (3 tests) green; inject-library coverage confirmed via test_inject_library.py. VR-1060 written: VERIFIED, zero functional discrepancies, one Low citation-drift finding. Filled RTM Test/Impl. Package cells for FR-4310/FR-4410 (attributed to IP-1060 directly); independently reconfirmed FR-4610/FR-4710/FR-4720's already-recorded v2.0 closure with this pass's own evidence. Updated Master Build Plan, packages/INDEX.md, verification/INDEX.md. Committed `d7155ee` (verification skill's own commit), pushed. Harvested BL-0042 (Low, DEFERRED). | `09-package-verification` on IP-1070 (After Action Review), next in ID order in the BL-0004 sweep; 3 more will follow after that. Thread B's 09-training-manual-review remains available whenever the user wants to switch |
 | 26 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1070 (After Action Review, 8th of 11 in the BL-0004 sweep) | Reconciliation: clean tree, no drift since run #25. Invoked 09-package-verification on IP-1070: confirmed state_at() builds a fresh WorldState via replay(mgr.sim._initial_state, ...) on every call, never touching the live mgr.sim.world; confirmed objectives_at/snapshot_at both wrap state_at() and only read its return value; confirmed compare_branches() takes two already-built AARReport objects and does no session access at all; confirmed the aar_report/aar_objectives_at/aar_snapshot_at wrappers and the /aar* HTTP routes carry no cell parameter (no facilitator-only gate), consistent with CLAUDE.md's documented LAN trust model for these ground-truth endpoints. aar.py's own 10 citations drifted only 0-2 lines (very stable file); inprocess.py's three wrapper citations drifted +58, the same file-wide growth this sweep keeps finding. Full suite 566 passed/3 skipped (99s), both permanent gates green, test_aar.py (3 tests) green. VR-1070 written: VERIFIED, zero functional discrepancies, one Low citation-drift finding. Filled RTM Test/Impl. Package cells for FR-7310/FR-7320 (attributed to IP-1070 directly) and NFR-2500's Test cell (this package's half only). Updated Master Build Plan, packages/INDEX.md, verification/INDEX.md. Committed `97fc5ff` (verification skill's own commit), pushed. Harvested BL-0043 (Low, DEFERRED). | `09-package-verification` on IP-1090 (Multiplayer / LAN Session Transport), next in ID order in the BL-0004 sweep; 2 more will follow after that. Thread B's 09-training-manual-review remains available whenever the user wants to switch |
 | 27 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1090 (Multiplayer / LAN Session Transport, 9th of 11 in the BL-0004 sweep) | Reconciliation: clean tree, no drift since run #26. Invoked 09-package-verification on IP-1090: confirmed catch_up() acquires self._lock before calling _catch_up_locked(), serializing every reader through the same anchor state; confirmed inprocess.py's _locked(sid) wraps the identical mgr._lock around every mutating call; confirmed exactly one SessionManager/InProcessSession instance exists per session id regardless of connected-client count, with no mode-specific branch anywhere. manager.py's four citations drifted by the identical uniform +32 VR-1060 (run #25) already found in this same file -- recognized as the same root cause rather than re-investigated as new. Found stronger test coverage than the package's own text claimed: test_web.py carries 5 multiplayer-specific tests (test_lazy_clock_advances_on_read, test_lazy_clock_idempotent_for_multi_reader, test_clock_pause_freezes_then_resumes, test_rewind_re_anchors_clock, test_concurrent_reads_and_writes_lock_safe) beyond test_session.py alone. Full suite 566 passed/3 skipped (95s), both permanent gates green, test_session.py (3 tests) green. VR-1090 written: VERIFIED, zero functional discrepancies, one Low citation-drift finding. Filled RTM Test/Impl. Package cells for FR-6310/FR-6320/FR-6410 (attributed to IP-1090 directly) and NFR-1400's Test cell (confirms lock-safety; the ~16-participant ceiling itself remains untested per the package's own honest disclosure). Updated Master Build Plan, packages/INDEX.md, verification/INDEX.md. Committed `39d0254` (verification skill's own commit), pushed. Harvested BL-0044 (Low, DEFERRED). | `09-package-verification` on IP-1100 (Save & Resume), next in ID order in the BL-0004 sweep; 1 more will follow after that (IP-1110, the last package in the sweep). Thread B's 09-training-manual-review remains available whenever the user wants to switch |
+| 28 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1100 (Save & Resume, 10th of 11 in the BL-0004 sweep) | Reconciliation: clean tree, no drift since run #27. Invoked 09-package-verification on IP-1100: confirmed save_state()'s returned dict cleanly separates content (vignette_id/overrides/classification) from session (eventlog/pending/orders/ssn_requests) state, and from_state() reloads the vignette content fresh before restoring the session half -- confirming FR-7220's split claim directly. Found a real factual overclaim while auditing the Requirements Covered table against the actual save_state() dict: the package claims Role Assignments are persisted, but role_assignments (manager.py:46, populated by assign_role()) is absent from the saved dict and never restored by from_state() -- cross-checked against IP-1151's own Rollback Considerations, which already correctly discloses this exact limitation. Filed as a Medium finding (BL-0045), not softened despite being a documentation-only issue, per this sweep's severity-honesty discipline (Medium doesn't require a gate stop, unlike Critical/High). Also found the package cites test_session.py for save-resume coverage; grepped that file and found zero save/resume tests -- the real test (test_save_resume_reproduces_state_and_queue) lives in test_session_features.py instead. Full suite 566 passed/3 skipped (107s), both permanent gates green, test_session_features.py (3 tests) green. VR-1100 written: VERIFIED (the functional round-trip holds), one Medium + two Low findings. Filled RTM Test/Impl. Package cells for FR-7210/FR-7220 (attributed to IP-1100 directly, with the corrected test-file citation) and NFR-1800's Test cell. Updated Master Build Plan, packages/INDEX.md, verification/INDEX.md. Committed `a54ea7a` (verification skill's own commit), pushed. Harvested BL-0045 (Medium, DEFERRED), BL-0046/BL-0047 (Low, DEFERRED). | `09-package-verification` on IP-1110 (AI-Red Doctrine Automation) -- the LAST package in the BL-0004 sweep. Once verified, flag to the user that all 18 packages now have a formal VR and 11-release-readiness is the next gate-worthy step for Thread A. Thread B's 09-training-manual-review remains available in parallel |
