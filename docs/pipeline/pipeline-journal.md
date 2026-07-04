@@ -13,6 +13,86 @@
 
 ## Position
 
+- **Updated:** 2026-07-04 (run #16)
+- **Increment:** two threads now active. **Thread A (v1 baseline follow-through):** the "iterate
+  through all `09-package-verification` passes" sweep completed at run #15 — all 18 packages
+  `VERIFIED`, `10-integration-review` unblocked and recommended next for that thread. **Thread B
+  (training-corpus elevation, opened outside the manager between runs #15-#16):** the user
+  directly elevated the training corpus to a co-equal product with the code (MSTR-001 §2;
+  vision/requirements/skills/manuals/learning-path all authored in two sessions not run through
+  this manager — reconciled into this journal for the first time this run, see below), then this
+  run (#16) closed the R600 research tier the elevation created.
+- **Reconciliation note (run #16):** between runs #15 and #16, substantial pipeline-shaped work
+  landed **outside** the manager's own loop (the user worked directly with the relevant skills
+  across two other sessions, PRs #45 and #46, both merged to `main`): the "complete outstanding 08"
+  /"iterate through 09" work this journal already tracked (PR #45, run #15's own content), **and**
+  a second, previously-untracked increment (PR #46): per-cell training manuals (`training/12-14`)
+  + bidirectional traceability matrix (`training/15`), then the full training-corpus elevation —
+  `MSTR-001` §2/§5, `GDS-00`/`GDS-01` "Training-corpus elevation" sections, assumptions-register
+  **A12**, the **FR-11000** requirements family + **NFR §16**, four new pipeline skills
+  (`02-research-training-pedagogy`, `08-training-manual-authoring`, `08-vignette-development`,
+  `09-training-manual-review`), and `training/16-learning-path.md`. This journal is reconciled
+  against that reality now: the tree wins, and PR #46's own backlog entries (`BL-0025`-`BL-0027`,
+  filed directly to `docs/pipeline/backlog.md` outside a manager run) are adopted into this
+  journal's backlog tracking as of this run.
+- **Thread A pipeline state:** Stages 01-09 current (all 18 packages `VERIFIED` per run #15).
+  Stage 10 (`10-integration-review`) unblocked, not yet run — still this thread's recommended next
+  step. PR [#45](https://github.com/Zabin/ZabSpaceExercise/pull/45) merged to `main` (confirmed:
+  `main`'s tip is `096c09e`, the PR #45 merge commit).
+- **Thread B pipeline state (training corpus):**
+  - Stage 00 (`00-intake`-equivalent) ✅ the owner's direct elevation instruction, worked outside
+    this manager across two sessions, produced PR #46 (merged to `main`, tip `d74f1da`).
+  - Stages 01-07 ✅ current for the elevation's own scope: vision (`MSTR-001`, `GDS-00`/`GDS-01`),
+    R600 tier index (scaffolded, then this run authored), FR-11000/NFR §16 requirements baseline,
+    the four new skills, and the manuals/learning-path artifacts themselves — all authored directly
+    by the user's sessions, not by manager-driven stage invocations. No gap to close there.
+  - Stage 02 ✅ **this run (#16):** `02-research-training-pedagogy` invoked in override mode (`run
+    02-research-training-pedagogy`) at the user's explicit request ("Run the pipeline to author the
+    R600 topics"), closing the one open item the elevation's own sessions had already flagged
+    (backlog `BL-0025`). Authored all 8 planned topics (R601-R608) in dependency order, each with
+    §2 Scope, inline citations, `### Sources` subsections, and frontmatter from the first draft —
+    the tier never entered the uncited state R400/R500 needed remediation from. This session's
+    `WebFetch` was blocked by the environment's egress policy (403 organizational-policy denial,
+    confirmed via the proxy status endpoint) for the whole pass; citations rest on multi-source
+    WebSearch corroboration rather than fetch-and-confirm — flagged transparently in every topic,
+    the tier index, the encyclopedia INDEX, and a new backlog finding (`BL-0028`). RTM Research
+    cells for `FR-11110`/`FR-11120`/`FR-11210`/`FR-11310`/`FR-11320`/`FR-11420`/`NFR-3600` filled in
+    from `UNASSIGNED`/"not yet citable" to their specific R601-R608 citations in the same pass.
+    Cross-references added to `R202`/`R208`'s `Referenced By` fields. `ROADMAP.md`, `CLAUDE.md`,
+    and `docs/research/INDEX.md` updated to reflect the tier's closed status. Committed (research
+    skill's own commit, separate from this journal/backlog commit per convention), pushed to
+    `claude/skills-docs-hierarchy-gy1422` (branch restarted from `main` after PR #46 merged, per
+    session convention for a merged designated branch).
+  - **`BL-0026` (the per-cell-vs-task-oriented manual layout design question) is now ripe** — its
+    named trigger ("after R606 authors") fired this run. Not batched into a gate stop this run
+    (Low severity, non-blocking, no current work depends on the answer) — surfaced in this run's
+    report for the user's own timing.
+  - Stages 08-11 (training side) ⛔ never run — `08-training-manual-authoring` (BL-0026, if the
+    user wants the restructuring explored) and `08-vignette-development` are both available next
+    for this thread; no gate blocks either.
+- **Backlog:** 28 total, 3 open+actionable this run's reconciliation touched: `BL-0025` → `DONE`
+  (this run), `BL-0026` → `NEEDS-USER` (ripe, not yet batched — see above), `BL-0028` → `NEW→DEFERRED`
+  this run (WebFetch-verification-pass gap, Medium, named trigger: a future unrestricted-WebFetch
+  session). `BL-0027` remains `DEFERRED` (trigger not yet fired). All 24 pre-existing entries
+  (`BL-0001`-`BL-0024`) unchanged from run #15's own accounting — see that run's row for detail;
+  none revisited this run since none of their triggers are training-corpus-related.
+- **Next step:** two independent, genuinely parallel options across the two threads —
+  **Thread A:** `10-integration-review` on the 18-package tranche (unblocked since run #15).
+  **Thread B:** either `02-research-training-pedagogy`'s open finding is closed (this run), so the
+  next Thread-B step is `08-training-manual-authoring` or `08-vignette-development` picking up
+  real training-artifact work (e.g., resolving `BL-0026`'s layout question, or extending the
+  learning path), or simply asking the user which thread to prioritize.
+- **Open gates:** none currently ripe for an immediate stop; `BL-0026` (Low, `NEEDS-USER`) is
+  available to batch into whichever thread's next gate check comes first. PR
+  [#45](https://github.com/Zabin/ZabSpaceExercise/pull/45) and
+  [#46](https://github.com/Zabin/ZabSpaceExercise/pull/46) are both merged — no open PR to monitor
+  from prior work; this run's own commit has not yet been opened as a PR (see report).
+
+---
+
+<!-- Runs #0-#15 Position history preserved below for record; superseded by the reconciled
+     Position block above. -->
+
 - **Updated:** 2026-07-04 (run #15)
 - **Increment:** v1 baseline follow-through — closing the gaps the 2026-07 strategic review and
   feature-planning pass opened. **The "iterate through all `09-package-verification` passes"
@@ -258,3 +338,4 @@
 | 13 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1120 (independently re-derived from the tree; several runs + a compaction boundary separate implementation (run #6) from this verification) | Verified against the live tree: full suite 566 passed/3 skipped, both permanent gates green; VR-1120 written (VERIFIED); RTM FR-4510/NFR-3100 cells updated; IP-1120 COMPLETE->VERIFIED. Both documented Implementation Tasks deviations confirmed accurate/harmless/in-scope. Run #6's package-doc drift fix and NFR-3100 RTM malformed-row fix both re-confirmed still accurate. Harvested 1 finding -> BL-0022 (Low, DONE -- DoD-text naming imprecision, informational only). Committed `3d0a300`, pushed (PR #45). | `09-package-verification` on either of IP-1130/IP-1151, both genuinely parallel -- continuing per the user's request to iterate through all |
 | 14 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1130 (independently re-derived from the tree; several runs + a compaction boundary separate implementation (run #7) from this verification) | Verified against the live tree: full suite 566 passed/3 skipped, both permanent gates green; VR-1130 written (VERIFIED); RTM FR-6510 cell updated; IP-1130 COMPLETE->VERIFIED. Investigated BL-0011's predicted route-guard maintenance-drift risk directly: both routes added since IP-1130 shipped (/roles/assign from IP-1151, IP-1130's own /observer/view POST) remain protected, via a stricter White-Cell-only allowlist check in inprocess.py rather than _reject_observer's denylist -- drift has not materialized. Harvested 1 finding -> BL-0023 (Low, DEFERRED -- test-coverage gap on the two newer routes, not a functional gap). Committed `826a61a`, pushed (PR #45). | `09-package-verification` on IP-1151, the sole remaining COMPLETE package -- continuing per the user's request to iterate through all |
 | 15 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs -- last package in the sweep) | `09-package-verification` | IP-1151 (independently re-derived from the tree; several runs + a compaction boundary separate implementation (run #8) from this verification) | Verified against the live tree: full suite 566 passed/3 skipped, both permanent gates green; VR-1151 written (VERIFIED); RTM FR-4210 cell updated; IP-1151 COMPLETE->VERIFIED. Independently re-derived BL-0014 (no role-based command-filtering consumer exists anywhere in the codebase) rather than re-citing it -- still true, unchanged since run #8. Harvested 1 finding -> BL-0024 (Low, DEFERRED -- assign_role's White-Cell-only gate untested against cell="observer" specifically, same family as BL-0023). Committed `12f9c8b`, pushed (PR #45). **All 18 packages in the Master Build Plan are now VERIFIED** (IP-1140 carries a standing user-accepted-risk note). This closes the "iterate through all 09-package-verification" sweep (runs #11-#15). | `10-integration-review` for the tranche -- every package has reached VERIFIED; open findings (BL-0006/BL-0008/BL-0010/BL-0012/BL-0014/BL-0015/BL-0016/BL-0019/BL-0020/BL-0023/BL-0024, all DEFERRED with named triggers) are backlog items for that review to spot-check, not blockers to starting it |
+| 16 | 2026-07-04 | override (`run 02-research-training-pedagogy`, at the user's explicit request "Run the pipeline to author the R600 topics") | `02-research-training-pedagogy` | R601-R608, the full R600 tier, dependency order | **First, reconciliation:** the training-corpus elevation (MSTR-001 §2/§5, GDS-00/GDS-01 sections, assumptions-register A12, FR-11000/NFR §16, four new skills, per-cell manuals, training/15-16) had landed on `main` across two prior sessions (PR #45 and PR #46, both merged) without ever running through this manager -- reconciled into this journal's Position block for the first time this run; backlog BL-0025/BL-0026/BL-0027 (filed directly to backlog.md by those sessions) adopted into tracking. Branch restarted from origin/main (its own prior PR #46 had merged). Then executed the override: authored all 8 R600 topics (R601 Instructional Systems Design, R602 Adult Learning Theory, R603 Simulation-Based Learning & Debriefing, R604 Cognitive Load & Scaffolding, R605 Learning-Path & Progression Design, R606 Minimalist & Procedural Documentation, R607 Assessment of Learning in Wargames, R608 Software Onboarding & Tutorial Design), each with §2 Scope, inline citations, Sources subsections, and frontmatter from the first draft. WebFetch was blocked by this session's egress policy (403 organizational-policy denial) for the whole pass -- citations rest on multi-source WebSearch corroboration, flagged transparently in every topic/index and as a new finding. Filled in RTM Research cells for the FR-11000 family + NFR-3600 (previously UNASSIGNED/"not yet citable"). Added R607 to R202/R208's Referenced By. Updated ROADMAP/CLAUDE.md/research INDEX. BL-0025 -> DONE. BL-0026 re-ripened (its "after R606 authors" trigger fired) -> re-dispositioned NEEDS-USER, not batched into a gate this run (Low, non-blocking). Harvested 1 new finding -> BL-0028 (Medium, DEFERRED -- the WebFetch-verification-pass gap, named trigger: a future unrestricted-WebFetch session). Committed (research skill's own commit), pushed to `claude/skills-docs-hierarchy-gy1422`. | Two parallel threads available: Thread A `10-integration-review` on the 18-VERIFIED-package tranche (unchanged from run #15); Thread B `08-training-manual-authoring` or `08-vignette-development` picking up real training-artifact work, including BL-0026's now-ripe layout question -- or ask the user which thread to prioritize |
