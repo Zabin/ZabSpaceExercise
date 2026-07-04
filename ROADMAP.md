@@ -575,6 +575,17 @@ own header still reads `COMPLETE`; `feature-index.md`'s FS-112–115 description
 status unverified"), both routed to `07-implementation-planning`/`06-feature-specification`. This
 tranche is clear to proceed to `11-release-readiness` on functional grounds.
 
+**Retro-verification sweep complete (2026-07-04, runs #18, #20–#29):** the integration review's
+`BL-0004` finding (the 11 original as-built packages carried `VERIFIED` with no formal `VR-xxxx`
+evidence) is now fully closed — the project owner chose to retro-verify all 11 rather than accept
+the gap. `IP-1010` through `IP-1110` each received an independent `09-package-verification` pass
+(see `docs/implementation/verification/INDEX.md`); **all 18 packages on the Master Build Plan now
+carry a formal Verification Report.** Sweep results: 8 of 11 clean with only routine citation-drift
+findings, 2 with one Medium finding each (`IP-1020`'s lifecycle-naming mismatch; `IP-1100`'s
+overclaim that Role Assignments are persisted), `IP-1110` with zero findings — no Critical/High
+finding anywhere in the sweep. The tranche's evidence base for `11-release-readiness` is now
+complete.
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
