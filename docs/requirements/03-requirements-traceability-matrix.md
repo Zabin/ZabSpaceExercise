@@ -47,6 +47,13 @@ requirements documents in full (every FR/NFR/Candidate leaf and its explicit fie
 > and process artifacts (the training corpus) rather than `spacesim/` code — see the note under
 > the FR-11000 rows for how the cells are populated honestly under that difference. No existing
 > row was altered.
+>
+> **Further amended 2026-07-04, same day** (pipeline-manager run #16, `02-research-training-pedagogy`
+> authored the R600 tier 0/8→8/8) to fill in the Research cells on `FR-11110`, `FR-11120`, `FR-11210`,
+> `FR-11310`, `FR-11320`, `FR-11420`, and `NFR-3600` — previously `UNASSIGNED`/"index only, not yet
+> citable" — with the specific R601–R608 topic(s) each leaf's Feature Mapping names. `FR-11410` stays
+> `UNASSIGNED` (no single topic names it specifically). No existing baselined FR/NFR row outside this
+> family was touched.
 
 Every populated cell below is backed by an explicit, already-written field on the cited
 requirement leaf (its own "Related ADRs," "Related Interfaces," "Source Documents," or
@@ -172,22 +179,26 @@ that package's own Architecture Components/Interfaces fields exactly (no interfa
 boundary — the interface gap FS-201's Open Questions flagged is a Phase 8 "should this get its own
 `INT-xxxx`" question, unaffected by this cell now being filled).
 
-| FR-11110 *(new 2026-07-04, training-corpus elevation)* | Role-scoped manual coverage per seat | UNASSIGNED | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/12-white-cell-manual.md`, `docs/training/13-blue-cell-manual.md`, `docs/training/14-red-cell-manual.md` |
-| FR-11120 *(new 2026-07-04)* | Section-level source anchoring | UNASSIGNED | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/12-white-cell-manual.md`–`14-red-cell-manual.md` (`> Sources:` footers) |
-| FR-11210 *(new 2026-07-04)* | Feature ⇄ manual bidirectional index | UNASSIGNED | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/15-manual-traceability.md` |
-| FR-11310 *(new 2026-07-04)* | Sequenced learning path over the vignette library | UNASSIGNED | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/16-learning-path.md` |
-| FR-11320 *(new 2026-07-04)* | Per-rung manual linkage | UNASSIGNED | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/16-learning-path.md` |
+| FR-11110 *(new 2026-07-04, training-corpus elevation)* | Role-scoped manual coverage per seat | R601, R602 | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/12-white-cell-manual.md`, `docs/training/13-blue-cell-manual.md`, `docs/training/14-red-cell-manual.md` |
+| FR-11120 *(new 2026-07-04)* | Section-level source anchoring | R606 | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/12-white-cell-manual.md`–`14-red-cell-manual.md` (`> Sources:` footers) |
+| FR-11210 *(new 2026-07-04)* | Feature ⇄ manual bidirectional index | R606 | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/15-manual-traceability.md` |
+| FR-11310 *(new 2026-07-04)* | Sequenced learning path over the vignette library | R605 | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/16-learning-path.md` |
+| FR-11320 *(new 2026-07-04)* | Per-rung manual linkage | R601, R605 | (none identified) | UNASSIGNED | (none — documentation artifact) | UNASSIGNED | UNASSIGNED | `docs/training/16-learning-path.md` |
 | FR-11410 *(new 2026-07-04)* | Training-artifact update rides the changing package | UNASSIGNED | (none identified) | UNASSIGNED | (none — process requirement) | UNASSIGNED | UNASSIGNED | `.claude/skills/08-code-implementation/SKILL.md`, `.claude/skills/10-integration-review/SKILL.md` (hook text) |
-| FR-11420 *(new 2026-07-04)* | Machine-verified vignette playbooks | UNASSIGNED | (none identified) | UNASSIGNED | (none) | UNASSIGNED | `spacesim/tests/test_vignette_tutorials.py` | `spacesim/content/vignettes/*.yaml` (`tutorial:` blocks), `docs/training/11-vignette-playbooks.md` |
+| FR-11420 *(new 2026-07-04)* | Machine-verified vignette playbooks | R605, R608 | (none identified) | UNASSIGNED | (none) | UNASSIGNED | `spacesim/tests/test_vignette_tutorials.py` | `spacesim/content/vignettes/*.yaml` (`tutorial:` blocks), `docs/training/11-vignette-playbooks.md` |
 
 The `FR-11000` family *(training-corpus elevation, 2026-07-04)* traces to documentation and
 process artifacts rather than `spacesim/` code — its "Impl. Package" cells name the real, on-disk
 training artifacts that satisfy each leaf today (verified paths, not placeholders), while Arch.
 Component/Interface cells are structurally `(none)`/`UNASSIGNED` because no ICD component or
-interface models the documentation corpus. Research cells are `UNASSIGNED` pending R600 topic
-authoring (`docs/research/encyclopedia/R600-index.md`, 0/8 — the tier index exists but per
-MSTR-007 discipline an unauthored topic is not citable evidence). `FR-11420`'s Test cell is the
-family's one live automated gate.
+interface models the documentation corpus. Research cells cite the R600 tier
+(`docs/research/encyclopedia/R600-index.md`, authored 2026-07-04, 8/8 topics — pipeline run #16)
+per each topic's own Feature Mapping field; `FR-11410` stays `UNASSIGNED` (a pure process
+requirement with no single research topic as its direct grounding — R601-R608 collectively inform
+it, but no one topic's Feature Mapping names it specifically). `FR-11420`'s Test cell is the
+family's one live automated gate. R600's citations rest on this session's WebSearch-corroborated
+sourcing rather than a fetch-and-confirm pass (see `encyclopedia/INDEX.md`'s R600 note, BL-0028) —
+these Research cells should be re-confirmed once that verification pass runs.
 
 ### Candidate Requirements (CR-01–CR-21) — `CANDIDATE — NOT BASELINED`
 
@@ -269,7 +280,7 @@ where the named subsystem maps onto one), not separately inferred.
 | NFR-3300 | Browser-only client, no external integration | UNASSIGNED | (none identified) | C4 | `ui_web/server.py` | UNASSIGNED | UNASSIGNED |
 | NFR-3400 *(new 2026-07-04, training-corpus elevation)* | Training-artifact accuracy (as-built only) | UNASSIGNED | (none identified) | (none — documentation) | `docs/training/`, `spacesim/content/vignettes/*.yaml` | UNASSIGNED | `spacesim/tests/test_vignette_tutorials.py` (partial — playbook slice) |
 | NFR-3500 *(new 2026-07-04)* | Modularity/retrievability of training modules | UNASSIGNED | (none identified) | (none — documentation) | `docs/training/` | UNASSIGNED | UNASSIGNED |
-| NFR-3600 *(new 2026-07-04)* | Learner-appropriate presentation | R600 (0/8 — index only, not yet citable) | (none identified) | (none — documentation) | `docs/training/`, vignette `intro_brief`/`tutorial`/`coaching` blocks | UNASSIGNED | UNASSIGNED |
+| NFR-3600 *(new 2026-07-04)* | Learner-appropriate presentation | R601–R608 (8/8 authored — see each topic's Feature Mapping for its specific manual/vignette target) | (none identified) | (none — documentation) | `docs/training/`, vignette `intro_brief`/`tutorial`/`coaching` blocks | UNASSIGNED | UNASSIGNED |
 
 ### Candidate NFRs (CNFR-01–CNFR-07) — `CANDIDATE — NOT BASELINED`
 

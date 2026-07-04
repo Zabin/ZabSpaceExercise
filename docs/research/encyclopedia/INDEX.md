@@ -14,7 +14,7 @@ Six tiers; each has its own index enumerating every topic with ID, scope, depend
 | R300 | Military Analysis | [R300-index.md](R300-index.md) | ✅ Done (20/20 topics) |
 | R400 | Research Methods | [R400-index.md](R400-index.md) | 🚧 Incomplete |
 | R500 | Future Operations | [R500-index.md](R500-index.md) | 🚧 Incomplete |
-| R600 | Training Pedagogy & Instructional Design | [R600-index.md](R600-index.md) | ⛔ Scaffolded 2026-07-04 (0/8 topics) — grounds the training corpus elevated to co-equal product (MSTR-001 §2); owned by `02-research-training-pedagogy` |
+| R600 | Training Pedagogy & Instructional Design | [R600-index.md](R600-index.md) | ✅ Done (8/8 topics, 2026-07-04) — grounds the training corpus elevated to co-equal product (MSTR-001 §2); owned by `02-research-training-pedagogy`; formal WebFetch verification pass still open (BL-0028) |
 
 **Authoring order:** per [`MSTR-007`](../../master/MSTR-007-research-philosophy.md) §6, each
 tier's index is authored before its topic documents, and [R100](R100-index.md) (most directly tied
@@ -59,3 +59,15 @@ quality (Purpose/Concepts/Operational Context/Implementation Guidance/Feature Ma
 Topics) is in question for those tiers either — this is a structural-completeness and sourcing
 finding, not a rewrite of the substance. Phase 4 (Feature Specifications) should not treat R400/R500
 as a finished dependency until their remediation pass lands.
+
+**R600 authored 2026-07-04 (8/8 topics, same-day scaffold-to-close)** at the user's explicit request,
+grounding the training-corpus elevation (MSTR-001 §2). Unlike R100/R200/R300's remediation passes,
+R600 was authored *with* §2 Scope and full citation structure from the first draft — it never entered
+the uncited state those tiers had to be remediated out of. One open item, distinct from the R400/R500
+gap above: this authoring session's `WebFetch` tool was blocked by the environment's egress policy
+(an organizational-policy 403, confirmed via the proxy status endpoint — not the transient/absent-
+network condition R300's own remediation note above describes), so citations rest on multi-source
+WebSearch corroboration rather than direct fetch-and-confirm. Tracked as **BL-0028**: a future session
+with unrestricted WebFetch should run the standard adversarial verification pass
+(`10-sources-and-methodology.md` §5.3) against all 8 R600 topics before they're relied on with the
+same confidence as R100/R200/R300.
