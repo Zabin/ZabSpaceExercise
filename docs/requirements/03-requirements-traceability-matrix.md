@@ -161,8 +161,8 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-7110 | Event log | UNASSIGNED | ADR-0002 | C2, C1 | INT-0008, INT-0014 | UNASSIGNED | UNASSIGNED | `engine/eventlog.py` |
 | FR-7210 | Save / resume | UNASSIGNED | ADR-0022 | C2, C5, C11 | INT-0012 | UNASSIGNED | UNASSIGNED | `session/manager.py` |
 | FR-7220 | Save-file content/session ownership split *(new leaf, CHG-007)* | UNASSIGNED | ADR-0022 | C2, C5, C11 | INT-0011, INT-0012 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1100)* |
-| FR-7310 | AAR replay/scrub | UNASSIGNED | ADR-0002 | C2, C1 | INT-0014 | UNASSIGNED | UNASSIGNED | `session/aar.py` |
-| FR-7320 | AAR branch compare | UNASSIGNED | ADR-0002 | C2, C1 | INT-0014 | UNASSIGNED | UNASSIGNED | `session/aar.py` |
+| FR-7310 | AAR replay/scrub | UNASSIGNED | ADR-0002 | C2, C1 | INT-0014 | UNASSIGNED | `spacesim/tests/test_aar.py`, `spacesim/tests/test_determinism.py` *(VR-1070)* | `IP-1070` *(closed 2026-07-04 via VR-1070)* |
+| FR-7320 | AAR branch compare | UNASSIGNED | ADR-0002 | C2, C1 | INT-0014 | UNASSIGNED | `spacesim/tests/test_aar.py` *(VR-1070)* | `IP-1070` *(closed 2026-07-04 via VR-1070)* |
 | FR-8110 | Operator console (web UI over the API) | UNASSIGNED | ADR-0008 | C4, C12 | INT-0001 | UNASSIGNED | UNASSIGNED | `ui_web/server.py`, `ui_web/static/` |
 | FR-9110 | AI-Red substitution for unseated Red | UNASSIGNED | ADR-0021, ADR-0024 | C2, C1, C8 | INT-0008, INT-0015 | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" | UNASSIGNED | `session/redai.py` |
 | FR-10110 *(new 2026-07, promoted from CR-19)* | Automated non-aggregating competency rubric-tier computation | R306, R310 | ADR-0017, ADR-0032 | C2, C1 | INT-0002 | UNASSIGNED | `tests/test_assessment.py`, `tests/test_orders.py` | `IP-2010` *(closed 2026-07-04 via VR-2010 — VERIFIED; two Medium findings filed against FS-201's own Acceptance Criteria scope, not against this closure, see VR-2010)* |
@@ -269,7 +269,7 @@ where the named subsystem maps onto one), not separately inferred.
 | NFR-2200 | Secure development practice | UNASSIGNED | ADR-0018 | C5 + all | `content/vignette.py`, all subsystems | UNASSIGNED | UNASSIGNED |
 | NFR-2300 | LAN trust boundary | UNASSIGNED | ADR-0015 | C2, C4 | `session/api.py` (SessionAPI, CellView), `ui_web/server.py` | UNASSIGNED | UNASSIGNED |
 | NFR-2400 | State-hash data integrity | UNASSIGNED | ADR-0002 | C1 | `engine/eventlog.py` (Snapshot), `engine/world.py` | UNASSIGNED | UNASSIGNED |
-| NFR-2500 | Action log sufficiency | UNASSIGNED | ADR-0002 | C1, C2 | `engine/eventlog.py`, `session/aar.py` | UNASSIGNED | UNASSIGNED |
+| NFR-2500 | Action log sufficiency | UNASSIGNED | ADR-0002 | C1, C2 | `engine/eventlog.py`, `session/aar.py` | UNASSIGNED | `spacesim/tests/test_aar.py` *(VR-1070 — `aar.py`'s `report()`/`DECISION_KINDS` half only; `eventlog.py`'s own half is a different, foundational component)* | UNASSIGNED |
 | NFR-2600 | Complete action log | UNASSIGNED | ADR-0017, ADR-0002 | C1 | `engine/eventlog.py`, `engine/orders.py`, `engine/handlers.py` | UNASSIGNED | UNASSIGNED |
 | NFR-2700 | File-based server config | UNASSIGNED | (none identified) | C4 | `spacesim/config.py`, `spacesim/ui_web/server.py` | UNASSIGNED | UNASSIGNED |
 | NFR-2800 | Test-driven gated build | UNASSIGNED | ADR-0002 | (all) | `spacesim/tests/` | UNASSIGNED | UNASSIGNED |

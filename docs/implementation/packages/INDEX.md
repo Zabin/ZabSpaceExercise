@@ -48,7 +48,7 @@ unauthorized FS.
 | [IP-1050](IP-1050-spacecraft-operations-bus-payload.md) | Spacecraft Operations — bus/payload command & telemetry | [FS-105](../../features/FS-105-spacecraft-operations.md) §3.1 | As-built | ✅ VERIFIED ([`VR-1050`](../verification/VR-1050-spacecraft-operations-bus-payload.md), 2026-07-04) |
 | [IP-1051](IP-1051-spacecraft-operations-effects-console.md) | Spacecraft Operations — effect resolution & console UX | [FS-105](../../features/FS-105-spacecraft-operations.md) §3.2-4 | As-built | ✅ VERIFIED ([`VR-1051`](../verification/VR-1051-spacecraft-operations-effects-console.md), 2026-07-04) |
 | [IP-1060](IP-1060-white-cell-dashboard.md) | White Cell Dashboard — god-view, inject, clock-authority trigger & adjudication *(v2.0, narrowed)* | [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.0 | As-built | ✅ VERIFIED ([`VR-1060`](../verification/VR-1060-white-cell-dashboard.md), 2026-07-04) |
-| [IP-1070](IP-1070-after-action-review.md) | After Action Review — replay/scrub/branch-compare | [FS-107](../../features/FS-107-after-action-review.md) | As-built | ✅ VERIFIED |
+| [IP-1070](IP-1070-after-action-review.md) | After Action Review — replay/scrub/branch-compare | [FS-107](../../features/FS-107-after-action-review.md) | As-built | ✅ VERIFIED ([`VR-1070`](../verification/VR-1070-after-action-review.md), 2026-07-04) |
 | [IP-1090](IP-1090-multiplayer-session-transport.md) | Multiplayer / LAN Session Transport — lazy clock, mutation locking, hot-seat/LAN sharing | [FS-109](../../features/FS-109-multiplayer-session-transport.md) | As-built | ✅ VERIFIED |
 | [IP-1100](IP-1100-save-and-resume.md) | Save & Resume — deterministic round trip & content/session split | [FS-110](../../features/FS-110-save-and-resume.md) | As-built | ✅ VERIFIED |
 | [IP-1110](IP-1110-ai-red-doctrine-automation.md) | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | [FS-111](../../features/FS-111-ai-red-doctrine-automation.md) | As-built | ✅ VERIFIED |
@@ -157,7 +157,8 @@ functional discrepancies, one Low citation-drift finding). `IP-1050` is the fift
 VERIFIED, no functional discrepancies, one Low citation finding). `IP-1051` is the sixth
 (`VR-1051` — VERIFIED, no functional discrepancies, one Low file-misattribution finding). `IP-1060`
 is the seventh (`VR-1060` — VERIFIED, no functional discrepancies, one Low citation-drift finding).
-The remaining 4 (`IP-1070`, `IP-1090`, `IP-1100`, `IP-1110`) are unaffected until their own turn in
+`IP-1070` is the eighth (`VR-1070` — VERIFIED, no functional discrepancies, one Low citation-drift
+finding). The remaining 3 (`IP-1090`, `IP-1100`, `IP-1110`) are unaffected until their own turn in
 the sweep.
 
 ## Authoring note
