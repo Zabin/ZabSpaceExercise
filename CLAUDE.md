@@ -348,8 +348,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `INDEX.md`.
 - **Training corpus is a co-equal product with the code (owner decision 2026-07-04).** The manuals,
   vignette learning path, and in-app briefs/tutorials are requirement-bearing artifacts, not doc
-  exhaust. Grounding: research tier **R600** (`docs/research/encyclopedia/R600-index.md`, scaffolded
-  0/8). Governance: **FR-11000** family + **NFR §16** (`docs/requirements/`). Production/review:
+  exhaust. Grounding: research tier **R600** (`docs/research/encyclopedia/R600-index.md`, authored
+  8/8 2026-07-04). Governance: **FR-11000** family + **NFR §16** (`docs/requirements/`). Production/review:
   dedicated pipeline peers `02-research-training-pedagogy`, `08-training-manual-authoring`,
   `08-vignette-development`, `09-training-manual-review` (the 08 peers split the write surface —
   only `08-code-implementation` writes `spacesim/` Python). Rationale in MSTR-001 §2; ConOps note in

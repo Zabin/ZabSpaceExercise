@@ -21,6 +21,6 @@ mechanics; the [build spec](../build-spec/INDEX.md) remains authoritative for wh
 A separate, larger corpus for **coding-agent domain understanding** rather than doctrinal
 rationale — see [`MSTR-007`](../master/MSTR-007-research-philosophy.md) for the distinction.
 Start at [`encyclopedia/INDEX.md`](encyclopedia/INDEX.md). Tier **R600** (training pedagogy &
-instructional design, scaffolded 2026-07-04) grounds the training corpus itself — the manuals,
-the vignette learning path, and the AAR debrief practice — per the training-corpus elevation
-(MSTR-001 §2).
+instructional design, authored 2026-07-04, 8/8 topics) grounds the training corpus itself — the
+manuals, the vignette learning path, and the AAR debrief practice — per the training-corpus
+elevation (MSTR-001 §2).

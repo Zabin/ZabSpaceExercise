@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R201](R201-probability-and-bayesian-reasoning.md)
-> **Referenced By:** [R203](R203-game-theory.md), [R209](R209-planning-theory.md), [R210](R210-decision-support-systems.md), [R212](R212-multi-criteria-decision-analysis.md), [R214](R214-utility-theory.md), MSTR-003
+> **Referenced By:** [R203](R203-game-theory.md), [R209](R209-planning-theory.md), [R210](R210-decision-support-systems.md), [R212](R212-multi-criteria-decision-analysis.md), [R214](R214-utility-theory.md), [R607](R607-assessment-of-learning-in-wargames.md), MSTR-003
 > **Produces:** the formal vocabulary behind "plan under uncertainty" as MSTR-003 §3 frames it
 > **Feature Mapping:** FS-201 (Competency Assessment), FS-105 (Spacecraft Operations)
 > **Related Topics:** [R201](R201-probability-and-bayesian-reasoning.md) (Probability), [R206](R206-bounded-rationality.md) (Bounded Rationality — the realistic counterpart to

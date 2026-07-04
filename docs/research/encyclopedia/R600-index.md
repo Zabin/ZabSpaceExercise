@@ -14,29 +14,38 @@ operator of this simulator and the doctrine it encodes. Owned by the
 
 | ID | Title | Scope (one line) | Depends on | Status |
 |---|---|---|---|---|
-| R601 | Instructional Systems Design | ADDIE/backward-design applied to simulator training: from training objective to manual module and vignette rung. | — | ⛔ Planned |
-| R602 | Adult Learning Theory | Andragogy/self-direction for the professional-military-education audience; implications for manual tone, length, and sequencing. | R601 | ⛔ Planned |
-| R603 | Simulation-Based Learning & Debriefing | What makes simulation training transfer; debriefing/AAR practice as the payoff step (ties to MSTR-001 §1 item 3). | R601 | ⛔ Planned |
-| R604 | Cognitive Load & Scaffolding in Complex-System Training | Managing intrinsic/extraneous load when teaching a many-panel operator console; fidelity/`ops_fidelity` as a scaffolding dial. | R602 | ⛔ Planned |
-| R605 | Learning-Path & Progression Design | Novice→expert sequencing, part-task training, and mastery gating — the theory behind `training/16-learning-path.md`'s rung structure. | R601, R604 | ⛔ Planned |
-| R606 | Minimalist & Procedural Documentation | Carroll's minimalism, task-oriented manuals, and role-scoped procedure layers — the craft behind the cell manuals' shape. | R602 | ⛔ Planned |
-| R607 | Assessment of Learning in Wargames & Exercises | Measuring whether training worked without corrupting the exercise; connects to DOM-002 and the R400 measurement tier. | R603 | ⛔ Planned |
-| R608 | Software Onboarding & Tutorial Design | In-app tutorial/tooltip/guided-first-run patterns; when embedded guidance beats a manual (the `00-training-basics` step-script pattern). | R604, R606 | ⛔ Planned |
+| [R601](R601-instructional-systems-design.md) | Instructional Systems Design | ADDIE/backward-design applied to simulator training: from training objective to manual module and vignette rung. | — | ✅ |
+| [R602](R602-adult-learning-theory.md) | Adult Learning Theory | Andragogy/self-direction for the professional-military-education audience; implications for manual tone, length, and sequencing. | R601 | ✅ |
+| [R603](R603-simulation-based-learning-and-debriefing.md) | Simulation-Based Learning & Debriefing | What makes simulation training transfer; debriefing/AAR practice as the payoff step (ties to MSTR-001 §1 item 3). | R601 | ✅ |
+| [R604](R604-cognitive-load-and-scaffolding.md) | Cognitive Load & Scaffolding in Complex-System Training | Managing intrinsic/extraneous load when teaching a many-panel operator console; fidelity/`ops_fidelity` as a scaffolding dial. | R602 | ✅ |
+| [R605](R605-learning-path-and-progression-design.md) | Learning-Path & Progression Design | Novice→expert sequencing, part-task training, and mastery gating — the theory behind `training/16-learning-path.md`'s rung structure. | R601, R604 | ✅ |
+| [R606](R606-minimalist-and-procedural-documentation.md) | Minimalist & Procedural Documentation | Carroll's minimalism, task-oriented manuals, and role-scoped procedure layers — the craft behind the cell manuals' shape. | R602 | ✅ |
+| [R607](R607-assessment-of-learning-in-wargames.md) | Assessment of Learning in Wargames & Exercises | Measuring whether training worked without corrupting the exercise; connects to DOM-002 and the R400 measurement tier. | R603 | ✅ |
+| [R608](R608-software-onboarding-and-tutorial-design.md) | Software Onboarding & Tutorial Design | In-app tutorial/tooltip/guided-first-run patterns; when embedded guidance beats a manual (the `00-training-basics` step-script pattern). | R604, R606 | ✅ |
 
-**Status: 0 of 8 topics authored — tier scaffolded 2026-07-04, authoring not yet begun.** Per
-MSTR-007 §6 the tier index is authored before its topic documents; this index is that step. Topic
-authoring belongs to the `02-research-training-pedagogy` skill and must meet the full
-`docs/research/10-sources-and-methodology.md` bar from the first draft (inline citations at claim
-sites, `### Sources` per `##` section with live URL + Wayback snapshot + accessed date, §2 Scope
-per MSTR-007 §4.2, `Last Reviewed`/`Primary Sources Consulted` frontmatter) — this tier starts
-*after* the GAP-13 lesson, so it never enters the uncited state R400/R500 had to be remediated
-out of. Do not treat any R600 topic as an available dependency for an FS/IP or manual-review pass
-until its row here reads ✅.
+**Status: 8 of 8 topics authored — tier closed 2026-07-04 (same-day scaffold-to-authored, per the
+user's explicit "author the R600 topics" request).** Every topic carries §2 Scope (MSTR-007 §4.2),
+inline citations at every substantive claim, a `### Sources` subsection per cited `##` section (live
+URL + Wayback calendar-view link + accessed date), and `Last Reviewed`/`Primary Sources Consulted`
+frontmatter, per `docs/research/10-sources-and-methodology.md`.
 
-**Anchor literature the topics are expected to draw from** (named here so the authoring skill
-starts from real sources, not vibes): Gagné's *Conditions of Learning*; Merrill's First Principles
-of Instruction; Knowles on andragogy; Sweller's cognitive load theory; Ericsson on deliberate
-practice; Carroll's *The Nurnberg Funnel* (minimalist documentation); Kirkpatrick's four levels +
-its wargaming critiques; Fanning & Gaba on simulation debriefing; the military AAR literature
-(TC 25-20); van Merriënboer's 4C/ID for complex-skill training. Each claim still requires its own
-verified citation at authoring time — this list is a starting bibliography, not a citation.
+**Verification-pass caveat (read before citing a topic as fully audited).** This authoring pass ran
+in a session where direct `WebFetch` of external sources was blocked by the environment's egress
+policy (a 403 organizational-policy denial, not a transient error — see each topic's own
+"Verification note"). Every claim is grounded in a real, named source corroborated across ≥2
+independent live web-search results (author, title, venue, year, and core finding all cross-checked
+against multiple listings), which is solid grounding but is **not** the same as the fetch-and-confirm
+adversarial verification pass `10-sources-and-methodology.md` §5.3 describes as this corpus's normal
+quality gate. That formal verification pass — fetching each cited URL, confirming the claim, and
+spot-checking Wayback availability — is an explicit open item, tracked as backlog **BL-0028**, and
+should run in a session with unrestricted WebFetch before this tier is treated as fully audited to
+the same standard as R100/R200/R300/R400/R500.
+
+**Anchor literature the topics actually cite** (the starting bibliography named at scaffolding time,
+now backed by real per-topic citations — see each topic's own `### Sources`): Gagné's and Merrill's
+instructional-design frameworks and Wiggins & McTighe's backward design (R601); Knowles' andragogy
+(R602); Fanning & Gaba on simulation debriefing and the U.S. Army's TC 25-20 AAR doctrine (R603);
+Sweller's cognitive load theory and Wood/Bruner/Ross's scaffolding concept (R604); Ericsson's
+deliberate practice, van Merriënboer's 4C/ID, and Bloom's mastery learning (R605); Carroll's
+*The Nurnberg Funnel* (R606); Scriven's formative/summative distinction, Kirkpatrick's four levels,
+and Perla's wargaming-debrief practice (R607); Nielsen's progressive disclosure (R608).
