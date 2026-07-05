@@ -119,6 +119,81 @@ against `packages/INDEX.md` for collisions — unclaimed):
 dependency already `VERIFIED`) is not itself an authorization; a separate, explicit user go-ahead
 is required before any Implementation Task begins.
 
+## Tranche 3 (2026-07-05): FS-117
+
+**Why this tranche.** `FS-117` (Vignette Creator — In-App Authoring, Typed Parameters & Per-Cell
+ROE) reached v1.1 — every capability it specifies now traces to a baselined requirement
+(`FR-5110`/`FR-5120`-`FR-5180`/`FR-3420`/`NFR-2000`/`NFR-2010`), closing the Critical Open Question
+that had blocked planning. `FEAT-5100` (the Feature Catalog entry this consolidates) is 0% built —
+no prior FS, no code — so every package below is genuinely forward-design, not an as-built record.
+
+**Three design-fork decisions resolved before packaging** (via `AskUserQuestion`, this pass — the
+same class of in-pass design resolution `IP-2010`'s run #4 amendment used): (1) typed
+per-payload-type/bus parameter sub-schemas bridge to the engine via new, strongly-typed fields
+directly on `PayloadState` (not a UI-side conversion to the existing generic `detail: dict`); (2)
+per-cell ROE uses a nested `roe: {blue: {...}, red: {...}}` structure on the `Vignette` schema (not
+a flat `Parameter`-style list); (3) a vignette using only the legacy global ROE pair is
+**auto-upgraded** to the explicit per-cell block on next save through the Creator (not left
+byte-identical forever) — chosen so the on-disk schema stays current with the simulator's actual
+per-cell capability, consistent with `NFR-2010`'s additive-evolution intent (a save always adds
+the new shape; it never *removes* the ability to read the legacy shape, so no vignette becomes
+unloadable).
+
+**Split by seam, five packages** — mirroring the `FS-105 → IP-1050`/`IP-1051` precedent
+(architecturally distinct concerns, not a count-padding split):
+
+1. **`IP-1170` — ISR Beam-Mode Coverage: Weather & Missile-Warning** (prerequisite). `engine/isr.py`'s
+   `BEAM_MODES` has zero entries for the `weather`/`mw` payload types (`BL-0053`) — confirmed
+   directly (`beam_params()` silently falls back to generic EO stripmap numbers for either type).
+   This is a hard precondition for two of `FR-5170`'s eight typed payload sub-schemas (`FS-117`
+   Open Question 6, its own Risks section, and `FR-5170`'s own Postcondition all name it). Scoped
+   as its own small, engine-only prerequisite package — a different seam (`C1` `engine/isr.py`)
+   from every other package in this tranche, and independently valuable (a real engine gap
+   `FS-105`/`FS-104`'s existing ISR tasking already exercises for the other six payload types)
+   rather than bundled into the UI-facing work that merely exposes it.
+2. **`IP-1171` — Typed Payload & Bus Parameter Domain Model** (`FR-5170`, `FR-5180`). `C1`/`C5` seam:
+   new typed pydantic sub-models on `PayloadState` per payload type, plus vignette-schema/loader
+   wiring so authored values reach `PowerState.charge_rate_per_s`/`drain_rate_per_s` and
+   `AssetResources.delta_v_ms` (already-live fields — no new engine fields needed for the bus half,
+   confirmed by reading `bus.py`/`entities.py` directly) rather than the dead `power_w`.
+3. **`IP-1172` — Per-Cell Rules of Engagement Enforcement** (`FR-3420`, `NFR-2010`). `C1`/`C5` seam:
+   the nested `roe:` vignette field, `build_world()`'s reconstruction of `VignetteContext.roe` as a
+   cell-keyed dict, `engine/orders.py`'s two ROE check sites (confirmed at lines 349/358, both
+   reached via the single `_validate()` method both `issue()` and `dry_run()` call — one fix site,
+   not two), and the auto-upgrade-on-save logic.
+4. **`IP-1173` — Vignette Creator Draft Session & Reverse Serialization** (`FR-5110`). `C2` seam: a
+   draft authoring session is an unstarted `SessionManager` instance registered in
+   `InProcessSession._sessions` the same way a normal session is (confirmed — `SessionManager.start()`
+   is a distinct call from `__init__`/registration, and the existing `MAX_LIVE_SESSIONS`
+   eviction in `_evict_if_full()` already provides a coarse answer to Open Question 2's "abandoned
+   draft session" concern, noted rather than re-solved from scratch); a new "Save as Vignette"
+   reverse-serialization function (`WorldState`+`VignetteContext` → `Vignette` YAML) is genuinely
+   new — no such function exists anywhere today (`save_state()`/`from_state()` serialize
+   session/game state, not authorable vignette content).
+5. **`IP-1174` — Vignette Creator UI Surfaces** (`FR-5120`, `FR-5130`, `FR-5140`, `FR-5150`,
+   `FR-5160`). `C4` seam: JSON view, 2D/3D preview (reusing `session/scene.py`'s `build_scene()` in
+   ground-truth mode), TLE/lat-long/asset-entry forms (reusing the existing `POST
+   /api/sessions/{sid}/force/tle` route), asset menu, and the seat-count-declaration + seat/role
+   matrix UI (reusing `FS-115`/`IP-1151`'s existing `assign_role`/`staffing_report`). Depends on
+   `IP-1171`/`IP-1172` (needs the typed schemas and per-cell ROE fields to present forms/selectors
+   for) and `IP-1173` (needs the draft-session API this UI is a thin client over).
+
+**Package IDs assigned** (per the `IP-<series><seq>0` convention, `FS-117 → IP-1170` family;
+checked against `packages/INDEX.md` for collisions — `IP-1170`-`IP-1179` unclaimed):
+
+| Package | Feature | Situation | Entry status |
+|---|---|---|---|
+| [IP-1170](packages/IP-1170-isr-beam-mode-coverage.md) | FS-117 (prerequisite, `BL-0053`) | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3) |
+| [IP-1171](packages/IP-1171-typed-payload-bus-parameters.md) | FS-117 §`FR-5170`/`FR-5180` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; depends on `IP-1170`) |
+| [IP-1172](packages/IP-1172-per-cell-roe-enforcement.md) | FS-117 §`FR-3420`/`NFR-2010` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3) |
+| [IP-1173](packages/IP-1173-vignette-creator-draft-session.md) | FS-117 §`FR-5110` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3) |
+| [IP-1174](packages/IP-1174-vignette-creator-ui-surfaces.md) | FS-117 §`FR-5120`-`FR-5160` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; depends on `IP-1171`/`IP-1172`/`IP-1173`) |
+
+None of these five packages is authorized for coding — per MSTR-006 §3, being fully specified (and
+having every *upstream Feature/architecture* dependency already closed) is not itself an
+authorization; a separate, explicit user go-ahead is required per package before any Implementation
+Task begins.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·

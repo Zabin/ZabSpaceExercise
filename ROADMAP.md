@@ -529,11 +529,22 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1150 | Session Setup: Vignette Selection & Parameter Tuning | `implementation/packages/IP-1150-vignette-selection.md` | FS-115 §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, `VR-1150`) |
 | IP-1151 | Session Setup: Seat-to-Role Assignment | `implementation/packages/IP-1151-seat-role-assignment.md` | FS-115 §FR-4210 | Forward design | ✅ VERIFIED (2026-07-04, run #15, `VR-1151` — `BL-0014`'s no-consumer finding independently re-derived, still true; one new Low finding) |
 | IP-1160 | Role-Scoped Command Catalog & Assignment Scoping | `implementation/packages/IP-1160-role-scoped-command-enforcement.md` | FS-116 | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; every dependency already `VERIFIED`) |
+| IP-1170 | ISR Beam-Mode Coverage — weather & missile-warning (`BL-0053` prerequisite) | `implementation/packages/IP-1170-isr-beam-mode-coverage.md` | FS-117 (prerequisite) | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; no package-level dependency) |
+| IP-1171 | Typed Payload & Bus Parameter Domain Model | `implementation/packages/IP-1171-typed-payload-bus-parameters.md` | FS-117 §FR-5170/FR-5180 | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; depends on `IP-1170`) |
+| IP-1172 | Per-Cell Rules of Engagement Enforcement | `implementation/packages/IP-1172-per-cell-roe-enforcement.md` | FS-117 §FR-3420/NFR-2010 | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; no package-level dependency) |
+| IP-1173 | Vignette Creator Draft Session & Reverse Serialization | `implementation/packages/IP-1173-vignette-creator-draft-session.md` | FS-117 §FR-5110 | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; no package-level dependency) |
+| IP-1174 | Vignette Creator UI Surfaces | `implementation/packages/IP-1174-vignette-creator-ui-surfaces.md` | FS-117 §FR-5120-FR-5160 | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; depends on `IP-1171`/`IP-1172`/`IP-1173`) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1160 is
 new (2026-07-05)**, closing `FEAT-3500`'s implementation gap that `11-release-readiness` found —
 see the Master Build Plan's Tranche 2 note and `01-technical-work-breakdown.md` for the no-split
-rationale.
+rationale. **IP-1170 through IP-1174 are new (2026-07-05, Tranche 3)** — the five packages planned
+against `FS-117` (Vignette Creator), split by architectural seam (engine ISR-beam-mode
+prerequisite, typed payload/bus parameters, per-cell ROE, draft-session lifecycle, UI surfaces).
+Three design-fork decisions (typed-schema bridging mechanism, per-cell ROE YAML shape,
+legacy-ROE auto-upgrade policy) were resolved by the project owner during this planning pass — see
+`01-technical-work-breakdown.md` Tranche 3 for the full rationale. None of the five is authorized
+for coding.
 
 **IP-1090/IP-1100/IP-1110 are new (2026-07, tranche 1)**, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03, mirroring the FS-106 split — no new code
