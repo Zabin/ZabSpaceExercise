@@ -182,18 +182,27 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
   one-shot vignette-file-load (GDS-02 §2 row 2, §8, ADR-0027).
 - **Data exchanged:** Incremental, partial vignette-definition state (accumulated across the
   authoring session); a final save/build action that emits a complete vignette file.
-- **Message/data structure:** Not specified at this baseline (GDS-09 unauthored).
+- **Message/data structure:** **Implemented (IP-1173, 2026-07-05):** `POST /api/sessions/draft`
+  (`{title}` → `{session}`) opens the authoring session; every existing session-scoped mutation
+  route (e.g. `force/tle`) applies to it directly; `POST /api/sessions/{sid}/save_vignette`
+  (`{vignette_id, title, classification?}` → `{vignette_id, path}`) is the single save/build
+  action. `IP-1174` will add the remaining Creator-specific UI surfaces (JSON view, 2D/3D preview,
+  asset menu, seat/role matrix) as thin clients over this same session.
 - **Direction:** Bidirectional, iterative.
 - **Frequency/timing:** Episodic, pre-session — not during a running exercise.
 - **Preconditions:** White Cell role; no running session is required to author a vignette.
 - **Postconditions:** A complete vignette definition file is written to C11 (filesystem) via C5
-  (Content & Data) once the authoring session is saved/built.
+  (Content & Data) once the authoring session is saved/built. **Implemented (IP-1173):** the draft
+  session is an unstarted `SessionManager`; no code path other than `save_vignette` writes to
+  `VIGNETTE_DIR`, and every time-control route rejects a draft session rather than advancing it.
 - **Error handling:** Not specified at this baseline.
 - **Dependencies:** C5's vignette schema (INT-0011's destination format).
 - **Related architecture components:** GDS-03 §2.5 (vignette schema), §2.4.
 - **Related ADRs:** ADR-0027.
-- **Open questions:** Where partial, unsaved authoring state lives (server session vs. browser
-  local state) is not stated by GDS-02/03/04 — flagged in §7.1.
+- **Open questions:** ~~Where partial, unsaved authoring state lives~~ **Resolved (IP-1173):** a
+  server-side draft session (an unstarted `SessionManager`), reusing the existing session
+  registry/locking/`MAX_LIVE_SESSIONS` eviction unmodified — the existing eviction cap is also this
+  package's pragmatic (not purpose-built) answer to abandoned-draft-session cleanup.
 
 ---
 
@@ -731,11 +740,11 @@ on — they are listed so a reviewer can triage them, not as a backlog this docu
    ADR-0024 already accepts this as a tracked future-work gap rather than a defect requiring
    immediate fix — restated here because an ICD reviewer scanning interfaces by principle-compliance
    would otherwise flag it as a new finding; it is not new, but it is real and still open.
-10. **Possible missing interface: partial scenario-authoring state (INT-0003).** Where in-progress,
-    unsaved vignette-builder state lives between round trips (server-session-scoped vs.
-    browser-local) is not stated by GDS-02 §8/ADR-0027 or any other approved document. This may
-    indicate a missing interface (e.g. an explicit "draft vignette" object with its own ownership)
-    rather than merely missing detail on an existing one — flagged for a reviewer to determine which.
+10. **Resolved (IP-1173, 2026-07-05): partial scenario-authoring state (INT-0003).** Where
+    in-progress, unsaved vignette-builder state lives between round trips is now implemented —
+    a server-side draft session (an unstarted `SessionManager`, no separate "draft vignette"
+    object/ownership needed), reusing the existing session registry/locking/eviction machinery
+    unmodified. See INT-0003's own entry above for the concrete route shapes.
 11. **Possible missing interface: push-based state delivery.** GDS-02/03 describe INT-0001 as
     HTTP-polling-based. `design/07-api-and-networking.md` §3 (non-binding) describes a documented-
     but-not-built future WebSocket push migration. Whether this future capability should be named as

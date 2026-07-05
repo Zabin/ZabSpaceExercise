@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator, Optional
 
-from spacesim.content.vignette import list_vignettes, load_vignette
+from spacesim.content.vignette import Vignette, list_vignettes, load_vignette
 from spacesim.engine.orders import Order
 from spacesim.session.api import Ack, CellView, OrderAck
 from spacesim.session import aar, assessment
@@ -33,6 +33,10 @@ class InProcessSession:
         # IP-1130 — White-Cell-designated Observer view per session: "godview" or a cell name.
         # UI-presentation state, not exercise state, so it lives here rather than on SessionManager.
         self._observer_view: dict[str, str] = {}
+        # IP-1173 (FR-5110) — sids of draft (Vignette Creator authoring) sessions: unstarted
+        # SessionManagers that must never advance their clock. UI-presentation/lifecycle state,
+        # not exercise state, mirrors _observer_view's own placement.
+        self._draft_sessions: set[str] = set()
 
     # -- multiplayer plumbing --------------------------------------------------
     # Every mutation is wrapped with the session's RLock; every read first calls
@@ -97,6 +101,31 @@ class InProcessSession:
         while len(self._sessions) >= self.MAX_LIVE_SESSIONS:
             oldest_sid = next(iter(self._sessions))
             self._sessions.pop(oldest_sid, None)
+            self._draft_sessions.discard(oldest_sid)  # IP-1173 — keep the draft-tracking set in sync
+
+    # -- Vignette Creator draft session (IP-1173, FR-5110) ----------------------
+    def create_draft_session(self, title: str = "Untitled Draft") -> str:
+        """A draft authoring session: an unstarted SessionManager backed by a near-empty
+        Vignette, registered and evicted the same way a normal session is. No code path here
+        or in SessionManager calls .start() on it — every time-control method below rejects a
+        draft sid rather than silently advancing its clock."""
+        self._evict_if_full()
+        self._counter += 1
+        sid = f"sess-{self._counter}"
+        draft_vignette = Vignette(id=f"draft-{sid}", title=title)
+        self._sessions[sid] = SessionManager(draft_vignette)
+        self._draft_sessions.add(sid)
+        return sid
+
+    def save_vignette(self, session: str, vignette_id: str, title: str,
+                       classification: str = "UNCLASSIFIED-TRAINING") -> str:
+        """Build a complete Vignette YAML from the session's current state and write it to
+        VIGNETTE_DIR — the only code path that does so. Works for any session (draft or
+        normal), matching FR-5110's own framing of "Save as Vignette" as the single explicit
+        action that ever produces a file."""
+        from spacesim.content.vignette_export import save_vignette as _save
+        with self._locked_read(session) as mgr:
+            return _save(mgr.world, mgr.ctx, vignette_id, title, classification=classification)
 
     def load_vignette(
         self, vignette_id: str, overrides: Optional[dict] = None, seed: int = 0,
@@ -153,22 +182,36 @@ class InProcessSession:
             return mgr.staffing_report()
 
     # -- time control ----------------------------------------------------------
+    # IP-1173 (FR-5110) — a draft session must never advance its clock (it produces no event
+    # log; determinism has nothing to test it against). Rejected here, at the InProcessSession
+    # boundary, not inside SessionManager itself — SessionManager.step/advance_to/rewind_to are
+    # also called directly, unstarted, by many engine-level unit tests that have nothing to do
+    # with drafts, so gating on a generic "not started" check there would be a much broader,
+    # unintended behavior change (see this package's own Risks).
     def step(self, session: str, dt_sim_s: float) -> Ack:
+        if session in self._draft_sessions:
+            return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
             mgr.step(dt_sim_s)
         return Ack()
 
     def advance_to(self, session: str, t: int) -> Ack:
+        if session in self._draft_sessions:
+            return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
             mgr.advance_to(t)
         return Ack()
 
     def rewind_to(self, session: str, t: int) -> Ack:
+        if session in self._draft_sessions:
+            return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
             mgr.rewind_to(t)
         return Ack()
 
     def undo_last(self, session: str, n: int = 1) -> Ack:
+        if session in self._draft_sessions:
+            return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
             mgr.undo_last(n)
         return Ack()
@@ -181,6 +224,8 @@ class InProcessSession:
         return Ack(ok=ok, reason=reason)
 
     def red_doctrine_step(self, session: str) -> list[OrderAck]:
+        if session in self._draft_sessions:  # IP-1173 — no AI-Red activity against a draft
+            return []
         with self._locked(session) as mgr:
             return RedDoctrine(mgr).step()
 

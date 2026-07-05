@@ -287,6 +287,11 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `{blue: {kinetic_authorized, cyber_authorized}, red: {...}}`; absent for every vignette shipped
   before this package, in which case `build_world()` mirrors the legacy flat
   `red_kinetic_authorized`/`cyber_authorized` parameters to both cells.
+- `spacesim/content/vignette_export.py` (IP-1173, FR-5110) — reverse serialization:
+  `export_vignette()`/`save_vignette()` convert a draft session's live `WorldState`+
+  `VignetteContext` into a `Vignette` model and write it to `VIGNETTE_DIR` — the mirror image of
+  `vignette.py`'s `load_vignette()`/`build_world()`, and the only code path that writes an
+  authored vignette file.
 - `spacesim/content/inject_library.yaml` — five reusable white-cell inject templates
   (debris breakup, GNSS-jam advisory, ambiguous RPO, GS outage, geomagnetic storm).
   Loaded via `InProcessSession.inject_library()`; surfaced in the white-cell GUI's
@@ -304,7 +309,11 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **IP-1130:** `set_observer_view`/`get_observer_view`/`observer_designation` — a fourth,
   White-Cell-designated read-only seat dispatching unmodified to `get_godview`/`get_view`, no
   parallel filtering path; **IP-1151:** `assign_role`/`staffing_report` — seat-to-role bindings
-  against a vignette's `roles_needed`, hard-gating `start()` on any unmet mandatory entry),
+  against a vignette's `roles_needed`, hard-gating `start()` on any unmet mandatory entry;
+  **IP-1173:** `create_draft_session`/`save_vignette` — a Vignette Creator draft session (an
+  unstarted `SessionManager`, tracked in `_draft_sessions`), reusing the existing registry/
+  locking/`MAX_LIVE_SESSIONS` eviction unmodified; `step`/`advance_to`/`rewind_to`/`undo_last`/
+  `red_doctrine_step` all reject a draft sid rather than advancing its clock),
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
   `aar.py` (replay/scrub/branch-compare + `snapshot_at`),
   `assessment.py` (IP-2010 — read-only competency-rubric scoring: `score_custody_quality`/

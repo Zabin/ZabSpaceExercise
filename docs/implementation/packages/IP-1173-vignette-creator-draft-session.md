@@ -2,9 +2,13 @@
 
 > **Package ID:** IP-1173
 > **Version:** 1.0
-> **Status:** 🟢 READY *(MSTR-006 §3 authorization obtained 2026-07-05, project owner, recorded in
-> `docs/pipeline/pipeline-journal.md` run #45 — no package-level dependency, so authorization was
-> the only gate; independent of every other Tranche 3 package.)*
+> **Status:** 🔵 COMPLETE *(implemented 2026-07-05 by `08-code-implementation` —
+> `InProcessSession.create_draft_session`/`save_vignette` added, the new
+> `content/vignette_export.py` reverse-serialization module, two new HTTP routes
+> (`POST /api/sessions/draft`, `POST /api/sessions/{sid}/save_vignette`), and every time-control
+> route (`step`/`advance_to`/`rewind_to`/`undo_last`/`red_doctrine_step`) rejects a draft session.
+> 7 new tests, full suite 586 passed/3 skipped (up from 579/3, +7), both permanent gates green.
+> Awaiting `09-package-verification` to advance to `VERIFIED`.)*
 > **Dependencies:** [FS-117](../../features/FS-117-vignette-creator.md) v1.1 (`FR-5110`),
 > [ADS-5100A](../../architecture/ADS-5100A-vignette-creator-session-and-ui.md) §2,
 > [FS-109](../../features/FS-109-multiplayer-session-transport.md)/[IP-1090](IP-1090-multiplayer-session-transport.md)
@@ -88,106 +92,106 @@ Operator-Console half over it.
 
 ## Files to Create
 
-- `spacesim/content/vignette_export.py` *(proposed, new)* — the reverse-serialization function
-  (`WorldState`, `VignetteContext` → `Vignette` model instance → YAML file), kept in a separate
-  module from `vignette.py`'s existing load-direction logic for a clean read/write seam (mirrors
-  the existing `load_vignette()`/`build_world()` pairing's own module, but as a new file rather than
-  growing `vignette.py` with a second, opposite-direction responsibility — a naming/organization
-  choice `08-code-implementation` may revisit if a single-module approach proves cleaner once the
-  actual field-by-field mapping is written).
+- `spacesim/content/vignette_export.py` *(implemented)* — `export_vignette()`/`save_vignette()`
+  (`WorldState`, `VignetteContext` → `Vignette` model instance → YAML file), in a separate module
+  from `vignette.py`'s existing load-direction logic, as proposed.
 
 ## Files to Modify
 
-- `spacesim/session/inprocess.py` *(proposed)* — a new `create_draft_session(sid: str) -> Ack`-style
-  method (or an optional-vignette-id parameter on the existing `load_vignette()`, if that proves
-  the cleaner shape once implemented) that registers a `SessionManager` backed by an empty/minimal
-  starting `WorldState` — never calling `start()`. Reuses the existing `_evict_if_full()` cap
-  (`MAX_LIVE_SESSIONS`) unmodified, which already provides a coarse answer to `FS-117`'s Open
-  Question 2 (an abandoned draft session is eventually evicted once enough other sessions are
-  created — noted as an existing, adequate-for-v1 mechanism, not a gap this package must solve
-  from scratch with a new TTL system).
-- `spacesim/session/manager.py` *(proposed)* — depending on where `08-code-implementation` finds the
-  cleanest seam, `SessionManager` may need small read accessors (e.g. exposing its current
-  `world`/`ctx` cleanly) for `vignette_export.py` to consume — no change to `start()`,
-  `advance_to()`, or any clock/scheduler logic, since a draft session must never exercise those
-  paths.
-- `spacesim/ui_web/server.py` *(proposed)* — new routes: a "create draft session" route
-  (parallel to the existing session-creation route) and a "save as vignette" route calling the new
-  reverse-serialization function and returning the written vignette's id/path. Both are additive;
-  no existing route changes.
+- `spacesim/session/inprocess.py` *(implemented)* — `create_draft_session(title: str = "Untitled
+  Draft") -> str` registers a `SessionManager` backed by a near-empty `Vignette(id=..., title=...)`
+  — never calling `start()`; tracked in a new `self._draft_sessions: set[str]`. Reuses the existing
+  `_evict_if_full()` cap (`MAX_LIVE_SESSIONS`) unmodified (extended by one line to also discard an
+  evicted sid from `_draft_sessions`, keeping the new set consistent — not a change to the cap
+  logic itself), which already provides a coarse answer to `FS-117`'s Open Question 2. `step`/
+  `advance_to`/`rewind_to`/`undo_last` each check `session in self._draft_sessions` and return
+  `Ack(ok=False, ...)` before touching `SessionManager` at all; `red_doctrine_step` returns `[]`
+  for a draft sid. `save_vignette(session, vignette_id, title, classification=...) -> str` calls
+  the new module's `save_vignette()` under the session's read lock.
+- `spacesim/session/manager.py` — **no change**, as anticipated; no read accessor was needed since
+  `vignette_export.py` reads `mgr.world`/`mgr.ctx` directly (both already public attributes).
+- `spacesim/ui_web/server.py` *(implemented)* — `POST /api/sessions/draft` (`DraftRequest{title}`
+  → `{session}`) and `POST /api/sessions/{sid}/save_vignette` (`SaveVignetteRequest{vignette_id,
+  title, classification?}` → `{vignette_id, path}`), both additive; no existing route changed.
 
-**Explicitly out of scope for this package:** every specific UI surface (JSON view, 2D/3D preview,
-asset entry forms, asset menu, seat/role matrix) — those are [IP-1174](IP-1174-vignette-creator-ui-surfaces.md)'s
-concern, which is a thin client over this package's session-layer API. This package also does not
-implement the typed-parameter sub-models ([IP-1171](IP-1171-typed-payload-bus-parameters.md)) or
-per-cell ROE ([IP-1172](IP-1172-per-cell-roe-enforcement.md)) schemas themselves — its
-reverse-serialization function must be written to emit whatever `Vignette` shape those two packages
-define, so it should be sequenced to land after (or be revised to reflect) their schemas, per
-Dependencies below.
+**Explicitly out of scope for this package (confirmed unchanged during implementation):** every
+specific UI surface — [IP-1174](IP-1174-vignette-creator-ui-surfaces.md)'s concern; the
+typed-parameter sub-models ([IP-1171](IP-1171-typed-payload-bus-parameters.md)) and per-cell ROE
+([IP-1172](IP-1172-per-cell-roe-enforcement.md)) schemas — this package's `export_vignette()`
+serializes whatever fields `Asset`/`PayloadState`/`VignetteContext.roe` carry today (already
+including `IP-1172`'s cell-keyed `roe`, since that package landed first in this session); it will
+need a follow-up touch once `IP-1171`'s typed payload/bus sub-models ship, per Dependencies below —
+not a defect in this pass, a disclosed sequencing consequence.
 
 ## Implementation Tasks
 
-**Not started — authorized 2026-07-05 (MSTR-006 §3).** Proposed sequence:
+**Complete (2026-07-05, `08-code-implementation`).**
 
-1. Write a failing test asserting a "create draft session" call registers a `SessionManager` that
-   is never `start()`-ed and produces no event log, before writing the entry point.
-2. Add the draft-session creation entry point, reusing `InProcessSession`'s existing registry/
-   locking/eviction machinery unmodified.
-3. Write a failing test asserting the reverse-serialization function, given a hand-constructed
-   `WorldState`/`VignetteContext`, produces a `Vignette` YAML file that `load_vignette()` can load
-   back and reproduce (a round-trip test), before writing the function.
-4. Implement the reverse-serialization function in the new `vignette_export.py` module, covering at
-   minimum: assets (with their typed payload/bus parameters, once [IP-1171](IP-1171-typed-payload-bus-parameters.md)
-   lands), ground sites, per-cell ROE (once [IP-1172](IP-1172-per-cell-roe-enforcement.md) lands),
-   `roles_needed`/seat declarations (once [IP-1174](IP-1174-vignette-creator-ui-surfaces.md)'s
-   seat/role matrix work defines the seat-count-declaration shape), and the basic vignette metadata
-   fields (`id`, `title`, `classification`, etc.) the Creator's UI collects.
-5. Add the "save as vignette" HTTP route calling this function, and confirm no partial file is ever
-   written by any other code path (per `FR-5110`'s own Postcondition).
-6. Confirm the draft session's clock never advances by construction — no test should be able to
-   drive it forward via any existing time-control route, since a draft session is never `start()`-ed.
+1. ✅ Wrote a failing test asserting `create_draft_session()` registers a never-`start()`-ed
+   `SessionManager` with an empty event log, before writing the entry point.
+2. ✅ Added the draft-session creation entry point, reusing `InProcessSession`'s existing registry/
+   locking/eviction machinery unmodified (plus the one-line `_draft_sessions` cleanup addition).
+3. ✅ Wrote a failing test asserting the reverse-serialization function, given a draft session with
+   a force-added asset, produces a `Vignette` YAML file `load_vignette()`/`build_world()` can load
+   back, before writing the function.
+4. ✅ Implemented `export_vignette()` in the new `vignette_export.py` module: assets (bucketed by
+   owner into `blue_forces`/`red_forces`/`neutral_forces` via `Asset.model_dump(exclude={"owner"})`
+   — already carrying whatever typed/legacy fields the live `PayloadState`/`BusState` have),
+   sensors, `ctx.roe` (already cell-keyed via `IP-1172`), `ctx.objectives`, and the basic vignette
+   metadata fields (`id`, `title`, `classification`, `start_epoch_utc`). `roles_needed`/seat
+   declarations deliberately omitted — no seat-count-declaration shape exists yet ([IP-1174](IP-1174-vignette-creator-ui-surfaces.md)'s
+   concern); the field is optional/absent-safe, so this is not a gap this package must fill.
+5. ✅ Added the "save as vignette" HTTP route; independently confirmed (grep across `spacesim/`)
+   that `content/vignette_export.py`'s `save_vignette()` is the only code path that writes to
+   `VIGNETTE_DIR`.
+6. ✅ Confirmed the draft session's clock never advances: `step`/`advance_to`/`rewind_to`/
+   `undo_last`/`red_doctrine_step` all reject a draft sid at the `InProcessSession` boundary
+   (not inside `SessionManager` itself — see Risks for why that distinction matters).
 
 ## Tests to Add
 
-*(Proposed — none exist yet.)*
-
-- `spacesim/tests/test_vignette_creator_session.py` *(new)* — one test per Acceptance Criterion:
-  - Given a fresh draft session with several incremental asset/parameter edits but no save action,
-    no file appears in `VIGNETTE_DIR` (`FR-5110`'s own literal Acceptance Criterion).
-  - Given a draft session with a small force lay-down, "Save as Vignette" produces a file that
-    `load_vignette()` can load and `build_world()` can build without error.
-  - Given a draft session, no time-control route (`step`/`advance_to`/`red_step`) succeeds against
-    it while it remains unstarted — confirms the "no clock advance, no scheduler activity"
-    guarantee is enforced, not merely assumed.
-  - Given `MAX_LIVE_SESSIONS` draft (or mixed draft/normal) sessions already live, creating one more
-    evicts the oldest per the existing `_evict_if_full()` behavior, unmodified.
+- `spacesim/tests/test_vignette_creator_session.py` *(new)* — 6 tests: draft session created/
+  registered/never-started; force-edit (asset add) accepted before any save; no partial file
+  written before save; "Save as Vignette" produces a file `load_vignette()`/`build_world()` load
+  and build without error; no time-control route (`step`/`advance_to`/`rewind_to`/`undo_last`/
+  `red_doctrine_step`) succeeds against a draft session; `MAX_LIVE_SESSIONS` eviction applies to
+  draft sessions unmodified (and cleans up `_draft_sessions` on eviction).
+- `spacesim/tests/test_web.py::test_draft_session_create_add_asset_and_save_as_vignette` *(new)* —
+  the same flow end to end through the HTTP routes (`POST /api/sessions/draft`, `force/tle`,
+  `POST .../save_vignette`), confirming the saved file round-trips through `load_vignette()`/
+  `build_world()`.
 
 ## Documentation Updates
 
-- `ROADMAP.md` Implementation Packages theme — add this package's row.
-- `docs/features/FS-117-vignette-creator.md`'s `Referenced By` metadata — add this package once
-  authored (this pass); also close (or explicitly leave open with this package's noted resolution)
-  Open Question 2 (abandoned-draft-session lifecycle) in a future `06-feature-specification` touch,
-  citing the existing `_evict_if_full()` mechanism as the v1 answer.
-- `CLAUDE.md`'s Code Map — a brief addition for `content/vignette_export.py` (or wherever the
-  reverse-serialization function lands) and the draft-session entry point in `session/inprocess.py`.
-- `docs/design/05-interface-control-document.md`'s `INT-0003` entry — update from
-  "not yet implemented" (if it currently reads that way) to reflect this package's concrete
-  implementation, mirroring `IP-1160`'s precedent of correcting an ICD entry as part of the first
-  package that makes an interface real.
+- `ROADMAP.md` Implementation Packages theme — this package's row (added at planning time) updated
+  to `COMPLETE`.
+- `docs/features/FS-117-vignette-creator.md`'s `Referenced By` metadata — already present (added
+  at planning time). Open Question 2 (abandoned-draft-session lifecycle) remains recorded there as
+  open pending a future `06-feature-specification` touch — not closed by this package directly
+  (out of this skill's scope to edit the FS), but this package's own text now names the
+  `_evict_if_full()` mechanism as the concrete v1 answer for that future touch to cite.
+- `CLAUDE.md`'s Code Map — `content/vignette_export.py` entry added; `session/inprocess.py`'s
+  entry gained the `create_draft_session`/`save_vignette` addition.
+- `docs/design/05-interface-control-document.md`'s `INT-0003` entry — updated from "not yet
+  implemented"/open-question framing to reflect this package's concrete route shapes; §7 Issue 10
+  marked resolved.
+- `docs/requirements/03-requirements-traceability-matrix.md` — `FR-5110`'s Test/Impl. Package
+  cells corrected (the prior `Impl. Package` cell cited `content/vignette.py`, which is the
+  vignette *schema*, not the iterative-composition capability `FR-5110` actually describes);
+  `session/inprocess.py`/`content/vignette_export.py` reverse-index rows updated/added.
 
 ## Definition of Done
 
 - [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
   §3, 2026-07-05, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #45).
-- [ ] A draft session can be created, registered, and mutated via existing session-scoped routes
+- [x] A draft session can be created, registered, and mutated via existing session-scoped routes
   (e.g. `force/tle`) without ever being `start()`-ed.
-- [ ] No time-control route succeeds against an unstarted draft session.
-- [ ] "Save as Vignette" produces a file `load_vignette()`/`build_world()` can load and build
+- [x] No time-control route succeeds against an unstarted draft session.
+- [x] "Save as Vignette" produces a file `load_vignette()`/`build_world()` can load and build
   without error, for at least a minimal force lay-down.
-- [ ] No partial/incomplete vignette file is ever written to `VIGNETTE_DIR` by any code path other
+- [x] No partial/incomplete vignette file is ever written to `VIGNETTE_DIR` by any code path other
   than the explicit "Save as Vignette" action.
-- [ ] The existing `MAX_LIVE_SESSIONS` eviction mechanism applies unmodified to draft sessions.
+- [x] The existing `MAX_LIVE_SESSIONS` eviction mechanism applies unmodified to draft sessions.
 
 ## Verification Checklist
 
@@ -244,7 +248,18 @@ Dependencies below.
   ([IP-1171](IP-1171-typed-payload-bus-parameters.md), [IP-1172](IP-1172-per-cell-roe-enforcement.md))
   — if `08-code-implementation` builds this package before those two, the exported vignette will be
   missing typed-parameter/per-cell-ROE fields until a follow-up pass adds them; this is an accepted,
-  disclosed sequencing choice, not a silent gap.
+  disclosed sequencing choice, not a silent gap. **Resolved favorably at build time:** `IP-1172`
+  landed first in this same session, so `export_vignette()` already emits the cell-keyed `roe`
+  field; only `IP-1171`'s typed payload/bus sub-models (not yet built) are still missing.
+- **The time-control rejection deliberately lives in `InProcessSession`, not `SessionManager`.**
+  `SessionManager.step`/`advance_to`/`rewind_to` are called directly, unstarted, by a large number
+  of engine-level unit tests unrelated to drafts (they construct a bare `SessionManager` and drive
+  it without ever calling `.start()`) — adding a generic "reject if not started" check inside
+  `SessionManager` itself would have been a much broader, almost certainly regression-inducing
+  change, not a targeted one. The `_draft_sessions` set at the `InProcessSession` boundary (the
+  actual HTTP-reachable layer) is what makes the rejection specific to *drafts*, not to "any
+  not-yet-started session" generally — confirmed by running the full suite, which would have
+  caught the broader alternative immediately.
 
 ## Rollback Considerations
 
