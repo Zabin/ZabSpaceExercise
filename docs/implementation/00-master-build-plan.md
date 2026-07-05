@@ -99,17 +99,17 @@ package in this plan to reach that state.
 
 | ID | Feature | Situation | Status | Blocking dependency |
 |---|---|---|---|---|
-| [IP-1010](packages/IP-1010-mission-planning.md) | FS-101 Mission Planning | As-built | ✅ VERIFIED | none |
-| [IP-1020](packages/IP-1020-command-scheduling.md) | FS-102 Command Scheduling | As-built | ✅ VERIFIED | none |
-| [IP-1030](packages/IP-1030-custody-management.md) | FS-103 Custody Management | As-built | ✅ VERIFIED | none |
-| [IP-1040](packages/IP-1040-sda-tasking.md) | FS-104 SDA Tasking | As-built | ✅ VERIFIED | none |
-| [IP-1050](packages/IP-1050-spacecraft-operations-bus-payload.md) | FS-105 §3.1 Spacecraft Ops (bus/payload) | As-built | ✅ VERIFIED | none |
-| [IP-1051](packages/IP-1051-spacecraft-operations-effects-console.md) | FS-105 §3.2-4 Spacecraft Ops (effects) | As-built | ✅ VERIFIED | none |
-| [IP-1060](packages/IP-1060-white-cell-dashboard.md) | FS-106 White Cell Dashboard *(v2.0, narrowed)* | As-built | ✅ VERIFIED | none |
-| [IP-1070](packages/IP-1070-after-action-review.md) | FS-107 After Action Review | As-built | ✅ VERIFIED | none |
-| [IP-1090](packages/IP-1090-multiplayer-session-transport.md) | FS-109 Multiplayer / LAN Session Transport | As-built | ✅ VERIFIED | none |
-| [IP-1100](packages/IP-1100-save-and-resume.md) | FS-110 Save & Resume | As-built | ✅ VERIFIED | none |
-| [IP-1110](packages/IP-1110-ai-red-doctrine-automation.md) | FS-111 AI-Red Doctrine Automation | As-built | ✅ VERIFIED | none |
+| [IP-1010](packages/IP-1010-mission-planning.md) | FS-101 Mission Planning | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #18)**, [`VR-1010`](verification/VR-1010-mission-planning.md), the first of 11 as-built packages closing the `BL-0004` evidence gap; full suite 566 passed/3 skipped, both permanent gates green |
+| [IP-1020](packages/IP-1020-command-scheduling.md) | FS-102 Command Scheduling | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #20)**, [`VR-1020`](verification/VR-1020-command-scheduling.md), 2nd of 11 in the `BL-0004` sweep; full suite 566 passed/3 skipped, both permanent gates green; one Medium finding (the package's claimed lifecycle-state names don't match the code, functional guarantee still holds) |
+| [IP-1030](packages/IP-1030-custody-management.md) | FS-103 Custody Management | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #21)**, [`VR-1030`](verification/VR-1030-custody-management.md), 3rd of 11 in the `BL-0004` sweep; full suite 566 passed/3 skipped, both permanent gates green, no functional discrepancies (one Low citation-drift finding) |
+| [IP-1040](packages/IP-1040-sda-tasking.md) | FS-104 SDA Tasking | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #22)**, [`VR-1040`](verification/VR-1040-sda-tasking.md), 4th of 11 in the `BL-0004` sweep; full suite 566 passed/3 skipped, both permanent gates green, no functional discrepancies (one Low citation-drift finding) |
+| [IP-1050](packages/IP-1050-spacecraft-operations-bus-payload.md) | FS-105 §3.1 Spacecraft Ops (bus/payload) | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #23)**, [`VR-1050`](verification/VR-1050-spacecraft-operations-bus-payload.md), 5th of 11 in the `BL-0004` sweep; full suite 566 passed/3 skipped, both permanent gates green, no functional discrepancies (one Low citation finding) |
+| [IP-1051](packages/IP-1051-spacecraft-operations-effects-console.md) | FS-105 §3.2-4 Spacecraft Ops (effects) | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #24)**, [`VR-1051`](verification/VR-1051-spacecraft-operations-effects-console.md), 6th of 11 in the `BL-0004` sweep; full suite 566 passed/3 skipped, both permanent gates green, no functional discrepancies (one Low file-misattribution finding) |
+| [IP-1060](packages/IP-1060-white-cell-dashboard.md) | FS-106 White Cell Dashboard *(v2.0, narrowed)* | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #25)**, [`VR-1060`](verification/VR-1060-white-cell-dashboard.md), 7th of 11 in the `BL-0004` sweep; full suite 566 passed/3 skipped, both permanent gates green, no functional discrepancies (one Low citation-drift finding) |
+| [IP-1070](packages/IP-1070-after-action-review.md) | FS-107 After Action Review | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #26)**, [`VR-1070`](verification/VR-1070-after-action-review.md), 8th of 11 in the `BL-0004` sweep; full suite 566 passed/3 skipped, both permanent gates green, no functional discrepancies (one Low citation-drift finding) |
+| [IP-1090](packages/IP-1090-multiplayer-session-transport.md) | FS-109 Multiplayer / LAN Session Transport | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #27)**, [`VR-1090`](verification/VR-1090-multiplayer-session-transport.md), 9th of 11 in the `BL-0004` sweep; full suite 566 passed/3 skipped, both permanent gates green, no functional discrepancies (one Low citation-drift finding) |
+| [IP-1100](packages/IP-1100-save-and-resume.md) | FS-110 Save & Resume | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #28)**, [`VR-1100`](verification/VR-1100-save-and-resume.md), 10th of 11 in the `BL-0004` sweep; full suite 566 passed/3 skipped, both permanent gates green; one Medium finding (package overclaims Role Assignments are persisted — false, per `IP-1151`'s own text), two Low citation findings |
+| [IP-1110](packages/IP-1110-ai-red-doctrine-automation.md) | FS-111 AI-Red Doctrine Automation | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #29)**, [`VR-1110`](verification/VR-1110-ai-red-doctrine-automation.md), 11th and last of 11 in the `BL-0004` sweep; full suite 566 passed/3 skipped, both permanent gates green, zero findings — the cleanest package in the sweep. **This closes `BL-0004`: all 18 packages on this plan now carry a formal `VR-xxxx` report.** |
 | [IP-2010](packages/IP-2010-competency-assessment.md) | FS-201 Competency Assessment | Forward design | ✅ VERIFIED | **Verified 2026-07-04**, [`VR-2010`](verification/VR-2010-competency-assessment.md) — full suite 566 passed/3 skipped, both permanent gates green; RTM `FR-10110` updated. Two Medium findings against FS-201's own Acceptance Criteria scope (longitudinal per-trainee report, self-assessment-mode accessibility — see Risk item 9 below), not against this package's own claims |
 | [IP-3010](packages/IP-3010-research-analytics.md) | FS-301 Research Analytics | Forward design | ✅ VERIFIED | **Verified 2026-07-04 (run #12)**, [`VR-3010`](verification/VR-3010-research-analytics.md) — full suite 566 passed/3 skipped, both permanent gates green; RTM `FR-10210` updated; `BL-0018`/`BL-0017` re-confirmed; no new findings |
 | [IP-1120](packages/IP-1120-classification-banner.md) | FS-112 Classification Banner | Partially built (gap-closing) | ✅ VERIFIED | **Verified 2026-07-04 (run #13)**, [`VR-1120`](verification/VR-1120-classification-banner.md) — full suite 566 passed/3 skipped, both permanent gates green; RTM `FR-4510`/`NFR-3100` updated; both documented implementation deviations confirmed accurate |
@@ -195,8 +195,20 @@ standing user-accepted-risk note (Risk item 6) rather than an outstanding remedi
 all `09-package-verification`" sweep the user requested (runs #11–#15). The tranche's only
 open items are findings/backlog entries, not incomplete packages: `IP-1140`'s accepted risk (Risk
 item 6), `IP-2010`'s two Medium FS-201-scope findings (Risk item 9), and `IP-1151`'s own `BL-0014`
-(Medium, routed to `06-feature-specification`). The next stage-appropriate step for this tranche is
-`10-integration-review`.
+(Medium, routed to `06-feature-specification`).
+
+**Update (2026-07-04, runs #17–#29):** `10-integration-review` ran against the full 18-package
+tranche (run #17) and came back clean on functional grounds — no Critical/High findings; see
+[`integration-review-18-package-tranche.md`](../reviews/integration-review-18-package-tranche.md).
+The review surfaced `BL-0004` (the 11 original as-built packages carried `VERIFIED` with no formal
+`VR-xxxx` evidence, since that convention postdates their authoring) as a standing gap; the project
+owner chose to retro-verify all 11 rather than accept the gap (run #18's gate check). That sweep is
+now complete: `IP-1010` (`VR-1010`) through `IP-1110` (`VR-1110`), one package per run
+(#18, #20–#29) — **every one of the 18 packages on this plan now carries a formal `VR-xxxx`
+report**, closing `BL-0004` in full. The sweep's own findings (8 of 11 clean, 2 with a single
+Medium finding each, 1 with zero findings) are tracked as `BL-0032`–`BL-0047` in the pipeline
+backlog, none Critical/High. The next stage-appropriate step for this tranche is
+`11-release-readiness`.
 
 ## Implementation sequence
 

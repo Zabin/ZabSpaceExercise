@@ -6,11 +6,19 @@
 
 ## 3. The interface at a glance
 
-The tool is built around three **cells**, selected with the buttons at the top:
+The tool is built around four **cells**, selected with the buttons at the top:
 
 - **White** — the facilitator. Sees **ground truth** (both sides), controls time, fires injects.
 - **Blue** / **Red** — the players. Each sees only **its own assets** and whatever its sensors
   have detected (*fog-of-war*).
+- **Observer** — a read-only fourth seat, White-Cell-designated (see [WCM-1](12-white-cell-manual.md#wcm-1--role-and-view)).
+  It can never issue a command — every mutating request is rejected server-side, even one that
+  bypasses the UI entirely — and its view is either full god-view or a named cell's own
+  fog-of-war picture, byte-for-byte identical to what that cell's own operator sees.
+
+The header also carries a **classification banner** on every screen — set once by White Cell at
+session Load from the vignette's default or an override, fixed for the session's lifetime, and
+embedded in every AAR/save export too (see [WCM-2](12-white-cell-manual.md#wcm-2--set-up-the-exercise)).
 
 The header carries a **time block** with two rows (UTC + selectable local timezone). The
 three accessibility toggles (**color-blind safe**, **high contrast**, **large text**) live

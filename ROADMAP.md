@@ -564,6 +564,28 @@ this plan has reached `VERIFIED`, with `IP-1140` carrying a standing user-accept
 than an outstanding gap-closing package). The next stage-appropriate step for this tranche is
 `10-integration-review`.
 
+**Integration review (2026-07-04):** [`reviews/integration-review-18-package-tranche.md`](docs/reviews/integration-review-18-package-tranche.md)
+reviewed all 18 packages as a set — full suite 566 passed/3 skipped, both permanent gates green,
+no Critical/High findings, no behavioral or interface divergence found. Three documentation/
+traceability-coherence findings: a Medium gap (5 of 7 tranche-2/forward-design features —
+`IP-1120`/`IP-1130`/`IP-1151`/`IP-2010`/`IP-3010` — have no coverage anywhere in the per-cell
+training manuals or `training/15-manual-traceability.md` §15.1, routed to
+`08-training-manual-authoring`), and two Low package-doc/feature-index staleness items (`IP-1150`'s
+own header still reads `COMPLETE`; `feature-index.md`'s FS-112–115 descriptions still say "build
+status unverified"), both routed to `07-implementation-planning`/`06-feature-specification`. This
+tranche is clear to proceed to `11-release-readiness` on functional grounds.
+
+**Retro-verification sweep complete (2026-07-04, runs #18, #20–#29):** the integration review's
+`BL-0004` finding (the 11 original as-built packages carried `VERIFIED` with no formal `VR-xxxx`
+evidence) is now fully closed — the project owner chose to retro-verify all 11 rather than accept
+the gap. `IP-1010` through `IP-1110` each received an independent `09-package-verification` pass
+(see `docs/implementation/verification/INDEX.md`); **all 18 packages on the Master Build Plan now
+carry a formal Verification Report.** Sweep results: 8 of 11 clean with only routine citation-drift
+findings, 2 with one Medium finding each (`IP-1020`'s lifecycle-naming mismatch; `IP-1100`'s
+overclaim that Role Assignments are persisted), `IP-1110` with zero findings — no Critical/High
+finding anywhere in the sweep. The tranche's evidence base for `11-release-readiness` is now
+complete.
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |

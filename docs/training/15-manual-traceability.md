@@ -69,6 +69,11 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Per-cell playbooks / tutorial | `test_vignette_tutorials.py`, `/vignettes/{id}/tutorial` | WCM-2 | BLU-10 | RED-9 |
 | Vignette library (add/move/retire) | `content/vignettes/*.yaml` | WCM-2 | BLU-10 | RED-9 |
 | Learning-path sequence & rung linkage | `16-learning-path.md`, `content/vignettes/*.yaml` | WCM-2 | BLU-10 | RED-9 |
+| Classification banner | `content/vignette.py` (`Vignette.classification`), `session/manager.py`, `session/aar.py` | WCM-2 | — | — |
+| Observer read-only seat (4th cell, no command ability) | `session/inprocess.py` (`set_observer_view`/`get_observer_view`), `ui_web/server.py` (`_reject_observer`) | WCM-1 | — | — |
+| Seat-to-role assignment / staffing gate | `content/vignette.py` (`Vignette.roles_needed`), `session/manager.py` (`assign_role`/`staffing_report`) | WCM-2 | — | — |
+| Competency assessment (custody/window/divergence rubric) | `session/assessment.py`, `GET /assessment` | WCM-11 | — | — |
+| Research analytics (offline batch export) | `tools/research_batch.py`, `session/research_export.py` | WCM-12 | — | — |
 
 ### 15.2 Manual section → backing features (reverse index)
 
@@ -79,8 +84,8 @@ mirrors each section's inline `> Sources:` footer.
 
 | § | Topic | Backing code / endpoints |
 |---|---|---|
-| WCM-1 | Role and view | `session/manager.py`, `session/controller.py` |
-| WCM-2 | Set up the exercise | `content/vignette.py`, `vignettes/*.yaml`, `/brief/{cell}` |
+| WCM-1 | Role and view | `session/manager.py`, `session/controller.py`, `session/inprocess.py` (Observer, FR-6510) |
+| WCM-2 | Set up the exercise | `content/vignette.py`, `vignettes/*.yaml`, `/brief/{cell}`, `session/manager.py` (classification, seat-to-role) |
 | WCM-3 | Hot-seat / LAN / pop-out | `session/inprocess.py`, `server.py` (`/api/sessions`) |
 | WCM-4 | Time control | `session/manager.py`, `engine/clock.py`, `/clock` |
 | WCM-5 | Injects | `content/inject_library.yaml`, `/inject` |
@@ -89,6 +94,8 @@ mirrors each section's inline `> Sources:` footer.
 | WCM-8 | AI-Red doctrine | `session/redai.py`, `/red_step` |
 | WCM-9 | After-Action Review | `session/aar.py`, `/aar*` |
 | WCM-10 | Save/resume + lag watchdog | `engine/simulation.py`, `/save`, `_record_catch_up_lag` |
+| WCM-11 | Competency assessment | `session/assessment.py`, `/assessment` |
+| WCM-12 | Offline research batch exports | `tools/research_batch.py`, `session/research_export.py` |
 
 #### Blue cell manual (`BLU-n`)
 
@@ -160,5 +167,50 @@ NFR-3400–3600 (accuracy / modularity / learner-appropriate presentation). See
 [`docs/requirements/01-functional-requirements.md`](../requirements/01-functional-requirements.md)
 §FR-11000 and [`02-non-functional-requirements.md`](../requirements/02-non-functional-requirements.md)
 §16.
+
+### 15.6 Layout evaluation (`BL-0026`)
+
+**Question:** FR-11110 mandates role-scoped *coverage*, not the current per-cell-monolith layout
+(`training/12-14`) specifically — the project owner asked (2026-07-04) whether a task-oriented cut
+across cells would serve trainees better, now that
+[R606](../research/encyclopedia/R606-minimalist-and-procedural-documentation.md) (minimalist,
+task-centered technical documentation — Carroll's *The Nurnberg Funnel*) grounds the decision.
+
+**R606's success criterion:** judge by task-completion speed for a reader mid-task, not by
+comprehensiveness — "can a Blue operator who just hit a jam signature find the diagnosis procedure
+fast, with minimal irrelevant material in the way," not "does this cover every mechanic somewhere."
+
+**Evaluation.** Two structural options were weighed against that criterion:
+
+1. **Per-cell (current).** Each of `BLU-n`/`RED-n`/`WCM-n` is already a *procedure layer*, not a
+   reference — it deep-links shared concept modules (`05-core-concepts.md`,
+   `02-interface.md`) rather than re-explaining mechanics, which is already the minimalist instinct
+   R606 asks for. Almost every task a Blue or Red operator actually performs mid-exercise is
+   inherently role-specific (Blue's SDA custody loop and Red's SDA targeting loop use the same
+   engine mechanic but are procedurally distinct decisions), so a reader mid-task lands on exactly
+   the section for their own role's version of that task with nothing from the other cell's
+   perspective in the way — a fast path by R606's own standard.
+2. **Task-oriented (cutting across cells).** A small number of mechanics genuinely mirror each
+   other across Blue/Red — cyber (`BLU-9`/`RED-6`), previews-before-commit (`BLU-3`/`RED-3`), and
+   SDA (`BLU-4`/`RED-4`) are the same underlying engine behavior read from each side. A unified
+   "Cyber" or "Previews" module could serve both roles from one file. But collapsing these into
+   cross-cell modules would cost the exact thing each per-cell manual already has going for it: a
+   reader mid-task would now have to skip past the *other* cell's half of the module to find their
+   own — for a corpus this size (9-10 sections per manual, each within NFR-3500's 50-300-line
+   budget), that cost is not clearly recovered by the shared-authoring convenience it buys.
+
+**Recommendation: keep the per-cell layout.** It already satisfies FR-11110's coverage mandate and
+R606's task-completion-speed criterion for the large majority of sections. Restructuring the whole
+corpus is not warranted by the evidence above. What *is* warranted, and applied in this same pass:
+**cross-link the small set of genuinely mirror-image sections** so a reader who wants the other
+side's version of the same mechanic can jump directly, rather than searching — `BLU-9`↔`RED-6`
+(cyber), `BLU-3`↔`RED-3` (previews-before-commit), `BLU-4`↔`RED-4` (SDA) each now carry a one-line
+"see also" cross-reference. This gets R606's cross-cutting benefit at near-zero restructuring cost,
+without regressing the per-cell procedure-layer property that already works.
+
+**Revisit trigger:** if the corpus grows enough that a single manual exceeds NFR-3500's module-count
+guidance, or if a future role (beyond White/Blue/Red/Observer) needs a mechanic that spans more than
+two cells, re-run this evaluation — the "small number of genuine mirrors" premise above would no
+longer hold at that scale.
 
 ---

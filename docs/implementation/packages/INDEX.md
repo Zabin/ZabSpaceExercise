@@ -41,17 +41,17 @@ unauthorized FS.
 
 | ID | Title | FS | Situation | Status |
 |---|---|---|---|---|
-| [IP-1010](IP-1010-mission-planning.md) | Mission Planning — dry-run preview & window/Δv display | [FS-101](../../features/FS-101-mission-planning.md) | As-built | ✅ VERIFIED |
-| [IP-1020](IP-1020-command-scheduling.md) | Command Scheduling — Order/OrderSystem lifecycle | [FS-102](../../features/FS-102-command-scheduling.md) | As-built | ✅ VERIFIED |
-| [IP-1030](IP-1030-custody-management.md) | Custody Management — Track confidence model | [FS-103](../../features/FS-103-custody-management.md) | As-built | ✅ VERIFIED |
-| [IP-1040](IP-1040-sda-tasking.md) | SDA Tasking — sensor tasking & SSN request lifecycle | [FS-104](../../features/FS-104-sda-tasking.md) | As-built | ✅ VERIFIED |
-| [IP-1050](IP-1050-spacecraft-operations-bus-payload.md) | Spacecraft Operations — bus/payload command & telemetry | [FS-105](../../features/FS-105-spacecraft-operations.md) §3.1 | As-built | ✅ VERIFIED |
-| [IP-1051](IP-1051-spacecraft-operations-effects-console.md) | Spacecraft Operations — effect resolution & console UX | [FS-105](../../features/FS-105-spacecraft-operations.md) §3.2-4 | As-built | ✅ VERIFIED |
-| [IP-1060](IP-1060-white-cell-dashboard.md) | White Cell Dashboard — god-view, inject, clock-authority trigger & adjudication *(v2.0, narrowed)* | [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.0 | As-built | ✅ VERIFIED |
-| [IP-1070](IP-1070-after-action-review.md) | After Action Review — replay/scrub/branch-compare | [FS-107](../../features/FS-107-after-action-review.md) | As-built | ✅ VERIFIED |
-| [IP-1090](IP-1090-multiplayer-session-transport.md) | Multiplayer / LAN Session Transport — lazy clock, mutation locking, hot-seat/LAN sharing | [FS-109](../../features/FS-109-multiplayer-session-transport.md) | As-built | ✅ VERIFIED |
-| [IP-1100](IP-1100-save-and-resume.md) | Save & Resume — deterministic round trip & content/session split | [FS-110](../../features/FS-110-save-and-resume.md) | As-built | ✅ VERIFIED |
-| [IP-1110](IP-1110-ai-red-doctrine-automation.md) | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | [FS-111](../../features/FS-111-ai-red-doctrine-automation.md) | As-built | ✅ VERIFIED |
+| [IP-1010](IP-1010-mission-planning.md) | Mission Planning — dry-run preview & window/Δv display | [FS-101](../../features/FS-101-mission-planning.md) | As-built | ✅ VERIFIED ([`VR-1010`](../verification/VR-1010-mission-planning.md), 2026-07-04) |
+| [IP-1020](IP-1020-command-scheduling.md) | Command Scheduling — Order/OrderSystem lifecycle | [FS-102](../../features/FS-102-command-scheduling.md) | As-built | ✅ VERIFIED ([`VR-1020`](../verification/VR-1020-command-scheduling.md), 2026-07-04) |
+| [IP-1030](IP-1030-custody-management.md) | Custody Management — Track confidence model | [FS-103](../../features/FS-103-custody-management.md) | As-built | ✅ VERIFIED ([`VR-1030`](../verification/VR-1030-custody-management.md), 2026-07-04) |
+| [IP-1040](IP-1040-sda-tasking.md) | SDA Tasking — sensor tasking & SSN request lifecycle | [FS-104](../../features/FS-104-sda-tasking.md) | As-built | ✅ VERIFIED ([`VR-1040`](../verification/VR-1040-sda-tasking.md), 2026-07-04) |
+| [IP-1050](IP-1050-spacecraft-operations-bus-payload.md) | Spacecraft Operations — bus/payload command & telemetry | [FS-105](../../features/FS-105-spacecraft-operations.md) §3.1 | As-built | ✅ VERIFIED ([`VR-1050`](../verification/VR-1050-spacecraft-operations-bus-payload.md), 2026-07-04) |
+| [IP-1051](IP-1051-spacecraft-operations-effects-console.md) | Spacecraft Operations — effect resolution & console UX | [FS-105](../../features/FS-105-spacecraft-operations.md) §3.2-4 | As-built | ✅ VERIFIED ([`VR-1051`](../verification/VR-1051-spacecraft-operations-effects-console.md), 2026-07-04) |
+| [IP-1060](IP-1060-white-cell-dashboard.md) | White Cell Dashboard — god-view, inject, clock-authority trigger & adjudication *(v2.0, narrowed)* | [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.0 | As-built | ✅ VERIFIED ([`VR-1060`](../verification/VR-1060-white-cell-dashboard.md), 2026-07-04) |
+| [IP-1070](IP-1070-after-action-review.md) | After Action Review — replay/scrub/branch-compare | [FS-107](../../features/FS-107-after-action-review.md) | As-built | ✅ VERIFIED ([`VR-1070`](../verification/VR-1070-after-action-review.md), 2026-07-04) |
+| [IP-1090](IP-1090-multiplayer-session-transport.md) | Multiplayer / LAN Session Transport — lazy clock, mutation locking, hot-seat/LAN sharing | [FS-109](../../features/FS-109-multiplayer-session-transport.md) | As-built | ✅ VERIFIED ([`VR-1090`](../verification/VR-1090-multiplayer-session-transport.md), 2026-07-04) |
+| [IP-1100](IP-1100-save-and-resume.md) | Save & Resume — deterministic round trip & content/session split | [FS-110](../../features/FS-110-save-and-resume.md) | As-built | ✅ VERIFIED ([`VR-1100`](../verification/VR-1100-save-and-resume.md), 2026-07-04) |
+| [IP-1110](IP-1110-ai-red-doctrine-automation.md) | AI-Red Doctrine Automation — doctrine-preset-driven Red activity generation | [FS-111](../../features/FS-111-ai-red-doctrine-automation.md) | As-built | ✅ VERIFIED ([`VR-1110`](../verification/VR-1110-ai-red-doctrine-automation.md), 2026-07-04) |
 | [IP-2010](IP-2010-competency-assessment.md) | Competency Assessment — rubric computation | [FS-201](../../features/FS-201-competency-assessment.md) | Forward design | ✅ VERIFIED (2026-07-04, [`VR-2010`](../verification/VR-2010-competency-assessment.md) — two Medium findings against FS-201's own Acceptance Criteria scope, not against this package; briefly `BLOCKED` 2026-07-02 on an ADR-0017 conflict, resolved same-day by `ADR-0032` — see the package's own header) |
 | [IP-3010](IP-3010-research-analytics.md) | Research Analytics — multi-run export | [FS-301](../../features/FS-301-research-analytics.md) | Forward design | ✅ VERIFIED (2026-07-04, [`VR-3010`](../verification/VR-3010-research-analytics.md) — `BL-0018`/`BL-0017` re-confirmed, no new findings) |
 | [IP-1120](IP-1120-classification-banner.md) | Classification Banner — wire the render/export path to the vignette's classification value | [FS-112](../../features/FS-112-classification-banner.md) | Partially built (gap-closing) | ✅ VERIFIED (2026-07-04, [`VR-1120`](../verification/VR-1120-classification-banner.md) — both documented deviations confirmed accurate, one Low informational finding) |
@@ -144,6 +144,27 @@ tranche's two new as-built packages (`IP-1140`, `IP-1150`) followed the current,
 instead**: `07-implementation-planning` confirmed the cited code exists, entering both at
 `COMPLETE`; both have since passed independent `09-package-verification` (`VR-1150`, `VR-1140`) and
 are now `VERIFIED`.
+
+**Retro-verification sweep (started 2026-07-04, run #18):** none of the 11 as-built packages ever
+had a formal `VR-xxxx` report — this was flagged as `BL-0004` and, per the project owner's explicit
+choice, is being closed retroactively, one package per `09-package-verification` invocation, ahead
+of `11-release-readiness` for the 18-package tranche. `IP-1010` is the first (`VR-1010` — VERIFIED,
+no functional discrepancies found). `IP-1020` is the second (`VR-1020` — VERIFIED, one Medium
+finding that the package's claimed lifecycle-state names don't match the code, though the
+functional guarantee holds). `IP-1030` is the third (`VR-1030` — VERIFIED, no functional
+discrepancies, one Low citation-drift finding). `IP-1040` is the fourth (`VR-1040` — VERIFIED, no
+functional discrepancies, one Low citation-drift finding). `IP-1050` is the fifth (`VR-1050` —
+VERIFIED, no functional discrepancies, one Low citation finding). `IP-1051` is the sixth
+(`VR-1051` — VERIFIED, no functional discrepancies, one Low file-misattribution finding). `IP-1060`
+is the seventh (`VR-1060` — VERIFIED, no functional discrepancies, one Low citation-drift finding).
+`IP-1070` is the eighth (`VR-1070` — VERIFIED, no functional discrepancies, one Low citation-drift
+finding). `IP-1090` is the ninth (`VR-1090` — VERIFIED, no functional discrepancies, one Low
+citation-drift finding). `IP-1100` is the tenth (`VR-1100` — VERIFIED, one Medium finding — the
+package overclaims that Role Assignments are persisted, which `IP-1151`'s own text already
+disclosed is false — plus two Low citation findings). `IP-1110` is the eleventh and **last**
+(`VR-1110` — VERIFIED, zero findings, the cleanest package in the sweep). **The `BL-0004`
+retro-verification sweep is complete: all 18 packages on the Master Build Plan now carry a formal
+`VR-xxxx` report.**
 
 ## Authoring note
 
