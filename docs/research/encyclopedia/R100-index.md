@@ -141,3 +141,29 @@ bidirectional cross-links into their declared dependency topics
 Tier R100 is now fully closed at 36/36 topics; `docs/reviews/research-gap-resolution.md` is left
 unmodified per its own closing instruction, since this index is the corpus's mechanism for recording
 gap resolution.
+
+**Vignette Creator grounding pass (2026-07-05).** `docs/pipeline/backlog.md` `BL-0052` (the
+Vignette Creator, a large forthcoming White-Cell authoring feature) surfaced a confirmed research
+gap: no existing topic enumerated realistic bus/payload parameter ranges, TLE-format/authoring
+guidance, or ground-station-siting methodology — content the eventual `ADS-xxx` design-synthesis
+pass for that feature needs to cite for its typed per-payload-type parameter sub-schemas rather than
+invent. Rather than bulk-authoring new topics (the tier is closed, not frozen), this pass extended
+seven existing topics with maintenance content, each following the existing citation convention:
+[R101](R101-orbital-mechanics-for-operations.md) (TLE format + plausible element ranges by regime,
+grounded against CelesTrak's NORAD TLE format reference), [R107](R107-ground-segment-operations.md)
+(ground-station siting methodology — elevation mask, latitude-vs-regime coverage, network spacing,
+coastal siting — complementing `docs/vignettes/GROUND-INFRASTRUCTURE.md`'s curated site list),
+[R109](R109-sensor-operations.md) (identifies and grounds a genuine sub-gap: `weather` and `mw`
+missile-warning payload types have zero `BEAM_MODES` entries in `engine/isr.py` at all, unlike
+`isr_eo`/`isr_sar`/`sda` — grounded against GOES-R ABI and SBIRS-GEO scan/stare precedent),
+[R110](R110-communications.md) (realistic SATCOM bandwidth/data-rate ranges by class, UHF narrowband
+through Ka-band HTS), [R111](R111-power-and-thermal-operations.md) (EPS power budgets by satellite
+size class, cross-referenced against the already-documented dead `power_w` field so the range
+doesn't get mistaken for a field that's actually live), [R112](R112-propulsion-and-maneuver-planning.md)
+(realistic total onboard Δv budget by mission class, distinct from the per-maneuver costs already
+covered), and [R134](R134-pnt-warfare-and-navigation-denial-operations.md) (realistic baseline PNT
+accuracy, grounded against the GPS SPS Performance Standard). No new `R1xx` row was added — every
+extension fits an existing topic's own declared scope. `R109`'s weather/`mw` finding is the one
+outright coverage gap this pass surfaced (not merely a missing range table) and is flagged in that
+topic's own Implementation Guidance as a precondition for `BL-0052`'s typed sub-schema work, not
+merely a nice-to-have.

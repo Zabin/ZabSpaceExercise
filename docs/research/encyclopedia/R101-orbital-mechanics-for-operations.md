@@ -1,7 +1,7 @@
 # R101 — Orbital Mechanics for Operations and Implementation
 
 > **Document ID:** R101
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** none (foundational)
 > **Referenced By:** [R102](R102-space-domain-awareness.md), [R103](R103-satellite-command-and-control.md), [R107](R107-ground-segment-operations.md), [R108](R108-constellation-operations.md), [R109](R109-sensor-operations.md), [R110](R110-communications.md), [R112](R112-propulsion-and-maneuver-planning.md), [R120](R120-access-window-and-geometry-planning.md), [R136](R136-cislunar-and-xgeo-operations.md), FS-101, FS-105
@@ -9,8 +9,8 @@
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations)
 > **Related Topics:** [`docs/research/04-orbital-mechanics-primer.md`](../04-orbital-mechanics-primer.md) (full derivations),
 > [`docs/research/04a-propagator-fidelity.md`](../04a-propagator-fidelity.md), [R120](R120-access-window-and-geometry-planning.md) (Access Window and Geometry Planning)
-> **Last Reviewed:** 2026-06-27
-> **Primary Sources Consulted:** 3
+> **Last Reviewed:** 2026-07-05
+> **Primary Sources Consulted:** 4
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -66,6 +66,34 @@ the terminator — consistent with the cylindrical-shadow umbra/penumbra geometr
 ch. 5 (shadow/eclipse determination) — see [R111](R111-power-and-thermal-operations.md) §4 for the
 consequence this had for the power model before the Jun 2026 fix.
 
+**TLE format and plausible-value ranges, for manual authoring (added for `BL-0052` grounding).**
+`engine/propagator.py`'s TLE-fidelity path validates a pasted Two-Line Element set via `sgp4` at
+import time, but validity (does `sgp4` parse it) is a different question from plausibility (is this
+a TLE a real object of this regime would actually have) — the latter is what a White Cell
+facilitator manually authoring a fictional TLE in a vignette-creator TLE entry box needs, since
+`sgp4` will happily accept a syntactically valid but operationally nonsensical set of elements. A
+TLE's two 69-character lines encode, per field
+([CelesTrak NORAD TLE format reference](https://celestrak.org/NORAD/documentation/tle-fmt.php)):
+inclination `i` (deg, columns 9-16), right ascension of the ascending node `Ω`/RAAN (deg, columns
+18-25), eccentricity `e` (columns 27-33, **implied leading decimal** — the digits `1234567` encode
+`0.1234567`), argument of perigee `ω` (deg, columns 35-42), mean anomaly `M` (deg, columns 44-51),
+mean motion `n` (revolutions/day, columns 53-63), and a drag term `B*` (columns 54-61 of line 1,
+implied decimal + power-of-ten exponent) — plus a mod-10 checksum as the final digit of each line.
+Plausible ranges by regime (consistent with this topic's own regime classification above and the
+classical-element ↔ state-vector relationship `orbit.py` already implements):
+
+| Regime | Mean motion `n` (rev/day) | Eccentricity `e` | Inclination `i` (deg) |
+|---|---|---|---|
+| LEO (e.g. ISS-class, ~400-800 km) | ~14.0-16.0 | 0.0001-0.01 (near-circular) | Any (0-180, retrograde SSO ~97-99) |
+| MEO (e.g. GPS-class, ~20,200 km) | ~2.0-2.2 | <0.02 | ~50-65 (GPS ~55) |
+| GEO (~35,786 km) | ~1.0 (exactly one rev/sidereal day) | <0.001 (near-circular, near-zero for station-kept) | Near 0 (drifts without N-S station-keeping, [R112](R112-propulsion-and-maneuver-planning.md)) |
+| HEO/Molniya-class | ~2.0 (12-hour period) | ~0.6-0.75 (highly eccentric) | ~63.4 (critical inclination — cancels apsidal drift) |
+
+A fictional TLE that mismatches its own claimed regime (e.g. an "ISS-class LEO" asset with mean
+motion `n ≈ 1.0`, which is actually GEO-period) will still pass `sgp4` validation but propagate to
+an orbit inconsistent with the vignette's own narrative — this is a plausibility check the vignette
+creator's own validation (not `sgp4`'s job) should perform, per Implementation Guidance below.
+
 ### Sources
 
 - *Hoots & Roehrich, Spacetrack Report No. 3* (1980-12) — [live](https://celestrak.org/NORAD/documentation/spacetrk.pdf)
@@ -83,6 +111,9 @@ consequence this had for the power model before the Jun 2026 fix.
 - *Vallado, Fundamentals of Astrodynamics and Applications* (software/reference page) — [live](https://celestrak.org/software/vallado-sw.php)
   · [snapshot](https://web.archive.org/web/2026/https://celestrak.org/software/vallado-sw.php)
   · accessed 2026-06-27.
+- *CelesTrak, "NORAD Two-Line Element Set Format"* — [live](https://celestrak.org/NORAD/documentation/tle-fmt.php)
+  · [snapshot](https://web.archive.org/web/2026/https://celestrak.org/NORAD/documentation/tle-fmt.php)
+  · accessed 2026-07-05.
 
 ## 4. Operational Context
 
@@ -104,12 +135,19 @@ choosing the regime-driven menu of what's tactically possible in that scenario (
   and if so, derive the binary from the fraction rather than maintaining two independent sources.
 - **Keep all time as integer microseconds internally.** Convert to ISO/float only at the
   UI/API/display boundary, never inside `engine/`.
+- **A vignette-authoring TLE entry surface should validate plausibility, not just `sgp4` syntax.**
+  Warn (don't necessarily block — a deliberately implausible TLE may be a legitimate scenario
+  choice) when a manually pasted or hand-authored TLE's mean motion/eccentricity/inclination
+  combination doesn't match any regime in the table above — this catches the "typo'd an exponent"
+  class of authoring error `sgp4`'s own checksum/format validation cannot.
 
 ## 6. Feature Mapping
 
 FS-101 (Mission Planning) and FS-105 (Spacecraft Operations) both depend on this topic: any planning
 or maneuver UI must reflect real regime/propagator constraints, not an idealized free-reachability
-model.
+model. The forthcoming Vignette Creator Feature Specification (`docs/pipeline/backlog.md` `BL-0052`,
+to be authored downstream of an `ADS-xxx` design-synthesis pass) depends on this topic's TLE-format
+subsection above for its manual TLE-entry surface's plausibility check.
 
 ## 7. Related Topics
 
