@@ -330,6 +330,7 @@ Router: [`features/feature-index.md`](docs/features/feature-index.md).
 | FS-114 | Hot-Seat Hand-Off Screen-Blank Menu | `features/FS-114-hot-seat-handoff.md` | (no owning DOM) | ✅ (build unverified) |
 | FS-115 | Session Setup: Vignette Selection & Seat Assignment | `features/FS-115-session-setup.md` | DOM-003 | ✅ (build unverified) |
 | FS-116 | Role-Scoped Command Catalog & Assignment Scoping | `features/FS-116-role-scoped-command-catalog.md` | (no owning DOM) | ✅ Ready for implementation planning (v1.2 — both Open Questions closed via ADS-3500 v1.1; per-verb DEFENSE_VERBS classification corrected) |
+| FS-117 | Vignette Creator — In-App Authoring, Typed Parameters & Per-Cell ROE | `features/FS-117-vignette-creator.md` | (no owning DOM) | 🚧 In progress — Critical Open Question 1 (no `FR`/`NFR` backs most of this Feature's scope beyond `FR-5110`/`NFR-2000`) blocks implementation-readiness |
 | FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | DOM-002 | ✅ |
 | FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | ⛔ Planned (authorized) |
 | FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | DOM-004, DOM-005 | ✅ |
@@ -384,6 +385,25 @@ individually as `bus` or `payload` by which subsystem it actually mutates (six `
 correction** — including reversing its own v1.0 plan to "fix" `app.js`'s already-correct
 `def.harden: "payload"` tag, and fixing the one real bug the audit found (`def.set_deception_mode`
 silently defaulting to `"bus"`). `FS-116`/`IP-1160` remain ready for `07-implementation-planning`.
+
+**FS-117 authored (2026-07-05), consolidating the Vignette Creator:** the project owner requested a
+large, distinct White-Cell authoring feature — JSON view, 2D/3D initial-state preview, TLE/lat-long
+asset entry, an asset menu, per-cell ROE selectors, typed payload/bus parameter overrides — and
+explicitly required it be documented as its own Feature, not blended into another spec. `FS-117`
+consolidates `FEAT-5100` (In-App Iterative Vignette Builder, 0% built) into one document, fully
+absorbing `docs/pipeline/backlog.md` `BL-0051`/`BL-0052`, grounded in
+[`ADS-5100A`](architecture/ADS-5100A-vignette-creator-session-and-ui.md) (authoring-session
+architecture resolving `CR-11` + every UI surface) and
+[`ADS-5100B`](architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md) (typed per-payload-type/
+bus parameter sub-schemas + real per-cell ROE enforcement). **`FS-117` surfaces one Critical Open
+Question that blocks implementation-readiness:** `FEAT-5100`'s own Feature Catalog entry lists only
+`FR-5110`/`NFR-2000` as Included Requirements — the typed-parameter, per-cell-ROE, and specific
+UI-mechanics scope the two `ADS-5100` documents commit to has **no owning requirement in the current
+baseline at all**. Per this skill's own rule against inventing requirements to fill a gap, `FS-117`
+names this explicitly rather than papering over it — **a `04-requirements-engineering` pass is
+needed before `07-implementation-planning` can honestly claim traceability** for most of this
+Feature's scope (the `FR-5110`/`NFR-2000`-only portion has no such gap and could proceed
+independently if the project owner wants to split delivery).
 
 ## Theme: Feature Planning — `05-feature-decomposition` skill output (`docs/feature-planning/`)
 

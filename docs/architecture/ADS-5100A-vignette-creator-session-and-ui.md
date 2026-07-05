@@ -8,7 +8,8 @@
 > `docs/feature-planning/03-feature-catalog.md` `FEAT-5100`/`FEAT-5200`/`FEAT-5300`,
 > `docs/vignettes/GROUND-INFRASTRUCTURE.md`
 > **Referenced By:** [ADS-5100B](ADS-5100B-typed-parameters-and-per-cell-roe.md) (the sibling
-> synthesis this document's UI surfaces expose)
+> synthesis this document's UI surfaces expose), [FS-117](../features/FS-117-vignette-creator.md)
+> (the Feature Specification this document grounds)
 > **Produces:** the eventual Vignette Creator Feature Specification's System Architecture/User
 > Workflows sections (`docs/pipeline/backlog.md` `BL-0052`, folding in `BL-0051`)
 > **Feature Mapping:** `FEAT-5100` (which this synthesis will supersede/consolidate, not be

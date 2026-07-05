@@ -10,7 +10,8 @@
 > [R137](../research/encyclopedia/R137-bus-and-payload-parameter-catalog.md),
 > `docs/pipeline/backlog.md` `BL-0053`
 > **Referenced By:** [ADS-5100A](ADS-5100A-vignette-creator-session-and-ui.md) (the UI surfaces
-> that consume the schemas/enforcement this document specifies)
+> that consume the schemas/enforcement this document specifies), [FS-117](../features/FS-117-vignette-creator.md)
+> (the Feature Specification this document grounds)
 > **Produces:** the eventual Vignette Creator Feature Specification's Domain Model/Functional
 > Requirements sections for typed parameters and per-cell ROE
 > **Feature Mapping:** `FEAT-5100`, `BL-0052`, `FS-101`/`FS-102` (the existing ROE-check owners this
