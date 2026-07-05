@@ -2,10 +2,13 @@
 
 > **Package ID:** IP-1174
 > **Version:** 1.0
-> **Status:** 🔴 BLOCKED *(not authorized — MSTR-006 §3; also depends on
-> [IP-1171](IP-1171-typed-payload-bus-parameters.md), [IP-1172](IP-1172-per-cell-roe-enforcement.md),
-> and [IP-1173](IP-1173-vignette-creator-draft-session.md) — see Dependencies. This is the last
-> package `08-code-implementation` should pick up in Tranche 3.)*
+> **Status:** 🔴 BLOCKED *(MSTR-006 §3 authorization obtained 2026-07-05 — see Definition of Done —
+> but this package depends on [IP-1171](IP-1171-typed-payload-bus-parameters.md),
+> [IP-1172](IP-1172-per-cell-roe-enforcement.md), and
+> [IP-1173](IP-1173-vignette-creator-draft-session.md), none yet `VERIFIED`; per this skill's own
+> "READY means fully specified AND every dependency VERIFIED" rule, this package stays `BLOCKED` on
+> those three, not on authorization. This is the last package `08-code-implementation` should pick
+> up in Tranche 3.)*
 > **Dependencies:** [FS-117](../../features/FS-117-vignette-creator.md) v1.1 (`FR-5120`, `FR-5130`,
 > `FR-5140`, `FR-5150`, `FR-5160`), [ADS-5100A](../../architecture/ADS-5100A-vignette-creator-session-and-ui.md)
 > §2/§4/§5/§6, [IP-1173](IP-1173-vignette-creator-draft-session.md) (the draft-session API this UI
@@ -140,7 +143,10 @@ boundary.
 
 ## Implementation Tasks
 
-**Not started — not authorized (MSTR-006 §3).** Proposed sequence once authorized:
+**Not started — authorized 2026-07-05 (MSTR-006 §3); blocked only on
+[IP-1171](IP-1171-typed-payload-bus-parameters.md)/[IP-1172](IP-1172-per-cell-roe-enforcement.md)/
+[IP-1173](IP-1173-vignette-creator-draft-session.md) reaching `VERIFIED` (see Status).** Proposed
+sequence:
 
 1. Confirm [IP-1173](IP-1173-vignette-creator-draft-session.md), [IP-1171](IP-1171-typed-payload-bus-parameters.md),
    and [IP-1172](IP-1172-per-cell-roe-enforcement.md) have reached at least `COMPLETE` (ideally
@@ -204,8 +210,8 @@ boundary.
 
 ## Definition of Done
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — not yet on record.
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3, 2026-07-05, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #45).
 - [ ] The JSON view and form UI never disagree about the draft session's current state (`FR-5120`).
 - [ ] The 2D/3D preview updates to match every asset add/edit/reassign/delete within the same
   authoring session, with no `CellController` fog-of-war filtering (`FR-5130`).

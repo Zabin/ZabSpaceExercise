@@ -2,8 +2,9 @@
 
 > **Package ID:** IP-1172
 > **Version:** 1.0
-> **Status:** 🔴 BLOCKED *(not authorized — MSTR-006 §3. No package-level dependency blocks this
-> one — independent of every other Tranche 3 package.)*
+> **Status:** 🟢 READY *(MSTR-006 §3 authorization obtained 2026-07-05, project owner, recorded in
+> `docs/pipeline/pipeline-journal.md` run #45 — no package-level dependency, so authorization was
+> the only gate; independent of every other Tranche 3 package.)*
 > **Dependencies:** [FS-117](../../features/FS-117-vignette-creator.md) v1.1 (`FR-3420`,
 > `NFR-2010`), [ADS-5100B](../../architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md) §3.2,
 > [FS-101](../../features/FS-101-mission-planning.md)/[FS-102](../../features/FS-102-command-scheduling.md)
@@ -111,7 +112,7 @@ per-cell shape a real, engine-enforced concept; it does not build the authoring 
 
 ## Implementation Tasks
 
-**Not started — not authorized (MSTR-006 §3).** Proposed sequence once authorized:
+**Not started — authorized 2026-07-05 (MSTR-006 §3).** Proposed sequence:
 
 1. Write failing tests encoding both Acceptance Criteria below (per-cell divergent ROE gates
    correctly; legacy-only vignette behavior is unchanged) before any code change.
@@ -158,8 +159,8 @@ per-cell shape a real, engine-enforced concept; it does not build the authoring 
 
 ## Definition of Done
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — not yet on record.
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3, 2026-07-05, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #45).
 - [ ] `Vignette.roe` exists, optional, defaulting to absent (no breakage of the 19 existing
   vignette YAML files, none of which declare it).
 - [ ] A vignette with an explicit per-cell `roe:` block gates kinetic/cyber orders independently

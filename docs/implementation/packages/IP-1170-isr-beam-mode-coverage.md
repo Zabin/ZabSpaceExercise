@@ -2,9 +2,10 @@
 
 > **Package ID:** IP-1170
 > **Version:** 1.0
-> **Status:** 🔴 BLOCKED *(not authorized — MSTR-006 §3. No package-level dependency blocks this
-> one; it is the tranche's own prerequisite, sequenced first per `01-technical-work-breakdown.md`
-> Tranche 3.)*
+> **Status:** 🟢 READY *(MSTR-006 §3 authorization obtained 2026-07-05, project owner, recorded in
+> `docs/pipeline/pipeline-journal.md` run #45 — no package-level dependency, so authorization is
+> the only gate this package had; it is the tranche's own prerequisite, sequenced first per
+> `01-technical-work-breakdown.md` Tranche 3.)*
 > **Dependencies:** None (independent engine-only fix; every citation below checked directly
 > against the current `spacesim/engine/isr.py`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md),
@@ -96,7 +97,7 @@ or when those functions are called.
 
 ## Implementation Tasks
 
-**Not started — not authorized (MSTR-006 §3).** Proposed sequence once authorized:
+**Not started — authorized 2026-07-05 (MSTR-006 §3).** Proposed sequence:
 
 1. Write a failing test asserting `available_modes("weather")`/`available_modes("mw")` return the
    new mode names (not `isr_eo`'s modes via fallback) and `beam_params("weather")`/`beam_params("mw")`
@@ -134,8 +135,8 @@ or when those functions are called.
 
 ## Definition of Done
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — not yet on record.
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3, 2026-07-05, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #45).
 - [ ] `BEAM_MODES["weather"]` and `BEAM_MODES["mw"]` exist with `R109`-grounded, type-specific
   numbers (not copies of `isr_eo`'s).
 - [ ] `_DEFAULT_MODE["weather"]`/`_DEFAULT_MODE["mw"]` resolve to a real mode name for each type.

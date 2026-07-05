@@ -2,8 +2,9 @@
 
 > **Package ID:** IP-1173
 > **Version:** 1.0
-> **Status:** 🔴 BLOCKED *(not authorized — MSTR-006 §3. No package-level dependency blocks this
-> one — independent of every other Tranche 3 package.)*
+> **Status:** 🟢 READY *(MSTR-006 §3 authorization obtained 2026-07-05, project owner, recorded in
+> `docs/pipeline/pipeline-journal.md` run #45 — no package-level dependency, so authorization was
+> the only gate; independent of every other Tranche 3 package.)*
 > **Dependencies:** [FS-117](../../features/FS-117-vignette-creator.md) v1.1 (`FR-5110`),
 > [ADS-5100A](../../architecture/ADS-5100A-vignette-creator-session-and-ui.md) §2,
 > [FS-109](../../features/FS-109-multiplayer-session-transport.md)/[IP-1090](IP-1090-multiplayer-session-transport.md)
@@ -126,7 +127,7 @@ Dependencies below.
 
 ## Implementation Tasks
 
-**Not started — not authorized (MSTR-006 §3).** Proposed sequence once authorized:
+**Not started — authorized 2026-07-05 (MSTR-006 §3).** Proposed sequence:
 
 1. Write a failing test asserting a "create draft session" call registers a `SessionManager` that
    is never `start()`-ed and produces no event log, before writing the entry point.
@@ -177,8 +178,8 @@ Dependencies below.
 
 ## Definition of Done
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — not yet on record.
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3, 2026-07-05, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #45).
 - [ ] A draft session can be created, registered, and mutated via existing session-scoped routes
   (e.g. `force/tle`) without ever being `start()`-ed.
 - [ ] No time-control route succeeds against an unstarted draft session.

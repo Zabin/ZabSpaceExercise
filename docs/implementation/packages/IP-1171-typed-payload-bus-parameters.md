@@ -2,9 +2,13 @@
 
 > **Package ID:** IP-1171
 > **Version:** 1.0
-> **Status:** 🔴 BLOCKED *(not authorized — MSTR-006 §3; also depends on
-> [IP-1170](IP-1170-isr-beam-mode-coverage.md) reaching `VERIFIED` for its `weather`/`mw`
-> sub-schemas to be more than a plausible-looking but inert field — see Dependencies.)*
+> **Status:** 🔴 BLOCKED *(MSTR-006 §3 authorization obtained 2026-07-05 — see Definition of Done —
+> but this package's `Dependencies` field cites [IP-1170](IP-1170-isr-beam-mode-coverage.md), not
+> yet `VERIFIED`; per this skill's own "READY means fully specified AND every dependency VERIFIED"
+> rule, this package stays `BLOCKED` on that dependency, not on authorization. `08-code-implementation`
+> may still build this package's six non-`weather`/`mw` sub-models now if it chooses to proceed
+> ahead of `IP-1170`'s verification, so long as the `weather`/`mw` sub-models' engine-inertness is
+> disclosed per this package's own Definition of Done — see Risks.)*
 > **Dependencies:** [FS-117](../../features/FS-117-vignette-creator.md) v1.1 (`FR-5170`,
 > `FR-5180`), [ADS-5100B](../../architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md) §3.1,
 > [IP-1170](IP-1170-isr-beam-mode-coverage.md) (weather/mw `BEAM_MODES` — not `VERIFIED` yet),
@@ -123,7 +127,8 @@ the Domain Model the UI will be a thin client over.
 
 ## Implementation Tasks
 
-**Not started — not authorized (MSTR-006 §3).** Proposed sequence once authorized:
+**Not started — authorized 2026-07-05 (MSTR-006 §3); blocked only on [IP-1170](IP-1170-isr-beam-mode-coverage.md)
+reaching `VERIFIED` for full `weather`/`mw` effect (see Status).** Proposed sequence:
 
 1. Confirm [IP-1170](IP-1170-isr-beam-mode-coverage.md)'s status — if not yet `VERIFIED`, the
    `weather`/`mw` sub-models may still be built (per `FR-5170`'s own Postcondition, disclosed as
@@ -170,8 +175,8 @@ the Domain Model the UI will be a thin client over.
 
 ## Definition of Done
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — not yet on record.
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3, 2026-07-05, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #45).
 - [ ] All 8 typed payload sub-models exist on `PayloadState`, each `Optional`, each populated only
   when `PayloadState.type` matches.
 - [ ] Every sub-model field traces to a specific `R109`/`R110`/`R134`/`R137` citation — none
