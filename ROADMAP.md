@@ -586,6 +586,14 @@ overclaim that Role Assignments are persisted), `IP-1110` with zero findings —
 finding anywhere in the sweep. The tranche's evidence base for `11-release-readiness` is now
 complete.
 
+**Training review (2026-07-05):** [`reviews/training-review-runs16-19-scope.md`](docs/reviews/training-review-runs16-19-scope.md)
+independently reviewed the training-corpus scope runs #16/#19 touched (`training/02`, `12`, `13`,
+`14`, `15`, `INDEX`) against shipped behavior — all Observer/classification/staffing/assessment/
+research-batch prose claims confirmed accurate, playbook suite green (16/16), no Critical/High
+findings. One Medium traceability finding: `WCM-1`/`BLU-1`/`RED-1` and `training/15` §15.1/§15.2
+cite a nonexistent `spacesim/session/controller.py` for the fog-of-war boundary — the real file is
+`spacesim/session/cells.py` — routed to `08-training-manual-authoring`.
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
