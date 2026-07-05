@@ -59,6 +59,7 @@ unauthorized FS.
 | [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, [`VR-1140`](../verification/VR-1140-hot-seat-handoff.md) — FR-6610's trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
 | [IP-1150](IP-1150-vignette-selection.md) | Session Setup: Vignette Selection & Parameter Tuning | [FS-115](../../features/FS-115-session-setup.md) §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, [`VR-1150`](../verification/VR-1150-vignette-selection.md)) |
 | [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | ✅ VERIFIED (2026-07-04, run #15, `VR-1151` — one Definition-of-Done caveat re-confirmed, not resolved, see the package's own header) |
+| [IP-1160](IP-1160-role-scoped-command-enforcement.md) | Role-Scoped Command Catalog & Assignment Scoping | [FS-116](../../features/FS-116-role-scoped-command-catalog.md) | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; every dependency `VERIFIED`) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1090,
 IP-1100, IP-1110 are new (2026-07)**, split out of IP-1060 v1.0 per `docs/feature-planning/
@@ -100,6 +101,17 @@ now `VERIFIED`** (2026-07-04, run #12, [`VR-3010`](../verification/VR-3010-resea
 (`RunRecord` + CSV/JSON export) confirmed against the live tree; `BL-0018`/`BL-0017` re-confirmed,
 no new findings). **Every package in this tier is now `VERIFIED`** — the "iterate through all
 `09-package-verification`" sweep (runs #11–#15) is complete.
+
+**`IP-1160` is new (2026-07-05), Tranche 2:** `11-release-readiness`'s
+[release assessment](../../reviews/release-assessment-fs-tracked-baseline.md) found `FEAT-3500`
+had zero owning Feature Specification and zero implementation — `FS-116` (via `06-feature-
+specification`) and `ADS-3500` (via `03-architecture-design-synthesis`, resolving `FS-116`'s two
+Open Questions) closed the specification gap; `IP-1160` is the single package that closes the
+implementation gap. Every one of its dependencies (`IP-1151`, `IP-1050`, `IP-1051`) is already
+`VERIFIED`, so `IP-1160` is specification-complete and would flip to `READY` the moment MSTR-006 §3
+authorization is granted — not yet on record as of this writing. See
+[`../01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) Tranche 2 for the
+no-split rationale.
 
 **Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
 §3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in

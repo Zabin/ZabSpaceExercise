@@ -482,8 +482,12 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1140 | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | `implementation/packages/IP-1140-hot-seat-handoff.md` | FS-114 | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, `VR-1140` — FR-6610 trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
 | IP-1150 | Session Setup: Vignette Selection & Parameter Tuning | `implementation/packages/IP-1150-vignette-selection.md` | FS-115 §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, `VR-1150`) |
 | IP-1151 | Session Setup: Seat-to-Role Assignment | `implementation/packages/IP-1151-seat-role-assignment.md` | FS-115 §FR-4210 | Forward design | ✅ VERIFIED (2026-07-04, run #15, `VR-1151` — `BL-0014`'s no-consumer finding independently re-derived, still true; one new Low finding) |
+| IP-1160 | Role-Scoped Command Catalog & Assignment Scoping | `implementation/packages/IP-1160-role-scoped-command-enforcement.md` | FS-116 | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; every dependency already `VERIFIED`) |
 
-FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3).
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1160 is
+new (2026-07-05)**, closing `FEAT-3500`'s implementation gap that `11-release-readiness` found —
+see the Master Build Plan's Tranche 2 note and `01-technical-work-breakdown.md` for the no-split
+rationale.
 
 **IP-1090/IP-1100/IP-1110 are new (2026-07, tranche 1)**, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03, mirroring the FS-106 split — no new code

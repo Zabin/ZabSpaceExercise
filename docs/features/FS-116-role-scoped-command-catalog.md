@@ -13,7 +13,8 @@
 > `FEAT-3500`, [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0049`/`BL-0014`,
 > [release-assessment-fs-tracked-baseline.md](../reviews/release-assessment-fs-tracked-baseline.md)
 > Finding 2 (the release-readiness audit that surfaced this Feature had zero owning spec and zero
-> implementation)
+> implementation), [IP-1160](../implementation/packages/IP-1160-role-scoped-command-enforcement.md)
+> (the Implementation Package planned against this spec)
 > **Produces:** the enforcement layer `FS-105`'s bus/payload command catalog and `FS-115`'s Role
 > Assignment record need to actually gate command legality by seated role, not merely by asset
 > capability/ownership

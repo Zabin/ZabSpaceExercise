@@ -117,6 +117,7 @@ package in this plan to reach that state.
 | [IP-1140](packages/IP-1140-hot-seat-handoff.md) | FS-114 Hot-Seat Hand-Off Screen-Blank Menu | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED | none — verified 2026-07-03, [`VR-1140`](verification/VR-1140-hot-seat-handoff.md); the FR-6610 trigger/menu divergence was adjudicated **not satisfied** (High finding, routed to `07-implementation-planning` for a gap-closing package pending user prioritization — see Risk item 6 below) |
 | [IP-1150](packages/IP-1150-vignette-selection.md) | FS-115 §FR-4110 Vignette Selection & Parameter Tuning | As-built | ✅ VERIFIED | none — verified 2026-07-03, [`VR-1150`](verification/VR-1150-vignette-selection.md) |
 | [IP-1151](packages/IP-1151-seat-role-assignment.md) | FS-115 §FR-4210 Seat-to-Role Assignment | Forward design | ✅ VERIFIED | **Verified 2026-07-04 (run #15)**, [`VR-1151`](verification/VR-1151-seat-role-assignment.md) — full suite 566 passed/3 skipped, both permanent gates green; RTM `FR-4210` updated. `BL-0014` (no role-based command-filtering consumer exists) independently re-derived, not merely re-cited — still true. One new Low finding (`BL-0024`): `assign_role`'s White-Cell-only gate untested against `cell="observer"` specifically |
+| [IP-1160](packages/IP-1160-role-scoped-command-enforcement.md) | FS-116 Role-Scoped Command Catalog & Assignment Scoping | Forward design | 🔴 BLOCKED | Not authorized (MSTR-006 §3). Closes `FEAT-3500`'s implementation gap (`11-release-readiness` Finding 2 / `BL-0049`) per `FS-116` v1.1 and `ADS-3500`'s design. Every dependency (`IP-1151`, `IP-1050`, `IP-1051`) already `VERIFIED` — this package is specification-complete and would flip to `READY` the moment authorization is granted |
 
 **Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code
@@ -209,6 +210,18 @@ report**, closing `BL-0004` in full. The sweep's own findings (8 of 11 clean, 2 
 Medium finding each, 1 with zero findings) are tracked as `BL-0032`–`BL-0047` in the pipeline
 backlog, none Critical/High. The next stage-appropriate step for this tranche is
 `11-release-readiness`.
+
+**Update (2026-07-05, run #31): `11-release-readiness` returned NO-GO.** Its
+[release assessment](../reviews/release-assessment-fs-tracked-baseline.md) found `FEAT-3500`
+(Role-Scoped Command Catalog & Assignment Scoping) — Must-priority, Release-1-bucketed — had zero
+owning Feature Specification and zero implementation anywhere in the codebase, despite the release
+plan's own text assuming its RTM `UNASSIGNED` cells were merely a citation gap (`BL-0049`, High).
+The project owner chose Path A (implement, not descope): `06-feature-specification` authored
+`FS-116`, `03-architecture-design-synthesis` authored `ADS-3500` resolving its two Open Questions,
+and this pass added **`IP-1160`** — the nineteenth package on this plan, and the only one not yet
+`VERIFIED`. `IP-1160` is fully specified and every one of its dependencies is already `VERIFIED`,
+so it is `BLOCKED` on MSTR-006 §3 authorization alone, not on any remaining design or dependency
+gap. `11-release-readiness` should be re-run once `IP-1160` reaches `VERIFIED`.
 
 ## Implementation sequence
 
@@ -368,19 +381,22 @@ documented FR-6610 divergence as **not satisfied**, see Risk item 6 below — `I
 
 ## Summary
 
-- **Total Features (Feature Catalog):** 18 (`docs/features/feature-index.md`, up from 11 —
+- **Total Features (Feature Catalog):** 19 (`docs/features/feature-index.md`, up from 11 —
   FS-109/110/111 split from FS-106, FS-112/113/114/115 newly authored, per
-  `docs/feature-planning/05-feature-review.md` Findings F-02/F-03/F-10)
-- **Total Features covered by this plan:** 16 — FS-101 through FS-107, FS-109, FS-110, FS-111,
-  FS-112, FS-113, FS-114, FS-115, FS-201, FS-301. FS-112/113/114/115 were added 2026-07 (tranche 2)
-  after `07-implementation-planning`'s required build-status verification pass
-  (`01-technical-work-breakdown.md` Tranche 1) — see that document for what was found.
+  `docs/feature-planning/05-feature-review.md` Findings F-02/F-03/F-10; FS-116 newly authored
+  2026-07-05 per `11-release-readiness` Finding 2 / `BL-0049`)
+- **Total Features covered by this plan:** 17 — FS-101 through FS-107, FS-109, FS-110, FS-111,
+  FS-112, FS-113, FS-114, FS-115, FS-116, FS-201, FS-301. FS-112/113/114/115 were added 2026-07
+  (tranche 2) after `07-implementation-planning`'s required build-status verification pass
+  (`01-technical-work-breakdown.md` Tranche 1) — see that document for what was found. FS-116 was
+  added 2026-07-05 (Tranche 2 of the *implementation* plan, per `01-technical-work-breakdown.md`).
 - **Features excluded (unauthorized candidates, MSTR-006 §3):** 2 — FS-108, FS-202
-- **Total Packages:** 18 (`packages/IP-1010` through `IP-3010`, plus `IP-1090`/`IP-1100`/`IP-1110`
+- **Total Packages:** 19 (`packages/IP-1010` through `IP-3010`, plus `IP-1090`/`IP-1100`/`IP-1110`
   added 2026-07 tranche 1, plus `IP-1120`/`IP-1130`/`IP-1140`/`IP-1150`/`IP-1151` added 2026-07
-  tranche 2; FS-105 and FS-115 are the two Features split across two lettered-equivalent packages
-  each — `IP-1050`/`IP-1051` by subsystem seam, `IP-1150`/`IP-1151` by build-status seam — per the
-  size-discipline precedent this corpus follows)
+  tranche 2, plus `IP-1160` added 2026-07-05 (Implementation Tranche 2); FS-105 and FS-115 are the
+  two Features split across two lettered-equivalent packages each — `IP-1050`/`IP-1051` by
+  subsystem seam, `IP-1150`/`IP-1151` by build-status seam — per the size-discipline precedent this
+  corpus follows; FS-116 is not split (see `01-technical-work-breakdown.md` Tranche 2))
 - **Critical Path Length:** 4 packages (`IP-1010`/`IP-1030` → `IP-1020`/`IP-1070` → `IP-2010` →
   `IP-3010`); this entire chain is now `VERIFIED` end-to-end (`VR-2010` run #11, `VR-3010` run #12).
   `IP-1090`/`IP-1100`/`IP-1110`/`IP-1130`/`IP-1140` do not extend the critical path — none has a
@@ -390,14 +406,16 @@ documented FR-6610 divergence as **not satisfied**, see Risk item 6 below — `I
 - **Parallel Work Opportunities:** 2 historical parallel waves among the (now-complete) as-built
   packages (6 packages, then 3 packages, running independently); the pre-existing forward-design
   surface's sequential constraint (`IP-2010` before `IP-3010`) is fully resolved — both are now
-  `VERIFIED`. **Zero packages remain coding-eligible (`READY`)**, and zero remain `COMPLETE`
-  pending verification — every package in this plan has reached `VERIFIED`.
-- **Package Status:** **18 `VERIFIED`** (the original 11 as-built + `IP-1150` + `IP-1140` +
-  `IP-2010` + `IP-3010` + `IP-1120` + `IP-1130` + `IP-1151`, the last six verified
-  2026-07-03/2026-07-04 via `VR-1140`/`VR-2010`/`VR-3010`/`VR-1120`/`VR-1130`/`VR-1151`); 0
-  `COMPLETE`, 0 `READY`, 0 `BLOCKED`, 0 `NOT STARTED`, 0 `IN PROGRESS`. **Every package in this
-  plan is now `VERIFIED`** — the "iterate through all `09-package-verification`" sweep (runs
-  #11–#15) is complete.
+  `VERIFIED`. `IP-1160` is independent of every other package (there is nothing else open to run
+  it in parallel with).
+- **Package Status:** **18 `VERIFIED`, 1 `BLOCKED`** (`IP-1160`, not authorized — MSTR-006 §3; every
+  one of its dependencies is already `VERIFIED`, so authorization is the sole remaining gate). The
+  18 `VERIFIED` packages are the original 11 as-built + `IP-1150` + `IP-1140` + `IP-2010` +
+  `IP-3010` + `IP-1120` + `IP-1130` + `IP-1151`, the last six verified 2026-07-03/2026-07-04 via
+  `VR-1140`/`VR-2010`/`VR-3010`/`VR-1120`/`VR-1130`/`VR-1151`. 0 `COMPLETE`, 0 `READY`, 0
+  `NOT STARTED`, 0 `IN PROGRESS`. The "iterate through all `09-package-verification`" sweep (runs
+  #11–#15) closed all 18 prior packages; `IP-1160` (added 2026-07-05) is the one package on this
+  plan not yet through that pipeline.
 
 ### Risks requiring architectural attention
 

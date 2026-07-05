@@ -88,6 +88,37 @@ No package in this tranche is authorized for coding (MSTR-006 §3) — `IP-1130`
 in the pure sense (no blocking package dependency), and even it requires a separate, explicit user
 go-ahead before any of its Implementation Tasks begin.
 
+## Tranche 2 (2026-07-05): FS-116
+
+**Why this tranche.** `11-release-readiness`'s
+[release assessment](../reviews/release-assessment-fs-tracked-baseline.md) found `FEAT-3500`
+(Role-Scoped Command Catalog & Assignment Scoping) — Must-priority, Release-1-bucketed — had zero
+owning Feature Specification and zero implementation anywhere in `spacesim/`, despite the release
+plan's own text assuming its RTM `UNASSIGNED` cells were merely a citation gap. `06-feature-
+specification` authored `FS-116` to close the spec gap; two Open Questions blocked
+implementation-readiness (no interface carries a seat identifier distinct from cell; the engine's
+three-way verb taxonomy doesn't map onto the two-way role-scope model), both resolved by `ADS-3500`
+(`03-architecture-design-synthesis`, Workflow B). This tranche plans the single package that
+closes the remaining implementation gap.
+
+**No split.** `FS-116` covers exactly one coherent unit of work — an offer-time filter (`FR-3510`)
+and an execution-time gate (`FR-3520`) over the *same* seat-resolution/verb-classification logic,
+touching a small, contiguous set of files (`session/manager.py`, `session/inprocess.py`,
+`ui_web/server.py`, `ui_web/static/app.js`). Unlike `FS-105`/`FS-115` (split by architecturally
+distinct concerns or by build-status seam), there is no internal seam here large enough to justify
+two packages — one package, `IP-1160`, covers the whole Feature.
+
+**Package ID assigned** (per the `IP-<series><seq>0` convention, `FS-116 → IP-1160`, checked
+against `packages/INDEX.md` for collisions — unclaimed):
+
+| Package | Feature | Situation | Entry status |
+|---|---|---|---|
+| [IP-1160](packages/IP-1160-role-scoped-command-enforcement.md) | FS-116 | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; every dependency package already `VERIFIED`) |
+
+`IP-1160` is not authorized for coding — per MSTR-006 §3, being fully specified (and every
+dependency already `VERIFIED`) is not itself an authorization; a separate, explicit user go-ahead
+is required before any Implementation Task begins.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
