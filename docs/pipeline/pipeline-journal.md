@@ -13,14 +13,17 @@
 
 ## Position
 
-- **Updated:** 2026-07-05 (run #30)
-- **Increment:** two threads active. **Thread A (v1 baseline follow-through):** the `BL-0004`
-  retro-verification sweep closed run #29 (all 18 packages `VERIFIED` with a formal `VR-xxxx`);
-  PR #48 carrying that work has since been **merged to `main`** (confirmed this run — corrects the
-  "open/draft" status run #29 recorded). Thread A remains gated on a release-readiness decision
-  (see Open gates). **Thread B (training-corpus elevation):** `09-training-manual-review` run this
-  run on the runs #16/#19 scope — clean apart from one Medium finding (`BL-0048`). Thread B has no
-  further outstanding step of its own; the corpus is current pending `BL-0048`'s fix.
+- **Updated:** 2026-07-05 (run #31)
+- **Increment:** two threads active. **Thread A (v1 baseline follow-through): `11-release-readiness`
+  ran this run — result NO-GO.** 16 of 17 FS-tracked Features (plus all Prototype/MVP foundational
+  work) are delivered/verified/clean or carry an explicitly accepted risk; the sole blocker is
+  **`FEAT-3500`** (Role-Scoped Command Catalog & Assignment Scoping, Must-priority, Release 1) —
+  confirmed to have **no owning Feature Specification and no implementation anywhere in the
+  codebase** (`BL-0049`, High, `NEEDS-USER`). No baseline record was flipped (NO-GO rule). Thread A
+  is now gated on the project owner's Path A (implement) vs. Path B (descope with authorization)
+  decision for `FEAT-3500` before this stage can be re-run for a GO. **Thread B (training-corpus
+  elevation):** `09-training-manual-review` closed run #30 clean apart from one Medium finding
+  (`BL-0048`, still open, queued for `08-training-manual-authoring`'s next touch).
 - **Reconciliation note (run #16, preserved):** between runs #15 and #16, substantial pipeline-shaped work
   landed **outside** the manager's own loop (the user worked directly with the relevant skills
   across two other sessions, PRs #45 and #46, both merged to `main`): the "complete outstanding 08"
@@ -44,27 +47,31 @@
   run #29, **zero findings — the cleanest package in the sweep**). Aggregate: 8/11 clean
   (routine citation drift only), 2/11 with one Medium finding each, 1/11 perfect. No Critical/High
   anywhere in the sweep. `BL-0004` closed `DONE`.
-- **Thread B pipeline state (training corpus):** `BL-0029`/`BL-0026` closed run #19 (see history
-  below for detail). **`09-training-manual-review` run this run** on that scope (`docs/training/02`,
-  `12`, `13`, `14`, `15`, `INDEX`) —
-  [`training-review-runs16-19-scope.md`](../reviews/training-review-runs16-19-scope.md): accuracy,
-  coverage, and pedagogy all clean (playbook suite 16/16 green); one Medium traceability finding
-  (`BL-0048` — `WCM-1`/`BLU-1`/`RED-1` + `training/15` §15.1/§15.2 cite a nonexistent
-  `spacesim/session/controller.py`; the real file is `spacesim/session/cells.py`). Committed
-  `a3c65ad`, pushed. Thread B's own outstanding-step queue is now empty pending `BL-0048`'s fix.
-- **Backlog:** 49 total. This run: `BL-0048` `NEW` → `DEFERRED` (Medium, rides
-  `08-training-manual-authoring`'s next touch of `training/12`/`13`/`14`/`15`). No `NEEDS-USER`
-  entries open on either thread.
-- **Next step / open gate:** Thread A's `11-release-readiness` gate remains open — raised to the
-  user again this run via `AskUserQuestion`; the user chose to run Thread B's
-  `09-training-manual-review` instead this cycle, now complete. The release-readiness go-ahead is
-  still needed for Thread A's next advance. Thread B has no further step queued (its one open
-  finding, `BL-0048`, is Low-maintenance-cost and does not itself justify a dedicated
-  `08-training-manual-authoring` run).
-- **Open gates:** **`11-release-readiness` for the 18-package tranche — still awaiting the user's
-  go-ahead to invoke it** (unchanged from run #29; this run's gate check re-offered it alongside
-  Thread B and the user chose Thread B for this cycle). PR #48 (runs #17-#29's work) **confirmed
-  merged to `main`** this run (drift corrected — run #29 recorded it as still open/draft).
+- **Thread A pipeline state (this run):** `11-release-readiness` invoked with the user's explicit
+  authorization (the standing gate from run #17 onward). Wrote
+  [`release-assessment-fs-tracked-baseline.md`](../reviews/release-assessment-fs-tracked-baseline.md):
+  full scope audit against `docs/feature-planning/01-release-plan.md`'s bucket assignments, one row
+  per FS-tracked Feature. Result: **NO-GO**. Two new findings: `BL-0049` (High, `NEEDS-USER` —
+  `FEAT-3500` undelivered, see Position summary above; escalates the substance of `BL-0014`, which
+  had found the same absence in 2026-07-03 but filed it Medium/non-blocking) and `BL-0050` (Medium,
+  `DEFERRED` — `FR-3310`'s "single scheduler" framing doesn't literally match the shipped
+  two-mechanism architecture; behavioral risk low, no owning FS). Test suite 566 passed/3 skipped,
+  permanent gates 14 passed, both unchanged. Committed `789f774`, pushed. No tracker flipped (NO-GO
+  rule).
+- **Thread B pipeline state:** `BL-0029`/`BL-0026` closed run #19; `09-training-manual-review`
+  closed run #30 clean apart from `BL-0048` (Medium, still open, doc-only, queued for
+  `08-training-manual-authoring`'s next touch of `training/12`/`13`/`14`/`15`).
+- **Backlog:** 50 total. This run: `BL-0049` `NEW` → `NEEDS-USER` (High), `BL-0050` `NEW` →
+  `DEFERRED` (Medium, rides a future `06-feature-specification` pass).
+- **Next step / open gate:** **`BL-0049` is a ripe `NEEDS-USER` entry — the project owner must
+  choose Path A (implement `FEAT-3500` via `06`→`07`→`08`→`09`, then re-run `10`/`11`) or Path B
+  (descope `FEAT-3500` to a future release with recorded authorization) before `11-release-readiness`
+  can be re-run for a GO on this baseline.** Thread B's `08-training-manual-authoring` touch for
+  `BL-0048` remains available in parallel — small, independent, no gate.
+- **Open gates:** **`BL-0049` (`FEAT-3500` Path A/B decision) — awaiting the project owner.**
+  `11-release-readiness` itself is no longer gated on a bare go-ahead (that gate cleared this run);
+  it is now gated on `BL-0049`'s resolution instead. PR #49 (runs #30-#31's work) is open/draft, no
+  CI configured in this repo, no review comments as of this run.
 
 ---
 
@@ -403,3 +410,4 @@
 | 28 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1100 (Save & Resume, 10th of 11 in the BL-0004 sweep) | Reconciliation: clean tree, no drift since run #27. Invoked 09-package-verification on IP-1100: confirmed save_state()'s returned dict cleanly separates content (vignette_id/overrides/classification) from session (eventlog/pending/orders/ssn_requests) state, and from_state() reloads the vignette content fresh before restoring the session half -- confirming FR-7220's split claim directly. Found a real factual overclaim while auditing the Requirements Covered table against the actual save_state() dict: the package claims Role Assignments are persisted, but role_assignments (manager.py:46, populated by assign_role()) is absent from the saved dict and never restored by from_state() -- cross-checked against IP-1151's own Rollback Considerations, which already correctly discloses this exact limitation. Filed as a Medium finding (BL-0045), not softened despite being a documentation-only issue, per this sweep's severity-honesty discipline (Medium doesn't require a gate stop, unlike Critical/High). Also found the package cites test_session.py for save-resume coverage; grepped that file and found zero save/resume tests -- the real test (test_save_resume_reproduces_state_and_queue) lives in test_session_features.py instead. Full suite 566 passed/3 skipped (107s), both permanent gates green, test_session_features.py (3 tests) green. VR-1100 written: VERIFIED (the functional round-trip holds), one Medium + two Low findings. Filled RTM Test/Impl. Package cells for FR-7210/FR-7220 (attributed to IP-1100 directly, with the corrected test-file citation) and NFR-1800's Test cell. Updated Master Build Plan, packages/INDEX.md, verification/INDEX.md. Committed `a54ea7a` (verification skill's own commit), pushed. Harvested BL-0045 (Medium, DEFERRED), BL-0046/BL-0047 (Low, DEFERRED). | `09-package-verification` on IP-1110 (AI-Red Doctrine Automation) -- the LAST package in the BL-0004 sweep. Once verified, flag to the user that all 18 packages now have a formal VR and 11-release-readiness is the next gate-worthy step for Thread A. Thread B's 09-training-manual-review remains available in parallel |
 | 29 | 2026-07-04 | advance (user asked to iterate through all remaining 09-package-verification runs) | `09-package-verification` | IP-1110 (AI-Red Doctrine Automation, 11th and LAST package in the BL-0004 sweep) | Reconciliation: clean tree, no drift since run #28. Invoked 09-package-verification on IP-1110: confirmed RedDoctrine.step() issues every order via self.mgr.issue_order("red", Order(...)), traced that call through manager.py's issue_order() (self.osys.issue(order)) to confirm it is the byte-identical OrderSystem.issue() path a human-issued order reaches (verified by cross-referencing inprocess.py's own human order-issuance wrapper, which resolves to the same manager.py.issue_order()) -- no AI-Red-specific branch exists anywhere in orders.py. Confirmed every one of redai.py's 8 cited line ranges is exact with zero drift -- the only package in the entire 11-package sweep with none. Full suite 566 passed/3 skipped (96s), both permanent gates green; no dedicated test_redai.py exists but RedDoctrine/step() are directly exercised in test_vignettes.py::test_doctrine_profiles_drive_different_red_behavior plus incidentally in test_session_features.py/test_aar.py. VR-1110 written: VERIFIED, zero findings -- the cleanest package in the sweep. Filled RTM Test/Impl. Package cells for FR-9110 (attributed to IP-1110 directly). This CLOSES BL-0004 in full: all 18 packages on the Master Build Plan now carry a formal VR-xxxx report for the first time in this project's history. Updated Master Build Plan (added a closure summary paragraph correcting the stale "next step is 10-integration-review" line, which had gone stale since run #17), packages/INDEX.md, verification/INDEX.md (updated its own header note to reflect full 18-package coverage), and ROADMAP.md's Implementation Packages theme with the sweep's aggregate results. Committed `47d46ff` (verification skill's own commit), pushed. No new backlog findings this run (zero to harvest). BL-0004 itself closed DONE, recording the sweep's full aggregate result. | **Gate:** `11-release-readiness` for the 18-package tranche is the natural next step for Thread A (evidence base now complete) but flips baseline records -- raised to the user as an explicit decision rather than invoked. Thread B's `09-training-manual-review` remains available in parallel. |
 | 30 | 2026-07-05 | advance (gate re-offered via AskUserQuestion; user chose Thread B) | `09-training-manual-review` | The runs #16/#19 training-corpus scope: `docs/training/02-interface.md`, `12-white-cell-manual.md` (WCM-1, WCM-2, WCM-11, WCM-12), `13-blue-cell-manual.md`, `14-red-cell-manual.md`, `15-manual-traceability.md` (§15.1/§15.2 new rows, §15.6), `INDEX.md` | Reconciliation: confirmed PR #48 (runs #17-#29's work) is now merged to `main` (tip `8574ca9`) -- corrects run #29's "open/draft" recording, drift noted and fixed in this run's Position block; no other drift found (Master Build Plan/RTM/ROADMAP all matched run #29's recorded state). Triaged backlog: no NEW entries, no DEFERRED triggers fired, no ripe NEEDS-USER items beyond the standing `11-release-readiness` gate. Gate check: re-offered the standing Thread-A gate (invoke `11-release-readiness` now, requires explicit go-ahead per this manager's own rule) alongside Thread B's ungated `09-training-manual-review`, via `AskUserQuestion` (first attempt hit a transient tool-permission error mid-stream; retried successfully). User chose Thread B. Invoked `09-training-manual-review` on the runs #16/#19 scope: independently confirmed every Observer/classification-override/seat-to-role-staffing/competency-assessment/research-batch prose claim against the live code (inprocess.py's observer functions, manager.py's assign_role/staffing_report and classification threading into save_state/aar export, assessment.py's three scoring functions, research_batch.py's run_batch signature and research_export.py's RunRecord fields) -- all confirmed accurate. Ran `test_vignette_tutorials.py`: 16 passed, unchanged. Found one genuine (not drift) misattribution: `WCM-1`/`BLU-1`/`RED-1` and `training/15` §15.1/§15.2 (7 locations) cite `spacesim/session/controller.py` for the fog-of-war boundary -- confirmed via `git log --all --diff-filter=A` that this file has never existed; the real `CellController` lives in `spacesim/session/cells.py`. Wrote `docs/reviews/training-review-runs16-19-scope.md`: clean apart from this one Medium finding. Updated ROADMAP.md's review theme. Committed `a3c65ad` (review skill's own commit), pushed. Harvested 1 finding -> `BL-0048` (Medium, DEFERRED -- rides `08-training-manual-authoring`'s next touch of the four affected files). | Thread A's `11-release-readiness` gate remains open, still awaiting the user's go-ahead (unchanged decision point); Thread B has no further queued step (BL-0048 is Low-maintenance-cost, doesn't itself justify a dedicated `08-training-manual-authoring` run) -- ask the user whether to invoke `11-release-readiness` now, or fold `BL-0048`'s fix into some other upcoming touch of the training corpus |
+| 31 | 2026-07-05 | advance (user explicitly authorized invoking `11-release-readiness`, then directed folding `BL-0048` into an `08-training-manual-authoring` touch) | `11-release-readiness` | Full 18-package Master Build Plan tranche (`IP-1010`-`IP-3010`, FS-101-111/112-115/201/301) against `docs/feature-planning/01-release-plan.md`'s bucket assignments | Reconciliation: no drift since run #30 (PR #49 still open/draft as expected, no CI configured). The user's instruction itself served as the standing gate's explicit go-ahead. Invoked `11-release-readiness`: reconstructed the promise from the release plan's Prototype/MVP/Release-1/Release-2 buckets, built the FS<->FEAT mapping from `05-feature-review.md`'s reconciliation table, and audited all 18 packages (566 passed/3 skipped, both permanent gates 14 passed, both unchanged). 16 of 17 FS-tracked Features clean or carrying an already-accepted/disclosed risk. Found **`FEAT-3500`** (Role-Scoped Command Catalog & Assignment Scoping, Must-priority, Release 1) has **no owning Feature Specification** (absent from the FS<->FEAT reconciliation table) **and no implementation anywhere in the codebase** -- re-confirmed via direct grep (`role_assignments` read only by `staffing_report()`, no command-authorization consumer) what `BL-0014` (run #8, re-derived run #15/`VR-1151`) had already found, but this pass recognized it as release-blocking rather than an ordinary Medium/deferred finding, since a release-readiness audit's specific job is checking "is every planned Feature actually delivered." Also found `FR-3310`'s "single scheduler" framing doesn't literally match the shipped two-mechanism architecture (`OrderSystem` vs. `SSNNetwork`, no `PlannedActivity` class anywhere) and has no owning FS either (`FS-102` explicitly disclaims citing any FR) -- lower severity, behavioral risk low. Wrote `docs/reviews/release-assessment-fs-tracked-baseline.md`: **NO-GO**, with an explicit Path A (implement `FEAT-3500`) / Path B (descope with authorization) choice put to the project owner; no tracker flipped, per the skill's own NO-GO rule. Committed `789f774` (release-readiness skill's own commit), pushed. Harvested 2 findings -> `BL-0049` (High, `NEEDS-USER` -- the `FEAT-3500` Path A/B decision), `BL-0050` (Medium, `DEFERRED` -- `FR-3310` framing, rides a future `06` pass). | **Gate: `BL-0049` (project owner's Path A/B decision on `FEAT-3500`) must be resolved before `11-release-readiness` can be re-run for a GO.** Thread B's `08-training-manual-authoring` touch for `BL-0048` (fixing the `session/controller.py` -> `session/cells.py` misattribution) remains available in parallel, per the user's own instruction this run -- no gate on that step. |
