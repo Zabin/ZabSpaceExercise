@@ -79,7 +79,9 @@ def test_red_kinetic_authorized_only_in_md_vignettes():
     for vid in RED_COA:
         mgr = SessionManager(load_vignette(vid), seed=1)
         mgr.start()
-        kinetic_default = mgr.ctx.roe.get("kinetic_authorized", False)
+        # IP-1172: ctx.roe is now cell-keyed; these COA vignettes have no explicit roe: block,
+        # so both cells share the same legacy-fallback value — checking Red's own is correct.
+        kinetic_default = mgr.ctx.roe.get("red", {}).get("kinetic_authorized", False)
         if vid.endswith("-md"):
             assert kinetic_default is True, f"{vid}: MD COA should default kinetic_authorized=True"
         else:

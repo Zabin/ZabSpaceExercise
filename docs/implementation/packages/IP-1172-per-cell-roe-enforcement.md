@@ -2,9 +2,13 @@
 
 > **Package ID:** IP-1172
 > **Version:** 1.0
-> **Status:** 🟢 READY *(MSTR-006 §3 authorization obtained 2026-07-05, project owner, recorded in
-> `docs/pipeline/pipeline-journal.md` run #45 — no package-level dependency, so authorization was
-> the only gate; independent of every other Tranche 3 package.)*
+> **Status:** 🔵 COMPLETE *(implemented 2026-07-05 by `08-code-implementation` — `Vignette.roe`
+> added, `build_world()`'s roe construction made cell-keyed with a legacy fallback,
+> `engine/orders.py`'s two `_validate()` check sites resolve per `order.cell`. Discovered and fixed
+> material drift beyond this package's own file list: `session/inprocess.py`'s per-cell brief
+> endpoint and seven test files constructed `OrderSystem`/read `ctx.roe` in the old flat shape —
+> see Risks. 4 new tests, full suite 579 passed/3 skipped (up from 575/3, +4), both permanent gates
+> green. Awaiting `09-package-verification` to advance to `VERIFIED`.)*
 > **Dependencies:** [FS-117](../../features/FS-117-vignette-creator.md) v1.1 (`FR-3420`,
 > `NFR-2010`), [ADS-5100B](../../architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md) §3.2,
 > [FS-101](../../features/FS-101-mission-planning.md)/[FS-102](../../features/FS-102-command-scheduling.md)
@@ -90,19 +94,25 @@ None proposed.
 
 ## Files to Modify
 
-- `spacesim/content/vignette.py` *(proposed)*:
+- `spacesim/content/vignette.py` *(implemented)*:
   - `Vignette` gains `roe: Optional[dict] = None` (each present key `"blue"`/`"red"` maps to
     `{"kinetic_authorized": bool, "cyber_authorized": bool}`).
-  - `build_world()`'s `roe` construction (currently lines 218-221) becomes: if `vignette.roe` is
-    present, use it directly (validated to have both cell keys, defaulting any missing
-    sub-key/cell to `False`); otherwise, fall back to today's legacy-parameter-derived flat values
-    and replicate them identically into both `roe["blue"]` and `roe["red"]` — this is the one
-    branch point implementing `NFR-2010`'s backward-compatibility guarantee.
-- `spacesim/engine/orders.py` *(proposed)* — `_validate()`'s two check sites (lines 349, 358)
-  change from `self.roe.get("kinetic_authorized", False)` / `self.roe.get("cyber_authorized", False)`
-  to `self.roe.get(order.cell, {}).get("kinetic_authorized", False)` / `...get("cyber_authorized", False)`.
-  No change to `OrderSystem.__init__`'s signature or to `issue()`/`dry_run()` themselves — both
-  already funnel through `_validate()`, so this is the single fix site for both entry points.
+  - `build_world()`'s `roe` construction now branches: if `vignette.roe` is truthy, build a
+    cell-keyed dict directly from it (missing cell/sub-key defaults to `False`); otherwise, fall
+    back to the legacy-parameter-derived flat values and replicate them identically into both
+    `roe["blue"]` and `roe["red"]` — this is the one branch point implementing `NFR-2010`'s
+    backward-compatibility guarantee.
+- `spacesim/engine/orders.py` *(implemented)* — `_validate()`'s two check sites changed from
+  `self.roe.get("kinetic_authorized", False)` / `self.roe.get("cyber_authorized", False)` to
+  `self.roe.get(order.cell, {}).get("kinetic_authorized", False)` / `...get("cyber_authorized", False)`.
+  No change to `OrderSystem.__init__`'s signature or to `issue()`/`dry_run()` themselves.
+- `spacesim/session/inprocess.py` *(implemented, not in this package's original file list — see
+  Risks)* — the per-cell Mission Brief endpoint's `_cell_brief(c)` closure exposed
+  `"roe": dict(ctx.roe)` (the whole, then-flat dict); now exposes `"roe": dict(ctx.roe.get(c, {}))`
+  — that cell's own authorization only. The external API shape (`{kinetic_authorized,
+  cyber_authorized}`) is unchanged, confirmed by `test_web.py::test_session_brief_returns_per_cell_blocks`
+  passing unmodified; `ui_web/static/app.js`'s `roe.kinetic_authorized`/`roe.cyber_authorized`
+  reads needed no change either.
 
 **Explicitly out of scope for this package:** the Creator's per-cell ROE selector UI — that is
 [IP-1174](IP-1174-vignette-creator-ui-surfaces.md)'s concern; the auto-upgrade-on-save *mechanism*
@@ -112,62 +122,68 @@ per-cell shape a real, engine-enforced concept; it does not build the authoring 
 
 ## Implementation Tasks
 
-**Not started — authorized 2026-07-05 (MSTR-006 §3).** Proposed sequence:
+**Complete (2026-07-05, `08-code-implementation`).**
 
-1. Write failing tests encoding both Acceptance Criteria below (per-cell divergent ROE gates
-   correctly; legacy-only vignette behavior is unchanged) before any code change.
-2. Add `Vignette.roe: Optional[dict] = None`.
-3. Rewrite `build_world()`'s `roe` construction: explicit-shape branch first, legacy-fallback
-   branch second, always producing a fully cell-keyed `{"blue": {...}, "red": {...}}` dict
-   regardless of which branch ran.
-4. Change `engine/orders.py`'s two `_validate()` check sites to resolve per `order.cell`.
-5. Re-run every existing ROE-adjacent test (`test_orders.py` and any vignette test exercising
-   `engage`/`cyber` actions) to confirm zero regression for all 19 currently shipped vignettes.
+1. ✅ Wrote 4 new failing tests first (test-first): 2 in `test_orders.py` (per-cell divergent
+   kinetic/cyber gating), 2 in `test_content.py` (explicit-block backward compatibility + partial
+   sub-key defaulting). Confirmed all 4 failed before implementation.
+2. ✅ Added `Vignette.roe: Optional[dict] = None`.
+3. ✅ Rewrote `build_world()`'s `roe` construction: explicit-shape branch first (cell-keyed,
+   missing cell/sub-key defaults to `False`), legacy-fallback branch second (both cells share the
+   flat-parameter-derived value) — always producing a fully cell-keyed dict regardless of which
+   branch ran.
+4. ✅ Changed `engine/orders.py`'s two `_validate()` check sites to resolve per `order.cell`.
+5. ✅ Re-ran the full suite: found and fixed real drift beyond this package's own anticipated
+   scope (see Risks) — `session/inprocess.py`'s per-cell brief endpoint and seven pre-existing test
+   files (`test_orders.py`, `test_planning.py`, `test_assessment.py`, `test_safe_mode.py`,
+   `test_ssn.py`, `test_content.py`, `test_vignette_library.py`) constructed `OrderSystem`/read
+   `ctx.roe` in the old flat shape. Fixed each (Step 7 — regressions this package's own change
+   caused, not scope creep). Full suite: 579 passed/3 skipped (up from 575/3, +4), zero regressions
+   for any of the 19 currently shipped vignettes.
 
 ## Tests to Add
 
-*(Proposed — none exist yet.)*
-
-- `spacesim/tests/test_orders.py` *(existing file, extend)* or a new `test_per_cell_roe.py` — one
-  test per Acceptance Criterion:
-  - Given a vignette with an explicit `roe:` block where Blue's kinetic ROE is authorized and Red's
-    is not, a kinetic order from Red is rejected (`roe_kinetic_not_authorized`) while an otherwise-
-    identical kinetic order from Blue succeeds (subject to the existing weapons-quality/ammo gates,
-    unchanged).
-  - The mirror image for cyber ROE.
-  - Given a vignette declaring only the legacy flat `red_kinetic_authorized`/`cyber_authorized`
-    parameters (no `roe:` block), both cells' order-issuance behavior for `engage`/`cyber` actions
-    is byte-identical to before this package — asserted directly against at least one of the 19
-    currently shipped vignettes, not just a synthetic fixture.
-  - Given a vignette with a `roe:` block that only partially specifies one cell (e.g. only
-    `kinetic_authorized`, no `cyber_authorized` key), the missing sub-key defaults to `False` for
-    that cell, not an exception.
+- `spacesim/tests/test_orders.py` *(existing file, extended)* —
+  `test_per_cell_roe_kinetic_divergent_gates_independently`,
+  `test_per_cell_roe_cyber_divergent_gates_independently`: Blue authorized/Red not (and the mirror
+  image for cyber) gates each cell's order-issuance independently, both passing.
+- `spacesim/tests/test_content.py` *(existing file, extended)* —
+  `test_explicit_per_cell_roe_gates_independently_and_is_backward_compatible` (an explicit,
+  divergent per-cell `roe:` block resolves correctly; a legacy-only vignette's `ctx.roe` mirrors
+  the same value to both cells), `test_partial_per_cell_roe_block_defaults_missing_subkey_to_false`
+  (a `roe:` block specifying only one cell/sub-key defaults everything else to `False`, never
+  raising or silently authorizing).
+- `test_vignette_1_loads_and_builds_a_world`/`test_parameter_override_flows_into_roe` (pre-existing,
+  updated in place) now assert `ctx.roe["blue"]`/`["red"]` instead of the old flat top-level keys.
 
 ## Documentation Updates
 
-- `ROADMAP.md` Implementation Packages theme — add this package's row.
-- `docs/features/FS-117-vignette-creator.md`'s `Referenced By` metadata — add this package once
-  authored (this pass).
-- `docs/design/04-data-model.md` §6 — gains the `Vignette.roe` field description, per this field's
-  own "once implemented" instruction.
-- Vignette-authoring reference documentation (`docs/vignettes/` conventions, if any describe the
-  `parameters` mechanism) — a brief addition noting the new optional `roe:` block and its
-  legacy-parameter fallback, so a hand-authoring White Cell user understands both paths remain
-  valid.
-- `CLAUDE.md`'s Code Map — a brief addition noting `engine/orders.py`'s ROE check is now per-cell,
-  mirroring prior packages' precedent.
+- `ROADMAP.md` Implementation Packages theme — this package's row (added at planning time) updated
+  to `COMPLETE`.
+- `docs/features/FS-117-vignette-creator.md`'s `Referenced By` metadata — already present (added
+  at planning time).
+- `docs/design/04-data-model.md` §6 — `Vignette.roe` field description added; a paragraph added
+  noting `build_world()` always produces a cell-keyed `ctx.roe` regardless of which path (explicit
+  or legacy-fallback) produced it.
+- `docs/vignettes/00-vignette-framework.md` — the "Authorities / ROE" parameter category now notes
+  the optional `roe:` block alongside the existing `red_kinetic_authorized` example, with the
+  fail-safe defaulting rule.
+- `CLAUDE.md`'s Code Map — `engine/orders.py`'s entry notes ROE is now resolved per issuing cell;
+  `content/vignette.py`'s entry notes the new `Vignette.roe` field and its legacy fallback.
+- `docs/requirements/03-requirements-traceability-matrix.md` — `FR-3420`'s Test/Impl. Package cells
+  and `NFR-2010`'s Test cell (ROE slice only) updated from `UNASSIGNED`.
 
 ## Definition of Done
 
 - [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
   §3, 2026-07-05, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #45).
-- [ ] `Vignette.roe` exists, optional, defaulting to absent (no breakage of the 19 existing
+- [x] `Vignette.roe` exists, optional, defaulting to absent (no breakage of the 19 existing
   vignette YAML files, none of which declare it).
-- [ ] A vignette with an explicit per-cell `roe:` block gates kinetic/cyber orders independently
+- [x] A vignette with an explicit per-cell `roe:` block gates kinetic/cyber orders independently
   per `order.cell`.
-- [ ] A vignette with only the legacy flat ROE parameters produces byte-identical order-issuance
+- [x] A vignette with only the legacy flat ROE parameters produces byte-identical order-issuance
   behavior to before this package, for all 19 currently shipped vignettes.
-- [ ] `engine/orders.py`'s two `_validate()` check sites resolve ROE via `order.cell`, with no
+- [x] `engine/orders.py`'s two `_validate()` check sites resolve ROE via `order.cell`, with no
   legacy-shape-awareness logic added to the engine itself (that logic lives entirely in
   `content/vignette.py`'s `build_world()`).
 
@@ -205,6 +221,20 @@ per-cell shape a real, engine-enforced concept; it does not build the authoring 
 
 ## Risks
 
+- **This package's own file list materially undercounted the blast radius — corrected during
+  implementation, not silently absorbed.** This package's original `Files to Modify` named only
+  `content/vignette.py` and `engine/orders.py`. Making `OrderSystem.roe`/`ctx.roe` always cell-keyed
+  in fact required a third production-code fix (`session/inprocess.py`'s per-cell Mission Brief
+  endpoint, which exposed the *whole* then-flat `ctx.roe` rather than the querying cell's own) and
+  touched seven pre-existing test files that constructed `OrderSystem` or read `ctx.roe` directly in
+  the old flat shape (`test_orders.py`, `test_planning.py`, `test_assessment.py`,
+  `test_safe_mode.py`, `test_ssn.py`, `test_content.py`, `test_vignette_library.py`). Every one of
+  these was a direct, mechanical consequence of the *same* architecture decision this package
+  already committed to (cell-keyed ROE) — not a new design choice — so fixing them in this run was
+  the correct call per `08-code-implementation`'s own "fix defects this package's own changes
+  introduce" rule, not scope creep. Confirmed no client-side (`app.js`) change was needed: the
+  per-cell brief's external API shape stayed identical (`test_web.py::test_session_brief_returns_per_cell_blocks`
+  passes unmodified).
 - **This touches already-`VERIFIED` `FS-101`/`FS-102` territory** (`engine/orders.py`'s `_validate()`
   method) — carried forward from `FS-117`'s own Risks. Re-confirming `FS-101`/`FS-102`'s existing
   Acceptance Criteria still hold after this change is part of this package's own verification

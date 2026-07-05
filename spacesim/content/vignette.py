@@ -87,6 +87,11 @@ class Vignette(BaseModel):
     # session/manager.py's Role Assignment registry + staffing gate. Empty/absent for every
     # vignette shipped before this package (no mandatory staffing requirement).
     roles_needed: list[RoleRequirement] = Field(default_factory=list)
+    # IP-1172 (FR-3420, NFR-2010) — optional per-cell ROE: {"blue": {kinetic_authorized,
+    # cyber_authorized}, "red": {...}}. Absent for every vignette shipped before this package;
+    # build_world() falls back to the legacy flat red_kinetic_authorized/cyber_authorized
+    # parameters, replicated identically to both cells, when this field is absent.
+    roe: Optional[dict] = None
 
 
 @dataclass
@@ -215,10 +220,24 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
         if net is not None:
             ssn_networks[cell] = net
 
-    roe = {
-        "kinetic_authorized": bool(params.get("red_kinetic_authorized", False)),
-        "cyber_authorized": bool(params.get("cyber_authorized", params.get("red_cyber_authorized", False))),
-    }
+    # IP-1172 (FR-3420, NFR-2010) — always produce a fully cell-keyed roe dict. An explicit
+    # vignette.roe block is used directly (missing cell/sub-key defaults to False — fail safe,
+    # never silently authorized); otherwise the legacy flat parameters are replicated
+    # identically to both cells, so all 19 pre-IP-1172 vignettes are unaffected.
+    if vignette.roe:
+        roe = {
+            cell: {
+                "kinetic_authorized": bool(vignette.roe.get(cell, {}).get("kinetic_authorized", False)),
+                "cyber_authorized": bool(vignette.roe.get(cell, {}).get("cyber_authorized", False)),
+            }
+            for cell in ("blue", "red")
+        }
+    else:
+        legacy = {
+            "kinetic_authorized": bool(params.get("red_kinetic_authorized", False)),
+            "cyber_authorized": bool(params.get("cyber_authorized", params.get("red_cyber_authorized", False))),
+        }
+        roe = {"blue": dict(legacy), "red": dict(legacy)}
     landing_offset_s = float(params.get("landing_window_start_s", 1800))
     ctx = VignetteContext(
         start_epoch=start,

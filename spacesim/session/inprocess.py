@@ -360,7 +360,11 @@ class InProcessSession:
                 "learning_objectives": list(v.learning_objectives),
                 "text": text,             # situation/mission/etc — from the YAML intro_brief.{cell}
                 "objectives": objs_out,   # enriched with desc + deadline
-                "roe": dict(ctx.roe),     # {kinetic_authorized, cyber_authorized}
+                # IP-1172: ctx.roe is now cell-keyed ({"blue": {...}, "red": {...}}) — the
+                # brief exposes only this specific cell's own {kinetic_authorized,
+                # cyber_authorized}, keeping the response shape identical to before this
+                # package (a legacy-fallback vignette's roe is the same for both cells anyway).
+                "roe": dict(ctx.roe.get(c, {})),
                 "now": now,
             }
 

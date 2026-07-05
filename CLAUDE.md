@@ -237,6 +237,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   Actions: `jam/engage/observe/maneuver/downlink/cyber` + `command` (bus/payload verbs, see `buscommands.py`).
   `dry_run()` is a read-only mirror of `issue()` (validate + window/delivery-path, but schedules/
   registers/books nothing) → powers the UI's "why can't I?" pre-disabled buttons; replay-safe like `scene.py`.
+  ROE (`engage`/`cyber`) is resolved per issuing cell (`self.roe[order.cell]`, IP-1172/FR-3420) — the
+  engine never branches on legacy-vs-explicit vignette shape, only on the always-cell-keyed dict
+  `content/vignette.py`'s `build_world()` produces.
 - `spacesim/engine/recovery.py` — `RecoverySystem`: multi-pass safe-mode recovery + re-safe-on-persistence.
 - `spacesim/engine/ssn.py` — mock Space Surveillance Network (per `docs/build-spec/08-ssn.md` §17): per-cell
   `SSNNetwork`s instantiated from a dispersion preset (`sparse`/`regional`/`global`/`proliferated`),
@@ -280,6 +283,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `RoleRequirement`/`Vignette.roles_needed` (IP-1151, FR-4210) — optional, additive staffing
   requirements; absent for every vignette shipped before this package.
   `Vignette.coaching` is a list of `{at_sim_t?, cell, title, body}` notes (FW §11.D.17).
+  `Vignette.roe` (IP-1172, FR-3420/NFR-2010) — optional per-cell
+  `{blue: {kinetic_authorized, cyber_authorized}, red: {...}}`; absent for every vignette shipped
+  before this package, in which case `build_world()` mirrors the legacy flat
+  `red_kinetic_authorized`/`cyber_authorized` parameters to both cells.
 - `spacesim/content/inject_library.yaml` — five reusable white-cell inject templates
   (debris breakup, GNSS-jam advisory, ambiguous RPO, GS outage, geomagnetic storm).
   Loaded via `InProcessSession.inject_library()`; surfaced in the white-cell GUI's

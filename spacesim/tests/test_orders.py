@@ -38,6 +38,11 @@ def _subpoint(orbit: OrbitState, t: int):
 
 
 def _sim_with(world: WorldState, roe=None, seed=7) -> tuple[Simulation, OrderSystem]:
+    # IP-1172: OrderSystem.roe is now always cell-keyed ({"blue": {...}, "red": {...}}).
+    # A flat dict (this file's pre-IP-1172 convenience shape) is mirrored to both cells,
+    # matching content/vignette.py's own legacy-parameter fallback semantics.
+    if roe is not None and "blue" not in roe and "red" not in roe:
+        roe = {"blue": dict(roe), "red": dict(roe)}
     sim = Simulation(world, seed=seed)
     osys = OrderSystem(sim, roe=roe)
     return sim, osys
@@ -129,6 +134,59 @@ def test_kinetic_engage_requires_track_and_roe_then_spawns_debris():
     assert world.assets["RSAT"].health == "destroyed"
     assert world.debris and world.consequences
     assert world.assets["INT"].resources.ammo == 0  # ammo consumed
+
+
+def test_per_cell_roe_kinetic_divergent_gates_independently():
+    # IP-1172 (FR-3420) — Blue authorized, Red not; each cell's order-issuance is independent.
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["RSAT"] = Asset(id="RSAT", owner="red", kind="satellite", orbit=sat)
+    world.assets["BSAT"] = Asset(id="BSAT", owner="blue", kind="satellite", orbit=sat)
+    world.assets["INT"] = Asset(
+        id="INT", owner="blue", kind="interceptor",
+        location=_subpoint(sat, 0), resources=AssetResources(ammo=1),
+    )
+    world.assets["RINT"] = Asset(
+        id="RINT", owner="red", kind="interceptor",
+        location=_subpoint(sat, 0), resources=AssetResources(ammo=1),
+    )
+    world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=1.0, characterized=True))
+    world.tracks.append(Track(object="BSAT", owner="red", last_observation=0, confidence=1.0, characterized=True))
+
+    sim, osys = _sim_with(world, roe={"blue": {"kinetic_authorized": True}, "red": {"kinetic_authorized": False}})
+
+    blue_order = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT",
+                                   params={"interceptor_class": "mrbm_kkv"}))
+    assert blue_order.status == "queued"
+
+    red_order = osys.issue(Order(cell="red", actor="RINT", action="engage", target="BSAT",
+                                  params={"interceptor_class": "mrbm_kkv"}))
+    assert red_order.status == "rejected" and red_order.fail_reason == "roe_kinetic_not_authorized"
+
+
+def test_per_cell_roe_cyber_divergent_gates_independently():
+    # IP-1172 (FR-3420) — mirror image of the kinetic case, for cyber ROE.
+    world = WorldState(now=0)
+    world.assets["BSAT"] = Asset(
+        id="BSAT", owner="blue", kind="satellite", cyber_posture="low",
+        cyber_vulnerabilities=[{"vector": "ground_modem", "patchable": True, "patched": False}],
+    )
+    world.assets["RSAT"] = Asset(
+        id="RSAT", owner="red", kind="satellite", cyber_posture="low",
+        cyber_vulnerabilities=[{"vector": "ground_modem", "patchable": True, "patched": False}],
+    )
+    world.assets["RCYB"] = Asset(id="RCYB", owner="red", kind="cyber_unit")
+    world.assets["BCYB"] = Asset(id="BCYB", owner="blue", kind="cyber_unit")
+
+    sim, osys = _sim_with(world, roe={"red": {"cyber_authorized": True}, "blue": {"cyber_authorized": False}})
+
+    red_order = osys.issue(Order(cell="red", actor="RCYB", action="cyber", target="BSAT",
+                                  params={"vector": "ground_modem", "payload": "seize_c2"}))
+    assert red_order.status == "queued"
+
+    blue_order = osys.issue(Order(cell="blue", actor="BCYB", action="cyber", target="RSAT",
+                                   params={"vector": "ground_modem", "payload": "seize_c2"}))
+    assert blue_order.status == "rejected" and blue_order.fail_reason == "roe_cyber_not_authorized"
 
 
 def test_cyber_resolves_outside_any_pass_window():
