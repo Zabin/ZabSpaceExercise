@@ -20,7 +20,7 @@ The filter is enforced server-side at the `SessionAPI`/`CellController` boundary
 threat picture, ROE, and success criteria — Red's brief never reveals Blue's hidden dispositions
 and vice versa.
 
-> **Sources:** `spacesim/session/controller.py` (fog filter) · `spacesim/session/scene.py` ·
+> **Sources:** `spacesim/session/cells.py` (`CellController`, fog filter) · `spacesim/session/scene.py` ·
 > `GET /api/sessions/{sid}/brief/red` · [`02-interface.md`](02-interface.md) §"A player cell"
 
 ### RED-2 · Plan-first commanding

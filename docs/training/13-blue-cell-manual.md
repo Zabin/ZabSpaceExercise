@@ -20,7 +20,7 @@ You never see Red's ground truth; the filter is enforced server-side at the
 on load; reopen from View ▾ → Mission brief) for situation, mission, friendly forces, threat
 picture, ROE, deadline, and success criteria before acting.
 
-> **Sources:** `spacesim/session/controller.py` (fog filter) · `spacesim/session/scene.py` ·
+> **Sources:** `spacesim/session/cells.py` (`CellController`, fog filter) · `spacesim/session/scene.py` ·
 > `GET /api/sessions/{sid}/brief/blue` · [`02-interface.md`](02-interface.md) §"A player cell"
 
 ### BLU-2 · Plan-first commanding
