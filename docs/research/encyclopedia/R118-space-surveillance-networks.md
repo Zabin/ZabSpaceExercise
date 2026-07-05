@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R102](R102-space-domain-awareness.md)
-> **Referenced By:** [R104](R104-collection-management.md), [R119](R119-space-situational-data-fusion.md), [R128](R128-ground-network-contact-scheduling.md), [R132](R132-proliferated-constellation-c2-and-mesh-operations.md), FS-104
+> **Referenced By:** [R104](R104-collection-management.md), [R119](R119-space-situational-data-fusion.md), [R128](R128-ground-network-contact-scheduling.md), [R132](R132-proliferated-constellation-c2-and-mesh-operations.md), [R137](R137-bus-and-payload-parameter-catalog.md), FS-104
 > **Produces:** implementation constraints for [`engine/ssn.py`](../../../spacesim/engine/ssn.py)
 > **Feature Mapping:** FS-104 (SDA Tasking)
 > **Related Topics:** [R102](R102-space-domain-awareness.md) (Space Domain Awareness), [R104](R104-collection-management.md) (Collection Management), [R119](R119-space-situational-data-fusion.md) (Data Fusion),

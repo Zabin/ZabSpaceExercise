@@ -41,6 +41,10 @@ def _subpoint(orbit: OrbitState, t: int):
 
 
 def _mgr(world: WorldState, roe=None, seed=1) -> _Mgr:
+    # IP-1172: OrderSystem.roe is now always cell-keyed; mirror a flat convenience dict to
+    # both cells (matches content/vignette.py's own legacy-parameter fallback semantics).
+    if roe is not None and "blue" not in roe and "red" not in roe:
+        roe = {"blue": dict(roe), "red": dict(roe)}
     sim = Simulation(world, seed=seed)
     osys = OrderSystem(sim, roe=roe)
     return _Mgr(sim=sim, osys=osys)

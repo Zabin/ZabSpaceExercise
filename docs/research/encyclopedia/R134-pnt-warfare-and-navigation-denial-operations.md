@@ -1,10 +1,10 @@
 # R134 — PNT Warfare and Navigation-Denial Operations
 
 > **Document ID:** R134
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R109](R109-sensor-operations.md), [R110](R110-communications.md)
-> **Referenced By:** —
+> **Referenced By:** [R137](R137-bus-and-payload-parameter-catalog.md)
 > **Produces:** implementation constraints for [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py)'s
 > `pnt.set_integrity` / `pnt.flex_power` / `pnt.set_health_flag` / `pnt.report_status` verbs
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
@@ -15,8 +15,8 @@
 > §4 (the pre-existing mission-type primer's PNT mention, already cited in `pnt.flex_power`'s code
 > comment), `docs/FUTURE-WORK.md` §2.2 (the deferred `05b-satcom-pnt.md` primer stub this topic's
 > research anticipates)
-> **Last Reviewed:** 2026-07-01
-> **Primary Sources Consulted:** 2
+> **Last Reviewed:** 2026-07-05
+> **Primary Sources Consulted:** 3
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -108,11 +108,30 @@ space-segment defense, and currently has no engine analog at all, since the simu
 payload type only models the transmitting satellite, not a downstream GNSS-user asset whose receiver
 posture could be separately hardened.
 
+**Realistic baseline PNT accuracy, for authoring a `pnt` payload's default accuracy figure (added
+for `BL-0052` grounding).** This topic's existing content covers jamming/spoofing/denial
+operationally, but doesn't state what a `pnt` payload's own *undegraded* baseline accuracy should
+be — the number a typed sub-schema's default (before any `pnt.set_integrity` degradation is
+applied) would need. The official U.S. government performance standard commits GPS's civilian
+Standard Positioning Service (SPS) to **≤9 meters horizontal accuracy at 95% confidence** (with
+well-implemented receivers routinely doing better in practice, and the older 100 m/95%
+specification superseded once Selective Availability was discontinued in 2000)
+([GPS.gov / DOT, *Global Positioning System Standard Positioning Service Performance Standard*, 4th
+ed.](https://rosap.ntl.bts.gov/view/dot/16930)). A vignette author's `pnt` payload sub-schema
+should therefore default `integrity_mode="standard"` to an accuracy figure in the **single-digit-to-
+low-tens-of-meters** band (not sub-meter — that requires augmentation this simulator doesn't model),
+with `pnt.set_integrity`'s `degraded`/`protected` modes scaling that baseline up/down rather than
+inventing an unrelated number.
+
 ### Sources
 
 - *Inside GNSS, "GNSS Spoofing and Jamming in Eastern Europe"* — [live](https://insidegnss.com/gnss-spoofing-and-jamming-in-eastern-europe/)
   · [snapshot](https://web.archive.org/web/2026/https://insidegnss.com/gnss-spoofing-and-jamming-in-eastern-europe/)
   · accessed 2026-07-01.
+- *U.S. Department of Transportation / GPS.gov, "Global Positioning System Standard Positioning
+  Service Performance Standard", 4th edition* — [live](https://rosap.ntl.bts.gov/view/dot/16930)
+  · [snapshot](https://web.archive.org/web/2026/https://rosap.ntl.bts.gov/view/dot/16930)
+  · accessed 2026-07-05.
 - *Breaking Defense, "As Baltics see spike in GPS jamming, NATO must respond"* (2024-01) — [live](https://breakingdefense.com/2024/01/as-baltics-see-spike-in-gps-jamming-nato-must-respond/)
   · [snapshot](https://web.archive.org/web/2026/https://breakingdefense.com/2024/01/as-baltics-see-spike-in-gps-jamming-nato-must-respond/)
   · accessed 2026-07-01.
@@ -163,12 +182,18 @@ judgment call, not a pre-labeled "you are being jammed" indicator.
   `engine/telemetry.py`'s existing attack-signature model already uses for jam/cyber/DE — not surface
   a pre-classified "spoofing detected" flag, which would remove the real judgment call this topic's
   operational context describes.
+- **A vignette-authoring `pnt` payload sub-schema's default accuracy field should sit in the
+  single-digit-to-low-tens-of-meters band** (per the SPS baseline above), not sub-meter — and
+  `pnt.set_integrity`'s degraded/protected modes should scale that authored baseline, not replace
+  it with an unrelated hardcoded figure.
 
 ## 6. Feature Mapping
 
 FS-105 (Spacecraft Operations) — the existing home of the `pnt.*` verb table this topic grounds;
 any future receiver-side (CRPA-equivalent) PNT defense feature should cite this topic directly
-rather than re-deriving the space-segment/user-segment distinction.
+rather than re-deriving the space-segment/user-segment distinction. The forthcoming Vignette
+Creator Feature Specification (`docs/pipeline/backlog.md` `BL-0052`) depends on this topic's
+baseline-accuracy subsection above for its typed PNT payload sub-schema.
 
 ## 7. Related Topics
 

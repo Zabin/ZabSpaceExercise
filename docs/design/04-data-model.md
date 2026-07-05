@@ -186,6 +186,12 @@ Vignette:
   roles_needed: [RoleRequirement...]  # IP-1151 (FR-4210) — optional; absent/empty means no
                                        # mandatory staffing requirement (every vignette shipped
                                        # before this package). See RoleRequirement below.
+  roe: {blue: {kinetic_authorized, cyber_authorized}, red: {...}}  # IP-1172 (FR-3420, NFR-2010) —
+                                       # optional per-cell ROE; absent means the legacy flat
+                                       # red_kinetic_authorized/cyber_authorized parameters apply
+                                       # identically to both cells (every vignette shipped before
+                                       # this package). A missing cell/sub-key in an explicit block
+                                       # defaults to false (fail safe).
 ```
 
 ```yaml
@@ -199,6 +205,11 @@ seats to `{asset_or_constellation, role}` against a vignette's declared `roles_n
 `mandatory` entry hard-blocks `Start` (`SessionManager.staffing_report()`, gated in
 `InProcessSession.start()`). Runtime enforcement of an assigned Role Assignment's scope is
 [FS-105](../features/FS-105-spacecraft-operations.md)'s concern, not produced by this schema.
+
+`content/vignette.py`'s `build_world()` resolves `roe` into `VignetteContext.roe`, always a fully
+cell-keyed `{"blue": {...}, "red": {...}}` dict regardless of which of the two paths above produced
+it — `engine/orders.py`'s `OrderSystem` never sees or branches on the legacy-vs-explicit distinction
+(IP-1172, FR-3420/NFR-2010).
 
 ## 6.5 Planned activities (commands & collection tasks share one scheduler)
 Both "command a satellite" and "task a sensor" are **planned activities** scheduled against

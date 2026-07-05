@@ -1,16 +1,16 @@
 # R111 — Power and Thermal Systems Operations
 
 > **Document ID:** R111
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md), [R103](R103-satellite-command-and-control.md)
-> **Referenced By:** [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R131](R131-space-environment-and-space-weather-operations.md), DOM-007, FS-105
+> **Referenced By:** [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R131](R131-space-environment-and-space-weather-operations.md), [R137](R137-bus-and-payload-parameter-catalog.md), DOM-007, FS-105
 > **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py), [`engine/busmodel.py`](../../../spacesim/engine/busmodel.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [`docs/AUDIT-2026-06-UI-TTC.md`](../../AUDIT-2026-06-UI-TTC.md) §2 (the precedent worked example),
 > DOM-005 §4 (fidelity-claim validation method), DOM-007 §4 (causality must be surfaced)
-> **Last Reviewed:** 2026-06-27
-> **Primary Sources Consulted:** 1
+> **Last Reviewed:** 2026-07-05
+> **Primary Sources Consulted:** 3
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -55,12 +55,38 @@ is never read (the model uses `charge_rate_per_s` instead); `propulsion.propella
 decoupled from `resources.delta_v_ms` (burning Δv never moves the propellant gauge). These are
 **documented, lower-priority follow-ups**, not regressions to silently work around — see §5.
 
+**Realistic EPS power budgets by satellite size class, for authoring bus parameters (added for
+`BL-0052` grounding).** `AssetResources.power_w` is the field a vignette author would naturally
+reach for to set a bus's power budget — but per the dead-field note above, **it is never read by
+`advance_bus`, which derives everything from `charge_rate_per_s`/`drain_rate_per_s` instead.** Any
+typed bus parameter sub-schema `BL-0052` builds must either wire `power_w` into the charge/drain
+computation first, or expose `charge_rate_per_s`/`drain_rate_per_s` directly (already-live fields)
+rather than adding a plausible-looking override that silently does nothing — this is a design
+decision for that pass, not something this research resolves. The realistic numbers themselves,
+for whichever field ends up authoritative:
+
+| Class | Typical power budget | Notes |
+|---|---|---|
+| CubeSat (1-3U) | **2-20 W** | 2-5 W typical continuous budget, up to ~20 W as an upper scalability target for 2U-3U platforms |
+| SmallSat (~50-500 kg class) | **~50-150 W** | Representative commercial SmallSat EPS products in this band |
+| Large GEO comsat | **10-20 kW** | Multiple-order-of-magnitude jump from smallsat/cubesat class, driven by high-power transponder payloads |
+
+A vignette author's realistic default should be size-class-driven, matching the same
+"don't collapse a three-order-of-magnitude spread into one constant" lesson [R110](R110-communications.md)'s
+bandwidth-range note draws for SATCOM.
+
 ### Sources
 
 - *NASA, Performance and Comparison of Lithium-Ion Batteries for Future NASA Missions and Aerospace
   Applications, NTRS 20080008855* — [live](https://ntrs.nasa.gov/api/citations/20080008855/downloads/20080008855.pdf)
   · [snapshot](https://web.archive.org/web/2026/https://ntrs.nasa.gov/api/citations/20080008855/downloads/20080008855.pdf)
   · accessed 2026-06-27.
+- *Power Electronics News, "Electrical Power Architecture of CubeSats and SmallSats"* — [live](https://www.powerelectronicsnews.com/electrical-power-architecture-of-cubesats-and-smallsats/)
+  · [snapshot](https://web.archive.org/web/2026/https://www.powerelectronicsnews.com/electrical-power-architecture-of-cubesats-and-smallsats/)
+  · accessed 2026-07-05.
+- *satsearch, "E14-150 14V SmallSat Electric Power System (EPS)" (representative SmallSat EPS product spec)* — [live](https://satsearch.co/products/ibeos-14v-smallsat-electric-power-system)
+  · [snapshot](https://web.archive.org/web/2026/https://satsearch.co/products/ibeos-14v-smallsat-electric-power-system)
+  · accessed 2026-07-05.
 
 ## 4. Operational Context
 
@@ -88,11 +114,18 @@ geometry*, not as an isolated number — exactly the causal-legibility requireme
 - **`ThermalState.temp_c`/`heater_watts`/`radiator_capacity_w` are declared but not yet integrated**
   by `advance_bus` (`temp_c` is static at 20°C) — a feature that reads these fields today is reading
   inert placeholders, not live state; check before assuming.
+- **A vignette-authoring bus power surface must not expose `power_w` as if it were a live budget**
+  (per the dead-field note above) without first wiring it — either wire it, or expose the
+  already-live `charge_rate_per_s`/`drain_rate_per_s` fields directly, sized per the size-class
+  ranges above.
 
 ## 6. Feature Mapping
 
 FS-105 (Spacecraft Operations) is the direct consumer. DOM-007 (causality surfacing) and DOM-005
-(fidelity validation method) both apply directly to any future power/thermal work.
+(fidelity validation method) both apply directly to any future power/thermal work. The forthcoming
+Vignette Creator Feature Specification (`docs/pipeline/backlog.md` `BL-0052`) depends on this
+topic's power-budget-by-class subsection above, and must resolve the `power_w` dead-field question
+before treating it as an authorable bus parameter.
 
 ## 7. Related Topics
 

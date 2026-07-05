@@ -33,7 +33,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 
 | Feature / capability | Backing code (primary) | White | Blue | Red |
 |---|---|---|---|---|
-| Fog-of-war boundary & per-cell view | `session/controller.py`, `session/scene.py` | WCM-1, WCM-6 | BLU-1 | RED-1 |
+| Fog-of-war boundary & per-cell view | `session/cells.py` (`CellController`), `session/scene.py` | WCM-1, WCM-6 | BLU-1 | RED-1 |
 | Mission brief (`intro_brief`) | `content/vignette.py`, `server.py` `/brief` | WCM-2 | BLU-1 | RED-1 |
 | Vignette load + parameter dials | `content/vignette.py`, `vignettes/*.yaml` | WCM-2 | — | — |
 | `ops_fidelity` (tactical/realistic/full_ttc) | `content/vignette.py`, `bus.py` | WCM-2 | BLU-5 | RED-7 |
@@ -84,7 +84,7 @@ mirrors each section's inline `> Sources:` footer.
 
 | § | Topic | Backing code / endpoints |
 |---|---|---|
-| WCM-1 | Role and view | `session/manager.py`, `session/controller.py`, `session/inprocess.py` (Observer, FR-6510) |
+| WCM-1 | Role and view | `session/manager.py`, `session/cells.py` (`CellController`), `session/inprocess.py` (Observer, FR-6510) |
 | WCM-2 | Set up the exercise | `content/vignette.py`, `vignettes/*.yaml`, `/brief/{cell}`, `session/manager.py` (classification, seat-to-role) |
 | WCM-3 | Hot-seat / LAN / pop-out | `session/inprocess.py`, `server.py` (`/api/sessions`) |
 | WCM-4 | Time control | `session/manager.py`, `engine/clock.py`, `/clock` |
@@ -101,7 +101,7 @@ mirrors each section's inline `> Sources:` footer.
 
 | § | Topic | Backing code / endpoints |
 |---|---|---|
-| BLU-1 | Fog-of-war view | `session/controller.py`, `session/scene.py`, `/brief/blue` |
+| BLU-1 | Fog-of-war view | `session/cells.py` (`CellController`), `session/scene.py`, `/brief/blue` |
 | BLU-2 | Plan-first commanding | `engine/orders.py` |
 | BLU-3 | Previews before commit | `engine/orders.py` `dry_run`, `/preview/consequence`, `engine/{maneuver,isr,jam}.py` |
 | BLU-4 | SDA tasking loop | `engine/custody.py`, `engine/access.py` |
@@ -116,7 +116,7 @@ mirrors each section's inline `> Sources:` footer.
 
 | § | Topic | Backing code / endpoints |
 |---|---|---|
-| RED-1 | Fog-of-war view | `session/controller.py`, `session/scene.py`, `/brief/red` |
+| RED-1 | Fog-of-war view | `session/cells.py` (`CellController`), `session/scene.py`, `/brief/red` |
 | RED-2 | Plan-first commanding | `engine/orders.py` |
 | RED-3 | Previews before commit | `engine/orders.py` `dry_run`, `/preview/consequence`, `engine/{maneuver,isr,jam}.py` |
 | RED-4 | SDA targeting | `engine/custody.py`, `engine/access.py` |

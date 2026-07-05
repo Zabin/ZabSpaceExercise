@@ -1,15 +1,15 @@
 # R110 — Communications
 
 > **Document ID:** R110
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
-> **Referenced By:** [R107](R107-ground-segment-operations.md), [R115](R115-electronic-warfare-in-space-operations.md), [R131](R131-space-environment-and-space-weather-operations.md), [R134](R134-pnt-warfare-and-navigation-denial-operations.md), [R135](R135-ground-segment-operations-as-contested-terrain.md), FS-105
+> **Referenced By:** [R107](R107-ground-segment-operations.md), [R115](R115-electronic-warfare-in-space-operations.md), [R131](R131-space-environment-and-space-weather-operations.md), [R134](R134-pnt-warfare-and-navigation-denial-operations.md), [R135](R135-ground-segment-operations-as-contested-terrain.md), [R137](R137-bus-and-payload-parameter-catalog.md), FS-105
 > **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py) (`CommsState`), [`engine/jam.py`](../../../spacesim/engine/jam.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R107](R107-ground-segment-operations.md) (Ground Segment Operations), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic Warfare), [R103](R103-satellite-command-and-control.md) (Satellite C2)
-> **Last Reviewed:** 2026-06-27
-> **Primary Sources Consulted:** 1
+> **Last Reviewed:** 2026-07-05
+> **Primary Sources Consulted:** 3
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -54,11 +54,35 @@ which (per the jam-effectiveness math, [R115](R115-electronic-warfare-in-space-o
 jam impact without changing which access channel (`jam_footprint`) or window applies — defense
 changes the outcome probability, not the geometry gate.
 
+**Realistic `data_rate_kbps`/bandwidth ranges by SATCOM class, for authoring a payload's initial
+parameters (added for `BL-0052` grounding).** `BusState.comms.data_rate_kbps` defaults to 1024
+and is clamped to [64, 16384] by `apply_command`'s `comms.config_link` handler — a plausible range
+band that spans real narrowband-to-wideband military SATCOM, but with no documented anchor to what
+a "realistic" value looks like for a given payload class:
+
+| Class | Representative bandwidth/data rate | Notes |
+|---|---|---|
+| Narrowband military UHF (e.g. MUOS legacy/narrowband mode) | up to **384 kbit/s**; individual UHF transponders often only ~5 MHz wide, yielding **~50-100 kbps** aggregate; legacy tactical voice/data channels commonly **19.2-128 kbps** | [MUOS overview](https://www.jcs.mil/Portals/36/Documents/Library/Instructions/CJCSI%206250.01G.pdf); representative of this simulator's low end of the clamp range |
+| Wideband Ku-band GEO transponder | conventional transponder channelization **27-72 MHz** | Typical commercial/military Ku-band comsat capacity |
+| Wideband Ka-band High-Throughput Satellite (HTS) | per-spot-beam channelization **125-500 MHz** | Multiple orders of magnitude more capacity than narrowband UHF — anchors this simulator's upper clamp region |
+
+A vignette author's realistic default for a `satcom` payload should therefore be class-driven, not
+a single constant: a narrowband tactical relay asset plausibly authored near the clamp's low end
+(hundreds of kbps), a wideband commercial-class relay nearer the high end (multiple Mbps-equivalent,
+i.e. near the 16384 kbps ceiling) — the three-order-of-magnitude spread between UHF and Ka-band HTS
+is itself the operationally meaningful fact a typed SATCOM sub-schema should surface, not collapse.
+
 ### Sources
 
 - *DTIC, Robust Satellite Communications Under Hostile Interference, ADA614712* — [live](https://apps.dtic.mil/sti/tr/pdf/ADA614712.pdf)
   · [snapshot](https://web.archive.org/web/2026/https://apps.dtic.mil/sti/tr/pdf/ADA614712.pdf)
   · accessed 2026-06-27.
+- *Chairman of the Joint Chiefs of Staff Instruction 6250.01G, "Satellite Communications"* — [live](https://www.jcs.mil/Portals/36/Documents/Library/Instructions/CJCSI%206250.01G.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://www.jcs.mil/Portals/36/Documents/Library/Instructions/CJCSI%206250.01G.pdf)
+  · accessed 2026-07-05.
+- *SatcomIndex, "Satellite Transponder Bandwidth Explained: Capacity, Carrier Planning, and Real-World Constraints"* — [live](https://www.satcomindex.com/blog/satellite-transponder-bandwidth-explained)
+  · [snapshot](https://web.archive.org/web/2026/https://www.satcomindex.com/blog/satellite-transponder-bandwidth-explained)
+  · accessed 2026-07-05.
 
 ## 4. Operational Context
 
@@ -79,11 +103,17 @@ built to let an operator practice.
   `_h_downlink`'s pattern, rather than trusting the state at planning time.
 - **Don't let a new feature bypass `is_link_denied`** to "just deliver" data — that is precisely the
   kind of parallel state [R102](R102-space-domain-awareness.md)/[R105](R105-custody-theory.md) warn against for fog-of-war-adjacent mechanisms.
+- **A vignette-authoring SATCOM parameter surface should default `data_rate_kbps` by class**, not a
+  single global default — offer at least a narrowband (low hundreds of kbps) and wideband
+  (multi-Mbps-equivalent, near the 16384 ceiling) preset per the ranges above, rather than forcing
+  every authored asset toward the same generic 1024 default regardless of its narrative role.
 
 ## 6. Feature Mapping
 
 FS-105 (Spacecraft Operations) is the direct consumer — any new comms-posture command must surface
-through the existing bus subsystem panel, not a bespoke comms screen.
+through the existing bus subsystem panel, not a bespoke comms screen. The forthcoming Vignette
+Creator Feature Specification (`docs/pipeline/backlog.md` `BL-0052`) depends on this topic's
+SATCOM bandwidth-range subsection above for its typed SATCOM payload sub-schema.
 
 ## 7. Related Topics
 

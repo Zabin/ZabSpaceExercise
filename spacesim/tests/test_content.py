@@ -54,15 +54,47 @@ def test_vignette_1_loads_and_builds_a_world():
     assert world.assets["JAM-NORTH"].owner == "red"
     assert world.assets["ISR-EO-1"].orbit.epoch == ctx.start_epoch  # epoch defaulted to start
     assert world.sensors["BLUE-RADAR"].owner == "blue"
-    # Parameter dials resolve into ROE + deadline.
-    assert ctx.roe["kinetic_authorized"] is False
+    # Parameter dials resolve into ROE + deadline. IP-1172: ctx.roe is now cell-keyed; this
+    # legacy-only vignette (no explicit roe: block) mirrors the same value to both cells.
+    assert ctx.roe["blue"]["kinetic_authorized"] is False
+    assert ctx.roe["red"]["kinetic_authorized"] is False
     assert ctx.landing_deadline == ctx.start_epoch + 10800 * 1_000_000
 
 
 def test_parameter_override_flows_into_roe():
     vig = load_vignette("leo-isr-denial")
     _, ctx = build_world(vig, overrides={"red_kinetic_authorized": True})
-    assert ctx.roe["kinetic_authorized"] is True
+    assert ctx.roe["blue"]["kinetic_authorized"] is True
+    assert ctx.roe["red"]["kinetic_authorized"] is True
+
+
+def test_explicit_per_cell_roe_gates_independently_and_is_backward_compatible():
+    """IP-1172 (FR-3420, NFR-2010) — explicit roe: block vs. legacy-only fallback."""
+    vig = load_vignette("leo-isr-denial")
+
+    # No explicit roe: block on the base vignette — legacy fallback applies.
+    assert vig.roe is None
+
+    # An explicit, divergent per-cell block overrides the legacy parameters entirely.
+    raw = vig.model_dump()
+    raw["roe"] = {"blue": {"kinetic_authorized": True, "cyber_authorized": False},
+                  "red": {"kinetic_authorized": False, "cyber_authorized": True}}
+    vig2 = Vignette.model_validate(raw)
+    _, ctx = build_world(vig2)
+    assert ctx.roe["blue"] == {"kinetic_authorized": True, "cyber_authorized": False}
+    assert ctx.roe["red"] == {"kinetic_authorized": False, "cyber_authorized": True}
+
+
+def test_partial_per_cell_roe_block_defaults_missing_subkey_to_false():
+    """IP-1172 (FR-3420) — a roe: block that only sets one sub-key for one cell defaults the
+    rest to False (fail safe), never raises and never silently authorizes."""
+    vig = load_vignette("leo-isr-denial")
+    raw = vig.model_dump()
+    raw["roe"] = {"blue": {"kinetic_authorized": True}}  # no cyber_authorized key; no "red" key at all
+    vig2 = Vignette.model_validate(raw)
+    _, ctx = build_world(vig2)
+    assert ctx.roe["blue"] == {"kinetic_authorized": True, "cyber_authorized": False}
+    assert ctx.roe["red"] == {"kinetic_authorized": False, "cyber_authorized": False}
 
 
 # ---------------------------------------------------------------------------

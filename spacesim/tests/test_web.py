@@ -383,3 +383,37 @@ def test_resumed_session_loads_paused():
     listing = {s["sid"]: s for s in c.get("/api/sessions").json()}
     assert listing[sid2]["started"] is True
     assert listing[sid2]["running"] is False   # resumed paused — must not silently fast-forward
+
+
+def test_draft_session_create_add_asset_and_save_as_vignette():
+    """IP-1173 (FR-5110) — the Vignette Creator's HTTP surface end to end."""
+    c = _client()
+    sid = c.post("/api/sessions/draft", json={"title": "HTTP Draft"}).json()["session"]
+    # A draft session exists and is registered like any other, but never started.
+    listing = {s["sid"]: s for s in c.get("/api/sessions").json()}
+    assert listing[sid]["started"] is False
+
+    # Time control is refused against it.
+    step = c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 60.0}).json()
+    assert step["ok"] is False
+
+    # Force-add an asset the same way any session's asset entry already works.
+    tle1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
+    tle2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+    ack = c.post(f"/api/sessions/{sid}/force/tle",
+                 json={"id": "HTTP-SAT", "line1": tle1, "line2": tle2, "owner": "blue"}).json()
+    assert ack["ok"] is True
+
+    # Save as vignette — a real, loadable file.
+    resp = c.post(f"/api/sessions/{sid}/save_vignette",
+                  json={"vignette_id": "test-ip1173-http-draft", "title": "HTTP Draft Saved"}).json()
+    assert resp["vignette_id"] == "test-ip1173-http-draft"
+    try:
+        from spacesim.content.vignette import build_world, load_vignette
+        vig = load_vignette("test-ip1173-http-draft")
+        assert vig.title == "HTTP Draft Saved"
+        world, _ = build_world(vig)
+        assert "HTTP-SAT" in world.assets
+    finally:
+        from pathlib import Path
+        Path(resp["path"]).unlink(missing_ok=True)

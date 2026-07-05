@@ -8,6 +8,8 @@ Beam mode hierarchy:
     isr_eo  — electro-optical  (spotlight/stripmap/wide_area/scan)
     isr_sar — synthetic-aperture radar  (spotlight/fine/stripmap/wide_area/polarimetric)
     sda     — space domain awareness  (fine/nominal/wide_area)
+    weather — weather imaging  (mesoscale/conus/full_disk)
+    mw      — missile warning / OPIR  (scan/stare)
 """
 from __future__ import annotations
 
@@ -43,12 +45,39 @@ BEAM_MODES: dict[str, dict[str, dict]] = {
         "nominal":   {"swath_km":  500.0, "resolution_m":  500.0, "power_factor": 1.0, "duty_cycle": 0.80, "gain_factor": 1.00},
         "fine":      {"swath_km":  100.0, "resolution_m":  100.0, "power_factor": 1.5, "duty_cycle": 0.50, "gain_factor": 1.80},
     },
+    # IP-1170 (BL-0053) — weather imaging, grounded in R109's GOES-R Advanced Baseline Imager
+    # figures: resolution_m is band-dependent 0.5-2km (R109-cited directly); duty_cycle is derived
+    # from R109's cited revisit cadence (mesoscale 30-60s / full-CONUS 5min / full-disk 10-15min —
+    # matches the existing wx.request_sector verb's own 30/60s mesoscale cadence constant).
+    # swath_km is illustrative (each mode's well-known real-world domain-size order of magnitude —
+    # mesoscale sector / CONUS / full visible disk — not independently re-cited from a numeric
+    # source; see IP-1170's Implementation Summary Outstanding Issues).
+    "weather": {
+        "mesoscale": {"swath_km": 1000.0,  "resolution_m":  500.0, "power_factor": 1.3, "duty_cycle": 0.90, "gain_factor": 1.40},
+        "conus":     {"swath_km": 5000.0,  "resolution_m": 1000.0, "power_factor": 1.0, "duty_cycle": 0.40, "gain_factor": 1.00},
+        "full_disk": {"swath_km": 20000.0, "resolution_m": 2000.0, "power_factor": 0.8, "duty_cycle": 0.15, "gain_factor": 0.65},
+    },
+    # IP-1170 (BL-0053) — missile warning (OPIR), grounded in R109's SBIRS-GEO scan/stare
+    # dichotomy: "scan" is the continuous, persistent global-coverage sensor (matches
+    # buscommands.py's mw.add_stare_area comment "the scanner keeps doing full-disk strategic
+    # warning"); "stare" is the dedicated smaller-theater sensor with faster revisit and higher
+    # sensitivity R109 describes (mw.add_stare_area's own revisit_s default of 30 matches stare's
+    # fast-revisit characterization). resolution_m/swath_km absolute figures are illustrative
+    # (R109 gives only relative scan-vs-stare/vs-legacy-DSP comparisons, not absolute numbers —
+    # see IP-1170's Outstanding Issues); the scan<stare gain_factor and swath ordering is faithful
+    # to R109's stated relative sensitivity/coverage trade.
+    "mw": {
+        "scan":  {"swath_km": 20000.0, "resolution_m": 1000.0, "power_factor": 1.0, "duty_cycle": 0.95, "gain_factor": 1.00},
+        "stare": {"swath_km":  1000.0, "resolution_m":  200.0, "power_factor": 1.3, "duty_cycle": 0.85, "gain_factor": 1.60},
+    },
 }
 
 _DEFAULT_MODE: dict[str, str] = {
     "isr_eo": "stripmap",
     "isr_sar": "stripmap",
     "sda": "nominal",
+    "weather": "conus",
+    "mw": "scan",
 }
 
 # Base SoC drain for a full-duty 300-second stripmap pass on a healthy bus.

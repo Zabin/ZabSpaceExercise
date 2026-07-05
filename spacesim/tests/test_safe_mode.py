@@ -88,7 +88,7 @@ def test_bus_evolution_runs_through_event_loop_and_replays_identically():
 
     sim = Simulation(w, seed=11)
     bus_sys = BusSystem(sim)
-    osys = OrderSystem(sim, roe={"cyber_authorized": True})
+    osys = OrderSystem(sim, roe={"blue": {"cyber_authorized": True}})  # IP-1172: cell-keyed
 
     bus_sys.schedule_ticks(period_s=300, until=hours(3))
     order = osys.issue(Order(cell="blue", actor="CYB", action="cyber", target="SAT",

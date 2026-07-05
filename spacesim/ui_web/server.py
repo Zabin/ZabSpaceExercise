@@ -45,6 +45,21 @@ class LoadRequest(BaseModel):
     classification: Optional[str] = None  # IP-1120 — White-Cell override; None = vignette default
 
 
+class DraftRequest(BaseModel):
+    title: str = "Untitled Draft"
+
+
+class SaveVignetteRequest(BaseModel):
+    vignette_id: str
+    title: str
+    classification: Optional[str] = None
+
+    @field_validator("vignette_id")
+    @classmethod
+    def _vid_charset(cls, v: str) -> str:
+        return _validate_id(v, field="SaveVignetteRequest.vignette_id")
+
+
 class ParamRequest(BaseModel):
     param_id: str
     value: Any
@@ -260,6 +275,22 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed,
                                 classification=req.classification)
         return {"session": sid, "classification": api.classification(sid)}
+
+    @app.post("/api/sessions/draft")
+    def create_draft(req: DraftRequest) -> dict:
+        """IP-1173 (FR-5110) — open a Vignette Creator draft session: an unstarted SessionManager
+        backed by a near-empty Vignette, registered/evicted the same way a normal session is."""
+        sid = api.create_draft_session(title=req.title)
+        return {"session": sid}
+
+    @app.post("/api/sessions/{sid}/save_vignette")
+    def save_vignette(sid: str, req: SaveVignetteRequest, cell: Optional[str] = None) -> dict:
+        """IP-1173 (FR-5110) — the only route that writes an authored vignette file. Works for
+        any session (draft or normal); no partial file is ever written by any other path."""
+        _require(sid); _reject_observer(cell)
+        path = api.save_vignette(sid, req.vignette_id, req.title,
+                                 classification=req.classification or "UNCLASSIFIED-TRAINING")
+        return {"vignette_id": req.vignette_id, "path": path}
 
     @app.get("/api/sessions")
     def list_sessions() -> list[dict]:

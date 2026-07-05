@@ -346,7 +346,11 @@ class OrderSystem:
             return False, "not_owner"
 
         if order.action == "engage":
-            if not self.roe.get("kinetic_authorized", False):
+            # IP-1172 (FR-3420) — resolved per issuing cell; self.roe is always cell-keyed
+            # ({"blue": {...}, "red": {...}}) by the time it reaches OrderSystem — the
+            # legacy-vs-explicit-shape distinction is resolved upstream in
+            # content/vignette.py's build_world(), never here.
+            if not self.roe.get(order.cell, {}).get("kinetic_authorized", False):
                 return False, "roe_kinetic_not_authorized"
             if actor.resources.ammo < 1:
                 return False, "no_ammo"
@@ -355,7 +359,7 @@ class OrderSystem:
                 return False, "no_weapons_quality_track"
 
         if order.action == "cyber":
-            if not self.roe.get("cyber_authorized", False):
+            if not self.roe.get(order.cell, {}).get("cyber_authorized", False):
                 return False, "roe_cyber_not_authorized"
             # Audit 2026-06 Commands §C2 — `vector` is mandatory. The legacy raw
             # base_prob fallback path is removed; cyber Pₛ now always derives from

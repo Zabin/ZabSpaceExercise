@@ -95,12 +95,42 @@ Constraints, Risks, Open Questions, Decision Log. Size discipline: ~8-15 pages e
 
 | ID | Document | Capability cluster | Owning domain | Status |
 |---|---|---|---|---|
-| *(none yet)* | — | — | — | — |
+| [ADS-3500](ADS-3500-role-scoped-command-enforcement.md) | Role-Scoped Command Enforcement | (GDS-04 §1.10-grounded; no owning DOM) | ✅ Authored |
+| [ADS-5100A](ADS-5100A-vignette-creator-session-and-ui.md) | Vignette Creator — Authoring Session & UI Architecture | (R1xx-grounded; no owning DOM) | ✅ Authored |
+| [ADS-5100B](ADS-5100B-typed-parameters-and-per-cell-roe.md) | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | (GDS-04-grounded; no owning DOM) | ✅ Authored |
 
-No `ADS-xxx` has been authored yet. Add a row here (status `⛔ Planned`) before authoring a new
-`ADS-xxx`, and mirror it in `ROADMAP.md`'s Architecture / Design Synthesis theme table, per the
-index-before-content convention used elsewhere in this corpus (e.g.
-`02-research-doctrine-exercises`'s workflow step 3).
+**ADS-3500 (2026-07-05):** the first `ADS-xxx` authored in this project — resolves two
+architecture-level Open Questions [`FS-116`](../features/FS-116-role-scoped-command-catalog.md)
+(Role-Scoped Command Catalog & Assignment Scoping, `FEAT-3500`) could not resolve within its own
+authority: (1) no interface carries a "seat" identifier distinct from "cell," so a Role
+Assignment's scope cannot be enforced whenever a cell has more than one seated operator; (2) the
+engine's existing three-way verb taxonomy (`BUS_VERBS`/`PAYLOAD_VERBS`/`DEFENSE_VERBS`) doesn't map
+onto the two-way `bus`/`payload`/`both` role-scope model `FR-3510`/`FR-3520` describe. Authored via
+Workflow B (per-cluster synthesis) rather than waiting on `GDS-09` (API Specification, still
+scaffold-only and gated behind `GDS-06`-`08`) — this is exactly the "real design tension the global
+ladder doesn't resolve at the system level" Workflow B exists for.
+
+**v1.1 (2026-07-05):** the project owner directed that `DEFENSE_VERBS` is an effect grouping, not a
+third role-scope category — every verb is bus or payload, never "purely defense." Decision Log
+entry 2 revised: each of the eight `DEFENSE_VERBS` entries individually reclassified by reading
+`apply_command()`'s actual implementation (six `bus`, two `payload` — `def.harden`/
+`def.set_deception_mode` mutate `payload_state` directly), superseding v1.0's wholesale
+`bus`-classification.
+
+**ADS-5100A/B (2026-07-05):** synthesize the Vignette Creator — a large, distinct White-Cell
+authoring feature the project owner explicitly required be documented on its own, not blended into
+any other Feature Specification — anchored to `FEAT-5100` (In-App Iterative Vignette Builder,
+`EP-5000`, 0% built) and folding in `BL-0051` (seat-count declaration + role-assignment matrix UI).
+Split by capability seam per this tier's own size discipline: **5100A** covers the authoring-session
+architecture (a server-side draft session resolving `CR-11`, an already-open Candidate Requirement)
+and every UI surface (JSON view, 2D/3D ground-truth preview, TLE/lat-long/asset entry, asset menu,
+seat/role matrix); **5100B** covers two Domain Model extensions the UI exposes but which are
+independently significant — typed per-payload-type/bus parameter sub-schemas (grounded in this
+session's own `R101`/`R107`/`R109`-`R112`/`R134`/`R137` research) and real per-cell ROE enforcement
+(extending `engine/orders.py`'s currently-global-only gate). Both documents record four
+already-made project-owner decisions in their Decision Logs rather than re-opening them, and flag
+`BL-0053` (the `weather`/`mw` `BEAM_MODES` engine gap) as a hard precondition for two of the eight
+typed payload sub-schemas.
 
 ## 3. Architecture Decision Records (`docs/architecture/adr/`)
 

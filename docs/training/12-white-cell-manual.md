@@ -26,7 +26,7 @@ the UI — the rejection holds even against a request that bypasses the browser 
 Use it to seat an extra trainee, an evaluator, or a second facilitator without giving them any way
 to affect the exercise.
 
-> **Sources:** `spacesim/session/manager.py` · `spacesim/session/controller.py` (fog boundary) ·
+> **Sources:** `spacesim/session/manager.py` · `spacesim/session/cells.py` (`CellController`, fog boundary) ·
 > `spacesim/session/inprocess.py` (`set_observer_view`/`get_observer_view`, FR-6510) ·
 > [`02-interface.md`](02-interface.md) §3
 

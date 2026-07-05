@@ -122,7 +122,7 @@ with — not a build order. The **Build Spec wins on any conflict** regardless o
 | ID | Document | Path | Depends on | Status |
 |---|---|---|---|---|
 | RE-00 | Encyclopedia index | `research/encyclopedia/INDEX.md` | RE-100…RE-500 | 🚧 *(re-audited this revision; flips tier status table from ✅ to 🚧, documents the two systemic defects below)* |
-| RE-100 | Tier R100 — Space Operations Foundation (30 topics authored, 0 planned) | `research/encyclopedia/R100-index.md` | RS-04, RS-05, RS-06 | 🚧 *(30/30 authored topics closed — Scope sections + citations remediated, R121/R122 backfilled; **R130** (Downlink Operations and Data Return) authored to close the one `engine/orders.py` action verb (`downlink`) that R103/R107/R114 each explicitly disclaimed covering, so all seven order-verb actions now have a dedicated topic; **R129** (SIGINT Collection and Geolocation Accuracy) authored to close the 2026-06-27 code-vs-encyclopedia re-audit gap on `engine/sigint.py` (band/mode database + √dwell × √N geolocation-error model), grounded against POPPY/PARCAE TDOA multilateration precedent)* |
+| RE-100 | Tier R100 — Space Operations Foundation (37 topics authored, 0 planned — *this row was stale at 30 before this revision; the aggregate "68 authored" count in this section's header above predates R131-R137 too and is not otherwise reconciled by this pass*) | `research/encyclopedia/R100-index.md` | RS-04, RS-05, RS-06 | 🚧 *(37/37 authored topics closed. **R137** (Bus and Payload Configuration Parameter Catalog) authored 2026-07-05 — a completeness/navigation index of every bus-subsystem and payload-type configuration parameter, cross-referenced to whichever topic characterizes it, grounding `docs/pipeline/backlog.md` `BL-0052` (Vignette Creator); surfaces the `weather`/`mw` `BEAM_MODES` coverage gap plus four smaller candidate gaps. Same-day, **R101/R107/R109/R110/R111/R112/R134** extended with realistic parameter-range grounding for the same `BL-0052` need (TLE format, ground-station siting, weather/missile-warning sensor characteristics, SATCOM bandwidth, EPS power budgets, Δv budgets, PNT accuracy). Prior: **R130** (Downlink Operations and Data Return) closed the one `engine/orders.py` action verb (`downlink`) R103/R107/R114 each disclaimed covering; **R129** (SIGINT Collection and Geolocation Accuracy) closed the 2026-06-27 re-audit gap on `engine/sigint.py`)* |
 | RE-200 | Tier R200 — Decision Sciences (14 topics) | `research/encyclopedia/R200-index.md` | MSTR-003 | 🚧 *(14/14 authored; 14/14 missing §2 Scope; 0/14 cite-compliant)* |
 | RE-300 | Tier R300 — Military Analysis (12 topics) | `research/encyclopedia/R300-index.md` | RS-01, RS-02, RS-07 | 🚧 *(12/12 authored; 12/12 missing §2 Scope; 0/12 cite-compliant — doctrinal/legal claims in this tier are the highest-stakes uncited content in the corpus)* |
 | RE-400 | Tier R400 — Research Methods (13 topics) | `research/encyclopedia/R400-index.md` | DOM-002, DOM-005 | ✅ *(13/13 authored; 13/13 have §2 Scope; 13/13 cite-compliant — GAP-13 closed 2026-07-02)* |
@@ -220,9 +220,25 @@ clusters with real design tension; small/uncontested features skip straight to `
 | ID | Document | Capability cluster | Owning domain | Status |
 |---|---|---|---|---|
 | ADS-00 | Architecture index | `architecture/INDEX.md` | — | ✅ |
+| ADS-3500 | Role-Scoped Command Enforcement | `architecture/ADS-3500-role-scoped-command-enforcement.md` | (no owning DOM) | ✅ Authored (2026-07-05) — the first `ADS-xxx` in this project |
+| ADS-5100A | Vignette Creator — Authoring Session & UI Architecture | `architecture/ADS-5100A-vignette-creator-session-and-ui.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
+| ADS-5100B | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | `architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
 
-No `ADS-xxx` capability document has been authored yet — this row will grow as the
-`03-architecture-design-synthesis` skill is run against a capability cluster with real design tension.
+**ADS-3500** resolves two Open Questions [`FS-116`](docs/features/FS-116-role-scoped-command-catalog.md)
+(`FEAT-3500`) surfaced: extends the operator-command interface to carry a `seat` identifier
+(amending `INT-0004`/`INT-0006`'s concrete realization) and classifies every `DEFENSE_VERBS` verb
+individually as `bus` or `payload` (v1.1, per the project owner's direction that there is no third
+"defense" role-scope category — six are `bus`, two — `def.harden`/`def.set_deception_mode` — are
+`payload`). Authored via Workflow B since `GDS-09` (the ladder level that would eventually formally
+own interface contracts) remains scaffold-only and gated behind `GDS-06`-`08`.
+
+**ADS-5100A/B** synthesize the Vignette Creator (`docs/pipeline/backlog.md` `BL-0052`, folding in
+`BL-0051`'s seat-count/matrix UI) — a large, distinct White-Cell authoring feature anchored to
+`FEAT-5100`, split by capability seam per this tier's own size discipline: **5100A** covers the
+authoring-session architecture (resolving `CR-11`) and UI surfaces (JSON view, 2D/3D preview,
+TLE/lat-long/asset entry, asset menu, seat/role matrix); **5100B** covers the two Domain Model
+extensions the UI surfaces but which are independently significant — typed per-payload-type/bus
+parameter sub-schemas and real per-cell ROE enforcement.
 
 ### Global ladder (`GDS-00`…`GDS-10`, scaffolded this revision, content not yet authored)
 
@@ -313,6 +329,8 @@ Router: [`features/feature-index.md`](docs/features/feature-index.md).
 | FS-113 | Observer Read-Only Access | `features/FS-113-observer-read-only-access.md` | (no owning DOM) | ✅ (build unverified) |
 | FS-114 | Hot-Seat Hand-Off Screen-Blank Menu | `features/FS-114-hot-seat-handoff.md` | (no owning DOM) | ✅ (build unverified) |
 | FS-115 | Session Setup: Vignette Selection & Seat Assignment | `features/FS-115-session-setup.md` | DOM-003 | ✅ (build unverified) |
+| FS-116 | Role-Scoped Command Catalog & Assignment Scoping | `features/FS-116-role-scoped-command-catalog.md` | (no owning DOM) | ✅ Ready for implementation planning (v1.2 — both Open Questions closed via ADS-3500 v1.1; per-verb DEFENSE_VERBS classification corrected) |
+| FS-117 | Vignette Creator — In-App Authoring, Typed Parameters & Per-Cell ROE | `features/FS-117-vignette-creator.md` | FR-5100 family, FR-3420, NFR-2000/NFR-2010 | ✅ Ready for implementation planning — v1.1 closed Open Question 1 (`04-requirements-engineering` added `FR-5120`-`FR-5180`/`FR-3420`/`NFR-2010`) |
 | FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | DOM-002 | ✅ |
 | FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | ⛔ Planned (authorized) |
 | FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | DOM-004, DOM-005 | ✅ |
@@ -347,6 +365,53 @@ verification is now done and each has an Implementation Package
 (`IP-1120`/`IP-1130`/`IP-1140`/`IP-1150`/`IP-1151` — see the Implementation Packages theme below).
 Phase 6-8 (Consistency/Dependency/Traceability review, MSTR-006 §7) is also complete (see the
 dedicated theme section below), predating this split and these four new specs/packages.
+
+**FS-116 authored (2026-07-05), closing a release-blocking gap:** `11-release-readiness`'s
+[release assessment](reviews/release-assessment-fs-tracked-baseline.md) found `FEAT-3500`
+(Role-Scoped Command Catalog & Assignment Scoping) — Must-priority, Release-1-bucketed — had **zero
+owning Feature Specification and zero implementation anywhere in the codebase**, despite the release
+plan's own text characterizing its RTM `UNASSIGNED` cells as "a traceability gap, not new
+development." `FS-116` is the new spec closing that gap (`FR-3510`/`FR-3520`), authored per the
+project owner's explicit Path-A choice (implement, rather than descope). v1.0 carried two Open
+Questions blocking `07-implementation-planning`; both are **closed as of v1.1** via
+[`ADS-3500`](architecture/ADS-3500-role-scoped-command-enforcement.md) — the first `ADS-xxx`
+authored in this project — which (1) extends the operator-command interface with an optional `seat`
+identifier (preserving `GDS-01`'s multi-seat concurrency model rather than narrowing it) and (2)
+classified `DEFENSE_VERBS` by role scope. **`IP-1160` was then planned against v1.1; the project
+owner subsequently gave further direction that there is no third "defense" role-scope category** —
+`ADS-3500` v1.1 (self-revised) and `FS-116` v1.2 now classify each `DEFENSE_VERBS` entry
+individually as `bus` or `payload` by which subsystem it actually mutates (six `bus`, two
+`payload` — `def.harden`/`def.set_deception_mode`). **`IP-1160` v1.1 carries the matching
+correction** — including reversing its own v1.0 plan to "fix" `app.js`'s already-correct
+`def.harden: "payload"` tag, and fixing the one real bug the audit found (`def.set_deception_mode`
+silently defaulting to `"bus"`). `FS-116`/`IP-1160` remain ready for `07-implementation-planning`.
+
+**FS-117 authored (2026-07-05), consolidating the Vignette Creator:** the project owner requested a
+large, distinct White-Cell authoring feature — JSON view, 2D/3D initial-state preview, TLE/lat-long
+asset entry, an asset menu, per-cell ROE selectors, typed payload/bus parameter overrides — and
+explicitly required it be documented as its own Feature, not blended into another spec. `FS-117`
+consolidates `FEAT-5100` (In-App Iterative Vignette Builder, 0% built) into one document, fully
+absorbing `docs/pipeline/backlog.md` `BL-0051`/`BL-0052`, grounded in
+[`ADS-5100A`](architecture/ADS-5100A-vignette-creator-session-and-ui.md) (authoring-session
+architecture resolving `CR-11` + every UI surface) and
+[`ADS-5100B`](architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md) (typed per-payload-type/
+bus parameter sub-schemas + real per-cell ROE enforcement). `FS-117` v1.0 surfaced one Critical Open
+Question blocking implementation-readiness: `FEAT-5100`'s own Feature Catalog entry listed only
+`FR-5110`/`NFR-2000` as Included Requirements, leaving the typed-parameter, per-cell-ROE, and
+specific UI-mechanics scope with no owning requirement in the baseline at all.
+
+**FS-117 amended to v1.1 (2026-07-05), Open Question 1 closed:** the project owner chose to run
+`04-requirements-engineering` now rather than split delivery. Nine new baselined requirement leaves
+were added — `FR-5120`, `FR-5130`, `FR-5140`, `FR-5150`, `FR-5160`, `FR-5170`, `FR-5180` (children
+of `FR-5100`), `FR-3420` (child of `FR-3400`), and `NFR-2010` (sibling of `NFR-2000`) — each traced
+to a specific `ADS-5100A`/`ADS-5100B` section or the R1xx research they cite (see
+[`docs/reviews/requirements-update-fs117.md`](reviews/requirements-update-fs117.md)). `CR-13` was
+checked directly and confirmed a near-miss, not a match, for the new per-cell-ROE requirement — no
+Candidate Requirement was promoted. `FS-117` is now `07-implementation-planning`-ready for its full
+scope, not merely the `FR-5110`/`NFR-2000` slice. One non-blocking gap remains, filed to the
+pipeline backlog as `BL-0056` (Medium): `docs/architecture/05-functional-requirements.md` (GDS-05)
+has not yet folded these nine leaves in — an architecture-ladder reconciliation item for a future
+`03-architecture-design-synthesis` maintenance touch, not a blocker to this Feature.
 
 ## Theme: Feature Planning — `05-feature-decomposition` skill output (`docs/feature-planning/`)
 
@@ -463,8 +528,24 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1140 | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | `implementation/packages/IP-1140-hot-seat-handoff.md` | FS-114 | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, `VR-1140` — FR-6610 trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
 | IP-1150 | Session Setup: Vignette Selection & Parameter Tuning | `implementation/packages/IP-1150-vignette-selection.md` | FS-115 §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, `VR-1150`) |
 | IP-1151 | Session Setup: Seat-to-Role Assignment | `implementation/packages/IP-1151-seat-role-assignment.md` | FS-115 §FR-4210 | Forward design | ✅ VERIFIED (2026-07-04, run #15, `VR-1151` — `BL-0014`'s no-consumer finding independently re-derived, still true; one new Low finding) |
+| IP-1160 | Role-Scoped Command Catalog & Assignment Scoping | `implementation/packages/IP-1160-role-scoped-command-enforcement.md` | FS-116 | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; every dependency already `VERIFIED`) |
+| IP-1170 | ISR Beam-Mode Coverage — weather & missile-warning (`BL-0053` prerequisite) | `implementation/packages/IP-1170-isr-beam-mode-coverage.md` | FS-117 (prerequisite) | Forward design | 🔵 COMPLETE (implemented 2026-07-05 by `08-code-implementation`; full suite 575 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
+| IP-1171 | Typed Payload & Bus Parameter Domain Model | `implementation/packages/IP-1171-typed-payload-bus-parameters.md` | FS-117 §FR-5170/FR-5180 | Forward design | 🔴 BLOCKED (authorized 2026-07-05 — MSTR-006 §3; blocked on `IP-1170` reaching `VERIFIED`) |
+| IP-1172 | Per-Cell Rules of Engagement Enforcement | `implementation/packages/IP-1172-per-cell-roe-enforcement.md` | FS-117 §FR-3420/NFR-2010 | Forward design | 🔵 COMPLETE (implemented 2026-07-05 by `08-code-implementation`; full suite 579 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
+| IP-1173 | Vignette Creator Draft Session & Reverse Serialization | `implementation/packages/IP-1173-vignette-creator-draft-session.md` | FS-117 §FR-5110 | Forward design | 🔵 COMPLETE (implemented 2026-07-05 by `08-code-implementation`; full suite 586 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
+| IP-1174 | Vignette Creator UI Surfaces | `implementation/packages/IP-1174-vignette-creator-ui-surfaces.md` | FS-117 §FR-5120-FR-5160 | Forward design | 🔴 BLOCKED (authorized 2026-07-05 — MSTR-006 §3; blocked on `IP-1171`/`IP-1172`/`IP-1173` reaching `VERIFIED`) |
 
-FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3).
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1160 is
+new (2026-07-05)**, closing `FEAT-3500`'s implementation gap that `11-release-readiness` found —
+see the Master Build Plan's Tranche 2 note and `01-technical-work-breakdown.md` for the no-split
+rationale. **IP-1170 through IP-1174 are new (2026-07-05, Tranche 3)** — the five packages planned
+against `FS-117` (Vignette Creator), split by architectural seam (engine ISR-beam-mode
+prerequisite, typed payload/bus parameters, per-cell ROE, draft-session lifecycle, UI surfaces).
+Three design-fork decisions (typed-schema bridging mechanism, per-cell ROE YAML shape,
+legacy-ROE auto-upgrade policy) were resolved by the project owner during this planning pass — see
+`01-technical-work-breakdown.md` Tranche 3 for the full rationale. **All five were authorized for
+coding 2026-07-05** (MSTR-006 §3, project owner) — `IP-1170`/`IP-1172`/`IP-1173` are `READY` now;
+`IP-1171`/`IP-1174` remain `BLOCKED` purely on sibling packages reaching `VERIFIED` first.
 
 **IP-1090/IP-1100/IP-1110 are new (2026-07, tranche 1)**, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03, mirroring the FS-106 split — no new code
@@ -585,6 +666,14 @@ findings, 2 with one Medium finding each (`IP-1020`'s lifecycle-naming mismatch;
 overclaim that Role Assignments are persisted), `IP-1110` with zero findings — no Critical/High
 finding anywhere in the sweep. The tranche's evidence base for `11-release-readiness` is now
 complete.
+
+**Training review (2026-07-05):** [`reviews/training-review-runs16-19-scope.md`](docs/reviews/training-review-runs16-19-scope.md)
+independently reviewed the training-corpus scope runs #16/#19 touched (`training/02`, `12`, `13`,
+`14`, `15`, `INDEX`) against shipped behavior — all Observer/classification/staffing/assessment/
+research-batch prose claims confirmed accurate, playbook suite green (16/16), no Critical/High
+findings. One Medium traceability finding: `WCM-1`/`BLU-1`/`RED-1` and `training/15` §15.1/§15.2
+cite a nonexistent `spacesim/session/controller.py` for the fog-of-war boundary — the real file is
+`spacesim/session/cells.py` — routed to `08-training-manual-authoring`.
 
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 

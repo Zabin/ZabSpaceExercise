@@ -1,15 +1,15 @@
 # R109 — Sensor Operations
 
 > **Document ID:** R109
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
-> **Referenced By:** [R102](R102-space-domain-awareness.md), [R104](R104-collection-management.md), [R118](R118-space-surveillance-networks.md), [R119](R119-space-situational-data-fusion.md), [R129](R129-sigint-collection-and-geolocation-accuracy.md), [R134](R134-pnt-warfare-and-navigation-denial-operations.md), FS-104
+> **Referenced By:** [R102](R102-space-domain-awareness.md), [R104](R104-collection-management.md), [R118](R118-space-surveillance-networks.md), [R119](R119-space-situational-data-fusion.md), [R129](R129-sigint-collection-and-geolocation-accuracy.md), [R134](R134-pnt-warfare-and-navigation-denial-operations.md), [R137](R137-bus-and-payload-parameter-catalog.md), FS-104
 > **Produces:** implementation constraints for [`engine/entities.py`](../../../spacesim/engine/entities.py) (`Sensor`), [`engine/isr.py`](../../../spacesim/engine/isr.py)
 > **Feature Mapping:** FS-104 (SDA Tasking)
 > **Related Topics:** [R102](R102-space-domain-awareness.md) (Space Domain Awareness), [R104](R104-collection-management.md) (Collection Management), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks)
-> **Last Reviewed:** 2026-06-27
-> **Primary Sources Consulted:** 1
+> **Last Reviewed:** 2026-07-05
+> **Primary Sources Consulted:** 3
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -59,6 +59,36 @@ range.
 directly to `battery_soc` — sensor tasking is not a free action; it costs the same power budget
 [R111](R111-power-and-thermal-operations.md) governs.
 
+**Weather and missile-warning payloads have no `BEAM_MODES` entry today — a genuine coverage gap
+(added for `BL-0052` grounding).** `engine/isr.py`'s `BEAM_MODES` database has exactly three
+payload-type keys (`isr_eo`, `isr_sar`, `sda`); the `weather` and `mw` (missile-warning) payload
+types `buscommands.py`'s `wx.*`/`mw.*` verbs already operate on (`wx.schedule_collection`,
+`wx.request_sector`, `mw.add_stare_area`) have no beam-mode parameterization at all — `beam_params()`
+silently falls back to generic EO stripmap numbers for any payload type it doesn't recognize. This
+is the sharpest of the "typed per-payload-type sub-schema" gaps `BL-0052`'s design decision will
+need to close, not merely document. Real-world grounding for each:
+
+- **Weather imaging** — GOES-R series' Advanced Baseline Imager (ABI) images at **0.5-2 km spatial
+  resolution** (band-dependent: 0.5 km visible, 1-2 km IR/water-vapor bands) with **temporal
+  revisit as fast as 30-60 seconds** for a storm-tracking mesoscale sector, 5 minutes for
+  full-CONUS, and 10-15 minutes for a full-disk scan
+  ([NOAA GOES-R, "Instruments: Advanced Baseline Imager (ABI)"](https://www.goes-r.gov/spacesegment/abi.html)).
+  A `weather` payload sub-schema's realistic fields are therefore closer to "resolution_km" (0.5-2
+  range) and "revisit_s"/mode (mesoscale-fast vs. full-disk-slow) than a `swath_km` figure — the
+  operationally interesting trade is temporal, not spatial, resolution.
+- **Missile warning (OPIR)** — SBIRS-GEO carries two distinct sensor types: a continuously
+  **scanning** sensor providing persistent global strategic warning (roughly 2× the revisit rate
+  and 3× the sensitivity of the legacy DSP system it replaced), and a **staring/step-staring**
+  sensor that dedicates itself to a smaller theater area for much faster revisit and higher
+  sensitivity at the cost of global coverage
+  ([Missile Defense Advocacy Alliance / CSIS Missile Threat, "Space-Based Infrared System
+  (SBIRS)"](https://missilethreat.csis.org/defsys/sbirs/)). A `mw` payload sub-schema's realistic
+  fields should therefore capture this same scan-vs-stare mode dichotomy (matching
+  `mw.add_stare_area`'s existing stare-area concept in `buscommands.py`) rather than a single
+  fixed sensitivity/range number — the mode choice itself (persistent-global vs. dedicated-theater)
+  is the operationally meaningful parameter, mirroring the EO/SAR beam-mode trade this topic already
+  documents for ISR.
+
 ### Sources
 
 - *eoPortal, Capella Space X-Band Synthetic Aperture Radar* — [live](https://www.eoportal.org/satellite-missions/capella-x-sar)
@@ -67,6 +97,12 @@ directly to `battery_soc` — sensor tasking is not a free action; it costs the 
 - *eoPortal, TerraSAR-X* — [live](https://www.eoportal.org/satellite-missions/terrasar-x)
   · [snapshot](https://web.archive.org/web/2026/https://www.eoportal.org/satellite-missions/terrasar-x)
   · accessed 2026-06-27.
+- *NOAA GOES-R Program, "Instruments: Advanced Baseline Imager (ABI)"* — [live](https://www.goes-r.gov/spacesegment/abi.html)
+  · [snapshot](https://web.archive.org/web/2026/https://www.goes-r.gov/spacesegment/abi.html)
+  · accessed 2026-07-05.
+- *Missile Defense Advocacy Alliance (citing CSIS Missile Threat), "Space-Based Infrared System (SBIRS)"* — [live](https://missilethreat.csis.org/defsys/sbirs/)
+  · [snapshot](https://web.archive.org/web/2026/https://missilethreat.csis.org/defsys/sbirs/)
+  · accessed 2026-07-05.
 
 ## 4. Operational Context
 
@@ -88,12 +124,18 @@ decisions rather than background flavor text.
   bus budget is a dead/decoupled-field bug waiting to happen.
 - **Footprint geometry for map rendering should reuse `isr.footprint_polygon`/`ground_heading_deg`**
   rather than a parallel geometry computation.
+- **Before building typed `weather`/`mw` payload sub-schemas, add `BEAM_MODES` entries for both
+  payload types** (per the gap above) — a typed schema over a field that silently falls back to
+  generic EO numbers would let a vignette author configure a parameter the engine doesn't actually
+  honor, which is worse than not offering the field at all.
 
 ## 6. Feature Mapping
 
 FS-104 (SDA Tasking) is the direct consumer — any sensor-tasking UI should expose the beam-mode
 trade explicitly (swath vs. resolution vs. power) rather than hiding it behind a single "task
-sensor" button.
+sensor" button. The forthcoming Vignette Creator Feature Specification (`docs/pipeline/backlog.md`
+`BL-0052`) depends on this topic's weather/missile-warning subsection above for its typed
+per-payload-type parameter sub-schemas, and on the `BEAM_MODES` coverage gap it identifies.
 
 ## 7. Related Topics
 

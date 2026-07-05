@@ -237,6 +237,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   Actions: `jam/engage/observe/maneuver/downlink/cyber` + `command` (bus/payload verbs, see `buscommands.py`).
   `dry_run()` is a read-only mirror of `issue()` (validate + window/delivery-path, but schedules/
   registers/books nothing) → powers the UI's "why can't I?" pre-disabled buttons; replay-safe like `scene.py`.
+  ROE (`engage`/`cyber`) is resolved per issuing cell (`self.roe[order.cell]`, IP-1172/FR-3420) — the
+  engine never branches on legacy-vs-explicit vignette shape, only on the always-cell-keyed dict
+  `content/vignette.py`'s `build_world()` produces.
 - `spacesim/engine/recovery.py` — `RecoverySystem`: multi-pass safe-mode recovery + re-safe-on-persistence.
 - `spacesim/engine/ssn.py` — mock Space Surveillance Network (per `docs/build-spec/08-ssn.md` §17): per-cell
   `SSNNetwork`s instantiated from a dispersion preset (`sparse`/`regional`/`global`/`proliferated`),
@@ -260,8 +263,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
 - `spacesim/engine/maneuver.py` — pure compute for six manoeuvre entry modes
   (eci / lvlh / finite_burn / target_coe / hohmann / plane_change).
-- `spacesim/engine/isr.py` — ISR beam-mode database (EO/SAR/SDA), `effective_gain()`,
-  `soc_drain()`, footprint polygon + ground-heading helpers.
+- `spacesim/engine/isr.py` — ISR beam-mode database (EO/SAR/SDA/weather/mw — the last two added
+  by IP-1170, closing `BL-0053`), `effective_gain()`, `soc_drain()`, footprint polygon +
+  ground-heading helpers.
 - `spacesim/engine/jam.py` — jam modulation database (barrage/spot/sweep/deceptive),
   `effective_radius_km()`, `effective_success_prob()`, footprint polygon (FW §11.A.1).
 - `spacesim/engine/engage.py` — kinetic-engagement math (closing geometry, salvo Pₖ,
@@ -279,6 +283,15 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `RoleRequirement`/`Vignette.roles_needed` (IP-1151, FR-4210) — optional, additive staffing
   requirements; absent for every vignette shipped before this package.
   `Vignette.coaching` is a list of `{at_sim_t?, cell, title, body}` notes (FW §11.D.17).
+  `Vignette.roe` (IP-1172, FR-3420/NFR-2010) — optional per-cell
+  `{blue: {kinetic_authorized, cyber_authorized}, red: {...}}`; absent for every vignette shipped
+  before this package, in which case `build_world()` mirrors the legacy flat
+  `red_kinetic_authorized`/`cyber_authorized` parameters to both cells.
+- `spacesim/content/vignette_export.py` (IP-1173, FR-5110) — reverse serialization:
+  `export_vignette()`/`save_vignette()` convert a draft session's live `WorldState`+
+  `VignetteContext` into a `Vignette` model and write it to `VIGNETTE_DIR` — the mirror image of
+  `vignette.py`'s `load_vignette()`/`build_world()`, and the only code path that writes an
+  authored vignette file.
 - `spacesim/content/inject_library.yaml` — five reusable white-cell inject templates
   (debris breakup, GNSS-jam advisory, ambiguous RPO, GS outage, geomagnetic storm).
   Loaded via `InProcessSession.inject_library()`; surfaced in the white-cell GUI's
@@ -296,7 +309,11 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **IP-1130:** `set_observer_view`/`get_observer_view`/`observer_designation` — a fourth,
   White-Cell-designated read-only seat dispatching unmodified to `get_godview`/`get_view`, no
   parallel filtering path; **IP-1151:** `assign_role`/`staffing_report` — seat-to-role bindings
-  against a vignette's `roles_needed`, hard-gating `start()` on any unmet mandatory entry),
+  against a vignette's `roles_needed`, hard-gating `start()` on any unmet mandatory entry;
+  **IP-1173:** `create_draft_session`/`save_vignette` — a Vignette Creator draft session (an
+  unstarted `SessionManager`, tracked in `_draft_sessions`), reusing the existing registry/
+  locking/`MAX_LIVE_SESSIONS` eviction unmodified; `step`/`advance_to`/`rewind_to`/`undo_last`/
+  `red_doctrine_step` all reject a draft sid rather than advancing its clock),
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
   `aar.py` (replay/scrub/branch-compare + `snapshot_at`),
   `assessment.py` (IP-2010 — read-only competency-rubric scoring: `score_custody_quality`/

@@ -59,8 +59,21 @@ unauthorized FS.
 | [IP-1140](IP-1140-hot-seat-handoff.md) | Hot-Seat Hand-Off Screen-Blank Menu — blank/blur/resume overlay | [FS-114](../../features/FS-114-hot-seat-handoff.md) | As-built (documented spec divergence, adjudicated) | ✅ VERIFIED (2026-07-03, [`VR-1140`](../verification/VR-1140-hot-seat-handoff.md) — FR-6610's trigger/menu divergence adjudicated **not satisfied**, High finding routed to `07-implementation-planning`) |
 | [IP-1150](IP-1150-vignette-selection.md) | Session Setup: Vignette Selection & Parameter Tuning | [FS-115](../../features/FS-115-session-setup.md) §FR-4110 | As-built | ✅ VERIFIED (2026-07-03, [`VR-1150`](../verification/VR-1150-vignette-selection.md)) |
 | [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | ✅ VERIFIED (2026-07-04, run #15, `VR-1151` — one Definition-of-Done caveat re-confirmed, not resolved, see the package's own header) |
+| [IP-1160](IP-1160-role-scoped-command-enforcement.md) | Role-Scoped Command Catalog & Assignment Scoping | [FS-116](../../features/FS-116-role-scoped-command-catalog.md) | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; every dependency `VERIFIED`) |
+| [IP-1170](IP-1170-isr-beam-mode-coverage.md) | ISR Beam-Mode Coverage — weather & missile-warning (`BL-0053` prerequisite) | [FS-117](../../features/FS-117-vignette-creator.md) (prerequisite) | Forward design | 🔵 COMPLETE (implemented 2026-07-05; full suite 575 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
+| [IP-1171](IP-1171-typed-payload-bus-parameters.md) | Typed Payload & Bus Parameter Domain Model | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5170`/`FR-5180` | Forward design | 🔴 BLOCKED (authorized 2026-07-05 — MSTR-006 §3; blocked on `IP-1170` reaching `VERIFIED`) |
+| [IP-1172](IP-1172-per-cell-roe-enforcement.md) | Per-Cell Rules of Engagement Enforcement | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-3420`/`NFR-2010` | Forward design | 🔵 COMPLETE (implemented 2026-07-05; full suite 579 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
+| [IP-1173](IP-1173-vignette-creator-draft-session.md) | Vignette Creator Draft Session & Reverse Serialization | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5110` | Forward design | 🔵 COMPLETE (implemented 2026-07-05; full suite 586 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
+| [IP-1174](IP-1174-vignette-creator-ui-surfaces.md) | Vignette Creator UI Surfaces | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5120`-`FR-5160` | Forward design | 🔴 BLOCKED (authorized 2026-07-05 — MSTR-006 §3; blocked on `IP-1171`/`IP-1172`/`IP-1173` reaching `VERIFIED`) |
 
-FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1090,
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1170
+through IP-1174 are new (2026-07-05)** — Tranche 3, the five packages planned against `FS-117`
+(Vignette Creator), split by seam (see [`../01-technical-work-breakdown.md`](../01-technical-work-breakdown.md)
+Tranche 3 for the full split rationale and the three design-fork decisions resolved before
+packaging). **All five authorized for coding 2026-07-05** (MSTR-006 §3, project owner) — `IP-1170`/
+`IP-1172`/`IP-1173` are `READY` now; `IP-1171`/`IP-1174` remain `BLOCKED` purely on sibling
+packages reaching `VERIFIED` first, per this plan's own "`READY` means fully specified and every
+dependency `VERIFIED`" rule. **IP-1090,
 IP-1100, IP-1110 are new (2026-07)**, split out of IP-1060 v1.0 per `docs/feature-planning/
 05-feature-review.md` Finding F-03, mirroring the FS-106→FS-106/109/110/111 split — see IP-1060
 v2.0's own header note. **IP-1120, IP-1130, IP-1140, IP-1150, IP-1151 are new (2026-07)**, the
@@ -100,6 +113,17 @@ now `VERIFIED`** (2026-07-04, run #12, [`VR-3010`](../verification/VR-3010-resea
 (`RunRecord` + CSV/JSON export) confirmed against the live tree; `BL-0018`/`BL-0017` re-confirmed,
 no new findings). **Every package in this tier is now `VERIFIED`** — the "iterate through all
 `09-package-verification`" sweep (runs #11–#15) is complete.
+
+**`IP-1160` is new (2026-07-05), Tranche 2:** `11-release-readiness`'s
+[release assessment](../../reviews/release-assessment-fs-tracked-baseline.md) found `FEAT-3500`
+had zero owning Feature Specification and zero implementation — `FS-116` (via `06-feature-
+specification`) and `ADS-3500` (via `03-architecture-design-synthesis`, resolving `FS-116`'s two
+Open Questions) closed the specification gap; `IP-1160` is the single package that closes the
+implementation gap. Every one of its dependencies (`IP-1151`, `IP-1050`, `IP-1051`) is already
+`VERIFIED`, so `IP-1160` is specification-complete and would flip to `READY` the moment MSTR-006 §3
+authorization is granted — not yet on record as of this writing. See
+[`../01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) Tranche 2 for the
+no-split rationale.
 
 **Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
 §3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in

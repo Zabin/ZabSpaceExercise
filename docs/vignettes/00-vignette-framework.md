@@ -126,7 +126,12 @@ parameters:
 ### Parameter categories every vignette should expose
 1. **Force levels** — counts/quality of each side's assets and ground stations.
 2. **Authorities / ROE** — what each side is *allowed* to do (kinetic on/off, escalation
-   caps). This is how White Cell teaches restraint and escalation control.
+   caps). This is how White Cell teaches restraint and escalation control. `red_kinetic_authorized`/
+   `cyber_authorized` (shown above) remain fully valid — a vignette declaring only these applies
+   the same authorization to both cells. **IP-1172 (FR-3420):** a vignette may instead (or in
+   addition) declare a top-level `roe: {blue: {kinetic_authorized, cyber_authorized}, red: {...}}`
+   block for independent per-cell authorities; a missing cell or sub-key in that block defaults to
+   `false` (fail safe), never silently authorized.
 3. **Red behavior** — doctrine profile, aggressiveness, EW intensity, RPO posture.
 4. **Environment** — start epoch, debris, space weather, geography.
 5. **Fidelity / fog** — SDA visibility, attribution difficulty, time compression.

@@ -26,6 +26,10 @@ def _subpoint(orbit, t):
 
 
 def _sim(world, roe=None, seed=5):
+    # IP-1172: OrderSystem.roe is now always cell-keyed; mirror a flat convenience dict to
+    # both cells (matches content/vignette.py's own legacy-parameter fallback semantics).
+    if roe is not None and "blue" not in roe and "red" not in roe:
+        roe = {"blue": dict(roe), "red": dict(roe)}
     sim = Simulation(world, seed=seed)
     return sim, OrderSystem(sim, roe=roe)
 

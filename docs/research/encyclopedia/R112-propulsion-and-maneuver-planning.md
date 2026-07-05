@@ -1,16 +1,16 @@
 # R112 — Propulsion and Maneuver Planning
 
 > **Document ID:** R112
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
-> **Referenced By:** [R111](R111-power-and-thermal-operations.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R127](R127-conjunction-assessment-and-collision-avoidance.md), [R133](R133-space-logistics-launch-reconstitution-and-servicing-economics.md), FS-101, FS-105
+> **Referenced By:** [R111](R111-power-and-thermal-operations.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R127](R127-conjunction-assessment-and-collision-avoidance.md), [R133](R133-space-logistics-launch-reconstitution-and-servicing-economics.md), [R137](R137-bus-and-payload-parameter-catalog.md), FS-101, FS-105
 > **Produces:** implementation constraints for [`engine/maneuver.py`](../../../spacesim/engine/maneuver.py), [`engine/entities.py`](../../../spacesim/engine/entities.py) (`AssetResources`)
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations)
 > **Related Topics:** [R101](R101-orbital-mechanics-for-operations.md) (Orbital Mechanics), [R111](R111-power-and-thermal-operations.md) (Power and Thermal — the sibling decoupled-field
 > note on `propellant_frac`), [R117](R117-directed-energy-and-kinetic-effects.md) (Directed Energy and Kinetic Effects — evasion burns)
-> **Last Reviewed:** 2026-06-27
-> **Primary Sources Consulted:** 1
+> **Last Reviewed:** 2026-07-05
+> **Primary Sources Consulted:** 2
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -55,11 +55,31 @@ does not move when `resources.delta_v_ms` is spent on a burn — this is documen
 lower-priority follow-up, not a silent bug to route around. A maneuver-planning feature should be
 aware its Δv math is correct even though the propellant *display* is currently inert.
 
+**Realistic total onboard Δv budget by mission class, for authoring a new asset's initial
+`resources.delta_v_ms` (added for `BL-0052` grounding).** The per-maneuver Δv costs above (Hohmann
+transfer burns, evasive burns) answer "how much does one maneuver cost"; a vignette author placing
+a new asset also needs "how much should this asset start with" — a distinct question this topic
+had not previously answered:
+
+| Mission class | Typical total onboard Δv budget | Notes |
+|---|---|---|
+| GEO comsat (station-keeping only, 15-year design life) | **~50 m/s/year** for north-south station-keeping (dominant, ~95% of the budget) + **~2 m/s/year** east-west — **roughly 750-800 m/s total** over a 15-year life | [Orbit Codex, "Station-Keeping: GEO Delta-V and Electric Propulsion"](https://orbitcodex.com/knowledge-base/station-keeping) |
+| LEO smallsat (station-keeping/altitude maintenance, few-year mission) | order-of-magnitude **~15-150 m/s** total mission budget, per illustrative published mission examples (one 5-year LEO mission budgeted 14.8 m/s for station-keeping alone) | **Illustrative range, not a single-source authoritative figure** — wide spread is expected, dominated by drag-compensation need, which is altitude- and area-to-mass-ratio-dependent, not a fixed constant; treat as an order-of-magnitude sanity check, not a precise target |
+| LEO phasing/rendezvous maneuver (one-time, not a budget but a representative single-maneuver cost) | order-of-magnitude **~100-150 m/s** for a ~10° phasing maneuver, per one published example (138.3 m/s) | Illustrates that a single non-station-keeping maneuver can consume as much Δv as an entire GEO asset's multi-year station-keeping budget — a useful sanity check against an implausibly small authored total |
+
+A vignette author's realistic initial `delta_v_ms` should therefore scale with both mission class
+and intended maneuver activity — a GEO asset authored with only enough Δv for one evasive burn
+(per this topic's own default 5.0 m/s `dv_cost` example) would be unrealistically fuel-starved
+compared to any real GEO comsat's multi-year station-keeping reserve.
+
 ### Sources
 
 - *NASA, Using the Two-Burn Escape Maneuver for Fast Transfers, NTRS 20100033146* — [live](https://ntrs.nasa.gov/api/citations/20100033146/downloads/20100033146.pdf)
   · [snapshot](https://web.archive.org/web/2026/https://ntrs.nasa.gov/api/citations/20100033146/downloads/20100033146.pdf)
   · accessed 2026-06-27.
+- *Orbit Codex, "Station-Keeping: GEO Delta-V and Electric Propulsion"* — [live](https://orbitcodex.com/knowledge-base/station-keeping)
+  · [snapshot](https://web.archive.org/web/2026/https://orbitcodex.com/knowledge-base/station-keeping)
+  · accessed 2026-07-05.
 
 ## 4. Operational Context
 
@@ -81,11 +101,18 @@ against a lifetime Δv ledger, not per-maneuver in isolation — exactly what tr
 - **Re-validate Δv sufficiency at execution time**, mirroring `_h_maneuver`, for any new
   Δv-consuming order type (e.g. `def.maneuver_evade` in `buscommands.py` already follows this
   pattern).
+- **A vignette-authoring bus parameter surface's default `delta_v_ms` should be mission-class-driven**
+  (per the table above), not a single flat constant — an asset authored with a GEO-scale
+  station-keeping reserve reads very differently in play than one authored with only enough for a
+  single evasive burn, and a vignette author should be able to choose deliberately, not by accident.
 
 ## 6. Feature Mapping
 
 FS-101 (Mission Planning) and FS-105 (Spacecraft Operations) both depend on accurate Δv-economy
-modeling for any new maneuver-adjacent feature.
+modeling for any new maneuver-adjacent feature. The forthcoming Vignette Creator Feature
+Specification (`docs/pipeline/backlog.md` `BL-0052`) depends on this topic's total-Δv-budget
+subsection above for its bus parameter defaults (e.g. the "fuel level" override the project owner
+named explicitly).
 
 ## 7. Related Topics
 

@@ -44,6 +44,7 @@ should have at least one topic here an implementer extending it would read first
 | [R134](R134-pnt-warfare-and-navigation-denial-operations.md) | PNT Warfare and Navigation-Denial Operations | GNSS interference/spoofing operational patterns behind the `pnt.*` command verbs — closes GAP-09. | [R109](R109-sensor-operations.md), [R110](R110-communications.md) | ✅ Done |
 | [R135](R135-ground-segment-operations-as-contested-terrain.md) | Ground Segment Operations as Contested Terrain | Cyber/physical attack surface of stations and networks, extending R107's cooperative-only treatment — closes GAP-12. | [R107](R107-ground-segment-operations.md), [R116](R116-cyber-operations-against-space-systems.md) | ✅ Done |
 | [R136](R136-cislunar-and-xgeo-operations.md) | Cislunar and xGEO Operations | Custody/sensing regimes beyond GEO — research-first, closes GAP-04. | [R101](R101-orbital-mechanics-for-operations.md), [R102](R102-space-domain-awareness.md) | ✅ Done |
+| [R137](R137-bus-and-payload-parameter-catalog.md) | Bus and Payload Configuration Parameter Catalog | Completeness/navigation index of every bus-subsystem and payload-type configuration parameter in the engine, cross-referenced to the topic that characterizes each — not a characterization document itself. | [R109](R109-sensor-operations.md), [R110](R110-communications.md), [R111](R111-power-and-thermal-operations.md), [R112](R112-propulsion-and-maneuver-planning.md), [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R115](R115-electronic-warfare-in-space-operations.md), [R116](R116-cyber-operations-against-space-systems.md), [R118](R118-space-surveillance-networks.md), [R121](R121-telemetry-logging-and-attack-signatures.md), [R129](R129-sigint-collection-and-geolocation-accuracy.md), [R134](R134-pnt-warfare-and-navigation-denial-operations.md) | ✅ Done |
 
 **Status: 36 of 36 topics complete — tier fully closed.** All
 36 authored topics (R101-R136) have substantive §1 Purpose/§2 Scope/§3 Concepts/§4 Operational
@@ -141,3 +142,46 @@ bidirectional cross-links into their declared dependency topics
 Tier R100 is now fully closed at 36/36 topics; `docs/reviews/research-gap-resolution.md` is left
 unmodified per its own closing instruction, since this index is the corpus's mechanism for recording
 gap resolution.
+
+**Vignette Creator grounding pass (2026-07-05).** `docs/pipeline/backlog.md` `BL-0052` (the
+Vignette Creator, a large forthcoming White-Cell authoring feature) surfaced a confirmed research
+gap: no existing topic enumerated realistic bus/payload parameter ranges, TLE-format/authoring
+guidance, or ground-station-siting methodology — content the eventual `ADS-xxx` design-synthesis
+pass for that feature needs to cite for its typed per-payload-type parameter sub-schemas rather than
+invent. Rather than bulk-authoring new topics (the tier is closed, not frozen), this pass extended
+seven existing topics with maintenance content, each following the existing citation convention:
+[R101](R101-orbital-mechanics-for-operations.md) (TLE format + plausible element ranges by regime,
+grounded against CelesTrak's NORAD TLE format reference), [R107](R107-ground-segment-operations.md)
+(ground-station siting methodology — elevation mask, latitude-vs-regime coverage, network spacing,
+coastal siting — complementing `docs/vignettes/GROUND-INFRASTRUCTURE.md`'s curated site list),
+[R109](R109-sensor-operations.md) (identifies and grounds a genuine sub-gap: `weather` and `mw`
+missile-warning payload types have zero `BEAM_MODES` entries in `engine/isr.py` at all, unlike
+`isr_eo`/`isr_sar`/`sda` — grounded against GOES-R ABI and SBIRS-GEO scan/stare precedent),
+[R110](R110-communications.md) (realistic SATCOM bandwidth/data-rate ranges by class, UHF narrowband
+through Ka-band HTS), [R111](R111-power-and-thermal-operations.md) (EPS power budgets by satellite
+size class, cross-referenced against the already-documented dead `power_w` field so the range
+doesn't get mistaken for a field that's actually live), [R112](R112-propulsion-and-maneuver-planning.md)
+(realistic total onboard Δv budget by mission class, distinct from the per-maneuver costs already
+covered), and [R134](R134-pnt-warfare-and-navigation-denial-operations.md) (realistic baseline PNT
+accuracy, grounded against the GPS SPS Performance Standard). No new `R1xx` row was added — every
+extension fits an existing topic's own declared scope. `R109`'s weather/`mw` finding is the one
+outright coverage gap this pass surfaced (not merely a missing range table) and is flagged in that
+topic's own Implementation Guidance as a precondition for `BL-0052`'s typed sub-schema work, not
+merely a nice-to-have.
+
+**Parameter-catalog pass (2026-07-05, same day): new topic [R137](R137-bus-and-payload-parameter-catalog.md), tier now 37/37.**
+The project owner asked for explicit assurance that every bus-subsystem and payload-type
+configuration parameter is covered somewhere in this tier, not just the realistic-range grounding
+the prior same-day pass added. Re-deriving the field inventory directly from the live tree
+(`entities.py`, `bus.py`, `isr.py`, `jam.py`, `cyber.py`, `sigint.py`, `engage.py`) rather than
+trusting the prior pass's own summary, this is a genuine new-topic case, not a maintenance edit to
+an existing one — no existing topic serves as a single completeness/navigation index across every
+bus subsystem and payload type; each existing topic only ever characterizes its own subsystem in
+isolation. **R137 is deliberately a cross-reference catalog, not a characterization document** — it
+lists every field once, in one place, and points to the topic that already defines its behavior and
+realistic range, rather than re-deriving or duplicating that content. It surfaces one already-known
+gap (the `weather`/`mw` `BEAM_MODES` gap R109 flagged the same day) plus four newly-identified
+candidate gaps (`Asset.hardening`'s numeric effect, `PayloadState.last_effect_assessment`,
+`deception_active`'s custody/attribution consequence, `Asset.civilian`'s political-cost
+consequence) — none blocking, all flagged as future maintenance work rather than silently left
+implicit. Cross-linked bidirectionally into all twelve topics it indexes.
