@@ -313,6 +313,7 @@ Router: [`features/feature-index.md`](docs/features/feature-index.md).
 | FS-113 | Observer Read-Only Access | `features/FS-113-observer-read-only-access.md` | (no owning DOM) | ✅ (build unverified) |
 | FS-114 | Hot-Seat Hand-Off Screen-Blank Menu | `features/FS-114-hot-seat-handoff.md` | (no owning DOM) | ✅ (build unverified) |
 | FS-115 | Session Setup: Vignette Selection & Seat Assignment | `features/FS-115-session-setup.md` | DOM-003 | ✅ (build unverified) |
+| FS-116 | Role-Scoped Command Catalog & Assignment Scoping | `features/FS-116-role-scoped-command-catalog.md` | (no owning DOM) | 🚧 In progress (2 Open Questions block implementation-readiness) |
 | FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | DOM-002 | ✅ |
 | FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | ⛔ Planned (authorized) |
 | FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | DOM-004, DOM-005 | ✅ |
@@ -347,6 +348,21 @@ verification is now done and each has an Implementation Package
 (`IP-1120`/`IP-1130`/`IP-1140`/`IP-1150`/`IP-1151` — see the Implementation Packages theme below).
 Phase 6-8 (Consistency/Dependency/Traceability review, MSTR-006 §7) is also complete (see the
 dedicated theme section below), predating this split and these four new specs/packages.
+
+**FS-116 authored (2026-07-05), closing a release-blocking gap:** `11-release-readiness`'s
+[release assessment](reviews/release-assessment-fs-tracked-baseline.md) found `FEAT-3500`
+(Role-Scoped Command Catalog & Assignment Scoping) — Must-priority, Release-1-bucketed — had **zero
+owning Feature Specification and zero implementation anywhere in the codebase**, despite the release
+plan's own text characterizing its RTM `UNASSIGNED` cells as "a traceability gap, not new
+development." `FS-116` is the new spec closing that gap (`FR-3510`/`FR-3520`), authored per the
+project owner's explicit Path-A choice (implement, rather than descope). It carries **two Open
+Questions that block `07-implementation-planning`**: (1) no existing interface carries a "seat"
+identifier distinct from "cell," so today's request shapes cannot express which seat's Role
+Assignment should gate a command whenever a cell has more than one seated operator; (2)
+`engine/buscommands.py`'s existing three-way verb taxonomy (`BUS_VERBS`/`PAYLOAD_VERBS`/
+`DEFENSE_VERBS`) doesn't map cleanly onto `FR-3510`/`FR-3520`'s two-way `bus`/`payload`/`both` scope
+model. Both require an architecture/requirements decision before an Implementation Package can be
+authored — see `FS-116`'s own Open Questions section.
 
 ## Theme: Feature Planning — `05-feature-decomposition` skill output (`docs/feature-planning/`)
 
