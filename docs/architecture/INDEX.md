@@ -96,6 +96,8 @@ Constraints, Risks, Open Questions, Decision Log. Size discipline: ~8-15 pages e
 | ID | Document | Capability cluster | Owning domain | Status |
 |---|---|---|---|---|
 | [ADS-3500](ADS-3500-role-scoped-command-enforcement.md) | Role-Scoped Command Enforcement | (GDS-04 §1.10-grounded; no owning DOM) | ✅ Authored |
+| [ADS-5100A](ADS-5100A-vignette-creator-session-and-ui.md) | Vignette Creator — Authoring Session & UI Architecture | (R1xx-grounded; no owning DOM) | ✅ Authored |
+| [ADS-5100B](ADS-5100B-typed-parameters-and-per-cell-roe.md) | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | (GDS-04-grounded; no owning DOM) | ✅ Authored |
 
 **ADS-3500 (2026-07-05):** the first `ADS-xxx` authored in this project — resolves two
 architecture-level Open Questions [`FS-116`](../features/FS-116-role-scoped-command-catalog.md)
@@ -114,6 +116,21 @@ entry 2 revised: each of the eight `DEFENSE_VERBS` entries individually reclassi
 `apply_command()`'s actual implementation (six `bus`, two `payload` — `def.harden`/
 `def.set_deception_mode` mutate `payload_state` directly), superseding v1.0's wholesale
 `bus`-classification.
+
+**ADS-5100A/B (2026-07-05):** synthesize the Vignette Creator — a large, distinct White-Cell
+authoring feature the project owner explicitly required be documented on its own, not blended into
+any other Feature Specification — anchored to `FEAT-5100` (In-App Iterative Vignette Builder,
+`EP-5000`, 0% built) and folding in `BL-0051` (seat-count declaration + role-assignment matrix UI).
+Split by capability seam per this tier's own size discipline: **5100A** covers the authoring-session
+architecture (a server-side draft session resolving `CR-11`, an already-open Candidate Requirement)
+and every UI surface (JSON view, 2D/3D ground-truth preview, TLE/lat-long/asset entry, asset menu,
+seat/role matrix); **5100B** covers two Domain Model extensions the UI exposes but which are
+independently significant — typed per-payload-type/bus parameter sub-schemas (grounded in this
+session's own `R101`/`R107`/`R109`-`R112`/`R134`/`R137` research) and real per-cell ROE enforcement
+(extending `engine/orders.py`'s currently-global-only gate). Both documents record four
+already-made project-owner decisions in their Decision Logs rather than re-opening them, and flag
+`BL-0053` (the `weather`/`mw` `BEAM_MODES` engine gap) as a hard precondition for two of the eight
+typed payload sub-schemas.
 
 ## 3. Architecture Decision Records (`docs/architecture/adr/`)
 

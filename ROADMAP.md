@@ -221,6 +221,8 @@ clusters with real design tension; small/uncontested features skip straight to `
 |---|---|---|---|---|
 | ADS-00 | Architecture index | `architecture/INDEX.md` | — | ✅ |
 | ADS-3500 | Role-Scoped Command Enforcement | `architecture/ADS-3500-role-scoped-command-enforcement.md` | (no owning DOM) | ✅ Authored (2026-07-05) — the first `ADS-xxx` in this project |
+| ADS-5100A | Vignette Creator — Authoring Session & UI Architecture | `architecture/ADS-5100A-vignette-creator-session-and-ui.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
+| ADS-5100B | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | `architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
 
 **ADS-3500** resolves two Open Questions [`FS-116`](docs/features/FS-116-role-scoped-command-catalog.md)
 (`FEAT-3500`) surfaced: extends the operator-command interface to carry a `seat` identifier
@@ -229,6 +231,14 @@ individually as `bus` or `payload` (v1.1, per the project owner's direction that
 "defense" role-scope category — six are `bus`, two — `def.harden`/`def.set_deception_mode` — are
 `payload`). Authored via Workflow B since `GDS-09` (the ladder level that would eventually formally
 own interface contracts) remains scaffold-only and gated behind `GDS-06`-`08`.
+
+**ADS-5100A/B** synthesize the Vignette Creator (`docs/pipeline/backlog.md` `BL-0052`, folding in
+`BL-0051`'s seat-count/matrix UI) — a large, distinct White-Cell authoring feature anchored to
+`FEAT-5100`, split by capability seam per this tier's own size discipline: **5100A** covers the
+authoring-session architecture (resolving `CR-11`) and UI surfaces (JSON view, 2D/3D preview,
+TLE/lat-long/asset entry, asset menu, seat/role matrix); **5100B** covers the two Domain Model
+extensions the UI surfaces but which are independently significant — typed per-payload-type/bus
+parameter sub-schemas and real per-cell ROE enforcement.
 
 ### Global ladder (`GDS-00`…`GDS-10`, scaffolded this revision, content not yet authored)
 
