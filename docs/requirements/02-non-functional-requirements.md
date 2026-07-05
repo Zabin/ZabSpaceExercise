@@ -8,7 +8,9 @@
 > [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md));
 > further amended (`ADR-0032`/`ADR-0033` conflict resolution, 2026-07; `01-functional-requirements.md`
 > gained two new baselined FR leaves — `FR-10110`, `FR-10210` — this document gained none; the ADR
-> range below was updated).
+> range below was updated); further amended (`FS-117` Vignette Creator requirements-coverage pass,
+> 2026-07-05; **one numbered NFR leaf added** — `NFR-2010` — see
+> [`reviews/requirements-update-fs117.md`](../reviews/requirements-update-fs117.md)).
 > **Authoritative inputs:**
 > [`build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §9
 > (NFR-1…NFR-10 — the legacy, pre-GDS NFR tag scheme),
@@ -234,6 +236,27 @@ review passes actually run against it).
   - **Dependencies:** None
   - **Source documents:** `CLAUDE.md` "Load-bearing invariants" #6
   - **Related ADRs:** ADR-0007
+
+- **NFR-2010 — Additive vignette-schema evolution**
+  - **Description:** A vignette-schema extension (a new typed parameter sub-schema, a new
+    per-cell-keyed structure replacing a previously flat one) shall be additive: every one of the
+    currently shipped vignette YAML files shall continue to load and run with byte-identical
+    behavior, without modification, after the extension ships.
+  - **Rationale:** `FS-117` (Vignette Creator) introduces two schema-shape changes — typed
+    per-payload-type/bus parameter sub-schemas (`FR-5170`/`FR-5180`) and a per-cell ROE structure
+    (`FR-3420`) — both of which must not force a migration of the 19 currently shipped vignette
+    files or change their observed behavior; this is a distinct quality attribute from `NFR-2000`
+    (content stays data, not code) and was not previously stated anywhere in this baseline.
+  - **Metric or verification method:** Test — every currently shipped vignette's existing
+    loading/behavior tests (`spacesim/tests/test_content.py`,
+    `spacesim/tests/test_vignette_tutorials.py`) continue to pass unchanged after the schema
+    extension ships.
+  - **Priority:** Must
+  - **Affected subsystems:** `content/vignette.py`, `engine/bus.py`, `engine/orders.py`
+  - **Dependencies:** NFR-2000
+  - **Source documents:** `docs/architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` §6
+    (Non-functional Requirements — Backward compatibility).
+  - **Related ADRs:** (none directly)
 
 ## 6. Extensibility
 

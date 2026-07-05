@@ -137,6 +137,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-3220 | SSN delivery | UNASSIGNED | ADR-0010 | C2, C3, C1 | INT-0009, INT-0010 | UNASSIGNED | `spacesim/tests/test_ssn.py` *(VR-1040)* | `IP-1040` *(closed 2026-07-04 via VR-1040)* |
 | FR-3310 | (order queue / cancel leaf) | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-3410 | (order delivery path leaf, ADR-0005/0013) | UNASSIGNED | ADR-0005, ADR-0013 | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_validate_order.py`, `spacesim/tests/test_orders.py`, `spacesim/tests/test_queue.py` *(VR-1010 + VR-1020, both confirmed — same rationale as `FR-3110`)* | `engine/orders.py` |
+| FR-3420 | Per-cell independent ROE | UNASSIGNED | (none directly) | C1 | (none — engine-internal validation change) | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-3510 | Role-Assignment command-filtering consequence | UNASSIGNED | ADR-0004 | C4, C7, C8 | INT-0004 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-3520 | Role-Assignment scoping (bus/payload/both) *(new leaf, CHG-002)* | UNASSIGNED | ADR-0004 | C4, C7, C8, C2 | INT-0004, INT-0006 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-4110 | White Cell exercise-control leaf | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | `test_content.py::test_vignette_1_loads_and_builds_a_world`, `test_content.py::test_parameter_override_flows_into_roe`, `test_web.py::test_ssn_endpoint_available` *(closed 2026-07-03 via IP-1150, VR-1150)* | `IP-1150` *(closed 2026-07-03 via VR-1150)* |
@@ -148,6 +149,13 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-4710 | No automated scoring / manual adjudication | UNASSIGNED | ADR-0017, ADR-0029 | C4, C6 | (none — absence of an interface) | UNASSIGNED | UNASSIGNED | (inspection — no outbound interface returns a score field) *(closed 2026-07 via IP-1060 v2.0, independently reconfirmed 2026-07-04 via VR-1060 — grepped `session/manager.py`/`ui_web/server.py` for any score/win-loss field, zero hits)* |
 | FR-4720 | Adjust safe-mode dials / live parameters mid-exercise *(new leaf, CHG-003)* | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0, independently confirmed 2026-07-04 via VR-1060)* |
 | FR-5110 | Scenario builder | UNASSIGNED | ADR-0027 | C4, C6, C5 | INT-0003 | UNASSIGNED | UNASSIGNED | `content/vignette.py` |
+| FR-5120 | Synchronized JSON view | UNASSIGNED | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
+| FR-5130 | 2D/3D initial-state preview | UNASSIGNED | ADR-0004 | C4, C2 | (none — reuses existing render pipeline) | FS-117 | UNASSIGNED | UNASSIGNED |
+| FR-5140 | TLE/lat-long asset entry | R101, R107 | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
+| FR-5150 | Asset menu (edit/reassign/delete) | UNASSIGNED | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
+| FR-5160 | Seat-count declaration + role matrix | UNASSIGNED | (none directly) | C4, C2 | INT-0002 | FS-117 | UNASSIGNED | UNASSIGNED |
+| FR-5170 | Typed per-payload-type parameter sub-schemas | R109, R110, R134, R137 | (none directly) | C1, C5 | (none — Domain Model/content-schema extension) | FS-117 | UNASSIGNED | UNASSIGNED |
+| FR-5180 | Typed bus parameter sub-schemas (power/propulsion) | R111, R112 | (none directly) | C1, C5 | (none directly) | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5210 | TLE force-add import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 | UNASSIGNED | UNASSIGNED | `content/` (TLE import) |
 | FR-5310 | Vignette loading | UNASSIGNED | ADR-0007 | C2, C5 | INT-0011 | UNASSIGNED | UNASSIGNED | `content/vignette.py` |
 | FR-6110 | SessionAPI seam (base) | UNASSIGNED | ADR-0002, ADR-0003 | C4, C2 | INT-0006 | UNASSIGNED | UNASSIGNED | `session/api.py` |
@@ -265,6 +273,7 @@ where the named subsystem maps onto one), not separately inferred.
 | NFR-1800 | Single-sitting availability | UNASSIGNED | (none identified) | C2 | `session/` (SessionManager) | UNASSIGNED | (inspection — no crash-recoverable-across-process-restart mechanism exists in `manager.py`) *(VR-1100)* | UNASSIGNED |
 | NFR-1900 | UI-agnostic engine + 80% coverage | UNASSIGNED | ADR-0002, ADR-0007 | C1 | `engine/` (all), test suite | UNASSIGNED | `spacesim/tests/test_import_guard.py` |
 | NFR-2000 | Content as data | UNASSIGNED | ADR-0007 | C5 | `content/vignette.py`, `content/vignettes/*.yaml` | UNASSIGNED | UNASSIGNED |
+| NFR-2010 | Additive vignette-schema evolution | UNASSIGNED | (none directly) | C5, C1 | `content/vignette.py`, `engine/bus.py`, `engine/orders.py` | FS-117 | UNASSIGNED |
 | NFR-2100 | Independently testable fidelity seams | UNASSIGNED | ADR-0009 | C1 | `engine/propagator.py`, `engine/access.py`, `engine/effects.py` | `FUTURE-WORK.md` §2 | UNASSIGNED |
 | NFR-2200 | Secure development practice | UNASSIGNED | ADR-0018 | C5 + all | `content/vignette.py`, all subsystems | UNASSIGNED | UNASSIGNED |
 | NFR-2300 | LAN trust boundary | UNASSIGNED | ADR-0015 | C2, C4 | `session/api.py` (SessionAPI, CellView), `ui_web/server.py` | UNASSIGNED | UNASSIGNED |
@@ -318,7 +327,7 @@ and ADR-0031 (both new 2026-07) are included on the same basis.
 |---|---|
 | ADR-0002 | FR-1120, FR-7110, FR-7310, FR-7320, NFR-1500, NFR-1700, NFR-1900, NFR-2400, NFR-2500, NFR-2600, NFR-2800 |
 | ADR-0003 | FR-6110 |
-| ADR-0004 | FR-2310, FR-3510, FR-3520, FR-4610, FR-6210, FR-6220, FR-6510, FR-6610 |
+| ADR-0004 | FR-2310, FR-3510, FR-3520, FR-4610, FR-5130, FR-6210, FR-6220, FR-6510, FR-6610 |
 | ADR-0005 | FR-3110, FR-3120, FR-3410, FR-4410 |
 | ADR-0006 | FR-1130 |
 | ADR-0007 | FR-5310, NFR-2000, NFR-1900 |
@@ -358,11 +367,11 @@ Related Interfaces field maps onto it via the derivation table.
 
 | Component | Citing Requirement(s) |
 |---|---|
-| C1 Simulation Engine | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-1510, FR-1520, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3120, FR-3220, FR-3310, FR-3410, FR-4410, FR-4610, FR-6210, FR-7110, FR-7220, FR-7310, FR-7320, FR-9110, NFR-1500, NFR-1700, NFR-2400, NFR-2600, NFR-2100, CR-01, CR-09, CR-10, CNFR-06 |
+| C1 Simulation Engine | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-1510, FR-1520, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3120, FR-3220, FR-3310, FR-3410, FR-3420, FR-4410, FR-4610, FR-5170, FR-5180, FR-6210, FR-7110, FR-7220, FR-7310, FR-7320, FR-9110, NFR-1500, NFR-1700, NFR-2010, NFR-2400, NFR-2600, NFR-2100, CR-01, CR-09, CR-10, CNFR-06 |
 | C2 Session/Application Layer | most FR-6xxx, FR-1xxx–FR-4xxx leaves citing INT-0006/0007/0008/0011/0012/0014 — see master matrix per-row; also CNFR-07 (new 2026-07, via ICD §7 item 12 cross-ref) |
 | C3 Mock SSN | FR-1510, FR-3210, FR-3220, CR-09 |
-| C4 Operator Console | FR-2410, FR-3110, FR-3120, FR-3510, FR-3520, FR-4110–FR-4720, FR-5110, FR-6110–FR-6610, FR-8110, NFR-1100, NFR-1200, NFR-1400, NFR-2300, NFR-2700, NFR-3000, NFR-3100, NFR-3200, NFR-3300, CR-02, CR-03, CR-06 |
-| C5 Content & Data | FR-5110, FR-5210, FR-5310, FR-7210, FR-7220, NFR-1600, NFR-2000, NFR-2200, NFR-3200, CR-08, CR-11 |
+| C4 Operator Console | FR-2410, FR-3110, FR-3120, FR-3510, FR-3520, FR-4110–FR-4720, FR-5110, FR-5120, FR-5130, FR-5140, FR-5150, FR-5160, FR-6110–FR-6610, FR-8110, NFR-1100, NFR-1200, NFR-1400, NFR-2300, NFR-2700, NFR-3000, NFR-3100, NFR-3200, NFR-3300, CR-02, CR-03, CR-06 |
+| C5 Content & Data | FR-5110, FR-5170, FR-5180, FR-5210, FR-5310, FR-7210, FR-7220, NFR-1600, NFR-2000, NFR-2010, NFR-2200, NFR-3200, CR-08, CR-11 |
 | C6 White Cell | FR-4110–FR-4720, FR-5110, FR-9110 (indirectly via INT-0016) |
 | C7 Blue Cell | FR-2410, FR-3110, FR-3120, FR-3510, FR-3520 |
 | C8 Red Cell (or AI-Red) | FR-2410, FR-3110, FR-3120, FR-3510, FR-3520, FR-9110, CR-01, CR-07, CNFR-06 |
@@ -447,11 +456,11 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `engine/effects.py` | FR-1410, FR-1420 |
 | `engine/cyber.py` | FR-1420 |
 | `engine/custody.py` | FR-1510, FR-1520 |
-| `engine/bus.py` | FR-2110, FR-2210 |
+| `engine/bus.py` | FR-2110, FR-2210, FR-5170, FR-5180, NFR-2010 |
 | `engine/busmodel.py` | FR-2310 |
 | `engine/buscommands.py` | FR-2410 |
 | `engine/recovery.py` | FR-2510 |
-| `engine/orders.py` | FR-3110, FR-3120, FR-3410, NFR-1600 |
+| `engine/orders.py` | FR-3110, FR-3120, FR-3410, FR-3420, NFR-1600, NFR-2010 |
 | `engine/ssn.py` | FR-3210, FR-3220 |
 | `engine/eventlog.py` | FR-7110, NFR-2400, NFR-2500, NFR-2600 |
 | `engine/world.py` | NFR-2400 |
@@ -465,7 +474,7 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `session/assessment.py` | FR-10110 *(closed 2026-07-03 via `IP-2010`)* |
 | `session/research_export.py` | FR-10210 *(closed 2026-07-04 via `IP-3010`)* |
 | `spacesim/tools/research_batch.py` | FR-10210 *(closed 2026-07-04 via `IP-3010`)* |
-| `content/vignette.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-5110, FR-5310, NFR-1600, NFR-2000, FR-4210 *(closed 2026-07-03 via IP-1151)* |
+| `content/vignette.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-5110, FR-5120, FR-5130, FR-5140, FR-5150, FR-5160, FR-5170, FR-5180, FR-5310, NFR-1600, NFR-2000, NFR-2010, FR-4210 *(closed 2026-07-03 via IP-1151)* |
 | `content/vignettes/*.yaml` | NFR-2000 |
 | `content/` (TLE import) | FR-5210, NFR-3200 |
 | `ui_web/server.py` | FR-4510, FR-8110, NFR-1400, NFR-2300, NFR-2700, NFR-3300, NFR-3100 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |

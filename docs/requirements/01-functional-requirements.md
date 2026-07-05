@@ -8,7 +8,15 @@
 > [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md));
 > further amended (`ADR-0032`/`ADR-0033` conflict resolution, 2026-07; **two numbered FR leaves
 > added** — `FR-10110`, `FR-10210`, promoted from `CR-19`/`CR-20` — see "ADR-0017/ADR-0029 conflict
-> resolution" section near the end of this document).
+> resolution" section near the end of this document); further amended (`FS-117` Vignette Creator
+> requirements-coverage pass, 2026-07-05; **nine numbered FR leaves added** — `FR-5120`, `FR-5130`,
+> `FR-5140`, `FR-5150`, `FR-5160`, `FR-5170`, `FR-5180` under `FR-5100`'s existing parent, plus
+> `FR-3420` under `FR-3400`'s existing parent — closing `docs/pipeline/backlog.md` `BL-0055`'s
+> Critical finding that most of `FS-117`'s architecture-committed scope, per
+> `docs/architecture/ADS-5100A-vignette-creator-session-and-ui.md`/`ADS-5100B-typed-parameters-and-per-cell-roe.md`,
+> had no owning requirement anywhere in this baseline; see
+> [`reviews/requirements-update-fs117.md`](../reviews/requirements-update-fs117.md) for the full
+> derivation and review).
 > **ADR range now ADR-0001 through ADR-0033** (32 `Accepted`, 1 `Superseded` — `ADR-0029` by
 > `ADR-0033`).
 > **Authoritative inputs (per explicit instruction for this baseline):**
@@ -647,7 +655,42 @@ review passes actually run against it).
 - **Source Documents:** GDS-04 §6.5 "Validation"; build-spec/02 §5.3 FR-P4 (binding statement).
 - **Related ADRs:** ADR-0005, ADR-0013
 - **Related Interfaces:** INT-0008
-- **Related Requirements:** FR-3110, FR-1310, FR-1520
+- **Related Requirements:** FR-3110, FR-1310, FR-1520, FR-3420
+
+#### FR-3420 — Per-cell independent Rules of Engagement
+
+- **ID:** FR-3420
+- **Title:** Enforce Rules of Engagement independently per cell
+- **Description:** The system shall enforce kinetic and cyber Rules of Engagement authorization
+  independently per issuing cell, rather than as a single value applied regardless of which cell
+  issued the order — while preserving identical behavior for a vignette that declares only the
+  legacy, single (non-cell-keyed) ROE parameter pair.
+- **Rationale:** `FR-3410`'s existing execute-time re-validation already checks "rules of
+  engagement" as one of five gates, but the current implementation (`engine/orders.py`) resolves a
+  single global flag regardless of `order.cell` — confirmed directly against the code, which never
+  references `order.cell` in its ROE check. The project owner explicitly requested per-cell ROE
+  selectors that actually gate per-cell behavior, not a cosmetic per-cell UI over one shared flag
+  (`docs/architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` §3.2, Decision Log entry 3).
+- **Priority:** Must
+- **Inputs:** A vignette's ROE declaration (legacy global pair, or an explicit per-cell structure);
+  an order's issuing cell.
+- **Outputs:** An accept/reject decision at `FR-3410`'s ROE check, now resolved per-cell.
+- **Preconditions:** An order reaches `FR-3410`'s execute-time re-validation.
+- **Postconditions:** A vignette declaring only the legacy global ROE pair produces identical
+  order-issuance behavior to today for both cells; a vignette declaring explicit per-cell values
+  gates each cell independently.
+- **Acceptance Criteria:** Given a vignette with differing per-cell kinetic ROE values, a kinetic
+  order from the not-authorized cell is rejected while an otherwise-identical order from the
+  authorized cell succeeds. Given a vignette using only the legacy global ROE pair, both cells'
+  order-issuance behavior is unchanged from today (regression, all 19 currently shipped vignettes).
+- **Verification Method:** Test
+- **Dependencies:** FR-3410
+- **Source Documents:** `docs/architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` §3.2,
+  §10 Decision Log entry 3.
+- **Related ADRs:** (none directly)
+- **Related Interfaces:** (none directly — an engine-internal validation change, not a new
+  interface)
+- **Related Requirements:** FR-3410, FR-5160
 
 ### FR-3500 — Role-scoped command catalog
 
@@ -950,7 +993,220 @@ review passes actually run against it).
 - **Source Documents:** ICD INT-0003; ADR-0027.
 - **Related ADRs:** ADR-0027
 - **Related Interfaces:** INT-0003
-- **Related Requirements:** FR-5210, FR-5310
+- **Related Requirements:** FR-5210, FR-5310, FR-5120, FR-5130, FR-5140, FR-5150, FR-5160, FR-5170, FR-5180
+
+#### FR-5120 — Synchronized JSON view of the in-progress vignette
+
+- **ID:** FR-5120
+- **Title:** Expose a synchronized raw-JSON view alongside the form-based authoring UI
+- **Description:** The system shall present a JSON view of the in-progress vignette's current
+  state alongside its form-based authoring UI, such that an edit made in either view is reflected
+  in the other without a manual refresh.
+- **Rationale:** `ADS-5100A` §2/§8 identifies "two independently-maintained data paths for one
+  draft" as the single most likely implementation defect for this capability; a requirement that
+  both views read/write one shared draft-session state, rather than merely offering a JSON export,
+  is what prevents that defect architecturally rather than catching it in testing.
+- **Priority:** Must
+- **Inputs:** The draft session's current state (`FR-5110`); an edit made via either the JSON view
+  or the form UI.
+- **Outputs:** An updated draft-session state, reflected in both views.
+- **Preconditions:** An authoring session is open (`FR-5110`).
+- **Postconditions:** The JSON view and form view never disagree about the draft session's current
+  state.
+- **Acceptance Criteria:** Given an edit made in the form UI, the JSON view reflects it without a
+  manual refresh, and vice versa.
+- **Verification Method:** Test
+- **Dependencies:** FR-5110
+- **Source Documents:** `docs/architecture/ADS-5100A-vignette-creator-session-and-ui.md` §2, §8
+  Risk 1.
+- **Related ADRs:** (none directly)
+- **Related Interfaces:** INT-0003
+- **Related Requirements:** FR-5110
+
+#### FR-5130 — 2D/3D initial-state preview
+
+- **ID:** FR-5130
+- **Title:** Preview the vignette's initial state in 2D and 3D before the exercise starts
+- **Description:** The system shall render the in-progress vignette's current initial force
+  lay-down in both 2D map and 3D globe form, reusing the existing render-from-custody scene
+  pipeline in ground-truth mode (no fog-of-war filtering).
+- **Rationale:** White Cell is the sole possible viewer of an authoring session; ground-truth
+  rendering is consistent with, not an exception to, the existing fog-of-war-at-the-boundary
+  pattern for White-Cell-only surfaces (`ADR-0004`) (`docs/architecture/ADS-5100A-vignette-creator-session-and-ui.md`
+  §6, §NFR).
+- **Priority:** Must
+- **Inputs:** The draft session's current asset/force state.
+- **Outputs:** A 2D map render and a 3D globe render of the current draft state.
+- **Preconditions:** An authoring session is open (`FR-5110`).
+- **Postconditions:** The preview reflects the draft session's current state, not a stale snapshot.
+- **Acceptance Criteria:** Given an asset added, edited, reassigned, or deleted via the Creator,
+  the 2D and 3D previews update to match within the same authoring session, with no
+  `CellController` fog-of-war filtering applied.
+- **Verification Method:** Test
+- **Dependencies:** FR-5110
+- **Source Documents:** `docs/architecture/ADS-5100A-vignette-creator-session-and-ui.md` §2, §6.
+- **Related ADRs:** ADR-0004
+- **Related Interfaces:** (none directly — reuses the existing render pipeline, not a new interface)
+- **Related Requirements:** FR-5110, FR-5150
+
+#### FR-5140 — TLE and lat/long asset entry
+
+- **ID:** FR-5140
+- **Title:** Add assets by manual TLE paste or lat/long entry, with type/cell/name fields
+- **Description:** The system shall let White Cell add a new asset to the in-progress vignette
+  either by pasting a Two-Line Element set (validated the same way the existing TLE-add mechanism
+  validates one) or by entering latitude/longitude for ground infrastructure (offering the curated
+  ground-site catalog before free-entry coordinates), in both cases requiring an asset-type,
+  cell-assignment, and name field.
+- **Rationale:** The project owner's explicit request; TLE entry is manual-only for this
+  requirement's scope — Space-Track.org network import is `FR-5210`'s own, separate concern, not
+  this requirement's. Regime-plausibility checking for a pasted TLE is grounded in
+  `docs/research/encyclopedia/R101-orbital-mechanics-for-operations.md`'s plausible-element-range
+  table; ground-site siting guidance is grounded in
+  `docs/research/encyclopedia/R107-ground-segment-operations.md`.
+- **Priority:** Must
+- **Inputs:** A pasted TLE or a latitude/longitude pair; asset-type, cell-assignment, and name
+  field values.
+- **Outputs:** A new asset added to the draft session.
+- **Preconditions:** An authoring session is open (`FR-5110`).
+- **Postconditions:** A TLE that fails validation, or an entry missing a required field, is
+  rejected with a specific reason rather than silently accepted or silently ignored.
+- **Acceptance Criteria:** Given a manually pasted, validation-passing TLE with all required
+  fields, the asset appears in the draft session's asset list; given a lat/long entry, the same
+  holds, and the curated site catalog is offered before free-entry coordinates.
+- **Verification Method:** Test
+- **Dependencies:** FR-5110
+- **Source Documents:** `docs/architecture/ADS-5100A-vignette-creator-session-and-ui.md` §2, §5;
+  `docs/research/encyclopedia/R101-orbital-mechanics-for-operations.md`;
+  `docs/research/encyclopedia/R107-ground-segment-operations.md`;
+  `docs/vignettes/GROUND-INFRASTRUCTURE.md`.
+- **Related ADRs:** (none directly)
+- **Related Interfaces:** INT-0003
+- **Related Requirements:** FR-5110, FR-5210 (the excluded, separate Space-Track path)
+
+#### FR-5150 — Asset menu (edit, reassign, delete)
+
+- **ID:** FR-5150
+- **Title:** Edit, reassign, or delete any already-added asset via a dedicated asset menu
+- **Description:** The system shall let White Cell edit an already-added asset's parameters,
+  reassign its owning cell, or delete it entirely, via a dedicated asset menu operating on the
+  draft session's current asset list.
+- **Rationale:** The project owner's explicit request; without this, an authoring mistake (wrong
+  cell, wrong parameter) would require restarting the authoring session rather than correcting it
+  in place.
+- **Priority:** Must
+- **Inputs:** A selected existing asset; an edit, reassignment, or delete action.
+- **Outputs:** The draft session's asset list, updated accordingly.
+- **Preconditions:** An authoring session is open (`FR-5110`) with at least one existing asset.
+- **Postconditions:** A deleted asset no longer appears anywhere in the draft session (asset list,
+  JSON view, 2D/3D preview).
+- **Acceptance Criteria:** Given an existing asset, selecting edit/reassign/delete in the asset
+  menu produces the corresponding change in the draft session's asset list, the JSON view
+  (`FR-5120`), and the 2D/3D preview (`FR-5130`) consistently.
+- **Verification Method:** Test
+- **Dependencies:** FR-5110
+- **Source Documents:** `docs/architecture/ADS-5100A-vignette-creator-session-and-ui.md` §2.
+- **Related ADRs:** (none directly)
+- **Related Interfaces:** INT-0003
+- **Related Requirements:** FR-5110, FR-5120, FR-5130
+
+#### FR-5160 — Seat-count declaration and seat/role-assignment matrix
+
+- **ID:** FR-5160
+- **Title:** Declare a seat count per cell and assign bus/payload/both roles via a matrix UI
+- **Description:** The system shall let White Cell declare how many seats exist per cell, then
+  assign bus/payload/both roles to those seats against assets via a matrix UI, reusing `FR-4210`'s
+  existing seat-to-role assignment mechanism as the underlying operation.
+- **Rationale:** `FR-4210` already lets White Cell bind one seat to one role/asset at a time, but
+  has no equivalent for declaring how many seats exist up front, and no batch/matrix presentation
+  across multiple seats and assets at once — a genuine workflow gap the project owner identified
+  directly (`docs/pipeline/backlog.md` `BL-0051`, folded into this Feature in full).
+- **Priority:** Must
+- **Inputs:** A declared seat count per cell; matrix cell selections (seat × asset × role).
+- **Outputs:** Generated seat identifiers per cell; Role Assignment records via the existing
+  `FR-4210` mechanism.
+- **Preconditions:** A vignette is loaded/being authored (`FR-4110`/`FR-5110`).
+- **Postconditions:** The resulting Role Assignment records are indistinguishable in shape from
+  ones produced by `FR-4210`'s existing one-at-a-time mechanism.
+- **Acceptance Criteria:** Given a declared seat count per cell and a matrix assignment, the
+  resulting Role Assignment state is identical in shape to what the existing `assign_role`
+  mechanism already produces for the same bindings entered one at a time.
+- **Verification Method:** Test
+- **Dependencies:** FR-4210, FR-5110
+- **Source Documents:** `docs/architecture/ADS-5100A-vignette-creator-session-and-ui.md` §2, §4;
+  `docs/pipeline/backlog.md` `BL-0051`.
+- **Related ADRs:** (none directly)
+- **Related Interfaces:** INT-0002
+- **Related Requirements:** FR-4210, FR-5110
+
+#### FR-5170 — Typed per-payload-type parameter sub-schemas
+
+- **ID:** FR-5170
+- **Title:** Present typed, validated parameter fields per payload type instead of an untyped bag
+- **Description:** The system shall present named, validated parameter fields specific to each
+  payload type (`satcom`/`isr_eo`/`isr_sar`/`sigint`/`sda`/`weather`/`pnt`/`mw`) for authoring,
+  replacing the generic, untyped parameter bag currently exposed for this purpose.
+- **Rationale:** The project owner's explicit request — "effective range of payload" and similar
+  parameters should be named, validated fields, not opaque dictionary keys. Grounded in
+  `docs/research/encyclopedia/R109-sensor-operations.md` (ISR/weather/missile-warning),
+  `R110-communications.md` (SATCOM), `R134-pnt-warfare-and-navigation-denial-operations.md` (PNT),
+  and `R137-bus-and-payload-parameter-catalog.md` (the completeness index confirming every payload
+  type's parameter set).
+- **Priority:** Must
+- **Inputs:** A selected payload type; parameter values entered against that type's schema.
+- **Outputs:** A validated, typed parameter set attached to the asset's payload state in the draft
+  session.
+- **Preconditions:** An asset with a payload exists in the draft session (`FR-5140`/`FR-5150`).
+- **Postconditions:** A `weather`/`mw` typed parameter set has no observable engine effect until
+  the corresponding engine parameterization exists (`docs/pipeline/backlog.md` `BL-0053`) — the
+  authoring surface must not imply this parameter is already live before then.
+- **Acceptance Criteria:** Given an `isr_eo` asset, the presented parameter fields are specific to
+  EO sensors (e.g. resolution, swath), not a generic key-value bag; given a `satcom` asset, the
+  presented fields are bandwidth-related instead. Given a `weather` or `mw` asset before `BL-0053`
+  ships, the UI discloses that the parameter has no engine effect yet.
+- **Verification Method:** Test
+- **Dependencies:** FR-5140, FR-5150
+- **Source Documents:** `docs/architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` §3.1;
+  `docs/research/encyclopedia/R109-sensor-operations.md`;
+  `docs/research/encyclopedia/R110-communications.md`;
+  `docs/research/encyclopedia/R134-pnt-warfare-and-navigation-denial-operations.md`;
+  `docs/research/encyclopedia/R137-bus-and-payload-parameter-catalog.md`.
+- **Related ADRs:** (none directly)
+- **Related Interfaces:** (none directly — a Domain Model/content-schema extension, not a new
+  interface)
+- **Related Requirements:** FR-5140, FR-5150, FR-5180
+
+#### FR-5180 — Typed bus parameter sub-schemas (power, propulsion)
+
+- **ID:** FR-5180
+- **Title:** Present typed, validated bus parameter fields for power and propulsion
+- **Description:** The system shall present named, validated parameter fields for a satellite
+  asset's power and propulsion bus subsystems for authoring, exposing only fields the engine
+  actually reads.
+- **Rationale:** `AssetResources.power_w` is a confirmed dead field never read by `advance_bus`
+  (`docs/research/encyclopedia/R111-power-and-thermal-operations.md`) — this requirement commits
+  to exposing `charge_rate_per_s`/`drain_rate_per_s` (already-live) instead, so the authoring
+  surface never presents a plausible-looking field with no effect. The propulsion field is
+  `AssetResources.delta_v_ms` ("fuel level"), grounded in
+  `docs/research/encyclopedia/R112-propulsion-and-maneuver-planning.md`'s total-Δv-budget-by-class
+  table.
+- **Priority:** Must
+- **Inputs:** Parameter values entered against the typed bus power/propulsion schema.
+- **Outputs:** A validated, typed parameter set attached to the asset's bus state in the draft
+  session.
+- **Preconditions:** A satellite asset exists in the draft session (`FR-5140`/`FR-5150`).
+- **Postconditions:** No authoring field maps to `AssetResources.power_w`.
+- **Acceptance Criteria:** Given a bus power parameter set via this requirement's UI, the resulting
+  saved vignette's field maps to `charge_rate_per_s`/`drain_rate_per_s`, never `power_w`. Given a
+  bus propulsion parameter set, it maps to `AssetResources.delta_v_ms`.
+- **Verification Method:** Test
+- **Dependencies:** FR-5140, FR-5150
+- **Source Documents:** `docs/architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` §3.1;
+  `docs/research/encyclopedia/R111-power-and-thermal-operations.md`;
+  `docs/research/encyclopedia/R112-propulsion-and-maneuver-planning.md`.
+- **Related ADRs:** (none directly)
+- **Related Interfaces:** (none directly)
+- **Related Requirements:** FR-5140, FR-5150, FR-5170
 
 ### FR-5200 — TLE import and fallback
 
