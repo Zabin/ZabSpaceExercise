@@ -13,19 +13,47 @@
 
 ## Position
 
-- **Updated:** 2026-07-05 (run #37)
-- **Increment:** two threads active. **Thread A (v1 baseline follow-through): the project owner
-  chose Path A** for `BL-0049` (implement `FEAT-3500`, not descope) — runs #33-#36 executed
-  `06-feature-specification` (`FS-116` authored, v1.0), `03-architecture-design-synthesis`
-  (`ADS-3500`, resolving both of `FS-116`'s Open Questions), `06-feature-specification` again
-  (`FS-116` v1.1, Open Questions closed), and `07-implementation-planning` (`IP-1160` authored,
-  `BLOCKED` only on authorization — every dependency already `VERIFIED`). **Run #37: the project
-  owner was asked for `IP-1160`'s MSTR-006 §3 go-ahead and answered "not yet."** `IP-1160` stays
-  `BLOCKED`/unauthorized; Path A is paused at this gate, not stalled — every upstream step (spec,
-  architecture, planning) is done, so implementation can begin the moment authorization is given.
-  `11-release-readiness` cannot be re-run for a GO until `IP-1160` reaches `VERIFIED` (or the
-  project owner reverses course to Path B). **Thread B (training-corpus elevation): CLOSED OUT run
-  #32** — `08-training-manual-authoring` fixed `BL-0048`; zero open findings, zero queued steps.
+- **Updated:** 2026-07-05 (run #38, triage)
+- **Increment:** three threads now active. **Thread A (v1 baseline follow-through):** unchanged
+  since run #37 — `IP-1160` remains `BLOCKED`, the project owner having explicitly deferred
+  authorization ("not yet"); `BL-0049` stays `SCHEDULED`/open, no re-ask needed until the project
+  owner revisits it. **Thread B (training-corpus elevation):** still closed out (zero open
+  findings, zero queued steps) as of run #32. **Thread C (new — Vignette Creator + seat-assignment
+  UI): opened this run.** Reconciled substantial work that landed **outside the manager's own
+  loop** since run #37 (the project owner worked directly with the relevant skills/tools in this
+  same session): (1) `ADS-3500` v1.1, `FS-116` v1.2, `IP-1160` v1.1 — a project-owner-directed
+  correction to the `DEFENSE_VERBS` role-scope classification (no third "defense" category; each
+  verb individually `bus` or `payload`, six/two per `apply_command()`'s actual code) cascaded
+  through all three documents; (2) `BL-0051` (seat-count declaration + role-assignment matrix UI at
+  vignette setup) and `BL-0052` (Vignette Creator — a large, distinct White-Cell authoring feature
+  anchored to `FEAT-5100`, four design-fork decisions already made by the project owner directly)
+  both filed via `00-intake`, plus a follow-up decision on `BL-0052` (Space-Track integration
+  deferred, manual TLE entry only for v1). All of this is already committed to the tree (this
+  session's own commits); this run's reconciliation is bringing the journal's own record up to
+  date with it, not correcting a defect.
+- **Thread A pipeline state:** unchanged since run #37 — see that run's row.
+- **Thread B pipeline state:** unchanged since run #32 — see that run's row.
+- **Thread C pipeline state (this run):** Triaged both new backlog entries. `BL-0051` bundled into
+  `BL-0052`'s design track (entry stage moved `04`→`03` — both are White-Cell setup-time screen
+  surface over the same underlying seat/asset/role concepts; designing them independently risks two
+  competing UI conventions for the same workflow moment). `BL-0052` sequenced `02` (research) before
+  `03` (architecture) — the confirmed research gap (no parameter-range/TLE-format/ground-siting
+  documentation) is upstream of the architecture pass per the pipeline's own ordering rule, and the
+  typed payload sub-schemas the eventual `ADS-xxx` will specify need that grounding to cite, not
+  invent. Both now `SCHEDULED`. No gate applies to invoking `02-research-ow-orbital-mechanics`
+  (research authoring isn't MSTR-006 §3-gated) — the next advance can proceed without a stop.
+- **Backlog:** 52 total. This run: `BL-0051`, `BL-0052` triaged `NEW`→`SCHEDULED` (bundled/
+  sequenced per above). No other `NEW` entries, no `DEFERRED` triggers fired, no ripe `NEEDS-USER`
+  items beyond the standing (already-answered-this-session, not due for re-ask) `IP-1160`
+  authorization gate.
+- **Next step / open gate:** Thread A remains gated on `IP-1160` authorization (the project owner's
+  call, not due to be re-asked). **Thread C is unblocked and ready: the next advance should invoke
+  `02-research-ow-orbital-mechanics`** to close the confirmed R1xx-tier gaps (bus/payload parameter
+  ranges, TLE-format primer, ground-station-siting methodology) grounding `BL-0052`'s eventual
+  `ADS-xxx` pass. Thread B has no queued work.
+- **Open gates:** **`IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner,
+  unchanged this run.** No other gate open. PR #49 (this whole increment's work, runs #30 onward)
+  remains open/draft, no CI configured in this repo, no review comments as of this run.
 - **Reconciliation note (run #16, preserved):** between runs #15 and #16, substantial pipeline-shaped work
   landed **outside** the manager's own loop (the user worked directly with the relevant skills
   across two other sessions, PRs #45 and #46, both merged to `main`): the "complete outstanding 08"
@@ -434,3 +462,4 @@
 | 35 | 2026-07-05 | advance | `06-feature-specification` | Amend `FS-116` to v1.1, closing both Open Questions via `ADS-3500` | Reconciliation: no drift since run #34. Re-opened `FS-116` (not a fresh draft): updated Status (In progress -> Ready for implementation planning), Dependencies (added `ADS-3500`), System Behaviour (named the seat-resolution mechanism and the resolved bus/payload/`DEFENSE_VERBS` classification concretely), Interfaces Used (INT-0004/INT-0006 now described as carrying the amended `seat` field, not flagged as blocked), Data Model Changes (confirmed the resolution is an interface addition, not a Domain Model change), Acceptance Criteria (added `DEFENSE_VERBS`/omitted-`seat` coverage), Verification Plan, and Open Questions (both closed, citing `ADS-3500`'s Decision Log by entry number). Fields the resolutions didn't touch (Purpose, Scope, Requirements Implemented, User Workflows, Error Handling, Performance/Security Considerations, Dependencies, Risks, Related ADRs/Interfaces) left unchanged. Updated `feature-index.md`/`ROADMAP.md`. Committed `b13de03`, pushed. | `FS-116` is implementation-ready -- advance to `07-implementation-planning`. |
 | 36 | 2026-07-05 | advance | `07-implementation-planning` | Plan the Implementation Package(s) for `FS-116` v1.1 | Reconciliation: no drift since run #35. Confirmed `FS-116` v1.1 approved with zero blocking Open Questions, and every candidate dependency package (`IP-1151`, `IP-1050`, `IP-1051`) already `VERIFIED`. Checked the live tree before citing any file/function (per this skill's own anti-drift discipline): confirmed `OrderRequest`/`issue_order`'s exact current signatures, and discovered `spacesim/ui_web/static/app.js` already carries a pre-existing, purely cosmetic, entirely unenforced `VERB_ROLE`/`ROLE_FILTER` client-side display filter (a personal "Bus/Payload/SDA/All" viewing toggle with zero connection to any Role Assignment) -- its `def.harden` tag conflicts with `ADS-3500`'s bus-scope classification, resolved in the package as a bug fix in favor of the reviewed, authoritative decision. Authored **`IP-1160`** (no split -- `FS-116` is one coherent unit of work across a small, contiguous set of files), all 14 fields populated, `Files to Modify` checked against the current source tree rather than guessed. Status: `BLOCKED`, not `READY`, solely because MSTR-006 §3 authorization is not yet on record -- every dependency gate is already cleared. Updated the Technical Work Breakdown (Tranche 2), `packages/INDEX.md`, the Master Build Plan (19 packages total: 18 `VERIFIED` + 1 `BLOCKED`), `FS-116`'s `Referenced By`, `ROADMAP.md`. Committed `0151fb0`, pushed. | `IP-1160` needs the project owner's explicit MSTR-006 §3 go-ahead before `08-code-implementation` can run -- asked via `AskUserQuestion`. |
 | 37 | 2026-07-05 | advance (gate check) | -- | `IP-1160` MSTR-006 §3 authorization | Reconciliation: no drift since run #36. Gate check: `IP-1160` is fully specified with every dependency `VERIFIED` -- the sole remaining gate before `08-code-implementation` is explicit authorization. Put the go/no-go to the project owner via `AskUserQuestion`. Answer: **"Not yet."** No package status changed (`IP-1160` remains `BLOCKED`); no code written; no further skill invoked this run -- a clean gate stop, not a stall. | Nothing queued on either thread until the project owner revisits `IP-1160`'s authorization (or chooses Path B instead) -- the pipeline is caught up. |
+| 38 | 2026-07-05 | triage | -- | Reconcile + disposition `BL-0051`/`BL-0052` | Reconciliation: substantial work landed outside the manager's own loop since run #37, all directed live by the project owner in this same session: `ADS-3500` v1.1 / `FS-116` v1.2 / `IP-1160` v1.1 (corrected the `DEFENSE_VERBS` role-scope classification -- no third "defense" category, each of the eight verbs individually `bus` or `payload` per `apply_command()`'s actual code, six/two split, reversing v1.0's wholesale `bus` call); `BL-0051` (seat-count declaration + role-assignment matrix UI) and `BL-0052` (Vignette Creator, a large distinct White-Cell authoring feature anchored to `FEAT-5100`, with four design-fork decisions already made directly by the project owner: server-side draft session resolving `CR-11`, typed per-payload-type sub-schemas, real per-cell ROE enforcement, and a new `ADS-xxx` cluster before a consolidated FS) filed via `00-intake`; a follow-up decision on `BL-0052` deferring Space-Track integration and confirming manual-only TLE entry for v1. All already committed; this run's job was bringing the journal's own record current, not fixing a defect. Triaged: `BL-0051` bundled into `BL-0052`'s track (entry stage `04`->`03`, rides the same `ADS-xxx` pass -- both are White-Cell setup-time UI over the same seat/asset/role concepts). `BL-0052` sequenced `02-research-ow-orbital-mechanics` before `03-architecture-design-synthesis` (upstream research gap -- no parameter-range/TLE-format/ground-siting documentation exists -- ordered ahead of the architecture pass that needs it as grounding). Both `NEW` -> `SCHEDULED`. No other `NEW` entries, no `DEFERRED` triggers fired, no ripe `NEEDS-USER` items beyond the standing, already-answered `IP-1160` gate (not due for re-ask). No skill invoked (triage mode). Committed journal + backlog together. | Thread A stays gated on `IP-1160` authorization (unchanged, the project owner's call). **Thread C is unblocked: the next advance should invoke `02-research-ow-orbital-mechanics`** to close the R1xx-tier gaps (bus/payload parameter ranges, TLE-format primer, ground-station-siting methodology) that `BL-0052`'s eventual `ADS-xxx` pass needs as grounding -- no gate applies, this can run without a stop. |
