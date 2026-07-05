@@ -224,9 +224,11 @@ clusters with real design tension; small/uncontested features skip straight to `
 
 **ADS-3500** resolves two Open Questions [`FS-116`](docs/features/FS-116-role-scoped-command-catalog.md)
 (`FEAT-3500`) surfaced: extends the operator-command interface to carry a `seat` identifier
-(amending `INT-0004`/`INT-0006`'s concrete realization) and classifies `DEFENSE_VERBS` for
-role-scope purposes. Authored via Workflow B since `GDS-09` (the ladder level that would eventually
-formally own interface contracts) remains scaffold-only and gated behind `GDS-06`-`08`.
+(amending `INT-0004`/`INT-0006`'s concrete realization) and classifies every `DEFENSE_VERBS` verb
+individually as `bus` or `payload` (v1.1, per the project owner's direction that there is no third
+"defense" role-scope category — six are `bus`, two — `def.harden`/`def.set_deception_mode` — are
+`payload`). Authored via Workflow B since `GDS-09` (the ladder level that would eventually formally
+own interface contracts) remains scaffold-only and gated behind `GDS-06`-`08`.
 
 ### Global ladder (`GDS-00`…`GDS-10`, scaffolded this revision, content not yet authored)
 

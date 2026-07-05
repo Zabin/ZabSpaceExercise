@@ -1,5 +1,5 @@
 > **Document ID:** ADS-3500
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Authored
 > **Dependencies:** [GDS-04](04-domain-model.md) §1.10 (Role Assignment), [GDS-03](03-architecture.md)
 > §2.2 (Session/Application Layer), `design/05-interface-control-document.md` INT-0004/INT-0006
@@ -7,8 +7,8 @@
 > amendment), `docs/requirements/01-functional-requirements.md` FR-3510/FR-3520
 > **Referenced By:** [FS-116](../features/FS-116-role-scoped-command-catalog.md)
 > **Produces:** the resolution of FS-116's two Open Questions; the seat-identifier interface
-> amendment and the `DEFENSE_VERBS` role-scope classification, both binding on FS-116's eventual
-> Implementation Package
+> amendment and the per-verb `bus`/`payload` classification of every `DEFENSE_VERBS` entry (v1.1 —
+> no third "defense" scope category), both binding on FS-116's eventual Implementation Package
 > **Feature Mapping:** FS-116
 > **Related Topics:** [ADR-0004](adr/ADR-0004-fog-of-war-at-boundary.md) (the structurally similar
 > "enforce once, server-side, at the session boundary" pattern this document extends to a new,
@@ -27,6 +27,16 @@ requirements' two-way role-scope model). Workflow B, not the global ladder, beca
 Specification — the level that would eventually formally own this interface decision) is still
 scaffold-only and gated behind `GDS-06`-`08`; this cluster's design tension cannot wait for that
 sequence to complete.*
+
+*v1.1 (this revision): the project owner gave explicit product direction after v1.0 — "verbs
+should be categorized as bus and payload; bus and payload verbs may provide a defensive effect but
+no commands are purely defense actions." This corrects Decision Log entry 2, which had classified
+every `DEFENSE_VERBS` entry as `bus`-scope wholesale. Every one of the eight `DEFENSE_VERBS` is now
+individually reclassified as `bus` or `payload` based on which subsystem it actually mutates
+(confirmed by reading `apply_command()`'s own implementation for each verb, not by category name)
+— the "defense" grouping in `engine/buscommands.py` describes an *effect* (a defensive posture or
+action), not a third *scope* category. Sections §3, §8, §9, and Decision Log entry 2 are updated;
+all other sections are unaffected by this correction.*
 
 ## 1. Executive Design Overview
 
@@ -76,22 +86,37 @@ the same *pattern* to a new, separately-grounded case (`GDS-04` §1.10).
 
 No new entity. The Role Assignment entity (`GDS-04` §1.10) is unchanged — this document only
 clarifies which of the engine's existing command verbs fall under which of its two already-defined
-scope values (`bus`, `payload`; `both` is the union):
+scope values (`bus`, `payload`; `both` is the union). Per the project owner's explicit v1.1
+direction, **there are only two role-scope categories — `DEFENSE_VERBS` is an effect grouping in
+`engine/buscommands.py`, not a third scope category**: every verb in it is individually bus or
+payload, decided by which subsystem `apply_command()` actually mutates, not by its `def.*` name
+prefix.
 
 | Verb category (`engine/buscommands.py`) | Role scope | Rationale |
 |---|---|---|
 | `BUS_VERBS` (EPS, ADCS, CDH, TCS, comms link config, propulsion) | `bus` | Platform-subsystem actions; already the requirement's own literal example ("a bus-only-assigned operator") in `FR-3510`'s Acceptance Criteria. |
 | `PAYLOAD_VERBS` (SATCOM mission config, ISR, SIGINT, SDA tasking, weather, PNT, missile-warning) | `payload` | Every verb in this set is tied to a specific payload's mission function — the requirement's own literal "payload-only command" example. |
-| `DEFENSE_VERBS` (cyber patch, frequency-hop, hardening, threat-warning, evasive maneuver, escort posture, dispersal, deception mode) | `bus` | See Decision Log entry 2 — every verb in this set is a platform/defense-posture action (propulsion-adjacent: `def.maneuver_evade`/`def.disperse`; comms/cyber-hardening-adjacent: the rest), none is tied to a specific payload's mission function the way every `PAYLOAD_VERBS` entry is. Classified as `bus` rather than introducing an unbaselined third role-scope category. |
+| `DEFENSE_VERBS` — reclassified individually (v1.1): | | |
+| &nbsp;&nbsp;`def.frequency_hop` | `bus` | Mutates `bus.comms.freq_hopping` — the same `bus.comms` subsystem `comms.enable_isl`/`comms.config_link` (already `BUS_VERBS`) mutate. |
+| &nbsp;&nbsp;`def.patch_cyber` | `bus` | Patches `a.cyber_vulnerabilities`, gating `recovery.py`'s safe-mode re-safing chain — a CDH/flight-software-domain concern (`CLAUDE.md`'s own telemetry framing: "cyber → FSW errors"), i.e. bus-domain. |
+| &nbsp;&nbsp;`def.set_threat_warning` | `bus` | Sets `a.threat_warning`, an asset-wide situational-posture flag (not `payload_state`-scoped) — a platform-level state, consistent with the bus being this domain's "whole-ship" owner. |
+| &nbsp;&nbsp;`def.maneuver_evade` | `bus` | Consumes `a.resources.delta_v_ms` — the identical propulsion resource pool `prop.cancel_burn`/`prop.collision_avoid`/`prop.station_keep` (already `BUS_VERBS`) consume; `payload_state.evasion_active` is set only as a secondary side-effect, not the primary action. |
+| &nbsp;&nbsp;`def.escort_posture` | `bus` | Sets `a.threat_warning` and logs a `world.consequences` entry — the same asset-wide posture mechanism as `def.set_threat_warning`, not a `payload_state` mutation. |
+| &nbsp;&nbsp;`def.disperse` | `bus` | Primary effect is `a.threat_warning = True` (a constellation-level maneuver posture, propulsion-adjacent like `def.maneuver_evade`); the conditional `payload_state.detail` update is a secondary annotation, not the action's substance. |
+| &nbsp;&nbsp;`def.harden` | `payload` | Mutates `a.payload_state.hardened` directly — the implementation requires `payload_state` to exist at all (`return False, "no_payload"` otherwise), unlike every `bus`-classified verb above. |
+| &nbsp;&nbsp;`def.set_deception_mode` | `payload` | The implementation's own comment states this "surfaces as a payload-side posture flag" (military deception per the USSF Space Warfighting Framework) — explicitly payload-domain by the code's own documentation. |
 
 ## 4. User Stories
 
 - *As a Blue operator seated under a `bus-only` Role Assignment for Asset X, I can issue evasive
-  maneuvers and patch cyber vulnerabilities on Asset X, but I cannot task Asset X's ISR sensor* —
-  because `def.maneuver_evade`/`def.patch_cyber` are `bus`-scoped verbs and `isr.collect_now` is not.
+  maneuvers and patch cyber vulnerabilities on Asset X, but I cannot task Asset X's ISR sensor or
+  harden its payload* — because `def.maneuver_evade`/`def.patch_cyber` are `bus`-scoped verbs while
+  `isr.collect_now`/`def.harden` are `payload`-scoped, and neither is offered/accepted outside its
+  own scope.
 - *As a Blue operator seated under a `payload-only` Role Assignment for Asset X, I can task Asset
-  X's sensors and manage its SATCOM configuration, but I cannot maneuver Asset X or patch its
-  cyber posture* — because those are `bus`-scoped verbs outside my assignment's scope.
+  X's sensors, manage its SATCOM configuration, and harden its payload, but I cannot maneuver Asset
+  X or patch its cyber posture* — because those are `bus`-scoped verbs outside my assignment's
+  scope.
 - *As a White Cell facilitator authoring a new vignette that declares `roles_needed`, I can rely on
   the existing `roles_needed`/`assign_role`/`staffing_report` mechanism (`FS-115`) unchanged — this
   document adds no new authoring surface.*
@@ -143,11 +168,12 @@ requirements from being implementable:
   either a future `GDS-09` authoring pass merges this decision in, or `FS-116`'s own eventual
   Implementation Package updates the ICD as part of its Documentation Updates (the more immediate,
   practical path — flagged for that package's authoring, not performed here).
-- **`DEFENSE_VERBS`' classification as `bus`-scope is a judgment call, not a requirement the
-  baseline already stated** — reasonable and explicitly justified (§3 above), but if a future
-  Feature needs finer-grained defense-verb scoping (e.g., a dedicated "defense operator" role
-  distinct from both bus and payload), this classification would need revisiting alongside a
-  Domain Model amendment to `GDS-04` §1.10's scope enumeration itself.
+- **Two of the eight per-verb classifications (`def.set_threat_warning`, `def.escort_posture`,
+  `def.disperse`) rest on "asset-wide posture flag → bus" reasoning rather than a `bus.*`-namespaced
+  field mutation** (unlike `def.frequency_hop`/`def.maneuver_evade`, which mutate `bus.comms`/
+  propulsion resources directly). This is a defensible, code-grounded call (per §3's rationale
+  column) but a softer one than the four verbs with a direct `bus.*` field mutation — if a future
+  Feature needs finer-grained defense-verb scoping, revisit these three first.
 - **Multi-seat-per-cell concurrency (`GDS-01` §2) is preserved, not simplified** — this was a
   deliberate choice (the project owner explicitly declined the "simplify scope to sidestep Q1"
   option that would have narrowed it). This means the eventual Implementation Package carries
@@ -162,19 +188,20 @@ requirements from being implementable:
    common enough that an omitted `seat` becomes a live ambiguity rather than a "no gate applies"
    default. Route to a future `04-requirements-engineering` or `08-vignette-development` pass, not
    blocking `FS-116`'s implementation today.
-2. **Whether a finer-grained third role-scope category (beyond `bus`/`payload`/`both`) is ever
-   needed for `DEFENSE_VERBS`-like actions** — deferred per Risk 2 above; not blocking, since this
-   document's `bus`-scope classification is a reasonable, recorded default.
+2. ~~Whether a finer-grained third role-scope category (beyond `bus`/`payload`/`both`) is ever
+   needed for `DEFENSE_VERBS`-like actions~~ — **closed by the project owner's explicit v1.1
+   direction: there is no third category.** Every command is bus or payload (or both); "defense" is
+   an effect a bus or payload verb can produce, never a scope category of its own.
 
-Both are residual and non-blocking — neither prevents `07-implementation-planning` from proceeding
-against `FS-116` with this document's two decisions as its grounding.
+Question 1 is residual and non-blocking — it does not prevent `07-implementation-planning` from
+proceeding against `FS-116` with this document's decisions as its grounding.
 
 ## 10. Decision Log
 
 | # | Decision | Rationale | Alternatives considered |
 |---|---|---|---|
 | 1 | Extend the operator-command interface (`INT-0004`'s concrete realization: `OrderRequest` in `spacesim/ui_web/server.py`; `INT-0006`'s concrete realization: `SessionManager.issue_order`/`InProcessSession.issue_order`) to carry an optional `seat: str \| None` field, resolved by the Session Layer against the existing Role Assignment mapping before applying `FS-116`'s role-scope gate. | Preserves `GDS-01` §2's existing many-roles-few-humans concurrency model (a cell may have more than one seated operator); consistent with the existing client-asserted trust level every other identifier in this system already carries; fully additive/backward-compatible with all 19 shipped vignettes and the full existing test suite. | (a) A single-active-Role-Assignment-per-cell simplification, avoiding any interface change — rejected: the project owner explicitly declined this option, since it would silently narrow `GDS-01` §2's documented concurrency model rather than making a deliberate, recorded architecture decision. (b) Deriving the acting seat from some other existing signal (e.g., a per-connection session token) — rejected: no such per-seat connection concept exists anywhere in the current session/transport layer (`session/inprocess.py`'s locking is per-session, not per-seat); inventing one would be a much larger change than adding one optional field. |
-| 2 | Classify every `DEFENSE_VERBS` entry as `bus`-scope for role-scope purposes (a `bus-only` Role Assignment includes `BUS_VERBS ∪ DEFENSE_VERBS`; `payload-only` includes only `PAYLOAD_VERBS`; `both` includes all three). | Every `DEFENSE_VERBS` entry is a platform/defense-posture action (propulsion-adjacent or comms/cyber-hardening-adjacent), structurally like `BUS_VERBS`'s existing `prop.*`/`comms.*` entries — none is tied to a specific payload's mission function the way every `PAYLOAD_VERBS` entry is. Keeps the role-scope model inside `GDS-04` §1.10's already-baselined two-value (`bus`/`payload`) enumeration rather than requiring a Domain Model amendment for a third category. | (a) Classify `DEFENSE_VERBS` as `payload`-scope — rejected: no `DEFENSE_VERBS` entry resembles a payload's mission-specific function (imagery, SATCOM, SIGINT, SDA, weather, PNT, missile-warning) the way every actual `PAYLOAD_VERBS` entry does. (b) Introduce a third `defense` role-scope category — rejected for this pass: a bigger, unbaselined Domain Model change with no requirement currently asking for it; left as a residual Open Question (§9.2) rather than pre-emptively built. |
+| 2 *(revised v1.1)* | **There are exactly two role-scope categories, `bus` and `payload` (`both` is their union) — no third "defense" category exists.** `DEFENSE_VERBS` is an *effect* grouping in `engine/buscommands.py` (verbs that produce a defensive posture/action), not a role-*scope* category; each of its eight members is individually classified `bus` or `payload` by which subsystem `apply_command()` actually mutates (see §3's table): `def.frequency_hop`/`def.patch_cyber`/`def.set_threat_warning`/`def.maneuver_evade`/`def.escort_posture`/`def.disperse` → `bus`; `def.harden`/`def.set_deception_mode` → `payload`. | **Directed by the project owner (v1.1):** "verbs should be categorized as bus and payload — bus and payload verbs may provide a defensive effect but no commands are purely defense actions." Confirmed against the actual `apply_command()` implementation for each of the eight verbs (not guessed from the `def.*` name prefix or the pre-existing, never-reviewed `app.js` `VERB_ROLE` tags) — four mutate a `bus.*`-namespaced field or the shared propulsion resource pool directly; two mutate `a.payload_state` directly (and fail with `no_payload` if it's absent); two (`def.set_threat_warning`, `def.escort_posture`) are asset-wide posture flags with no `bus.*`/`payload_state` field of their own, classified `bus` as the platform/"whole-ship" owner in this domain model. | *(v1.0, superseded)* Classify every `DEFENSE_VERBS` entry as `bus`-scope wholesale — rejected in v1.1: this session's own `app.js` had already, independently, tagged `def.harden` as `"payload"` (a coincidental but correct prior signal the v1.0 pass didn't weight before lumping all eight together), and reading `apply_command()` directly confirms `def.harden`/`def.set_deception_mode` are genuinely payload-side, not bus-side, actions. |
 
 ---
 

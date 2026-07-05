@@ -108,6 +108,13 @@ Workflow B (per-cluster synthesis) rather than waiting on `GDS-09` (API Specific
 scaffold-only and gated behind `GDS-06`-`08`) — this is exactly the "real design tension the global
 ladder doesn't resolve at the system level" Workflow B exists for.
 
+**v1.1 (2026-07-05):** the project owner directed that `DEFENSE_VERBS` is an effect grouping, not a
+third role-scope category — every verb is bus or payload, never "purely defense." Decision Log
+entry 2 revised: each of the eight `DEFENSE_VERBS` entries individually reclassified by reading
+`apply_command()`'s actual implementation (six `bus`, two `payload` — `def.harden`/
+`def.set_deception_mode` mutate `payload_state` directly), superseding v1.0's wholesale
+`bus`-classification.
+
 ## 3. Architecture Decision Records (`docs/architecture/adr/`)
 
 A separate, flat record of individual architectural decisions extracted from GDS-01 (Concept of
