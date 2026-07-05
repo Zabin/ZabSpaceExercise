@@ -220,9 +220,13 @@ clusters with real design tension; small/uncontested features skip straight to `
 | ID | Document | Capability cluster | Owning domain | Status |
 |---|---|---|---|---|
 | ADS-00 | Architecture index | `architecture/INDEX.md` | — | ✅ |
+| ADS-3500 | Role-Scoped Command Enforcement | `architecture/ADS-3500-role-scoped-command-enforcement.md` | (no owning DOM) | ✅ Authored (2026-07-05) — the first `ADS-xxx` in this project |
 
-No `ADS-xxx` capability document has been authored yet — this row will grow as the
-`03-architecture-design-synthesis` skill is run against a capability cluster with real design tension.
+**ADS-3500** resolves two Open Questions [`FS-116`](docs/features/FS-116-role-scoped-command-catalog.md)
+(`FEAT-3500`) surfaced: extends the operator-command interface to carry a `seat` identifier
+(amending `INT-0004`/`INT-0006`'s concrete realization) and classifies `DEFENSE_VERBS` for
+role-scope purposes. Authored via Workflow B since `GDS-09` (the ladder level that would eventually
+formally own interface contracts) remains scaffold-only and gated behind `GDS-06`-`08`.
 
 ### Global ladder (`GDS-00`…`GDS-10`, scaffolded this revision, content not yet authored)
 

@@ -95,12 +95,18 @@ Constraints, Risks, Open Questions, Decision Log. Size discipline: ~8-15 pages e
 
 | ID | Document | Capability cluster | Owning domain | Status |
 |---|---|---|---|---|
-| *(none yet)* | — | — | — | — |
+| [ADS-3500](ADS-3500-role-scoped-command-enforcement.md) | Role-Scoped Command Enforcement | (GDS-04 §1.10-grounded; no owning DOM) | ✅ Authored |
 
-No `ADS-xxx` has been authored yet. Add a row here (status `⛔ Planned`) before authoring a new
-`ADS-xxx`, and mirror it in `ROADMAP.md`'s Architecture / Design Synthesis theme table, per the
-index-before-content convention used elsewhere in this corpus (e.g.
-`02-research-doctrine-exercises`'s workflow step 3).
+**ADS-3500 (2026-07-05):** the first `ADS-xxx` authored in this project — resolves two
+architecture-level Open Questions [`FS-116`](../features/FS-116-role-scoped-command-catalog.md)
+(Role-Scoped Command Catalog & Assignment Scoping, `FEAT-3500`) could not resolve within its own
+authority: (1) no interface carries a "seat" identifier distinct from "cell," so a Role
+Assignment's scope cannot be enforced whenever a cell has more than one seated operator; (2) the
+engine's existing three-way verb taxonomy (`BUS_VERBS`/`PAYLOAD_VERBS`/`DEFENSE_VERBS`) doesn't map
+onto the two-way `bus`/`payload`/`both` role-scope model `FR-3510`/`FR-3520` describe. Authored via
+Workflow B (per-cluster synthesis) rather than waiting on `GDS-09` (API Specification, still
+scaffold-only and gated behind `GDS-06`-`08`) — this is exactly the "real design tension the global
+ladder doesn't resolve at the system level" Workflow B exists for.
 
 ## 3. Architecture Decision Records (`docs/architecture/adr/`)
 
