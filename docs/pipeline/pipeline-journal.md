@@ -13,44 +13,37 @@
 
 ## Position
 
-- **Updated:** 2026-07-05 (run #39, override)
+- **Updated:** 2026-07-05 (run #40)
 - **Increment:** three threads active. **Thread A (v1 baseline follow-through):** unchanged since
   run #37 — `IP-1160` remains `BLOCKED`, authorization still explicitly deferred by the project
   owner; `BL-0049` stays `SCHEDULED`/open, no re-ask due. **Thread B (training-corpus elevation):**
   still closed out (zero open findings, zero queued steps) as of run #32. **Thread C (Vignette
-  Creator + seat-assignment UI): two research passes landed this run's reconciliation, both
-  outside the manager's own advance loop until now.** (1) The `02-research-ow-orbital-mechanics`
-  grounding pass recommended at run #38 — extended `R101`/`R107`/`R109`/`R110`/`R111`/`R112`/`R134`
-  with realistic parameter-range grounding (TLE format, ground-station siting, weather/
-  missile-warning sensor characteristics, SATCOM bandwidth, EPS power budgets, Δv budgets, PNT
-  accuracy) — was invoked directly rather than through a manager advance. (2) The project owner
-  then explicitly asked (via this override run) for a **new R1xx topic** verifying full parameter
-  coverage: **`R137`** (Bus and Payload Configuration Parameter Catalog, tier now 37/37) — a
-  completeness/navigation index of every bus-subsystem and payload-type parameter, cross-referenced
-  to whichever topic characterizes it, re-derived directly from the live tree
-  (`entities.py`/`bus.py`/`isr.py`/`jam.py`/`cyber.py`/`sigint.py`/`engage.py`) rather than trusted
-  from the prior pass's own summary. All of this is already committed; this run's job was bringing
-  the journal current with it and properly executing the override (research authoring needs no
-  gate) rather than correcting a defect.
+  Creator + seat-assignment UI): architecture synthesis landed this run, on the manager's own
+  normal advance loop.** `03-architecture-design-synthesis` authored **`ADS-5100A`** (authoring-
+  session architecture — a server-side draft session resolving `CR-11` — plus every UI surface:
+  JSON view, 2D/3D ground-truth preview, TLE/lat-long/asset entry, asset menu, seat/role matrix)
+  and **`ADS-5100B`** (two Domain Model extensions the UI exposes: typed per-payload-type/bus
+  parameter sub-schemas grounded in `R101`/`R107`/`R109`-`R112`/`R134`/`R137`, and real per-cell ROE
+  enforcement extending `engine/orders.py`'s currently-global-only gate), split by capability seam
+  per the tier's own size discipline. Both record all four of the project owner's already-made
+  design-fork decisions in their Decision Logs and fold `BL-0051` in fully.
 - **Thread A pipeline state:** unchanged since run #37 — see that run's row.
 - **Thread B pipeline state:** unchanged since run #32 — see that run's row.
-- **Thread C pipeline state (this run):** `R137` surfaced one already-known gap (the `weather`/`mw`
-  `BEAM_MODES` gap `R109` flagged the same day — filed as **`BL-0053`**, Medium, `SCHEDULED` to ride
-  `BL-0052`'s eventual Implementation Package, since it's a precondition for that work rather than a
-  standalone fix) and four new low-priority candidate gaps (`Asset.hardening`'s numeric effect,
-  `PayloadState.last_effect_assessment`, `deception_active`'s deferred custody/attribution
-  consequence, `Asset.civilian`'s political-cost consequence — filed as **`BL-0054`**, Low,
-  `DEFERRED`, revisit trigger: the day any FS proposes making one of these four fields live). Both
-  new backlog entries harvested this run.
-- **Backlog:** 54 total. This run: harvested `BL-0053` (Medium, `SCHEDULED`), `BL-0054` (Low,
-  `DEFERRED`) from `R137`'s own findings. `BL-0051`/`BL-0052` unchanged (`SCHEDULED`, from run #38).
-  No `DEFERRED` triggers fired, no ripe `NEEDS-USER` items beyond the standing `IP-1160` gate.
+- **Thread C pipeline state (this run):** `BL-0051`/`BL-0052` both advanced past their `03` stage —
+  entry stage updated to `06` in the backlog, `SCHEDULED` to ride `06-feature-specification` next.
+  Nine Open Questions across both new documents (5 in `5100A`, 4 in `5100B`) are recorded durably in
+  the documents' own §9 sections, not duplicated as separate backlog entries — consistent with how
+  `ADS-3500`'s and `FS-116`'s own Open Questions were handled. `BL-0053` (the `weather`/`mw`
+  `BEAM_MODES` precondition) is independently re-confirmed by `ADS-5100B`'s own Constraints/Risks
+  sections, disposition unchanged.
+- **Backlog:** 54 total. This run: `BL-0051`/`BL-0052` disposition text updated (entry stage `03`→`06`,
+  both still `SCHEDULED`). No new `NEW` entries, no `DEFERRED` triggers fired, no ripe `NEEDS-USER`
+  items beyond the standing `IP-1160` gate.
 - **Next step / open gate:** Thread A remains gated on `IP-1160` authorization (the project owner's
-  call, not due to be re-asked). **Thread C's research grounding for the Vignette Creator is now
-  substantially complete — the next advance should invoke `03-architecture-design-synthesis`** for
-  `BL-0052`'s `ADS-xxx` (folding `BL-0051` in per run #38's bundling decision, and citing `R137` plus
-  the seven newly-extended topics as grounding), unless the project owner wants further research
-  first. Thread B has no queued work.
+  call, not due to be re-asked). **Thread C is ready for `06-feature-specification`: author the
+  Vignette Creator Feature Specification** consolidating `FEAT-5100`'s catalog entry, drawing on
+  `ADS-5100A`/`ADS-5100B` as System Architecture/Domain Model grounding, and resolving (or
+  explicitly carrying forward) their nine Open Questions. Thread B has no queued work.
 - **Open gates:** **`IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner,
   unchanged this run.** No other gate open. PR #49 (this whole increment's work, runs #30 onward)
   remains open/draft, no CI configured in this repo, no review comments as of this run.
@@ -464,3 +457,4 @@
 | 37 | 2026-07-05 | advance (gate check) | -- | `IP-1160` MSTR-006 §3 authorization | Reconciliation: no drift since run #36. Gate check: `IP-1160` is fully specified with every dependency `VERIFIED` -- the sole remaining gate before `08-code-implementation` is explicit authorization. Put the go/no-go to the project owner via `AskUserQuestion`. Answer: **"Not yet."** No package status changed (`IP-1160` remains `BLOCKED`); no code written; no further skill invoked this run -- a clean gate stop, not a stall. | Nothing queued on either thread until the project owner revisits `IP-1160`'s authorization (or chooses Path B instead) -- the pipeline is caught up. |
 | 38 | 2026-07-05 | triage | -- | Reconcile + disposition `BL-0051`/`BL-0052` | Reconciliation: substantial work landed outside the manager's own loop since run #37, all directed live by the project owner in this same session: `ADS-3500` v1.1 / `FS-116` v1.2 / `IP-1160` v1.1 (corrected the `DEFENSE_VERBS` role-scope classification -- no third "defense" category, each of the eight verbs individually `bus` or `payload` per `apply_command()`'s actual code, six/two split, reversing v1.0's wholesale `bus` call); `BL-0051` (seat-count declaration + role-assignment matrix UI) and `BL-0052` (Vignette Creator, a large distinct White-Cell authoring feature anchored to `FEAT-5100`, with four design-fork decisions already made directly by the project owner: server-side draft session resolving `CR-11`, typed per-payload-type sub-schemas, real per-cell ROE enforcement, and a new `ADS-xxx` cluster before a consolidated FS) filed via `00-intake`; a follow-up decision on `BL-0052` deferring Space-Track integration and confirming manual-only TLE entry for v1. All already committed; this run's job was bringing the journal's own record current, not fixing a defect. Triaged: `BL-0051` bundled into `BL-0052`'s track (entry stage `04`->`03`, rides the same `ADS-xxx` pass -- both are White-Cell setup-time UI over the same seat/asset/role concepts). `BL-0052` sequenced `02-research-ow-orbital-mechanics` before `03-architecture-design-synthesis` (upstream research gap -- no parameter-range/TLE-format/ground-siting documentation exists -- ordered ahead of the architecture pass that needs it as grounding). Both `NEW` -> `SCHEDULED`. No other `NEW` entries, no `DEFERRED` triggers fired, no ripe `NEEDS-USER` items beyond the standing, already-answered `IP-1160` gate (not due for re-ask). No skill invoked (triage mode). Committed journal + backlog together. | Thread A stays gated on `IP-1160` authorization (unchanged, the project owner's call). **Thread C is unblocked: the next advance should invoke `02-research-ow-orbital-mechanics`** to close the R1xx-tier gaps (bus/payload parameter ranges, TLE-format primer, ground-station-siting methodology) that `BL-0052`'s eventual `ADS-xxx` pass needs as grounding -- no gate applies, this can run without a stop. |
 | 39 | 2026-07-05 | override (`run 02-research-ow-orbital-mechanics`, project owner's explicit request, superseding the plain-advance recommendation of proceeding straight to `03`) | `02-research-ow-orbital-mechanics` | Reconcile the run #38-recommended grounding pass (already executed outside the loop) and author a new parameter-completeness topic | Reconciliation: the run #38-recommended `02-research-ow-orbital-mechanics` grounding pass had already been invoked and completed directly (outside a manager advance) between runs #38 and #39 -- extended `R101` (TLE format + plausible element ranges by regime), `R107` (ground-station siting methodology), `R109` (weather/missile-warning sensor characteristics -- and flagged their `BEAM_MODES` gap), `R110` (SATCOM bandwidth ranges), `R111` (EPS power budgets by class), `R112` (Δv budgets by mission class), `R134` (PNT baseline accuracy), each cited to a real source (CelesTrak, NOAA GOES-R, CSIS/SBIRS, CJCSI 6250.01G, NASA, GPS.gov) with Wayback snapshots. This run's own override: the project owner then asked directly for a further research document verifying complete bus/payload parameter coverage. Gate check: none applies (research authoring isn't MSTR-006 §3-gated). Invoked `02-research-ow-orbital-mechanics`: re-derived the full field inventory directly from `entities.py`/`bus.py`/`isr.py`/`jam.py`/`cyber.py`/`sigint.py`/`engage.py` (not trusted from the prior pass's own summary, per the skill's own anti-drift discipline), confirmed a genuine coverage gap justifying a new topic (no existing R1xx topic serves as a completeness/navigation index across every bus subsystem and payload type), added the `R100-index.md` row before content (index-before-content), and authored **`R137`** (Bus and Payload Configuration Parameter Catalog, tier now 37/37) -- parameter tables per bus sub-state and per payload type, each row citing which existing topic characterizes it, explicitly not re-characterizing. Cross-linked bidirectionally into all twelve topics it indexes (`R109`/`R110`/`R111`/`R112`/`R113`/`R114`/`R115`/`R116`/`R118`/`R121`/`R129`/`R134`). Corrected a pre-existing, unrelated `ROADMAP.md` staleness in the same touch (`RE-100`'s row still said "30 topics" against the actual 36-then-37). Committed `f5a0c9f` (prior grounding pass, reconciled retroactively) and `3d376c2` (this run's `R137` authoring), both pushed. Harvested 2 findings -> `BL-0053` (Medium, `SCHEDULED` -- the `weather`/`mw` `BEAM_MODES` gap, rides `BL-0052`'s eventual Implementation Package as a precondition), `BL-0054` (Low, `DEFERRED` -- four smaller candidate gaps, revisit on-demand). | Thread A unchanged (`IP-1160` gate still open). **Thread C's Vignette Creator research grounding is now substantially complete -- the next advance should invoke `03-architecture-design-synthesis` for `BL-0052`'s `ADS-xxx`** (folding `BL-0051` in per run #38's bundling decision), citing `R137` plus the seven newly-extended topics, unless the project owner wants further research first. |
+| 40 | 2026-07-05 | advance | `03-architecture-design-synthesis` | Author `BL-0052`'s `ADS-xxx` (Vignette Creator), folding `BL-0051` in | Reconciliation: no drift since run #39. Triage: `BL-0051`/`BL-0052` both `SCHEDULED` for this exact step, no other `NEW` entries, no `DEFERRED` triggers fired. Gate check: none applies (architecture-design-synthesis authoring isn't MSTR-006 §3-gated, no release GO, no unadjudicated Critical/High finding). Invoked `03-architecture-design-synthesis` (Workflow B, mirroring `ADS-3500`'s precedent): added the index-before-content rows to `architecture/INDEX.md` §2 and `ROADMAP.md`'s Architecture theme table, then authored two documents split by capability seam per the tier's own size discipline (the combined scope didn't fit one 8-15-page document) -- **`ADS-5100A`** (Vignette Creator authoring-session architecture: a server-side draft session resolving `CR-11`, reusing the existing `POST /force/tle` endpoint and render-from-custody pipeline in ground-truth mode; every UI surface -- JSON view, 2D/3D preview, TLE/lat-long/asset entry, asset menu, seat/role matrix folding in `BL-0051`) and **`ADS-5100B`** (two Domain Model extensions: typed per-payload-type/bus parameter sub-schemas grounded in `R101`/`R107`/`R109`-`R112`/`R134`/`R137`, explicitly routing the typed power sub-schema to the live `charge_rate_per_s`/`drain_rate_per_s` fields rather than the dead `power_w`; real per-cell ROE enforcement extending `engine/orders.py`'s currently-global-only gate, backward-compatible with all 19 shipped vignettes' legacy shape). Both Decision Logs record the project owner's four already-made design-fork decisions verbatim rather than re-opening them, and both flag `BL-0053` (the `weather`/`mw` `BEAM_MODES` gap) as a hard precondition for two of the eight typed payload sub-schemas. Nine Open Questions recorded across both documents' own §9 sections (non-blocking). Committed `72820de`, pushed. Updated `BL-0051`/`BL-0052`'s own backlog entries (entry stage `03`->`06`, both remain `SCHEDULED`) rather than filing the nine Open Questions as separate entries, since they're already durably recorded in the committed ADS documents themselves (consistent with how `ADS-3500`/`FS-116`'s own Open Questions were handled). | Thread A unchanged (`IP-1160` gate still open). **Thread C is ready for `06-feature-specification`: author the Vignette Creator Feature Specification**, consolidating `FEAT-5100`'s catalog entry and drawing on `ADS-5100A`/`ADS-5100B` as grounding, resolving or explicitly carrying forward their nine Open Questions. |
