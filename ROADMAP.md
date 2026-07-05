@@ -319,7 +319,7 @@ Router: [`features/feature-index.md`](docs/features/feature-index.md).
 | FS-113 | Observer Read-Only Access | `features/FS-113-observer-read-only-access.md` | (no owning DOM) | ✅ (build unverified) |
 | FS-114 | Hot-Seat Hand-Off Screen-Blank Menu | `features/FS-114-hot-seat-handoff.md` | (no owning DOM) | ✅ (build unverified) |
 | FS-115 | Session Setup: Vignette Selection & Seat Assignment | `features/FS-115-session-setup.md` | DOM-003 | ✅ (build unverified) |
-| FS-116 | Role-Scoped Command Catalog & Assignment Scoping | `features/FS-116-role-scoped-command-catalog.md` | (no owning DOM) | ✅ Ready for implementation planning (v1.1 — both Open Questions closed via ADS-3500) |
+| FS-116 | Role-Scoped Command Catalog & Assignment Scoping | `features/FS-116-role-scoped-command-catalog.md` | (no owning DOM) | ✅ Ready for implementation planning (v1.2 — both Open Questions closed via ADS-3500 v1.1; per-verb DEFENSE_VERBS classification corrected) |
 | FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | DOM-002 | ✅ |
 | FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | ⛔ Planned (authorized) |
 | FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | DOM-004, DOM-005 | ✅ |
@@ -366,8 +366,13 @@ Questions blocking `07-implementation-planning`; both are **closed as of v1.1** 
 [`ADS-3500`](architecture/ADS-3500-role-scoped-command-enforcement.md) — the first `ADS-xxx`
 authored in this project — which (1) extends the operator-command interface with an optional `seat`
 identifier (preserving `GDS-01`'s multi-seat concurrency model rather than narrowing it) and (2)
-classifies `DEFENSE_VERBS` as `bus`-scope for role-scoping purposes. `FS-116` is now ready for
-`07-implementation-planning`.
+classified `DEFENSE_VERBS` by role scope. **`IP-1160` was then planned against v1.1; the project
+owner subsequently gave further direction that there is no third "defense" role-scope category** —
+`ADS-3500` v1.1 (self-revised) and `FS-116` v1.2 now classify each `DEFENSE_VERBS` entry
+individually as `bus` or `payload` by which subsystem it actually mutates (six `bus`, two
+`payload` — `def.harden`/`def.set_deception_mode`). `FS-116` remains ready for
+`07-implementation-planning`; `IP-1160` needs a matching correction (its classification table and
+tests still reflect the superseded wholesale-`bus` call).
 
 ## Theme: Feature Planning — `05-feature-decomposition` skill output (`docs/feature-planning/`)
 

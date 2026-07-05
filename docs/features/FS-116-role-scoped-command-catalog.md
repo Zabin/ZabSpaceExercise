@@ -1,14 +1,14 @@
 # FS-116 — Role-Scoped Command Catalog & Assignment Scoping
 
 > **Document ID:** FS-116
-> **Version:** 1.1
+> **Version:** 1.2
 > **Status:** ✅ Ready for implementation planning (both Open Questions closed — see below)
 > **Dependencies:** [FS-115](FS-115-session-setup.md) (produces the Role Assignment record this
 > Feature enforces, `FR-4210`), [FS-105](FS-105-spacecraft-operations.md) (the bus/payload command
 > catalog — `BUS_VERBS`/`PAYLOAD_VERBS`/`DEFENSE_VERBS` — this Feature filters/enforces against),
-> [ADS-3500](../architecture/ADS-3500-role-scoped-command-enforcement.md) (resolves both Open
+> [ADS-3500](../architecture/ADS-3500-role-scoped-command-enforcement.md) v1.1 (resolves both Open
 > Questions this document's v1.0 could not — the seat-identifier interface amendment and the
-> `DEFENSE_VERBS` role-scope classification)
+> per-verb `bus`/`payload` classification of every `DEFENSE_VERBS` entry)
 > **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md)
 > `FEAT-3500`, [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0049`/`BL-0014`,
 > [release-assessment-fs-tracked-baseline.md](../reviews/release-assessment-fs-tracked-baseline.md)
@@ -37,12 +37,19 @@ verification) but not recognized as release-blocking until the readiness audit s
 "is every planned Feature actually delivered." The project owner authorized closing this gap via the
 full `06`→`07`→`08`→`09` pipeline (Path A) rather than descoping the Feature.*
 
-*v1.1 (this revision): v1.0's two Open Questions blocked implementation-readiness; the project owner
-routed both upstream to `03-architecture-design-synthesis` rather than have this skill or
+*v1.1: v1.0's two Open Questions blocked implementation-readiness; the project owner routed both
+upstream to `03-architecture-design-synthesis` rather than have this skill or
 `07-implementation-planning` improvise an answer.
 [ADS-3500](../architecture/ADS-3500-role-scoped-command-enforcement.md) resolved both. This revision
 updates every field their resolutions affect; fields the resolutions did not touch are unchanged
 from v1.0.*
+
+*v1.2 (this revision): the project owner gave further explicit direction after `IP-1160` was
+already planned against v1.1 — there is no third "defense" role-scope category; every verb is
+`bus` or `payload`, and a defensive effect is a property either can have. `ADS-3500` v1.1 revised
+its per-`DEFENSE_VERBS`-verb classification accordingly (six `bus`, two `payload` —
+`def.harden`/`def.set_deception_mode`); this revision updates every field that referenced the
+superseded wholesale-`bus` classification.*
 
 ## Feature ID
 
@@ -110,10 +117,12 @@ none invented.
 - **Order-panel filtering (`FR-3510`, presentation-layer consequence):** given the resolved Role
   Assignment for the targeted Asset, the offered command list is the intersection of `FS-105`'s
   asset-legal verbs (`can_issue()`'s existing gates) and the verbs the Role Assignment's scope
-  covers — `BUS_VERBS ∪ DEFENSE_VERBS` for `bus`, `PAYLOAD_VERBS` for `payload`, all three sets for
-  `both` (per `ADS-3500` Decision Log entry 2, which classifies every `DEFENSE_VERBS` entry as
-  `bus`-scope). A command the Role Assignment does not cover for that Asset never appears in the
-  offered list.
+  covers. There are only two verb-level scope values, `bus` and `payload` (`both` is their union) —
+  per `ADS-3500` Decision Log entry 2 (v1.1), `DEFENSE_VERBS` is an *effect* grouping, not a third
+  scope: six of its eight members (`def.frequency_hop`, `def.patch_cyber`, `def.set_threat_warning`,
+  `def.maneuver_evade`, `def.escort_posture`, `def.disperse`) are `bus`-scope, and two
+  (`def.harden`, `def.set_deception_mode`) are `payload`-scope. A command the Role Assignment does
+  not cover for that Asset never appears in the offered list.
 - **Execution-time role-scope enforcement (`FR-3520`, session-layer behavior):** independent of
   whether a command was ever offered in the panel, every command submission carrying a resolvable
   `seat`/Role-Assignment pair is checked against that scope for the targeted Asset before it is
@@ -158,8 +167,8 @@ None beyond what `GDS-04` §1.10 (Role Assignment) and `FS-115` already define �
 parameter), not a Domain Model change. This Feature reads the existing Role Assignment mapping
 (`seat → {asset_or_constellation, role}`); it does not add a new entity, attribute, or relationship
 to the Domain Model. It adds a read-time *derivation* (resolve the acting seat's Role Assignment for
-a given Asset, then intersect against `BUS_VERBS ∪ DEFENSE_VERBS`/`PAYLOAD_VERBS` per `ADS-3500`'s
-verb-classification table), not new persistent state.
+a given Asset, then intersect against the `bus`/`payload` verb set per `ADS-3500`'s per-verb
+classification table, §3), not new persistent state.
 
 ## State Changes
 
@@ -201,15 +210,17 @@ Observer rejection is "enforced at this same trust level, not a stronger one."
 ## Acceptance Criteria
 
 1. Given an operator seated under a Role Assignment scoped `bus-only` for Asset X, the order panel
-   for Asset X offers zero `PAYLOAD_VERBS`, regardless of Asset X's payload state — and offers every
-   asset-legal `BUS_VERBS`/`DEFENSE_VERBS` command (per `ADS-3500`'s classification of `DEFENSE_VERBS`
-   as `bus`-scope).
-2. Given the same operator, a payload-verb command for Asset X submitted by any path that bypasses
-   the order panel is rejected with a role-scope-specific reason, not silently accepted and not
-   accepted-then-ignored.
-3. Given an operator seated under a `both`-scoped Role Assignment for Asset X, every `BUS_VERBS`,
-   `PAYLOAD_VERBS`, and `DEFENSE_VERBS` command legal per `FS-105`'s existing gates is offered and
-   accepted, unchanged from today's behavior.
+   for Asset X offers zero `payload`-scoped commands — including `def.harden`/`def.set_deception_mode`,
+   which are `payload`-scope per `ADS-3500` §3 despite their `def.*` name — regardless of Asset X's
+   payload state; every asset-legal `bus`-scoped command (including the six other `DEFENSE_VERBS`
+   entries) is offered.
+2. Given the same operator, a payload-scoped command for Asset X (including `def.harden`/
+   `def.set_deception_mode`) submitted by any path that bypasses the order panel is rejected with a
+   role-scope-specific reason, not silently accepted and not accepted-then-ignored.
+3. Given an operator seated under a `both`-scoped Role Assignment for Asset X, every `bus`- and
+   `payload`-scoped command legal per `FS-105`'s existing gates is offered and accepted — including
+   every `DEFENSE_VERBS` entry regardless of which of the two scopes it falls under — unchanged from
+   today's behavior.
 4. Given an Asset with no Role Assignment covering the acting seat, every command for that Asset is
    rejected with the same role-scope reason as an out-of-scope command (not a different, unhandled
    failure mode).
@@ -224,11 +235,12 @@ Observer rejection is "enforced at this same trust level, not a stronger one."
 
 Per each requirement's own `Verification Method` (`Test`, both `FR-3510` and `FR-3520`): automated
 tests exercising Acceptance Criteria 1–5 against a fixture Role Assignment scoped each of
-`bus-only`/`payload-only`/`both` (including at least one `DEFENSE_VERBS` command per scope, per
-`ADS-3500`'s classification), plus a regression run of the full existing test suite to confirm
-Acceptance Criterion 6. Consistent with this project's test-first mandate (`CLAUDE.md` "Test-driven
-workflow") — the implementing package must encode each Acceptance Criterion as a failing test
-before implementation.
+`bus-only`/`payload-only`/`both`, explicitly including at least one of each per-verb `DEFENSE_VERBS`
+classification (`def.harden`/`def.set_deception_mode` as `payload`; the other six as `bus`) per
+`ADS-3500` §3's table, plus a regression run of the full existing test suite to confirm Acceptance
+Criterion 6. Consistent with this project's test-first mandate (`CLAUDE.md` "Test-driven workflow")
+— the implementing package must encode each Acceptance Criterion as a failing test before
+implementation.
 
 ## Dependencies
 
@@ -278,14 +290,16 @@ Both of v1.0's Open Questions are **closed** as of this revision, resolved by
    explicitly declined the single-active-Role-Assignment-per-cell simplification that would have
    sidestepped this question at that model's expense.
 2. ~~`DEFENSE_VERBS` doesn't map cleanly onto the two-way `bus`/`payload` role-scope model.~~
-   **Resolved** (`ADS-3500` Decision Log entry 2): every `DEFENSE_VERBS` entry is classified as
-   `bus`-scope (a `bus-only` Role Assignment includes `BUS_VERBS ∪ DEFENSE_VERBS`; `payload-only`
-   includes only `PAYLOAD_VERBS`; `both` includes all three sets).
+   **Resolved** (`ADS-3500` Decision Log entry 2, revised v1.1 per the project owner's explicit
+   direction that there is no third "defense" scope category): each of the eight `DEFENSE_VERBS`
+   entries is individually classified `bus` or `payload` by which subsystem `apply_command()`
+   actually mutates — six `bus` (`def.frequency_hop`, `def.patch_cyber`, `def.set_threat_warning`,
+   `def.maneuver_evade`, `def.escort_posture`, `def.disperse`), two `payload` (`def.harden`,
+   `def.set_deception_mode`, both of which mutate `payload_state` directly).
 
-`ADS-3500` itself carries two residual, non-blocking Open Questions of its own (whether `seat`
-should become mandatory once more vignettes declare `roles_needed`; whether a third
-`defense`-scope category is ever needed) — neither blocks `07-implementation-planning` against this
-document.
+`ADS-3500` itself carries one residual, non-blocking Open Question of its own (whether `seat`
+should become mandatory once more vignettes declare `roles_needed`) — it does not block
+`07-implementation-planning` against this document.
 
 ## Related ADRs
 
