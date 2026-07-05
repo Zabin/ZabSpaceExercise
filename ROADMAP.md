@@ -370,9 +370,10 @@ classified `DEFENSE_VERBS` by role scope. **`IP-1160` was then planned against v
 owner subsequently gave further direction that there is no third "defense" role-scope category** —
 `ADS-3500` v1.1 (self-revised) and `FS-116` v1.2 now classify each `DEFENSE_VERBS` entry
 individually as `bus` or `payload` by which subsystem it actually mutates (six `bus`, two
-`payload` — `def.harden`/`def.set_deception_mode`). `FS-116` remains ready for
-`07-implementation-planning`; `IP-1160` needs a matching correction (its classification table and
-tests still reflect the superseded wholesale-`bus` call).
+`payload` — `def.harden`/`def.set_deception_mode`). **`IP-1160` v1.1 carries the matching
+correction** — including reversing its own v1.0 plan to "fix" `app.js`'s already-correct
+`def.harden: "payload"` tag, and fixing the one real bug the audit found (`def.set_deception_mode`
+silently defaulting to `"bus"`). `FS-116`/`IP-1160` remain ready for `07-implementation-planning`.
 
 ## Theme: Feature Planning — `05-feature-decomposition` skill output (`docs/feature-planning/`)
 

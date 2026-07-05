@@ -1,16 +1,18 @@
 # IP-1160 — Role-Scoped Command Catalog & Assignment Scoping
 
 > **Package ID:** IP-1160
-> **Version:** 1.0
+> **Version:** 1.1 *(corrected the per-verb `DEFENSE_VERBS` classification — see Risks and the
+> "Files to Modify"/"Implementation Tasks" sections; no other field changed from v1.0)*
 > **Status:** 🔴 BLOCKED *(not authorized — MSTR-006 §3. Every dependency package is already
 > `VERIFIED`, so this package is specification-complete and would be `READY` the moment
 > authorization is granted; it is marked `BLOCKED` rather than `READY` only because that
 > authorization is the one thing standing between this package and code, per this skill's own
 > "READY means fully specified AND every dependency VERIFIED" rule — see Dependencies below for why
 > the dependency half is already satisfied.)*
-> **Dependencies:** [FS-116](../../features/FS-116-role-scoped-command-catalog.md) v1.1,
-> [ADS-3500](../../architecture/ADS-3500-role-scoped-command-enforcement.md) (binding design
-> grounding for the seat-identifier interface amendment and `DEFENSE_VERBS` classification),
+> **Dependencies:** [FS-116](../../features/FS-116-role-scoped-command-catalog.md) v1.2,
+> [ADS-3500](../../architecture/ADS-3500-role-scoped-command-enforcement.md) v1.1 (binding design
+> grounding for the seat-identifier interface amendment and the per-verb `DEFENSE_VERBS`
+> classification),
 > [IP-1151](IP-1151-seat-role-assignment.md) (produces the Role Assignment record this package
 > reads — `VERIFIED`), [IP-1050](IP-1050-spacecraft-operations-bus-payload.md)/
 > [IP-1051](IP-1051-spacecraft-operations-effects-console.md) (the command catalog this package
@@ -36,6 +38,13 @@ run #15, and `11-release-readiness`'s [release assessment](../../reviews/release
 Finding 2). `FS-116`'s two Open Questions (no interface carries a seat identifier; `DEFENSE_VERBS`
 doesn't map onto the two-way role-scope model) are both closed as of `FS-116` v1.1, via `ADS-3500`
 — this package plans against that resolved design, not an open one.*
+
+*v1.1 (this revision): the project owner gave further direction after this package's v1.0 draft —
+there is no third "defense" role-scope category; every command is `bus` or `payload`, and a
+defensive effect is a property either can have. `ADS-3500` v1.1 revised its per-`DEFENSE_VERBS`-verb
+classification accordingly (six `bus`, two `payload`); this revision updates every field in this
+package that referenced the superseded wholesale-`bus` call, including reversing this package's own
+v1.0 plan to "correct" `app.js`'s already-correct `def.harden: "payload"` tag to `"bus"`.*
 
 ## Package ID
 
@@ -64,7 +73,7 @@ two Must-priority requirements against the design `ADS-3500` settled.
 
 | Req ID | Title (abridged) | How this package's design covers it |
 |---|---|---|
-| FR-3510 | Order panel offers only role-and-asset-legal commands | The client-side command-list builder (`app.js`'s `actionsFor()`) filters against the acting seat's resolved Role Assignment scope (via `ADS-3500`'s `BUS_VERBS ∪ DEFENSE_VERBS`/`PAYLOAD_VERBS`/both classification) whenever one exists for the targeted Asset; unchanged when none does. |
+| FR-3510 | Order panel offers only role-and-asset-legal commands | The client-side command-list builder (`app.js`'s `actionsFor()`) filters against the acting seat's resolved Role Assignment scope (via `ADS-3500`'s per-verb `bus`/`payload` classification, §3 — there is no third category) whenever one exists for the targeted Asset; unchanged when none does. |
 | FR-3520 | Role Assignment scope enforced at execution time, independent of the UI filter | `SessionManager.issue_order` gains a role-scope check — resolving the submitted `seat` against the existing Role Assignment mapping and rejecting an out-of-scope verb — before the order ever reaches `OrderSystem.issue()`, so a request that bypasses the order panel entirely is rejected identically to one the panel would have hidden. |
 
 ## Architecture Components
@@ -100,9 +109,14 @@ principle: extend, don't create a parallel mechanism).
 - `spacesim/session/manager.py` *(proposed)* — add a role-scope resolution helper (e.g., a method
   resolving `(seat, actor_id, verb) → allowed: bool`, reusing the existing `role_assignments`
   mapping and `_role_covers`-style matching `assign_role`/`staffing_report` already established at
-  `IP-1151`) and a verb-classification lookup built from `engine.buscommands.BUS_VERBS`/
-  `PAYLOAD_VERBS`/`DEFENSE_VERBS` (imported, not duplicated — `bus` scope = `BUS_VERBS ∪
-  DEFENSE_VERBS`, per `ADS-3500` Decision Log entry 2). `issue_order(self, cell, order, seat=None)`
+  `IP-1151`) and a per-verb `bus`/`payload` classification table per `ADS-3500` §3: `bus` =
+  `BUS_VERBS ∪ {def.frequency_hop, def.patch_cyber, def.set_threat_warning, def.maneuver_evade,
+  def.escort_posture, def.disperse}`; `payload` = `PAYLOAD_VERBS ∪ {def.harden,
+  def.set_deception_mode}`. `engine.buscommands.BUS_VERBS`/`PAYLOAD_VERBS` are imported, not
+  duplicated; the six/two split of `DEFENSE_VERBS`'s members is this package's own explicit table
+  (per `ADS-3500` Decision Log entry 2, revised v1.1 — there is no third scope category, so
+  `DEFENSE_VERBS` itself is never used as a set in this classification, only its individual
+  members). `issue_order(self, cell, order, seat=None)`
   gains the new parameter; when `seat` is supplied, `order.action == "command"`, and the targeted
   Asset has a covering `roles_needed` entry, the role-scope check runs before `self.osys.issue(order)`
   — a rejection short-circuits with a role-scope-specific `fail_reason`, mirroring `_order_ack`'s
@@ -124,11 +138,15 @@ principle: extend, don't create a parallel mechanism).
     the free-standing `ROLE_FILTER` manual toggle's role as the *authoritative* filter in that case
     (the manual toggle remains available as an additional narrowing when no Role Assignment applies,
     unchanged from today).
-  - **Correct the existing `VERB_ROLE` object's `def.harden` entry** (currently tagged `"payload"`,
-    a pre-existing, never-reviewed cosmetic tag — see Risks) to `"bus"`, consistent with `ADS-3500`'s
-    classification of every `DEFENSE_VERBS` entry as `bus`-scope. Also add the three `DEFENSE_VERBS`
-    entries `VERB_ROLE` is currently missing entirely (`def.escort_posture`, `def.disperse`,
-    `def.set_deception_mode`), tagged `"bus"`.
+  - **Add the three `DEFENSE_VERBS` entries the existing `VERB_ROLE` object is missing entirely**
+    (`def.escort_posture: "bus"`, `def.disperse: "bus"`, `def.set_deception_mode: "payload"`) —
+    the first two currently fall back to `VERB_ROLE`'s `|| "bus"` default, which happens to already
+    match `ADS-3500`'s classification; `def.set_deception_mode` does **not** (it falls back to
+    `"bus"` today but is `payload`-scope per `ADS-3500` §3 — this one is a real bug fix, not just an
+    explicit restatement of the existing default). **`def.harden`'s existing `"payload"` tag needs
+    no change** — it already matches `ADS-3500`'s classification (see Risks: this pre-existing tag
+    turned out to be correct, unlike the wholesale-`bus` call this package's own design initially
+    made before the project owner's v1.1 correction).
 
 **Explicitly out of scope for this package** (per `FS-116`'s own Scope boundary, carried forward):
 the base order actions (`jam`/`engage`/`observe`/`maneuver`/`downlink`/`cyber`) that
@@ -142,16 +160,19 @@ base actions; role-scoping the base actions is not this Feature's stated require
 **Not started — not authorized (MSTR-006 §3).** Proposed sequence once authorized:
 
 1. Add the role-scope resolution helper to `SessionManager` (verb → `bus`/`payload` classification
-   from the engine's existing three sets per `ADS-3500`'s table; seat → Role Assignment → scope
-   resolution reusing `IP-1151`'s existing matching logic).
+   per `ADS-3500` §3's per-verb table — `BUS_VERBS` plus six named `DEFENSE_VERBS` members = `bus`;
+   `PAYLOAD_VERBS` plus `def.harden`/`def.set_deception_mode` = `payload`; seat → Role Assignment →
+   scope resolution reusing `IP-1151`'s existing matching logic).
 2. Wire `issue_order`'s new optional `seat` parameter through `SessionManager` → `InProcessSession` →
    `OrderRequest`/the HTTP route, confirming every existing call site (tests, vignette-driven flows)
    continues to omit it and behave unchanged.
 3. Add the client-side seat-identifier concept and thread it into `composeBody()`.
 4. Wire `actionsFor(a)`'s automatic Role-Assignment-driven filtering, alongside the existing manual
    `ROLE_FILTER` toggle (which remains for the no-Role-Assignment-applies case).
-5. Correct `VERB_ROLE`'s `def.harden` tag and add the three missing `DEFENSE_VERBS` entries (see
-   Files to Modify).
+5. Add `VERB_ROLE`'s three missing `DEFENSE_VERBS` entries (`def.escort_posture`/`def.disperse` as
+   `"bus"`, `def.set_deception_mode` as `"payload"` — the last is a real bug fix, since it currently
+   falls back to `"bus"`). `def.harden`'s existing `"payload"` tag needs no change (see Files to
+   Modify).
 6. Write tests first (per `CLAUDE.md`'s mandatory test-first workflow) encoding every Acceptance
    Criterion below, then implement until green.
 
@@ -160,14 +181,16 @@ base actions; role-scoping the base actions is not this Feature's stated require
 *(Proposed — none exist yet.)*
 
 - `spacesim/tests/test_role_scope_enforcement.py` *(new)* — one test per Acceptance Criterion:
-  - A `bus-only` Role Assignment for Asset X: submitting a `PAYLOAD_VERBS` command for X (bypassing
-    any client-side filter, i.e. calling `issue_order` directly with `seat` set) is rejected with a
-    role-scope-specific `fail_reason`; a `BUS_VERBS`/`DEFENSE_VERBS` command for X is accepted
-    (subject to `FS-105`'s existing gates, unchanged).
-  - A `payload-only` Role Assignment: the mirror image (payload commands accepted, bus/defense
-    commands rejected).
-  - A `both`-scoped Role Assignment: every asset-legal `BUS_VERBS`/`PAYLOAD_VERBS`/`DEFENSE_VERBS`
-    command is accepted, unchanged from today.
+  - A `bus-only` Role Assignment for Asset X: submitting a `payload`-scoped command for X (including
+    `def.harden` or `def.set_deception_mode`, bypassing any client-side filter, i.e. calling
+    `issue_order` directly with `seat` set) is rejected with a role-scope-specific `fail_reason`; a
+    `bus`-scoped command (including the six other `DEFENSE_VERBS` members) is accepted (subject to
+    `FS-105`'s existing gates, unchanged).
+  - A `payload-only` Role Assignment: the mirror image (`payload`-scoped commands including
+    `def.harden`/`def.set_deception_mode` accepted; `bus`-scoped commands rejected).
+  - A `both`-scoped Role Assignment: every asset-legal `bus`- or `payload`-scoped command (all eight
+    `DEFENSE_VERBS` members included, regardless of which scope each falls under) is accepted,
+    unchanged from today.
   - An Asset with no Role Assignment covering the submitting seat at all: every command for that
     Asset is rejected with the same role-scope reason as an out-of-scope command.
   - A command submission that omits `seat` entirely, or targets an Asset with no covering
@@ -202,8 +225,9 @@ base actions; role-scoping the base actions is not this Feature's stated require
   `issue_order`, independent of whether the command was ever offered client-side (`FR-3520`).
 - [ ] The order panel's offered command list is automatically filtered to the acting seat's Role
   Assignment scope when one covers the targeted Asset (`FR-3510`).
-- [ ] `DEFENSE_VERBS` are treated as `bus`-scope throughout (both the session-layer check and the
-  corrected `VERB_ROLE` client tags), per `ADS-3500` Decision Log entry 2.
+- [ ] Every `DEFENSE_VERBS` member is treated per its individual `bus`/`payload` classification
+  throughout (both the session-layer check and the `VERB_ROLE` client tags) — six `bus`, two
+  `payload` (`def.harden`, `def.set_deception_mode`) — per `ADS-3500` Decision Log entry 2 (v1.1).
 - [ ] Every one of the 19 currently shipped vignettes (none declaring `roles_needed`) starts and
   plays with command issuance completely unaffected by this package.
 - [ ] `docs/design/05-interface-control-document.md`'s `INT-0004`/`INT-0006` entries updated to
@@ -252,15 +276,19 @@ base actions; role-scoping the base actions is not this Feature's stated require
 - **The pre-existing `VERB_ROLE`/`ROLE_FILTER` mechanism in `app.js` is a client-side-only,
   unenforced display convenience predating this Feature** (a personal "Bus/Payload/SDA/All" viewing
   filter with no connection to any Role Assignment, and a third "sda" tag that is a cosmetic
-  sub-grouping of `payload`-scoped verbs, not a fourth role-scope category). Its one substantive
-  conflict with `ADS-3500`'s classification — `def.harden` tagged `"payload"` there versus `"bus"`
-  per `ADS-3500` Decision Log entry 2 — is resolved in favor of `ADS-3500` (the reviewed,
-  authoritative decision) as a bug fix, not silently preserved; flagged here so the correction isn't
-  read as an unexplained behavior change. This existing mechanism must not be mistaken for `FR-3510`'s
-  actual implementation — it enforces nothing server-side and was never tied to a Role Assignment.
-- **`ADS-3500`'s own two residual Open Questions** (mandatory `seat` once more vignettes declare
-  `roles_needed`; a possible third `defense` role-scope category) are out of this package's scope to
-  resolve — carried forward, non-blocking.
+  sub-grouping of `payload`-scoped verbs, not a fourth role-scope category). **Its existing
+  `def.harden: "payload"` tag turned out to be correct** — this package's own first draft had
+  proposed "correcting" it to `"bus"` (matching `ADS-3500` v1.0's now-superseded wholesale
+  classification); the project owner's v1.1 direction reversed that, and the pre-existing tag needs
+  no change after all. The one real gap is `def.set_deception_mode`, which `VERB_ROLE` doesn't tag
+  at all and so silently falls back to `"bus"` via `actionsFor()`'s `|| "bus"` default — a genuine
+  bug fix, not a preservation, since `ADS-3500` §3 classifies it `payload`. This existing mechanism
+  must not be mistaken for `FR-3510`'s actual implementation — it enforces nothing server-side and
+  was never tied to a Role Assignment.
+- **`ADS-3500`'s own residual Open Question** (mandatory `seat` once more vignettes declare
+  `roles_needed`) is out of this package's scope to resolve — carried forward, non-blocking. Its
+  other prior Open Question (a possible third `defense` role-scope category) is now closed by the
+  project owner's explicit v1.1 direction — there is no third category.
 
 ## Rollback Considerations
 
@@ -270,7 +298,7 @@ declares — reverting `SessionManager`'s role-scope helper, the `seat` paramete
 `issue_order`'s two wrappers and `OrderRequest`, the client-side seat concept, and `actionsFor()`'s
 automatic filtering fully restores today's behavior with no data-migration concern (no persisted
 state is added — `role_assignments` already established by `IP-1151` is unchanged in shape, only
-newly *read* by this package's helper). The `VERB_ROLE` tag corrections (`def.harden` and the three
-added `DEFENSE_VERBS` entries) are cosmetic client-side data and can be reverted independently of
-everything else in this package without any functional consequence, since `VERB_ROLE` only ever
-drove the pre-existing unenforced manual filter.
+newly *read* by this package's helper). The three added `VERB_ROLE` entries
+(`def.escort_posture`/`def.disperse`/`def.set_deception_mode`) are cosmetic client-side data and
+can be reverted independently of everything else in this package without any functional
+consequence, since `VERB_ROLE` only ever drove the pre-existing unenforced manual filter.
