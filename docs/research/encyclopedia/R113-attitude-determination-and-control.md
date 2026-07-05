@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R103](R103-satellite-command-and-control.md)
-> **Referenced By:** [R109](R109-sensor-operations.md), [R111](R111-power-and-thermal-operations.md), FS-105
+> **Referenced By:** [R109](R109-sensor-operations.md), [R111](R111-power-and-thermal-operations.md), [R137](R137-bus-and-payload-parameter-catalog.md), FS-105
 > **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py) (`AttitudeState`), [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py) (`adcs.*`)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R103](R103-satellite-command-and-control.md) (Satellite C2), [R109](R109-sensor-operations.md) (Sensor Operations — pointing for collection), [R111](R111-power-and-thermal-operations.md)

@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R109](R109-sensor-operations.md), [R104](R104-collection-management.md)
-> **Referenced By:** FS-104
+> **Referenced By:** FS-104, [R137](R137-bus-and-payload-parameter-catalog.md)
 > **Produces:** implementation constraints for [`engine/sigint.py`](../../../spacesim/engine/sigint.py), [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py) (`sigint.task_collection`)
 > **Feature Mapping:** FS-104 (SDA Tasking)
 > **Related Topics:** [R109](R109-sensor-operations.md) (Sensor Operations — the beam-mode/host-power model this topic mirrors for the SIGINT payload type),

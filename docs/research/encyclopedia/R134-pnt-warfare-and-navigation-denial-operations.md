@@ -4,7 +4,7 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R109](R109-sensor-operations.md), [R110](R110-communications.md)
-> **Referenced By:** —
+> **Referenced By:** [R137](R137-bus-and-payload-parameter-catalog.md)
 > **Produces:** implementation constraints for [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py)'s
 > `pnt.set_integrity` / `pnt.flex_power` / `pnt.set_health_flag` / `pnt.report_status` verbs
 > **Feature Mapping:** FS-105 (Spacecraft Operations)

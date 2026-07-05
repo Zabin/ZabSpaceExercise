@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R110](R110-communications.md)
-> **Referenced By:** [R117](R117-directed-energy-and-kinetic-effects.md), FS-105
+> **Referenced By:** [R117](R117-directed-energy-and-kinetic-effects.md), [R137](R137-bus-and-payload-parameter-catalog.md), FS-105
 > **Produces:** implementation constraints for [`engine/jam.py`](../../../spacesim/engine/jam.py), `JAM_FOOTPRINT` access channel
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R110](R110-communications.md) (Communications — the thing EW denies), MSTR-002 (the five-D effect

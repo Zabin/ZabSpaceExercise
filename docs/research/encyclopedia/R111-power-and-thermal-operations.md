@@ -4,7 +4,7 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md), [R103](R103-satellite-command-and-control.md)
-> **Referenced By:** [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R131](R131-space-environment-and-space-weather-operations.md), DOM-007, FS-105
+> **Referenced By:** [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R131](R131-space-environment-and-space-weather-operations.md), [R137](R137-bus-and-payload-parameter-catalog.md), DOM-007, FS-105
 > **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py), [`engine/busmodel.py`](../../../spacesim/engine/busmodel.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [`docs/AUDIT-2026-06-UI-TTC.md`](../../AUDIT-2026-06-UI-TTC.md) §2 (the precedent worked example),
