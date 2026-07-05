@@ -330,7 +330,7 @@ Router: [`features/feature-index.md`](docs/features/feature-index.md).
 | FS-114 | Hot-Seat Hand-Off Screen-Blank Menu | `features/FS-114-hot-seat-handoff.md` | (no owning DOM) | ✅ (build unverified) |
 | FS-115 | Session Setup: Vignette Selection & Seat Assignment | `features/FS-115-session-setup.md` | DOM-003 | ✅ (build unverified) |
 | FS-116 | Role-Scoped Command Catalog & Assignment Scoping | `features/FS-116-role-scoped-command-catalog.md` | (no owning DOM) | ✅ Ready for implementation planning (v1.2 — both Open Questions closed via ADS-3500 v1.1; per-verb DEFENSE_VERBS classification corrected) |
-| FS-117 | Vignette Creator — In-App Authoring, Typed Parameters & Per-Cell ROE | `features/FS-117-vignette-creator.md` | (no owning DOM) | 🚧 In progress — Critical Open Question 1 (no `FR`/`NFR` backs most of this Feature's scope beyond `FR-5110`/`NFR-2000`) blocks implementation-readiness |
+| FS-117 | Vignette Creator — In-App Authoring, Typed Parameters & Per-Cell ROE | `features/FS-117-vignette-creator.md` | FR-5100 family, FR-3420, NFR-2000/NFR-2010 | ✅ Ready for implementation planning — v1.1 closed Open Question 1 (`04-requirements-engineering` added `FR-5120`-`FR-5180`/`FR-3420`/`NFR-2010`) |
 | FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | DOM-002 | ✅ |
 | FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | ⛔ Planned (authorized) |
 | FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | DOM-004, DOM-005 | ✅ |
@@ -395,15 +395,23 @@ absorbing `docs/pipeline/backlog.md` `BL-0051`/`BL-0052`, grounded in
 [`ADS-5100A`](architecture/ADS-5100A-vignette-creator-session-and-ui.md) (authoring-session
 architecture resolving `CR-11` + every UI surface) and
 [`ADS-5100B`](architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md) (typed per-payload-type/
-bus parameter sub-schemas + real per-cell ROE enforcement). **`FS-117` surfaces one Critical Open
-Question that blocks implementation-readiness:** `FEAT-5100`'s own Feature Catalog entry lists only
-`FR-5110`/`NFR-2000` as Included Requirements — the typed-parameter, per-cell-ROE, and specific
-UI-mechanics scope the two `ADS-5100` documents commit to has **no owning requirement in the current
-baseline at all**. Per this skill's own rule against inventing requirements to fill a gap, `FS-117`
-names this explicitly rather than papering over it — **a `04-requirements-engineering` pass is
-needed before `07-implementation-planning` can honestly claim traceability** for most of this
-Feature's scope (the `FR-5110`/`NFR-2000`-only portion has no such gap and could proceed
-independently if the project owner wants to split delivery).
+bus parameter sub-schemas + real per-cell ROE enforcement). `FS-117` v1.0 surfaced one Critical Open
+Question blocking implementation-readiness: `FEAT-5100`'s own Feature Catalog entry listed only
+`FR-5110`/`NFR-2000` as Included Requirements, leaving the typed-parameter, per-cell-ROE, and
+specific UI-mechanics scope with no owning requirement in the baseline at all.
+
+**FS-117 amended to v1.1 (2026-07-05), Open Question 1 closed:** the project owner chose to run
+`04-requirements-engineering` now rather than split delivery. Nine new baselined requirement leaves
+were added — `FR-5120`, `FR-5130`, `FR-5140`, `FR-5150`, `FR-5160`, `FR-5170`, `FR-5180` (children
+of `FR-5100`), `FR-3420` (child of `FR-3400`), and `NFR-2010` (sibling of `NFR-2000`) — each traced
+to a specific `ADS-5100A`/`ADS-5100B` section or the R1xx research they cite (see
+[`docs/reviews/requirements-update-fs117.md`](reviews/requirements-update-fs117.md)). `CR-13` was
+checked directly and confirmed a near-miss, not a match, for the new per-cell-ROE requirement — no
+Candidate Requirement was promoted. `FS-117` is now `07-implementation-planning`-ready for its full
+scope, not merely the `FR-5110`/`NFR-2000` slice. One non-blocking gap remains, filed to the
+pipeline backlog as `BL-0056` (Medium): `docs/architecture/05-functional-requirements.md` (GDS-05)
+has not yet folded these nine leaves in — an architecture-ladder reconciliation item for a future
+`03-architecture-design-synthesis` maintenance touch, not a blocker to this Feature.
 
 ## Theme: Feature Planning — `05-feature-decomposition` skill output (`docs/feature-planning/`)
 

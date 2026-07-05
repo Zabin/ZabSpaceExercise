@@ -1,6 +1,12 @@
 > **Document ID:** FS-117
-> **Version:** 1.0
-> **Status:** 🚧 In progress (one Critical Open Question blocks implementation-readiness — see below)
+> **Version:** 1.1
+> **Status:** ✅ Ready for implementation planning (Open Question 1 closed — see below)
+> **Changelog (v1.1, 2026-07-05):** Closed Open Question 1. `04-requirements-engineering` (run #42)
+> added nine new baselined requirement leaves — `FR-5120`, `FR-5130`, `FR-5140`, `FR-5150`,
+> `FR-5160`, `FR-5170`, `FR-5180` (children of `FR-5100`), `FR-3420` (child of `FR-3400`), and
+> `NFR-2010` (sibling of `NFR-2000`) — covering every capability this document's `ADS-5100A`/
+> `ADS-5100B` grounding commits to. `Requirements Implemented`, `Produces`, `Risks`, and `Open
+> Question 1` updated to cite them; no other field's substance changed.
 > **Dependencies:** [FS-115](FS-115-session-setup.md) (`FR-4210` — the `assign_role`/
 > `staffing_report` mechanism this Feature's seat/role matrix reuses, `VERIFIED`),
 > [FS-105](FS-105-spacecraft-operations.md) (`BusState`/`PayloadState` this Feature's typed
@@ -12,10 +18,11 @@
 > `FEAT-5100` (this Feature consolidates/supersedes that catalog entry's FS, per the project
 > owner's explicit "document as its own distinct feature" instruction),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0051`/`BL-0052` (both fully absorbed
-> here)
-> **Produces:** an in-app Vignette Creator satisfying `FR-5110`/`NFR-2000`, plus (pending the
-> requirements-baseline gap this document's Open Question 1 names) the typed-parameter and
-> per-cell-ROE capability the two `ADS-5100` documents commit to
+> here, `DONE`), `BL-0055` (the requirements-baseline gap this document's v1.0 Open Question 1
+> named — closed by v1.1)
+> **Produces:** an in-app Vignette Creator satisfying `FR-5110`/`NFR-2000`, `FR-5120`-`FR-5180`,
+> `FR-3420`, and `NFR-2010` in full — every capability the two `ADS-5100` documents commit to now
+> has an owning requirement
 > **Feature Mapping:** FS-117 (this document)
 > **Related Topics:** [FS-113](FS-113-observer-read-only-access.md) (a structurally similar
 > White-Cell-only, ground-truth-visibility precedent this Feature's 2D/3D preview follows)
@@ -84,11 +91,24 @@ authoring session, emit a complete file only on explicit save/build) and **`NFR-
 data, not code) are the two requirements `FEAT-5100`'s Feature Catalog entry actually lists as
 `Included Requirements`, and both are implemented by this Feature as scoped above.
 
-**No other Functional or Non-Functional Requirement in the current baseline covers this Feature's
-typed-parameter or per-cell-ROE scope, or the specific UI mechanics (JSON view, 2D/3D preview,
-TLE/lat-long entry, asset menu, seat/role matrix) this document's grounding architecture commits
-to.** This is not a citation gap this document can silently paper over — see **Open Question 1**,
-the single most important finding this Feature Specification surfaces.
+**As of `04-requirements-engineering`'s run #42 pass (see
+[`docs/reviews/requirements-update-fs117.md`](../reviews/requirements-update-fs117.md)), nine
+additional baselined requirements cover the rest of this Feature's scope:**
+
+| ID | Covers |
+|---|---|
+| `FR-5120` | Synchronized JSON view alongside the form UI |
+| `FR-5130` | 2D/3D initial-state preview |
+| `FR-5140` | TLE and lat/long asset entry |
+| `FR-5150` | Asset menu (edit, reassign, delete) |
+| `FR-5160` | Seat-count declaration and seat/role-assignment matrix (`BL-0051`) |
+| `FR-5170` | Typed per-payload-type parameter sub-schemas |
+| `FR-5180` | Typed bus parameter sub-schemas (power, propulsion) |
+| `FR-3420` | Per-cell independent Rules of Engagement |
+| `NFR-2010` | Additive vignette-schema evolution (all 19 shipped vignettes keep working unchanged) |
+
+Every capability this Feature Specification describes now traces to a baselined `FR-xxxx`/
+`NFR-xxxx` — Open Question 1's requirements-baseline gap is closed.
 
 ## User Workflows
 
@@ -284,11 +304,12 @@ completion.
 
 ## Risks
 
-- **The requirements-baseline gap named in Open Question 1 is this document's single biggest
-  risk.** An Implementation Package built directly from this FS's typed-parameter/per-cell-ROE scope
-  without a `04-requirements-engineering` pass first would be implementing capability with no
-  `FR-xxxx`/`NFR-xxxx` backing it — a traceability gap by construction, not an oversight to catch
-  later.
+- **The requirements-baseline gap Open Question 1 named is now closed** (v1.1) — `04-requirements-
+  engineering` run #42 added `FR-5120`-`FR-5180`/`FR-3420`/`NFR-2010`. `07-implementation-planning`
+  can now cite genuine traceability for every part of this Feature's scope. The one remaining,
+  non-blocking gap `04`'s own review surfaced (Finding 9, `BL-0056`, Medium): `docs/architecture/
+  05-functional-requirements.md` (GDS-05) has not yet folded these nine leaves in — an architecture-
+  ladder reconciliation item, not a risk to this Feature's implementation-readiness.
 - **Two data paths for one draft (JSON view vs. form UI) is the most likely implementation
   defect**, carried forward from `ADS-5100A`'s own Risk 1 — both must be thin clients over one
   shared draft-session state.
@@ -307,20 +328,13 @@ completion.
 
 ## Open Questions
 
-1. **CRITICAL — no `FR-xxxx`/`NFR-xxxx` in the current baseline covers this Feature's
-   typed-parameter or per-cell-ROE scope, nor the specific UI mechanics (JSON view, 2D/3D preview,
-   TLE/lat-long entry, asset menu, seat/role matrix) beyond `FR-5110`'s generic "iterative
-   composition" framing.** `FEAT-5100`'s own catalog entry lists only `FR-5110`/`NFR-2000` as
-   `Included Requirements` — everything else this document specifies flows from the two `ADS-5100`
-   design syntheses, which are architecture-tier documents, not a requirements baseline. This is
-   squarely what this skill's own rule anticipates ("A capability gap discovered while specifying
-   is an Open Question, never a new requirement invented to fill the gap") — **this must be
-   resolved by a `04-requirements-engineering` pass** (formalizing new `FR-xxxx`/`NFR-xxxx` entries,
-   or explicit Candidate Requirements per the existing `CR-01`–`CR-18` convention) before
-   `07-implementation-planning` can honestly claim traceability for the typed-parameter/per-cell-ROE/
-   UI-mechanics portion of this Feature. The `FR-5110`/`NFR-2000`-only portion (iterative
-   composition, save/build gating) has no such gap and could proceed independently if the project
-   owner wants to split delivery.
+1. **CLOSED (v1.1).** `04-requirements-engineering` run #42 added `FR-5120`, `FR-5130`, `FR-5140`,
+   `FR-5150`, `FR-5160`, `FR-5170`, `FR-5180`, `FR-3420`, and `NFR-2010` — every capability this
+   document specifies (typed-parameter sub-schemas, per-cell ROE, and the JSON-view/2D-3D-preview/
+   TLE-lat-long-entry/asset-menu/seat-role-matrix UI mechanics) now traces to a baselined
+   requirement. See [`docs/reviews/requirements-update-fs117.md`](../reviews/requirements-update-fs117.md)
+   for the full derivation and review. `07-implementation-planning` may now proceed against this
+   Feature's full scope, not merely the `FR-5110`/`NFR-2000` slice.
 2. **Abandoned-draft-session lifecycle policy** (from `ADS-5100A` Open Question 2) — indefinite
    retention, a TTL, or an explicit resume-list. A product decision, not resolved here.
 3. **Exact seat/role matrix UI layout** (from `ADS-5100A` Open Question 3) — checkbox-grid
