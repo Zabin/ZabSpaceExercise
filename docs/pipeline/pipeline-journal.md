@@ -13,18 +13,19 @@
 
 ## Position
 
-- **Updated:** 2026-07-05 (run #32)
-- **Increment:** two threads active. **Thread A (v1 baseline follow-through): `11-release-readiness`
-  ran run #31 — result NO-GO.** 16 of 17 FS-tracked Features (plus all Prototype/MVP foundational
-  work) are delivered/verified/clean or carry an explicitly accepted risk; the sole blocker is
-  **`FEAT-3500`** (Role-Scoped Command Catalog & Assignment Scoping, Must-priority, Release 1) —
-  confirmed to have **no owning Feature Specification and no implementation anywhere in the
-  codebase** (`BL-0049`, High, `NEEDS-USER`). No baseline record was flipped (NO-GO rule). Thread A
-  is now gated on the project owner's Path A (implement) vs. Path B (descope with authorization)
-  decision for `FEAT-3500` before this stage can be re-run for a GO. **Thread B (training-corpus
-  elevation): CLOSED OUT this run** — `08-training-manual-authoring` fixed `BL-0048` (the
-  `session/controller.py` → `session/cells.py` citation, 7 locations) in run #32; Thread B now has
-  zero open findings and zero queued steps.
+- **Updated:** 2026-07-05 (run #37)
+- **Increment:** two threads active. **Thread A (v1 baseline follow-through): the project owner
+  chose Path A** for `BL-0049` (implement `FEAT-3500`, not descope) — runs #33-#36 executed
+  `06-feature-specification` (`FS-116` authored, v1.0), `03-architecture-design-synthesis`
+  (`ADS-3500`, resolving both of `FS-116`'s Open Questions), `06-feature-specification` again
+  (`FS-116` v1.1, Open Questions closed), and `07-implementation-planning` (`IP-1160` authored,
+  `BLOCKED` only on authorization — every dependency already `VERIFIED`). **Run #37: the project
+  owner was asked for `IP-1160`'s MSTR-006 §3 go-ahead and answered "not yet."** `IP-1160` stays
+  `BLOCKED`/unauthorized; Path A is paused at this gate, not stalled — every upstream step (spec,
+  architecture, planning) is done, so implementation can begin the moment authorization is given.
+  `11-release-readiness` cannot be re-run for a GO until `IP-1160` reaches `VERIFIED` (or the
+  project owner reverses course to Path B). **Thread B (training-corpus elevation): CLOSED OUT run
+  #32** — `08-training-manual-authoring` fixed `BL-0048`; zero open findings, zero queued steps.
 - **Reconciliation note (run #16, preserved):** between runs #15 and #16, substantial pipeline-shaped work
   landed **outside** the manager's own loop (the user worked directly with the relevant skills
   across two other sessions, PRs #45 and #46, both merged to `main`): the "complete outstanding 08"
@@ -48,35 +49,46 @@
   run #29, **zero findings — the cleanest package in the sweep**). Aggregate: 8/11 clean
   (routine citation drift only), 2/11 with one Medium finding each, 1/11 perfect. No Critical/High
   anywhere in the sweep. `BL-0004` closed `DONE`.
-- **Thread A pipeline state (this run):** `11-release-readiness` invoked with the user's explicit
-  authorization (the standing gate from run #17 onward). Wrote
-  [`release-assessment-fs-tracked-baseline.md`](../reviews/release-assessment-fs-tracked-baseline.md):
-  full scope audit against `docs/feature-planning/01-release-plan.md`'s bucket assignments, one row
-  per FS-tracked Feature. Result: **NO-GO**. Two new findings: `BL-0049` (High, `NEEDS-USER` —
-  `FEAT-3500` undelivered, see Position summary above; escalates the substance of `BL-0014`, which
-  had found the same absence in 2026-07-03 but filed it Medium/non-blocking) and `BL-0050` (Medium,
-  `DEFERRED` — `FR-3310`'s "single scheduler" framing doesn't literally match the shipped
-  two-mechanism architecture; behavioral risk low, no owning FS). Test suite 566 passed/3 skipped,
-  permanent gates 14 passed, both unchanged. Committed `789f774`, pushed. No tracker flipped (NO-GO
-  rule).
-- **Thread B pipeline state (this run):** `BL-0029`/`BL-0026` closed run #19; `09-training-manual-review`
-  closed run #30 clean apart from `BL-0048`. **`08-training-manual-authoring` invoked this run
-  (run #32), at the user's explicit direction, to fix `BL-0048`:** corrected all seven
-  `spacesim/session/controller.py` → `spacesim/session/cells.py` (`CellController`) citations across
-  `WCM-1`, `BLU-1`, `RED-1`, and `training/15` §15.1/§15.2. Playbook suite re-run green (16/16), no
-  regression. No other tracker touched (a pure citation fix). Committed `1abcada`, pushed. Thread B
-  now has **zero open findings and zero queued steps.**
-- **Backlog:** 50 total. This run: `BL-0048` → `DONE` (fixed). No `NEEDS-USER` entries beyond
-  `BL-0049` (unchanged, still open).
-- **Next step / open gate:** **`BL-0049` is a ripe `NEEDS-USER` entry — the project owner must
-  choose Path A (implement `FEAT-3500` via `06`→`07`→`08`→`09`, then re-run `10`/`11`) or Path B
-  (descope `FEAT-3500` to a future release with recorded authorization) before `11-release-readiness`
-  can be re-run for a GO on this baseline.** Thread B has no further queued work — its scope is fully
-  current pending the next feature-driven manual-impact finding.
-- **Open gates:** **`BL-0049` (`FEAT-3500` Path A/B decision) — awaiting the project owner.**
-  `11-release-readiness` itself is no longer gated on a bare go-ahead (that gate cleared run #31);
-  it is now gated on `BL-0049`'s resolution instead. PR #49 (runs #30-#32's work) is open/draft, no
-  CI configured in this repo, no review comments as of this run.
+- **Thread A pipeline state (runs #31-#37):** `11-release-readiness` (run #31) returned **NO-GO**:
+  16 of 17 FS-tracked Features clean/accepted-risk; `FEAT-3500` undelivered (`BL-0049`, High) —
+  escalates `BL-0014`'s substance (found 2026-07-03, filed Medium/non-blocking) to release-blocking,
+  since this was the first pass to specifically audit "is every planned Feature delivered." Also
+  found `BL-0050` (Medium, `FR-3310`'s "single scheduler" framing doesn't match the shipped
+  two-mechanism architecture, `DEFERRED`, non-blocking). No tracker flipped (NO-GO rule). The
+  project owner chose **Path A** (run #33's instruction: "run pipeline skill for thread A path A").
+  Run #33: `06-feature-specification` authored `FS-116` v1.0 — closed but immediately hit two
+  Open Questions blocking implementation-readiness (no interface carries a seat identifier distinct
+  from cell; the engine's three-way verb taxonomy doesn't map onto the two-way role-scope model).
+  Run #34: the project owner chose to route both upstream properly ("Route upstream first
+  (03/04)") rather than resolve inline or narrow scope; `03-architecture-design-synthesis` authored
+  **`ADS-3500`** (Workflow B, the first `ADS-xxx` in this project, since `GDS-09` remains
+  scaffold-only) — Decision Log entry 1 extends the operator-command interface with an optional
+  `seat` identifier (preserving `GDS-01`'s multi-seat concurrency model, per the project owner's
+  explicit rejection of the "simplify scope" alternative); entry 2 classifies `DEFENSE_VERBS` as
+  `bus`-scope. Run #35: `06-feature-specification` amended `FS-116` to v1.1, closing both Open
+  Questions citing `ADS-3500`. Run #36: `07-implementation-planning` authored **`IP-1160`** (no
+  split — one coherent unit of work), discovering along the way that `app.js` already carries a
+  pre-existing, purely cosmetic, unenforced `VERB_ROLE`/`ROLE_FILTER` display filter whose
+  `def.harden` tag conflicts with `ADS-3500`'s classification (flagged as a bug fix in the
+  package, not a re-opened design question) — every dependency (`IP-1151`, `IP-1050`, `IP-1051`)
+  already `VERIFIED`, so `IP-1160` is `BLOCKED` on authorization alone. Run #37: `AskUserQuestion`
+  put the MSTR-006 §3 go-ahead to the project owner; answer was **"not yet."** `IP-1160` remains
+  `BLOCKED`/unauthorized — recorded, not chased.
+- **Thread B pipeline state:** `BL-0029`/`BL-0026` closed run #19; `09-training-manual-review`
+  closed run #30 clean apart from `BL-0048`; `08-training-manual-authoring` fixed `BL-0048` run #32
+  (all seven `spacesim/session/controller.py` → `spacesim/session/cells.py` citations). Thread B has
+  **zero open findings and zero queued steps.**
+- **Backlog:** 51 total. Runs #31-#37: `BL-0048` → `DONE` (run #32); `BL-0049` → `SCHEDULED` (Path A
+  chosen, rode `06`→`03`→`06`→`07`) — remains open, now blocked on authorization rather than on
+  spec/architecture/planning work, all of which is done; `BL-0050` unchanged (`DEFERRED`).
+- **Next step / open gate:** **`IP-1160`'s MSTR-006 §3 authorization — awaiting the project
+  owner**, who has explicitly deferred it ("not yet"). Nothing else is queued on Thread A until
+  that decision changes; Thread B has no queued work either. This pipeline is fully caught up
+  pending either a future authorization decision or new upstream work (a code change, a new
+  backlog item, etc.).
+- **Open gates:** **`IP-1160` authorization (MSTR-006 §3) — explicitly deferred by the project
+  owner this run, not yet granted.** PR #49 (runs #30-#37's work) is open/draft, no CI configured
+  in this repo, no review comments as of this run.
 
 ---
 
@@ -417,3 +429,8 @@
 | 30 | 2026-07-05 | advance (gate re-offered via AskUserQuestion; user chose Thread B) | `09-training-manual-review` | The runs #16/#19 training-corpus scope: `docs/training/02-interface.md`, `12-white-cell-manual.md` (WCM-1, WCM-2, WCM-11, WCM-12), `13-blue-cell-manual.md`, `14-red-cell-manual.md`, `15-manual-traceability.md` (§15.1/§15.2 new rows, §15.6), `INDEX.md` | Reconciliation: confirmed PR #48 (runs #17-#29's work) is now merged to `main` (tip `8574ca9`) -- corrects run #29's "open/draft" recording, drift noted and fixed in this run's Position block; no other drift found (Master Build Plan/RTM/ROADMAP all matched run #29's recorded state). Triaged backlog: no NEW entries, no DEFERRED triggers fired, no ripe NEEDS-USER items beyond the standing `11-release-readiness` gate. Gate check: re-offered the standing Thread-A gate (invoke `11-release-readiness` now, requires explicit go-ahead per this manager's own rule) alongside Thread B's ungated `09-training-manual-review`, via `AskUserQuestion` (first attempt hit a transient tool-permission error mid-stream; retried successfully). User chose Thread B. Invoked `09-training-manual-review` on the runs #16/#19 scope: independently confirmed every Observer/classification-override/seat-to-role-staffing/competency-assessment/research-batch prose claim against the live code (inprocess.py's observer functions, manager.py's assign_role/staffing_report and classification threading into save_state/aar export, assessment.py's three scoring functions, research_batch.py's run_batch signature and research_export.py's RunRecord fields) -- all confirmed accurate. Ran `test_vignette_tutorials.py`: 16 passed, unchanged. Found one genuine (not drift) misattribution: `WCM-1`/`BLU-1`/`RED-1` and `training/15` §15.1/§15.2 (7 locations) cite `spacesim/session/controller.py` for the fog-of-war boundary -- confirmed via `git log --all --diff-filter=A` that this file has never existed; the real `CellController` lives in `spacesim/session/cells.py`. Wrote `docs/reviews/training-review-runs16-19-scope.md`: clean apart from this one Medium finding. Updated ROADMAP.md's review theme. Committed `a3c65ad` (review skill's own commit), pushed. Harvested 1 finding -> `BL-0048` (Medium, DEFERRED -- rides `08-training-manual-authoring`'s next touch of the four affected files). | Thread A's `11-release-readiness` gate remains open, still awaiting the user's go-ahead (unchanged decision point); Thread B has no further queued step (BL-0048 is Low-maintenance-cost, doesn't itself justify a dedicated `08-training-manual-authoring` run) -- ask the user whether to invoke `11-release-readiness` now, or fold `BL-0048`'s fix into some other upcoming touch of the training corpus |
 | 31 | 2026-07-05 | advance (user explicitly authorized invoking `11-release-readiness`, then directed folding `BL-0048` into an `08-training-manual-authoring` touch) | `11-release-readiness` | Full 18-package Master Build Plan tranche (`IP-1010`-`IP-3010`, FS-101-111/112-115/201/301) against `docs/feature-planning/01-release-plan.md`'s bucket assignments | Reconciliation: no drift since run #30 (PR #49 still open/draft as expected, no CI configured). The user's instruction itself served as the standing gate's explicit go-ahead. Invoked `11-release-readiness`: reconstructed the promise from the release plan's Prototype/MVP/Release-1/Release-2 buckets, built the FS<->FEAT mapping from `05-feature-review.md`'s reconciliation table, and audited all 18 packages (566 passed/3 skipped, both permanent gates 14 passed, both unchanged). 16 of 17 FS-tracked Features clean or carrying an already-accepted/disclosed risk. Found **`FEAT-3500`** (Role-Scoped Command Catalog & Assignment Scoping, Must-priority, Release 1) has **no owning Feature Specification** (absent from the FS<->FEAT reconciliation table) **and no implementation anywhere in the codebase** -- re-confirmed via direct grep (`role_assignments` read only by `staffing_report()`, no command-authorization consumer) what `BL-0014` (run #8, re-derived run #15/`VR-1151`) had already found, but this pass recognized it as release-blocking rather than an ordinary Medium/deferred finding, since a release-readiness audit's specific job is checking "is every planned Feature actually delivered." Also found `FR-3310`'s "single scheduler" framing doesn't literally match the shipped two-mechanism architecture (`OrderSystem` vs. `SSNNetwork`, no `PlannedActivity` class anywhere) and has no owning FS either (`FS-102` explicitly disclaims citing any FR) -- lower severity, behavioral risk low. Wrote `docs/reviews/release-assessment-fs-tracked-baseline.md`: **NO-GO**, with an explicit Path A (implement `FEAT-3500`) / Path B (descope with authorization) choice put to the project owner; no tracker flipped, per the skill's own NO-GO rule. Committed `789f774` (release-readiness skill's own commit), pushed. Harvested 2 findings -> `BL-0049` (High, `NEEDS-USER` -- the `FEAT-3500` Path A/B decision), `BL-0050` (Medium, `DEFERRED` -- `FR-3310` framing, rides a future `06` pass). | **Gate: `BL-0049` (project owner's Path A/B decision on `FEAT-3500`) must be resolved before `11-release-readiness` can be re-run for a GO.** Thread B's `08-training-manual-authoring` touch for `BL-0048` (fixing the `session/controller.py` -> `session/cells.py` misattribution) remains available in parallel, per the user's own instruction this run -- no gate on that step. |
 | 32 | 2026-07-05 | advance (user directed folding `BL-0048` into an `08-training-manual-authoring` touch, same instruction as run #31) | `08-training-manual-authoring` | `BL-0048` -- correct the `session/controller.py` misattribution in `WCM-1`/`BLU-1`/`RED-1` and `training/15` §15.1/§15.2 (7 locations) | Reconciliation: no drift since run #31. No gate applies (training-manual authoring is not gated). Invoked `08-training-manual-authoring`: grepped `docs/training/` for `session/controller.py`, confirmed exactly the 7 locations `BL-0048` named (no additional stragglers), corrected each to `spacesim/session/cells.py` (`CellController`) -- 3 Sources footers (`WCM-1`, `BLU-1`, `RED-1`) + 4 `training/15` table cells (§15.1's "Fog-of-war boundary" row, §15.2's `WCM-1`/`BLU-1`/`RED-1` rows). No behavioral prose changed, pure citation fix. Re-ran `test_vignette_tutorials.py`: 16 passed, no regression. No other tracker needed updating (INDEX/ROADMAP never cited the wrong filename). Committed `1abcada` (training-authoring skill's own commit), pushed. `BL-0048` -> `DONE`. Thread B now has zero open findings and zero queued steps. | Thread A remains gated on `BL-0049` (the project owner's `FEAT-3500` Path A/B decision) -- that is the pipeline's sole open item across both threads. Thread B has nothing queued; its next work will be the next feature-driven manual-impact finding, whenever one arises. |
+| 33 | 2026-07-05 | advance (user instruction: "Run pipeline skill for thread A path A") | `06-feature-specification` | FEAT-3500 -- author the missing Feature Specification (FR-3510/FR-3520) | Reconciliation: no drift since run #32. `BL-0049` -> `SCHEDULED` (Path A chosen this run, rides `06`). Invoked `06-feature-specification`: read `FEAT-3500`'s Feature Catalog entry (Included Requirements FR-3510/FR-3520, Related ADRs ADR-0004, Affected Interfaces INT-0004/INT-0006), GDS-04 §1.10 (Role Assignment), GDS-03 §2.2 (Session Layer), the ICD's INT-0004/INT-0006 entries, and the live `engine/buscommands.py`/`session/manager.py`/`ui_web/server.py` source. Authored `docs/features/FS-116-role-scoped-command-catalog.md` (next available FS-1xx ID per `feature-index.md`), grounding Subsystem Responsibilities in GDS-04 §1.10's own domain-model text rather than stretching the Feature Catalog's imprecise `ADR-0004` citation (which is actually scoped to cell-level fog-of-war, not role-level enforcement -- flagged as a Risk, not corrected, since editing the catalog is out of this skill's authority). Surfaced two genuine Open Questions the skill could not resolve: (1) no interface carries a `seat` identifier distinct from `cell` -- confirmed by reading `OrderRequest`/`issue_order`'s actual signatures; (2) the engine's three-way verb taxonomy (`BUS_VERBS`/`PAYLOAD_VERBS`/`DEFENSE_VERBS`) doesn't map onto the two-way `bus`/`payload` role-scope model. Both explicitly block `07-implementation-planning`. Updated `feature-index.md`/`ROADMAP.md`. Committed `d707557`, pushed. | `07-implementation-planning` cannot proceed with two Open Questions unresolved -- route both upstream first. Asked the user how to resolve them. |
+| 34 | 2026-07-05 | advance (user chose "Route upstream first (03/04)" over resolving inline or simplifying scope) | `03-architecture-design-synthesis` | Resolve `FS-116`'s two Open Questions (seat-identifier interface gap; `DEFENSE_VERBS` classification) | Reconciliation: no drift since run #33. Read `architecture/INDEX.md` §1: `GDS-09` (API Specification, the ladder level that would eventually own this interface decision) remains scaffold-only and gated behind `GDS-06`-`08` -- cannot jump ahead per the ladder's strict sequential rule. Used Workflow B (per-cluster `ADS-xxx`) instead, since this is exactly "real design tension the global ladder doesn't resolve at the system level." Authored **`ADS-3500`** (docs/architecture/ADS-3500-role-scoped-command-enforcement.md), the first `ADS-xxx` in this project: ten fixed sections per MSTR-005 §3a. Decision Log entry 1 extends `INT-0004`/`INT-0006`'s concrete realizations with an optional `seat` field/parameter, resolved by the Session Layer against the existing Role Assignment mapping -- explicitly preserving GDS-01 §2's multi-seat concurrency model rather than narrowing it (the project owner's prior answer had already ruled out the "simplify scope" alternative). Decision Log entry 2 classifies every `DEFENSE_VERBS` entry as `bus`-scope (grounded in each verb's own semantic content -- platform/defense-posture actions, none tied to a specific payload's mission function -- and kept inside GDS-04 §1.10's existing two-value enumeration rather than adding an unbaselined third category). Updated `architecture/INDEX.md` §2 and `ROADMAP.md`'s Architecture theme table. Committed `db4a8b2`, pushed. | `FS-116` itself still shows both Open Questions as unresolved (this skill doesn't edit Feature Specifications) -- a brief `06-feature-specification` touch should close them out citing `ADS-3500`, then `07-implementation-planning` can proceed. |
+| 35 | 2026-07-05 | advance | `06-feature-specification` | Amend `FS-116` to v1.1, closing both Open Questions via `ADS-3500` | Reconciliation: no drift since run #34. Re-opened `FS-116` (not a fresh draft): updated Status (In progress -> Ready for implementation planning), Dependencies (added `ADS-3500`), System Behaviour (named the seat-resolution mechanism and the resolved bus/payload/`DEFENSE_VERBS` classification concretely), Interfaces Used (INT-0004/INT-0006 now described as carrying the amended `seat` field, not flagged as blocked), Data Model Changes (confirmed the resolution is an interface addition, not a Domain Model change), Acceptance Criteria (added `DEFENSE_VERBS`/omitted-`seat` coverage), Verification Plan, and Open Questions (both closed, citing `ADS-3500`'s Decision Log by entry number). Fields the resolutions didn't touch (Purpose, Scope, Requirements Implemented, User Workflows, Error Handling, Performance/Security Considerations, Dependencies, Risks, Related ADRs/Interfaces) left unchanged. Updated `feature-index.md`/`ROADMAP.md`. Committed `b13de03`, pushed. | `FS-116` is implementation-ready -- advance to `07-implementation-planning`. |
+| 36 | 2026-07-05 | advance | `07-implementation-planning` | Plan the Implementation Package(s) for `FS-116` v1.1 | Reconciliation: no drift since run #35. Confirmed `FS-116` v1.1 approved with zero blocking Open Questions, and every candidate dependency package (`IP-1151`, `IP-1050`, `IP-1051`) already `VERIFIED`. Checked the live tree before citing any file/function (per this skill's own anti-drift discipline): confirmed `OrderRequest`/`issue_order`'s exact current signatures, and discovered `spacesim/ui_web/static/app.js` already carries a pre-existing, purely cosmetic, entirely unenforced `VERB_ROLE`/`ROLE_FILTER` client-side display filter (a personal "Bus/Payload/SDA/All" viewing toggle with zero connection to any Role Assignment) -- its `def.harden` tag conflicts with `ADS-3500`'s bus-scope classification, resolved in the package as a bug fix in favor of the reviewed, authoritative decision. Authored **`IP-1160`** (no split -- `FS-116` is one coherent unit of work across a small, contiguous set of files), all 14 fields populated, `Files to Modify` checked against the current source tree rather than guessed. Status: `BLOCKED`, not `READY`, solely because MSTR-006 §3 authorization is not yet on record -- every dependency gate is already cleared. Updated the Technical Work Breakdown (Tranche 2), `packages/INDEX.md`, the Master Build Plan (19 packages total: 18 `VERIFIED` + 1 `BLOCKED`), `FS-116`'s `Referenced By`, `ROADMAP.md`. Committed `0151fb0`, pushed. | `IP-1160` needs the project owner's explicit MSTR-006 §3 go-ahead before `08-code-implementation` can run -- asked via `AskUserQuestion`. |
+| 37 | 2026-07-05 | advance (gate check) | -- | `IP-1160` MSTR-006 §3 authorization | Reconciliation: no drift since run #36. Gate check: `IP-1160` is fully specified with every dependency `VERIFIED` -- the sole remaining gate before `08-code-implementation` is explicit authorization. Put the go/no-go to the project owner via `AskUserQuestion`. Answer: **"Not yet."** No package status changed (`IP-1160` remains `BLOCKED`); no code written; no further skill invoked this run -- a clean gate stop, not a stall. | Nothing queued on either thread until the project owner revisits `IP-1160`'s authorization (or chooses Path B instead) -- the pipeline is caught up. |
