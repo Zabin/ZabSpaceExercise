@@ -154,7 +154,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-5140 | TLE/lat-long asset entry | R101, R107 | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5150 | Asset menu (edit/reassign/delete) | UNASSIGNED | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5160 | Seat-count declaration + role matrix | UNASSIGNED | (none directly) | C4, C2 | INT-0002 | FS-117 | UNASSIGNED | UNASSIGNED |
-| FR-5170 | Typed per-payload-type parameter sub-schemas | R109, R110, R134, R137 | (none directly) | C1, C5 | (none — Domain Model/content-schema extension) | FS-117 | UNASSIGNED | UNASSIGNED |
+| FR-5170 | Typed per-payload-type parameter sub-schemas | R109, R110, R134, R137 | (none directly) | C1, C5 | (none — Domain Model/content-schema extension) | FS-117 | `spacesim/tests/test_isr.py` (weather/mw `BEAM_MODES` precondition only) | IP-1170 *(closes the weather/mw engine-precondition slice only — `BL-0053`; FR-5170's own typed-sub-schema/UI scope still awaits IP-1171)* |
 | FR-5180 | Typed bus parameter sub-schemas (power/propulsion) | R111, R112 | (none directly) | C1, C5 | (none directly) | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5210 | TLE force-add import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 | UNASSIGNED | UNASSIGNED | `content/` (TLE import) |
 | FR-5310 | Vignette loading | UNASSIGNED | ADR-0007 | C2, C5 | INT-0011 | UNASSIGNED | UNASSIGNED | `content/vignette.py` |

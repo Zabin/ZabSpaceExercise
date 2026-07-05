@@ -76,6 +76,75 @@ def test_available_modes_sar():
 
 
 # ---------------------------------------------------------------------------
+# beam_params — weather & mw (IP-1170, BL-0053)
+# ---------------------------------------------------------------------------
+
+def test_available_modes_weather_not_eo_fallback():
+    modes = available_modes("weather")
+    assert set(modes) == {"mesoscale", "conus", "full_disk"}
+
+
+def test_available_modes_mw_not_eo_fallback():
+    modes = available_modes("mw")
+    assert set(modes) == {"scan", "stare"}
+
+
+def test_beam_params_weather_default_mode_is_conus():
+    bp, mode = beam_params("weather")
+    assert mode == "conus"
+    assert bp["resolution_m"] == pytest.approx(1000.0)
+
+
+def test_beam_params_weather_mesoscale_is_finest_and_fastest():
+    bp, mode = beam_params("weather", "mesoscale")
+    assert mode == "mesoscale"
+    assert bp["resolution_m"] == pytest.approx(500.0)
+    assert bp["duty_cycle"] > beam_params("weather", "conus")[0]["duty_cycle"]
+    assert bp["duty_cycle"] > beam_params("weather", "full_disk")[0]["duty_cycle"]
+
+
+def test_beam_params_weather_full_disk_is_coarsest_and_slowest():
+    bp, mode = beam_params("weather", "full_disk")
+    assert mode == "full_disk"
+    assert bp["resolution_m"] == pytest.approx(2000.0)
+    assert bp["duty_cycle"] < beam_params("weather", "mesoscale")[0]["duty_cycle"]
+
+
+def test_beam_params_mw_default_mode_is_scan():
+    bp, mode = beam_params("mw")
+    assert mode == "scan"
+
+
+def test_beam_params_mw_stare_has_higher_gain_than_scan():
+    scan_bp, _ = beam_params("mw", "scan")
+    stare_bp, _ = beam_params("mw", "stare")
+    assert stare_bp["gain_factor"] > scan_bp["gain_factor"]
+    assert stare_bp["swath_km"] < scan_bp["swath_km"]
+
+
+def test_beam_params_weather_mw_distinct_from_isr_eo_defaults():
+    # BL-0053's original symptom: weather/mw silently fell back to isr_eo's
+    # generic stripmap numbers. Confirm the numbers are now type-specific.
+    eo_bp, _ = beam_params("isr_eo")
+    weather_bp, _ = beam_params("weather")
+    mw_bp, _ = beam_params("mw")
+    assert weather_bp != eo_bp
+    assert mw_bp != eo_bp
+
+
+def test_beam_params_isr_eo_sar_sda_unchanged_by_weather_mw_addition():
+    # Regression: adding weather/mw must not touch any existing entry.
+    bp, mode = beam_params("isr_eo", "spotlight")
+    assert mode == "spotlight"
+    assert bp["swath_km"] == pytest.approx(5.0)
+    assert bp["gain_factor"] == pytest.approx(1.5)
+    bp, mode = beam_params("isr_sar", "wide_area")
+    assert bp["swath_km"] == pytest.approx(500.0)
+    bp, mode = beam_params("sda", "fine")
+    assert bp["swath_km"] == pytest.approx(100.0)
+
+
+# ---------------------------------------------------------------------------
 # effective_gain
 # ---------------------------------------------------------------------------
 

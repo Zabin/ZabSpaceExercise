@@ -2,10 +2,10 @@
 
 > **Package ID:** IP-1170
 > **Version:** 1.0
-> **Status:** 🟢 READY *(MSTR-006 §3 authorization obtained 2026-07-05, project owner, recorded in
-> `docs/pipeline/pipeline-journal.md` run #45 — no package-level dependency, so authorization is
-> the only gate this package had; it is the tranche's own prerequisite, sequenced first per
-> `01-technical-work-breakdown.md` Tranche 3.)*
+> **Status:** 🔵 COMPLETE *(implemented 2026-07-05 by `08-code-implementation` — `BEAM_MODES["weather"]`/
+> `["mw"]` + `_DEFAULT_MODE` entries added to `spacesim/engine/isr.py`, 9 new tests in
+> `spacesim/tests/test_isr.py`, full suite 575 passed/3 skipped (up from 566/3, +9), both permanent
+> gates green. Awaiting `09-package-verification` to advance to `VERIFIED`.)*
 > **Dependencies:** None (independent engine-only fix; every citation below checked directly
 > against the current `spacesim/engine/isr.py`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md),
@@ -97,22 +97,35 @@ or when those functions are called.
 
 ## Implementation Tasks
 
-**Not started — authorized 2026-07-05 (MSTR-006 §3).** Proposed sequence:
+**Complete (2026-07-05, `08-code-implementation`).**
 
-1. Write a failing test asserting `available_modes("weather")`/`available_modes("mw")` return the
-   new mode names (not `isr_eo`'s modes via fallback) and `beam_params("weather")`/`beam_params("mw")`
-   return the new, type-specific numbers.
-2. Add the two new `BEAM_MODES` entries and `_DEFAULT_MODE` mappings, grounded in `R109`'s cited
-   figures.
-3. Confirm `orders.py`'s existing call sites (`beam_params`/`available_modes` callers at
-   observe-schedule time) require no change — they already accept any payload type string and look
-   it up generically; this is purely a data-completeness fix.
-4. Re-run the full existing ISR/observe test suite to confirm no regression to `isr_eo`/`isr_sar`/
-   `sda` behavior (this package adds keys, touches none of the existing three).
+1. ✅ Wrote 9 failing tests in `spacesim/tests/test_isr.py` first (test-first, per `CLAUDE.md`),
+   covering `available_modes("weather")`/`available_modes("mw")`, `beam_params()` defaults and
+   mode-specific values for both new types, the relative mesoscale/conus/full_disk and scan/stare
+   orderings, and a regression check that `isr_eo`/`isr_sar`/`sda` are byte-identical. Confirmed all
+   9 failed before implementation.
+2. ✅ Added `BEAM_MODES["weather"]` (`mesoscale`/`conus`/`full_disk`) and `BEAM_MODES["mw"]`
+   (`scan`/`stare`), plus `_DEFAULT_MODE["weather"] = "conus"` and `_DEFAULT_MODE["mw"] = "scan"`.
+   `resolution_m` and the mesoscale/conus/full_disk duty-cycle ordering are directly grounded in
+   `R109`'s cited GOES-R figures; `mw`'s `scan`/`stare` gain-factor and swath ordering is faithful
+   to `R109`'s relative scan-vs-stare comparison. `swath_km` (both types) and `mw`'s `resolution_m`
+   are illustrative order-of-magnitude values not independently re-cited from a numeric source —
+   flagged, not silently guessed (see the Implementation Summary's Outstanding Issues).
+3. ✅ Confirmed `orders.py`'s two `beam_params`/`available_modes` call sites (lines 531, 755) need no
+   change — both call generically with a payload-type string, no hardcoded type list.
+4. ✅ Full suite re-run: 575 passed/3 skipped (up from 566/3, +9 — the exact 9 new tests), zero
+   regressions to `isr_eo`/`isr_sar`/`sda`.
 
 ## Tests to Add
 
-*(Proposed — none exist yet.)*
+- `spacesim/tests/test_isr.py` (existing file, extended) — 9 new tests, all passing:
+  `test_available_modes_weather_not_eo_fallback`, `test_available_modes_mw_not_eo_fallback`,
+  `test_beam_params_weather_default_mode_is_conus`,
+  `test_beam_params_weather_mesoscale_is_finest_and_fastest`,
+  `test_beam_params_weather_full_disk_is_coarsest_and_slowest`,
+  `test_beam_params_mw_default_mode_is_scan`, `test_beam_params_mw_stare_has_higher_gain_than_scan`,
+  `test_beam_params_weather_mw_distinct_from_isr_eo_defaults`,
+  `test_beam_params_isr_eo_sar_sda_unchanged_by_weather_mw_addition`.
 
 - `spacesim/tests/test_isr.py` *(existing file, extend)* or a new `test_isr_beam_modes.py` — one
   test per Acceptance Criterion:
@@ -126,22 +139,32 @@ or when those functions are called.
 
 ## Documentation Updates
 
-- `ROADMAP.md` Implementation Packages theme — add this package's row.
-- `docs/pipeline/backlog.md` `BL-0053` — flip to `DONE` once implemented and verified (the pipeline
-  manager's own harvest step, not this package's write scope).
-- `docs/research/encyclopedia/R109-sensor-operations.md` — no change needed; it already grounds the
-  numbers this package consumes (confirmed at authoring time — the research pass predates this
-  package and explicitly flagged the engine gap it fills).
+- `ROADMAP.md` Implementation Packages theme — this package's row (added at planning time) updated
+  to `COMPLETE`.
+- `docs/pipeline/backlog.md` `BL-0053` — left to the pipeline manager's own harvest step (not this
+  package's write scope) to flip to `DONE` once `09-package-verification` confirms.
+- `docs/research/encyclopedia/R109-sensor-operations.md` — no change needed; confirmed unchanged,
+  it already grounds the numbers this package consumes.
+- `docs/requirements/03-requirements-traceability-matrix.md` `FR-5170`'s Test/Impl. Package cells —
+  updated from `UNASSIGNED` to `spacesim/tests/test_isr.py` / `IP-1170`, both explicitly annotated
+  as covering only the weather/mw engine-precondition slice, not `FR-5170`'s full typed-sub-schema/
+  UI scope (that remains `IP-1171`'s to close).
+- `CLAUDE.md`'s Code Map — `engine/isr.py`'s entry updated from "EO/SAR/SDA" to "EO/SAR/SDA/
+  weather/mw," citing this package and `BL-0053`.
 
 ## Definition of Done
 
 - [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
   §3, 2026-07-05, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #45).
-- [ ] `BEAM_MODES["weather"]` and `BEAM_MODES["mw"]` exist with `R109`-grounded, type-specific
-  numbers (not copies of `isr_eo`'s).
-- [ ] `_DEFAULT_MODE["weather"]`/`_DEFAULT_MODE["mw"]` resolve to a real mode name for each type.
-- [ ] `available_modes("weather")`/`available_modes("mw")` no longer fall back to `isr_eo`'s modes.
-- [ ] Every existing `isr_eo`/`isr_sar`/`sda` test continues to pass unchanged.
+- [x] `BEAM_MODES["weather"]` and `BEAM_MODES["mw"]` exist with `R109`-grounded, type-specific
+  numbers (not copies of `isr_eo`'s). **Note:** resolution_m/duty_cycle are directly grounded in
+  `R109`'s cited GOES-R/SBIRS figures; `swath_km` (both types) and `mw`'s `resolution_m` are
+  illustrative order-of-magnitude values, not independently re-cited from a numeric source — see
+  Outstanding Issues in the Implementation Summary.
+- [x] `_DEFAULT_MODE["weather"]`/`_DEFAULT_MODE["mw"]` resolve to a real mode name for each type
+  (`"conus"`/`"scan"`).
+- [x] `available_modes("weather")`/`available_modes("mw")` no longer fall back to `isr_eo`'s modes.
+- [x] Every existing `isr_eo`/`isr_sar`/`sda` test continues to pass unchanged.
 
 ## Verification Checklist
 

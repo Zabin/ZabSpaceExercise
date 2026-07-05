@@ -260,8 +260,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
 - `spacesim/engine/maneuver.py` — pure compute for six manoeuvre entry modes
   (eci / lvlh / finite_burn / target_coe / hohmann / plane_change).
-- `spacesim/engine/isr.py` — ISR beam-mode database (EO/SAR/SDA), `effective_gain()`,
-  `soc_drain()`, footprint polygon + ground-heading helpers.
+- `spacesim/engine/isr.py` — ISR beam-mode database (EO/SAR/SDA/weather/mw — the last two added
+  by IP-1170, closing `BL-0053`), `effective_gain()`, `soc_drain()`, footprint polygon +
+  ground-heading helpers.
 - `spacesim/engine/jam.py` — jam modulation database (barrage/spot/sweep/deceptive),
   `effective_radius_km()`, `effective_success_prob()`, footprint polygon (FW §11.A.1).
 - `spacesim/engine/engage.py` — kinetic-engagement math (closing geometry, salvo Pₖ,
