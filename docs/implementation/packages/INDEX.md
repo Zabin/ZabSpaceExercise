@@ -61,7 +61,7 @@ unauthorized FS.
 | [IP-1151](IP-1151-seat-role-assignment.md) | Session Setup: Seat-to-Role Assignment | [FS-115](../../features/FS-115-session-setup.md) §FR-4210 | Forward design | ✅ VERIFIED (2026-07-04, run #15, `VR-1151` — one Definition-of-Done caveat re-confirmed, not resolved, see the package's own header) |
 | [IP-1160](IP-1160-role-scoped-command-enforcement.md) | Role-Scoped Command Catalog & Assignment Scoping | [FS-116](../../features/FS-116-role-scoped-command-catalog.md) | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; every dependency `VERIFIED`) |
 | [IP-1170](IP-1170-isr-beam-mode-coverage.md) | ISR Beam-Mode Coverage — weather & missile-warning (`BL-0053` prerequisite) | [FS-117](../../features/FS-117-vignette-creator.md) (prerequisite) | Forward design | ✅ VERIFIED (2026-07-05, [`VR-1170`](../verification/VR-1170-isr-beam-mode-coverage.md) — full suite 586 passed/3 skipped, both permanent gates green; one Low citation-drift finding) |
-| [IP-1171](IP-1171-typed-payload-bus-parameters.md) | Typed Payload & Bus Parameter Domain Model | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5170`/`FR-5180` | Forward design | 🟢 READY (authorized 2026-07-05 — MSTR-006 §3; `IP-1170` reached `VERIFIED` 2026-07-05) |
+| [IP-1171](IP-1171-typed-payload-bus-parameters.md) | Typed Payload & Bus Parameter Domain Model | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5170`/`FR-5180` | Forward design | 🔵 COMPLETE (implemented 2026-07-05; full suite 594 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
 | [IP-1172](IP-1172-per-cell-roe-enforcement.md) | Per-Cell Rules of Engagement Enforcement | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-3420`/`NFR-2010` | Forward design | 🔵 COMPLETE (implemented 2026-07-05; full suite 579 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
 | [IP-1173](IP-1173-vignette-creator-draft-session.md) | Vignette Creator Draft Session & Reverse Serialization | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5110` | Forward design | 🔵 COMPLETE (implemented 2026-07-05; full suite 586 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
 | [IP-1174](IP-1174-vignette-creator-ui-surfaces.md) | Vignette Creator UI Surfaces | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5120`-`FR-5160` | Forward design | 🔴 BLOCKED (authorized 2026-07-05 — MSTR-006 §3; blocked on `IP-1171`/`IP-1172`/`IP-1173` reaching `VERIFIED`) |
@@ -73,11 +73,12 @@ Tranche 3 for the full split rationale and the three design-fork decisions resol
 packaging). **All five authorized for coding 2026-07-05** (MSTR-006 §3, project owner). `IP-1170`
 is now `VERIFIED` (2026-07-05, [`VR-1170`](../verification/VR-1170-isr-beam-mode-coverage.md) —
 verified in a fresh session per the project owner's own run #46 choice; full suite 586 passed/3
-skipped, both permanent gates green; closes `BL-0053`); `IP-1172`/`IP-1173` are `COMPLETE`,
-awaiting their own `09-package-verification` pass; `IP-1171` is now `READY` (its sole blocker,
-`IP-1170` reaching `VERIFIED`, has cleared); `IP-1174` remains `BLOCKED` on `IP-1171`/`IP-1172`/
-`IP-1173` all reaching `VERIFIED` first, per this plan's own "`READY` means fully specified and
-every dependency `VERIFIED`" rule. **IP-1090,
+skipped, both permanent gates green; closes `BL-0053`). `IP-1171` (typed payload/bus parameter
+Domain Model, all 8 sub-models built with full engine-wiring since `IP-1170` was already
+`VERIFIED`) is now `COMPLETE` too (full suite 594 passed/3 skipped), alongside `IP-1172`/`IP-1173`
+— all three await their own `09-package-verification` pass. `IP-1174` remains `BLOCKED` on
+`IP-1171`/`IP-1172`/`IP-1173` all reaching `VERIFIED` first, per this plan's own "`READY` means
+fully specified and every dependency `VERIFIED`" rule. **IP-1090,
 IP-1100, IP-1110 are new (2026-07)**, split out of IP-1060 v1.0 per `docs/feature-planning/
 05-feature-review.md` Finding F-03, mirroring the FS-106→FS-106/109/110/111 split — see IP-1060
 v2.0's own header note. **IP-1120, IP-1130, IP-1140, IP-1150, IP-1151 are new (2026-07)**, the

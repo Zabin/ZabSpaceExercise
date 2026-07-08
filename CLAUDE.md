@@ -260,6 +260,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   system's `command` action (uplink/stored delivery like `maneuver`). New verbs extend `apply_command`.
 - `spacesim/engine/bus.py` — `BusState`/`PayloadState` SOH (limits, gating, safe mode, pass-gated view).
   `ThermalState` carries `temp_c`/`heater_watts`/`radiator_capacity_w` (FW §11.B.11).
+  `PayloadState` gains one `Optional[...]` typed sub-model per payload type (`satcom`/`isr_eo`/
+  `isr_sar`/`sigint`/`sda`/`weather`/`pnt`/`mw`), auto-populated from `type` via a `model_validator`
+  (IP-1171, FR-5170) — authored defaults for the Vignette Creator, distinct from `isr.py`'s
+  `BEAM_MODES` runtime table; `weather`/`mw` mirror IP-1170's now-`VERIFIED` entries.
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
 - `spacesim/engine/maneuver.py` — pure compute for six manoeuvre entry modes
   (eci / lvlh / finite_burn / target_coe / hohmann / plane_change).

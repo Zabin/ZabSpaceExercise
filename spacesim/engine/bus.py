@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 Status = Literal["green", "yellow", "red"]
 _RANK = {"green": 0, "yellow": 1, "red": 2}
@@ -109,6 +109,83 @@ class SafeModeState(BaseModel):
     steps_done: list[str] = []
 
 
+# IP-1171 (FR-5170) — typed per-payload-type authoring sub-models, one per the 8 typed payload
+# types (satcom/isr_eo/isr_sar/sigint/sda/weather/pnt/mw). Authored defaults for the Vignette
+# Creator's authoring surface, distinct from engine/isr.py's BEAM_MODES runtime table (a
+# task-time mode selection) — no invented number; every field traces to a cited topic below.
+class SatcomParams(BaseModel):
+    # R110 §3 (SATCOM bandwidth-by-class subsection): narrowband military UHF tops out near
+    # 384 kbit/s (CJCSI 6250.01G); wideband Ka-band HTS reaches the engine's own 16384 kbps clamp
+    # ceiling (bus.py CommsState.data_rate_kbps / buscommands.py comms.config_link).
+    bandwidth_class: Literal["narrowband", "wideband"] = "narrowband"
+    data_rate_kbps_max: float = 384.0
+
+
+class IsrEoParams(BaseModel):
+    # Mirrors engine/isr.py BEAM_MODES["isr_eo"]["stripmap"] (this type's own _DEFAULT_MODE) —
+    # R109's EO/SAR stripmap-vs-spotlight trade (Capella X-SAR / TerraSAR-X precedent) already
+    # grounds the runtime table these authored defaults echo, rather than re-deriving a second
+    # number.
+    resolution_m: float = 3.0
+    swath_km: float = 30.0
+
+
+class IsrSarParams(BaseModel):
+    # Mirrors engine/isr.py BEAM_MODES["isr_sar"]["stripmap"] — same R109 SAR trade as IsrEoParams.
+    resolution_m: float = 3.0
+    swath_km: float = 25.0
+
+
+class SigintParams(BaseModel):
+    # Mirrors engine/sigint.py's own BANDS/MODES defaults ("L" band, "track" mode) — R137 §3.5
+    # attributes SIGINT's own characterization to R129, not R109; engine/sigint.py's
+    # geolocation_error_km() is the live consumer of both fields' real names.
+    default_band: str = "L"
+    default_mode: str = "track"
+
+
+class SdaParams(BaseModel):
+    # Mirrors engine/isr.py BEAM_MODES["sda"]["nominal"] (this type's own _DEFAULT_MODE).
+    resolution_m: float = 500.0
+    swath_km: float = 500.0
+
+
+class WeatherParams(BaseModel):
+    # Mirrors engine/isr.py BEAM_MODES["weather"]["conus"] (IP-1170, VERIFIED — R109's GOES-R
+    # ABI resolution/revisit grounding). Wired to a real, independently-verified BEAM_MODES entry,
+    # not a placeholder — FR-5170's own Postcondition is satisfied for this type.
+    resolution_m: float = 1000.0
+    swath_km: float = 5000.0
+
+
+class PntParams(BaseModel):
+    # R134 (PNT Warfare): GPS civilian SPS baseline is <=9m/95% horizontal accuracy — the
+    # single-digit-to-low-tens-of-meters band pnt.set_integrity's degraded/protected modes scale,
+    # not an unrelated invented figure.
+    accuracy_m: float = 9.0
+
+
+class MwParams(BaseModel):
+    # Mirrors engine/isr.py BEAM_MODES["mw"]["scan"] (IP-1170, VERIFIED — R109's SBIRS-GEO
+    # scan/stare grounding).
+    resolution_m: float = 1000.0
+    swath_km: float = 20000.0
+
+
+# Maps PayloadState.type -> (field name, sub-model class) for the 8 typed payload types only;
+# space_control and any other type are deliberately left on the untyped `detail` dict.
+_TYPED_PARAM_CLASSES: dict[str, type[BaseModel]] = {
+    "satcom": SatcomParams,
+    "isr_eo": IsrEoParams,
+    "isr_sar": IsrSarParams,
+    "sigint": SigintParams,
+    "sda": SdaParams,
+    "weather": WeatherParams,
+    "pnt": PntParams,
+    "mw": MwParams,
+}
+
+
 class PayloadState(BaseModel):
     type: str = "isr_eo"                      # satcom|isr_eo|isr_sar|sigint|sda|space_control|...
     health: Status = "green"
@@ -124,6 +201,25 @@ class PayloadState(BaseModel):
     deception_active: bool = False            # def.set_deception_mode: USSF SWF Apr 2025 §3.2 passive measure #2
     shutter_closed: bool = False              # isr.shutter_sensor: optics protected from laser dazzle/blinding; blocks collection
     detail: dict = Field(default_factory=dict)
+
+    # IP-1171 (FR-5170) — one Optional typed sub-model field per payload type, populated only
+    # when `type` matches; every other field stays None. Mirrors isr.py's own type->params lookup
+    # shape without touching that runtime table.
+    satcom: Optional[SatcomParams] = None
+    isr_eo: Optional[IsrEoParams] = None
+    isr_sar: Optional[IsrSarParams] = None
+    sigint: Optional[SigintParams] = None
+    sda: Optional[SdaParams] = None
+    weather: Optional[WeatherParams] = None
+    pnt: Optional[PntParams] = None
+    mw: Optional[MwParams] = None
+
+    @model_validator(mode="after")
+    def _populate_typed_params(self) -> "PayloadState":
+        cls = _TYPED_PARAM_CLASSES.get(self.type)
+        if cls is not None and getattr(self, self.type) is None:
+            setattr(self, self.type, cls())
+        return self
 
 
 class BusState(BaseModel):

@@ -2,13 +2,11 @@
 
 > **Package ID:** IP-1171
 > **Version:** 1.0
-> **Status:** 🔴 BLOCKED *(MSTR-006 §3 authorization obtained 2026-07-05 — see Definition of Done —
-> but this package's `Dependencies` field cites [IP-1170](IP-1170-isr-beam-mode-coverage.md), not
-> yet `VERIFIED`; per this skill's own "READY means fully specified AND every dependency VERIFIED"
-> rule, this package stays `BLOCKED` on that dependency, not on authorization. `08-code-implementation`
-> may still build this package's six non-`weather`/`mw` sub-models now if it chooses to proceed
-> ahead of `IP-1170`'s verification, so long as the `weather`/`mw` sub-models' engine-inertness is
-> disclosed per this package's own Definition of Done — see Risks.)*
+> **Status:** 🔵 COMPLETE *(implemented 2026-07-05 by `08-code-implementation` — [IP-1170](IP-1170-isr-beam-mode-coverage.md)
+> reached `VERIFIED` first (2026-07-05, `VR-1170`), so all 8 typed sub-models, including
+> `weather`/`mw`, were built with full engine-wiring from the start, no inert placeholder needed.
+> 8 new tests in `spacesim/tests/test_typed_payload_params.py`, full suite 594 passed/3 skipped
+> (up from 586/3, +8), both permanent gates green. Awaiting `09-package-verification`.)*
 > **Dependencies:** [FS-117](../../features/FS-117-vignette-creator.md) v1.1 (`FR-5170`,
 > `FR-5180`), [ADS-5100B](../../architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md) §3.1,
 > [IP-1170](IP-1170-isr-beam-mode-coverage.md) (weather/mw `BEAM_MODES` — not `VERIFIED` yet),
@@ -127,66 +125,70 @@ the Domain Model the UI will be a thin client over.
 
 ## Implementation Tasks
 
-**Not started — authorized 2026-07-05 (MSTR-006 §3); blocked only on [IP-1170](IP-1170-isr-beam-mode-coverage.md)
-reaching `VERIFIED` for full `weather`/`mw` effect (see Status).** Proposed sequence:
+**Complete (2026-07-05, `08-code-implementation`).** [IP-1170](IP-1170-isr-beam-mode-coverage.md)
+had already reached `VERIFIED` before this package started, so the proposed sequence's "inert
+until IP-1170 ships" branch never applied — all 8 sub-models, including `weather`/`mw`, were built
+with full engine-wiring from the start:
 
-1. Confirm [IP-1170](IP-1170-isr-beam-mode-coverage.md)'s status — if not yet `VERIFIED`, the
-   `weather`/`mw` sub-models may still be built (per `FR-5170`'s own Postcondition, disclosed as
-   inert until then), but this package's own Definition of Done must not claim full engine effect
-   for those two types until `IP-1170` is `VERIFIED`.
-2. Write failing tests for each of the 8 new sub-models' validation behavior before adding them
-   (per `CLAUDE.md`'s test-first mandate).
-3. Add the 8 sub-models and their `PayloadState` fields, grounded field-by-field in `R109`/`R110`/
-   `R134`/`R137` (no invented number — if a specific field's realistic value isn't in the cited
-   research, flag it rather than guessing).
-4. Confirm (or add, if needed) the vignette-loader path for setting `PowerState.charge_rate_per_s`/
-   `drain_rate_per_s`/`AssetResources.delta_v_ms` per-asset from vignette YAML data.
-5. Re-run every existing vignette-loading test to confirm the additive `PayloadState` fields (all
-   `Optional`, defaulting to `None`) don't change behavior for any of the 19 currently shipped
-   vignettes.
+1. ✅ Confirmed [IP-1170](IP-1170-isr-beam-mode-coverage.md) is `VERIFIED` (`VR-1170`) before
+   starting — `weather`/`mw` sub-models mirror real `BEAM_MODES["weather"]`/`["mw"]` values, no
+   inert-placeholder disclosure needed.
+2. ✅ Wrote 8 failing tests first in `spacesim/tests/test_typed_payload_params.py` (test-first,
+   per `CLAUDE.md`), confirmed all 8 failed (2 additional tests in the same file — the bus
+   power/propulsion override and the 19-vignette regression check — passed immediately, since
+   they exercise pre-existing `Asset.model_validate`/`build_world` behavior needing no change).
+3. ✅ Added the 8 sub-models (`SatcomParams`/`IsrEoParams`/`IsrSarParams`/`SigintParams`/
+   `SdaParams`/`WeatherParams`/`PntParams`/`MwParams`) and their `Optional[...] = None`
+   `PayloadState` fields, auto-populated via a `model_validator(mode="after")` keyed on
+   `PayloadState.type`. Every field traces to a cited source: `SatcomParams` to `R110`'s
+   bandwidth-by-class table; `IsrEoParams`/`IsrSarParams`/`SdaParams`/`WeatherParams`/`MwParams`
+   to their own type's already-`R109`-grounded `engine/isr.py` `BEAM_MODES` `_DEFAULT_MODE` entry
+   (no second number invented — mirrored, not re-derived); `SigintParams` to `engine/sigint.py`'s
+   own `BANDS`/`MODES` defaults (re-attributed to `R129`, not `R109`, per `R137` §3.5 — see
+   Outstanding Issues); `PntParams.accuracy_m` to `R134`'s GPS SPS ≤9m/95% baseline.
+4. ✅ Confirmed (no addition needed) `Asset.model_validate()` already accepts nested per-asset
+   overrides for `resources.delta_v_ms`/`bus_state.power.charge_rate_per_s`/`drain_rate_per_s` via
+   plain pydantic nested-model coercion — `content/vignette.py` untouched.
+5. ✅ Full suite re-run: 594 passed/3 skipped (up from 586/3, +8 — the exact new tests), zero
+   regressions; `test_typed_payload_params.py`'s own regression test confirms all 19 currently
+   shipped vignettes load/build unchanged.
 
 ## Tests to Add
 
-*(Proposed — none exist yet.)*
-
-- `spacesim/tests/test_typed_payload_params.py` *(new)* — one test per Acceptance Criterion:
-  - Given an `isr_eo` asset, its `PayloadState.isr_eo` sub-model is populated with EO-specific
-    fields (resolution/swath), not a generic key-value bag; its other 7 payload-type sub-model
-    fields are `None`.
-  - Given a `satcom` asset, `PayloadState.satcom` is populated with bandwidth-related fields.
-  - Given a `weather`/`mw` asset, the corresponding sub-model exists and is populated, but (until
-    `IP-1170` ships) has no observable effect on `engine/isr.py`'s beam-parameter resolution —
-    this asymmetry itself is asserted by a test, not silently left unverified.
-  - Given a bus power/propulsion override in a vignette, the resulting `PowerState.charge_rate_per_s`/
-    `drain_rate_per_s`/`AssetResources.delta_v_ms` reflect it; `AssetResources.power_w` is never
-    touched by this path.
-  - Regression: all 19 currently shipped vignettes load and build unchanged (every new field is
-    `Optional`/absent-safe).
+- `spacesim/tests/test_typed_payload_params.py` *(new)* — 8 tests, all passing:
+  `test_isr_eo_asset_gets_isr_eo_params_only`, `test_satcom_asset_gets_bandwidth_params`,
+  `test_weather_and_mw_sub_models_mirror_ip1170_beam_modes`, `test_pnt_asset_gets_baseline_accuracy`,
+  `test_explicit_sub_model_override_is_respected_not_overwritten`,
+  `test_space_control_type_gets_no_typed_sub_model`,
+  `test_bus_power_and_propulsion_override_reaches_live_fields_not_dead_power_w`,
+  `test_all_currently_shipped_vignettes_load_and_build_unchanged`.
 
 ## Documentation Updates
 
-- `ROADMAP.md` Implementation Packages theme — add this package's row.
-- `docs/features/FS-117-vignette-creator.md`'s `Referenced By` metadata — add this package once
-  authored (this pass).
-- `docs/design/04-data-model.md` §6 — gains the 8 new `PayloadState` sub-model entries, per this
-  field's own "once implemented" instruction (mirrors `IP-1151`'s precedent for `RoleRequirement`).
-- `CLAUDE.md`'s Code Map — a brief addition for `bus.py`'s new typed sub-models, mirroring prior
-  packages' precedent of updating this field when a new Domain Model concept ships.
+- `ROADMAP.md` Implementation Packages theme — this package's row updated to `COMPLETE`.
+- `docs/features/FS-117-vignette-creator.md`'s `Referenced By` metadata — stale "(all `BLOCKED`,
+  not authorized)" parenthetical corrected to reflect current per-package status.
+- `docs/design/04-data-model.md` §6 — gained the 8 new `PayloadState` sub-model entries, mirroring
+  `IP-1151`'s `RoleRequirement` precedent.
+- `CLAUDE.md`'s Code Map — `engine/bus.py`'s entry updated with the 8 typed sub-models.
 
 ## Definition of Done
 
 - [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
   §3, 2026-07-05, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #45).
-- [ ] All 8 typed payload sub-models exist on `PayloadState`, each `Optional`, each populated only
+- [x] All 8 typed payload sub-models exist on `PayloadState`, each `Optional`, each populated only
   when `PayloadState.type` matches.
-- [ ] Every sub-model field traces to a specific `R109`/`R110`/`R134`/`R137` citation — none
-  invented.
-- [ ] Bus power/propulsion authoring reaches `PowerState.charge_rate_per_s`/`drain_rate_per_s`/
-  `AssetResources.delta_v_ms`; `AssetResources.power_w` is never written by this path.
-- [ ] `weather`/`mw` sub-models' engine-effectiveness is honestly gated on
-  [IP-1170](IP-1170-isr-beam-mode-coverage.md) reaching `VERIFIED` — not claimed done until that
-  package independently confirms.
-- [ ] All 19 currently shipped vignettes load and build unchanged.
+- [x] Every sub-model field traces to a specific `R109`/`R110`/`R129`/`R134`/`R137` citation —
+  none invented (`SigintParams` traces to `R129`, not `R109`, per `R137` §3.5 — see Outstanding
+  Issues for the package's own citation-set imprecision this corrects).
+- [x] Bus power/propulsion authoring reaches `PowerState.charge_rate_per_s`/`drain_rate_per_s`/
+  `AssetResources.delta_v_ms`; `AssetResources.power_w` is never written by this path (confirmed
+  by direct grep of `engine/bus.py` — zero hits — and a dedicated round-trip test).
+- [x] `weather`/`mw` sub-models' engine-effectiveness is honestly gated on
+  [IP-1170](IP-1170-isr-beam-mode-coverage.md) reaching `VERIFIED` — it already had, before this
+  package started, so both mirror real `BEAM_MODES` values from the start (confirmed by a
+  dedicated test asserting parity with `BEAM_MODES["weather"]["conus"]`/`["mw"]["scan"]`).
+- [x] All 19 currently shipped vignettes load and build unchanged.
 
 ## Verification Checklist
 
@@ -230,6 +232,17 @@ reaching `VERIFIED` for full `weather`/`mw` effect (see Status).** Proposed sequ
 - **Two-package dependency (`IP-1170` + this package) for one Feature's two payload types** adds a
   small sequencing burden — accepted because the alternative (folding `IP-1170` into this package)
   would mix a pure `engine/isr.py` data fix with a genuine Domain Model extension, a different seam.
+
+### Outstanding Issues (Implementation Summary)
+
+- **`SigintParams`'s own field-grounding citation, as this package's `Files to Modify` text
+  originally stated it, said "`R109`'s SIGINT-adjacent content" — checked against `R137` §3.5
+  (the completeness index both this package and `R109` itself defer to) during implementation and
+  found imprecise: `R137` attributes SIGINT's actual characterization to `R129`, not `R109`.**
+  Not a functional defect (`SigintParams.default_band`/`default_mode` mirror `engine/sigint.py`'s
+  own already-correct `BANDS`/`MODES` defaults either way) — corrected in this package's own
+  Definition of Done and the RTM `FR-5170` Research column (`R129` added) rather than silently
+  matched to the imprecise original wording.
 
 ## Rollback Considerations
 

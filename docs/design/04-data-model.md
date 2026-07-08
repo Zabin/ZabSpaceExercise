@@ -211,6 +211,24 @@ cell-keyed `{"blue": {...}, "red": {...}}` dict regardless of which of the two p
 it — `engine/orders.py`'s `OrderSystem` never sees or branches on the legacy-vs-explicit distinction
 (IP-1172, FR-3420/NFR-2010).
 
+```yaml
+PayloadState (bus.py):            # IP-1171 (FR-5170) — one Optional typed sub-model per payload
+                                   # type, populated only when `type` matches; all 19 vignettes
+                                   # shipped before this package set none of these fields.
+  satcom:   {bandwidth_class: narrowband|wideband, data_rate_kbps_max: float}   # R110
+  isr_eo:   {resolution_m: float, swath_km: float}                             # R109
+  isr_sar:  {resolution_m: float, swath_km: float}                             # R109
+  sigint:   {default_band: str, default_mode: str}                             # R129 (via R137 §3.5)
+  sda:      {resolution_m: float, swath_km: float}                             # R109
+  weather:  {resolution_m: float, swath_km: float}                             # R109, wired to IP-1170's BEAM_MODES["weather"]
+  pnt:      {accuracy_m: float}                                                # R134 (GPS SPS baseline)
+  mw:       {resolution_m: float, swath_km: float}                             # R109, wired to IP-1170's BEAM_MODES["mw"]
+```
+Each field mirrors an already-grounded default (`engine/isr.py`'s `BEAM_MODES`/`engine/sigint.py`'s
+`BANDS`/`MODES` where one exists) rather than a separately invented number — a vignette author who
+sets one of these on a `payload_state` block gets a real, validated schema instead of the untyped
+`detail` dict; a payload type outside this list of 8 (e.g. `space_control`) still uses `detail` only.
+
 ## 6.5 Planned activities (commands & collection tasks share one scheduler)
 Both "command a satellite" and "task a sensor" are **planned activities** scheduled against
 access windows. Implement them on one scheduler with two `kind`s so the queue, timeline,

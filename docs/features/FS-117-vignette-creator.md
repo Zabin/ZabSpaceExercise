@@ -25,8 +25,9 @@
 > [IP-1171](../implementation/packages/IP-1171-typed-payload-bus-parameters.md),
 > [IP-1172](../implementation/packages/IP-1172-per-cell-roe-enforcement.md),
 > [IP-1173](../implementation/packages/IP-1173-vignette-creator-draft-session.md),
-> [IP-1174](../implementation/packages/IP-1174-vignette-creator-ui-surfaces.md) (all `BLOCKED`,
-> not authorized — MSTR-006 §3)
+> [IP-1174](../implementation/packages/IP-1174-vignette-creator-ui-surfaces.md) (all authorized;
+> `IP-1170` `VERIFIED`, `IP-1171`/`IP-1172`/`IP-1173` `COMPLETE` pending `09-package-verification`,
+> `IP-1174` `BLOCKED` on the other three reaching `VERIFIED`)
 > **Produces:** an in-app Vignette Creator satisfying `FR-5110`/`NFR-2000`, `FR-5120`-`FR-5180`,
 > `FR-3420`, and `NFR-2010` in full — every capability the two `ADS-5100` documents commit to now
 > has an owning requirement

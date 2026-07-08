@@ -120,10 +120,10 @@ package in this plan to reach that state.
 | [IP-1151](packages/IP-1151-seat-role-assignment.md) | FS-115 §FR-4210 Seat-to-Role Assignment | Forward design | ✅ VERIFIED | **Verified 2026-07-04 (run #15)**, [`VR-1151`](verification/VR-1151-seat-role-assignment.md) — full suite 566 passed/3 skipped, both permanent gates green; RTM `FR-4210` updated. `BL-0014` (no role-based command-filtering consumer exists) independently re-derived, not merely re-cited — still true. One new Low finding (`BL-0024`): `assign_role`'s White-Cell-only gate untested against `cell="observer"` specifically |
 | [IP-1160](packages/IP-1160-role-scoped-command-enforcement.md) | FS-116 Role-Scoped Command Catalog & Assignment Scoping | Forward design | 🔴 BLOCKED | Not authorized (MSTR-006 §3). Closes `FEAT-3500`'s implementation gap (`11-release-readiness` Finding 2 / `BL-0049`) per `FS-116` v1.2 and `ADS-3500` v1.1's design (per-verb `bus`/`payload` classification — no third "defense" scope category). Every dependency (`IP-1151`, `IP-1050`, `IP-1051`) already `VERIFIED` — this package is specification-complete and would flip to `READY` the moment authorization is granted |
 | [IP-1170](packages/IP-1170-isr-beam-mode-coverage.md) | FS-117 (prerequisite) ISR Beam-Mode Coverage — weather & missile-warning | Forward design | ✅ VERIFIED | **Verified 2026-07-05 (run #48, fresh session)**, [`VR-1170`](verification/VR-1170-isr-beam-mode-coverage.md) — full suite 586 passed/3 skipped, both permanent gates green; `BL-0053`'s original symptom independently re-confirmed gone, closing it. One Low citation-drift finding |
-| [IP-1171](packages/IP-1171-typed-payload-bus-parameters.md) | FS-117 §FR-5170/FR-5180 Typed Payload & Bus Parameter Domain Model | Forward design | 🟢 READY | **Authorized 2026-07-05** (MSTR-006 §3, run #45). `IP-1170` reached `VERIFIED` 2026-07-05 (run #48) — its sole blocker is cleared; independent of `IP-1172`/`IP-1173` |
+| [IP-1171](packages/IP-1171-typed-payload-bus-parameters.md) | FS-117 §FR-5170/FR-5180 Typed Payload & Bus Parameter Domain Model | Forward design | 🔵 COMPLETE | Implemented 2026-07-05 by `08-code-implementation` — 8 typed `PayloadState` sub-models (`satcom`/`isr_eo`/`isr_sar`/`sigint`/`sda`/`weather`/`pnt`/`mw`), auto-populated via a `model_validator`; `weather`/`mw` built with full engine-wiring since `IP-1170` was already `VERIFIED`. 8 new tests, full suite 594 passed/3 skipped, both permanent gates green. Awaiting `09-package-verification` |
 | [IP-1172](packages/IP-1172-per-cell-roe-enforcement.md) | FS-117 §FR-3420/NFR-2010 Per-Cell Rules of Engagement Enforcement | Forward design | 🔵 COMPLETE | Implemented 2026-07-05 by `08-code-implementation` — `Vignette.roe` + cell-keyed `build_world()`/`engine/orders.py` resolution; also fixed material drift in `session/inprocess.py` + 7 test files (see the package's own Risks). 4 new tests, full suite 579 passed/3 skipped, both permanent gates green. Awaiting `09-package-verification` |
 | [IP-1173](packages/IP-1173-vignette-creator-draft-session.md) | FS-117 §FR-5110 Vignette Creator Draft Session & Reverse Serialization | Forward design | 🔵 COMPLETE | Implemented 2026-07-05 by `08-code-implementation` — `InProcessSession.create_draft_session`/`save_vignette` + new `content/vignette_export.py` + two HTTP routes; every time-control route rejects a draft session. 7 new tests, full suite 586 passed/3 skipped, both permanent gates green. Awaiting `09-package-verification` |
-| [IP-1174](packages/IP-1174-vignette-creator-ui-surfaces.md) | FS-117 §FR-5120-FR-5160 Vignette Creator UI Surfaces | Forward design | 🔴 BLOCKED | **Authorized 2026-07-05** (MSTR-006 §3, run #45). `IP-1171` is now `READY`, `IP-1172`/`IP-1173` are `COMPLETE` — still blocked on all three of `IP-1171`/`IP-1172`/`IP-1173` reaching `VERIFIED` — the last package in Tranche 3 to build |
+| [IP-1174](packages/IP-1174-vignette-creator-ui-surfaces.md) | FS-117 §FR-5120-FR-5160 Vignette Creator UI Surfaces | Forward design | 🔴 BLOCKED | **Authorized 2026-07-05** (MSTR-006 §3, run #45). `IP-1171`/`IP-1172`/`IP-1173` are all now `COMPLETE` — still blocked on all three reaching `VERIFIED` — the last package in Tranche 3 to build |
 
 **Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code
@@ -278,6 +278,18 @@ exactly one package, per that skill's own rule); `IP-1174` now depends on `IP-11
 `IP-1173`, one of which (`IP-1171`) is `READY` (not yet `VERIFIED`) and two of which are
 `COMPLETE`, and stays `BLOCKED`.
 
+**Update (2026-07-05, run #49): `IP-1171` implemented.** With `IP-1170` already `VERIFIED`,
+`IP-1171`'s own "inert until `IP-1170` ships" disclosure never applied — all 8 typed `PayloadState`
+sub-models (`satcom`/`isr_eo`/`isr_sar`/`sigint`/`sda`/`weather`/`pnt`/`mw`) were built with full
+engine-wiring from the start, auto-populated via a new `model_validator` keyed on
+`PayloadState.type`. `weather`/`mw` mirror `IP-1170`'s real `BEAM_MODES` values, not inert
+placeholders. Bus power/propulsion authoring (`FR-5180`) needed no engine change — confirmed
+`Asset.model_validate()` already routes nested overrides to the live
+`PowerState.charge_rate_per_s`/`drain_rate_per_s`/`AssetResources.delta_v_ms` fields, never the
+dead `power_w`. 8 new tests, full suite 594 passed/3 skipped (up from 586/3), both permanent gates
+green. `IP-1171` flips `READY → COMPLETE`. `IP-1174` now depends on three `COMPLETE` packages
+(`IP-1171`/`IP-1172`/`IP-1173`) and stays `BLOCKED` on all three reaching `VERIFIED`.
+
 ## Implementation sequence
 
 Because 11 of 13 packages describe already-shipped code, "sequence" here has two distinct readings,
@@ -329,10 +341,10 @@ IP-1160 (🔴 BLOCKED — not authorized, MSTR-006 §3; every dependency VERIFIE
 IP-1170 (✅ VERIFIED 2026-07-05, VR-1170 — cleared; closes BL-0053)
    │  prerequisite for full weather/mw engine effect
    ▼
-IP-1171 (🟢 READY — authorized 2026-07-05, run #45; IP-1170 reached VERIFIED run #48)
+IP-1171 (🔵 COMPLETE 2026-07-05 — implemented by 08-code-implementation; awaiting VERIFIED)
    │
    ├──► IP-1174 (🔴 BLOCKED — authorized 2026-07-05, run #45; blocked on IP-1171/IP-1172/IP-1173
-   │              reaching VERIFIED — IP-1172/IP-1173 still COMPLETE)
+   │              reaching VERIFIED — all three now COMPLETE)
    │
 IP-1172 (🔵 COMPLETE 2026-07-05 — implemented by 08-code-implementation; awaiting VERIFIED) ────┤
                                                                                                    │
@@ -346,18 +358,17 @@ is `VERIFIED` (run #13) and `IP-1151` is now `VERIFIED` too (`VR-1151`, run #15)
 `VERIFIED`. **All 18 original packages in this plan are `VERIFIED`** — `IP-1140` carries a standing
 user-accepted-risk note (Risk item 6) rather than a gap-closing package. **`IP-1160` remains
 `BLOCKED` on MSTR-006 §3 authorization alone** (FS-116, every dependency `VERIFIED`) — still awaiting
-the project owner's go-ahead. **Tranche 3 (FS-117) was authorized 2026-07-05 (run #45), and
-`IP-1170`/`IP-1172`/`IP-1173` were implemented the same day; `IP-1170` has since passed independent
-verification (run #48, fresh session, `VR-1170`) and is now `VERIFIED`, closing `BL-0053`.**
-`IP-1172`/`IP-1173` remain `COMPLETE`, awaiting their own `09-package-verification` pass. `IP-1171`
-flipped `BLOCKED → READY` the moment `IP-1170` reached `VERIFIED`. `IP-1174` remains `BLOCKED`,
-purely on `IP-1171`/`IP-1172`/`IP-1173` all reaching `VERIFIED` first, not on authorization. This
-tranche's remaining forward motion is a mix of standing findings/backlog work (Risk items 6/9,
-`IP-1151`'s own `BL-0014`), `IP-1160`'s standing authorization gate, and the rest of Tranche 3's
-verification sweep — the next stage-appropriate step for the 18 pre-Tranche-3 `VERIFIED` packages
+the project owner's go-ahead. **Tranche 3 (FS-117) was authorized 2026-07-05 (run #45); all five
+packages have been implemented, and `IP-1170` has since passed independent verification (run #48,
+fresh session, `VR-1170`) and is now `VERIFIED`, closing `BL-0053`.** `IP-1171`/`IP-1172`/`IP-1173`
+are all now `COMPLETE`, each awaiting its own `09-package-verification` pass. `IP-1174` remains
+`BLOCKED`, purely on those three reaching `VERIFIED` first, not on authorization. This tranche's
+remaining forward motion is a mix of standing findings/backlog work (Risk items 6/9, `IP-1151`'s
+own `BL-0014`), `IP-1160`'s standing authorization gate, and the rest of Tranche 3's verification
+sweep — the next stage-appropriate step for the 18 pre-Tranche-3 `VERIFIED` packages
 remains `10-integration-review`/`11-release-readiness`; for `IP-1160`, it is the project owner's
-MSTR-006 §3 go-ahead; for Tranche 3, it is `09-package-verification` on `IP-1172` or `IP-1173`
-next (in either order), or `08-code-implementation` on the now-`READY` `IP-1171`.
+MSTR-006 §3 go-ahead; for Tranche 3, it is `09-package-verification` on `IP-1171`, `IP-1172`, or
+`IP-1173` (any order, each in its own fresh session).
 
 ## Dependency graph
 
@@ -448,7 +459,7 @@ package-level dependency chain of its own (every one of its dependencies is alre
 length 1; it remains `BLOCKED` purely on MSTR-006 §3 authorization. Tranche 3's longest internal
 chain is `IP-1170 → IP-1171 → IP-1174` (length 3), shorter than the historic length-4 critical path
 above, which remains fully `VERIFIED`. **Tranche 3 was authorized 2026-07-05 (run #45)** — `IP-1170`
-has since reached `VERIFIED` (run #48), unblocking `IP-1171` to `READY`; `IP-1174` remains
+has since reached `VERIFIED` (run #48) and `IP-1171` is now `COMPLETE` (run #49); `IP-1174` remains
 `BLOCKED` on `IP-1171`/`IP-1172`/`IP-1173` all reaching `VERIFIED`, the ordinary build-sequencing
 gate every multi-package tranche has, not on authorization.
 
@@ -483,10 +494,10 @@ gate every multi-package tranche has, not on authorization.
   `IP-1130`, `IP-1151`) — no package in this tranche remains open.
 - **Tranche 3 (FS-117):** `IP-1170`, `IP-1172`, and `IP-1173` had no package-level dependency on
   anything in this tranche or elsewhere in this plan and were authorized/built fully in parallel
-  with each other. `IP-1171` depends only on `IP-1170`, now `VERIFIED` (run #48) — `IP-1171` is
-  `READY`. `IP-1174` is the sole package requiring all three of `IP-1171`/`IP-1172`/`IP-1173` at
-  least `COMPLETE` first — the natural last package in this tranche's build order, whether or not
-  the other four are built in parallel. `IP-1172`/`IP-1173` can each be independently verified in
+  with each other. `IP-1171` depended only on `IP-1170`, which reached `VERIFIED` (run #48) before
+  `IP-1171` started — `IP-1171` is now `COMPLETE` (run #49). `IP-1174` is the sole package requiring
+  all three of `IP-1171`/`IP-1172`/`IP-1173` at least `COMPLETE` first — the natural last package in
+  this tranche's build order. `IP-1171`/`IP-1172`/`IP-1173` can each be independently verified in
   parallel whenever a fresh session is available for each.
 
 ## Summary
@@ -522,24 +533,23 @@ gate every multi-package tranche has, not on authorization.
   packages (6 packages, then 3 packages, running independently); the pre-existing forward-design
   surface's sequential constraint (`IP-2010` before `IP-3010`) is fully resolved — both are now
   `VERIFIED`. `IP-1160` is independent of every other package. **Tranche 3, authorized 2026-07-05
-  (run #45), implemented runs #46-#47, `IP-1170` independently verified run #48:** `IP-1170`/
-  `IP-1172`/`IP-1173` were mutually independent; `IP-1170` is now `VERIFIED`, `IP-1172`/`IP-1173`
-  remain `COMPLETE` awaiting their own verification pass; `IP-1171` depends only on `IP-1170` and
-  is now `READY`; `IP-1174` is the sole package needing all three of the others `VERIFIED` first.
-- **Package Status:** **19 `VERIFIED`, 2 `COMPLETE`, 1 `READY`, 2 `BLOCKED`** (`IP-1172`/`IP-1173` —
-  implemented 2026-07-05, awaiting `09-package-verification`; `IP-1171` — authorized 2026-07-05,
-  now `READY` since `IP-1170` reached `VERIFIED` run #48; `IP-1160` — every dependency already
-  `VERIFIED`, authorization is the sole remaining gate, still not on record; `IP-1174` —
-  authorized 2026-07-05, `BLOCKED` on `IP-1171`/`IP-1172`/`IP-1173` all reaching `VERIFIED`). The 19
-  `VERIFIED` packages are the original 11 as-built + `IP-1150` + `IP-1140` + `IP-2010` + `IP-3010` +
-  `IP-1120` + `IP-1130` + `IP-1151` + `IP-1170`, the last seven verified 2026-07-03 through
-  2026-07-05 via `VR-1140`/`VR-2010`/`VR-3010`/`VR-1120`/`VR-1130`/`VR-1151`/`VR-1170`. 0
-  `NOT STARTED`, 0 `IN PROGRESS`. The "iterate through all `09-package-verification`" sweep (runs
-  #11–#15) closed 18 packages; `IP-1170` (run #48, this pass) is the first of Tranche 3 to join
+  (run #45), implemented runs #46-#47/#49, `IP-1170` independently verified run #48:** `IP-1170`/
+  `IP-1172`/`IP-1173` were mutually independent; `IP-1170` is now `VERIFIED`, `IP-1171`/`IP-1172`/
+  `IP-1173` are all `COMPLETE` awaiting their own verification pass (each independently, whenever a
+  fresh session is available); `IP-1174` is the sole package needing all three `VERIFIED` first.
+- **Package Status:** **19 `VERIFIED`, 3 `COMPLETE`, 0 `READY`, 2 `BLOCKED`** (`IP-1171`/`IP-1172`/
+  `IP-1173` — implemented 2026-07-05, awaiting `09-package-verification`; `IP-1160` — every
+  dependency already `VERIFIED`, authorization is the sole remaining gate, still not on record;
+  `IP-1174` — authorized 2026-07-05, `BLOCKED` on `IP-1171`/`IP-1172`/`IP-1173` all reaching
+  `VERIFIED`). The 19 `VERIFIED` packages are the original 11 as-built + `IP-1150` + `IP-1140` +
+  `IP-2010` + `IP-3010` + `IP-1120` + `IP-1130` + `IP-1151` + `IP-1170`, the last seven verified
+  2026-07-03 through 2026-07-05 via `VR-1140`/`VR-2010`/`VR-3010`/`VR-1120`/`VR-1130`/`VR-1151`/
+  `VR-1170`. 0 `NOT STARTED`, 0 `IN PROGRESS`. The "iterate through all `09-package-verification`"
+  sweep (runs #11–#15) closed 18 packages; `IP-1170` (run #48) is the first of Tranche 3 to join
   them. `IP-1160`, `IP-1171`, `IP-1172`, `IP-1173`, `IP-1174` remain the five packages on this plan
-  not yet `VERIFIED` — `IP-1172`/`IP-1173` are `COMPLETE` and ready for `09-package-verification`
-  in a fresh session (the project owner's own choice, run #46); `IP-1171` is `READY` for
-  `08-code-implementation`; `IP-1174` and `IP-1160` remain `BLOCKED`.
+  not yet `VERIFIED` — `IP-1171`/`IP-1172`/`IP-1173` are all `COMPLETE` and ready for
+  `09-package-verification` in a fresh session each (the project owner's own run #46 choice);
+  `IP-1174` and `IP-1160` remain `BLOCKED`.
 
 ### Risks requiring architectural attention
 
