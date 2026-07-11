@@ -211,6 +211,27 @@ cell-keyed `{"blue": {...}, "red": {...}}` dict regardless of which of the two p
 it — `engine/orders.py`'s `OrderSystem` never sees or branches on the legacy-vs-explicit distinction
 (IP-1172, FR-3420/NFR-2010).
 
+```yaml
+PayloadState:                    # engine/bus.py — one Optional typed sub-model per payload type
+  type: str                      # satcom | isr_eo | isr_sar | sigint | sda | weather | mw | pnt | ...
+  satcom: {bandwidth_class, data_rate_kbps_max}                     # IP-1171 (FR-5170), R110
+  isr_eo: {swath_km, resolution_m, power_factor, duty_cycle, gain_factor}   # R109
+  isr_sar: {swath_km, resolution_m, power_factor, duty_cycle, gain_factor}  # R109
+  sigint: {band, mode}                                              # R129 (via engine/sigint.py)
+  sda: {swath_km, resolution_m, power_factor, duty_cycle, gain_factor}      # R109
+  weather: {swath_km, resolution_m, power_factor, duty_cycle, gain_factor}  # R109 (GOES-R ABI)
+  mw: {swath_km, resolution_m, power_factor, duty_cycle, gain_factor}       # R109 (SBIRS-GEO)
+  pnt: {baseline_accuracy_m}                                        # R134 (GPS SPS ≤9m/95%)
+```
+`PayloadState`'s `_populate_typed_params` validator auto-populates exactly the one field matching
+`type` with that type's R109/R110/R129/R134-grounded default (an *authored* baseline, distinct from
+`engine/isr.py`'s `BEAM_MODES` runtime table an operator selects among at order-issue time) — every
+other of the 8 fields stays `None`, and an explicit vignette-authored value is never overwritten
+(IP-1171, FR-5170). `FR-5180`'s bus power/propulsion authoring needed no schema change:
+`Asset.model_validate()` already routes a vignette's per-asset `resources.delta_v_ms` /
+`bus_state.power.charge_rate_per_s`/`drain_rate_per_s` overrides to the live fields `advance_bus()`
+reads — `AssetResources.power_w` is confirmed never written by this path (IP-1171, FR-5180).
+
 ## 6.5 Planned activities (commands & collection tasks share one scheduler)
 Both "command a satellite" and "task a sensor" are **planned activities** scheduled against
 access windows. Implement them on one scheduler with two `kind`s so the queue, timeline,

@@ -137,7 +137,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-3220 | SSN delivery | UNASSIGNED | ADR-0010 | C2, C3, C1 | INT-0009, INT-0010 | UNASSIGNED | `spacesim/tests/test_ssn.py` *(VR-1040)* | `IP-1040` *(closed 2026-07-04 via VR-1040)* |
 | FR-3310 | (order queue / cancel leaf) | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-3410 | (order delivery path leaf, ADR-0005/0013) | UNASSIGNED | ADR-0005, ADR-0013 | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_validate_order.py`, `spacesim/tests/test_orders.py`, `spacesim/tests/test_queue.py` *(VR-1010 + VR-1020, both confirmed — same rationale as `FR-3110`)* | `engine/orders.py` |
-| FR-3420 | Per-cell independent ROE | UNASSIGNED | (none directly) | C1 | (none — engine-internal validation change) | FS-117 | `spacesim/tests/test_orders.py::test_per_cell_roe_kinetic_divergent_gates_independently`, `::test_per_cell_roe_cyber_divergent_gates_independently`, `spacesim/tests/test_content.py::test_explicit_per_cell_roe_gates_independently_and_is_backward_compatible`, `::test_partial_per_cell_roe_block_defaults_missing_subkey_to_false` *(IP-1172, COMPLETE — pending `09-package-verification`)* | IP-1172 *(COMPLETE 2026-07-05, pending `VERIFIED`)* |
+| FR-3420 | Per-cell independent ROE | UNASSIGNED | (none directly) | C1 | (none — engine-internal validation change) | FS-117 | `spacesim/tests/test_orders.py::test_per_cell_roe_kinetic_divergent_gates_independently`, `::test_per_cell_roe_cyber_divergent_gates_independently`, `spacesim/tests/test_content.py::test_explicit_per_cell_roe_gates_independently_and_is_backward_compatible`, `::test_partial_per_cell_roe_block_defaults_missing_subkey_to_false` *(IP-1172, VERIFIED — `VR-1172`)* | IP-1172 *(VERIFIED 2026-07-11)* |
 | FR-3510 | Role-Assignment command-filtering consequence | UNASSIGNED | ADR-0004 | C4, C7, C8 | INT-0004 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-3520 | Role-Assignment scoping (bus/payload/both) *(new leaf, CHG-002)* | UNASSIGNED | ADR-0004 | C4, C7, C8, C2 | INT-0004, INT-0006 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-4110 | White Cell exercise-control leaf | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | `test_content.py::test_vignette_1_loads_and_builds_a_world`, `test_content.py::test_parameter_override_flows_into_roe`, `test_web.py::test_ssn_endpoint_available` *(closed 2026-07-03 via IP-1150, VR-1150)* | `IP-1150` *(closed 2026-07-03 via VR-1150)* |
@@ -148,14 +148,14 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-4610 | (manual adjudication / custody-adjacent leaf, ADR-0004) | UNASSIGNED | ADR-0004 | C4, C6, C2, C1 | INT-0002, INT-0007 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0, independently confirmed 2026-07-04 via VR-1060)* |
 | FR-4710 | No automated scoring / manual adjudication | UNASSIGNED | ADR-0017, ADR-0029 | C4, C6 | (none — absence of an interface) | UNASSIGNED | UNASSIGNED | (inspection — no outbound interface returns a score field) *(closed 2026-07 via IP-1060 v2.0, independently reconfirmed 2026-07-04 via VR-1060 — grepped `session/manager.py`/`ui_web/server.py` for any score/win-loss field, zero hits)* |
 | FR-4720 | Adjust safe-mode dials / live parameters mid-exercise *(new leaf, CHG-003)* | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0, independently confirmed 2026-07-04 via VR-1060)* |
-| FR-5110 | Scenario builder | UNASSIGNED | ADR-0027 | C4, C6, C5 | INT-0003 | UNASSIGNED | `spacesim/tests/test_vignette_creator_session.py` (all 6 tests), `spacesim/tests/test_web.py::test_draft_session_create_add_asset_and_save_as_vignette` *(IP-1173, COMPLETE — pending `09-package-verification`)* | IP-1173 *(COMPLETE 2026-07-05, pending `VERIFIED`; corrects this cell's prior `content/vignette.py` citation, which named the vignette schema/loader, not the iterative-composition capability `FR-5110` actually describes)* |
+| FR-5110 | Scenario builder | UNASSIGNED | ADR-0027 | C4, C6, C5 | INT-0003 | UNASSIGNED | `spacesim/tests/test_vignette_creator_session.py` (all 6 tests), `spacesim/tests/test_web.py::test_draft_session_create_add_asset_and_save_as_vignette` *(IP-1173, VERIFIED — `VR-1173`)* | IP-1173 *(VERIFIED 2026-07-11; corrects this cell's prior `content/vignette.py` citation, which named the vignette schema/loader, not the iterative-composition capability `FR-5110` actually describes)* |
 | FR-5120 | Synchronized JSON view | UNASSIGNED | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5130 | 2D/3D initial-state preview | UNASSIGNED | ADR-0004 | C4, C2 | (none — reuses existing render pipeline) | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5140 | TLE/lat-long asset entry | R101, R107 | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5150 | Asset menu (edit/reassign/delete) | UNASSIGNED | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5160 | Seat-count declaration + role matrix | UNASSIGNED | (none directly) | C4, C2 | INT-0002 | FS-117 | UNASSIGNED | UNASSIGNED |
-| FR-5170 | Typed per-payload-type parameter sub-schemas | R109, R110, R134, R137 | (none directly) | C1, C5 | (none — Domain Model/content-schema extension) | FS-117 | `spacesim/tests/test_isr.py` (weather/mw `BEAM_MODES` precondition only) | IP-1170 *(closes the weather/mw engine-precondition slice only — `BL-0053`; FR-5170's own typed-sub-schema/UI scope still awaits IP-1171)* |
-| FR-5180 | Typed bus parameter sub-schemas (power/propulsion) | R111, R112 | (none directly) | C1, C5 | (none directly) | FS-117 | UNASSIGNED | UNASSIGNED |
+| FR-5170 | Typed per-payload-type parameter sub-schemas | R109, R110, R134, R137 | (none directly) | C1, C5 | (none — Domain Model/content-schema extension) | FS-117 | `spacesim/tests/test_isr.py` (weather/mw `BEAM_MODES` precondition, `IP-1170`, `VERIFIED`), `spacesim/tests/test_typed_payload_params.py` (all 12 tests — the 8 typed sub-models + auto-population + all-19-vignettes regression, `IP-1171`, `COMPLETE` — pending `09-package-verification`) | IP-1170 *(`VERIFIED` — closes the weather/mw engine-precondition slice, `BL-0053`)*, IP-1171 *(COMPLETE 2026-07-11, pending `VERIFIED` — closes the typed-sub-schema/UI-facing scope)* |
+| FR-5180 | Typed bus parameter sub-schemas (power/propulsion) | R111, R112 | (none directly) | C1, C5 | (none directly) | FS-117 | `spacesim/tests/test_typed_payload_params.py::test_bus_power_and_propulsion_overrides_reach_live_fields_not_power_w` *(IP-1171, COMPLETE — pending `09-package-verification`; confirms `Asset.model_validate()` already routes overrides to the live fields, no loader change needed)* | IP-1171 *(COMPLETE 2026-07-11, pending `VERIFIED`)* |
 | FR-5210 | TLE force-add import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 | UNASSIGNED | UNASSIGNED | `content/` (TLE import) |
 | FR-5310 | Vignette loading | UNASSIGNED | ADR-0007 | C2, C5 | INT-0011 | UNASSIGNED | UNASSIGNED | `content/vignette.py` |
 | FR-6110 | SessionAPI seam (base) | UNASSIGNED | ADR-0002, ADR-0003 | C4, C2 | INT-0006 | UNASSIGNED | UNASSIGNED | `session/api.py` |
@@ -273,7 +273,7 @@ where the named subsystem maps onto one), not separately inferred.
 | NFR-1800 | Single-sitting availability | UNASSIGNED | (none identified) | C2 | `session/` (SessionManager) | UNASSIGNED | (inspection — no crash-recoverable-across-process-restart mechanism exists in `manager.py`) *(VR-1100)* | UNASSIGNED |
 | NFR-1900 | UI-agnostic engine + 80% coverage | UNASSIGNED | ADR-0002, ADR-0007 | C1 | `engine/` (all), test suite | UNASSIGNED | `spacesim/tests/test_import_guard.py` |
 | NFR-2000 | Content as data | UNASSIGNED | ADR-0007 | C5 | `content/vignette.py`, `content/vignettes/*.yaml` | UNASSIGNED | UNASSIGNED |
-| NFR-2010 | Additive vignette-schema evolution | UNASSIGNED | (none directly) | C5, C1 | `content/vignette.py`, `engine/bus.py`, `engine/orders.py` | FS-117 | `spacesim/tests/test_content.py::test_vignette_1_loads_and_builds_a_world`, `::test_explicit_per_cell_roe_gates_independently_and_is_backward_compatible` *(IP-1172's ROE slice only — all 19 pre-existing vignettes' order-issuance behavior confirmed unchanged; `engine/bus.py`'s typed-parameter-additivity slice remains IP-1171's to close, COMPLETE pending `09-package-verification`)* |
+| NFR-2010 | Additive vignette-schema evolution | UNASSIGNED | (none directly) | C5, C1 | `content/vignette.py`, `engine/bus.py`, `engine/orders.py` | FS-117 | `spacesim/tests/test_content.py::test_vignette_1_loads_and_builds_a_world`, `::test_explicit_per_cell_roe_gates_independently_and_is_backward_compatible` *(IP-1172's ROE slice only, VERIFIED — `VR-1172` — all 19 pre-existing vignettes' order-issuance behavior confirmed unchanged; `engine/bus.py`'s typed-parameter-additivity slice remains IP-1171's to close, `READY`, not yet implemented)* |
 | NFR-2100 | Independently testable fidelity seams | UNASSIGNED | ADR-0009 | C1 | `engine/propagator.py`, `engine/access.py`, `engine/effects.py` | `FUTURE-WORK.md` §2 | UNASSIGNED |
 | NFR-2200 | Secure development practice | UNASSIGNED | ADR-0018 | C5 + all | `content/vignette.py`, all subsystems | UNASSIGNED | UNASSIGNED |
 | NFR-2300 | LAN trust boundary | UNASSIGNED | ADR-0015 | C2, C4 | `session/api.py` (SessionAPI, CellView), `ui_web/server.py` | UNASSIGNED | UNASSIGNED |
@@ -456,7 +456,7 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `engine/effects.py` | FR-1410, FR-1420 |
 | `engine/cyber.py` | FR-1420 |
 | `engine/custody.py` | FR-1510, FR-1520 |
-| `engine/bus.py` | FR-2110, FR-2210, FR-5170, FR-5180, NFR-2010 |
+| `engine/bus.py` | FR-2110, FR-2210, FR-5170 *(typed sub-models slice, IP-1171, COMPLETE — pending VERIFIED)*, FR-5180 *(bus power/propulsion confirmation slice, IP-1171, COMPLETE — pending VERIFIED)*, NFR-2010 |
 | `engine/busmodel.py` | FR-2310 |
 | `engine/buscommands.py` | FR-2410 |
 | `engine/recovery.py` | FR-2510 |
@@ -468,14 +468,14 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `session/manager.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-4310, FR-4410, FR-7210, FR-6310, NFR-1300, NFR-1800, FR-4510 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |
 | `session/api.py` | FR-6110, NFR-2300 |
 | `session/cells.py` | FR-6210, FR-6220 |
-| `session/inprocess.py` | FR-6320, FR-6410, NFR-1400, FR-5110 *(draft-session slice, IP-1173, COMPLETE — pending VERIFIED)* |
+| `session/inprocess.py` | FR-6320, FR-6410, NFR-1400, FR-5110 *(draft-session slice, IP-1173, VERIFIED)* |
 | `session/aar.py` | FR-7310, FR-7320, NFR-2500, NFR-3100 |
 | `session/redai.py` | FR-9110 |
 | `session/assessment.py` | FR-10110 *(closed 2026-07-03 via `IP-2010`)* |
 | `session/research_export.py` | FR-10210 *(closed 2026-07-04 via `IP-3010`)* |
 | `spacesim/tools/research_batch.py` | FR-10210 *(closed 2026-07-04 via `IP-3010`)* |
 | `content/vignette.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-5110, FR-5120, FR-5130, FR-5140, FR-5150, FR-5160, FR-5170, FR-5180, FR-5310, NFR-1600, NFR-2000, NFR-2010, FR-4210 *(closed 2026-07-03 via IP-1151)* |
-| `content/vignette_export.py` | FR-5110 *(reverse-serialization slice, IP-1173, COMPLETE — pending VERIFIED)* |
+| `content/vignette_export.py` | FR-5110 *(reverse-serialization slice, IP-1173, VERIFIED)* |
 | `content/vignettes/*.yaml` | NFR-2000 |
 | `content/` (TLE import) | FR-5210, NFR-3200 |
 | `ui_web/server.py` | FR-4510, FR-8110, NFR-1400, NFR-2300, NFR-2700, NFR-3300, NFR-3100 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |
