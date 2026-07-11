@@ -154,8 +154,8 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-5140 | TLE/lat-long asset entry | R101, R107 | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5150 | Asset menu (edit/reassign/delete) | UNASSIGNED | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5160 | Seat-count declaration + role matrix | UNASSIGNED | (none directly) | C4, C2 | INT-0002 | FS-117 | UNASSIGNED | UNASSIGNED |
-| FR-5170 | Typed per-payload-type parameter sub-schemas | R109, R110, R134, R137 | (none directly) | C1, C5 | (none — Domain Model/content-schema extension) | FS-117 | `spacesim/tests/test_isr.py` (weather/mw `BEAM_MODES` precondition only) | IP-1170 *(closes the weather/mw engine-precondition slice only — `BL-0053`; FR-5170's own typed-sub-schema/UI scope still awaits IP-1171)* |
-| FR-5180 | Typed bus parameter sub-schemas (power/propulsion) | R111, R112 | (none directly) | C1, C5 | (none directly) | FS-117 | UNASSIGNED | UNASSIGNED |
+| FR-5170 | Typed per-payload-type parameter sub-schemas | R109, R110, R134, R137 | (none directly) | C1, C5 | (none — Domain Model/content-schema extension) | FS-117 | `spacesim/tests/test_isr.py` (weather/mw `BEAM_MODES` precondition, `IP-1170`, `VERIFIED`), `spacesim/tests/test_typed_payload_params.py` (all 12 tests — the 8 typed sub-models + auto-population + all-19-vignettes regression, `IP-1171`, `COMPLETE` — pending `09-package-verification`) | IP-1170 *(`VERIFIED` — closes the weather/mw engine-precondition slice, `BL-0053`)*, IP-1171 *(COMPLETE 2026-07-11, pending `VERIFIED` — closes the typed-sub-schema/UI-facing scope)* |
+| FR-5180 | Typed bus parameter sub-schemas (power/propulsion) | R111, R112 | (none directly) | C1, C5 | (none directly) | FS-117 | `spacesim/tests/test_typed_payload_params.py::test_bus_power_and_propulsion_overrides_reach_live_fields_not_power_w` *(IP-1171, COMPLETE — pending `09-package-verification`; confirms `Asset.model_validate()` already routes overrides to the live fields, no loader change needed)* | IP-1171 *(COMPLETE 2026-07-11, pending `VERIFIED`)* |
 | FR-5210 | TLE force-add import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 | UNASSIGNED | UNASSIGNED | `content/` (TLE import) |
 | FR-5310 | Vignette loading | UNASSIGNED | ADR-0007 | C2, C5 | INT-0011 | UNASSIGNED | UNASSIGNED | `content/vignette.py` |
 | FR-6110 | SessionAPI seam (base) | UNASSIGNED | ADR-0002, ADR-0003 | C4, C2 | INT-0006 | UNASSIGNED | UNASSIGNED | `session/api.py` |
@@ -456,7 +456,7 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `engine/effects.py` | FR-1410, FR-1420 |
 | `engine/cyber.py` | FR-1420 |
 | `engine/custody.py` | FR-1510, FR-1520 |
-| `engine/bus.py` | FR-2110, FR-2210, FR-5170, FR-5180, NFR-2010 |
+| `engine/bus.py` | FR-2110, FR-2210, FR-5170 *(typed sub-models slice, IP-1171, COMPLETE — pending VERIFIED)*, FR-5180 *(bus power/propulsion confirmation slice, IP-1171, COMPLETE — pending VERIFIED)*, NFR-2010 |
 | `engine/busmodel.py` | FR-2310 |
 | `engine/buscommands.py` | FR-2410 |
 | `engine/recovery.py` | FR-2510 |

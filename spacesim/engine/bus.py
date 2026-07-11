@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 Status = Literal["green", "yellow", "red"]
 _RANK = {"green": 0, "yellow": 1, "red": 2}
@@ -109,6 +109,83 @@ class SafeModeState(BaseModel):
     steps_done: list[str] = []
 
 
+# IP-1171 (FR-5170) — typed per-payload-type parameter sub-models, one per PayloadState.type.
+# Authored defaults an asset carries for the Vignette Creator's authoring surface, distinct from
+# the per-beam-mode *runtime* table an operator selects among at order-issue time
+# (`engine/isr.py`'s BEAM_MODES). Field values for the five beam-mode-adjacent types
+# (isr_eo/isr_sar/sda/weather/mw) intentionally mirror that type's own BEAM_MODES default-mode
+# entry (R109-grounded; weather/mw grounded via IP-1170/BL-0053, now VERIFIED) — kept as literal
+# defaults here rather than importing engine/isr.py, per this module's own "pure data, importable
+# by world.py without a cycle" design (see module docstring).
+class SatcomParams(BaseModel):
+    # R110 §3 — bandwidth/data-rate by SATCOM class (BL-0052 grounding).
+    bandwidth_class: Literal["narrowband", "wideband_ku", "wideband_ka_hts"] = "narrowband"
+    data_rate_kbps_max: int = 384   # R110: narrowband ceiling ("up to 384 kbit/s", MUOS)
+
+
+class IsrEoParams(BaseModel):
+    # R109 §3 — mirrors BEAM_MODES["isr_eo"]["stripmap"] (engine/isr.py).
+    swath_km: float = 30.0
+    resolution_m: float = 3.0
+    power_factor: float = 1.2
+    duty_cycle: float = 0.40
+    gain_factor: float = 1.00
+
+
+class IsrSarParams(BaseModel):
+    # R109 §3 — mirrors BEAM_MODES["isr_sar"]["stripmap"] (engine/isr.py).
+    swath_km: float = 25.0
+    resolution_m: float = 3.0
+    power_factor: float = 1.8
+    duty_cycle: float = 0.15
+    gain_factor: float = 1.00
+
+
+class SigintParams(BaseModel):
+    # R129 (via engine/sigint.py's BANDS/MODES) — authored default band/mode.
+    band: Literal["UHF", "L", "S", "X", "Ku", "Ka", "W"] = "L"
+    mode: Literal["scan", "track", "geolocate"] = "track"
+
+
+class SdaParams(BaseModel):
+    # R109 §3 — mirrors BEAM_MODES["sda"]["nominal"] (engine/isr.py).
+    swath_km: float = 500.0
+    resolution_m: float = 500.0
+    power_factor: float = 1.0
+    duty_cycle: float = 0.80
+    gain_factor: float = 1.00
+
+
+class WeatherParams(BaseModel):
+    # R109 §3 (GOES-R ABI) — mirrors BEAM_MODES["weather"]["conus"] (IP-1170/BL-0053, engine/isr.py).
+    swath_km: float = 5000.0
+    resolution_m: float = 1000.0
+    power_factor: float = 1.0
+    duty_cycle: float = 0.40
+    gain_factor: float = 1.00
+
+
+class MwParams(BaseModel):
+    # R109 §3 (SBIRS-GEO scan/stare) — mirrors BEAM_MODES["mw"]["scan"] (IP-1170/BL-0053, engine/isr.py).
+    swath_km: float = 20000.0
+    resolution_m: float = 1000.0
+    power_factor: float = 1.0
+    duty_cycle: float = 0.95
+    gain_factor: float = 1.00
+
+
+class PntParams(BaseModel):
+    # R134 §3 — GPS civilian SPS undegraded baseline: ≤9m/95% horizontal accuracy.
+    baseline_accuracy_m: float = 9.0
+
+
+_TYPED_PARAM_MODELS: dict[str, type[BaseModel]] = {
+    "satcom": SatcomParams, "isr_eo": IsrEoParams, "isr_sar": IsrSarParams,
+    "sigint": SigintParams, "sda": SdaParams, "weather": WeatherParams,
+    "mw": MwParams, "pnt": PntParams,
+}
+
+
 class PayloadState(BaseModel):
     type: str = "isr_eo"                      # satcom|isr_eo|isr_sar|sigint|sda|space_control|...
     health: Status = "green"
@@ -124,6 +201,25 @@ class PayloadState(BaseModel):
     deception_active: bool = False            # def.set_deception_mode: USSF SWF Apr 2025 §3.2 passive measure #2
     shutter_closed: bool = False              # isr.shutter_sensor: optics protected from laser dazzle/blinding; blocks collection
     detail: dict = Field(default_factory=dict)
+
+    # IP-1171 (FR-5170) — one typed sub-model per payload type, each Optional/None until either
+    # a vignette author sets it explicitly or the validator below auto-populates the single field
+    # matching `type` with that type's authored default.
+    satcom: Optional[SatcomParams] = None
+    isr_eo: Optional[IsrEoParams] = None
+    isr_sar: Optional[IsrSarParams] = None
+    sigint: Optional[SigintParams] = None
+    sda: Optional[SdaParams] = None
+    weather: Optional[WeatherParams] = None
+    mw: Optional[MwParams] = None
+    pnt: Optional[PntParams] = None
+
+    @model_validator(mode="after")
+    def _populate_typed_params(self) -> "PayloadState":
+        model = _TYPED_PARAM_MODELS.get(self.type)
+        if model is not None and getattr(self, self.type) is None:
+            setattr(self, self.type, model())
+        return self
 
 
 class BusState(BaseModel):

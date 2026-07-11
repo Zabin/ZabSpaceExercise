@@ -260,6 +260,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   system's `command` action (uplink/stored delivery like `maneuver`). New verbs extend `apply_command`.
 - `spacesim/engine/bus.py` — `BusState`/`PayloadState` SOH (limits, gating, safe mode, pass-gated view).
   `ThermalState` carries `temp_c`/`heater_watts`/`radiator_capacity_w` (FW §11.B.11).
+  `PayloadState` carries 8 typed, `Optional` per-payload-type sub-models (`SatcomParams`/`IsrEoParams`/
+  `IsrSarParams`/`SigintParams`/`SdaParams`/`WeatherParams`/`MwParams`/`PntParams`, R109/R110/R129/R134-
+  grounded), auto-populated for exactly the one field matching `PayloadState.type` — authored defaults
+  distinct from `isr.py`'s `BEAM_MODES` runtime table (IP-1171, FR-5170/FR-5180).
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
 - `spacesim/engine/maneuver.py` — pure compute for six manoeuvre entry modes
   (eci / lvlh / finite_burn / target_coe / hohmann / plane_change).
