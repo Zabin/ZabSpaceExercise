@@ -148,7 +148,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-4610 | (manual adjudication / custody-adjacent leaf, ADR-0004) | UNASSIGNED | ADR-0004 | C4, C6, C2, C1 | INT-0002, INT-0007 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0, independently confirmed 2026-07-04 via VR-1060)* |
 | FR-4710 | No automated scoring / manual adjudication | UNASSIGNED | ADR-0017, ADR-0029 | C4, C6 | (none — absence of an interface) | UNASSIGNED | UNASSIGNED | (inspection — no outbound interface returns a score field) *(closed 2026-07 via IP-1060 v2.0, independently reconfirmed 2026-07-04 via VR-1060 — grepped `session/manager.py`/`ui_web/server.py` for any score/win-loss field, zero hits)* |
 | FR-4720 | Adjust safe-mode dials / live parameters mid-exercise *(new leaf, CHG-003)* | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0, independently confirmed 2026-07-04 via VR-1060)* |
-| FR-5110 | Scenario builder | UNASSIGNED | ADR-0027 | C4, C6, C5 | INT-0003 | UNASSIGNED | `spacesim/tests/test_vignette_creator_session.py` (all 6 tests), `spacesim/tests/test_web.py::test_draft_session_create_add_asset_and_save_as_vignette` *(IP-1173, COMPLETE — pending `09-package-verification`)* | IP-1173 *(COMPLETE 2026-07-05, pending `VERIFIED`; corrects this cell's prior `content/vignette.py` citation, which named the vignette schema/loader, not the iterative-composition capability `FR-5110` actually describes)* |
+| FR-5110 | Scenario builder | UNASSIGNED | ADR-0027 | C4, C6, C5 | INT-0003 | UNASSIGNED | `spacesim/tests/test_vignette_creator_session.py` (all 6 tests), `spacesim/tests/test_web.py::test_draft_session_create_add_asset_and_save_as_vignette` *(IP-1173, VERIFIED — `VR-1173`)* | IP-1173 *(VERIFIED 2026-07-11; corrects this cell's prior `content/vignette.py` citation, which named the vignette schema/loader, not the iterative-composition capability `FR-5110` actually describes)* |
 | FR-5120 | Synchronized JSON view | UNASSIGNED | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5130 | 2D/3D initial-state preview | UNASSIGNED | ADR-0004 | C4, C2 | (none — reuses existing render pipeline) | FS-117 | UNASSIGNED | UNASSIGNED |
 | FR-5140 | TLE/lat-long asset entry | R101, R107 | (none directly) | C4, C2 | INT-0003 | FS-117 | UNASSIGNED | UNASSIGNED |
@@ -468,14 +468,14 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `session/manager.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-4310, FR-4410, FR-7210, FR-6310, NFR-1300, NFR-1800, FR-4510 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |
 | `session/api.py` | FR-6110, NFR-2300 |
 | `session/cells.py` | FR-6210, FR-6220 |
-| `session/inprocess.py` | FR-6320, FR-6410, NFR-1400, FR-5110 *(draft-session slice, IP-1173, COMPLETE — pending VERIFIED)* |
+| `session/inprocess.py` | FR-6320, FR-6410, NFR-1400, FR-5110 *(draft-session slice, IP-1173, VERIFIED)* |
 | `session/aar.py` | FR-7310, FR-7320, NFR-2500, NFR-3100 |
 | `session/redai.py` | FR-9110 |
 | `session/assessment.py` | FR-10110 *(closed 2026-07-03 via `IP-2010`)* |
 | `session/research_export.py` | FR-10210 *(closed 2026-07-04 via `IP-3010`)* |
 | `spacesim/tools/research_batch.py` | FR-10210 *(closed 2026-07-04 via `IP-3010`)* |
 | `content/vignette.py` | FR-4110 *(closed 2026-07-03 via IP-1150)*, FR-5110, FR-5120, FR-5130, FR-5140, FR-5150, FR-5160, FR-5170, FR-5180, FR-5310, NFR-1600, NFR-2000, NFR-2010, FR-4210 *(closed 2026-07-03 via IP-1151)* |
-| `content/vignette_export.py` | FR-5110 *(reverse-serialization slice, IP-1173, COMPLETE — pending VERIFIED)* |
+| `content/vignette_export.py` | FR-5110 *(reverse-serialization slice, IP-1173, VERIFIED)* |
 | `content/vignettes/*.yaml` | NFR-2000 |
 | `content/` (TLE import) | FR-5210, NFR-3200 |
 | `ui_web/server.py` | FR-4510, FR-8110, NFR-1400, NFR-2300, NFR-2700, NFR-3300, NFR-3100 *(closed 2026-07-03 via IP-1120)*, FR-4210 *(closed 2026-07-03 via IP-1151)* |
