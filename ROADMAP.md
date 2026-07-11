@@ -531,9 +531,9 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1160 | Role-Scoped Command Catalog & Assignment Scoping | `implementation/packages/IP-1160-role-scoped-command-enforcement.md` | FS-116 | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; every dependency already `VERIFIED`) |
 | IP-1170 | ISR Beam-Mode Coverage — weather & missile-warning (`BL-0053` prerequisite) | `implementation/packages/IP-1170-isr-beam-mode-coverage.md` | FS-117 (prerequisite) | Forward design | ✅ VERIFIED (verified 2026-07-05, run #48 — fresh session, [`VR-1170`](implementation/verification/VR-1170-isr-beam-mode-coverage.md); full suite 586 passed/3 skipped, both permanent gates green; closes `BL-0053`) |
 | IP-1171 | Typed Payload & Bus Parameter Domain Model | `implementation/packages/IP-1171-typed-payload-bus-parameters.md` | FS-117 §FR-5170/FR-5180 | Forward design | 🟢 READY (authorized 2026-07-05 — MSTR-006 §3; `IP-1170` reached `VERIFIED` 2026-07-05) |
-| IP-1172 | Per-Cell Rules of Engagement Enforcement | `implementation/packages/IP-1172-per-cell-roe-enforcement.md` | FS-117 §FR-3420/NFR-2010 | Forward design | 🔵 COMPLETE (implemented 2026-07-05 by `08-code-implementation`; full suite 579 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
+| IP-1172 | Per-Cell Rules of Engagement Enforcement | `implementation/packages/IP-1172-per-cell-roe-enforcement.md` | FS-117 §FR-3420/NFR-2010 | Forward design | ✅ VERIFIED (verified 2026-07-11, fresh session, [`VR-1172`](implementation/verification/VR-1172-per-cell-roe-enforcement.md); full suite 586 passed/3 skipped, both permanent gates green; zero findings) |
 | IP-1173 | Vignette Creator Draft Session & Reverse Serialization | `implementation/packages/IP-1173-vignette-creator-draft-session.md` | FS-117 §FR-5110 | Forward design | 🔵 COMPLETE (implemented 2026-07-05 by `08-code-implementation`; full suite 586 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
-| IP-1174 | Vignette Creator UI Surfaces | `implementation/packages/IP-1174-vignette-creator-ui-surfaces.md` | FS-117 §FR-5120-FR-5160 | Forward design | 🔴 BLOCKED (authorized 2026-07-05 — MSTR-006 §3; blocked on `IP-1171`/`IP-1172`/`IP-1173` reaching `VERIFIED`) |
+| IP-1174 | Vignette Creator UI Surfaces | `implementation/packages/IP-1174-vignette-creator-ui-surfaces.md` | FS-117 §FR-5120-FR-5160 | Forward design | 🔴 BLOCKED (authorized 2026-07-05 — MSTR-006 §3; blocked on `IP-1171`/`IP-1173` reaching `VERIFIED`) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1160 is
 new (2026-07-05)**, closing `FEAT-3500`'s implementation gap that `11-release-readiness` found —
@@ -545,10 +545,11 @@ Three design-fork decisions (typed-schema bridging mechanism, per-cell ROE YAML 
 legacy-ROE auto-upgrade policy) were resolved by the project owner during this planning pass — see
 `01-technical-work-breakdown.md` Tranche 3 for the full rationale. **All five were authorized for
 coding 2026-07-05** (MSTR-006 §3, project owner); `IP-1170`/`IP-1172`/`IP-1173` were implemented
-the same day. `IP-1170` has since passed independent verification (2026-07-05, run #48, fresh
-session, `VR-1170`) and is `VERIFIED`, unblocking `IP-1171` to `READY`. `IP-1172`/`IP-1173` remain
-`COMPLETE`, awaiting their own `09-package-verification` pass; `IP-1174` remains `BLOCKED` on all
-three of `IP-1171`/`IP-1172`/`IP-1173` reaching `VERIFIED`.
+the same day. `IP-1170` and `IP-1172` have since passed independent verification (2026-07-05, run
+#48, `VR-1170`; 2026-07-11, fresh session, `VR-1172`) and are `VERIFIED` — `IP-1170` unblocking
+`IP-1171` to `READY`. `IP-1173` remains
+`COMPLETE`, awaiting its own `09-package-verification` pass; `IP-1174` remains `BLOCKED` on
+`IP-1171`/`IP-1173` reaching `VERIFIED`.
 
 **IP-1090/IP-1100/IP-1110 are new (2026-07, tranche 1)**, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03, mirroring the FS-106 split — no new code
