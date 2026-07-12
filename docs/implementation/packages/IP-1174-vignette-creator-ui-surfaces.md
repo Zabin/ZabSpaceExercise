@@ -2,13 +2,12 @@
 
 > **Package ID:** IP-1174
 > **Version:** 1.0
-> **Status:** 🔴 BLOCKED *(MSTR-006 §3 authorization obtained 2026-07-05 — see Definition of Done —
-> but this package depends on [IP-1171](IP-1171-typed-payload-bus-parameters.md),
+> **Status:** 🟡 READY *(MSTR-006 §3 authorization obtained 2026-07-05 — see Definition of Done.
+> All three dependencies — [IP-1171](IP-1171-typed-payload-bus-parameters.md),
 > [IP-1172](IP-1172-per-cell-roe-enforcement.md), and
-> [IP-1173](IP-1173-vignette-creator-draft-session.md), none yet `VERIFIED`; per this skill's own
-> "READY means fully specified AND every dependency VERIFIED" rule, this package stays `BLOCKED` on
-> those three, not on authorization. This is the last package `08-code-implementation` should pick
-> up in Tranche 3.)*
+> [IP-1173](IP-1173-vignette-creator-draft-session.md) — are now `VERIFIED` (`IP-1171` the last to
+> clear, `VR-1171`, 2026-07-12). This is the last package to build in Tranche 3 — eligible for
+> `08-code-implementation`.)*
 > **Dependencies:** [FS-117](../../features/FS-117-vignette-creator.md) v1.1 (`FR-5120`, `FR-5130`,
 > `FR-5140`, `FR-5150`, `FR-5160`), [ADS-5100A](../../architecture/ADS-5100A-vignette-creator-session-and-ui.md)
 > §2/§4/§5/§6, [IP-1173](IP-1173-vignette-creator-draft-session.md) (the draft-session API this UI
