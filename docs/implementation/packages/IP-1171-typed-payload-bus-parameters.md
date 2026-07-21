@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1171
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implemented 2026-07-11 by `08-code-implementation` — 8 new typed
+> **Status:** ✅ VERIFIED *(implemented 2026-07-11 by `08-code-implementation` — 8 new typed
 > `PayloadState` sub-models added to `engine/bus.py` (`SatcomParams`/`IsrEoParams`/`IsrSarParams`/
 > `SigintParams`/`SdaParams`/`WeatherParams`/`MwParams`/`PntParams`), each `Optional`, auto-populated
 > for exactly the field matching `PayloadState.type` via a new `model_validator(mode="after")`.
@@ -13,8 +13,10 @@
 > vignette's per-asset `resources.delta_v_ms`/`bus_state.power.charge_rate_per_s`/`drain_rate_per_s`
 > overrides to the live fields; confirmed `AssetResources.power_w` is never written by this path. 12
 > new tests, full suite 598 passed/3 skipped (up from 586/3, +12), both permanent gates green. All
-> 19 currently shipped vignettes confirmed unchanged. Awaiting `09-package-verification` to advance
-> to `VERIFIED`.)*
+> 19 currently shipped vignettes confirmed unchanged. Independently verified 2026-07-12 in a fresh
+> session ([`VR-1171`](../verification/VR-1171-typed-payload-bus-parameters.md)) — one Low finding,
+> fixed in place (an RTM `Research`-column gap, `R129` was missing from `FR-5170`'s row). `IP-1174`
+> is unblocked.)*
 > **Dependencies:** [FS-117](../../features/FS-117-vignette-creator.md) v1.1 (`FR-5170`,
 > `FR-5180`), [ADS-5100B](../../architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md) §3.1,
 > [IP-1170](IP-1170-isr-beam-mode-coverage.md) (weather/mw `BEAM_MODES` — not `VERIFIED` yet),
@@ -217,17 +219,18 @@ the Domain Model the UI will be a thin client over.
 
 ## Verification Checklist
 
-*(To be executed by `09-package-verification` once this package reaches `COMPLETE`.)*
+*(Executed by `09-package-verification`, 2026-07-12 — see
+[`VR-1171`](../verification/VR-1171-typed-payload-bus-parameters.md) for full evidence.)*
 
-- [ ] `spacesim/tests/test_typed_payload_params.py` exists and is green.
-- [ ] `python3 -m pytest spacesim/tests/test_determinism.py` remains green (pure Domain Model
+- [x] `spacesim/tests/test_typed_payload_params.py` exists and is green.
+- [x] `python3 -m pytest spacesim/tests/test_determinism.py` remains green (pure Domain Model
   extension, no RNG/wall-clock/mutation-order change).
-- [ ] `python3 -m pytest spacesim/tests/test_import_guard.py` remains green.
-- [ ] Full existing suite re-run with zero regressions.
-- [ ] Independently confirm (not merely re-cite) that `weather`/`mw` sub-model values actually reach
+- [x] `python3 -m pytest spacesim/tests/test_import_guard.py` remains green.
+- [x] Full existing suite re-run with zero regressions.
+- [x] Independently confirm (not merely re-cite) that `weather`/`mw` sub-model values actually reach
   `engine/isr.py`'s beam-parameter resolution once [IP-1170](IP-1170-isr-beam-mode-coverage.md) is
   `VERIFIED` — a live-code check, not a documentation cross-reference.
-- [ ] Independently confirm `AssetResources.power_w` is not written anywhere by this package's new
+- [x] Independently confirm `AssetResources.power_w` is not written anywhere by this package's new
   code paths (grep + read, per this project's own established anti-drift discipline).
 
 ## Dependencies
