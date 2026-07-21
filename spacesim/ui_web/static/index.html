@@ -259,6 +259,7 @@
             <option value="">(pick a target…)</option>
           </select>
         </label>
+        <label>or id <input id="task-target-manual" type="text" placeholder="type id — e.g. to task a sensor before custody exists" style="width:16em" /></label>
         <label>Priority <select id="task-priority">
           <option value="routine">routine</option>
           <option value="priority" selected>priority</option>
@@ -310,6 +311,7 @@
           <option value="">(pick a known target…)</option>
         </select>
       </label>
+      <label>or id <input id="o-target-manual" type="text" placeholder="type id — untracked ok (e.g. to task a sensor first)" style="width:16em" /></label>
 
       <!-- Audit 2026-06 Commands §M4 (Phase C step 2) — declarative form panel.
            Populated by renderVerbForm() in app.js from VERB_FORM_SCHEMA. When a verb
