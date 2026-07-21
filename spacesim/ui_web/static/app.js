@@ -73,6 +73,12 @@ const ACTIONS_BY_KIND = {
   cyber_unit: ["cyber"], directed_energy: ["jam"],
   ground_radar: ["observe"], ground_optical: ["observe"], space_based: ["observe"],
 };
+// Actions that carry an order-level Target — orders.py only reads order.target for these four
+// (jam/engage/cyber effects resolve against it; observe/sensor-tasking windows against it).
+// maneuver/downlink/command (dotted bus+payload verbs) act on the actor itself and never read
+// order.target, so the Target field is disabled/blanked for every other action (see
+// populateTargetPicker()).
+const TARGET_REQUIRED_ACTIONS = new Set(["jam", "engage", "cyber", "observe"]);
 const PARAM_TEMPLATE = {
   downlink: () => ({ via: DEFAULT_STATION }),
   maneuver: () => ({ dv: [0, 5, 0], via: DEFAULT_STATION }),
@@ -878,8 +884,7 @@ function onActorChange() {
   $("o-action").innerHTML = actionsFor(a).map((x) => `<option>${x}</option>`).join("");
   if (prevAction && [...$("o-action").options].some((o) => o.value === prevAction))
     $("o-action").value = prevAction;
-  onActionChange(prevAction !== $("o-action").value);  // only reset params if action changed
-  populateTargetPicker();   // valid targets depend on the actor's owning side
+  onActionChange(prevAction !== $("o-action").value);  // also repopulates target (owner + gating)
   if (SID && id) drawRibbon(id);
 }
 function onActionChange(resetParams = true) {
@@ -905,6 +910,7 @@ function onActionChange(resetParams = true) {
   if (isCyber) cyberSummaryUpdate();
   // Clear any prior jam preview footprint
   if (!isJam && window.JAM_PREVIEW) { JAM_PREVIEW = null; if (typeof drawMap === "function") drawMap(); }
+  populateTargetPicker();   // (re)gate the Target field for the new action; owner unchanged
   previewOrder();
 }
 
@@ -1551,11 +1557,7 @@ function fleetPasses(a, soh, bus, alarms) {     // does asset pass the active fl
   return true;
 }
 
-// Build the shared <datalist> backing the Target inputs in the compose form and the tasking
-// rail. Lists own assets/sensors and every track the cell has on objects (the only ids the
-// fog-of-war boundary actually exposes). The label after the id surfaces classification +
-// characterisation so Red/Blue can tell hostile vs neutral at a glance.
-// Latest target data cached so the actor-aware target dropdown can rebuild when the
+// Latest target data cached so the actor-aware target dropdowns can rebuild when the
 // operator changes actor/action without another network round-trip.
 let TARGET_ASSETS = [];
 let TARGET_TRACKS = [];
@@ -1563,37 +1565,16 @@ let TARGET_TRACKS = [];
 function populateTargetOptions(assets, tracks) {
   TARGET_ASSETS = assets || [];
   TARGET_TRACKS = tracks || [];
-  const dl = $("target-options");
-  if (dl) {
-    const opts = [];
-    (assets || []).forEach((a) => {
-      if (!a.id) return;
-      const tag = a.owner && a.owner !== CELL ? a.owner : "own";
-      opts.push(`<option value="${esc(a.id)}">${esc(tag)} · ${esc(a.kind || "")}</option>`);
-    });
-    (tracks || []).forEach((t) => {
-      if (!t.object) return;
-      const cls = t.classification || "unknown";
-      const ch = t.characterized ? "characterised" : "uncertain";
-      opts.push(`<option value="${esc(t.object)}">${esc(cls)} · ${esc(ch)}</option>`);
-    });
-    dl.innerHTML = opts.join("");
-  }
   populateTargetPicker();
 }
 
-// Build the "valid targets in the other cell" <select>. Fog-of-war correct:
-//  - Blue/Red see their known_tracks (the only enemy objects they've identified) plus any
-//    non-own asset their view exposes.
-//  - White (god view) sees every asset; we list those NOT owned by the selected actor's owner,
-//    grouped by owner — so a White operator driving a Blue asset is offered Red targets, etc.
-// Ground stations / sensors are never offered as offensive targets.
-function populateTargetPicker() {
-  const sel = $("o-target-pick");
-  if (!sel) return;
-  const actor = $("o-actor") ? $("o-actor").value : "";
-  const actorOwner = (ASSETS[actor] && ASSETS[actor].owner) || (CELL !== "white" ? CELL : null);
-  const TARGETABLE = new Set(["satellite", "space_based", "interceptor", "directed_energy"]);
+// Group every target the current fog-of-war view exposes, excluding `excludeOwner`'s own side.
+// Fog-of-war correct: Blue/Red see their known_tracks (the only enemy objects they've
+// identified) plus any non-own asset their view exposes; White (god view) sees every asset,
+// filtered by whichever owner is passed in. Ground stations / sensors are never offered as
+// offensive targets — only the four physically-targetable kinds below.
+const TARGETABLE_KINDS = new Set(["satellite", "space_based", "interceptor", "directed_energy"]);
+function buildTargetGroups(excludeOwner) {
   const seen = new Set();
   const byOwner = {};   // owner -> [{id, label}]
   const add = (id, owner, label) => {
@@ -1609,15 +1590,18 @@ function populateTargetPicker() {
     const ch = t.characterized ? "char" : "uncertain";
     add(t.object, t.owner || "track", `${t.object} — ${cls} · ${ch}`);
   });
-  // Assets the view exposes that are not the actor's own side and are physically targetable.
+  // Assets the view exposes that are not the excluded side and are physically targetable.
   (TARGET_ASSETS || []).forEach((a) => {
-    if (!a.id || !TARGETABLE.has(a.kind)) return;
-    if (actorOwner && a.owner === actorOwner) return;   // not your own side
+    if (!a.id || !TARGETABLE_KINDS.has(a.kind)) return;
+    if (excludeOwner && a.owner === excludeOwner) return;   // not your own side
     add(a.id, a.owner, `${a.id} — ${a.owner || "?"} · ${a.kind}`);
   });
-  const prev = sel.value;
+  return { byOwner, seen };
+}
+
+function targetOptionsHtml(byOwner, emptyLabel) {
   const groups = Object.keys(byOwner).sort();
-  let html = `<option value="">(pick a known target…)</option>`;
+  let html = `<option value="">${esc(emptyLabel)}</option>`;
   if (!groups.length) {
     html += `<option value="" disabled>no known enemy targets yet — build custody first</option>`;
   } else if (groups.length === 1) {
@@ -1628,9 +1612,39 @@ function populateTargetPicker() {
       byOwner[g].map((o) => `<option value="${esc(o.id)}">${esc(o.label)}</option>`).join("") +
       `</optgroup>`).join("");
   }
-  sel.innerHTML = html;
-  // Preserve the operator's current pick if it's still a valid option.
-  if (prev && seen.has(prev)) sel.value = prev;
+  return html;
+}
+
+// Populate the "known targets on the other side" <select>s: the compose form's Target field
+// (Satellite command) and the Tasking rail's Target field. Both draw on the same fog-of-war
+// filtered lists — Red and Blue otherwise have no way to see what the other cell has.
+function populateTargetPicker() {
+  const orderSel = $("o-target");
+  if (orderSel) {
+    const actor = $("o-actor") ? $("o-actor").value : "";
+    const actorOwner = (ASSETS[actor] && ASSETS[actor].owner) || (CELL !== "white" ? CELL : null);
+    const prev = orderSel.value;
+    const { byOwner, seen } = buildTargetGroups(actorOwner);
+    orderSel.innerHTML = targetOptionsHtml(byOwner, "(pick a known target…)");
+    if (prev && seen.has(prev)) orderSel.value = prev;
+    // Only jam/engage/cyber/observe carry an order-level target (TARGET_REQUIRED_ACTIONS) —
+    // blank + disable the field for every other action so it can't be mistaken for required.
+    const action = $("o-action") ? $("o-action").value : "";
+    const needsTarget = TARGET_REQUIRED_ACTIONS.has(action);
+    orderSel.disabled = !needsTarget;
+    if (!needsTarget) orderSel.value = "";
+  }
+
+  const taskSel = $("task-target");
+  if (taskSel) {
+    // Tasking always plans sensor collection against the other side, on behalf of the acting
+    // cell (White tasks as Blue — see planTask()'s own `cell` resolution).
+    const taskOwner = CELL === "white" ? "blue" : CELL;
+    const prev = taskSel.value;
+    const { byOwner, seen } = buildTargetGroups(taskOwner);
+    taskSel.innerHTML = targetOptionsHtml(byOwner, "(pick a target…)");
+    if (prev && seen.has(prev)) taskSel.value = prev;
+  }
 }
 
 function renderFleet(assets, alarmCount, now) {
@@ -2079,11 +2093,7 @@ window.addEventListener("DOMContentLoaded", () => {
     refreshStaffingReport();
   };
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
-  $("o-target").oninput = previewOrder; $("o-params").oninput = previewOrder;
-  // Picking a valid target from the dropdown fills the free-text id and previews.
-  $("o-target-pick").onchange = (e) => {
-    if (e.target.value) { $("o-target").value = e.target.value; previewOrder(); }
-  };
+  $("o-target").onchange = previewOrder; $("o-params").oninput = previewOrder;
   $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("drill-overlay").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("present").onchange = (e) => document.body.classList.toggle("present", e.target.checked);
