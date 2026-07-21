@@ -37,13 +37,26 @@ The "repository root" referred to below is the folder containing `README.md`, `s
 - **Linux.** Right-click the folder in your file manager and pick "Open in Terminal", or run
   `cd /path/to/ZabSpaceExercise` in any terminal.
 
+> **Downloaded the repo as a ZIP from GitHub?** Extracting `ZabSpaceExercise-main.zip` produces a
+> folder that contains *another* folder one level down — the repository root ends up at
+> `...\ZabSpaceExercise-main\ZabSpaceExercise\`, not at the top-level extracted folder. Make sure
+> your terminal's prompt shows that inner `ZabSpaceExercise` path (the one containing
+> `spacesim\`) before running any command below — e.g. on Windows:
+> ```
+> cd C:\Users\<you>\Documents\python\ZabSpaceExercise-main\ZabSpaceExercise
+> ```
+> Running these commands one level too high (in `ZabSpaceExercise-main`) is the most common cause
+> of "module not found" / "no such file or directory" errors in this guide.
+
 ### 1.3 (Recommended) create a virtual environment
 
 A *virtual environment* keeps this project's Python packages separate from anything else on your
 machine. Run these two commands once, in the repository root:
 
 ```bash
-python3 -m venv .venv
+python3 -m venv .venv          # macOS / Linux
+python -m venv .venv           # Windows (cmd) — Windows installs usually register "python",
+                                # not "python3"; if "python" isn't found either, try "py -m venv .venv"
 
 # Activate it (you'll do this every time you open a fresh terminal):
 #   Windows (cmd):       .venv\Scripts\activate.bat
@@ -52,6 +65,14 @@ python3 -m venv .venv
 ```
 
 You'll know it worked when your terminal prompt is prefixed with `(.venv)`.
+
+> **Windows notes.** If `python -m venv .venv` appears to hang, it's usually `venv` waiting on
+> `ensurepip` to reach the network — retry with `python -m venv .venv --without-pip` and install
+> packages afterward (§1.4 still works the same). If creating the environment fails with
+> `PermissionError: [Errno 13] Permission denied: '...\Scripts\activate.bat'`, delete the
+> partial `.venv` folder (`rmdir /s /q .venv`) and recreate it; if it keeps happening, your
+> project folder is probably under OneDrive-synced `Documents`, which can lock files mid-write —
+> either pause OneDrive sync or move the project to a non-synced path (e.g. `C:\dev\...`).
 
 ### 1.4 Install the project's Python packages
 
@@ -98,10 +119,15 @@ internet connection or ephemeris download is required.
 Start the web server from the repository root (with your virtual environment activated, if any):
 
 ```bash
-python3 -m spacesim.ui_web              # uses spacesim.config.yaml (default: 127.0.0.1:8000)
-# or, equivalently:
-uvicorn spacesim.ui_web.server:app
+python3 -m spacesim.ui_web              # macOS / Linux — uses spacesim.config.yaml (default: 127.0.0.1:8000)
+python -m spacesim.ui_web               # Windows (cmd) — same launcher, no separate uvicorn command needed
 ```
+
+This is the **only command you need to start the server** — it launches uvicorn internally, so
+you do not have to install or invoke `uvicorn` yourself from the command prompt. (The `uvicorn
+spacesim.ui_web.server:app` form mentioned in §2's "Changing the port" note below is an
+equivalent alternative for users who prefer the uvicorn CLI directly — it's optional, not
+required.)
 
 Then open **http://127.0.0.1:8000/** in a browser. You should see the dark mission-control layout
 with the `UNCLASSIFIED // TRAINING` banner. The UI works in any current desktop browser
