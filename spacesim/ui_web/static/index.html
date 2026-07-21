@@ -130,16 +130,18 @@
     <span id="banner" class="banner">UNCLASSIFIED-TRAINING</span>
   </header>
 
+  <!-- Mission brief panel: situation / objectives / ROE / success criteria. Auto-opens
+       on first session load; collapsible thereafter (state persisted in localStorage).
+       Full page width, below the title bar and above every other panel/viewer. -->
+  <section class="panel brief-panel" id="brief-panel">
+    <h2>
+      <button id="brief-toggle" class="brief-toggle" title="Collapse / expand the brief">▾</button>
+      Mission brief <span id="brief-vignette-title" class="muted"></span>
+    </h2>
+    <div id="brief-body" class="brief-body">(load a vignette to see the mission brief)</div>
+  </section>
+
   <main>
-    <!-- Mission brief panel: situation / objectives / ROE / success criteria. Auto-opens
-         on first session load; collapsible thereafter (state persisted in localStorage). -->
-    <section class="panel brief-panel" id="brief-panel">
-      <h2>
-        <button id="brief-toggle" class="brief-toggle" title="Collapse / expand the brief">▾</button>
-        Mission brief <span id="brief-vignette-title" class="muted"></span>
-      </h2>
-      <div id="brief-body" class="brief-body">(load a vignette to see the mission brief)</div>
-    </section>
     <section class="panel" id="cell-time-panel">
       <h2>Cell &amp; Time</h2>
       <div class="clock">UTC: <b id="now">—</b></div>
@@ -252,7 +254,11 @@
           <option value="GEO">GEO</option><option value="HEO">HEO</option>
           <option value="cislunar">cislunar</option>
         </select></label>
-        <label>Target <input id="task-target" list="target-options" placeholder="(known track id)" style="width:10em" /></label>
+        <label>Target
+          <select id="task-target" title="Known targets on the other side — tracks this cell has custody/belief on, or (White) every non-Blue asset.">
+            <option value="">(pick a target…)</option>
+          </select>
+        </label>
         <label>Priority <select id="task-priority">
           <option value="routine">routine</option>
           <option value="priority" selected>priority</option>
@@ -300,11 +306,10 @@
       <div id="actor-info" class="toggle"></div>
       <label>Action <select id="o-action"></select></label>
       <label>Target
-        <select id="o-target-pick" title="Valid targets the other cell exposes — known enemy tracks (Blue/Red) or all adversary assets (White)">
+        <select id="o-target" title="Valid targets the other cell exposes — known enemy tracks (Blue/Red) or all adversary assets (White). Disabled when the selected action doesn't take a target.">
           <option value="">(pick a known target…)</option>
         </select>
       </label>
-      <label>or id <input id="o-target" list="target-options" placeholder="(track id or own asset)" style="width:10em" /></label>
 
       <!-- Audit 2026-06 Commands §M4 (Phase C step 2) — declarative form panel.
            Populated by renderVerbForm() in app.js from VERB_FORM_SCHEMA. When a verb
@@ -492,9 +497,6 @@
       <h3>Command queue</h3>
       <div id="queue"></div>
     </section>
-    <!-- Shared target list — populated in refresh(): own asset/sensor ids + characterised
-         known-track object ids (fog-of-war: red/blue only see what they've identified). -->
-    <datalist id="target-options"></datalist>
   </main>
 
   <section class="viewers" id="viewers-panel">
