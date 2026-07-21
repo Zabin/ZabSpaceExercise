@@ -461,7 +461,12 @@ function composeBody() {
   let action = $("o-action").value;
   // A dotted verb (eps.shed_load, satcom.*) is a bus/payload command carried by the "command" action.
   if (action.includes(".")) { params = { ...params, verb: action }; action = "command"; }
-  return { cell, actor, action, target: $("o-target")?.value || null, params };
+  // The dropdown covers everything the cell already has a track/belief on; the manual field
+  // is the escape hatch for an id the cell knows from the scenario but hasn't tracked yet —
+  // most importantly, tasking a sensor at all (the "observe" action IS how custody gets built,
+  // so its target can never come pre-populated from a track the operator doesn't have yet).
+  const target = $("o-target-manual")?.value || $("o-target")?.value || null;
+  return { cell, actor, action, target, params };
 }
 
 // Verbs offered for an asset: kind-based core actions + bus verbs for satellites + payload verbs by type.
@@ -538,7 +543,8 @@ const CONSEQUENCE = {
 let TASK_MODE = "organic";
 
 async function planTask() {
-  const target = $("task-target").value || $("o-target").value;
+  const target = $("task-target-manual")?.value || $("task-target").value
+              || $("o-target-manual")?.value || $("o-target").value;
   if (!SID || !target) { $("task-result").textContent = "Pick a target (track id)."; return; }
   const cell = CELL === "white" ? "blue" : CELL;
   if (TASK_MODE === "ssn") {
@@ -1099,7 +1105,7 @@ function engageSummaryUpdate() {
 async function computeEngage() {
   if (!SID) { $("engage-result").textContent = "No active session."; return; }
   const actor = $("o-actor").value;
-  const target = $("o-target").value;
+  const target = $("o-target-manual")?.value || $("o-target").value;
   if (!actor || !target) { $("engage-result").textContent = "Select actor + target."; return; }
   const cell = CELL === "white" ? (ASSETS[actor]?.owner || "red") : CELL;
   const mp = engageGatherParams();
@@ -1603,7 +1609,11 @@ function targetOptionsHtml(byOwner, emptyLabel) {
   const groups = Object.keys(byOwner).sort();
   let html = `<option value="">${esc(emptyLabel)}</option>`;
   if (!groups.length) {
-    html += `<option value="" disabled>no known enemy targets yet — build custody first</option>`;
+    // Nothing tracked yet — this is expected at the start of a scenario (before any sensor has
+    // been tasked) or whenever the operator hasn't built custody on the intended target. The
+    // "or id" field beside this dropdown is exactly for that case: an operator can still task a
+    // sensor (or jam/cyber) against an id they know from the mission brief but haven't tracked.
+    html += `<option value="" disabled>no known targets yet — type an id below, or task a sensor to build custody</option>`;
   } else if (groups.length === 1) {
     html += byOwner[groups[0]].map((o) => `<option value="${esc(o.id)}">${esc(o.label)}</option>`).join("");
   } else {
@@ -1617,9 +1627,12 @@ function targetOptionsHtml(byOwner, emptyLabel) {
 
 // Populate the "known targets on the other side" <select>s: the compose form's Target field
 // (Satellite command) and the Tasking rail's Target field. Both draw on the same fog-of-war
-// filtered lists — Red and Blue otherwise have no way to see what the other cell has.
+// filtered lists — Red and Blue otherwise have no way to see what the other cell has. Each
+// select is paired with a manual "or id" text input (…-manual) for targets not yet tracked —
+// most importantly, the "observe" action IS how custody gets built in the first place, so its
+// target can never come pre-populated from a track the operator doesn't have yet.
 function populateTargetPicker() {
-  const orderSel = $("o-target");
+  const orderSel = $("o-target"), orderManual = $("o-target-manual");
   if (orderSel) {
     const actor = $("o-actor") ? $("o-actor").value : "";
     const actorOwner = (ASSETS[actor] && ASSETS[actor].owner) || (CELL !== "white" ? CELL : null);
@@ -1628,11 +1641,15 @@ function populateTargetPicker() {
     orderSel.innerHTML = targetOptionsHtml(byOwner, "(pick a known target…)");
     if (prev && seen.has(prev)) orderSel.value = prev;
     // Only jam/engage/cyber/observe carry an order-level target (TARGET_REQUIRED_ACTIONS) —
-    // blank + disable the field for every other action so it can't be mistaken for required.
+    // blank + disable both fields for every other action so neither looks required.
     const action = $("o-action") ? $("o-action").value : "";
     const needsTarget = TARGET_REQUIRED_ACTIONS.has(action);
     orderSel.disabled = !needsTarget;
-    if (!needsTarget) orderSel.value = "";
+    if (orderManual) orderManual.disabled = !needsTarget;
+    if (!needsTarget) {
+      orderSel.value = "";
+      if (orderManual) orderManual.value = "";
+    }
   }
 
   const taskSel = $("task-target");
@@ -2094,6 +2111,7 @@ window.addEventListener("DOMContentLoaded", () => {
   };
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
   $("o-target").onchange = previewOrder; $("o-params").oninput = previewOrder;
+  $("o-target-manual").oninput = previewOrder;
   $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("drill-overlay").onchange = () => DRILL.param && drawParam(DRILL.param);
   $("present").onchange = (e) => document.body.classList.toggle("present", e.target.checked);
@@ -2301,7 +2319,17 @@ function renderPlaybooks() {
         const p = pbList()[+c.dataset.i];
         $("o-actor").value = p.actor; onActorChange();
         $("o-action").value = p.action; onActionChange();
-        $("o-target").value = p.target || "";
+        // Prefer the dropdown if the saved target is still a known option; otherwise it's an
+        // id the operator typed manually at save time (or has since lost custody on) — put it
+        // back in the manual field rather than silently dropping it.
+        const sel = $("o-target");
+        if (sel && [...sel.options].some((o) => o.value === p.target)) {
+          sel.value = p.target || "";
+          if ($("o-target-manual")) $("o-target-manual").value = "";
+        } else {
+          if (sel) sel.value = "";
+          if ($("o-target-manual")) $("o-target-manual").value = p.target || "";
+        }
         $("o-params").value = p.params;
         previewOrder();
       }
