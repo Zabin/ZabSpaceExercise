@@ -660,8 +660,10 @@ function applyLayoutCull() {
   const keep = new Set();
   layout.split("+").forEach((tok) => (LAYOUT_PANELS[tok] || []).forEach((id) => keep.add(id)));
   if (keep.size === 0) return;
-  // Hide top-level direct children of main that aren't in the keep set.
-  document.querySelectorAll("main > [id]").forEach((el) => {
+  // Hide top-level direct children of main that aren't in the keep set. The mission brief
+  // panel lives outside <main> (full page width, above every other panel) but is still a
+  // top-level layout element subject to the same pop-out culling, so it's included explicitly.
+  document.querySelectorAll("main > [id], #brief-panel").forEach((el) => {
     if (!keep.has(el.id)) el.hidden = true;
   });
   // Hide individual viewer sub-panels (globe-panel / map-panel inside viewers-panel).

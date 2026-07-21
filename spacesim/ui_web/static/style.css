@@ -218,8 +218,10 @@ tr.track-coe-row td { background: #0c1620; padding: 4px 10px 6px 20px !important
 .pchip.green { color: var(--green); } .pchip.yellow { color: var(--yellow); border-color: #5a4a1e; }
 .pchip.red { color: var(--red); border-color: #5a2424; } .pchip.los { color: #7a8aa0; }
 
-/* Mission brief panel — surfaces vignette intro_brief.{cell} + live deadlines + ROE. */
-.brief-panel { margin: 8px 12px; border-left: 4px solid var(--cell-accent, #5a8fe0); }
+/* Mission brief panel — surfaces vignette intro_brief.{cell} + live deadlines + ROE.
+   Sits outside the <main> grid so it always spans the full page width, directly under
+   the toolbar and above every other panel/viewer (docked mode; panels.js can still float it). */
+.brief-panel { margin: 12px 12px 0; border-left: 4px solid var(--cell-accent, #5a8fe0); }
 .brief-panel h2 { display: flex; align-items: center; gap: 8px; cursor: default; }
 .brief-toggle { background: transparent; border: 1px solid var(--border); color: var(--text);
   width: 22px; height: 22px; border-radius: 4px; cursor: pointer; padding: 0; font-size: 12px; }

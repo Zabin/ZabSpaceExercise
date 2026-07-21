@@ -130,16 +130,18 @@
     <span id="banner" class="banner">UNCLASSIFIED-TRAINING</span>
   </header>
 
+  <!-- Mission brief panel: situation / objectives / ROE / success criteria. Auto-opens
+       on first session load; collapsible thereafter (state persisted in localStorage).
+       Full page width, below the title bar and above every other panel/viewer. -->
+  <section class="panel brief-panel" id="brief-panel">
+    <h2>
+      <button id="brief-toggle" class="brief-toggle" title="Collapse / expand the brief">▾</button>
+      Mission brief <span id="brief-vignette-title" class="muted"></span>
+    </h2>
+    <div id="brief-body" class="brief-body">(load a vignette to see the mission brief)</div>
+  </section>
+
   <main>
-    <!-- Mission brief panel: situation / objectives / ROE / success criteria. Auto-opens
-         on first session load; collapsible thereafter (state persisted in localStorage). -->
-    <section class="panel brief-panel" id="brief-panel">
-      <h2>
-        <button id="brief-toggle" class="brief-toggle" title="Collapse / expand the brief">▾</button>
-        Mission brief <span id="brief-vignette-title" class="muted"></span>
-      </h2>
-      <div id="brief-body" class="brief-body">(load a vignette to see the mission brief)</div>
-    </section>
     <section class="panel" id="cell-time-panel">
       <h2>Cell &amp; Time</h2>
       <div class="clock">UTC: <b id="now">—</b></div>
