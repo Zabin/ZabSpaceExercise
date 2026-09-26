@@ -533,7 +533,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1171 | Typed Payload & Bus Parameter Domain Model | `implementation/packages/IP-1171-typed-payload-bus-parameters.md` | FS-117 §FR-5170/FR-5180 | Forward design | ✅ VERIFIED (verified 2026-07-12, fresh session, [`VR-1171`](implementation/verification/VR-1171-typed-payload-bus-parameters.md); full suite 598 passed/3 skipped, both permanent gates green; one Low finding, fixed in place) |
 | IP-1172 | Per-Cell Rules of Engagement Enforcement | `implementation/packages/IP-1172-per-cell-roe-enforcement.md` | FS-117 §FR-3420/NFR-2010 | Forward design | ✅ VERIFIED (verified 2026-07-11, fresh session, [`VR-1172`](implementation/verification/VR-1172-per-cell-roe-enforcement.md); full suite 586 passed/3 skipped, both permanent gates green; zero findings) |
 | IP-1173 | Vignette Creator Draft Session & Reverse Serialization | `implementation/packages/IP-1173-vignette-creator-draft-session.md` | FS-117 §FR-5110 | Forward design | ✅ VERIFIED (verified 2026-07-11, fresh session, [`VR-1173`](implementation/verification/VR-1173-vignette-creator-draft-session.md); full suite 586 passed/3 skipped, both permanent gates green; zero findings) |
-| IP-1174 | Vignette Creator UI Surfaces | `implementation/packages/IP-1174-vignette-creator-ui-surfaces.md` | FS-117 §FR-5120-FR-5160 | Forward design | 🟡 READY (authorized 2026-07-05 — MSTR-006 §3; every dependency — `IP-1171`/`IP-1172`/`IP-1173` — now `VERIFIED`) |
+| IP-1174 | Vignette Creator UI Surfaces | `implementation/packages/IP-1174-vignette-creator-ui-surfaces.md` | FS-117 §FR-5120-FR-5160 | Forward design | 🔵 COMPLETE (implemented 2026-09-26; full suite 622 passed/3 skipped; awaiting `09-package-verification`) |
 | IP-1061 | Inject Scheduling & Sizing-Cap Defect Remediation | `implementation/packages/IP-1061-inject-and-sizing-defect-remediation.md` | FS-106 §FR-4410 + NFR-1300 (ADR-0019) | Remediation | 🔵 COMPLETE (implemented 2026-09-26; awaiting `09-package-verification`) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1160 is
@@ -548,9 +548,11 @@ legacy-ROE auto-upgrade policy) were resolved by the project owner during this p
 coding 2026-07-05** (MSTR-006 §3, project owner); `IP-1170`/`IP-1172`/`IP-1173` were implemented
 the same day. `IP-1170`, `IP-1172`, `IP-1173`, and now `IP-1171` have all passed independent
 verification (2026-07-05, run #48, `VR-1170`; 2026-07-11, same fresh session, `VR-1172`/`VR-1173`;
-2026-07-12, fresh session, `VR-1171`) and are all `VERIFIED`. **`IP-1174` now flips
-`BLOCKED → READY`** — every one of its three dependencies is `VERIFIED`, and it is the sole package
-left to implement in this tranche.
+2026-07-12, fresh session, `VR-1171`) and are all `VERIFIED`. **`IP-1174` flipped `BLOCKED → READY`**
+2026-09-26 once all three dependencies reached `VERIFIED`, and — sequenced behind the new
+remediation package `IP-1061` by the project owner's own priority call that same day — **was
+implemented and reached `COMPLETE` the same day**, closing this tranche's last forward-design
+package pending only its own `09-package-verification` pass.
 
 **IP-1090/IP-1100/IP-1110 are new (2026-07, tranche 1)**, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03, mirroring the FS-106 split — no new code

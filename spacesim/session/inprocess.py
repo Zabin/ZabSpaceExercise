@@ -223,6 +223,45 @@ class InProcessSession:
             ok, reason = mgr.add_tle(asset_id, line1, line2, owner=owner, kind=kind)
         return Ack(ok=ok, reason=reason)
 
+    # -- Vignette Creator UI surfaces (IP-1174) --------------------------------
+    def add_ground_asset(self, session: str, asset_id: str, lat_deg: float, lon_deg: float,
+                         owner: str = "blue", kind: str = "ground_station") -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.add_ground_asset(asset_id, lat_deg, lon_deg, owner=owner, kind=kind)
+        return Ack(ok=ok, reason=reason)
+
+    def creator_state(self, session: str) -> dict:
+        with self._locked_read(session) as mgr:
+            return mgr.creator_state()
+
+    def creator_set_state(self, session: str, assets: list[dict]) -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.creator_set_state(assets)
+        return Ack(ok=ok, reason=reason)
+
+    def creator_edit_asset(self, session: str, asset_id: str, patch: dict) -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.creator_edit_asset(asset_id, patch)
+        return Ack(ok=ok, reason=reason)
+
+    def creator_delete_asset(self, session: str, asset_id: str) -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.creator_delete_asset(asset_id)
+        return Ack(ok=ok, reason=reason)
+
+    def creator_scene(self, session: str) -> dict:
+        with self._locked_read(session) as mgr:
+            return mgr.creator_scene()
+
+    def declare_seats(self, session: str, cell: str, count: int) -> dict:
+        with self._locked(session) as mgr:
+            seats = mgr.declare_seats(cell, count)
+        return {"cell": cell, "seats": seats}
+
+    def seats_declared(self, session: str) -> dict:
+        with self._locked_read(session) as mgr:
+            return dict(mgr.seats_declared)
+
     def red_doctrine_step(self, session: str) -> list[OrderAck]:
         if session in self._draft_sessions:  # IP-1173 — no AI-Red activity against a draft
             return []

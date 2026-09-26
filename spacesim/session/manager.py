@@ -44,6 +44,10 @@ class SessionManager:
         # session setup. Not itself gameplay/exercise state (no engine/WorldState involvement) —
         # a pre-start staffing concern only, per FS-115's own Scope boundary.
         self.role_assignments: dict[str, dict] = {}
+        # IP-1174 (FR-5160) — cell -> declared seat-id list, set by White Cell during Creator
+        # authoring. Same placement rationale as role_assignments above: UI-setup state, not
+        # exercise state.
+        self.seats_declared: dict[str, list[str]] = {}
         self.world, self.ctx = build_world(vignette, overrides)
         self.sim = Simulation(self.world, seed=seed)
         self.sim.register_handler("inject", self._h_inject)
@@ -354,6 +358,98 @@ class SessionManager:
         self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
         self.sim._initial_state = self.world.model_dump()  # re-baseline so rewind keeps the edit
         return True, ""
+
+    # -- Vignette Creator UI surfaces (IP-1174) --------------------------------
+    # One state, two views: every method below reads or mutates the same `self.world.assets`
+    # dict the form UI and the JSON view both present — there is no second, cached
+    # representation to fall out of sync with (FR-5120's own convergence requirement).
+
+    def add_ground_asset(self, asset_id: str, lat_deg: float, lon_deg: float,
+                         owner: str = "blue", kind: str = "ground_station") -> tuple[bool, str]:
+        """White-Cell force edit: add a ground asset by lat/long (FR-5140's lat/long entry path,
+        alongside `add_tle`'s orbital path)."""
+        if self.started:
+            return False, "cannot edit force after start"
+        from spacesim.engine.geometry import GeoPoint
+        self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind,
+                                            location=GeoPoint(lat_deg=lat_deg, lon_deg=lon_deg))
+        self.sim._initial_state = self.world.model_dump()
+        return True, ""
+
+    def creator_state(self) -> dict:
+        """FR-5120 — the JSON view's read: every asset, as the form UI would also see it."""
+        return {"assets": [a.model_dump() for a in self.world.assets.values()]}
+
+    def creator_set_state(self, assets: list[dict]) -> tuple[bool, str]:
+        """FR-5120 — the JSON view's write: replace the whole asset list atomically. Validates
+        every entry via `Asset` before committing any of them, so a malformed JSON edit can't
+        half-apply."""
+        if self.started:
+            return False, "cannot edit force after start"
+        try:
+            validated = {a["id"]: Asset.model_validate(a) for a in assets}
+        except Exception as exc:
+            return False, f"invalid asset list: {exc}"
+        self.world.assets = validated
+        self.sim._initial_state = self.world.model_dump()
+        return True, ""
+
+    def creator_edit_asset(self, asset_id: str, patch: dict) -> tuple[bool, str]:
+        """FR-5150 — edit an existing asset's fields in place (e.g. owner, kind, group)."""
+        if self.started:
+            return False, "cannot edit force after start"
+        asset = self.world.assets.get(asset_id)
+        if asset is None:
+            return False, f"no such asset: {asset_id}"
+        merged = {**asset.model_dump(), **patch, "id": asset_id}
+        try:
+            self.world.assets[asset_id] = Asset.model_validate(merged)
+        except Exception as exc:
+            return False, f"invalid edit: {exc}"
+        self.sim._initial_state = self.world.model_dump()
+        return True, ""
+
+    def creator_delete_asset(self, asset_id: str) -> tuple[bool, str]:
+        """FR-5150 — remove an asset from the draft/pre-start force."""
+        if self.started:
+            return False, "cannot edit force after start"
+        if asset_id not in self.world.assets:
+            return False, f"no such asset: {asset_id}"
+        del self.world.assets[asset_id]
+        self.sim._initial_state = self.world.model_dump()
+        return True, ""
+
+    def creator_scene(self) -> dict:
+        """FR-5130 — ground-truth 2D/3D preview: every asset at its true position, with no
+        `CellController` fog-of-war filtering. `session/scene.py`'s `build_scene(world, cell)`
+        filters internally to assets owned by exactly `cell` (it's the per-cell belief renderer,
+        not a ground-truth mode), and `Asset.owner` is one of {blue, red, neutral} — never
+        "white" — so a single `build_scene(world, "white")` call would always return an empty
+        scene. Ground truth is the union of every owner's own (unfiltered-for-itself) scene;
+        this composes `build_scene()` unmodified once per owner and merges the results, still
+        with no `CellController` import or call anywhere in this method."""
+        merged_assets: list = []
+        sun_lat = sun_lon = 0.0
+        for owner in ("blue", "red", "neutral"):
+            s = build_scene(self.world, owner)
+            merged_assets.extend(s.assets)
+            sun_lat, sun_lon = s.sun_lat_deg, s.sun_lon_deg
+        return {"cell": "godview", "now": self.world.now, "sun_lat_deg": sun_lat,
+                "sun_lon_deg": sun_lon, "assets": [a.model_dump() for a in merged_assets],
+                # No cross-cell tracks/footprints exist in ground-truth mode (every asset is
+                # already rendered directly, at its true position) — empty so the existing
+                # drawMap()/Globe.render() consumers (which iterate scene.tracks unconditionally)
+                # work unmodified against this scene shape too.
+                "tracks": [], "footprints": []}
+
+    def declare_seats(self, cell: str, count: int) -> list[str]:
+        """FR-5160 — generate `count` seat identifiers for `cell` (e.g. `blue-1`..`blue-N`),
+        replacing any previous declaration for that cell. The seat/role matrix UI then calls the
+        existing `assign_role` once per checked cell — this only creates the seat ids to check
+        against, reusing IP-1151's mechanism unmodified."""
+        seats = [f"{cell}-{i}" for i in range(1, count + 1)]
+        self.seats_declared[cell] = seats
+        return seats
 
     # -- command queue --------------------------------------------------------
     def list_orders(self, cell: str) -> list[dict]:

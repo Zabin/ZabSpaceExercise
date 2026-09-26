@@ -344,9 +344,14 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   consequence-confirm, fleet rail with next-contact countdown/SoC/alarm badge/filter + alarm
   deep-link, `j/k/c/g` keyboard nav, presentation mode, supersede-guarded refresh, 2D belief map,
   subsystem drill-down whose cards carry per-subsystem telemetry + command-verb buttons; `api.post`
-  attaches the caller's own seat as a `cell` query param to every mutating call), `globe.js` (3D
+  attaches the caller's own seat as a `cell` query param to every mutating call; `api.put/patch/del`
+  extend the same cell-query-param convention for IP-1174's routes below), `globe.js` (3D
   orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`
-  (telemetry line graphs), `style.css`, `index.html`.
+  (telemetry line graphs), `creator.js` (IP-1174 — the Vignette Creator's White-Cell UI: synchronized
+  JSON view, ground-truth 2D/3D preview, TLE/lat-long asset entry with a curated-site picker,
+  asset menu, seat-count declaration + seat/role matrix; a thin client over a *draft* session,
+  `POST /api/sessions/draft` + the `creator/*`/`force/ground`/`ground_sites` routes), `style.css`,
+  `index.html`.
 - `tools/build_coastlines.py` — regenerates the committed `static/world.json` (low-res world map)
   from `basemap-data` (offline; coarse fallback if unavailable). `tools/render_manual.py` draws it.
 - `spacesim/content/vignettes/00-training-basics.yaml` — guided tutorial vignette with a per-cell

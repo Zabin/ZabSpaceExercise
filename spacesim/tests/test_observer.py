@@ -85,6 +85,11 @@ _MUTATING_ROUTES = [
     ("post", "/api/sessions/{sid}/undo", {"json": {"n": 1}, "params": {"cell": "observer"}}),
     ("post", "/api/sessions/{sid}/inject", {"json": {"inject": "commercial_imagery_leak"}, "params": {"cell": "observer"}}),
     ("post", "/api/sessions/{sid}/force/tle", {"json": {"id": "X-1", "line1": "1 x", "line2": "2 x"}, "params": {"cell": "observer"}}),
+    # IP-1174 — Vignette Creator UI surfaces.
+    ("post", "/api/sessions/{sid}/force/ground", {"json": {"id": "GND-1", "lat_deg": 1.0, "lon_deg": 1.0}, "params": {"cell": "observer"}}),
+    ("put", "/api/sessions/{sid}/creator/state", {"json": {"assets": []}, "params": {"cell": "observer"}}),
+    ("patch", "/api/sessions/{sid}/creator/asset/ISR-EO-1", {"json": {"patch": {"owner": "red"}}, "params": {"cell": "observer"}}),
+    ("delete", "/api/sessions/{sid}/creator/asset/ISR-EO-1", {"params": {"cell": "observer"}}),
     ("post", "/api/sessions/{sid}/red_step", {"params": {"cell": "observer"}}),
     ("post", "/api/sessions/{sid}/order", {"json": {"cell": "observer", "actor": "ISR-EO-1", "action": "downlink", "params": {"via": "GS-NORTH"}}}),
     ("post", "/api/sessions/{sid}/order/validate", {"json": {"cell": "observer", "actor": "ISR-EO-1", "action": "downlink", "params": {"via": "GS-NORTH"}}}),

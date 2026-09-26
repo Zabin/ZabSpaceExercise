@@ -187,7 +187,7 @@ checked against `packages/INDEX.md` for collisions — `IP-1170`-`IP-1179` uncla
 | [IP-1171](packages/IP-1171-typed-payload-bus-parameters.md) | FS-117 §`FR-5170`/`FR-5180` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; depends on `IP-1170`) |
 | [IP-1172](packages/IP-1172-per-cell-roe-enforcement.md) | FS-117 §`FR-3420`/`NFR-2010` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3) |
 | [IP-1173](packages/IP-1173-vignette-creator-draft-session.md) | FS-117 §`FR-5110` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3) |
-| [IP-1174](packages/IP-1174-vignette-creator-ui-surfaces.md) | FS-117 §`FR-5120`-`FR-5160` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; depends on `IP-1171`/`IP-1172`/`IP-1173`) |
+| [IP-1174](packages/IP-1174-vignette-creator-ui-surfaces.md) | FS-117 §`FR-5120`-`FR-5160` | Forward design | 🔵 COMPLETE (authorized 2026-07-05; implemented 2026-09-26; awaiting `09-package-verification`) |
 
 None of these five packages is authorized for coding — per MSTR-006 §3, being fully specified (and
 having every *upstream Feature/architecture* dependency already closed) is not itself an

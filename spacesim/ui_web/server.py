@@ -193,6 +193,36 @@ class SSNCancelBody(BaseModel):
     request_id: str
 
 
+class GroundAssetRequest(BaseModel):
+    """IP-1174 (FR-5140) — lat/long asset entry, the ground-based sibling of ``TleRequest``."""
+    id: str
+    lat_deg: float
+    lon_deg: float
+    owner: str = "blue"
+    kind: str = "ground_station"
+
+    @field_validator("id")
+    @classmethod
+    def _id_charset(cls, v: str) -> str:
+        return _validate_id(v, field="GroundAssetRequest.id")
+
+
+class CreatorStateRequest(BaseModel):
+    """IP-1174 (FR-5120) — the JSON view's write: a full replacement asset list."""
+    assets: list[dict]
+
+
+class CreatorAssetPatchRequest(BaseModel):
+    """IP-1174 (FR-5150) — the asset menu's edit operation; any subset of Asset's own fields."""
+    patch: dict
+
+
+class SeatDeclarationRequest(BaseModel):
+    """IP-1174 (FR-5160) — seat-count declaration, one cell at a time."""
+    cell: str
+    count: int
+
+
 def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     api = api or InProcessSession()
     app = FastAPI(title="Space Control & Orbital Warfare Exercise Simulator")
@@ -353,6 +383,68 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def add_tle(sid: str, req: TleRequest, cell: Optional[str] = None) -> Ack:
         _require(sid); _reject_observer(cell)
         return api.add_tle(sid, req.id, req.line1, req.line2, owner=req.owner, kind=req.kind)
+
+    # -- Vignette Creator UI surfaces (IP-1174) --------------------------------
+    @app.post("/api/sessions/{sid}/force/ground")
+    def add_ground_asset(sid: str, req: GroundAssetRequest, cell: Optional[str] = None) -> Ack:
+        """FR-5140 — lat/long asset entry, the ground-based sibling of ``force/tle`` above."""
+        _require(sid); _reject_observer(cell)
+        return api.add_ground_asset(sid, req.id, req.lat_deg, req.lon_deg,
+                                    owner=req.owner, kind=req.kind)
+
+    @app.get("/api/ground_sites")
+    def ground_sites() -> list[dict]:
+        """FR-5140 — the curated site list offered before free-entry coordinates."""
+        from spacesim.content.ground_sites import load_ground_sites
+        return load_ground_sites()
+
+    @app.get("/api/sessions/{sid}/creator/state")
+    def creator_state(sid: str) -> dict:
+        """FR-5120 — the JSON view's read: every asset, exactly as the form UI would also see it."""
+        _require(sid)
+        return api.creator_state(sid)
+
+    @app.put("/api/sessions/{sid}/creator/state")
+    def creator_set_state(sid: str, req: CreatorStateRequest, cell: Optional[str] = None) -> Ack:
+        """FR-5120 — the JSON view's write: replace the whole asset list atomically."""
+        _require(sid); _reject_observer(cell)
+        return api.creator_set_state(sid, req.assets)
+
+    @app.patch("/api/sessions/{sid}/creator/asset/{asset_id}")
+    def creator_edit_asset(sid: str, asset_id: str, req: CreatorAssetPatchRequest,
+                           cell: Optional[str] = None) -> Ack:
+        """FR-5150 — the asset menu's edit/reassign operation (owner reassignment is just a
+        patch of the ``owner`` field, so no separate reassign route is needed)."""
+        _require(sid); _reject_observer(cell)
+        return api.creator_edit_asset(sid, asset_id, req.patch)
+
+    @app.delete("/api/sessions/{sid}/creator/asset/{asset_id}")
+    def creator_delete_asset(sid: str, asset_id: str, cell: Optional[str] = None) -> Ack:
+        """FR-5150 — the asset menu's delete operation."""
+        _require(sid); _reject_observer(cell)
+        return api.creator_delete_asset(sid, asset_id)
+
+    @app.get("/api/sessions/{sid}/creator/scene")
+    def creator_scene(sid: str) -> dict:
+        """FR-5130 — the 2D/3D initial-state preview, ground-truth (no CellController filtering)."""
+        _require(sid)
+        return api.creator_scene(sid)
+
+    @app.post("/api/sessions/{sid}/creator/seats")
+    def declare_seats(sid: str, req: SeatDeclarationRequest) -> dict:
+        """FR-5160 — seat-count declaration; White-Cell-only, mirroring ``roles/assign``'s own
+        cell-must-be-white check (this check already excludes an Observer-seated caller the same
+        way it excludes Blue/Red, so no separate ``_reject_observer`` call is needed — same
+        reasoning as that route's own comment)."""
+        _require(sid)
+        if req.cell != "white":
+            raise HTTPException(status_code=403, detail="only White Cell may declare seats")
+        return api.declare_seats(sid, req.cell, req.count)
+
+    @app.get("/api/sessions/{sid}/creator/seats")
+    def seats_declared(sid: str) -> dict:
+        _require(sid)
+        return api.seats_declared(sid)
 
     @app.post("/api/sessions/{sid}/red_step")
     def red_step(sid: str, cell: Optional[str] = None) -> list[OrderAck]:
