@@ -5,7 +5,7 @@
 > **Status:** ✅ Done
 > **Dependencies:** [DOM-003](../domains/DOM-003-white-cell-framework.md), [DOM-001](../domains/DOM-001-training-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md)
 > **Referenced By:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md), [IMP-106A](../implementations/IMP-106A-white-cell-dashboard.md)
-> **Produces:** the facilitation surface [FS-108](FS-108-inject-authoring.md) (candidate) would extend
+> **Produces:** the facilitation surface [FS-108](FS-108-inject-authoring.md) (candidate) would extend; remediation package [IP-1061](../implementation/packages/IP-1061-inject-and-sizing-defect-remediation.md) (`FR-4410` defects, 2026-09-26)
 > **Feature Mapping:** FS-106 (this document)
 > **Related Topics:** [FS-107](FS-107-after-action-review.md) (White-only AAR controls), [FS-109](FS-109-multiplayer-session-transport.md)
 > (the underlying session/clock transport this dashboard's admin panel triggers), [FS-110](FS-110-save-and-resume.md)

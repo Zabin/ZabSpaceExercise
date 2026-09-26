@@ -194,6 +194,33 @@ having every *upstream Feature/architecture* dependency already closed) is not i
 authorization; a separate, explicit user go-ahead is required per package before any Implementation
 Task begins.
 
+## Remediation Tranche (2026-09-26): IP-1061 — intake defects A1–A4
+
+Source: `00-intake` entries `BL-0062`–`BL-0065` (external user validation report, 26 Sep 2026),
+triaged by `00-pipeline-manager` run #53. No new Feature Specification — the defects are shipped
+behaviour diverging from already-approved baseline (`FR-4410` via FS-106/`IP-1060`; `NFR-1300` via
+ADR-0019).
+
+```
+FS-106 §FR-4410 ─┬─ A1  time inject at at_sim_s 0 never fires (+ rewind no-double-fire)  ─┐
+                 ├─ A2  inject_library.yaml comment names a non-existent route            ├─► IP-1061
+                 └─ A3  duplicate, divergent space_weather branch in _h_inject            │
+NFR-1300 / ADR-0019 ── A4  hard 24-sat / 3-per-group cap in build_world()                 ─┘
+```
+
+**No-split rationale.** Four defects, one package: each is a few lines, all four are
+regression-testable in the existing `test_inject_library.py` / `test_content.py`, and they touch
+only `session/manager.py`, `content/vignette.py`, and one YAML comment — no seam crossing, no
+engine change, one coherent Definition of Done ("shipped behaviour matches the approved
+baseline"). Splitting A4 (content) from A1–A3 (session) would double the verification cost for no
+isolation benefit. A5 (`BL-0066`, directed-energy path) is **excluded** — the user chose a distinct
+DE path, which is new specified behaviour and enters at `06-feature-specification`, not a
+remediation. A2 is a comment-only fix per the user's 2026-09-26 decision (no alias route).
+
+| Package | Status | Authorization |
+|---|---|---|
+| [IP-1061](packages/IP-1061-inject-and-sizing-defect-remediation.md) | 🟡 READY | Authorized 2026-09-26 (MSTR-006 §3) |
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
