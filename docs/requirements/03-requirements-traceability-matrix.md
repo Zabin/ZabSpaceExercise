@@ -13,7 +13,7 @@ it is the `docs/requirements/`-side deliverable the project owner requested dire
 Inputs read in full to build this matrix: the research encyclopedia index
 ([`docs/research/encyclopedia/`](../research/encyclopedia/INDEX.md)), the GDS architecture ladder
 (`docs/architecture/00`–`05`), the ADR index
-([`docs/architecture/adr/INDEX.md`](../architecture/adr/INDEX.md), ADR-0001–ADR-0033, 32
+([`docs/architecture/adr/INDEX.md`](../architecture/adr/INDEX.md), ADR-0001–ADR-0035, 34
 `Accepted` and 1 `Superseded` — `ADR-0029` by `ADR-0033`), the Interface Control Document
 ([`docs/design/05-interface-control-document.md`](../design/05-interface-control-document.md)),
 the [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md), and both
@@ -144,6 +144,8 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-4210 | Seat-to-role assignment | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | `tests/test_session_setup.py` | `IP-1151` *(closed 2026-07-04 via VR-1151)* |
 | FR-4310 | Pause / resume clock control | UNASSIGNED | ADR-0016 | C4, C6 | INT-0002 | UNASSIGNED | `spacesim/tests/test_session.py` *(VR-1060)* | `IP-1060` *(closed 2026-07-04 via VR-1060)* |
 | FR-4410 | Inject authoring / firing | UNASSIGNED | ADR-0005 | C4, C6, C1 | INT-0002, INT-0016 | UNASSIGNED | `spacesim/tests/test_inject_library.py` (incl. `test_time_inject_at_zero_fires_at_start`, `test_rewind_does_not_refire_fired_inject`, `test_rewind_to_start_before_first_advance_keeps_zero_inject`, `test_space_weather_invalid_severity_coerced`, `test_space_weather_clear_alias_and_message` — `IP-1061`), `spacesim/tests/test_session.py` *(VR-1060)* | `IP-1060` *(closed 2026-07-04 via VR-1060)*, `IP-1061` (2026-09-26 — `BL-0062`–`BL-0064` remediation) |
+| FR-4420 *(new 2026-09-26, `BL-0070`/B4)* | Condition-triggered injects, evaluated deterministically | UNASSIGNED | ADR-0002, ADR-0005, ADR-0006 | C2, C1 | INT-0016 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-4430 *(new 2026-09-26, `BL-0070`/B4)* | New inject effect types (anomaly, sensor outage, custody loss, scripted manoeuvre) | UNASSIGNED | ADR-0004, ADR-0005 | C2, C1 | INT-0016 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-4510 | Observer view | UNASSIGNED | (none directly) | C4, C6, C12 | INT-0002, INT-0001 | UNASSIGNED | `tests/test_classification_banner.py`, `tests/test_web.py::test_load_response_carries_resolved_classification`, `tests/test_web.py::test_session_discovery_surfaces_classification_for_joining_tabs` | `IP-1120` *(closed 2026-07-04 via VR-1120 — VERIFIED; Title column defect above re-confirmed present, tracked as BL-0010)* |
 | FR-4610 | (manual adjudication / custody-adjacent leaf, ADR-0004) | UNASSIGNED | ADR-0004 | C4, C6, C2, C1 | INT-0002, INT-0007 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0, independently confirmed 2026-07-04 via VR-1060)* |
 | FR-4710 | No automated scoring / manual adjudication | UNASSIGNED | ADR-0017, ADR-0029 | C4, C6 | (none — absence of an interface) | UNASSIGNED | UNASSIGNED | (inspection — no outbound interface returns a score field) *(closed 2026-07 via IP-1060 v2.0, independently reconfirmed 2026-07-04 via VR-1060 — grepped `session/manager.py`/`ui_web/server.py` for any score/win-loss field, zero hits)* |
@@ -157,7 +159,11 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-5170 | Typed per-payload-type parameter sub-schemas | R109, R110, R129, R134, R137 | (none directly) | C1, C5 | (none — Domain Model/content-schema extension) | FS-117 | `spacesim/tests/test_isr.py` (weather/mw `BEAM_MODES` precondition, `IP-1170`, `VERIFIED`), `spacesim/tests/test_typed_payload_params.py` (all 12 tests — the 8 typed sub-models + auto-population + all-19-vignettes regression, `IP-1171`, `VERIFIED`) | IP-1170 *(`VERIFIED` — closes the weather/mw engine-precondition slice, `BL-0053`)*, IP-1171 *(`VERIFIED` 2026-07-12, `VR-1171` — closes the typed-sub-schema/UI-facing scope)* |
 | FR-5180 | Typed bus parameter sub-schemas (power/propulsion) | R111, R112 | (none directly) | C1, C5 | (none directly) | FS-117 | `spacesim/tests/test_typed_payload_params.py::test_bus_power_and_propulsion_overrides_reach_live_fields_not_power_w` *(IP-1171, `VERIFIED`; confirms `Asset.model_validate()` already routes overrides to the live fields, no loader change needed)* | IP-1171 *(`VERIFIED` 2026-07-12, `VR-1171`)* |
 | FR-5210 | TLE force-add import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 | UNASSIGNED | UNASSIGNED | `content/` (TLE import) |
+| FR-5220 *(new 2026-09-26, `BL-0067`/B1)* | Bulk TLE and CCSDS OMM multi-object import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 *(stretched shape — see `reviews/requirements-update-must-tier-batch.md` Finding 5)* | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-5310 | Vignette loading | UNASSIGNED | ADR-0007 | C2, C5 | INT-0011 | UNASSIGNED | UNASSIGNED | `content/vignette.py` |
+| FR-5410 *(new 2026-09-26, `BL-0082`/B16)* | Load vignettes from configured external directories | UNASSIGNED | ADR-0007, ADR-0018 | C2, C5 | INT-0011 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-5420 *(new 2026-09-26, `BL-0082`/B16)* | `save_vignette` writes only to a configured user directory | UNASSIGNED | ADR-0007, ADR-0022 | C2, C5 | INT-0011, INT-0012 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-5510 *(new 2026-09-26, `BL-0071`/B5)* | Save a running session's current state as a new starting vignette | UNASSIGNED | ADR-0022, ADR-0007 | C2, C5, C11 | INT-0011, INT-0012 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-6110 | SessionAPI seam (base) | UNASSIGNED | ADR-0002, ADR-0003 | C4, C2 | INT-0006 | UNASSIGNED | UNASSIGNED | `session/api.py` |
 | FR-6210 | Fog-of-war filtering | UNASSIGNED | ADR-0004 | C4, C2, C1 | INT-0006, INT-0007 | UNASSIGNED | `spacesim/tests/test_scene.py` *(VR-1030 — `IP-1030`'s own `scene.py` custody-track filter contribution to this boundary; the boundary mechanism itself is `session/cells.py`'s, not this package's)* | `session/cells.py` |
 | FR-6220 | Observer fog-of-war view | UNASSIGNED | ADR-0004, ADR-0015 | C4, C12, C9 | INT-0001, INT-0005 | UNASSIGNED | UNASSIGNED | `session/cells.py` |
@@ -171,6 +177,8 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-7220 | Save-file content/session ownership split *(new leaf, CHG-007)* | UNASSIGNED | ADR-0022 | C2, C5, C11 | INT-0011, INT-0012 | UNASSIGNED | `spacesim/tests/test_session_features.py::test_save_resume_reproduces_state_and_queue` *(VR-1100)* | `session/manager.py` *(closed 2026-07 via IP-1100, independently confirmed 2026-07-04 via VR-1100)* |
 | FR-7310 | AAR replay/scrub | UNASSIGNED | ADR-0002 | C2, C1 | INT-0014 | UNASSIGNED | `spacesim/tests/test_aar.py`, `spacesim/tests/test_determinism.py` *(VR-1070)* | `IP-1070` *(closed 2026-07-04 via VR-1070)* |
 | FR-7320 | AAR branch compare | UNASSIGNED | ADR-0002 | C2, C1 | INT-0014 | UNASSIGNED | `spacesim/tests/test_aar.py` *(VR-1070)* | `IP-1070` *(closed 2026-07-04 via VR-1070)* |
+| FR-7410 *(new 2026-09-26, `BL-0069`/B3)* | Truth ephemeris export (ECI/RIC, CSV/CCSDS OEM) | R101 | ADR-0004, ADR-0015 | C2, C1 | INT-0014 *(stretched shape — see `reviews/requirements-update-must-tier-batch.md` Finding 6)* | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-7420 *(new 2026-09-26, `BL-0069`/B3 — blocked on `BL-0068`/B2, see `reviews/requirements-update-must-tier-batch.md` Finding 4)* | Cell-observed ephemeris export (ECI/RIC, CSV/CCSDS OEM) | UNASSIGNED | ADR-0004, ADR-0013 | C2, C1, C3 | INT-0007 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-8110 | Operator console (web UI over the API) | UNASSIGNED | ADR-0008 | C4, C12 | INT-0001 | UNASSIGNED | UNASSIGNED | `ui_web/server.py`, `ui_web/static/` |
 | FR-9110 | AI-Red substitution for unseated Red | UNASSIGNED | ADR-0021, ADR-0024 | C2, C1, C8 | INT-0008, INT-0015 | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" | `spacesim/tests/test_vignettes.py::test_doctrine_profiles_drive_different_red_behavior` *(VR-1110)* | `IP-1110` *(closed 2026-07-04 via VR-1110)* |
 | FR-10110 *(new 2026-07, promoted from CR-19)* | Automated non-aggregating competency rubric-tier computation | R306, R310 | ADR-0017, ADR-0032 | C2, C1 | INT-0002 | UNASSIGNED | `tests/test_assessment.py`, `tests/test_orders.py` | `IP-2010` *(closed 2026-07-04 via VR-2010 — VERIFIED; two Medium findings filed against FS-201's own Acceptance Criteria scope, not against this closure, see VR-2010)* |
@@ -290,6 +298,7 @@ where the named subsystem maps onto one), not separately inferred.
 | NFR-3400 *(new 2026-07-04, training-corpus elevation)* | Training-artifact accuracy (as-built only) | UNASSIGNED | (none identified) | (none — documentation) | `docs/training/`, `spacesim/content/vignettes/*.yaml` | UNASSIGNED | `spacesim/tests/test_vignette_tutorials.py` (partial — playbook slice) |
 | NFR-3500 *(new 2026-07-04)* | Modularity/retrievability of training modules | UNASSIGNED | (none identified) | (none — documentation) | `docs/training/` | UNASSIGNED | UNASSIGNED |
 | NFR-3600 *(new 2026-07-04)* | Learner-appropriate presentation | R601–R608 (8/8 authored — see each topic's Feature Mapping for its specific manual/vignette target) | (none identified) | (none — documentation) | `docs/training/`, vignette `intro_brief`/`tutorial`/`coaching` blocks | UNASSIGNED | UNASSIGNED |
+| NFR-3700 *(new 2026-09-26, `BL-0082`/B16)* | Path-traversal safety generalized to external content roots | UNASSIGNED | ADR-0007, ADR-0018 | C5 | `content/vignette.py` (existing guard, generalized), `content/vignette_export.py` | UNASSIGNED | UNASSIGNED |
 
 ### Candidate NFRs (CNFR-01–CNFR-07) — `CANDIDATE — NOT BASELINED`
 
@@ -325,27 +334,27 @@ and ADR-0031 (both new 2026-07) are included on the same basis.
 
 | ADR | Citing Requirement(s) |
 |---|---|
-| ADR-0002 | FR-1120, FR-7110, FR-7310, FR-7320, NFR-1500, NFR-1700, NFR-1900, NFR-2400, NFR-2500, NFR-2600, NFR-2800 |
+| ADR-0002 | FR-1120, FR-7110, FR-7310, FR-7320, FR-4420, NFR-1500, NFR-1700, NFR-1900, NFR-2400, NFR-2500, NFR-2600, NFR-2800 |
 | ADR-0003 | FR-6110 |
-| ADR-0004 | FR-2310, FR-3510, FR-3520, FR-4610, FR-5130, FR-6210, FR-6220, FR-6510, FR-6610 |
-| ADR-0005 | FR-3110, FR-3120, FR-3410, FR-4410 |
-| ADR-0006 | FR-1130 |
-| ADR-0007 | FR-5310, NFR-2000, NFR-1900 |
+| ADR-0004 | FR-2310, FR-3510, FR-3520, FR-4610, FR-5130, FR-6210, FR-6220, FR-6510, FR-6610, FR-4430, FR-7410, FR-7420 |
+| ADR-0005 | FR-3110, FR-3120, FR-3410, FR-4410, FR-4420, FR-4430 |
+| ADR-0006 | FR-1130, FR-4420 |
+| ADR-0007 | FR-5310, NFR-2000, NFR-1900, FR-5410, FR-5420, FR-5510, NFR-3700 |
 | ADR-0008 | FR-8110 |
 | ADR-0009 | FR-1210, NFR-1100, NFR-2100 |
 | ADR-0010 | FR-3210, FR-3220 |
 | ADR-0011 | FR-1220 |
 | ADR-0012 | FR-1410, FR-1420 |
-| ADR-0013 | FR-1510, FR-1520, FR-3410 |
+| ADR-0013 | FR-1510, FR-1520, FR-3410, FR-7420 |
 | ADR-0014 | FR-6310, FR-6320, FR-6410, NFR-1100, NFR-1400 |
-| ADR-0015 | FR-6220, NFR-2300 |
+| ADR-0015 | FR-6220, NFR-2300, FR-7410 |
 | ADR-0016 | FR-1110, FR-4310 |
 | ADR-0017 | FR-4710, NFR-2600, FR-10110 *(added 2026-07: CR-19 promoted to FR-10110 once ADR-0032 resolved the conflict)* |
-| ADR-0018 | FR-5210, NFR-3200, NFR-2200 |
+| ADR-0018 | FR-5210, NFR-3200, NFR-2200, FR-5220, FR-5410, NFR-3700 |
 | ADR-0019 | NFR-1200, NFR-1300 |
 | ADR-0020 | NFR-1200, NFR-2900 |
 | ADR-0021 | FR-9110 |
-| ADR-0022 | FR-7210, FR-7220 |
+| ADR-0022 | FR-7210, FR-7220, FR-5420, FR-5510 |
 | ADR-0024 | FR-9110, CR-01, CNFR-06 |
 | ADR-0026 | FR-6310, FR-6320, NFR-1400 |
 | ADR-0027 | FR-5110 |
@@ -358,6 +367,8 @@ and ADR-0031 (both new 2026-07) are included on the same basis.
 | ADR-0023 | (no citing FR/NFR) |
 | ADR-0025 | (no citing FR/NFR) |
 | ADR-0028 | (no citing FR/NFR) |
+| ADR-0034 *(new 2026-07, DE Open Questions — no numbered FR cites it yet, pending the not-yet-authorized DE Implementation Package)* | (no citing FR/NFR) |
+| ADR-0035 *(new 2026-07, DE Open Questions — same status as ADR-0034)* | (no citing FR/NFR) |
 
 ## Reverse index — Architecture Component → Requirement
 
@@ -425,7 +436,7 @@ because `FUTURE-WORK.md` cites the requirement back. Seven of the eight entries 
 | CR-16 | `FUTURE-WORK.md` §13 (R17 — ground-segment cyber deepening) *(new 2026-07)* |
 | CR-17 | `FUTURE-WORK.md` §2 (unwired `prop.collision_avoid`), §13 (R16 — persistent debris) *(new 2026-07)* |
 | CNFR-07 | `FUTURE-WORK.md` §13 (R19 — distributed-use security growth path + GAP-11 study) *(new 2026-07)* |
-| All other FR/NFR/CR/CNFR (including CR-18) | `UNASSIGNED` |
+| All other FR/NFR/CR/CNFR (including CR-18, and the 2026-09-26 batch FR-4420, FR-4430, FR-5220, FR-5410, FR-5420, FR-5510, FR-7410, FR-7420, NFR-3700) | `UNASSIGNED` |
 
 ## Reverse index — Requirement → Test
 
@@ -485,7 +496,7 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `spacesim/tests/` | NFR-2800 |
 | Build/dependency manifest, `spacesim/` (whole tree) | NFR-2900 |
 | All subsystems (no single file) | NFR-2200 |
-| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
+| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4420, FR-4430, FR-5220, FR-5410, FR-5420, FR-5510, FR-7410, FR-7420, NFR-3700 *(2026-09-26 Must-tier batch — no implementing file exists yet for any of these nine leaves)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
 
 *(FR-4610/FR-4710/FR-4720 closed 2026-07 via `IP-1060` v2.0; FR-7220 closed 2026-07 via `IP-1100` —
 both split from `IP-1060` v1.0 per Finding F-03 — see the master matrix rows above. **FR-4110
@@ -565,6 +576,33 @@ Summary:
   from the still-Candidate list there.
 - Updated the "Method and discipline" section's ADR range (`ADR-0031` → `ADR-0033`) and its
   `Accepted`/`Superseded` split.
+
+## Must-tier external-validation-report intake batch (2026-09-26)
+
+Following the Must-tier `04-requirements-engineering` intake batch (`docs/pipeline/backlog.md`
+`BL-0082`/`BL-0070`/`BL-0071`/`BL-0067`/`BL-0069`, items B16/B4/B5/B1/B3 — see
+[`reviews/requirements-update-must-tier-batch.md`](../reviews/requirements-update-must-tier-batch.md)
+for the full derivation and review), this matrix gained:
+
+- Nine new master-matrix rows: `FR-4420`, `FR-4430`, `FR-5220`, `FR-5410`, `FR-5420`, `FR-5510`,
+  `FR-7410`, `FR-7420`, `NFR-3700` — all `UNASSIGNED` on every forward-trace column, honestly (none
+  has shipped code, an assigned architecture component beyond the C1–C12 list, or a test yet).
+- `FR-5220`'s and `FR-7410`/`FR-7420`'s Interface cells cite the closest existing ICD interface
+  (`INT-0013`, `INT-0014` respectively) with an inline note that the review report's Findings 5/6
+  flag as an interface-model stretch, not a clean fit — an architecture-owner decision, not
+  resolved in this matrix.
+- `FR-7420`'s row is annotated as blocked on `BL-0068` (item B2, entering the pipeline at
+  `03-architecture-design-synthesis`) per the review report's Finding 4 — baselined, not yet
+  independently verifiable.
+- Reverse-index updates: `ADR-0002`, `ADR-0004`, `ADR-0005`, `ADR-0006`, `ADR-0007`, `ADR-0013`,
+  `ADR-0015`, `ADR-0018`, `ADR-0022` each gained the new leaves citing them back; `ADR-0034`/
+  `ADR-0035` (authored earlier in the same increment for the DE Open Questions, `FS-105` v1.1) were
+  added to the ADR reverse index with `(no citing FR/NFR)`, since no requirement in this baseline
+  yet implements the not-authorized DE Implementation Package.
+- The Requirement → Future Feature / Test / Implementation Package reverse indexes' `UNASSIGNED`
+  catch-all rows were extended to list all nine new leaves explicitly, rather than leaving them
+  silently absent.
+- The ADR range note below was updated to `ADR-0001` through `ADR-0035`.
 
 ## Related
 

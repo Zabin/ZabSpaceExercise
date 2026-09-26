@@ -10,7 +10,12 @@
 > gained two new baselined FR leaves — `FR-10110`, `FR-10210` — this document gained none; the ADR
 > range below was updated); further amended (`FS-117` Vignette Creator requirements-coverage pass,
 > 2026-07-05; **one numbered NFR leaf added** — `NFR-2010` — see
-> [`reviews/requirements-update-fs117.md`](../reviews/requirements-update-fs117.md)).
+> [`reviews/requirements-update-fs117.md`](../reviews/requirements-update-fs117.md)); further
+> amended (Must-tier external-validation-report intake batch, 2026-09-26; **one numbered NFR leaf
+> added** — `NFR-3700`, generalizing `NFR-2200`'s path-traversal posture to external vignette
+> directories and the user-save directory — closing `docs/pipeline/backlog.md` `BL-0082` item B16's
+> security-generalization concern; see `01-functional-requirements.md`'s companion note and
+> `03-requirements-review.md`).
 > **Authoritative inputs:**
 > [`build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §9
 > (NFR-1…NFR-10 — the legacy, pre-GDS NFR tag scheme),
@@ -325,6 +330,31 @@ review passes actually run against it).
   > boundary is a likely RMF finding). Both source documents (build-spec/04 §9 NFR-5 and ADR-0015)
   > are internally consistent on their own terms for v1; this document flags the forward tension
   > for whoever scopes a v2 accreditation effort rather than resolving it unilaterally.
+
+- **NFR-3700 — Path-traversal safety generalized to external content roots**
+  - **Description:** The path-traversal guard `load_vignette` applies to the built-in
+    `VIGNETTE_DIR` (rejecting, without touching the filesystem, any identifier containing a path
+    separator, a parent-directory traversal token, an absolute-path marker, or a disallowed
+    character) shall apply identically to every configured external vignette directory (`FR-5410`)
+    and to the configured user-save directory (`FR-5420`) — no content root introduced by either
+    requirement may be reachable by a traversal identifier that the existing `VIGNETTE_DIR` guard
+    would already reject.
+  - **Rationale:** `NFR-2200`'s "input validation on all loaded files" already commits to this
+    posture for the single existing content root; `BL-0082` (item B16) explicitly asks for the same
+    guard to generalize as external/user directories are added, and a directory-specific guard that
+    is not re-verified per new root is exactly the kind of defect this document's Security section
+    exists to rule out.
+  - **Metric or verification method:** Test — a traversal identifier rejected against
+    `VIGNETTE_DIR` is also rejected against every configured external directory and the configured
+    user-save directory, with no filesystem access on rejection.
+  - **Priority:** Must
+  - **Affected subsystems:** `content/vignette.py` (`load_vignette`'s existing guard,
+    `spacesim/content/vignette.py:140-153`), `content/vignette_export.py` (`save_vignette`)
+  - **Dependencies:** NFR-2200
+  - **Source documents:** `docs/pipeline/backlog.md` `BL-0082` (external validation report, 26 Sep
+    2026, item B16); `requirements/01-functional-requirements.md` `FR-5410`, `FR-5420`;
+    `spacesim/content/vignette.py:140-153` (existing guard, the pattern this NFR generalizes).
+  - **Related ADRs:** ADR-0007, ADR-0018
 
 ## 8. Data integrity
 

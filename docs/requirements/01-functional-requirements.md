@@ -16,8 +16,14 @@
 > `docs/architecture/ADS-5100A-vignette-creator-session-and-ui.md`/`ADS-5100B-typed-parameters-and-per-cell-roe.md`,
 > had no owning requirement anywhere in this baseline; see
 > [`reviews/requirements-update-fs117.md`](../reviews/requirements-update-fs117.md) for the full
-> derivation and review).
-> **ADR range now ADR-0001 through ADR-0033** (32 `Accepted`, 1 `Superseded` — `ADR-0029` by
+> derivation and review); further amended (Must-tier external-validation-report intake batch,
+> 2026-09-26; **nine numbered FR leaves added** — `FR-4420`, `FR-4430` under `FR-4400`'s existing
+> parent; `FR-5220` under `FR-5200`'s existing parent; `FR-5410`, `FR-5420` under new parent
+> `FR-5400`; `FR-5510` under new parent `FR-5500`; `FR-7410`, `FR-7420` under new parent `FR-7400`
+> — closing `docs/pipeline/backlog.md` `BL-0082`/`BL-0070`/`BL-0071`/`BL-0067`/`BL-0069` (items
+> B16/B4/B5/B1/B3). `FR-7420` is baselined but not independently verifiable until `BL-0068` (item
+> B2)'s custody domain-model change is specified — see `03-requirements-review.md`.)
+> **ADR range now ADR-0001 through ADR-0035** (34 `Accepted`, 1 `Superseded` — `ADR-0029` by
 > `ADR-0033`).
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
@@ -965,6 +971,85 @@ review passes actually run against it).
 - **Related Interfaces:** INT-0002
 - **Related Requirements:** FR-4710
 
+#### FR-4420 — Condition-triggered injects, evaluated deterministically
+
+- **ID:** FR-4420
+- **Title:** Fire an inject when a deterministic engine-evaluated condition becomes true
+- **Description:** The system shall allow White Cell to author an inject whose trigger is a
+  condition over engine state — range between two named assets crossing a threshold, a named
+  cell's custody confidence on a track crossing a threshold, or an objective reaching a declared
+  state — evaluated on each scheduled engine tick against the deterministic `WorldState`, never
+  against wall-clock time or an out-of-band poll.
+- **Rationale:** `FR-4410` covers only immediate and simulated-time-scheduled firing; the project
+  owner's explicit request (external validation report, 26 Sep 2026, item B4) asks for
+  condition-based triggers as well. Evaluating the condition on scheduled engine ticks, rather than
+  wall-clock or an external process, is required to preserve the deterministic-core invariant
+  (`(initial_state, ordered eventlog, seed) → byte-identical state`, `CLAUDE.md` invariant 1;
+  `ADR-0002`) — a condition trigger is itself a source of nondeterminism if it is evaluated
+  anywhere the sub-stepped `Scheduler` doesn't already visit (`ADR-0006`).
+- **Priority:** Must
+- **Inputs:** A condition-triggered Inject definition (range/custody/objective-state condition +
+  effect payload).
+- **Outputs:** The inject's effects, applied at the first scheduled engine tick where the condition
+  evaluates true; an `EventLog` entry recording the firing tick and the condition's evaluated
+  value.
+- **Preconditions:** A non-repeatable condition-triggered inject must not have already fired.
+- **Postconditions:** The inject fires at the same simulated tick on every replay of the same
+  `(initial_state, ordered eventlog, seed)`, regardless of wall-clock elapsed time during the
+  original run.
+- **Acceptance Criteria:** Given a condition-triggered inject (e.g. range < X between two named
+  assets) and a replayed event log reaching the same `WorldState` history, the inject fires at the
+  identical simulated tick on both the original run and the replay.
+- **Verification Method:** Test
+- **Dependencies:** FR-4410, FR-1120
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0070` (external validation report, 26 Sep
+  2026, item B4); `CLAUDE.md` invariant 1 (deterministic core); `ADR-0002`; `ADR-0006`;
+  `docs/FUTURE-WORK.md` §13 R18.
+- **Related ADRs:** ADR-0002, ADR-0005, ADR-0006
+- **Related Interfaces:** INT-0016
+- **Related Requirements:** FR-4410, FR-1120, FR-4430
+
+#### FR-4430 — New inject effect types (anomaly, sensor outage, forced custody loss, scripted manoeuvre)
+
+- **ID:** FR-4430
+- **Title:** Extend the inject effect vocabulary with anomaly, sensor-outage, custody-loss, and
+  scripted-manoeuvre effects
+- **Description:** The system shall support four additional inject effect types beyond the
+  existing set (`message`/`reveal_asset`/`political_consequence`/`patch_cyber_vuln`/`gs_outage`/
+  `space_weather`/`conjunction_warning`/`spawn_debris`): (a) a spacecraft anomaly effect with a
+  controller-set true cause (bus or telemetry subsystem), (b) a sensor-outage effect applicable to
+  any sensor (not only ground stations, which `gs_outage` already covers), (c) a forced
+  custody-loss effect that degrades or drops a named cell's track on a target, and (d) a scripted
+  manoeuvre effect that moves any named asset via a White-Cell-authored manoeuvre, independent of
+  that asset's owning cell issuing a plan-first order.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B4); the existing inject effect vocabulary has no equivalent for any of the four (baseline
+  effects enumerated from the current `Inject`/effect schema, `docs/pipeline/backlog.md` `BL-0070`).
+  A White-Cell-authored inject is the documented, accepted bypass of plan-first commanding
+  (`ADR-0005`), so a scripted manoeuvre fired this way does not violate `ADR-0005`'s plan-first
+  invariant for operator-issued orders.
+- **Priority:** Must
+- **Inputs:** An inject definition using one of the four new effect types, with its
+  type-appropriate payload (anomaly cause; target sensor id; target cell + track id + degrade/drop
+  mode; target asset + manoeuvre parameters).
+- **Outputs:** The corresponding applied effect on the targeted Asset/Sensor/Track/`BusState`; an
+  `EventLog` entry.
+- **Preconditions:** The targeted Asset/Sensor/Track exists in the current `WorldState`.
+- **Postconditions:** An anomaly effect's true cause is recorded in the event log exactly as the
+  controller set it, never re-derived; a forced custody-loss effect changes only the named cell's
+  own `Track`/`TrackCatalog` entry, never another cell's.
+- **Acceptance Criteria:** Given each of the four new effect types fired via an inject, the
+  targeted Asset/Sensor/Track/`BusState` shows the expected change, and no other cell's fog-of-war-
+  filtered view is affected by a forced custody-loss effect targeted at a different cell.
+- **Verification Method:** Test
+- **Dependencies:** FR-4410, FR-6100
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0070` (external validation report, 26 Sep
+  2026, item B4); `ADR-0005`; `ADR-0004` (fog-of-war boundary, for the custody-loss effect's
+  per-cell scoping).
+- **Related ADRs:** ADR-0004, ADR-0005
+- **Related Interfaces:** INT-0016
+- **Related Requirements:** FR-4410, FR-4420, FR-1510
+
 ---
 
 ## FR-5000 — Scenario / Vignette Authoring
@@ -1236,6 +1321,43 @@ review passes actually run against it).
 - **Related Interfaces:** INT-0013
 - **Related Requirements:** FR-1210, FR-5310
 
+#### FR-5220 — Bulk TLE and CCSDS OMM multi-object import
+
+- **ID:** FR-5220
+- **Title:** Import multiple objects from one TLE or CCSDS OMM file in a single operation
+- **Description:** The system shall accept a file containing multiple objects — either a
+  multi-object Two-Line Element file or a CCSDS Orbit Mean-Elements Message (OMM) file — and
+  import all objects in that file in one operation, with a per-object side (cell) assignment and
+  asset-template assignment specified alongside the import, distinct from the existing
+  one-TLE-per-call path.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B1). The baseline `POST /api/sessions/{sid}/force/tle` route and `FR-5140`'s manual paste both
+  accept exactly one TLE per call, with no OMM support and no per-object side/template mapping for
+  a batch — a distinct capability from either existing path, not a variant of them.
+- **Priority:** Must
+- **Inputs:** A multi-object TLE file or a CCSDS OMM file; a per-object side and asset-template
+  assignment.
+- **Outputs:** One populated `OrbitState`-backed `Asset` per object in the file, force-added to its
+  assigned side using its assigned asset template.
+- **Preconditions:** None for the manual/offline path — consistent with `FR-5210`'s existing
+  offline-first posture (`ADR-0018`); no network access is required for this requirement's file-
+  based import.
+- **Postconditions:** A file containing one object with malformed elements does not abort the
+  import of the file's other, well-formed objects; each object's failure/success is reported
+  individually.
+- **Acceptance Criteria:** Given a multi-object TLE file with nine valid objects and one malformed
+  object, the import produces nine force-added Assets with the specified side/template
+  assignments, and reports the tenth object's failure without aborting the other nine. Given a
+  CCSDS OMM file with multiple objects, the same holds.
+- **Verification Method:** Test
+- **Dependencies:** FR-1210, FR-5140
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0067` (external validation report, 26 Sep
+  2026, item B1); `spacesim/ui_web/server.py` (`POST /api/sessions/{sid}/force/tle`, current
+  one-object-per-call route); `ADR-0018` (offline-first runtime).
+- **Related ADRs:** ADR-0018
+- **Related Interfaces:** INT-0013
+- **Related Requirements:** FR-5140, FR-5210
+
 ### FR-5300 — Vignette validation
 
 #### FR-5310 — Load-time vignette validation with precise errors
@@ -1262,6 +1384,123 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0007
 - **Related Interfaces:** INT-0011
 - **Related Requirements:** FR-4110, FR-5210
+
+### FR-5400 — External vignette directories
+
+#### FR-5410 — Load vignettes from configured external directories
+
+- **ID:** FR-5410
+- **Title:** Load vignettes from one or more configured external directories in addition to the
+  built-in library
+- **Description:** The system shall load vignettes from zero or more additional directories named
+  in `spacesim.config.yaml` (or an environment variable), alongside the built-in `VIGNETTE_DIR`
+  library, and shall present vignettes from external directories as a separately labeled group
+  distinct from the built-in library in any vignette-selection interface.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B16); baseline `spacesim/content/vignette.py` loads only from the single, hard-coded
+  `VIGNETTE_DIR` (`spacesim/content/vignette.py:22`), with no external-content-root capability, so
+  a user cannot keep authored scenarios outside the source tree.
+- **Priority:** Should
+- **Inputs:** Zero or more configured external directory paths; the built-in `VIGNETTE_DIR`.
+- **Outputs:** A combined vignette catalog, with each entry's origin (built-in vs. a named
+  external directory) preserved and surfaced.
+- **Preconditions:** A configured external directory, if any, exists and is readable.
+- **Postconditions:** A vignette id that collides between the built-in library and an external
+  directory is resolved deterministically and disclosed, never silently shadowing one with the
+  other.
+- **Acceptance Criteria:** Given a configured external directory containing a valid vignette file,
+  that vignette appears in the selection interface labeled as external, distinct from the
+  built-in-library group; given no configured external directory, behavior is unchanged from the
+  baseline.
+- **Verification Method:** Test
+- **Dependencies:** FR-5310
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0082` (external validation report, 26 Sep
+  2026, item B16); `spacesim/content/vignette.py:22` (`VIGNETTE_DIR`); `spacesim/config.py`
+  (existing `spacesim.config.yaml`/`SPACESIM_CONFIG` convention this requirement's configuration
+  extends).
+- **Related ADRs:** ADR-0007, ADR-0018
+- **Related Interfaces:** INT-0011
+- **Related Requirements:** FR-5310, FR-5420
+
+#### FR-5420 — `save_vignette` writes only to a configured user directory, with no path traversal
+
+- **ID:** FR-5420
+- **Title:** Restrict `save_vignette` to a configured user directory and reject path traversal
+- **Description:** The system shall write a vignette produced by `save_vignette` (or an equivalent
+  save-as-scenario/draft-save operation) only to a configured user directory — never to the
+  built-in `VIGNETTE_DIR` — and shall reject, without touching the filesystem, any vignette
+  identifier containing a path separator, a parent-directory traversal token, an absolute-path
+  marker, or a character outside the existing allowed charset, generalizing the same guard
+  `load_vignette` already applies.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B16); baseline `save_vignette` writes into `VIGNETTE_DIR` itself
+  (`spacesim/content/vignette_export.py`, "this is now a write path to `VIGNETTE_DIR`, at least as
+  sensitive as the read path" per that module's own comment), which is the built-in library, not a
+  user-owned location — and the existing traversal guard at
+  `spacesim/content/vignette.py:140-153` is specific to the load path and must be generalized to
+  cover this write path too.
+- **Priority:** Should
+- **Inputs:** A save-as-scenario/draft-save request with a user-supplied vignette identifier.
+- **Outputs:** A vignette file written to the configured user directory (never `VIGNETTE_DIR`); or
+  a rejection with no filesystem write, for a disallowed identifier.
+- **Preconditions:** A user directory is configured (`FR-5410`'s same configuration mechanism).
+- **Postconditions:** No save-as-scenario/draft-save write ever lands inside `VIGNETTE_DIR`; a
+  rejected identifier never reaches a filesystem call.
+- **Acceptance Criteria:** Given a vignette identifier containing `../` or an absolute path, the
+  save request is rejected before any filesystem access occurs; given a valid identifier, the file
+  is written to the configured user directory, not `VIGNETTE_DIR`.
+- **Verification Method:** Test
+- **Dependencies:** FR-5410
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0082` (external validation report, 26 Sep
+  2026, item B16); `spacesim/content/vignette_export.py` (`save_vignette`, current
+  `VIGNETTE_DIR`-writing behavior); `spacesim/content/vignette.py:140-153` (existing traversal
+  guard, generalized by this requirement); FS-117 (Vignette Creator draft save, `IP-1173`).
+- **Related ADRs:** ADR-0007, ADR-0022
+- **Related Interfaces:** INT-0011, INT-0012
+- **Related Requirements:** FR-5410, FR-5510
+
+### FR-5500 — Save-as-scenario (mid-exercise state → new starting vignette)
+
+#### FR-5510 — Save a running session's current state as a new starting vignette
+
+- **ID:** FR-5510
+- **Title:** Save a running session's current state as a new vignette starting at that moment
+- **Description:** The system shall allow White Cell to save a running session's current state as
+  a new vignette whose declared start epoch is the moment of save (not the original vignette's
+  start epoch), carrying forward each cell's current tracks, each side's remaining resources, each
+  asset's current health/bus state, and the current space-weather state; the written file shall
+  record the simulator version (source-control commit or package version) that produced it.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B5); this is distinct from both existing save-adjacent capabilities: `FR-7210`/`FR-7220` (session
+  save/resume) persist a session's own event-log/state history for resuming *that* session, not a
+  new vignette's starting content; the Vignette Creator's draft save (FS-117, `IP-1173`,
+  `export_vignette`/`save_vignette`) builds a `Vignette` from an unstarted draft session's state,
+  not a *running, already-started* session's mid-exercise state. Neither existing path carries
+  tracks forward (the Creator draft has none to carry; a resumed session save keeps the *original*
+  vignette's start epoch per `FR-7210`) or stamps a simulator version.
+- **Priority:** Should
+- **Inputs:** A save-as-scenario request against a running or paused session.
+- **Outputs:** A new vignette file (per `FR-5420`'s user-directory write target) whose start epoch
+  is the save moment, with each cell's current `TrackCatalog`, each side's remaining
+  `AssetResources`, each asset's current `BusState`/`PayloadState` health, and current space-weather
+  state embedded as that vignette's initial conditions; a simulator-version field in the file.
+- **Preconditions:** A running or paused session exists.
+- **Postconditions:** Loading the resulting vignette produces a fresh session whose initial state
+  matches the source session's state at the moment of save, for every field this requirement names.
+- **Acceptance Criteria:** Given a running session at sim time T with specific track/resource/
+  health/space-weather state, saving as a new scenario and then loading the resulting vignette
+  produces a session whose start epoch is T and whose initial tracks/resources/health/space-weather
+  match the source session's state at T; the file records a simulator version.
+- **Verification Method:** Test
+- **Dependencies:** FR-5420, FR-7210
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0071` (external validation report, 26 Sep
+  2026, item B5); `spacesim/content/vignette_export.py` (`export_vignette`/`save_vignette`, the
+  existing draft-session write path this requirement is distinct from); `FR-7210`/`FR-7220`
+  (session save/resume, the existing capability this requirement is distinct from); `ADR-0022`
+  (save-file ownership split).
+- **Related ADRs:** ADR-0022, ADR-0007
+- **Related Interfaces:** INT-0011, INT-0012
+- **Related Requirements:** FR-5420, FR-7210, FR-7220
 
 ---
 
@@ -1610,6 +1849,94 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0002
 - **Related Interfaces:** INT-0014
 - **Related Requirements:** FR-7310
+
+### FR-7400 — State-vector / ephemeris export
+
+#### FR-7410 — Truth ephemeris export (ECI and RIC), CSV and CCSDS OEM
+
+- **ID:** FR-7410
+- **Title:** Export ground-truth state vectors for a time span in ECI and RIC, as CSV and CCSDS OEM
+- **Description:** The system shall export ground-truth state vectors (ephemerides) for one or more
+  assets over a specified simulated time span, in Earth-Centered Inertial (ECI) frame and in
+  Radial-Intrack-Crosstrack (RIC) frame relative to a chosen reference object, in both CSV and
+  CCSDS Orbit Ephemeris Message (OEM) format; this export shall be available only through the
+  existing no-cell, White-Cell-only ground-truth endpoints (`/godview`, `/eventlog`, `/save`,
+  `/aar*`, `/objectives` per `FR-6220`), never through a cell-scoped endpoint.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B3). Baseline god-view already returns current truth as JSON with no ephemeris/time-span export,
+  and AAR export (`FR-7110`/`FR-10210`) covers the event log, not state vectors — no existing
+  requirement covers state/ephemeris export. Restricting truth export to the no-cell endpoints is
+  required by the existing fog-of-war trust boundary (`FR-6220`; `CLAUDE.md` "LAN trust model" —
+  the no-cell ground-truth endpoints deliberately expose ground truth without a cell binding, and a
+  truth ephemeris export must not become a new cell-scoped route that leaks ground truth through a
+  fog-filtered surface).
+- **Priority:** Must
+- **Inputs:** A time span, one or more asset identifiers, a reference-object identifier (for the
+  RIC frame), and a requested format (CSV or CCSDS OEM).
+- **Outputs:** A file (CSV or CCSDS OEM) containing the requested assets' ground-truth state
+  vectors across the requested time span, in both ECI and RIC-relative-to-the-reference-object
+  form.
+- **Preconditions:** The requester holds the White Cell role (or Observer, where the no-cell
+  endpoint's existing access rule already permits it).
+- **Postconditions:** No cell-scoped route exposes this truth export; the export is reachable only
+  through the endpoints `FR-6220` already designates as ground-truth-exposing.
+- **Acceptance Criteria:** Given a time span and a reference object, the exported CSV and CCSDS OEM
+  files both contain state vectors matching the engine's own `WorldState`/`Propagator` truth at
+  each sampled time, correctly transformed into RIC relative to the chosen reference object; the
+  export endpoint is one of the existing no-cell endpoints, not a new cell-scoped one.
+- **Verification Method:** Test
+- **Dependencies:** FR-6220, FR-1210
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0069` (external validation report, 26 Sep
+  2026, item B3); `FR-6220` (no-cell ground-truth endpoints); `CLAUDE.md` "LAN trust model"; `R101`
+  (frame conventions grounding the ECI/RIC transform); `engine/geometry.py` (existing GMST
+  ECI↔ECEF frame machinery this export's ECI output reuses).
+- **Related ADRs:** ADR-0004, ADR-0015
+- **Related Interfaces:** INT-0014
+- **Related Requirements:** FR-6220, FR-7420
+
+#### FR-7420 — Cell-observed ephemeris export (ECI and RIC), CSV and CCSDS OEM
+
+- **ID:** FR-7420
+- **Title:** Export a cell's observed (custody-estimated) state vectors for a time span, fog-of-
+  war-respecting, in ECI and RIC, as CSV and CCSDS OEM
+- **Description:** The system shall export a requesting cell's own observed/estimated state
+  vectors (as distinct from ground truth) for one or more tracked objects over a specified
+  simulated time span, in ECI and in RIC relative to a chosen reference object, in both CSV and
+  CCSDS OEM format, through a cell-scoped, fog-of-war-respecting endpoint that returns only that
+  cell's own belief state.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B3), paired with `FR-7410`'s truth-side export. This leaf is **blocked on the per-cell estimated-
+  element-set history model** requested in `docs/pipeline/backlog.md` `BL-0068` (item B2): the
+  baseline `Track`/`TrackCatalog` (`engine/custody.py`) holds a confidence-decayed *copy of truth*,
+  not an independently-estimated element set whose error grows with time since last observation, so
+  there is currently no "cell-observed state vector" distinct from ground truth to export. This
+  requirement is baselined now (the capability is genuinely wanted and traces to the same source),
+  but its Acceptance Criteria cannot be verified until the domain-model change `BL-0068` requests is
+  itself specified and implemented.
+- **Priority:** Must
+- **Inputs:** A time span, one or more tracked-object identifiers, a reference-object identifier,
+  a requested format (CSV or CCSDS OEM); the requesting cell's identity (fog-of-war scoping).
+- **Outputs:** A file (CSV or CCSDS OEM) containing the requesting cell's own observed/estimated
+  state vectors (not ground truth) for the requested tracked objects, in ECI and RIC-relative-to-
+  the-reference-object form.
+- **Preconditions:** The requesting cell holds a `Track` on each requested object; the estimated-
+  state-history capability `BL-0068`/a future FR covering it exists and is populated.
+- **Postconditions:** The exported values equal the requesting cell's own belief state at each
+  sampled time, never the ground-truth value, and never another cell's belief state.
+- **Acceptance Criteria:** *(Cannot be finalized independent of the `BL-0068` domain-model change —
+  see Open Questions in the companion Requirements Review.)* Given the estimated-state-history
+  capability exists, an export request from cell C for object X returns C's own estimated state at
+  each sampled time, matching `CellController`'s existing fog-of-war filtering rule (no ground
+  truth, no other cell's belief state).
+- **Verification Method:** Test
+- **Dependencies:** FR-7410, FR-6100
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0069` (external validation report, 26 Sep
+  2026, item B3) and `BL-0068` (item B2, the blocking domain-model change); `ADR-0004` (fog-of-war
+  at the boundary); `engine/custody.py` (current `Track`/`TrackCatalog`, a confidence-decayed copy
+  of truth, not yet an independent estimate).
+- **Related ADRs:** ADR-0004, ADR-0013
+- **Related Interfaces:** INT-0007
+- **Related Requirements:** FR-7410, FR-1510
 
 ---
 
