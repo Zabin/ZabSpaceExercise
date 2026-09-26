@@ -13,39 +13,36 @@
 
 ## Position
 
-- **Updated:** 2026-09-26 (run #56)
+- **Updated:** 2026-09-26 (run #57)
 - **Increment:** four threads. **Thread D (external user validation intake):** `IP-1061`/`IP-1174`
-  both `COMPLETE`, each awaiting `09-package-verification` in a fresh session (still can't run in
-  this session). `BL-0066` (A5) advanced at `06` — `FS-105` v1.1 now states the one settled DE
-  behavioral contract, but real closure is blocked on `BL-0086` (a research gap: `R117` doesn't
-  actually characterize directed energy despite its title). Must-tier `04` intake batch
-  (`BL-0082` B16 first) still queued, unaffected by this run. **Thread C (Vignette Creator):**
-  Tranche 3 closed (unchanged). **Thread A:** `IP-1160` still `BLOCKED` on authorization
-  (unchanged). **Thread B:** no queued work.
+  both `COMPLETE`, each awaiting `09-package-verification` in a fresh session. `BL-0066` (A5)
+  now has full research grounding (`BL-0086` closed via `R117` v1.1) — **next step is re-invoking
+  `06-feature-specification` on `FS-105`** to close its v1.1 Open Questions using the new DE
+  characterization, then `07-implementation-planning` can write the DE Implementation Package.
+  Must-tier `04` intake batch (`BL-0082` B16 first) still queued. **Thread C:** Tranche 3 closed
+  (unchanged). **Thread A:** `IP-1160` still `BLOCKED` on authorization (unchanged). **Thread B:**
+  no queued work.
 - **Pipeline state:**
   - `08` — nothing eligible this session (same-session exclusion on `IP-1061`/`IP-1174`;
     `IP-1160` `BLOCKED` on authorization).
   - `09` — `IP-1061` and `IP-1174` both due, each in a fresh session.
-  - `06` — `FS-105` v1.1 partially closes `BL-0066`; blocked on `BL-0086` for full closure.
-  - `02` — `BL-0086` (characterize directed energy — `02-research-ow-orbital-mechanics`) is now
-    the next actionable step this session can take (no same-session or authorization constraint).
+  - `06` — due next: re-invoke on `FS-105` to close its v1.1 Open Questions with `R117` v1.1's
+    new DE grounding.
   - `04` — Must-tier intake batch queued (`BL-0082` B16 first, then `BL-0070`/`0071`/`0067`/`0069`);
     `03` for `BL-0068` (B2) after it.
-- **Backlog:** 86 total. This run: harvested `BL-0086` (`NEW` → `SCHEDULED`, rides the next `02`
-  pass); `BL-0066` updated in place (still `SCHEDULED`, now naming `BL-0086` as its remaining
-  blocker rather than "grounding gaps" generically).
-- **Next step:** `02-research-ow-orbital-mechanics` on **`BL-0086`** — characterize directed-energy
-  weapons (laser dazzle/damage, HPM) with the same citation rigor `R117` already applies to
-  kinetic, so `06-feature-specification` can close `FS-105`'s v1.1 Open Questions and
-  `07-implementation-planning` can write a DE Implementation Package. Not gated (research has no
-  MSTR-006 §3 authorization requirement).
+- **Backlog:** 87 total. This run: `BL-0086` → `DONE` (research gap closed); harvested `BL-0087`
+  (Low, `DEFERRED` — WebFetch-blocked verification caveat, same class as `BL-0028`, not blocking).
+- **Next step:** `06-feature-specification` on **`FS-105`** — close the four v1.1 Open Questions
+  (DE probability model, reversibility split, gating channel, weapons-quality bar) using `R117`
+  v1.1's new §3.2/§5 grounding, so `BL-0066` can advance to `07-implementation-planning`. Not
+  gated.
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner.
   PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft, subscribed, hourly check-ins
   continuing; repo has no CI workflows.
 
 ---
 
-<!-- Run #52 Position preserved below for record; superseded by the run #53-#56 Position blocks above. -->
+<!-- Run #52 Position preserved below for record; superseded by the run #53-#57 Position blocks above. -->
 
 ### Run #52 Position (superseded)
 
@@ -513,3 +510,4 @@
 | 54 | 2026-09-26 | advance (same session as run #53) | `08-code-implementation` | `IP-1061` — Inject Scheduling & Sizing-Cap Defect Remediation | Reconciliation (Step 1): no drift — `main` unchanged since run #53 (`32ca02a`), `IP-1061` still `READY`+authorized, dependency `IP-1060` still `VERIFIED`. No gate applies (already authorized 2026-09-26). Invoked `08-code-implementation` on `IP-1061`: test-first — wrote 5 failing tests in `test_inject_library.py` (4 observed failing pre-fix; `test_space_weather_clear_alias_and_message` already passed, noted rather than hidden) and inverted 2 `test_content.py` cap tests (observed failing pre-fix), then implemented all four fixes exactly as specified — `_arm_schedule()`'s initial/re-arm split with a new `inject_id` payload key, the merged `space_weather` branch, the `inject_library.yaml` comment correction, and the removed hard satellite/constellation cap. Re-ran the original intake reproduction script against the fixed tree (both defects confirmed fixed). Full suite: 603 passed/3 skipped (up from 598/3), both permanent gates green. Updated `docs/FUTURE-WORK.md` §6, `docs/vignettes/00-LIBRARY-ARCHITECTURE.md`, RTM `FR-4410`/`NFR-1300` rows (the latter's `Impl. Package` cell had been entirely missing — same defect class as `BL-0009`/`BL-0034` — now added), and flipped `IP-1061` to `COMPLETE` across its own header, the Master Build Plan (row + status count + tranche narrative), `packages/INDEX.md`, `ROADMAP.md`, and the TWBS. Checked `docs/training/15-manual-traceability.md` §15.1's inject row (`WCM-5`) and the White-Cell manual — no stale route/cap claim found, no manual edit needed. Committed `1475951`, pushed. No new backlog findings — the package's own pre-named Risks (legacy-save `inject_id` absence, narrow) are recorded in the Implementation Summary, not filed as new entries. | `09-package-verification` on `IP-1061`, in a fresh session; then `08-code-implementation` on `IP-1174`. |
 | 55 | 2026-09-26 | advance (same session as runs #53-#54) | `08-code-implementation` | `IP-1174` — Vignette Creator UI Surfaces | Reconciliation (Step 1): no drift — `main` unchanged since run #54, `IP-1061` still `COMPLETE` (this session's own implementation), `IP-1174` still `READY`+authorized with all three dependencies `VERIFIED`. Journal's recorded next step (`09-package-verification` on `IP-1061`) could not run in this session — that skill never verifies its own same-session implementation work, and this session implemented `IP-1061` in run #54; `IP-1174` was independently `READY`+authorized with no dependency on `IP-1061` (disjoint files, per the Master Build Plan's own parallelism note), so it was selected as the highest-leverage unblocked step instead. Invoked `08-code-implementation` on `IP-1174`: read the package, `FS-117`, `ADS-5100A`, and the live tree — found and resolved in place a material drift (the package's own claim that `build_scene(world, cell)` supports a ground-truth-equivalent call is false; it filters internally by owner, and `Asset.owner` is never "white"). Implemented `FR-5130` instead via a new `SessionManager.creator_scene()` composing `build_scene()` per real owner and merging — no engine change, `scene.py` unmodified. Built all five requirements' backend routes (`creator/state` GET/PUT, `creator/scene`, `force/ground` + `GET /api/ground_sites` via a new `content/ground_sites.py` markdown-table parser, `creator/asset/{id}` PATCH/DELETE, `creator/seats`), a new `creator.js` front-end module wired into a white-only "Creator ▾" menu, and 15 new tests plus 4 new Observer-guard route entries. Ran a browser-driven Playwright golden-path check (new draft → TLE add → asset list → JSON view → seat declaration → matrix assign → preview refresh): no functional console errors. Full suite: 622 passed/3 skipped (up from 603), both permanent gates green. Updated `FS-117`'s status cross-link, the RTM's `FR-5120`-`FR-5160` rows, `CLAUDE.md`'s code map, and flipped `IP-1174` to `COMPLETE` across its own header/Risks/DoD, the Master Build Plan, `packages/INDEX.md`, `ROADMAP.md`, and the TWBS. Committed `18c19a5`, pushed. No new backlog findings — the `build_scene()` finding was resolved in place per the package's own established precedent for implementation-time design judgment, not filed. | `09-package-verification` on `IP-1061` and/or `IP-1174`, each in its own fresh session (genuinely parallel — no shared files, no authorization gate). |
 | 56 | 2026-09-26 | advance | `06-feature-specification` | `FS-105` v1.1 — directed-energy order/resolution path (`BL-0066`) | Reconciliation (Step 1): no drift — `main` unchanged since run #55. `09` on `IP-1061`/`IP-1174` still excluded (same session as their own `08` runs); `BL-0066` (`SCHEDULED`, ripe since `IP-1061` reached `COMPLETE` in run #54) was the next unblocked step. Invoked `06-feature-specification` on `FS-105`: confirmed the FR-1410 gap directly against the live tree, added the one behavioral contract this spec can state with full confidence (a DE order must resolve to `category="directed_energy"`), then found reading `R117` in full that **its content is entirely about kinetic `engage`** despite its title naming directed energy — no DE-specific probability model, reversibility split, gating channel, or weapons-quality requirement exists anywhere in the approved inputs. Recorded four Open Questions rather than inventing DE physics, per this skill's own rule against ungrounded capability claims (FS-105's own v1.0 Risks section already names this exact failure mode). `FS-105` bumped to v1.1 with a changelog note; v1.0 scope unchanged. Committed `50f8ce0`. Harvested `BL-0086` (the R117 research gap) and updated `BL-0066`'s disposition to point at it. | `02-research-ow-orbital-mechanics` on `BL-0086` (characterize directed energy), then re-invoke `06-feature-specification` on `FS-105` to close its Open Questions. |
+| 57 | 2026-09-26 | advance | `02-research-ow-orbital-mechanics` | `R117` v1.1 — characterize directed energy (`BL-0086`) | Reconciliation (Step 1): no drift. `BL-0086` (`SCHEDULED`, ripe) was the next unblocked step — no same-session or authorization constraint applies to research. Invoked `02-research-ow-orbital-mechanics`: confirmed `R117`'s v1.0 content was entirely kinetic despite its title, then researched DE via `WebSearch` (`WebFetch` blocked for every source domain, confirmed via the proxy status endpoint — same class of restriction as `BL-0028`). Added §3.2 (dazzle/blind/HPM reversibility split, 3 corroborating sources), an irradiance/range/aperture effectiveness model as the declared-auditable basis FR-1410 needs (2 more sources), and ground-vs-space reachability. Extended §4 (Operational Context) and §5 (Implementation Guidance) with concrete DE guidance, explicitly not resolving the weapons-quality-tier and reversibility-threshold questions (routed to `06`/`03`). Bumped `R117` to v1.1, updated `R100-index.md`'s row. Committed `78ff823`. Harvested `BL-0087` (WebFetch-blocked caveat, Low, `DEFERRED`) and flipped `BL-0086` to `DONE`. | `06-feature-specification` on `FS-105` — close its v1.1 Open Questions with this new grounding. |
