@@ -1,8 +1,14 @@
 # FS-106 — White Cell Dashboard
 
 > **Document ID:** FS-106
-> **Version:** 2.0
+> **Version:** 2.1
 > **Status:** ✅ Done
+> **Changelog (v2.1, 2026-09-26):** Added `FR-4420` (condition-triggered injects, evaluated
+> deterministically) and `FR-4430` (four new inject effect types: anomaly, sensor outage, forced
+> custody loss, scripted manoeuvre) to `Requirements Implemented`, closing backlog `BL-0070`
+> (external validation report, 26 Sep 2026, item B4). Updated User Workflows, System Behaviour,
+> Data Model Changes, Error Handling, Acceptance Criteria, Verification Plan, and Open Questions
+> accordingly; no other field's substance changed.
 > **Dependencies:** [DOM-003](../domains/DOM-003-white-cell-framework.md), [DOM-001](../domains/DOM-001-training-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md)
 > **Referenced By:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md), [IMP-106A](../implementations/IMP-106A-white-cell-dashboard.md)
 > **Produces:** the facilitation surface [FS-108](FS-108-inject-authoring.md) (candidate) would extend; remediation package [IP-1061](../implementation/packages/IP-1061-inject-and-sizing-defect-remediation.md) (`FR-4410` defects, 2026-09-26)
@@ -80,6 +86,13 @@ by this revision — a corresponding update to `docs/requirements/03-requirement
 matrix.md`'s Impl. Package column is a separate, follow-on documentation task, not performed here
 (this skill does not edit the requirements baseline).
 
+**Added v2.1:** `FR-4420` (condition-triggered injects, evaluated deterministically on scheduled
+engine ticks) and `FR-4430` (four new inject effect types: spacecraft anomaly with a
+controller-set true cause, sensor outage for any sensor, forced custody loss/degrade, scripted
+manoeuvre) — both children of `FR-4400`, the same parent `FR-4410` sits under, so both are the
+same "inject authoring and firing" capability this document already owns, extended rather than a
+new capability requiring a new Feature.
+
 ## User Workflows
 
 - The White Cell facilitator opens the god-view, observing both cells' belief states and ground
@@ -100,6 +113,15 @@ matrix.md`'s Impl. Package column is a separate, follow-on documentation task, n
   ([R106](../research/encyclopedia/R106-mission-operations.md) §5) — a perspective
   [FS-105](FS-105-spacecraft-operations.md)'s per-cell console does not provide, and likewise not
   itself traced to a numbered FR (see Open Questions).
+- *(Added v2.1)* The facilitator authors a condition-triggered inject — a range threshold between
+  two named assets, a named cell's custody-confidence threshold on a track, or an objective
+  reaching a declared state — instead of an immediate/time-scheduled trigger, using the same
+  authoring surface `FR-4410` already provides (`FR-4420`).
+- *(Added v2.1)* The facilitator selects one of the four new inject effect types (spacecraft
+  anomaly with a controller-set true cause, sensor outage on any named sensor, forced custody
+  loss/degrade against a named cell's track, or a scripted manoeuvre of any named asset) and
+  configures its type-appropriate payload, using the same panel `FR-4410`'s existing effects
+  already populate (`FR-4430`).
 
 ## System Behaviour
 
@@ -127,6 +149,19 @@ matrix.md`'s Impl. Package column is a separate, follow-on documentation task, n
   [R308](../research/encyclopedia/R308-red-teaming-methodology.md). The preset's own behavior once
   selected is [FS-111](FS-111-ai-red-doctrine-automation.md)'s System Behaviour, not this
   document's.
+- *(Added v2.1)* **A condition-triggered inject's condition is evaluated only on scheduled engine
+  ticks against the deterministic `WorldState`, never against wall-clock time.** Per `FR-4420`'s
+  own Rationale, evaluating it anywhere else would reintroduce nondeterminism into a system whose
+  `(initial_state, ordered eventlog, seed) → byte-identical state` invariant is load-bearing
+  (`ADR-0002`, `ADR-0006`) — the same replay guarantee `FS-107`'s AAR scrubber and `ADS-1500`'s
+  custody-export design (this same increment) both depend on.
+- *(Added v2.1)* **A forced custody-loss effect changes only the targeted cell's own `Track`/
+  `TrackCatalog` entry, never another cell's** (`FR-4430`'s own Postcondition) — the same
+  fog-of-war-at-the-boundary invariant (`ADR-0004`) every other cell-scoped mutation in this
+  system already respects; this Feature does not introduce a parallel enforcement path.
+- *(Added v2.1)* **An anomaly inject's controller-set true cause is recorded in the event log
+  exactly as the facilitator set it, never re-derived** — the panel is presenting a White-Cell
+  narrative decision, not computing a diagnosis.
 - **Authority-tier statement** (DOM-003 §8): this spec now touches three of DOM-003's four
   authority tiers — visibility (god-view), inject, and clock-trigger — plus manual adjudication.
   Session administration (§6 of DOM-003) is no longer this document's own System Behaviour; it is
@@ -159,6 +194,12 @@ Not addressed in any prior version of this document — no existing content to c
 dashboard consumes existing session state without a Domain Model change. Flagged as an Open
 Question below, unchanged from v1.0.
 
+*(Added v2.1)* `FR-4420`/`FR-4430` likewise require no new Domain Model entity: a
+condition-triggered inject is a new *trigger shape* on the existing `Inject` concept (alongside
+immediate/scheduled), and the four new effect types are new entries in the existing inject-effect
+vocabulary, both extending structures the domain model already has (`GDS-04` §1.12 Inject),
+consistent with `ADR-0007` (content as data).
+
 ## State Changes
 
 - Inject scheduling commits an inject to the session's inject queue; the inject executes at the
@@ -174,6 +215,12 @@ Question below, unchanged from v1.0.
   (FR-4310) — the propagation mechanism that keeps all clients consistent is FS-109's concern.
 - The source document does not enumerate failure modes for inject scheduling beyond the
   architectural constraints above (unchanged from v1.0).
+- *(Added v2.1)* A condition-triggered inject whose targeted asset/track/cell no longer exists by
+  the time its condition would be evaluated: not specified by `FR-4420`'s own text — see Open
+  Questions.
+- *(Added v2.1)* A scripted-manoeuvre inject naming an asset with insufficient remaining Δv: not
+  specified by `FR-4430`'s own text — see Open Questions (this is the same ambiguity the
+  Requirements Review already flagged, `BL-0091`).
 
 ## Performance Considerations
 
@@ -206,6 +253,12 @@ Question below, unchanged from v1.0.
 - Red doctrine preset is viewable and switchable/hand-tunable mid-exercise from this dashboard.
 - Mission-set/campaign sequence visibility and the cross-cell assess beat are visible from this
   dashboard (research-grounded, not FR-traced — see Open Questions).
+- *(Added v2.1)* A condition-triggered inject fires at the identical simulated tick on both an
+  original run and a replay of the same `(initial_state, ordered eventlog, seed)`.
+- *(Added v2.1)* Each of the four new inject effect types (anomaly, sensor outage, forced custody
+  loss, scripted manoeuvre), once fired, produces the expected change on its targeted
+  Asset/Sensor/Track/`BusState`, and a forced custody-loss effect never changes a non-targeted
+  cell's own `Track`.
 
 ## Verification Plan
 
@@ -213,6 +266,11 @@ Test (automated) for clock-authority role rejection (FR-4310) and the no-automat
 inspection sweep (FR-4710); Demonstration for inject-scheduling UX, doctrine-preset switching, and
 live parameter adjustment (FR-4720), consistent with those requirements' own stated Verification
 Methods in `docs/requirements/01-functional-requirements.md`.
+
+*(Added v2.1)* Test (automated) for `FR-4420` (a condition-triggered inject fires at the same
+simulated tick under replay) and `FR-4430` (each new effect type's targeted-state assertion,
+including the negative assertion that a forced custody-loss effect never touches a non-targeted
+cell's own `Track`) — consistent with both requirements' own stated Verification Method (Test).
 
 ## Dependencies
 
@@ -268,13 +326,34 @@ dependencies.
   Domain Model entities is unresolved (unchanged from v1.0).
 - `IMP-106A`/`IP-1060` reconciliation against this narrowed scope (see Risks) is an open follow-on
   task.
+- *(Added v2.1, carried from the Requirements Review, `BL-0091`)* **Scripted-manoeuvre inject
+  entry-mode ambiguity.** `FR-4430` does not state whether a scripted-manoeuvre inject must resolve
+  through `engine/maneuver.py`'s existing six entry modes (eci/lvlh/finite_burn/target_coe/
+  hohmann/plane_change) or may set a resulting state directly — a design-level choice this Feature
+  Specification cannot make on its own authority; it needs either an explicit `04-requirements-
+  engineering` amendment naming the mode, or a deliberate `07-implementation-planning` decision
+  citing this document. Whichever it names, the Postcondition/Acceptance-Criteria text above should
+  be updated to state it explicitly once resolved.
+- *(Added v2.1)* **Condition-triggered inject targeting a deleted/expired asset, track, or cell**
+  — `FR-4420` does not state whether such a condition simply never fires (evaluates false forever),
+  is treated as an error at authoring time, or something else. Not resolved here.
+- *(Added v2.1)* **Scripted-manoeuvre inject against an asset with insufficient Δv** — `FR-4430`
+  does not state whether the manoeuvre is clamped, rejected, or applied anyway (bypassing the
+  normal `AssetResources.delta_v_ms` gate `FR-1310` enforces for operator-issued manoeuvre orders).
+  Given injects are the documented, accepted bypass of plan-first commanding (`ADR-0005`), a
+  facilitator-authored manoeuvre plausibly *should* bypass this gate too — but that is an inference,
+  not a stated decision, and is flagged here rather than assumed.
 
 ## Related ADRs
 
 ADR-0016 (single point of time control) —
 `docs/architecture/adr/ADR-0016-single-point-of-time-control.md`. ADR-0027 (scenario-authoring
 boundary) is **removed** from this revision's Related ADRs — it grounded the now-removed INT-0003
-citation (see Interfaces Used) and does not bear on this document's narrowed scope.
+citation (see Interfaces Used) and does not bear on this document's narrowed scope. **Added v2.1:**
+ADR-0002 (deterministic core) and ADR-0006 (sub-stepped clock) — `FR-4420`'s condition-trigger
+determinism requirement; ADR-0004 (fog-of-war at the boundary) — `FR-4430`'s forced-custody-loss
+per-cell scoping; ADR-0005 (plan-first commanding) — both new leaves exercise the same documented
+inject bypass this document's existing FR-4410 scope already relies on.
 
 ## Related Interfaces
 
