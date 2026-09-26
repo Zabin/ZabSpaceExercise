@@ -2,12 +2,17 @@
 
 > **Document ID:** FS-105
 > **Version:** 1.1
-> **Status:** ✅ Done (v1.0 scope); the v1.1 directed-energy slice added below is
-> **Open — blocked on research grounding**, not yet implementation-ready
+> **Status:** ✅ Done (v1.0 scope); the v1.1 directed-energy slice is **Open — blocked on two
+> architecture decisions** (gating access channel, weapons-quality confidence tier), not yet
+> implementation-ready
 > **Changelog (v1.1, 2026-09-26):** Added `Requirements Implemented`/System-Behaviour/Open-Questions
 > coverage for the directed-energy (DE) order/resolution path, closing backlog `BL-0066` (external
 > validation report A5, user decision 2026-09-26: a distinct DE path, not a documented DE→jam
-> mapping). No other field's v1.0 substance changed.
+> mapping). Updated same-day once `R117` v1.1 (`02-research-ow-orbital-mechanics`, closing
+> `BL-0086`) supplied real DE grounding: two of the four original Open Questions (probability
+> model, reversibility split) are now settled in System Behaviour/Acceptance Criteria; two
+> (gating channel, weapons-quality tier) remain genuine architecture decisions, routed to
+> `03-architecture-design-synthesis`. No v1.0-scope field's substance changed.
 > **Dependencies:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-007](../domains/DOM-007-human-factors-framework.md), [R103](../research/encyclopedia/R103-satellite-command-and-control.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R107](../research/encyclopedia/R107-ground-segment-operations.md), [R108](../research/encyclopedia/R108-constellation-operations.md),
 > [R110](../research/encyclopedia/R110-communications.md), [R111](../research/encyclopedia/R111-power-and-thermal-operations.md), [R112](../research/encyclopedia/R112-propulsion-and-maneuver-planning.md), [R113](../research/encyclopedia/R113-attitude-determination-and-control.md), [R114](../research/encyclopedia/R114-command-and-data-handling.md), [R115](../research/encyclopedia/R115-electronic-warfare-in-space-operations.md), [R116](../research/encyclopedia/R116-cyber-operations-against-space-systems.md),
 > [R117](../research/encyclopedia/R117-directed-energy-and-kinetic-effects.md), [R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md), [R303](../research/encyclopedia/R303-deterrence-theory.md), [R304](../research/encyclopedia/R304-escalation-dynamics.md)
@@ -130,11 +135,25 @@ yet specify.
 - **Belief must stay visually distinguishable from ground truth.** Every custody/track display
   hosted in this console inherits [FS-103](FS-103-custody-management.md) §3's requirement ([DOM-007](../domains/DOM-007-human-factors-framework.md) §4).
 - **(v1.1) A DE order must resolve to `category="directed_energy"`, never silently to
-  `electronic_warfare`.** This is the one statement this addition can make with full confidence
-  from approved inputs: `FR-1410` names DE as a distinct category, and the engine already declares
-  it as one — the gap is purely that no order path reaches it. Everything else about *how* it
-  resolves (probability model, reversibility, gating channel) is an Open Question below, not
-  specified here.
+  `electronic_warfare`.** `FR-1410` names DE as a distinct category, and the engine already
+  declares it as one — the gap is purely that no order path reaches it.
+- **(v1.1, updated) DE's success probability must derive from a declared irradiance-at-range
+  model, never an operator-typed number.** Per `R117` v1.1 §3.2/§5: effectiveness is a function of
+  power, range, aperture, and beam quality (spot size ∝ wavelength × range / aperture), falling off
+  with range — continuous physics, not a discrete per-class table the way kinetic engagement's
+  `INTERCEPTORS` table is. A ground-based DE order's reachability/effectiveness must also account
+  for the atmosphere-limited, weather-dependent range `R117` v1.1 describes; a space-based DE
+  order's does not.
+- **(v1.1, updated) A DE effect must resolve to one of two outcome branches by an irradiance/dwell
+  threshold, not a single fixed reversibility flag.** Per `R117` v1.1 §3.2/§5: a dazzle-class effect
+  (low irradiance/short dwell) resolves reversibly (`deny`/`disrupt`); a damage-class effect
+  (threshold-crossing irradiance/sustained dwell) resolves irreversibly (`degrade`/`destroy`) and
+  must use the same consequence-confirm pattern kinetic engagement uses. An HPM-class DE effect
+  defaults to the irreversible branch, since real HPM reversibility is not attacker-controllable
+  (`R117` v1.1 §3.2). The exact numeric threshold is an Implementation Package parameter (Open
+  Questions below), not specified here.
+- Everything else about *how* a DE order resolves (gating access channel, weapons-quality
+  requirement) is an Open Question below, not specified here.
 
 ## Subsystem Responsibilities
 
@@ -210,8 +229,18 @@ Derived from the source document's capability requirements, restated as checkabl
 - ROE chip state is captured at time of order for downstream assessment.
 - **(v1.1)** A DE order against a `directed_energy`-kind asset produces an effect whose `category`
   field is `directed_energy`, never `electronic_warfare` — checkable directly against the
-  resulting `EffectInstance`/event-log entry. (The remaining v1.1 acceptance criteria — success
-  probability, reversibility, gating channel — cannot yet be stated checkably; see Open Questions.)
+  resulting `EffectInstance`/event-log entry.
+- **(v1.1, updated)** Two DE orders at different ranges against the same target (all else equal)
+  produce different success probabilities, with the shorter-range order's probability at least as
+  high as the longer-range order's — checkable by comparing two `EffectInstance.success_prob`
+  values against `R117` v1.1's irradiance-falls-with-range model, without needing a specific
+  formula's exact output.
+- **(v1.1, updated)** A DE effect that crosses the (Implementation-Package-defined) damage
+  threshold produces `reversible=False`; one that does not produces `reversible=True` — checkable
+  directly against the resulting `EffectInstance`, and gated through the same consequence-confirm
+  UI as kinetic engagement when `reversible=False`.
+- **(Still open — see Open Questions)** The gating access channel and weapons-quality requirement
+  for a DE order cannot yet be stated as checkable criteria.
 
 ## Verification Plan
 
@@ -238,17 +267,18 @@ displays, not formal dependencies in the metadata block.
 - A new effect category or fidelity tier being added without its own domain/research grounding would
   create an ungrounded capability claim — the source document names this as a non-goal and a risk
   boundary.
-- **(v1.1) `R117`'s own title ("Directed Energy and Kinetic Effects") does not match its content**,
-  confirmed by direct read: every substantive claim in `R117` (§3 precondition stack, Pₖ-from-class,
-  closing geometry, debris-risk tagging, §5 Implementation Guidance) is about the *kinetic*
-  `engage` path (`engine/engage.py`) only. The one sentence naming "directed-energy" (§5, first
-  bullet) states a generic constraint — derive success probability from a declared database — and
-  names no such database, no DE-specific physics (irradiance-vs-range falloff, dazzle-vs-damage
-  thresholds), and no DE-specific access-channel/reachability model. **This is the risk this v1.1
-  addition cannot resolve on its own**: specifying DE's resolution mechanics now would mean
-  inventing physics R117 doesn't actually characterize — exactly what this document's own prior
-  (v1.0) risk note warns against. Routed to `02-research-ow-orbital-mechanics` as the actual gap
-  behind `BL-0066`/A5 (see Open Questions).
+- **(v1.1, resolved same day) `R117`'s own title ("Directed Energy and Kinetic Effects") did not
+  match its content** — every substantive claim was kinetic-`engage`-only, with no DE-specific
+  physics, probability model, or reversibility characterization. Routed to
+  `02-research-ow-orbital-mechanics`, which closed the gap (`BL-0086` → `R117` v1.1). This risk is
+  retired; the two Open Questions §3.2/§5 explicitly declined to resolve (gating channel,
+  weapons-quality tier) are real architecture decisions, not a research-grounding gap, and are
+  tracked below rather than as a risk.
+- **(v1.1) A DE-damage effect being irreversible would be the engine's second `reversible=False`
+  category**, alongside kinetic — a real tension with `MSTR-002`'s "kinetic effects are the one
+  irreversible category" framing (`R117` v1.1 §4.2/§7 names this explicitly rather than resolving
+  it). `03-architecture-design-synthesis` should confirm this doesn't require amending `MSTR-002`'s
+  own statement, not just the engine's `Category` enum.
 
 ## Open Questions
 
@@ -261,36 +291,40 @@ displays, not formal dependencies in the metadata block.
 - The source document does not address Security Considerations beyond the fog-of-war boundary.
 - The source document does not state formal Verification Methods per criterion.
 
-**v1.1 additions (all block `07-implementation-planning` from writing a DE Implementation Package
-until resolved — see Next Step in the completion summary):**
+**v1.1 additions, updated in this same version once `R117` v1.1 (`02-research-ow-orbital-mechanics`,
+closing `BL-0086`) supplied real DE grounding — two of the original four are now settled enough to
+state as System Behaviour/Acceptance Criteria (moved there; struck through below for the record),
+two remain genuinely open and now block `07-implementation-planning`:**
 
-- **DE's success/kill probability model is uncharacterized.** `R117` §5 requires a "declared,
-  auditable database" (mirroring `engine/engage.py`'s `INTERCEPTORS` table or `engine/jam.py`'s
-  modulation database) but names none for DE. Needs a `02-research-ow-orbital-mechanics` pass
-  actually characterizing directed-energy weapons (laser dazzle/damage, high-power microwave)
-  against public sourcing, the same rigor `R117` already applies to kinetic — closing the gap its
-  own title implies is already closed.
-- **DE's reversibility split is undecided.** The five-D model's other categories split cleanly:
-  EW/cyber are reversible (`deny`/`disrupt`/`deceive`), kinetic is the sole `reversible=False`
-  category (per `R117` §3, "MSTR-002: kinetic effects are the one irreversible category"). Real DE
-  spans both a reversible mode (dazzle — temporary sensor denial) and a potentially irreversible
-  one (sustained high-power damage) — CLAUDE.md's own framing ("most effects are reversible...not
-  kinetic") doesn't say which side of that line DE sits on, or whether it needs a third,
-  intermediate consequence-confirm tier. Needs the same research pass to resolve, since inventing
-  the split here would be exactly the "ungrounded capability claim" this document's v1.0 Risks
-  section already warns against.
-- **DE's gating access channel is undecided.** `ADR-0011` (six access channels) names
-  `weapon_engagement` and `jam_footprint` as existing channels; whether DE reuses
-  `weapon_engagement` (same reachability predicate as kinetic — `AccessProvider._weapon_predicate`,
-  per `R117` §3) or needs a new channel (e.g. a DE-specific line-of-sight/range model distinct from
-  interceptor reachability) is an architecture decision this skill may not make — routed to
-  `03-architecture-design-synthesis` if the research pass above concludes DE's reachability model
-  genuinely differs from the existing weapon-engagement predicate.
-- **Whether DE requires the weapons-quality custody gate is undecided.** `R117` §5's own guidance:
-  "if a feature needs a lower-confidence-bar engagement type, it must say so explicitly as a new,
-  distinctly-named confidence tier" — DE may or may not need the same bar as kinetic engagement;
-  this depends on the reversibility question above (a reversible dazzle effect plausibly needs a
-  lower bar than an irreversible kinetic strike) and is deferred to the same research pass.
+- ~~DE's success/kill probability model is uncharacterized.~~ **Settled by `R117` v1.1 §3.2/§5:**
+  DE effectiveness derives from an irradiance-at-range model (spot size ∝ wavelength × range /
+  aperture; effectiveness falls with range) — a continuous physics-based model, not a discrete
+  per-class table like kinetic's `INTERCEPTORS`. See System Behaviour and Acceptance Criteria below
+  for the resulting behavioral contract. (The exact formula/constants are an Implementation Package
+  decision within this shape, not a spec-level one.)
+- ~~DE's reversibility split is undecided.~~ **Settled in shape by `R117` v1.1 §3.2/§5:** DE splits
+  into two outcome branches by an irradiance/dwell threshold — a low-irradiance/short-dwell effect
+  is reversible (`deny`/`disrupt`), a threshold-crossing high-irradiance/sustained-dwell effect is
+  irreversible (`degrade`/`destroy`); HPM's attacker-uncontrollable reversibility (`R117` §3.2)
+  means an HPM-class DE effect should default to the irreversible branch. **Still open:** no
+  open-source irradiance-threshold figure was found (`R117` v1.1 §5) — the numeric crossing point
+  is a tunable Implementation Package parameter, not a spec-level fact, and does not by itself
+  block `07`.
+- **DE's gating access channel remains an architecture decision.** `R117` v1.1 §3.2/§5 gives the
+  physics (ground-based DE is atmosphere-limited and weather-dependent; space-based DE is not) and
+  recommends reusing `AccessProvider`'s existing line-of-sight/mask-angle reachability model rather
+  than inventing a parallel one — but whether that means literally reusing the `weapon_engagement`
+  channel (`ADR-0011`), or a new channel because DE's *reachability* (line-of-sight) and DE's
+  *effectiveness* (power-limited range) are two different distances that `weapon_engagement`'s
+  existing predicate doesn't separate, is still `03-architecture-design-synthesis`'s call, not
+  this spec's. **Blocks `07-implementation-planning`** until resolved.
+- **Whether DE needs a new, lower-than-weapons-quality confidence tier remains an architecture
+  decision.** `R117` v1.1 §5 recommends one for the reversible dazzle branch specifically (a
+  reversible effect plausibly doesn't need kinetic's highest bar) but explicitly declines to
+  decide it, per `R105` §4's own rule that a new tier must be introduced deliberately, not
+  inferred. **Blocks `07-implementation-planning`** until `03-architecture-design-synthesis`
+  either names a new tier or confirms DE-damage (the irreversible branch) reuses weapons-quality
+  as-is while DE-dazzle (the reversible branch) does not require it.
 
 ## Related ADRs
 
