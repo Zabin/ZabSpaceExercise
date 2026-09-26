@@ -223,6 +223,7 @@ clusters with real design tension; small/uncontested features skip straight to `
 | ADS-3500 | Role-Scoped Command Enforcement | `architecture/ADS-3500-role-scoped-command-enforcement.md` | (no owning DOM) | ✅ Authored (2026-07-05) — the first `ADS-xxx` in this project |
 | ADS-5100A | Vignette Creator — Authoring Session & UI Architecture | `architecture/ADS-5100A-vignette-creator-session-and-ui.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
 | ADS-5100B | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | `architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
+| ADS-1500 | Per-Cell Custody — Estimated-State History & Export | `architecture/ADS-1500-per-cell-custody-estimated-state-and-export.md` | R105-grounded; FS-103 | ✅ Authored (2026-09-26) |
 
 **ADS-3500** resolves two Open Questions [`FS-116`](docs/features/FS-116-role-scoped-command-catalog.md)
 (`FEAT-3500`) surfaced: extends the operator-command interface to carry a `seat` identifier
