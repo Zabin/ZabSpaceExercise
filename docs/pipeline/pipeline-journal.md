@@ -13,34 +13,44 @@
 
 ## Position
 
-- **Updated:** 2026-09-26 (run #60)
-- **Increment:** four threads. **Thread D (external user validation intake): `BL-0066` (A5) fully
-  CLOSED** — `FS-105` v1.1's directed-energy slice is implementation-ready (all 4 Open Questions
-  settled across `R117` v1.1 + `ADR-0034`/`ADR-0035`). `IP-1061`/`IP-1174` both `COMPLETE`, each
-  still awaiting `09-package-verification` in a fresh session (this session cannot close that).
-  Must-tier `04` intake batch (`BL-0082` B16 first, then `BL-0070`/`0071`/`0067`/`0069`) is the
-  next actionable work in this thread. **Thread C:** Tranche 3 closed (unchanged). **Thread A:**
-  `IP-1160` still `BLOCKED` on authorization (unchanged). **Thread B:** no queued work.
+- **Updated:** 2026-09-26 (run #61)
+- **Increment:** four threads. **Thread D (external user validation intake): Must-tier `04-
+  requirements-engineering` intake batch CLOSED for B16/B4/B5/B1/B3** — nine new baselined
+  leaves (`FR-4420`, `FR-4430`, `FR-5220`, `FR-5410`, `FR-5420`, `FR-5510`, `FR-7410`, `FR-7420`,
+  `NFR-3700`) added to `01-functional-requirements.md`/`02-non-functional-requirements.md`,
+  reviewed in `docs/reviews/requirements-update-must-tier-batch.md`, traced in
+  `03-requirements-traceability-matrix.md`. `FR-7420` is baselined but blocked on `BL-0068` (B2)'s
+  domain-model change before it's independently verifiable. `BL-0066` (A5) remains fully CLOSED
+  (unchanged since run #60) — `IP-1061`/`IP-1174` both `COMPLETE`, still awaiting
+  `09-package-verification` in a fresh session. **Thread C:** Tranche 3 closed (unchanged).
+  **Thread A:** `IP-1160` still `BLOCKED` on authorization (unchanged). **Thread B:** no queued
+  work.
 - **Pipeline state:**
   - `08` — nothing eligible this session (same-session exclusion on `IP-1061`/`IP-1174`;
     `IP-1160` `BLOCKED` on authorization).
   - `09` — `IP-1061` and `IP-1174` both due, each in a fresh session.
-  - `07` — DE Implementation Package now due (`FS-105` v1.1 is implementation-ready); **will need
-    the project owner's MSTR-006 §3 authorization before `08` may code it**, per this project's
-    standing rule for every forward-design package.
-  - `04` — Must-tier intake batch queued: `BL-0082` (B16, external vignette directories) first,
-    then `BL-0070`/`0071`/`0067`/`0069` (B4/B5/B1/B3); `03` for `BL-0068` (B2) after it.
-- **Backlog:** 90 total, unchanged count this run — `BL-0066` flipped `SCHEDULED → DONE`, no new
-  findings.
-- **Next step:** `07-implementation-planning` on the DE Implementation Package for `FS-105` v1.1 —
-  or, since that package cannot be *coded* without authorization anyway, `04-requirements-
-  engineering` on the Must-tier intake batch (`BL-0082` B16 first) is equally available and
-  arguably higher-leverage right now (unblocks four more backlog items, vs. one package that will
-  sit at `NOT STARTED`/`READY` pending a gate regardless of whether it's planned now or later).
-  Recommend `04` on `BL-0082` next; `07` on the DE package whenever convenient (no urgency since
-  it can't be coded without a separate authorization either way).
+  - `07` — DE Implementation Package still due (`FS-105` v1.1 is implementation-ready); **will
+    need the project owner's MSTR-006 §3 authorization before `08` may code it**.
+  - `06` — five Feature Specs now due for the just-baselined FRs: B16 (`FR-5410`/`FR-5420`/
+    `NFR-3700`), B4 (`FR-4420`/`FR-4430`, plus `BL-0091`'s scripted-manoeuvre entry-mode
+    ambiguity to resolve in the same pass), B5 (`FR-5510`), B1 (`FR-5220`), B3 (`FR-7410`
+    standalone; `FR-7420` blocked on `BL-0068`).
+  - `03` — `BL-0068` (B2, per-cell estimated-state domain-model change) queued; `FR-7420` and
+    any B3 cell-observed Feature Spec work depend on its output. Two Low interface-model-stretch
+    findings (`BL-0092`/`INT-0013`, `BL-0093`/`INT-0014`) also route here, non-blocking.
+- **Backlog:** 93 total. This run: `BL-0082`/`BL-0070`/`BL-0071`/`BL-0067`/`BL-0069` flipped
+  `SCHEDULED → IN PIPELINE` (entry stage `04` → `06`); three new findings harvested —
+  `BL-0091` (design-question, Low, rides the B4 `06` pass), `BL-0092`/`BL-0093` (findings, Low,
+  `DEFERRED` to whoever next touches the ICD's `INT-0013`/`INT-0014` entries).
+- **Next step:** `03-architecture-design-synthesis` on `BL-0068` (B2 — custody domain-model
+  change, estimated state ≠ truth copy), per the user's "everything, all 17 B-items" instruction
+  and this thread's own recorded ordering (B2 was always slotted after the Must-tier `04` batch).
+  Closing it unblocks `FR-7420`'s verifiability and the B3 cell-observed Feature Spec. The five
+  `06-feature-specification` passes above are equally available in parallel once `03`/`BL-0068`
+  is done or if worked independently first — recommend `03` on `BL-0068` next since it is the one
+  remaining blocker in this thread, then cycle through the five `06` passes.
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner. A
-  **new gate will open** once `07` writes the DE Implementation Package: MSTR-006 §3 authorization,
+  **gate will open** once `07` writes the DE Implementation Package: MSTR-006 §3 authorization,
   before `08` may code it. PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft,
   subscribed, hourly check-ins continuing; repo has no CI workflows.
 
@@ -518,3 +528,4 @@
 | 58 | 2026-09-26 | advance | `06-feature-specification` | `FS-105` v1.1 — close Open Questions with `R117` v1.1 grounding | Reconciliation (Step 1): no drift. Re-invoked `06-feature-specification` on `FS-105` per run #57's recorded next step. Closed 2 of 4 v1.1 Open Questions using `R117` v1.1's new §3.2/§5 content: DE probability model (irradiance-at-range, continuous physics not a discrete class table) and reversibility split (dazzle=reversible/damage+HPM=irreversible, by an irradiance/dwell threshold) both moved from Open Questions into settled System Behaviour + Acceptance Criteria. The remaining 2 (gating access channel; weapons-quality-tier/MSTR-002 second-irreversible-category tension) are genuine architecture decisions `R117` v1.1 itself declines to make — kept open, precisely restated, and routed to `03-architecture-design-synthesis`. Retired the R117-title-mismatch risk (closed by `BL-0086`); added the MSTR-002 tension as a new named risk. Bumped `FS-105`'s changelog note (still v1.1, same version, same-day update). Committed `eae2df1`. Harvested `BL-0088`/`BL-0089` (both `SCHEDULED`) and updated `BL-0066`'s disposition to name them as its only remaining blockers. | `03-architecture-design-synthesis` on `BL-0088`+`BL-0089` (batched) — DE's gating channel and confidence-tier decisions. |
 | 59 | 2026-09-26 | advance | `03-architecture-design-synthesis` | `ADR-0034`/`ADR-0035` — DE access channel + confidence tier (`BL-0088`/`BL-0089`) | Reconciliation (Step 1): no drift. Both backlog entries batched at the same stage for the same feature, per run #58's recorded next step. Authored `ADR-0034` (DE reuses `weapon_engagement` — the reachability-vs-effectiveness split is already the established channel/resolver pattern `jam_footprint`/`engine/jam.py` and `weapon_engagement`/`engine/engage.py` both use; no seventh channel needed) and `ADR-0035` (DE's custody precondition follows its reversibility branch, reusing `jam`'s no-precondition tier for dazzle and `engage`'s weapons-quality tier for damage — no new tier invented, per `R105` §5's own decision rule). Found in passing that `R117`'s "MSTR-002: kinetic is the one irreversible category" citation is unsupported — `MSTR-002` makes no reversibility claim at all; the real source is `CLAUDE.md`'s "most... not kinetic" summary, which already accommodates DE's two-branch shape. Updated `architecture/adr/INDEX.md`. Committed `4afdfe1`. Harvested `BL-0090` (Low, `DEFERRED`) and flipped `BL-0088`/`BL-0089` to `DONE`; updated `BL-0066`'s disposition. | `06-feature-specification` on `FS-105` — fold both ADRs in to close `BL-0066` fully. |
 | 60 | 2026-09-26 | advance | `06-feature-specification` | `FS-105` v1.1 — fold in `ADR-0034`/`ADR-0035`, close `BL-0066` in full | Reconciliation (Step 1): no drift. Folded both ADRs into `FS-105` v1.1: gating channel (`ADR-0034`) and confidence tier (`ADR-0035`) moved from Open Questions into settled System Behaviour + Acceptance Criteria, matching the pattern the prior two questions (probability model, reversibility split) already used. Retired the MSTR-002-tension risk per `ADR-0035`'s own finding. Updated the header/changelog and Related ADRs. All four v1.1 Open Questions are now closed; `FS-105` v1.1's DE slice is implementation-ready. Committed `a1c04af`. Flipped `BL-0066` to `DONE` — closes the entire A5 thread from the original external validation report. No new findings. | `07-implementation-planning` on the DE Implementation Package (will need MSTR-006 §3 authorization before `08` can code it, so no urgency) — or `04-requirements-engineering` on the Must-tier intake batch (`BL-0082` B16 first), which this run recommends as the higher-leverage parallel option. |
+| 61 | 2026-09-26 | advance | `04-requirements-engineering` | Must-tier intake batch — `BL-0082`(B16), `BL-0070`(B4), `BL-0071`(B5), `BL-0067`(B1), `BL-0069`(B3) | Reconciliation (Step 1): no drift. Read all five backlog rows verbatim plus GDS-04/ICD/ADR inputs and the cited baseline code (`vignette.py`, `vignette_export.py`, `config.py`, `server.py`). Drafted nine new baselined leaves in the user-accepted order (B16 first): `FR-5410`/`FR-5420` (new parent `FR-5400`), `FR-4420`/`FR-4430` (under existing `FR-4400`), `FR-5510` (new parent `FR-5500`), `FR-5220` (under existing `FR-5200`), `FR-7410`/`FR-7420` (new parent `FR-7400`), `NFR-3700` (Security). Wrote `docs/reviews/requirements-update-must-tier-batch.md` (9 findings: 3 ambiguity/dependency/interface-stretch, rest clean). Updated `03-requirements-traceability-matrix.md` (9 new rows, ADR reverse-index updates, `ADR-0034`/`0035` added, summary section). Committed. Flipped `BL-0082`/`BL-0070`/`BL-0071`/`BL-0067`/`BL-0069` `SCHEDULED → IN PIPELINE` (entry stage `04` → `06`). Harvested 3 new findings: `BL-0091` (scripted-manoeuvre entry-mode ambiguity, Low, rides B4's `06` pass), `BL-0092`/`BL-0093` (ICD interface-stretch on `INT-0013`/`INT-0014`, Low, `DEFERRED`). | `03-architecture-design-synthesis` on `BL-0068` (B2 — custody domain-model change), the one remaining blocker in this thread; the five `06-feature-specification` passes for B16/B4/B5/B1/B3 are also now available. |
