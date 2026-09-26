@@ -2,10 +2,15 @@
 
 > **Package ID:** IP-1061
 > **Version:** 1.0
-> **Status:** 🟡 READY *(authored 2026-09-26, pipeline run #53. **Authorized for coding 2026-09-26**
-> — MSTR-006 §3, project owner, recorded in [`backlog.md`](../../pipeline/backlog.md) `BL-0062`
-> and prioritized ahead of [IP-1174](IP-1174-vignette-creator-ui-surfaces.md). Its only package
-> dependency, [IP-1060](IP-1060-white-cell-dashboard.md), is `VERIFIED`.)*
+> **Status:** 🔵 COMPLETE *(implemented 2026-09-26 by `08-code-implementation`. All four defects
+> fixed test-first: `_arm_schedule()` gained an initial-vs-re-arm distinction (A1), the two
+> `space_weather` branches in `_h_inject()` were merged into one validating branch (A3), the
+> `inject_library.yaml` comment was corrected (A2), and both hard-cap `ValueError` raises were
+> removed from `build_world()` (A4). 5 new tests in `test_inject_library.py` (A1/A3); the 2
+> `test_content.py` cap-enforcement tests were inverted to cap-removal tests in place (the 2
+> at-limit tests were kept unchanged — still valid regardless of enforcement), so this package's
+> own test count is +5 net. Full suite 603 passed/3 skipped (up from 598/3), both permanent
+> gates green. Awaiting `09-package-verification` to advance to `VERIFIED`.)*
 > **Dependencies:** [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.0 (`FR-4410`),
 > [ADR-0019](../../architecture/adr/ADR-0019-sizing-guideline-not-engine-cap.md) (`NFR-1300`),
 > [IP-1060](IP-1060-white-cell-dashboard.md) (`VERIFIED` — the as-built inject mechanism this
@@ -204,20 +209,25 @@ All tests below go in `spacesim/tests/test_inject_library.py` unless stated othe
 
 ## Verification Checklist
 
-- [ ] `grep -c 'kind == "space_weather"' spacesim/session/manager.py` returns `1`.
-- [ ] `grep -n inject_schedule -r spacesim/` returns no hits.
-- [ ] `grep -n "satellite cap\|constellation(s) exceed" spacesim/content/vignette.py` returns no
+- [x] `grep -c 'kind == "space_weather"' spacesim/session/manager.py` returns `1`.
+- [x] `grep -n inject_schedule -r spacesim/` returns no hits (a pre-existing, unrelated test name,
+      `test_fire_inject_scheduled_...`, contains `_scheduled_` not `_schedule` and does not match).
+- [x] `grep -n "satellite cap\|constellation(s) exceed" spacesim/content/vignette.py` returns no
       hits.
-- [ ] Each of the 7 new tests exists and passes. Each of the 5 A1/A3 tests was observed failing
-      before the fix (recorded in the Implementation Summary).
-- [ ] The intake reproduction script (the `BL-0062` / `BL-0064` evidence) re-run against the
+- [x] Each of the 7 new tests exists and passes. 4 of the 5 A1/A3 tests were observed failing
+      before the fix; `test_space_weather_clear_alias_and_message` already passed pre-fix (the
+      live branch already handled `clear` correctly) — see Outstanding Issues in the
+      Implementation Summary.
+- [x] The intake reproduction script (the `BL-0062` / `BL-0064` evidence) re-run against the
       fixed tree:
   - `at_sim_s: 0` gives 1 message;
   - `bogus` severity gives `minor`.
-- [ ] `python3 -m pytest` passes in full. `test_determinism.py` and `test_import_guard.py` pass.
-- [ ] No file under `spacesim/engine/` was modified.
-- [ ] The RTM `FR-4410` / `NFR-1300` rows cite IP-1061.
-- [ ] The Master Build Plan row, the `packages/INDEX.md` row and this header all agree on status.
+- [x] `python3 -m pytest` passes in full (603 passed, 3 skipped). `test_determinism.py` and
+      `test_import_guard.py` pass.
+- [x] No file under `spacesim/engine/` was modified.
+- [x] The RTM `FR-4410` / `NFR-1300` rows cite IP-1061.
+- [x] The Master Build Plan row, the `packages/INDEX.md` row and this header all agree on status
+      (`COMPLETE`).
 
 ## Dependencies
 

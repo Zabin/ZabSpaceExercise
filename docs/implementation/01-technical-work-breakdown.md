@@ -219,7 +219,7 @@ remediation. A2 is a comment-only fix per the user's 2026-09-26 decision (no ali
 
 | Package | Status | Authorization |
 |---|---|---|
-| [IP-1061](packages/IP-1061-inject-and-sizing-defect-remediation.md) | 🟡 READY | Authorized 2026-09-26 (MSTR-006 §3) |
+| [IP-1061](packages/IP-1061-inject-and-sizing-defect-remediation.md) | 🔵 COMPLETE | Authorized 2026-09-26 (MSTR-006 §3); implemented 2026-09-26 |
 
 ## Related
 

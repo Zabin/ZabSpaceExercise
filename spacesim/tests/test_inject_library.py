@@ -12,7 +12,9 @@ from __future__ import annotations
 
 import pytest
 
+from spacesim.content.vignette import Vignette
 from spacesim.session.inprocess import InProcessSession
+from spacesim.session.manager import SessionManager
 
 
 # Effect types accepted by manager._h_inject (must stay in sync with that handler).
@@ -27,6 +29,23 @@ def _api_session():
     sid = api.load_vignette("training-basics")
     api.start(sid)
     return api, sid
+
+
+def _scripted_inject_manager(at_sim_s: float, text: str = "t0") -> SessionManager:
+    """A minimal vignette carrying one scripted time inject, unstarted (IP-1061 A1/A3 tests)."""
+    raw = {
+        "id": "test-scripted-inject",
+        "title": "Scripted inject test",
+        "start_epoch_utc": "2030-01-01T00:00:00Z",
+        "blue_forces": [], "red_forces": [], "neutral_forces": [], "sensors": [],
+        "injects": [{
+            "id": "t0-inject",
+            "trigger": {"type": "time", "at_sim_s": at_sim_s},
+            "effects": [{"type": "message", "to": ["blue"], "text": text}],
+        }],
+    }
+    vig = Vignette.model_validate(raw)
+    return SessionManager(vig, seed=0)
 
 
 # ---------------------------------------------------------------------------
@@ -159,3 +178,78 @@ def test_library_entry_scheduled_replays_through_eventlog():
     # The inject event is present in the eventlog (deterministic replay)
     inject_events = [e for e in mgr.sim.eventlog.entries if e.kind == "inject"]
     assert len(inject_events) >= 1
+
+
+# ---------------------------------------------------------------------------
+# IP-1061 (BL-0062/BL-0064) — scripted time-inject arming/re-arming, space_weather validation
+# ---------------------------------------------------------------------------
+
+def test_time_inject_at_zero_fires_at_start():
+    """A1: a scripted inject at at_sim_s: 0 must fire at session start, not be skipped."""
+    mgr = _scripted_inject_manager(0, text="t0")
+    mgr.start()
+    mgr.set_clock(False)
+    mgr.step(10)
+    matches = [m for m in mgr.world.messages if m.get("text") == "t0"]
+    assert len(matches) == 1
+    assert matches[0]["t"] == mgr.ctx.start_epoch
+
+
+def test_rewind_does_not_refire_fired_inject():
+    """A1: a rewind to (or past) an inject's firing time must not refire it."""
+    # Case 1: inject at 5s, rewind to exactly its firing time after it already fired.
+    mgr = _scripted_inject_manager(5, text="t5")
+    mgr.start()
+    mgr.set_clock(False)
+    mgr.step(10)
+    assert len([m for m in mgr.world.messages if m.get("text") == "t5"]) == 1
+    mgr.rewind_to(mgr.ctx.start_epoch + 5_000_000)
+    mgr.step(10)
+    assert len([m for m in mgr.world.messages if m.get("text") == "t5"]) == 1
+    inject_events = [e for e in mgr.sim.eventlog.entries if e.kind == "inject"]
+    assert len(inject_events) == 1
+
+    # Case 2: inject at 0s, rewind to start_epoch after it already fired.
+    mgr2 = _scripted_inject_manager(0, text="t0b")
+    mgr2.start()
+    mgr2.set_clock(False)
+    mgr2.step(10)
+    assert len([m for m in mgr2.world.messages if m.get("text") == "t0b"]) == 1
+    mgr2.rewind_to(mgr2.ctx.start_epoch)
+    mgr2.step(10)
+    assert len([m for m in mgr2.world.messages if m.get("text") == "t0b"]) == 1
+    inject_events2 = [e for e in mgr2.sim.eventlog.entries if e.kind == "inject"]
+    assert len(inject_events2) == 1
+
+
+def test_rewind_to_start_before_first_advance_keeps_zero_inject():
+    """A1: rewinding to start_epoch before ever advancing must not lose a 0s inject."""
+    mgr = _scripted_inject_manager(0, text="t0c")
+    mgr.start()
+    mgr.set_clock(False)
+    mgr.rewind_to(mgr.ctx.start_epoch)   # no step yet — inject has never fired
+    mgr.step(10)
+    matches = [m for m in mgr.world.messages if m.get("text") == "t0c"]
+    assert len(matches) == 1
+
+
+def test_space_weather_invalid_severity_coerced():
+    """A3: an invalid severity value is coerced to 'minor', not stored verbatim."""
+    api, sid = _api_session()
+    mgr = api._sessions[sid]
+    api.fire_inject(sid, {"effects": [{"type": "space_weather", "severity": "bogus"}]})
+    assert mgr.world.space_weather == {"severity": "minor"}
+    assert any(m.get("text") == "Space weather: severity=minor" for m in mgr.world.messages)
+
+
+def test_space_weather_clear_alias_and_message():
+    """A3: the 'clear' alias resolves to 'none' and posts exactly one message to all cells."""
+    api, sid = _api_session()
+    mgr = api._sessions[sid]
+    before = len([m for m in mgr.world.messages if "Space weather" in m.get("text", "")])
+    api.fire_inject(sid, {"effects": [{"type": "space_weather", "severity": "clear"}]})
+    assert mgr.world.space_weather == {"severity": "none"}
+    sw_messages = [m for m in mgr.world.messages if "Space weather" in m.get("text", "")]
+    assert len(sw_messages) == before + 1
+    assert sw_messages[-1]["text"] == "Space weather: severity=none"
+    assert set(sw_messages[-1]["to"]) == {"white", "blue", "red"}

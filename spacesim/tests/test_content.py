@@ -98,14 +98,14 @@ def test_partial_per_cell_roe_block_defaults_missing_subkey_to_false():
 
 
 # ---------------------------------------------------------------------------
-# Satellite cap enforcement (build-spec/01-context-and-scope.md §3.1)
+# Satellite sizing is a soft guideline, not an engine cap (ADR-0019, NFR-1300).
+# IP-1061 removed the hard ValueError raises this section used to pin.
 # ---------------------------------------------------------------------------
 
-def test_total_satellite_cap_enforced():
-    """25 orbital assets must raise ValueError."""
+def test_vignette_above_24_satellites_loads():
+    """25 orbital assets must load without error — no engine-enforced cap (ADR-0019)."""
     vig = _make_vignette([_sat(i) for i in range(25)])
-    with pytest.raises(ValueError, match="≤24 satellite cap"):
-        build_world(vig)
+    build_world(vig)   # no exception
 
 
 def test_total_satellite_cap_at_limit_passes():
@@ -114,12 +114,11 @@ def test_total_satellite_cap_at_limit_passes():
     build_world(vig)   # no exception
 
 
-def test_per_constellation_cap_enforced():
-    """4 satellites in the same group must raise ValueError."""
+def test_constellation_above_3_loads():
+    """4 satellites in the same group must load without error — no engine-enforced cap (ADR-0019)."""
     sats = [_sat(i, group="ALPHA") for i in range(4)]
     vig = _make_vignette(sats)
-    with pytest.raises(ValueError, match="constellation.*cap"):
-        build_world(vig)
+    build_world(vig)   # no exception
 
 
 def test_per_constellation_cap_at_limit_passes():

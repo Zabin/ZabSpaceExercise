@@ -124,7 +124,7 @@ package in this plan to reach that state.
 | [IP-1172](packages/IP-1172-per-cell-roe-enforcement.md) | FS-117 §FR-3420/NFR-2010 Per-Cell Rules of Engagement Enforcement | Forward design | ✅ VERIFIED | **Verified 2026-07-11 (fresh session)**, [`VR-1172`](verification/VR-1172-per-cell-roe-enforcement.md) — full suite 586 passed/3 skipped, both permanent gates green; both `_validate()` check sites independently confirmed to resolve per `order.cell` with zero legacy-shape branching inside `engine/`. Zero findings |
 | [IP-1173](packages/IP-1173-vignette-creator-draft-session.md) | FS-117 §FR-5110 Vignette Creator Draft Session & Reverse Serialization | Forward design | ✅ VERIFIED | **Verified 2026-07-11 (fresh session)**, [`VR-1173`](verification/VR-1173-vignette-creator-draft-session.md) — full suite 586 passed/3 skipped, both permanent gates green; sole-writer-to-`VIGNETTE_DIR` and draft-session time-control rejection independently confirmed; independent manual round-trip beyond the existing tests. Zero findings |
 | [IP-1174](packages/IP-1174-vignette-creator-ui-surfaces.md) | FS-117 §FR-5120-FR-5160 Vignette Creator UI Surfaces | Forward design | 🟡 READY | none — **Authorized 2026-07-05** (MSTR-006 §3, run #45); every dependency (`IP-1171`/`IP-1172`/`IP-1173`) `VERIFIED` (`IP-1171` via `VR-1171`, 2026-07-12). *(Row corrected 2026-09-26, run #53: it still read `BLOCKED` on `IP-1171` after that package's verification — narrative and `packages/INDEX.md` already said `READY`.)* Sequenced **after `IP-1061`** by the project owner's 2026-09-26 priority call.
-| [IP-1061](packages/IP-1061-inject-and-sizing-defect-remediation.md) | FS-106 §FR-4410 + NFR-1300 (ADR-0019) Inject Scheduling & Sizing-Cap Defect Remediation | Remediation (forward design) | 🟡 READY | none — **Authorized 2026-09-26** (MSTR-006 §3, project owner, run #53); sole dependency `IP-1060` `VERIFIED`. Closes backlog `BL-0062`–`BL-0065` (external validation report, 26 Sep 2026). **Next package to build** — prioritized ahead of `IP-1174` by the project owner. |
+| [IP-1061](packages/IP-1061-inject-and-sizing-defect-remediation.md) | FS-106 §FR-4410 + NFR-1300 (ADR-0019) Inject Scheduling & Sizing-Cap Defect Remediation | Remediation (forward design) | 🔵 COMPLETE | none — **implemented 2026-09-26** by `08-code-implementation`: 5 new tests in `test_inject_library.py`, 2 `test_content.py` cap tests inverted in place, full suite 603 passed/3 skipped, both permanent gates green. Closes backlog `BL-0062`–`BL-0065`. Awaiting `09-package-verification`. |
 
 **Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code
@@ -392,7 +392,14 @@ itself — the next stage-appropriate step for the 18 pre-Tranche-3 `VERIFIED` p
 §3 go-ahead; for Tranche 3, it is `08-code-implementation` on `IP-1174`, the last package in this
 tranche.
 
-**Remediation tranche (2026-09-26, run #53):** `IP-1061` (Inject Scheduling & Sizing-Cap Defect Remediation — `FR-4410` + `NFR-1300`/ADR-0019) is new, authorized, and `READY` (sole dependency `IP-1060` `VERIFIED`). It shares no modified file with `IP-1174` and could run in parallel, but the project owner sequenced it **first**: `08-code-implementation` on `IP-1061` → `09-package-verification` (fresh session) → `08-code-implementation` on `IP-1174`.
+**Remediation tranche (2026-09-26):** `IP-1061` (Inject Scheduling & Sizing-Cap Defect Remediation
+— `FR-4410` + `NFR-1300`/ADR-0019) was authored `READY` and authorized (run #53), sequenced ahead
+of `IP-1174` by the project owner, and **implemented this same day (run #54)**: `_arm_schedule()`'s
+initial-vs-re-arm distinction (A1), the merged `space_weather` branch (A3), the corrected
+`inject_library.yaml` comment (A2), and the removed hard satellite/constellation cap (A4) — 5 new
+tests, full suite 603 passed/3 skipped, both permanent gates green. `IP-1061` is now `COMPLETE`,
+awaiting `09-package-verification` (fresh session) before `08-code-implementation` picks up
+`IP-1174`.
 
 ## Dependency graph
 
@@ -563,7 +570,7 @@ implement in this plan.
   verified (`IP-1170` run #48; `IP-1172`/`IP-1173` 2026-07-11; `IP-1171` 2026-07-12, all fresh
   sessions):** `IP-1170`/`IP-1172`/`IP-1173`/`IP-1171` are all now `VERIFIED`; `IP-1174` is the
   sole package remaining, now `READY`.
-- **Package Status (2026-09-26, run #53):** **22 `VERIFIED`, 0 `COMPLETE`, 2 `READY`, 1 `BLOCKED`** — `IP-1061` (new remediation package, authorized, `READY`, built first) and `IP-1174` (`READY`) are the two `READY` packages. *Superseded count, preserved:* **22 `VERIFIED`, 0 `COMPLETE`, 1 `READY`, 1 `BLOCKED`** (`IP-1174` — every
+- **Package Status (2026-09-26, run #54, post-`IP-1061` implementation):** **22 `VERIFIED`, 1 `COMPLETE`, 1 `READY`, 1 `BLOCKED`** — `IP-1061` is `COMPLETE` (implemented, awaiting `09-package-verification`); `IP-1174` (`READY`) is next. *Superseded counts, preserved:* run #53 (`IP-1061` newly `READY`): 22/0/2/1; pre-run-#53: 22/0/1/1 (`IP-1174` — every
   dependency now `VERIFIED`, `READY` for `08-code-implementation`; `IP-1160` — every dependency
   already `VERIFIED`, authorization is the sole remaining gate, still not on record). The 22
   `VERIFIED` packages are the original 11 as-built + `IP-1150` + `IP-1140` + `IP-2010` + `IP-3010` +

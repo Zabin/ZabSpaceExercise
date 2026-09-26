@@ -133,19 +133,39 @@ class SessionManager:
     # -- lifecycle -------------------------------------------------------------
     def start(self) -> None:
         self.started = True
-        self._arm_schedule(self.sim.clock.now)
+        self._arm_schedule(self.sim.clock.now, initial=True)
         self.set_clock(True)   # auto-start real-time clock (matches "Start begins ticking" UX)
 
-    def _arm_schedule(self, from_t: int) -> None:
+    def _arm_schedule(self, from_t: int, initial: bool = False) -> None:
         """(Re)queue bus ticks and scripted time-injects after ``from_t`` — also used after a
-        rewind, since a rewind clears pending future events."""
+        rewind, since a rewind clears pending future events.
+
+        IP-1061 (BL-0062, A1): the *initial* arm at ``start()`` uses ``at >= from_t`` so an inject
+        scripted for exactly the start epoch (``at_sim_s: 0``) fires rather than being silently
+        skipped by a strict ``>``. A *re-arm* after a rewind still guards with ``at > from_t`` for
+        everything strictly in the future, but additionally re-arms an inject whose scheduled time
+        equals ``from_t`` only if no retained event-log entry shows it already fired — a rewind
+        keeps every entry with ``sim_time <= t`` (``engine/simulation.py``'s ``rewind_to()``), so an
+        inject that already fired at exactly ``from_t`` is found there and is not re-queued
+        (no double fire), while one that never fired (e.g. rewinding to the start epoch before the
+        first ``advance_to``) is re-armed (not lost)."""
         self.bus.schedule_ticks(BUS_TICK_PERIOD_S, until=self.horizon, start=from_t)
+        fired_at_from_t: Optional[set[str]] = None
+        if not initial:
+            fired_at_from_t = {
+                e.payload.get("inject_id") for e in self.sim.eventlog.entries
+                if e.kind == "inject" and e.sim_time == from_t
+            }
         for inj in self.vignette.injects:
             trig = inj.trigger or {}
             if trig.get("type") == "time" and "at_sim_s" in trig:
                 at = self.ctx.start_epoch + int(float(trig["at_sim_s"]) * 1_000_000)
-                if at > from_t:
-                    self.sim.schedule(at, "inject", {"effects": inj.effects})
+                if initial:
+                    schedule = at >= from_t
+                else:
+                    schedule = at > from_t or (at == from_t and inj.id not in fired_at_from_t)
+                if schedule:
+                    self.sim.schedule(at, "inject", {"effects": inj.effects, "inject_id": inj.id})
 
     # -- time control ----------------------------------------------------------
     def step(self, dt_sim_s: float) -> None:
@@ -625,12 +645,18 @@ class SessionManager:
                                            "text": f"{eff['target']}: outage {'cleared' if asset.health == 'nominal' else 'declared (' + eff.get('cause', 'unspecified') + ')'}",
                                            "t": world.now})
             elif kind == "space_weather":
-                # FUTURE-WORK §10.C.11: storm severity scales eclipse drain in advance_bus.
-                # severity ∈ {none, minor, severe}; "clear" alias resets to none.
-                sev = eff.get("severity", "minor")
+                # FUTURE-WORK §10.C.11: storm severity scales eclipse drain in advance_bus and is
+                # surfaced to telemetry signatures (FSW errors climb in 'severe').
+                # severity ∈ {none, minor, severe}; "clear" is an alias for none; any other value
+                # is coerced to "minor" rather than rejected, so a malformed inject cannot abort a
+                # running exercise (IP-1061, BL-0064 — this merges what were two divergent
+                # branches, the second of which validated but was unreachable).
+                sev = str(eff.get("severity", "minor"))
                 if sev == "clear":
                     sev = "none"
-                world.space_weather["severity"] = sev
+                if sev not in ("none", "minor", "severe"):
+                    sev = "minor"
+                world.space_weather = {"severity": sev}
                 world.messages.append({"to": ["white", "blue", "red"],
                                        "text": f"Space weather: severity={sev}",
                                        "t": world.now})
@@ -643,13 +669,6 @@ class SessionManager:
                 world.messages.append({"to": ["white", "blue"],
                                        "text": f"Conjunction warning: {eff.get('a')}↔{eff.get('b')} @ {eff.get('range_km', '?')} km",
                                        "t": world.now})
-            elif kind == "space_weather":
-                # FUTURE-WORK §10.C.11: solar / geomagnetic storm. severity scales eclipse drain
-                # and is surfaced to telemetry signatures (FSW errors climb in 'severe').
-                sev = str(eff.get("severity", "none"))
-                if sev not in ("none", "minor", "severe"):
-                    sev = "minor"
-                world.space_weather = {"severity": sev}
             elif kind == "spawn_debris":
                 # FW §11.D.19 — inject-library debris event.  Records a new DebrisField
                 # so downstream conjunction screening surfaces the elevated risk.  Region

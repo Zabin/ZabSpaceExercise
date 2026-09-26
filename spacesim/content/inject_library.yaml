@@ -16,7 +16,9 @@
 #
 # Operators load the library via GET /api/sessions/{sid}/inject_library,
 # pick an entry, edit any field, and fire with POST /api/sessions/{sid}/inject
-# (immediate) or POST /api/sessions/{sid}/inject_schedule with at_sim_t.
+# — pass an at_sim_t field (µs sim-UTC) to schedule it for later, or omit it to
+# fire immediately (IP-1061, BL-0063: this comment previously named a
+# non-existent separate scheduling route).
 #
 # Five reference patterns:
 
