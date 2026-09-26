@@ -13,36 +13,39 @@
 
 ## Position
 
-- **Updated:** 2026-09-26 (run #58)
+- **Updated:** 2026-09-26 (run #59)
 - **Increment:** four threads. **Thread D (external user validation intake):** `IP-1061`/`IP-1174`
-  both `COMPLETE`, awaiting `09-package-verification` (fresh session). `BL-0066` (A5) narrowed to
-  two genuine architecture decisions (`BL-0088`/`BL-0089`) — probability model and reversibility
-  split are now settled `FS-105` v1.1 behavioral contract. Must-tier `04` intake batch
-  (`BL-0082` B16 first) still queued, unaffected. **Thread C:** Tranche 3 closed (unchanged).
-  **Thread A:** `IP-1160` still `BLOCKED` on authorization (unchanged). **Thread B:** no queued
-  work.
+  both `COMPLETE`, awaiting `09-package-verification` (fresh session). `BL-0066` (A5) — both
+  architecture decisions closed (`ADR-0034` access channel, `ADR-0035` confidence tier); only
+  remaining step is folding them into `FS-105` v1.1 (`06-feature-specification`), then `07` can
+  write the DE Implementation Package (itself needing MSTR-006 §3 authorization once written).
+  Must-tier `04` intake batch (`BL-0082` B16 first) still queued, unaffected. **Thread C:**
+  Tranche 3 closed (unchanged). **Thread A:** `IP-1160` still `BLOCKED` on authorization
+  (unchanged). **Thread B:** no queued work.
 - **Pipeline state:**
   - `08` — nothing eligible this session (same-session exclusion; `IP-1160` `BLOCKED`).
   - `09` — `IP-1061`/`IP-1174` both due, each in a fresh session.
-  - `06` — `FS-105` v1.1 blocked on `03` for its last two Open Questions.
-  - `03` — `BL-0088`/`BL-0089` (DE gating channel; DE confidence tier + MSTR-002 tension) due next
-    — the next actionable step this session can take.
+  - `06` — due next: fold `ADR-0034`/`ADR-0035` into `FS-105` v1.1, closing its last two Open
+    Questions.
+  - `07` — DE Implementation Package due once `06` closes `FS-105`; **will need MSTR-006 §3
+    authorization from the project owner before `08` may code it** (same gate every forward-design
+    package in this project has needed).
   - `04` — Must-tier intake batch queued (`BL-0082` B16 first, then `BL-0070`/`0071`/`0067`/`0069`);
-    `03` for `BL-0068` (B2) after it (shares stage 03 with `BL-0088`/`0089` — batch if convenient).
-- **Backlog:** 89 total. This run: harvested `BL-0088`/`BL-0089` (both `SCHEDULED`, ride the next
-  `03` pass); `BL-0066` updated in place to name them as its only remaining blockers.
-- **Next step:** `03-architecture-design-synthesis` on **`BL-0088`+`BL-0089`** — DE's gating
-  access channel and confidence-tier questions (batched, same stage, same feature) — so
-  `06-feature-specification` can close `FS-105` v1.1 fully and `07-implementation-planning` can
-  write the DE Implementation Package. Not gated (architecture-design work has no MSTR-006 §3
-  authorization requirement — that gate applies to *coding* a package, not designing one).
-- **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner.
-  PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft, subscribed, hourly check-ins
-  continuing; repo has no CI workflows.
+    `03` for `BL-0068` (B2) after it.
+- **Backlog:** 90 total. This run: `BL-0088`/`BL-0089` → `DONE` (both architecture decisions
+  closed via `ADR-0034`/`ADR-0035`); `BL-0066` updated in place; harvested `BL-0090` (Low,
+  `DEFERRED` — R117's MSTR-002 citation doesn't hold up, prose-only, next R117 touch).
+- **Next step:** `06-feature-specification` on `FS-105` — fold `ADR-0034`/`ADR-0035` in, closing
+  `BL-0066`/A5 fully and unblocking `07-implementation-planning`. Not gated.
+- **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner. A
+  **new gate will open** once `07` writes the DE Implementation Package: MSTR-006 §3 authorization
+  from the project owner, before `08` may code it — flagged now so the next run's gate check isn't
+  a surprise. PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft, subscribed, hourly
+  check-ins continuing; repo has no CI workflows.
 
 ---
 
-<!-- Run #52 Position preserved below for record; superseded by the run #53-#58 Position blocks above. -->
+<!-- Run #52 Position preserved below for record; superseded by the run #53-#59 Position blocks above. -->
 
 ### Run #52 Position (superseded)
 
@@ -512,3 +515,4 @@
 | 56 | 2026-09-26 | advance | `06-feature-specification` | `FS-105` v1.1 — directed-energy order/resolution path (`BL-0066`) | Reconciliation (Step 1): no drift — `main` unchanged since run #55. `09` on `IP-1061`/`IP-1174` still excluded (same session as their own `08` runs); `BL-0066` (`SCHEDULED`, ripe since `IP-1061` reached `COMPLETE` in run #54) was the next unblocked step. Invoked `06-feature-specification` on `FS-105`: confirmed the FR-1410 gap directly against the live tree, added the one behavioral contract this spec can state with full confidence (a DE order must resolve to `category="directed_energy"`), then found reading `R117` in full that **its content is entirely about kinetic `engage`** despite its title naming directed energy — no DE-specific probability model, reversibility split, gating channel, or weapons-quality requirement exists anywhere in the approved inputs. Recorded four Open Questions rather than inventing DE physics, per this skill's own rule against ungrounded capability claims (FS-105's own v1.0 Risks section already names this exact failure mode). `FS-105` bumped to v1.1 with a changelog note; v1.0 scope unchanged. Committed `50f8ce0`. Harvested `BL-0086` (the R117 research gap) and updated `BL-0066`'s disposition to point at it. | `02-research-ow-orbital-mechanics` on `BL-0086` (characterize directed energy), then re-invoke `06-feature-specification` on `FS-105` to close its Open Questions. |
 | 57 | 2026-09-26 | advance | `02-research-ow-orbital-mechanics` | `R117` v1.1 — characterize directed energy (`BL-0086`) | Reconciliation (Step 1): no drift. `BL-0086` (`SCHEDULED`, ripe) was the next unblocked step — no same-session or authorization constraint applies to research. Invoked `02-research-ow-orbital-mechanics`: confirmed `R117`'s v1.0 content was entirely kinetic despite its title, then researched DE via `WebSearch` (`WebFetch` blocked for every source domain, confirmed via the proxy status endpoint — same class of restriction as `BL-0028`). Added §3.2 (dazzle/blind/HPM reversibility split, 3 corroborating sources), an irradiance/range/aperture effectiveness model as the declared-auditable basis FR-1410 needs (2 more sources), and ground-vs-space reachability. Extended §4 (Operational Context) and §5 (Implementation Guidance) with concrete DE guidance, explicitly not resolving the weapons-quality-tier and reversibility-threshold questions (routed to `06`/`03`). Bumped `R117` to v1.1, updated `R100-index.md`'s row. Committed `78ff823`. Harvested `BL-0087` (WebFetch-blocked caveat, Low, `DEFERRED`) and flipped `BL-0086` to `DONE`. | `06-feature-specification` on `FS-105` — close its v1.1 Open Questions with this new grounding. |
 | 58 | 2026-09-26 | advance | `06-feature-specification` | `FS-105` v1.1 — close Open Questions with `R117` v1.1 grounding | Reconciliation (Step 1): no drift. Re-invoked `06-feature-specification` on `FS-105` per run #57's recorded next step. Closed 2 of 4 v1.1 Open Questions using `R117` v1.1's new §3.2/§5 content: DE probability model (irradiance-at-range, continuous physics not a discrete class table) and reversibility split (dazzle=reversible/damage+HPM=irreversible, by an irradiance/dwell threshold) both moved from Open Questions into settled System Behaviour + Acceptance Criteria. The remaining 2 (gating access channel; weapons-quality-tier/MSTR-002 second-irreversible-category tension) are genuine architecture decisions `R117` v1.1 itself declines to make — kept open, precisely restated, and routed to `03-architecture-design-synthesis`. Retired the R117-title-mismatch risk (closed by `BL-0086`); added the MSTR-002 tension as a new named risk. Bumped `FS-105`'s changelog note (still v1.1, same version, same-day update). Committed `eae2df1`. Harvested `BL-0088`/`BL-0089` (both `SCHEDULED`) and updated `BL-0066`'s disposition to name them as its only remaining blockers. | `03-architecture-design-synthesis` on `BL-0088`+`BL-0089` (batched) — DE's gating channel and confidence-tier decisions. |
+| 59 | 2026-09-26 | advance | `03-architecture-design-synthesis` | `ADR-0034`/`ADR-0035` — DE access channel + confidence tier (`BL-0088`/`BL-0089`) | Reconciliation (Step 1): no drift. Both backlog entries batched at the same stage for the same feature, per run #58's recorded next step. Authored `ADR-0034` (DE reuses `weapon_engagement` — the reachability-vs-effectiveness split is already the established channel/resolver pattern `jam_footprint`/`engine/jam.py` and `weapon_engagement`/`engine/engage.py` both use; no seventh channel needed) and `ADR-0035` (DE's custody precondition follows its reversibility branch, reusing `jam`'s no-precondition tier for dazzle and `engage`'s weapons-quality tier for damage — no new tier invented, per `R105` §5's own decision rule). Found in passing that `R117`'s "MSTR-002: kinetic is the one irreversible category" citation is unsupported — `MSTR-002` makes no reversibility claim at all; the real source is `CLAUDE.md`'s "most... not kinetic" summary, which already accommodates DE's two-branch shape. Updated `architecture/adr/INDEX.md`. Committed `4afdfe1`. Harvested `BL-0090` (Low, `DEFERRED`) and flipped `BL-0088`/`BL-0089` to `DONE`; updated `BL-0066`'s disposition. | `06-feature-specification` on `FS-105` — fold both ADRs in to close `BL-0066` fully. |
