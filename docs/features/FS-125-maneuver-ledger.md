@@ -7,7 +7,9 @@
 > code it extends (`engine/orders.py`, `engine/eventlog.py`, `engine/entities.py`).
 > **Dependencies:** None (additive presentation/export layer over existing `FR-1310`/`FR-7110`
 > state)
-> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0072` (item B6),
+> **Referenced By:** [IP-1250](../implementation/packages/IP-1250-maneuver-ledger.md)
+> (Implementation Package, `READY`, not yet authorized),
+> [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0072` (item B6),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-1320`, `docs/FUTURE-WORK.md` "Δv panel" item
 > **Produces:** a per-asset, purpose-tagged manoeuvre ledger view and CSV export, satisfying

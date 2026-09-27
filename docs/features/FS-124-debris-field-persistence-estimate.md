@@ -9,7 +9,9 @@
 > `docs/FUTURE-WORK.md` §13 R16/GAP-02).
 > **Dependencies:** None (this Feature is additive, presentational-only, and touches no other
 > Feature's own scope)
-> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0077` (item B11),
+> **Referenced By:** [IP-1240](../implementation/packages/IP-1240-debris-field-persistence-estimate.md)
+> (Implementation Package, `READY`, not yet authorized),
+> [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0077` (item B11),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-1430`, Candidate Requirement `CR-17` (this Feature is deliberately narrower than, not a
 > promotion of)

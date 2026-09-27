@@ -7,7 +7,9 @@
 > code it extends (`engine/telemetry.py`, `spacesim/ui_web/server.py`).
 > **Dependencies:** [FS-106](FS-106-white-cell-dashboard.md) v2.1 (`FR-4430`'s `anomaly` inject
 > effect — the channel-perturbation source this Feature's export must reflect faithfully)
-> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0075` (item B9),
+> **Referenced By:** [IP-1260](../implementation/packages/IP-1260-telemetry-csv-export.md)
+> (Implementation Package, `BLOCKED` on `IP-1062` reaching `VERIFIED`),
+> [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0075` (item B9),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-2320`
 > **Produces:** a fog-of-war-respecting, per-asset telemetry CSV export over a requested time span,

@@ -10,7 +10,9 @@
 > **Dependencies:** [FS-116](FS-116-role-scoped-command-catalog.md) (`FR-4210` roles — the seat/role
 > concept `FR-3430`'s designated-controller-role approval reuses), [FS-129](FS-129-jamming-delivery-and-effect-detectability.md)
 > (shares one open effect-classification-taxonomy question with this Feature, `BL-0105`)
-> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0076` (item B10),
+> **Referenced By:** [IP-1270](../implementation/packages/IP-1270-effect-authorization-gating-and-live-roe.md)
+> (Implementation Package, `READY`, not yet authorized),
+> [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0076` (item B10),
 > `BL-0105` (the shared-taxonomy consistency note),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-3430`, `FR-3440`

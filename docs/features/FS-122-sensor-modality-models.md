@@ -11,7 +11,9 @@
 > **Dependencies:** [FS-104](FS-104-sda-tasking.md) (SDA Tasking — the sensor-tasking workflow this
 > Feature's access/effectiveness refinements sit underneath, distinct not duplicative per
 > `FR-1600`'s own family preamble)
-> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0073` (item B7),
+> **Referenced By:** [IP-1220](../implementation/packages/IP-1220-sensor-modality-models.md)
+> (Implementation Package, `READY`, not yet authorized),
+> [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0073` (item B7),
 > `BL-0083` (item B17), [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-1610`-`FR-1660`, [docs/reviews/requirements-update-should-tier-batch.md](../reviews/requirements-update-should-tier-batch.md)
 > **Produces:** five new sensor-modality access/effectiveness models (fence/dish radar, optical

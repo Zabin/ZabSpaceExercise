@@ -292,6 +292,53 @@ in bulk. **Note:** `IP-1180` and `IP-1200` both extend the same function (`save_
 landed diff, not against either package document's description alone (see each package's own
 Dependencies/Risks).
 
+## Should-tier batch (run #78)
+
+Seven packages against the eight Feature Specifications `06-feature-specification` drafted for the
+Should-tier external-validation-report intake batch (`FS-122`, `FS-124`-`FS-129`). **No-split
+rationale, every package in this batch:** each Feature Specification's own scope fits a single
+subsystem seam (`engine/` core, or one `session/` read/write path) with one coherent Definition of
+Done — none spans a seam wide enough to warrant a lettered slice, unlike `FS-105`'s bus/payload-vs-
+effects split or `FS-117`'s five-way Tranche 3 split. One package per Feature Spec.
+
+**`FS-122` covers two backlog items in one package (`IP-1220`).** `BL-0073`/B7 (five sensor
+variants) and `BL-0083`/B17 (hosted sensor) share the same new `FR-1600` requirement parent and the
+same `engine/entities.py`/`access.py`/`isr.py` seam — splitting them into two packages would
+duplicate the `Sensor`-field-addition task and create an artificial cross-package dependency for a
+seam that isn't real. One package, six leaves.
+
+**`FS-123` (B8, space-weather-index drag/anomaly-rate coupling) has no package this run.** Its own
+two Open Questions (`BL-0104`: the index-to-scaling mapping function; `BL-0121`: implausible-index-
+value handling) are physics/design decisions this skill's own rules forbid inventing — per Step 0's
+"every Open Question that blocks a planning decision must be resolved" gate, planning stopped here
+rather than guessing a formula. The next free ID in this series (`IP-1230`) is reserved for it once
+`04`/`06` resolves both questions.
+
+**`IP-1270`/`IP-1290` share one design dependency, not a file seam.** `FR-3430` (`FS-127`, B10) and
+`FR-1450` (`FS-129`, B15) independently describe "an effect's type and/or its five-D's
+reversibility category" in identical words (`BL-0105`) — rather than each package inventing its own
+classification vocabulary, `IP-1270` (authored first, per the user-directed batch order) commits to
+the shared enumeration (order action type × five-D's reversibility category, both already-named
+engine vocabularies) and `IP-1290` cites that resolution. This is a sequencing dependency between
+two otherwise-independent packages (different files, `engine/orders.py`'s ROE-gating extension vs.
+`engine/effects.py`'s jam-delivery/detectability extension), not a file-level split rationale.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1220](packages/IP-1220-sensor-modality-models.md) | FS-122 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED` |
+| [IP-1240](packages/IP-1240-debris-field-persistence-estimate.md) | FS-124 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED` |
+| [IP-1250](packages/IP-1250-maneuver-ledger.md) | FS-125 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED` |
+| [IP-1260](packages/IP-1260-telemetry-csv-export.md) | FS-126 | 🔴 BLOCKED | Not an authorization block — depends on `IP-1062` reaching `VERIFIED` (currently `COMPLETE` only) |
+| [IP-1270](packages/IP-1270-effect-authorization-gating-and-live-roe.md) | FS-127 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED`; resolves the shared taxonomy `IP-1290` reuses |
+| [IP-1280](packages/IP-1280-variable-speed-aar-replay.md) | FS-128 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED` |
+| [IP-1290](packages/IP-1290-jamming-delivery-and-effect-detectability.md) | FS-129 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED`; reuses `IP-1270`'s shared taxonomy — sequence after or coordinate closely |
+
+**None of the seven is authorized for coding (MSTR-006 §3)** — a separate, explicit decision for the
+project owner, per package or in bulk. **Sequencing note:** `IP-1270` before (or tightly
+coordinated with) `IP-1290`; `IP-1260` cannot begin `08-code-implementation` until `IP-1062` clears
+`09-package-verification` in a fresh session; the remaining four (`IP-1220`, `IP-1240`, `IP-1250`,
+`IP-1280`) have no cross-package ordering constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·

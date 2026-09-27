@@ -10,7 +10,9 @@
 > **Dependencies:** [FS-105](FS-105-spacecraft-operations.md) (Spacecraft Operations — the
 > command-delivery path `FR-1440` degrades), [FS-127](FS-127-effect-authorization-gating-and-live-roe.md)
 > (shares one open effect-classification-taxonomy question with this Feature, `BL-0105`)
-> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0081` (item B15),
+> **Referenced By:** [IP-1290](../implementation/packages/IP-1290-jamming-delivery-and-effect-detectability.md)
+> (Implementation Package, `READY`, not yet authorized),
+> [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0081` (item B15),
 > `BL-0105` (the shared-taxonomy consistency note),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-1440`, `FR-1450`

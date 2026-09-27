@@ -541,8 +541,21 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1200 | Save-as-Scenario | `implementation/packages/IP-1200-save-as-scenario.md` | FS-120 `FR-5510` | Forward design | 🔵 COMPLETE (implemented 2026-09-27, full suite 689/3, both permanent gates green; awaiting `09-package-verification` in a fresh session) |
 | IP-1190 | Bulk TLE and CCSDS OMM Multi-Object Import | `implementation/packages/IP-1190-bulk-tle-omm-import.md` | FS-119 `FR-5220` | Forward design | 🔵 COMPLETE (implemented 2026-09-27, full suite 638/3, both permanent gates green; awaiting `09-package-verification` in a fresh session) |
 | IP-1210 | Ephemeris Export (Truth and Cell-Observed) | `implementation/packages/IP-1210-ephemeris-export.md` | FS-121 `FR-7410`/`FR-7420`; FS-103 v1.1 | Forward design | 🔵 COMPLETE (implemented 2026-09-27, full suite 707/3, both permanent gates green; awaiting `09-package-verification` in a fresh session) |
+| IP-1220 | Sensor Modality Models | `implementation/packages/IP-1220-sensor-modality-models.md` | FS-122 `FR-1610`-`FR-1660` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1240 | Debris-Field Persistence Estimate by Altitude | `implementation/packages/IP-1240-debris-field-persistence-estimate.md` | FS-124 `FR-1430` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1250 | Per-Asset Manoeuvre Ledger with Purpose Tags and CSV Export | `implementation/packages/IP-1250-maneuver-ledger.md` | FS-125 `FR-1320` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1260 | Per-Asset Telemetry CSV Export Over a Time Span | `implementation/packages/IP-1260-telemetry-csv-export.md` | FS-126 `FR-2320` | Forward design | 🔴 BLOCKED (depends on `IP-1062` reaching `VERIFIED`, currently `COMPLETE` only — not an authorization block) |
+| IP-1270 | Optional Effect-Authorization Gating and Live Rules-of-Engagement Changes | `implementation/packages/IP-1270-effect-authorization-gating-and-live-roe.md` | FS-127 `FR-3430`/`FR-3440` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`; resolves the shared taxonomy IP-1290 reuses) |
+| IP-1280 | Variable-Speed AAR Replay from Truth or a Single Cell's Viewpoint | `implementation/packages/IP-1280-variable-speed-aar-replay.md` | FS-128 `FR-7330` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1290 | Jamming-Delivery Degradation and Per-Effect-Class Detectability Settings | `implementation/packages/IP-1290-jamming-delivery-and-effect-detectability.md` | FS-129 `FR-1440`/`FR-1450` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`; reuses IP-1270's shared taxonomy) |
 
-FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1180,
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1220,
+IP-1240, IP-1250, IP-1260, IP-1270, IP-1280, and IP-1290 are new (2026-09-27, run #78)** — seven
+packages planned against the Should-tier external-validation-report intake batch (`BL-0072`-
+`BL-0083`); `FS-123` (B8, space-weather coupling) has no package yet, blocked on two open design
+questions (`BL-0104`/`BL-0121`). See `01-technical-work-breakdown.md` §"Should-tier batch (run
+#78)" for the no-split rationale. None is authorized for coding (MSTR-006 §3) — a separate
+decision for the project owner. **IP-1180,
 IP-1062, IP-1200, IP-1190, and IP-1210 are new (2026-09-27, Tranche 4)** — all six packages planned
 against the Must-tier external validation report batch (`BL-0062`–`BL-0083`) are now written; see
 `01-technical-work-breakdown.md` Tranche 4 for the no-split rationale of each. None is authorized

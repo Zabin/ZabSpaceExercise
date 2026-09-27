@@ -136,6 +136,13 @@ package in this plan to reach that state.
 | [IP-1200](packages/IP-1200-save-as-scenario.md) | FS-120 Save-as-Scenario (`BL-0071`, item B5) | Forward design | 🔵 COMPLETE | none — **implemented 2026-09-27** by `08-code-implementation` (authorized the same day, MSTR-006 §3; built against `IP-1180`'s actual landed diff, per the coordination note): `export_vignette()`/`save_vignette()` gain an optional `start_epoch` parameter (defaults preserve `IP-1173`'s exact prior behavior); three new additive `Vignette` fields (`initial_tracks`, `simulator_version`, `initial_space_weather`) carried forward and consumed by `build_world()`; new `spacesim/version.py::simulator_version()` (git short hash, package-version fallback); new `SessionManager.save_as_scenario()` requiring `self.started`; `InProcessSession.save_vignette(..., as_scenario=...)` and `SaveVignetteRequest.as_scenario` wire it through the existing route (no new route). 11 new tests, full suite 689 passed/3 skipped (up from 678/3), both permanent gates green. Resolves `BL-0097` in full. Awaiting `09-package-verification` in a fresh session. |
 | [IP-1190](packages/IP-1190-bulk-tle-omm-import.md) | FS-119 Bulk TLE and CCSDS OMM Multi-Object Import (`BL-0067`, item B1) | Forward design | 🔵 COMPLETE | none — **implemented 2026-09-27** by `08-code-implementation` (authorized the same day, MSTR-006 §3): new `content/bulk_import.py` (`parse_multi_tle`/`parse_ccsds_omm`, KVN only), new public `engine/orbit.py::mean_to_true()` extracted with zero behavior change to `elements_to_rv()`, `_force_add_tle_object`/`_force_add_omm_object`/`bulk_import()` on `SessionManager`, new `POST /api/sessions/{sid}/force/bulk_import` route (+ `InProcessSession.bulk_import()` plumbing, implied by the route but not separately named in the package's own Files to Modify). 16 new tests (`test_bulk_import.py`, `test_bulk_import_session.py`, 2 in `test_orbit.py`, 1 in `test_web.py`, 1 new Observer-guard entry), full suite 638 passed/3 skipped (up from 622/3), both permanent gates green. Resolves `BL-0096` in full. Awaiting `09-package-verification` in a fresh session. |
 | [IP-1210](packages/IP-1210-ephemeris-export.md) | FS-121/FS-103 v1.1 Ephemeris Export (`BL-0069`, items B2/B3) | Forward design | 🔵 COMPLETE | none — **implemented 2026-09-27** by `08-code-implementation` (authorized the same day, MSTR-006 §3): new `session/ephemeris.py` (`sample_times`/`truth_ephemeris`/`cell_observed_ephemeris`/`to_ric`/`write_csv`/`write_oem`) built on a new additive `aar.state_at_time(mgr, t)` sibling of `state_at(mgr, seq)`; `engine/maneuver.py::lvlh_frame` reused unmodified for the RIC transform; two new HTTP routes (`GET .../ephemeris/truth` no-cell, `GET .../ephemeris/{cell}` cell-scoped). 18 new tests (`test_ephemeris.py`, +1 in `test_aar.py`, +4 in `test_web.py`), full suite 707 passed/3 skipped (up from 689/3), both permanent gates green. Resolves `BL-0098` in full. Awaiting `09-package-verification` in a fresh session. **This closes the five-package authorized-implementation tranche for this increment** (`IP-1180`/`IP-1062`/`IP-1200`/`IP-1190`/`IP-1210` — every one now `COMPLETE`). |
+| [IP-1220](packages/IP-1220-sensor-modality-models.md) | FS-122 Sensor Modality Models (`BL-0073`/`BL-0083`, items B7/B17) | Forward design | 🟡 READY | Not authorized (MSTR-006 §3). Every dependency (`IP-1010`/`1020`/`1030`/`1040`/`1050`/`1051`, all engine core) already `VERIFIED` — specification-complete, would flip to eligible-for-`08` the moment authorization is granted. |
+| [IP-1240](packages/IP-1240-debris-field-persistence-estimate.md) | FS-124 Debris-Field Persistence Estimate by Altitude (`BL-0077`, item B11) | Forward design | 🟡 READY | Not authorized (MSTR-006 §3). Dependency (`IP-1051`) `VERIFIED`. |
+| [IP-1250](packages/IP-1250-maneuver-ledger.md) | FS-125 Per-Asset Manoeuvre Ledger with Purpose Tags and CSV Export (`BL-0072`, item B6) | Forward design | 🟡 READY | Not authorized (MSTR-006 §3). Dependency (`IP-1010`) `VERIFIED`. |
+| [IP-1260](packages/IP-1260-telemetry-csv-export.md) | FS-126 Per-Asset Telemetry CSV Export Over a Time Span (`BL-0075`, item B9) | Forward design | 🔴 BLOCKED | Not an authorization block — this package's own Acceptance Criterion 1 requires `IP-1062`'s `anomaly` effect, currently `COMPLETE` but not yet `VERIFIED` (awaiting `09-package-verification` in a fresh session). Per this skill's own eligibility rule, a dependency merely `COMPLETE` keeps a package `BLOCKED`, not `READY`. |
+| [IP-1270](packages/IP-1270-effect-authorization-gating-and-live-roe.md) | FS-127 Optional Effect-Authorization Gating and Live Rules-of-Engagement Changes (`BL-0076`, item B10) | Forward design | 🟡 READY | Not authorized (MSTR-006 §3). Dependencies (`IP-1172`, `IP-1151`, core `eventlog.py`) `VERIFIED`. **Resolves the effect-classification enumeration `IP-1290` must reuse (`BL-0105`) — should be sequenced before or closely coordinated with `IP-1290`.** |
+| [IP-1280](packages/IP-1280-variable-speed-aar-replay.md) | FS-128 Variable-Speed AAR Replay from Truth or a Single Cell's Viewpoint (`BL-0078`, item B12) | Forward design | 🟡 READY | Not authorized (MSTR-006 §3). Dependency (`IP-1070`) `VERIFIED`. |
+| [IP-1290](packages/IP-1290-jamming-delivery-and-effect-detectability.md) | FS-129 Jamming-Delivery Degradation and Per-Effect-Class Detectability Settings (`BL-0081`, item B15) | Forward design | 🟡 READY | Not authorized (MSTR-006 §3). Dependencies (`IP-1051`, `IP-1010`/`1020`) `VERIFIED`. **Must be sequenced after (or closely coordinated with) `IP-1270`, whose landed effect-classification schema this package's own configuration parsing must match exactly (`BL-0105`).** |
 
 **Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code
@@ -384,6 +391,30 @@ the entire five-package Must-tier implementation tranche for this increment** �
 `IP-1062`, `IP-1200`, `IP-1190`, `IP-1210` are all now `COMPLETE`, each awaiting
 `09-package-verification` in its own fresh session (the same-session exclusion applies to all
 five, since this session implemented every one of them).
+
+**Update (2026-09-27, run #78): Seven new forward-design packages planned for the Should-tier
+external-validation-report intake batch**, against the eight Feature Specifications
+`06-feature-specification` drafted (`FS-122`, `FS-124`-`FS-129` — `FS-123` excluded, see below):
+`IP-1220` (FS-122, sensor modality models, B7+B17), `IP-1240` (FS-124, debris persistence, B11),
+`IP-1250` (FS-125, manoeuvre ledger, B6), `IP-1260` (FS-126, telemetry export, B9 — **`BLOCKED`**,
+not `READY`, since its own Acceptance Criterion 1 needs `IP-1062`'s `anomaly` effect and `IP-1062`
+is only `COMPLETE`, not yet `VERIFIED`), `IP-1270` (FS-127, effect-authorization gating + live ROE,
+B10), `IP-1280` (FS-128, variable-speed AAR replay, B12), `IP-1290` (FS-129, jamming-delivery +
+per-effect-class detectability, B15). `IP-1270` and `IP-1290` share one design dependency:
+`IP-1270`'s Design Decision 1 authors the effect-classification enumeration (order action type ×
+five-D's reversibility category) both `FR-3430` and `FR-1450` independently describe in identical
+words (`BL-0105`) — `IP-1290` cites, does not re-derive, that resolution, and the two packages
+should be sequenced with `IP-1270` first or closely coordinated. **No package was written for
+`FS-123`** (space-weather-index drag/anomaly-rate coupling, B8) — its own Open Questions
+(`BL-0104`/`BL-0121`, the index-to-scaling mapping function and implausible-index-value handling)
+are genuine physics/design decisions this skill's own rules forbid inventing; `FS-123` remains
+`🚧` until a `04`/`06` pass resolves them, at which point an eighth package (`IP-1230`, the next
+free slot in this series) can be planned. **None of the seven is authorized (MSTR-006 §3)** — all
+enter at `READY` (six) or `BLOCKED` (`IP-1260`, dependency-blocked not authorization-blocked), per
+this skill's own default-unauthorized rule. See
+[`01-technical-work-breakdown.md`](01-technical-work-breakdown.md) §"Should-tier batch (run #78)"
+for the full split rationale (in this case, one Feature Spec → one package each, no splitting
+needed — every FS in this batch fits a single coherent Definition of Done).
 
 ## Implementation sequence
 
