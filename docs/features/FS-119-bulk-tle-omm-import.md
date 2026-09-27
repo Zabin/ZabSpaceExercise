@@ -9,7 +9,8 @@
 > **Dependencies:** `FR-1210` (propagator seam), `FR-5140` (single manual TLE/lat-long entry, the
 > capability `FR-5220` is a batch sibling of, not a replacement for)
 > **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0067` (external
-> validation report, 26 Sep 2026, item B1)
+> validation report, 26 Sep 2026, item B1), [IP-1190](../implementation/packages/IP-1190-bulk-tle-omm-import.md)
+> (Implementation Package, `NOT STARTED`, not yet authorized)
 > **Produces:** a bulk TLE/CCSDS OMM multi-object import capability satisfying `FR-5220`
 > **Feature Mapping:** FS-119 (this document)
 > **Related Topics:** [FS-118](FS-118-external-vignette-directories.md) (same increment, adjacent

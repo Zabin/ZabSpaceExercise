@@ -69,6 +69,7 @@ unauthorized FS.
 | [IP-1180](IP-1180-external-vignette-directories.md) | External Vignette Directories & Safe Scenario Save Target (`BL-0082`, item B16) | [FS-118](../../features/FS-118-external-vignette-directories.md) `FR-5410`/`FR-5420`/`NFR-3700` | Forward design | ⚪ NOT STARTED (not authorized — MSTR-006 §3; specification-complete, no unmet dependency — `IP-1173` already `VERIFIED`) |
 | [IP-1062](IP-1062-condition-triggered-injects-and-new-effects.md) | Condition-Triggered Injects & New Inject Effect Types (`BL-0070`, item B4) | [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.1 `FR-4420`/`FR-4430` | Forward design | ⚪ NOT STARTED (not authorized — MSTR-006 §3; specification-complete, no dependency to satisfy) |
 | [IP-1200](IP-1200-save-as-scenario.md) | Save-as-Scenario (`BL-0071`, item B5) | [FS-120](../../features/FS-120-save-as-scenario.md) `FR-5510` | Forward design | ⚪ NOT STARTED (not authorized — MSTR-006 §3; specification-complete; same-function implementation-sequencing note with `IP-1180`, see the package's own Dependencies) |
+| [IP-1190](IP-1190-bulk-tle-omm-import.md) | Bulk TLE and CCSDS OMM Multi-Object Import (`BL-0067`, item B1) | [FS-119](../../features/FS-119-bulk-tle-omm-import.md) `FR-5220` | Forward design | ⚪ NOT STARTED (not authorized — MSTR-006 §3; specification-complete, no dependency to satisfy) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1170
 through IP-1174 are new (2026-07-05)** — Tranche 3, the five packages planned against `FS-117`
@@ -157,9 +158,16 @@ satisfy, not yet authorized. **`IP-1200` is the third**, closing `FS-120` (save-
 `Vignette` fields (`initial_tracks`, `simulator_version`), and reuse of the existing
 `space_weather` dict shape as `initial_space_weather` — resolves `BL-0097`'s Open Question in
 full as two Design Decisions. Notes a same-function implementation-sequencing coordination point
-with `IP-1180` (both extend `save_vignette()`). Specification-complete, not yet authorized. The
-remaining two Must-tier packages (`FS-119`, `FS-121`/`FS-103` v1.1) are queued for subsequent
-`07-implementation-planning` passes.
+with `IP-1180` (both extend `save_vignette()`). Specification-complete, not yet authorized. **`IP-1190` is the fourth**, closing `FS-119` (bulk
+TLE/CCSDS OMM import, `BL-0067`, item B1) — generalizes `session/manager.py::add_tle()`'s existing
+single-object mechanism to a batch entry point via new shared per-object helpers, adds a new
+`content/bulk_import.py` parser module (multi-TLE + CCSDS OMM in KVN form only — XML OMM explicitly
+out of scope, see the package's own Risks), and extracts a new public `engine/orbit.py::
+mean_to_true()` (mirroring the existing `true_to_mean()`) for the OMM path's mean-anomaly
+conversion. Resolves `BL-0096`'s two Open Questions in full as Design Decisions (outright file-level
+rejection vs. per-object failure; no new batch-size cap beyond `ADR-0019`'s existing soft
+guideline). Specification-complete, not yet authorized. The remaining Must-tier package
+(`FS-121`/`FS-103` v1.1) is queued for the next `07-implementation-planning` pass.
 
 **Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
 §3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in

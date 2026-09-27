@@ -233,8 +233,8 @@ recorded:
 ```
 FS-118 (FR-5410/FR-5420/NFR-3700)              ─► IP-1180   [done]
 FS-106 v2.1 (FR-4420/FR-4430 slice)             ─► IP-1062   [done]
-FS-120 (FR-5510)                                ─► IP-1200   [this pass]
-FS-119 (FR-5220)                                ─► IP-1190   [queued]
+FS-120 (FR-5510)                                ─► IP-1200   [done]
+FS-119 (FR-5220)                                ─► IP-1190   [this pass]
 FS-121 + FS-103 v1.1 (FR-7410/FR-7420)          ─► IP-1210   [queued]
 ```
 
@@ -262,17 +262,23 @@ package.
 extension of one existing function pair (`export_vignette()`/`save_vignette()`) plus two additive
 schema fields — no seam crossing, one package.
 
+**No-split rationale (IP-1190).** `FS-119`'s single requirement (`FR-5220`) covers two file
+formats sharing one batch entry point and one per-object failure-reporting contract — splitting
+"TLE parsing" from "OMM parsing" into separate packages would duplicate the batch-orchestration/
+reporting logic for no isolation benefit; one package, two parser functions.
+
 | Package | FS | Status | Authorization |
 |---|---|---|---|
 | [IP-1180](packages/IP-1180-external-vignette-directories.md) | FS-118 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
 | [IP-1062](packages/IP-1062-condition-triggered-injects-and-new-effects.md) | FS-106 v2.1 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
 | [IP-1200](packages/IP-1200-save-as-scenario.md) | FS-120 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
+| [IP-1190](packages/IP-1190-bulk-tle-omm-import.md) | FS-119 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
 
-The remaining two packages (`FS-119`, `FS-121`/`FS-103` v1.1) are queued for subsequent
-`07-implementation-planning` passes, per the pipeline journal's recorded next step. **Note:**
-`IP-1180` and `IP-1200` both extend the same function (`save_vignette()`/`export_vignette()`) —
-whichever is implemented second must be built against the first's actual landed diff, not against
-either package document's description alone (see each package's own Dependencies/Risks).
+The remaining package (`FS-121`/`FS-103` v1.1) is queued for the next `07-implementation-planning`
+pass, per the pipeline journal's recorded next step. **Note:** `IP-1180` and `IP-1200` both extend
+the same function (`save_vignette()`/`export_vignette()`) — whichever is implemented second must be
+built against the first's actual landed diff, not against either package document's description
+alone (see each package's own Dependencies/Risks).
 
 ## Related
 
