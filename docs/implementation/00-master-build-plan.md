@@ -10,9 +10,12 @@
 > **Produces:** the executable sequencing, dependency graph, and status ledger for every
 > Implementation Package in this pass
 > **Feature Mapping:** FS-101 through FS-107, FS-109, FS-110, FS-111, FS-112, FS-113, FS-114,
-> FS-115, FS-116, FS-117, FS-201, FS-301 (18 of 20 catalog entries; FS-108/FS-202 excluded, see
-> §"Scope and exclusions". FS-116 was already planned via `IP-1160` — this line's omission of it
-> was a pre-existing staleness, corrected here alongside FS-117's addition.)
+> FS-115, FS-116, FS-117, FS-118, FS-201, FS-301 (19 of 21 catalog entries; FS-108/FS-202 excluded,
+> see §"Scope and exclusions". FS-116 was already planned via `IP-1160` — this line's omission of it
+> was a pre-existing staleness, corrected here alongside FS-117's addition. **FS-118 added
+> 2026-09-27** via `IP-1180`, the first of six Must-tier packages from the external validation
+> report intake batch — FS-119/FS-120/FS-121/FS-106 v2.1/FS-103 v1.1 remain queued for subsequent
+> `07-implementation-planning` passes and are not yet reflected in this line.)
 > **Related Topics:** [`packages/INDEX.md`](packages/INDEX.md), [`docs/implementations/INDEX.md`](../implementations/INDEX.md) (the superseded prior corpus), [`.claude/skills/08-code-implementation/SKILL.md`](../../.claude/skills/08-code-implementation/SKILL.md) (the downstream skill that executes packages against this plan)
 
 [↑ Docs index](../INDEX.md) · [Packages index](packages/INDEX.md) · [Feature index](../features/feature-index.md)
@@ -125,6 +128,7 @@ package in this plan to reach that state.
 | [IP-1173](packages/IP-1173-vignette-creator-draft-session.md) | FS-117 §FR-5110 Vignette Creator Draft Session & Reverse Serialization | Forward design | ✅ VERIFIED | **Verified 2026-07-11 (fresh session)**, [`VR-1173`](verification/VR-1173-vignette-creator-draft-session.md) — full suite 586 passed/3 skipped, both permanent gates green; sole-writer-to-`VIGNETTE_DIR` and draft-session time-control rejection independently confirmed; independent manual round-trip beyond the existing tests. Zero findings |
 | [IP-1174](packages/IP-1174-vignette-creator-ui-surfaces.md) | FS-117 §FR-5120-FR-5160 Vignette Creator UI Surfaces | Forward design | 🔵 COMPLETE | none — **implemented 2026-09-26** (same day as `IP-1061`, a fresh session per the tranche's own eligibility filter — `IP-1061`'s COMPLETE state has no dependency edge to this package). 15 new tests in `test_vignette_creator_ui.py` + 4 new Observer-guard entries in `test_observer.py`, full suite 622 passed/3 skipped, both permanent gates green. See this package's own Risks/Outstanding-Issues for the corrected `build_scene()`/ground-truth design finding. Awaiting `09-package-verification`.
 | [IP-1061](packages/IP-1061-inject-and-sizing-defect-remediation.md) | FS-106 §FR-4410 + NFR-1300 (ADR-0019) Inject Scheduling & Sizing-Cap Defect Remediation | Remediation (forward design) | 🔵 COMPLETE | none — **implemented 2026-09-26** by `08-code-implementation`: 5 new tests in `test_inject_library.py`, 2 `test_content.py` cap tests inverted in place, full suite 603 passed/3 skipped, both permanent gates green. Closes backlog `BL-0062`–`BL-0065`. Awaiting `09-package-verification`. |
+| [IP-1180](packages/IP-1180-external-vignette-directories.md) | FS-118 External Vignette Directories & Safe Scenario Save Target (`BL-0082`, item B16) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete — sole dependency `IP-1173` already `VERIFIED`; would flip to `READY` the moment authorization is granted. First of six Must-tier packages queued this increment (2026-09-27). |
 
 **Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code

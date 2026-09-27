@@ -66,6 +66,7 @@ unauthorized FS.
 | [IP-1173](IP-1173-vignette-creator-draft-session.md) | Vignette Creator Draft Session & Reverse Serialization | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5110` | Forward design | ✅ VERIFIED (2026-07-11, [`VR-1173`](../verification/VR-1173-vignette-creator-draft-session.md) — full suite 586 passed/3 skipped, both permanent gates green; zero findings) |
 | [IP-1174](IP-1174-vignette-creator-ui-surfaces.md) | Vignette Creator UI Surfaces | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5120`-`FR-5160` | Forward design | 🔵 COMPLETE (implemented 2026-09-26; full suite 622 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
 | [IP-1061](IP-1061-inject-and-sizing-defect-remediation.md) | Inject Scheduling & Sizing-Cap Defect Remediation (`BL-0062`–`BL-0065`) | [FS-106](../../features/FS-106-white-cell-dashboard.md) §FR-4410 + NFR-1300 ([ADR-0019](../../architecture/adr/ADR-0019-sizing-guideline-not-engine-cap.md)) | Remediation (forward design) | 🔵 COMPLETE (implemented 2026-09-26; full suite 603 passed/3 skipped; awaiting `09-package-verification`) |
+| [IP-1180](IP-1180-external-vignette-directories.md) | External Vignette Directories & Safe Scenario Save Target (`BL-0082`, item B16) | [FS-118](../../features/FS-118-external-vignette-directories.md) `FR-5410`/`FR-5420`/`NFR-3700` | Forward design | ⚪ NOT STARTED (not authorized — MSTR-006 §3; specification-complete, no unmet dependency — `IP-1173` already `VERIFIED`) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1170
 through IP-1174 are new (2026-07-05)** — Tranche 3, the five packages planned against `FS-117`
@@ -131,6 +132,19 @@ implementation gap. Every one of its dependencies (`IP-1151`, `IP-1050`, `IP-105
 authorization is granted — not yet on record as of this writing. See
 [`../01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) Tranche 2 for the
 no-split rationale.
+
+**`IP-1180` is new (2026-09-27), Tranche 4 (external validation report, Must-tier batch):** the
+first of six Implementation Packages planned against the six Must-tier Feature Specifications
+authored from the 26 Sep 2026 external validation report (`docs/pipeline/backlog.md` `BL-0062`–
+`BL-0083`; priority order per `docs/pipeline/pipeline-journal.md` run #63: B16, B4, B5, B1, B2/B3).
+`IP-1180` closes `FS-118`'s three requirements in one package (no split — a single coherent seam
+across `content/vignette.py`/`content/vignette_export.py`/`config.py`) and resolves three of
+`FS-118`'s four Open Questions as explicit design decisions (see the package's own "Design
+Decisions" section), the fourth by direct code reading. Its sole dependency, `IP-1173`, is already
+`VERIFIED`, so it is specification-complete and would flip to `READY` the moment MSTR-006 §3
+authorization is granted — not yet on record as of this writing. The remaining five Must-tier
+packages (`FS-106` v2.1's `FR-4420`/`FR-4430` slice, `FS-120`, `FS-119`, `FS-121`/`FS-103` v1.1) are
+queued for subsequent `07-implementation-planning` passes.
 
 **Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
 §3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in

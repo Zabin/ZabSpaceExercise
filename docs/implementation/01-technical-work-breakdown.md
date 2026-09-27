@@ -221,6 +221,39 @@ remediation. A2 is a comment-only fix per the user's 2026-09-26 decision (no ali
 |---|---|---|
 | [IP-1061](packages/IP-1061-inject-and-sizing-defect-remediation.md) | 🔵 COMPLETE | Authorized 2026-09-26 (MSTR-006 §3); implemented 2026-09-26 |
 
+## Tranche 4 (2026-09-27, in progress): Must-tier external validation report batch
+
+Source: `docs/pipeline/backlog.md` `BL-0067`/`BL-0068`/`BL-0069`/`BL-0070`/`BL-0071`/`BL-0082`
+(external user validation report, 26 Sep 2026, items B1/B2/B3/B4/B5/B16). Six Feature
+Specifications now `✅ Ready for implementation planning` (run #61-#63): `FS-118` (B16), `FS-106`
+v2.1 (B4), `FS-120` (B5), `FS-119` (B1), `FS-121` + `FS-103` v1.1 (B2/B3). Planned one package per
+Feature Specification (no cross-Feature split), in the priority order the pipeline journal
+recorded:
+
+```
+FS-118 (FR-5410/FR-5420/NFR-3700)              ─► IP-1180   [this pass]
+FS-106 v2.1 (FR-4420/FR-4430 slice)             ─► IP-106x   [queued]
+FS-120 (FR-5510)                                ─► IP-1200   [queued]
+FS-119 (FR-5220)                                ─► IP-1190   [queued]
+FS-121 + FS-103 v1.1 (FR-7410/FR-7420)          ─► IP-1210   [queued]
+```
+
+**No-split rationale (IP-1180).** `FS-118`'s three requirements (external-directory load,
+user-directory save retargeting, generalized traversal guard) share one seam — `content/
+vignette.py`/`content/vignette_export.py`/`config.py` — and one coherent Definition of Done ("the
+catalog and the save path both honor the plural set of configured content roots, safely"). No
+engine change, no UI-route-shape change. Splitting the load-side extension from the save-side
+retargeting would double the verification cost (both share the same generalized traversal-guard
+helper) for no isolation benefit.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1180](packages/IP-1180-external-vignette-directories.md) | FS-118 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
+
+The remaining five packages (`FS-106` v2.1's `FR-4420`/`FR-4430` slice, `FS-120`, `FS-119`,
+`FS-121`/`FS-103` v1.1) are queued for subsequent `07-implementation-planning` passes, per the
+pipeline journal's recorded next step.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·

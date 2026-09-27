@@ -536,8 +536,12 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1173 | Vignette Creator Draft Session & Reverse Serialization | `implementation/packages/IP-1173-vignette-creator-draft-session.md` | FS-117 §FR-5110 | Forward design | ✅ VERIFIED (verified 2026-07-11, fresh session, [`VR-1173`](implementation/verification/VR-1173-vignette-creator-draft-session.md); full suite 586 passed/3 skipped, both permanent gates green; zero findings) |
 | IP-1174 | Vignette Creator UI Surfaces | `implementation/packages/IP-1174-vignette-creator-ui-surfaces.md` | FS-117 §FR-5120-FR-5160 | Forward design | 🔵 COMPLETE (implemented 2026-09-26; full suite 622 passed/3 skipped; awaiting `09-package-verification`) |
 | IP-1061 | Inject Scheduling & Sizing-Cap Defect Remediation | `implementation/packages/IP-1061-inject-and-sizing-defect-remediation.md` | FS-106 §FR-4410 + NFR-1300 (ADR-0019) | Remediation | 🔵 COMPLETE (implemented 2026-09-26; awaiting `09-package-verification`) |
+| IP-1180 | External Vignette Directories & Safe Scenario Save Target | `implementation/packages/IP-1180-external-vignette-directories.md` | FS-118 `FR-5410`/`FR-5420`/`NFR-3700` | Forward design | ⚪ NOT STARTED (not authorized, MSTR-006 §3; specification-complete) |
 
-FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1160 is
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1180 is
+new (2026-09-27, Tranche 4)** — the first of six packages planned against the Must-tier external
+validation report batch (`BL-0062`–`BL-0083`); see `01-technical-work-breakdown.md` Tranche 4 for
+the no-split rationale and the remaining five packages queued. **IP-1160 is
 new (2026-07-05)**, closing `FEAT-3500`'s implementation gap that `11-release-readiness` found —
 see the Master Build Plan's Tranche 2 note and `01-technical-work-breakdown.md` for the no-split
 rationale. **IP-1170 through IP-1174 are new (2026-07-05, Tranche 3)** — the five packages planned
