@@ -13,41 +13,44 @@
 
 ## Position
 
-- **Updated:** 2026-09-26 (run #63)
-- **Increment:** four threads. **Thread D (external user validation intake): all six Must-tier
-  items (B16/B4/B5/B1/B2/B3) now have Feature Specifications** — `FS-118` (B16), `FS-106` v2.1
-  (B4), `FS-120` (B5), `FS-119` (B1), `FS-121` + `FS-103` v1.1 (B2/B3 together, per `ADS-1500`'s
-  Consequences). Every one is `✅ Ready for implementation planning`. `BL-0066` (A5) remains fully
-  CLOSED (unchanged since run #60) — `IP-1061`/`IP-1174` both `COMPLETE`, still awaiting
-  `09-package-verification` in a fresh session. **Thread C:** Tranche 3 closed (unchanged).
-  **Thread A:** `IP-1160` still `BLOCKED` on authorization (unchanged). **Thread B:** no queued
-  work.
+- **Updated:** 2026-09-27 (run #64)
+- **Increment:** four threads. **Thread D (external user validation intake): the first of six
+  Must-tier Implementation Packages is now written — `IP-1180`** (FS-118, B16, `FR-5410`/`FR-5420`/
+  `NFR-3700`), `⚪ NOT STARTED`, specification-complete (sole dependency `IP-1173` already
+  `VERIFIED`), not yet authorized. It resolves FS-118's four Open Questions in full (one by direct
+  code reading, three as explicit Design Decisions) — `BL-0094` closed. Five Must-tier Implementation
+  Packages remain queued: `FS-106` v2.1's `FR-4420`/`FR-4430` slice (B4), `FS-120` (B5), `FS-119`
+  (B1), `FS-121` + `FS-103` v1.1 (B2/B3). `BL-0066` (A5) remains fully CLOSED (unchanged since run
+  #60) — `IP-1061`/`IP-1174` both `COMPLETE`, still awaiting `09-package-verification` in a fresh
+  session. **Thread C:** Tranche 3 closed (unchanged). **Thread A:** `IP-1160` still `BLOCKED` on
+  authorization (unchanged). **Thread B:** no queued work.
 - **Pipeline state:**
-  - `08` — nothing eligible this session (same-session exclusion on `IP-1061`/`IP-1174`;
-    `IP-1160` `BLOCKED` on authorization).
+  - `08` — nothing eligible this session (same-session exclusion on `IP-1061`/`IP-1174`; `IP-1160`
+    and now `IP-1180` both `BLOCKED`/`NOT STARTED` on authorization, not yet sought for either).
   - `09` — `IP-1061` and `IP-1174` both due, each in a fresh session.
-  - `07` — **seven Implementation Packages now due**: the DE package (`FS-105` v1.1) plus one per
-    Must-tier Feature Spec — `FS-118` (B16), `FS-106` v2.1's `FR-4420`/`FR-4430` slice (B4),
-    `FS-120` (B5), `FS-119` (B1), `FS-121` + `FS-103` v1.1 (B2/B3). **Every one will need the
-    project owner's MSTR-006 §3 authorization before `08` may code it** — writing the packages
-    themselves is not gated, only the subsequent coding step.
+  - `07` — **six Implementation Packages now due**: the DE package (`FS-105` v1.1) plus five
+    remaining Must-tier packages — `FS-106` v2.1's `FR-4420`/`FR-4430` slice (B4), `FS-120` (B5),
+    `FS-119` (B1), `FS-121` + `FS-103` v1.1 (B2/B3). `IP-1180` (B16) is now done. **Every one will
+    need the project owner's MSTR-006 §3 authorization before `08` may code it** — writing the
+    packages themselves is not gated, only the subsequent coding step.
   - `06`/`03` — nothing outstanding for the Must-tier thread. Two Low interface-model-stretch
-    findings (`BL-0092`/`INT-0013`, `BL-0093`/`INT-0014`) remain routed to whoever next touches
-    the ICD, non-blocking. Five new Low/Medium design-question findings (`BL-0094`-`BL-0098`, one
-    per new Feature Spec's Open Questions) are `SCHEDULED` to ride each spec's own `07` pass.
-- **Backlog:** 98 total. This run: `BL-0067`/`BL-0068`/`BL-0069`/`BL-0070`/`BL-0071`/`BL-0082`
-  flipped `IN PIPELINE`, entry stage `06` → `07`; five new findings harvested (`BL-0094`-`BL-0098`,
-  Feature Spec Open Questions, all `SCHEDULED` to ride the owning `07` pass).
-- **Next step:** `07-implementation-planning` on the six Must-tier Implementation Packages
-  (writing them is not itself gated — only the later `08` coding step needs MSTR-006 §3
-  authorization), per the user's "everything, all 17 B-items" instruction. Recommend the same
-  priority order: B16 (`FS-118`), B4 (`FS-106` v2.1), B5 (`FS-120`), B1 (`FS-119`), then B2/B3
-  together (`FS-121`/`FS-103` v1.1). The DE package (`FS-105` v1.1) remains available in parallel
-  whenever convenient.
-- **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner. A
-  **gate will open** once `07` writes the DE Implementation Package: MSTR-006 §3 authorization,
-  before `08` may code it. PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft,
-  subscribed, hourly check-ins continuing; repo has no CI workflows.
+    findings (`BL-0092`/`INT-0013`, `BL-0093`/`INT-0014`) remain routed to whoever next touches the
+    ICD, non-blocking. Four Low/Medium design-question findings (`BL-0095`-`BL-0098`, one per
+    remaining new Feature Spec's Open Questions) stay `SCHEDULED` to ride each spec's own `07` pass.
+    `BL-0099` (Low, facilitator-visible collision-disclosure UX) `DEFERRED`; `BL-0100` (Low,
+    recommend baselining Design Decision 2 in a future `FR-5410` amendment) `DEFERRED`, routed to
+    `04`.
+- **Backlog:** 100 total. This run: `BL-0094` flipped `DONE` (closed in full by `IP-1180`); two new
+  findings harvested (`BL-0099`, `BL-0100`, both Low, both `DEFERRED`, non-blocking).
+- **Next step:** `07-implementation-planning` on the next Must-tier Implementation Package, same
+  priority order: B4 (`FS-106` v2.1's `FR-4420`/`FR-4430` slice), then B5 (`FS-120`), B1 (`FS-119`),
+  then B2/B3 together (`FS-121`/`FS-103` v1.1) — per the user's "everything, all 17 B-items"
+  instruction. Writing these is not itself gated; the DE package (`FS-105` v1.1) remains available
+  in parallel whenever convenient.
+- **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner.
+  **`IP-1180` authorization (MSTR-006 §3) — not yet sought.** A gate will also open once `07`
+  writes the DE Implementation Package. PR #55 (branch `claude/chart-prompt-file-90hm9u`)
+  open/draft, subscribed, hourly check-ins continuing; repo has no CI workflows.
 
 ---
 
@@ -526,3 +529,4 @@
 | 61 | 2026-09-26 | advance | `04-requirements-engineering` | Must-tier intake batch — `BL-0082`(B16), `BL-0070`(B4), `BL-0071`(B5), `BL-0067`(B1), `BL-0069`(B3) | Reconciliation (Step 1): no drift. Read all five backlog rows verbatim plus GDS-04/ICD/ADR inputs and the cited baseline code (`vignette.py`, `vignette_export.py`, `config.py`, `server.py`). Drafted nine new baselined leaves in the user-accepted order (B16 first): `FR-5410`/`FR-5420` (new parent `FR-5400`), `FR-4420`/`FR-4430` (under existing `FR-4400`), `FR-5510` (new parent `FR-5500`), `FR-5220` (under existing `FR-5200`), `FR-7410`/`FR-7420` (new parent `FR-7400`), `NFR-3700` (Security). Wrote `docs/reviews/requirements-update-must-tier-batch.md` (9 findings: 3 ambiguity/dependency/interface-stretch, rest clean). Updated `03-requirements-traceability-matrix.md` (9 new rows, ADR reverse-index updates, `ADR-0034`/`0035` added, summary section). Committed. Flipped `BL-0082`/`BL-0070`/`BL-0071`/`BL-0067`/`BL-0069` `SCHEDULED → IN PIPELINE` (entry stage `04` → `06`). Harvested 3 new findings: `BL-0091` (scripted-manoeuvre entry-mode ambiguity, Low, rides B4's `06` pass), `BL-0092`/`BL-0093` (ICD interface-stretch on `INT-0013`/`INT-0014`, Low, `DEFERRED`). | `03-architecture-design-synthesis` on `BL-0068` (B2 — custody domain-model change), the one remaining blocker in this thread; the five `06-feature-specification` passes for B16/B4/B5/B1/B3 are also now available. |
 | 62 | 2026-09-26 | advance | `03-architecture-design-synthesis` | `BL-0068` (B2, custody domain-model change) | Reconciliation: no drift. Read `engine/custody.py` directly (Track/observe/current_confidence) plus every call site of `state_estimate` (orders.py:745, ssn.py:386, scene.py's render path) and R105/ADR-0013/ADR-0004/ADR-0002. Found the backlog's premise half-wrong: `state_estimate` is already a frozen, forward-propagated snapshot independent of ground truth (an unobserved manoeuvre already does not leak), so no engine change is needed for that half. Designed the genuinely missing half (a per-cell belief-state history for `FR-7420`'s export) as a reuse of the existing deterministic `EventLog` replay (`session/aar.py::state_at`) rather than a new stored structure — mirrors this increment's own ADR-0034/0035 minimal-surgery precedent. Wrote `ADS-1500` (10 sections, Decision Log records 5 decisions), updated `architecture/INDEX.md` §2 and `ROADMAP.md`. Committed. Flipped `BL-0068` `SCHEDULED → IN PIPELINE` (entry stage `03` → `06`). No new findings — Open Questions (synthetic estimation-error injection; sampling-rate performance ceiling) are both genuinely open, left for a future increment/07 sizing, not filed as backlog items since neither blocks `FR-7420`'s MVP path. | `06-feature-specification` on the six now-unblocked Must-tier Feature Specs (B16, B4, B5, B1, then B2+B3 together per `ADS-1500`'s Consequences). |
 | 63 | 2026-09-26 | advance | `06-feature-specification` | six Must-tier Feature Specs — B16 (`FR-5410`/`FR-5420`/`NFR-3700`), B4 (`FR-4420`/`FR-4430`), B5 (`FR-5510`), B1 (`FR-5220`), B2/B3 (`FR-7410`/`FR-7420`) | Wrote `FS-118` (new, external vignette directories/safe save target). Updated `FS-106` in place to v2.1 (condition-triggered injects + four new effect types, the natural home since both new FRs are children of FR-4410's own FR-4400 parent). Wrote `FS-119` (new, bulk TLE/OMM import) and `FS-120` (new, save-as-scenario, carefully distinguished from FS-110 save/resume and FS-117's draft save). Wrote `FS-121` (new, truth+cell-observed ephemeris export) and updated `FS-103` to v1.1 per `ADS-1500`'s Consequences (confirms `Track.state_estimate` independence, closes FS-103's own historical-record Open Question). Updated `docs/features/feature-index.md` for all five. Committed in three commits (FS-118; FS-106; FS-119/120/121+FS-103). Flipped `BL-0067`/`BL-0068`/`BL-0069`/`BL-0070`/`BL-0071`/`BL-0082` `IN PIPELINE` (entry stage `06` → `07`). Harvested 5 new findings: `BL-0094` (FS-118, Medium — 4 open questions incl. IP-1173 code-path identity), `BL-0095` (FS-106, Low), `BL-0096` (FS-119, Low), `BL-0097` (FS-120, Low), `BL-0098` (FS-121, Low) — all `SCHEDULED` to ride each spec's own `07` pass. | `07-implementation-planning` on the six Must-tier Implementation Packages, same priority order (B16, B4, B5, B1, B2/B3); writing them is unblocked, only the subsequent `08` coding step needs MSTR-006 §3 authorization. |
+| 64 | 2026-09-27 | advance | `07-implementation-planning` | `IP-1180` — FS-118 (B16, `FR-5410`/`FR-5420`/`NFR-3700`) | Reconciliation (Step 1): no drift; confirmed via `packages/INDEX.md`/Master Build Plan that none of the six Must-tier FS's had a package yet, and the backlog carried no un-triaged `NEW` entries. Read FS-118 in full plus the live code (`content/vignette.py`, `content/vignette_export.py`, `config.py`, `session/inprocess.py`, `ui_web/server.py`) before drafting. Wrote `IP-1180` (one package, no split): extends `list_vignettes()`/`load_vignette()` to enumerate configured external directories, retargets `save_vignette()` to a configured user-save directory, generalizes the traversal guard into shared helpers. Resolved all four of FS-118's Open Questions: OQ1 by direct code reading (`save_vignette` in `vignette_export.py` is the one and only retargeted path — traced its single caller and single route); OQ2-4 as explicit Design Decisions (unreadable external directory skipped+logged; no-`user_save_dir` rejects with a specific error; built-in-wins id-collision tie-break, shadow logged). Updated `packages/INDEX.md`, `00-master-build-plan.md`, `01-technical-work-breakdown.md` (new Tranche 4), `ROADMAP.md`, and `FS-118`'s `Referenced By` metadata. Committed `b328cd1`, pushed to the open PR #55 branch. Flipped `BL-0094` `DONE` (closed in full). Harvested 2 new findings: `BL-0099` (Low, facilitator-visible collision-disclosure UX, `DEFERRED`), `BL-0100` (Low, recommend a future `FR-5410` amendment baselining Design Decision 2, `DEFERRED`, routed to `04`). `IP-1180` entered `⚪ NOT STARTED`, not yet authorized (MSTR-006 §3 not sought this run). | `07-implementation-planning` on the next Must-tier Implementation Package (B4 — `FS-106` v2.1's `FR-4420`/`FR-4430` slice), same priority order; writing it is unblocked, only the later `08` coding step needs MSTR-006 §3 authorization. |
