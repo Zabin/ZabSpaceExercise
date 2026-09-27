@@ -22,7 +22,17 @@
 > `FR-5400`; `FR-5510` under new parent `FR-5500`; `FR-7410`, `FR-7420` under new parent `FR-7400`
 > — closing `docs/pipeline/backlog.md` `BL-0082`/`BL-0070`/`BL-0071`/`BL-0067`/`BL-0069` (items
 > B16/B4/B5/B1/B3). `FR-7420` is baselined but not independently verifiable until `BL-0068` (item
-> B2)'s custody domain-model change is specified — see `03-requirements-review.md`.)
+> B2)'s custody domain-model change is specified — see
+> [`reviews/requirements-update-must-tier-batch.md`](../reviews/requirements-update-must-tier-batch.md).);
+> further amended (Should-tier external-validation-report intake batch, 2026-09-27; **thirteen
+> numbered FR leaves added** — `FR-1230` under `FR-1200`'s existing parent; `FR-1320` under
+> `FR-1300`'s existing parent; `FR-1430`, `FR-1440`, `FR-1450` under `FR-1400`'s existing parent;
+> `FR-1610`–`FR-1660` (six leaves) under new parent `FR-1600`; `FR-2320` under `FR-2300`'s existing
+> parent; `FR-3430`, `FR-3440` under `FR-3400`'s existing parent; `FR-4440` under `FR-4400`'s
+> existing parent; `FR-7330` under `FR-7300`'s existing parent — closing
+> `docs/pipeline/backlog.md` `BL-0073`/`BL-0074`/`BL-0077`/`BL-0072`/`BL-0075`/`BL-0076`/`BL-0078`/
+> `BL-0081`/`BL-0083` (items B7/B8/B11/B6/B9/B10/B12/B15/B17) — see
+> [`reviews/requirements-update-should-tier-batch.md`](../reviews/requirements-update-should-tier-batch.md).)
 > **ADR range now ADR-0001 through ADR-0035** (34 `Accepted`, 1 `Superseded` — `ADR-0029` by
 > `ADR-0033`).
 > **Authoritative inputs (per explicit instruction for this baseline):**
@@ -205,6 +215,44 @@ review passes actually run against it).
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-1210, FR-1130, FR-3110, FR-3210
 
+#### FR-1230 — Space-weather-index-driven LEO drag coupling
+
+- **ID:** FR-1230
+- **Title:** Couple a space-weather index time series into deterministic LEO orbital drag
+- **Description:** The system shall accept a space-weather index time series (e.g. F10.7 solar
+  flux, Kp/Ap geomagnetic index) as vignette-authored data or an inject payload, and shall use it
+  to scale low-Earth-orbit atmospheric-drag decay for propagated Assets, computed deterministically
+  from the declared index values and simulated time — never from a wall-clock read or an
+  out-of-band atmospheric-density service call.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B8); `engine/perturbations.py` already implements drag physics (`secular_drag_decay()`) but it is
+  not coupled into the runtime propagator (`docs/FUTURE-WORK.md` §2, §13 R12/GAP-01, previously
+  accepted-deferred). `R131` v1.1 §3 grounds F10.7 (slow solar-cycle baseline) and Kp/Ap (fast
+  geomagnetic index) as the two real numeric inputs density models of this class (NRLMSISE-00,
+  JB2008) actually consume together — this requirement is additive to, not a replacement for, the
+  existing `severity` (none/minor/severe) space-weather inject field `FR-4410` already carries.
+- **Priority:** Should
+- **Inputs:** A declared space-weather index time series (per-index values at declared simulated
+  times) from vignette data or an inject payload; the affected Asset's current orbital state.
+- **Outputs:** A scaled drag-decay term applied to the affected Asset's propagated orbital state,
+  computed via `engine/perturbations.py::secular_drag_decay()` or an equivalent deterministic
+  function of the declared index value(s) and elapsed simulated time.
+- **Preconditions:** The affected Asset is in a low-Earth-orbit regime where drag is physically
+  material (per `engine/orbit.py`'s existing regime classification).
+- **Postconditions:** Replaying the identical `(initial_state, ordered eventlog, seed)` — which
+  includes the index time series, itself vignette data or an inject payload already covered by the
+  eventlog — reproduces byte-identical propagated state (`CLAUDE.md` invariant 1; `ADR-0002`).
+- **Acceptance Criteria:** Given two index time series with differing Kp/F10.7 values, the same
+  Asset's propagated altitude decay differs measurably and consistently with the higher-drag series
+  decaying faster; replaying either run reproduces identical results.
+- **Verification Method:** Test
+- **Dependencies:** FR-1210, FR-1120
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0074` (external validation report, 26 Sep
+  2026, item B8); `docs/research/encyclopedia/R131-space-environment-and-space-weather-operations.md`
+  §3 (v1.1); `docs/FUTURE-WORK.md` §2, §13 R12/GAP-01; `ADR-0002`.
+- **Related ADRs:** ADR-0002
+- **Related Requirements:** FR-1210, FR-1120, FR-4410, FR-4440
+
 ### FR-1300 — Maneuver and resource accounting
 
 #### FR-1310 — Impulsive maneuver with delta-v budget enforcement
@@ -233,6 +281,40 @@ review passes actually run against it).
 - **Related ADRs:** (none directly — restates a GDS-04 validation rule)
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-1210, FR-3110
+
+#### FR-1320 — Per-asset manoeuvre ledger with purpose tags and export
+
+- **ID:** FR-1320
+- **Title:** Record a per-asset manoeuvre ledger with an operator-entered purpose tag, viewable and
+  exportable
+- **Description:** The system shall record, for each Asset, an ordered ledger of every impulsive
+  manoeuvre applied against it — simulated time, delta-v cost, the operator-entered purpose tag
+  supplied with the order, and the Asset's remaining delta-v budget immediately after — viewable in
+  the operator console and exportable as CSV.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B6); every manoeuvre is already deducted from `delta_v_ms` and logged in the `EventLog`
+  (`FR-1310`, `FR-7110`), but neither is presented as a per-asset, purpose-tagged ledger a
+  facilitator or operator can review or export — the same gap `docs/FUTURE-WORK.md`'s "Δv panel"
+  item names.
+- **Priority:** Should
+- **Inputs:** A manoeuvre order carrying an operator-entered purpose tag (free-text or a declared
+  short label); the Asset's `EventLog` history of applied manoeuvres.
+- **Outputs:** A per-asset, time-ordered ledger view (time, delta-v cost, purpose tag, remaining
+  budget); a CSV export of the same rows for a requested Asset.
+- **Preconditions:** The purpose tag is supplied at order-issue time, per `FR-3110`'s existing
+  planned-activity creation path — it is not a separate action.
+- **Postconditions:** The ledger is derived from the existing `EventLog`, never a separate
+  mutable-state copy that could drift from it.
+- **Acceptance Criteria:** Given an Asset with N recorded manoeuvres, the ledger view and its CSV
+  export both list exactly N rows, each with the correct time/cost/tag/remaining-budget values
+  matching the `EventLog`.
+- **Verification Method:** Test
+- **Dependencies:** FR-1310, FR-7110, FR-3110
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0072` (external validation report, 26 Sep
+  2026, item B6); `docs/FUTURE-WORK.md` "Δv panel" item; `FR-1310`.
+- **Related ADRs:** (none directly — a presentation/export layer over existing `FR-1310`/`FR-7110`
+  state, not a new resource-accounting rule)
+- **Related Requirements:** FR-1310, FR-7110, FR-3110
 
 ### FR-1400 — Counterspace effect resolution
 
@@ -292,6 +374,111 @@ review passes actually run against it).
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-1410, FR-1220
 
+#### FR-1430 — Debris-field persistence estimate by altitude
+
+- **ID:** FR-1430
+- **Title:** Attach an estimated persistence figure, by altitude, to a spawned debris field
+- **Description:** The system shall compute and attach to each `DebrisField` object (created by a
+  destructive effect or a `spawn_debris` inject) an estimated persistence figure derived from its
+  altitude, and shall make that figure visible to players/facilitator wherever the debris field
+  itself is shown.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B11); `docs/FUTURE-WORK.md` §13 R16/GAP-02 previously accepted-deferred a fuller persistent-debris
+  environment layer — this requirement is deliberately narrower than that deferred item (and than
+  Candidate Requirement `CR-17`'s "persistent, world-changing debris consequence" that gates future
+  Access Windows): it is an **informational estimate only**, not a mechanism that changes Access
+  Window computation (`FR-1220`) or conjunction screening behavior. `R117` v1.2 §3.1 grounds
+  real-world debris-lifetime-by-altitude figures (weeks-months below ~300-400km; years-decades at
+  600-1000km; centuries above ~900km) and the IADC 25-year / FCC 5-year LEO-disposal-guideline
+  figures the estimate should be consistent with in order of magnitude.
+- **Priority:** Should
+- **Inputs:** A newly created `DebrisField`'s altitude (from the destructive effect's or inject's
+  resulting orbital state).
+- **Outputs:** A `persistence_estimate` value attached to the `DebrisField`, displayed wherever the
+  field is rendered to a player or facilitator.
+- **Preconditions:** The `DebrisField` has a determinable altitude at creation time.
+- **Postconditions:** The estimate does not gate, degrade, or otherwise change any Access Window
+  computation (`FR-1220`) or conjunction-screening outcome — it is read-only, presentational state,
+  distinct from the deferred fuller mechanism `CR-17` still describes.
+- **Acceptance Criteria:** Given two `DebrisField`s created at different altitudes, the
+  lower-altitude field's `persistence_estimate` is shorter than the higher-altitude field's, and
+  neither estimate changes either field's effect on Access Window computation.
+- **Verification Method:** Test
+- **Dependencies:** FR-1410, FR-1230
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0077` (external validation report, 26 Sep
+  2026, item B11); `docs/research/encyclopedia/R117-directed-energy-and-kinetic-effects.md` §3.1
+  (v1.2); `docs/FUTURE-WORK.md` §2, §13 R16/GAP-02; Candidate Requirement `CR-17` (this requirement
+  is deliberately narrower than, not a promotion of, `CR-17`).
+- **Related ADRs:** (none directly — an informational estimate, not a new engine mechanism)
+- **Related Requirements:** FR-1410, FR-1230, FR-1220
+
+#### FR-1440 — Uplink/crosslink jamming degrades command and relay delivery paths
+
+- **ID:** FR-1440
+- **Title:** Extend jam effectiveness to command-uplink and crosslink-relay delivery, not telemetry
+  alone
+- **Description:** The system shall allow a successful uplink or crosslink jam effect to cause a
+  planned command routed through the jammed link to fail delivery or be delayed, in addition to the
+  jam's existing telemetry-signature effect.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B15); the baseline models uplink/crosslink jamming as changing telemetry signatures only, with no
+  effect on command/relay delivery, though `engine/effects.py`'s `is_link_denied` already models a
+  denied-link concept the delivery path (`FR-3110`'s stored/ISL delivery) does not yet consult for
+  the jam effect category specifically.
+- **Priority:** Should
+- **Inputs:** An active, successfully resolved uplink or crosslink jam `EffectInstance`; a planned
+  command routed through the affected link at execute-time re-validation (`FR-3410`).
+- **Outputs:** A failed or delayed delivery outcome for the affected planned command, recorded in
+  the `EventLog`.
+- **Preconditions:** The jam effect is currently active and its footprint covers the command's
+  delivery path at the command's scheduled execution time.
+- **Postconditions:** A command whose delivery path is not covered by an active jam is unaffected;
+  the jam's existing telemetry-signature effect is unchanged by this requirement.
+- **Acceptance Criteria:** Given an active uplink jam covering a command's delivery path at its
+  scheduled execution time, the command fails or is delayed at execute-time re-validation; given no
+  active jam on that path, the same command executes normally.
+- **Verification Method:** Test
+- **Dependencies:** FR-1410, FR-3410, FR-3110
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0081` (external validation report, 26 Sep
+  2026, item B15); `engine/effects.py` `is_link_denied`.
+- **Related ADRs:** (none directly — extends an existing effect category's consequences within
+  `ADR-0011`'s six-channel model)
+- **Related Requirements:** FR-1410, FR-3410, FR-3110, FR-1450
+
+#### FR-1450 — Per-effect-class detectability and attribution-difficulty configuration
+
+- **ID:** FR-1450
+- **Title:** Configure detectability and attribution difficulty per effect class
+- **Description:** The system shall allow each effect class (by type and/or reversibility category)
+  to carry its own configurable detectability and attribution-difficulty settings, consulted when
+  resolving that effect's detection/attribution outcome, rather than a single fixed setting applied
+  uniformly across all effect classes.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B15); `FR-1410` already resolves an attribution signal as a side effect of every effect
+  resolution, but the baseline has no per-effect-class tuning of detectability/attribution
+  difficulty — a jam effect and a kinetic effect are not equally detectable or attributable in
+  reality, and the vignette author currently has no way to express that difference.
+- **Priority:** Should
+- **Inputs:** A per-effect-class (by type and/or reversibility category) detectability/
+  attribution-difficulty configuration, authored as vignette data.
+- **Outputs:** A detection/attribution outcome for a resolved effect that reflects its own
+  effect-class's configured setting, rather than a single global default.
+- **Preconditions:** A detectability/attribution-difficulty configuration is declared for the
+  effect's class; an undeclared class falls back to the existing single fixed setting `FR-1410`
+  already provides.
+- **Postconditions:** Declaring a per-class setting for one effect class does not change the
+  detection/attribution outcome of any other, undeclared effect class.
+- **Acceptance Criteria:** Given two effect classes with differently configured
+  detectability/attribution-difficulty settings, resolving one instance of each produces detection/
+  attribution outcomes consistent with each class's own configured setting, not a shared default.
+- **Verification Method:** Test
+- **Dependencies:** FR-1410
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0081` (external validation report, 26 Sep
+  2026, item B15); `FR-1410` (existing attribution-as-side-effect mechanism).
+- **Related ADRs:** (none directly — a configuration layer over `FR-1410`'s existing attribution
+  mechanism, not a new effect-resolution rule)
+- **Related Requirements:** FR-1410, FR-1440
+
 ### FR-1500 — Custody, tracks, and the weapons-quality gate
 
 #### FR-1510 — Track confidence decay and reset
@@ -348,6 +535,212 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0013
 - **Related Interfaces:** INT-0007
 - **Related Requirements:** FR-1510, FR-3110, FR-3400
+
+### FR-1600 — Sensor modality-specific access and effectiveness models *(new 2026-09, Should-tier external-validation-report intake batch)*
+
+`FR-1220` computes access windows for the six channels generically, including
+`sensor_observation`; the six leaves below add modality-specific access-predicate and
+effectiveness refinements for particular real sensor types, each layered on top of `FR-1220`'s
+existing generic computation rather than replacing it. This family complements, and does not
+duplicate, `FR-3200`'s sensor-*tasking*-workflow family (contention, SSN request/delivery) — these
+leaves constrain what a sensor *can* observe and how effectively, not how tasking is arbitrated.
+
+#### FR-1610 — Fence/dish radar beam-mode variants
+
+- **ID:** FR-1610
+- **Title:** Model a wide-field-of-regard, continuous-coverage radar variant alongside a
+  narrow-beam, cued radar variant
+- **Description:** The system shall support a radar sensor configured as a wide, low-gain,
+  continuous field-of-regard variant (a "fence," detecting objects transiting a fixed volume) in
+  addition to the existing narrow, high-gain, steerable-beam variant (a "dish," cued to one target
+  at a time), as a beam-mode parameterization rather than a distinct `Sensor.kind`.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B7); `R109` v1.2 §3.6 grounds the real Space Fence phased-array radar's continuous-coverage
+  sweep-and-catalog behavior against a cued tracking dish's narrower beam, and recommends modeling
+  the difference as a `BEAM_MODES` extreme (per the existing swath/resolution/power trade `FR-1220`
+  and the ground/space sensor model already support) rather than a new access predicate.
+- **Priority:** Should
+- **Inputs:** A ground-kind sensor's declared beam-mode parameterization (wide-field-of-regard/
+  low-gain vs. narrow-beam/high-gain).
+- **Outputs:** An access/effectiveness result consistent with the declared beam-mode's
+  swath/gain trade.
+- **Preconditions:** The sensor is declared with a beam-mode entry in the relevant `BEAM_MODES`-
+  style table.
+- **Postconditions:** No new `Sensor.kind` value is introduced; the existing ground/space access
+  predicate is unchanged.
+- **Acceptance Criteria:** Given a wide-field-of-regard sensor and a narrow-beam sensor observing
+  the same volume, the wide variant detects more transiting objects at lower per-object gain than
+  the narrow variant, consistent with each one's declared beam-mode parameters.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0073` (external validation report, 26 Sep
+  2026, item B7); `docs/research/encyclopedia/R109-sensor-operations.md` §3.6 (v1.2).
+- **Related ADRs:** ADR-0011
+- **Related Requirements:** FR-1220
+
+#### FR-1620 — Optical sensor solar/lunar exclusion angle
+
+- **ID:** FR-1620
+- **Title:** Reject an optical observation whose line of sight falls within a configured solar/lunar
+  exclusion angle
+- **Description:** The system shall support, for a ground-based optical sensor, a configurable
+  exclusion-angle radius around the Sun (and optionally the Moon) such that an otherwise
+  geometrically valid, correctly-lit access window is rejected if the excluded body falls within
+  that angular radius of the sensor's boresight.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B7); the baseline ground-optical predicate already checks target-sunlit/site-dark lighting
+  (`FR-1220`) but has no solar/lunar exclusion-angle concept. `R109` v1.2 §3.7 grounds this against
+  real GEODSS deep-space-surveillance practice (an exclusion cone commonly cited around 90° for
+  ground-based deep-space optical sensors, flagged in the research topic itself as a single-source,
+  order-of-magnitude figure, not a precise universal constant).
+- **Priority:** Should
+- **Inputs:** A declared `exclusion_angle_deg` (solar, and optionally lunar) on a ground-optical
+  sensor; the current Sun/Moon angular position relative to the sensor's boresight.
+- **Outputs:** An accept/reject decision for the access window, layered on top of the existing
+  lighting predicate.
+- **Preconditions:** The sensor declares a non-default `exclusion_angle_deg`; a sensor with no
+  declared value is unaffected (falls back to the existing lighting-only predicate).
+- **Postconditions:** An access window otherwise valid under the existing lighting predicate is
+  rejected only when the excluded body falls within the declared angular radius.
+- **Acceptance Criteria:** Given a sensor with a declared exclusion angle and a geometry placing the
+  Sun inside that angle, the access window is rejected; given the Sun outside that angle (all else
+  equal), the window is granted per the existing lighting predicate.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0073` (external validation report, 26 Sep
+  2026, item B7); `docs/research/encyclopedia/R109-sensor-operations.md` §3.7 (v1.2, including its
+  own single-source flag on the 90° figure).
+- **Related ADRs:** ADR-0011
+- **Related Requirements:** FR-1220
+
+#### FR-1630 — Space-based sensor minimum-range floor and altitude-band affinity
+
+- **ID:** FR-1630
+- **Title:** Model a minimum-range floor and an altitude-band effectiveness affinity for
+  space-based sensors
+- **Description:** The system shall support, for a space-based sensor, a configurable minimum-range
+  floor below which the sensor cannot resolve a target, and a configurable altitude-band affinity
+  that degrades the sensor's effective gain when observing outside its declared regime.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B7); the baseline treats all space-based sensors as uniformly effective at any range/regime.
+  `R109` v1.2 §3.8 grounds this against real fielded systems (SBSS/GSSAP specialized to the
+  geostationary belt) and peer-reviewed dual-altitude-band coverage analysis showing single-sensor
+  coverage across both LEO and GEO bands trades away performance in both.
+- **Priority:** Should
+- **Inputs:** A declared `min_range_km` floor and `altitude_band_affinity` on a space-based sensor;
+  the current range and altitude-band relationship between sensor and target.
+- **Outputs:** A rejected (below floor) or gain-degraded (outside declared band) observation
+  effectiveness result.
+- **Preconditions:** The sensor declares a non-default `min_range_km`/`altitude_band_affinity`; a
+  sensor with no declared values is unaffected.
+- **Postconditions:** Gain degradation outside the declared band composes with, rather than
+  replaces, the existing off-nadir `look_angle_deg` gain degradation.
+- **Acceptance Criteria:** Given a sensor with a declared minimum-range floor, an observation
+  attempt closer than that floor is rejected; given a declared altitude-band affinity, effective
+  gain against a target outside the declared band is measurably lower than against one inside it.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0073` (external validation report, 26 Sep
+  2026, item B7); `docs/research/encyclopedia/R109-sensor-operations.md` §3.8 (v1.2).
+- **Related ADRs:** ADR-0011
+- **Related Requirements:** FR-1220
+
+#### FR-1640 — Cue-dependent sensor tasking precondition
+
+- **ID:** FR-1640
+- **Title:** Require an existing track before a cue-dependent sensor (e.g. laser ranging) may be
+  tasked
+- **Description:** The system shall support declaring a sensor as cue-dependent, and shall reject
+  (at plan-time validation and `dry_run`) a tasking of that sensor against a target with no
+  existing `Track`, rather than treating it as a general-search, detect-from-scratch sensor.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B7, "cue-dependent laser-ranging sensor"); `R109` v1.2 §3.9 grounds this against real laser-
+  ranging practice (ILRS-coordinated ground stations achieving mm-to-cm-precision range only
+  against a cued, cooperative retroreflector-equipped target) — a laser-ranging sensor cannot
+  independently detect an uncued object the way a radar/EO sensor can.
+- **Priority:** Should
+- **Inputs:** A sensor declared `requires_cue: true`; a tasking request naming a target.
+- **Outputs:** An accept/reject decision for the tasking request.
+- **Preconditions:** The sensor is declared `requires_cue: true`.
+- **Postconditions:** A cue-dependent sensor tasked against a target with an existing `Track` is
+  accepted normally; one tasked against a target with no `Track` is rejected (or pre-disabled via
+  `dry_run`), not silently treated as a detection attempt.
+- **Acceptance Criteria:** Given a cue-dependent sensor and a target with no existing `Track`, the
+  tasking request is rejected; given the same sensor and a target with an existing `Track`, the
+  tasking request is accepted (subject to the normal access-window check).
+- **Verification Method:** Test
+- **Dependencies:** FR-1220, FR-1510
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0073` (external validation report, 26 Sep
+  2026, item B7); `docs/research/encyclopedia/R109-sensor-operations.md` §3.9 (v1.2).
+- **Related ADRs:** ADR-0011
+- **Related Requirements:** FR-1220, FR-1510
+
+#### FR-1650 — Passive-RF multilateration sensor network
+
+- **ID:** FR-1650
+- **Title:** Resolve a passive-RF geolocation fix from a network of receivers against an emitting
+  target
+- **Description:** The system shall support a passive-RF sensor network capable of producing a
+  geolocation fix only when (a) the target is actively emitting, and (b) at least three member
+  receivers (for a 2D fix) or at least four member receivers (for a 3D fix including altitude) of
+  the declared network simultaneously have access to that emission — a passive-RF sensor shall have
+  no independent single-sensor access predicate of its own.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B7, "passive RF sensor needing an emitting target and ≥3 receivers"); `R109` v1.2 §3.10 grounds
+  the ≥3/≥4-receiver minimum against real TDOA multilateration practice, and recommends reusing the
+  existing SSN network-aggregation pattern (`FR-3200` family) for a single fix rather than a new
+  aggregation mechanism.
+- **Priority:** Should
+- **Inputs:** A declared passive-RF sensor network (≥3 member receivers); the target's current
+  emission state; each member receiver's own access to that emission.
+- **Outputs:** A geolocation fix (2D or 3D, depending on receiver count meeting access) or no fix.
+- **Preconditions:** The target is actively emitting; the network has at least 3 member receivers.
+- **Postconditions:** No fix is produced against a non-emitting target regardless of receiver
+  count or geometry; no fix is produced with fewer than 3 receivers simultaneously having access.
+- **Acceptance Criteria:** Given an emitting target and exactly 3 member receivers with access, a 2D
+  fix is produced; given the same target and 4 member receivers with access, a 3D fix is produced;
+  given a non-emitting target, no fix is produced regardless of receiver count.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220, FR-3210
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0073` (external validation report, 26 Sep
+  2026, item B7); `docs/research/encyclopedia/R109-sensor-operations.md` §3.10 (v1.2).
+- **Related ADRs:** ADR-0011, ADR-0010
+- **Related Requirements:** FR-1220, FR-3210, FR-3220
+
+#### FR-1660 — Satellite-hosted sensor follows host orbit
+
+- **ID:** FR-1660
+- **Title:** A satellite-hosted sensor's position follows its host asset's orbit, including after
+  manoeuvres, and may be named directly in observe orders
+- **Description:** The system shall support a sensor hosted on a satellite Asset whose position is
+  derived from that Asset's own propagated orbital state (including after the Asset manoeuvres),
+  rather than the sensor carrying an independent orbit; an observe order shall be able to name
+  either the host Asset or its hosted sensor as the observer.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B17); the baseline's `space_based` sensor kind has its own orbit that follows no asset, and observe
+  orders are accepted only from sensor entities directly — no existing FR ties a hosted ISR/SDA
+  payload (`FR-5170`'s typed sub-schemas) to the sensor-observation channel this way.
+- **Priority:** Should
+- **Inputs:** A sensor declared as hosted on a named satellite Asset; an observe order naming
+  either the host Asset or the hosted sensor.
+- **Outputs:** The hosted sensor's position, recomputed from the host Asset's current propagated
+  orbital state at every access-window computation; an access/effectiveness result for the observe
+  order regardless of which of the two names it used.
+- **Preconditions:** The named host Asset exists and has a determinable propagated orbital state.
+- **Postconditions:** The hosted sensor's position always matches its host Asset's current orbital
+  state, including immediately after the host Asset manoeuvres (`FR-1310`) — it is never a stale
+  copy from before the manoeuvre.
+- **Acceptance Criteria:** Given a hosted sensor and a manoeuvre applied to its host Asset, the
+  hosted sensor's subsequent access-window computation reflects the post-manoeuvre orbital state;
+  an observe order naming the host Asset and one naming the hosted sensor directly produce the same
+  access/effectiveness result.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220, FR-1310
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0083` (external validation report, 26 Sep
+  2026, item B17); `FR-5170` (typed ISR/SDA payload sub-schemas this ties to the observation
+  channel).
+- **Related ADRs:** ADR-0011
+- **Related Requirements:** FR-1220, FR-1310, FR-5170
 
 ---
 
@@ -436,6 +829,38 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0007, INT-0008
 - **Related Requirements:** FR-2110, FR-6200
+
+#### FR-2320 — Per-asset telemetry CSV export over a time span
+
+- **ID:** FR-2320
+- **Title:** Export a cell's own pass-gated telemetry for a named asset over a time span as CSV
+- **Description:** The system shall support exporting, for a requested Asset and simulated time
+  span, the requesting cell's own pass-gated telemetry channel history as CSV, reflecting exactly
+  the same fog-of-war-filtered, pass-gated view that cell's own telemetry endpoints already show
+  (`FR-2310`) — never ground truth.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B9); the baseline exposes 19 telemetry parameters per asset via JSON endpoints
+  (`engine/telemetry.py`, read-time seeded) with no export path. A new-effect-type anomaly inject
+  (`FR-4430`) must perturb the relevant exported channel(s) the same way it perturbs the live
+  JSON-endpoint values, since both read the same underlying telemetry function.
+- **Priority:** Should
+- **Inputs:** A requested Asset id, cell, and simulated time span.
+- **Outputs:** A CSV file of the requesting cell's own pass-gated telemetry channel values across
+  the requested span.
+- **Preconditions:** The requesting cell has fog-of-war-filtered access to the named Asset's
+  telemetry, per `FR-6210`.
+- **Postconditions:** The exported values are identical to what the same cell's own live telemetry
+  endpoint would show at each sampled point — never another cell's or ground-truth values.
+- **Acceptance Criteria:** Given an Asset with an active anomaly-inject effect (`FR-4430`) perturbing
+  one telemetry channel, the CSV export for the affected cell shows the perturbation at the correct
+  simulated times; a different cell's export of the same Asset never shows data that cell's own
+  fog-of-war filter would not otherwise expose.
+- **Verification Method:** Test
+- **Dependencies:** FR-2310, FR-6210, FR-4430
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0075` (external validation report, 26 Sep
+  2026, item B9); `FR-2310`; `FR-6210`.
+- **Related ADRs:** ADR-0004
+- **Related Requirements:** FR-2310, FR-6210, FR-4430
 
 ### FR-2400 — Payload-type-specific operations
 
@@ -697,6 +1122,69 @@ review passes actually run against it).
 - **Related Interfaces:** (none directly — an engine-internal validation change, not a new
   interface)
 - **Related Requirements:** FR-3410, FR-5160
+
+#### FR-3430 — Optional per-effect-type controller-role authorization gating
+
+- **ID:** FR-3430
+- **Title:** Optionally gate an effect's execution on a designated controller role's approval
+- **Description:** The system shall support an optional, vignette-declared gating rule under which
+  an effect (identified by type and/or reversibility category) requires approval by a designated
+  controller role before it executes, and shall log the approval request, the decision, and the
+  time taken to decide.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B10); the baseline enforces only fixed per-cell ROE flags (`FR-3420`) — kinetic and cyber — with
+  jamming not gated at all, and no approval-workflow concept exists for any effect type.
+- **Priority:** Should
+- **Inputs:** A vignette-declared gating rule (effect type/reversibility category → required
+  controller role); a pending effect order matching a gated rule.
+- **Outputs:** An approval request event; an approve/deny decision event; the gated effect's
+  execution proceeding only on approval.
+- **Preconditions:** A gating rule is declared for the effect's type/reversibility category; an
+  effect with no matching rule is unaffected (executes per its existing gates, e.g. `FR-3420`,
+  `FR-3410`).
+- **Postconditions:** The approval request, the decision, and the time taken to decide are all
+  recorded in the `EventLog`.
+- **Acceptance Criteria:** Given a gated effect type and a pending order of that type, the order
+  does not execute until the designated controller role records an approval decision; the
+  `EventLog` shows the request, the decision, and the elapsed time between them.
+- **Verification Method:** Test
+- **Dependencies:** FR-3420, FR-4210, FR-7110
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0076` (external validation report, 26 Sep
+  2026, item B10); `FR-3420`; `FR-4210` (roles).
+- **Related ADRs:** (none directly — an optional workflow layered on top of `FR-3420`'s existing
+  ROE gate, not a new effect-resolution rule)
+- **Related Requirements:** FR-3420, FR-4210, FR-7110, FR-3440
+
+#### FR-3440 — Live, logged mid-session Rules-of-Engagement changes
+
+- **ID:** FR-3440
+- **Title:** Allow a designated controller role to change ROE flags mid-session, logged for
+  deterministic replay
+- **Description:** The system shall allow a designated controller role to change a cell's ROE flags
+  (kinetic, cyber, and any per-effect-type gating rule from `FR-3430`) during a running session, and
+  shall record each change as an `EventLog` entry so replaying the same event log reproduces the
+  identical sequence of ROE states.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B10); `FR-3420`'s per-cell ROE is fixed from the vignette declaration for the session's duration,
+  and `FR-4720`'s existing live-parameter-adjustment mechanism (safe-mode dials) does not cover ROE
+  flags. A live ROE change must be an ordinary `EventLog` entry, not an out-of-band mutation, to
+  preserve the deterministic-core invariant (`CLAUDE.md` invariant 1; `ADR-0002`).
+- **Priority:** Should
+- **Inputs:** A controller-issued ROE-change request (cell, flag, new value).
+- **Outputs:** An updated ROE state for the named cell, effective from the simulated time of the
+  change; an `EventLog` entry recording the change.
+- **Preconditions:** The requesting operator holds the designated controller role.
+- **Postconditions:** Replaying the identical `(initial_state, ordered eventlog, seed)` reproduces
+  the identical sequence of ROE states at the identical simulated times.
+- **Acceptance Criteria:** Given a controller-issued ROE change at simulated time T, an order issued
+  by the affected cell before T is evaluated under the prior ROE value and one issued after T under
+  the new value; replaying the session reproduces this identically.
+- **Verification Method:** Test
+- **Dependencies:** FR-3420, FR-4720, FR-1120
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0076` (external validation report, 26 Sep
+  2026, item B10); `FR-3420`; `FR-4720`; `CLAUDE.md` invariant 1; `ADR-0002`.
+- **Related ADRs:** ADR-0002
+- **Related Requirements:** FR-3420, FR-4720, FR-1120, FR-3430
 
 ### FR-3500 — Role-scoped command catalog
 
@@ -1049,6 +1537,39 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0004, ADR-0005
 - **Related Interfaces:** INT-0016
 - **Related Requirements:** FR-4410, FR-4420, FR-1510
+
+#### FR-4440 — Space-weather-index-driven anomaly rate scaling
+
+- **ID:** FR-4440
+- **Title:** Scale the rate of environment-induced anomalies by the current space-weather index
+  values
+- **Description:** The system shall scale the rate at which environment-induced anomaly injects
+  (`FR-4430`'s anomaly effect type) fire, deterministically, according to the currently declared
+  space-weather index time series (`FR-1230`) — a higher-severity index period shall produce a
+  higher rate of environment-induced anomalies than a quiescent period, computed as a function of
+  the declared index values and simulated time.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B8); complements `FR-1230`'s drag coupling — both are the same index-driven-environment concept
+  applied to a different consequence (orbital decay vs. anomaly likelihood). Must remain
+  deterministic per the same invariant `FR-1230`/`FR-4420` already cite.
+- **Priority:** Should
+- **Inputs:** The currently declared space-weather index time series (`FR-1230`); the existing
+  anomaly inject mechanism (`FR-4430`).
+- **Outputs:** Environment-induced anomaly injects firing at a rate that varies with the declared
+  index values over simulated time.
+- **Preconditions:** A space-weather index time series is declared (`FR-1230`); with none declared,
+  no environment-induced anomaly rate scaling applies (baseline behavior unchanged).
+- **Postconditions:** Replaying the identical `(initial_state, ordered eventlog, seed)` reproduces
+  the identical sequence of environment-induced anomaly firings at the identical simulated times.
+- **Acceptance Criteria:** Given two runs differing only in their declared index time series (one
+  quiescent, one high-severity), the high-severity run's environment-induced anomaly rate is
+  measurably higher; replaying either run reproduces identical firing times.
+- **Verification Method:** Test
+- **Dependencies:** FR-1230, FR-4420, FR-4430, FR-1120
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0074` (external validation report, 26 Sep
+  2026, item B8); `FR-1230`; `FR-4420`; `FR-4430`.
+- **Related ADRs:** ADR-0002, ADR-0006
+- **Related Requirements:** FR-1230, FR-4420, FR-4430, FR-1120
 
 ---
 
@@ -1849,6 +2370,43 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0002
 - **Related Interfaces:** INT-0014
 - **Related Requirements:** FR-7310
+
+#### FR-7330 — Variable-speed AAR replay from truth or a single cell's viewpoint
+
+- **ID:** FR-7330
+- **Title:** Play back an exercise timeline at a variable speed, from ground truth or from a single
+  cell's fog-respecting viewpoint
+- **Description:** The system shall support timeline playback of a recorded exercise at a
+  configurable, variable speed, reconstructed either from ground truth or from a single named
+  cell's fog-of-war-respecting viewpoint (never another cell's or an unfiltered view presented as
+  that cell's own).
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B12); `FR-7310` already reconstructs state at any event sequence or simulated time for read-only
+  replay/scrub, but has no continuous variable-speed playback mode or per-cell-viewpoint
+  presentation — this requirement is additive to `FR-7310`'s existing point-in-time reconstruction,
+  not a replacement for it.
+- **Priority:** Should
+- **Inputs:** A recorded exercise's event log; a requested playback speed; a requested viewpoint
+  (ground truth, or a named cell).
+- **Outputs:** A continuously advancing reconstructed-state view at the requested speed, filtered to
+  the requested viewpoint.
+- **Preconditions:** The requested cell viewpoint is a cell that participated in the recorded
+  exercise.
+- **Postconditions:** A cell-viewpoint playback shows only what that cell's fog-of-war filter would
+  have shown at each played-back moment — never ground truth presented as that cell's belief.
+- **Acceptance Criteria:** Given a recorded exercise and a requested cell viewpoint, the played-back
+  state at any moment matches what `FR-6210`'s fog-of-war filter would produce for that cell at that
+  simulated time; given a requested ground-truth viewpoint, the played-back state matches `FR-6220`'s
+  no-cell ground-truth view. Playing back at a non-default speed does not disturb the live session
+  (`FR-7310`'s existing non-disturbance guarantee).
+- **Verification Method:** Test
+- **Dependencies:** FR-7310, FR-6210, FR-6220
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0078` (external validation report, 26 Sep
+  2026, item B12); `FR-7310`; `FR-6210`; `FR-6220`; `docs/FUTURE-WORK.md` §13 R10 (belief-vs-truth
+  analytics, adjacent).
+- **Related ADRs:** ADR-0002, ADR-0004
+- **Related Interfaces:** INT-0014
+- **Related Requirements:** FR-7310, FR-6210, FR-6220
 
 ### FR-7400 — State-vector / ephemeris export
 
