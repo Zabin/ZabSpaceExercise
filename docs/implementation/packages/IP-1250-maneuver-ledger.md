@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1250
 > **Version:** 1.0
-> **Status:** 🟡 READY *(fully specified; MSTR-006 §3 authorization not yet given)*
+> **Status:** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
 > **Dependencies:** [FS-125](../../features/FS-125-maneuver-ledger.md) v1.0 (`FR-1320`),
 > `engine/orders.py`/`engine/eventlog.py` (`VERIFIED` baseline code, `IP-1010`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md),
@@ -34,9 +34,8 @@ Add an operator-entered purpose tag to manoeuvre-order issuance, and a derived, 
 ledger view (time, delta-v cost, purpose tag, remaining budget) plus CSV export, both reconstructed
 from the existing `EventLog` history — no new persisted state.
 
-> **This is a forward-design package. Per MSTR-006 §3, this document's own specification is not
-> itself an authorization to write code** — a separate, explicit user go-ahead is required before
-> any Implementation Task below begins.
+> **This package is authorized for coding.** Per MSTR-006 §3, the project owner gave explicit
+> go-ahead 2026-09-27 (batched with five sibling packages from the same Should-tier intake round).
 
 ## Feature Reference
 

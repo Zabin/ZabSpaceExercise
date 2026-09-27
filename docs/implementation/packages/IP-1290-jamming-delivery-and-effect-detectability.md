@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1290
 > **Version:** 1.0
-> **Status:** 🟡 READY *(fully specified; MSTR-006 §3 authorization not yet given)*
+> **Status:** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
 > **Dependencies:** [FS-129](../../features/FS-129-jamming-delivery-and-effect-detectability.md)
 > v1.0 (`FR-1440`/`FR-1450`), `engine/effects.py`/`engine/orders.py` (`IP-1051`/`IP-1010`/`IP-1020`,
 > `VERIFIED`), [IP-1270](IP-1270-effect-authorization-gating-and-live-roe.md) (the shared
@@ -40,9 +40,8 @@ delivery (in addition to its existing telemetry-signature effect), and let each 
 its own configurable detectability/attribution-difficulty setting, falling back to the existing
 single fixed setting where undeclared.
 
-> **This is a forward-design package. Per MSTR-006 §3, this document's own specification is not
-> itself an authorization to write code** — a separate, explicit user go-ahead is required before
-> any Implementation Task below begins.
+> **This package is authorized for coding.** Per MSTR-006 §3, the project owner gave explicit
+> go-ahead 2026-09-27 (batched with five sibling packages from the same Should-tier intake round).
 
 ## Feature Reference
 

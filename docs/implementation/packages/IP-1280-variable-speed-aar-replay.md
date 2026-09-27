@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1280
 > **Version:** 1.0
-> **Status:** 🟡 READY *(fully specified; MSTR-006 §3 authorization not yet given)*
+> **Status:** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
 > **Dependencies:** [FS-128](../../features/FS-128-variable-speed-aar-replay.md) v1.0 (`FR-7330`),
 > `session/aar.py` (`IP-1070`, `VERIFIED`), `session/cells.py` (baseline, `VERIFIED`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md),
@@ -34,9 +34,8 @@ single named cell's fog-of-war-respecting viewpoint, built entirely on `FR-7310`
 point-in-time reconstruction (`state_at`/`state_at_time`) called repeatedly at successive simulated
 moments.
 
-> **This is a forward-design package. Per MSTR-006 §3, this document's own specification is not
-> itself an authorization to write code** — a separate, explicit user go-ahead is required before
-> any Implementation Task below begins.
+> **This package is authorized for coding.** Per MSTR-006 §3, the project owner gave explicit
+> go-ahead 2026-09-27 (batched with five sibling packages from the same Should-tier intake round).
 
 ## Feature Reference
 

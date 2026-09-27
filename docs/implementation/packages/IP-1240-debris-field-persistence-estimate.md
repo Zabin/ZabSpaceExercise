@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1240
 > **Version:** 1.0
-> **Status:** 🟡 READY *(fully specified; MSTR-006 §3 authorization not yet given)*
+> **Status:** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
 > **Dependencies:** [FS-124](../../features/FS-124-debris-field-persistence-estimate.md) v1.0
 > (`FR-1430`), `engine/effects.py` (`VERIFIED` baseline code, `IP-1051`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md),
@@ -36,9 +36,8 @@ Compute and attach an estimated `persistence_estimate` to every `DebrisField` at
 derived from its altitude, displayed wherever the field is already rendered — deliberately narrower
 than Candidate Requirement `CR-17`'s deferred, fuller persistent-debris/gating mechanism.
 
-> **This is a forward-design package. Per MSTR-006 §3, this document's own specification is not
-> itself an authorization to write code** — a separate, explicit user go-ahead is required before
-> any Implementation Task below begins.
+> **This package is authorized for coding.** Per MSTR-006 §3, the project owner gave explicit
+> go-ahead 2026-09-27 (batched with five sibling packages from the same Should-tier intake round).
 
 ## Feature Reference
 

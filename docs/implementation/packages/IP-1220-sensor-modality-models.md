@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1220
 > **Version:** 1.0
-> **Status:** 🟡 READY *(fully specified; MSTR-006 §3 authorization not yet given — see Objective)*
+> **Status:** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3 — see Objective)*
 > **Dependencies:** [FS-122](../../features/FS-122-sensor-modality-models.md) v1.0
 > (`FR-1610`-`FR-1660`), `engine/entities.py`/`engine/access.py`/`engine/isr.py`/`engine/orders.py`/
 > `engine/custody.py`/`engine/ssn.py` (all `VERIFIED` baseline code)
@@ -38,9 +38,8 @@ they gate: a fence/dish beam-mode entry, a solar/lunar exclusion angle, a min-ra
 affinity, a cue-dependence precondition, a passive-RF multi-receiver network fix, and a
 host-Asset-following position — satisfying `FR-1610`-`FR-1660` in full.
 
-> **This is a forward-design package. Per MSTR-006 §3, this document's own specification is not
-> itself an authorization to write code** — a separate, explicit user go-ahead is required before
-> any Implementation Task below begins.
+> **This package is authorized for coding.** Per MSTR-006 §3, the project owner gave explicit
+> go-ahead 2026-09-27 (batched with five sibling packages from the same Should-tier intake round).
 
 ## Feature Reference
 

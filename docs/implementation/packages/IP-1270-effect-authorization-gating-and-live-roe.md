@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1270
 > **Version:** 1.0
-> **Status:** 🟡 READY *(fully specified; MSTR-006 §3 authorization not yet given)*
+> **Status:** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
 > **Dependencies:** [FS-127](../../features/FS-127-effect-authorization-gating-and-live-roe.md) v1.0
 > (`FR-3430`/`FR-3440`), `engine/orders.py` (`IP-1010`/`IP-1172`, `VERIFIED`), `session/manager.py`
 > (`IP-1060`, `VERIFIED`), `FR-4210` roles (`IP-1151`, `VERIFIED`)
@@ -42,9 +42,8 @@ Add a vignette-declared gating rule (effect classification → required controll
 matching order pending approval, logging the request/decision/elapsed time; and a controller-issued,
 logged, mid-session ROE-flag change mechanism preserving deterministic replay.
 
-> **This is a forward-design package. Per MSTR-006 §3, this document's own specification is not
-> itself an authorization to write code** — a separate, explicit user go-ahead is required before
-> any Implementation Task below begins.
+> **This package is authorized for coding.** Per MSTR-006 §3, the project owner gave explicit
+> go-ahead 2026-09-27 (batched with five sibling packages from the same Should-tier intake round).
 
 ## Feature Reference
 
