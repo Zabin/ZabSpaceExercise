@@ -12,7 +12,8 @@
 > time-span sampling are built on), `FR-6220` (no-cell ground-truth endpoints, the binding `FR-7410`
 > must use)
 > **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0069` (external
-> validation report, 26 Sep 2026, item B3)
+> validation report, 26 Sep 2026, item B3), [IP-1210](../implementation/packages/IP-1210-ephemeris-export.md)
+> (Implementation Package, `NOT STARTED`, not yet authorized)
 > **Produces:** truth and cell-observed ephemeris export in ECI/RIC, CSV/CCSDS OEM, satisfying
 > `FR-7410`/`FR-7420`
 > **Feature Mapping:** FS-121 (this document)

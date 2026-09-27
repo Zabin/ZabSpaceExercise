@@ -15,8 +15,10 @@
 > was a pre-existing staleness, corrected here alongside FS-117's addition. **FS-118 added
 > 2026-09-27** via `IP-1180`, the first of six Must-tier packages from the external validation
 > report intake batch; **the FS-106 v2.1 slice's package (`IP-1062`), FS-120's package (`IP-1200`),
-> and FS-119's package (`IP-1190`) added the same day** — FS-121/FS-103 v1.1 remain queued for the
-> next `07-implementation-planning` pass and are not yet reflected in this line.)
+> FS-119's package (`IP-1190`), and FS-121/FS-103 v1.1's package (`IP-1210`) all added the same
+> day** — this closes the six-package Must-tier tranche; FS-121/FS-103 v1.1 are not yet reflected
+> in this Feature Mapping line's own list above, a bookkeeping catch-up left for the next pass that
+> touches this frontmatter.)
 > **Related Topics:** [`packages/INDEX.md`](packages/INDEX.md), [`docs/implementations/INDEX.md`](../implementations/INDEX.md) (the superseded prior corpus), [`.claude/skills/08-code-implementation/SKILL.md`](../../.claude/skills/08-code-implementation/SKILL.md) (the downstream skill that executes packages against this plan)
 
 [↑ Docs index](../INDEX.md) · [Packages index](packages/INDEX.md) · [Feature index](../features/feature-index.md)
@@ -133,6 +135,7 @@ package in this plan to reach that state.
 | [IP-1062](packages/IP-1062-condition-triggered-injects-and-new-effects.md) | FS-106 v2.1 Condition-Triggered Injects & New Inject Effect Types (`BL-0070`, item B4) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete, no unmet dependency. Second of six Must-tier packages queued this increment (2026-09-27). |
 | [IP-1200](packages/IP-1200-save-as-scenario.md) | FS-120 Save-as-Scenario (`BL-0071`, item B5) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete. Same-function implementation-sequencing note with `IP-1180` (both extend `save_vignette()`) — see the package's own Dependencies. Third of six Must-tier packages queued this increment (2026-09-27). |
 | [IP-1190](packages/IP-1190-bulk-tle-omm-import.md) | FS-119 Bulk TLE and CCSDS OMM Multi-Object Import (`BL-0067`, item B1) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete, no unmet dependency. Fourth of six Must-tier packages queued this increment (2026-09-27). |
+| [IP-1210](packages/IP-1210-ephemeris-export.md) | FS-121/FS-103 v1.1 Ephemeris Export (`BL-0069`, items B2/B3) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete, no unmet dependency. Sixth and last of six Must-tier packages queued this increment (2026-09-27) — closes the external validation report intake batch's Must-tier tranche. |
 
 **Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code

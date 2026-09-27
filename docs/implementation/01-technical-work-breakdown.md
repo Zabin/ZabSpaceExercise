@@ -234,9 +234,12 @@ recorded:
 FS-118 (FR-5410/FR-5420/NFR-3700)              ─► IP-1180   [done]
 FS-106 v2.1 (FR-4420/FR-4430 slice)             ─► IP-1062   [done]
 FS-120 (FR-5510)                                ─► IP-1200   [done]
-FS-119 (FR-5220)                                ─► IP-1190   [this pass]
-FS-121 + FS-103 v1.1 (FR-7410/FR-7420)          ─► IP-1210   [queued]
+FS-119 (FR-5220)                                ─► IP-1190   [done]
+FS-121 + FS-103 v1.1 (FR-7410/FR-7420)          ─► IP-1210   [this pass — LAST]
 ```
+
+**All six Must-tier packages are now written.** This closes the external validation report intake
+batch's `07-implementation-planning` tranche in full.
 
 **No-split rationale (IP-1180).** `FS-118`'s three requirements (external-directory load,
 user-directory save retargeting, generalized traversal guard) share one seam — `content/
@@ -267,18 +270,27 @@ formats sharing one batch entry point and one per-object failure-reporting contr
 "TLE parsing" from "OMM parsing" into separate packages would duplicate the batch-orchestration/
 reporting logic for no isolation benefit; one package, two parser functions.
 
+**No-split rationale (IP-1210).** `FR-7410` (truth export) and `FR-7420` (cell-observed export)
+share one time-span replay mechanism (`aar.state_at_time`) and one serializer (ECI/RIC transform +
+CSV/CCSDS OEM writers), per `ADS-1500`'s own System Architecture — splitting them into two packages
+would either duplicate the shared serializer or create an artificial cross-package dependency for
+a seam that isn't real (both variants are thin, differently-sourced callers of the same
+machinery). One package, two sampling functions sharing one serializer.
+
 | Package | FS | Status | Authorization |
 |---|---|---|---|
 | [IP-1180](packages/IP-1180-external-vignette-directories.md) | FS-118 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
 | [IP-1062](packages/IP-1062-condition-triggered-injects-and-new-effects.md) | FS-106 v2.1 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
 | [IP-1200](packages/IP-1200-save-as-scenario.md) | FS-120 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
 | [IP-1190](packages/IP-1190-bulk-tle-omm-import.md) | FS-119 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
+| [IP-1210](packages/IP-1210-ephemeris-export.md) | FS-121/FS-103 v1.1 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
 
-The remaining package (`FS-121`/`FS-103` v1.1) is queued for the next `07-implementation-planning`
-pass, per the pipeline journal's recorded next step. **Note:** `IP-1180` and `IP-1200` both extend
-the same function (`save_vignette()`/`export_vignette()`) — whichever is implemented second must be
-built against the first's actual landed diff, not against either package document's description
-alone (see each package's own Dependencies/Risks).
+**All six Must-tier packages are now written and specification-complete.** None is authorized for
+coding (MSTR-006 §3) — that is a separate, explicit decision for the project owner, per package or
+in bulk. **Note:** `IP-1180` and `IP-1200` both extend the same function (`save_vignette()`/
+`export_vignette()`) — whichever is implemented second must be built against the first's actual
+landed diff, not against either package document's description alone (see each package's own
+Dependencies/Risks).
 
 ## Related
 

@@ -540,12 +540,13 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1062 | Condition-Triggered Injects & New Inject Effect Types | `implementation/packages/IP-1062-condition-triggered-injects-and-new-effects.md` | FS-106 v2.1 `FR-4420`/`FR-4430` | Forward design | ⚪ NOT STARTED (not authorized, MSTR-006 §3; specification-complete) |
 | IP-1200 | Save-as-Scenario | `implementation/packages/IP-1200-save-as-scenario.md` | FS-120 `FR-5510` | Forward design | ⚪ NOT STARTED (not authorized, MSTR-006 §3; specification-complete) |
 | IP-1190 | Bulk TLE and CCSDS OMM Multi-Object Import | `implementation/packages/IP-1190-bulk-tle-omm-import.md` | FS-119 `FR-5220` | Forward design | ⚪ NOT STARTED (not authorized, MSTR-006 §3; specification-complete) |
+| IP-1210 | Ephemeris Export (Truth and Cell-Observed) | `implementation/packages/IP-1210-ephemeris-export.md` | FS-121 `FR-7410`/`FR-7420`; FS-103 v1.1 | Forward design | ⚪ NOT STARTED (not authorized, MSTR-006 §3; specification-complete) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1180,
-IP-1062, IP-1200, and IP-1190 are new (2026-09-27, Tranche 4)** — the first four of six packages
-planned against the Must-tier external validation report batch (`BL-0062`–`BL-0083`); see
-`01-technical-work-breakdown.md` Tranche 4 for the no-split rationale and the remaining package
-queued. **IP-1160 is
+IP-1062, IP-1200, IP-1190, and IP-1210 are new (2026-09-27, Tranche 4)** — all six packages planned
+against the Must-tier external validation report batch (`BL-0062`–`BL-0083`) are now written; see
+`01-technical-work-breakdown.md` Tranche 4 for the no-split rationale of each. None is authorized
+for coding (MSTR-006 §3) — a separate decision for the project owner. **IP-1160 is
 new (2026-07-05)**, closing `FEAT-3500`'s implementation gap that `11-release-readiness` found —
 see the Master Build Plan's Tranche 2 note and `01-technical-work-breakdown.md` for the no-split
 rationale. **IP-1170 through IP-1174 are new (2026-07-05, Tranche 3)** — the five packages planned

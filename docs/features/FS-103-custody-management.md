@@ -12,7 +12,7 @@
 > `BL-0068` (external validation report item B2)'s domain-model question for this document.
 > **Status:** ✅ Done
 > **Dependencies:** [DOM-009](../domains/DOM-009-doctrine-development-framework.md), [R105](../research/encyclopedia/R105-custody-theory.md)
-> **Referenced By:** [DOM-009](../domains/DOM-009-doctrine-development-framework.md), [R105](../research/encyclopedia/R105-custody-theory.md), [DOM-002](../domains/DOM-002-assessment-framework.md) (custody quality dimension), [IMP-103A](../implementations/IMP-103A-custody-management.md)
+> **Referenced By:** [DOM-009](../domains/DOM-009-doctrine-development-framework.md), [R105](../research/encyclopedia/R105-custody-theory.md), [DOM-002](../domains/DOM-002-assessment-framework.md) (custody quality dimension), [IMP-103A](../implementations/IMP-103A-custody-management.md), [IP-1210](../implementation/packages/IP-1210-ephemeris-export.md) (Implementation Package for the sibling `FS-121`, `NOT STARTED`, not yet authorized)
 > **Produces:** the custody/track-confidence surface consumed by [FS-104](FS-104-sda-tasking.md) (tasking that updates custody) and
 > [FS-105](FS-105-spacecraft-operations.md) (effects gated by weapons-quality custody)
 > **Feature Mapping:** FS-103 (this document)
