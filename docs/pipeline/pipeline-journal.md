@@ -13,45 +13,48 @@
 
 ## Position
 
-- **Updated:** 2026-09-27 (run #66)
-- **Increment:** four threads. **Thread D (external user validation intake): the first three of
-  six Must-tier Implementation Packages are now written — `IP-1180`** (FS-118, B16),
-  **`IP-1062`** (FS-106 v2.1, B4), **and `IP-1200`** (FS-120, B5, `FR-5510`), all `⚪ NOT STARTED`,
-  specification-complete, not yet authorized. `IP-1200` extends `IP-1173`'s existing
-  `export_vignette()`/`save_vignette()` in place (optional `start_epoch` parameter, two new
-  additive `Vignette` fields — `initial_tracks`, `simulator_version` — plus reuse of the existing
-  `space_weather` dict shape), resolving `BL-0097` in full (a save-as-scenario request is rejected
-  only when the session hasn't started — `SessionManager` has no "ended" lifecycle state) with no
-  new findings. Notes a same-function implementation-sequencing coordination point with `IP-1180`
-  (both extend `save_vignette()`). Three Must-tier Implementation Packages remain queued: `FS-119`
-  (B1), `FS-121` + `FS-103` v1.1 (B2/B3). `BL-0066` (A5) remains fully CLOSED (unchanged since run
-  #60) — `IP-1061`/`IP-1174` both `COMPLETE`, still awaiting `09-package-verification` in a fresh
-  session. **Thread C:** Tranche 3 closed (unchanged). **Thread A:** `IP-1160` still `BLOCKED` on
-  authorization (unchanged). **Thread B:** no queued work.
+- **Updated:** 2026-09-27 (run #67)
+- **Increment:** four threads. **Thread D (external user validation intake): the first four of six
+  Must-tier Implementation Packages are now written — `IP-1180`** (FS-118, B16),
+  **`IP-1062`** (FS-106 v2.1, B4), **`IP-1200`** (FS-120, B5), **and `IP-1190`** (FS-119, B1,
+  `FR-5220`), all `⚪ NOT STARTED`, specification-complete, not yet authorized. `IP-1190`
+  generalizes `session/manager.py::add_tle()`'s single-object mechanism to a batch entry point via
+  new shared per-object helpers, adds a new `content/bulk_import.py` parser module (multi-TLE +
+  CCSDS OMM in KVN form only — XML OMM explicitly out of scope, disclosed in the package's own
+  Risks), and extracts a new public `engine/orbit.py::mean_to_true()` for the OMM path's
+  mean-anomaly conversion. Resolves `BL-0096` in full (outright file-level rejection vs. per-object
+  failure; no new batch-size cap beyond `ADR-0019`'s existing soft guideline) with no new findings.
+  One Must-tier Implementation Package remains queued: `FS-121` + `FS-103` v1.1 (B2/B3). `BL-0066`
+  (A5) remains fully CLOSED (unchanged since run #60) — `IP-1061`/`IP-1174` both `COMPLETE`, still
+  awaiting `09-package-verification` in a fresh session. **Thread C:** Tranche 3 closed (unchanged).
+  **Thread A:** `IP-1160` still `BLOCKED` on authorization (unchanged). **Thread B:** no queued
+  work.
 - **Pipeline state:**
   - `08` — nothing eligible this session (same-session exclusion on `IP-1061`/`IP-1174`; `IP-1160`,
-    `IP-1180`, `IP-1062`, and now `IP-1200` all `BLOCKED`/`NOT STARTED` on authorization, not yet
-    sought for any of the four).
+    `IP-1180`, `IP-1062`, `IP-1200`, and now `IP-1190` all `BLOCKED`/`NOT STARTED` on authorization,
+    not yet sought for any of the five).
   - `09` — `IP-1061` and `IP-1174` both due, each in a fresh session.
-  - `07` — **four Implementation Packages now due**: the DE package (`FS-105` v1.1) plus two
-    remaining Must-tier packages — `FS-119` (B1), `FS-121` + `FS-103` v1.1 (B2/B3). `IP-1180`
-    (B16), `IP-1062` (B4), and `IP-1200` (B5) are now done. **Every one will need the project
+  - `07` — **three Implementation Packages now due**: the DE package (`FS-105` v1.1) plus the one
+    remaining Must-tier package — `FS-121` + `FS-103` v1.1 (B2/B3). `IP-1180` (B16), `IP-1062`
+    (B4), `IP-1200` (B5), and `IP-1190` (B1) are now done. **Every one will need the project
     owner's MSTR-006 §3 authorization before `08` may code it** — writing the packages themselves
     is not gated, only the subsequent coding step.
   - `06`/`03` — nothing outstanding for the Must-tier thread. Two Low interface-model-stretch
     findings (`BL-0092`/`INT-0013`, `BL-0093`/`INT-0014`) remain routed to whoever next touches the
-    ICD, non-blocking. Two Low design-question findings (`BL-0096`/`BL-0098`, one per remaining new
-    Feature Spec's Open Questions) stay `SCHEDULED` to ride each spec's own `07` pass. `BL-0099`,
-    `BL-0100`, `BL-0101` (all Low) remain `DEFERRED`, non-blocking.
-- **Backlog:** 101 total. This run: `BL-0097` flipped `DONE` (closed in full by `IP-1200`); no new
+    ICD, non-blocking. One Low design-question finding (`BL-0098`, FS-121's Open Questions) stays
+    `SCHEDULED` to ride that spec's own `07` pass. `BL-0099`, `BL-0100`, `BL-0101` (all Low) remain
+    `DEFERRED`, non-blocking.
+- **Backlog:** 101 total. This run: `BL-0096` flipped `DONE` (closed in full by `IP-1190`); no new
   findings.
-- **Next step:** `07-implementation-planning` on the next Must-tier Implementation Package, same
-  priority order: B1 (`FS-119`), then B2/B3 together (`FS-121`/`FS-103` v1.1) — per the user's
-  "everything, all 17 B-items" instruction. Writing these is not itself gated; the DE package
-  (`FS-105` v1.1) remains available in parallel whenever convenient.
+- **Next step:** `07-implementation-planning` on the last Must-tier Implementation Package, B2/B3
+  together (`FS-121`/`FS-103` v1.1) — per the user's "everything, all 17 B-items" instruction.
+  Writing it is not itself gated; the DE package (`FS-105` v1.1) remains available in parallel
+  whenever convenient. Once this lands, all six Must-tier packages will be written and the
+  increment's next move is seeking MSTR-006 §3 authorization from the project owner for however
+  many of the six (plus the DE package and `IP-1160`) they choose to greenlight.
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner.
-  **`IP-1180`, `IP-1062`, and `IP-1200` authorization (MSTR-006 §3) — not yet sought for any.** A
-  gate will also open once `07` writes the DE Implementation Package. PR #55 (branch
+  **`IP-1180`, `IP-1062`, `IP-1200`, and `IP-1190` authorization (MSTR-006 §3) — not yet sought for
+  any.** A gate will also open once `07` writes the DE Implementation Package. PR #55 (branch
   `claude/chart-prompt-file-90hm9u`) open/draft, subscribed, hourly check-ins continuing; repo has
   no CI workflows.
 
@@ -535,3 +538,4 @@
 | 64 | 2026-09-27 | advance | `07-implementation-planning` | `IP-1180` — FS-118 (B16, `FR-5410`/`FR-5420`/`NFR-3700`) | Reconciliation (Step 1): no drift; confirmed via `packages/INDEX.md`/Master Build Plan that none of the six Must-tier FS's had a package yet, and the backlog carried no un-triaged `NEW` entries. Read FS-118 in full plus the live code (`content/vignette.py`, `content/vignette_export.py`, `config.py`, `session/inprocess.py`, `ui_web/server.py`) before drafting. Wrote `IP-1180` (one package, no split): extends `list_vignettes()`/`load_vignette()` to enumerate configured external directories, retargets `save_vignette()` to a configured user-save directory, generalizes the traversal guard into shared helpers. Resolved all four of FS-118's Open Questions: OQ1 by direct code reading (`save_vignette` in `vignette_export.py` is the one and only retargeted path — traced its single caller and single route); OQ2-4 as explicit Design Decisions (unreadable external directory skipped+logged; no-`user_save_dir` rejects with a specific error; built-in-wins id-collision tie-break, shadow logged). Updated `packages/INDEX.md`, `00-master-build-plan.md`, `01-technical-work-breakdown.md` (new Tranche 4), `ROADMAP.md`, and `FS-118`'s `Referenced By` metadata. Committed `b328cd1`, pushed to the open PR #55 branch. Flipped `BL-0094` `DONE` (closed in full). Harvested 2 new findings: `BL-0099` (Low, facilitator-visible collision-disclosure UX, `DEFERRED`), `BL-0100` (Low, recommend a future `FR-5410` amendment baselining Design Decision 2, `DEFERRED`, routed to `04`). `IP-1180` entered `⚪ NOT STARTED`, not yet authorized (MSTR-006 §3 not sought this run). | `07-implementation-planning` on the next Must-tier Implementation Package (B4 — `FS-106` v2.1's `FR-4420`/`FR-4430` slice), same priority order; writing it is unblocked, only the later `08` coding step needs MSTR-006 §3 authorization. |
 | 65 | 2026-09-27 | advance | `07-implementation-planning` | `IP-1062` — FS-106 v2.1 (B4, `FR-4420`/`FR-4430`) | Reconciliation: no drift (self-consistent with run #64's own writes). No un-triaged `NEW` backlog entries. Read FS-106 v2.1's relevant section, `BL-0070`/`BL-0091`/`BL-0095`, and the live code (`session/manager.py`'s `_h_inject`/`_arm_schedule`/`advance_to`/`_rebuild`/`replay`, `engine/maneuver.py::compute_maneuver`, `engine/orders.py::_h_maneuver`/`scene_from_world`, `engine/custody.py::Track`, `engine/entities.py::Sensor`/`AssetResources`, `engine/bus.py::BusState`) before drafting. Wrote `IP-1062` (one package, no split): a new periodic `condition_check` event (same cadence as `bus_tick`) evaluates range/custody/objective-state conditions against replayed `WorldState`; firing-state derived from a time-filtered eventlog scan (no new `WorldState` field — deliberately avoided a mid-handler `eventlog.append` that would have corrupted `_rebuild()`/`replay()`'s iteration, instead mutating the tick event's own payload dict in place before `advance_to`'s existing post-handler append). Four new effect types (`anomaly`, `sensor_outage`, `forced_custody_loss`, `scripted_manoeuvre`) added to a shared effect-application helper refactored out of `_h_inject`. Resolved `BL-0091` (must resolve through the six existing entry modes via `compute_maneuver()`) and `BL-0095` (deleted-target condition never fires; Δv gate bypassed per `ADR-0005`) as explicit Design Decisions; surfaced one new interpretive finding of its own (anomaly's bus/telemetry subsystem mapping onto `BusState.mode`/`comms.status` is this package's own reading). Updated `packages/INDEX.md`, `00-master-build-plan.md`, `01-technical-work-breakdown.md`, `ROADMAP.md`, `FS-106`'s `Referenced By`. Committed `866f335`, pushed. Flipped `BL-0091`/`BL-0095` `DONE`. Harvested 1 new finding: `BL-0101` (Low, `DEFERRED`, routed to `04`). `IP-1062` entered `⚪ NOT STARTED`, not yet authorized. | `07-implementation-planning` on the next Must-tier Implementation Package (B5 — `FS-120`), same priority order; writing it is unblocked, only the later `08` coding step needs MSTR-006 §3 authorization. |
 | 66 | 2026-09-27 | advance | `07-implementation-planning` | `IP-1200` — FS-120 (B5, `FR-5510`) | Reconciliation: no drift (self-consistent with run #65's own writes). No un-triaged `NEW` backlog entries. Read FS-120, `BL-0071`/`BL-0097`, and the live code (`content/vignette_export.py::export_vignette`/`save_vignette`, `content/vignette.py`'s `Vignette` schema, `session/manager.py`'s `SessionManager` — confirmed no "ended" lifecycle flag exists, only `self.started` — and `_h_inject`'s `space_weather` shape, `session/inprocess.py::save_vignette`) before drafting. Wrote `IP-1200` (one package, no split): confirmed the existing `export_vignette()` already carries resources/health via `Asset.model_dump()` with zero change needed; extended it with an optional `start_epoch` parameter (default preserves `IP-1173`'s exact prior behavior), two new additive `Vignette` fields (`initial_tracks`, `simulator_version` — the latter via a new small `spacesim/version.py` helper, git-hash-or-package-version fallback), and reuse of the existing `space_weather` dict shape as `initial_space_weather`. Resolved `BL-0097` in full: reject a save-as-scenario request only when `not self.started` (no "ended" state exists to check for; mid-recovery is asset-level, not session-lifecycle). Flagged a same-function implementation-sequencing coordination point with `IP-1180` (both extend `save_vignette()` — whichever lands second must build against the first's actual diff). Updated `packages/INDEX.md`, `00-master-build-plan.md`, `01-technical-work-breakdown.md`, `ROADMAP.md`, `FS-120`'s `Referenced By`. Committed `5da4ef3`, pushed. Flipped `BL-0097` `DONE`. No new findings. `IP-1200` entered `⚪ NOT STARTED`, not yet authorized. | `07-implementation-planning` on the next Must-tier Implementation Package (B1 — `FS-119`, bulk TLE/OMM import), same priority order; writing it is unblocked, only the later `08` coding step needs MSTR-006 §3 authorization. |
+| 67 | 2026-09-27 | advance | `07-implementation-planning` | `IP-1190` — FS-119 (B1, `FR-5220`) | Reconciliation: no drift (self-consistent with run #66's own writes). No un-triaged `NEW` backlog entries. Read FS-119, `BL-0067`/`BL-0096`, and the live code (`session/manager.py::add_tle`/`add_ground_asset`, `engine/orbit.py`'s `OrbitState`/`elements_to_rv`/`true_to_mean`/`_solve_kepler`, `engine/propagator.py`'s TLE/Kepler dispatch, `ui_web/server.py`'s `TleRequest`/`force/tle` route) before drafting; confirmed by search that no CCSDS OMM parsing exists anywhere in the repository today. Wrote `IP-1190` (one package, no split — two parser functions sharing one batch entry point): a new `content/bulk_import.py` module parses multi-object TLE files and CCSDS OMM in KVN form (XML OMM explicitly scoped out, disclosed in Risks, not a silent gap); extracted a new public `engine/orbit.py::mean_to_true()` (mirroring the existing `true_to_mean()`) from `elements_to_rv()`'s existing inline mean-to-true-anomaly computation, zero behavior change; extracted `add_tle()`'s common per-object body into a shared helper reused by both the unchanged single-object path and the new batch path; added `SessionManager.bulk_import()` and a new `POST /api/sessions/{sid}/force/bulk_import` route. Resolved `BL-0096` in full as two Design Decisions: a file recognized as neither TLE nor OMM is rejected outright before any object is processed (distinct from a per-object malformed-element failure within an otherwise-recognizable file); no new batch-size cap, deferring entirely to `ADR-0019`'s existing soft guideline. Updated `packages/INDEX.md`, `00-master-build-plan.md`, `01-technical-work-breakdown.md`, `ROADMAP.md`, `FS-119`'s `Referenced By`. Committed `765374e`, pushed. Flipped `BL-0096` `DONE`. No new findings. `IP-1190` entered `⚪ NOT STARTED`, not yet authorized. | `07-implementation-planning` on the last Must-tier Implementation Package (B2/B3 together — `FS-121`/`FS-103` v1.1), completing all six; only the later `08` coding step needs MSTR-006 §3 authorization. |
