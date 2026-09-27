@@ -385,8 +385,17 @@ def test_resumed_session_loads_paused():
     assert listing[sid2]["running"] is False   # resumed paused — must not silently fast-forward
 
 
-def test_draft_session_create_add_asset_and_save_as_vignette():
-    """IP-1173 (FR-5110) — the Vignette Creator's HTTP surface end to end."""
+def test_draft_session_create_add_asset_and_save_as_vignette(tmp_path, monkeypatch):
+    """IP-1173 (FR-5110) — the Vignette Creator's HTTP surface end to end. save_vignette() has
+    no implicit VIGNETTE_DIR default (IP-1180) — a user_save_dir must be configured."""
+    cfg_path = tmp_path / "spacesim.config.yaml"
+    save_dir = tmp_path / "user_saves"
+    save_dir.mkdir()
+    cfg_path.write_text(
+        f"content:\n  user_save_dir: {save_dir}\n  external_vignette_dirs:\n    - {save_dir}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SPACESIM_CONFIG", str(cfg_path))
     c = _client()
     sid = c.post("/api/sessions/draft", json={"title": "HTTP Draft"}).json()["session"]
     # A draft session exists and is registered like any other, but never started.

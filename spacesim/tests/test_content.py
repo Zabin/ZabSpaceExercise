@@ -61,6 +61,79 @@ def test_vignette_1_loads_and_builds_a_world():
     assert ctx.landing_deadline == ctx.start_epoch + 10800 * 1_000_000
 
 
+# -- IP-1180 (FR-5410, NFR-3700) — external vignette directories -----------------------------
+
+def _write_vignette_file(directory, vignette_id: str, title: str = "External") -> None:
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / f"{vignette_id}.yaml").write_text(
+        yaml.safe_dump({"vignette": {
+            "id": vignette_id, "title": title,
+            "start_epoch_utc": "2030-01-01T00:00:00Z",
+            "blue_forces": [], "red_forces": [], "neutral_forces": [], "sensors": [],
+        }}),
+        encoding="utf-8",
+    )
+
+
+def test_list_vignettes_empty_external_dirs_reproduces_baseline(tmp_path):
+    baseline = list_vignettes()
+    same = list_vignettes(external_dirs=[])
+    assert [v["id"] for v in baseline] == [v["id"] for v in same]
+    assert all(v["origin"] == "built-in" for v in same)
+
+
+def test_list_vignettes_enumerates_external_directory_with_origin_tag(tmp_path):
+    ext = tmp_path / "my-external-vignettes"
+    _write_vignette_file(ext, "ext-vig-1", "An External Vignette")
+    entries = {v["id"]: v for v in list_vignettes(external_dirs=[ext])}
+    assert "ext-vig-1" in entries
+    assert entries["ext-vig-1"]["origin"] == "my-external-vignettes"
+
+
+def test_list_vignettes_skips_unreadable_or_missing_external_directory(tmp_path):
+    missing = tmp_path / "does-not-exist"
+    entries = list_vignettes(external_dirs=[missing])
+    # The catalog build still succeeds and still contains every built-in entry.
+    assert any(v["id"] == "leo-isr-denial" for v in entries)
+
+
+def test_list_vignettes_id_collision_resolves_built_in_first(tmp_path):
+    ext = tmp_path / "colliding-dir"
+    _write_vignette_file(ext, "leo-isr-denial", "A Shadow Attempt")
+    entries = [v for v in list_vignettes(external_dirs=[ext]) if v["id"] == "leo-isr-denial"]
+    assert len(entries) == 1
+    assert entries[0]["origin"] == "built-in"
+    assert entries[0]["title"] != "A Shadow Attempt"
+
+
+def test_load_vignette_finds_object_that_exists_only_in_external_directory(tmp_path):
+    ext = tmp_path / "only-here"
+    _write_vignette_file(ext, "only-in-external", "Only External")
+    vig = load_vignette("only-in-external", external_dirs=[ext])
+    assert vig.title == "Only External"
+    with pytest.raises(FileNotFoundError):
+        load_vignette("only-in-external")  # not visible without the external dir
+
+
+@pytest.mark.parametrize("bad_id", [
+    "../../etc/passwd",
+    "/etc/passwd",
+    "..\\..\\windows\\system32\\config",
+    "~root/.ssh/id_rsa",
+    ".env",
+    "foo/bar",
+    "id with space",
+])
+def test_load_vignette_rejects_traversal_against_external_directory_too(tmp_path, bad_id):
+    """FS-118 Acceptance Criterion 3 — the traversal guard rejects identically whether checked
+    against VIGNETTE_DIR (existing coverage, test_defensive_audit_2026.py) or an external
+    directory, with no filesystem access on rejection."""
+    ext = tmp_path / "some-external-dir"
+    ext.mkdir()
+    with pytest.raises((ValueError, FileNotFoundError)):
+        load_vignette(bad_id, external_dirs=[ext])
+
+
 def test_parameter_override_flows_into_roe():
     vig = load_vignette("leo-isr-denial")
     _, ctx = build_world(vig, overrides={"red_kinetic_authorized": True})

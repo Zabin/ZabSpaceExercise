@@ -286,6 +286,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   propagators.
 - `spacesim/engine/sun.py` — `sun_unit_eci`, binary `is_sunlit()`, smooth `eclipse_fraction()`
   (umbra/penumbra interpolation; FW §11.B.10).
+- `spacesim/config.py` — `ServerConfig`/`load_server_config()`. `ContentConfig`/
+  `load_content_config()` (IP-1180, FR-5410/FR-5420) — optional `content:` section
+  (`external_vignette_dirs`, `user_save_dir`), same optional-file/`SPACESIM_CONFIG`-override
+  pattern as `ServerConfig`; absent by default (empty catalog extension, no save target).
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
   `RoleRequirement`/`Vignette.roles_needed` (IP-1151, FR-4210) — optional, additive staffing
   requirements; absent for every vignette shipped before this package.
@@ -294,9 +298,16 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `{blue: {kinetic_authorized, cyber_authorized}, red: {...}}`; absent for every vignette shipped
   before this package, in which case `build_world()` mirrors the legacy flat
   `red_kinetic_authorized`/`cyber_authorized` parameters to both cells.
+  `list_vignettes()`/`load_vignette()` (IP-1180, FR-5410) — enumerate/search zero or more
+  configured external directories alongside `VIGNETTE_DIR`, each entry tagged `origin`
+  (`"built-in"` or the external directory's basename); a same-id collision resolves built-in-first,
+  external order thereafter, loser skipped + logged. `_validate_id`/`_resolve_within_root`
+  (NFR-3700) — the traversal guard, extracted/generalized to any content root, shared with the
+  save path below.
 - `spacesim/content/vignette_export.py` (IP-1173, FR-5110) — reverse serialization:
   `export_vignette()`/`save_vignette()` convert a draft session's live `WorldState`+
-  `VignetteContext` into a `Vignette` model and write it to `VIGNETTE_DIR` — the mirror image of
+  `VignetteContext` into a `Vignette` model and write it to a configured `user_save_dir`
+  (IP-1180, FR-5420 — retargeted from `VIGNETTE_DIR`; raises if unconfigured) — the mirror image of
   `vignette.py`'s `load_vignette()`/`build_world()`, and the only code path that writes an
   authored vignette file.
 - `spacesim/content/bulk_import.py` (IP-1190, FR-5220) — `parse_multi_tle()`/`parse_ccsds_omm()`

@@ -13,73 +13,41 @@
 
 ## Position
 
-- **Updated:** 2026-09-27 (run #70)
-- **Authorization granted (run #69):** the project owner explicitly authorized MSTR-006 §3 coding
-  for all five Must-tier Implementation Packages written this session — `IP-1180`, `IP-1062`,
-  `IP-1200`, `IP-1190`, `IP-1210` — via direct instruction ("Iterate pipeline until the new backlog
-  items are fully implemented pausing only at the review final stage"), additionally instructing
-  the pipeline to iterate continuously through `08`/`09`/`10` without stopping for a fresh
-  authorization ask each run, pausing only at `11-release-readiness`'s GO/NO-GO call. The
-  same-session verification exclusion on `09-package-verification` still applies undiminished —
-  packages this session implements cannot be verified this session regardless of this
-  authorization. Flagged same-function coordination risk carried forward unchanged: `IP-1180` and
-  `IP-1200` both extend `save_vignette()`/`export_vignette()` in `spacesim/content/vignette_export.py`
-  — build order is `IP-1180` before `IP-1200` so the latter is built against the former's landed
-  diff, not against either package document's description alone.
-- **`IP-1190` implemented (run #70).** `08-code-implementation` built the bulk TLE/CCSDS OMM
-  (KVN) import capability exactly as specified: new `content/bulk_import.py`, new public
-  `engine/orbit.py::mean_to_true()` (behavior-preserving extraction), `_force_add_tle_object`/
-  `_force_add_omm_object`/`bulk_import()` on `SessionManager`, new `force/bulk_import` route (+
-  `session/inprocess.py` wrapper plumbing, implied but not literally named by the package —
-  harvested as `BL-0102`, Low, informational). 16 new tests, full suite 638 passed/3 skipped (up
-  from 622/3), both permanent gates green. `IP-1190` flips `READY → COMPLETE`. `BL-0096` already
-  `DONE` (closed at planning time). Committed and pushed to the open PR #55 branch.
-- **Pipeline state (run #70):** `08` — `IP-1180`/`IP-1062`/`IP-1200`/`IP-1210` remain the next
-  three authorized-and-eligible Must-tier packages (in that order, `IP-1180` before `IP-1200` per
-  the coordination note above); `09` — `IP-1061`/`IP-1174`/`IP-1190` all `COMPLETE`, all three
-  excluded from this session's own verification (same-session rule), each awaiting a fresh session.
-- **Increment:** four threads. **Thread D (external user validation intake): ALL SIX Must-tier
-  Implementation Packages are now written — `IP-1180`** (FS-118, B16), **`IP-1062`** (FS-106 v2.1,
-  B4), **`IP-1200`** (FS-120, B5), **`IP-1190`** (FS-119, B1), **and `IP-1210`** (FS-121/FS-103
-  v1.1, B2/B3, `FR-7410`/`FR-7420`) — every one `⚪ NOT STARTED`, specification-complete, not yet
-  authorized. **The six-package Must-tier tranche from the 26 Sep 2026 external validation report
-  is now fully planned.** `IP-1210` implements `ADS-1500`'s replay-based design exactly: a new
-  `session/ephemeris.py` module built on a new additive `aar.state_at_time()` sibling of the
-  existing `state_at()`, reusing `engine/maneuver.py::lvlh_frame` for the RIC transform — one
-  package, two sampling functions (truth/cell-observed) sharing one serializer. Resolves `BL-0098`
-  in full (wholly-out-of-range spans rejected, partially-out-of-range spans clamped; no numeric
-  sampling-rate ceiling, a coarse default interval instead) with no new findings. `BL-0066` (A5)
-  remains fully CLOSED (unchanged since run #60) — `IP-1061`/`IP-1174` both `COMPLETE`, still
-  awaiting `09-package-verification` in a fresh session. **Thread C:** Tranche 3 closed (unchanged).
-  **Thread A:** `IP-1160` still `BLOCKED` on authorization (unchanged). **Thread B:** no queued
-  work.
+- **Updated:** 2026-09-27 (run #71)
+- **Increment:** Thread D (external user validation intake) is in its authorized implementation
+  phase. **Authorization (run #69):** the project owner granted MSTR-006 §3 for all five
+  Must-tier packages queued this increment — `IP-1180`, `IP-1062`, `IP-1200`, `IP-1190`,
+  `IP-1210` — via direct instruction to iterate the pipeline through `08`/`09`/`10` continuously,
+  pausing only at `11-release-readiness`'s GO/NO-GO call. **Implemented so far: `IP-1190`** (run
+  #70 — bulk TLE/CCSDS OMM import, 638/3, both gates green) **and `IP-1180`** (run #71 — external
+  vignette directories + safe scenario save target, 661/3, both gates green), in that order per
+  the flagged `save_vignette()`/`export_vignette()` coordination note (`IP-1180` before `IP-1200`).
+  Remaining to implement: `IP-1062`, `IP-1200` (must build against `IP-1180`'s landed diff),
+  `IP-1210`. `IP-1061`/`IP-1174` (implemented pre-authorization, run #53-55) remain `COMPLETE`,
+  still excluded from this session's own verification. Thread A (`IP-1160`, `BLOCKED`) and the
+  still-unwritten DE Implementation Package (`FS-105` v1.1) are untouched by this authorization —
+  separate, unchanged gates. Threads B/C: no queued work.
 - **Pipeline state:**
-  - `08` — nothing eligible this session (same-session exclusion on `IP-1061`/`IP-1174`; `IP-1160`
-    and all six Must-tier packages `BLOCKED`/`NOT STARTED` on authorization, not yet sought for
-    any).
-  - `09` — `IP-1061` and `IP-1174` both due, each in a fresh session.
-  - `07` — **one Implementation Package remains due for this increment**: the DE package (`FS-105`
-    v1.1) — available in parallel whenever convenient, no urgency (needs MSTR-006 §3 before `08`
-    regardless). **All six Must-tier packages are done.**
-  - `06`/`03` — nothing outstanding for the Must-tier thread. Two Low interface-model-stretch
-    findings (`BL-0092`/`INT-0013`, `BL-0093`/`INT-0014`) remain routed to whoever next touches the
-    ICD, non-blocking. `BL-0099`, `BL-0100`, `BL-0101` (all Low) remain `DEFERRED`, non-blocking.
-- **Backlog:** 102 total. This run (run #70): harvested `BL-0102` (Low, `DEFERRED`, informational —
-  the implied `session/inprocess.py` plumbing `IP-1190`'s own `Files to Modify` didn't literally
-  name).
-- **Next step:** `08-code-implementation` on `IP-1180` (FS-118, external vignette directories) —
-  authorized, `READY`, next in the user-directed build order (before `IP-1200`, per the
-  `save_vignette()`/`export_vignette()` coordination note). Then `IP-1062`, then `IP-1200`, then
-  `IP-1210` — the remaining four of five authorized Must-tier packages. `IP-1160` and the
-  still-unwritten DE package remain untouched by this authorization (separate, unchanged gates).
+  - `08` — `IP-1062`, `IP-1200`, `IP-1210` remain the next three authorized-and-eligible Must-tier
+    packages (in that build order). `IP-1160` `BLOCKED`/DE package unwritten, both untouched.
+  - `09` — `IP-1061`, `IP-1174`, `IP-1190`, `IP-1180` all `COMPLETE`, all four excluded from this
+    session's own verification (same-session rule), each awaiting a fresh session.
+  - `07` — one Implementation Package remains due for this increment (the DE package, `FS-105`
+    v1.1), available in parallel whenever convenient, no urgency.
+  - `06`/`03` — nothing outstanding for the Must-tier thread. `BL-0092`/`BL-0093` (Low,
+    interface-model-stretch) remain routed to whoever next touches the ICD, non-blocking.
+    `BL-0099`/`BL-0100`/`BL-0101`/`BL-0102` (all Low) remain `DEFERRED`, non-blocking.
+- **Backlog:** 102 total. No new findings this run (`IP-1180`'s own Risks/Design-Decisions were
+  already harvested at planning time — `BL-0094`/`BL-0099`/`BL-0100`, all already dispositioned).
+- **Next step:** `08-code-implementation` on `IP-1062` (FS-106 v2.1, condition-triggered injects
+  and new inject effect types) — authorized, `READY`, no shared-file coordination risk with any
+  remaining package. Then `IP-1200` (must read `IP-1180`'s actual landed diff first), then
+  `IP-1210`.
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner,
-  unchanged. **`IP-1180`/`IP-1062`/`IP-1200`/`IP-1190`/`IP-1210`'s MSTR-006 §3 authorization was
-  granted 2026-09-27** (project owner instruction: iterate the pipeline through implementation and
-  integration review, pausing only at `11-release-readiness`'s GO/NO-GO call) — `IP-1190` is now
-  implemented under that grant; the other four remain to be picked up in subsequent advances. A
-  gate will also open once `07` writes the DE Implementation Package. PR #55 (branch
-  `claude/chart-prompt-file-90hm9u`) open/draft, subscribed, hourly check-ins continuing; repo has
-  no CI workflows.
+  unchanged. The five Must-tier packages' authorization (granted run #69) continues to cover
+  `IP-1062`/`IP-1200`/`IP-1210`, not yet implemented. A gate will also open once `07` writes the DE
+  Implementation Package. PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft, subscribed,
+  hourly check-ins continuing; repo has no CI workflows.
 
 ---
 
@@ -565,3 +533,4 @@
 | 68 | 2026-09-27 | advance | `07-implementation-planning` | `IP-1210` — FS-121/FS-103 v1.1 (B2/B3, `FR-7410`/`FR-7420`) | Reconciliation: no drift (self-consistent with run #67's own writes). No un-triaged `NEW` backlog entries. Read FS-121, FS-103 v1.1, `ADS-1500`'s full System Architecture/Decision Log, `BL-0069`/`BL-0098`, and the live code (`session/aar.py::state_at`/`snapshot_at`, `engine/simulation.py::replay`, `engine/custody.py::Track.state_estimate`, `engine/maneuver.py::lvlh_frame`) before drafting — confirmed `aar.state_at` replays to a sequence number, not a time, and passes no `snapshots=` argument (full replay per sample, matching `ADS-1500`'s own performance-risk citation); confirmed `lvlh_frame` already returns the exact R/T/N basis triad RIC needs. Wrote `IP-1210` (one package, no split — two sampling functions sharing one serializer, per `ADS-1500`'s own System Architecture): a new `session/ephemeris.py` module built on a new additive `aar.state_at_time()` sibling of the existing `state_at()`; truth export reads ground truth, cell-observed export reads the requesting cell's own `Track.state_estimate` (empty result for an unobserved T, per FR-7420's Postcondition) with the reference-object own-asset-vs-tracked rule FS-121 already specifies; both share one ECI/RIC (via `lvlh_frame`) + CSV/CCSDS-OEM serializer. Resolved `BL-0098` in full as two Design Decisions: a wholly-out-of-range time span is rejected outright, a partially-out-of-range span is silently clamped; no numeric sampling-rate ceiling, a coarse default interval (`span/100`, clamped to `BUS_TICK_PERIOD_S`) instead, enforcement deferred (matching `ADS-1500`'s own explicit non-decision). Updated `packages/INDEX.md`, `00-master-build-plan.md`, `01-technical-work-breakdown.md`, `ROADMAP.md`, `FS-121`'s and `FS-103`'s `Referenced By`. Committed `0d54c1c`, pushed. Flipped `BL-0098` `DONE`. No new findings. `IP-1210` entered `⚪ NOT STARTED`, not yet authorized. **This closes the six-package Must-tier tranche from the 26 Sep 2026 external validation report intake batch — every one of B16/B4/B5/B1/B2/B3 now has a written, specification-complete Implementation Package.** | The pipeline is now at a human decision point (MSTR-006 §3 authorization) rather than a mechanical next step — see Position/Open gates. The one remaining mechanical option is `07-implementation-planning` on the still-queued DE package (`FS-105` v1.1), independent of any authorization decision. |
 | 69 | 2026-09-27 | advance | — (gate resolution, no skill invoked) | MSTR-006 §3 authorization for the five Must-tier packages | The project owner instructed: "Iterate pipeline until the new backlog items are fully implemented pausing only at the review final stage" — read as explicit MSTR-006 §3 authorization for `IP-1180`/`IP-1062`/`IP-1200`/`IP-1190`/`IP-1210`, plus a standing instruction to keep advancing through `08`/`09`/`10` across multiple runs without a fresh gate-ask each time, stopping only at `11-release-readiness`. Recorded in the Position block/Open gates; the same-session verification exclusion on `09` is explicitly preserved, unaffected by this grant. | `08-code-implementation` on `IP-1190` (no shared-file coordination risk with the other four — selected first for that reason). |
 | 70 | 2026-09-27 | advance | `08-code-implementation` | `IP-1190` — Bulk TLE and CCSDS OMM Multi-Object Import | Reconciliation: no drift. `IP-1190` selected as the next authorized+eligible package with zero coordination risk. Invoked `08-code-implementation`: test-first — wrote failing tests for `mean_to_true()`'s extraction, `parse_multi_tle()`/`parse_ccsds_omm()`, `_force_add_tle_object`/`_force_add_omm_object`, `bulk_import()`, and the new HTTP route, then implemented each in turn exactly as `IP-1190` specified. New `content/bulk_import.py` (multi-TLE + CCSDS OMM KVN parsers, Design Decision 1's outright-rejection-vs-per-object-failure split); new public `engine/orbit.py::mean_to_true()` (extracted from `elements_to_rv()`'s existing inline computation, confirmed bit-for-bit identical via a hand-inlined regression test); `SessionManager._force_add_tle_object`/`_force_add_omm_object`/`bulk_import()`; new `POST /api/sessions/{sid}/force/bulk_import` route, plus the implied `session/inprocess.py` wrapper the route needs to reach the manager (not literally named in the package's own `Files to Modify` — harvested as `BL-0102`, Low). Added one new `test_observer.py` `_MUTATING_ROUTES` row for the new route, matching the established per-new-mutating-route convention. 16 new tests across `test_bulk_import.py` (new), `test_bulk_import_session.py` (new), `test_orbit.py` (+2), `test_web.py` (+1), `test_observer.py` (+1). Full suite **638 passed/3 skipped** (up from 622/3), both permanent gates green — zero regressions to the existing `add_tle`/`add_ground_asset`/`force/tle` tests. Updated the RTM (`FR-5220`'s Impl. Package/Test/Future-Feature cells), `CLAUDE.md`'s code map, `FS-119`'s `Referenced By`, `IP-1190`'s own header/DoD, the Master Build Plan (row + narrative update), `packages/INDEX.md`, `01-technical-work-breakdown.md`, `ROADMAP.md`. `IP-1190` flips `READY → COMPLETE`. `BL-0096` already `DONE` (closed at planning time, unchanged). Committed and pushed to the open PR #55 branch (`claude/chart-prompt-file-90hm9u`). Harvested `BL-0102` (Low, `DEFERRED`). | `08-code-implementation` on `IP-1180` next (FS-118, external vignette directories) — before `IP-1200`, per the flagged `save_vignette()`/`export_vignette()` coordination note. |
+| 71 | 2026-09-27 | advance | `08-code-implementation` | `IP-1180` — External Vignette Directories & Safe Scenario Save Target | Reconciliation: no drift. `IP-1180` selected next per the user-directed build order (before `IP-1200`, coordination note). Invoked `08-code-implementation`: read `IP-1180` in full plus the live `content/vignette.py`/`content/vignette_export.py`/`config.py`. Added `ContentConfig`/`load_content_config()` (`config.py`, mirroring `ServerConfig`'s shape exactly); extracted `_validate_id`/`_resolve_within_root` from `load_vignette()`'s existing body (Design Decision resolving Open Question 1's code-path identity, zero behavior change, regression-tested); extended `list_vignettes()`/`load_vignette()` to enumerate/search configured external directories (Design Decisions 2/4: unreadable directory skipped+logged; built-in-wins id-collision, loser skipped+logged); retargeted `content/vignette_export.py::save_vignette()` from `VIGNETTE_DIR` to a configured `user_save_dir`, reusing the new shared guard helpers in place of the module's own duplicate `_ID_RE` (Design Decision 3: raises when unconfigured) — this also closed a latent traversal gap in the old local regex, which never rejected `".."` (both dots are charset-legal), now caught by `_validate_id`'s explicit separator/traversal check. Updated 3 existing tests (`test_vignette_creator_session.py`, `test_web.py`) that called `save_vignette()`/`/save_vignette` to configure a `tmp_path` `user_save_dir` fixture (regression, not rewrite) — a pre-existing test that referenced `VIGNETTE_DIR` for a since-relocated assertion was fixed to reference the new fixture. 23 new tests across `test_config.py` (+5), `test_content.py` (+6, including the full existing traversal-token parametrization re-run against an external directory), new `test_vignette_export.py` (+6 incl. parametrization). Full suite **661 passed/3 skipped** (up from 638/3), both permanent gates green — zero regressions to any existing vignette-load/save-as-vignette test. Updated the ICD (`INT-0011`/`INT-0012` prose, citation-only), the RTM (`FR-5410`/`FR-5420`/`NFR-3700`'s Impl. Package/Test/Future-Feature cells), `CLAUDE.md`'s code map, `FS-118`'s `Referenced By`, `spacesim.config.yaml`'s documented-by-example `content:` section, `IP-1180`'s own header/DoD, the Master Build Plan (row + narrative update), `packages/INDEX.md`, `01-technical-work-breakdown.md`, `ROADMAP.md`. `IP-1180` flips `READY → COMPLETE`. `BL-0094` already `DONE` (closed at planning time, unchanged); no new findings this run. Committed and pushed to the open PR #55 branch (`claude/chart-prompt-file-90hm9u`). | `08-code-implementation` on `IP-1062` next (FS-106 v2.1, condition-triggered injects) — no shared-file coordination risk with any remaining package. |

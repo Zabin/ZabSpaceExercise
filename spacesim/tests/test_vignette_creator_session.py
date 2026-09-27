@@ -2,14 +2,35 @@
 
 A draft session is an unstarted SessionManager, registered/evicted the same way a normal
 session is, that never advances its clock; "Save as Vignette" is the only code path that
-writes to VIGNETTE_DIR.
+writes an authored vignette file — to a configured ``user_save_dir`` (IP-1180, FR-5420), not
+``VIGNETTE_DIR``.
 """
 from __future__ import annotations
 
 from pathlib import Path
 
-from spacesim.content.vignette import VIGNETTE_DIR, build_world, load_vignette
+import pytest
+
+from spacesim.content.vignette import build_world, load_vignette
 from spacesim.session import InProcessSession
+
+
+@pytest.fixture(autouse=True)
+def user_save_dir(tmp_path, monkeypatch):
+    """IP-1180 — save_vignette() has no implicit VIGNETTE_DIR default any more; every test in
+    this file that saves needs a configured user_save_dir, so this session's own tmp directory
+    is wired in via SPACESIM_CONFIG rather than repeating the fixture per test. Also registered
+    as an external vignette directory, so a just-saved scenario can be loaded straight back via
+    the plain ``load_vignette(id)`` call these tests already use."""
+    cfg_path = tmp_path / "spacesim.config.yaml"
+    save_dir = tmp_path / "user_saves"
+    save_dir.mkdir()
+    cfg_path.write_text(
+        f"content:\n  user_save_dir: {save_dir}\n  external_vignette_dirs:\n    - {save_dir}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SPACESIM_CONFIG", str(cfg_path))
+    return save_dir
 
 # A real, valid TLE pair (ISS, arbitrary epoch) — mirrors the existing force/tle test fixtures'
 # convention of using a real satellite's elements so sgp4 validation passes.
@@ -34,11 +55,11 @@ def test_draft_session_accepts_force_edit_before_any_save():
     assert "SAT-1" in api._sessions[sid].world.assets
 
 
-def test_no_partial_vignette_file_written_before_save():
+def test_no_partial_vignette_file_written_before_save(user_save_dir):
     api = InProcessSession()
     sid = api.create_draft_session(title="Partial")
     api._sessions[sid].add_tle("SAT-2", _TLE1, _TLE2, owner="blue")
-    assert not (VIGNETTE_DIR / "test-partial-draft-not-saved.yaml").exists()
+    assert not (user_save_dir / "test-partial-draft-not-saved.yaml").exists()
 
 
 def test_save_as_vignette_produces_a_loadable_file():

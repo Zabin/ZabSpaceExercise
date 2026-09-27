@@ -14,7 +14,8 @@
 > validation report, 26 Sep 2026, item B16), [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-5410`/`FR-5420`, [docs/requirements/02-non-functional-requirements.md](../requirements/02-non-functional-requirements.md)
 > `NFR-3700`, [IP-1180](../implementation/packages/IP-1180-external-vignette-directories.md)
-> (Implementation Package, `NOT STARTED`, not yet authorized)
+> (Implementation Package, `COMPLETE` 2026-09-27, awaiting `09-package-verification` in a fresh
+> session)
 > **Produces:** an external-vignette-directory load path and a safe, user-directory-scoped
 > save-as-scenario write target, satisfying `FR-5410`/`FR-5420`/`NFR-3700` in full
 > **Feature Mapping:** FS-118 (this document)

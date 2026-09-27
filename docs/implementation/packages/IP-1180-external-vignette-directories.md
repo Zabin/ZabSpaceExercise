@@ -2,7 +2,9 @@
 
 > **Package ID:** IP-1180
 > **Version:** 1.0
-> **Status:** ⚪ NOT STARTED *(forward design — not authorized for coding, MSTR-006 §3)*
+> **Status:** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
+> awaiting `09-package-verification` in a fresh session — this session implemented it and may not
+> verify its own work)*
 > **Dependencies:** [FS-118](../../features/FS-118-external-vignette-directories.md) v1.0
 > (`FR-5410`/`FR-5420`/`NFR-3700`), [FS-117](../../features/FS-117-vignette-creator.md)/
 > [IP-1173](IP-1173-vignette-creator-draft-session.md) (`save_vignette` — the existing, `VERIFIED`
@@ -253,22 +255,33 @@ introduced) but must be re-run green per this repository's mandatory workflow.
 
 ## Definition of Done
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — not yet sought or granted as of this writing.
-- [ ] `list_vignettes()` enumerates configured external directories alongside `VIGNETTE_DIR`,
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3) — granted 2026-09-27 by the project owner's direct instruction.
+- [x] `list_vignettes()` enumerates configured external directories alongside `VIGNETTE_DIR`,
   tagging each entry's origin; empty configuration reproduces baseline behavior byte-for-byte.
-- [ ] `load_vignette()` finds a vignette that exists only in a configured external directory.
-- [ ] An unreadable/nonexistent configured external directory is skipped without failing the whole
-  catalog build.
-- [ ] An id collision between the built-in library and a configured external directory resolves to
+  (`test_list_vignettes_empty_external_dirs_reproduces_baseline`,
+  `test_list_vignettes_enumerates_external_directory_with_origin_tag`)
+- [x] `load_vignette()` finds a vignette that exists only in a configured external directory.
+  (`test_load_vignette_finds_object_that_exists_only_in_external_directory`)
+- [x] An unreadable/nonexistent configured external directory is skipped without failing the whole
+  catalog build. (`test_list_vignettes_skips_unreadable_or_missing_external_directory`)
+- [x] An id collision between the built-in library and a configured external directory resolves to
   the built-in entry, with the external entry absent from the catalog and the shadow logged.
-- [ ] `save_vignette()` writes only to a configured `user_save_dir`, never to `VIGNETTE_DIR`, and
+  (`test_list_vignettes_id_collision_resolves_built_in_first`)
+- [x] `save_vignette()` writes only to a configured `user_save_dir`, never to `VIGNETTE_DIR`, and
   raises a specific, distinguishable error when no `user_save_dir` is configured.
-- [ ] The traversal guard (charset + `..`/separator/leading-character rejection, then
+  (`test_save_vignette_raises_when_no_user_save_dir_configured`,
+  `test_save_vignette_writes_to_configured_user_save_dir_not_vignette_dir`)
+- [x] The traversal guard (charset + `..`/separator/leading-character rejection, then
   resolved-path-inside-root re-check) rejects an offending identifier identically against
   `VIGNETTE_DIR`, every configured external directory, and the configured user-save directory, with
   no filesystem access on rejection in every case.
-- [ ] Full existing test suite green, zero regressions, both permanent gates green.
+  (`test_load_vignette_rejects_traversal_against_external_directory_too`,
+  `test_export_vignette_rejects_traversal_id_before_any_filesystem_access`, plus the existing
+  `test_load_vignette_rejects_path_traversal` regression against `VIGNETTE_DIR`)
+- [x] Full existing test suite green, zero regressions, both permanent gates green: **661
+  passed / 3 skipped** (up from 638/3), `test_determinism.py` and `test_import_guard.py` both
+  green.
 
 ## Verification Checklist
 
