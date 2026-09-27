@@ -230,7 +230,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `elements_to_rv()`'s existing inline computation with no behavior change; reused by the CCSDS OMM
   bulk-import path, which supplies a mean anomaly the TLE path never needed.
 - `spacesim/engine/propagator.py` — `Propagator` seam: Kepler+J2 (fictional) / sgp4 (TLE).
-- `spacesim/engine/entities.py` — `Asset`/`AssetResources`, `GroundSite`, `Sensor`.
+- `spacesim/engine/entities.py` — `Asset`/`AssetResources`, `GroundSite`, `Sensor`
+  (`Sensor.health`, IP-1062/FR-4430 — additive `"nominal"|"degraded"`, the `sensor_outage`
+  inject effect's target field).
 - `spacesim/engine/access.py` — `AccessProvider` seam: all six channels + window caching; unknown
   endpoint ids (e.g. a command planned `via` a station not in the force) degrade to no-access, not a crash.
 - `spacesim/engine/custody.py` — `Track` (on-demand confidence decay) + weapons-quality gate.
@@ -242,7 +244,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   registers/books nothing) → powers the UI's "why can't I?" pre-disabled buttons; replay-safe like `scene.py`.
   ROE (`engage`/`cyber`) is resolved per issuing cell (`self.roe[order.cell]`, IP-1172/FR-3420) — the
   engine never branches on legacy-vs-explicit vignette shape, only on the always-cell-keyed dict
-  `content/vignette.py`'s `build_world()` produces.
+  `content/vignette.py`'s `build_world()` produces. `scene_from_world()`'s sensor filter (IP-1062,
+  FR-4430) excludes a `health="degraded"` sensor (`sensor_outage` inject effect), mirroring the
+  existing degraded-ground-station filter immediately above it.
 - `spacesim/engine/recovery.py` — `RecoverySystem`: multi-pass safe-mode recovery + re-safe-on-persistence.
 - `spacesim/engine/ssn.py` — mock Space Surveillance Network (per `docs/build-spec/08-ssn.md` §17): per-cell
   `SSNNetwork`s instantiated from a dispersion preset (`sparse`/`regional`/`global`/`proliferated`),
@@ -325,6 +329,17 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `add_tle()`'s single-object mechanism (extracted into `_force_add_tle_object`) via a new
   `_force_add_omm_object` sibling, per-object success/failure reporting, batch continues past a
   malformed object,
+  **IP-1062 (FR-4420/FR-4430):** `_apply_inject_effects()` — the shared per-effect dispatch
+  extracted from `_h_inject`'s previous inline body, now also called by a new
+  `_h_condition_check()` handler that evaluates every not-yet-fired condition-triggered inject
+  (`trigger.type == "condition"`, reusing `content/vignette.py`'s `_evaluate_metric()`) against
+  replayed `WorldState` at a `condition_check` tick cadence `_arm_schedule` queues only when a
+  vignette declares one; firing-state is derived from a time-filtered eventlog scan (no new
+  `WorldState` field), mirroring `_arm_schedule`'s own pattern. Four new effect types:
+  `anomaly` (bus→safe_mode / telemetry→comms degraded), `sensor_outage` (`Sensor.health`),
+  `forced_custody_loss` (`Track` mutation, cell-scoped), `scripted_manoeuvre` (the six existing
+  `engine/maneuver.py` entry modes via `compute_maneuver()`/`apply_impulse()`, deliberately
+  bypassing `AssetResources.delta_v_ms` per `ADR-0005`),
   `validate_order` dry-run, `next_contacts` fleet countdown, `begin_recovery`/`recovery_status`
   wiring `RecoverySystem` for the safe-mode recovery strip; **multiplayer:** server-authoritative
   lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /

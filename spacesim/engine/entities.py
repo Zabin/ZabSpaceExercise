@@ -75,3 +75,8 @@ class Sensor(BaseModel):
     needs_lighting: bool = False         # optical: target sunlit + site in darkness
     max_range_m: Optional[float] = None  # None = unlimited (geometry only)
     network: bool = False                # SSN member (request-only, not directly taskable)
+    # IP-1062 (FR-4430) — the sensor_outage inject effect's target field. Additive; every
+    # existing vignette's sensors have no `health` key in YAML, defaulting to "nominal" (zero
+    # behavior change). Mirrors Asset.health's degraded/nominal pair (no "destroyed" state for
+    # a sensor — outages are reversible, per the effect's own `restore` flag).
+    health: Literal["nominal", "degraded"] = "nominal"

@@ -52,6 +52,7 @@ class SessionManager:
         self.world, self.ctx = build_world(vignette, overrides)
         self.sim = Simulation(self.world, seed=seed)
         self.sim.register_handler("inject", self._h_inject)
+        self.sim.register_handler("condition_check", self._h_condition_check)
         self.osys = OrderSystem(self.sim, roe=dict(self.ctx.roe))
         self.bus = BusSystem(self.sim)
         self.recovery = RecoverySystem(
@@ -155,6 +156,14 @@ class SessionManager:
         (no double fire), while one that never fired (e.g. rewinding to the start epoch before the
         first ``advance_to``) is re-armed (not lost)."""
         self.bus.schedule_ticks(BUS_TICK_PERIOD_S, until=self.horizon, start=from_t)
+        # IP-1062 (FR-4420) — only when the vignette actually declares a condition-triggered
+        # inject, so the other 18 of 19 library vignettes gain zero extra eventlog entries.
+        if any((inj.trigger or {}).get("type") == "condition" for inj in self.vignette.injects):
+            step = int(BUS_TICK_PERIOD_S * 1_000_000)
+            t = from_t + step
+            while t <= self.horizon:
+                self.sim.schedule(t, "condition_check")
+                t += step
         fired_at_from_t: Optional[set[str]] = None
         if not initial:
             fired_at_from_t = {
@@ -784,7 +793,14 @@ class SessionManager:
 
     # -- inject handler (runs inside the deterministic event loop) -------------
     def _h_inject(self, world: WorldState, payload: dict, rng) -> None:
-        for eff in payload.get("effects", []):
+        self._apply_inject_effects(world, payload.get("effects", []), rng)
+
+    def _apply_inject_effects(self, world: WorldState, effects: list, rng) -> None:
+        """IP-1062 — shared per-effect dispatch, extracted from `_h_inject`'s previous inline
+        body with no behavior change for any of the eight prior effect types, so both the
+        time/immediate trigger path (`_h_inject`) and the new condition-triggered path
+        (`_h_condition_check`) apply effects identically."""
+        for eff in effects:
             kind = eff.get("type")
             if kind == "message":
                 world.messages.append({"to": eff.get("to", []), "text": eff.get("text", ""), "t": world.now})
@@ -854,3 +870,88 @@ class SessionManager:
                 if eff.get("message"):
                     world.messages.append({"to": ["white", "blue", "red"],
                                             "text": str(eff["message"]), "t": world.now})
+            elif kind == "anomaly":
+                # IP-1062 (FR-4430) — a controller-set spacecraft anomaly. Design Decision 4:
+                # subsystem "bus" -> whole-bus safe mode (reuses the existing safe-mode/
+                # RecoverySystem recovery loop); subsystem "telemetry" -> comms degraded (the
+                # closest existing BusState field to "telemetry").
+                asset = world.assets.get(eff["target"])
+                if asset is not None and asset.bus_state is not None:
+                    restore = eff.get("restore") is True
+                    if eff.get("subsystem") == "bus":
+                        asset.bus_state.mode = "nominal" if restore else "safe_mode"
+                    elif eff.get("subsystem") == "telemetry":
+                        asset.bus_state.comms.status = "green" if restore else "red"
+                    world.messages.append({"to": ["white", "blue", "red"],
+                                           "text": f"{eff['target']}: anomaly {'cleared' if restore else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
+                                           "t": world.now})
+            elif kind == "sensor_outage":
+                # IP-1062 (FR-4430) — mirrors gs_outage's health-flag pattern for a sensor.
+                sensor = world.sensors.get(eff["target"])
+                if sensor is not None:
+                    sensor.health = "nominal" if eff.get("restore") is True else "degraded"
+                    world.messages.append({"to": ["white", "blue", "red"],
+                                           "text": f"{eff['target']}: sensor outage {'cleared' if sensor.health == 'nominal' else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
+                                           "t": world.now})
+            elif kind == "forced_custody_loss":
+                # IP-1062 (FR-4430) — a missing target is a no-op (Design Decision 2's posture),
+                # never another cell's Track (world.track_for is already cell-scoped, ADR-0004).
+                tr = world.track_for(eff["cell"], eff["target"])
+                if tr is not None:
+                    if eff.get("mode") == "drop":
+                        world.tracks.remove(tr)
+                    else:
+                        tr.confidence = float(eff.get("degrade_to", 0.0))
+                        tr.last_observation = world.now
+            elif kind == "scripted_manoeuvre":
+                # IP-1062 (FR-4430) — Design Decisions 1/3: resolves through the existing six
+                # manoeuvre entry modes via compute_maneuver(), the same propagator call
+                # OrderSystem._h_maneuver already uses, deliberately bypassing
+                # asset.resources.delta_v_ms (injects are the documented plan-first bypass,
+                # ADR-0005) — never checked, never deducted.
+                asset = world.assets.get(eff["target"])
+                if asset is not None and asset.orbit is not None:
+                    from spacesim.engine.maneuver import compute_maneuver
+                    result = compute_maneuver(asset.orbit, eff["mode"], eff.get("params", {}),
+                                              world.now, self.osys.prop)
+                    import numpy as _np
+                    dv = _np.asarray(result["dv"], dtype=float)
+                    asset.orbit = self.osys.prop.apply_impulse(asset.orbit, dv, world.now)
+                    world.messages.append({"to": ["white"],
+                                           "text": f"{eff['target']}: scripted manoeuvre ({eff['mode']}), "
+                                                   f"cost={result['cost']:.1f} m/s",
+                                           "t": world.now})
+
+    def _condition_inject_already_fired(self, inj_id: str, before_t: int) -> bool:
+        """IP-1062 (FR-4420) — derived from event-log history, no new WorldState field: mirrors
+        `_arm_schedule`'s own time-filtered eventlog-scan pattern, safe under both live-run and
+        replay since eventlog entries are strictly time-ordered immutable history."""
+        for e in self.sim.eventlog.entries:
+            if e.kind == "condition_check" and e.sim_time < before_t:
+                if any(f.get("inject_id") == inj_id for f in e.payload.get("fired", [])):
+                    return True
+        return False
+
+    def _h_condition_check(self, world: WorldState, payload: dict, rng) -> None:
+        """IP-1062 (FR-4420) — evaluates every not-yet-fired condition-triggered inject against
+        the current (replayed) WorldState. Mutates this event's own `payload` dict in place
+        rather than calling `eventlog.append()` from inside the handler — `Simulation.advance_to`'s
+        existing post-handler append captures this same dict, so the firing tick and evaluated
+        condition are recorded with no additional/nested append (a mid-handler append would
+        corrupt `_rebuild()`/`replay()`'s iteration over the entries list — see the package's
+        own Risks)."""
+        from spacesim.content.vignette import _evaluate_metric
+        fired: list[dict] = []
+        for inj in self.vignette.injects:
+            trig = inj.trigger or {}
+            if trig.get("type") != "condition":
+                continue
+            if self._condition_inject_already_fired(inj.id, world.now):
+                continue
+            # A condition targeting a deleted/expired asset/track/cell simply evaluates false
+            # forever (Design Decision resolving BL-0095 part 1) — _evaluate_metric's own
+            # existing None-handling already produces this, no new error-handling branch needed.
+            if _evaluate_metric(world, self.ctx, trig.get("metric", {})):
+                self._apply_inject_effects(world, inj.effects, rng)
+                fired.append({"inject_id": inj.id, "value": True})
+        payload["fired"] = fired

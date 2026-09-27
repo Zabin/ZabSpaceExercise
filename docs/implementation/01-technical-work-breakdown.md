@@ -280,7 +280,7 @@ machinery). One package, two sampling functions sharing one serializer.
 | Package | FS | Status | Authorization |
 |---|---|---|---|
 | [IP-1180](packages/IP-1180-external-vignette-directories.md) | FS-118 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (661/3, both gates green), awaiting `09` in a fresh session |
-| [IP-1062](packages/IP-1062-condition-triggered-injects-and-new-effects.md) | FS-106 v2.1 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
+| [IP-1062](packages/IP-1062-condition-triggered-injects-and-new-effects.md) | FS-106 v2.1 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (678/3, both gates green), awaiting `09` in a fresh session |
 | [IP-1200](packages/IP-1200-save-as-scenario.md) | FS-120 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
 | [IP-1190](packages/IP-1190-bulk-tle-omm-import.md) | FS-119 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (638/3, both gates green), awaiting `09` in a fresh session |
 | [IP-1210](packages/IP-1210-ephemeris-export.md) | FS-121/FS-103 v1.1 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |

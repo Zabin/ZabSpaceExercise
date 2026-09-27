@@ -17,10 +17,12 @@ from spacesim.session.inprocess import InProcessSession
 from spacesim.session.manager import SessionManager
 
 
-# Effect types accepted by manager._h_inject (must stay in sync with that handler).
+# Effect types accepted by manager._apply_inject_effects (must stay in sync with that helper).
 _KNOWN_EFFECT_TYPES = {
     "message", "reveal_asset", "political_consequence", "patch_cyber_vuln",
     "gs_outage", "space_weather", "conjunction_warning", "spawn_debris",
+    # IP-1062 (FR-4430):
+    "anomaly", "sensor_outage", "forced_custody_loss", "scripted_manoeuvre",
 }
 
 

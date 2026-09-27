@@ -2,7 +2,9 @@
 
 > **Package ID:** IP-1062
 > **Version:** 1.0
-> **Status:** ⚪ NOT STARTED *(forward design — not authorized for coding, MSTR-006 §3)*
+> **Status:** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
+> awaiting `09-package-verification` in a fresh session — this session implemented it and may not
+> verify its own work)*
 > **Dependencies:** [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.1
 > (`FR-4420`/`FR-4430`), [IP-1061](IP-1061-inject-and-sizing-defect-remediation.md) (`COMPLETE`,
 > not a build dependency but the most recent prior touch of the same `_h_inject`/`_arm_schedule`
@@ -275,22 +277,30 @@ handler.
 
 ## Definition of Done
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — not yet sought or granted as of this writing.
-- [ ] A condition-triggered inject (range/custody/objective-state) fires at the first scheduled
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3) — granted 2026-09-27 by the project owner's direct instruction.
+- [x] A condition-triggered inject (range/custody/objective-state) fires at the first scheduled
   engine tick where its condition evaluates true, and never fires before that.
-- [ ] The same condition-triggered inject fires at the identical simulated tick under replay of the
-  same `(initial_state, eventlog, seed)`.
-- [ ] A vignette with no condition-triggered injects schedules zero `condition_check` events.
-- [ ] Each of the four new effect types produces the state change described in System Behaviour;
+  (`test_condition_inject_fires_at_first_true_tick_and_records_fired_payload`)
+- [x] The same condition-triggered inject fires at the identical simulated tick under replay of the
+  same `(initial_state, eventlog, seed)`. (`test_condition_inject_fires_at_identical_tick_under_replay`)
+- [x] A vignette with no condition-triggered injects schedules zero `condition_check` events.
+  (`test_vignette_with_no_condition_injects_schedules_zero_condition_check_events`)
+- [x] Each of the four new effect types produces the state change described in System Behaviour;
   `forced_custody_loss` never changes a non-targeted cell's own `Track`.
-- [ ] `scripted_manoeuvre` changes `asset.orbit` via the named entry mode without touching
-  `asset.resources.delta_v_ms`.
-- [ ] A degraded sensor is absent from `AccessProvider`'s `sensor_observation` endpoints; restoring
-  it makes it reappear.
-- [ ] Every existing inject-library/effect test still passes unchanged (the `_h_inject` refactor is
-  behavior-preserving for all eight prior effect types).
-- [ ] Full existing test suite green, zero regressions, both permanent gates green.
+  (`test_inject_effects_v2.py` — one test per effect type/branch, plus
+  `test_forced_custody_loss_never_touches_another_cells_track`)
+- [x] `scripted_manoeuvre` changes `asset.orbit` via the named entry mode without touching
+  `asset.resources.delta_v_ms`. (`test_scripted_manoeuvre_changes_orbit_via_eci_mode_bypassing_delta_v_budget`,
+  `test_scripted_manoeuvre_changes_orbit_via_hohmann_mode`)
+- [x] A degraded sensor is absent from `AccessProvider`'s `sensor_observation` endpoints; restoring
+  it makes it reappear. (`test_scene_from_world_excludes_degraded_sensor`)
+- [x] Every existing inject-library/effect test still passes unchanged (the `_h_inject` refactor is
+  behavior-preserving for all eight prior effect types) — `test_inject_library.py`'s full suite
+  re-run with zero changes needed beyond the `_KNOWN_EFFECT_TYPES` documentation set.
+- [x] Full existing test suite green, zero regressions, both permanent gates green: **678
+  passed / 3 skipped** (up from 661/3), `test_determinism.py` and `test_import_guard.py` both
+  green.
 
 ## Verification Checklist
 

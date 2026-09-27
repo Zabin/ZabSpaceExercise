@@ -90,7 +90,9 @@ def scene_from_world(world: WorldState) -> Scene:
         satellites={i: a.orbit for i, a in world.assets.items() if a.orbit is not None},
         sites={i: a.as_ground_site() for i, a in world.assets.items()
                if a.location is not None and a.health != "degraded"},
-        sensors=dict(world.sensors),
+        # IP-1062 (FR-4430) — a sensor_outage'd sensor (health="degraded") loses its
+        # sensor_observation access the same way a degraded ground station loses uplink/downlink.
+        sensors={i: s for i, s in world.sensors.items() if s.health != "degraded"},
     )
 
 
