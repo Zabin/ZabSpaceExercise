@@ -27,6 +27,27 @@ def test_capstone_runs_a_synchronized_red_campaign():
     assert rep.timeline and any("cyber" in e.summary for e in rep.timeline)
 
 
+def test_state_at_time_reconstructs_world_at_arbitrary_time():
+    """IP-1210 (FR-7410/FR-7420) — state_at_time()'s applied-event set matches exactly the
+    events with sim_time <= t, and world.now == t (not the last applied event's own time)."""
+    mgr = _campaign()
+    RedDoctrine(mgr).step()
+    mgr.advance_to(mgr.world.now + minutes(1))
+
+    mid_t = mgr.sim.eventlog.entries[0].sim_time
+    world_at_mid = aar.state_at_time(mgr, mid_t)
+    assert world_at_mid.now == mid_t
+    expected_seq = sum(1 for e in mgr.sim.eventlog.entries if e.sim_time <= mid_t)
+    world_at_seq = aar.state_at(mgr, seq=expected_seq)
+    world_at_seq.now = mid_t  # state_at() doesn't pin final_time; align before comparing
+    assert world_at_mid.model_dump() == world_at_seq.model_dump()
+
+    # Read-only: the live sim is untouched.
+    live_now = mgr.sim.clock.now
+    aar.state_at_time(mgr, mid_t)
+    assert mgr.sim.clock.now == live_now
+
+
 def test_aar_scrub_is_read_only_and_reconstructs_earlier_state():
     mgr = _campaign()
     RedDoctrine(mgr).step()

@@ -486,3 +486,50 @@ def test_save_as_scenario_route_end_to_end(tmp_path, monkeypatch):
     assert draft_resp.status_code == 200
     from pathlib import Path
     Path(draft_resp.json()["path"]).unlink(missing_ok=True)
+
+
+def test_ephemeris_truth_route_no_cell_binding():
+    """IP-1210 (FR-7410) — reachable with no cell query param, like /godview."""
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0})
+    assert r.status_code == 200
+    assert "eci_r_x_m" in r.text  # CSV header present
+
+
+def test_ephemeris_truth_route_wholly_out_of_range_is_400():
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0 + 10_000_000_000, "t2": t0 + 20_000_000_000})
+    assert r.status_code == 400
+
+
+def test_ephemeris_cell_observed_route_fog_of_war_enforced():
+    """IP-1210 (FR-7420) — a cell with no Track on the requested object gets an empty export,
+    never another cell's belief or ground truth, mirroring test_scene.py's fog-of-war pattern."""
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/red",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0})
+    assert r.status_code == 200
+    lines = r.text.strip().splitlines()
+    assert len(lines) == 1  # header only — red has no track on blue's ISR-EO-1
+
+
+def test_ephemeris_oem_format():
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0, "format": "oem"})
+    assert r.status_code == 200
+    assert "CCSDS_OEM_VERS" in r.text

@@ -369,7 +369,14 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   locking/`MAX_LIVE_SESSIONS` eviction unmodified; `step`/`advance_to`/`rewind_to`/`undo_last`/
   `red_doctrine_step` all reject a draft sid rather than advancing its clock),
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
-  `aar.py` (replay/scrub/branch-compare + `snapshot_at`),
+  `aar.py` (replay/scrub/branch-compare + `snapshot_at`; `state_at_time(mgr, t)` (IP-1210,
+  FR-7410/FR-7420) — additive sibling of `state_at(mgr, seq)`, reconstructing at an arbitrary sim
+  time instead of an eventlog sequence number, used by `ephemeris.py`'s time-span sampling),
+  `ephemeris.py` (IP-1210, FR-7410/FR-7420 — truth/cell-observed ephemeris export: `sample_times()`/
+  `truth_ephemeris()`/`cell_observed_ephemeris()`/`to_ric()` (reuses `engine/maneuver.py::
+  lvlh_frame` directly for the RIC transform)/`write_csv()`/`write_oem()`; a wholly-out-of-range
+  time span is rejected, a partially-out-of-range span is silently clamped; cell-observed reads
+  only the requesting cell's own `Track.state_estimate`, never ground truth),
   `assessment.py` (IP-2010 — read-only competency-rubric scoring: `score_custody_quality`/
   `score_window_discipline`/`score_belief_truth_divergence` + `assessment_report`, never a
   composite score; belief-truth divergence classifies aware/unaware from `custody_confidence_at_decision`,

@@ -283,7 +283,7 @@ machinery). One package, two sampling functions sharing one serializer.
 | [IP-1062](packages/IP-1062-condition-triggered-injects-and-new-effects.md) | FS-106 v2.1 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (678/3, both gates green), awaiting `09` in a fresh session |
 | [IP-1200](packages/IP-1200-save-as-scenario.md) | FS-120 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (689/3, both gates green), awaiting `09` in a fresh session |
 | [IP-1190](packages/IP-1190-bulk-tle-omm-import.md) | FS-119 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (638/3, both gates green), awaiting `09` in a fresh session |
-| [IP-1210](packages/IP-1210-ephemeris-export.md) | FS-121/FS-103 v1.1 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
+| [IP-1210](packages/IP-1210-ephemeris-export.md) | FS-121/FS-103 v1.1 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (707/3, both gates green), awaiting `09` in a fresh session |
 
 **All six Must-tier packages are now written and specification-complete.** None is authorized for
 coding (MSTR-006 §3) — that is a separate, explicit decision for the project owner, per package or

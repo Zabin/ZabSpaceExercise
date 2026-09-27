@@ -504,9 +504,14 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Destination Component:** C1 (`EventLog`, `WorldState`)
 - **Purpose:** Replay/scrub to any `EventLog` point and branch-compare, read-only against the
   engine, never the live session (GDS-03 §1 diagram `AAR --> EL`, `AAR --> WS`; GDS-03 §2.2
-  "Responsibilities").
+  "Responsibilities"). **IP-1210 (FR-7410/FR-7420, 2026-09-27):** generalized from a single-point
+  replay read to a time-span read via a new additive `aar.state_at_time(mgr, t)` sibling of
+  `state_at(mgr, seq)` — same interface, same read-only guarantee, reconstructing at an arbitrary
+  sim time instead of only an eventlog sequence number. Per the Requirements Review's own Finding 6
+  (`BL-0093`), this documented shape (a single-point read) remains a stretched fit for a
+  time-span/multi-sample export — not resolved here, still routed to whoever next touches the ICD.
 - **Data exchanged:** Read: historical `EventLog` entries and reconstructed `WorldState` snapshots
-  at a given point. No write.
+  at a given point (or, as of `IP-1210`, a given time). No write.
 - **Message/data structure:** Not specified beyond GDS-03 §2.2's description (`snapshot_at`).
 - **Direction:** One-directional (C2 reads from C1 only).
 - **Frequency/timing:** Post-session or mid-session, on White Cell/Observer demand.

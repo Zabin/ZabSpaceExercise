@@ -20,6 +20,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, field_validator
 
 from spacesim.engine.orders import Order
+from spacesim.session import ephemeris
 from spacesim.session.api import Ack, CellView, OrderAck
 from spacesim.session.inprocess import InProcessSession
 from spacesim.session.scene import SceneView
@@ -716,6 +717,32 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def alarms(sid: str, cell: str) -> list:
         _require(sid)
         return api.alarms(sid, cell)
+
+    @app.get("/api/sessions/{sid}/ephemeris/truth", response_class=PlainTextResponse)
+    def ephemeris_truth(sid: str, object_id: str, reference_id: str, t1: int, t2: int,
+                         interval_s: Optional[float] = None, format: str = "csv") -> str:
+        """IP-1210 (FR-7410) — ground-truth ephemeris export over a time span, ECI + RIC. A
+        no-cell, White-Cell-only endpoint (`FR-6220`), like `/godview`/`/eventlog`/`/aar*`."""
+        _require(sid)
+        try:
+            rows = api.truth_ephemeris(sid, object_id, reference_id, t1, t2, interval_s=interval_s)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        return ephemeris.write_oem(rows, object_id) if format == "oem" else ephemeris.write_csv(rows)
+
+    @app.get("/api/sessions/{sid}/ephemeris/{cell}", response_class=PlainTextResponse)
+    def ephemeris_cell_observed(sid: str, cell: str, object_id: str, reference_id: str,
+                                t1: int, t2: int, interval_s: Optional[float] = None,
+                                format: str = "csv") -> str:
+        """IP-1210 (FR-7420) — `cell`'s own believed ephemeris over a time span, ECI + RIC. Same
+        fog-of-war trust level as every other cell-scoped read (`/view/{cell}`, `/scene/{cell}`)."""
+        _require(sid)
+        try:
+            rows = api.cell_observed_ephemeris(sid, cell, object_id, reference_id, t1, t2,
+                                               interval_s=interval_s)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        return ephemeris.write_oem(rows, object_id) if format == "oem" else ephemeris.write_csv(rows)
 
     @app.get("/api/sessions/{sid}/save")
     def save(sid: str) -> dict:

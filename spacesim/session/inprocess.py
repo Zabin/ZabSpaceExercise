@@ -918,6 +918,21 @@ class InProcessSession:
         with self._locked_read(session) as mgr:
             return mgr.alarms(cell)
 
+    # -- ephemeris export (IP-1210, FR-7410/FR-7420) ----------------------------
+    def truth_ephemeris(self, session: str, object_id: str, reference_id: str, t1: int, t2: int,
+                        interval_s: Optional[float] = None) -> list[dict]:
+        from spacesim.session import ephemeris
+        with self._locked_read(session) as mgr:
+            return ephemeris.truth_ephemeris(mgr, object_id, reference_id, t1, t2,
+                                             interval_s=interval_s)
+
+    def cell_observed_ephemeris(self, session: str, cell: str, object_id: str, reference_id: str,
+                                t1: int, t2: int, interval_s: Optional[float] = None) -> list[dict]:
+        from spacesim.session import ephemeris
+        with self._locked_read(session) as mgr:
+            return ephemeris.cell_observed_ephemeris(mgr, cell, object_id, reference_id, t1, t2,
+                                                     interval_s=interval_s)
+
     # -- save / resume ---------------------------------------------------------
     def save(self, session: str) -> dict:
         # Snapshot under lock so an in-flight mutation can't tear the state.

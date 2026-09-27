@@ -49,6 +49,23 @@ def state_at(mgr, seq: Optional[int] = None) -> WorldState:
     )
 
 
+def state_at_time(mgr, t: int) -> WorldState:
+    """IP-1210 (FR-7410/FR-7420) — read-only: reconstruct the world at an arbitrary sim time
+    ``t`` (not an eventlog sequence number, `state_at`'s own unit). Additive sibling of
+    `state_at` — replays up to the sequence position at-or-before ``t``, then pins
+    ``world.now = t`` (reproducing trailing idle time, exactly as `Simulation.replay()`'s own
+    ``final_time`` already does for the live clock)."""
+    seq = sum(1 for e in mgr.sim.eventlog.entries if e.sim_time <= t)
+    return replay(
+        mgr.sim._initial_state,
+        mgr.sim._seed,
+        mgr.sim.eventlog,
+        handlers=mgr.sim.handlers(),
+        up_to_seq=seq,
+        final_time=t,
+    )
+
+
 def objectives_at(mgr, seq: Optional[int] = None) -> dict:
     world = state_at(mgr, seq)
     return evaluate_objectives(world, mgr.ctx)

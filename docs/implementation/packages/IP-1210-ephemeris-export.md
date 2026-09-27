@@ -2,7 +2,9 @@
 
 > **Package ID:** IP-1210
 > **Version:** 1.0
-> **Status:** ⚪ NOT STARTED *(forward design — not authorized for coding, MSTR-006 §3)*
+> **Status:** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
+> awaiting `09-package-verification` in a fresh session — this session implemented it and may not
+> verify its own work)*
 > **Dependencies:** [FS-121](../../features/FS-121-ephemeris-export.md) v1.0
 > (`FR-7410`/`FR-7420`), [FS-103](../../features/FS-103-custody-management.md) v1.1 (confirmed
 > `Track.state_estimate` independence from truth), [ADS-1500](../../architecture/ADS-1500-per-cell-custody-estimated-state-and-export.md)
@@ -222,18 +224,29 @@ RNG use, and no new `engine/` import-boundary crossing.
 
 ## Definition of Done
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — not yet sought or granted as of this writing.
-- [ ] Given a time span and reference object, the truth export's CSV and CCSDS OEM files both
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3) — granted 2026-09-27 by the project owner's direct instruction.
+- [x] Given a time span and reference object, the truth export's CSV and CCSDS OEM files both
   contain state vectors matching the engine's own truth at each sampled time, correctly transformed
   into RIC; reachable only via a no-cell route.
-- [ ] Given the same time span, a cell-observed export request from cell C for object X returns C's
+  (`test_truth_ephemeris_eci_and_ric_correctness`, `test_ephemeris_truth_route_no_cell_binding`,
+  `test_ephemeris_oem_format`)
+- [x] Given the same time span, a cell-observed export request from cell C for object X returns C's
   own estimated state at each sampled time, matching `CellController`'s existing fog-of-war rule —
   no ground truth, no other cell's belief.
-- [ ] A wholly-out-of-range time span is rejected with a specific error; a partially-out-of-range
-  span is silently clamped, not rejected.
-- [ ] Both exports are byte-identical across repeated calls against the same saved session.
-- [ ] Full existing test suite green, zero regressions, both permanent gates green.
+  (`test_cell_observed_ephemeris_uses_state_estimate_and_own_asset_reference`,
+  `test_cell_observed_ephemeris_never_leaks_ground_truth_or_another_cells_belief`,
+  `test_cell_observed_ephemeris_reference_object_only_tracked_uses_stale_state_estimate`,
+  `test_ephemeris_cell_observed_route_fog_of_war_enforced`)
+- [x] A wholly-out-of-range time span is rejected with a specific error; a partially-out-of-range
+  span is silently clamped, not rejected. (`test_truth_ephemeris_wholly_out_of_range_raises`,
+  `test_truth_ephemeris_partial_range_clamps_not_rejects`,
+  `test_ephemeris_truth_route_wholly_out_of_range_is_400`)
+- [x] Both exports are byte-identical across repeated calls against the same saved session.
+  (`test_truth_ephemeris_deterministic_across_repeated_calls`)
+- [x] Full existing test suite green, zero regressions, both permanent gates green: **707
+  passed / 3 skipped** (up from 689/3), `test_determinism.py` and `test_import_guard.py` both
+  green.
 
 ## Verification Checklist
 

@@ -540,7 +540,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1062 | Condition-Triggered Injects & New Inject Effect Types | `implementation/packages/IP-1062-condition-triggered-injects-and-new-effects.md` | FS-106 v2.1 `FR-4420`/`FR-4430` | Forward design | 🔵 COMPLETE (implemented 2026-09-27, full suite 678/3, both permanent gates green; awaiting `09-package-verification` in a fresh session) |
 | IP-1200 | Save-as-Scenario | `implementation/packages/IP-1200-save-as-scenario.md` | FS-120 `FR-5510` | Forward design | 🔵 COMPLETE (implemented 2026-09-27, full suite 689/3, both permanent gates green; awaiting `09-package-verification` in a fresh session) |
 | IP-1190 | Bulk TLE and CCSDS OMM Multi-Object Import | `implementation/packages/IP-1190-bulk-tle-omm-import.md` | FS-119 `FR-5220` | Forward design | 🔵 COMPLETE (implemented 2026-09-27, full suite 638/3, both permanent gates green; awaiting `09-package-verification` in a fresh session) |
-| IP-1210 | Ephemeris Export (Truth and Cell-Observed) | `implementation/packages/IP-1210-ephemeris-export.md` | FS-121 `FR-7410`/`FR-7420`; FS-103 v1.1 | Forward design | ⚪ NOT STARTED (not authorized, MSTR-006 §3; specification-complete) |
+| IP-1210 | Ephemeris Export (Truth and Cell-Observed) | `implementation/packages/IP-1210-ephemeris-export.md` | FS-121 `FR-7410`/`FR-7420`; FS-103 v1.1 | Forward design | 🔵 COMPLETE (implemented 2026-09-27, full suite 707/3, both permanent gates green; awaiting `09-package-verification` in a fresh session) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1180,
 IP-1062, IP-1200, IP-1190, and IP-1210 are new (2026-09-27, Tranche 4)** — all six packages planned
