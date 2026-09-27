@@ -538,11 +538,13 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1061 | Inject Scheduling & Sizing-Cap Defect Remediation | `implementation/packages/IP-1061-inject-and-sizing-defect-remediation.md` | FS-106 §FR-4410 + NFR-1300 (ADR-0019) | Remediation | 🔵 COMPLETE (implemented 2026-09-26; awaiting `09-package-verification`) |
 | IP-1180 | External Vignette Directories & Safe Scenario Save Target | `implementation/packages/IP-1180-external-vignette-directories.md` | FS-118 `FR-5410`/`FR-5420`/`NFR-3700` | Forward design | ⚪ NOT STARTED (not authorized, MSTR-006 §3; specification-complete) |
 | IP-1062 | Condition-Triggered Injects & New Inject Effect Types | `implementation/packages/IP-1062-condition-triggered-injects-and-new-effects.md` | FS-106 v2.1 `FR-4420`/`FR-4430` | Forward design | ⚪ NOT STARTED (not authorized, MSTR-006 §3; specification-complete) |
+| IP-1200 | Save-as-Scenario | `implementation/packages/IP-1200-save-as-scenario.md` | FS-120 `FR-5510` | Forward design | ⚪ NOT STARTED (not authorized, MSTR-006 §3; specification-complete) |
 
-FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1180 and
-IP-1062 are new (2026-09-27, Tranche 4)** — the first two of six packages planned against the
-Must-tier external validation report batch (`BL-0062`–`BL-0083`); see `01-technical-work-breakdown.md`
-Tranche 4 for the no-split rationale and the remaining three packages queued. **IP-1160 is
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1180,
+IP-1062, and IP-1200 are new (2026-09-27, Tranche 4)** — the first three of six packages planned
+against the Must-tier external validation report batch (`BL-0062`–`BL-0083`); see
+`01-technical-work-breakdown.md` Tranche 4 for the no-split rationale and the remaining two
+packages queued. **IP-1160 is
 new (2026-07-05)**, closing `FEAT-3500`'s implementation gap that `11-release-readiness` found —
 see the Master Build Plan's Tranche 2 note and `01-technical-work-breakdown.md` for the no-split
 rationale. **IP-1170 through IP-1174 are new (2026-07-05, Tranche 3)** — the five packages planned

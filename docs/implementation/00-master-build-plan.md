@@ -14,9 +14,9 @@
 > see §"Scope and exclusions". FS-116 was already planned via `IP-1160` — this line's omission of it
 > was a pre-existing staleness, corrected here alongside FS-117's addition. **FS-118 added
 > 2026-09-27** via `IP-1180`, the first of six Must-tier packages from the external validation
-> report intake batch; **the FS-106 v2.1 slice's package (`IP-1062`) added the same day** —
-> FS-119/FS-120/FS-121/FS-103 v1.1 remain queued for subsequent `07-implementation-planning` passes
-> and are not yet reflected in this line.)
+> report intake batch; **the FS-106 v2.1 slice's package (`IP-1062`) and FS-120's package
+> (`IP-1200`) added the same day** — FS-119/FS-121/FS-103 v1.1 remain queued for subsequent
+> `07-implementation-planning` passes and are not yet reflected in this line.)
 > **Related Topics:** [`packages/INDEX.md`](packages/INDEX.md), [`docs/implementations/INDEX.md`](../implementations/INDEX.md) (the superseded prior corpus), [`.claude/skills/08-code-implementation/SKILL.md`](../../.claude/skills/08-code-implementation/SKILL.md) (the downstream skill that executes packages against this plan)
 
 [↑ Docs index](../INDEX.md) · [Packages index](packages/INDEX.md) · [Feature index](../features/feature-index.md)
@@ -131,6 +131,7 @@ package in this plan to reach that state.
 | [IP-1061](packages/IP-1061-inject-and-sizing-defect-remediation.md) | FS-106 §FR-4410 + NFR-1300 (ADR-0019) Inject Scheduling & Sizing-Cap Defect Remediation | Remediation (forward design) | 🔵 COMPLETE | none — **implemented 2026-09-26** by `08-code-implementation`: 5 new tests in `test_inject_library.py`, 2 `test_content.py` cap tests inverted in place, full suite 603 passed/3 skipped, both permanent gates green. Closes backlog `BL-0062`–`BL-0065`. Awaiting `09-package-verification`. |
 | [IP-1180](packages/IP-1180-external-vignette-directories.md) | FS-118 External Vignette Directories & Safe Scenario Save Target (`BL-0082`, item B16) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete — sole dependency `IP-1173` already `VERIFIED`; would flip to `READY` the moment authorization is granted. First of six Must-tier packages queued this increment (2026-09-27). |
 | [IP-1062](packages/IP-1062-condition-triggered-injects-and-new-effects.md) | FS-106 v2.1 Condition-Triggered Injects & New Inject Effect Types (`BL-0070`, item B4) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete, no unmet dependency. Second of six Must-tier packages queued this increment (2026-09-27). |
+| [IP-1200](packages/IP-1200-save-as-scenario.md) | FS-120 Save-as-Scenario (`BL-0071`, item B5) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete. Same-function implementation-sequencing note with `IP-1180` (both extend `save_vignette()`) — see the package's own Dependencies. Third of six Must-tier packages queued this increment (2026-09-27). |
 
 **Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code
