@@ -134,7 +134,7 @@ package in this plan to reach that state.
 | [IP-1180](packages/IP-1180-external-vignette-directories.md) | FS-118 External Vignette Directories & Safe Scenario Save Target (`BL-0082`, item B16) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete — sole dependency `IP-1173` already `VERIFIED`; would flip to `READY` the moment authorization is granted. First of six Must-tier packages queued this increment (2026-09-27). |
 | [IP-1062](packages/IP-1062-condition-triggered-injects-and-new-effects.md) | FS-106 v2.1 Condition-Triggered Injects & New Inject Effect Types (`BL-0070`, item B4) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete, no unmet dependency. Second of six Must-tier packages queued this increment (2026-09-27). |
 | [IP-1200](packages/IP-1200-save-as-scenario.md) | FS-120 Save-as-Scenario (`BL-0071`, item B5) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete. Same-function implementation-sequencing note with `IP-1180` (both extend `save_vignette()`) — see the package's own Dependencies. Third of six Must-tier packages queued this increment (2026-09-27). |
-| [IP-1190](packages/IP-1190-bulk-tle-omm-import.md) | FS-119 Bulk TLE and CCSDS OMM Multi-Object Import (`BL-0067`, item B1) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete, no unmet dependency. Fourth of six Must-tier packages queued this increment (2026-09-27). |
+| [IP-1190](packages/IP-1190-bulk-tle-omm-import.md) | FS-119 Bulk TLE and CCSDS OMM Multi-Object Import (`BL-0067`, item B1) | Forward design | 🔵 COMPLETE | none — **implemented 2026-09-27** by `08-code-implementation` (authorized the same day, MSTR-006 §3): new `content/bulk_import.py` (`parse_multi_tle`/`parse_ccsds_omm`, KVN only), new public `engine/orbit.py::mean_to_true()` extracted with zero behavior change to `elements_to_rv()`, `_force_add_tle_object`/`_force_add_omm_object`/`bulk_import()` on `SessionManager`, new `POST /api/sessions/{sid}/force/bulk_import` route (+ `InProcessSession.bulk_import()` plumbing, implied by the route but not separately named in the package's own Files to Modify). 16 new tests (`test_bulk_import.py`, `test_bulk_import_session.py`, 2 in `test_orbit.py`, 1 in `test_web.py`, 1 new Observer-guard entry), full suite 638 passed/3 skipped (up from 622/3), both permanent gates green. Resolves `BL-0096` in full. Awaiting `09-package-verification` in a fresh session. |
 | [IP-1210](packages/IP-1210-ephemeris-export.md) | FS-121/FS-103 v1.1 Ephemeris Export (`BL-0069`, items B2/B3) | Forward design | ⚪ NOT STARTED | Not authorized (MSTR-006 §3). Specification-complete, no unmet dependency. Sixth and last of six Must-tier packages queued this increment (2026-09-27) — closes the external validation report intake batch's Must-tier tranche. |
 
 **Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
@@ -316,6 +316,21 @@ and confirmed `FR-5180`'s bus power/propulsion authoring already routes through
 tests (`test_typed_payload_params.py`), full suite **598 passed/3 skipped** (up from 586/3), both
 permanent gates green — all 19 shipped vignettes confirmed unchanged. `IP-1171` flips
 `READY → COMPLETE`. `IP-1174` remains `BLOCKED`, now solely on `IP-1171` reaching `VERIFIED`.
+
+**Update (2026-09-27): the project owner authorized MSTR-006 §3 coding for all five Must-tier
+packages queued this increment (`IP-1180`, `IP-1062`, `IP-1200`, `IP-1190`, `IP-1210`), directing
+the pipeline to iterate through `08`/`09`/`10` continuously, pausing only at `11-release-readiness`'s
+GO/NO-GO call.** `08-code-implementation` implemented **`IP-1190`** first (no shared-file
+coordination risk with any of the other four — see `IP-1190`'s own Build-sequencing note): new
+`content/bulk_import.py` (`parse_multi_tle`/`parse_ccsds_omm`, KVN-only), new public
+`engine/orbit.py::mean_to_true()` (behavior-preserving extraction, confirmed via a bit-for-bit
+regression test), `_force_add_tle_object`/`_force_add_omm_object`/`bulk_import()` on
+`SessionManager`, and a new `POST /api/sessions/{sid}/force/bulk_import` route. 16 new tests, full
+suite **638 passed/3 skipped** (up from 622/3), both permanent gates green. `IP-1190` flips
+`READY → COMPLETE` (never `BLOCKED` — it had no unmet dependency, only the authorization gate,
+now cleared). Resolves `BL-0096` in full. Next: `08-code-implementation` on `IP-1180` (external
+vignette directories), building the coordination-flagged `save_vignette()`/`export_vignette()`
+change first so `IP-1200` (implemented after it) builds against its actual landed diff.
 
 ## Implementation sequence
 

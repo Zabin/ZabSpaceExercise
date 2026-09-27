@@ -223,6 +223,13 @@ class InProcessSession:
             ok, reason = mgr.add_tle(asset_id, line1, line2, owner=owner, kind=kind)
         return Ack(ok=ok, reason=reason)
 
+    def bulk_import(self, session: str, file_format: str, content: str,
+                     assignments: dict[str, dict]) -> list[dict]:
+        """IP-1190 (FR-5220) — a ``ValueError`` from an unrecognizable file (Design Decision 1)
+        propagates to the caller unchanged; per-object failures are in the returned report list."""
+        with self._locked(session) as mgr:
+            return mgr.bulk_import(file_format, content, assignments)
+
     # -- Vignette Creator UI surfaces (IP-1174) --------------------------------
     def add_ground_asset(self, session: str, asset_id: str, lat_deg: float, lon_deg: float,
                          owner: str = "blue", kind: str = "ground_station") -> Ack:

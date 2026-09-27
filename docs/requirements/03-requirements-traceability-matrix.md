@@ -159,7 +159,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-5170 | Typed per-payload-type parameter sub-schemas | R109, R110, R129, R134, R137 | (none directly) | C1, C5 | (none — Domain Model/content-schema extension) | FS-117 | `spacesim/tests/test_isr.py` (weather/mw `BEAM_MODES` precondition, `IP-1170`, `VERIFIED`), `spacesim/tests/test_typed_payload_params.py` (all 12 tests — the 8 typed sub-models + auto-population + all-19-vignettes regression, `IP-1171`, `VERIFIED`) | IP-1170 *(`VERIFIED` — closes the weather/mw engine-precondition slice, `BL-0053`)*, IP-1171 *(`VERIFIED` 2026-07-12, `VR-1171` — closes the typed-sub-schema/UI-facing scope)* |
 | FR-5180 | Typed bus parameter sub-schemas (power/propulsion) | R111, R112 | (none directly) | C1, C5 | (none directly) | FS-117 | `spacesim/tests/test_typed_payload_params.py::test_bus_power_and_propulsion_overrides_reach_live_fields_not_power_w` *(IP-1171, `VERIFIED`; confirms `Asset.model_validate()` already routes overrides to the live fields, no loader change needed)* | IP-1171 *(`VERIFIED` 2026-07-12, `VR-1171`)* |
 | FR-5210 | TLE force-add import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 | UNASSIGNED | UNASSIGNED | `content/` (TLE import) |
-| FR-5220 *(new 2026-09-26, `BL-0067`/B1)* | Bulk TLE and CCSDS OMM multi-object import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 *(stretched shape — see `reviews/requirements-update-must-tier-batch.md` Finding 5)* | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-5220 *(new 2026-09-26, `BL-0067`/B1)* | Bulk TLE and CCSDS OMM multi-object import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 *(stretched shape — see `reviews/requirements-update-must-tier-batch.md` Finding 5)* | FS-119 | `spacesim/tests/test_bulk_import.py`, `spacesim/tests/test_bulk_import_session.py`, `spacesim/tests/test_orbit.py::test_mean_to_true_*`, `spacesim/tests/test_web.py::test_bulk_import_tle_route_end_to_end` | IP-1190 *(`COMPLETE` 2026-09-27, awaiting `09-package-verification` in a fresh session)* |
 | FR-5310 | Vignette loading | UNASSIGNED | ADR-0007 | C2, C5 | INT-0011 | UNASSIGNED | UNASSIGNED | `content/vignette.py` |
 | FR-5410 *(new 2026-09-26, `BL-0082`/B16)* | Load vignettes from configured external directories | UNASSIGNED | ADR-0007, ADR-0018 | C2, C5 | INT-0011 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-5420 *(new 2026-09-26, `BL-0082`/B16)* | `save_vignette` writes only to a configured user directory | UNASSIGNED | ADR-0007, ADR-0022 | C2, C5 | INT-0011, INT-0012 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
@@ -436,7 +436,7 @@ because `FUTURE-WORK.md` cites the requirement back. Seven of the eight entries 
 | CR-16 | `FUTURE-WORK.md` §13 (R17 — ground-segment cyber deepening) *(new 2026-07)* |
 | CR-17 | `FUTURE-WORK.md` §2 (unwired `prop.collision_avoid`), §13 (R16 — persistent debris) *(new 2026-07)* |
 | CNFR-07 | `FUTURE-WORK.md` §13 (R19 — distributed-use security growth path + GAP-11 study) *(new 2026-07)* |
-| All other FR/NFR/CR/CNFR (including CR-18, and the 2026-09-26 batch FR-4420, FR-4430, FR-5220, FR-5410, FR-5420, FR-5510, FR-7410, FR-7420, NFR-3700) | `UNASSIGNED` |
+| All other FR/NFR/CR/CNFR (including CR-18, and the 2026-09-26 batch FR-4420, FR-4430, FR-5410, FR-5420, FR-5510, FR-7410, FR-7420, NFR-3700 — `FR-5220` now assigned to `IP-1190`, see its own row above) | `UNASSIGNED` |
 
 ## Reverse index — Requirement → Test
 
@@ -496,7 +496,7 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `spacesim/tests/` | NFR-2800 |
 | Build/dependency manifest, `spacesim/` (whole tree) | NFR-2900 |
 | All subsystems (no single file) | NFR-2200 |
-| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4420, FR-4430, FR-5220, FR-5410, FR-5420, FR-5510, FR-7410, FR-7420, NFR-3700 *(2026-09-26 Must-tier batch — no implementing file exists yet for any of these nine leaves)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
+| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-4420, FR-4430, FR-5410, FR-5420, FR-5510, FR-7410, FR-7420, NFR-3700 *(2026-09-26 Must-tier batch — no implementing file exists yet for any of these eight leaves; `FR-5220` now assigned to `spacesim/content/bulk_import.py`/`session/manager.py::bulk_import`, `IP-1190`)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
 
 *(FR-4610/FR-4710/FR-4720 closed 2026-07 via `IP-1060` v2.0; FR-7220 closed 2026-07 via `IP-1100` —
 both split from `IP-1060` v1.0 per Finding F-03 — see the master matrix rows above. **FR-4110

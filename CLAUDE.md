@@ -226,6 +226,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/geometry.py` — frames (GMST ECI↔ECEF), WGS84 geodety, topocentric look angles.
 - `spacesim/engine/sun.py` — analytic Sun direction + cylindrical eclipse/lighting test.
 - `spacesim/engine/orbit.py` — `OrbitState`, Kepler+J2 element↔state, regime classification.
+  `mean_to_true()` (IP-1190, FR-5220) — public mean-anomaly→true-anomaly conversion, extracted from
+  `elements_to_rv()`'s existing inline computation with no behavior change; reused by the CCSDS OMM
+  bulk-import path, which supplies a mean anomaly the TLE path never needed.
 - `spacesim/engine/propagator.py` — `Propagator` seam: Kepler+J2 (fictional) / sgp4 (TLE).
 - `spacesim/engine/entities.py` — `Asset`/`AssetResources`, `GroundSite`, `Sensor`.
 - `spacesim/engine/access.py` — `AccessProvider` seam: all six channels + window caching; unknown
@@ -296,12 +299,21 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `VignetteContext` into a `Vignette` model and write it to `VIGNETTE_DIR` — the mirror image of
   `vignette.py`'s `load_vignette()`/`build_world()`, and the only code path that writes an
   authored vignette file.
+- `spacesim/content/bulk_import.py` (IP-1190, FR-5220) — `parse_multi_tle()`/`parse_ccsds_omm()`
+  (CCSDS OMM in KVN form only, XML out of scope): each parses a multi-object file into a common
+  per-object dict shape; a file with zero recognizable blocks of its claimed shape is rejected
+  outright, distinct from a recognizable-but-malformed block (returned for a later per-object
+  force-add failure, never dropped at parse time).
 - `spacesim/content/inject_library.yaml` — five reusable white-cell inject templates
   (debris breakup, GNSS-jam advisory, ambiguous RPO, GS outage, geomagnetic storm).
   Loaded via `InProcessSession.inject_library()`; surfaced in the white-cell GUI's
   **Build / schedule inject** panel with editable JSON + Now/+seconds/absolute-UTC scheduler
   (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
+  **IP-1190 (FR-5220):** `bulk_import()` — multi-object TLE/CCSDS OMM (KVN) import, generalizing
+  `add_tle()`'s single-object mechanism (extracted into `_force_add_tle_object`) via a new
+  `_force_add_omm_object` sibling, per-object success/failure reporting, batch continues past a
+  malformed object,
   `validate_order` dry-run, `next_contacts` fleet countdown, `begin_recovery`/`recovery_status`
   wiring `RecoverySystem` for the safe-mode recovery strip; **multiplayer:** server-authoritative
   lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /

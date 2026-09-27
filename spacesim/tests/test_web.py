@@ -417,3 +417,24 @@ def test_draft_session_create_add_asset_and_save_as_vignette():
     finally:
         from pathlib import Path
         Path(resp["path"]).unlink(missing_ok=True)
+
+
+def test_bulk_import_tle_route_end_to_end():
+    """IP-1190 (FR-5220) — the new /force/bulk_import route, TLE format, end to end."""
+    c = _client()
+    sid = c.post("/api/sessions/draft", json={"title": "Bulk Import"}).json()["session"]
+    tle1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
+    tle2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+    content = "\n".join(["HTTP-BULK-1", tle1, tle2])
+    resp = c.post(f"/api/sessions/{sid}/force/bulk_import",
+                   json={"format": "tle", "content": content,
+                         "assignments": {"HTTP-BULK-1": {"asset_id": "HTTP-BULK-1", "owner": "blue"}}})
+    reports = resp.json()
+    assert len(reports) == 1
+    assert reports[0]["ok"] is True
+    assert reports[0]["asset_id"] == "HTTP-BULK-1"
+
+    # An unrecognizable file surfaces as a 400, not a per-object report.
+    bad_resp = c.post(f"/api/sessions/{sid}/force/bulk_import",
+                       json={"format": "tle", "content": "not a tle file", "assignments": {}})
+    assert bad_resp.status_code == 400

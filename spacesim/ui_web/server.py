@@ -10,7 +10,7 @@ Everything the UI does goes through these endpoints; the browser never touches t
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 import re
 
@@ -93,6 +93,15 @@ class TleRequest(BaseModel):
     @classmethod
     def _id_charset(cls, v: str) -> str:
         return _validate_id(v, field="TleRequest.id")
+
+
+class BulkImportRequest(BaseModel):
+    """IP-1190 (FR-5220) — multi-object TLE / CCSDS OMM (KVN) bulk import, alongside (not
+    replacing) ``TleRequest``'s single-object path. ``assignments`` maps each object's parsed
+    ``raw_id`` to {"asset_id": ..., "owner": ..., "kind": ...}."""
+    format: Literal["tle", "omm"]
+    content: str
+    assignments: dict[str, dict] = {}
 
 
 class OrderRequest(BaseModel):
@@ -383,6 +392,17 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def add_tle(sid: str, req: TleRequest, cell: Optional[str] = None) -> Ack:
         _require(sid); _reject_observer(cell)
         return api.add_tle(sid, req.id, req.line1, req.line2, owner=req.owner, kind=req.kind)
+
+    @app.post("/api/sessions/{sid}/force/bulk_import")
+    def bulk_import(sid: str, req: BulkImportRequest, cell: Optional[str] = None) -> list[dict]:
+        """IP-1190 (FR-5220) — multi-object TLE/CCSDS OMM (KVN) import, additive alongside
+        `force/tle` above. A file recognized as neither format (Design Decision 1) surfaces as
+        a 400, not a per-object report."""
+        _require(sid); _reject_observer(cell)
+        try:
+            return api.bulk_import(sid, req.format, req.content, req.assignments)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
 
     # -- Vignette Creator UI surfaces (IP-1174) --------------------------------
     @app.post("/api/sessions/{sid}/force/ground")

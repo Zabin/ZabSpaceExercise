@@ -2,7 +2,9 @@
 
 > **Package ID:** IP-1190
 > **Version:** 1.0
-> **Status:** ⚪ NOT STARTED *(forward design — not authorized for coding, MSTR-006 §3)*
+> **Status:** 🟢 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
+> awaiting `09-package-verification` in a fresh session — this session implemented it and may not
+> verify its own work)*
 > **Dependencies:** [FS-119](../../features/FS-119-bulk-tle-omm-import.md) v1.0 (`FR-5220`),
 > `FR-1210` (propagator seam, unchanged, reused), `FR-5140`/`session/manager.py::add_tle` (the
 > single-object mechanism this package generalizes, not replaces)
@@ -224,18 +226,24 @@ or global RNG use.
 
 ## Definition of Done
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — not yet sought or granted as of this writing.
-- [ ] A multi-object TLE file with nine valid objects and one malformed object produces nine
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3) — granted 2026-09-27 by the project owner's direct instruction.
+- [x] A multi-object TLE file with nine valid objects and one malformed object produces nine
   force-added Assets with the specified side/template assignments and reports the tenth's failure,
-  without aborting the batch.
-- [ ] A CCSDS OMM (KVN) file with multiple objects produces the same result.
-- [ ] A file recognized as neither format is rejected outright, before any object is processed.
-- [ ] An object present in the file but missing from the caller's assignment map is reported as a
+  without aborting the batch. (`test_bulk_import_tle_nine_valid_one_malformed_no_exception`)
+- [x] A CCSDS OMM (KVN) file with multiple objects produces the same result.
+  (`test_bulk_import_omm_nine_valid_one_malformed_no_exception`)
+- [x] A file recognized as neither format is rejected outright, before any object is processed.
+  (`test_bulk_import_unrecognizable_file_raises`, `test_neither_tle_nor_omm_shaped_file_raises_from_both_parsers`)
+- [x] An object present in the file but missing from the caller's assignment map is reported as a
   per-object failure, not silently dropped.
-- [ ] The existing single-object `force/tle`/`add_tle` path and `FR-5140`'s lat/long entry path are
-  both unchanged in behavior.
-- [ ] Full existing test suite green, zero regressions, both permanent gates green.
+  (`test_bulk_import_object_missing_assignment_reported_as_failure_not_dropped`)
+- [x] The existing single-object `force/tle`/`add_tle` path and `FR-5140`'s lat/long entry path are
+  both unchanged in behavior (verified: full suite green, zero regressions to
+  `test_vignette_creator_session.py`/`test_web.py`'s existing `add_tle`/`add_ground_asset` tests).
+- [x] Full existing test suite green, zero regressions, both permanent gates green: **638
+  passed / 3 skipped** (up from 622/3), `test_determinism.py` and `test_import_guard.py` both
+  green.
 
 ## Verification Checklist
 

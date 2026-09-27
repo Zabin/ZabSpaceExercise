@@ -8,9 +8,10 @@ Players send *intents*; the manager validates and mutates state — never the ot
 
 from __future__ import annotations
 
+import math
 import threading
 import time as _time
-from typing import Optional
+from typing import Literal, Optional
 
 from spacesim.content.vignette import Vignette, build_world, evaluate_objectives
 from spacesim.engine import telemetry
@@ -343,6 +344,12 @@ class SessionManager:
         """White-Cell force edit: add a real named satellite by TLE (validated via sgp4)."""
         if self.started:
             return False, "cannot edit force after start"
+        return self._force_add_tle_object(asset_id, line1, line2, owner, kind)
+
+    # IP-1190 (FR-5220) — the per-object body `add_tle` used to inline, extracted so the new
+    # bulk-import path reuses the exact same construction/validation, unchanged, for its
+    # single-object TLE case (Files to Modify's own "behavior-preserving refactor" instruction).
+    def _force_add_tle_object(self, asset_id: str, line1: str, line2: str, owner: str, kind: str) -> tuple[bool, str]:
         l1, l2 = line1.strip(), line2.strip()
         if not (l1.startswith("1 ") and l2.startswith("2 ") and len(l1) >= 69 and len(l2) >= 69):
             return False, "invalid TLE: expected two 69-char lines starting with '1 ' and '2 '"
@@ -358,6 +365,71 @@ class SessionManager:
         self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
         self.sim._initial_state = self.world.model_dump()  # re-baseline so rewind keeps the edit
         return True, ""
+
+    # IP-1190 (FR-5220) — the CCSDS OMM sibling of `_force_add_tle_object`. OMM's Keplerian
+    # mean-elements set maps onto the existing `OrbitState(source="kepler", ...)` shape exactly;
+    # the one conversion needed (mean anomaly -> true anomaly at epoch) reuses the new
+    # `engine/orbit.py::mean_to_true()`. Mirrors the TLE helper's error-handling shape: any
+    # exception while building elements becomes a per-object failure string, never propagates.
+    # Like `add_tle`, the elements are anchored at the session's own `ctx.start_epoch` rather
+    # than the OMM's own `EPOCH` field — the same simplification `add_tle` already makes for a
+    # TLE's own epoch, kept consistent rather than introducing a second epoch-handling
+    # convention in the same package.
+    def _force_add_omm_object(self, asset_id: str, elements: dict, owner: str, kind: str) -> tuple[bool, str]:
+        required = ("a_m", "e", "i_deg", "raan_deg", "argp_deg", "mean_anomaly_deg")
+        missing = [k for k in required if elements.get(k) is None]
+        if missing:
+            return False, f"invalid OMM element set: missing {', '.join(missing)}"
+        try:
+            from spacesim.engine.orbit import mean_to_true
+            e = float(elements["e"])
+            mean_anom_rad = math.radians(float(elements["mean_anomaly_deg"]))
+            ta_deg = math.degrees(mean_to_true(mean_anom_rad, e))
+            orbit = OrbitState(
+                source="kepler",
+                a_m=float(elements["a_m"]),
+                e=e,
+                i_deg=float(elements["i_deg"]),
+                raan_deg=float(elements["raan_deg"]),
+                argp_deg=float(elements["argp_deg"]),
+                ta_deg=ta_deg,
+                epoch=self.ctx.start_epoch,
+            )
+        except Exception as exc:  # malformed OMM elements are a normal rejection, not a crash
+            return False, f"invalid OMM element set: {exc}"
+        self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
+        self.sim._initial_state = self.world.model_dump()
+        return True, ""
+
+    def bulk_import(self, file_format: Literal["tle", "omm"], content: str,
+                     assignments: dict[str, dict]) -> list[dict]:
+        """White-Cell force edit: import many objects from one multi-object TLE or CCSDS OMM
+        (KVN) file in a single operation (IP-1190, FR-5220) — generalizes, does not replace,
+        `add_tle`'s single-object path. A per-object entry present in the file but absent from
+        `assignments` is reported as a per-object failure, never silently dropped. A file
+        recognized as neither format raises `ValueError` before any object is processed (Design
+        Decision 1) — the caller's problem, not a per-object report."""
+        if self.started:
+            return []
+        from spacesim.content.bulk_import import parse_ccsds_omm, parse_multi_tle
+        objects = parse_multi_tle(content) if file_format == "tle" else parse_ccsds_omm(content)
+        reports: list[dict] = []
+        for obj in objects:
+            raw_id = obj["raw_id"]
+            assignment = assignments.get(raw_id)
+            if assignment is None:
+                reports.append({"raw_id": raw_id, "asset_id": None, "ok": False,
+                                 "reason": "no side/template assignment provided"})
+                continue
+            asset_id = assignment.get("asset_id", raw_id)
+            owner = assignment.get("owner", "blue")
+            kind = assignment.get("kind", "satellite")
+            if obj["format"] == "tle":
+                ok, reason = self._force_add_tle_object(asset_id, obj["line1"], obj["line2"], owner, kind)
+            else:
+                ok, reason = self._force_add_omm_object(asset_id, obj, owner, kind)
+            reports.append({"raw_id": raw_id, "asset_id": asset_id, "ok": ok, "reason": reason})
+        return reports
 
     # -- Vignette Creator UI surfaces (IP-1174) --------------------------------
     # One state, two views: every method below reads or mutates the same `self.world.assets`
