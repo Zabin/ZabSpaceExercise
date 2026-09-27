@@ -1,17 +1,23 @@
 # R131 — Space Environment and Space Weather Operations
 
 > **Document ID:** R131
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R110](R110-communications.md), [R111](R111-power-and-thermal-operations.md)
-> **Referenced By:** [R121](R121-telemetry-logging-and-attack-signatures.md)
-> **Produces:** implementation constraints for [`engine/perturbations.py`](../../../spacesim/engine/perturbations.py) (`atmospheric_density`, `drag_acceleration`, `secular_drag_decay`), [`engine/bus.py`](../../../spacesim/engine/bus.py) (`advance_bus`'s `storm_mult`), [`engine/world.py`](../../../spacesim/engine/world.py) (`WorldState.space_weather`), and the `space_weather` inject type in [`session/manager.py`](../../../spacesim/session/manager.py)
+> **Referenced By:** [R121](R121-telemetry-logging-and-attack-signatures.md), [R117](R117-directed-energy-and-kinetic-effects.md)
+> **Produces:** implementation constraints for [`engine/perturbations.py`](../../../spacesim/engine/perturbations.py) (`atmospheric_density`, `drag_acceleration`, `secular_drag_decay`), [`engine/bus.py`](../../../spacesim/engine/bus.py) (`advance_bus`'s `storm_mult`), [`engine/world.py`](../../../spacesim/engine/world.py) (`WorldState.space_weather`), and the `space_weather` inject type in [`session/manager.py`](../../../spacesim/session/manager.py); (v1.1) a numeric index-series (F10.7/Kp) input shape for `BL-0074`/B8's index-driven drag/anomaly-rate feature
 > **Feature Mapping:** FS-105 (Spacecraft Operations), FS-104 (SDA Tasking)
-> **Related Topics:** [R110](R110-communications.md) (Communications — the jam/interference signature this topic's ionospheric effects can be confused with), [R111](R111-power-and-thermal-operations.md) (Power and Thermal Systems Operations — the eclipse-drain model space weather scales), [R121](R121-telemetry-logging-and-attack-signatures.md) (Telemetry, Logging, and Attack-Signature Modeling — the symptom layer an environmental event must be disambiguated within), [R127](R127-conjunction-assessment-and-collision-avoidance.md) (Conjunction Assessment — drag-driven orbit uncertainty)
-> **Last Reviewed:** 2026-07-01
-> **Primary Sources Consulted:** 2
+> **Related Topics:** [R110](R110-communications.md) (Communications — the jam/interference signature this topic's ionospheric effects can be confused with), [R111](R111-power-and-thermal-operations.md) (Power and Thermal Systems Operations — the eclipse-drain model space weather scales), [R121](R121-telemetry-logging-and-attack-signatures.md) (Telemetry, Logging, and Attack-Signature Modeling — the symptom layer an environmental event must be disambiguated within), [R127](R127-conjunction-assessment-and-collision-avoidance.md) (Conjunction Assessment — drag-driven orbit uncertainty), [R117](R117-directed-energy-and-kinetic-effects.md) (Directed Energy and Kinetic Effects — debris-persistence-by-altitude shares this topic's drag mechanism, v1.2)
+> **Last Reviewed:** 2026-09-27
+> **Primary Sources Consulted:** 4 (2 for the v1.0 storm/scintillation/SEU content; 2 new for
+> v1.1's numeric-index-driven drag content)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
+
+*v1.1 changelog (2026-09-27): grounds `BL-0074`/B8 (an index time series driving deterministic
+LEO drag and anomaly rate) — a new §3 subsection on the real F10.7/Kp numeric-index inputs to
+atmospheric density models, and a new §5 bullet on how to wire them without inventing an unsourced
+formula. No existing content changed in substance.*
 
 ## 1. Purpose
 
@@ -116,6 +122,28 @@ This is the doctrinal precedent for treating a `space_weather` inject as somethi
 library's `space_weather_severe` template already pairs the severity effect with an advisory
 message to all cells.
 
+**Two independent numeric indices, not one, are the real inputs a density model consumes — F10.7
+for the slow solar-cycle baseline, Kp/Ap for fast geomagnetic disturbances.** The F10.7 index
+(solar radio flux at 10.7 cm wavelength) tracks the Sun's extreme-ultraviolet output, which is
+absorbed high in the thermosphere and heats it — this sets the atmosphere's gradual, weeks-to-years
+baseline density; the Kp/Ap index measures fast geomagnetic disturbances driven by coronal mass
+ejections and storms, the same event class §3 above already covers qualitatively
+([Orbital Radar, "F10.7 Solar Flux Index: Satellite Drag Explained"](https://orbitalradar.com/glossary/solar-flux)
+([Wayback](https://web.archive.org/web/2026/https://orbitalradar.com/glossary/solar-flux))). Real
+high-precision density models (NRLMSISE-00, JB2008) take **both** the daily F10.7 value and its
+81-day running average, plus a geomagnetic index, as inputs — never a single scalar "severity"
+value — because the slow solar-cycle term and the fast storm term are physically distinct and can
+move independently (a quiet-Kp period during high solar maximum still elevates baseline density;
+a sharp Kp spike during solar minimum still spikes density transiently)
+([SPENVIS, "Help: Atmosphere and ionosphere models"](https://www.spenvis.oma.be/help/background/atmosphere/models.html)
+([Wayback](https://web.archive.org/web/2026/https://www.spenvis.oma.be/help/background/atmosphere/models.html))).
+This is the concrete numeric-index shape `BL-0074`/B8 asks for: an index *time series* (not a
+single enum value) is exactly how the real world represents this input, and the existing
+`space_weather.severity` enum (`{"none","minor","severe"}`) is a coarse, already-useful
+*qualitative* proxy for a small number of common vignette-authoring cases — B8's index-series
+input is an additive, more granular alternative for the same underlying physics, not a
+replacement for the existing enum.
+
 ### Sources
 
 - *Orbital Radar, "How Solar Storms Affect Satellites — Drag, Radiation & Charging"* — [live](https://orbitalradar.com/space-weather/solar-storms-and-satellites)
@@ -142,6 +170,12 @@ message to all cells.
   surveys)* — [live](https://en.wikipedia.org/wiki/Single-event_upset)
   · [snapshot](https://web.archive.org/web/2026/https://en.wikipedia.org/wiki/Single-event_upset)
   · accessed 2026-07-01.
+- *Orbital Radar, "F10.7 Solar Flux Index: Satellite Drag Explained"* — [live](https://orbitalradar.com/glossary/solar-flux)
+  · [snapshot](https://web.archive.org/web/2026/https://orbitalradar.com/glossary/solar-flux)
+  · accessed 2026-09-27.
+- *SPENVIS, "Help: Atmosphere and ionosphere models"* — [live](https://www.spenvis.oma.be/help/background/atmosphere/models.html)
+  · [snapshot](https://web.archive.org/web/2026/https://www.spenvis.oma.be/help/background/atmosphere/models.html)
+  · accessed 2026-09-27.
 
 ## 4. Operational Context
 
@@ -178,6 +212,18 @@ storms do not produce).
   scale density by storm severity**, mirroring the real 2–10× density-multiplication range cited
   above, rather than inventing an unsourced multiplier — and should stay a pure, deterministic
   function of `(severity, altitude)` to preserve replay-exactness (MSTR-002 invariant 1).
+- **An index-series feature (`BL-0074`/B8) should add a new, additive `space_weather` shape
+  (e.g. a time-keyed F10.7/Kp series) alongside the existing `severity` enum, not replace it** —
+  both key the same `atmospheric_density`/`drag_acceleration` consumer, so the density function
+  should accept either input form and derive an internal density multiplier from whichever is
+  present (index series takes precedence if both are somehow set), keeping every existing
+  `severity`-only vignette's behavior byte-identical. Deriving a numeric multiplier from F10.7/Kp
+  should interpolate between the same 2–10× real-world range this topic already cites for
+  qualitative severity, not introduce an independent, differently-scaled formula — a vignette
+  author should get a comparable drag effect whichever input form they choose. The rate of
+  environment-induced anomalies (B8's second ask) should scale with the same derived multiplier,
+  reusing the multiplier as a single shared "how disturbed is the environment right now" signal
+  rather than deriving anomaly rate from the raw index independently of drag.
 - **A disambiguation training feature (e.g. the "attack-signature diagnosis trainer" concept in the
   strategic review's Part 5) should present the G/S/R-index-style corroborating signal alongside
   telemetry**, not just the symptom telemetry alone — the real disambiguation skill this topic

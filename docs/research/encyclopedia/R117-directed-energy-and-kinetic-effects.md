@@ -1,19 +1,21 @@
 # R117 — Directed Energy and Kinetic Effects
 
 > **Document ID:** R117
-> **Version:** 1.1
+> **Version:** 1.2
 > **Status:** ✅ Done
-> **Dependencies:** [R105](R105-custody-theory.md)
+> **Dependencies:** [R105](R105-custody-theory.md), [R131](R131-space-environment-and-space-weather-operations.md)
 > **Referenced By:** FS-105
-> **Produces:** implementation constraints for [`engine/engage.py`](../../../spacesim/engine/engage.py), `WEAPON_ENGAGEMENT` access channel, and (new in v1.1) a directed-energy (DE) order/resolution path (`FR-1410`'s `directed_energy` category, currently declared but unreachable from any order — backlog `BL-0066`/`BL-0086`)
+> **Produces:** implementation constraints for [`engine/engage.py`](../../../spacesim/engine/engage.py), `WEAPON_ENGAGEMENT` access channel, (v1.1) a directed-energy (DE) order/resolution path (`FR-1410`'s `directed_energy` category, currently declared but unreachable from any order — backlog `BL-0066`/`BL-0086`), and (v1.2) altitude-dependent debris-persistence grounding for `debris_risk`/`DebrisField` consumers (backlog `BL-0077`/B11)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [R105](R105-custody-theory.md) (Custody Theory — the weapons-quality gate this category requires), [R101](R101-orbital-mechanics-for-operations.md)
 > (Orbital Mechanics — regime as a reachability gate), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic Warfare — DE dazzle shares EW's reversible-deny
-> shape, though the mechanism and gating differ), MSTR-002 (kinetic effects are the one
+> shape, though the mechanism and gating differ), [R131](R131-space-environment-and-space-weather-operations.md)
+> (Space Environment — the drag mechanism debris-persistence-by-altitude shares with satellite orbital decay), MSTR-002 (kinetic effects are the one
 > irreversible category — v1.1 narrows this: see §3.2)
-> **Last Reviewed:** 2026-09-26
-> **Primary Sources Consulted:** 8 (1 for the v1.0 kinetic content; 7 new for v1.1's directed-energy
-> content, WebSearch multi-source corroboration only — see `BL-0087`)
+> **Last Reviewed:** 2026-09-27
+> **Primary Sources Consulted:** 10 (1 for the v1.0 kinetic content; 7 for v1.1's directed-energy
+> content, WebSearch multi-source corroboration only — see `BL-0087`; 2 new for v1.2's
+> debris-persistence content)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -21,6 +23,11 @@
 its content was entirely about kinetic engagement. §3.2/§4.2/§5's DE bullets, the Dependencies/
 Related Topics/Feature Mapping updates, and this changelog note are new; the v1.0 kinetic content
 (§3.1/§4.1 below) is unchanged in substance, only renumbered from a single undivided §3/§4.*
+
+*v1.2 changelog (2026-09-27): grounds `BL-0077`/B11 (debris-field persistence estimate by
+altitude) — a new §3.1 subsection on altitude-dependent debris-persistence, a new §5 bullet, and
+the Dependencies/Related Topics/Feature Mapping updates naming [R131](R131-space-environment-and-space-weather-operations.md)
+as the shared drag-mechanism topic. No existing content changed in substance.*
 
 ## 1. Purpose
 
@@ -77,6 +84,43 @@ long-lasting space debris*](https://www.spacecom.mil/Newsroom/News/Article-Displ
 ([Wayback](https://web.archive.org/web/2026/https://www.spacecom.mil/Newsroom/News/Article-Display/Article/2842957/russian-direct-ascent-anti-satellite-missile-test-creates-significant-long-last/))) —
 exactly the kind of environment-wide, undoable consequence `debris_risk="high"` exists to flag for
 downstream consumers, even though the engine itself does not simulate the fragmentation.
+
+**Debris persistence is altitude-dependent, driven by the same atmospheric-drag mechanism
+[R131](R131-space-environment-and-space-weather-operations.md) grounds for satellite orbital
+decay — not a separate physical process.** Below roughly 300–400 km, drag-dominated decay is fast
+(weeks to months: an object left in a 300 km orbit typically decays within a few months); between
+600–1,000 km, decay stretches to years or decades; above roughly 900 km, small-debris lifetimes
+can extend to centuries, since drag falls off steeply with altitude while the same debris fragment
+carries no propulsion to counteract it
+([Alfriend & Lewis (ScienceDirect), *Altitude and directional effects on debris lifetimes in low
+Earth orbit*](https://www.sciencedirect.com/science/article/pii/S246889672600100X)
+([Wayback](https://web.archive.org/web/2026/https://www.sciencedirect.com/science/article/pii/S246889672600100X))).
+This is precisely why international practice treats "will it decay" as an altitude-and-time
+question, not a binary: the IADC's 25-year post-mission-disposal guideline for LEO (below 2,000
+km) exists because a drag-driven natural decay timeline is the accepted metric for "the debris
+environment self-cleans," and the FCC's 2024 rule tightening this to 5 years for
+FCC-licensed satellites is itself evidence that the *default* 25-year figure was judged too slow at
+the lower LEO altitudes most operational debris actually occupies
+([Federal Register, *Space Innovation; Mitigation of Orbital Debris in the New Space
+Age*](https://www.federalregister.gov/documents/2024/08/09/2024-17093/space-innovation-mitigation-of-orbital-debris-in-the-new-space-age)
+([Wayback](https://web.archive.org/web/2026/https://www.federalregister.gov/documents/2024/08/09/2024-17093/space-innovation-mitigation-of-orbital-debris-in-the-new-space-age))).
+A future `DebrisField.persistence_estimate` (backlog `BL-0077`/B11) should therefore be a function
+of `(altitude_km, solar-activity-adjusted drag proxy)`, reusing whatever severity-scaled density
+term a future space-weather-driven drag feature (`BL-0074`/B8, see
+[R131](R131-space-environment-and-space-weather-operations.md) §5) introduces — not a second,
+independently-invented altitude/lifetime table — since both features are asking the same physical
+question ("how much drag does this altitude/epoch experience") of the same underlying mechanism.
+
+#### Sources (§3.1, debris persistence)
+
+- *Alfriend & Lewis, "Altitude and directional effects on debris lifetimes in low Earth orbit,"
+  ScienceDirect* — [live](https://www.sciencedirect.com/science/article/pii/S246889672600100X)
+  · [snapshot](https://web.archive.org/web/2026/https://www.sciencedirect.com/science/article/pii/S246889672600100X)
+  · accessed 2026-09-27.
+- *Federal Register, "Space Innovation; Mitigation of Orbital Debris in the New Space Age"*
+  (2024-08-09 rule) — [live](https://www.federalregister.gov/documents/2024/08/09/2024-17093/space-innovation-mitigation-of-orbital-debris-in-the-new-space-age)
+  · [snapshot](https://web.archive.org/web/2026/https://www.federalregister.gov/documents/2024/08/09/2024-17093/space-innovation-mitigation-of-orbital-debris-in-the-new-space-age)
+  · accessed 2026-09-27.
 
 **Reachability is gated by regime, before Pₖ math ever runs.** `AccessProvider._weapon_predicate`
 enforces `interceptor_max_alt_m` (default 2,000 km — LEO-only reach by default) and
@@ -236,17 +280,30 @@ tension this topic surfaces rather than resolves (see §5 and Open Questions in 
   consequence-confirm dialog) and assessment (DOM-002) treat it with the same gravity. A DE-damage
   effect is not `kinetic=True` (no debris) but should still gate through the same consequence-
   confirm pattern given its irreversibility.
+- **A `DebrisField.persistence_estimate` (`BL-0077`/B11) should be a pure function of altitude
+  (and, once `BL-0074`/B8 lands, the same severity-scaled drag proxy) — not a fixed per-event
+  constant.** Bucket by the real altitude regimes named above (roughly: <400 km → weeks-months;
+  600-1,000 km → years-decades; >900 km → centuries) rather than inventing a continuous formula
+  with no source backing it; a coarse three-to-four-bucket table grounded in this section's
+  citations is preferable to false numeric precision. Build it as a small pure function alongside
+  `engine/perturbations.py`'s existing drag functions (same module, same "pure function of
+  altitude/severity, replay-exact" discipline — MSTR-002 invariant 1), not as a new independent
+  subsystem.
 
 ## 6. Feature Mapping
 
 FS-105 (Spacecraft Operations) is the direct consumer for both kinetic and (as of v1.1's guidance)
 directed-energy engagement-class features — any new engagement-class feature must preserve the
-existing consequence-confirm UX pattern for irreversible actions.
+existing consequence-confirm UX pattern for irreversible actions. FS-104 (SDA Tasking)/the
+`DebrisField`-consuming conjunction-screening feature is the consumer for v1.2's debris-persistence
+guidance.
 
 ## 7. Related Topics
 
 [R105](R105-custody-theory.md) (the weapons-quality gate this category's defining precondition), [R101](R101-orbital-mechanics-for-operations.md) (regime as a
 reachability gate), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic Warfare — DE dazzle's reversible-deny shape parallels EW's,
-though the physical mechanism and gating differ), MSTR-002 (the five-D taxonomy; v1.1 narrows its
+though the physical mechanism and gating differ), [R131](R131-space-environment-and-space-weather-operations.md)
+(Space Environment — the drag mechanism debris-persistence-by-altitude shares with satellite
+orbital decay, v1.2), MSTR-002 (the five-D taxonomy; v1.1 narrows its
 "kinetic is the one irreversible category" framing — DE-damage and uncontrolled-severity HPM are
 also potentially irreversible, an open tension this topic surfaces rather than resolves).
