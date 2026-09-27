@@ -13,53 +13,64 @@
 
 ## Position
 
-- **Updated:** 2026-09-27 (run #76)
+- **Updated:** 2026-09-27 (run #77)
 - **Increment:** Thread D (external user validation intake) — the five-package Must-tier
   implementation tranche remains fully `COMPLETE` (`IP-1180`/`IP-1062`/`IP-1200`/`IP-1190`/
   `IP-1210`, runs #70-74), alongside `IP-1061`/`IP-1174` from an earlier session; all 7 still await
   `09-package-verification` in a fresh session (same-session exclusion), unchanged this run.
-  **This run: reconciled the just-completed `02-research-ow-orbital-mechanics` pass** (run
-  #75's own recorded next step, executed directly in the same continuing session across a
-  context-compaction boundary rather than via a fresh manager invocation) — `R109` v1.2
-  (§3.6-§3.10, five B7 sensor variants), `R117` v1.2 (§3.1, B11 debris persistence), `R131` v1.1
-  (§3, B8 F10.7/Kp drag-model inputs), `R100-index.md` updated, harvested as `BL-0103`. **Then
-  invoked `04-requirements-engineering`** on the full nine-item Should-tier batch now unblocked:
-  **thirteen new baselined FR leaves added** — new parent `FR-1600` + `FR-1610`-`FR-1660` (B7 five
-  sensor variants, B17 hosted sensor); `FR-1230`+`FR-4440` (B8 drag/anomaly-rate coupling);
-  `FR-1430` (B11 debris persistence, deliberately narrower than Candidate `CR-17`); `FR-1320` (B6
-  manoeuvre ledger); `FR-2320` (B9 telemetry export); `FR-3430`+`FR-3440` (B10 approval gating +
-  live ROE); `FR-7330` (B12 variable-speed replay); `FR-1440`+`FR-1450` (B15 jamming-delivery +
-  detectability settings). No NFR added. Full review:
-  [`reviews/requirements-update-should-tier-batch.md`](../reviews/requirements-update-should-tier-batch.md).
-  All nine backlog rows flip `SCHEDULED → IN PIPELINE`, entry stage `04 → 06`.
+  **This run: reconciled six new user-filed intake items** (`BL-0107`-`BL-0112`: a live
+  interactively-selectable RIC-frame view + its research gap; a quick-copy cell-visible TLE export
+  + its mean-vs-osculating-element design question; a CATS/illumination-phase-angle overlay for the
+  RIC view + its research gap — "CATS" clarified via `AskUserQuestion` after failing to ground it
+  independently, then corroborated against a real AGI/STK source). Triaged: `BL-0107`/`BL-0109`/
+  `BL-0111` `SCHEDULED` into the next `04-requirements-engineering` pass, batched; `BL-0108`/
+  `BL-0112` `DEFERRED` until `06-feature-specification` designs their respective views (the
+  underlying transform/format grounding already exists; only display-convention research is open,
+  non-blocking). **Then invoked `06-feature-specification`** on the nine already-baselined
+  Should-tier items: **eight Feature Specifications drafted** — `FS-122` (B7+B17, one spec since
+  both share the new `FR-1600` parent), `FS-123` (B8), `FS-124` (B11), `FS-125` (B6), `FS-126`
+  (B9), `FS-127` (B10), `FS-128` (B12), `FS-129` (B15). Seven are `✅ Ready for implementation
+  planning`; `FS-123` is `🚧` — `BL-0104`'s index-to-scaling mapping question genuinely blocks a
+  testable implementation (re-routed `06 → 07`, not resolved here, per this skill's own
+  never-invent-an-answer rule). `BL-0105` (shared effect-classification taxonomy) carried
+  identically into both `FS-127`/`FS-129`, also re-routed `06 → 07`. Nine new Open Questions
+  harvested as `BL-0113`-`BL-0121`. All nine batch items' entry stage advances `06 → 07`
+  (`BL-0074`/B8 gated on `BL-0104`/`BL-0121` before its own package can be written).
 - **Pipeline state:**
-  - `06` (`06-feature-specification`) — **due next**: the nine now-baselined Should-tier items
-    (`BL-0072`-`BL-0078`, `BL-0081`, `BL-0083`), riding `BL-0104`/`BL-0105`'s design questions.
-  - `08` — nothing eligible; `IP-1160` `BLOCKED`/DE package unwritten remain untouched.
+  - `07` (`07-implementation-planning`) — **due next**: the seven unblocked Should-tier Feature
+    Specs (`FS-122`, `FS-124`-`FS-129`); `FS-123` (B8) waits on `BL-0104`/`BL-0121`'s design
+    decisions first. The DE Implementation Package (`FS-105` v1.1) remains queued in parallel,
+    unrelated to this batch.
+  - `04` (`04-requirements-engineering`) — due for the newly-scheduled `BL-0107`/`BL-0109`/
+    `BL-0111` (RIC-frame view, quick TLE export, CATS-angle overlay), batched together.
+  - `08` — nothing eligible; `IP-1160` `BLOCKED` remains untouched.
   - `09` — 7 packages (`IP-1061`/`IP-1174`/`IP-1190`/`IP-1180`/`IP-1062`/`IP-1200`/`IP-1210`), all
     `COMPLETE`, all excluded from this session's own verification, each awaiting a fresh session.
   - `10` — cannot run yet: none of the 7 pending packages has reached `VERIFIED`.
-  - `07` — the DE Implementation Package (`FS-105` v1.1) remains queued, available in parallel.
-  - `06`/`03` — `BL-0092`/`BL-0093` (Low, ICD interface-stretch — `BL-0093` now also covers
-    `FR-7330`'s stretch) remain routed to whoever next touches the ICD, non-blocking.
-    `BL-0099`/`BL-0100`/`BL-0101`/`BL-0102`/`BL-0103` (all Low) remain `DEFERRED`, non-blocking.
-- **Backlog:** 106 total. This run: harvested `BL-0103` (research finding, late-harvested from the
-  02 pass); harvested `BL-0104`/`BL-0105` (Low design/consistency questions, `SCHEDULED` into `06`);
-  `BL-0106` (Low, `DONE` — a stale citation fixed same run); extended `BL-0093` (now also covers
-  `FR-7330`'s `INT-0014` stretch); flipped `BL-0072`-`BL-0078`/`BL-0081`/`BL-0083` (all nine)
-  `SCHEDULED → IN PIPELINE`.
-- **Next step:** `06-feature-specification` on the nine now-baselined Should-tier items (batched or
-  as individual `FS-xxx` drafts), carrying `BL-0104` (B8 index-to-scaling mapping) and `BL-0105`
-  (B10/B15 shared effect-classification taxonomy) as design questions to resolve in the same pass.
-  Independently, `07-implementation-planning` on the DE Implementation Package remains available in
-  parallel, and `09-package-verification` on the 7 pending packages needs a fresh session.
+  - `02`/`03`/`06` — `BL-0108`/`BL-0112` (Low, research-gaps for the RIC-view/CATS-angle display
+    conventions) `DEFERRED` until their `06` design work; `BL-0092`/`BL-0093` (Low, ICD
+    interface-stretch) remain routed to whoever next touches the ICD, non-blocking.
+    `BL-0099`/`BL-0100`/`BL-0101`/`BL-0102`/`BL-0103`/`BL-0110` (all Low) remain `DEFERRED`,
+    non-blocking.
+- **Backlog:** 121 total. This run: harvested six new intake entries (`BL-0107`-`BL-0112`, three
+  `SCHEDULED` into `04`, two `DEFERRED`, one net-new research-gap pair); harvested nine new Open
+  Questions (`BL-0113`-`BL-0121`) from the `06` pass; re-routed `BL-0104`/`BL-0105` `06 → 07`;
+  flipped `BL-0072`-`BL-0078`/`BL-0081`/`BL-0083` (all nine) entry stage `06 → 07`.
+- **Next step:** `07-implementation-planning` on the seven unblocked Should-tier Feature Specs
+  (`FS-122`, `FS-124`-`FS-129`) is the highest-leverage per-feature-loop step. In parallel:
+  `04-requirements-engineering` on `BL-0107`/`BL-0109`/`BL-0111` (batched); `FS-123`/`BL-0104`/
+  `BL-0121` need a design decision (a `07` design call, or an earlier `04` amendment) before that
+  eighth package can be written; `09-package-verification` on the 7 pending packages needs a fresh
+  session; `07-implementation-planning` on the DE Implementation Package remains queued.
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner,
-  unchanged. The five-package Must-tier authorization (granted run #69) is fully spent. A gate
-  will also open once `07` writes the DE Implementation Package, and separately once a fresh
-  session's `00-pipeline-manager` reaches `11-release-readiness`'s GO/NO-GO call. PR #55 (branch
-  `claude/chart-prompt-file-90hm9u`) open/draft, subscribed, hourly check-ins continuing (last
-  check at 2026-09-27T16:42Z, nothing actionable, re-armed for 2026-09-27T21:14Z); repo has no CI
-  workflows.
+  unchanged. The five-package Must-tier authorization (granted run #69) is fully spent — any of the
+  seven now-spec-complete Should-tier Features reaching `07-implementation-planning`'s package-
+  writing step, and any package it produces reaching `08-code-implementation`, will need a fresh
+  MSTR-006 §3 authorization ask before code is written (not yet reached this run). A gate will also
+  open once a fresh session's `00-pipeline-manager` reaches `11-release-readiness`'s GO/NO-GO call.
+  PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft, subscribed, hourly check-ins
+  continuing (last check at 2026-09-27T16:42Z, nothing actionable, re-armed for
+  2026-09-27T21:14Z); repo has no CI workflows.
 
 ---
 
@@ -551,3 +562,4 @@
 | 74 | 2026-09-27 | advance | `08-code-implementation` | `IP-1210` — Ephemeris Export (Truth and Cell-Observed, ECI/RIC, CSV/CCSDS OEM) | Reconciliation: no drift. `IP-1210` selected as the last of the five authorized Must-tier packages, no shared-file coordination risk. Invoked `08-code-implementation`: read `IP-1210` in full plus `session/aar.py`/`engine/simulation.py::replay`/`engine/maneuver.py::lvlh_frame`/`engine/custody.py::Track`/`engine/propagator.py`. Added `aar.state_at_time(mgr, t)` (additive sibling of `state_at(mgr, seq)`, computing `seq = sum(sim_time <= t)` then calling `replay(..., up_to_seq=seq, final_time=t)` — confirmed both parameters already compose exactly as needed by reading `replay()`'s own body). New `session/ephemeris.py`: `sample_times()` (explicit/default-interval per Design Decision 2, `span/100` clamped to `BUS_TICK_PERIOD_S`), `truth_ephemeris()`/`cell_observed_ephemeris()` (both clamp-or-reject the requested span against the session's own valid range per Design Decision 1, then sample via `state_at_time`), `to_ric()` (direct reuse of `lvlh_frame`'s R/T/N basis), `write_csv()`/`write_oem()` (CCSDS OEM in KVN form, km/km-s units). Two new HTTP routes: `GET .../ephemeris/truth` (no-cell, reachable like `/godview`) and `GET .../ephemeris/{cell}` (cell-scoped, same trust level as `/view/{cell}`/`/scene/{cell}`) — registered in that order so the static `/truth` path matches before the `{cell}` wildcard. Resolved `BL-0098` in full, matching the package's own two Design Decisions exactly — no drift found during implementation; the CCSDS OEM's exact KVN field set (not fully specified by the package) was filled in with the standard header block (`CCSDS_OEM_VERS`/`OBJECT_NAME`/`OBJECT_ID`/`CENTER_NAME`/`REF_FRAME`/`TIME_SYSTEM`), a reasonable implementation-time completion, not a new design decision. Confirmed via direct test that `cell_observed_ephemeris()` never reads `world.assets[...].orbit` for the target (always `Track.state_estimate`) and, for a merely-tracked reference object, uses the cell's own (deliberately staled, in one test) estimate rather than live ground truth. 18 new tests (`test_ephemeris.py`, +1 in `test_aar.py` for `state_at_time`, +4 in `test_web.py` for both routes + fog-of-war + OEM format). Full suite **707 passed/3 skipped** (up from 689/3), both permanent gates green. Updated the ICD (`INT-0014` prose, citation-only, `BL-0093`'s stretch left unresolved and routed as before), the RTM (`FR-7410`/`FR-7420`'s Impl. Package/Test/Future-Feature cells — closing out the entire 2026-09-26 Must-tier batch's traceability), `CLAUDE.md`'s code map, `FS-121`'s and `FS-103`'s `Referenced By`, `IP-1210`'s own header/DoD, the Master Build Plan (row + narrative update), `packages/INDEX.md`, `01-technical-work-breakdown.md`, `ROADMAP.md`. `IP-1210` flips `READY → COMPLETE`. `BL-0098` already `DONE` (closed at planning time, unchanged). No new findings this run. Committed and pushed to the open PR #55 branch (`claude/chart-prompt-file-90hm9u`). **This closes the entire five-package Must-tier implementation tranche for this increment.** | This session has exhausted its mechanical options on Thread D — every authorized package is `COMPLETE`, and the same-session-verification-exclusion rule means `09`/`10` cannot advance further here. Available next steps: a fresh session runs `00-pipeline-manager` repeatedly to clear `09` on all 7 pending packages then `10-integration-review`, surfacing back to `11-release-readiness`'s GO/NO-GO per the user's own pausing instruction; or, in parallel, this session could run `07-implementation-planning` on the still-queued DE Implementation Package (`FS-105` v1.1), independent of the same-session constraint. |
 | 75 | 2026-09-27 | triage | — | backlog re-triage | User instruction: "Triage back log and then begin iterating pipeline on them." Read the backlog in full. Corrected drift: `BL-0067`/`0068`/`0069`/`0070`/`0071`/`0082` (B1/B2/B3/B4/B5/B16) still read "rides a future `07` pass" though all five packages implementing them (`IP-1190`, `IP-1210`, `IP-1062`, `IP-1200`, `IP-1180`) reached `COMPLETE` in runs #70-74 — text corrected to record the actual package/status, disposition unchanged (`IN PIPELINE`, correctly awaiting `VERIFIED`). Re-checked the 11 Should/Could-tier intake items' standing `DEFERRED` triggers: the Must-tier `04` batch's gate closed at run #61, firing 8 of them directly (`BL-0072`/`0073`/`0074`/`0075`/`0076`/`0078`/`0081`/`0083`) and, via `BL-0074`'s own scheduling in this same pass, `BL-0077` (its trigger names `BL-0074` being scheduled). All 9 dispositioned `SCHEDULED`: `BL-0073`/`BL-0074`/`BL-0077` (B7/B8/B11) to the next `02-research-ow-orbital-mechanics` pass (research-first, per their own entry-stage field); the remaining six (`BL-0072`/`0075`/`0076`/`0078`/`0081`/`0083`, B6/B9/B10/B12/B15/B17) batched into the next `04-requirements-engineering` pass, mirroring how the original Must-tier batch was run in one `04` pass. `BL-0079` (B13, Could-tier) re-checked and left `DEFERRED` — its own trigger ("all Should-tier items past `04`") has not fired, since the six just-scheduled items are only entering `04`, not yet through it. `BL-0080` (B14) unchanged (`R14` not scheduled). No Critical/High severity among any of these (all S/C priority) — no user agreement needed to schedule rather than act immediately. No new findings; nothing un-harvested from run #74. | `02-research-ow-orbital-mechanics` on `BL-0073`/`BL-0074`/`BL-0077` (B7/B8/B11, batched) — the highest-leverage unblocked step now that these are `SCHEDULED`; research-first items must clear before their `04` work can start. |
 | 76 | 2026-09-27 | advance | `04-requirements-engineering` | Should-tier batch: `BL-0073`/`BL-0074`/`BL-0077`/`BL-0072`/`BL-0075`/`BL-0076`/`BL-0078`/`BL-0081`/`BL-0083` (B7/B8/B11/B6/B9/B10/B12/B15/B17) | **Reconciliation first:** between run #75 and this run, `02-research-ow-orbital-mechanics` was run directly (continuing the same session across a context-compaction boundary, per the user's standing "iterate pipeline" instruction) rather than via a manager invocation — the journal's run #75-recorded next step (`02-research-ow-orbital-mechanics` on `BL-0073`/`BL-0074`/`BL-0077`) is exactly what that run executed: `R109` v1.2 (§3.6-§3.10, five sensor variants), `R117` v1.2 (§3.1, debris persistence), `R131` v1.1 (§3, F10.7/Kp drag inputs), `R100-index.md` updated, committed `e843ec8`. Harvested that run's own finding as `BL-0103` (Low, DEFERRED — R109 §3.7's single-source 90° exclusion angle). Re-dispositioned `BL-0073`/`BL-0074`/`BL-0077` from "rides `02`" to "rides the next `04`" now that their research is closed. **This run's own invocation:** with all nine Should-tier items now `SCHEDULED` into `04` (no gate applies — MoSCoW `Should`, no release GO, no unadjudicated Critical/High, no ripe `NEEDS-USER` entry), invoked `04-requirements-engineering` on the full nine-item batch. Thirteen new baselined FR leaves added: `FR-1600` (new parent) + `FR-1610`-`FR-1660` (B7 five sensor variants + B17 hosted sensor); `FR-1230`+`FR-4440` (B8 drag/anomaly-rate coupling); `FR-1430` (B11 debris persistence, deliberately narrower than `CR-17`); `FR-1320` (B6 manoeuvre ledger); `FR-2320` (B9 telemetry export); `FR-3430`+`FR-3440` (B10 approval gating + live ROE); `FR-7330` (B12 variable-speed replay); `FR-1440`+`FR-1450` (B15 jamming-delivery + per-effect-class settings). No NFR added (existing `NFR-2600` already covers the new logging obligations). Traceability matrix gained 13 rows, all forward columns honestly `UNASSIGNED`. Full review: `docs/reviews/requirements-update-should-tier-batch.md`. Also fixed a stale citation in `01-functional-requirements.md`'s own Must-tier changelog note (referenced a non-existent `03-requirements-review.md`; corrected to the real `reviews/requirements-update-must-tier-batch.md`). Committed `3c0285f`, pushed to the open PR #55 branch. Harvested 3 new findings (`BL-0104` Low SCHEDULED — B8 index-to-scaling mapping ambiguity, rides `06`; `BL-0105` Low SCHEDULED — B10/B15 shared effect-classification taxonomy note, rides `06`; `BL-0106` Low DONE — the stale-citation fix) plus folded a fourth into the existing `BL-0093` entry (Finding 12 — `FR-7330` stretches `INT-0014` the same way `FR-7410`/`FR-7420` already do). All nine batch items' own backlog rows updated `SCHEDULED → IN PIPELINE`, entry stage `04 → 06`. Also handled one PR #55 check-in mid-run (nothing actionable — still open/draft, no CI, no review threads — re-armed silently for +60min). | `06-feature-specification` on the now-baselined Should-tier batch (nine `FS-xxx` drafts or a batched pass, riding `BL-0104`/`BL-0105`'s design questions) is the next per-feature-loop step; independently, `09-package-verification` on the 7 pending `COMPLETE` packages still needs a fresh session, and `07-implementation-planning` on the DE Implementation Package (`FS-105` v1.1) remains queued in parallel. |
+| 77 | 2026-09-27 | advance | `06-feature-specification` | Should-tier batch: FS-122 (B7+B17) / FS-123 (B8) / FS-124 (B11) / FS-125 (B6) / FS-126 (B9) / FS-127 (B10) / FS-128 (B12) / FS-129 (B15) | **Reconciliation + triage first:** since run #76, the user filed six new intake items directly in-session (`BL-0107`/`BL-0108` — live RIC-frame view + its research gap; `BL-0109`/`BL-0110` — quick TLE export + its mean-vs-osculating-element design question; `BL-0111`/`BL-0112` — CATS/illumination-phase-angle overlay for the RIC view + its research gap, the term clarified via `AskUserQuestion` after failing to ground it independently, then corroborated against a real AGI/STK source). Triaged all six: `BL-0107`/`BL-0109`/`BL-0111` SCHEDULED into the next `04-requirements-engineering` pass (batched together); `BL-0108`/`BL-0112` DEFERRED until `06-feature-specification` designs their respective views (the underlying transform/format grounding already exists; only display-convention research remains open, non-blocking). No drift found elsewhere; the recorded next step (`06-feature-specification` on the nine Should-tier items) remained valid and outranked the new, not-yet-due intake items. **This run's own invocation:** drafted eight Feature Specifications (one per FR family, `FS-122` covering both B7 and B17 since they share the new `FR-1600` parent) — `FS-122`-`FS-129`, `docs/features/feature-index.md` updated. Seven of eight are `✅ Ready for implementation planning`; `FS-123` (B8) is `🚧` — `BL-0104`'s index-to-scaling mapping question genuinely blocks a testable implementation, not merely an inline `07` decision, so it was re-routed `06 → 07` rather than resolved here (per this skill's own "never invent an answer" rule). `BL-0105` (shared effect-classification taxonomy) similarly carried forward, cited identically in both `FS-127` and `FS-129`, re-routed `06 → 07`. Harvested nine new Open Questions across the eight specs as `BL-0113`-`BL-0121` (mostly Low, entry stage `07`; `BL-0113` entry stage `04` since it's plausibly a requirements-text gap). All nine batch items' backlog rows updated: entry stage `06 → 07` (`BL-0074`/B8 remains gated on `BL-0104` before it can proceed). Committed `0c52621` (specs) and `55115eb` (backlog harvest), pushed to the open PR #55 branch. | `07-implementation-planning` on the now-spec-complete Should-tier items is the next per-feature-loop step for the seven unblocked ones (`FS-122`, `FS-124`-`FS-129` minus `FS-123`); `FS-123`'s own package cannot be written until `BL-0104`/`BL-0121`'s mapping-function/plausible-range questions are resolved (a `07` design decision, or an earlier `04` amendment if warranted). Independently: `04-requirements-engineering` on the newly `SCHEDULED` `BL-0107`/`BL-0109`/`BL-0111` (RIC-frame view, TLE export, CATS angle); `09-package-verification` on the 7 pending `COMPLETE` packages still needs a fresh session; `07-implementation-planning` on the DE Implementation Package (`FS-105` v1.1) remains queued in parallel. |
