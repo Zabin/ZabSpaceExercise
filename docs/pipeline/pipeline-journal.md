@@ -13,52 +13,58 @@
 
 ## Position
 
-- **Updated:** 2026-09-27 (run #74)
-- **Increment:** Thread D (external user validation intake) — **the entire five-package
-  authorized implementation tranche is now COMPLETE.** Authorization granted run #69
-  (`IP-1180`, `IP-1062`, `IP-1200`, `IP-1190`, `IP-1210`); implemented in order `IP-1190` (run
-  #70), `IP-1180` (run #71), `IP-1062` (run #72), `IP-1200` (run #73), **`IP-1210`** (run #74 —
-  ephemeris export, 707/3, both gates green). Every one of the six Must-tier B-items from the
-  26 Sep 2026 external validation report (B16/B4/B5/B1/B2/B3) now has `COMPLETE` code, alongside
-  `IP-1061`/`IP-1174` (`BL-0062`-`BL-0065`/A1-A4, `IP-1174`/FS-117) implemented pre-authorization
-  in an earlier session (runs #53-55). **All eight implemented packages this increment are
-  excluded from this session's own `09-package-verification`** (same-session rule) — every one
-  awaits a fresh session. Thread A (`IP-1160`, `BLOCKED`) and the still-unwritten DE
-  Implementation Package (`FS-105` v1.1) remain untouched by this authorization — separate,
-  unchanged gates. Threads B/C: no queued work.
+- **Updated:** 2026-09-27 (run #75, triage)
+- **Increment:** Thread D (external user validation intake) — **the five-package Must-tier
+  implementation tranche is fully COMPLETE** (`IP-1180`/`IP-1062`/`IP-1200`/`IP-1190`/`IP-1210`,
+  runs #70-74), alongside `IP-1061`/`IP-1174` from an earlier session. All 7 await
+  `09-package-verification` in a fresh session (same-session exclusion). **This run: backlog
+  triage per explicit user request** ("triage backlog and begin iterating pipeline on them").
+  Corrected stale "IN PIPELINE... rides a `07` pass" text on `BL-0067`/`0068`/`0069`/`0070`/
+  `0071`/`0082` (B1/B2/B3/B4/B5/B16) to reflect their actual `COMPLETE` implementation status
+  (still `IN PIPELINE`, correctly awaiting `VERIFIED`). **Re-triaged the 11 Should/Could-tier
+  intake items (`BL-0072`-`BL-0083`, B6-B15/B17):** their revisit trigger ("the Must-tier `04`
+  intake batch closes its gate") fired at run #61 and had not yet been acted on. Nine flip
+  `DEFERRED → SCHEDULED`: `BL-0073`/`BL-0074` (B7/B8) ride the next `02-research-ow-orbital-mechanics`
+  pass (sensor phenomenology; space-environment/GAP-01 drag grounding) before `04`; `BL-0077`
+  (B11) rides the same `02` pass as `BL-0074` (its own trigger — "`BL-0074` scheduled" — fired in
+  this same triage pass); `BL-0072`/`BL-0075`/`BL-0076`/`BL-0078`/`BL-0081`/`BL-0083` (B6/B9/B10/
+  B12/B15/B17) all ride the next `04-requirements-engineering` pass, batched together (mirroring
+  how the Must-tier batch was run in one `04` pass, run #61). `BL-0079` (B13, Could-tier)
+  re-checked: its own trigger ("all Should-tier items past `04`") has **not** fired — the six `04`
+  candidates are only `SCHEDULED` into `04`, not yet past it — remains `DEFERRED`. `BL-0080` (B14)
+  unchanged, `R14` still not scheduled.
 - **Pipeline state:**
-  - `08` — nothing left eligible from this authorization; `IP-1160` `BLOCKED`/DE package
-    unwritten remain the only two forward-design items with any `08` future, both on separate,
-    unmet gates.
-  - `09` — `IP-1061`, `IP-1174`, `IP-1190`, `IP-1180`, `IP-1062`, `IP-1200`, `IP-1210` — **7
-    packages, all `COMPLETE`, all excluded from this session's own verification**, each awaiting
-    a fresh session's `09-package-verification` pass before `10-integration-review` can run
-    against this tranche.
-  - `10` — cannot run yet: none of the 7 pending packages has reached `VERIFIED`. Per the user's
-    own standing instruction ("iterate through 08/09/10, pausing only at 11"), `10` is the next
-    milestone once a fresh session clears `09` for all seven — not reachable from this session.
-  - `07` — one Implementation Package remains due for this increment (the DE package, `FS-105`
-    v1.1), available in parallel whenever convenient, no urgency.
-  - `06`/`03` — nothing outstanding for the Must-tier thread. `BL-0092`/`BL-0093` (Low,
-    interface-model-stretch) remain routed to whoever next touches the ICD, non-blocking.
-    `BL-0099`/`BL-0100`/`BL-0101`/`BL-0102` (all Low) remain `DEFERRED`, non-blocking.
-- **Backlog:** 102 total. No new findings this run (`IP-1210`'s own Design Decisions were already
-  harvested at planning time — `BL-0098`, already `DONE`).
-- **Next step:** **This session has reached the end of what it can mechanically do on Thread D** —
-  every authorized package is `COMPLETE`, and `09-package-verification`'s same-session-exclusion
-  rule means this session cannot advance any of the 7 pending packages toward `VERIFIED`, which
-  is a precondition for `10-integration-review`. The two available options are: (a) a fresh
-  session runs `00-pipeline-manager` (advance mode) repeatedly to work through `09` on all 7
-  packages, then `10-integration-review` on the resulting tranche, then report back for the
-  `11-release-readiness` GO/NO-GO the user's own instruction reserves as the pipeline's pausing
-  point; or (b) this session continues other available work in parallel —
-  `07-implementation-planning` on the still-queued DE Implementation Package (`FS-105` v1.1), the
-  one remaining mechanical option not blocked by the same-session rule.
+  - `02` (`02-research-ow-orbital-mechanics`) — **due next**: `BL-0073`/`BL-0074`/`BL-0077`
+    (B7/B8/B11) batched — sensor phenomenology + space-environment/drag grounding, before either
+    can reach `04`.
+  - `04` (`04-requirements-engineering`) — due after `02` clears: `BL-0072`/`BL-0075`/`BL-0076`/
+    `BL-0078`/`BL-0081`/`BL-0083` (B6/B9/B10/B12/B15/B17), six new FR leaves in one batched pass,
+    plus `BL-0073`/`BL-0074`/`BL-0077` once their `02` grounding lands.
+  - `08` — nothing eligible; `IP-1160` `BLOCKED`/DE package unwritten remain untouched.
+  - `09` — 7 packages (`IP-1061`/`IP-1174`/`IP-1190`/`IP-1180`/`IP-1062`/`IP-1200`/`IP-1210`), all
+    `COMPLETE`, all excluded from this session's own verification, each awaiting a fresh session.
+  - `10` — cannot run yet: none of the 7 pending packages has reached `VERIFIED`.
+  - `07` — the DE Implementation Package (`FS-105` v1.1) remains queued, available in parallel.
+  - `06`/`03` — `BL-0092`/`BL-0093` (Low, ICD interface-stretch) remain routed to whoever next
+    touches the ICD, non-blocking. `BL-0099`/`BL-0100`/`BL-0101`/`BL-0102` (all Low) remain
+    `DEFERRED`, non-blocking.
+- **Backlog:** 102 total. This run (triage): 6 entries corrected for drift (`BL-0067`/`0068`/
+  `0069`/`0070`/`0071`/`0082`, text only, status unchanged); 9 entries re-dispositioned
+  `DEFERRED → SCHEDULED` (`BL-0072`-`0078`, `BL-0081`, `BL-0083`); 1 entry re-checked and confirmed
+  still correctly `DEFERRED` (`BL-0079`). No new findings.
+- **Next step:** `02-research-ow-orbital-mechanics` on `BL-0073`/`BL-0074`/`BL-0077` (B7 sensor
+  phenomenology, B8 space-environment/drag, B11 debris persistence — batched, since B11 rides the
+  same research entry point as B8) — the highest-leverage unblocked step now that the Should-tier
+  re-triage has surfaced due work. Then `04-requirements-engineering` on the six `04`-ready items
+  (`BL-0072`/`BL-0075`/`BL-0076`/`BL-0078`/`BL-0081`/`BL-0083`) plus whatever `02` just unblocked.
+  Independently, `07-implementation-planning` on the DE Implementation Package remains available
+  in parallel, and `09-package-verification` on the 7 pending packages needs a fresh session.
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred by the project owner,
-  unchanged. The five-package Must-tier authorization (granted run #69) is now fully spent — all
-  five implemented. A gate will also open once `07` writes the DE Implementation Package. PR #55
-  (branch `claude/chart-prompt-file-90hm9u`) open/draft, subscribed, hourly check-ins continuing;
-  repo has no CI workflows.
+  unchanged. The five-package Must-tier authorization (granted run #69) is fully spent. A gate
+  will also open once `07` writes the DE Implementation Package, and separately once a fresh
+  session's `00-pipeline-manager` reaches `11-release-readiness`'s GO/NO-GO call. PR #55 (branch
+  `claude/chart-prompt-file-90hm9u`) open/draft, subscribed, hourly check-ins continuing; repo has
+  no CI workflows.
 
 ---
 
@@ -548,3 +554,4 @@
 | 72 | 2026-09-27 | advance | `08-code-implementation` | `IP-1062` — Condition-Triggered Injects & New Inject Effect Types | Reconciliation: no drift. `IP-1062` selected next (no shared-file coordination risk with any remaining package). Invoked `08-code-implementation`: read `IP-1062` in full plus the live `session/manager.py` (`_h_inject`, `_arm_schedule`, `Simulation.advance_to`/`schedule`/`register_handler`), `content/vignette.py`'s `_evaluate_metric`/`_range_km`/`world.track_for`, `engine/entities.py`'s `Sensor`, `engine/orders.py::scene_from_world`, `engine/maneuver.py::compute_maneuver`, `engine/propagator.py::apply_impulse`, `engine/custody.py::Track`, `engine/bus.py::BusState`. Extracted `_h_inject`'s body into a shared `_apply_inject_effects(world, effects, rng)` helper (zero behavior change to the eight existing effect types — verified via the full existing `test_inject_library.py` suite passing unchanged); added `_h_condition_check` + a new `condition_check` periodic event scheduled by `_arm_schedule` only when the vignette declares a condition-type trigger (eventlog-bloat guard); firing-state derived from a time-filtered eventlog scan mirroring `_arm_schedule`'s own existing pattern (no new `WorldState` field, no mid-handler `eventlog.append` — the handler mutates the tick event's own `payload` dict in place, captured by `advance_to`'s existing post-handler append). Added four new effect branches to the shared dispatch: `anomaly` (Design Decision 4: subsystem `"bus"`→`bus_state.mode="safe_mode"`, `"telemetry"`→`bus_state.comms.status="red"`), `sensor_outage` (new additive `Sensor.health` field + `scene_from_world()` filter, mirroring the existing degraded-ground-station pattern), `forced_custody_loss` (cell-scoped `Track` mutation via `world.track_for`, never touching another cell's track), `scripted_manoeuvre` (resolves through `engine/maneuver.py`'s existing six entry modes via `compute_maneuver()`/`apply_impulse()`, deliberately bypassing `AssetResources.delta_v_ms` per `ADR-0005`/Design Decision 3 — confirmed by direct test, never read or written). Resolved `BL-0091` (scripted-manoeuvre must resolve through the six existing entry modes, never a parallel mechanism) and `BL-0095` (a deleted-target condition never fires; the Δv gate bypass is deliberate) in full, matching the package's own Design Decisions exactly — no drift found during implementation. 17 new tests (`test_condition_triggered_injects.py`, `test_inject_effects_v2.py`), `test_inject_library.py`'s `_KNOWN_EFFECT_TYPES` set updated for documentation accuracy (no functional test change). Full suite **678 passed/3 skipped** (up from 661/3), both permanent gates green. Updated the RTM (`FR-4420`/`FR-4430`'s Impl. Package/Test/Future-Feature cells), `CLAUDE.md`'s code map, `FS-106`'s `Referenced By`, `IP-1062`'s own header/DoD, the Master Build Plan (row + narrative update), `packages/INDEX.md`, `01-technical-work-breakdown.md`, `ROADMAP.md`. `IP-1062` flips `READY → COMPLETE`. `BL-0091`/`BL-0095` already `DONE` (closed at planning time, unchanged); `BL-0101` (the anomaly subsystem-mapping interpretation) unchanged, confirmed implemented exactly as that finding described. No new findings this run. Committed and pushed to the open PR #55 branch (`claude/chart-prompt-file-90hm9u`). | `08-code-implementation` on `IP-1200` next (FS-120, save-as-scenario) — must read `IP-1180`'s actual landed diff first, per the flagged coordination note. |
 | 73 | 2026-09-27 | advance | `08-code-implementation` | `IP-1200` — Save-as-Scenario (Mid-Exercise State → New Starting Vignette) | Reconciliation: no drift. `IP-1200` selected next per the user-directed build order — read `IP-1180`'s actual landed diff first (its own coordination note), confirmed `export_vignette()`/`save_vignette()`'s real post-`IP-1180` signatures (`_validate_id`/`_resolve_within_root` reused, `load_content_config().user_save_dir` retargeting) before extending them, avoiding any silent revert of `IP-1180`'s changes. Invoked `08-code-implementation`: added `Vignette.initial_tracks`/`simulator_version`/`initial_space_weather` (all additive, absent for every pre-`IP-1200` vignette); `build_world()` extended to consume them when present; `export_vignette()`/`save_vignette()` gain an optional `start_epoch` parameter (defaults reproduce `IP-1173`'s exact prior behavior) plus unconditional tracks/version/space-weather carry-forward; new `spacesim/version.py::simulator_version()` (git short hash, `spacesim.__version__` fallback, never raises); new `SessionManager.save_as_scenario()` requiring `self.started` (Design Decision 1: no "ended" lifecycle state exists, confirmed by direct read); `InProcessSession.save_vignette(..., as_scenario=...)` and `SaveVignetteRequest.as_scenario` thread through the existing route (no new route). Resolved `BL-0097` in full, matching the package's own Design Decisions exactly. Two test-timing bugs self-caught and fixed during implementation (not package defects): two new tests captured `sim.clock.now` for comparison while the session's real-time clock was still running, racing a few microseconds of catch-up drift before the save actually happened — fixed by pausing the clock (`set_clock(False)` / `POST .../clock {running:false}`) before the comparison window in both the manager-level and HTTP-level tests. 11 new tests, full suite **689 passed/3 skipped** (up from 678/3), both permanent gates green. Updated the RTM (`FR-5510`'s Impl. Package/Test/Future-Feature cells), `CLAUDE.md`'s code map, `FS-120`'s `Referenced By`, `IP-1200`'s own header/DoD, the Master Build Plan (row + narrative update), `packages/INDEX.md`, `01-technical-work-breakdown.md`, `ROADMAP.md`. `IP-1200` flips `READY → COMPLETE`. `BL-0097` already `DONE` (closed at planning time, unchanged). No new findings this run. Committed and pushed to the open PR #55 branch (`claude/chart-prompt-file-90hm9u`). | `08-code-implementation` on `IP-1210` next (FS-121/FS-103 v1.1, ephemeris export) — the last of the five authorized Must-tier packages, no shared-file coordination risk with any remaining package. |
 | 74 | 2026-09-27 | advance | `08-code-implementation` | `IP-1210` — Ephemeris Export (Truth and Cell-Observed, ECI/RIC, CSV/CCSDS OEM) | Reconciliation: no drift. `IP-1210` selected as the last of the five authorized Must-tier packages, no shared-file coordination risk. Invoked `08-code-implementation`: read `IP-1210` in full plus `session/aar.py`/`engine/simulation.py::replay`/`engine/maneuver.py::lvlh_frame`/`engine/custody.py::Track`/`engine/propagator.py`. Added `aar.state_at_time(mgr, t)` (additive sibling of `state_at(mgr, seq)`, computing `seq = sum(sim_time <= t)` then calling `replay(..., up_to_seq=seq, final_time=t)` — confirmed both parameters already compose exactly as needed by reading `replay()`'s own body). New `session/ephemeris.py`: `sample_times()` (explicit/default-interval per Design Decision 2, `span/100` clamped to `BUS_TICK_PERIOD_S`), `truth_ephemeris()`/`cell_observed_ephemeris()` (both clamp-or-reject the requested span against the session's own valid range per Design Decision 1, then sample via `state_at_time`), `to_ric()` (direct reuse of `lvlh_frame`'s R/T/N basis), `write_csv()`/`write_oem()` (CCSDS OEM in KVN form, km/km-s units). Two new HTTP routes: `GET .../ephemeris/truth` (no-cell, reachable like `/godview`) and `GET .../ephemeris/{cell}` (cell-scoped, same trust level as `/view/{cell}`/`/scene/{cell}`) — registered in that order so the static `/truth` path matches before the `{cell}` wildcard. Resolved `BL-0098` in full, matching the package's own two Design Decisions exactly — no drift found during implementation; the CCSDS OEM's exact KVN field set (not fully specified by the package) was filled in with the standard header block (`CCSDS_OEM_VERS`/`OBJECT_NAME`/`OBJECT_ID`/`CENTER_NAME`/`REF_FRAME`/`TIME_SYSTEM`), a reasonable implementation-time completion, not a new design decision. Confirmed via direct test that `cell_observed_ephemeris()` never reads `world.assets[...].orbit` for the target (always `Track.state_estimate`) and, for a merely-tracked reference object, uses the cell's own (deliberately staled, in one test) estimate rather than live ground truth. 18 new tests (`test_ephemeris.py`, +1 in `test_aar.py` for `state_at_time`, +4 in `test_web.py` for both routes + fog-of-war + OEM format). Full suite **707 passed/3 skipped** (up from 689/3), both permanent gates green. Updated the ICD (`INT-0014` prose, citation-only, `BL-0093`'s stretch left unresolved and routed as before), the RTM (`FR-7410`/`FR-7420`'s Impl. Package/Test/Future-Feature cells — closing out the entire 2026-09-26 Must-tier batch's traceability), `CLAUDE.md`'s code map, `FS-121`'s and `FS-103`'s `Referenced By`, `IP-1210`'s own header/DoD, the Master Build Plan (row + narrative update), `packages/INDEX.md`, `01-technical-work-breakdown.md`, `ROADMAP.md`. `IP-1210` flips `READY → COMPLETE`. `BL-0098` already `DONE` (closed at planning time, unchanged). No new findings this run. Committed and pushed to the open PR #55 branch (`claude/chart-prompt-file-90hm9u`). **This closes the entire five-package Must-tier implementation tranche for this increment.** | This session has exhausted its mechanical options on Thread D — every authorized package is `COMPLETE`, and the same-session-verification-exclusion rule means `09`/`10` cannot advance further here. Available next steps: a fresh session runs `00-pipeline-manager` repeatedly to clear `09` on all 7 pending packages then `10-integration-review`, surfacing back to `11-release-readiness`'s GO/NO-GO per the user's own pausing instruction; or, in parallel, this session could run `07-implementation-planning` on the still-queued DE Implementation Package (`FS-105` v1.1), independent of the same-session constraint. |
+| 75 | 2026-09-27 | triage | — | backlog re-triage | User instruction: "Triage back log and then begin iterating pipeline on them." Read the backlog in full. Corrected drift: `BL-0067`/`0068`/`0069`/`0070`/`0071`/`0082` (B1/B2/B3/B4/B5/B16) still read "rides a future `07` pass" though all five packages implementing them (`IP-1190`, `IP-1210`, `IP-1062`, `IP-1200`, `IP-1180`) reached `COMPLETE` in runs #70-74 — text corrected to record the actual package/status, disposition unchanged (`IN PIPELINE`, correctly awaiting `VERIFIED`). Re-checked the 11 Should/Could-tier intake items' standing `DEFERRED` triggers: the Must-tier `04` batch's gate closed at run #61, firing 8 of them directly (`BL-0072`/`0073`/`0074`/`0075`/`0076`/`0078`/`0081`/`0083`) and, via `BL-0074`'s own scheduling in this same pass, `BL-0077` (its trigger names `BL-0074` being scheduled). All 9 dispositioned `SCHEDULED`: `BL-0073`/`BL-0074`/`BL-0077` (B7/B8/B11) to the next `02-research-ow-orbital-mechanics` pass (research-first, per their own entry-stage field); the remaining six (`BL-0072`/`0075`/`0076`/`0078`/`0081`/`0083`, B6/B9/B10/B12/B15/B17) batched into the next `04-requirements-engineering` pass, mirroring how the original Must-tier batch was run in one `04` pass. `BL-0079` (B13, Could-tier) re-checked and left `DEFERRED` — its own trigger ("all Should-tier items past `04`") has not fired, since the six just-scheduled items are only entering `04`, not yet through it. `BL-0080` (B14) unchanged (`R14` not scheduled). No Critical/High severity among any of these (all S/C priority) — no user agreement needed to schedule rather than act immediately. No new findings; nothing un-harvested from run #74. | `02-research-ow-orbital-mechanics` on `BL-0073`/`BL-0074`/`BL-0077` (B7/B8/B11, batched) — the highest-leverage unblocked step now that these are `SCHEDULED`; research-first items must clear before their `04` work can start. |
