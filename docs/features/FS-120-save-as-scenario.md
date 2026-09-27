@@ -11,7 +11,8 @@
 > explicitly distinct from)
 > **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0071` (external
 > validation report, 26 Sep 2026, item B5), [IP-1200](../implementation/packages/IP-1200-save-as-scenario.md)
-> (Implementation Package, `NOT STARTED`, not yet authorized)
+> (Implementation Package, `COMPLETE` 2026-09-27, awaiting `09-package-verification` in a fresh
+> session)
 > **Produces:** a mid-exercise-state-to-new-vignette save capability satisfying `FR-5510`
 > **Feature Mapping:** FS-120 (this document)
 > **Related Topics:** [FS-118](FS-118-external-vignette-directories.md), [FS-110](FS-110-save-and-resume.md)

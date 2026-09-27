@@ -447,3 +447,42 @@ def test_bulk_import_tle_route_end_to_end():
     bad_resp = c.post(f"/api/sessions/{sid}/force/bulk_import",
                        json={"format": "tle", "content": "not a tle file", "assignments": {}})
     assert bad_resp.status_code == 400
+
+
+def test_save_as_scenario_route_end_to_end(tmp_path, monkeypatch):
+    """IP-1200 (FR-5510) — start a session, advance it, save-as-scenario, load the result: the
+    new session's start epoch equals the save moment and initial state carries forward."""
+    cfg_path = tmp_path / "spacesim.config.yaml"
+    save_dir = tmp_path / "user_saves"
+    save_dir.mkdir()
+    cfg_path.write_text(
+        f"content:\n  user_save_dir: {save_dir}\n  external_vignette_dirs:\n    - {save_dir}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SPACESIM_CONFIG", str(cfg_path))
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600.0})
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})  # stop catch-up drift
+    save_moment = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+
+    resp = c.post(f"/api/sessions/{sid}/save_vignette",
+                  json={"vignette_id": "test-ip1200-http-scenario", "title": "HTTP Scenario",
+                        "as_scenario": True}).json()
+    try:
+        from spacesim.content.vignette import load_vignette
+        from spacesim.engine import simtime
+        vig = load_vignette("test-ip1200-http-scenario")
+        assert vig.start_epoch_utc == simtime.to_iso(save_moment)
+        assert vig.simulator_version
+    finally:
+        from pathlib import Path
+        Path(resp["path"]).unlink(missing_ok=True)
+
+    # A draft session's own "Save as Vignette" (as_scenario omitted/False) is unaffected.
+    draft_sid = c.post("/api/sessions/draft", json={"title": "Still Draft"}).json()["session"]
+    draft_resp = c.post(f"/api/sessions/{draft_sid}/save_vignette",
+                        json={"vignette_id": "test-ip1200-draft-unaffected", "title": "Draft"})
+    assert draft_resp.status_code == 200
+    from pathlib import Path
+    Path(draft_resp.json()["path"]).unlink(missing_ok=True)

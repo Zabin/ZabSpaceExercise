@@ -2,7 +2,9 @@
 
 > **Package ID:** IP-1200
 > **Version:** 1.0
-> **Status:** ⚪ NOT STARTED *(forward design — not authorized for coding, MSTR-006 §3)*
+> **Status:** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
+> built against `IP-1180`'s actual landed diff, per this package's own coordination note — awaiting
+> `09-package-verification` in a fresh session, since this session implemented it)*
 > **Dependencies:** [FS-120](../../features/FS-120-save-as-scenario.md) v1.0 (`FR-5510`),
 > [IP-1180](IP-1180-external-vignette-directories.md) (`FR-5420`'s user-save-directory write
 > target — `⚪ NOT STARTED`, not yet authorized; this package's own write path calls the same,
@@ -214,17 +216,25 @@ extension is pure/deterministic (reads only the passed-in `Vignette`'s data).
 
 ## Definition of Done
 
-- [ ] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
-  §3) — not yet sought or granted as of this writing.
-- [ ] `export_vignette()`/`save_vignette()` with no `start_epoch` argument reproduce today's exact
+- [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
+  §3) — granted 2026-09-27 by the project owner's direct instruction.
+- [x] `export_vignette()`/`save_vignette()` with no `start_epoch` argument reproduce today's exact
   output — `IP-1173`'s draft-save behavior is unchanged.
-- [ ] Given a running session at sim time T with specific track/resource/health/space-weather
+  (`test_export_vignette_omitted_start_epoch_reproduces_prior_behavior`)
+- [x] Given a running session at sim time T with specific track/resource/health/space-weather
   state, saving as a new scenario and loading the result produces a session whose start epoch is T
   and whose initial tracks/resources/health/space-weather match the source session's state at T.
-- [ ] The resulting file records a non-empty `simulator_version`.
-- [ ] A save-as-scenario request against an unstarted session is rejected with a specific error.
-- [ ] All 19 existing library vignettes still load unchanged (schema additivity regression).
-- [ ] Full existing test suite green, zero regressions, both permanent gates green.
+  (`test_export_vignette_carries_forward_tracks_space_weather_and_version`,
+  `test_save_as_scenario_stamps_the_save_moment_as_new_start_epoch`,
+  `test_save_as_scenario_route_end_to_end`)
+- [x] The resulting file records a non-empty `simulator_version`.
+- [x] A save-as-scenario request against an unstarted session is rejected with a specific error.
+  (`test_save_as_scenario_rejected_against_unstarted_session`)
+- [x] All 19 existing library vignettes still load unchanged (schema additivity regression).
+  (`test_all_library_vignettes_have_no_save_as_scenario_fields`)
+- [x] Full existing test suite green, zero regressions, both permanent gates green: **689
+  passed / 3 skipped** (up from 678/3), `test_determinism.py` and `test_import_guard.py` both
+  green.
 
 ## Verification Checklist
 

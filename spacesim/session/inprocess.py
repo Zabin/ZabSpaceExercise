@@ -118,13 +118,20 @@ class InProcessSession:
         return sid
 
     def save_vignette(self, session: str, vignette_id: str, title: str,
-                       classification: str = "UNCLASSIFIED-TRAINING") -> str:
-        """Build a complete Vignette YAML from the session's current state and write it to
-        VIGNETTE_DIR — the only code path that does so. Works for any session (draft or
-        normal), matching FR-5110's own framing of "Save as Vignette" as the single explicit
-        action that ever produces a file."""
-        from spacesim.content.vignette_export import save_vignette as _save
+                       classification: str = "UNCLASSIFIED-TRAINING",
+                       as_scenario: bool = False) -> str:
+        """Build a complete Vignette YAML from the session's current state and write it to the
+        configured user-save directory — the only code path that does so. Works for any session
+        (draft or normal), matching FR-5110's own framing of "Save as Vignette" as the single
+        explicit action that ever produces a file.
+
+        IP-1200 (FR-5510): ``as_scenario=True`` routes through `SessionManager.save_as_scenario()`
+        instead — the save-as-scenario path, requiring a started session and stamping the result
+        with the save moment as its new start epoch."""
         with self._locked_read(session) as mgr:
+            if as_scenario:
+                return mgr.save_as_scenario(vignette_id, title, classification=classification)
+            from spacesim.content.vignette_export import save_vignette as _save
             return _save(mgr.world, mgr.ctx, vignette_id, title, classification=classification)
 
     def load_vignette(

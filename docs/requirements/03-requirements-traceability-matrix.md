@@ -163,7 +163,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-5310 | Vignette loading | UNASSIGNED | ADR-0007 | C2, C5 | INT-0011 | UNASSIGNED | UNASSIGNED | `content/vignette.py` |
 | FR-5410 *(new 2026-09-26, `BL-0082`/B16)* | Load vignettes from configured external directories | UNASSIGNED | ADR-0007, ADR-0018 | C2, C5 | INT-0011 | FS-118 | `spacesim/tests/test_content.py` (external-directory enumeration/collision/traversal tests) | IP-1180 *(`COMPLETE` 2026-09-27, awaiting `09-package-verification` in a fresh session)* |
 | FR-5420 *(new 2026-09-26, `BL-0082`/B16)* | `save_vignette` writes only to a configured user directory | UNASSIGNED | ADR-0007, ADR-0022 | C2, C5 | INT-0011, INT-0012 | FS-118 | `spacesim/tests/test_vignette_export.py` | IP-1180 *(`COMPLETE` 2026-09-27, awaiting `09-package-verification` in a fresh session)* |
-| FR-5510 *(new 2026-09-26, `BL-0071`/B5)* | Save a running session's current state as a new starting vignette | UNASSIGNED | ADR-0022, ADR-0007 | C2, C5, C11 | INT-0011, INT-0012 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-5510 *(new 2026-09-26, `BL-0071`/B5)* | Save a running session's current state as a new starting vignette | UNASSIGNED | ADR-0022, ADR-0007 | C2, C5, C11 | INT-0011, INT-0012 | FS-120 | `spacesim/tests/test_vignette_export.py`, `spacesim/tests/test_vignette_creator_session.py`, `spacesim/tests/test_web.py::test_save_as_scenario_route_end_to_end` | IP-1200 *(`COMPLETE` 2026-09-27, awaiting `09-package-verification` in a fresh session)* |
 | FR-6110 | SessionAPI seam (base) | UNASSIGNED | ADR-0002, ADR-0003 | C4, C2 | INT-0006 | UNASSIGNED | UNASSIGNED | `session/api.py` |
 | FR-6210 | Fog-of-war filtering | UNASSIGNED | ADR-0004 | C4, C2, C1 | INT-0006, INT-0007 | UNASSIGNED | `spacesim/tests/test_scene.py` *(VR-1030 — `IP-1030`'s own `scene.py` custody-track filter contribution to this boundary; the boundary mechanism itself is `session/cells.py`'s, not this package's)* | `session/cells.py` |
 | FR-6220 | Observer fog-of-war view | UNASSIGNED | ADR-0004, ADR-0015 | C4, C12, C9 | INT-0001, INT-0005 | UNASSIGNED | UNASSIGNED | `session/cells.py` |
@@ -436,7 +436,7 @@ because `FUTURE-WORK.md` cites the requirement back. Seven of the eight entries 
 | CR-16 | `FUTURE-WORK.md` §13 (R17 — ground-segment cyber deepening) *(new 2026-07)* |
 | CR-17 | `FUTURE-WORK.md` §2 (unwired `prop.collision_avoid`), §13 (R16 — persistent debris) *(new 2026-07)* |
 | CNFR-07 | `FUTURE-WORK.md` §13 (R19 — distributed-use security growth path + GAP-11 study) *(new 2026-07)* |
-| All other FR/NFR/CR/CNFR (including CR-18, and the 2026-09-26 batch FR-5510, FR-7410, FR-7420 — `FR-5220` assigned to `IP-1190`, `FR-5410`/`FR-5420`/`NFR-3700` assigned to `IP-1180`, `FR-4420`/`FR-4430` assigned to `IP-1062`, see their own rows above) | `UNASSIGNED` |
+| All other FR/NFR/CR/CNFR (including CR-18, and the 2026-09-26 batch FR-7410, FR-7420 — `FR-5220` assigned to `IP-1190`, `FR-5410`/`FR-5420`/`NFR-3700` assigned to `IP-1180`, `FR-4420`/`FR-4430` assigned to `IP-1062`, `FR-5510` assigned to `IP-1200`, see their own rows above) | `UNASSIGNED` |
 
 ## Reverse index — Requirement → Test
 
@@ -496,7 +496,7 @@ ID scheme — there is no `FS-xxx`/`IMP-xxx` convention anywhere in this repo).
 | `spacesim/tests/` | NFR-2800 |
 | Build/dependency manifest, `spacesim/` (whole tree) | NFR-2900 |
 | All subsystems (no single file) | NFR-2200 |
-| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-5510, FR-7410, FR-7420 *(2026-09-26 Must-tier batch — no implementing file exists yet for any of these three leaves; `FR-5220` assigned to `spacesim/content/bulk_import.py`/`session/manager.py::bulk_import`, `IP-1190`; `FR-5410`/`FR-5420`/`NFR-3700` assigned to `spacesim/content/vignette.py`/`vignette_export.py`/`config.py`, `IP-1180`; `FR-4420`/`FR-4430` assigned to `spacesim/session/manager.py`/`engine/entities.py`/`engine/orders.py`, `IP-1062`)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
+| UNASSIGNED | FR-1130, FR-3310, FR-3510, FR-3520, FR-7410, FR-7420 *(2026-09-26 Must-tier batch — no implementing file exists yet for either of these two leaves; `FR-5220` assigned to `spacesim/content/bulk_import.py`/`session/manager.py::bulk_import`, `IP-1190`; `FR-5410`/`FR-5420`/`NFR-3700` assigned to `spacesim/content/vignette.py`/`vignette_export.py`/`config.py`, `IP-1180`; `FR-4420`/`FR-4430` assigned to `spacesim/session/manager.py`/`engine/entities.py`/`engine/orders.py`, `IP-1062`; `FR-5510` assigned to `spacesim/content/vignette_export.py`/`session/manager.py::save_as_scenario`/`spacesim/version.py`, `IP-1200`)*, all remaining Candidate Requirements (CR-01–CR-18, CR-21 — CR-19/CR-20 promoted, see master matrix), all Candidate NFRs (CNFR-01–CNFR-07) |
 
 *(FR-4610/FR-4710/FR-4720 closed 2026-07 via `IP-1060` v2.0; FR-7220 closed 2026-07 via `IP-1100` —
 both split from `IP-1060` v1.0 per Finding F-03 — see the master matrix rows above. **FR-4110

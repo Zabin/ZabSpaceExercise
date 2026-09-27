@@ -53,6 +53,9 @@ class SaveVignetteRequest(BaseModel):
     vignette_id: str
     title: str
     classification: Optional[str] = None
+    # IP-1200 (FR-5510) — save-as-scenario, additive; default preserves IP-1173's existing
+    # draft-save behavior for every existing caller.
+    as_scenario: bool = False
 
     @field_validator("vignette_id")
     @classmethod
@@ -327,8 +330,12 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """IP-1173 (FR-5110) — the only route that writes an authored vignette file. Works for
         any session (draft or normal); no partial file is ever written by any other path."""
         _require(sid); _reject_observer(cell)
-        path = api.save_vignette(sid, req.vignette_id, req.title,
-                                 classification=req.classification or "UNCLASSIFIED-TRAINING")
+        try:
+            path = api.save_vignette(sid, req.vignette_id, req.title,
+                                     classification=req.classification or "UNCLASSIFIED-TRAINING",
+                                     as_scenario=req.as_scenario)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
         return {"vignette_id": req.vignette_id, "path": path}
 
     @app.get("/api/sessions")

@@ -205,3 +205,48 @@ def test_ungrouped_satellites_not_counted_per_constellation():
     """5 ungrouped orbital assets are fine — no group means not constellation-capped."""
     vig = _make_vignette([_sat(i) for i in range(5)])
     build_world(vig)   # no exception
+
+
+# -- IP-1200 (FR-5510) — save-as-scenario's carried-forward Vignette fields ------------------
+
+def test_all_library_vignettes_have_no_save_as_scenario_fields():
+    """Additive/absent regression (NFR-2010) — every one of the 19 shipped vignettes predates
+    IP-1200, so none declares initial_tracks/simulator_version/initial_space_weather."""
+    for entry in list_vignettes():
+        vig = load_vignette(entry["id"])
+        assert vig.initial_tracks == []
+        assert vig.simulator_version is None
+
+
+def test_build_world_consumes_initial_tracks():
+    raw = {
+        "id": "test-initial-tracks", "title": "Initial tracks",
+        "start_epoch_utc": "2030-01-01T00:00:00Z",
+        "blue_forces": [], "red_forces": [], "neutral_forces": [], "sensors": [],
+        "initial_tracks": [{"object": "SAT-RED", "owner": "blue", "confidence": 0.8,
+                             "last_observation": 0}],
+    }
+    vig = Vignette.model_validate(raw)
+    world, _ = build_world(vig)
+    tr = world.track_for("blue", "SAT-RED")
+    assert tr is not None
+    assert tr.confidence == pytest.approx(0.8)
+
+
+def test_build_world_consumes_initial_space_weather():
+    raw = {
+        "id": "test-initial-space-weather", "title": "Initial space weather",
+        "start_epoch_utc": "2030-01-01T00:00:00Z",
+        "blue_forces": [], "red_forces": [], "neutral_forces": [], "sensors": [],
+        "initial_space_weather": {"severity": "severe"},
+    }
+    vig = Vignette.model_validate(raw)
+    world, _ = build_world(vig)
+    assert world.space_weather == {"severity": "severe"}
+
+
+def test_build_world_with_no_initial_tracks_or_space_weather_is_unchanged():
+    vig = load_vignette("leo-isr-denial")
+    world, _ = build_world(vig)
+    assert world.tracks == []
+    assert world.space_weather == {"severity": "none"}

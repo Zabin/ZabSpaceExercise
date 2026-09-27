@@ -97,6 +97,35 @@ def test_no_time_control_route_succeeds_against_a_draft_session():
     assert api._sessions[sid].sim.clock.now == initial_now
 
 
+# -- IP-1200 (FR-5510) — save-as-scenario ------------------------------------------------------
+
+def test_save_as_scenario_rejected_against_unstarted_session():
+    api = InProcessSession()
+    sid = api.create_draft_session(title="Never Started")
+    with pytest.raises(ValueError, match="cannot save-as-scenario"):
+        api.save_vignette(sid, "test-save-as-scenario-unstarted", "Unstarted", as_scenario=True)
+
+
+def test_save_as_scenario_stamps_the_save_moment_as_new_start_epoch():
+    api = InProcessSession()
+    sid = api.load_vignette("leo-isr-denial", seed=1)
+    api.start(sid)
+    mgr = api._sessions[sid]
+    mgr.set_clock(False)  # pause the real-time clock so no further catch-up drift occurs
+    mgr.advance_to(mgr.sim.clock.now + 600_000_000)  # 10 minutes in
+    save_moment = mgr.sim.clock.now
+    vignette_id = "test-ip1200-save-as-scenario"
+    path = api.save_vignette(sid, vignette_id, "Save As Scenario Test", as_scenario=True)
+    try:
+        assert Path(path).exists()
+        vig = load_vignette(vignette_id)
+        from spacesim.engine import simtime
+        assert vig.start_epoch_utc == simtime.to_iso(save_moment)
+        assert vig.simulator_version
+    finally:
+        Path(path).unlink(missing_ok=True)
+
+
 def test_draft_session_evicted_by_existing_max_live_sessions_cap():
     api = InProcessSession()
     api.MAX_LIVE_SESSIONS = 2

@@ -12,18 +12,25 @@ from pathlib import Path
 
 import yaml
 
+from typing import Optional
+
 from spacesim.config import load_content_config
 from spacesim.content.vignette import Vignette, VignetteContext, _resolve_within_root, _validate_id
 from spacesim.engine import simtime
 from spacesim.engine.world import WorldState
+from spacesim.version import simulator_version
 
 
 def export_vignette(
     world: WorldState, ctx: VignetteContext, vignette_id: str, title: str,
-    classification: str = "UNCLASSIFIED-TRAINING",
+    classification: str = "UNCLASSIFIED-TRAINING", start_epoch: Optional[int] = None,
 ) -> Vignette:
     """Build a ``Vignette`` model from a draft session's current state. Does not write to disk
-    — see ``save_vignette`` for that."""
+    — see ``save_vignette`` for that.
+
+    IP-1200 (FR-5510): ``start_epoch``, when given, becomes the resulting vignette's declared
+    start (a save-as-scenario call passes the save moment); omitted, this reproduces IP-1173's
+    exact prior behavior (``ctx.start_epoch``, the *original* vignette's start)."""
     _validate_id(vignette_id)
 
     blue_forces: list[dict] = []
@@ -39,19 +46,22 @@ def export_vignette(
         id=vignette_id,
         title=title,
         classification=classification,
-        start_epoch_utc=simtime.to_iso(ctx.start_epoch),
+        start_epoch_utc=simtime.to_iso(start_epoch if start_epoch is not None else ctx.start_epoch),
         blue_forces=blue_forces,
         red_forces=red_forces,
         neutral_forces=neutral_forces,
         sensors=sensors,
         roe=dict(ctx.roe),
         objectives=dict(ctx.objectives),
+        initial_tracks=[t.model_dump() for t in world.tracks],
+        simulator_version=simulator_version(),
+        initial_space_weather=dict(world.space_weather) if world.space_weather else None,
     )
 
 
 def save_vignette(
     world: WorldState, ctx: VignetteContext, vignette_id: str, title: str,
-    classification: str = "UNCLASSIFIED-TRAINING",
+    classification: str = "UNCLASSIFIED-TRAINING", start_epoch: Optional[int] = None,
 ) -> str:
     """Build a ``Vignette`` from the current draft state and write it to the configured
     ``user_save_dir`` (IP-1180, FR-5420) as ``{vignette_id}.yaml`` — the only code path that
@@ -65,7 +75,8 @@ def save_vignette(
     Issues): this overwrites an existing file of the same id without confirmation, the same way
     a hand-edited YAML file would. A "confirm overwrite" UX belongs to IP-1174's Creator UI.
     """
-    vignette = export_vignette(world, ctx, vignette_id, title, classification=classification)
+    vignette = export_vignette(world, ctx, vignette_id, title, classification=classification,
+                                start_epoch=start_epoch)
     user_save_dir = load_content_config().user_save_dir
     if not user_save_dir:
         raise ValueError(

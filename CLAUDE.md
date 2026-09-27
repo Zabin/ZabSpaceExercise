@@ -302,6 +302,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `{blue: {kinetic_authorized, cyber_authorized}, red: {...}}`; absent for every vignette shipped
   before this package, in which case `build_world()` mirrors the legacy flat
   `red_kinetic_authorized`/`cyber_authorized` parameters to both cells.
+  `Vignette.initial_tracks`/`simulator_version`/`initial_space_weather` (IP-1200, FR-5510) —
+  save-as-scenario's carried-forward mid-exercise state; absent/empty for every vignette shipped
+  before this package, in which case `build_world()`'s consumption of them is a no-op.
   `list_vignettes()`/`load_vignette()` (IP-1180, FR-5410) — enumerate/search zero or more
   configured external directories alongside `VIGNETTE_DIR`, each entry tagged `origin`
   (`"built-in"` or the external directory's basename); a same-id collision resolves built-in-first,
@@ -313,7 +316,14 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `VignetteContext` into a `Vignette` model and write it to a configured `user_save_dir`
   (IP-1180, FR-5420 — retargeted from `VIGNETTE_DIR`; raises if unconfigured) — the mirror image of
   `vignette.py`'s `load_vignette()`/`build_world()`, and the only code path that writes an
-  authored vignette file.
+  authored vignette file. **IP-1200 (FR-5510):** both functions gain an optional
+  `start_epoch: Optional[int] = None` (used in place of `ctx.start_epoch` when given — the
+  save-as-scenario call passes the save moment; omitted, reproduces the prior behavior exactly),
+  and `export_vignette()` now carries forward `world.tracks`/`world.space_weather`/
+  `spacesim.version.simulator_version()` into the new `Vignette.initial_tracks`/
+  `initial_space_weather`/`simulator_version` fields, consumed by `build_world()` when present.
+- `spacesim/version.py` (IP-1200, FR-5510) — `simulator_version()`: the short git commit hash
+  when a working tree is available, else the package's own `spacesim.__version__` — never raises.
 - `spacesim/content/bulk_import.py` (IP-1190, FR-5220) — `parse_multi_tle()`/`parse_ccsds_omm()`
   (CCSDS OMM in KVN form only, XML out of scope): each parses a multi-object file into a common
   per-object dict shape; a file with zero recognizable blocks of its claimed shape is rejected
@@ -340,6 +350,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `forced_custody_loss` (`Track` mutation, cell-scoped), `scripted_manoeuvre` (the six existing
   `engine/maneuver.py` entry modes via `compute_maneuver()`/`apply_impulse()`, deliberately
   bypassing `AssetResources.delta_v_ms` per `ADR-0005`),
+  **IP-1200 (FR-5510):** `save_as_scenario()` — requires `self.started`, else calls
+  `vignette_export.save_vignette(..., start_epoch=self.sim.clock.now)`,
   `validate_order` dry-run, `next_contacts` fleet countdown, `begin_recovery`/`recovery_status`
   wiring `RecoverySystem` for the safe-mode recovery strip; **multiplayer:** server-authoritative
   lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /

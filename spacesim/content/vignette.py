@@ -128,6 +128,11 @@ class Vignette(BaseModel):
     # build_world() falls back to the legacy flat red_kinetic_authorized/cyber_authorized
     # parameters, replicated identically to both cells, when this field is absent.
     roe: Optional[dict] = None
+    # IP-1200 (FR-5510) — save-as-scenario's carried-forward mid-exercise state. All three
+    # absent/empty for every vignette shipped before this package (additive, NFR-2010).
+    initial_tracks: list[dict] = Field(default_factory=list)   # each entry a Track.model_dump()
+    simulator_version: Optional[str] = None
+    initial_space_weather: Optional[dict] = None   # the same plain dict shape as world.space_weather
 
 
 @dataclass
@@ -328,6 +333,13 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
         red_doctrine_profile=str(params.get("red_doctrine_profile", vignette.red_doctrine_profile)),
         ssn_networks=ssn_networks,
     )
+    # IP-1200 (FR-5510) — save-as-scenario's carried-forward state, consumed only when present
+    # (absent/empty for every pre-IP-1200 vignette, per NFR-2010).
+    if vignette.initial_tracks:
+        from spacesim.engine.custody import Track
+        world.tracks = [Track.model_validate(t) for t in vignette.initial_tracks]
+    if vignette.initial_space_weather:
+        world.space_weather = dict(vignette.initial_space_weather)
     return world, ctx
 
 

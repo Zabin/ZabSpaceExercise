@@ -440,6 +440,20 @@ class SessionManager:
             reports.append({"raw_id": raw_id, "asset_id": asset_id, "ok": ok, "reason": reason})
         return reports
 
+    def save_as_scenario(self, vignette_id: str, title: str,
+                          classification: str = "UNCLASSIFIED-TRAINING") -> str:
+        """IP-1200 (FR-5510) — save this session's current mid-exercise state (tracks, remaining
+        resources, asset health, space weather) as a new vignette whose declared start is the
+        save moment. Requires a started session (`SessionManager` has no "ended" lifecycle state
+        — only `self.started` — so this is the only precondition there is to check); a draft
+        (unstarted Creator) session already has its own dedicated save path (`save_vignette`
+        below), unaffected by this method."""
+        if not self.started:
+            raise ValueError("cannot save-as-scenario: session has not been started")
+        from spacesim.content.vignette_export import save_vignette
+        return save_vignette(self.world, self.ctx, vignette_id, title,
+                             classification=classification, start_epoch=self.sim.clock.now)
+
     # -- Vignette Creator UI surfaces (IP-1174) --------------------------------
     # One state, two views: every method below reads or mutates the same `self.world.assets`
     # dict the form UI and the JSON view both present — there is no second, cached
