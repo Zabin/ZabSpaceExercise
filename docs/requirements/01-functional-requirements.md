@@ -35,6 +35,13 @@
 > [`reviews/requirements-update-should-tier-batch.md`](../reviews/requirements-update-should-tier-batch.md).)
 > **ADR range now ADR-0001 through ADR-0035** (34 `Accepted`, 1 `Superseded` — `ADR-0029` by
 > `ADR-0033`).
+> further amended (`FR-7410`/`FR-7420` OEM/RIC tension, 2026-09-27; **one numbered FR leaf
+> added** — `FR-7430` under `FR-7400`'s existing parent, closing `docs/pipeline/backlog.md`
+> `BL-0136`, a `VR-1210` finding that CCSDS OEM has no native RIC-relative representation for
+> ephemeris data lines. Owner decision: OEM stays ECI-only; RIC stays in CSV and gains a new
+> companion export file, `FR-7430`. `FR-7410`/`FR-7420`'s own Description/Outputs/Acceptance
+> Criteria amended to match — no requirement's *behavioral intent* changed, only which file format
+> carries which frame.)
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -2415,11 +2422,12 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **ID:** FR-7410
 - **Title:** Export ground-truth state vectors for a time span in ECI and RIC, as CSV and CCSDS OEM
 - **Description:** The system shall export ground-truth state vectors (ephemerides) for one or more
-  assets over a specified simulated time span, in Earth-Centered Inertial (ECI) frame and in
-  Radial-Intrack-Crosstrack (RIC) frame relative to a chosen reference object, in both CSV and
-  CCSDS Orbit Ephemeris Message (OEM) format; this export shall be available only through the
-  existing no-cell, White-Cell-only ground-truth endpoints (`/godview`, `/eventlog`, `/save`,
-  `/aar*`, `/objectives` per `FR-6220`), never through a cell-scoped endpoint.
+  assets over a specified simulated time span, in Earth-Centered Inertial (ECI) frame, as CSV
+  (ECI and RIC columns) and CCSDS Orbit Ephemeris Message (OEM, ECI only — see Notes); RIC-relative
+  state vectors for a chosen reference object shall additionally be available via a companion
+  RIC-specific export file (`FR-7430`). This export shall be available only through the existing
+  no-cell, White-Cell-only ground-truth endpoints (`/godview`, `/eventlog`, `/save`, `/aar*`,
+  `/objectives` per `FR-6220`), never through a cell-scoped endpoint.
 - **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
   B3). Baseline god-view already returns current truth as JSON with no ephemeris/time-span export,
   and AAR export (`FR-7110`/`FR-10210`) covers the event log, not state vectors — no existing
@@ -2431,17 +2439,19 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Priority:** Must
 - **Inputs:** A time span, one or more asset identifiers, a reference-object identifier (for the
   RIC frame), and a requested format (CSV or CCSDS OEM).
-- **Outputs:** A file (CSV or CCSDS OEM) containing the requested assets' ground-truth state
-  vectors across the requested time span, in both ECI and RIC-relative-to-the-reference-object
-  form.
+- **Outputs:** A CSV file containing the requested assets' ground-truth state vectors across the
+  requested time span in both ECI and RIC-relative-to-the-reference-object form; a CCSDS OEM file
+  containing the same state vectors in ECI only (CCSDS OEM's native format); a companion
+  RIC-specific export file per `FR-7430` when RIC data is needed in a format other than CSV.
 - **Preconditions:** The requester holds the White Cell role (or Observer, where the no-cell
   endpoint's existing access rule already permits it).
 - **Postconditions:** No cell-scoped route exposes this truth export; the export is reachable only
   through the endpoints `FR-6220` already designates as ground-truth-exposing.
-- **Acceptance Criteria:** Given a time span and a reference object, the exported CSV and CCSDS OEM
-  files both contain state vectors matching the engine's own `WorldState`/`Propagator` truth at
-  each sampled time, correctly transformed into RIC relative to the chosen reference object; the
-  export endpoint is one of the existing no-cell endpoints, not a new cell-scoped one.
+- **Acceptance Criteria:** Given a time span and a reference object, the exported CSV file contains
+  state vectors matching the engine's own `WorldState`/`Propagator` truth at each sampled time in
+  both ECI and correctly-transformed RIC form; the exported CCSDS OEM file contains the same ECI
+  state vectors in conformant CCSDS OEM (KVN) format; the export endpoint is one of the existing
+  no-cell endpoints, not a new cell-scoped one.
 - **Verification Method:** Test
 - **Dependencies:** FR-6220, FR-1210
 - **Source Documents:** `docs/pipeline/backlog.md` `BL-0069` (external validation report, 26 Sep
@@ -2450,7 +2460,15 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   ECI↔ECEF frame machinery this export's ECI output reuses).
 - **Related ADRs:** ADR-0004, ADR-0015
 - **Related Interfaces:** INT-0014
-- **Related Requirements:** FR-6220, FR-7420
+- **Related Requirements:** FR-6220, FR-7420, FR-7430
+- **Notes:** *Amended 2026-09-27 (owner decision, closing `docs/pipeline/backlog.md` `BL-0136`,
+  a `VR-1210` finding): the original Acceptance Criteria required RIC-transformed state vectors in
+  **both** CSV and CCSDS OEM. `VR-1210` found this infeasible as written — CCSDS OEM has no native
+  RIC-relative representation for ephemeris data lines (only for covariance) — and reported the
+  tension rather than silently picking a convention. The project owner's direct decision: keep OEM
+  in its native ECI form, and satisfy the RIC-in-every-format intent with a new companion
+  RIC-specific file format (`FR-7430`) instead of stretching OEM to do something it cannot do. See
+  `FR-7430` for that companion format's own requirement.*
 
 #### FR-7420 — Cell-observed ephemeris export (ECI and RIC), CSV and CCSDS OEM
 
@@ -2459,9 +2477,9 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   war-respecting, in ECI and RIC, as CSV and CCSDS OEM
 - **Description:** The system shall export a requesting cell's own observed/estimated state
   vectors (as distinct from ground truth) for one or more tracked objects over a specified
-  simulated time span, in ECI and in RIC relative to a chosen reference object, in both CSV and
-  CCSDS OEM format, through a cell-scoped, fog-of-war-respecting endpoint that returns only that
-  cell's own belief state.
+  simulated time span, as CSV (ECI and RIC columns) and CCSDS OEM (ECI only — see `FR-7410`'s
+  Notes on the companion RIC file, `FR-7430`), through a cell-scoped, fog-of-war-respecting
+  endpoint that returns only that cell's own belief state.
 - **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
   B3), paired with `FR-7410`'s truth-side export. This leaf is **blocked on the per-cell estimated-
   element-set history model** requested in `docs/pipeline/backlog.md` `BL-0068` (item B2): the
@@ -2494,7 +2512,53 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   of truth, not yet an independent estimate).
 - **Related ADRs:** ADR-0004, ADR-0013
 - **Related Interfaces:** INT-0007
-- **Related Requirements:** FR-7410, FR-1510
+- **Related Requirements:** FR-7410, FR-1510, FR-7430
+- **Notes:** *Amended 2026-09-27 (owner decision, closing `BL-0136`) — same CSV/OEM split as
+  `FR-7410`'s Notes: OEM stays ECI-only (its native format); RIC data for the cell-observed variant
+  is available via CSV and via the companion `FR-7430` file, scoped to the requesting cell's own
+  belief state like every other output this requirement produces.*
+
+#### FR-7430 — Companion RIC-specific ephemeris export file
+
+- **ID:** FR-7430
+- **Title:** Export RIC-relative state vectors as a dedicated, non-OEM companion file
+- **Description:** The system shall support exporting RIC-relative state vectors (for either the
+  truth export, `FR-7410`, or the cell-observed export, `FR-7420`) as a dedicated companion file
+  format distinct from CCSDS OEM, for use in external tools that need machine-readable RIC data in
+  a format other than the CSV `FR-7410`/`FR-7420` already provide.
+- **Rationale:** Owner decision 2026-09-27, closing `docs/pipeline/backlog.md` `BL-0136`. `VR-1210`
+  found that CCSDS OEM has no native RIC-relative representation for ephemeris data lines (only for
+  covariance matrices), so `FR-7410`/`FR-7420`'s original "RIC in both CSV and OEM" Acceptance
+  Criteria could not be satisfied by a conformant OEM file. Rather than accept CSV-only RIC output,
+  the project owner chose to add this companion format so a non-CSV, machine-readable RIC export
+  remains available.
+- **Priority:** Should
+- **Inputs:** The same time span, asset/reference-object identifiers, and (for the cell-observed
+  variant) requesting-cell identity that `FR-7410`/`FR-7420` already take.
+- **Outputs:** A companion file containing RIC-relative state vectors for the requested span,
+  distinct from the CSV and CCSDS OEM files `FR-7410`/`FR-7420` already produce.
+- **Preconditions:** Same as whichever of `FR-7410`/`FR-7420` this export rides (truth: no-cell
+  White-Cell-only endpoint; cell-observed: the requesting cell holds a `Track` on each object).
+- **Postconditions:** The companion file's RIC values match the same RIC transform `FR-7410`/
+  `FR-7420`'s own CSV output already produces (`engine/maneuver.py::lvlh_frame`-based) — this is an
+  additional serialization of the same computed values, not a second, independently-computed RIC
+  transform.
+- **Acceptance Criteria:** Given a time span and reference object, the companion file's RIC values
+  match the corresponding CSV export's RIC columns exactly, for both the truth and cell-observed
+  variants.
+- **Verification Method:** Test
+- **Dependencies:** FR-7410, FR-7420
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0136` (owner decision, 2026-09-27);
+  [`VR-1210`](../implementation/verification/VR-1210-ephemeris-export.md) (the finding this
+  requirement closes).
+- **Related ADRs:** none directly — an additive export-format requirement, not a new mechanism.
+- **Related Interfaces:** INT-0014
+- **Related Requirements:** FR-7410, FR-7420
+- **Notes:** The exact companion file format (e.g. a simple RIC-only CSV variant, a small custom
+  JSON/YAML schema, or another standard format with a native relative-motion representation) is not
+  specified here — that is a `07-implementation-planning` design decision, consistent with this
+  skill's own rule against specifying implementation shape. `IP-1210`'s remediation package is
+  expected to make and document that choice.
 
 ---
 
