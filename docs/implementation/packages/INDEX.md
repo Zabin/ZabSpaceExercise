@@ -67,6 +67,7 @@ unauthorized FS.
 | [IP-1174](IP-1174-vignette-creator-ui-surfaces.md) | Vignette Creator UI Surfaces | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5120`-`FR-5160` | Forward design | 🔵 COMPLETE (implemented 2026-09-26; full suite 622 passed/3 skipped, both permanent gates green; awaiting `09-package-verification`) |
 | [IP-1061](IP-1061-inject-and-sizing-defect-remediation.md) | Inject Scheduling & Sizing-Cap Defect Remediation (`BL-0062`–`BL-0065`) | [FS-106](../../features/FS-106-white-cell-dashboard.md) §FR-4410 + NFR-1300 ([ADR-0019](../../architecture/adr/ADR-0019-sizing-guideline-not-engine-cap.md)) | Remediation (forward design) | 🔵 COMPLETE (implemented 2026-09-26; full suite 603 passed/3 skipped; awaiting `09-package-verification`) |
 | [IP-1180](IP-1180-external-vignette-directories.md) | External Vignette Directories & Safe Scenario Save Target (`BL-0082`, item B16) | [FS-118](../../features/FS-118-external-vignette-directories.md) `FR-5410`/`FR-5420`/`NFR-3700` | Forward design | ⚪ NOT STARTED (not authorized — MSTR-006 §3; specification-complete, no unmet dependency — `IP-1173` already `VERIFIED`) |
+| [IP-1062](IP-1062-condition-triggered-injects-and-new-effects.md) | Condition-Triggered Injects & New Inject Effect Types (`BL-0070`, item B4) | [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.1 `FR-4420`/`FR-4430` | Forward design | ⚪ NOT STARTED (not authorized — MSTR-006 §3; specification-complete, no dependency to satisfy) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1170
 through IP-1174 are new (2026-07-05)** — Tranche 3, the five packages planned against `FS-117`
@@ -142,9 +143,15 @@ across `content/vignette.py`/`content/vignette_export.py`/`config.py`) and resol
 `FS-118`'s four Open Questions as explicit design decisions (see the package's own "Design
 Decisions" section), the fourth by direct code reading. Its sole dependency, `IP-1173`, is already
 `VERIFIED`, so it is specification-complete and would flip to `READY` the moment MSTR-006 §3
-authorization is granted — not yet on record as of this writing. The remaining five Must-tier
-packages (`FS-106` v2.1's `FR-4420`/`FR-4430` slice, `FS-120`, `FS-119`, `FS-121`/`FS-103` v1.1) are
-queued for subsequent `07-implementation-planning` passes.
+authorization is granted — not yet on record as of this writing. **`IP-1062` is the second**,
+closing `FS-106` v2.1's `FR-4420`/`FR-4430` slice (`BL-0070`, item B4) — resolves `BL-0091`
+(scripted-manoeuvre entry-mode ambiguity: must resolve through `engine/maneuver.py`'s six existing
+entry modes) and `BL-0095` (deleted-target condition ⇒ never fires; scripted-manoeuvre bypasses the
+`delta_v_ms` gate per `ADR-0005`) as explicit Design Decisions, and surfaces one new Low finding of
+its own (the anomaly effect's "bus"/"telemetry" subsystem mapping is this package's own
+interpretation, not a literal requirements citation). Specification-complete, no dependency to
+satisfy, not yet authorized. The remaining three Must-tier packages (`FS-120`, `FS-119`,
+`FS-121`/`FS-103` v1.1) are queued for subsequent `07-implementation-planning` passes.
 
 **Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
 §3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in

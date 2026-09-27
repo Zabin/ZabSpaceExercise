@@ -231,8 +231,8 @@ Feature Specification (no cross-Feature split), in the priority order the pipeli
 recorded:
 
 ```
-FS-118 (FR-5410/FR-5420/NFR-3700)              ─► IP-1180   [this pass]
-FS-106 v2.1 (FR-4420/FR-4430 slice)             ─► IP-106x   [queued]
+FS-118 (FR-5410/FR-5420/NFR-3700)              ─► IP-1180   [done]
+FS-106 v2.1 (FR-4420/FR-4430 slice)             ─► IP-1062   [this pass]
 FS-120 (FR-5510)                                ─► IP-1200   [queued]
 FS-119 (FR-5220)                                ─► IP-1190   [queued]
 FS-121 + FS-103 v1.1 (FR-7410/FR-7420)          ─► IP-1210   [queued]
@@ -246,13 +246,25 @@ engine change, no UI-route-shape change. Splitting the load-side extension from 
 retargeting would double the verification cost (both share the same generalized traversal-guard
 helper) for no isolation benefit.
 
+**No-split rationale (IP-1062).** `FS-106` v2.1's two requirements (condition-triggered firing,
+four new effect types) share one seam — `session/manager.py`'s inject dispatch — and the four new
+effect types are naturally implemented as siblings in the same shared effect-application helper
+the condition-check path also calls. Splitting "the condition-evaluation mechanism" from "the new
+effect types" would leave the condition-trigger half with nothing to demonstrate (no effect type it
+could plausibly fire without at least one of the others already existing, and the eight pre-existing
+effect types already work with `time`-typed triggers, so a condition trigger firing an old effect
+type is a valid, cheap demonstration — but the two new-effect-type engine touches, `Sensor.health`
+and the `scripted_manoeuvre`/`forced_custody_loss` engine calls, are exactly the shared-helper
+additions the condition path also needs to dispatch through) — one coherent Definition of Done, one
+package.
+
 | Package | FS | Status | Authorization |
 |---|---|---|---|
 | [IP-1180](packages/IP-1180-external-vignette-directories.md) | FS-118 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
+| [IP-1062](packages/IP-1062-condition-triggered-injects-and-new-effects.md) | FS-106 v2.1 | ⚪ NOT STARTED | Not yet sought (MSTR-006 §3) |
 
-The remaining five packages (`FS-106` v2.1's `FR-4420`/`FR-4430` slice, `FS-120`, `FS-119`,
-`FS-121`/`FS-103` v1.1) are queued for subsequent `07-implementation-planning` passes, per the
-pipeline journal's recorded next step.
+The remaining three packages (`FS-120`, `FS-119`, `FS-121`/`FS-103` v1.1) are queued for subsequent
+`07-implementation-planning` passes, per the pipeline journal's recorded next step.
 
 ## Related
 
