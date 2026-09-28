@@ -10,6 +10,7 @@ own `Track.state_estimate`, never ground truth and never another cell's belief (
 from __future__ import annotations
 
 import io
+from datetime import datetime, timezone
 from typing import Optional
 
 import numpy as np
@@ -64,10 +65,25 @@ def to_ric(r_target: np.ndarray, v_target: np.ndarray,
     """Project the target's ECI state, relative to the reference object, onto the reference
     object's own R/T/N (RIC) basis at the same instant — reuses `engine.maneuver.lvlh_frame`
     directly, the same physical frame under different letter names (R=Radial, I=In-track≡
-    Transverse, C=Cross-track≡Normal)."""
+    Transverse, C=Cross-track≡Normal).
+
+    BL-0136/IP-1210 remediation (VR-1210 Finding H1): the RIC frame itself rotates with the
+    reference object, so the *true* RIC-relative velocity is the inertial relative velocity
+    minus the frame's own rotation term, ``omega x ric_r`` — projecting the raw inertial
+    relative velocity onto the RIC basis (the prior implementation) omits this term and reports
+    spurious relative motion for a co-orbital, RIC-stationary neighbour. The frame's angular
+    velocity vector is ``h_ref / |r_ref|^2`` along the reference orbit's normal (``n_hat``,
+    conserved specific angular momentum direction/rate for any two-body orbit); expressed in the
+    RIC basis this is exactly ``[0, 0, omega]`` since ``n_hat`` is the basis's own third row."""
     r_hat, t_hat, n_hat = lvlh_frame(r_ref, v_ref)
     basis = np.array([r_hat, t_hat, n_hat])
-    return basis @ (r_target - r_ref), basis @ (v_target - v_ref)
+    ric_r = basis @ (r_target - r_ref)
+    ric_v_inertial = basis @ (v_target - v_ref)
+    h_ref = np.cross(r_ref, v_ref)
+    omega = np.linalg.norm(h_ref) / np.dot(r_ref, r_ref)
+    omega_cross_ric_r = np.array([-omega * ric_r[1], omega * ric_r[0], 0.0])
+    ric_v = ric_v_inertial - omega_cross_ric_r
+    return ric_r, ric_v
 
 
 def truth_ephemeris(mgr, object_id: str, reference_id: str, t1: int, t2: int,
@@ -147,25 +163,68 @@ def write_csv(rows: list[dict]) -> str:
     return buf.getvalue()
 
 
+def _ccsds_epoch(micros: int) -> str:
+    """CCSDS ASCII time format for an OEM epoch — no UTC-offset suffix (implicit, per
+    ``TIME_SYSTEM = UTC``), unlike ``simtime.to_iso``'s ``+00:00``-suffixed output
+    (VR-1210 Finding M1)."""
+    return simtime.to_iso(micros).replace("+00:00", "")
+
+
 def write_oem(rows: list[dict], object_id: str) -> str:
     """The shared CCSDS OEM (Orbit Ephemeris Message) serializer, KVN form — ECI position/
-    velocity only (OEM has no native RIC-relative representation); position in km, velocity in
-    km/s, per the CCSDS OEM convention."""
+    velocity only (OEM has no native RIC-relative representation, per `FR-7430`'s companion
+    file); position in km, velocity in km/s, per the CCSDS OEM convention.
+
+    BL-0136/IP-1210 remediation (VR-1210 Finding M1) — the header now conforms to the CCSDS OEM
+    KVN structure: ``CREATION_DATE``/``ORIGINATOR`` precede the metadata block; ``META_START``/
+    ``META_STOP`` actually wrap ``OBJECT_NAME``/``OBJECT_ID``/``CENTER_NAME``/``REF_FRAME``/
+    ``TIME_SYSTEM``/``START_TIME``/``STOP_TIME`` instead of bracketing nothing; state-vector and
+    ``START_TIME``/``STOP_TIME`` epochs use the CCSDS ASCII time format (no ``+00:00`` suffix);
+    ``REF_FRAME`` is ``TEME`` — the engine's own documented approximation
+    (`engine/propagator.py`: "TEME treated as ECI at moderate fidelity"), not the more precise
+    ``EME2000`` frame the prior label implied."""
+    start = _ccsds_epoch(rows[0]["t"]) if rows else ""
+    stop = _ccsds_epoch(rows[-1]["t"]) if rows else ""
     lines = [
         "CCSDS_OEM_VERS = 2.0",
+        f"CREATION_DATE = {datetime.now(timezone.utc).isoformat().replace('+00:00', '')}",
+        "ORIGINATOR = spacesim",
+        "",
+        "META_START",
         f"OBJECT_NAME = {object_id}",
         f"OBJECT_ID = {object_id}",
         "CENTER_NAME = EARTH",
-        "REF_FRAME = EME2000",
+        "REF_FRAME = TEME",
         "TIME_SYSTEM = UTC",
-        "META_START",
+        f"START_TIME = {start}",
+        f"STOP_TIME = {stop}",
         "META_STOP",
+        "",
     ]
     for row in rows:
         r = [x / 1000.0 for x in row["eci_r"]]
         v = [x / 1000.0 for x in row["eci_v"]]
         lines.append(
-            f"{simtime.to_iso(row['t'])} {r[0]:.6f} {r[1]:.6f} {r[2]:.6f} "
+            f"{_ccsds_epoch(row['t'])} {r[0]:.6f} {r[1]:.6f} {r[2]:.6f} "
             f"{v[0]:.6f} {v[1]:.6f} {v[2]:.6f}"
         )
     return "\n".join(lines) + "\n"
+
+
+def write_ric_csv(rows: list[dict]) -> str:
+    """FR-7430 — the companion RIC-specific export file (CCSDS OEM has no native RIC/RSW-relative
+    data-line representation, only for covariance blocks; a dedicated non-OEM companion file is
+    the resolution the project owner selected for `BL-0136`'s FR-7410/OEM tension). A plain CSV,
+    RIC position/velocity only — the ECI-carrying `write_oem`'s companion, not a replacement for
+    it; `write_csv` above already carries both ECI and RIC for the CSV export path, so this
+    function exists specifically to pair with `write_oem`, which cannot."""
+    import csv
+
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow([
+        "t_iso", "ric_r_x_m", "ric_r_y_m", "ric_r_z_m", "ric_v_x_ms", "ric_v_y_ms", "ric_v_z_ms",
+    ])
+    for row in rows:
+        w.writerow([simtime.to_iso(row["t"]), *row["ric_r"], *row["ric_v"]])
+    return buf.getvalue()

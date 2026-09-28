@@ -533,3 +533,17 @@ def test_ephemeris_oem_format():
                       "t1": t0, "t2": t0, "interval_s": 1.0, "format": "oem"})
     assert r.status_code == 200
     assert "CCSDS_OEM_VERS" in r.text
+
+
+def test_ephemeris_ric_companion_format():
+    """FR-7430 — the companion RIC-specific export file, reachable via format=ric on both the
+    truth and cell-observed ephemeris routes (BL-0136's resolution of the FR-7410/OEM tension)."""
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0, "format": "ric"})
+    assert r.status_code == 200
+    assert "ric_r_x_m" in r.text
+    assert "eci_r_x_m" not in r.text

@@ -753,7 +753,13 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             rows = api.truth_ephemeris(sid, object_id, reference_id, t1, t2, interval_s=interval_s)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc))
-        return ephemeris.write_oem(rows, object_id) if format == "oem" else ephemeris.write_csv(rows)
+        if format == "oem":
+            return ephemeris.write_oem(rows, object_id)
+        if format == "ric":
+            # FR-7430 — the companion RIC-specific export, alongside "oem" (ECI-only, CCSDS-
+            # conformant) and the default "csv" (which already carries both ECI and RIC).
+            return ephemeris.write_ric_csv(rows)
+        return ephemeris.write_csv(rows)
 
     @app.get("/api/sessions/{sid}/ephemeris/{cell}", response_class=PlainTextResponse)
     def ephemeris_cell_observed(sid: str, cell: str, object_id: str, reference_id: str,
@@ -767,7 +773,11 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
                                                interval_s=interval_s)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc))
-        return ephemeris.write_oem(rows, object_id) if format == "oem" else ephemeris.write_csv(rows)
+        if format == "oem":
+            return ephemeris.write_oem(rows, object_id)
+        if format == "ric":
+            return ephemeris.write_ric_csv(rows)
+        return ephemeris.write_csv(rows)
 
     @app.get("/api/sessions/{sid}/save")
     def save(sid: str) -> dict:

@@ -5,6 +5,29 @@
 > **Status:** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
 > awaiting `09-package-verification` in a fresh session — this session implemented it and may not
 > verify its own work)*
+> **Remediation (2026-09-27/28, authorized by the project owner per MSTR-006 §3 — fix to true
+> RIC-frame velocity, not rename/document as inertial):** an independent fresh-session
+> verification pass ([VR-1210](../verification/VR-1210-ephemeris-export.md)) found `to_ric()`
+> returned the raw inertial relative velocity resolved onto the RIC basis, omitting the RIC
+> frame's own rotation term — a co-orbital, RIC-stationary neighbour (constant RIC separation)
+> reported a spurious −13.29 m/s radial velocity (Finding H1, High). **Fixed:** `to_ric()` now
+> subtracts `ω × ric_r`, with `ω = |h_ref| / |r_ref|²` along the reference orbit's normal (`n_hat`
+> — conserved specific-angular-momentum direction/rate for any two-body orbit), expressed in the
+> RIC basis as `[0, 0, ω]` since `n_hat` is exactly the basis's own third row. Also fixed (Finding
+> M1, Medium): `write_oem`'s KVN structure is now CCSDS-conformant — `CREATION_DATE`/`ORIGINATOR`
+> precede a `META_START`/`META_STOP` block that actually wraps the metadata fields (previously
+> empty, with the fields sitting outside it), epochs use the CCSDS ASCII time format (no
+> `+00:00` suffix), and `REF_FRAME` is now `TEME` (the engine's own documented approximation —
+> `engine/propagator.py`: "TEME treated as ECI at moderate fidelity" — not the more precise
+> `EME2000` the prior label implied). Resolves `BL-0136` (Finding M2, the OEM/RIC tension) per the
+> project owner's requirements-baseline amendment: new `FR-7430` requires a **companion
+> RIC-specific export file** — implemented as `write_ric_csv()` plus a new `format=ric` option on
+> both ephemeris HTTP routes, alongside the existing `format=csv` (ECI+RIC) and `format=oem`
+> (ECI-only, CCSDS-conformant, per `FR-7410`/`FR-7420`'s amended text). New/strengthened tests in
+> `test_ephemeris.py` (co-orbital-stationary + finite-difference cross-check for the velocity fix,
+> a structural OEM-conformance test, a `write_ric_csv` test) and `test_web.py` (the new `format=ric`
+> route). Full suite green (both permanent gates included). Re-verification is a fresh
+> `09-package-verification` pass, not yet run.
 > **Dependencies:** [FS-121](../../features/FS-121-ephemeris-export.md) v1.0
 > (`FR-7410`/`FR-7420`), [FS-103](../../features/FS-103-custody-management.md) v1.1 (confirmed
 > `Track.state_estimate` independence from truth), [ADS-1500](../../architecture/ADS-1500-per-cell-custody-estimated-state-and-export.md)
@@ -68,6 +91,7 @@ serializer and one shared time-span replay mechanism, per `ADS-1500`'s System Ar
 |---|---|---|
 | FR-7410 | Truth ephemeris export | A new no-cell function samples ground truth (`world.assets[X].orbit`) at each time T in the requested span via time-span replay, transforms to ECI directly and to RIC relative to the reference object's own ground-truth state, and serializes via the shared writer. Reachable only through an existing no-cell route/pattern (`FR-6220`). |
 | FR-7420 | Cell-observed ephemeris export | A new cell-scoped function samples the requesting cell's own `Track.state_estimate` for X at each T (empty result for a T with no Track, per `FS-121`'s own Postcondition), forward-propagates it to exactly T, resolves the RIC reference per the cell's-own-asset-vs.-tracked-object rule, and serializes via the same shared writer. |
+| FR-7430 | Companion RIC-specific ephemeris export file (**added 2026-09-27, owner amendment resolving `BL-0136`**) | `write_ric_csv(rows)` — a dedicated CSV carrying only `t`/`ric_r`/`ric_v`, exposed via a new `format=ric` option on both `/ephemeris/truth` and `/ephemeris/{cell}`, alongside the existing `format=csv` (ECI+RIC) and `format=oem` (ECI-only). Pairs specifically with `write_oem`, since CCSDS OEM has no native RIC-relative data-line representation and `write_csv` already carries both. |
 
 ## Architecture Components
 
@@ -135,13 +159,20 @@ the cell-observed variant's fog-of-war binding.
     a merely-tracked reference object.
   - `to_ric(r_target, v_target, r_ref, v_ref) -> tuple[np.ndarray, np.ndarray]`: calls
     `engine.maneuver.lvlh_frame(r_ref, v_ref)` to get the reference object's own R/T/N basis at T,
-    then projects `r_target - r_ref` (and `v_target - v_ref`) onto that basis — the RIC-relative
-    position/velocity.
-  - `write_csv(rows: list[dict]) -> str` / `write_oem(rows: list[dict], object_id: str) -> str`: the
-    shared serializer, parameterized only by the already-uniform row shape both export functions
-    produce (`{"t": int, "eci_r": [...], "eci_v": [...], "ric_r": [...], "ric_v": [...],
-    "uncertainty_km"?: float, "confidence"?: float}` — the last two present only for the
-    cell-observed variant, per `ADS-1500` Decision 4's "uncertainty as metadata" framing).
+    projects `r_target - r_ref` onto that basis for `ric_r`; for `ric_v` (**remediated 2026-09-27/28
+    per BL-0134**), projects `v_target - v_ref` onto the same basis and then subtracts the RIC
+    frame's own rotation term `ω × ric_r` (`ω = |h_ref|/|r_ref|²` along the basis's own third row) —
+    the true RIC-frame-relative velocity, not the raw inertial relative velocity resolved onto RIC
+    axes (which the prior implementation returned).
+  - `write_csv(rows: list[dict]) -> str` / `write_oem(rows: list[dict], object_id: str) -> str` /
+    `write_ric_csv(rows: list[dict]) -> str` (**new, `FR-7430`, added in the 2026-09-27/28
+    remediation**): `write_csv` carries both ECI and RIC (parameterized only by the already-uniform
+    row shape both export functions produce: `{"t": int, "eci_r": [...], "eci_v": [...],
+    "ric_r": [...], "ric_v": [...], "uncertainty_km"?: float, "confidence"?: float}` — the last two
+    present only for the cell-observed variant, per `ADS-1500` Decision 4's "uncertainty as
+    metadata" framing); `write_oem` carries ECI only, CCSDS-conformant KVN (OEM has no native
+    RIC-relative data-line representation); `write_ric_csv` is the companion RIC-only file `FR-7430`
+    requires, pairing with `write_oem` specifically (since `write_csv` already carries RIC).
 
 ## Files to Modify
 

@@ -78,6 +78,52 @@ def test_truth_ephemeris_eci_and_ric_correctness():
     assert np.allclose(row["ric_r"], expected_ric_r)
 
 
+# -- to_ric() velocity correctness (BL-0136/VR-1210 Finding H1 regression) -----------------------
+
+def test_to_ric_velocity_zero_for_co_orbital_ric_stationary_neighbour():
+    """Two satellites in the identical circular orbit, offset only in true anomaly, orbit at the
+    same angular rate — their RIC-frame separation is constant, so the *true* RIC-relative
+    velocity must be ~0. The prior (buggy) implementation, which omitted the frame-rotation term,
+    reported a spurious velocity here (VR-1210 measured -13.29 m/s radial for this exact case)."""
+    prop = ModeratePropagator()
+    from spacesim.engine.orbit import OrbitState
+    orbit_ref = OrbitState(a_m=_LEO_A, e=0.0, i_deg=51.6, raan_deg=0.0, argp_deg=0.0, ta_deg=0.0, epoch=0)
+    orbit_tgt = OrbitState(a_m=_LEO_A, e=0.0, i_deg=51.6, raan_deg=0.0, argp_deg=0.0, ta_deg=30.0, epoch=0)
+    r_ref, v_ref = prop.rv(orbit_ref, 0)
+    r_tgt, v_tgt = prop.rv(orbit_tgt, 0)
+    ric_r, ric_v = ephemeris.to_ric(r_tgt, v_tgt, r_ref, v_ref)
+    assert np.allclose(ric_v, 0.0, atol=1e-6)
+    assert np.linalg.norm(ric_r) > 1000.0  # sanity: the two satellites are genuinely separated
+
+
+def test_to_ric_velocity_matches_finite_difference_of_ric_position():
+    """Cross-check `to_ric`'s velocity against a finite-difference derivative of `ric_r` computed
+    at two nearby true anomalies for a non-co-orbital (different-period) pair, so the frame-
+    rotation term is exercised in the general (non-degenerate) case too."""
+    prop = ModeratePropagator()
+    from spacesim.engine.orbit import OrbitState
+    orbit_ref = OrbitState(a_m=_LEO_A, e=0.0, i_deg=51.6, raan_deg=0.0, argp_deg=0.0, ta_deg=0.0, epoch=0)
+    orbit_tgt = OrbitState(a_m=_LEO_A + 50e3, e=0.01, i_deg=52.0, raan_deg=2.0, argp_deg=10.0,
+                            ta_deg=15.0, epoch=0)
+    dt = 0.01  # seconds — small enough for a clean finite-difference estimate
+    t0 = 0
+    t1 = int(dt * 1_000_000)
+    r_ref0, v_ref0 = prop.rv(orbit_ref, t0)
+    r_tgt0, v_tgt0 = prop.rv(orbit_tgt, t0)
+    r_ref1, v_ref1 = prop.rv(orbit_ref, t1)
+    r_tgt1, v_tgt1 = prop.rv(orbit_tgt, t1)
+
+    ric_r0, ric_v0 = ephemeris.to_ric(r_tgt0, v_tgt0, r_ref0, v_ref0)
+    ric_r1, _ = ephemeris.to_ric(r_tgt1, v_tgt1, r_ref1, v_ref1)
+    finite_diff_v = (ric_r1 - ric_r0) / dt
+    # atol is sub-metre/s, not tight truncation-error tolerance: the reference orbit's own J2
+    # nodal precession slowly rotates the orbital plane itself (n_hat drifts ~1e-6 rad/s for this
+    # geometry), a real but separate, much smaller effect than the in-plane ω×ρ term this test
+    # targets — `to_ric`'s ω is derived from h/r² (in-plane rotation only), so a residual at this
+    # scale is expected and not a regression of the ω×ρ fix itself.
+    assert np.allclose(ric_v0, finite_diff_v, atol=0.5)
+
+
 def test_truth_ephemeris_wholly_out_of_range_raises():
     mgr = _two_sat_manager_with_track()
     lo, hi = ephemeris._valid_range(mgr)
@@ -181,3 +227,38 @@ def test_write_oem_round_trips_expected_fields():
     assert "OBJECT_NAME = SAT-RED" in oem_text
     assert "CCSDS_OEM_VERS" in oem_text
     assert "1.000000" in oem_text  # km conversion of 1000.0 m
+
+
+def test_write_oem_is_ccsds_conformant():
+    """BL-0136/VR-1210 Finding M1 remediation: META_START/META_STOP actually wrap the metadata
+    block, CREATION_DATE/ORIGINATOR/START_TIME/STOP_TIME are present, epochs carry no '+00:00'
+    suffix, and REF_FRAME names the engine's own documented approximation (TEME), not EME2000."""
+    rows = [
+        {"t": 0, "eci_r": [1000.0, 2000.0, 3000.0], "eci_v": [4000.0, 5000.0, 6000.0]},
+        {"t": 1_000_000, "eci_r": [1001.0, 2001.0, 3001.0], "eci_v": [4001.0, 5001.0, 6001.0]},
+    ]
+    oem_text = ephemeris.write_oem(rows, "SAT-RED")
+    lines = oem_text.splitlines()
+    start_i = lines.index("META_START")
+    stop_i = lines.index("META_STOP")
+    meta_block = "\n".join(lines[start_i:stop_i])
+    for key in ("OBJECT_NAME", "OBJECT_ID", "CENTER_NAME", "REF_FRAME", "TIME_SYSTEM",
+                "START_TIME", "STOP_TIME"):
+        assert key in meta_block
+    assert "CREATION_DATE" in oem_text
+    assert "ORIGINATOR" in oem_text
+    assert "REF_FRAME = TEME" in oem_text
+    assert "+00:00" not in oem_text
+
+
+def test_write_ric_csv_carries_only_ric_fields():
+    """FR-7430 — the companion RIC-specific export file, since CCSDS OEM has no native RIC-relative
+    data-line representation."""
+    rows = [{"t": 0, "eci_r": [1.0, 2.0, 3.0], "eci_v": [4.0, 5.0, 6.0],
+             "ric_r": [7.0, 8.0, 9.0], "ric_v": [10.0, 11.0, 12.0]}]
+    ric_text = ephemeris.write_ric_csv(rows)
+    lines = ric_text.strip().splitlines()
+    assert len(lines) == 2
+    assert "ric_r_x_m" in lines[0]
+    assert "eci_r_x_m" not in lines[0]
+    assert "7.0" in lines[1]
