@@ -58,13 +58,34 @@ def test_anomaly_bus_subsystem_sets_safe_mode_and_restore_clears_it():
     mgr._apply_inject_effects(mgr.world, [
         {"type": "anomaly", "target": "SAT-1", "subsystem": "bus", "cause": "test cause"},
     ], mgr.sim.rng)
-    assert mgr.world.assets["SAT-1"].bus_state.mode == "safe_mode"
+    bus = mgr.world.assets["SAT-1"].bus_state
+    assert bus.mode == "safe_mode"
+    # BL-0128 remediation: enter_safe_mode() must be used, not a bare `mode` assignment, so the
+    # full safe-mode state is consistent — otherwise begin_recovery refuses with "not_safed" and
+    # the asset is operator-unrecoverable.
+    assert bus.safe_mode.active is True
+    assert bus.safe_mode.cause == "test cause"
+    assert bus.safe_mode.entered_at == mgr.world.now
     assert any("test cause" in m["text"] for m in mgr.world.messages)
 
     mgr._apply_inject_effects(mgr.world, [
         {"type": "anomaly", "target": "SAT-1", "subsystem": "bus", "restore": True},
     ], mgr.sim.rng)
-    assert mgr.world.assets["SAT-1"].bus_state.mode == "nominal"
+    assert bus.mode == "nominal"
+    assert bus.safe_mode.active is False
+
+
+def test_anomaly_safed_asset_is_accepted_by_begin_recovery():
+    """BL-0128 remediation regression: an anomaly-safed asset must be recoverable through the
+    existing RecoverySystem loop (Design Decision 4's actual intent), not refused with
+    "not_safed"."""
+    mgr = _bare_manager()
+    mgr.world.assets["SAT-1"] = Asset(id="SAT-1", owner="blue", bus_state=BusState())
+    mgr._apply_inject_effects(mgr.world, [
+        {"type": "anomaly", "target": "SAT-1", "subsystem": "bus", "cause": "test cause"},
+    ], mgr.sim.rng)
+    result = mgr.begin_recovery("blue", "SAT-1", "")
+    assert result["reason"] != "not_safed"
 
 
 def test_anomaly_telemetry_subsystem_degrades_comms():

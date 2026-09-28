@@ -5,6 +5,19 @@
 > **Status:** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
 > awaiting `09-package-verification` in a fresh session — this session implemented it and may not
 > verify its own work)*
+> **Remediation (2026-09-27/28, authorized by the project owner per MSTR-006 §3):** an independent
+> fresh-session verification pass ([VR-1062](../verification/VR-1062-condition-triggered-injects-and-new-effects.md))
+> found the `anomaly` effect's `subsystem: "bus"` branch set `bus_state.mode = "safe_mode"`
+> directly instead of calling `engine/bus.py::enter_safe_mode()`, leaving `safe_mode.active`
+> `False` and `cause`/`entered_at` unset — `begin_recovery` refused with `not_safed` and the asset
+> was operator-unrecoverable; the `restore: true` path had the mirror defect (Finding H1, High).
+> Design Decision 4's own stated intent ("reusing the existing safe-mode/`RecoverySystem` recovery
+> loop") was therefore not actually realized. **Fixed:** both branches now call
+> `enter_safe_mode(bus, world.now, cause)`/`exit_safe_mode(bus)`. Added
+> `test_anomaly_safed_asset_is_accepted_by_begin_recovery` (`test_inject_effects_v2.py`) plus
+> stronger assertions on the existing bus-subsystem test (`safe_mode.active`/`cause`/`entered_at`).
+> Full suite green (both permanent gates included). This unblocks `IP-1260` once this package is
+> re-`VERIFIED`. Re-verification is a fresh `09-package-verification` pass, not yet run.
 > **Dependencies:** [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.1
 > (`FR-4420`/`FR-4430`), [IP-1061](IP-1061-inject-and-sizing-defect-remediation.md) (`COMPLETE`,
 > not a build dependency but the most recent prior touch of the same `_h_inject`/`_arm_schedule`
@@ -122,12 +135,15 @@ direct-mutation inject, still deterministic-event-loop-scheduled); no ICD edit n
    (`power`, `attitude`, `thermal`, `propulsion`, `cdh`, `comms`), no field literally named
    "telemetry." This package maps `subsystem: "telemetry"` → `bus_state.comms.status = "red"`
    (`comms` is the subsystem `command_uplink`/`telemetry_downlink` access windows key off, the
-   closest existing match to "telemetry"), and `subsystem: "bus"` → `bus_state.mode = "safe_mode"`
-   (a whole-bus anomaly, deliberately reusing the existing safe-mode/`RecoverySystem` recovery loop
-   for player-visible consequences rather than inventing a new health axis). **This mapping is this
-   package's own interpretation, not a literal requirements citation** — routed to
-   `04-requirements-engineering`/`06-feature-specification` as a new Low finding (see Risks) so a
-   future baseline touch can either confirm or override it.
+   closest existing match to "telemetry"), and `subsystem: "bus"` → `engine/bus.py::enter_safe_mode()`/
+   `exit_safe_mode()` (a whole-bus anomaly, reusing the existing safe-mode/`RecoverySystem` recovery
+   loop for player-visible consequences rather than inventing a new health axis — **remediated
+   2026-09-27/28 per `BL-0128`: the shipped code originally set `bus_state.mode` directly instead of
+   calling `enter_safe_mode()`/`exit_safe_mode()`, leaving `safe_mode.active` unset and
+   `begin_recovery` unable to accept the asset; fixed to call those functions so the full safe-mode
+   state is consistent**). **This subsystem mapping is this package's own interpretation, not a
+   literal requirements citation** — routed to `04-requirements-engineering`/`06-feature-specification`
+   as a new Low finding (see Risks) so a future baseline touch can either confirm or override it.
 
 ## Files to Modify
 
@@ -179,9 +195,10 @@ direct-mutation inject, still deterministic-event-loop-scheduled); no ICD edit n
 ## System Behaviour — the four new effect types
 
 - **`anomaly`** — `{"type": "anomaly", "target": <asset_id>, "subsystem": "bus"|"telemetry",
-  "cause": <str>, "restore"?: bool}`. Sets `bus_state.mode = "safe_mode"` (subsystem `"bus"`) or
-  `bus_state.comms.status = "red"` (subsystem `"telemetry"`) — see Design Decision 4 — or clears the
-  same field when `restore` is `true`. Appends a `world.messages` entry naming `eff["cause"]`
+  "cause": <str>, "restore"?: bool}`. Calls `enter_safe_mode(bus, world.now, cause)` (subsystem
+  `"bus"`) — or `exit_safe_mode(bus)` when `restore` is `true` — or sets/clears
+  `bus_state.comms.status = "red"`/`"green"` (subsystem `"telemetry"`) — see Design Decision 4.
+  Appends a `world.messages` entry naming `eff["cause"]`
   verbatim (mirrors the existing `gs_outage` message pattern, lines 740-742) — the event log's own
   copy of `eff["cause"]` (already logged as part of `payload["effects"]`) and this message both carry
   the controller-set value with no re-derivation, satisfying `FR-4430`'s Postcondition directly.

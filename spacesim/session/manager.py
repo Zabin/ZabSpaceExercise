@@ -16,6 +16,7 @@ from typing import Literal, Optional
 from spacesim.content.vignette import Vignette, build_world, evaluate_objectives
 from spacesim.engine import telemetry
 from spacesim.engine.access import AccessProvider, COMMAND_UPLINK, TELEMETRY_DOWNLINK
+from spacesim.engine.bus import enter_safe_mode, exit_safe_mode
 from spacesim.engine.busmodel import BusSystem
 from spacesim.engine.custody import Track
 from spacesim.engine.entities import Asset
@@ -895,11 +896,20 @@ class SessionManager:
                 # subsystem "bus" -> whole-bus safe mode (reuses the existing safe-mode/
                 # RecoverySystem recovery loop); subsystem "telemetry" -> comms degraded (the
                 # closest existing BusState field to "telemetry").
+                # BL-0128 remediation: the "bus" branch previously set `bus_state.mode` directly,
+                # leaving `safe_mode.active`/`cause`/`entered_at` unset — `begin_recovery` refused
+                # with `not_safed` and the asset was operator-unrecoverable. Routed through
+                # `engine/bus.py`'s `enter_safe_mode()`/`exit_safe_mode()` so the safe-mode state
+                # is fully consistent and the existing RecoverySystem loop actually applies.
                 asset = world.assets.get(eff["target"])
                 if asset is not None and asset.bus_state is not None:
                     restore = eff.get("restore") is True
                     if eff.get("subsystem") == "bus":
-                        asset.bus_state.mode = "nominal" if restore else "safe_mode"
+                        if restore:
+                            exit_safe_mode(asset.bus_state)
+                        else:
+                            cause = str(eff.get("cause", "anomaly"))
+                            enter_safe_mode(asset.bus_state, world.now, cause)
                     elif eff.get("subsystem") == "telemetry":
                         asset.bus_state.comms.status = "green" if restore else "red"
                     world.messages.append({"to": ["white", "blue", "red"],
