@@ -89,3 +89,59 @@ def test_maneuver_ledger_returns_rows_matching_eventlog_and_is_fog_scoped():
     # Fog: Red cannot read Blue's ledger; White can read any.
     assert mgr.maneuver_ledger("red", "ISR-EO-1") is None
     assert mgr.maneuver_ledger("white", "ISR-EO-1") == rows
+
+
+# ---- IP-1270 (FR-3430/FR-3440) — effect-authorization gating + live ROE via SessionManager -----
+
+def _gated_manager():
+    from spacesim.content.vignette import Vignette
+    raw = {
+        "id": "test-ip1270-gating", "title": "Gating test",
+        "start_epoch_utc": "2030-01-01T00:00:00Z",
+        "blue_forces": [
+            {"id": "INT", "kind": "interceptor", "location": {"lat_deg": 0.0, "lon_deg": 0.0},
+             "resources": {"ammo": 1}},
+        ],
+        "red_forces": [
+            {"id": "RSAT", "kind": "satellite",
+             "orbit": {"a_m": 6928137.0, "e": 0.0, "i_deg": 51.6, "raan_deg": 0.0, "argp_deg": 0.0, "ta_deg": 0.0}},
+        ],
+        "neutral_forces": [], "sensors": [],
+        "roe": {"blue": {"kinetic_authorized": True}, "red": {"kinetic_authorized": True}},
+        "effect_gating_rules": [{"action_type": "engage", "required_role": "white"}],
+    }
+    mgr = SessionManager(Vignette.model_validate(raw), seed=1)
+    mgr.start()
+    from spacesim.engine.custody import Track
+    mgr.world.tracks.append(Track(object="RSAT", owner="blue", confidence=1.0,
+                                  characterized=True, last_observation=mgr.world.now))
+    return mgr
+
+
+def test_session_decide_gated_order_role_gated():
+    mgr = _gated_manager()
+    ack = mgr.issue_order("blue", Order(cell="blue", actor="INT", action="engage", target="RSAT"))
+    assert ack.status == "pending_approval"
+    ok, reason = mgr.decide_gated_order("blue", ack.id, True)
+    assert not ok and reason == "not_controller"
+    ok, reason = mgr.decide_gated_order("white", ack.id, True)
+    assert ok, reason
+
+
+def test_session_issue_roe_change_role_gated():
+    mgr = _gated_manager()
+    ok, reason = mgr.issue_roe_change("blue", "blue", "kinetic_authorized", False)
+    assert not ok and reason == "not_controller"
+    ok, reason = mgr.issue_roe_change("white", "blue", "kinetic_authorized", False)
+    assert ok, reason
+
+
+def test_pending_gated_order_discarded_on_rewind():
+    """IP-1270 Design Decision 2 — a pending-approval order still awaiting a decision at rewind
+    is discarded, with no persisted cross-session pending state."""
+    mgr = _gated_manager()
+    ack = mgr.issue_order("blue", Order(cell="blue", actor="INT", action="engage", target="RSAT"))
+    assert ack.status == "pending_approval"
+    assert len(mgr.osys._pending) == 1
+    mgr.rewind_to(mgr.sim.clock.now)
+    assert len(mgr.osys._pending) == 0

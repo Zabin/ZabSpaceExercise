@@ -257,9 +257,20 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   default `""`) and, on success, mutates in the same dict `applied=True`/`remaining_delta_v_ms`
   (captured by the eventlog entry logged immediately after, same pattern as IP-1062's
   `condition_check`); a re-validation failure sets `applied=False` instead.
-  ROE (`engage`/`cyber`) is resolved per issuing cell (`self.roe[order.cell]`, IP-1172/FR-3420) — the
-  engine never branches on legacy-vs-explicit vignette shape, only on the always-cell-keyed dict
-  `content/vignette.py`'s `build_world()` produces. `scene_from_world()`'s sensor filter (IP-1062,
+  ROE (`engage`/`cyber`) is resolved per issuing cell against `_effective_roe(cell, order.issued_at)`
+  (IP-1172/FR-3420, IP-1270/FR-3440) — the vignette-declared static `_static_roe` overlaid with any
+  `roe_change` eventlog entries at or before the order's own issue time, a pure point-in-time
+  derivation (never `self.roe`, a "current value" convenience cache `_h_roe_change` also
+  maintains, mutated for any direct caller that wants the live value rather than a specific
+  instant's). `issue_roe_change(cell, target_cell, flag, value)` — White-Cell-only, logs a
+  `roe_change` entry. `gating_rules`/`_matching_gate` (IP-1270, FR-3430) — a vignette-declared
+  `{action_type?, reversibility_category?, required_role}` rule holds a matching order in a new
+  `pending_approval` state (`self._pending`) instead of scheduling it; `decide_gated_order(cell,
+  order_id, approve)` resumes/rejects it, role-gated against the rule's own `required_role`,
+  logging `effect_gate_request`/`effect_gate_decision` (with elapsed time) — discarded (not
+  replayed) on rewind/undo (`session/manager.py::_rebind`). The engine never branches on
+  legacy-vs-explicit vignette shape, only on the always-cell-keyed dict `content/vignette.py`'s
+  `build_world()` produces. `scene_from_world()`'s sensor filter (IP-1062,
   FR-4430) excludes a `health="degraded"` sensor (`sensor_outage` inject effect), mirroring the
   existing degraded-ground-station filter immediately above it. IP-1220 (FR-1640/FR-1660) —
   `_validate()`'s observe branch rejects a `requires_cue` sensor tasked against a target with no
@@ -320,6 +331,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `RoleRequirement`/`Vignette.roles_needed` (IP-1151, FR-4210) — optional, additive staffing
   requirements; absent for every vignette shipped before this package.
   `Vignette.coaching` is a list of `{at_sim_t?, cell, title, body}` notes (FW §11.D.17).
+  `Vignette.effect_gating_rules` (IP-1270, FR-3430) — additive, optional list of
+  `{action_type?, reversibility_category?, required_role}`; `build_world()` passes it through
+  unmodified into `VignetteContext.gating_rules`, absent (`[]`) for every vignette shipped before
+  this package.
   `Vignette.roe` (IP-1172, FR-3420/NFR-2010) — optional per-cell
   `{blue: {kinetic_authorized, cyber_authorized}, red: {...}}`; absent for every vignette shipped
   before this package, in which case `build_world()` mirrors the legacy flat
@@ -357,6 +372,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **Build / schedule inject** panel with editable JSON + Now/+seconds/absolute-UTC scheduler
   (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
+  **IP-1270 (FR-3430/FR-3440):** `decide_gated_order`/`issue_roe_change` — thin wrappers over
+  `OrderSystem`'s own methods; no additional state at this layer,
   **IP-1250 (FR-1320):** `maneuver_ledger(cell, asset_id)` — a derived, read-only per-asset
   manoeuvre ledger (time/delta-v cost/purpose tag/resulting remaining budget), filtered from
   `EventLog`'s `execute_maneuver` entries (`applied=True` only), fog-scoped like `get_telemetry`,
@@ -421,6 +438,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`;
   **IP-1250 (FR-1320):** `/maneuver_ledger/{cell}/{asset}` (+ `/export.csv`) — the per-asset
   manoeuvre ledger view/CSV export, fog-scoped identically to `/telemetry/{cell}/{asset}`;
+  **IP-1270 (FR-3430/FR-3440):** `/gate/decide` + `/roe/change` — role-gated (checked inside
+  `SessionManager`/`OrderSystem`) pending-order decision and live ROE-flag-change routes;
   **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
   route table at implementation time, not merely IP-1130's own enumerated list, per that package's
   own Risks note — plus `/observer/view` + `/observer/designation`) + `static/`

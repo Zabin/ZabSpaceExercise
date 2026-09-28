@@ -330,6 +330,16 @@ class InProcessSession:
             ok = mgr.cancel_order(cell, order_id)
         return Ack(ok=ok, reason="" if ok else "order not found / not cancellable")
 
+    def decide_gated_order(self, session: str, cell: str, order_id: str, approve: bool) -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.decide_gated_order(cell, order_id, approve)
+        return Ack(ok=ok, reason=reason)
+
+    def issue_roe_change(self, session: str, cell: str, target_cell: str, flag: str, value: bool) -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.issue_roe_change(cell, target_cell, flag, value)
+        return Ack(ok=ok, reason=reason)
+
     def windows_ahead(self, session: str, cell: str, asset: str):
         with self._locked_read(session) as mgr:
             return mgr.windows_ahead(cell, asset)

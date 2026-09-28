@@ -220,6 +220,10 @@ def test_characterize_via_ssn_unlocks_engage_gate():
                                          location=GeoPoint(lat_deg=0.0, lon_deg=0.0, alt_m=0.0))
     mgr.world.assets["BLUE-KIL"].resources.ammo = 1
     mgr.osys.roe.setdefault("blue", {})["kinetic_authorized"] = True  # IP-1172: cell-keyed
+    # IP-1270 (FR-3440) — _effective_roe's point-in-time baseline is the immutable _static_roe,
+    # not the mutable "current value" cache above; set both so this direct test-setup mutation
+    # (rather than issue_roe_change's own logged mechanism) still takes effect.
+    mgr.osys._static_roe.setdefault("blue", {})["kinetic_authorized"] = True
     mgr.sim._initial_state = mgr.world.model_dump()
     # Pre-check: engage refused for "no_weapons_quality_track".
     ack0 = mgr.validate_order("blue", Order(cell="blue", actor="BLUE-KIL", action="engage", target="TGT"))

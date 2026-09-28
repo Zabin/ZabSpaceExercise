@@ -136,6 +136,22 @@ class CancelRequest(BaseModel):
     order_id: str
 
 
+class GateDecisionRequest(BaseModel):
+    """IP-1270 (FR-3430) — cell is the caller's own seat (must match the gate's required_role)."""
+    cell: str
+    order_id: str
+    approve: bool
+
+
+class RoeChangeRequest(BaseModel):
+    """IP-1270 (FR-3440) — cell is the caller's own seat (must be "white"); target_cell is the
+    cell the ROE flag applies to."""
+    cell: str
+    target_cell: str
+    flag: str
+    value: bool
+
+
 class ManeuverComputeRequest(BaseModel):
     cell: str
     actor: str
@@ -597,6 +613,20 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def cancel_order(sid: str, req: CancelRequest) -> Ack:
         _require(sid); _reject_observer(req.cell)
         return api.cancel_order(sid, req.cell, req.order_id)
+
+    @app.post("/api/sessions/{sid}/gate/decide")
+    def decide_gated_order(sid: str, req: GateDecisionRequest) -> Ack:
+        """IP-1270 (FR-3430) — approve/deny a pending-approval order; role-gated inside
+        SessionManager/OrderSystem against the matched rule's own required_role."""
+        _require(sid); _reject_observer(req.cell)
+        return api.decide_gated_order(sid, req.cell, req.order_id, req.approve)
+
+    @app.post("/api/sessions/{sid}/roe/change")
+    def issue_roe_change(sid: str, req: RoeChangeRequest) -> Ack:
+        """IP-1270 (FR-3440) — a live, logged mid-session ROE-flag change; White-Cell-only
+        (checked inside SessionManager/OrderSystem)."""
+        _require(sid); _reject_observer(req.cell)
+        return api.issue_roe_change(sid, req.cell, req.target_cell, req.flag, req.value)
 
     @app.get("/api/sessions/{sid}/windows/{cell}/{asset}")
     def windows_ahead(sid: str, cell: str, asset: str) -> dict:

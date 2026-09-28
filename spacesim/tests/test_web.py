@@ -560,6 +560,29 @@ def test_ephemeris_oem_format():
     assert "CCSDS_OEM_VERS" in r.text
 
 
+def test_roe_change_route_is_white_cell_only():
+    """IP-1270 (FR-3440) — only White Cell may issue a live ROE change."""
+    c = _client()
+    sid = _new_session(c)
+    denied = c.post(f"/api/sessions/{sid}/roe/change", json={
+        "cell": "blue", "target_cell": "blue", "flag": "kinetic_authorized", "value": True})
+    assert denied.json()["ok"] is False and denied.json()["reason"] == "not_controller"
+
+    allowed = c.post(f"/api/sessions/{sid}/roe/change", json={
+        "cell": "white", "target_cell": "blue", "flag": "kinetic_authorized", "value": True})
+    assert allowed.json()["ok"] is True
+
+
+def test_gate_decide_route_rejects_unknown_pending_order():
+    """IP-1270 (FR-3430) — the decision route rejects a nonexistent/unmatched pending order id
+    (this session's loaded vignette declares no gating rules, so nothing is ever pending)."""
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/gate/decide", json={
+        "cell": "white", "order_id": "no-such-order", "approve": True})
+    assert r.json()["ok"] is False and r.json()["reason"] == "no_such_pending_order"
+
+
 def test_ephemeris_ric_companion_format():
     """FR-7430 — the companion RIC-specific export file, reachable via format=ric on both the
     truth and cell-observed ephemeris routes (BL-0136's resolution of the FR-7410/OEM tension)."""

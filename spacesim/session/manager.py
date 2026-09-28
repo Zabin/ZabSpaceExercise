@@ -54,7 +54,7 @@ class SessionManager:
         self.sim = Simulation(self.world, seed=seed)
         self.sim.register_handler("inject", self._h_inject)
         self.sim.register_handler("condition_check", self._h_condition_check)
-        self.osys = OrderSystem(self.sim, roe=dict(self.ctx.roe))
+        self.osys = OrderSystem(self.sim, roe=dict(self.ctx.roe), gating_rules=list(self.ctx.gating_rules))
         self.bus = BusSystem(self.sim)
         self.recovery = RecoverySystem(
             self.sim,
@@ -305,6 +305,9 @@ class SessionManager:
         self.world = self.sim.world
         self.osys.world = self.sim.world
         self.osys.orders.clear()           # queued events were dropped by the rewind
+        # IP-1270 (FR-3430, Design Decision 2) — a pending-approval order still awaiting a
+        # decision is discarded on rewind/undo, same as any other queued-not-yet-executed order.
+        self.osys._pending.clear()
         self.osys._sensor_bookings.clear()
         self.osys._order_sensor.clear()
         self.osys._pass_bookings.clear()
@@ -595,6 +598,15 @@ class SessionManager:
         if o is None or (cell != "white" and o.cell != cell):
             return False
         return self.osys.cancel(order_id)
+
+    def decide_gated_order(self, cell: str, order_id: str, approve: bool) -> tuple[bool, str]:
+        """IP-1270 (FR-3430) — approve/deny a pending-approval order; only the gate's own
+        required_role cell may decide."""
+        return self.osys.decide_gated_order(cell, order_id, approve)
+
+    def issue_roe_change(self, cell: str, target_cell: str, flag: str, value: bool) -> tuple[bool, str]:
+        """IP-1270 (FR-3440) — a controller-issued, live, logged mid-session ROE-flag change."""
+        return self.osys.issue_roe_change(cell, target_cell, flag, value)
 
     def windows_ahead(self, cell: str, asset_id: str, horizon_s: float = 6 * 3600, limit: int = 16):
         """Upcoming command-uplink + telemetry-downlink windows for an own satellite (pass timeline)."""
