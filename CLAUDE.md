@@ -232,9 +232,16 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/propagator.py` — `Propagator` seam: Kepler+J2 (fictional) / sgp4 (TLE).
 - `spacesim/engine/entities.py` — `Asset`/`AssetResources`, `GroundSite`, `Sensor`
   (`Sensor.health`, IP-1062/FR-4430 — additive `"nominal"|"degraded"`, the `sensor_outage`
-  inject effect's target field).
+  inject effect's target field). IP-1220 (FR-1610-FR-1660) — six additive, default-absent
+  sensor-modality fields: `beam_mode`, `exclusion_angle_deg`, `min_range_km`,
+  `altitude_band_affinity`, `requires_cue`, `host_asset_id`.
 - `spacesim/engine/access.py` — `AccessProvider` seam: all six channels + window caching; unknown
   endpoint ids (e.g. a command planned `via` a station not in the force) degrade to no-access, not a crash.
+  IP-1220 (FR-1620/FR-1630/FR-1660) — `_observation_predicate`'s ground-optical branch gains a
+  solar-exclusion-angle reject after its lighting check; the space-based branch gains a
+  min-range-floor reject; `_sensor_orbit()` substitutes a `host_asset_id`-hosted sensor's position
+  from its host Asset's current orbit; `_sensor_id_for_actor()` resolves either a sensor's own id
+  or its host_asset_id to the same sensor for `SENSOR_OBSERVATION` queries.
 - `spacesim/engine/custody.py` — `Track` (on-demand confidence decay) + weapons-quality gate.
 - `spacesim/engine/effects.py` — `EffectInstance`/`EffectResolver` seam (5 D's), `is_link_denied`.
 - `spacesim/engine/orders.py` — `Order` + `OrderSystem` (validate → window → execute), cyber
@@ -246,14 +253,20 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   engine never branches on legacy-vs-explicit vignette shape, only on the always-cell-keyed dict
   `content/vignette.py`'s `build_world()` produces. `scene_from_world()`'s sensor filter (IP-1062,
   FR-4430) excludes a `health="degraded"` sensor (`sensor_outage` inject effect), mirroring the
-  existing degraded-ground-station filter immediately above it.
+  existing degraded-ground-station filter immediately above it. IP-1220 (FR-1640/FR-1660) —
+  `_validate()`'s observe branch rejects a `requires_cue` sensor tasked against a target with no
+  existing `Track` (`world.track_for`); `_resolve_sensor_id()`/`_candidate_sensors()` accept either
+  a sensor's own id or its `host_asset_id` as the order's `actor`.
 - `spacesim/engine/recovery.py` — `RecoverySystem`: multi-pass safe-mode recovery + re-safe-on-persistence.
 - `spacesim/engine/ssn.py` — mock Space Surveillance Network (per `docs/build-spec/08-ssn.md` §17): per-cell
   `SSNNetwork`s instantiated from a dispersion preset (`sparse`/`regional`/`global`/`proliferated`),
   hybrid-turnaround request resolution (earliest viable window inside the priority SLA + processing
   delay; coalition vs. national affiliation), and two deterministic handlers (`ssn_collect` /
   `ssn_deliver`) that stage on `world.ssn_staged` and deliver into the requester's `TrackCatalog`.
-  Replay-safe; cancel-before-collect tag-skips both events.
+  Replay-safe; cancel-before-collect tag-skips both events. `passive_rf_fix()` (IP-1220, FR-1650) —
+  a passive-RF multilateration fix reusing `SSNNetwork`'s member-list shape, gated on the target's
+  existing `bus_state.comms.status` (not a new field) and ≥3 (2D)/≥4 (3D) member receivers with
+  simultaneous `SENSOR_OBSERVATION` access.
 - `spacesim/engine/telemetry.py` — read-time seeded subsystem telemetry (graphs/logs) + attack
   signatures (jam→RX power, cyber→FSW errors, DE→SNR, power sag, kinetic→loss-of-signal). Pure,
   never mutates state/RNG (like `scene.py`). `sample/series(..., nominal=True)` drop the attack term
@@ -275,8 +288,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/maneuver.py` — pure compute for six manoeuvre entry modes
   (eci / lvlh / finite_burn / target_coe / hohmann / plane_change).
 - `spacesim/engine/isr.py` — ISR beam-mode database (EO/SAR/SDA/weather/mw — the last two added
-  by IP-1170, closing `BL-0053`), `effective_gain()`, `soc_drain()`, footprint polygon +
-  ground-heading helpers.
+  by IP-1170, closing `BL-0053`; `ground_radar` fence/dish variants added by IP-1220, FR-1610),
+  `effective_gain()` (IP-1220, FR-1630 — optional `target_regime`/`band_affinity` degrade gain on
+  a mismatch), `soc_drain()`, footprint polygon + ground-heading helpers.
 - `spacesim/engine/jam.py` — jam modulation database (barrage/spot/sweep/deceptive),
   `effective_radius_km()`, `effective_success_prob()`, footprint polygon (FW §11.A.1).
 - `spacesim/engine/engage.py` — kinetic-engagement math (closing geometry, salvo Pₖ,

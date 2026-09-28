@@ -320,11 +320,24 @@ class OrderSystem:
 
     def _candidate_sensors(self, order: Order) -> list[str]:
         if order.actor and order.actor != "auto":
-            return [order.actor]
+            # IP-1220 (FR-1660) — an observe order may name either the sensor's own id or its
+            # host_asset_id; resolve the latter to the actual sensor id so both identifiers
+            # produce an identical result.
+            return [self._resolve_sensor_id(order.actor) or order.actor]
         return [sid for sid, s in self.world.sensors.items() if s.owner == order.cell]
 
     def _contended(self, sid: str, start: int, end: int) -> bool:
         return any(not (end <= b0 or start >= b1) for (b0, b1) in self._sensor_bookings.get(sid, []))
+
+    def _resolve_sensor_id(self, actor: str) -> Optional[str]:
+        """IP-1220 (FR-1660) — resolve either a sensor's own id or its host_asset_id to the
+        actual sensor id, so an observe order naming either identifier is treated identically."""
+        if actor in self.world.sensors:
+            return actor
+        for sid, s in self.world.sensors.items():
+            if s.host_asset_id == actor:
+                return sid
+        return None
 
     # -- validation ------------------------------------------------------------
     def _validate(self, order: Order) -> tuple[bool, str]:
@@ -334,11 +347,16 @@ class OrderSystem:
         if order.action == "observe":
             if order.actor == "auto":
                 return True, ""  # sensor chosen at planning time
-            sensor = self.world.sensors.get(order.actor)
+            sid = self._resolve_sensor_id(order.actor)
+            sensor = self.world.sensors.get(sid) if sid else None
             if sensor is None:
                 return False, "no_such_sensor"
             if sensor.owner != order.cell:
                 return False, "not_owner"
+            # IP-1220 (FR-1640) — a cue-dependent sensor may only be tasked against a target the
+            # cell already holds a Track on.
+            if sensor.requires_cue and self.world.track_for(order.cell, order.target) is None:
+                return False, "requires_cue"
             return True, ""
 
         actor = self.world.assets.get(order.actor)
@@ -544,7 +562,18 @@ class OrderSystem:
             # through isr.effective_gain.
             requested_gain = float(p.get("gain", 1.0))
             base_gain = max(0.0, min(1.0, requested_gain))
-            gain = _eg(base_gain, look_angle_deg, bp)
+            # IP-1220 (FR-1630) — a space-based actor_sensor's altitude_band_affinity degrades
+            # gain when the target's regime doesn't match; additive, None/None reproduces the
+            # pre-package call exactly.
+            target_regime = None
+            band_affinity = getattr(actor_sensor, "altitude_band_affinity", None) if actor_sensor else None
+            if band_affinity is not None:
+                target_orbit = self.world.assets.get(order.target, None)
+                target_orbit = target_orbit.orbit if target_orbit is not None else None
+                if target_orbit is not None:
+                    from spacesim.engine.orbit import classify_regime
+                    target_regime = classify_regime(target_orbit.a_m, target_orbit.e, target_orbit.i_deg)
+            gain = _eg(base_gain, look_angle_deg, bp, target_regime=target_regime, band_affinity=band_affinity)
 
             # Compute footprint polygon from the actor's current orbit position + heading.
             footprint: Optional[list] = None

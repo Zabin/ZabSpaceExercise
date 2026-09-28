@@ -235,6 +235,47 @@ def test_observe_order_resets_custody_at_the_collection_window():
     assert tr.characterized and tr.current_confidence(world.now) > 0.9  # custody restored
 
 
+def test_cue_dependent_sensor_rejected_without_existing_track():
+    """IP-1220 (FR-1640) — a requires_cue sensor's tasking is rejected against a target the
+    tasking cell has no existing Track on."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["TGT"] = Asset(id="TGT", owner="red", kind="satellite", orbit=sat)
+    world.sensors["RDR"] = Sensor(id="RDR", owner="blue", kind="ground_radar",
+                                  location=_subpoint(sat, 0), requires_cue=True)
+    sim, osys = _sim_with(world)
+    order = osys.issue(Order(cell="blue", actor="RDR", action="observe", target="TGT",
+                             params={"intent": "track"}))
+    assert order.status == "rejected"
+    assert order.fail_reason == "requires_cue"
+
+
+def test_cue_dependent_sensor_accepted_with_existing_track():
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["TGT"] = Asset(id="TGT", owner="red", kind="satellite", orbit=sat)
+    world.sensors["RDR"] = Sensor(id="RDR", owner="blue", kind="ground_radar",
+                                  location=_subpoint(sat, 0), requires_cue=True)
+    world.tracks.append(Track(object="TGT", owner="blue", last_observation=0, confidence=0.5))
+    sim, osys = _sim_with(world)
+    order = osys.issue(Order(cell="blue", actor="RDR", action="observe", target="TGT",
+                             params={"intent": "track"}))
+    assert order.status == "queued"
+
+
+def test_cue_dependent_dry_run_also_rejects():
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["TGT"] = Asset(id="TGT", owner="red", kind="satellite", orbit=sat)
+    world.sensors["RDR"] = Sensor(id="RDR", owner="blue", kind="ground_radar",
+                                  location=_subpoint(sat, 0), requires_cue=True)
+    sim, osys = _sim_with(world)
+    order = osys.dry_run(Order(cell="blue", actor="RDR", action="observe", target="TGT",
+                               params={"intent": "track"}))
+    assert order.status == "rejected"
+    assert order.fail_reason == "requires_cue"
+
+
 def test_maneuver_consumes_delta_v_and_changes_orbit():
     sat = _leo()
     world = WorldState(now=0)
