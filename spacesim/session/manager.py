@@ -462,12 +462,18 @@ class SessionManager:
     def add_ground_asset(self, asset_id: str, lat_deg: float, lon_deg: float,
                          owner: str = "blue", kind: str = "ground_station") -> tuple[bool, str]:
         """White-Cell force edit: add a ground asset by lat/long (FR-5140's lat/long entry path,
-        alongside `add_tle`'s orbital path)."""
+        alongside `add_tle`'s orbital path). BL-0124 remediation: validates via `Asset` the same
+        way `creator_set_state` does, so a malformed `owner`/`kind` or out-of-range lat/long
+        rejects with `Ack(ok=False, ...)` instead of an unhandled 500."""
         if self.started:
             return False, "cannot edit force after start"
         from spacesim.engine.geometry import GeoPoint
-        self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind,
-                                            location=GeoPoint(lat_deg=lat_deg, lon_deg=lon_deg))
+        try:
+            asset = Asset(id=asset_id, owner=owner, kind=kind,
+                          location=GeoPoint(lat_deg=lat_deg, lon_deg=lon_deg))
+        except Exception as exc:
+            return False, f"invalid ground asset: {exc}"
+        self.world.assets[asset_id] = asset
         self.sim._initial_state = self.world.model_dump()
         return True, ""
 

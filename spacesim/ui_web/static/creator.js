@@ -157,8 +157,14 @@ window.Creator = (function () {
       }).join("") + `</tbody></table>`;
     el.querySelectorAll("tr[data-seat]").forEach((row) => {
       row.querySelector(".m-assign").onclick = async () => {
+        // BL-0123 remediation: `RoleAssignmentRequest.cell` is the *caller's* own seat (must be
+        // "white") — `role_assignments` itself carries no per-cell partitioning at all, so this
+        // must never be `row.dataset.cell` (the assigned seat's own cell prefix, e.g. "blue"),
+        // which would make assigning a non-White seat's role fail the White-Cell-only check.
+        // The Vignette Creator is a White-Cell-only tool (see module banner above), so the caller
+        // is always White here.
         await api.post(`/api/sessions/${sid}/roles/assign`, {
-          cell: row.dataset.cell, seat: row.dataset.seat,
+          cell: "white", seat: row.dataset.seat,
           asset_or_constellation: row.querySelector(".m-asset").value,
           role: row.querySelector(".m-role").value,
         });

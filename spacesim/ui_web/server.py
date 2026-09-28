@@ -207,17 +207,36 @@ class SSNCancelBody(BaseModel):
 
 
 class GroundAssetRequest(BaseModel):
-    """IP-1174 (FR-5140) — lat/long asset entry, the ground-based sibling of ``TleRequest``."""
+    """IP-1174 (FR-5140) — lat/long asset entry, the ground-based sibling of ``TleRequest``.
+    BL-0125 remediation: ``owner`` shares ``Asset``'s own vocabulary (blue/red/neutral) instead of
+    an unconstrained ``str``, so a malformed owner rejects at the request-schema level (422)
+    rather than reaching ``Asset(...)`` unvalidated."""
     id: str
     lat_deg: float
     lon_deg: float
-    owner: str = "blue"
+    owner: Literal["blue", "red", "neutral"] = "blue"
     kind: str = "ground_station"
 
     @field_validator("id")
     @classmethod
     def _id_charset(cls, v: str) -> str:
         return _validate_id(v, field="GroundAssetRequest.id")
+
+    @field_validator("lat_deg")
+    @classmethod
+    def _lat_range(cls, v: float) -> float:
+        """BL-0124 remediation — reject an out-of-range latitude (e.g. 999) at the request
+        schema level instead of silently storing it."""
+        if not -90.0 <= v <= 90.0:
+            raise ValueError(f"lat_deg must be in [-90, 90], got {v}")
+        return v
+
+    @field_validator("lon_deg")
+    @classmethod
+    def _lon_range(cls, v: float) -> float:
+        if not -180.0 <= v <= 180.0:
+            raise ValueError(f"lon_deg must be in [-180, 180], got {v}")
+        return v
 
 
 class CreatorStateRequest(BaseModel):
@@ -231,7 +250,10 @@ class CreatorAssetPatchRequest(BaseModel):
 
 
 class SeatDeclarationRequest(BaseModel):
-    """IP-1174 (FR-5160) — seat-count declaration, one cell at a time."""
+    """IP-1174 (FR-5160) — seat-count declaration, one cell at a time. ``cell`` here is the
+    *target* cell the seats are declared for (white/blue/red) — the caller's own identity is
+    carried separately, as the query-param ``cell`` every other mutating route already uses
+    (see ``declare_seats`` below; this remediation closes BL-0123)."""
     cell: str
     count: int
 
@@ -459,13 +481,16 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         return api.creator_scene(sid)
 
     @app.post("/api/sessions/{sid}/creator/seats")
-    def declare_seats(sid: str, req: SeatDeclarationRequest) -> dict:
-        """FR-5160 — seat-count declaration; White-Cell-only, mirroring ``roles/assign``'s own
-        cell-must-be-white check (this check already excludes an Observer-seated caller the same
-        way it excludes Blue/Red, so no separate ``_reject_observer`` call is needed — same
-        reasoning as that route's own comment)."""
+    def declare_seats(sid: str, req: SeatDeclarationRequest, cell: Optional[str] = None) -> dict:
+        """FR-5160 — seat-count declaration; White-Cell-only. BL-0123 remediation: unlike
+        ``roles/assign`` (which is not cell-partitioned at all — ``cell`` there is purely caller
+        identity), ``declare_seats`` genuinely needs a distinct *target* cell (white/blue/red),
+        carried in ``req.cell``. The caller's own identity is the query-param ``cell``, the same
+        convention every other mutating route in this file already uses (``creator_set_state``,
+        ``creator_edit_asset``, etc.) — only a White-Cell caller may declare seats for *any*
+        target cell, including White's own."""
         _require(sid)
-        if req.cell != "white":
+        if cell != "white":
             raise HTTPException(status_code=403, detail="only White Cell may declare seats")
         return api.declare_seats(sid, req.cell, req.count)
 

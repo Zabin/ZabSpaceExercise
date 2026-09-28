@@ -183,18 +183,33 @@ def test_asset_delete_removed_from_list_and_edit_then_fails():
 def test_seat_declaration_generates_seat_ids():
     c = _client()
     sid = _draft(c)
-    r = c.post(f"/api/sessions/{sid}/creator/seats", json={"cell": "white", "count": 3})
+    r = c.post(f"/api/sessions/{sid}/creator/seats?cell=white", json={"cell": "white", "count": 3})
     assert r.status_code == 200
     assert r.json()["seats"] == ["white-1", "white-2", "white-3"]
     read = c.get(f"/api/sessions/{sid}/creator/seats").json()
     assert read["white"] == ["white-1", "white-2", "white-3"]
 
 
-def test_seat_declaration_rejects_non_white_cell():
+def test_seat_declaration_rejects_non_white_caller():
+    """BL-0123 remediation: the White-Cell-only gate checks the *caller's own* seat (the ``cell``
+    query param every mutating route uses), not the target cell being declared for."""
     c = _client()
     sid = _draft(c)
-    r = c.post(f"/api/sessions/{sid}/creator/seats", json={"cell": "blue", "count": 2})
+    r = c.post(f"/api/sessions/{sid}/creator/seats?cell=blue", json={"cell": "blue", "count": 2})
     assert r.status_code == 403
+
+
+def test_seat_declaration_allows_white_caller_to_declare_non_white_target_cell():
+    """BL-0123 remediation: a White-Cell caller (query param) may declare seats for any target
+    cell (body field) — Blue and Red seats were previously unreachable because the route
+    conflated caller identity with the target cell."""
+    c = _client()
+    sid = _draft(c)
+    r = c.post(f"/api/sessions/{sid}/creator/seats?cell=white", json={"cell": "blue", "count": 2})
+    assert r.status_code == 200
+    assert r.json()["seats"] == ["blue-1", "blue-2"]
+    read = c.get(f"/api/sessions/{sid}/creator/seats").json()
+    assert read["blue"] == ["blue-1", "blue-2"]
 
 
 def test_matrix_assignment_produces_role_assignments_identical_to_direct_assign_role():
@@ -203,7 +218,7 @@ def test_matrix_assignment_produces_role_assignments_identical_to_direct_assign_
     c = _client()
     sid = _draft(c)
     c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-ROLE", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
-    c.post(f"/api/sessions/{sid}/creator/seats", json={"cell": "white", "count": 1})
+    c.post(f"/api/sessions/{sid}/creator/seats?cell=white", json={"cell": "white", "count": 1})
     r = c.post(f"/api/sessions/{sid}/roles/assign", json={
         "cell": "white", "seat": "white-1", "asset_or_constellation": "SAT-ROLE", "role": "both",
     })
