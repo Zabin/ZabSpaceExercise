@@ -482,6 +482,26 @@ class SessionManager:
         """FR-5120 — the JSON view's read: every asset, as the form UI would also see it."""
         return {"assets": [a.model_dump() for a in self.world.assets.values()]}
 
+    def maneuver_ledger(self, cell: str, asset_id: str) -> Optional[list[dict]]:
+        """IP-1250 (FR-1320) — a derived, read-only per-asset manoeuvre ledger: no new persisted
+        state, purely a filtered read of the existing `EventLog`. Excludes an execute-time
+        re-validation failure (`applied=False`) — no delta-v was actually spent, so it belongs in
+        `world.effect_log`'s failure record, not this ledger. Fog-scoped like `get_telemetry`:
+        ``None`` when the cell doesn't own the asset (White sees any asset)."""
+        if not self._owns(cell, asset_id):
+            return None
+        return [
+            {
+                "t": e.sim_time,
+                "cost": e.payload.get("cost", 0.0),
+                "purpose_tag": e.payload.get("purpose_tag", ""),
+                "remaining_delta_v_ms": e.payload.get("remaining_delta_v_ms"),
+            }
+            for e in self.sim.eventlog.entries
+            if e.kind == "execute_maneuver" and e.payload.get("actor") == asset_id
+               and e.payload.get("applied", True)
+        ]
+
     def creator_set_state(self, assets: list[dict]) -> tuple[bool, str]:
         """FR-5120 — the JSON view's write: replace the whole asset list atomically. Validates
         every entry via `Asset` before committing any of them, so a malformed JSON edit can't

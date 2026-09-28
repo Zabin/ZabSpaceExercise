@@ -7,6 +7,7 @@ OrderSystem (no GUI / session layer yet).
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from spacesim.engine.custody import Track
 from spacesim.engine.effects import is_link_denied
@@ -299,6 +300,35 @@ def test_maneuver_consumes_delta_v_and_changes_orbit():
     big = list(500.0 * v / np.linalg.norm(v))
     rej = osys.issue(Order(cell="blue", actor="SAT", action="maneuver", params={"dv": big, "via": "GS"}))
     assert rej.status == "rejected" and rej.fail_reason == "insufficient_delta_v"
+
+
+def test_maneuver_purpose_tag_carried_to_eventlog_and_blank_default():
+    """IP-1250 (FR-1320) — an operator-supplied purpose_tag is carried through to the resulting
+    EventLog entry; an omitted tag is accepted and recorded as ""."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["SAT"] = Asset(
+        id="SAT", owner="blue", kind="satellite", orbit=sat, resources=AssetResources(delta_v_ms=150.0),
+    )
+    world.assets["GS"] = Asset(id="GS", owner="blue", kind="ground_station", location=_subpoint(sat, 0))
+    sim, osys = _sim_with(world)
+    _, v = PROP.rv(sat, 0)
+    dv = list(10.0 * v / np.linalg.norm(v))
+
+    order = osys.issue(Order(cell="blue", actor="SAT", action="maneuver",
+                             params={"dv": dv, "via": "GS", "purpose_tag": "station-keeping"}))
+    sim.advance_to(order.earliest_window[0] + 1)
+    entries = [e for e in sim.eventlog.entries if e.kind == "execute_maneuver"]
+    assert len(entries) == 1
+    assert entries[0].payload["purpose_tag"] == "station-keeping"
+    assert entries[0].payload["applied"] is True
+    assert entries[0].payload["remaining_delta_v_ms"] == pytest.approx(140.0, abs=1e-6)
+
+    order2 = osys.issue(Order(cell="blue", actor="SAT", action="maneuver",
+                              params={"dv": dv, "via": "GS"}))  # no purpose_tag
+    sim.advance_to(order2.earliest_window[0] + 1)
+    entries2 = [e for e in sim.eventlog.entries if e.kind == "execute_maneuver"]
+    assert entries2[-1].payload["purpose_tag"] == ""
 
 
 def test_engage_sequence_replays_byte_identical():

@@ -154,6 +154,31 @@ def test_telemetry_series_count():
     assert "points" in body and len(body["points"]) == 30
 
 
+def test_maneuver_ledger_route_and_csv_export_are_fog_scoped():
+    """IP-1250 (FR-1320) — the ledger route/CSV export mirror /telemetry's fog-of-war behavior:
+    an operator cannot fetch another cell's Asset ledger."""
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/order", json={
+        "cell": "blue", "actor": "ISR-EO-1", "action": "maneuver",
+        "params": {"dv": [5.0, 0.0, 0.0], "via": "GS-NORTH", "purpose_tag": "test-tag"}})
+    assert r.json()["ok"], r.json()
+    win = r.json()["earliest_window"]
+    c.post(f"/api/sessions/{sid}/advance", json={"t": win[0] + 1})
+
+    ledger = c.get(f"/api/sessions/{sid}/maneuver_ledger/blue/ISR-EO-1")
+    assert ledger.status_code == 200
+    rows = ledger.json()
+    assert len(rows) == 1 and rows[0]["purpose_tag"] == "test-tag"
+
+    csv_r = c.get(f"/api/sessions/{sid}/maneuver_ledger/blue/ISR-EO-1/export.csv")
+    assert csv_r.status_code == 200
+    assert "test-tag" in csv_r.text
+
+    denied = c.get(f"/api/sessions/{sid}/maneuver_ledger/red/ISR-EO-1")
+    assert denied.status_code == 404
+
+
 def test_fog_cross_cell_telemetry():
     """Blue cell cannot read Red cell's asset telemetry."""
     c = _client()

@@ -380,6 +380,10 @@ class InProcessSession:
         with self._locked_read(session) as mgr:
             return mgr.get_telemetry(cell, asset)
 
+    def maneuver_ledger(self, session: str, cell: str, asset: str):
+        with self._locked_read(session) as mgr:
+            return mgr.maneuver_ledger(cell, asset)
+
     def get_series(self, session: str, cell: str, asset: str, param: str, t0=None, t1=None,
                    n: int = 120, nominal: bool = False):
         with self._locked_read(session) as mgr:

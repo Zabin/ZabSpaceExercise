@@ -687,6 +687,31 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=404, detail="no such telemetry series")
         return r
 
+    @app.get("/api/sessions/{sid}/maneuver_ledger/{cell}/{asset}")
+    def maneuver_ledger(sid: str, cell: str, asset: str) -> list[dict]:
+        """IP-1250 (FR-1320) — per-asset manoeuvre ledger; fog-scoped identically to
+        `/telemetry/{cell}/{asset}` (own assets only, White sees any)."""
+        _require(sid)
+        r = api.maneuver_ledger(sid, cell, asset)
+        if r is None:
+            raise HTTPException(status_code=404, detail="no maneuver ledger for this asset (fog/ownership)")
+        return r
+
+    @app.get("/api/sessions/{sid}/maneuver_ledger/{cell}/{asset}/export.csv", response_class=PlainTextResponse)
+    def maneuver_ledger_export_csv(sid: str, cell: str, asset: str) -> str:
+        """IP-1250 (FR-1320) — the same ledger rows, serialized as CSV."""
+        _require(sid)
+        rows = api.maneuver_ledger(sid, cell, asset)
+        if rows is None:
+            raise HTTPException(status_code=404, detail="no maneuver ledger for this asset (fog/ownership)")
+        import csv, io
+        buf = io.StringIO()
+        w = csv.writer(buf)
+        w.writerow(["t", "cost", "purpose_tag", "remaining_delta_v_ms"])
+        for row in rows:
+            w.writerow([row["t"], row["cost"], row["purpose_tag"], row["remaining_delta_v_ms"]])
+        return buf.getvalue()
+
     @app.get("/api/sessions/{sid}/godview")
     def get_godview(sid: str) -> dict:
         _require(sid)

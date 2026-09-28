@@ -630,6 +630,9 @@ class OrderSystem:
             "dv": dv,
             "cost": float(np.linalg.norm(dv)),
             "custody_confidence_at_decision": custody_confidence,
+            # IP-1250 (FR-1320) — an optional operator-entered purpose tag, additive; a manoeuvre
+            # order with no supplied tag is accepted, recorded as "".
+            "purpose_tag": str(p.get("purpose_tag", "")),
         }
 
     def _plan_cyber(self, order: Order, commit: bool) -> None:
@@ -714,10 +717,16 @@ class OrderSystem:
         if actor.resources.delta_v_ms + 1e-9 < float(payload["cost"]) or actor.health == "destroyed":
             world.effect_log.append({"t": world.now, "template": "maneuver", "target": payload["actor"],
                                      "achieved": "failed", "success": False})
+            # IP-1250 (FR-1320) — mutating `payload` in place is captured by the eventlog entry
+            # Simulation.advance_to() logs immediately after this handler returns (same pattern
+            # IP-1062's condition_check uses); the ledger read excludes a failed re-validation.
+            payload["applied"] = False
             return
         dv = np.asarray(payload["dv"], dtype=float)
         actor.orbit = self.prop.apply_impulse(actor.orbit, dv, world.now)
         actor.resources.delta_v_ms -= float(payload["cost"])
+        payload["applied"] = True
+        payload["remaining_delta_v_ms"] = actor.resources.delta_v_ms
 
     def _h_downlink(self, world: WorldState, payload: dict, rng) -> None:
         """Deliver collected product — unless the downlink is jammed at the execution moment."""

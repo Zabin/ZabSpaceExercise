@@ -253,6 +253,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   Actions: `jam/engage/observe/maneuver/downlink/cyber` + `command` (bus/payload verbs, see `buscommands.py`).
   `dry_run()` is a read-only mirror of `issue()` (validate + window/delivery-path, but schedules/
   registers/books nothing) → powers the UI's "why can't I?" pre-disabled buttons; replay-safe like `scene.py`.
+  `_h_maneuver` (IP-1250, FR-1320) — the execute-time payload gains `purpose_tag` (additive,
+  default `""`) and, on success, mutates in the same dict `applied=True`/`remaining_delta_v_ms`
+  (captured by the eventlog entry logged immediately after, same pattern as IP-1062's
+  `condition_check`); a re-validation failure sets `applied=False` instead.
   ROE (`engage`/`cyber`) is resolved per issuing cell (`self.roe[order.cell]`, IP-1172/FR-3420) — the
   engine never branches on legacy-vs-explicit vignette shape, only on the always-cell-keyed dict
   `content/vignette.py`'s `build_world()` produces. `scene_from_world()`'s sensor filter (IP-1062,
@@ -353,6 +357,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **Build / schedule inject** panel with editable JSON + Now/+seconds/absolute-UTC scheduler
   (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
+  **IP-1250 (FR-1320):** `maneuver_ledger(cell, asset_id)` — a derived, read-only per-asset
+  manoeuvre ledger (time/delta-v cost/purpose tag/resulting remaining budget), filtered from
+  `EventLog`'s `execute_maneuver` entries (`applied=True` only), fog-scoped like `get_telemetry`,
   **IP-1190 (FR-5220):** `bulk_import()` — multi-object TLE/CCSDS OMM (KVN) import, generalizing
   `add_tle()`'s single-object mechanism (extracted into `_force_add_tle_object`) via a new
   `_force_add_omm_object` sibling, per-object success/failure reporting, batch continues past a
@@ -412,6 +419,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   once per run. Distinct from the repo-root `tools/` directory (non-package build scripts like
   `tools/build_coastlines.py`) — this one must be importable by `spacesim/tests/`.
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`;
+  **IP-1250 (FR-1320):** `/maneuver_ledger/{cell}/{asset}` (+ `/export.csv`) — the per-asset
+  manoeuvre ledger view/CSV export, fog-scoped identically to `/telemetry/{cell}/{asset}`;
   **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
   route table at implementation time, not merely IP-1130's own enumerated list, per that package's
   own Risks note — plus `/observer/view` + `/observer/designation`) + `static/`
