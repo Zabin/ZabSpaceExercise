@@ -597,6 +597,7 @@ class OrderSystem:
                 window_start=win.start,
                 window_end=win.end,
                 link_target=link_target,
+                order_action_type=order.action,
             )
             return "execute_effect", {
                 "effect": effect.model_dump(),
@@ -641,6 +642,7 @@ class OrderSystem:
                 success_prob=adj_pk,
                 window_start=win.start,
                 window_end=win.end,
+                order_action_type=order.action,
             )
             return "execute_effect", {
                 "effect": effect.model_dump(),
@@ -805,6 +807,7 @@ class OrderSystem:
             sm_susceptibility=float(p.get("sm_susceptibility", 1.0)),
             persistence_bonus=float(p.get("persistence_bonus", 1.0)),
             window_start=self.sim.clock.now,
+            order_action_type=order.action,
         )
         self.sim.schedule(self.sim.clock.now, "execute_effect", {"effect": effect.model_dump()}, actor=order.cell, tag=order.id)
 
@@ -836,6 +839,12 @@ class OrderSystem:
         self._release_bookings_on_execute(payload.get("__order_id"))
         actor = world.assets.get(payload["actor"])
         if actor is None or actor.orbit is None:
+            return
+        # IP-1290 (FR-1440) — an uplink jam covering the manoeuvre command's delivery path.
+        if is_link_denied(world, payload["actor"], world.now, link="uplink"):
+            world.effect_log.append({"t": world.now, "template": "maneuver", "target": payload["actor"],
+                                     "achieved": "jammed", "success": False})
+            payload["applied"] = False
             return
         # Re-validate at execute time (resources may have changed since planning).
         if actor.resources.delta_v_ms + 1e-9 < float(payload["cost"]) or actor.health == "destroyed":
@@ -883,6 +892,12 @@ class OrderSystem:
     def _h_command(self, world: WorldState, payload: dict, rng) -> None:
         """Apply a bus/payload verb at its window (re-validates at execute time, like the others)."""
         self._release_bookings_on_execute(payload.get("__order_id"))
+        # IP-1290 (FR-1440) — an uplink jam covering the command's delivery path at execute time
+        # fails delivery, mirroring _h_downlink's existing jam-check pattern.
+        if is_link_denied(world, payload["actor"], world.now, link="uplink"):
+            world.effect_log.append({"t": world.now, "template": payload.get("verb"),
+                                     "target": payload["actor"], "achieved": "jammed", "success": False})
+            return
         ok, label = apply_command(world, payload["actor"], payload.get("verb") or "",
                                    payload.get("params", {}), world.now)
         world.effect_log.append({"t": world.now, "template": payload.get("verb"),

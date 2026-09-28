@@ -133,6 +133,11 @@ class Vignette(BaseModel):
     # axes absent matches every order (not a useful declaration, but not rejected either). Absent
     # for every vignette shipped before this package (additive, NFR-2010) — zero behavior change.
     effect_gating_rules: list[dict] = Field(default_factory=list)
+    # IP-1290 (FR-1450) — optional per-effect-class detectability/attribution-difficulty overrides,
+    # each {action_type?: str, reversibility_category?: str, confidence: float}, keyed by the same
+    # shared enumeration as effect_gating_rules above (IP-1270 Design Decision 1). Absent for every
+    # vignette shipped before this package (additive, NFR-2010) — zero behavior change.
+    effect_detectability_config: list[dict] = Field(default_factory=list)
     # IP-1200 (FR-5510) — save-as-scenario's carried-forward mid-exercise state. All three
     # absent/empty for every vignette shipped before this package (additive, NFR-2010).
     initial_tracks: list[dict] = Field(default_factory=list)   # each entry a Track.model_dump()
@@ -155,6 +160,8 @@ class VignetteContext:
     ssn_networks: dict = field(default_factory=dict)   # cell -> SSNNetwork (only populated if vignette opts in)
     # IP-1270 (FR-3430) — passed through unmodified from vignette.effect_gating_rules.
     gating_rules: list[dict] = field(default_factory=list)
+    # IP-1290 (FR-1450) — passed through unmodified from vignette.effect_detectability_config.
+    detectability_config: list[dict] = field(default_factory=list)
 
 
 def list_vignettes(external_dirs: Optional[Sequence[Path]] = None) -> list[dict]:
@@ -340,6 +347,7 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
         red_doctrine_profile=str(params.get("red_doctrine_profile", vignette.red_doctrine_profile)),
         ssn_networks=ssn_networks,
         gating_rules=list(vignette.effect_gating_rules),
+        detectability_config=list(vignette.effect_detectability_config),
     )
     # IP-1200 (FR-5510) — save-as-scenario's carried-forward state, consumed only when present
     # (absent/empty for every pre-IP-1200 vignette, per NFR-2010).

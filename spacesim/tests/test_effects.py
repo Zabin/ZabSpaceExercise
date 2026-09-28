@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from spacesim.engine.effects import (
     DebrisField,
     EffectInstance,
@@ -81,6 +83,40 @@ def test_debris_persistence_estimate_does_not_gate_access_or_conjunction():
     ModerateEffectResolver().resolve(eff, w, SeededRng(1))
     assert len(w.debris) == 1
     assert w.conjunctions == []  # unaffected by debris creation
+
+
+def test_per_effect_class_detectability_resolves_independently_of_fixed_setting():
+    """IP-1290 (FR-1450) — a declared per-effect-class detectability override resolves
+    independently of the existing single fixed attribution-confidence setting; an undeclared
+    class falls back to that fixed setting unchanged."""
+    config = [{"action_type": "jam", "reversibility_category": "deny", "confidence": 0.1},
+              {"action_type": "engage", "reversibility_category": "destroy", "confidence": 0.99}]
+    resolver = ModerateEffectResolver(detectability_config=config)
+
+    w1 = _world_with_target()
+    jam_eff = EffectInstance(category="electronic_warfare", segment="link", actor="JAM", target="TGT",
+                             intended_outcome="deny", success_prob=1.0, attribution="ambiguous",
+                             order_action_type="jam")
+    out1 = resolver.resolve(jam_eff, w1, SeededRng(1))
+    sig1 = next(se for se in out1.side_effects if se["type"] == "attribution_signal")
+    assert sig1["confidence"] == pytest.approx(0.1)
+
+    w2 = _world_with_target()
+    engage_eff = EffectInstance(category="direct_ascent", segment="orbital", actor="INT", target="TGT",
+                                kinetic=True, debris_risk="high", attribution="overt",
+                                intended_outcome="destroy", success_prob=1.0, order_action_type="engage")
+    out2 = resolver.resolve(engage_eff, w2, SeededRng(1))
+    sig2 = next(se for se in out2.side_effects if se["type"] == "attribution_signal")
+    assert sig2["confidence"] == pytest.approx(0.99)
+
+    # Undeclared class (cyber) falls back to the existing fixed setting unchanged.
+    w3 = _world_with_target()
+    cyber_eff = EffectInstance(category="cyber", segment="link", actor="C2", target="TGT",
+                               intended_outcome="deny", success_prob=1.0, attribution="ambiguous",
+                               order_action_type="cyber")
+    out3 = resolver.resolve(cyber_eff, w3, SeededRng(1))
+    sig3 = next(se for se in out3.side_effects if se["type"] == "attribution_signal")
+    assert sig3["confidence"] == pytest.approx(0.5)  # the fixed "ambiguous" value, unaffected
 
 
 def test_reversible_deny_creates_active_link_effect_for_its_window():

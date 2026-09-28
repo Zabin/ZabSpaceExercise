@@ -54,7 +54,11 @@ class SessionManager:
         self.sim = Simulation(self.world, seed=seed)
         self.sim.register_handler("inject", self._h_inject)
         self.sim.register_handler("condition_check", self._h_condition_check)
-        self.osys = OrderSystem(self.sim, roe=dict(self.ctx.roe), gating_rules=list(self.ctx.gating_rules))
+        from spacesim.engine.effects import ModerateEffectResolver
+        self.osys = OrderSystem(
+            self.sim, roe=dict(self.ctx.roe), gating_rules=list(self.ctx.gating_rules),
+            resolver=ModerateEffectResolver(detectability_config=list(self.ctx.detectability_config)),
+        )
         self.bus = BusSystem(self.sim)
         self.recovery = RecoverySystem(
             self.sim,

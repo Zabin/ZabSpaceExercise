@@ -418,6 +418,46 @@ def test_maneuver_consumes_delta_v_and_changes_orbit():
     assert rej.status == "rejected" and rej.fail_reason == "insufficient_delta_v"
 
 
+def test_maneuver_delivery_denied_by_active_uplink_jam_at_execute_time():
+    """IP-1290 (FR-1440) — a manoeuvre command whose delivery path is covered by an active
+    uplink jam fails at execute time (no delta-v consumed, no orbit change)."""
+    from spacesim.engine.effects import ActiveEffect
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", orbit=sat,
+                                resources=AssetResources(delta_v_ms=150.0))
+    world.assets["GS"] = Asset(id="GS", owner="blue", kind="ground_station", location=_subpoint(sat, 0))
+    sim, osys = _sim_with(world)
+    _, v = PROP.rv(sat, 0)
+    dv = list(10.0 * v / np.linalg.norm(v))
+    order = osys.issue(Order(cell="blue", actor="SAT", action="maneuver", params={"dv": dv, "via": "GS"}))
+    start, end = order.earliest_window
+    world.active_effects.append(ActiveEffect(target="SAT", outcome="deny", start=start - 1, end=end + 1,
+                                             link_target="uplink"))
+    a_before = world.assets["SAT"].orbit.a_m
+    sim.advance_to(start + 1)
+    assert world.assets["SAT"].orbit.a_m == a_before
+    assert world.assets["SAT"].resources.delta_v_ms == pytest.approx(150.0)
+    assert world.effect_log[-1]["achieved"] == "jammed" and world.effect_log[-1]["success"] is False
+
+
+def test_maneuver_delivery_unaffected_without_jam_regression():
+    """Regression: a command not covered by an active jam is unaffected."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", orbit=sat,
+                                resources=AssetResources(delta_v_ms=150.0))
+    world.assets["GS"] = Asset(id="GS", owner="blue", kind="ground_station", location=_subpoint(sat, 0))
+    sim, osys = _sim_with(world)
+    _, v = PROP.rv(sat, 0)
+    dv = list(10.0 * v / np.linalg.norm(v))
+    order = osys.issue(Order(cell="blue", actor="SAT", action="maneuver", params={"dv": dv, "via": "GS"}))
+    a_before = world.assets["SAT"].orbit.a_m
+    sim.advance_to(order.earliest_window[0] + 1)
+    assert world.assets["SAT"].orbit.a_m > a_before
+    assert world.assets["SAT"].resources.delta_v_ms == pytest.approx(140.0)
+
+
 def test_maneuver_purpose_tag_carried_to_eventlog_and_blank_default():
     """IP-1250 (FR-1320) — an operator-supplied purpose_tag is carried through to the resulting
     EventLog entry; an omitted tag is accepted and recorded as ""."""

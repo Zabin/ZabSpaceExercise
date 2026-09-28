@@ -56,6 +56,10 @@ class EffectInstance(BaseModel):
     # Safe-mode inducement (12-safe-mode-loop.md §6.1); only read when intended_outcome=safe_mode:
     sm_susceptibility: float = 1.0        # White-Cell master dial multiplier
     persistence_bonus: float = 1.0        # sustained vs. one-shot attempt
+    # IP-1290 (FR-1450) — the issuing order's action type (jam/engage/cyber/...), additive; used
+    # only to look up a declared per-effect-class detectability override. None for any effect
+    # instance built before this package (e.g. direct EffectInstance() construction in tests).
+    order_action_type: Optional[str] = None
 
 
 class EffectOutcome(BaseModel):
@@ -121,6 +125,23 @@ _EVASION_RESIDUAL = 0.4
 
 
 class ModerateEffectResolver:
+    def __init__(self, detectability_config: Optional[list[dict]] = None) -> None:
+        # IP-1290 (FR-1450) — vignette-declared per-effect-class detectability/attribution-
+        # difficulty overrides, keyed by IP-1270's shared enumeration (order action type ×
+        # five-D's reversibility category). Additive/optional: absent (default []) reproduces
+        # FR-1410's existing single fixed attribution-confidence setting exactly.
+        self.detectability_config = detectability_config or []
+
+    def _class_confidence(self, action_type: Optional[str], category: str) -> Optional[float]:
+        for rule in self.detectability_config:
+            rt, rc = rule.get("action_type"), rule.get("reversibility_category")
+            if rt is not None and rt != action_type:
+                continue
+            if rc is not None and rc != category:
+                continue
+            return float(rule["confidence"])
+        return None
+
     def resolve(self, effect: EffectInstance, world: "WorldState", rng: SeededRng) -> EffectOutcome:
         target = world.assets.get(effect.target)
         if target is not None and target.health == "destroyed":
@@ -187,7 +208,10 @@ class ModerateEffectResolver:
                 side.append({"type": "political_consequence", "severity": "medium",
                              "cause": f"civilian_collateral_{effect.template}", "target": effect.target})
 
-        conf = {"overt": 0.95, "ambiguous": 0.5, "covert": 0.15}[effect.attribution]
+        # IP-1290 (FR-1450) — a declared per-effect-class override takes precedence over the
+        # fixed attribution-confidence table; falls back to it when the class is undeclared.
+        override = self._class_confidence(effect.order_action_type, achieved)
+        conf = override if override is not None else {"overt": 0.95, "ambiguous": 0.5, "covert": 0.15}[effect.attribution]
         side.append({"type": "attribution_signal", "to": _victim_cell(world, effect), "confidence": conf})
         return EffectOutcome(achieved_outcome=achieved, success=True, side_effects=side)
 

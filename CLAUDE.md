@@ -244,6 +244,13 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   or its host_asset_id to the same sensor for `SENSOR_OBSERVATION` queries.
 - `spacesim/engine/custody.py` — `Track` (on-demand confidence decay) + weapons-quality gate.
 - `spacesim/engine/effects.py` — `EffectInstance`/`EffectResolver` seam (5 D's), `is_link_denied`.
+  `EffectInstance.order_action_type` (IP-1290, FR-1450) — additive, the issuing order's action
+  type, set at each of the three construction sites (jam/engage/cyber) in `orders.py`.
+  `ModerateEffectResolver(detectability_config=...)`/`_class_confidence()` (IP-1290) — a declared
+  per-effect-class (order action type × five-D's reversibility category, `IP-1270`'s shared
+  enumeration) attribution-confidence override, consulted at the same point the existing fixed
+  `{"overt":.95,"ambiguous":.5,"covert":.15}` table is; falls back to it when the class is
+  undeclared.
   `DebrisField.persistence_estimate` (IP-1240, FR-1430) — a coarse, altitude-derived, display-only
   estimate (`_persistence_estimate()`) attached at both construction sites (destructive-effect
   resolution here, and `spawn_debris` in `session/manager.py`); never consulted by Access Window
@@ -256,7 +263,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `_h_maneuver` (IP-1250, FR-1320) — the execute-time payload gains `purpose_tag` (additive,
   default `""`) and, on success, mutates in the same dict `applied=True`/`remaining_delta_v_ms`
   (captured by the eventlog entry logged immediately after, same pattern as IP-1062's
-  `condition_check`); a re-validation failure sets `applied=False` instead.
+  `condition_check`); a re-validation failure sets `applied=False` instead. `_h_maneuver`/
+  `_h_command` (IP-1290, FR-1440) — an active uplink jam covering the command's delivery path at
+  execute time fails delivery (`achieved="jammed"`), checked via the existing `is_link_denied`,
+  mirroring `_h_downlink`'s own jam-check pattern.
   ROE (`engage`/`cyber`) is resolved per issuing cell against `_effective_roe(cell, order.issued_at)`
   (IP-1172/FR-3420, IP-1270/FR-3440) — the vignette-declared static `_static_roe` overlaid with any
   `roe_change` eventlog entries at or before the order's own issue time, a pure point-in-time
@@ -334,7 +344,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `Vignette.effect_gating_rules` (IP-1270, FR-3430) — additive, optional list of
   `{action_type?, reversibility_category?, required_role}`; `build_world()` passes it through
   unmodified into `VignetteContext.gating_rules`, absent (`[]`) for every vignette shipped before
-  this package.
+  this package. `Vignette.effect_detectability_config` (IP-1290, FR-1450) — the same shared
+  enumeration, each entry `{action_type?, reversibility_category?, confidence}`, passed through
+  unmodified into `VignetteContext.detectability_config`.
   `Vignette.roe` (IP-1172, FR-3420/NFR-2010) — optional per-cell
   `{blue: {kinetic_authorized, cyber_authorized}, red: {...}}`; absent for every vignette shipped
   before this package, in which case `build_world()` mirrors the legacy flat
