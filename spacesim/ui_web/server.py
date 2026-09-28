@@ -152,6 +152,25 @@ class RoeChangeRequest(BaseModel):
     value: bool
 
 
+class PlaybackStartRequest(BaseModel):
+    """IP-1280 (FR-7330) — viewpoint is "truth" or a cell that participated in the recorded
+    exercise."""
+    viewpoint: str = "truth"
+    speed: float = 1.0
+
+
+class PlaybackAdvanceRequest(BaseModel):
+    dt_s: float
+
+
+class PlaybackViewpointRequest(BaseModel):
+    viewpoint: str
+
+
+class PlaybackSpeedRequest(BaseModel):
+    speed: float
+
+
 class ManeuverComputeRequest(BaseModel):
     cell: str
     actor: str
@@ -784,6 +803,41 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Download the AAR as JSON (FUTURE-WORK §10.E.20). Mirrors /aar but pinned filename."""
         _require(sid)
         return api.aar_report(sid).model_dump()
+
+    @app.post("/api/sessions/{sid}/aar/playback/start")
+    def playback_start(sid: str, req: PlaybackStartRequest) -> Ack:
+        """IP-1280 (FR-7330) — start (or replace) this session's variable-speed AAR playback,
+        from ground truth or a named cell's fog-of-war-respecting viewpoint; rejected at the
+        request boundary if the cell did not participate in the recorded exercise."""
+        _require(sid)
+        return api.playback_start(sid, req.viewpoint, req.speed)
+
+    @app.post("/api/sessions/{sid}/aar/playback/advance")
+    def playback_advance(sid: str, req: PlaybackAdvanceRequest) -> dict:
+        _require(sid)
+        r = api.playback_advance(sid, req.dt_s)
+        if r is None:
+            raise HTTPException(status_code=404, detail="no playback session — call .../playback/start first")
+        return r
+
+    @app.get("/api/sessions/{sid}/aar/playback/state")
+    def playback_state(sid: str) -> dict:
+        _require(sid)
+        r = api.playback_state(sid)
+        if r is None:
+            raise HTTPException(status_code=404, detail="no playback session — call .../playback/start first")
+        return r
+
+    @app.post("/api/sessions/{sid}/aar/playback/viewpoint")
+    def playback_set_viewpoint(sid: str, req: PlaybackViewpointRequest) -> Ack:
+        """Design Decision 1 — a viewpoint switch continues from the same simulated moment."""
+        _require(sid)
+        return api.playback_set_viewpoint(sid, req.viewpoint)
+
+    @app.post("/api/sessions/{sid}/aar/playback/speed")
+    def playback_set_speed(sid: str, req: PlaybackSpeedRequest) -> Ack:
+        _require(sid)
+        return api.playback_set_speed(sid, req.speed)
 
     @app.get("/api/sessions/{sid}/assessment")
     def assessment_report(sid: str) -> dict:

@@ -583,6 +583,40 @@ def test_gate_decide_route_rejects_unknown_pending_order():
     assert r.json()["ok"] is False and r.json()["reason"] == "no_such_pending_order"
 
 
+def test_aar_playback_start_advance_and_viewpoint_switch():
+    """IP-1280 (FR-7330) — the playback routes: start, advance, viewpoint switch."""
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/order", json={
+        "cell": "blue", "actor": "ISR-EO-1", "action": "downlink", "params": {"via": "GS-NORTH"}})
+
+    start = c.post(f"/api/sessions/{sid}/aar/playback/start", json={"viewpoint": "truth", "speed": 2.0})
+    assert start.json()["ok"] is True
+
+    adv = c.post(f"/api/sessions/{sid}/aar/playback/advance", json={"dt_s": 30.0})
+    assert adv.status_code == 200
+    assert "assets" in adv.json()  # ground-truth WorldState shape
+
+    switched = c.post(f"/api/sessions/{sid}/aar/playback/viewpoint", json={"viewpoint": "blue"})
+    assert switched.json()["ok"] is True
+    state = c.get(f"/api/sessions/{sid}/aar/playback/state")
+    assert "own_assets" in state.json()  # CellView shape, not ground truth
+
+
+def test_aar_playback_rejects_nonparticipating_cell():
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/aar/playback/start", json={"viewpoint": "not-a-real-cell"})
+    assert r.json()["ok"] is False
+
+
+def test_aar_playback_advance_without_start_is_404():
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/aar/playback/advance", json={"dt_s": 10.0})
+    assert r.status_code == 404
+
+
 def test_ephemeris_ric_companion_format():
     """FR-7430 — the companion RIC-specific export file, reachable via format=ric on both the
     truth and cell-observed ephemeris routes (BL-0136's resolution of the FR-7410/OEM tension)."""

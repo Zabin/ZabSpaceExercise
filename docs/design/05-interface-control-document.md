@@ -510,6 +510,10 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
   sim time instead of only an eventlog sequence number. Per the Requirements Review's own Finding 6
   (`BL-0093`), this documented shape (a single-point read) remains a stretched fit for a
   time-span/multi-sample export — not resolved here, still routed to whoever next touches the ICD.
+  **IP-1280 (FR-7330, 2026-09-28):** a second stretch of this same shape — `aar.PlaybackSession`
+  calls `state_at_time()` repeatedly at successive simulated moments (paced by a requested speed)
+  rather than once, alongside `ephemeris.py`'s own multi-sample stretch above. Citation-only, per
+  `BL-0093`'s own tracked note — not a new interface, not an ICD redesign.
 - **Data exchanged:** Read: historical `EventLog` entries and reconstructed `WorldState` snapshots
   at a given point (or, as of `IP-1210`, a given time). No write.
 - **Message/data structure:** Not specified beyond GDS-03 §2.2's description (`snapshot_at`).

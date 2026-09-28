@@ -425,7 +425,12 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
   `aar.py` (replay/scrub/branch-compare + `snapshot_at`; `state_at_time(mgr, t)` (IP-1210,
   FR-7410/FR-7420) — additive sibling of `state_at(mgr, seq)`, reconstructing at an arbitrary sim
-  time instead of an eventlog sequence number, used by `ephemeris.py`'s time-span sampling),
+  time instead of an eventlog sequence number, used by `ephemeris.py`'s time-span sampling;
+  `PlaybackSession` (IP-1280, FR-7330) — continuous, speed-adjustable timeline playback built
+  entirely on repeated `state_at_time()` calls, from ground truth or a `CellController`-filtered
+  single-cell viewpoint (`_participant_cells()` rejects a non-participating cell at construction/
+  `set_viewpoint()`; switching viewpoint never resets the played-back moment); one instance per
+  session, held in `InProcessSession._playbacks`, never in `SessionManager` itself),
   `ephemeris.py` (IP-1210, FR-7410/FR-7420 — truth/cell-observed ephemeris export: `sample_times()`/
   `truth_ephemeris()`/`cell_observed_ephemeris()`/`to_ric()` (reuses `engine/maneuver.py::
   lvlh_frame` directly for the RIC transform)/`write_csv()`/`write_oem()`; a wholly-out-of-range
@@ -450,6 +455,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`;
   **IP-1250 (FR-1320):** `/maneuver_ledger/{cell}/{asset}` (+ `/export.csv`) — the per-asset
   manoeuvre ledger view/CSV export, fog-scoped identically to `/telemetry/{cell}/{asset}`;
+  **IP-1280 (FR-7330):** `/aar/playback/{start,advance,state,viewpoint,speed}` — the variable-
+  speed AAR playback routes over `session/aar.py::PlaybackSession`;
   **IP-1270 (FR-3430/FR-3440):** `/gate/decide` + `/roe/change` — role-gated (checked inside
   `SessionManager`/`OrderSystem`) pending-order decision and live ROE-flag-change routes;
   **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live

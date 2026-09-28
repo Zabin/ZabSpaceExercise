@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from spacesim.content.vignette import load_vignette
 from spacesim.session import aar
 from spacesim.session.manager import SessionManager
@@ -82,3 +84,66 @@ def test_branch_comparison_shows_objective_flip():
     diff = aar.compare_branches(report_a, report_b)
     assert "red.disable_satcom" in diff["objective_flips"]
     assert diff["objective_flips"]["red.disable_satcom"] == {"a": True, "b": False}
+
+
+# ---- IP-1280 (FR-7330) — variable-speed AAR playback -----------------------------------------
+
+def test_playback_at_nondefault_speed_does_not_disturb_live_session():
+    mgr = _campaign()
+    RedDoctrine(mgr).step()
+    mgr.advance_to(mgr.world.now + minutes(1))
+    live_now = mgr.sim.clock.now
+    live_dump = mgr.world.model_dump()
+
+    pb = aar.PlaybackSession(mgr, viewpoint="truth", speed=4.0)
+    pb.advance(10.0)
+    pb.advance(10.0)
+
+    assert mgr.sim.clock.now == live_now
+    assert mgr.world.model_dump() == live_dump
+
+
+def test_playback_cell_viewpoint_matches_cell_controller_at_sampled_moments():
+    from spacesim.session.cells import CellController
+    mgr = _campaign()
+    RedDoctrine(mgr).step()
+    mgr.advance_to(mgr.world.now + minutes(1))
+
+    pb = aar.PlaybackSession(mgr, viewpoint="blue", start_t=mgr.ctx.start_epoch)
+    pb.advance(30.0)
+    world = aar.state_at_time(mgr, pb.t)
+    expected = CellController.view(world, "blue", aar.evaluate_objectives(world, mgr.ctx)).model_dump()
+    assert pb.state() == expected
+
+
+def test_playback_truth_viewpoint_matches_ground_truth_reconstruction():
+    mgr = _campaign()
+    RedDoctrine(mgr).step()
+    mgr.advance_to(mgr.world.now + minutes(1))
+
+    pb = aar.PlaybackSession(mgr, viewpoint="truth", start_t=mgr.ctx.start_epoch)
+    pb.advance(30.0)
+    expected = aar.state_at_time(mgr, pb.t).model_dump()
+    assert pb.state() == expected
+
+
+def test_playback_viewpoint_switch_continues_from_same_moment():
+    mgr = _campaign()
+    RedDoctrine(mgr).step()
+    mgr.advance_to(mgr.world.now + minutes(1))
+
+    pb = aar.PlaybackSession(mgr, viewpoint="truth", start_t=mgr.ctx.start_epoch)
+    pb.advance(45.0)
+    t_before_switch = pb.t
+    pb.set_viewpoint("red")
+    assert pb.t == t_before_switch  # switching viewpoint never resets the played-back moment
+
+
+def test_playback_rejects_a_nonparticipating_cell_viewpoint():
+    mgr = _campaign()
+    with pytest.raises(ValueError):
+        aar.PlaybackSession(mgr, viewpoint="not-a-real-cell")
+
+    pb = aar.PlaybackSession(mgr, viewpoint="truth")
+    with pytest.raises(ValueError):
+        pb.set_viewpoint("not-a-real-cell")

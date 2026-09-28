@@ -37,6 +37,9 @@ class InProcessSession:
         # SessionManagers that must never advance their clock. UI-presentation/lifecycle state,
         # not exercise state, mirrors _observer_view's own placement.
         self._draft_sessions: set[str] = set()
+        # IP-1280 (FR-7330) — one AAR PlaybackSession per exercise session, keyed the same way;
+        # UI-presentation/scrubber state, not exercise state, same placement rationale as above.
+        self._playbacks: dict[str, aar.PlaybackSession] = {}
 
     # -- multiplayer plumbing --------------------------------------------------
     # Every mutation is wrapped with the session's RLock; every read first calls
@@ -922,6 +925,44 @@ class InProcessSession:
 
     def aar_snapshot_at(self, session: str, seq=None) -> dict:
         return aar.snapshot_at(self._sessions[session], seq)
+
+    # -- IP-1280 (FR-7330) — variable-speed AAR playback -----------------------
+    def playback_start(self, session: str, viewpoint: str = "truth", speed: float = 1.0) -> Ack:
+        try:
+            self._playbacks[session] = aar.PlaybackSession(
+                self._sessions[session], viewpoint=viewpoint, speed=speed)
+        except ValueError as exc:
+            return Ack(ok=False, reason=str(exc))
+        return Ack(ok=True)
+
+    def playback_advance(self, session: str, dt_s: float) -> Optional[dict]:
+        pb = self._playbacks.get(session)
+        if pb is None:
+            return None
+        return pb.advance(dt_s)
+
+    def playback_state(self, session: str) -> Optional[dict]:
+        pb = self._playbacks.get(session)
+        if pb is None:
+            return None
+        return pb.state()
+
+    def playback_set_viewpoint(self, session: str, viewpoint: str) -> Ack:
+        pb = self._playbacks.get(session)
+        if pb is None:
+            return Ack(ok=False, reason="no_playback_session")
+        try:
+            pb.set_viewpoint(viewpoint)
+        except ValueError as exc:
+            return Ack(ok=False, reason=str(exc))
+        return Ack(ok=True)
+
+    def playback_set_speed(self, session: str, speed: float) -> Ack:
+        pb = self._playbacks.get(session)
+        if pb is None:
+            return Ack(ok=False, reason="no_playback_session")
+        pb.set_speed(speed)
+        return Ack(ok=True)
 
     # -- competency assessment (IP-2010) ----------------------------------------
     def assessment_report(self, session: str) -> dict:
