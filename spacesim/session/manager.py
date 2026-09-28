@@ -878,7 +878,7 @@ class SessionManager:
                 # FW §11.D.19 — inject-library debris event.  Records a new DebrisField
                 # so downstream conjunction screening surfaces the elevated risk.  Region
                 # is opaque to the engine; the UI / next conjunction tick consumes it.
-                from spacesim.engine.effects import DebrisField
+                from spacesim.engine.effects import DebrisField, _persistence_estimate
                 world.debris.append(DebrisField(
                     created_at=world.now,
                     source=str(eff.get("source", "inject")),
@@ -887,6 +887,7 @@ class SessionManager:
                         "altitude_km": eff.get("altitude_km"),
                         "n_fragments": int(eff.get("n_fragments", 0)),
                     },
+                    persistence_estimate=_persistence_estimate(eff.get("altitude_km")),
                 ))
                 if eff.get("message"):
                     world.messages.append({"to": ["white", "blue", "red"],

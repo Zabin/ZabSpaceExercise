@@ -151,6 +151,8 @@ def test_spawn_debris_effect_creates_debris_field():
     assert fld.region["altitude_km"] == 500
     assert fld.region["n_fragments"] == 800
     assert fld.source == "inject"
+    # IP-1240 (FR-1430) — the spawn_debris path also attaches an altitude-derived estimate.
+    assert fld.persistence_estimate == "years_to_decades"
 
 
 # ---------------------------------------------------------------------------

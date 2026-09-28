@@ -244,6 +244,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   or its host_asset_id to the same sensor for `SENSOR_OBSERVATION` queries.
 - `spacesim/engine/custody.py` — `Track` (on-demand confidence decay) + weapons-quality gate.
 - `spacesim/engine/effects.py` — `EffectInstance`/`EffectResolver` seam (5 D's), `is_link_denied`.
+  `DebrisField.persistence_estimate` (IP-1240, FR-1430) — a coarse, altitude-derived, display-only
+  estimate (`_persistence_estimate()`) attached at both construction sites (destructive-effect
+  resolution here, and `spawn_debris` in `session/manager.py`); never consulted by Access Window
+  or conjunction-screening logic.
 - `spacesim/engine/orders.py` — `Order` + `OrderSystem` (validate → window → execute), cyber
   exception, ISL/stored delivery, sensor tasking (auto-select + contention), order queue + cancel.
   Actions: `jam/engage/observe/maneuver/downlink/cyber` + `command` (bus/payload verbs, see `buscommands.py`).

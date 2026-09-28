@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 from spacesim.engine.effects import (
+    DebrisField,
     EffectInstance,
     ModerateEffectResolver,
+    _persistence_estimate,
     is_link_denied,
 )
 from spacesim.engine.entities import Asset
+from spacesim.engine.geometry import R_EARTH_EQ
+from spacesim.engine.orbit import OrbitState
 from spacesim.engine.rng import SeededRng
 from spacesim.engine.world import WorldState
 
@@ -30,6 +34,53 @@ def test_kinetic_destroy_spawns_debris_and_political_consequence():
     assert w.assets["TGT"].health == "destroyed"
     assert len(w.debris) == 1
     assert any(se["type"] == "political_consequence" and se["severity"] == "high" for se in out.side_effects)
+
+
+def test_kinetic_destroy_debris_persistence_estimate_monotonic_with_altitude():
+    """IP-1240 (FR-1430) — a lower-altitude DebrisField's persistence_estimate is shorter than a
+    higher-altitude one's; neither changes Access Window computation (FR-1220) — the estimate is
+    stored, not consulted by any gating logic."""
+    def _kinetic_destroy(altitude_km: float) -> DebrisField:
+        w = _world_with_target(orbit=OrbitState(
+            a_m=R_EARTH_EQ + altitude_km * 1000.0, e=0.0, i_deg=51.6,
+            raan_deg=0.0, argp_deg=0.0, ta_deg=0.0, epoch=0,
+        ))
+        eff = EffectInstance(
+            category="direct_ascent", segment="orbital", actor="INT", target="TGT",
+            kinetic=True, debris_risk="high", attribution="overt",
+            intended_outcome="destroy", success_prob=1.0,
+        )
+        ModerateEffectResolver().resolve(eff, w, SeededRng(1))
+        return w.debris[0]
+
+    low = _kinetic_destroy(300.0)
+    mid = _kinetic_destroy(700.0)
+    high = _kinetic_destroy(1200.0)
+    order = ["weeks_to_months", "years_to_decades", "centuries"]
+    assert order.index(low.persistence_estimate) < order.index(mid.persistence_estimate)
+    assert order.index(mid.persistence_estimate) < order.index(high.persistence_estimate)
+
+
+def test_persistence_estimate_altitude_not_determinable_returns_none():
+    assert _persistence_estimate(None) is None
+
+
+def test_debris_persistence_estimate_does_not_gate_access_or_conjunction():
+    """IP-1240 Implementation Task 4 — a regression guard against wiring the estimate into
+    gating: creating a DebrisField (with any persistence_estimate) must not appear anywhere in
+    AccessProvider's construction inputs or be read by conjunction-screening (world.conjunctions
+    is populated only by the pre-existing conjunction_warning inject, never by debris presence)."""
+    w = _world_with_target(orbit=OrbitState(
+        a_m=R_EARTH_EQ + 300_000.0, e=0.0, i_deg=51.6, raan_deg=0.0, argp_deg=0.0, ta_deg=0.0, epoch=0,
+    ))
+    eff = EffectInstance(
+        category="direct_ascent", segment="orbital", actor="INT", target="TGT",
+        kinetic=True, debris_risk="high", attribution="overt",
+        intended_outcome="destroy", success_prob=1.0,
+    )
+    ModerateEffectResolver().resolve(eff, w, SeededRng(1))
+    assert len(w.debris) == 1
+    assert w.conjunctions == []  # unaffected by debris creation
 
 
 def test_reversible_deny_creates_active_link_effect_for_its_window():

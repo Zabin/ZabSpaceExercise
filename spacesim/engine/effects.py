@@ -80,6 +80,24 @@ class DebrisField(BaseModel):
     created_at: int
     source: str
     region: dict = Field(default_factory=dict)
+    # IP-1240 (FR-1430) — a coarse, display-only estimate; never consulted by Access Window
+    # computation or conjunction-screening, per FS-124's own Scope boundary.
+    persistence_estimate: Optional[str] = None
+
+
+def _persistence_estimate(altitude_km: Optional[float]) -> Optional[str]:
+    """IP-1240 (FR-1430) — a coarse debris-persistence estimate by altitude, grounded in `R117`
+    v1.2 §3.1's banded real-world figures (Alfriend & Lewis): below ~300-400km, drag-dominated
+    decay is weeks-to-months; 600-1000km stretches to years-decades; above ~900km, small-debris
+    lifetimes can extend to centuries. A pure function of already-computed state — never consulted
+    by Access Window computation or conjunction-screening (FS-124 Scope boundary)."""
+    if altitude_km is None:
+        return None
+    if altitude_km < 400.0:
+        return "weeks_to_months"
+    if altitude_km < 900.0:
+        return "years_to_decades"
+    return "centuries"
 
 
 class EffectResolver(Protocol):
@@ -133,8 +151,13 @@ class ModerateEffectResolver:
             if target is not None:
                 target.health = "destroyed"
             if effect.kinetic and effect.debris_risk != "none":
+                altitude_km = None
+                if target is not None and target.orbit is not None:
+                    from spacesim.engine.geometry import R_EARTH_EQ
+                    altitude_km = (target.orbit.a_m - R_EARTH_EQ) / 1000.0
                 world.debris.append(
-                    DebrisField(created_at=world.now, source=effect.actor, region={"about": effect.target})
+                    DebrisField(created_at=world.now, source=effect.actor, region={"about": effect.target},
+                               persistence_estimate=_persistence_estimate(altitude_km))
                 )
                 severity = "high" if (effect.escalation_weight >= 7 or effect.debris_risk == "high") else "medium"
                 side.append({"type": "political_consequence", "severity": severity, "cause": effect.template})
