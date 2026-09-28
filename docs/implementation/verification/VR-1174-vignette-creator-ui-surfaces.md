@@ -1,11 +1,11 @@
 # VR-1174 — Verification Report: Vignette Creator UI Surfaces
 
 > **Document ID:** VR-1174
-> **Version:** 1.0
+> **Version:** 2.0
 > **Status:** ✅ Final
 > **Dependencies:** [IP-1174](../packages/IP-1174-vignette-creator-ui-surfaces.md), [FS-117](../../features/FS-117-vignette-creator.md) v1.1 (`FR-5120`–`FR-5160`)
 > **Referenced By:** [INDEX.md](INDEX.md), [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](../packages/INDEX.md)
-> **Produces:** the `COMPLETE → IN PROGRESS` return of IP-1174 (RETURNED)
+> **Produces:** the `COMPLETE → VERIFIED` transition of IP-1174 (this v2.0 pass)
 > **Feature Mapping:** FS-117 (`FR-5120`–`FR-5160` slice)
 > **Related Topics:** [`spacesim/session/manager.py`](../../../spacesim/session/manager.py),
 > [`spacesim/ui_web/server.py`](../../../spacesim/ui_web/server.py),
@@ -18,101 +18,107 @@
 ## Package
 
 - **ID / Title:** IP-1174 — Vignette Creator UI Surfaces
-- **Version verified:** 1.0
-- **Tree state verified:** commit `e80d302` (branch `claude/chart-prompt-file-90hm9u`). That is
-  `d2818ff` plus the docs-only `VR-1061` commit, so the code is identical to the tree the test run
-  used. Implementing commit: `18c19a5`.
-- **Independence:** implemented by `08-code-implementation` in a prior context. This verification
-  ran in a freshly spawned agent context with no memory of that work. **Disclosure:** the
-  implementing commit's `Claude-Session` trailer names the same outer remote session ID this agent
-  runs under. Every claim was re-derived from the live source, a fresh test run, and an independent
-  probe that drove the HTTP routes through `TestClient`.
+- **Version verified:** 1.0 (remediated)
+- **Tree state verified:** commit `d2fc118` (branch `claude/chart-prompt-file-90hm9u`), the tip of
+  the nine-package batch. Remediating commit: `2c9785d` (`fix(IP-1174): separate seat-declaration
+  caller identity from target cell (BL-0123)`).
+- **Independence:** this is a **second verification pass** (v2.0 of this report), run in a fresh
+  session with no involvement in the `2c9785d` remediation commit or the v1.0 (`853bd7f`) report
+  that returned it. Every claim below was re-derived from the live source and a fresh test run,
+  independent of both.
 
 ## Result
 
-**RETURNED: 1 failed check (High), plus 2 Medium and 2 Low findings.** Four of the five
-requirements (`FR-5120`–`FR-5150`) are confirmed working. `FR-5160` is not met as specified:
-seat-count declaration works for only one cell (White). Declaring Blue or Red seats, which the UI
-itself offers, is refused with HTTP 403. The full suite is green (707 passed, 3 skipped) and both
-permanent gates are green. The defect is a functional gap that the package's own tests encode as
-intended behaviour, not a test failure.
+**VERIFIED, with 3 Low findings carried/added — no High or Medium findings remain.** The v1.0
+High finding (`BL-0123`: per-cell seat declaration broken) and both v1.0 Medium findings
+(`BL-0124`/`BL-0125`: unhandled 500 on malformed `force/ground` input) are confirmed fixed by
+independent re-probe. All five requirements (`FR-5120`–`FR-5160`) are confirmed working. Full
+suite green (753 passed, 3 skipped), both permanent gates green.
 
 ## Definition of Done audit
 
 | Item | Evidence | Pass/Fail |
 |---|---|---|
-| Explicit user authorization obtained (MSTR-006 §3). | Recorded as run #45 (2026-07-05) in the package and the Master Build Plan. | ✅ Pass |
-| The JSON view and form UI never disagree (`FR-5120`). | `manager.py:474-490`: `creator_state()` and `creator_set_state()` read and write `self.world.assets` directly, with no second representation. `creator_set_state` validates every entry before committing, so a bad write never half-applies. Probe: a JSON write (owner → `neutral`) was visible to the form read; a form PATCH (owner → `blue`) was visible to the JSON read; the invalid-owner PUT was rejected cleanly with an `Ack` reason. | ✅ Pass |
-| 2D/3D preview updates on every add/edit/reassign/delete, with no `CellController` filtering (`FR-5130`). | `manager.py:517-538`: `creator_scene()` calls the unmodified `build_scene()` once per owner (`blue`, `red`, `neutral`) and merges the results. The only `CellController` strings added by the diff are comments and one test comment; the import at `manager.py:29` predates this package. Probe: the scene tracked every add, edit and delete. The scene's `RenderAsset` entries carry no `owner` field, so the preview cannot tell the cells apart (Finding L1). | ✅ Pass |
-| TLE paste and lat/long entry both work with type/cell/name fields; the curated site list is offered before free entry (`FR-5140`). | `server.py:416-427`: `force/ground` plus `GET /api/ground_sites`. `force/tle` is unmodified. `content/ground_sites.py` parses 52 sites from `GROUND-INFRASTRUCTURE.md`; the probe got 52. The paths work for valid input, but `force/ground` with an invalid `owner`/`kind` returns **HTTP 500** (an unhandled pydantic `ValidationError` from `Asset(...)` at `manager.py:462-472`), and `lat_deg=999` is accepted without a range check (Finding M1). | ✅ Pass (with Medium finding) |
-| Asset menu edit/reassign/delete is consistent across list, JSON view and preview (`FR-5150`). | `manager.py:492-515`; `server.py:441-453`. Probe: PATCH then DELETE were each reflected in the next state read and scene read. A PATCH cannot change the `id` because `id` is forced back. | ✅ Pass |
-| A declared seat count plus matrix assignment produces `role_assignments` state identical in shape to `assign_role` (`FR-5160`). | For **White** seats only: `test_matrix_assignment_produces_role_assignments_identical_to_direct_assign_role` passes. The requirement is "declare how many seats exist **per cell**" (`FR-5160` title and description). `server.py:461-470` uses the request body's `cell` both as the caller-authorization check (`!= "white"` → 403) **and** as the target cell passed to `declare_seats(sid, req.cell, ...)`, so only `white-N` seats can ever be generated. Probe: `{"cell":"blue","count":2}` → 403 "only White Cell may declare seats", and the same for red. `index.html:147` offers White, Blue and Red. `creator.js:131-136` posts the chosen cell as `cell`, so choosing Blue or Red throws in `api.post` and the matrix never refreshes. The matrix's per-row `roles/assign` call then sends `cell = seat prefix` (`creator.js:151,160-164`), so even a Blue seat would be refused by `assign_role`'s White-only check (probe: `{"ok":false,"reason":"only White Cell may assign seat-to-role bindings"}`). `test_seat_declaration_rejects_non_white_cell` (`test_vignette_creator_ui.py:193`) asserts this defect as intended behaviour. | ❌ **Fail** (Finding H1) |
-| No regression to any existing menu/panel/route. | Full suite 707 passed, 3 skipped. `test_observer.py` has 4 new Observer-guard entries (`force/ground`, `creator/state` PUT, `creator/asset` PATCH/DELETE), and all pass. | ✅ Pass |
+| Explicit user authorization for the remediation (MSTR-006 §3). | Package header records "authorized 2026-09-27, project owner's direct instruction." | ✅ Pass |
+| `FR-5120`–`FR-5150` remain met (unchanged from v1.0, re-confirmed). | Independent probe: JSON-view PUT visible on next form-equivalent GET and vice versa; `creator_scene()` reflects add/edit/delete with no `CellController` import anywhere in `manager.py`'s creator methods or `server.py`'s creator routes; `force/tle`/`force/ground`/`ground_sites` (52 curated sites) all functional; asset PATCH/DELETE consistent across list/JSON/scene. | ✅ Pass |
+| `FR-5160`'s per-cell seat declaration now works (`BL-0123`). | `server.py:518-530`: `declare_seats(sid, req: SeatDeclarationRequest, cell: Optional[str] = None)` — `cell` (query param) is the caller's identity, gated `cell != "white"` → 403; `req.cell` is the pure *target* cell passed to `api.declare_seats(sid, req.cell, req.count)`. Independent probe: `POST /creator/seats?cell=white` with body `{"cell":"blue","count":2}` → 200, `{"seats":["blue-1","blue-2"]}`; same for `{"cell":"red","count":1}` → `["red-1"]`; a non-white caller (`?cell=blue`) → 403. `creator.js:131-136`'s `declareSeats()` calls `api.post(...)`, which (`app.js:44-49`) appends `cell=CELL` — the UI's own currently-selected seat — as the query param; since the Creator panel is White-only, this is always `"white"` in practice. | ✅ Pass |
+| The matrix's `roles/assign` call sends caller identity, not the assigned seat's cell prefix (`BL-0123`). | `creator.js:159-171`: the `.m-assign` handler posts `cell: "white"` literally (with an inline comment explaining why), not `row.dataset.cell`. Probe: assigning a `blue-1` seat's role via the matrix succeeds (`role_assignments` records the binding), where before the fix it would have been refused by `assign_role`'s White-only gate. | ✅ Pass |
+| `force/ground` no longer 500s on malformed input (`BL-0124`). | `manager.py:470-486::add_ground_asset` wraps `Asset(...)` construction in `try/except Exception`, returning `(False, f"invalid ground asset: {exc}")` → `Ack(ok=False, ...)`. Independent probe: `owner="purple"` and `lat_deg=999` both now return HTTP 422 (rejected at the pydantic-schema layer, below) rather than reaching this handler at all; a value that passes the schema but still fails `Asset(...)` (e.g. a malformed `kind` outside any `Literal`, since `GroundAssetRequest.kind` remains a free `str`) is the manager-level catch's actual remaining trigger, confirmed by direct call. | ✅ Pass |
+| `GroundAssetRequest.owner`/lat-long range-validated (`BL-0125`). | `server.py:242-274`: `owner: Literal["blue","red","neutral"]` plus `@field_validator` range checks on `lat_deg`/`lon_deg` ([-90,90]/[-180,180]). Probe: `owner="purple"` → 422 `literal_error`; `lat_deg=999` → 422 `value_error` with the exact message quoted in the validator. | ✅ Pass |
+| Stale `build_scene(world, cell)` prose corrected (`BL-0127`). | Package `:101` (FR-5130 row) and `manager.py:551-559`'s docstring both now describe the per-owner-merge design (`creator_scene()` composes `build_scene()` once per real owner and merges), not the disproved single-call premise. `:315-333`'s Risks note also documents the correction. | ✅ Pass |
+| No regression to any existing menu/panel/route. | Full suite 753 passed, 3 skipped (up from 707 at v1.0 — the other 8 packages in this batch account for the growth). No pre-existing test broken. | ✅ Pass |
 
 ## Verification Checklist audit
 
 | Item | Evidence | Pass/Fail |
 |---|---|---|
-| `test_vignette_creator_ui.py` exists and is green. | 15 tests (`:31`–`:200`), all green. One of them (`:193`) encodes the H1 defect. | ✅ Pass |
-| `test_determinism.py` green. | 14 passed (with `test_import_guard.py`). | ✅ Pass |
-| `test_import_guard.py` green. | Same run. No `spacesim/engine/` file was touched by `18c19a5`. | ✅ Pass |
-| Full suite, zero regressions. | 707 passed, 3 skipped. | ✅ Pass |
-| Independently confirm that the JSON view and form UI share one state by driving both. | Done by the probe (see the FR-5120 row), not by re-running the package's tests. | ✅ Pass |
-| Independently confirm the preview uses `build_scene()` in ground-truth mode with no `CellController` import or call. | Confirmed by reading the code (see the FR-5130 row). The package's original "single ground-truth call" premise was wrong, as the Status header already discloses. The per-owner merge that replaced it is sound. | ✅ Pass |
+| `test_vignette_creator_ui.py` exists and is green. | 16 tests (up from 15 at v1.0), all green. `test_seat_declaration_rejects_non_white_cell` (v1.0, encoded the defect as intended) is gone; replaced by `test_seat_declaration_rejects_non_white_caller` (`:193`) and a new `test_seat_declaration_allows_white_caller_to_declare_non_white_target_cell` (`:202`), which directly tests the v1.0 H1 fix. | ✅ Pass |
+| `test_determinism.py` green. | 6 passed (this package touches no engine code — draft sessions have no event log/clock advance). | ✅ Pass |
+| `test_import_guard.py` green. | 8 passed. No file under `spacesim/engine/` touched by this package or its remediation. | ✅ Pass |
+| Full suite, zero regressions. | 753 passed, 3 skipped, 1 warning (pre-existing `httpx`/starlette deprecation notice, unrelated). | ✅ Pass |
+| Independently confirm JSON view / form UI share one state. | Re-confirmed by fresh probe (unchanged from v1.0; not touched by this remediation). | ✅ Pass |
+| Independently confirm the preview uses `build_scene()` in ground-truth mode, no `CellController` import/call. | Re-confirmed: `grep -n CellController` across `manager.py`'s creator methods, `server.py`'s creator routes, and `creator.js` returns nothing in the creator surface's own code. | ✅ Pass |
 
 ## Requirements audit
 
 | Req ID | Where implemented | Where tested | RTM cell state | Pass/Fail |
 |---|---|---|---|---|
-| FR-5120 | `manager.py` `creator_state`/`creator_set_state`; `server.py` `creator/state` GET/PUT; `creator.js` JSON panel | `test_vignette_creator_ui.py:31-71` (4 tests) | `:180` cites the tests and `IP-1174`. Annotated this pass as `RETURNED (VR-1174)` at package level. | ✅ Pass |
-| FR-5130 | `manager.py::creator_scene`; `server.py` `creator/scene`; `creator.js` preview | `:86`, `:96` | `:181`, annotated likewise. | ✅ Pass |
-| FR-5140 | `server.py` `force/tle` (unmodified), `force/ground`, `ground_sites`; `content/ground_sites.py` | `:109`, `:121`, `:134` | `:182`, annotated likewise. | ✅ Pass (M1) |
-| FR-5150 | `manager.py` `creator_edit_asset`/`creator_delete_asset`; `server.py` `creator/asset/{id}` PATCH/DELETE | `:149`, `:159`, `:169` | `:183`, annotated likewise. | ✅ Pass |
-| FR-5160 | `manager.py::declare_seats`; `server.py` `creator/seats`; `creator.js` matrix | `:183`, `:193`, `:200` | `:184`, annotated as **not met, `VR-1174` H1**. | ❌ Fail |
+| FR-5120 | `manager.py::creator_state`/`creator_set_state`; `server.py` `creator/state` GET/PUT | `test_vignette_creator_ui.py` (4 tests) | RTM `:180` still says "RETURNED on `FR-5160`" — **stale, corrected by this report (see Findings L3)**. | ✅ Pass |
+| FR-5130 | `manager.py::creator_scene`; `server.py` `creator/scene` | same file | RTM `:181` — same stale annotation, corrected. | ✅ Pass |
+| FR-5140 | `server.py` `force/tle`, `force/ground`, `ground_sites`; `content/ground_sites.py` | same file | RTM `:182` — same stale annotation, corrected. | ✅ Pass |
+| FR-5150 | `manager.py::creator_edit_asset`/`creator_delete_asset`; `server.py` `creator/asset/{id}` PATCH/DELETE | same file | RTM `:183` — same stale annotation, corrected. | ✅ Pass |
+| FR-5160 | `manager.py::declare_seats`; `server.py::declare_seats` (caller/target split); `creator.js` matrix | `test_vignette_creator_ui.py:183-215` (3 tests) | RTM `:184` says "RETURNED... H1... not met" — **stale, this is the cell this report actually needed to flip; corrected.** | ✅ Pass |
 
 ## Test run
 
-Commands run on the `d2818ff` code tree:
+Commands run on the `d2fc118` tree (worktree `agent-a17e870f946ba1748`):
 
 ```
-PYTHONPATH=. python3 <scratchpad>/p1174.py      # independent HTTP-route probe (not committed)
-  → declare white 200 ["white-1","white-2"]; declare blue 403; declare red 403
-  → assign blue: {"ok":false,"reason":"only White Cell may assign seat-to-role bindings"}
-  → JSON⇄form convergence OK both directions; scene reflects add/edit/delete
-  → force/ground owner="purple" → 500 Internal Server Error; lat_deg=999 → ok:true
-  → ground_sites → 52
+python3 -m pytest -q                                                    # full suite
+  → 753 passed, 3 skipped, 1 warning in 168.20s
 
-python3 -m pytest -o addopts="" -q spacesim/tests/test_determinism.py spacesim/tests/test_import_guard.py
-  → 14 passed
-python3 -m pytest -o addopts="" -q            (full suite)
-  → 707 passed, 3 skipped, 1 warning in 156.06s
+python3 -m pytest spacesim/tests/test_determinism.py -q                 # permanent gate 1
+  → 6 passed
+
+python3 -m pytest spacesim/tests/test_import_guard.py -q                # permanent gate 2
+  → 8 passed
+
+python3 -m pytest spacesim/tests/test_vignette_creator_ui.py -q         # package-specific
+  → 16 passed
+```
+
+Independent HTTP-route probe (`TestClient`, not committed — ad hoc scratchpad script):
+```
+declare white 200 ["white-1"]; declare blue (caller=white) 200 ["blue-1","blue-2"];
+declare red (caller=white) 200 ["red-1"]; declare (caller=blue) 403
+matrix-assign a blue-1 seat (caller literal "white") → role_assignments records it
+force/ground owner="purple" → 422 (literal_error); lat_deg=999 → 422 (value_error, range msg)
+JSON⇄form convergence OK both directions; scene reflects add/edit/delete
 ```
 
 ## Scope audit
 
-`git show --stat 18c19a5` touches:
-
-- **Production code:** the new `creator.js` and `content/ground_sites.py`. Modified:
-  `session/manager.py`, `session/inprocess.py`, `ui_web/server.py`, `ui_web/static/app.js` and
-  `ui_web/static/index.html`.
-- **Tests:** the new `test_vignette_creator_ui.py`; `test_observer.py` was extended.
-- **Docs:** `CLAUDE.md`, `ROADMAP.md`, `FS-117`'s status note, the RTM, the Master Build Plan,
-  `packages/INDEX.md`, `01-technical-work-breakdown.md`, and the package itself.
-
-`content/ground_sites.py` is outside the declared Files to Create. It is disclosed and anticipated
-by the package's own Risk ("minimal parsing needed"), so it is an accepted excursion. The package
-said the `session/manager.py` additions would be "small". They came to +96 lines, which is
-proportionate. No unexplained excursion.
+`git show --stat 2c9785d` touches: `docs/implementation/00-master-build-plan.md`,
+`docs/implementation/packages/IP-1174-vignette-creator-ui-surfaces.md`, `docs/pipeline/backlog.md`,
+`spacesim/session/manager.py`, `spacesim/tests/test_vignette_creator_ui.py`,
+`spacesim/ui_web/server.py`, `spacesim/ui_web/static/creator.js`. Every file is inside the
+package's own declared surface (Files to Create/Modify) or its natural test/doc companions — no
+unexplained excursion. No `spacesim/engine/` file touched.
 
 ## Findings
 
 | # | Description | Severity | Recommended owner |
 |---|---|---|---|
-| H1 | **`FR-5160`'s per-cell seat declaration is not delivered.** `POST /creator/seats` overloads the body's `cell` as both the caller's identity (must be `white`) and the target cell for the seats, so only White seats (`white-1`…) can be declared. The Creator UI's Blue/Red options fail with an uncaught 403. The matrix's `roles/assign` call also sends the seat's own cell prefix as the caller identity, so a non-White row could never be assigned even if its seats existed. `test_seat_declaration_rejects_non_white_cell` pins the defect as if it were intended. **Fix direction (for 08, not done here):** separate the caller seat (the `cell` query parameter, the convention every other mutating route uses) from the target cell in the body, have the matrix call `roles/assign` as `white`, and invert the `:193` test to check the caller identity, not the target cell. | **High** | `08-code-implementation` re-run on IP-1174 |
-| M1 | `POST /force/ground` has no input validation. An invalid `owner`/`kind` raises an unhandled `ValidationError` from `Asset(...)`, which surfaces as **HTTP 500** instead of an `Ack(ok=False, …)` (compare `creator_set_state`, which catches it). There is no `lat_deg`/`lon_deg` range check (`999` is accepted and stored). | Medium | `08-code-implementation` (same re-run) |
-| M2 | `GroundAssetRequest.owner`/`kind` and the lat/long form share no validation vocabulary with `Asset`'s own `Literal` types. The same malformed-input path as M1 but at the schema level; the request model should constrain owner to `blue`/`red`/`neutral`. | Medium | `08-code-implementation` (same re-run) |
-| L1 | The ground-truth preview scene (`creator_scene`) drops owner information: `RenderAsset` has no `owner` field, so the merged preview cannot colour or label assets by cell. `FR-5130` only requires rendering the lay-down, so this is a usability gap, not a failed requirement. | Low | `07-implementation-planning` (candidate enhancement) |
-| L2 | The package's Objective, Architecture and Verification Checklist prose still describes the disproved single-call `build_scene(world, cell)` "ground-truth mode". The implementation note in Risks records the correction, but the prose was never updated. Carried forward from the implementing session's own routing. | Low | `07-implementation-planning` (package text) |
+| L1 *(carried forward from v1.0, unresolved, out of this remediation's scope)* | The ground-truth preview scene (`creator_scene`) still drops owner information: `RenderAsset` has no `owner` field, so the merged preview cannot colour/label assets by cell. `FR-5130` only requires rendering the lay-down, so this remains a usability gap, not a failed requirement. | Low | `07-implementation-planning` (candidate enhancement) |
+| L2 (new) | `BL-0124`/`BL-0125`'s fix is functionally confirmed by this report's own probe, but `test_vignette_creator_ui.py` has no dedicated regression test asserting the malformed-`owner`/out-of-range-`lat_deg` rejection path (422, or the manager-level `Ack(ok=False)` for a malformed `kind`). A future edit to `GroundAssetRequest` or `add_ground_asset` could silently regress this with no test catching it. | Low | `08-code-implementation` (add regression test; does not block VERIFIED — behavior itself is correct and independently probed) |
+| L3 (new) | The Requirements Traceability Matrix rows for `FR-5120`–`FR-5160` (`03-requirements-traceability-matrix.md:180-184`) still carry v1.0's "RETURNED... not met" annotations. This report corrects them (see Related change below) as part of this pass's mandated traceability audit. | Low | Closed by this report's own RTM edit |
+
+## RTM correction applied by this report
+
+`docs/requirements/03-requirements-traceability-matrix.md` rows for `FR-5120`–`FR-5160` (lines
+180–184) updated to drop the stale "RETURNED... `VR-1174`" annotation and record `IP-1174` as
+`VERIFIED` (this report), since the v1.0 defect they described is now fixed and independently
+confirmed.
 
 ## Related
 
@@ -120,3 +126,12 @@ proportionate. No unexplained excursion.
 [VR-1173](VR-1173-vignette-creator-draft-session.md) · [VR-1151](VR-1151-seat-role-assignment.md) ·
 [00-master-build-plan.md](../00-master-build-plan.md) · [packages/INDEX.md](../packages/INDEX.md) ·
 [03-requirements-traceability-matrix.md](../../requirements/03-requirements-traceability-matrix.md)
+
+## Prior pass (v1.0, superseded)
+
+v1.0 (`853bd7f`, tree `d2818ff`) returned this package: High finding `H1` (seat declaration
+White-only), Medium findings `M1`/`M2` (unhandled 500 + missing validation on `force/ground`), plus
+Low findings `L1` (preview owner labelling, still open above) and `L2` (stale
+`build_scene(world, cell)` prose, fixed and confirmed above as part of the `BL-0127` DoD item).
+`FR-5120`–`FR-5150` were already confirmed met at v1.0; only `FR-5160` failed. This v2.0 pass
+confirms all three findings' fixes independently and closes the package to `VERIFIED`.
