@@ -131,12 +131,18 @@ and are not re-wired as command verbs.
   truncated eventlog after rewind (batch A2). Order events carry `sensor_id` + `window_end` so
   replay produces identical bookings without manual rebind.
 
-## 6. Sat / fleet caps validation — ✅ implemented
+## 6. Sat / fleet caps validation — soft guideline, not an engine cap (IP-1061, 2026-09-26)
 
-`build-spec/01-context-and-scope.md` declares ≤24 satellites for v1 with a hard ceiling of 48,
-and constellations ≤3 sats. Enforced at vignette load: `content/vignette.build_world` raises
-`ValueError` with a clear message if either cap is exceeded. Pinned by tests in
-`spacesim/tests/test_content.py` (batch A1).
+`build-spec/01-context-and-scope.md` originally declared ≤24 satellites for v1 with a hard
+ceiling of 48, and constellations ≤3 sats, enforced at vignette load by `content/vignette.
+build_world` raising `ValueError` if either was exceeded. **[ADR-0019](architecture/adr/ADR-0019-sizing-guideline-not-engine-cap.md)**
+established these figures as a soft sizing guideline, not an engine-enforced cap (`NFR-1300`);
+an external user validation report (26 Sep 2026, `BL-0065`) found the code had never been
+updated to match, and `IP-1061` removed both `ValueError` raises. `content/vignette.build_world`
+now accepts vignettes of any size — the clock-lag watchdog
+(`SessionManager._record_catch_up_lag`) is the intended backstop for hardware that can't keep up
+with an oversized vignette, per ADR-0019. `spacesim/tests/test_content.py` now pins the inverse
+(vignettes above the old cap load without error) instead of the removed enforcement.
 
 ## 7. Mock Space Surveillance Network (SSN) — ✅ implemented
 

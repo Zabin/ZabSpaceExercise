@@ -187,12 +187,157 @@ checked against `packages/INDEX.md` for collisions — `IP-1170`-`IP-1179` uncla
 | [IP-1171](packages/IP-1171-typed-payload-bus-parameters.md) | FS-117 §`FR-5170`/`FR-5180` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; depends on `IP-1170`) |
 | [IP-1172](packages/IP-1172-per-cell-roe-enforcement.md) | FS-117 §`FR-3420`/`NFR-2010` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3) |
 | [IP-1173](packages/IP-1173-vignette-creator-draft-session.md) | FS-117 §`FR-5110` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3) |
-| [IP-1174](packages/IP-1174-vignette-creator-ui-surfaces.md) | FS-117 §`FR-5120`-`FR-5160` | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; depends on `IP-1171`/`IP-1172`/`IP-1173`) |
+| [IP-1174](packages/IP-1174-vignette-creator-ui-surfaces.md) | FS-117 §`FR-5120`-`FR-5160` | Forward design | 🔵 COMPLETE (authorized 2026-07-05; implemented 2026-09-26; awaiting `09-package-verification`) |
 
 None of these five packages is authorized for coding — per MSTR-006 §3, being fully specified (and
 having every *upstream Feature/architecture* dependency already closed) is not itself an
 authorization; a separate, explicit user go-ahead is required per package before any Implementation
 Task begins.
+
+## Remediation Tranche (2026-09-26): IP-1061 — intake defects A1–A4
+
+Source: `00-intake` entries `BL-0062`–`BL-0065` (external user validation report, 26 Sep 2026),
+triaged by `00-pipeline-manager` run #53. No new Feature Specification — the defects are shipped
+behaviour diverging from already-approved baseline (`FR-4410` via FS-106/`IP-1060`; `NFR-1300` via
+ADR-0019).
+
+```
+FS-106 §FR-4410 ─┬─ A1  time inject at at_sim_s 0 never fires (+ rewind no-double-fire)  ─┐
+                 ├─ A2  inject_library.yaml comment names a non-existent route            ├─► IP-1061
+                 └─ A3  duplicate, divergent space_weather branch in _h_inject            │
+NFR-1300 / ADR-0019 ── A4  hard 24-sat / 3-per-group cap in build_world()                 ─┘
+```
+
+**No-split rationale.** Four defects, one package: each is a few lines, all four are
+regression-testable in the existing `test_inject_library.py` / `test_content.py`, and they touch
+only `session/manager.py`, `content/vignette.py`, and one YAML comment — no seam crossing, no
+engine change, one coherent Definition of Done ("shipped behaviour matches the approved
+baseline"). Splitting A4 (content) from A1–A3 (session) would double the verification cost for no
+isolation benefit. A5 (`BL-0066`, directed-energy path) is **excluded** — the user chose a distinct
+DE path, which is new specified behaviour and enters at `06-feature-specification`, not a
+remediation. A2 is a comment-only fix per the user's 2026-09-26 decision (no alias route).
+
+| Package | Status | Authorization |
+|---|---|---|
+| [IP-1061](packages/IP-1061-inject-and-sizing-defect-remediation.md) | 🔵 COMPLETE | Authorized 2026-09-26 (MSTR-006 §3); implemented 2026-09-26 |
+
+## Tranche 4 (2026-09-27, in progress): Must-tier external validation report batch
+
+Source: `docs/pipeline/backlog.md` `BL-0067`/`BL-0068`/`BL-0069`/`BL-0070`/`BL-0071`/`BL-0082`
+(external user validation report, 26 Sep 2026, items B1/B2/B3/B4/B5/B16). Six Feature
+Specifications now `✅ Ready for implementation planning` (run #61-#63): `FS-118` (B16), `FS-106`
+v2.1 (B4), `FS-120` (B5), `FS-119` (B1), `FS-121` + `FS-103` v1.1 (B2/B3). Planned one package per
+Feature Specification (no cross-Feature split), in the priority order the pipeline journal
+recorded:
+
+```
+FS-118 (FR-5410/FR-5420/NFR-3700)              ─► IP-1180   [done]
+FS-106 v2.1 (FR-4420/FR-4430 slice)             ─► IP-1062   [done]
+FS-120 (FR-5510)                                ─► IP-1200   [done]
+FS-119 (FR-5220)                                ─► IP-1190   [done]
+FS-121 + FS-103 v1.1 (FR-7410/FR-7420)          ─► IP-1210   [this pass — LAST]
+```
+
+**All six Must-tier packages are now written.** This closes the external validation report intake
+batch's `07-implementation-planning` tranche in full.
+
+**No-split rationale (IP-1180).** `FS-118`'s three requirements (external-directory load,
+user-directory save retargeting, generalized traversal guard) share one seam — `content/
+vignette.py`/`content/vignette_export.py`/`config.py` — and one coherent Definition of Done ("the
+catalog and the save path both honor the plural set of configured content roots, safely"). No
+engine change, no UI-route-shape change. Splitting the load-side extension from the save-side
+retargeting would double the verification cost (both share the same generalized traversal-guard
+helper) for no isolation benefit.
+
+**No-split rationale (IP-1062).** `FS-106` v2.1's two requirements (condition-triggered firing,
+four new effect types) share one seam — `session/manager.py`'s inject dispatch — and the four new
+effect types are naturally implemented as siblings in the same shared effect-application helper
+the condition-check path also calls. Splitting "the condition-evaluation mechanism" from "the new
+effect types" would leave the condition-trigger half with nothing to demonstrate (no effect type it
+could plausibly fire without at least one of the others already existing, and the eight pre-existing
+effect types already work with `time`-typed triggers, so a condition trigger firing an old effect
+type is a valid, cheap demonstration — but the two new-effect-type engine touches, `Sensor.health`
+and the `scripted_manoeuvre`/`forced_custody_loss` engine calls, are exactly the shared-helper
+additions the condition path also needs to dispatch through) — one coherent Definition of Done, one
+package.
+
+**No-split rationale (IP-1200).** `FS-120`'s single requirement (`FR-5510`) is one coherent
+extension of one existing function pair (`export_vignette()`/`save_vignette()`) plus two additive
+schema fields — no seam crossing, one package.
+
+**No-split rationale (IP-1190).** `FS-119`'s single requirement (`FR-5220`) covers two file
+formats sharing one batch entry point and one per-object failure-reporting contract — splitting
+"TLE parsing" from "OMM parsing" into separate packages would duplicate the batch-orchestration/
+reporting logic for no isolation benefit; one package, two parser functions.
+
+**No-split rationale (IP-1210).** `FR-7410` (truth export) and `FR-7420` (cell-observed export)
+share one time-span replay mechanism (`aar.state_at_time`) and one serializer (ECI/RIC transform +
+CSV/CCSDS OEM writers), per `ADS-1500`'s own System Architecture — splitting them into two packages
+would either duplicate the shared serializer or create an artificial cross-package dependency for
+a seam that isn't real (both variants are thin, differently-sourced callers of the same
+machinery). One package, two sampling functions sharing one serializer.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1180](packages/IP-1180-external-vignette-directories.md) | FS-118 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (661/3, both gates green), awaiting `09` in a fresh session |
+| [IP-1062](packages/IP-1062-condition-triggered-injects-and-new-effects.md) | FS-106 v2.1 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (678/3, both gates green), awaiting `09` in a fresh session |
+| [IP-1200](packages/IP-1200-save-as-scenario.md) | FS-120 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (689/3, both gates green), awaiting `09` in a fresh session |
+| [IP-1190](packages/IP-1190-bulk-tle-omm-import.md) | FS-119 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (638/3, both gates green), awaiting `09` in a fresh session |
+| [IP-1210](packages/IP-1210-ephemeris-export.md) | FS-121/FS-103 v1.1 | 🔵 COMPLETE | Granted 2026-09-27 — implemented same day (707/3, both gates green), awaiting `09` in a fresh session |
+
+**All six Must-tier packages are now written and specification-complete.** None is authorized for
+coding (MSTR-006 §3) — that is a separate, explicit decision for the project owner, per package or
+in bulk. **Note:** `IP-1180` and `IP-1200` both extend the same function (`save_vignette()`/
+`export_vignette()`) — whichever is implemented second must be built against the first's actual
+landed diff, not against either package document's description alone (see each package's own
+Dependencies/Risks).
+
+## Should-tier batch (run #78)
+
+Seven packages against the eight Feature Specifications `06-feature-specification` drafted for the
+Should-tier external-validation-report intake batch (`FS-122`, `FS-124`-`FS-129`). **No-split
+rationale, every package in this batch:** each Feature Specification's own scope fits a single
+subsystem seam (`engine/` core, or one `session/` read/write path) with one coherent Definition of
+Done — none spans a seam wide enough to warrant a lettered slice, unlike `FS-105`'s bus/payload-vs-
+effects split or `FS-117`'s five-way Tranche 3 split. One package per Feature Spec.
+
+**`FS-122` covers two backlog items in one package (`IP-1220`).** `BL-0073`/B7 (five sensor
+variants) and `BL-0083`/B17 (hosted sensor) share the same new `FR-1600` requirement parent and the
+same `engine/entities.py`/`access.py`/`isr.py` seam — splitting them into two packages would
+duplicate the `Sensor`-field-addition task and create an artificial cross-package dependency for a
+seam that isn't real. One package, six leaves.
+
+**`FS-123` (B8, space-weather-index drag/anomaly-rate coupling) has no package this run.** Its own
+two Open Questions (`BL-0104`: the index-to-scaling mapping function; `BL-0121`: implausible-index-
+value handling) are physics/design decisions this skill's own rules forbid inventing — per Step 0's
+"every Open Question that blocks a planning decision must be resolved" gate, planning stopped here
+rather than guessing a formula. The next free ID in this series (`IP-1230`) is reserved for it once
+`04`/`06` resolves both questions.
+
+**`IP-1270`/`IP-1290` share one design dependency, not a file seam.** `FR-3430` (`FS-127`, B10) and
+`FR-1450` (`FS-129`, B15) independently describe "an effect's type and/or its five-D's
+reversibility category" in identical words (`BL-0105`) — rather than each package inventing its own
+classification vocabulary, `IP-1270` (authored first, per the user-directed batch order) commits to
+the shared enumeration (order action type × five-D's reversibility category, both already-named
+engine vocabularies) and `IP-1290` cites that resolution. This is a sequencing dependency between
+two otherwise-independent packages (different files, `engine/orders.py`'s ROE-gating extension vs.
+`engine/effects.py`'s jam-delivery/detectability extension), not a file-level split rationale.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1220](packages/IP-1220-sensor-modality-models.md) | FS-122 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED` |
+| [IP-1240](packages/IP-1240-debris-field-persistence-estimate.md) | FS-124 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED` |
+| [IP-1250](packages/IP-1250-maneuver-ledger.md) | FS-125 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED` |
+| [IP-1260](packages/IP-1260-telemetry-csv-export.md) | FS-126 | 🔴 BLOCKED | Not an authorization block — depends on `IP-1062` reaching `VERIFIED` (currently `COMPLETE` only) |
+| [IP-1270](packages/IP-1270-effect-authorization-gating-and-live-roe.md) | FS-127 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED`; resolves the shared taxonomy `IP-1290` reuses |
+| [IP-1280](packages/IP-1280-variable-speed-aar-replay.md) | FS-128 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED` |
+| [IP-1290](packages/IP-1290-jamming-delivery-and-effect-detectability.md) | FS-129 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED`; reuses `IP-1270`'s shared taxonomy — sequence after or coordinate closely |
+
+**None of the seven is authorized for coding (MSTR-006 §3)** — a separate, explicit decision for the
+project owner, per package or in bulk. **Sequencing note:** `IP-1270` before (or tightly
+coordinated with) `IP-1290`; `IP-1260` cannot begin `08-code-implementation` until `IP-1062` clears
+`09-package-verification` in a fresh session; the remaining four (`IP-1220`, `IP-1240`, `IP-1250`,
+`IP-1280`) have no cross-package ordering constraint.
 
 ## Related
 

@@ -223,6 +223,7 @@ clusters with real design tension; small/uncontested features skip straight to `
 | ADS-3500 | Role-Scoped Command Enforcement | `architecture/ADS-3500-role-scoped-command-enforcement.md` | (no owning DOM) | ✅ Authored (2026-07-05) — the first `ADS-xxx` in this project |
 | ADS-5100A | Vignette Creator — Authoring Session & UI Architecture | `architecture/ADS-5100A-vignette-creator-session-and-ui.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
 | ADS-5100B | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | `architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
+| ADS-1500 | Per-Cell Custody — Estimated-State History & Export | `architecture/ADS-1500-per-cell-custody-estimated-state-and-export.md` | R105-grounded; FS-103 | ✅ Authored (2026-09-26) |
 
 **ADS-3500** resolves two Open Questions [`FS-116`](docs/features/FS-116-role-scoped-command-catalog.md)
 (`FEAT-3500`) surfaced: extends the operator-command interface to carry a `seat` identifier
@@ -533,9 +534,32 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1171 | Typed Payload & Bus Parameter Domain Model | `implementation/packages/IP-1171-typed-payload-bus-parameters.md` | FS-117 §FR-5170/FR-5180 | Forward design | ✅ VERIFIED (verified 2026-07-12, fresh session, [`VR-1171`](implementation/verification/VR-1171-typed-payload-bus-parameters.md); full suite 598 passed/3 skipped, both permanent gates green; one Low finding, fixed in place) |
 | IP-1172 | Per-Cell Rules of Engagement Enforcement | `implementation/packages/IP-1172-per-cell-roe-enforcement.md` | FS-117 §FR-3420/NFR-2010 | Forward design | ✅ VERIFIED (verified 2026-07-11, fresh session, [`VR-1172`](implementation/verification/VR-1172-per-cell-roe-enforcement.md); full suite 586 passed/3 skipped, both permanent gates green; zero findings) |
 | IP-1173 | Vignette Creator Draft Session & Reverse Serialization | `implementation/packages/IP-1173-vignette-creator-draft-session.md` | FS-117 §FR-5110 | Forward design | ✅ VERIFIED (verified 2026-07-11, fresh session, [`VR-1173`](implementation/verification/VR-1173-vignette-creator-draft-session.md); full suite 586 passed/3 skipped, both permanent gates green; zero findings) |
-| IP-1174 | Vignette Creator UI Surfaces | `implementation/packages/IP-1174-vignette-creator-ui-surfaces.md` | FS-117 §FR-5120-FR-5160 | Forward design | 🟡 READY (authorized 2026-07-05 — MSTR-006 §3; every dependency — `IP-1171`/`IP-1172`/`IP-1173` — now `VERIFIED`) |
+| IP-1174 | Vignette Creator UI Surfaces | `implementation/packages/IP-1174-vignette-creator-ui-surfaces.md` | FS-117 §FR-5120-FR-5160 | Forward design | 🟠 IN PROGRESS: RETURNED by [`VR-1174`](implementation/verification/VR-1174-vignette-creator-ui-surfaces.md) (2026-09-27). High: `FR-5160` per-cell seat declaration is White-only. 2 Medium input-validation findings. Awaiting an `08-code-implementation` re-run |
+| IP-1061 | Inject Scheduling & Sizing-Cap Defect Remediation | `implementation/packages/IP-1061-inject-and-sizing-defect-remediation.md` | FS-106 §FR-4410 + NFR-1300 (ADR-0019) | Remediation | ✅ VERIFIED (verified 2026-09-27, fresh agent context, [`VR-1061`](implementation/verification/VR-1061-inject-and-sizing-defect-remediation.md); full suite 707 passed/3 skipped, both permanent gates green; 3 Low findings) |
+| IP-1180 | External Vignette Directories & Safe Scenario Save Target | `implementation/packages/IP-1180-external-vignette-directories.md` | FS-118 `FR-5410`/`FR-5420`/`NFR-3700` | Forward design | ✅ VERIFIED (verified 2026-09-27, fresh agent context, [`VR-1180`](implementation/verification/VR-1180-external-vignette-directories.md); full suite 707/3, both permanent gates green; 1 Low finding) |
+| IP-1062 | Condition-Triggered Injects & New Inject Effect Types | `implementation/packages/IP-1062-condition-triggered-injects-and-new-effects.md` | FS-106 v2.1 `FR-4420`/`FR-4430` | Forward design | 🟠 IN PROGRESS: RETURNED by [`VR-1062`](implementation/verification/VR-1062-condition-triggered-injects-and-new-effects.md) (2026-09-27). High: the `anomaly`/bus effect leaves a half-safe state that is unrecoverable through `begin_recovery`. Awaiting an `08-code-implementation` re-run |
+| IP-1200 | Save-as-Scenario | `implementation/packages/IP-1200-save-as-scenario.md` | FS-120 `FR-5510` | Forward design | ✅ VERIFIED (verified 2026-09-27, fresh agent context, after IP-1180, [`VR-1200`](implementation/verification/VR-1200-save-as-scenario.md); full suite 707/3, both permanent gates green; 2 Low findings) |
+| IP-1190 | Bulk TLE and CCSDS OMM Multi-Object Import | `implementation/packages/IP-1190-bulk-tle-omm-import.md` | FS-119 `FR-5220` | Forward design | ✅ VERIFIED (verified 2026-09-27, fresh agent context, [`VR-1190`](implementation/verification/VR-1190-bulk-tle-omm-import.md); full suite 707/3, both permanent gates green; 2 Medium and 2 Low findings) |
+| IP-1210 | Ephemeris Export (Truth and Cell-Observed) | `implementation/packages/IP-1210-ephemeris-export.md` | FS-121 `FR-7410`/`FR-7420`; FS-103 v1.1 | Forward design | 🟠 IN PROGRESS: RETURNED by [`VR-1210`](implementation/verification/VR-1210-ephemeris-export.md) (2026-09-27). High: RIC velocity omits the ω×ρ transport term. Medium: the CCSDS OEM output is non-conformant and carries no RIC. Awaiting an `08-code-implementation` re-run |
+| IP-1220 | Sensor Modality Models | `implementation/packages/IP-1220-sensor-modality-models.md` | FS-122 `FR-1610`-`FR-1660` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1240 | Debris-Field Persistence Estimate by Altitude | `implementation/packages/IP-1240-debris-field-persistence-estimate.md` | FS-124 `FR-1430` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1250 | Per-Asset Manoeuvre Ledger with Purpose Tags and CSV Export | `implementation/packages/IP-1250-maneuver-ledger.md` | FS-125 `FR-1320` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1260 | Per-Asset Telemetry CSV Export Over a Time Span | `implementation/packages/IP-1260-telemetry-csv-export.md` | FS-126 `FR-2320` | Forward design | 🔴 BLOCKED (depends on `IP-1062` reaching `VERIFIED`. `IP-1062` was RETURNED by `VR-1062` with a High finding in the `anomaly` effect this package needs, so the blocker has not cleared. Not an authorization block) |
+| IP-1270 | Optional Effect-Authorization Gating and Live Rules-of-Engagement Changes | `implementation/packages/IP-1270-effect-authorization-gating-and-live-roe.md` | FS-127 `FR-3430`/`FR-3440` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`; resolves the shared taxonomy IP-1290 reuses) |
+| IP-1280 | Variable-Speed AAR Replay from Truth or a Single Cell's Viewpoint | `implementation/packages/IP-1280-variable-speed-aar-replay.md` | FS-128 `FR-7330` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1290 | Jamming-Delivery Degradation and Per-Effect-Class Detectability Settings | `implementation/packages/IP-1290-jamming-delivery-and-effect-detectability.md` | FS-129 `FR-1440`/`FR-1450` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`; reuses IP-1270's shared taxonomy) |
 
-FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1160 is
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1220,
+IP-1240, IP-1250, IP-1260, IP-1270, IP-1280, and IP-1290 are new (2026-09-27, run #78)** — seven
+packages planned against the Should-tier external-validation-report intake batch (`BL-0072`-
+`BL-0083`); `FS-123` (B8, space-weather coupling) has no package yet, blocked on two open design
+questions (`BL-0104`/`BL-0121`). See `01-technical-work-breakdown.md` §"Should-tier batch (run
+#78)" for the no-split rationale. None is authorized for coding (MSTR-006 §3) — a separate
+decision for the project owner. **IP-1180,
+IP-1062, IP-1200, IP-1190, and IP-1210 are new (2026-09-27, Tranche 4)** — all six packages planned
+against the Must-tier external validation report batch (`BL-0062`–`BL-0083`) are now written; see
+`01-technical-work-breakdown.md` Tranche 4 for the no-split rationale of each. None is authorized
+for coding (MSTR-006 §3) — a separate decision for the project owner. **IP-1160 is
 new (2026-07-05)**, closing `FEAT-3500`'s implementation gap that `11-release-readiness` found —
 see the Master Build Plan's Tranche 2 note and `01-technical-work-breakdown.md` for the no-split
 rationale. **IP-1170 through IP-1174 are new (2026-07-05, Tranche 3)** — the five packages planned
@@ -547,9 +571,11 @@ legacy-ROE auto-upgrade policy) were resolved by the project owner during this p
 coding 2026-07-05** (MSTR-006 §3, project owner); `IP-1170`/`IP-1172`/`IP-1173` were implemented
 the same day. `IP-1170`, `IP-1172`, `IP-1173`, and now `IP-1171` have all passed independent
 verification (2026-07-05, run #48, `VR-1170`; 2026-07-11, same fresh session, `VR-1172`/`VR-1173`;
-2026-07-12, fresh session, `VR-1171`) and are all `VERIFIED`. **`IP-1174` now flips
-`BLOCKED → READY`** — every one of its three dependencies is `VERIFIED`, and it is the sole package
-left to implement in this tranche.
+2026-07-12, fresh session, `VR-1171`) and are all `VERIFIED`. **`IP-1174` flipped `BLOCKED → READY`**
+2026-09-26 once all three dependencies reached `VERIFIED`, and — sequenced behind the new
+remediation package `IP-1061` by the project owner's own priority call that same day — **was
+implemented and reached `COMPLETE` the same day**, closing this tranche's last forward-design
+package pending only its own `09-package-verification` pass.
 
 **IP-1090/IP-1100/IP-1110 are new (2026-07, tranche 1)**, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03, mirroring the FS-106 split — no new code

@@ -1,8 +1,15 @@
 # Feature Dependency Graph
 
-Analysis of all 36 Features' `Dependencies`/`Dependent Features` fields from
+Analysis of all 39 Features' `Dependencies`/`Dependent Features` fields from
 `03-feature-catalog.md`, cross-checked bidirectionally (every edge appears on both the depending
 and depended-upon Feature's entry).
+
+> **Amended 2026-10-03** (`05-feature-decomposition`, targeting the six new FR leaves baselined
+> for `BL-0107`/`BL-0109`/`BL-0111`/`BL-0122`/`BL-0079`): added three new Features —
+> **FEAT-1600** (depends on FEAT-1200), **FEAT-7400** (depends on FEAT-7100, FEAT-6200), and
+> **FEAT-8200** (depends on FEAT-6200, FEAT-1200, FEAT-8100). None introduces a new cycle: all
+> three are pure leaves (no Feature-level dependents of their own), and all three reuse existing,
+> already-resolved prerequisites rather than adding a new prerequisite edge anywhere upstream.
 
 ## Circular dependencies found (Critical — reported, not silently resolved)
 
@@ -62,12 +69,12 @@ existing FEAT-6600 chain, not schedule-extending.
 
 | Feature | Direct dependents | Why it's high-leverage |
 |---|---|---|
-| **FEAT-1200** Orbital Propagation & Access-Window Geometry | 7 (FEAT-1300, 1400, 1500, 2300, 3100, 3200, 5200) | The geometric substrate nearly every other Feature schedules against — the single highest-leverage early-build target in the catalog. |
+| **FEAT-1200** Orbital Propagation & Access-Window Geometry | 9 (FEAT-1300, 1400, 1500, 2300, 3100, 3200, 5200, 1600 *(new 2026-10-03)*, 8200 *(new 2026-10-03)*) | The geometric substrate nearly every other Feature schedules against — the single highest-leverage early-build target in the catalog. |
 | **FEAT-7100** Ordered Event Log | 3 direct (FEAT-1100, 7200, 7300), plus everything downstream of FEAT-1100 | Foundational to determinism itself, not merely a logging convenience — its position at the head of the critical path is not an accident of citation, it reflects real structural precedence. |
 | **FEAT-1100** Deterministic, Sub-Stepped Simulation Clock | 3 (FEAT-4300, 4400, 6300) | Gates all White-Cell time authority and the entire multiplayer transport. |
 | **FEAT-2100** Bus Subsystem SOH Modeling | 3 (FEAT-2200, 2300, 2500) | Gates the whole bus/payload Epic's remaining Features. |
 | **FEAT-3100** Plan-First Command Authoring | 3 (FEAT-3300, 3400, 9100) | Gates the shared scheduler, execute-time re-validation, and AI-Red. |
-| **FEAT-6200** Fog-of-War Filtering at the Session Boundary | 2 (FEAT-4600, 6500) | Gates both White Cell's god-view/view-as and Observer access. |
+| **FEAT-6200** Fog-of-War Filtering at the Session Boundary | 4 (FEAT-4600, 6500, 7400 *(new 2026-10-03)*, 8200 *(new 2026-10-03)*) | Gates White Cell's god-view/view-as, Observer access, and now both new export/view Features that read a cell's own belief state. |
 
 ## Parallel development opportunities
 
@@ -79,7 +86,13 @@ concurrently:
 - **EP-5000** (Scenario / Vignette Authoring) — FEAT-5200 depends only on FEAT-1200; FEAT-5100 and
   FEAT-5300 have no Feature-level dependencies at all.
 - **EP-8000** (Operator Console Presentation) — FEAT-8100 has zero Feature-level dependencies;
-  fully parallel-buildable from day one.
+  fully parallel-buildable from day one. FEAT-8200 *(new 2026-10-03)* depends on FEAT-6200 and
+  FEAT-1200 (both in EP-1000/EP-6000) and on FEAT-8100 itself, so it is parallel-buildable
+  alongside EP-2000/EP-5000 once those three prerequisites exist, not from day one.
+- **FEAT-1600** *(new 2026-10-03)* — depends only on FEAT-1200; parallel-buildable alongside
+  EP-2000/EP-5000 for the same reason.
+- **FEAT-7400** *(new 2026-10-03)* — depends on FEAT-7100 and FEAT-6200; parallel-buildable once
+  those two (already on the critical path for other reasons) exist.
 - **FEAT-3500** (Role-Scoped Command Catalog) and **FEAT-4700** (Manual Adjudication & Live
   Parameter Adjustment) — both have zero Feature-level dependencies.
 
@@ -97,6 +110,7 @@ graph TD
         F1300["FEAT-1300 Maneuver/Δv"]
         F1400["FEAT-1400 Effect Resolution"]
         F1500["FEAT-1500 Custody/Weapons-Quality"]
+        F1600["FEAT-1600 Sensor Modality Models (new)"]
     end
     subgraph EP2["EP-2000 Bus & Payload"]
         F2100["FEAT-2100 Bus SOH"]
@@ -138,9 +152,11 @@ graph TD
         F7100["FEAT-7100 Event Log"]
         F7200["FEAT-7200 Save/Resume"]
         F7300["FEAT-7300 AAR Replay/Scrub"]
+        F7400["FEAT-7400 Ephemeris/TLE Export (new)"]
     end
     subgraph EP8["EP-8000 Presentation"]
         F8100["FEAT-8100 Browser Console"]
+        F8200["FEAT-8200 RIC View/CATS Overlay (new)"]
     end
     subgraph EP9["EP-9000 AI-Red"]
         F9100["FEAT-9100 AI-Red Automation"]
@@ -189,6 +205,13 @@ graph TD
     F7300 --> F10100
     F10100 --> F10200
     F1100 --> F10200
+
+    F1200 --> F1600
+    F7100 --> F7400
+    F6200 --> F7400
+    F6200 --> F8200
+    F1200 --> F8200
+    F8100 --> F8200
 ```
 
 *(Edges are drawn `prerequisite --> dependent`, i.e. arrow points from the Feature that must exist

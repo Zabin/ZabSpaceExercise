@@ -8,6 +8,18 @@
 > citation vs. `UNASSIGNED`) as the three evidence sources — not invented forward planning. Where
 > the RTM shows `UNASSIGNED`, the bucket reflects "needs a traceability/verification pass," never
 > "needs new development," unless stated otherwise.
+>
+> **Amended 2026-10-03** (`05-feature-decomposition`, six new FR leaves for `BL-0107`/`BL-0109`/
+> `BL-0111`/`BL-0122`/`BL-0079`): unlike the rest of this plan, the three brand-new Features this
+> amendment adds (**FEAT-1600**, **FEAT-7400**, **FEAT-8200**) are genuine forward planning, not a
+> build-history reconstruction — their new leaves (`FR-1670`, `FR-7440`, `FR-8210`, `FR-8220`) are
+> unimplemented (RTM `UNASSIGNED`), even though each Feature also carries pre-existing, already-
+> `VERIFIED` sibling leaves. Bucketed at **Release 2** below on priority (`Should`) and dependency
+> grounds (each depends only on already-Release-1-or-earlier-bucketed Features), consistent with
+> this plan's existing Release-2 treatment of other `Should`-priority, not-yet-authorized Features
+> (`FEAT-9100`, `FEAT-10100`, `FEAT-10200`). `FEAT-4400`/`FEAT-4600` each gained one new, Could-
+> priority, unimplemented leaf (`FR-4450`/`FR-4620`) — both Features keep their existing bucket
+> (the new leaf is additive, not a reason to reschedule the whole Feature).
 
 ## Bucket assignments
 
@@ -55,6 +67,9 @@
 | **FEAT-6600** Hot-Seat Hand-Off Screen-Blank Menu | Must-priority per its FR (closes GDS-05's own prior Open Question 1), same treatment — the second of the two audit-flagged gaps, and the deepest node on the catalog's critical path. |
 | **FEAT-10100** Automated Non-Aggregating Competency Rubric Computation *(new 2026-07)* | **Should**-priority, same reasoning pattern as FEAT-9100 — valuable but not a precondition for any vignette's playability. Additionally gated on `MSTR-006` §3 authorization (forward-design, not yet implemented) independent of its now-resolved `ADR-0017` conflict (`ADR-0032`). |
 | **FEAT-10200** Multi-Run/Cohort Structured Research-Data Export *(new 2026-07)* | **Should**-priority, depends on FEAT-10100 (same bucket, dependency-consistent). Additionally gated on `MSTR-006` §3 authorization and on `IP-2010` (FEAT-10100's implementation package) reaching `COMPLETE` first — its own now-resolved `ADR-0029` conflict (`ADR-0033`) does not remove either gate. |
+| **FEAT-1600** Sensor Modality-Specific Access & Effectiveness Models *(new 2026-10-03)* | Six of its seven leaves (`FR-1610`-`FR-1660`) are `Should`-priority and already `VERIFIED` built — this Feature's bucket is driven by its one brand-new, unimplemented leaf, `FR-1670`, also `Should`-priority. Depends only on FEAT-1200 (Prototype-bucketed) — no dependency blocks Release 2. Additionally gated on `BL-0112`'s research grounding landing before `06-feature-specification` can design `FR-1670`'s concrete default range/degradation curve. |
+| **FEAT-7400** State-Vector/Ephemeris & TLE Export *(new 2026-10-03)* | Three of its four leaves (`FR-7410`-`FR-7430`) are `Must`-priority and already `VERIFIED` built — this Feature's bucket is driven by its one brand-new, unimplemented leaf, `FR-7440`, `Should`-priority. Depends on FEAT-7100 (MVP-bucketed) and FEAT-6200 (Release-1-bucketed) — no dependency blocks Release 2. Additionally gated on `BL-0110`'s mean-element-fit design decision before `FR-7440` can be built. |
+| **FEAT-8200** Live RIC-Frame Relative-Motion View & CATS Overlay *(new 2026-10-03)* | **Should**-priority (both `FR-8210`/`FR-8220`), entirely unimplemented (RTM `UNASSIGNED`). Depends on FEAT-6200 (Release-1), FEAT-1200 (Prototype), and FEAT-8100 (MVP) — all already earlier-bucketed, so no dependency blocks Release 2. Additionally gated on `BL-0108`/`BL-0112`'s research grounding before `06-feature-specification` can design it. |
 
 ### Future
 
@@ -92,6 +107,10 @@ needed before any of them could enter this catalog.
   governance record (direct ground-truth read, ADR-0024).
 - **FEAT-8100** (Browser Console) — framework-free hand-rolled JS is flagged as a cost multiplier
   for every future UI-scale Feature.
+- **FEAT-8200** (Live RIC-Frame View & CATS Overlay, new 2026-10-03) — entirely unimplemented,
+  with two open upstream research gaps (`BL-0108`, `BL-0112`) that must close before
+  `06-feature-specification` can design it; the single newest and least-grounded Feature in the
+  catalog.
 
 ### Foundational (critical path or blocking, per `04-feature-dependency-graph.md`)
 
@@ -103,11 +122,13 @@ anything; this is a dependency-graph property, not a statement about priority or
 
 FEAT-1400, FEAT-2300, FEAT-2400, FEAT-2500, FEAT-3300, FEAT-3500, FEAT-4200, FEAT-4300, FEAT-4400,
 FEAT-4500, FEAT-4600, FEAT-4700, FEAT-5200, FEAT-6500, FEAT-6600, FEAT-7200, FEAT-8100,
-FEAT-9100, FEAT-10200 *(new 2026-07)*. Several of these (e.g. FEAT-2500 Safe-Mode Loop, FEAT-6600
-Hot-Seat Hand-Off) are Must-priority, high-value Features in their own right — "optional" here
-means only that no *sibling Feature's construction* is blocked by deferring them, not that the
-capability itself is low-value. **FEAT-7300 removed from this list (2026-07):** it now has a
-dependent (`FEAT-10100`) and is no longer a leaf node in the dependency graph.
+FEAT-9100, FEAT-10200 *(new 2026-07)*, FEAT-1600, FEAT-7400, FEAT-8200 *(new 2026-10-03 — all
+three are leaf nodes with no Feature-level dependents of their own)*. Several of these (e.g.
+FEAT-2500 Safe-Mode Loop, FEAT-6600 Hot-Seat Hand-Off) are Must-priority, high-value Features in
+their own right — "optional" here means only that no *sibling Feature's construction* is blocked
+by deferring them, not that the capability itself is low-value. **FEAT-7300 removed from this
+list (2026-07):** it now has a dependent (`FEAT-10100`) and is no longer a leaf node in the
+dependency graph.
 
 ### Deferred
 

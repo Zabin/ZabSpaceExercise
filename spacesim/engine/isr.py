@@ -70,6 +70,14 @@ BEAM_MODES: dict[str, dict[str, dict]] = {
         "scan":  {"swath_km": 20000.0, "resolution_m": 1000.0, "power_factor": 1.0, "duty_cycle": 0.95, "gain_factor": 1.00},
         "stare": {"swath_km":  1000.0, "resolution_m":  200.0, "power_factor": 1.3, "duty_cycle": 0.85, "gain_factor": 1.60},
     },
+    # IP-1220 (FR-1610) — ground-based radar beam-mode variants: "fence" is a wide-field-of-regard
+    # surveillance fence (detects more transiting objects per pass, at lower per-object gain/
+    # resolution); "dish" is a narrow, steerable tracking beam (the inverse trade). Reuses the
+    # existing schema unmodified — no new field shape.
+    "ground_radar": {
+        "fence": {"swath_km": 10000.0, "resolution_m": 500.0, "power_factor": 1.0, "duty_cycle": 0.90, "gain_factor": 0.50},
+        "dish":  {"swath_km":    50.0, "resolution_m":   2.0, "power_factor": 1.5, "duty_cycle": 0.40, "gain_factor": 1.60},
+    },
 }
 
 _DEFAULT_MODE: dict[str, str] = {
@@ -78,6 +86,7 @@ _DEFAULT_MODE: dict[str, str] = {
     "sda": "nominal",
     "weather": "conus",
     "mw": "scan",
+    "ground_radar": "dish",
 }
 
 # Base SoC drain for a full-duty 300-second stripmap pass on a healthy bus.
@@ -103,16 +112,29 @@ def available_modes(payload_type: str) -> list[str]:
     return list(BEAM_MODES.get(payload_type, BEAM_MODES["isr_eo"]).keys())
 
 
-def effective_gain(base_gain: float, look_angle_deg: float, bp: dict) -> float:
+_BAND_AFFINITY_MISMATCH_FACTOR = 0.5  # IP-1220 (FR-1630) — gain penalty outside a declared band
+
+
+def effective_gain(base_gain: float, look_angle_deg: float, bp: dict,
+                    target_regime: Optional[str] = None,
+                    band_affinity: Optional[str] = None) -> float:
     """Compute confidence-gain adjusted for beam-mode and off-nadir angle.
 
     EO: off-nadir degrades resolution and thus gain (cosine weighting).
     SAR: look angle is required for operation; little gain penalty within ±45°.
     The caller passes the per-mode gain_factor; look-angle penalty applies to both.
+
+    IP-1220 (FR-1630) — a space-based sensor's optional ``altitude_band_affinity`` (a
+    ``engine/orbit.py::Regime`` value) degrades gain when the target's own regime doesn't match
+    the sensor's declared affinity, composing with (applied after) the existing off-nadir term.
+    Additive: omitting either argument reproduces the pre-package gain exactly.
     """
     look_rad = math.radians(max(0.0, min(45.0, look_angle_deg)))
     angle_factor = math.cos(look_rad)        # 1.0 at nadir, 0.707 at 45°
-    return base_gain * bp["gain_factor"] * angle_factor
+    gain = base_gain * bp["gain_factor"] * angle_factor
+    if band_affinity is not None and target_regime is not None and target_regime != band_affinity:
+        gain *= _BAND_AFFINITY_MISMATCH_FACTOR
+    return gain
 
 
 def soc_drain(bp: dict, duration_s: float) -> float:

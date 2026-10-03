@@ -1,15 +1,24 @@
 # FS-103 — Custody Management
 
 > **Document ID:** FS-103
-> **Version:** 1.0
+> **Version:** 1.1
+> **Changelog (v1.1, 2026-09-26):** Closes this document's third Open Question below (historical
+> custody record / schema additions), per `docs/architecture/ADS-1500-per-cell-custody-estimated-
+> state-and-export.md`'s Consequences: no `EventLog`/`Snapshot` schema addition is needed — a
+> cell's past belief state is reconstructed via the existing deterministic replay
+> (`session/aar.py::state_at`), and `Track.state_estimate` is confirmed already independent of
+> live ground truth (a frozen, forward-propagated snapshot from last observation, not a copy of
+> truth re-synced on every read) — see the new note at the end of System Behaviour. Closes backlog
+> `BL-0068` (external validation report item B2)'s domain-model question for this document.
 > **Status:** ✅ Done
 > **Dependencies:** [DOM-009](../domains/DOM-009-doctrine-development-framework.md), [R105](../research/encyclopedia/R105-custody-theory.md)
-> **Referenced By:** [DOM-009](../domains/DOM-009-doctrine-development-framework.md), [R105](../research/encyclopedia/R105-custody-theory.md), [DOM-002](../domains/DOM-002-assessment-framework.md) (custody quality dimension), [IMP-103A](../implementations/IMP-103A-custody-management.md)
+> **Referenced By:** [DOM-009](../domains/DOM-009-doctrine-development-framework.md), [R105](../research/encyclopedia/R105-custody-theory.md), [DOM-002](../domains/DOM-002-assessment-framework.md) (custody quality dimension), [IMP-103A](../implementations/IMP-103A-custody-management.md), [IP-1210](../implementation/packages/IP-1210-ephemeris-export.md) (Implementation Package for the sibling `FS-121`, `COMPLETE` 2026-09-27, awaiting `09-package-verification` in a fresh session)
 > **Produces:** the custody/track-confidence surface consumed by [FS-104](FS-104-sda-tasking.md) (tasking that updates custody) and
 > [FS-105](FS-105-spacecraft-operations.md) (effects gated by weapons-quality custody)
 > **Feature Mapping:** FS-103 (this document)
 > **Related Topics:** [R104](../research/encyclopedia/R104-collection-management.md) (collection feeding custody), [R115](../research/encyclopedia/R115-electronic-warfare-in-space-operations.md)-[R117](../research/encyclopedia/R117-directed-energy-and-kinetic-effects.md) (effect categories with custody
-> preconditions), [DOM-002](../domains/DOM-002-assessment-framework.md) §4 (custody quality as an assessment dimension)
+> preconditions), [DOM-002](../domains/DOM-002-assessment-framework.md) §4 (custody quality as an assessment dimension), [ADS-1500](../architecture/ADS-1500-per-cell-custody-estimated-state-and-export.md)
+> (v1.1 — the estimated-state-history/export design this document's third Open Question is closed by)
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
 
@@ -80,6 +89,21 @@ rewrite may resolve by inference.
 - **Doctrine differences live in data, not feature logic.** Per [DOM-009](../domains/DOM-009-doctrine-development-framework.md) §4, a vignette's SSN
   dispersion preset implies sparser or denser collection, but Custody Management's decay/display
   behavior must be uniform across vignettes; the doctrine difference lives in the data feeding it.
+- *(Added v1.1)* **A cell's `Track.state_estimate` is already independent of live ground truth, not
+  a re-synced copy.** Confirmed by direct code reading (`docs/architecture/ADS-1500-per-cell-
+  custody-estimated-state-and-export.md` Decision 1): the estimate is written only at observation
+  time and forward-propagated on its own thereafter — a target's own truth orbit changing after that
+  observation (including an unobserved manoeuvre) does not leak into the cell's belief until the
+  cell re-observes. This confirms, rather than contradicts, the "belief must stay visually
+  distinguishable from ground truth" rule above — the backend already enforces the divergence this
+  Feature's UI rule exists to make visible.
+- *(Added v1.1)* **A cell's past custody belief state (for after-action review or export) is
+  reconstructed via deterministic `EventLog` replay, not a separately-stored history.** Per
+  `ADS-1500` Decision 2, `session/aar.py::state_at`'s existing replay-to-a-point mechanism already
+  answers "what did cell C believe object X's state was at time T" for any past T — this closes
+  this document's own third Open Question below (no `EventLog`/`Snapshot` schema addition is
+  needed for the historical custody record DOM-002 §4's belief-truth-divergence assessment depends
+  on).
 
 ## Subsystem Responsibilities
 
@@ -179,8 +203,9 @@ material the document discusses as constraints:
 - The source document does not assign a per-subsystem Subsystem Responsibilities table; how
   `engine/custody.py` and `session/CellController` divide custody display and decay ownership is
   unresolved in this document.
-- The source document does not address Data Model Changes; whether the historical custody record
-  requires schema additions beyond existing `EventLog`/`Snapshot` structures is unresolved.
+- ~~The source document does not address Data Model Changes; whether the historical custody record
+  requires schema additions beyond existing `EventLog`/`Snapshot` structures is unresolved.~~
+  *(Closed v1.1: no, per `ADS-1500` Decision 2 — see System Behaviour above.)*
 - The source document does not address Security Considerations beyond the fog-of-war boundary
   already established by ADR-0004; whether any additional access-control concern exists for
   custody history is unresolved.

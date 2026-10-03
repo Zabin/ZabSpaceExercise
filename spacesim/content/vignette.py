@@ -8,9 +8,11 @@ format decision: YAML (human-authorable; matches the architecture/tech-stack/roa
 
 from __future__ import annotations
 
+import logging
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Sequence
 
 import yaml
 from pydantic import BaseModel, Field
@@ -20,6 +22,40 @@ from spacesim.engine.entities import Asset, Sensor
 
 CONTENT_DIR = Path(__file__).resolve().parent
 VIGNETTE_DIR = CONTENT_DIR / "vignettes"
+
+_logger = logging.getLogger(__name__)
+
+# Same charset discipline as ui_web/server.py's _validate_id / OrderRequest.actor.
+_ID_RE = re.compile(r"[A-Za-z0-9_.\-]{1,128}")
+
+
+def _validate_id(path_or_id: str) -> None:
+    """IP-1180 (NFR-3700) — shared id-validation, extracted from ``load_vignette()``'s existing
+    body with no behavior change, so the save path (``vignette_export.py``) applies the exact
+    same guard rather than maintaining a second copy."""
+    if not isinstance(path_or_id, str) or not path_or_id:
+        raise ValueError("vignette id must be a non-empty string")
+    if "/" in path_or_id or "\\" in path_or_id or ".." in path_or_id:
+        raise ValueError(f"vignette id contains path separators or traversal: {path_or_id!r}")
+    if path_or_id.startswith(("~", ".")):
+        raise ValueError(f"vignette id may not start with '~' or '.': {path_or_id!r}")
+    if not _ID_RE.fullmatch(path_or_id):
+        raise ValueError(f"vignette id has disallowed characters: {path_or_id!r}")
+
+
+def _resolve_within_root(root: Path, filename: str) -> Path:
+    """IP-1180 (NFR-3700) — the resolved-path-inside-root re-check, generalized from
+    ``load_vignette()``'s existing body to take any content root, not only ``VIGNETTE_DIR``."""
+    candidate = (root / filename).resolve()
+    root_resolved = root.resolve()
+    if root_resolved not in candidate.parents:
+        raise ValueError(f"path escapes root {root}: {candidate}")
+    return candidate
+
+
+def _configured_external_dirs() -> list[Path]:
+    from spacesim.config import load_content_config
+    return [Path(d) for d in load_content_config().external_vignette_dirs]
 
 
 class Parameter(BaseModel):
@@ -92,6 +128,21 @@ class Vignette(BaseModel):
     # build_world() falls back to the legacy flat red_kinetic_authorized/cyber_authorized
     # parameters, replicated identically to both cells, when this field is absent.
     roe: Optional[dict] = None
+    # IP-1270 (FR-3430) — optional effect-authorization gating rules, each
+    # {action_type?: str, reversibility_category?: str, required_role: str}. A rule with both
+    # axes absent matches every order (not a useful declaration, but not rejected either). Absent
+    # for every vignette shipped before this package (additive, NFR-2010) — zero behavior change.
+    effect_gating_rules: list[dict] = Field(default_factory=list)
+    # IP-1290 (FR-1450) — optional per-effect-class detectability/attribution-difficulty overrides,
+    # each {action_type?: str, reversibility_category?: str, confidence: float}, keyed by the same
+    # shared enumeration as effect_gating_rules above (IP-1270 Design Decision 1). Absent for every
+    # vignette shipped before this package (additive, NFR-2010) — zero behavior change.
+    effect_detectability_config: list[dict] = Field(default_factory=list)
+    # IP-1200 (FR-5510) — save-as-scenario's carried-forward mid-exercise state. All three
+    # absent/empty for every vignette shipped before this package (additive, NFR-2010).
+    initial_tracks: list[dict] = Field(default_factory=list)   # each entry a Track.model_dump()
+    simulator_version: Optional[str] = None
+    initial_space_weather: Optional[dict] = None   # the same plain dict shape as world.space_weather
 
 
 @dataclass
@@ -107,10 +158,20 @@ class VignetteContext:
     objectives: dict = field(default_factory=dict)
     red_doctrine_profile: str = "generic"
     ssn_networks: dict = field(default_factory=dict)   # cell -> SSNNetwork (only populated if vignette opts in)
+    # IP-1270 (FR-3430) — passed through unmodified from vignette.effect_gating_rules.
+    gating_rules: list[dict] = field(default_factory=list)
+    # IP-1290 (FR-1450) — passed through unmodified from vignette.effect_detectability_config.
+    detectability_config: list[dict] = field(default_factory=list)
 
 
-def list_vignettes() -> list[dict]:
-    out = []
+def list_vignettes(external_dirs: Optional[Sequence[Path]] = None) -> list[dict]:
+    """Enumerate the built-in library plus any configured external directories (IP-1180,
+    FR-5410). Each entry carries ``origin``: ``"built-in"`` for ``VIGNETTE_DIR``, or the external
+    directory's own basename. A same-id collision resolves to whichever root was scanned first
+    (built-in, then external directories in configured order) — the loser is skipped and a
+    ``WARNING`` discloses the shadow (Design Decision 4)."""
+    out: list[dict] = []
+    seen_ids: set[str] = set()
     for path in sorted(VIGNETTE_DIR.glob("*.yaml")):
         # Audit Jun 2026 §B/E - tolerate one malformed file rather than 500ing
         # the whole listing endpoint.
@@ -121,13 +182,45 @@ def list_vignettes() -> list[dict]:
             data = raw["vignette"]
             if not isinstance(data, dict) or "id" not in data:
                 continue
-            out.append({"id": data["id"], "title": data.get("title", data["id"]), "path": str(path)})
+            out.append({"id": data["id"], "title": data.get("title", data["id"]),
+                        "path": str(path), "origin": "built-in"})
+            seen_ids.add(data["id"])
         except (yaml.YAMLError, OSError):
             continue
+
+    dirs = list(external_dirs) if external_dirs is not None else _configured_external_dirs()
+    for ext_dir in dirs:
+        ext_dir = Path(ext_dir)
+        if not ext_dir.is_dir():
+            # Design Decision 2 — an unreadable/nonexistent configured directory is skipped,
+            # logged, and the catalog build continues with the remaining roots.
+            _logger.warning("external vignette directory unreadable or missing, skipped: %s", ext_dir)
+            continue
+        origin = ext_dir.name
+        for path in sorted(ext_dir.glob("*.yaml")):
+            try:
+                raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+                if not isinstance(raw, dict) or "vignette" not in raw:
+                    continue
+                data = raw["vignette"]
+                if not isinstance(data, dict) or "id" not in data:
+                    continue
+                vid = data["id"]
+                if vid in seen_ids:
+                    _logger.warning(
+                        "vignette id %r in external directory %s shadowed by an earlier entry, skipped",
+                        vid, ext_dir,
+                    )
+                    continue
+                out.append({"id": vid, "title": data.get("title", vid),
+                            "path": str(path), "origin": origin})
+                seen_ids.add(vid)
+            except (yaml.YAMLError, OSError):
+                continue
     return out
 
 
-def load_vignette(path_or_id: str) -> Vignette:
+def load_vignette(path_or_id: str, external_dirs: Optional[Sequence[Path]] = None) -> Vignette:
     """Load a vignette by its declared id.
 
     Audit Jun 2026 §D4 hardening: only basenames are accepted; any input
@@ -135,22 +228,14 @@ def load_vignette(path_or_id: str) -> Vignette:
     marker, or non-`[A-Za-z0-9_.-]` characters is rejected without touching the
     filesystem. The resolved path is then re-checked to live inside
     ``VIGNETTE_DIR`` (defence in depth against symlink/normalisation tricks).
-    """
-    if not isinstance(path_or_id, str) or not path_or_id:
-        raise ValueError("vignette id must be a non-empty string")
-    if "/" in path_or_id or "\\" in path_or_id or ".." in path_or_id:
-        raise ValueError(f"vignette id contains path separators or traversal: {path_or_id!r}")
-    if path_or_id.startswith(("~", ".")):
-        raise ValueError(f"vignette id may not start with '~' or '.': {path_or_id!r}")
-    # Lock the charset — same as web-layer TleRequest.id / OrderRequest.actor.
-    import re as _re
-    if not _re.fullmatch(r"[A-Za-z0-9_.\-]{1,128}", path_or_id):
-        raise ValueError(f"vignette id has disallowed characters: {path_or_id!r}")
 
-    candidate = (VIGNETTE_DIR / f"{path_or_id}.yaml").resolve()
-    vignette_root = VIGNETTE_DIR.resolve()
-    if vignette_root not in candidate.parents:
-        raise ValueError(f"vignette path escapes VIGNETTE_DIR: {candidate}")
+    IP-1180 (FR-5410): after exhausting the built-in search (unchanged, still checked first —
+    Design Decision 4's built-in-wins rule), falls through to each configured external directory
+    in turn, applying the same guard against every root.
+    """
+    _validate_id(path_or_id)
+
+    candidate = _resolve_within_root(VIGNETTE_DIR, f"{path_or_id}.yaml")
     if candidate.exists():
         path = candidate
     else:  # resolve by the vignette's declared id (filenames are numbered, ids are not)
@@ -162,6 +247,28 @@ def load_vignette(path_or_id: str) -> Vignette:
             if data_inner["vignette"].get("id") == path_or_id:
                 path = p
                 break
+        if path is None:
+            dirs = list(external_dirs) if external_dirs is not None else _configured_external_dirs()
+            for ext_dir in dirs:
+                ext_dir = Path(ext_dir)
+                if not ext_dir.is_dir():
+                    continue
+                ext_candidate = _resolve_within_root(ext_dir, f"{path_or_id}.yaml")
+                if ext_candidate.exists():
+                    path = ext_candidate
+                    break
+                for p in sorted(ext_dir.glob("*.yaml")):
+                    try:
+                        data_inner = yaml.safe_load(p.read_text(encoding="utf-8"))
+                    except (yaml.YAMLError, OSError):
+                        continue
+                    if not isinstance(data_inner, dict) or "vignette" not in data_inner:
+                        continue
+                    if data_inner["vignette"].get("id") == path_or_id:
+                        path = p
+                        break
+                if path is not None:
+                    break
         if path is None:
             raise FileNotFoundError(f"no vignette with id {path_or_id!r}")
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -197,20 +304,10 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
         sensor = Sensor.model_validate(spec)
         world.sensors[sensor.id] = sensor
 
-    # Enforce v1 satellite caps (build-spec/01-context-and-scope.md §3.1)
-    orbital = [a for a in world.assets.values() if a.orbit is not None]
-    if len(orbital) > 24:
-        raise ValueError(
-            f"vignette '{vignette.id}': {len(orbital)} orbital assets exceed the ≤24 satellite cap"
-        )
-    from collections import Counter
-    group_counts = Counter(a.group for a in orbital if a.group)
-    over = {g: n for g, n in group_counts.items() if n > 3}
-    if over:
-        detail = ", ".join(f"{g}={n}" for g, n in over.items())
-        raise ValueError(
-            f"vignette '{vignette.id}': constellation(s) exceed the ≤3 satellite cap: {detail}"
-        )
+    # Satellite/constellation sizing (~24 total, ≤3 per constellation) is a soft guideline for
+    # typical White-Cell hardware, not an engine-enforced cap (ADR-0019, NFR-1300) — IP-1061
+    # (BL-0065) removed the hard ValueError this used to raise. The clock-lag watchdog
+    # (`SessionManager._record_catch_up_lag`) is the intended backstop for oversized vignettes.
 
     # SSN per-cell networks (opt-in via vignette params; off by default) — `docs/SSN-DESIGN.md`.
     ssn_networks: dict = {}
@@ -249,7 +346,16 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
         objectives=vignette.objectives,
         red_doctrine_profile=str(params.get("red_doctrine_profile", vignette.red_doctrine_profile)),
         ssn_networks=ssn_networks,
+        gating_rules=list(vignette.effect_gating_rules),
+        detectability_config=list(vignette.effect_detectability_config),
     )
+    # IP-1200 (FR-5510) — save-as-scenario's carried-forward state, consumed only when present
+    # (absent/empty for every pre-IP-1200 vignette, per NFR-2010).
+    if vignette.initial_tracks:
+        from spacesim.engine.custody import Track
+        world.tracks = [Track.model_validate(t) for t in vignette.initial_tracks]
+    if vignette.initial_space_weather:
+        world.space_weather = dict(vignette.initial_space_weather)
     return world, ctx
 
 

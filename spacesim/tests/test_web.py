@@ -154,6 +154,31 @@ def test_telemetry_series_count():
     assert "points" in body and len(body["points"]) == 30
 
 
+def test_maneuver_ledger_route_and_csv_export_are_fog_scoped():
+    """IP-1250 (FR-1320) — the ledger route/CSV export mirror /telemetry's fog-of-war behavior:
+    an operator cannot fetch another cell's Asset ledger."""
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/order", json={
+        "cell": "blue", "actor": "ISR-EO-1", "action": "maneuver",
+        "params": {"dv": [5.0, 0.0, 0.0], "via": "GS-NORTH", "purpose_tag": "test-tag"}})
+    assert r.json()["ok"], r.json()
+    win = r.json()["earliest_window"]
+    c.post(f"/api/sessions/{sid}/advance", json={"t": win[0] + 1})
+
+    ledger = c.get(f"/api/sessions/{sid}/maneuver_ledger/blue/ISR-EO-1")
+    assert ledger.status_code == 200
+    rows = ledger.json()
+    assert len(rows) == 1 and rows[0]["purpose_tag"] == "test-tag"
+
+    csv_r = c.get(f"/api/sessions/{sid}/maneuver_ledger/blue/ISR-EO-1/export.csv")
+    assert csv_r.status_code == 200
+    assert "test-tag" in csv_r.text
+
+    denied = c.get(f"/api/sessions/{sid}/maneuver_ledger/red/ISR-EO-1")
+    assert denied.status_code == 404
+
+
 def test_fog_cross_cell_telemetry():
     """Blue cell cannot read Red cell's asset telemetry."""
     c = _client()
@@ -385,8 +410,17 @@ def test_resumed_session_loads_paused():
     assert listing[sid2]["running"] is False   # resumed paused — must not silently fast-forward
 
 
-def test_draft_session_create_add_asset_and_save_as_vignette():
-    """IP-1173 (FR-5110) — the Vignette Creator's HTTP surface end to end."""
+def test_draft_session_create_add_asset_and_save_as_vignette(tmp_path, monkeypatch):
+    """IP-1173 (FR-5110) — the Vignette Creator's HTTP surface end to end. save_vignette() has
+    no implicit VIGNETTE_DIR default (IP-1180) — a user_save_dir must be configured."""
+    cfg_path = tmp_path / "spacesim.config.yaml"
+    save_dir = tmp_path / "user_saves"
+    save_dir.mkdir()
+    cfg_path.write_text(
+        f"content:\n  user_save_dir: {save_dir}\n  external_vignette_dirs:\n    - {save_dir}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SPACESIM_CONFIG", str(cfg_path))
     c = _client()
     sid = c.post("/api/sessions/draft", json={"title": "HTTP Draft"}).json()["session"]
     # A draft session exists and is registered like any other, but never started.
@@ -417,3 +451,181 @@ def test_draft_session_create_add_asset_and_save_as_vignette():
     finally:
         from pathlib import Path
         Path(resp["path"]).unlink(missing_ok=True)
+
+
+def test_bulk_import_tle_route_end_to_end():
+    """IP-1190 (FR-5220) — the new /force/bulk_import route, TLE format, end to end."""
+    c = _client()
+    sid = c.post("/api/sessions/draft", json={"title": "Bulk Import"}).json()["session"]
+    tle1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
+    tle2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+    content = "\n".join(["HTTP-BULK-1", tle1, tle2])
+    resp = c.post(f"/api/sessions/{sid}/force/bulk_import",
+                   json={"format": "tle", "content": content,
+                         "assignments": {"HTTP-BULK-1": {"asset_id": "HTTP-BULK-1", "owner": "blue"}}})
+    reports = resp.json()
+    assert len(reports) == 1
+    assert reports[0]["ok"] is True
+    assert reports[0]["asset_id"] == "HTTP-BULK-1"
+
+    # An unrecognizable file surfaces as a 400, not a per-object report.
+    bad_resp = c.post(f"/api/sessions/{sid}/force/bulk_import",
+                       json={"format": "tle", "content": "not a tle file", "assignments": {}})
+    assert bad_resp.status_code == 400
+
+
+def test_save_as_scenario_route_end_to_end(tmp_path, monkeypatch):
+    """IP-1200 (FR-5510) — start a session, advance it, save-as-scenario, load the result: the
+    new session's start epoch equals the save moment and initial state carries forward."""
+    cfg_path = tmp_path / "spacesim.config.yaml"
+    save_dir = tmp_path / "user_saves"
+    save_dir.mkdir()
+    cfg_path.write_text(
+        f"content:\n  user_save_dir: {save_dir}\n  external_vignette_dirs:\n    - {save_dir}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SPACESIM_CONFIG", str(cfg_path))
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600.0})
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})  # stop catch-up drift
+    save_moment = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+
+    resp = c.post(f"/api/sessions/{sid}/save_vignette",
+                  json={"vignette_id": "test-ip1200-http-scenario", "title": "HTTP Scenario",
+                        "as_scenario": True}).json()
+    try:
+        from spacesim.content.vignette import load_vignette
+        from spacesim.engine import simtime
+        vig = load_vignette("test-ip1200-http-scenario")
+        assert vig.start_epoch_utc == simtime.to_iso(save_moment)
+        assert vig.simulator_version
+    finally:
+        from pathlib import Path
+        Path(resp["path"]).unlink(missing_ok=True)
+
+    # A draft session's own "Save as Vignette" (as_scenario omitted/False) is unaffected.
+    draft_sid = c.post("/api/sessions/draft", json={"title": "Still Draft"}).json()["session"]
+    draft_resp = c.post(f"/api/sessions/{draft_sid}/save_vignette",
+                        json={"vignette_id": "test-ip1200-draft-unaffected", "title": "Draft"})
+    assert draft_resp.status_code == 200
+    from pathlib import Path
+    Path(draft_resp.json()["path"]).unlink(missing_ok=True)
+
+
+def test_ephemeris_truth_route_no_cell_binding():
+    """IP-1210 (FR-7410) — reachable with no cell query param, like /godview."""
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0})
+    assert r.status_code == 200
+    assert "eci_r_x_m" in r.text  # CSV header present
+
+
+def test_ephemeris_truth_route_wholly_out_of_range_is_400():
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0 + 10_000_000_000, "t2": t0 + 20_000_000_000})
+    assert r.status_code == 400
+
+
+def test_ephemeris_cell_observed_route_fog_of_war_enforced():
+    """IP-1210 (FR-7420) — a cell with no Track on the requested object gets an empty export,
+    never another cell's belief or ground truth, mirroring test_scene.py's fog-of-war pattern."""
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/red",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0})
+    assert r.status_code == 200
+    lines = r.text.strip().splitlines()
+    assert len(lines) == 1  # header only — red has no track on blue's ISR-EO-1
+
+
+def test_ephemeris_oem_format():
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0, "format": "oem"})
+    assert r.status_code == 200
+    assert "CCSDS_OEM_VERS" in r.text
+
+
+def test_roe_change_route_is_white_cell_only():
+    """IP-1270 (FR-3440) — only White Cell may issue a live ROE change."""
+    c = _client()
+    sid = _new_session(c)
+    denied = c.post(f"/api/sessions/{sid}/roe/change", json={
+        "cell": "blue", "target_cell": "blue", "flag": "kinetic_authorized", "value": True})
+    assert denied.json()["ok"] is False and denied.json()["reason"] == "not_controller"
+
+    allowed = c.post(f"/api/sessions/{sid}/roe/change", json={
+        "cell": "white", "target_cell": "blue", "flag": "kinetic_authorized", "value": True})
+    assert allowed.json()["ok"] is True
+
+
+def test_gate_decide_route_rejects_unknown_pending_order():
+    """IP-1270 (FR-3430) — the decision route rejects a nonexistent/unmatched pending order id
+    (this session's loaded vignette declares no gating rules, so nothing is ever pending)."""
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/gate/decide", json={
+        "cell": "white", "order_id": "no-such-order", "approve": True})
+    assert r.json()["ok"] is False and r.json()["reason"] == "no_such_pending_order"
+
+
+def test_aar_playback_start_advance_and_viewpoint_switch():
+    """IP-1280 (FR-7330) — the playback routes: start, advance, viewpoint switch."""
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/order", json={
+        "cell": "blue", "actor": "ISR-EO-1", "action": "downlink", "params": {"via": "GS-NORTH"}})
+
+    start = c.post(f"/api/sessions/{sid}/aar/playback/start", json={"viewpoint": "truth", "speed": 2.0})
+    assert start.json()["ok"] is True
+
+    adv = c.post(f"/api/sessions/{sid}/aar/playback/advance", json={"dt_s": 30.0})
+    assert adv.status_code == 200
+    assert "assets" in adv.json()  # ground-truth WorldState shape
+
+    switched = c.post(f"/api/sessions/{sid}/aar/playback/viewpoint", json={"viewpoint": "blue"})
+    assert switched.json()["ok"] is True
+    state = c.get(f"/api/sessions/{sid}/aar/playback/state")
+    assert "own_assets" in state.json()  # CellView shape, not ground truth
+
+
+def test_aar_playback_rejects_nonparticipating_cell():
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/aar/playback/start", json={"viewpoint": "not-a-real-cell"})
+    assert r.json()["ok"] is False
+
+
+def test_aar_playback_advance_without_start_is_404():
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/aar/playback/advance", json={"dt_s": 10.0})
+    assert r.status_code == 404
+
+
+def test_ephemeris_ric_companion_format():
+    """FR-7430 — the companion RIC-specific export file, reachable via format=ric on both the
+    truth and cell-observed ephemeris routes (BL-0136's resolution of the FR-7410/OEM tension)."""
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0, "format": "ric"})
+    assert r.status_code == 200
+    assert "ric_r_x_m" in r.text
+    assert "eci_r_x_m" not in r.text

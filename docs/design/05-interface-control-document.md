@@ -412,7 +412,10 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Source Component:** C2
 - **Destination Component:** C5 (Content & Data)
 - **Purpose:** Load a Vignette's mission, roles, force lay-down, parameters, injects, briefs into a
-  `WorldState` (GDS-03 §1 diagram `SM -->|load| VIG`, `SM -->|load| TLE`; GDS-04 §1.1).
+  `WorldState` (GDS-03 §1 diagram `SM -->|load| VIG`, `SM -->|load| TLE`; GDS-04 §1.1). **IP-1180
+  (FR-5410, 2026-09-27):** the load root is now plural — the built-in library plus zero or more
+  configured external directories, each catalog entry tagged with its origin — not a shape change
+  to this interface (still one parsed Vignette object per load call), a citation update only.
 - **Data exchanged:** A parsed Vignette object; asset/effect/sensor template data the engine
   consults when constructing the initial force lay-down.
 - **Message/data structure:** Not specified beyond GDS-04 §1.1's conceptual fields; on-disk format
@@ -440,7 +443,11 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Source Component:** C2 (act of producing a save) / **Destination Component:** C5 (on-disk
   format ownership) and C11 (filesystem, the physical write target)
 - **Purpose:** Persist a complete, deterministic session snapshot for resume (GDS-03 §1 diagram
-  `SM -->|read-write| SAVE`; GDS-04 §1.14 "Persistent state").
+  `SM -->|read-write| SAVE`; GDS-04 §1.14 "Persistent state"). **IP-1180 (FR-5420, 2026-09-27):**
+  the Vignette Creator's authored-vignette write path (`content/vignette_export.py::save_vignette`,
+  distinct from this interface's session-snapshot save/resume) now writes to a configured
+  `user_save_dir` rather than `VIGNETTE_DIR` — the C2-owns-the-act/C5-owns-the-format split
+  (`ADR-0022`) is unchanged, only *which* directory C5's format is written into.
 - **Data exchanged:** The current `WorldState`, full `EventLog`, all Snapshots, Role Assignments
   (GDS-04 §1.14).
 - **Message/data structure:** Not specified beyond the entity list above; the on-disk format is
@@ -497,9 +504,18 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Destination Component:** C1 (`EventLog`, `WorldState`)
 - **Purpose:** Replay/scrub to any `EventLog` point and branch-compare, read-only against the
   engine, never the live session (GDS-03 §1 diagram `AAR --> EL`, `AAR --> WS`; GDS-03 §2.2
-  "Responsibilities").
+  "Responsibilities"). **IP-1210 (FR-7410/FR-7420, 2026-09-27):** generalized from a single-point
+  replay read to a time-span read via a new additive `aar.state_at_time(mgr, t)` sibling of
+  `state_at(mgr, seq)` — same interface, same read-only guarantee, reconstructing at an arbitrary
+  sim time instead of only an eventlog sequence number. Per the Requirements Review's own Finding 6
+  (`BL-0093`), this documented shape (a single-point read) remains a stretched fit for a
+  time-span/multi-sample export — not resolved here, still routed to whoever next touches the ICD.
+  **IP-1280 (FR-7330, 2026-09-28):** a second stretch of this same shape — `aar.PlaybackSession`
+  calls `state_at_time()` repeatedly at successive simulated moments (paced by a requested speed)
+  rather than once, alongside `ephemeris.py`'s own multi-sample stretch above. Citation-only, per
+  `BL-0093`'s own tracked note — not a new interface, not an ICD redesign.
 - **Data exchanged:** Read: historical `EventLog` entries and reconstructed `WorldState` snapshots
-  at a given point. No write.
+  at a given point (or, as of `IP-1210`, a given time). No write.
 - **Message/data structure:** Not specified beyond GDS-03 §2.2's description (`snapshot_at`).
 - **Direction:** One-directional (C2 reads from C1 only).
 - **Frequency/timing:** Post-session or mid-session, on White Cell/Observer demand.

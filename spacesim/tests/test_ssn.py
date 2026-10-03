@@ -8,14 +8,16 @@ narrow on the request lifecycle and on observable end-state effects.
 from __future__ import annotations
 
 from spacesim.content.vignette import load_vignette
-from spacesim.engine.access import COMMAND_UPLINK
-from spacesim.engine.entities import GeoPoint
-from spacesim.engine.geometry import R_EARTH_EQ
+from spacesim.engine.access import AccessProvider, COMMAND_UPLINK, Scene, SENSOR_OBSERVATION
+from spacesim.engine.bus import BusState
+from spacesim.engine.entities import GeoPoint, Sensor
+from spacesim.engine.geometry import R_EARTH_EQ, ecef_to_geodetic, eci_to_ecef
 from spacesim.engine.orbit import OrbitState
 from spacesim.engine.orders import Order
+from spacesim.engine.propagator import ModeratePropagator
 from spacesim.engine.ssn import (
-    COALITION_DELAY_MULTIPLIER, PROCESSING_DELAY_S, SSNRequest,
-    instantiate_network,
+    COALITION_DELAY_MULTIPLIER, PROCESSING_DELAY_S, SSNNetwork, SSNRequest,
+    instantiate_network, passive_rf_fix,
 )
 from spacesim.engine.world import WorldState
 from spacesim.engine.entities import Asset
@@ -218,6 +220,10 @@ def test_characterize_via_ssn_unlocks_engage_gate():
                                          location=GeoPoint(lat_deg=0.0, lon_deg=0.0, alt_m=0.0))
     mgr.world.assets["BLUE-KIL"].resources.ammo = 1
     mgr.osys.roe.setdefault("blue", {})["kinetic_authorized"] = True  # IP-1172: cell-keyed
+    # IP-1270 (FR-3440) — _effective_roe's point-in-time baseline is the immutable _static_roe,
+    # not the mutable "current value" cache above; set both so this direct test-setup mutation
+    # (rather than issue_roe_change's own logged mechanism) still takes effect.
+    mgr.osys._static_roe.setdefault("blue", {})["kinetic_authorized"] = True
     mgr.sim._initial_state = mgr.world.model_dump()
     # Pre-check: engage refused for "no_weapons_quality_track".
     ack0 = mgr.validate_order("blue", Order(cell="blue", actor="BLUE-KIL", action="engage", target="TGT"))
@@ -228,3 +234,48 @@ def test_characterize_via_ssn_unlocks_engage_gate():
     mgr.advance_to(ack.product_at + 1)
     ack1 = mgr.validate_order("blue", Order(cell="blue", actor="BLUE-KIL", action="engage", target="TGT"))
     assert ack1.reason != "no_weapons_quality_track"
+
+
+# ---- passive-RF multilateration (IP-1220, FR-1650) ---------------------------
+
+def _clustered_receivers(prefix: str, n: int, sub: GeoPoint) -> tuple[SSNNetwork, dict[str, Sensor]]:
+    """N ground-radar receivers co-located under the target's ground track, all with an
+    unlimited elevation mask so simultaneous access at t=0 is guaranteed."""
+    sensors: dict[str, Sensor] = {}
+    for i in range(n):
+        sid = f"{prefix}-{i + 1}"
+        sensors[sid] = Sensor(id=sid, owner="blue", kind="ground_radar",
+                              location=GeoPoint(lat_deg=sub.lat_deg, lon_deg=sub.lon_deg),
+                              elevation_mask_deg=-90.0, network=True)
+    net = SSNNetwork(cell="blue", affiliation="coalition", dispersion="proliferated",
+                     sensors=list(sensors.keys()), concurrency=5)
+    return net, sensors
+
+
+def test_passive_rf_fix_requires_min_receivers_and_emitting_target():
+    sat = OrbitState(a_m=R_EARTH_EQ + 550e3, e=0.0, i_deg=51.6, raan_deg=0, argp_deg=0, ta_deg=0, epoch=0)
+    prop = ModeratePropagator()
+    r, _ = prop.rv(sat, 0)
+    sub = ecef_to_geodetic(eci_to_ecef(r, 0))
+
+    world = WorldState(now=0)
+    world.assets["TGT"] = Asset(id="TGT", owner="red", kind="satellite", orbit=sat,
+                                bus_state=BusState())  # comms.status defaults "green" — emitting
+
+    net2, sensors2 = _clustered_receivers("RF2", 2, sub)
+    net3, sensors3 = _clustered_receivers("RF3", 3, sub)
+    net4, sensors4 = _clustered_receivers("RF4", 4, sub)
+    for group in (sensors2, sensors3, sensors4):
+        world.sensors.update(group)
+
+    ap = AccessProvider(Scene(satellites={"TGT": sat}, sensors=world.sensors))
+
+    assert passive_rf_fix(net2, world, "TGT", 0, ap) is None  # only 2 receivers, need >=3
+    fix3 = passive_rf_fix(net3, world, "TGT", 0, ap)
+    assert fix3 is not None and len(fix3) >= 3
+    assert passive_rf_fix(net3, world, "TGT", 0, ap, three_d=True) is None  # 3D needs >=4
+    fix4 = passive_rf_fix(net4, world, "TGT", 0, ap, three_d=True)
+    assert fix4 is not None and len(fix4) >= 4
+
+    world.assets["TGT"].bus_state.comms.status = "red"  # not emitting
+    assert passive_rf_fix(net4, world, "TGT", 0, ap) is None

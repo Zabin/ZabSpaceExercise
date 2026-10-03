@@ -10,9 +10,15 @@
 > **Produces:** the executable sequencing, dependency graph, and status ledger for every
 > Implementation Package in this pass
 > **Feature Mapping:** FS-101 through FS-107, FS-109, FS-110, FS-111, FS-112, FS-113, FS-114,
-> FS-115, FS-116, FS-117, FS-201, FS-301 (18 of 20 catalog entries; FS-108/FS-202 excluded, see
-> §"Scope and exclusions". FS-116 was already planned via `IP-1160` — this line's omission of it
-> was a pre-existing staleness, corrected here alongside FS-117's addition.)
+> FS-115, FS-116, FS-117, FS-118, FS-201, FS-301 (19 of 21 catalog entries; FS-108/FS-202 excluded,
+> see §"Scope and exclusions". FS-116 was already planned via `IP-1160` — this line's omission of it
+> was a pre-existing staleness, corrected here alongside FS-117's addition. **FS-118 added
+> 2026-09-27** via `IP-1180`, the first of six Must-tier packages from the external validation
+> report intake batch; **the FS-106 v2.1 slice's package (`IP-1062`), FS-120's package (`IP-1200`),
+> FS-119's package (`IP-1190`), and FS-121/FS-103 v1.1's package (`IP-1210`) all added the same
+> day** — this closes the six-package Must-tier tranche; FS-121/FS-103 v1.1 are not yet reflected
+> in this Feature Mapping line's own list above, a bookkeeping catch-up left for the next pass that
+> touches this frontmatter.)
 > **Related Topics:** [`packages/INDEX.md`](packages/INDEX.md), [`docs/implementations/INDEX.md`](../implementations/INDEX.md) (the superseded prior corpus), [`.claude/skills/08-code-implementation/SKILL.md`](../../.claude/skills/08-code-implementation/SKILL.md) (the downstream skill that executes packages against this plan)
 
 [↑ Docs index](../INDEX.md) · [Packages index](packages/INDEX.md) · [Feature index](../features/feature-index.md)
@@ -123,7 +129,20 @@ package in this plan to reach that state.
 | [IP-1171](packages/IP-1171-typed-payload-bus-parameters.md) | FS-117 §FR-5170/FR-5180 Typed Payload & Bus Parameter Domain Model | Forward design | 🔵 COMPLETE | Implemented 2026-07-11 by `08-code-implementation` — 8 new typed `PayloadState` sub-models (`bus.py`), auto-populated per `type`, R109/R110/R129/R134-grounded; `FR-5180`'s bus power/propulsion authoring confirmed to already route through `Asset.model_validate()`, no loader change needed. 12 new tests, full suite 598 passed/3 skipped, both permanent gates green. Awaiting `09-package-verification` |
 | [IP-1172](packages/IP-1172-per-cell-roe-enforcement.md) | FS-117 §FR-3420/NFR-2010 Per-Cell Rules of Engagement Enforcement | Forward design | ✅ VERIFIED | **Verified 2026-07-11 (fresh session)**, [`VR-1172`](verification/VR-1172-per-cell-roe-enforcement.md) — full suite 586 passed/3 skipped, both permanent gates green; both `_validate()` check sites independently confirmed to resolve per `order.cell` with zero legacy-shape branching inside `engine/`. Zero findings |
 | [IP-1173](packages/IP-1173-vignette-creator-draft-session.md) | FS-117 §FR-5110 Vignette Creator Draft Session & Reverse Serialization | Forward design | ✅ VERIFIED | **Verified 2026-07-11 (fresh session)**, [`VR-1173`](verification/VR-1173-vignette-creator-draft-session.md) — full suite 586 passed/3 skipped, both permanent gates green; sole-writer-to-`VIGNETTE_DIR` and draft-session time-control rejection independently confirmed; independent manual round-trip beyond the existing tests. Zero findings |
-| [IP-1174](packages/IP-1174-vignette-creator-ui-surfaces.md) | FS-117 §FR-5120-FR-5160 Vignette Creator UI Surfaces | Forward design | 🔴 BLOCKED | **Authorized 2026-07-05** (MSTR-006 §3, run #45). `IP-1172`/`IP-1173` are `VERIFIED`; `IP-1171` is now `COMPLETE` (implemented 2026-07-11) but not yet `VERIFIED` — this plan's own "`READY` means every dependency `VERIFIED`" rule keeps `IP-1174` `BLOCKED` until `IP-1171`'s own `09-package-verification` pass closes it — the last package in Tranche 3 to build |
+| [IP-1174](packages/IP-1174-vignette-creator-ui-surfaces.md) | FS-117 §FR-5120-FR-5160 Vignette Creator UI Surfaces | Forward design | ✅ VERIFIED | **`VERIFIED` 2026-09-28** via [`VR-1174`](verification/VR-1174-vignette-creator-ui-surfaces.md) v2.0 (second pass) — the v1.0 High/Medium findings (`BL-0123`/`BL-0124`/`BL-0125`) confirmed fixed by independent re-probe; no High/Medium remains. **Remediated 2026-09-27/28** against [`VR-1174`](verification/VR-1174-vignette-creator-ui-surfaces.md)'s High + 2 Medium findings (authorized 2026-09-27, MSTR-006 §3, project owner's direct instruction): `declare_seats` (`FR-5160`) now takes caller identity as the `cell` query param (the convention every other mutating route uses), leaving the body's `cell` as the pure target cell — Blue/Red seat declaration works; `creator.js`'s matrix `roles/assign` call now sends literal `"white"` caller identity instead of the assigned seat's own cell prefix. `force/ground`'s `Asset(...)` validation error now returns `Ack(ok=False, ...)` instead of an unhandled 500 (`BL-0124`); `GroundAssetRequest.owner` is `Literal["blue","red","neutral"]` with `lat_deg`/`lon_deg` range validators (`BL-0125`). This package's own stale `build_scene(world, cell)` prose corrected in place (`BL-0127`). `test_seat_declaration_rejects_non_white_cell` inverted (`test_seat_declaration_rejects_non_white_caller`) + a new allow-non-white-target-cell test added. Full suite green (both permanent gates included). *Prior state:* **RETURNED 2026-09-27 by `VR-1174`** — one failed check (High H1) plus 2 Medium/2 Low findings; `FR-5120`–`FR-5150` confirmed working then. Originally implemented 2026-09-26 (same day as `IP-1061`, a fresh session per the tranche's own eligibility filter — `IP-1061`'s COMPLETE state has no dependency edge to this package). Awaiting a fresh `09-package-verification` pass (new session, per same-session-verification-exclusion).
+| [IP-1061](packages/IP-1061-inject-and-sizing-defect-remediation.md) | FS-106 §FR-4410 + NFR-1300 (ADR-0019) Inject Scheduling & Sizing-Cap Defect Remediation | Remediation (forward design) | ✅ VERIFIED | **Verified 2026-09-27 (fresh agent context)**, [`VR-1061`](verification/VR-1061-inject-and-sizing-defect-remediation.md) — full suite 707 passed/3 skipped, both permanent gates green. A1 (0 s inject fires once, no rewind double-fire or loss), A3 (single validating `space_weather` branch), A2 (comment) and A4 (caps removed) independently re-derived with a probe script beyond the package's own tests. 3 Low findings: checklist grep literal, DoD test-count wording, and the pre-existing `NFR-1300` RTM column-shape defect class. Implemented 2026-09-26; closes backlog `BL-0062`–`BL-0065`. |
+| [IP-1180](packages/IP-1180-external-vignette-directories.md) | FS-118 External Vignette Directories & Safe Scenario Save Target (`BL-0082`, item B16) | Forward design | ✅ VERIFIED | **Verified 2026-09-27 (fresh agent context)**, [`VR-1180`](verification/VR-1180-external-vignette-directories.md). Full suite 707 passed/3 skipped, both permanent gates green. Built-in-wins collision, external-versus-external ordering, missing-directory skip, the retargeted save, and a single shared traversal guard were all confirmed with hand-built temporary-directory fixtures. 1 Low finding: a saved vignette is not loadable unless `user_save_dir` is also listed in `external_vignette_dirs`, and the config example does not say so. *Prior state:* implemented 2026-09-27 by `08-code-implementation` (authorized the same day, MSTR-006 §3): new `ContentConfig`/`load_content_config()` (`config.py`); `content/vignette.py`'s `list_vignettes()`/`load_vignette()` extended to enumerate/search configured external directories (built-in-wins collision rule, unreadable-directory skip, both logged), traversal guard extracted into shared `_validate_id`/`_resolve_within_root` helpers; `content/vignette_export.py::save_vignette()` retargeted to a configured `user_save_dir`, raising when unconfigured. 23 new tests (`test_config.py`, `test_content.py`, new `test_vignette_export.py`), 3 existing save-as-vignette tests updated to configure a `tmp_path` `user_save_dir` fixture (regression, not rewrite). Full suite 661 passed/3 skipped (up from 638/3), both permanent gates green. Resolves `BL-0094`'s remaining three Design-Decision-based Open Questions in full. Awaiting `09-package-verification` in a fresh session. |
+| [IP-1062](packages/IP-1062-condition-triggered-injects-and-new-effects.md) | FS-106 v2.1 Condition-Triggered Injects & New Inject Effect Types (`BL-0070`, item B4) | Forward design | ✅ VERIFIED | **`VERIFIED` 2026-09-28** via [`VR-1062`](verification/VR-1062-condition-triggered-injects-and-new-effects.md) v2.0 (second pass) — the v1.0 High finding (`BL-0128`) confirmed fixed by independent re-probe, incl. `begin_recovery` acceptance; `BL-0129` (Medium) remains open/`SCHEDULED`, correctly out of this remediation's scope, and does not block `VERIFIED`. **Remediated 2026-09-27/28** against [`VR-1062`](verification/VR-1062-condition-triggered-injects-and-new-effects.md)'s High finding (authorized 2026-09-27, MSTR-006 §3, project owner's direct instruction): the `anomaly` effect's `subsystem: "bus"` branch now calls `engine/bus.py::enter_safe_mode(bus, world.now, cause)`/`exit_safe_mode(bus)` instead of setting `bus_state.mode` directly, so `safe_mode.active`/`cause`/`entered_at` are fully consistent and `begin_recovery` accepts the asset. Added `test_anomaly_safed_asset_is_accepted_by_begin_recovery` + stronger assertions on the existing bus-subsystem test (`test_inject_effects_v2.py`). Full suite green (both permanent gates included). This unblocks `IP-1260` once this package is re-`VERIFIED`. *Prior state:* **RETURNED 2026-09-27 by `VR-1062`** — High H1 (`begin_recovery` refused with `not_safed`), plus 1 Medium (a malformed effect payload raises mid-handler, `BL-0129`, still open/`SCHEDULED`) and 4 Low; `FR-4420` (the condition trigger, including replay and rewinds) independently confirmed sound. Originally implemented 2026-09-27 by `08-code-implementation` (authorized the same day, MSTR-006 §3): a new periodic `condition_check` event (`_h_condition_check`) evaluates condition-triggered injects against replayed `WorldState`, firing-state derived from a time-filtered eventlog scan (no new `WorldState` field, no mid-handler `eventlog.append`); `_h_inject`'s body extracted into a shared `_apply_inject_effects` helper, gaining four new branches (`anomaly`, `sensor_outage`, `forced_custody_loss`, `scripted_manoeuvre`); new `Sensor.health` field + `scene_from_world()` filter. Resolves `BL-0091`/`BL-0095` in full. Awaiting a fresh `09-package-verification` pass (new session, per same-session-verification-exclusion). |
+| [IP-1200](packages/IP-1200-save-as-scenario.md) | FS-120 Save-as-Scenario (`BL-0071`, item B5) | Forward design | ✅ VERIFIED | **Verified 2026-09-27 (fresh agent context, after `IP-1180`)**, [`VR-1200`](verification/VR-1200-save-as-scenario.md). Full suite 707 passed/3 skipped, both permanent gates green. The independent round trip started `leo-isr-denial`, created a track, a bus anomaly, severe space weather and a Δv change, then saved as a scenario and reloaded. Start epoch equalled T, the tracks were identical, and all 6 assets were `model_dump()`-identical. 2 Low findings: the package's "byte-identical" checklist wording contradicts its own always-stamp-version design, and there is no browser GUI control. *Prior state:* implemented 2026-09-27 by `08-code-implementation` (authorized the same day, MSTR-006 §3; built against `IP-1180`'s actual landed diff, per the coordination note): `export_vignette()`/`save_vignette()` gain an optional `start_epoch` parameter (defaults preserve `IP-1173`'s exact prior behavior); three new additive `Vignette` fields (`initial_tracks`, `simulator_version`, `initial_space_weather`) carried forward and consumed by `build_world()`; new `spacesim/version.py::simulator_version()` (git short hash, package-version fallback); new `SessionManager.save_as_scenario()` requiring `self.started`; `InProcessSession.save_vignette(..., as_scenario=...)` and `SaveVignetteRequest.as_scenario` wire it through the existing route (no new route). 11 new tests, full suite 689 passed/3 skipped (up from 678/3), both permanent gates green. Resolves `BL-0097` in full. Awaiting `09-package-verification` in a fresh session. |
+| [IP-1190](packages/IP-1190-bulk-tle-omm-import.md) | FS-119 Bulk TLE and CCSDS OMM Multi-Object Import (`BL-0067`, item B1) | Forward design | ✅ VERIFIED | **Verified 2026-09-27 (fresh agent context)**, [`VR-1190`](verification/VR-1190-bulk-tle-omm-import.md). Full suite 707 passed/3 skipped, both permanent gates green. Every DoD and Acceptance Criterion was confirmed. `mean_to_true()` was checked against a hand-computed Kepler solution, and the reject-versus-per-object-failure split was tested with hand-built fixtures. 2 Medium findings: the OMM `EPOCH` is discarded on the false premise that `add_tle` does the same, and an invalid assignment owner/kind aborts the batch with HTTP 500. 2 Low. *Prior state:* implemented 2026-09-27 by `08-code-implementation` (authorized the same day, MSTR-006 §3): new `content/bulk_import.py` (`parse_multi_tle`/`parse_ccsds_omm`, KVN only), new public `engine/orbit.py::mean_to_true()` extracted with zero behavior change to `elements_to_rv()`, `_force_add_tle_object`/`_force_add_omm_object`/`bulk_import()` on `SessionManager`, new `POST /api/sessions/{sid}/force/bulk_import` route (+ `InProcessSession.bulk_import()` plumbing, implied by the route but not separately named in the package's own Files to Modify). 16 new tests (`test_bulk_import.py`, `test_bulk_import_session.py`, 2 in `test_orbit.py`, 1 in `test_web.py`, 1 new Observer-guard entry), full suite 638 passed/3 skipped (up from 622/3), both permanent gates green. Resolves `BL-0096` in full. Awaiting `09-package-verification` in a fresh session. |
+| [IP-1210](packages/IP-1210-ephemeris-export.md) | FS-121/FS-103 v1.1 Ephemeris Export (`BL-0069`, items B2/B3) | Forward design | ✅ VERIFIED | **`VERIFIED` 2026-09-28** via [`VR-1210`](verification/VR-1210-ephemeris-export.md) v2.0 (second pass) — the v1.0 High/Medium findings confirmed fixed, incl. an independent from-scratch numeric re-derivation of the ω×ρ correction. **Remediated 2026-09-27/28** against [`VR-1210`](verification/VR-1210-ephemeris-export.md)'s High + 2 Medium findings (authorized 2026-09-27, MSTR-006 §3, project owner's direct instruction — fix to true RIC-frame velocity, not rename/document): `to_ric()` now subtracts the RIC frame's own rotation term `ω × ric_r` (`ω = |h_ref|/|r_ref|²` along the reference orbit's normal) from the inertial-relative-velocity-in-RIC-axes it previously returned unmodified — the reported co-orbital-stationary probe case now correctly reports `ric_v ≈ 0` instead of −13.29 m/s. `write_oem`'s KVN structure is now CCSDS-conformant (`CREATION_DATE`/`ORIGINATOR`, a `META_START`/`META_STOP` block that actually wraps its metadata fields, CCSDS ASCII epochs, `REF_FRAME = TEME` matching the engine's own documented approximation). `BL-0136`'s OEM/RIC tension resolved per the owner's `FR-7430` amendment: new `write_ric_csv()` + a `format=ric` route option on both ephemeris endpoints. New/strengthened tests: `test_to_ric_velocity_zero_for_co_orbital_ric_stationary_neighbour`, `test_to_ric_velocity_matches_finite_difference_of_ric_position`, `test_write_oem_is_ccsds_conformant`, `test_write_ric_csv_carries_only_ric_fields` (`test_ephemeris.py`), `test_ephemeris_ric_companion_format` (`test_web.py`). Full suite green (both permanent gates included). *Prior state:* **RETURNED 2026-09-27 by `VR-1210`** — High H1 (missing `ω×ρ` term) plus 2 Medium (OEM non-conformance, no RIC in OEM) and 2 Low; ECI, RIC position, fog-of-war, range clamp/reject and determinism independently confirmed then. Originally implemented 2026-09-27 by `08-code-implementation` (authorized the same day, MSTR-006 §3): new `session/ephemeris.py` built on a new additive `aar.state_at_time(mgr, t)` sibling of `state_at(mgr, seq)`; `engine/maneuver.py::lvlh_frame` reused unmodified for the RIC transform; two HTTP routes (`GET .../ephemeris/truth` no-cell, `GET .../ephemeris/{cell}` cell-scoped). Resolves `BL-0098` in full. Awaiting a fresh `09-package-verification` pass (new session, per same-session-verification-exclusion). **This closes the five-package authorized-implementation tranche for this increment** (`IP-1180`/`IP-1062`/`IP-1200`/`IP-1190`/`IP-1210` — every one now `COMPLETE`). |
+| [IP-1220](packages/IP-1220-sensor-modality-models.md) | FS-122 Sensor Modality Models (`BL-0073`/`BL-0083`, items B7/B17) | Forward design | ✅ VERIFIED | **`VERIFIED` 2026-09-28** via [`VR-1220`](verification/VR-1220-sensor-modality-models.md) — all six requirements confirmed; 1 Low finding (package's own doc left unupdated at implementation time; `passive_rf_fix()` confirmed unwired to any delivery path, not itself a DoD gap). **Implemented 2026-09-28** (authorized 2026-09-27, MSTR-006 §3): six additive `Sensor` fields (`beam_mode`/`exclusion_angle_deg`/`min_range_km`/`altitude_band_affinity`/`requires_cue`/`host_asset_id`); `isr.py` gains a `ground_radar` fence/dish `BEAM_MODES` entry + `effective_gain()`'s optional band-affinity degradation; `access.py`'s `_observation_predicate` gains the solar-exclusion-angle reject (ground) and min-range-floor reject + host-asset orbit substitution (space-based), plus a shared `_sensor_id_for_actor()` dual-identifier resolver; `orders.py`'s `_validate`/`_candidate_sensors` gain the `requires_cue` precondition and the same dual-identifier resolution; `ssn.py` gains `passive_rf_fix()` (FR-1650). New tests in `test_access.py`, `test_isr.py`, `test_orders.py`, `test_ssn.py`. Full suite green, both permanent gates green. Awaiting `09-package-verification`. |
+| [IP-1240](packages/IP-1240-debris-field-persistence-estimate.md) | FS-124 Debris-Field Persistence Estimate by Altitude (`BL-0077`, item B11) | Forward design | ✅ VERIFIED | **`VERIFIED` 2026-09-28** via [`VR-1240`](verification/VR-1240-debris-field-persistence-estimate.md) — clean, 1 Low finding (package's own doc left unupdated at implementation time). **Implemented 2026-09-28** (authorized 2026-09-27, MSTR-006 §3): a new `DebrisField.persistence_estimate` field, computed by a pure `_persistence_estimate(altitude_km)` (R117 v1.2 §3.1 banded figures) and attached at both construction sites (`effects.py`'s destructive-effect resolution, `manager.py`'s `spawn_debris` inject handler). New tests in `test_effects.py` (monotonic with altitude, no gating-logic coupling) and `test_inject_library.py`. Full suite green, both permanent gates green. Awaiting `09-package-verification`. |
+| [IP-1250](packages/IP-1250-maneuver-ledger.md) | FS-125 Per-Asset Manoeuvre Ledger with Purpose Tags and CSV Export (`BL-0072`, item B6) | Forward design | ✅ VERIFIED | **`VERIFIED` 2026-09-28** via [`VR-1250`](verification/VR-1250-maneuver-ledger.md) — clean, 1 Low finding (package's own doc left unupdated at implementation time). **Implemented 2026-09-28** (authorized 2026-09-27, MSTR-006 §3): manoeuvre orders gain an additive `purpose_tag` param, carried into the `execute_maneuver` payload (and thus the eventlog entry unmodified, per the existing generic-payload-dict pattern); `_h_maneuver` mutates the same payload in place with `applied`/`remaining_delta_v_ms` on success (captured by the eventlog entry logged immediately after, same technique `IP-1062`'s `condition_check` uses); `SessionManager.maneuver_ledger(cell, asset_id)` is a pure, fog-scoped derivation from `EventLog`; two new routes (`GET .../maneuver_ledger/{cell}/{asset}` + `/export.csv`), fog-scoped identically to `/telemetry`. New tests in `test_orders.py`, `test_session_features.py`, `test_web.py`. Full suite green, both permanent gates green. Awaiting `09-package-verification`. |
+| [IP-1260](packages/IP-1260-telemetry-csv-export.md) | FS-126 Per-Asset Telemetry CSV Export Over a Time Span (`BL-0075`, item B9) | Forward design | 🟡 READY | **Blocker cleared 2026-09-28.** `IP-1062` (this package's own Acceptance Criterion 1 dependency, the `anomaly` effect) reached `VERIFIED` via [`VR-1062`](verification/VR-1062-condition-triggered-injects-and-new-effects.md) v2.0 this same verification pass — `begin_recovery` acceptance of an anomaly-safed asset is now independently confirmed sound. This package's own dependency list names no other unverified package, and it was already part of the same authorized six-package Should-tier batch (2026-09-27, MSTR-006 §3) as `IP-1220`/`IP-1240`/`IP-1250`/`IP-1270`/`IP-1280`/`IP-1290` — so it flips `BLOCKED → READY`, not merely unblocked-but-unauthorized. Not implemented by this verification pass (09-package-verification never implements); next step is `08-code-implementation` on this package. |
+| [IP-1270](packages/IP-1270-effect-authorization-gating-and-live-roe.md) | FS-127 Optional Effect-Authorization Gating and Live Rules-of-Engagement Changes (`BL-0076`, item B10) | Forward design | ✅ VERIFIED | **`VERIFIED` 2026-09-28** via [`VR-1270`](verification/VR-1270-effect-authorization-gating-and-live-roe.md) — clean, 1 Low finding (package's own doc left unupdated); the shared effect-classification enumeration independently confirmed correctly reused by `IP-1290`. **Implemented 2026-09-28** (authorized 2026-09-27, MSTR-006 §3): `content/vignette.py` gains additive `Vignette.effect_gating_rules` (threaded through `VignetteContext.gating_rules`); `OrderSystem` gains a `_matching_gate()` check (order action type × five-D's reversibility category, Design Decision 1's shared enumeration `IP-1290` must reuse) holding a matched order `pending_approval` (`self._pending`) instead of scheduling it, `decide_gated_order()` (role-gated against the rule's `required_role`, logs `effect_gate_request`/`effect_gate_decision` with elapsed time), `_effective_roe()` (a point-in-time derivation: the immutable `_static_roe` overlaid with `roe_change` eventlog entries at or before the order's own issue time — `FR-3420`'s two ROE checks now read this instead of the static-only value), and `issue_roe_change()` (White-Cell-only, logs `roe_change`). `session/manager.py::_rebind()` discards any pending order on rewind/undo (Design Decision 2). Two new HTTP routes (`/gate/decide`, `/roe/change`). New tests in `test_orders.py`, `test_session_features.py`, `test_web.py`; one pre-existing `test_ssn.py` test updated (it mutated `osys.roe` directly for setup — now also sets the new immutable `_static_roe` baseline). Full suite green, both permanent gates green. Awaiting `09-package-verification`. **This resolves the effect-classification enumeration `IP-1290` must reuse (`BL-0105`).** |
+| [IP-1280](packages/IP-1280-variable-speed-aar-replay.md) | FS-128 Variable-Speed AAR Replay from Truth or a Single Cell's Viewpoint (`BL-0078`, item B12) | Forward design | ✅ VERIFIED | **`VERIFIED` 2026-09-28** via [`VR-1280`](verification/VR-1280-variable-speed-aar-replay.md) — clean, 1 Low finding (package's own doc left unupdated). **This is the last of the nine-package batch to reach `VERIFIED`.** **Implemented 2026-09-28** (authorized 2026-09-27, MSTR-006 §3): new `session/aar.py::PlaybackSession` — a continuous, speed-adjustable playback controller built entirely on repeated `state_at_time()` calls (unmodified), through either the no-cell ground-truth path or `CellController.view()`'s existing fog-of-war filter; `_participant_cells()` rejects a viewpoint naming a cell that owns no assets/sensors in the recorded exercise, at construction and at `set_viewpoint()`; a viewpoint switch never resets the played-back moment (Design Decision 1). One `PlaybackSession` per exercise session, held in `InProcessSession._playbacks` (UI-presentation state, not exercise state — same placement as `_observer_view`). Five new HTTP routes (`start`/`advance`/`state`/`viewpoint`/`speed`). New tests in `test_aar.py` (non-disturbance, cell/truth-viewpoint matching, viewpoint-switch continuity, non-participating-cell rejection) and `test_web.py`. Full suite green, both permanent gates green. Awaiting `09-package-verification`. **This is the last of the six-package Should-tier authorized batch — every package now `COMPLETE`.** |
+| [IP-1290](packages/IP-1290-jamming-delivery-and-effect-detectability.md) | FS-129 Jamming-Delivery Degradation and Per-Effect-Class Detectability Settings (`BL-0081`, item B15) | Forward design | ✅ VERIFIED | **`VERIFIED` 2026-09-28** via [`VR-1290`](verification/VR-1290-jamming-delivery-and-effect-detectability.md) — clean, 1 Low finding (package's own doc left unupdated); schema independently confirmed structurally identical to `IP-1270`'s landed enumeration. **Implemented 2026-09-28**, sequenced after `IP-1270` per its Build-sequencing note — read `IP-1270`'s actual landed schema (`_matching_gate`/`gating_rules` shape: `{action_type?, reversibility_category?, ...}`) before writing this package's own config parsing, per its Implementation Task 1 (authorized 2026-09-27, MSTR-006 §3): `_h_command`/`_h_maneuver` gain a check (`is_link_denied(world, actor, now, link="uplink")`) that fails delivery (`achieved="jammed"`) when an active uplink jam covers the command's execution moment, mirroring `_h_downlink`'s existing pattern; `EffectInstance.order_action_type` (additive, set at all three effect-construction sites — jam/engage/cyber) plus `ModerateEffectResolver(detectability_config=...)`/`_class_confidence()` let a vignette declare a per-effect-class attribution-confidence override, keyed by `IP-1270`'s exact enumeration, falling back to the existing fixed `{"overt":.95,"ambiguous":.5,"covert":.15}` table when undeclared; `content/vignette.py` gains the additive `Vignette.effect_detectability_config` → `VignetteContext.detectability_config` plumbing. New tests in `test_orders.py` (jam-covers-delivery + no-jam regression) and `test_effects.py` (per-class resolution, parametrized declared vs. undeclared). Full suite green, both permanent gates green. Awaiting `09-package-verification`. |
 
 **Update (2026-07, tranche 1):** IP-1090/IP-1100/IP-1110 are new, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03 (mirroring the FS-106 split). No new code
@@ -305,6 +324,194 @@ tests (`test_typed_payload_params.py`), full suite **598 passed/3 skipped** (up 
 permanent gates green — all 19 shipped vignettes confirmed unchanged. `IP-1171` flips
 `READY → COMPLETE`. `IP-1174` remains `BLOCKED`, now solely on `IP-1171` reaching `VERIFIED`.
 
+**Update (2026-09-27): the project owner authorized MSTR-006 §3 coding for all five Must-tier
+packages queued this increment (`IP-1180`, `IP-1062`, `IP-1200`, `IP-1190`, `IP-1210`), directing
+the pipeline to iterate through `08`/`09`/`10` continuously, pausing only at `11-release-readiness`'s
+GO/NO-GO call.** `08-code-implementation` implemented **`IP-1190`** first (no shared-file
+coordination risk with any of the other four — see `IP-1190`'s own Build-sequencing note): new
+`content/bulk_import.py` (`parse_multi_tle`/`parse_ccsds_omm`, KVN-only), new public
+`engine/orbit.py::mean_to_true()` (behavior-preserving extraction, confirmed via a bit-for-bit
+regression test), `_force_add_tle_object`/`_force_add_omm_object`/`bulk_import()` on
+`SessionManager`, and a new `POST /api/sessions/{sid}/force/bulk_import` route. 16 new tests, full
+suite **638 passed/3 skipped** (up from 622/3), both permanent gates green. `IP-1190` flips
+`READY → COMPLETE` (never `BLOCKED` — it had no unmet dependency, only the authorization gate,
+now cleared). Resolves `BL-0096` in full. Next: `08-code-implementation` on `IP-1180` (external
+vignette directories), building the coordination-flagged `save_vignette()`/`export_vignette()`
+change first so `IP-1200` (implemented after it) builds against its actual landed diff.
+
+**Update (2026-09-27, same session): `IP-1180` implemented second**, before `IP-1200`, per the
+flagged coordination note. New `ContentConfig`/`load_content_config()` (`config.py`);
+`content/vignette.py`'s `list_vignettes()`/`load_vignette()` extended to enumerate/search
+configured external directories (built-in-wins collision rule, unreadable-directory skip, both
+logged); traversal guard extracted into shared `_validate_id`/`_resolve_within_root` helpers;
+`content/vignette_export.py::save_vignette()` retargeted to a configured `user_save_dir`, raising
+when unconfigured. 23 new tests, 3 existing save-as-vignette tests updated (not rewritten) to
+configure a `tmp_path` `user_save_dir` fixture. Full suite **661 passed/3 skipped** (up from
+638/3), both permanent gates green. `IP-1180` flips `READY → COMPLETE`. Resolves `BL-0094`'s
+remaining three Open Questions in full. `IP-1200` (implemented next) must build against this
+landed diff — the optional `start_epoch` parameter and additive `initial_tracks`/
+`simulator_version` fields `IP-1200` adds are new, non-conflicting extensions to the same
+functions this run just changed. Next: `08-code-implementation` on `IP-1062` (FS-106 v2.1,
+condition-triggered injects) — no shared-file coordination risk with any remaining package.
+
+**Update (2026-09-27, same session): `IP-1062` implemented.** New `_h_condition_check` handler
++ periodic `condition_check` event, scheduled only when a vignette declares a condition-type
+trigger; `_h_inject` refactored into a shared `_apply_inject_effects` helper (behavior-preserving
+for all eight prior effect types — `test_inject_library.py` re-run with zero functional changes),
+gaining four new branches (`anomaly`, `sensor_outage`, `forced_custody_loss`,
+`scripted_manoeuvre`); new `Sensor.health` field + `scene_from_world()` filter mirroring the
+existing ground-station-outage pattern. Resolved `BL-0091` (scripted-manoeuvre resolves through
+the existing six entry modes, never a parallel mechanism) and `BL-0095` (a deleted-target
+condition never fires; the Δv gate is deliberately bypassed per `ADR-0005`) in full. 17 new
+tests, full suite **678 passed/3 skipped** (up from 661/3), both permanent gates green. `IP-1062`
+flips `READY → COMPLETE`. Next: `08-code-implementation` on `IP-1200` (FS-120, save-as-scenario)
+— must build against `IP-1180`'s actual landed diff, per the coordination note above.
+
+**Update (2026-09-27, same session): `IP-1200` implemented**, built directly against `IP-1180`'s
+actual landed `export_vignette()`/`save_vignette()`/`_validate_id`/`_resolve_within_root` shapes
+(no conflict — additive `start_epoch` parameter and new `Vignette` fields, orthogonal to `IP-1180`'s
+own changes). New `spacesim/version.py`, `SessionManager.save_as_scenario()`, and the
+`as_scenario` threading through `InProcessSession`/`SaveVignetteRequest`. 11 new tests, full suite
+**689 passed/3 skipped** (up from 678/3), both permanent gates green. `IP-1200` flips
+`READY → COMPLETE`. Resolves `BL-0097` in full. Next: `08-code-implementation` on `IP-1210`
+(FS-121/FS-103 v1.1, ephemeris export) — the last of the five authorized Must-tier packages.
+
+**Update (2026-09-27, same session): `IP-1210` implemented — the last of the five authorized
+Must-tier packages.** New `session/ephemeris.py` built exactly per `ADS-1500`'s System
+Architecture: one shared time-span replay mechanism (`aar.state_at_time`, additive, does not
+change `state_at`'s existing contract or its AAR-scrubber callers) and one shared ECI/RIC/CSV/OEM
+serializer for both the truth (`FR-7410`) and cell-observed (`FR-7420`) variants. Resolved
+`BL-0098` in full: a wholly-out-of-range time span raises naming the session's actual valid
+range; a partially-out-of-range span is silently clamped. Confirmed by direct test that the
+cell-observed export never reads `world.assets[...].orbit` for the target (always
+`Track.state_estimate`) and resolves a merely-tracked reference object via the cell's own
+(possibly stale) estimate, never ground truth. 18 new tests, full suite **707 passed/3 skipped**
+(up from 689/3), both permanent gates green. `IP-1210` flips `READY → COMPLETE`. **This closes
+the entire five-package Must-tier implementation tranche for this increment** — `IP-1180`,
+`IP-1062`, `IP-1200`, `IP-1190`, `IP-1210` are all now `COMPLETE`, each awaiting
+`09-package-verification` in its own fresh session (the same-session exclusion applies to all
+five, since this session implemented every one of them).
+
+**Update (2026-09-27, run #78): Seven new forward-design packages planned for the Should-tier
+external-validation-report intake batch**, against the eight Feature Specifications
+`06-feature-specification` drafted (`FS-122`, `FS-124`-`FS-129` — `FS-123` excluded, see below):
+`IP-1220` (FS-122, sensor modality models, B7+B17), `IP-1240` (FS-124, debris persistence, B11),
+`IP-1250` (FS-125, manoeuvre ledger, B6), `IP-1260` (FS-126, telemetry export, B9 — **`BLOCKED`**,
+not `READY`, since its own Acceptance Criterion 1 needs `IP-1062`'s `anomaly` effect and `IP-1062`
+is only `COMPLETE`, not yet `VERIFIED`), `IP-1270` (FS-127, effect-authorization gating + live ROE,
+B10), `IP-1280` (FS-128, variable-speed AAR replay, B12), `IP-1290` (FS-129, jamming-delivery +
+per-effect-class detectability, B15). `IP-1270` and `IP-1290` share one design dependency:
+`IP-1270`'s Design Decision 1 authors the effect-classification enumeration (order action type ×
+five-D's reversibility category) both `FR-3430` and `FR-1450` independently describe in identical
+words (`BL-0105`) — `IP-1290` cites, does not re-derive, that resolution, and the two packages
+should be sequenced with `IP-1270` first or closely coordinated. **No package was written for
+`FS-123`** (space-weather-index drag/anomaly-rate coupling, B8) — its own Open Questions
+(`BL-0104`/`BL-0121`, the index-to-scaling mapping function and implausible-index-value handling)
+are genuine physics/design decisions this skill's own rules forbid inventing; `FS-123` remains
+`🚧` until a `04`/`06` pass resolves them, at which point an eighth package (`IP-1230`, the next
+free slot in this series) can be planned. **None of the seven is authorized (MSTR-006 §3)** — all
+enter at `READY` (six) or `BLOCKED` (`IP-1260`, dependency-blocked not authorization-blocked), per
+this skill's own default-unauthorized rule. See
+[`01-technical-work-breakdown.md`](01-technical-work-breakdown.md) §"Should-tier batch (run #78)"
+for the full split rationale (in this case, one Feature Spec → one package each, no splitting
+needed — every FS in this batch fits a single coherent Definition of Done).
+
+**Update (2026-09-27, `09-package-verification` batch, fresh agent context): `IP-1061` independently
+verified.** [`VR-1061`](verification/VR-1061-inject-and-sizing-defect-remediation.md) checked every
+Definition-of-Done item against the live tree at `d2818ff`: the full suite passed (707 passed, 3
+skipped) and both permanent gates are green. A1, A2, A3 and A4 were re-derived with an independent
+probe script, not only by re-running the package's own tests. The report also confirms that
+`IP-1062`'s later `_apply_inject_effects()` refactor preserved the single validating `space_weather`
+branch. `IP-1061` flips `COMPLETE → VERIFIED` with 3 Low findings, all package-text or RTM-shape
+issues with no functional gap. The seven `COMPLETE` packages are being verified one per report, in
+the order `IP-1061`, `IP-1174`, `IP-1190`, `IP-1180`, `IP-1062`, `IP-1200`, `IP-1210`.
+
+**Update (2026-09-27, same verification batch): `IP-1174` RETURNED.**
+[`VR-1174`](verification/VR-1174-vignette-creator-ui-surfaces.md) confirmed `FR-5120` through
+`FR-5150` by driving the HTTP routes directly: JSON and form views converge, the ground-truth
+preview tracks every edit, TLE and lat/long entry work, and the curated 52-site list loads. It found
+one failed Definition-of-Done/requirement check. `FR-5160` requires seat-count declaration "per
+cell", but `POST /creator/seats` rejects any body `cell` other than `white`, and that same field is
+the target cell. Only White seats can be declared, so the Blue/Red options in the Creator UI fail
+with 403. The package's own `test_seat_declaration_rejects_non_white_cell` pins this as intended.
+There are also 2 Medium findings: `force/ground` has no owner/kind/lat/lon validation, and an
+invalid owner produces HTTP 500. `IP-1174` flips `COMPLETE → IN PROGRESS`. Next step for it:
+`08-code-implementation` re-run against `VR-1174`'s findings.
+
+**Update (2026-09-27, same verification batch): `IP-1190` independently verified.**
+[`VR-1190`](verification/VR-1190-bulk-tle-omm-import.md) confirmed every Definition-of-Done item
+and both `FR-5220` Acceptance Criteria. `mean_to_true()` agrees with a hand-computed Kepler solution
+and with the original inline expression bit for bit. The outright-rejection versus
+per-object-failure distinction held against hand-built fixtures. `IP-1190` flips
+`COMPLETE → VERIFIED` with 2 Medium findings, both routed for remediation planning rather than
+blocking. First, the OMM `EPOCH` is discarded (elements are anchored at `ctx.start_epoch`) on a
+false "same as `add_tle`" premise. Second, a malformed per-object assignment aborts the batch with
+HTTP 500.
+
+**Update (2026-09-27, same verification batch): `IP-1180` independently verified.** It was checked
+before `IP-1200`, per both packages' coordination note.
+[`VR-1180`](verification/VR-1180-external-vignette-directories.md) confirmed every
+Definition-of-Done and Checklist item with hand-built temporary-directory fixtures. The confirmed
+behaviours are:
+
+- On an id collision, the built-in vignette wins and the collision is logged.
+- A missing external directory is skipped, logged, and does not stop later directories being read.
+- Saving goes only to `user_save_dir`, with a specific error when it is unset.
+- There is a single shared traversal guard for load and save.
+
+`IP-1180` flips `COMPLETE → VERIFIED` with 1 Low finding: a saved file cannot be loaded back unless
+`user_save_dir` is also listed in `external_vignette_dirs`.
+
+**Update (2026-09-27, same verification batch): `IP-1062` RETURNED.**
+[`VR-1062`](verification/VR-1062-condition-triggered-injects-and-new-effects.md) confirmed the
+condition-trigger mechanism (`FR-4420`) sound with a proximity condition on real orbits. It fires
+at the first true tick, only once, with no mid-handler append. Replay equals live across plain,
+exact-tick, prior-tick and non-aligned rewinds.
+
+It also confirmed `sensor_outage`, `forced_custody_loss` and `scripted_manoeuvre` (Δv budget
+untouched). It found one failed check (High H1): the `anomaly`/bus effect sets
+`bus_state.mode = "safe_mode"` directly. `safe_mode.active` stays `False`, so the operator's
+recovery strip shows safe mode while `begin_recovery` refuses with `not_safed`, and the
+`asset_safed` metric reads `False`. The effect should go through
+`enter_safe_mode()`/`exit_safe_mode()`. There is also 1 Medium finding (a malformed effect payload
+raises mid-handler, leaving an unlogged partial mutation) and 4 Low findings.
+
+`IP-1062` flips `COMPLETE → IN PROGRESS`. **`IP-1260` stays `BLOCKED`.** Its blocker (IP-1062
+reaching `VERIFIED`) has not cleared, and the High finding sits in the exact `anomaly` effect
+`IP-1260`'s Acceptance Criterion 1 depends on.
+
+**Update (2026-09-27, same verification batch): `IP-1200` independently verified**, after `IP-1180`,
+per the coordination note. [`VR-1200`](verification/VR-1200-save-as-scenario.md) round-tripped a
+real mid-exercise session (`leo-isr-denial`). The session was saved as a scenario, reloaded, and
+compared with the source session field by field. The start epoch equalled the save moment. Tracks,
+space weather, and every asset's orbit, `bus_state` and resources were identical. `IP-1200` flips
+`COMPLETE → VERIFIED` with 2 Low findings. The first is a package-text contradiction over
+"byte-identical" output. The second is that the capability has no browser GUI control and is
+reachable only through the API.
+
+**Update (2026-09-27, same verification batch): `IP-1210` RETURNED. This closes the seven-package
+verification batch.** [`VR-1210`](verification/VR-1210-ephemeris-export.md) confirmed ECI state
+vectors, RIC position, the cell-observed fog-of-war rule, the range reject-versus-clamp split and
+determinism. It found one failed check (High H1): the exported RIC velocity omits the rotating-frame
+`ω×ρ` term. A co-orbital, RIC-stationary neighbour reports −13.29 m/s radial velocity. It also found
+2 Medium findings (the OEM file is non-conformant and carries no RIC) and 2 Low findings.
+`IP-1210` flips `COMPLETE → IN PROGRESS`.
+
+**Batch outcome:**
+
+- **`VERIFIED` (4):** `IP-1061`, `IP-1190`, `IP-1180`, `IP-1200`.
+- **`RETURNED` → `IN PROGRESS` (3):** `IP-1174` (`FR-5160` seat declaration is White-only),
+  `IP-1062` (`anomaly`/bus effect is half-safe and unrecoverable) and `IP-1210` (RIC velocity).
+  Each needs an `08-code-implementation` re-run against its VR, followed by a fresh
+  `09-package-verification`.
+- **`IP-1260` stays `BLOCKED`** on `IP-1062`.
+
+**Update (2026-09-27/28): `IP-1174` remediated, flips `IN PROGRESS → COMPLETE`.** All three
+findings (`BL-0123` High, `BL-0124`/`BL-0125` Medium) fixed; `BL-0127` (stale package prose)
+corrected in place. See this package's status-table row above for the fix detail. Awaiting a
+fresh `09-package-verification` pass. `IP-1062` and `IP-1210` remain `IN PROGRESS`, remediation not
+yet started.
+
 ## Implementation sequence
 
 Because 11 of 13 packages describe already-shipped code, "sequence" here has two distinct readings,
@@ -391,6 +598,15 @@ itself — the next stage-appropriate step for the 18 pre-Tranche-3 `VERIFIED` p
 §3 go-ahead; for Tranche 3, it is `08-code-implementation` on `IP-1174`, the last package in this
 tranche.
 
+**Remediation tranche (2026-09-26):** `IP-1061` (Inject Scheduling & Sizing-Cap Defect Remediation
+— `FR-4410` + `NFR-1300`/ADR-0019) was authored `READY` and authorized (run #53), sequenced ahead
+of `IP-1174` by the project owner, and **implemented this same day (run #54)**: `_arm_schedule()`'s
+initial-vs-re-arm distinction (A1), the merged `space_weather` branch (A3), the corrected
+`inject_library.yaml` comment (A2), and the removed hard satellite/constellation cap (A4) — 5 new
+tests, full suite 603 passed/3 skipped, both permanent gates green. `IP-1061` is now `COMPLETE`,
+awaiting `09-package-verification` (fresh session) before `08-code-implementation` picks up
+`IP-1174`.
+
 ## Dependency graph
 
 ```
@@ -406,7 +622,7 @@ IP-1030 (Custody Management) ────┬──► IP-1040 (SDA Tasking)     
                                                                           │       │
 IP-1010, IP-1020 ─────────────────────────────────────────────────────┐ │       │
                                                                         ▼ ▼       │
-IP-1060 (White Cell Dashboard) [independent — no downstream package]  IP-2010 (Competency Assessment)
+IP-1060 (White Cell Dashboard) ──► IP-1061 (Inject/Sizing remediation, 2026-09-26)  IP-2010 (Competency Assessment)
                                                                           │
                                                                           ▼
                                                                      IP-3010 (Research Analytics)
@@ -560,7 +776,25 @@ implement in this plan.
   verified (`IP-1170` run #48; `IP-1172`/`IP-1173` 2026-07-11; `IP-1171` 2026-07-12, all fresh
   sessions):** `IP-1170`/`IP-1172`/`IP-1173`/`IP-1171` are all now `VERIFIED`; `IP-1174` is the
   sole package remaining, now `READY`.
-- **Package Status:** **22 `VERIFIED`, 0 `COMPLETE`, 1 `READY`, 1 `BLOCKED`** (`IP-1174` — every
+- **Package Status (2026-09-27, after the seven-package `09-package-verification` batch):** **26
+  `VERIFIED`, 0 `COMPLETE`, 3 `IN PROGRESS`, 6 `READY`, 2 `BLOCKED`.**
+  - Newly `VERIFIED`: `IP-1061` (`VR-1061`), `IP-1190` (`VR-1190`), `IP-1180` (`VR-1180`) and
+    `IP-1200` (`VR-1200`).
+  - RETURNED to `IN PROGRESS`: `IP-1174` (`VR-1174`), `IP-1062` (`VR-1062`) and `IP-1210`
+    (`VR-1210`), each with one High finding.
+  - `READY` (none authorized): `IP-1220`, `IP-1240`, `IP-1250`, `IP-1270`, `IP-1280`, `IP-1290`.
+  - `BLOCKED`: `IP-1160` (authorization) and `IP-1260` (on `IP-1062`).
+
+**Update (2026-09-27/28): all three `IN PROGRESS` packages remediated** (`IP-1174`, `IP-1062`,
+`IP-1210` — see their own status-table rows above), each now `COMPLETE` awaiting a fresh
+`09-package-verification` pass. **The six `READY` Should-tier packages were authorized the same
+day (MSTR-006 §3, project owner's direct instruction, batched together).** `IP-1220` is now
+`COMPLETE` (implemented 2026-09-28, see its own row above); the remaining five
+(`IP-1240`/`IP-1250`/`IP-1270`/`IP-1280`/`IP-1290`) stay `READY`, authorized, queued for
+implementation in this same session.
+
+  The earlier count below is kept as history.
+- **Package Status (2026-09-26, run #55, post-`IP-1174` implementation):** **22 `VERIFIED`, 2 `COMPLETE`, 0 `READY`, 1 `BLOCKED`** — `IP-1061` and `IP-1174` are both `COMPLETE`, each awaiting its own `09-package-verification` pass (independently, in fresh sessions relative to their own implementation). `IP-1160` remains the sole `BLOCKED` package (authorization). *Superseded counts, preserved:* run #54 (`IP-1174` newly implemented): 22/1/1/1; run #53 (`IP-1061` newly `READY`): 22/0/2/1; pre-run-#53: 22/0/1/1 (`IP-1174` — every
   dependency now `VERIFIED`, `READY` for `08-code-implementation`; `IP-1160` — every dependency
   already `VERIFIED`, authorization is the sole remaining gate, still not on record). The 22
   `VERIFIED` packages are the original 11 as-built + `IP-1150` + `IP-1140` + `IP-2010` + `IP-3010` +

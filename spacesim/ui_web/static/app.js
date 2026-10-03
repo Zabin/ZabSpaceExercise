@@ -47,6 +47,17 @@ const api = {
     if (!r.ok) throw new Error(await r.text());
     return r.json();
   },
+  // IP-1174 — the Vignette Creator's PUT/PATCH/DELETE routes carry the same cell-query-param
+  // convention as post() above, for the same Observer-guard reason.
+  async _mutate(method, p, b) {
+    const url = p + (p.includes("?") ? "&" : "?") + "cell=" + encodeURIComponent(CELL);
+    const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  put(p, b) { return this._mutate("PUT", p, b); },
+  patch(p, b) { return this._mutate("PATCH", p, b); },
+  del(p) { return this._mutate("DELETE", p); },
 };
 // Drop sub-second precision so the displayed clock never shows .xxx ms — sim time advances
 // per-event but the readouts here are operator-grade, not millisecond-precise.
@@ -2144,6 +2155,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // opening one closes the others, plus outside-click + Escape close any open menu.
   const menus = [
     { btn: $("session-btn"),  menu: $("session-menu") },
+    { btn: $("creator-btn"),  menu: $("creator-menu") },
     { btn: $("view-btn"),     menu: $("view-menu") },
     { btn: $("settings-btn"), menu: $("settings-menu") },
   ].filter((m) => m.btn && m.menu);
@@ -2933,3 +2945,7 @@ addEventListener("DOMContentLoaded", () => {
     if (el) el.addEventListener("change", cyberSummaryUpdate);
   });
 });
+
+// IP-1174 — Vignette Creator menu wiring (creator.js is a dedicated module, per the existing
+// globe.js/graph.js pattern of separate front-end files alongside this one).
+addEventListener("DOMContentLoaded", () => { window.Creator && Creator.init(); });

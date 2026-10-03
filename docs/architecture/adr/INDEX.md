@@ -65,6 +65,12 @@ ADR's own "Consequences" section.
 | [ADR-0031](ADR-0031-governance-record-consistency.md) | Governance-record consistency: GDS-00 §7 correction; DOM-002/DOM-005 status gap acknowledged | Accepted |
 | [ADR-0032](ADR-0032-descriptive-rubric-not-automated-scoring.md) | Descriptive rubric-tier reporting carved out of ADR-0017's "no automated... assessment mechanism" (amends ADR-0017) | Accepted |
 | [ADR-0033](ADR-0033-dedicated-research-export-interface.md) | A dedicated multi-run/cohort research-export interface is authorized (supersedes ADR-0029) | Accepted |
+| [ADR-0034](ADR-0034-directed-energy-reuses-weapon-engagement-channel.md) | Directed energy reuses `weapon_engagement`; no seventh access channel | Accepted |
+| [ADR-0035](ADR-0035-directed-energy-confidence-tiers-by-branch.md) | DE-dazzle needs no custody precondition (like `jam`); DE-damage needs weapons-quality (like `engage`) | Accepted |
+
+**ADR-0034/0035** close the two architecture-level Open Questions `06-feature-specification`
+carried in `FS-105` v1.1 for the directed-energy order/resolution path (backlog `BL-0066`,
+`BL-0088`, `BL-0089`), grounded in `R117` v1.1's new DE characterization (`BL-0086`).
 
 ADR-0001 through ADR-0023 record decisions already settled and reflected in the shipped system at
 the time this ADR set was first authored. ADR-0024 through ADR-0029 originally recorded questions

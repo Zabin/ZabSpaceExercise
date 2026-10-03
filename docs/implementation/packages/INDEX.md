@@ -64,7 +64,20 @@ unauthorized FS.
 | [IP-1171](IP-1171-typed-payload-bus-parameters.md) | Typed Payload & Bus Parameter Domain Model | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5170`/`FR-5180` | Forward design | ✅ VERIFIED (2026-07-12, [`VR-1171`](../verification/VR-1171-typed-payload-bus-parameters.md) — full suite 598 passed/3 skipped, both permanent gates green; one Low finding, fixed in place) |
 | [IP-1172](IP-1172-per-cell-roe-enforcement.md) | Per-Cell Rules of Engagement Enforcement | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-3420`/`NFR-2010` | Forward design | ✅ VERIFIED (2026-07-11, [`VR-1172`](../verification/VR-1172-per-cell-roe-enforcement.md) — full suite 586 passed/3 skipped, both permanent gates green; zero findings) |
 | [IP-1173](IP-1173-vignette-creator-draft-session.md) | Vignette Creator Draft Session & Reverse Serialization | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5110` | Forward design | ✅ VERIFIED (2026-07-11, [`VR-1173`](../verification/VR-1173-vignette-creator-draft-session.md) — full suite 586 passed/3 skipped, both permanent gates green; zero findings) |
-| [IP-1174](IP-1174-vignette-creator-ui-surfaces.md) | Vignette Creator UI Surfaces | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5120`-`FR-5160` | Forward design | 🟡 READY (authorized 2026-07-05 — MSTR-006 §3; every dependency — `IP-1171`/`IP-1172`/`IP-1173` — now `VERIFIED`) |
+| [IP-1174](IP-1174-vignette-creator-ui-surfaces.md) | Vignette Creator UI Surfaces | [FS-117](../../features/FS-117-vignette-creator.md) §`FR-5120`-`FR-5160` | Forward design | ✅ VERIFIED 2026-09-28 via [`VR-1174`](../verification/VR-1174-vignette-creator-ui-surfaces.md) v2.0 (second pass) — the v1.0 High/Medium findings (`BL-0123`/`BL-0124`/`BL-0125`) confirmed fixed. |
+| [IP-1061](IP-1061-inject-and-sizing-defect-remediation.md) | Inject Scheduling & Sizing-Cap Defect Remediation (`BL-0062`–`BL-0065`) | [FS-106](../../features/FS-106-white-cell-dashboard.md) §FR-4410 + NFR-1300 ([ADR-0019](../../architecture/adr/ADR-0019-sizing-guideline-not-engine-cap.md)) | Remediation (forward design) | ✅ VERIFIED (2026-09-27, [`VR-1061`](../verification/VR-1061-inject-and-sizing-defect-remediation.md) — full suite 707 passed/3 skipped, both permanent gates green; 3 Low findings, no functional gap) |
+| [IP-1180](IP-1180-external-vignette-directories.md) | External Vignette Directories & Safe Scenario Save Target (`BL-0082`, item B16) | [FS-118](../../features/FS-118-external-vignette-directories.md) `FR-5410`/`FR-5420`/`NFR-3700` | Forward design | ✅ VERIFIED (2026-09-27, [`VR-1180`](../verification/VR-1180-external-vignette-directories.md). Full suite 707 passed/3 skipped, both permanent gates green. 1 Low finding: `user_save_dir` is not auto-loadable) |
+| [IP-1062](IP-1062-condition-triggered-injects-and-new-effects.md) | Condition-Triggered Injects & New Inject Effect Types (`BL-0070`, item B4) | [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.1 `FR-4420`/`FR-4430` | Forward design | ✅ VERIFIED 2026-09-28 via [`VR-1062`](../verification/VR-1062-condition-triggered-injects-and-new-effects.md) v2.0 (second pass) — the `enter_safe_mode()`/`exit_safe_mode()` fix confirmed sound, `begin_recovery` acceptance independently reconfirmed. `BL-0129` (Medium) remains open/`SCHEDULED`, out of scope. |
+| [IP-1200](IP-1200-save-as-scenario.md) | Save-as-Scenario (`BL-0071`, item B5) | [FS-120](../../features/FS-120-save-as-scenario.md) `FR-5510` | Forward design | ✅ VERIFIED (2026-09-27, [`VR-1200`](../verification/VR-1200-save-as-scenario.md). Verified after `IP-1180`. Full suite 707 passed/3 skipped, both permanent gates green. Independent end-to-end round trip showed all 6 assets, tracks and space weather identical. 2 Low findings) |
+| [IP-1190](IP-1190-bulk-tle-omm-import.md) | Bulk TLE and CCSDS OMM Multi-Object Import (`BL-0067`, item B1) | [FS-119](../../features/FS-119-bulk-tle-omm-import.md) `FR-5220` | Forward design | ✅ VERIFIED (2026-09-27, [`VR-1190`](../verification/VR-1190-bulk-tle-omm-import.md). Full suite 707 passed/3 skipped, both permanent gates green. 2 Medium findings: the OMM `EPOCH` is discarded, and a malformed assignment aborts the batch. 2 Low findings) |
+| [IP-1210](IP-1210-ephemeris-export.md) | Ephemeris Export, Truth and Cell-Observed (`BL-0069`, items B2/B3) | [FS-121](../../features/FS-121-ephemeris-export.md) `FR-7410`/`FR-7420`/`FR-7430`; [FS-103](../../features/FS-103-custody-management.md) v1.1 | Forward design | ✅ VERIFIED 2026-09-28 via [`VR-1210`](../verification/VR-1210-ephemeris-export.md) v2.0 (second pass) — ω×ρ fix independently re-derived from scratch, OEM conformance + `FR-7430` companion export confirmed. |
+| [IP-1220](IP-1220-sensor-modality-models.md) | Sensor Modality Models (`BL-0073`/`BL-0083`, items B7/B17) | [FS-122](../../features/FS-122-sensor-modality-models.md) `FR-1610`-`FR-1660` | Forward design | ✅ VERIFIED 2026-09-28 via [`VR-1220`](../verification/VR-1220-sensor-modality-models.md) — 1 Low finding (own doc left unupdated). |
+| [IP-1240](IP-1240-debris-field-persistence-estimate.md) | Debris-Field Persistence Estimate by Altitude (`BL-0077`, item B11) | [FS-124](../../features/FS-124-debris-field-persistence-estimate.md) `FR-1430` | Forward design | ✅ VERIFIED 2026-09-28 via [`VR-1240`](../verification/VR-1240-debris-field-persistence-estimate.md) — clean, 1 Low finding (own doc left unupdated). |
+| [IP-1250](IP-1250-maneuver-ledger.md) | Per-Asset Manoeuvre Ledger with Purpose Tags and CSV Export (`BL-0072`, item B6) | [FS-125](../../features/FS-125-maneuver-ledger.md) `FR-1320` | Forward design | ✅ VERIFIED 2026-09-28 via [`VR-1250`](../verification/VR-1250-maneuver-ledger.md) — clean, 1 Low finding (own doc left unupdated). |
+| [IP-1260](IP-1260-telemetry-csv-export.md) | Per-Asset Telemetry CSV Export Over a Time Span (`BL-0075`, item B9) | [FS-126](../../features/FS-126-telemetry-csv-export.md) `FR-2320` | Forward design | 🟡 READY (blocker cleared 2026-09-28 — `IP-1062` reached `VERIFIED` via `VR-1062` v2.0; already part of the same authorized batch as its five siblings) |
+| [IP-1270](IP-1270-effect-authorization-gating-and-live-roe.md) | Optional Effect-Authorization Gating and Live Rules-of-Engagement Changes (`BL-0076`, item B10) | [FS-127](../../features/FS-127-effect-authorization-gating-and-live-roe.md) `FR-3430`/`FR-3440` | Forward design | ✅ VERIFIED 2026-09-28 via [`VR-1270`](../verification/VR-1270-effect-authorization-gating-and-live-roe.md) — clean, 1 Low finding (own doc left unupdated); shared taxonomy confirmed correctly reused by `IP-1290`. |
+| [IP-1280](IP-1280-variable-speed-aar-replay.md) | Variable-Speed AAR Replay from Truth or a Single Cell's Viewpoint (`BL-0078`, item B12) | [FS-128](../../features/FS-128-variable-speed-aar-replay.md) `FR-7330` | Forward design | ✅ VERIFIED 2026-09-28 via [`VR-1280`](../verification/VR-1280-variable-speed-aar-replay.md) — clean, 1 Low finding (own doc left unupdated). |
+| [IP-1290](IP-1290-jamming-delivery-and-effect-detectability.md) | Jamming-Delivery Degradation and Per-Effect-Class Detectability Settings (`BL-0081`, item B15) | [FS-129](../../features/FS-129-jamming-delivery-and-effect-detectability.md) `FR-1440`/`FR-1450` | Forward design | ✅ VERIFIED 2026-09-28 via [`VR-1290`](../verification/VR-1290-jamming-delivery-and-effect-detectability.md) — clean, 1 Low finding (own doc left unupdated); schema confirmed identical to `IP-1270`'s landed shape. |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1170
 through IP-1174 are new (2026-07-05)** — Tranche 3, the five packages planned against `FS-117`
@@ -130,6 +143,48 @@ implementation gap. Every one of its dependencies (`IP-1151`, `IP-1050`, `IP-105
 authorization is granted — not yet on record as of this writing. See
 [`../01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) Tranche 2 for the
 no-split rationale.
+
+**`IP-1180` is new (2026-09-27), Tranche 4 (external validation report, Must-tier batch):** the
+first of six Implementation Packages planned against the six Must-tier Feature Specifications
+authored from the 26 Sep 2026 external validation report (`docs/pipeline/backlog.md` `BL-0062`–
+`BL-0083`; priority order per `docs/pipeline/pipeline-journal.md` run #63: B16, B4, B5, B1, B2/B3).
+`IP-1180` closes `FS-118`'s three requirements in one package (no split — a single coherent seam
+across `content/vignette.py`/`content/vignette_export.py`/`config.py`) and resolves three of
+`FS-118`'s four Open Questions as explicit design decisions (see the package's own "Design
+Decisions" section), the fourth by direct code reading. Its sole dependency, `IP-1173`, is already
+`VERIFIED`, so it is specification-complete and would flip to `READY` the moment MSTR-006 §3
+authorization is granted — not yet on record as of this writing. **`IP-1062` is the second**,
+closing `FS-106` v2.1's `FR-4420`/`FR-4430` slice (`BL-0070`, item B4) — resolves `BL-0091`
+(scripted-manoeuvre entry-mode ambiguity: must resolve through `engine/maneuver.py`'s six existing
+entry modes) and `BL-0095` (deleted-target condition ⇒ never fires; scripted-manoeuvre bypasses the
+`delta_v_ms` gate per `ADR-0005`) as explicit Design Decisions, and surfaces one new Low finding of
+its own (the anomaly effect's "bus"/"telemetry" subsystem mapping is this package's own
+interpretation, not a literal requirements citation). Specification-complete, no dependency to
+satisfy, not yet authorized. **`IP-1200` is the third**, closing `FS-120` (save-as-scenario,
+`BL-0071`, item B5) — extends the existing `export_vignette()`/`save_vignette()` mechanism
+(`IP-1173`, `VERIFIED`) in place with an optional `start_epoch` parameter, two new additive
+`Vignette` fields (`initial_tracks`, `simulator_version`), and reuse of the existing
+`space_weather` dict shape as `initial_space_weather` — resolves `BL-0097`'s Open Question in
+full as two Design Decisions. Notes a same-function implementation-sequencing coordination point
+with `IP-1180` (both extend `save_vignette()`). Specification-complete, not yet authorized. **`IP-1190` is the fourth**, closing `FS-119` (bulk
+TLE/CCSDS OMM import, `BL-0067`, item B1) — generalizes `session/manager.py::add_tle()`'s existing
+single-object mechanism to a batch entry point via new shared per-object helpers, adds a new
+`content/bulk_import.py` parser module (multi-TLE + CCSDS OMM in KVN form only — XML OMM explicitly
+out of scope, see the package's own Risks), and extracts a new public `engine/orbit.py::
+mean_to_true()` (mirroring the existing `true_to_mean()`) for the OMM path's mean-anomaly
+conversion. Resolves `BL-0096`'s two Open Questions in full as Design Decisions (outright file-level
+rejection vs. per-object failure; no new batch-size cap beyond `ADR-0019`'s existing soft
+guideline). **Implemented 2026-09-27** (MSTR-006 §3 authorization granted the same day) —
+`COMPLETE`, full suite 638 passed/3 skipped, both permanent gates green, awaiting
+`09-package-verification` in a fresh session. **`IP-1210` is the sixth and last**,
+closing `FS-121`/`FS-103` v1.1 (ephemeris export, `BL-0069`, items B2/B3) — implements `ADS-1500`'s
+replay-based design exactly: a new `session/ephemeris.py` module built on a new additive
+`aar.state_at_time()` sibling of the existing `state_at()`, reusing `engine/maneuver.py::
+lvlh_frame` for the RIC transform. Resolves `BL-0098`'s two Open Questions in full as Design
+Decisions (wholly-out-of-range spans rejected, partially-out-of-range spans clamped; no numeric
+sampling-rate ceiling, a coarse default interval instead). **This closes the external validation
+report intake batch's six-package Must-tier tranche** — every one of B16/B4/B5/B1/B2/B3 now has a
+written, specification-complete, not-yet-authorized Implementation Package.
 
 **Authorization update (2026-07-03):** the project owner reviewed every package gated on MSTR-006
 §3 and authorized `IP-2010`, `IP-1130`, `IP-1120`, and `IP-1151` (recorded in

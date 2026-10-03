@@ -10,3 +10,10 @@ server:
   host: 127.0.0.1   # use 0.0.0.0 to expose on a LAN
   port: 8000
   reload: false     # auto-reload on code change (dev only)
+
+# IP-1180 (FR-5410/FR-5420) — external vignette content, all optional. Uncomment to opt in.
+# content:
+#   external_vignette_dirs: []   # additional directories to search for *.yaml vignettes,
+#                                 # listed alongside (never overriding) the built-in library
+#   user_save_dir: null          # where the Vignette Creator's "Save as Vignette" writes —
+#                                 # required for that action to succeed; there is no default

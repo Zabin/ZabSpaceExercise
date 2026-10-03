@@ -90,7 +90,9 @@ def scene_from_world(world: WorldState) -> Scene:
         satellites={i: a.orbit for i, a in world.assets.items() if a.orbit is not None},
         sites={i: a.as_ground_site() for i, a in world.assets.items()
                if a.location is not None and a.health != "degraded"},
-        sensors=dict(world.sensors),
+        # IP-1062 (FR-4430) — a sensor_outage'd sensor (health="degraded") loses its
+        # sensor_observation access the same way a degraded ground station loses uplink/downlink.
+        sensors={i: s for i, s in world.sensors.items() if s.health != "degraded"},
     )
 
 
@@ -103,10 +105,15 @@ class OrderSystem:
         access_config: Optional[AccessConfig] = None,
         horizon_s: float = 24 * 3600,
         wq_threshold: float = WEAPONS_QUALITY_THRESHOLD,
+        gating_rules: Optional[list[dict]] = None,
     ) -> None:
         self.sim = sim
         self.world: WorldState = sim.world
         self.roe = roe or {}
+        # IP-1270 (FR-3440) — the immutable, vignette-declared baseline `_effective_roe` overlays
+        # roe_change history onto; `self.roe` itself becomes a "current value" convenience cache
+        # only (mutated by `_h_roe_change`), never the source of point-in-time truth.
+        self._static_roe = {k: dict(v) for k, v in (roe or {}).items()}
         self.resolver = resolver or ModerateEffectResolver()
         self.prop = ModeratePropagator()
         self.access_config = access_config
@@ -122,11 +129,23 @@ class OrderSystem:
         self._order_pass: dict[str, tuple[str, int]] = {}            # order_id → pass key (for cancel)
         self.orders: dict[str, Order] = {}   # issued orders by id (for the queue + cancellation)
         self._order_counter = 0
+        # IP-1270 (FR-3430) — vignette-declared {action_type?, reversibility_category?,
+        # required_role} gating rules; order_id -> (Order, matched rule) for orders currently
+        # held pending a decision. Discarded (not replayed) on rewind/undo, per Design Decision 2
+        # — see session/manager.py::_rebind.
+        self.gating_rules = gating_rules or []
+        self._pending: dict[str, tuple[Order, dict]] = {}
 
         sim.register_handler("execute_effect", self._h_effect)
         sim.register_handler("execute_maneuver", self._h_maneuver)
         sim.register_handler("execute_observe", self._h_observe)
         sim.register_handler("execute_downlink", self._h_downlink)
+        # IP-1270 (FR-3430/FR-3440) — audit-trail-only entries (no world mutation) plus the
+        # live ROE-flag-change handler; all three must be registered so replay/rewind's generic
+        # per-kind handler dispatch (`Simulation._rebuild`) never KeyErrors on them.
+        sim.register_handler("effect_gate_request", self._h_noop)
+        sim.register_handler("effect_gate_decision", self._h_noop)
+        sim.register_handler("roe_change", self._h_roe_change)
         sim.register_handler("execute_command", self._h_command)
 
     # -- issue pipeline --------------------------------------------------------
@@ -156,6 +175,111 @@ class OrderSystem:
             order.status, order.fail_reason = "rejected", reason
             return
 
+        # IP-1270 (FR-3430) — a gated order is held pending a controller decision instead of
+        # being scheduled; dry_run previews the pending state but logs nothing.
+        gate = self._matching_gate(order)
+        if gate is not None:
+            order.status = "pending_approval"
+            if commit:
+                self._pending[order.id] = (order, gate)
+                self.sim.eventlog.append(
+                    sim_time=self.sim.clock.now, kind="effect_gate_request", actor=order.cell,
+                    payload={"order_id": order.id, "required_role": gate.get("required_role"),
+                             "action_type": order.action},
+                )
+            return
+
+        self._continue_plan(order, commit)
+
+    def _order_classification(self, order: Order) -> tuple[str, Optional[str]]:
+        """IP-1270 Design Decision 1 — the shared effect-classification enumeration this
+        package's own gating rules AND IP-1290's per-class detectability settings both consume:
+        order action type crossed with the five-D's reversibility category, where determinable at
+        issue time (an ``engage``'s intended outcome is always ``destroy`` — the one irreversible
+        category; a ``jam``'s is always ``deny``; every other action's achieved outcome is not
+        reliably known before execution, so its category is ``None`` — a rule may still match on
+        ``action_type`` alone in that case)."""
+        category = {"engage": "destroy", "jam": "deny"}.get(order.action)
+        return order.action, category
+
+    def _matching_gate(self, order: Order) -> Optional[dict]:
+        action_type, category = self._order_classification(order)
+        for rule in self.gating_rules:
+            rt, rc = rule.get("action_type"), rule.get("reversibility_category")
+            if rt is not None and rt != action_type:
+                continue
+            if rc is not None and rc != category:
+                continue
+            return rule
+        return None
+
+    def decide_gated_order(self, cell: str, order_id: str, approve: bool) -> tuple[bool, str]:
+        """IP-1270 (FR-3430) — only the gate's ``required_role`` cell may decide. Approving
+        resumes normal planning (window/delivery-path selection + scheduling); denying rejects
+        the order outright. Both the request and the decision (with elapsed time) are logged."""
+        entry = self._pending.get(order_id)
+        if entry is None:
+            return False, "no_such_pending_order"
+        order, gate = entry
+        if cell != gate.get("required_role"):
+            return False, "not_controller"
+        requested_at = self.sim.clock.now
+        for e in reversed(self.sim.eventlog.entries):
+            if e.kind == "effect_gate_request" and e.payload.get("order_id") == order_id:
+                requested_at = e.sim_time
+                break
+        now = self.sim.clock.now
+        del self._pending[order_id]
+        self.sim.eventlog.append(
+            sim_time=now, kind="effect_gate_decision", actor=cell,
+            payload={"order_id": order_id, "approved": bool(approve),
+                     "elapsed_us": now - requested_at},
+        )
+        if approve:
+            self._continue_plan(order, commit=True)
+        else:
+            order.status, order.fail_reason = "rejected", "gate_denied"
+        return True, ""
+
+    def _h_noop(self, world: WorldState, payload: dict, rng) -> None:
+        """IP-1270 — audit-trail-only eventlog entries (effect_gate_request/decision) carry no
+        world mutation; registered purely so replay/rewind's generic per-kind dispatch doesn't
+        KeyError on them."""
+        return
+
+    def _effective_roe(self, cell: str, at_time: int) -> dict:
+        """IP-1270 (FR-3440) — the vignette-declared static ROE for ``cell``, overlaid with every
+        ``roe_change`` eventlog entry for ``cell`` at or before ``at_time``, in chronological
+        order (eventlog entries are always time-ordered, live or replayed). A pure derivation —
+        no separate mutable ROE-history state exists that could drift from it."""
+        roe = dict(self._static_roe.get(cell, {}))
+        for e in self.sim.eventlog.entries:
+            if e.kind == "roe_change" and e.payload.get("cell") == cell and e.sim_time <= at_time:
+                roe[e.payload["flag"]] = e.payload["value"]
+        return roe
+
+    def _h_roe_change(self, world: WorldState, payload: dict, rng) -> None:
+        """Updates the convenience 'current value' cache (`self.roe`); time-varying evaluation
+        always re-derives via `_effective_roe`, so this mutation is not itself load-bearing for
+        correctness, only for any caller that reads `self.roe` directly for the current value."""
+        self.roe.setdefault(payload["cell"], {})[payload["flag"]] = payload["value"]
+
+    def issue_roe_change(self, cell: str, target_cell: str, flag: str, value: bool) -> tuple[bool, str]:
+        """IP-1270 (FR-3440) — a controller-issued, logged, mid-session ROE-flag change, effective
+        from its simulated time. Only the designated controller role (``"white"``) may issue one."""
+        if cell != "white":
+            return False, "not_controller"
+        if flag not in ("kinetic_authorized", "cyber_authorized"):
+            return False, "unknown_flag"
+        now = self.sim.clock.now
+        payload = {"cell": target_cell, "flag": flag, "value": bool(value)}
+        self._h_roe_change(self.world, payload, self.sim.rng)
+        self.sim.eventlog.append(sim_time=now, kind="roe_change", actor=cell, payload=payload)
+        return True, ""
+
+    def _continue_plan(self, order: Order, commit: bool) -> None:
+        """The pre-IP-1270 body of `_plan`, resumed after an order clears any gating check
+        (immediately, if unmatched; on approval, if matched)."""
         channel = ACTION_CHANNEL[order.action]
         if channel is None:
             self._plan_cyber(order, commit)
@@ -318,11 +442,24 @@ class OrderSystem:
 
     def _candidate_sensors(self, order: Order) -> list[str]:
         if order.actor and order.actor != "auto":
-            return [order.actor]
+            # IP-1220 (FR-1660) — an observe order may name either the sensor's own id or its
+            # host_asset_id; resolve the latter to the actual sensor id so both identifiers
+            # produce an identical result.
+            return [self._resolve_sensor_id(order.actor) or order.actor]
         return [sid for sid, s in self.world.sensors.items() if s.owner == order.cell]
 
     def _contended(self, sid: str, start: int, end: int) -> bool:
         return any(not (end <= b0 or start >= b1) for (b0, b1) in self._sensor_bookings.get(sid, []))
+
+    def _resolve_sensor_id(self, actor: str) -> Optional[str]:
+        """IP-1220 (FR-1660) — resolve either a sensor's own id or its host_asset_id to the
+        actual sensor id, so an observe order naming either identifier is treated identically."""
+        if actor in self.world.sensors:
+            return actor
+        for sid, s in self.world.sensors.items():
+            if s.host_asset_id == actor:
+                return sid
+        return None
 
     # -- validation ------------------------------------------------------------
     def _validate(self, order: Order) -> tuple[bool, str]:
@@ -332,11 +469,16 @@ class OrderSystem:
         if order.action == "observe":
             if order.actor == "auto":
                 return True, ""  # sensor chosen at planning time
-            sensor = self.world.sensors.get(order.actor)
+            sid = self._resolve_sensor_id(order.actor)
+            sensor = self.world.sensors.get(sid) if sid else None
             if sensor is None:
                 return False, "no_such_sensor"
             if sensor.owner != order.cell:
                 return False, "not_owner"
+            # IP-1220 (FR-1640) — a cue-dependent sensor may only be tasked against a target the
+            # cell already holds a Track on.
+            if sensor.requires_cue and self.world.track_for(order.cell, order.target) is None:
+                return False, "requires_cue"
             return True, ""
 
         actor = self.world.assets.get(order.actor)
@@ -350,7 +492,9 @@ class OrderSystem:
             # ({"blue": {...}, "red": {...}}) by the time it reaches OrderSystem — the
             # legacy-vs-explicit-shape distinction is resolved upstream in
             # content/vignette.py's build_world(), never here.
-            if not self.roe.get(order.cell, {}).get("kinetic_authorized", False):
+            # IP-1270 (FR-3440) — evaluated as of the order's own issue time, so a live ROE
+            # change affects orders issued after it, never ones already issued before it.
+            if not self._effective_roe(order.cell, order.issued_at).get("kinetic_authorized", False):
                 return False, "roe_kinetic_not_authorized"
             if actor.resources.ammo < 1:
                 return False, "no_ammo"
@@ -359,7 +503,7 @@ class OrderSystem:
                 return False, "no_weapons_quality_track"
 
         if order.action == "cyber":
-            if not self.roe.get(order.cell, {}).get("cyber_authorized", False):
+            if not self._effective_roe(order.cell, order.issued_at).get("cyber_authorized", False):
                 return False, "roe_cyber_not_authorized"
             # Audit 2026-06 Commands §C2 — `vector` is mandatory. The legacy raw
             # base_prob fallback path is removed; cyber Pₛ now always derives from
@@ -453,6 +597,7 @@ class OrderSystem:
                 window_start=win.start,
                 window_end=win.end,
                 link_target=link_target,
+                order_action_type=order.action,
             )
             return "execute_effect", {
                 "effect": effect.model_dump(),
@@ -497,6 +642,7 @@ class OrderSystem:
                 success_prob=adj_pk,
                 window_start=win.start,
                 window_end=win.end,
+                order_action_type=order.action,
             )
             return "execute_effect", {
                 "effect": effect.model_dump(),
@@ -542,7 +688,18 @@ class OrderSystem:
             # through isr.effective_gain.
             requested_gain = float(p.get("gain", 1.0))
             base_gain = max(0.0, min(1.0, requested_gain))
-            gain = _eg(base_gain, look_angle_deg, bp)
+            # IP-1220 (FR-1630) — a space-based actor_sensor's altitude_band_affinity degrades
+            # gain when the target's regime doesn't match; additive, None/None reproduces the
+            # pre-package call exactly.
+            target_regime = None
+            band_affinity = getattr(actor_sensor, "altitude_band_affinity", None) if actor_sensor else None
+            if band_affinity is not None:
+                target_orbit = self.world.assets.get(order.target, None)
+                target_orbit = target_orbit.orbit if target_orbit is not None else None
+                if target_orbit is not None:
+                    from spacesim.engine.orbit import classify_regime
+                    target_regime = classify_regime(target_orbit.a_m, target_orbit.e, target_orbit.i_deg)
+            gain = _eg(base_gain, look_angle_deg, bp, target_regime=target_regime, band_affinity=band_affinity)
 
             # Compute footprint polygon from the actor's current orbit position + heading.
             footprint: Optional[list] = None
@@ -599,6 +756,9 @@ class OrderSystem:
             "dv": dv,
             "cost": float(np.linalg.norm(dv)),
             "custody_confidence_at_decision": custody_confidence,
+            # IP-1250 (FR-1320) — an optional operator-entered purpose tag, additive; a manoeuvre
+            # order with no supplied tag is accepted, recorded as "".
+            "purpose_tag": str(p.get("purpose_tag", "")),
         }
 
     def _plan_cyber(self, order: Order, commit: bool) -> None:
@@ -647,6 +807,7 @@ class OrderSystem:
             sm_susceptibility=float(p.get("sm_susceptibility", 1.0)),
             persistence_bonus=float(p.get("persistence_bonus", 1.0)),
             window_start=self.sim.clock.now,
+            order_action_type=order.action,
         )
         self.sim.schedule(self.sim.clock.now, "execute_effect", {"effect": effect.model_dump()}, actor=order.cell, tag=order.id)
 
@@ -679,14 +840,26 @@ class OrderSystem:
         actor = world.assets.get(payload["actor"])
         if actor is None or actor.orbit is None:
             return
+        # IP-1290 (FR-1440) — an uplink jam covering the manoeuvre command's delivery path.
+        if is_link_denied(world, payload["actor"], world.now, link="uplink"):
+            world.effect_log.append({"t": world.now, "template": "maneuver", "target": payload["actor"],
+                                     "achieved": "jammed", "success": False})
+            payload["applied"] = False
+            return
         # Re-validate at execute time (resources may have changed since planning).
         if actor.resources.delta_v_ms + 1e-9 < float(payload["cost"]) or actor.health == "destroyed":
             world.effect_log.append({"t": world.now, "template": "maneuver", "target": payload["actor"],
                                      "achieved": "failed", "success": False})
+            # IP-1250 (FR-1320) — mutating `payload` in place is captured by the eventlog entry
+            # Simulation.advance_to() logs immediately after this handler returns (same pattern
+            # IP-1062's condition_check uses); the ledger read excludes a failed re-validation.
+            payload["applied"] = False
             return
         dv = np.asarray(payload["dv"], dtype=float)
         actor.orbit = self.prop.apply_impulse(actor.orbit, dv, world.now)
         actor.resources.delta_v_ms -= float(payload["cost"])
+        payload["applied"] = True
+        payload["remaining_delta_v_ms"] = actor.resources.delta_v_ms
 
     def _h_downlink(self, world: WorldState, payload: dict, rng) -> None:
         """Deliver collected product — unless the downlink is jammed at the execution moment."""
@@ -719,6 +892,12 @@ class OrderSystem:
     def _h_command(self, world: WorldState, payload: dict, rng) -> None:
         """Apply a bus/payload verb at its window (re-validates at execute time, like the others)."""
         self._release_bookings_on_execute(payload.get("__order_id"))
+        # IP-1290 (FR-1440) — an uplink jam covering the command's delivery path at execute time
+        # fails delivery, mirroring _h_downlink's existing jam-check pattern.
+        if is_link_denied(world, payload["actor"], world.now, link="uplink"):
+            world.effect_log.append({"t": world.now, "template": payload.get("verb"),
+                                     "target": payload["actor"], "achieved": "jammed", "success": False})
+            return
         ok, label = apply_command(world, payload["actor"], payload.get("verb") or "",
                                    payload.get("params", {}), world.now)
         world.effect_log.append({"t": world.now, "template": payload.get("verb"),

@@ -98,6 +98,7 @@ Constraints, Risks, Open Questions, Decision Log. Size discipline: ~8-15 pages e
 | [ADS-3500](ADS-3500-role-scoped-command-enforcement.md) | Role-Scoped Command Enforcement | (GDS-04 §1.10-grounded; no owning DOM) | ✅ Authored |
 | [ADS-5100A](ADS-5100A-vignette-creator-session-and-ui.md) | Vignette Creator — Authoring Session & UI Architecture | (R1xx-grounded; no owning DOM) | ✅ Authored |
 | [ADS-5100B](ADS-5100B-typed-parameters-and-per-cell-roe.md) | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | (GDS-04-grounded; no owning DOM) | ✅ Authored |
+| [ADS-1500](ADS-1500-per-cell-custody-estimated-state-and-export.md) | Per-Cell Custody — Estimated-State History & Export | R105-grounded; FS-103 | ✅ Authored |
 
 **ADS-3500 (2026-07-05):** the first `ADS-xxx` authored in this project — resolves two
 architecture-level Open Questions [`FS-116`](../features/FS-116-role-scoped-command-catalog.md)
@@ -116,6 +117,16 @@ entry 2 revised: each of the eight `DEFENSE_VERBS` entries individually reclassi
 `apply_command()`'s actual implementation (six `bus`, two `payload` — `def.harden`/
 `def.set_deception_mode` mutate `payload_state` directly), superseding v1.0's wholesale
 `bus`-classification.
+
+**ADS-1500 (2026-09-26):** resolves `BL-0068` (external validation report item B2). Finds the
+requester's premise half-confirmed, half-already-solved: `Track.state_estimate` already does not
+leak an unobserved manoeuvre (a frozen, forward-propagated snapshot from last observation, verified
+by direct reading of `orders.py`/`ssn.py`/`scene.py`), so no engine change is needed for that part.
+The genuinely missing piece — a per-cell belief-state *history* for ephemeris export
+(`FR-7420`) — is resolved by reusing the existing deterministic `EventLog` replay (`ADR-0002`,
+`session/aar.py`'s existing `state_at`) rather than adding a new stored history structure, mirroring
+this project's established minimal-surgery-over-invention pattern. Unblocks `FR-7420`'s
+verifiability.
 
 **ADS-5100A/B (2026-07-05):** synthesize the Vignette Creator — a large, distinct White-Cell
 authoring feature the project owner explicitly required be documented on its own, not blended into

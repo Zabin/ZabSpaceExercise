@@ -185,6 +185,37 @@ def test_effective_gain_clamps_look_angle_at_45():
     assert g45 == pytest.approx(g60, rel=1e-6)
 
 
+def test_effective_gain_band_affinity_mismatch_degrades_gain():
+    """IP-1220 (FR-1630) — a declared altitude_band_affinity degrades gain when the target's
+    regime doesn't match; omitting either argument reproduces the pre-package gain exactly."""
+    bp, _ = beam_params("sda", "nominal")
+    g_no_affinity = effective_gain(1.0, 0.0, bp)
+    g_match = effective_gain(1.0, 0.0, bp, target_regime="LEO", band_affinity="LEO")
+    g_mismatch = effective_gain(1.0, 0.0, bp, target_regime="GEO", band_affinity="LEO")
+    assert g_match == pytest.approx(g_no_affinity, rel=1e-9)
+    assert g_mismatch < g_match
+
+
+# ---------------------------------------------------------------------------
+# ground_radar fence/dish beam modes (IP-1220, FR-1610)
+# ---------------------------------------------------------------------------
+
+def test_ground_radar_fence_vs_dish_trade():
+    """A wide-field-of-regard fence radar covers more swath at lower per-object gain than a
+    narrow-beam dish radar observing the same volume."""
+    fence, _ = beam_params("ground_radar", "fence")
+    dish, _ = beam_params("ground_radar", "dish")
+    assert fence["swath_km"] > dish["swath_km"]
+    g_fence = effective_gain(1.0, 0.0, fence)
+    g_dish = effective_gain(1.0, 0.0, dish)
+    assert g_fence < g_dish
+
+
+def test_ground_radar_default_mode_is_dish():
+    _, resolved = beam_params("ground_radar")
+    assert resolved == "dish"
+
+
 # ---------------------------------------------------------------------------
 # soc_drain
 # ---------------------------------------------------------------------------

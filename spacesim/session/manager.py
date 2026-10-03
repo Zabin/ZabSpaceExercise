@@ -8,13 +8,15 @@ Players send *intents*; the manager validates and mutates state — never the ot
 
 from __future__ import annotations
 
+import math
 import threading
 import time as _time
-from typing import Optional
+from typing import Literal, Optional
 
 from spacesim.content.vignette import Vignette, build_world, evaluate_objectives
 from spacesim.engine import telemetry
 from spacesim.engine.access import AccessProvider, COMMAND_UPLINK, TELEMETRY_DOWNLINK
+from spacesim.engine.bus import enter_safe_mode, exit_safe_mode
 from spacesim.engine.busmodel import BusSystem
 from spacesim.engine.custody import Track
 from spacesim.engine.entities import Asset
@@ -44,10 +46,19 @@ class SessionManager:
         # session setup. Not itself gameplay/exercise state (no engine/WorldState involvement) —
         # a pre-start staffing concern only, per FS-115's own Scope boundary.
         self.role_assignments: dict[str, dict] = {}
+        # IP-1174 (FR-5160) — cell -> declared seat-id list, set by White Cell during Creator
+        # authoring. Same placement rationale as role_assignments above: UI-setup state, not
+        # exercise state.
+        self.seats_declared: dict[str, list[str]] = {}
         self.world, self.ctx = build_world(vignette, overrides)
         self.sim = Simulation(self.world, seed=seed)
         self.sim.register_handler("inject", self._h_inject)
-        self.osys = OrderSystem(self.sim, roe=dict(self.ctx.roe))
+        self.sim.register_handler("condition_check", self._h_condition_check)
+        from spacesim.engine.effects import ModerateEffectResolver
+        self.osys = OrderSystem(
+            self.sim, roe=dict(self.ctx.roe), gating_rules=list(self.ctx.gating_rules),
+            resolver=ModerateEffectResolver(detectability_config=list(self.ctx.detectability_config)),
+        )
         self.bus = BusSystem(self.sim)
         self.recovery = RecoverySystem(
             self.sim,
@@ -133,19 +144,47 @@ class SessionManager:
     # -- lifecycle -------------------------------------------------------------
     def start(self) -> None:
         self.started = True
-        self._arm_schedule(self.sim.clock.now)
+        self._arm_schedule(self.sim.clock.now, initial=True)
         self.set_clock(True)   # auto-start real-time clock (matches "Start begins ticking" UX)
 
-    def _arm_schedule(self, from_t: int) -> None:
+    def _arm_schedule(self, from_t: int, initial: bool = False) -> None:
         """(Re)queue bus ticks and scripted time-injects after ``from_t`` — also used after a
-        rewind, since a rewind clears pending future events."""
+        rewind, since a rewind clears pending future events.
+
+        IP-1061 (BL-0062, A1): the *initial* arm at ``start()`` uses ``at >= from_t`` so an inject
+        scripted for exactly the start epoch (``at_sim_s: 0``) fires rather than being silently
+        skipped by a strict ``>``. A *re-arm* after a rewind still guards with ``at > from_t`` for
+        everything strictly in the future, but additionally re-arms an inject whose scheduled time
+        equals ``from_t`` only if no retained event-log entry shows it already fired — a rewind
+        keeps every entry with ``sim_time <= t`` (``engine/simulation.py``'s ``rewind_to()``), so an
+        inject that already fired at exactly ``from_t`` is found there and is not re-queued
+        (no double fire), while one that never fired (e.g. rewinding to the start epoch before the
+        first ``advance_to``) is re-armed (not lost)."""
         self.bus.schedule_ticks(BUS_TICK_PERIOD_S, until=self.horizon, start=from_t)
+        # IP-1062 (FR-4420) — only when the vignette actually declares a condition-triggered
+        # inject, so the other 18 of 19 library vignettes gain zero extra eventlog entries.
+        if any((inj.trigger or {}).get("type") == "condition" for inj in self.vignette.injects):
+            step = int(BUS_TICK_PERIOD_S * 1_000_000)
+            t = from_t + step
+            while t <= self.horizon:
+                self.sim.schedule(t, "condition_check")
+                t += step
+        fired_at_from_t: Optional[set[str]] = None
+        if not initial:
+            fired_at_from_t = {
+                e.payload.get("inject_id") for e in self.sim.eventlog.entries
+                if e.kind == "inject" and e.sim_time == from_t
+            }
         for inj in self.vignette.injects:
             trig = inj.trigger or {}
             if trig.get("type") == "time" and "at_sim_s" in trig:
                 at = self.ctx.start_epoch + int(float(trig["at_sim_s"]) * 1_000_000)
-                if at > from_t:
-                    self.sim.schedule(at, "inject", {"effects": inj.effects})
+                if initial:
+                    schedule = at >= from_t
+                else:
+                    schedule = at > from_t or (at == from_t and inj.id not in fired_at_from_t)
+                if schedule:
+                    self.sim.schedule(at, "inject", {"effects": inj.effects, "inject_id": inj.id})
 
     # -- time control ----------------------------------------------------------
     def step(self, dt_sim_s: float) -> None:
@@ -270,6 +309,9 @@ class SessionManager:
         self.world = self.sim.world
         self.osys.world = self.sim.world
         self.osys.orders.clear()           # queued events were dropped by the rewind
+        # IP-1270 (FR-3430, Design Decision 2) — a pending-approval order still awaiting a
+        # decision is discarded on rewind/undo, same as any other queued-not-yet-executed order.
+        self.osys._pending.clear()
         self.osys._sensor_bookings.clear()
         self.osys._order_sensor.clear()
         self.osys._pass_bookings.clear()
@@ -319,6 +361,12 @@ class SessionManager:
         """White-Cell force edit: add a real named satellite by TLE (validated via sgp4)."""
         if self.started:
             return False, "cannot edit force after start"
+        return self._force_add_tle_object(asset_id, line1, line2, owner, kind)
+
+    # IP-1190 (FR-5220) — the per-object body `add_tle` used to inline, extracted so the new
+    # bulk-import path reuses the exact same construction/validation, unchanged, for its
+    # single-object TLE case (Files to Modify's own "behavior-preserving refactor" instruction).
+    def _force_add_tle_object(self, asset_id: str, line1: str, line2: str, owner: str, kind: str) -> tuple[bool, str]:
         l1, l2 = line1.strip(), line2.strip()
         if not (l1.startswith("1 ") and l2.startswith("2 ") and len(l1) >= 69 and len(l2) >= 69):
             return False, "invalid TLE: expected two 69-char lines starting with '1 ' and '2 '"
@@ -334,6 +382,203 @@ class SessionManager:
         self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
         self.sim._initial_state = self.world.model_dump()  # re-baseline so rewind keeps the edit
         return True, ""
+
+    # IP-1190 (FR-5220) — the CCSDS OMM sibling of `_force_add_tle_object`. OMM's Keplerian
+    # mean-elements set maps onto the existing `OrbitState(source="kepler", ...)` shape exactly;
+    # the one conversion needed (mean anomaly -> true anomaly at epoch) reuses the new
+    # `engine/orbit.py::mean_to_true()`. Mirrors the TLE helper's error-handling shape: any
+    # exception while building elements becomes a per-object failure string, never propagates.
+    # Like `add_tle`, the elements are anchored at the session's own `ctx.start_epoch` rather
+    # than the OMM's own `EPOCH` field — the same simplification `add_tle` already makes for a
+    # TLE's own epoch, kept consistent rather than introducing a second epoch-handling
+    # convention in the same package.
+    def _force_add_omm_object(self, asset_id: str, elements: dict, owner: str, kind: str) -> tuple[bool, str]:
+        required = ("a_m", "e", "i_deg", "raan_deg", "argp_deg", "mean_anomaly_deg")
+        missing = [k for k in required if elements.get(k) is None]
+        if missing:
+            return False, f"invalid OMM element set: missing {', '.join(missing)}"
+        try:
+            from spacesim.engine.orbit import mean_to_true
+            e = float(elements["e"])
+            mean_anom_rad = math.radians(float(elements["mean_anomaly_deg"]))
+            ta_deg = math.degrees(mean_to_true(mean_anom_rad, e))
+            orbit = OrbitState(
+                source="kepler",
+                a_m=float(elements["a_m"]),
+                e=e,
+                i_deg=float(elements["i_deg"]),
+                raan_deg=float(elements["raan_deg"]),
+                argp_deg=float(elements["argp_deg"]),
+                ta_deg=ta_deg,
+                epoch=self.ctx.start_epoch,
+            )
+        except Exception as exc:  # malformed OMM elements are a normal rejection, not a crash
+            return False, f"invalid OMM element set: {exc}"
+        self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
+        self.sim._initial_state = self.world.model_dump()
+        return True, ""
+
+    def bulk_import(self, file_format: Literal["tle", "omm"], content: str,
+                     assignments: dict[str, dict]) -> list[dict]:
+        """White-Cell force edit: import many objects from one multi-object TLE or CCSDS OMM
+        (KVN) file in a single operation (IP-1190, FR-5220) — generalizes, does not replace,
+        `add_tle`'s single-object path. A per-object entry present in the file but absent from
+        `assignments` is reported as a per-object failure, never silently dropped. A file
+        recognized as neither format raises `ValueError` before any object is processed (Design
+        Decision 1) — the caller's problem, not a per-object report."""
+        if self.started:
+            return []
+        from spacesim.content.bulk_import import parse_ccsds_omm, parse_multi_tle
+        objects = parse_multi_tle(content) if file_format == "tle" else parse_ccsds_omm(content)
+        reports: list[dict] = []
+        for obj in objects:
+            raw_id = obj["raw_id"]
+            assignment = assignments.get(raw_id)
+            if assignment is None:
+                reports.append({"raw_id": raw_id, "asset_id": None, "ok": False,
+                                 "reason": "no side/template assignment provided"})
+                continue
+            asset_id = assignment.get("asset_id", raw_id)
+            owner = assignment.get("owner", "blue")
+            kind = assignment.get("kind", "satellite")
+            if obj["format"] == "tle":
+                ok, reason = self._force_add_tle_object(asset_id, obj["line1"], obj["line2"], owner, kind)
+            else:
+                ok, reason = self._force_add_omm_object(asset_id, obj, owner, kind)
+            reports.append({"raw_id": raw_id, "asset_id": asset_id, "ok": ok, "reason": reason})
+        return reports
+
+    def save_as_scenario(self, vignette_id: str, title: str,
+                          classification: str = "UNCLASSIFIED-TRAINING") -> str:
+        """IP-1200 (FR-5510) — save this session's current mid-exercise state (tracks, remaining
+        resources, asset health, space weather) as a new vignette whose declared start is the
+        save moment. Requires a started session (`SessionManager` has no "ended" lifecycle state
+        — only `self.started` — so this is the only precondition there is to check); a draft
+        (unstarted Creator) session already has its own dedicated save path (`save_vignette`
+        below), unaffected by this method."""
+        if not self.started:
+            raise ValueError("cannot save-as-scenario: session has not been started")
+        from spacesim.content.vignette_export import save_vignette
+        return save_vignette(self.world, self.ctx, vignette_id, title,
+                             classification=classification, start_epoch=self.sim.clock.now)
+
+    # -- Vignette Creator UI surfaces (IP-1174) --------------------------------
+    # One state, two views: every method below reads or mutates the same `self.world.assets`
+    # dict the form UI and the JSON view both present — there is no second, cached
+    # representation to fall out of sync with (FR-5120's own convergence requirement).
+
+    def add_ground_asset(self, asset_id: str, lat_deg: float, lon_deg: float,
+                         owner: str = "blue", kind: str = "ground_station") -> tuple[bool, str]:
+        """White-Cell force edit: add a ground asset by lat/long (FR-5140's lat/long entry path,
+        alongside `add_tle`'s orbital path). BL-0124 remediation: validates via `Asset` the same
+        way `creator_set_state` does, so a malformed `owner`/`kind` or out-of-range lat/long
+        rejects with `Ack(ok=False, ...)` instead of an unhandled 500."""
+        if self.started:
+            return False, "cannot edit force after start"
+        from spacesim.engine.geometry import GeoPoint
+        try:
+            asset = Asset(id=asset_id, owner=owner, kind=kind,
+                          location=GeoPoint(lat_deg=lat_deg, lon_deg=lon_deg))
+        except Exception as exc:
+            return False, f"invalid ground asset: {exc}"
+        self.world.assets[asset_id] = asset
+        self.sim._initial_state = self.world.model_dump()
+        return True, ""
+
+    def creator_state(self) -> dict:
+        """FR-5120 — the JSON view's read: every asset, as the form UI would also see it."""
+        return {"assets": [a.model_dump() for a in self.world.assets.values()]}
+
+    def maneuver_ledger(self, cell: str, asset_id: str) -> Optional[list[dict]]:
+        """IP-1250 (FR-1320) — a derived, read-only per-asset manoeuvre ledger: no new persisted
+        state, purely a filtered read of the existing `EventLog`. Excludes an execute-time
+        re-validation failure (`applied=False`) — no delta-v was actually spent, so it belongs in
+        `world.effect_log`'s failure record, not this ledger. Fog-scoped like `get_telemetry`:
+        ``None`` when the cell doesn't own the asset (White sees any asset)."""
+        if not self._owns(cell, asset_id):
+            return None
+        return [
+            {
+                "t": e.sim_time,
+                "cost": e.payload.get("cost", 0.0),
+                "purpose_tag": e.payload.get("purpose_tag", ""),
+                "remaining_delta_v_ms": e.payload.get("remaining_delta_v_ms"),
+            }
+            for e in self.sim.eventlog.entries
+            if e.kind == "execute_maneuver" and e.payload.get("actor") == asset_id
+               and e.payload.get("applied", True)
+        ]
+
+    def creator_set_state(self, assets: list[dict]) -> tuple[bool, str]:
+        """FR-5120 — the JSON view's write: replace the whole asset list atomically. Validates
+        every entry via `Asset` before committing any of them, so a malformed JSON edit can't
+        half-apply."""
+        if self.started:
+            return False, "cannot edit force after start"
+        try:
+            validated = {a["id"]: Asset.model_validate(a) for a in assets}
+        except Exception as exc:
+            return False, f"invalid asset list: {exc}"
+        self.world.assets = validated
+        self.sim._initial_state = self.world.model_dump()
+        return True, ""
+
+    def creator_edit_asset(self, asset_id: str, patch: dict) -> tuple[bool, str]:
+        """FR-5150 — edit an existing asset's fields in place (e.g. owner, kind, group)."""
+        if self.started:
+            return False, "cannot edit force after start"
+        asset = self.world.assets.get(asset_id)
+        if asset is None:
+            return False, f"no such asset: {asset_id}"
+        merged = {**asset.model_dump(), **patch, "id": asset_id}
+        try:
+            self.world.assets[asset_id] = Asset.model_validate(merged)
+        except Exception as exc:
+            return False, f"invalid edit: {exc}"
+        self.sim._initial_state = self.world.model_dump()
+        return True, ""
+
+    def creator_delete_asset(self, asset_id: str) -> tuple[bool, str]:
+        """FR-5150 — remove an asset from the draft/pre-start force."""
+        if self.started:
+            return False, "cannot edit force after start"
+        if asset_id not in self.world.assets:
+            return False, f"no such asset: {asset_id}"
+        del self.world.assets[asset_id]
+        self.sim._initial_state = self.world.model_dump()
+        return True, ""
+
+    def creator_scene(self) -> dict:
+        """FR-5130 — ground-truth 2D/3D preview: every asset at its true position, with no
+        `CellController` fog-of-war filtering. `session/scene.py`'s `build_scene(world, cell)`
+        filters internally to assets owned by exactly `cell` (it's the per-cell belief renderer,
+        not a ground-truth mode), and `Asset.owner` is one of {blue, red, neutral} — never
+        "white" — so a single `build_scene(world, "white")` call would always return an empty
+        scene. Ground truth is the union of every owner's own (unfiltered-for-itself) scene;
+        this composes `build_scene()` unmodified once per owner and merges the results, still
+        with no `CellController` import or call anywhere in this method."""
+        merged_assets: list = []
+        sun_lat = sun_lon = 0.0
+        for owner in ("blue", "red", "neutral"):
+            s = build_scene(self.world, owner)
+            merged_assets.extend(s.assets)
+            sun_lat, sun_lon = s.sun_lat_deg, s.sun_lon_deg
+        return {"cell": "godview", "now": self.world.now, "sun_lat_deg": sun_lat,
+                "sun_lon_deg": sun_lon, "assets": [a.model_dump() for a in merged_assets],
+                # No cross-cell tracks/footprints exist in ground-truth mode (every asset is
+                # already rendered directly, at its true position) — empty so the existing
+                # drawMap()/Globe.render() consumers (which iterate scene.tracks unconditionally)
+                # work unmodified against this scene shape too.
+                "tracks": [], "footprints": []}
+
+    def declare_seats(self, cell: str, count: int) -> list[str]:
+        """FR-5160 — generate `count` seat identifiers for `cell` (e.g. `blue-1`..`blue-N`),
+        replacing any previous declaration for that cell. The seat/role matrix UI then calls the
+        existing `assign_role` once per checked cell — this only creates the seat ids to check
+        against, reusing IP-1151's mechanism unmodified."""
+        seats = [f"{cell}-{i}" for i in range(1, count + 1)]
+        self.seats_declared[cell] = seats
+        return seats
 
     # -- command queue --------------------------------------------------------
     def list_orders(self, cell: str) -> list[dict]:
@@ -357,6 +602,15 @@ class SessionManager:
         if o is None or (cell != "white" and o.cell != cell):
             return False
         return self.osys.cancel(order_id)
+
+    def decide_gated_order(self, cell: str, order_id: str, approve: bool) -> tuple[bool, str]:
+        """IP-1270 (FR-3430) — approve/deny a pending-approval order; only the gate's own
+        required_role cell may decide."""
+        return self.osys.decide_gated_order(cell, order_id, approve)
+
+    def issue_roe_change(self, cell: str, target_cell: str, flag: str, value: bool) -> tuple[bool, str]:
+        """IP-1270 (FR-3440) — a controller-issued, live, logged mid-session ROE-flag change."""
+        return self.osys.issue_roe_change(cell, target_cell, flag, value)
 
     def windows_ahead(self, cell: str, asset_id: str, horizon_s: float = 6 * 3600, limit: int = 16):
         """Upcoming command-uplink + telemetry-downlink windows for an own satellite (pass timeline)."""
@@ -596,7 +850,14 @@ class SessionManager:
 
     # -- inject handler (runs inside the deterministic event loop) -------------
     def _h_inject(self, world: WorldState, payload: dict, rng) -> None:
-        for eff in payload.get("effects", []):
+        self._apply_inject_effects(world, payload.get("effects", []), rng)
+
+    def _apply_inject_effects(self, world: WorldState, effects: list, rng) -> None:
+        """IP-1062 — shared per-effect dispatch, extracted from `_h_inject`'s previous inline
+        body with no behavior change for any of the eight prior effect types, so both the
+        time/immediate trigger path (`_h_inject`) and the new condition-triggered path
+        (`_h_condition_check`) apply effects identically."""
+        for eff in effects:
             kind = eff.get("type")
             if kind == "message":
                 world.messages.append({"to": eff.get("to", []), "text": eff.get("text", ""), "t": world.now})
@@ -625,12 +886,18 @@ class SessionManager:
                                            "text": f"{eff['target']}: outage {'cleared' if asset.health == 'nominal' else 'declared (' + eff.get('cause', 'unspecified') + ')'}",
                                            "t": world.now})
             elif kind == "space_weather":
-                # FUTURE-WORK §10.C.11: storm severity scales eclipse drain in advance_bus.
-                # severity ∈ {none, minor, severe}; "clear" alias resets to none.
-                sev = eff.get("severity", "minor")
+                # FUTURE-WORK §10.C.11: storm severity scales eclipse drain in advance_bus and is
+                # surfaced to telemetry signatures (FSW errors climb in 'severe').
+                # severity ∈ {none, minor, severe}; "clear" is an alias for none; any other value
+                # is coerced to "minor" rather than rejected, so a malformed inject cannot abort a
+                # running exercise (IP-1061, BL-0064 — this merges what were two divergent
+                # branches, the second of which validated but was unreachable).
+                sev = str(eff.get("severity", "minor"))
                 if sev == "clear":
                     sev = "none"
-                world.space_weather["severity"] = sev
+                if sev not in ("none", "minor", "severe"):
+                    sev = "minor"
+                world.space_weather = {"severity": sev}
                 world.messages.append({"to": ["white", "blue", "red"],
                                        "text": f"Space weather: severity={sev}",
                                        "t": world.now})
@@ -643,18 +910,11 @@ class SessionManager:
                 world.messages.append({"to": ["white", "blue"],
                                        "text": f"Conjunction warning: {eff.get('a')}↔{eff.get('b')} @ {eff.get('range_km', '?')} km",
                                        "t": world.now})
-            elif kind == "space_weather":
-                # FUTURE-WORK §10.C.11: solar / geomagnetic storm. severity scales eclipse drain
-                # and is surfaced to telemetry signatures (FSW errors climb in 'severe').
-                sev = str(eff.get("severity", "none"))
-                if sev not in ("none", "minor", "severe"):
-                    sev = "minor"
-                world.space_weather = {"severity": sev}
             elif kind == "spawn_debris":
                 # FW §11.D.19 — inject-library debris event.  Records a new DebrisField
                 # so downstream conjunction screening surfaces the elevated risk.  Region
                 # is opaque to the engine; the UI / next conjunction tick consumes it.
-                from spacesim.engine.effects import DebrisField
+                from spacesim.engine.effects import DebrisField, _persistence_estimate
                 world.debris.append(DebrisField(
                     created_at=world.now,
                     source=str(eff.get("source", "inject")),
@@ -663,7 +923,102 @@ class SessionManager:
                         "altitude_km": eff.get("altitude_km"),
                         "n_fragments": int(eff.get("n_fragments", 0)),
                     },
+                    persistence_estimate=_persistence_estimate(eff.get("altitude_km")),
                 ))
                 if eff.get("message"):
                     world.messages.append({"to": ["white", "blue", "red"],
                                             "text": str(eff["message"]), "t": world.now})
+            elif kind == "anomaly":
+                # IP-1062 (FR-4430) — a controller-set spacecraft anomaly. Design Decision 4:
+                # subsystem "bus" -> whole-bus safe mode (reuses the existing safe-mode/
+                # RecoverySystem recovery loop); subsystem "telemetry" -> comms degraded (the
+                # closest existing BusState field to "telemetry").
+                # BL-0128 remediation: the "bus" branch previously set `bus_state.mode` directly,
+                # leaving `safe_mode.active`/`cause`/`entered_at` unset — `begin_recovery` refused
+                # with `not_safed` and the asset was operator-unrecoverable. Routed through
+                # `engine/bus.py`'s `enter_safe_mode()`/`exit_safe_mode()` so the safe-mode state
+                # is fully consistent and the existing RecoverySystem loop actually applies.
+                asset = world.assets.get(eff["target"])
+                if asset is not None and asset.bus_state is not None:
+                    restore = eff.get("restore") is True
+                    if eff.get("subsystem") == "bus":
+                        if restore:
+                            exit_safe_mode(asset.bus_state)
+                        else:
+                            cause = str(eff.get("cause", "anomaly"))
+                            enter_safe_mode(asset.bus_state, world.now, cause)
+                    elif eff.get("subsystem") == "telemetry":
+                        asset.bus_state.comms.status = "green" if restore else "red"
+                    world.messages.append({"to": ["white", "blue", "red"],
+                                           "text": f"{eff['target']}: anomaly {'cleared' if restore else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
+                                           "t": world.now})
+            elif kind == "sensor_outage":
+                # IP-1062 (FR-4430) — mirrors gs_outage's health-flag pattern for a sensor.
+                sensor = world.sensors.get(eff["target"])
+                if sensor is not None:
+                    sensor.health = "nominal" if eff.get("restore") is True else "degraded"
+                    world.messages.append({"to": ["white", "blue", "red"],
+                                           "text": f"{eff['target']}: sensor outage {'cleared' if sensor.health == 'nominal' else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
+                                           "t": world.now})
+            elif kind == "forced_custody_loss":
+                # IP-1062 (FR-4430) — a missing target is a no-op (Design Decision 2's posture),
+                # never another cell's Track (world.track_for is already cell-scoped, ADR-0004).
+                tr = world.track_for(eff["cell"], eff["target"])
+                if tr is not None:
+                    if eff.get("mode") == "drop":
+                        world.tracks.remove(tr)
+                    else:
+                        tr.confidence = float(eff.get("degrade_to", 0.0))
+                        tr.last_observation = world.now
+            elif kind == "scripted_manoeuvre":
+                # IP-1062 (FR-4430) — Design Decisions 1/3: resolves through the existing six
+                # manoeuvre entry modes via compute_maneuver(), the same propagator call
+                # OrderSystem._h_maneuver already uses, deliberately bypassing
+                # asset.resources.delta_v_ms (injects are the documented plan-first bypass,
+                # ADR-0005) — never checked, never deducted.
+                asset = world.assets.get(eff["target"])
+                if asset is not None and asset.orbit is not None:
+                    from spacesim.engine.maneuver import compute_maneuver
+                    result = compute_maneuver(asset.orbit, eff["mode"], eff.get("params", {}),
+                                              world.now, self.osys.prop)
+                    import numpy as _np
+                    dv = _np.asarray(result["dv"], dtype=float)
+                    asset.orbit = self.osys.prop.apply_impulse(asset.orbit, dv, world.now)
+                    world.messages.append({"to": ["white"],
+                                           "text": f"{eff['target']}: scripted manoeuvre ({eff['mode']}), "
+                                                   f"cost={result['cost']:.1f} m/s",
+                                           "t": world.now})
+
+    def _condition_inject_already_fired(self, inj_id: str, before_t: int) -> bool:
+        """IP-1062 (FR-4420) — derived from event-log history, no new WorldState field: mirrors
+        `_arm_schedule`'s own time-filtered eventlog-scan pattern, safe under both live-run and
+        replay since eventlog entries are strictly time-ordered immutable history."""
+        for e in self.sim.eventlog.entries:
+            if e.kind == "condition_check" and e.sim_time < before_t:
+                if any(f.get("inject_id") == inj_id for f in e.payload.get("fired", [])):
+                    return True
+        return False
+
+    def _h_condition_check(self, world: WorldState, payload: dict, rng) -> None:
+        """IP-1062 (FR-4420) — evaluates every not-yet-fired condition-triggered inject against
+        the current (replayed) WorldState. Mutates this event's own `payload` dict in place
+        rather than calling `eventlog.append()` from inside the handler — `Simulation.advance_to`'s
+        existing post-handler append captures this same dict, so the firing tick and evaluated
+        condition are recorded with no additional/nested append (a mid-handler append would
+        corrupt `_rebuild()`/`replay()`'s iteration over the entries list — see the package's
+        own Risks)."""
+        from spacesim.content.vignette import _evaluate_metric
+        fired: list[dict] = []
+        for inj in self.vignette.injects:
+            trig = inj.trigger or {}
+            if trig.get("type") != "condition":
+                continue
+            if self._condition_inject_already_fired(inj.id, world.now):
+                continue
+            # A condition targeting a deleted/expired asset/track/cell simply evaluates false
+            # forever (Design Decision resolving BL-0095 part 1) — _evaluate_metric's own
+            # existing None-handling already produces this, no new error-handling branch needed.
+            if _evaluate_metric(world, self.ctx, trig.get("metric", {})):
+                self._apply_inject_effects(world, inj.effects, rng)
+                fired.append({"inject_id": inj.id, "value": True})
+        payload["fired"] = fired

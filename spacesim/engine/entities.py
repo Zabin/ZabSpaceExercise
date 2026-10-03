@@ -75,3 +75,16 @@ class Sensor(BaseModel):
     needs_lighting: bool = False         # optical: target sunlit + site in darkness
     max_range_m: Optional[float] = None  # None = unlimited (geometry only)
     network: bool = False                # SSN member (request-only, not directly taskable)
+    # IP-1062 (FR-4430) — the sensor_outage inject effect's target field. Additive; every
+    # existing vignette's sensors have no `health` key in YAML, defaulting to "nominal" (zero
+    # behavior change). Mirrors Asset.health's degraded/nominal pair (no "destroyed" state for
+    # a sensor — outages are reversible, per the effect's own `restore` flag).
+    health: Literal["nominal", "degraded"] = "nominal"
+    # IP-1220 (FR-1610-FR-1660) — six additive, optional/default-absent sensor-modality fields.
+    # A Sensor declaring none of these behaves exactly as before this package.
+    beam_mode: Optional[str] = None            # FR-1610 — a key into engine/isr.py's BEAM_MODES
+    exclusion_angle_deg: Optional[float] = None  # FR-1620 — ground-optical solar exclusion radius
+    min_range_km: Optional[float] = None         # FR-1630 — space-based hard-reject range floor
+    altitude_band_affinity: Optional[str] = None  # FR-1630 — a Regime value (see engine/orbit.py)
+    requires_cue: bool = False                    # FR-1640 — tasking gated on an existing Track
+    host_asset_id: Optional[str] = None           # FR-1660 — position follows this Asset's orbit

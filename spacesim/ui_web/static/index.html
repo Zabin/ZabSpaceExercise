@@ -83,6 +83,79 @@
         </div>
       </div>
     </div>
+    <div class="menu-wrap white-only">
+      <button id="creator-btn" title="Build a new vignette from scratch: assets, seats/roles, and a JSON/2D-3D preview (FS-117)">🛠 Creator ▾</button>
+      <div id="creator-menu" class="menu-pop" hidden>
+        <div class="menu-section">
+          <div class="menu-head" title="An unstarted draft session — nothing is saved until Save as Vignette (FR-5110)">Draft</div>
+          <label class="menu-item-inline">Title
+            <input id="creator-title" type="text" placeholder="Untitled Draft" style="width:12em">
+          </label>
+          <div class="menu-item-row">
+            <button id="creator-new">New draft</button>
+          </div>
+          <label class="menu-item-inline">Vignette id
+            <input id="creator-save-id" type="text" placeholder="my-scenario" style="width:10em">
+          </label>
+          <div class="menu-item-row">
+            <button id="creator-save">💾 Save as vignette</button>
+          </div>
+          <pre id="creator-save-result" class="muted" style="font-size:11px">—</pre>
+        </div>
+        <div class="menu-section" title="TLE-paste and lat/long asset entry (FR-5140)">
+          <div class="menu-head">Add asset — orbital (TLE)</div>
+          <label class="menu-item-inline">Id<input id="creator-tle-id" type="text" style="width:8em"></label>
+          <label class="menu-item-inline">Cell
+            <select id="creator-tle-owner"><option value="blue">Blue</option><option value="red">Red</option><option value="neutral">Neutral</option></select>
+          </label>
+          <label class="menu-item-inline">Kind<input id="creator-tle-kind" type="text" value="satellite" style="width:8em"></label>
+          <label class="menu-item-inline">Line 1<input id="creator-tle-l1" type="text" style="width:22em"></label>
+          <label class="menu-item-inline">Line 2<input id="creator-tle-l2" type="text" style="width:22em"></label>
+          <div class="menu-item-row"><button id="creator-tle-add">Add (TLE)</button></div>
+        </div>
+        <div class="menu-section" title="Curated site list offered before free-entry coordinates (FR-5140)">
+          <div class="menu-head">Add asset — ground (lat/long)</div>
+          <label class="menu-item-inline">Id<input id="creator-gnd-id" type="text" style="width:8em"></label>
+          <label class="menu-item-inline">Cell
+            <select id="creator-gnd-owner"><option value="blue">Blue</option><option value="red">Red</option><option value="neutral">Neutral</option></select>
+          </label>
+          <label class="menu-item-inline">Kind<input id="creator-gnd-kind" type="text" value="ground_station" style="width:10em"></label>
+          <label class="menu-item-inline">Curated site
+            <select id="creator-gnd-site"><option value="">(free entry)</option></select>
+          </label>
+          <label class="menu-item-inline">Lat<input id="creator-gnd-lat" type="number" step="0.01" style="width:6em"></label>
+          <label class="menu-item-inline">Lon<input id="creator-gnd-lon" type="number" step="0.01" style="width:6em"></label>
+          <div class="menu-item-row"><button id="creator-gnd-add">Add (lat/long)</button></div>
+        </div>
+        <div class="menu-section" title="Edit, reassign, or delete an asset (FR-5150)">
+          <div class="menu-head">Asset list</div>
+          <div class="menu-item-row"><button id="creator-refresh">↻ Refresh</button></div>
+          <div id="creator-asset-list" class="muted" style="font-size:11px;max-height:12em;overflow:auto">—</div>
+        </div>
+        <div class="menu-section" title="Synchronized JSON view — reads/writes the same draft state the forms above do (FR-5120)">
+          <div class="menu-head">JSON view</div>
+          <textarea id="creator-json" rows="6" style="width:100%;font-family:monospace;font-size:11px"></textarea>
+          <div class="menu-item-row">
+            <button id="creator-json-load">Load from state</button>
+            <button id="creator-json-save">Save to state</button>
+          </div>
+          <pre id="creator-json-result" class="muted" style="font-size:11px">—</pre>
+        </div>
+        <div class="menu-section" title="Seat-count declaration + seat/role-assignment matrix (FR-5160)">
+          <div class="menu-head">Seats &amp; roles</div>
+          <label class="menu-item-inline">Cell
+            <select id="creator-seat-cell"><option value="white">White</option><option value="blue">Blue</option><option value="red">Red</option></select>
+          </label>
+          <label class="menu-item-inline">Count<input id="creator-seat-count" type="number" value="1" min="1" style="width:4em"></label>
+          <div class="menu-item-row"><button id="creator-seat-declare">Declare seats</button></div>
+          <div id="creator-matrix" class="muted" style="font-size:11px">—</div>
+        </div>
+        <div class="menu-section" title="Ground-truth preview, no fog-of-war filtering (FR-5130) — reuses the existing 2D map / 3D globe">
+          <div class="menu-head">Preview</div>
+          <div class="menu-item-row"><button id="creator-preview">🔭 Refresh preview (2D map / 3D globe)</button></div>
+        </div>
+      </div>
+    </div>
     <div class="menu-wrap">
       <button id="view-btn" title="Display modes and pop-out windows">▦ View ▾</button>
       <div id="view-menu" class="menu-pop" hidden>
@@ -710,6 +783,7 @@
   <script src="/graph.js"></script>
   <script src="/globe.js"></script>
   <script src="/app.js"></script>
+  <script src="/creator.js"></script>
   <script src="/panels.js"></script>
 </body>
 </html>
