@@ -1,16 +1,16 @@
 # R109 — Sensor Operations
 
 > **Document ID:** R109
-> **Version:** 1.2
+> **Version:** 1.3
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
-> **Referenced By:** [R102](R102-space-domain-awareness.md), [R104](R104-collection-management.md), [R118](R118-space-surveillance-networks.md), [R119](R119-space-situational-data-fusion.md), [R129](R129-sigint-collection-and-geolocation-accuracy.md), [R134](R134-pnt-warfare-and-navigation-denial-operations.md), [R137](R137-bus-and-payload-parameter-catalog.md), FS-104
-> **Produces:** implementation constraints for [`engine/entities.py`](../../../spacesim/engine/entities.py) (`Sensor`), [`engine/isr.py`](../../../spacesim/engine/isr.py); (v1.2) new-sensor-modality grounding for `BL-0073`/B7 (fence/dish radar, optical exclusion angles, space-based min-range/altitude band, laser ranging, passive-RF multilateration)
-> **Feature Mapping:** FS-104 (SDA Tasking)
-> **Related Topics:** [R102](R102-space-domain-awareness.md) (Space Domain Awareness), [R104](R104-collection-management.md) (Collection Management), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks), [R129](R129-sigint-collection-and-geolocation-accuracy.md) (SIGINT Collection and Geolocation Accuracy — the TDOA/multilateration model a passive-RF SDA sensor reuses, v1.2)
-> **Last Reviewed:** 2026-09-27
-> **Primary Sources Consulted:** 9 (3 for the v1.0/v1.1 content; 6 new for v1.2's sensor-variant
-> grounding)
+> **Referenced By:** [R102](R102-space-domain-awareness.md), [R104](R104-collection-management.md), [R118](R118-space-surveillance-networks.md), [R119](R119-space-situational-data-fusion.md), [R129](R129-sigint-collection-and-geolocation-accuracy.md), [R134](R134-pnt-warfare-and-navigation-denial-operations.md), [R137](R137-bus-and-payload-parameter-catalog.md), [R127](R127-conjunction-assessment-and-collision-avoidance.md) (v1.1, its own RIC-display §3.x cross-references this topic's phase-angle work), FS-104
+> **Produces:** implementation constraints for [`engine/entities.py`](../../../spacesim/engine/entities.py) (`Sensor`), [`engine/isr.py`](../../../spacesim/engine/isr.py), [`engine/sun.py`](../../../spacesim/engine/sun.py) (`sun_unit_eci`, reused by §3.11's phase-angle computation); (v1.2) new-sensor-modality grounding for `BL-0073`/B7 (fence/dish radar, optical exclusion angles, space-based min-range/altitude band, laser ranging, passive-RF multilateration); (v1.3) Sun-target-observer illumination phase angle ("CATS angle") grounding for `BL-0111`/`BL-0112`/`BL-0122`
+> **Feature Mapping:** FS-104 (SDA Tasking); (v1.3) `FEAT-8200`/`FEAT-1600` ([`docs/feature-planning/03-feature-catalog.md`](../../feature-planning/03-feature-catalog.md))
+> **Related Topics:** [R102](R102-space-domain-awareness.md) (Space Domain Awareness), [R104](R104-collection-management.md) (Collection Management), [R118](R118-space-surveillance-networks.md) (Space Surveillance Networks), [R129](R129-sigint-collection-and-geolocation-accuracy.md) (SIGINT Collection and Geolocation Accuracy — the TDOA/multilateration model a passive-RF SDA sensor reuses, v1.2), [R127](R127-conjunction-assessment-and-collision-avoidance.md) (Conjunction Assessment — the RIC/RTN-frame relative-motion *display* convention §3.11's phase angle is shown alongside in `FEAT-8200`'s RIC view, v1.3)
+> **Last Reviewed:** 2026-10-03
+> **Primary Sources Consulted:** 13 (3 for the v1.0/v1.1 content; 6 for v1.2's sensor-variant
+> grounding; 4 new for v1.3's CATS/phase-angle grounding)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -204,6 +204,81 @@ same "aggregate multiple sensors into a network" pattern [R118](R118-space-surve
 SSN already models for cross-sensor cataloging, reused here for a single fix rather than a catalog
 build-up — not a new aggregation mechanism.
 
+### 3.11 Sun-target-observer illumination phase angle / "CATS angle" (`BL-0111`/`BL-0112`/`BL-0122`)
+
+**A passive EO sensor's usable observation geometry is governed by a three-body phase angle, not
+only by the sensor's own boresight-vs-Sun exclusion angle (§3.7).** The relevant quantity —
+variously called the illumination phase angle, the solar phase angle, or, in commercial mission-
+planning tooling, the Camera-Target-Sun (CATS) angle / "LOS Sun Illumination Angle" — is measured
+**at the target's location**, between the target→Sun vector and the target→observer (camera)
+vector: 0° means the target's face toward the observer is fully sunlit (directly analogous to a
+full moon as seen from Earth), 180° means the target is backlit/silhouetted from the observer's
+viewpoint (a new moon) ([AGI, "Constraints - Sun"](https://help.agi.com/stk/12.2.0/content/stk/constraints-02.htm))
+([Wayback](https://web.archive.org/web/2026/https://help.agi.com/stk/12.2.0/content/stk/constraints-02.htm));
+([AGI, "New Feature in STK 11.1.1 - New Lighting Constraint"](https://www.agi.com/products/stk-systems-bundle/stk-professional/new-feature-in-stk-11-1-1-new-lighting-constraint))
+([Wayback](https://web.archive.org/web/2026/https://www.agi.com/products/stk-systems-bundle/stk-professional/new-feature-in-stk-11-1-1-new-lighting-constraint)).
+This is a genuinely different quantity from both `is_sunlit()`/`eclipse_fraction()` (`engine/sun.py`,
+which model whether the target is illuminated by the Sun *in isolation*, a two-body question) and
+§3.7's exclusion angle (the Sun's angular proximity to the *sensor's own boresight*, a sensor-centric
+constraint) — the CATS/phase angle is the three-body relationship between all of Sun, target, and
+observer, and it governs *how well-illuminated the target appears from the observer's specific
+vantage point*, independent of whether the sensor itself is pointed anywhere near the Sun.
+
+**Real SDA/photometric practice treats phase angle as operationally load-bearing, not cosmetic.**
+Lower phase angle means stronger returned signal and more reliable detection/characterization: a
+2022 AMOS sensor-performance comparison for space- and ground-based SDA architectures models
+"difficult solar-phase-angle geometries" directly as a coverage-gap risk a sensor architecture must
+be sized against, citing roughly a 90° usable-phase-angle constraint for ground-based optical SDA
+sensors and a looser (order ~150°) constraint for space-based ones — ground-based sensors face a
+tighter usable range because atmospheric/twilight effects compound with the phase-angle effect
+itself, while a space-based sensor's main limit is simply how backlit the target becomes
+([Bloom, Wysack, Griesbach & Lawitzke, "Space and Ground-Based SDA Sensor Performance
+Comparisons," AMOS Conference 2022](https://amostech.com/TechnicalPapers/2022/Poster/Bloom.pdf))
+([Wayback](https://web.archive.org/web/2026/https://amostech.com/TechnicalPapers/2022/Poster/Bloom.pdf)).
+Independently, long-standing SDA photometric-characterization practice treats 0° phase angle as the
+*reference* condition any off-angle photometric size/magnitude estimate must be corrected back
+toward — debris-characterization campaigns reduce radar-cross-section/optical-signature
+measurements "using the diffuse Lambertian spherical phase function correction to 0° phase angle"
+before deriving a physical-size estimate, precisely because detectability and signature fidelity
+both degrade smoothly as phase angle departs from 0°
+([Africano et al., "Understanding Photometric Phase Angle Corrections," 4th European Conference on
+Space Debris, 2005](https://conference.sdo.esoc.esa.int/proceedings/sdc4/paper/108/SDC4-paper108.pdf))
+([Wayback](https://web.archive.org/web/2026/https://conference.sdo.esoc.esa.int/proceedings/sdc4/paper/108/SDC4-paper108.pdf)).
+**Single-source flag (ballpark figures only):** the ground≈90°/space≈150° usable-range figures above
+rest on one AMOS conference source and are reported here as an order-of-magnitude starting anchor
+for a configurable default, not a precise universal constant — the same flagging discipline §3.7
+already applies to its own 90° exclusion-angle figure, and for the same reason (a single technical-
+conference source, not a cross-corroborated standard). This closes `docs/pipeline/backlog.md`
+`BL-0151`'s open design ambiguity **partially**: a concrete, citable starting default now exists
+(0°-90° usable for a ground-based passive EO sensor, 0°-150° for a space-based one, with
+effectiveness degrading smoothly — not as a hard cliff — as the angle approaches the limit), but
+`06-feature-specification` should treat this as a configurable, overridable default rather than a
+hard-coded universal threshold, consistent with §3.7's own `exclusion_angle_deg` precedent.
+
+### Sources (§3.11, CATS/illumination phase angle)
+
+- *AGI, "Constraints - Sun" (STK 12.2.0 help)* — [live](https://help.agi.com/stk/12.2.0/content/stk/constraints-02.htm)
+  · [snapshot](https://web.archive.org/web/2026/https://help.agi.com/stk/12.2.0/content/stk/constraints-02.htm)
+  · accessed 2026-10-03.
+- *AGI, "New Feature in STK 11.1.1 - New Lighting Constraint"* —
+  [live](https://www.agi.com/products/stk-systems-bundle/stk-professional/new-feature-in-stk-11-1-1-new-lighting-constraint)
+  · [snapshot](https://web.archive.org/web/2026/https://www.agi.com/products/stk-systems-bundle/stk-professional/new-feature-in-stk-11-1-1-new-lighting-constraint)
+  · accessed 2026-10-03.
+- *Bloom, Wysack, Griesbach & Lawitzke, "Space and Ground-Based SDA Sensor Performance
+  Comparisons," AMOS Conference 2022* — [live](https://amostech.com/TechnicalPapers/2022/Poster/Bloom.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://amostech.com/TechnicalPapers/2022/Poster/Bloom.pdf)
+  · accessed 2026-10-03.
+- *Africano, Kervin, Hall, Sydney, Ross, Payne, Gregory, Jorgensen, Jarvis, Parr-Thumm, Stansbery &
+  Barker, "Understanding Photometric Phase Angle Corrections," 4th European Conference on Space
+  Debris, 2005* — [live](https://conference.sdo.esoc.esa.int/proceedings/sdc4/paper/108/SDC4-paper108.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://conference.sdo.esoc.esa.int/proceedings/sdc4/paper/108/SDC4-paper108.pdf)
+  · accessed 2026-10-03.
+
+**Single-source flag:** the ground≈90°/space≈150° usable-phase-angle figures rest on the Bloom et
+al. 2022 AMOS source alone — treat as an order-of-magnitude anchor for a configurable default, not
+a precise universal constant, pending a second corroborating source (same treatment §3.7 already
+gives its own 90° exclusion-angle figure).
+
 ### Sources (§3.6-§3.10, new sensor modalities)
 
 - *U.S. Space Force / Lockheed Martin (via Smithsonian Air & Space Magazine), "How Things Work:
@@ -277,6 +352,17 @@ decisions rather than background flavor text.
   access predicate** — reuse [R118](R118-space-surveillance-networks.md)'s network-of-sensors
   pattern, gating a fix on ≥3 (2D) or ≥4 (3D) member receivers simultaneously having access to an
   *emitting* (not merely illuminated) target, rather than adding a bespoke multi-sensor code path.
+- **The CATS/illumination phase angle (§3.11) is a pure geometry computation over existing
+  primitives** — `sun_unit_eci()` (`engine/sun.py`) already gives the Sun direction; the target→
+  observer vector is already available wherever an access-window or RIC-view computation runs. The
+  phase angle itself is `arccos` of the dot product between the (negated) target→Sun unit vector
+  and the target→observer unit vector — no new state, no new propagation. For `FR-8220`'s display
+  overlay, compute and expose this value read-only, the same pure/non-mutating pattern
+  `engine/scene.py`/`engine/telemetry.py` already use for read-time derived quantities. For
+  `FR-1670`'s access-gating use, layer a configurable usable-range check (default 0°-90° ground /
+  0°-150° space, per the single-source figures above) on top of the existing lighting (`FR-1220`)
+  and, where declared, exclusion-angle (§3.7/`FR-1620`) predicates in `AccessProvider._observation_predicate`
+  — do not invent a second geometry computation for the two use cases; one function, two callers.
 
 ## 6. Feature Mapping
 
@@ -286,7 +372,12 @@ sensor" button. The forthcoming Vignette Creator Feature Specification (`docs/pi
 `BL-0052`) depends on this topic's weather/missile-warning subsection above for its typed
 per-payload-type parameter sub-schemas, and on the `BEAM_MODES` coverage gap it identifies.
 The five new-sensor-modality subsections (§3.6-§3.10) ground `docs/pipeline/backlog.md` `BL-0073`
-(B7) for the forthcoming `04-requirements-engineering` pass deriving its baselined FRs.
+(B7) for the forthcoming `04-requirements-engineering` pass deriving its baselined FRs. §3.11 (v1.3,
+2026-10-03) grounds `BL-0111`/`BL-0122`'s baselined `FR-8220` (the RIC-view CATS display overlay,
+`FEAT-8200`, [`docs/feature-planning/03-feature-catalog.md`](../../feature-planning/03-feature-catalog.md))
+and `FR-1670` (the CATS access-gating refinement, `FEAT-1600`) — closing the `BL-0112` research
+gap both leaves' `06-feature-specification` pass is blocked on, and partially closing `BL-0151`'s
+open design ambiguity with a concrete, single-source-flagged default range (see §3.11).
 
 ## 7. Related Topics
 

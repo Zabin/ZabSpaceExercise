@@ -1,17 +1,17 @@
 # R127 — Conjunction Assessment and Collision Avoidance Operations
 
 > **Document ID:** R127
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** ✅ Done
-> **Dependencies:** [R102](R102-space-domain-awareness.md), [R105](R105-custody-theory.md), [R112](R112-propulsion-and-maneuver-planning.md)
-> **Referenced By:** FS-105, [R131](R131-space-environment-and-space-weather-operations.md)
-> **Produces:** implementation constraints for [`engine/conjunction.py`](../../../spacesim/engine/conjunction.py) and the `prop.collision_avoid` verb in [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py)
-> **Feature Mapping:** FS-105 (Spacecraft Operations)
+> **Dependencies:** [R102](R102-space-domain-awareness.md), [R105](R105-custody-theory.md), [R112](R112-propulsion-and-maneuver-planning.md), [R101](R101-orbital-mechanics-for-operations.md) (v1.1, the RIC/LVLH transform grounding)
+> **Referenced By:** FS-105, [R131](R131-space-environment-and-space-weather-operations.md), [R109](R109-sensor-operations.md) (v1.3, cross-references this topic's RIC-display work)
+> **Produces:** implementation constraints for [`engine/conjunction.py`](../../../spacesim/engine/conjunction.py) and the `prop.collision_avoid` verb in [`engine/buscommands.py`](../../../spacesim/engine/buscommands.py); (v1.1) RIC/RTN-frame relative-motion display grounding for `BL-0107`/`BL-0108`, consumed by [`session/ephemeris.py`](../../../spacesim/session/ephemeris.py)'s existing `to_ric()`
+> **Feature Mapping:** FS-105 (Spacecraft Operations); (v1.1) `FEAT-8200` ([`docs/feature-planning/03-feature-catalog.md`](../../feature-planning/03-feature-catalog.md))
 > **Related Topics:** [R102](R102-space-domain-awareness.md) (SDA — the tracking custody feeds conjunction screening), [R105](R105-custody-theory.md)
 > (Custody Theory — confidence the conjunction prediction is itself subject to), [R112](R112-propulsion-and-maneuver-planning.md) (Propulsion and Maneuver
-> Planning — the Δv the avoidance maneuver consumes)
-> **Last Reviewed:** 2026-06-27
-> **Primary Sources Consulted:** 2
+> Planning — the Δv the avoidance maneuver consumes), [R101](R101-orbital-mechanics-for-operations.md) (RIC/LVLH transform math, v1.1), [R109](R109-sensor-operations.md) (CATS/illumination phase angle shown alongside the same RIC view, v1.1)
+> **Last Reviewed:** 2026-10-03
+> **Primary Sources Consulted:** 5 (2 for the v1.0 content; 3 new for v1.1's RIC-display grounding)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -75,6 +75,60 @@ consistent with how every other White-Cell-curated anomaly (`gs_outage`, `geomag
 delivered: as world-state/inject content the operator must notice and act on, not an engine-forced
 event.
 
+### RIC/RTN-frame relative-motion display as the standard operator presentation (v1.1, `BL-0107`/`BL-0108`)
+
+**Real conjunction/RPO analysis is never presented to an operator in raw ECI coordinates — it is
+presented relative to one object, in that object's own rotating RIC (Radial/In-track/Cross-track,
+equivalently RTN — Radial/Transverse/Normal) frame.** This is not a cosmetic display choice: the
+CCSDS Conjunction Data Message standard — the real, operationally-exchanged data product
+`predict_conjunctions` is a coarse stand-in for (§3 above) — defines its relative state vector
+(`RELATIVE_POSITION_R/T/N`, `RELATIVE_VELOCITY_R/T/N`) and covariance *natively* in the RTN frame of
+the primary object, with screening-volume geometry likewise expressed in RTN or the closely related
+TVN (Transverse/Velocity/Normal) frame
+([CCSDS 508.0-B-1, *Conjunction Data Message*, Recommended Standard](https://ccsds.org/Pubs/508x0b1e2c2.pdf))
+([Wayback](https://web.archive.org/web/2026/https://ccsds.org/Pubs/508x0b1e2c2.pdf)). NASA's own
+CARA program (§3 above) builds its operator-facing conjunction visualizations directly on this
+frame: the real "2D conjunction plane" display used by CARA analysts and mission operators projects
+the encounter onto the plane normal to the relative-velocity vector, with the relative-position
+vector and out-of-plane component as the two displayed axes — a rotating-frame, one-object-relative
+presentation, not an ECI one
+([White & Baars, "Methods \[for\] Visualizing Conjunctions," NASA Technical Reports Server,
+2025](https://ntrs.nasa.gov/api/citations/20250006946/downloads/White_2025_Methods_Visualizing_Conjunctions.pdf))
+([Wayback](https://web.archive.org/web/2026/https://ntrs.nasa.gov/api/citations/20250006946/downloads/White_2025_Methods_Visualizing_Conjunctions.pdf)).
+Commercial mission-planning tooling makes the operator-selectable-origin convention explicit: a
+widely-used orbital-analysis package's relative-motion display defines the RIC frame's origin at
+the analyst-chosen "chief" object's center of mass, describing every other ("deputy") object's
+position/velocity in radial/in-track/cross-track components relative to that chosen chief — the
+chief selection is an ordinary user interaction, not a fixed, hard-coded reference
+([AGI, "RIC Coordinates"](https://help.agi.com/stk/Subsystems/dataProviders/Content/html/dataProviders/RIC_Coordinates.htm))
+([Wayback](https://web.archive.org/web/2026/https://help.agi.com/stk/Subsystems/dataProviders/Content/html/dataProviders/RIC_Coordinates.htm)).
+This closes `docs/pipeline/backlog.md` `BL-0108`'s research gap: RIC-frame relative-motion display,
+with an operator-selectable origin/chief object, is a real, standard, operationally load-bearing
+console convention — not a novel UI idea this project would be inventing from scratch. It directly
+grounds `FR-8210` (`FEAT-8200`, [`docs/feature-planning/03-feature-catalog.md`](../../feature-planning/03-feature-catalog.md)),
+the live, operator-selectable RIC-frame view `BL-0107` requested, and reuses the same physical frame
+`FR-7410`/`FR-7420`/`FR-7430`'s one-shot CSV/CCSDS-OEM export already computes via
+`engine/maneuver.py::lvlh_frame`/`session/ephemeris.py::to_ric()` — this topic grounds the *display*
+concept; [R101](R101-orbital-mechanics-for-operations.md)/[R112](R112-propulsion-and-maneuver-planning.md)
+already ground the *transform math* itself (RIC/RSW as an LVLH frame instance), and neither R101 nor
+R112 claims to cover the display/console convention, which is this subsection's own, distinct
+contribution.
+
+### Sources (RIC/RTN-frame relative-motion display, v1.1)
+
+- *CCSDS 508.0-B-1, "Conjunction Data Message," Recommended Standard, Issue 1, June 2013* —
+  [live](https://ccsds.org/Pubs/508x0b1e2c2.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://ccsds.org/Pubs/508x0b1e2c2.pdf)
+  · accessed 2026-10-03.
+- *White, E.H. & Baars, L.G., "Methods [for] Visualizing Conjunctions," NASA Technical Reports
+  Server, 2025* — [live](https://ntrs.nasa.gov/api/citations/20250006946/downloads/White_2025_Methods_Visualizing_Conjunctions.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://ntrs.nasa.gov/api/citations/20250006946/downloads/White_2025_Methods_Visualizing_Conjunctions.pdf)
+  · accessed 2026-10-03.
+- *AGI, "RIC Coordinates" (STK help documentation)* —
+  [live](https://help.agi.com/stk/Subsystems/dataProviders/Content/html/dataProviders/RIC_Coordinates.htm)
+  · [snapshot](https://web.archive.org/web/2026/https://help.agi.com/stk/Subsystems/dataProviders/Content/html/dataProviders/RIC_Coordinates.htm)
+  · accessed 2026-10-03.
+
 ### Sources
 
 - *NASA CARA Program, Conjunction Assessment Risk Analysis overview* — [live](https://www.nasa.gov/cara/)
@@ -114,14 +168,27 @@ based Pc.
 - **Surface new conjunction data the same way the existing inject/world-entities mechanism does**
   (`world.entities["conjunctions"]` or a named inject template) — don't add a separate alert
   pipeline that bypasses the inject/world-state pattern every other White Cell anomaly uses.
+- **A live, operator-selectable RIC-frame view (`FR-8210`) should present relative motion exactly
+  the way real CDM/CARA tooling does — relative to one chosen origin object, in that object's own
+  RIC/RTN basis, not ECI** — reuse `session/ephemeris.py::to_ric()`/`engine/maneuver.py::lvlh_frame`
+  directly rather than a second RIC-transform implementation; the "chosen origin" is an ordinary
+  live UI selection (mirroring AGI STK's chief-object pick, above), re-rendered on every clock
+  advance, not a one-time, session-start-only configuration choice.
 
 ## 6. Feature Mapping
 
 FS-105 (Spacecraft Operations) is the direct consumer — any conjunction-fidelity increase or new
 collision-avoidance UI must preserve the predictor/operator-decision split this topic documents.
+(v1.1) `FEAT-8200` ([`docs/feature-planning/03-feature-catalog.md`](../../feature-planning/03-feature-catalog.md))
+— the live, operator-selectable RIC-frame relative-motion view (`FR-8210`, `BL-0107`) — is also a
+direct consumer, grounded by this topic's own new RIC/RTN-frame-display subsection above; it closes
+the `BL-0108` research gap that Feature's `06-feature-specification` pass is blocked on.
 
 ## 7. Related Topics
 
 [R102](R102-space-domain-awareness.md) (the SDA/tracking chain conjunction screening depends on), [R105](R105-custody-theory.md) (the confidence
 model a higher-fidelity Pc estimate would need to draw on), [R112](R112-propulsion-and-maneuver-planning.md) (the Δv economy the avoidance
-maneuver itself spends).
+maneuver itself spends), [R101](R101-orbital-mechanics-for-operations.md) (the RIC/LVLH transform
+math this topic's own RIC-display subsection presents operationally, v1.1), [R109](R109-sensor-operations.md)
+(Sensor Operations — its own §3.11, v1.3, grounds the CATS/illumination-phase-angle readout the
+same `FEAT-8200` RIC view also displays).
