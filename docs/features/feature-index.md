@@ -49,6 +49,7 @@ Per [`MSTR-006`](../master/MSTR-006-governance-principles.md) §4, a Feature Spe
 | [FS-127](FS-127-effect-authorization-gating-and-live-roe.md) | Optional Effect-Authorization Gating and Live Rules-of-Engagement Changes | FR-3430/FR-3440 | ✅ Ready for implementation planning — one Open Question shared with FS-129 | Controller-role approval workflow for gated effect types plus live, logged mid-session ROE-flag changes. Closes `BL-0076` (item B10). |
 | [FS-128](FS-128-variable-speed-aar-replay.md) | Variable-Speed AAR Replay from Truth or a Single Cell's Viewpoint | FR-7330 | ✅ Ready for implementation planning | Continuous, speed-adjustable timeline playback from ground truth or a fog-respecting single-cell viewpoint, additive to the existing point-in-time AAR reconstruction. Closes `BL-0078` (item B12). |
 | [FS-129](FS-129-jamming-delivery-and-effect-detectability.md) | Jamming-Delivery Degradation and Per-Effect-Class Detectability Settings | FR-1440/FR-1450 | ✅ Ready for implementation planning — one Open Question shared with FS-127 | Successful uplink/crosslink jamming now degrades command/relay delivery, not telemetry alone; each effect class carries its own configurable detectability/attribution-difficulty setting. Closes `BL-0081` (item B15). |
+| [FS-130](FS-130-ric-frame-view-and-cats-overlay.md) | Live RIC-Frame Relative-Motion View & CATS Overlay | FR-8210/FR-8220 | 🚧 Open Questions outstanding (route/parameter shape, CATS-banding display choice — both `07`-level, no research/requirements blocker) | A live, operator-selectable RIC-frame relative-motion view, distinct from the existing one-shot CSV/CCSDS-OEM export (`FS-121`); a CATS illumination-phase-angle overlay for the view's selected chase satellite, extending it. The first FS in this set whose approved input is a real `05-feature-decomposition` Feature Catalog entry (`FEAT-8200`). Closes `BL-0107`/`BL-0111`. |
 | [FS-201](FS-201-competency-assessment.md) | Competency Assessment | DOM-002 | ✅ Done | Read-only rubric-based measurement layer over existing engine state. |
 | [FS-202](FS-202-rubric-authoring.md) | Rubric Authoring *(candidate)* | DOM-002 | 🅿️ Scoped, not authorized | Tooling for facilitators/instructors to define/adjust FS-201 rubric tiers. |
 | [FS-301](FS-301-research-analytics.md) | Research Analytics | DOM-004, DOM-005 | ✅ Done | Structured multi-run/cohort export for instrument-grade research use. |
@@ -73,6 +74,15 @@ document), these four had no prior FS-corpus description to draw on — each is 
 the requirements baseline and Feature Catalog, and each explicitly flags its own build status as
 **unverified** in its Risks/Open Questions sections; confirming whether the underlying code exists
 is a follow-on task, not performed here.
+
+**FS-130 is the first document in this set whose approved input is a real `05-feature-decomposition`
+Feature Catalog entry** (`FEAT-8200`, in [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md),
+produced 2026-10-03). Every prior FS file's metadata notes "no Feature Catalog exists here" because
+none did at the time each was written — that catalog now exists for a growing subset of this
+baseline's FRs (see `docs/feature-planning/05-feature-review.md` Finding F-11 for which FRs it does
+and does not yet cover), and a future FS authored against an already-catalogued Feature should cite
+the catalog entry the same way FS-130 does, rather than repeating the now-stale "no catalog exists"
+framing.
 
 FS-108 and FS-202 are written as **lighter-weight candidate-scope stubs**, not full specs — both
 are explicitly named "(candidate)" everywhere they appear in the existing corpus (`DOM-002`,
