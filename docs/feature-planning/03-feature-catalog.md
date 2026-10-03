@@ -12,6 +12,19 @@
 > expand into a full `FS-xxx` specification later — it is not itself a specification. See
 > `05-feature-review.md`'s mapping note for the full disposition, including how the 11 existing
 > `FS-1xx`/`FS-2xx`/`FS-3xx` documents map onto this catalog's `FEAT-xxxx` rows.
+>
+> **Amended 2026-10-03** (`05-feature-decomposition`, targeting six new FR leaves baselined this
+> run for `BL-0107`/`BL-0109`/`BL-0111`/`BL-0122`/`BL-0079`): added **FEAT-1600** (Sensor
+> Modality-Specific Access & Effectiveness Models, owning `FR-1610`-`FR-1670`), **FEAT-7400**
+> (State-Vector/Ephemeris & TLE Export, owning `FR-7410`-`FR-7440`), and **FEAT-8200** (Live
+> RIC-Frame Relative-Motion View & CATS Overlay, owning `FR-8210`/`FR-8220`, new parent `FR-8200`);
+> extended the existing **FEAT-4400** (+`FR-4450`) and **FEAT-4600** (+`FR-4620`). This run's scope
+> was explicitly the six new leaves only — it does **not** re-baseline this catalog against every
+> FR added to the requirements document since this catalog's original 49-FR pass (the Must-tier,
+> Should-tier, FS-117, and `FR-7430` intake batches between the original pass and this run remain
+> **not yet decomposed** outside the three leaves — `FR-1610`-`FR-1660`, `FR-7410`-`FR-7430` — that
+> rode into `FEAT-1600`/`FEAT-7400` as natural siblings of this run's own new leaves). See
+> `05-feature-review.md`'s Finding log for the full disposition of this partial-staleness gap.
 
 Source baseline read in full: `docs/requirements/01-functional-requirements.md` (49 baselined FR
 leaves + 18 Candidate Requirements CR-01–CR-18), `docs/requirements/02-non-functional-requirements.md`
@@ -71,7 +84,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-1210, FR-1220, NFR-2100, NFR-1300 |
 | **Excluded Requirements** | FR-1310 (maneuver application consumes propagated state but is owned by FEAT-1300) |
 | **Dependencies** | None |
-| **Dependent Features** | FEAT-1300, FEAT-1400, FEAT-1500, FEAT-2300, FEAT-3100, FEAT-3200, FEAT-5200 |
+| **Dependent Features** | FEAT-1300, FEAT-1400, FEAT-1500, FEAT-1600, FEAT-2300, FEAT-3100, FEAT-3200, FEAT-5200, FEAT-8200 |
 | **Affected Subsystems** | C1 Simulation Engine |
 | **Affected Interfaces** | INT-0008 |
 | **Related ADRs** | ADR-0009, ADR-0011, ADR-0019 |
@@ -150,6 +163,29 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Risk** | Low. |
 | **Suggested Verification Strategy** | Given a Track observed at T0 with confidence C0, confidence at T1 > T0 with no observation is < C0; an engagement against a sub-threshold or uncharacterized Track is rejected at both plan-time and execute-time. |
 | **Open Questions** | None within baseline scope. |
+
+### FEAT-1600 — Sensor Modality-Specific Access & Effectiveness Models
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-1600 |
+| **Title** | Sensor Modality-Specific Access & Effectiveness Models |
+| **Purpose** | Model the real phenomenological differences between sensor modalities (radar beam modes, optical lighting/exclusion-angle constraints, space-based range/band specialization, cue-dependent sensors, passive-RF multilateration) as access/effectiveness refinements layered on the baseline `sensor_observation` channel, rather than treating every sensor as uniformly capable. |
+| **Description** | Adds fence/dish radar beam-mode variants, a configurable optical solar/lunar exclusion angle, a space-based minimum-range floor and altitude-band affinity, a cue-dependent tasking precondition, a passive-RF ≥3/≥4-receiver multilateration network, satellite-hosted-sensor orbit-following, and (newly, `FR-1670`, 2026-10-03) a general Sun-target-observer illumination phase-angle (CATS) access-window refinement for any passive EO sensor — each an optional, opt-in refinement a sensor declares; a sensor declaring none of them falls back to the baseline lighting-only predicate (`FR-1220`) unaffected. |
+| **Scope** | The seven sensor-modality-specific predicates/effectiveness models themselves. Does not cover the baseline access-window geometry they layer on top of (FEAT-1200, a dependency) or SSN network aggregation generally (FEAT-3200, a peer the passive-RF leaf, `FR-1650`, explicitly reuses rather than duplicates). |
+| **Included Requirements** | FR-1610, FR-1620, FR-1630, FR-1640, FR-1650, FR-1660, FR-1670 |
+| **Excluded Requirements** | FR-1210/FR-1220 (the baseline propagation/lighting predicate these all layer on — FEAT-1200); FR-3210/FR-3220 (SSN network aggregation `FR-1650` reuses — FEAT-3200) |
+| **Dependencies** | FEAT-1200 |
+| **Dependent Features** | None |
+| **Affected Subsystems** | C1 Simulation Engine, C2 Session/Application Layer, C3 Mock SSN |
+| **Affected Interfaces** | INT-0008, INT-0009, INT-0010 |
+| **Related ADRs** | ADR-0010, ADR-0011 |
+| **User Value** | Lets a vignette author or White Cell model real sensor-type differences (a GEODSS-class optical sensor cannot stare at the Sun; a laser-ranging sensor cannot cold-detect; a TDOA network needs ≥3 simultaneous receivers) rather than one undifferentiated "sensor" abstraction. |
+| **Technical Value** | Each predicate is additive and independently opt-in — no existing sensor's behavior changes unless it declares the new field, keeping the baseline `FR-1220` predicate's existing guarantees intact. |
+| **Complexity** | Medium-High — six independently-testable predicate/effectiveness models (`FR-1610`-`FR-1660`) plus a seventh, newer one (`FR-1670`) sharing the same opt-in, compose-don't-replace discipline. |
+| **Risk** | `FR-1610`-`FR-1660` are `VERIFIED` built (`IP-1220`, per `VR-1220` — `engine/isr.py`, `engine/access.py`, `engine/ssn.py`). `FR-1670` (2026-10-03) is a brand-new, unimplemented leaf with an open research gap on its concrete default phase-angle range/degradation curve (`BL-0112`/`BL-0151`, routed to `06-feature-specification`) — this Feature is **partially built**, not uniformly at one maturity level; a reader should not assume `FR-1670` carries the same verified status as its six siblings. |
+| **Suggested Verification Strategy** | Per-leaf acceptance criteria already stated in each FR; for `FR-1670` specifically, given a declared usable phase-angle range and a geometry outside it, the access window is rejected or degraded, composing with (not replacing) `FR-1220`/`FR-1620`. |
+| **Open Questions** | This Feature bundles one brand-new FR (`FR-1670`, this run's own scope) together with six pre-existing, already-`VERIFIED` siblings (`FR-1610`-`FR-1660`) that predate this `05-feature-decomposition` run and had no Feature Catalog entry of their own before now — a pre-existing gap this Feature closes as a side effect, flagged explicitly rather than silently; see `05-feature-review.md`. `FR-8220` (the CATS-angle *display* overlay, FEAT-8200) and `FR-1670` (CATS-angle *access-gating*) should share one phase-angle computation per `BL-0152` — a cross-Feature implementation note, not a dependency edge, since neither Feature's own behavior requires the other to exist first. |
 
 ---
 
@@ -469,21 +505,21 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Feature ID** | FEAT-4400 |
 | **Title** | Inject Authoring & Firing |
 | **Purpose** | Let White Cell apply a scripted or manual inject immediately or at a scheduled simulated time, as the documented bypass of plan-first commanding for narrative control. |
-| **Description** | Applies an Inject's effects outside the normal Planned-Activity/access-window path, immediately or at a future `at_sim_t`; a scheduled inject survives save/resume and fires byte-identically. |
-| **Scope** | Inject application/scheduling. The *authoring UX* around this (templated/preview inject-authoring, the FS-108 candidate) is a presentation-layer concern layered on top, not part of this Feature's own requirement scope. |
-| **Included Requirements** | FR-4410 |
+| **Description** | Applies an Inject's effects outside the normal Planned-Activity/access-window path, immediately or at a future `at_sim_t`; a scheduled inject survives save/resume and fires byte-identically. Also lets White Cell edit the parameters of, or cancel, a scheduled inject before it fires (`FR-4450`, added 2026-10-03). |
+| **Scope** | Inject application/scheduling, plus pre-fire edit/cancel of an already-scheduled inject. The *authoring UX* around this (templated/preview inject-authoring, the FS-108 candidate) is a presentation-layer concern layered on top, not part of this Feature's own requirement scope. |
+| **Included Requirements** | FR-4410, FR-4450 |
 | **Excluded Requirements** | None baselined-adjacent (the richer authoring UX has no baselined FR — it is FS-108, an unauthorized candidate spec per `docs/features/feature-index.md`). |
 | **Dependencies** | FEAT-1100 |
 | **Dependent Features** | None |
 | **Affected Subsystems** | C6 White Cell, C1 Simulation Engine |
 | **Affected Interfaces** | INT-0002, INT-0016 |
 | **Related ADRs** | ADR-0005 |
-| **User Value** | Injects are White Cell's accepted narrative-control tool — the mechanism behind every "unexpected debris event" or "GNSS jamming advisory" moment. |
+| **User Value** | Injects are White Cell's accepted narrative-control tool — the mechanism behind every "unexpected debris event" or "GNSS jamming advisory" moment; `FR-4450` adds the ability to correct or withdraw one before it fires, per `BL-0079` (Could-tier). |
 | **Technical Value** | A documented, bounded escape hatch from plan-first commanding rather than an ad hoc one. |
-| **Complexity** | Medium. |
-| **Risk** | Low; verified (`session/manager.py`). |
-| **Suggested Verification Strategy** | A session saved and resumed before a scheduled inject's `at_sim_t` still fires it at the correct time with identical effects to an unsaved run. |
-| **Open Questions** | None within baseline scope; FS-108's richer authoring UX remains a separate, unauthorized candidate (see `05-feature-review.md`). |
+| **Complexity** | Medium (the original `FR-4410` scheduling mechanism); Low (`FR-4450`'s edit/cancel addition — mutates/removes an already-modeled pending-inject record, no new mechanism). |
+| **Risk** | `FR-4410` low; verified (`session/manager.py`). `FR-4450` is a brand-new, unimplemented Could-tier leaf (RTM `UNASSIGNED`) — a genuine future-build item, not yet a traceability-only gap like the rest of this Feature. |
+| **Suggested Verification Strategy** | A session saved and resumed before a scheduled inject's `at_sim_t` still fires it at the correct time with identical effects to an unsaved run; a cancel request against a scheduled, not-yet-fired inject removes it from the pending queue and it does not subsequently fire. |
+| **Open Questions** | None within baseline scope for `FR-4410`; FS-108's richer authoring UX remains a separate, unauthorized candidate (see `05-feature-review.md`). `FR-4450` has no implementation yet — a future `06-feature-specification`/`07-implementation-planning` pass. |
 
 ### FEAT-4500 — Classification Banner
 
@@ -515,21 +551,21 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Feature ID** | FEAT-4600 |
 | **Title** | God-View & Per-Cell View-As |
 | **Purpose** | Let White Cell see ground truth plus both cells' belief states combined, and switch to viewing exactly as Red or Blue would, for fair adjudication. |
-| **Description** | Provides a combined god-view and a view-as-cell mode that never grants White Cell write access to that cell's state through the view-as path. |
-| **Scope** | The White Cell view mechanism. The underlying per-cell filtering it borrows is FEAT-6200 (a dependency). |
-| **Included Requirements** | FR-4610 |
+| **Description** | Provides a combined god-view and a view-as-cell mode that never grants White Cell write access to that cell's state through the view-as path. Also provides a simultaneous side-by-side presentation of ground truth plus each cell's belief state (`FR-4620`, added 2026-10-03), distinct from view-as-cell's sequential one-at-a-time switching. |
+| **Scope** | The White Cell view mechanism, both sequential (view-as) and simultaneous (side-by-side). The underlying per-cell filtering it borrows is FEAT-6200 (a dependency). |
+| **Included Requirements** | FR-4610, FR-4620 |
 | **Excluded Requirements** | FR-6210 (the underlying fog-of-war filter — FEAT-6200) |
 | **Dependencies** | FEAT-6200 |
 | **Dependent Features** | None |
 | **Affected Subsystems** | C6 White Cell |
 | **Affected Interfaces** | INT-0002, INT-0007 |
 | **Related ADRs** | ADR-0004 |
-| **User Value** | White Cell must adjudicate using each side's *actual* belief state, not an assumption about it — this Feature makes that literally checkable. |
-| **Technical Value** | Reuses FEAT-6200's filter rather than a separate, potentially-diverging White-Cell-only view path. |
-| **Complexity** | Medium. |
-| **Risk** | RTM Impl. Package `UNASSIGNED` — traceability gap; narratively covered by `FS-106`. |
-| **Suggested Verification Strategy** | White Cell viewing as Red sees exactly what a Red-seated operator would see via INT-0004, no more, no less. |
-| **Open Questions** | Close the RTM citation gap. |
+| **User Value** | White Cell must adjudicate using each side's *actual* belief state, not an assumption about it — this Feature makes that literally checkable; `FR-4620` additionally lets White Cell compare both cells' belief against truth at a glance rather than switching back and forth, per `BL-0079` (Could-tier). |
+| **Technical Value** | Reuses FEAT-6200's filter rather than a separate, potentially-diverging White-Cell-only view path, for both the sequential and simultaneous presentations. |
+| **Complexity** | Medium (`FR-4610`); Low-Medium (`FR-4620` — a layout/rendering addition over the same already-filtered data, no new filtering mechanism). |
+| **Risk** | `FR-4610`'s RTM Impl. Package `UNASSIGNED` — traceability gap; narratively covered by `FS-106`. `FR-4620` is a brand-new, unimplemented Could-tier leaf (RTM `UNASSIGNED`) — a genuine future-build item, not yet a traceability-only gap. |
+| **Suggested Verification Strategy** | White Cell viewing as Red sees exactly what a Red-seated operator would see via INT-0004, no more, no less; White Cell's side-by-side view simultaneously displays ground truth and both cells' `CellView`s, each matching that same exact-match standard. |
+| **Open Questions** | Close the RTM citation gap for `FR-4610`. `FR-4620` has no implementation yet — a future `06-feature-specification`/`07-implementation-planning` pass. |
 
 ### FEAT-4700 — Manual Adjudication & Live Parameter Adjustment
 
@@ -666,7 +702,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-6210, FR-6220, NFR-2300 |
 | **Excluded Requirements** | FR-4610 (White Cell's own god-view/view-as consumer — FEAT-4600) |
 | **Dependencies** | FEAT-6100, FEAT-1500 |
-| **Dependent Features** | FEAT-4600, FEAT-6500 |
+| **Dependent Features** | FEAT-4600, FEAT-6500, FEAT-7400, FEAT-8200 |
 | **Affected Subsystems** | C2 Session/Application Layer, C1 Simulation Engine |
 | **Affected Interfaces** | INT-0006, INT-0007, INT-0001, INT-0005 |
 | **Related ADRs** | ADR-0004, ADR-0015 |
@@ -785,7 +821,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-7110, NFR-2500, NFR-2600 |
 | **Excluded Requirements** | FR-1120 (determinism/replay guarantee — FEAT-1100) |
 | **Dependencies** | None |
-| **Dependent Features** | FEAT-1100, FEAT-7200, FEAT-7300 |
+| **Dependent Features** | FEAT-1100, FEAT-7200, FEAT-7300, FEAT-7400 |
 | **Affected Subsystems** | C1 Simulation Engine |
 | **Affected Interfaces** | INT-0008, INT-0014 |
 | **Related ADRs** | ADR-0002 |
@@ -842,6 +878,29 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Suggested Verification Strategy** | Scrubbing to `T-100s` from a live session at T does not change the live session's clock/state; two branches diverging at T each correctly attribute their own post-T state. |
 | **Open Questions** | None. |
 
+### FEAT-7400 — State-Vector/Ephemeris & TLE Export
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-7400 |
+| **Title** | State-Vector/Ephemeris & TLE Export |
+| **Purpose** | Let White Cell (truth) and any cell (its own belief) export orbital state out of the simulator for use in external tools — as time-span state vectors (ECI/RIC, CSV/CCSDS-OEM) and, separately, as a quick current-epoch TLE for any satellite the requesting cell can currently see. |
+| **Description** | Exports ground-truth and cell-observed state vectors over a time span in ECI and RIC-relative form, as CSV, CCSDS OEM (ECI only), and a dedicated RIC-only companion file; separately, exports a current two-line element set for any satellite the requesting cell holds a `Track` on, as a copyable/clipboard string (added `FR-7440`, 2026-10-03). Every cell-scoped export path is fog-of-war-filtered; the truth export rides only the existing no-cell ground-truth endpoints. |
+| **Scope** | The export mechanisms themselves (serialization + the fog-of-war/no-cell-endpoint rule they follow). Does not cover the underlying RIC-transform math (`engine/maneuver.py::lvlh_frame`, a shared utility, not owned by any one Feature) or the fog-of-war filter itself (FEAT-6200, a dependency). |
+| **Included Requirements** | FR-7410, FR-7420, FR-7430, FR-7440 |
+| **Excluded Requirements** | FR-6210/FR-6220 (the fog-of-war filter and its no-cell exception these all ride — FEAT-6200) |
+| **Dependencies** | FEAT-7100, FEAT-6200 |
+| **Dependent Features** | None |
+| **Affected Subsystems** | C2 Session/Application Layer, C1 Simulation Engine, C3 Mock SSN |
+| **Affected Interfaces** | INT-0014, INT-0007, INT-0006 |
+| **Related ADRs** | ADR-0004, ADR-0015, ADR-0013 |
+| **User Value** | Lets an operator or analyst take orbital state out of the simulator into real external orbital-mechanics tooling (STK, GMAT, a spreadsheet) for further analysis — the ECI/RIC export for rigorous state-vector work, the quick TLE export for anything that consumes two-line elements directly. |
+| **Technical Value** | All four leaves reuse the same underlying RIC-transform (`to_ric()`/`lvlh_frame()`) and the same fog-of-war posture, rather than each inventing its own export convention. |
+| **Complexity** | High (`FR-7410`/`FR-7420`/`FR-7430` — dual-format, dual-frame, truth-vs-cell-observed serialization); Medium (`FR-7440` — simpler output shape, but its Acceptance Criteria depend on resolving `BL-0110`'s mean-element-fit design question first). |
+| **Risk** | `FR-7410`/`FR-7420`/`FR-7430` are `VERIFIED` built (`IP-1210`, per `VR-1210` v2.0). `FR-7440` (2026-10-03) is a brand-new, unimplemented leaf, and its own Notes field flags that generating a current-epoch TLE from an arbitrary propagated state is not a simple format conversion (`BL-0110`) — a real implementation-shape decision a future `06`/`07` pass must make before this leaf can be built. This Feature is **partially built**, not uniformly at one maturity level. |
+| **Suggested Verification Strategy** | Per-leaf acceptance criteria already stated in each FR; for `FR-7440` specifically, given a cell holding a `Track` on satellite X, a TLE-export request for X returns a well-formed TLE, and the same request for an untracked satellite Y is rejected. |
+| **Open Questions** | This Feature bundles one brand-new FR (`FR-7440`, this run's own scope) together with three pre-existing, already-`VERIFIED` siblings (`FR-7410`-`FR-7430`) that predate this `05-feature-decomposition` run and had no Feature Catalog entry of their own before now — a pre-existing gap this Feature closes as a side effect, flagged explicitly rather than silently; see `05-feature-review.md`. `BL-0110`'s mean-element-fit design question remains open for `FR-7440` specifically. |
+
 ---
 
 ## Epic EP-8000 — Operator Console Presentation
@@ -858,7 +917,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-8110, NFR-1100, NFR-1200, NFR-2700, NFR-2900, NFR-3000, NFR-3300 |
 | **Excluded Requirements** | None adjacent (this Feature intentionally absorbs the UI-wide cross-cutting NFRs rather than splitting them across every screen-owning Feature). |
 | **Dependencies** | None |
-| **Dependent Features** | None |
+| **Dependent Features** | FEAT-8200 |
 | **Affected Subsystems** | C4 Operator Console, C12 Browser client |
 | **Affected Interfaces** | INT-0001 |
 | **Related ADRs** | ADR-0008, ADR-0019, ADR-0020 |
@@ -868,6 +927,29 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Risk** | The strategic review (§1.4) flags framework-free JS as raising the cost of future UI-scale features (e.g. constellation aggregation, FC-06) — a noted future cost, not a current defect. |
 | **Suggested Verification Strategy** | Every documented user-facing capability in the baseline is reachable through a standards-compliant browser session; interactive frame rates hold on reference hardware (16 GB RAM, integrated graphics) up to the sizing guideline. |
 | **Open Questions** | None within baseline scope. |
+
+### FEAT-8200 — Live RIC-Frame Relative-Motion View & CATS Overlay
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-8200 |
+| **Title** | Live RIC-Frame Relative-Motion View & CATS Overlay |
+| **Purpose** | Let an operator select a target satellite as the origin of a live, interactive RIC (Radial-In-track-Cross-track) relative-motion view, and, for a selected chase satellite within that view, see a live illumination phase-angle (CATS) readout predicting whether an optical sensor would get a usable view of the target. |
+| **Description** | Renders other objects' position/motion live, relative to an operator-selected origin satellite, in the RIC frame, updating as the session clock advances and fog-of-war-filtered for a cell-scoped operator (`FR-8210`); when a chase/observer satellite is also selected, computes and displays the Sun-target-observer illumination phase angle for that pair as a live, read-only readout (`FR-8220`), extending `FR-8210` rather than standing alone. Distinct from the existing one-shot CSV/CCSDS-OEM RIC export (FEAT-7400), which is non-interactive and not rendered live. |
+| **Scope** | The live, interactive view and its CATS overlay. Does not cover the underlying RIC-transform math (`engine/maneuver.py::lvlh_frame`, a shared utility) or the one-shot export format (FEAT-7400, a sibling, not a dependency — neither Feature requires the other to exist first). Does not cover using the same CATS angle as an access-window *gate* for sensor tasking generally (`FR-1670`, FEAT-1600, a distinct, broader-scope capability). |
+| **Included Requirements** | FR-8210, FR-8220 |
+| **Excluded Requirements** | FR-7410/FR-7420/FR-7430 (the one-shot export this reuses transform grounding from — FEAT-7400); FR-1670 (the CATS angle used as an access-gating criterion rather than a display readout — FEAT-1600); FR-6210 (the underlying fog-of-war filter — FEAT-6200) |
+| **Dependencies** | FEAT-6200, FEAT-1200, FEAT-8100 |
+| **Dependent Features** | None |
+| **Affected Subsystems** | C4 Operator Console, C12 Browser client, C2 Session/Application Layer, C1 Simulation Engine |
+| **Affected Interfaces** | INT-0001, INT-0006, INT-0007 |
+| **Related ADRs** | ADR-0004, ADR-0008 |
+| **User Value** | Direct Blue/Red RPO/proximity situational-awareness tool, and White Cell oversight aid — an operator reasoning about a chase satellite's relative geometry and lighting no longer has to mentally reconstruct the RIC frame from a raw ECI readout or a one-shot export file. |
+| **Technical Value** | Reuses the already-implemented, already-tested RIC transform (`to_ric()`/`lvlh_frame()`, FEAT-7400's own underlying math) for a new, live rendering use, rather than a second implementation of the same geometry. |
+| **Complexity** | High (`FR-8210` — a new live, interactive, fog-of-war-aware rendering surface); Low-Medium (`FR-8220` — one additional computed readout layered on `FR-8210`'s existing selection state). |
+| **Risk** | Both leaves are brand-new and entirely unimplemented (RTM `UNASSIGNED` for both). `FR-8210` carries an open research gap on RIC-frame-display-as-operational-concept (`BL-0108`, no R1xx grounding exists yet, revisit before `06-feature-specification`). `FR-8220` carries an open research gap on the concrete default phase-angle range/degradation semantics (`BL-0112`/`BL-0151`) and a shared-computation note with `FR-1670` (`BL-0152`) that a future implementation should resolve by using one phase-angle function for both Features, not two. |
+| **Suggested Verification Strategy** | Given an operator selecting satellite X as the RIC-frame origin, displayed relative positions match `to_ric()`-computed values at the current sim time, and update when a different origin is selected; given a cell-scoped request, rendered objects are limited to that cell's own `TrackCatalog`; given a selected chase/target pair, the displayed CATS angle matches the geometrically computed Sun-target-chaser angle to within floating-point tolerance. |
+| **Open Questions** | Both `BL-0108` and `BL-0112`'s research gaps are correctly still open (their revisit trigger is before `06-feature-specification`, not before this decomposition) — flagged here so whoever specifies this Feature next knows to check their status first. |
 
 ---
 

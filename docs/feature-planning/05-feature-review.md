@@ -54,15 +54,20 @@ not itself a baselined requirement's Feature.
 
 ## Quality-gate verification
 
-- **Completeness (updated 2026-07):** All 49 original baselined `FR-xxxx` leaves, the 2 new
-  `FR-10000`-category leaves (`FR-10110`/`FR-10210`, promoted from `CR-19`/`CR-20` once
-  `ADR-0032`/`ADR-0033` resolved their blocking conflicts), and all 23 baselined `NFR-xxxx` leaves
-  are each owned by exactly one Feature in `03-feature-catalog.md` (now 38 Features, up from 36 —
-  see `EP-10000` in `02-epic-catalog.md`). No FR/NFR ID is missing; none appears twice.
-- **Epic assignment:** All 38 Features appear in exactly one Epic's `Features Included` list in
-  `02-epic-catalog.md` (5+5+5+7+3+6+3+1+1+2 = 38, matching the catalog's own Summary table).
-- **Release assignment:** All 38 Features appear in exactly one bucket in `01-release-plan.md`
-  (2 Prototype + 8 MVP + 21 Release 1 + 7 Release 2 + 0 Future = 38).
+- **Completeness (updated 2026-07; partially updated 2026-10-03 — see Finding F-11):** All 49
+  original baselined `FR-xxxx` leaves, the 2 new `FR-10000`-category leaves (`FR-10110`/
+  `FR-10210`, promoted from `CR-19`/`CR-20` once `ADR-0032`/`ADR-0033` resolved their blocking
+  conflicts), and all 23 baselined `NFR-xxxx` leaves are each owned by exactly one Feature in
+  `03-feature-catalog.md` (now **41 Features**, up from 38 — see Finding F-11 for the three new
+  ones). No FR/NFR ID among these is missing; none appears twice. **This bullet is honestly
+  incomplete against the requirements document's current full FR count** — see Finding F-11: a
+  large number of FR leaves added to `01-functional-requirements.md` between this catalog's
+  original authoring and 2026-10-03 (the Must-tier, Should-tier, and FS-117 intake batches) remain
+  outside every Feature's `Included Requirements`, this run's own scope limitation notwithstanding.
+- **Epic assignment:** All 41 Features appear in exactly one Epic's `Features Included` list in
+  `02-epic-catalog.md` (6+5+5+7+3+6+4+2+1+2 = 41, matching the catalog's own updated Summary).
+- **Release assignment:** All 41 Features appear in exactly one bucket in `01-release-plan.md`
+  (2 Prototype + 8 MVP + 21 Release 1 + 10 Release 2 + 0 Future = 41).
 - **Circular dependencies:** Two found and resolved with stated rationale, not silently broken —
   see `04-feature-dependency-graph.md`'s "Circular dependencies found" section and Finding F-05
   below.
@@ -87,6 +92,8 @@ not itself a baselined requirement's Feature.
 | F-08 | Feature possibly too small (judgment call, not a defect) | FEAT-1300 | Impulsive Maneuver & Δv Budget Accounting owns exactly one FR (FR-1310) and cites no ADR of its own ("none directly — restates a GDS-04 validation rule"). A stricter reviewer could merge it into FEAT-1200 (Orbital Propagation & Access-Window Geometry) as a sub-capability rather than a standalone Feature. | Low | Kept standalone here because Δv is independently named as "the operator's hardest constraint" (a distinct user-facing training objective) and has its own dedicated design document (`design/14-delta-v-economy.md`) — but this is a closer call than the catalog's other single-FR Features (e.g. FEAT-9100 AI-Red, which has three dedicated ADRs). |
 | F-09 | Architectural inconsistency (deliberate, disclosed) | EP-9000 | EP-9000 (AI-Red) is a single-Feature Epic, which the Best Practices guidance generally discourages ("an Epic that exists to hold exactly one Feature is a sign the Epic layer added no organizing value"). Kept as its own Epic here specifically because of its outsized strategic weight (the Strategic Review's #1 tracked gap, FC-02/GAP-08) despite module-wise fitting naturally under EP-3000 (Command Planning) or EP-4000 (White Cell). | Low | Disclosed rather than hidden; a reviewer who weighs strict subsystem-alignment over strategic signaling could reasonably fold EP-9000 into EP-3000. |
 | F-10 | Missing Feature Specification (found during F-03's remediation) — **RESOLVED 2026-07** | FEAT-4100, FEAT-4200 → FS-115 | While splitting FS-106 (Finding F-03), a close read of FS-106 v1.0's actual User Workflows (not just this catalog's earlier mapping guess) confirmed it never covered vignette selection/parameter tuning (FR-4110) or seat-to-role assignment (FR-4210) at all — these session-setup capabilities had **zero presence in any existing `FS-xxx` document**, matching the pattern of F-02's three findings exactly. | High | **Done:** FS-115 authored, folding FEAT-4100/FEAT-4200 into one "Session Setup" document since both are Must-priority, sequential, White-Cell-only setup-phase steps with a direct Feature Catalog dependency edge between them. **Not yet done:** build-status verification, same as F-02. |
+| F-11 | Requirements-baseline completeness gap — **this run's own scope is explicitly partial, by instruction** (informational, not a defect of this run's actual output) | `FR-1600`-family (`FR-1610`-`FR-1670`), `FR-7400`-family (`FR-7410`-`FR-7440`), `FR-8200`-family (`FR-8210`/`FR-8220`), `FR-4450`, `FR-4620`, plus every other FR leaf baselined between this catalog's original 49-FR authoring and 2026-10-03 that this run did **not** touch (the Must-tier batch `FR-4420`/`FR-4430`/`FR-5220`/`FR-5410`/`FR-5420`/`FR-5510`; the Should-tier batch `FR-1230`/`FR-1320`/`FR-1430`-`FR-1450`/`FR-2320`/`FR-3430`/`FR-3440`/`FR-4440`/`FR-7330`; the `FS-117` batch `FR-5120`-`FR-5180`/`FR-3420`; the `ADR-0032`/`ADR-0033` conflict-resolution batch, already counted above as `FR-10110`/`FR-10210`) | This `05-feature-decomposition` run was explicitly scoped (by the invoking instruction) to decompose only the six FR leaves baselined this same session for `BL-0107`/`BL-0109`/`BL-0111`/`BL-0122`/`BL-0079`, plus — as a necessary side effect of giving `FR-1670`/`FR-7440` a cohesive Feature home rather than an isolated one — their six already-`VERIFIED` siblings (`FR-1610`-`FR-1660`, `FR-7410`-`FR-7430`). Every other FR leaf added to `01-functional-requirements.md` since this catalog's original authoring pass remains outside every Feature's `Included Requirements` — a real, pre-existing completeness gap this run did not close and was not asked to close. | Medium (a genuine, large completeness gap; not Critical because every un-decomposed FR is independently `VERIFIED`-built and narratively traceable through the existing `FS-xxx` corpus per `CLAUDE.md`'s Code Map, so no capability is silently un-tracked — only un-cataloged at this planning layer) | A future, dedicated `05-feature-decomposition` pass should re-run Step 0's inventory against the full current `01-functional-requirements.md` and close this gap in one sweep, rather than letting each new intake batch's own narrowly-scoped `05` run leave an ever-larger residue of undecomposed-but-shipped FR leaves behind it. Not performed by this run, which was explicitly instructed not to touch any FR already covered by an existing catalog entry and, by extension, not instructed to backfill FRs that were never covered at all. |
+| F-12 | Open upstream research gates (informational — correctly left open, not resolved here) | FEAT-1600 (`FR-1670`), FEAT-8200 (`FR-8210`, `FR-8220`), `BL-0108`, `BL-0112`, `BL-0151`, `BL-0152` | Two of this run's three new Features carry an open research gap that must close before `06-feature-specification` can design them: `BL-0108` (no R1xx topic grounds RIC-frame relative-motion display as an operational concept, blocks `FEAT-8200`/`FR-8210`'s design) and `BL-0112` (no R1xx topic grounds the Sun-target-observer CATS phase angle, blocks `FEAT-8200`/`FR-8220`'s and `FEAT-1600`/`FR-1670`'s concrete design). `BL-0151`/`BL-0152` (the concrete default phase-angle range/curve ambiguity, and the shared-computation note between `FR-1670`/`FR-8220`) are two further open, `06`-routed findings this run's upstream `04-requirements-engineering` pass already harvested. | Low (correctly deferred, not a defect — each gap's own revisit trigger is stated as before `06-feature-specification`, not before this decomposition) | No action from this skill — `03-feature-catalog.md`'s own Open Questions fields for `FEAT-1600`/`FEAT-8200` already name these gates explicitly, so whoever runs `06-feature-specification` next sees them without needing this review document open at the same time. Resolve via `02-research-ow-orbital-mechanics` before specifying either Feature in depth. |
 
 ## Reconciling the 50–80 expectation
 
@@ -97,7 +104,7 @@ for by Findings F-01 and F-04:
 
 | Source of additional Features once upstream work closes the gap | Estimated yield |
 |---|---|
-| **This catalog (approved FR/NFR baseline only, updated 2026-07)** | **38** |
+| **This catalog (approved FR/NFR baseline only, updated 2026-07, partially updated 2026-10-03 — see Finding F-11)** | **41** |
 | DOM-002/004/005 backfilled into FR/NFR form (F-01) — **fully resolved: 2 baselined (`FR-10110`/`FR-10210`, already counted in the 38 above, via `EP-10000`), 1 Candidate Requirement remains (`CR-21`, counted in the row below)** | 0 (already counted above) |
 | 19 remaining Candidate Requirements (`CR-01`–`CR-18`, `CR-21`) + 7 Candidate NFRs, once baselined by `04-requirements-engineering` where the project owner resolves each one's blocking condition (most map close to 1:1 with this catalog's grain; a few, like CR-01/CNFR-06, are one Feature not two) | ~20–22 |
 | 8 Strategic Review Future Concepts with no Candidate Requirement yet (FC-01, 03, 04, 05, 07, 12, 14, 15), once run through architecture/requirements authoring | ~8–10 |

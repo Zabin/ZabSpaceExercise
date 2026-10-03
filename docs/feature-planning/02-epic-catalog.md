@@ -14,10 +14,10 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Epic ID** | EP-1000 |
 | **Title** | Simulation Engine Core & Determinism |
 | **Purpose** | The deterministic substrate — clock, orbital geometry, maneuver/resource accounting, effect resolution, and custody — that every other Epic ultimately reads or writes through. |
-| **Features Included** | FEAT-1100, FEAT-1200, FEAT-1300, FEAT-1400, FEAT-1500 |
-| **Subsystems** | C1 Simulation Engine |
+| **Features Included** | FEAT-1100, FEAT-1200, FEAT-1300, FEAT-1400, FEAT-1500, FEAT-1600 *(added 2026-10-03)* |
+| **Subsystems** | C1 Simulation Engine, C2 Session/Application Layer, C3 Mock SSN *(FEAT-1600's own additional subsystem touches)* |
 | **Estimated Scope** | Very Large — this Epic underpins the project's single load-bearing invariant (determinism) and the six-access-channel geometry every other Epic schedules against. |
-| **Risks** | Any change here risks violating the determinism gate that the whole documentation-driven build discipline treats as permanent; the two resolved circular-citation findings (FEAT-1100↔FEAT-4300, FEAT-1100↔FEAT-7100) originate in this Epic's own requirements text. |
+| **Risks** | Any change here risks violating the determinism gate that the whole documentation-driven build discipline treats as permanent; the two resolved circular-citation findings (FEAT-1100↔FEAT-4300, FEAT-1100↔FEAT-7100) originate in this Epic's own requirements text. `FEAT-1600` is partially built — six of its seven leaves are `VERIFIED`, one (`FR-1670`) is brand new and unimplemented. |
 | **Dependencies** | EP-7000 (FEAT-1100 depends on FEAT-7100's event log) |
 
 ### EP-2000 — Bus & Payload Operations
@@ -92,11 +92,11 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Epic ID** | EP-7000 |
 | **Title** | Logging, Replay & After-Action Review |
 | **Purpose** | The event log, deterministic save/resume with content-session ownership split, and the read-only AAR replay/scrub/branch-compare instrument built over both. |
-| **Features Included** | FEAT-7100, FEAT-7200, FEAT-7300 |
-| **Subsystems** | C1 Simulation Engine, C2 Session/Application Layer, C5 Content & Data, C11 Local filesystem |
+| **Features Included** | FEAT-7100, FEAT-7200, FEAT-7300, FEAT-7400 *(added 2026-10-03)* |
+| **Subsystems** | C1 Simulation Engine, C2 Session/Application Layer, C5 Content & Data, C11 Local filesystem, C3 Mock SSN *(FEAT-7400's own additional subsystem touch)* |
 | **Estimated Scope** | Large — foundational to EP-1000's own determinism guarantee (FEAT-1100 depends on FEAT-7100), not merely a downstream consumer of it. |
-| **Risks** | FEAT-7200 (Save/Resume) is currently undifferentiated inside `FS-106-white-cell-dashboard.md` despite its own dedicated ADR (ADR-0022) and ICD issue closure — a second strong candidate for its own Feature Specification alongside the EP-6000 findings. |
-| **Dependencies** | None outbound (this Epic is depended upon by EP-1000, not the reverse) |
+| **Risks** | FEAT-7200 (Save/Resume) is currently undifferentiated inside `FS-106-white-cell-dashboard.md` despite its own dedicated ADR (ADR-0022) and ICD issue closure — a second strong candidate for its own Feature Specification alongside the EP-6000 findings. `FEAT-7400` is partially built — three of its four leaves are `VERIFIED`, one (`FR-7440`) is brand new, unimplemented, and awaits a `BL-0110` design decision before it can be. |
+| **Dependencies** | EP-6000 *(added 2026-10-03: `FEAT-7400` depends on `FEAT-6200`'s fog-of-war filter)* — otherwise this Epic is depended upon by EP-1000, not the reverse |
 
 ### EP-8000 — Operator Console Presentation
 
@@ -105,11 +105,11 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Epic ID** | EP-8000 |
 | **Title** | Operator Console Presentation |
 | **Purpose** | The single architectural decision (browser-over-desktop-GUI) and its cross-cutting quality attributes — performance, hardware floor, accessibility, portability, configuration, external-integration boundary — that make every other Epic's capability reachable by a human. |
-| **Features Included** | FEAT-8100 |
-| **Subsystems** | C4 Operator Console, C12 Browser client |
-| **Estimated Scope** | Small in Feature count, Large in actual surface area (a whole hand-rolled front end lives inside this one Feature's scope) — kept as a single Feature rather than split because the requirements baseline itself carries only one FR leaf (FR-8110) here, with the rest as cross-cutting NFRs rather than distinct functional capabilities. |
-| **Risks** | The strategic review flags framework-free JS as a cost multiplier for future UI-scale Features (e.g. constellation aggregation) — a forward cost, not a current defect. |
-| **Dependencies** | None (this Epic has no Feature-level build dependency on any other Epic) |
+| **Features Included** | FEAT-8100, FEAT-8200 *(added 2026-10-03)* |
+| **Subsystems** | C4 Operator Console, C12 Browser client, C2 Session/Application Layer, C1 Simulation Engine *(FEAT-8200's own additional subsystem touches)* |
+| **Estimated Scope** | Small-Medium in Feature count (two), Large in actual surface area (a whole hand-rolled front end lives inside FEAT-8100's scope) — FEAT-8100 kept as a single Feature rather than split because the requirements baseline itself originally carried only one FR leaf (FR-8110) here, with the rest as cross-cutting NFRs rather than distinct functional capabilities; FEAT-8200 is a new, separately-scoped capability (a specific interactive view, not a cross-cutting console concern) added 2026-10-03. |
+| **Risks** | The strategic review flags framework-free JS as a cost multiplier for future UI-scale Features (e.g. constellation aggregation) — a forward cost, not a current defect. `FEAT-8200` is entirely unimplemented and carries two open research gaps (`BL-0108`, `BL-0112`) that must close before `06-feature-specification` designs it. |
+| **Dependencies** | EP-6000, EP-1000 *(added 2026-10-03: `FEAT-8200` depends on `FEAT-6200`'s fog-of-war filter and `FEAT-1200`'s access geometry, in addition to this Epic's own `FEAT-8100`)* — `FEAT-8100` itself still has no Feature-level build dependency on any other Epic |
 
 ### EP-9000 — AI-Red
 
@@ -145,18 +145,18 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 
 | Epic | Features | Epic-level Dependencies |
 |---|---|---|
-| EP-1000 Simulation Engine Core & Determinism | 5 | EP-7000 |
+| EP-1000 Simulation Engine Core & Determinism | 6 *(+1, 2026-10-03: FEAT-1600)* | EP-7000 |
 | EP-2000 Bus & Payload Operations | 5 | EP-1000 |
 | EP-3000 Command Planning & Sensor Tasking | 5 | EP-1000 |
 | EP-4000 White Cell Exercise Control | 7 | EP-1000, EP-5000, EP-6000 |
 | EP-5000 Scenario / Vignette Authoring | 3 | EP-1000 |
 | EP-6000 Session, Multiplayer & Fog-of-War | 6 | EP-1000 |
-| EP-7000 Logging, Replay & After-Action Review | 3 | (none outbound) |
-| EP-8000 Operator Console Presentation | 1 | (none) |
+| EP-7000 Logging, Replay & After-Action Review | 4 *(+1, 2026-10-03: FEAT-7400)* | (none outbound) |
+| EP-8000 Operator Console Presentation | 2 *(+1, 2026-10-03: FEAT-8200)* | (none) |
 | EP-9000 AI-Red | 1 | EP-3000 |
 | EP-10000 Assessment & Research Instrumentation *(new 2026-07)* | 2 | EP-1000 |
-| **Total** | **38** | |
+| **Total** | **41** | |
 
 Every Feature in `03-feature-catalog.md` appears in exactly one Epic's `Features Included` list
-above — cross-checked against the catalog's own Epic headers (38 Features total, matching the
+above — cross-checked against the catalog's own Epic headers (41 Features total, matching the
 catalog's Summary table).
