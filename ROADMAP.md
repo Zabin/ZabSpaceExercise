@@ -548,6 +548,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1270 | Optional Effect-Authorization Gating and Live Rules-of-Engagement Changes | `implementation/packages/IP-1270-effect-authorization-gating-and-live-roe.md` | FS-127 `FR-3430`/`FR-3440` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`; resolves the shared taxonomy IP-1290 reuses) |
 | IP-1280 | Variable-Speed AAR Replay from Truth or a Single Cell's Viewpoint | `implementation/packages/IP-1280-variable-speed-aar-replay.md` | FS-128 `FR-7330` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
 | IP-1290 | Jamming-Delivery Degradation and Per-Effect-Class Detectability Settings | `implementation/packages/IP-1290-jamming-delivery-and-effect-detectability.md` | FS-129 `FR-1440`/`FR-1450` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`; reuses IP-1270's shared taxonomy) |
+| IP-1300 | Live RIC-Frame Relative-Motion View & CATS Overlay | `implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md` | FS-130 `FR-8210`/`FR-8220` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1220,
 IP-1240, IP-1250, IP-1260, IP-1270, IP-1280, and IP-1290 are new (2026-09-27, run #78)** — seven

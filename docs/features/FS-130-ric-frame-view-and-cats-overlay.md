@@ -16,7 +16,9 @@
 > exist first), [FS-105](FS-105-spacecraft-operations.md) (Spacecraft Operations — the fog-of-war/
 > `CellController` boundary this Feature's cell-scoped path rides), [FS-106](FS-106-white-cell-dashboard.md)
 > (White Cell Dashboard — the god-view path this Feature's White-Cell/no-cell variant rides)
-> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0107` (the live,
+> **Referenced By:** [IP-1300](../implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md)
+> (Implementation Package, `READY`, not yet authorized),
+> [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0107` (the live,
 > operator-selectable RIC-frame view request), `BL-0111` (the CATS overlay extension), `BL-0151`
 > (open phase-angle-default design ambiguity), `BL-0152` (shared phase-angle-computation note
 > with `FS-122`'s forthcoming `FR-1670` spec), [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)

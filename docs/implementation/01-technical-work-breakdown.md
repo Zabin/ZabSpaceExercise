@@ -339,6 +339,32 @@ coordinated with) `IP-1290`; `IP-1260` cannot begin `08-code-implementation` unt
 `09-package-verification` in a fresh session; the remaining four (`IP-1220`, `IP-1240`, `IP-1250`,
 `IP-1280`) have no cross-package ordering constraint.
 
+## RIC-view/CATS-overlay tranche (run #85)
+
+One package against `FS-130` (Live RIC-Frame Relative-Motion View & CATS Overlay), the first
+Feature Specification in this set authored against a real `05-feature-decomposition` Feature
+Catalog entry (`FEAT-8200`). **No-split rationale:** `FR-8210`'s live-view mechanism and `FR-8220`'s
+CATS overlay share one read path (the overlay is computed inline on the same request, not a
+separate round trip) and touch the same small seam (`engine/sun.py`, `session/ephemeris.py`,
+`session/manager.py`/`inprocess.py`'s read-method pair, one new HTTP route) — splitting them into
+two packages would duplicate the fog-of-war-rejection test pattern and create an artificial
+cross-package dependency for a seam that isn't real, the same reasoning `IP-1220` applied to its
+own six-leaf bundle.
+
+`FS-130` carried three Open Questions; this package resolves two at the implementation-planning
+level (`BL-0155` route/parameter shape, `BL-0156` origin-selection persistence — both ordinary `07`
+design decisions FS-130's own prose explicitly routed here) and deliberately leaves the third
+(`BL-0154`, CATS-angle display-banding) open, shipping the simplest grounded design (an unbanded
+numeric readout) rather than inventing a banding scheme no input document commits to.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1300](packages/IP-1300-ric-frame-view-and-cats-overlay.md) | FS-130 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED` |
+
+**Not authorized for coding (MSTR-006 §3)** — a separate, explicit decision for the project owner.
+No cross-package sequencing constraint; this package has no dependency on any other currently
+open package in this plan.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
