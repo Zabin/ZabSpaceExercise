@@ -42,6 +42,21 @@
 > companion export file, `FR-7430`. `FR-7410`/`FR-7420`'s own Description/Outputs/Acceptance
 > Criteria amended to match — no requirement's *behavioral intent* changed, only which file format
 > carries which frame.)
+> further amended (RIC-view/CATS-angle/TLE-export/controller-view intake batch, 2026-10-03;
+> **seven numbered FR leaves added** — `FR-8200`/`FR-8210`/`FR-8220` under new parent `FR-8200`
+> (the live, operator-selectable RIC-frame relative-motion view, and its CATS illumination-phase-
+> angle overlay); `FR-7440` under `FR-7400`'s existing parent (quick TLE export for a cell-visible
+> satellite); `FR-1670` under `FR-1600`'s existing parent (CATS-angle access-window refinement for
+> any passive EO sensor); `FR-4450` under `FR-4400`'s existing parent and `FR-4620` under
+> `FR-4600`'s existing parent (the Could-tier side-by-side controller view with editable pending-
+> inject queue) — closing `docs/pipeline/backlog.md` `BL-0107`, `BL-0109`, `BL-0111`, `BL-0122`,
+> `BL-0079` (batched together by the pipeline manager's run #77/#78 triage). `FR-8210` and `FR-7440`
+> are baselined citing existing transform/export grounding but flag open research/design gaps
+> (`BL-0108`, `BL-0110`) that must close before `06-feature-specification` designs them, not before
+> this baseline; `FR-1670`/`FR-8220` cite `BL-0112`'s single-source AGI/STK citation as their
+> concrete grounding anchor, same precedent as `FR-1620`'s own single-source figure — see
+> [`reviews/requirements-update-ric-cats-batch.md`](../reviews/requirements-update-ric-cats-batch.md)
+> for the full derivation and review.)
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -748,6 +763,66 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   channel).
 - **Related ADRs:** ADR-0011
 - **Related Requirements:** FR-1220, FR-1310, FR-5170
+
+#### FR-1670 — Phase-angle (CATS) based access-window refinement for passive EO sensors
+
+- **ID:** FR-1670
+- **Title:** Refine a passive electro-optical sensor's access window using the Sun-target-observer
+  illumination phase angle (CATS)
+- **Description:** The system shall support, for any passive electro-optical sensor (ground-based
+  or space-based), a configurable usable phase-angle range measured as the Sun-target-observer
+  illumination phase angle — the angle at the target between the target→Sun vector and the
+  target→sensor vector (0° = full illumination as seen from the sensor, 180° = backlit/
+  silhouetted) — such that an otherwise geometrically valid access window is rejected, or has its
+  observation effectiveness degraded, when the phase angle at the time of observation falls
+  outside the declared usable range. This is a distinct and more general predicate than `FR-1620`'s
+  existing solar/lunar exclusion angle, which is measured at the sensor's own boresight and applies
+  only to ground-based optical sensors.
+- **Rationale:** Project owner's explicit request (`docs/pipeline/backlog.md` `BL-0122`), broader
+  than the display-only use of the same angle requested by `BL-0111`/`FR-8220`: here the angle
+  gates or refines whether/how effectively an observation can occur at all, for any passive-EO
+  sensor tasking any target, not only within the `FR-8210` RIC-view context and not only
+  ground-based (`FR-1620`'s current scope). No existing FR covers a phase-angle-based access
+  criterion for a general passive-EO sensor. `BL-0112` (research-gap) found no R1xx encyclopedia
+  topic grounds this three-body phase angle directly, but identified one real Tier-B source during
+  intake — AGI, "New Feature in STK 11.1.1 - New Lighting Constraint"
+  (https://www.agi.com/products/stk/pro/new-feature-in-stk-11-1-1-new-lighting-constraint) —
+  describing an operationally used lighting constraint of exactly this kind (0°="full moon",
+  180°="new moon", constraining when an optical payload can achieve a usable detection magnitude
+  against a target in a different orbital regime). This requirement is baselined on that citation,
+  the same way `FR-1620` baselined on its own single-source-flagged 90° figure.
+- **Priority:** Should
+- **Inputs:** A declared usable phase-angle range on a passive EO sensor; the current Sun-target-
+  observer geometry at the time of the access-window computation.
+- **Outputs:** An accept/reject decision, or a degraded observation-effectiveness result, composed
+  with — not replacing — the sensor's existing lighting (`FR-1220`) and, where applicable,
+  exclusion-angle (`FR-1620`) predicates.
+- **Preconditions:** The sensor declares a non-default usable phase-angle range; a sensor with no
+  declared range is unaffected (falls back to its existing predicates unchanged).
+- **Postconditions:** This predicate composes with, rather than replaces, `FR-1220`'s lighting
+  predicate and, for a ground-based optical sensor that also declares one, `FR-1620`'s exclusion
+  angle.
+- **Acceptance Criteria:** Given a passive EO sensor with a declared usable phase-angle range and a
+  geometry producing a phase angle outside that range, the access window is rejected or the
+  observation effectiveness is measurably degraded; given a geometry producing a phase angle inside
+  the declared range (all else equal), the window/effectiveness is unaffected by this predicate.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220, FR-1620
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0122`; `BL-0112` (research-gap, citing AGI,
+  "New Feature in STK 11.1.1 - New Lighting Constraint"); `FR-1620` (the narrower, ground-only,
+  boresight-measured predecessor concept).
+- **Related ADRs:** ADR-0011
+- **Related Interfaces:** INT-0008
+- **Related Requirements:** FR-1220, FR-1620, FR-1630, FR-8220
+- **Notes:** `BL-0112`'s revisit trigger ("before `06-feature-specification` designs `BL-0111`'s
+  overlay") applies equally here — the concrete default usable-phase-angle range and the shape of
+  the effectiveness-degradation curve are design-level choices this requirement deliberately does
+  not specify, pending that research pass closing with a fuller sourcing basis than the single AGI/
+  STK citation above. Whether this capability extends `FR-1620` directly or remains its own sibling
+  leaf is also a `06-feature-specification`-level design question (see `BL-0122`'s own Overlap
+  note), not decided here. `FR-8220` (the `BL-0111` display overlay) and this requirement should
+  share one underlying phase-angle computation, not two independently implemented ones — flagged
+  for whoever drafts the Feature Spec(s) for both.
 
 ---
 
@@ -1577,6 +1652,72 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   2026, item B8); `FR-1230`; `FR-4420`; `FR-4430`.
 - **Related ADRs:** ADR-0002, ADR-0006
 - **Related Requirements:** FR-1230, FR-4420, FR-4430, FR-1120
+
+#### FR-4450 — Edit or cancel a scheduled inject before it fires
+
+- **ID:** FR-4450
+- **Title:** Edit or cancel a scheduled, not-yet-fired inject
+- **Description:** The system shall allow White Cell to edit the parameters of, or cancel, a
+  scheduled inject that has not yet fired, distinct from the existing `GET /injects` listing (which
+  is read-only) and from `FR-4410`'s/`FR-4420`'s existing immediate/scheduled/condition-triggered
+  firing mechanisms (which create or fire an inject, but do not let White Cell change or withdraw
+  one already scheduled).
+- **Rationale:** `docs/pipeline/backlog.md` `BL-0079` (Could-tier, external validation report, 26
+  Sep 2026, item B13). Baseline already supports god-view, pause, on-demand injects, and coaching
+  notes, and already lists pending injects via `GET /injects`, but no requirement covers editing or
+  cancelling an already-scheduled inject before it fires.
+- **Priority:** Could
+- **Inputs:** A White-Cell edit or cancel request naming a scheduled, not-yet-fired inject.
+- **Outputs:** The inject's updated parameters (edit), or its removal from the pending queue
+  (cancel).
+- **Preconditions:** The requester holds the White Cell role; the named inject is scheduled and has
+  not yet fired.
+- **Postconditions:** A cancelled inject never fires; an edited inject fires with its updated
+  parameters at its (possibly updated) scheduled time; an already-fired inject can no longer be
+  edited or cancelled.
+- **Acceptance Criteria:** Given a scheduled, not-yet-fired inject, a cancel request removes it
+  from the pending queue and it subsequently does not fire; given an edit request changing one
+  parameter, the inject later fires carrying the updated parameter value, not its original one.
+- **Verification Method:** Test
+- **Dependencies:** FR-4410, FR-4420
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0079` (external validation report, 26 Sep
+  2026, item B13); `FR-4410`; the existing `GET /injects` route (read-only baseline).
+- **Related ADRs:** ADR-0005
+- **Related Interfaces:** INT-0002, INT-0016
+- **Related Requirements:** FR-4410, FR-4420, FR-4620
+
+#### FR-4620 — Side-by-side controller view: each cell's picture beside truth
+
+- **ID:** FR-4620
+- **Title:** Present White Cell a side-by-side view of each cell's belief state alongside ground
+  truth
+- **Description:** The system shall provide White Cell a controller view that displays each cell's
+  own belief state side-by-side with ground truth simultaneously, distinct from the existing
+  god-view's sequential "switch to view-as-cell" mechanism (`FR-4610`), which shows one view at a
+  time rather than multiple views side-by-side.
+- **Rationale:** `docs/pipeline/backlog.md` `BL-0079` (Could-tier, external validation report, 26
+  Sep 2026, item B13). `FR-4610` already provides god-view plus sequential view-as-cell switching,
+  not a simultaneous side-by-side presentation of both cells' belief alongside truth.
+- **Priority:** Could
+- **Inputs:** A White-Cell request for the side-by-side controller view.
+- **Outputs:** A rendered display showing ground truth and each cell's `CellView` simultaneously.
+- **Preconditions:** The requester holds the White Cell role.
+- **Postconditions:** The side-by-side view never grants White Cell write access to a cell's state
+  through this display path (mirrors `FR-4610`'s existing postcondition).
+- **Acceptance Criteria:** Given a running session, White Cell's side-by-side view simultaneously
+  displays ground truth and both Red's and Blue's `CellView`s, each matching `FR-4610`'s own
+  exact-match acceptance criterion for its respective cell.
+- **Verification Method:** Test
+- **Dependencies:** FR-4610, FR-6210
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0079` (external validation report, 26 Sep
+  2026, item B13); `FR-4610`; `FR-6210`.
+- **Related ADRs:** ADR-0004
+- **Related Interfaces:** INT-0002, INT-0007
+- **Related Requirements:** FR-4610, FR-6210, FR-4450
+- **Notes:** `BL-0079`'s own backlog row bundles this side-by-side presentation together with the
+  editable pending-inject queue (`FR-4450`) as one requested feature; per this skill's atomicity
+  rule they are baselined as two independent leaves — a side-by-side controller view could exist
+  without inject editing, and inject editing (`FR-4450`) could exist without a side-by-side view.
 
 ---
 
@@ -2560,6 +2701,51 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   skill's own rule against specifying implementation shape. `IP-1210`'s remediation package is
   expected to make and document that choice.
 
+#### FR-7440 — Quick TLE export for a cell-visible satellite
+
+- **ID:** FR-7440
+- **Title:** Quick-export a current two-line element set for any satellite visible to the
+  requesting cell
+- **Description:** The system shall provide a quick, minimal-UI export — a copyable text field or
+  a copy-to-clipboard action, per the user's own stated minimal bar; no dedicated file-download
+  flow is required — of a current Two-Line Element (TLE) set for any satellite currently visible
+  to the requesting cell (i.e. the cell holds a `Track` on it), reading the requesting cell's own
+  belief state and never ground truth, mirroring `FR-6210`'s fog-of-war rule; for White Cell and
+  the other no-cell ground-truth paths, this mirrors `FR-6220`'s existing named exception.
+- **Rationale:** Project owner's explicit request (`docs/pipeline/backlog.md` `BL-0109`) — "can
+  just be an easy place to cut and paste, or a cut-and-paste button next to it." Distinct from
+  `FR-5210`/`FR-5220` (TLE *import*, not export) and `FR-7410`/`FR-7420`/`FR-7430` (ECI/RIC
+  state-vector export, not TLE format) — no existing FR covers TLE export in either direction.
+- **Priority:** Should
+- **Inputs:** A target satellite identifier currently visible (tracked) by the requesting cell.
+- **Outputs:** A current-epoch TLE (two lines) for that satellite, presented for copy/clipboard
+  use.
+- **Preconditions:** The requesting cell holds a `Track` on the named satellite (fog-of-war,
+  mirroring `FR-6210`); White Cell and the other no-cell ground-truth paths may request any
+  satellite per `FR-6220`'s existing exception.
+- **Postconditions:** No cell-scoped request returns a TLE for a satellite the requesting cell does
+  not hold a `Track` on.
+- **Acceptance Criteria:** Given a cell holding a `Track` on satellite X, a TLE-export request for
+  X returns a well-formed two-line element set; given the same cell has no `Track` on satellite Y,
+  the same request for Y is rejected.
+- **Verification Method:** Test
+- **Dependencies:** FR-6210, FR-1210, FR-1510
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0109`; `BL-0110` (design-question — see
+  Notes); `FR-6210`; `FR-7410`/`FR-7420` (the sibling export family, different file format).
+- **Related ADRs:** ADR-0004
+- **Related Interfaces:** INT-0006, INT-0007
+- **Related Requirements:** FR-6210, FR-5210, FR-7410
+- **Notes:** `BL-0110` (design-question, filed alongside `BL-0109`) found that generating a
+  current-epoch TLE from an arbitrary propagated orbital state (the engine's Kepler+J2 *osculating*
+  state, not SGP4 *mean* elements) is not a simple algebraic/format conversion — a rigorous
+  conversion needs a mean-element-fitting procedure against SGP4, not an algebraic inverse. This
+  requirement's Acceptance Criteria are satisfiable by any of `BL-0110`'s three named options (a
+  full mean-element fit; re-epoching a TLE-sourced object's original elements with a documented,
+  bounded-error approximation; or restricting export to TLE-sourced objects only, with a clearly
+  stated limitation for Kepler-fictional ones) — which option is chosen is a
+  `06-feature-specification`/`07-implementation-planning` design decision (`BL-0110`'s own
+  disposition), not decided here.
+
 ---
 
 ## FR-8000 — Operator Console Presentation
@@ -2589,6 +2775,114 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Related ADRs:** ADR-0008
 - **Related Interfaces:** INT-0001
 - **Related Requirements:** FR-6110
+
+### FR-8200 — Relative-motion (RIC) frame view
+
+#### FR-8210 — Live, operator-selectable RIC-frame relative-motion view
+
+- **ID:** FR-8210
+- **Title:** Provide a live, operator-selectable RIC (Radial-In-track-Cross-track) relative-motion
+  frame view
+- **Description:** The system shall provide an interactive view in which the operator selects a
+  target satellite as the frame's origin, and the view renders other objects' (and/or the
+  operator's own assets') position and motion live, relative to that selected object, in the RIC/
+  RSW frame — distinct from the existing one-shot CSV/CCSDS-OEM RIC export (`FR-7410`/`FR-7420`/
+  `FR-7430`), which is non-interactive and not rendered live. For a cell-scoped operator this view
+  shall render only that cell's own belief state (fog-of-war), never ground truth, per `FR-6210`;
+  for White Cell it may render ground truth via the existing god-view path (`FR-4610`).
+- **Rationale:** Project owner's explicit request (`docs/pipeline/backlog.md` `BL-0107`, filed
+  live, this session, distinct from the external validation report). `FR-7410`/`FR-7420`/`FR-7430`
+  already reuse `engine/maneuver.py::lvlh_frame` via `session/ephemeris.py::to_ric()` for a batch
+  CSV/CCSDS-OEM export, so the RIC transform math itself is not new — but that path is a one-shot,
+  non-interactive export, not a live rendered view with an operator-selectable center. No existing
+  FR covers a live/interactive RIC-frame view or the operator interaction of choosing its center
+  satellite. Serves Blue/Red proximity/RPO situational awareness and White Cell oversight.
+- **Priority:** Should
+- **Inputs:** An operator selection of a target satellite as the RIC-frame origin; the live world/
+  belief state.
+- **Outputs:** A rendered view showing other objects' position/velocity relative to the selected
+  origin in RIC coordinates, updating live as the session clock advances.
+- **Preconditions:** The selected origin object exists and has a determinable state (ground truth
+  for White Cell/no-cell paths; the requesting cell's own `Track` for a cell-scoped view).
+- **Postconditions:** A cell-scoped rendering of this view never exposes another cell's belief
+  state or ground truth (mirrors `FR-6210`); switching the selected origin re-renders the view
+  relative to the new origin without a page or session reload.
+- **Acceptance Criteria:** Given a running session and an operator selecting satellite X as the
+  RIC-frame origin, the view's displayed relative positions for other objects match the values
+  `to_ric()` would compute against the live state at the current sim time; given the operator
+  reselects satellite Y, the view's displayed values update to be relative to Y; given a
+  cell-scoped request, the rendered objects are limited to that cell's own `TrackCatalog`/
+  `CellView`.
+- **Verification Method:** Test
+- **Dependencies:** FR-6210, FR-1210, FR-7410, FR-8110
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0107`; `FR-7410`/`FR-7420`/`FR-7430` (the
+  existing RIC-transform grounding — `engine/maneuver.py::lvlh_frame`, `session/ephemeris.py::
+  to_ric()`); `R112` (`lvlh` as an existing maneuver-entry-mode parameterization — transform-math
+  grounding only, not a display-concept grounding, see Notes); `FR-6210` (fog-of-war).
+- **Related ADRs:** ADR-0004, ADR-0008
+- **Related Interfaces:** INT-0001, INT-0006, INT-0007
+- **Related Requirements:** FR-7410, FR-7420, FR-7430, FR-6210, FR-4610, FR-8220
+- **Notes:** `BL-0108` (research-gap, filed alongside `BL-0107`) found that no R1xx encyclopedia
+  topic grounds RIC-frame relative-motion *display* as an operational/console concept (checked
+  `R101`, `R102`, `R112`, `R123` directly — none discusses RIC/LVLH/RSW-frame relative-motion
+  display, operator-selectable frame centers, or real ops-center RPO/conjunction-display
+  conventions). This requirement is baselined now on the existing transform-math grounding (`R112`,
+  `FR-7410`/`FR-7420`/`FR-7430`) per `BL-0108`'s own disposition, which defers its revisit trigger
+  to *before `06-feature-specification` drafts this requirement's design*, not before baselining
+  the requirement itself. A future `02-research-ow-orbital-mechanics` pass closing `BL-0108` should
+  inform, not gate, that design.
+
+#### FR-8220 — CATS illumination-phase-angle overlay for the RIC view's selected chase satellite
+
+- **ID:** FR-8220
+- **Title:** Display the CATS (Sun-target-observer illumination phase angle) for the RIC view's
+  selected chase satellite
+- **Description:** When a chase/observer satellite is selected within the `FR-8210` RIC-frame
+  view, the system shall compute and display, for the selected target in that frame, the
+  illumination phase angle (the "CATS angle," also known as the LOS Sun Illumination Angle) — the
+  angle at the target between the target→Sun vector and the target→chaser vector (0° = full
+  illumination as seen from the chaser, 90° = side-lit with visible shadow, 180° = backlit/
+  silhouetted) — as a live, updating readout alongside the RIC view, extending `FR-8210` rather
+  than standing alone.
+- **Rationale:** Project owner's explicit request (`docs/pipeline/backlog.md` `BL-0111`, clarified
+  via `AskUserQuestion` after "CATS angle" was not independently groundable). Directly predicts
+  whether the chaser's optical sensor will get a usable, glare-free, or silhouetted view of the
+  target. Distinct from the existing `engine/sun.py` `sun_unit_eci`/`is_sunlit`/`eclipse_fraction`
+  (illumination-by-the-Sun-in-isolation / eclipse state), which is not the three-body phase angle
+  this request asks for. `BL-0112` (research-gap) found zero R1xx encyclopedia topic grounding this
+  angle directly, but identified one real Tier-B source — AGI, "New Feature in STK 11.1.1 - New
+  Lighting Constraint" (https://www.agi.com/products/stk/pro/new-feature-in-stk-11-1-1-new-lighting-
+  constraint) — this requirement cites as its Source Document, the same precedent `FR-1620` set for
+  a single-source-flagged figure.
+- **Priority:** Should
+- **Inputs:** The RIC view's currently selected chase/observer satellite and target satellite; the
+  current Sun position (`engine/sun.py::sun_unit_eci`).
+- **Outputs:** A live, continuously updating numeric phase-angle readout (degrees) for the selected
+  chase-target pair.
+- **Preconditions:** `FR-8210`'s view is active, with both a chase/observer satellite and a target
+  satellite selected.
+- **Postconditions:** The displayed value is purely informational (read-only) and does not itself
+  gate or alter any access window or order — a distinct scope from `FR-1670`/`BL-0122`'s use of the
+  same angle as an access criterion.
+- **Acceptance Criteria:** Given a selected chase satellite and target with a known Sun position,
+  the displayed CATS angle matches the geometrically computed Sun-target-chaser angle at the
+  current sim time to within floating-point tolerance; reselecting a different chase or target
+  satellite updates the displayed angle accordingly.
+- **Verification Method:** Test
+- **Dependencies:** FR-8210, FR-1210
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0111`; `BL-0112` (research-gap, citing AGI,
+  "New Feature in STK 11.1.1 - New Lighting Constraint"); `engine/sun.py` (existing sunlit/eclipse
+  machinery this is distinct from).
+- **Related ADRs:** ADR-0004
+- **Related Interfaces:** INT-0001
+- **Related Requirements:** FR-8210, FR-1670
+- **Notes:** `BL-0112`'s revisit trigger ("before `06-feature-specification` designs `BL-0111`'s
+  overlay") applies here, not before baselining — this leaf cites the one real Tier-B source
+  `BL-0112` already identified, which is a usable starting anchor, not yet a full-quality-gate
+  research pass. `BL-0122`/`FR-1670` extends the same underlying phase-angle computation to a
+  broader, access-gating use; `FR-8220` and `FR-1670` should share one phase-angle computation
+  function, not two independently implemented ones — flagged for whoever drafts the Feature Spec(s)
+  for both.
 
 ---
 

@@ -65,6 +65,17 @@ requirements documents in full (every FR/NFR/Candidate leaf and its explicit fie
 > changed. See
 > [`reviews/requirements-update-should-tier-batch.md`](../reviews/requirements-update-should-tier-batch.md)
 > for the full analysis.
+>
+> **Further amended 2026-10-03** (RIC-view/CATS-angle/TLE-export/controller-view intake batch) to
+> add seven new master-matrix rows: `FR-1670`, `FR-4450`, `FR-4620`, `FR-7440`, `FR-8210`,
+> `FR-8220` (new parent `FR-8200`) — all with every forward-trace column (`Future Feature`/`Test`/
+> `Impl. Package`) honestly `UNASSIGNED` (no `FS-xxx`/`IP-xxxx`/test exists yet for any of these
+> five backlog items). No row's Research column is populated — `BL-0108`/`BL-0112`'s research gaps
+> remain open (`DEFERRED`, revisited before `06-feature-specification`), so `FR-8210`/`FR-8220`/
+> `FR-1670` cite only backlog rows and existing FR/engine-code Source Documents, consistent with
+> this matrix's own discipline against inferring a Research cell with no explicit citation. See
+> [`reviews/requirements-update-ric-cats-batch.md`](../reviews/requirements-update-ric-cats-batch.md)
+> for the full analysis.
 
 Every populated cell below is backed by an explicit, already-written field on the cited
 requirement leaf (its own "Related ADRs," "Related Interfaces," "Source Documents," or
@@ -148,6 +159,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-1640 *(new 2026-09-27, `BL-0073`/B7)* | Cue-dependent sensor tasking precondition | R109 | ADR-0011 | C1 | INT-0008 | FS-122 | `spacesim/tests/test_orders.py::test_cue_dependent_sensor_rejected_without_existing_track` | IP-1220 *(VERIFIED 2026-09-28 via VR-1220)* |
 | FR-1650 *(new 2026-09-27, `BL-0073`/B7)* | Passive-RF multilateration sensor network | R109 | ADR-0011, ADR-0010 | C2, C3, C1 | INT-0008, INT-0009, INT-0010 | FS-122 | `spacesim/tests/test_ssn.py::test_passive_rf_fix_requires_min_receivers_and_emitting_target` | IP-1220 *(VERIFIED 2026-09-28 via VR-1220 — `passive_rf_fix()` confirmed pure/unwired to any TrackCatalog delivery path, per VR-1220 Finding L2)* |
 | FR-1660 *(new 2026-09-27, `BL-0083`/B17)* | Satellite-hosted sensor follows host orbit | UNASSIGNED | ADR-0011 | C1 | INT-0008 | FS-122 | `spacesim/tests/test_access.py::test_hosted_sensor_follows_host_asset_orbit_and_both_identifiers_match` | IP-1220 *(VERIFIED 2026-09-28 via VR-1220)* |
+| FR-1670 *(new 2026-10-03, `BL-0122`)* | Phase-angle (CATS) access-window refinement for passive EO sensors | UNASSIGNED | ADR-0011 | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-2110 | Bus state model | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_bus.py` *(VR-1050)* | `IP-1050` *(closed 2026-07-04 via VR-1050)* |
 | FR-2210 | Payload state model | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_bus.py` *(VR-1050)* | `IP-1050` *(closed 2026-07-04 via VR-1050)* |
 | FR-2310 | Bus evolution / telemetry-contact / downlink handlers | UNASSIGNED | ADR-0004 | C2, C1 | INT-0007, INT-0008 | UNASSIGNED | UNASSIGNED | `engine/busmodel.py` |
@@ -172,8 +184,10 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-4420 *(new 2026-09-26, `BL-0070`/B4)* | Condition-triggered injects, evaluated deterministically | UNASSIGNED | ADR-0002, ADR-0005, ADR-0006 | C2, C1 | INT-0016 | FS-106 | `spacesim/tests/test_condition_triggered_injects.py` | IP-1062 *(VERIFIED 2026-09-28 via `VR-1062` v2.0, second pass)* |
 | FR-4430 *(new 2026-09-26, `BL-0070`/B4)* | New inject effect types (anomaly, sensor outage, custody loss, scripted manoeuvre) | UNASSIGNED | ADR-0004, ADR-0005 | C2, C1 | INT-0016 | FS-106 | `spacesim/tests/test_inject_effects_v2.py` | IP-1062 *(VERIFIED 2026-09-28 via `VR-1062` v2.0, second pass — the v1.0 `anomaly`/bus H1 defect (`BL-0128`) is fixed: `enter_safe_mode()`/`exit_safe_mode()` are now called, independently reconfirmed including `begin_recovery` acceptance. `BL-0129` (malformed-payload mid-handler exception) remains open, tracked separately)* |
 | FR-4440 *(new 2026-09-27, `BL-0074`/B8)* | Space-weather-index-driven anomaly rate scaling | R131 | ADR-0002, ADR-0006 | C2, C1 | INT-0016 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-4450 *(new 2026-10-03, `BL-0079`/B13)* | Edit or cancel a scheduled inject before it fires | UNASSIGNED | ADR-0005 | C4, C6, C1 | INT-0002, INT-0016 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-4510 | Observer view | UNASSIGNED | (none directly) | C4, C6, C12 | INT-0002, INT-0001 | UNASSIGNED | `tests/test_classification_banner.py`, `tests/test_web.py::test_load_response_carries_resolved_classification`, `tests/test_web.py::test_session_discovery_surfaces_classification_for_joining_tabs` | `IP-1120` *(closed 2026-07-04 via VR-1120 — VERIFIED; Title column defect above re-confirmed present, tracked as BL-0010)* |
 | FR-4610 | (manual adjudication / custody-adjacent leaf, ADR-0004) | UNASSIGNED | ADR-0004 | C4, C6, C2, C1 | INT-0002, INT-0007 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0, independently confirmed 2026-07-04 via VR-1060)* |
+| FR-4620 *(new 2026-10-03, `BL-0079`/B13)* | Side-by-side controller view: each cell's picture beside truth | UNASSIGNED | ADR-0004 | C4, C6, C2, C1 | INT-0002, INT-0007 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-4710 | No automated scoring / manual adjudication | UNASSIGNED | ADR-0017, ADR-0029 | C4, C6 | (none — absence of an interface) | UNASSIGNED | UNASSIGNED | (inspection — no outbound interface returns a score field) *(closed 2026-07 via IP-1060 v2.0, independently reconfirmed 2026-07-04 via VR-1060 — grepped `session/manager.py`/`ui_web/server.py` for any score/win-loss field, zero hits)* |
 | FR-4720 | Adjust safe-mode dials / live parameters mid-exercise *(new leaf, CHG-003)* | UNASSIGNED | (none directly) | C4, C6 | INT-0002 | UNASSIGNED | UNASSIGNED | `session/manager.py` *(closed 2026-07 via IP-1060 v2.0, independently confirmed 2026-07-04 via VR-1060)* |
 | FR-5110 | Scenario builder | UNASSIGNED | ADR-0027 | C4, C6, C5 | INT-0003 | UNASSIGNED | `spacesim/tests/test_vignette_creator_session.py` (all 6 tests), `spacesim/tests/test_web.py::test_draft_session_create_add_asset_and_save_as_vignette` *(IP-1173, VERIFIED — `VR-1173`)* | IP-1173 *(VERIFIED 2026-07-11; corrects this cell's prior `content/vignette.py` citation, which named the vignette schema/loader, not the iterative-composition capability `FR-5110` actually describes)* |
@@ -207,7 +221,10 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-7410 *(new 2026-09-26, `BL-0069`/B3)* | Truth ephemeris export (ECI/RIC, CSV/CCSDS OEM) | R101 | ADR-0004, ADR-0015 | C2, C1 | INT-0014 *(stretched shape — see `reviews/requirements-update-must-tier-batch.md` Finding 6)* | FS-121 | `spacesim/tests/test_ephemeris.py`, `spacesim/tests/test_web.py::test_ephemeris_truth_route_*` | IP-1210 *(remediated 2026-09-27/28 — ω×ρ term added, OEM CCSDS-conformant; awaiting fresh `09-package-verification`)* |
 | FR-7420 *(new 2026-09-26, `BL-0069`/B3 — blocked on `BL-0068`/B2, see `reviews/requirements-update-must-tier-batch.md` Finding 4)* | Cell-observed ephemeris export (ECI/RIC, CSV/CCSDS OEM) | UNASSIGNED | ADR-0004, ADR-0013 | C2, C1, C3 | INT-0007 | FS-121 | `spacesim/tests/test_ephemeris.py`, `spacesim/tests/test_web.py::test_ephemeris_cell_observed_route_fog_of_war_enforced` | IP-1210 *(remediated 2026-09-27/28 — ω×ρ term added, OEM CCSDS-conformant; awaiting fresh `09-package-verification`)* |
 | FR-7430 *(new 2026-09-27, owner decision closing `BL-0136`)* | Companion RIC-specific ephemeris export file | UNASSIGNED | (none directly) | C2, C1 | INT-0014 | FS-121 (amendment pending) | `spacesim/tests/test_ephemeris.py::test_write_ric_csv_carries_only_ric_fields`, `spacesim/tests/test_web.py::test_ephemeris_ric_companion_format` | IP-1210 *(implemented 2026-09-27/28 as part of the same remediation pass — `write_ric_csv()` + `format=ric` route option; awaiting fresh `09-package-verification`)* |
+| FR-7440 *(new 2026-10-03, `BL-0109`)* | Quick TLE export for a cell-visible satellite | UNASSIGNED | ADR-0004 | C4, C2, C1 | INT-0006, INT-0007 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-8110 | Operator console (web UI over the API) | UNASSIGNED | ADR-0008 | C4, C12 | INT-0001 | UNASSIGNED | UNASSIGNED | `ui_web/server.py`, `ui_web/static/` |
+| FR-8210 *(new 2026-10-03, `BL-0107`)* | Live, operator-selectable RIC-frame relative-motion view | UNASSIGNED | ADR-0004, ADR-0008 | C4, C12, C2, C1 | INT-0001, INT-0006, INT-0007 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| FR-8220 *(new 2026-10-03, `BL-0111`)* | CATS illumination-phase-angle overlay for the RIC view's selected chase satellite | UNASSIGNED | ADR-0004 | C4, C12 | INT-0001 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-9110 | AI-Red substitution for unseated Red | UNASSIGNED | ADR-0021, ADR-0024 | C2, C1, C8 | INT-0008, INT-0015 | `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" | `spacesim/tests/test_vignettes.py::test_doctrine_profiles_drive_different_red_behavior` *(VR-1110)* | `IP-1110` *(closed 2026-07-04 via VR-1110)* |
 | FR-10110 *(new 2026-07, promoted from CR-19)* | Automated non-aggregating competency rubric-tier computation | R306, R310 | ADR-0017, ADR-0032 | C2, C1 | INT-0002 | UNASSIGNED | `tests/test_assessment.py`, `tests/test_orders.py` | `IP-2010` *(closed 2026-07-04 via VR-2010 — VERIFIED; two Medium findings filed against FS-201's own Acceptance Criteria scope, not against this closure, see VR-2010)* |
 | FR-10210 *(new 2026-07, promoted from CR-20)* | Multi-run/cohort structured research-data export | UNASSIGNED | ADR-0029, ADR-0033 | C1, C2 | UNASSIGNED | UNASSIGNED | `tests/test_research_batch.py` | `IP-3010` *(closed 2026-07-04 via VR-3010 — VERIFIED)* |
@@ -364,14 +381,14 @@ and ADR-0031 (both new 2026-07) are included on the same basis.
 |---|---|
 | ADR-0002 | FR-1120, FR-7110, FR-7310, FR-7320, FR-4420, NFR-1500, NFR-1700, NFR-1900, NFR-2400, NFR-2500, NFR-2600, NFR-2800 |
 | ADR-0003 | FR-6110 |
-| ADR-0004 | FR-2310, FR-3510, FR-3520, FR-4610, FR-5130, FR-6210, FR-6220, FR-6510, FR-6610, FR-4430, FR-7410, FR-7420 |
-| ADR-0005 | FR-3110, FR-3120, FR-3410, FR-4410, FR-4420, FR-4430 |
+| ADR-0004 | FR-2310, FR-3510, FR-3520, FR-4610, FR-5130, FR-6210, FR-6220, FR-6510, FR-6610, FR-4430, FR-7410, FR-7420, FR-4620, FR-7440, FR-8220 |
+| ADR-0005 | FR-3110, FR-3120, FR-3410, FR-4410, FR-4420, FR-4430, FR-4450 |
 | ADR-0006 | FR-1130, FR-4420 |
 | ADR-0007 | FR-5310, NFR-2000, NFR-1900, FR-5410, FR-5420, FR-5510, NFR-3700 |
-| ADR-0008 | FR-8110 |
+| ADR-0008 | FR-8110, FR-8210 |
 | ADR-0009 | FR-1210, NFR-1100, NFR-2100 |
 | ADR-0010 | FR-3210, FR-3220 |
-| ADR-0011 | FR-1220 |
+| ADR-0011 | FR-1220, FR-1670 |
 | ADR-0012 | FR-1410, FR-1420 |
 | ADR-0013 | FR-1510, FR-1520, FR-3410, FR-7420 |
 | ADR-0014 | FR-6310, FR-6320, FR-6410, NFR-1100, NFR-1400 |
@@ -406,10 +423,10 @@ Related Interfaces field maps onto it via the derivation table.
 
 | Component | Citing Requirement(s) |
 |---|---|
-| C1 Simulation Engine | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-1510, FR-1520, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3120, FR-3220, FR-3310, FR-3410, FR-3420, FR-4410, FR-4610, FR-5170, FR-5180, FR-6210, FR-7110, FR-7220, FR-7310, FR-7320, FR-9110, NFR-1500, NFR-1700, NFR-2010, NFR-2400, NFR-2600, NFR-2100, CR-01, CR-09, CR-10, CNFR-06 |
+| C1 Simulation Engine | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-1510, FR-1520, FR-1670, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3120, FR-3220, FR-3310, FR-3410, FR-3420, FR-4410, FR-4450, FR-4610, FR-4620, FR-5170, FR-5180, FR-6210, FR-7110, FR-7220, FR-7310, FR-7320, FR-7440, FR-8210, FR-9110, NFR-1500, NFR-1700, NFR-2010, NFR-2400, NFR-2600, NFR-2100, CR-01, CR-09, CR-10, CNFR-06 |
 | C2 Session/Application Layer | most FR-6xxx, FR-1xxx–FR-4xxx leaves citing INT-0006/0007/0008/0011/0012/0014 — see master matrix per-row; also CNFR-07 (new 2026-07, via ICD §7 item 12 cross-ref) |
 | C3 Mock SSN | FR-1510, FR-3210, FR-3220, CR-09 |
-| C4 Operator Console | FR-2410, FR-3110, FR-3120, FR-3510, FR-3520, FR-4110–FR-4720, FR-5110, FR-5120, FR-5130, FR-5140, FR-5150, FR-5160, FR-6110–FR-6610, FR-8110, NFR-1100, NFR-1200, NFR-1400, NFR-2300, NFR-2700, NFR-3000, NFR-3100, NFR-3200, NFR-3300, CR-02, CR-03, CR-06 |
+| C4 Operator Console | FR-2410, FR-3110, FR-3120, FR-3510, FR-3520, FR-4110–FR-4720, FR-5110, FR-5120, FR-5130, FR-5140, FR-5150, FR-5160, FR-6110–FR-6610, FR-7440, FR-8110, FR-8210, FR-8220, NFR-1100, NFR-1200, NFR-1400, NFR-2300, NFR-2700, NFR-3000, NFR-3100, NFR-3200, NFR-3300, CR-02, CR-03, CR-06 |
 | C5 Content & Data | FR-5110, FR-5170, FR-5180, FR-5210, FR-5310, FR-7210, FR-7220, NFR-1600, NFR-2000, NFR-2010, NFR-2200, NFR-3200, CR-08, CR-11 |
 | C6 White Cell | FR-4110–FR-4720, FR-5110, FR-9110 (indirectly via INT-0016) |
 | C7 Blue Cell | FR-2410, FR-3110, FR-3120, FR-3510, FR-3520 |
@@ -417,7 +434,7 @@ Related Interfaces field maps onto it via the derivation table.
 | C9 Observer | FR-6220, FR-6510, CR-06 |
 | C10 Space-Track.org | FR-5210 |
 | C11 Local filesystem | FR-7210, FR-7220, CR-08, CR-11 |
-| C12 Browser client | FR-4510, FR-6220, FR-6310, FR-6410, FR-8110, NFR-1200, CR-02, CR-03 |
+| C12 Browser client | FR-4510, FR-6220, FR-6310, FR-6410, FR-8110, FR-8210, FR-8220, NFR-1200, CR-02, CR-03 |
 
 ## Reverse index — Interface → Requirement
 
@@ -426,14 +443,14 @@ mechanical, no inference.
 
 | Interface | Citing Requirement(s) |
 |---|---|
-| INT-0001 | FR-4510, FR-6220, FR-6310, FR-6410, FR-6510 (via FR-6510's own field — see master matrix), FR-6610, FR-8110, CR-02, CR-03 |
-| INT-0002 | FR-1110, FR-4110, FR-4210, FR-4310, FR-4410, FR-4510, FR-4610, FR-4720 |
+| INT-0001 | FR-4510, FR-6220, FR-6310, FR-6410, FR-6510 (via FR-6510's own field — see master matrix), FR-6610, FR-8110, FR-8210, FR-8220, CR-02, CR-03 |
+| INT-0002 | FR-1110, FR-4110, FR-4210, FR-4310, FR-4410, FR-4450, FR-4510, FR-4610, FR-4620, FR-4720 |
 | INT-0003 | FR-5110 |
 | INT-0004 | FR-2410, FR-3110, FR-3120, FR-3510, FR-3520 |
 | INT-0005 | FR-6220, FR-6510, CR-06 |
-| INT-0006 | FR-3110, FR-3120, FR-3520, FR-6110, FR-6210, FR-6310, FR-6320, FR-6410, FR-6510, FR-6610, CNFR-07 (via ICD §7 item 12 cross-ref, new 2026-07) |
-| INT-0007 | FR-1510, FR-1520, FR-2310, FR-4610, FR-6210 |
-| INT-0008 | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3310, FR-3410, FR-7110, FR-9110 |
+| INT-0006 | FR-3110, FR-3120, FR-3520, FR-6110, FR-6210, FR-6310, FR-6320, FR-6410, FR-6510, FR-6610, FR-7440, FR-8210, CNFR-07 (via ICD §7 item 12 cross-ref, new 2026-07) |
+| INT-0007 | FR-1510, FR-1520, FR-2310, FR-4610, FR-4620, FR-6210, FR-7440, FR-8210 |
+| INT-0008 | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-1670, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3310, FR-3410, FR-7110, FR-9110 |
 | INT-0009 | FR-3210, FR-3220, CR-09 |
 | INT-0010 | FR-1510, FR-3220, CR-09 |
 | INT-0011 | FR-5310, FR-7220 |
@@ -441,7 +458,7 @@ mechanical, no inference.
 | INT-0013 | FR-5210 |
 | INT-0014 | FR-1120, FR-7110, FR-7310, FR-7320 |
 | INT-0015 | FR-9110, CR-01, CR-07, CNFR-06 |
-| INT-0016 | FR-4410 |
+| INT-0016 | FR-4410, FR-4450 |
 | (no interface) | FR-4710 |
 
 ## Reverse index — Requirement → Future Feature
