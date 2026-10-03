@@ -13,28 +13,31 @@
 
 ## Position
 
-- **Updated:** 2026-10-03 (run #84)
+- **Updated:** 2026-10-03 (run #85)
 - **Increment:** Thread E (RIC-view/CATS-angle/TLE-export/controller-view intake batch) —
-  **`02-research-ow-orbital-mechanics` run via override (`run 02-research-ow-orbital-mechanics`,
-  targeting `BL-0108`/`BL-0112`) now CLOSED — both research gates that blocked `06-feature-
-  specification` on `FEAT-8200`/`FEAT-1600` are cleared.** [R127](../research/encyclopedia/R127-conjunction-assessment-and-collision-avoidance.md)
-  v1.1 adds a new subsection grounding RIC/RTN-frame relative-motion display, with an operator-
-  selectable origin/chief object, as a standard, operationally load-bearing console convention
-  (CCSDS 508.0-B-1 CDM standard; NASA CARA/White & Baars 2025; AGI STK "RIC Coordinates") —
-  closing `BL-0108`. [R109](../research/encyclopedia/R109-sensor-operations.md) v1.3 adds §3.11,
-  the Sun-target-observer CATS/illumination phase angle (AGI STK Sun-constraint docs; Bloom et al.
-  2022 AMOS; Africano et al. 2005 ESA SDC4) — closing `BL-0112`, and giving `BL-0151` a concrete,
-  single-source-flagged starting default (0°-90° ground / 0°-150° space). `R101`/`R100-index.md`
-  cross-links updated. Both `BL-0108`/`BL-0112` flipped `SCHEDULED → DONE`.
+  **`06-feature-specification` run via override (`run 06-feature-specification`, targeting
+  `FEAT-8200`) now CLOSED.** [FS-130](../features/FS-130-ric-frame-view-and-cats-overlay.md) —
+  Live RIC-Frame Relative-Motion View & CATS Overlay — authored for `FR-8210`/`FR-8220`, closing
+  `BL-0107`'s primary thread and `BL-0111`'s extension. The first Feature Specification in this
+  repository's `docs/features/` set whose approved input is a real `05-feature-decomposition`
+  Feature Catalog entry (`FEAT-8200`) rather than the prior "no catalog exists here" framing every
+  earlier FS document carried. Three Open Questions harvested (`BL-0154` CATS-banding display
+  choice, `BL-0155` route/parameter shape, `BL-0156` origin-selection persistence) — all routed to
+  `07-implementation-planning`, none a research/requirements blocker. `docs/requirements/
+  03-requirements-traceability-matrix.md`'s `FR-8210`/`FR-8220` rows updated (Research cells now
+  cite `R127`/`R109`; Future Feature cells now cite `FS-130`) as pure forward cross-references, no
+  requirement text changed. `docs/features/feature-index.md` gained a new row plus a narrative
+  note flagging FS-130's catalog-backed status for future specs to follow.
 - **Pipeline state:**
-  - **Gate: none currently open.** This run produced research grounding only — no package
+  - **Gate: none currently open.** This run produced a design specification only — no package
     authorization, release GO, or unadjudicated Critical/High finding was touched.
-  - `06` (`06-feature-specification`) — **now fully unblocked for this thread.** Due for
-    `FEAT-8200` (`FR-8210`/`FR-8220`, both research gates cleared this run), `FEAT-1600`
-    (`FR-1670`, research gate cleared), `FEAT-7400` (`FR-7440`, no research gate — `BL-0110` is a
-    `06`/`07`-level design question), and the `FR-4450`/`FR-4620` additions to `FEAT-4400`/
-    `FEAT-4600` (no research gate). None of this thread's six leaves/three-plus-two Features is
-    blocked on anything upstream anymore.
+  - `07` (`07-implementation-planning`) — **now due for `FS-130`** (`BL-0154`/`BL-0155`/`BL-0156`
+    ride along) — not yet run. Authoring an Implementation Package is **not** itself authorization
+    to code it (MSTR-006 §3) — that remains a separate, explicit human gate this thread expects to
+    reach once a package is drafted, per the task's own stated hard stop.
+  - `06` — still due for `FEAT-1600` (`FR-1670`), `FEAT-7400` (`FR-7440`), and the `FEAT-4400`/
+    `FEAT-4600` additions (`FR-4450`/`FR-4620`) — none blocked, this run's own target was `FEAT-8200`
+    only, per the task's own instruction to drive `BL-0107`'s thread specifically.
   - `09` — still fully drained from run #81; no package awaits verification.
   - `08` — `IP-1260` (`FS-126`, telemetry CSV export) remains `READY`, unblocked since run #81 —
     unchanged, still available independently of this thread.
@@ -44,22 +47,27 @@
     unchanged; `BL-0113` (exclusion-angle rejection-reason distinguishability, `FR-1620`) remains
     open/`SCHEDULED`, routed to a future `04` pass, out of this run's scope; the standing
     Low-severity `DEFERRED` entries remain non-blocking.
-- **Backlog:** 153 total (no new entries this run). `BL-0108`/`BL-0112` flipped `SCHEDULED → DONE`
-  (both research gaps closed, see Increment above); `BL-0151` annotated in place (partially
-  closed — a concrete default now exists, final adoption is `06`'s own call, stays `SCHEDULED`);
-  `BL-0107`/`BL-0109`/`BL-0111`/`BL-0122`/`BL-0079` unchanged (`IN PIPELINE`, entry stage `06`,
-  now with no upstream blocker remaining); `BL-0110`/`BL-0113`/`BL-0152`/`BL-0153` correctly
-  re-confirmed still open, unchanged, out of this run's scope.
-- **Next step:** `06-feature-specification` on this thread's Features — `FEAT-8200` (`FR-8210`/
-  `FR-8220`) is the direct continuation of `BL-0107`'s own thread and the task's own named target;
-  `FEAT-1600`, `FEAT-7400`, and the `FEAT-4400`/`FEAT-4600` additions are also available with no
-  gate, for whoever wants to keep draining this batch in parallel. `08-code-implementation` on `IP-1260`,
-  or `10-integration-review` on the run #81 tranche, both remain available from the prior thread.
+- **Backlog:** 156 total (+3 this run: `BL-0154`/`BL-0155`/`BL-0156`, FS-130's three Open
+  Questions, all Low, `SCHEDULED` for `07`). `BL-0107`/`BL-0111` flipped entry stage `06 → 07`
+  (remain `IN PIPELINE`); `BL-0122` unblocked (research gate closed run #84) but entry stage stays
+  `06` — not yet run against `FEAT-1600` specifically; `BL-0109`/`BL-0079` unchanged (`IN
+  PIPELINE`, entry stage `06`, out of this run's scope — `FEAT-7400`/`FEAT-4400`/`FEAT-4600` were
+  not this run's target); `BL-0110`/`BL-0113`/`BL-0151`/`BL-0152`/`BL-0153` correctly re-confirmed
+  still open, unchanged, out of this run's scope.
+- **Next step:** `07-implementation-planning` on `FS-130` (riding `BL-0154`/`BL-0155`/`BL-0156`) —
+  the direct continuation of `BL-0107`'s own thread. **This is the last automatic step before the
+  task's own named hard stop**: once `07-implementation-planning` drafts an Implementation
+  Package for `FS-130`, `00-pipeline-manager` must stop at the MSTR-006 §3 package-authorization
+  gate and ask the user, never invoke `08-code-implementation` itself. Independently, no gate:
+  `06-feature-specification` on `FEAT-1600`/`FEAT-7400`/`FEAT-4400`/`FEAT-4600` remains available
+  for whoever wants to keep draining this batch in parallel; `08-code-implementation` on `IP-1260`
+  (already-authorized, a different thread) and `10-integration-review` on the run #81 tranche also
+  remain available.
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred, unchanged, the only
-  standing gate. A gate will also open once a fresh session's `00-pipeline-manager` reaches
-  `11-release-readiness`'s GO/NO-GO call, or if `06-feature-specification`/`07-implementation-
-  planning` on this thread's Features produces a drafted IP-xxxx package — package authorization
-  (MSTR-006 §3) is a named human gate this thread expects to reach before any code is written.
+  standing gate right now. **The next gate this thread itself expects to hit:** once
+  `07-implementation-planning` drafts an Implementation Package for `FS-130`, MSTR-006 §3 package
+  authorization must be asked of the user before any `08-code-implementation` run — not assumed,
+  even though the task's own original request could be read as implying "build it."
   PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft, subscribed, hourly check-ins
   continuing (last checked 2026-09-28 with the automated check-in schedule, nothing actionable,
   re-armed); repo has no CI workflows.
@@ -562,3 +570,4 @@
 | 82 | 2026-10-03 | override (`run 04-requirements-engineering`, targeting `BL-0107` + batch `BL-0109`/`BL-0111`/`BL-0122`/`BL-0079`; superseded the manager's own default recommendation of `08-code-implementation` on `IP-1260` or `10-integration-review` on the run #81 tranche, per explicit session instruction to drive this specific thread) | `04-requirements-engineering` | `BL-0107`/`BL-0109`/`BL-0111`/`BL-0122`/`BL-0079` | Reconciled journal/backlog against the tree (no drift found — Position block already correctly anticipated this exact run). Triaged backlog: no un-harvested `NEW` entries from run #81; re-confirmed `BL-0108`/`BL-0112` (research-gap) and `BL-0110`/`BL-0113` (design-questions) all correctly still open with unchanged dispositions, none ripe this run. Invoked `04-requirements-engineering`, explicitly scoped to the named batch and explicitly excluding `BL-0113` (different feature family, `FS-122`, already `IN PIPELINE` at `08`) and instructed not to run `02-research-ow-orbital-mechanics` first (both research-gaps' revisit triggers fire before `06`, not before `04`, per their own dispositions). Baselined six new FR leaves: `FR-8210`/`FR-8220` (new parent `FR-8200`) for `BL-0107`/`BL-0111`; `FR-7440` for `BL-0109`; `FR-1670` for `BL-0122`; `FR-4450`/`FR-4620` (split from `BL-0079` per the atomicity rule). No NFR added. Full Requirements Review run (14 findings, all Low or informational, zero Critical/High) — see `docs/reviews/requirements-update-ric-cats-batch.md`. Updated `01-functional-requirements.md` (top-of-file amendment note + six new leaves) and `03-requirements-traceability-matrix.md` (six new rows + reverse-index/ADR/Interface/Component appendix updates). Committed `e57bf3e` (the `04-requirements-engineering` skill's own deliverable commit, per its own convention), pushed. Harvested 2 findings into the backlog as `BL-0151`/`BL-0152` (both Low, `SCHEDULED` for `06`); flipped `BL-0107`/`BL-0109`/`BL-0111`/`BL-0122`/`BL-0079` `SCHEDULED → IN PIPELINE` (entry stage `04 → 05`); re-confirmed `BL-0108`/`BL-0112` unchanged/`DEFERRED` with an inline note recording this run's direct re-check. | `05-feature-decomposition` on `FR-8210`/`FR-8220`/`FR-7440`/`FR-1670`/`FR-4450`/`FR-4620` — the next loop step for this thread, per the task's own 04→05→06→07 progression. `08-code-implementation` on `IP-1260` and `10-integration-review` on the run #81 tranche both remain independently available from the prior thread. |
 | 83 | 2026-10-03 | override (`run 05-feature-decomposition`, targeting the six leaves `FR-8210`/`FR-8220`/`FR-7440`/`FR-1670`/`FR-4450`/`FR-4620` run #82 baselined) | `05-feature-decomposition` | `FR-8210`, `FR-8220`, `FR-7440`, `FR-1670`, `FR-4450`, `FR-4620` | Reconciled journal/backlog (no drift). Triaged backlog: no un-harvested `NEW` entries from run #82; re-confirmed `BL-0108`/`BL-0112`/`BL-0110`/`BL-0113` all correctly still open, unchanged, none ripe yet for this run's own step. Invoked `05-feature-decomposition`, explicitly scoped to the six named leaves (plus, as the skill's own cohesion judgment, their already-`VERIFIED` siblings sharing the same new leaf's parent family, to avoid a fragmented Feature). Added three new Features to `docs/feature-planning/03-feature-catalog.md`: `FEAT-1600` (`FR-1610`-`FR-1670`), `FEAT-7400` (`FR-7410`-`FR-7440`), `FEAT-8200` (new parent `FR-8200`, `FR-8210`/`FR-8220`); extended `FEAT-4400` (+`FR-4450`) and `FEAT-4600` (+`FR-4620`). Updated Epic Catalog (EP-1000/EP-7000/EP-8000 `Features Included` + outbound `Dependencies`), Feature Dependency Graph (3 new leaf nodes, 0 new cycles, critical path unchanged at 4 edges), Release Plan (all three new Features Release-2-bucketed on priority/dependency grounds), Feature Review (Finding F-11 — this run's explicitly partial scope against the wider still-undecomposed baseline; Finding F-12 — surfaces that `BL-0108`/`BL-0112`'s revisit trigger now fires, since `06` is the very next step for `FEAT-8200`/`FEAT-1600`). Committed `a8d749c` (the `05-feature-decomposition` skill's own deliverable commit), pushed. Harvested `BL-0153` (Finding F-11, Medium, `SCHEDULED`) into the backlog; flipped `BL-0107`/`BL-0109`/`BL-0111`/`BL-0122`/`BL-0079` entry stage `05 → 06` (remain `IN PIPELINE`); flipped `BL-0108`/`BL-0112` `DEFERRED → SCHEDULED` (trigger fired — see Increment). | `02-research-ow-orbital-mechanics` on `BL-0108`/`BL-0112`, ahead of `06-feature-specification` on `FEAT-8200`/`FEAT-1600`, per the pipeline's own upstream-findings-before-downstream-work ordering rule. `06-feature-specification` on `FEAT-7400` or `FEAT-4400`/`FEAT-4600`'s new leaves remains independently available with no gate, for whoever wants to keep that thread moving in parallel. |
 | 84 | 2026-10-03 | override (`run 02-research-ow-orbital-mechanics`, targeting `BL-0108`/`BL-0112`; superseded no other recommendation — this was itself the manager's own next step per run #83's upstream-findings-before-downstream-work ordering rule) | `02-research-ow-orbital-mechanics` | `BL-0108`, `BL-0112` | Reconciled journal/backlog (no drift). Triaged backlog: no un-harvested `NEW` entries from run #83; re-confirmed `BL-0110`/`BL-0113`/`BL-0152`/`BL-0153` all correctly still open, unchanged, none ripe this run. Invoked `02-research-ow-orbital-mechanics` against both named gaps. Found `R127` (Conjunction Assessment) — not originally checked by `BL-0108`'s own intake (which checked only `R101`/`R102`/`R112`/`R123`) — as the more precisely-fitting home: added a new subsection grounding RIC/RTN-frame relative-motion display with an operator-selectable origin as a real, standard console convention (CCSDS 508.0-B-1 CDM; NASA CARA/White & Baars 2025; AGI STK "RIC Coordinates"), v1.0→v1.1. Extended `R109` (Sensor Operations) with a new §3.11 grounding the CATS/illumination phase angle beyond the single AGI/STK citation `BL-0112`'s own intake started from (added Bloom et al. 2022 AMOS and Africano et al. 2005 ESA SDC4 as independent corroboration), v1.2→v1.3 — also supplying `BL-0151` a concrete, single-source-flagged starting default (0°-90° ground/0°-150° space). Updated `R101`/`R100-index.md` cross-links. Committed `c15cf2b` (the research skill's own deliverable commit), pushed. Harvested nothing new (no findings beyond what the two closures themselves state); flipped `BL-0108`/`BL-0112` `SCHEDULED → DONE`; annotated `BL-0151` in place (partially closed, stays `SCHEDULED` pending `06`'s own adoption decision). | `06-feature-specification` on `FEAT-8200` (`FR-8210`/`FR-8220`) — the direct continuation of `BL-0107`'s own thread, now fully unblocked. `FEAT-1600`, `FEAT-7400`, and the `FEAT-4400`/`FEAT-4600` additions are also available with no gate. |
+| 85 | 2026-10-03 | override (`run 06-feature-specification`, targeting `FEAT-8200`; superseded no other recommendation — this was itself the manager's own next step per run #84's unblocked state, and matches the task's own explicit instruction to target `FEAT-8200` specifically rather than draining the whole batch) | `06-feature-specification` | `FEAT-8200` | Reconciled journal/backlog (no drift). Triaged backlog: no un-harvested `NEW` entries from run #84; re-confirmed `BL-0110`/`BL-0113`/`BL-0151`/`BL-0152`/`BL-0153` all correctly still open, unchanged, none ripe this run. Invoked `06-feature-specification` against `FEAT-8200`. Noted this repo's skill-authored "no Feature Catalog exists here" boilerplate is now stale (a real catalog exists as of run #83) and used `FEAT-8200`'s real catalog entry as the approved input instead. Authored `docs/features/FS-130-ric-frame-view-and-cats-overlay.md` (20-field template, matching every sibling FS document's established structure at `docs/features/`, not the skill's own default `docs/features/specifications/` path, consistent with this repo's real precedent of FS-116 through FS-129). Three Open Questions surfaced, none a blocker. Updated `docs/features/feature-index.md` (new row + narrative note) and `docs/requirements/03-requirements-traceability-matrix.md` (Research/Future Feature cells for `FR-8210`/`FR-8220`, pure forward cross-references). Committed `eadced3` (the `06-feature-specification` skill's own deliverable commit), pushed. Harvested `BL-0154`/`BL-0155`/`BL-0156` (all Low, `SCHEDULED` for `07`); flipped `BL-0107`/`BL-0111` entry stage `06 → 07`; left `BL-0109`/`BL-0079`/`BL-0122` unchanged (entry stage `06`, out of this run's explicit target). | `07-implementation-planning` on `FS-130` (riding `BL-0154`/`BL-0155`/`BL-0156`) — the direct continuation of this thread, and the step immediately before the task's own named MSTR-006 §3 hard stop. |
