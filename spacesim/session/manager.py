@@ -865,6 +865,48 @@ class SessionManager:
                 "points": telemetry.series(self.sim.world, asset_id, param, t0, t1, n,
                                            self.sim._seed, nominal=nominal)}
 
+    def telemetry_export(self, cell: str, asset_id: str, t1: Optional[int] = None,
+                         t2: Optional[int] = None,
+                         interval_s: Optional[float] = None) -> Optional[list[dict]]:
+        """IP-1260 (FR-2320) — the requesting cell's telemetry for one asset over a sim-time span,
+        as flat rows (one per sampled instant x parameter) for CSV export.
+
+        Fog-scoped exactly like `get_telemetry` (``None`` unless the cell owns the asset; White sees
+        any). Each value is `engine/telemetry.py`'s own `sample()` evaluated on the world *as of
+        that instant* (event-log replay, the same mechanism `session/ephemeris.py` uses), so it is
+        identical to what the live telemetry endpoint showed at that sim time — an `FR-4430`
+        anomaly inject appears from its own onset onward, never back-dated. Span handling reuses
+        `ephemeris._clamp_or_reject` / `sample_times` (Design Decision 1): a partially out-of-range
+        span is clamped, a wholly out-of-range one raises ``ValueError``; omitted bounds default to
+        the recorded range. Read-only: no world mutation, no RNG draw, no wall clock."""
+        from spacesim.engine.simtime import to_iso
+        from spacesim.engine.simulation import replay
+        from spacesim.session import ephemeris
+
+        if not self._owns(cell, asset_id):
+            return None
+        lo, hi = ephemeris._valid_range(self)
+        t1, t2 = ephemeris._clamp_or_reject(self, lo if t1 is None else int(t1),
+                                            hi if t2 is None else int(t2))
+        seed = self.sim._seed
+        entries = self.sim.eventlog.entries
+        worlds: dict[int, WorldState] = {}   # telemetry reads state, not world.now: one replay per seq
+        rows: list[dict] = []
+        for t in ephemeris.sample_times(t1, t2, interval_s):
+            seq = sum(1 for e in entries if e.sim_time <= t)
+            world = worlds.get(seq)
+            if world is None:
+                world = worlds[seq] = replay(self.sim._initial_state, seed, self.sim.eventlog,
+                                             handlers=self.sim.handlers(),
+                                             snapshots=self.sim.snapshots, up_to_seq=seq)
+            utc = to_iso(t)
+            for spec in telemetry.PARAMS.values():
+                s = telemetry.sample(world, asset_id, spec.id, t, seed)
+                rows.append({"t": t, "utc": utc, "asset": asset_id, "subsystem": spec.subsystem,
+                             "param": spec.id, "value": s["value"], "unit": s["unit"],
+                             "status": s["status"]})
+        return rows
+
     def get_godview(self) -> WorldState:
         return self.sim.world
 

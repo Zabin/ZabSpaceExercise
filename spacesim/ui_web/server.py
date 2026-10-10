@@ -749,6 +749,33 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=404, detail="no telemetry for this asset (fog/ownership)")
         return r
 
+    # IP-1260 (FR-2320) — declared BEFORE the /{param} series route so "export.csv" is never
+    # captured as a parameter id.
+    @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv", response_class=PlainTextResponse)
+    def telemetry_export_csv(sid: str, cell: str, asset: str, t1: Optional[int] = None,
+                             t2: Optional[int] = None,
+                             interval_s: Optional[float] = Query(None, gt=0)) -> str:
+        """IP-1260 (FR-2320) — the cell's own telemetry for one asset over a sim-time span, as CSV
+        (one row per sampled instant x parameter). Fog-scoped identically to
+        `/telemetry/{cell}/{asset}` (own assets only, White sees any; 404 otherwise). Omitted
+        bounds default to the recorded range; a partially out-of-range span is clamped, a wholly
+        out-of-range one is a 400 (same rule as `/ephemeris`)."""
+        _require(sid)
+        try:
+            rows = api.telemetry_export(sid, cell, asset, t1=t1, t2=t2, interval_s=interval_s)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        if rows is None:
+            raise HTTPException(status_code=404, detail="no telemetry for this asset (fog/ownership)")
+        import csv, io
+        cols = ["t", "utc", "asset", "subsystem", "param", "value", "unit", "status"]
+        buf = io.StringIO()
+        w = csv.writer(buf)
+        w.writerow(cols)
+        for row in rows:
+            w.writerow(["" if row[k] is None else row[k] for k in cols])
+        return buf.getvalue()
+
     @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}/{param}")
     def telemetry_series(sid: str, cell: str, asset: str, param: str,
                          t0: Optional[int] = None, t1: Optional[int] = None,

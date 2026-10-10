@@ -408,6 +408,12 @@ class InProcessSession:
         with self._locked_read(session) as mgr:
             return mgr.maneuver_ledger(cell, asset)
 
+    def telemetry_export(self, session: str, cell: str, asset: str, t1=None, t2=None,
+                         interval_s=None):
+        """IP-1260 (FR-2320) — pass-through to `SessionManager.telemetry_export`."""
+        with self._locked_read(session) as mgr:
+            return mgr.telemetry_export(cell, asset, t1=t1, t2=t2, interval_s=interval_s)
+
     def get_series(self, session: str, cell: str, asset: str, param: str, t0=None, t1=None,
                    n: int = 120, nominal: bool = False):
         with self._locked_read(session) as mgr:

@@ -300,6 +300,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   signatures (jam→RX power, cyber→FSW errors, DE→SNR, power sag, kinetic→loss-of-signal). Pure,
   never mutates state/RNG (like `scene.py`). `sample/series(..., nominal=True)` drop the attack term
   → the clean baseline ghost the "compare to nominal" overlay draws (`&nominal=1` on the series endpoint).
+  **IP-1260 (FR-2320):** `sample()` is also the sole value source for the per-asset telemetry CSV
+  export (`SessionManager.telemetry_export`) — no parallel computation.
 - `spacesim/engine/buscommands.py` — real catalog bus/payload/defense verbs (EPS shed/restore/charge-
   mode, `adcs.set_mode`, `cdh.dump_storage`, `satcom.mitigate_interference`/`shift_users`,
   `isr.collect_now`/`schedule_collection`, `def.patch_cyber` for the recovery-loop root-cause fix);
@@ -395,6 +397,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
   **IP-1270 (FR-3430/FR-3440):** `decide_gated_order`/`issue_roe_change` — thin wrappers over
   `OrderSystem`'s own methods; no additional state at this layer,
+  **IP-1260 (FR-2320):** `telemetry_export(cell, asset_id, t1, t2, interval_s)` — per-asset telemetry
+  over a sim-time span as flat rows (one per sampled instant x parameter), each value
+  `telemetry.sample()` on the world replayed to that instant; fog-scoped like `get_telemetry`;
+  `ephemeris._clamp_or_reject` span rule; served as CSV at `GET /telemetry/{cell}/{asset}/export.csv`,
   **IP-1250 (FR-1320):** `maneuver_ledger(cell, asset_id)` — a derived, read-only per-asset
   manoeuvre ledger (time/delta-v cost/purpose tag/resulting remaining budget), filtered from
   `EventLog`'s `execute_maneuver` entries (`applied=True` only), fog-scoped like `get_telemetry`,

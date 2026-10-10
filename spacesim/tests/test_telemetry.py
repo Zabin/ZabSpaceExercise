@@ -144,3 +144,108 @@ def test_world_map_data_present_and_nontrivial():
     assert data["coast"] and data["borders"]
     pts = sum(len(s) for s in data["coast"]) + sum(len(s) for s in data["borders"])
     assert pts > 1000  # a real low-res world, not a stub
+
+
+# -- IP-1260 (FR-2320) — per-asset telemetry CSV export over a time span ---------------------
+
+def _export_mgr():
+    """training-basics, clock paused; a bus `anomaly` inject (FR-4430) fires at +600 s and the
+    session then runs on to +1200 s, so the recorded range brackets the perturbation's onset."""
+    mgr = SessionManager(load_vignette("training-basics"), seed=1)
+    mgr.start()
+    mgr.set_clock(False)
+    t0 = mgr.ctx.start_epoch
+    mgr.advance_to(t0 + minutes(10))
+    mgr.fire_inject([{"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus",
+                      "cause": "export test"}])
+    mgr.advance_to(t0 + minutes(20))
+    return mgr, t0, t0 + minutes(10)
+
+
+def _by_param(rows, param):
+    return [r for r in rows if r["param"] == param]
+
+
+def test_telemetry_export_reflects_anomaly_perturbation_at_correct_times():
+    mgr, t0, t_anom = _export_mgr()
+    rows = mgr.telemetry_export("blue", "ISR-EO-1", t0, mgr.sim.clock.now, interval_s=60)
+    snr = _by_param(rows, "snr_db")
+    assert len(snr) == 21
+    before = [r for r in snr if r["t"] < t_anom]
+    after = [r for r in snr if r["t"] >= t_anom]
+    assert before and after
+    # Payload SNR is nominal (~30 dB) before the anomaly safes the bus, ~2 dB (payload off) after —
+    # read at each sampled time's own world state, not the end-of-span state.
+    assert all(r["value"] > 25 and r["status"] == "green" for r in before)
+    assert all(r["value"] < 8 and r["status"] == "red" for r in after)
+    att = _by_param(rows, "attitude_error_deg")
+    assert all(r["value"] < 1.0 for r in att if r["t"] < t_anom)
+    assert all(r["value"] > 1.0 for r in att if r["t"] >= t_anom)
+
+
+def test_telemetry_export_matches_live_endpoint_and_engine_sample_at_each_point():
+    from spacesim.session import aar
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    rows = mgr.telemetry_export("blue", "ISR-EO-1", t0, now, interval_s=300)
+    # Every exported value is exactly engine/telemetry.py's own sample() on the world as of t.
+    for r in rows:
+        world_t = aar.state_at_time(mgr, r["t"])
+        s = tel.sample(world_t, "ISR-EO-1", r["param"], r["t"], mgr.sim._seed)
+        assert (r["value"], r["status"], r["unit"]) == (s["value"], s["status"], s["unit"])
+    # And the final sample (t == now) is identical to the live JSON telemetry endpoint's reading.
+    live = {p["id"]: p for sub in mgr.get_telemetry("blue", "ISR-EO-1")["subsystems"].values()
+            for p in sub}
+    last = [r for r in rows if r["t"] == now]
+    assert len(last) == len(tel.PARAMS)
+    for r in last:
+        assert (r["value"], r["status"]) == (live[r["param"]]["value"], live[r["param"]]["status"])
+
+
+def test_telemetry_export_is_fog_scoped_per_requesting_cell():
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    assert mgr.telemetry_export("red", "ISR-EO-1", t0, now) is None      # another cell's asset
+    assert mgr.telemetry_export("observer", "ISR-EO-1", t0, now) is None  # not a cell that owns it
+    assert mgr.telemetry_export("blue", "NO-SUCH-ASSET", t0, now) is None
+    blue = mgr.telemetry_export("blue", "ISR-EO-1", t0, now, interval_s=300)
+    white = mgr.telemetry_export("white", "ISR-EO-1", t0, now, interval_s=300)
+    assert blue == white   # White sees any asset, exactly as /telemetry/{cell}/{asset} does
+
+
+def test_telemetry_export_is_read_only_and_deterministic():
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    before = mgr.sim.world.model_dump()
+    n_events = len(mgr.sim.eventlog.entries)
+    a = mgr.telemetry_export("blue", "ISR-EO-1", t0, now, interval_s=120)
+    b = mgr.telemetry_export("blue", "ISR-EO-1", t0, now, interval_s=120)
+    assert a == b
+    assert mgr.sim.world.model_dump() == before
+    assert len(mgr.sim.eventlog.entries) == n_events and mgr.sim.clock.now == now
+
+
+def test_telemetry_export_wholly_out_of_range_rejected():
+    import pytest
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    with pytest.raises(ValueError):
+        mgr.telemetry_export("blue", "ISR-EO-1", now + minutes(1), now + minutes(2))
+    with pytest.raises(ValueError):
+        mgr.telemetry_export("blue", "ISR-EO-1", t0 - minutes(2), t0 - minutes(1))
+
+
+def test_telemetry_export_partially_out_of_range_clamped():
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    rows = mgr.telemetry_export("blue", "ISR-EO-1", t0 - minutes(5), now + minutes(5), interval_s=60)
+    times = sorted({r["t"] for r in rows})
+    assert times[0] == t0 and times[-1] <= now
+    assert len(times) == 21   # clamped to [t0, now], sampled every 60 s
+
+
+def test_telemetry_export_default_span_is_the_recorded_range():
+    mgr, t0, _ = _export_mgr()
+    rows = mgr.telemetry_export("blue", "ISR-EO-1", interval_s=600)
+    assert sorted({r["t"] for r in rows}) == [t0, t0 + minutes(10), t0 + minutes(20)]
+    assert {r["param"] for r in rows} == set(tel.PARAMS)

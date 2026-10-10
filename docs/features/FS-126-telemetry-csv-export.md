@@ -8,7 +8,7 @@
 > **Dependencies:** [FS-106](FS-106-white-cell-dashboard.md) v2.1 (`FR-4430`'s `anomaly` inject
 > effect — the channel-perturbation source this Feature's export must reflect faithfully)
 > **Referenced By:** [IP-1260](../implementation/packages/IP-1260-telemetry-csv-export.md)
-> (Implementation Package, `BLOCKED` on `IP-1062` reaching `VERIFIED`),
+> (Implementation Package — `COMPLETE` 2026-10-10, awaiting `09-package-verification`),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0075` (item B9),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-2320`

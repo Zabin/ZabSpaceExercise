@@ -179,6 +179,51 @@ def test_maneuver_ledger_route_and_csv_export_are_fog_scoped():
     assert denied.status_code == 404
 
 
+def test_telemetry_export_csv_route_is_cell_scoped_like_telemetry():
+    """IP-1260 (FR-2320) — /telemetry/{cell}/{asset}/export.csv mirrors /telemetry/{cell}/{asset}'s
+    fog-of-war scoping (own assets only, White sees any; 404 otherwise), serializes CSV, clamps a
+    partially out-of-range span and rejects a wholly out-of-range one (400)."""
+    import csv, io
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    now = c.get(f"/api/sessions/{sid}/clock").json()["now"]
+
+    span = {"t1": now - 600 * 10**6, "t2": now, "interval_s": 300}
+    r = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv", params=span)
+    assert r.status_code == 200
+    rows = list(csv.DictReader(io.StringIO(r.text)))
+    assert list(rows[0]) == ["t", "utc", "asset", "subsystem", "param", "value", "unit", "status"]
+    assert {row["asset"] for row in rows} == {"ISR-EO-1"}
+    assert len({row["t"] for row in rows}) == 3 and int(rows[-1]["t"]) == now
+    # The final sample's values equal the live JSON endpoint's reading at the same sim time.
+    live = {p["id"]: p for sub in c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1").json()
+            ["subsystems"].values() for p in sub}
+    for row in rows:
+        if int(row["t"]) == now:
+            assert float(row["value"]) == pytest.approx(live[row["param"]]["value"])
+            assert row["status"] == live[row["param"]]["status"]
+
+    white = c.get(f"/api/sessions/{sid}/telemetry/white/ISR-EO-1/export.csv", params=span)
+    assert white.status_code == 200 and white.text == r.text
+    assert c.get(f"/api/sessions/{sid}/telemetry/red/ISR-EO-1/export.csv").status_code == 404
+    assert c.get(f"/api/sessions/{sid}/telemetry/blue/JAM-NORTH/export.csv").status_code == 404
+
+    clamped = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv",
+                    params={"t1": now - 10**12, "t2": now + 10**9, "interval_s": 60})
+    # A partially out-of-range span is clamped to the recorded range == the omitted-bounds default.
+    full = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv", params={"interval_s": 60})
+    assert clamped.status_code == 200 and full.status_code == 200 and clamped.text == full.text
+    clamped_t = sorted({int(row["t"]) for row in csv.DictReader(io.StringIO(clamped.text))})
+    assert clamped_t[-1] <= now and len(clamped_t) == 11
+    out = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv",
+                params={"t1": now + 10**9, "t2": now + 2 * 10**9})
+    assert out.status_code == 400 and "wholly outside" in out.json()["detail"]
+    # The /{param} series route is unaffected by the new sibling path.
+    assert c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/snr_db?n=5").status_code == 200
+
+
 def test_fog_cross_cell_telemetry():
     """Blue cell cannot read Red cell's asset telemetry."""
     c = _client()
