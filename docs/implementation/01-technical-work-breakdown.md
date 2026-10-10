@@ -365,6 +365,31 @@ numeric readout) rather than inventing a banding scheme no input document commit
 No cross-package sequencing constraint; this package has no dependency on any other currently
 open package in this plan.
 
+## Quick-TLE-export tranche (run #91)
+
+One package against `FS-121` v2.0's `FR-7440` slice (Quick TLE export for a cell-visible
+satellite, `FEAT-7400`). `FR-7410`-`FR-7430` in the same Feature Specification are already
+`VERIFIED` under `IP-1210` and are not re-planned. **Slice rationale (new package, not an
+`IP-1210` revision):** `FR-7440` shares `IP-1210`'s fog-of-war posture but none of its code path
+(no time-span replay, no CSV/OEM serializer) — reopening a `VERIFIED` package for unrelated new
+scope would muddy its verification record; numbered `IP-1211` as the FS-121 series' next slice.
+**No-split rationale:** the engine conversion (`engine/tle_export.py`), the session read
+(`quick_tle()` + two pass-throughs), the route and the console panel are one thin vertical read
+path with one Definition of Done; splitting engine from UI would create an artificial dependency
+for a seam with no other consumer.
+
+Resolves FS-121 v2.0 Open Questions 4/6/7/8 (`BL-0110`, `BL-0160`, `BL-0161`, `BL-0162`) as
+Design Decisions; Open Question 5 (`BL-0159`, own-asset scope) is a requirements question
+`DEFERRED` to `04`, honoured by following `FR-7440` literally. `BL-0110`'s choice (option (a), a
+single-epoch SGP4 mean-element fit) was grounded by a throwaway planning prototype (not committed)
+that measured ≤ ~51 m round-trip residual across LEO/MEO/GEO/HEO/equatorial/retrograde cases.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1211](packages/IP-1211-quick-tle-export.md) | FS-121 v2.0 (`FR-7440`) | 🟡 READY | Pre-authorized by the project owner (MSTR-006 §3, 2026-10-10 session task instruction) — this package only |
+
+No cross-package sequencing constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
