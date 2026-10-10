@@ -811,6 +811,22 @@ class SessionManager:
     def get_scene(self, cell: str):
         return build_scene(self.sim.world, cell)
 
+    def get_ric_view(self, cell: str, origin: str, chase: Optional[str] = None,
+                     target: Optional[str] = None) -> dict:
+        """IP-1300 (FR-8210/FR-8220) — live RIC-frame view, placed beside ``get_scene``.
+
+        Implementation Task 1 (verify-before-reuse): ``build_scene()`` filters strictly on
+        ``owner == cell`` with no ``"white"`` case, so ``cell="white"`` would NOT reach ground
+        truth through the cell-scoped path. The White-Cell variant is therefore wired explicitly
+        through ``get_godview()``'s ground-truth world (``FR-4610``) with no cell filter; every
+        other cell reads only its own belief (``FR-6210``). Raises ``ValueError`` on an
+        out-of-custody selection."""
+        from spacesim.session import ephemeris
+
+        if cell == "white":
+            return ephemeris.live_ric_view(self.get_godview(), None, origin, chase=chase, target=target)
+        return ephemeris.live_ric_view(self.sim.world, cell, origin, chase=chase, target=target)
+
     def _owns(self, cell: str, asset_id: str) -> bool:
         asset = self.sim.world.assets.get(asset_id)
         return asset is not None and (cell == "white" or asset.owner == cell)

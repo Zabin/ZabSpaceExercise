@@ -332,7 +332,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   and `secular_drag_decay()` (FW §11.B.7-9); pure functions composed by future high-fidelity
   propagators.
 - `spacesim/engine/sun.py` — `sun_unit_eci`, binary `is_sunlit()`, smooth `eclipse_fraction()`
-  (umbra/penumbra interpolation; FW §11.B.10).
+  (umbra/penumbra interpolation; FW §11.B.10); `cats_phase_angle_deg()` (IP-1300, FR-8220) — the Sun-target-
+  chaser illumination ("CATS") phase angle, the engine's single shared phase-angle function
+  (`BL-0152`: any future `FR-1670` access predicate must call it, not re-derive it).
 - `spacesim/config.py` — `ServerConfig`/`load_server_config()`. `ContentConfig`/
   `load_content_config()` (IP-1180, FR-5410/FR-5420) — optional `content:` section
   (`external_vignette_dirs`, `user_save_dir`), same optional-file/`SPACESIM_CONFIG`-override
@@ -435,7 +437,12 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `truth_ephemeris()`/`cell_observed_ephemeris()`/`to_ric()` (reuses `engine/maneuver.py::
   lvlh_frame` directly for the RIC transform)/`write_csv()`/`write_oem()`; a wholly-out-of-range
   time span is rejected, a partially-out-of-range span is silently clamped; cell-observed reads
-  only the requesting cell's own `Track.state_estimate`, never ground truth),
+  only the requesting cell's own `Track.state_estimate`, never ground truth; **IP-1300
+  (FR-8210/FR-8220):** `live_ric_view()` — the live, operator-selected-origin RIC view at the
+  current sim time via the unmodified `to_ric()`, own assets at truth + own Tracks at belief only
+  (or ground truth for White via `SessionManager.get_ric_view()`'s explicit `get_godview()` branch —
+  `build_scene()` has no `"white"` case), plus an unbanded CATS readout when chase+target are both
+  given; out-of-custody selections raise `ValueError`),
   `assessment.py` (IP-2010 — read-only competency-rubric scoring: `score_custody_quality`/
   `score_window_discipline`/`score_belief_truth_divergence` + `assessment_report`, never a
   composite score; belief-truth divergence classifies aware/unaware from `custody_confidence_at_decision`,
@@ -453,6 +460,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   once per run. Distinct from the repo-root `tools/` directory (non-package build scripts like
   `tools/build_coastlines.py`) — this one must be importable by `spacesim/tests/`.
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`;
+  **IP-1300 (FR-8210/FR-8220):** `GET /ric_view/{cell}?origin=&chase=&target=` — live RIC-frame
+  view (+ CATS angle), 404 on an out-of-custody selection, rendered by `static/ricview.js`
+  (View ▾ → RIC frame view; selection is non-persistent per BL-0156);
   **IP-1250 (FR-1320):** `/maneuver_ledger/{cell}/{asset}` (+ `/export.csv`) — the per-asset
   manoeuvre ledger view/CSV export, fog-scoped identically to `/telemetry/{cell}/{asset}`;
   **IP-1280 (FR-7330):** `/aar/playback/{start,advance,state,viewpoint,speed}` — the variable-

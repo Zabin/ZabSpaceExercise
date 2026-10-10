@@ -629,3 +629,65 @@ def test_ephemeris_ric_companion_format():
     assert r.status_code == 200
     assert "ric_r_x_m" in r.text
     assert "eci_r_x_m" not in r.text
+
+
+# -- IP-1300 (FR-8210/FR-8220) — live RIC-frame view route -------------------------------------
+
+def _coorbital_session(c: TestClient) -> str:
+    sid = c.post("/api/sessions",
+                 json={"vignette_id": "co-orbital-threat-escort", "seed": 1}).json()["session"]
+    c.post(f"/api/sessions/{sid}/start")
+    return sid
+
+
+def test_ric_view_route_cell_scoped_returns_only_cells_own_picture():
+    c = _client()
+    sid = _coorbital_session(c)
+    r = c.get(f"/api/sessions/{sid}/ric_view/blue", params={"origin": "BLUE-HVA"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["origin"] == "BLUE-HVA" and body["cell"] == "blue"
+    ids = {o["id"] for o in body["objects"]}
+    assert ids == {"BLUE-ESCORT"}  # blue holds no Track on RED-COORB: never rendered
+    assert body["cats"] is None
+
+
+def test_ric_view_route_rejects_origin_outside_cells_custody():
+    c = _client()
+    sid = _coorbital_session(c)
+    r = c.get(f"/api/sessions/{sid}/ric_view/blue", params={"origin": "RED-COORB"})
+    assert r.status_code == 404
+    r = c.get(f"/api/sessions/{sid}/ric_view/blue",
+              params={"origin": "BLUE-HVA", "chase": "BLUE-ESCORT", "target": "RED-COORB"})
+    assert r.status_code == 404
+
+
+def test_ric_view_route_white_renders_every_object_from_ground_truth():
+    """Implementation Task 1/8 — `build_scene()` has no `cell == "white"` case, so the White
+    variant is wired explicitly through the `get_godview()` ground-truth world, not `cell="white"`
+    filtering; it renders every on-orbit object (FR-4610 exact-match standard)."""
+    c = _client()
+    sid = _coorbital_session(c)
+    r = c.get(f"/api/sessions/{sid}/ric_view/white",
+              params={"origin": "RED-COORB", "chase": "RED-COORB", "target": "BLUE-HVA"})
+    assert r.status_code == 200
+    body = r.json()
+    assert {o["id"] for o in body["objects"]} == {"BLUE-HVA", "BLUE-ESCORT"}
+    assert all(o["source"] == "asset" for o in body["objects"])
+    assert 0.0 <= body["cats"]["phase_angle_deg"] <= 180.0
+    # Ground truth agrees with the god-view state: co-orbital, same plane -> ~zero cross-track.
+    for o in body["objects"]:
+        assert abs(o["ric_r"][2]) < 1.0
+
+
+def test_ric_view_client_surface_is_served():
+    c = _client()
+    assert 'src="/ricview.js"' in c.get("/").text
+    js = c.get("/ricview.js")
+    assert js.status_code == 200 and "/ric_view/" in js.text
+
+
+def test_ric_view_route_requires_origin():
+    c = _client()
+    sid = _coorbital_session(c)
+    assert c.get(f"/api/sessions/{sid}/ric_view/blue").status_code == 422

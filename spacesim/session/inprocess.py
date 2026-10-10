@@ -389,6 +389,12 @@ class InProcessSession:
         with self._locked_read(session) as mgr:
             return mgr.get_scene(cell)
 
+    def get_ric_view(self, session: str, cell: str, origin: str, chase: Optional[str] = None,
+                     target: Optional[str] = None) -> dict:
+        """IP-1300 (FR-8210/FR-8220) — live RIC-frame view; selection is per-request only."""
+        with self._locked_read(session) as mgr:
+            return mgr.get_ric_view(cell, origin, chase=chase, target=target)
+
     def get_telemetry(self, session: str, cell: str, asset: str):
         with self._locked_read(session) as mgr:
             return mgr.get_telemetry(cell, asset)

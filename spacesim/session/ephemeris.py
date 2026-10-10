@@ -18,6 +18,7 @@ import numpy as np
 from spacesim.engine import simtime
 from spacesim.engine.maneuver import lvlh_frame
 from spacesim.engine.propagator import ModeratePropagator
+from spacesim.engine.sun import cats_phase_angle_deg
 from spacesim.session import aar
 from spacesim.session.manager import BUS_TICK_PERIOD_S
 
@@ -84,6 +85,102 @@ def to_ric(r_target: np.ndarray, v_target: np.ndarray,
     omega_cross_ric_r = np.array([-omega * ric_r[1], omega * ric_r[0], 0.0])
     ric_v = ric_v_inertial - omega_cross_ric_r
     return ric_r, ric_v
+
+
+def _live_state(world, cell: Optional[str], obj_id: str):
+    """Resolve ``obj_id``'s live state at ``world.now`` as ``cell`` is allowed to see it.
+
+    ``cell is None`` is the no-cell / ground-truth path (White Cell via ``get_godview()``): any
+    on-orbit asset at its true orbit. Otherwise (fog of war, FR-6210 / ADR-0004) an asset the cell
+    owns resolves to its true orbit, and anything else only to the cell's own ``Track``
+    ``state_estimate`` — never ground truth, never another cell's belief. Returns
+    ``(r, v, track_or_None)`` or ``None`` when the cell has no determinable state for the object.
+    """
+    t = world.now
+    asset = world.assets.get(obj_id)
+    if asset is not None and asset.orbit is not None and (cell is None or asset.owner == cell):
+        r, v = _PROP.rv(asset.orbit, t)
+        return r, v, None
+    if cell is None:
+        return None
+    tr = world.track_for(cell, obj_id)
+    if tr is None or tr.state_estimate is None:
+        return None
+    r, v = _PROP.rv(tr.state_estimate, t)
+    return r, v, tr
+
+
+def _visible_ids(world, cell: Optional[str]) -> list[str]:
+    """Every object ``cell`` may render: all on-orbit assets for the no-cell path; otherwise the
+    cell's own on-orbit assets plus the objects it holds a ``state_estimate``-bearing Track on."""
+    if cell is None:
+        return [a.id for a in world.assets.values() if a.orbit is not None]
+    ids = [a.id for a in world.assets.values() if a.owner == cell and a.orbit is not None]
+    for tr in world.tracks:
+        if tr.owner == cell and tr.state_estimate is not None and tr.object not in ids:
+            ids.append(tr.object)
+    return ids
+
+
+def live_ric_view(world, cell: Optional[str], origin: str, chase: Optional[str] = None,
+                  target: Optional[str] = None) -> dict:
+    """IP-1300 (FR-8210/FR-8220) — the live RIC-frame relative-motion view at ``world.now``.
+
+    Every object visible to ``cell`` (see ``_visible_ids``) is projected relative to the
+    operator-selected ``origin`` with the existing ``to_ric()`` (unmodified), evaluated on the
+    live current-sim-time state rather than a stored time-span sample. ``cell=None`` renders
+    ground truth (the White-Cell / god-view path); a named cell renders only its own belief.
+
+    When BOTH ``chase`` and ``target`` are supplied, a ``cats`` readout carries the Sun-target-
+    chaser illumination phase angle from the shared ``engine.sun.cats_phase_angle_deg`` — an
+    unbanded raw angle (IP-1300 Design Decision 4 / BL-0154). With either missing, ``cats`` is
+    ``None`` and the view is otherwise identical.
+
+    Raises ``ValueError`` when the origin (or a supplied chase/target pair member) has no state
+    ``cell`` is allowed to see — the selection is rejected, never silently substituted.
+    Pure and read-only: no world mutation, no RNG, no wall clock. Selection is per-request,
+    never persisted (Design Decision 3 / BL-0156).
+    """
+    who = cell if cell is not None else "ground truth"
+    o = _live_state(world, cell, origin)
+    if o is None:
+        raise ValueError(f"origin {origin!r} has no state visible to {who}")
+    r_o, v_o, _ = o
+
+    objects: list[dict] = []
+    for obj_id in _visible_ids(world, cell):
+        if obj_id == origin:
+            continue
+        s = _live_state(world, cell, obj_id)
+        if s is None:
+            continue
+        r, v, tr = s
+        ric_r, ric_v = to_ric(r, v, r_o, v_o)
+        objects.append({
+            "id": obj_id,
+            "source": "track" if tr is not None else "asset",
+            "ric_r": ric_r.tolist(),
+            "ric_v": ric_v.tolist(),
+            "range_m": float(np.linalg.norm(ric_r)),
+            "confidence": round(tr.current_confidence(world.now), 3) if tr is not None else None,
+            "uncertainty_km": round(tr.current_uncertainty_km(world.now), 2) if tr is not None else None,
+        })
+
+    cats = None
+    if chase is not None and target is not None:
+        c = _live_state(world, cell, chase)
+        if c is None:
+            raise ValueError(f"chase {chase!r} has no state visible to {who}")
+        tg = _live_state(world, cell, target)
+        if tg is None:
+            raise ValueError(f"target {target!r} has no state visible to {who}")
+        cats = {
+            "chase": chase, "target": target,
+            "phase_angle_deg": cats_phase_angle_deg(tg[0], c[0], world.now),
+        }
+
+    return {"cell": cell if cell is not None else "white", "now": world.now, "origin": origin,
+            "objects": objects, "cats": cats}
 
 
 def truth_ephemeris(mgr, object_id: str, reference_id: str, t1: int, t2: int,

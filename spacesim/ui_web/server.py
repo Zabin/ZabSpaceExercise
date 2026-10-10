@@ -716,6 +716,19 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.get_scene(sid, cell)  # render-from-custody belief geometry
 
+    @app.get("/api/sessions/{sid}/ric_view/{cell}")
+    def get_ric_view(sid: str, cell: str, origin: str, chase: Optional[str] = None,
+                     target: Optional[str] = None) -> dict:
+        """IP-1300 (FR-8210/FR-8220) — live RIC-frame relative-motion view about ``origin``,
+        plus an unbanded CATS phase-angle readout when both ``chase`` and ``target`` are given.
+        Fog applied server-side (own assets + own Tracks only); ``white`` reads ground truth via
+        the god-view path. An out-of-custody selection is a 404, like ``/telemetry``."""
+        _require(sid)
+        try:
+            return api.get_ric_view(sid, cell, origin, chase=chase, target=target)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
+
     @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}")
     def telemetry(sid: str, cell: str, asset: str) -> dict:
         _require(sid)

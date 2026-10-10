@@ -262,3 +262,121 @@ def test_write_ric_csv_carries_only_ric_fields():
     assert "ric_r_x_m" in lines[0]
     assert "eci_r_x_m" not in lines[0]
     assert "7.0" in lines[1]
+
+
+# -- live_ric_view() (IP-1300, FR-8210/FR-8220) ---------------------------------------------------
+
+def _rv_truth(world, obj_id):
+    return ModeratePropagator().rv(world.assets[obj_id].orbit, world.now)
+
+
+def _obj(view, obj_id):
+    matches = [o for o in view["objects"] if o["id"] == obj_id]
+    assert len(matches) == 1, view["objects"]
+    return matches[0]
+
+
+def test_live_ric_view_truth_matches_to_ric_at_current_sim_time():
+    """FR-8210 AC — the displayed relative state equals what `to_ric()` computes against the
+    live state at the current sim time (no-cell / ground-truth path)."""
+    mgr = _two_sat_manager_with_track()
+    mgr.step(600.0)
+    world = mgr.get_godview()
+    view = ephemeris.live_ric_view(world, None, "SAT-BLUE")
+    r_b, v_b = _rv_truth(world, "SAT-BLUE")
+    r_r, v_r = _rv_truth(world, "SAT-RED")
+    exp_r, exp_v = ephemeris.to_ric(r_r, v_r, r_b, v_b)
+    red = _obj(view, "SAT-RED")
+    assert view["now"] == world.now and view["origin"] == "SAT-BLUE"
+    np.testing.assert_allclose(red["ric_r"], exp_r, rtol=0, atol=1e-6)
+    np.testing.assert_allclose(red["ric_v"], exp_v, rtol=0, atol=1e-9)
+    assert red["range_m"] == pytest.approx(float(np.linalg.norm(exp_r)))
+    assert all(o["id"] != "SAT-BLUE" for o in view["objects"])  # origin is not its own neighbour
+    assert view["cats"] is None
+
+
+def test_live_ric_view_reselecting_origin_rerenders_relative_to_new_origin():
+    mgr = _two_sat_manager_with_track()
+    world = mgr.get_godview()
+    view = ephemeris.live_ric_view(world, None, "SAT-RED")
+    r_b, v_b = _rv_truth(world, "SAT-BLUE")
+    r_r, v_r = _rv_truth(world, "SAT-RED")
+    exp_r, _ = ephemeris.to_ric(r_b, v_b, r_r, v_r)
+    np.testing.assert_allclose(_obj(view, "SAT-BLUE")["ric_r"], exp_r, rtol=0, atol=1e-6)
+
+
+def test_live_ric_view_cell_scoped_renders_belief_not_truth():
+    """FR-8210/FR-6210 — a tracked object renders from the cell's own `state_estimate` (here
+    deliberately offset from truth), never ground truth; an own asset renders at its true state."""
+    mgr = _two_sat_manager_with_track(estimate_ta_deg=31.0)
+    world = mgr.sim.world
+    view = ephemeris.live_ric_view(world, "blue", "SAT-BLUE")
+    r_b, v_b = _rv_truth(world, "SAT-BLUE")
+    est = world.track_for("blue", "SAT-RED").state_estimate
+    r_e, v_e = ModeratePropagator().rv(est, world.now)
+    exp_r, _ = ephemeris.to_ric(r_e, v_e, r_b, v_b)
+    red = _obj(view, "SAT-RED")
+    assert red["source"] == "track"
+    np.testing.assert_allclose(red["ric_r"], exp_r, rtol=0, atol=1e-6)
+    r_t, v_t = _rv_truth(world, "SAT-RED")
+    truth_r, _ = ephemeris.to_ric(r_t, v_t, r_b, v_b)
+    assert np.linalg.norm(np.array(red["ric_r"]) - truth_r) > 1e3  # belief, not truth
+    assert red["confidence"] is not None and red["uncertainty_km"] is not None
+
+
+def test_live_ric_view_cell_scoped_limits_objects_to_cells_own_picture():
+    """Red holds no Track on SAT-BLUE: red's view from its own asset shows no SAT-BLUE."""
+    mgr = _two_sat_manager_with_track()
+    view = ephemeris.live_ric_view(mgr.sim.world, "red", "SAT-RED")
+    assert view["objects"] == []
+
+
+def test_live_ric_view_rejects_origin_outside_cells_custody():
+    mgr = _two_sat_manager_with_track()
+    with pytest.raises(ValueError):
+        ephemeris.live_ric_view(mgr.sim.world, "red", "SAT-BLUE")
+    with pytest.raises(ValueError):
+        ephemeris.live_ric_view(mgr.sim.world, None, "NO-SUCH-SAT")
+
+
+def test_live_ric_view_rejects_chase_or_target_outside_cells_custody():
+    mgr = _two_sat_manager_with_track()
+    with pytest.raises(ValueError):
+        ephemeris.live_ric_view(mgr.sim.world, "red", "SAT-RED", chase="SAT-RED", target="SAT-BLUE")
+    with pytest.raises(ValueError):
+        ephemeris.live_ric_view(mgr.sim.world, "red", "SAT-RED", chase="SAT-BLUE", target="SAT-RED")
+
+
+def test_live_ric_view_cats_only_when_both_chase_and_target_supplied():
+    """FR-8220 — the CATS readout equals the shared engine phase-angle function evaluated on the
+    same live state; absent unless BOTH chase and target are selected, and its absence leaves the
+    FR-8210 view itself unchanged."""
+    from spacesim.engine.sun import cats_phase_angle_deg
+
+    mgr = _two_sat_manager_with_track()
+    world = mgr.get_godview()
+    base = ephemeris.live_ric_view(world, None, "SAT-BLUE")
+    only_chase = ephemeris.live_ric_view(world, None, "SAT-BLUE", chase="SAT-BLUE")
+    assert only_chase["cats"] is None and only_chase["objects"] == base["objects"]
+
+    full = ephemeris.live_ric_view(world, None, "SAT-BLUE", chase="SAT-BLUE", target="SAT-RED")
+    assert full["objects"] == base["objects"]
+    r_chaser, _ = _rv_truth(world, "SAT-BLUE")
+    r_target, _ = _rv_truth(world, "SAT-RED")
+    assert full["cats"]["chase"] == "SAT-BLUE" and full["cats"]["target"] == "SAT-RED"
+    assert full["cats"]["phase_angle_deg"] == pytest.approx(
+        cats_phase_angle_deg(r_target, r_chaser, world.now))
+    assert 0.0 <= full["cats"]["phase_angle_deg"] <= 180.0
+
+    swapped = ephemeris.live_ric_view(world, None, "SAT-BLUE", chase="SAT-RED", target="SAT-BLUE")
+    assert swapped["cats"]["phase_angle_deg"] == pytest.approx(
+        cats_phase_angle_deg(r_chaser, r_target, world.now))
+
+
+def test_live_ric_view_is_read_only_and_deterministic():
+    mgr = _two_sat_manager_with_track()
+    before = mgr.sim.world.model_dump_json()
+    a = ephemeris.live_ric_view(mgr.sim.world, "blue", "SAT-BLUE", chase="SAT-BLUE", target="SAT-RED")
+    b = ephemeris.live_ric_view(mgr.sim.world, "blue", "SAT-BLUE", chase="SAT-BLUE", target="SAT-RED")
+    assert a == b
+    assert mgr.sim.world.model_dump_json() == before

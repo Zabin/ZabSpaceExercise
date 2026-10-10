@@ -173,6 +173,10 @@
           <button id="tutorial" class="menu-item" title="Per-cell step-by-step playbook">▶ Tutorial panel</button>
         </div>
         <div class="menu-section">
+          <div class="menu-head">Proximity</div>
+          <button id="ric-open" class="menu-item" title="Live RIC-frame relative-motion view + CATS phase angle (FR-8210/FR-8220)">⊕ RIC frame view</button>
+        </div>
+        <div class="menu-section">
           <div class="menu-head">Pop out (multi-screen)</div>
           <button class="menu-item popout-btn" data-layout="globe">3D globe</button>
           <button class="menu-item popout-btn" data-layout="map">2D belief map</button>
@@ -766,6 +770,17 @@
     <ol id="tutorial-steps"></ol>
   </div>
 
+  <div id="ric-panel" role="dialog" aria-label="RIC frame view">
+    <span class="close" id="ric-close">✕</span>
+    <h3>RIC frame view</h3>
+    <div class="ric-pickers">
+      <label>Origin <select id="ric-origin"></select></label>
+      <label>Chase <select id="ric-chase"></select></label>
+      <label>Target <select id="ric-target"></select></label>
+    </div>
+    <div id="ric-out"></div>
+  </div>
+
   <div id="inspector-wrap" role="dialog" aria-label="Vignette inspector">
     <div id="inspector">
       <h3>Vignette inspector — <span id="inspector-id" class="muted"></span></h3>
@@ -782,6 +797,7 @@
   <script src="/symbology.js"></script>
   <script src="/graph.js"></script>
   <script src="/globe.js"></script>
+  <script src="/ricview.js"></script>
   <script src="/app.js"></script>
   <script src="/creator.js"></script>
   <script src="/panels.js"></script>
