@@ -74,6 +74,8 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Seat-to-role assignment / staffing gate | `content/vignette.py` (`Vignette.roles_needed`), `session/manager.py` (`assign_role`/`staffing_report`) | WCM-2 | — | — |
 | Competency assessment (custody/window/divergence rubric) | `session/assessment.py`, `GET /assessment` | WCM-11 | — | — |
 | Research analytics (offline batch export) | `tools/research_batch.py`, `session/research_export.py` | WCM-12 | — | — |
+| Live RIC frame view + CATS phase-angle overlay | `engine/sun.py` (`cats_phase_angle_deg`), `session/ephemeris.py` (`live_ric_view`), `GET /ric_view/{cell}` | WCM-13 | BLU-11 | RED-10 |
+| Quick TLE export (cell-visible satellite) | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `GET /tle/{cell}` | WCM-14 | BLU-12 | RED-11 |
 
 ### 15.2 Manual section → backing features (reverse index)
 
@@ -96,6 +98,8 @@ mirrors each section's inline `> Sources:` footer.
 | WCM-10 | Save/resume + lag watchdog | `engine/simulation.py`, `/save`, `_record_catch_up_lag` |
 | WCM-11 | Competency assessment | `session/assessment.py`, `/assessment` |
 | WCM-12 | Offline research batch exports | `tools/research_batch.py`, `session/research_export.py` |
+| WCM-13 | RIC frame view & CATS phase angle (ground truth) | `engine/sun.py`, `session/ephemeris.py` (`live_ric_view`), `/ric_view/{cell}` |
+| WCM-14 | Quick TLE export (ground truth) | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `/tle/{cell}` |
 
 #### Blue cell manual (`BLU-n`)
 
@@ -111,6 +115,8 @@ mirrors each section's inline `> Sources:` footer.
 | BLU-8 | Maneuver & conjunctions | `world.conjunctions`, `prop.collision_avoid`, `engine/maneuver.py` |
 | BLU-9 | Cyber posture | `engine/cyber.py` |
 | BLU-10 | Win the vignette | `11-vignette-playbooks.md`, `/vignettes/{id}/tutorial` |
+| BLU-11 | RIC frame view & CATS phase angle | `engine/sun.py`, `session/ephemeris.py` (`live_ric_view`), `/ric_view/{cell}` |
+| BLU-12 | Quick TLE export | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `/tle/{cell}` |
 
 #### Red cell manual (`RED-n`)
 
@@ -125,6 +131,8 @@ mirrors each section's inline `> Sources:` footer.
 | RED-7 | Own-force management | `engine/bus.py`, `engine/recovery.py`, `engine/telemetry.py` |
 | RED-8 | Doctrine profiles | `session/redai.py` |
 | RED-9 | Win the vignette | `11-vignette-playbooks.md`, `/vignettes/{id}/tutorial` |
+| RED-10 | RIC frame view & CATS phase angle | `engine/sun.py`, `session/ephemeris.py` (`live_ric_view`), `/ric_view/{cell}` |
+| RED-11 | Quick TLE export | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `/tle/{cell}` |
 
 ### 15.3 Maintenance protocol (how this stays true)
 
