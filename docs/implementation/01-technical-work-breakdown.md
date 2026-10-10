@@ -359,7 +359,7 @@ numeric readout) rather than inventing a banding scheme no input document commit
 
 | Package | FS | Status | Authorization |
 |---|---|---|---|
-| [IP-1300](packages/IP-1300-ric-frame-view-and-cats-overlay.md) | FS-130 | 🟡 READY | Not authorized (MSTR-006 §3); every dependency `VERIFIED` |
+| [IP-1300](packages/IP-1300-ric-frame-view-and-cats-overlay.md) | FS-130 | ✅ VERIFIED | `VERIFIED` 2026-10-10 via [`VR-1300`](verification/VR-1300-ric-frame-view-and-cats-overlay.md) |
 
 **Not authorized for coding (MSTR-006 §3)** — a separate, explicit decision for the project owner.
 No cross-package sequencing constraint; this package has no dependency on any other currently

@@ -13,39 +13,46 @@
 
 ## Position
 
-- **Updated:** 2026-10-10 (run #88 — override `run 08-code-implementation IP-1300`)
-- **Increment:** Thread E (RIC-view/CATS-angle/TLE-export/controller-view intake batch). **Run #87's
-  gate is closed:** the project owner explicitly authorized `IP-1300` (MSTR-006 §3) on 2026-10-10.
-  This run invoked `08-code-implementation` on
-  [IP-1300](../implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md) — **now
-  `COMPLETE`** (commit `152754e`): `engine/sun.py::cats_phase_angle_deg()` (single shared
-  phase-angle function, `BL-0152`), `session/ephemeris.py::live_ric_view()`,
-  `SessionManager`/`InProcessSession.get_ric_view()`, `GET /api/sessions/{sid}/ric_view/{cell}
-  ?origin=&chase=&target=`, `static/ricview.js` panel. Implementation Task 1 resolved:
-  `build_scene()` has no `"white"` case, so the White variant is wired explicitly through
-  `get_godview()`. Full suite 772 passed / 3 skipped; both permanent gates green.
+- **Updated:** 2026-10-10 (run #89 — `09-package-verification` on `IP-1300`)
+- **Increment:** Thread E (RIC-view/CATS-angle/TLE-export/controller-view intake batch). **Run #89
+  closes this thread's implementation loop:** `09-package-verification`, in a fresh session with no
+  involvement in `b10717a`/`152754e`, independently re-verified
+  [IP-1300](../implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md) against the
+  shipped tree (not merely re-running its own tests) and produced
+  [VR-1300](../implementation/verification/VR-1300-ric-frame-view-and-cats-overlay.md) —
+  **`VERIFIED`, 2 Low findings, neither blocking.** `cats_phase_angle_deg()` independently
+  hand-checked against a fresh reference geometry; the White-Cell/`get_godview()` wiring claim
+  (Implementation Task 1) independently confirmed by reading `build_scene()`/`get_ric_view()`
+  directly, not trusted; the HTTP route independently probed (422/404, including a coincident-
+  chase/target edge case the shipped tests don't cover) on two vignettes the implementer's own
+  tests don't use. Full suite 772 passed / 3 skipped (independently re-run), both permanent gates
+  green. **`BL-0158` adjudicated `DONE`** (both halves accepted, no remediation). **`BL-0157`
+  unblocked** — ready for `08-training-manual-authoring`.
 - **Pipeline state:**
-  - `09` — **`IP-1300` awaits `09-package-verification`** (fresh session, never this one).
-    `IP-1171` also still `COMPLETE` per the Master Build Plan table (pre-existing).
+  - `08-training-manual-authoring` — **now the direct next step**: the RIC view has no manual
+    coverage yet (`BL-0157`), and its revisit trigger ("once `IP-1300` verifies") has fired.
   - `08` — `IP-1260` (`FS-126`) remains `READY` and already authorized (independent thread).
-  - `08-training-manual-authoring` — the new operator-visible RIC view has no manual coverage yet
-    (`BL-0157`), due after `IP-1300` verifies.
+    `IP-1171` still `COMPLETE` per the Master Build Plan table (pre-existing, unrelated).
   - `06` — `FEAT-1600` (`FR-1670`, must consume `cats_phase_angle_deg()` per `BL-0152`),
     `FEAT-7400` (`FR-7440`), `FEAT-4400`/`FEAT-4600` additions — none blocked.
-  - `10` — still available on the run #81 nine-package `VERIFIED` tranche, unchanged.
+  - `10` — still available on the run #81 nine-package `VERIFIED` tranche, unchanged. A tranche
+    including `IP-1300` is also now an option (35 `VERIFIED` packages total), though `IP-1300` has
+    no cross-package integration seam of its own (no package depends on it).
   - `02`/`03`/`04` — `FS-123`/B8 parked pending `BL-0104`/`BL-0121`; `IP-1160` `BLOCKED`
     (authorization); `BL-0113` open/`SCHEDULED` for a future `04` pass; standing Low `DEFERRED`
     entries non-blocking.
-- **Backlog:** 158 total. New this run: `BL-0157` (manual coverage for the RIC view, `SCHEDULED`
-  after `09` on `IP-1300`), `BL-0158` (package Files-to-Modify omitted `index.html`/`style.css`;
-  GUI unverified headless — `SCHEDULED` for `09` on `IP-1300`). `BL-0107`/`BL-0111` entry stage
-  `08 → 09` (stay `IN PIPELINE`). `BL-0152` annotated (shared function now exists; remains
-  `SCHEDULED` for `FEAT-1600`'s `06`). `BL-0154` unchanged (unbanded readout shipped, still open).
-- **Next step:** `09-package-verification` on `IP-1300` (riding `BL-0158`) — in a fresh session,
-  since `09` never verifies its own session's implementation work.
+- **Backlog:** 158 total (net unchanged — `BL-0157` flips `SCHEDULED`-note but stays open at a new
+  disposition, `BL-0158` closes). This run: `BL-0158` → `DONE` (adjudicated, see VR-1300).
+  `BL-0107`/`BL-0111` → `DONE` (both requests fully shipped and verified; entry-stage narrative
+  closed). `BL-0157` unchanged `SCHEDULED` but its trigger note now records that it has fired.
+  `BL-0152`/`BL-0154` unchanged (still correctly open, pending `FEAT-1600`'s `06` pass / a future
+  banding decision respectively).
+- **Next step:** `08-training-manual-authoring` for the RIC view (`BL-0157`) — document the
+  as-built, verified panel in `docs/training/15-manual-traceability.md` §15.1 and the relevant
+  Blue/Red/White manual sections.
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred, unchanged. No gate on
-  `IP-1300` remains. PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft; repo has no CI
-  workflows.
+  `IP-1300` or this thread remains. PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft;
+  repo has no CI workflows.
 
 ---
 
@@ -549,3 +556,4 @@
 | 86 | 2026-10-03 | override (`run 07-implementation-planning`, targeting `FS-130`; superseded no other recommendation — this was itself the manager's own next step per run #85's unblocked state, and the step immediately before this thread's own named hard stop) | `07-implementation-planning` | `FS-130` | Reconciled journal/backlog (no drift). Triaged backlog: no un-harvested `NEW` entries from run #85; re-confirmed `BL-0110`/`BL-0113`/`BL-0151`/`BL-0152`/`BL-0153` all correctly still open, unchanged, none ripe this run. Invoked `07-implementation-planning` against `FS-130`. Checked `packages/INDEX.md` for the next free ID (`IP-1300`, following the established FS-number×10 convention — `FS-129`→`IP-1290`). Authored `docs/implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md` (14-field template): resolved `BL-0155` (new `GET /ric_view/{cell}` route, mirroring `/scene/{cell}`'s exact call chain through `SessionManager`→`InProcessSession`→`ui_web/server.py`) and `BL-0156` (non-persistent selection) as Design Decisions; narrowed `BL-0154` to an unbanded-readout design rather than closing it; flagged a verify-before-reuse risk on the White-Cell/no-cell variant's actual wiring (Implementation Task 1). Status `READY` (every cited dependency `VERIFIED`); explicitly NOT authorized. Updated the TWBS (new tranche section), Master Build Plan (new row + fresh Package Status bullet + a scoped addendum flagging — not fixing — the dependency-graph/critical-path/Summary sections' own pre-existing staleness relative to the Should-tier batch), `packages/INDEX.md`, `ROADMAP.md`, and `FS-130`'s own `Referenced By` metadata (cross-link only). Committed `b10717a` (the `07-implementation-planning` skill's own deliverable commit), pushed. Harvest/journal for this run was completed retroactively as part of run #87 below (an ordering correction caught before either was committed separately a second time). | Immediately followed by run #87's gate stop — see below. |
 | 87 | 2026-10-03 | advance (no override — this is where the manager's own Step 3/Step 4 logic lands next regardless) | — (gate check only; no skill invoked) | `IP-1300` / `08-code-implementation` | Reconciled (no drift). Triaged: harvested run #86's three Open-Question resolutions into the backlog (`BL-0155`/`BL-0156` → `DONE`; `BL-0154` annotated, stays `SCHEDULED`); flipped `BL-0107`/`BL-0111` entry stage `07 → 08`. Determined the next step for this thread is `08-code-implementation` on `IP-1300` — gate-checked per Step 4: MSTR-006 §3 authorization is required and is **not** on record. Per the task's own explicit instruction (the named hard stop once a package reaches `READY`/`BLOCKED`), this run stops here and does **not** invoke `08-code-implementation`, and does **not** ask the question itself beyond recording it — the question is relayed to the user in this run's own report. | **GATE: MSTR-006 §3 authorization for `IP-1300` (implementing `FR-8210`/`FR-8220`, `FS-130`).** Awaiting the project owner's explicit go/no-go. Until answered, the next `00-pipeline-manager` advance will re-surface this same gate unless the user instead directs a different, unblocked step (e.g. `06-feature-specification` on `FEAT-1600`/`FEAT-7400`/`FEAT-4400`/`FEAT-4600`). |
 | 88 | 2026-10-10 | override (`run 08-code-implementation IP-1300`; superseded run #87's recorded next step, which was the GATE itself — now answered by the project owner's explicit MSTR-006 §3 authorization) | `08-code-implementation` | `IP-1300` | Reconciled journal/backlog against the Master Build Plan/`packages/INDEX.md`/`ROADMAP.md` (no drift — `IP-1300` `READY`, every dependency `VERIFIED`). Triaged backlog: zero `NEW` entries; `BL-0152` (shared phase-angle function) and `BL-0154` (unbanded CATS) passed to the invoked skill as riders. Gate check: MSTR-006 §3 authorization now on record (project owner, 2026-10-10). Invoked `08-code-implementation`: `IP-1300` `READY → IN PROGRESS → COMPLETE`, committed `152754e` (new `cats_phase_angle_deg()`, `live_ric_view()`, `get_ric_view()` ×2, `GET /ric_view/{cell}`, `ricview.js`; 18 new tests; full suite 772 passed / 3 skipped; determinism + import-guard green). Implementation Task 1 resolved — `build_scene()` has no `"white"` case, White wired explicitly via `get_godview()`. Harvested 2 findings (`BL-0157`, `BL-0158`); `BL-0107`/`BL-0111` entry stage `08 → 09`; `BL-0152` annotated. | `09-package-verification` on `IP-1300` (riding `BL-0158`), in a fresh session. |
+| 89 | 2026-10-10 | advance (no override — `09-package-verification` on `IP-1300` was run #88's own recorded next step, executed here in a fresh session per the same-session-verification-exclusion rule) | `09-package-verification` | `IP-1300` | Reconciled journal/backlog against the tree (no drift — `IP-1300` `COMPLETE`, commit `152754e`, as run #88 left it). Triaged backlog: `BL-0157`/`BL-0158` were the only entries riding this step; both adjudicated below. Independently re-verified `IP-1300` from scratch (fresh session, no involvement in `b10717a`/`152754e`): hand-derived `cats_phase_angle_deg()` against a fresh reference geometry distinct from `test_cats_angle.py`'s own fixtures (0°/60°/90°/180°, coincident-rejection); read `build_scene()`/`get_godview()`/`get_ric_view()` directly to confirm Implementation Task 1's White-Cell wiring claim rather than trusting it; probed the HTTP route live via fresh `TestClient` sessions on two vignettes not used by the implementer's own tests, including a coincident-chase/target 404 edge case absent from the shipped suite; ran the full suite from scratch (772 passed/3 skipped, independently tallied from the raw dot-stream since this environment's pytest capture drops its own final summary line) plus both permanent gates by name (14 passed). Produced [`VR-1300`](../implementation/verification/VR-1300-ric-frame-view-and-cats-overlay.md) — **`VERIFIED`, 2 Low findings** (package's own doc left unupdated, same pattern as the whole 2026-09/2026-10 batch; a process note for `07-implementation-planning` to name shell files explicitly in future UI-touching packages). **`BL-0158` adjudicated `DONE`**: the omitted `index.html`/`style.css` listing is an implied, necessary consequence of adding a new panel (accepted, same precedent `VR-1290` set for an undeclared-but-expected call-site change); the headless-only UI verification posture was cross-checked against every other UI-touching package in `verification/INDEX.md` and found to match the project's own established bar exactly, not a lowered one. **`BL-0157` unblocked** — its own revisit trigger ("once `09-package-verification` has verified `IP-1300`") has fired; ready for `08-training-manual-authoring`. Flipped `IP-1300` `COMPLETE → VERIFIED` on the Master Build Plan, `packages/INDEX.md`, `ROADMAP.md`, `01-technical-work-breakdown.md`; updated the RTM's `FR-8210`/`FR-8220` `Impl. Package` cells from "`COMPLETE`...awaiting `09`" to "`VERIFIED` via VR-1300"; flipped `BL-0107`/`BL-0111` `IN PIPELINE → DONE` (both requests are now fully shipped and verified). Committed the VR report + ledger updates, pushed. | **`08-training-manual-authoring` on the RIC view (`BL-0157`)** is now the direct next step for this thread — document the as-built, verified View ▾ → RIC frame view panel in `docs/training/15-manual-traceability.md` §15.1 + the relevant Blue/Red/White manual sections. Independently, `08-code-implementation` on `IP-1260` (still `READY`) and `10-integration-review` on the run #81 nine-package tranche both remain available with no gate. |
