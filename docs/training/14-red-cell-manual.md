@@ -126,4 +126,41 @@ side of the escalation line.
 > **Sources:** [`11-vignette-playbooks.md`](11-vignette-playbooks.md) ·
 > `spacesim/tests/test_vignette_tutorials.py` · `GET /api/vignettes/{id}/tutorial`
 
+### RED-10 · RIC frame view & CATS phase angle
+
+**View ▾ → Proximity → ⊕ RIC frame view** opens a live relative-motion plot: pick an **Origin**
+and, optionally, a **Chase** and a **Target**. The picker only offers objects Red **owns or holds
+a Track on** (fog-of-war, same rule as every other cell-scoped view) — naming anything else is
+rejected outright, never silently substituted. The in-track/radial plot and R/I/C-km table update
+continuously as the clock runs, relative to whichever origin you've selected.
+
+This is your targeting tool for a true relative-geometry read **from Red's own belief**: select
+your chaser/interceptor as **Chase** and Blue's asset as **Target** to add the **CATS phase
+angle** (0° front-lit · 90° side-lit · 180° backlit) — a direct read on whether your own optical
+sensor would get a usable look at Blue's bird right now, or a silhouette, before you commit to an
+RPO/engagement window (RED-5).
+
+*See also: [BLU-11](13-blue-cell-manual.md#blu-11--ric-frame-view--cats-phase-angle) — the same
+view from the defender's side.*
+
+> **Sources:** `spacesim/engine/sun.py` (`cats_phase_angle_deg`) ·
+> `spacesim/session/ephemeris.py` (`live_ric_view`, `to_ric`) ·
+> `GET /api/sessions/{sid}/ric_view/{cell}` · `spacesim/ui_web/static/ricview.js`
+
+### RED-11 · Quick TLE export
+
+**View ▾ → Proximity → ⧉ TLE export** gives you a copyable, current-epoch TLE — but only for an
+object Red **currently holds a Track on**; your own un-tracked assets are not exportable (task a
+sensor on your own bird first — this is the capability's literal scope, not a bug). The export is
+fit to **Red's own belief** (the track's `state_estimate`), never Blue's ground truth: a stale
+track exports a stale TLE, exactly as stale as your last look.
+
+Use it to hand your believed picture of a target to an outside tool for a quick what-if, or to
+compare against White's god-truth export during an AAR debrief on how far your custody had
+drifted from reality.
+
+> **Sources:** `spacesim/engine/tle_export.py` (`orbit_to_tle`) ·
+> `spacesim/session/ephemeris.py` (`quick_tle`) ·
+> `GET /api/sessions/{sid}/tle/{cell}` · `spacesim/ui_web/static/tleexport.js`
+
 ---

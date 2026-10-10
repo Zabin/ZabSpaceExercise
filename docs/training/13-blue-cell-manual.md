@@ -140,4 +140,44 @@ deadline in your Mission brief.
 > **Sources:** [`11-vignette-playbooks.md`](11-vignette-playbooks.md) ·
 > `spacesim/tests/test_vignette_tutorials.py` · `GET /api/vignettes/{id}/tutorial`
 
+### BLU-11 · RIC frame view & CATS phase angle
+
+**View ▾ → Proximity → ⊕ RIC frame view** opens a live, relative-motion plot: pick an **Origin**
+and, optionally, a **Chase** and a **Target**. Unlike the god-view (WCM-13), your picker only
+offers objects you **own or hold a Track on** — the same fog-of-war rule as every other
+cell-scoped view. Selecting anything else is rejected outright (a clear error, never a silent
+fallback to a different object or to ground truth). The plot (in-track vs. radial, origin at
+centre) and the R/I/C-km table re-render continuously as the clock runs.
+
+This is your tool for reading a true relative-motion picture **from your own belief**, not the
+2D map's compressed symbol view — useful when flying a defensive manoeuvre (BLU-8) or escort
+(evade a closing track, or hold station on an escorted asset). Selecting your own
+sensor/interceptor as **Chase** and the threat as **Target** adds the **CATS phase angle** (0°
+front-lit · 90° side-lit · 180° backlit): a quick read on whether your optical sensor would get a
+usable look at the target right now, or a silhouette.
+
+*See also: [RED-10](14-red-cell-manual.md#red-10--ric-frame-view--cats-phase-angle) — the same
+view from the targeting side.*
+
+> **Sources:** `spacesim/engine/sun.py` (`cats_phase_angle_deg`) ·
+> `spacesim/session/ephemeris.py` (`live_ric_view`, `to_ric`) ·
+> `GET /api/sessions/{sid}/ric_view/{cell}` · `spacesim/ui_web/static/ricview.js`
+
+### BLU-12 · Quick TLE export
+
+**View ▾ → Proximity → ⧉ TLE export** gives you a copyable, current-epoch TLE for one object —
+but only one your cell **currently holds a Track on**; your own un-tracked assets are **not**
+exportable (task a sensor on your own bird first if you need its TLE — this is the capability's
+literal scope, not a bug). The export is fit to **your own belief** (the track's
+`state_estimate`), never ground truth: if the target has manoeuvred since your last observation
+and you haven't re-tasked, the exported TLE reflects your stale picture exactly like every other
+belief-based view does.
+
+Use it to hand a believed TLE off to an outside tool for a quick what-if, or to compare against
+White's god-truth export (WCM-14) during a debrief on how far your custody had drifted.
+
+> **Sources:** `spacesim/engine/tle_export.py` (`orbit_to_tle`) ·
+> `spacesim/session/ephemeris.py` (`quick_tle`) ·
+> `GET /api/sessions/{sid}/tle/{cell}` · `spacesim/ui_web/static/tleexport.js`
+
 ---

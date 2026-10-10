@@ -199,4 +199,48 @@ by design — only `vignette_id`/`seed`/`condition_label`/the rubric tiers.
 > `spacesim/session/research_export.py` (`RunRecord`, `export_csv`/`export_json`) ·
 > [FS-301](../features/FS-301-research-analytics.md) (FR-10210)
 
+### WCM-13 · RIC frame view & CATS phase angle (ground truth)
+
+**View ▾ → Proximity → ⊕ RIC frame view** opens a live panel: pick any on-orbit object as
+**Origin**, and optionally a **Chase** and a **Target** (which may be the same object as the
+origin, or different). As White you see **every** on-orbit object, at true position, rendered
+relative to the origin — not fog-filtered, the same god-view exception every other White-only
+view already rides. The panel polls every 1.5 s while open, so the plot and table track the live
+clock without a reload.
+
+The view shows an in-track (horizontal) vs. radial (vertical) scatter plot, origin at centre,
+auto-scaled to the furthest object, plus a table of **R / I / C** (km) and **range** (km) per
+object. Selecting both Chase and Target adds a **CATS illumination-phase-angle** readout — 0°
+front-lit, 90° side-lit, 180° backlit — shown as a raw number with no colour or usable/degraded
+banding (that visual threshold is a deliberately open design question, not yet decided — see
+`BL-0154` in the pipeline backlog). Reselecting any of the three pickers re-renders immediately;
+nothing else about the session is disturbed.
+
+Use it in the room to show both cells' true relative geometry during a proximity vignette (e.g.
+`geo-rpo-shadowing`), or to sanity-check what a cell's own fogged RIC picture (BLU-11/RED-10)
+*should* look like before a debrief.
+
+> **Sources:** `spacesim/engine/sun.py` (`cats_phase_angle_deg`) ·
+> `spacesim/session/ephemeris.py` (`live_ric_view`, `to_ric`) ·
+> `spacesim/session/manager.py` (`get_ric_view`) ·
+> `GET /api/sessions/{sid}/ric_view/{cell}` · `spacesim/ui_web/static/ricview.js`
+
+### WCM-14 · Quick TLE export (ground truth)
+
+**View ▾ → Proximity → ⧉ TLE export** opens a panel: pick any on-orbit satellite and get a
+freshly generated, current-epoch two-line element set fitted to its **true** orbit, plus a
+**Copy** button (clipboard, with a select-and-Ctrl/⌘+C fallback on plain-HTTP LAN sessions). The
+fit is a single-epoch SGP4 mean-element fit computed on the spot, not a stored or re-emitted
+source TLE — the panel shows the round-trip fit residual (metres) and the standing limitation
+note ("fitted... propagated away from epoch, SGP4 and the simulator's Kepler+J2 model diverge")
+under the text box every time.
+
+Use it to hand a real-format TLE for any engine-modelled asset — fictional or TLE-sourced — to an
+outside tool (a visualization package, a conjunction checker) without a file-download step. Not
+available to the Observer seat, which holds no asset or track ownership of its own to export from.
+
+> **Sources:** `spacesim/engine/tle_export.py` (`orbit_to_tle`) ·
+> `spacesim/session/ephemeris.py` (`quick_tle`) · `spacesim/session/manager.py` (`get_tle`) ·
+> `GET /api/sessions/{sid}/tle/{cell}` · `spacesim/ui_web/static/tleexport.js`
+
 ---
