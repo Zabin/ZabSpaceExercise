@@ -13,44 +13,49 @@
 
 ## Position
 
-- **Updated:** 2026-10-10 (run #93 — `09-package-verification` on `IP-1211`, fresh session)
-- **Increment:** Thread E, TLE-export leg (`BL-0109`), now closed out. Runs #90-#93 carried it from
-  `06` to `VERIFIED`: [FS-121](../features/FS-121-ephemeris-export.md) v2.0 →
-  [IP-1211](../implementation/packages/IP-1211-quick-tle-export.md) → implemented (commit
-  `bc1e157`) → **independently verified** ([VR-1211](../implementation/verification/VR-1211-quick-tle-export.md),
-  fresh session, no involvement in the implementing commit). `BL-0110`'s single-epoch SGP4
-  mean-element fit confirmed correct (≤1 km round-trip bound; all 40 on-orbit assets across all 19
-  shipped vignettes measured at 1.5-70 m, independently re-derived, not merely re-run). `BL-0164`
-  (the safeguarded-Newton deviation from the package's plain fixed-point text) **adjudicated `DONE`,
-  accepted as sound and necessary** — the plain iteration's divergence for exactly/near-equatorial
-  GEO was independently reproduced from scratch (residuals growing unboundedly over 10 passes); the
-  safeguarded version never emitted an out-of-bound TLE across a fresh GEO-inclination sweep and 5
-  independently-chosen geometries. The fog-of-war claim (stale belief survives a manoeuvre)
-  independently re-tested end-to-end through `SessionManager.get_tle` on a freshly built session,
-  not the implementer's fixture. Full suite 805 passed / 3 skipped; determinism + import-guard gates
-  green (14/14). One Low finding filed: `BL-0165` (pipeline-journal "< 1 cm" wording conflates the
-  internal fit-convergence tolerance with the exported round-trip accuracy — doc-wording only, no
-  code defect; this run's own earlier "< 1 cm" phrasing above is corrected accordingly).
+- **Updated:** 2026-10-10 (run #94 — `08-training-manual-authoring` on `BL-0157`+`BL-0163`, batched)
+- **Increment:** Thread E (`BL-0109`/TLE export) and Thread D (`BL-0107`/`BL-0111`/RIC view +
+  CATS) are now both fully closed, through their own code *and* their training-manual obligation.
+  Runs #90-#93 took the TLE-export leg `06 → VERIFIED` ([FS-121](../features/FS-121-ephemeris-export.md)
+  v2.0 → [IP-1211](../implementation/packages/IP-1211-quick-tle-export.md) → commit `bc1e157` →
+  [VR-1211](../implementation/verification/VR-1211-quick-tle-export.md), 1 Low finding). `BL-0164`
+  (safeguarded-Newton deviation) adjudicated `DONE, accepted`. **This run (#94)** closed the
+  doc-defect each thread's own `08-code-implementation` pass had flagged: `BL-0157` (RIC view/CATS,
+  `IP-1300`/`VR-1300`) and `BL-0163` (TLE export, `IP-1211`/`VR-1211`) both had zero
+  training-manual coverage. `08-training-manual-authoring` added `WCM-13`/`WCM-14` (White, ground
+  truth), `BLU-11`/`BLU-12`, `RED-10`/`RED-11` (fog-of-war-filtered, cross-linked as a mirror pair
+  per the corpus's existing `BLU-n`↔`RED-n` convention) plus both directions of the
+  [§15 traceability matrix](../training/15-manual-traceability.md) and `training/INDEX.md`'s
+  per-manual summaries — documenting as-built, `VERIFIED` behavior only. Neither feature was added
+  to [§16 the learning path](../training/16-learning-path.md): FR-11310 ties every rung to a
+  vignette file, and neither shipped with one, so this is pure reference-manual coverage. Committed
+  `a0e425e`, pushed clean (plain fast-forward — no conflict with the concurrent `IP-1260` thread's
+  own worktree on this same branch).
 - **Pipeline state:**
-  - `08` — `IP-1260` `READY`/authorized (independent thread).
-  - `08-training-manual-authoring` — `BL-0157` ready; `BL-0163`'s revisit trigger has now fired
-    (`IP-1211` `VERIFIED`) — `SCHEDULED`, batchable with `BL-0157`.
-  - `00-pipeline-manager` — `BL-0165` (journal-wording correction, Low, no code change) open for
-    next touch.
+  - `08` — `IP-1260` `READY`/authorized (independent thread; another agent may already be driving
+    it concurrently on this same branch, in its own worktree).
+  - `08-training-manual-authoring` — `BL-0166` (new, Low) open for a future touch: the sibling
+    ephemeris-export capability (`FR-7410`/`FR-7420`/`FR-7430`, already `VERIFIED` via `IP-1210`)
+    has the same manual-coverage gap `BL-0157`/`BL-0163` just closed, noticed but not fixed this run
+    (out of this run's own named scope).
   - `06` — `FEAT-1600` (`FR-1670`), `FEAT-4400`/`FEAT-4600` additions — none blocked.
-  - `10` — available on the run #81 nine-package `VERIFIED` tranche, unchanged. `IP-1211`'s
-    `VERIFIED` status does not by itself unblock a new integration-review tranche (it has no
-    downstream dependents and is not part of that batch).
-- **Backlog:** `BL-0164` flipped `SCHEDULED → DONE` (adjudicated above); `BL-0163` flipped
-  `DEFERRED → SCHEDULED` (trigger fired, routed to `08-training-manual-authoring`); `BL-0165`
-  (new, Low, journal-wording) filed `SCHEDULED` for `00-pipeline-manager`; `BL-0109` entry stage
-  `09 → done` (its own request is now fully closed: `COMPLETE`→`VERIFIED`, every Open Question it
-  spawned resolved or routed). `BL-0159` left `DEFERRED` to the next `04` pass, unchanged — this
-  verification pass gave no new information bearing on it (it followed `FR-7440` literally, as the
-  package itself does, and found nothing to revisit).
-- **Next step:** no package in this thread needs further pipeline work. Candidates for the next
-  run: `08-code-implementation` on `IP-1260` (`READY`/authorized, independent thread), or
-  `08-training-manual-authoring` on the now-`SCHEDULED` `BL-0163`+`BL-0157` batch.
+  - `10` — available on the run #81 nine-package `VERIFIED` tranche, unchanged. Neither `IP-1211`'s
+    nor this run's own documentation-only work unblocks a new integration-review tranche.
+- **Backlog:** `BL-0157`/`BL-0163` flipped `SCHEDULED → DONE` (both closed this run); `BL-0165`
+  (journal-wording conflation) flipped `SCHEDULED → DONE` (this run's own text states the
+  internal-tolerance-vs-exported-residual distinction explicitly, correcting the drift noted below
+  rather than rewriting the earlier row); `BL-0166` (new, Low, ephemeris-export manual-coverage gap)
+  filed `SCHEDULED` for a future `08-training-manual-authoring` pass. `BL-0159` unchanged, still
+  `DEFERRED` to the next `04` pass.
+- **Drift corrected this run:** the append-only run-log table was missing a row for run #93
+  (`09-package-verification` on `IP-1211`) even though that run's full outcome was already recorded
+  in this Position block by the previous run — reconstructed and appended as run #93 from the
+  Position block's own prior text, immediately before this run's own row (#94); no other row was
+  rewritten.
+- **Next step:** no package or backlog item in this thread needs further pipeline work right now.
+  Candidates for the next advance: `08-code-implementation` on `IP-1260` (independent thread,
+  `READY`/authorized), `10-integration-review` on the run #81 nine-package tranche (still
+  available), or a future `08-training-manual-authoring` pass on `BL-0166` (Low, no urgency).
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred, unchanged. None for this
   thread.
 
@@ -560,3 +565,5 @@
 | 90 | 2026-10-10 | override (`run 06-feature-specification FEAT-7400`; superseded run #89's recorded next step, `08-training-manual-authoring` on `BL-0157`, per explicit session instruction to drive `BL-0109`'s thread) | `06-feature-specification` | `FEAT-7400` (`FR-7440`, riding `BL-0110`) | Reconciled journal/backlog against the tree (no drift — no FS covered `FR-7440`; RTM showed `FR-7440` Future Feature `UNASSIGNED`, `FR-7430` "FS-121 (amendment pending)"). Triaged: zero `NEW` entries; `BL-0110` was the only entry riding this step. Invoked `06-feature-specification`: since FS-121 already owned three of `FEAT-7400`'s four leaves, extended it in place to v2.0 (one Feature ⇄ one FS) — adds `FR-7440` across every template field (fog-of-war state source, current-epoch rule, well-formedness/round-trip criterion, rejection rules, 7 new Acceptance Criteria) and records as-built `FR-7430`. `BL-0110` left as Open Question 4 (constraints stated; option (c) flagged as needing the owner since it narrows "any satellite"). Updated `feature-index.md` and RTM forward refs. Committed `84d9578`. Harvested `BL-0159` (own-asset scope, `DEFERRED` → next `04`), `BL-0160`/`BL-0161`/`BL-0162` (route, UI placement, catalog-number placeholder; `SCHEDULED` → `07`); annotated `BL-0110` (`SCHEDULED` → `07`); `BL-0109` entry stage `06 → 07`. | `07-implementation-planning` on FS-121 v2.0 / `FR-7440` (riding `BL-0110`, `BL-0160`-`BL-0162`). |
 | 91 | 2026-10-10 | override (`run 07-implementation-planning FS-121`; matches run #90's recorded next step) | `07-implementation-planning` | FS-121 v2.0 (`FR-7440` slice) | Reconciled (no drift — FS-121 v2.0 at `84d9578`, no package for `FR-7440`). Triaged: zero `NEW`; `BL-0110`/`BL-0160`/`BL-0161`/`BL-0162` riding. Invoked `07-implementation-planning`: grounded `BL-0110` with a throwaway scratch prototype (SGP4 mean-element fit; found `rv_to_elements` collapses true anomaly for circular-equatorial states, so the fit must use equinoctial elements computed directly from r/v; ≤~51 m round-trip worst case) and authored `IP-1211` (`READY`, 5 Design Decisions). Updated TWBS (new tranche), Master Build Plan, `packages/INDEX.md`, `ROADMAP.md`, FS-121 Referenced By. Committed `f936b85`. Harvested nothing new; closed `BL-0110`/`BL-0160`/`BL-0161`/`BL-0162`; `BL-0109` entry stage `07 → 08`. Gate check for the next step: MSTR-006 §3 authorization for `IP-1211` is on record (pre-granted). | `08-code-implementation` on `IP-1211`. |
 | 92 | 2026-10-10 | override (`run 08-code-implementation IP-1211`; matches run #91's recorded next step) | `08-code-implementation` | `IP-1211` | Reconciled (no drift — `IP-1211` `READY` on MBP/INDEX/ROADMAP). Triaged: zero `NEW`. Gate check: MSTR-006 §3 authorization on record (project owner pre-authorization for `BL-0109`/`FR-7440`'s package, relayed in the session task instruction). Invoked `08-code-implementation`: `IP-1211` `READY → IN PROGRESS → COMPLETE`, test-first (new `test_tle_export.py`, `test_ephemeris.py::test_quick_tle_*`, `test_web.py::test_tle_*` written and seen failing first). Plain fixed-point fit diverged for near-equatorial GEO, so the fit became a safeguarded Newton + fixed-point correction (same contract); verified every on-orbit asset in all shipped vignettes fits within bound. Full suite 805 passed / 3 skipped (808 collected, tallied via JUnit XML — this environment drops pytest's summary line), determinism + import-guard 14 passed. Committed `bc1e157`. Harvested `BL-0163`, `BL-0164`; `BL-0109` entry stage `08 → 09`. | `09-package-verification` on `IP-1211` (riding `BL-0164`), fresh session. |
+| 93 | 2026-10-10 | advance (no override — `09-package-verification` on `IP-1211` was run #92's own recorded next step, executed here in a fresh session per the same-session-verification-exclusion rule) | `09-package-verification` | `IP-1211` | *(row reconstructed by run #94 — the Position block already recorded this run's full outcome, but the append-only run-log row was never written at the time; corrected now, not rewriting any other row.)* Reconciled (no drift — `IP-1211` `COMPLETE`, commit `bc1e157`, as run #92 left it). Triaged: `BL-0164` was the entry riding this step. Independently re-verified `IP-1211` from scratch (fresh session, no involvement in `f936b85`/`bc1e157`): reproduced the plain-fixed-point GEO divergence and the safeguarded version's never-out-of-bound behaviour from scratch across a fresh GEO-inclination sweep plus 5 independently-chosen geometries; hand-checked one fresh orbit's TLE checksums/round-trip residual (6.53 m); re-measured the ≤1 km bound across all 40 on-orbit assets in all 19 shipped vignettes (1.5–70 m); independently re-tested the fog-of-war claim end-to-end through `SessionManager.get_tle` on a freshly built session/vignette, not the implementer's fixture. Full suite 805 passed/3 skipped (808 collected, JUnit-tallied), both gates 14 passed. Produced [`VR-1211`](../implementation/verification/VR-1211-quick-tle-export.md) — **`VERIFIED`, 1 Low finding**. **`BL-0164` adjudicated `DONE, accepted`** (the safeguarded-Newton deviation is sound and necessary). Filed `BL-0165` (journal-wording conflation, Low, doc-only). Flipped `IP-1211` `COMPLETE → VERIFIED` on the Master Build Plan/`packages/INDEX.md`/`ROADMAP.md`/TWBS; updated the RTM's `FR-7440` row. `BL-0163`'s revisit trigger fired (routed to `08-training-manual-authoring`, batchable with `BL-0157`); `BL-0109` entry stage `09 → done`. Committed the VR report + ledger updates, pushed. | `08-code-implementation` on `IP-1260` (independent thread, `READY`/authorized), or `08-training-manual-authoring` on the now-`SCHEDULED` `BL-0163`+`BL-0157` batch. |
+| 94 | 2026-10-10 | override (`run 08-training-manual-authoring BL-0157 and BL-0163`; matches run #93's recorded next step exactly, invoked explicitly per this session's task) | `08-training-manual-authoring` | `BL-0157` + `BL-0163` (batched) | Reconciled journal/backlog against the tree first: found the run-log drift noted above (run #93's row was never appended, though its outcome was already captured in the Position block) and corrected it in this same row-set rather than editing the Position block's own prior text. Triaged backlog: zero `NEW` entries; `BL-0157`/`BL-0163` were both already `SCHEDULED` for exactly this step, riding together as instructed. No gate applies (training-manual authoring is not gated). Invoked `08-training-manual-authoring`: read `VR-1300`/`FS-130` and `VR-1211`/`FS-121` v2.0 in full, read the shipped code directly (`engine/sun.py`, `session/ephemeris.py`, `session/manager.py`/`inprocess.py`, `ui_web/server.py`, `ricview.js`, `tleexport.js`, `index.html`'s View ▾ → Proximity menu) rather than paraphrasing the verification reports, and added `WCM-13`/`WCM-14` (White, ground truth), `BLU-11`/`BLU-12`, `RED-10`/`RED-11` (fog-of-war-filtered, `BLU-11`↔`RED-10` cross-linked as a mirror pair per the corpus's existing convention) — documenting as-built behavior only: fog rejection on an out-of-custody origin/chase/target selection, the unbanded CATS readout (`BL-0154` still open, not invented here), the Observer seat's client-side exclusion, and `FR-7440`'s literal own-asset-without-a-track scope limit (`BL-0159`, unchanged). Updated `15-manual-traceability.md` §15.1 (2 new rows) + §15.2 (6 new rows across White/Blue/Red) and `INDEX.md`'s per-manual summaries. Explicitly did **not** add either feature to `16-learning-path.md` — FR-11310 ties every rung to a vignette file and neither feature shipped with one, so this is reference-manual coverage, not a learning-path rung (same reasoning applies to both). `test_vignette_tutorials.py` still green (16 passed). Committed `a0e425e`, pushed (plain fast-forward, no conflict with the concurrent `IP-1260` thread's own worktree). Harvested one new finding: `BL-0166` (the sibling `FR-7410`/`FR-7420`/`FR-7430` ephemeris export, already `VERIFIED` via `IP-1210`, has the same manual-coverage gap — noticed while placing these sections, not fixed in this run, `SCHEDULED` for a future `08-training-manual-authoring` pass). Also corrected `BL-0165` (journal-wording conflation) to `DONE` in this same pass — this run's own journal text states the internal-tolerance-vs-exported-residual distinction explicitly rather than repeating the earlier "< 1 cm" shorthand. Flipped `BL-0157`/`BL-0163` `SCHEDULED → DONE`. | No package or backlog item in this thread needs further pipeline work right now. Candidates for the next advance: `08-code-implementation` on `IP-1260` (independent thread, `READY`/authorized — another agent's concurrent worktree may already be driving this), `10-integration-review` on the run #81 nine-package tranche (still available, unchanged), or a future `08-training-manual-authoring` pass on `BL-0166` (ephemeris-export manual coverage, Low, no urgency). |
