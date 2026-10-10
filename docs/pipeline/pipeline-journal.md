@@ -13,65 +13,39 @@
 
 ## Position
 
-- **Updated:** 2026-10-03 (run #87 — GATE)
-- **Increment:** Thread E (RIC-view/CATS-angle/TLE-export/controller-view intake batch) —
-  **`07-implementation-planning` run via override (run #86, targeting `FS-130`) CLOSED, then this
-  run (#87) hit the task's own named hard stop immediately after.**
-  [IP-1300](../implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md) — Live
-  RIC-Frame Relative-Motion View & CATS Overlay — drafted, `READY` (every dependency `VERIFIED`:
-  `IP-1210`, `FS-105`, `FS-106`). Resolved `BL-0155` (route: `GET /api/sessions/{sid}/ric_view/
-  {cell}?origin=&chase=&target=`) and `BL-0156` (origin selection kept non-persistent) as ordinary
-  `07`-level decisions; narrowed, did not close, `BL-0154` (ships an unbanded CATS readout rather
-  than inventing a banding scheme). Flagged one verify-before-reuse risk (Implementation Task 1:
-  confirm the White-Cell/no-cell variant's wiring against the actual shipped `get_godview()`/
-  `build_scene()` code). Cross-linked `FS-130`'s `Referenced By`, `docs/implementation/
-  01-technical-work-breakdown.md`, `00-master-build-plan.md`, `packages/INDEX.md`, `ROADMAP.md`.
-  **This run (#87) then performed the gate-check Step 4 always owes once a package reaches
-  `READY`/`BLOCKED`: the next step in this thread's own loop is `08-code-implementation` on
-  `IP-1300`, which requires explicit MSTR-006 §3 project-owner authorization — none is on record.
-  Per the task's own explicit instruction, this is the hard stop: `08-code-implementation` is
-  NOT invoked.**
+- **Updated:** 2026-10-10 (run #88 — override `run 08-code-implementation IP-1300`)
+- **Increment:** Thread E (RIC-view/CATS-angle/TLE-export/controller-view intake batch). **Run #87's
+  gate is closed:** the project owner explicitly authorized `IP-1300` (MSTR-006 §3) on 2026-10-10.
+  This run invoked `08-code-implementation` on
+  [IP-1300](../implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md) — **now
+  `COMPLETE`** (commit `152754e`): `engine/sun.py::cats_phase_angle_deg()` (single shared
+  phase-angle function, `BL-0152`), `session/ephemeris.py::live_ric_view()`,
+  `SessionManager`/`InProcessSession.get_ric_view()`, `GET /api/sessions/{sid}/ric_view/{cell}
+  ?origin=&chase=&target=`, `static/ricview.js` panel. Implementation Task 1 resolved:
+  `build_scene()` has no `"white"` case, so the White variant is wired explicitly through
+  `get_godview()`. Full suite 772 passed / 3 skipped; both permanent gates green.
 - **Pipeline state:**
-  - **Gate: OPEN.** `IP-1300` (`FS-130`, `FR-8210`/`FR-8220`) is `READY` and fully specified but
-    **not authorized for coding** (MSTR-006 §3). This is the gate the task instructed this thread
-    to stop at cleanly, not bypass.
-  - `06` — still due for `FEAT-1600` (`FR-1670`), `FEAT-7400` (`FR-7440`), and the `FEAT-4400`/
-    `FEAT-4600` additions (`FR-4450`/`FR-4620`) — none blocked, available for whoever wants to
-    keep draining this batch in parallel; not part of this thread's own named target (`BL-0107`).
-  - `09` — still fully drained from run #81; no package awaits verification.
-  - `08` — `IP-1260` (`FS-126`, telemetry CSV export) remains `READY` **and already authorized**
-    (a different, pre-existing thread, MSTR-006 §3 go-ahead given 2026-09-27) — available
-    independently of this gate.
-  - `10` (`10-integration-review`) — still available on the run #81 nine-package `VERIFIED`
-    tranche, unchanged, not run this session.
-  - `02`/`03`/`04` — `FS-123`/B8 still parked pending `BL-0104`/`BL-0121`; `IP-1160` `BLOCKED`
-    unchanged (its own, separate, longstanding authorization gate); `BL-0113` (exclusion-angle
-    rejection-reason distinguishability, `FR-1620`) remains open/`SCHEDULED`, routed to a future
-    `04` pass; the standing Low-severity `DEFERRED` entries remain non-blocking.
-- **Backlog:** 156 total (no new entries this run; run #86 already harvested `BL-0154`/`BL-0155`/
-  `BL-0156`). `BL-0155`/`BL-0156` flipped `SCHEDULED → DONE` (resolved by `IP-1300`); `BL-0154`
-  annotated in place — narrowed, stays `SCHEDULED`, open for a future enhancement pass. `BL-0107`/
-  `BL-0111` flipped entry stage `07 → 08` (remain `IN PIPELINE`, now explicitly `BLOCKED` on the
-  authorization gate above, not merely "not yet run"). `BL-0109`/`BL-0079`/`BL-0122` unchanged
-  (entry stage `06`, out of this run's scope); `BL-0110`/`BL-0113`/`BL-0151`/`BL-0152`/`BL-0153`
-  correctly re-confirmed still open, unchanged, out of this run's scope.
-- **Next step:** **Gated — the decision needed is the user's, not a skill invocation.** The exact
-  question: *does the project owner authorize `08-code-implementation` to begin coding `IP-1300`
-  (Live RIC-Frame Relative-Motion View & CATS Overlay, implementing `FR-8210`/`FR-8220`), per
-  MSTR-006 §3?* If yes, the next `00-pipeline-manager` advance runs `08-code-implementation` on
-  `IP-1300`. If the user instead wants the batch's other Features specified first, the next
-  advance runs `06-feature-specification` on `FEAT-1600`/`FEAT-7400`/`FEAT-4400`/`FEAT-4600`
-  instead — genuinely parallel, no gate. Independently available with no gate either way:
-  `08-code-implementation` on the already-authorized `IP-1260`, or `10-integration-review` on the
-  run #81 tranche.
-- **Open gates:** **`IP-1300` authorization (MSTR-006 §3) — new, this run, the primary open gate
-  for this thread.** `IP-1160` authorization (MSTR-006 §3) — still deferred, unchanged, a separate,
-  pre-existing gate. A gate will also open once a fresh session's `00-pipeline-manager` reaches
-  `11-release-readiness`'s GO/NO-GO call, unrelated to either.
-  even though the task's own original request could be read as implying "build it."
-  PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft, subscribed, hourly check-ins
-  continuing (last checked 2026-09-28 with the automated check-in schedule, nothing actionable,
-  re-armed); repo has no CI workflows.
+  - `09` — **`IP-1300` awaits `09-package-verification`** (fresh session, never this one).
+    `IP-1171` also still `COMPLETE` per the Master Build Plan table (pre-existing).
+  - `08` — `IP-1260` (`FS-126`) remains `READY` and already authorized (independent thread).
+  - `08-training-manual-authoring` — the new operator-visible RIC view has no manual coverage yet
+    (`BL-0157`), due after `IP-1300` verifies.
+  - `06` — `FEAT-1600` (`FR-1670`, must consume `cats_phase_angle_deg()` per `BL-0152`),
+    `FEAT-7400` (`FR-7440`), `FEAT-4400`/`FEAT-4600` additions — none blocked.
+  - `10` — still available on the run #81 nine-package `VERIFIED` tranche, unchanged.
+  - `02`/`03`/`04` — `FS-123`/B8 parked pending `BL-0104`/`BL-0121`; `IP-1160` `BLOCKED`
+    (authorization); `BL-0113` open/`SCHEDULED` for a future `04` pass; standing Low `DEFERRED`
+    entries non-blocking.
+- **Backlog:** 158 total. New this run: `BL-0157` (manual coverage for the RIC view, `SCHEDULED`
+  after `09` on `IP-1300`), `BL-0158` (package Files-to-Modify omitted `index.html`/`style.css`;
+  GUI unverified headless — `SCHEDULED` for `09` on `IP-1300`). `BL-0107`/`BL-0111` entry stage
+  `08 → 09` (stay `IN PIPELINE`). `BL-0152` annotated (shared function now exists; remains
+  `SCHEDULED` for `FEAT-1600`'s `06`). `BL-0154` unchanged (unbanded readout shipped, still open).
+- **Next step:** `09-package-verification` on `IP-1300` (riding `BL-0158`) — in a fresh session,
+  since `09` never verifies its own session's implementation work.
+- **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred, unchanged. No gate on
+  `IP-1300` remains. PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft; repo has no CI
+  workflows.
 
 ---
 
@@ -574,3 +548,4 @@
 | 85 | 2026-10-03 | override (`run 06-feature-specification`, targeting `FEAT-8200`; superseded no other recommendation — this was itself the manager's own next step per run #84's unblocked state, and matches the task's own explicit instruction to target `FEAT-8200` specifically rather than draining the whole batch) | `06-feature-specification` | `FEAT-8200` | Reconciled journal/backlog (no drift). Triaged backlog: no un-harvested `NEW` entries from run #84; re-confirmed `BL-0110`/`BL-0113`/`BL-0151`/`BL-0152`/`BL-0153` all correctly still open, unchanged, none ripe this run. Invoked `06-feature-specification` against `FEAT-8200`. Noted this repo's skill-authored "no Feature Catalog exists here" boilerplate is now stale (a real catalog exists as of run #83) and used `FEAT-8200`'s real catalog entry as the approved input instead. Authored `docs/features/FS-130-ric-frame-view-and-cats-overlay.md` (20-field template, matching every sibling FS document's established structure at `docs/features/`, not the skill's own default `docs/features/specifications/` path, consistent with this repo's real precedent of FS-116 through FS-129). Three Open Questions surfaced, none a blocker. Updated `docs/features/feature-index.md` (new row + narrative note) and `docs/requirements/03-requirements-traceability-matrix.md` (Research/Future Feature cells for `FR-8210`/`FR-8220`, pure forward cross-references). Committed `eadced3` (the `06-feature-specification` skill's own deliverable commit), pushed. Harvested `BL-0154`/`BL-0155`/`BL-0156` (all Low, `SCHEDULED` for `07`); flipped `BL-0107`/`BL-0111` entry stage `06 → 07`; left `BL-0109`/`BL-0079`/`BL-0122` unchanged (entry stage `06`, out of this run's explicit target). | `07-implementation-planning` on `FS-130` (riding `BL-0154`/`BL-0155`/`BL-0156`) — the direct continuation of this thread, and the step immediately before the task's own named MSTR-006 §3 hard stop. |
 | 86 | 2026-10-03 | override (`run 07-implementation-planning`, targeting `FS-130`; superseded no other recommendation — this was itself the manager's own next step per run #85's unblocked state, and the step immediately before this thread's own named hard stop) | `07-implementation-planning` | `FS-130` | Reconciled journal/backlog (no drift). Triaged backlog: no un-harvested `NEW` entries from run #85; re-confirmed `BL-0110`/`BL-0113`/`BL-0151`/`BL-0152`/`BL-0153` all correctly still open, unchanged, none ripe this run. Invoked `07-implementation-planning` against `FS-130`. Checked `packages/INDEX.md` for the next free ID (`IP-1300`, following the established FS-number×10 convention — `FS-129`→`IP-1290`). Authored `docs/implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md` (14-field template): resolved `BL-0155` (new `GET /ric_view/{cell}` route, mirroring `/scene/{cell}`'s exact call chain through `SessionManager`→`InProcessSession`→`ui_web/server.py`) and `BL-0156` (non-persistent selection) as Design Decisions; narrowed `BL-0154` to an unbanded-readout design rather than closing it; flagged a verify-before-reuse risk on the White-Cell/no-cell variant's actual wiring (Implementation Task 1). Status `READY` (every cited dependency `VERIFIED`); explicitly NOT authorized. Updated the TWBS (new tranche section), Master Build Plan (new row + fresh Package Status bullet + a scoped addendum flagging — not fixing — the dependency-graph/critical-path/Summary sections' own pre-existing staleness relative to the Should-tier batch), `packages/INDEX.md`, `ROADMAP.md`, and `FS-130`'s own `Referenced By` metadata (cross-link only). Committed `b10717a` (the `07-implementation-planning` skill's own deliverable commit), pushed. Harvest/journal for this run was completed retroactively as part of run #87 below (an ordering correction caught before either was committed separately a second time). | Immediately followed by run #87's gate stop — see below. |
 | 87 | 2026-10-03 | advance (no override — this is where the manager's own Step 3/Step 4 logic lands next regardless) | — (gate check only; no skill invoked) | `IP-1300` / `08-code-implementation` | Reconciled (no drift). Triaged: harvested run #86's three Open-Question resolutions into the backlog (`BL-0155`/`BL-0156` → `DONE`; `BL-0154` annotated, stays `SCHEDULED`); flipped `BL-0107`/`BL-0111` entry stage `07 → 08`. Determined the next step for this thread is `08-code-implementation` on `IP-1300` — gate-checked per Step 4: MSTR-006 §3 authorization is required and is **not** on record. Per the task's own explicit instruction (the named hard stop once a package reaches `READY`/`BLOCKED`), this run stops here and does **not** invoke `08-code-implementation`, and does **not** ask the question itself beyond recording it — the question is relayed to the user in this run's own report. | **GATE: MSTR-006 §3 authorization for `IP-1300` (implementing `FR-8210`/`FR-8220`, `FS-130`).** Awaiting the project owner's explicit go/no-go. Until answered, the next `00-pipeline-manager` advance will re-surface this same gate unless the user instead directs a different, unblocked step (e.g. `06-feature-specification` on `FEAT-1600`/`FEAT-7400`/`FEAT-4400`/`FEAT-4600`). |
+| 88 | 2026-10-10 | override (`run 08-code-implementation IP-1300`; superseded run #87's recorded next step, which was the GATE itself — now answered by the project owner's explicit MSTR-006 §3 authorization) | `08-code-implementation` | `IP-1300` | Reconciled journal/backlog against the Master Build Plan/`packages/INDEX.md`/`ROADMAP.md` (no drift — `IP-1300` `READY`, every dependency `VERIFIED`). Triaged backlog: zero `NEW` entries; `BL-0152` (shared phase-angle function) and `BL-0154` (unbanded CATS) passed to the invoked skill as riders. Gate check: MSTR-006 §3 authorization now on record (project owner, 2026-10-10). Invoked `08-code-implementation`: `IP-1300` `READY → IN PROGRESS → COMPLETE`, committed `152754e` (new `cats_phase_angle_deg()`, `live_ric_view()`, `get_ric_view()` ×2, `GET /ric_view/{cell}`, `ricview.js`; 18 new tests; full suite 772 passed / 3 skipped; determinism + import-guard green). Implementation Task 1 resolved — `build_scene()` has no `"white"` case, White wired explicitly via `get_godview()`. Harvested 2 findings (`BL-0157`, `BL-0158`); `BL-0107`/`BL-0111` entry stage `08 → 09`; `BL-0152` annotated. | `09-package-verification` on `IP-1300` (riding `BL-0158`), in a fresh session. |
