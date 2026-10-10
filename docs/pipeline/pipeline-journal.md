@@ -13,25 +13,28 @@
 
 ## Position
 
-- **Updated:** 2026-10-10 (run #91 — override `07-implementation-planning` on FS-121 `FR-7440`)
-- **Increment:** Thread E, TLE-export leg (`BL-0109`), driven by explicit session instruction. Run
-  #90 extended [FS-121](../features/FS-121-ephemeris-export.md) to v2.0 for `FEAT-7400`; **run #91
-  planned it**: [IP-1211](../implementation/packages/IP-1211-quick-tle-export.md) `READY`, every
-  dependency `VERIFIED`, resolving `BL-0110` (SGP4 mean-element fit), `BL-0160` (route),
-  `BL-0161` (UI panel), `BL-0162` (placeholder catalog number). `IP-1211` is pre-authorized by the
-  project owner (MSTR-006 §3, relayed in the 2026-10-10 session task instruction — this package
-  only).
+- **Updated:** 2026-10-10 (run #92 — override `08-code-implementation` on `IP-1211`)
+- **Increment:** Thread E, TLE-export leg (`BL-0109`). Runs #90-#92 carried it from `06` to
+  `COMPLETE`: [FS-121](../features/FS-121-ephemeris-export.md) v2.0 → [IP-1211](../implementation/packages/IP-1211-quick-tle-export.md)
+  → implemented (commit `bc1e157`) under the project owner's pre-authorization. `BL-0110` resolved
+  as a single-epoch SGP4 mean-element fit for every orbit kind (≤1 km round-trip bound; every
+  shipped-vignette orbit fits to < 1 cm). Full suite 805 passed / 3 skipped; determinism +
+  import-guard gates green.
 - **Pipeline state:**
-  - `08` — **`IP-1211` is the direct next step** (authorized). `IP-1260` also `READY`/authorized
-    (independent thread).
-  - `08-training-manual-authoring` — `BL-0157` (RIC view manual coverage) still ready.
+  - `09` — **`IP-1211` `COMPLETE`, awaiting `09-package-verification` in a fresh session** (riding
+    `BL-0164`).
+  - `08` — `IP-1260` `READY`/authorized (independent thread).
+  - `08-training-manual-authoring` — `BL-0157` ready; `BL-0163` (TLE export coverage) deferred until
+    `IP-1211` verifies — batchable with `BL-0157`.
   - `06` — `FEAT-1600` (`FR-1670`), `FEAT-4400`/`FEAT-4600` additions — none blocked.
   - `10` — available on the run #81 nine-package `VERIFIED` tranche, unchanged.
-- **Backlog:** this run closed `BL-0110`/`BL-0160`/`BL-0161`/`BL-0162` (`DONE`); `BL-0109` entry
-  stage `07 → 08`; `BL-0159` annotated (still `DEFERRED` to next `04`). No new entries.
-- **Next step:** `08-code-implementation` on `IP-1211` — authorized; implement test-first.
-- **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred, unchanged. None for
-  this thread.
+- **Backlog:** harvested `BL-0163` (doc-defect, `DEFERRED` → after `IP-1211` verifies) and `BL-0164`
+  (finding, `SCHEDULED` → `09` on `IP-1211`); `BL-0109` entry stage `08 → 09`. `BL-0159` still
+  `DEFERRED` to the next `04` pass.
+- **Next step:** `09-package-verification` on `IP-1211` (riding `BL-0164`) — must run in a fresh
+  session (same-session verification exclusion).
+- **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred, unchanged. None for this
+  thread.
 
 ---
 
@@ -538,3 +541,4 @@
 | 89 | 2026-10-10 | advance (no override — `09-package-verification` on `IP-1300` was run #88's own recorded next step, executed here in a fresh session per the same-session-verification-exclusion rule) | `09-package-verification` | `IP-1300` | Reconciled journal/backlog against the tree (no drift — `IP-1300` `COMPLETE`, commit `152754e`, as run #88 left it). Triaged backlog: `BL-0157`/`BL-0158` were the only entries riding this step; both adjudicated below. Independently re-verified `IP-1300` from scratch (fresh session, no involvement in `b10717a`/`152754e`): hand-derived `cats_phase_angle_deg()` against a fresh reference geometry distinct from `test_cats_angle.py`'s own fixtures (0°/60°/90°/180°, coincident-rejection); read `build_scene()`/`get_godview()`/`get_ric_view()` directly to confirm Implementation Task 1's White-Cell wiring claim rather than trusting it; probed the HTTP route live via fresh `TestClient` sessions on two vignettes not used by the implementer's own tests, including a coincident-chase/target 404 edge case absent from the shipped suite; ran the full suite from scratch (772 passed/3 skipped, independently tallied from the raw dot-stream since this environment's pytest capture drops its own final summary line) plus both permanent gates by name (14 passed). Produced [`VR-1300`](../implementation/verification/VR-1300-ric-frame-view-and-cats-overlay.md) — **`VERIFIED`, 2 Low findings** (package's own doc left unupdated, same pattern as the whole 2026-09/2026-10 batch; a process note for `07-implementation-planning` to name shell files explicitly in future UI-touching packages). **`BL-0158` adjudicated `DONE`**: the omitted `index.html`/`style.css` listing is an implied, necessary consequence of adding a new panel (accepted, same precedent `VR-1290` set for an undeclared-but-expected call-site change); the headless-only UI verification posture was cross-checked against every other UI-touching package in `verification/INDEX.md` and found to match the project's own established bar exactly, not a lowered one. **`BL-0157` unblocked** — its own revisit trigger ("once `09-package-verification` has verified `IP-1300`") has fired; ready for `08-training-manual-authoring`. Flipped `IP-1300` `COMPLETE → VERIFIED` on the Master Build Plan, `packages/INDEX.md`, `ROADMAP.md`, `01-technical-work-breakdown.md`; updated the RTM's `FR-8210`/`FR-8220` `Impl. Package` cells from "`COMPLETE`...awaiting `09`" to "`VERIFIED` via VR-1300"; flipped `BL-0107`/`BL-0111` `IN PIPELINE → DONE` (both requests are now fully shipped and verified). Committed the VR report + ledger updates, pushed. | **`08-training-manual-authoring` on the RIC view (`BL-0157`)** is now the direct next step for this thread — document the as-built, verified View ▾ → RIC frame view panel in `docs/training/15-manual-traceability.md` §15.1 + the relevant Blue/Red/White manual sections. Independently, `08-code-implementation` on `IP-1260` (still `READY`) and `10-integration-review` on the run #81 nine-package tranche both remain available with no gate. |
 | 90 | 2026-10-10 | override (`run 06-feature-specification FEAT-7400`; superseded run #89's recorded next step, `08-training-manual-authoring` on `BL-0157`, per explicit session instruction to drive `BL-0109`'s thread) | `06-feature-specification` | `FEAT-7400` (`FR-7440`, riding `BL-0110`) | Reconciled journal/backlog against the tree (no drift — no FS covered `FR-7440`; RTM showed `FR-7440` Future Feature `UNASSIGNED`, `FR-7430` "FS-121 (amendment pending)"). Triaged: zero `NEW` entries; `BL-0110` was the only entry riding this step. Invoked `06-feature-specification`: since FS-121 already owned three of `FEAT-7400`'s four leaves, extended it in place to v2.0 (one Feature ⇄ one FS) — adds `FR-7440` across every template field (fog-of-war state source, current-epoch rule, well-formedness/round-trip criterion, rejection rules, 7 new Acceptance Criteria) and records as-built `FR-7430`. `BL-0110` left as Open Question 4 (constraints stated; option (c) flagged as needing the owner since it narrows "any satellite"). Updated `feature-index.md` and RTM forward refs. Committed `84d9578`. Harvested `BL-0159` (own-asset scope, `DEFERRED` → next `04`), `BL-0160`/`BL-0161`/`BL-0162` (route, UI placement, catalog-number placeholder; `SCHEDULED` → `07`); annotated `BL-0110` (`SCHEDULED` → `07`); `BL-0109` entry stage `06 → 07`. | `07-implementation-planning` on FS-121 v2.0 / `FR-7440` (riding `BL-0110`, `BL-0160`-`BL-0162`). |
 | 91 | 2026-10-10 | override (`run 07-implementation-planning FS-121`; matches run #90's recorded next step) | `07-implementation-planning` | FS-121 v2.0 (`FR-7440` slice) | Reconciled (no drift — FS-121 v2.0 at `84d9578`, no package for `FR-7440`). Triaged: zero `NEW`; `BL-0110`/`BL-0160`/`BL-0161`/`BL-0162` riding. Invoked `07-implementation-planning`: grounded `BL-0110` with a throwaway scratch prototype (SGP4 mean-element fit; found `rv_to_elements` collapses true anomaly for circular-equatorial states, so the fit must use equinoctial elements computed directly from r/v; ≤~51 m round-trip worst case) and authored `IP-1211` (`READY`, 5 Design Decisions). Updated TWBS (new tranche), Master Build Plan, `packages/INDEX.md`, `ROADMAP.md`, FS-121 Referenced By. Committed `f936b85`. Harvested nothing new; closed `BL-0110`/`BL-0160`/`BL-0161`/`BL-0162`; `BL-0109` entry stage `07 → 08`. Gate check for the next step: MSTR-006 §3 authorization for `IP-1211` is on record (pre-granted). | `08-code-implementation` on `IP-1211`. |
+| 92 | 2026-10-10 | override (`run 08-code-implementation IP-1211`; matches run #91's recorded next step) | `08-code-implementation` | `IP-1211` | Reconciled (no drift — `IP-1211` `READY` on MBP/INDEX/ROADMAP). Triaged: zero `NEW`. Gate check: MSTR-006 §3 authorization on record (project owner pre-authorization for `BL-0109`/`FR-7440`'s package, relayed in the session task instruction). Invoked `08-code-implementation`: `IP-1211` `READY → IN PROGRESS → COMPLETE`, test-first (new `test_tle_export.py`, `test_ephemeris.py::test_quick_tle_*`, `test_web.py::test_tle_*` written and seen failing first). Plain fixed-point fit diverged for near-equatorial GEO, so the fit became a safeguarded Newton + fixed-point correction (same contract); verified every on-orbit asset in all shipped vignettes fits within bound. Full suite 805 passed / 3 skipped (808 collected, tallied via JUnit XML — this environment drops pytest's summary line), determinism + import-guard 14 passed. Committed `bc1e157`. Harvested `BL-0163`, `BL-0164`; `BL-0109` entry stage `08 → 09`. | `09-package-verification` on `IP-1211` (riding `BL-0164`), fresh session. |
