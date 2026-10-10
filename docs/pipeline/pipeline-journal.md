@@ -13,26 +13,44 @@
 
 ## Position
 
-- **Updated:** 2026-10-10 (run #92 — override `08-code-implementation` on `IP-1211`)
-- **Increment:** Thread E, TLE-export leg (`BL-0109`). Runs #90-#92 carried it from `06` to
-  `COMPLETE`: [FS-121](../features/FS-121-ephemeris-export.md) v2.0 → [IP-1211](../implementation/packages/IP-1211-quick-tle-export.md)
-  → implemented (commit `bc1e157`) under the project owner's pre-authorization. `BL-0110` resolved
-  as a single-epoch SGP4 mean-element fit for every orbit kind (≤1 km round-trip bound; every
-  shipped-vignette orbit fits to < 1 cm). Full suite 805 passed / 3 skipped; determinism +
-  import-guard gates green.
+- **Updated:** 2026-10-10 (run #93 — `09-package-verification` on `IP-1211`, fresh session)
+- **Increment:** Thread E, TLE-export leg (`BL-0109`), now closed out. Runs #90-#93 carried it from
+  `06` to `VERIFIED`: [FS-121](../features/FS-121-ephemeris-export.md) v2.0 →
+  [IP-1211](../implementation/packages/IP-1211-quick-tle-export.md) → implemented (commit
+  `bc1e157`) → **independently verified** ([VR-1211](../implementation/verification/VR-1211-quick-tle-export.md),
+  fresh session, no involvement in the implementing commit). `BL-0110`'s single-epoch SGP4
+  mean-element fit confirmed correct (≤1 km round-trip bound; all 40 on-orbit assets across all 19
+  shipped vignettes measured at 1.5-70 m, independently re-derived, not merely re-run). `BL-0164`
+  (the safeguarded-Newton deviation from the package's plain fixed-point text) **adjudicated `DONE`,
+  accepted as sound and necessary** — the plain iteration's divergence for exactly/near-equatorial
+  GEO was independently reproduced from scratch (residuals growing unboundedly over 10 passes); the
+  safeguarded version never emitted an out-of-bound TLE across a fresh GEO-inclination sweep and 5
+  independently-chosen geometries. The fog-of-war claim (stale belief survives a manoeuvre)
+  independently re-tested end-to-end through `SessionManager.get_tle` on a freshly built session,
+  not the implementer's fixture. Full suite 805 passed / 3 skipped; determinism + import-guard gates
+  green (14/14). One Low finding filed: `BL-0165` (pipeline-journal "< 1 cm" wording conflates the
+  internal fit-convergence tolerance with the exported round-trip accuracy — doc-wording only, no
+  code defect; this run's own earlier "< 1 cm" phrasing above is corrected accordingly).
 - **Pipeline state:**
-  - `09` — **`IP-1211` `COMPLETE`, awaiting `09-package-verification` in a fresh session** (riding
-    `BL-0164`).
   - `08` — `IP-1260` `READY`/authorized (independent thread).
-  - `08-training-manual-authoring` — `BL-0157` ready; `BL-0163` (TLE export coverage) deferred until
-    `IP-1211` verifies — batchable with `BL-0157`.
+  - `08-training-manual-authoring` — `BL-0157` ready; `BL-0163`'s revisit trigger has now fired
+    (`IP-1211` `VERIFIED`) — `SCHEDULED`, batchable with `BL-0157`.
+  - `00-pipeline-manager` — `BL-0165` (journal-wording correction, Low, no code change) open for
+    next touch.
   - `06` — `FEAT-1600` (`FR-1670`), `FEAT-4400`/`FEAT-4600` additions — none blocked.
-  - `10` — available on the run #81 nine-package `VERIFIED` tranche, unchanged.
-- **Backlog:** harvested `BL-0163` (doc-defect, `DEFERRED` → after `IP-1211` verifies) and `BL-0164`
-  (finding, `SCHEDULED` → `09` on `IP-1211`); `BL-0109` entry stage `08 → 09`. `BL-0159` still
-  `DEFERRED` to the next `04` pass.
-- **Next step:** `09-package-verification` on `IP-1211` (riding `BL-0164`) — must run in a fresh
-  session (same-session verification exclusion).
+  - `10` — available on the run #81 nine-package `VERIFIED` tranche, unchanged. `IP-1211`'s
+    `VERIFIED` status does not by itself unblock a new integration-review tranche (it has no
+    downstream dependents and is not part of that batch).
+- **Backlog:** `BL-0164` flipped `SCHEDULED → DONE` (adjudicated above); `BL-0163` flipped
+  `DEFERRED → SCHEDULED` (trigger fired, routed to `08-training-manual-authoring`); `BL-0165`
+  (new, Low, journal-wording) filed `SCHEDULED` for `00-pipeline-manager`; `BL-0109` entry stage
+  `09 → done` (its own request is now fully closed: `COMPLETE`→`VERIFIED`, every Open Question it
+  spawned resolved or routed). `BL-0159` left `DEFERRED` to the next `04` pass, unchanged — this
+  verification pass gave no new information bearing on it (it followed `FR-7440` literally, as the
+  package itself does, and found nothing to revisit).
+- **Next step:** no package in this thread needs further pipeline work. Candidates for the next
+  run: `08-code-implementation` on `IP-1260` (`READY`/authorized, independent thread), or
+  `08-training-manual-authoring` on the now-`SCHEDULED` `BL-0163`+`BL-0157` batch.
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred, unchanged. None for this
   thread.
 
