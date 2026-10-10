@@ -13,46 +13,29 @@
 
 ## Position
 
-- **Updated:** 2026-10-10 (run #89 — `09-package-verification` on `IP-1300`)
-- **Increment:** Thread E (RIC-view/CATS-angle/TLE-export/controller-view intake batch). **Run #89
-  closes this thread's implementation loop:** `09-package-verification`, in a fresh session with no
-  involvement in `b10717a`/`152754e`, independently re-verified
-  [IP-1300](../implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md) against the
-  shipped tree (not merely re-running its own tests) and produced
-  [VR-1300](../implementation/verification/VR-1300-ric-frame-view-and-cats-overlay.md) —
-  **`VERIFIED`, 2 Low findings, neither blocking.** `cats_phase_angle_deg()` independently
-  hand-checked against a fresh reference geometry; the White-Cell/`get_godview()` wiring claim
-  (Implementation Task 1) independently confirmed by reading `build_scene()`/`get_ric_view()`
-  directly, not trusted; the HTTP route independently probed (422/404, including a coincident-
-  chase/target edge case the shipped tests don't cover) on two vignettes the implementer's own
-  tests don't use. Full suite 772 passed / 3 skipped (independently re-run), both permanent gates
-  green. **`BL-0158` adjudicated `DONE`** (both halves accepted, no remediation). **`BL-0157`
-  unblocked** — ready for `08-training-manual-authoring`.
+- **Updated:** 2026-10-10 (run #90 — override `06-feature-specification` on `FEAT-7400`)
+- **Increment:** Thread E (RIC-view/CATS-angle/TLE-export/controller-view intake batch). The RIC
+  view/CATS leg (`BL-0107`/`BL-0111`) is closed (`IP-1300` `VERIFIED`, run #89). **Run #90 starts
+  the TLE-export leg (`BL-0109`)** by explicit session instruction (the project owner has
+  pre-authorized `08-code-implementation` for the package(s) that implement `BL-0109`/`FR-7440` —
+  that authorization covers only those packages): `06-feature-specification` extended
+  [FS-121](../features/FS-121-ephemeris-export.md) in place to v2.0 so it covers all of
+  `FEAT-7400` (adds `FR-7440`; records the already-built `FR-7430`, closing the RTM's "amendment
+  pending" note). `BL-0110` (TLE-generation method) carried as FS-121 Open Question 4, now
+  `SCHEDULED` for `07`.
 - **Pipeline state:**
-  - `08-training-manual-authoring` — **now the direct next step**: the RIC view has no manual
-    coverage yet (`BL-0157`), and its revisit trigger ("once `IP-1300` verifies") has fired.
+  - `07` — **FS-121 v2.0 / `FR-7440` is the direct next step** (riding `BL-0110`, `BL-0160`,
+    `BL-0161`, `BL-0162`).
+  - `08-training-manual-authoring` — `BL-0157` (RIC view manual coverage) still ready, unchanged.
   - `08` — `IP-1260` (`FS-126`) remains `READY` and already authorized (independent thread).
-    `IP-1171` still `COMPLETE` per the Master Build Plan table (pre-existing, unrelated).
-  - `06` — `FEAT-1600` (`FR-1670`, must consume `cats_phase_angle_deg()` per `BL-0152`),
-    `FEAT-7400` (`FR-7440`), `FEAT-4400`/`FEAT-4600` additions — none blocked.
-  - `10` — still available on the run #81 nine-package `VERIFIED` tranche, unchanged. A tranche
-    including `IP-1300` is also now an option (35 `VERIFIED` packages total), though `IP-1300` has
-    no cross-package integration seam of its own (no package depends on it).
-  - `02`/`03`/`04` — `FS-123`/B8 parked pending `BL-0104`/`BL-0121`; `IP-1160` `BLOCKED`
-    (authorization); `BL-0113` open/`SCHEDULED` for a future `04` pass; standing Low `DEFERRED`
-    entries non-blocking.
-- **Backlog:** 158 total (net unchanged — `BL-0157` flips `SCHEDULED`-note but stays open at a new
-  disposition, `BL-0158` closes). This run: `BL-0158` → `DONE` (adjudicated, see VR-1300).
-  `BL-0107`/`BL-0111` → `DONE` (both requests fully shipped and verified; entry-stage narrative
-  closed). `BL-0157` unchanged `SCHEDULED` but its trigger note now records that it has fired.
-  `BL-0152`/`BL-0154` unchanged (still correctly open, pending `FEAT-1600`'s `06` pass / a future
-  banding decision respectively).
-- **Next step:** `08-training-manual-authoring` for the RIC view (`BL-0157`) — document the
-  as-built, verified panel in `docs/training/15-manual-traceability.md` §15.1 and the relevant
-  Blue/Red/White manual sections.
-- **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred, unchanged. No gate on
-  `IP-1300` or this thread remains. PR #55 (branch `claude/chart-prompt-file-90hm9u`) open/draft;
-  repo has no CI workflows.
+  - `06` — `FEAT-1600` (`FR-1670`), `FEAT-4400`/`FEAT-4600` additions — none blocked.
+  - `10` — available on the run #81 nine-package `VERIFIED` tranche, unchanged.
+- **Backlog:** +4 this run (`BL-0159`-`BL-0162`), all dispositioned. Open entries due at the next step: `BL-0110`, `BL-0160`, `BL-0161`, `BL-0162`
+  (all ride `07` on FS-121/`FR-7440`). `BL-0159` `DEFERRED` to the next `04` pass. Others unchanged.
+- **Next step:** `07-implementation-planning` on FS-121 v2.0 (`FR-7440` slice) — resolve `BL-0110`
+  and the three route/UI/identity questions as Design Decisions, produce the IP package.
+- **Open gates:** `IP-1160` authorization (MSTR-006 §3) — still deferred, unchanged. None for this thread — MSTR-006 §3 authorization for the `FR-7440` package is
+  pre-granted by the project owner (2026-10-10 session instruction). `IP-1300`'s own gate is closed.
 
 ---
 
@@ -557,3 +540,4 @@
 | 87 | 2026-10-03 | advance (no override — this is where the manager's own Step 3/Step 4 logic lands next regardless) | — (gate check only; no skill invoked) | `IP-1300` / `08-code-implementation` | Reconciled (no drift). Triaged: harvested run #86's three Open-Question resolutions into the backlog (`BL-0155`/`BL-0156` → `DONE`; `BL-0154` annotated, stays `SCHEDULED`); flipped `BL-0107`/`BL-0111` entry stage `07 → 08`. Determined the next step for this thread is `08-code-implementation` on `IP-1300` — gate-checked per Step 4: MSTR-006 §3 authorization is required and is **not** on record. Per the task's own explicit instruction (the named hard stop once a package reaches `READY`/`BLOCKED`), this run stops here and does **not** invoke `08-code-implementation`, and does **not** ask the question itself beyond recording it — the question is relayed to the user in this run's own report. | **GATE: MSTR-006 §3 authorization for `IP-1300` (implementing `FR-8210`/`FR-8220`, `FS-130`).** Awaiting the project owner's explicit go/no-go. Until answered, the next `00-pipeline-manager` advance will re-surface this same gate unless the user instead directs a different, unblocked step (e.g. `06-feature-specification` on `FEAT-1600`/`FEAT-7400`/`FEAT-4400`/`FEAT-4600`). |
 | 88 | 2026-10-10 | override (`run 08-code-implementation IP-1300`; superseded run #87's recorded next step, which was the GATE itself — now answered by the project owner's explicit MSTR-006 §3 authorization) | `08-code-implementation` | `IP-1300` | Reconciled journal/backlog against the Master Build Plan/`packages/INDEX.md`/`ROADMAP.md` (no drift — `IP-1300` `READY`, every dependency `VERIFIED`). Triaged backlog: zero `NEW` entries; `BL-0152` (shared phase-angle function) and `BL-0154` (unbanded CATS) passed to the invoked skill as riders. Gate check: MSTR-006 §3 authorization now on record (project owner, 2026-10-10). Invoked `08-code-implementation`: `IP-1300` `READY → IN PROGRESS → COMPLETE`, committed `152754e` (new `cats_phase_angle_deg()`, `live_ric_view()`, `get_ric_view()` ×2, `GET /ric_view/{cell}`, `ricview.js`; 18 new tests; full suite 772 passed / 3 skipped; determinism + import-guard green). Implementation Task 1 resolved — `build_scene()` has no `"white"` case, White wired explicitly via `get_godview()`. Harvested 2 findings (`BL-0157`, `BL-0158`); `BL-0107`/`BL-0111` entry stage `08 → 09`; `BL-0152` annotated. | `09-package-verification` on `IP-1300` (riding `BL-0158`), in a fresh session. |
 | 89 | 2026-10-10 | advance (no override — `09-package-verification` on `IP-1300` was run #88's own recorded next step, executed here in a fresh session per the same-session-verification-exclusion rule) | `09-package-verification` | `IP-1300` | Reconciled journal/backlog against the tree (no drift — `IP-1300` `COMPLETE`, commit `152754e`, as run #88 left it). Triaged backlog: `BL-0157`/`BL-0158` were the only entries riding this step; both adjudicated below. Independently re-verified `IP-1300` from scratch (fresh session, no involvement in `b10717a`/`152754e`): hand-derived `cats_phase_angle_deg()` against a fresh reference geometry distinct from `test_cats_angle.py`'s own fixtures (0°/60°/90°/180°, coincident-rejection); read `build_scene()`/`get_godview()`/`get_ric_view()` directly to confirm Implementation Task 1's White-Cell wiring claim rather than trusting it; probed the HTTP route live via fresh `TestClient` sessions on two vignettes not used by the implementer's own tests, including a coincident-chase/target 404 edge case absent from the shipped suite; ran the full suite from scratch (772 passed/3 skipped, independently tallied from the raw dot-stream since this environment's pytest capture drops its own final summary line) plus both permanent gates by name (14 passed). Produced [`VR-1300`](../implementation/verification/VR-1300-ric-frame-view-and-cats-overlay.md) — **`VERIFIED`, 2 Low findings** (package's own doc left unupdated, same pattern as the whole 2026-09/2026-10 batch; a process note for `07-implementation-planning` to name shell files explicitly in future UI-touching packages). **`BL-0158` adjudicated `DONE`**: the omitted `index.html`/`style.css` listing is an implied, necessary consequence of adding a new panel (accepted, same precedent `VR-1290` set for an undeclared-but-expected call-site change); the headless-only UI verification posture was cross-checked against every other UI-touching package in `verification/INDEX.md` and found to match the project's own established bar exactly, not a lowered one. **`BL-0157` unblocked** — its own revisit trigger ("once `09-package-verification` has verified `IP-1300`") has fired; ready for `08-training-manual-authoring`. Flipped `IP-1300` `COMPLETE → VERIFIED` on the Master Build Plan, `packages/INDEX.md`, `ROADMAP.md`, `01-technical-work-breakdown.md`; updated the RTM's `FR-8210`/`FR-8220` `Impl. Package` cells from "`COMPLETE`...awaiting `09`" to "`VERIFIED` via VR-1300"; flipped `BL-0107`/`BL-0111` `IN PIPELINE → DONE` (both requests are now fully shipped and verified). Committed the VR report + ledger updates, pushed. | **`08-training-manual-authoring` on the RIC view (`BL-0157`)** is now the direct next step for this thread — document the as-built, verified View ▾ → RIC frame view panel in `docs/training/15-manual-traceability.md` §15.1 + the relevant Blue/Red/White manual sections. Independently, `08-code-implementation` on `IP-1260` (still `READY`) and `10-integration-review` on the run #81 nine-package tranche both remain available with no gate. |
+| 90 | 2026-10-10 | override (`run 06-feature-specification FEAT-7400`; superseded run #89's recorded next step, `08-training-manual-authoring` on `BL-0157`, per explicit session instruction to drive `BL-0109`'s thread) | `06-feature-specification` | `FEAT-7400` (`FR-7440`, riding `BL-0110`) | Reconciled journal/backlog against the tree (no drift — no FS covered `FR-7440`; RTM showed `FR-7440` Future Feature `UNASSIGNED`, `FR-7430` "FS-121 (amendment pending)"). Triaged: zero `NEW` entries; `BL-0110` was the only entry riding this step. Invoked `06-feature-specification`: since FS-121 already owned three of `FEAT-7400`'s four leaves, extended it in place to v2.0 (one Feature ⇄ one FS) — adds `FR-7440` across every template field (fog-of-war state source, current-epoch rule, well-formedness/round-trip criterion, rejection rules, 7 new Acceptance Criteria) and records as-built `FR-7430`. `BL-0110` left as Open Question 4 (constraints stated; option (c) flagged as needing the owner since it narrows "any satellite"). Updated `feature-index.md` and RTM forward refs. Committed `84d9578`. Harvested `BL-0159` (own-asset scope, `DEFERRED` → next `04`), `BL-0160`/`BL-0161`/`BL-0162` (route, UI placement, catalog-number placeholder; `SCHEDULED` → `07`); annotated `BL-0110` (`SCHEDULED` → `07`); `BL-0109` entry stage `06 → 07`. | `07-implementation-planning` on FS-121 v2.0 / `FR-7440` (riding `BL-0110`, `BL-0160`-`BL-0162`). |
