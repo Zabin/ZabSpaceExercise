@@ -76,6 +76,8 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Research analytics (offline batch export) | `tools/research_batch.py`, `session/research_export.py` | WCM-12 | — | — |
 | Live RIC frame view + CATS phase-angle overlay | `engine/sun.py` (`cats_phase_angle_deg`), `session/ephemeris.py` (`live_ric_view`), `GET /ric_view/{cell}` | WCM-13 | BLU-11 | RED-10 |
 | Quick TLE export (cell-visible satellite) | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `GET /tle/{cell}` | WCM-14 | BLU-12 | RED-11 |
+| Ephemeris export, time-span (ECI/RIC, CSV/CCSDS OEM, truth + cell-observed) | `session/ephemeris.py` (`truth_ephemeris`, `cell_observed_ephemeris`, `write_csv`/`write_oem`/`write_ric_csv`), `GET /ephemeris/truth`, `GET /ephemeris/{cell}` | WCM-15 | BLU-13 | RED-12 |
+| Per-asset telemetry CSV export, time-span | `session/manager.py` (`telemetry_export`), `engine/telemetry.py` (`sample`, per-instant replay), `GET /telemetry/{cell}/{asset}/export.csv` | WCM-16 | BLU-14 | RED-13 |
 
 ### 15.2 Manual section → backing features (reverse index)
 
@@ -100,6 +102,8 @@ mirrors each section's inline `> Sources:` footer.
 | WCM-12 | Offline research batch exports | `tools/research_batch.py`, `session/research_export.py` |
 | WCM-13 | RIC frame view & CATS phase angle (ground truth) | `engine/sun.py`, `session/ephemeris.py` (`live_ric_view`), `/ric_view/{cell}` |
 | WCM-14 | Quick TLE export (ground truth) | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `/tle/{cell}` |
+| WCM-15 | Ephemeris export, ground truth (URL-only) | `session/ephemeris.py` (`truth_ephemeris`), `/ephemeris/truth` |
+| WCM-16 | Per-asset telemetry CSV export (URL-only) | `session/manager.py` (`telemetry_export`), `engine/telemetry.py`, `/telemetry/{cell}/{asset}/export.csv` |
 
 #### Blue cell manual (`BLU-n`)
 
@@ -117,6 +121,8 @@ mirrors each section's inline `> Sources:` footer.
 | BLU-10 | Win the vignette | `11-vignette-playbooks.md`, `/vignettes/{id}/tutorial` |
 | BLU-11 | RIC frame view & CATS phase angle | `engine/sun.py`, `session/ephemeris.py` (`live_ric_view`), `/ric_view/{cell}` |
 | BLU-12 | Quick TLE export | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `/tle/{cell}` |
+| BLU-13 | Ephemeris export, your own belief (URL-only) | `session/ephemeris.py` (`cell_observed_ephemeris`), `/ephemeris/{cell}` |
+| BLU-14 | Your telemetry CSV export (URL-only) | `session/manager.py` (`telemetry_export`), `engine/telemetry.py`, `/telemetry/{cell}/{asset}/export.csv` |
 
 #### Red cell manual (`RED-n`)
 
@@ -133,6 +139,8 @@ mirrors each section's inline `> Sources:` footer.
 | RED-9 | Win the vignette | `11-vignette-playbooks.md`, `/vignettes/{id}/tutorial` |
 | RED-10 | RIC frame view & CATS phase angle | `engine/sun.py`, `session/ephemeris.py` (`live_ric_view`), `/ric_view/{cell}` |
 | RED-11 | Quick TLE export | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `/tle/{cell}` |
+| RED-12 | Ephemeris export, your own belief (URL-only) | `session/ephemeris.py` (`cell_observed_ephemeris`), `/ephemeris/{cell}` |
+| RED-13 | Your telemetry CSV export (URL-only) | `session/manager.py` (`telemetry_export`), `engine/telemetry.py`, `/telemetry/{cell}/{asset}/export.csv` |
 
 ### 15.3 Maintenance protocol (how this stays true)
 

@@ -243,4 +243,68 @@ available to the Observer seat, which holds no asset or track ownership of its o
 > `spacesim/session/ephemeris.py` (`quick_tle`) · `spacesim/session/manager.py` (`get_tle`) ·
 > `GET /api/sessions/{sid}/tle/{cell}` · `spacesim/ui_web/static/tleexport.js`
 
+### WCM-15 · Ephemeris export, ground truth (URL-only)
+
+`GET /api/sessions/{sid}/ephemeris/truth?object_id=&reference_id=&t1=&t2=&interval_s=&format=`
+gives you a ground-truth state-vector history for one object over a time span — a different
+capability from the *live, current-instant* RIC view (WCM-13): this one is a time-series export
+you pull into an outside tool. There is **no console panel or button for it** — it is reachable
+only by constructing the URL yourself (paste it into the browser's address bar, or call it from a
+script/`curl`), exactly like the offline research export (WCM-12) has no in-session control.
+
+Each sampled row carries both the **ECI** state vector and the **RIC** state vector relative to
+your chosen `reference_id` — the same R/T/N radial-in-track-cross-track frame WCM-13's live view
+uses, now sampled across the span instead of read live. `format=csv` (the default) carries both
+frames in one file; `format=oem` writes a CCSDS OEM 2.0 (Orbit Ephemeris Message) KVN file,
+ECI-only (OEM has no native RIC representation); `format=ric` writes a RIC-only companion CSV
+pairing with the OEM file. `t1`/`t2` are sim time as **integer microseconds since the Unix
+epoch** — the same units `world.now` and the event log use, not a clock-face time you type in
+directly; read one off the event log or a save file first. `interval_s` is optional (defaults to
+a coarse span/100 sampling, floored at one bus-tick period).
+
+A requested span **partially** outside the session's own recorded range (from load/start to the
+current sim time) is silently clamped to the overlap; a span **wholly** outside it is rejected
+(HTTP 400) naming the actual valid range. This is the no-cell, White-Cell-only truth path
+(`FR-6220`) — the same binding rule every other no-cell endpoint (`/godview`, `/eventlog`,
+`/save`, `/aar*`) already follows; it is not reachable with a `cell` in the URL.
+
+Use it to hand an analyst a real ground-truth ephemeris for a vignette's key asset, or to build an
+external conjunction/visualization check against what the engine actually propagated — a job the
+live JSON god-view (current instant only) cannot do.
+
+> **Sources:** `spacesim/session/ephemeris.py` (`truth_ephemeris`, `to_ric`, `write_csv`,
+> `write_oem`, `write_ric_csv`) · `GET /api/sessions/{sid}/ephemeris/truth` ·
+> [FS-121](../features/FS-121-ephemeris-export.md) (`FR-7410`/`FR-7430`)
+
+### WCM-16 · Per-asset telemetry CSV export (URL-only)
+
+`GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv?t1=&t2=&interval_s=` turns any
+asset's subsystem telemetry into a CSV time series — one row per sampled instant × parameter
+(19 parameters per asset), covering the same channels the live telemetry panel (WCM-6's
+monitoring view, BLU-6/RED-7's diagnosis workflow) already shows, now over a requested span
+instead of just the current instant. Like WCM-15, **there is no console button for this** — it
+is URL-only, by design (`FS-126`'s own scope names only the backing code, no UI affordance).
+
+As White Cell you can request **any** asset's export (`cell=white` bypasses the ownership check
+the way every other `/telemetry/{cell}/...` route already does); Blue and Red can only export
+their own assets (see BLU-14/RED-13). `t1`/`t2` are the same integer-microsecond sim time units as
+WCM-15's ephemeris export; a partially out-of-range span clamps, a wholly out-of-range one is
+rejected (400), identically.
+
+**The one fact worth understanding precisely:** each exported row is computed on the world
+*replayed to that exact sampled instant* — not read off the session's current/final state and
+then stamped with an old timestamp. That is why a historical anomaly (e.g. an `FR-4430` anomaly
+inject that safed the asset partway through the span) shows up in the export starting from its
+own correct onset time, never leaking backward into rows sampled before the inject actually
+fired. A naive "read the live value, label it with each requested time" approach would get this
+wrong — every pre-onset row would falsely show the anomaly too, because the asset's *current* bus
+state (safe-mode, in this example) doesn't know when in the past it actually entered safe mode.
+Replaying the event log to each sampled instant is what keeps the export's anomaly timing
+trustworthy for AAR analysis.
+
+> **Sources:** `spacesim/session/manager.py` (`telemetry_export`) ·
+> `spacesim/engine/telemetry.py` (`sample`, read via per-instant replay) ·
+> `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv` ·
+> [FS-126](../features/FS-126-telemetry-csv-export.md) (`FR-2320`)
+
 ---

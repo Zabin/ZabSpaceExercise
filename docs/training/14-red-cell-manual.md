@@ -163,4 +163,48 @@ drifted from reality.
 > `spacesim/session/ephemeris.py` (`quick_tle`) ·
 > `GET /api/sessions/{sid}/tle/{cell}` · `spacesim/ui_web/static/tleexport.js`
 
+### RED-12 · Ephemeris export, your own belief (URL-only)
+
+`GET /api/sessions/{sid}/ephemeris/red?object_id=&reference_id=&t1=&t2=&interval_s=&format=`
+exports **Red's own believed** state-vector history for a tracked object over a time span — the
+time-series sibling of the live RIC view (RED-10): that view shows your belief right now, this
+exports it across a span. There is **no console control for it** — construct the URL yourself
+(address bar, script, or `curl`).
+
+Each row carries ECI and RIC (relative to `reference_id`) state vectors, sourced from your own
+`Track.state_estimate` at each sampled time — never Blue's ground truth, never a Track you don't
+hold. An instant where you held no Track on the object produces **no row for that instant** (an
+empty result, not a fabricated one) — if your custody lapsed, the gap in the export is the
+honest record of that lapse. The reference object resolves to ground truth only when it is your
+own asset; otherwise your own belief of it, same rule as RED-10's live view. `format=csv`
+(default) carries both frames; `format=oem` is ECI-only CCSDS OEM; `format=ric` is the RIC-only
+companion file. `t1`/`t2` are sim time as integer microseconds, the same units the event log
+uses — not a clock-face time.
+
+Use it to pull your targeting picture of Blue's asset into an outside tool, or to compare your
+custody's drift against White's ground-truth export (WCM-15) during an AAR debrief.
+
+> **Sources:** `spacesim/session/ephemeris.py` (`cell_observed_ephemeris`, `to_ric`, `write_csv`,
+> `write_oem`, `write_ric_csv`) · `GET /api/sessions/{sid}/ephemeris/{cell}` ·
+> [FS-121](../features/FS-121-ephemeris-export.md) (`FR-7420`/`FR-7430`)
+
+### RED-13 · Your telemetry CSV export (URL-only)
+
+`GET /api/sessions/{sid}/telemetry/red/{asset}/export.csv?t1=&t2=&interval_s=` exports your own
+asset's full 19-parameter telemetry history over a time span as CSV — the time-series sibling of
+the live telemetry readout you already use for own-force management (RED-7). Like RED-12, it is
+**URL-only**, no console button.
+
+You can only export assets you own; a different cell's asset is rejected (404), the same
+fog-of-war rule the live readout already applies. Each row is computed on the world *replayed to
+that exact sampled instant*, so a historical anomaly (e.g. a cyber or EW effect that pushed your
+own bird into safe mode) shows up starting exactly at its own onset time — never back-dated into
+rows sampled before it actually fired. That precision is what lets you reconstruct exactly when a
+degradation began, not just that it eventually happened.
+
+> **Sources:** `spacesim/session/manager.py` (`telemetry_export`) ·
+> `spacesim/engine/telemetry.py` (`sample`, read via per-instant replay) ·
+> `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv` ·
+> [FS-126](../features/FS-126-telemetry-csv-export.md) (`FR-2320`)
+
 ---

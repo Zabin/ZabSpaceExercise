@@ -180,4 +180,48 @@ White's god-truth export (WCM-14) during a debrief on how far your custody had d
 > `spacesim/session/ephemeris.py` (`quick_tle`) ·
 > `GET /api/sessions/{sid}/tle/{cell}` · `spacesim/ui_web/static/tleexport.js`
 
+### BLU-13 · Ephemeris export, your own belief (URL-only)
+
+`GET /api/sessions/{sid}/ephemeris/blue?object_id=&reference_id=&t1=&t2=&interval_s=&format=`
+exports **your own believed** state-vector history for a tracked object over a time span — the
+time-series sibling of the live RIC view (BLU-11): that view shows your belief right now, this
+exports it across a span. There is **no console control for it** — construct the URL yourself
+(address bar, script, or `curl`).
+
+Each row carries ECI and RIC (relative to `reference_id`) state vectors, sourced from **your
+own `Track.state_estimate`** at each sampled time — never ground truth, never another cell's
+belief. A sampled instant at which you held no Track on the object produces **no row for that
+instant** (an empty result, not a fabricated one) — if your custody lapsed partway through the
+span, the gap in the export is the honest record of that lapse. The reference object resolves to
+ground truth only when it is your own asset; otherwise it uses your own belief of it too, same
+rule as BLU-11's live view. `format=csv` (default) carries both frames; `format=oem` is
+ECI-only CCSDS OEM; `format=ric` is the RIC-only companion file. `t1`/`t2` are sim time as
+integer microseconds, the same units the event log uses — not a clock-face time.
+
+Use it to pull your own tracked picture of a target into an outside tool, or to compare your
+belief's drift against White's ground-truth export (WCM-15) during a debrief.
+
+> **Sources:** `spacesim/session/ephemeris.py` (`cell_observed_ephemeris`, `to_ric`, `write_csv`,
+> `write_oem`, `write_ric_csv`) · `GET /api/sessions/{sid}/ephemeris/{cell}` ·
+> [FS-121](../features/FS-121-ephemeris-export.md) (`FR-7420`/`FR-7430`)
+
+### BLU-14 · Your telemetry CSV export (URL-only)
+
+`GET /api/sessions/{sid}/telemetry/blue/{asset}/export.csv?t1=&t2=&interval_s=` exports your own
+asset's full 19-parameter telemetry history over a time span as CSV — the time-series sibling of
+the live telemetry panel you already read (BLU-6). Like BLU-13, it is **URL-only**, no console
+button.
+
+You can only export assets you own; a different cell's asset is rejected (404), the same
+fog-of-war rule the live panel already applies. Each row is computed on the world *replayed to
+that exact sampled instant*, so a historical anomaly shows up starting exactly at its own onset
+time — never back-dated into rows sampled before it actually fired. That precision is what makes
+the export trustworthy for reconstructing "when did this subsystem actually start degrading"
+after the fact, rather than just confirming it eventually did.
+
+> **Sources:** `spacesim/session/manager.py` (`telemetry_export`) ·
+> `spacesim/engine/telemetry.py` (`sample`, read via per-instant replay) ·
+> `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv` ·
+> [FS-126](../features/FS-126-telemetry-csv-export.md) (`FR-2320`)
+
 ---
