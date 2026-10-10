@@ -691,3 +691,66 @@ def test_ric_view_route_requires_origin():
     c = _client()
     sid = _coorbital_session(c)
     assert c.get(f"/api/sessions/{sid}/ric_view/blue").status_code == 422
+
+
+# -- IP-1211 (FR-7440) — quick TLE export route ------------------------------------------------
+
+def _coorbital_with_blue_track():
+    """A co-orbital session in which Blue holds a state-bearing Track on RED-COORB (seeded the same
+    way an observation does — a copy of the truth orbit at observation time, `orders.py`)."""
+    from spacesim.engine.custody import Track
+    from spacesim.session.inprocess import InProcessSession
+
+    api = InProcessSession()
+    c = TestClient(create_app(api))
+    sid = _coorbital_session(c)
+    world = api._sessions[sid].sim.world
+    world.tracks.append(Track(object="RED-COORB", owner="blue", last_observation=world.now,
+                              confidence=0.9,
+                              state_estimate=world.assets["RED-COORB"].orbit.model_copy(deep=True)))
+    return c, sid
+
+
+def test_tle_route_returns_lines_for_tracked_object():
+    pytest.importorskip("sgp4")
+    c, sid = _coorbital_with_blue_track()
+    r = c.get(f"/api/sessions/{sid}/tle/blue", params={"object_id": "RED-COORB"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["source"] == "track" and body["object_id"] == "RED-COORB" and body["cell"] == "blue"
+    assert len(body["line1"]) == 69 and len(body["line2"]) == 69
+    assert body["line1"].startswith("1 ") and body["line2"].startswith("2 ")
+    assert body["fit_error_m"] <= 1000.0 and body["note"]
+
+
+def test_tle_route_untracked_is_404():
+    pytest.importorskip("sgp4")
+    c = _client()
+    sid = _coorbital_session(c)
+    r = c.get(f"/api/sessions/{sid}/tle/blue", params={"object_id": "RED-COORB"})
+    assert r.status_code == 404
+    assert "track" in r.json()["detail"]
+
+
+def test_tle_route_requires_object_id():
+    c = _client()
+    sid = _coorbital_session(c)
+    assert c.get(f"/api/sessions/{sid}/tle/blue").status_code == 422
+
+
+def test_tle_route_white_reads_truth():
+    pytest.importorskip("sgp4")
+    c = _client()
+    sid = _coorbital_session(c)
+    r = c.get(f"/api/sessions/{sid}/tle/white", params={"object_id": "RED-COORB"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["source"] == "truth" and body["cell"] == "white"
+    assert len(body["line1"]) == 69
+
+
+def test_tle_export_client_surface_is_served():
+    c = _client()
+    assert 'src="/tleexport.js"' in c.get("/").text
+    js = c.get("/tleexport.js")
+    assert js.status_code == 200 and "/tle/" in js.text

@@ -827,6 +827,16 @@ class SessionManager:
             return ephemeris.live_ric_view(self.get_godview(), None, origin, chase=chase, target=target)
         return ephemeris.live_ric_view(self.sim.world, cell, origin, chase=chase, target=target)
 
+    def get_tle(self, cell: str, object_id: str) -> dict:
+        """IP-1211 (FR-7440) — quick current-epoch TLE export, wired exactly like
+        ``get_ric_view``: ``"white"`` reads ground truth via ``get_godview()`` (``FR-6220``); every
+        other cell exports only from its own Track (``FR-6210``). ``ValueError`` on rejection."""
+        from spacesim.session import ephemeris
+
+        if cell == "white":
+            return ephemeris.quick_tle(self.get_godview(), None, object_id)
+        return ephemeris.quick_tle(self.sim.world, cell, object_id)
+
     def _owns(self, cell: str, asset_id: str) -> bool:
         asset = self.sim.world.assets.get(asset_id)
         return asset is not None and (cell == "white" or asset.owner == cell)

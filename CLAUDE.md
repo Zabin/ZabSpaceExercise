@@ -335,6 +335,13 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   (umbra/penumbra interpolation; FW §11.B.10); `cats_phase_angle_deg()` (IP-1300, FR-8220) — the Sun-target-
   chaser illumination ("CATS") phase angle, the engine's single shared phase-angle function
   (`BL-0152`: any future `FR-1670` access predicate must call it, not re-derive it).
+- `spacesim/engine/tle_export.py` (IP-1211, FR-7440) — current-epoch TLE generation from any ECI
+  state: a single-epoch SGP4 mean-element fit (`state_to_tle()`; non-singular equinoctial
+  elements computed directly from r/v, safeguarded Newton + fixed-point correction, bounded and
+  deterministic), formatted by `sgp4.exporter.export_tle`, round-trip-checked against
+  `ROUND_TRIP_BOUND_M` (1 km) or rejected with `ValueError`. `tle_identity()` carries a TLE-sourced
+  orbit's catalog number/designator/B* forward; anything else gets the `99999` placeholder.
+  `sgp4` is lazy-imported (optional dependency), like `propagator._tle_rv`.
 - `spacesim/config.py` — `ServerConfig`/`load_server_config()`. `ContentConfig`/
   `load_content_config()` (IP-1180, FR-5410/FR-5420) — optional `content:` section
   (`external_vignette_dirs`, `user_save_dir`), same optional-file/`SPACESIM_CONFIG`-override
@@ -442,7 +449,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   current sim time via the unmodified `to_ric()`, own assets at truth + own Tracks at belief only
   (or ground truth for White via `SessionManager.get_ric_view()`'s explicit `get_godview()` branch —
   `build_scene()` has no `"white"` case), plus an unbanded CATS readout when chase+target are both
-  given; out-of-custody selections raise `ValueError`),
+  given; out-of-custody selections raise `ValueError`; **IP-1211 (FR-7440):** `quick_tle()` — a
+  current-epoch TLE for one satellite via `engine/tle_export.py`, a cell exporting only from its own
+  `Track.state_estimate` (own assets without a Track are rejected — `BL-0159`), White from ground
+  truth via `SessionManager.get_tle()`'s `get_godview()` branch; rejections raise `ValueError`),
   `assessment.py` (IP-2010 — read-only competency-rubric scoring: `score_custody_quality`/
   `score_window_discipline`/`score_belief_truth_divergence` + `assessment_report`, never a
   composite score; belief-truth divergence classifies aware/unaware from `custody_confidence_at_decision`,
@@ -463,6 +473,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **IP-1300 (FR-8210/FR-8220):** `GET /ric_view/{cell}?origin=&chase=&target=` — live RIC-frame
   view (+ CATS angle), 404 on an out-of-custody selection, rendered by `static/ricview.js`
   (View ▾ → RIC frame view; selection is non-persistent per BL-0156);
+  **IP-1211 (FR-7440):** `GET /tle/{cell}?object_id=` — quick current-epoch TLE export (404 on
+  any rejection), rendered by `static/tleexport.js` (View ▾ → TLE export: copyable textarea + Copy
+  button with a plain-HTTP `execCommand` fallback);
   **IP-1250 (FR-1320):** `/maneuver_ledger/{cell}/{asset}` (+ `/export.csv`) — the per-asset
   manoeuvre ledger view/CSV export, fog-scoped identically to `/telemetry/{cell}/{asset}`;
   **IP-1280 (FR-7330):** `/aar/playback/{start,advance,state,viewpoint,speed}` — the variable-

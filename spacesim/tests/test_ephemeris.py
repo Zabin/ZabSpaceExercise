@@ -380,3 +380,80 @@ def test_live_ric_view_is_read_only_and_deterministic():
     b = ephemeris.live_ric_view(mgr.sim.world, "blue", "SAT-BLUE", chase="SAT-BLUE", target="SAT-RED")
     assert a == b
     assert mgr.sim.world.model_dump_json() == before
+
+
+# -- quick_tle() (IP-1211, FR-7440) ----------------------------------------------------------------
+
+def _tle_position_m(out):
+    from sgp4.api import Satrec
+
+    sat = Satrec.twoline2rv(out["line1"], out["line2"])
+    err, r_km, _ = sat.sgp4(sat.jdsatepoch, sat.jdsatepochF)
+    assert err == 0
+    return np.array(r_km) * 1000.0
+
+
+def test_quick_tle_cell_uses_own_track_belief():
+    """FS-121 AC4/AC6/AC8 — after the target manoeuvres post-observation, the cell's TLE
+    reproduces its own (stale) belief, never the new ground truth; White's reproduces truth."""
+    pytest.importorskip("sgp4")
+    from spacesim.engine.tle_export import ROUND_TRIP_BOUND_M
+
+    mgr = _two_sat_manager_with_track(estimate_ta_deg=30.0)
+    world = mgr.sim.world
+    red = world.assets["SAT-RED"]
+    # A burn 10 min before `now` (after Blue's last observation snapshot): truth at `now` is ~90 km
+    # off Blue's belief, which was captured pre-burn.
+    red.orbit = ModeratePropagator().apply_impulse(
+        red.orbit, np.array([0.0, 0.0, 150.0]), world.now - 600 * 1_000_000)
+
+    blue = ephemeris.quick_tle(world, "blue", "SAT-RED")
+    assert blue["source"] == "track" and blue["object_id"] == "SAT-RED"
+    assert blue["epoch_iso"] == simtime.to_iso(world.now)
+    est = world.track_for("blue", "SAT-RED").state_estimate
+    r_belief, _ = ModeratePropagator().rv(est, world.now)
+    r_truth, _ = ModeratePropagator().rv(red.orbit, world.now)
+    assert np.linalg.norm(_tle_position_m(blue) - r_belief) <= ROUND_TRIP_BOUND_M
+    assert np.linalg.norm(_tle_position_m(blue) - r_truth) > 10e3  # the cross-track burn is not leaked
+
+    white = ephemeris.quick_tle(world, None, "SAT-RED")
+    assert white["source"] == "truth"
+    assert np.linalg.norm(_tle_position_m(white) - r_truth) <= ROUND_TRIP_BOUND_M
+
+
+def test_quick_tle_rejects_untracked_and_stateless_track():
+    """FR-7440 AC/Postcondition — no Track (or a Track with no state_estimate) → rejected."""
+    pytest.importorskip("sgp4")
+    mgr = _two_sat_manager_with_track()
+    world = mgr.sim.world
+    with pytest.raises(ValueError):
+        ephemeris.quick_tle(world, "red", "SAT-BLUE")  # red holds no Track on SAT-BLUE
+    world.track_for("blue", "SAT-RED").state_estimate = None
+    with pytest.raises(ValueError):
+        ephemeris.quick_tle(world, "blue", "SAT-RED")
+    with pytest.raises(ValueError):
+        ephemeris.quick_tle(world, None, "NO-SUCH-SAT")
+
+
+def test_quick_tle_own_asset_without_track_rejected():
+    """IP-1211 Design Decision 5 — FR-7440 read literally (BL-0159 deferred to 04): a cell's own
+    asset, on which it holds no Track, is not exportable through the cell-scoped path."""
+    pytest.importorskip("sgp4")
+    mgr = _two_sat_manager_with_track()
+    with pytest.raises(ValueError, match="track"):
+        ephemeris.quick_tle(mgr.sim.world, "blue", "SAT-BLUE")
+
+
+def test_quick_tle_is_read_only():
+    """FS-121 AC9 — producing a TLE mutates no world, RNG, or event-log state."""
+    pytest.importorskip("sgp4")
+    mgr = _two_sat_manager_with_track()
+    before = mgr.sim.world.model_dump_json()
+    rng_before = mgr.sim.rng.export_state()
+    log_before = len(mgr.sim.eventlog.entries)
+    a = ephemeris.quick_tle(mgr.sim.world, "blue", "SAT-RED")
+    b = ephemeris.quick_tle(mgr.sim.world, "blue", "SAT-RED")
+    assert a == b
+    assert mgr.sim.world.model_dump_json() == before
+    assert mgr.sim.rng.export_state() == rng_before
+    assert len(mgr.sim.eventlog.entries) == log_before

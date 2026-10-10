@@ -175,6 +175,7 @@
         <div class="menu-section">
           <div class="menu-head">Proximity</div>
           <button id="ric-open" class="menu-item" title="Live RIC-frame relative-motion view + CATS phase angle (FR-8210/FR-8220)">⊕ RIC frame view</button>
+          <button id="tle-open" class="menu-item" title="Copy a current-epoch two-line element set for a satellite your cell tracks (FR-7440)">⧉ TLE export</button>
         </div>
         <div class="menu-section">
           <div class="menu-head">Pop out (multi-screen)</div>
@@ -781,6 +782,17 @@
     <div id="ric-out"></div>
   </div>
 
+  <div id="tle-panel" role="dialog" aria-label="TLE export">
+    <span class="close" id="tle-close">✕</span>
+    <h3>TLE export</h3>
+    <div class="tle-pickers">
+      <label>Satellite <select id="tle-object"></select></label>
+    </div>
+    <textarea id="tle-text" rows="2" readonly spellcheck="false" aria-label="Two-line element set"></textarea>
+    <div class="tle-actions"><button id="tle-copy" type="button">⧉ Copy</button> <span id="tle-copied" class="muted"></span></div>
+    <div id="tle-meta" class="muted"></div>
+  </div>
+
   <div id="inspector-wrap" role="dialog" aria-label="Vignette inspector">
     <div id="inspector">
       <h3>Vignette inspector — <span id="inspector-id" class="muted"></span></h3>
@@ -798,6 +810,7 @@
   <script src="/graph.js"></script>
   <script src="/globe.js"></script>
   <script src="/ricview.js"></script>
+  <script src="/tleexport.js"></script>
   <script src="/app.js"></script>
   <script src="/creator.js"></script>
   <script src="/panels.js"></script>

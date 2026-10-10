@@ -395,6 +395,11 @@ class InProcessSession:
         with self._locked_read(session) as mgr:
             return mgr.get_ric_view(cell, origin, chase=chase, target=target)
 
+    def get_tle(self, session: str, cell: str, object_id: str) -> dict:
+        """IP-1211 (FR-7440) — quick current-epoch TLE export (read-only, fog applied)."""
+        with self._locked_read(session) as mgr:
+            return mgr.get_tle(cell, object_id)
+
     def get_telemetry(self, session: str, cell: str, asset: str):
         with self._locked_read(session) as mgr:
             return mgr.get_telemetry(cell, asset)

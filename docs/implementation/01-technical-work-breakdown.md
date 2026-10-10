@@ -386,7 +386,7 @@ that measured ≤ ~51 m round-trip residual across LEO/MEO/GEO/HEO/equatorial/re
 
 | Package | FS | Status | Authorization |
 |---|---|---|---|
-| [IP-1211](packages/IP-1211-quick-tle-export.md) | FS-121 v2.0 (`FR-7440`) | 🟡 READY | Pre-authorized by the project owner (MSTR-006 §3, 2026-10-10 session task instruction) — this package only |
+| [IP-1211](packages/IP-1211-quick-tle-export.md) | FS-121 v2.0 (`FR-7440`) | 🔵 COMPLETE (2026-10-10) | Pre-authorized by the project owner (MSTR-006 §3, 2026-10-10 session task instruction) — this package only |
 
 No cross-package sequencing constraint.
 

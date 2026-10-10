@@ -183,6 +183,49 @@ def live_ric_view(world, cell: Optional[str], origin: str, chase: Optional[str] 
             "objects": objects, "cats": cats}
 
 
+def quick_tle(world, cell: Optional[str], object_id: str) -> dict:
+    """IP-1211 (FR-7440) — a current-epoch TLE for ``object_id`` as ``cell`` is allowed to see it.
+
+    ``cell is None`` is the White-Cell / no-cell ground-truth path (``FR-6220``): any on-orbit
+    asset at its true orbit. A named cell exports only from its OWN ``Track.state_estimate`` on the
+    object (``FR-6210``, ``ADR-0004``) — never ground truth, never another cell's track. Per
+    Design Decision 5 (``FR-7440`` read literally; own-asset scope is ``BL-0159``, deferred to
+    requirements), a cell's own asset on which it holds no Track is NOT exportable, so this
+    deliberately does not reuse ``_live_state()``'s own-asset-at-truth branch for cells.
+
+    The TLE is a single-epoch SGP4 mean-element fit at ``world.now`` (``engine.tle_export``,
+    Design Decision 1); line-1 identity per Design Decision 2. Raises ``ValueError`` with a reason
+    on any rejection. Pure and read-only: no world mutation, no RNG, no wall clock.
+    """
+    from spacesim.engine.tle_export import LIMITATION_NOTE, orbit_to_tle
+
+    t = world.now
+    if cell is None:
+        asset = world.assets.get(object_id)
+        if asset is None:
+            raise ValueError(f"no object {object_id!r} in this session")
+        if asset.orbit is None:
+            raise ValueError(f"{object_id!r} has no orbit — not a satellite")
+        orbit, source = asset.orbit, "truth"
+    else:
+        tr = world.track_for(cell, object_id)
+        if tr is None:
+            raise ValueError(
+                f"{cell} holds no track on {object_id!r} — TLE export needs a held track "
+                "(own-asset export is not yet in scope)")
+        if tr.state_estimate is None:
+            raise ValueError(f"{cell}'s track on {object_id!r} carries no orbit estimate to export")
+        orbit, source = tr.state_estimate, "track"
+    r, v = _PROP.rv(orbit, t)
+    out = orbit_to_tle(orbit, r, v, t)
+    return {
+        "cell": cell if cell is not None else "white", "now": t, "object_id": object_id,
+        "name": object_id, "line1": out["line1"], "line2": out["line2"],
+        "epoch_iso": simtime.to_iso(t), "source": source,
+        "fit_error_m": round(out["fit_error_m"], 3), "note": LIMITATION_NOTE,
+    }
+
+
 def truth_ephemeris(mgr, object_id: str, reference_id: str, t1: int, t2: int,
                      interval_s: Optional[float] = None) -> list[dict]:
     """FR-7410 — ground-truth state vectors over a time span, ECI + RIC relative to

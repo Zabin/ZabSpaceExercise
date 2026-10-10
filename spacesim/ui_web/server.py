@@ -729,6 +729,18 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         except ValueError as exc:
             raise HTTPException(status_code=404, detail=str(exc))
 
+    @app.get("/api/sessions/{sid}/tle/{cell}")
+    def get_tle(sid: str, cell: str, object_id: str) -> dict:
+        """IP-1211 (FR-7440) — quick, copyable current-epoch TLE for one satellite. Fog applied
+        server-side: a cell exports only from its own Track; ``white`` reads ground truth via the
+        god-view path. Any rejection (no track, no estimate, unknown id, unrepresentable orbit) is
+        a 404 with the reason, like ``/ric_view``."""
+        _require(sid)
+        try:
+            return api.get_tle(sid, cell, object_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
+
     @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}")
     def telemetry(sid: str, cell: str, asset: str) -> dict:
         _require(sid)
