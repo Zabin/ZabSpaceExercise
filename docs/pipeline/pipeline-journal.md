@@ -13,32 +13,34 @@
 
 ## Position
 
-- **Updated:** 2026-10-11 (run #108 — advance, `09-training-manual-review`)
-- **Increment:** training-corpus currency after the `VERIFIED` export-hardening chain
-  (`IP-1210`/`IP-1260`/`IP-1261`/`IP-1262`). Run #102's telemetry-history-graph sections were
-  independently reviewed in [REV-TRN-003](../reviews/training-review-run102-scope.md) (commit
-  `8bc702f`). Run #102's own additions are accurate. Five findings concern surrounding prose:
-  1 Medium (`BL-0186`, RED-7 safe-mode parity does not hold in shipped content) and 4 Low.
+- **Updated:** 2026-10-11 (run #109 — advance, `08-training-manual-authoring`)
+- **Increment:** training-corpus currency and small export/inject boundary fixes after the
+  `VERIFIED` export-hardening chain. Run #109 worked off REV-TRN-003's prose findings in commit
+  `ef3b6e6`:
+  - RED-7 is qualified: no shipped Red satellite has a bus, but Blue's effects still leave
+    telemetry signatures.
+  - RED-13's example is fixed.
+  - `WCM-6` now covers White's any-asset drill-down.
+  - Matrix rows updated.
 - **Pipeline state:**
-  - `08-training-manual-authoring`: `BL-0186` (Medium) is queued with `BL-0189` and `BL-0190`, all
-    `SCHEDULED`.
-  - `09-training-manual-review`: run #107's scope (`10` §10.5/§10.6, `WCM-15`/`16`,
-    `BLU-13`/`14`, `RED-12`/`13`, §15.1 rows 79–80 and the matching §15.2 rows) needs a session
-    other than run #107's/#108's.
-  - `07`: `BL-0184` + `BL-0188` (both Low boundary-contract bugs, batched).
-  - `10`: the run #81 tranche with `BL-0169` riding; the export-hardening chain is a candidate for
-    its own integration review.
-  - `04`: `BL-0171` (now also carries REV-TRN-003 F3), `BL-0159`, `BL-0181`.
+  - `07`: `BL-0184` (telemetry export 422 vs 400) + `BL-0188` (silent bus-anomaly no-op), both
+    `SCHEDULED` as one remediation pass.
+  - `09-training-manual-review`: owed on run #107's scope and run #109's scope (`RED-7`,
+    `RED-13` example sentence, `WCM-6` bullet, §15.1 telemetry row, §15.2 `WCM-6`/`BLU-6`/`RED-7`
+    rows). Both need a session other than this one, which authored #107 and #109.
+  - `10`: the run #81 tranche with `BL-0169`; the export-hardening chain (after `BL-0184` lands,
+    ideally).
+  - `04`: `BL-0171` (+ REV-TRN-003 F3), `BL-0159`, `BL-0181`.
   - `06`: `FEAT-1600` (`BL-0122`), `FEAT-4400`/`FEAT-4600`, `BL-0183`.
-- **Backlog:** harvested `BL-0186` (Medium, `SCHEDULED` `08-tma`), `BL-0187` (`NEEDS-USER`, not
-  ripe: should shipped Red satellites get a `bus_state`?), `BL-0188` (Low bug, `SCHEDULED` `07`
-  with `BL-0184`), `BL-0189`/`BL-0190` (Low, `SCHEDULED` `08-tma`). `BL-0171` annotated (F3).
-  `BL-0172` annotated: review done. No `NEW` entries open.
-- **Next step:** `08-training-manual-authoring` on `BL-0186` + `BL-0189` + `BL-0190`, the
-  highest-severity due item at an upstream stage. Parallel: `07` on `BL-0184`/`BL-0188`;
-  `10-integration-review` on the export chain.
+- **Backlog:** `BL-0186`/`BL-0189`/`BL-0190` → `DONE` (independent review owed). `BL-0179`'s trigger
+  was tightened (White manual at 325 lines). No `NEW` entries open. `BL-0187` stays `NEEDS-USER`
+  (not ripe).
+- **Next step:** `07-implementation-planning` on `BL-0184` + `BL-0188`, one remediation package.
+  Those are the due upstream items, and `BL-0184` touches the export chain a later `10` would
+  review. Parallel: `10-integration-review` on the run #81 tranche (`BL-0169`).
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) is still deferred. `BL-0187` is
-  `NEEDS-USER` but not ripe. This thread has no blocking gate.
+  `NEEDS-USER`, not ripe. Owner pre-authorized `08-code-implementation` generically for packages
+  this iteration reaches (2026-10-11).
 
 ---
 
@@ -562,3 +564,4 @@
 | 106 | 2026-10-11 | advance (no override — run #105's recorded next step) | `09-package-verification` | `IP-1262` | Reconciled (origin tip `e700123` = run #105's own push; `IP-1262` `COMPLETE` on MBP/`packages/INDEX.md`/ROADMAP, own header — no drift). Triaged: zero `NEW` entries; `BL-0176`/`BL-0174` ride this step (fresh-session verification target), `BL-0182` carries a revisit trigger on this very step. Gate check: verification is not gated; independence confirmed (this worktree checked out directly from `origin/claude/chart-prompt-file-90hm9u` at `e700123` onto a local tracking branch, no prior commit by this session on the branch). Invoked `09-package-verification`: re-derived every Definition-of-Done and Verification-Checklist item from the tree, not the Implementation Summary. Read `sample_times`' code directly (arithmetic count check precedes list construction; all three call sites — `truth_ephemeris`, `cell_observed_ephemeris`, `telemetry_export` — confirmed by `grep`/read to share it). Independently timed rejection of requests implying ~10¹⁵–10²⁴ instants (six orders of magnitude past the implementer's own ~10⁷ test): 0.003–0.005 ms at the module level, 3.49 ms through a full HTTP round trip, with no growth tied to the attempted count — proving the arithmetic pre-check claim (the DoS-shaped bug this package exists to fix is genuinely closed). Independently rebuilt `interval_s` boundary tests (`0`, negative, `nan`, ±inf), the exact-ceiling/one-over boundary, and the `BL-0174` reversed-window rider on fresh scenarios/vignettes distinct from the implementer's fixtures — all confirmed. Independently reproduced the fail-first claim on a detached pre-fix worktree at `daa1915` (new test files only, production code left at pre-fix state): 8/10 new cases failed, matching exactly. Full suite independently re-run: **833 passed, 3 skipped** (matches exactly); both permanent gates independently re-run by name: **14 passed**. Audited traceability: RTM `FR-7410`/`FR-7420`/`FR-2320` rows correctly cite `IP-1262`; MBP/`packages/INDEX.md`/ROADMAP rows and the package's own header all agreed `COMPLETE` before this report. Wrote [`VR-1262`](../implementation/verification/VR-1262-export-sampling-bounds.md): **VERIFIED, clean** — 1 Low finding (F1: `FS-121`/`FS-126`'s own `Referenced By` fields still tag `IP-1262`/`IP-1261` `READY`, stale and pre-existing, not this package's own claim; filed `BL-0183`, left unedited per this skill's own Feature-Specification boundary, matching `VR-1260`/`VR-1261` precedent). Flipped `IP-1262` `COMPLETE → VERIFIED` on the MBP, `packages/INDEX.md`, `ROADMAP.md`, the verification `INDEX.md`, and (unlike the apparent gap left in `IP-1261`'s own header after `VR-1261`) the package's own Status header. Resolved `BL-0176` → `DONE` (closed by `VR-1262`). Resolved `BL-0174`'s rider status → `DONE` (independently re-confirmed on a fresh scenario, not merely re-run). `BL-0182`'s revisit trigger fired (verification passed clean) → `DEFERRED → SCHEDULED`. Harvested 1 new finding: `BL-0183` (Low, FS `Referenced By` status-tag staleness, entry stage `06`). Committed verification + ledger updates, pushed to `origin/claude/chart-prompt-file-90hm9u` (merged with concurrent remote commits, no force-push, PR #55 unchanged). | `00-pipeline-manager` has no more packages blocked solely on `IP-1262`; recommend `08-training-manual-authoring` on the `BL-0084`/`BL-0177`/`BL-0178`/`BL-0180`/`BL-0182` batch (all now `SCHEDULED`, same sections), or `10-integration-review` if this tranche's packages (`IP-1210`/`IP-1260`/`IP-1261`/`IP-1262`, all now `VERIFIED`) are ready to be reviewed together. |
 | 107 | 2026-10-11 | advance (no override — first of run #106's two recorded candidates) | `08-training-manual-authoring` | `BL-0084` + `BL-0177` + `BL-0178` + `BL-0180` + `BL-0182` (batched) | Reconciled against the tree (origin tip `d1fa748` = run #106's push). `IP-1262` is `VERIFIED` on the MBP and `packages/INDEX.md`; the known ROADMAP drift is `BL-0169`; no new drift. Triage: zero `NEW` entries; all five batch entries were `SCHEDULED` for this step; no `DEFERRED` trigger fired. Step 3 chose this batch over the `10` and `09` candidates, following run #102's precedent that a due upstream backlog item comes before downstream review. The batch includes `BL-0084`, a Medium. Gate check: not gated. Invoked `08-training-manual-authoring` and verified as-built behaviour live through `TestClient`. Interval checks: ephemeris routes answer 400 for `0`/`-1`/`nan`/`inf`; the telemetry export answers **422** for `0`/`-1`/`nan` (`Query(gt=0)`) and 400 for `inf`. The over-ceiling message names the minimum `interval_s`. Exporting your own asset through `/ephemeris/blue` returns 200 with the header only. The target picker comes from `app.js::populateTargetPicker` and `TARGET_REQUIRED_ACTIONS`. Edits: `10-ui-reference.md` §10.5 row 5, §10.6 row 4 and a screenshot note; `WCM-15`/`WCM-16`, including the `WCM-6` → §10.13 fix; `BLU-13`/`BLU-14`; `RED-12`/`RED-13`; footers; §15.1 rows 79–80 and six §15.2 rows. `test_vignette_tutorials.py` 16 passed; links resolve. Commit `2778526`. Harvested 2: `BL-0184` (Low bug, 422 vs 400; `SCHEDULED` `07`) and `BL-0185` (Low, `render_manual.py` ref-05/06 stale; `DEFERRED`). Closed `BL-0084`, `BL-0177`, `BL-0178`, `BL-0180` and `BL-0182` (`DONE`, independent review owed). `BL-0179` annotated (320 lines). | `09-training-manual-review` on run #102's scope (+ run #107's, if the reviewing session authored neither). |
 | 108 | 2026-10-11 | advance (no override — run #107's recorded next step) | `09-training-manual-review` | Run #102's scope (`BLU-6`, `RED-7`, `05` §Diagnosing, `10` §10.13 row 5, §15.1 telemetry row, §15.2 `BLU-6`/`RED-7`) | Reconciled (origin tip `cddb111` = run #107's own push; no drift). Triaged: zero `NEW` entries. Gate check: review is not gated. Independence: this session authored run #107, not run #102, so run #107's edits were excluded. Invoked `09-training-manual-review` with live drives through `TestClient` on `geo-rpo-shadowing` seed 7, on cells and parameters different from the shipped tests. Results: a 120-point window covering the last hour (or since the epoch); a bus anomaly on `BLUE-HVA` first deviates at the first post-onset sample, with 0 pre-onset deviations; Red-cell series/export parity 7/7; nominal ghost clean; fog 404. Found that **all 9 shipped Red satellites lack `bus_state`** (vs 1 of 31 Blue), so RED-7's safe-mode/recovery parity claim never holds in shipped content, and a bus anomaly on a bus-less asset is a silent `ok: true` no-op. White can open the drill-down (200 on any asset) but has no `WCM` coverage. Section-ID audit: 43 referenced, 0 orphans. Playbook suite 16/16. Wrote [REV-TRN-003](../reviews/training-review-run102-scope.md) + ROADMAP review paragraph, commit `8bc702f`: **0 Critical / 0 High / 1 Medium / 4 Low**. Harvested 5 entries: `BL-0186` (F1), `BL-0187` (F1(a), `NEEDS-USER`, not ripe), `BL-0188` (F2), `BL-0189` (F4), `BL-0190` (F5). F3 annotated onto `BL-0171`. `BL-0172` annotated (review done). | `08-training-manual-authoring` on `BL-0186` + `BL-0189` + `BL-0190`. |
+| 109 | 2026-10-11 | advance (no override — run #108's recorded next step) | `08-training-manual-authoring` | `BL-0186` + `BL-0189` + `BL-0190` (batched) | Reconciled (origin tip `eed8952` = run #108's own push; no drift). Triaged: zero `NEW` entries; all three batch entries were `SCHEDULED` for this step. Gate check: not gated. Invoked `08-training-manual-authoring`. As-built facts came from run #108's live drives plus fresh code reads: `app.js::renderFleet`/`rollup` show `—` and an uncoloured dot for a bus-less asset; `engine/telemetry.py` attack flags come from `active_effects`; White's fleet rail is fed from `/godview`. Edits:<br>• `RED-7` rewritten: Blue's effects still leave signatures; no shipped Red satellite has a bus, so there is no SOH, safe mode or recovery in practice; the full rules apply when a vignette authors one.<br>• `RED-13` example no longer cites a Red safe-mode event (same defect class).<br>• `WCM-6` gains an any-asset telemetry drill-down bullet.<br>• `RED-7`/`WCM-6` footers updated.<br>• §15.1 telemetry row White = `WCM-6`; §15.2 `WCM-6`, `BLU-6` (+ series route) and `RED-7` rows updated.<br>Section-ID audit: 0 orphans. Playbook suite 16/16. Commit `ef3b6e6`. Closed `BL-0186`/`BL-0189`/`BL-0190` (`DONE`, independent review owed). `BL-0179` trigger tightened (White manual at 325 lines). No new findings. | `07-implementation-planning` on `BL-0184` + `BL-0188`. |
