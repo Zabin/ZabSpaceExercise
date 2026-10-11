@@ -31,7 +31,7 @@
   separate, not-yet-adjudicated "Adjacent observation" (whether `FR-2310` pass-gating should apply
   to historical points in `get_series`/`telemetry_export`) was **split off** to a new entry,
   **`BL-0171`** (`design-question`, entry stage `04`, `SCHEDULED` in parallel/non-blocking — it
-  does not gate `BL-0170`'s `07`/`08` work). Committed backlog-only changes as `<commit>` on
+  does not gate `BL-0170`'s `07`/`08` work). Committed backlog-only changes as `64e760a` on
   `claude/chart-prompt-file-90hm9u`, pushed.
 - **Pipeline state:**
   - `10`: still available on the run #81 nine-package `VERIFIED` tranche. `BL-0169` (`ROADMAP.md`
