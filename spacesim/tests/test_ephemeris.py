@@ -507,3 +507,43 @@ def test_ephemeris_exports_unchanged_after_migration():
                                                  interval_s=120)
     assert observed == _reference_rows(mgr, observed_row, t0, now, 120)
     assert observed and len(observed) < len(truth)   # the dropped track leaves later instants empty
+
+
+# -- IP-1262 (BL-0176) — export sampling bounds ---------------------------------------------------
+
+@pytest.mark.parametrize("bad", [0.0, -5.0, float("inf"), float("nan")])
+def test_sample_times_rejects_non_positive_or_non_finite_interval(bad):
+    """Test 1 — an explicit interval_s must be finite and > 0 (it used to floor to a 1 us step)."""
+    with pytest.raises(ValueError):
+        ephemeris.sample_times(0, 10_000_000, interval_s=bad)
+
+
+def test_sample_times_enforces_sample_count_ceiling_arithmetically():
+    """Test 2 — over-ceiling requests are rejected before any list is built; at the ceiling OK."""
+    import time
+    cap = ephemeris.MAX_EXPORT_SAMPLES
+    step_s = 1.0
+    span_us = int((cap - 1) * step_s * 1_000_000)
+    assert len(ephemeris.sample_times(0, span_us, interval_s=step_s)) == cap
+    with pytest.raises(ValueError) as exc:
+        ephemeris.sample_times(0, span_us + 1_000_000, interval_s=step_s)
+    msg = str(exc.value)
+    assert str(cap) in msg and "interval_s" in msg
+    t = time.perf_counter()
+    with pytest.raises(ValueError):
+        ephemeris.sample_times(0, 10**13, interval_s=1e-6)   # ~1e13 instants if built naively
+    assert time.perf_counter() - t < 0.5
+
+
+def test_ephemeris_exports_propagate_over_ceiling_rejection():
+    """Test 3 — both ephemeris exports surface the ValueError for an over-ceiling request."""
+    mgr = _two_sat_manager_with_track()
+    mgr.step(600)
+    lo, _ = ephemeris._valid_range(mgr)
+    # A 20 ms span at a 1 us step = 20,001 instants (> MAX_EXPORT_SAMPLES), kept small so the
+    # pre-fix tree fails this test quickly rather than hanging.
+    with pytest.raises(ValueError):
+        ephemeris.truth_ephemeris(mgr, "SAT-RED", "SAT-BLUE", lo, lo + 20_000, interval_s=1e-6)
+    with pytest.raises(ValueError):
+        ephemeris.cell_observed_ephemeris(mgr, "blue", "SAT-RED", "SAT-BLUE", lo, lo + 20_000,
+                                          interval_s=0.0)

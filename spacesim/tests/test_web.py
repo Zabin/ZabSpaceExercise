@@ -824,3 +824,33 @@ def test_tle_export_client_surface_is_served():
     assert 'src="/tleexport.js"' in c.get("/").text
     js = c.get("/tleexport.js")
     assert js.status_code == 200 and "/tle/" in js.text
+
+
+# -- IP-1262 (BL-0176) — export sampling bounds at the route ---------------------------------------
+
+def test_ephemeris_routes_reject_non_positive_interval_400():
+    """Test 5 — interval_s <= 0 is a 400 on both ephemeris routes (was a 1 us step / hang)."""
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    now = c.get(f"/api/sessions/{sid}/clock").json()["now"]
+    base = {"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH", "t1": now - 20_000, "t2": now}
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth", params={**base, "interval_s": 0})
+    assert r.status_code == 400
+    r = c.get(f"/api/sessions/{sid}/ephemeris/blue", params={**base, "interval_s": -1})
+    assert r.status_code == 400
+
+
+def test_telemetry_export_route_rejects_over_ceiling_interval_400():
+    """Test 6 — a tiny positive interval_s (passes gt=0) is a 400 naming the ceiling."""
+    from spacesim.session import ephemeris
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    now = c.get(f"/api/sessions/{sid}/clock").json()["now"]
+    r = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv",
+              params={"t1": now - 20_000, "t2": now, "interval_s": 0.000001})
+    assert r.status_code == 400
+    assert str(ephemeris.MAX_EXPORT_SAMPLES) in r.json()["detail"]

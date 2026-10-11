@@ -455,7 +455,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `ephemeris.py` (IP-1210, FR-7410/FR-7420 — truth/cell-observed ephemeris export: `sample_times()`/
   `truth_ephemeris()`/`cell_observed_ephemeris()`/`to_ric()` (reuses `engine/maneuver.py::
   lvlh_frame` directly for the RIC transform)/`write_csv()`/`write_oem()`; a wholly-out-of-range
-  time span is rejected, a partially-out-of-range span is silently clamped; cell-observed reads
+  time span is rejected, a partially-out-of-range span is silently clamped; **IP-1262:**
+  `sample_times()` is the single sampling choke point for all three time-span exports (both
+  ephemeris + `telemetry_export`) — a non-finite/non-positive explicit `interval_s`, or sampling
+  over `MAX_EXPORT_SAMPLES` (10,000) instants, raises `ValueError` (→ 400) before any replay; cell-observed reads
   only the requesting cell's own `Track.state_estimate`, never ground truth; **IP-1300
   (FR-8210/FR-8220):** `live_ric_view()` — the live, operator-selected-origin RIC view at the
   current sim time via the unmodified `to_ric()`, own assets at truth + own Tracks at belief only

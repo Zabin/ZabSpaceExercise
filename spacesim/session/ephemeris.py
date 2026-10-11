@@ -12,6 +12,7 @@ Truth reads ground-truth `Asset.orbit`; cell-observed reads the requesting cell'
 from __future__ import annotations
 
 import io
+import math
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -25,6 +26,11 @@ from spacesim.session import aar
 from spacesim.session.manager import BUS_TICK_PERIOD_S
 
 _PROP = ModeratePropagator()
+
+# IP-1262 (BL-0176) — hard ceiling on the instants one time-span export may sample. Sized from a
+# measured ~1.25 s 10,000-instant telemetry export on `multi-domain-taiwan` at +6 h; the default
+# interval (span/100, floored at one bus tick) always stays far below it (<= 101 instants).
+MAX_EXPORT_SAMPLES = 10_000
 
 
 def _valid_range(mgr) -> tuple[int, int]:
@@ -48,13 +54,31 @@ def _clamp_or_reject(mgr, t1: int, t2: int) -> tuple[int, int]:
 def sample_times(t1: int, t2: int, interval_s: Optional[float] = None) -> list[int]:
     """Build the list of sampled instants in ``[t1, t2]``. Design Decision 2 (IP-1210, BL-0098):
     an explicit ``interval_s`` is used as given; omitted, defaults to a coarse interval derived
-    from the span itself (``span / 100``), clamped to a minimum of one bus-tick period."""
+    from the span itself (``span / 100``), clamped to a minimum of one bus-tick period.
+
+    IP-1262 (BL-0176) — the single choke point every time-span export samples through:
+    an explicit ``interval_s`` that is not finite or not ``> 0`` raises ``ValueError``; so does a
+    request whose instant count would exceed ``MAX_EXPORT_SAMPLES`` (checked arithmetically,
+    before any list is built or replay run), naming the smallest ``interval_s`` that would fit.
+    The export routes map ``ValueError`` to HTTP 400."""
+    if interval_s is not None and not (math.isfinite(interval_s) and interval_s > 0):
+        raise ValueError(f"interval_s must be a finite number > 0, got {interval_s!r}")
     if t2 < t1:
         return []
     span_s = (t2 - t1) / 1_000_000.0
     if interval_s is None:
         interval_s = max(span_s / 100.0, BUS_TICK_PERIOD_S) if span_s > 0 else BUS_TICK_PERIOD_S
     step = max(int(interval_s * 1_000_000), 1)
+    count = (t2 - t1) // step + 1
+    if count > MAX_EXPORT_SAMPLES:
+        # Smallest whole-microsecond step that fits (ceil division), plus 1 us of headroom so a
+        # caller copying the suggested value survives float->int truncation of interval_s * 1e6.
+        min_interval_us = -(-(t2 - t1) // (MAX_EXPORT_SAMPLES - 1)) + 1
+        raise ValueError(
+            f"requested sampling yields {count} instants, over the export ceiling of "
+            f"MAX_EXPORT_SAMPLES={MAX_EXPORT_SAMPLES}; use interval_s >= "
+            f"{min_interval_us / 1_000_000.0:.6f} for this span"
+        )
     times = []
     t = t1
     while t <= t2:

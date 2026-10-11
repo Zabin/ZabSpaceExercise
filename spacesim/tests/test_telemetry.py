@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from spacesim.content.vignette import load_vignette
 from spacesim.engine import telemetry as tel
 from spacesim.engine.bus import BusState, enter_safe_mode
@@ -361,3 +363,33 @@ def test_series_replay_cost_is_single_pass():
     distinct = {sum(1 for e in entries if e.sim_time <= p["t"]) for p in pts}
     assert len(distinct) >= 3          # the window genuinely spans several positions
     assert 0 < calls["n"] <= len(entries)
+
+
+# -- IP-1262 (BL-0176, rider BL-0174) -------------------------------------------------------------
+
+def test_telemetry_export_over_ceiling_rejected_without_replay(monkeypatch):
+    """Test 4 — a pathological interval_s is rejected before any replay is run."""
+    from spacesim.session import aar
+    mgr, t0, _ = _export_mgr()
+    called = {"n": 0}
+    real = aar.worlds_at_times
+
+    def spy(*a, **k):
+        called["n"] += 1
+        return real(*a, **k)
+
+    monkeypatch.setattr(aar, "worlds_at_times", spy)
+    with pytest.raises(ValueError):
+        mgr.telemetry_export("blue", "ISR-EO-1", t0, t0 + 20_000, interval_s=1e-6)
+    assert called["n"] == 0
+
+
+def test_series_reversed_window_matches_forward_reversed():
+    """Test 7 (BL-0174 rider) — get_series with t0 > t1 does not raise and returns the forward
+    call's points in reverse order, value/status identical at every shared instant."""
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    fwd = mgr.get_series("blue", "ISR-EO-1", "snr_db", t0=t0, t1=now, n=9)["points"]
+    rev = mgr.get_series("blue", "ISR-EO-1", "snr_db", t0=now, t1=t0, n=9)["points"]
+    assert [p["t"] for p in rev] == [p["t"] for p in fwd][::-1]
+    assert [(p["value"], p["status"]) for p in rev] == [(p["value"], p["status"]) for p in fwd][::-1]

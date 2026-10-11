@@ -759,7 +759,8 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         (one row per sampled instant x parameter). Fog-scoped identically to
         `/telemetry/{cell}/{asset}` (own assets only, White sees any; 404 otherwise). Omitted
         bounds default to the recorded range; a partially out-of-range span is clamped, a wholly
-        out-of-range one is a 400 (same rule as `/ephemeris`)."""
+        out-of-range one is a 400 (same rule as `/ephemeris`). IP-1262: a request whose sampling
+        would exceed `ephemeris.MAX_EXPORT_SAMPLES` instants is also a 400 naming the ceiling."""
         _require(sid)
         try:
             rows = api.telemetry_export(sid, cell, asset, t1=t1, t2=t2, interval_s=interval_s)
@@ -908,7 +909,9 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def ephemeris_truth(sid: str, object_id: str, reference_id: str, t1: int, t2: int,
                          interval_s: Optional[float] = None, format: str = "csv") -> str:
         """IP-1210 (FR-7410) — ground-truth ephemeris export over a time span, ECI + RIC. A
-        no-cell, White-Cell-only endpoint (`FR-6220`), like `/godview`/`/eventlog`/`/aar*`."""
+        no-cell, White-Cell-only endpoint (`FR-6220`), like `/godview`/`/eventlog`/`/aar*`.
+        IP-1262: a non-finite or non-positive `interval_s`, or sampling over
+        `ephemeris.MAX_EXPORT_SAMPLES` instants, is a 400."""
         _require(sid)
         try:
             rows = api.truth_ephemeris(sid, object_id, reference_id, t1, t2, interval_s=interval_s)
@@ -927,7 +930,9 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
                                 t1: int, t2: int, interval_s: Optional[float] = None,
                                 format: str = "csv") -> str:
         """IP-1210 (FR-7420) — `cell`'s own believed ephemeris over a time span, ECI + RIC. Same
-        fog-of-war trust level as every other cell-scoped read (`/view/{cell}`, `/scene/{cell}`)."""
+        fog-of-war trust level as every other cell-scoped read (`/view/{cell}`, `/scene/{cell}`).
+        IP-1262: a non-finite or non-positive `interval_s`, or sampling over
+        `ephemeris.MAX_EXPORT_SAMPLES` instants, is a 400."""
         _require(sid)
         try:
             rows = api.cell_observed_ephemeris(sid, cell, object_id, reference_id, t1, t2,
