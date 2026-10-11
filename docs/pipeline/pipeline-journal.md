@@ -13,31 +13,43 @@
 
 ## Position
 
-- **Updated:** 2026-10-11 (run #111 — advance, `08-code-implementation`)
-- **Increment:** inject-path hardening and training-corpus currency after the `VERIFIED`
-  export-hardening chain. **`IP-1063` is `COMPLETE`** (commit `2900437`):
-  - `validate_inject_effects` rejects malformed or FR-4430-precondition-failing injects
-    atomically at the White boundary (400 with the reason).
-  - The handler skips an invalid effect with a White message instead of raising mid-handler.
-  - 15 new tests, all seen failing first. Full suite 848 passed / 3 skipped; both permanent gates
-    green.
-  - Live check: `anomaly` on `RED-INSP` (no bus) → 400; on `BLUE-HVA` → 200 and `safe_mode`.
+- **Updated:** 2026-10-11 (run #112 — advance, `09-package-verification`, fresh session)
+- **Increment:** `IP-1063` closed out. **`IP-1063` is `VERIFIED`** via
+  [VR-1063](../implementation/verification/VR-1063-inject-effect-fire-time-validation.md)
+  (fresh session, independent of runs #110/#111, first pass, clean):
+  - Atomic boundary reject re-confirmed with a *stronger* multi-effect scenario (invalid effect
+    last, two valid effects preceding it — none applied).
+  - Handler skip-never-raise re-confirmed: the original crash independently reproduced on the
+    pre-fix tree (`470be0d`, detached worktree) with a fresh scenario, and confirmed gone (plus
+    the post-crash effect now correctly applying) on the fixed tree.
+  - `BL-0188` re-confirmed over real HTTP on a vignette/asset pair distinct from the package's own
+    fixture (`leo-isr-denial`/`RED-ASAT`/`ISR-EO-1`, not `geo-rpo-shadowing`/`RED-INSP`/`BLUE-HVA`).
+  - Replay parity on the skip path re-derived with a different malformed-effect shape/scenario —
+    byte-identical.
+  - `engine/` confirmed untouched. "Shipped content validates clean" independently re-run from
+    scratch (19 vignettes, 35 effects, 8 types) and confirmed non-vacuous via a sanity check.
+  - Full suite 848 passed / 3 skipped (independently re-run, matches exactly); both permanent
+    gates green (14).
+  - 1 Low finding (`BL-0193`, pre-existing `FS-106` doc staleness, same pattern as `BL-0183`; not
+    a defect of `IP-1063`).
+  - `BL-0129` and `BL-0188` **closed**. `BL-0192`'s revisit trigger fired: `DEFERRED → SCHEDULED`.
 - **Pipeline state:**
-  - `09-package-verification`: **`IP-1063` needs a fresh session.** This session planned (#110)
-    and implemented (#111) it, so it cannot verify it.
   - `09-training-manual-review`: owed on run #107's and run #109's scopes. Both need a session
     other than this one.
   - `10`: the run #81 tranche with `BL-0169`; the export-hardening chain
-    (`IP-1210`/`IP-1260`/`IP-1261`/`IP-1262`).
+    (`IP-1210`/`IP-1260`/`IP-1261`/`IP-1262`). `IP-1063` is a standalone package (no dependents),
+    so it does not join either tranche by itself.
   - `04`: `BL-0171`, `BL-0159`, `BL-0181`.
-  - `06`: `FEAT-1600` (`BL-0122`), `FEAT-4400`/`FEAT-4600`, `BL-0183` + `BL-0191`.
-- **Backlog:** `BL-0129`/`BL-0188` stay `IN PIPELINE` (close on `IP-1063` `VERIFIED`). Harvested
-  `BL-0192` (Low, `IP-1063` manual impact on `WCM-5`/§10.3; `DEFERRED` until `IP-1063` is
-  `VERIFIED`). No `NEW` entries open. `BL-0187` stays `NEEDS-USER`, not ripe.
-- **Next step:** `09-package-verification` on `IP-1063`, **in a fresh session** (riding `BL-0129` +
-  `BL-0188`). Also available to a session independent of runs #107/#109:
-  `09-training-manual-review` on those scopes. Available to any session: `10-integration-review`
-  on the export chain or the run #81 tranche; `06` on `BL-0183` + `BL-0191`.
+  - `06`: `FEAT-1600` (`BL-0122`), `FEAT-4400`/`FEAT-4600`, `BL-0183` + `BL-0191` + `BL-0193`.
+  - `08-training-manual-authoring`: `BL-0192` is now `SCHEDULED` (ready to ride the next pass).
+- **Backlog:** `BL-0129`/`BL-0188` `CLOSED` this run. `BL-0192` `DEFERRED → SCHEDULED`. New entry
+  `BL-0193` (Low, FS-106 doc staleness) filed by this run's verification. No `NEW` entries open.
+  `BL-0187` stays `NEEDS-USER`, not ripe.
+- **Next step:** no package is currently `COMPLETE` awaiting verification. Available to any
+  session: `09-training-manual-review` on runs #107/#109's scopes; `10-integration-review` on the
+  export chain or the run #81 tranche; `06-feature-specification` on `BL-0183` + `BL-0191` +
+  `BL-0193` (FS metadata hygiene + FS-106 Error Handling ratification); `08-training-manual-authoring`
+  on `BL-0192`. Recommend `09-training-manual-review` next, as it has been owed longest.
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) is still deferred. `BL-0187` is
   `NEEDS-USER`, not ripe. No other gate.
 
@@ -566,3 +578,4 @@
 | 109 | 2026-10-11 | advance (no override — run #108's recorded next step) | `08-training-manual-authoring` | `BL-0186` + `BL-0189` + `BL-0190` (batched) | Reconciled (origin tip `eed8952` = run #108's own push; no drift). Triaged: zero `NEW` entries; all three batch entries were `SCHEDULED` for this step. Gate check: not gated. Invoked `08-training-manual-authoring`. As-built facts came from run #108's live drives plus fresh code reads: `app.js::renderFleet`/`rollup` show `—` and an uncoloured dot for a bus-less asset; `engine/telemetry.py` attack flags come from `active_effects`; White's fleet rail is fed from `/godview`. Edits:<br>• `RED-7` rewritten: Blue's effects still leave signatures; no shipped Red satellite has a bus, so there is no SOH, safe mode or recovery in practice; the full rules apply when a vignette authors one.<br>• `RED-13` example no longer cites a Red safe-mode event (same defect class).<br>• `WCM-6` gains an any-asset telemetry drill-down bullet.<br>• `RED-7`/`WCM-6` footers updated.<br>• §15.1 telemetry row White = `WCM-6`; §15.2 `WCM-6`, `BLU-6` (+ series route) and `RED-7` rows updated.<br>Section-ID audit: 0 orphans. Playbook suite 16/16. Commit `ef3b6e6`. Closed `BL-0186`/`BL-0189`/`BL-0190` (`DONE`, independent review owed). `BL-0179` trigger tightened (White manual at 325 lines). No new findings. | `07-implementation-planning` on `BL-0184` + `BL-0188`. |
 | 110 | 2026-10-11 | advance (no override — run #109's recorded next step) | `07-implementation-planning` | `BL-0184` + `BL-0188` (+ due `BL-0129` in the same seam) | Reconciled (origin tip `470be0d` = run #109's own push; no drift). Triaged: zero `NEW` entries. `BL-0129` (Medium, `VR-1062` M1, `SCHEDULED` `07` since 2026-09-27) was found due in the same inject seam as `BL-0188` and folded into this step. Gate check: planning is not gated, and authoring a package is not authorization. Invoked `07-implementation-planning`, checking every cited line at `470be0d`: `manager.py` `fire_inject :780-797`, the `_apply_inject_effects` loop at `:938` and the `anomaly` guard at `:1020`; `inprocess.py :288-291`; `server.py :445-448`; `app.js` `api.post :44-49`, where a 200 `ok:false` would render "✓ fired", hence the 400 mapping. Authored **[IP-1063](../implementation/packages/IP-1063-inject-effect-fire-time-validation.md)**: a pure `validate_inject_effects` used at `fire_inject` (atomic boundary reject → `Ack(ok=False)` → 400) and per effect in the handler (skip + White message, never raise; `IP-1062` DD2 handler no-op kept). Seven tests, including replay parity on the skip path and "all shipped content validates clean". Updated the TWBS, MBP row + note, `packages/INDEX.md`, the ROADMAP row and FS-106 `Produces`. Commit `c69b238`. `BL-0184` **not planned**: the 422 is `IP-1262` DD1's disclosed, `VR-1262`-verified decision. Closed it `REJECTED` (by design; reopen on owner request). `BL-0129`/`BL-0188` → `IN PIPELINE`. Harvested `BL-0191` (Low, FS-106 Error Handling should ratify the boundary decision; `SCHEDULED` `06` with `BL-0183`). **Authorization:** `IP-1063` pre-authorized by the project owner 2026-10-11 (MSTR-006 §3, session task instruction for this iteration's packages; same precedent as `IP-1211`/`IP-1300`/`IP-1260`/`IP-1261`/`IP-1262`). | `08-code-implementation` on `IP-1063`. |
 | 111 | 2026-10-11 | advance (no override — run #110's recorded next step) | `08-code-implementation` | `IP-1063` | Reconciled (origin tip `290c2a3` = run #110's own push; `IP-1063` `READY` on MBP/`packages/INDEX.md`/ROADMAP; no drift). Triaged: zero `NEW` entries; `BL-0129`/`BL-0188` ride this step. **Gate check:** the MSTR-006 §3 authorization gate was cleared by the project owner's pre-authorization on 2026-10-11 of the packages this iteration reaches (session task instruction; same precedent as `IP-1211`/`IP-1300`/`IP-1260`/`IP-1261`/`IP-1262`). Invoked `08-code-implementation`: MBP marked `IN PROGRESS` before any edit, and work was test-first. 15 new tests (Tests 1–7, 8 of them parametrized validator cases, plus `test_web.py::test_inject_route_rejects_invalid_inject_400`), all seen failing first (`ImportError`, did-not-raise, raw `KeyError` mid-handler, 200 instead of 400). Implementation:<br>• `session/manager.py`: module-level pure `validate_inject_effects`/`_inject_effect_problem`; the `fire_inject` atomic reject; the per-effect skip guard plus a `compute_maneuver` guard in `_apply_inject_effects` via `_skip_inject_effect`.<br>• `session/inprocess.py`: `ValueError` → `Ack(ok=False)`.<br>• `ui_web/server.py`: `/inject` returns 400 on a failed `Ack`.<br>No `engine/` file was touched. Full suite **848 passed / 3 skipped** (851 collected, JUnit); `test_determinism.py` + `test_import_guard.py` 14 passed. Live check on `geo-rpo-shadowing`: `RED-INSP` → 400 naming the missing bus; `BLUE-HVA` → 200 + `safe_mode`. Updated the RTM `FR-4410`/`FR-4430` rows, the `CLAUDE.md` code map, the package header, MBP, `packages/INDEX.md` and ROADMAP → `COMPLETE`. Commit `2900437`. Harvested 1: `BL-0192` (manual impact on `WCM-5`/§10.3, `DEFERRED` to `IP-1063` `VERIFIED`). `BL-0129`/`BL-0188` annotated, still `IN PIPELINE`. | `09-package-verification` on `IP-1063`, **fresh session required** (this session planned and implemented it). |
+| 112 | 2026-10-11 | advance (no override — run #111's recorded next step) | `09-package-verification` | `IP-1063` | Reconciled (origin tip `19fa973` = run #111's own push; `IP-1063` `COMPLETE` on MBP/`packages/INDEX.md`/ROADMAP; no drift). Triaged: zero `NEW` entries; `BL-0129`/`BL-0188` ride this step, `BL-0192`'s revisit trigger is pending on the outcome. **Independence:** fresh session with no involvement in `2900437`/`c69b238`/`290c2a3`/`19fa973` or any prior commit on this branch — checked out `origin/claude/chart-prompt-file-90hm9u` at `19fa973` onto a new local tracking branch (`verify-ip1063-local`), satisfying the skill's same-session exclusion. Gate check: verification isn't MSTR-006 §3-gated. Invoked `09-package-verification` on `IP-1063`: read the package, FS-106, the RTM rows, and every cited line/diff in `2900437` directly. Independently re-derived (not re-read) every load-bearing claim with fixtures distinct from the implementer's own: the atomicity property with a *stronger* three-effect scenario (invalid effect last, two valid effects preceding it — confirmed none applied, not merely "stops before the first bad effect"); the BL-0129 crash reproduced from scratch on the pre-fix tree (`470be0d`, detached worktree, removed after) with an existing-asset `scripted_manoeuvre`/unknown-mode scenario, confirmed crashing there and confirmed fixed (with correct skip-and-continue past it) on the current tree; `BL-0188` reproduced end-to-end over real HTTP on `leo-isr-denial`/`RED-ASAT`/`ISR-EO-1` (not the implementer's `geo-rpo-shadowing`/`RED-INSP`/`BLUE-HVA`); replay parity on the skip path re-derived with a different malformed-effect shape (`forced_custody_loss` missing `cell`) and scenario, confirmed byte-identical via `model_dump_json()`; `engine/` confirmed untouched (`git show 2900437 --stat`); the "shipped content validates clean" claim independently re-run with a from-scratch script (not the shipped test), confirmed non-vacuous (19 vignettes, 18 injects, 35 effects, 8 distinct types, 0 problems, plus a sanity check that a genuinely bad effect of a shipped type is correctly flagged). Ran the full suite (**848 passed/3 skipped**, exactly matching) and both permanent gates by name (14 passed). Scope audit (`git show --stat 2900437`) confirmed the implementing commit touched exactly the package's declared file set, additions-only in both test files, no `engine/` file. Wrote [`VR-1063`](../implementation/verification/VR-1063-inject-effect-fire-time-validation.md): **VERIFIED, clean**, 1 Low finding (`BL-0193`, `FS-106`'s own `Produces` field stale — same pattern as `BL-0183`; not a defect of `IP-1063`). `IP-1063` flipped `COMPLETE → VERIFIED` on the MBP, `packages/INDEX.md`, ROADMAP and its own header; verification `INDEX.md` row added. `BL-0129`/`BL-0188` **closed**. `BL-0192`'s revisit trigger fired: `DEFERRED → SCHEDULED`. Harvested 1: `BL-0193` (Low, filed this run). | `09-training-manual-review` on run #107's/#109's scopes (owed longest); also available: `10-integration-review` on the export chain or the run #81 tranche; `06-feature-specification` on `BL-0183`+`BL-0191`+`BL-0193`; `08-training-manual-authoring` on `BL-0192`. |

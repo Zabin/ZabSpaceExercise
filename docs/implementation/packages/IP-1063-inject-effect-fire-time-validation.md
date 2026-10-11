@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1063
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE 2026-10-11 (`08-code-implementation`, pipeline run #111; awaiting `09-package-verification` in a fresh session). `validate_inject_effects` + `_inject_effect_problem` (module-level, pure) in `session/manager.py`; `fire_inject` rejects atomically; `_apply_inject_effects` skips invalid effects (+ `compute_maneuver` guard) via `_skip_inject_effect`; `InProcessSession.fire_inject` → `Ack(ok=False)`; `/inject` → 400. 15 new tests (Tests 1–7 incl. 8 parametrized cases + route test), all 15 observed failing first (Test 7 only on the not-yet-existing import; it guards shipped content and passed as soon as the validator existed, as the package anticipated). Full suite 848 passed/3 skipped (851 collected, JUnit), both permanent gates green (14).
+> **Status:** ✅ VERIFIED 2026-10-11 via [VR-1063](../verification/VR-1063-inject-effect-fire-time-validation.md) (`09-package-verification`, fresh session, first pass, clean — 1 Low finding `BL-0193`, pre-existing `FS-106` doc staleness, not a defect of this package). Closes `BL-0129` and `BL-0188`. Independently re-confirmed: atomic boundary reject (with a *stronger* multi-effect scenario than this package's own test), handler skip-never-raise (the pre-fix crash reproduced on `470be0d` and confirmed gone on the fixed tree), BL-0188's bus-less-asset reject (on a different vignette/asset pair), and replay parity on the skip path (with a different malformed-effect shape). Previously: 🔵 COMPLETE 2026-10-11 (`08-code-implementation`, pipeline run #111). `validate_inject_effects` + `_inject_effect_problem` (module-level, pure) in `session/manager.py`; `fire_inject` rejects atomically; `_apply_inject_effects` skips invalid effects (+ `compute_maneuver` guard) via `_skip_inject_effect`; `InProcessSession.fire_inject` → `Ack(ok=False)`; `/inject` → 400. 15 new tests (Tests 1–7 incl. 8 parametrized cases + route test), all 15 observed failing first (Test 7 only on the not-yet-existing import; it guards shipped content and passed as soon as the validator existed, as the package anticipated). Full suite 848 passed/3 skipped (851 collected, JUnit), both permanent gates green (14).
 > *(Authored 2026-10-11, `07-implementation-planning`, pipeline run #110; authorized by the project owner
 > 2026-10-11, MSTR-006 §3, session pre-authorization of this iteration's packages.)*
 > **Dependencies:** [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.1 (`FR-4410`,
@@ -279,22 +279,27 @@ None.
 
 ## Verification Checklist
 
-- [ ] `git diff` of the implementing commit touches no file under `spacesim/engine/`.
-- [ ] `grep -n "validate_inject_effects" spacesim/session/manager.py` shows the definition and
+- [x] `git diff` of the implementing commit touches no file under `spacesim/engine/`.
+- [x] `grep -n "validate_inject_effects" spacesim/session/manager.py` shows the definition and
       **both** call sites (`fire_inject` and `_apply_inject_effects`).
-- [ ] The `fire_inject` call precedes every `self.sim.schedule(...)` in that method (read it).
-- [ ] Tests 1–7 exist and pass. Tests 1–6 were observed failing first, as recorded in the
+- [x] The `fire_inject` call precedes every `self.sim.schedule(...)` in that method (read it).
+- [x] Tests 1–7 exist and pass. Tests 1–6 were observed failing first, as recorded in the
       Implementation Summary.
-- [ ] Independent reproduction on `geo-rpo-shadowing`: `POST /inject` with `{"type": "anomaly",
-      "target": "RED-INSP", "subsystem": "bus"}` → 400. The same inject on `BLUE-HVA` → 200, and
-      `bus_mode` becomes `safe_mode`.
-- [ ] Independent reproduction of `BL-0129`: a scheduled inject with a malformed second effect
-      advances without an exception, and `replay()` reproduces the live world.
-- [ ] No pre-existing test file was modified except by additions (`git diff --stat`).
-- [ ] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
-- [ ] The RTM `FR-4430`/`FR-4410` rows cite `IP-1063`.
-- [ ] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
+- [x] Independent reproduction (on a different vignette/asset pair, `leo-isr-denial`/`RED-ASAT`/
+      `ISR-EO-1`, per [VR-1063](../verification/VR-1063-inject-effect-fire-time-validation.md)):
+      `POST /inject` with an `anomaly` on a bus-less asset → 400. The same inject on an asset with
+      a bus → 200, and `bus_mode` becomes `safe_mode`.
+- [x] Independent reproduction of `BL-0129`: a scheduled inject with a malformed second effect
+      advances without an exception, and `replay()` reproduces the live world. (Also independently
+      reproduced the original crash on the pre-fix tree, `470be0d` — see VR-1063.)
+- [x] No pre-existing test file was modified except by additions (`git diff --stat`).
+- [x] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
+- [x] The RTM `FR-4430`/`FR-4410` rows cite `IP-1063`.
+- [x] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
       agree on status.
+
+**Verified** 2026-10-11 via [VR-1063](../verification/VR-1063-inject-effect-fire-time-validation.md)
+(`09-package-verification`, fresh session, first pass, clean).
 
 ## Dependencies
 
