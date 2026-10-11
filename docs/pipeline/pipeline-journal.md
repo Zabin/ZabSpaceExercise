@@ -13,28 +13,35 @@
 
 ## Position
 
-- **Updated:** 2026-10-11 (run #104 — advance, `07-implementation-planning`)
-- **Increment:** export-hardening remediation. **[`IP-1262`](../implementation/packages/IP-1262-export-sampling-bounds.md)
-  is `READY`** (commit `c7d70dc`). It validates explicit `interval_s` (finite, `> 0`) and caps the
-  sample count at `MAX_EXPORT_SAMPLES = 10,000` in `session/ephemeris.py::sample_times`, the single
-  choke point for all three time-span exports. The ceiling is sized from this pass's measurement:
-  about 1.25 s for a 10k-instant export on `multi-domain-taiwan` at +6 h. The package also carries
-  `BL-0174`'s reversed-window `get_series` test as a rider. MSTR-006 §3 authorization was granted by
-  the project owner on 2026-10-11 (session pre-authorization of this iteration's packages).
+- **Updated:** 2026-10-11 (run #105 — advance, `08-code-implementation`)
+- **Increment:** export-hardening remediation. **`IP-1262` is `COMPLETE`** (commit `4fd4591`).
+  `session/ephemeris.py::sample_times`, the single sampling choke point for both ephemeris exports
+  and `telemetry_export`, now rejects a non-finite or non-positive explicit `interval_s`. It also
+  rejects any request over `MAX_EXPORT_SAMPLES` (10,000) instants, checked before any replay;
+  rejections surface as a 400. The package carries the `BL-0174` reversed-window `get_series`
+  regression test as a rider. 10 new tests were added. The full suite is 833 passed / 3 skipped and
+  both permanent gates are green. Measured on `multi-domain-taiwan` +6 h: a 9,999-instant export
+  takes 1.26 s, and an over-ceiling request is rejected in ~0.1 ms.
 - **Pipeline state:**
-  - `08-code-implementation`: `IP-1262` is `READY` and authorized.
+  - `09-package-verification`: `IP-1262` is `COMPLETE` and needs a **fresh session**. This session
+    planned and implemented it, so the same-session exclusion applies. `BL-0176` and `BL-0174` ride
+    this step.
+  - `09-training-manual-review`: run #102's scope (`BLU-6`, `RED-7`, `05` §Diagnosing, `10` §10.13
+    row 5, §15.1 row 61 and the matching §15.2 rows) also needs a session other than this one.
   - `08-training-manual-authoring`: `BL-0084` (Medium) is queued with `BL-0177`, `BL-0178` and
-    `BL-0180`. `IP-1262`'s new 400 will add a manual-impact note once it ships.
-  - `09-training-manual-review`: run #102's scope still needs a session other than run #102's.
-  - `10`: the run #81 tranche is still pending, with `BL-0169` riding.
-  - `04`: `BL-0171`, `BL-0159` and `BL-0181` are non-blocking.
-  - `06`: `FEAT-1600` and the `FEAT-4400`/`FEAT-4600` additions.
-- **Backlog:** `BL-0176` and `BL-0174` moved to `IN PIPELINE` (`IP-1262`). No new findings were
-  harvested, and no `NEW` entries are open.
-- **Next step:** `08-code-implementation` on `IP-1262` (authorized). After that, a **fresh-session**
-  `09-package-verification`.
-- **Open gates:** `IP-1160` authorization (MSTR-006 §3) is still deferred. `IP-1262` is cleared by
-  the 2026-10-11 pre-authorization.
+    `BL-0180`. `BL-0182` (`IP-1262` manual impact) joins the batch once `IP-1262` is `VERIFIED`.
+  - `10`: the run #81 tranche is pending, with `BL-0169` riding.
+  - `04`: `BL-0171`, `BL-0159` and `BL-0181`.
+  - `06`: `FEAT-1600` (`BL-0122`) and the `FEAT-4400`/`FEAT-4600` additions.
+- **Backlog:** harvested `BL-0182` (Low, `IP-1262` manual impact). It is `DEFERRED` until
+  `IP-1262` is `VERIFIED`, then goes to the `08-tma` batch. `BL-0176` and `BL-0174` stay
+  `IN PIPELINE`, with entry stage now `09`. No `NEW` entries are open.
+- **Next step:** `09-package-verification` on `IP-1262` (riding `BL-0176`/`BL-0174`) in a **fresh
+  session**. A session that implemented nothing in scope may instead take `09-training-manual-review`
+  on run #102's scope. This session can still take `08-training-manual-authoring` on the
+  `BL-0084` batch.
+- **Open gates:** `IP-1160` authorization (MSTR-006 §3) is still deferred and unchanged. This
+  thread has no gate.
 
 ---
 
@@ -554,3 +561,4 @@
 | 102 | 2026-10-11 | advance (no override — first of run #101's three recorded ungated candidates) | `08-training-manual-authoring` | `BL-0172` | Reconciled against the tree (origin tip `859d5be` = run #101's push): `IP-1261` `VERIFIED` on MBP/`packages/INDEX.md`/ROADMAP with `VR-1261` on disk — agrees with run #101's row. **Drift corrected:** the Position block still described run #100 (run #101 appended its row but did not rewrite Position); rewritten this run. Triaged: zero `NEW` entries; `BL-0172` `SCHEDULED` for exactly this step; no `DEFERRED` trigger fired. Step 3: chose `BL-0172` over the two ungated `09-training-manual-review`/`10-integration-review` candidates (a due backlog item at an upstream stage outranks downstream review). Gate check: manual authoring is not gated. Invoked `08-training-manual-authoring`: verified as-built behaviour by reading `session/manager.py::get_series`, `session/aar.py::worlds_at_times` and `ui_web/static/app.js::drawParam` (`?n=120`, optional `&nominal=1` ghost). Updated `BLU-6` (per-instant history, last-hour/120-point window, onset trustworthy, agrees with the `BLU-14` export at shared instants), `RED-7` (same, pointing to `RED-13`), both `> Sources:` footers, `05-core-concepts.md` §"Diagnosing attacks from telemetry" (one clause), `10-ui-reference.md` §10.13 row 5 (was "60-pt rolling"), `15-manual-traceability.md` §15.1 "Telemetry signatures + nominal ghost" row + §15.2 `BLU-6`/`RED-7` rows. No new section IDs, so `INDEX.md`/ROADMAP/learning path unchanged. `test_vignette_tutorials.py` 16 passed. Committed `6e323bc`. Harvested 1: `BL-0175` (the "60-pt" error, fixed same run, `DONE`). `BL-0172` → `DONE`. | `09-training-manual-review` on run #97's scope (run #102's scope needs a different session). |
 | 103 | 2026-10-11 | advance (no override — run #102's recorded next step) | `09-training-manual-review` | Run #97's scope (`WCM-15`/`16`, `BLU-13`/`14`, `RED-12`/`13`, §15.1 rows 79–80 + §15.2 rows, `INDEX.md` summaries) + `BL-0084` | Reconciled (origin tip `7c38b20` = run #102's own push; no drift). Triaged: zero `NEW` entries; `BL-0084`'s revisit trigger ("the next `09-training-manual-review` run") fired → folded into this step's target. Gate check: review is not gated. Independence: this session authored none of run #97's sections; run #102's own edits (same session) were explicitly excluded. Invoked `09-training-manual-review`: checked every claim in code and drove the key ones live on `test_ephemeris.py`'s two-satellite session (span clamp/reject, default sampling, truth vs track-only belief, no-track gap, ownership 404, 19-parameter rows, OEM header). Wrote [REV-TRN-002](../reviews/training-review-run97-scope.md) + ROADMAP review-theme paragraph, commit `2f405df`. Result: prose accurate, traceability consistent, playbook suite 16/16, **0 Critical / 0 High / 2 Medium / 5 Low**. Harvested 6: `BL-0176` (F1, Medium bug — export `interval_s` unbounded below → 1 µs sampling can freeze a session; `SCHEDULED` `07`), `BL-0177` (F3), `BL-0178` (F4), `BL-0180` (F6) (Low prose/anchor, `SCHEDULED` `08-tma`), `BL-0179` (F5, `12-white-cell-manual.md` 310 lines; `DEFERRED` to next White-manual addition), `BL-0181` (F7, µs-only bounds usability; `DEFERRED` to next `04`). `BL-0084` → `SCHEDULED` (F2 confirmed; rides next `08-tma`). | `07-implementation-planning` on `BL-0176`. |
 | 104 | 2026-10-11 | advance (no override — run #103's recorded next step) | `07-implementation-planning` | `BL-0176` (+ rider `BL-0174`) | Reconciled (origin tip `daa1915` = run #103's own push; no drift). Triaged: zero `NEW` entries; `BL-0176` `SCHEDULED` for exactly this step; `BL-0174` (test-only, needs a package to reach `08`) folded in as a rider. Gate check: planning is not gated. Invoked `07-implementation-planning`: Step 0 confirmed FS-121 v2.0 / FS-126 v1.0 approved and that the sampling ceiling is explicitly a `07` decision (FS-121 Risks + Open Question 2; `IP-1210` Design Decision 2's disclosed deferral). Measured cost on `multi-domain-taiwan` (seed 1, +6 h, 73 entries): 0.19 s / 0.88 s / 1.25 s for 1k/5k/10k-instant telemetry exports, 1.1 s for a 10k truth ephemeris. Authored [`IP-1262`](../implementation/packages/IP-1262-export-sampling-bounds.md) (all 14 fields; `interval_s` finite/`> 0` + `MAX_EXPORT_SAMPLES = 10,000` arithmetic check in `sample_times` before any list/replay; 7 tests incl. the `BL-0174` rider; every cited file/line checked at `daa1915`); TWBS section, MBP row + note, `packages/INDEX.md` row, ROADMAP row, FS-121/FS-126 `Referenced By` links. Status `READY`; **MSTR-006 §3 authorization recorded as granted by the project owner 2026-10-11** (session pre-authorization). Committed `c7d70dc`. Harvested 0 new findings. `BL-0176`/`BL-0174` → `IN PIPELINE`. | `08-code-implementation` on `IP-1262` (authorized), then a fresh-session `09-package-verification`. |
+| 105 | 2026-10-11 | advance (no override — run #104's recorded next step) | `08-code-implementation` | `IP-1262` | Reconciled (origin tip `4578850` = run #104's own push; `IP-1262` `READY` on MBP/`packages/INDEX.md`/ROADMAP — no drift). Triaged: zero `NEW` entries; `BL-0176`/`BL-0174` ride this step. Gate check: MSTR-006 §3 authorization for `IP-1262` on record (project owner, 2026-10-11 session pre-authorization of this iteration's packages) — cleared; no other gate. Invoked `08-code-implementation`: `IP-1262` `READY → IN PROGRESS → COMPLETE`, test-first (Tests 1-6 observed failing first — `OverflowError` on `inf`, missing `MAX_EXPORT_SAMPLES`, DID-NOT-RAISE on the exports, 200 instead of 400 on the routes; Test 1's `nan` case already raised by accident, rider Test 7 passing on arrival, both as the package predicted). Baseline 823 passed/3 skipped → **833 passed/3 skipped** (836 collected, JUnit-tallied); `test_determinism.py` + `test_import_guard.py` 14 passed. Updated RTM `FR-7410`/`FR-7420`/`FR-2320`, `CLAUDE.md` code map, MBP/`packages/INDEX.md`/ROADMAP rows, package Status header. Ceiling measurement recorded (9,999-instant export 1.26 s on `multi-domain-taiwan` +6 h). Committed `4fd4591`. Harvested 1: `BL-0182` (manual impact — new 400 on the URL-only exports; `DEFERRED` until `IP-1262` `VERIFIED`). | `09-package-verification` on `IP-1262` (riding `BL-0176`/`BL-0174`) in a **fresh session**; this session may continue with `08-training-manual-authoring` on the `BL-0084` batch. |
