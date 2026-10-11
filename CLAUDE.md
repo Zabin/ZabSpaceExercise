@@ -222,7 +222,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/eventlog.py` — `EventLog`, `EventLogEntry`, `Snapshot`.
 - `spacesim/engine/world.py` — `WorldState` (pydantic; minimal in P1, extended later).
 - `spacesim/engine/handlers.py` — event-handler registry (`(world, payload, rng) -> None`).
-- `spacesim/engine/simulation.py` — `Simulation` driver + `replay()` + `SavedSession`.
+- `spacesim/engine/simulation.py` — `Simulation` driver + `replay()` + `SavedSession`;
+  `replay_stepwise()` (IP-1261) — one forward replay pass yielding the world at several
+  non-decreasing event-log positions (`replay()` itself unchanged).
 - `spacesim/engine/geometry.py` — frames (GMST ECI↔ECEF), WGS84 geodety, topocentric look angles.
 - `spacesim/engine/sun.py` — analytic Sun direction + cylindrical eclipse/lighting test.
 - `spacesim/engine/orbit.py` — `OrbitState`, Kepler+J2 element↔state, regime classification.
@@ -440,7 +442,11 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
   `aar.py` (replay/scrub/branch-compare + `snapshot_at`; `state_at_time(mgr, t)` (IP-1210,
   FR-7410/FR-7420) — additive sibling of `state_at(mgr, seq)`, reconstructing at an arbitrary sim
-  time instead of an eventlog sequence number, used by `ephemeris.py`'s time-span sampling;
+  time instead of an eventlog sequence number; `worlds_at_times(mgr, times)` (IP-1261, BL-0170) —
+  its time-span counterpart, one forward pass over `replay_stepwise()` (live-tail shortcut: no
+  replay when every instant is at/after the last entry), shared by `manager.py::get_series` (the
+  console's telemetry graphs, now per-instant history rather than back-dated live state),
+  `telemetry_export`, and both `ephemeris.py` exports;
   `PlaybackSession` (IP-1280, FR-7330) — continuous, speed-adjustable timeline playback built
   entirely on repeated `state_at_time()` calls, from ground truth or a `CellController`-filtered
   single-cell viewpoint (`_participant_cells()` rejects a non-participating cell at construction/

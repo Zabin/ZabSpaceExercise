@@ -457,3 +457,53 @@ def test_quick_tle_is_read_only():
     assert mgr.sim.world.model_dump_json() == before
     assert mgr.sim.rng.export_state() == rng_before
     assert len(mgr.sim.eventlog.entries) == log_before
+
+
+# -- IP-1261 (BL-0170) — ephemeris exports migrated onto the shared single-pass helper -----------
+
+def _reference_rows(mgr, row_fn, t1, t2, interval_s):
+    """The pre-IP-1261 algorithm: one `state_at_time` replay per sampled instant."""
+    from spacesim.session import aar
+    t1, t2 = ephemeris._clamp_or_reject(mgr, t1, t2)
+    return [row for t in ephemeris.sample_times(t1, t2, interval_s)
+            for row in row_fn(aar.state_at_time(mgr, t), t)]
+
+
+def test_ephemeris_exports_unchanged_after_migration():
+    mgr = _two_sat_manager_with_track()
+    t0 = mgr.sim.clock.now
+    mgr.advance_to(t0 + 900 * 1_000_000)
+    mgr.fire_inject([{"type": "scripted_manoeuvre", "target": "SAT-RED", "mode": "eci",
+                      "params": {"dv": [5.0, 0.0, 0.0]}}])
+    mgr.advance_to(t0 + 1200 * 1_000_000)
+    mgr.fire_inject([{"type": "forced_custody_loss", "cell": "blue", "target": "SAT-RED",
+                      "mode": "drop"}])
+    mgr.advance_to(t0 + 1800 * 1_000_000)
+    now = mgr.sim.clock.now
+    assert len({e.sim_time for e in mgr.sim.eventlog.entries}) >= 3
+
+    def truth_row(world, t):
+        r_t, v_t = ephemeris._PROP.rv(world.assets["SAT-RED"].orbit, t)
+        r_r, v_r = ephemeris._PROP.rv(world.assets["SAT-BLUE"].orbit, t)
+        ric_r, ric_v = ephemeris.to_ric(r_t, v_t, r_r, v_r)
+        return [{"t": t, "eci_r": r_t.tolist(), "eci_v": v_t.tolist(),
+                 "ric_r": ric_r.tolist(), "ric_v": ric_v.tolist()}]
+
+    def observed_row(world, t):
+        tr = world.track_for("blue", "SAT-RED")
+        if tr is None or tr.state_estimate is None:
+            return []
+        r_t, v_t = ephemeris._PROP.rv(tr.state_estimate, t)
+        r_r, v_r = ephemeris._PROP.rv(world.assets["SAT-BLUE"].orbit, t)
+        ric_r, ric_v = ephemeris.to_ric(r_t, v_t, r_r, v_r)
+        return [{"t": t, "eci_r": r_t.tolist(), "eci_v": v_t.tolist(),
+                 "ric_r": ric_r.tolist(), "ric_v": ric_v.tolist(),
+                 "confidence": tr.current_confidence(t),
+                 "uncertainty_km": tr.current_uncertainty_km(t)}]
+
+    truth = ephemeris.truth_ephemeris(mgr, "SAT-RED", "SAT-BLUE", t0, now, interval_s=120)
+    assert truth == _reference_rows(mgr, truth_row, t0, now, 120)
+    observed = ephemeris.cell_observed_ephemeris(mgr, "blue", "SAT-RED", "SAT-BLUE", t0, now,
+                                                 interval_s=120)
+    assert observed == _reference_rows(mgr, observed_row, t0, now, 120)
+    assert observed and len(observed) < len(truth)   # the dropped track leaves later instants empty

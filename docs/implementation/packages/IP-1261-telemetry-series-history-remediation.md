@@ -2,8 +2,16 @@
 
 > **Package ID:** IP-1261
 > **Version:** 1.0
-> **Status:** 🟢 READY *(fully specified; every dependency package `VERIFIED`; MSTR-006 §3
-> authorization granted by the project owner 2026-10-11 — see Dependencies)*
+> **Status:** 🔵 COMPLETE *(implemented 2026-10-11 by `08-code-implementation`; authorized by the
+> project owner 2026-10-11, MSTR-006 §3. `engine/simulation.py::replay_stepwise()` (additive;
+> `replay()` untouched) + `session/aar.py::worlds_at_times()` (single forward pass, live-tail
+> shortcut); `get_series`, `telemetry_export`, `truth_ephemeris`, `cell_observed_ephemeris` all
+> route through it. 10 new tests (6 in `test_telemetry.py`, 2 in `test_aar.py`, 1 each in
+> `test_ephemeris.py`/`test_web.py`); Tests 1-4 + 10 and the cost guard observed failing first.
+> Full suite 823 passed/3 skipped (826 collected, JUnit-tallied; baseline 813/3), both permanent
+> gates green (14 passed). Measured cost on `multi-domain-taiwan` at +6 h (73 entries): ~4.3-4.7
+> ms per `get_series(n=120)` call, ~90-100 ms per 21-call drill rebuild. Awaiting a fresh-session
+> `09-package-verification` to advance to `VERIFIED`.)*
 > **Dependencies:** [FS-126](../../features/FS-126-telemetry-csv-export.md) v1.0 (`FR-2320`),
 > [FS-121](../../features/FS-121-ephemeris-export.md) v2.0 (`FR-7410`/`FR-7420` — behaviour
 > preserved, not changed), [IP-1260](IP-1260-telemetry-csv-export.md) (`VERIFIED` 2026-10-10,

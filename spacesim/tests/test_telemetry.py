@@ -249,3 +249,115 @@ def test_telemetry_export_default_span_is_the_recorded_range():
     rows = mgr.telemetry_export("blue", "ISR-EO-1", interval_s=600)
     assert sorted({r["t"] for r in rows}) == [t0, t0 + minutes(10), t0 + minutes(20)]
     assert {r["param"] for r in rows} == set(tel.PARAMS)
+
+
+# -- IP-1261 (BL-0170, FR-2320 parity) — the live series route reads each instant's own world ----
+
+def _replay_ref(mgr, asset, param, t, nominal=False):
+    from spacesim.session import aar
+    return tel.sample(aar.state_at_time(mgr, t), asset, param, t, mgr.sim._seed, nominal=nominal)
+
+
+def _assert_series_matches_replay(mgr, asset, param, t0, t1, n, nominal=False):
+    pts = mgr.get_series("blue", asset, param, t0=t0, t1=t1, n=n, nominal=nominal)["points"]
+    for p in pts:
+        ref = _replay_ref(mgr, asset, param, p["t"], nominal=nominal)
+        assert (p["value"], p["status"]) == (ref["value"], ref["status"]), (param, p["t"])
+    return pts
+
+
+def _paused_mgr():
+    mgr = SessionManager(load_vignette("training-basics"), seed=1)
+    mgr.start()
+    mgr.set_clock(False)
+    return mgr, mgr.ctx.start_epoch
+
+
+def test_series_pre_onset_matches_replay():
+    """Scenario A — a bus anomaly at +600 s must not be back-dated onto pre-onset points."""
+    mgr, t0, t_anom = _export_mgr()
+    now = mgr.sim.clock.now
+    for param in ("snr_db", "attitude_error_deg", "battery_soc"):
+        pts = _assert_series_matches_replay(mgr, "ISR-EO-1", param, t0, now, 7)
+        if param == "snr_db":
+            assert all(p["status"] == "green" for p in pts if p["t"] < t_anom)
+            assert all(p["status"] == "red" for p in pts if p["t"] >= t_anom)
+    # The nominal ghost reads per-instant state too (battery SoC baseline).
+    _assert_series_matches_replay(mgr, "ISR-EO-1", "battery_soc", t0, now, 7, nominal=True)
+
+
+def test_series_cyber_cpu_load_pre_onset_matches_replay():
+    """Scenario B — a cyber-cause anomaly's CPU-load signature starts at its own onset."""
+    mgr, t0 = _paused_mgr()
+    mgr.advance_to(t0 + minutes(10))
+    mgr.fire_inject([{"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus", "cause": "cyber"}])
+    mgr.advance_to(t0 + minutes(20))
+    pts = _assert_series_matches_replay(mgr, "ISR-EO-1", "cpu_load_pct", t0, mgr.sim.clock.now, 7)
+    pre = [p["value"] for p in pts if p["t"] < t0 + minutes(10)]
+    post = [p["value"] for p in pts if p["t"] >= t0 + minutes(10)]
+    assert max(pre) < min(post)
+
+
+def test_series_cleared_episode_stays_in_history():
+    """Scenario C — a safe-mode episode that was later cleared must still show in history."""
+    mgr, t0 = _paused_mgr()
+    mgr.advance_to(t0 + minutes(5))
+    mgr.fire_inject([{"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus", "cause": "c"}])
+    mgr.advance_to(t0 + minutes(10))
+    mgr.fire_inject([{"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus", "restore": True}])
+    mgr.advance_to(t0 + minutes(15))
+    pts = _assert_series_matches_replay(mgr, "ISR-EO-1", "snr_db", t0, mgr.sim.clock.now, 7)
+    in_episode = [p for p in pts if t0 + minutes(5) <= p["t"] < t0 + minutes(10)]
+    assert in_episode and all(p["status"] == "red" for p in in_episode)
+
+
+def test_series_destroyed_asset_not_los_before_kill():
+    from spacesim.engine.effects import EffectInstance
+    mgr, t0 = _paused_mgr()
+    mgr.advance_to(t0 + minutes(10))
+    kill = EffectInstance(category="direct_ascent", segment="orbital", actor="RED-ASAT",
+                          target="ISR-EO-1", intended_outcome="destroy", success_prob=1.0)
+    mgr.sim.schedule(mgr.sim.clock.now, "execute_effect", {"effect": kill.model_dump()}, actor="red")
+    mgr.advance_to(t0 + minutes(20))
+    assert mgr.sim.world.assets["ISR-EO-1"].health == "destroyed"
+    pts = _assert_series_matches_replay(mgr, "ISR-EO-1", "rx_power_dbm", t0, mgr.sim.clock.now, 5)
+    assert all(p["value"] is not None for p in pts if p["t"] < t0 + minutes(10))
+    assert all(p["status"] == "los" for p in pts if p["t"] > t0 + minutes(10))
+
+
+def test_series_instants_and_shape_unchanged():
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    r = mgr.get_series("blue", "ISR-EO-1", "snr_db", t0=t0, t1=now, n=13)
+    assert set(r) == {"asset", "param", "nominal", "points"}
+    ref = tel.series(mgr.sim.world, "ISR-EO-1", "snr_db", t0, now, 13, mgr.sim._seed)
+    assert [p["t"] for p in r["points"]] == [p["t"] for p in ref]
+    assert all(set(p) == {"t", "value", "status"} for p in r["points"])
+    # Default window (no t0/t1): the last hour, clamped to the start epoch, ending at now.
+    d = mgr.get_series("blue", "ISR-EO-1", "snr_db")["points"]
+    assert d[0]["t"] == t0 and d[-1]["t"] == now and len(d) == 120
+
+
+def test_series_replay_cost_is_single_pass():
+    """Cost guard — one series call applies each event-log entry at most once (a single forward
+    pass), however many distinct event-log positions its window spans."""
+    from spacesim.engine.handlers import DEFAULT_HANDLERS
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    entries = mgr.sim.eventlog.entries
+    calls = {"n": 0}
+    merged = dict(DEFAULT_HANDLERS)
+    merged.update(mgr.sim.handlers())
+
+    def _wrap(fn):
+        def counted(world, payload, rng):
+            calls["n"] += 1
+            return fn(world, payload, rng)
+        return counted
+
+    wrapped = {k: _wrap(v) for k, v in merged.items()}
+    mgr.sim.handlers = lambda: dict(wrapped)
+    pts = mgr.get_series("blue", "ISR-EO-1", "snr_db", t0=t0, t1=now, n=120)["points"]
+    distinct = {sum(1 for e in entries if e.sim_time <= p["t"]) for p in pts}
+    assert len(distinct) >= 3          # the window genuinely spans several positions
+    assert 0 < calls["n"] <= len(entries)

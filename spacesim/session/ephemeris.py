@@ -1,10 +1,12 @@
 """Ephemeris export — truth and cell-observed state vectors over a time span, in ECI and RIC,
 serialized as CSV or CCSDS OEM (IP-1210, FR-7410/FR-7420).
 
-Both export variants share one time-span replay mechanism (`session.aar.state_at_time`, this
-package's own additive sibling of `state_at`) and one serializer — per `ADS-1500`'s System
-Architecture. Truth reads ground-truth `Asset.orbit`; cell-observed reads the requesting cell's
-own `Track.state_estimate`, never ground truth and never another cell's belief (`ADR-0004`).
+Both export variants share one time-span replay mechanism and one serializer — per `ADS-1500`'s
+System Architecture. Since IP-1261 (BL-0170) that mechanism is `session.aar.worlds_at_times` (one
+forward replay pass per export, yielding the world as of each sampled instant — the same state
+`aar.state_at_time` reconstructs), shared with the telemetry series route and telemetry export.
+Truth reads ground-truth `Asset.orbit`; cell-observed reads the requesting cell's own
+`Track.state_estimate`, never ground truth and never another cell's belief (`ADR-0004`).
 """
 
 from __future__ import annotations
@@ -232,8 +234,7 @@ def truth_ephemeris(mgr, object_id: str, reference_id: str, t1: int, t2: int,
     ``reference_id``'s own ground-truth state. No-cell (White-Cell-only) per `FR-6220`."""
     t1, t2 = _clamp_or_reject(mgr, t1, t2)
     rows: list[dict] = []
-    for t in sample_times(t1, t2, interval_s):
-        world = aar.state_at_time(mgr, t)
+    for t, world in aar.worlds_at_times(mgr, sample_times(t1, t2, interval_s)):
         target = world.assets.get(object_id)
         reference = world.assets.get(reference_id)
         if target is None or target.orbit is None or reference is None or reference.orbit is None:
@@ -257,8 +258,7 @@ def cell_observed_ephemeris(mgr, cell: str, object_id: str, reference_id: str, t
     never ground truth for a merely-tracked reference (`ADS-1500` Decision 5)."""
     t1, t2 = _clamp_or_reject(mgr, t1, t2)
     rows: list[dict] = []
-    for t in sample_times(t1, t2, interval_s):
-        world = aar.state_at_time(mgr, t)
+    for t, world in aar.worlds_at_times(mgr, sample_times(t1, t2, interval_s)):
         tr = world.track_for(cell, object_id)
         if tr is None or tr.state_estimate is None:
             continue

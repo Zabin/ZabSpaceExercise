@@ -154,6 +154,31 @@ def test_telemetry_series_count():
     assert "points" in body and len(body["points"]) == 30
 
 
+def test_telemetry_series_route_matches_export_csv():
+    """IP-1261 (BL-0170 scenario D, FR-2320 parity) — the live series route and the CSV export
+    report the same value/status at every instant both sample; an anomaly is not back-dated."""
+    import csv, io
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
+    start = c.get(f"/api/sessions/{sid}/clock").json()["now"]
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    c.post(f"/api/sessions/{sid}/inject", json={"inject": {"effects": [
+        {"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus", "cause": "route test"}]}})
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    t1 = start + 1200 * 10**6
+    series = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/snr_db",
+                   params={"t0": start, "t1": t1, "n": 5}).json()["points"]
+    csv_r = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv",
+                  params={"t1": start, "t2": t1, "interval_s": 300})
+    exported = {int(r["t"]): r for r in csv.DictReader(io.StringIO(csv_r.text)) if r["param"] == "snr_db"}
+    assert [p["t"] for p in series] == sorted(exported)
+    for p in series:
+        assert p["value"] == pytest.approx(float(exported[p["t"]]["value"]))
+        assert p["status"] == exported[p["t"]]["status"]
+    assert all(p["status"] == "green" for p in series if p["t"] < start + 600 * 10**6)
+
+
 def test_maneuver_ledger_route_and_csv_export_are_fog_scoped():
     """IP-1250 (FR-1320) — the ledger route/CSV export mirror /telemetry's fog-of-war behavior:
     an operator cannot fetch another cell's Asset ledger."""

@@ -856,14 +856,31 @@ class SessionManager:
 
     def get_series(self, cell: str, asset_id: str, param: str,
                    t0=None, t1=None, n: int = 120, nominal: bool = False):
+        """One telemetry parameter over a window (default: the last hour), for the console's
+        drill-down graphs and sparklines. IP-1261 (BL-0170, FR-2320 parity): each point is
+        `engine/telemetry.py`'s own `sample()` on the world *as of that instant* (one forward
+        replay pass via `aar.worlds_at_times`), never the live world back-dated across the
+        window — so it agrees with `telemetry_export` at every shared instant. Instants are
+        spaced exactly as `telemetry.series()` spaces them. Read-only."""
+        from spacesim.session import aar
+
         if not self._owns(cell, asset_id) or param not in telemetry.PARAMS:
             return None
         now = self.sim.clock.now
         t1 = now if t1 is None else int(t1)
         t0 = max(self.ctx.start_epoch, now - 3600 * 1_000_000) if t0 is None else int(t0)
-        return {"asset": asset_id, "param": param, "nominal": nominal,
-                "points": telemetry.series(self.sim.world, asset_id, param, t0, t1, n,
-                                           self.sim._seed, nominal=nominal)}
+        n = max(n, 2)
+        step = (t1 - t0) / (n - 1)
+        times = [int(t0 + i * step) for i in range(n)]
+        seed = self.sim._seed
+        backwards = t1 < t0   # a caller-supplied reversed window keeps its point order
+        points = []
+        for t, world in aar.worlds_at_times(self, times[::-1] if backwards else times):
+            s = telemetry.sample(world, asset_id, param, t, seed, nominal=nominal)
+            points.append({"t": t, "value": s["value"], "status": s["status"]})
+        if backwards:
+            points.reverse()
+        return {"asset": asset_id, "param": param, "nominal": nominal, "points": points}
 
     def telemetry_export(self, cell: str, asset_id: str, t1: Optional[int] = None,
                          t2: Optional[int] = None,
@@ -878,10 +895,11 @@ class SessionManager:
         anomaly inject appears from its own onset onward, never back-dated. Span handling reuses
         `ephemeris._clamp_or_reject` / `sample_times` (Design Decision 1): a partially out-of-range
         span is clamped, a wholly out-of-range one raises ``ValueError``; omitted bounds default to
-        the recorded range. Read-only: no world mutation, no RNG draw, no wall clock."""
+        the recorded range. Read-only: no world mutation, no RNG draw, no wall clock.
+        IP-1261: the per-instant worlds come from the shared single-pass helper
+        `aar.worlds_at_times` (also used by `get_series` and both ephemeris exports)."""
         from spacesim.engine.simtime import to_iso
-        from spacesim.engine.simulation import replay
-        from spacesim.session import ephemeris
+        from spacesim.session import aar, ephemeris
 
         if not self._owns(cell, asset_id):
             return None
@@ -889,16 +907,8 @@ class SessionManager:
         t1, t2 = ephemeris._clamp_or_reject(self, lo if t1 is None else int(t1),
                                             hi if t2 is None else int(t2))
         seed = self.sim._seed
-        entries = self.sim.eventlog.entries
-        worlds: dict[int, WorldState] = {}   # telemetry reads state, not world.now: one replay per seq
         rows: list[dict] = []
-        for t in ephemeris.sample_times(t1, t2, interval_s):
-            seq = sum(1 for e in entries if e.sim_time <= t)
-            world = worlds.get(seq)
-            if world is None:
-                world = worlds[seq] = replay(self.sim._initial_state, seed, self.sim.eventlog,
-                                             handlers=self.sim.handlers(),
-                                             snapshots=self.sim.snapshots, up_to_seq=seq)
+        for t, world in aar.worlds_at_times(self, ephemeris.sample_times(t1, t2, interval_s)):
             utc = to_iso(t)
             for spec in telemetry.PARAMS.values():
                 s = telemetry.sample(world, asset_id, spec.id, t, seed)

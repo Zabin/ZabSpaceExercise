@@ -147,3 +147,62 @@ def test_playback_rejects_a_nonparticipating_cell_viewpoint():
     pb = aar.PlaybackSession(mgr, viewpoint="truth")
     with pytest.raises(ValueError):
         pb.set_viewpoint("not-a-real-cell")
+
+
+# -- IP-1261 (BL-0170) — single-forward-pass time-span replay ------------------------------------
+
+def _campaign_with_history():
+    mgr = _campaign()
+    mgr.set_clock(False)
+    RedDoctrine(mgr).step()
+    mgr.advance_to(mgr.world.now + minutes(1))
+    mgr.fire_inject([{"type": "anomaly", "target": "SATCOM-1", "subsystem": "telemetry"}])
+    mgr.advance_to(mgr.world.now + minutes(30))
+    return mgr
+
+
+def test_worlds_at_times_matches_state_at_time():
+    mgr = _campaign_with_history()
+    entries = mgr.sim.eventlog.entries
+    assert len(entries) >= 5
+    start, last, now = mgr.ctx.start_epoch, entries[-1].sim_time, mgr.sim.clock.now
+    times = sorted({start, entries[0].sim_time, entries[len(entries) // 2].sim_time,
+                    entries[len(entries) // 2].sim_time + 1, last, (last + now) // 2, now})
+    live_before = mgr.sim.world.model_dump()
+    seen = []
+    for t, world in aar.worlds_at_times(mgr, times):
+        seen.append(t)
+        expected = aar.state_at_time(mgr, t).model_dump()
+        got = world.model_dump()
+        if world is mgr.sim.world:          # live-tail shortcut: `now` deliberately not pinned
+            got.pop("now"); expected.pop("now")
+        assert got == expected, t
+    assert seen == times
+    assert mgr.sim.world.model_dump() == live_before
+
+    # Every requested instant at/after the last entry -> live-tail shortcut, no replay at all.
+    tail = [last, now]
+    yielded = list(aar.worlds_at_times(mgr, tail))
+    assert [t for t, _ in yielded] == tail and all(w is mgr.sim.world for _, w in yielded)
+    assert mgr.sim.world.now == now
+
+    with pytest.raises(ValueError):
+        list(aar.worlds_at_times(mgr, [now, start]))
+
+
+def test_stepwise_replay_matches_replay_at_every_position():
+    from spacesim.engine.simulation import replay, replay_stepwise
+    mgr = _campaign_with_history()
+    sim = mgr.sim
+    n = len(sim.eventlog.entries)
+    positions = list(range(n + 1))
+    dumps = [(p, w.model_dump()) for p, w in zip(
+        positions, replay_stepwise(sim._initial_state, sim._seed, sim.eventlog, positions,
+                                   handlers=sim.handlers()))]
+    assert len(dumps) == n + 1
+    for p, d in dumps:
+        assert d == replay(sim._initial_state, sim._seed, sim.eventlog, handlers=sim.handlers(),
+                           up_to_seq=p).model_dump(), p
+    with pytest.raises(ValueError):
+        list(replay_stepwise(sim._initial_state, sim._seed, sim.eventlog, [2, 1],
+                             handlers=sim.handlers()))

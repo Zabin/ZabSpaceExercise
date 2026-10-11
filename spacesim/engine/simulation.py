@@ -9,6 +9,8 @@ final state — that is the rewind/undo/branch guarantee, asserted by the determ
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator
+
 from pydantic import BaseModel, Field
 
 from spacesim.engine.clock import ScheduledEvent, Scheduler, SimClock
@@ -196,3 +198,54 @@ def replay(
     if final_time is not None:
         world.now = final_time
     return world
+
+
+def replay_stepwise(
+    initial_state: dict,
+    seed: int,
+    eventlog: EventLog,
+    positions: Iterable[int],
+    handlers: dict[str, EventHandler] | None = None,
+    snapshots: list[Snapshot] | None = None,
+) -> Iterator[WorldState]:
+    """IP-1261 (BL-0170) — a single forward pass of `replay()` that yields the world at each of
+    several event-log positions (a non-decreasing sequence), instead of one from-scratch replay
+    per position.
+
+    Starts exactly as `replay()` does (latest in-range snapshot at or before the first position,
+    else the initial state), then applies each entry exactly as `replay()`'s loop does. The world
+    yielded for position ``p`` equals ``replay(..., up_to_seq=p)`` at the moment it is yielded;
+    it is the *same* mutable object every time, so read it before advancing the generator.
+    A decreasing position raises ``ValueError``.
+    """
+    pos = list(positions)
+    if any(b < a for a, b in zip(pos, pos[1:])):
+        raise ValueError("replay_stepwise positions must be non-decreasing")
+    if not pos:
+        return
+    h: dict[str, EventHandler] = dict(DEFAULT_HANDLERS)
+    if handlers:
+        h.update(handlers)
+
+    entries = eventlog.entries
+    first = max(0, min(pos[0], len(entries)))
+    candidates = [s for s in snapshots or [] if s.seq <= first]
+    if candidates:
+        snap = max(candidates, key=lambda s: s.seq)
+        world = WorldState.model_validate(snap.world_state)
+        rng = SeededRng(seed)
+        rng.import_state(snap.rng_state)
+        applied = snap.seq
+    else:
+        world = WorldState.model_validate(initial_state)
+        rng = SeededRng(seed)
+        applied = 0
+
+    for p in pos:
+        target = max(0, min(p, len(entries)))
+        while applied < target:
+            entry = entries[applied]
+            world.now = entry.sim_time
+            h[entry.kind](world, entry.payload, rng)
+            applied += 1
+        yield world
