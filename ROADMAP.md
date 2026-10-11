@@ -708,6 +708,14 @@ findings. One Medium traceability finding: `WCM-1`/`BLU-1`/`RED-1` and `training
 cite a nonexistent `spacesim/session/controller.py` for the fog-of-war boundary — the real file is
 `spacesim/session/cells.py` — routed to `08-training-manual-authoring`.
 
+**Training review (2026-10-11):** [`reviews/training-review-run97-scope.md`](docs/reviews/training-review-run97-scope.md)
+(REV-TRN-002) independently reviewed run #97's ephemeris/telemetry-export sections
+(`WCM-15`/`16`, `BLU-13`/`14`, `RED-12`/`13`, `training/15` rows 79–80) — prose accurate against
+shipped behavior (driven live), traceability consistent, playbook suite 16/16, no Critical/High.
+7 findings: 2 Medium (F1 — export `interval_s` has no lower bound, a code defect → `00-intake`;
+F2 — `10-ui-reference` §10.5/§10.6 still document the target field as plain text, confirming
+`BL-0084`) and 5 Low.
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
