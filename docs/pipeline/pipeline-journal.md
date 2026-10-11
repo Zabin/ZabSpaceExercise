@@ -13,41 +13,44 @@
 
 ## Position
 
-- **Updated:** 2026-10-10 (run #97 — advance/override, `08-training-manual-authoring` on the
-  `BL-0166`+`BL-0167` batch)
-- **Increment:** Training-manual coverage gap closed for both already-`VERIFIED` export
-  capabilities the prior two runs' findings surfaced. Added `WCM-15`/`BLU-13`/`RED-12` (time-span
-  ephemeris export — `FR-7410`/`FR-7420`/`FR-7430`, `FS-121`, `IP-1210`/`VR-1210`: ground-truth
-  truth export for White, cell-observed belief export for Blue/Red, ECI+RIC, CSV/CCSDS-OEM/RIC-only
-  formats, URL-only/no console control) and `WCM-16`/`BLU-14`/`RED-13` (per-asset telemetry CSV
-  export over a time span — `FR-2320`, `FS-126`, `IP-1260`/`VR-1260`: any asset for White,
-  own-asset-only for Blue/Red, URL-only), documenting as-built/verified behavior only. Each new
-  section carries a `> Sources:` footer; `docs/training/15-manual-traceability.md` §15.1 (two new
-  forward rows) and §15.2 (new reverse rows in all three per-cell tables) updated bidirectionally;
-  `docs/training/INDEX.md`'s three per-cell manual summary rows updated to name the new sections.
-  Applied the same vignette-file test `16-learning-path.md` already used to exclude the RIC
-  view/TLE-export sections: `VR-1210`'s and `VR-1260`'s own scope audits show neither package
-  touched any `spacesim/content/vignettes/*.yaml` file, so neither capability is added to the
-  learning path — checked explicitly, not assumed from the prior precedent.
-  `python3 -m pytest spacesim/tests/test_vignette_tutorials.py` re-run green (16 passed) since no
-  playbook-adjacent prose moved. Committed `419c2e4` on `claude/chart-prompt-file-90hm9u`, pushed
-  (fast-forward from `db5caa4`, PR #55 unaffected).
+- **Updated:** 2026-10-11 (run #98 — `triage` mode, no skill invoked)
+- **Increment:** Backlog triage only. `00-intake` filed `BL-0170` (commit `4e1c759`, after run
+  #97) describing a real, independently-reproduced correctness bug: the live telemetry series
+  route (`SessionManager.get_series`) back-dates current world state onto historical queries,
+  disagreeing with the already-`VERIFIED` telemetry CSV export (`IP-1260`) at every historical
+  point and violating `FR-2320`'s own cross-route parity Postcondition. This run dispositioned it:
+  **`BL-0170` → `SCHEDULED`**, riding the next `07-implementation-planning` pass as a remediation
+  package implementing the entry's own recommended Option (4) (a shared single-forward-pass
+  replay helper, used by `get_series`, `telemetry_export`, and both ephemeris exports). The
+  entry's own "Anchor note for `07`" (no `FR` names the live series route's mechanism itself) is
+  resolved, not deferred: the project owner explicitly confirmed this session that the windowed
+  console telemetry graphs are a desired, kept feature, closing the "should this capability even
+  exist" question — `FR-2320` + `FR-2310` are accepted as sufficient requirements anchor, with no
+  `04` pre-step needed for the core fix. Severity is Medium, so this did not require the user's
+  explicit sign-off under the severity-honesty rule (that rule binds Critical/High). The entry's
+  separate, not-yet-adjudicated "Adjacent observation" (whether `FR-2310` pass-gating should apply
+  to historical points in `get_series`/`telemetry_export`) was **split off** to a new entry,
+  **`BL-0171`** (`design-question`, entry stage `04`, `SCHEDULED` in parallel/non-blocking — it
+  does not gate `BL-0170`'s `07`/`08` work). Committed backlog-only changes as `<commit>` on
+  `claude/chart-prompt-file-90hm9u`, pushed.
 - **Pipeline state:**
   - `10`: still available on the run #81 nine-package `VERIFIED` tranche. `BL-0169` (`ROADMAP.md`
-    drift for those nine packages, unrelated to this run) rides with it, left unchanged by this
-    run (out of its named scope).
-  - `09-training-manual-review`: available on this run's touched scope (the four new manual
-    sections + the four traceability rows) — not yet invoked; this run's own rules forbid
-    reviewing its own same-session authoring work.
+    drift for those nine packages) still rides with it, unchanged by this run.
+  - `09-training-manual-review`: still available on run #97's touched scope (`WCM-15`/`16`,
+    `BLU-13`/`14`, `RED-12`/`13` + the matching traceability/`INDEX.md` rows) — not yet invoked.
+  - `07`: now has a ripe, no-gate target it did not have at run #97's close — `BL-0170`.
+  - `04`: `BL-0171` (new, parallel, non-blocking) joins `BL-0159` (`FR-7440` own-asset scope,
+    already `DEFERRED` to `04`) as available `04` work.
   - `06`: `FEAT-1600` (`FR-1670`) and the `FEAT-4400`/`FEAT-4600` additions. None are blocked.
-- **Backlog:** `BL-0166` and `BL-0167` both flipped `SCHEDULED → DONE` this run (batched, one
-  commit). No new findings surfaced during authoring (no code bugs, no R600 grounding gaps, no
-  vignette-side staleness) — nothing new harvested. `BL-0169` left `SCHEDULED`, unchanged.
-- **Next step:** `09-training-manual-review` on the scope this run touched (`WCM-15`/`16`,
-  `BLU-13`/`14`, `RED-12`/`13`, and the matching `15-manual-traceability.md`/`INDEX.md` rows), or
-  `10-integration-review` on the run #81 nine-package tranche (riding `BL-0169`) — either is
-  available with no gate; no package currently needs `08-code-implementation` or
-  `09-package-verification`.
+- **Backlog:** `BL-0170` flipped `NEW → SCHEDULED` (rides next `07`). New entry `BL-0171` filed
+  `SCHEDULED` (rides a future `04` pass, non-blocking). `BL-0169` left `SCHEDULED`, unchanged.
+  No other `NEW` entries existed to triage this run.
+- **Next step:** `07-implementation-planning` on `BL-0170` — per the pipeline's ordering rules, a
+  due backlog item at an earlier per-feature-loop stage (`07`) outranks the two previously-queued,
+  equally-ungated per-release/doc-stage candidates (`09-training-manual-review` on run #97's
+  scope, `10-integration-review` on the run #81 tranche riding `BL-0169`), which remain available
+  as parallel threads if a concurrent session picks them up. `04-requirements-engineering` on
+  `BL-0171` (+ `BL-0159`) is also available in parallel, non-blocking.
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) is still deferred and unchanged. This
   thread has no gates.
 
@@ -562,3 +565,4 @@
 | 95 | 2026-10-10 | override (`run 08-code-implementation IP-1260`; run #93's Position named this as a no-gate candidate, and run #94's Position did too) | `08-code-implementation` | `IP-1260` | Reconciled journal and backlog against MBP, `packages/INDEX.md` and `ROADMAP.md`. `IP-1260` was `READY` on MBP and INDEX, with `IP-1062` `VERIFIED`. **Drift found:** the `ROADMAP.md` package table is stale for the nine run #81 packages, so `BL-0169` was filed and routed to `10` (the manager does not edit stage ledgers). Triaged: zero `NEW` entries. Gate check: MSTR-006 §3 authorization for `IP-1260` is on record. It was part of the six-package Should-tier batch authorized 2026-09-27, and the project owner re-confirmed it in this session's task instruction. Invoked `08-code-implementation`: `IP-1260` `READY → IN PROGRESS → COMPLETE`, test-first, commit `a53f9f8`. That commit added 8 tests, which were seen failing first. Full suite: 813 passed / 3 skipped (816 collected, JUnit XML). Gates: 14 passed. Harvested `BL-0167`, `BL-0168` and `BL-0169`. `BL-0075` moved `08 → 09`. **Concurrency note:** this run was first journaled locally as run #94 with BL-0166 to BL-0168. Another session pushed its own run #94 and BL-0166 (`08-training-manual-authoring`) to this branch first, so the two ledger edits conflicted. That local commit (`a3ee495`) was not pushed. The implementation commit was merged plainly with the remote (`24ce1dd`; it shares no files with the other session's work), and this run was re-journaled as #95 with fresh IDs. | `09-package-verification` on `IP-1260` (riding `BL-0168`), fresh session. |
 | 96 | 2026-10-10 | advance (no override — `09-package-verification` on `IP-1260` was run #95's own recorded next step, executed here in a fresh session per the same-session-verification-exclusion rule) | `09-package-verification` | `IP-1260` | Reconciled journal/backlog against the tree (no drift — `IP-1260` `COMPLETE`, commit `a53f9f8`, as run #95 left it). Triaged: `BL-0168` was the entry riding this step; `BL-0167`/`BL-0169` left as found per the task instruction. Independently re-verified `IP-1260` from scratch (fresh session, no involvement in `a53f9f8`): built a fresh scenario (seed 777, different asset-timing shape than the implementer's own `_export_mgr()` fixture) straddling an `anomaly` inject, confirmed the exported rows gate the perturbation to onset-or-later with zero mismatches against a from-scratch `Simulation.replay()` cross-check, and separately demonstrated that sampling the live/final world instead (the naive approach) would have leaked the anomaly into all 10 pre-onset rows — independently proving the per-sample replay mechanism is necessary, not gratuitous. Probed the live HTTP route via fresh `TestClient` sessions built from scratch (own-cell 200, cross-cell/observer 404, White 200, route-precedence over `/{param}` confirmed, 400 on a wholly-out-of-range span) and five independent time-span boundary cases (exact full range, both exact single-point boundaries, one microsecond past each boundary). Confirmed via `git show`/`git log --follow` that `engine/telemetry.py` and the sibling `/{param}` series route (`get_series`, introduced at `2c9ed07`) are both genuinely untouched by `a53f9f8`'s diff — the pre-existing-quirk claim holds. Full suite 813 passed/3 skipped (816 collected, JUnit-tallied), both gates 14 passed. Produced [`VR-1260`](../implementation/verification/VR-1260-telemetry-csv-export.md) — **`VERIFIED`, 1 Low finding**. **`BL-0168` adjudicated `DONE` in full** (parts 1-3 accepted as necessary/in-scope; part 4 confirmed genuine but cosmetic, same "own doc left unupdated" pattern as this batch's other six packages — no remediation routed anywhere). Flipped `IP-1260` `COMPLETE → VERIFIED` on the Master Build Plan, `packages/INDEX.md`, `ROADMAP.md`, verification `INDEX.md`; updated the RTM's `FR-2320` row. Left `FS-126`'s own `Referenced By` field untouched (still names `COMPLETE`) — this skill does not edit Feature Specifications, matching `VR-1211`'s identical treatment of `FS-121`. `BL-0167`'s revisit trigger ("once `09-package-verification` verifies `IP-1260`") has now fired, moved `DEFERRED → SCHEDULED`, batched with `BL-0166`; `BL-0169` left `SCHEDULED`, unchanged (out of this run's scope, per the task instruction). `BL-0075` entry stage `09 → done`. Committed the VR report + ledger updates, pushed. | `08-training-manual-authoring` on the now-`SCHEDULED` `BL-0166`+`BL-0167` batch (ephemeris-export + telemetry-export manual coverage, both now `VERIFIED`), or `10-integration-review` on the run #81 nine-package tranche (riding `BL-0169`) — either is available with no gate. |
 | 97 | 2026-10-10 | override (`run 08-training-manual-authoring BL-0166 and BL-0167`; matches run #96's recorded next step exactly, invoked explicitly per this session's task) | `08-training-manual-authoring` | `BL-0166` + `BL-0167` (batched) | Reconciled journal/backlog against the tree first: MBP/`packages/INDEX.md` confirmed `IP-1210`/`IP-1211`/`IP-1260`/`IP-1300` all `VERIFIED` as the journal expected, no drift. Triaged backlog: zero `NEW` entries; `BL-0166`/`BL-0167` were both already `SCHEDULED` for exactly this step, riding together as instructed. No gate applies (training-manual authoring is not gated). Invoked `08-training-manual-authoring`: read `VR-1210`/`FS-121` v2.0 and `VR-1260`/`FS-126` in full, and the shipped code directly (`session/ephemeris.py`'s `truth_ephemeris`/`cell_observed_ephemeris`/`write_csv`/`write_oem`/`write_ric_csv`, `session/manager.py::telemetry_export`, the `ui_web/server.py` routes, and a grep of `ui_web/static/` confirming neither capability has a console control) rather than paraphrasing the reports. Added `WCM-15`/`BLU-13`/`RED-12` (time-span ephemeris export, ground-truth for White / own-belief for Blue-Red, ECI+RIC, `csv`/`oem`/`ric` formats, integer-microsecond sim-time bounds, clamp-partial/reject-wholly-out-of-range span rule, empty-row-not-fabricated custody-gap behavior) and `WCM-16`/`BLU-14`/`RED-13` (per-asset telemetry CSV export, any-asset for White via the existing `cell=white` ownership bypass / own-asset-only for Blue-Red, with the per-instant-replay anomaly-timing guarantee — and the naive-non-replay failure mode it prevents — documented precisely per the task's own emphasis that this is the capability's whole point). Updated `15-manual-traceability.md` §15.1 (2 new forward rows) + §15.2 (6 new reverse rows across White/Blue/Red) and `INDEX.md`'s three per-manual summaries. Explicitly checked, not assumed, whether either belongs on `16-learning-path.md`: `VR-1210`'s and `VR-1260`'s own scope audits list every file each package's implementing commit touched, and neither list includes any `spacesim/content/vignettes/*.yaml` file — so, applying the same FR-11310 vignette-file test the RIC-view/TLE-export sections were excluded under, neither is added. `test_vignette_tutorials.py` re-run green (16 passed, unaffected). Committed `419c2e4`, fetched/fast-forward-pushed onto `db5caa4` (no conflict — no other session wrote to this branch between fetch and push). Flipped `BL-0166`/`BL-0167` `SCHEDULED → DONE`. No new findings surfaced (no code bugs, no R600 grounding gaps, no vignette-side staleness). | `09-training-manual-review` on this run's touched scope (`WCM-15`/`16`, `BLU-13`/`14`, `RED-12`/`13`, the matching traceability/`INDEX.md` rows), or `10-integration-review` on the run #81 nine-package tranche (riding `BL-0169`, still unchanged) — either is available with no gate. |
+| 98 | 2026-10-11 | triage | — | — | Reconciled journal/backlog against the tree first (Step 1): MBP/`packages/INDEX.md`/ROADMAP package rows for `IP-1210`/`IP-1211`/`IP-1260`/`IP-1300` confirmed unchanged and `VERIFIED` as expected; no drift found relevant to this run's scope. Late-harvest check: run #97's own recorded next step (`09-training-manual-review` or `10-integration-review`) produced no findings of its own since neither was invoked between runs — nothing to late-harvest. Triaged the one `NEW` entry: `BL-0170` (`00-intake`, commit `4e1c759`, filed after run #97 — the live telemetry series route `get_series` back-dates current world state onto historical queries, disagreeing with the already-`VERIFIED` `IP-1260` CSV export at every historical point, against `FR-2320`'s cross-route parity Postcondition). Dispositioned `BL-0170 → SCHEDULED`, riding the next `07-implementation-planning` pass as a remediation package (the entry's own recommended Option (4): a shared single-forward-pass replay helper for `get_series`/`telemetry_export`/both ephemeris exports). Resolved the entry's own "Anchor note for `07`" using this session's task instruction that the project owner has explicitly confirmed the windowed console telemetry graphs are a desired, kept feature (closing the "should this capability exist" question, which the entry had left open) — `FR-2320`+`FR-2310` accepted as sufficient anchor, no `04` pre-step needed for the core fix; Medium severity, so no Critical/High deferral-sign-off rule applies. Split the entry's separate, un-adjudicated "Adjacent observation" (`FR-2310` pass-gating on historical points) into a new entry, `BL-0171` (`design-question`, entry stage `04`, `SCHEDULED` in parallel/non-blocking — explicitly does not gate `BL-0170`'s `07`/`08` work). No standing `DEFERRED`/`NEEDS-USER` entries had a trigger fire this run; `BL-0159`/`BL-0169` left unchanged, out of this run's named scope. No gate applies — triaging a disposition is not itself MSTR-006 §3 authorization, no release GO is implicated, and `BL-0170` is Medium (not Critical/High unadjudicated). Committed backlog + journal updates together, pushed. | `07-implementation-planning` on `BL-0170` — outranks the two previously-queued, equally-ungated `09-training-manual-review`/`10-integration-review` candidates per the per-feature-loop-drains-first ordering rule; those two remain available as parallel threads, as does `04-requirements-engineering` on `BL-0171`(+`BL-0159`). |
