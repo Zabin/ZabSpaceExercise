@@ -717,6 +717,14 @@ shipped behavior (driven live), traceability consistent, playbook suite 16/16, n
 F2 — `10-ui-reference` §10.5/§10.6 still document the target field as plain text, confirming
 `BL-0084`) and 5 Low.
 
+**Training review (2026-10-11):** [`reviews/training-review-run102-scope.md`](docs/reviews/training-review-run102-scope.md)
+(REV-TRN-003) independently reviewed run #102's telemetry-history-graph sections (`BLU-6`, `RED-7`,
+`05` §Diagnosing, `10` §10.13 row 5, `training/15` telemetry row and the `BLU-6`/`RED-7` reverse
+rows). Run #102's additions are accurate, driven live on fresh fixtures. The playbook suite passed
+16/16, with no Critical/High. 5 findings: 1 Medium (F1 — RED-7's pre-existing safe-mode/recovery
+parity claim does not hold, because none of the 9 shipped Red satellites has a `bus_state`) and
+4 Low.
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
