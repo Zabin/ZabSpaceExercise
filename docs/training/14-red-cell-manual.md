@@ -100,10 +100,15 @@ defender's side.*
 Red's satellites have the same **bus** SOH and safe-mode model as Blue's — Blue can hit back.
 Watch the fleet rail's worst-subsystem dots and alarm feed, diagnose incoming attacks from
 telemetry signatures (same table as [`13-blue-cell-manual.md`](13-blue-cell-manual.md) §BLU-6), and
-run the multi-pass recovery chain (patch the root cause or the asset re-safes).
+run the multi-pass recovery chain (patch the root cause or the asset re-safes). As in BLU-6, each
+point on a drill-down history graph is your asset's state at that instant, so where the line
+breaks is when the effect actually began — the same value your telemetry CSV export (RED-13)
+gives at any instant both of them sample.
 
 > **Sources:** `spacesim/engine/bus.py` · `spacesim/engine/recovery.py` ·
-> `spacesim/engine/telemetry.py` · [`05-core-concepts.md`](05-core-concepts.md) §"Bus state-of-health"
+> `spacesim/engine/telemetry.py` · `spacesim/session/manager.py` (`get_series`) ·
+> `spacesim/session/aar.py` (`worlds_at_times`) ·
+> [`05-core-concepts.md`](05-core-concepts.md) §"Bus state-of-health"
 
 ### RED-8 · Doctrine profiles and the COA vignettes
 

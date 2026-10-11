@@ -84,7 +84,11 @@ at the next telemetry contact, not the moment it happens.
 
 The tool **never tells you "you are being jammed"** — it shows physics; you infer the cause. Click
 a fleet row for the subsystem drill-down (parameter list vs. limits, per-parameter history graph
-with a clean "compare to nominal" ghost, symptom log). Read the signature:
+with a clean "compare to nominal" ghost, symptom log). The graph covers the last hour of sim time (or
+since exercise start, if sooner; 120 points), and **each point is the asset's state at that instant** — an attack or anomaly
+appears on the graph starting at its own onset, never smeared back over earlier points. So the
+point where the line breaks is a trustworthy answer to "when did this start," and it gives
+the same value as your telemetry CSV export (BLU-14) at any instant both of them sample. Read the signature:
 
 | If you see… | Likely cause | Blue response |
 |---|---|---|
@@ -96,6 +100,8 @@ with a clean "compare to nominal" ghost, symptom log). Read the signature:
 | All telemetry **ceases** | kinetic kill (irreversible) | — |
 
 > **Sources:** `spacesim/engine/telemetry.py` (signatures + nominal baseline) ·
+> `spacesim/session/manager.py` (`get_series`) · `spacesim/session/aar.py` (`worlds_at_times`,
+> per-instant replay) · `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/{param}` ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"Diagnosing attacks from telemetry"
 
 ### BLU-7 · Recover a safed satellite

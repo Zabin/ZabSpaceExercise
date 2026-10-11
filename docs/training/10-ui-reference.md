@@ -318,7 +318,7 @@ The **Same group** helper requires an Actor already selected and uses its `group
 | 2 | Parameter chips | clickable chips | Click to graph that telemetry parameter. |
 | 3 | compare to nominal | checkbox | Overlay the clean baseline (`?nominal=1`). |
 | 4 | overlay | dropdown | Pick a second parameter to overlay on the graph. |
-| 5 | Graph canvas | read-only | 60-pt rolling line graph from `GET /telemetry/{cell}/{asset}/{param}`. |
+| 5 | Graph canvas | read-only | 120-point line graph of the last hour of sim time (or since exercise start) from `GET /telemetry/{cell}/{asset}/{param}?n=120`; each point is that instant's own state. |
 | 6 | Verb buttons | per-subsystem cards | One-click load the command verb into the compose form. |
 | 7 | Begin recovery | button | (Recovery strip) `POST /recovery/{cell}/{asset}` — start the multi-pass chain. |
 | 8 | Patch (def.patch_cyber) | button | (Recovery strip) Load the patch-cyber command pre-filled with the first unpatched vector. |
