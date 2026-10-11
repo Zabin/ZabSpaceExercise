@@ -13,34 +13,26 @@
 
 ## Position
 
-- **Updated:** 2026-10-11 (run #109 — advance, `08-training-manual-authoring`)
-- **Increment:** training-corpus currency and small export/inject boundary fixes after the
-  `VERIFIED` export-hardening chain. Run #109 worked off REV-TRN-003's prose findings in commit
-  `ef3b6e6`:
-  - RED-7 is qualified: no shipped Red satellite has a bus, but Blue's effects still leave
-    telemetry signatures.
-  - RED-13's example is fixed.
-  - `WCM-6` now covers White's any-asset drill-down.
-  - Matrix rows updated.
+- **Updated:** 2026-10-11 (run #110 — advance, `07-implementation-planning`)
+- **Increment:** training-corpus currency and inject-path hardening after the `VERIFIED`
+  export-hardening chain. **`IP-1063`** (inject effect fire-time validation, `BL-0129` + `BL-0188`)
+  was planned in commit `c69b238`. It is `READY` and pre-authorized by the project owner
+  (MSTR-006 §3, 2026-10-11 session task instruction). `BL-0184` was closed as by-design
+  (`IP-1262` Design Decision 1).
 - **Pipeline state:**
-  - `07`: `BL-0184` (telemetry export 422 vs 400) + `BL-0188` (silent bus-anomaly no-op), both
-    `SCHEDULED` as one remediation pass.
-  - `09-training-manual-review`: owed on run #107's scope and run #109's scope (`RED-7`,
-    `RED-13` example sentence, `WCM-6` bullet, §15.1 telemetry row, §15.2 `WCM-6`/`BLU-6`/`RED-7`
-    rows). Both need a session other than this one, which authored #107 and #109.
-  - `10`: the run #81 tranche with `BL-0169`; the export-hardening chain (after `BL-0184` lands,
-    ideally).
-  - `04`: `BL-0171` (+ REV-TRN-003 F3), `BL-0159`, `BL-0181`.
-  - `06`: `FEAT-1600` (`BL-0122`), `FEAT-4400`/`FEAT-4600`, `BL-0183`.
-- **Backlog:** `BL-0186`/`BL-0189`/`BL-0190` → `DONE` (independent review owed). `BL-0179`'s trigger
-  was tightened (White manual at 325 lines). No `NEW` entries open. `BL-0187` stays `NEEDS-USER`
-  (not ripe).
-- **Next step:** `07-implementation-planning` on `BL-0184` + `BL-0188`, one remediation package.
-  Those are the due upstream items, and `BL-0184` touches the export chain a later `10` would
-  review. Parallel: `10-integration-review` on the run #81 tranche (`BL-0169`).
+  - `08-code-implementation`: `IP-1063` is `READY` and authorized.
+  - `09-training-manual-review`: owed on run #107's and run #109's scopes. Both need a session
+    other than this one.
+  - `10`: the run #81 tranche with `BL-0169`; the export-hardening chain.
+  - `04`: `BL-0171`, `BL-0159`, `BL-0181`.
+  - `06`: `FEAT-1600` (`BL-0122`), `FEAT-4400`/`FEAT-4600`, `BL-0183` + `BL-0191` (new, batched).
+- **Backlog:** `BL-0129`/`BL-0188` → `IN PIPELINE` (`IP-1063`). `BL-0184` → `REJECTED` (by design;
+  reopen on owner request). Harvested `BL-0191` (Low, FS-106 Error Handling ratification,
+  `SCHEDULED` `06`). No `NEW` entries open. `BL-0187` stays `NEEDS-USER`, not ripe.
+- **Next step:** `08-code-implementation` on `IP-1063` (pre-authorized; test-first).
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) is still deferred. `BL-0187` is
-  `NEEDS-USER`, not ripe. Owner pre-authorized `08-code-implementation` generically for packages
-  this iteration reaches (2026-10-11).
+  `NEEDS-USER`, not ripe. The `IP-1063` authorization was granted by the project owner on
+  2026-10-11 under the generic pre-authorization of this iteration's packages.
 
 ---
 
@@ -565,3 +557,4 @@
 | 107 | 2026-10-11 | advance (no override — first of run #106's two recorded candidates) | `08-training-manual-authoring` | `BL-0084` + `BL-0177` + `BL-0178` + `BL-0180` + `BL-0182` (batched) | Reconciled against the tree (origin tip `d1fa748` = run #106's push). `IP-1262` is `VERIFIED` on the MBP and `packages/INDEX.md`; the known ROADMAP drift is `BL-0169`; no new drift. Triage: zero `NEW` entries; all five batch entries were `SCHEDULED` for this step; no `DEFERRED` trigger fired. Step 3 chose this batch over the `10` and `09` candidates, following run #102's precedent that a due upstream backlog item comes before downstream review. The batch includes `BL-0084`, a Medium. Gate check: not gated. Invoked `08-training-manual-authoring` and verified as-built behaviour live through `TestClient`. Interval checks: ephemeris routes answer 400 for `0`/`-1`/`nan`/`inf`; the telemetry export answers **422** for `0`/`-1`/`nan` (`Query(gt=0)`) and 400 for `inf`. The over-ceiling message names the minimum `interval_s`. Exporting your own asset through `/ephemeris/blue` returns 200 with the header only. The target picker comes from `app.js::populateTargetPicker` and `TARGET_REQUIRED_ACTIONS`. Edits: `10-ui-reference.md` §10.5 row 5, §10.6 row 4 and a screenshot note; `WCM-15`/`WCM-16`, including the `WCM-6` → §10.13 fix; `BLU-13`/`BLU-14`; `RED-12`/`RED-13`; footers; §15.1 rows 79–80 and six §15.2 rows. `test_vignette_tutorials.py` 16 passed; links resolve. Commit `2778526`. Harvested 2: `BL-0184` (Low bug, 422 vs 400; `SCHEDULED` `07`) and `BL-0185` (Low, `render_manual.py` ref-05/06 stale; `DEFERRED`). Closed `BL-0084`, `BL-0177`, `BL-0178`, `BL-0180` and `BL-0182` (`DONE`, independent review owed). `BL-0179` annotated (320 lines). | `09-training-manual-review` on run #102's scope (+ run #107's, if the reviewing session authored neither). |
 | 108 | 2026-10-11 | advance (no override — run #107's recorded next step) | `09-training-manual-review` | Run #102's scope (`BLU-6`, `RED-7`, `05` §Diagnosing, `10` §10.13 row 5, §15.1 telemetry row, §15.2 `BLU-6`/`RED-7`) | Reconciled (origin tip `cddb111` = run #107's own push; no drift). Triaged: zero `NEW` entries. Gate check: review is not gated. Independence: this session authored run #107, not run #102, so run #107's edits were excluded. Invoked `09-training-manual-review` with live drives through `TestClient` on `geo-rpo-shadowing` seed 7, on cells and parameters different from the shipped tests. Results: a 120-point window covering the last hour (or since the epoch); a bus anomaly on `BLUE-HVA` first deviates at the first post-onset sample, with 0 pre-onset deviations; Red-cell series/export parity 7/7; nominal ghost clean; fog 404. Found that **all 9 shipped Red satellites lack `bus_state`** (vs 1 of 31 Blue), so RED-7's safe-mode/recovery parity claim never holds in shipped content, and a bus anomaly on a bus-less asset is a silent `ok: true` no-op. White can open the drill-down (200 on any asset) but has no `WCM` coverage. Section-ID audit: 43 referenced, 0 orphans. Playbook suite 16/16. Wrote [REV-TRN-003](../reviews/training-review-run102-scope.md) + ROADMAP review paragraph, commit `8bc702f`: **0 Critical / 0 High / 1 Medium / 4 Low**. Harvested 5 entries: `BL-0186` (F1), `BL-0187` (F1(a), `NEEDS-USER`, not ripe), `BL-0188` (F2), `BL-0189` (F4), `BL-0190` (F5). F3 annotated onto `BL-0171`. `BL-0172` annotated (review done). | `08-training-manual-authoring` on `BL-0186` + `BL-0189` + `BL-0190`. |
 | 109 | 2026-10-11 | advance (no override — run #108's recorded next step) | `08-training-manual-authoring` | `BL-0186` + `BL-0189` + `BL-0190` (batched) | Reconciled (origin tip `eed8952` = run #108's own push; no drift). Triaged: zero `NEW` entries; all three batch entries were `SCHEDULED` for this step. Gate check: not gated. Invoked `08-training-manual-authoring`. As-built facts came from run #108's live drives plus fresh code reads: `app.js::renderFleet`/`rollup` show `—` and an uncoloured dot for a bus-less asset; `engine/telemetry.py` attack flags come from `active_effects`; White's fleet rail is fed from `/godview`. Edits:<br>• `RED-7` rewritten: Blue's effects still leave signatures; no shipped Red satellite has a bus, so there is no SOH, safe mode or recovery in practice; the full rules apply when a vignette authors one.<br>• `RED-13` example no longer cites a Red safe-mode event (same defect class).<br>• `WCM-6` gains an any-asset telemetry drill-down bullet.<br>• `RED-7`/`WCM-6` footers updated.<br>• §15.1 telemetry row White = `WCM-6`; §15.2 `WCM-6`, `BLU-6` (+ series route) and `RED-7` rows updated.<br>Section-ID audit: 0 orphans. Playbook suite 16/16. Commit `ef3b6e6`. Closed `BL-0186`/`BL-0189`/`BL-0190` (`DONE`, independent review owed). `BL-0179` trigger tightened (White manual at 325 lines). No new findings. | `07-implementation-planning` on `BL-0184` + `BL-0188`. |
+| 110 | 2026-10-11 | advance (no override — run #109's recorded next step) | `07-implementation-planning` | `BL-0184` + `BL-0188` (+ due `BL-0129` in the same seam) | Reconciled (origin tip `470be0d` = run #109's own push; no drift). Triaged: zero `NEW` entries. `BL-0129` (Medium, `VR-1062` M1, `SCHEDULED` `07` since 2026-09-27) was found due in the same inject seam as `BL-0188` and folded into this step. Gate check: planning is not gated, and authoring a package is not authorization. Invoked `07-implementation-planning`, checking every cited line at `470be0d`: `manager.py` `fire_inject :780-797`, the `_apply_inject_effects` loop at `:938` and the `anomaly` guard at `:1020`; `inprocess.py :288-291`; `server.py :445-448`; `app.js` `api.post :44-49`, where a 200 `ok:false` would render "✓ fired", hence the 400 mapping. Authored **[IP-1063](../implementation/packages/IP-1063-inject-effect-fire-time-validation.md)**: a pure `validate_inject_effects` used at `fire_inject` (atomic boundary reject → `Ack(ok=False)` → 400) and per effect in the handler (skip + White message, never raise; `IP-1062` DD2 handler no-op kept). Seven tests, including replay parity on the skip path and "all shipped content validates clean". Updated the TWBS, MBP row + note, `packages/INDEX.md`, the ROADMAP row and FS-106 `Produces`. Commit `c69b238`. `BL-0184` **not planned**: the 422 is `IP-1262` DD1's disclosed, `VR-1262`-verified decision. Closed it `REJECTED` (by design; reopen on owner request). `BL-0129`/`BL-0188` → `IN PIPELINE`. Harvested `BL-0191` (Low, FS-106 Error Handling should ratify the boundary decision; `SCHEDULED` `06` with `BL-0183`). **Authorization:** `IP-1063` pre-authorized by the project owner 2026-10-11 (MSTR-006 §3, session task instruction for this iteration's packages; same precedent as `IP-1211`/`IP-1300`/`IP-1260`/`IP-1261`/`IP-1262`). | `08-code-implementation` on `IP-1063`. |
