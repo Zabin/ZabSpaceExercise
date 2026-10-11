@@ -452,6 +452,46 @@ its own verify cycle. The ceiling value (10,000) is set from this pass's own mea
 
 No cross-package sequencing constraint.
 
+## Inject fire-time validation remediation (pipeline run #110, 2026-10-11)
+
+One remediation package covers two inject-path defects in the same seam,
+`session/manager.py`'s inject-effect dispatch:
+
+- `BL-0129` (Medium, `VR-1062` M1, open since 2026-09-27): a malformed effect raises mid-handler
+  after earlier effects have already mutated the world, so the live state diverges from replay.
+- `BL-0188` (Low, REV-TRN-003 F2): an `anomaly` on a bus-less asset is accepted with `ok: true` and
+  does nothing.
+
+Planned against `FS-106` v2.1 (`FR-4430` Precondition; `FR-4410`).
+
+Work units (all owned by `IP-1063`):
+
+1. **A pure validator** (`validate_inject_effects`): structural checks for every keyed effect type,
+   plus FR-4430 target-precondition checks that include "anomaly needs a `bus_state`".
+2. **Boundary wiring:** `fire_inject` rejects atomically, `InProcessSession` maps the failure to
+   `Ack(ok=False)`, and `/inject` returns 400.
+3. **Handler guard:** skip an invalid effect whole with one White message, and never raise.
+4. **Tests,** including replay parity on the skip path and "all shipped content validates clean".
+
+**No-split rationale:** units 1–3 share one function, and units 2 and 3 are its two call sites.
+Splitting boundary from handler would give two packages editing the same 130-line method with no
+independent Definition of Done.
+
+**`BL-0184` deliberately not planned.** The manager routed it here (the telemetry export answers
+422, not 400, for `interval_s <= 0`/NaN). This pass found that behaviour is an explicit, disclosed
+decision of `IP-1262` (Design Decision 1: "the telemetry route's existing `gt=0` (a 422) stays as an
+earlier guard"), independently verified by `VR-1262`. Reversing a verified package's documented
+decision is not a remediation of a defect. It is returned to `00-pipeline-manager` with a
+recommendation to close it as by-design, unless the project owner wants uniform 400s across the
+three export routes. It is also a different seam (the HTTP route layer), so it would not belong in
+this package anyway.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1063](packages/IP-1063-inject-effect-fire-time-validation.md) | FS-106 (`FR-4430`, `FR-4410`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, 2026-10-11 session task instruction) — this iteration's packages |
+
+No cross-package sequencing constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
