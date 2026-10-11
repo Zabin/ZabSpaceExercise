@@ -13,31 +13,35 @@
 
 ## Position
 
-- **Updated:** 2026-10-11 (run #99 — advance, `07-implementation-planning`)
-- **Increment:** `BL-0170` remediation (live telemetry series route back-dates current world
-  state). Run #99 planned it as **`IP-1261`** (Telemetry Series History Remediation — single-pass
-  time-span replay; commit `70db636`): an additive stepwise-replay generator in
-  `engine/simulation.py` (`replay()` untouched), a time-keyed helper in `session/aar.py` with a
-  live-tail shortcut, `get_series` routed through it, and `telemetry_export` + both ephemeris
-  exports migrated onto it with identical output; 10 new tests (scenarios A-D, parity, cost guard,
-  migration equality). `READY` (deps `IP-1260`/`IP-1210` `VERIFIED`). **MSTR-006 §3 authorization
-  granted by the project owner 2026-10-11** for this iteration's packages (session task
-  instruction; same precedent as `IP-1211`/`BL-0109` and `IP-1300`/`IP-1260`).
+- **Updated:** 2026-10-11 (run #100 — advance, `08-code-implementation`)
+- **Increment:** `BL-0170` remediation. **`IP-1261` is `COMPLETE`** (commit `a5bf986`): the
+  stepwise replay generator `engine/simulation.py::replay_stepwise()` (additive; `replay()`
+  unchanged), the time-keyed helper `session/aar.py::worlds_at_times()` (one forward pass plus a
+  live-tail shortcut), and `get_series`, `telemetry_export` and both ephemeris exports routed
+  through it. The exports' output is unchanged. 10 new tests. Full suite 823 passed / 3 skipped,
+  and both permanent gates are green. Measured cost on `multi-domain-taiwan` at +6 h is about
+  4.5 ms per series call, or about 90-100 ms per drill rebuild. That is within `BL-0170`'s
+  estimate, so the Option (5) snapshotting trigger has not fired.
 - **Pipeline state:**
-  - `08`: `IP-1261` `READY` + authorized — the next step.
+  - `09-package-verification`: `IP-1261` `COMPLETE`. This needs a **fresh session**: the
+    same-session-verification exclusion applies, because this session implemented it. `BL-0173`
+    rides this step.
   - `09-training-manual-review`: still available on run #97's touched scope (`WCM-15`/`16`,
-    `BLU-13`/`14`, `RED-12`/`13` + matching traceability/`INDEX.md` rows).
-  - `10`: still available on the run #81 nine-package `VERIFIED` tranche, `BL-0169` riding.
-  - `04`: `BL-0171` + `BL-0159` available, non-blocking.
-  - `06`: `FEAT-1600` (`FR-1670`) and the `FEAT-4400`/`FEAT-4600` additions, unblocked.
-- **Backlog:** `BL-0170` `SCHEDULED → IN PIPELINE` (entry stage `07 → 08`, rides `08` on
-  `IP-1261`). No `NEW` entries; no new findings harvested from this `07` run. `BL-0171`,
-  `BL-0169`, `BL-0159` unchanged.
-- **Next step:** `08-code-implementation` on `IP-1261` — the per-feature loop drains first, and
-  the package is `READY` and authorized. After it reaches `COMPLETE`, `09-package-verification`
-  must run in a **fresh session**.
-- **Open gates:** `IP-1160` authorization (MSTR-006 §3) still deferred, unchanged. None on this
-  thread (`IP-1261` authorized).
+    `BLU-13`/`14`, `RED-12`/`13`, and the matching traceability and `INDEX.md` rows).
+  - `10`: still available on the run #81 nine-package `VERIFIED` tranche, with `BL-0169` riding.
+  - `04`: `BL-0171` and `BL-0159` are available and non-blocking.
+  - `06`: `FEAT-1600` (`FR-1670`) and the `FEAT-4400`/`FEAT-4600` additions are unblocked.
+- **Backlog:** `BL-0170` stays `IN PIPELINE`, with its entry stage moved `08 → 09`. Two new
+  entries were harvested:
+  - `BL-0172` (manual impact, Low) is `DEFERRED` until `IP-1261` is `VERIFIED`, then goes to
+    `08-training-manual-authoring`.
+  - `BL-0173` (the reversed-window handling in `get_series` is not listed in the package, Low)
+    is `SCHEDULED` for adjudication during `09` on `IP-1261`.
+- **Next step:** `09-package-verification` on `IP-1261`, riding `BL-0173`, in a **fresh
+  session**. This session may not run it. A session that implemented nothing in scope can instead
+  take `09-training-manual-review` on run #97's scope, the parallel step that ranks next.
+- **Open gates:** `IP-1160` authorization (MSTR-006 §3) is still deferred and unchanged. This
+  thread has no gate.
 
 ---
 
@@ -552,3 +556,4 @@
 | 97 | 2026-10-10 | override (`run 08-training-manual-authoring BL-0166 and BL-0167`; matches run #96's recorded next step exactly, invoked explicitly per this session's task) | `08-training-manual-authoring` | `BL-0166` + `BL-0167` (batched) | Reconciled journal/backlog against the tree first: MBP/`packages/INDEX.md` confirmed `IP-1210`/`IP-1211`/`IP-1260`/`IP-1300` all `VERIFIED` as the journal expected, no drift. Triaged backlog: zero `NEW` entries; `BL-0166`/`BL-0167` were both already `SCHEDULED` for exactly this step, riding together as instructed. No gate applies (training-manual authoring is not gated). Invoked `08-training-manual-authoring`: read `VR-1210`/`FS-121` v2.0 and `VR-1260`/`FS-126` in full, and the shipped code directly (`session/ephemeris.py`'s `truth_ephemeris`/`cell_observed_ephemeris`/`write_csv`/`write_oem`/`write_ric_csv`, `session/manager.py::telemetry_export`, the `ui_web/server.py` routes, and a grep of `ui_web/static/` confirming neither capability has a console control) rather than paraphrasing the reports. Added `WCM-15`/`BLU-13`/`RED-12` (time-span ephemeris export, ground-truth for White / own-belief for Blue-Red, ECI+RIC, `csv`/`oem`/`ric` formats, integer-microsecond sim-time bounds, clamp-partial/reject-wholly-out-of-range span rule, empty-row-not-fabricated custody-gap behavior) and `WCM-16`/`BLU-14`/`RED-13` (per-asset telemetry CSV export, any-asset for White via the existing `cell=white` ownership bypass / own-asset-only for Blue-Red, with the per-instant-replay anomaly-timing guarantee — and the naive-non-replay failure mode it prevents — documented precisely per the task's own emphasis that this is the capability's whole point). Updated `15-manual-traceability.md` §15.1 (2 new forward rows) + §15.2 (6 new reverse rows across White/Blue/Red) and `INDEX.md`'s three per-manual summaries. Explicitly checked, not assumed, whether either belongs on `16-learning-path.md`: `VR-1210`'s and `VR-1260`'s own scope audits list every file each package's implementing commit touched, and neither list includes any `spacesim/content/vignettes/*.yaml` file — so, applying the same FR-11310 vignette-file test the RIC-view/TLE-export sections were excluded under, neither is added. `test_vignette_tutorials.py` re-run green (16 passed, unaffected). Committed `419c2e4`, fetched/fast-forward-pushed onto `db5caa4` (no conflict — no other session wrote to this branch between fetch and push). Flipped `BL-0166`/`BL-0167` `SCHEDULED → DONE`. No new findings surfaced (no code bugs, no R600 grounding gaps, no vignette-side staleness). | `09-training-manual-review` on this run's touched scope (`WCM-15`/`16`, `BLU-13`/`14`, `RED-12`/`13`, the matching traceability/`INDEX.md` rows), or `10-integration-review` on the run #81 nine-package tranche (riding `BL-0169`, still unchanged) — either is available with no gate. |
 | 98 | 2026-10-11 | triage | — | — | Reconciled journal/backlog against the tree first (Step 1): MBP/`packages/INDEX.md`/ROADMAP package rows for `IP-1210`/`IP-1211`/`IP-1260`/`IP-1300` confirmed unchanged and `VERIFIED` as expected; no drift found relevant to this run's scope. Late-harvest check: run #97's own recorded next step (`09-training-manual-review` or `10-integration-review`) produced no findings of its own since neither was invoked between runs — nothing to late-harvest. Triaged the one `NEW` entry: `BL-0170` (`00-intake`, commit `4e1c759`, filed after run #97 — the live telemetry series route `get_series` back-dates current world state onto historical queries, disagreeing with the already-`VERIFIED` `IP-1260` CSV export at every historical point, against `FR-2320`'s cross-route parity Postcondition). Dispositioned `BL-0170 → SCHEDULED`, riding the next `07-implementation-planning` pass as a remediation package (the entry's own recommended Option (4): a shared single-forward-pass replay helper for `get_series`/`telemetry_export`/both ephemeris exports). Resolved the entry's own "Anchor note for `07`" using this session's task instruction that the project owner has explicitly confirmed the windowed console telemetry graphs are a desired, kept feature (closing the "should this capability exist" question, which the entry had left open) — `FR-2320`+`FR-2310` accepted as sufficient anchor, no `04` pre-step needed for the core fix; Medium severity, so no Critical/High deferral-sign-off rule applies. Split the entry's separate, un-adjudicated "Adjacent observation" (`FR-2310` pass-gating on historical points) into a new entry, `BL-0171` (`design-question`, entry stage `04`, `SCHEDULED` in parallel/non-blocking — explicitly does not gate `BL-0170`'s `07`/`08` work). No standing `DEFERRED`/`NEEDS-USER` entries had a trigger fire this run; `BL-0159`/`BL-0169` left unchanged, out of this run's named scope. No gate applies — triaging a disposition is not itself MSTR-006 §3 authorization, no release GO is implicated, and `BL-0170` is Medium (not Critical/High unadjudicated). Committed backlog + journal updates together, pushed. | `07-implementation-planning` on `BL-0170` — outranks the two previously-queued, equally-ungated `09-training-manual-review`/`10-integration-review` candidates per the per-feature-loop-drains-first ordering rule; those two remain available as parallel threads, as does `04-requirements-engineering` on `BL-0171`(+`BL-0159`). |
 | 99 | 2026-10-11 | advance (no override — run #98's recorded next step) | `07-implementation-planning` | `BL-0170` | Reconciled journal/backlog against the tree (origin tip `55d27a4`, unchanged since run #98; MBP/`packages/INDEX.md`/ROADMAP agree — no drift). Triaged: zero `NEW` entries; `BL-0170` was the `SCHEDULED` entry riding this step; no `DEFERRED` trigger fired. Gate check: planning is not gated (authoring a package is not authorization). Invoked `07-implementation-planning`: authored [`IP-1261`](../implementation/packages/IP-1261-telemetry-series-history-remediation.md) (remediation, FS-126 `FR-2320` + FS-121 `FR-7410`/`FR-7420` migration-only; `FR-2310` cited as anchor context, not claimed, because `BL-0171` is open) implementing `BL-0170`'s Option (4); verified every cited file/function/line against the tree; added the TWBS section (no-split rationale), MBP status row + critical-path note, `packages/INDEX.md` row, ROADMAP row, and FS-126/FS-121 `Referenced By` cross-links. Status `READY`; **MSTR-006 §3 authorization recorded as granted by the project owner 2026-10-11** (session task pre-authorization of this iteration's packages). Committed `70db636`. Harvested 0 new findings. `BL-0170` → `IN PIPELINE` (entry stage `08`). | `08-code-implementation` on `IP-1261` (authorized), then a fresh-session `09-package-verification`. |
+| 100 | 2026-10-11 | advance (no override — run #99's recorded next step) | `08-code-implementation` | `IP-1261` | Reconciled (origin tip `fdb3438` = run #99's own push; no drift). Triaged: zero `NEW` entries; `BL-0170` rides this step. Gate check: MSTR-006 §3 authorization for `IP-1261` on record (project owner, 2026-10-11 session task pre-authorization of this iteration's packages) — cleared; no other gate. Invoked `08-code-implementation`: `IP-1261` `READY → IN PROGRESS → COMPLETE`, test-first (defect tests 1-4 + route test 10 + cost guard observed failing first; the ephemeris migration guard passed before and after, as intended). Baseline 813 passed/3 skipped → **823 passed/3 skipped** (826 collected, JUnit-tallied); `test_determinism.py` + `test_import_guard.py` 14 passed. Updated RTM `FR-2320`/`FR-7410`/`FR-7420` (not `FR-2310`), `CLAUDE.md` code map, MBP/`packages/INDEX.md`/ROADMAP rows, package Status header. Re-ran `BL-0170` scenario D through the HTTP route: 60/60 pre-onset points `green`. Committed `a5bf986`. Harvested 2: `BL-0172` (manual impact, `DEFERRED` to after `IP-1261` `VERIFIED`), `BL-0173` (reversed-window handling, `SCHEDULED` for `09`). | `09-package-verification` on `IP-1261` (riding `BL-0173`) in a **fresh session**; this session may continue with `09-training-manual-review` on run #97's scope. |
