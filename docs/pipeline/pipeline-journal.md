@@ -13,33 +13,41 @@
 
 ## Position
 
-- **Updated:** 2026-10-11 (run #105 — advance, `08-code-implementation`)
-- **Increment:** export-hardening remediation. **`IP-1262` is `COMPLETE`** (commit `4fd4591`).
-  `session/ephemeris.py::sample_times`, the single sampling choke point for both ephemeris exports
-  and `telemetry_export`, now rejects a non-finite or non-positive explicit `interval_s`. It also
-  rejects any request over `MAX_EXPORT_SAMPLES` (10,000) instants, checked before any replay;
-  rejections surface as a 400. The package carries the `BL-0174` reversed-window `get_series`
-  regression test as a rider. 10 new tests were added. The full suite is 833 passed / 3 skipped and
-  both permanent gates are green. Measured on `multi-domain-taiwan` +6 h: a 9,999-instant export
-  takes 1.26 s, and an over-ceiling request is rejected in ~0.1 ms.
+- **Updated:** 2026-10-11 (run #106 — advance, `09-package-verification`)
+- **Increment:** export-hardening remediation. **`IP-1262` is `VERIFIED`** via
+  [`VR-1262`](../implementation/verification/VR-1262-export-sampling-bounds.md) (fresh session,
+  clean, 1 Low finding). `session/ephemeris.py::sample_times`, the single sampling choke point for
+  both ephemeris exports and `telemetry_export` (independently confirmed by direct call-site read),
+  rejects a non-finite or non-positive explicit `interval_s` and any request over
+  `MAX_EXPORT_SAMPLES` (10,000) instants, checked arithmetically before any replay — independently
+  confirmed genuine (not a disguised generate-then-reject) by timing rejection of requests implying
+  ~10¹⁵–10²⁴ instants at 0.003–0.005 ms (module level) / 3.49 ms (full HTTP round trip), with no
+  growth tied to the attempted count. The `BL-0174` reversed-window rider independently re-built on
+  a fresh scenario and confirmed correct. Fail-first independently reproduced on a detached pre-fix
+  worktree (8/10 new cases failed). Full suite 833 passed/3 skipped, both permanent gates green
+  (14/14), independently re-run. This closes the three-package `IP-1210`/`IP-1260`/`IP-1261`/
+  `IP-1262` export-hardening chain — all four now `VERIFIED`.
 - **Pipeline state:**
-  - `09-package-verification`: `IP-1262` is `COMPLETE` and needs a **fresh session**. This session
-    planned and implemented it, so the same-session exclusion applies. `BL-0176` and `BL-0174` ride
-    this step.
   - `09-training-manual-review`: run #102's scope (`BLU-6`, `RED-7`, `05` §Diagnosing, `10` §10.13
-    row 5, §15.1 row 61 and the matching §15.2 rows) also needs a session other than this one.
-  - `08-training-manual-authoring`: `BL-0084` (Medium) is queued with `BL-0177`, `BL-0178` and
-    `BL-0180`. `BL-0182` (`IP-1262` manual impact) joins the batch once `IP-1262` is `VERIFIED`.
-  - `10`: the run #81 tranche is pending, with `BL-0169` riding.
+    row 5, §15.1 row 61 and the matching §15.2 rows) still needs a session.
+  - `08-training-manual-authoring`: `BL-0084` (Medium) is queued with `BL-0177`, `BL-0178`,
+    `BL-0180` and now `BL-0182` (`IP-1262` manual impact — revisit trigger fired this run,
+    `DEFERRED → SCHEDULED`).
+  - `10`: the run #81 tranche is pending, with `BL-0169` riding. The export-hardening chain
+    (`IP-1210`/`IP-1260`/`IP-1261`/`IP-1262`, all now `VERIFIED`) is a candidate for its own
+    `10-integration-review` pass.
   - `04`: `BL-0171`, `BL-0159` and `BL-0181`.
-  - `06`: `FEAT-1600` (`BL-0122`) and the `FEAT-4400`/`FEAT-4600` additions.
-- **Backlog:** harvested `BL-0182` (Low, `IP-1262` manual impact). It is `DEFERRED` until
-  `IP-1262` is `VERIFIED`, then goes to the `08-tma` batch. `BL-0176` and `BL-0174` stay
-  `IN PIPELINE`, with entry stage now `09`. No `NEW` entries are open.
-- **Next step:** `09-package-verification` on `IP-1262` (riding `BL-0176`/`BL-0174`) in a **fresh
-  session**. A session that implemented nothing in scope may instead take `09-training-manual-review`
-  on run #102's scope. This session can still take `08-training-manual-authoring` on the
-  `BL-0084` batch.
+  - `06`: `FEAT-1600` (`BL-0122`) and the `FEAT-4400`/`FEAT-4600` additions, plus `BL-0183`
+    (Low, FS `Referenced By` status-tag staleness on `FS-121`/`FS-126`, harvested this run).
+- **Backlog:** `BL-0176` → `DONE` (closed by `VR-1262`). `BL-0174` → `DONE` (rider independently
+  re-confirmed, not merely re-run). `BL-0182` → `SCHEDULED` (revisit trigger fired: `IP-1262`
+  `VERIFIED` clean). Harvested `BL-0183` (Low, new) — FS `Referenced By` status-tag staleness on
+  `FS-121`/`FS-126`, entry stage `06`. No `NEW` entries are open.
+- **Next step:** no package is blocked solely on `IP-1262` reaching `VERIFIED`. Candidates:
+  `08-training-manual-authoring` on the `BL-0084`/`BL-0177`/`BL-0178`/`BL-0180`/`BL-0182` batch
+  (all `SCHEDULED`, same sections), or `10-integration-review` on the now-fully-`VERIFIED`
+  `IP-1210`/`IP-1260`/`IP-1261`/`IP-1262` export chain. `09-training-manual-review` on run #102's
+  scope remains open for a session other than this one (if this one touched it).
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) is still deferred and unchanged. This
   thread has no gate.
 
@@ -562,3 +570,4 @@
 | 103 | 2026-10-11 | advance (no override — run #102's recorded next step) | `09-training-manual-review` | Run #97's scope (`WCM-15`/`16`, `BLU-13`/`14`, `RED-12`/`13`, §15.1 rows 79–80 + §15.2 rows, `INDEX.md` summaries) + `BL-0084` | Reconciled (origin tip `7c38b20` = run #102's own push; no drift). Triaged: zero `NEW` entries; `BL-0084`'s revisit trigger ("the next `09-training-manual-review` run") fired → folded into this step's target. Gate check: review is not gated. Independence: this session authored none of run #97's sections; run #102's own edits (same session) were explicitly excluded. Invoked `09-training-manual-review`: checked every claim in code and drove the key ones live on `test_ephemeris.py`'s two-satellite session (span clamp/reject, default sampling, truth vs track-only belief, no-track gap, ownership 404, 19-parameter rows, OEM header). Wrote [REV-TRN-002](../reviews/training-review-run97-scope.md) + ROADMAP review-theme paragraph, commit `2f405df`. Result: prose accurate, traceability consistent, playbook suite 16/16, **0 Critical / 0 High / 2 Medium / 5 Low**. Harvested 6: `BL-0176` (F1, Medium bug — export `interval_s` unbounded below → 1 µs sampling can freeze a session; `SCHEDULED` `07`), `BL-0177` (F3), `BL-0178` (F4), `BL-0180` (F6) (Low prose/anchor, `SCHEDULED` `08-tma`), `BL-0179` (F5, `12-white-cell-manual.md` 310 lines; `DEFERRED` to next White-manual addition), `BL-0181` (F7, µs-only bounds usability; `DEFERRED` to next `04`). `BL-0084` → `SCHEDULED` (F2 confirmed; rides next `08-tma`). | `07-implementation-planning` on `BL-0176`. |
 | 104 | 2026-10-11 | advance (no override — run #103's recorded next step) | `07-implementation-planning` | `BL-0176` (+ rider `BL-0174`) | Reconciled (origin tip `daa1915` = run #103's own push; no drift). Triaged: zero `NEW` entries; `BL-0176` `SCHEDULED` for exactly this step; `BL-0174` (test-only, needs a package to reach `08`) folded in as a rider. Gate check: planning is not gated. Invoked `07-implementation-planning`: Step 0 confirmed FS-121 v2.0 / FS-126 v1.0 approved and that the sampling ceiling is explicitly a `07` decision (FS-121 Risks + Open Question 2; `IP-1210` Design Decision 2's disclosed deferral). Measured cost on `multi-domain-taiwan` (seed 1, +6 h, 73 entries): 0.19 s / 0.88 s / 1.25 s for 1k/5k/10k-instant telemetry exports, 1.1 s for a 10k truth ephemeris. Authored [`IP-1262`](../implementation/packages/IP-1262-export-sampling-bounds.md) (all 14 fields; `interval_s` finite/`> 0` + `MAX_EXPORT_SAMPLES = 10,000` arithmetic check in `sample_times` before any list/replay; 7 tests incl. the `BL-0174` rider; every cited file/line checked at `daa1915`); TWBS section, MBP row + note, `packages/INDEX.md` row, ROADMAP row, FS-121/FS-126 `Referenced By` links. Status `READY`; **MSTR-006 §3 authorization recorded as granted by the project owner 2026-10-11** (session pre-authorization). Committed `c7d70dc`. Harvested 0 new findings. `BL-0176`/`BL-0174` → `IN PIPELINE`. | `08-code-implementation` on `IP-1262` (authorized), then a fresh-session `09-package-verification`. |
 | 105 | 2026-10-11 | advance (no override — run #104's recorded next step) | `08-code-implementation` | `IP-1262` | Reconciled (origin tip `4578850` = run #104's own push; `IP-1262` `READY` on MBP/`packages/INDEX.md`/ROADMAP — no drift). Triaged: zero `NEW` entries; `BL-0176`/`BL-0174` ride this step. Gate check: MSTR-006 §3 authorization for `IP-1262` on record (project owner, 2026-10-11 session pre-authorization of this iteration's packages) — cleared; no other gate. Invoked `08-code-implementation`: `IP-1262` `READY → IN PROGRESS → COMPLETE`, test-first (Tests 1-6 observed failing first — `OverflowError` on `inf`, missing `MAX_EXPORT_SAMPLES`, DID-NOT-RAISE on the exports, 200 instead of 400 on the routes; Test 1's `nan` case already raised by accident, rider Test 7 passing on arrival, both as the package predicted). Baseline 823 passed/3 skipped → **833 passed/3 skipped** (836 collected, JUnit-tallied); `test_determinism.py` + `test_import_guard.py` 14 passed. Updated RTM `FR-7410`/`FR-7420`/`FR-2320`, `CLAUDE.md` code map, MBP/`packages/INDEX.md`/ROADMAP rows, package Status header. Ceiling measurement recorded (9,999-instant export 1.26 s on `multi-domain-taiwan` +6 h). Committed `4fd4591`. Harvested 1: `BL-0182` (manual impact — new 400 on the URL-only exports; `DEFERRED` until `IP-1262` `VERIFIED`). | `09-package-verification` on `IP-1262` (riding `BL-0176`/`BL-0174`) in a **fresh session**; this session may continue with `08-training-manual-authoring` on the `BL-0084` batch. |
+| 106 | 2026-10-11 | advance (no override — run #105's recorded next step) | `09-package-verification` | `IP-1262` | Reconciled (origin tip `e700123` = run #105's own push; `IP-1262` `COMPLETE` on MBP/`packages/INDEX.md`/ROADMAP, own header — no drift). Triaged: zero `NEW` entries; `BL-0176`/`BL-0174` ride this step (fresh-session verification target), `BL-0182` carries a revisit trigger on this very step. Gate check: verification is not gated; independence confirmed (this worktree checked out directly from `origin/claude/chart-prompt-file-90hm9u` at `e700123` onto a local tracking branch, no prior commit by this session on the branch). Invoked `09-package-verification`: re-derived every Definition-of-Done and Verification-Checklist item from the tree, not the Implementation Summary. Read `sample_times`' code directly (arithmetic count check precedes list construction; all three call sites — `truth_ephemeris`, `cell_observed_ephemeris`, `telemetry_export` — confirmed by `grep`/read to share it). Independently timed rejection of requests implying ~10¹⁵–10²⁴ instants (six orders of magnitude past the implementer's own ~10⁷ test): 0.003–0.005 ms at the module level, 3.49 ms through a full HTTP round trip, with no growth tied to the attempted count — proving the arithmetic pre-check claim (the DoS-shaped bug this package exists to fix is genuinely closed). Independently rebuilt `interval_s` boundary tests (`0`, negative, `nan`, ±inf), the exact-ceiling/one-over boundary, and the `BL-0174` reversed-window rider on fresh scenarios/vignettes distinct from the implementer's fixtures — all confirmed. Independently reproduced the fail-first claim on a detached pre-fix worktree at `daa1915` (new test files only, production code left at pre-fix state): 8/10 new cases failed, matching exactly. Full suite independently re-run: **833 passed, 3 skipped** (matches exactly); both permanent gates independently re-run by name: **14 passed**. Audited traceability: RTM `FR-7410`/`FR-7420`/`FR-2320` rows correctly cite `IP-1262`; MBP/`packages/INDEX.md`/ROADMAP rows and the package's own header all agreed `COMPLETE` before this report. Wrote [`VR-1262`](../implementation/verification/VR-1262-export-sampling-bounds.md): **VERIFIED, clean** — 1 Low finding (F1: `FS-121`/`FS-126`'s own `Referenced By` fields still tag `IP-1262`/`IP-1261` `READY`, stale and pre-existing, not this package's own claim; filed `BL-0183`, left unedited per this skill's own Feature-Specification boundary, matching `VR-1260`/`VR-1261` precedent). Flipped `IP-1262` `COMPLETE → VERIFIED` on the MBP, `packages/INDEX.md`, `ROADMAP.md`, the verification `INDEX.md`, and (unlike the apparent gap left in `IP-1261`'s own header after `VR-1261`) the package's own Status header. Resolved `BL-0176` → `DONE` (closed by `VR-1262`). Resolved `BL-0174`'s rider status → `DONE` (independently re-confirmed on a fresh scenario, not merely re-run). `BL-0182`'s revisit trigger fired (verification passed clean) → `DEFERRED → SCHEDULED`. Harvested 1 new finding: `BL-0183` (Low, FS `Referenced By` status-tag staleness, entry stage `06`). Committed verification + ledger updates, pushed to `origin/claude/chart-prompt-file-90hm9u` (merged with concurrent remote commits, no force-push, PR #55 unchanged). | `00-pipeline-manager` has no more packages blocked solely on `IP-1262`; recommend `08-training-manual-authoring` on the `BL-0084`/`BL-0177`/`BL-0178`/`BL-0180`/`BL-0182` batch (all now `SCHEDULED`, same sections), or `10-integration-review` if this tranche's packages (`IP-1210`/`IP-1260`/`IP-1261`/`IP-1262`, all now `VERIFIED`) are ready to be reviewed together. |

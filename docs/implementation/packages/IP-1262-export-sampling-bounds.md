@@ -2,7 +2,18 @@
 
 > **Package ID:** IP-1262
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implemented 2026-10-11 by `08-code-implementation`, pipeline run #105;
+> **Status:** ✅ VERIFIED 2026-10-11 via [`VR-1262`](../verification/VR-1262-export-sampling-bounds.md)
+> *(fresh-session, independent — clean, 1 Low finding: `FS-121`/`FS-126`'s own `Referenced By`
+> fields still tag this package `READY`, stale and pre-existing, filed `BL-0183`, left unedited per
+> the verifier's own Feature-Specification boundary. The arithmetic, up-front sample-count ceiling
+> was independently confirmed real — not a disguised full-generation-then-reject — by timing a
+> request implying ~10¹⁵–10²⁴ instants: rejected in 0.003–0.005 ms at the module level and 3.49 ms
+> through a full HTTP round trip, with no growth tied to the attempted count. All three call sites
+> independently confirmed to share `sample_times` by direct code read; the `BL-0174` rider
+> independently re-built on a fresh scenario and confirmed correct; the fail-first claim
+> independently reproduced on a detached pre-fix worktree (8/10 new cases failed, matching
+> exactly). Full suite 833 passed/3 skipped, both permanent gates green (14/14), independently
+> re-run.)* *(implemented 2026-10-11 by `08-code-implementation`, pipeline run #105;
 > authorized by the project owner 2026-10-11, MSTR-006 §3. `session/ephemeris.py`: `MAX_EXPORT_SAMPLES =
 > 10_000` + finite/`> 0` `interval_s` validation and an arithmetic count check in `sample_times` before
 > any list/replay; three route docstrings. 10 new tests (Test 1 ×4 parametrized, Tests 2-7); Tests 1-6
@@ -10,7 +21,7 @@
 > the Objective notes), rider Test 7 passing on arrival as intended. Full suite 833 passed/3 skipped
 > (836 collected, JUnit-tallied; baseline 823/3), both permanent gates green (14 passed). Measured on
 > `multi-domain-taiwan` +6 h: a 9,999-instant telemetry export 1.26 s; an over-ceiling request rejected
-> in ~0.1 ms. Awaiting a fresh-session `09-package-verification`.)*
+> in ~0.1 ms.)*
 > **Dependencies:** [FS-121](../../features/FS-121-ephemeris-export.md) v2.0 (`FR-7410`/`FR-7420`;
 > resolves its Open Question 2, the sampling-rate/performance ceiling),
 > [FS-126](../../features/FS-126-telemetry-csv-export.md) v1.0 (`FR-2320`),
