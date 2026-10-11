@@ -390,6 +390,39 @@ that measured ≤ ~51 m round-trip residual across LEO/MEO/GEO/HEO/equatorial/re
 
 No cross-package sequencing constraint.
 
+## Telemetry-series-history remediation (pipeline run #99, 2026-10-11)
+
+One remediation package for `BL-0170` (live telemetry series route back-dates current world state
+across its window; disagrees with the `VERIFIED` `IP-1260` export at every historical point,
+against `FR-2320`'s cross-route parity Postcondition). Planned against `FS-126` (`FR-2320`) with
+`FS-121` (`FR-7410`/`FR-7420`) as a behaviour-preserving migration target.
+
+Work units (all owned by `IP-1261`):
+
+1. **Engine — stepwise replay generator** (additive sibling of `replay()`; `replay()` untouched).
+2. **Session — time-keyed helper** in `session/aar.py` (single forward pass + live-tail shortcut).
+3. **Fix — `get_series`** routed through the helper.
+4. **Migration — `telemetry_export` + `truth_ephemeris` + `cell_observed_ephemeris`** onto the
+   helper, output identical.
+5. **Regression + parity + cost-guard tests** (`BL-0170` scenarios A-D).
+
+**No-split rationale:** units 1-2 have no consumer other than 3-4, and unit 3 alone (`BL-0170`
+Option 1, per-seq replay in `get_series`) was rejected on lock-hold cost, so the fix is not
+shippable without the helper. Splitting the migration (4) into a follow-on package was considered
+and rejected: it would leave two different time-span replay mechanisms live at once, and the
+migration's own guard (exact-equality tests against the existing outputs) is cheap and belongs with
+the helper's introduction. **New package, not an `IP-1260` revision:** `IP-1260` is `VERIFIED`;
+the defect is in the pre-existing `get_series` path `IP-1260` explicitly did not touch
+(`VR-1260`), so it is planned as a remediation slice (`IP-1261`, mirroring `IP-1061` under
+`IP-1060`). `BL-0171` (`FR-2310` pass-gating of historical points) is a `04` question and is not
+in this package; if adopted, it layers on this package's helper as a separate package.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1261](packages/IP-1261-telemetry-series-history-remediation.md) | FS-126 (`FR-2320`) + FS-121 (`FR-7410`/`FR-7420`, migration) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, 2026-10-11 session task instruction) — this iteration's packages |
+
+No cross-package sequencing constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·

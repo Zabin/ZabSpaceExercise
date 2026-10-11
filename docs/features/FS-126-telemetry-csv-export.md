@@ -9,6 +9,8 @@
 > effect — the channel-perturbation source this Feature's export must reflect faithfully)
 > **Referenced By:** [IP-1260](../implementation/packages/IP-1260-telemetry-csv-export.md)
 > (Implementation Package — `COMPLETE` 2026-10-10, awaiting `09-package-verification`),
+> [IP-1261](../implementation/packages/IP-1261-telemetry-series-history-remediation.md)
+> (remediation package — live series route parity with this export, `BL-0170`; 🟢 `READY`, authored 2026-10-11),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0075` (item B9),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-2320`
