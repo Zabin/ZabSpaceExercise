@@ -423,6 +423,35 @@ in this package; if adopted, it layers on this package's helper as a separate pa
 
 No cross-package sequencing constraint.
 
+## Export sampling-bounds remediation (pipeline run #104, 2026-10-11)
+
+One remediation package for `BL-0176` (REV-TRN-002 F1): the three time-span exports accept an
+explicit `interval_s` that `session/ephemeris.py::sample_times` floors to a 1 µs step, so a single
+request can replay an unbounded number of instants under the session lock. Planned against
+`FS-121` (`FR-7410`/`FR-7420`, closing Open Question 2's explicit-interval half) and `FS-126`
+(`FR-2320`).
+
+Work units (all owned by `IP-1262`):
+
+1. **Validation + ceiling in `sample_times`**, the single choke point all three exports share
+   (`interval_s` finite and `> 0`; arithmetic sample-count check against `MAX_EXPORT_SAMPLES`
+   before any list is built or replay run).
+2. **Route docstrings** naming the new 400 (status mapping already exists).
+3. **Tests**, plus the `BL-0174` rider: a regression test for `get_series`'s reversed window.
+
+**No-split rationale:** units 1-2 are a few lines behind one function; splitting would produce
+packages with no independent Definition of Done. The `BL-0174` rider is folded in because it is a
+single test under the same `FR-2320` anchor and same test module, and `08-code-implementation`
+can only execute test work through a package — a standalone one-test package was judged not worth
+its own verify cycle. The ceiling value (10,000) is set from this pass's own measurement on
+`multi-domain-taiwan` at +6 h (~1.25 s for a 10,000-instant telemetry export).
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1262](packages/IP-1262-export-sampling-bounds.md) | FS-121 (`FR-7410`/`FR-7420`) + FS-126 (`FR-2320`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, 2026-10-11 session task instruction) — this iteration's packages |
+
+No cross-package sequencing constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·

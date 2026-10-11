@@ -11,6 +11,8 @@
 > (Implementation Package — `COMPLETE` 2026-10-10, awaiting `09-package-verification`),
 > [IP-1261](../implementation/packages/IP-1261-telemetry-series-history-remediation.md)
 > (remediation package — live series route parity with this export, `BL-0170`; 🟢 `READY`, authored 2026-10-11),
+> [IP-1262](../implementation/packages/IP-1262-export-sampling-bounds.md)
+> (remediation package — export `interval_s` floor + sample-count ceiling, `BL-0176`; 🟢 `READY`, authored 2026-10-11),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0075` (item B9),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-2320`

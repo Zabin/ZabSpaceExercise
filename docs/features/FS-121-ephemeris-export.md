@@ -26,6 +26,7 @@
 > (Implementation Package for `FR-7410`-`FR-7430`, ✅ `VERIFIED` 2026-09-28),
 > [IP-1211](../implementation/packages/IP-1211-quick-tle-export.md) (Implementation Package for `FR-7440`, 🟡 `READY`, authored 2026-10-10),
 > [IP-1261](../implementation/packages/IP-1261-telemetry-series-history-remediation.md) (remediation package — migrates `FR-7410`/`FR-7420`'s time-span sampling onto a shared single-pass replay helper, output unchanged; 🟢 `READY`, authored 2026-10-11),
+> [IP-1262](../implementation/packages/IP-1262-export-sampling-bounds.md) (remediation package — explicit-`interval_s` floor + sample-count ceiling, closing Open Question 2's explicit-interval half, `BL-0176`; 🟢 `READY`, authored 2026-10-11),
 > [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md) `FEAT-7400`
 > **Produces:** truth and cell-observed ephemeris export in ECI/RIC, CSV/CCSDS OEM + companion RIC
 > file, satisfying `FR-7410`/`FR-7420`/`FR-7430`; and a quick, copyable current-epoch TLE for any

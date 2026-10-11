@@ -551,6 +551,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1300 | Live RIC-Frame Relative-Motion View & CATS Overlay | `implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md` | FS-130 `FR-8210`/`FR-8220` | Forward design | ✅ VERIFIED 2026-10-10 via `docs/implementation/verification/VR-1300-ric-frame-view-and-cats-overlay.md` — clean, 2 Low findings; `BL-0158` adjudicated `DONE` |
 | IP-1211 | Quick TLE Export for a Cell-Visible Satellite | `implementation/packages/IP-1211-quick-tle-export.md` | FS-121 `FR-7440` | Forward design | ✅ VERIFIED 2026-10-10 (`VR-1211`, fresh session; `BL-0164` adjudicated `DONE`, accepted) |
 | IP-1261 | Telemetry Series History Remediation (single-pass time-span replay) | `implementation/packages/IP-1261-telemetry-series-history-remediation.md` | FS-126 `FR-2320` (+ FS-121 `FR-7410`/`FR-7420` migration) | Remediation | ✅ VERIFIED 2026-10-11 via `VR-1261` — clean, 1 Low finding (`BL-0173` reversed-window handling correct but untested); `BL-0170` closed |
+| IP-1262 | Time-Span Export Sampling Bounds (interval_s floor + sample-count ceiling) | `implementation/packages/IP-1262-export-sampling-bounds.md` | FS-121 `FR-7410`/`FR-7420` + FS-126 `FR-2320` | Remediation | 🟢 READY (pre-authorized by the project owner 2026-10-11, MSTR-006 §3; `BL-0176`, rider `BL-0174`) |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1220,
 IP-1240, IP-1250, IP-1260, IP-1270, IP-1280, and IP-1290 are new (2026-09-27, run #78)** — seven
