@@ -58,7 +58,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | SDA tasking → custody → unlock | `engine/custody.py`, `engine/access.py` | — | BLU-4 | RED-4 |
 | Weapons-quality gate | `engine/custody.py` | — | BLU-4 | RED-4, RED-5 |
 | Bus/payload SOH + safe mode | `engine/bus.py`, `engine/busmodel.py` | WCM-2 | BLU-5 | RED-7 |
-| Telemetry signatures + nominal ghost (history graph, per-instant) | `engine/telemetry.py`, `session/manager.py` (`get_series`), `session/aar.py` (`worlds_at_times`), `GET /telemetry/{cell}/{asset}/{param}` | — | BLU-6 | RED-7 |
+| Telemetry signatures + nominal ghost (history graph, per-instant) | `engine/telemetry.py`, `session/manager.py` (`get_series`), `session/aar.py` (`worlds_at_times`), `GET /telemetry/{cell}/{asset}/{param}` | WCM-6 | BLU-6 | RED-7 |
 | Safe-mode recovery chain | `engine/recovery.py`, `engine/buscommands.py` | — | BLU-7 | RED-7 |
 | Bus/payload command verbs | `engine/buscommands.py` | — | BLU-7 | RED-7 |
 | Conjunctions + collision avoid | `world.conjunctions`, `prop.collision_avoid` | — | BLU-8 | — |
@@ -93,7 +93,7 @@ mirrors each section's inline `> Sources:` footer.
 | WCM-3 | Hot-seat / LAN / pop-out | `session/inprocess.py`, `server.py` (`/api/sessions`) |
 | WCM-4 | Time control | `session/manager.py`, `engine/clock.py`, `/clock` |
 | WCM-5 | Injects | `content/inject_library.yaml`, `/inject` |
-| WCM-6 | Monitor both sides | `session/scene.py`, `app.js`, `Vignette.coaching` |
+| WCM-6 | Monitor both sides | `session/scene.py`, `app.js` (incl. `openDrill`), `Vignette.coaching`, `session/manager.py` (`get_telemetry`/`get_series`) |
 | WCM-7 | TLE add | `engine/propagator.py`, `/force/tle` |
 | WCM-8 | AI-Red doctrine | `session/redai.py`, `/red_step` |
 | WCM-9 | After-Action Review | `session/aar.py`, `/aar*` |
@@ -114,7 +114,7 @@ mirrors each section's inline `> Sources:` footer.
 | BLU-3 | Previews before commit | `engine/orders.py` `dry_run`, `/preview/consequence`, `engine/{maneuver,isr,jam}.py` |
 | BLU-4 | SDA tasking loop | `engine/custody.py`, `engine/access.py` |
 | BLU-5 | Bus health | `engine/bus.py`, `engine/busmodel.py` |
-| BLU-6 | Diagnose from telemetry | `engine/telemetry.py`, `session/manager.py` (`get_series`), `session/aar.py` (`worlds_at_times`) |
+| BLU-6 | Diagnose from telemetry | `engine/telemetry.py`, `session/manager.py` (`get_series`), `session/aar.py` (`worlds_at_times`), `/telemetry/{cell}/{asset}/{param}` |
 | BLU-7 | Recovery | `engine/recovery.py`, `engine/buscommands.py` |
 | BLU-8 | Maneuver & conjunctions | `world.conjunctions`, `prop.collision_avoid`, `engine/maneuver.py` |
 | BLU-9 | Cyber posture | `engine/cyber.py` |
@@ -134,7 +134,7 @@ mirrors each section's inline `> Sources:` footer.
 | RED-4 | SDA targeting | `engine/custody.py`, `engine/access.py` |
 | RED-5 | Five D's / effects | `engine/effects.py`, `engine/{jam,engage}.py`, `engine/access.py` |
 | RED-6 | Cyber wildcard | `engine/cyber.py` |
-| RED-7 | Own-force management | `engine/bus.py`, `engine/recovery.py`, `engine/telemetry.py`, `session/manager.py` (`get_series`), `session/aar.py` (`worlds_at_times`) |
+| RED-7 | Own-force management | `engine/bus.py`, `engine/recovery.py`, `engine/telemetry.py`, `session/manager.py` (`get_series`), `session/aar.py` (`worlds_at_times`), `app.js` (`renderFleet`/`rollup`), `vignettes/*.yaml` (`red_forces`, no `bus_state`) |
 | RED-8 | Doctrine profiles | `session/redai.py` |
 | RED-9 | Win the vignette | `11-vignette-playbooks.md`, `/vignettes/{id}/tutorial` |
 | RED-10 | RIC frame view & CATS phase angle | `engine/sun.py`, `session/ephemeris.py` (`live_ric_view`), `/ric_view/{cell}` |

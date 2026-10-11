@@ -97,17 +97,31 @@ defender's side.*
 
 ### RED-7 · Manage your own force
 
-Red's satellites have the same **bus** SOH and safe-mode model as Blue's — Blue can hit back.
-Watch the fleet rail's worst-subsystem dots and alarm feed, diagnose incoming attacks from
-telemetry signatures (same table as [`13-blue-cell-manual.md`](13-blue-cell-manual.md) §BLU-6), and
-run the multi-pass recovery chain (patch the root cause or the asset re-safes). As in BLU-6, each
-point on a drill-down history graph is your asset's state at that instant, so where the line
-breaks is when the effect actually began — the same value your telemetry CSV export (RED-13)
-gives at any instant both of them sample.
+Blue can hit back. Its jam, cyber and directed-energy effects leave the same telemetry signatures
+on your satellites that yours leave on Blue's. Diagnose them from the drill-down (same table as
+[`13-blue-cell-manual.md`](13-blue-cell-manual.md) §BLU-6).
+
+**Bus health depends on the vignette.** The engine applies Blue's **bus** SOH and safe-mode model
+to any satellite whose vignette gives it a bus. **None of the shipped vignettes gives a Red
+satellite a bus yet**, so in practice you will see:
+
+- `—` for bus mode and battery on the fleet rail, and an uncoloured health dot;
+- no safe-mode events;
+- nothing for the recovery chain to do.
+
+If a vignette does give a Red satellite a bus, the same rules as BLU-5 and BLU-7 apply. Watch the
+worst-subsystem dots and alarm feed, and run the multi-pass recovery chain (patch the root cause
+or the asset re-safes).
+
+As in BLU-6, each point on a drill-down history graph is your asset's state at that instant, so
+where the line breaks is when the effect actually began. Your telemetry CSV export (RED-13) gives
+the same value at any instant both of them sample.
 
 > **Sources:** `spacesim/engine/bus.py` · `spacesim/engine/recovery.py` ·
 > `spacesim/engine/telemetry.py` · `spacesim/session/manager.py` (`get_series`) ·
 > `spacesim/session/aar.py` (`worlds_at_times`) ·
+> `spacesim/ui_web/static/app.js` (`renderFleet`/`rollup`, `—` for a bus-less asset) ·
+> `spacesim/content/vignettes/*.yaml` (`red_forces`, no `bus_state` authored) ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"Bus state-of-health"
 
 ### RED-8 · Doctrine profiles and the COA vignettes
@@ -211,8 +225,8 @@ the live telemetry readout you already use for own-force management (RED-7). Lik
 
 You can only export assets you own; a different cell's asset is rejected (404), the same
 fog-of-war rule the live readout already applies. Each row is computed on the world *replayed to
-that exact sampled instant*, so a historical anomaly (e.g. a cyber or EW effect that pushed your
-own bird into safe mode) shows up starting exactly at its own onset time — never back-dated into
+that exact sampled instant*, so a historical effect (e.g. Blue jamming or a cyber attack on
+your own bird) shows up starting exactly at its own onset time — never back-dated into
 rows sampled before it actually fired. That precision is what lets you reconstruct exactly when a
 degradation began, not just that it eventually happened.
 
