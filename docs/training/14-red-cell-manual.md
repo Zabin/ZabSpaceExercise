@@ -186,11 +186,20 @@ own asset; otherwise your own belief of it, same rule as RED-10's live view. `fo
 companion file. `t1`/`t2` are sim time as integer microseconds, the same units the event log
 uses — not a clock-face time.
 
+This export reads **only your tracks**. Red holds no track on its own assets, so naming one of
+them as `object_id` returns a file with the header row and no data. The live RIC view (RED-10)
+behaves differently because it shows your own assets at truth. For your own bird's history, use
+the telemetry export (RED-13). `interval_s` follows WCM-15's rules. If you set it, it must be a
+finite number greater than zero. A request over **10,000 sampled instants** is rejected
+(HTTP 400), and the message names the smallest usable `interval_s`.
+
 Use it to pull your targeting picture of Blue's asset into an outside tool, or to compare your
 custody's drift against White's ground-truth export (WCM-15) during an AAR debrief.
 
 > **Sources:** `spacesim/session/ephemeris.py` (`cell_observed_ephemeris`, `to_ric`, `write_csv`,
-> `write_oem`, `write_ric_csv`) · `GET /api/sessions/{sid}/ephemeris/{cell}` ·
+> `write_oem`, `write_ric_csv`, `sample_times`/`MAX_EXPORT_SAMPLES`) ·
+> `spacesim/session/aar.py` (`worlds_at_times`, per-instant replay) ·
+> `GET /api/sessions/{sid}/ephemeris/{cell}` ·
 > [FS-121](../features/FS-121-ephemeris-export.md) (`FR-7420`/`FR-7430`)
 
 ### RED-13 · Your telemetry CSV export (URL-only)
@@ -207,8 +216,14 @@ own bird into safe mode) shows up starting exactly at its own onset time — nev
 rows sampled before it actually fired. That precision is what lets you reconstruct exactly when a
 degradation began, not just that it eventually happened.
 
+The span and sampling rules are the same as RED-12's. A request over 10,000 sampled instants gets
+a 400 that names the smallest usable `interval_s`. A zero, negative or NaN `interval_s` is refused
+with a **422** on this route.
+
 > **Sources:** `spacesim/session/manager.py` (`telemetry_export`) ·
 > `spacesim/engine/telemetry.py` (`sample`, read via per-instant replay) ·
+> `spacesim/session/aar.py` (`worlds_at_times`) ·
+> `spacesim/session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`) ·
 > `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv` ·
 > [FS-126](../features/FS-126-telemetry-csv-export.md) (`FR-2320`)
 

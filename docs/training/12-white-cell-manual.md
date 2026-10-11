@@ -260,7 +260,10 @@ ECI-only (OEM has no native RIC representation); `format=ric` writes a RIC-only 
 pairing with the OEM file. `t1`/`t2` are sim time as **integer microseconds since the Unix
 epoch** — the same units `world.now` and the event log use, not a clock-face time you type in
 directly; read one off the event log or a save file first. `interval_s` is optional (defaults to
-a coarse span/100 sampling, floored at one bus-tick period).
+a coarse span/100 sampling, floored at one bus-tick period, so at most 101 rows). If you set it,
+it must be a finite number greater than zero, or the request is rejected (HTTP 400). Any request
+that would sample more than **10,000 instants** is also rejected with HTTP 400. The error message
+names the smallest `interval_s` your span allows (about 0.36 s for a one-hour span).
 
 A requested span **partially** outside the session's own recorded range (from load/start to the
 current sim time) is silently clamped to the overlap; a span **wholly** outside it is rejected
@@ -273,15 +276,18 @@ external conjunction/visualization check against what the engine actually propag
 live JSON god-view (current instant only) cannot do.
 
 > **Sources:** `spacesim/session/ephemeris.py` (`truth_ephemeris`, `to_ric`, `write_csv`,
-> `write_oem`, `write_ric_csv`) · `GET /api/sessions/{sid}/ephemeris/truth` ·
+> `write_oem`, `write_ric_csv`, `sample_times`/`MAX_EXPORT_SAMPLES`) ·
+> `spacesim/session/aar.py` (`worlds_at_times`, per-instant replay) ·
+> `GET /api/sessions/{sid}/ephemeris/truth` ·
 > [FS-121](../features/FS-121-ephemeris-export.md) (`FR-7410`/`FR-7430`)
 
 ### WCM-16 · Per-asset telemetry CSV export (URL-only)
 
 `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv?t1=&t2=&interval_s=` turns any
 asset's subsystem telemetry into a CSV time series — one row per sampled instant × parameter
-(19 parameters per asset), covering the same channels the live telemetry panel (WCM-6's
-monitoring view, BLU-6/RED-7's diagnosis workflow) already shows, now over a requested span
+(19 parameters per asset), covering the same channels the live subsystem drill-down
+([UI reference §10.13](10-ui-reference.md#1013-subsystem-drill-down); BLU-6/RED-7 cover the
+diagnosis workflow) already shows, now over a requested span
 instead of just the current instant. Like WCM-15, **there is no console button for this** — it
 is URL-only, by design (`FS-126`'s own scope names only the backing code, no UI affordance).
 
@@ -289,7 +295,9 @@ As White Cell you can request **any** asset's export (`cell=white` bypasses the 
 the way every other `/telemetry/{cell}/...` route already does); Blue and Red can only export
 their own assets (see BLU-14/RED-13). `t1`/`t2` are the same integer-microsecond sim time units as
 WCM-15's ephemeris export; a partially out-of-range span clamps, a wholly out-of-range one is
-rejected (400), identically.
+rejected (400), identically. The same 10,000-instant ceiling applies (400, naming the smallest
+usable `interval_s`). A zero, negative or NaN `interval_s` is also refused, but on this route
+the status is **422**, not 400.
 
 **The one fact worth understanding precisely:** each exported row is computed on the world
 *replayed to that exact sampled instant* — not read off the session's current/final state and
@@ -304,6 +312,8 @@ trustworthy for AAR analysis.
 
 > **Sources:** `spacesim/session/manager.py` (`telemetry_export`) ·
 > `spacesim/engine/telemetry.py` (`sample`, read via per-instant replay) ·
+> `spacesim/session/aar.py` (`worlds_at_times`) ·
+> `spacesim/session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`) ·
 > `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv` ·
 > [FS-126](../features/FS-126-telemetry-csv-export.md) (`FR-2320`)
 

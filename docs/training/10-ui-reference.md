@@ -166,7 +166,7 @@ The next-contact countdown column is **read-only** (data from `GET /next_contact
 | 2 | Intent | dropdown | **search** / **track** / **characterize** / **cue**. |
 | 3 | Sensor | dropdown | Organic mode only. `auto` lets the engine pick the earliest viable own sensor. |
 | 4 | Regime | dropdown | SSN mode only. **LEO** / **MEO** / **GEO** / **HEO** / **cislunar**. |
-| 5 | Target | text | Track id (e.g. `RED-TGT`). |
+| 5 | Target | dropdown + **or id** text input | Dropdown lists the other side's **known targets**: your tracks, grouped by owner, plus any non-own satellite/space-based/interceptor/directed-energy asset your fog-filtered view shows. White tasks on Blue's behalf and so sees every non-Blue asset. When the list is empty it says *no known targets yet*. The **or id** box takes precedence over the dropdown. Use it to task a sensor against an id you have not tracked yet; collection is how custody starts. If both are empty, Plan collection falls back to the compose form's target (§10.6 row 4). |
 | 6 | Priority | dropdown | **routine** / **priority** / **immediate** (drives SSN SLA + organic queue order). |
 | 7 | Plan collection | button | Organic: `POST /order` with `action: observe`. SSN: `POST /ssn/{cell}/request`. |
 | 8 | Beam mode | dropdown | `auto` + **wide_area / stripmap / spotlight / scan / fine / polarimetric** (see `engine/isr.py`). |
@@ -186,7 +186,7 @@ The next-contact countdown column is **read-only** (data from `GET /next_contact
 | 1 | Role filter chips | 4 chips | **All** / **Bus** / **Payload** / **SDA** — filters the Actor dropdown. |
 | 2 | Actor | dropdown | Own assets (filtered by role chip + current cell). |
 | 3 | Action | dropdown | Legal actions for the actor's `kind`: e.g. satellite ⇒ `downlink/maneuver/command`, jammer ⇒ `jam`. |
-| 4 | Target | text | Optional. Track id, station id, or asset id depending on action. |
+| 4 | Target | dropdown + **or id** text input | Uses the same known-target list as §10.5 row 5, with the selected actor's own side left out. The **or id** box takes precedence. Both fields are **enabled only for `jam` / `engage` / `cyber` / `observe`**. For any other action they are blanked and disabled because that order takes no target. |
 | 5 | Params | JSON text | Pre-filled per action (see PARAM_TEMPLATE in `app.js`). Live dry-run on every keystroke. |
 | 6 | Validity preview | read-only | ✓ queue · delivery_path · window OR ✗ reason (from `POST /order/validate`). |
 | 7 | Consequence preview | read-only | severity / esc / reversible / debris / attribution (from `POST /preview/consequence`). |
@@ -199,6 +199,10 @@ The next-contact countdown column is **read-only** (data from `GET /next_contact
 
 When **Action** is set to `maneuver` or `jam`, an additional assistant panel appears below
 Params — see §10.7 / §10.8.
+
+*Screenshot note:* `ref-05-tasking.png` and `ref-06-compose.png` were drawn before the target
+picker shipped and still show **Target** as a single text box. Where a screenshot and a table row
+disagree, follow the table row (§10.5 row 5, §10.6 row 4).
 
 ---
 
