@@ -2,10 +2,9 @@
 
 > **Package ID:** IP-1063
 > **Version:** 1.0
-> **Status:** 🟢 READY *(authored 2026-10-11, `07-implementation-planning`, pipeline run #110.
-> Every dependency is `VERIFIED`. **Authorized** by the project owner on 2026-10-11 under the
-> session pre-authorization of this iteration's packages, MSTR-006 §3. This follows the same
-> precedent as `IP-1261`/`IP-1262`.)*
+> **Status:** 🔵 COMPLETE 2026-10-11 (`08-code-implementation`, pipeline run #111; awaiting `09-package-verification` in a fresh session). `validate_inject_effects` + `_inject_effect_problem` (module-level, pure) in `session/manager.py`; `fire_inject` rejects atomically; `_apply_inject_effects` skips invalid effects (+ `compute_maneuver` guard) via `_skip_inject_effect`; `InProcessSession.fire_inject` → `Ack(ok=False)`; `/inject` → 400. 15 new tests (Tests 1–7 incl. 8 parametrized cases + route test), all 15 observed failing first (Test 7 only on the not-yet-existing import; it guards shipped content and passed as soon as the validator existed, as the package anticipated). Full suite 848 passed/3 skipped (851 collected, JUnit), both permanent gates green (14).
+> *(Authored 2026-10-11, `07-implementation-planning`, pipeline run #110; authorized by the project owner
+> 2026-10-11, MSTR-006 §3, session pre-authorization of this iteration's packages.)*
 > **Dependencies:** [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.1 (`FR-4410`,
 > `FR-4430`), [IP-1062](IP-1062-condition-triggered-injects-and-new-effects.md) (`VERIFIED`,
 > `VR-1062` v2.0), [IP-1061](IP-1061-inject-and-sizing-defect-remediation.md) (`VERIFIED`; its "a

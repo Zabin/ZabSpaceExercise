@@ -287,7 +287,10 @@ class InProcessSession:
 
     def fire_inject(self, session: str, inject, at_sim_t: Optional[int] = None) -> Ack:
         with self._locked(session) as mgr:
-            mgr.fire_inject(inject, at_sim_t=at_sim_t)
+            try:
+                mgr.fire_inject(inject, at_sim_t=at_sim_t)
+            except ValueError as exc:   # IP-1063 — invalid inject: nothing applied, reason surfaced
+                return Ack(ok=False, reason=str(exc))
         return Ack()
 
     def inject_library(self) -> list[dict]:

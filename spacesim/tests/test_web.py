@@ -854,3 +854,17 @@ def test_telemetry_export_route_rejects_over_ceiling_interval_400():
               params={"t1": now - 20_000, "t2": now, "interval_s": 0.000001})
     assert r.status_code == 400
     assert str(ephemeris.MAX_EXPORT_SAMPLES) in r.json()["detail"]
+
+
+def test_inject_route_rejects_invalid_inject_400():
+    """IP-1063 (BL-0188) — an inject whose FR-4430 target precondition fails is a 400 naming the
+    target, not a 200 {"ok": true} that silently does nothing."""
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/inject", json={"inject": {"effects": [
+        {"type": "anomaly", "target": "NO-SUCH-SAT", "subsystem": "bus"}]}})
+    assert r.status_code == 400
+    assert "NO-SUCH-SAT" in r.json()["detail"]
+    r = c.post(f"/api/sessions/{sid}/inject", json={"inject": {"effects": [
+        {"type": "message", "to": ["blue"], "text": "hello"}]}})
+    assert r.status_code == 200 and r.json()["ok"] is True

@@ -32,6 +32,96 @@ from spacesim.session.scene import build_scene
 
 BUS_TICK_PERIOD_S = 300.0
 
+# IP-1063 (BL-0129/BL-0188) — the inject effect types `SessionManager._apply_inject_effects`
+# dispatches. Extend this (and `_INJECT_REQUIRED_KEYS`) alongside that dispatch: an effect type
+# missing here is rejected at the White boundary and skipped in the handler.
+INJECT_EFFECT_TYPES = frozenset({
+    "message", "reveal_asset", "political_consequence", "patch_cyber_vuln", "gs_outage",
+    "space_weather", "conjunction_warning", "spawn_debris",
+    "anomaly", "sensor_outage", "forced_custody_loss", "scripted_manoeuvre",   # FR-4430
+})
+_INJECT_REQUIRED_KEYS = {
+    "reveal_asset": ("to", "target"),
+    "patch_cyber_vuln": ("target",),
+    "gs_outage": ("target",),
+    "anomaly": ("target",),
+    "sensor_outage": ("target",),
+    "forced_custody_loss": ("cell", "target"),
+    "scripted_manoeuvre": ("target", "mode"),
+}
+_MANEUVER_MODES = frozenset({"eci", "lvlh", "finite_burn", "target_coe", "hohmann", "plane_change"})
+
+
+def _inject_effect_problem(world: WorldState, eff, check_targets: bool, prop=None) -> Optional[str]:
+    """One effect's problem (or ``None``). Pure: reads ``world``, mutates nothing, draws no RNG."""
+    if not isinstance(eff, dict):
+        return "effect is not an object"
+    kind = eff.get("type")
+    if not isinstance(kind, str) or kind not in INJECT_EFFECT_TYPES:
+        return f"unknown effect type {kind!r}"
+    missing = [k for k in _INJECT_REQUIRED_KEYS.get(kind, ()) if eff.get(k) in (None, "")]
+    if missing:
+        return f"{kind} is missing {', '.join(missing)}"
+    if kind == "anomaly" and eff.get("subsystem") not in ("bus", "telemetry"):
+        return f"anomaly subsystem must be 'bus' or 'telemetry', got {eff.get('subsystem')!r}"
+    if kind == "forced_custody_loss":
+        if eff["cell"] not in ("blue", "red"):
+            return f"forced_custody_loss cell must be 'blue' or 'red', got {eff['cell']!r}"
+        if "degrade_to" in eff:
+            try:
+                float(eff["degrade_to"])
+            except (TypeError, ValueError):
+                return f"forced_custody_loss degrade_to is not a number: {eff['degrade_to']!r}"
+    if kind == "scripted_manoeuvre":
+        if eff["mode"] not in _MANEUVER_MODES:
+            return f"scripted_manoeuvre mode {eff['mode']!r} is not one of {sorted(_MANEUVER_MODES)}"
+        if not isinstance(eff.get("params", {}), dict):
+            return "scripted_manoeuvre params must be an object"
+    if not check_targets:
+        return None
+    # FR-4430 Precondition — "the targeted Asset/Sensor/Track exists in the current WorldState".
+    tgt = eff.get("target")
+    if kind == "anomaly":
+        asset = world.assets.get(tgt)
+        if asset is None:
+            return f"anomaly target {tgt!r} does not exist"
+        if asset.bus_state is None:
+            return (f"anomaly target {tgt!r} has no bus (no bus_state), so a "
+                    f"{eff['subsystem']} anomaly cannot land on it")
+    elif kind == "sensor_outage":
+        if tgt not in world.sensors:
+            return f"sensor_outage target {tgt!r} is not a sensor"
+    elif kind == "forced_custody_loss":
+        if world.track_for(eff["cell"], tgt) is None:
+            return f"forced_custody_loss: {eff['cell']} holds no track on {tgt!r}"
+    elif kind == "scripted_manoeuvre":
+        asset = world.assets.get(tgt)
+        if asset is None or asset.orbit is None:
+            return f"scripted_manoeuvre target {tgt!r} does not exist or has no orbit"
+        from spacesim.engine.maneuver import compute_maneuver
+        try:
+            compute_maneuver(asset.orbit, eff["mode"], eff.get("params", {}), world.now, prop)
+        except (ValueError, KeyError, TypeError) as exc:
+            return f"scripted_manoeuvre params rejected: {exc}"
+    return None
+
+
+def validate_inject_effects(world: WorldState, effects, *, check_targets: bool, prop=None) -> list[str]:
+    """IP-1063 (BL-0129/BL-0188) — every problem with an inject's effect list, one string per
+    invalid effect (``"#i type: reason"``); ``[]`` means valid. Pure — safe to call inside the
+    deterministic handler under replay. ``check_targets`` adds FR-4430's target Precondition for
+    the four FR-4430 effect types (an `anomaly` needs a target *with a bus*); the eight earlier
+    types are checked structurally only (their missing-target posture is unchanged)."""
+    if not isinstance(effects, list):
+        return ["effects must be a list"]
+    problems = []
+    for i, eff in enumerate(effects):
+        p = _inject_effect_problem(world, eff, check_targets, prop)
+        if p is not None:
+            kind = eff.get("type") if isinstance(eff, dict) else None
+            problems.append(f"#{i} {kind}: {p}")
+    return problems
+
 
 class SessionManager:
     def __init__(
@@ -783,8 +873,16 @@ class SessionManager:
         ``inject`` may be a list of effects, a dict with ``{"effects": [...]}``, or an id string
         resolved against the loaded vignette.  When ``at_sim_t`` is set and > current sim time,
         the inject is scheduled deterministically through the event log so it replays exactly.
+
+        IP-1063 (BL-0129/BL-0188): the whole effect list is validated first — structurally, and
+        against FR-4430's target Precondition in the current world — and an invalid inject raises
+        ``ValueError`` naming every problem, with nothing scheduled, applied, or logged (atomic).
         """
         effects = inject if isinstance(inject, list) else self._inject_effects(inject)
+        problems = validate_inject_effects(self.sim.world, effects, check_targets=True,
+                                           prop=self.osys.prop)
+        if problems:
+            raise ValueError("inject rejected: " + "; ".join(problems))
         now = self.sim.clock.now
         requested = int(at_sim_t) if at_sim_t is not None else now
         when = max(now, requested)   # past timestamps clamp to "now" (no backwards time travel)
@@ -934,8 +1032,17 @@ class SessionManager:
         """IP-1062 — shared per-effect dispatch, extracted from `_h_inject`'s previous inline
         body with no behavior change for any of the eight prior effect types, so both the
         time/immediate trigger path (`_h_inject`) and the new condition-triggered path
-        (`_h_condition_check`) apply effects identically."""
+        (`_h_condition_check`) apply effects identically.
+
+        IP-1063 (BL-0129): an effect that fails structural validation is skipped whole — never
+        raising mid-handler after earlier effects already mutated ``world`` — with one White
+        message; the decision is a pure function of (world, effect), so replay matches live.
+        Target-precondition misses stay silent no-ops here (IP-1062 Design Decision 2)."""
         for eff in effects:
+            problem = _inject_effect_problem(world, eff, check_targets=False)
+            if problem is not None:
+                self._skip_inject_effect(world, eff, problem)
+                continue
             kind = eff.get("type")
             if kind == "message":
                 world.messages.append({"to": eff.get("to", []), "text": eff.get("text", ""), "t": world.now})
@@ -1057,8 +1164,14 @@ class SessionManager:
                 asset = world.assets.get(eff["target"])
                 if asset is not None and asset.orbit is not None:
                     from spacesim.engine.maneuver import compute_maneuver
-                    result = compute_maneuver(asset.orbit, eff["mode"], eff.get("params", {}),
-                                              world.now, self.osys.prop)
+                    try:
+                        # IP-1063 (BL-0129) — compute_maneuver is pure; bad mode-specific params
+                        # skip the effect before apply_impulse mutates anything.
+                        result = compute_maneuver(asset.orbit, eff["mode"], eff.get("params", {}),
+                                                  world.now, self.osys.prop)
+                    except (ValueError, KeyError, TypeError) as exc:
+                        self._skip_inject_effect(world, eff, f"scripted_manoeuvre params rejected: {exc}")
+                        continue
                     import numpy as _np
                     dv = _np.asarray(result["dv"], dtype=float)
                     asset.orbit = self.osys.prop.apply_impulse(asset.orbit, dv, world.now)
@@ -1066,6 +1179,13 @@ class SessionManager:
                                            "text": f"{eff['target']}: scripted manoeuvre ({eff['mode']}), "
                                                    f"cost={result['cost']:.1f} m/s",
                                            "t": world.now})
+
+    @staticmethod
+    def _skip_inject_effect(world: WorldState, eff, problem: str) -> None:
+        """IP-1063 (BL-0129) — the one White-visible trace of a skipped (invalid) inject effect."""
+        kind = eff.get("type") if isinstance(eff, dict) else None
+        world.messages.append({"to": ["white"], "text": f"inject effect skipped ({kind}): {problem}",
+                               "t": world.now})
 
     def _condition_inject_already_fired(self, inj_id: str, before_t: int) -> bool:
         """IP-1062 (FR-4420) — derived from event-log history, no new WorldState field: mirrors

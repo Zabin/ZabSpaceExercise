@@ -198,3 +198,136 @@ def test_scripted_manoeuvre_missing_asset_is_a_no_op():
     mgr._apply_inject_effects(mgr.world, [
         {"type": "scripted_manoeuvre", "target": "GHOST", "mode": "eci", "params": {"dv": [1, 0, 0]}},
     ], mgr.sim.rng)  # must not raise
+
+
+# -- IP-1063 (BL-0129 / BL-0188) — inject effect fire-time validation ---------------------------
+
+def _validate(*args, **kwargs):
+    # Imported lazily so the pre-implementation test run fails per test, not at collection.
+    from spacesim.session.manager import validate_inject_effects
+    return validate_inject_effects(*args, **kwargs)
+
+
+def _bus_less_manager() -> SessionManager:
+    """A started manager whose world has one bus-less satellite (BL-0188's shape — every shipped
+    Red satellite) and one satellite with a bus."""
+    orbit = {"a_m": _LEO_A, "e": 0.0, "i_deg": 51.6, "raan_deg": 0.0, "argp_deg": 0.0}
+    raw = {
+        "id": "test-ip1063", "title": "IP-1063",
+        "start_epoch_utc": "2030-01-01T00:00:00Z",
+        "blue_forces": [{"id": "SAT-BUS", "kind": "satellite", "orbit": {**orbit, "ta_deg": 0.0},
+                         "bus_state": {"power": {"battery_soc": 0.9}}}],
+        "red_forces": [{"id": "SAT-NOBUS", "kind": "satellite", "orbit": {**orbit, "ta_deg": 30.0}}],
+        "neutral_forces": [], "sensors": [],
+    }
+    mgr = SessionManager(Vignette.model_validate(raw), seed=0)
+    mgr.start()
+    return mgr
+
+
+@pytest.mark.parametrize("effect", [
+    {"type": "anomaly", "subsystem": "bus"},                                      # no target
+    {"type": "anomaly", "target": "SAT-1", "subsystem": "power"},                 # bad subsystem
+    {"type": "forced_custody_loss", "target": "SAT-1", "mode": "drop"},           # no cell
+    {"type": "forced_custody_loss", "cell": "purple", "target": "SAT-1"},         # bad cell
+    {"type": "scripted_manoeuvre", "target": "SAT-1", "mode": "warp"},            # bad mode
+    {"target": "SAT-1"},                                                          # no type
+    {"type": "anomoly", "target": "SAT-1"},                                       # unknown type
+    {"type": "reveal_asset", "target": "SAT-1"},                                  # no `to`
+])
+def test_validator_flags_malformed_effects(effect):
+    mgr = _bare_manager()
+    problems = _validate(mgr.world, [effect], check_targets=False)
+    assert len(problems) == 1
+
+
+def test_validator_accepts_well_formed_fr4430_effects():
+    mgr = _bare_manager()
+    mgr.world.assets["SAT-1"] = Asset(id="SAT-1", owner="blue", orbit=_orbit(), bus_state=BusState())
+    mgr.world.sensors["S-1"] = Sensor(id="S-1", owner="blue")
+    mgr.world.tracks.append(Track(object="SAT-1", owner="red", confidence=1.0, last_observation=0))
+    effects = [
+        {"type": "anomaly", "target": "SAT-1", "subsystem": "bus", "cause": "c"},
+        {"type": "sensor_outage", "target": "S-1"},
+        {"type": "forced_custody_loss", "cell": "red", "target": "SAT-1", "mode": "degrade", "degrade_to": 0.2},
+        {"type": "scripted_manoeuvre", "target": "SAT-1", "mode": "eci", "params": {"dv": [1, 0, 0]}},
+    ]
+    assert _validate(mgr.world, effects, check_targets=True) == []
+
+
+def test_fire_inject_rejects_anomaly_on_bus_less_asset_and_changes_nothing():
+    """BL-0188 — previously accepted with ok:true and silently a no-op."""
+    mgr = _bus_less_manager()
+    n_log, now = len(mgr.sim.eventlog.entries), mgr.sim.clock.now
+    with pytest.raises(ValueError) as exc:
+        mgr.fire_inject([{"type": "anomaly", "target": "SAT-NOBUS", "subsystem": "bus"}])
+    assert "SAT-NOBUS" in str(exc.value) and "bus" in str(exc.value)
+    assert len(mgr.sim.eventlog.entries) == n_log
+    assert mgr.sim.clock.now == now
+    # The same inject on an asset with a bus is accepted and lands.
+    mgr.fire_inject([{"type": "anomaly", "target": "SAT-BUS", "subsystem": "bus", "cause": "x"}])
+    assert mgr.world.assets["SAT-BUS"].bus_state.mode == "safe_mode"
+
+
+def test_fire_inject_is_atomic_on_a_partly_invalid_inject():
+    mgr = _bus_less_manager()
+    with pytest.raises(ValueError):
+        mgr.fire_inject([{"type": "message", "to": ["white"], "text": "IP1063-atomic"},
+                         {"type": "anomaly", "subsystem": "bus"}])
+    assert not any(m.get("text") == "IP1063-atomic" for m in mgr.world.messages)
+
+
+def test_handler_skips_malformed_effect_without_raising():
+    """BL-0129 — a malformed effect used to raise mid-handler after earlier effects mutated."""
+    mgr = _bare_manager()
+    mgr.world.sensors["S-1"] = Sensor(id="S-1", owner="blue")
+    mgr._apply_inject_effects(mgr.world, [
+        {"type": "message", "to": ["blue"], "text": "first"},
+        {"type": "forced_custody_loss", "target": "SAT-X", "mode": "drop"},   # no cell
+        {"type": "sensor_outage", "target": "S-1"},
+    ], mgr.sim.rng)
+    assert any(m.get("text") == "first" for m in mgr.world.messages)
+    assert mgr.world.sensors["S-1"].health == "degraded"
+    skipped = [m for m in mgr.world.messages
+               if m.get("to") == ["white"] and str(m.get("text", "")).startswith("inject effect skipped")]
+    assert len(skipped) == 1
+
+
+def test_skip_path_replays_identically():
+    """BL-0129 — a vignette-style scheduled inject (bypassing fire_inject's boundary) with a
+    malformed effect and a scripted manoeuvre whose params make compute_maneuver raise: live
+    advances without an exception, and replay reproduces the live world exactly."""
+    mgr = _bus_less_manager()
+    t = mgr.sim.clock.now + 60 * 1_000_000
+    mgr.sim.schedule(t, "inject", {"effects": [
+        {"type": "message", "to": ["blue"], "text": "kept"},
+        {"type": "anomaly", "subsystem": "bus"},                                           # malformed
+        {"type": "scripted_manoeuvre", "target": "SAT-BUS", "mode": "eci", "params": {"dv": [1, 2]}},
+    ]})
+    mgr.sim.advance_to(t + 1)
+    mgr.world = mgr.sim.world
+    assert any(m.get("text") == "kept" for m in mgr.world.messages)
+    skipped = [m for m in mgr.world.messages if str(m.get("text", "")).startswith("inject effect skipped")]
+    assert len(skipped) == 2
+    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
+
+
+def test_all_shipped_injects_and_library_templates_validate_clean():
+    """Regression guard: the validator's known-type set and required keys match shipped content."""
+    from pathlib import Path
+
+    import yaml
+
+    from spacesim.content.vignette import list_vignettes, load_vignette
+    mgr = _bare_manager()
+    problems = []
+    for entry in list_vignettes():
+        v = load_vignette(entry["id"])
+        for inj in v.injects:
+            problems += [f"{v.id}/{inj.id}: {p}"
+                         for p in _validate(mgr.world, inj.effects, check_targets=False)]
+    lib = Path(__file__).resolve().parent.parent / "content" / "inject_library.yaml"
+    for inj in (yaml.safe_load(lib.read_text(encoding="utf-8")) or {}).get("injects") or []:
+        problems += [f"library/{inj.get('id')}: {p}"
+                     for p in _validate(mgr.world, inj.get("effects") or [], check_targets=False)]
+    assert problems == []

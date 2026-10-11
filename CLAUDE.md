@@ -397,6 +397,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **Build / schedule inject** panel with editable JSON + Now/+seconds/absolute-UTC scheduler
   (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
+  **IP-1063 (BL-0129/BL-0188):** pure `validate_inject_effects` — `fire_inject` rejects a
+  malformed or FR-4430-precondition-failing inject atomically (`ValueError` → `Ack(ok=False)` →
+  `/inject` 400; e.g. an `anomaly` on an asset with no `bus_state`), and `_apply_inject_effects`
+  skips an invalid effect with a White "inject effect skipped" message instead of raising mid-handler,
   **IP-1270 (FR-3430/FR-3440):** `decide_gated_order`/`issue_roe_change` — thin wrappers over
   `OrderSystem`'s own methods; no additional state at this layer,
   **IP-1260 (FR-2320):** `telemetry_export(cell, asset_id, t1, t2, interval_s)` — per-asset telemetry

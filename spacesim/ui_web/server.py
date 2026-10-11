@@ -444,8 +444,14 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions/{sid}/inject")
     def inject(sid: str, req: InjectRequest, cell: Optional[str] = None) -> Ack:
+        """Fire or schedule an inject. IP-1063 (BL-0188/BL-0129): a malformed inject, or one whose
+        FR-4430 target precondition fails (e.g. an `anomaly` on an asset with no bus), is a 400
+        naming the reason, with nothing applied — the console's `api.post` only surfaces non-2xx."""
         _require(sid); _reject_observer(cell)
-        return api.fire_inject(sid, req.inject, at_sim_t=req.at_sim_t)
+        ack = api.fire_inject(sid, req.inject, at_sim_t=req.at_sim_t)
+        if not ack.ok:
+            raise HTTPException(status_code=400, detail=ack.reason)
+        return ack
 
     @app.get("/api/sessions/{sid}/inject_library")
     def inject_library_list(sid: str) -> list:
