@@ -126,7 +126,7 @@ on the own asset, queued to the next command-uplink window.
 | # | Control | Type | Effect / valid values |
 |---|---|---|---|
 | 1 | Inject dropdown | dropdown | Vignette-defined injects from `GET /injects`. |
-| 2 | Fire | button | `POST /inject` with `{inject: <id>}` — fires immediately. |
+| 2 | Fire | button | `POST /inject` with `{inject: <id>}` — fires immediately. If the server rejects the inject (HTTP 400, see below), nothing is applied and **nothing appears on screen**: this button has no result line. If an expected message never shows in **Messages**, re-check the inject in the builder, which does report the reason. |
 | 3 | Build / schedule inject | `<details>` toggle | Expands the builder panel below. |
 | 4 | Template | dropdown | 5 library entries from `GET /inject_library` + `(custom)`. |
 | 5 | Load | button | Pre-fills the JSON editor with the selected template's effects. |
@@ -135,10 +135,37 @@ on the own asset, queued to the next command-uplink window.
 | 8 | + seconds from now | number | Visible only when Schedule=+s. Offset in seconds. |
 | 9 | Absolute UTC | datetime-local | Visible only when Schedule=absolute. UTC literal (paste from the UTC clock). |
 | 10 | Schedule / fire | button | `POST /inject` with `{inject:{effects:[…]}, at_sim_t:<µs>}`. Past timestamps clamp to "now". |
+| 11 | Result line | read-only | `✓ fired immediately (N effects)` or `✓ scheduled for <UTC> (N effects)` on success. A rejected inject shows `✗ server error:` followed by the server's `inject rejected: #i <type>: <reason>` text, one entry per bad effect (`#i` is the effect's position, counting from 0). |
 
 **Supported effect types in the editor:** `message`, `reveal_asset`, `political_consequence`,
-`patch_cyber_vuln`, `gs_outage`, `space_weather`, `conjunction_warning`, `spawn_debris`.
+`patch_cyber_vuln`, `gs_outage`, `space_weather`, `conjunction_warning`, `spawn_debris`, plus the
+four controller events `anomaly` (needs `target` and `subsystem`: `bus` or `telemetry`),
+`sensor_outage` (`target` = a sensor id), `forced_custody_loss` (`cell` = `blue`/`red` and
+`target`) and `scripted_manoeuvre` (`target`, `mode` = one of the six manoeuvre modes, `params`).
 See [`07-white-cell-facilitation.md`](07-white-cell-facilitation.md) for example payloads.
+
+**Checked before anything fires.** The server checks the whole effect list when you click Fire or
+Schedule / fire. It rejects the inject with HTTP 400, and applies **none** of its effects (even the
+valid ones), when any effect:
+
+- has an unknown `type`, is missing a required key, or has a malformed value (for example an
+  `anomaly` subsystem other than `bus`/`telemetry`);
+- is an `anomaly` whose target has no bus (for example, any shipped Red satellite);
+- is a `sensor_outage` whose target is not a sensor;
+- is a `forced_custody_loss` for a track that cell does not hold;
+- is a `scripted_manoeuvre` whose target has no orbit, or whose `params` the manoeuvre maths refuses.
+
+The same check runs when you fire a vignette inject by name with **Fire** (row 2).
+
+Two cases are **not** checked at the console, because they fire later on their own:
+
+- injects a vignette schedules by time or by condition;
+- builder injects you scheduled for later, whose targets may have changed since you scheduled them.
+
+When one of these fires, a malformed effect is skipped, the rest still apply, and White alone gets
+the **Messages** line `inject effect skipped (<type>): <reason>`. A well-formed effect whose target
+is missing or unsuitable at that moment (for example, the track is gone) is skipped with no
+message.
 
 ---
 

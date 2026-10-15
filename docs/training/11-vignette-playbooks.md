@@ -9,7 +9,9 @@ stay correct as the code changes. The same step scripts are embedded in each vig
 surface in the app under **View ▾ → Tutorial panel** (scoped to your current cell).
 
 **How to read a step.** *Actor* → *Action* → *Params* is exactly what you type in the **Satellite
-command** panel (Target autocompletes from what your cell can see). After issuing, use **+10m** to
+command** panel. For the target, pick it from the **Target** dropdown, which lists the other
+side's objects your cell already knows about. If it is not listed yet, type its id in the **or id**
+box ([UI reference §10.6 row 4](10-ui-reference.md#106-satellite-command-compose-form)). After issuing, use **+10m** to
 advance past the order's window so it executes. Objectives flip in the **Cell & Time → Objectives**
 panel.
 

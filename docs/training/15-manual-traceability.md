@@ -40,7 +40,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Hot-seat / LAN / pop-out transport | `session/inprocess.py`, `server.py` | WCM-3 | — | — |
 | Server-authoritative clock, pause/jump | `session/manager.py`, `engine/clock.py` | WCM-4 | — | — |
 | Rewind / undo / branch (determinism) | `session/manager.py`, `engine/simulation.py` | WCM-4, WCM-9 | — | — |
-| Injects + builder + library | `content/inject_library.yaml`, `server.py` `/inject` | WCM-5 | — | — |
+| Injects + builder + library (incl. fire-time validation) | `content/inject_library.yaml`, `server.py` `/inject`, `session/manager.py` (`fire_inject`, `validate_inject_effects`, `_skip_inject_effect`), `app.js` (`fireBuiltInject`) | WCM-5 | — | — |
 | Activity timeline (Gantt) | `ui_web/static/app.js`, `session/scene.py` | WCM-6 | BLU-2 | RED-2 |
 | Coaching notes | `content/vignette.py` (`Vignette.coaching`) | WCM-6 | — | — |
 | Objectives / deadlines | `content/vignette.py`, `server.py` `/objectives` | WCM-6 | BLU-10 | RED-9 |
@@ -92,7 +92,7 @@ mirrors each section's inline `> Sources:` footer.
 | WCM-2 | Set up the exercise | `content/vignette.py`, `vignettes/*.yaml`, `/brief/{cell}`, `session/manager.py` (classification, seat-to-role) |
 | WCM-3 | Hot-seat / LAN / pop-out | `session/inprocess.py`, `server.py` (`/api/sessions`) |
 | WCM-4 | Time control | `session/manager.py`, `engine/clock.py`, `/clock` |
-| WCM-5 | Injects | `content/inject_library.yaml`, `/inject` |
+| WCM-5 | Injects | `content/inject_library.yaml`, `/inject`, `session/manager.py` (`fire_inject`, `validate_inject_effects`, `_skip_inject_effect`), `app.js` (`fireBuiltInject`, `fireInject`) |
 | WCM-6 | Monitor both sides | `session/scene.py`, `app.js` (incl. `openDrill`), `Vignette.coaching`, `session/manager.py` (`get_telemetry`/`get_series`) |
 | WCM-7 | TLE add | `engine/propagator.py`, `/force/tle` |
 | WCM-8 | AI-Red doctrine | `session/redai.py`, `/red_step` |

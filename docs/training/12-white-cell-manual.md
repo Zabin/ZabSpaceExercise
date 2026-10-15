@@ -98,12 +98,21 @@ Two layers:
   schedule modes: **Now**, **+ N seconds**, **Absolute UTC**. Future-dated injects go through
   the deterministic event log — they replay byte-identical on save/resume and AAR scrub. Past
   timestamps clamp to now.
+- **Bad injects are refused whole.** If any effect is malformed or cannot land (e.g. an
+  `anomaly` on a satellite with no bus, which includes every shipped Red satellite), the server
+  rejects the inject with HTTP 400 and applies none of it. The builder's result line shows
+  `✗ server error: … inject rejected: #i <type>: <reason>`; the **Fire** button shows nothing.
+  A vignette's own timed or conditional inject with a malformed effect skips just that effect and
+  tells only you, in **Messages**: `inject effect skipped (<type>): <reason>`. Full rules:
+  [UI reference §10.3](10-ui-reference.md#103-injects-white-cell--build--schedule-inject).
 
 Add your own templates to `spacesim/content/inject_library.yaml`; they appear in the dropdown on
 next session load. Facilitation patterns — when to inject what — are in
 [`07-white-cell-facilitation.md`](07-white-cell-facilitation.md).
 
 > **Sources:** `spacesim/content/inject_library.yaml` · `POST /api/sessions/{sid}/inject` ·
+> `spacesim/session/manager.py` (`fire_inject`, `validate_inject_effects`, `_skip_inject_effect`) ·
+> `spacesim/ui_web/static/app.js` (`fireBuiltInject`, `fireInject`) ·
 > [`02-interface.md`](02-interface.md) §"White-Cell inject builder"
 
 ### WCM-6 · Monitor both sides
