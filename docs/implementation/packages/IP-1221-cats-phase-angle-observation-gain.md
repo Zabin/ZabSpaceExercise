@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1221
 > **Version:** 1.0
-> **Status:** 🟢 READY
+> **Status:** 🟡 IN PROGRESS — `08-code-implementation`, pipeline run #125 (2026-10-15)
 > *(Authored 2026-10-15 by `07-implementation-planning`, pipeline run #124.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
 > of the packages this iteration reaches. Same precedent as `IP-1212`/`IP-1063`/`IP-1262`.
