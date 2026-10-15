@@ -828,6 +828,7 @@ FS → IMP → Code → Tests) for all 11 Feature Specifications:
 | TR-10 | UI reference (all 14 panels) | `training/10-ui-reference.md` | BS-07, MAN-00 | ✅ |
 | TR-11 | Per-vignette playbooks — how each cell completes objectives, move by move, verified against the engine | `training/11-vignette-playbooks.md` | VG-IDX, TR-06 | ✅ |
 | TR-12 | Role-scoped **White Cell** manual (facilitator procedure layer; sections `WCM-n`) | `training/12-white-cell-manual.md` | TR-02, TR-05, TR-07, TR-15 | ✅ |
+| TR-12a | Role-scoped **White Cell** manual, part 2 — analysis and data exports (`WCM-12`–`WCM-16`), split from TR-12 for NFR-3500 module size | `training/12a-white-cell-analysis-and-exports.md` | TR-12, TR-15 | ✅ |
 | TR-13 | Role-scoped **Blue cell** manual (defender procedure layer; sections `BLU-n`) | `training/13-blue-cell-manual.md` | TR-02, TR-05, TR-15 | ✅ |
 | TR-14 | Role-scoped **Red cell** manual (adversary procedure layer; sections `RED-n`) | `training/14-red-cell-manual.md` | TR-02, TR-05, TR-15 | ✅ |
 | TR-15 | Per-cell manual **traceability matrix** — bidirectional feature ⇄ manual-section index; hooked into skills 08 (doc-update step) and 10 (doc-coherence dimension) | `training/15-manual-traceability.md` | TR-12, TR-13, TR-14 | ✅ |

@@ -3,7 +3,8 @@
 ## 15. Per-cell manual traceability matrix
 
 The **bidirectional cross-reference** that keeps the three role-scoped cell manuals
-([White](12-white-cell-manual.md) · [Blue](13-blue-cell-manual.md) ·
+([White](12-white-cell-manual.md), with `WCM-12`–`WCM-16` in
+[12a](12a-white-cell-analysis-and-exports.md) · [Blue](13-blue-cell-manual.md) ·
 [Red](14-red-cell-manual.md)) cheap to maintain. It exists so a change is never silently stranded
 from its documentation:
 
@@ -85,6 +86,9 @@ Start here when you **edit a manual section** and want to confirm it still match
 mirrors each section's inline `> Sources:` footer.
 
 #### White Cell manual (`WCM-n`)
+
+`WCM-1`–`WCM-11` are in [`12-white-cell-manual.md`](12-white-cell-manual.md);
+`WCM-12`–`WCM-16` are in [`12a-white-cell-analysis-and-exports.md`](12a-white-cell-analysis-and-exports.md).
 
 | § | Topic | Backing code / endpoints |
 |---|---|---|
