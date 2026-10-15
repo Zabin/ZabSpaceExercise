@@ -57,6 +57,11 @@
 > concrete grounding anchor, same precedent as `FR-1620`'s own single-source figure — see
 > [`reviews/requirements-update-ric-cats-batch.md`](../reviews/requirements-update-ric-cats-batch.md)
 > for the full derivation and review.)
+> further amended (parked-questions batch, 2026-10-15; **no numbered FR leaf added** — `FR-7440`
+> amended so "visible" includes the requesting cell's own satellites, aligning it with `FR-6210`
+> and `ADS-1500` Decision 5, closing `BL-0159`; new candidate `CR-22`, closing `BL-0181` at this
+> stage; `BL-0171` and `BL-0113` reported for adjudication, not resolved — see
+> [`reviews/requirements-update-parked-questions-batch.md`](../reviews/requirements-update-parked-questions-batch.md).)
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -2709,29 +2714,39 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Description:** The system shall provide a quick, minimal-UI export — a copyable text field or
   a copy-to-clipboard action, per the user's own stated minimal bar; no dedicated file-download
   flow is required — of a current Two-Line Element (TLE) set for any satellite currently visible
-  to the requesting cell (i.e. the cell holds a `Track` on it), reading the requesting cell's own
-  belief state and never ground truth, mirroring `FR-6210`'s fog-of-war rule; for White Cell and
-  the other no-cell ground-truth paths, this mirrors `FR-6220`'s existing named exception.
+  to the requesting cell, where "visible" means exactly what `FR-6210` exposes to that cell: the
+  cell's **own** satellites, plus any other satellite on which the cell holds a `Track`. For a
+  tracked satellite the TLE reads the requesting cell's own belief state, never ground truth; for
+  the cell's own satellite it reads that satellite's actual state, which the cell already knows
+  exactly (`ADS-1500` Decision 5). For White Cell and the other no-cell ground-truth paths, this
+  mirrors `FR-6220`'s existing named exception. *(Amended 2026-10-15 — see Notes.)*
 - **Rationale:** Project owner's explicit request (`docs/pipeline/backlog.md` `BL-0109`) — "can
   just be an easy place to cut and paste, or a cut-and-paste button next to it." Distinct from
   `FR-5210`/`FR-5220` (TLE *import*, not export) and `FR-7410`/`FR-7420`/`FR-7430` (ECI/RIC
   state-vector export, not TLE format) — no existing FR covers TLE export in either direction.
 - **Priority:** Should
-- **Inputs:** A target satellite identifier currently visible (tracked) by the requesting cell.
+- **Inputs:** A target satellite identifier currently visible to the requesting cell (its own
+  satellite, or one it tracks).
 - **Outputs:** A current-epoch TLE (two lines) for that satellite, presented for copy/clipboard
   use.
-- **Preconditions:** The requesting cell holds a `Track` on the named satellite (fog-of-war,
-  mirroring `FR-6210`); White Cell and the other no-cell ground-truth paths may request any
-  satellite per `FR-6220`'s existing exception.
-- **Postconditions:** No cell-scoped request returns a TLE for a satellite the requesting cell does
-  not hold a `Track` on.
-- **Acceptance Criteria:** Given a cell holding a `Track` on satellite X, a TLE-export request for
-  X returns a well-formed two-line element set; given the same cell has no `Track` on satellite Y,
-  the same request for Y is rejected.
+- **Preconditions:** The requesting cell owns the named satellite or holds a `Track` on it
+  (fog-of-war, mirroring `FR-6210`); White Cell and the other no-cell ground-truth paths may
+  request any satellite per `FR-6220`'s existing exception.
+- **Postconditions:** No cell-scoped request returns a TLE for a satellite the requesting cell
+  neither owns nor holds a `Track` on; no cell-scoped TLE of a non-owned satellite is derived from
+  ground truth.
+- **Acceptance Criteria:** Given a cell holding a `Track` on another side's satellite X, a
+  TLE-export request for X returns a well-formed two-line element set derived from that cell's
+  belief; given the cell's own satellite Z (no `Track` needed), the request for Z returns a
+  well-formed TLE; given another side's satellite Y on which the cell has no `Track`, the request
+  for Y is rejected.
 - **Verification Method:** Test
 - **Dependencies:** FR-6210, FR-1210, FR-1510
 - **Source Documents:** `docs/pipeline/backlog.md` `BL-0109`; `BL-0110` (design-question — see
-  Notes); `FR-6210`; `FR-7410`/`FR-7420` (the sibling export family, different file format).
+  Notes); `FR-6210` (what a cell sees: its own assets plus held tracks); `ADS-1500` Decision 5 (a
+  cell knows its own assets' true state exactly; custody applies only to other objects);
+  `docs/pipeline/backlog.md` `BL-0159` (the amendment's trigger); `FR-7410`/`FR-7420` (the
+  sibling export family, different file format).
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0006, INT-0007
 - **Related Requirements:** FR-6210, FR-5210, FR-7410
@@ -2745,6 +2760,14 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   stated limitation for Kepler-fictional ones) — which option is chosen is a
   `06-feature-specification`/`07-implementation-planning` design decision (`BL-0110`'s own
   disposition), not decided here.
+  **Amended 2026-10-15 (`BL-0159`):** the original text defined "visible" as "holds a `Track`",
+  which, read literally, excluded a cell's own satellites, because a cell holds no `Track` on its
+  own fleet. That was narrower than `FR-6210` (a cell's view exposes its own assets plus its held
+  tracks), than `ADS-1500` Decision 5, and than the owner's own wording in `BL-0109` ("any
+  satellite visible to the requesting cell"). The amendment aligns "visible" with `FR-6210`. The
+  shipped `IP-1211` implements the literal pre-amendment reading (Design Decision 5: an own asset
+  without a `Track` is rejected), so a remediation package is owed. No other leaf's behaviour
+  changes. See [`reviews/requirements-update-parked-questions-batch.md`](../reviews/requirements-update-parked-questions-batch.md).
 
 ---
 
@@ -3339,6 +3362,17 @@ by that promotion.
   program in the IRB sense, so this boundary remains unaddressed by their promotion. A requirement
   would still be vacuous until a concrete human-subjects-research feature is proposed; recorded
   here so the constraint is not silently forgotten if/when one is. **Source:** DOM-004 §6.
+- **CR-22 — Human-readable time bounds for time-span exports.** *(new 2026-10-15, `BL-0181`)* The
+  time-span exports (`FR-7410`, `FR-7420`, `FR-2320`) take their span bounds only as integer
+  microseconds of simulated time. The console never displays that unit, so an operator must read the
+  values out of the event log or a save file. A requirement that the exports accept ISO-8601 UTC
+  bounds, or that the console surface simulated time in the export's unit, cannot be baselined on
+  the current inputs. Its only source is a training-review usability observation (`REV-TRN-002` F7),
+  not an owner request or an approved architecture statement, and none of the three leaves' sources
+  specifies an input form. It is recorded here so the friction is not lost; promotion needs the
+  project owner to request it (the precedent every `BL-0067`…`BL-0083` intake leaf followed).
+  **Source:** `docs/pipeline/backlog.md` `BL-0181`; `docs/reviews/training-review-run97-scope.md`
+  F7.
 
 - **CR-12 — Proliferated-Constellation Aggregation Layer.** No layer/mesh-level tasking, health
   rollup, or aggregated-custody construct exists for constellations larger than the ≤3-satellite cap
