@@ -735,6 +735,15 @@ parity claim does not hold, because none of the 9 shipped Red satellites has a `
 (`11-vignette-playbooks` says Target "autocompletes"; the shipped control is a dropdown plus an
 `or id` box) and F2 Low (`03`/`04` walkthroughs do not say to use `or id` for untracked targets).
 
+**Training review (2026-10-15):** [`reviews/training-review-run114-scope.md`](docs/reviews/training-review-run114-scope.md)
+(REV-TRN-005) independently reviewed run #114's inject fire-time validation prose (§10.3, `WCM-5`),
+the `or id` target orientation in `03`/`04`/`11`, and the White manual split into `12`/`12a`.
+Everything in scope is accurate, driven live on `geo-rpo-shadowing` seed 23. The split is
+verbatim, traceability is consistent (0 orphans), and the playbook suite passed 16/16, with no
+Critical/High. 3 Low findings: F1 (§10.3 says builder injects scheduled for later are not checked
+at the console, but they are checked when scheduled), F2 (`07` has no example payloads for the
+four `FR-4430` types), and F3 (two broken intra-file anchors in `01`, pre-existing).
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
