@@ -24,9 +24,9 @@
 > validation report, 26 Sep 2026, item B3), `BL-0109` (quick TLE export request), `BL-0110` (the
 > TLE-generation design question), [IP-1210](../implementation/packages/IP-1210-ephemeris-export.md)
 > (Implementation Package for `FR-7410`-`FR-7430`, ✅ `VERIFIED` 2026-09-28),
-> [IP-1211](../implementation/packages/IP-1211-quick-tle-export.md) (Implementation Package for `FR-7440`, 🟡 `READY`, authored 2026-10-10),
-> [IP-1261](../implementation/packages/IP-1261-telemetry-series-history-remediation.md) (remediation package — migrates `FR-7410`/`FR-7420`'s time-span sampling onto a shared single-pass replay helper, output unchanged; 🟢 `READY`, authored 2026-10-11),
-> [IP-1262](../implementation/packages/IP-1262-export-sampling-bounds.md) (remediation package — explicit-`interval_s` floor + sample-count ceiling, closing Open Question 2's explicit-interval half, `BL-0176`; 🟢 `READY`, authored 2026-10-11),
+> [IP-1211](../implementation/packages/IP-1211-quick-tle-export.md) (Implementation Package for `FR-7440`, ✅ `VERIFIED`, [VR-1211](../implementation/verification/VR-1211-quick-tle-export.md)),
+> [IP-1261](../implementation/packages/IP-1261-telemetry-series-history-remediation.md) (remediation package — migrates `FR-7410`/`FR-7420`'s time-span sampling onto a shared single-pass replay helper, output unchanged; ✅ `VERIFIED`, [VR-1261](../implementation/verification/VR-1261-telemetry-series-history-remediation.md)),
+> [IP-1262](../implementation/packages/IP-1262-export-sampling-bounds.md) (remediation package — explicit-`interval_s` floor + sample-count ceiling, closing Open Question 2's explicit-interval half, `BL-0176`; ✅ `VERIFIED`, [VR-1262](../implementation/verification/VR-1262-export-sampling-bounds.md)),
 > [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md) `FEAT-7400`
 > **Produces:** truth and cell-observed ephemeris export in ECI/RIC, CSV/CCSDS OEM + companion RIC
 > file, satisfying `FR-7410`/`FR-7420`/`FR-7430`; and a quick, copyable current-epoch TLE for any

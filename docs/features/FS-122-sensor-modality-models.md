@@ -12,7 +12,7 @@
 > Feature's access/effectiveness refinements sit underneath, distinct not duplicative per
 > `FR-1600`'s own family preamble)
 > **Referenced By:** [IP-1220](../implementation/packages/IP-1220-sensor-modality-models.md)
-> (Implementation Package, `READY`, not yet authorized),
+> (Implementation Package, ✅ `VERIFIED`, [VR-1220](../implementation/verification/VR-1220-sensor-modality-models.md)),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0073` (item B7),
 > `BL-0083` (item B17), [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-1610`-`FR-1660`, [docs/reviews/requirements-update-should-tier-batch.md](../reviews/requirements-update-should-tier-batch.md)

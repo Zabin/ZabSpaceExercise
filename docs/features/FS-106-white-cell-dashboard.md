@@ -1,7 +1,7 @@
 # FS-106 — White Cell Dashboard
 
 > **Document ID:** FS-106
-> **Version:** 2.1
+> **Version:** 2.2
 > **Status:** ✅ Done
 > **Changelog (v2.1, 2026-09-26):** Added `FR-4420` (condition-triggered injects, evaluated
 > deterministically) and `FR-4430` (four new inject effect types: anomaly, sensor outage, forced
@@ -9,9 +9,15 @@
 > (external validation report, 26 Sep 2026, item B4). Updated User Workflows, System Behaviour,
 > Data Model Changes, Error Handling, Acceptance Criteria, Verification Plan, and Open Questions
 > accordingly; no other field's substance changed.
+> **Changelog (v2.2, 2026-10-15):** Ratified the inject failure-mode behaviour that `IP-1062`
+> (Design Decisions 1–3, ✅ `VERIFIED`) and `IP-1063` (Design Decisions 2–3, ✅ `VERIFIED`) had
+> settled at package level, closing backlog `BL-0191`: Error Handling now enumerates the inject
+> failure modes, and the three v2.1 inject Open Questions are closed by reference to those
+> decisions. Acceptance Criteria and Verification Plan gained matching v2.2 entries. Package status
+> tags in `Produces` were refreshed (`BL-0193`). No other field's substance changed.
 > **Dependencies:** [DOM-003](../domains/DOM-003-white-cell-framework.md), [DOM-001](../domains/DOM-001-training-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md)
 > **Referenced By:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md), [IMP-106A](../implementations/IMP-106A-white-cell-dashboard.md)
-> **Produces:** the facilitation surface [FS-108](FS-108-inject-authoring.md) (candidate) would extend; remediation package [IP-1061](../implementation/packages/IP-1061-inject-and-sizing-defect-remediation.md) (`FR-4410` defects, 2026-09-26); [IP-1062](../implementation/packages/IP-1062-condition-triggered-injects-and-new-effects.md) (`FR-4420`/`FR-4430`, `COMPLETE` 2026-09-27, awaiting `09-package-verification` in a fresh session); remediation package [IP-1063](../implementation/packages/IP-1063-inject-effect-fire-time-validation.md) (`FR-4430`/`FR-4410` inject fire-time validation, `BL-0129`/`BL-0188`, `READY` 2026-10-11)
+> **Produces:** the facilitation surface [FS-108](FS-108-inject-authoring.md) (candidate) would extend; remediation package [IP-1061](../implementation/packages/IP-1061-inject-and-sizing-defect-remediation.md) (`FR-4410` defects, 2026-09-26); [IP-1062](../implementation/packages/IP-1062-condition-triggered-injects-and-new-effects.md) (`FR-4420`/`FR-4430`, ✅ `VERIFIED`, [VR-1062](../implementation/verification/VR-1062-condition-triggered-injects-and-new-effects.md)); remediation package [IP-1063](../implementation/packages/IP-1063-inject-effect-fire-time-validation.md) (`FR-4430`/`FR-4410` inject fire-time validation, `BL-0129`/`BL-0188`, ✅ `VERIFIED`, [VR-1063](../implementation/verification/VR-1063-inject-effect-fire-time-validation.md))
 > **Feature Mapping:** FS-106 (this document)
 > **Related Topics:** [FS-107](FS-107-after-action-review.md) (White-only AAR controls), [FS-109](FS-109-multiplayer-session-transport.md)
 > (the underlying session/clock transport this dashboard's admin panel triggers), [FS-110](FS-110-save-and-resume.md)
@@ -213,14 +219,36 @@ consistent with `ADR-0007` (content as data).
 
 - Clock-control requests from a non-White-Cell role are rejected with the clock state unchanged
   (FR-4310) — the propagation mechanism that keeps all clients consistent is FS-109's concern.
-- The source document does not enumerate failure modes for inject scheduling beyond the
-  architectural constraints above (unchanged from v1.0).
-- *(Added v2.1)* A condition-triggered inject whose targeted asset/track/cell no longer exists by
-  the time its condition would be evaluated: not specified by `FR-4420`'s own text — see Open
-  Questions.
-- *(Added v2.1)* A scripted-manoeuvre inject naming an asset with insufficient remaining Δv: not
-  specified by `FR-4430`'s own text — see Open Questions (this is the same ambiguity the
-  Requirements Review already flagged, `BL-0091`).
+- *(v2.2 — ratified from `IP-1063` Design Decision 2, grounded in `FR-4430`'s Precondition
+  "the targeted Asset/Sensor/Track exists in the current `WorldState`" and `FR-4410`)*
+  **White-Cell-originated inject, fired now or scheduled: checked whole, rejected atomically.**
+  Every effect in the inject is checked before anything is scheduled, logged or applied.
+  - The structural check covers all twelve effect types: a known type, its required fields, and
+    well-formed values.
+  - The `FR-4430` target-precondition check covers the four `FR-4430` types, against the world at
+    fire/schedule time. An `anomaly` target must be an asset that has a bus; a `sensor_outage`
+    target must be a sensor; a `forced_custody_loss` needs the named cell to hold a track on the
+    target; a `scripted_manoeuvre` target must have an orbit, and its parameters must be accepted
+    by the manoeuvre computation.
+  - If any effect fails, the whole inject is refused. **None** of its effects apply, no clock moves,
+    and White Cell sees a rejection naming each failing effect by position, type and reason.
+  - The eight pre-`FR-4430` types keep their earlier missing-target posture; they are checked
+    structurally only.
+- *(v2.2 — ratified from `IP-1063` Design Decision 3)* **Inject that reaches the deterministic
+  handler without passing the White-Cell check** (vignette-scheduled, condition-triggered, or
+  scheduled earlier and fired later). An effect that fails the structural check is skipped whole,
+  and White Cell alone receives one message naming the effect type and the reason. The remaining
+  effects still apply, and the run never halts on a bad effect. The skip decision is a pure
+  function of the world and the effect, so live and replay match exactly (`NFR-1500`).
+- *(v2.2 — ratified from `IP-1062` Design Decision 2, retained by `IP-1063` Design Decision 3)* **A
+  well-formed effect whose target is missing or unsuitable when it fires in the handler** is a
+  silent no-op. It has no state change and no message.
+- *(v2.2 — ratified from `IP-1062` Design Decision 2)* **A condition-triggered inject whose
+  condition names a deleted/expired asset, track or cell** evaluates false and never fires. It is
+  not an error at authoring or at run time.
+- *(v2.2 — ratified from `IP-1062` Design Decision 3, under `ADR-0005`)* **A scripted-manoeuvre
+  inject against an asset with insufficient Δv** is applied anyway. It neither checks nor deducts
+  `AssetResources.delta_v_ms`, because injects are the documented bypass of plan-first commanding.
 
 ## Performance Considerations
 
@@ -259,6 +287,13 @@ consistent with `ADR-0007` (content as data).
   loss, scripted manoeuvre), once fired, produces the expected change on its targeted
   Asset/Sensor/Track/`BusState`, and a forced custody-loss effect never changes a non-targeted
   cell's own `Track`.
+- *(Added v2.2)* A White-Cell inject containing at least one effect that fails the structural or
+  `FR-4430` target-precondition check is refused as a whole. No effect in it is applied, including
+  valid effects listed before the bad one. The refusal names each failing effect.
+- *(Added v2.2)* An inject that reaches the handler with a structurally invalid effect never halts
+  the run. That effect is skipped with exactly one White-only message, the other effects apply,
+  and a replay of the session reproduces the live world byte-identically.
+- *(Added v2.2)* Every shipped vignette inject and every inject-library template passes the check.
 
 ## Verification Plan
 
@@ -271,6 +306,11 @@ Methods in `docs/requirements/01-functional-requirements.md`.
 simulated tick under replay) and `FR-4430` (each new effect type's targeted-state assertion,
 including the negative assertion that a forced custody-loss effect never touches a non-targeted
 cell's own `Track`) — consistent with both requirements' own stated Verification Method (Test).
+
+*(Added v2.2)* Test (automated) for the ratified inject failure modes: atomic rejection at the
+White-Cell boundary (direct call and over HTTP), skip-never-halt with a White-only message in the
+handler, replay parity on the skip path, and shipped-content cleanliness. These are already
+exercised by `IP-1063`'s tests and were independently re-derived in `VR-1063`.
 
 ## Dependencies
 
@@ -333,16 +373,22 @@ dependencies.
   Specification cannot make on its own authority; it needs either an explicit `04-requirements-
   engineering` amendment naming the mode, or a deliberate `07-implementation-planning` decision
   citing this document. Whichever it names, the Postcondition/Acceptance-Criteria text above should
-  be updated to state it explicitly once resolved.
+  be updated to state it explicitly once resolved. **Closed v2.2:** resolved by `IP-1062` Design
+  Decision 1 (always through the six entry modes via the existing manoeuvre computation, never a
+  direct state set; ✅ `VERIFIED`, `VR-1062`). Ratified in Error Handling above.
 - *(Added v2.1)* **Condition-triggered inject targeting a deleted/expired asset, track, or cell**
   — `FR-4420` does not state whether such a condition simply never fires (evaluates false forever),
-  is treated as an error at authoring time, or something else. Not resolved here.
+  is treated as an error at authoring time, or something else. **Closed v2.2:** the condition
+  evaluates false and never fires (`IP-1062` Design Decision 2, retained by `IP-1063`). Ratified in
+  Error Handling above.
 - *(Added v2.1)* **Scripted-manoeuvre inject against an asset with insufficient Δv** — `FR-4430`
   does not state whether the manoeuvre is clamped, rejected, or applied anyway (bypassing the
   normal `AssetResources.delta_v_ms` gate `FR-1310` enforces for operator-issued manoeuvre orders).
   Given injects are the documented, accepted bypass of plan-first commanding (`ADR-0005`), a
   facilitator-authored manoeuvre plausibly *should* bypass this gate too — but that is an inference,
-  not a stated decision, and is flagged here rather than assumed.
+  not a stated decision, and is flagged here rather than assumed. **Closed v2.2:** bypassed, neither
+  checked nor deducted (`IP-1062` Design Decision 3, under `ADR-0005`). Ratified in Error Handling
+  above. Facilitator-facing consequence: a scripted manoeuvre is outside the normal Δv budget.
 
 ## Related ADRs
 

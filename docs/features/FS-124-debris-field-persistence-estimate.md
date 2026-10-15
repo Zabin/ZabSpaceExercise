@@ -10,7 +10,7 @@
 > **Dependencies:** None (this Feature is additive, presentational-only, and touches no other
 > Feature's own scope)
 > **Referenced By:** [IP-1240](../implementation/packages/IP-1240-debris-field-persistence-estimate.md)
-> (Implementation Package, `READY`, not yet authorized),
+> (Implementation Package, ✅ `VERIFIED`, [VR-1240](../implementation/verification/VR-1240-debris-field-persistence-estimate.md)),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0077` (item B11),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-1430`, Candidate Requirement `CR-17` (this Feature is deliberately narrower than, not a

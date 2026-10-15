@@ -8,7 +8,7 @@
 > **Dependencies:** None (additive presentation/export layer over existing `FR-1310`/`FR-7110`
 > state)
 > **Referenced By:** [IP-1250](../implementation/packages/IP-1250-maneuver-ledger.md)
-> (Implementation Package, `READY`, not yet authorized),
+> (Implementation Package, ✅ `VERIFIED`, [VR-1250](../implementation/verification/VR-1250-maneuver-ledger.md)),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0072` (item B6),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-1320`, `docs/FUTURE-WORK.md` "Δv panel" item

@@ -17,7 +17,7 @@
 > `CellController` boundary this Feature's cell-scoped path rides), [FS-106](FS-106-white-cell-dashboard.md)
 > (White Cell Dashboard — the god-view path this Feature's White-Cell/no-cell variant rides)
 > **Referenced By:** [IP-1300](../implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md)
-> (Implementation Package, `READY`, not yet authorized),
+> (Implementation Package, ✅ `VERIFIED`, [VR-1300](../implementation/verification/VR-1300-ric-frame-view-and-cats-overlay.md)),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0107` (the live,
 > operator-selectable RIC-frame view request), `BL-0111` (the CATS overlay extension), `BL-0151`
 > (open phase-angle-default design ambiguity), `BL-0152` (shared phase-angle-computation note

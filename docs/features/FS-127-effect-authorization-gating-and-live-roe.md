@@ -11,7 +11,7 @@
 > concept `FR-3430`'s designated-controller-role approval reuses), [FS-129](FS-129-jamming-delivery-and-effect-detectability.md)
 > (shares one open effect-classification-taxonomy question with this Feature, `BL-0105`)
 > **Referenced By:** [IP-1270](../implementation/packages/IP-1270-effect-authorization-gating-and-live-roe.md)
-> (Implementation Package, `READY`, not yet authorized),
+> (Implementation Package, ✅ `VERIFIED`, [VR-1270](../implementation/verification/VR-1270-effect-authorization-gating-and-live-roe.md)),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0076` (item B10),
 > `BL-0105` (the shared-taxonomy consistency note),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)

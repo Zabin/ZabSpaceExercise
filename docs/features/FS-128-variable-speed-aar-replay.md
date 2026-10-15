@@ -8,7 +8,7 @@
 > **Dependencies:** [FS-107](FS-107-after-action-review.md) (After Action Review — the point-in-time
 > reconstruction mechanism this Feature's continuous playback is additive to)
 > **Referenced By:** [IP-1280](../implementation/packages/IP-1280-variable-speed-aar-replay.md)
-> (Implementation Package, `READY`, not yet authorized),
+> (Implementation Package, ✅ `VERIFIED`, [VR-1280](../implementation/verification/VR-1280-variable-speed-aar-replay.md)),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0078` (item B12),
 > `BL-0093` (the `INT-0014` interface-stretch note, now covering this Feature's own stretch too),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
