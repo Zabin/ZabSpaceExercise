@@ -928,7 +928,9 @@ class SessionManager:
     def get_tle(self, cell: str, object_id: str) -> dict:
         """IP-1211 (FR-7440) — quick current-epoch TLE export, wired exactly like
         ``get_ric_view``: ``"white"`` reads ground truth via ``get_godview()`` (``FR-6220``); every
-        other cell exports only from its own Track (``FR-6210``). ``ValueError`` on rejection."""
+        other cell exports its own satellites from their actual orbit (IP-1212, ``FR-7440`` as
+        amended) and anything else only from its own Track (``FR-6210``). ``ValueError`` on
+        rejection."""
         from spacesim.session import ephemeris
 
         if cell == "white":

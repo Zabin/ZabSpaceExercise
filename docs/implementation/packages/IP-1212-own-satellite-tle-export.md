@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1212
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-15 by `07-implementation-planning` (pipeline run #118).
+> **Status:** 🔵 COMPLETE — COMPLETE 2026-10-15 (`08-code-implementation`, pipeline run #119): `quick_tle` own-asset branch ahead of the track lookup (`source: "own"`, own asset without orbit rejected, stale message fixed); `tleexport.js` picker lists own on-orbit satellites + `SOURCE_LABEL`; `get_tle`/route docstrings. Replaced the superseded `test_quick_tle_own_asset_without_track_rejected`; 5 new tests (Tests 1, 3, 4, 5 observed failing first; Test 2 passed on arrival as intended). Full suite 852 passed/3 skipped (855 collected, JUnit; baseline 848/3), both permanent gates green (14). Awaiting fresh-session `09-package-verification`.
+> *(Authored 2026-10-15 by `07-implementation-planning`, pipeline run #118.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization of
 > the packages this iteration reaches. Same precedent as `IP-1261`/`IP-1262`/`IP-1063`.
 > **Dependencies:** [FS-121](../../features/FS-121-ephemeris-export.md) v2.1 (`FR-7440`, System

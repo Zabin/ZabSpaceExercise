@@ -435,13 +435,51 @@ def test_quick_tle_rejects_untracked_and_stateless_track():
         ephemeris.quick_tle(world, None, "NO-SUCH-SAT")
 
 
-def test_quick_tle_own_asset_without_track_rejected():
-    """IP-1211 Design Decision 5 — FR-7440 read literally (BL-0159 deferred to 04): a cell's own
-    asset, on which it holds no Track, is not exportable through the cell-scoped path."""
+def test_quick_tle_own_satellite_uses_actual_orbit():
+    """IP-1212 (FR-7440 amended 2026-10-15, FS-121 v2.1 AC11) — a cell's own satellite, on which it
+    holds no Track, exports from its actual orbit (ADS-1500 Decision 5). Supersedes IP-1211 DD5."""
+    pytest.importorskip("sgp4")
+    from spacesim.engine.tle_export import ROUND_TRIP_BOUND_M
+
+    mgr = _two_sat_manager_with_track()
+    world = mgr.sim.world
+    assert world.track_for("blue", "SAT-BLUE") is None
+    out = ephemeris.quick_tle(world, "blue", "SAT-BLUE")
+    assert out["source"] == "own" and out["cell"] == "blue" and out["object_id"] == "SAT-BLUE"
+    assert len(out["line1"]) == 69 and len(out["line2"]) == 69
+    r_actual, _ = ModeratePropagator().rv(world.assets["SAT-BLUE"].orbit, world.now)
+    assert np.linalg.norm(_tle_position_m(out) - r_actual) <= ROUND_TRIP_BOUND_M
+
+
+def test_quick_tle_other_cell_still_rejected_for_untracked_satellite():
+    """IP-1212 — FS-121 AC7 / AC11's cross-cell negative: Red neither owns nor tracks SAT-BLUE."""
     pytest.importorskip("sgp4")
     mgr = _two_sat_manager_with_track()
     with pytest.raises(ValueError, match="track"):
-        ephemeris.quick_tle(mgr.sim.world, "blue", "SAT-BLUE")
+        ephemeris.quick_tle(mgr.sim.world, "red", "SAT-BLUE")
+
+
+def test_quick_tle_ownership_beats_a_held_track():
+    """IP-1212 Design Decision 1 — even with a (deliberately wrong) Track on its own satellite, the
+    cell's TLE reproduces the actual orbit, never the estimate."""
+    pytest.importorskip("sgp4")
+    from spacesim.engine.custody import Track
+    from spacesim.engine.tle_export import ROUND_TRIP_BOUND_M
+
+    mgr = _two_sat_manager_with_track()
+    world = mgr.sim.world
+    own = world.assets["SAT-BLUE"]
+    offset = own.orbit.model_copy(deep=True)
+    offset.ta_deg = (own.orbit.ta_deg + 30.0) % 360.0
+    world.tracks.append(Track(object="SAT-BLUE", owner="blue", confidence=0.9,
+                              last_observation=world.now, state_estimate=offset))
+    out = ephemeris.quick_tle(world, "blue", "SAT-BLUE")
+    assert out["source"] == "own"
+    prop = ModeratePropagator()
+    r_actual, _ = prop.rv(own.orbit, world.now)
+    r_offset, _ = prop.rv(offset, world.now)
+    assert np.linalg.norm(_tle_position_m(out) - r_actual) <= ROUND_TRIP_BOUND_M
+    assert np.linalg.norm(_tle_position_m(out) - r_offset) > 10e3
 
 
 def test_quick_tle_is_read_only():

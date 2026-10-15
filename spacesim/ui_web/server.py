@@ -738,9 +738,10 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     @app.get("/api/sessions/{sid}/tle/{cell}")
     def get_tle(sid: str, cell: str, object_id: str) -> dict:
         """IP-1211 (FR-7440) — quick, copyable current-epoch TLE for one satellite. Fog applied
-        server-side: a cell exports only from its own Track; ``white`` reads ground truth via the
-        god-view path. Any rejection (no track, no estimate, unknown id, unrepresentable orbit) is
-        a 404 with the reason, like ``/ric_view``."""
+        server-side: a cell exports its own satellites from their actual orbit (IP-1212, FR-7440
+        as amended) and any other satellite only from its own Track; ``white`` reads ground truth
+        via the god-view path. Any rejection (another side's satellite with no track, no estimate,
+        unknown id, no orbit, unrepresentable orbit) is a 404 with the reason, like ``/ric_view``."""
         _require(sid)
         try:
             return api.get_tle(sid, cell, object_id)

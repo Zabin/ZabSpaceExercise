@@ -213,11 +213,11 @@ def quick_tle(world, cell: Optional[str], object_id: str) -> dict:
     """IP-1211 (FR-7440) — a current-epoch TLE for ``object_id`` as ``cell`` is allowed to see it.
 
     ``cell is None`` is the White-Cell / no-cell ground-truth path (``FR-6220``): any on-orbit
-    asset at its true orbit. A named cell exports only from its OWN ``Track.state_estimate`` on the
-    object (``FR-6210``, ``ADR-0004``) — never ground truth, never another cell's track. Per
-    Design Decision 5 (``FR-7440`` read literally; own-asset scope is ``BL-0159``, deferred to
-    requirements), a cell's own asset on which it holds no Track is NOT exportable, so this
-    deliberately does not reuse ``_live_state()``'s own-asset-at-truth branch for cells.
+    asset at its true orbit. A named cell exports a satellite it OWNS from that satellite's actual
+    orbit (``source="own"``; IP-1212, ``FR-7440`` as amended 2026-10-15, ``ADS-1500`` Decision 5 —
+    ownership decides, even if the cell also holds a Track on it), and any other satellite only
+    from its OWN ``Track.state_estimate`` (``FR-6210``, ``ADR-0004``) — never ground truth, never
+    another cell's track. (IP-1212 supersedes IP-1211 Design Decision 5, which rejected own assets.)
 
     The TLE is a single-epoch SGP4 mean-element fit at ``world.now`` (``engine.tle_export``,
     Design Decision 1); line-1 identity per Design Decision 2. Raises ``ValueError`` with a reason
@@ -233,12 +233,18 @@ def quick_tle(world, cell: Optional[str], object_id: str) -> dict:
         if asset.orbit is None:
             raise ValueError(f"{object_id!r} has no orbit — not a satellite")
         orbit, source = asset.orbit, "truth"
+    elif (own := world.assets.get(object_id)) is not None and own.owner == cell:
+        # IP-1212 (FR-7440 amended): a cell's own satellite at its actual orbit — ownership decides,
+        # checked before any Track lookup (ADS-1500 Decision 5).
+        if own.orbit is None:
+            raise ValueError(f"{object_id!r} has no orbit — not a satellite")
+        orbit, source = own.orbit, "own"
     else:
         tr = world.track_for(cell, object_id)
         if tr is None:
             raise ValueError(
-                f"{cell} holds no track on {object_id!r} — TLE export needs a held track "
-                "(own-asset export is not yet in scope)")
+                f"{cell} holds no track on {object_id!r} — TLE export of another side's "
+                "satellite needs a held track")
         if tr.state_estimate is None:
             raise ValueError(f"{cell}'s track on {object_id!r} carries no orbit estimate to export")
         orbit, source = tr.state_estimate, "track"

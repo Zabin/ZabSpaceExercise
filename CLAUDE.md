@@ -469,8 +469,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   (or ground truth for White via `SessionManager.get_ric_view()`'s explicit `get_godview()` branch —
   `build_scene()` has no `"white"` case), plus an unbanded CATS readout when chase+target are both
   given; out-of-custody selections raise `ValueError`; **IP-1211 (FR-7440):** `quick_tle()` — a
-  current-epoch TLE for one satellite via `engine/tle_export.py`, a cell exporting only from its own
-  `Track.state_estimate` (own assets without a Track are rejected — `BL-0159`), White from ground
+  current-epoch TLE for one satellite via `engine/tle_export.py`, a cell exporting its own
+  satellites from their actual orbit (`source: "own"`, IP-1212, `FR-7440` as amended — ownership
+  beats a held Track) and anything else only from its own `Track.state_estimate`, White from ground
   truth via `SessionManager.get_tle()`'s `get_godview()` branch; rejections raise `ValueError`),
   `assessment.py` (IP-2010 — read-only competency-rubric scoring: `score_custody_quality`/
   `score_window_discipline`/`score_belief_truth_divergence` + `assessment_report`, never a

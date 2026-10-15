@@ -819,6 +819,32 @@ def test_tle_route_white_reads_truth():
     assert len(body["line1"]) == 69
 
 
+def test_tle_route_own_satellite_200():
+    """IP-1212 (FR-7440 amended, FS-121 v2.1 AC11) — a cell exports its own satellite with no Track;
+    the other cell (no Track either) is still refused; an own asset with no orbit is refused."""
+    pytest.importorskip("sgp4")
+    c = _client()
+    sid = _coorbital_session(c)
+    assets = c.get(f"/api/sessions/{sid}/godview").json()["assets"]
+    own = next(a["id"] for a in assets.values() if a["owner"] == "blue" and a.get("orbit"))
+    r = c.get(f"/api/sessions/{sid}/tle/blue", params={"object_id": own})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["source"] == "own" and body["cell"] == "blue" and body["object_id"] == own
+    assert len(body["line1"]) == 69 and len(body["line2"]) == 69
+    assert c.get(f"/api/sessions/{sid}/tle/red", params={"object_id": own}).status_code == 404
+
+    sid2 = _new_session(c)   # leo-isr-denial: GS-NORTH is a Blue-owned asset with no orbit
+    r = c.get(f"/api/sessions/{sid2}/tle/blue", params={"object_id": "GS-NORTH"})
+    assert r.status_code == 404 and "orbit" in r.json()["detail"]
+
+
+def test_tle_export_client_lists_own_satellites():
+    """IP-1212 Design Decisions 2/5 — the served picker labels the new "own" source."""
+    js = _client().get("/tleexport.js").text
+    assert '"own"' in js
+
+
 def test_tle_export_client_surface_is_served():
     c = _client()
     assert 'src="/tleexport.js"' in c.get("/").text
