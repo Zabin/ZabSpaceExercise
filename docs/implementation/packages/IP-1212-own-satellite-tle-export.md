@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1212
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE — COMPLETE 2026-10-15 (`08-code-implementation`, pipeline run #119): `quick_tle` own-asset branch ahead of the track lookup (`source: "own"`, own asset without orbit rejected, stale message fixed); `tleexport.js` picker lists own on-orbit satellites + `SOURCE_LABEL`; `get_tle`/route docstrings. Replaced the superseded `test_quick_tle_own_asset_without_track_rejected`; 5 new tests (Tests 1, 3, 4, 5 observed failing first; Test 2 passed on arrival as intended). Full suite 852 passed/3 skipped (855 collected, JUnit; baseline 848/3), both permanent gates green (14). Awaiting fresh-session `09-package-verification`.
+> **Status:** ✅ VERIFIED — VERIFIED 2026-10-15 ([VR-1212](../verification/VR-1212-own-satellite-tle-export.md), `09-package-verification`, fresh session): own-satellite export without a held track, ownership-beats-a-held-track precedence, the cross-cell fog-of-war rejection, and the no-orbit rejection all independently reproduced on `geo-rpo-shadowing`/`BLUE-HVA`, distinct from this package's own fixtures, at both the function and HTTP levels. The superseded `test_quick_tle_own_asset_without_track_rejected` confirmed fully removed with no leftover contradicting assertion anywhere in the tree. Full suite 852 passed/3 skipped (855 collected) and both permanent gates (14) independently re-run and confirmed. 1 Low finding (`BL-0203`): `FS-121`'s `Referenced By` stale-tag, same pre-existing pattern as `BL-0183`/`BL-0193`, not a defect in this package.
+> *(COMPLETE 2026-10-15, `08-code-implementation`, pipeline run #119): `quick_tle` own-asset branch ahead of the track lookup (`source: "own"`, own asset without orbit rejected, stale message fixed); `tleexport.js` picker lists own on-orbit satellites + `SOURCE_LABEL`; `get_tle`/route docstrings. Replaced the superseded `test_quick_tle_own_asset_without_track_rejected`; 5 new tests (Tests 1, 3, 4, 5 observed failing first; Test 2 passed on arrival as intended). Full suite 852 passed/3 skipped (855 collected, JUnit; baseline 848/3), both permanent gates green (14).)*
 > *(Authored 2026-10-15 by `07-implementation-planning`, pipeline run #118.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization of
 > the packages this iteration reaches. Same precedent as `IP-1261`/`IP-1262`/`IP-1063`.
@@ -203,20 +204,23 @@ unchanged.
 
 ## Verification Checklist
 
-- [ ] `git diff` of the implementing commit touches no file under `spacesim/engine/`.
-- [ ] Read `quick_tle`: the own-asset check runs in the cell branch **before** `track_for`, and
+- [x] `git diff` of the implementing commit touches no file under `spacesim/engine/`.
+- [x] Read `quick_tle`: the own-asset check runs in the cell branch **before** `track_for`, and
       `cell is None` (White) never reaches it.
-- [ ] Tests 1–5 exist and pass. Tests 1, 3, 4 and 5 were observed failing first, as recorded in the
+- [x] Tests 1–5 exist and pass. Tests 1, 3, 4 and 5 were observed failing first, as recorded in the
       Implementation Summary.
-- [ ] Independent reproduction on a fresh session and a vignette other than the tests':
+- [x] Independent reproduction on a fresh session and a vignette other than the tests':
       `GET /tle/<cell>?object_id=<own satellite>` returns 200 with `source: "own"`; the other
       cell's request returns 404.
-- [ ] The only pre-existing test changed is `test_quick_tle_own_asset_without_track_rejected`
+- [x] The only pre-existing test changed is `test_quick_tle_own_asset_without_track_rejected`
       (removed, replaced by Test 1); `git diff` on the test files shows that and additions only.
-- [ ] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
-- [ ] The RTM `FR-7440` row cites `IP-1212`.
-- [ ] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
+- [x] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
+- [x] The RTM `FR-7440` row cites `IP-1212`.
+- [x] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
       agree on status.
+
+**Independently verified `09-package-verification` (fresh session), 2026-10-15 — see
+[VR-1212](../verification/VR-1212-own-satellite-tle-export.md). `COMPLETE → VERIFIED`.**
 
 ## Dependencies
 
