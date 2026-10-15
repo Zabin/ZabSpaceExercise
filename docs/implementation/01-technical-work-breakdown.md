@@ -514,6 +514,30 @@ independently testable outcome.
 
 No cross-package sequencing constraint.
 
+## CATS phase-angle observation gain (pipeline run #124, 2026-10-15)
+
+`FS-122` v1.1 (run #123) added `FR-1670`, `FEAT-1600`'s last unbuilt leaf. `FR-1610`–`FR-1660` are
+built (`IP-1220`, `VERIFIED`). Work units:
+
+1. **Model:** an optional usable-phase-angle range on `Sensor`, with a validator that rejects
+   malformed ranges and ranges on non-`needs_lighting` sensors.
+2. **Gain:** a pure factor helper (linear fall-off outside the range) and one additive
+   `effective_gain` argument.
+3. **Wiring:** the observe branch of `_exec_payload` computes the angle at `win.start` with the
+   shared `cats_phase_angle_deg`.
+4. **Tests:** factor shape, composition and regression, end-to-end for ground, space-based and
+   hosted sensors, the validator, shipped-content unchanged, and the single-definition check.
+
+**No-split rationale:** all four units sit in `engine/`, share one Definition of Done (FS-122 AC7–11)
+and are individually small. Unit 3 cannot be tested without units 1–2, and units 1–2 have no
+observable outcome without unit 3. As the next slice of the FS-122 series it takes `IP-1221`.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1221](packages/IP-1221-cats-phase-angle-observation-gain.md) | FS-122 v1.1 (`FR-1670`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
+
+No cross-package sequencing constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
