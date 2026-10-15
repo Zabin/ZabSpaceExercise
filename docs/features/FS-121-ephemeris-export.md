@@ -1,5 +1,7 @@
 > **Document ID:** FS-121
-> **Version:** 2.0 (2026-10-10 — extended to cover all of `FEAT-7400`: adds `FR-7440` (quick TLE
+> **Version:** 2.1 (2026-10-15 — `FR-7440` amended upstream (`BL-0159`): a cell's **own** satellites
+> are now in scope; the fields that amendment affects are updated and Open Question 5 is closed.
+> Nothing else changed.) Prior: 2.0 (2026-10-10 — extended to cover all of `FEAT-7400`: adds `FR-7440` (quick TLE
 > export, `BL-0109`) and records `FR-7430` (companion RIC file, already built/`VERIFIED` under
 > `IP-1210`, closing the RTM's "FS-121 (amendment pending)" note). The `FR-7410`/`FR-7420` content
 > of v1.0 is unchanged in substance.)
@@ -67,9 +69,9 @@ fog-of-war-respecting export of that same cell's own believed state vectors over
 time span/frame/format set (`FR-7420`); (3) the companion RIC-only export file paired with the
 OEM output (`FR-7430`, as built — recorded here in v2.0, no new behavior); (4) **(v2.0)** a quick,
 single-satellite, current-epoch TLE export, presented as a copyable text field and/or a
-copy-to-clipboard action — no file-download flow — for any satellite the requesting cell holds a
-`Track` on (cell-scoped, fog-of-war-filtered, `FR-6210`), or any on-orbit satellite for White Cell
-via the no-cell exception (`FR-6220`) (`FR-7440`).
+copy-to-clipboard action — no file-download flow — for any satellite the requesting cell owns or
+holds a `Track` on (cell-scoped, fog-of-war-filtered, `FR-6210`; own satellites added v2.1), or any
+on-orbit satellite for White Cell via the no-cell exception (`FR-6220`) (`FR-7440`).
 
 **Out of scope:** TLE *import* (`FR-5210`/`FR-5220`, a different Feature); a time-span or bulk
 multi-object TLE export (`FR-7440` names one target satellite per request); any change to the
@@ -100,12 +102,12 @@ added, none dropped.
    alongside an OEM export; the system returns the same RIC columns the CSV export already carries,
    as a dedicated file.
 4. **Quick TLE export — Blue or Red cell operator (`FR-7440`).** (a) The operator, viewing a
-   satellite their cell currently holds a `Track` on (placement in the console is Open Question 7),
-   invokes "TLE" for it. (b) The console shows a two-line text block in a copyable field, with a
+   satellite their cell currently holds a `Track` on **or one of their own satellites** (v2.1;
+   placement in the console is Open Question 7), invokes "TLE" for it. (b) The console shows a two-line text block in a copyable field, with a
    copy-to-clipboard action beside it. (c) The operator copies it and pastes it into an external
-   tool (STK, GMAT, a TLE-consuming script). Edge: the operator requests a satellite the cell holds
-   no `Track` on (e.g. a stale selection, or a hand-crafted request) — the request is rejected with
-   a reason; no TLE is shown.
+   tool (STK, GMAT, a TLE-consuming script). Edge: the operator requests another side's satellite
+   the cell holds no `Track` on (e.g. a stale selection, or a hand-crafted request) — the request is
+   rejected with a reason; no TLE is shown.
 5. **Quick TLE export — White Cell (`FR-7440`, `FR-6220` exception).** White Cell invokes the same
    action on any on-orbit satellite and receives a TLE derived from ground truth. Edge: the named
    object does not exist, or has no orbit — rejected with a reason.
@@ -145,6 +147,12 @@ added, none dropped.
     propagated forward by the existing `Propagator` seam (`FS-103` v1.1), a target that has
     manoeuvred since C last observed it exports C's *stale belief*, not its new truth — this is the
     correct, intended fog-of-war outcome, not a defect.
+  - *(v2.1) Cell-scoped request from cell C for its **own** satellite Z:* Z's actual orbit
+    (`Asset.orbit`). A cell always knows its own asset's true state exactly, and custody applies
+    only to other objects (`ADS-1500` Decision 5, the same rule this Feature's RIC reference-object
+    rule already applies; amended `FR-7440`). No `Track` is required or consulted. If C also holds a
+    `Track` on its own satellite, the own-asset rule still applies; ownership decides, not whether a
+    track exists.
   - *White Cell (no-cell path, `FR-6220`):* X's ground-truth orbit.
 - **"Current epoch."** The TLE's epoch is the session's current simulated time (`world.now`), read
   from the sim clock — never the wall clock (`ADR-0002`). The exported TLE should, when propagated
@@ -164,12 +172,13 @@ added, none dropped.
   for each kind is Open Question 4 — `FR-7440`'s own Notes assign this choice to `06`/`07`, and
   this spec deliberately records the constraints and options rather than picking one.
 - **Rejection (edge cases).** A cell-scoped request is rejected — no TLE is returned, a specific
-  reason is given — when: the cell holds no `Track` on the named satellite; the `Track` exists but
-  carries no `state_estimate` (custody without a state); or the object does not exist.
-  `FR-7440`'s Postcondition: no cell-scoped request returns a TLE for a satellite the cell does not
-  hold a `Track` on. A White-Cell request is rejected when the object does not exist or has no
-  orbit. (Whether a cell's *own* asset, on which it usually holds no `Track`, is exportable is Open
-  Question 5.)
+  reason is given — when: the named satellite is another side's and the cell holds no `Track` on
+  it; the `Track` exists but carries no `state_estimate` (custody without a state); the object does
+  not exist; or (v2.1) it is the cell's own asset but has no orbit (e.g. a ground station).
+  `FR-7440`'s Postcondition (amended): no cell-scoped request returns a TLE for a satellite the
+  cell neither owns nor holds a `Track` on, and no cell-scoped TLE of a non-owned satellite is
+  derived from ground truth. A White-Cell request is rejected when the object does not exist or
+  has no orbit.
 - **Read-only.** Producing a TLE mutates no session or world state, consumes no RNG draw, and
   writes no event-log entry — like every other export in this Feature and like `scene.py`.
 
@@ -182,7 +191,7 @@ added, none dropped.
 | `engine/propagator.py` (`Propagator`) | Forward-propagates the sampled state (truth `Asset.orbit` or a cell's `Track.state_estimate`) to exactly the requested time — unchanged, reused as-is. |
 | A new shared ephemeris serializer (ECI/RIC transform, CSV/CCSDS OEM writers) | Parameterized by state source (truth vs. cell-observed); shared between `FR-7410` and `FR-7420` rather than duplicated, per `ADS-1500`'s System Architecture. |
 | `ui_web/server.py` | Exposes the truth export through an existing no-cell route and the cell-observed export through a new cell-scoped route, both per `ADR-0004`/`FR-6220`'s existing binding rules. |
-| **(v2.0, `FR-7440`)** C2 Session/Application Layer (`SessionManager`/`InProcessSession`/`CellController`, `session/ephemeris.py`'s export family) | Resolves the requester's permitted state source (own `Track.state_estimate` for a cell; ground truth for White Cell), applies the rejection rules, and invokes the TLE serialization — the fog-of-war decision lives here, at the boundary (`ADR-0004`), never in the UI. |
+| **(v2.0, `FR-7440`)** C2 Session/Application Layer (`SessionManager`/`InProcessSession`/`CellController`, `session/ephemeris.py`'s export family) | Resolves the requester's permitted state source (for a cell: its own `Track.state_estimate` for another side's satellite, or — v2.1 — the actual orbit of a satellite it owns; ground truth for White Cell), applies the rejection rules, and invokes the TLE serialization — the fog-of-war decision lives here, at the boundary (`ADR-0004`), never in the UI. |
 | **(v2.0, `FR-7440`)** C1 Simulation Engine (`engine/orbit.py`/`engine/propagator.py`) | Supplies the state to serialize via the existing `Propagator` seam (unchanged), and hosts whatever pure, deterministic orbit-to-TLE conversion `07` chooses for `BL-0110` (Open Question 4). No change to propagation behavior. |
 | **(v2.0, `FR-7440`)** C4 Operator Console (`ui_web/static/`) | Presents the returned TLE as a copyable text field with a copy-to-clipboard action; renders the rejection reason on failure. Holds no filtering logic. |
 | **(v2.0, `FR-7440`)** C3 Mock SSN | No new responsibility — named in `FEAT-7400`'s `Affected Subsystems` because SSN deliveries are one of the existing writers of `Track.state_estimate` (`engine/ssn.py`), i.e. a source of the belief state `FR-7440` exports; unchanged. |
@@ -225,8 +234,9 @@ RNG state, or event-log entry is created; the clipboard copy is a purely client-
 - A malformed/out-of-range reference-object identifier: rejected with a specific reason, consistent
   with the existing "invalid input fails loudly" posture (`FR-5310`'s analogous rule for vignette
   loading).
-- **(v2.0, `FR-7440`)** Cell requests a TLE for a satellite it holds no `Track` on → rejected with a
-  specific reason (`FR-7440` Acceptance Criteria/Postcondition); no TLE, partial or otherwise.
+- **(v2.0, `FR-7440`; narrowed v2.1)** Cell requests a TLE for another side's satellite it holds no
+  `Track` on → rejected with a specific reason (`FR-7440` Acceptance Criteria/Postcondition); no
+  TLE, partial or otherwise. A cell's own satellite is never rejected for lacking a `Track`.
 - **(v2.0, `FR-7440`)** Cell holds a `Track` with no `state_estimate` → rejected with a specific
   reason (there is no believed orbit to serialize — never fall back to ground truth).
 - **(v2.0, `FR-7440`)** Unknown object id, or an object with no orbit (White Cell or cell) →
@@ -257,8 +267,11 @@ RNG state, or event-log entry is created; the clipboard copy is a purely client-
 - Cell-observed export must enforce the same fog-of-war-at-the-boundary rule (`ADR-0004`) every
   other cell-scoped read already does — reads only the requesting cell's own `Track`, never another
   cell's, never ground truth.
-- **(v2.0, `FR-7440`)** Same posture: the cell-scoped TLE path reads only the requesting cell's own
-  `Track`, filtered at the `SessionAPI`/`CellController` boundary (`ADR-0004`, `FR-6210`); White
+- **(v2.0, `FR-7440`)** Same posture: for another side's satellite the cell-scoped TLE path reads only
+  the requesting cell's own `Track`, filtered at the `SessionAPI`/`CellController` boundary
+  (`ADR-0004`, `FR-6210`). **(v2.1)** For the cell's own satellite it reads that satellite's actual
+  orbit; this exposes nothing the cell does not already see (`FR-6210` exposes a cell's own assets
+  at truth), and the ownership check must sit at the same boundary, never in the UI; White
   Cell's ground-truth variant rides the existing no-cell exception (`FR-6220`, `ADR-0015`) rather
   than becoming a new, separately-named unfiltered surface. The exported TLE of a manoeuvred target
   must reflect the cell's belief, so it must not leak the post-manoeuvre truth. No new trust
@@ -288,7 +301,7 @@ RNG state, or event-log entry is created; the clipboard copy is a purely client-
 6. *(`FR-7440`)* Propagating the returned TLE with SGP4 to its own epoch reproduces C's believed
    position for X at that instant within the accuracy bound `07-implementation-planning` states
    (Open Question 4) — tested for at least one TLE-sourced and one Kepler+J2-sourced target.
-7. *(`FR-7440`)* Given C holds no `Track` on satellite Y (or the `Track` has no `state_estimate`),
+7. *(`FR-7440`)* Given C holds no `Track` on another side's satellite Y (or the `Track` has no `state_estimate`),
    the C-scoped request for Y is rejected with a reason and returns no TLE.
 8. *(`FR-7440`, fog-of-war)* If X has manoeuvred after C's last observation, C's exported TLE
    reproduces C's pre-manoeuvre belief, not X's post-manoeuvre ground truth; White Cell's export
@@ -297,6 +310,11 @@ RNG state, or event-log entry is created; the clipboard copy is a purely client-
    unchanged (the determinism property test stays green).
 10. *(`FR-7440`, UI)* The console presents the TLE in a copyable text field with an adjacent
     copy-to-clipboard action — no file download is required.
+11. *(`FR-7440`, v2.1 — own satellite)* Given cell C owning satellite Z and holding no `Track` on it,
+    a C-scoped TLE request for Z returns a well-formed TLE (as in criterion 4) whose SGP4
+    propagation to its own epoch reproduces Z's actual position within the same bound as criterion
+    6. The same request made by the other cell, which holds no `Track` on Z, is still rejected
+    (criterion 7).
 
 ## Verification Plan
 
@@ -310,6 +328,8 @@ route; criteria 7 and 8 are the negative fog-of-war assertions, mirroring `test_
 pattern. Criterion 10: Inspection/Demonstration (the console is unverified headless per this
 project's established UI-verification posture — `CLAUDE.md` status line), backed by a route-level
 Test that the payload carries the two TLE lines.
+**(v2.1)** Criterion 11: Test (automated) at the session layer and the HTTP route, including the
+cross-cell negative (the other cell's request for Z is still rejected).
 
 ## Dependencies
 
@@ -388,7 +408,10 @@ unchanged as historical record. Questions 4-8 below are new in v2.0, all for `FR
    Read literally, own assets are not exportable. **Why it matters:** exporting one's own
    satellite's TLE is a natural operator need. **Resolution path:** a `04-requirements-engineering`
    amendment to `FR-7440` (broaden "visible" to include own assets); until then `07` should follow
-   the literal requirement.
+   the literal requirement. **Closed v2.1:** `FR-7440` was amended on 2026-10-15 (`BL-0159`;
+   [report](../reviews/requirements-update-parked-questions-batch.md)), and own satellites are now in
+   scope (System Behaviour, Error Handling, Acceptance Criterion 11). The shipped `IP-1211` follows
+   the pre-amendment reading (its Design Decision 5), so a remediation package is owed (`BL-0201`).
 6. **Route path and request shape.** No ICD interface or ADR commits to a URL/parameter convention
    beyond the general cell-scoped `GET /api/sessions/{sid}/<resource>/{cell}` pattern and the
    White-Cell no-cell pattern. A `07-implementation-planning` decision (same as `FS-130`'s
