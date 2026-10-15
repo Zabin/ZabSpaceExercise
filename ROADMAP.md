@@ -726,6 +726,14 @@ rows). Run #102's additions are accurate, driven live on fresh fixtures. The pla
 parity claim does not hold, because none of the 9 shipped Red satellites has a `bus_state`) and
 4 Low.
 
+**Training review (2026-10-15):** [`reviews/training-review-runs107-109-scope.md`](docs/reviews/training-review-runs107-109-scope.md)
+(REV-TRN-004) independently reviewed run #107's target-picker and export-bounds sections and run
+#109's `RED-7`/`RED-13`/`WCM-6` sections. All prose in scope is accurate, driven live on
+`multi-domain-taiwan` seed 11. Traceability is consistent (0 orphans), the playbook suite passed
+16/16, with no Critical/High. 2 findings in adjacent shared modules: F1 Medium
+(`11-vignette-playbooks` says Target "autocompletes"; the shipped control is a dropdown plus an
+`or id` box) and F2 Low (`03`/`04` walkthroughs do not say to use `or id` for untracked targets).
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
