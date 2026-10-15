@@ -13,21 +13,29 @@
 
 ## Position
 
-- **Updated:** 2026-10-15 (run #118 — advance, `07-implementation-planning`)
-- **Increment:** `BL-0201` chain. **`IP-1212`** (own-satellite quick TLE export, remediation of
-  `IP-1211` Design Decision 5) is authored `READY` (commit `c4fb117`). It is pre-authorized by the
-  project owner (MSTR-006 §3, the standing 2026-10-11 pre-authorization of this iteration's
-  packages).
+- **Updated:** 2026-10-15 (run #119 — advance, `08-code-implementation`)
+- **Increment:** `BL-0201` chain. **`IP-1212` is `COMPLETE`** (commit `44cf966`): a cell now exports
+  its own satellites' TLE from their actual orbit (`source: "own"`, and ownership beats a held
+  track), while another side's untracked satellite is still rejected. Full suite 852 passed /
+  3 skipped (855 collected, JUnit). Both permanent gates are green (14).
 - **Pipeline state:**
-  - `08`: `IP-1212` (`READY`, authorized) is next.
+  - `09-package-verification`: `IP-1212`. **It must run in a fresh session with no involvement in
+    `44cf966`/`6e1c3d8`/`c4fb117`** (runs #113–#119 were one session).
+  - `09-training-manual-review`: owed on run #114's scope, also from a session other than #113–#119.
+  - `08-training-manual-authoring`: `BL-0202` (`IP-1212` manual impact), `DEFERRED` until `IP-1212`
+    is `VERIFIED`.
   - `06`: `FEAT-1600` (`BL-0122`), `FEAT-4400`/`FEAT-4600` (`BL-0079`); `BL-0200` is `DEFERRED`.
-  - `09-training-manual-review`: owed on run #114's scope (a session other than #113–#118's).
-  - `10`: the run #81 tranche with `BL-0169`; the export-hardening chain. `BL-0199` rides it.
-- **Backlog:** `BL-0201` `IN PIPELINE` (rides `IP-1212`). No `NEW` entries. `NEEDS-USER`, not ripe:
-  `BL-0187`, `BL-0171`, `BL-0181`. `BL-0184` stays `REJECTED`.
-- **Next step:** `08-code-implementation` on `IP-1212`. It is authorized, so the gate is cleared.
+  - `10`: the run #81 tranche with `BL-0169`; the export-hardening chain (`IP-1210`/`IP-1260`/
+    `IP-1261`/`IP-1262`, now joined by `IP-1211`/`IP-1212` once verified). `BL-0199` rides it.
+- **Backlog:** new `BL-0202` (Low, `DEFERRED` until `IP-1212` is `VERIFIED`). `BL-0201` stays
+  `IN PIPELINE`. No `NEW` entries. `NEEDS-USER`, not ripe: `BL-0187`, `BL-0171`, `BL-0181`.
+  `BL-0184` stays `REJECTED`.
+- **Next step:** `09-package-verification` on `IP-1212`, in a fresh session. The other
+  independent-session step available is `09-training-manual-review` on run #114's scope. A session
+  with no independence constraint could instead take `06-feature-specification` on `FEAT-1600`
+  (`BL-0122`).
 - **Open gates:** `IP-1160` authorization (MSTR-006 §3) is still deferred. `NEEDS-USER`, not ripe:
-  `BL-0187`, `BL-0171`, `BL-0181`. No other gate.
+  `BL-0187`, `BL-0171` (option A or B), `BL-0181` (promote `CR-22`?). No other gate.
 
 ---
 
@@ -561,3 +569,4 @@
 | 116 | 2026-10-15 | advance (no override — run #115's recorded next step) | `04-requirements-engineering` | `BL-0171` + `BL-0113` (+ `BL-0159`/`BL-0181`/`BL-0010`/`BL-0012`, triggered by "next `04` pass") | Reconciled (origin tip `0b51cd7` = run #115's own push; no drift). Triaged: zero `NEW` entries; four `DEFERRED` triggers fired on this step and rode it. `BL-0187` was excluded, as the owner parked it. Gate check: a requirements pass is not MSTR-006-gated. Each question was checked for source support before any decision — the skill may not originate facts.<br>• `BL-0159`: **`FR-7440` amended** so "visible" means `FR-6210`'s view (own satellites plus held tracks). Traced to `FR-6210`, `ADS-1500` Decision 5 and `BL-0109`'s own wording.<br>• `BL-0181` → **`CR-22`** candidate (review-observation source only).<br>• `BL-0010`/`BL-0012`: RTM titles corrected.<br>• `BL-0113`: no amendment (`FR-1620` does not require distinguishable reasons; the as-built system conforms).<br>• `BL-0171`: **reported, not resolved** (Medium). `FR-2320` says "pass-gated", but its own Postcondition and the as-built drill-down, series and export are ungated between contacts; GDS-05 FR-B3 and `FR-2310` gate only the SOH snapshot. Options A and B framed for the owner.<br>Wrote [the update report](../reviews/requirements-update-parked-questions-batch.md); changed `01`/`03` only. Commit `086a15f`. Closed `BL-0159`/`0113`/`0010`/`0012`. `BL-0171`/`BL-0181` → `NEEDS-USER` (not ripe, non-blocking). Harvested `BL-0201` (Low; `IP-1211` implements the pre-amendment `FR-7440`; chain `06` → `07` → `08`; `SCHEDULED`). | `06-feature-specification` on `FS-121` (`FR-7440` own-asset scope, `BL-0201`). |
 | 117 | 2026-10-15 | advance (no override — run #116's recorded next step) | `06-feature-specification` | `FS-121` (`FR-7440` own-satellite scope, `BL-0201`) | Reconciled (origin tip `c71c2c7` = run #116's own push; no drift). Triaged: zero `NEW` entries; `BL-0201` `SCHEDULED` for exactly this step. Gate check: spec work is not gated. Invoked `06-feature-specification` and updated only the fields the 2026-10-15 `FR-7440` amendment touches:<br>• Version, Scope and User Workflow 4.<br>• System Behaviour: a new state-source branch, so an own satellite reads its actual `Asset.orbit` per `ADS-1500` Decision 5, and ownership decides even if a track exists. The rejection rule is narrowed to another side's untracked satellite, plus an own asset with no orbit.<br>• The C2 Subsystem Responsibilities row, Error Handling and Security Considerations (the ownership check stays at the boundary).<br>• New Acceptance Criterion 11 (own satellite exportable; the other cell is still rejected), with its Verification Plan entry. Criterion 7 is reworded to "another side's satellite".<br>• Open Question 5 closed. `feature-index.md` row updated.<br>No new requirement; Feature Catalog untouched. Commit `f466e93`. `BL-0201` → `IN PIPELINE`. No new findings. | `07-implementation-planning` on `BL-0201` (remediation package against `IP-1211`). |
 | 118 | 2026-10-15 | advance (no override — run #117's recorded next step) | `07-implementation-planning` | `BL-0201` (remediation package against `IP-1211` for `FS-121` v2.1) | Reconciled (origin tip `9cb18e8` = run #117's own push; no drift). Triaged: zero `NEW` entries. Gate check: planning is not gated, and authoring a package is not authorization. Invoked `07-implementation-planning`; every cited line was checked at `9cb18e8` (`ephemeris.quick_tle :212-252`, `_live_state :116-136`, `manager.get_tle :928-936`, the `server.py` `/tle` route `:738-748`, `tleexport.js :2-24/:46/:55`, `test_ephemeris.py :438-444`, `test_web.py` TLE route tests). Authored **[IP-1212](../implementation/packages/IP-1212-own-satellite-tle-export.md)** (all 14 fields):<br>• An own-asset branch ahead of the track lookup, so ownership beats a held track; it returns `source: "own"`.<br>• An own asset with no orbit is rejected; the stale "not yet in scope" text is dropped.<br>• The picker lists own on-orbit satellites; White is unchanged.<br>• It replaces the one superseded DD5 test and adds 5 tests, including the cross-cell negative. The ground-station case was re-targeted to `leo-isr-denial` `GS-NORTH` after checking that `co-orbital-threat-escort` has no Blue ground-station asset.<br>`READY`; pre-authorized (MSTR-006 §3, the owner's standing 2026-10-11 pre-authorization). Updated the MBP row and note, `packages/INDEX.md`, ROADMAP, a TWBS section (no-split rationale) and `FS-121` Referenced By. Commit `c4fb117`. No new findings. | `08-code-implementation` on `IP-1212`. |
+| 119 | 2026-10-15 | advance (no override — run #118's recorded next step) | `08-code-implementation` | `IP-1212` | Reconciled (origin tip `a270ea6` = run #118's own push; `IP-1212` `READY`; no drift). Triaged: zero `NEW` entries; `BL-0201` rides this step. **Gate check:** the MSTR-006 §3 authorization gate was cleared by the project owner's pre-authorization on 2026-10-11 of the packages this iteration reaches (session task instruction; same precedent as `IP-1211`/`IP-1300`/`IP-1260`/`IP-1261`/`IP-1262`/`IP-1063`). Dependency `IP-1211` is `VERIFIED`. Invoked `08-code-implementation`. `IP-1212` was marked `IN PROGRESS` before any edit (commit `6e1c3d8`), and the work was test-first:<br>• Replaced the superseded DD5 test.<br>• Tests 1, 3, 4 and 5 were seen failing first (`ValueError`, `source=='track'`, 404, missing `"own"`). Test 2 (cross-cell negative) passed on arrival, as the package predicted.<br>Implemented:<br>• The `quick_tle` own-asset branch ahead of `track_for` (`source: "own"`; an own asset with no orbit is rejected; the stale message is fixed).<br>• The `tleexport.js` picker now lists own on-orbit satellites (owner check plus White's kind filter), with a `SOURCE_LABEL`.<br>• The `get_tle` and route docstrings.<br>Full suite **852 passed / 3 skipped** (855 collected, JUnit; baseline 848/3). `test_determinism.py` + `test_import_guard.py` 14/14. Updated the RTM `FR-7440` row, the `CLAUDE.md` code map and MBP/`packages/INDEX.md`/ROADMAP → `COMPLETE` (commit `44cf966`). Harvested 1: `BL-0202` (Low; `BLU-12`/`RED-11` still say own satellites are not exportable; `WCM-14`/§15 to check; `DEFERRED` until `IP-1212` is `VERIFIED`, `BL-0192` precedent). | `09-package-verification` on `IP-1212`, in a **fresh session** (not this one, which ran #113–#119). |
