@@ -157,15 +157,21 @@ valid ones), when any effect:
 
 The same check runs when you fire a vignette inject by name with **Fire** (row 2).
 
-Two cases are **not** checked at the console, because they fire later on their own:
+A builder inject you schedule for later goes through the same check when you click Schedule /
+fire. It is **not checked again when it fires**, so its targets may have changed by then.
 
-- injects a vignette schedules by time or by condition;
-- builder injects you scheduled for later, whose targets may have changed since you scheduled them.
+Injects a vignette schedules by time or by condition are never checked at the console, because
+they fire on their own. When one of these fires:
 
-When one of these fires, a malformed effect is skipped, the rest still apply, and White alone gets
-the **Messages** line `inject effect skipped (<type>): <reason>`. A well-formed effect whose target
-is missing or unsuitable at that moment (for example, the track is gone) is skipped with no
-message.
+- a malformed effect is skipped, the rest still apply, and White alone gets the **Messages** line
+  `inject effect skipped (<type>): <reason>`.
+
+When any scheduled inject fires, vignette or builder:
+
+- a well-formed effect whose target is missing or unsuitable at that moment (for example, the
+  track is gone, or the satellite no longer has a bus) is skipped with **no** message;
+- a `scripted_manoeuvre` whose `params` the manoeuvre maths now refuses is skipped with the same
+  White-only `inject effect skipped` line.
 
 ---
 

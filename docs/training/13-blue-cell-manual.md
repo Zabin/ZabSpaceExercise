@@ -171,20 +171,29 @@ view from the targeting side.*
 
 ### BLU-12 · Quick TLE export
 
-**View ▾ → Proximity → ⧉ TLE export** gives you a copyable, current-epoch TLE for one object —
-but only one your cell **currently holds a Track on**; your own un-tracked assets are **not**
-exportable (task a sensor on your own bird first if you need its TLE — this is the capability's
-literal scope, not a bug). The export is fit to **your own belief** (the track's
-`state_estimate`), never ground truth: if the target has manoeuvred since your last observation
-and you haven't re-tasked, the exported TLE reflects your stale picture exactly like every other
-belief-based view does.
+**View ▾ → Proximity → ⧉ TLE export** gives you a copyable, current-epoch TLE for one object.
+The picker lists two kinds of object, and the line under the text box says which one you got:
 
-Use it to hand a believed TLE off to an outside tool for a quick what-if, or to compare against
-White's god-truth export (WCM-14) during a debrief on how far your custody had drifted.
+- **Your own satellites** (every Blue on-orbit asset; ground stations are not listed). The TLE is
+  fitted to the satellite's **actual orbit**, and the panel reads *from your satellite (actual
+  orbit)*. You do not need a track on your own bird. If you also hold a track on it, the actual
+  orbit is still used.
+- **Objects you currently hold a Track on.** The TLE is fitted to **your own belief** (the
+  track's `state_estimate`), never ground truth, and the panel reads *from your track (belief)*.
+  If the target has manoeuvred since your last observation and you haven't re-tasked, the
+  exported TLE reflects your stale picture, like every other belief-based view.
+
+Another side's satellite you hold no track on is not listed. Asked for by URL, it is refused with
+`blue holds no track on '<id>'`; task a sensor on it first. With nothing to list, the panel reads
+*no own satellite or tracked object to export*.
+
+Use it to hand a TLE off to an outside tool for a quick what-if, or to compare a believed TLE
+against White's god-truth export (WCM-14) during a debrief on how far your custody had drifted.
 
 > **Sources:** `spacesim/engine/tle_export.py` (`orbit_to_tle`) ·
-> `spacesim/session/ephemeris.py` (`quick_tle`) ·
-> `GET /api/sessions/{sid}/tle/{cell}` · `spacesim/ui_web/static/tleexport.js`
+> `spacesim/session/ephemeris.py` (`quick_tle`, own-satellite branch) ·
+> `GET /api/sessions/{sid}/tle/{cell}` · `spacesim/ui_web/static/tleexport.js` (`candidates`,
+> `SOURCE_LABEL`)
 
 ### BLU-13 · Ephemeris export, your own belief (URL-only)
 

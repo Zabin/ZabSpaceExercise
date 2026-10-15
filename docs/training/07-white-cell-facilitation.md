@@ -59,6 +59,31 @@ curl -X POST http://127.0.0.1:8000/api/sessions/<SID>/inject -H 'Content-Type: a
 }'
 ```
 
+**Controller events (`FR-4430`).** Four effect types let you script a fault or a move directly.
+Paste any of these into the builder's JSON editor (ids from **Training: Basics**; substitute your
+vignette's):
+
+```json
+[
+  {"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus", "cause": "SEU in flight computer"},
+  {"type": "anomaly", "target": "ISR-EO-1", "subsystem": "telemetry", "cause": "transponder fault"},
+  {"type": "sensor_outage", "target": "RADAR-TRN", "cause": "power failure"},
+  {"type": "forced_custody_loss", "cell": "blue", "target": "RED-TGT", "degrade_to": 0.2},
+  {"type": "scripted_manoeuvre", "target": "RED-TGT", "mode": "lvlh", "params": {"dv_t": 2.0}}
+]
+```
+
+| Type | What it does | Optional keys |
+|---|---|---|
+| `anomaly`, `subsystem: bus` | Puts the satellite into **safe mode**, so the normal recovery loop applies. Announced to all three cells: `<id>: anomaly declared (<cause>)`. The target must have a bus. | `cause`; `"restore": true` takes it out of safe mode again (`anomaly cleared`). |
+| `anomaly`, `subsystem: telemetry` | Sets the satellite's comms to red. Announced to all three cells. | `cause`; `"restore": true` sets comms back to green. |
+| `sensor_outage` | Marks the sensor degraded. Announced to all three cells: `<id>: sensor outage declared (<cause>)`. | `cause`; `"restore": true` marks it nominal again. |
+| `forced_custody_loss` | Sets that cell's track confidence on the target to `degrade_to` (default `0`). No message, so the cell finds out from its track table. The cell must hold the track. | `degrade_to` (a number); `"mode": "drop"` deletes the track instead. |
+| `scripted_manoeuvre` | Applies a burn in any of the six manoeuvre modes (`eci`, `lvlh`, `finite_burn`, `target_coe`, `hohmann`, `plane_change`), with that mode's parameters in `params` (for `lvlh`: `dv_r`/`dv_t`/`dv_n`, in m/s). It **bypasses the Δv budget**: nothing is checked or deducted. Only White is told, with the cost. | — |
+
+> **Sources:** `spacesim/session/manager.py` (`_apply_inject_effects`, `_inject_effect_problem`) ·
+> `spacesim/engine/maneuver.py` (`compute_maneuver`) · `POST /api/sessions/{sid}/inject`
+
 The library lives at `spacesim/content/inject_library.yaml` — add new entries there and they show
 up in the dropdown on next session load.
 

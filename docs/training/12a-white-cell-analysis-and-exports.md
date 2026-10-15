@@ -67,6 +67,10 @@ Use it to hand a real-format TLE for any engine-modelled asset — fictional or 
 outside tool (a visualization package, a conjunction checker) without a file-download step. Not
 available to the Observer seat, which holds no asset or track ownership of its own to export from.
 
+Blue and Red have the same panel with fog of war applied: each cell exports its own satellites
+from their actual orbit and anything else only from its own track (BLU-12, RED-11). For a custody
+debrief, compare a cell's track-based TLE for a target against your truth TLE for the same object.
+
 > **Sources:** `spacesim/engine/tle_export.py` (`orbit_to_tle`) ·
 > `spacesim/session/ephemeris.py` (`quick_tle`) · `spacesim/session/manager.py` (`get_tle`) ·
 > `GET /api/sessions/{sid}/tle/{cell}` · `spacesim/ui_web/static/tleexport.js`

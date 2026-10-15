@@ -152,8 +152,9 @@ Press **Ctrl-K** (or **⌘-K** on macOS) any time to open the command palette �
 navigate.
 
 > Prefer a script or an air-gapped box with no browser? Every action is also available through the
-> in-process Python API and the HTTP API — see [§9](#9-http-api-reference) and the
-> *headless walkthrough* at the end of [§4](#4-your-first-exercise).
+> in-process Python API and the HTTP API — see [§9](08-http-api-reference.md#9-http-api-reference) and the
+> [*headless walkthrough*](03-first-exercise.md#headless-walkthrough-no-browser) at the end of
+> [§4](03-first-exercise.md#4-your-first-exercise).
 
 ### 2.1 Multi-tab and LAN multiplayer
 

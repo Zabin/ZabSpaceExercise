@@ -76,7 +76,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Competency assessment (custody/window/divergence rubric) | `session/assessment.py`, `GET /assessment` | WCM-11 | — | — |
 | Research analytics (offline batch export) | `tools/research_batch.py`, `session/research_export.py` | WCM-12 | — | — |
 | Live RIC frame view + CATS phase-angle overlay | `engine/sun.py` (`cats_phase_angle_deg`), `session/ephemeris.py` (`live_ric_view`), `GET /ric_view/{cell}` | WCM-13 | BLU-11 | RED-10 |
-| Quick TLE export (cell-visible satellite) | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `GET /tle/{cell}` | WCM-14 | BLU-12 | RED-11 |
+| Quick TLE export (own satellites at actual orbit + tracked objects at belief; White: ground truth) | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `GET /tle/{cell}`, `tleexport.js` (`candidates`, `SOURCE_LABEL`) | WCM-14 | BLU-12 | RED-11 |
 | Ephemeris export, time-span (ECI/RIC, CSV/CCSDS OEM, truth + cell-observed) | `session/ephemeris.py` (`truth_ephemeris`, `cell_observed_ephemeris`, `write_csv`/`write_oem`/`write_ric_csv`, `sample_times`/`MAX_EXPORT_SAMPLES`), `session/aar.py` (`worlds_at_times`), `GET /ephemeris/truth`, `GET /ephemeris/{cell}` | WCM-15 | BLU-13 | RED-12 |
 | Per-asset telemetry CSV export, time-span | `session/manager.py` (`telemetry_export`), `engine/telemetry.py` (`sample`, per-instant replay), `session/aar.py` (`worlds_at_times`), `session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`), `GET /telemetry/{cell}/{asset}/export.csv` | WCM-16 | BLU-14 | RED-13 |
 
@@ -105,7 +105,7 @@ mirrors each section's inline `> Sources:` footer.
 | WCM-11 | Competency assessment | `session/assessment.py`, `/assessment` |
 | WCM-12 | Offline research batch exports | `tools/research_batch.py`, `session/research_export.py` |
 | WCM-13 | RIC frame view & CATS phase angle (ground truth) | `engine/sun.py`, `session/ephemeris.py` (`live_ric_view`), `/ric_view/{cell}` |
-| WCM-14 | Quick TLE export (ground truth) | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `/tle/{cell}` |
+| WCM-14 | Quick TLE export (ground truth) | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `session/manager.py` (`get_tle`), `/tle/{cell}`, `tleexport.js` |
 | WCM-15 | Ephemeris export, ground truth (URL-only) | `session/ephemeris.py` (`truth_ephemeris`, `sample_times`/`MAX_EXPORT_SAMPLES`), `session/aar.py` (`worlds_at_times`), `/ephemeris/truth` |
 | WCM-16 | Per-asset telemetry CSV export (URL-only) | `session/manager.py` (`telemetry_export`), `engine/telemetry.py`, `session/aar.py` (`worlds_at_times`), `session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`), `/telemetry/{cell}/{asset}/export.csv` |
 
@@ -124,7 +124,7 @@ mirrors each section's inline `> Sources:` footer.
 | BLU-9 | Cyber posture | `engine/cyber.py` |
 | BLU-10 | Win the vignette | `11-vignette-playbooks.md`, `/vignettes/{id}/tutorial` |
 | BLU-11 | RIC frame view & CATS phase angle | `engine/sun.py`, `session/ephemeris.py` (`live_ric_view`), `/ric_view/{cell}` |
-| BLU-12 | Quick TLE export | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `/tle/{cell}` |
+| BLU-12 | Quick TLE export | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`, own-satellite branch), `/tle/{cell}`, `tleexport.js` (`candidates`, `SOURCE_LABEL`) |
 | BLU-13 | Ephemeris export, your own belief (URL-only) | `session/ephemeris.py` (`cell_observed_ephemeris`, `sample_times`/`MAX_EXPORT_SAMPLES`), `session/aar.py` (`worlds_at_times`), `/ephemeris/{cell}` |
 | BLU-14 | Your telemetry CSV export (URL-only) | `session/manager.py` (`telemetry_export`), `engine/telemetry.py`, `session/aar.py` (`worlds_at_times`), `session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`), `/telemetry/{cell}/{asset}/export.csv` |
 
@@ -142,7 +142,7 @@ mirrors each section's inline `> Sources:` footer.
 | RED-8 | Doctrine profiles | `session/redai.py` |
 | RED-9 | Win the vignette | `11-vignette-playbooks.md`, `/vignettes/{id}/tutorial` |
 | RED-10 | RIC frame view & CATS phase angle | `engine/sun.py`, `session/ephemeris.py` (`live_ric_view`), `/ric_view/{cell}` |
-| RED-11 | Quick TLE export | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `/tle/{cell}` |
+| RED-11 | Quick TLE export | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`, own-satellite branch), `/tle/{cell}`, `tleexport.js` (`candidates`, `SOURCE_LABEL`) |
 | RED-12 | Ephemeris export, your own belief (URL-only) | `session/ephemeris.py` (`cell_observed_ephemeris`, `sample_times`/`MAX_EXPORT_SAMPLES`), `session/aar.py` (`worlds_at_times`), `/ephemeris/{cell}` |
 | RED-13 | Your telemetry CSV export (URL-only) | `session/manager.py` (`telemetry_export`), `engine/telemetry.py`, `session/aar.py` (`worlds_at_times`), `session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`), `/telemetry/{cell}/{asset}/export.csv` |
 

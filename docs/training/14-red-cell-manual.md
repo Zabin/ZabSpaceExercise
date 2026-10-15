@@ -168,19 +168,27 @@ view from the defender's side.*
 
 ### RED-11 · Quick TLE export
 
-**View ▾ → Proximity → ⧉ TLE export** gives you a copyable, current-epoch TLE — but only for an
-object Red **currently holds a Track on**; your own un-tracked assets are not exportable (task a
-sensor on your own bird first — this is the capability's literal scope, not a bug). The export is
-fit to **Red's own belief** (the track's `state_estimate`), never Blue's ground truth: a stale
-track exports a stale TLE, exactly as stale as your last look.
+**View ▾ → Proximity → ⧉ TLE export** gives you a copyable, current-epoch TLE for one object.
+The picker lists:
+
+- **Red's own satellites** (on-orbit assets only). These are fitted to the satellite's **actual
+  orbit**, with or without a track on it, and the panel reads *from your satellite (actual
+  orbit)*.
+- **Objects Red currently holds a Track on.** These are fitted to **Red's own belief** (the
+  track's `state_estimate`), never Blue's ground truth, and the panel reads *from your track
+  (belief)*. A stale track exports a stale TLE, exactly as stale as your last look.
+
+A Blue satellite you hold no track on is not listed. Asked for by URL, it is refused with
+`red holds no track on '<id>'`; task a sensor on it first.
 
 Use it to hand your believed picture of a target to an outside tool for a quick what-if, or to
 compare against White's god-truth export during an AAR debrief on how far your custody had
 drifted from reality.
 
 > **Sources:** `spacesim/engine/tle_export.py` (`orbit_to_tle`) ·
-> `spacesim/session/ephemeris.py` (`quick_tle`) ·
-> `GET /api/sessions/{sid}/tle/{cell}` · `spacesim/ui_web/static/tleexport.js`
+> `spacesim/session/ephemeris.py` (`quick_tle`, own-satellite branch) ·
+> `GET /api/sessions/{sid}/tle/{cell}` · `spacesim/ui_web/static/tleexport.js` (`candidates`,
+> `SOURCE_LABEL`)
 
 ### RED-12 · Ephemeris export, your own belief (URL-only)
 
