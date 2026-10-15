@@ -492,6 +492,28 @@ this package anyway.
 
 No cross-package sequencing constraint.
 
+## Own-satellite quick-TLE remediation (pipeline run #118, 2026-10-15)
+
+`04-requirements-engineering` amended `FR-7440` (`BL-0159`, run #116) so "visible" includes the
+requesting cell's own satellites, and `FS-121` v2.1 (run #117) specified it. The shipped `IP-1211`
+(`VERIFIED`) rejects an own satellite without a `Track` (its Design Decision 5). Work units:
+
+1. **Session:** add an own-asset branch to `session/ephemeris.py::quick_tle`, ahead of the track
+   lookup (ownership beats a track), with `source: "own"`; reject an own asset with no orbit.
+2. **Console:** add own on-orbit satellites to `tleexport.js`'s cell picker, plus a source label.
+3. **Tests:** replace the one superseded `IP-1211` test; add session-layer and route tests,
+   including the cross-cell negative.
+
+**No-split rationale:** unit 2 is a few lines that only make unit 1 reachable from the console, and
+both share one Definition of Done (FS-121 AC11). Splitting would leave a package with no
+independently testable outcome.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1212](packages/IP-1212-own-satellite-tle-export.md) | FS-121 v2.1 (`FR-7440`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
+
+No cross-package sequencing constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·

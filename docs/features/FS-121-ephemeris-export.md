@@ -28,6 +28,7 @@
 > (Implementation Package for `FR-7410`-`FR-7430`, ✅ `VERIFIED` 2026-09-28),
 > [IP-1211](../implementation/packages/IP-1211-quick-tle-export.md) (Implementation Package for `FR-7440`, ✅ `VERIFIED`, [VR-1211](../implementation/verification/VR-1211-quick-tle-export.md)),
 > [IP-1261](../implementation/packages/IP-1261-telemetry-series-history-remediation.md) (remediation package — migrates `FR-7410`/`FR-7420`'s time-span sampling onto a shared single-pass replay helper, output unchanged; ✅ `VERIFIED`, [VR-1261](../implementation/verification/VR-1261-telemetry-series-history-remediation.md)),
+> [IP-1212](../implementation/packages/IP-1212-own-satellite-tle-export.md) (remediation package for the amended `FR-7440` — own satellites exportable, `BL-0201`; 🟢 `READY`, authored 2026-10-15),
 > [IP-1262](../implementation/packages/IP-1262-export-sampling-bounds.md) (remediation package — explicit-`interval_s` floor + sample-count ceiling, closing Open Question 2's explicit-interval half, `BL-0176`; ✅ `VERIFIED`, [VR-1262](../implementation/verification/VR-1262-export-sampling-bounds.md)),
 > [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md) `FEAT-7400`
 > **Produces:** truth and cell-observed ephemeris export in ECI/RIC, CSV/CCSDS OEM + companion RIC
