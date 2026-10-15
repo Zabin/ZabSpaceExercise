@@ -1,6 +1,12 @@
 > **Document ID:** FS-122
-> **Version:** 1.0
-> **Status:** ✅ Ready for implementation planning
+> **Version:** 1.1 (2026-10-15 — adds `FR-1670`, the CATS illumination phase-angle refinement, the
+> seventh leaf `FEAT-1600` bundles; v1.0 covered `FR-1610`-`FR-1660`, now built and `VERIFIED`)
+> **Status:** ✅ Ready for implementation planning — `FR-1670` only (`FR-1610`-`FR-1660` are built,
+> [IP-1220](../implementation/packages/IP-1220-sensor-modality-models.md) ✅ `VERIFIED`)
+> **Approved Feature (v1.1):** [`FEAT-1600`](../feature-planning/03-feature-catalog.md) (Sensor
+> Modality-Specific Access & Effectiveness Models; Included Requirements `FR-1610`-`FR-1670`). A
+> Feature Catalog now exists (run #83, 2026-10-03), so the v1.0 note below about its absence
+> describes the state when v1.0 was drafted.
 > **Note on this repository's chain:** no `05-feature-decomposition` Feature Catalog exists here
 > (per this skill's own Gotchas); this document's approved input is the just-baselined
 > requirements themselves — `docs/requirements/01-functional-requirements.md` `FR-1610`-`FR-1660`
@@ -15,14 +21,19 @@
 > (Implementation Package, ✅ `VERIFIED`, [VR-1220](../implementation/verification/VR-1220-sensor-modality-models.md)),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0073` (item B7),
 > `BL-0083` (item B17), [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
-> `FR-1610`-`FR-1660`, [docs/reviews/requirements-update-should-tier-batch.md](../reviews/requirements-update-should-tier-batch.md)
+> `FR-1610`-`FR-1670`, [docs/reviews/requirements-update-should-tier-batch.md](../reviews/requirements-update-should-tier-batch.md),
+> (v1.1) `BL-0122`, `BL-0151`, `BL-0152`, [docs/reviews/requirements-update-ric-cats-batch.md](../reviews/requirements-update-ric-cats-batch.md)
 > **Produces:** five new sensor-modality access/effectiveness models (fence/dish radar, optical
 > exclusion angle, space-based min-range/altitude-band, cue-dependent tasking, passive-RF
 > multilateration) plus one hosted-sensor orbit-following model, satisfying `FR-1610`-`FR-1660` in
-> full except where an Open Question below blocks full closure
+> full except where an Open Question below blocks full closure; (v1.1) a seventh, the passive-EO
+> illumination phase-angle (CATS) effectiveness refinement, satisfying `FR-1670`
 > **Feature Mapping:** FS-122 (this document)
 > **Related Topics:** [FS-103](FS-103-custody-management.md) (custody/Track — `FR-1640`'s cue
-> precondition and `FR-1650`'s network-fix output both interact with `Track`)
+> precondition and `FR-1650`'s network-fix output both interact with `Track`); (v1.1)
+> [FS-130](FS-130-ric-frame-view-and-cats-overlay.md) (the display-only CATS overlay, `FR-8220`,
+> which owns the shared phase-angle function this Feature reuses);
+> [`R109` v1.3](../research/encyclopedia/R109-sensor-operations.md) §3.11 (CATS grounding)
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
 
@@ -37,7 +48,10 @@ Give the six new sensor-modality requirements one coherent home: each adds a rea
 behavior `FR-1220`'s generic six-channel access computation does not itself distinguish (a fence
 vs. a dish radar, a solar/lunar exclusion cone, a minimum-range floor and altitude-band affinity, a
 cue-dependent tasking precondition, a multi-receiver passive-RF network, and a satellite-hosted
-sensor that follows its host's orbit). `FR-1600`'s own family preamble states the goal directly:
+sensor that follows its host's orbit). v1.1 adds a seventh (`FR-1670`): a passive electro-optical
+sensor's observation becomes less effective when the target is poorly lit *as seen from that
+sensor*, measured by the Sun-target-observer illumination phase angle (the "CATS angle", `R109`
+§3.11). `FR-1600`'s own family preamble states the goal directly:
 "complements, and does not duplicate," the generic access model and the `FR-3200` tasking-workflow
 family.
 
@@ -46,13 +60,16 @@ family.
 **In scope:** the six leaves' own access-predicate/effectiveness refinements — `FR-1610` (fence/dish
 beam-mode variants), `FR-1620` (solar/lunar exclusion angle), `FR-1630` (min-range floor and
 altitude-band affinity), `FR-1640` (cue-dependent tasking precondition), `FR-1650` (passive-RF
-network fix), `FR-1660` (hosted-sensor orbit-following).
+network fix), `FR-1660` (hosted-sensor orbit-following); (v1.1) `FR-1670` (illumination phase-angle
+refinement for any passive EO sensor, ground- or space-based).
 
 **Out of scope (named, not silently absorbed):** sensor tasking contention/arbitration (`FR-3200`
 family, `FS-104`); the `BEAM_MODES` payload-type coverage gap for `weather`/`mw` payloads (a
 pre-existing, separately tracked gap, `R109` §3 "genuine coverage gap"); the RIC-frame view and
-CATS-angle overlay (`docs/pipeline/backlog.md` `BL-0107`/`BL-0111`, not yet baselined as FRs at the
-time of this document).
+its display-only CATS-angle readout (`FR-8210`/`FR-8220`, [FS-130](FS-130-ric-frame-view-and-cats-overlay.md),
+built by `IP-1300`). FS-130 shows the phase angle to a user; `FR-1670` uses the same angle to
+change an observation's effectiveness. Showing the angle in any tasking or preview surface is not
+required by `FR-1670` and is not specified here.
 
 ## Requirements Implemented
 
@@ -62,6 +79,7 @@ time of this document).
 - `FR-1640` — Cue-dependent sensor tasking precondition.
 - `FR-1650` — Passive-RF multilateration sensor network.
 - `FR-1660` — Satellite-hosted sensor follows host orbit.
+- `FR-1670` — Phase-angle (CATS) based access-window refinement for passive EO sensors *(v1.1)*.
 
 ## User Workflows
 
@@ -88,6 +106,15 @@ time of this document).
 6. **An operator issues an observe order naming a hosted sensor's host asset, or the sensor itself.**
    Either name resolves to the same access/effectiveness computation, using the host Asset's current
    propagated orbital state, including after a manoeuvre (`FR-1660`).
+7. **(v1.1) White Cell authors a passive EO sensor with a usable phase-angle range.** The vignette's
+   sensor definition (a ground-optical sensor, or a space-based or hosted optical sensor) declares
+   a usable phase-angle range in degrees (`FR-1670`). `R109` §3.11's recommended starting values
+   are 0°–90° for a ground-based sensor and 0°–150° for a space-based one (see Data Model
+   Changes). A Blue or Red operator then tasks that sensor with an ordinary observe order, with
+   nothing new to enter. When the target is well lit as seen from the sensor, the observation is as
+   effective as before. When the target is backlit beyond the declared range, the order still
+   executes in its window but the observation is weaker: it raises the cell's track confidence
+   less. A sensor that declares no range behaves exactly as today.
 
 ## System Behaviour
 
@@ -120,6 +147,40 @@ time of this document).
   manoeuvre (`FR-1310`) is applied to the host — never a stale, pre-manoeuvre position. An observe
   order naming either the host Asset or the hosted sensor directly resolves to the identical
   computation.
+- **Normal path — `FR-1670` (v1.1).** For a sensor that declares a usable phase-angle range, the
+  phase angle is computed at the observation instant: the scheduled time inside the access window
+  at which the observe executes (`FR-1670` "at the time of observation"). It is the angle at the
+  target between the target→Sun direction and the target→sensor direction, from 0° (target face
+  fully lit as seen by the sensor) to 180° (backlit). The sensor position is the ground site for a
+  ground sensor, its own orbit for a space-based sensor, and its host's current orbit for a hosted
+  sensor (`FR-1660`). The angle is computed by the engine's one existing shared phase-angle
+  function (`engine/sun.py` `cats_phase_angle_deg`, built by `IP-1300` for `FR-8220`). `BL-0152`
+  requires both uses to share it, and that function's own docstring names `FR-1670` as its
+  intended second caller, so no second phase-angle computation is introduced.
+  - **Inside the declared range** (bounds inclusive): the observation is unaffected by this
+    predicate (`FR-1670` Acceptance Criteria).
+  - **Outside the declared range:** the observation's effectiveness is degraded rather than its
+    window rejected. `FR-1670` allows either; `R109` §3.11 grounds a smooth degradation ("not a
+    hard cliff") as real practice, so this spec chooses degradation. The degradation is
+    continuous at the range bound (no jump at the limit). It does not increase as the angle moves
+    further outside the range. It is strictly below the unaffected value for every angle outside
+    the range. The exact curve is an `07-implementation-planning` design decision (Open Question
+    3).
+  - **Composition:** effectiveness enters through the same observation-gain seam `FR-1630`'s
+    altitude-band affinity already uses. It is applied in addition to — never in place of — the
+    existing look-angle and altitude-band degradations.
+- **Edge case — `FR-1670`, window already rejected.** The existing lighting predicate (`FR-1220`:
+  target sunlit and, for a ground sensor, site dark) and, where declared, the exclusion angle
+  (`FR-1620`) run first and are unchanged. A window they reject stays rejected, and the phase-angle
+  refinement never re-admits one (`FR-1670` Postconditions: composes with, never replaces).
+- **Edge case — `FR-1670`, no declared range.** The sensor behaves exactly as today, per
+  `FR-1670`'s own Preconditions. In particular, `R109` §3.11's recommended values are **not**
+  applied to a sensor that does not declare a range, because that would change every existing
+  optical sensor's behaviour, which `FR-1670` forbids.
+- **Edge case — `FR-1670`, coincident sensor and target positions.** The shared function treats
+  the angle as undefined there. This geometry cannot occur inside a valid access window (a
+  space-based window already requires line of sight at nonzero range); the implementation must not
+  let it raise mid-handler (Error Handling).
 
 ## Subsystem Responsibilities
 
@@ -131,6 +192,10 @@ time of this document).
 | `engine/orders.py` (`OrderSystem`) | Owns plan-time validation and `dry_run()`; extended to check `requires_cue`/existing-`Track` (`FR-1640`) before permitting a cue-dependent sensor's tasking. |
 | `engine/custody.py` (`Track`/`TrackCatalog`) | Consulted (not modified) by `FR-1640`'s cue-existence check and produced-into by `FR-1650`'s network fix. |
 | `engine/ssn.py` (Mock SSN) | Owns the network-aggregation pattern `FR-1650` reuses for the passive-RF sensor network's multi-receiver fix, per `R109` §3.10's own recommendation. |
+| `engine/entities.py` (`Sensor`) — v1.1 | Owns the one new optional declarative field for `FR-1670`: the sensor's usable phase-angle range. |
+| `engine/sun.py` — v1.1 | Owns `cats_phase_angle_deg`, consumed unchanged as the single phase-angle computation (`BL-0152`). |
+| `engine/orders.py` (`OrderSystem`) / `engine/isr.py` — v1.1 | Own the observation-gain computation (`effective_gain`, the `FR-1630` precedent seam); extended to apply the `FR-1670` degradation for a sensor that declares a range, at the observation instant. |
+| `engine/access.py` (`AccessProvider`) — v1.1 | Unchanged by `FR-1670`: window geometry, lighting and exclusion-angle rejection stay as they are. Consulted for the observer position the existing predicates already resolve (ground site, sensor orbit, host orbit). |
 
 ## Interfaces Used
 
@@ -139,6 +204,8 @@ time of this document).
 - `INT-0009`/`INT-0010` (CellController/SessionAPI → Mock SSN / Mock SSN → Engine delivery) — the
   existing interfaces `FR-1650`'s network-fix reuses, per its own citation of the SSN aggregation
   pattern.
+- (v1.1) `FR-1670` operates entirely inside the engine's observe path under `INT-0008`, the only
+  interface the RTM lists for it. No new interface, route or UI control is needed.
 - `INT-0007` (CellController → Engine Custody) — the existing interface `FR-1640`'s cue-existence
   check and `FR-1650`'s fix-delivery-into-`TrackCatalog` both operate through.
 
@@ -153,11 +220,19 @@ time of this document).
   of them behaves exactly as today.
 - No change to `Track`/`TrackCatalog`'s own shape — `FR-1640`/`FR-1650` only read/write through the
   existing model.
+- (v1.1) `Sensor` gains one more optional, additive field for `FR-1670`: a usable phase-angle
+  range, a lower and an upper bound in degrees within [0, 180], absent by default. The field name
+  and shape are an `07` decision, following the six v1.0 fields' precedent. `R109` §3.11's
+  single-source, ballpark figures (0°–90° ground, 0°–150° space-based) are the **recommended values
+  for vignette authors**, used in this spec's acceptance criteria. They are not an implicit default
+  (`BL-0151`; see the System Behaviour edge case). No change to `Track`, `Asset` or `WorldState`.
 
 ## State Changes
 
 None to session/persistent engine state beyond the additive `Sensor` fields above, which are
-vignette-authored (or force-added) declarative data, not runtime-mutable session state.
+vignette-authored (or force-added) declarative data, not runtime-mutable session state. This also
+holds for v1.1's `FR-1670` field. Its effect lands only in the observation's existing outcome
+(track confidence), through the existing observe handler.
 
 ## Error Handling
 
@@ -171,18 +246,30 @@ vignette-authored (or force-added) declarative data, not runtime-mutable session
 - `FR-1650`: fewer than 3 (2D)/4 (3D) receivers with simultaneous access, or a non-emitting target,
   both produce "no fix" — `FR-1650`'s own text does not distinguish these two failure causes in its
   observable contract (Open Question 2).
+- (v1.1) `FR-1670`: an observation degraded by the phase-angle refinement is not an error. The
+  order executes normally and only its effectiveness is lower, so no rejection reason is surfaced.
+  The phase-angle computation must never raise inside the deterministic observe handler; a
+  geometry the shared function cannot evaluate is treated as unaffected (Edge case, coincident
+  positions). A declared range that is malformed (lower bound above upper, or outside [0, 180]), or
+  one declared on a sensor that is not passive EO, is Open Question 4.
 
 ## Performance Considerations
 
 None named by `FR-1610`-`FR-1660` beyond what `FR-1220`'s existing access-window computation already
 respects — each leaf is a bounded per-sensor or small-per-network additional check, not a new
 computational class.
+(v1.1) `FR-1670` adds one phase-angle evaluation per observation of a sensor that declares a range.
+It is pure and deterministic (positions and sim time only, no RNG, no wall clock), so the Phase-1
+determinism gate and replay (`NFR-1500`) are unaffected.
 
 ## Security Considerations
 
 `ADR-0004` (fog-of-war at the boundary): `FR-1650`'s network fix is delivered into the requesting
 cell's own `TrackCatalog` exactly as the existing SSN delivery path already does — no leaf in this
-Feature introduces a new ground-truth-read path bypassing `CellController`.
+Feature introduces a new ground-truth-read path bypassing `CellController`. (v1.1) `FR-1670`'s
+phase angle is computed engine-side from true positions, like every other access and lighting
+computation. A cell only sees the result through its own track's confidence, and the angle is
+never added to any cell-scoped response.
 
 ## Acceptance Criteria
 
@@ -204,6 +291,20 @@ Feature introduces a new ground-truth-read path bypassing `CellController`.
 6. Given a hosted sensor and a manoeuvre applied to its host Asset, the hosted sensor's subsequent
    access-window computation reflects the post-manoeuvre orbital state; an observe order naming the
    host Asset and one naming the hosted sensor directly produce the same result. *(`FR-1660`)*
+7. *(v1.1)* Given a ground-optical sensor declaring a usable range of 0°–90°, and an observation
+   whose phase angle at the observation instant is inside that range, the resulting observation
+   gain equals the gain the same sensor produces with no declared range (all else equal). Given a
+   phase angle outside the range, the gain is strictly lower. *(`FR-1670`)*
+8. *(v1.1)* The degradation is continuous at the bound: approaching the upper bound from outside,
+   the gain tends to the unaffected value. It never increases as the angle moves further beyond
+   the bound. *(`FR-1670`, `R109` §3.11 "not a hard cliff")*
+9. *(v1.1)* The same holds for a space-based sensor declaring 0°–150°, and for a hosted sensor
+   (observer position = host orbit, `FR-1660`). *(`FR-1670`)*
+10. *(v1.1)* A window rejected by the lighting predicate or by a declared exclusion angle stays
+    rejected whatever the phase angle. A sensor with no declared range produces results identical
+    to before this version, for every shipped vignette. *(`FR-1670` Preconditions/Postconditions)*
+11. *(v1.1)* The engine contains exactly one phase-angle computation (`cats_phase_angle_deg`),
+    called by both the `FR-8220` overlay and the `FR-1670` refinement. *(`BL-0152`)*
 
 ## Verification Plan
 
@@ -216,6 +317,13 @@ Feature introduces a new ground-truth-read path bypassing `CellController`.
 - Criterion 5 — Test: parametrized over receiver count (2/3/4) and target emission state (on/off).
 - Criterion 6 — Test: a hosted sensor's access window computed before and after a host-Asset
   manoeuvre; an observe order naming each of the two identifiers.
+- Criteria 7–9 (v1.1) — Test: the same sensor and target with and without a declared range,
+  parametrized over geometries whose phase angle at the observation instant falls inside, at, and
+  beyond the bound, for ground, space-based and hosted sensors.
+- Criterion 10 (v1.1) — Test: a lit-window/exclusion-rejected geometry with a declared range, plus
+  a regression run showing every shipped vignette's observe outcomes unchanged.
+- Criterion 11 (v1.1) — Inspection/Test: extend `IP-1300`'s existing single-definition test to
+  cover the new caller.
 
 ## Dependencies
 
@@ -223,6 +331,9 @@ Feature introduces a new ground-truth-read path bypassing `CellController`.
   sit underneath; not a build dependency, a scope boundary (see Scope, Out of scope).
 - `FS-103` (Custody Management) — `FR-1640`'s cue-existence check and `FR-1650`'s fix delivery both
   read/write through `Track`/`TrackCatalog`, unchanged by this Feature.
+- (v1.1) `FS-130` / `IP-1300` (✅ `VERIFIED`) — owns the shared `cats_phase_angle_deg` that
+  `FR-1670` consumes. Build dependency satisfied. `FEAT-1600` depends on `FEAT-1200` (baseline
+  access), which is built.
 
 ## Risks
 
@@ -236,18 +347,46 @@ Feature introduces a new ground-truth-read path bypassing `CellController`.
   fence/dish entries must be added to the existing three-payload-type `BEAM_MODES` table — this
   Feature does not itself need to close the separately-tracked `weather`/`mw` gap, but an
   Implementation Package should not conflate the two.
+- **(v1.1) Single-source figure risk (`R109` §3.11, `BL-0151`).** The 0°–90°/0°–150° figures rest
+  on one AMOS conference source. Because the range is author-declared and never an implicit
+  default, a wrong figure affects only vignettes that adopt it, and it can be corrected in content.
+- **(v1.1) Timing risk.** The existing observation gain is assembled when the observe payload is
+  built against its chosen window. `FR-1670` requires the angle at the observation instant, so the
+  package must evaluate it at the scheduled execution time, not at the issue time.
+- **(v1.1) Content risk.** No shipped vignette declares a range, so `FR-1670` has no operator-visible
+  effect until a vignette adopts it. Whether any should is a `08-vignette-development` content
+  question, not this spec's.
 
 ## Open Questions
 
-1. **What distinguishes an exclusion-angle rejection from a lighting-predicate rejection in the
-   observable error contract?** `FR-1620`'s own Acceptance Criteria state both outcomes (rejected
-   vs. granted) but not whether the two rejection *reasons* must be distinguishable to the operator
-   (e.g. for a UI message). Needs a `04-requirements-engineering` amendment or an
-   `07-implementation-planning` design decision — this document does not invent one.
+1. ~~**What distinguishes an exclusion-angle rejection from a lighting-predicate rejection in the
+   observable error contract?**~~ **Closed (v1.1, by reference).** `04-requirements-engineering`
+   (2026-10-15, [parked-questions batch](../reviews/requirements-update-parked-questions-batch.md),
+   `BL-0113`) found that `FR-1620` does not require distinguishable reasons. As built, both rejections
+   suppress the window at the same predicate layer, which satisfies `FR-1620`. No amendment; a
+   distinct operator-visible reason would be a new feature through `00-intake`.
 2. **Does `FR-1650`'s "no fix" observable state distinguish an insufficient-receiver-count cause
    from a non-emitting-target cause?** Neither is stated as needing to be distinguishable in
    `FR-1650`'s own text; an Implementation Package needs a concrete answer before committing to a
    specific "why no fix" surfaced reason (or the deliberate absence of one).
+3. **(v1.1) The exact degradation curve outside the declared phase-angle range (`BL-0151` residual).**
+   `R109` §3.11 grounds a smooth degradation but gives no function, and `FR-1670` states none. This
+   spec fixes the contract: unaffected inside the range, continuous at the bound, non-increasing
+   beyond it, strictly lower outside it. It does not pick the shape (for example, how far below the
+   unaffected value the gain falls at 180°). That is an `07-implementation-planning` design
+   decision, to be recorded in its package; if a cited shape is wanted, route it to
+   `02-research-ow-orbital-mechanics` first.
+4. **(v1.1) Malformed or misplaced range declarations.** `FR-1670` does not say what happens when a
+   declared range has its lower bound above its upper bound, falls outside [0, 180], or is declared
+   on a sensor that is not passive EO (e.g. a ground radar). The v1.0 precedent (`FR-1620`'s
+   `exclusion_angle_deg`) applies the field without a kind check. Options: reject at vignette load,
+   or ignore it. This is an `07` design decision; it does not block the normal path.
+5. **(v1.1) What counts as "passive electro-optical" in the engine's sensor model.** `Sensor.kind`
+   distinguishes `ground_optical` / `ground_radar` / `space_based`, and `needs_lighting` marks the
+   optical lighting behaviour (the engine's own optical flag). This spec reads "passive EO" as a
+   sensor with `needs_lighting` set, including a space-based or hosted one. If
+   `04-requirements-engineering` intended a narrower or broader reading, `FR-1670` should say so;
+   until then, `07` should adopt this reading.
 
 ## Related ADRs
 
