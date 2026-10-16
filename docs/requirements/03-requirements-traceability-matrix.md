@@ -214,7 +214,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-5220 *(new 2026-09-26, `BL-0067`/B1)* | Bulk TLE and CCSDS OMM multi-object import | UNASSIGNED | ADR-0018 | C5, C10 | INT-0013 *(stretched shape — see `reviews/requirements-update-must-tier-batch.md` Finding 5)* | FS-119 | `spacesim/tests/test_bulk_import.py`, `spacesim/tests/test_bulk_import_session.py`, `spacesim/tests/test_orbit.py::test_mean_to_true_*`, `spacesim/tests/test_web.py::test_bulk_import_tle_route_end_to_end` | IP-1190 *(`VERIFIED` 2026-09-27 via `VR-1190`)* |
 | FR-5310 | Vignette loading | UNASSIGNED | ADR-0007 | C2, C5 | INT-0011 | FS-131 *(2026-10-16)* | UNASSIGNED | `content/vignette.py` |
 | FR-5311 *(new 2026-10-16, `BL-0235`)* | TLE-sourced orbits parse at load | UNASSIGNED | ADR-0007 | C5, C1 | INT-0011 | FS-131 | UNASSIGNED | UNASSIGNED |
-| FR-5312 *(new 2026-10-16, `BL-0234`)* | Space assets carry an orbit, terrestrial assets a location | UNASSIGNED | ADR-0007 | C5 | INT-0011 | FS-131 *(not yet in FS-131's rule list — see report F5)* | UNASSIGNED | UNASSIGNED |
+| FR-5312 *(new 2026-10-16, `BL-0234`; amended run #144, `BL-0241`)* | Space assets carry an orbit, non-cyber terrestrial assets a location | UNASSIGNED | ADR-0007, ADR-0012 | C5 | INT-0011 | FS-131 (v1.1) | UNASSIGNED | UNASSIGNED |
 | FR-5313 *(new 2026-10-16, `BL-0234`)* | Unique asset/sensor identifiers within a vignette | UNASSIGNED | ADR-0007 | C5 | INT-0011 | FS-131 | UNASSIGNED | UNASSIGNED |
 | FR-5314 *(new 2026-10-16, `BL-0234`)* | `roles_needed` names a declared asset or group | UNASSIGNED | ADR-0007 | C5, C2 | INT-0011 | FS-131 | UNASSIGNED | UNASSIGNED |
 | FR-5410 *(new 2026-09-26, `BL-0082`/B16)* | Load vignettes from configured external directories | UNASSIGNED | ADR-0007, ADR-0018 | C2, C5 | INT-0011 | FS-118 | `spacesim/tests/test_content.py` (external-directory enumeration/collision/traversal tests) | IP-1180 *(`VERIFIED` 2026-09-27 via `VR-1180`)* |
@@ -409,7 +409,7 @@ and ADR-0031 (both new 2026-07) are included on the same basis.
 | ADR-0009 | FR-1210, NFR-1100, NFR-2100 |
 | ADR-0010 | FR-3210, FR-3220 |
 | ADR-0011 | FR-1220, FR-1670 |
-| ADR-0012 | FR-1410, FR-1420 |
+| ADR-0012 | FR-1410, FR-1420, FR-5312 |
 | ADR-0013 | FR-1510, FR-1520, FR-3410, FR-7420 |
 | ADR-0014 | FR-6310, FR-6320, FR-6410, NFR-1100, NFR-1400 |
 | ADR-0015 | FR-6220, NFR-2300, FR-7410 |

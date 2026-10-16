@@ -95,3 +95,34 @@ No finding was acted on beyond the derivations in §1. The Review proposes; it a
 2. `03-architecture-design-synthesis` on F1 (`BL-0233`) and F3 (`BL-0226`'s power residue). F1
    blocks only FS-131 criterion 10, not the rest of FS-131's planning.
 3. F2 (`BL-0215`) waits for the project owner and blocks nothing.
+
+## Addendum — run #144 (2026-10-16): `FR-5312` scope (`BL-0241`)
+
+**Trigger:** FS-131 v1.1 (run #143) scanned the shipped library while adding `FR-5312`'s rule.
+Seven vignettes (`00-training-basics`, `06-satcom-cyber-link`, `08-multi-domain-taiwan`,
+`coa-china-md`, `coa-china-ml`, `coa-russia-md`, `learn-intermediate-recovery`) declare a
+`cyber_unit` (`RED-CYBER`) with no location. `FR-5312` as written in run #142 required every
+"terrestrial asset" to have a location without defining terrestrial. Read broadly, it would have
+refused all seven. That was a defect in this skill's own run #142 wording.
+
+**Sources checked:**
+
+- GDS-04 §1.2 Purpose lists "satellite, ground station-adjacent terrestrial force, jammer,
+  interceptor, or cyber unit". Its Constraints do not define terrestrial.
+- ADR-0012: cyber is "the one window-independent exception", because cyber operations are
+  "persistent compromise, not a live geometric pass".
+- `FR-1420` resolves cyber "without requiring an open access window".
+
+**Change applied:** `FR-5312` now exempts cyber units from the location rule. This affects its
+Description, Postcondition, Acceptance Criteria (which now name the located kinds and assert that
+a location-less cyber unit loads), Source Documents, Related ADRs (ADR-0012 added) and Notes. The
+RTM row is updated to match. Every other non-satellite kind, including an unrecognised free-text
+one, stays under the rule.
+
+**Review:** the amended leaf is consistent with ADR-0012, `FR-1420` and FS-131 criterion 9. No new
+conflict. FS-131 v1.1's narrow reading (System Behaviour 7, criterion 11) already matches this
+scope. Its Open Question 6 can be marked closed at the next `06` touch; there is no behavioural
+difference to plan around.
+
+**Untouched:** `BL-0171`, `BL-0181`, `BL-0187`, `BL-0215`.
+

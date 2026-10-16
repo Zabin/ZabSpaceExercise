@@ -71,6 +71,9 @@
 > shipped content model) and `BL-0215` (`FR-1610` Acceptance Criterion vs Postcondition) are
 > reported for adjudication, not resolved — see
 > [`reviews/requirements-update-load-validation-batch.md`](../reviews/requirements-update-load-validation-batch.md).)
+> further amended (2026-10-16, run #144; **no numbered leaf added** — `FR-5312` narrowed so cyber
+> units are exempt from the location rule, per ADR-0012's window-independent cyber exception,
+> closing `BL-0241` — see the addendum in the same report.)
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -2143,7 +2146,9 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **ID:** FR-5312
 - **Title:** Reject at load a satellite with no orbit or a terrestrial asset with no location
 - **Description:** The system shall reject, at vignette load, a satellite asset that declares no
-  orbit, and a terrestrial asset that declares no location. The error shall name the asset.
+  orbit, and a terrestrial asset other than a cyber unit that declares no location. The error
+  shall name the asset. *(Amended 2026-10-16, run #144, `BL-0241`: cyber units are exempt from the
+  location rule.)*
 - **Rationale:** GDS-04 §1.2 "Constraints": "A satellite must have an Orbit; a terrestrial asset
   must have a location instead". As built (2026-10-16, run #142), deleting the orbit from a
   satellite (`03-gnss-ew-campaign` `BLUE-GNSS`), or the location from a jammer (`RED-JAM`), still
@@ -2154,18 +2159,29 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Outputs:** A loaded force, or a load rejection naming the asset.
 - **Preconditions:** None.
 - **Postconditions:** Every satellite in a loaded world has an orbit, and every terrestrial asset
-  has a location.
+  other than a cyber unit has a location.
 - **Acceptance Criteria:** Given a vignette whose only defect is a satellite entry without an
-  orbit, loading is refused and the error names the satellite. The same holds for a terrestrial
-  asset without a location.
+  orbit, loading is refused and the error names the satellite. The same holds for a jammer, ground
+  station, interceptor, directed-energy or terrestrial-force entry without a location. A vignette
+  whose cyber unit declares no location loads.
 - **Verification Method:** Test
 - **Dependencies:** FR-5310
-- **Source Documents:** GDS-04 §1.2 "Constraints"; `design/04-data-model.md` §9 (legacy reference
-  cited by GDS-04).
-- **Related ADRs:** ADR-0007
+- **Source Documents:** GDS-04 §1.2 "Purpose" and "Constraints"; `design/04-data-model.md` §9
+  (legacy reference cited by GDS-04); ADR-0012 "Decision" and "Rationale" (the cyber exception).
+- **Related ADRs:** ADR-0007, ADR-0012
 - **Related Interfaces:** INT-0011
-- **Related Requirements:** FR-5310
-- **Notes:** *(new 2026-10-16, `BL-0234`, run #142)* The rule applies to assets. GDS-04 §1.5 says
+- **Related Requirements:** FR-5310, FR-1420
+- **Notes:** *(amended 2026-10-16, `BL-0241`, run #144)* GDS-04 §1.2 does not define "terrestrial".
+  Its Purpose lists satellites, terrestrial forces, jammers, interceptors and cyber units. A
+  location exists to place an asset in access geometry: a ground station, jammer or interceptor is
+  an endpoint of the access channels. ADR-0012 makes cyber "window-independent" because cyber
+  operations are "persistent compromise, not a live geometric pass", and `FR-1420` resolves cyber
+  "without requiring an open access window". A cyber unit therefore uses no geometry, and the
+  location rule does not apply to it. Seven shipped vignettes declare a location-less cyber unit
+  (`RED-CYBER`), and all of them stay valid. Any other non-satellite kind, including an
+  unrecognised free-text kind, is held to the rule. Whether unrecognised kinds should be refused
+  outright is candidate `CR-24`'s question, not this leaf's.
+  *(original, 2026-10-16, `BL-0234`, run #142)* The rule applies to assets. GDS-04 §1.5 says
   a space-based Sensor "owns an Orbit exactly like a satellite Asset does", but as built a sensor
   may instead name a host satellite (`host_asset_id`, FR-1660). Whether a dangling host reference
   is invalid is one of the cross-references left as candidate `CR-24`.
