@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1041
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #132.
+> **Status:** 🟡 IN PROGRESS — 2026-10-16, `08-code-implementation`, pipeline run #133.
+> *(Was 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #132.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
 > of the packages this iteration reaches. Same precedent as `IP-1222`/`IP-1221`/`IP-1212`/`IP-1063`.
 > **Dependencies:** [FS-104](../../features/FS-104-sda-tasking.md) (Acceptance Criteria: contention
