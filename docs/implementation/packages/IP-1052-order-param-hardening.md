@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1052
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #136.
+> **Status:** 🟡 IN PROGRESS — 2026-10-16, `08-code-implementation`, pipeline run #137.
+> *(Was 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #136.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
 > of the packages this iteration reaches. Same precedent as `IP-1041`/`IP-1222`/`IP-1221`/`IP-1212`.
 > **Dependencies:** [FS-102](../../features/FS-102-command-scheduling.md) (Error Handling: an
