@@ -62,6 +62,15 @@
 > and `ADS-1500` Decision 5, closing `BL-0159`; new candidate `CR-22`, closing `BL-0181` at this
 > stage; `BL-0171` and `BL-0113` reported for adjudication, not resolved — see
 > [`reviews/requirements-update-parked-questions-batch.md`](../reviews/requirements-update-parked-questions-batch.md).)
+> further amended (load-validation batch, 2026-10-16; **five numbered FR leaves added** —
+> `FR-5311`–`FR-5314` under `FR-5310` (TLE parse, orbit/location presence, unique identifiers,
+> `roles_needed` references), and `FR-1460` under `FR-1400` (salvo bounded by remaining ammunition).
+> Each restates a GDS-04 §1.2/§1.3/§1.10 domain-model constraint, or `FR-5310`'s own text, as an
+> atomic testable leaf. They close `BL-0234`/`BL-0235` at this stage and the ammunition part of
+> `BL-0226`. New candidates `CR-23`/`CR-24`/`CR-25`. `BL-0233` (`FR-5310`'s template clause vs the
+> shipped content model) and `BL-0215` (`FR-1610` Acceptance Criterion vs Postcondition) are
+> reported for adjudication, not resolved — see
+> [`reviews/requirements-update-load-validation-batch.md`](../reviews/requirements-update-load-validation-batch.md).)
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -505,6 +514,45 @@ review passes actually run against it).
 - **Related ADRs:** (none directly — a configuration layer over `FR-1410`'s existing attribution
   mechanism, not a new effect-resolution rule)
 - **Related Requirements:** FR-1410, FR-1440
+
+#### FR-1460 — Kinetic salvo bounded by remaining ammunition
+
+- **ID:** FR-1460
+- **Title:** Reject a kinetic engagement whose salvo exceeds the effector's remaining ammunition
+- **Description:** The system shall reject, at order validation, a kinetic engagement order whose
+  requested salvo size exceeds the issuing effector's remaining ammunition, so that ammunition
+  never goes negative.
+- **Rationale:** GDS-04 §1.2 "Constraints": "resource levels cannot go negative". §1.2
+  "Persistent state" names ammunition among an Asset's resource levels ("resource levels
+  (fuel/power/ammo)"). `FR-1310` already applies the same constraint to `delta_v_ms` and rejects at
+  validation rather than partially applying. As built (2026-10-16, run #142), an effector with 1
+  round accepts a 5-round salvo, and a successful engagement then leaves `ammo = -4` (the
+  consumption step subtracts the salvo). Only the `ammo < 1` case is refused today (`no_ammo`).
+- **Priority:** Must (it restates a GDS-04 domain-model constraint, the same tier `FR-1310` gave
+  the `delta_v_ms` form of it)
+- **Inputs:** A kinetic engagement order's requested salvo size; the effector's remaining
+  ammunition.
+- **Outputs:** Acceptance, or a rejection with a reason stating insufficient ammunition.
+- **Preconditions:** The order is otherwise valid (ownership, ROE, custody gates).
+- **Postconditions:** The effector's ammunition is never negative after the engagement executes.
+- **Acceptance Criteria:** Given an effector with `N` rounds remaining, an engagement requesting a
+  salvo larger than `N` is rejected before anything is scheduled, by both the preview and issue
+  paths. An engagement requesting a salvo of `N` or fewer is accepted, and a successful engagement
+  leaves the effector with `N` minus the salvo.
+- **Verification Method:** Test
+- **Dependencies:** FR-1410
+- **Source Documents:** GDS-04 §1.2 "Persistent state" and "Constraints"; `design/04-data-model.md`
+  §9 (legacy reference, cited by GDS-04 for the same rule); `FR-1310` (precedent form for
+  `delta_v_ms`).
+- **Related ADRs:** (none directly — restates a GDS-04 validation rule)
+- **Related Requirements:** FR-1310, FR-1410, FR-3110
+- **Notes:** *(new 2026-10-16, `BL-0226`, run #142)* Only the ammunition bound is baselined. The
+  other range rules `BL-0226` asked about have no source and are candidate `CR-25`: a salvo of
+  zero or less, a fractional salvo, and a negative jam power, bandwidth or cyber dwell. Jammer
+  `power_w` consumption also drives that resource negative as built, but jammers default to 0 W.
+  Enforcing GDS-04's constraint on power would refuse almost every shipped jam, so that is
+  reported as a conflict, not baselined. See the
+  [update report](../reviews/requirements-update-load-validation-batch.md) F3.
 
 ### FR-1500 — Custody, tracks, and the weapons-quality gate
 
@@ -2059,6 +2107,130 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Related Interfaces:** INT-0011
 - **Related Requirements:** FR-4110, FR-5210
 
+#### FR-5311 — TLE-sourced orbits parse at load
+
+- **ID:** FR-5311
+- **Title:** Reject at load a vignette asset whose TLE does not parse
+- **Description:** The system shall reject, at vignette load, any asset whose orbit is given as a
+  two-line element set that does not parse into an element set the orbit propagator accepts. The
+  error shall name the asset.
+- **Rationale:** GDS-04 §1.3 "Constraints": "TLE-sourced orbits must parse at load or the Asset is
+  rejected with a clear error". This is `FR-5310`'s "well-formed TLEs" clause made atomic. As built
+  (2026-10-16, run #141), a malformed TLE loads and starts, then raises an SGP4 propagation error on
+  the first clock advance (`BL-0237`).
+- **Priority:** Must (inherits `FR-5310`)
+- **Inputs:** A vignette asset with a TLE-sourced orbit.
+- **Outputs:** A loaded asset, or a load rejection naming the asset.
+- **Preconditions:** None.
+- **Postconditions:** No session exists whose initial world holds a TLE the propagator cannot use.
+- **Acceptance Criteria:** Given a vignette whose only defect is one asset with malformed TLE
+  lines, loading it is refused, the error names that asset, and no session is created.
+- **Verification Method:** Test
+- **Dependencies:** FR-5310
+- **Source Documents:** GDS-04 §1.3 "Constraints"; `design/04-data-model.md` §9 (legacy reference
+  cited by GDS-04); `FR-5310` Description.
+- **Related ADRs:** ADR-0007
+- **Related Interfaces:** INT-0011
+- **Related Requirements:** FR-5310, FR-5210, FR-5220
+- **Notes:** *(new 2026-10-16, `BL-0235`, run #142)* "Parse" is the whole sourced rule. Two
+  further checks are not baselined and are candidate `CR-23`: line-checksum enforcement, and epoch
+  sanity relative to the vignette start. No input document asks for either. FS-131 elaborates
+  "parse" as initialising and propagating at the vignette start epoch, which is a design-level
+  reading of this leaf.
+
+#### FR-5312 — Space assets carry an orbit, terrestrial assets a location
+
+- **ID:** FR-5312
+- **Title:** Reject at load a satellite with no orbit or a terrestrial asset with no location
+- **Description:** The system shall reject, at vignette load, a satellite asset that declares no
+  orbit, and a terrestrial asset that declares no location. The error shall name the asset.
+- **Rationale:** GDS-04 §1.2 "Constraints": "A satellite must have an Orbit; a terrestrial asset
+  must have a location instead". As built (2026-10-16, run #142), deleting the orbit from a
+  satellite (`03-gnss-ew-campaign` `BLUE-GNSS`), or the location from a jammer (`RED-JAM`), still
+  loads, starts and advances an hour without error. The asset is silently present but can never
+  have access, which is a silent partial load in `FR-5310`'s terms.
+- **Priority:** Must (inherits `FR-5310`)
+- **Inputs:** A vignette's force entries.
+- **Outputs:** A loaded force, or a load rejection naming the asset.
+- **Preconditions:** None.
+- **Postconditions:** Every satellite in a loaded world has an orbit, and every terrestrial asset
+  has a location.
+- **Acceptance Criteria:** Given a vignette whose only defect is a satellite entry without an
+  orbit, loading is refused and the error names the satellite. The same holds for a terrestrial
+  asset without a location.
+- **Verification Method:** Test
+- **Dependencies:** FR-5310
+- **Source Documents:** GDS-04 §1.2 "Constraints"; `design/04-data-model.md` §9 (legacy reference
+  cited by GDS-04).
+- **Related ADRs:** ADR-0007
+- **Related Interfaces:** INT-0011
+- **Related Requirements:** FR-5310
+- **Notes:** *(new 2026-10-16, `BL-0234`, run #142)* The rule applies to assets. GDS-04 §1.5 says
+  a space-based Sensor "owns an Orbit exactly like a satellite Asset does", but as built a sensor
+  may instead name a host satellite (`host_asset_id`, FR-1660). Whether a dangling host reference
+  is invalid is one of the cross-references left as candidate `CR-24`.
+
+#### FR-5313 — Unique identifiers within a vignette
+
+- **ID:** FR-5313
+- **Title:** Reject at load a vignette that reuses an asset or sensor identifier
+- **Description:** The system shall reject, at vignette load, a vignette in which two asset
+  entries, or two sensor entries, share one identifier. The error shall name the identifier.
+- **Rationale:** `FR-5310` forbids "a partial or silent load". GDS-04 §1.2 and §1.5 give every
+  Asset and Sensor an "Identity" as persistent state. As built (2026-10-16, run #141), two force
+  entries with one id load without complaint and the later silently replaces the earlier. One
+  declared asset vanishes from the world: a silent partial load.
+- **Priority:** Must (inherits `FR-5310`)
+- **Inputs:** A vignette's force and sensor entries.
+- **Outputs:** A loaded world, or a load rejection naming the duplicated identifier.
+- **Preconditions:** None.
+- **Postconditions:** Every asset and sensor entry the vignette declares is present in the loaded
+  world.
+- **Acceptance Criteria:** Given a vignette that declares two force entries with one id (in the
+  same force list or in different ones), loading is refused and the error names that id. The same
+  holds for two sensor entries.
+- **Verification Method:** Test
+- **Dependencies:** FR-5310
+- **Source Documents:** `FR-5310` Description ("rather than a partial or silent load"); GDS-04 §1.2
+  and §1.5 "Persistent state" (Identity).
+- **Related ADRs:** ADR-0007
+- **Related Interfaces:** INT-0011
+- **Related Requirements:** FR-5310
+- **Notes:** *(new 2026-10-16, `BL-0234`, run #142)* No input says whether an asset and a sensor
+  may share an id, so this leaf does not require it either way. The as-built world keeps assets
+  and sensors in separate maps.
+
+#### FR-5314 — Declared roles name declared assets
+
+- **ID:** FR-5314
+- **Title:** Reject at load a staffing requirement that names no declared asset or constellation
+- **Description:** The system shall reject, at vignette load, a `roles_needed` entry whose asset
+  or constellation reference matches no asset and no constellation group the vignette declares.
+  The error shall name the reference.
+- **Rationale:** `FR-5310` requires "every declared `roles_needed` satisfiable". GDS-04 §1.10 says
+  a Role Assignment "references one or more Assets" and "can only reference Assets the Vignette's
+  `roles_needed` made available". A requirement that names nothing the vignette declares can only
+  be met by a seat bound to a non-existent asset, so it is not satisfiable. As built (2026-10-16,
+  run #141), such an entry loads and the session starts.
+- **Priority:** Must (inherits `FR-5310`)
+- **Inputs:** A vignette's `roles_needed` entries; its declared assets and constellation groups.
+- **Outputs:** A loaded vignette, or a load rejection naming the unresolved reference.
+- **Preconditions:** None.
+- **Postconditions:** Every `roles_needed` entry of a loaded vignette refers to something that
+  exists in its world.
+- **Acceptance Criteria:** Given a vignette whose `roles_needed` names an id that is neither an
+  asset id nor a constellation group of that vignette, loading is refused and the error names the
+  id. A `roles_needed` entry naming an existing asset or group loads as today.
+- **Verification Method:** Test
+- **Dependencies:** FR-5310, FR-4210
+- **Source Documents:** `FR-5310` Description; GDS-04 §1.10 "Relationships" and "Constraints".
+- **Related ADRs:** ADR-0007
+- **Related Interfaces:** INT-0011
+- **Related Requirements:** FR-5310, FR-4210
+- **Notes:** *(new 2026-10-16, `BL-0234`, run #142)* "Satisfiable" is read as "refers to something
+  that exists". Whether the seats present can cover every mandatory role is a start-time matter
+  that `FR-4210`'s staffing gate already owns, not a load-time one.
+
 ### FR-5400 — External vignette directories
 
 #### FR-5410 — Load vignettes from configured external directories
@@ -3373,6 +3545,37 @@ by that promotion.
   project owner to request it (the precedent every `BL-0067`…`BL-0083` intake leaf followed).
   **Source:** `docs/pipeline/backlog.md` `BL-0181`; `docs/reviews/training-review-run97-scope.md`
   F7.
+- **CR-23 — TLE checksum and epoch-sanity checks at load.** *(new 2026-10-16, `BL-0235`)*
+  `FR-5311` baselines the sourced rule: a TLE-sourced orbit must parse. Two stricter checks have no
+  source in any input document: rejecting a TLE whose line checksum is wrong, and rejecting one
+  whose epoch is implausibly far from the vignette start. A TLE can fail its checksum and still
+  propagate, and it can pass the checksum and still fail to propagate, so these checks are not
+  implied by "parse". If adopted, the same posture should apply to in-session TLE import
+  (`FR-5210`/`FR-5220`), so one TLE is judged the same way on both paths. **Source:**
+  `docs/pipeline/backlog.md` `BL-0235`; FS-131 Open Question 3.
+- **CR-24 — Load-time integrity of other in-vignette cross-references.** *(new 2026-10-16,
+  `BL-0234`)* Beyond `FR-5311`–`FR-5314`, a vignette carries references that load silently when
+  they point at nothing:
+  - a sensor's `host_asset_id`;
+  - an objective metric's object or target id;
+  - a scheduled inject effect's target, which is checked only when the inject fires (`FR-4430`,
+    `IP-1063`);
+  - a free-text asset `kind` (an unknown kind such as `starship` is accepted).
+
+  `NFR-1600`'s "invalid scenario JSON ... shall fail at load" is broad enough to cover any of
+  these. But no input document names them, and each new rule can refuse content that loads today.
+  The project owner, or an architecture statement, must say which are invalid before any is
+  baselined. **Source:** `docs/pipeline/backlog.md` `BL-0234`; FS-131 Open Question 2.
+- **CR-25 — Range rules for order parameters.** *(new 2026-10-16, `BL-0226`)* `IP-1052` validates
+  order parameters for type and finiteness only. Values in range for neither physics nor the
+  effector are accepted:
+  - a salvo of zero or less (consumed as 1) or a fractional salvo (truncated);
+  - a negative jam power, bandwidth or victim bandwidth;
+  - a negative cyber dwell.
+
+  `FR-1460` baselines only the ammunition bound, which GDS-04 §1.2's non-negative-resource rule
+  supports. No input document states rules for the others. **Source:** `docs/pipeline/backlog.md`
+  `BL-0226`; `IP-1052` Design Decision 5.
 
 - **CR-12 — Proliferated-Constellation Aggregation Layer.** No layer/mesh-level tasking, health
   rollup, or aggregated-custody construct exists for constellations larger than the ≤3-satellite cap
