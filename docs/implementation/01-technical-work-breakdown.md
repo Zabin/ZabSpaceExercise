@@ -603,6 +603,43 @@ phantom sensor booking. Work units:
 
 No cross-package sequencing constraint.
 
+## Order-parameter hardening (pipeline run #136, 2026-10-16)
+
+`BL-0222`'s revisit trigger fired when `IP-1041` reached `VERIFIED` (run #134). Planning reproduced
+the defect class live at `d2ded6a` on `leo-isr-denial` seed 5. It is wider than filed: besides
+jam/engage, cyber, maneuver and command routing params crash. A ghost `queued`/`draft` order is left
+in the registry. `power_w: "inf"` and `dv: [NaN,0,0]` corrupt `WorldState` permanently. A
+wrong-length `dv` is accepted and raises inside `Simulation.advance_to`. Work units:
+
+1. **Per-action param check** in `_validate`, immediately after `unknown_action`, with `null` =
+   absent (extends `IP-1041`'s helper pattern; observe unchanged).
+2. **Plan-then-commit ordering** in `issue`, `_continue_plan`, `_plan_command`, `_plan_collection`
+   and `_plan_cyber`: build the payload before any status, booking, registry or scheduler write.
+3. **Console tip:** `REASON_TIPS.invalid_param` action-neutral.
+4. **Tests:** every action's refusals through both paths, no ghost or corrupted state, a
+   monkeypatched-failure no-state test, `null` defaults, well-formed orders unchanged.
+
+**Split / no-split rationale.**
+
+- Units 1–4 are one package. They change one seam (`OrderSystem`'s validate → plan → commit
+  pipeline in one file), share one fixture (one vignette carries a jammer, an interceptor, a
+  satellite and stations), and fix one symptom class (a malformed order that is not refused up
+  front). Splitting validation from reordering would leave Test 8's guarantee half-delivered.
+  FS-105 is the primary spec (effects console), so the package takes `IP-1052`, next to the as-built
+  `IP-1050`/`IP-1051`. FS-102 is co-cited.
+- **Not packaged:**
+  - Range rules (`salvo_n` ≤ 0 or above `ammo`, negative power or dwell): no requirement states
+    them. Routed to `04-requirements-engineering`.
+  - `Simulation.advance_to` dropping a raising handler's event unlogged: an engine-wide
+    determinism question beyond order params. Routed to `03`/`07`.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1052](packages/IP-1052-order-param-hardening.md) | FS-105 v1.1 + FS-102 (`FR-3110`, `FR-1310`, `FR-1410`, `FR-1420`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
+
+No cross-package sequencing constraint (`IP-1160`, `BLOCKED`, also edits `_validate`; whichever
+lands second rebases).
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
