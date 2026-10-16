@@ -640,6 +640,40 @@ wrong-length `dv` is accepted and raises inside `Simulation.advance_to`. Work un
 No cross-package sequencing constraint (`IP-1160`, `BLOCKED`, also edits `_validate`; whichever
 lands second rebases).
 
+## Load-time vignette validation (pipeline run #145, 2026-10-16)
+
+FS-131 v1.1 (`FEAT-5300`; `FR-5310`–`FR-5314`, `NFR-1600`, `NFR-2200`) is the first spec for a Must
+Feature with no prior code. It absorbs `BL-0220` (bare 500 at load, silent **Load**) and `BL-0237`
+(a malformed TLE crashes on the first advance). Work units:
+
+1. **Gate** (`content/vignette.py`): `VignetteValidationError` and a pure `validate_vignette`.
+   It covers schema and entity validators surfaced at load, TLE initialise/propagate,
+   orbit/location presence (cyber units exempt), unique ids, `roles_needed` references, and a
+   `build_world` catch-all. All problems are collected.
+2. **Registry ordering** (`session/inprocess.py`): build the manager before eviction or the
+   counter increment (FS-131 OQ5).
+3. **Wire form** (`ui_web/server.py`): 400 `invalid_vignette` with problems, 404 unknown id, 400
+   path guard (FS-131 OQ4).
+4. **Console** (`app.js::loadSession`): show the refusal at **Load**.
+5. **Tests:** one file covering criteria 1–9 and 11.
+
+**Split / no-split rationale.**
+
+- Units 1–5 are **one package**. They are a single request path (Load → session layer → content
+  gate → HTTP → console) with a single symptom class (an invalid vignette that is not refused up
+  front). Each acceptance criterion needs the whole path: criterion 1 asserts a 400 at HTTP, which
+  needs units 1 and 3; criterion 8 needs units 1 and 2. A content-only package would leave
+  `BL-0220`'s 500 in place.
+- **Not packaged:** FS-131 criterion 10 (`FR-5310`'s template clause) is blocked on `BL-0233` at
+  `03`. The `CR-23`/`CR-24` checks are not baselined. The manual impact is routed to
+  `08-training-manual-authoring` after `VERIFIED`.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1310](packages/IP-1310-load-time-vignette-validation.md) | FS-131 v1.1 (`FR-5310`–`FR-5314`, `NFR-1600`, `NFR-2200`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
+
+No cross-package sequencing constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
