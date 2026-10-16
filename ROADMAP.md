@@ -746,6 +746,20 @@ Critical/High. 3 Low findings: F1 (§10.3 says builder injects scheduled for lat
 at the console, but they are checked when scheduled), F2 (`07` has no example payloads for the
 four `FR-4430` types), and F3 (two broken intra-file anchors in `01`, pre-existing).
 
+**Training review (2026-10-16):** [`reviews/training-review-runs122-127-scope.md`](docs/reviews/training-review-runs122-127-scope.md)
+(REV-TRN-006) independently reviewed run #122's own-satellite TLE, controller-event payload,
+§10.3 and `01`-anchor sections and run #127's sensor-authoring field table, `WCM-2`/`BLU-4`/`RED-4`
+paragraphs and `08` §9 export routes. Driven live on `co-orbital-threat-escort` seeds 7/13.
+Traceability is consistent (0 broken links, 0 orphans), and the playbook and training suites
+passed 20/20, with no Critical/High. 4 findings:
+
+- F1 Medium: the `06` table and `WCM-2` are stale since `IP-1222`, which made `beam_mode`, the
+  affinity check and the `auto` cue gate live (`BL-0216`).
+- F2 Medium: a code defect. A windowless observe is rejected `sensor_contended` ("Sensor is
+  busy"), not `no_window`.
+- F3 Low: a malformed sensor field gives a bare 500, and Load is silent.
+- F4 Low: two omissions in the `07` table.
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
