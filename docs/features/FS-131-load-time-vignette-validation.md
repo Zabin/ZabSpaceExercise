@@ -1,7 +1,8 @@
 # FS-131 — Load-Time Vignette Validation
 
 > **Document ID:** FS-131
-> **Version:** 1.0
+> **Version:** 1.1 (2026-10-16, run #143: aligned to `FR-5311`–`FR-5314`, added in run #142; see
+> the change note at the end)
 > **Status:** ✅ Ready for implementation planning, **except** the `FR-5310` template-reference
 > clause. That clause and its Acceptance Criterion name a construct the shipped content model does
 > not carry (Open Question 1, routed to `04-requirements-engineering`). Every other clause is
@@ -14,8 +15,8 @@
 > **Dependencies:** none (per `FEAT-5300`). **Dependent:** [FS-115](FS-115-session-setup.md)
 > (`FEAT-4100`, Session Setup — no session can start without a validated vignette).
 > **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0220` (its first
-> concrete error-path case), [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
-> `FR-5310`, [docs/requirements/02-non-functional-requirements.md](../requirements/02-non-functional-requirements.md)
+> concrete error-path case), `BL-0237`, `BL-0240`, [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
+> `FR-5310`–`FR-5314`, [docs/requirements/02-non-functional-requirements.md](../requirements/02-non-functional-requirements.md)
 > `NFR-1600`/`NFR-2200`, [`03-feature-catalog.md`](../feature-planning/03-feature-catalog.md) `FEAT-5300`
 > **Produces:** a single load-time gate: a vignette either becomes a session, or is refused with an
 > error that names the failing element. It never becomes a partly built, silently altered or
@@ -76,10 +77,17 @@ fails loudly at load". A facilitator gets a fixable error message, not a mysteri
 | ID | Coverage in this spec |
 |---|---|
 | **FR-5310** | Full, except the template-reference clause (Open Question 1): well-formed TLEs, every declared `roles_needed` satisfiable, rejection with a precise error rather than a partial or silent load, and the postcondition that no partly built `WorldState` survives a failed validation. |
+| **FR-5311** | TLE-sourced orbits parse at load, or the asset is rejected by name (System Behaviour 2). |
+| **FR-5312** | A satellite needs an orbit and a terrestrial asset needs a location, or the asset is rejected by name (System Behaviour 7). What counts as "terrestrial" is Open Question 6. |
+| **FR-5313** | Asset ids, and sensor ids, are each unique within a vignette (System Behaviour 4). |
+| **FR-5314** | Every `roles_needed` entry names a declared asset or constellation group (System Behaviour 3). |
 | **NFR-1600** | The load-time half: "Invalid scenario JSON or TLEs shall fail at load with a precise, actionable White Cell error." The running-engine half is out of scope (see Scope). |
 | **NFR-2200** | The loading part: input validation on all loaded files, and no execution of scenario-embedded code. The dependency-pinning and no-phone-home clauses are project-wide and are not owned by this Feature. |
 
-No requirement was added; none was dropped.
+No requirement was added by this spec, and none was dropped. `FR-5311`–`FR-5314` are child leaves of
+`FR-5310`, which `04-requirements-engineering` baselined in run #142 from GDS-04 §1.2/§1.3/§1.10.
+They belong to `FEAT-5300` by parentage. The catalog entry's Included Requirements still lists
+only `FR-5310`, which is a `05` housekeeping note (the entry was not edited here).
 
 ## User Workflows
 
@@ -114,18 +122,20 @@ registers any session.** Validation covers:
    these rules fire only while the world is being built (`build_world`). This spec requires that
    **every** such rule is checked as part of load validation, and its failure reported the same
    way as a schema failure.
-2. **Well-formed TLEs** (`FR-5310`). An asset whose orbit is given as a TLE must be usable as
+2. **Well-formed TLEs** (`FR-5310`, `FR-5311`). An asset whose orbit is given as a TLE must be usable as
    one: the element set initialises, and propagates without error at the vignette's start epoch.
    As built, a malformed TLE (`1 99999U garbage`) loads, starts, and then makes the session raise
    `sgp4 propagation error code 2` on its first clock advance (reproduced this run). That is the
    exact "later crash" this Feature exists to prevent. Whether checksum or epoch-sanity checks go
-   beyond "initialises and propagates" is Open Question 3.
-3. **Every declared `roles_needed` entry is satisfiable** (`FR-5310`; GDS-04 §1.1 Constraints).
+   beyond "initialises and propagates" is answered by the baseline: no, they are candidate `CR-23`
+   and not required (closed Open Question 3).
+3. **Every declared `roles_needed` entry is satisfiable** (`FR-5310`, `FR-5314`; GDS-04 §1.1
+   Constraints, §1.10).
    Each entry's `asset_or_constellation` must name an asset or a constellation group the vignette
    actually declares. As built, an entry naming `NO-SUCH-SAT` loads and starts. Today
    `assign_role` accepts any string, so such a requirement can only ever be met by a seat bound
    to an asset that does not exist.
-4. **No silent loss of content** (`FR-5310`: "rather than a partial or silent load"). As built,
+4. **No silent loss of content** (`FR-5310`: "rather than a partial or silent load"; `FR-5313`). As built,
    two force entries with the same `id` load without complaint, and the later one silently
    replaces the earlier one in the world. That is a silent partial load. Asset ids and sensor ids
    must each be unique, and a collision is a rejection naming the duplicated id.
@@ -135,6 +145,19 @@ registers any session.** Validation covers:
 6. **No code execution** (`NFR-2200`). Loading remains data-only: YAML is parsed with the safe
    loader and validated by schema, and no field is evaluated as code (ADR-0007). This holds today.
    The spec records it as a property the gate must keep, not as new work.
+7. **Space assets have an orbit, terrestrial assets a location** (`FR-5312`; GDS-04 §1.2
+   Constraints). A satellite entry with no orbit is refused, naming the satellite. A terrestrial
+   asset with no location is refused, naming the asset. As built, both load, start and advance
+   silently (`03-gnss-ew-campaign`: `BLUE-GNSS` without its orbit, `RED-JAM` without its
+   location), leaving an asset that can never have access.
+   **Shipped-content caution:** 7 shipped vignettes declare a `cyber_unit` (`RED-CYBER`) with no
+   location. Cyber is the one effect not gated by geometry (CLAUDE.md "Key facts"). If
+   "terrestrial" covered every non-satellite asset, `FR-5312` would refuse those 7 vignettes,
+   contradicting criterion 9 and `NFR-2010`. Which kinds count is Open Question 6. Until it is
+   answered, the rule applies to satellites and to the kinds that clearly occupy a place on
+   the ground and take part in access geometry (`ground_station`, `jammer`, `interceptor`,
+   `directed_energy`, `terrestrial_force`), and a `cyber_unit` without a location must still
+   load. The shipped library has no violation of the rule read that way (checked this run).
 
 **Outcomes.**
 
@@ -157,7 +180,9 @@ registers any session.** Validation covers:
   world (for example TLE propagation), the gate builds that part, discards it, and reports the
   failure. A failure discovered after the session is registered means the gate is incomplete.
 - Vignettes shipped before this Feature must all still pass. All 19 built-in vignettes are
-  expected to pass rules 1–5; verifying that is part of the Verification Plan.
+  expected to pass rules 1–5 and 7 (checked by a data scan this run: no duplicate ids, no
+  dangling `roles_needed`, no satellite without an orbit, no located-kind asset without a
+  location). Verifying that in the test suite is part of the Verification Plan.
 
 ## Subsystem Responsibilities
 
@@ -209,6 +234,7 @@ identifier. A rejection is a transient result returned to the caller and is not 
 | Field type or field rule violated (e.g. `beam_mode: Fence`, `usable_phase_angle_deg: [100, 20]`, `altitude_band_affinity: Leo`, `estimated_duration_min: "long"`, `start_epoch_utc: "yesterday"`) | Refused. The message names the section, the entry id and the field, and quotes the rule (the existing validator text, e.g. "ground_radar beam_mode must be one of ['dish', 'fence'], got 'Fence'"). |
 | Malformed or unpropagatable TLE | Refused at load, naming the asset id. It is never deferred to the first clock advance. |
 | `roles_needed` names no declared asset/group | Refused, naming the requirement's `asset_or_constellation` value. |
+| Satellite with no orbit, or a located terrestrial asset with no location (`FR-5312`) | Refused, naming the asset. A `cyber_unit` without a location is not refused (Open Question 6). |
 | Duplicate asset or sensor id | Refused, naming the id and both sections it appears in. |
 | Unknown vignette id, or an id the path guard refuses | Refused, naming the id. This is a client error, not a server error. |
 | Not YAML / no `vignette` key | Refused, naming the file. |
@@ -265,12 +291,16 @@ Every refusal leaves the registry unchanged (State Changes).
    initial world and event log as before. The determinism and import-guard gates stay green.
 10. *(Blocked on Open Question 1.)* `FR-5310`'s own criterion: "a vignette referencing a
     non-existent asset template is rejected with an error naming the missing template".
+11. Loading a vignette whose only defect is a satellite entry without an orbit is refused, naming
+    the satellite. The same holds for a `jammer` (or `ground_station`) entry without a location.
+    A vignette whose `cyber_unit` has no location still loads, as all 7 shipped ones do
+    (`FR-5312`; Open Question 6).
 
 ## Verification Plan
 
 | Criterion | Method |
 |---|---|
-| 1–6 | **Test**: load-path tests over the session layer and HTTP (`TestClient`), using fixture vignettes under a temporary external directory, asserting rejection, message content and status class. |
+| 1–6, 11 | **Test**: load-path tests over the session layer and HTTP (`TestClient`), using fixture vignettes under a temporary external directory, asserting rejection, message content and status class. |
 | 7 | **Demonstration** (browser GUI; headless runs are unverified per CLAUDE.md), backed by a **Test** of the route's client-error response the console displays. |
 | 8 | **Test**: registry size, contents and next-id before and after a refused load, at `MAX_LIVE_SESSIONS` and below. |
 | 9 | **Test**: every library vignette loads; the existing determinism property test; a fixed-seed world/event-log equality check against pre-change behaviour. |
@@ -300,11 +330,15 @@ surfaces already exist (FS-122 / `IP-1220`–`1222`).
   Question 2.
 - **Requirement/as-built mismatch.** `FR-5310`'s template clause cannot be tested against the
   shipped content model (Open Question 1).
+- **Over-broad `FR-5312`.** Implementing "terrestrial" as "not a satellite" would refuse 7
+  shipped vignettes (Open Question 6). Criterion 9 and the narrow reading in System Behaviour 7
+  guard against it.
 
 ## Open Questions
 
-1. **The template-reference clause has nothing to check** (→ `04-requirements-engineering`, with
-   `03` if the content model should gain templates). `FR-5310` requires "every referenced template
+1. **The template-reference clause has nothing to check** (→ `03-architecture-design-synthesis`,
+   re-routed from `04` in run #142: the requirement agrees with GDS-03 §2.5, GDS-04 §1.2 and
+   ADR-0007, which all describe template libraries the build lacks; `BL-0233`). `FR-5310` requires "every referenced template
    exists", and its only Acceptance Criterion is a vignette "referencing a non-existent asset
    template". GDS-03 §2.5 describes asset/effect/sensor template libraries, and GDS-04 §1.2 lists
    a "template reference" on Asset. The shipped content model has neither: assets and sensors are
@@ -314,7 +348,10 @@ surfaces already exist (FS-122 / `IP-1220`–`1222`).
    above), or the template libraries are first built as their own Feature. Until then criterion
    10 cannot be planned. **It matters because** `FR-5310` is Must, and its only stated acceptance
    test cannot currently be run.
-2. **Which other in-file cross-references are "invalid scenario data"?** (→ `04`.) Candidates
+2. ~~**Which other in-file cross-references are "invalid scenario data"?**~~ **Closed (run #142,
+   `04`):** the baseline answers with `FR-5312`–`FR-5314`. The rest (`host_asset_id`, objective
+   ids, scheduled inject targets, free-text `kind`) is candidate `CR-24`, not baselined, so this
+   Feature does **not** reject them. The original question follows for the record. (→ `04`.) Candidates
    that load silently today: a sensor's `host_asset_id` naming no asset; an `objectives` metric
    naming an unknown object; a scheduled inject effect targeting an unknown id (checked only at
    fire time by `IP-1063`); a free-text asset `kind` such as `starship`, which is accepted
@@ -322,7 +359,10 @@ surfaces already exist (FS-122 / `IP-1220`–`1222`).
    enough to cover any of them, and `FR-5310` names none of them. **It matters because** each
    added rule can refuse content that loads today. The requirements owner should decide the set,
    not this spec.
-3. **What "well-formed TLE" requires beyond initialise-and-propagate** (→ `04`, aligned with
+3. ~~**What "well-formed TLE" requires beyond initialise-and-propagate**~~ **Closed (run #142,
+   `04`):** `FR-5311` requires the TLE to parse into an element set the propagator accepts.
+   Checksum and epoch sanity are candidate `CR-23`, not required. The original question follows
+   for the record. (→ `04`, aligned with
    `FR-5210`/FS-119's per-object posture so one TLE is judged the same way on both paths). The
    options are line-checksum enforcement and epoch sanity relative to `start_epoch_utc`.
    **It matters because** a TLE can pass a checksum and still fail propagation, and can fail a
@@ -335,6 +375,15 @@ surfaces already exist (FS-122 / `IP-1220`–`1222`).
 5. **Registry-side-effect ordering** (→ `07`). The required outcome (a refused load leaves the
    registry untouched) is fixed above. Whether validation moves ahead of `_evict_if_full()` and
    the counter increment, or those become conditional, is an implementation choice.
+6. **Which asset kinds are "terrestrial" for `FR-5312`?** (→ `04-requirements-engineering`.)
+   `FR-5312` and GDS-04 §1.2 say a terrestrial asset must have a location, but do not define
+   terrestrial. GDS-04 §1.2's Purpose lists satellites, terrestrial forces, jammers,
+   interceptors and cyber units. Seven shipped vignettes declare a `cyber_unit` without a
+   location, and cyber is the geometry-free effect. **It matters because** the broad reading
+   would refuse those 7 vignettes, contradicting criterion 9 and `NFR-2010`. Resolve by
+   amending `FR-5312` to name the kinds (or to exempt `cyber_unit`). Until then this spec
+   applies the narrow reading stated in System Behaviour 7. That reading is the only one
+   consistent with criterion 9, not a settled answer.
 
 ## Related ADRs
 
@@ -348,3 +397,12 @@ rule is added here).
 INT-0003 (in-app scenario builder — its output reaches this gate when loaded), INT-0012 (save
 round trip — a resumed save is not a vignette load and is outside this gate), INT-0013 (TLE
 import — the in-session sibling path, FS-119).
+
+## Change note
+
+- **v1.1 (2026-10-16, run #143, `BL-0240`).** Added `FR-5311`–`FR-5314` (baselined run #142) to
+  Requirements Implemented. Added System Behaviour 7, an Error Handling row and criterion 11 for
+  `FR-5312`. Closed Open Questions 2 and 3 against the new leaves and candidates `CR-23`/`CR-24`.
+  Re-routed Open Question 1 to `03` (`BL-0233`). Added Open Question 6 (the definition of
+  "terrestrial"), found by scanning the shipped library while adding `FR-5312`'s rule.
+  Status unchanged: ready for implementation planning except criterion 10.
