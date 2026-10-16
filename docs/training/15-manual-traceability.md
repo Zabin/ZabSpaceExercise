@@ -58,7 +58,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Jam assistant + footprint | `engine/jam.py` | — | BLU-3, BLU-6 | RED-3, RED-5 |
 | SDA tasking → custody → unlock | `engine/custody.py`, `engine/access.py` | — | BLU-4 | RED-4 |
 | Weapons-quality gate | `engine/custody.py` | — | BLU-4 | RED-4, RED-5 |
-| Sensor modality authoring fields (`exclusion_angle_deg`, `min_range_km`, `altitude_band_affinity`, `requires_cue`, `host_asset_id`, `usable_phase_angle_deg`; radar `beam_mode` inert), field table in `06` | `engine/entities.py` (`Sensor`, `_check_usable_phase_angle`), `engine/access.py` (`_observation_predicate`, `_sensor_orbit`), `engine/orders.py` (`_validate`, `_resolve_sensor_id`, `_observation_phase_angle_deg`), `engine/isr.py` (`effective_gain`, `phase_angle_factor`) | WCM-2 | BLU-4 | RED-4 |
+| Sensor modality authoring fields (`exclusion_angle_deg`, `min_range_km`, `altitude_band_affinity`, `requires_cue` incl. the `auto` skip, `host_asset_id`, `usable_phase_angle_deg`, radar `fence`/`dish` `beam_mode`; load-time checks), field table in `06`; observe rejection reasons (`no_window` vs `sensor_contended`, `requires_cue`, `invalid_param`) in `09` §10 | `engine/entities.py` (`Sensor`, `_check_usable_phase_angle`, `_check_radar_beam_mode`), `engine/access.py` (`_observation_predicate`, `_sensor_orbit`), `engine/orders.py` (`_validate`, `_observe_params_ok`, `_candidate_sensors`, `_auto_blocked_by_cue`, `_plan_collection`, `_resolve_sensor_id`, `_observation_phase_angle_deg`, radar mode in `_exec_payload`), `engine/isr.py` (`effective_gain`, `altitude_band`, `phase_angle_factor`, `BEAM_MODES["ground_radar"]`), `app.js` (`REASON_TIPS`) | WCM-2 | BLU-4 | RED-4 |
 | Bus/payload SOH + safe mode | `engine/bus.py`, `engine/busmodel.py` | WCM-2 | BLU-5 | RED-7 |
 | Telemetry signatures + nominal ghost (history graph, per-instant) | `engine/telemetry.py`, `session/manager.py` (`get_series`), `session/aar.py` (`worlds_at_times`), `GET /telemetry/{cell}/{asset}/{param}` | WCM-6 | BLU-6 | RED-7 |
 | Safe-mode recovery chain | `engine/recovery.py`, `engine/buscommands.py` | — | BLU-7 | RED-7 |
@@ -94,7 +94,7 @@ mirrors each section's inline `> Sources:` footer.
 | § | Topic | Backing code / endpoints |
 |---|---|---|
 | WCM-1 | Role and view | `session/manager.py`, `session/cells.py` (`CellController`), `session/inprocess.py` (Observer, FR-6510) |
-| WCM-2 | Set up the exercise | `content/vignette.py`, `vignettes/*.yaml`, `/brief/{cell}`, `session/manager.py` (classification, seat-to-role), `engine/entities.py` (`Sensor` modality fields) |
+| WCM-2 | Set up the exercise | `content/vignette.py`, `vignettes/*.yaml`, `/brief/{cell}`, `session/manager.py` (classification, seat-to-role), `engine/entities.py` (`Sensor` modality fields, `_check_radar_beam_mode`) |
 | WCM-3 | Hot-seat / LAN / pop-out | `session/inprocess.py`, `server.py` (`/api/sessions`) |
 | WCM-4 | Time control | `session/manager.py`, `engine/clock.py`, `/clock` |
 | WCM-5 | Injects | `content/inject_library.yaml`, `/inject`, `session/manager.py` (`fire_inject`, `validate_inject_effects`, `_skip_inject_effect`), `app.js` (`fireBuiltInject`, `fireInject`) |
@@ -117,7 +117,7 @@ mirrors each section's inline `> Sources:` footer.
 | BLU-1 | Fog-of-war view | `session/cells.py` (`CellController`), `session/scene.py`, `/brief/blue` |
 | BLU-2 | Plan-first commanding | `engine/orders.py` |
 | BLU-3 | Previews before commit | `engine/orders.py` `dry_run`, `/preview/consequence`, `engine/{maneuver,isr,jam}.py` |
-| BLU-4 | SDA tasking loop | `engine/custody.py`, `engine/access.py` (`_observation_predicate`), `engine/orders.py` (`requires_cue`, `_resolve_sensor_id`) |
+| BLU-4 | SDA tasking loop | `engine/custody.py`, `engine/access.py` (`_observation_predicate`), `engine/orders.py` (`requires_cue`, `_candidate_sensors`, `_plan_collection`, `_resolve_sensor_id`) |
 | BLU-5 | Bus health | `engine/bus.py`, `engine/busmodel.py` |
 | BLU-6 | Diagnose from telemetry | `engine/telemetry.py`, `session/manager.py` (`get_series`), `session/aar.py` (`worlds_at_times`), `/telemetry/{cell}/{asset}/{param}` |
 | BLU-7 | Recovery | `engine/recovery.py`, `engine/buscommands.py` |
@@ -136,7 +136,7 @@ mirrors each section's inline `> Sources:` footer.
 | RED-1 | Fog-of-war view | `session/cells.py` (`CellController`), `session/scene.py`, `/brief/red` |
 | RED-2 | Plan-first commanding | `engine/orders.py` |
 | RED-3 | Previews before commit | `engine/orders.py` `dry_run`, `/preview/consequence`, `engine/{maneuver,isr,jam}.py` |
-| RED-4 | SDA targeting | `engine/custody.py`, `engine/access.py` (`_observation_predicate`), `engine/orders.py` (`requires_cue`, `_resolve_sensor_id`) |
+| RED-4 | SDA targeting | `engine/custody.py`, `engine/access.py` (`_observation_predicate`), `engine/orders.py` (`requires_cue`, `_candidate_sensors`, `_plan_collection`, `_resolve_sensor_id`) |
 | RED-5 | Five D's / effects | `engine/effects.py`, `engine/{jam,engage}.py`, `engine/access.py` |
 | RED-6 | Cyber wildcard | `engine/cyber.py` |
 | RED-7 | Own-force management | `engine/bus.py`, `engine/recovery.py`, `engine/telemetry.py`, `session/manager.py` (`get_series`), `session/aar.py` (`worlds_at_times`), `app.js` (`renderFleet`/`rollup`), `vignettes/*.yaml` (`red_forces`, no `bus_state`) |

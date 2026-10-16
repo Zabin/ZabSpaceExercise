@@ -7,13 +7,19 @@
 - **`ModuleNotFoundError: spacesim`** — run from the repository root (the folder containing
   `spacesim/`), or `pip install -e .`.
 - **An order is rejected** — read the `reason`: `no_window` (no pass in the look-ahead),
-  `roe_kinetic_not_authorized` (enable it via the `red_kinetic_authorized` dial),
-  `no_weapons_quality_track` (task a sensor first), `insufficient_delta_v`, `not_owner`.
+  `sensor_contended` (the sensor can see the target, but every window in the look-ahead is
+  already booked; cancel a queued task or try later), `requires_cue` (that sensor needs a track
+  on the target first), `invalid_param` (a tasking field such as beam mode, look angle, duration
+  or gain is malformed), `roe_kinetic_not_authorized` (enable it via the `red_kinetic_authorized`
+  dial), `no_weapons_quality_track` (task a sensor first), `insufficient_delta_v`, `not_owner`.
 - **Nothing happens after issuing an order** — orders execute at their scheduled **window**;
   advance time (`+10m`) until the clock reaches it.
 - **A satellite shows `safe_mode`/red** — it was safed (attack or bus fault); run the recovery
   procedure and remove the root cause.
 - **Tests fail to collect** — install the dev extras: `pip install pytest hypothesis skyfield httpx`.
+
+> **Sources:** `spacesim/engine/orders.py` (`_validate`, `_observe_params_ok`, `_plan_collection`,
+> `_plan_command`) · `spacesim/ui_web/static/app.js` (`REASON_TIPS`) · FR-3210
 
 ---
 

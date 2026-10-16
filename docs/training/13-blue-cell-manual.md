@@ -65,18 +65,21 @@ before you commit.
 
 Some vignettes give a sensor limits of its own. A **cue-dependent** sensor refuses a target you
 hold no track on, and the preview shows reason `requires_cue`: get a first look with another
-sensor. A sensor **hosted** on one of your satellites can be tasked by the sensor's name or by the
+sensor. Leave the sensor on **auto** and the engine skips cue-dependent sensors for an untracked
+target. A sensor **hosted** on one of your satellites can be tasked by the sensor's name or by the
 satellite's name. Other limits remove windows or reduce gain: a Sun exclusion angle, a minimum
-range, an orbit-regime specialty, or a usable phase-angle range
-([`06`](06-the-vignette-library.md#authoring-sensors-optional-modality-fields) lists them). The
-preview's earliest window is the quickest check that a sensor can see the target at all.
+range, an orbit-regime specialty, a usable phase-angle range, or a radar's `fence`/`dish` beam
+mode ([`06`](06-the-vignette-library.md#authoring-sensors-optional-modality-fields) lists them).
+The preview is the quickest check that a sensor can see the target at all. `no_window` means it
+can't in the look-ahead. `sensor_contended` means it can, but every window is already booked.
 
 *See also: [RED-4](14-red-cell-manual.md#red-4--build-a-targeting-picture-with-sda) — the same
 tasking→custody→unlock loop, applied to targeting rather than defense.*
 
 > **Sources:** `spacesim/engine/custody.py` (`Track`, weapons-quality gate) ·
 > `spacesim/engine/access.py` (`sensor_observation`, `_observation_predicate`) ·
-> `spacesim/engine/orders.py` (`_validate` `requires_cue`, `_resolve_sensor_id`) ·
+> `spacesim/engine/orders.py` (`_validate` `requires_cue`, `_candidate_sensors`,
+> `_plan_collection`, `_resolve_sensor_id`) ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"SDA sensor tasking"
 
 ### BLU-5 · Keep your buses healthy

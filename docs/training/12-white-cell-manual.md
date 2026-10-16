@@ -58,13 +58,14 @@ to affect the exercise.
 minimum range, an orbit-regime affinity, a cue requirement, a host satellite, and a usable
 phase-angle range. The table in
 [`06-the-vignette-library.md`](06-the-vignette-library.md#authoring-sensors-optional-modality-fields)
-says what each one does. A malformed phase-angle range stops the vignette from loading, so fix it
-before the session. The radar `beam_mode` field has no effect yet.
+says what each one does. A radar can also take a default `fence` or `dish` beam mode. A malformed
+phase-angle range, an unknown radar beam mode, or a misspelt orbit regime stops the vignette from
+loading, so fix it before the session.
 
 > **Sources:** `spacesim/content/vignette.py` + `spacesim/content/vignettes/*.yaml` ·
 > `GET /api/sessions/{sid}/brief/{cell}` · `spacesim/session/manager.py` (`classification`,
 > `assign_role`/`staffing_report`, FR-4510/FR-4210) · `spacesim/engine/entities.py` (`Sensor`
-> modality fields, FR-1610–FR-1670) ·
+> modality fields and their load-time checks, FR-1610–FR-1670) ·
 > [`07-white-cell-facilitation.md`](07-white-cell-facilitation.md)
 
 ### WCM-3 · Run the room: hot-seat and LAN

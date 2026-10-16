@@ -77,8 +77,8 @@ vignette's):
 |---|---|---|
 | `anomaly`, `subsystem: bus` | Puts the satellite into **safe mode**, so the normal recovery loop applies. Announced to all three cells: `<id>: anomaly declared (<cause>)`. The target must have a bus. | `cause`; `"restore": true` takes it out of safe mode again (`anomaly cleared`). |
 | `anomaly`, `subsystem: telemetry` | Sets the satellite's comms to red. Announced to all three cells. | `cause`; `"restore": true` sets comms back to green. |
-| `sensor_outage` | Marks the sensor degraded. Announced to all three cells: `<id>: sensor outage declared (<cause>)`. | `cause`; `"restore": true` marks it nominal again. |
-| `forced_custody_loss` | Sets that cell's track confidence on the target to `degrade_to` (default `0`). No message, so the cell finds out from its track table. The cell must hold the track. | `degrade_to` (a number); `"mode": "drop"` deletes the track instead. |
+| `sensor_outage` | Marks the sensor degraded. Announced to all three cells: `<id>: sensor outage declared (<cause>)`. | `cause`; `"restore": true` marks it nominal again (`sensor outage cleared`). |
+| `forced_custody_loss` | Sets that cell's track confidence on the target to `degrade_to` (default `0`), and counts the track as last observed at the inject time, so decay starts again from `degrade_to`. No message, so the cell finds out from its track table. The cell must hold the track. | `degrade_to` (a number); `"mode": "drop"` deletes the track instead. |
 | `scripted_manoeuvre` | Applies a burn in any of the six manoeuvre modes (`eci`, `lvlh`, `finite_burn`, `target_coe`, `hohmann`, `plane_change`), with that mode's parameters in `params` (for `lvlh`: `dv_r`/`dv_t`/`dv_n`, in m/s). It **bypasses the Δv budget**: nothing is checked or deducted. Only White is told, with the cost. | — |
 
 > **Sources:** `spacesim/session/manager.py` (`_apply_inject_effects`, `_inject_effect_problem`) ·
