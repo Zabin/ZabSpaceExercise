@@ -2,7 +2,14 @@
 
 > **Package ID:** IP-1041
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #133. `_plan_collection` reports `sensor_contended` only when a window was found and all were booked, else `no_window`; `_validate` rejects a malformed observe `beam_mode`/`look_angle_deg`/`duration_s`/`gain` as `invalid_param` (module helper `_observe_params_ok`, before the `auto` early return and before any booking) and drops an explicit `null` so it takes the absent default; `isr.beam_params` falls back on a non-string mode; `REASON_TIPS` gained `invalid_param`/`requires_cue` and a corrected `sensor_contended`. Tests: `test_observe_order_remediation.py` (29 collected; all but the contention and existing-reason cases seen failing first). Full suite 908 passed / 3 skipped (911 collected; baseline 879/3/882) (JUnit), gates 14/14.
+> **Status:** ✅ VERIFIED — 2026-10-16, `09-package-verification` (fresh session),
+> [VR-1041](../verification/VR-1041-observe-order-reason-and-param-remediation.md), clean, no
+> findings against the package. Both bug sides independently reproduced on fresh fixtures/
+> vignette/seed distinct from the implementer's own test file; the phantom-booking and
+> `dry_run`/`issue`-agreement claims independently proved over live HTTP; the `None`-drop/
+> `inprocess.py` Gantt-protection claim independently confirmed with a working counterfactual.
+> Full suite 908 passed / 3 skipped independently re-run, gates 14/14.
+> *(Was 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #133. `_plan_collection` reports `sensor_contended` only when a window was found and all were booked, else `no_window`; `_validate` rejects a malformed observe `beam_mode`/`look_angle_deg`/`duration_s`/`gain` as `invalid_param` (module helper `_observe_params_ok`, before the `auto` early return and before any booking) and drops an explicit `null` so it takes the absent default; `isr.beam_params` falls back on a non-string mode; `REASON_TIPS` gained `invalid_param`/`requires_cue` and a corrected `sensor_contended`. Tests: `test_observe_order_remediation.py` (29 collected; all but the contention and existing-reason cases seen failing first). Full suite 908 passed / 3 skipped (911 collected; baseline 879/3/882) (JUnit), gates 14/14.)*
 > *(Was 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #132.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
 > of the packages this iteration reaches. Same precedent as `IP-1222`/`IP-1221`/`IP-1212`/`IP-1063`.
@@ -269,23 +276,23 @@ draw no RNG, and import nothing outside `engine/`.
 
 ## Verification Checklist
 
-- [ ] `git diff` of the implementing commit touches code only in `spacesim/engine/orders.py`,
+- [x] `git diff` of the implementing commit touches code only in `spacesim/engine/orders.py`,
       `spacesim/engine/isr.py`, `spacesim/ui_web/static/app.js` and `spacesim/tests/`;
       `access.py` and `session/` are unchanged.
-- [ ] Read `_plan_collection`: the reason is `sensor_contended` only when a window was found, and
+- [x] Read `_plan_collection`: the reason is `sensor_contended` only when a window was found, and
       the `requires_cue` early return still runs first.
-- [ ] Read `_validate`: the observe-param check precedes the `auto` early return.
-- [ ] Independent reproduction on a fixture other than the tests': a windowless observe gives
+- [x] Read `_validate`: the observe-param check precedes the `auto` early return.
+- [x] Independent reproduction on a fixture other than the tests': a windowless observe gives
       `no_window` through both `POST /order/validate` and `POST /order`.
-- [ ] Independent reproduction of Objective 2's probe (list/dict `beam_mode`, string
+- [x] Independent reproduction of Objective 2's probe (list/dict `beam_mode`, string
       `look_angle_deg`/`gain`) over HTTP: no 500; `invalid_param` from both routes; the sensor's
       next window is unchanged afterwards.
-- [ ] A console-shaped order with blank look-angle and duration (`null`s) is accepted.
-- [ ] Tests 1–9 exist and pass; the Implementation Summary records which were seen failing first.
-- [ ] Pre-existing tests are unmodified.
-- [ ] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
-- [ ] The RTM `FR-3210`/`FR-1610` rows cite `IP-1041`.
-- [ ] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
+- [x] A console-shaped order with blank look-angle and duration (`null`s) is accepted.
+- [x] Tests 1–9 exist and pass; the Implementation Summary records which were seen failing first.
+- [x] Pre-existing tests are unmodified.
+- [x] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
+- [x] The RTM `FR-3210`/`FR-1610` rows cite `IP-1041`.
+- [x] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
       agree on status.
 
 ## Dependencies
