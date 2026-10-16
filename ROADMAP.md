@@ -555,7 +555,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1063 | Inject Effect Fire-Time Validation (boundary reject + handler skip) | `implementation/packages/IP-1063-inject-effect-fire-time-validation.md` | FS-106 `FR-4430`/`FR-4410` | Remediation | ✅ VERIFIED 2026-10-11 via `VR-1063` (fresh session, first pass, clean) — closes `BL-0129`/`BL-0188` |
 | IP-1212 | Quick TLE Export for a Cell's Own Satellites (`FR-7440` amendment) | `implementation/packages/IP-1212-own-satellite-tle-export.md` | FS-121 `FR-7440` | Remediation | ✅ VERIFIED 2026-10-15 (`VR-1212`) — closes `BL-0201`/`BL-0159` |
 | IP-1221 | CATS Phase-Angle Observation-Gain Refinement (`FR-1670`) | `implementation/packages/IP-1221-cats-phase-angle-observation-gain.md` | FS-122 `FR-1670` | Forward design | ✅ VERIFIED 2026-10-16 via `VR-1221` — clean, first pass; closes `BL-0122` |
-| IP-1222 | Sensor-Modality Wiring Remediation (`FR-1610`/`FR-1630`/`FR-1640`) | `implementation/packages/IP-1222-sensor-modality-wiring-remediation.md` | FS-122 `FR-1610`/`FR-1630`/`FR-1640` | Remediation (forward design) | 🟢 READY 2026-10-16 — pre-authorized; `BL-0212`/`BL-0213`/`BL-0214` |
+| IP-1222 | Sensor-Modality Wiring Remediation (`FR-1610`/`FR-1630`/`FR-1640`) | `implementation/packages/IP-1222-sensor-modality-wiring-remediation.md` | FS-122 `FR-1610`/`FR-1630`/`FR-1640` | Remediation (forward design) | 🟡 IN PROGRESS 2026-10-16 (run #129) — pre-authorized; `BL-0212`/`BL-0213`/`BL-0214` |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1220,
 IP-1240, IP-1250, IP-1260, IP-1270, IP-1280, and IP-1290 are new (2026-09-27, run #78)** — seven

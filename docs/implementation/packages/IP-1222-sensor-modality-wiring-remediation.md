@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1222
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #128.
+> **Status:** 🟡 IN PROGRESS — 2026-10-16, `08-code-implementation`, pipeline run #129.
+> *(Was 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #128.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
 > of the packages this iteration reaches. Same precedent as `IP-1221`/`IP-1212`/`IP-1063`.
 > **Dependencies:** [FS-122](../../features/FS-122-sensor-modality-models.md) v1.1 (`FR-1610`,
