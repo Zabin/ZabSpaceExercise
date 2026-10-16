@@ -115,6 +115,13 @@ def available_modes(payload_type: str) -> list[str]:
 _BAND_AFFINITY_MISMATCH_FACTOR = 0.5  # IP-1220 (FR-1630) — gain penalty outside a declared band
 
 
+def altitude_band(regime: str) -> str:
+    """IP-1222 Design Decision 5 (BL-0214) — the altitude band a regime belongs to, for the
+    `FR-1630` affinity comparison. ``LEO_SSO`` is an inclination/node-rate property inside the LEO
+    altitude band, so it maps to ``LEO``; every other regime is its own band."""
+    return "LEO" if regime == "LEO_SSO" else regime
+
+
 def phase_angle_factor(phase_angle_deg: float, usable_range: tuple[float, float]) -> float:
     """IP-1221 (FR-1670, FS-122 v1.1 Design Decision 3) — the observation-gain multiplier for a
     passive-EO sensor's declared usable Sun-target-sensor phase-angle range ``(lo, hi)``.
@@ -157,7 +164,8 @@ def effective_gain(base_gain: float, look_angle_deg: float, bp: dict,
     look_rad = math.radians(max(0.0, min(45.0, look_angle_deg)))
     angle_factor = math.cos(look_rad)        # 1.0 at nadir, 0.707 at 45°
     gain = base_gain * bp["gain_factor"] * angle_factor
-    if band_affinity is not None and target_regime is not None and target_regime != band_affinity:
+    if (band_affinity is not None and target_regime is not None
+            and altitude_band(target_regime) != altitude_band(band_affinity)):
         gain *= _BAND_AFFINITY_MISMATCH_FACTOR
     if phase_angle_deg is not None and usable_phase_range is not None:
         gain *= phase_angle_factor(phase_angle_deg, usable_phase_range)

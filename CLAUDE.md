@@ -321,9 +321,11 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/maneuver.py` — pure compute for six manoeuvre entry modes
   (eci / lvlh / finite_burn / target_coe / hohmann / plane_change).
 - `spacesim/engine/isr.py` — ISR beam-mode database (EO/SAR/SDA/weather/mw — the last two added
-  by IP-1170, closing `BL-0053`; `ground_radar` fence/dish variants added by IP-1220, FR-1610),
-  `effective_gain()` (IP-1220, FR-1630 — optional `target_regime`/`band_affinity` degrade gain on
-  a mismatch; IP-1221, FR-1670 — optional `phase_angle_deg`/`usable_phase_range` scale gain by
+  by IP-1170, closing `BL-0053`; `ground_radar` fence/dish variants added by IP-1220, FR-1610,
+  reached by an observe order since IP-1222 when the order param or the radar's `Sensor.beam_mode`
+  names one), `effective_gain()` (IP-1220, FR-1630 — optional `target_regime`/`band_affinity`
+  degrade gain on an altitude-band mismatch, `LEO_SSO` counted as `LEO` via `altitude_band()`,
+  IP-1222; IP-1221, FR-1670 — optional `phase_angle_deg`/`usable_phase_range` scale gain by
   `phase_angle_factor()`, a linear fall-off outside a passive-EO sensor's declared
   `Sensor.usable_phase_angle_deg`, evaluated by `OrderSystem._observation_phase_angle_deg` at the
   observation's `win.start`), `soc_drain()`, footprint polygon + ground-heading helpers.

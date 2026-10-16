@@ -2,7 +2,15 @@
 
 > **Package ID:** IP-1222
 > **Version:** 1.0
-> **Status:** 🟡 IN PROGRESS — 2026-10-16, `08-code-implementation`, pipeline run #129.
+> **Status:** 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #129. Awaiting
+> `09-package-verification` in a fresh session. A radar's `fence`/`dish` (order param, else
+> `Sensor.beam_mode`) selects the `ground_radar` table; a radar naming no radar mode stays on
+> `isr_sar` `stripmap`. `auto` drops `requires_cue` sensors without a held track (`requires_cue`
+> reason when none is left). `altitude_band_affinity` is `Optional[Regime]`, compared through
+> `isr.altitude_band`. An unknown radar `beam_mode` fails `Sensor` validation. Tests:
+> `test_sensor_modality_wiring.py` (10; 8 seen failing first, Tests 6 and 9 passed on arrival as
+> planned). Full suite 879 passed / 3 skipped (882 collected; baseline 869/3/872) (JUnit), gates
+> 14/14.
 > *(Was 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #128.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
 > of the packages this iteration reaches. Same precedent as `IP-1221`/`IP-1212`/`IP-1063`.

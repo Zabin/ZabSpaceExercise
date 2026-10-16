@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from spacesim.engine.bus import BusState, PayloadState
 from spacesim.engine.geometry import GeoPoint
-from spacesim.engine.orbit import OrbitState
+from spacesim.engine.orbit import OrbitState, Regime
 
 
 class AssetResources(BaseModel):
@@ -85,7 +85,8 @@ class Sensor(BaseModel):
     beam_mode: Optional[str] = None            # FR-1610 — a key into engine/isr.py's BEAM_MODES
     exclusion_angle_deg: Optional[float] = None  # FR-1620 — ground-optical solar exclusion radius
     min_range_km: Optional[float] = None         # FR-1630 — space-based hard-reject range floor
-    altitude_band_affinity: Optional[str] = None  # FR-1630 — a Regime value (see engine/orbit.py)
+    # FR-1630 — IP-1222 (BL-0214): typed as a Regime, so a misspelt band fails at load.
+    altitude_band_affinity: Optional[Regime] = None
     requires_cue: bool = False                    # FR-1640 — tasking gated on an existing Track
     host_asset_id: Optional[str] = None           # FR-1660 — position follows this Asset's orbit
     # IP-1221 (FR-1670) — optional usable Sun-target-sensor phase-angle range (lo, hi) in degrees
@@ -107,4 +108,17 @@ class Sensor(BaseModel):
         if not self.needs_lighting:
             raise ValueError("usable_phase_angle_deg applies only to a passive-EO sensor "
                              "(needs_lighting: true)")
+        return self
+
+    @model_validator(mode="after")
+    def _check_radar_beam_mode(self) -> "Sensor":
+        """IP-1222 Design Decision 3 (BL-0212) — a ground radar's declared ``beam_mode`` must name
+        a ``BEAM_MODES["ground_radar"]`` entry (``fence``/``dish``). Other sensor kinds are not
+        checked: their table depends on the dual-registered asset's payload type."""
+        if self.kind == "ground_radar" and self.beam_mode is not None:
+            from spacesim.engine.isr import BEAM_MODES
+            modes = BEAM_MODES["ground_radar"]
+            if self.beam_mode not in modes:
+                raise ValueError(f"ground_radar beam_mode must be one of {sorted(modes)}, "
+                                 f"got {self.beam_mode!r}")
         return self

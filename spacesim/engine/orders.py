@@ -413,6 +413,10 @@ class OrderSystem:
         now = self.sim.clock.now
         ap = self._ap()
         sensor_ids = self._candidate_sensors(order)
+        if not sensor_ids and self._auto_blocked_by_cue(order):
+            order.status = "rejected"
+            order.fail_reason = "requires_cue"
+            return
         chosen: Optional[tuple[str, AccessWindow]] = None
         for sid in sensor_ids:
             wins = ap.windows(sid, order.target or "", SENSOR_OBSERVATION, now, now + self.horizon)
@@ -446,7 +450,20 @@ class OrderSystem:
             # host_asset_id; resolve the latter to the actual sensor id so both identifiers
             # produce an identical result.
             return [self._resolve_sensor_id(order.actor) or order.actor]
-        return [sid for sid, s in self.world.sensors.items() if s.owner == order.cell]
+        # IP-1222 Design Decision 4 (BL-0213, FR-1640) — auto-selection never picks a
+        # cue-dependent sensor against a target the cell holds no Track on.
+        untracked = self.world.track_for(order.cell, order.target) is None
+        return [sid for sid, s in self.world.sensors.items()
+                if s.owner == order.cell and not (s.requires_cue and untracked)]
+
+    def _auto_blocked_by_cue(self, order: Order) -> bool:
+        """IP-1222 Design Decision 4 — True when an ``auto`` observe has no candidate only because
+        every owned sensor is cue-dependent and the cell holds no Track on the target."""
+        if order.actor and order.actor != "auto":
+            return False
+        owned = [s for s in self.world.sensors.values() if s.owner == order.cell]
+        return (bool(owned) and all(s.requires_cue for s in owned)
+                and self.world.track_for(order.cell, order.target) is None)
 
     def _contended(self, sid: str, start: int, end: int) -> bool:
         return any(not (end <= b0 or start >= b1) for (b0, b1) in self._sensor_bookings.get(sid, []))
@@ -706,8 +723,19 @@ class OrderSystem:
             else:
                 payload_type = "isr_eo"
             from spacesim.engine.isr import (
+                BEAM_MODES as _BEAM_MODES,
                 beam_params as _bp, effective_gain as _eg, footprint_polygon, ground_heading_deg,
             )
+            # IP-1222 Design Decisions 1-2 (BL-0212, FR-1610) — the order's beam_mode param wins,
+            # else the executing sensor's declared beam_mode. A ground radar whose requested mode
+            # is a radar entry (fence/dish) uses the ground_radar table; a radar naming no radar
+            # mode stays on the payload type chosen above, unchanged.
+            if beam_mode_req is None and actor_sensor is not None and actor_sensor.beam_mode:
+                beam_mode_req = actor_sensor.beam_mode
+            if (actor_sensor is not None and actor_sensor.kind == "ground_radar"
+                    and isinstance(beam_mode_req, str)
+                    and beam_mode_req in _BEAM_MODES["ground_radar"]):
+                payload_type = "ground_radar"
             bp, resolved_mode = _bp(payload_type, beam_mode_req)
             # Audit 2026-06 Commands §C3 — base gain is clamped to [0, 1]: the operator
             # may deliberately request a *less*-confident observation (search-only
