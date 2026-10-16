@@ -178,7 +178,8 @@ const REASON_TIPS = {
   // IP-1041 — sensor_contended now means a window exists but every one in the horizon is booked.
   sensor_contended: "Sensor is booked for every window in the planning horizon — cancel a queued task or try later.",
   requires_cue: "This sensor needs a cue — get a first track on the target with another sensor.",
-  invalid_param: "A tasking parameter is malformed — check beam mode, look angle, duration and gain.",
+  // IP-1052 — every action's params are checked now, not only observe's.
+  invalid_param: "An order parameter is malformed or not a finite number — check the order's fields (or the JSON params box).",
   unknown_action: "Action not supported for this asset.",
   unknown_command: "Command verb not supported.",
   no_payload_for_verb: "This asset's payload can't run that command.",

@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1052
 > **Version:** 1.0
-> **Status:** 🟡 IN PROGRESS — 2026-10-16, `08-code-implementation`, pipeline run #137.
+> **Status:** 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #137, awaiting a **fresh-session** `09-package-verification`. `ORDER_PARAM_RULES` + `_order_params_ok` (module level, beside `_observe_params_ok`, which becomes its `observe` entry) run in `_validate` right after `unknown_action`: jam/engage/cyber/maneuver/command/downlink params of the wrong shape (non-finite or non-numeric number, non-integral-convertible `salvo_n`/`stored_at`, `dv` not a finite 3-vector, non-string id/enum) are rejected `invalid_param`, and an explicit `null` is dropped so it takes the absent default. `issue` registers the order after `_plan` returns; `_continue_plan`/`_plan_command`/`_plan_collection` build the payload before status/booking/schedule, and `_plan_cyber` constructs the effect before marking the order queued (`_mark_cyber_queued`). `REASON_TIPS.invalid_param` action-neutral. Tests: `test_order_param_hardening.py` (41 collected; all seen failing first except the three unchanged-behaviour tests — numeric strings, salvo truncation, observe unchanged — which passed on arrival as Tests 9–10 predicted). Full suite 949 passed / 3 skipped (952 collected, JUnit; baseline 908/3/911), gates 14/14.
+> *(Was 🟡 IN PROGRESS — 2026-10-16, `08-code-implementation`, pipeline run #137.)*
 > *(Was 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #136.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
 > of the packages this iteration reaches. Same precedent as `IP-1041`/`IP-1222`/`IP-1221`/`IP-1212`.

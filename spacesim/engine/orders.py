@@ -83,6 +83,67 @@ def _observe_params_ok(params: dict) -> bool:
                 return False
     return True
 
+
+# IP-1052 Design Decision 1 (BL-0222, FR-3110/FR-1310/FR-1410/FR-1420) — the params every other
+# action converts later (in `_validate`, `_plan_command`, `_exec_payload`, `_plan_cyber`), and the
+# shape each must have. Checked in `_validate`, so `dry_run` and `issue` refuse alike, before any
+# window search, booking, registry entry or scheduled event.
+ORDER_PARAM_RULES: dict[str, dict[str, str]] = {
+    "jam": {"power_w": "float", "bandwidth_hz": "float", "victim_bandwidth_hz": "float",
+            "modulation": "str", "link_target": "str"},
+    "engage": {"salvo_n": "int", "interceptor_class": "str"},
+    "cyber": {"dwell_s": "float", "persistence_h": "float", "sm_susceptibility": "float",
+              "persistence_bonus": "float", "vector": "str", "payload": "str", "segment": "str"},
+    "maneuver": {"dv": "vec3", "stored_at": "int", "via": "str"},
+    "command": {"verb": "str", "stored_at": "int", "via": "str"},
+    "downlink": {"via": "str"},
+}
+
+
+def _finite_float_ok(value) -> bool:
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
+def _param_value_ok(kind: str, value) -> bool:
+    if kind == "str":
+        return isinstance(value, str)
+    if kind == "float":
+        return _finite_float_ok(value)
+    if kind == "int":
+        # Whatever `int()` accepts today (int, integral string, float — truncated as before);
+        # NaN, inf and non-numeric strings raise and are refused.
+        try:
+            int(value)
+        except (TypeError, ValueError, OverflowError):
+            return False
+        return True
+    if kind == "vec3":
+        return (isinstance(value, (list, tuple)) and len(value) == 3
+                and all(_finite_float_ok(v) for v in value))
+    raise ValueError(f"unknown param kind {kind!r}")
+
+
+def _order_params_ok(action: str, params: dict) -> bool:
+    """IP-1052 Design Decisions 1-2 — normalize and check an order's params in place, per action.
+
+    ``observe`` keeps `IP-1041`'s own helper. For every other action, an explicit ``None`` for a
+    param in ``ORDER_PARAM_RULES`` is dropped (so it takes the absent default everywhere it is read
+    later), then each present param must have its declared shape. Returns False on the first
+    malformed value; never raises.
+    """
+    if action == "observe":
+        return _observe_params_ok(params)
+    rules = ORDER_PARAM_RULES.get(action)
+    if not rules:
+        return True
+    for key in rules:
+        if key in params and params[key] is None:
+            del params[key]
+    return all(_param_value_ok(kind, params[key]) for key, kind in rules.items() if key in params)
+
 # Realistic bar widths for the Gantt chart (in seconds).  "None" means use the full window.
 BAR_DURATION_S: dict = {
     "command":  120,   # uplink + ACK
@@ -180,8 +241,10 @@ class OrderSystem:
         order.issued_at = self.sim.clock.now
         self._order_counter += 1
         order.id = f"ord-{self._order_counter}"
-        self.orders[order.id] = order
+        # IP-1052 Design Decision 3 — registered only once planning returned, so an exception
+        # raised while planning leaves no ghost entry behind (it still propagates).
         self._plan(order, commit=True)
+        self.orders[order.id] = order
         return order
 
     def dry_run(self, order: Order) -> Order:
@@ -322,12 +385,15 @@ class OrderSystem:
         if win is None:
             order.status, order.fail_reason = "rejected", "no_window"
             return
+        # IP-1052 Design Decision 3 — build the payload before any write, so a failure leaves the
+        # order un-queued and nothing scheduled.
+        if commit:
+            kind, data = self._exec_payload(order, win)
+            data["__order_id"] = order.id  # threaded through so handlers can release bookings
         order.earliest_window = (win.start, win.end)
         order.delivery_path = "ground_uplink"  # jam/engage/downlink gate on a single access window
         order.status = "queued"
         if commit:
-            kind, data = self._exec_payload(order, win)
-            data["__order_id"] = order.id  # threaded through so handlers can release bookings
             self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
     def _release_bookings_on_execute(self, order_id: Optional[str]) -> None:
@@ -411,6 +477,10 @@ class OrderSystem:
             order.status, order.fail_reason = "rejected", reason
             return
         path, win = min(choices, key=lambda pw: pw[1].start)
+        # IP-1052 Design Decision 3 — payload first, then status, booking and schedule.
+        if commit:
+            kind, data = self._exec_payload(order, win)
+            data["__order_id"] = order.id
         order.delivery_path = path
         order.earliest_window = (win.start, win.end)
         order.status = "queued"
@@ -419,8 +489,6 @@ class OrderSystem:
                 key = (order.actor, win.start)
                 self._pass_bookings[key] = self._pass_bookings.get(key, 0) + 1
                 self._order_pass[order.id] = key
-            kind, data = self._exec_payload(order, win)
-            data["__order_id"] = order.id
             self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
     def _best_isl_window(self, ap: AccessProvider, cell: str, actor: str, now: int) -> Optional[AccessWindow]:
@@ -463,17 +531,19 @@ class OrderSystem:
             order.fail_reason = "sensor_contended" if windows_found else "no_window"
             return
         sid, win = chosen
-        order.actor = sid
+        order.actor = sid   # read by _exec_payload, so assigned before it
+        # IP-1052 Design Decision 3 — payload first, then status, booking and schedule.
+        if commit:
+            kind, data = self._exec_payload(order, win)
+            data["sensor_id"] = sid          # persisted in eventlog for booking reconstruction
+            data["window_end"] = win.end     # on rewind/replay
+            data["__order_id"] = order.id
         order.delivery_path = "sensor_collect"
         order.earliest_window = (win.start, win.end)
         order.status = "queued"
         if commit:
             self._sensor_bookings.setdefault(sid, []).append((win.start, win.end))
             self._order_sensor[order.id] = (sid, win.start, win.end)
-            kind, data = self._exec_payload(order, win)
-            data["sensor_id"] = sid          # persisted in eventlog for booking reconstruction
-            data["window_end"] = win.end     # on rewind/replay
-            data["__order_id"] = order.id
             self.sim.schedule(win.start, kind, data, actor=order.cell, tag=order.id)
 
     def _candidate_sensors(self, order: Order) -> list[str]:
@@ -515,11 +585,13 @@ class OrderSystem:
         if order.action not in ACTION_CHANNEL:
             return False, "unknown_action"
 
+        # IP-1041 Design Decision 2 (BL-0217, observe) / IP-1052 Design Decision 1 (BL-0222, every
+        # other action) — before any other check, window search or booking, so `dry_run` and
+        # `issue` agree and nothing leaks.
+        if not _order_params_ok(order.action, order.params):
+            return False, "invalid_param"
+
         if order.action == "observe":
-            # IP-1041 Design Decision 2 (BL-0217) — before the `auto` early return and before any
-            # window search or booking, so `dry_run` and `issue` agree and nothing leaks.
-            if not _observe_params_ok(order.params):
-                return False, "invalid_param"
             if order.actor == "auto":
                 return True, ""  # sensor chosen at planning time
             sid = self._resolve_sensor_id(order.actor)
@@ -862,12 +934,16 @@ class OrderSystem:
             "purpose_tag": str(p.get("purpose_tag", "")),
         }
 
-    def _plan_cyber(self, order: Order, commit: bool) -> None:
+    def _mark_cyber_queued(self, order: Order) -> None:
         order.status = "queued"
         order.earliest_window = None       # cyber is not pass-gated (resolves now, against posture)
         order.delivery_path = "cyber"
+
+    def _plan_cyber(self, order: Order, commit: bool) -> None:
         if not commit:
+            self._mark_cyber_queued(order)
             return
+        # IP-1052 Design Decision 3 — the effect is constructed before the order is marked queued.
         p = order.params
         # Audit 2026-06 Commands §C2 — cyber Pₛ fully derived from vector × posture × dwell.
         # `vector` is mandatory (validator enforces). Payload table fixes reversibility /
@@ -910,7 +986,9 @@ class OrderSystem:
             window_start=self.sim.clock.now,
             order_action_type=order.action,
         )
-        self.sim.schedule(self.sim.clock.now, "execute_effect", {"effect": effect.model_dump()}, actor=order.cell, tag=order.id)
+        payload = {"effect": effect.model_dump()}
+        self._mark_cyber_queued(order)
+        self.sim.schedule(self.sim.clock.now, "execute_effect", payload, actor=order.cell, tag=order.id)
 
     # -- handlers (run inside the deterministic event loop) --------------------
     def _h_effect(self, world: WorldState, payload: dict, rng) -> None:
