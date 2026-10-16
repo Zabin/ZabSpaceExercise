@@ -37,7 +37,10 @@ the same access window is Red's tempo problem.
 ### RED-3 · Previews before you commit
 
 1. **Dry-run validity** — the green ✓ / red ✗ line; a blocked action tells you *why* (missing
-   window, weapons-quality, or ROE gate).
+   window, weapons-quality, or ROE gate). A hand-edited raw JSON param with the wrong type or a
+   non-number (`"power_w": "inf"`, text for `salvo_n`) shows ✗ `invalid_param`; a field set to
+   `null` counts as left out. [`09` §10](09-troubleshooting-and-glossary.md#10-troubleshooting)
+   lists every reason.
 2. **Consequence preview** — severity, escalation weight, reversibility, debris risk, and
    **attribution**: Red's escalation-management dashboard. A reversible EW/cyber effect keeps you
    below the threshold a kinetic strike crosses.
@@ -47,8 +50,9 @@ the same access window is Red's tempo problem.
 *See also: [BLU-3](13-blue-cell-manual.md#blu-3--previews-before-you-commit) — the same preview
 mechanics from Blue's side.*
 
-> **Sources:** `spacesim/engine/orders.py` `dry_run()` · `POST /preview/consequence` ·
-> `spacesim/engine/{maneuver,isr,jam}.py` · [`02-interface.md`](02-interface.md) §"Order-composition assistants"
+> **Sources:** `spacesim/engine/orders.py` `dry_run()`, `_order_params_ok`/`ORDER_PARAM_RULES` ·
+> `POST /preview/consequence` · `spacesim/engine/{maneuver,isr,jam}.py` ·
+> [`02-interface.md`](02-interface.md) §"Order-composition assistants"
 
 ### RED-4 · Build a targeting picture with SDA
 
@@ -64,15 +68,19 @@ an **auto** order skips it for an untracked target. A sensor **hosted** on one o
 answers to either name. A Sun exclusion angle, a minimum range, an orbit-regime specialty, a
 usable phase-angle range or a radar's `fence`/`dish` beam mode can remove windows or reduce gain
 ([`06`](06-the-vignette-library.md#authoring-sensors-optional-modality-fields) lists them). Check
-the preview before you plan around a look. `no_window` means the sensor can't see the target in
-the look-ahead. `sensor_contended` means every window it found is already booked.
+the preview before you plan around a look. `no_window` means the sensor can't see the target
+within the planning horizon (the next 24 hours). `sensor_contended` means every window it found
+is already booked. When you task a radar, leave the **Mode** dropdown on `auto`: any other entry
+replaces the radar's own mode.
 
 *See also: [BLU-4](13-blue-cell-manual.md#blu-4--sda-task-sensors-build-custody-unlock-actions) —
 the same tasking→custody→unlock loop, applied to defense rather than targeting.*
 
 > **Sources:** `spacesim/engine/custody.py` (weapons-quality gate) · `spacesim/engine/access.py`
 > (`_observation_predicate`) · `spacesim/engine/orders.py` (`_validate` `requires_cue`,
-> `_candidate_sensors`, `_plan_collection`, `_resolve_sensor_id`) · [`05-core-concepts.md`](05-core-concepts.md) §"SDA sensor tasking"
+> `_candidate_sensors`, `_plan_collection`, `_resolve_sensor_id`, observe mode in `_exec_payload`) ·
+> `spacesim/ui_web/static/index.html` (`#task-beam-mode`) ·
+> [`05-core-concepts.md`](05-core-concepts.md) §"SDA sensor tasking"
 
 ### RED-5 · The five D's: choose your effect
 

@@ -40,7 +40,11 @@ ride one pass.
 Three assistants show what an order will do before you fire it:
 
 1. **Dry-run validity** — the green ✓ / red ✗ line ("will queue · ground_uplink · window
-   14:32:10"); a blocked action tells you *why* it's blocked (pre-disabled Issue button).
+   14:32:10"); a blocked action tells you *why* it's blocked (pre-disabled Issue button). If
+   you edit the command menu's raw JSON params by hand, a field with the wrong type or a
+   non-number (`"inf"`, text where a number belongs, a `dv` without exactly three numbers) shows
+   ✗ `invalid_param`; a field set to `null` counts as left out.
+   [`09` §10](09-troubleshooting-and-glossary.md#10-troubleshooting) lists every reason.
 2. **Consequence preview** — severity, escalation weight, reversibility, debris risk, attribution;
    civilian-target denial bumps severity a tier.
 3. **Verb assistants** — `maneuver` (six entry modes, live Δv + new elements), `observe` (beam
@@ -50,8 +54,9 @@ Three assistants show what an order will do before you fire it:
 *See also: [RED-3](14-red-cell-manual.md#red-3--previews-before-you-commit) — the same preview
 mechanics from Red's side.*
 
-> **Sources:** `spacesim/engine/orders.py` `dry_run()` · `POST /preview/consequence` ·
-> `spacesim/engine/{maneuver,isr,jam}.py` · [`02-interface.md`](02-interface.md) §"Order-composition assistants"
+> **Sources:** `spacesim/engine/orders.py` `dry_run()`, `_order_params_ok`/`ORDER_PARAM_RULES` ·
+> `POST /preview/consequence` · `spacesim/engine/{maneuver,isr,jam}.py` ·
+> [`02-interface.md`](02-interface.md) §"Order-composition assistants"
 
 ### BLU-4 · SDA: task sensors, build custody, unlock actions
 
@@ -70,8 +75,10 @@ target. A sensor **hosted** on one of your satellites can be tasked by the senso
 satellite's name. Other limits remove windows or reduce gain: a Sun exclusion angle, a minimum
 range, an orbit-regime specialty, a usable phase-angle range, or a radar's `fence`/`dish` beam
 mode ([`06`](06-the-vignette-library.md#authoring-sensors-optional-modality-fields) lists them).
-The preview is the quickest check that a sensor can see the target at all. `no_window` means it
-can't in the look-ahead. `sensor_contended` means it can, but every window is already booked.
+When you task a radar, leave the **Mode** dropdown on `auto`: any other entry replaces the radar's
+own mode. The preview is the quickest check that a sensor can see the target at all. `no_window`
+means it can't within the planning horizon (the next 24 hours). `sensor_contended` means it can,
+but every window is already booked.
 
 *See also: [RED-4](14-red-cell-manual.md#red-4--build-a-targeting-picture-with-sda) — the same
 tasking→custody→unlock loop, applied to targeting rather than defense.*
@@ -79,7 +86,8 @@ tasking→custody→unlock loop, applied to targeting rather than defense.*
 > **Sources:** `spacesim/engine/custody.py` (`Track`, weapons-quality gate) ·
 > `spacesim/engine/access.py` (`sensor_observation`, `_observation_predicate`) ·
 > `spacesim/engine/orders.py` (`_validate` `requires_cue`, `_candidate_sensors`,
-> `_plan_collection`, `_resolve_sensor_id`) ·
+> `_plan_collection`, `_resolve_sensor_id`, observe mode in `_exec_payload`) ·
+> `spacesim/ui_web/static/index.html` (`#task-beam-mode`) ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"SDA sensor tasking"
 
 ### BLU-5 · Keep your buses healthy

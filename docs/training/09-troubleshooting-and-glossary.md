@@ -6,11 +6,14 @@
   `python3 -m uvicorn spacesim.ui_web.server:app`.
 - **`ModuleNotFoundError: spacesim`** — run from the repository root (the folder containing
   `spacesim/`), or `pip install -e .`.
-- **An order is rejected** — read the `reason`: `no_window` (no pass in the look-ahead),
-  `sensor_contended` (the sensor can see the target, but every window in the look-ahead is
-  already booked; cancel a queued task or try later), `requires_cue` (that sensor needs a track
-  on the target first), `invalid_param` (a tasking field such as beam mode, look angle, duration
-  or gain is malformed), `roe_kinetic_not_authorized` (enable it via the `red_kinetic_authorized`
+- **An order is rejected** — read the `reason`: `no_window` (no pass within the planning
+  horizon), `sensor_contended` (the sensor can see the target, but every window within the
+  planning horizon is already booked; cancel a queued task or try later), `requires_cue` (that
+  sensor needs a track on the target first), `invalid_param` (one of the order's params has the
+  wrong type or is not a finite number, for any action: for example `power_w: "inf"` on a jam,
+  text for `salvo_n`, a `dv` that is not exactly three numbers, a non-text `via`, or a list as an
+  observe beam mode; fix the field in the order's params, and note that a field set to `null`
+  counts as left out), `roe_kinetic_not_authorized` (enable it via the `red_kinetic_authorized`
   dial), `no_weapons_quality_track` (task a sensor first), `insufficient_delta_v`, `not_owner`.
 - **Nothing happens after issuing an order** — orders execute at their scheduled **window**;
   advance time (`+10m`) until the clock reaches it.
@@ -18,8 +21,9 @@
   procedure and remove the root cause.
 - **Tests fail to collect** — install the dev extras: `pip install pytest hypothesis skyfield httpx`.
 
-> **Sources:** `spacesim/engine/orders.py` (`_validate`, `_observe_params_ok`, `_plan_collection`,
-> `_plan_command`) · `spacesim/ui_web/static/app.js` (`REASON_TIPS`) · FR-3210
+> **Sources:** `spacesim/engine/orders.py` (`_validate`, `_order_params_ok`, `ORDER_PARAM_RULES`,
+> `_observe_params_ok`, `_plan_collection`, `_plan_command`, `OrderSystem` `horizon_s`) ·
+> `spacesim/ui_web/static/app.js` (`REASON_TIPS`) · FR-3110 · FR-3210
 
 ---
 
@@ -37,3 +41,12 @@
 - **Cyber exception** — cyber is the one effect not gated by orbital passes.
 - **ISL** — inter-satellite (crosslink) relay path for commands.
 - **AAR** — After-Action Review: deterministic read-only replay, scrubbing, and branch comparison.
+- **Planning horizon** — how far ahead the engine searches for a window when you plan an order or
+  task a sensor: the next 24 hours of sim time. No window inside it gives `no_window`. The console's
+  rejection tips use this term.
+
+> **Sources:** `spacesim/engine/access.py` (the six channels) · `spacesim/engine/custody.py`
+> (`Track`, weapons-quality gate) · `spacesim/session/cells.py` (`CellController`, fog-of-war) ·
+> `spacesim/engine/bus.py` (safe mode) · `spacesim/engine/effects.py` (five D's) ·
+> `spacesim/engine/orders.py` (cyber exception, ISL delivery, `OrderSystem` `horizon_s`) ·
+> `spacesim/session/aar.py` · `spacesim/ui_web/static/app.js` (`REASON_TIPS`)

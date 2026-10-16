@@ -202,7 +202,7 @@ The next-contact countdown column is **read-only** (data from `GET /next_contact
 | 5 | Target | dropdown + **or id** text input | Dropdown lists the other side's **known targets**: your tracks, grouped by owner, plus any non-own satellite/space-based/interceptor/directed-energy asset your fog-filtered view shows. White tasks on Blue's behalf and so sees every non-Blue asset. When the list is empty it says *no known targets yet*. The **or id** box takes precedence over the dropdown. Use it to task a sensor against an id you have not tracked yet; collection is how custody starts. If both are empty, Plan collection falls back to the compose form's target (§10.6 row 4). |
 | 6 | Priority | dropdown | **routine** / **priority** / **immediate** (drives SSN SLA + organic queue order). |
 | 7 | Plan collection | button | Organic: `POST /order` with `action: observe`. SSN: `POST /ssn/{cell}/request`. |
-| 8 | Beam mode | dropdown | `auto` + **wide_area / stripmap / spotlight / scan / fine / polarimetric** (see `engine/isr.py`). |
+| 8 | Beam mode | dropdown | `auto` + **wide_area / stripmap / spotlight / scan / fine / polarimetric** (see `engine/isr.py`). On a ground radar keep `auto`: any other entry replaces the radar's own `fence`/`dish` mode. The radar modes are not listed here; send them through §10.6 row 5 (see [`06`](06-the-vignette-library.md#authoring-sensors-optional-modality-fields)). |
 | 9 | Look angle | range slider | 0–45° off-nadir. Cosine roll-off applies to gain + swath width. |
 | 10 | Duration (s) | number | 30–3600 s. Drives the SOC drain `base × power_factor × duration / 300`. |
 | 11 | Coverage line | read-only | SSN mode: `GET /ssn/{cell}/coverage?regime=` — feasibility hint. |
@@ -220,7 +220,7 @@ The next-contact countdown column is **read-only** (data from `GET /next_contact
 | 2 | Actor | dropdown | Own assets (filtered by role chip + current cell). |
 | 3 | Action | dropdown | Legal actions for the actor's `kind`: e.g. satellite ⇒ `downlink/maneuver/command`, jammer ⇒ `jam`. |
 | 4 | Target | dropdown + **or id** text input | Uses the same known-target list as §10.5 row 5, with the selected actor's own side left out. The **or id** box takes precedence. Both fields are **enabled only for `jam` / `engage` / `cyber` / `observe`**. For any other action they are blanked and disabled because that order takes no target. |
-| 5 | Params | JSON text | Pre-filled per action (see PARAM_TEMPLATE in `app.js`). Live dry-run on every keystroke. |
+| 5 | Params | JSON text, under **Advanced (raw JSON params)** | Pre-filled per action (see PARAM_TEMPLATE in `app.js`). Live dry-run on every keystroke. A field with the wrong type or a non-finite number (`"inf"`, a `dv` without exactly three numbers) shows ✗ `invalid_param`. A field set to `null` counts as left out. |
 | 6 | Validity preview | read-only | ✓ queue · delivery_path · window OR ✗ reason (from `POST /order/validate`). |
 | 7 | Consequence preview | read-only | severity / esc / reversible / debris / attribution (from `POST /preview/consequence`). |
 | 8 | Issue order | primary button | `POST /order`. Disabled while validity preview is ✗. |
