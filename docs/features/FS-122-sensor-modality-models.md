@@ -18,7 +18,7 @@
 > Feature's access/effectiveness refinements sit underneath, distinct not duplicative per
 > `FR-1600`'s own family preamble)
 > **Referenced By:** [IP-1221](../implementation/packages/IP-1221-cats-phase-angle-observation-gain.md)
-> (Implementation Package for `FR-1670`, v1.1, 🔵 `COMPLETE` 2026-10-16, awaiting `09`),
+> (Implementation Package for `FR-1670`, v1.1, ✅ `VERIFIED` 2026-10-16 via `VR-1221`),
 > [IP-1220](../implementation/packages/IP-1220-sensor-modality-models.md)
 > (Implementation Package, ✅ `VERIFIED`, [VR-1220](../implementation/verification/VR-1220-sensor-modality-models.md)),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0073` (item B7),

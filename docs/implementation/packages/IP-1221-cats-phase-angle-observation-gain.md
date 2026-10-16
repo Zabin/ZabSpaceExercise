@@ -2,8 +2,20 @@
 
 > **Package ID:** IP-1221
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #125; awaiting
-> `09-package-verification` in a fresh session. `Sensor.usable_phase_angle_deg` + validator; `isr.phase_angle_factor` + additive `effective_gain` args; `OrderSystem._observation_phase_angle_deg` (shared `cats_phase_angle_deg`, at `win.start`) wired into the observe gain. Tests: `test_phase_angle_gain.py` (16) + `test_cats_angle.py` Test 8. Full suite 869 passed / 3 skipped (872 collected; baseline 852/3) (JUnit), gates 14/14.
+> **Status:** ✅ VERIFIED — 2026-10-16 via [VR-1221](../verification/VR-1221-cats-phase-angle-observation-gain.md)
+> (`09-package-verification`, fresh session, first pass, clean — no findings against the package).
+> The linear-falloff shape, `effective_gain` backward compatibility, and the load-time `Sensor`
+> validator were all independently re-derived on fresh sample points/orbit-epoch geometries
+> distinct from this package's own test fixtures, at both the pure-helper and full-`OrderSystem`
+> levels; a defense-in-depth probe (forcing a range onto a non-passive-EO sensor past the
+> validator) confirmed `orders.py`'s own `needs_lighting` guard independently blocks it too.
+> `cats_phase_angle_deg` confirmed singly-defined; `access.py`/`sun.py` confirmed genuinely
+> untouched. Full suite 869 passed/3 skipped, gates 14/14, independently re-run. Closes `BL-0122`.
+> *(Was 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #125: `Sensor.usable_phase_angle_deg`
+> + validator; `isr.phase_angle_factor` + additive `effective_gain` args;
+> `OrderSystem._observation_phase_angle_deg` (shared `cats_phase_angle_deg`, at `win.start`) wired
+> into the observe gain. Tests: `test_phase_angle_gain.py` (16) + `test_cats_angle.py` Test 8. Full
+> suite 869 passed / 3 skipped (872 collected; baseline 852/3) (JUnit), gates 14/14.)*
 > *(Authored 2026-10-15 by `07-implementation-planning`, pipeline run #124.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
 > of the packages this iteration reaches. Same precedent as `IP-1212`/`IP-1063`/`IP-1262`.
@@ -248,22 +260,33 @@ and imports nothing outside `engine/`.
 
 ## Verification Checklist
 
-- [ ] `git diff` of the implementing commit touches code only in `spacesim/engine/entities.py`,
+- [x] `git diff` of the implementing commit touches code only in `spacesim/engine/entities.py`,
       `isr.py`, `orders.py` and `spacesim/tests/`; `access.py` and `sun.py` are unchanged.
-- [ ] Read `effective_gain`: with the new argument omitted, its arithmetic is identical to
-      `isr.py:132-137` at `b0e77a6`.
-- [ ] Read the observe branch: the angle is evaluated at `win.start`, the factor is applied only
+      Independently confirmed via `git show d529555 --stat`: `access.py` absent entirely from the
+      diff; `sun.py` likewise absent (not merely unchanged content).
+- [x] Read `effective_gain`: with the new argument omitted, its arithmetic is identical to
+      `isr.py:132-137` at `b0e77a6`. Independently confirmed bit-identical (`==`) across four look
+      angles, comparing the pre-package call shape against the new signature with both new
+      arguments `None`.
+- [x] Read the observe branch: the angle is evaluated at `win.start`, the factor is applied only
       for `needs_lighting` sensors with a declared range, and every undefined case falls back to 1
-      without raising.
-- [ ] Tests 1–8 exist and pass; the Implementation Summary records which were seen failing first.
-- [ ] Independent reproduction on a fixture other than the tests': a backlit and a front-lit
+      without raising. Confirmed by direct read of `orders.py:727-733`/`:547-571` plus a
+      defense-in-depth probe forcing a range onto a non-passive-EO sensor past the validator.
+- [x] Tests 1–8 exist and pass; the Implementation Summary records which were seen failing first.
+      `test_phase_angle_gain.py` (16) + `test_cats_angle.py` Test 8 (7 total in that file) re-run:
+      23 passed.
+- [x] Independent reproduction on a fixture other than the tests': a backlit and a front-lit
       observation by the same declared sensor give strictly lower and unchanged gain respectively.
-- [ ] Pre-existing tests are unmodified except `test_cats_angle.py`'s single-definition test, if
-      extended in place.
-- [ ] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
-- [ ] The RTM `FR-1670` row cites `IP-1221`.
-- [ ] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
-      agree on status.
+      Reproduced on a fresh orbit/epoch fixture (alt 780 km/i 97.4°/RAAN 201°/epoch 5×10⁸ µs) for
+      both a space-based and a ground-optical sensor — see `VR-1221` §4.
+- [x] Pre-existing tests are unmodified except `test_cats_angle.py`'s single-definition test, if
+      extended in place. Confirmed by direct diff read: a pure addition, zero lines changed inside
+      the pre-existing test.
+- [x] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
+      869 passed/3 skipped (872 collected), gates 14/14 — independently re-run twice.
+- [x] The RTM `FR-1670` row cites `IP-1221`.
+- [x] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
+      agree on status. All four flipped to `VERIFIED` by this verification pass (`VR-1221`).
 
 ## Dependencies
 
