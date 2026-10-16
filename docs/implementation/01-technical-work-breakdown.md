@@ -510,7 +510,7 @@ independently testable outcome.
 
 | Package | FS | Status | Authorization |
 |---|---|---|---|
-| [IP-1212](packages/IP-1212-own-satellite-tle-export.md) | FS-121 v2.1 (`FR-7440`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
+| [IP-1212](packages/IP-1212-own-satellite-tle-export.md) | FS-121 v2.1 (`FR-7440`) | ✅ VERIFIED (`VR-1212`; was 🟢 READY when planned) | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
 
 No cross-package sequencing constraint.
 
@@ -534,7 +534,34 @@ observable outcome without unit 3. As the next slice of the FS-122 series it tak
 
 | Package | FS | Status | Authorization |
 |---|---|---|---|
-| [IP-1221](packages/IP-1221-cats-phase-angle-observation-gain.md) | FS-122 v1.1 (`FR-1670`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
+| [IP-1221](packages/IP-1221-cats-phase-angle-observation-gain.md) | FS-122 v1.1 (`FR-1670`) | ✅ VERIFIED (`VR-1221`; was 🟢 READY when planned) | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
+
+No cross-package sequencing constraint.
+
+## Sensor-modality wiring remediation (pipeline run #128, 2026-10-16)
+
+Run #127 (`08-training-manual-authoring`) found that two `IP-1220` requirements are not reached end
+to end (`BL-0212`: `FR-1610` fence/dish never selected; `BL-0213`: `auto` sensor selection skips
+`FR-1640`'s cue gate) and that `FR-1630`'s affinity is an unchecked string (`BL-0214`). Work units:
+
+1. **Beam mode:** in the observe branch of `_exec_payload`, select the `ground_radar` table for a
+   radar sensor whose requested mode (order param, else the sensor's `beam_mode`) is a radar key;
+   leave every other path unchanged.
+2. **Cue gate:** filter `requires_cue` sensors without a held track out of `auto` candidates, and
+   reject with `requires_cue` when that empties the list.
+3. **Affinity:** type `altitude_band_affinity` as `Regime`; compare `LEO`/`LEO_SSO` as one band.
+4. **Validator:** reject an unknown radar `beam_mode` at `Sensor` validation.
+5. **Tests:** end-to-end for each, plus shipped-content-unchanged.
+
+**No-split rationale:** all units are small edits in `engine/orders.py`, `isr.py` and
+`entities.py` along the same sensor-observe seam, found together and remediating one package
+(`IP-1220`). Each could be a package on its own, but none is large enough to justify a separate
+verification pass, and units 1 and 4 share the radar-mode definition. As the next slice of the
+FS-122 series it takes `IP-1222`.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1222](packages/IP-1222-sensor-modality-wiring-remediation.md) | FS-122 v1.1 (`FR-1610`, `FR-1630`, `FR-1640`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
 
 No cross-package sequencing constraint.
 
