@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from spacesim.engine.bus import BusState, PayloadState
 from spacesim.engine.geometry import GeoPoint
@@ -88,3 +88,23 @@ class Sensor(BaseModel):
     altitude_band_affinity: Optional[str] = None  # FR-1630 — a Regime value (see engine/orbit.py)
     requires_cue: bool = False                    # FR-1640 — tasking gated on an existing Track
     host_asset_id: Optional[str] = None           # FR-1660 — position follows this Asset's orbit
+    # IP-1221 (FR-1670) — optional usable Sun-target-sensor phase-angle range (lo, hi) in degrees
+    # for a passive-EO (needs_lighting) sensor; outside it the observation gain falls off
+    # (engine/isr.py::phase_angle_factor). Absent = unaffected. R109 v1.3 §3.11's recommended
+    # author values: (0, 90) ground-based, (0, 150) space-based — never an implicit default.
+    usable_phase_angle_deg: Optional[tuple[float, float]] = None
+
+    @model_validator(mode="after")
+    def _check_usable_phase_angle(self) -> "Sensor":
+        """IP-1221 Design Decisions 4-5 — a malformed range, or one on a sensor that is not
+        passive EO (``needs_lighting``), is rejected at load rather than misbehaving at run time."""
+        rng = self.usable_phase_angle_deg
+        if rng is None:
+            return self
+        lo, hi = rng
+        if not (0.0 <= lo <= hi <= 180.0):
+            raise ValueError(f"usable_phase_angle_deg must satisfy 0 <= lo <= hi <= 180, got {rng!r}")
+        if not self.needs_lighting:
+            raise ValueError("usable_phase_angle_deg applies only to a passive-EO sensor "
+                             "(needs_lighting: true)")
+        return self

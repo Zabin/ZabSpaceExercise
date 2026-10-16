@@ -61,3 +61,14 @@ def test_phase_angle_is_defined_only_once_in_engine():
     engine = Path(__file__).resolve().parents[1] / "engine"
     hits = [p.name for p in engine.glob("*.py") if "def cats_phase_angle_deg" in p.read_text()]
     assert hits == ["sun.py"]
+
+
+def test_fr1670_observe_path_reuses_the_shared_phase_angle_function():
+    """IP-1221 Test 8 (FS-122 AC11, BL-0152): the FR-1670 observe-gain refinement calls the one
+    shared `cats_phase_angle_deg` rather than re-deriving the geometry."""
+    from pathlib import Path
+
+    engine = Path(__file__).resolve().parents[1] / "engine"
+    assert "cats_phase_angle_deg" in (engine / "orders.py").read_text()
+    hits = [p.name for p in engine.glob("*.py") if "def cats_phase_angle_deg" in p.read_text()]
+    assert hits == ["sun.py"]

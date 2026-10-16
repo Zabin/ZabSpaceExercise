@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1221
 > **Version:** 1.0
-> **Status:** 🟡 IN PROGRESS — `08-code-implementation`, pipeline run #125 (2026-10-15)
+> **Status:** 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #125; awaiting
+> `09-package-verification` in a fresh session. `Sensor.usable_phase_angle_deg` + validator; `isr.phase_angle_factor` + additive `effective_gain` args; `OrderSystem._observation_phase_angle_deg` (shared `cats_phase_angle_deg`, at `win.start`) wired into the observe gain. Tests: `test_phase_angle_gain.py` (16) + `test_cats_angle.py` Test 8. Full suite 869 passed / 3 skipped (872 collected; baseline 852/3) (JUnit), gates 14/14.
 > *(Authored 2026-10-15 by `07-implementation-planning`, pipeline run #124.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
 > of the packages this iteration reaches. Same precedent as `IP-1212`/`IP-1063`/`IP-1262`.

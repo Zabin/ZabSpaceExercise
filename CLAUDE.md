@@ -323,7 +323,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/isr.py` — ISR beam-mode database (EO/SAR/SDA/weather/mw — the last two added
   by IP-1170, closing `BL-0053`; `ground_radar` fence/dish variants added by IP-1220, FR-1610),
   `effective_gain()` (IP-1220, FR-1630 — optional `target_regime`/`band_affinity` degrade gain on
-  a mismatch), `soc_drain()`, footprint polygon + ground-heading helpers.
+  a mismatch; IP-1221, FR-1670 — optional `phase_angle_deg`/`usable_phase_range` scale gain by
+  `phase_angle_factor()`, a linear fall-off outside a passive-EO sensor's declared
+  `Sensor.usable_phase_angle_deg`, evaluated by `OrderSystem._observation_phase_angle_deg` at the
+  observation's `win.start`), `soc_drain()`, footprint polygon + ground-heading helpers.
 - `spacesim/engine/jam.py` — jam modulation database (barrage/spot/sweep/deceptive),
   `effective_radius_km()`, `effective_success_prob()`, footprint polygon (FW §11.A.1).
 - `spacesim/engine/engage.py` — kinetic-engagement math (closing geometry, salvo Pₖ,
@@ -338,7 +341,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/sun.py` — `sun_unit_eci`, binary `is_sunlit()`, smooth `eclipse_fraction()`
   (umbra/penumbra interpolation; FW §11.B.10); `cats_phase_angle_deg()` (IP-1300, FR-8220) — the Sun-target-
   chaser illumination ("CATS") phase angle, the engine's single shared phase-angle function
-  (`BL-0152`: any future `FR-1670` access predicate must call it, not re-derive it).
+  (`BL-0152`: now also called by IP-1221's `FR-1670` observe-gain refinement, not re-derived).
 - `spacesim/engine/tle_export.py` (IP-1211, FR-7440) — current-epoch TLE generation from any ECI
   state: a single-epoch SGP4 mean-element fit (`state_to_tle()`; non-singular equinoctial
   elements computed directly from r/v, safeguarded Newton + fixed-point correction, bounded and

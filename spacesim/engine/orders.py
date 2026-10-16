@@ -544,6 +544,34 @@ class OrderSystem:
         return wins[0] if wins else None
 
     # -- execution payloads ----------------------------------------------------
+    def _observation_phase_angle_deg(self, sensor, target_id: Optional[str], t: int) -> Optional[float]:
+        """IP-1221 (FR-1670, Design Decision 2) — the Sun-target-sensor phase angle at ``t`` from
+        true positions, via the one shared ``engine/sun.py::cats_phase_angle_deg`` (BL-0152).
+        Observer = ground site (ground sensor), host Asset's orbit (hosted, FR-1660 rule), else the
+        sensor's own orbit. ``None`` (→ gain unaffected) for any geometry that can't be evaluated;
+        never raises. Pure: reads the world, mutates nothing, draws no RNG."""
+        from spacesim.engine.geometry import ecef_to_eci, geodetic_to_ecef
+        from spacesim.engine.sun import cats_phase_angle_deg
+
+        target = self.world.assets.get(target_id) if target_id else None
+        if target is None or target.orbit is None:
+            return None
+        r_target, _ = self.prop.rv(target.orbit, t)
+        if sensor.kind == "space_based":
+            host = self.world.assets.get(sensor.host_asset_id) if sensor.host_asset_id else None
+            obs_orbit = host.orbit if (host is not None and host.orbit is not None) else sensor.orbit
+            if obs_orbit is None:
+                return None
+            r_obs, _ = self.prop.rv(obs_orbit, t)
+        else:
+            if sensor.location is None:
+                return None
+            r_obs = ecef_to_eci(geodetic_to_ecef(sensor.location), t)
+        try:
+            return cats_phase_angle_deg(r_target, r_obs, t)
+        except ValueError:
+            return None
+
     def _exec_payload(self, order: Order, win: AccessWindow) -> tuple[str, dict]:
         p = order.params
         # IP-2010 v1.1 (BL-0002) — capture the issuing cell's live track confidence for
@@ -699,7 +727,16 @@ class OrderSystem:
                 if target_orbit is not None:
                     from spacesim.engine.orbit import classify_regime
                     target_regime = classify_regime(target_orbit.a_m, target_orbit.e, target_orbit.i_deg)
-            gain = _eg(base_gain, look_angle_deg, bp, target_regime=target_regime, band_affinity=band_affinity)
+            # IP-1221 (FR-1670) — a passive-EO sensor declaring a usable phase-angle range has its
+            # gain scaled by the Sun-target-sensor phase angle at the observation instant
+            # (win.start, the time the execute event is scheduled at). Undeclared sensors and any
+            # undefined geometry leave the gain unchanged.
+            phase_deg = None
+            usable_range = getattr(actor_sensor, "usable_phase_angle_deg", None) if actor_sensor else None
+            if usable_range is not None and actor_sensor.needs_lighting:
+                phase_deg = self._observation_phase_angle_deg(actor_sensor, order.target, win.start)
+            gain = _eg(base_gain, look_angle_deg, bp, target_regime=target_regime, band_affinity=band_affinity,
+                       phase_angle_deg=phase_deg, usable_phase_range=usable_range if phase_deg is not None else None)
 
             # Compute footprint polygon from the actor's current orbit position + heading.
             footprint: Optional[list] = None

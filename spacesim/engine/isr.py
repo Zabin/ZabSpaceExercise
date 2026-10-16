@@ -115,9 +115,30 @@ def available_modes(payload_type: str) -> list[str]:
 _BAND_AFFINITY_MISMATCH_FACTOR = 0.5  # IP-1220 (FR-1630) — gain penalty outside a declared band
 
 
+def phase_angle_factor(phase_angle_deg: float, usable_range: tuple[float, float]) -> float:
+    """IP-1221 (FR-1670, FS-122 v1.1 Design Decision 3) — the observation-gain multiplier for a
+    passive-EO sensor's declared usable Sun-target-sensor phase-angle range ``(lo, hi)``.
+
+    1.0 inside ``[lo, hi]`` (bounds inclusive). Outside, a linear fall-off: from 1 at ``hi`` to
+    0 at 180 deg above the range, and from 1 at ``lo`` to 0 at 0 deg below it — continuous at the
+    bound, non-increasing away from it, strictly below 1 everywhere outside (R109 v1.3 §3.11
+    "not a hard cliff"; the 0 endpoint matches the Lambertian phase function at full backlight).
+    Pure; a bound at the domain edge has no outside region on that side.
+    """
+    lo, hi = float(usable_range[0]), float(usable_range[1])
+    theta = float(phase_angle_deg)
+    if lo <= theta <= hi:
+        return 1.0
+    if theta > hi:
+        return max(0.0, (180.0 - theta) / (180.0 - hi))   # hi < theta <= 180 ⇒ hi < 180
+    return max(0.0, theta / lo)                            # 0 <= theta < lo ⇒ lo > 0
+
+
 def effective_gain(base_gain: float, look_angle_deg: float, bp: dict,
                     target_regime: Optional[str] = None,
-                    band_affinity: Optional[str] = None) -> float:
+                    band_affinity: Optional[str] = None,
+                    phase_angle_deg: Optional[float] = None,
+                    usable_phase_range: Optional[tuple[float, float]] = None) -> float:
     """Compute confidence-gain adjusted for beam-mode and off-nadir angle.
 
     EO: off-nadir degrades resolution and thus gain (cosine weighting).
@@ -128,12 +149,18 @@ def effective_gain(base_gain: float, look_angle_deg: float, bp: dict,
     ``engine/orbit.py::Regime`` value) degrades gain when the target's own regime doesn't match
     the sensor's declared affinity, composing with (applied after) the existing off-nadir term.
     Additive: omitting either argument reproduces the pre-package gain exactly.
+
+    IP-1221 (FR-1670) — a passive-EO sensor's declared ``usable_phase_range`` scales gain by
+    ``phase_angle_factor(phase_angle_deg, usable_phase_range)``, applied after every existing term.
+    Additive: omitting either argument reproduces the pre-package gain exactly.
     """
     look_rad = math.radians(max(0.0, min(45.0, look_angle_deg)))
     angle_factor = math.cos(look_rad)        # 1.0 at nadir, 0.707 at 45°
     gain = base_gain * bp["gain_factor"] * angle_factor
     if band_affinity is not None and target_regime is not None and target_regime != band_affinity:
         gain *= _BAND_AFFINITY_MISMATCH_FACTOR
+    if phase_angle_deg is not None and usable_phase_range is not None:
+        gain *= phase_angle_factor(phase_angle_deg, usable_phase_range)
     return gain
 
 
