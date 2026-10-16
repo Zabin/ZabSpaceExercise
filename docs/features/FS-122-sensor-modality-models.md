@@ -17,7 +17,7 @@
 > **Dependencies:** [FS-104](FS-104-sda-tasking.md) (SDA Tasking — the sensor-tasking workflow this
 > Feature's access/effectiveness refinements sit underneath, distinct not duplicative per
 > `FR-1600`'s own family preamble)
-> **Referenced By:** [IP-1222](../implementation/packages/IP-1222-sensor-modality-wiring-remediation.md)
+> **Referenced By:** [IP-1041](../implementation/packages/IP-1041-observe-order-reason-and-param-remediation.md) (🟢 READY, observe-order remediation), [IP-1222](../implementation/packages/IP-1222-sensor-modality-wiring-remediation.md)
 > (remediation package for `FR-1610`/`FR-1630`/`FR-1640` wiring, ✅ `VERIFIED` 2026-10-16 via
 > [VR-1222](../implementation/verification/VR-1222-sensor-modality-wiring-remediation.md)),
 > [IP-1221](../implementation/packages/IP-1221-cats-phase-angle-observation-gain.md)

@@ -561,7 +561,45 @@ FS-122 series it takes `IP-1222`.
 
 | Package | FS | Status | Authorization |
 |---|---|---|---|
-| [IP-1222](packages/IP-1222-sensor-modality-wiring-remediation.md) | FS-122 v1.1 (`FR-1610`, `FR-1630`, `FR-1640`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
+| [IP-1222](packages/IP-1222-sensor-modality-wiring-remediation.md) | FS-122 v1.1 (`FR-1610`, `FR-1630`, `FR-1640`) | ✅ VERIFIED (`VR-1222`, 2026-10-16; was 🟢 READY at authoring) | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
+
+No cross-package sequencing constraint.
+
+## Observe-order remediation (pipeline run #132, 2026-10-16)
+
+Run #131's training review ([REV-TRN-006](../reviews/training-review-runs122-127-scope.md) F2/F3)
+found two code defects on the sensor-tasking and session-load seams (`BL-0219`, `BL-0220`), and fired
+`BL-0217`'s revisit trigger. Planning re-checked each live at `9fc25a4` and found `BL-0217` wider than
+filed: string `look_angle_deg`/`gain` and an explicit `null` also crash, and every such crash leaves a
+phantom sensor booking. Work units:
+
+1. **Reason:** in `_plan_collection`, report `sensor_contended` only when a window was found and
+   every one was booked; otherwise `no_window`.
+2. **Param validation:** reject a malformed observe `beam_mode`/`look_angle_deg`/`duration_s`/`gain`
+   in `_validate` (before the `auto` early return, before any booking) with `invalid_param`; treat an
+   explicit `null` as absent; guard `isr.beam_params` against a non-string mode.
+3. **Console tips:** `REASON_TIPS` for `invalid_param` and `requires_cue`; corrected
+   `sensor_contended` text.
+4. **Tests:** both reasons, both paths, no phantom booking, HTTP outcome, `null` defaults,
+   well-formed orders unchanged.
+
+**Split / no-split rationale.**
+
+- Units 1–3 are one package. They are small edits on one seam (`OrderSystem`'s observe planning and
+  validation) with one shared test fixture, found together. Unit 2's booking leak is also a source
+  of false `sensor_contended`, so it is the same symptom as unit 1. The FS-104 series takes
+  `IP-1041`, next to the as-built `IP-1040`.
+- **`BL-0220` is not packaged.** It violates `FR-5310` (load-time vignette validation with a
+  precise error). The Feature Catalog assigns `FR-5310` to `FEAT-5300`, which has no Feature
+  Specification. `FS-115` excludes vignette-file validity explicitly, and the catalog lists
+  `FR-5310` under its Excluded Requirements. This skill plans only from an approved
+  specification, so `BL-0220` routes to `06-feature-specification` (an FS for `FEAT-5300`, or an
+  owner decision to fold it into an existing spec).
+- The `jam`/`engage` numeric-param crash class is left for a later pass (see `IP-1041` Risks).
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1041](packages/IP-1041-observe-order-reason-and-param-remediation.md) | FS-104 (`FR-3210`) + FS-122 v1.1 (`FR-1610`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
 
 No cross-package sequencing constraint.
 
