@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1041
 > **Version:** 1.0
-> **Status:** 🟡 IN PROGRESS — 2026-10-16, `08-code-implementation`, pipeline run #133.
+> **Status:** 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #133. `_plan_collection` reports `sensor_contended` only when a window was found and all were booked, else `no_window`; `_validate` rejects a malformed observe `beam_mode`/`look_angle_deg`/`duration_s`/`gain` as `invalid_param` (module helper `_observe_params_ok`, before the `auto` early return and before any booking) and drops an explicit `null` so it takes the absent default; `isr.beam_params` falls back on a non-string mode; `REASON_TIPS` gained `invalid_param`/`requires_cue` and a corrected `sensor_contended`. Tests: `test_observe_order_remediation.py` (29 collected; all but the contention and existing-reason cases seen failing first). Full suite 908 passed / 3 skipped (911 collected; baseline 879/3/882) (JUnit), gates 14/14.
 > *(Was 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #132.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
 > of the packages this iteration reaches. Same precedent as `IP-1222`/`IP-1221`/`IP-1212`/`IP-1063`.

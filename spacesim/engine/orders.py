@@ -56,6 +56,33 @@ ACTION_CHANNEL = {
 # the same ceiling keeps the exercise planning realistic.
 MAX_COMMANDS_PER_PASS = 4
 
+# IP-1041 Design Decision 2 (BL-0217) — the observe params `_exec_payload` converts with float().
+OBSERVE_NUMERIC_PARAMS = ("look_angle_deg", "duration_s", "gain")
+
+
+def _observe_params_ok(params: dict) -> bool:
+    """IP-1041 Design Decisions 2-3 — normalize and check an observe order's params in place.
+
+    An explicit ``None`` for ``beam_mode`` or a numeric param is dropped, so it takes the same
+    default as an absent key everywhere the params are read later. ``beam_mode`` must then be a
+    string; each numeric param must be accepted by ``float()`` (as today, so numeric strings still
+    work) and finite. Returns False on the first malformed value; never raises.
+    """
+    for key in ("beam_mode",) + OBSERVE_NUMERIC_PARAMS:
+        if key in params and params[key] is None:
+            del params[key]
+    if "beam_mode" in params and not isinstance(params["beam_mode"], str):
+        return False
+    for key in OBSERVE_NUMERIC_PARAMS:
+        if key in params:
+            try:
+                value = float(params[key])
+            except (TypeError, ValueError):
+                return False
+            if not math.isfinite(value):
+                return False
+    return True
+
 # Realistic bar widths for the Gantt chart (in seconds).  "None" means use the full window.
 BAR_DURATION_S: dict = {
     "command":  120,   # uplink + ACK
@@ -418,8 +445,10 @@ class OrderSystem:
             order.fail_reason = "requires_cue"
             return
         chosen: Optional[tuple[str, AccessWindow]] = None
+        windows_found = False
         for sid in sensor_ids:
             wins = ap.windows(sid, order.target or "", SENSOR_OBSERVATION, now, now + self.horizon)
+            windows_found = windows_found or bool(wins)
             for w in wins:
                 if not self._contended(sid, w.start, w.end):
                     chosen = (sid, w)
@@ -428,7 +457,10 @@ class OrderSystem:
                 break
         if chosen is None:
             order.status = "rejected"
-            order.fail_reason = "sensor_contended" if sensor_ids else "no_window"
+            # IP-1041 Design Decision 1 (BL-0219, FR-3210) — "contended" only when a window was
+            # found and every one found was booked; no window at all is `no_window`, the same rule
+            # `_plan_command` uses for `pass_capacity_full` vs `no_window`.
+            order.fail_reason = "sensor_contended" if windows_found else "no_window"
             return
         sid, win = chosen
         order.actor = sid
@@ -484,6 +516,10 @@ class OrderSystem:
             return False, "unknown_action"
 
         if order.action == "observe":
+            # IP-1041 Design Decision 2 (BL-0217) — before the `auto` early return and before any
+            # window search or booking, so `dry_run` and `issue` agree and nothing leaks.
+            if not _observe_params_ok(order.params):
+                return False, "invalid_param"
             if order.actor == "auto":
                 return True, ""  # sensor chosen at planning time
             sid = self._resolve_sensor_id(order.actor)

@@ -101,7 +101,9 @@ def beam_params(payload_type: str, beam_mode: Optional[str] = None) -> tuple[dic
     """
     modes = BEAM_MODES.get(payload_type) or BEAM_MODES.get("isr_eo", {})
     default = _DEFAULT_MODE.get(payload_type, "stripmap")
-    resolved = beam_mode if (beam_mode and beam_mode in modes) else default
+    # IP-1041 Design Decision 4 (BL-0217) — a non-string mode is unrecognised, so it falls back
+    # like any unknown name instead of raising on the membership test.
+    resolved = beam_mode if (isinstance(beam_mode, str) and beam_mode in modes) else default
     params = dict(modes.get(resolved) or modes.get(default) or next(iter(modes.values()),
         {"swath_km": 30.0, "resolution_m": 3.0, "power_factor": 1.0, "duty_cycle": 0.40, "gain_factor": 1.0}))
     return params, resolved
