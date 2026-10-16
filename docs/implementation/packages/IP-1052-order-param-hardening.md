@@ -2,7 +2,16 @@
 
 > **Package ID:** IP-1052
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #137, awaiting a **fresh-session** `09-package-verification`. `ORDER_PARAM_RULES` + `_order_params_ok` (module level, beside `_observe_params_ok`, which becomes its `observe` entry) run in `_validate` right after `unknown_action`: jam/engage/cyber/maneuver/command/downlink params of the wrong shape (non-finite or non-numeric number, non-integral-convertible `salvo_n`/`stored_at`, `dv` not a finite 3-vector, non-string id/enum) are rejected `invalid_param`, and an explicit `null` is dropped so it takes the absent default. `issue` registers the order after `_plan` returns; `_continue_plan`/`_plan_command`/`_plan_collection` build the payload before status/booking/schedule, and `_plan_cyber` constructs the effect before marking the order queued (`_mark_cyber_queued`). `REASON_TIPS.invalid_param` action-neutral. Tests: `test_order_param_hardening.py` (41 collected; all seen failing first except the three unchanged-behaviour tests — numeric strings, salvo truncation, observe unchanged — which passed on arrival as Tests 9–10 predicted). Full suite 949 passed / 3 skipped (952 collected, JUnit; baseline 908/3/911), gates 14/14.
+> **Status:** 🟢 VERIFIED — 2026-10-16, `09-package-verification`, [VR-1052](../verification/VR-1052-order-param-hardening.md), clean, first pass, fresh session. Both `WorldState`-corruption
+> claims (`-inf` jammer power via `power_w: "inf"`, `NaN` orbit/Δv via `dv: [NaN, 0, 0]`)
+> independently reproduced and confirmed fixed on fresh vignettes/seeds distinct from this
+> package's own fixtures, including a load-bearing well-formed-order consumption counterfactual.
+> Ghost-order prevention independently confirmed across all five action types. The
+> `_plan_collection`/`order.actor` ordering claim independently proved with a positive
+> counterfactual (`VR-1041`'s own standard). `BL-0227` confirmed correctly scoped (specific route
+> closed, general `advance_to` gap independently reconfirmed still live and out of scope). Full
+> suite re-run exactly (949/3/952); gates 14/14. No findings against the package.
+> *(Was 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #137, awaiting a **fresh-session** `09-package-verification`. `ORDER_PARAM_RULES` + `_order_params_ok` (module level, beside `_observe_params_ok`, which becomes its `observe` entry) run in `_validate` right after `unknown_action`: jam/engage/cyber/maneuver/command/downlink params of the wrong shape (non-finite or non-numeric number, non-integral-convertible `salvo_n`/`stored_at`, `dv` not a finite 3-vector, non-string id/enum) are rejected `invalid_param`, and an explicit `null` is dropped so it takes the absent default. `issue` registers the order after `_plan` returns; `_continue_plan`/`_plan_command`/`_plan_collection` build the payload before status/booking/schedule, and `_plan_cyber` constructs the effect before marking the order queued (`_mark_cyber_queued`). `REASON_TIPS.invalid_param` action-neutral. Tests: `test_order_param_hardening.py` (41 collected; all seen failing first except the three unchanged-behaviour tests — numeric strings, salvo truncation, observe unchanged — which passed on arrival as Tests 9–10 predicted). Full suite 949 passed / 3 skipped (952 collected, JUnit; baseline 908/3/911), gates 14/14.)*
 > *(Was 🟡 IN PROGRESS — 2026-10-16, `08-code-implementation`, pipeline run #137.)*
 > *(Was 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #136.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
@@ -302,26 +311,26 @@ nothing outside `engine/`.
 
 ## Verification Checklist
 
-- [ ] `git diff` of the implementing commit touches code only in `spacesim/engine/orders.py`,
+- [x] `git diff` of the implementing commit touches code only in `spacesim/engine/orders.py`,
       `spacesim/ui_web/static/app.js` and `spacesim/tests/`; `simulation.py`, `access.py`,
       `buscommands.py` and `session/` are unchanged.
-- [ ] Read `_validate`: the per-action check runs immediately after `unknown_action`, and observe
+- [x] Read `_validate`: the per-action check runs immediately after `unknown_action`, and observe
       still goes through `_observe_params_ok`.
-- [ ] Read `issue`, `_continue_plan`, `_plan_command`, `_plan_collection`, `_plan_cyber`: no status,
+- [x] Read `issue`, `_continue_plan`, `_plan_command`, `_plan_collection`, `_plan_cyber`: no status,
       booking, registry or scheduler write precedes payload construction.
-- [ ] Independent reproduction on a vignette/seed other than `leo-isr-denial` seed 5: a jam with
+- [x] Independent reproduction on a vignette/seed other than `leo-isr-denial` seed 5: a jam with
       `power_w: "abc"` gives `invalid_param` from both `POST /order/validate` and `POST /order`, and
       no ghost order is listed.
-- [ ] Independent reproduction of the two `WorldState`-corruption cases (`power_w: "inf"`,
+- [x] Independent reproduction of the two `WorldState`-corruption cases (`power_w: "inf"`,
       `dv: [NaN, 0, 0]`): refused, and the asset's values stay finite after advancing past the window.
-- [ ] A wrong-length `dv` is refused; advancing past its would-be window raises nothing.
-- [ ] Test 8's no-state guarantee, re-derived independently (e.g. a different raising point or order
+- [x] A wrong-length `dv` is refused; advancing past its would-be window raises nothing.
+- [x] Test 8's no-state guarantee, re-derived independently (e.g. a different raising point or order
       kind).
-- [ ] Tests 1–10 exist and pass; the Implementation Summary records which were seen failing first.
-- [ ] Pre-existing tests are unmodified.
-- [ ] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
-- [ ] The RTM `FR-3110`/`FR-1310`/`FR-1410`/`FR-1420` rows cite `IP-1052`.
-- [ ] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
+- [x] Tests 1–10 exist and pass; the Implementation Summary records which were seen failing first.
+- [x] Pre-existing tests are unmodified.
+- [x] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
+- [x] The RTM `FR-3110`/`FR-1310`/`FR-1410`/`FR-1420` rows cite `IP-1052`.
+- [x] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
       agree on status.
 
 ## Dependencies
