@@ -762,6 +762,21 @@ passed 20/20, with no Critical/High. 4 findings:
 - F3 Low: a malformed sensor field gives a bare 500, and Load is silent.
 - F4 Low: two omissions in the `07` table.
 
+**Training review (2026-10-16):** [`reviews/training-review-run135-scope.md`](docs/reviews/training-review-run135-scope.md)
+(REV-TRN-007) independently reviewed run #135's sensor-modality rows in `06`, the `WCM-2`/`BLU-4`/
+`RED-4` sensor paragraphs, the two `07` controller-event rows, the `09` §10 rejection reasons and
+the §15 rows. Driven on fresh engine fixtures and `co-orbital-threat-escort` seed 61 over HTTP.
+Every behavioural claim checked is accurate. Traceability is consistent (0 broken links, 43 IDs,
+0 orphans), and the playbook and training suites passed 20/20, with no Critical/High. 4 Low
+findings:
+
+- F1: `06` says only the HTTP API can send a radar `fence`/`dish`. The command menu's raw JSON
+  params box also can.
+- F2: the corpus doesn't say that a non-`auto` **Mode** dropdown entry replaces a radar's own
+  mode (`spotlight` gives 1.8 ×).
+- F3: "look-ahead" (manual) vs "planning horizon" (console), with neither in the glossary.
+- F4: `09` §10 `invalid_param` is stale since `IP-1052` (already `BL-0228`).
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
