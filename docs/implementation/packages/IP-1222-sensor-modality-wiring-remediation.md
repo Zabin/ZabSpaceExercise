@@ -2,15 +2,25 @@
 
 > **Package ID:** IP-1222
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #129. Awaiting
-> `09-package-verification` in a fresh session. A radar's `fence`/`dish` (order param, else
-> `Sensor.beam_mode`) selects the `ground_radar` table; a radar naming no radar mode stays on
-> `isr_sar` `stripmap`. `auto` drops `requires_cue` sensors without a held track (`requires_cue`
-> reason when none is left). `altitude_band_affinity` is `Optional[Regime]`, compared through
-> `isr.altitude_band`. An unknown radar `beam_mode` fails `Sensor` validation. Tests:
-> `test_sensor_modality_wiring.py` (10; 8 seen failing first, Tests 6 and 9 passed on arrival as
-> planned). Full suite 879 passed / 3 skipped (882 collected; baseline 869/3/872) (JUnit), gates
-> 14/14.
+> **Status:** ✅ VERIFIED — 2026-10-16 via [VR-1222](../verification/VR-1222-sensor-modality-wiring-remediation.md)
+> (`09-package-verification`, fresh session, first pass, clean — no findings against the package).
+> The load-bearing backward-compatibility claim was independently swept across every shipped
+> vignette: all 38 `ground_radar` sensors found across 15 of 19 vignette files still resolve
+> `stripmap`/gain exactly 1.0 with no mode requested, while `fence`/`dish` now produce distinct
+> gains on the same sensors. The `auto` cue gate was independently reproduced on a fixture distinct
+> from this package's own (space-based/GEO/red-cell), rejecting with no track and correctly
+> selecting the cue sensor once a track exists. The radar `beam_mode` validator and the
+> `altitude_band_affinity` retyping were independently probed with fresh malformed inputs; no
+> shipped vignette declares `altitude_band_affinity` at all. Full suite 879 passed/3 skipped, gates
+> 14/14, independently re-run. Closes `BL-0212`/`BL-0213`/`BL-0214`.
+> *(Was 🔵 COMPLETE — 2026-10-16, `08-code-implementation`, pipeline run #129. A radar's
+> `fence`/`dish` (order param, else `Sensor.beam_mode`) selects the `ground_radar` table; a radar
+> naming no radar mode stays on `isr_sar` `stripmap`. `auto` drops `requires_cue` sensors without a
+> held track (`requires_cue` reason when none is left). `altitude_band_affinity` is
+> `Optional[Regime]`, compared through `isr.altitude_band`. An unknown radar `beam_mode` fails
+> `Sensor` validation. Tests: `test_sensor_modality_wiring.py` (10; 8 seen failing first, Tests 6
+> and 9 passed on arrival as planned). Full suite 879 passed / 3 skipped (882 collected; baseline
+> 869/3/872) (JUnit), gates 14/14.)*
 > *(Was 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #128.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3) through the standing pre-authorization
 > of the packages this iteration reaches. Same precedent as `IP-1221`/`IP-1212`/`IP-1063`.
@@ -254,21 +264,26 @@ draw no RNG and import nothing outside `engine/`.
 
 ## Verification Checklist
 
-- [ ] `git diff` of the implementing commit touches code only in `spacesim/engine/orders.py`,
-      `isr.py`, `entities.py` and `spacesim/tests/`; `access.py` is unchanged.
-- [ ] Read the observe branch: the `ground_radar` table is chosen only for a `ground_radar` actor
+- [x] `git diff` of the implementing commit touches code only in `spacesim/engine/orders.py`,
+      `isr.py`, `entities.py` and `spacesim/tests/`; `access.py` is unchanged. (`VR-1222`)
+- [x] Read the observe branch: the `ground_radar` table is chosen only for a `ground_radar` actor
       sensor whose effective requested mode is a radar key; the existing resolution is otherwise
-      untouched.
-- [ ] Independent reproduction through the HTTP API on a shipped vignette (e.g. `leo-isr-denial`
+      untouched. (`VR-1222`)
+- [x] Independent reproduction through the HTTP API on a shipped vignette (e.g. `leo-isr-denial`
       `BLUE-RADAR`): `fence` and `dish` now execute as themselves with different gains, and no
-      mode still executes as `stripmap`.
-- [ ] Independent reproduction of the `auto` cue gate on a fixture other than the tests'.
-- [ ] Tests 1–9 exist and pass; the Implementation Summary records which were seen failing first.
-- [ ] Pre-existing tests are unmodified.
-- [ ] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
-- [ ] The RTM `FR-1610`/`FR-1630`/`FR-1640` rows cite `IP-1222`.
-- [ ] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
-      agree on status.
+      mode still executes as `stripmap`. (`VR-1222` swept all 38 shipped-vignette `ground_radar`
+      sensors across 15 of 19 vignette files, not only `leo-isr-denial`.)
+- [x] Independent reproduction of the `auto` cue gate on a fixture other than the tests'.
+      (`VR-1222`: space-based/GEO/red-cell fixture, both the no-track rejection and the
+      with-track selection.)
+- [x] Tests 1–9 exist and pass; the Implementation Summary records which were seen failing first.
+      (`VR-1222`)
+- [x] Pre-existing tests are unmodified. (`VR-1222`)
+- [x] `python3 -m pytest` passes in full, and `test_determinism.py` and `test_import_guard.py` pass.
+      (`VR-1222`: 879 passed/3 skipped, gates 14/14)
+- [x] The RTM `FR-1610`/`FR-1630`/`FR-1640` rows cite `IP-1222`. (`VR-1222`)
+- [x] The Master Build Plan row, the `packages/INDEX.md` row, `ROADMAP.md`'s row and this header
+      agree on status. (`VR-1222`)
 
 ## Dependencies
 
