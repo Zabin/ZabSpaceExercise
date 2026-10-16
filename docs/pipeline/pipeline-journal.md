@@ -13,48 +13,44 @@
 
 ## Position
 
-- **Updated:** 2026-10-16 (run #141 — advance, `06-feature-specification`)
-- **Increment:** load-time vignette validation (`FEAT-5300`, Must, Release 1).
-  [FS-131](../features/FS-131-load-time-vignette-validation.md) is written and ready for
-  implementation planning, except `FR-5310`'s template-reference clause.
-  - As-built probes found three more failures besides `BL-0220`'s bare 500. A malformed TLE
-    loads and then crashes the session on its first advance (`BL-0237`, Medium). `roles_needed`
-    naming no asset loads silently. Duplicate asset ids are silently replaced.
-  - Unknown or traversal ids also give a 500. A refused build consumes a session id, and can
-    evict a live session when the registry is full.
+- **Updated:** 2026-10-16 (run #142 — advance, `04-requirements-engineering`)
+- **Increment:** load-time vignette validation (`FEAT-5300`, Must). The requirements are
+  sharpened under FS-131.
+  - Five Must leaves added: `FR-5311` (TLE parse), `FR-5312` (orbit/location presence), `FR-5313`
+    (unique ids), `FR-5314` (`roles_needed` references) and `FR-1460` (salvo ≤ ammo).
+  - Three candidates added: `CR-23`/`CR-24`/`CR-25`.
+  - Reported for adjudication: `FR-5310`'s template clause vs the as-built content model (`BL-0233`,
+    → `03`) and `FR-1610`'s AC vs its Postcondition (`BL-0215`, owner).
+  - Report: [load-validation batch](../reviews/requirements-update-load-validation-batch.md).
   - No package is `READY` or `COMPLETE`.
 - **Pipeline state:**
-  - `04-requirements-engineering`: due on `BL-0233` (Medium, `FR-5310`'s only Acceptance
-    Criterion names asset templates the content model doesn't have), `BL-0234` (which other
-    cross-references are invalid) and `BL-0235` (what "well-formed TLE" means).
-    - That pass also fires `BL-0215`'s and `BL-0226`'s "next `04` pass" triggers.
-    - `BL-0171`/`BL-0181` would ride an `04` pass too, but are parked `NEEDS-USER` with the
-      owner, so they must not be resolved.
-  - `07-implementation-planning` on FS-131 follows (`BL-0220`, `BL-0236` and `BL-0237` ride).
+  - `06`: FS-131 sync to `FR-5311`–`FR-5314` (`BL-0240`) is due before `07` plans it.
+  - `07` on FS-131 then follows (`BL-0220`, `BL-0236` and `BL-0237` ride).
+  - `03`: `BL-0233` (Medium; options A/B) and `BL-0239` (jammer power) are due. `BL-0233` blocks
+    only FS-131 criterion 10.
+  - `05`: `FR-1460` needs a catalog Feature (`BL-0238`, riding `BL-0153`'s inventory pass).
   - `09-training-manual-review` on run #140's scope (`a6e2a51`) is still owed, from a different
     agent context.
   - `10`: the `FS-122` chain (`BL-0224`), the order-hardening chain, the ephemeris/TLE-export/CATS
     chain, and the run #81 tranche (`BL-0169`).
   - `IP-1160` is `BLOCKED` on authorization.
 - **Backlog:**
-  - Harvested 5:
-    - `BL-0233` (Medium, → `04`);
-    - `BL-0234` and `BL-0235` (Low, → `04`);
-    - `BL-0236` (Low, → `07`);
-    - `BL-0237` (Medium bug, → `07` with FS-131).
-  - All five are `SCHEDULED`.
-  - `BL-0220` was re-routed `06 → 07`.
+  - Closed `DONE` at this stage: `BL-0234`, `BL-0235`, `BL-0226`.
+  - `BL-0233` re-routed `04 → 03`.
+  - `BL-0215` → `NEEDS-USER` (not ripe, non-blocking).
+  - Harvested 3: `BL-0238` (Low, `FR-1460` build path), `BL-0239` (Low, → `03`) and `BL-0240`
+    (Low, → `06`), all `SCHEDULED`.
   - No `NEW` entries.
-  - `NEEDS-USER`, not ripe: `BL-0187`, `BL-0171`, `BL-0181`. `BL-0184` stays `REJECTED`.
-- **Next step:** `04-requirements-engineering` on `BL-0233` + `BL-0234` + `BL-0235`, with
-  `BL-0215`/`BL-0226` riding.
-  - It runs before `07` on FS-131: these are upstream findings that change which rules the
-    package would implement.
-  - If `04`'s own rules make `BL-0233` a judgment for the owner (amend a Must requirement's only
-    acceptance test, or add template libraries), it becomes a `NEEDS-USER` stop.
+  - `NEEDS-USER`, not ripe: `BL-0187`, `BL-0171`, `BL-0181` (parked with the owner, untouched),
+    and `BL-0215` (new). `BL-0184` stays `REJECTED`.
+- **Next step:** `06-feature-specification` on FS-131 (`BL-0240`): add `FR-5311`–`FR-5314`, the
+  `FR-5312` rule and its acceptance criterion; close Open Questions 2/3 against the new leaves and
+  candidates.
+  - Then `07-implementation-planning` on FS-131.
+  - `03` on `BL-0233` + `BL-0239` may run in parallel.
 - **Open gates:**
   - `IP-1160` authorization (MSTR-006 §3) is still deferred by the owner.
-  - `NEEDS-USER`, not ripe: `BL-0187`, `BL-0171`, `BL-0181`.
+  - `NEEDS-USER`, not ripe: `BL-0187`, `BL-0171`, `BL-0181`, `BL-0215`.
 
 ---
 
@@ -611,3 +607,4 @@
 | 139 | 2026-10-16 | advance (no override — run #138 named this step as one of two options) | `09-training-manual-review` | Run #135's scope (`6c8c174`) | Reconciled (origin tip `0458fd3` = run #138's own push; `IP-1052` `VERIFIED` per `VR-1052`; no `READY`/`COMPLETE` package; only `IP-1160` `BLOCKED`). **Journal drift noted:** run #138's row reads commit `<pending>`. It is `0458fd3`; the row is left as written (append-only). Triaged: zero `NEW`; no `DEFERRED` trigger fired. `BL-0187`/`BL-0171`/`BL-0181` left `NEEDS-USER` and `BL-0184` left `REJECTED`, as the owner parked them. **Step 3 choice:** of run #138's two named options, review came before `BL-0228`'s authoring. `BL-0228` edits the same `09` §10 bullet run #135 wrote, so reviewing first keeps the scopes separate (the run #131 precedent). Gate check: review is not gated. **Independence:** a fresh agent context with no part in run #135, `IP-1041`/`IP-1052`/`IP-1220`–`1222`, or any earlier branch commit. Invoked `09-training-manual-review`:<br>• Code reads of `isr.py` (`BEAM_MODES["ground_radar"]`, `_DEFAULT_MODE`, `beam_params`, `altitude_band`, `effective_gain`), `Sensor` + `_check_radar_beam_mode`, the `orders.py` observe path (`_candidate_sensors`/`_auto_blocked_by_cue`/`_plan_collection`/`_validate`/`_exec_payload` mode precedence), `_apply_inject_effects`, and `app.js` `composeBody`/`actionsFor`/actor list/`REASON_TIPS`.<br>• An engine probe on a fresh SSO-target fixture (seed 31) of every `06`/`BLU-4`/`RED-4`/`09` §10 claim: radar gains, order-over-sensor precedence, load-time rejections, `LEO_SSO` = `LEO`, the `auto` cue skip and all-cue rejection, `no_window` vs `sensor_contended`, `invalid_param`/`null`.<br>• An HTTP probe on `co-orbital-threat-escort` seed 61.<br>• Link/ID/footer script: 294 links with 0 broken, 43 IDs, 0 orphans, 0 missing paths.<br>• Playbook + training suites 20/20, and the modality/observe suites alongside (59/59).<br>Wrote [REV-TRN-007](../reviews/training-review-run135-scope.md) and a ROADMAP review-theme entry (commit `910e104`). **No Critical/High; 4 Low.** F1: the `06` "only the HTTP API" claim is wrong, because the command menu's raw JSON params box sends `fence`/`dish`. F2: a non-`auto` Mode dropdown entry silently replaces a radar's mode (`spotlight` 1.8 ×). F3: "look-ahead" vs "planning horizon", with neither in the glossary. F4: = `BL-0228`, confirmed. Harvested 3: `BL-0229` (F1), `BL-0230` (F2) and `BL-0231` (F3), all `SCHEDULED` for `08-training-manual-authoring`. `BL-0225` → `SCHEDULED` with them. `BL-0224` extended with F1/F2 (stays `DEFERRED` to the `FS-122`-chain `10`). | `08-training-manual-authoring` on `BL-0228` + `BL-0229` + `BL-0230` + `BL-0231` + `BL-0225` (batched). Its output needs a `09-training-manual-review` from a different agent context. |
 | 140 | 2026-10-16 | advance (no override — run #139's recorded next step) | `08-training-manual-authoring` | `BL-0228` + `BL-0229` + `BL-0230` + `BL-0231` + `BL-0225` (batched) | Reconciled (origin tip `0ec6217` = run #139's own push; no drift). Triaged: zero `NEW`; the five riders were `SCHEDULED` for this step. `BL-0187`/`BL-0171`/`BL-0181` left `NEEDS-USER` and `BL-0184` left `REJECTED`, as the owner parked them. Gate check: manual authoring is not gated. Invoked `08-training-manual-authoring`.<br>As-built was re-checked by code reads: `ORDER_PARAM_RULES`/`_param_value_ok`/`_order_params_ok`, `OrderSystem` `horizon_s` = 24 h (`SessionManager` passes none), `composeBody`/`ACTIONS_BY_KIND`/`VERB_FORM_SCHEMA` (observe has no form, so it uses the raw JSON box), `index.html` `#json-params-wrap`/`#task-beam-mode`, `REASON_TIPS`. A fresh HTTP probe on `gnss-ew-campaign` seed 140 gave: jam `power_w` `"lots"`/`"inf"` → `invalid_param`; `null` → queued; `"200"` → queued; maneuver `dv: [1,2]` and `via: 7` → `invalid_param`.<br>Updated:<br>• `09` §10: `invalid_param` is action-neutral with examples and `null` = absent; "planning horizon" replaces "look-ahead"; footer adds `_order_params_ok`/`ORDER_PARAM_RULES`/`horizon_s` and FR-3110.<br>• `09` §11: new "Planning horizon" glossary entry and the module's first glossary Sources footer (`BL-0225`).<br>• `06` `beam_mode` row: the command-menu raw-JSON path, plus the Mode-dropdown override (`spotlight` 1.8 ×, `scan` plain); planning-horizon wording; footer adds `app.js`/`index.html`.<br>• `BLU-3`/`RED-3`: `invalid_param` for hand-edited params.<br>• `BLU-4`/`RED-4`: keep Mode on `auto` for a radar; planning-horizon wording.<br>• `10` §10.5 row 8 and §10.6 row 5 notes.<br>• §15.1: sensor row extended, plus a new order-param shape-check row (`BLU-3`/`RED-3`); §15.2 `BLU-3`/`BLU-4`/`RED-3`/`RED-4` rows.<br>Checks: links 297 with 0 broken, 43 IDs with 0 orphans, 0 missing paths. Module sizes: `13` 279, `14` 270, `09` 52. Playbook + training suites 20/20. Commit `a6e2a51`. `BL-0225`/`BL-0228`/`BL-0229`/`BL-0230`/`BL-0231` → `DONE`. Harvested 1: `BL-0232` (Low, `10-ui-reference.md` has no Sources footers, `DEFERRED` with `BL-0198`). No R600 grounding gap: the run made no pedagogical choices. | `09-training-manual-review` on run #140's scope, in a **different agent context**. This context may instead take `10-integration-review` on the `FS-122` chain (`BL-0224` riding) or the order-hardening chain. |
 | 141 | 2026-10-16 | advance (no override — run #140 named review or `10` for other contexts and `06` on `FEAT-5300` as a parallel; this run applied the ordering rule that the per-feature loop (06→09) drains before per-release `10`) | `06-feature-specification` | `FEAT-5300` (Load-Time Vignette Validation), with `BL-0220` riding | Reconciled (origin tip `d3f91c4` = run #140's own push; no drift). Triaged: zero `NEW`; `BL-0220` was `SCHEDULED` for this step. `BL-0187`/`BL-0171`/`BL-0181` left `NEEDS-USER` and `BL-0184` left `REJECTED`, as the owner parked them. Gate check: specification is not gated. **Step 3 choice:** `FEAT-5300` is a Must, Release 1 Feature with no FS, and `FEAT-4100` depends on it. A `06` step in the per-feature loop outranks the `10` reviews. Run #140's own scope review stays owed to a different context. Invoked `06-feature-specification`.<br>• **Step 0:** `FEAT-5300` is approved in the catalog (`FR-5310`, `NFR-1600`, `NFR-2200`; ADR-0007; INT-0011). Read `FR-5310`, the NFRs, ADR-0007, INT-0011, the GDS-04 §1.1/§1.2 Vignette/Asset entries and GDS-03 §2.5.<br>• **As-built probes:** a session-layer probe on `04-co-orbital-threat-escort` seed 3, and HTTP through a temporary external directory.<br>&nbsp;&nbsp;– `beam_mode: Fence` and a reversed phase range fail inside `build_world`, so `POST /api/sessions` gives a bare 500 (`BL-0220` confirmed); a schema-type error, an unknown id and `../etc` also give 500.<br>&nbsp;&nbsp;– A malformed TLE loads and starts, then raises `sgp4 propagation error code 2` on the first advance.<br>&nbsp;&nbsp;– `roles_needed` naming `NO-SUCH-SAT`, a duplicate asset id (silently replaced), an unknown host, a free-text `kind` and a wrong-typed parameter default all load.<br>&nbsp;&nbsp;– A refused build still increments the session counter, after `_evict_if_full()`.<br>&nbsp;&nbsp;– No shipped vignette has a TLE orbit.<br>Wrote **[FS-131](../features/FS-131-load-time-vignette-validation.md)** (all 21 fields):<br>• one gate before any registry side effect: schema and every per-entity rule (including the late `build_world` validators), TLE initialise-and-propagate at the start epoch, `roles_needed` resolving to a declared asset or group, unique asset/sensor ids, unknown/unsafe ids as client errors, data-only loading;<br>• the refusal names the section, entry, field and reason, and is shown at **Load**;<br>• a refused load leaves the registry untouched;<br>• the shipped library still loads byte-identically;<br>• 10 acceptance criteria.<br>Feature-index row added; the FS-115 dependency note was pointed at FS-131. Commit `049b62e`. **Status:** ready for implementation planning except `FR-5310`'s template clause. Harvested 5: `BL-0233` (Medium, OQ1 → `04`: the only AC names asset templates that don't exist in the content model), `BL-0234` (Low, OQ2 → `04`: which other cross-references count), `BL-0235` (Low, OQ3 → `04`: the TLE well-formedness definition), `BL-0236` (Low, OQ4/5 → `07`: wire form and registry ordering) and `BL-0237` (Medium bug: a malformed TLE crashes mid-exercise; rides FS-131). `BL-0220` re-routed `06 → 07`. | `04-requirements-engineering` on `BL-0233`–`BL-0235` (`BL-0215`/`BL-0226` riding; `BL-0171`/`BL-0181` stay parked), then `07-implementation-planning` on FS-131. |
+| 142 | 2026-10-16 | advance (no override — run #141's recorded next step) | `04-requirements-engineering` | `BL-0233` + `BL-0234` + `BL-0235` (FS-131 Open Questions 1–3), with `BL-0215`/`BL-0226` riding | Reconciled (origin tip `e6d2124` = run #141's own push; no drift). Triaged: zero `NEW`. The "next `04` pass" trigger fired for `BL-0215` and `BL-0226` (→ ride) and for `BL-0171`/`BL-0181`, which are **excluded**: they are parked `NEEDS-USER` with the owner and stay untouched, as does `BL-0187`. `BL-0184` left `REJECTED`. Gate check: a requirements pass is not gated. Each question was checked for source support before any decision. Invoked `04-requirements-engineering`.<br>• **Sources found:** GDS-04 §1.3 ("TLE-sourced orbits must parse at load or the Asset is rejected"), §1.2 ("a satellite must have an Orbit; a terrestrial asset … a location"; "resource levels cannot go negative", with ammo listed among them), §1.10 (Role Assignment references Assets), §1.2/§1.5 Identity, and `FR-5310`'s own text.<br>• **Probes:**<br>&nbsp;&nbsp;– `03-gnss-ew-campaign`: a satellite without an orbit, or a jammer without a location, loads and advances silently.<br>&nbsp;&nbsp;– `da-asat-crisis` seed 142: 1 round and a 5-round salvo → accepted, `ammo = -4` after a successful engagement.<br>&nbsp;&nbsp;– Jammers default to 0 W, and no shipped vignette sets jammer power.<br>• **Added five Must leaves:** `FR-5311` (TLE parse), `FR-5312` (orbit/location), `FR-5313` (unique asset/sensor ids), `FR-5314` (`roles_needed` names a declared asset or group) and `FR-1460` (salvo ≤ remaining ammo).<br>• **Added candidates:** `CR-23` (TLE checksum/epoch), `CR-24` (host/objective/inject/`kind` cross-references) and `CR-25` (other param ranges).<br>• **RTM:** rows added, `FR-5310` → FS-131, reverse indexes updated.<br>• **Reported, not resolved:** F1 Medium `BL-0233` (requirement and architecture agree on template libraries the build lacks → `03`, options A/B); F2 Low `BL-0215` (owner A/B); F3 Low (jammer power negativity vs GDS-04 → `03`); F5 Low (FS-131 must list the new leaves → `06`).<br>Wrote the [update report](../reviews/requirements-update-load-validation-batch.md). Changed `01`/`03` only; `02` unchanged. Commit `f7c7c7a`. `BL-0234`/`BL-0235`/`BL-0226` → `DONE` at this stage. `BL-0233` → `03` (`SCHEDULED`). `BL-0215` → `NEEDS-USER`. Harvested 3: `BL-0238` (`FR-1460` build path, `05`→`06`→`07`), `BL-0239` (jammer power, `03`) and `BL-0240` (FS-131 sync, `06`). | `06-feature-specification` on FS-131 (`BL-0240`), then `07-implementation-planning` on FS-131. `03` on `BL-0233` + `BL-0239` is a parallel option. |
