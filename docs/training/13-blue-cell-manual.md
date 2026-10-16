@@ -63,11 +63,21 @@ Sensors do one thing at a time — task two collections at once and the second s
 you re-task. This tasking→custody→unlock loop is Blue's core defensive discipline: know the sky
 before you commit.
 
+Some vignettes give a sensor limits of its own. A **cue-dependent** sensor refuses a target you
+hold no track on, and the preview shows reason `requires_cue`: get a first look with another
+sensor. A sensor **hosted** on one of your satellites can be tasked by the sensor's name or by the
+satellite's name. Other limits remove windows or reduce gain: a Sun exclusion angle, a minimum
+range, an orbit-regime specialty, or a usable phase-angle range
+([`06`](06-the-vignette-library.md#authoring-sensors-optional-modality-fields) lists them). The
+preview's earliest window is the quickest check that a sensor can see the target at all.
+
 *See also: [RED-4](14-red-cell-manual.md#red-4--build-a-targeting-picture-with-sda) — the same
 tasking→custody→unlock loop, applied to targeting rather than defense.*
 
 > **Sources:** `spacesim/engine/custody.py` (`Track`, weapons-quality gate) ·
-> `spacesim/engine/access.py` (`sensor_observation`) · [`05-core-concepts.md`](05-core-concepts.md) §"SDA sensor tasking"
+> `spacesim/engine/access.py` (`sensor_observation`, `_observation_predicate`) ·
+> `spacesim/engine/orders.py` (`_validate` `requires_cue`, `_resolve_sensor_id`) ·
+> [`05-core-concepts.md`](05-core-concepts.md) §"SDA sensor tasking"
 
 ### BLU-5 · Keep your buses healthy
 

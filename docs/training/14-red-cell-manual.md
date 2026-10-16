@@ -58,11 +58,19 @@ Blue's assets; a good report raises track confidence and shrinks uncertainty unt
 thing at a time (contention pushes the second task to a later pass), and custody **decays** between
 looks — re-task before a firing window or the gate re-locks.
 
+Some vignettes give a sensor limits of its own. A **cue-dependent** sensor refuses a target you
+hold no track on (the preview shows reason `requires_cue`), so cue it from another sensor first.
+A sensor **hosted** on one of your satellites answers to either name. A Sun exclusion angle, a
+minimum range, an orbit-regime specialty or a usable phase-angle range can remove windows or
+reduce gain ([`06`](06-the-vignette-library.md#authoring-sensors-optional-modality-fields) lists
+them). Check the preview's earliest window before you plan around a look.
+
 *See also: [BLU-4](13-blue-cell-manual.md#blu-4--sda-task-sensors-build-custody-unlock-actions) —
 the same tasking→custody→unlock loop, applied to defense rather than targeting.*
 
-> **Sources:** `spacesim/engine/custody.py` (weapons-quality gate) · `spacesim/engine/access.py` ·
-> [`05-core-concepts.md`](05-core-concepts.md) §"SDA sensor tasking"
+> **Sources:** `spacesim/engine/custody.py` (weapons-quality gate) · `spacesim/engine/access.py`
+> (`_observation_predicate`) · `spacesim/engine/orders.py` (`_validate` `requires_cue`,
+> `_resolve_sensor_id`) · [`05-core-concepts.md`](05-core-concepts.md) §"SDA sensor tasking"
 
 ### RED-5 · The five D's: choose your effect
 
