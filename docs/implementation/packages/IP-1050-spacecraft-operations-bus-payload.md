@@ -3,6 +3,7 @@
 > **Package ID:** IP-1050
 > **Version:** 1.0
 > **Status:** ✅ VERIFIED
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0040`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-105 (§3.1), IP-1020 (the `command` action's delivery/window lifecycle)
 > **Referenced By:** IP-1051 (sibling package, effect resolution & console UX), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the executed-state surface IP-1070 replays and IP-2010 assesses
@@ -150,3 +151,14 @@ Rollback surface: `spacesim/engine/buscommands.py` (entire module) and the `appl
 site in `spacesim/engine/orders.py:688`. `BusState`/`PayloadState` are part of the existing save/
 eventlog schema (`spacesim/engine/bus.py`); a revert requires re-verification against the
 order-system and bus-model test suites plus the determinism property test before landing.
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0040` (`VR-1050` Finding 1).** The `_exec_payload (:562-563)` citation pointed at an interior
+  branch, not the function. Current anchors: `OrderSystem._exec_payload()` is defined at
+  `engine/orders.py:713`; its `if order.action == "command":` branch is at `:931`.
+  `engine/buscommands.py`: `apply_command()` `:82`, `can_issue()` `:550`. **Style note for future
+  packages:** cite the function's definition plus a description of the branch ("the `command`
+  branch of `_exec_payload()`"), not a bare interior line number.

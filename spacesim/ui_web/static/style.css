@@ -391,6 +391,49 @@ body.large-text input {
 #tutorial-panel .close:hover { color: var(--text); }
 #tutorial-panel ol { margin: 4px 0 0 18px; padding: 0; font-size: 12px; line-height: 1.45; }
 #tutorial-panel li { margin-bottom: 6px; }
+/* IP-1211 — quick TLE export panel (FR-7440), mirrors #ric-panel. */
+#tle-panel {
+  position: fixed; top: 60px; left: 16px; width: min(560px, 92vw);
+  max-height: calc(100vh - 80px); overflow: auto;
+  background: #0d141c; border: 1px solid var(--cell-accent); border-radius: 10px;
+  padding: 12px 14px 14px; z-index: 241;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.45);
+  display: none;
+}
+#tle-panel.open { display: block; }
+#tle-panel h3 { margin: 0 0 8px; color: var(--cell-accent); }
+#tle-panel .close { position: absolute; top: 6px; right: 10px; cursor: pointer; color: var(--muted); font-size: 14px; }
+#tle-panel .tle-pickers { font-size: 12px; margin-bottom: 8px; }
+#tle-panel textarea {
+  width: 100%; box-sizing: border-box; resize: none; white-space: pre; overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px;
+  background: #081018; color: var(--text); border: 1px solid var(--muted); border-radius: 6px; padding: 6px;
+}
+#tle-panel .tle-actions { margin: 6px 0; font-size: 12px; }
+#tle-panel #tle-meta { font-size: 11px; }
+/* IP-1300 — live RIC-frame view panel (FR-8210/FR-8220). */
+#ric-panel {
+  position: fixed; top: 60px; left: 16px; width: min(380px, 92vw);
+  max-height: calc(100vh - 80px); overflow: auto;
+  background: #0d141c; border: 1px solid var(--cell-accent); border-radius: 10px;
+  padding: 12px 14px 14px; z-index: 240;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.45);
+  display: none;
+}
+#ric-panel.open { display: block; }
+#ric-panel h3 { margin: 0 0 8px; color: var(--cell-accent); }
+#ric-panel .close { position: absolute; top: 6px; right: 10px; cursor: pointer; color: var(--muted); font-size: 14px; }
+#ric-panel .ric-pickers { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; margin-bottom: 8px; }
+#ric-panel .ric-svg { width: 100%; height: auto; background: #081018; border-radius: 6px; }
+#ric-panel .ric-axis { stroke: var(--muted); stroke-width: 1; }
+#ric-panel .ric-lbl { fill: var(--text); font-size: 9px; }
+#ric-panel .ric-origin { fill: var(--cell-accent); }
+#ric-panel .ric-pt-asset { fill: #7fd1ff; }
+#ric-panel .ric-pt-track { fill: none; stroke: #ffb347; stroke-width: 1.5; }
+#ric-panel .ric-cats { font-size: 12px; margin: 6px 0; }
+#ric-panel .ric-table { width: 100%; font-size: 11px; border-collapse: collapse; }
+#ric-panel .ric-table td, #ric-panel .ric-table th { padding: 2px 4px; text-align: right; }
+#ric-panel .ric-table td:first-child, #ric-panel .ric-table th:first-child { text-align: left; }
 #inspector {
   width: min(780px, 92vw); max-height: 80vh; background: #0d141c;
   border: 1px solid var(--cell-accent); border-radius: 10px; padding: 12px;

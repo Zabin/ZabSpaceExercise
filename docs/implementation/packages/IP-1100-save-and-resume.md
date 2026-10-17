@@ -3,6 +3,7 @@
 > **Package ID:** IP-1100
 > **Version:** 1.0
 > **Status:** ✅ VERIFIED
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0045`, `BL-0046`, `BL-0047`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-110
 > **Referenced By:** IP-1060 (the White-only save/resume trigger this mechanism serves), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the persisted session artifact IP-1070's AAR replay reads from
@@ -42,7 +43,7 @@ event-log portion.
 
 | Req ID | Title (abridged) | How this package covers it |
 |---|---|---|
-| FR-7210 | Deterministic save-file round trip | `save_state()`/`from_state()` (`manager.py:430`, `:450`) persist and reconstruct `WorldState`/`EventLog`/Snapshots/Role Assignments. |
+| FR-7210 | Deterministic save-file round trip | `save_state()`/`from_state()` (`manager.py:430`, `:450`) persist and reconstruct `WorldState`/`EventLog`/Snapshots. *(Corrected 2026-10-17, `BL-0045`: Role Assignments are **not** persisted — see maintenance notes.)* |
 | FR-7220 | Save-file content/session ownership split | The content (Vignette/template/parameter) portion is independently re-extractable from the save/resume payload — this leaf's RTM Impl. Package citation was previously `UNASSIGNED`; `save_state()`/`from_state()`'s existing structure is the evidence closing that gap (see Verification Checklist). |
 | NFR-1800 | Single-sitting, single-process exercise availability | `save_state()`/`from_state()` implement deliberate, on-demand or end-of-exercise persistence, not crash-recoverable availability across process restarts — no mechanism in `manager.py` claims the latter. |
 
@@ -136,3 +137,20 @@ Rollback surface: `spacesim/session/manager.py`'s `save_state()`/`from_state()`/
 revert requires re-verification against `test_session.py` and the determinism property test before
 landing, since save/resume schema changes are exactly the kind of change that can silently break
 byte-identical replay.
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0045` (`VR-1100` Finding 1, Medium) — false persistence claim.** The Requirements Covered
+  row for `FR-7210` said `save_state()`/`from_state()` persist "Role Assignments". **They do not.**
+  `role_assignments` is in-memory `SessionManager` state; `save_state()` does not write it and
+  `from_state()` does not restore it (as `IP-1151`'s own Rollback Considerations states). Nothing
+  relies on role assignments surviving save/resume. The table row has been annotated in place.
+- **`BL-0046` (`VR-1100` Finding 2).** Current `session/manager.py` anchors: `add_tle()` `:450`,
+  `save_state()` `:806`, `from_state()` `:827`.
+- **`BL-0047` (`VR-1100` Finding 3).** The save/resume round-trip test is
+  `spacesim/tests/test_session_features.py::test_save_resume_reproduces_state_and_queue` (`:19`),
+  not `spacesim/tests/test_session.py` (which has no save/resume test). Read every
+  `test_session.py` mention in Tests to Add, the Verification Checklist and Rollback Considerations
+  as `test_session_features.py`.

@@ -3,6 +3,7 @@
 > **Package ID:** IP-1030
 > **Version:** 1.0
 > **Status:** ✅ VERIFIED
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0038`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-103
 > **Referenced By:** IP-1040 (produces the `observe()` calls this model consumes), IP-1050/IP-1051 (the `engage` gate), IP-1070 (AAR custody replay), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the custody-confidence surface IP-1051's console and IP-1070's AAR consume
@@ -142,3 +143,12 @@ Because `Track` is plain pydantic state inside `WorldState.tracks` (no custody-s
 schema beyond the existing save format), a revert requires no data migration — but must be
 re-verified against `spacesim/tests/test_custody.py` and the determinism property test before
 landing, since custody state participates in eventlog replay.
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0038` (`VR-1030` Finding 1).** Current anchors: `engine/custody.py` — `current_confidence()`
+  `:45`, `confidence_at_decision()` `:57` (inserted by `IP-2010` v1.1), `observe()` `:78`;
+  `engine/orders.py` — the weapons-quality gate inside `_validate()` (`no_weapons_quality_track`)
+  is at `:640-641`.

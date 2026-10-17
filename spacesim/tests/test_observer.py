@@ -85,6 +85,13 @@ _MUTATING_ROUTES = [
     ("post", "/api/sessions/{sid}/undo", {"json": {"n": 1}, "params": {"cell": "observer"}}),
     ("post", "/api/sessions/{sid}/inject", {"json": {"inject": "commercial_imagery_leak"}, "params": {"cell": "observer"}}),
     ("post", "/api/sessions/{sid}/force/tle", {"json": {"id": "X-1", "line1": "1 x", "line2": "2 x"}, "params": {"cell": "observer"}}),
+    # IP-1190 — bulk TLE/OMM import.
+    ("post", "/api/sessions/{sid}/force/bulk_import", {"json": {"format": "tle", "content": "1 x", "assignments": {}}, "params": {"cell": "observer"}}),
+    # IP-1174 — Vignette Creator UI surfaces.
+    ("post", "/api/sessions/{sid}/force/ground", {"json": {"id": "GND-1", "lat_deg": 1.0, "lon_deg": 1.0}, "params": {"cell": "observer"}}),
+    ("put", "/api/sessions/{sid}/creator/state", {"json": {"assets": []}, "params": {"cell": "observer"}}),
+    ("patch", "/api/sessions/{sid}/creator/asset/ISR-EO-1", {"json": {"patch": {"owner": "red"}}, "params": {"cell": "observer"}}),
+    ("delete", "/api/sessions/{sid}/creator/asset/ISR-EO-1", {"params": {"cell": "observer"}}),
     ("post", "/api/sessions/{sid}/red_step", {"params": {"cell": "observer"}}),
     ("post", "/api/sessions/{sid}/order", {"json": {"cell": "observer", "actor": "ISR-EO-1", "action": "downlink", "params": {"via": "GS-NORTH"}}}),
     ("post", "/api/sessions/{sid}/order/validate", {"json": {"cell": "observer", "actor": "ISR-EO-1", "action": "downlink", "params": {"via": "GS-NORTH"}}}),
@@ -138,3 +145,28 @@ def test_non_observer_seats_still_work_normally():
         "cell": "blue", "actor": "ISR-EO-1", "action": "downlink", "params": {"via": "GS-NORTH"},
     })
     assert resp.status_code == 200 and resp.json()["ok"] is True
+
+
+# --------------------------------------------------------------------------- #
+# IP-1131 (BL-0023) — the two White-only routes guarded by an allowlist rather than
+# _reject_observer also refuse an Observer-seated caller explicitly.
+# --------------------------------------------------------------------------- #
+
+def test_observer_cannot_set_the_observer_view():
+    c = _client()
+    sid = _new_unstarted_session(c)
+    ack = c.post(f"/api/sessions/{sid}/observer/view",
+                 json={"cell": "observer", "designation": "red"}).json()
+    assert ack["ok"] is False
+    assert c.get(f"/api/sessions/{sid}/observer/designation").json()["designation"] == "godview"
+
+
+def test_observer_cannot_assign_roles_over_http():
+    c = _client()
+    sid = _new_unstarted_session(c)
+    before = c.get(f"/api/sessions/{sid}/roles/staffing").json()
+    ack = c.post(f"/api/sessions/{sid}/roles/assign",
+                 json={"cell": "observer", "seat": "obs-seat", "asset_or_constellation": "ISR-EO-1",
+                       "role": "bus"}).json()
+    assert ack["ok"] is False
+    assert c.get(f"/api/sessions/{sid}/roles/staffing").json() == before

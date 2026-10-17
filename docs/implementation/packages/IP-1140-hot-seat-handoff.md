@@ -22,6 +22,7 @@
 > per this skill's rule that an as-built package may be born `VERIFIED` only after an actual
 > `09-package-verification` pass — the authoring pass confirmed the cited code exists, but was not
 > that independent pass).*)*
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0016`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-114, [IP-1090](IP-1090-multiplayer-session-transport.md) (the one-Session-
 > object hot-seat/LAN sharing mechanism this hand-off menu sits on top of, per FS-114's own
 > Dependencies field) — `VERIFIED`
@@ -220,3 +221,15 @@ they were added outside this project's own numbered-pipeline discipline). Since 
 proposes no code change, there is nothing for it to roll back — this section is retained for
 template consistency and to note that removing the mechanism entirely would reopen FR-6610 as a
 fully unimplemented gap, not merely revert an in-progress change.
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0016` (`VR-1140` Finding 2).** The `app.js`/`index.html` citations (`app.js:2717-2733`/`:2752`,
+  `index.html:596-601`, and the Verification Checklist's interim `app.js:2805-2821`/`:2840`,
+  `index.html:640-645`) have drifted again. Current anchors: the hand-off block in `app.js` begins at
+  the `// #6 — Hand-off screen blank between operators` comment (`:2875`; `handover-title` text set at
+  `:2883`); the button-hint tooltip is the `"⏸ Handover"` entry (`:2910`); the `#handover` dialog
+  markup is `index.html:723-726`; the `#handover-btn` toolbar button is `index.html:34`. Content is
+  unchanged from what `VR-1140` verified.

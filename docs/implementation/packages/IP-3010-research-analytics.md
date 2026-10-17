@@ -29,6 +29,7 @@
 > unblocked 2026-07-03, run #9), was 🔴 BLOCKED before that (blocked on IP-2010 reaching `COMPLETE`
 > and on its own separate MSTR-006 §3 authorization, both unrelated to the now-resolved ADR-0029
 > conflict).*)*)*
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0017`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-301, IP-2010 (the per-exercise rubric output this package aggregates —
 > **hard blocking dependency**, not merely a design reference)
 > **Referenced By:** none yet
@@ -258,3 +259,14 @@ Master Build Plan. The one file this rollback would remove that other tooling co
 notice is `spacesim/tools/__init__.py` itself, since it makes `spacesim/tools/` the first
 subpackage of its kind — but nothing else in this pass depends on that subpackage existing, so its
 removal is likewise self-contained.
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0017` (implementation Outstanding Issue 1).** Correcting the `Files to Create` analogy that the
+  Risks section already flagged: `tools/build_coastlines.py` is **not** a precedent for
+  `spacesim/tools/research_batch.py`. The repo-root `tools/` directory holds standalone,
+  non-package build scripts that nothing imports. `spacesim/tools/` was created by this package as a
+  genuinely new, importable subpackage (the first of its kind), because `run_batch()` must be
+  importable by `spacesim/tests/`. The path itself was correct and was followed exactly.

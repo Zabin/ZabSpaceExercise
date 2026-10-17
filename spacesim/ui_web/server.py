@@ -9,8 +9,9 @@ Everything the UI does goes through these endpoints; the browser never touches t
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 import re
 
@@ -20,6 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, field_validator
 
 from spacesim.engine.orders import Order
+from spacesim.session import ephemeris
 from spacesim.session.api import Ack, CellView, OrderAck
 from spacesim.session.inprocess import InProcessSession
 from spacesim.session.scene import SceneView
@@ -53,6 +55,9 @@ class SaveVignetteRequest(BaseModel):
     vignette_id: str
     title: str
     classification: Optional[str] = None
+    # IP-1200 (FR-5510) — save-as-scenario, additive; default preserves IP-1173's existing
+    # draft-save behavior for every existing caller.
+    as_scenario: bool = False
 
     @field_validator("vignette_id")
     @classmethod
@@ -95,6 +100,15 @@ class TleRequest(BaseModel):
         return _validate_id(v, field="TleRequest.id")
 
 
+class BulkImportRequest(BaseModel):
+    """IP-1190 (FR-5220) — multi-object TLE / CCSDS OMM (KVN) bulk import, alongside (not
+    replacing) ``TleRequest``'s single-object path. ``assignments`` maps each object's parsed
+    ``raw_id`` to {"asset_id": ..., "owner": ..., "kind": ...}."""
+    format: Literal["tle", "omm"]
+    content: str
+    assignments: dict[str, dict] = {}
+
+
 class OrderRequest(BaseModel):
     cell: str
     actor: str
@@ -121,6 +135,41 @@ class OrderRequest(BaseModel):
 class CancelRequest(BaseModel):
     cell: str
     order_id: str
+
+
+class GateDecisionRequest(BaseModel):
+    """IP-1270 (FR-3430) — cell is the caller's own seat (must match the gate's required_role)."""
+    cell: str
+    order_id: str
+    approve: bool
+
+
+class RoeChangeRequest(BaseModel):
+    """IP-1270 (FR-3440) — cell is the caller's own seat (must be "white"); target_cell is the
+    cell the ROE flag applies to."""
+    cell: str
+    target_cell: str
+    flag: str
+    value: bool
+
+
+class PlaybackStartRequest(BaseModel):
+    """IP-1280 (FR-7330) — viewpoint is "truth" or a cell that participated in the recorded
+    exercise."""
+    viewpoint: str = "truth"
+    speed: float = 1.0
+
+
+class PlaybackAdvanceRequest(BaseModel):
+    dt_s: float
+
+
+class PlaybackViewpointRequest(BaseModel):
+    viewpoint: str
+
+
+class PlaybackSpeedRequest(BaseModel):
+    speed: float
 
 
 class ManeuverComputeRequest(BaseModel):
@@ -193,6 +242,77 @@ class SSNCancelBody(BaseModel):
     request_id: str
 
 
+class GroundAssetRequest(BaseModel):
+    """IP-1174 (FR-5140) — lat/long asset entry, the ground-based sibling of ``TleRequest``.
+    BL-0125 remediation: ``owner`` shares ``Asset``'s own vocabulary (blue/red/neutral) instead of
+    an unconstrained ``str``, so a malformed owner rejects at the request-schema level (422)
+    rather than reaching ``Asset(...)`` unvalidated."""
+    id: str
+    lat_deg: float
+    lon_deg: float
+    owner: Literal["blue", "red", "neutral"] = "blue"
+    kind: str = "ground_station"
+
+    @field_validator("id")
+    @classmethod
+    def _id_charset(cls, v: str) -> str:
+        return _validate_id(v, field="GroundAssetRequest.id")
+
+    @field_validator("lat_deg")
+    @classmethod
+    def _lat_range(cls, v: float) -> float:
+        """BL-0124 remediation — reject an out-of-range latitude (e.g. 999) at the request
+        schema level instead of silently storing it."""
+        if not -90.0 <= v <= 90.0:
+            raise ValueError(f"lat_deg must be in [-90, 90], got {v}")
+        return v
+
+    @field_validator("lon_deg")
+    @classmethod
+    def _lon_range(cls, v: float) -> float:
+        if not -180.0 <= v <= 180.0:
+            raise ValueError(f"lon_deg must be in [-180, 180], got {v}")
+        return v
+
+
+class CreatorStateRequest(BaseModel):
+    """IP-1174 (FR-5120) — the JSON view's write: a full replacement asset list."""
+    assets: list[dict]
+
+
+class CreatorAssetPatchRequest(BaseModel):
+    """IP-1174 (FR-5150) — the asset menu's edit operation; any subset of Asset's own fields."""
+    patch: dict
+
+
+class SeatDeclarationRequest(BaseModel):
+    """IP-1174 (FR-5160) — seat-count declaration, one cell at a time. ``cell`` here is the
+    *target* cell the seats are declared for (white/blue/red) — the caller's own identity is
+    carried separately, as the query-param ``cell`` every other mutating route already uses
+    (see ``declare_seats`` below; this remediation closes BL-0123)."""
+    cell: str
+    count: int
+
+
+@contextmanager
+def _vignette_load_errors(vid: str):
+    """IP-1310 (FS-131 OQ4) — map a refused vignette load to a client error, never a 500:
+    invalid content → 400 ``invalid_vignette`` with every problem; unknown id → 404; an id the
+    path guard refuses → 400."""
+    from spacesim.content.vignette import VignetteValidationError
+    try:
+        yield
+    except VignetteValidationError as exc:
+        raise HTTPException(status_code=400, detail={
+            "error": "invalid_vignette", "vignette": exc.vignette_id,
+            "message": exc.message, "problems": exc.problems,
+        }) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"vignette {vid!r} not found") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     api = api or InProcessSession()
     app = FastAPI(title="Space Control & Orbital Warfare Exercise Simulator")
@@ -258,10 +378,8 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Structured per-cell player tutorial for the in-UI Tutorial panel — parsed by pydantic,
         not regex-scraped from YAML, so blue/red steps never bleed into each other."""
         from spacesim.content.vignette import load_vignette
-        try:
+        with _vignette_load_errors(vid):
             return load_vignette(vid).tutorial or {}
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail=f"vignette {vid!r} not found")
 
     @app.get("/api/sessions/{sid}/brief/{cell}")
     def session_brief(sid: str, cell: str) -> dict:
@@ -272,8 +390,9 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions")
     def load(req: LoadRequest) -> dict:
-        sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed,
-                                classification=req.classification)
+        with _vignette_load_errors(req.vignette_id):
+            sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed,
+                                    classification=req.classification)
         return {"session": sid, "classification": api.classification(sid)}
 
     @app.post("/api/sessions/draft")
@@ -288,8 +407,12 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """IP-1173 (FR-5110) — the only route that writes an authored vignette file. Works for
         any session (draft or normal); no partial file is ever written by any other path."""
         _require(sid); _reject_observer(cell)
-        path = api.save_vignette(sid, req.vignette_id, req.title,
-                                 classification=req.classification or "UNCLASSIFIED-TRAINING")
+        try:
+            path = api.save_vignette(sid, req.vignette_id, req.title,
+                                     classification=req.classification or "UNCLASSIFIED-TRAINING",
+                                     as_scenario=req.as_scenario)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
         return {"vignette_id": req.vignette_id, "path": path}
 
     @app.get("/api/sessions")
@@ -340,8 +463,14 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions/{sid}/inject")
     def inject(sid: str, req: InjectRequest, cell: Optional[str] = None) -> Ack:
+        """Fire or schedule an inject. IP-1063 (BL-0188/BL-0129): a malformed inject, or one whose
+        FR-4430 target precondition fails (e.g. an `anomaly` on an asset with no bus), is a 400
+        naming the reason, with nothing applied — the console's `api.post` only surfaces non-2xx."""
         _require(sid); _reject_observer(cell)
-        return api.fire_inject(sid, req.inject, at_sim_t=req.at_sim_t)
+        ack = api.fire_inject(sid, req.inject, at_sim_t=req.at_sim_t)
+        if not ack.ok:
+            raise HTTPException(status_code=400, detail=ack.reason)
+        return ack
 
     @app.get("/api/sessions/{sid}/inject_library")
     def inject_library_list(sid: str) -> list:
@@ -353,6 +482,82 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def add_tle(sid: str, req: TleRequest, cell: Optional[str] = None) -> Ack:
         _require(sid); _reject_observer(cell)
         return api.add_tle(sid, req.id, req.line1, req.line2, owner=req.owner, kind=req.kind)
+
+    @app.post("/api/sessions/{sid}/force/bulk_import")
+    def bulk_import(sid: str, req: BulkImportRequest, cell: Optional[str] = None) -> list[dict]:
+        """IP-1190 (FR-5220) — multi-object TLE/CCSDS OMM (KVN) import, additive alongside
+        `force/tle` above. A file recognized as neither format (Design Decision 1) surfaces as
+        a 400, not a per-object report."""
+        _require(sid); _reject_observer(cell)
+        try:
+            return api.bulk_import(sid, req.format, req.content, req.assignments)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+
+    # -- Vignette Creator UI surfaces (IP-1174) --------------------------------
+    @app.post("/api/sessions/{sid}/force/ground")
+    def add_ground_asset(sid: str, req: GroundAssetRequest, cell: Optional[str] = None) -> Ack:
+        """FR-5140 — lat/long asset entry, the ground-based sibling of ``force/tle`` above."""
+        _require(sid); _reject_observer(cell)
+        return api.add_ground_asset(sid, req.id, req.lat_deg, req.lon_deg,
+                                    owner=req.owner, kind=req.kind)
+
+    @app.get("/api/ground_sites")
+    def ground_sites() -> list[dict]:
+        """FR-5140 — the curated site list offered before free-entry coordinates."""
+        from spacesim.content.ground_sites import load_ground_sites
+        return load_ground_sites()
+
+    @app.get("/api/sessions/{sid}/creator/state")
+    def creator_state(sid: str) -> dict:
+        """FR-5120 — the JSON view's read: every asset, exactly as the form UI would also see it."""
+        _require(sid)
+        return api.creator_state(sid)
+
+    @app.put("/api/sessions/{sid}/creator/state")
+    def creator_set_state(sid: str, req: CreatorStateRequest, cell: Optional[str] = None) -> Ack:
+        """FR-5120 — the JSON view's write: replace the whole asset list atomically."""
+        _require(sid); _reject_observer(cell)
+        return api.creator_set_state(sid, req.assets)
+
+    @app.patch("/api/sessions/{sid}/creator/asset/{asset_id}")
+    def creator_edit_asset(sid: str, asset_id: str, req: CreatorAssetPatchRequest,
+                           cell: Optional[str] = None) -> Ack:
+        """FR-5150 — the asset menu's edit/reassign operation (owner reassignment is just a
+        patch of the ``owner`` field, so no separate reassign route is needed)."""
+        _require(sid); _reject_observer(cell)
+        return api.creator_edit_asset(sid, asset_id, req.patch)
+
+    @app.delete("/api/sessions/{sid}/creator/asset/{asset_id}")
+    def creator_delete_asset(sid: str, asset_id: str, cell: Optional[str] = None) -> Ack:
+        """FR-5150 — the asset menu's delete operation."""
+        _require(sid); _reject_observer(cell)
+        return api.creator_delete_asset(sid, asset_id)
+
+    @app.get("/api/sessions/{sid}/creator/scene")
+    def creator_scene(sid: str) -> dict:
+        """FR-5130 — the 2D/3D initial-state preview, ground-truth (no CellController filtering)."""
+        _require(sid)
+        return api.creator_scene(sid)
+
+    @app.post("/api/sessions/{sid}/creator/seats")
+    def declare_seats(sid: str, req: SeatDeclarationRequest, cell: Optional[str] = None) -> dict:
+        """FR-5160 — seat-count declaration; White-Cell-only. BL-0123 remediation: unlike
+        ``roles/assign`` (which is not cell-partitioned at all — ``cell`` there is purely caller
+        identity), ``declare_seats`` genuinely needs a distinct *target* cell (white/blue/red),
+        carried in ``req.cell``. The caller's own identity is the query-param ``cell``, the same
+        convention every other mutating route in this file already uses (``creator_set_state``,
+        ``creator_edit_asset``, etc.) — only a White-Cell caller may declare seats for *any*
+        target cell, including White's own."""
+        _require(sid)
+        if cell != "white":
+            raise HTTPException(status_code=403, detail="only White Cell may declare seats")
+        return api.declare_seats(sid, req.cell, req.count)
+
+    @app.get("/api/sessions/{sid}/creator/seats")
+    def seats_declared(sid: str) -> dict:
+        _require(sid)
+        return api.seats_declared(sid)
 
     @app.post("/api/sessions/{sid}/red_step")
     def red_step(sid: str, cell: Optional[str] = None) -> list[OrderAck]:
@@ -453,6 +658,20 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid); _reject_observer(req.cell)
         return api.cancel_order(sid, req.cell, req.order_id)
 
+    @app.post("/api/sessions/{sid}/gate/decide")
+    def decide_gated_order(sid: str, req: GateDecisionRequest) -> Ack:
+        """IP-1270 (FR-3430) — approve/deny a pending-approval order; role-gated inside
+        SessionManager/OrderSystem against the matched rule's own required_role."""
+        _require(sid); _reject_observer(req.cell)
+        return api.decide_gated_order(sid, req.cell, req.order_id, req.approve)
+
+    @app.post("/api/sessions/{sid}/roe/change")
+    def issue_roe_change(sid: str, req: RoeChangeRequest) -> Ack:
+        """IP-1270 (FR-3440) — a live, logged mid-session ROE-flag change; White-Cell-only
+        (checked inside SessionManager/OrderSystem)."""
+        _require(sid); _reject_observer(req.cell)
+        return api.issue_roe_change(sid, req.cell, req.target_cell, req.flag, req.value)
+
     @app.get("/api/sessions/{sid}/windows/{cell}/{asset}")
     def windows_ahead(sid: str, cell: str, asset: str) -> dict:
         _require(sid)
@@ -522,6 +741,32 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.get_scene(sid, cell)  # render-from-custody belief geometry
 
+    @app.get("/api/sessions/{sid}/ric_view/{cell}")
+    def get_ric_view(sid: str, cell: str, origin: str, chase: Optional[str] = None,
+                     target: Optional[str] = None) -> dict:
+        """IP-1300 (FR-8210/FR-8220) — live RIC-frame relative-motion view about ``origin``,
+        plus an unbanded CATS phase-angle readout when both ``chase`` and ``target`` are given.
+        Fog applied server-side (own assets + own Tracks only); ``white`` reads ground truth via
+        the god-view path. An out-of-custody selection is a 404, like ``/telemetry``."""
+        _require(sid)
+        try:
+            return api.get_ric_view(sid, cell, origin, chase=chase, target=target)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
+
+    @app.get("/api/sessions/{sid}/tle/{cell}")
+    def get_tle(sid: str, cell: str, object_id: str) -> dict:
+        """IP-1211 (FR-7440) — quick, copyable current-epoch TLE for one satellite. Fog applied
+        server-side: a cell exports its own satellites from their actual orbit (IP-1212, FR-7440
+        as amended) and any other satellite only from its own Track; ``white`` reads ground truth
+        via the god-view path. Any rejection (another side's satellite with no track, no estimate,
+        unknown id, no orbit, unrepresentable orbit) is a 404 with the reason, like ``/ric_view``."""
+        _require(sid)
+        try:
+            return api.get_tle(sid, cell, object_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
+
     @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}")
     def telemetry(sid: str, cell: str, asset: str) -> dict:
         _require(sid)
@@ -529,6 +774,34 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         if r is None:
             raise HTTPException(status_code=404, detail="no telemetry for this asset (fog/ownership)")
         return r
+
+    # IP-1260 (FR-2320) — declared BEFORE the /{param} series route so "export.csv" is never
+    # captured as a parameter id.
+    @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv", response_class=PlainTextResponse)
+    def telemetry_export_csv(sid: str, cell: str, asset: str, t1: Optional[int] = None,
+                             t2: Optional[int] = None,
+                             interval_s: Optional[float] = Query(None, gt=0)) -> str:
+        """IP-1260 (FR-2320) — the cell's own telemetry for one asset over a sim-time span, as CSV
+        (one row per sampled instant x parameter). Fog-scoped identically to
+        `/telemetry/{cell}/{asset}` (own assets only, White sees any; 404 otherwise). Omitted
+        bounds default to the recorded range; a partially out-of-range span is clamped, a wholly
+        out-of-range one is a 400 (same rule as `/ephemeris`). IP-1262: a request whose sampling
+        would exceed `ephemeris.MAX_EXPORT_SAMPLES` instants is also a 400 naming the ceiling."""
+        _require(sid)
+        try:
+            rows = api.telemetry_export(sid, cell, asset, t1=t1, t2=t2, interval_s=interval_s)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        if rows is None:
+            raise HTTPException(status_code=404, detail="no telemetry for this asset (fog/ownership)")
+        import csv, io
+        cols = ["t", "utc", "asset", "subsystem", "param", "value", "unit", "status"]
+        buf = io.StringIO()
+        w = csv.writer(buf)
+        w.writerow(cols)
+        for row in rows:
+            w.writerow(["" if row[k] is None else row[k] for k in cols])
+        return buf.getvalue()
 
     @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}/{param}")
     def telemetry_series(sid: str, cell: str, asset: str, param: str,
@@ -541,6 +814,31 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         if r is None:
             raise HTTPException(status_code=404, detail="no such telemetry series")
         return r
+
+    @app.get("/api/sessions/{sid}/maneuver_ledger/{cell}/{asset}")
+    def maneuver_ledger(sid: str, cell: str, asset: str) -> list[dict]:
+        """IP-1250 (FR-1320) — per-asset manoeuvre ledger; fog-scoped identically to
+        `/telemetry/{cell}/{asset}` (own assets only, White sees any)."""
+        _require(sid)
+        r = api.maneuver_ledger(sid, cell, asset)
+        if r is None:
+            raise HTTPException(status_code=404, detail="no maneuver ledger for this asset (fog/ownership)")
+        return r
+
+    @app.get("/api/sessions/{sid}/maneuver_ledger/{cell}/{asset}/export.csv", response_class=PlainTextResponse)
+    def maneuver_ledger_export_csv(sid: str, cell: str, asset: str) -> str:
+        """IP-1250 (FR-1320) — the same ledger rows, serialized as CSV."""
+        _require(sid)
+        rows = api.maneuver_ledger(sid, cell, asset)
+        if rows is None:
+            raise HTTPException(status_code=404, detail="no maneuver ledger for this asset (fog/ownership)")
+        import csv, io
+        buf = io.StringIO()
+        w = csv.writer(buf)
+        w.writerow(["t", "cost", "purpose_tag", "remaining_delta_v_ms"])
+        for row in rows:
+            w.writerow([row["t"], row["cost"], row["purpose_tag"], row["remaining_delta_v_ms"]])
+        return buf.getvalue()
 
     @app.get("/api/sessions/{sid}/godview")
     def get_godview(sid: str) -> dict:
@@ -585,6 +883,41 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.aar_report(sid).model_dump()
 
+    @app.post("/api/sessions/{sid}/aar/playback/start")
+    def playback_start(sid: str, req: PlaybackStartRequest) -> Ack:
+        """IP-1280 (FR-7330) — start (or replace) this session's variable-speed AAR playback,
+        from ground truth or a named cell's fog-of-war-respecting viewpoint; rejected at the
+        request boundary if the cell did not participate in the recorded exercise."""
+        _require(sid)
+        return api.playback_start(sid, req.viewpoint, req.speed)
+
+    @app.post("/api/sessions/{sid}/aar/playback/advance")
+    def playback_advance(sid: str, req: PlaybackAdvanceRequest) -> dict:
+        _require(sid)
+        r = api.playback_advance(sid, req.dt_s)
+        if r is None:
+            raise HTTPException(status_code=404, detail="no playback session — call .../playback/start first")
+        return r
+
+    @app.get("/api/sessions/{sid}/aar/playback/state")
+    def playback_state(sid: str) -> dict:
+        _require(sid)
+        r = api.playback_state(sid)
+        if r is None:
+            raise HTTPException(status_code=404, detail="no playback session — call .../playback/start first")
+        return r
+
+    @app.post("/api/sessions/{sid}/aar/playback/viewpoint")
+    def playback_set_viewpoint(sid: str, req: PlaybackViewpointRequest) -> Ack:
+        """Design Decision 1 — a viewpoint switch continues from the same simulated moment."""
+        _require(sid)
+        return api.playback_set_viewpoint(sid, req.viewpoint)
+
+    @app.post("/api/sessions/{sid}/aar/playback/speed")
+    def playback_set_speed(sid: str, req: PlaybackSpeedRequest) -> Ack:
+        _require(sid)
+        return api.playback_set_speed(sid, req.speed)
+
     @app.get("/api/sessions/{sid}/assessment")
     def assessment_report(sid: str) -> dict:
         """Competency assessment rubric report (IP-2010, FS-201) — per-cell/per-exercise, both
@@ -597,6 +930,46 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def alarms(sid: str, cell: str) -> list:
         _require(sid)
         return api.alarms(sid, cell)
+
+    @app.get("/api/sessions/{sid}/ephemeris/truth", response_class=PlainTextResponse)
+    def ephemeris_truth(sid: str, object_id: str, reference_id: str, t1: int, t2: int,
+                         interval_s: Optional[float] = None, format: str = "csv") -> str:
+        """IP-1210 (FR-7410) — ground-truth ephemeris export over a time span, ECI + RIC. A
+        no-cell, White-Cell-only endpoint (`FR-6220`), like `/godview`/`/eventlog`/`/aar*`.
+        IP-1262: a non-finite or non-positive `interval_s`, or sampling over
+        `ephemeris.MAX_EXPORT_SAMPLES` instants, is a 400."""
+        _require(sid)
+        try:
+            rows = api.truth_ephemeris(sid, object_id, reference_id, t1, t2, interval_s=interval_s)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        if format == "oem":
+            return ephemeris.write_oem(rows, object_id)
+        if format == "ric":
+            # FR-7430 — the companion RIC-specific export, alongside "oem" (ECI-only, CCSDS-
+            # conformant) and the default "csv" (which already carries both ECI and RIC).
+            return ephemeris.write_ric_csv(rows)
+        return ephemeris.write_csv(rows)
+
+    @app.get("/api/sessions/{sid}/ephemeris/{cell}", response_class=PlainTextResponse)
+    def ephemeris_cell_observed(sid: str, cell: str, object_id: str, reference_id: str,
+                                t1: int, t2: int, interval_s: Optional[float] = None,
+                                format: str = "csv") -> str:
+        """IP-1210 (FR-7420) — `cell`'s own believed ephemeris over a time span, ECI + RIC. Same
+        fog-of-war trust level as every other cell-scoped read (`/view/{cell}`, `/scene/{cell}`).
+        IP-1262: a non-finite or non-positive `interval_s`, or sampling over
+        `ephemeris.MAX_EXPORT_SAMPLES` instants, is a 400."""
+        _require(sid)
+        try:
+            rows = api.cell_observed_ephemeris(sid, cell, object_id, reference_id, t1, t2,
+                                               interval_s=interval_s)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        if format == "oem":
+            return ephemeris.write_oem(rows, object_id)
+        if format == "ric":
+            return ephemeris.write_ric_csv(rows)
+        return ephemeris.write_csv(rows)
 
     @app.get("/api/sessions/{sid}/save")
     def save(sid: str) -> dict:

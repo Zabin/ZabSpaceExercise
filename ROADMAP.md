@@ -223,6 +223,7 @@ clusters with real design tension; small/uncontested features skip straight to `
 | ADS-3500 | Role-Scoped Command Enforcement | `architecture/ADS-3500-role-scoped-command-enforcement.md` | (no owning DOM) | ✅ Authored (2026-07-05) — the first `ADS-xxx` in this project |
 | ADS-5100A | Vignette Creator — Authoring Session & UI Architecture | `architecture/ADS-5100A-vignette-creator-session-and-ui.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
 | ADS-5100B | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | `architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
+| ADS-1500 | Per-Cell Custody — Estimated-State History & Export | `architecture/ADS-1500-per-cell-custody-estimated-state-and-export.md` | R105-grounded; FS-103 | ✅ Authored (2026-09-26) |
 
 **ADS-3500** resolves two Open Questions [`FS-116`](docs/features/FS-116-role-scoped-command-catalog.md)
 (`FEAT-3500`) surfaced: extends the operator-command interface to carry a `seat` identifier
@@ -427,12 +428,14 @@ identified." The `05-feature-decomposition` skill was run against the approved r
 |---|---|---|---|
 | — | Feature Planning index | `feature-planning/INDEX.md` | ✅ |
 | — | Release Plan | `feature-planning/01-release-plan.md` | ✅ |
-| — | Epic Catalog (`EP-1000`–`EP-10000`, 10 Epics) | `feature-planning/02-epic-catalog.md` | ✅ |
-| — | Feature Catalog (`FEAT-1100`–`FEAT-10200`, 38 Features) | `feature-planning/03-feature-catalog.md` | ✅ |
+| — | Epic Catalog (`EP-1000`–`EP-11000`, 11 Epics) | `feature-planning/02-epic-catalog.md` | ✅ |
+| — | Feature Catalog (`FEAT-1100`–`FEAT-11300`, 45 Features; full sweep 2026-10-17) | `feature-planning/03-feature-catalog.md` | ✅ |
 | — | Feature Dependency Graph | `feature-planning/04-feature-dependency-graph.md` | ✅ |
 | — | Feature Review | `feature-planning/05-feature-review.md` | ✅ |
 
-**Key findings:** all 49 baselined FR + 23 baselined NFR leaves are traced to exactly one Feature
+**Update 2026-10-17 (run #151 sweep, `BL-0153`):** all 103 baselined FR + 28 baselined NFR leaves
+are now traced to exactly one of 45 Features; six release buckets re-derived to match the dependency
+graph (`05-feature-review.md` F-13–F-20). **Original key findings (first pass):** all 49 baselined FR + 23 baselined NFR leaves are traced to exactly one Feature
 each (36 total); three Features (Classification Banner, Observer Read-Only Access, Hot-Seat
 Hand-Off) have zero presence in any existing `FS-xxx` document, confirming the motivating audit;
 `FS-106-white-cell-dashboard.md` bundles ten catalog Features across three Epics and is flagged as
@@ -533,9 +536,51 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1171 | Typed Payload & Bus Parameter Domain Model | `implementation/packages/IP-1171-typed-payload-bus-parameters.md` | FS-117 §FR-5170/FR-5180 | Forward design | ✅ VERIFIED (verified 2026-07-12, fresh session, [`VR-1171`](implementation/verification/VR-1171-typed-payload-bus-parameters.md); full suite 598 passed/3 skipped, both permanent gates green; one Low finding, fixed in place) |
 | IP-1172 | Per-Cell Rules of Engagement Enforcement | `implementation/packages/IP-1172-per-cell-roe-enforcement.md` | FS-117 §FR-3420/NFR-2010 | Forward design | ✅ VERIFIED (verified 2026-07-11, fresh session, [`VR-1172`](implementation/verification/VR-1172-per-cell-roe-enforcement.md); full suite 586 passed/3 skipped, both permanent gates green; zero findings) |
 | IP-1173 | Vignette Creator Draft Session & Reverse Serialization | `implementation/packages/IP-1173-vignette-creator-draft-session.md` | FS-117 §FR-5110 | Forward design | ✅ VERIFIED (verified 2026-07-11, fresh session, [`VR-1173`](implementation/verification/VR-1173-vignette-creator-draft-session.md); full suite 586 passed/3 skipped, both permanent gates green; zero findings) |
-| IP-1174 | Vignette Creator UI Surfaces | `implementation/packages/IP-1174-vignette-creator-ui-surfaces.md` | FS-117 §FR-5120-FR-5160 | Forward design | 🟡 READY (authorized 2026-07-05 — MSTR-006 §3; every dependency — `IP-1171`/`IP-1172`/`IP-1173` — now `VERIFIED`) |
+| IP-1174 | Vignette Creator UI Surfaces | `implementation/packages/IP-1174-vignette-creator-ui-surfaces.md` | FS-117 §FR-5120-FR-5160 | Forward design | 🟠 IN PROGRESS: RETURNED by [`VR-1174`](implementation/verification/VR-1174-vignette-creator-ui-surfaces.md) (2026-09-27). High: `FR-5160` per-cell seat declaration is White-only. 2 Medium input-validation findings. Awaiting an `08-code-implementation` re-run |
+| IP-1061 | Inject Scheduling & Sizing-Cap Defect Remediation | `implementation/packages/IP-1061-inject-and-sizing-defect-remediation.md` | FS-106 §FR-4410 + NFR-1300 (ADR-0019) | Remediation | ✅ VERIFIED (verified 2026-09-27, fresh agent context, [`VR-1061`](implementation/verification/VR-1061-inject-and-sizing-defect-remediation.md); full suite 707 passed/3 skipped, both permanent gates green; 3 Low findings) |
+| IP-1180 | External Vignette Directories & Safe Scenario Save Target | `implementation/packages/IP-1180-external-vignette-directories.md` | FS-118 `FR-5410`/`FR-5420`/`NFR-3700` | Forward design | ✅ VERIFIED (verified 2026-09-27, fresh agent context, [`VR-1180`](implementation/verification/VR-1180-external-vignette-directories.md); full suite 707/3, both permanent gates green; 1 Low finding) |
+| IP-1062 | Condition-Triggered Injects & New Inject Effect Types | `implementation/packages/IP-1062-condition-triggered-injects-and-new-effects.md` | FS-106 v2.1 `FR-4420`/`FR-4430` | Forward design | 🟠 IN PROGRESS: RETURNED by [`VR-1062`](implementation/verification/VR-1062-condition-triggered-injects-and-new-effects.md) (2026-09-27). High: the `anomaly`/bus effect leaves a half-safe state that is unrecoverable through `begin_recovery`. Awaiting an `08-code-implementation` re-run |
+| IP-1200 | Save-as-Scenario | `implementation/packages/IP-1200-save-as-scenario.md` | FS-120 `FR-5510` | Forward design | ✅ VERIFIED (verified 2026-09-27, fresh agent context, after IP-1180, [`VR-1200`](implementation/verification/VR-1200-save-as-scenario.md); full suite 707/3, both permanent gates green; 2 Low findings) |
+| IP-1190 | Bulk TLE and CCSDS OMM Multi-Object Import | `implementation/packages/IP-1190-bulk-tle-omm-import.md` | FS-119 `FR-5220` | Forward design | ✅ VERIFIED (verified 2026-09-27, fresh agent context, [`VR-1190`](implementation/verification/VR-1190-bulk-tle-omm-import.md); full suite 707/3, both permanent gates green; 2 Medium and 2 Low findings) |
+| IP-1210 | Ephemeris Export (Truth and Cell-Observed) | `implementation/packages/IP-1210-ephemeris-export.md` | FS-121 `FR-7410`/`FR-7420`; FS-103 v1.1 | Forward design | 🟠 IN PROGRESS: RETURNED by [`VR-1210`](implementation/verification/VR-1210-ephemeris-export.md) (2026-09-27). High: RIC velocity omits the ω×ρ transport term. Medium: the CCSDS OEM output is non-conformant and carries no RIC. Awaiting an `08-code-implementation` re-run |
+| IP-1220 | Sensor Modality Models | `implementation/packages/IP-1220-sensor-modality-models.md` | FS-122 `FR-1610`-`FR-1660` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1240 | Debris-Field Persistence Estimate by Altitude | `implementation/packages/IP-1240-debris-field-persistence-estimate.md` | FS-124 `FR-1430` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1250 | Per-Asset Manoeuvre Ledger with Purpose Tags and CSV Export | `implementation/packages/IP-1250-maneuver-ledger.md` | FS-125 `FR-1320` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1260 | Per-Asset Telemetry CSV Export Over a Time Span | `implementation/packages/IP-1260-telemetry-csv-export.md` | FS-126 `FR-2320` | Forward design | ✅ VERIFIED 2026-10-10 via [`VR-1260`](implementation/verification/VR-1260-telemetry-csv-export.md) — `BL-0168` adjudicated in full; 1 Low finding (own package-doc header still reads `BLOCKED`). *Prior note, superseded:* 🔵 COMPLETE 2026-10-10 (run #94; awaiting `09-package-verification`) |
+| IP-1270 | Optional Effect-Authorization Gating and Live Rules-of-Engagement Changes | `implementation/packages/IP-1270-effect-authorization-gating-and-live-roe.md` | FS-127 `FR-3430`/`FR-3440` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`; resolves the shared taxonomy IP-1290 reuses) |
+| IP-1280 | Variable-Speed AAR Replay from Truth or a Single Cell's Viewpoint | `implementation/packages/IP-1280-variable-speed-aar-replay.md` | FS-128 `FR-7330` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`) |
+| IP-1290 | Jamming-Delivery Degradation and Per-Effect-Class Detectability Settings | `implementation/packages/IP-1290-jamming-delivery-and-effect-detectability.md` | FS-129 `FR-1440`/`FR-1450` | Forward design | 🟡 READY (not authorized, MSTR-006 §3; every dependency `VERIFIED`; reuses IP-1270's shared taxonomy) |
+| IP-1300 | Live RIC-Frame Relative-Motion View & CATS Overlay | `implementation/packages/IP-1300-ric-frame-view-and-cats-overlay.md` | FS-130 `FR-8210`/`FR-8220` | Forward design | ✅ VERIFIED 2026-10-10 via `docs/implementation/verification/VR-1300-ric-frame-view-and-cats-overlay.md` — clean, 2 Low findings; `BL-0158` adjudicated `DONE` |
+| IP-1211 | Quick TLE Export for a Cell-Visible Satellite | `implementation/packages/IP-1211-quick-tle-export.md` | FS-121 `FR-7440` | Forward design | ✅ VERIFIED 2026-10-10 (`VR-1211`, fresh session; `BL-0164` adjudicated `DONE`, accepted) |
+| IP-1261 | Telemetry Series History Remediation (single-pass time-span replay) | `implementation/packages/IP-1261-telemetry-series-history-remediation.md` | FS-126 `FR-2320` (+ FS-121 `FR-7410`/`FR-7420` migration) | Remediation | ✅ VERIFIED 2026-10-11 via `VR-1261` — clean, 1 Low finding (`BL-0173` reversed-window handling correct but untested); `BL-0170` closed |
+| IP-1262 | Time-Span Export Sampling Bounds (interval_s floor + sample-count ceiling) | `implementation/packages/IP-1262-export-sampling-bounds.md` | FS-121 `FR-7410`/`FR-7420` + FS-126 `FR-2320` | Remediation | ✅ VERIFIED 2026-10-11 via `VR-1262` — clean, 1 Low finding (`FS-121`/`FS-126` `Referenced By` status tags stale, filed `BL-0183`); `BL-0176` closed, `BL-0174` rider independently confirmed |
+| IP-1063 | Inject Effect Fire-Time Validation (boundary reject + handler skip) | `implementation/packages/IP-1063-inject-effect-fire-time-validation.md` | FS-106 `FR-4430`/`FR-4410` | Remediation | ✅ VERIFIED 2026-10-11 via `VR-1063` (fresh session, first pass, clean) — closes `BL-0129`/`BL-0188` |
+| IP-1212 | Quick TLE Export for a Cell's Own Satellites (`FR-7440` amendment) | `implementation/packages/IP-1212-own-satellite-tle-export.md` | FS-121 `FR-7440` | Remediation | ✅ VERIFIED 2026-10-15 (`VR-1212`) — closes `BL-0201`/`BL-0159` |
+| IP-1221 | CATS Phase-Angle Observation-Gain Refinement (`FR-1670`) | `implementation/packages/IP-1221-cats-phase-angle-observation-gain.md` | FS-122 `FR-1670` | Forward design | ✅ VERIFIED 2026-10-16 via `VR-1221` — clean, first pass; closes `BL-0122` |
+| IP-1222 | Sensor-Modality Wiring Remediation (`FR-1610`/`FR-1630`/`FR-1640`) | `implementation/packages/IP-1222-sensor-modality-wiring-remediation.md` | FS-122 `FR-1610`/`FR-1630`/`FR-1640` | Remediation (forward design) | ✅ VERIFIED 2026-10-16 via `VR-1222` — clean, first pass; closes `BL-0212`/`BL-0213`/`BL-0214` |
+| IP-1041 | Observe-Order Remediation (`no_window` vs. `sensor_contended`; malformed params) | `implementation/packages/IP-1041-observe-order-reason-and-param-remediation.md` | FS-104 `FR-3210` + FS-122 `FR-1610` | Remediation (forward design) | ✅ VERIFIED 2026-10-16 (`implementation/verification/VR-1041-observe-order-reason-and-param-remediation.md`, clean) — implemented 2026-10-16 (run #133), authored 2026-10-16 (run #132), pre-authorized; closes `BL-0219`/`BL-0217` |
+| IP-1052 | Order-Parameter Hardening (jam/engage/cyber/maneuver/command params; plan-then-commit) | `implementation/packages/IP-1052-order-param-hardening.md` | FS-105 + FS-102 `FR-3110`/`FR-1310`/`FR-1410`/`FR-1420` | Remediation (forward design) | 🟢 VERIFIED — `VR-1052`, clean, 2026-10-16; implemented 2026-10-16 (run #137); authored 2026-10-16 (run #136), pre-authorized (MSTR-006 §3, standing 2026-10-11); closes `BL-0222` |
+| IP-1310 | Load-Time Vignette Validation (one gate; 400/404 not 500; registry untouched on refusal) | `implementation/packages/IP-1310-load-time-vignette-validation.md` | FS-131 `FR-5310`–`FR-5314`/`NFR-1600`/`NFR-2200` | Forward design | ✅ VERIFIED 2026-10-17 via `VR-1310` — clean, fresh session, no findings; implemented 2026-10-17 (run #146); authored 2026-10-16 (run #145), pre-authorized (MSTR-006 §3, standing 2026-10-11); closes `BL-0220`/`BL-0236`/`BL-0237` |
+| IP-1320 | Effect Resource Bounds (salvo ≤ rounds at preview/issue/execution; jam leaves `power_w` alone) | `implementation/packages/IP-1320-effect-resource-bounds.md` | FS-132 `FR-1460`/`FR-1470` | Remediation (forward design) | ✅ VERIFIED 2026-10-17 ([VR-1320](implementation/verification/VR-1320-effect-resource-bounds.md), fresh session, clean) — implemented 2026-10-17 (run #154), authored 2026-10-17 (run #153), pre-authorized (MSTR-006 §3, standing 2026-10-11); closes `BL-0238`/`BL-0245` |
+| IP-1321 | Missed Salvo Consumes Its Rounds (every fired engagement charged, hit or miss) | `implementation/packages/IP-1321-missed-salvo-consumes-rounds.md` | FS-132 v1.1 `FR-1480` | Remediation (forward design) | 🔵 COMPLETE (run #178; awaiting 09) — authored 2026-10-17 (run #176), pre-authorized (MSTR-006 §3, standing 2026-10-11); closes `BL-0249` when `VERIFIED` |
+| IP-1311 | Vignette Id Scan Robustness (one unreadable file never turns an id lookup into a 500) | `implementation/packages/IP-1311-vignette-id-scan-robustness.md` | FS-131 `FR-5310`/`NFR-1600` | Remediation (forward design) | 🟢 READY — authored 2026-10-17 (run #158), pre-authorized (MSTR-006 §3, standing 2026-10-11); closes `BL-0252` when `VERIFIED` |
+| IP-1021 | Failure-Atomic Event Application | `implementation/packages/IP-1021-failure-atomic-event-application.md` | FS-102 v1.1 + ADR-0038 `FR-1120`/`NFR-1600`/`NFR-2600` | Remediation (forward design) | ✅ VERIFIED 2026-10-17 via `VR-1021` — clean, fresh session, no findings; closes `BL-0264`/`BL-0227` |
+| IP-1064 | Condition-Triggered Inject Follow-Ups | `implementation/packages/IP-1064-condition-inject-follow-ups.md` | FS-106 v2.1 `FR-4420`/`NFR-1100` | Remediation (forward design) | 🔵 COMPLETE |
+| IP-1065 | White Cell Console and Session Small Fixes | `implementation/packages/IP-1065-console-and-session-small-fixes.md` | FS-106/FS-102 v1.1/FS-118 v1.1/FS-120/FS-119 `FR-4410`/`FR-3310`/`FR-5410`/`FR-5510`/`FR-5220`/`NFR-3400` | Remediation (forward design) | ✅ VERIFIED 2026-10-17 via `VR-1065` — fresh session; one Low RTM-cell finding corrected; closes `BL-0196`/`0266`/`0267`/`0145`/`0141`/`0185`/`0261` |
+| IP-1131 | Verification-Coverage Follow-Ups (test-only) | `implementation/packages/IP-1131-verification-coverage-follow-ups.md` | FS-113/FS-115/FS-102 v1.1 + NFR-3400 `FR-6510`/`FR-4210`/`FR-3310`/`NFR-3400` | Remediation (forward design) | 🔵 COMPLETE |
+| IP-1223 | Beam-Mode Choice Follows the Sensor's Modality | `implementation/packages/IP-1223-beam-mode-follows-sensor-modality.md` | FS-122 v1.2 `FR-1610`/`NFR-1600` | Remediation (forward design) | ✅ VERIFIED 2026-10-17 via `VR-1223` — fresh session; one Low traceability note (FS-122 `Referenced By`, corrected); closes `BL-0265` |
 
-FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1160 is
+FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1220,
+IP-1240, IP-1250, IP-1260, IP-1270, IP-1280, and IP-1290 are new (2026-09-27, run #78)** — seven
+packages planned against the Should-tier external-validation-report intake batch (`BL-0072`-
+`BL-0083`); `FS-123` (B8, space-weather coupling) has no package yet, blocked on two open design
+questions (`BL-0104`/`BL-0121`). See `01-technical-work-breakdown.md` §"Should-tier batch (run
+#78)" for the no-split rationale. None is authorized for coding (MSTR-006 §3) — a separate
+decision for the project owner. **IP-1180,
+IP-1062, IP-1200, IP-1190, and IP-1210 are new (2026-09-27, Tranche 4)** — all six packages planned
+against the Must-tier external validation report batch (`BL-0062`–`BL-0083`) are now written; see
+`01-technical-work-breakdown.md` Tranche 4 for the no-split rationale of each. None is authorized
+for coding (MSTR-006 §3) — a separate decision for the project owner. **IP-1160 is
 new (2026-07-05)**, closing `FEAT-3500`'s implementation gap that `11-release-readiness` found —
 see the Master Build Plan's Tranche 2 note and `01-technical-work-breakdown.md` for the no-split
 rationale. **IP-1170 through IP-1174 are new (2026-07-05, Tranche 3)** — the five packages planned
@@ -547,9 +592,11 @@ legacy-ROE auto-upgrade policy) were resolved by the project owner during this p
 coding 2026-07-05** (MSTR-006 §3, project owner); `IP-1170`/`IP-1172`/`IP-1173` were implemented
 the same day. `IP-1170`, `IP-1172`, `IP-1173`, and now `IP-1171` have all passed independent
 verification (2026-07-05, run #48, `VR-1170`; 2026-07-11, same fresh session, `VR-1172`/`VR-1173`;
-2026-07-12, fresh session, `VR-1171`) and are all `VERIFIED`. **`IP-1174` now flips
-`BLOCKED → READY`** — every one of its three dependencies is `VERIFIED`, and it is the sole package
-left to implement in this tranche.
+2026-07-12, fresh session, `VR-1171`) and are all `VERIFIED`. **`IP-1174` flipped `BLOCKED → READY`**
+2026-09-26 once all three dependencies reached `VERIFIED`, and — sequenced behind the new
+remediation package `IP-1061` by the project owner's own priority call that same day — **was
+implemented and reached `COMPLETE` the same day**, closing this tranche's last forward-design
+package pending only its own `09-package-verification` pass.
 
 **IP-1090/IP-1100/IP-1110 are new (2026-07, tranche 1)**, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03, mirroring the FS-106 split — no new code
@@ -679,6 +726,85 @@ findings. One Medium traceability finding: `WCM-1`/`BLU-1`/`RED-1` and `training
 cite a nonexistent `spacesim/session/controller.py` for the fog-of-war boundary — the real file is
 `spacesim/session/cells.py` — routed to `08-training-manual-authoring`.
 
+**Training review (2026-10-11):** [`reviews/training-review-run97-scope.md`](docs/reviews/training-review-run97-scope.md)
+(REV-TRN-002) independently reviewed run #97's ephemeris/telemetry-export sections
+(`WCM-15`/`16`, `BLU-13`/`14`, `RED-12`/`13`, `training/15` rows 79–80) — prose accurate against
+shipped behavior (driven live), traceability consistent, playbook suite 16/16, no Critical/High.
+7 findings: 2 Medium (F1 — export `interval_s` has no lower bound, a code defect → `00-intake`;
+F2 — `10-ui-reference` §10.5/§10.6 still document the target field as plain text, confirming
+`BL-0084`) and 5 Low.
+
+**Training review (2026-10-11):** [`reviews/training-review-run102-scope.md`](docs/reviews/training-review-run102-scope.md)
+(REV-TRN-003) independently reviewed run #102's telemetry-history-graph sections (`BLU-6`, `RED-7`,
+`05` §Diagnosing, `10` §10.13 row 5, `training/15` telemetry row and the `BLU-6`/`RED-7` reverse
+rows). Run #102's additions are accurate, driven live on fresh fixtures. The playbook suite passed
+16/16, with no Critical/High. 5 findings: 1 Medium (F1 — RED-7's pre-existing safe-mode/recovery
+parity claim does not hold, because none of the 9 shipped Red satellites has a `bus_state`) and
+4 Low.
+
+**Training review (2026-10-15):** [`reviews/training-review-runs107-109-scope.md`](docs/reviews/training-review-runs107-109-scope.md)
+(REV-TRN-004) independently reviewed run #107's target-picker and export-bounds sections and run
+#109's `RED-7`/`RED-13`/`WCM-6` sections. All prose in scope is accurate, driven live on
+`multi-domain-taiwan` seed 11. Traceability is consistent (0 orphans), the playbook suite passed
+16/16, with no Critical/High. 2 findings in adjacent shared modules: F1 Medium
+(`11-vignette-playbooks` says Target "autocompletes"; the shipped control is a dropdown plus an
+`or id` box) and F2 Low (`03`/`04` walkthroughs do not say to use `or id` for untracked targets).
+
+**Training review (2026-10-15):** [`reviews/training-review-run114-scope.md`](docs/reviews/training-review-run114-scope.md)
+(REV-TRN-005) independently reviewed run #114's inject fire-time validation prose (§10.3, `WCM-5`),
+the `or id` target orientation in `03`/`04`/`11`, and the White manual split into `12`/`12a`.
+Everything in scope is accurate, driven live on `geo-rpo-shadowing` seed 23. The split is
+verbatim, traceability is consistent (0 orphans), and the playbook suite passed 16/16, with no
+Critical/High. 3 Low findings: F1 (§10.3 says builder injects scheduled for later are not checked
+at the console, but they are checked when scheduled), F2 (`07` has no example payloads for the
+four `FR-4430` types), and F3 (two broken intra-file anchors in `01`, pre-existing).
+
+**Training review (2026-10-16):** [`reviews/training-review-runs122-127-scope.md`](docs/reviews/training-review-runs122-127-scope.md)
+(REV-TRN-006) independently reviewed run #122's own-satellite TLE, controller-event payload,
+§10.3 and `01`-anchor sections and run #127's sensor-authoring field table, `WCM-2`/`BLU-4`/`RED-4`
+paragraphs and `08` §9 export routes. Driven live on `co-orbital-threat-escort` seeds 7/13.
+Traceability is consistent (0 broken links, 0 orphans), and the playbook and training suites
+passed 20/20, with no Critical/High. 4 findings:
+
+- F1 Medium: the `06` table and `WCM-2` are stale since `IP-1222`, which made `beam_mode`, the
+  affinity check and the `auto` cue gate live (`BL-0216`).
+- F2 Medium: a code defect. A windowless observe is rejected `sensor_contended` ("Sensor is
+  busy"), not `no_window`.
+- F3 Low: a malformed sensor field gives a bare 500, and Load is silent.
+- F4 Low: two omissions in the `07` table.
+
+**Training review (2026-10-16):** [`reviews/training-review-run135-scope.md`](docs/reviews/training-review-run135-scope.md)
+(REV-TRN-007) independently reviewed run #135's sensor-modality rows in `06`, the `WCM-2`/`BLU-4`/
+`RED-4` sensor paragraphs, the two `07` controller-event rows, the `09` §10 rejection reasons and
+the §15 rows. Driven on fresh engine fixtures and `co-orbital-threat-escort` seed 61 over HTTP.
+Every behavioural claim checked is accurate. Traceability is consistent (0 broken links, 43 IDs,
+0 orphans), and the playbook and training suites passed 20/20, with no Critical/High. 4 Low
+findings:
+
+- F1: `06` says only the HTTP API can send a radar `fence`/`dish`. The command menu's raw JSON
+  params box also can.
+- F2: the corpus doesn't say that a non-`auto` **Mode** dropdown entry replaces a radar's own
+  mode (`spotlight` gives 1.8 ×).
+- F3: "look-ahead" (manual) vs "planning horizon" (console), with neither in the glossary.
+- F4: `09` §10 `invalid_param` is stale since `IP-1052` (already `BL-0228`).
+
+**Training review (2026-10-17):** [`reviews/training-review-runs140-148-scope.md`](docs/reviews/training-review-runs140-148-scope.md)
+(REV-TRN-008) independently reviewed run #140's sections (`invalid_param` for every action, radar
+mode paths, planning horizon) and run #148's (the refused **Load**). They were driven on fresh
+fixtures: `sda-custody-hunt` seed 4242, `gnss-ew-campaign` seed 7171, and a `TestClient` run
+against a temporary vignette folder. Traceability is consistent (302 links with 0 broken, 43 IDs
+with 0 orphans). The playbook and training suites passed 20/20. There are no Critical/High
+findings. 2 Medium, 4 Low:
+
+- F1 Medium: a file that won't parse as YAML is left out of the picker; `06` says a broken
+  vignette still appears.
+- F2 Medium: a code bug. One unparseable `.yaml` in the built-in folder makes a misspelt id
+  return a 500, not a 404, and breaks the id lookup of later-sorting files.
+- F3 Low: the `build` problem only appears once the others are fixed.
+- F4 Low: numeric text (`"3"`, `"200"`) is accepted, not "text".
+- F5 Low: the `06` raw-JSON radar example drops the pre-filled `intent`.
+- F6 Low: `10` §10.5 row 8 calls the **Mode** control "Beam mode".
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
@@ -770,9 +896,10 @@ FS → IMP → Code → Tests) for all 11 Feature Specifications:
 | TR-07 | White Cell facilitation | `training/07-white-cell-facilitation.md` | DS-06 | ✅ |
 | TR-08 | HTTP API reference | `training/08-http-api-reference.md` | DS-07 | ✅ |
 | TR-09 | Troubleshooting & glossary | `training/09-troubleshooting-and-glossary.md` | — | ✅ |
-| TR-10 | UI reference (all 14 panels) | `training/10-ui-reference.md` | BS-07, MAN-00 | ✅ |
+| TR-10 | UI reference (all 15 panels; split 2026-10-17 into `10` + `10a` orders + `10b` views, each with `> Sources:` footers, `BL-0198`/`BL-0232`) | `training/10-ui-reference.md`, `training/10a-ui-reference-orders.md`, `training/10b-ui-reference-views.md` | BS-07, MAN-00 | ✅ |
 | TR-11 | Per-vignette playbooks — how each cell completes objectives, move by move, verified against the engine | `training/11-vignette-playbooks.md` | VG-IDX, TR-06 | ✅ |
 | TR-12 | Role-scoped **White Cell** manual (facilitator procedure layer; sections `WCM-n`) | `training/12-white-cell-manual.md` | TR-02, TR-05, TR-07, TR-15 | ✅ |
+| TR-12a | Role-scoped **White Cell** manual, part 2 — analysis and data exports (`WCM-12`–`WCM-16`), split from TR-12 for NFR-3500 module size | `training/12a-white-cell-analysis-and-exports.md` | TR-12, TR-15 | ✅ |
 | TR-13 | Role-scoped **Blue cell** manual (defender procedure layer; sections `BLU-n`) | `training/13-blue-cell-manual.md` | TR-02, TR-05, TR-15 | ✅ |
 | TR-14 | Role-scoped **Red cell** manual (adversary procedure layer; sections `RED-n`) | `training/14-red-cell-manual.md` | TR-02, TR-05, TR-15 | ✅ |
 | TR-15 | Per-cell manual **traceability matrix** — bidirectional feature ⇄ manual-section index; hooked into skills 08 (doc-update step) and 10 (doc-coherence dimension) | `training/15-manual-traceability.md` | TR-12, TR-13, TR-14 | ✅ |

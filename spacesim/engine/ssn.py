@@ -390,3 +390,37 @@ class SSNSystem:
         if req is not None:
             req.state = "DELIVERED"
             self._inflight[cell] = max(0, self._inflight.get(cell, 0) - 1)
+
+
+# --------------------------- Passive-RF multilateration (IP-1220, FR-1650) --------------------
+
+def _is_emitting(world: WorldState, target_id: str) -> bool:
+    """The target's emission state, read from its existing bus comms status (not a new field
+    this package introduces) — "red" (down/degraded) means not emitting; anything else does."""
+    asset = world.assets.get(target_id)
+    if asset is None or asset.bus_state is None:
+        return False
+    return asset.bus_state.comms.status != "red"
+
+
+def passive_rf_fix(network: SSNNetwork, world: WorldState, target_id: str, t: int,
+                    ap: AccessProvider, three_d: bool = False) -> Optional[list[str]]:
+    """FR-1650 — a passive-RF multilateration fix on ``target_id`` at time ``t``, reusing
+    ``SSNNetwork``'s existing member-list/dispersion-preset shape. Reuses the existing
+    ``SENSOR_OBSERVATION`` channel to determine which member sensors simultaneously have access
+    (line of sight to the target) at ``t`` — a genuine geolocation fix additionally requires the
+    target to be emitting. Returns the list of member sensor ids that produced the fix, or
+    ``None`` when no fix is produced (either cause — insufficient receivers or a non-emitting
+    target — resolves to the identical ``None`` outcome, per this package's Design Decision 1).
+    """
+    if not _is_emitting(world, target_id):
+        return None
+    needed = 4 if three_d else 3
+    receiving: list[str] = []
+    for sid in network.sensors:
+        wins = ap.windows(sid, target_id, SENSOR_OBSERVATION, t, t)
+        if any(w.start <= t <= w.end for w in wins):
+            receiving.append(sid)
+    if len(receiving) < needed:
+        return None
+    return receiving

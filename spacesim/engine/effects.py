@@ -56,6 +56,10 @@ class EffectInstance(BaseModel):
     # Safe-mode inducement (12-safe-mode-loop.md §6.1); only read when intended_outcome=safe_mode:
     sm_susceptibility: float = 1.0        # White-Cell master dial multiplier
     persistence_bonus: float = 1.0        # sustained vs. one-shot attempt
+    # IP-1290 (FR-1450) — the issuing order's action type (jam/engage/cyber/...), additive; used
+    # only to look up a declared per-effect-class detectability override. None for any effect
+    # instance built before this package (e.g. direct EffectInstance() construction in tests).
+    order_action_type: Optional[str] = None
 
 
 class EffectOutcome(BaseModel):
@@ -80,6 +84,24 @@ class DebrisField(BaseModel):
     created_at: int
     source: str
     region: dict = Field(default_factory=dict)
+    # IP-1240 (FR-1430) — a coarse, display-only estimate; never consulted by Access Window
+    # computation or conjunction-screening, per FS-124's own Scope boundary.
+    persistence_estimate: Optional[str] = None
+
+
+def _persistence_estimate(altitude_km: Optional[float]) -> Optional[str]:
+    """IP-1240 (FR-1430) — a coarse debris-persistence estimate by altitude, grounded in `R117`
+    v1.2 §3.1's banded real-world figures (Alfriend & Lewis): below ~300-400km, drag-dominated
+    decay is weeks-to-months; 600-1000km stretches to years-decades; above ~900km, small-debris
+    lifetimes can extend to centuries. A pure function of already-computed state — never consulted
+    by Access Window computation or conjunction-screening (FS-124 Scope boundary)."""
+    if altitude_km is None:
+        return None
+    if altitude_km < 400.0:
+        return "weeks_to_months"
+    if altitude_km < 900.0:
+        return "years_to_decades"
+    return "centuries"
 
 
 class EffectResolver(Protocol):
@@ -103,6 +125,23 @@ _EVASION_RESIDUAL = 0.4
 
 
 class ModerateEffectResolver:
+    def __init__(self, detectability_config: Optional[list[dict]] = None) -> None:
+        # IP-1290 (FR-1450) — vignette-declared per-effect-class detectability/attribution-
+        # difficulty overrides, keyed by IP-1270's shared enumeration (order action type ×
+        # five-D's reversibility category). Additive/optional: absent (default []) reproduces
+        # FR-1410's existing single fixed attribution-confidence setting exactly.
+        self.detectability_config = detectability_config or []
+
+    def _class_confidence(self, action_type: Optional[str], category: str) -> Optional[float]:
+        for rule in self.detectability_config:
+            rt, rc = rule.get("action_type"), rule.get("reversibility_category")
+            if rt is not None and rt != action_type:
+                continue
+            if rc is not None and rc != category:
+                continue
+            return float(rule["confidence"])
+        return None
+
     def resolve(self, effect: EffectInstance, world: "WorldState", rng: SeededRng) -> EffectOutcome:
         target = world.assets.get(effect.target)
         if target is not None and target.health == "destroyed":
@@ -133,8 +172,13 @@ class ModerateEffectResolver:
             if target is not None:
                 target.health = "destroyed"
             if effect.kinetic and effect.debris_risk != "none":
+                altitude_km = None
+                if target is not None and target.orbit is not None:
+                    from spacesim.engine.geometry import R_EARTH_EQ
+                    altitude_km = (target.orbit.a_m - R_EARTH_EQ) / 1000.0
                 world.debris.append(
-                    DebrisField(created_at=world.now, source=effect.actor, region={"about": effect.target})
+                    DebrisField(created_at=world.now, source=effect.actor, region={"about": effect.target},
+                               persistence_estimate=_persistence_estimate(altitude_km))
                 )
                 severity = "high" if (effect.escalation_weight >= 7 or effect.debris_risk == "high") else "medium"
                 side.append({"type": "political_consequence", "severity": severity, "cause": effect.template})
@@ -164,7 +208,10 @@ class ModerateEffectResolver:
                 side.append({"type": "political_consequence", "severity": "medium",
                              "cause": f"civilian_collateral_{effect.template}", "target": effect.target})
 
-        conf = {"overt": 0.95, "ambiguous": 0.5, "covert": 0.15}[effect.attribution]
+        # IP-1290 (FR-1450) — a declared per-effect-class override takes precedence over the
+        # fixed attribution-confidence table; falls back to it when the class is undeclared.
+        override = self._class_confidence(effect.order_action_type, achieved)
+        conf = override if override is not None else {"overt": 0.95, "ambiguous": 0.5, "covert": 0.15}[effect.attribution]
         side.append({"type": "attribution_signal", "to": _victim_cell(world, effect), "confidence": conf})
         return EffectOutcome(achieved_outcome=achieved, success=True, side_effects=side)
 

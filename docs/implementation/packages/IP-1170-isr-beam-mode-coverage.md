@@ -6,6 +6,7 @@
 > `["mw"]` + `_DEFAULT_MODE` entries added to `spacesim/engine/isr.py`, 9 new tests in
 > `spacesim/tests/test_isr.py`, full suite 575 passed/3 skipped (up from 566/3, +9), both permanent
 > gates green. Awaiting `09-package-verification` to advance to `VERIFIED`.)*
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0058`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** None (independent engine-only fix; every citation below checked directly
 > against the current `spacesim/engine/isr.py`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md),
@@ -205,3 +206,14 @@ Purely additive — two new `BEAM_MODES` keys and two new `_DEFAULT_MODE` entrie
 touched. Reverting removes the two payload types' real parameterization and restores today's
 silent-fallback-to-EO behavior; no data migration concern (no persisted state depends on these
 values beyond a live `beam_params()` call at observe-schedule time).
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0058` (`VR-1170` Finding 1).** Implementation Task 3 cites `engine/orders.py` call sites at
+  lines 531/755. At `e1e721c` the two `isr.beam_params` call sites are `:859` (observe execution,
+  `_bp(payload_type, beam_mode_req)`) and `:1143` (SoC drain, `_bp(payload_type,
+  payload.get("beam_mode"))`). `orders.py` no longer calls `available_modes()` at all. Both live
+  call sites pass `payload_type` as a variable, so the package's conclusion (no hardcoded type list;
+  no change needed for `weather`/`mw`) still holds.

@@ -1467,8 +1467,9 @@ def s_ref_tasking():
     callout(d, px - 6, py + 12, 1)
     # Row 1
     y1 = py + 40
-    fields1 = [("Intent: [characterize ▾]", 200, 2), ("Sensor: [auto ▾]", 160, 3),
-               ("Regime: [LEO ▾]", 150, 4), ("Target: [RED-TGT]", 170, 5)]
+    # IP-1065 (BL-0185): Target is a known-target dropdown plus an "or id" box, as shipped.
+    fields1 = [("Intent: [characterize ▾]", 190, 2), ("Sensor: [auto ▾]", 140, 3),
+               ("Regime: [LEO ▾]", 130, 4), ("Target: [RED-TGT ▾] or id [      ]", 290, 5)]
     cx = px
     for lbl, w, n in fields1:
         d.rounded_rectangle([cx, y1, cx + w, y1 + 22], radius=4, fill=(30,38,50), outline=BORDER)
@@ -1486,7 +1487,7 @@ def s_ref_tasking():
     d.text((cx + 8, y2 + 5), "Plan collection", font=f12b, fill=(0,0,0)); callout(d, cx + 65, y2 - 8, 7)
     # Row 3 (ISR params)
     y3 = y2 + 32
-    fields3 = [("Mode: [stripmap ▾]", 170, 8), ("Look angle: ▬▬▬● 15°", 200, 9), ("Duration (s): [300]", 170, 10)]
+    fields3 = [("Mode: [auto ▾]", 170, 8), ("Look angle: ▬▬▬● 15°", 200, 9), ("Duration (s): [300]", 170, 10)]
     cx = px
     for lbl, w, n in fields3:
         d.rounded_rectangle([cx, y3, cx + w, y3 + 22], radius=4, fill=(30,38,50), outline=BORDER)
@@ -1500,16 +1501,16 @@ def s_ref_tasking():
     d.text((px, y5), "SSN queue: ssn-1  characterize  RED-TGT  GEO  priority  SCHEDULED  [✕]", font=f12, fill=TEXT)
     callout(d, px - 6, y5 + 8, 12)
 
-    lx, ly = panel(d, 12, 400, W - 24, 240, "Legend (`10-ui-reference.md` §5)")
+    lx, ly = panel(d, 12, 400, W - 24, 240, "Legend (`10a-ui-reference-orders.md` §10.5)")
     legend(d, lx, ly, W - 48, 200, "Tasking controls", [
         (1, "Mode chips — Organic / SSN request"),
         (2, "Intent — search / track / characterize / cue"),
         (3, "Sensor — auto or pick an own sensor (Organic only)"),
         (4, "Regime — LEO / MEO / GEO / HEO / cislunar (SSN only)"),
-        (5, "Target — track id"),
+        (5, "Target — known-target dropdown + \"or id\" box (box wins)"),
         (6, "Priority — routine / priority / immediate"),
         (7, "Plan collection — submit the order or SSN request"),
-        (8, "Beam mode — auto + 6 named modes (EO/SAR-specific)"),
+        (8, "Beam mode — auto + the tasked sensor's own modes (radar: fence/dish)"),
         (9, "Look angle — 0–45° off-nadir slider"),
         (10, "Duration — 30–3600 s per collection"),
         (11, "Coverage line — read-only feasibility hint"),
@@ -1535,8 +1536,8 @@ def s_ref_compose():
     y1 = py + 36
     fields = [("Actor: [ISR-EO-1 ▾]", 200, 2),
               ("Action: [observe ▾]",  170, 3),
-              ("Target: [RED-TGT]",    180, 4),
-              ("Params: {\"intent\":\"characterize\"}", 320, 5)]
+              ("Target: [RED-TGT ▾] or id [    ]", 260, 4),
+              ("Params: {\"intent\":\"characterize\"}", 280, 5)]
     cx = px
     for lbl, w, n in fields:
         d.rounded_rectangle([cx, y1, cx + w, y1 + 22], radius=4, fill=(30,38,50), outline=BORDER)
@@ -1565,12 +1566,12 @@ def s_ref_compose():
     d.text((px, y6), "Queue: ord-3 ISR-EO-1 observe RED-TGT  ground_uplink  queued  [✕]", font=f12, fill=TEXT)
     callout(d, px - 6, y6 + 6, 13)
 
-    lx, ly = panel(d, 12, 460, W - 24, 200, "Legend (`10-ui-reference.md` §6)")
+    lx, ly = panel(d, 12, 460, W - 24, 200, "Legend (`10a-ui-reference-orders.md` §10.6)")
     legend(d, lx, ly, W - 48, 160, "Satellite command controls", [
         (1, "Role filter chips — All / Bus / Payload / SDA"),
         (2, "Actor — own assets (filtered by role chip)"),
         (3, "Action — legal actions for the actor's kind"),
-        (4, "Target — string (track id, station id, …)"),
+        (4, "Target — known-target dropdown + \"or id\" box (jam/engage/cyber/observe only)"),
         (5, "Params — JSON; pre-filled per action; live dry-run"),
         (6, "Validity preview — ✓ queue / ✗ reason (read-only)"),
         (7, "Consequence preview — severity / esc / reversible / attr"),

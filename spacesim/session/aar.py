@@ -8,13 +8,16 @@ two event logs and diff the outcomes), and an exportable campaign summary.
 
 from __future__ import annotations
 
+from bisect import bisect_right
+from collections.abc import Iterable, Iterator
 from typing import Optional
 
 from pydantic import BaseModel, Field
 
 from spacesim.content.vignette import evaluate_objectives
-from spacesim.engine.simulation import replay
+from spacesim.engine.simulation import replay, replay_stepwise
 from spacesim.engine.world import WorldState
+from spacesim.session.cells import CellController
 
 DECISION_KINDS = {"execute_effect", "execute_maneuver", "execute_downlink", "execute_observe", "inject",
                   "recovery_finish", "recovery_confirm"}
@@ -47,6 +50,54 @@ def state_at(mgr, seq: Optional[int] = None) -> WorldState:
         handlers=mgr.sim.handlers(),
         up_to_seq=seq,
     )
+
+
+def state_at_time(mgr, t: int) -> WorldState:
+    """IP-1210 (FR-7410/FR-7420) — read-only: reconstruct the world at an arbitrary sim time
+    ``t`` (not an eventlog sequence number, `state_at`'s own unit). Additive sibling of
+    `state_at` — replays up to the sequence position at-or-before ``t``, then pins
+    ``world.now = t`` (reproducing trailing idle time, exactly as `Simulation.replay()`'s own
+    ``final_time`` already does for the live clock)."""
+    seq = sum(1 for e in mgr.sim.eventlog.entries if e.sim_time <= t)
+    return replay(
+        mgr.sim._initial_state,
+        mgr.sim._seed,
+        mgr.sim.eventlog,
+        handlers=mgr.sim.handlers(),
+        up_to_seq=seq,
+        final_time=t,
+    )
+
+
+def worlds_at_times(mgr, times: Iterable[int]) -> Iterator[tuple[int, WorldState]]:
+    """IP-1261 (BL-0170) — read-only: the world as of each of several sim times, in one forward
+    replay pass (time-keyed counterpart of `state_at_time`, for time-span reads).
+
+    ``times`` must be non-decreasing (``ValueError`` otherwise). Yields ``(t, world)`` in input
+    order; ``world``'s state equals ``state_at_time(mgr, t)``'s in every field, with one
+    exception: if *every* requested ``t`` is at or after the last event-log entry (the live tail,
+    including any ``t`` past the live clock), no replay is done at all and the live
+    ``mgr.sim.world`` itself is yielded with ``now`` left untouched. Consumers therefore use the
+    yielded ``t``, never ``world.now``, never mutate the yielded world, and finish reading it
+    before advancing the iterator (replayed copies are one object, mutated forward).
+    Shared by `SessionManager.get_series`/`telemetry_export` and both ephemeris exports.
+    """
+    ts = [int(t) for t in times]
+    if any(b < a for a, b in zip(ts, ts[1:])):
+        raise ValueError("worlds_at_times requires non-decreasing times")
+    entries = mgr.sim.eventlog.entries
+    sim_times = [e.sim_time for e in entries]
+    positions = [bisect_right(sim_times, t) for t in ts]   # entries with sim_time <= t
+    if all(p == len(entries) for p in positions):
+        world = mgr.sim.world
+        for t in ts:
+            yield t, world
+        return
+    stepper = replay_stepwise(mgr.sim._initial_state, mgr.sim._seed, mgr.sim.eventlog, positions,
+                              handlers=mgr.sim.handlers(), snapshots=mgr.sim.snapshots)
+    for t, world in zip(ts, stepper):
+        world.now = t
+        yield t, world
 
 
 def objectives_at(mgr, seq: Optional[int] = None) -> dict:
@@ -117,6 +168,65 @@ def compare_branches(report_a: AARReport, report_b: AARReport) -> dict:
         "events_b": report_b.n_events,
         "objective_flips": flips,
     }
+
+
+def _participant_cells(world: WorldState) -> set[str]:
+    """IP-1280 (FR-7330, Design Decision 2) — the recorded exercise's actual cell participants,
+    derived from asset/sensor ownership (never invented — "blue"/"red" only if either actually
+    owns something in this exercise's own recorded world)."""
+    owners = {a.owner for a in world.assets.values()} | {s.owner for s in world.sensors.values()}
+    return {o for o in owners if o in ("blue", "red")}
+
+
+class PlaybackSession:
+    """IP-1280 (FR-7330) — continuous, speed-adjustable timeline playback over a recorded
+    exercise, from ground truth or a single cell's fog-of-war-respecting viewpoint. Built
+    entirely on `state_at_time()`'s existing point-in-time reconstruction, called repeatedly;
+    read-only like `state_at`/`state_at_time` themselves — never disturbs the live session.
+    """
+
+    def __init__(self, mgr, viewpoint: str = "truth", speed: float = 1.0,
+                 start_t: Optional[int] = None) -> None:
+        self.mgr = mgr
+        self._validate_viewpoint(viewpoint)
+        self.viewpoint = viewpoint
+        self.speed = speed
+        self.t = start_t if start_t is not None else mgr.ctx.start_epoch
+
+    def _validate_viewpoint(self, viewpoint: str) -> None:
+        if viewpoint == "truth":
+            return
+        participants = _participant_cells(self.mgr.world)
+        if viewpoint not in participants:
+            raise ValueError(
+                f"cell {viewpoint!r} did not participate in this recorded exercise "
+                f"(participants: {sorted(participants)})"
+            )
+
+    def set_viewpoint(self, viewpoint: str) -> None:
+        """Design Decision 1 — a viewpoint switch continues from the same simulated moment
+        (``self.t`` is never reset here)."""
+        self._validate_viewpoint(viewpoint)
+        self.viewpoint = viewpoint
+
+    def set_speed(self, speed: float) -> None:
+        self.speed = float(speed)
+
+    def advance(self, dt_s: float) -> dict:
+        """Move the played-back moment forward by ``dt_s * speed`` seconds, clamped to the
+        recorded exercise's own span (``[ctx.start_epoch, live sim clock]``), and return the
+        state at the new moment. Read-only: never touches ``mgr.sim``'s own clock/eventlog."""
+        lo, hi = self.mgr.ctx.start_epoch, self.mgr.sim.clock.now
+        self.t = max(lo, min(hi, self.t + int(dt_s * self.speed * 1_000_000)))
+        return self.state()
+
+    def state(self) -> dict:
+        """The state at the current played-back moment, through the current viewpoint."""
+        world = state_at_time(self.mgr, self.t)
+        if self.viewpoint == "truth":
+            return world.model_dump()
+        objectives = evaluate_objectives(world, self.mgr.ctx)
+        return CellController.view(world, self.viewpoint, objectives).model_dump()
 
 
 def export_csv(rep: AARReport) -> str:

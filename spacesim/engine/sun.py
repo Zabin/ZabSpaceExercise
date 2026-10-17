@@ -76,3 +76,23 @@ def eclipse_fraction(r_eci_sat: np.ndarray, micros: int) -> float:
     if r_pen <= r_umb:
         return 0.0
     return float((perp_dist - r_umb) / (r_pen - r_umb))
+
+
+def cats_phase_angle_deg(r_target_eci: np.ndarray, r_chaser_eci: np.ndarray, micros: int) -> float:
+    """The CATS (Camera/Chase-Target-Sun) illumination phase angle, in degrees [0, 180]
+    (IP-1300, FR-8220; grounded in R109 v1.3 §3.11): the angle *at the target* between the
+    target->Sun vector and the target->chaser vector. 0 deg = fully lit as seen from the chaser,
+    90 deg = side-lit, 180 deg = backlit / silhouetted.
+
+    The Sun is treated as being at infinity (target->Sun == ``sun_unit_eci``), consistent with
+    every other lighting primitive in this module; the parallax this neglects is below ~0.02 deg
+    even at GEO. Pure and deterministic. This is the single shared phase-angle function for the
+    engine (BL-0152): the display overlay (FR-8220) and any future access predicate (FR-1670)
+    must both call it rather than re-deriving the geometry.
+    """
+    to_chaser = np.asarray(r_chaser_eci, dtype=float) - np.asarray(r_target_eci, dtype=float)
+    dist = float(np.linalg.norm(to_chaser))
+    if dist == 0.0:
+        raise ValueError("chaser and target positions coincide; phase angle is undefined")
+    cos_angle = float(np.dot(sun_unit_eci(micros), to_chaser / dist))
+    return math.degrees(math.acos(max(-1.0, min(1.0, cos_angle))))

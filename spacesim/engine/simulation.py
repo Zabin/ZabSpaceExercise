@@ -9,11 +9,14 @@ final state — that is the rewind/undo/branch guarantee, asserted by the determ
 
 from __future__ import annotations
 
+import copy
+from collections.abc import Iterable, Iterator
+
 from pydantic import BaseModel, Field
 
 from spacesim.engine.clock import ScheduledEvent, Scheduler, SimClock
 from spacesim.engine.eventlog import EventLog, Snapshot
-from spacesim.engine.handlers import DEFAULT_HANDLERS, EventHandler
+from spacesim.engine.handlers import DEFAULT_HANDLERS, HANDLER_ERROR_KIND, EventHandler
 from spacesim.engine.rng import SeededRng
 from spacesim.engine.world import WorldState
 
@@ -72,12 +75,51 @@ class Simulation:
         for event in self.scheduler.pop_due(target):
             self.clock.now = event.t
             self.world.now = event.t
-            self._apply(event.kind, event.payload)
+            try:
+                self._apply(event.kind, event.payload)
+            except Exception as exc:  # noqa: BLE001 — ADR-0038: any handler failure is contained
+                self._record_failed_event(event, exc)
+                continue
             self.eventlog.append(
                 sim_time=event.t, kind=event.kind, actor=event.actor, payload=event.payload
             )
         self.clock.now = target
         self.world.now = target
+
+    def _record_failed_event(self, event: ScheduledEvent, exc: Exception) -> None:
+        """IP-1021 (ADR-0038) — failure-atomic event application.
+
+        Restore the live world and RNG to exactly what the event log reproduces (the failed event
+        is not in it), keeping the scheduler's other pending events and the clock, then log a
+        no-op failure record in the event's place so replay stays identical and the failure is
+        visible. The world and RNG are restored *in place*, so every live reference to them
+        (``SessionManager.world``, ``OrderSystem.world``, ...) stays valid."""
+        failed_payload = copy.deepcopy(event.payload)
+        live_scheduler = self.scheduler
+        self.scheduler = Scheduler()  # absorbs anything a handler schedules while re-deriving
+        try:
+            world = WorldState.model_validate(self._initial_state)
+            rng = SeededRng(self._seed)
+            for entry in self.eventlog.entries:
+                world.now = entry.sim_time
+                self._handlers[entry.kind](world, entry.payload, rng)
+        finally:
+            self.scheduler = live_scheduler
+        world.now = event.t
+        for name in type(self.world).model_fields:
+            setattr(self.world, name, getattr(world, name))
+        self.rng.import_state(rng.export_state())
+        self.eventlog.append(
+            sim_time=event.t,
+            kind=HANDLER_ERROR_KIND,
+            actor=event.actor,
+            payload={
+                "failed_kind": event.kind,
+                "failed_payload": failed_payload,
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            },
+        )
 
     def rewind_to(self, t: int) -> None:
         """Exact rewind: keep event-log entries at or before ``t``, then re-derive state from
@@ -196,3 +238,54 @@ def replay(
     if final_time is not None:
         world.now = final_time
     return world
+
+
+def replay_stepwise(
+    initial_state: dict,
+    seed: int,
+    eventlog: EventLog,
+    positions: Iterable[int],
+    handlers: dict[str, EventHandler] | None = None,
+    snapshots: list[Snapshot] | None = None,
+) -> Iterator[WorldState]:
+    """IP-1261 (BL-0170) — a single forward pass of `replay()` that yields the world at each of
+    several event-log positions (a non-decreasing sequence), instead of one from-scratch replay
+    per position.
+
+    Starts exactly as `replay()` does (latest in-range snapshot at or before the first position,
+    else the initial state), then applies each entry exactly as `replay()`'s loop does. The world
+    yielded for position ``p`` equals ``replay(..., up_to_seq=p)`` at the moment it is yielded;
+    it is the *same* mutable object every time, so read it before advancing the generator.
+    A decreasing position raises ``ValueError``.
+    """
+    pos = list(positions)
+    if any(b < a for a, b in zip(pos, pos[1:])):
+        raise ValueError("replay_stepwise positions must be non-decreasing")
+    if not pos:
+        return
+    h: dict[str, EventHandler] = dict(DEFAULT_HANDLERS)
+    if handlers:
+        h.update(handlers)
+
+    entries = eventlog.entries
+    first = max(0, min(pos[0], len(entries)))
+    candidates = [s for s in snapshots or [] if s.seq <= first]
+    if candidates:
+        snap = max(candidates, key=lambda s: s.seq)
+        world = WorldState.model_validate(snap.world_state)
+        rng = SeededRng(seed)
+        rng.import_state(snap.rng_state)
+        applied = snap.seq
+    else:
+        world = WorldState.model_validate(initial_state)
+        rng = SeededRng(seed)
+        applied = 0
+
+    for p in pos:
+        target = max(0, min(p, len(entries)))
+        while applied < target:
+            entry = entries[applied]
+            world.now = entry.sim_time
+            h[entry.kind](world, entry.payload, rng)
+            applied += 1
+        yield world

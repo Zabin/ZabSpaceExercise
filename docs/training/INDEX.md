@@ -20,7 +20,8 @@ is no separate "multiplayer build." See module 01 for the workflow.
 > doing anything else. Open it again any time from **View ▾ → Mission brief**.
 
 > **Which cell are you?** Modules 01–11 are shared onboarding. For a **role-scoped procedure
-> manual** scoped to your seat, jump to [12 — White Cell](12-white-cell-manual.md),
+> manual** scoped to your seat, jump to [12 — White Cell](12-white-cell-manual.md) (with
+> [12a](12a-white-cell-analysis-and-exports.md) for analysis and exports),
 > [13 — Blue cell](13-blue-cell-manual.md), or [14 — Red cell](14-red-cell-manual.md). Each is the
 > thin procedure layer for that role on top of the shared concept modules; every section is
 > cross-referenced to its backing code in [15 — traceability matrix](15-manual-traceability.md), so
@@ -39,15 +40,18 @@ is no separate "multiplayer build." See module 01 for the workflow.
 | [03-first-exercise](03-first-exercise.md) | Your first exercise (Vignette 1): load, plan a downlink, advance time, rewind & branch; headless walkthrough. |
 | [04-guided-vignette](04-guided-vignette.md) | The guided training vignette, every step, both cells (Blue custody/imagery; Red reversible denial). |
 | [05-core-concepts](05-core-concepts.md) | Plan-first commanding, SDA tasking→custody→unlock, bus SOH & safe mode, recovery, **diagnosing attacks from telemetry**, cyber off-pass exception, TLE add, doctrine & AAR, save/resume. |
-| [06-the-vignette-library](06-the-vignette-library.md) | The full 19-vignette scenario library at a glance. |
+| [06-the-vignette-library](06-the-vignette-library.md) | The full 19-vignette scenario library at a glance, plus the optional sensor fields for authoring your own and what **Load** refuses (and how it reports it). |
 | [07-white-cell-facilitation](07-white-cell-facilitation.md) | Running an exercise as White Cell. |
 | [08-http-api-reference](08-http-api-reference.md) | The HTTP API surface for clients/integration. |
 | [09-troubleshooting-and-glossary](09-troubleshooting-and-glossary.md) | Common issues + glossary. |
-| [10-ui-reference](10-ui-reference.md) | Exhaustive UI reference — every control, dropdown, input, keyboard shortcut, and mouse interaction across all 14 panels, with annotated screenshots. |
+| [10-ui-reference](10-ui-reference.md) | Exhaustive UI reference — every control, dropdown, input, keyboard shortcut, and mouse interaction across all 15 panels, with annotated screenshots. This module holds the index and the always-visible panels (§10.1–§10.4). |
+| [10a-ui-reference-orders](10a-ui-reference-orders.md) | UI reference, order panels: sensor tasking, compose form, maneuver/jam assistants, batch bar (§10.5–§10.9). |
+| [10b-ui-reference-views](10b-ui-reference-views.md) | UI reference, viewers and review panels: globe, map, AAR, drill-down, modals/keys, activity timeline (§10.10–§10.15). |
 | [11-vignette-playbooks](11-vignette-playbooks.md) | Per-vignette tutorials — how **each cell** completes its objectives, move by move (verified against the engine), with the window / weapons-quality / ROE gates called out. |
-| [12-white-cell-manual](12-white-cell-manual.md) | **Role-scoped manual — White Cell.** The facilitator's procedure layer: set-up (vignette, classification, seat-to-role staffing), Observer designation, room control (hot-seat/LAN), time control, injects, monitoring, TLE add, AI-Red, AAR, competency assessment, offline research batch exports, save/resume. Sections `WCM-n`, cross-referenced in §15. |
-| [13-blue-cell-manual](13-blue-cell-manual.md) | **Role-scoped manual — Blue cell.** The defender's procedure layer: fog-of-war, plan-first commanding, SDA custody, bus health, attack diagnosis, recovery, defensive maneuver, cyber. Sections `BLU-n`, cross-referenced in §15. |
-| [14-red-cell-manual](14-red-cell-manual.md) | **Role-scoped manual — Red cell.** The adversary's procedure layer: fog-of-war, plan-first commanding, SDA targeting, the five D's, cyber wildcard, own-force management, doctrine profiles. Sections `RED-n`, cross-referenced in §15. |
+| [12-white-cell-manual](12-white-cell-manual.md) | **Role-scoped manual — White Cell.** The facilitator's procedure layer: set-up (vignette, classification, seat-to-role staffing), Observer designation, room control (hot-seat/LAN), time control, injects, monitoring, TLE add, AI-Red, AAR, save/resume, competency assessment. Sections `WCM-1`–`WCM-11`, cross-referenced in §15; analysis and exports continue in 12a. |
+| [12a-white-cell-analysis-and-exports](12a-white-cell-analysis-and-exports.md) | **Role-scoped manual — White Cell, part 2.** Analysis and data exports: offline research batch exports, live RIC-frame view + CATS overlay, quick TLE export, time-span ephemeris export (truth, URL-only), per-asset telemetry CSV export (URL-only). Sections `WCM-12`–`WCM-16`, cross-referenced in §15. |
+| [13-blue-cell-manual](13-blue-cell-manual.md) | **Role-scoped manual — Blue cell.** The defender's procedure layer: fog-of-war, plan-first commanding, SDA custody, bus health, attack diagnosis, recovery, defensive maneuver, cyber, live RIC-frame view + CATS overlay, quick TLE export, time-span ephemeris export (own belief, URL-only), own telemetry CSV export (URL-only). Sections `BLU-n`, cross-referenced in §15. |
+| [14-red-cell-manual](14-red-cell-manual.md) | **Role-scoped manual — Red cell.** The adversary's procedure layer: fog-of-war, plan-first commanding, SDA targeting, the five D's, cyber wildcard, own-force management, doctrine profiles, live RIC-frame view + CATS overlay, quick TLE export, time-span ephemeris export (own belief, URL-only), own telemetry CSV export (URL-only). Sections `RED-n`, cross-referenced in §15. |
 | [15-manual-traceability](15-manual-traceability.md) | **Bidirectional cross-reference** feature ⇄ manual section, so any feature change routes to exactly the cell-manual sections that describe it (and vice versa). The seam that keeps the manuals cheap to maintain. |
 | [16-learning-path](16-learning-path.md) | **The vignette learning path** — the 19 vignettes sequenced from zero-knowledge onboarding through the canonical mechanics ladder into the mission-set/doctrine tracks, each rung linked to the manual modules to read first and its verified playbook. |
 

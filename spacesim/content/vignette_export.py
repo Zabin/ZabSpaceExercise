@@ -8,28 +8,30 @@ since it is a genuinely new, opposite-direction responsibility — not a variant
 """
 from __future__ import annotations
 
-import re
+from pathlib import Path
 
 import yaml
 
-from spacesim.content.vignette import VIGNETTE_DIR, Vignette, VignetteContext
+from typing import Optional
+
+from spacesim.config import load_content_config
+from spacesim.content.vignette import Vignette, VignetteContext, _resolve_within_root, _validate_id
 from spacesim.engine import simtime
 from spacesim.engine.world import WorldState
-
-# Same charset discipline as ui_web/server.py's _validate_id / content/vignette.py's
-# load_vignette() — this is now a write path to VIGNETTE_DIR, at least as sensitive as the
-# existing read path.
-_ID_RE = re.compile(r"^[A-Za-z0-9_.\-]{1,128}$")
+from spacesim.version import simulator_version
 
 
 def export_vignette(
     world: WorldState, ctx: VignetteContext, vignette_id: str, title: str,
-    classification: str = "UNCLASSIFIED-TRAINING",
+    classification: str = "UNCLASSIFIED-TRAINING", start_epoch: Optional[int] = None,
 ) -> Vignette:
     """Build a ``Vignette`` model from a draft session's current state. Does not write to disk
-    — see ``save_vignette`` for that."""
-    if not _ID_RE.match(vignette_id):
-        raise ValueError(f"vignette id must match {_ID_RE.pattern}: {vignette_id!r}")
+    — see ``save_vignette`` for that.
+
+    IP-1200 (FR-5510): ``start_epoch``, when given, becomes the resulting vignette's declared
+    start (a save-as-scenario call passes the save moment); omitted, this reproduces IP-1173's
+    exact prior behavior (``ctx.start_epoch``, the *original* vignette's start)."""
+    _validate_id(vignette_id)
 
     blue_forces: list[dict] = []
     red_forces: list[dict] = []
@@ -44,34 +46,43 @@ def export_vignette(
         id=vignette_id,
         title=title,
         classification=classification,
-        start_epoch_utc=simtime.to_iso(ctx.start_epoch),
+        start_epoch_utc=simtime.to_iso(start_epoch if start_epoch is not None else ctx.start_epoch),
         blue_forces=blue_forces,
         red_forces=red_forces,
         neutral_forces=neutral_forces,
         sensors=sensors,
         roe=dict(ctx.roe),
         objectives=dict(ctx.objectives),
+        initial_tracks=[t.model_dump() for t in world.tracks],
+        simulator_version=simulator_version(),
+        initial_space_weather=dict(world.space_weather) if world.space_weather else None,
     )
 
 
 def save_vignette(
     world: WorldState, ctx: VignetteContext, vignette_id: str, title: str,
-    classification: str = "UNCLASSIFIED-TRAINING",
+    classification: str = "UNCLASSIFIED-TRAINING", start_epoch: Optional[int] = None,
 ) -> str:
-    """Build a ``Vignette`` from the current draft state and write it to ``VIGNETTE_DIR`` as
-    ``{vignette_id}.yaml`` — the only code path that writes an authored vignette file for the
-    Creator (``FR-5110``'s own Postcondition: no partial file exists before this explicit
-    action). Returns the written file's path.
+    """Build a ``Vignette`` from the current draft state and write it to the configured
+    ``user_save_dir`` (IP-1180, FR-5420) as ``{vignette_id}.yaml`` — the only code path that
+    writes an authored vignette file for the Creator (``FR-5110``'s own Postcondition: no partial
+    file exists before this explicit action). Returns the written file's path.
+
+    Raises ``ValueError`` if no ``user_save_dir`` is configured (Design Decision 3) — a save
+    request never silently falls back to ``VIGNETTE_DIR``, which would defeat FR-5420's purpose.
 
     Known limitation (not this package's scope to resolve — see IP-1173's Risks/Outstanding
     Issues): this overwrites an existing file of the same id without confirmation, the same way
     a hand-edited YAML file would. A "confirm overwrite" UX belongs to IP-1174's Creator UI.
     """
-    vignette = export_vignette(world, ctx, vignette_id, title, classification=classification)
-    candidate = (VIGNETTE_DIR / f"{vignette_id}.yaml").resolve()
-    vignette_root = VIGNETTE_DIR.resolve()
-    if vignette_root not in candidate.parents:
-        raise ValueError(f"vignette id escapes VIGNETTE_DIR: {vignette_id!r}")
+    vignette = export_vignette(world, ctx, vignette_id, title, classification=classification,
+                                start_epoch=start_epoch)
+    user_save_dir = load_content_config().user_save_dir
+    if not user_save_dir:
+        raise ValueError(
+            "no user-save directory configured — set content.user_save_dir in spacesim.config.yaml"
+        )
+    candidate = _resolve_within_root(Path(user_save_dir), f"{vignette_id}.yaml")
     candidate.write_text(
         yaml.safe_dump({"vignette": vignette.model_dump(exclude_none=True)}, sort_keys=False),
         encoding="utf-8",

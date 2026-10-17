@@ -28,10 +28,17 @@ class BusSystem:
         sim.register_handler("telemetry_contact", self._h_contact)
         sim.register_handler("isr_downlink", self._h_downlink)
 
-    def schedule_ticks(self, period_s: float, until: int, start: int | None = None) -> None:
-        """Queue a regular cadence of ``bus_tick`` events up to ``until``."""
+    def schedule_ticks(self, period_s: float, until: int, start: int | None = None,
+                       anchor: int | None = None) -> None:
+        """Queue a regular cadence of ``bus_tick`` events up to ``until``.
+
+        IP-1064 (BL-0132): with ``anchor``, ticks fall on the grid ``anchor + k·step`` — the first
+        tick is the next grid point after ``start`` — so re-arming after a rewind to a time between
+        ticks does not shift the cadence. Without it, the grid starts at ``start`` (unchanged)."""
         step = int(period_s * 1_000_000)
         t = self.sim.clock.now if start is None else start
+        if anchor is not None and t >= anchor:
+            t = anchor + ((t - anchor) // step) * step
         t += step
         while t <= until:
             self.sim.schedule(t, "bus_tick")

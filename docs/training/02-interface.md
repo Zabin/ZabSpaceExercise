@@ -123,7 +123,7 @@ Bars are colour-coded per cell and status-coded by style:
 
 Click any bar to print `cell · actor · action · status · window · delivery_path` in the detail
 line below the canvas. Past- and future-window selectors let you zoom from 10 min back to 6 h
-ahead. See [`10-ui-reference.md §10.15`](10-ui-reference.md#1015-cell-activity-timeline-per-cell-gantt--past--present--scheduled)
+ahead. See [`10-ui-reference.md §10.15`](10b-ui-reference-views.md#1015-cell-activity-timeline-per-cell-gantt--past--present--scheduled)
 for the full control table.
 
 ![Cell activity timeline](../manual/ref-15-activity.png)

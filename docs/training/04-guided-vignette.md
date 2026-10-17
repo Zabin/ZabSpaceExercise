@@ -14,6 +14,12 @@ with the station), `RED-CYBER`, `RED-RDR`, and `RED-ASAT` (kinetic, off by defau
 
 > In the command panel, **selecting an Actor filters the Action menu to that asset's legal
 > actions** and pre-fills the parameter template — see ![command menu](../manual/17-command-menu.png)
+>
+> **Setting the Target.** The **Target** dropdown lists only the other side's objects your cell
+> already knows about. A target you have not tracked yet, such as `RED-TGT` in Blue Step 2 or
+> `ISR-EO-1` in Red Step 2, will not be listed. Type its id in the **or id** box beside the
+> dropdown instead; that box wins when both are set. Observing is how a target gets onto the list.
+> Details: [UI reference §10.6 row 4](10a-ui-reference-orders.md#106-satellite-command-compose-form).
 
 ### Blue — maintain custody and deliver imagery
 

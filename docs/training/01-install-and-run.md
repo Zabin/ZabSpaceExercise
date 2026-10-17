@@ -152,8 +152,9 @@ Press **Ctrl-K** (or **⌘-K** on macOS) any time to open the command palette �
 navigate.
 
 > Prefer a script or an air-gapped box with no browser? Every action is also available through the
-> in-process Python API and the HTTP API — see [§9](#9-http-api-reference) and the
-> *headless walkthrough* at the end of [§4](#4-your-first-exercise).
+> in-process Python API and the HTTP API — see [§9](08-http-api-reference.md#9-http-api-reference) and the
+> [*headless walkthrough*](03-first-exercise.md#headless-walkthrough-no-browser) at the end of
+> [§4](03-first-exercise.md#4-your-first-exercise).
 
 ### 2.1 Multi-tab and LAN multiplayer
 
@@ -186,5 +187,40 @@ preset layouts (3D globe, 2D map, Globe + Map, Fleet & telemetry, Order compose,
 timeline). Each pop-out is a new window that joins the same session and shows only the
 requested panels — drag it to a second monitor. Pop-outs keep working even if the parent tab
 closes, since they all talk directly to the server.
+
+### 2.2 Your own vignette folders (optional)
+
+By default the server offers only the built-in vignette library, and saving a vignette from a
+session is refused. To keep your own scenarios outside the repository, add a `content:` block to
+`spacesim.config.yaml` (the shipped file has it commented out):
+
+```yaml
+content:
+  external_vignette_dirs:            # extra folders searched for *.yaml vignettes
+    - /home/me/spacesim-vignettes
+  user_save_dir: /home/me/spacesim-vignettes   # where a saved vignette is written
+```
+
+- **Set both keys to the same folder if you want to load your saves back.** A vignette saved from
+  a session lands in `user_save_dir`, but the vignette list reads only the built-in library and
+  the `external_vignette_dirs` folders. A save folder that is not also listed there is written to
+  but never offered for **Load**.
+- **Use absolute paths.** A relative path is read from the folder you start the server in.
+- **No `user_save_dir`, no save.** Without it, a save request is refused with "no user-save
+  directory configured".
+- **A missing or unreadable folder is skipped.** The rest of the list still loads, and the server
+  terminal prints a warning naming the folder.
+- **Duplicate ids.** If one of your vignettes uses the same `id` as a built-in one (or as one in
+  an earlier folder in the list), the first one found wins: built-in first, then your folders in
+  the order listed. The server terminal prints a warning naming the skipped id and its folder.
+- **Where they appear.** Your vignettes appear in the same **Session ▾** vignette list as the
+  built-in ones. As built, the list does not label or group them separately.
+- The file is read on each request, so reloading the page picks up a new vignette file; changing
+  `spacesim.config.yaml` itself needs no restart for these two keys.
+
+> **Sources:** `spacesim/config.py` (`ContentConfig`, `load_content_config`) ·
+> `spacesim/content/vignette.py` (`list_vignettes`, `_configured_external_dirs`) ·
+> `spacesim/content/vignette_export.py` (`save_vignette`) · `spacesim/ui_web/static/app.js`
+> (`loadVignettes`) · `spacesim.config.yaml` (`content:` block)
 
 ---

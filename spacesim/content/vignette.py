@@ -8,9 +8,11 @@ format decision: YAML (human-authorable; matches the architecture/tech-stack/roa
 
 from __future__ import annotations
 
+import logging
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Sequence
 
 import yaml
 from pydantic import BaseModel, Field
@@ -20,6 +22,62 @@ from spacesim.engine.entities import Asset, Sensor
 
 CONTENT_DIR = Path(__file__).resolve().parent
 VIGNETTE_DIR = CONTENT_DIR / "vignettes"
+
+_logger = logging.getLogger(__name__)
+
+# Same charset discipline as ui_web/server.py's _validate_id / OrderRequest.actor.
+_ID_RE = re.compile(r"[A-Za-z0-9_.\-]{1,128}")
+
+
+def _validate_id(path_or_id: str) -> None:
+    """IP-1180 (NFR-3700) — shared id-validation, extracted from ``load_vignette()``'s existing
+    body with no behavior change, so the save path (``vignette_export.py``) applies the exact
+    same guard rather than maintaining a second copy."""
+    if not isinstance(path_or_id, str) or not path_or_id:
+        raise ValueError("vignette id must be a non-empty string")
+    if "/" in path_or_id or "\\" in path_or_id or ".." in path_or_id:
+        raise ValueError(f"vignette id contains path separators or traversal: {path_or_id!r}")
+    if path_or_id.startswith(("~", ".")):
+        raise ValueError(f"vignette id may not start with '~' or '.': {path_or_id!r}")
+    if not _ID_RE.fullmatch(path_or_id):
+        raise ValueError(f"vignette id has disallowed characters: {path_or_id!r}")
+
+
+def _resolve_within_root(root: Path, filename: str) -> Path:
+    """IP-1180 (NFR-3700) — the resolved-path-inside-root re-check, generalized from
+    ``load_vignette()``'s existing body to take any content root, not only ``VIGNETTE_DIR``."""
+    candidate = (root / filename).resolve()
+    root_resolved = root.resolve()
+    if root_resolved not in candidate.parents:
+        raise ValueError(f"path escapes root {root}: {candidate}")
+    return candidate
+
+
+class VignetteValidationError(ValueError):
+    """IP-1310 (FR-5310, NFR-1600) — a vignette refused at load, naming every failing element.
+
+    ``problems`` is a list of ``{"where": "<section>[<entry>].<field>", "reason": "<text>"}``.
+    Subclasses ``ValueError`` so existing ``ValueError`` callers keep working.
+    """
+
+    def __init__(self, vignette_id: str, problems: list[dict]):
+        self.vignette_id = vignette_id
+        self.problems = list(problems)
+        super().__init__(self.message)
+
+    @property
+    def message(self) -> str:
+        n = len(self.problems)
+        if not n:
+            return f"vignette {self.vignette_id!r} is invalid"
+        first = self.problems[0]
+        more = f" (and {n - 1} more problem{'s' if n > 2 else ''})" if n > 1 else ""
+        return f"vignette {self.vignette_id!r} is invalid: {first['where']}: {first['reason']}{more}"
+
+
+def _configured_external_dirs() -> list[Path]:
+    from spacesim.config import load_content_config
+    return [Path(d) for d in load_content_config().external_vignette_dirs]
 
 
 class Parameter(BaseModel):
@@ -92,6 +150,21 @@ class Vignette(BaseModel):
     # build_world() falls back to the legacy flat red_kinetic_authorized/cyber_authorized
     # parameters, replicated identically to both cells, when this field is absent.
     roe: Optional[dict] = None
+    # IP-1270 (FR-3430) — optional effect-authorization gating rules, each
+    # {action_type?: str, reversibility_category?: str, required_role: str}. A rule with both
+    # axes absent matches every order (not a useful declaration, but not rejected either). Absent
+    # for every vignette shipped before this package (additive, NFR-2010) — zero behavior change.
+    effect_gating_rules: list[dict] = Field(default_factory=list)
+    # IP-1290 (FR-1450) — optional per-effect-class detectability/attribution-difficulty overrides,
+    # each {action_type?: str, reversibility_category?: str, confidence: float}, keyed by the same
+    # shared enumeration as effect_gating_rules above (IP-1270 Design Decision 1). Absent for every
+    # vignette shipped before this package (additive, NFR-2010) — zero behavior change.
+    effect_detectability_config: list[dict] = Field(default_factory=list)
+    # IP-1200 (FR-5510) — save-as-scenario's carried-forward mid-exercise state. All three
+    # absent/empty for every vignette shipped before this package (additive, NFR-2010).
+    initial_tracks: list[dict] = Field(default_factory=list)   # each entry a Track.model_dump()
+    simulator_version: Optional[str] = None
+    initial_space_weather: Optional[dict] = None   # the same plain dict shape as world.space_weather
 
 
 @dataclass
@@ -107,10 +180,20 @@ class VignetteContext:
     objectives: dict = field(default_factory=dict)
     red_doctrine_profile: str = "generic"
     ssn_networks: dict = field(default_factory=dict)   # cell -> SSNNetwork (only populated if vignette opts in)
+    # IP-1270 (FR-3430) — passed through unmodified from vignette.effect_gating_rules.
+    gating_rules: list[dict] = field(default_factory=list)
+    # IP-1290 (FR-1450) — passed through unmodified from vignette.effect_detectability_config.
+    detectability_config: list[dict] = field(default_factory=list)
 
 
-def list_vignettes() -> list[dict]:
-    out = []
+def list_vignettes(external_dirs: Optional[Sequence[Path]] = None) -> list[dict]:
+    """Enumerate the built-in library plus any configured external directories (IP-1180,
+    FR-5410). Each entry carries ``origin``: ``"built-in"`` for ``VIGNETTE_DIR``, or the external
+    directory's own basename. A same-id collision resolves to whichever root was scanned first
+    (built-in, then external directories in configured order) — the loser is skipped and a
+    ``WARNING`` discloses the shadow (Design Decision 4)."""
+    out: list[dict] = []
+    seen_ids: set[str] = set()
     for path in sorted(VIGNETTE_DIR.glob("*.yaml")):
         # Audit Jun 2026 §B/E - tolerate one malformed file rather than 500ing
         # the whole listing endpoint.
@@ -121,13 +204,45 @@ def list_vignettes() -> list[dict]:
             data = raw["vignette"]
             if not isinstance(data, dict) or "id" not in data:
                 continue
-            out.append({"id": data["id"], "title": data.get("title", data["id"]), "path": str(path)})
+            out.append({"id": data["id"], "title": data.get("title", data["id"]),
+                        "path": str(path), "origin": "built-in"})
+            seen_ids.add(data["id"])
         except (yaml.YAMLError, OSError):
             continue
+
+    dirs = list(external_dirs) if external_dirs is not None else _configured_external_dirs()
+    for ext_dir in dirs:
+        ext_dir = Path(ext_dir)
+        if not ext_dir.is_dir():
+            # Design Decision 2 — an unreadable/nonexistent configured directory is skipped,
+            # logged, and the catalog build continues with the remaining roots.
+            _logger.warning("external vignette directory unreadable or missing, skipped: %s", ext_dir)
+            continue
+        origin = ext_dir.name
+        for path in sorted(ext_dir.glob("*.yaml")):
+            try:
+                raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+                if not isinstance(raw, dict) or "vignette" not in raw:
+                    continue
+                data = raw["vignette"]
+                if not isinstance(data, dict) or "id" not in data:
+                    continue
+                vid = data["id"]
+                if vid in seen_ids:
+                    _logger.warning(
+                        "vignette id %r in external directory %s shadowed by an earlier entry, skipped",
+                        vid, ext_dir,
+                    )
+                    continue
+                out.append({"id": vid, "title": data.get("title", vid),
+                            "path": str(path), "origin": origin})
+                seen_ids.add(vid)
+            except (yaml.YAMLError, OSError):
+                continue
     return out
 
 
-def load_vignette(path_or_id: str) -> Vignette:
+def load_vignette(path_or_id: str, external_dirs: Optional[Sequence[Path]] = None) -> Vignette:
     """Load a vignette by its declared id.
 
     Audit Jun 2026 §D4 hardening: only basenames are accepted; any input
@@ -135,22 +250,14 @@ def load_vignette(path_or_id: str) -> Vignette:
     marker, or non-`[A-Za-z0-9_.-]` characters is rejected without touching the
     filesystem. The resolved path is then re-checked to live inside
     ``VIGNETTE_DIR`` (defence in depth against symlink/normalisation tricks).
-    """
-    if not isinstance(path_or_id, str) or not path_or_id:
-        raise ValueError("vignette id must be a non-empty string")
-    if "/" in path_or_id or "\\" in path_or_id or ".." in path_or_id:
-        raise ValueError(f"vignette id contains path separators or traversal: {path_or_id!r}")
-    if path_or_id.startswith(("~", ".")):
-        raise ValueError(f"vignette id may not start with '~' or '.': {path_or_id!r}")
-    # Lock the charset — same as web-layer TleRequest.id / OrderRequest.actor.
-    import re as _re
-    if not _re.fullmatch(r"[A-Za-z0-9_.\-]{1,128}", path_or_id):
-        raise ValueError(f"vignette id has disallowed characters: {path_or_id!r}")
 
-    candidate = (VIGNETTE_DIR / f"{path_or_id}.yaml").resolve()
-    vignette_root = VIGNETTE_DIR.resolve()
-    if vignette_root not in candidate.parents:
-        raise ValueError(f"vignette path escapes VIGNETTE_DIR: {candidate}")
+    IP-1180 (FR-5410): after exhausting the built-in search (unchanged, still checked first —
+    Design Decision 4's built-in-wins rule), falls through to each configured external directory
+    in turn, applying the same guard against every root.
+    """
+    _validate_id(path_or_id)
+
+    candidate = _resolve_within_root(VIGNETTE_DIR, f"{path_or_id}.yaml")
     if candidate.exists():
         path = candidate
     else:  # resolve by the vignette's declared id (filenames are numbered, ids are not)
@@ -163,11 +270,47 @@ def load_vignette(path_or_id: str) -> Vignette:
                 path = p
                 break
         if path is None:
+            dirs = list(external_dirs) if external_dirs is not None else _configured_external_dirs()
+            for ext_dir in dirs:
+                ext_dir = Path(ext_dir)
+                if not ext_dir.is_dir():
+                    continue
+                ext_candidate = _resolve_within_root(ext_dir, f"{path_or_id}.yaml")
+                if ext_candidate.exists():
+                    path = ext_candidate
+                    break
+                for p in sorted(ext_dir.glob("*.yaml")):
+                    try:
+                        data_inner = yaml.safe_load(p.read_text(encoding="utf-8"))
+                    except (yaml.YAMLError, OSError):
+                        continue
+                    if not isinstance(data_inner, dict) or "vignette" not in data_inner:
+                        continue
+                    if data_inner["vignette"].get("id") == path_or_id:
+                        path = p
+                        break
+                if path is not None:
+                    break
+        if path is None:
             raise FileNotFoundError(f"no vignette with id {path_or_id!r}")
-    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    # IP-1310 (FR-5310, NFR-1600) — every content failure from here on is one
+    # VignetteValidationError naming each failing element, never a bare parser/pydantic error.
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        raise VignetteValidationError(path_or_id, [{"where": path.name, "reason": f"not valid YAML: {exc}"}]) from exc
     if not isinstance(data, dict) or "vignette" not in data:
-        raise ValueError(f"malformed vignette file (missing 'vignette' key): {path.name}")
-    return Vignette.model_validate(data["vignette"])
+        raise VignetteValidationError(path_or_id, [{"where": path.name,
+                                                    "reason": "malformed vignette file (missing 'vignette' key)"}])
+    from pydantic import ValidationError
+    try:
+        vignette = Vignette.model_validate(data["vignette"])
+    except ValidationError as exc:
+        raise VignetteValidationError(path_or_id, _pydantic_problems("vignette", exc)) from exc
+    problems = validate_vignette(vignette)
+    if problems:
+        raise VignetteValidationError(path_or_id, problems)
+    return vignette
 
 
 def resolve_params(vignette: Vignette, overrides: Optional[dict] = None) -> dict:
@@ -175,6 +318,129 @@ def resolve_params(vignette: Vignette, overrides: Optional[dict] = None) -> dict
     if overrides:
         values.update({k: v for k, v in overrides.items() if k in values})
     return values
+
+
+def _force_sections(vignette: Vignette):
+    return (("blue", vignette.blue_forces), ("red", vignette.red_forces),
+            ("neutral", vignette.neutral_forces))
+
+
+def _asset_data(spec: dict, owner: str, start: int) -> dict:
+    """The force-entry normalisation ``build_world`` applies (owner injected, orbit epoch defaulted
+    to the vignette start). Shared with ``validate_vignette`` (IP-1310) so the two cannot drift."""
+    data = {**spec, "owner": owner}
+    if data.get("orbit") is not None and data["orbit"].get("epoch") is None:
+        data["orbit"]["epoch"] = start
+    return data
+
+
+def _loc_text(loc) -> str:
+    return ".".join(str(part) for part in loc) if loc else "(entry)"
+
+
+def _pydantic_problems(where: str, exc) -> list[dict]:
+    from pydantic import ValidationError
+    if isinstance(exc, ValidationError):
+        return [{"where": f"{where}.{_loc_text(err.get('loc'))}" if err.get("loc") else where,
+                 "reason": str(err.get("msg", "invalid"))} for err in exc.errors()]
+    return [{"where": where, "reason": str(exc)}]
+
+
+def validate_vignette(vignette: Vignette) -> list[dict]:
+    """IP-1310 (FS-131; FR-5310–FR-5314, NFR-1600) — every load-time problem in ``vignette``.
+
+    Pure: reads no clock, draws no RNG, schedules nothing, and mutates nothing it did not create
+    (every entry is deep-copied before normalisation). Returns ``[]`` for a valid vignette;
+    otherwise one ``{"where", "reason"}`` dict per failing element, all problems collected.
+    """
+    import copy
+
+    from spacesim.engine.custody import Track
+    from spacesim.engine.propagator import ModeratePropagator
+
+    problems: list[dict] = []
+    try:
+        start = simtime.from_iso(vignette.start_epoch_utc)
+    except Exception as exc:  # noqa: BLE001 — any parse failure is a content problem
+        problems.append({"where": "start_epoch_utc", "reason": str(exc)})
+        start = None
+
+    # Force entries: the build_world normalisation + Asset model (FR-5310, FR-5312, FR-5311).
+    asset_sections: dict[str, list[str]] = {}
+    groups: set[str] = set()
+    prop = ModeratePropagator()
+    for owner, force in _force_sections(vignette):
+        section = f"{owner}_forces"
+        for index, spec in enumerate(force):
+            ref = spec.get("id", index) if isinstance(spec, dict) else index
+            where = f"{section}[{ref}]"
+            if not isinstance(spec, dict):
+                problems.append({"where": where, "reason": "entry is not a mapping"})
+                continue
+            try:
+                asset = Asset.model_validate(_asset_data(copy.deepcopy(spec), owner, start or 0))
+            except Exception as exc:  # noqa: BLE001
+                problems.extend(_pydantic_problems(where, exc))
+                continue
+            asset_sections.setdefault(asset.id, []).append(section)
+            if asset.group:
+                groups.add(asset.group)
+            # FR-5312 — a satellite needs an orbit; every other kind except a cyber unit (whose
+            # effects are window-independent, ADR-0012) needs a location.
+            if asset.kind == "satellite" and asset.orbit is None:
+                problems.append({"where": f"{where}.orbit", "reason": "a satellite must declare an orbit"})
+            elif asset.kind not in ("satellite", "cyber_unit") and asset.location is None:
+                problems.append({"where": f"{where}.location",
+                                 "reason": f"a {asset.kind} must declare a location"})
+            # FR-5311 — a TLE orbit must initialise and propagate at the vignette start epoch.
+            if asset.orbit is not None and asset.orbit.source == "tle" and start is not None:
+                try:
+                    prop.rv(asset.orbit, start)
+                except Exception as exc:  # noqa: BLE001
+                    problems.append({"where": f"{where}.orbit",
+                                     "reason": f"TLE does not parse/propagate: {exc}"})
+
+    # FR-5313 — asset ids unique across the three force lists.
+    for asset_id, sections in asset_sections.items():
+        if len(sections) > 1:
+            problems.append({"where": f"{'/'.join(sections)}[{asset_id}]",
+                             "reason": f"asset id {asset_id!r} is declared {len(sections)} times"})
+
+    # Sensors: the Sensor model and its validators (FR-5310), then unique ids (FR-5313).
+    sensor_ids: dict[str, int] = {}
+    for index, spec in enumerate(vignette.sensors):
+        ref = spec.get("id", index) if isinstance(spec, dict) else index
+        where = f"sensors[{ref}]"
+        try:
+            sensor = Sensor.model_validate(copy.deepcopy(spec))
+        except Exception as exc:  # noqa: BLE001
+            problems.extend(_pydantic_problems(where, exc))
+            continue
+        sensor_ids[sensor.id] = sensor_ids.get(sensor.id, 0) + 1
+    for sensor_id, count in sensor_ids.items():
+        if count > 1:
+            problems.append({"where": f"sensors[{sensor_id}]",
+                             "reason": f"sensor id {sensor_id!r} is declared {count} times"})
+
+    # FR-5314 — each roles_needed entry names a declared asset or constellation group.
+    for index, req in enumerate(vignette.roles_needed):
+        if req.asset_or_constellation not in asset_sections and req.asset_or_constellation not in groups:
+            problems.append({"where": f"roles_needed[{index}].asset_or_constellation",
+                             "reason": f"{req.asset_or_constellation!r} is not a declared asset or group"})
+
+    for index, spec in enumerate(vignette.initial_tracks):
+        try:
+            Track.model_validate(copy.deepcopy(spec))
+        except Exception as exc:  # noqa: BLE001
+            problems.extend(_pydantic_problems(f"initial_tracks[{index}]", exc))
+
+    # Catch-all: whatever else build_world enforces is enforced at load too.
+    if not problems:
+        try:
+            build_world(vignette.model_copy(deep=True))
+        except Exception as exc:  # noqa: BLE001
+            problems.append({"where": "build", "reason": f"{type(exc).__name__}: {exc}"})
+    return problems
 
 
 def build_world(vignette: Vignette, overrides: Optional[dict] = None):
@@ -185,32 +451,19 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
     params = resolve_params(vignette, overrides)
     world = WorldState(now=start)
 
-    for owner, force in (("blue", vignette.blue_forces), ("red", vignette.red_forces), ("neutral", vignette.neutral_forces)):
+    for owner, force in _force_sections(vignette):
         for spec in force:
-            data = {**spec, "owner": owner}
-            if data.get("orbit") is not None and data["orbit"].get("epoch") is None:
-                data["orbit"]["epoch"] = start
-            asset = Asset.model_validate(data)
+            asset = Asset.model_validate(_asset_data(spec, owner, start))
             world.assets[asset.id] = asset
 
     for spec in vignette.sensors:
         sensor = Sensor.model_validate(spec)
         world.sensors[sensor.id] = sensor
 
-    # Enforce v1 satellite caps (build-spec/01-context-and-scope.md §3.1)
-    orbital = [a for a in world.assets.values() if a.orbit is not None]
-    if len(orbital) > 24:
-        raise ValueError(
-            f"vignette '{vignette.id}': {len(orbital)} orbital assets exceed the ≤24 satellite cap"
-        )
-    from collections import Counter
-    group_counts = Counter(a.group for a in orbital if a.group)
-    over = {g: n for g, n in group_counts.items() if n > 3}
-    if over:
-        detail = ", ".join(f"{g}={n}" for g, n in over.items())
-        raise ValueError(
-            f"vignette '{vignette.id}': constellation(s) exceed the ≤3 satellite cap: {detail}"
-        )
+    # Satellite/constellation sizing (~24 total, ≤3 per constellation) is a soft guideline for
+    # typical White-Cell hardware, not an engine-enforced cap (ADR-0019, NFR-1300) — IP-1061
+    # (BL-0065) removed the hard ValueError this used to raise. The clock-lag watchdog
+    # (`SessionManager._record_catch_up_lag`) is the intended backstop for oversized vignettes.
 
     # SSN per-cell networks (opt-in via vignette params; off by default) — `docs/SSN-DESIGN.md`.
     ssn_networks: dict = {}
@@ -249,7 +502,16 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
         objectives=vignette.objectives,
         red_doctrine_profile=str(params.get("red_doctrine_profile", vignette.red_doctrine_profile)),
         ssn_networks=ssn_networks,
+        gating_rules=list(vignette.effect_gating_rules),
+        detectability_config=list(vignette.effect_detectability_config),
     )
+    # IP-1200 (FR-5510) — save-as-scenario's carried-forward state, consumed only when present
+    # (absent/empty for every pre-IP-1200 vignette, per NFR-2010).
+    if vignette.initial_tracks:
+        from spacesim.engine.custody import Track
+        world.tracks = [Track.model_validate(t) for t in vignette.initial_tracks]
+    if vignette.initial_space_weather:
+        world.space_weather = dict(vignette.initial_space_weather)
     return world, ctx
 
 
@@ -336,3 +598,17 @@ def _evaluate_metric(world, ctx: VignetteContext, m: dict) -> bool:
         r = _range_km(world, m["a"], m["b"])
         return r is not None and r >= float(m.get("min_km", 50.0)) and now >= deadline
     return False
+
+
+def _measure_metric(world, ctx: VignetteContext, m: dict):
+    """IP-1064 (BL-0131, FR-4420 Outputs) — the measured quantity `_evaluate_metric` compares, for
+    the condition-inject record: range in km for ``proximity``/``evade``, the track's current
+    confidence for ``custody``/``deny_custody`` (0.0 with no track). Any other metric has no
+    measured quantity, so its boolean result is the value. Read-only; never changes a decision."""
+    kind = m.get("kind")
+    if kind in ("proximity", "evade"):
+        return _range_km(world, m["a"], m["b"])
+    if kind in ("custody", "deny_custody"):
+        tr = world.track_for(m["side"], m["object"])
+        return float(tr.current_confidence(world.now)) if tr is not None else 0.0
+    return _evaluate_metric(world, ctx, m)

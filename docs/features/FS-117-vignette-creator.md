@@ -1,6 +1,7 @@
 > **Document ID:** FS-117
 > **Version:** 1.1
-> **Status:** ✅ Ready for implementation planning (Open Question 1 closed — see below)
+> **Status:** ✅ Done — built: every package (`IP-1170`–`IP-1174`) `VERIFIED`.
+> *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Changelog (v1.1, 2026-07-05):** Closed Open Question 1. `04-requirements-engineering` (run #42)
 > added nine new baselined requirement leaves — `FR-5120`, `FR-5130`, `FR-5140`, `FR-5150`,
 > `FR-5160`, `FR-5170`, `FR-5180` (children of `FR-5100`), `FR-3420` (child of `FR-3400`), and
@@ -25,8 +26,9 @@
 > [IP-1171](../implementation/packages/IP-1171-typed-payload-bus-parameters.md),
 > [IP-1172](../implementation/packages/IP-1172-per-cell-roe-enforcement.md),
 > [IP-1173](../implementation/packages/IP-1173-vignette-creator-draft-session.md),
-> [IP-1174](../implementation/packages/IP-1174-vignette-creator-ui-surfaces.md) (all `BLOCKED`,
-> not authorized — MSTR-006 §3)
+> [IP-1174](../implementation/packages/IP-1174-vignette-creator-ui-surfaces.md) (all authorized;
+> all five ✅ `VERIFIED`; `IP-1174` via
+> [VR-1174](../implementation/verification/VR-1174-vignette-creator-ui-surfaces.md))
 > **Produces:** an in-app Vignette Creator satisfying `FR-5110`/`NFR-2000`, `FR-5120`-`FR-5180`,
 > `FR-3420`, and `NFR-2010` in full — every capability the two `ADS-5100` documents commit to now
 > has an owning requirement

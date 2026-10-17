@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from spacesim.content.vignette import load_vignette
 from spacesim.engine import telemetry as tel
 from spacesim.engine.bus import BusState, enter_safe_mode
@@ -144,3 +146,250 @@ def test_world_map_data_present_and_nontrivial():
     assert data["coast"] and data["borders"]
     pts = sum(len(s) for s in data["coast"]) + sum(len(s) for s in data["borders"])
     assert pts > 1000  # a real low-res world, not a stub
+
+
+# -- IP-1260 (FR-2320) — per-asset telemetry CSV export over a time span ---------------------
+
+def _export_mgr():
+    """training-basics, clock paused; a bus `anomaly` inject (FR-4430) fires at +600 s and the
+    session then runs on to +1200 s, so the recorded range brackets the perturbation's onset."""
+    mgr = SessionManager(load_vignette("training-basics"), seed=1)
+    mgr.start()
+    mgr.set_clock(False)
+    t0 = mgr.ctx.start_epoch
+    mgr.advance_to(t0 + minutes(10))
+    mgr.fire_inject([{"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus",
+                      "cause": "export test"}])
+    mgr.advance_to(t0 + minutes(20))
+    return mgr, t0, t0 + minutes(10)
+
+
+def _by_param(rows, param):
+    return [r for r in rows if r["param"] == param]
+
+
+def test_telemetry_export_reflects_anomaly_perturbation_at_correct_times():
+    mgr, t0, t_anom = _export_mgr()
+    rows = mgr.telemetry_export("blue", "ISR-EO-1", t0, mgr.sim.clock.now, interval_s=60)
+    snr = _by_param(rows, "snr_db")
+    assert len(snr) == 21
+    before = [r for r in snr if r["t"] < t_anom]
+    after = [r for r in snr if r["t"] >= t_anom]
+    assert before and after
+    # Payload SNR is nominal (~30 dB) before the anomaly safes the bus, ~2 dB (payload off) after —
+    # read at each sampled time's own world state, not the end-of-span state.
+    assert all(r["value"] > 25 and r["status"] == "green" for r in before)
+    assert all(r["value"] < 8 and r["status"] == "red" for r in after)
+    att = _by_param(rows, "attitude_error_deg")
+    assert all(r["value"] < 1.0 for r in att if r["t"] < t_anom)
+    assert all(r["value"] > 1.0 for r in att if r["t"] >= t_anom)
+
+
+def test_telemetry_export_matches_live_endpoint_and_engine_sample_at_each_point():
+    from spacesim.session import aar
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    rows = mgr.telemetry_export("blue", "ISR-EO-1", t0, now, interval_s=300)
+    # Every exported value is exactly engine/telemetry.py's own sample() on the world as of t.
+    for r in rows:
+        world_t = aar.state_at_time(mgr, r["t"])
+        s = tel.sample(world_t, "ISR-EO-1", r["param"], r["t"], mgr.sim._seed)
+        assert (r["value"], r["status"], r["unit"]) == (s["value"], s["status"], s["unit"])
+    # And the final sample (t == now) is identical to the live JSON telemetry endpoint's reading.
+    live = {p["id"]: p for sub in mgr.get_telemetry("blue", "ISR-EO-1")["subsystems"].values()
+            for p in sub}
+    last = [r for r in rows if r["t"] == now]
+    assert len(last) == len(tel.PARAMS)
+    for r in last:
+        assert (r["value"], r["status"]) == (live[r["param"]]["value"], live[r["param"]]["status"])
+
+
+def test_telemetry_export_is_fog_scoped_per_requesting_cell():
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    assert mgr.telemetry_export("red", "ISR-EO-1", t0, now) is None      # another cell's asset
+    assert mgr.telemetry_export("observer", "ISR-EO-1", t0, now) is None  # not a cell that owns it
+    assert mgr.telemetry_export("blue", "NO-SUCH-ASSET", t0, now) is None
+    blue = mgr.telemetry_export("blue", "ISR-EO-1", t0, now, interval_s=300)
+    white = mgr.telemetry_export("white", "ISR-EO-1", t0, now, interval_s=300)
+    assert blue == white   # White sees any asset, exactly as /telemetry/{cell}/{asset} does
+
+
+def test_telemetry_export_is_read_only_and_deterministic():
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    before = mgr.sim.world.model_dump()
+    n_events = len(mgr.sim.eventlog.entries)
+    a = mgr.telemetry_export("blue", "ISR-EO-1", t0, now, interval_s=120)
+    b = mgr.telemetry_export("blue", "ISR-EO-1", t0, now, interval_s=120)
+    assert a == b
+    assert mgr.sim.world.model_dump() == before
+    assert len(mgr.sim.eventlog.entries) == n_events and mgr.sim.clock.now == now
+
+
+def test_telemetry_export_wholly_out_of_range_rejected():
+    import pytest
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    with pytest.raises(ValueError):
+        mgr.telemetry_export("blue", "ISR-EO-1", now + minutes(1), now + minutes(2))
+    with pytest.raises(ValueError):
+        mgr.telemetry_export("blue", "ISR-EO-1", t0 - minutes(2), t0 - minutes(1))
+
+
+def test_telemetry_export_partially_out_of_range_clamped():
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    rows = mgr.telemetry_export("blue", "ISR-EO-1", t0 - minutes(5), now + minutes(5), interval_s=60)
+    times = sorted({r["t"] for r in rows})
+    assert times[0] == t0 and times[-1] <= now
+    assert len(times) == 21   # clamped to [t0, now], sampled every 60 s
+
+
+def test_telemetry_export_default_span_is_the_recorded_range():
+    mgr, t0, _ = _export_mgr()
+    rows = mgr.telemetry_export("blue", "ISR-EO-1", interval_s=600)
+    assert sorted({r["t"] for r in rows}) == [t0, t0 + minutes(10), t0 + minutes(20)]
+    assert {r["param"] for r in rows} == set(tel.PARAMS)
+
+
+# -- IP-1261 (BL-0170, FR-2320 parity) — the live series route reads each instant's own world ----
+
+def _replay_ref(mgr, asset, param, t, nominal=False):
+    from spacesim.session import aar
+    return tel.sample(aar.state_at_time(mgr, t), asset, param, t, mgr.sim._seed, nominal=nominal)
+
+
+def _assert_series_matches_replay(mgr, asset, param, t0, t1, n, nominal=False):
+    pts = mgr.get_series("blue", asset, param, t0=t0, t1=t1, n=n, nominal=nominal)["points"]
+    for p in pts:
+        ref = _replay_ref(mgr, asset, param, p["t"], nominal=nominal)
+        assert (p["value"], p["status"]) == (ref["value"], ref["status"]), (param, p["t"])
+    return pts
+
+
+def _paused_mgr():
+    mgr = SessionManager(load_vignette("training-basics"), seed=1)
+    mgr.start()
+    mgr.set_clock(False)
+    return mgr, mgr.ctx.start_epoch
+
+
+def test_series_pre_onset_matches_replay():
+    """Scenario A — a bus anomaly at +600 s must not be back-dated onto pre-onset points."""
+    mgr, t0, t_anom = _export_mgr()
+    now = mgr.sim.clock.now
+    for param in ("snr_db", "attitude_error_deg", "battery_soc"):
+        pts = _assert_series_matches_replay(mgr, "ISR-EO-1", param, t0, now, 7)
+        if param == "snr_db":
+            assert all(p["status"] == "green" for p in pts if p["t"] < t_anom)
+            assert all(p["status"] == "red" for p in pts if p["t"] >= t_anom)
+    # The nominal ghost reads per-instant state too (battery SoC baseline).
+    _assert_series_matches_replay(mgr, "ISR-EO-1", "battery_soc", t0, now, 7, nominal=True)
+
+
+def test_series_cyber_cpu_load_pre_onset_matches_replay():
+    """Scenario B — a cyber-cause anomaly's CPU-load signature starts at its own onset."""
+    mgr, t0 = _paused_mgr()
+    mgr.advance_to(t0 + minutes(10))
+    mgr.fire_inject([{"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus", "cause": "cyber"}])
+    mgr.advance_to(t0 + minutes(20))
+    pts = _assert_series_matches_replay(mgr, "ISR-EO-1", "cpu_load_pct", t0, mgr.sim.clock.now, 7)
+    pre = [p["value"] for p in pts if p["t"] < t0 + minutes(10)]
+    post = [p["value"] for p in pts if p["t"] >= t0 + minutes(10)]
+    assert max(pre) < min(post)
+
+
+def test_series_cleared_episode_stays_in_history():
+    """Scenario C — a safe-mode episode that was later cleared must still show in history."""
+    mgr, t0 = _paused_mgr()
+    mgr.advance_to(t0 + minutes(5))
+    mgr.fire_inject([{"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus", "cause": "c"}])
+    mgr.advance_to(t0 + minutes(10))
+    mgr.fire_inject([{"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus", "restore": True}])
+    mgr.advance_to(t0 + minutes(15))
+    pts = _assert_series_matches_replay(mgr, "ISR-EO-1", "snr_db", t0, mgr.sim.clock.now, 7)
+    in_episode = [p for p in pts if t0 + minutes(5) <= p["t"] < t0 + minutes(10)]
+    assert in_episode and all(p["status"] == "red" for p in in_episode)
+
+
+def test_series_destroyed_asset_not_los_before_kill():
+    from spacesim.engine.effects import EffectInstance
+    mgr, t0 = _paused_mgr()
+    mgr.advance_to(t0 + minutes(10))
+    kill = EffectInstance(category="direct_ascent", segment="orbital", actor="RED-ASAT",
+                          target="ISR-EO-1", intended_outcome="destroy", success_prob=1.0)
+    mgr.sim.schedule(mgr.sim.clock.now, "execute_effect", {"effect": kill.model_dump()}, actor="red")
+    mgr.advance_to(t0 + minutes(20))
+    assert mgr.sim.world.assets["ISR-EO-1"].health == "destroyed"
+    pts = _assert_series_matches_replay(mgr, "ISR-EO-1", "rx_power_dbm", t0, mgr.sim.clock.now, 5)
+    assert all(p["value"] is not None for p in pts if p["t"] < t0 + minutes(10))
+    assert all(p["status"] == "los" for p in pts if p["t"] > t0 + minutes(10))
+
+
+def test_series_instants_and_shape_unchanged():
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    r = mgr.get_series("blue", "ISR-EO-1", "snr_db", t0=t0, t1=now, n=13)
+    assert set(r) == {"asset", "param", "nominal", "points"}
+    ref = tel.series(mgr.sim.world, "ISR-EO-1", "snr_db", t0, now, 13, mgr.sim._seed)
+    assert [p["t"] for p in r["points"]] == [p["t"] for p in ref]
+    assert all(set(p) == {"t", "value", "status"} for p in r["points"])
+    # Default window (no t0/t1): the last hour, clamped to the start epoch, ending at now.
+    d = mgr.get_series("blue", "ISR-EO-1", "snr_db")["points"]
+    assert d[0]["t"] == t0 and d[-1]["t"] == now and len(d) == 120
+
+
+def test_series_replay_cost_is_single_pass():
+    """Cost guard — one series call applies each event-log entry at most once (a single forward
+    pass), however many distinct event-log positions its window spans."""
+    from spacesim.engine.handlers import DEFAULT_HANDLERS
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    entries = mgr.sim.eventlog.entries
+    calls = {"n": 0}
+    merged = dict(DEFAULT_HANDLERS)
+    merged.update(mgr.sim.handlers())
+
+    def _wrap(fn):
+        def counted(world, payload, rng):
+            calls["n"] += 1
+            return fn(world, payload, rng)
+        return counted
+
+    wrapped = {k: _wrap(v) for k, v in merged.items()}
+    mgr.sim.handlers = lambda: dict(wrapped)
+    pts = mgr.get_series("blue", "ISR-EO-1", "snr_db", t0=t0, t1=now, n=120)["points"]
+    distinct = {sum(1 for e in entries if e.sim_time <= p["t"]) for p in pts}
+    assert len(distinct) >= 3          # the window genuinely spans several positions
+    assert 0 < calls["n"] <= len(entries)
+
+
+# -- IP-1262 (BL-0176, rider BL-0174) -------------------------------------------------------------
+
+def test_telemetry_export_over_ceiling_rejected_without_replay(monkeypatch):
+    """Test 4 — a pathological interval_s is rejected before any replay is run."""
+    from spacesim.session import aar
+    mgr, t0, _ = _export_mgr()
+    called = {"n": 0}
+    real = aar.worlds_at_times
+
+    def spy(*a, **k):
+        called["n"] += 1
+        return real(*a, **k)
+
+    monkeypatch.setattr(aar, "worlds_at_times", spy)
+    with pytest.raises(ValueError):
+        mgr.telemetry_export("blue", "ISR-EO-1", t0, t0 + 20_000, interval_s=1e-6)
+    assert called["n"] == 0
+
+
+def test_series_reversed_window_matches_forward_reversed():
+    """Test 7 (BL-0174 rider) — get_series with t0 > t1 does not raise and returns the forward
+    call's points in reverse order, value/status identical at every shared instant."""
+    mgr, t0, _ = _export_mgr()
+    now = mgr.sim.clock.now
+    fwd = mgr.get_series("blue", "ISR-EO-1", "snr_db", t0=t0, t1=now, n=9)["points"]
+    rev = mgr.get_series("blue", "ISR-EO-1", "snr_db", t0=now, t1=t0, n=9)["points"]
+    assert [p["t"] for p in rev] == [p["t"] for p in fwd][::-1]
+    assert [(p["value"], p["status"]) for p in rev] == [(p["value"], p["status"]) for p in fwd][::-1]

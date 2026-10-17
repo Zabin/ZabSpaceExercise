@@ -1,6 +1,7 @@
 # Interface Control Document (ICD)
 
-> **Status:** Draft — first issue; amended 2026-07 in two passes (see "ICD change log" below).
+> **Status:** Draft — first issue; amended 2026-07 in two passes and 2026-10-17 in a third (see
+> "ICD change log" below).
 > **Inputs consumed (approved baseline only):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -412,7 +413,14 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Source Component:** C2
 - **Destination Component:** C5 (Content & Data)
 - **Purpose:** Load a Vignette's mission, roles, force lay-down, parameters, injects, briefs into a
-  `WorldState` (GDS-03 §1 diagram `SM -->|load| VIG`, `SM -->|load| TLE`; GDS-04 §1.1).
+  `WorldState` (GDS-03 §1 diagram `SM -->|load| VIG`, `SM -->|load| TLE`; GDS-04 §1.1). **IP-1180
+  (FR-5410, 2026-09-27):** the load root is now plural — the built-in library plus zero or more
+  configured external directories, each catalog entry tagged with its origin — not a shape change
+  to this interface (still one parsed Vignette object per load call), a citation update only.
+  **Pass 3 (2026-10-17, `BL-0092`):** this interface also carries C2's in-session parsing of
+  operator-supplied orbit text through C5's parsers — the single-object TLE paste (`FR-5210`) and
+  the multi-object TLE/CCSDS OMM file import (`FR-5220`, `content/bulk_import.py`). The text reaches
+  C2 from the console through INT-0006; no external system is involved.
 - **Data exchanged:** A parsed Vignette object; asset/effect/sensor template data the engine
   consults when constructing the initial force lay-down.
 - **Message/data structure:** Not specified beyond GDS-04 §1.1's conceptual fields; on-disk format
@@ -440,7 +448,11 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Source Component:** C2 (act of producing a save) / **Destination Component:** C5 (on-disk
   format ownership) and C11 (filesystem, the physical write target)
 - **Purpose:** Persist a complete, deterministic session snapshot for resume (GDS-03 §1 diagram
-  `SM -->|read-write| SAVE`; GDS-04 §1.14 "Persistent state").
+  `SM -->|read-write| SAVE`; GDS-04 §1.14 "Persistent state"). **IP-1180 (FR-5420, 2026-09-27):**
+  the Vignette Creator's authored-vignette write path (`content/vignette_export.py::save_vignette`,
+  distinct from this interface's session-snapshot save/resume) now writes to a configured
+  `user_save_dir` rather than `VIGNETTE_DIR` — the C2-owns-the-act/C5-owns-the-format split
+  (`ADR-0022`) is unchanged, only *which* directory C5's format is written into.
 - **Data exchanged:** The current `WorldState`, full `EventLog`, all Snapshots, Role Assignments
   (GDS-04 §1.14).
 - **Message/data structure:** Not specified beyond the entity list above; the on-disk format is
@@ -487,6 +499,11 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Related ADRs:** ADR-0018 (offline-first; this is the one named exception, build-time only).
 - **Open questions:** Credential/authentication handling for the Space-Track call is not specified
   by any approved document (§7.8).
+- **Scope note (pass 3, 2026-10-17, `BL-0092`):** this interface is the network fetch from
+  Space-Track only. `FR-5220`'s file-based multi-object TLE/OMM import does **not** use it: the
+  operator supplies the file, it travels the console → `SessionAPI` path (INT-0006), and C2 parses
+  it through C5 (INT-0011). The earlier "stretched shape" reading (`BL-0092`) is resolved by
+  assigning the import to those two interfaces rather than widening this one.
 
 ---
 
@@ -497,9 +514,21 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Destination Component:** C1 (`EventLog`, `WorldState`)
 - **Purpose:** Replay/scrub to any `EventLog` point and branch-compare, read-only against the
   engine, never the live session (GDS-03 §1 diagram `AAR --> EL`, `AAR --> WS`; GDS-03 §2.2
-  "Responsibilities").
+  "Responsibilities"). **IP-1210 (FR-7410/FR-7420, 2026-09-27):** generalized from a single-point
+  replay read to a time-span read via a new additive `aar.state_at_time(mgr, t)` sibling of
+  `state_at(mgr, seq)` — same interface, same read-only guarantee, reconstructing at an arbitrary
+  sim time instead of only an eventlog sequence number. **IP-1280 (FR-7330, 2026-09-28):**
+  `aar.PlaybackSession` reads at successive simulated moments, paced by a requested speed.
+  **Pass 3 (2026-10-17, `BL-0093`) — shape generalized.** This interface is a read-only
+  reconstruction read in three forms: a single point (an event-log sequence number or a sim time),
+  a sampled series of times (the time-span exports `FR-7410`/`FR-7420`/`FR-7430`, `FR-2320`), and
+  paced successive reads (variable-speed playback, `FR-7330`). All three share one guarantee: they
+  reconstruct from the event log and never touch the live session. A cell-scoped series (the
+  cell-observed export, telemetry export, a single-cell playback viewpoint) is filtered at the
+  session seam exactly as a single-point cell read is (INT-0007), never inside this interface. The
+  earlier "stretched shape" notes are superseded by this description.
 - **Data exchanged:** Read: historical `EventLog` entries and reconstructed `WorldState` snapshots
-  at a given point. No write.
+  at a given point, at each of a sampled series of times, or at paced successive times. No write.
 - **Message/data structure:** Not specified beyond GDS-03 §2.2's description (`snapshot_at`).
 - **Direction:** One-directional (C2 reads from C1 only).
 - **Frequency/timing:** Post-session or mid-session, on White Cell/Observer demand.
@@ -836,6 +865,9 @@ the changes landed in *this* document, across both passes.
 | 2 | Internal re-check prompted by items 13/14 | §7 item 17 (new) | Re-verified §3 principle 4 (one-directional dependency graph) against the two newly-flagged candidate interfaces — no circular dependency found; recorded as checked-and-cleared. |
 | 2 | Internal ownership review | §6.3 | Added an explicit statement that C4 (Operator Console) owns no persistent data — the ownership diagram previously omitted C4 entirely, which could otherwise be misread as an oversight rather than the deliberate "stateless presentation layer" fact GDS-03 §2.4 already establishes. |
 | 2 | — | Header metadata, this section | Status line and section header updated to reflect two amendment passes; no ADR/GDS document was touched in pass 2 (see scope note below). |
+| 3 (2026-10-17, run #161) | `BL-0092` | INT-0011, INT-0013 | File-based TLE/OMM import (`FR-5220`) assigned to INT-0006 + INT-0011; INT-0013 scoped to the Space-Track network fetch. |
+| 3 | `BL-0093` | INT-0014 | Shape generalized to single-point, sampled-series and paced reads; the two "stretched shape" notes superseded. |
+| 3 | — | Header metadata | Status line notes the third pass. |
 
 **Scope note (pass 2):** this pass reviewed the Strategic Review specifically for interface
 concerns — interface ownership, missing interfaces, data ownership, interface contracts, and
