@@ -15,7 +15,7 @@
 > **Dependencies:** none (per `FEAT-5300`). **Dependent:** [FS-115](FS-115-session-setup.md)
 > (`FEAT-4100`, Session Setup — no session can start without a validated vignette).
 > **Referenced By:** [IP-1310](../implementation/packages/IP-1310-load-time-vignette-validation.md)
-> (Implementation Package, 🔵 `COMPLETE`, criteria 1–9 and 11),
+> (Implementation Package, ✅ `VERIFIED` via [VR-1310](../implementation/verification/VR-1310-load-time-vignette-validation.md), criteria 1–9 and 11),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0220` (its first
 > concrete error-path case), `BL-0237`, `BL-0240`, [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-5310`–`FR-5314`, [docs/requirements/02-non-functional-requirements.md](../requirements/02-non-functional-requirements.md)
