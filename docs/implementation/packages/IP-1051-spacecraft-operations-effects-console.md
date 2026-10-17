@@ -3,6 +3,7 @@
 > **Package ID:** IP-1051
 > **Version:** 1.0
 > **Status:** ✅ VERIFIED
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0041`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-105 (§3.2, §3.3, §4), IP-1030 (custody/weapons-quality gate), IP-1010 (kinetic consequence preview parity)
 > **Referenced By:** IP-1050 (sibling package, bus/payload command & telemetry), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the executed-effect surface IP-1070 replays and IP-2010 assesses
@@ -158,3 +159,14 @@ Rollback surface: `spacesim/engine/effects.py`, `engine/jam.py`, `engine/engage.
 `world.consequences` and `EffectInstance`/`EffectOutcome` participate in the eventlog/save schema; a
 revert requires re-verification against the effect-resolution test suites and the determinism
 property test before landing.
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0041` (`VR-1051` Finding 1) — file misattribution, not drift.** `_FREQ_HOP_RESIDUAL` and
+  `_EVASION_RESIDUAL` live in **`spacesim/engine/effects.py`** (defined `:123-124`, applied `:240` /
+  `:247`), and always have. They never lived in `engine/orders.py`. Every citation of them as
+  `orders.py:89-100` (reference files, Implementation Task 4, the Verification Checklist) should read
+  `engine/effects.py`. The substantive claim (defender-side modifiers change the resolver's
+  probability roll) is true at the real location.

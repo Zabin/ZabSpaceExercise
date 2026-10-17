@@ -6,8 +6,9 @@
 > not `VERIFIED`, per this skill's rule that an as-built package may be born `VERIFIED` only after
 > an actual `09-package-verification` pass — this authoring pass confirmed the cited code and test
 > exist, but is not that independent pass.)*
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0001`, `BL-0030`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-115 (FR-4110 slice)
-> **Referenced By:** [IP-1120](IP-1120-classification-banner.md), [IP-1151](IP-1151-seat-role-assignment.md) (both `BLOCKED` on this package reaching `VERIFIED`), [00-master-build-plan.md](../00-master-build-plan.md)
+> **Referenced By:** [IP-1120](IP-1120-classification-banner.md), [IP-1151](IP-1151-seat-role-assignment.md) (both `BLOCKED` on this package at authoring time; both `VERIFIED` since runs #13/#15 — corrected 2026-10-17, `BL-0030`), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the loaded, parameter-resolved Session every other package in this plan's session
 > layer builds on
 > **Feature Reference:** [FS-115 — Session Setup: Vignette Selection & Seat Assignment](../../features/FS-115-session-setup.md) (FR-4110 portion)
@@ -162,3 +163,20 @@ Not applicable in the ordinary sense — this package proposes no code change. I
 a defect in the resolution path, rollback would mean reverting to the vignette's declared defaults
 being used unconditionally (i.e. the override mechanism itself), which is bounded to
 `session/manager.py`'s `overrides` parameter and its call sites in `ui_web/server.py`.
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0001` (`VR-1150` Finding 1).** The Risks / Tests-to-Add claim that "no test exercises the
+  explicit zero-overrides → all-defaults path" is **incorrect**.
+  `spacesim/tests/test_content.py::test_vignette_1_loads_and_builds_a_world` (now `:46`) calls
+  `build_world(vig)` with no `overrides` and asserts the vignette-declared defaults. No coverage gap
+  exists. The override-path test this package cites at `test_content.py:62`,
+  `test_parameter_override_flows_into_roe`, is now at `:137`.
+- **`BL-0030` (integration-review-18-package-tranche Finding 2).** The header's `Status` line is the
+  authoring-time snapshot (this repository's convention: a package's own Status line is not
+  rewritten after authoring; the Master Build Plan and `packages/INDEX.md` are authoritative). The
+  ledger status is **`VERIFIED`** via [`VR-1150`](../verification/VR-1150-vignette-selection.md)
+  (run #3). The `Referenced By` field has been corrected in place: `IP-1120` and `IP-1151` are both
+  `VERIFIED` (runs #13/#15), no longer `BLOCKED` on this package.

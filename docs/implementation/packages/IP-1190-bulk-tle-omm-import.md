@@ -5,6 +5,7 @@
 > **Status:** 🟢 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
 > awaiting `09-package-verification` in a fresh session — this session implemented it and may not
 > verify its own work)*
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0102`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** [FS-119](../../features/FS-119-bulk-tle-omm-import.md) v1.0 (`FR-5220`),
 > `FR-1210` (propagator seam, unchanged, reused), `FR-5140`/`session/manager.py::add_tle` (the
 > single-object mechanism this package generalizes, not replaces)
@@ -156,6 +157,11 @@ document needs to cite differently to be buildable).
   returning its per-object report list — additive, alongside the unchanged existing `force/tle`
   route (`FR-5140`'s single-object path is explicitly out of scope for modification, per FS-119's
   own Scope).
+- `spacesim/session/inprocess.py` *(added 2026-10-17, `BL-0102`, recording what was built)* — a new
+  `InProcessSession.bulk_import()` wrapper mirroring `add_tle()`'s, through which the route reaches
+  `SessionManager.bulk_import()` (every force-edit route goes through this layer).
+- `spacesim/tests/test_observer.py` *(added 2026-10-17, `BL-0102`)* — one new `_MUTATING_ROUTES`
+  row for `POST /force/bulk_import`, per the per-new-mutating-route convention.
 
 ## Implementation Tasks
 
@@ -294,3 +300,14 @@ capability with no effect on any existing single-object TLE/lat-long entry, any 
 or any already-force-added asset (assets already added via a bulk import become ordinary `Asset`
 entries indistinguishable from a single-object `add_tle()` result — no special marker, no
 data-migration concern on rollback).
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0102` (implementation Outstanding Issue).** `Files to Modify` omitted two files the build
+  needed, both directly-implied plumbing, not scope creep. They have been added to that field in
+  place: `spacesim/session/inprocess.py` (`InProcessSession.bulk_import()`, `:239`, mirroring the
+  `add_tle()` wrapper, because every force-edit route reaches `SessionManager` through this layer)
+  and `spacesim/tests/test_observer.py` (one new `_MUTATING_ROUTES` row for
+  `POST /force/bulk_import`, per the per-mutating-route convention).

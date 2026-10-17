@@ -3,6 +3,7 @@
 > **Package ID:** IP-1010
 > **Version:** 1.0
 > **Status:** ✅ VERIFIED
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0032`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-101
 > **Referenced By:** IP-1020 (shares the validate path), IP-1050/IP-1051 (renders this package's preview surface), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the planning-preview surface IP-1050/IP-1051's console renders
@@ -184,3 +185,14 @@ revert if a regression were found, not an undeployment plan:
   targeted rollback of preview-only behavior without touching commit behavior is not possible given
   the single-shared-path design, and should not be attempted (it would reintroduce the
   preview/commit divergence risk this design deliberately eliminates).
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0032` (`VR-1010` Findings 1-2).** Current anchors: `engine/orders.py` — `issue()` `:250`,
+  `dry_run()` `:260`, `_validate()` `:594`, `_next_window()` `:677`; `engine/access.py` —
+  `windows()` `:109`; `session/inprocess.py` — `validate_order()` `:327`, `compute_maneuver()`
+  `:514`. **Correction:** `InProcessSession.validate_order()` takes `self._locked(session)` (then
+  `mgr._catch_up_locked()`), not `_locked_read()`. Both wrap the same `mgr._lock`, so the package's
+  substantive claim (the dry-run runs under the session lock) holds.

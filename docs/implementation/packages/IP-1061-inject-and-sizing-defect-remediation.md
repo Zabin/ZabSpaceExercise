@@ -11,6 +11,7 @@
 > at-limit tests were kept unchanged — still valid regardless of enforcement), so this package's
 > own test count is +5 net. Full suite 603 passed/3 skipped (up from 598/3), both permanent
 > gates green. Awaiting `09-package-verification` to advance to `VERIFIED`.)*
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0146`, `BL-0147`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.0 (`FR-4410`),
 > [ADR-0019](../../architecture/adr/ADR-0019-sizing-guideline-not-engine-cap.md) (`NFR-1300`),
 > [IP-1060](IP-1060-white-cell-dashboard.md) (`VERIFIED` — the as-built inject mechanism this
@@ -263,3 +264,18 @@ The change is purely subtractive or local. Reverting the implementing commit res
 behaviour exactly: the `inject_id` payload key is inert on apply, and no schema, API or
 persisted-format field is added. No data migration is needed. If only A4 were to be rolled back,
 that would conflict with ADR-0019 and would need a superseding ADR, not a code revert.
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0146` (`VR-1061` Finding L1).** Verification Checklist item 2's literal command
+  `grep -n inject_schedule -r spacesim/` **does** return one hit: the substring inside the test name
+  `test_fire_inject_scheduled_does_not_apply_until_advance` (`tests/test_inject_library.py:111`). The
+  intent (no code or comment names a nonexistent `inject_schedule` route) is met. The objectively
+  checkable form is the whole-word search `grep -rnw inject_schedule spacesim/`, which returns no
+  hits at `e1e721c`.
+- **`BL-0147` (`VR-1061` Finding L2).** The Definition of Done's "the four old cap tests are replaced
+  by the two 'loads' tests" does not describe what was built. As built (and disclosed in the Status
+  header): the 2 cap-**enforcement** tests were inverted in place into "loads" assertions, and the 2
+  **at-limit** tests were kept unchanged.

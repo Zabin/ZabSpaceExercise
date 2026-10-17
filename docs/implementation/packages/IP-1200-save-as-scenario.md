@@ -5,6 +5,7 @@
 > **Status:** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
 > built against `IP-1180`'s actual landed diff, per this package's own coordination note — awaiting
 > `09-package-verification` in a fresh session, since this session implemented it)*
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0144`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** [FS-120](../../features/FS-120-save-as-scenario.md) v1.0 (`FR-5510`),
 > [IP-1180](IP-1180-external-vignette-directories.md) (`FR-5420`'s user-save-directory write
 > target — `⚪ NOT STARTED`, not yet authorized; this package's own write path calls the same,
@@ -246,7 +247,9 @@ extension is pure/deterministic (reads only the passed-in `Vignette`'s data).
 - [ ] Full existing suite re-run with zero regressions, in particular every `IP-1173`-authored
   draft-save test.
 - [ ] Independently confirm, by reading the shipped code, that `export_vignette()`'s
-  `start_epoch=None` default path is byte-identical to its pre-`IP-1200` behavior.
+  `start_epoch=None` default path is byte-identical to its pre-`IP-1200` behavior. *(Corrected
+  2026-10-17, `BL-0144`: start-epoch semantics unchanged; the file itself is not byte-identical by
+  design — see maintenance notes.)*
 - [ ] Independently round-trip a save-as-scenario file through `load_vignette()`/`build_world()`
   and confirm the resulting `WorldState` carries the expected tracks/health/resources/space-weather.
 - [ ] Independently confirm `SessionManager.save_as_scenario()` is unreachable for a draft
@@ -294,3 +297,15 @@ concern: a save-as-scenario file already written remains an ordinary, loadable v
 rollback (its `initial_tracks`/`simulator_version`/`initial_space_weather` fields would simply be
 ignored by a rolled-back `build_world()`, not rejected, since pydantic tolerates unknown-to-older-
 code additive fields the same way every other additive schema change in this project already does).
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0144` (`VR-1200` Finding L1).** The Verification Checklist's "byte-identical to its
+  pre-`IP-1200` behavior" contradicts this package's own Files to Modify. Read it as: with
+  `start_epoch=None`, `export_vignette()`/`save_vignette()` keep `IP-1173`'s **start-epoch
+  semantics** unchanged (`ctx.start_epoch`). The written file is **not** byte-identical by design:
+  it always carries `simulator_version`, and carries `initial_tracks`/`initial_space_weather`
+  whenever the world has them. The shipped code follows the design; only the checklist wording was
+  wrong. The checklist item has been annotated in place.

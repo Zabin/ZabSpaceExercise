@@ -525,6 +525,18 @@ corrected in place. See this package's status-table row above for the fix detail
 fresh `09-package-verification` pass. `IP-1062` and `IP-1210` remain `IN PROGRESS`, remediation not
 yet started.
 
+**Update (2026-10-17, pipeline run #159): package-text maintenance pass, no status change.** 17
+already-`VERIFIED` packages (`IP-1010`, `IP-1020`, `IP-1030`, `IP-1040`, `IP-1050`, `IP-1051`,
+`IP-1060`, `IP-1061`, `IP-1070`, `IP-1090`, `IP-1100`, `IP-1140`, `IP-1150`, `IP-1170`, `IP-1190`,
+`IP-1200`, `IP-3010`) gained a dated **Post-verification maintenance notes** section (plus a header
+pointer) that corrects the prose and citation findings their Verification Reports raised
+(`BL-0001`, `BL-0016`, `BL-0017`, `BL-0030`, `BL-0032`, `BL-0036`–`BL-0047`, `BL-0058`, `BL-0102`,
+`BL-0144`, `BL-0146`, `BL-0147`). The two false claims (`IP-1020`'s four-state lifecycle vocabulary,
+`IP-1100`'s persisted Role Assignments) and the one file misattribution (`IP-1051`'s residual
+constants live in `effects.py`) are corrected explicitly. Line-number drift is closed by declaring
+the paired symbol name the durable anchor, with current lines as of `e1e721c`. No package's scope,
+Definition of Done outcome, status or authorization changed; this table is unchanged.
+
 ## Implementation sequence
 
 Because 11 of 13 packages describe already-shipped code, "sequence" here has two distinct readings,
