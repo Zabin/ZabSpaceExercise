@@ -781,6 +781,23 @@ findings:
 - F3: "look-ahead" (manual) vs "planning horizon" (console), with neither in the glossary.
 - F4: `09` §10 `invalid_param` is stale since `IP-1052` (already `BL-0228`).
 
+**Training review (2026-10-17):** [`reviews/training-review-runs140-148-scope.md`](docs/reviews/training-review-runs140-148-scope.md)
+(REV-TRN-008) independently reviewed run #140's sections (`invalid_param` for every action, radar
+mode paths, planning horizon) and run #148's (the refused **Load**). They were driven on fresh
+fixtures: `sda-custody-hunt` seed 4242, `gnss-ew-campaign` seed 7171, and a `TestClient` run
+against a temporary vignette folder. Traceability is consistent (302 links with 0 broken, 43 IDs
+with 0 orphans). The playbook and training suites passed 20/20. There are no Critical/High
+findings. 2 Medium, 4 Low:
+
+- F1 Medium: a file that won't parse as YAML is left out of the picker; `06` says a broken
+  vignette still appears.
+- F2 Medium: a code bug. One unparseable `.yaml` in the built-in folder makes a misspelt id
+  return a 500, not a 404, and breaks the id lookup of later-sorting files.
+- F3 Low: the `build` problem only appears once the others are fixed.
+- F4 Low: numeric text (`"3"`, `"200"`) is accepted, not "text".
+- F5 Low: the `06` raw-JSON radar example drops the pre-filled `intent`.
+- F6 Low: `10` §10.5 row 8 calls the **Mode** control "Beam mode".
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
