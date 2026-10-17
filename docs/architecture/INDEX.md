@@ -150,15 +150,17 @@ Operations), GDS-02 (System Context), GDS-03 (Architecture), and the research en
 distinct from both the sequential ladder in §1 and the per-cluster `ADS-xxx` in §2. Each
 `ADR-NNNN` carries Decision ID, Title, Context, Decision, Alternatives Considered, Rationale,
 Consequences, and a Status of `Accepted`, `Proposed`, or `Deferred`. See
-[`adr/INDEX.md`](adr/INDEX.md) for the full list (33 ADRs as of this writing, 32 `Accepted` and 1
-`Superseded`: 23 were already settled when first authored; 6 (ADR-0024–0029) originally recorded
+[`adr/INDEX.md`](adr/INDEX.md) for the full list (37 ADRs as of this writing, 35 `Accepted`, 1
+`Superseded` and 1 `Proposed`: 23 were already settled when first authored; 6 (ADR-0024–0029) originally recorded
 Open Questions the ladder left genuinely open and were resolved afterward by explicit
 project-owner decision; 2 (ADR-0030–0031) were added in direct response to
 [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) — see
 [`reviews/architecture-update.md`](../reviews/architecture-update.md); 2 more (ADR-0032–0033) were
 added to resolve conflicts a `04-requirements-engineering` pass found between `DOM-002`/`004` and
 `ADR-0017`/`ADR-0029` — see [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md).
-`ADR-0033` supersedes `ADR-0029`, this corpus's first `Superseded` entry).
+`ADR-0033` supersedes `ADR-0029`, this corpus's first `Superseded` entry; 2 (ADR-0034–0035) closed
+FS-105's directed-energy Open Questions; 2 (ADR-0036–0037) answer the load-validation batch's
+routed questions — `ADR-0037` decided, `ADR-0036` `Proposed` pending a project-owner decision).
 
 ## Related
 

@@ -67,10 +67,19 @@ ADR's own "Consequences" section.
 | [ADR-0033](ADR-0033-dedicated-research-export-interface.md) | A dedicated multi-run/cohort research-export interface is authorized (supersedes ADR-0029) | Accepted |
 | [ADR-0034](ADR-0034-directed-energy-reuses-weapon-engagement-channel.md) | Directed energy reuses `weapon_engagement`; no seventh access channel | Accepted |
 | [ADR-0035](ADR-0035-directed-energy-confidence-tiers-by-branch.md) | DE-dazzle needs no custody precondition (like `jam`); DE-damage needs weapons-quality (like `engage`) | Accepted |
+| [ADR-0036](ADR-0036-content-template-libraries-vs-inline-authoring.md) | Asset/effect/sensor template libraries vs. the shipped inline-authoring model (`FR-5310`'s template clause) | **Proposed — owner decision pending** |
+| [ADR-0037](ADR-0037-jammer-power-is-a-rating-not-a-consumable.md) | A jammer's `power_w` is a rating, not a consumable; the success-path subtraction is a defect | Accepted |
 
 **ADR-0034/0035** close the two architecture-level Open Questions `06-feature-specification`
 carried in `FS-105` v1.1 for the directed-energy order/resolution path (backlog `BL-0066`,
 `BL-0088`, `BL-0089`), grounded in `R117` v1.1's new DE characterization (`BL-0086`).
+
+**ADR-0036/0037** answer the two architecture questions `04-requirements-engineering` routed here
+from the load-validation batch (run #142, report F1/F3). `ADR-0037` decides (`BL-0239`): jammer
+`power_w` is a rating, so GDS-04 §1.2 stands and the code is the defect. `ADR-0036` (`BL-0233`) is
+`Proposed`: either answer rewrites closed-gate GDS-03 §2.5/GDS-04 §1.2 and Accepted `ADR-0007`, or
+adds new scope, so — following the `ADR-0024`–`0029` precedent — it records the options and a
+recommendation (amend to inline authoring) and leaves the decision to the project owner.
 
 ADR-0001 through ADR-0023 record decisions already settled and reflected in the shipped system at
 the time this ADR set was first authored. ADR-0024 through ADR-0029 originally recorded questions
@@ -104,8 +113,8 @@ asked directly per-conflict: `ADR-0032` **narrows** `ADR-0017` (a carve-out, not
 `ADR-0017` remains `Accepted` and its core "no composite score, no automated win/loss" prohibition
 is unchanged); `ADR-0033` **supersedes** `ADR-0029` outright (the project owner chose to authorize
 the dedicated research-export interface `ADR-0029` had previously rejected, rather than work around
-it). `ADR-0033` is this corpus's first `Superseded` entry. Of 33 ADRs, 32 are `Accepted` and 1 is
-`Superseded`.
+it). `ADR-0033` is this corpus's first `Superseded` entry. Of 37 ADRs, 35 are `Accepted`, 1 is
+`Superseded` (`ADR-0029`), and 1 is `Proposed` (`ADR-0036`, awaiting the project owner).
 
 ## Related
 
