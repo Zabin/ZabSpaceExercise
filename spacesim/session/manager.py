@@ -1237,8 +1237,9 @@ class SessionManager:
             # forever (Design Decision resolving BL-0095 part 1) — _evaluate_metric's own
             # existing None-handling already produces this, no new error-handling branch needed.
             if _evaluate_metric(world, self.ctx, trig.get("metric", {})):
+                # IP-1064 (BL-0131) — record the measured value that decided the firing, measured
+                # before the inject's own effects can change it (VR-1064 Finding 1, BL-0278).
+                value = _measure_metric(world, self.ctx, trig.get("metric", {}))
                 self._apply_inject_effects(world, inj.effects, rng)
-                # IP-1064 (BL-0131) — record the measured value that decided the firing.
-                fired.append({"inject_id": inj.id,
-                              "value": _measure_metric(world, self.ctx, trig.get("metric", {}))})
+                fired.append({"inject_id": inj.id, "value": value})
         payload["fired"] = fired
