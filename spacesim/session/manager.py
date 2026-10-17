@@ -250,12 +250,15 @@ class SessionManager:
         inject that already fired at exactly ``from_t`` is found there and is not re-queued
         (no double fire), while one that never fired (e.g. rewinding to the start epoch before the
         first ``advance_to``) is re-armed (not lost)."""
-        self.bus.schedule_ticks(BUS_TICK_PERIOD_S, until=self.horizon, start=from_t)
+        # IP-1064 (BL-0132) — both tick grids stay anchored to the session start epoch, so a re-arm
+        # after a rewind to a time between ticks does not shift them.
+        anchor = self.ctx.start_epoch
+        self.bus.schedule_ticks(BUS_TICK_PERIOD_S, until=self.horizon, start=from_t, anchor=anchor)
         # IP-1062 (FR-4420) — only when the vignette actually declares a condition-triggered
         # inject, so the other 18 of 19 library vignettes gain zero extra eventlog entries.
         if any((inj.trigger or {}).get("type") == "condition" for inj in self.vignette.injects):
             step = int(BUS_TICK_PERIOD_S * 1_000_000)
-            t = from_t + step
+            t = (anchor + ((from_t - anchor) // step) * step if from_t >= anchor else from_t) + step
             while t <= self.horizon:
                 self.sim.schedule(t, "condition_check")
                 t += step
@@ -1197,15 +1200,19 @@ class SessionManager:
         world.messages.append({"to": ["white"], "text": f"inject effect skipped ({kind}): {problem}",
                                "t": world.now})
 
-    def _condition_inject_already_fired(self, inj_id: str, before_t: int) -> bool:
+    def _fired_condition_inject_ids(self, before_t: int) -> set[str]:
         """IP-1062 (FR-4420) — derived from event-log history, no new WorldState field: mirrors
         `_arm_schedule`'s own time-filtered eventlog-scan pattern, safe under both live-run and
-        replay since eventlog entries are strictly time-ordered immutable history."""
+        replay since eventlog entries are strictly time-ordered immutable history.
+        IP-1064 (BL-0133): one scan per tick builds the whole set (was one scan per inject)."""
+        fired: set[str] = set()
         for e in self.sim.eventlog.entries:
             if e.kind == "condition_check" and e.sim_time < before_t:
-                if any(f.get("inject_id") == inj_id for f in e.payload.get("fired", [])):
-                    return True
-        return False
+                fired.update(f.get("inject_id") for f in e.payload.get("fired", []))
+        return fired
+
+    def _condition_inject_already_fired(self, inj_id: str, before_t: int) -> bool:
+        return inj_id in self._fired_condition_inject_ids(before_t)
 
     def _h_condition_check(self, world: WorldState, payload: dict, rng) -> None:
         """IP-1062 (FR-4420) — evaluates every not-yet-fired condition-triggered inject against
@@ -1215,18 +1222,23 @@ class SessionManager:
         condition are recorded with no additional/nested append (a mid-handler append would
         corrupt `_rebuild()`/`replay()`'s iteration over the entries list — see the package's
         own Risks)."""
-        from spacesim.content.vignette import _evaluate_metric
+        from spacesim.content.vignette import _evaluate_metric, _measure_metric
         fired: list[dict] = []
+        already = None
         for inj in self.vignette.injects:
             trig = inj.trigger or {}
             if trig.get("type") != "condition":
                 continue
-            if self._condition_inject_already_fired(inj.id, world.now):
+            if already is None:
+                already = self._fired_condition_inject_ids(world.now)  # IP-1064: once per tick
+            if inj.id in already:
                 continue
             # A condition targeting a deleted/expired asset/track/cell simply evaluates false
             # forever (Design Decision resolving BL-0095 part 1) — _evaluate_metric's own
             # existing None-handling already produces this, no new error-handling branch needed.
             if _evaluate_metric(world, self.ctx, trig.get("metric", {})):
                 self._apply_inject_effects(world, inj.effects, rng)
-                fired.append({"inject_id": inj.id, "value": True})
+                # IP-1064 (BL-0131) — record the measured value that decided the firing.
+                fired.append({"inject_id": inj.id,
+                              "value": _measure_metric(world, self.ctx, trig.get("metric", {}))})
         payload["fired"] = fired

@@ -598,3 +598,17 @@ def _evaluate_metric(world, ctx: VignetteContext, m: dict) -> bool:
         r = _range_km(world, m["a"], m["b"])
         return r is not None and r >= float(m.get("min_km", 50.0)) and now >= deadline
     return False
+
+
+def _measure_metric(world, ctx: VignetteContext, m: dict):
+    """IP-1064 (BL-0131, FR-4420 Outputs) — the measured quantity `_evaluate_metric` compares, for
+    the condition-inject record: range in km for ``proximity``/``evade``, the track's current
+    confidence for ``custody``/``deny_custody`` (0.0 with no track). Any other metric has no
+    measured quantity, so its boolean result is the value. Read-only; never changes a decision."""
+    kind = m.get("kind")
+    if kind in ("proximity", "evade"):
+        return _range_km(world, m["a"], m["b"])
+    if kind in ("custody", "deny_custody"):
+        tr = world.track_for(m["side"], m["object"])
+        return float(tr.current_confidence(world.now)) if tr is not None else 0.0
+    return _evaluate_metric(world, ctx, m)
