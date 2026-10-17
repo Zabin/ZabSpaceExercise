@@ -126,3 +126,39 @@ difference to plan around.
 
 **Untouched:** `BL-0171`, `BL-0181`, `BL-0187`, `BL-0215`.
 
+
+## Addendum — run #150 (2026-10-17): jammer power (F3, `BL-0245`)
+
+**Trigger:** `03-architecture-design-synthesis` answered F3 (run #149) with
+[ADR-0037](../architecture/adr/ADR-0037-jammer-power-is-a-rating-not-a-consumable.md) (Accepted):
+a jammer's power figure is a rating, not a consumable. GDS-04 §1.2's "resource levels cannot go
+negative" stands unamended; the success-path subtraction is the defect. Rating enforcement is
+explicitly out of scope.
+
+**Sources checked:** GDS-04 §1.2 "Persistent state" and "Constraints"; ADR-0037 Decision and
+Consequences; `FR-1410` (resource consumption as a side effect, "consistently with the effect
+template's declared properties"); `FR-1460`; `FR-5180` (the same field is dead for satellites).
+
+**Change applied:**
+
+- **`FR-1470` added** under `FR-1400`: a jam leaves the jammer's declared power rating unchanged,
+  whether it succeeds or fails. Must, the same tier `FR-1310`/`FR-1460` gave the other forms of
+  the GDS-04 constraint. Its Acceptance Criteria also hold the jam's outcome fixed for a seed, so
+  the remediation cannot change any shipped jam.
+- **`FR-1460` Notes** annotated: the jammer-power conflict they reported is resolved by ADR-0037 /
+  `FR-1470`; the two leaves touch the same consumption step and may share a package.
+- **RTM:** row `FR-1470`; reverse-index rows `ADR-0036` (no citing requirement yet) and `ADR-0037`;
+  `FR-1470` added to C1 and INT-0008.
+
+**Review (focused on the changed area):**
+
+| Finding type | IDs involved | Description | Severity | Recommendation |
+|---|---|---|---|---|
+| None — consistency check | `FR-1470` vs. `FR-1410`, `FR-1460`, `FR-5180`, ADR-0037 | `FR-1410`'s "resource consumption" side effect stays valid: ammunition (`FR-1460`) and Δv (`FR-1310`) are still consumed; `FR-1470` only says a power *rating* is not. No conflict with `FR-5180` (satellite bus power is a separate authored rate). No duplicate. | — | None. |
+| Downstream routing | `FR-1470`, `FR-1460` | Neither leaf has a catalog Feature or FS. By parentage both are `FEAT-1400`'s. | Low | `05-feature-decomposition` assigns both in one pass (`BL-0238` + `BL-0245`), then `06` and one `07` remediation package. |
+
+`F1` (`BL-0233`) is now `ADR-0036`, `Proposed`, awaiting the project owner; this addendum does not
+touch `FR-5310`. `F2` (`BL-0215`) is unchanged. `02-non-functional-requirements.md` was read for
+the data-integrity category and is unchanged.
+
+**Untouched:** `BL-0171`, `BL-0181`, `BL-0187`, `BL-0215`.

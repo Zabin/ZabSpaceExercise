@@ -74,6 +74,10 @@
 > further amended (2026-10-16, run #144; **no numbered leaf added** — `FR-5312` narrowed so cyber
 > units are exempt from the location rule, per ADR-0012's window-independent cyber exception,
 > closing `BL-0241` — see the addendum in the same report.)
+> further amended (2026-10-17, run #150; **one numbered leaf added** — `FR-1470` under `FR-1400`:
+> jamming leaves the jammer's power rating unchanged, per ADR-0037, closing `BL-0245` and the F3
+> conflict of the load-validation report; `FR-1460` Notes annotated — see the second addendum in
+> the same report.)
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -555,7 +559,46 @@ review passes actually run against it).
   `power_w` consumption also drives that resource negative as built, but jammers default to 0 W.
   Enforcing GDS-04's constraint on power would refuse almost every shipped jam, so that is
   reported as a conflict, not baselined. See the
-  [update report](../reviews/requirements-update-load-validation-batch.md) F3.
+  [update report](../reviews/requirements-update-load-validation-batch.md) F3. *(Resolved
+  2026-10-17, run #150: ADR-0037 decides jammer power is a rating, not a consumable — baselined as
+  `FR-1470`. The two leaves touch the same consumption step and may share one remediation
+  package.)*
+
+#### FR-1470 — Jamming leaves the jammer's power rating unchanged
+
+- **ID:** FR-1470
+- **Title:** Leave a jamming effector's power rating unchanged when a jam executes
+- **Description:** The system shall leave a jamming effector's declared power rating unchanged
+  when a jam it issued executes, whether the jam succeeds or fails, so that the rating never goes
+  negative.
+- **Rationale:** GDS-04 §1.2 "Constraints": "resource levels cannot go negative"; §1.2
+  "Persistent state" lists power among an Asset's resource levels. ADR-0037 (Accepted) decides
+  that a jammer's power figure is a rating (watts, a rate), not a consumable energy budget, so
+  jamming does not consume it and GDS-04's constraint holds without amendment. As built
+  (2026-10-17, ADR-0037 Context), a successful jam subtracts its modulation-scaled draw from the
+  jammer's power figure; jammers default to 0 W, so most successful jams drive it negative.
+- **Priority:** Must (it restates a GDS-04 domain-model constraint, the same tier `FR-1310` and
+  `FR-1460` gave the Δv and ammunition forms of it)
+- **Inputs:** A jam order's execution; the jamming effector's declared power rating.
+- **Outputs:** The jam's effect outcome (unchanged by this requirement).
+- **Preconditions:** The jam order was accepted and has reached execution.
+- **Postconditions:** The jammer's power rating after execution equals its rating before.
+- **Acceptance Criteria:** Given a jammer with a declared power rating `R` (including the default
+  0), after it executes a successful jam and after it executes a failed jam, the jammer's power
+  rating as reported in ground truth is still `R`. The jam's success probability, footprint and
+  effect outcome for the same seed are the same as before this requirement.
+- **Verification Method:** Test
+- **Dependencies:** FR-1410
+- **Source Documents:** GDS-04 §1.2 "Persistent state" and "Constraints"; ADR-0037 Decision and
+  Consequences.
+- **Related ADRs:** ADR-0037
+- **Related Interfaces:** INT-0008
+- **Related Requirements:** FR-1410, FR-1460, FR-5180
+- **Notes:** *(new 2026-10-17, `BL-0245`, run #150)* Enforcing the rating — refusing a jam whose
+  requested power exceeds it — is **not** required: ADR-0037 excludes it (every shipped jammer is
+  rated 0 W, so it would refuse every shipped jam). It would need an owner request through
+  `00-intake`. The as-built field is `AssetResources.power_w`; for satellites it is already a
+  dead field (`FR-5180`, `R111` §2).
 
 ### FR-1500 — Custody, tracks, and the weapons-quality gate
 
