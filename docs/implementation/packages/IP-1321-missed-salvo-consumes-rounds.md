@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1321
 > **Version:** 1.0
-> **Status:** ✅ VERIFIED — 2026-10-17, `09-package-verification`, pipeline run #182, via
+> **Status:** ✅ VERIFIED — 2026-10-17, `09-package-verification`, pipeline run #183, via
 > [VR-1321](../verification/VR-1321-missed-salvo-consumes-rounds.md) (fresh session, clean — no
 > findings). All four Objective-table cases (miss, hit, destroyed-target, re-check-failure)
 > independently reproduced on fresh fixtures distinct from the implementer's own; replay

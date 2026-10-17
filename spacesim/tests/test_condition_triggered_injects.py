@@ -3,6 +3,8 @@ scheduled engine ticks, fires exactly once, reproduces under replay, and adds ze
 bloat for a vignette that declares none."""
 from __future__ import annotations
 
+import pytest
+
 from spacesim.content.vignette import Vignette
 from spacesim.session.manager import BUS_TICK_PERIOD_S, SessionManager
 
@@ -175,3 +177,52 @@ def test_two_condition_injects_each_fire_once_at_the_same_tick():
     fired_ticks = [e.sim_time for e in mgr.sim.eventlog.entries
                    if e.kind == "condition_check" and e.payload.get("fired")]
     assert len(fired_ticks) == 1
+
+
+# --------------------------------------------------------------------------- #
+# IP-1064 re-run (VR-1064 Finding 1, BL-0278) — the recorded value is the one the decision saw,
+# even when the inject's own effects change the measured quantity.
+# --------------------------------------------------------------------------- #
+
+def _fired_value(mgr) -> float:
+    (entry,) = [e for e in mgr.sim.eventlog.entries
+                if e.kind == "condition_check" and e.payload.get("fired")]
+    (fired,) = entry.payload["fired"]
+    return fired["value"]
+
+
+@pytest.mark.parametrize("loss", [{"degrade_to": 0.0}, {"mode": "drop"}])
+def test_custody_record_value_is_measured_before_a_self_affecting_custody_loss(loss):
+    """BL-0278 — a `custody >= 0.5` condition whose own effect is `forced_custody_loss` on the
+    measured track records the confidence that decided the firing, not the post-effect 0.0."""
+    metric = {"kind": "custody", "side": "blue", "object": "SAT-RED", "min_conf": 0.5}
+    tick = int(BUS_TICK_PERIOD_S * 1_000_000)
+    # Control: the same scenario with a message-only effect (the track is untouched), so its
+    # recorded value is exactly the confidence the decision compared at the firing tick.
+    control = SessionManager(_custody_condition_vignette(metric), seed=3)
+    control.start()
+    control.advance_to(control.sim.clock.now + tick)
+    decided_at = _fired_value(control)
+    assert decided_at >= 0.5
+
+    raw = _custody_condition_vignette(metric).model_dump()
+    raw["injects"][1]["effects"] = [{"type": "forced_custody_loss", "cell": "blue",
+                                     "target": "SAT-RED", **loss}]
+    mgr = SessionManager(Vignette.model_validate(raw), seed=3)
+    mgr.start()
+    mgr.advance_to(mgr.sim.clock.now + tick)
+    assert _fired_value(mgr) == decided_at
+
+
+def test_deny_custody_record_value_is_measured_before_a_self_affecting_reveal():
+    """BL-0278, other direction — a `deny_custody` condition that fires with no track (the
+    decision saw 0.0) and whose own effect is `reveal_asset` on that object records 0.0, not 1.0."""
+    raw = _custody_condition_vignette({"kind": "deny_custody", "side": "blue", "object": "SAT-RED",
+                                       "min_conf": 0.5, "by_s": 0}).model_dump()
+    raw["injects"] = [raw["injects"][1]]  # drop the t=0 reveal: blue holds no track
+    raw["injects"][0]["effects"] = [{"type": "reveal_asset", "to": "blue", "target": "SAT-RED"}]
+    mgr = SessionManager(Vignette.model_validate(raw), seed=5)
+    mgr.start()
+    mgr.advance_to(mgr.sim.clock.now + int(BUS_TICK_PERIOD_S * 1_000_000))
+    assert mgr.world.track_for("blue", "SAT-RED") is not None  # the effect did run
+    assert _fired_value(mgr) == 0.0
