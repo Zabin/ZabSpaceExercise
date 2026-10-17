@@ -151,6 +151,76 @@ def test_queued_overdraw_replays_identically():
     assert replayed.model_dump() == world.model_dump()
 
 
+# -- FR-1480 (IP-1321, FS-132 v1.1): a fired salvo is charged whether it hits or misses -----------
+# Owner decision 2026-10-17 (`BL-0249`): misses consume interceptors too. Before IP-1321 the charge
+# sat inside `if cons and outcome.success`, so a miss left the rounds untouched.
+
+def _kinetic_log(world: WorldState) -> list[dict]:
+    return [e for e in world.effect_log if e["template"].startswith("da_asat")]
+
+
+def _missed_engagement():
+    world = _kinetic_world(ammo=2)
+    sim, osys = _osys(world, resolver=_ForcedResolver(success=False))
+    order = osys.issue(_engage(salvo_n=1))
+    assert order.status == "queued", order.fail_reason
+    sim.advance_to(order.earliest_window[0] + 1)
+    return world, sim, osys
+
+
+def test_missed_salvo_is_charged():
+    world, _, osys = _missed_engagement()
+    (rec,) = _kinetic_log(world)
+    assert rec["success"] is False
+    assert world.assets["RSAT0"].health != "destroyed"
+    assert world.assets["INT"].resources.ammo == 1          # the miss cost the round it fired
+    # Only one round is left, so a 2-round salvo is now refused at both paths.
+    assert osys.dry_run(_engage(salvo_n=2)).fail_reason == "insufficient_ammo"
+    assert osys.issue(_engage(salvo_n=2)).fail_reason == "insufficient_ammo"
+
+
+def test_salvo_at_already_destroyed_target_is_charged():
+    world = _kinetic_world(ammo=2)
+    sim, osys = _osys(world)                                 # the real resolver
+    order = osys.issue(_engage(salvo_n=1))
+    assert order.status == "queued", order.fail_reason
+    world.assets["RSAT0"].health = "destroyed"               # destroyed before the window opens
+    sim.advance_to(order.earliest_window[0] + 1)
+    (rec,) = _kinetic_log(world)
+    assert rec["achieved"] == "none" and rec["success"] is False
+    assert world.assets["INT"].resources.ammo == 1
+
+
+def test_exact_salvo_charged_on_a_miss():
+    world = _kinetic_world(ammo=2)
+    sim, osys = _osys(world, resolver=_ForcedResolver(success=False))
+    order = osys.issue(_engage(salvo_n=2))
+    assert order.status == "queued", order.fail_reason
+    sim.advance_to(order.earliest_window[0] + 1)
+    assert _kinetic_log(world)[-1]["success"] is False
+    assert world.assets["INT"].resources.ammo == 0
+
+
+# Recorded at `8b690d8` (before IP-1321) with the real resolver: seed 1 hits, seed 2 misses; the
+# rounds left were 1 and 2. The outcomes must not change; only the miss's rounds now drop to 1.
+@pytest.mark.parametrize("seed,achieved,success", [(1, "destroy", True), (2, "none", False)])
+def test_engagement_outcome_unchanged_and_charged_for_seed(seed, achieved, success):
+    world = _kinetic_world(ammo=2)
+    sim, osys = _osys(world, seed=seed)
+    order = osys.issue(_engage(salvo_n=1))
+    sim.advance_to(order.earliest_window[0] + 1)
+    (rec,) = _kinetic_log(world)
+    assert (rec["achieved"], rec["success"]) == (achieved, success)
+    assert world.assets["INT"].resources.ammo == 1
+
+
+def test_missed_salvo_replays_identically():
+    world, sim, _ = _missed_engagement()
+    replayed = sim.replay()
+    assert replayed.model_dump() == world.model_dump()
+    assert replayed.assets["INT"].resources.ammo == 1
+
+
 # -- FR-1470: jamming leaves the power rating alone ----------------------------------------------
 
 @pytest.mark.parametrize("rating", [0.0, 250.0])

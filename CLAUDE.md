@@ -270,7 +270,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   Resource bounds (IP-1320, FR-1460/FR-1470): an `engage` whose salvo (`_engage_rounds`, at least
   1) exceeds the rounds left is rejected `insufficient_ammo`, and `_h_effect` re-checks the rounds
   at execution (a failed record, nothing resolved or charged); a jam never changes the jammer's
-  `power_w` (a rating, ADR-0037).
+  `power_w` (a rating, ADR-0037). A fired salvo is charged whether it hits or misses (IP-1321,
+  FR-1480 — owner decision `BL-0249`; "fired" = reached resolution).
   `_h_maneuver` (IP-1250, FR-1320) — the execute-time payload gains `purpose_tag` (additive,
   default `""`) and, on success, mutates in the same dict `applied=True`/`remaining_delta_v_ms`
   (captured by the eventlog entry logged immediately after, same pattern as IP-1062's

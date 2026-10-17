@@ -1071,7 +1071,10 @@ class OrderSystem:
         for se in outcome.side_effects:
             if se.get("type") == "political_consequence":
                 world.consequences.append({**se, "t": world.now})
-        if cons and outcome.success:
+        # IP-1321 (FR-1480, FS-132 v1.1) — a fired salvo is charged whether it hits or misses
+        # (owner decision, BL-0249). "Fired" = reached resolution, so this also covers a target
+        # already destroyed at execution; the re-check above returns first and charges nothing.
+        if cons:
             actor = world.assets.get(cons["actor"])
             if actor is not None and "ammo" in cons:
                 actor.resources.ammo -= int(cons["ammo"])
