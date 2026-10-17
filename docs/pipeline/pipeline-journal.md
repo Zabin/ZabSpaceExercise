@@ -13,31 +13,36 @@
 
 ## Position
 
-- **Updated:** 2026-10-16 (run #145 — advance, `07-implementation-planning`)
+- **Updated:** 2026-10-17 (run #146 — advance, `08-code-implementation`)
 - **Increment:** load-time vignette validation (`FEAT-5300`, Must).
-  [IP-1310](../implementation/packages/IP-1310-load-time-vignette-validation.md) is `READY` and
-  pre-authorized.
-  - It adds one gate in `load_vignette` and builds the manager before registry eviction or the
-    counter.
-  - Refusals become 400/404 instead of 500, and the console shows them at **Load**.
-  - It covers FS-131 criteria 1–9 and 11. Criterion 10 is blocked on `BL-0233` (`03`).
+  [IP-1310](../implementation/packages/IP-1310-load-time-vignette-validation.md) is `COMPLETE` and
+  awaits a **fresh-session** `09-package-verification`.
+  - `validate_vignette` and `VignetteValidationError` gate `load_vignette`.
+  - The manager is built before any registry side effect.
+  - Refusals are 400/404 instead of 500, and the console shows them at **Load**.
+  - Full suite 972 passed / 3 skipped (975 collected); gates 14/14.
 - **Pipeline state:**
-  - `08-code-implementation` on `IP-1310` is next.
-  - `03`: `BL-0233` (Medium) and `BL-0239`.
-  - `05`: `BL-0238` (`FR-1460`).
-  - `06`: `BL-0242` (FS-131 text), at its next touch.
+  - `09-package-verification` on `IP-1310` is next, in a session other than the one that ran
+    #139–#146.
   - `09-training-manual-review` on run #140's scope (`a6e2a51`) is still owed, from a different
     agent context.
+  - `03`: `BL-0233` (Medium) and `BL-0239`.
+  - `05`: `BL-0238` (`FR-1460`).
+  - `06`: `BL-0242` (FS-131 text).
   - `10`: the `FS-122`, order-hardening and ephemeris chains, and the run #81 tranche.
   - `IP-1160` is `BLOCKED` on authorization.
 - **Backlog:**
-  - `BL-0220`, `BL-0236` and `BL-0237` → `IN PIPELINE` (`IP-1310`).
-  - Harvested 1: `BL-0243` (Low, manual impact, `DEFERRED` until `VERIFIED`).
+  - `BL-0220`/`BL-0236`/`BL-0237` stay `IN PIPELINE` until `VERIFIED`.
+  - `BL-0243` (manual impact) is `DEFERRED` until `VERIFIED`.
+  - `BL-0227` annotated: one more content route into it is closed, and the general gap is still
+    open.
   - No `NEW` entries.
   - `NEEDS-USER`, not ripe: `BL-0187`, `BL-0171`, `BL-0181`, `BL-0215`. `BL-0184` stays
     `REJECTED`.
-- **Next step:** `08-code-implementation` on `IP-1310`. The MSTR-006 §3 gate is cleared by the
-  owner's standing 2026-10-11 pre-authorization of this iteration's packages.
+- **Next step:** `09-package-verification` on `IP-1310`, in a **fresh session**.
+  - Not gated otherwise. Parallel options for that or another fresh context:
+    `09-training-manual-review` on run #140's scope; `03-architecture-design-synthesis` on
+    `BL-0233` + `BL-0239`.
 - **Open gates:**
   - `IP-1160` authorization (MSTR-006 §3) is still deferred by the owner.
   - `NEEDS-USER`, not ripe: `BL-0187`, `BL-0171`, `BL-0181`, `BL-0215`.
@@ -601,3 +606,4 @@
 | 143 | 2026-10-16 | advance (no override — run #142's recorded next step) | `06-feature-specification` | FS-131 sync to `FR-5311`–`FR-5314` (`BL-0240`) | Reconciled (origin tip `c7ac945` = run #142's own push; no drift). Triaged: zero `NEW`; `BL-0240` was `SCHEDULED` for this step. Parked `NEEDS-USER` entries untouched. Gate check: specification is not gated. Invoked `06-feature-specification` (update mode).<br>FS-131 → **v1.1**:<br>• `FR-5311`–`FR-5314` added to Requirements Implemented, all `FEAT-5300`'s by parentage. The catalog's Included Requirements lists only `FR-5310`, which is a `05` note; the catalog was not edited.<br>• System Behaviour 7, an Error Handling row and criterion 11 added for `FR-5312`.<br>• Open Questions 2/3 closed against `FR-5312`–`FR-5314` and `CR-23`/`CR-24`. Open Question 1 re-routed to `03` (`BL-0233`).<br>**A shipped-library data scan** (19 files) found no duplicate ids, no dangling `roles_needed`, and no satellite without an orbit. But 7 vignettes declare a `cyber_unit` `RED-CYBER` with no location, and `FR-5312` doesn't define "terrestrial". The broad reading would refuse all 7 vignettes. FS-131 therefore adds Open Question 6 and applies a narrow reading meanwhile (satellites plus `ground_station`/`jammer`/`interceptor`/`directed_energy`/`terrestrial_force`), labelled as not settled. Feature-index row updated. Commit `38df149`. `BL-0240` → `DONE`. Harvested 1: `BL-0241` (Low, amend `FR-5312` → `04`, `SCHEDULED` ahead of `07`). | `04-requirements-engineering` on `BL-0241`, then `07-implementation-planning` on FS-131. |
 | 144 | 2026-10-16 | advance (no override — run #143's recorded next step) | `04-requirements-engineering` | `BL-0241` (`FR-5312` "terrestrial" scope) | Reconciled (origin tip `f5594c6` = run #143's own push; no drift). Triaged: zero `NEW`; `BL-0241` was `SCHEDULED` for this step. Parked `NEEDS-USER` entries (`BL-0171`/`0181`/`0187`/`0215`) untouched. Gate check: not gated. Invoked `04-requirements-engineering` (small delta).<br>• **Sources:** GDS-04 §1.2 Purpose lists cyber units among non-satellite assets but leaves "terrestrial" undefined; ADR-0012 makes cyber "window-independent … not a live geometric pass"; `FR-1420` resolves cyber "without requiring an open access window". A location serves access geometry, and a cyber unit uses none.<br>• **Amended `FR-5312`:** cyber units are exempt. The amendment covers its Description, Postcondition, AC (names the located kinds and asserts a location-less cyber unit loads), Sources, ADRs (+ADR-0012), Related Requirements (+`FR-1420`) and Notes. Unrecognised free-text kinds stay under the rule; refusing them outright remains `CR-24`.<br>• RTM row and the ADR-0012 reverse index were updated; header note added; addendum appended to the [load-validation report](../reviews/requirements-update-load-validation-batch.md).<br>This was a defect in run #142's own wording, now fixed. The 7 shipped vignettes with `RED-CYBER` stay valid, and FS-131 v1.1's narrow reading equals the amended rule. Commit `a13eb72`. `BL-0241` → `DONE`. Harvested 1: `BL-0242` (Low, FS-131 Open Question 6 text now stale → `06` at its next touch; does not block `07`). | `07-implementation-planning` on FS-131 (`BL-0220`/`BL-0236`/`BL-0237` riding). |
 | 145 | 2026-10-16 | advance (no override — run #144's recorded next step) | `07-implementation-planning` | FS-131 v1.1 (with `BL-0220`/`BL-0236`/`BL-0237` riding) | Reconciled (origin tip `6aa6f8f` = run #144's own push; no drift). Triaged: zero `NEW`; the three riders were `SCHEDULED` for this step. Parked `NEEDS-USER` entries untouched. Gate check: planning is not gated, and authoring a package is not authorization. Invoked `07-implementation-planning`.<br>• **Step 0:** FS-131 v1.1 is ready except criterion 10. `FR-5310`–`FR-5314` are baselined. OQ4/OQ5 are `07`-level, decided here.<br>• **Tree checks at `6aa6f8f`:** `load_vignette` (`vignette.py:223-278`), `build_world` (287), `InProcessSession.load_vignette` (`inprocess.py:140-150`; evict and counter run before the build), the `load`/`vignette_tutorial` routes (`server.py:373-377`/356-364), `loadSession` (`app.js:220-238`, no `catch`), `_tle_rv` and the `Asset`/`Sensor`/`Track` models. The existing tests expecting `ValueError`/`FileNotFoundError` from `load_vignette` stay valid, because the new error subclasses `ValueError`.<br>Authored **[IP-1310](../implementation/packages/IP-1310-load-time-vignette-validation.md)** (all 14 fields):<br>• DD1: a pure `validate_vignette` collecting all problems, and `VignetteValidationError(ValueError)`. It covers schema/YAML/missing-key, entity validators at load, TLE initialise/propagate at the start epoch, `FR-5312` with cyber units exempt, unique ids, `roles_needed` against ids ∪ groups, `initial_tracks`, and a `build_world` catch-all.<br>• DD2: the manager is built before eviction and the counter.<br>• DD3: 400 `invalid_vignette` with problems / 404 / 400.<br>• DD4: `loadSession` `catch`.<br>• DD5: purity.<br>• DD6: scope boundaries.<br>• 10 tests.<br>`READY`, pre-authorized. Updated the TWBS section (one package; rationale recorded), the MBP row/note/count (46/0/1/1 of 48), `packages/INDEX.md`, ROADMAP and FS-131 Referenced By. Commit `10978f4`. `BL-0220`/`BL-0236`/`BL-0237` → `IN PIPELINE`. Harvested 1: `BL-0243` (Low, manual impact, `DEFERRED` until `VERIFIED`). | `08-code-implementation` on `IP-1310`. |
+| 146 | 2026-10-17 | advance (no override — run #145's recorded next step) | `08-code-implementation` | `IP-1310` | Reconciled (origin tip `3ce2178` = run #145's own push plus its backlog fix-up; no drift). **Journal note:** run #145's journal commit `831e939` landed without its backlog half (the sandbox refused the update script), so `3ce2178` applied it; the run #145 row is unchanged. Triaged: zero `NEW`; `BL-0220`/`BL-0236`/`BL-0237` ride this step. **Gate check:** the MSTR-006 §3 authorization gate was cleared by the project owner's 2026-10-11 pre-authorization of the packages this iteration reaches (same precedent as `IP-1052`/`IP-1041`). Dependencies `IP-1150`/`IP-1180`/`IP-1222` are `VERIFIED`. Invoked `08-code-implementation`. Marked `IN PROGRESS` before any edit (commit `04bdd5a`). Baseline suite 949/3/952. Test-first: `test_vignette_load_validation.py` (23 collected). After adding only the exception class so the module imports, 17 were seen failing. The 6 unchanged-behaviour tests passed on arrival as planned.<br>Implemented:<br>• `VignetteValidationError(ValueError)` and pure `validate_vignette`, with `_asset_data`/`_force_sections` shared with `build_world` (behaviour unchanged).<br>• `load_vignette` converts YAML, missing-key, schema and content failures.<br>• `InProcessSession.load_vignette` builds the manager before eviction and the counter.<br>• `server.py::_vignette_load_errors` returns 400 `invalid_vignette` / 404 / 400 on the load and tutorial routes.<br>• `app.js::loadSession` gets a `catch` showing `Load failed:` plus the problems.<br>**Mechanism note for `09`:** a model-level validator has an empty pydantic `loc`, so its `where` is `sensors[<id>]` and the field name is in `reason`.<br>Live re-probe: bad radar and bad schema → 400 (load and tutorial); unknown id → 404; `../etc` → 400; after the refusals, 0 sessions and counter 0. Full suite **972 passed / 3 skipped** (975 collected, JUnit). `test_determinism.py` + `test_import_guard.py` 14/14. Updated the RTM `FR-5310`–`FR-5314` rows, MBP row + count (46/1/0/1 of 48), `packages/INDEX.md`, ROADMAP, header, FS-131 Referenced By and the `CLAUDE.md` code-map bullet. Manual impact not edited, per the package (it is `BL-0243`). Commit `a73086f`. Harvested 0 new. `BL-0227` annotated. | `09-package-verification` on `IP-1310`, in a **fresh session** (not this one, which ran #139–#146). |
