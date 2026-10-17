@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1321
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-17 by `07-implementation-planning`, pipeline run #176.
+> **Status:** 🟡 IN PROGRESS — 2026-10-17, `08-code-implementation`, pipeline run #177.
+> *(Was 🟢 READY — authored 2026-10-17 by `07-implementation-planning`, pipeline run #176.)*
 > Every dependency is `VERIFIED`. **Authorization (MSTR-006 §3):** this package falls under the
 > project owner's standing pre-authorization of 2026-10-11 for the packages this iteration
 > reaches (same precedent as `IP-1320`/`IP-1311`/`IP-1021`), and the owner's 2026-10-17 decision on
