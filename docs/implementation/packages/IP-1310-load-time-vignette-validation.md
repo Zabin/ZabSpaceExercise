@@ -2,7 +2,20 @@
 
 > **Package ID:** IP-1310
 > **Version:** 1.0
-> **Status:** 🟡 IN PROGRESS — 2026-10-16, `08-code-implementation`, pipeline run #146.
+> **Status:** 🔵 COMPLETE — 2026-10-17, `08-code-implementation`, pipeline run #146, awaiting a
+> **fresh-session** `09-package-verification`. `VignetteValidationError(ValueError)` + pure
+> `validate_vignette` in `content/vignette.py` (with `_asset_data`/`_force_sections` shared with
+> `build_world`, whose behaviour is unchanged); `load_vignette` converts YAML/missing-key/schema/
+> content failures into it. `InProcessSession.load_vignette` builds the manager before eviction
+> and the counter. `server.py::_vignette_load_errors` maps 400 `invalid_vignette` / 404 / 400 on
+> the load and tutorial routes. `app.js::loadSession` shows `Load failed:` plus the problem list.
+> Tests: `test_vignette_load_validation.py` (23 collected). 17 were seen failing first; the 6
+> unchanged-behaviour tests (good TLE, `cyber_unit` without location, valid `roles_needed`, the
+> shipped library, gate-does-not-change ×2) passed on arrival as planned. **Mechanism note for
+> `09`:** a model-level validator (e.g. `_check_radar_beam_mode`) has an empty pydantic `loc`, so
+> its problem's `where` is `sensors[<id>]`; the field name appears in `reason`. Full suite 972
+> passed / 3 skipped (975 collected, JUnit; baseline 949/3/952); gates 14/14.
+> *(Was 🟡 IN PROGRESS — 2026-10-16, `08-code-implementation`, pipeline run #146.)*
 > *(Was 🟢 READY — authored 2026-10-16 by `07-implementation-planning`, pipeline run #145.)*
 > Authorized by the project owner 2026-10-11 (MSTR-006 §3), through the standing
 > pre-authorization of the packages this iteration reaches. Same precedent as

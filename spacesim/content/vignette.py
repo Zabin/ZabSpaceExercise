@@ -53,6 +53,28 @@ def _resolve_within_root(root: Path, filename: str) -> Path:
     return candidate
 
 
+class VignetteValidationError(ValueError):
+    """IP-1310 (FR-5310, NFR-1600) — a vignette refused at load, naming every failing element.
+
+    ``problems`` is a list of ``{"where": "<section>[<entry>].<field>", "reason": "<text>"}``.
+    Subclasses ``ValueError`` so existing ``ValueError`` callers keep working.
+    """
+
+    def __init__(self, vignette_id: str, problems: list[dict]):
+        self.vignette_id = vignette_id
+        self.problems = list(problems)
+        super().__init__(self.message)
+
+    @property
+    def message(self) -> str:
+        n = len(self.problems)
+        if not n:
+            return f"vignette {self.vignette_id!r} is invalid"
+        first = self.problems[0]
+        more = f" (and {n - 1} more problem{'s' if n > 2 else ''})" if n > 1 else ""
+        return f"vignette {self.vignette_id!r} is invalid: {first['where']}: {first['reason']}{more}"
+
+
 def _configured_external_dirs() -> list[Path]:
     from spacesim.config import load_content_config
     return [Path(d) for d in load_content_config().external_vignette_dirs]
@@ -271,10 +293,24 @@ def load_vignette(path_or_id: str, external_dirs: Optional[Sequence[Path]] = Non
                     break
         if path is None:
             raise FileNotFoundError(f"no vignette with id {path_or_id!r}")
-    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    # IP-1310 (FR-5310, NFR-1600) — every content failure from here on is one
+    # VignetteValidationError naming each failing element, never a bare parser/pydantic error.
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        raise VignetteValidationError(path_or_id, [{"where": path.name, "reason": f"not valid YAML: {exc}"}]) from exc
     if not isinstance(data, dict) or "vignette" not in data:
-        raise ValueError(f"malformed vignette file (missing 'vignette' key): {path.name}")
-    return Vignette.model_validate(data["vignette"])
+        raise VignetteValidationError(path_or_id, [{"where": path.name,
+                                                    "reason": "malformed vignette file (missing 'vignette' key)"}])
+    from pydantic import ValidationError
+    try:
+        vignette = Vignette.model_validate(data["vignette"])
+    except ValidationError as exc:
+        raise VignetteValidationError(path_or_id, _pydantic_problems("vignette", exc)) from exc
+    problems = validate_vignette(vignette)
+    if problems:
+        raise VignetteValidationError(path_or_id, problems)
+    return vignette
 
 
 def resolve_params(vignette: Vignette, overrides: Optional[dict] = None) -> dict:
@@ -282,6 +318,129 @@ def resolve_params(vignette: Vignette, overrides: Optional[dict] = None) -> dict
     if overrides:
         values.update({k: v for k, v in overrides.items() if k in values})
     return values
+
+
+def _force_sections(vignette: Vignette):
+    return (("blue", vignette.blue_forces), ("red", vignette.red_forces),
+            ("neutral", vignette.neutral_forces))
+
+
+def _asset_data(spec: dict, owner: str, start: int) -> dict:
+    """The force-entry normalisation ``build_world`` applies (owner injected, orbit epoch defaulted
+    to the vignette start). Shared with ``validate_vignette`` (IP-1310) so the two cannot drift."""
+    data = {**spec, "owner": owner}
+    if data.get("orbit") is not None and data["orbit"].get("epoch") is None:
+        data["orbit"]["epoch"] = start
+    return data
+
+
+def _loc_text(loc) -> str:
+    return ".".join(str(part) for part in loc) if loc else "(entry)"
+
+
+def _pydantic_problems(where: str, exc) -> list[dict]:
+    from pydantic import ValidationError
+    if isinstance(exc, ValidationError):
+        return [{"where": f"{where}.{_loc_text(err.get('loc'))}" if err.get("loc") else where,
+                 "reason": str(err.get("msg", "invalid"))} for err in exc.errors()]
+    return [{"where": where, "reason": str(exc)}]
+
+
+def validate_vignette(vignette: Vignette) -> list[dict]:
+    """IP-1310 (FS-131; FR-5310–FR-5314, NFR-1600) — every load-time problem in ``vignette``.
+
+    Pure: reads no clock, draws no RNG, schedules nothing, and mutates nothing it did not create
+    (every entry is deep-copied before normalisation). Returns ``[]`` for a valid vignette;
+    otherwise one ``{"where", "reason"}`` dict per failing element, all problems collected.
+    """
+    import copy
+
+    from spacesim.engine.custody import Track
+    from spacesim.engine.propagator import ModeratePropagator
+
+    problems: list[dict] = []
+    try:
+        start = simtime.from_iso(vignette.start_epoch_utc)
+    except Exception as exc:  # noqa: BLE001 — any parse failure is a content problem
+        problems.append({"where": "start_epoch_utc", "reason": str(exc)})
+        start = None
+
+    # Force entries: the build_world normalisation + Asset model (FR-5310, FR-5312, FR-5311).
+    asset_sections: dict[str, list[str]] = {}
+    groups: set[str] = set()
+    prop = ModeratePropagator()
+    for owner, force in _force_sections(vignette):
+        section = f"{owner}_forces"
+        for index, spec in enumerate(force):
+            ref = spec.get("id", index) if isinstance(spec, dict) else index
+            where = f"{section}[{ref}]"
+            if not isinstance(spec, dict):
+                problems.append({"where": where, "reason": "entry is not a mapping"})
+                continue
+            try:
+                asset = Asset.model_validate(_asset_data(copy.deepcopy(spec), owner, start or 0))
+            except Exception as exc:  # noqa: BLE001
+                problems.extend(_pydantic_problems(where, exc))
+                continue
+            asset_sections.setdefault(asset.id, []).append(section)
+            if asset.group:
+                groups.add(asset.group)
+            # FR-5312 — a satellite needs an orbit; every other kind except a cyber unit (whose
+            # effects are window-independent, ADR-0012) needs a location.
+            if asset.kind == "satellite" and asset.orbit is None:
+                problems.append({"where": f"{where}.orbit", "reason": "a satellite must declare an orbit"})
+            elif asset.kind not in ("satellite", "cyber_unit") and asset.location is None:
+                problems.append({"where": f"{where}.location",
+                                 "reason": f"a {asset.kind} must declare a location"})
+            # FR-5311 — a TLE orbit must initialise and propagate at the vignette start epoch.
+            if asset.orbit is not None and asset.orbit.source == "tle" and start is not None:
+                try:
+                    prop.rv(asset.orbit, start)
+                except Exception as exc:  # noqa: BLE001
+                    problems.append({"where": f"{where}.orbit",
+                                     "reason": f"TLE does not parse/propagate: {exc}"})
+
+    # FR-5313 — asset ids unique across the three force lists.
+    for asset_id, sections in asset_sections.items():
+        if len(sections) > 1:
+            problems.append({"where": f"{'/'.join(sections)}[{asset_id}]",
+                             "reason": f"asset id {asset_id!r} is declared {len(sections)} times"})
+
+    # Sensors: the Sensor model and its validators (FR-5310), then unique ids (FR-5313).
+    sensor_ids: dict[str, int] = {}
+    for index, spec in enumerate(vignette.sensors):
+        ref = spec.get("id", index) if isinstance(spec, dict) else index
+        where = f"sensors[{ref}]"
+        try:
+            sensor = Sensor.model_validate(copy.deepcopy(spec))
+        except Exception as exc:  # noqa: BLE001
+            problems.extend(_pydantic_problems(where, exc))
+            continue
+        sensor_ids[sensor.id] = sensor_ids.get(sensor.id, 0) + 1
+    for sensor_id, count in sensor_ids.items():
+        if count > 1:
+            problems.append({"where": f"sensors[{sensor_id}]",
+                             "reason": f"sensor id {sensor_id!r} is declared {count} times"})
+
+    # FR-5314 — each roles_needed entry names a declared asset or constellation group.
+    for index, req in enumerate(vignette.roles_needed):
+        if req.asset_or_constellation not in asset_sections and req.asset_or_constellation not in groups:
+            problems.append({"where": f"roles_needed[{index}].asset_or_constellation",
+                             "reason": f"{req.asset_or_constellation!r} is not a declared asset or group"})
+
+    for index, spec in enumerate(vignette.initial_tracks):
+        try:
+            Track.model_validate(copy.deepcopy(spec))
+        except Exception as exc:  # noqa: BLE001
+            problems.extend(_pydantic_problems(f"initial_tracks[{index}]", exc))
+
+    # Catch-all: whatever else build_world enforces is enforced at load too.
+    if not problems:
+        try:
+            build_world(vignette.model_copy(deep=True))
+        except Exception as exc:  # noqa: BLE001
+            problems.append({"where": "build", "reason": f"{type(exc).__name__}: {exc}"})
+    return problems
 
 
 def build_world(vignette: Vignette, overrides: Optional[dict] = None):
@@ -292,12 +451,9 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
     params = resolve_params(vignette, overrides)
     world = WorldState(now=start)
 
-    for owner, force in (("blue", vignette.blue_forces), ("red", vignette.red_forces), ("neutral", vignette.neutral_forces)):
+    for owner, force in _force_sections(vignette):
         for spec in force:
-            data = {**spec, "owner": owner}
-            if data.get("orbit") is not None and data["orbit"].get("epoch") is None:
-                data["orbit"]["epoch"] = start
-            asset = Asset.model_validate(data)
+            asset = Asset.model_validate(_asset_data(spec, owner, start))
             world.assets[asset.id] = asset
 
     for spec in vignette.sensors:

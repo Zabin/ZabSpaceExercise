@@ -9,6 +9,7 @@ Everything the UI does goes through these endpoints; the browser never touches t
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Literal, Optional
 
@@ -293,6 +294,25 @@ class SeatDeclarationRequest(BaseModel):
     count: int
 
 
+@contextmanager
+def _vignette_load_errors(vid: str):
+    """IP-1310 (FS-131 OQ4) — map a refused vignette load to a client error, never a 500:
+    invalid content → 400 ``invalid_vignette`` with every problem; unknown id → 404; an id the
+    path guard refuses → 400."""
+    from spacesim.content.vignette import VignetteValidationError
+    try:
+        yield
+    except VignetteValidationError as exc:
+        raise HTTPException(status_code=400, detail={
+            "error": "invalid_vignette", "vignette": exc.vignette_id,
+            "message": exc.message, "problems": exc.problems,
+        }) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"vignette {vid!r} not found") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     api = api or InProcessSession()
     app = FastAPI(title="Space Control & Orbital Warfare Exercise Simulator")
@@ -358,10 +378,8 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Structured per-cell player tutorial for the in-UI Tutorial panel — parsed by pydantic,
         not regex-scraped from YAML, so blue/red steps never bleed into each other."""
         from spacesim.content.vignette import load_vignette
-        try:
+        with _vignette_load_errors(vid):
             return load_vignette(vid).tutorial or {}
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail=f"vignette {vid!r} not found")
 
     @app.get("/api/sessions/{sid}/brief/{cell}")
     def session_brief(sid: str, cell: str) -> dict:
@@ -372,8 +390,9 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions")
     def load(req: LoadRequest) -> dict:
-        sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed,
-                                classification=req.classification)
+        with _vignette_load_errors(req.vignette_id):
+            sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed,
+                                    classification=req.classification)
         return {"session": sid, "classification": api.classification(sid)}
 
     @app.post("/api/sessions/draft")

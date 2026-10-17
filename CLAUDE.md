@@ -356,6 +356,11 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   (`external_vignette_dirs`, `user_save_dir`), same optional-file/`SPACESIM_CONFIG`-override
   pattern as `ServerConfig`; absent by default (empty catalog extension, no save target).
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
+  **IP-1310 (FR-5310–FR-5314):** `load_vignette` is a load-time gate — `validate_vignette` (pure) collects
+  every problem (entity validators, TLE parse/propagate, orbit/location with `cyber_unit` exempt, unique
+  ids, `roles_needed` refs, `build_world` catch-all) and raises `VignetteValidationError(ValueError)`;
+  `POST /api/sessions` maps it to 400 `invalid_vignette` (404 unknown id), and a refused load leaves the
+  session registry untouched.
   `RoleRequirement`/`Vignette.roles_needed` (IP-1151, FR-4210) — optional, additive staffing
   requirements; absent for every vignette shipped before this package.
   `Vignette.coaching` is a list of `{at_sim_t?, cell, title, body}` notes (FW §11.D.17).

@@ -222,10 +222,22 @@ async function loadSession() {
   const vselect = $("vignette");
   const vlabel = vselect && vselect.selectedOptions[0] ? vselect.selectedOptions[0].textContent : vselect.value;
   const classOverride = ($("classification-override") || {}).value || "";
-  const resp = await api.post("/api/sessions", {
-    vignette_id: vselect.value, seed: +$("seed").value,
-    classification: classOverride.trim() || undefined,
-  });
+  // IP-1310 (FS-131 W2, BL-0220) — a refused load is shown at Load, never swallowed silently.
+  let resp;
+  try {
+    resp = await api.post("/api/sessions", {
+      vignette_id: vselect.value, seed: +$("seed").value,
+      classification: classOverride.trim() || undefined,
+    });
+  } catch (e) {
+    let detail = String(e && e.message || e);
+    try { detail = JSON.parse(detail).detail ?? detail; } catch { /* plain text */ }
+    const msg = typeof detail === "object" ? (detail.message || JSON.stringify(detail)) : String(detail);
+    const probs = (detail && Array.isArray(detail.problems)) ? detail.problems : [];
+    $("session").innerHTML = `<b>Load failed:</b> ${esc(msg)}` +
+      (probs.length ? `<ul>${probs.map((p) => `<li>${esc(p.where)} — ${esc(p.reason)}</li>`).join("")}</ul>` : "");
+    return;
+  }
   SID = resp.session;
   setBanner(resp.classification);
   location.hash = SID;   // multiplayer: shareable URL — Blue/Red tabs open this to join

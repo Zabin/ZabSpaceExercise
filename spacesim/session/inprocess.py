@@ -141,12 +141,15 @@ class InProcessSession:
         self, vignette_id: str, overrides: Optional[dict] = None, seed: int = 0,
         classification: Optional[str] = None,
     ) -> str:
+        # IP-1310 (FS-131 OQ5) — validate and build the manager *before* any registry side effect,
+        # so a refused load evicts nothing and consumes no session id.
         vignette = load_vignette(vignette_id)
+        mgr = SessionManager(vignette, overrides=overrides, seed=seed,
+                             classification=classification)
         self._evict_if_full()
         self._counter += 1
         sid = f"sess-{self._counter}"
-        self._sessions[sid] = SessionManager(vignette, overrides=overrides, seed=seed,
-                                             classification=classification)
+        self._sessions[sid] = mgr
         return sid
 
     def classification(self, session: str) -> str:
