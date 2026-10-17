@@ -704,6 +704,33 @@ slice (`FR-1460`, `FR-1470`).
 
 No cross-package sequencing constraint, except that `IP-1160` (`BLOCKED`) would rebase over it.
 
+## Vignette id-scan robustness (pipeline run #158, 2026-10-17)
+
+**Input:** [FS-131](../features/FS-131-load-time-vignette-validation.md) v1.1 — Behaviour 5 and
+Acceptance Criterion 6 (`FR-5310`, `NFR-1600`), for the `BL-0252` defect REV-TRN-008 found: an
+unguarded `yaml.safe_load` in `load_vignette`'s built-in declared-id scan.
+
+**Work units.**
+
+1. **Shared "declared id of a file" helper** (`content/vignette.py`), used by the built-in and the
+   external-root declared-id scans.
+2. **Tests** (`test_vignette_id_scan.py`).
+
+**Split / no-split rationale.**
+
+- One package. It is one function in one file, and both scans must change together, or the roots
+  drift again (the cause of the defect). It is a separate package from `IP-1310` because that one
+  is `VERIFIED` and closed. The fix is to the id-resolution step that runs before `IP-1310`'s gate,
+  not to the gate.
+- **Not packaged:** a "some files in this folder could not be read" notice (a new behaviour, not
+  in FS-131; via `00-intake` if wanted); FS-131 criterion 10 (`BL-0233`).
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1311](packages/IP-1311-vignette-id-scan-robustness.md) | FS-131 v1.1 (`FR-5310`, `NFR-1600`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
+
+No cross-package sequencing constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
