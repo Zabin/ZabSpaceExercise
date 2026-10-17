@@ -348,14 +348,9 @@
       <!-- ISR collection parameters — shown for organic mode only -->
       <div id="task-isr-params" class="ctrl" style="margin-top:4px">
         <label id="task-beam-wrap">Mode
+          <!-- IP-1223 (FS-122 v1.2): filled by app.js populateBeamModes() from the tasked sensor's modality -->
           <select id="task-beam-mode">
             <option value="">auto</option>
-            <option value="wide_area">Wide area</option>
-            <option value="stripmap">Stripmap</option>
-            <option value="spotlight">Spotlight</option>
-            <option value="scan">Scan / EO</option>
-            <option value="fine">Fine / SAR</option>
-            <option value="polarimetric">Polarimetric</option>
           </select>
         </label>
         <label>Look&nbsp;angle

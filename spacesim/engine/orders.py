@@ -60,6 +60,15 @@ MAX_COMMANDS_PER_PASS = 4
 OBSERVE_NUMERIC_PARAMS = ("look_angle_deg", "duration_s", "gain")
 
 
+def _requested_beam_mode(params: dict) -> Optional[str]:
+    """IP-1223 — the beam mode an observe order explicitly requests, or None for no request
+    (absent, ``None``, empty, or ``auto``: the sensor's own mode applies)."""
+    mode = params.get("beam_mode")
+    if not isinstance(mode, str) or mode in ("", "auto"):
+        return None
+    return mode
+
+
 def _observe_params_ok(params: dict) -> bool:
     """IP-1041 Design Decisions 2-3 — normalize and check an observe order's params in place.
 
@@ -565,8 +574,34 @@ class OrderSystem:
         # IP-1222 Design Decision 4 (BL-0213, FR-1640) — auto-selection never picks a
         # cue-dependent sensor against a target the cell holds no Track on.
         untracked = self.world.track_for(order.cell, order.target) is None
+        # IP-1223 Design Decision 3 (FS-122 v1.2) — a requested beam mode narrows auto-selection
+        # to the sensors whose modality offers it.
+        mode = _requested_beam_mode(order.params)
         return [sid for sid, s in self.world.sensors.items()
-                if s.owner == order.cell and not (s.requires_cue and untracked)]
+                if s.owner == order.cell and not (s.requires_cue and untracked)
+                and (mode is None or mode in self._observe_modes(sid))]
+
+    def _observe_payload_type(self, sid: str) -> str:
+        """IP-1223 Design Decision 1 — the beam-mode table an observe by ``sid`` is scored on when
+        it names no radar mode: the dual-registered asset's payload type, else the sensor-kind
+        lighting heuristic, else EO (unchanged from the observe branch of ``_exec_payload``)."""
+        asset = self.world.assets.get(sid)
+        sensor = self.world.sensors.get(sid)
+        if asset and asset.payload_state:
+            return asset.payload_state.type
+        if sensor:
+            return "isr_eo" if sensor.needs_lighting else "isr_sar"
+        return "isr_eo"
+
+    def _observe_modes(self, sid: str) -> list[str]:
+        """IP-1223 Design Decision 1 (FS-122 v1.2, FR-1610) — the beam modes the executing
+        sensor's modality offers: a ground radar offers its own ``fence``/``dish``; any other
+        sensor offers its payload type's table."""
+        from spacesim.engine.isr import BEAM_MODES, available_modes
+        sensor = self.world.sensors.get(sid)
+        if sensor is not None and sensor.kind == "ground_radar":
+            return list(BEAM_MODES["ground_radar"])
+        return available_modes(self._observe_payload_type(sid))
 
     def _auto_blocked_by_cue(self, order: Order) -> bool:
         """IP-1222 Design Decision 4 — True when an ``auto`` observe has no candidate only because
@@ -602,7 +637,13 @@ class OrderSystem:
             return False, "invalid_param"
 
         if order.action == "observe":
+            mode = _requested_beam_mode(order.params)
             if order.actor == "auto":
+                # IP-1223 Design Decision 3 — a mode no own sensor offers is an illegal parameter.
+                if mode is not None and not any(
+                        mode in self._observe_modes(sid)
+                        for sid, s in self.world.sensors.items() if s.owner == order.cell):
+                    return False, "invalid_param"
                 return True, ""  # sensor chosen at planning time
             sid = self._resolve_sensor_id(order.actor)
             sensor = self.world.sensors.get(sid) if sid else None
@@ -610,6 +651,10 @@ class OrderSystem:
                 return False, "no_such_sensor"
             if sensor.owner != order.cell:
                 return False, "not_owner"
+            # IP-1223 Design Decision 2 (FS-122 v1.2) — a mode the executing sensor's modality
+            # does not offer is refused, never scored on another modality's table.
+            if mode is not None and mode not in self._observe_modes(sid):
+                return False, "invalid_param"
             # IP-1220 (FR-1640) — a cue-dependent sensor may only be tasked against a target the
             # cell already holds a Track on.
             if sensor.requires_cue and self.world.track_for(order.cell, order.target) is None:
@@ -836,12 +881,8 @@ class OrderSystem:
             actor_orbit = ((actor_asset.orbit if actor_asset else None)
                            or (actor_sensor.orbit if actor_sensor else None))
             # Derive payload type: asset payload_state → sensor kind heuristic → default EO
-            if actor_asset and actor_asset.payload_state:
-                payload_type = actor_asset.payload_state.type
-            elif actor_sensor:
-                payload_type = "isr_eo" if actor_sensor.needs_lighting else "isr_sar"
-            else:
-                payload_type = "isr_eo"
+            # (IP-1223 — the same helper validation uses, so the two cannot disagree).
+            payload_type = self._observe_payload_type(order.actor)
             from spacesim.engine.isr import (
                 BEAM_MODES as _BEAM_MODES,
                 beam_params as _bp, effective_gain as _eg, footprint_polygon, ground_heading_deg,

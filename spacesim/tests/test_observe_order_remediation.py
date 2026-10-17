@@ -195,7 +195,8 @@ def test_null_params_mean_absent():
 def test_well_formed_orders_unchanged():
     assert _payload_for(look_angle_deg="10", duration_s="120") == \
         _payload_for(look_angle_deg=10.0, duration_s=120.0)
-    assert _payload_for(gain=0.5, beam_mode="stripmap") == _payload_for(gain=0.5, beam_mode="stripmap")
+    # IP-1223 (FS-122 v1.2): the fixture is a radar, so its own mode (a SAR name is now refused).
+    assert _payload_for(gain=0.5, beam_mode="dish") == _payload_for(gain=0.5, beam_mode="dish")
     for odd in (["fence"], {"a": 1}, 3):
         assert beam_params("isr_sar", odd) == beam_params("isr_sar", None)
         assert beam_params("ground_radar", odd) == beam_params("ground_radar", None)

@@ -657,6 +657,43 @@ const ISR_BEAM_INFO = {
   polarimetric:{ swath: "30 km",      res: "5 m",       power: "high", duty: "20%"    },
 };
 
+// IP-1223 (FS-122 v1.2, FR-1610) — the beam modes the tasked sensor's modality offers, mirroring
+// the server's `OrderSystem._observe_modes` (engine/isr.py `BEAM_MODES`). The server stays
+// authoritative: a mode the executing sensor does not offer is refused `invalid_param`.
+const BEAM_MODES_BY_TYPE = {
+  isr_eo: ["wide_area", "stripmap", "spotlight", "scan"],
+  isr_sar: ["wide_area", "stripmap", "fine", "spotlight", "polarimetric"],
+  sda: ["wide_area", "nominal", "fine"],
+  weather: ["mesoscale", "conus", "full_disk"],
+  mw: ["scan", "stare"],
+  ground_radar: ["fence", "dish"],
+};
+let TASK_SENSOR_ENTRIES = [];
+
+function beamModesForSensor(id) {
+  const entries = TASK_SENSOR_ENTRIES.filter((a) => a.id === id);
+  if (entries.some((a) => a.kind === "ground_radar")) return BEAM_MODES_BY_TYPE.ground_radar;
+  const withPayload = entries.find((a) => a.payload_state && a.payload_state.type);
+  if (withPayload) return BEAM_MODES_BY_TYPE[withPayload.payload_state.type] || BEAM_MODES_BY_TYPE.isr_eo;
+  const sensor = entries.find((a) => "needs_lighting" in a);
+  if (sensor) return sensor.needs_lighting ? BEAM_MODES_BY_TYPE.isr_eo : BEAM_MODES_BY_TYPE.isr_sar;
+  return BEAM_MODES_BY_TYPE.isr_eo;
+}
+
+// `auto` lists the union of the cell's own tasking sensors' modes (the server then picks a
+// sensor that offers the chosen mode).
+function populateBeamModes() {
+  const sel = $("task-beam-mode"), tsel = $("task-sensor");
+  if (!sel || !tsel) return;
+  const ids = tsel.value === "auto" ? [...tsel.options].map((o) => o.value).filter((v) => v !== "auto") : [tsel.value];
+  const modes = [];
+  ids.forEach((id) => beamModesForSensor(id).forEach((m) => { if (!modes.includes(m)) modes.push(m); }));
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">auto</option>` + modes.map((m) => `<option value="${esc(m)}">${esc(m)}</option>`).join("");
+  sel.value = modes.includes(cur) ? cur : "";
+  updateIsrInfo();
+}
+
 function updateIsrInfo() {
   const el = $("task-isr-info"); if (!el) return;
   const mode = $("task-beam-mode") && $("task-beam-mode").value;
@@ -1322,6 +1359,8 @@ async function refresh() {
     const sids = assets.filter((a) => !a.network && ((a.kind && a.kind.startsWith("ground_")) || a.kind === "space_based")).map((a) => a.id);
     tsel.innerHTML = `<option value="auto">auto</option>` + sids.map((i) => `<option>${i}</option>`).join("");
     if (cur && (cur === "auto" || sids.includes(cur))) tsel.value = cur;
+    TASK_SENSOR_ENTRIES = assets.filter((a) => sids.includes(a.id));
+    populateBeamModes();
   }
 
   // Viewers.
@@ -2150,6 +2189,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("#task-mode .chip").forEach((b) => b.onclick = () => setTaskMode(b.dataset.tmode));
   $("task-regime").onchange = ssnCoverage;
   if ($("task-beam-mode")) $("task-beam-mode").onchange = updateIsrInfo;
+  if ($("task-sensor")) $("task-sensor").onchange = populateBeamModes;  // IP-1223
   if ($("task-look-angle")) $("task-look-angle").oninput = updateIsrInfo;
   const tzSel = document.getElementById("tz-select");
   if (tzSel) tzSel.onchange = () => {

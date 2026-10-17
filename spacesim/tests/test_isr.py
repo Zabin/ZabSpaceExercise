@@ -528,7 +528,8 @@ def test_observe_ground_sensor_no_footprint():
     sim, osys = _sim_with_orders(world)
     order = osys.issue(Order(
         cell="blue", actor="GND_RDR", action="observe", target="TGT1",
-        params={"intent": "characterize", "beam_mode": "wide_area"},
+        # IP-1223 (FS-122 v1.2): a radar is tasked with its own mode; a SAR name is now refused.
+        params={"intent": "characterize", "beam_mode": "dish"},
     ))
     assert order.status == "queued"
     sim.advance_to(order.earliest_window[0] + 1)
