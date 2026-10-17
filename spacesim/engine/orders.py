@@ -144,6 +144,16 @@ def _order_params_ok(action: str, params: dict) -> bool:
             del params[key]
     return all(_param_value_ok(kind, params[key]) for key, kind in rules.items() if key in params)
 
+def _engage_rounds(params: dict) -> int:
+    """IP-1320 (FR-1460) — the rounds an ``engage`` consumes: its salvo, at least one.
+
+    The single source for both the validation bound and the plan's ``consume`` entry, so the two
+    cannot drift. Called only after ``_order_params_ok`` (which drops a ``None`` salvo and rejects
+    a malformed one), so ``int`` cannot fail here.
+    """
+    return max(1, int(params.get("salvo_n", 1)))
+
+
 # Realistic bar widths for the Gantt chart (in seconds).  "None" means use the full window.
 BAR_DURATION_S: dict = {
     "command":  120,   # uplink + ACK
@@ -623,6 +633,9 @@ class OrderSystem:
                 return False, "roe_kinetic_not_authorized"
             if actor.resources.ammo < 1:
                 return False, "no_ammo"
+            # IP-1320 (FR-1460) — the salvo may not exceed the rounds left (preview == issue).
+            if _engage_rounds(order.params) > actor.resources.ammo:
+                return False, "insufficient_ammo"
             track = self.world.track_for(order.cell, order.target or "")
             if track is None or not track.is_weapons_quality(self.sim.clock.now, self.wq_threshold):
                 return False, "no_weapons_quality_track"
@@ -718,7 +731,6 @@ class OrderSystem:
             from spacesim.engine.jam import (
                 effective_success_prob as _jam_prob,
                 modulation_params as _jam_mod,
-                power_draw_w as _jam_power,
             )
             modulation = p.get("modulation")
             power_w = float(p.get("power_w", 100.0))
@@ -754,8 +766,8 @@ class OrderSystem:
             )
             return "execute_effect", {
                 "effect": effect.model_dump(),
-                "consume": {"actor": order.actor,
-                            "power_w": _jam_power(power_w, modulation)},
+                # IP-1320 (FR-1470, ADR-0037) — a jammer's power_w is a rating, not a
+                # consumable: a jam consumes nothing from it.
                 "custody_confidence_at_decision": custody_confidence,
             }
 
@@ -799,7 +811,7 @@ class OrderSystem:
             )
             return "execute_effect", {
                 "effect": effect.model_dump(),
-                "consume": {"actor": order.actor, "ammo": max(1, salvo_n)},
+                "consume": {"actor": order.actor, "ammo": _engage_rounds(p)},
                 "custody_confidence_at_decision": custody_confidence,
             }
 
@@ -993,6 +1005,19 @@ class OrderSystem:
     # -- handlers (run inside the deterministic event loop) --------------------
     def _h_effect(self, world: WorldState, payload: dict, rng) -> None:
         effect = EffectInstance.model_validate(payload["effect"])
+        cons = payload.get("consume")
+        # IP-1320 (FR-1460, FR-3410) — re-check the rounds at execution: an earlier queued
+        # engagement may have spent them. Mirrors _h_maneuver's failed Δv re-validation: no
+        # resolution, no RNG draw, nothing charged.
+        if cons and "ammo" in cons:
+            shooter = world.assets.get(cons["actor"])
+            if shooter is not None and shooter.resources.ammo < int(cons["ammo"]):
+                world.effect_log.append({
+                    "t": world.now, "template": effect.template, "category": effect.category,
+                    "target": effect.target, "achieved": "failed", "success": False,
+                    "reason": "insufficient_ammo",
+                })
+                return
         outcome = self.resolver.resolve(effect, world, rng)
         world.effect_log.append({
             "t": world.now,
@@ -1005,14 +1030,12 @@ class OrderSystem:
         for se in outcome.side_effects:
             if se.get("type") == "political_consequence":
                 world.consequences.append({**se, "t": world.now})
-        cons = payload.get("consume")
         if cons and outcome.success:
             actor = world.assets.get(cons["actor"])
-            if actor is not None:
-                if "ammo" in cons:
-                    actor.resources.ammo -= int(cons["ammo"])
-                if "power_w" in cons:
-                    actor.resources.power_w -= float(cons["power_w"])
+            if actor is not None and "ammo" in cons:
+                actor.resources.ammo -= int(cons["ammo"])
+            # IP-1320 (FR-1470, ADR-0037) — no power_w branch: jamming never changes the rating.
+            # A pre-IP-1320 save's jam payload may still carry a power_w entry; it is ignored.
 
     def _h_maneuver(self, world: WorldState, payload: dict, rng) -> None:
         self._release_bookings_on_execute(payload.get("__order_id"))

@@ -262,6 +262,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   Actions: `jam/engage/observe/maneuver/downlink/cyber` + `command` (bus/payload verbs, see `buscommands.py`).
   `dry_run()` is a read-only mirror of `issue()` (validate + window/delivery-path, but schedules/
   registers/books nothing) → powers the UI's "why can't I?" pre-disabled buttons; replay-safe like `scene.py`.
+  Resource bounds (IP-1320, FR-1460/FR-1470): an `engage` whose salvo (`_engage_rounds`, at least
+  1) exceeds the rounds left is rejected `insufficient_ammo`, and `_h_effect` re-checks the rounds
+  at execution (a failed record, nothing resolved or charged); a jam never changes the jammer's
+  `power_w` (a rating, ADR-0037).
   `_h_maneuver` (IP-1250, FR-1320) — the execute-time payload gains `purpose_tag` (additive,
   default `""`) and, on success, mutates in the same dict `applied=True`/`remaining_delta_v_ms`
   (captured by the eventlog entry logged immediately after, same pattern as IP-1062's

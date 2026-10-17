@@ -171,6 +171,8 @@ const REASON_TIPS = {
   roe_cyber_not_authorized: "ROE does not authorize cyber effects.",
   no_weapons_quality_track: "No weapons-quality track — task a sensor to characterize the target first.",
   no_ammo: "No munitions remaining on this effector.",
+  // IP-1320 (FR-1460) — some rounds remain, but fewer than the salvo asks for.
+  insufficient_ammo: "Salvo is larger than the rounds this effector has left — reduce the salvo.",
   insufficient_delta_v: "Insufficient delta-v for this maneuver.",
   not_owner: "This asset belongs to another cell.",
   no_such_asset: "Unknown asset.",

@@ -2,7 +2,20 @@
 
 > **Package ID:** IP-1320
 > **Version:** 1.0
-> **Status:** 🟡 IN PROGRESS — 2026-10-17, `08-code-implementation`, pipeline run #154.
+> **Status:** 🔵 COMPLETE — 2026-10-17, `08-code-implementation`, pipeline run #154, awaiting a
+> **fresh-session** `09-package-verification`. `engine/orders.py`: `_engage_rounds` (shared by
+> `_validate`'s new `insufficient_ammo` check — after `no_ammo`, before the weapons-quality gate —
+> and the engage plan's `consume`); `_h_effect` re-checks rounds before resolving (failed record
+> with `reason: "insufficient_ammo"`, no resolve/RNG/charge); the jam plan emits no `power_w`
+> consumption and `_h_effect` has no `power_w` branch (unused `power_draw_w` import dropped from
+> the jam branch). `app.js` `REASON_TIPS.insufficient_ammo`. `test_salvo_float_truncation_unchanged`:
+> effector rounds raised to 3, assertion unchanged. Tests: `test_effect_resource_bounds.py`
+> (13 collected). **6 seen failing first** (oversized salvo; queued overdraw; successful jam at
+> 0 W and 250 W; the two seeded jam-outcome tests on their power assertion). 7 passed on arrival
+> as planned or by as-built behaviour: exact salvo, absent/`None` salvo ×2, zero rounds, replay,
+> and the two *failed*-jam cases (as built, a failed jam already charged nothing). Task 5: every
+> shipped tutorial `engage` uses the default salvo of 1; no test asserted a drifted `power_w`.
+> Full suite 985 passed / 3 skipped (988 collected, JUnit; baseline 972/3/975); gates 14/14.
 > *(Was 🟢 READY — authored 2026-10-17 by `07-implementation-planning`, pipeline run #153.)*
 > Every dependency is `VERIFIED`. **Authorization (MSTR-006 §3):** this package falls under the
 > project owner's standing pre-authorization of 2026-10-11 for the packages this iteration

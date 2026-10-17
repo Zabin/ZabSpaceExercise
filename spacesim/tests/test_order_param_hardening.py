@@ -262,6 +262,9 @@ def test_numeric_strings_still_accepted_with_identical_payloads(vignette):
 
 
 def test_salvo_float_truncation_unchanged(vignette, mgr):
+    # IP-1320 (FR-1460) — RED-ASAT holds 1 round in leo-isr-denial; give it enough that the
+    # salvo bound is not what this truncation test exercises.
+    mgr.world.assets["RED-ASAT"].resources.ammo = 3
     order = mgr.osys.issue(_engage(salvo_n=2.7))
     assert order.status == "queued", order.fail_reason
     assert _scheduled(mgr.osys, order.id)["consume"]["ammo"] == 2

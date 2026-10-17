@@ -16,7 +16,7 @@
 > **Dependencies:** [FS-105](FS-105-spacecraft-operations.md) (the engage/jam order paths and
 > effect resolution this spec bounds); [FS-102](FS-102-command-scheduling.md) (execute-time
 > re-validation, `FR-3410`).
-> **Referenced By:** [IP-1320](../implementation/packages/IP-1320-effect-resource-bounds.md) (Implementation Package, 🟢 `READY`, authored 2026-10-17); [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0238`, `BL-0245`;
+> **Referenced By:** [IP-1320](../implementation/packages/IP-1320-effect-resource-bounds.md) (Implementation Package, 🔵 `COMPLETE` 2026-10-17, awaiting `09`); [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0238`, `BL-0245`;
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-1460`, `FR-1470`; [ADR-0037](../architecture/adr/ADR-0037-jammer-power-is-a-rating-not-a-consumable.md);
 > [`03-feature-catalog.md`](../feature-planning/03-feature-catalog.md) `FEAT-1400`
