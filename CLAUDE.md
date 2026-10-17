@@ -224,7 +224,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/handlers.py` — event-handler registry (`(world, payload, rng) -> None`).
 - `spacesim/engine/simulation.py` — `Simulation` driver + `replay()` + `SavedSession`;
   `replay_stepwise()` (IP-1261) — one forward replay pass yielding the world at several
-  non-decreasing event-log positions (`replay()` itself unchanged).
+  non-decreasing event-log positions (`replay()` itself unchanged). `advance_to` is
+  failure-atomic (IP-1021, ADR-0038): a raising handler is rolled back in place to the replayed
+  world/RNG, logged as a no-op `handler_error` record (`engine/handlers.py`), and the advance
+  continues.
 - `spacesim/engine/geometry.py` — frames (GMST ECI↔ECEF), WGS84 geodety, topocentric look angles.
 - `spacesim/engine/sun.py` — analytic Sun direction + cylindrical eclipse/lighting test.
 - `spacesim/engine/orbit.py` — `OrbitState`, Kepler+J2 element↔state, regime classification.

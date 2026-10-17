@@ -161,7 +161,7 @@ Forward traces: Future Feature · Test · Implementation Package.
 | Req ID | Title (abridged) | Research | ADR | Arch. Component | Interface | Future Feature | Test | Impl. Package |
 |---|---|---|---|---|---|---|---|---|
 | FR-1110 | Single clock owner | UNASSIGNED | ADR-0016 | C2, C1 | INT-0002, INT-0008 | UNASSIGNED | UNASSIGNED | `engine/clock.py` |
-| FR-1120 | Determinism (`(state, eventlog, seed) → byte-identical`) | UNASSIGNED | ADR-0002 | C2, C1 | INT-0008, INT-0014 | UNASSIGNED | `spacesim/tests/test_determinism.py` | `engine/simulation.py` |
+| FR-1120 | Determinism (`(state, eventlog, seed) → byte-identical`) | UNASSIGNED | ADR-0002, ADR-0038 | C2, C1 | INT-0008, INT-0014 | UNASSIGNED | `spacesim/tests/test_determinism.py`; `spacesim/tests/test_failure_atomic_events.py` *(IP-1021 — failure path)* | `engine/simulation.py` — `IP-1021` *(COMPLETE 2026-10-17, failure-atomic `advance_to`; awaiting `09-package-verification`)* |
 | FR-1130 | (clock/scheduler leaf, ADR-0006) | UNASSIGNED | ADR-0006 | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_clock_and_time.py` *(VR-1020)* | UNASSIGNED |
 | FR-1210 | (propagation seam, ADR-0009) | UNASSIGNED | ADR-0009 | C2, C1 | INT-0008 | UNASSIGNED | UNASSIGNED | `engine/propagator.py` |
 | FR-1220 | (access provider, ADR-0011) | UNASSIGNED | ADR-0011 | C2, C1 | INT-0008 | UNASSIGNED | `spacesim/tests/test_access.py` *(VR-1010; the file is shared by the four packages in the next cell)* | `engine/access.py` — shared by `IP-1010`, `IP-1040`, `IP-1050`, `IP-1051`, all `VERIFIED` (`VR-1010`/`VR-1040`/`VR-1050`/`VR-1051`, runs #18/#22/#23/#24) *(attributed 2026-10-17, `BL-0033`)* |
@@ -370,7 +370,7 @@ unheaded ninth cell (`NFR-1300`/`1400`/`1500`/`1600`/`1800`/`2500`/`3100`).
 | NFR-2300 | LAN trust boundary | UNASSIGNED | ADR-0015 | C2, C4 | `session/api.py` (SessionAPI, CellView), `ui_web/server.py` | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | NFR-2400 | State-hash data integrity | UNASSIGNED | ADR-0002 | C1 | `engine/eventlog.py` (Snapshot), `engine/world.py` | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | NFR-2500 | Action log sufficiency | UNASSIGNED | ADR-0002 | C1, C2 | `engine/eventlog.py`, `session/aar.py` | UNASSIGNED | `spacesim/tests/test_aar.py` *(VR-1070 — `aar.py`'s `report()`/`DECISION_KINDS` half only; `eventlog.py`'s own half is a different, foundational component)* | UNASSIGNED |
-| NFR-2600 | Complete action log | UNASSIGNED | ADR-0017, ADR-0002 | C1 | `engine/eventlog.py`, `engine/orders.py`, `engine/handlers.py` | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| NFR-2600 | Complete action log | UNASSIGNED | ADR-0017, ADR-0002, ADR-0038 | C1 | `engine/eventlog.py`, `engine/orders.py`, `engine/handlers.py` | UNASSIGNED | `spacesim/tests/test_failure_atomic_events.py::test_failure_record_carries_the_failed_event_and_replays_as_noop` *(IP-1021 — a failed event is recorded, not lost)* | `IP-1021` *(COMPLETE 2026-10-17; awaiting `09`)* |
 | NFR-2700 | File-based server config | UNASSIGNED | (none identified) | C4 | `spacesim/config.py`, `spacesim/ui_web/server.py` | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | NFR-2800 | Test-driven gated build | UNASSIGNED | ADR-0002 | (all) | `spacesim/tests/` | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | NFR-2900 | Windows-first portability | UNASSIGNED | ADR-0020 | (all) | Build/dependency manifest, `spacesim/` | UNASSIGNED | UNASSIGNED | UNASSIGNED |
@@ -532,7 +532,7 @@ requirement ID directly.
 
 | Requirement | Test |
 |---|---|
-| FR-1120 | `spacesim/tests/test_determinism.py` |
+| FR-1120 | `spacesim/tests/test_determinism.py`, `spacesim/tests/test_failure_atomic_events.py` |
 | NFR-1500 | `spacesim/tests/test_determinism.py` |
 | NFR-1900 | `spacesim/tests/test_import_guard.py` |
 | All other FR/NFR/CR/CNFR | `UNASSIGNED` |

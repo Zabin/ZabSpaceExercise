@@ -9,13 +9,14 @@ final state — that is the rewind/undo/branch guarantee, asserted by the determ
 
 from __future__ import annotations
 
+import copy
 from collections.abc import Iterable, Iterator
 
 from pydantic import BaseModel, Field
 
 from spacesim.engine.clock import ScheduledEvent, Scheduler, SimClock
 from spacesim.engine.eventlog import EventLog, Snapshot
-from spacesim.engine.handlers import DEFAULT_HANDLERS, EventHandler
+from spacesim.engine.handlers import DEFAULT_HANDLERS, HANDLER_ERROR_KIND, EventHandler
 from spacesim.engine.rng import SeededRng
 from spacesim.engine.world import WorldState
 
@@ -74,12 +75,51 @@ class Simulation:
         for event in self.scheduler.pop_due(target):
             self.clock.now = event.t
             self.world.now = event.t
-            self._apply(event.kind, event.payload)
+            try:
+                self._apply(event.kind, event.payload)
+            except Exception as exc:  # noqa: BLE001 — ADR-0038: any handler failure is contained
+                self._record_failed_event(event, exc)
+                continue
             self.eventlog.append(
                 sim_time=event.t, kind=event.kind, actor=event.actor, payload=event.payload
             )
         self.clock.now = target
         self.world.now = target
+
+    def _record_failed_event(self, event: ScheduledEvent, exc: Exception) -> None:
+        """IP-1021 (ADR-0038) — failure-atomic event application.
+
+        Restore the live world and RNG to exactly what the event log reproduces (the failed event
+        is not in it), keeping the scheduler's other pending events and the clock, then log a
+        no-op failure record in the event's place so replay stays identical and the failure is
+        visible. The world and RNG are restored *in place*, so every live reference to them
+        (``SessionManager.world``, ``OrderSystem.world``, ...) stays valid."""
+        failed_payload = copy.deepcopy(event.payload)
+        live_scheduler = self.scheduler
+        self.scheduler = Scheduler()  # absorbs anything a handler schedules while re-deriving
+        try:
+            world = WorldState.model_validate(self._initial_state)
+            rng = SeededRng(self._seed)
+            for entry in self.eventlog.entries:
+                world.now = entry.sim_time
+                self._handlers[entry.kind](world, entry.payload, rng)
+        finally:
+            self.scheduler = live_scheduler
+        world.now = event.t
+        for name in type(self.world).model_fields:
+            setattr(self.world, name, getattr(world, name))
+        self.rng.import_state(rng.export_state())
+        self.eventlog.append(
+            sim_time=event.t,
+            kind=HANDLER_ERROR_KIND,
+            actor=event.actor,
+            payload={
+                "failed_kind": event.kind,
+                "failed_payload": failed_payload,
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            },
+        )
 
     def rewind_to(self, t: int) -> None:
         """Exact rewind: keep event-log entries at or before ``t``, then re-derive state from

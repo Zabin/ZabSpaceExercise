@@ -32,8 +32,21 @@ def _random_roll(world: WorldState, payload: dict, rng: SeededRng) -> None:
     world.counters[into] = world.counters.get(into, 0) + rng.randint(1, sides)
 
 
+HANDLER_ERROR_KIND = "handler_error"
+
+
+def _handler_error(world: WorldState, payload: dict, rng: SeededRng) -> None:
+    """IP-1021 (ADR-0038) — the failure record logged in place of an event whose handler raised.
+
+    Deliberately a no-op: the failed event's partial effects were rolled back, so replaying the
+    record must change nothing. The payload (``failed_kind``, ``failed_payload``, ``error_type``,
+    ``error``) exists only so the event log and the AAR show what failed."""
+    return None
+
+
 DEFAULT_HANDLERS: dict[str, EventHandler] = {
     "inc_counter": _inc_counter,
     "set_value": _set_value,
     "random_roll": _random_roll,
+    HANDLER_ERROR_KIND: _handler_error,
 }
