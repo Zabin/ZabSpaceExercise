@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1321
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE — 2026-10-17, `08-code-implementation`, pipeline run #177, awaiting a
+> **Status:** 🔵 COMPLETE — 2026-10-17, `08-code-implementation`, pipeline run #178, awaiting a
 > **fresh-session** `09-package-verification`. `engine/orders.py::OrderSystem._h_effect`: the
 > consumption step's `if cons and outcome.success:` is now `if cons:` (with an `IP-1321`/`FR-1480`
 > comment), so `consume.ammo` is charged for every engagement that reaches resolution; the
@@ -15,7 +15,7 @@
 > rule (`test_orders.py`'s `ammo == 0` follows a *hit*, still correct), and every shipped tutorial
 > `engage` fires once — no fixture changed. Full suite **1022 passed / 3 skipped** (run #173
 > baseline 1016/3 + 6 new); gates 14/14.
-> *(Was 🟡 IN PROGRESS — 2026-10-17, `08-code-implementation`, pipeline run #177.)*
+> *(Was 🟡 IN PROGRESS — 2026-10-17, `08-code-implementation`, pipeline run #178.)*
 > *(Was 🟢 READY — authored 2026-10-17 by `07-implementation-planning`, pipeline run #176.)*
 > Every dependency is `VERIFIED`. **Authorization (MSTR-006 §3):** this package falls under the
 > project owner's standing pre-authorization of 2026-10-11 for the packages this iteration
