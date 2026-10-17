@@ -145,3 +145,28 @@ def test_non_observer_seats_still_work_normally():
         "cell": "blue", "actor": "ISR-EO-1", "action": "downlink", "params": {"via": "GS-NORTH"},
     })
     assert resp.status_code == 200 and resp.json()["ok"] is True
+
+
+# --------------------------------------------------------------------------- #
+# IP-1131 (BL-0023) — the two White-only routes guarded by an allowlist rather than
+# _reject_observer also refuse an Observer-seated caller explicitly.
+# --------------------------------------------------------------------------- #
+
+def test_observer_cannot_set_the_observer_view():
+    c = _client()
+    sid = _new_unstarted_session(c)
+    ack = c.post(f"/api/sessions/{sid}/observer/view",
+                 json={"cell": "observer", "designation": "red"}).json()
+    assert ack["ok"] is False
+    assert c.get(f"/api/sessions/{sid}/observer/designation").json()["designation"] == "godview"
+
+
+def test_observer_cannot_assign_roles_over_http():
+    c = _client()
+    sid = _new_unstarted_session(c)
+    before = c.get(f"/api/sessions/{sid}/roles/staffing").json()
+    ack = c.post(f"/api/sessions/{sid}/roles/assign",
+                 json={"cell": "observer", "seat": "obs-seat", "asset_or_constellation": "ISR-EO-1",
+                       "role": "bus"}).json()
+    assert ack["ok"] is False
+    assert c.get(f"/api/sessions/{sid}/roles/staffing").json() == before

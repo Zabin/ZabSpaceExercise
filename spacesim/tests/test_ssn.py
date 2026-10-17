@@ -279,3 +279,43 @@ def test_passive_rf_fix_requires_min_receivers_and_emitting_target():
 
     world.assets["TGT"].bus_state.comms.status = "red"  # not emitting
     assert passive_rf_fix(net4, world, "TGT", 0, ap) is None
+
+
+# ---- FR-3310 rewind parity (IP-1131, BL-0259) ----------------------------------
+
+def test_ssn_request_and_command_behave_identically_under_rewind():
+    """FR-3310 — commands and collection tasks share one scheduler, so a rewind to before their
+    execution treats both kinds the same way: neither survives as a pending activity, neither's
+    effect remains, and re-advancing executes neither (pending events do not survive a rewind)."""
+    mgr = _mgr_with_network("global")
+    mgr.set_clock(False)
+    t0 = mgr.sim.clock.now
+    blue_gs = Asset(id="GS-B", owner="blue", kind="ground_station",
+                    location=GeoPoint(lat_deg=0.0, lon_deg=0.0, alt_m=0.0))
+    mgr.world.assets["GS-B"] = blue_gs
+    mgr.world.assets["SAT-B"] = Asset(id="SAT-B", owner="blue", kind="satellite",
+                                      orbit=OrbitState(a_m=R_EARTH_EQ + 550e3, e=0.0, i_deg=51.6,
+                                                       raan_deg=0.0, argp_deg=0.0, ta_deg=0.0,
+                                                       epoch=t0))
+    mgr.sim._initial_state = mgr.world.model_dump()
+    ssn = mgr.submit_ssn_request("blue", "characterize", "TGT", "LEO", "priority")
+    cmd = mgr.issue_order("blue", Order(cell="blue", actor="SAT-B", action="downlink",
+                                        params={"via": "GS-B"}))
+    assert ssn.ok and cmd.ok and cmd.status == "queued", (ssn.reason, cmd.reason)
+    end = max(ssn.product_at, cmd.earliest_window[1]) + 1
+    mgr.advance_to(end)
+    assert any(t.owner == "blue" and t.object == "TGT" for t in mgr.world.tracks)
+    assert [o["status"] for o in mgr.list_orders("blue")] == ["executed"]
+
+    mgr.rewind_to(t0 + 1)
+    # Both kinds return to the same pre-execution state.
+    assert mgr.list_ssn_requests("blue") == []
+    assert mgr.list_orders("blue") == []
+    assert not any(t.owner == "blue" and t.object == "TGT" for t in mgr.world.tracks)
+    pending = {e.kind for e in mgr.sim.scheduler.pending()}
+    assert not pending & {"ssn_collect", "ssn_deliver", "execute_downlink"}
+    # And re-advancing executes neither kind.
+    mgr.advance_to(end)
+    assert not any(t.owner == "blue" and t.object == "TGT" for t in mgr.world.tracks)
+    assert mgr.list_orders("blue") == []
+    assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
