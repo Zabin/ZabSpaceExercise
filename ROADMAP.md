@@ -428,12 +428,14 @@ identified." The `05-feature-decomposition` skill was run against the approved r
 |---|---|---|---|
 | — | Feature Planning index | `feature-planning/INDEX.md` | ✅ |
 | — | Release Plan | `feature-planning/01-release-plan.md` | ✅ |
-| — | Epic Catalog (`EP-1000`–`EP-10000`, 10 Epics) | `feature-planning/02-epic-catalog.md` | ✅ |
-| — | Feature Catalog (`FEAT-1100`–`FEAT-10200`, 38 Features) | `feature-planning/03-feature-catalog.md` | ✅ |
+| — | Epic Catalog (`EP-1000`–`EP-11000`, 11 Epics) | `feature-planning/02-epic-catalog.md` | ✅ |
+| — | Feature Catalog (`FEAT-1100`–`FEAT-11300`, 45 Features; full sweep 2026-10-17) | `feature-planning/03-feature-catalog.md` | ✅ |
 | — | Feature Dependency Graph | `feature-planning/04-feature-dependency-graph.md` | ✅ |
 | — | Feature Review | `feature-planning/05-feature-review.md` | ✅ |
 
-**Key findings:** all 49 baselined FR + 23 baselined NFR leaves are traced to exactly one Feature
+**Update 2026-10-17 (run #151 sweep, `BL-0153`):** all 103 baselined FR + 28 baselined NFR leaves
+are now traced to exactly one of 45 Features; six release buckets re-derived to match the dependency
+graph (`05-feature-review.md` F-13–F-20). **Original key findings (first pass):** all 49 baselined FR + 23 baselined NFR leaves are traced to exactly one Feature
 each (36 total); three Features (Classification Banner, Observer Read-Only Access, Hot-Seat
 Hand-Off) have zero presence in any existing `FS-xxx` document, confirming the motivating audit;
 `FS-106-white-cell-dashboard.md` bundles ten catalog Features across three Epics and is flagged as

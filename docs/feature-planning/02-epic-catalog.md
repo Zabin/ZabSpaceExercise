@@ -1,6 +1,6 @@
 # Epic Catalog
 
-Nine Epics, one per top-level `FR-x000` grouping in `docs/requirements/01-functional-requirements.md`
+Eleven Epics *(nine at original authoring; EP-10000 added 2026-07, EP-11000 2026-10-17)*, one per top-level `FR-x000` grouping in `docs/requirements/01-functional-requirements.md`
 — the requirements baseline's own hierarchy already draws these lines, so Epic boundaries are taken
 directly from it rather than redrawn (per this skill's Best Practices). Every Feature in
 `03-feature-catalog.md` belongs to exactly one Epic below.
@@ -18,7 +18,7 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Subsystems** | C1 Simulation Engine, C2 Session/Application Layer, C3 Mock SSN *(FEAT-1600's own additional subsystem touches)* |
 | **Estimated Scope** | Very Large — this Epic underpins the project's single load-bearing invariant (determinism) and the six-access-channel geometry every other Epic schedules against. |
 | **Risks** | Any change here risks violating the determinism gate that the whole documentation-driven build discipline treats as permanent; the two resolved circular-citation findings (FEAT-1100↔FEAT-4300, FEAT-1100↔FEAT-7100) originate in this Epic's own requirements text. `FEAT-1600` is partially built — six of its seven leaves are `VERIFIED`, one (`FR-1670`) is brand new and unimplemented. |
-| **Dependencies** | EP-7000 (FEAT-1100 depends on FEAT-7100's event log) |
+| **Dependencies** | EP-7000 (FEAT-1100 depends on FEAT-7100's event log); EP-3000 *(sweep 2026-10-17: FEAT-1300's manoeuvre ledger reads plan-time purpose tags, and FEAT-1400's delivery-path jamming acts on FEAT-3100/FEAT-3400 — EP-3000 also depends on EP-1000, an Epic-level mutual dependency with no Feature-level cycle, see `05-feature-review.md` F-17)* |
 
 ### EP-2000 — Bus & Payload Operations
 
@@ -31,7 +31,7 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Subsystems** | C1 Simulation Engine |
 | **Estimated Scope** | Large — five Features covering the full bus-operator training objective set. |
 | **Risks** | Safe-mode recovery (FEAT-2500) is a multi-pass state machine; correctness there is what the training objective actually measures, so subtle recovery-logic bugs would silently undermine the pedagogy without crashing anything. |
-| **Dependencies** | EP-1000 (orbital/access geometry gates telemetry contacts, FEAT-2300) |
+| **Dependencies** | EP-1000 (orbital/access geometry gates telemetry contacts, FEAT-2300); EP-6000 and EP-4000 *(sweep 2026-10-17: FEAT-2300's telemetry export is cell-filtered and shows anomaly-inject perturbation)* |
 
 ### EP-3000 — Command Planning & Sensor Tasking
 
@@ -44,7 +44,7 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Subsystems** | C1 Simulation Engine, C2 Session/Application Layer, C3 Mock SSN |
 | **Estimated Scope** | Large — the mechanism every operator action and every AI-Red action (EP-9000) ultimately flows through. |
 | **Risks** | FEAT-3300 and FEAT-3500 both show `UNASSIGNED` RTM traceability on their included FRs — a documentation gap on an Epic that is otherwise clearly built and tested per `CLAUDE.md`'s code map. |
-| **Dependencies** | EP-1000 (access geometry gates every plan; Δv and custody gate execute-time validation) |
+| **Dependencies** | EP-1000 (access geometry gates every plan; Δv and custody gate execute-time validation); EP-4000 and EP-7000 *(sweep 2026-10-17: FEAT-3400's ROE family uses role assignments and manual adjudication, logged)* |
 
 ### EP-4000 — White Cell Exercise Control
 
@@ -66,11 +66,11 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Epic ID** | EP-5000 |
 | **Title** | Scenario / Vignette Authoring |
 | **Purpose** | Turning a scenario concept into a runnable, validated vignette file — in-app iterative composition, TLE import with offline fallback, and load-time validation. |
-| **Features Included** | FEAT-5100, FEAT-5200, FEAT-5300 |
+| **Features Included** | FEAT-5100, FEAT-5200, FEAT-5300, FEAT-5400, FEAT-5500 *(5400/5500 added 2026-10-17)* |
 | **Subsystems** | C5 Content & Data |
 | **Estimated Scope** | Medium. |
 | **Risks** | The strategic review independently flags scenario authoring as still "White-Cell-hostile" in practice (§4.2) — the requirement (FEAT-5100) may be nominally met while YAML hand-editing remains the dominant real workflow; this is a usability finding, not a traceability gap. |
-| **Dependencies** | EP-1000 (TLE import needs the propagation seam) |
+| **Dependencies** | EP-1000 (TLE import needs the propagation seam); EP-4000 and EP-7000 *(sweep 2026-10-17: the Creator's seat/role matrix authors FEAT-4200's records; save-as-scenario builds on FEAT-7200)* |
 
 ### EP-6000 — Session, Multiplayer & Fog-of-War
 
@@ -139,24 +139,38 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Risks** | `FEAT-10200` depends on `FEAT-10100`'s output; both remain `MSTR-006` §3 gated for implementation regardless of their ADR-tier resolution — a package being unblocked at the architecture tier is not an authorization to code (see `IP-2010`/`IP-3010`). |
 | **Dependencies** | EP-1000 (FEAT-10200 depends on the core deterministic clock for reproducibility) |
 
+### EP-11000 — Training Corpus & Learning Path *(new 2026-10-17)*
+
+| Field | Content |
+|---|---|
+| **Epic ID** | EP-11000 |
+| **Title** | Training Corpus & Learning Path |
+| **Purpose** | The operator-facing training corpus — role-scoped manuals, their traceability and currency, and the vignette learning path — elevated to co-equal product status (MSTR-001 §2, 2026-07-04) and baselined as the `FR-11000` family. |
+| **Features Included** | FEAT-11100, FEAT-11300 |
+| **Subsystems** | None in the C1–C12 component set (documentation artifacts); FEAT-11300 touches C5 Content & Data through vignette tutorial blocks |
+| **Estimated Scope** | Medium — two Features, broad but shallow; mostly Inspection-verified, one Test-verified leaf (`FR-11420`). |
+| **Risks** | Prose drifting from behaviour; mitigated by `FR-11410` and independent manual reviews. |
+| **Dependencies** | EP-4000 (FEAT-11300 sequences the vignette library FEAT-4100 selects from) |
+
 ---
 
 ## Summary
 
 | Epic | Features | Epic-level Dependencies |
 |---|---|---|
-| EP-1000 Simulation Engine Core & Determinism | 6 *(+1, 2026-10-03: FEAT-1600)* | EP-7000 |
-| EP-2000 Bus & Payload Operations | 5 | EP-1000 |
-| EP-3000 Command Planning & Sensor Tasking | 5 | EP-1000 |
+| EP-1000 Simulation Engine Core & Determinism | 6 | EP-7000, EP-3000 *(2026-10-17)* |
+| EP-2000 Bus & Payload Operations | 5 | EP-1000, EP-6000, EP-4000 *(2026-10-17)* |
+| EP-3000 Command Planning & Sensor Tasking | 5 | EP-1000, EP-4000, EP-7000 *(2026-10-17)* |
 | EP-4000 White Cell Exercise Control | 7 | EP-1000, EP-5000, EP-6000 |
-| EP-5000 Scenario / Vignette Authoring | 3 | EP-1000 |
+| EP-5000 Scenario / Vignette Authoring | 5 *(+2, 2026-10-17: FEAT-5400, FEAT-5500)* | EP-1000, EP-4000, EP-7000 *(2026-10-17)* |
 | EP-6000 Session, Multiplayer & Fog-of-War | 6 | EP-1000 |
-| EP-7000 Logging, Replay & After-Action Review | 4 *(+1, 2026-10-03: FEAT-7400)* | (none outbound) |
-| EP-8000 Operator Console Presentation | 2 *(+1, 2026-10-03: FEAT-8200)* | (none) |
+| EP-7000 Logging, Replay & After-Action Review | 4 | EP-6000 |
+| EP-8000 Operator Console Presentation | 2 | EP-6000, EP-1000 |
 | EP-9000 AI-Red | 1 | EP-3000 |
-| EP-10000 Assessment & Research Instrumentation *(new 2026-07)* | 2 | EP-1000 |
-| **Total** | **41** | |
+| EP-10000 Assessment & Research Instrumentation *(new 2026-07)* | 2 | EP-1000, EP-3000, EP-7000 |
+| EP-11000 Training Corpus & Learning Path *(new 2026-10-17)* | 2 | EP-4000 |
+| **Total** | **45** | |
 
 Every Feature in `03-feature-catalog.md` appears in exactly one Epic's `Features Included` list
-above — cross-checked against the catalog's own Epic headers (41 Features total, matching the
-catalog's Summary table).
+above — cross-checked against the catalog's own Epic headers (45 Features total, matching the
+catalog's Summary table; 6+5+5+7+5+6+4+2+1+2+2 = 45).
