@@ -11,7 +11,13 @@ with that existing ID space and document type, this decomposition's outputs live
 **`docs/feature-planning/`** and use the prefix **`FEAT-xxxx`** for its 36 catalog rows, per this
 skill's own stated rule for exactly this situation.
 
-**Reconciliation — how the 11 existing `FS-xxx` documents map onto this catalog's 36 `FEAT-xxxx` rows:**
+**Reconciliation — how the existing `FS-xxx` documents map onto this catalog's `FEAT-xxxx` rows:**
+
+*Extended 2026-10-17 (pipeline run #162, `BL-0247`): rows FS-112–FS-132 added, each derived from
+the FS's own Feature mapping / approved-input header and the owning Feature of the leaves it newly
+implements (an FS's "Requirements Implemented" field also lists leaves it only depends on; those do
+not change its mapping). "Slice" means the FS specifies only the named leaves of a Feature whose
+other leaves live in another FS. The table was originally written for the first 11 documents.*
 
 | Existing FS-xxx | Maps onto (FEAT-xxxx) | Note |
 |---|---|---|
@@ -26,6 +32,27 @@ skill's own stated rule for exactly this situation.
 | **FS-109 Multiplayer / LAN Session Transport** *(new 2026-07)* | FEAT-6300, FEAT-6400 | Split out of FS-106 v1.0 per Finding F-03 |
 | **FS-110 Save & Resume** *(new 2026-07)* | FEAT-7200 | Split out of FS-106 v1.0 per Finding F-03 |
 | **FS-111 AI-Red Doctrine Automation** *(new 2026-07)* | FEAT-9100 | Split out of FS-106 v1.0 per Finding F-03 |
+| FS-112 Classification Banner | FEAT-4500 | 1:1 — Finding F-02 |
+| FS-113 Observer Read-Only Access | FEAT-6500 | 1:1 — Finding F-02 (cites `FR-4610`, owned by FEAT-4600, as a dependency) |
+| FS-114 Hot-Seat Hand-Off | FEAT-6600 | 1:1 — Finding F-02 |
+| FS-115 Session Setup | FEAT-4100, FEAT-4200 | One FS covers two catalog Features — Finding F-10 |
+| FS-116 Role-Scoped Command Catalog | FEAT-3500 | 1:1 (`IP-1160` `BLOCKED` on authorization) |
+| FS-117 Vignette Creator | FEAT-5100 | 1:1 — consolidates the catalog entry (`ADS-5100A`/`ADS-5100B`) |
+| FS-118 External Vignette Directories | FEAT-5400 | 1:1 (`FR-5410`/`FR-5420`/`NFR-3700`) |
+| FS-119 Bulk TLE/OMM Import | FEAT-5200 | Slice: `FR-5220` only; `FR-5210` was already built |
+| FS-120 Save-as-Scenario | FEAT-5500 | 1:1 (`FR-5510`) |
+| FS-121 Ephemeris Export | FEAT-7400 | 1:1 since v2.0 (all four leaves) |
+| FS-122 Sensor Modality Models | FEAT-1600 | 1:1 (all seven leaves since v1.1) |
+| FS-123 Space-Weather Index Coupling | FEAT-1200, FEAT-4400 | Cross-Feature slice: `FR-1230` (FEAT-1200) + `FR-4440` (FEAT-4400) |
+| FS-124 Debris-Field Persistence Estimate | FEAT-1400 | Slice: `FR-1430` |
+| FS-125 Manoeuvre Ledger | FEAT-1300 | Slice: `FR-1320` |
+| FS-126 Telemetry CSV Export | FEAT-2300 | Slice: `FR-2320` |
+| FS-127 Effect Authorization Gating & Live ROE | FEAT-3400 | Slice: `FR-3420`/`FR-3430`/`FR-3440` |
+| FS-128 Variable-Speed AAR Replay | FEAT-7300 | Slice: `FR-7330` (FS-107 owns the rest of FEAT-7300) |
+| FS-129 Jamming Delivery & Effect Detectability | FEAT-1400 | Slice: `FR-1440`/`FR-1450` |
+| FS-130 RIC-Frame View & CATS Overlay | FEAT-8200 | 1:1 |
+| FS-131 Load-Time Vignette Validation | FEAT-5300 | 1:1 (`FR-5310`–`FR-5314`) |
+| FS-132 Effect Resource Bounds | FEAT-1400 | Slice: `FR-1460`/`FR-1470` (FS-105 owns `FR-1410`/`FR-1420`) |
 | FS-201 Competency Assessment | FEAT-10100 | **Resolved 2026-07** — see Finding F-01 and the update note below |
 | FS-202 Rubric Authoring *(candidate, unauthorized)* | *(none — see Finding F-01)* | Rubric-authoring tooling itself was not baselined; only FS-201's own rubric-tier computation (FR-10110) was |
 | FS-301 Research Analytics | FEAT-10200 | **Resolved 2026-07** — see Finding F-01 and the update note below |
