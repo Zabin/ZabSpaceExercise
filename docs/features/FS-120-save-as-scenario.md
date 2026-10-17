@@ -10,7 +10,7 @@
 > from, per `FR-5510`'s own Rationale), [FS-117](FS-117-vignette-creator.md) (`IP-1173`'s
 > `export_vignette`/`save_vignette` — the draft-session export mechanism this Feature is also
 > explicitly distinct from)
-> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0071` (external · [IP-1065](../implementation/packages/IP-1065-console-and-session-small-fixes.md) *(planned 2026-10-17, run #166)*
+> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0071` (external · [IP-1065](../implementation/packages/IP-1065-console-and-session-small-fixes.md) (✅ VERIFIED 2026-10-17, VR-1065)
 > validation report, 26 Sep 2026, item B5), [IP-1200](../implementation/packages/IP-1200-save-as-scenario.md)
 > (Implementation Package, ✅ `VERIFIED`, [VR-1200](../implementation/verification/VR-1200-save-as-scenario.md))
 > **Produces:** a mid-exercise-state-to-new-vignette save capability satisfying `FR-5510`

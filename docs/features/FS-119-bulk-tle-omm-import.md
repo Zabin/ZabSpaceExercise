@@ -9,7 +9,7 @@
 > not silently absorb (see Open Questions).
 > **Dependencies:** `FR-1210` (propagator seam), `FR-5140` (single manual TLE/lat-long entry, the
 > capability `FR-5220` is a batch sibling of, not a replacement for)
-> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0067` (external · [IP-1065](../implementation/packages/IP-1065-console-and-session-small-fixes.md) *(planned 2026-10-17, run #166)*
+> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0067` (external · [IP-1065](../implementation/packages/IP-1065-console-and-session-small-fixes.md) (✅ VERIFIED 2026-10-17, VR-1065)
 > validation report, 26 Sep 2026, item B1), [IP-1190](../implementation/packages/IP-1190-bulk-tle-omm-import.md)
 > (Implementation Package, ✅ `VERIFIED`, [VR-1190](../implementation/verification/VR-1190-bulk-tle-omm-import.md))
 > **Produces:** a bulk TLE/CCSDS OMM multi-object import capability satisfying `FR-5220`
