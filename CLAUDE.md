@@ -197,8 +197,10 @@ single facilitator can spread globe / map / fleet / order / AAR across multiple 
 **LAN trust model (load-bearing).** The cell selector (`White` / `Blue` / `Red`) is **client-side
 trust** — there is no per-cell authentication. The fog-of-war filter is applied by
 `SessionAPI` / `CellController` to every cell-scoped response, but the no-cell ground-truth
-endpoints (`/godview`, `/eventlog`, `/save`, `/aar*`, `/objectives`) deliberately expose ground
-truth without a cell binding. **Deploy only on a trusted LAN with cooperative participants.** A
+endpoints (`/godview`, `/eventlog`, `/save`, `/aar*`, `/objectives`, `/assessment`,
+`/ephemeris/truth`, the Observer view, and the White Cell facilitation/authoring reads — the full
+named set is `FR-6220` in `docs/requirements/01-functional-requirements.md`) deliberately expose
+ground truth without a cell binding. **Deploy only on a trusted LAN with cooperative participants.** A
 hostile participant on the LAN can read another cell's belief state through `/scene/{cell}` or
 `/telemetry/{cell}/...` by sending the other cell's name in the URL. This is by design for the
 v1 PME training context (everyone in the room is on the same team learning together) and is

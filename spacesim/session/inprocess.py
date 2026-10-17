@@ -595,6 +595,10 @@ class InProcessSession:
             status = o.status
             if status == "queued" and start <= now <= end:
                 status = "active"   # the bar straddles now → currently executing
+            elif status == "queued" and o.earliest_window is not None and now > end:
+                # IP-1065 (BL-0266) — the window has passed, so the order has executed: the same
+                # derived label `SessionManager.list_orders()` shows (`Order.status` never holds it).
+                status = "executed"
             activities.append({
                 "kind": "order",
                 "cell": o.cell,

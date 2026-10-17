@@ -521,6 +521,7 @@ class SessionManager:
         from spacesim.content.bulk_import import parse_ccsds_omm, parse_multi_tle
         objects = parse_multi_tle(content) if file_format == "tle" else parse_ccsds_omm(content)
         reports: list[dict] = []
+        imported_as: dict[str, str] = {}   # IP-1065 (BL-0141) — asset id → raw id, this file only
         for obj in objects:
             raw_id = obj["raw_id"]
             assignment = assignments.get(raw_id)
@@ -529,12 +530,19 @@ class SessionManager:
                                  "reason": "no side/template assignment provided"})
                 continue
             asset_id = assignment.get("asset_id", raw_id)
+            if asset_id in imported_as:
+                reports.append({"raw_id": raw_id, "asset_id": asset_id, "ok": False,
+                                 "reason": f"duplicate asset id {asset_id!r} in this file: already "
+                                           f"imported from {imported_as[asset_id]!r}"})
+                continue
             owner = assignment.get("owner", "blue")
             kind = assignment.get("kind", "satellite")
             if obj["format"] == "tle":
                 ok, reason = self._force_add_tle_object(asset_id, obj["line1"], obj["line2"], owner, kind)
             else:
                 ok, reason = self._force_add_omm_object(asset_id, obj, owner, kind)
+            if ok:
+                imported_as[asset_id] = raw_id
             reports.append({"raw_id": raw_id, "asset_id": asset_id, "ok": ok, "reason": reason})
         return reports
 

@@ -196,7 +196,15 @@ async function loadVignettes() {
       sel.innerHTML = '<option value="" disabled selected>(no vignettes found — check server)</option>';
       return;
     }
-    sel.innerHTML = list.map((v) => `<option value="${esc(v.id)}">${esc(v.title)}</option>`).join("");
+    // IP-1065 (BL-0267, FR-5410) — built-in vignettes first, then one labelled optgroup per
+    // external directory (each entry's `origin`), so external content is a distinct group.
+    const opt = (v) => `<option value="${esc(v.id)}">${esc(v.title)}</option>`;
+    const builtIn = list.filter((v) => !v.origin || v.origin === "built-in");
+    const origins = [...new Set(list.filter((v) => v.origin && v.origin !== "built-in").map((v) => v.origin))];
+    sel.innerHTML = (origins.length
+      ? `<optgroup label="Built-in library">${builtIn.map(opt).join("")}</optgroup>`
+      : builtIn.map(opt).join(""))
+      + origins.map((o) => `<optgroup label="External: ${esc(o)}">${list.filter((v) => v.origin === o).map(opt).join("")}</optgroup>`).join("");
   } catch (e) {
     sel.innerHTML = '<option value="" disabled selected>(failed to load — is the server running?)</option>';
     console.error("loadVignettes failed:", e);
@@ -352,7 +360,30 @@ async function setServerClock(running) {
 }
 async function fireInject() {
   const id = $("inject-sel").value; if (!id || id === "(none)") return;
-  await api.post(`/api/sessions/${SID}/inject`, { inject: id }); await refresh();
+  const out = $("inject-result");
+  // IP-1065 (BL-0196) — a 400 (`inject rejected: …`) is shown, not thrown unhandled.
+  try {
+    await api.post(`/api/sessions/${SID}/inject`, { inject: id });
+    if (out) { out.style.color = ""; out.textContent = `✓ fired ${id}`; }
+  } catch (err) {
+    if (out) { out.style.color = "var(--red)"; out.textContent = "✗ server error: " + (err.message || err); }
+  }
+  await refresh();
+}
+
+// IP-1065 (BL-0145, FR-5510) — save this running session as a new starting vignette.
+async function saveAsScenario() {
+  const out = $("save-scenario-result");
+  if (!SID) { if (out) out.textContent = "No active session."; return; }
+  const vid = (prompt("New vignette id (letters, digits, - or _):") || "").trim();
+  if (!vid) return;
+  const title = (prompt("Title for the new vignette:", vid) || vid).trim();
+  try {
+    const r = await api.post(`/api/sessions/${SID}/save_vignette`, { vignette_id: vid, title, as_scenario: true });
+    if (out) { out.style.color = ""; out.textContent = `✓ saved ${r.path}`; }
+  } catch (err) {
+    if (out) { out.style.color = "var(--red)"; out.textContent = "✗ " + (err.message || err); }
+  }
 }
 
 // ---- FW §11.D.19 — Inject library + builder (White Cell) -----------------
@@ -2151,6 +2182,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const st = await api.get(`/api/sessions/${SID}/clock`);
     await setServerClock(!st.running);
   };
+  if ($("save-scenario-btn")) $("save-scenario-btn").onclick = saveAsScenario;  // IP-1065
   $("fire-inject").onclick = fireInject; $("issue").onclick = issueOrder;
   // FW §11.D.19 — inject builder
   if ($("inject-lib-load")) $("inject-lib-load").onclick = loadInjectTemplate;
