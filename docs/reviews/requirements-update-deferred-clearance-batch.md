@@ -68,6 +68,15 @@ Every amended leaf remains atomic and testable.
 - [x] The review reviewed the final on-disk text.
 - [x] Candidates were not promoted; the matrix uses `UNASSIGNED` honestly.
 
+## Addendum — closing straggler (run #172, 2026-10-17)
+
+| Item | Change | Traced to |
+|---|---|---|
+| `BL-0263` | `FR-5220` Related Interfaces corrected INT-0013 → INT-0006, INT-0011; RTM Arch. Component C5, C10 → C4, C2, C5 and Interface cells corrected; `FR-5220` added to the C2/C4/C5 and INT-0006/INT-0011 reverse-index rows (it was missing from every component row). | ICD pass 3 (run #161): file-based import travels console → SessionAPI and C2 parses through C5; INT-0013 is the Space-Track network fetch only. |
+| `BL-0101` | `FR-4430` Notes: the requirement fixes the cause categories and the recorded-not-re-derived Postcondition; no source states which `BusState` change each category produces, so the as-built mapping (`bus` → safe mode with the controller cause, recoverable; `telemetry` → comms red; `IP-1062` DD4 as remediated) is confirmed as satisfying the leaf, and any change to it is a `06`/`07` design change. | `FR-4430` Description/Postcondition; `BL-0128` remediation. |
+
+No new finding. No numbered leaf added or behaviour changed.
+
 ## Related
 
 [`01-functional-requirements.md`](../requirements/01-functional-requirements.md) ·

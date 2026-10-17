@@ -1745,6 +1745,14 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Related ADRs:** ADR-0004, ADR-0005
 - **Related Interfaces:** INT-0016
 - **Related Requirements:** FR-4410, FR-4420, FR-1510
+- **Notes:** *Added 2026-10-17 (run #172, `BL-0101`).* The requirement fixes the anomaly's cause
+  categories (bus or telemetry subsystem) and that the controller-set cause is recorded, never
+  re-derived (Postcondition). No source states which `BusState` change each category produces, so
+  "the expected change" in the Acceptance Criteria is the design's to define, not this leaf's. As
+  built (`IP-1062` Design Decision 4, as remediated under `BL-0128`): `bus` enters safe mode with
+  the controller-set cause, recoverable through the existing recovery loop; `telemetry` marks the
+  comms subsystem red. That mapping satisfies this leaf as written and is confirmed here; changing
+  it would be a design change at `06`/`07`, not a requirements change.
 
 #### FR-4440 — Space-weather-index-driven anomaly rate scaling
 
@@ -2150,7 +2158,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   2026, item B1); `spacesim/ui_web/server.py` (`POST /api/sessions/{sid}/force/tle`, current
   one-object-per-call route); `ADR-0018` (offline-first runtime).
 - **Related ADRs:** ADR-0018
-- **Related Interfaces:** INT-0013
+- **Related Interfaces:** INT-0006, INT-0011 *(corrected 2026-10-17, run #172, `BL-0263`: ICD pass 3 assigns the file-based import to the console → `SessionAPI` path and C2's parse through C5; INT-0013 is the Space-Track network fetch only)*
 - **Related Requirements:** FR-5140, FR-5210
 
 ### FR-5300 — Vignette validation
