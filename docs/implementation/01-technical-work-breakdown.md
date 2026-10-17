@@ -674,6 +674,36 @@ Feature with no prior code. It absorbs `BL-0220` (bare 500 at load, silent **Loa
 
 No cross-package sequencing constraint.
 
+## Effect resource bounds (pipeline run #153, 2026-10-17)
+
+**Input:** [FS-132](../features/FS-132-effect-resource-bounds.md) v1.0 — `FEAT-1400`'s resource-bound
+slice (`FR-1460`, `FR-1470`).
+
+**Work units.**
+
+1. **Validation bound** (`engine/orders.py::_validate`, engage branch): `insufficient_ammo` on a
+   consumed salvo above the remaining rounds, with a shared rounds helper.
+2. **Execute-time re-check** (`_h_effect`): no resolution, failed record, no charge.
+3. **Jam power** (jam plan `consume` + `_h_effect` consumption): stop touching `power_w`.
+4. **Console tip** (`app.js` `REASON_TIPS`).
+5. **Tests**, plus one fixture adjustment in `test_order_param_hardening.py`.
+
+**Split / no-split rationale.**
+
+- Units 1–5 are **one package**. Units 1–3 are all in one file, one code path (the effect order's
+  plan → validate → execute → consume step), and verified together: `FR-1460`'s postcondition
+  needs units 1 and 2, and unit 3 edits the same consumption lines. Splitting `FR-1470` out would
+  give two packages editing the same eight lines of `_h_effect`.
+- **Not packaged:** rating enforcement for jams (ADR-0037 excludes it); salvo range rules
+  (`CR-25`); whether a missed salvo consumes rounds (`BL-0249`, `04`). The manual impact is routed
+  to `08-training-manual-authoring` after `VERIFIED` (`BL-0250`).
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1320](packages/IP-1320-effect-resource-bounds.md) | FS-132 v1.0 (`FR-1460`, `FR-1470`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization) |
+
+No cross-package sequencing constraint, except that `IP-1160` (`BLOCKED`) would rebase over it.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
