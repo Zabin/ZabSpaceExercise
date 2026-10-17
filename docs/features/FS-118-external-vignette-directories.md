@@ -12,7 +12,7 @@
 > **Dependencies:** [FS-117](FS-117-vignette-creator.md) (`FR-5110`/`IP-1173` — the draft-save
 > capability `FR-5420` is explicitly distinct from, not a variant of), `FR-5310` (load-time vignette
 > validation, unchanged by this Feature)
-> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0082` (external
+> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0082` (external · [IP-1065](../implementation/packages/IP-1065-console-and-session-small-fixes.md) *(planned 2026-10-17, run #166)*
 > validation report, 26 Sep 2026, item B16), [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-5410`/`FR-5420`, [docs/requirements/02-non-functional-requirements.md](../requirements/02-non-functional-requirements.md)
 > `NFR-3700`, [IP-1180](../implementation/packages/IP-1180-external-vignette-directories.md)

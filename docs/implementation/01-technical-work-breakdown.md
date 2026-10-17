@@ -731,6 +731,45 @@ unguarded `yaml.safe_load` in `load_vignette`'s built-in declared-id scan.
 
 No cross-package sequencing constraint.
 
+## Tranche — owner-prioritized `DEFERRED` backlog clearance follow-ups (2026-10-17, pipeline run #166)
+
+The project owner asked (2026-10-17) for the long tail of `DEFERRED` backlog entries to be cleared.
+The entries that needed code or tests, plus findings the clearance pass itself surfaced, are cut
+into five packages along real seams:
+
+1. **`IP-1021` — engine event loop** (`engine/simulation.py`, `engine/handlers.py`): ADR-0038.
+   Its own package: it is the one change to a load-bearing invariant, Medium severity, and must be
+   reviewable alone.
+2. **`IP-1223` — observe beam modes** (`engine/orders.py` + console list): FS-122 v1.2. Its own
+   package: an engine validation rule plus its console mirror, one Definition of Done.
+3. **`IP-1065` — White Cell console and session small fixes** (`app.js`, `index.html`,
+   `inprocess.py::cell_activity`, `manager.py::bulk_import`, `tools/render_manual.py`): five
+   independent one-function fixes on the same console/session seam plus two doc follow-ups. **Not
+   split** into five packages: each is a few lines with one test, and one run covers them; they
+   share no production function, so each hunk stays separately revertible.
+4. **`IP-1064` — condition-inject follow-ups** (`manager.py` condition/tick code,
+   `content/vignette.py`, `engine/busmodel.py`): `VR-1062`'s three remaining Lows, which all touch
+   the same tick-arming and condition-check code — split from `IP-1065` because they share that
+   code with each other, not with the console.
+5. **`IP-1131` — test-only coverage**: four regression tests over four FS slices. One package
+   because no production file changes; mixing them with a code package would blur "no production
+   change" as a checkable DoD item.
+
+**Not packaged (disposed without code):** `BL-0006` (cyber decisions carry no
+`custody_confidence_at_decision`; cyber is window- and track-independent by ADR-0012, so whether
+cyber should be scored for belief-truth divergence is a design question for FS-201, not a code
+gap) and `BL-0126` (creator preview colour-by-owner: an enhancement beyond `FR-5130`, which is met).
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1021](packages/IP-1021-failure-atomic-event-application.md) | FS-102 v1.1 + ADR-0038 | 🟢 READY | Pre-authorized (MSTR-006 §3, standing 2026-10-11) |
+| [IP-1223](packages/IP-1223-beam-mode-follows-sensor-modality.md) | FS-122 v1.2 | 🟢 READY | Pre-authorized |
+| [IP-1065](packages/IP-1065-console-and-session-small-fixes.md) | FS-106/102/118/120/119 | 🟢 READY | Pre-authorized |
+| [IP-1064](packages/IP-1064-condition-inject-follow-ups.md) | FS-106 v2.1 | 🟢 READY | Pre-authorized |
+| [IP-1131](packages/IP-1131-verification-coverage-follow-ups.md) | FS-113/115/102 + NFR-3400 | 🟢 READY | Pre-authorized |
+
+No cross-package sequencing constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
