@@ -152,7 +152,7 @@ next session load. Facilitation patterns — when to inject what — are in
 - **Any asset's telemetry:** click any fleet row, Blue or Red, to open its subsystem drill-down:
   parameters vs. limits, history graph with the nominal ghost, and symptom log. It shows exactly
   what that cell's operators read in BLU-6/RED-7, so use it to see an attack's signature land.
-  Controls: [UI reference §10.13](10-ui-reference.md#1013-subsystem-drill-down).
+  Controls: [UI reference §10.13](10b-ui-reference-views.md#1013-subsystem-drill-down).
 
 > **Sources:** `spacesim/session/scene.py` · `spacesim/ui_web/static/app.js` (Gantt, objectives,
 > `openDrill`) · `spacesim/session/manager.py` (`get_telemetry`/`get_series`, White reads any asset) ·

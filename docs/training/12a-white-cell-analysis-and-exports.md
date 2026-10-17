@@ -118,7 +118,7 @@ live JSON god-view (current instant only) cannot do.
 `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv?t1=&t2=&interval_s=` turns any
 asset's subsystem telemetry into a CSV time series — one row per sampled instant × parameter
 (19 parameters per asset), covering the same channels the live subsystem drill-down
-([UI reference §10.13](10-ui-reference.md#1013-subsystem-drill-down); BLU-6/RED-7 cover the
+([UI reference §10.13](10b-ui-reference-views.md#1013-subsystem-drill-down); BLU-6/RED-7 cover the
 diagnosis workflow) already shows, now over a requested span
 instead of just the current instant. Like WCM-15, **there is no console button for this** — it
 is URL-only, by design (`FS-126`'s own scope names only the backing code, no UI affordance).

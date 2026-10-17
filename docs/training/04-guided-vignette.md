@@ -19,7 +19,7 @@ with the station), `RED-CYBER`, `RED-RDR`, and `RED-ASAT` (kinetic, off by defau
 > already knows about. A target you have not tracked yet, such as `RED-TGT` in Blue Step 2 or
 > `ISR-EO-1` in Red Step 2, will not be listed. Type its id in the **or id** box beside the
 > dropdown instead; that box wins when both are set. Observing is how a target gets onto the list.
-> Details: [UI reference §10.6 row 4](10-ui-reference.md#106-satellite-command-compose-form).
+> Details: [UI reference §10.6 row 4](10a-ui-reference-orders.md#106-satellite-command-compose-form).
 
 ### Blue — maintain custody and deliver imagery
 

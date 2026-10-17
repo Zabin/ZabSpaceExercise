@@ -890,7 +890,7 @@ FS → IMP → Code → Tests) for all 11 Feature Specifications:
 | TR-07 | White Cell facilitation | `training/07-white-cell-facilitation.md` | DS-06 | ✅ |
 | TR-08 | HTTP API reference | `training/08-http-api-reference.md` | DS-07 | ✅ |
 | TR-09 | Troubleshooting & glossary | `training/09-troubleshooting-and-glossary.md` | — | ✅ |
-| TR-10 | UI reference (all 14 panels) | `training/10-ui-reference.md` | BS-07, MAN-00 | ✅ |
+| TR-10 | UI reference (all 15 panels; split 2026-10-17 into `10` + `10a` orders + `10b` views, each with `> Sources:` footers, `BL-0198`/`BL-0232`) | `training/10-ui-reference.md`, `training/10a-ui-reference-orders.md`, `training/10b-ui-reference-views.md` | BS-07, MAN-00 | ✅ |
 | TR-11 | Per-vignette playbooks — how each cell completes objectives, move by move, verified against the engine | `training/11-vignette-playbooks.md` | VG-IDX, TR-06 | ✅ |
 | TR-12 | Role-scoped **White Cell** manual (facilitator procedure layer; sections `WCM-n`) | `training/12-white-cell-manual.md` | TR-02, TR-05, TR-07, TR-15 | ✅ |
 | TR-12a | Role-scoped **White Cell** manual, part 2 — analysis and data exports (`WCM-12`–`WCM-16`), split from TR-12 for NFR-3500 module size | `training/12a-white-cell-analysis-and-exports.md` | TR-12, TR-15 | ✅ |

@@ -76,6 +76,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Classification banner | `content/vignette.py` (`Vignette.classification`), `session/manager.py`, `session/aar.py` | WCM-2 | — | — |
 | Observer read-only seat (4th cell, no command ability) | `session/inprocess.py` (`set_observer_view`/`get_observer_view`), `ui_web/server.py` (`_reject_observer`) | WCM-1 | — | — |
 | Load-time vignette validation (refused **Load**: `Load failed:` + every problem as *where — reason*; no session made, nothing evicted, no `sess-N` used; 404 for an unknown id; `build` item only once nothing else is wrong; an unparseable file is left out of the picker), rule list in `06` "When a vignette won't load", symptom in `09` §10 | `content/vignette.py` (`load_vignette`, `validate_vignette`, `VignetteValidationError`, `list_vignettes`), `session/inprocess.py` (`load_vignette`), `ui_web/server.py` (`_vignette_load_errors`), `app.js` (`loadSession`) | WCM-2 | — | — |
+| External vignette folders + user save folder (`content:` config; two-key setup to load saves back) | `config.py` (`ContentConfig`), `content/vignette.py` (`list_vignettes`), `content/vignette_export.py` (`save_vignette`) | `01` §2.2 (shared) | — | — |
 | Seat-to-role assignment / staffing gate | `content/vignette.py` (`Vignette.roles_needed`), `session/manager.py` (`assign_role`/`staffing_report`) | WCM-2 | — | — |
 | Competency assessment (custody/window/divergence rubric) | `session/assessment.py`, `GET /assessment` | WCM-11 | — | — |
 | Research analytics (offline batch export) | `tools/research_batch.py`, `session/research_export.py` | WCM-12 | — | — |
@@ -83,6 +84,42 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Quick TLE export (own satellites at actual orbit + tracked objects at belief; White: ground truth) | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `GET /tle/{cell}`, `tleexport.js` (`candidates`, `SOURCE_LABEL`) | WCM-14 | BLU-12 | RED-11 |
 | Ephemeris export, time-span (ECI/RIC, CSV/CCSDS OEM, truth + cell-observed) | `session/ephemeris.py` (`truth_ephemeris`, `cell_observed_ephemeris`, `write_csv`/`write_oem`/`write_ric_csv`, `sample_times`/`MAX_EXPORT_SAMPLES`), `session/aar.py` (`worlds_at_times`), `GET /ephemeris/truth`, `GET /ephemeris/{cell}` | WCM-15 | BLU-13 | RED-12 |
 | Per-asset telemetry CSV export, time-span | `session/manager.py` (`telemetry_export`), `engine/telemetry.py` (`sample`, per-instant replay), `session/aar.py` (`worlds_at_times`), `session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`), `GET /telemetry/{cell}/{asset}/export.csv` | WCM-16 | BLU-14 | RED-13 |
+
+### 15.1a Feature → shared modules (`01`–`11`)
+
+*Added 2026-10-17 (`BL-0197`).* §15.1 indexes the role manuals only. A feature change can also
+strand walkthrough and reference prose in the shared modules, as the target picker did (`BL-0084`
+updated §10 and the role manuals, while `03`/`04`/`11` went stale until `BL-0194`/`BL-0195`).
+When a feature in §15.1 changes, also check the shared sections its group names here. Section
+names are the module's own headings.
+
+| Feature group (§15.1 rows) | Shared module sections to check |
+|---|---|
+| Install, server launch, config, LAN binding | `01` §1–§2, §2.1, §2.2 · `09` §10 |
+| Vignette load, picker, seed, load failures, external vignette folders | `01` §2.2 · `02` "The scenario picker" · `03` Step 1 · `06` "When a vignette won't load" · `09` §10 · `10` §10.1.1 |
+| Mission brief | `02` "Mission brief — read this first" |
+| Fog-of-war, god-view, Observer | `02` "White Cell god-view", "A player cell (fog-of-war)" |
+| Hot-seat, LAN, pop-outs | `01` §2.1 · `10` §10.1 (Handover), §10.1.2 · `10b` §10.14 |
+| Clock, pause/jump, rewind/undo/branch | `03` Steps 3–4 · `10` §10.1 · `05` "Red doctrine & After-Action Review" |
+| Compose form, target picker, params, dry-run, `invalid_param`, reason tips | `02` "Commanding & White Cell menus", "Order-composition assistants" · `03` Step 2 · `04` (all three walkthroughs) · `05` "Plan-first commanding", "Live previews before commit" · `09` §10 · `10a` §10.6 · `11` (every playbook) |
+| Maneuver / jam / engage / cyber assistants, consequence preview | `02` "Order-composition assistants", "Consequence preview & conjunction screening" · `05` "Live previews before commit" · `10a` §10.7–§10.8 |
+| Sensor tasking, SSN, beam modes, custody, weapons-quality gate, sensor modality fields | `04` Blue/Red Step 2 · `05` "SDA sensor tasking → custody → unlock" · `06` "Authoring sensors: optional modality fields" · `10a` §10.5 · `11` |
+| Effect resource bounds, kinetic engagement, ROE | `05` "Live previews before commit" · `09` §10 · `11` §11.5 |
+| Activity timeline (Gantt) | `02` "Per-cell activity timeline (Gantt)" · `10b` §10.15 |
+| Injects + builder + library | `02` "White-Cell inject builder" · `07` §8 · `09` §10 · `10` §10.3 |
+| Bus SOH, safe mode, recovery, telemetry, drill-down | `04` "Blue — recover from the cyber attack" · `05` "Bus state-of-health & safe mode", "Safe-mode recovery", "Diagnosing attacks from telemetry" · `10b` §10.13 |
+| Cyber | `04` Red walkthrough, Blue recovery · `05` "Cyber — the off-pass exception" |
+| Conjunctions / collision avoid | `02` "Consequence preview & conjunction screening" · `05` "Conjunctions & collision avoidance" · `10` §10.2 |
+| TLE force-add | `05` "Adding real satellites by TLE" |
+| AAR, Red doctrine | `05` "Red doctrine & After-Action Review" · `10b` §10.12 |
+| Save / resume | `05` "Save & resume" · `10` §10.1.3 |
+| Viewers (globe, map), accessibility, local time | `02` "Viewers — 2D map and 3D globe", "Local time + accessibility toggles" · `10` §10.1.2, §10.2 · `10b` §10.10–§10.11 |
+| Any HTTP route added, renamed or reshaped | `08` §9 |
+| Vignette library, playbooks, learning path | `06` (track tables) · `11` · `16` |
+| Any new term an operator meets | `09` §11 Glossary |
+
+> **Sources:** this index is derived from the shared modules' own headings (`01`–`11`, `10a`,
+> `10b`) and §15.1's feature rows; it carries no code anchors of its own.
 
 ### 15.2 Manual section → backing features (reverse index)
 
@@ -236,5 +273,11 @@ without regressing the per-cell procedure-layer property that already works.
 guidance, or if a future role (beyond White/Blue/Red/Observer) needs a mechanic that spans more than
 two cells, re-run this evaluation — the "small number of genuine mirrors" premise above would no
 longer hold at that scale.
+
+**Trigger check (2026-10-17, `BL-0035`): not fired.** The role manuals are 227 (`12`), 152 (`12a`),
+280 (`13`) and 283 (`14`) lines, each inside NFR-3500's ~300-line guide; the White manual's 2026
+split into `12`/`12a` kept each module in budget rather than signalling a layout problem. The seats
+are still White, Blue, Red and Observer. Re-check at the next role added or the next manual past
+300 lines.
 
 ---
