@@ -78,6 +78,13 @@
 > jamming leaves the jammer's power rating unchanged, per ADR-0037, closing `BL-0245` and the F3
 > conflict of the load-validation report; `FR-1460` Notes annotated — see the second addendum in
 > the same report.)
+> further amended (2026-10-17, run #160, owner-prioritized `DEFERRED` backlog clearance; **no
+> numbered leaf added**. `FR-6220`'s named no-cell set is enumerated as built (`BL-0138`);
+> `FR-7410`/`FR-7420` input cardinality restated to match their source (`BL-0137`); `FR-4420`'s
+> Precondition no longer implies an unspecified re-fire rule (`BL-0130`); `FR-3310`'s Outputs
+> restated in GDS-05 FR-P3's own terms (`BL-0050`). New candidates `CR-26`–`CR-28` (`BL-0100`,
+> `BL-0130`, `BL-0249`) — see
+> [`reviews/requirements-update-deferred-clearance-batch.md`](../reviews/requirements-update-deferred-clearance-batch.md).)
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -1226,7 +1233,8 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   action (GDS-04 §6.5; build-spec/02 §5.3 FR-P3).
 - **Priority:** Must
 - **Inputs:** A Planned Activity of either `kind` (`command` or `collection`).
-- **Outputs:** A scheduled entry queryable through one queue/timeline regardless of kind.
+- **Outputs:** A scheduled entry whose queueing, cancellation before execution, undo and
+  time-travel behaviour is the same regardless of kind.
 - **Preconditions:** The activity has a valid `kind` and `actor_ref`.
 - **Postconditions:** Undo/time-travel operations apply identically to both kinds.
 - **Acceptance Criteria:** Given a rewind to a sim time before a collection-kind activity's
@@ -1239,6 +1247,17 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Related ADRs:** (none directly)
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-3110, FR-3210, FR-4300
+- **Notes:** *Amended 2026-10-17 (run #160, `BL-0050`).* The Outputs field said "queryable through
+  one queue/timeline". GDS-05 FR-P3, the governing statement, says the two kinds share one
+  scheduler "so queue, timeline, undo, and time-travel behave identically". That is a behavioural
+  parity requirement, not a single-list requirement, so the Outputs field now uses FR-P3's terms.
+  As built, the order system (`engine/orders.py`) carries commands and sensor-tasking `observe`
+  orders, and the SSN service (`engine/ssn.py`) carries SSN requests. Both schedule events on the
+  one deterministic `Scheduler`/`EventLog`, so undo and rewind replay both kinds through the same
+  path. The order queue and the SSN request list are separate operator surfaces. No test yet
+  exercises the Acceptance Criterion for an SSN request specifically (a rewind before collection,
+  then parity with a command); that gap is routed to `07` (`BL-0259`). Feature ownership of this
+  leaf is `06`'s (`BL-0050`).
 
 ### FR-3400 — Re-validation at execution time
 
@@ -1662,7 +1681,9 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Outputs:** The inject's effects, applied at the first scheduled engine tick where the condition
   evaluates true; an `EventLog` entry recording the firing tick and the condition's evaluated
   value.
-- **Preconditions:** A non-repeatable condition-triggered inject must not have already fired.
+- **Preconditions:** The condition-triggered inject has not already fired. A condition-triggered
+  inject fires at most once on a session timeline; no source states a re-fire rule for one marked
+  `repeatable` (see Notes and candidate `CR-27`).
 - **Postconditions:** The inject fires at the same simulated tick on every replay of the same
   `(initial_state, ordered eventlog, seed)`, regardless of wall-clock elapsed time during the
   original run.
@@ -1677,6 +1698,12 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Related ADRs:** ADR-0002, ADR-0005, ADR-0006
 - **Related Interfaces:** INT-0016
 - **Related Requirements:** FR-4410, FR-1120, FR-4430
+- **Notes:** *Amended 2026-10-17 (run #160, `BL-0130`, `VR-1062` Finding L1).* The Precondition
+  read "a non-repeatable ... inject must not have already fired", which implied that a
+  `repeatable` one may re-fire. Neither source (`BL-0070`/B4, FUTURE-WORK §13 R18) says so, and
+  none says when a re-fire would happen (every tick the condition holds, or each false-to-true
+  transition). As built, a condition-triggered inject fires once whatever its `repeatable` flag.
+  The Precondition now states that sourced behaviour. A re-fire rule is candidate `CR-27`.
 
 #### FR-4430 — New inject effect types (anomaly, sensor outage, forced custody loss, scripted manoeuvre)
 
@@ -2468,9 +2495,17 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **ID:** FR-6220
 - **Title:** Permit a documented, named set of no-cell ground-truth endpoints
 - **Description:** The system shall permit exactly the documented set of no-cell, ground-truth-
-  exposing interfaces (god-view, event log, save, AAR, objectives-equivalent flows) to bypass
-  per-cell filtering, as an explicit, accepted v1 trust-boundary exception rather than an
-  unbounded one.
+  exposing interfaces to bypass per-cell filtering, as an explicit, accepted v1 trust-boundary
+  exception rather than an unbounded one. The named set is:
+  - **session ground truth:** the god-view (`FR-4610`), the event log, the save file (`FR-7210`),
+    the AAR family including replay playback (`FR-7110`/`FR-7330`), the objectives read, the
+    competency assessment report (`FR-10110`), and the truth ephemeris export (`FR-7410`);
+  - **the Observer view (`FR-6510`)**, which dispatches unmodified to the god-view or to the
+    designated cell's view and adds no filtering path of its own;
+  - **White Cell facilitation and authoring reads whose content is scenario truth by nature:** the
+    inject list (`FR-4410`/`FR-4450`), the vignette catalogue and a vignette's source and tutorial
+    (`FR-4110`/`FR-5310`), the Vignette Creator's draft-session state, preview and seat
+    declaration (`FR-5120`/`FR-5130`/`FR-5160`), and the role staffing report (`FR-4210`).
 - **Rationale:** The LAN trust model names this exception explicitly rather than leaving it as an
   unaudited gap (GDS-01 §4; ADR-0015).
 - **Priority:** Must
@@ -2486,6 +2521,14 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Related ADRs:** ADR-0004, ADR-0015
 - **Related Interfaces:** INT-0001, INT-0005
 - **Related Requirements:** FR-6210
+- **Notes:** *Amended 2026-10-17 (run #160, `BL-0138`).* The original parenthesis listed five
+  flows (god-view, event log, save, AAR, objectives). A static review of the shipped route table
+  (`ui_web/server.py` at `e1e721c`, this requirement's own Inspection method) found further no-cell
+  routes that later baselined requirements already require to show scenario truth to White Cell:
+  the truth ephemeris export, the assessment report, the Observer view and the facilitation/authoring
+  reads above. Each is now named with its owning requirement. No route changed and no new exception
+  was created; the list now matches what those requirements already oblige. A future no-cell route
+  must be added here in the same change set, or it violates the Postcondition.
 
 ### FR-6300 — Server-authoritative multiplayer clock and locking
 
@@ -2798,13 +2841,12 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 
 - **ID:** FR-7410
 - **Title:** Export ground-truth state vectors for a time span in ECI and RIC, as CSV and CCSDS OEM
-- **Description:** The system shall export ground-truth state vectors (ephemerides) for one or more
-  assets over a specified simulated time span, in Earth-Centered Inertial (ECI) frame, as CSV
+- **Description:** The system shall export ground-truth state vectors (ephemerides) for a named
+  asset over a specified simulated time span, in Earth-Centered Inertial (ECI) frame, as CSV
   (ECI and RIC columns) and CCSDS Orbit Ephemeris Message (OEM, ECI only — see Notes); RIC-relative
   state vectors for a chosen reference object shall additionally be available via a companion
-  RIC-specific export file (`FR-7430`). This export shall be available only through the existing
-  no-cell, White-Cell-only ground-truth endpoints (`/godview`, `/eventlog`, `/save`, `/aar*`,
-  `/objectives` per `FR-6220`), never through a cell-scoped endpoint.
+  RIC-specific export file (`FR-7430`). This export shall be available only as a member of the
+  no-cell, White-Cell-only ground-truth set `FR-6220` names, never through a cell-scoped endpoint.
 - **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
   B3). Baseline god-view already returns current truth as JSON with no ephemeris/time-span export,
   and AAR export (`FR-7110`/`FR-10210`) covers the event log, not state vectors — no existing
@@ -2814,8 +2856,9 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   truth ephemeris export must not become a new cell-scoped route that leaks ground truth through a
   fog-filtered surface).
 - **Priority:** Must
-- **Inputs:** A time span, one or more asset identifiers, a reference-object identifier (for the
-  RIC frame), and a requested format (CSV or CCSDS OEM).
+- **Inputs:** A time span, one asset identifier per export (several assets are exported by
+  repeated requests; see Notes), a reference-object identifier (for the RIC frame), and a
+  requested format (CSV or CCSDS OEM).
 - **Outputs:** A CSV file containing the requested assets' ground-truth state vectors across the
   requested time span in both ECI and RIC-relative-to-the-reference-object form; a CCSDS OEM file
   containing the same state vectors in ECI only (CCSDS OEM's native format); a companion
@@ -2846,6 +2889,14 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   in its native ECI form, and satisfy the RIC-in-every-format intent with a new companion
   RIC-specific file format (`FR-7430`) instead of stretching OEM to do something it cannot do. See
   `FR-7430` for that companion format's own requirement.*
+  *Amended 2026-10-17 (run #160, `BL-0137`, `VR-1210` Finding L1).* The Description and Inputs
+  said "one or more" assets; the shipped export takes exactly one `object_id` per request. The
+  source (`BL-0069`, item B3) asks to "export truth ... state vectors/ephemerides for a time span"
+  and does not state a per-file object count, and the Acceptance Criteria were always per export.
+  "One or more" was this baseline's own sharpening, not a sourced commitment, so the leaf now says
+  one asset per export. A multi-object file (for example a multi-segment OEM) would be a new owner
+  request via `00-intake`. The Postcondition's endpoint wording now defers to `FR-6220`'s named
+  set, which includes this export (`BL-0138`).
 
 #### FR-7420 — Cell-observed ephemeris export (ECI and RIC), CSV and CCSDS OEM
 
@@ -2853,7 +2904,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Title:** Export a cell's observed (custody-estimated) state vectors for a time span, fog-of-
   war-respecting, in ECI and RIC, as CSV and CCSDS OEM
 - **Description:** The system shall export a requesting cell's own observed/estimated state
-  vectors (as distinct from ground truth) for one or more tracked objects over a specified
+  vectors (as distinct from ground truth) for a named tracked object over a specified
   simulated time span, as CSV (ECI and RIC columns) and CCSDS OEM (ECI only — see `FR-7410`'s
   Notes on the companion RIC file, `FR-7430`), through a cell-scoped, fog-of-war-respecting
   endpoint that returns only that cell's own belief state.
@@ -2867,7 +2918,8 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   but its Acceptance Criteria cannot be verified until the domain-model change `BL-0068` requests is
   itself specified and implemented.
 - **Priority:** Must
-- **Inputs:** A time span, one or more tracked-object identifiers, a reference-object identifier,
+- **Inputs:** A time span, one tracked-object identifier per export (same rationale as
+  `FR-7410`'s 2026-10-17 note, `BL-0137`), a reference-object identifier,
   a requested format (CSV or CCSDS OEM); the requesting cell's identity (fog-of-war scoping).
 - **Outputs:** A file (CSV or CCSDS OEM) containing the requesting cell's own observed/estimated
   state vectors (not ground truth) for the requested tracked objects, in ECI and RIC-relative-to-
@@ -3635,6 +3687,26 @@ by that promotion.
   `FR-1460` baselines only the ammunition bound, which GDS-04 §1.2's non-negative-resource rule
   supports. No input document states rules for the others. **Source:** `docs/pipeline/backlog.md`
   `BL-0226`; `IP-1052` Design Decision 5.
+- **CR-26 — An unreadable configured external vignette directory is skipped and disclosed.** *(new
+  2026-10-17, `BL-0100`)* `FR-5410`'s Precondition assumes a configured external directory exists
+  and is readable, and says nothing about one that does not. As built (`IP-1180` Design Decision 2),
+  such a directory is skipped, a server log line records it, and the catalog is built from the
+  rest. That is a planning-level decision. No input document states the rule, and a package is not
+  a requirements source. Promotion needs the owner or an architecture statement to choose between
+  skip-and-disclose and refuse-to-start. **Source:** `docs/pipeline/backlog.md` `BL-0100`; `IP-1180`
+  Design Decision 2.
+- **CR-27 — Re-fire rule for a repeatable condition-triggered inject.** *(new 2026-10-17,
+  `BL-0130`)* The inject schema carries a `repeatable` flag, but no source says whether a
+  repeatable condition-triggered inject fires again, and if so whether on every tick the condition
+  holds or on each false-to-true transition. `FR-4420` now states the as-built fire-once rule.
+  **Source:** `docs/pipeline/backlog.md` `BL-0130`; `VR-1062` Finding L1.
+- **CR-28 — A missed kinetic salvo consumes its rounds.** *(new 2026-10-17, `BL-0249`)* As built
+  (`IP-1320`, FS-132 Open Question 3), an engagement charges its salvo only when it succeeds, so a
+  missed salvo costs nothing, although fired interceptors are physically spent. `FR-1460`'s
+  Acceptance Criteria cover only the successful case, and no input document states a rule for a
+  miss. Charging a miss would change shipped behaviour (and `RED-5`'s text), so it is a game-rule
+  choice for the project owner. **Source:** `docs/pipeline/backlog.md` `BL-0249`; FS-132 Open
+  Question 3.
 
 - **CR-12 — Proliferated-Constellation Aggregation Layer.** No layer/mesh-level tasking, health
   rollup, or aggregated-custody construct exists for constellations larger than the ≤3-satellite cap

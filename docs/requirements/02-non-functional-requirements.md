@@ -546,7 +546,11 @@ these are the *how well* constraints.
     the NFR face of FR-11410, and assumption A12 tracks the residual enforcement risk.
   - **Metric or verification method:** Analysis — at stage 09/10 review, sampled manual sections
     mapped (via `training/15`) to the change set match observed behavior; the vignette playbook
-    suite (`test_vignette_tutorials.py`) is green.
+    suite (`test_vignette_tutorials.py`) is green; and *(amended 2026-10-17, run #160, `BL-0027`)*
+    an automated test confirms that every code path and symbol a training module's `> Sources:`
+    footer names still exists, so a moved or renamed code path fails the suite. This is the
+    mitigation `strategic-assumptions-register.md` A12 names ("extend the playbook-test pattern to
+    manual `Sources:` anchors"); A12's trigger fired when `BL-0029` found real drift.
   - **Priority:** Must
   - **Affected subsystems:** `docs/training/`, `spacesim/content/vignettes/*.yaml` (briefs and
     tutorial blocks)
