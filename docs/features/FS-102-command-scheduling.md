@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R103](../research/encyclopedia/R103-satellite-command-and-control.md)
-> **Referenced By:** [R103](../research/encyclopedia/R103-satellite-command-and-control.md), [IMP-102A](../implementations/IMP-102A-command-scheduling.md), [IP-1052](../implementation/packages/IP-1052-order-param-hardening.md) (🟢 `VERIFIED` 2026-10-16, `VR-1052`; order-parameter hardening, `BL-0222`)
+> **Referenced By:** [FS-132](FS-132-effect-resource-bounds.md) (execute-time ammunition re-check, `FR-1460`), [R103](../research/encyclopedia/R103-satellite-command-and-control.md), [IMP-102A](../implementations/IMP-102A-command-scheduling.md), [IP-1052](../implementation/packages/IP-1052-order-param-hardening.md) (🟢 `VERIFIED` 2026-10-16, `VR-1052`; order-parameter hardening, `BL-0222`)
 > **Produces:** the executed-order surface consumed by [FS-105](FS-105-spacecraft-operations.md)'s telemetry/confirmation views
 > **Feature Mapping:** FS-102 (this document)
 > **Related Topics:** [FS-101](FS-101-mission-planning.md) (plan-time preview of the same latency), [R107](../research/encyclopedia/R107-ground-segment-operations.md) (ground-segment access),
