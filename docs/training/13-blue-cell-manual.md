@@ -42,8 +42,9 @@ Three assistants show what an order will do before you fire it:
 1. **Dry-run validity** — the green ✓ / red ✗ line ("will queue · ground_uplink · window
    14:32:10"); a blocked action tells you *why* it's blocked (pre-disabled Issue button). If
    you edit the command menu's raw JSON params by hand, a field with the wrong type or a
-   non-number (`"inf"`, text where a number belongs, a `dv` without exactly three numbers) shows
-   ✗ `invalid_param`; a field set to `null` counts as left out.
+   non-number (`"inf"`, words where a number belongs, a `dv` without exactly three numbers) shows
+   ✗ `invalid_param`. A number written as text, such as `"200"`, is accepted, and a field set to
+   `null` counts as left out.
    [`09` §10](09-troubleshooting-and-glossary.md#10-troubleshooting) lists every reason.
 2. **Consequence preview** — severity, escalation weight, reversibility, debris risk, attribution;
    civilian-target denial bumps severity a tier.

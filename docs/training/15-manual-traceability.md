@@ -58,7 +58,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Jam assistant + footprint | `engine/jam.py` | — | BLU-3, BLU-6 | RED-3, RED-5 |
 | SDA tasking → custody → unlock | `engine/custody.py`, `engine/access.py` | — | BLU-4 | RED-4 |
 | Weapons-quality gate | `engine/custody.py` | — | BLU-4 | RED-4, RED-5 |
-| Sensor modality authoring fields (`exclusion_angle_deg`, `min_range_km`, `altitude_band_affinity`, `requires_cue` incl. the `auto` skip, `host_asset_id`, `usable_phase_angle_deg`, radar `fence`/`dish` `beam_mode` incl. the command-menu raw-JSON path and the Mode-dropdown override; load-time checks), field table in `06`; observe rejection reasons (`no_window` vs `sensor_contended`, `requires_cue`, `invalid_param`) in `09` §10 | `engine/entities.py` (`Sensor`, `_check_usable_phase_angle`, `_check_radar_beam_mode`), `engine/access.py` (`_observation_predicate`, `_sensor_orbit`), `engine/orders.py` (`_validate`, `_observe_params_ok`, `_candidate_sensors`, `_auto_blocked_by_cue`, `_plan_collection`, `_resolve_sensor_id`, `_observation_phase_angle_deg`, radar mode in `_exec_payload`), `engine/isr.py` (`effective_gain`, `altitude_band`, `phase_angle_factor`, `BEAM_MODES["ground_radar"]`), `app.js` (`REASON_TIPS`, `composeBody`, `ACTIONS_BY_KIND`), `index.html` (`#task-beam-mode`) | WCM-2 | BLU-4 | RED-4 |
+| Sensor modality authoring fields (`exclusion_angle_deg`, `min_range_km`, `altitude_band_affinity`, `requires_cue` incl. the `auto` skip, `host_asset_id`, `usable_phase_angle_deg`, radar `fence`/`dish` `beam_mode` incl. the command-menu raw-JSON path and the Mode-dropdown override; load-time checks), field table in `06`; observe rejection reasons (`no_window` vs `sensor_contended`, `requires_cue`, `invalid_param`) in `09` §10 | `engine/entities.py` (`Sensor`, `_check_usable_phase_angle`, `_check_radar_beam_mode`), `engine/access.py` (`_observation_predicate`, `_sensor_orbit`), `engine/orders.py` (`_validate`, `_observe_params_ok`, `_candidate_sensors`, `_auto_blocked_by_cue`, `_plan_collection`, `_resolve_sensor_id`, `_observation_phase_angle_deg`, radar mode in `_exec_payload`), `engine/isr.py` (`effective_gain`, `altitude_band`, `phase_angle_factor`, `BEAM_MODES["ground_radar"]`), `app.js` (`REASON_TIPS`, `composeBody`, `ACTIONS_BY_KIND`, `PARAM_TEMPLATE.observe`), `index.html` (`#task-beam-mode`) | WCM-2 | BLU-4 | RED-4 |
 | Order-param shape check (`invalid_param` for every action; `null` = absent), `09` §10 | `engine/orders.py` (`_order_params_ok`, `ORDER_PARAM_RULES`, `_observe_params_ok`, called in `_validate`), `app.js` (`REASON_TIPS`) | — | BLU-3 | RED-3 |
 | Bus/payload SOH + safe mode | `engine/bus.py`, `engine/busmodel.py` | WCM-2 | BLU-5 | RED-7 |
 | Telemetry signatures + nominal ghost (history graph, per-instant) | `engine/telemetry.py`, `session/manager.py` (`get_series`), `session/aar.py` (`worlds_at_times`), `GET /telemetry/{cell}/{asset}/{param}` | WCM-6 | BLU-6 | RED-7 |
@@ -68,13 +68,14 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Cyber (off-pass exception) | `engine/cyber.py` | — | BLU-9 | RED-6 |
 | Five D's effects | `engine/effects.py` | — | — | RED-5 |
 | Kinetic engagement + ROE gate | `engine/engage.py` | — | — | RED-5 |
+| Effect resource bounds (salvo limited to rounds left: `no_ammo`/`insufficient_ammo` at preview + issue, execute-time re-check of queued strikes, rounds spent only on success; jamming leaves the jammer's `power_w` unchanged), `09` §10 | `engine/orders.py` (`_validate`, `_engage_rounds`, `_h_effect`, jam plan), `app.js` (`REASON_TIPS.insufficient_ammo`) | — | — | RED-3, RED-5 |
 | RPO / co-orbital proximity | `engine/access.py` (`rpo_proximity`) | — | BLU-6 | RED-5 |
 | Per-cell playbooks / tutorial | `test_vignette_tutorials.py`, `/vignettes/{id}/tutorial` | WCM-2 | BLU-10 | RED-9 |
 | Vignette library (add/move/retire) | `content/vignettes/*.yaml` | WCM-2 | BLU-10 | RED-9 |
 | Learning-path sequence & rung linkage | `16-learning-path.md`, `content/vignettes/*.yaml` | WCM-2 | BLU-10 | RED-9 |
 | Classification banner | `content/vignette.py` (`Vignette.classification`), `session/manager.py`, `session/aar.py` | WCM-2 | — | — |
 | Observer read-only seat (4th cell, no command ability) | `session/inprocess.py` (`set_observer_view`/`get_observer_view`), `ui_web/server.py` (`_reject_observer`) | WCM-1 | — | — |
-| Load-time vignette validation (refused **Load**: `Load failed:` + every problem as *where — reason*; no session made, nothing evicted, no `sess-N` used; 404 for an unknown id), rule list in `06` "When a vignette won't load", symptom in `09` §10 | `content/vignette.py` (`load_vignette`, `validate_vignette`, `VignetteValidationError`, `list_vignettes`), `session/inprocess.py` (`load_vignette`), `ui_web/server.py` (`_vignette_load_errors`), `app.js` (`loadSession`) | WCM-2 | — | — |
+| Load-time vignette validation (refused **Load**: `Load failed:` + every problem as *where — reason*; no session made, nothing evicted, no `sess-N` used; 404 for an unknown id; `build` item only once nothing else is wrong; an unparseable file is left out of the picker), rule list in `06` "When a vignette won't load", symptom in `09` §10 | `content/vignette.py` (`load_vignette`, `validate_vignette`, `VignetteValidationError`, `list_vignettes`), `session/inprocess.py` (`load_vignette`), `ui_web/server.py` (`_vignette_load_errors`), `app.js` (`loadSession`) | WCM-2 | — | — |
 | Seat-to-role assignment / staffing gate | `content/vignette.py` (`Vignette.roles_needed`), `session/manager.py` (`assign_role`/`staffing_report`) | WCM-2 | — | — |
 | Competency assessment (custody/window/divergence rubric) | `session/assessment.py`, `GET /assessment` | WCM-11 | — | — |
 | Research analytics (offline batch export) | `tools/research_batch.py`, `session/research_export.py` | WCM-12 | — | — |
@@ -96,7 +97,7 @@ mirrors each section's inline `> Sources:` footer.
 | § | Topic | Backing code / endpoints |
 |---|---|---|
 | WCM-1 | Role and view | `session/manager.py`, `session/cells.py` (`CellController`), `session/inprocess.py` (Observer, FR-6510) |
-| WCM-2 | Set up the exercise | `content/vignette.py`, `vignettes/*.yaml`, `/brief/{cell}`, `session/manager.py` (classification, seat-to-role), `engine/entities.py` (`Sensor` modality fields, `_check_radar_beam_mode`), `content/vignette.py` (`validate_vignette`, `VignetteValidationError`), `app.js` (`loadSession`, Load-failed readout) |
+| WCM-2 | Set up the exercise | `content/vignette.py`, `vignettes/*.yaml`, `/brief/{cell}`, `session/manager.py` (classification, seat-to-role), `engine/entities.py` (`Sensor` modality fields, `_check_radar_beam_mode`), `content/vignette.py` (`validate_vignette`, `VignetteValidationError`, `list_vignettes`), `app.js` (`loadSession`, Load-failed readout) |
 | WCM-3 | Hot-seat / LAN / pop-out | `session/inprocess.py`, `server.py` (`/api/sessions`) |
 | WCM-4 | Time control | `session/manager.py`, `engine/clock.py`, `/clock` |
 | WCM-5 | Injects | `content/inject_library.yaml`, `/inject`, `session/manager.py` (`fire_inject`, `validate_inject_effects`, `_skip_inject_effect`), `app.js` (`fireBuiltInject`, `fireInject`) |
@@ -137,9 +138,9 @@ mirrors each section's inline `> Sources:` footer.
 |---|---|---|
 | RED-1 | Fog-of-war view | `session/cells.py` (`CellController`), `session/scene.py`, `/brief/red` |
 | RED-2 | Plan-first commanding | `engine/orders.py` |
-| RED-3 | Previews before commit | `engine/orders.py` `dry_run`, `_order_params_ok`/`ORDER_PARAM_RULES`, `/preview/consequence`, `engine/{maneuver,isr,jam}.py` |
+| RED-3 | Previews before commit | `engine/orders.py` `dry_run`, `_order_params_ok`/`ORDER_PARAM_RULES`, `_engage_rounds` (`insufficient_ammo`), `/preview/consequence`, `engine/{maneuver,isr,jam}.py` |
 | RED-4 | SDA targeting | `engine/custody.py`, `engine/access.py` (`_observation_predicate`), `engine/orders.py` (`requires_cue`, `_candidate_sensors`, `_plan_collection`, `_resolve_sensor_id`, observe mode in `_exec_payload`), `index.html` (`#task-beam-mode`) |
-| RED-5 | Five D's / effects | `engine/effects.py`, `engine/{jam,engage}.py`, `engine/access.py` |
+| RED-5 | Five D's / effects | `engine/effects.py`, `engine/{jam,engage}.py`, `engine/access.py`, `engine/orders.py` (`_validate` `no_ammo`/`insufficient_ammo`, `_engage_rounds`, `_h_effect`), `app.js` (`REASON_TIPS.insufficient_ammo`) |
 | RED-6 | Cyber wildcard | `engine/cyber.py` |
 | RED-7 | Own-force management | `engine/bus.py`, `engine/recovery.py`, `engine/telemetry.py`, `session/manager.py` (`get_series`), `session/aar.py` (`worlds_at_times`), `app.js` (`renderFleet`/`rollup`), `vignettes/*.yaml` (`red_forces`, no `bus_state`) |
 | RED-8 | Doctrine profiles | `session/redai.py` |

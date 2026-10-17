@@ -37,10 +37,11 @@ the same access window is Red's tempo problem.
 ### RED-3 · Previews before you commit
 
 1. **Dry-run validity** — the green ✓ / red ✗ line; a blocked action tells you *why* (missing
-   window, weapons-quality, or ROE gate). A hand-edited raw JSON param with the wrong type or a
-   non-number (`"power_w": "inf"`, text for `salvo_n`) shows ✗ `invalid_param`; a field set to
-   `null` counts as left out. [`09` §10](09-troubleshooting-and-glossary.md#10-troubleshooting)
-   lists every reason.
+   window, weapons-quality, ROE gate, or a salvo larger than the rounds left). A hand-edited raw
+   JSON param with the wrong type or a non-number (`"power_w": "inf"`, `"salvo_n": "three"`)
+   shows ✗ `invalid_param`. A number written as text, such as `"200"`, is accepted, and a field
+   set to `null` counts as left out.
+   [`09` §10](09-troubleshooting-and-glossary.md#10-troubleshooting) lists every reason.
 2. **Consequence preview** — severity, escalation weight, reversibility, debris risk, and
    **attribution**: Red's escalation-management dashboard. A reversible EW/cyber effect keeps you
    below the threshold a kinetic strike crosses.
@@ -50,8 +51,9 @@ the same access window is Red's tempo problem.
 *See also: [BLU-3](13-blue-cell-manual.md#blu-3--previews-before-you-commit) — the same preview
 mechanics from Blue's side.*
 
-> **Sources:** `spacesim/engine/orders.py` `dry_run()`, `_order_params_ok`/`ORDER_PARAM_RULES` ·
-> `POST /preview/consequence` · `spacesim/engine/{maneuver,isr,jam}.py` ·
+> **Sources:** `spacesim/engine/orders.py` `dry_run()`, `_order_params_ok`/`ORDER_PARAM_RULES`,
+> `_engage_rounds` (`insufficient_ammo`) · `POST /preview/consequence` ·
+> `spacesim/engine/{maneuver,isr,jam}.py` ·
 > [`02-interface.md`](02-interface.md) §"Order-composition assistants"
 
 ### RED-4 · Build a targeting picture with SDA
@@ -91,12 +93,23 @@ channel: `jam_footprint`, `weapon_engagement`, `sensor_observation`, `rpo_proxim
 authorizes it and you accept the debris and attribution cost the consequence preview shows you.
 
 - **Jam** — barrage / spot / sweep / deceptive modulation; the assistant computes the effective
-  denial radius and draws the orange footprint on the 2D map.
+  denial radius and draws the orange footprint on the 2D map. Jamming uses nothing up: the
+  jammer's power rating is the same after any number of jams.
 - **Engage** (kinetic) — closing geometry, salvo Pₖ, debris-cone estimate; gated on
-  weapons-quality custody *and* `red_kinetic_authorized` ROE.
+  weapons-quality custody *and* `red_kinetic_authorized` ROE. The salvo (`salvo_n`, default 1)
+  must fit in the rounds the effector has left. With none left the preview says `no_ammo`; with
+  too few for the salvo it says `insufficient_ammo`, so reduce the salvo. Rounds are spent only
+  by a strike that succeeds; a miss spends none.
+  - **Queued strikes share the rounds.** If you queue several engagements on one effector, the
+    first to execute spends its rounds. A later one that no longer fits does nothing at its
+    window: no roll, no rounds spent, target untouched. The ground-truth effect log shows it as
+    `failed`, `insufficient_ammo`. Count the rounds across everything you have queued.
 - **RPO** — co-orbital proximity to inspect, shadow, or threaten.
 
 > **Sources:** `spacesim/engine/effects.py` (5 D's) · `spacesim/engine/{jam,engage}.py` ·
+> `spacesim/engine/orders.py` (`_validate` `no_ammo`/`insufficient_ammo`, `_engage_rounds`,
+> `_h_effect` rounds re-check and success-only charge, jam plan with no `power_w` consumption) ·
+> `spacesim/ui_web/static/app.js` (`REASON_TIPS.insufficient_ammo`) · FR-1460 · FR-1470 ·
 > [`05-core-concepts.md`](05-core-concepts.md) · [`../research/INDEX.md`](../research/INDEX.md)
 
 ### RED-6 · Cyber: the off-pass wildcard

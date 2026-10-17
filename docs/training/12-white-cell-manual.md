@@ -65,7 +65,9 @@ loading, so fix it before the session.
 **If Load is refused.** The whole vignette is checked when you press **Load**. If it fails, no
 session starts and the session line in the **Cell & Time** panel shows **Load failed:** with a list of every problem, each
 naming where it is in the YAML and why. Fix them all and press **Load** again; a refused load
-leaves any open session alone. Besides the sensor rules, Load refuses a satellite with no orbit,
+leaves any open session alone. The last check (listed under `build`) runs only once nothing else
+is wrong, so a retry can turn up one new item. A file that is not valid YAML does not appear in
+the vignette picker at all. Besides the sensor rules, Load refuses a satellite with no orbit,
 another asset (except a cyber unit) with no location, a TLE that will not propagate to the start
 time, a duplicate asset or sensor id, and a `roles_needed` entry naming an asset or group that is
 not in the vignette. The full list is in
@@ -75,7 +77,7 @@ not in the vignette. The full list is in
 > `GET /api/sessions/{sid}/brief/{cell}` · `spacesim/session/manager.py` (`classification`,
 > `assign_role`/`staffing_report`, FR-4510/FR-4210) · `spacesim/engine/entities.py` (`Sensor`
 > modality fields and their load-time checks, FR-1610–FR-1670) · `spacesim/content/vignette.py`
-> (`validate_vignette`, `VignetteValidationError`) · `spacesim/ui_web/static/app.js`
+> (`validate_vignette`, `VignetteValidationError`, `list_vignettes`) · `spacesim/ui_web/static/app.js`
 > (`loadSession`, the **Load failed** readout; FR-5310–FR-5314) ·
 > [`07-white-cell-facilitation.md`](07-white-cell-facilitation.md)
 
