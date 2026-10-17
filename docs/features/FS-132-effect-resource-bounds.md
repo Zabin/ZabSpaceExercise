@@ -21,7 +21,7 @@
 > **Dependencies:** [FS-105](FS-105-spacecraft-operations.md) (the engage/jam order paths and
 > effect resolution this spec bounds); [FS-102](FS-102-command-scheduling.md) (execute-time
 > re-validation, `FR-3410`).
-> **Referenced By:** [IP-1320](../implementation/packages/IP-1320-effect-resource-bounds.md) (Implementation Package, ✅ `VERIFIED` 2026-10-17 via [VR-1320](../implementation/verification/VR-1320-effect-resource-bounds.md)); [IP-1321](../implementation/packages/IP-1321-missed-salvo-consumes-rounds.md) (Implementation Package for the v1.1 `FR-1480` delta, 🔵 `COMPLETE` 2026-10-17, awaiting 09); [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0238`, `BL-0245` (closed);
+> **Referenced By:** [IP-1320](../implementation/packages/IP-1320-effect-resource-bounds.md) (Implementation Package, ✅ `VERIFIED` 2026-10-17 via [VR-1320](../implementation/verification/VR-1320-effect-resource-bounds.md)); [IP-1321](../implementation/packages/IP-1321-missed-salvo-consumes-rounds.md) (Implementation Package for the v1.1 `FR-1480` delta, ✅ `VERIFIED` 2026-10-17 via [VR-1321](../implementation/verification/VR-1321-missed-salvo-consumes-rounds.md)); [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0238`, `BL-0245`, `BL-0249` (closed);
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-1460`, `FR-1470`, `FR-1480`; [ADR-0037](../architecture/adr/ADR-0037-jammer-power-is-a-rating-not-a-consumable.md);
 > [`03-feature-catalog.md`](../feature-planning/03-feature-catalog.md) `FEAT-1400`

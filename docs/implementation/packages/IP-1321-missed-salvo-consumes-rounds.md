@@ -2,7 +2,14 @@
 
 > **Package ID:** IP-1321
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE — 2026-10-17, `08-code-implementation`, pipeline run #178, awaiting a
+> **Status:** ✅ VERIFIED — 2026-10-17, `09-package-verification`, pipeline run #182, via
+> [VR-1321](../verification/VR-1321-missed-salvo-consumes-rounds.md) (fresh session, clean — no
+> findings). All four Objective-table cases (miss, hit, destroyed-target, re-check-failure)
+> independently reproduced on fresh fixtures distinct from the implementer's own; replay
+> determinism of a missed, charged salvo independently confirmed byte-for-byte; the "5 of 6 failed
+> first" claim independently re-derived by mechanically reverting the fix and re-running. Full
+> suite 1022 passed / 3 skipped re-run exactly; gates 14/14.
+> *(Was 🔵 COMPLETE — 2026-10-17, `08-code-implementation`, pipeline run #178, awaiting a
 > **fresh-session** `09-package-verification`. `engine/orders.py::OrderSystem._h_effect`: the
 > consumption step's `if cons and outcome.success:` is now `if cons:` (with an `IP-1321`/`FR-1480`
 > comment), so `consume.ammo` is charged for every engagement that reaches resolution; the
