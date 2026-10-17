@@ -85,6 +85,11 @@
 > restated in GDS-05 FR-P3's own terms (`BL-0050`). New candidates `CR-26`–`CR-28` (`BL-0100`,
 > `BL-0130`, `BL-0249`) — see
 > [`reviews/requirements-update-deferred-clearance-batch.md`](../reviews/requirements-update-deferred-clearance-batch.md).)
+> further amended (2026-10-17, project-owner decision on `BL-0249`; **one numbered leaf added** —
+> `FR-1480` under `FR-1400`: a kinetic salvo is charged whether it hits or misses, promoted from
+> `CR-28` (marked `PROMOTED` in place). `FR-1460`'s Acceptance Criteria amended so the charge is
+> stated for a hit and a miss alike; its validation bound and Postcondition are unchanged — see
+> [`reviews/requirements-update-missed-salvo-decision.md`](../reviews/requirements-update-missed-salvo-decision.md).)
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -551,8 +556,10 @@ review passes actually run against it).
 - **Postconditions:** The effector's ammunition is never negative after the engagement executes.
 - **Acceptance Criteria:** Given an effector with `N` rounds remaining, an engagement requesting a
   salvo larger than `N` is rejected before anything is scheduled, by both the preview and issue
-  paths. An engagement requesting a salvo of `N` or fewer is accepted, and a successful engagement
-  leaves the effector with `N` minus the salvo.
+  paths. An engagement requesting a salvo of `N` or fewer is accepted, and once it executes —
+  whether it hits or misses — it leaves the effector with `N` minus the salvo (`FR-1480`).
+  *(Amended 2026-10-17, `BL-0249`: read "a successful engagement leaves the effector with `N` minus
+  the salvo", which covered only a hit.)*
 - **Verification Method:** Test
 - **Dependencies:** FR-1410
 - **Source Documents:** GDS-04 §1.2 "Persistent state" and "Constraints"; `design/04-data-model.md`
@@ -569,7 +576,10 @@ review passes actually run against it).
   [update report](../reviews/requirements-update-load-validation-batch.md) F3. *(Resolved
   2026-10-17, run #150: ADR-0037 decides jammer power is a rating, not a consumable — baselined as
   `FR-1470`. The two leaves touch the same consumption step and may share one remediation
-  package.)*
+  package.)* *(Amended 2026-10-17, `BL-0249`: the project owner decided that a missed salvo
+  consumes its rounds. That rule is its own leaf, `FR-1480` (promoted from `CR-28`); this leaf's
+  Acceptance Criteria now state the charge for a hit and a miss alike, and its validation bound and
+  "never negative" Postcondition are unchanged.)*
 
 #### FR-1470 — Jamming leaves the jammer's power rating unchanged
 
@@ -606,6 +616,55 @@ review passes actually run against it).
   rated 0 W, so it would refuse every shipped jam). It would need an owner request through
   `00-intake`. The as-built field is `AssetResources.power_w`; for satellites it is already a
   dead field (`FR-5180`, `R111` §2).
+
+#### FR-1480 — A kinetic salvo is charged whether it hits or misses
+
+- **ID:** FR-1480
+- **Title:** Charge a kinetic engagement's salvo against the effector's ammunition whether the
+  engagement hits or misses
+- **Description:** The system shall deduct a kinetic engagement's salvo from the issuing
+  effector's remaining ammunition whenever the engagement is fired at its execution moment,
+  whether the engagement succeeds or fails, so that a missed salvo costs the same rounds as a
+  successful one.
+- **Rationale:** Project-owner decision 2026-10-17, closing `docs/pipeline/backlog.md` `BL-0249`
+  and promoting candidate `CR-28` ("A missed kinetic salvo consumes its rounds"): fired
+  interceptors are physically spent whether or not they hit. GDS-04 §1.2 "Persistent state" names
+  ammunition among an Asset's resource levels. As built (`IP-1320`, FS-132 Open Question 3), only a
+  successful engagement is charged, so a miss costs nothing; `FR-1460`'s Acceptance Criteria had
+  covered only the successful case and no input document stated a rule for a miss until this
+  decision.
+- **Priority:** Must (an explicit project-owner directive changing shipped behaviour; the same
+  tier as `FR-1460`, whose consumption step it governs)
+- **Inputs:** An accepted kinetic engagement reaching its execution moment; its salvo (the rounds
+  it consumes, the same figure `FR-1460`'s bound compares); the effector's remaining ammunition.
+- **Outputs:** The effector's ammunition reduced by the salvo; the engagement's effect outcome
+  (unchanged by this requirement).
+- **Preconditions:** The engagement was accepted at validation (`FR-1460`) and, at its execution
+  moment, the effector still holds at least the salvo (`FR-1460` Postcondition, `FR-3410`).
+- **Postconditions:** The effector's ammunition after execution equals its ammunition before
+  minus the salvo, for a hit and a miss alike; it is never negative (`FR-1460`).
+- **Acceptance Criteria:** Given an effector with `N` rounds and an accepted engagement whose
+  salvo `S` is no larger than `N`: after the engagement executes and **succeeds**, the effector
+  holds `N − S`; after it executes and **fails**, the effector also holds `N − S`. An engagement
+  that fails `FR-1460`'s execute-time re-check (the rounds no longer cover it) is not fired and
+  charges nothing. For the same initial state, event log and seed, each engagement's success or
+  failure and effect outcome are the same as before this requirement.
+- **Verification Method:** Test
+- **Dependencies:** FR-1460, FR-1410
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0249` (project-owner decision, 2026-10-17);
+  this document's Candidate Requirements `CR-28` (the candidate text promoted); GDS-04 §1.2
+  "Persistent state" (ammunition is a resource level).
+- **Related ADRs:** (none directly — a resource-bookkeeping rule on `FR-1410`'s existing
+  consumption side effect)
+- **Related Interfaces:** INT-0008
+- **Related Requirements:** FR-1410, FR-1460, FR-1470, FR-3410
+- **Notes:** *(new 2026-10-17, `BL-0249`)* The leaf does not distinguish *why* an executed
+  engagement failed. An engagement that reaches its execution moment and passes the re-check is
+  treated as fired, including one whose target was already destroyed by then: no source describes
+  an abort, and the owner's rule is "charge on every shot fired". Charging a miss changes shipped
+  behaviour and the operator manual's `RED-5` text ("Rounds are spent only on success"); both
+  follow downstream (`06` FS-132, `07`/`08` a package, `08-training-manual-authoring` for `RED-5`
+  once that package is `VERIFIED`).
 
 ### FR-1500 — Custody, tracks, and the weapons-quality gate
 
@@ -3708,7 +3767,9 @@ by that promotion.
   repeatable condition-triggered inject fires again, and if so whether on every tick the condition
   holds or on each false-to-true transition. `FR-4420` now states the as-built fire-once rule.
   **Source:** `docs/pipeline/backlog.md` `BL-0130`; `VR-1062` Finding L1.
-- **CR-28 — A missed kinetic salvo consumes its rounds.** *(new 2026-10-17, `BL-0249`)* As built
+- **CR-28 — A missed kinetic salvo consumes its rounds. `PROMOTED 2026-10-17 → FR-1480`, on the
+  project owner's decision (`BL-0249`): misses consume interceptors too.** *(new 2026-10-17,
+  `BL-0249`)* As built
   (`IP-1320`, FS-132 Open Question 3), an engagement charges its salvo only when it succeeds, so a
   missed salvo costs nothing, although fired interceptors are physically spent. `FR-1460`'s
   Acceptance Criteria cover only the successful case, and no input document states a rule for a

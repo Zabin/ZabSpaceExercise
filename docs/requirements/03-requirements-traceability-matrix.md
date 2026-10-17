@@ -35,6 +35,12 @@ it is the `docs/requirements/`-side deliverable the project owner requested dire
 > **Amended 2026-10-17** (run #172, closing straggler of the same clearance pass): `FR-5220`
 > Interface/Component cells corrected to INT-0006/INT-0011 and C4/C2/C5 (`BL-0263`); `FR-4430`
 > row annotated (`BL-0101`, mapping confirmed in Notes). No other row changed.
+>
+> **Amended 2026-10-17** (project-owner decision on `BL-0249`, see
+> [`reviews/requirements-update-missed-salvo-decision.md`](../reviews/requirements-update-missed-salvo-decision.md)):
+> added row `FR-1480` (promoted from `CR-28`; forward cells `UNASSIGNED` until FS-132 and a package
+> carry it); `FR-1460` row annotated (Acceptance Criteria amended); `CR-28` row marked `PROMOTED`;
+> `FR-1480` added to the C1 and INT-0008 reverse-index rows. No other row changed.
 
 Inputs read in full to build this matrix: the research encyclopedia index
 ([`docs/research/encyclopedia/`](../research/encyclopedia/INDEX.md)), the GDS architecture ladder
@@ -177,8 +183,9 @@ Forward traces: Future Feature · Test · Implementation Package.
 | FR-1430 *(new 2026-09-27, `BL-0077`/B11)* | Debris-field persistence estimate by altitude | R117 | (none directly — informational estimate, not a new engine mechanism) | C1 | INT-0008 | FS-124 | `spacesim/tests/test_effects.py::test_kinetic_destroy_debris_persistence_estimate_monotonic_with_altitude` | IP-1240 *(VERIFIED 2026-09-28 via VR-1240)* |
 | FR-1440 *(new 2026-09-27, `BL-0081`/B15)* | Uplink/crosslink jamming degrades command and relay delivery paths | UNASSIGNED | (none directly — extends ADR-0011's six-channel model) | C2, C1 | INT-0008 | FS-129 | `spacesim/tests/test_orders.py::test_maneuver_delivery_denied_by_active_uplink_jam_at_execute_time` | IP-1290 *(VERIFIED 2026-09-28 via VR-1290)* |
 | FR-1450 *(new 2026-09-27, `BL-0081`/B15)* | Per-effect-class detectability and attribution-difficulty configuration | UNASSIGNED | (none directly) | C2, C1 | INT-0008 | FS-129 | `spacesim/tests/test_effects.py::test_per_effect_class_detectability_resolves_independently_of_fixed_setting` | IP-1290 *(VERIFIED 2026-09-28 via VR-1290 — schema confirmed identical to IP-1270's landed enumeration)* |
-| FR-1460 *(new 2026-10-16, `BL-0226`)* | Kinetic salvo bounded by remaining ammunition | UNASSIGNED | (none directly) | C1 | INT-0008 | FS-132 | `spacesim/tests/test_effect_resource_bounds.py` *(IP-1320)* | `IP-1320` *(VERIFIED 2026-10-17 via VR-1320 — `engine/orders.py::_engage_rounds`/`_validate` reject `insufficient_ammo`; `_h_effect` re-checks rounds at execution; all three gate points independently reproduced on fresh fixtures)* |
+| FR-1460 *(new 2026-10-16, `BL-0226`; AC amended 2026-10-17, `BL-0249` — charge stated for hit and miss, see FR-1480)* | Kinetic salvo bounded by remaining ammunition | UNASSIGNED | (none directly) | C1 | INT-0008 | FS-132 | `spacesim/tests/test_effect_resource_bounds.py` *(IP-1320)* | `IP-1320` *(VERIFIED 2026-10-17 via VR-1320 — `engine/orders.py::_engage_rounds`/`_validate` reject `insufficient_ammo`; `_h_effect` re-checks rounds at execution; all three gate points independently reproduced on fresh fixtures)* |
 | FR-1470 *(new 2026-10-17, `BL-0245`)* | Jamming leaves the jammer's power rating unchanged | R111 | ADR-0037 | C1 | INT-0008 | FS-132 | `spacesim/tests/test_effect_resource_bounds.py` *(IP-1320)* | `IP-1320` *(VERIFIED 2026-10-17 via VR-1320 — `engine/orders.py` jam plan emits no `power_w` consumption; `_h_effect` has no `power_w` branch; independently confirmed unchanged across three sequential jam orders)* |
+| FR-1480 *(new 2026-10-17, `BL-0249`, promoted from `CR-28`)* | Kinetic salvo charged whether it hits or misses | UNASSIGNED | (none directly) | C1 | INT-0008 | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | FR-1510 | Custody/Track confidence decay | UNASSIGNED | ADR-0013 | C2, C1, C3 | INT-0007, INT-0010 | UNASSIGNED | `spacesim/tests/test_custody.py` *(VR-1030)* | `IP-1030` *(closed 2026-07-04 via VR-1030)* |
 | FR-1520 | Weapons-quality gate | UNASSIGNED | ADR-0013 | C2, C1 | INT-0007 | UNASSIGNED | `spacesim/tests/test_custody.py`, `spacesim/tests/test_orders.py::test_kinetic_engage_requires_track_and_roe_then_spawns_debris` *(VR-1030)* | `IP-1030` *(closed 2026-07-04 via VR-1030)* |
 | FR-1610 *(new 2026-09-27, `BL-0073`/B7)* | Fence/dish radar beam-mode variants | R109 | ADR-0011 | C1 | INT-0008 | FS-122 | `spacesim/tests/test_isr.py::test_ground_radar_fence_vs_dish_trade`, `spacesim/tests/test_sensor_modality_wiring.py::test_radar_beam_mode_by_order_param_end_to_end`, `::test_radar_beam_mode_by_sensor_declaration_and_param_override`, `::test_radar_beam_mode_validator`, `spacesim/tests/test_observe_order_remediation.py::test_malformed_param_rejected_by_both_paths`, `::test_well_formed_orders_unchanged`, `spacesim/tests/test_beam_mode_modality.py` *(IP-1223 — foreign mode refused, auto filtered, console list)* | IP-1220 *(VERIFIED 2026-09-28 via VR-1220)*; IP-1222 *(VERIFIED 2026-10-16 via VR-1222 — end-to-end wiring, `engine/orders.py` observe branch + `engine/entities.py` validator, `BL-0212`)*; IP-1041 *(VERIFIED 2026-10-16 via VR-1041 — a non-string `beam_mode` request is rejected `invalid_param` in `engine/orders.py::_validate` (`_observe_params_ok`), and `engine/isr.py::beam_params` falls back instead of raising, `BL-0217`)*; IP-1223 *(COMPLETE 2026-10-17 — `engine/orders.py` `_requested_beam_mode`/`_observe_modes`/`_observe_payload_type` in `_validate` + `_candidate_sensors`; `app.js` `populateBeamModes`; VERIFIED 2026-10-17 via VR-1223)* |
@@ -333,7 +340,7 @@ to a not-built GDS-02/03/04 candidate component/concept instead, so Arch. Compon
 | CR-25 *(new 2026-10-16, `BL-0226`)* | Range rules for order parameters | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | CR-26 *(new 2026-10-17, `BL-0100`)* | Unreadable external vignette directory skipped and disclosed | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | CR-27 *(new 2026-10-17, `BL-0130`)* | Re-fire rule for a repeatable condition-triggered inject | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
-| CR-28 *(new 2026-10-17, `BL-0249`)* | A missed kinetic salvo consumes its rounds | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| CR-28 *(new 2026-10-17, `BL-0249` — **PROMOTED to FR-1480** 2026-10-17, see master matrix above)* | A missed kinetic salvo consumes its rounds | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 
 `CR-19`–`CR-21`, added by the 2026-07 DOM-002/004/005 backfill pass (`docs/feature-planning/
 05-feature-review.md` Finding F-01), follow the same discipline as `CR-12`–`CR-18`: neither cites a
@@ -467,7 +474,7 @@ Related Interfaces field maps onto it via the derivation table.
 
 | Component | Citing Requirement(s) |
 |---|---|
-| C1 Simulation Engine | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-1460, FR-1470, FR-1510, FR-1520, FR-1670, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3120, FR-3220, FR-3310, FR-3410, FR-3420, FR-4410, FR-4450, FR-4610, FR-4620, FR-5170, FR-5180, FR-6210, FR-7110, FR-7220, FR-7310, FR-7320, FR-7440, FR-8210, FR-9110, NFR-1500, NFR-1700, NFR-2010, NFR-2400, NFR-2600, NFR-2100, CR-01, CR-09, CR-10, CNFR-06 |
+| C1 Simulation Engine | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-1460, FR-1470, FR-1480, FR-1510, FR-1520, FR-1670, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3120, FR-3220, FR-3310, FR-3410, FR-3420, FR-4410, FR-4450, FR-4610, FR-4620, FR-5170, FR-5180, FR-6210, FR-7110, FR-7220, FR-7310, FR-7320, FR-7440, FR-8210, FR-9110, NFR-1500, NFR-1700, NFR-2010, NFR-2400, NFR-2600, NFR-2100, CR-01, CR-09, CR-10, CNFR-06 |
 | C2 Session/Application Layer | most FR-6xxx, FR-1xxx–FR-4xxx leaves citing INT-0006/0007/0008/0011/0012/0014 — see master matrix per-row; also CNFR-07 (new 2026-07, via ICD §7 item 12 cross-ref), FR-5220 *(2026-10-17, `BL-0263`)* |
 | C3 Mock SSN | FR-1510, FR-3210, FR-3220, CR-09 |
 | C4 Operator Console | FR-2410, FR-3110, FR-3120, FR-3510, FR-3520, FR-4110–FR-4720, FR-5110, FR-5120, FR-5130, FR-5140, FR-5150, FR-5160, FR-6110–FR-6610, FR-7440, FR-8110, FR-8210, FR-8220, NFR-1100, NFR-1200, NFR-1400, NFR-2300, NFR-2700, NFR-3000, NFR-3100, NFR-3200, NFR-3300, CR-02, CR-03, CR-06, FR-5220 *(2026-10-17, `BL-0263`)* |
@@ -494,7 +501,7 @@ mechanical, no inference.
 | INT-0005 | FR-6220, FR-6510, CR-06 |
 | INT-0006 | FR-3110, FR-3120, FR-3520, FR-6110, FR-6210, FR-6310, FR-6320, FR-6410, FR-6510, FR-6610, FR-7440, FR-8210, CNFR-07 (via ICD §7 item 12 cross-ref, new 2026-07), FR-5220 |
 | INT-0007 | FR-1510, FR-1520, FR-2310, FR-4610, FR-4620, FR-6210, FR-7440, FR-8210 |
-| INT-0008 | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-1460, FR-1470, FR-1670, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3310, FR-3410, FR-7110, FR-9110 |
+| INT-0008 | FR-1110, FR-1120, FR-1130, FR-1210, FR-1220, FR-1310, FR-1410, FR-1420, FR-1460, FR-1470, FR-1480, FR-1670, FR-2110, FR-2210, FR-2310, FR-2410, FR-2510, FR-3110, FR-3310, FR-3410, FR-7110, FR-9110 |
 | INT-0009 | FR-3210, FR-3220, CR-09 |
 | INT-0010 | FR-1510, FR-3220, CR-09 |
 | INT-0011 | FR-5310, FR-5311, FR-5312, FR-5313, FR-5314, FR-7220, FR-5220 |
