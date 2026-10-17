@@ -567,7 +567,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1064 | Condition-Triggered Inject Follow-Ups | `implementation/packages/IP-1064-condition-inject-follow-ups.md` | FS-106 v2.1 `FR-4420`/`NFR-1100` | Remediation (forward design) | 🟢 READY — authored 2026-10-17 (run #166), pre-authorized (MSTR-006 §3, standing 2026-10-11) |
 | IP-1065 | White Cell Console and Session Small Fixes | `implementation/packages/IP-1065-console-and-session-small-fixes.md` | FS-106/FS-102 v1.1/FS-118 v1.1/FS-120/FS-119 `FR-4410`/`FR-3310`/`FR-5410`/`FR-5510`/`FR-5220`/`NFR-3400` | Remediation (forward design) | 🟢 READY — authored 2026-10-17 (run #166), pre-authorized (MSTR-006 §3, standing 2026-10-11) |
 | IP-1131 | Verification-Coverage Follow-Ups (test-only) | `implementation/packages/IP-1131-verification-coverage-follow-ups.md` | FS-113/FS-115/FS-102 v1.1 + NFR-3400 `FR-6510`/`FR-4210`/`FR-3310`/`NFR-3400` | Remediation (forward design) | 🟢 READY — authored 2026-10-17 (run #166), pre-authorized (MSTR-006 §3, standing 2026-10-11) |
-| IP-1223 | Beam-Mode Choice Follows the Sensor's Modality | `implementation/packages/IP-1223-beam-mode-follows-sensor-modality.md` | FS-122 v1.2 `FR-1610`/`NFR-1600` | Remediation (forward design) | 🟢 READY — authored 2026-10-17 (run #166), pre-authorized (MSTR-006 §3, standing 2026-10-11) |
+| IP-1223 | Beam-Mode Choice Follows the Sensor's Modality | `implementation/packages/IP-1223-beam-mode-follows-sensor-modality.md` | FS-122 v1.2 `FR-1610`/`NFR-1600` | Remediation (forward design) | 🔵 IN PROGRESS |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1220,
 IP-1240, IP-1250, IP-1260, IP-1270, IP-1280, and IP-1290 are new (2026-09-27, run #78)** — seven
