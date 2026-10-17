@@ -1,8 +1,7 @@
 > **Document ID:** FS-129
 > **Version:** 1.0
-> **Status:** ✅ Ready for implementation planning — one Open Question (shared effect-classification
-> taxonomy with `FS-127`) should be confirmed jointly before either Feature's Implementation Package
-> is written
+> **Status:** ✅ Done — built: `IP-1290` `VERIFIED` (the Open Question shared with FS-127 was settled at package level).
+> *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Note on this repository's chain:** no `05-feature-decomposition` Feature Catalog exists here
 > (per this skill's own Gotchas); this document's approved input is the just-baselined requirements
 > themselves — `docs/requirements/01-functional-requirements.md` `FR-1440`, `FR-1450` — plus the

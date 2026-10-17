@@ -1,15 +1,13 @@
 > **Document ID:** FS-121
-> **Version:** 2.1 (2026-10-15 — `FR-7440` amended upstream (`BL-0159`): a cell's **own** satellites
+> **Version:** 2.2 (2026-10-17 — `FR-7410`/`FR-7420` restated upstream as one asset per export
+> (`BL-0137`); User Workflows 1–2 follow (`BL-0262`). Nothing else changed.) Prior: 2.1 (2026-10-15 — `FR-7440` amended upstream (`BL-0159`): a cell's **own** satellites
 > are now in scope; the fields that amendment affects are updated and Open Question 5 is closed.
 > Nothing else changed.) Prior: 2.0 (2026-10-10 — extended to cover all of `FEAT-7400`: adds `FR-7440` (quick TLE
 > export, `BL-0109`) and records `FR-7430` (companion RIC file, already built/`VERIFIED` under
 > `IP-1210`, closing the RTM's "FS-121 (amendment pending)" note). The `FR-7410`/`FR-7420` content
 > of v1.0 is unchanged in substance.)
-> **Status:** `FR-7410`/`FR-7420`/`FR-7430` — ✅ built and `VERIFIED` (`IP-1210`, `VR-1210` v2.0).
-> `FR-7440` — 🚧 Open Questions outstanding, none a research/requirements blocker: all are
-> `07-implementation-planning`-level design decisions this spec deliberately leaves open per this
-> skill's own rules (Open Questions 4-8 below, including `BL-0110`'s TLE-generation choice, which
-> `FR-7440`'s own Notes assign to `06`/`07`).
+> **Status:** ✅ Done — built: `IP-1210`, `IP-1211`, `IP-1212`, `IP-1261`, `IP-1262` all `VERIFIED` — all four leaves (`FR-7410`–`FR-7440`) built.
+> *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Note on this repository's chain:** v1.0's approved input was `FR-7410`/`FR-7420` directly ("no
 > Feature Catalog exists here"). As of v2.0 the approved input **is** a real Feature Catalog entry —
 > `FEAT-7400` in [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md)
@@ -91,12 +89,13 @@ added, none dropped.
 
 ## User Workflows
 
-1. **Truth export (White Cell).** White Cell specifies a time span, one or more assets, a reference
+1. **Truth export (White Cell).** White Cell specifies a time span, one asset (several assets are exported
+   by repeated requests, per `FR-7410`), a reference
    object (for RIC), and a format (CSV or CCSDS OEM); the system returns ground-truth state vectors
    for that span in both ECI and RIC-relative-to-the-reference-object form, via one of the existing
    no-cell endpoints (`FR-6220`).
 2. **Cell-observed export (a Blue or Red cell operator).** The requesting cell specifies a time span,
-   one or more tracked-object identifiers, a reference object, and a format; the system returns that
+   one tracked-object identifier (one per export, per `FR-7420`), a reference object, and a format; the system returns that
    cell's own believed state vectors (never ground truth, never another cell's belief) for the span,
    via a cell-scoped endpoint.
 3. **Companion RIC file (`FR-7430`, as built).** Either requester above selects the RIC-only format

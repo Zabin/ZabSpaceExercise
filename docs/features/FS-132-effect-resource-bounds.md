@@ -2,8 +2,8 @@
 
 > **Document ID:** FS-132
 > **Version:** 1.0 (2026-10-17, run #152)
-> **Status:** ✅ Ready for implementation planning. Open Questions 1–2 are `07`-level choices with
-> a stated default; Open Question 3 is a separate, non-blocking finding routed upstream.
+> **Status:** ✅ Done — built: `IP-1320` `VERIFIED` (`VR-1320`).
+> *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Approved input:** the Feature Catalog entry `FEAT-1400` (Five-D's Counterspace Effect
 > Resolution) in [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md),
 > following the FS-130/FS-131 convention. This spec covers the **resource-bound slice** of

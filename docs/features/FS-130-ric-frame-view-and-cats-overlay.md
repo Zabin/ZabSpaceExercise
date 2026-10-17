@@ -1,8 +1,7 @@
 > **Document ID:** FS-130
 > **Version:** 1.0
-> **Status:** 🚧 Open Questions outstanding — not yet ✅ Ready for implementation planning (see
-> Open Questions below; none is a research/requirements blocker, all are `07-implementation-
-> planning`-level design decisions this spec deliberately leaves open per this skill's own rules)
+> **Status:** ✅ Done — built: `IP-1300` `VERIFIED` (its Open Questions were settled at package level, `BL-0154`).
+> *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Note on this repository's chain:** unlike every prior `FS-1xx`/`2xx`/`3xx` document in this
 > set (each of which notes "no `05-feature-decomposition` Feature Catalog exists here"), this
 > document's approved input **is** a real Feature Catalog entry — `FEAT-8200` in

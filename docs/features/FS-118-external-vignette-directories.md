@@ -1,6 +1,8 @@
 > **Document ID:** FS-118
-> **Version:** 1.0
-> **Status:** ✅ Ready for implementation planning
+> **Version:** 1.1 *(2026-10-17, pipeline run #163: Open Questions 2 and 4 annotated with how
+> they were settled, including the collision-disclosure channel, `BL-0099`. No behaviour changed.)*
+> **Status:** ✅ Done — built: `IP-1180` `VERIFIED` (`VR-1180`).
+> *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Note on this repository's chain:** no `05-feature-decomposition` Feature Catalog exists here
 > (per this skill's own Gotchas); this document's approved input is the just-baselined
 > requirements themselves — `docs/requirements/01-functional-requirements.md` `FR-5410`/`FR-5420`,
@@ -232,6 +234,9 @@ enumeration it extends.
    precondition is violated (silently skip the bad directory? fail the whole catalog build? surface
    a warning to White Cell?). Needs a `04-requirements-engineering` amendment or an explicit
    `07-implementation-planning` design decision — this document does not invent one.
+   **Settled at package level (`IP-1180` Design Decision 2):** the directory is skipped and a
+   server log line records it. `04` recorded the rule as candidate `CR-26` (2026-10-17, `BL-0100`)
+   because no requirement states it.
 3. **What is the observable behavior of a save request when no user-save directory is configured
    at all?** Neither `FR-5410` nor `FR-5420` states whether this is an error (reject the save
    entirely), a fallback (e.g. reject with a specific "configure a user-save directory first"
@@ -242,6 +247,12 @@ enumeration it extends.
    state the rule itself (built-in wins? first-configured-directory wins? reject the collision
    outright and require unique ids?). This is squarely a design decision an Implementation Package
    needs a concrete answer to before it can write a single, unambiguous resolution function.
+   **Settled (`IP-1180` Design Decision 4; disclosure channel confirmed 2026-10-17, `BL-0099`):**
+   the root scanned first wins, and a server `WARNING` log line names the shadowed file. That log
+   line is the disclosure `FR-5410`'s Postcondition requires: the White Cell facilitator launches
+   and runs the server (`python3 -m spacesim.ui_web`), so the server log is a facilitator-visible
+   channel in the v1 deployment. An in-console collision notice would be an enhancement, filed
+   through `00-intake` if a facilitator asks for it; it is not a gap in this Feature.
 
 ## Related ADRs
 

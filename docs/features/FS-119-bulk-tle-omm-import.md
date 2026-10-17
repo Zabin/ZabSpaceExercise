@@ -1,6 +1,7 @@
 > **Document ID:** FS-119
 > **Version:** 1.0
-> **Status:** ✅ Ready for implementation planning
+> **Status:** ✅ Done — built: `IP-1190` `VERIFIED` (`VR-1190`).
+> *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Note on this repository's chain:** no Feature Catalog exists here; the approved input is
 > `docs/requirements/01-functional-requirements.md` `FR-5220`, a sibling leaf under `FR-5210`'s
 > existing `FR-5200` parent. `FR-5210` itself (Space-Track import + manual fallback) has no owning

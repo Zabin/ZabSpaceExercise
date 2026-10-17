@@ -1,6 +1,7 @@
 > **Document ID:** FS-126
 > **Version:** 1.0
-> **Status:** ✅ Ready for implementation planning
+> **Status:** ✅ Done — built: `IP-1260`, `IP-1261`, `IP-1262` `VERIFIED`.
+> *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Note on this repository's chain:** no `05-feature-decomposition` Feature Catalog exists here
 > (per this skill's own Gotchas); this document's approved input is the just-baselined requirement
 > itself — `docs/requirements/01-functional-requirements.md` `FR-2320` — plus the real baseline

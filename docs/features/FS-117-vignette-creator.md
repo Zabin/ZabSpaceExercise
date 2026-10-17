@@ -1,6 +1,7 @@
 > **Document ID:** FS-117
 > **Version:** 1.1
-> **Status:** ✅ Ready for implementation planning (Open Question 1 closed — see below)
+> **Status:** ✅ Done — built: every package (`IP-1170`–`IP-1174`) `VERIFIED`.
+> *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Changelog (v1.1, 2026-07-05):** Closed Open Question 1. `04-requirements-engineering` (run #42)
 > added nine new baselined requirement leaves — `FR-5120`, `FR-5130`, `FR-5140`, `FR-5150`,
 > `FR-5160`, `FR-5170`, `FR-5180` (children of `FR-5100`), `FR-3420` (child of `FR-3400`), and

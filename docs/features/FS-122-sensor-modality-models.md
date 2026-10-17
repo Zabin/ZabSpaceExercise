@@ -1,8 +1,10 @@
 > **Document ID:** FS-122
-> **Version:** 1.1 (2026-10-15 — adds `FR-1670`, the CATS illumination phase-angle refinement, the
+> **Version:** 1.2 (2026-10-17 — `BL-0224`: beam-mode choice on a ground radar specified (console
+> choices and a mode the sensor does not offer); a remediation package is owed. Nothing else
+> changed.) Prior: 1.1 (2026-10-15 — adds `FR-1670`, the CATS illumination phase-angle refinement, the
 > seventh leaf `FEAT-1600` bundles; v1.0 covered `FR-1610`-`FR-1660`, now built and `VERIFIED`)
-> **Status:** ✅ Ready for implementation planning — `FR-1670` only (`FR-1610`-`FR-1660` are built,
-> [IP-1220](../implementation/packages/IP-1220-sensor-modality-models.md) ✅ `VERIFIED`)
+> **Status:** ✅ Done for the v1.1 scope — built: `IP-1220`, `IP-1221`, `IP-1222`, `IP-1041` all `VERIFIED` — all seven leaves (`FR-1610`–`FR-1670`) built. The v1.2 beam-mode behaviour (`BL-0224`) is ✅ Ready for implementation planning (a remediation package is owed).
+> *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Approved Feature (v1.1):** [`FEAT-1600`](../feature-planning/03-feature-catalog.md) (Sensor
 > Modality-Specific Access & Effectiveness Models; Included Requirements `FR-1610`-`FR-1670`). A
 > Feature Catalog now exists (run #83, 2026-10-03), so the v1.0 note below about its absence
@@ -187,6 +189,18 @@ required by `FR-1670` and is not specified here.
   space-based window already requires line of sight at nonzero range); the implementation must not
   let it raise mid-handler (Error Handling).
 
+- **Beam-mode choice follows the executing sensor's modality** *(added v1.2, 2026-10-17,
+  `BL-0224`)*. `FR-1610` makes a radar's `fence`/`dish` modes selectable by an observe order. Two
+  behaviours follow from that, and the v1.1 build meets neither (REV-TRN-007 F1/F2):
+  - The console's beam-mode choices for an observe order are the modes the tasked sensor's
+    modality offers, plus `auto` (the sensor's own authored mode). A ground radar offers
+    `fence`/`dish`; it is never offered the imaging-SAR or EO names. As built, the Mode dropdown is a
+    fixed EO/SAR list, so a radar's own modes are reachable only through the raw JSON params box.
+  - A requested mode that the executing sensor's modality does not offer is refused with a reason
+    (`invalid_param`). It is never resolved against another modality's table. As built
+    (`IP-1222` Design Decision 2), a radar asked for `spotlight` is scored on the imaging-SAR table
+    (gain 1.8, above its own `dish` 1.6).
+
 ## Subsystem Responsibilities
 
 | Subsystem | Responsibility |
@@ -311,6 +325,11 @@ never added to any cell-scoped response.
 11. *(v1.1)* The engine contains exactly one phase-angle computation (`cats_phase_angle_deg`),
     called by both the `FR-8220` overlay and the `FR-1670` refinement. *(`BL-0152`)*
 
+- *(v1.2, `BL-0224`)* With a ground radar as the tasked sensor, the console's beam-mode choices are
+  `auto`, `fence` and `dish` only. An observe order naming a mode the executing sensor's modality
+  does not offer (for example `spotlight` on a radar) is refused with `invalid_param`, by both the
+  preview and issue paths, and nothing is scheduled.
+
 ## Verification Plan
 
 - Criterion 1 — Test: two sensors sharing a beam-mode table, differing only in the wide/narrow
@@ -392,6 +411,10 @@ never added to any cell-scoped response.
    sensor with `needs_lighting` set, including a space-based or hosted one. If
    `04-requirements-engineering` intended a narrower or broader reading, `FR-1670` should say so;
    until then, `07` should adopt this reading.
+
+- *(v1.2, `BL-0224`, `07`-level)* When the sensor is auto-selected, should a requested mode filter
+  the candidate sensors to those that offer it, or should the order be refused when the chosen
+  sensor does not? Either meets the v1.2 behaviour; the package decides and records it.
 
 ## Related ADRs
 

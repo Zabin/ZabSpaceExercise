@@ -1,10 +1,13 @@
 # FS-201 — Competency Assessment
 
 > **Document ID:** FS-201
-> **Version:** 1.0
-> **Status:** ✅ Done *(spec only — `Status` describes this document, not the underlying capability,
-> which remains ⛔ Planned per [DOM-002](../domains/DOM-002-assessment-framework.md); [IMP-201A](../implementations/IMP-201A-competency-assessment.md)
-> exists as a design-only package per `MSTR-006` §3 — it is not an implementation-authorizing document)*
+> **Version:** 1.1 *(2026-10-17, pipeline run #163: two Acceptance Criteria moved to a "Deferred
+> criteria" list because they exceed `FR-10110` and were not delivered by `IP-2010` (`BL-0019`,
+> `BL-0020`); Status note updated. No delivered behaviour changed.)*
+> **Status:** ✅ Done *(the per-cell per-exercise report is built: [IP-2010](../implementation/packages/IP-2010-competency-assessment.md),
+> `VERIFIED` via `VR-2010`. Two criteria are explicitly deferred — see Acceptance Criteria. The
+> earlier note that the capability "remains ⛔ Planned" predates `IP-2010`. [IMP-201A](../implementations/IMP-201A-competency-assessment.md)
+> is the superseded design-only package.)*
 > **Dependencies:** [DOM-002](../domains/DOM-002-assessment-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md) §7, [DOM-001](../domains/DOM-001-training-framework.md), [R306](../research/encyclopedia/R306-operational-assessment.md), [R310](../research/encyclopedia/R310-effects-based-operations.md)
 > **Referenced By:** [DOM-002](../domains/DOM-002-assessment-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md), [DOM-001](../domains/DOM-001-training-framework.md), [R306](../research/encyclopedia/R306-operational-assessment.md), [R310](../research/encyclopedia/R310-effects-based-operations.md), [IMP-201A](../implementations/IMP-201A-competency-assessment.md), [FS-202](FS-202-rubric-authoring.md)
 > **Produces:** the per-cell/per-exercise and longitudinal competency report; export data consumed by
@@ -155,12 +158,29 @@ Derived from the source document's capability requirements, restated as checkabl
   cells, without collapsing them into a composite number.
 - Deferred dimensions (resource economy, escalation discipline, time-to-decision) are absent from
   the report, not substituted with a default, in the first iteration.
-- A longitudinal per-trainee report aggregates dimension-by-dimension results across exercises.
 - The scoring computation produces no `WorldState` mutation.
-- The report is accessible in all three assessment modes: automated in-engine, facilitator rubric
-  (from [FS-106](FS-106-white-cell-dashboard.md)), and self-assessment/debrief ([FS-107](FS-107-after-action-review.md)).
+- The report is available to White Cell during the exercise and in the facilitated debrief, where
+  the facilitator presents it alongside [FS-107](FS-107-after-action-review.md)'s AAR; this is how
+  the facilitator-rubric and debrief modes are served in this iteration.
 - No composite single score is produced (per [DOM-002](../domains/DOM-002-assessment-framework.md) §5's explicit rejection of numeric averaging
   across non-commensurable dimensions).
+
+**Deferred criteria (2026-10-17, not delivered by `IP-2010`, outside `FR-10110`).** `FR-10110`,
+the one baselined requirement this FS implements, requires only the per-cell per-exercise report.
+The two criteria below were written into this FS from DOM-001/DOM-002 and go beyond that
+requirement. They are kept as the Feature's stated direction, but they are **not** acceptance
+conditions for the built Feature. Each would need an owner request (via `00-intake`), then a
+requirement and a package:
+
+- *(`BL-0019`)* A longitudinal per-trainee report aggregates dimension-by-dimension results across
+  exercises. This needs a trainee-identity and cross-session store that no approved document
+  defines (ICD §7 item 14, candidate `INT-0018`; Open Questions below). `IP-2010` Implementation
+  Task 5 deferred it knowingly.
+- *(`BL-0020`)* Each trainee reaches their own rubric in a self-service, self-assessment mode. As
+  built, the report is White-Cell-only. That is not an oversight to patch: the report is computed
+  from ground truth and is one of `FR-6220`'s named no-cell ground-truth reads, so a Blue or Red
+  view would need a fog-filtered variant of the rubric, which is new design. Until then, the
+  self-assessment/debrief mode is served by the facilitated debrief above.
 
 ## Verification Plan
 
@@ -198,7 +218,8 @@ dependencies of FS-201.
   requires a new Domain Model entity or extends the existing `EventLog`/`SavedSession` is
   unresolved.
 - The longitudinal per-trainee aggregation implies a cross-session data structure not present in
-  the existing save format — how this is stored and queried is unresolved.
+  the existing save format — how this is stored and queried is unresolved. *(Now a deferred
+  criterion, 2026-10-17, `BL-0019`; this question blocks only that criterion.)*
 - The source document does not address Security Considerations for per-trainee longitudinal data.
 - The source document does not state formal Verification Methods per criterion.
 - No ICD interface explicitly names the competency assessment scoring or report path; whether a new
