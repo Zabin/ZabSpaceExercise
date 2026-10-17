@@ -62,10 +62,21 @@ says what each one does. A radar can also take a default `fence` or `dish` beam 
 phase-angle range, an unknown radar beam mode, or a misspelt orbit regime stops the vignette from
 loading, so fix it before the session.
 
+**If Load is refused.** The whole vignette is checked when you press **Load**. If it fails, no
+session starts and the session line in the **Cell & Time** panel shows **Load failed:** with a list of every problem, each
+naming where it is in the YAML and why. Fix them all and press **Load** again; a refused load
+leaves any open session alone. Besides the sensor rules, Load refuses a satellite with no orbit,
+another asset (except a cyber unit) with no location, a TLE that will not propagate to the start
+time, a duplicate asset or sensor id, and a `roles_needed` entry naming an asset or group that is
+not in the vignette. The full list is in
+[`06-the-vignette-library.md`](06-the-vignette-library.md#when-a-vignette-wont-load).
+
 > **Sources:** `spacesim/content/vignette.py` + `spacesim/content/vignettes/*.yaml` ·
 > `GET /api/sessions/{sid}/brief/{cell}` · `spacesim/session/manager.py` (`classification`,
 > `assign_role`/`staffing_report`, FR-4510/FR-4210) · `spacesim/engine/entities.py` (`Sensor`
-> modality fields and their load-time checks, FR-1610–FR-1670) ·
+> modality fields and their load-time checks, FR-1610–FR-1670) · `spacesim/content/vignette.py`
+> (`validate_vignette`, `VignetteValidationError`) · `spacesim/ui_web/static/app.js`
+> (`loadSession`, the **Load failed** readout; FR-5310–FR-5314) ·
 > [`07-white-cell-facilitation.md`](07-white-cell-facilitation.md)
 
 ### WCM-3 · Run the room: hot-seat and LAN

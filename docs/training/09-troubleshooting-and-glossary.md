@@ -15,6 +15,13 @@
   observe beam mode; fix the field in the order's params, and note that a field set to `null`
   counts as left out), `roe_kinetic_not_authorized` (enable it via the `red_kinetic_authorized`
   dial), `no_weapons_quality_track` (task a sensor first), `insufficient_delta_v`, `not_owner`.
+- **The Cell & Time panel says `Load failed:`** — the vignette has errors and no session was made. The list
+  under the message names every problem as *section*`[`*entry*`]`.*field* and a reason. Fix each
+  one in the YAML and press **Load** again. An open session is not touched by a refused load.
+  What the check looks for is listed in
+  [`06-the-vignette-library.md`](06-the-vignette-library.md#when-a-vignette-wont-load). If the
+  message says the vignette was **not found**, the id is wrong or the file is not in a vignette
+  folder.
 - **Nothing happens after issuing an order** — orders execute at their scheduled **window**;
   advance time (`+10m`) until the clock reaches it.
 - **A satellite shows `safe_mode`/red** — it was safed (attack or bus fault); run the recovery
@@ -23,7 +30,9 @@
 
 > **Sources:** `spacesim/engine/orders.py` (`_validate`, `_order_params_ok`, `ORDER_PARAM_RULES`,
 > `_observe_params_ok`, `_plan_collection`, `_plan_command`, `OrderSystem` `horizon_s`) ·
-> `spacesim/ui_web/static/app.js` (`REASON_TIPS`) · FR-3110 · FR-3210
+> `spacesim/ui_web/static/app.js` (`REASON_TIPS`, `loadSession`) ·
+> `spacesim/content/vignette.py` (`validate_vignette`, `VignetteValidationError`) ·
+> `spacesim/ui_web/server.py` (`_vignette_load_errors`) · FR-3110 · FR-3210 · FR-5310
 
 ---
 
