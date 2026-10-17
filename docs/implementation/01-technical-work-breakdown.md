@@ -770,6 +770,30 @@ gap) and `BL-0126` (creator preview colour-by-owner: an enhancement beyond `FR-5
 
 No cross-package sequencing constraint.
 
+## Missed salvo consumes its rounds (pipeline run #176, 2026-10-17)
+
+**Input:** [FS-132](../features/FS-132-effect-resource-bounds.md) v1.1 — System Behaviour 3, State
+Changes, Error Handling (v1.1 rows), Acceptance Criteria 2, 8, 9 (`FR-1480`, and `FR-1460`'s
+amended AC), for the project owner's 2026-10-17 decision on `BL-0249`: misses consume interceptors.
+
+| Unit | Work | Seam |
+|---|---|---|
+| 1 | Drop the `outcome.success` term from `_h_effect`'s ammo charge, so every engagement that reaches resolution is charged | C1 engine, `engine/orders.py` consumption step |
+| 2 | Tests: miss charged (+ later `insufficient_ammo`), destroyed-target charged, exact-salvo miss, outcome parity, replay | `spacesim/tests/test_effect_resource_bounds.py` |
+
+**Split / no-split rationale.** One package, a new FS-132 slice (`IP-1321`) rather than a reopened
+`IP-1320`: `IP-1320` is `VERIFIED` and its record stays as verified; this is a separate,
+owner-directed rule change to one condition in the same consumption step. Units 1–2 are one file
+plus its test file and are verified together. **Not packaged:** the manual (`RED-5`, §15.1 row) —
+routed to `08-training-manual-authoring` after `VERIFIED`; the `FEAT-1400` catalog row
+(`BL-0275`, `05`).
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1321](packages/IP-1321-missed-salvo-consumes-rounds.md) | FS-132 v1.1 (`FR-1480`) | 🟢 READY | Pre-authorized by the project owner (MSTR-006 §3, standing 2026-10-11 pre-authorization; owner decision `BL-0249`) |
+
+No cross-package sequencing constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
