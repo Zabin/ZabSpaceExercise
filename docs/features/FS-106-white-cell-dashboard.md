@@ -1,8 +1,9 @@
 # FS-106 — White Cell Dashboard
 
 > **Document ID:** FS-106
-> **Version:** 2.2
-> **Status:** ✅ Done
+> **Version:** 2.3
+> **Status:** ✅ Ready for implementation planning (v2.3 additions `FR-4450`/`FR-4620`). Everything up to
+> v2.2 is ✅ Done.
 > **Changelog (v2.1, 2026-09-26):** Added `FR-4420` (condition-triggered injects, evaluated
 > deterministically) and `FR-4430` (four new inject effect types: anomaly, sensor outage, forced
 > custody loss, scripted manoeuvre) to `Requirements Implemented`, closing backlog `BL-0070`
@@ -15,6 +16,14 @@
 > failure modes, and the three v2.1 inject Open Questions are closed by reference to those
 > decisions. Acceptance Criteria and Verification Plan gained matching v2.2 entries. Package status
 > tags in `Produces` were refreshed (`BL-0193`). No other field's substance changed.
+> **Changelog (v2.3, 2026-10-18):** Added `FR-4450` (White Cell edits or cancels a scheduled,
+> not-yet-fired inject; `FEAT-4400`) and `FR-4620` (a side-by-side controller view of ground truth
+> with both cells' belief; `FEAT-4600`) to `Requirements Implemented`. This closes the spec stage
+> of backlog `BL-0079` (external validation report, 26 Sep 2026, item B13). Both leaves were
+> already folded into this document's Features by `05-feature-decomposition` (run #83). Updated
+> Scope, User Workflows, System Behaviour, Subsystem Responsibilities, Data Model Changes, State
+> Changes, Error Handling, Security Considerations, Acceptance Criteria, Verification Plan and
+> Risks. No v2.2 field's substance changed.
 > **Dependencies:** [DOM-003](../domains/DOM-003-white-cell-framework.md), [DOM-001](../domains/DOM-001-training-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md)
 > **Referenced By:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md), [IMP-106A](../implementations/IMP-106A-white-cell-dashboard.md) · [IP-1064](../implementation/packages/IP-1064-condition-inject-follow-ups.md) (✅ VERIFIED 2026-10-17, VR-1064 v2.0), [IP-1065](../implementation/packages/IP-1065-console-and-session-small-fixes.md) (✅ VERIFIED 2026-10-17, VR-1065)
 > **Produces:** the facilitation surface [FS-108](FS-108-inject-authoring.md) (candidate) would extend; remediation package [IP-1061](../implementation/packages/IP-1061-inject-and-sizing-defect-remediation.md) (`FR-4410` defects, 2026-09-26); [IP-1062](../implementation/packages/IP-1062-condition-triggered-injects-and-new-effects.md) (`FR-4420`/`FR-4430`, ✅ `VERIFIED`, [VR-1062](../implementation/verification/VR-1062-condition-triggered-injects-and-new-effects.md)); remediation package [IP-1063](../implementation/packages/IP-1063-inject-effect-fire-time-validation.md) (`FR-4430`/`FR-4410` inject fire-time validation, `BL-0129`/`BL-0188`, ✅ `VERIFIED`, [VR-1063](../implementation/verification/VR-1063-inject-effect-fire-time-validation.md))
@@ -55,6 +64,8 @@ experience in real time, not merely observe it.
 ## Scope
 
 In scope: god-view rendering (both cells' belief + ground truth simultaneously) and view-as-cell;
+*(v2.3)* the side-by-side controller view (`FR-4620`) and editing or cancelling a pending inject
+(`FR-4450`);
 the inject build/schedule panel; clock pause/resume and the rewind/undo/branch **trigger surface**
 (the White-only authority to invoke these, not the replay/scrub instrument itself); manual
 adjudication (the absence of automated scoring, plus live safe-mode-dial/parameter adjustment
@@ -99,6 +110,15 @@ manoeuvre) — both children of `FR-4400`, the same parent `FR-4410` sits under,
 same "inject authoring and firing" capability this document already owns, extended rather than a
 new capability requiring a new Feature.
 
+**Added v2.3:**
+
+- `FR-4450` (edit or cancel a scheduled, not-yet-fired inject) is under `FR-4400`, in `FEAT-4400`.
+- `FR-4620` (side-by-side controller view: ground truth beside each cell's belief) is under
+  `FR-4600`, in `FEAT-4600`.
+
+Both are Could-tier leaves the Feature Catalog already assigns to this document's Features
+(run #83). `FEAT-4400`'s `FR-4440` is specified by FS-123, not here.
+
 ## User Workflows
 
 - The White Cell facilitator opens the god-view, observing both cells' belief states and ground
@@ -128,6 +148,19 @@ new capability requiring a new Feature.
   loss/degrade against a named cell's track, or a scripted manoeuvre of any named asset) and
   configures its type-appropriate payload, using the same panel `FR-4410`'s existing effects
   already populate (`FR-4430`).
+
+- *(Added v2.3)* The facilitator opens the **pending-inject queue**. It lists every inject that
+  has not yet fired, each with its trigger kind, its fire time (for a time-scheduled inject), and
+  its effects. The queue covers:
+  - the vignette's time-triggered injects still in the future;
+  - its condition-triggered injects not yet fired;
+  - injects White Cell itself scheduled for a future time.
+
+  The facilitator either **cancels** one, after which it never fires, or **edits** it, replacing
+  its effect list and, for a time-scheduled inject, its fire time (`FR-4450`).
+- *(Added v2.3)* The facilitator opens the **side-by-side controller view**. It shows ground truth,
+  Blue's picture and Red's picture together, so each cell's belief can be compared with truth and
+  with the other cell's at a glance (`FR-4620`).
 
 ## System Behaviour
 
@@ -168,6 +201,32 @@ new capability requiring a new Feature.
 - *(Added v2.1)* **An anomaly inject's controller-set true cause is recorded in the event log
   exactly as the facilitator set it, never re-derived** — the panel is presenting a White-Cell
   narrative decision, not computing a diagnosis.
+- *(Added v2.3)* **Pending-inject queue (`FR-4450`).**
+  - **Identity.** Every pending inject has a stable handle: a vignette inject keeps its own id,
+    and an inject White Cell scheduled through the console gets an id when it is scheduled. The
+    queue is read-only: listing it changes nothing.
+  - **Cancel.** A cancel removes the inject from the queue, and the inject subsequently never
+    fires. A cancelled condition-triggered inject is never evaluated again.
+  - **Edit.** An edit replaces the inject's effect list and, for a time-scheduled inject, its fire
+    time. The inject later fires carrying the edited values, never the original ones (`FR-4450`
+    Postcondition). An edited fire time earlier than now is clamped to now, the same rule a newly
+    scheduled White inject follows.
+  - **Validation.** An edited effect list passes the same whole-inject check a newly fired inject
+    does (v2.2 Error Handling): it is accepted whole or refused whole.
+  - **Determinism.** A cancel or edit is a White Cell action recorded in the event log at the
+    simulated instant it is made (`ADR-0002`). Replay therefore reproduces it, and a rewind to an
+    earlier instant discards it with the rest of the later history. After such a rewind the inject
+    is pending again with its original parameters.
+  - **Already fired.** An inject that has already fired can no longer be edited or cancelled.
+- *(Added v2.3)* **Side-by-side controller view (`FR-4620`).**
+  - **Content.** White Cell sees ground truth plus Blue's and Red's own views together. Each
+    cell's panel is exactly what `FR-4610`'s view-as returns for that cell, with no additional
+    ground truth and no filtering of its own. The fog-of-war filter remains the single
+    `SessionAPI`/`CellController` path (`ADR-0004`).
+  - **One instant.** All three panels describe **one and the same simulated instant**, so a
+    difference between panels is a difference in belief, never a clock skew between reads.
+  - **Read-only.** The view grants White Cell no write access to either cell's state through this
+    display path (`FR-4620` Postcondition).
 - **Authority-tier statement** (DOM-003 §8): this spec now touches three of DOM-003's four
   authority tiers — visibility (god-view), inject, and clock-trigger — plus manual adjudication.
   Session administration (§6 of DOM-003) is no longer this document's own System Behaviour; it is
@@ -182,7 +241,9 @@ new capability requiring a new Feature.
 | `session/manager.py` (`InProcessSession.inject_library()`) | Loads/exposes the five reusable inject templates and applies scheduled/immediate injects (FR-4410). |
 | `session/api.py` (`SessionAPI`) | Serves god-view and view-as-cell requests (FR-4610), reusing the fog-of-war filter FS-106 does not itself implement (that filter's own Feature is `FEAT-6200` in the Feature Catalog, specified by a different, not-yet-authored FS). |
 | `session/redai.py` | Exposes the currently-selected doctrine preset for display and accepts a facilitator's preset-switch/hand-tune request (DOM-003 §7); the preset's own generation behavior is FS-111's subsystem responsibility, not this row's. |
-| `ui_web/server.py` / `ui_web/static/` | Renders the dashboard panels (god-view, inject panel, clock controls, adjudication/parameter controls) over the above. |
+| `ui_web/server.py` / `ui_web/static/` | Renders the dashboard panels (god-view, inject panel, clock controls, adjudication/parameter controls) over the above. *(v2.3)* Also renders the pending-inject queue with its edit and cancel controls, and the side-by-side controller view. |
+| `session/manager.py` (`SessionManager`) *(v2.3)* | Owns the pending-inject queue: listing it, cancelling and editing an entry with the White-only and already-fired checks, recording each cancel or edit in the event log, and reusing the v2.2 whole-inject check for edited effects (`FR-4450`). |
+| `session/api.py` / `session/inprocess.py` *(v2.3)* | Serves the side-by-side controller view as ground truth plus both cells' `CellView`s for one simulated instant, reusing `get_godview`/`get_view` unchanged (`FR-4620`). |
 
 ## Interfaces Used
 
@@ -206,10 +267,18 @@ immediate/scheduled), and the four new effect types are new entries in the exist
 vocabulary, both extending structures the domain model already has (`GDS-04` §1.12 Inject),
 consistent with `ADR-0007` (content as data).
 
+*(Added v2.3)* `FR-4450` adds no new Domain Model entity. A pending inject is the existing
+`Inject` concept (`GDS-04` §1.12) in its scheduled state. Its handle, and the record of a
+cancellation or edit, are session/event-log state, not a new entity. `FR-4620` reads existing
+state only.
+
 ## State Changes
 
 - Inject scheduling commits an inject to the session's inject queue; the inject executes at the
   scheduled sim time via `WorldState` direct mutation (INT-0016, per the ICD).
+- *(Added v2.3)* A cancel moves a pending inject to *cancelled*, and it never fires. An edit
+  replaces a pending inject's effects and fire time and leaves it pending. Both happen only before
+  the inject fires, and both are recorded in the event log (`FR-4450`).
 - Red doctrine preset changes take effect immediately for AI-Red (ADR-0021) — the effect itself is
   FS-111's State Changes, not this document's.
 - Clock-control and save/resume state transitions themselves are FS-109's and FS-110's State
@@ -250,6 +319,16 @@ consistent with `ADR-0007` (content as data).
   inject against an asset with insufficient Δv** is applied anyway. It neither checks nor deducts
   `AssetResources.delta_v_ms`, because injects are the documented bypass of plan-first commanding.
 
+- *(Added v2.3)* **Edit or cancel requests (`FR-4450`):**
+  - A request naming no pending inject, or one that has already fired, is refused with the reason
+    and changes nothing.
+  - A request from any seat other than White Cell, including the Observer seat (`FR-6510`/
+    `IP-1130`), is refused and changes nothing.
+  - An edit whose new effect list fails the whole-inject check is refused whole (as v2.2). The
+    inject stays pending with its previous parameters.
+- *(Added v2.3)* **Side-by-side view requests (`FR-4620`):** a request from a non-White seat is
+  refused. The view is a ground-truth display at the same no-cell trust level as the god-view.
+
 ## Performance Considerations
 
 - **Single point of time control.** All clock-control *requests* originate only from this
@@ -267,6 +346,10 @@ consistent with `ADR-0007` (content as data).
 - The LAN trust model (ADR-0015) applies: the dashboard's god-view is one of the no-cell
   ground-truth endpoints. The trust model's multi-client/session-sharing implications are FS-109's
   Security Considerations, not restated here.
+
+- *(Added v2.3)* The side-by-side controller view and the inject edit/cancel controls are
+  White-only, at the same client-side-trust level as every other White surface (`CLAUDE.md` LAN
+  trust model). Neither exposes ground truth to a Red or Blue seat.
 
 ## Acceptance Criteria
 
@@ -295,6 +378,22 @@ consistent with `ADR-0007` (content as data).
   and a replay of the session reproduces the live world byte-identically.
 - *(Added v2.2)* Every shipped vignette inject and every inject-library template passes the check.
 
+- *(Added v2.3)* **Cancel (`FR-4450`).** A pending time-scheduled inject cancelled before its
+  fire time is gone from the pending queue, and after the clock passes its fire time it has not
+  fired: no effect applied and no inject record. The same holds for a pending condition-triggered
+  inject whose condition later becomes true.
+- *(Added v2.3)* **Edit (`FR-4450`).** A pending inject edited to change one effect parameter (for
+  example a message's text) fires carrying the edited value, not the original one. An edited fire
+  time is the time it fires at.
+- *(Added v2.3)* **Refusals (`FR-4450`).** Editing or cancelling an already-fired inject, an
+  unknown handle, or a request from a non-White seat is refused with nothing changed. An edit with
+  an invalid effect is refused whole.
+- *(Added v2.3)* **Replay and rewind (`FR-4450`).** A session containing a cancel and an edit
+  replays byte-identically. A rewind to before the cancel leaves the inject pending again.
+- *(Added v2.3)* **Side-by-side view (`FR-4620`).** The view returns ground truth plus Blue's and
+  Red's views for a single simulated instant. Each cell's panel equals that cell's `FR-4610`
+  view-as result at that instant, and the truth panel equals the god-view at that instant.
+
 ## Verification Plan
 
 Test (automated) for clock-authority role rejection (FR-4310) and the no-automated-scoring
@@ -311,6 +410,12 @@ cell's own `Track`) — consistent with both requirements' own stated Verificati
 White-Cell boundary (direct call and over HTTP), skip-never-halt with a White-only message in the
 handler, replay parity on the skip path, and shipped-content cleanliness. These are already
 exercised by `IP-1063`'s tests and were independently re-derived in `VR-1063`.
+
+*(Added v2.3)* Test (automated) for `FR-4450` (cancel, edit, refusal, replay and rewind, each
+directly and over HTTP) and for `FR-4620` (the single-instant three-view read, compared field by
+field with the god-view and each cell's view-as). This is consistent with both requirements'
+stated Verification Method (Test). The browser rendering of both panels is Demonstration, like the
+rest of this dashboard's UI.
 
 ## Dependencies
 
@@ -342,6 +447,15 @@ dependencies.
   v2.0 scope (they also cover material now specified by FS-109/FS-110/FS-111). Reconciling the
   Implementation Package layer against this split is a follow-on task, out of scope for this
   Feature Specification revision.
+
+- *(Added v2.3)* **Rewind interplay (`FR-4450`).** A facilitator may expect a cancel to survive a
+  rewind. This spec deliberately follows the event-log semantics (`ADR-0002`): a rewind discards a
+  later cancel or edit, exactly as it discards every other later action. The operator-facing manual
+  must say so.
+- *(Added v2.3)* **Scope of an edit.** `FR-4450` says "parameters". This revision reads that as the
+  effect list plus, for a time-scheduled inject, the fire time. Changing a condition-triggered
+  inject's *condition* is not covered: it is neither requested by `BL-0079` nor needed by
+  `FR-4450`'s acceptance criterion. A request for it would come through `00-intake`.
 
 ## Open Questions
 
@@ -390,6 +504,8 @@ dependencies.
   checked nor deducted (`IP-1062` Design Decision 3, under `ADR-0005`). Ratified in Error Handling
   above. Facilitator-facing consequence: a scripted manoeuvre is outside the normal Δv budget.
 
+- *(Added v2.3)* None open for `FR-4450`/`FR-4620`; the two scoping reads are stated under Risks.
+
 ## Related ADRs
 
 ADR-0016 (single point of time control) —
@@ -399,7 +515,9 @@ citation (see Interfaces Used) and does not bear on this document's narrowed sco
 ADR-0002 (deterministic core) and ADR-0006 (sub-stepped clock) — `FR-4420`'s condition-trigger
 determinism requirement; ADR-0004 (fog-of-war at the boundary) — `FR-4430`'s forced-custody-loss
 per-cell scoping; ADR-0005 (plan-first commanding) — both new leaves exercise the same documented
-inject bypass this document's existing FR-4410 scope already relies on.
+inject bypass this document's existing FR-4410 scope already relies on. **v2.3:** ADR-0002
+(`FR-4450` cancels and edits are event-log actions) and ADR-0004 (`FR-4620` reuses the single
+fog-of-war filter path) bear on the new leaves; no new ADR is needed.
 
 ## Related Interfaces
 
