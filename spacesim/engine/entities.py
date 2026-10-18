@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from spacesim.engine.bus import BusState, PayloadState
 from spacesim.engine.geometry import GeoPoint
@@ -43,10 +43,23 @@ class Asset(BaseModel):
     isl_peers: list[str] = Field(default_factory=list)
     stored_program: bool = True        # accepts time/condition-triggered onboard commands
     threat_warning: bool = False       # def.set_threat_warning posture (informational)
+    # IP-1230 (FR-1230, ADR-0039 decision 7) — Cd·A/m (m²/kg) for index-driven LEO drag. Opt-in:
+    # no default, so no shipped asset's trajectory changes; absent means no drag coupling.
+    ballistic_coeff_m2_kg: Optional[float] = None
 
     # FUTURE-WORK §10.C.12 — terrain-aware horizon: optional per-azimuth mask table.
     # Each entry: {az_min, az_max, mask_deg}. Azimuths in [0, 360); mask wins by first match.
     mask_table: list[dict] = Field(default_factory=list)
+
+    @field_validator("ballistic_coeff_m2_kg")
+    @classmethod
+    def _check_ballistic_coeff(cls, bc: Optional[float]) -> Optional[float]:
+        """IP-1230 (ADR-0039 decision 7) — a declared ballistic coefficient must be finite and > 0.
+        A field validator, so a load-time refusal names ``…ballistic_coeff_m2_kg``."""
+        import math
+        if bc is not None and not (math.isfinite(bc) and bc > 0.0):
+            raise ValueError(f"ballistic_coeff_m2_kg must be a finite number > 0, got {bc!r}")
+        return bc
 
     def as_ground_site(self) -> "GroundSite":
         if self.location is None:

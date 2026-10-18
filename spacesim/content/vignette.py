@@ -9,6 +9,7 @@ format decision: YAML (human-authorable; matches the architecture/tech-stack/roa
 from __future__ import annotations
 
 import logging
+import math
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -165,6 +166,13 @@ class Vignette(BaseModel):
     initial_tracks: list[dict] = Field(default_factory=list)   # each entry a Track.model_dump()
     simulator_version: Optional[str] = None
     initial_space_weather: Optional[dict] = None   # the same plain dict shape as world.space_weather
+    # IP-1230 (FR-1230/FR-4440, ADR-0039) — both optional and absent for every vignette shipped
+    # before this package (zero behavior change). `space_weather_series`: entries
+    # {at_sim_s >= 0, f107?, kp?}, converted by build_world into world.space_weather["index_series"]
+    # (absolute sim time). `environmental_anomalies`: {base_rate_per_day >= 0, assets: [ids],
+    # subsystem: bus|telemetry (default bus), cause (default "space_weather")}.
+    space_weather_series: list[dict] = Field(default_factory=list)
+    environmental_anomalies: Optional[dict] = None
 
 
 @dataclass
@@ -346,6 +354,37 @@ def _pydantic_problems(where: str, exc) -> list[dict]:
     return [{"where": where, "reason": str(exc)}]
 
 
+def _environmental_anomaly_problems(block, asset_ids, bused) -> list[dict]:
+    """IP-1230 (ADR-0039 decision 8) — problems in an optional ``environmental_anomalies`` block."""
+    if block is None:
+        return []
+    where = "environmental_anomalies"
+    if not isinstance(block, dict):
+        return [{"where": where, "reason": "must be a mapping"}]
+    out: list[dict] = []
+    rate = block.get("base_rate_per_day")
+    if (not isinstance(rate, (int, float)) or isinstance(rate, bool) or not math.isfinite(rate)
+            or rate < 0):
+        out.append({"where": f"{where}.base_rate_per_day",
+                    "reason": f"must be a finite number >= 0, got {rate!r}"})
+    assets = block.get("assets")
+    if not isinstance(assets, list) or not assets:
+        out.append({"where": f"{where}.assets", "reason": "must be a non-empty list of asset ids"})
+    else:
+        for aid in assets:
+            if aid not in asset_ids:
+                out.append({"where": f"{where}.assets", "reason": f"{aid!r} is not a declared asset"})
+            elif aid not in bused:
+                out.append({"where": f"{where}.assets",
+                            "reason": f"{aid!r} has no bus (bus_state), so an anomaly cannot land on it"})
+    if block.get("subsystem", "bus") not in ("bus", "telemetry"):
+        out.append({"where": f"{where}.subsystem",
+                    "reason": f"must be 'bus' or 'telemetry', got {block.get('subsystem')!r}"})
+    if not isinstance(block.get("cause", "space_weather"), str):
+        out.append({"where": f"{where}.cause", "reason": "must be a string"})
+    return out
+
+
 def validate_vignette(vignette: Vignette) -> list[dict]:
     """IP-1310 (FS-131; FR-5310–FR-5314, NFR-1600) — every load-time problem in ``vignette``.
 
@@ -367,6 +406,7 @@ def validate_vignette(vignette: Vignette) -> list[dict]:
 
     # Force entries: the build_world normalisation + Asset model (FR-5310, FR-5312, FR-5311).
     asset_sections: dict[str, list[str]] = {}
+    bused: set[str] = set()   # IP-1230 — assets with a bus (environmental-anomaly eligibility)
     groups: set[str] = set()
     prop = ModeratePropagator()
     for owner, force in _force_sections(vignette):
@@ -383,6 +423,8 @@ def validate_vignette(vignette: Vignette) -> list[dict]:
                 problems.extend(_pydantic_problems(where, exc))
                 continue
             asset_sections.setdefault(asset.id, []).append(section)
+            if asset.bus_state is not None:
+                bused.add(asset.id)
             if asset.group:
                 groups.add(asset.group)
             # FR-5312 — a satellite needs an orbit; every other kind except a cyber unit (whose
@@ -433,6 +475,16 @@ def validate_vignette(vignette: Vignette) -> list[dict]:
             Track.model_validate(copy.deepcopy(spec))
         except Exception as exc:  # noqa: BLE001
             problems.extend(_pydantic_problems(f"initial_tracks[{index}]", exc))
+
+    # IP-1230 (ADR-0039 decision 6) — a declared index series must be physical; the same shared
+    # validator the White inject boundary uses (engine/perturbations.py::index_series_problems).
+    from spacesim.engine.perturbations import index_series_problems
+    for reason in index_series_problems(list(vignette.space_weather_series), "at_sim_s"):
+        problems.append({"where": "space_weather_series", "reason": reason})
+    if isinstance(vignette.initial_space_weather, dict) and "index_series" in vignette.initial_space_weather:
+        for reason in index_series_problems(vignette.initial_space_weather["index_series"], "t"):
+            problems.append({"where": "initial_space_weather.index_series", "reason": reason})
+    problems.extend(_environmental_anomaly_problems(vignette.environmental_anomalies, asset_sections, bused))
 
     # Catch-all: whatever else build_world enforces is enforced at load too.
     if not problems:
@@ -512,6 +564,14 @@ def build_world(vignette: Vignette, overrides: Optional[dict] = None):
         world.tracks = [Track.model_validate(t) for t in vignette.initial_tracks]
     if vignette.initial_space_weather:
         world.space_weather = dict(vignette.initial_space_weather)
+    # IP-1230 (ADR-0039 decision 1) — a declared index series, stored in absolute sim time and
+    # merged into (never replacing) world.space_weather, so `severity` is kept.
+    if vignette.space_weather_series:
+        entries = [{"t": start + int(float(e["at_sim_s"]) * 1_000_000),
+                    **{k: float(e[k]) for k in ("f107", "kp") if k in e}}
+                   for e in vignette.space_weather_series]
+        merged = sorted(list(world.space_weather.get("index_series", [])) + entries, key=lambda e: e["t"])
+        world.space_weather = {**world.space_weather, "index_series": merged}
     return world, ctx
 
 

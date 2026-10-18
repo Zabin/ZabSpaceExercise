@@ -62,6 +62,12 @@ def _inject_effect_problem(world: WorldState, eff, check_targets: bool, prop=Non
     missing = [k for k in _INJECT_REQUIRED_KEYS.get(kind, ()) if eff.get(k) in (None, "")]
     if missing:
         return f"{kind} is missing {', '.join(missing)}"
+    if kind == "space_weather" and "index_series" in eff:
+        # IP-1230 (ADR-0039 decision 6) — the same shared validator vignette load uses.
+        from spacesim.engine.perturbations import index_series_problems
+        found = index_series_problems(eff["index_series"], "offset_s", time_required=False)
+        if found:
+            return f"space_weather index_series: {found[0]}"
     if kind == "anomaly" and eff.get("subsystem") not in ("bus", "telemetry"):
         return f"anomaly subsystem must be 'bus' or 'telemetry', got {eff.get('subsystem')!r}"
     if kind == "forced_custody_loss":
@@ -149,7 +155,9 @@ class SessionManager:
             self.sim, roe=dict(self.ctx.roe), gating_rules=list(self.ctx.gating_rules),
             resolver=ModerateEffectResolver(detectability_config=list(self.ctx.detectability_config)),
         )
-        self.bus = BusSystem(self.sim)
+        self.bus = BusSystem(self.sim, tick_period_s=BUS_TICK_PERIOD_S)
+        # IP-1230 (FR-4440) — opt-in environmental anomalies; scheduled only when declared.
+        self.sim.register_handler("env_anomaly_check", self._h_env_anomaly_check)
         self.recovery = RecoverySystem(
             self.sim,
             difficulty=self.ctx.param_values.get("safe_mode_recovery_difficulty", "realistic"),
@@ -261,6 +269,14 @@ class SessionManager:
             t = (anchor + ((from_t - anchor) // step) * step if from_t >= anchor else from_t) + step
             while t <= self.horizon:
                 self.sim.schedule(t, "condition_check")
+                t += step
+        # IP-1230 (FR-4440, ADR-0039 decision 8) — only when the vignette declares an
+        # environmental-anomaly block, so no other vignette gains an eventlog entry or RNG draw.
+        if self.vignette.environmental_anomalies:
+            step = int(BUS_TICK_PERIOD_S * 1_000_000)
+            t = (anchor + ((from_t - anchor) // step) * step if from_t >= anchor else from_t) + step
+            while t <= self.horizon:
+                self.sim.schedule(t, "env_anomaly_check")
                 t += step
         fired_at_from_t: Optional[set[str]] = None
         if not initial:
@@ -1090,15 +1106,34 @@ class SessionManager:
                 # is coerced to "minor" rather than rejected, so a malformed inject cannot abort a
                 # running exercise (IP-1061, BL-0064 — this merges what were two divergent
                 # branches, the second of which validated but was unreachable).
-                sev = str(eff.get("severity", "minor"))
-                if sev == "clear":
-                    sev = "none"
-                if sev not in ("none", "minor", "severe"):
-                    sev = "minor"
-                world.space_weather = {"severity": sev}
-                world.messages.append({"to": ["white", "blue", "red"],
-                                       "text": f"Space weather: severity={sev}",
-                                       "t": world.now})
+                # IP-1230 (ADR-0039 decisions 1/3): keys are updated, never the whole dict
+                # replaced, so a severity inject keeps a declared index series and a series-only
+                # inject leaves severity untouched. With neither key, today's "minor" default.
+                has_series = "index_series" in eff
+                sw = dict(world.space_weather)
+                if "severity" in eff or not has_series:
+                    sev = str(eff.get("severity", "minor"))
+                    if sev == "clear":
+                        sev = "none"
+                    if sev not in ("none", "minor", "severe"):
+                        sev = "minor"
+                    sw["severity"] = sev
+                    world.messages.append({"to": ["white", "blue", "red"],
+                                           "text": f"Space weather: severity={sev}",
+                                           "t": world.now})
+                if has_series:
+                    new = [{"t": world.now + int(float(e.get("offset_s", 0)) * 1_000_000),
+                            **{k: float(e[k]) for k in ("f107", "kp") if k in e}}
+                           for e in eff["index_series"]]
+                    if new:
+                        first = min(e["t"] for e in new)
+                        kept = [e for e in sw.get("index_series", []) if e["t"] < first]
+                        sw["index_series"] = sorted(kept + new, key=lambda e: e["t"])
+                        world.messages.append({"to": ["white", "blue", "red"],
+                                               "text": "Space weather: index series updated ("
+                                                       + ", ".join(f"{k}={v:g}" for k, v in new[0].items() if k != "t")
+                                                       + ")", "t": world.now})
+                world.space_weather = sw
             elif kind == "conjunction_warning":
                 # FUTURE-WORK §2: pre-load a conjunction advisory so prop.collision_avoid
                 # has something to react to. Effect carries {a, b, range_km, t_close}.
@@ -1192,6 +1227,36 @@ class SessionManager:
                                            "text": f"{eff['target']}: scripted manoeuvre ({eff['mode']}), "
                                                    f"cost={result['cost']:.1f} m/s",
                                            "t": world.now})
+
+    def _h_env_anomaly_check(self, world: WorldState, payload: dict, rng) -> None:
+        """IP-1230 (FR-4440, ADR-0039 decision 8) — environment-induced anomalies.
+
+        One seeded draw per listed asset per tick, always (so the RNG stream never depends on
+        world state); fires with probability ``1 − exp(−base_rate × f_geo(Kp) × dt_days)`` through
+        the existing ``anomaly`` effect. Skipped (draw still taken) when the asset is gone, has no
+        bus, or — for ``subsystem: bus`` — is already in safe mode. Records ``payload["fired"]`` in
+        place, as `_h_condition_check` does, so AAR shows each firing."""
+        import math as _math
+        from spacesim.engine.perturbations import anomaly_rate_multiplier
+        block = self.vignette.environmental_anomalies or {}
+        rate = float(block.get("base_rate_per_day", 0.0))
+        subsystem = block.get("subsystem", "bus")
+        cause = str(block.get("cause", "space_weather"))
+        mult = anomaly_rate_multiplier(world.space_weather.get("index_series"), world.now)
+        p = 1.0 - _math.exp(-rate * mult * (BUS_TICK_PERIOD_S / 86400.0))
+        fired: list[dict] = []
+        for aid in block.get("assets", []):
+            draw = rng.random()
+            asset = world.assets.get(aid)
+            if asset is None or asset.bus_state is None:
+                continue
+            if subsystem == "bus" and asset.bus_state.safe_mode.active:
+                continue
+            if draw < p:
+                self._apply_inject_effects(world, [{"type": "anomaly", "target": aid,
+                                                    "subsystem": subsystem, "cause": cause}], rng)
+                fired.append({"asset": aid, "p": p})
+        payload["fired"] = fired
 
     @staticmethod
     def _skip_inject_effect(world: WorldState, eff, problem: str) -> None:

@@ -328,6 +328,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   grounded), auto-populated for exactly the one field matching `PayloadState.type` — authored defaults
   distinct from `isr.py`'s `BEAM_MODES` runtime table (IP-1171, FR-5170/FR-5180).
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
+  IP-1230: `bus_tick` also applies opt-in index-driven LEO drag (`_apply_index_drag`) to `kepler`
+  LEO assets with an authored `Asset.ballistic_coeff_m2_kg`, only while
+  `world.space_weather["index_series"]` is declared (no series → no-op, byte-identical).
 - `spacesim/engine/maneuver.py` — pure compute for six manoeuvre entry modes
   (eci / lvlh / finite_burn / target_coe / hohmann / plane_change).
 - `spacesim/engine/isr.py` — ISR beam-mode database (EO/SAR/SDA/weather/mw — the last two added
@@ -349,7 +352,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   √dwell × √N collectors × atmospheric loss (FW §11.A.6).
 - `spacesim/engine/perturbations.py` — drag, J3/J4, third-body (Sun/Moon), SRP perturbations
   and `secular_drag_decay()` (FW §11.B.7-9); pure functions composed by future high-fidelity
-  propagators.
+  propagators. **IP-1230 (FR-1230/FR-4440, ADR-0039):** `f_solar`/`f_geo` piecewise-linear
+  space-weather index factors, step-held `index_in_effect`, `drag_multiplier` (`f_solar × f_geo`),
+  `anomaly_rate_multiplier` (`f_geo` only) and the shared `index_series_problems` validator.
 - `spacesim/engine/sun.py` — `sun_unit_eci`, binary `is_sunlit()`, smooth `eclipse_fraction()`
   (umbra/penumbra interpolation; FW §11.B.10); `cats_phase_angle_deg()` (IP-1300, FR-8220) — the Sun-target-
   chaser illumination ("CATS") phase angle, the engine's single shared phase-angle function
@@ -374,6 +379,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `RoleRequirement`/`Vignette.roles_needed` (IP-1151, FR-4210) — optional, additive staffing
   requirements; absent for every vignette shipped before this package.
   `Vignette.coaching` is a list of `{at_sim_t?, cell, title, body}` notes (FW §11.D.17).
+  `Vignette.space_weather_series` / `environmental_anomalies` (IP-1230, FR-1230/FR-4440,
+  ADR-0039) — optional; a declared F10.7/Kp series (stored as `world.space_weather["index_series"]`)
+  and an opt-in environmental-anomaly base rate; non-physical values refused at load.
   `Vignette.effect_gating_rules` (IP-1270, FR-3430) — additive, optional list of
   `{action_type?, reversibility_category?, required_role}`; `build_world()` passes it through
   unmodified into `VignetteContext.gating_rules`, absent (`[]`) for every vignette shipped before
@@ -448,7 +456,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **IP-1200 (FR-5510):** `save_as_scenario()` — requires `self.started`, else calls
   `vignette_export.save_vignette(..., start_epoch=self.sim.clock.now)`,
   `validate_order` dry-run, `next_contacts` fleet countdown, `begin_recovery`/`recovery_status`
-  wiring `RecoverySystem` for the safe-mode recovery strip; **multiplayer:** server-authoritative
+  wiring `RecoverySystem` for the safe-mode recovery strip; **IP-1230:** an opt-in `env_anomaly_check` tick
+  (`_h_env_anomaly_check`, `FR-4440`) and a `space_weather` inject that updates keys and accepts an
+  `index_series`; **multiplayer:** server-authoritative
   lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /
   catch_up / clock_state`, re-anchor on `start/rewind/undo/advance` so the wall clock can't snap
   the sim back),

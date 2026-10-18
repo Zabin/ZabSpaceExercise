@@ -14,16 +14,24 @@ Handlers:
 
 from __future__ import annotations
 
+import numpy as np
+
 from spacesim.engine.bus import advance_bus, downlink_storage, refresh_ground_view
+from spacesim.engine.orbit import MU_EARTH, R_EARTH_EQ
+from spacesim.engine.perturbations import drag_multiplier, secular_drag_decay
 from spacesim.engine.propagator import ModeratePropagator
 from spacesim.engine.sun import eclipse_fraction
 from spacesim.engine.world import WorldState
 
 
 class BusSystem:
-    def __init__(self, sim, propagator: ModeratePropagator | None = None) -> None:
+    def __init__(self, sim, propagator: ModeratePropagator | None = None,
+                 tick_period_s: float = 300.0) -> None:
         self.sim = sim
         self.prop = propagator or ModeratePropagator()
+        # IP-1230 (ADR-0039 decision 7) — the drag step's dt: a construction-time constant, so
+        # live advance, rewind and replay all apply the identical per-tick decrement.
+        self.tick_period_s = float(tick_period_s)
         sim.register_handler("bus_tick", self._h_tick)
         sim.register_handler("telemetry_contact", self._h_contact)
         sim.register_handler("isr_downlink", self._h_downlink)
@@ -59,6 +67,34 @@ class BusSystem:
                 continue
             advance_bus(asset.bus_state, asset.payload_state, world.now,
                         self._sunlit(world, asset, world.now), space_weather=sw)
+        self._apply_index_drag(world)
+
+    def _apply_index_drag(self, world: WorldState) -> None:
+        """IP-1230 (FR-1230, ADR-0039 decision 7) — opt-in, index-driven secular LEO drag.
+
+        No declared series → return at once (no state change, no RNG): every vignette that does
+        not opt in is byte-identical. Otherwise each ``kepler`` LEO/LEO_SSO asset with an authored
+        ballistic coefficient loses ``secular_drag_decay(alt, BC, dt) × f_solar × f_geo`` of
+        semi-major axis, applied as the equivalent retrograde along-track Δv through the
+        propagator seam (re-epoched at this tick, so position is continuous). Environment, not a
+        manoeuvre: no ``delta_v_ms`` is charged."""
+        series = world.space_weather.get("index_series")
+        if not series:
+            return
+        mult = drag_multiplier(series, world.now)
+        for asset in world.assets.values():
+            orbit, bc = asset.orbit, asset.ballistic_coeff_m2_kg
+            if (orbit is None or orbit.source != "kepler" or bc is None or bc <= 0
+                    or orbit.regime not in ("LEO", "LEO_SSO")):
+                continue
+            r, v = self.prop.rv(orbit, world.now)
+            a = float(np.linalg.norm(r))
+            speed = float(np.linalg.norm(v))
+            drop = -secular_drag_decay(a - R_EARTH_EQ, bc, self.tick_period_s) * mult
+            if drop <= 0.0 or speed == 0.0:
+                continue
+            dv = MU_EARTH * drop / (2.0 * a * a * speed)
+            asset.orbit = self.prop.apply_impulse(orbit, -dv * (v / speed), world.now)
 
     def _h_contact(self, world: WorldState, payload: dict, rng) -> None:
         asset = world.assets.get(payload["asset"])
