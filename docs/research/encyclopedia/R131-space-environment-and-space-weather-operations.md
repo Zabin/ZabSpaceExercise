@@ -1,16 +1,16 @@
 # R131 — Space Environment and Space Weather Operations
 
 > **Document ID:** R131
-> **Version:** 1.1
+> **Version:** 1.2
 > **Status:** ✅ Done
 > **Dependencies:** [R110](R110-communications.md), [R111](R111-power-and-thermal-operations.md)
 > **Referenced By:** [R121](R121-telemetry-logging-and-attack-signatures.md), [R117](R117-directed-energy-and-kinetic-effects.md)
 > **Produces:** implementation constraints for [`engine/perturbations.py`](../../../spacesim/engine/perturbations.py) (`atmospheric_density`, `drag_acceleration`, `secular_drag_decay`), [`engine/bus.py`](../../../spacesim/engine/bus.py) (`advance_bus`'s `storm_mult`), [`engine/world.py`](../../../spacesim/engine/world.py) (`WorldState.space_weather`), and the `space_weather` inject type in [`session/manager.py`](../../../spacesim/session/manager.py); (v1.1) a numeric index-series (F10.7/Kp) input shape for `BL-0074`/B8's index-driven drag/anomaly-rate feature
-> **Feature Mapping:** FS-105 (Spacecraft Operations), FS-104 (SDA Tasking)
+> **Feature Mapping:** FS-105 (Spacecraft Operations), FS-104 (SDA Tasking), FS-123 (Space-Weather-Index Coupling, v1.1–v1.2)
 > **Related Topics:** [R110](R110-communications.md) (Communications — the jam/interference signature this topic's ionospheric effects can be confused with), [R111](R111-power-and-thermal-operations.md) (Power and Thermal Systems Operations — the eclipse-drain model space weather scales), [R121](R121-telemetry-logging-and-attack-signatures.md) (Telemetry, Logging, and Attack-Signature Modeling — the symptom layer an environmental event must be disambiguated within), [R127](R127-conjunction-assessment-and-collision-avoidance.md) (Conjunction Assessment — drag-driven orbit uncertainty), [R117](R117-directed-energy-and-kinetic-effects.md) (Directed Energy and Kinetic Effects — debris-persistence-by-altitude shares this topic's drag mechanism, v1.2)
-> **Last Reviewed:** 2026-09-27
-> **Primary Sources Consulted:** 4 (2 for the v1.0 storm/scintillation/SEU content; 2 new for
-> v1.1's numeric-index-driven drag content)
+> **Last Reviewed:** 2026-10-18
+> **Primary Sources Consulted:** 10 (2 for the v1.0 storm/scintillation/SEU content; 2 new for
+> v1.1's numeric-index-driven drag content; 6 new for v1.2's quantitative index anchors)
 
 [↑ Tier R100 index](R100-index.md) · [Encyclopedia index](INDEX.md)
 
@@ -18,6 +18,16 @@
 LEO drag and anomaly rate) — a new §3 subsection on the real F10.7/Kp numeric-index inputs to
 atmospheric density models, and a new §5 bullet on how to wire them without inventing an unsourced
 formula. No existing content changed in substance.*
+
+*v1.2 changelog (2026-10-18): grounds `BL-0104`/`BL-0121` (FS-123's two Open Questions: the
+index-to-multiplier mapping and the plausible index range). Adds a new §3 subsection,
+"Quantitative anchors for an index-driven multiplier," and a new §5 bullet that turns those
+anchors into implementation constraints. **Verification note:** this session's environment
+network policy refused direct page fetches (`WebFetch`/`curl` to every external host), so each
+v1.2 claim was checked against the search engine's indexed excerpt of the cited page rather than
+a full-page read. Snapshot links use the same `web.archive.org/web/2026/<url>` form as v1.1 and
+were not individually opened. A future citation-rot pass with network access should re-read the
+six v1.2 sources in full. No v1.0/v1.1 content changed.*
 
 ## 1. Purpose
 
@@ -144,6 +154,63 @@ single enum value) is exactly how the real world represents this input, and the 
 input is an additive, more granular alternative for the same underlying physics, not a
 replacement for the existing enum.
 
+### Quantitative anchors for an index-driven multiplier (v1.2)
+
+**Kp is a bounded, quasi-logarithmic 0–9 scale in thirds, and NOAA's G-scale is defined directly
+on it.** The planetary Kp index is the 3-hourly average of standardized K values from 13
+mid-latitude observatories, reported in 28 steps (0, 0+, 1−, 1, … 9). K itself is
+quasi-logarithmic: the nT threshold roughly doubles per step up to K=4 and rises faster above it
+(e.g. 5 nT at K=1, 40 nT at K=4, 500 nT at K=9)
+([NOAA SWPC, "The K-index"](https://www.swpc.noaa.gov/sites/default/files/images/u2/TheK-index.pdf)
+([Wayback](https://web.archive.org/web/2026/https://www.swpc.noaa.gov/sites/default/files/images/u2/TheK-index.pdf))).
+NOAA assigns geomagnetic-storm levels from it: **Kp 5 = G1, 6 = G2, 7 = G3, 8 to 9− = G4,
+9o = G5**. The G3 row is the first to name increased LEO drag explicitly
+([NOAA SWPC, "NOAA Space Weather Scales" (scale table, rev. 2023-12-11)](https://www.swpc.noaa.gov/sites/default/files/images/NOAAscales.pdf)
+([Wayback](https://web.archive.org/web/2026/https://www.swpc.noaa.gov/sites/default/files/images/NOAAscales.pdf))).
+A declared Kp outside **[0, 9]** is therefore not a physical value, and Kp ≤ 4 is below storm
+level on NOAA's own scale.
+
+**F10.7 is reported in solar flux units (sfu) and spans roughly 50 to 300+ sfu over a solar
+cycle.** NOAA SWPC states the 10.7 cm flux "can vary from below 50 s.f.u. to above 300 s.f.u.
+over the course of a solar cycle," and that satellite drag correlates with the solar cycle
+"especially as represented by F10.7"
+([NOAA SWPC, "F10.7 cm Radio Emissions"](https://www.swpc.noaa.gov/phenomena/f107-cm-radio-emissions)
+([Wayback](https://web.archive.org/web/2026/https://www.swpc.noaa.gov/phenomena/f107-cm-radio-emissions))).
+A zero or negative F10.7 is non-physical. Values well beyond ~300 sfu occur only as short flare
+spikes, which is why density models use the 81-day mean alongside the daily value (§3 above).
+
+**The density response to F10.7 is much larger than the index change, about an order of
+magnitude at 400 km across a solar cycle.** An NCAR-TIEGCM study of solar cycle 23 (1996–2008)
+finds solar forcing rising by more than a factor of 4 from minimum to maximum, while 400 km
+thermospheric density rises by **more than a factor of 10** over the same interval. Intra-annual
+swings stay under 2× in quiet years and reach 2–3× in active ones
+([Tang et al., "TIEGCM Numerical Study on the Thermospheric Density Response to Solar F10.7 Radio
+Flux Variations during the 23rd Solar Cycle," *Chinese Journal of Space Science* 41(5):704–714
+(2021)](https://www.cjss.ac.cn/en/article/doi/10.11728/cjss2021.05.704)
+([Wayback](https://web.archive.org/web/2026/https://www.cjss.ac.cn/en/article/doi/10.11728/cjss2021.05.704));
+*single modeled source (Tier B), not corroborated here by an observational density record*).
+Together with §3's 2–10× storm factor (the geomagnetic term), the solar-cycle term and the storm
+term are each roughly one order of magnitude at LEO, and they multiply rather than add. A
+quiet-Kp solar maximum and a G5 storm at solar minimum are distinct regimes, which is why the two
+indices are separate inputs.
+
+**Environment-induced anomaly likelihood follows the geomagnetic index (charging, particles), not
+F10.7, and the evidence on its shape is mixed.** A 2025 exposure-normalized study of anomaly
+catalogs finds that the **daily probability of an anomaly rises sharply for Kp ≥ 5**, even though
+raw anomaly counts are dominated by the far more numerous quiet days. It attributes LEO anomalies
+to storm drag, nightside auroral charging and cosmic-ray single-event effects, and GEO anomalies
+mainly to surface and deep-dielectric charging
+([Kirov et al., Space Climate workshop proceedings, Sozopol (2025)](https://www.spaceclimate.bas.bg/ws-sozopol/pdf/Articles/Kirov2025.pdf)
+([Wayback](https://web.archive.org/web/2026/https://www.spaceclimate.bas.bg/ws-sozopol/pdf/Articles/Kirov2025.pdf));
+*single source, workshop proceedings, flagged*). Against that, an Inmarsat GEO anomaly study
+found average Kp stayed below 2 in the days around its anomalies, and concluded surface charging
+was not the sole cause, pointing to energetic-electron flux instead
+([Lohmeyer et al., *Space Weather* (2013), MIT DSpace](https://dspace.mit.edu/handle/1721.1/110812)
+([Wayback](https://web.archive.org/web/2026/https://dspace.mit.edu/handle/1721.1/110812))). The
+defensible reading for a PME simulator: **anomaly rate rises with Kp above the G1 threshold, and
+a quiet period still carries a non-zero base rate** (see the SEU paragraph above: SEUs track
+SAA/polar geometry, not storm level). Neither source supports a precise rate-versus-Kp curve.
+
 ### Sources
 
 - *Orbital Radar, "How Solar Storms Affect Satellites — Drag, Radiation & Charging"* — [live](https://orbitalradar.com/space-weather/solar-storms-and-satellites)
@@ -176,6 +243,24 @@ replacement for the existing enum.
 - *SPENVIS, "Help: Atmosphere and ionosphere models"* — [live](https://www.spenvis.oma.be/help/background/atmosphere/models.html)
   · [snapshot](https://web.archive.org/web/2026/https://www.spenvis.oma.be/help/background/atmosphere/models.html)
   · accessed 2026-09-27.
+- *NOAA SWPC, "The K-index"* — [live](https://www.swpc.noaa.gov/sites/default/files/images/u2/TheK-index.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://www.swpc.noaa.gov/sites/default/files/images/u2/TheK-index.pdf)
+  · accessed 2026-10-18 (search-index excerpt; see the v1.2 verification note).
+- *NOAA SWPC, "NOAA Space Weather Scales" (scale table, rev. 2023-12-11)* — [live](https://www.swpc.noaa.gov/sites/default/files/images/NOAAscales.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://www.swpc.noaa.gov/sites/default/files/images/NOAAscales.pdf)
+  · accessed 2026-10-18 (search-index excerpt).
+- *NOAA SWPC, "F10.7 cm Radio Emissions"* — [live](https://www.swpc.noaa.gov/phenomena/f107-cm-radio-emissions)
+  · [snapshot](https://web.archive.org/web/2026/https://www.swpc.noaa.gov/phenomena/f107-cm-radio-emissions)
+  · accessed 2026-10-18 (search-index excerpt).
+- *Tang et al., "TIEGCM Numerical Study on the Thermospheric Density Response to Solar F10.7 Radio Flux Variations during the 23rd Solar Cycle," Chinese Journal of Space Science 41(5):704–714 (2021)* — [live](https://www.cjss.ac.cn/en/article/doi/10.11728/cjss2021.05.704)
+  · [snapshot](https://web.archive.org/web/2026/https://www.cjss.ac.cn/en/article/doi/10.11728/cjss2021.05.704)
+  · accessed 2026-10-18 (abstract, search-index excerpt).
+- *Kirov et al., Space Climate workshop proceedings, Sozopol (2025)* — [live](https://www.spaceclimate.bas.bg/ws-sozopol/pdf/Articles/Kirov2025.pdf)
+  · [snapshot](https://web.archive.org/web/2026/https://www.spaceclimate.bas.bg/ws-sozopol/pdf/Articles/Kirov2025.pdf)
+  · accessed 2026-10-18 (abstract, search-index excerpt).
+- *Lohmeyer et al., Space Weather (2013), MIT DSpace record* — [live](https://dspace.mit.edu/handle/1721.1/110812)
+  · [snapshot](https://web.archive.org/web/2026/https://dspace.mit.edu/handle/1721.1/110812)
+  · accessed 2026-10-18 (search-index excerpt).
 
 ## 4. Operational Context
 
@@ -224,6 +309,35 @@ storms do not produce).
   environment-induced anomalies (B8's second ask) should scale with the same derived multiplier,
   reusing the multiplier as a single shared "how disturbed is the environment right now" signal
   rather than deriving anomaly rate from the raw index independently of drag.
+- **(v1.2) Turning the §3 quantitative anchors into a mapping (`BL-0104`/`BL-0121`, FS-123).** No
+  cited source gives a closed-form "index to multiplier" curve at this simulator's fidelity, so the
+  mapping is a *design* choice for `06-feature-specification`. It must sit on these anchors, not on
+  invented ones:
+  - **Two factors that multiply, not one blended scalar:** a solar factor from F10.7 and a
+    geomagnetic factor from Kp, combined as `M = f_solar(F10.7) × f_geo(Kp)`. Each factor should
+    span about one order of magnitude (Tang et al. for F10.7 at 400 km; §3's 2–10× for storms),
+    not more.
+  - **The geomagnetic factor should be flat (1.0) for Kp ≤ 4 and rise across the G-scale, Kp 5 to
+    9**, reaching the top of the cited 2–10× storm range at G5. A curve that already moves at Kp 2
+    would contradict NOAA's own below-storm boundary.
+  - **The solar factor should be monotone in F10.7 across ~50–300 sfu with about a 10× span**, and
+    should equal 1.0 at one named reference flux, so `engine/perturbations.py::_ATMOS_TABLE` keeps
+    its meaning as the reference density. Piecewise-linear interpolation between a small table of
+    anchors is preferable to an exponential fit, since no cited source supports a fit's shape.
+  - **Plausible range (`BL-0121`):** Kp is physically bounded to [0, 9], and F10.7 to positive
+    values. A declared Kp outside [0, 9], or an F10.7 that is ≤ 0 or non-finite, is a data error.
+    Refuse it at the authoring/inject boundary (the `FR-5310` load-time validation and `IP-1063`
+    fire-time validation pattern) rather than silently clamping it inside the engine. A positive
+    F10.7 above the table's top anchor is rare but real (flare spikes), so clamp it to the top
+    anchor rather than refusing it.
+  - **Anomaly rate should use the geomagnetic factor, not the full drag multiplier.** The v1.1
+    bullet above suggested reusing the drag multiplier as one shared "how disturbed" signal. The
+    v1.2 evidence (anomaly likelihood tracks Kp and charging, while F10.7's solar-cycle term mainly
+    moves drag) refines that: scale the environment-induced anomaly rate by `f_geo(Kp)` only, over
+    a **vignette-authored base rate** (the quiet-time SEU/charging background). Do not hard-code a
+    base rate in `session/manager.py`; no cited source gives one for a generic spacecraft.
+  - **Keep all of it a pure function of declared data and sim time** (MSTR-002 invariant 1), with
+    any random draw going through `engine/rng.py::SeededRng` only.
 - **A disambiguation training feature (e.g. the "attack-signature diagnosis trainer" concept in the
   strategic review's Part 5) should present the G/S/R-index-style corroborating signal alongside
   telemetry**, not just the symptom telemetry alone — the real disambiguation skill this topic
@@ -239,7 +353,7 @@ storms do not produce).
 
 FS-105 (Spacecraft Operations) is the direct consumer for any telemetry/bus-model extension; FS-104
 (SDA Tasking) is the consumer for any feature surfacing environmental corroboration alongside SDA
-custody/anomaly assessment.
+custody/anomaly assessment. FS-123 (Space-Weather-Index-Driven Drag and Anomaly-Rate Coupling) consumes the v1.1 index-input shape and the v1.2 quantitative anchors.
 
 ## 7. Related Topics
 
