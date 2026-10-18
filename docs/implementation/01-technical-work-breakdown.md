@@ -828,6 +828,36 @@ after `VERIFIED`, and the `FR-4440` Notes line (`BL-0281`, `04`).
 
 No cross-package sequencing constraint.
 
+## Controller view and pending-inject queue (pipeline run #191, 2026-10-18)
+
+**Input:** [FS-106](../features/FS-106-white-cell-dashboard.md) v2.3: `FR-4450` (`FEAT-4400`) and
+`FR-4620` (`FEAT-4600`). This is the owner-prioritized stalled batch, `BL-0079` (item B13).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Handles, logged `inject_admin` cancel/edit, override fold, handler skip, re-arm, pending listing | C2 session, `session/manager.py`, `inprocess.py` | IP-1066 |
+| 2 | Routes and the White pending-inject list (cancel / edit) | C4 console, `server.py`, `app.js`, `index.html` | IP-1066 |
+| 3 | Single-instant composite read (truth + both `CellView`s) | C2 session, `manager.py`, `inprocess.py` | IP-1067 |
+| 4 | White-only route and the text Compare panel | C4 console | IP-1067 |
+
+**Split rationale.** The work is two packages along the requirement seam, which FS-106 v2.3
+already treats as independent (`FR-4620`'s Notes):
+
+- `IP-1066` changes the deterministic inject path: new event kind, handler checks and re-arm. Its
+  risk sits in replay and rewind.
+- `IP-1067` is a pure read composition with no state.
+
+Neither depends on the other, and each verifies on its own. Bundling them would make one
+Definition of Done mix a determinism-sensitive change with a read-only one.
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1066](packages/IP-1066-pending-inject-edit-cancel.md) | FS-106 v2.3 (`FR-4450`) | 🟢 READY | Pre-authorized (standing 2026-10-11 + owner's 2026-10-18 stalled-batch instruction) |
+| [IP-1067](packages/IP-1067-side-by-side-controller-view.md) | FS-106 v2.3 (`FR-4620`) | 🟢 READY | Pre-authorized (same) |
+
+No cross-package sequencing constraint. **Not packaged:** the manual prose (`WCM-5` and the
+god-view section), routed via §15.1 after `VERIFIED`.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
