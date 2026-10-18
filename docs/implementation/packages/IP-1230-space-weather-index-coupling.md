@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1230
 > **Version:** 1.0
-> **Status:** 🟢 READY. Authored 2026-10-18 by `07-implementation-planning` in pipeline run #188.
+> **Status:** 🟡 IN PROGRESS — 2026-10-18, `08-code-implementation`, pipeline run #189.
+> *(Was 🟢 READY. Authored 2026-10-18 by `07-implementation-planning` in pipeline run #188.)*
 > Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** this package falls under the project owner's standing
 > pre-authorization of 2026-10-11 for the packages this pipeline iteration reaches. The owner's
