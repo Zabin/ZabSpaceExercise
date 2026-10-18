@@ -17,7 +17,8 @@
 > `BL-0104`, `BL-0121`;
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
 > `FR-1230`, `FR-4440`; [ADR-0039](../architecture/adr/ADR-0039-space-weather-index-to-multiplier-mapping.md);
-> `IP-1230` (planned).
+> [IP-1230](../implementation/packages/IP-1230-space-weather-index-coupling.md) (✅ VERIFIED
+> 2026-10-18, [VR-1230](../implementation/verification/VR-1230-space-weather-index-coupling.md)).
 > **Produces:** a deterministic coupling from a declared space-weather index time series into LEO
 > drag decay (`FR-1230`) and into the rate of environment-induced anomalies (`FR-4440`).
 > **Feature Mapping:** FS-123 (this document); `FEAT-1200` (`FR-1230`), `FEAT-4400` (`FR-4440`).
