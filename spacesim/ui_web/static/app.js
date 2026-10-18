@@ -455,6 +455,49 @@ function onInjectWhenChange() {
   $("inject-abs-wrap").style.display = mode === "abs" ? "" : "none";
 }
 
+// IP-1066 (FR-4450) — White Cell's pending-inject queue: every not-yet-fired inject, with
+// Cancel and Edit… controls. The server decides (White-only, already-fired, whole-inject
+// check); a refusal is shown in #inject-result, never thrown.
+async function renderPendingInjects() {
+  const box = $("pending-injects");
+  if (!box || !SID || CELL !== "white") return;
+  const rows = await api.get(`/api/sessions/${SID}/injects/pending`).catch(() => null);
+  if (!rows) return;
+  if (!rows.length) { box.innerHTML = '<span class="muted">(no pending injects)</span>'; return; }
+  box.innerHTML = rows.map((r) => `<div class="ctrl" style="font-size:11px;gap:6px">
+      <code>${esc(r.handle)}</code>
+      <span class="muted">${r.trigger === "time" ? esc(iso(r.at)) : "on condition"}</span>
+      <span>${esc((r.effects || []).map((e) => e.type).join(", "))}</span>
+      <button class="vbtn" data-pi-cancel="${esc(r.handle)}">Cancel</button>
+      <button class="vbtn" data-pi-edit="${esc(r.handle)}">Edit…</button></div>`).join("");
+  box.querySelectorAll("[data-pi-cancel]").forEach((b) => { b.onclick = () => pendingInjectAction(b.dataset.piCancel, "cancel"); });
+  box.querySelectorAll("[data-pi-edit]").forEach((b) => {
+    b.onclick = () => pendingInjectAction(b.dataset.piEdit, "edit", rows.find((r) => r.handle === b.dataset.piEdit));
+  });
+}
+
+async function pendingInjectAction(handle, action, row) {
+  const out = $("inject-result");
+  let body = {};
+  if (action === "edit") {
+    const raw = prompt(`Effects for ${handle} (JSON list):`, JSON.stringify(row.effects));
+    if (raw === null) return;
+    try { body.effects = JSON.parse(raw); }
+    catch (err) { if (out) { out.style.color = "var(--red)"; out.textContent = "✗ effects JSON invalid: " + err.message; } return; }
+    if (row.trigger === "time") {
+      const secs = (prompt("New fire time, seconds from now (blank = unchanged):", "") || "").trim();
+      if (secs) body.at_sim_t = Math.round(NOW + Number(secs) * 1e6);
+    }
+  }
+  try {
+    await api.post(`/api/sessions/${SID}/injects/${encodeURIComponent(handle)}/${action}`, body);
+    if (out) { out.style.color = ""; out.textContent = `✓ ${action === "cancel" ? "cancelled" : "edited"} ${handle}`; }
+  } catch (err) {
+    if (out) { out.style.color = "var(--red)"; out.textContent = "✗ server error: " + (err.message || err); }
+  }
+  await refresh();
+}
+
 async function renderQueue() {
   const QUEUE_TTL_US = 5 * 60 * 1_000_000;   // drop completed/cancelled after 5 min sim time
   const orders = await api.get(`/api/sessions/${SID}/orders/${CELL}`).catch(() => []);
@@ -1413,6 +1456,7 @@ async function refresh() {
   });
   drawMap();
   renderQueue();
+  renderPendingInjects();   // IP-1066 — White only (a no-op for other seats)
   renderAlarms();
   refreshAAR();
   renderConjunctions();   // FW §11.C.14

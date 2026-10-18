@@ -458,7 +458,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `validate_order` dry-run, `next_contacts` fleet countdown, `begin_recovery`/`recovery_status`
   wiring `RecoverySystem` for the safe-mode recovery strip; **IP-1230:** an opt-in `env_anomaly_check` tick
   (`_h_env_anomaly_check`, `FR-4440`) and a `space_weather` inject that updates keys and accepts an
-  `index_series`; **multiplayer:** server-authoritative
+  `index_series`; **IP-1066 (FR-4450):** a White-only pending-inject queue (`pending_injects`/
+  `cancel_inject`/`edit_inject`) logged as `inject_admin` events whose overrides fold from the event
+  log strictly before the fire instant (`_inject_overrides`); a stale event is logged `skipped`, edits
+  re-arm after a rewind, White future injects carry `white-<n>` handles; **multiplayer:** server-authoritative
   lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /
   catch_up / clock_state`, re-anchor on `start/rewind/undo/advance` so the wall clock can't snap
   the sim back),
@@ -539,7 +542,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   consequence-confirm, fleet rail with next-contact countdown/SoC/alarm badge/filter + alarm
   deep-link, `j/k/c/g` keyboard nav, presentation mode, supersede-guarded refresh, 2D belief map,
   subsystem drill-down whose cards carry per-subsystem telemetry + command-verb buttons; `api.post`
-  attaches the caller's own seat as a `cell` query param to every mutating call; `api.put/patch/del`
+  attaches the caller's own seat as a `cell` query param to every mutating call; IP-1066
+  `renderPendingInjects` lists pending injects with Cancel / Edit…; `api.put/patch/del`
   extend the same cell-query-param convention for IP-1174's routes below), `globe.js` (3D
   orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`
   (telemetry line graphs), `creator.js` (IP-1174 — the Vignette Creator's White-Cell UI: synchronized

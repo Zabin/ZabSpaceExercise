@@ -87,6 +87,12 @@ class InjectRequest(BaseModel):
     at_sim_t: Optional[int] = None   # FW §11.D.19: optional future-dated scheduling (µs UTC)
 
 
+class InjectEditRequest(BaseModel):
+    """IP-1066 (FR-4450) — new effects and/or a new fire time (µs UTC) for a pending inject."""
+    effects: Optional[list] = None
+    at_sim_t: Optional[int] = None
+
+
 class TleRequest(BaseModel):
     id: str
     line1: str
@@ -730,6 +736,34 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def injects_list(sid: str) -> list:
         _require(sid)
         return api.list_injects(sid)
+
+    # IP-1066 (FR-4450) — the pending-inject queue. Listing is a no-cell White read like
+    # /injects; cancel/edit are White-only (403 otherwise, Observer included), at the same
+    # client-side-trust level as every other White route (CLAUDE.md LAN trust model).
+    @app.get("/api/sessions/{sid}/injects/pending")
+    def injects_pending(sid: str) -> list:
+        _require(sid)
+        return api.pending_injects(sid)
+
+    @app.post("/api/sessions/{sid}/injects/{handle}/cancel")
+    def inject_cancel(sid: str, handle: str, cell: Optional[str] = None) -> Ack:
+        _require(sid)
+        if cell != "white":
+            raise HTTPException(status_code=403, detail="only White Cell may cancel an inject")
+        ack = api.cancel_inject(sid, handle)
+        if not ack.ok:
+            raise HTTPException(status_code=400, detail=ack.reason)
+        return ack
+
+    @app.post("/api/sessions/{sid}/injects/{handle}/edit")
+    def inject_edit(sid: str, handle: str, req: InjectEditRequest, cell: Optional[str] = None) -> Ack:
+        _require(sid)
+        if cell != "white":
+            raise HTTPException(status_code=403, detail="only White Cell may edit an inject")
+        ack = api.edit_inject(sid, handle, effects=req.effects, at_sim_t=req.at_sim_t)
+        if not ack.ok:
+            raise HTTPException(status_code=400, detail=ack.reason)
+        return ack
 
     @app.get("/api/sessions/{sid}/view/{cell}")
     def get_view(sid: str, cell: str) -> CellView:

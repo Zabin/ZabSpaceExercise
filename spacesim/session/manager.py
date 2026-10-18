@@ -150,6 +150,9 @@ class SessionManager:
         self.sim = Simulation(self.world, seed=seed)
         self.sim.register_handler("inject", self._h_inject)
         self.sim.register_handler("condition_check", self._h_condition_check)
+        # IP-1066 (FR-4450) — White Cell cancel/edit of a pending inject, as a logged action.
+        self.sim.register_handler("inject_admin", self._h_inject_admin)
+        self._white_inject_seq = 0   # handles white-<n> for White future-dated injects (never reused)
         from spacesim.engine.effects import ModerateEffectResolver
         self.osys = OrderSystem(
             self.sim, roe=dict(self.ctx.roe), gating_rules=list(self.ctx.gating_rules),
@@ -294,6 +297,16 @@ class SessionManager:
                     schedule = at > from_t or (at == from_t and inj.id not in fired_at_from_t)
                 if schedule:
                     self.sim.schedule(at, "inject", {"effects": inj.effects, "inject_id": inj.id})
+        # IP-1066 (FR-4450, Design Decision 8) — a rewind cleared the scheduler; re-arm each edited,
+        # still-pending time inject from the retained `inject_admin` history (the original vignette
+        # events above are skipped by `_h_inject` because an override exists).
+        if not initial:
+            for handle, ov in self._inject_overrides(from_t + 1).items():
+                if (ov["cancelled"] or ov.get("trigger") != "time" or ov.get("at") is None
+                        or ov["at"] <= from_t or self._inject_applied(handle, from_t + 1)):
+                    continue
+                self.sim.schedule(ov["at"], "inject",
+                                  {"effects": ov["effects"], "inject_id": handle, "rev": ov["rev"]})
 
     # -- time control ----------------------------------------------------------
     def step(self, dt_sim_s: float) -> None:
@@ -829,6 +842,124 @@ class SessionManager:
         return [{"id": i.id, "label": i.label, "trigger": (i.trigger or {}).get("type", "manual")}
                 for i in self.vignette.injects]
 
+    # -- pending-inject queue (IP-1066, FR-4450) ---------------------------------------------
+    def _inject_overrides(self, before_t: int) -> dict[str, dict]:
+        """Fold every ``inject_admin`` entry with ``sim_time < before_t`` (log order) into
+        ``{handle: {rev, cancelled, trigger, at, effects}}``. Read only from the event log, so it
+        is identical live and under replay (the `_fired_condition_inject_ids` pattern)."""
+        out: dict[str, dict] = {}
+        for e in self.sim.eventlog.entries:
+            if e.kind != "inject_admin" or e.sim_time >= before_t:
+                continue
+            pl = e.payload
+            out[pl["handle"]] = {"rev": pl["rev"], "cancelled": pl["action"] == "cancel",
+                                 "trigger": pl.get("trigger"), "at": pl.get("at"),
+                                 "effects": pl.get("effects")}
+        return out
+
+    def _inject_applied(self, handle: str, before_t: int) -> bool:
+        """Whether an inject with this handle already fired (applied, not skipped) before ``before_t``."""
+        for e in self.sim.eventlog.entries:
+            if e.sim_time >= before_t:
+                break
+            if e.kind == "inject" and e.payload.get("inject_id") == handle and "skipped" not in e.payload:
+                return True
+        return False
+
+    def pending_injects(self) -> list[dict]:
+        """FR-4450 — every not-yet-fired inject, with edits applied and cancellations removed:
+        ``{handle, source, trigger, at, effects}``, time injects by fire time, conditions last."""
+        now = self.sim.clock.now
+        ovs = self._inject_overrides(now + 1)
+        rows: list[dict] = []
+        fired_cond = self._fired_condition_inject_ids(now + 1)
+        for inj in self.vignette.injects:
+            trig = inj.trigger or {}
+            ov = ovs.get(inj.id)
+            if ov is not None and ov["cancelled"]:
+                continue
+            effects = ov["effects"] if ov is not None else inj.effects
+            if trig.get("type") == "time" and "at_sim_s" in trig:
+                at = ov["at"] if ov is not None else self.ctx.start_epoch + int(float(trig["at_sim_s"]) * 1_000_000)
+                if at <= now or self._inject_applied(inj.id, now + 1):
+                    continue
+                rows.append({"handle": inj.id, "source": "vignette", "trigger": "time", "at": at, "effects": effects})
+            elif trig.get("type") == "condition":
+                if inj.id in fired_cond:
+                    continue
+                rows.append({"handle": inj.id, "source": "vignette", "trigger": "condition", "at": None,
+                             "effects": effects})
+        white: dict[str, dict] = {}
+        for ev in self.sim.scheduler.pending():
+            h = ev.payload.get("inject_id", "") if ev.kind == "inject" else ""
+            if isinstance(h, str) and h.startswith("white-") and "rev" not in ev.payload:
+                white.setdefault(h, {"at": ev.t, "effects": ev.payload.get("effects", [])})
+        for h, ov in ovs.items():
+            if h.startswith("white-") and ov.get("trigger") == "time":
+                white.setdefault(h, {"at": ov["at"], "effects": ov["effects"]})
+        for h, base in white.items():
+            ov = ovs.get(h)
+            if ov is not None and ov["cancelled"]:
+                continue
+            at = ov["at"] if ov is not None else base["at"]
+            if at is None or at <= now or self._inject_applied(h, now + 1):
+                continue
+            rows.append({"handle": h, "source": "white", "trigger": "time", "at": at,
+                         "effects": ov["effects"] if ov is not None else base["effects"]})
+        rows.sort(key=lambda r: (r["at"] is None, r["at"] or 0))
+        return rows
+
+    def cancel_inject(self, handle: str) -> None:
+        """FR-4450 — cancel a pending inject; it never fires. Raises ``ValueError`` (nothing
+        changed) if no such inject is pending."""
+        row = self._pending_row(handle)
+        self._log_inject_admin(row, "cancel", row["effects"], row["at"])
+
+    def edit_inject(self, handle: str, effects: Optional[list] = None, at_sim_t: Optional[int] = None) -> None:
+        """FR-4450 — replace a pending inject's effects and/or (time injects only) fire time. The
+        edited effects pass the IP-1063 whole-inject check; the edit is refused whole otherwise."""
+        row = self._pending_row(handle)
+        if effects is None and at_sim_t is None:
+            raise ValueError("edit rejected: nothing to change (give effects and/or at_sim_t)")
+        if at_sim_t is not None:
+            if row["trigger"] != "time":
+                raise ValueError(f"edit rejected: {handle!r} is condition-triggered and has no fire time")
+            if int(at_sim_t) <= self.sim.clock.now:
+                raise ValueError("edit rejected: at_sim_t must be after the current simulated time")
+        new_effects = row["effects"] if effects is None else effects
+        if effects is not None:
+            problems = validate_inject_effects(self.sim.world, effects, check_targets=True, prop=self.osys.prop)
+            if problems:
+                raise ValueError("edit rejected: " + "; ".join(problems))
+        new_at = row["at"] if at_sim_t is None else int(at_sim_t)
+        rev = self._log_inject_admin(row, "edit", new_effects, new_at)
+        if row["trigger"] == "time":
+            self.sim.schedule(new_at, "inject", {"effects": new_effects, "inject_id": handle, "rev": rev})
+
+    def _pending_row(self, handle: str) -> dict:
+        for row in self.pending_injects():
+            if row["handle"] == handle:
+                return row
+        raise ValueError(f"no pending inject {handle!r} (unknown, already fired, or cancelled)")
+
+    def _log_inject_admin(self, row: dict, action: str, effects, at) -> int:
+        """Record a cancel/edit as an ``inject_admin`` event at the current instant (ADR-0002) and
+        apply it immediately, like ``fire_inject``'s immediate path. Returns the action's rev."""
+        handle = row["handle"]
+        rev = 1 + sum(1 for e in self.sim.eventlog.entries
+                      if e.kind == "inject_admin" and e.payload.get("handle") == handle)
+        now = self.sim.clock.now
+        self.sim.schedule(now, "inject_admin", {"handle": handle, "action": action, "rev": rev,
+                                                "trigger": row["trigger"], "at": at, "effects": effects})
+        self.sim.advance_to(now)
+        self.world = self.sim.world
+        return rev
+
+    def _h_inject_admin(self, world: WorldState, payload: dict, rng) -> None:
+        """IP-1066 — the logged White action; its only state change is a White-only message."""
+        verb = "cancelled" if payload.get("action") == "cancel" else "edited"
+        world.messages.append({"to": ["white"], "text": f"inject {payload.get('handle')} {verb}", "t": world.now})
+
     # -- save / resume --------------------------------------------------------
     def save_state(self) -> dict:
         """A complete, serializable snapshot: history + pending events + the order queue.
@@ -876,6 +1007,13 @@ class SessionManager:
                     mgr.ssn._bookings.setdefault(r.assigned_sensor, []).append((r.collect_at, r.product_at))
         rnums = [int(r.id.split("-")[1]) for r in mgr.ssn.requests.values() if r.id.startswith("ssn-")]
         mgr.ssn._counter = max(rnums, default=0)
+        # IP-1066 — White inject handles are never reused across a save/resume.
+        seen = [p.get("payload", {}).get("inject_id", "") for p in state.get("pending", [])]
+        seen += [e.payload.get("inject_id", "") or e.payload.get("handle", "")
+                 for e in mgr.sim.eventlog.entries if e.kind in ("inject", "inject_admin")]
+        mgr._white_inject_seq = max((int(h.split("-", 1)[1]) for h in seen
+                                     if isinstance(h, str) and h.startswith("white-")
+                                     and h.split("-", 1)[1].isdigit()), default=0)
         mgr.started = state.get("started", False)
         return mgr
 
@@ -915,7 +1053,10 @@ class SessionManager:
         when = max(now, requested)   # past timestamps clamp to "now" (no backwards time travel)
         if when > now:
             # FW §11.D.19 — future-dated inject: schedule deterministically (replay-safe).
-            self.sim.schedule(when, "inject", {"effects": effects})
+            # IP-1066 (FR-4450, Design Decision 1) — a stable handle so White can edit/cancel it.
+            self._white_inject_seq += 1
+            handle = f"white-{self._white_inject_seq}"
+            self.sim.schedule(when, "inject", {"effects": effects, "inject_id": handle}, tag=handle)
             return
         self.sim.schedule(when, "inject", {"effects": effects})
         self.sim.advance_to(when)  # apply + log immediately (so it replays through the event log)
@@ -1055,6 +1196,16 @@ class SessionManager:
 
     # -- inject handler (runs inside the deterministic event loop) -------------
     def _h_inject(self, world: WorldState, payload: dict, rng) -> None:
+        # IP-1066 (FR-4450, Design Decision 4) — a cancelled or superseded event applies nothing
+        # and is logged with `skipped`. Overrides are folded strictly before this instant.
+        handle = payload.get("inject_id")
+        if handle:
+            ov = self._inject_overrides(world.now).get(handle)
+            rev = payload.get("rev")
+            stale = (ov is not None) if rev is None else (ov is None or ov["cancelled"] or ov["rev"] != rev)
+            if stale:
+                payload["skipped"] = "cancelled" if (ov is not None and ov["cancelled"]) else "superseded"
+                return
         self._apply_inject_effects(world, payload.get("effects", []), rng)
 
     def _apply_inject_effects(self, world: WorldState, effects: list, rng) -> None:
@@ -1296,7 +1447,11 @@ class SessionManager:
                 continue
             if already is None:
                 already = self._fired_condition_inject_ids(world.now)  # IP-1064: once per tick
+                overrides = self._inject_overrides(world.now)          # IP-1066: once per tick
             if inj.id in already:
+                continue
+            ov = overrides.get(inj.id)
+            if ov is not None and ov["cancelled"]:
                 continue
             # A condition targeting a deleted/expired asset/track/cell simply evaluates false
             # forever (Design Decision resolving BL-0095 part 1) — _evaluate_metric's own
@@ -1305,6 +1460,6 @@ class SessionManager:
                 # IP-1064 (BL-0131) — record the measured value that decided the firing, measured
                 # before the inject's own effects can change it (VR-1064 Finding 1, BL-0278).
                 value = _measure_metric(world, self.ctx, trig.get("metric", {}))
-                self._apply_inject_effects(world, inj.effects, rng)
+                self._apply_inject_effects(world, ov["effects"] if ov is not None else inj.effects, rng)
                 fired.append({"inject_id": inj.id, "value": value})
         payload["fired"] = fired

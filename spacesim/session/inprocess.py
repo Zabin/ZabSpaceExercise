@@ -386,6 +386,29 @@ class InProcessSession:
     def list_injects(self, session: str) -> list:
         return self._sessions[session].list_injects()
 
+    # -- pending-inject queue (IP-1066, FR-4450) -------------------------------------------------
+    def pending_injects(self, session: str) -> list:
+        with self._locked_read(session) as mgr:
+            return mgr.pending_injects()
+
+    def cancel_inject(self, session: str, handle: str) -> Ack:
+        with self._locked(session) as mgr:
+            try:
+                mgr.catch_up()
+                mgr.cancel_inject(handle)
+            except ValueError as exc:
+                return Ack(ok=False, reason=str(exc))
+        return Ack()
+
+    def edit_inject(self, session: str, handle: str, effects=None, at_sim_t: Optional[int] = None) -> Ack:
+        with self._locked(session) as mgr:
+            try:
+                mgr.catch_up()
+                mgr.edit_inject(handle, effects=effects, at_sim_t=at_sim_t)
+            except ValueError as exc:
+                return Ack(ok=False, reason=str(exc))
+        return Ack()
+
     # -- reads -----------------------------------------------------------------
     def get_view(self, session: str, cell: str) -> CellView:
         with self._locked_read(session) as mgr:

@@ -2,7 +2,9 @@
 
 > **Package ID:** IP-1066
 > **Version:** 1.0
-> **Status:** 🟡 IN PROGRESS — 2026-10-18, `08-code-implementation`, pipeline run #192.
+> **Status:** 🔵 COMPLETE — 2026-10-18, `08-code-implementation`, pipeline run #192, awaiting a
+> **fresh-session** `09-package-verification`. The package adds 27 tests in `test_pending_inject_queue.py`. **26 were seen failing first**; the one that passed on arrival pins an uncancelled condition inject still firing. Full suite: **1098 passed / 3 skipped** (run #189 baseline 1071/3, plus 27). Gates: 14/14. No existing test changed. Disclosed: the pending listing (`GET /injects/pending`) is a no-cell White read, like `/injects`. Only cancel and edit are 403-gated, which the package's tests specify.
+> *(Was 🟡 IN PROGRESS — 2026-10-18, pipeline run #192.)*
 > *(Was 🟢 READY.)* Authored 2026-10-18 by `07-implementation-planning`, pipeline run #191.
 > Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** covered by two standing decisions:
