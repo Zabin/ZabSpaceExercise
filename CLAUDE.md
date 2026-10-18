@@ -461,7 +461,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `index_series`; **IP-1066 (FR-4450):** a White-only pending-inject queue (`pending_injects`/
   `cancel_inject`/`edit_inject`) logged as `inject_admin` events whose overrides fold from the event
   log strictly before the fire instant (`_inject_overrides`); a stale event is logged `skipped`, edits
-  re-arm after a rewind, White future injects carry `white-<n>` handles; **multiplayer:** server-authoritative
+  re-arm after a rewind, White future injects carry `white-<n>` handles; **IP-1067 (FR-4620):**
+  `controller_view()` composes the god-view and both cells' `get_view` for one instant (served
+  White-only at `/controller_view`, one `_locked_read`); **multiplayer:** server-authoritative
   lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /
   catch_up / clock_state`, re-anchor on `start/rewind/undo/advance` so the wall clock can't snap
   the sim back),
@@ -543,7 +545,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   deep-link, `j/k/c/g` keyboard nav, presentation mode, supersede-guarded refresh, 2D belief map,
   subsystem drill-down whose cards carry per-subsystem telemetry + command-verb buttons; `api.post`
   attaches the caller's own seat as a `cell` query param to every mutating call; IP-1066
-  `renderPendingInjects` lists pending injects with Cancel / Edit…; `api.put/patch/del`
+  `renderPendingInjects` lists pending injects with Cancel / Edit…; IP-1067 `refreshComparePanel`
+  renders the ⚖ Compare panel (truth / Blue / Red) from one `/controller_view` read; `api.put/patch/del`
   extend the same cell-query-param convention for IP-1174's routes below), `globe.js` (3D
   orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`
   (telemetry line graphs), `creator.js` (IP-1174 — the Vignette Creator's White-Cell UI: synchronized

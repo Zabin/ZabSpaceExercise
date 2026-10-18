@@ -879,6 +879,15 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.get_godview(sid).model_dump()
 
+    @app.get("/api/sessions/{sid}/controller_view")
+    def controller_view(sid: str, cell: Optional[str] = None) -> dict:
+        """IP-1067 (FR-4620) — White-only side-by-side view: truth + both cells' own views, one
+        simulated instant (403 for any other seat; client-side-trust model, CLAUDE.md)."""
+        _require(sid)
+        if cell != "white":
+            raise HTTPException(status_code=403, detail="only White Cell may open the controller view")
+        return api.controller_view(sid)
+
     @app.get("/api/sessions/{sid}/eventlog")
     def get_eventlog(sid: str, since_seq: int = 0) -> list:
         _require(sid)

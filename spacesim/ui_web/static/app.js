@@ -498,6 +498,24 @@ async function pendingInjectAction(handle, action, row) {
   await refresh();
 }
 
+// IP-1067 (FR-4620) — White's side-by-side controller view, rendered only from the one
+// composite /controller_view read (one simulated instant for all three columns).
+async function refreshComparePanel(force) {
+  const det = $("compare-details");
+  if (!SID || CELL !== "white" || !det || (!det.open && !force)) return;
+  const cv = await api.get(`/api/sessions/${SID}/controller_view?cell=white`).catch(() => null);
+  if (!cv) return;
+  $("compare-at").textContent = `at ${iso(cv.now)}`;
+  $("compare-truth").textContent = Object.values(cv.truth.assets || {})
+    .map((a) => `${a.id} [${a.owner}] ${a.health}`).join("\n") || "—";
+  const side = (v) => [
+    "own: " + ((v.own_assets || []).map((a) => a.id).join(", ") || "—"),
+    ...(v.known_tracks || []).map((t) => `track ${t.object}: conf ${Number(t.confidence ?? 0).toFixed(2)}`),
+  ].join("\n");
+  $("compare-blue").textContent = side(cv.blue);
+  $("compare-red").textContent = side(cv.red);
+}
+
 async function renderQueue() {
   const QUEUE_TTL_US = 5 * 60 * 1_000_000;   // drop completed/cancelled after 5 min sim time
   const orders = await api.get(`/api/sessions/${SID}/orders/${CELL}`).catch(() => []);
@@ -1457,6 +1475,7 @@ async function refresh() {
   drawMap();
   renderQueue();
   renderPendingInjects();   // IP-1066 — White only (a no-op for other seats)
+  refreshComparePanel();    // IP-1067 — only while the Compare panel is open
   renderAlarms();
   refreshAAR();
   renderConjunctions();   // FW §11.C.14
@@ -2238,6 +2257,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("loadfile").onchange = (e) => e.target.files[0] && loadSaveFile(e.target.files[0]);
   $("aar-slider").oninput = (e) => aarAt(e.target.value);
   if ($("assessment-refresh")) $("assessment-refresh").onclick = refreshAssessment;
+  if ($("compare-refresh")) $("compare-refresh").onclick = () => refreshComparePanel(true);   // IP-1067
   // IP-1130 — White Cell designates the read-only Observer seat's view.
   if ($("observer-designation")) $("observer-designation").onchange = (e) => {
     if (SID) api.post(`/api/sessions/${SID}/observer/view`, { cell: "white", designation: e.target.value });

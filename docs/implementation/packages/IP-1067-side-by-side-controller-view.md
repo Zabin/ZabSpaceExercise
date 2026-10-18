@@ -2,7 +2,9 @@
 
 > **Package ID:** IP-1067
 > **Version:** 1.0
-> **Status:** 🟡 IN PROGRESS — 2026-10-18, `08-code-implementation`, pipeline run #193.
+> **Status:** 🔵 COMPLETE — 2026-10-18, `08-code-implementation`, pipeline run #193, awaiting a
+> **fresh-session** `09-package-verification`. The package adds 10 tests in `test_controller_view.py`. **9 were seen failing first**; the one that passed on arrival pins the unknown-session 404. Full suite: **1108 passed / 3 skipped** (run #192 baseline 1098/3, plus 10). Gates: 14/14. No existing test changed.
+> *(Was 🟡 IN PROGRESS — 2026-10-18, pipeline run #193.)*
 > *(Was 🟢 READY.)* Authored 2026-10-18 by `07-implementation-planning`, pipeline run #191.
 > Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** covered by two standing decisions:

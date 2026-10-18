@@ -452,6 +452,11 @@ class InProcessSession:
         with self._locked_read(session) as mgr:
             return mgr.get_godview()
 
+    def controller_view(self, session: str) -> dict:
+        """IP-1067 (FR-4620) — one lock, one catch_up: all three panels describe one instant."""
+        with self._locked_read(session) as mgr:
+            return mgr.controller_view()
+
     # -- Observer (IP-1130) -----------------------------------------------------
     def set_observer_view(self, session: str, cell: str, designation: str) -> Ack:
         """White-Cell-only: designate the Observer seat's view as "godview" or a named cell."""

@@ -1188,6 +1188,14 @@ class SessionManager:
     def get_godview(self) -> WorldState:
         return self.sim.world
 
+    def controller_view(self) -> dict:
+        """IP-1067 (FR-4620) — ground truth plus Blue's and Red's own views for this one instant.
+        Composes ``get_godview``/``get_view`` unchanged: no second fog-of-war path (ADR-0004)."""
+        return {"now": self.sim.world.now,
+                "truth": self.get_godview().model_dump(),
+                "blue": self.get_view("blue").model_dump(),
+                "red": self.get_view("red").model_dump()}
+
     def get_eventlog(self, since_seq: int = 0):
         return [e for e in self.sim.eventlog.entries if e.seq >= since_seq]
 

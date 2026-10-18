@@ -653,6 +653,20 @@
     <pre id="activity-detail" class="muted" style="font-size:11px;margin-top:4px;min-height:14px">—</pre>
   </section>
 
+  <!-- IP-1067 (FR-4620): ground truth beside each cell's own picture, one simulated instant. -->
+  <section class="panel white-only" id="compare-panel" style="margin:0 12px 14px">
+    <details id="compare-details">
+      <summary style="cursor:pointer"><b>⚖ Compare — truth beside each cell's picture</b></summary>
+      <div class="ctrl" style="margin-top:4px"><button id="compare-refresh">🔄 Refresh</button>
+        <span id="compare-at" class="muted"></span></div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-top:6px">
+        <div><h3>Truth</h3><pre id="compare-truth" style="font-size:11px">—</pre></div>
+        <div><h3>Blue's picture</h3><pre id="compare-blue" style="font-size:11px">—</pre></div>
+        <div><h3>Red's picture</h3><pre id="compare-red" style="font-size:11px">—</pre></div>
+      </div>
+    </details>
+  </section>
+
   <section class="panel white-only" id="aar-panel" style="margin:0 12px 14px">
     <h2>After-action review — scrub the deterministic timeline</h2>
     <div class="ctrl">
