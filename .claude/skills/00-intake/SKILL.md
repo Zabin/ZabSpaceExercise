@@ -52,9 +52,11 @@ too early costs a pass-through; entering too late skips a gate.
 
 ### Step 4 — Dedupe and file
 
-Check the backlog (and, for bugs, open findings) for an existing entry covering the same thing —
+Check the backlog — **both** `docs/pipeline/backlog.md` and its closed-entry archive
+`docs/pipeline/backlog-archive.md` — (and, for bugs, open findings) for an existing entry covering
+the same thing —
 if found, note the new report on that entry instead of duplicating it. Otherwise append a new
-`BL-xxxx` row (next sequential ID): Filed (date + "intake: <requester's ask, condensed>"), Type,
+`BL-xxxx` row to `backlog.md` (next sequential ID — the highest in **either** file + 1): Filed (date + "intake: <requester's ask, condensed>"), Type,
 Summary (with evidence links), Sev/Pri (user's stated priority or the evidence-based severity),
 Entry stage, Disposition `—` (the manager decides), Status `NEW`. Commit as
 `docs(pipeline): intake BL-xxxx — <summary>`.

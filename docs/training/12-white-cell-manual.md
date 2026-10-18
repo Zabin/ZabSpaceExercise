@@ -54,9 +54,31 @@ to affect the exercise.
    requirement from step 3 is still unmet, **Start** refuses with the unsatisfied entry named — it
    is a hard gate, not a warning you can click through.
 
+**Writing your own vignette?** Sensors accept optional fields: a solar exclusion angle, a
+minimum range, an orbit-regime affinity, a cue requirement, a host satellite, and a usable
+phase-angle range. The table in
+[`06-the-vignette-library.md`](06-the-vignette-library.md#authoring-sensors-optional-modality-fields)
+says what each one does. A radar can also take a default `fence` or `dish` beam mode. A malformed
+phase-angle range, an unknown radar beam mode, or a misspelt orbit regime stops the vignette from
+loading, so fix it before the session.
+
+**If Load is refused.** The whole vignette is checked when you press **Load**. If it fails, no
+session starts and the session line in the **Cell & Time** panel shows **Load failed:** with a list of every problem, each
+naming where it is in the YAML and why. Fix them all and press **Load** again; a refused load
+leaves any open session alone. The last check (listed under `build`) runs only once nothing else
+is wrong, so a retry can turn up one new item. A file that is not valid YAML does not appear in
+the vignette picker at all. Besides the sensor rules, Load refuses a satellite with no orbit,
+another asset (except a cyber unit) with no location, a TLE that will not propagate to the start
+time, a duplicate asset or sensor id, and a `roles_needed` entry naming an asset or group that is
+not in the vignette. The full list is in
+[`06-the-vignette-library.md`](06-the-vignette-library.md#when-a-vignette-wont-load).
+
 > **Sources:** `spacesim/content/vignette.py` + `spacesim/content/vignettes/*.yaml` ·
 > `GET /api/sessions/{sid}/brief/{cell}` · `spacesim/session/manager.py` (`classification`,
-> `assign_role`/`staffing_report`, FR-4510/FR-4210) ·
+> `assign_role`/`staffing_report`, FR-4510/FR-4210) · `spacesim/engine/entities.py` (`Sensor`
+> modality fields and their load-time checks, FR-1610–FR-1670) · `spacesim/content/vignette.py`
+> (`validate_vignette`, `VignetteValidationError`, `list_vignettes`) · `spacesim/ui_web/static/app.js`
+> (`loadSession`, the **Load failed** readout; FR-5310–FR-5314) ·
 > [`07-white-cell-facilitation.md`](07-white-cell-facilitation.md)
 
 ### WCM-3 · Run the room: hot-seat and LAN
@@ -98,12 +120,21 @@ Two layers:
   schedule modes: **Now**, **+ N seconds**, **Absolute UTC**. Future-dated injects go through
   the deterministic event log — they replay byte-identical on save/resume and AAR scrub. Past
   timestamps clamp to now.
+- **Bad injects are refused whole.** If any effect is malformed or cannot land (e.g. an
+  `anomaly` on a satellite with no bus, which includes every shipped Red satellite), the server
+  rejects the inject with HTTP 400 and applies none of it. The builder's result line shows
+  `✗ server error: … inject rejected: #i <type>: <reason>`; the **Fire** button shows nothing.
+  A vignette's own timed or conditional inject with a malformed effect skips just that effect and
+  tells only you, in **Messages**: `inject effect skipped (<type>): <reason>`. Full rules:
+  [UI reference §10.3](10-ui-reference.md#103-injects-white-cell--build--schedule-inject).
 
 Add your own templates to `spacesim/content/inject_library.yaml`; they appear in the dropdown on
 next session load. Facilitation patterns — when to inject what — are in
 [`07-white-cell-facilitation.md`](07-white-cell-facilitation.md).
 
 > **Sources:** `spacesim/content/inject_library.yaml` · `POST /api/sessions/{sid}/inject` ·
+> `spacesim/session/manager.py` (`fire_inject`, `validate_inject_effects`, `_skip_inject_effect`) ·
+> `spacesim/ui_web/static/app.js` (`fireBuiltInject`, `fireInject`) ·
 > [`02-interface.md`](02-interface.md) §"White-Cell inject builder"
 
 ### WCM-6 · Monitor both sides
@@ -118,8 +149,13 @@ next session load. Facilitation patterns — when to inject what — are in
 - **Coaching notes:** vignettes may carry `coaching:` entries targeted at a cell and a sim time;
   the Coaching sidebar surfaces them without touching the player's screen. Use them to seed AAR
   discussion points.
+- **Any asset's telemetry:** click any fleet row, Blue or Red, to open its subsystem drill-down:
+  parameters vs. limits, history graph with the nominal ghost, and symptom log. It shows exactly
+  what that cell's operators read in BLU-6/RED-7, so use it to see an attack's signature land.
+  Controls: [UI reference §10.13](10b-ui-reference-views.md#1013-subsystem-drill-down).
 
-> **Sources:** `spacesim/session/scene.py` · `spacesim/ui_web/static/app.js` (Gantt, objectives) ·
+> **Sources:** `spacesim/session/scene.py` · `spacesim/ui_web/static/app.js` (Gantt, objectives,
+> `openDrill`) · `spacesim/session/manager.py` (`get_telemetry`/`get_series`, White reads any asset) ·
 > `Vignette.coaching` in `spacesim/content/vignette.py`
 
 ### WCM-7 · Change the force mid-exercise: TLE add
@@ -181,22 +217,11 @@ as `BL-0019`/`BL-0020` in the pipeline backlog, not a bug — the panel does exa
 > `score_belief_truth_divergence`/`assessment_report`) · `GET /api/sessions/{sid}/assessment` ·
 > [FS-201](../features/FS-201-competency-assessment.md) (FR-10110)
 
-### WCM-12 · Offline research batch exports
+### Analysis and data exports (WCM-12 to WCM-16)
 
-Outside a live session, `spacesim/tools/research_batch.py`'s `run_batch(vignette_id, seeds,
-condition_label, n_steps_or_until)` runs the same deterministic engine headlessly across a list of
-seeds — one fresh session per seed, no shared state between runs — and returns one `RunRecord` per
-run: `vignette_id`, `seed`, `condition_label`, and that run's WCM-11 rubric output verbatim (never
-recomputed). `spacesim/session/research_export.py`'s `export_csv`/`export_json` flatten a batch of
-`RunRecord`s into one row per run for spreadsheet or statistical-tool import — the same pattern the
-AAR's own CSV export uses. This is a researcher/instructor tool for comparing conditions across many
-seeded runs (e.g. "does `red_ew_intensity: high` change Blue's custody-quality distribution"), not an
-in-session facilitator control — there is no UI panel for it; run it from a Python shell or a small
-driver script that imports `run_batch`. No trainee-identifying or cross-institution data is collected
-by design — only `vignette_id`/`seed`/`condition_label`/the rubric tiers.
-
-> **Sources:** `spacesim/tools/research_batch.py` (`run_batch`) ·
-> `spacesim/session/research_export.py` (`RunRecord`, `export_csv`/`export_json`) ·
-> [FS-301](../features/FS-301-research-analytics.md) (FR-10210)
+The analysis and export sections (offline research batches, the RIC frame view and CATS phase
+angle, quick TLE export, the time-span ephemeris export and the per-asset telemetry CSV export)
+are in [`12a-white-cell-analysis-and-exports.md`](12a-white-cell-analysis-and-exports.md). They keep
+their IDs, `WCM-12` to `WCM-16`.
 
 ---

@@ -197,8 +197,10 @@ single facilitator can spread globe / map / fleet / order / AAR across multiple 
 **LAN trust model (load-bearing).** The cell selector (`White` / `Blue` / `Red`) is **client-side
 trust** — there is no per-cell authentication. The fog-of-war filter is applied by
 `SessionAPI` / `CellController` to every cell-scoped response, but the no-cell ground-truth
-endpoints (`/godview`, `/eventlog`, `/save`, `/aar*`, `/objectives`) deliberately expose ground
-truth without a cell binding. **Deploy only on a trusted LAN with cooperative participants.** A
+endpoints (`/godview`, `/eventlog`, `/save`, `/aar*`, `/objectives`, `/assessment`,
+`/ephemeris/truth`, the Observer view, and the White Cell facilitation/authoring reads — the full
+named set is `FR-6220` in `docs/requirements/01-functional-requirements.md`) deliberately expose
+ground truth without a cell binding. **Deploy only on a trusted LAN with cooperative participants.** A
 hostile participant on the LAN can read another cell's belief state through `/scene/{cell}` or
 `/telemetry/{cell}/...` by sending the other cell's name in the URL. This is by design for the
 v1 PME training context (everyone in the room is on the same team learning together) and is
@@ -222,35 +224,96 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
 - `spacesim/engine/eventlog.py` — `EventLog`, `EventLogEntry`, `Snapshot`.
 - `spacesim/engine/world.py` — `WorldState` (pydantic; minimal in P1, extended later).
 - `spacesim/engine/handlers.py` — event-handler registry (`(world, payload, rng) -> None`).
-- `spacesim/engine/simulation.py` — `Simulation` driver + `replay()` + `SavedSession`.
+- `spacesim/engine/simulation.py` — `Simulation` driver + `replay()` + `SavedSession`;
+  `replay_stepwise()` (IP-1261) — one forward replay pass yielding the world at several
+  non-decreasing event-log positions (`replay()` itself unchanged). `advance_to` is
+  failure-atomic (IP-1021, ADR-0038): a raising handler is rolled back in place to the replayed
+  world/RNG, logged as a no-op `handler_error` record (`engine/handlers.py`), and the advance
+  continues.
 - `spacesim/engine/geometry.py` — frames (GMST ECI↔ECEF), WGS84 geodety, topocentric look angles.
 - `spacesim/engine/sun.py` — analytic Sun direction + cylindrical eclipse/lighting test.
 - `spacesim/engine/orbit.py` — `OrbitState`, Kepler+J2 element↔state, regime classification.
+  `mean_to_true()` (IP-1190, FR-5220) — public mean-anomaly→true-anomaly conversion, extracted from
+  `elements_to_rv()`'s existing inline computation with no behavior change; reused by the CCSDS OMM
+  bulk-import path, which supplies a mean anomaly the TLE path never needed.
 - `spacesim/engine/propagator.py` — `Propagator` seam: Kepler+J2 (fictional) / sgp4 (TLE).
-- `spacesim/engine/entities.py` — `Asset`/`AssetResources`, `GroundSite`, `Sensor`.
+- `spacesim/engine/entities.py` — `Asset`/`AssetResources`, `GroundSite`, `Sensor`
+  (`Sensor.health`, IP-1062/FR-4430 — additive `"nominal"|"degraded"`, the `sensor_outage`
+  inject effect's target field). IP-1220 (FR-1610-FR-1660) — six additive, default-absent
+  sensor-modality fields: `beam_mode`, `exclusion_angle_deg`, `min_range_km`,
+  `altitude_band_affinity`, `requires_cue`, `host_asset_id`.
 - `spacesim/engine/access.py` — `AccessProvider` seam: all six channels + window caching; unknown
   endpoint ids (e.g. a command planned `via` a station not in the force) degrade to no-access, not a crash.
+  IP-1220 (FR-1620/FR-1630/FR-1660) — `_observation_predicate`'s ground-optical branch gains a
+  solar-exclusion-angle reject after its lighting check; the space-based branch gains a
+  min-range-floor reject; `_sensor_orbit()` substitutes a `host_asset_id`-hosted sensor's position
+  from its host Asset's current orbit; `_sensor_id_for_actor()` resolves either a sensor's own id
+  or its host_asset_id to the same sensor for `SENSOR_OBSERVATION` queries.
 - `spacesim/engine/custody.py` — `Track` (on-demand confidence decay) + weapons-quality gate.
 - `spacesim/engine/effects.py` — `EffectInstance`/`EffectResolver` seam (5 D's), `is_link_denied`.
+  `EffectInstance.order_action_type` (IP-1290, FR-1450) — additive, the issuing order's action
+  type, set at each of the three construction sites (jam/engage/cyber) in `orders.py`.
+  `ModerateEffectResolver(detectability_config=...)`/`_class_confidence()` (IP-1290) — a declared
+  per-effect-class (order action type × five-D's reversibility category, `IP-1270`'s shared
+  enumeration) attribution-confidence override, consulted at the same point the existing fixed
+  `{"overt":.95,"ambiguous":.5,"covert":.15}` table is; falls back to it when the class is
+  undeclared.
+  `DebrisField.persistence_estimate` (IP-1240, FR-1430) — a coarse, altitude-derived, display-only
+  estimate (`_persistence_estimate()`) attached at both construction sites (destructive-effect
+  resolution here, and `spawn_debris` in `session/manager.py`); never consulted by Access Window
+  or conjunction-screening logic.
 - `spacesim/engine/orders.py` — `Order` + `OrderSystem` (validate → window → execute), cyber
   exception, ISL/stored delivery, sensor tasking (auto-select + contention), order queue + cancel.
   Actions: `jam/engage/observe/maneuver/downlink/cyber` + `command` (bus/payload verbs, see `buscommands.py`).
   `dry_run()` is a read-only mirror of `issue()` (validate + window/delivery-path, but schedules/
   registers/books nothing) → powers the UI's "why can't I?" pre-disabled buttons; replay-safe like `scene.py`.
-  ROE (`engage`/`cyber`) is resolved per issuing cell (`self.roe[order.cell]`, IP-1172/FR-3420) — the
-  engine never branches on legacy-vs-explicit vignette shape, only on the always-cell-keyed dict
-  `content/vignette.py`'s `build_world()` produces.
+  Resource bounds (IP-1320, FR-1460/FR-1470): an `engage` whose salvo (`_engage_rounds`, at least
+  1) exceeds the rounds left is rejected `insufficient_ammo`, and `_h_effect` re-checks the rounds
+  at execution (a failed record, nothing resolved or charged); a jam never changes the jammer's
+  `power_w` (a rating, ADR-0037). A fired salvo is charged whether it hits or misses (IP-1321,
+  FR-1480 — owner decision `BL-0249`; "fired" = reached resolution).
+  `_h_maneuver` (IP-1250, FR-1320) — the execute-time payload gains `purpose_tag` (additive,
+  default `""`) and, on success, mutates in the same dict `applied=True`/`remaining_delta_v_ms`
+  (captured by the eventlog entry logged immediately after, same pattern as IP-1062's
+  `condition_check`); a re-validation failure sets `applied=False` instead. `_h_maneuver`/
+  `_h_command` (IP-1290, FR-1440) — an active uplink jam covering the command's delivery path at
+  execute time fails delivery (`achieved="jammed"`), checked via the existing `is_link_denied`,
+  mirroring `_h_downlink`'s own jam-check pattern.
+  ROE (`engage`/`cyber`) is resolved per issuing cell against `_effective_roe(cell, order.issued_at)`
+  (IP-1172/FR-3420, IP-1270/FR-3440) — the vignette-declared static `_static_roe` overlaid with any
+  `roe_change` eventlog entries at or before the order's own issue time, a pure point-in-time
+  derivation (never `self.roe`, a "current value" convenience cache `_h_roe_change` also
+  maintains, mutated for any direct caller that wants the live value rather than a specific
+  instant's). `issue_roe_change(cell, target_cell, flag, value)` — White-Cell-only, logs a
+  `roe_change` entry. `gating_rules`/`_matching_gate` (IP-1270, FR-3430) — a vignette-declared
+  `{action_type?, reversibility_category?, required_role}` rule holds a matching order in a new
+  `pending_approval` state (`self._pending`) instead of scheduling it; `decide_gated_order(cell,
+  order_id, approve)` resumes/rejects it, role-gated against the rule's own `required_role`,
+  logging `effect_gate_request`/`effect_gate_decision` (with elapsed time) — discarded (not
+  replayed) on rewind/undo (`session/manager.py::_rebind`). The engine never branches on
+  legacy-vs-explicit vignette shape, only on the always-cell-keyed dict `content/vignette.py`'s
+  `build_world()` produces. `scene_from_world()`'s sensor filter (IP-1062,
+  FR-4430) excludes a `health="degraded"` sensor (`sensor_outage` inject effect), mirroring the
+  existing degraded-ground-station filter immediately above it. IP-1220 (FR-1640/FR-1660) —
+  `_validate()`'s observe branch rejects a `requires_cue` sensor tasked against a target with no
+  existing `Track` (`world.track_for`); `_resolve_sensor_id()`/`_candidate_sensors()` accept either
+  a sensor's own id or its `host_asset_id` as the order's `actor`.
 - `spacesim/engine/recovery.py` — `RecoverySystem`: multi-pass safe-mode recovery + re-safe-on-persistence.
 - `spacesim/engine/ssn.py` — mock Space Surveillance Network (per `docs/build-spec/08-ssn.md` §17): per-cell
   `SSNNetwork`s instantiated from a dispersion preset (`sparse`/`regional`/`global`/`proliferated`),
   hybrid-turnaround request resolution (earliest viable window inside the priority SLA + processing
   delay; coalition vs. national affiliation), and two deterministic handlers (`ssn_collect` /
   `ssn_deliver`) that stage on `world.ssn_staged` and deliver into the requester's `TrackCatalog`.
-  Replay-safe; cancel-before-collect tag-skips both events.
+  Replay-safe; cancel-before-collect tag-skips both events. `passive_rf_fix()` (IP-1220, FR-1650) —
+  a passive-RF multilateration fix reusing `SSNNetwork`'s member-list shape, gated on the target's
+  existing `bus_state.comms.status` (not a new field) and ≥3 (2D)/≥4 (3D) member receivers with
+  simultaneous `SENSOR_OBSERVATION` access.
 - `spacesim/engine/telemetry.py` — read-time seeded subsystem telemetry (graphs/logs) + attack
   signatures (jam→RX power, cyber→FSW errors, DE→SNR, power sag, kinetic→loss-of-signal). Pure,
   never mutates state/RNG (like `scene.py`). `sample/series(..., nominal=True)` drop the attack term
   → the clean baseline ghost the "compare to nominal" overlay draws (`&nominal=1` on the series endpoint).
+  **IP-1260 (FR-2320):** `sample()` is also the sole value source for the per-asset telemetry CSV
+  export (`SessionManager.telemetry_export`) — no parallel computation.
 - `spacesim/engine/buscommands.py` — real catalog bus/payload/defense verbs (EPS shed/restore/charge-
   mode, `adcs.set_mode`, `cdh.dump_storage`, `satcom.mitigate_interference`/`shift_users`,
   `isr.collect_now`/`schedule_collection`, `def.patch_cyber` for the recovery-loop root-cause fix);
@@ -265,11 +328,20 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   grounded), auto-populated for exactly the one field matching `PayloadState.type` — authored defaults
   distinct from `isr.py`'s `BEAM_MODES` runtime table (IP-1171, FR-5170/FR-5180).
 - `spacesim/engine/busmodel.py` — `BusSystem`: bus-evolution / telemetry-contact / downlink handlers.
+  IP-1230: `bus_tick` also applies opt-in index-driven LEO drag (`_apply_index_drag`) to `kepler`
+  LEO assets with an authored `Asset.ballistic_coeff_m2_kg`, only while
+  `world.space_weather["index_series"]` is declared (no series → no-op, byte-identical).
 - `spacesim/engine/maneuver.py` — pure compute for six manoeuvre entry modes
   (eci / lvlh / finite_burn / target_coe / hohmann / plane_change).
 - `spacesim/engine/isr.py` — ISR beam-mode database (EO/SAR/SDA/weather/mw — the last two added
-  by IP-1170, closing `BL-0053`), `effective_gain()`, `soc_drain()`, footprint polygon +
-  ground-heading helpers.
+  by IP-1170, closing `BL-0053`; `ground_radar` fence/dish variants added by IP-1220, FR-1610,
+  reached by an observe order since IP-1222 when the order param or the radar's `Sensor.beam_mode`
+  names one), `effective_gain()` (IP-1220, FR-1630 — optional `target_regime`/`band_affinity`
+  degrade gain on an altitude-band mismatch, `LEO_SSO` counted as `LEO` via `altitude_band()`,
+  IP-1222; IP-1221, FR-1670 — optional `phase_angle_deg`/`usable_phase_range` scale gain by
+  `phase_angle_factor()`, a linear fall-off outside a passive-EO sensor's declared
+  `Sensor.usable_phase_angle_deg`, evaluated by `OrderSystem._observation_phase_angle_deg` at the
+  observation's `win.start`), `soc_drain()`, footprint polygon + ground-heading helpers.
 - `spacesim/engine/jam.py` — jam modulation database (barrage/spot/sweep/deceptive),
   `effective_radius_km()`, `effective_success_prob()`, footprint polygon (FW §11.A.1).
 - `spacesim/engine/engage.py` — kinetic-engagement math (closing geometry, salvo Pₖ,
@@ -280,30 +352,118 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   √dwell × √N collectors × atmospheric loss (FW §11.A.6).
 - `spacesim/engine/perturbations.py` — drag, J3/J4, third-body (Sun/Moon), SRP perturbations
   and `secular_drag_decay()` (FW §11.B.7-9); pure functions composed by future high-fidelity
-  propagators.
+  propagators. **IP-1230 (FR-1230/FR-4440, ADR-0039):** `f_solar`/`f_geo` piecewise-linear
+  space-weather index factors, step-held `index_in_effect`, `drag_multiplier` (`f_solar × f_geo`),
+  `anomaly_rate_multiplier` (`f_geo` only) and the shared `index_series_problems` validator.
 - `spacesim/engine/sun.py` — `sun_unit_eci`, binary `is_sunlit()`, smooth `eclipse_fraction()`
-  (umbra/penumbra interpolation; FW §11.B.10).
+  (umbra/penumbra interpolation; FW §11.B.10); `cats_phase_angle_deg()` (IP-1300, FR-8220) — the Sun-target-
+  chaser illumination ("CATS") phase angle, the engine's single shared phase-angle function
+  (`BL-0152`: now also called by IP-1221's `FR-1670` observe-gain refinement, not re-derived).
+- `spacesim/engine/tle_export.py` (IP-1211, FR-7440) — current-epoch TLE generation from any ECI
+  state: a single-epoch SGP4 mean-element fit (`state_to_tle()`; non-singular equinoctial
+  elements computed directly from r/v, safeguarded Newton + fixed-point correction, bounded and
+  deterministic), formatted by `sgp4.exporter.export_tle`, round-trip-checked against
+  `ROUND_TRIP_BOUND_M` (1 km) or rejected with `ValueError`. `tle_identity()` carries a TLE-sourced
+  orbit's catalog number/designator/B* forward; anything else gets the `99999` placeholder.
+  `sgp4` is lazy-imported (optional dependency), like `propagator._tle_rv`.
+- `spacesim/config.py` — `ServerConfig`/`load_server_config()`. `ContentConfig`/
+  `load_content_config()` (IP-1180, FR-5410/FR-5420) — optional `content:` section
+  (`external_vignette_dirs`, `user_save_dir`), same optional-file/`SPACESIM_CONFIG`-override
+  pattern as `ServerConfig`; absent by default (empty catalog extension, no save target).
 - `spacesim/content/vignette.py` + `vignettes/*.yaml` — vignette schema, loader, world-builder, objectives.
+  **IP-1310 (FR-5310–FR-5314):** `load_vignette` is a load-time gate — `validate_vignette` (pure) collects
+  every problem (entity validators, TLE parse/propagate, orbit/location with `cyber_unit` exempt, unique
+  ids, `roles_needed` refs, `build_world` catch-all) and raises `VignetteValidationError(ValueError)`;
+  `POST /api/sessions` maps it to 400 `invalid_vignette` (404 unknown id), and a refused load leaves the
+  session registry untouched.
   `RoleRequirement`/`Vignette.roles_needed` (IP-1151, FR-4210) — optional, additive staffing
   requirements; absent for every vignette shipped before this package.
   `Vignette.coaching` is a list of `{at_sim_t?, cell, title, body}` notes (FW §11.D.17).
+  `Vignette.space_weather_series` / `environmental_anomalies` (IP-1230, FR-1230/FR-4440,
+  ADR-0039) — optional; a declared F10.7/Kp series (stored as `world.space_weather["index_series"]`)
+  and an opt-in environmental-anomaly base rate; non-physical values refused at load.
+  `Vignette.effect_gating_rules` (IP-1270, FR-3430) — additive, optional list of
+  `{action_type?, reversibility_category?, required_role}`; `build_world()` passes it through
+  unmodified into `VignetteContext.gating_rules`, absent (`[]`) for every vignette shipped before
+  this package. `Vignette.effect_detectability_config` (IP-1290, FR-1450) — the same shared
+  enumeration, each entry `{action_type?, reversibility_category?, confidence}`, passed through
+  unmodified into `VignetteContext.detectability_config`.
   `Vignette.roe` (IP-1172, FR-3420/NFR-2010) — optional per-cell
   `{blue: {kinetic_authorized, cyber_authorized}, red: {...}}`; absent for every vignette shipped
   before this package, in which case `build_world()` mirrors the legacy flat
   `red_kinetic_authorized`/`cyber_authorized` parameters to both cells.
+  `Vignette.initial_tracks`/`simulator_version`/`initial_space_weather` (IP-1200, FR-5510) —
+  save-as-scenario's carried-forward mid-exercise state; absent/empty for every vignette shipped
+  before this package, in which case `build_world()`'s consumption of them is a no-op.
+  `list_vignettes()`/`load_vignette()` (IP-1180, FR-5410) — enumerate/search zero or more
+  configured external directories alongside `VIGNETTE_DIR`, each entry tagged `origin`
+  (`"built-in"` or the external directory's basename); a same-id collision resolves built-in-first,
+  external order thereafter, loser skipped + logged. `_validate_id`/`_resolve_within_root`
+  (NFR-3700) — the traversal guard, extracted/generalized to any content root, shared with the
+  save path below.
 - `spacesim/content/vignette_export.py` (IP-1173, FR-5110) — reverse serialization:
   `export_vignette()`/`save_vignette()` convert a draft session's live `WorldState`+
-  `VignetteContext` into a `Vignette` model and write it to `VIGNETTE_DIR` — the mirror image of
+  `VignetteContext` into a `Vignette` model and write it to a configured `user_save_dir`
+  (IP-1180, FR-5420 — retargeted from `VIGNETTE_DIR`; raises if unconfigured) — the mirror image of
   `vignette.py`'s `load_vignette()`/`build_world()`, and the only code path that writes an
-  authored vignette file.
+  authored vignette file. **IP-1200 (FR-5510):** both functions gain an optional
+  `start_epoch: Optional[int] = None` (used in place of `ctx.start_epoch` when given — the
+  save-as-scenario call passes the save moment; omitted, reproduces the prior behavior exactly),
+  and `export_vignette()` now carries forward `world.tracks`/`world.space_weather`/
+  `spacesim.version.simulator_version()` into the new `Vignette.initial_tracks`/
+  `initial_space_weather`/`simulator_version` fields, consumed by `build_world()` when present.
+- `spacesim/version.py` (IP-1200, FR-5510) — `simulator_version()`: the short git commit hash
+  when a working tree is available, else the package's own `spacesim.__version__` — never raises.
+- `spacesim/content/bulk_import.py` (IP-1190, FR-5220) — `parse_multi_tle()`/`parse_ccsds_omm()`
+  (CCSDS OMM in KVN form only, XML out of scope): each parses a multi-object file into a common
+  per-object dict shape; a file with zero recognizable blocks of its claimed shape is rejected
+  outright, distinct from a recognizable-but-malformed block (returned for a later per-object
+  force-add failure, never dropped at parse time).
 - `spacesim/content/inject_library.yaml` — five reusable white-cell inject templates
   (debris breakup, GNSS-jam advisory, ambiguous RPO, GS outage, geomagnetic storm).
   Loaded via `InProcessSession.inject_library()`; surfaced in the white-cell GUI's
   **Build / schedule inject** panel with editable JSON + Now/+seconds/absolute-UTC scheduler
   (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
+  **IP-1063 (BL-0129/BL-0188):** pure `validate_inject_effects` — `fire_inject` rejects a
+  malformed or FR-4430-precondition-failing inject atomically (`ValueError` → `Ack(ok=False)` →
+  `/inject` 400; e.g. an `anomaly` on an asset with no `bus_state`), and `_apply_inject_effects`
+  skips an invalid effect with a White "inject effect skipped" message instead of raising mid-handler,
+  **IP-1270 (FR-3430/FR-3440):** `decide_gated_order`/`issue_roe_change` — thin wrappers over
+  `OrderSystem`'s own methods; no additional state at this layer,
+  **IP-1260 (FR-2320):** `telemetry_export(cell, asset_id, t1, t2, interval_s)` — per-asset telemetry
+  over a sim-time span as flat rows (one per sampled instant x parameter), each value
+  `telemetry.sample()` on the world replayed to that instant; fog-scoped like `get_telemetry`;
+  `ephemeris._clamp_or_reject` span rule; served as CSV at `GET /telemetry/{cell}/{asset}/export.csv`,
+  **IP-1250 (FR-1320):** `maneuver_ledger(cell, asset_id)` — a derived, read-only per-asset
+  manoeuvre ledger (time/delta-v cost/purpose tag/resulting remaining budget), filtered from
+  `EventLog`'s `execute_maneuver` entries (`applied=True` only), fog-scoped like `get_telemetry`,
+  **IP-1190 (FR-5220):** `bulk_import()` — multi-object TLE/CCSDS OMM (KVN) import, generalizing
+  `add_tle()`'s single-object mechanism (extracted into `_force_add_tle_object`) via a new
+  `_force_add_omm_object` sibling, per-object success/failure reporting, batch continues past a
+  malformed object,
+  **IP-1062 (FR-4420/FR-4430):** `_apply_inject_effects()` — the shared per-effect dispatch
+  extracted from `_h_inject`'s previous inline body, now also called by a new
+  `_h_condition_check()` handler that evaluates every not-yet-fired condition-triggered inject
+  (`trigger.type == "condition"`, reusing `content/vignette.py`'s `_evaluate_metric()`) against
+  replayed `WorldState` at a `condition_check` tick cadence `_arm_schedule` queues only when a
+  vignette declares one; firing-state is derived from a time-filtered eventlog scan (no new
+  `WorldState` field), mirroring `_arm_schedule`'s own pattern. Four new effect types:
+  `anomaly` (bus→safe_mode / telemetry→comms degraded), `sensor_outage` (`Sensor.health`),
+  `forced_custody_loss` (`Track` mutation, cell-scoped), `scripted_manoeuvre` (the six existing
+  `engine/maneuver.py` entry modes via `compute_maneuver()`/`apply_impulse()`, deliberately
+  bypassing `AssetResources.delta_v_ms` per `ADR-0005`),
+  **IP-1200 (FR-5510):** `save_as_scenario()` — requires `self.started`, else calls
+  `vignette_export.save_vignette(..., start_epoch=self.sim.clock.now)`,
   `validate_order` dry-run, `next_contacts` fleet countdown, `begin_recovery`/`recovery_status`
-  wiring `RecoverySystem` for the safe-mode recovery strip; **multiplayer:** server-authoritative
+  wiring `RecoverySystem` for the safe-mode recovery strip; **IP-1230:** an opt-in `env_anomaly_check` tick
+  (`_h_env_anomaly_check`, `FR-4440`) and a `space_weather` inject that updates keys and accepts an
+  `index_series`; **IP-1066 (FR-4450):** a White-only pending-inject queue (`pending_injects`/
+  `cancel_inject`/`edit_inject`) logged as `inject_admin` events whose overrides fold from the event
+  log strictly before the fire instant (`_inject_overrides`); a stale event is logged `skipped`, edits
+  re-arm after a rewind, White future injects carry `white-<n>` handles; **IP-1067 (FR-4620):**
+  `controller_view()` composes the god-view and both cells' `get_view` for one instant (served
+  White-only at `/controller_view`, one `_locked_read`); **multiplayer:** server-authoritative
   lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /
   catch_up / clock_state`, re-anchor on `start/rewind/undo/advance` so the wall clock can't snap
   the sim back),
@@ -319,7 +479,35 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   locking/`MAX_LIVE_SESSIONS` eviction unmodified; `step`/`advance_to`/`rewind_to`/`undo_last`/
   `red_doctrine_step` all reject a draft sid rather than advancing its clock),
   `scene.py` (render-from-custody belief), `redai.py` (Red doctrine presets),
-  `aar.py` (replay/scrub/branch-compare + `snapshot_at`),
+  `aar.py` (replay/scrub/branch-compare + `snapshot_at`; `state_at_time(mgr, t)` (IP-1210,
+  FR-7410/FR-7420) — additive sibling of `state_at(mgr, seq)`, reconstructing at an arbitrary sim
+  time instead of an eventlog sequence number; `worlds_at_times(mgr, times)` (IP-1261, BL-0170) —
+  its time-span counterpart, one forward pass over `replay_stepwise()` (live-tail shortcut: no
+  replay when every instant is at/after the last entry), shared by `manager.py::get_series` (the
+  console's telemetry graphs, now per-instant history rather than back-dated live state),
+  `telemetry_export`, and both `ephemeris.py` exports;
+  `PlaybackSession` (IP-1280, FR-7330) — continuous, speed-adjustable timeline playback built
+  entirely on repeated `state_at_time()` calls, from ground truth or a `CellController`-filtered
+  single-cell viewpoint (`_participant_cells()` rejects a non-participating cell at construction/
+  `set_viewpoint()`; switching viewpoint never resets the played-back moment); one instance per
+  session, held in `InProcessSession._playbacks`, never in `SessionManager` itself),
+  `ephemeris.py` (IP-1210, FR-7410/FR-7420 — truth/cell-observed ephemeris export: `sample_times()`/
+  `truth_ephemeris()`/`cell_observed_ephemeris()`/`to_ric()` (reuses `engine/maneuver.py::
+  lvlh_frame` directly for the RIC transform)/`write_csv()`/`write_oem()`; a wholly-out-of-range
+  time span is rejected, a partially-out-of-range span is silently clamped; **IP-1262:**
+  `sample_times()` is the single sampling choke point for all three time-span exports (both
+  ephemeris + `telemetry_export`) — a non-finite/non-positive explicit `interval_s`, or sampling
+  over `MAX_EXPORT_SAMPLES` (10,000) instants, raises `ValueError` (→ 400) before any replay; cell-observed reads
+  only the requesting cell's own `Track.state_estimate`, never ground truth; **IP-1300
+  (FR-8210/FR-8220):** `live_ric_view()` — the live, operator-selected-origin RIC view at the
+  current sim time via the unmodified `to_ric()`, own assets at truth + own Tracks at belief only
+  (or ground truth for White via `SessionManager.get_ric_view()`'s explicit `get_godview()` branch —
+  `build_scene()` has no `"white"` case), plus an unbanded CATS readout when chase+target are both
+  given; out-of-custody selections raise `ValueError`; **IP-1211 (FR-7440):** `quick_tle()` — a
+  current-epoch TLE for one satellite via `engine/tle_export.py`, a cell exporting its own
+  satellites from their actual orbit (`source: "own"`, IP-1212, `FR-7440` as amended — ownership
+  beats a held Track) and anything else only from its own `Track.state_estimate`, White from ground
+  truth via `SessionManager.get_tle()`'s `get_godview()` branch; rejections raise `ValueError`),
   `assessment.py` (IP-2010 — read-only competency-rubric scoring: `score_custody_quality`/
   `score_window_discipline`/`score_belief_truth_divergence` + `assessment_report`, never a
   composite score; belief-truth divergence classifies aware/unaware from `custody_confidence_at_decision`,
@@ -337,6 +525,18 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   once per run. Distinct from the repo-root `tools/` directory (non-package build scripts like
   `tools/build_coastlines.py`) — this one must be importable by `spacesim/tests/`.
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`;
+  **IP-1300 (FR-8210/FR-8220):** `GET /ric_view/{cell}?origin=&chase=&target=` — live RIC-frame
+  view (+ CATS angle), 404 on an out-of-custody selection, rendered by `static/ricview.js`
+  (View ▾ → RIC frame view; selection is non-persistent per BL-0156);
+  **IP-1211 (FR-7440):** `GET /tle/{cell}?object_id=` — quick current-epoch TLE export (404 on
+  any rejection), rendered by `static/tleexport.js` (View ▾ → TLE export: copyable textarea + Copy
+  button with a plain-HTTP `execCommand` fallback);
+  **IP-1250 (FR-1320):** `/maneuver_ledger/{cell}/{asset}` (+ `/export.csv`) — the per-asset
+  manoeuvre ledger view/CSV export, fog-scoped identically to `/telemetry/{cell}/{asset}`;
+  **IP-1280 (FR-7330):** `/aar/playback/{start,advance,state,viewpoint,speed}` — the variable-
+  speed AAR playback routes over `session/aar.py::PlaybackSession`;
+  **IP-1270 (FR-3430/FR-3440):** `/gate/decide` + `/roe/change` — role-gated (checked inside
+  `SessionManager`/`OrderSystem`) pending-order decision and live ROE-flag-change routes;
   **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
   route table at implementation time, not merely IP-1130's own enumerated list, per that package's
   own Risks note — plus `/observer/view` + `/observer/designation`) + `static/`
@@ -344,9 +544,16 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   consequence-confirm, fleet rail with next-contact countdown/SoC/alarm badge/filter + alarm
   deep-link, `j/k/c/g` keyboard nav, presentation mode, supersede-guarded refresh, 2D belief map,
   subsystem drill-down whose cards carry per-subsystem telemetry + command-verb buttons; `api.post`
-  attaches the caller's own seat as a `cell` query param to every mutating call), `globe.js` (3D
+  attaches the caller's own seat as a `cell` query param to every mutating call; IP-1066
+  `renderPendingInjects` lists pending injects with Cancel / Edit…; IP-1067 `refreshComparePanel`
+  renders the ⚖ Compare panel (truth / Blue / Red) from one `/controller_view` read; `api.put/patch/del`
+  extend the same cell-query-param convention for IP-1174's routes below), `globe.js` (3D
   orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`
-  (telemetry line graphs), `style.css`, `index.html`.
+  (telemetry line graphs), `creator.js` (IP-1174 — the Vignette Creator's White-Cell UI: synchronized
+  JSON view, ground-truth 2D/3D preview, TLE/lat-long asset entry with a curated-site picker,
+  asset menu, seat-count declaration + seat/role matrix; a thin client over a *draft* session,
+  `POST /api/sessions/draft` + the `creator/*`/`force/ground`/`ground_sites` routes), `style.css`,
+  `index.html`.
 - `tools/build_coastlines.py` — regenerates the committed `static/world.json` (low-res world map)
   from `basemap-data` (offline; coarse fallback if unavailable). `tools/render_manual.py` draws it.
 - `spacesim/content/vignettes/00-training-basics.yaml` — guided tutorial vignette with a per-cell

@@ -3,6 +3,7 @@
 > **Package ID:** IP-1060
 > **Version:** 2.0 — narrowed to match FS-106 v2.0
 > **Status:** ✅ VERIFIED
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0042`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-106
 > **Referenced By:** IP-1070 (the AAR instrument this dashboard's controls invoke), IP-1090
 > (the multiplayer transport this dashboard's clock/session-admin controls trigger), IP-1100
@@ -165,3 +166,11 @@ Rollback surface: `spacesim/session/manager.py`'s god-view/inject/clock-trigger/
 methods specifically (see Reference files) — no longer the whole file's clock-anchor/save-resume
 surface, which now belongs to IP-1090/IP-1100's own Rollback Considerations. A revert requires
 re-verification against `test_session.py` and the determinism property test before landing.
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0042` (`VR-1060` Finding 1).** All 13 `session/manager.py` citations drifted by a uniform
+  +32/+34 at verification time and further since. Each citation is paired with its method name;
+  resolve by that name. Examples at `e1e721c`: `set_clock()` `:292`, `undo_last()` `:390`.

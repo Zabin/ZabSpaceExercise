@@ -37,6 +37,9 @@ class InProcessSession:
         # SessionManagers that must never advance their clock. UI-presentation/lifecycle state,
         # not exercise state, mirrors _observer_view's own placement.
         self._draft_sessions: set[str] = set()
+        # IP-1280 (FR-7330) — one AAR PlaybackSession per exercise session, keyed the same way;
+        # UI-presentation/scrubber state, not exercise state, same placement rationale as above.
+        self._playbacks: dict[str, aar.PlaybackSession] = {}
 
     # -- multiplayer plumbing --------------------------------------------------
     # Every mutation is wrapped with the session's RLock; every read first calls
@@ -118,25 +121,35 @@ class InProcessSession:
         return sid
 
     def save_vignette(self, session: str, vignette_id: str, title: str,
-                       classification: str = "UNCLASSIFIED-TRAINING") -> str:
-        """Build a complete Vignette YAML from the session's current state and write it to
-        VIGNETTE_DIR — the only code path that does so. Works for any session (draft or
-        normal), matching FR-5110's own framing of "Save as Vignette" as the single explicit
-        action that ever produces a file."""
-        from spacesim.content.vignette_export import save_vignette as _save
+                       classification: str = "UNCLASSIFIED-TRAINING",
+                       as_scenario: bool = False) -> str:
+        """Build a complete Vignette YAML from the session's current state and write it to the
+        configured user-save directory — the only code path that does so. Works for any session
+        (draft or normal), matching FR-5110's own framing of "Save as Vignette" as the single
+        explicit action that ever produces a file.
+
+        IP-1200 (FR-5510): ``as_scenario=True`` routes through `SessionManager.save_as_scenario()`
+        instead — the save-as-scenario path, requiring a started session and stamping the result
+        with the save moment as its new start epoch."""
         with self._locked_read(session) as mgr:
+            if as_scenario:
+                return mgr.save_as_scenario(vignette_id, title, classification=classification)
+            from spacesim.content.vignette_export import save_vignette as _save
             return _save(mgr.world, mgr.ctx, vignette_id, title, classification=classification)
 
     def load_vignette(
         self, vignette_id: str, overrides: Optional[dict] = None, seed: int = 0,
         classification: Optional[str] = None,
     ) -> str:
+        # IP-1310 (FS-131 OQ5) — validate and build the manager *before* any registry side effect,
+        # so a refused load evicts nothing and consumes no session id.
         vignette = load_vignette(vignette_id)
+        mgr = SessionManager(vignette, overrides=overrides, seed=seed,
+                             classification=classification)
         self._evict_if_full()
         self._counter += 1
         sid = f"sess-{self._counter}"
-        self._sessions[sid] = SessionManager(vignette, overrides=overrides, seed=seed,
-                                             classification=classification)
+        self._sessions[sid] = mgr
         return sid
 
     def classification(self, session: str) -> str:
@@ -223,6 +236,52 @@ class InProcessSession:
             ok, reason = mgr.add_tle(asset_id, line1, line2, owner=owner, kind=kind)
         return Ack(ok=ok, reason=reason)
 
+    def bulk_import(self, session: str, file_format: str, content: str,
+                     assignments: dict[str, dict]) -> list[dict]:
+        """IP-1190 (FR-5220) — a ``ValueError`` from an unrecognizable file (Design Decision 1)
+        propagates to the caller unchanged; per-object failures are in the returned report list."""
+        with self._locked(session) as mgr:
+            return mgr.bulk_import(file_format, content, assignments)
+
+    # -- Vignette Creator UI surfaces (IP-1174) --------------------------------
+    def add_ground_asset(self, session: str, asset_id: str, lat_deg: float, lon_deg: float,
+                         owner: str = "blue", kind: str = "ground_station") -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.add_ground_asset(asset_id, lat_deg, lon_deg, owner=owner, kind=kind)
+        return Ack(ok=ok, reason=reason)
+
+    def creator_state(self, session: str) -> dict:
+        with self._locked_read(session) as mgr:
+            return mgr.creator_state()
+
+    def creator_set_state(self, session: str, assets: list[dict]) -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.creator_set_state(assets)
+        return Ack(ok=ok, reason=reason)
+
+    def creator_edit_asset(self, session: str, asset_id: str, patch: dict) -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.creator_edit_asset(asset_id, patch)
+        return Ack(ok=ok, reason=reason)
+
+    def creator_delete_asset(self, session: str, asset_id: str) -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.creator_delete_asset(asset_id)
+        return Ack(ok=ok, reason=reason)
+
+    def creator_scene(self, session: str) -> dict:
+        with self._locked_read(session) as mgr:
+            return mgr.creator_scene()
+
+    def declare_seats(self, session: str, cell: str, count: int) -> dict:
+        with self._locked(session) as mgr:
+            seats = mgr.declare_seats(cell, count)
+        return {"cell": cell, "seats": seats}
+
+    def seats_declared(self, session: str) -> dict:
+        with self._locked_read(session) as mgr:
+            return dict(mgr.seats_declared)
+
     def red_doctrine_step(self, session: str) -> list[OrderAck]:
         if session in self._draft_sessions:  # IP-1173 — no AI-Red activity against a draft
             return []
@@ -231,7 +290,10 @@ class InProcessSession:
 
     def fire_inject(self, session: str, inject, at_sim_t: Optional[int] = None) -> Ack:
         with self._locked(session) as mgr:
-            mgr.fire_inject(inject, at_sim_t=at_sim_t)
+            try:
+                mgr.fire_inject(inject, at_sim_t=at_sim_t)
+            except ValueError as exc:   # IP-1063 — invalid inject: nothing applied, reason surfaced
+                return Ack(ok=False, reason=str(exc))
         return Ack()
 
     def inject_library(self) -> list[dict]:
@@ -277,6 +339,16 @@ class InProcessSession:
             ok = mgr.cancel_order(cell, order_id)
         return Ack(ok=ok, reason="" if ok else "order not found / not cancellable")
 
+    def decide_gated_order(self, session: str, cell: str, order_id: str, approve: bool) -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.decide_gated_order(cell, order_id, approve)
+        return Ack(ok=ok, reason=reason)
+
+    def issue_roe_change(self, session: str, cell: str, target_cell: str, flag: str, value: bool) -> Ack:
+        with self._locked(session) as mgr:
+            ok, reason = mgr.issue_roe_change(cell, target_cell, flag, value)
+        return Ack(ok=ok, reason=reason)
+
     def windows_ahead(self, session: str, cell: str, asset: str):
         with self._locked_read(session) as mgr:
             return mgr.windows_ahead(cell, asset)
@@ -314,6 +386,29 @@ class InProcessSession:
     def list_injects(self, session: str) -> list:
         return self._sessions[session].list_injects()
 
+    # -- pending-inject queue (IP-1066, FR-4450) -------------------------------------------------
+    def pending_injects(self, session: str) -> list:
+        with self._locked_read(session) as mgr:
+            return mgr.pending_injects()
+
+    def cancel_inject(self, session: str, handle: str) -> Ack:
+        with self._locked(session) as mgr:
+            try:
+                mgr.catch_up()
+                mgr.cancel_inject(handle)
+            except ValueError as exc:
+                return Ack(ok=False, reason=str(exc))
+        return Ack()
+
+    def edit_inject(self, session: str, handle: str, effects=None, at_sim_t: Optional[int] = None) -> Ack:
+        with self._locked(session) as mgr:
+            try:
+                mgr.catch_up()
+                mgr.edit_inject(handle, effects=effects, at_sim_t=at_sim_t)
+            except ValueError as exc:
+                return Ack(ok=False, reason=str(exc))
+        return Ack()
+
     # -- reads -----------------------------------------------------------------
     def get_view(self, session: str, cell: str) -> CellView:
         with self._locked_read(session) as mgr:
@@ -323,9 +418,30 @@ class InProcessSession:
         with self._locked_read(session) as mgr:
             return mgr.get_scene(cell)
 
+    def get_ric_view(self, session: str, cell: str, origin: str, chase: Optional[str] = None,
+                     target: Optional[str] = None) -> dict:
+        """IP-1300 (FR-8210/FR-8220) — live RIC-frame view; selection is per-request only."""
+        with self._locked_read(session) as mgr:
+            return mgr.get_ric_view(cell, origin, chase=chase, target=target)
+
+    def get_tle(self, session: str, cell: str, object_id: str) -> dict:
+        """IP-1211 (FR-7440) — quick current-epoch TLE export (read-only, fog applied)."""
+        with self._locked_read(session) as mgr:
+            return mgr.get_tle(cell, object_id)
+
     def get_telemetry(self, session: str, cell: str, asset: str):
         with self._locked_read(session) as mgr:
             return mgr.get_telemetry(cell, asset)
+
+    def maneuver_ledger(self, session: str, cell: str, asset: str):
+        with self._locked_read(session) as mgr:
+            return mgr.maneuver_ledger(cell, asset)
+
+    def telemetry_export(self, session: str, cell: str, asset: str, t1=None, t2=None,
+                         interval_s=None):
+        """IP-1260 (FR-2320) — pass-through to `SessionManager.telemetry_export`."""
+        with self._locked_read(session) as mgr:
+            return mgr.telemetry_export(cell, asset, t1=t1, t2=t2, interval_s=interval_s)
 
     def get_series(self, session: str, cell: str, asset: str, param: str, t0=None, t1=None,
                    n: int = 120, nominal: bool = False):
@@ -335,6 +451,11 @@ class InProcessSession:
     def get_godview(self, session: str):
         with self._locked_read(session) as mgr:
             return mgr.get_godview()
+
+    def controller_view(self, session: str) -> dict:
+        """IP-1067 (FR-4620) — one lock, one catch_up: all three panels describe one instant."""
+        with self._locked_read(session) as mgr:
+            return mgr.controller_view()
 
     # -- Observer (IP-1130) -----------------------------------------------------
     def set_observer_view(self, session: str, cell: str, designation: str) -> Ack:
@@ -502,6 +623,10 @@ class InProcessSession:
             status = o.status
             if status == "queued" and start <= now <= end:
                 status = "active"   # the bar straddles now → currently executing
+            elif status == "queued" and o.earliest_window is not None and now > end:
+                # IP-1065 (BL-0266) — the window has passed, so the order has executed: the same
+                # derived label `SessionManager.list_orders()` shows (`Order.status` never holds it).
+                status = "executed"
             activities.append({
                 "kind": "order",
                 "cell": o.cell,
@@ -856,6 +981,44 @@ class InProcessSession:
     def aar_snapshot_at(self, session: str, seq=None) -> dict:
         return aar.snapshot_at(self._sessions[session], seq)
 
+    # -- IP-1280 (FR-7330) — variable-speed AAR playback -----------------------
+    def playback_start(self, session: str, viewpoint: str = "truth", speed: float = 1.0) -> Ack:
+        try:
+            self._playbacks[session] = aar.PlaybackSession(
+                self._sessions[session], viewpoint=viewpoint, speed=speed)
+        except ValueError as exc:
+            return Ack(ok=False, reason=str(exc))
+        return Ack(ok=True)
+
+    def playback_advance(self, session: str, dt_s: float) -> Optional[dict]:
+        pb = self._playbacks.get(session)
+        if pb is None:
+            return None
+        return pb.advance(dt_s)
+
+    def playback_state(self, session: str) -> Optional[dict]:
+        pb = self._playbacks.get(session)
+        if pb is None:
+            return None
+        return pb.state()
+
+    def playback_set_viewpoint(self, session: str, viewpoint: str) -> Ack:
+        pb = self._playbacks.get(session)
+        if pb is None:
+            return Ack(ok=False, reason="no_playback_session")
+        try:
+            pb.set_viewpoint(viewpoint)
+        except ValueError as exc:
+            return Ack(ok=False, reason=str(exc))
+        return Ack(ok=True)
+
+    def playback_set_speed(self, session: str, speed: float) -> Ack:
+        pb = self._playbacks.get(session)
+        if pb is None:
+            return Ack(ok=False, reason="no_playback_session")
+        pb.set_speed(speed)
+        return Ack(ok=True)
+
     # -- competency assessment (IP-2010) ----------------------------------------
     def assessment_report(self, session: str) -> dict:
         self.catch_up(session)
@@ -864,6 +1027,21 @@ class InProcessSession:
     def alarms(self, session: str, cell: str) -> list:
         with self._locked_read(session) as mgr:
             return mgr.alarms(cell)
+
+    # -- ephemeris export (IP-1210, FR-7410/FR-7420) ----------------------------
+    def truth_ephemeris(self, session: str, object_id: str, reference_id: str, t1: int, t2: int,
+                        interval_s: Optional[float] = None) -> list[dict]:
+        from spacesim.session import ephemeris
+        with self._locked_read(session) as mgr:
+            return ephemeris.truth_ephemeris(mgr, object_id, reference_id, t1, t2,
+                                             interval_s=interval_s)
+
+    def cell_observed_ephemeris(self, session: str, cell: str, object_id: str, reference_id: str,
+                                t1: int, t2: int, interval_s: Optional[float] = None) -> list[dict]:
+        from spacesim.session import ephemeris
+        with self._locked_read(session) as mgr:
+            return ephemeris.cell_observed_ephemeris(mgr, cell, object_id, reference_id, t1, t2,
+                                                     interval_s=interval_s)
 
     # -- save / resume ---------------------------------------------------------
     def save(self, session: str) -> dict:

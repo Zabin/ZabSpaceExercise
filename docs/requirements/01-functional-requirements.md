@@ -16,9 +16,80 @@
 > `docs/architecture/ADS-5100A-vignette-creator-session-and-ui.md`/`ADS-5100B-typed-parameters-and-per-cell-roe.md`,
 > had no owning requirement anywhere in this baseline; see
 > [`reviews/requirements-update-fs117.md`](../reviews/requirements-update-fs117.md) for the full
-> derivation and review).
-> **ADR range now ADR-0001 through ADR-0033** (32 `Accepted`, 1 `Superseded` — `ADR-0029` by
+> derivation and review); further amended (Must-tier external-validation-report intake batch,
+> 2026-09-26; **nine numbered FR leaves added** — `FR-4420`, `FR-4430` under `FR-4400`'s existing
+> parent; `FR-5220` under `FR-5200`'s existing parent; `FR-5410`, `FR-5420` under new parent
+> `FR-5400`; `FR-5510` under new parent `FR-5500`; `FR-7410`, `FR-7420` under new parent `FR-7400`
+> — closing `docs/pipeline/backlog.md` `BL-0082`/`BL-0070`/`BL-0071`/`BL-0067`/`BL-0069` (items
+> B16/B4/B5/B1/B3). `FR-7420` is baselined but not independently verifiable until `BL-0068` (item
+> B2)'s custody domain-model change is specified — see
+> [`reviews/requirements-update-must-tier-batch.md`](../reviews/requirements-update-must-tier-batch.md).);
+> further amended (Should-tier external-validation-report intake batch, 2026-09-27; **thirteen
+> numbered FR leaves added** — `FR-1230` under `FR-1200`'s existing parent; `FR-1320` under
+> `FR-1300`'s existing parent; `FR-1430`, `FR-1440`, `FR-1450` under `FR-1400`'s existing parent;
+> `FR-1610`–`FR-1660` (six leaves) under new parent `FR-1600`; `FR-2320` under `FR-2300`'s existing
+> parent; `FR-3430`, `FR-3440` under `FR-3400`'s existing parent; `FR-4440` under `FR-4400`'s
+> existing parent; `FR-7330` under `FR-7300`'s existing parent — closing
+> `docs/pipeline/backlog.md` `BL-0073`/`BL-0074`/`BL-0077`/`BL-0072`/`BL-0075`/`BL-0076`/`BL-0078`/
+> `BL-0081`/`BL-0083` (items B7/B8/B11/B6/B9/B10/B12/B15/B17) — see
+> [`reviews/requirements-update-should-tier-batch.md`](../reviews/requirements-update-should-tier-batch.md).)
+> **ADR range now ADR-0001 through ADR-0035** (34 `Accepted`, 1 `Superseded` — `ADR-0029` by
 > `ADR-0033`).
+> further amended (`FR-7410`/`FR-7420` OEM/RIC tension, 2026-09-27; **one numbered FR leaf
+> added** — `FR-7430` under `FR-7400`'s existing parent, closing `docs/pipeline/backlog.md`
+> `BL-0136`, a `VR-1210` finding that CCSDS OEM has no native RIC-relative representation for
+> ephemeris data lines. Owner decision: OEM stays ECI-only; RIC stays in CSV and gains a new
+> companion export file, `FR-7430`. `FR-7410`/`FR-7420`'s own Description/Outputs/Acceptance
+> Criteria amended to match — no requirement's *behavioral intent* changed, only which file format
+> carries which frame.)
+> further amended (RIC-view/CATS-angle/TLE-export/controller-view intake batch, 2026-10-03;
+> **seven numbered FR leaves added** — `FR-8200`/`FR-8210`/`FR-8220` under new parent `FR-8200`
+> (the live, operator-selectable RIC-frame relative-motion view, and its CATS illumination-phase-
+> angle overlay); `FR-7440` under `FR-7400`'s existing parent (quick TLE export for a cell-visible
+> satellite); `FR-1670` under `FR-1600`'s existing parent (CATS-angle access-window refinement for
+> any passive EO sensor); `FR-4450` under `FR-4400`'s existing parent and `FR-4620` under
+> `FR-4600`'s existing parent (the Could-tier side-by-side controller view with editable pending-
+> inject queue) — closing `docs/pipeline/backlog.md` `BL-0107`, `BL-0109`, `BL-0111`, `BL-0122`,
+> `BL-0079` (batched together by the pipeline manager's run #77/#78 triage). `FR-8210` and `FR-7440`
+> are baselined citing existing transform/export grounding but flag open research/design gaps
+> (`BL-0108`, `BL-0110`) that must close before `06-feature-specification` designs them, not before
+> this baseline; `FR-1670`/`FR-8220` cite `BL-0112`'s single-source AGI/STK citation as their
+> concrete grounding anchor, same precedent as `FR-1620`'s own single-source figure — see
+> [`reviews/requirements-update-ric-cats-batch.md`](../reviews/requirements-update-ric-cats-batch.md)
+> for the full derivation and review.)
+> further amended (parked-questions batch, 2026-10-15; **no numbered FR leaf added** — `FR-7440`
+> amended so "visible" includes the requesting cell's own satellites, aligning it with `FR-6210`
+> and `ADS-1500` Decision 5, closing `BL-0159`; new candidate `CR-22`, closing `BL-0181` at this
+> stage; `BL-0171` and `BL-0113` reported for adjudication, not resolved — see
+> [`reviews/requirements-update-parked-questions-batch.md`](../reviews/requirements-update-parked-questions-batch.md).)
+> further amended (load-validation batch, 2026-10-16; **five numbered FR leaves added** —
+> `FR-5311`–`FR-5314` under `FR-5310` (TLE parse, orbit/location presence, unique identifiers,
+> `roles_needed` references), and `FR-1460` under `FR-1400` (salvo bounded by remaining ammunition).
+> Each restates a GDS-04 §1.2/§1.3/§1.10 domain-model constraint, or `FR-5310`'s own text, as an
+> atomic testable leaf. They close `BL-0234`/`BL-0235` at this stage and the ammunition part of
+> `BL-0226`. New candidates `CR-23`/`CR-24`/`CR-25`. `BL-0233` (`FR-5310`'s template clause vs the
+> shipped content model) and `BL-0215` (`FR-1610` Acceptance Criterion vs Postcondition) are
+> reported for adjudication, not resolved — see
+> [`reviews/requirements-update-load-validation-batch.md`](../reviews/requirements-update-load-validation-batch.md).)
+> further amended (2026-10-16, run #144; **no numbered leaf added** — `FR-5312` narrowed so cyber
+> units are exempt from the location rule, per ADR-0012's window-independent cyber exception,
+> closing `BL-0241` — see the addendum in the same report.)
+> further amended (2026-10-17, run #150; **one numbered leaf added** — `FR-1470` under `FR-1400`:
+> jamming leaves the jammer's power rating unchanged, per ADR-0037, closing `BL-0245` and the F3
+> conflict of the load-validation report; `FR-1460` Notes annotated — see the second addendum in
+> the same report.)
+> further amended (2026-10-17, run #160, owner-prioritized `DEFERRED` backlog clearance; **no
+> numbered leaf added**. `FR-6220`'s named no-cell set is enumerated as built (`BL-0138`);
+> `FR-7410`/`FR-7420` input cardinality restated to match their source (`BL-0137`); `FR-4420`'s
+> Precondition no longer implies an unspecified re-fire rule (`BL-0130`); `FR-3310`'s Outputs
+> restated in GDS-05 FR-P3's own terms (`BL-0050`). New candidates `CR-26`–`CR-28` (`BL-0100`,
+> `BL-0130`, `BL-0249`) — see
+> [`reviews/requirements-update-deferred-clearance-batch.md`](../reviews/requirements-update-deferred-clearance-batch.md).)
+> further amended (2026-10-17, project-owner decision on `BL-0249`; **one numbered leaf added** —
+> `FR-1480` under `FR-1400`: a kinetic salvo is charged whether it hits or misses, promoted from
+> `CR-28` (marked `PROMOTED` in place). `FR-1460`'s Acceptance Criteria amended so the charge is
+> stated for a hit and a miss alike; its validation bound and Postcondition are unchanged — see
+> [`reviews/requirements-update-missed-salvo-decision.md`](../reviews/requirements-update-missed-salvo-decision.md).)
 > **Authoritative inputs (per explicit instruction for this baseline):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
 > [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
@@ -199,6 +270,44 @@ review passes actually run against it).
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-1210, FR-1130, FR-3110, FR-3210
 
+#### FR-1230 — Space-weather-index-driven LEO drag coupling
+
+- **ID:** FR-1230
+- **Title:** Couple a space-weather index time series into deterministic LEO orbital drag
+- **Description:** The system shall accept a space-weather index time series (e.g. F10.7 solar
+  flux, Kp/Ap geomagnetic index) as vignette-authored data or an inject payload, and shall use it
+  to scale low-Earth-orbit atmospheric-drag decay for propagated Assets, computed deterministically
+  from the declared index values and simulated time — never from a wall-clock read or an
+  out-of-band atmospheric-density service call.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B8); `engine/perturbations.py` already implements drag physics (`secular_drag_decay()`) but it is
+  not coupled into the runtime propagator (`docs/FUTURE-WORK.md` §2, §13 R12/GAP-01, previously
+  accepted-deferred). `R131` v1.1 §3 grounds F10.7 (slow solar-cycle baseline) and Kp/Ap (fast
+  geomagnetic index) as the two real numeric inputs density models of this class (NRLMSISE-00,
+  JB2008) actually consume together — this requirement is additive to, not a replacement for, the
+  existing `severity` (none/minor/severe) space-weather inject field `FR-4410` already carries.
+- **Priority:** Should
+- **Inputs:** A declared space-weather index time series (per-index values at declared simulated
+  times) from vignette data or an inject payload; the affected Asset's current orbital state.
+- **Outputs:** A scaled drag-decay term applied to the affected Asset's propagated orbital state,
+  computed via `engine/perturbations.py::secular_drag_decay()` or an equivalent deterministic
+  function of the declared index value(s) and elapsed simulated time.
+- **Preconditions:** The affected Asset is in a low-Earth-orbit regime where drag is physically
+  material (per `engine/orbit.py`'s existing regime classification).
+- **Postconditions:** Replaying the identical `(initial_state, ordered eventlog, seed)` — which
+  includes the index time series, itself vignette data or an inject payload already covered by the
+  eventlog — reproduces byte-identical propagated state (`CLAUDE.md` invariant 1; `ADR-0002`).
+- **Acceptance Criteria:** Given two index time series with differing Kp/F10.7 values, the same
+  Asset's propagated altitude decay differs measurably and consistently with the higher-drag series
+  decaying faster; replaying either run reproduces identical results.
+- **Verification Method:** Test
+- **Dependencies:** FR-1210, FR-1120
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0074` (external validation report, 26 Sep
+  2026, item B8); `docs/research/encyclopedia/R131-space-environment-and-space-weather-operations.md`
+  §3 (v1.1); `docs/FUTURE-WORK.md` §2, §13 R12/GAP-01; `ADR-0002`.
+- **Related ADRs:** ADR-0002
+- **Related Requirements:** FR-1210, FR-1120, FR-4410, FR-4440
+
 ### FR-1300 — Maneuver and resource accounting
 
 #### FR-1310 — Impulsive maneuver with delta-v budget enforcement
@@ -227,6 +336,40 @@ review passes actually run against it).
 - **Related ADRs:** (none directly — restates a GDS-04 validation rule)
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-1210, FR-3110
+
+#### FR-1320 — Per-asset manoeuvre ledger with purpose tags and export
+
+- **ID:** FR-1320
+- **Title:** Record a per-asset manoeuvre ledger with an operator-entered purpose tag, viewable and
+  exportable
+- **Description:** The system shall record, for each Asset, an ordered ledger of every impulsive
+  manoeuvre applied against it — simulated time, delta-v cost, the operator-entered purpose tag
+  supplied with the order, and the Asset's remaining delta-v budget immediately after — viewable in
+  the operator console and exportable as CSV.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B6); every manoeuvre is already deducted from `delta_v_ms` and logged in the `EventLog`
+  (`FR-1310`, `FR-7110`), but neither is presented as a per-asset, purpose-tagged ledger a
+  facilitator or operator can review or export — the same gap `docs/FUTURE-WORK.md`'s "Δv panel"
+  item names.
+- **Priority:** Should
+- **Inputs:** A manoeuvre order carrying an operator-entered purpose tag (free-text or a declared
+  short label); the Asset's `EventLog` history of applied manoeuvres.
+- **Outputs:** A per-asset, time-ordered ledger view (time, delta-v cost, purpose tag, remaining
+  budget); a CSV export of the same rows for a requested Asset.
+- **Preconditions:** The purpose tag is supplied at order-issue time, per `FR-3110`'s existing
+  planned-activity creation path — it is not a separate action.
+- **Postconditions:** The ledger is derived from the existing `EventLog`, never a separate
+  mutable-state copy that could drift from it.
+- **Acceptance Criteria:** Given an Asset with N recorded manoeuvres, the ledger view and its CSV
+  export both list exactly N rows, each with the correct time/cost/tag/remaining-budget values
+  matching the `EventLog`.
+- **Verification Method:** Test
+- **Dependencies:** FR-1310, FR-7110, FR-3110
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0072` (external validation report, 26 Sep
+  2026, item B6); `docs/FUTURE-WORK.md` "Δv panel" item; `FR-1310`.
+- **Related ADRs:** (none directly — a presentation/export layer over existing `FR-1310`/`FR-7110`
+  state, not a new resource-accounting rule)
+- **Related Requirements:** FR-1310, FR-7110, FR-3110
 
 ### FR-1400 — Counterspace effect resolution
 
@@ -286,6 +429,243 @@ review passes actually run against it).
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-1410, FR-1220
 
+#### FR-1430 — Debris-field persistence estimate by altitude
+
+- **ID:** FR-1430
+- **Title:** Attach an estimated persistence figure, by altitude, to a spawned debris field
+- **Description:** The system shall compute and attach to each `DebrisField` object (created by a
+  destructive effect or a `spawn_debris` inject) an estimated persistence figure derived from its
+  altitude, and shall make that figure visible to players/facilitator wherever the debris field
+  itself is shown.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B11); `docs/FUTURE-WORK.md` §13 R16/GAP-02 previously accepted-deferred a fuller persistent-debris
+  environment layer — this requirement is deliberately narrower than that deferred item (and than
+  Candidate Requirement `CR-17`'s "persistent, world-changing debris consequence" that gates future
+  Access Windows): it is an **informational estimate only**, not a mechanism that changes Access
+  Window computation (`FR-1220`) or conjunction screening behavior. `R117` v1.2 §3.1 grounds
+  real-world debris-lifetime-by-altitude figures (weeks-months below ~300-400km; years-decades at
+  600-1000km; centuries above ~900km) and the IADC 25-year / FCC 5-year LEO-disposal-guideline
+  figures the estimate should be consistent with in order of magnitude.
+- **Priority:** Should
+- **Inputs:** A newly created `DebrisField`'s altitude (from the destructive effect's or inject's
+  resulting orbital state).
+- **Outputs:** A `persistence_estimate` value attached to the `DebrisField`, displayed wherever the
+  field is rendered to a player or facilitator.
+- **Preconditions:** The `DebrisField` has a determinable altitude at creation time.
+- **Postconditions:** The estimate does not gate, degrade, or otherwise change any Access Window
+  computation (`FR-1220`) or conjunction-screening outcome — it is read-only, presentational state,
+  distinct from the deferred fuller mechanism `CR-17` still describes.
+- **Acceptance Criteria:** Given two `DebrisField`s created at different altitudes, the
+  lower-altitude field's `persistence_estimate` is shorter than the higher-altitude field's, and
+  neither estimate changes either field's effect on Access Window computation.
+- **Verification Method:** Test
+- **Dependencies:** FR-1410, FR-1230
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0077` (external validation report, 26 Sep
+  2026, item B11); `docs/research/encyclopedia/R117-directed-energy-and-kinetic-effects.md` §3.1
+  (v1.2); `docs/FUTURE-WORK.md` §2, §13 R16/GAP-02; Candidate Requirement `CR-17` (this requirement
+  is deliberately narrower than, not a promotion of, `CR-17`).
+- **Related ADRs:** (none directly — an informational estimate, not a new engine mechanism)
+- **Related Requirements:** FR-1410, FR-1230, FR-1220
+
+#### FR-1440 — Uplink/crosslink jamming degrades command and relay delivery paths
+
+- **ID:** FR-1440
+- **Title:** Extend jam effectiveness to command-uplink and crosslink-relay delivery, not telemetry
+  alone
+- **Description:** The system shall allow a successful uplink or crosslink jam effect to cause a
+  planned command routed through the jammed link to fail delivery or be delayed, in addition to the
+  jam's existing telemetry-signature effect.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B15); the baseline models uplink/crosslink jamming as changing telemetry signatures only, with no
+  effect on command/relay delivery, though `engine/effects.py`'s `is_link_denied` already models a
+  denied-link concept the delivery path (`FR-3110`'s stored/ISL delivery) does not yet consult for
+  the jam effect category specifically.
+- **Priority:** Should
+- **Inputs:** An active, successfully resolved uplink or crosslink jam `EffectInstance`; a planned
+  command routed through the affected link at execute-time re-validation (`FR-3410`).
+- **Outputs:** A failed or delayed delivery outcome for the affected planned command, recorded in
+  the `EventLog`.
+- **Preconditions:** The jam effect is currently active and its footprint covers the command's
+  delivery path at the command's scheduled execution time.
+- **Postconditions:** A command whose delivery path is not covered by an active jam is unaffected;
+  the jam's existing telemetry-signature effect is unchanged by this requirement.
+- **Acceptance Criteria:** Given an active uplink jam covering a command's delivery path at its
+  scheduled execution time, the command fails or is delayed at execute-time re-validation; given no
+  active jam on that path, the same command executes normally.
+- **Verification Method:** Test
+- **Dependencies:** FR-1410, FR-3410, FR-3110
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0081` (external validation report, 26 Sep
+  2026, item B15); `engine/effects.py` `is_link_denied`.
+- **Related ADRs:** (none directly — extends an existing effect category's consequences within
+  `ADR-0011`'s six-channel model)
+- **Related Requirements:** FR-1410, FR-3410, FR-3110, FR-1450
+
+#### FR-1450 — Per-effect-class detectability and attribution-difficulty configuration
+
+- **ID:** FR-1450
+- **Title:** Configure detectability and attribution difficulty per effect class
+- **Description:** The system shall allow each effect class (by type and/or reversibility category)
+  to carry its own configurable detectability and attribution-difficulty settings, consulted when
+  resolving that effect's detection/attribution outcome, rather than a single fixed setting applied
+  uniformly across all effect classes.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B15); `FR-1410` already resolves an attribution signal as a side effect of every effect
+  resolution, but the baseline has no per-effect-class tuning of detectability/attribution
+  difficulty — a jam effect and a kinetic effect are not equally detectable or attributable in
+  reality, and the vignette author currently has no way to express that difference.
+- **Priority:** Should
+- **Inputs:** A per-effect-class (by type and/or reversibility category) detectability/
+  attribution-difficulty configuration, authored as vignette data.
+- **Outputs:** A detection/attribution outcome for a resolved effect that reflects its own
+  effect-class's configured setting, rather than a single global default.
+- **Preconditions:** A detectability/attribution-difficulty configuration is declared for the
+  effect's class; an undeclared class falls back to the existing single fixed setting `FR-1410`
+  already provides.
+- **Postconditions:** Declaring a per-class setting for one effect class does not change the
+  detection/attribution outcome of any other, undeclared effect class.
+- **Acceptance Criteria:** Given two effect classes with differently configured
+  detectability/attribution-difficulty settings, resolving one instance of each produces detection/
+  attribution outcomes consistent with each class's own configured setting, not a shared default.
+- **Verification Method:** Test
+- **Dependencies:** FR-1410
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0081` (external validation report, 26 Sep
+  2026, item B15); `FR-1410` (existing attribution-as-side-effect mechanism).
+- **Related ADRs:** (none directly — a configuration layer over `FR-1410`'s existing attribution
+  mechanism, not a new effect-resolution rule)
+- **Related Requirements:** FR-1410, FR-1440
+
+#### FR-1460 — Kinetic salvo bounded by remaining ammunition
+
+- **ID:** FR-1460
+- **Title:** Reject a kinetic engagement whose salvo exceeds the effector's remaining ammunition
+- **Description:** The system shall reject, at order validation, a kinetic engagement order whose
+  requested salvo size exceeds the issuing effector's remaining ammunition, so that ammunition
+  never goes negative.
+- **Rationale:** GDS-04 §1.2 "Constraints": "resource levels cannot go negative". §1.2
+  "Persistent state" names ammunition among an Asset's resource levels ("resource levels
+  (fuel/power/ammo)"). `FR-1310` already applies the same constraint to `delta_v_ms` and rejects at
+  validation rather than partially applying. As built (2026-10-16, run #142), an effector with 1
+  round accepts a 5-round salvo, and a successful engagement then leaves `ammo = -4` (the
+  consumption step subtracts the salvo). Only the `ammo < 1` case is refused today (`no_ammo`).
+- **Priority:** Must (it restates a GDS-04 domain-model constraint, the same tier `FR-1310` gave
+  the `delta_v_ms` form of it)
+- **Inputs:** A kinetic engagement order's requested salvo size; the effector's remaining
+  ammunition.
+- **Outputs:** Acceptance, or a rejection with a reason stating insufficient ammunition.
+- **Preconditions:** The order is otherwise valid (ownership, ROE, custody gates).
+- **Postconditions:** The effector's ammunition is never negative after the engagement executes.
+- **Acceptance Criteria:** Given an effector with `N` rounds remaining, an engagement requesting a
+  salvo larger than `N` is rejected before anything is scheduled, by both the preview and issue
+  paths. An engagement requesting a salvo of `N` or fewer is accepted, and once it executes —
+  whether it hits or misses — it leaves the effector with `N` minus the salvo (`FR-1480`).
+  *(Amended 2026-10-17, `BL-0249`: read "a successful engagement leaves the effector with `N` minus
+  the salvo", which covered only a hit.)*
+- **Verification Method:** Test
+- **Dependencies:** FR-1410
+- **Source Documents:** GDS-04 §1.2 "Persistent state" and "Constraints"; `design/04-data-model.md`
+  §9 (legacy reference, cited by GDS-04 for the same rule); `FR-1310` (precedent form for
+  `delta_v_ms`).
+- **Related ADRs:** (none directly — restates a GDS-04 validation rule)
+- **Related Requirements:** FR-1310, FR-1410, FR-3110
+- **Notes:** *(new 2026-10-16, `BL-0226`, run #142)* Only the ammunition bound is baselined. The
+  other range rules `BL-0226` asked about have no source and are candidate `CR-25`: a salvo of
+  zero or less, a fractional salvo, and a negative jam power, bandwidth or cyber dwell. Jammer
+  `power_w` consumption also drives that resource negative as built, but jammers default to 0 W.
+  Enforcing GDS-04's constraint on power would refuse almost every shipped jam, so that is
+  reported as a conflict, not baselined. See the
+  [update report](../reviews/requirements-update-load-validation-batch.md) F3. *(Resolved
+  2026-10-17, run #150: ADR-0037 decides jammer power is a rating, not a consumable — baselined as
+  `FR-1470`. The two leaves touch the same consumption step and may share one remediation
+  package.)* *(Amended 2026-10-17, `BL-0249`: the project owner decided that a missed salvo
+  consumes its rounds. That rule is its own leaf, `FR-1480` (promoted from `CR-28`); this leaf's
+  Acceptance Criteria now state the charge for a hit and a miss alike, and its validation bound and
+  "never negative" Postcondition are unchanged.)*
+
+#### FR-1470 — Jamming leaves the jammer's power rating unchanged
+
+- **ID:** FR-1470
+- **Title:** Leave a jamming effector's power rating unchanged when a jam executes
+- **Description:** The system shall leave a jamming effector's declared power rating unchanged
+  when a jam it issued executes, whether the jam succeeds or fails, so that the rating never goes
+  negative.
+- **Rationale:** GDS-04 §1.2 "Constraints": "resource levels cannot go negative"; §1.2
+  "Persistent state" lists power among an Asset's resource levels. ADR-0037 (Accepted) decides
+  that a jammer's power figure is a rating (watts, a rate), not a consumable energy budget, so
+  jamming does not consume it and GDS-04's constraint holds without amendment. As built
+  (2026-10-17, ADR-0037 Context), a successful jam subtracts its modulation-scaled draw from the
+  jammer's power figure; jammers default to 0 W, so most successful jams drive it negative.
+- **Priority:** Must (it restates a GDS-04 domain-model constraint, the same tier `FR-1310` and
+  `FR-1460` gave the Δv and ammunition forms of it)
+- **Inputs:** A jam order's execution; the jamming effector's declared power rating.
+- **Outputs:** The jam's effect outcome (unchanged by this requirement).
+- **Preconditions:** The jam order was accepted and has reached execution.
+- **Postconditions:** The jammer's power rating after execution equals its rating before.
+- **Acceptance Criteria:** Given a jammer with a declared power rating `R` (including the default
+  0), after it executes a successful jam and after it executes a failed jam, the jammer's power
+  rating as reported in ground truth is still `R`. The jam's success probability, footprint and
+  effect outcome for the same seed are the same as before this requirement.
+- **Verification Method:** Test
+- **Dependencies:** FR-1410
+- **Source Documents:** GDS-04 §1.2 "Persistent state" and "Constraints"; ADR-0037 Decision and
+  Consequences.
+- **Related ADRs:** ADR-0037
+- **Related Interfaces:** INT-0008
+- **Related Requirements:** FR-1410, FR-1460, FR-5180
+- **Notes:** *(new 2026-10-17, `BL-0245`, run #150)* Enforcing the rating — refusing a jam whose
+  requested power exceeds it — is **not** required: ADR-0037 excludes it (every shipped jammer is
+  rated 0 W, so it would refuse every shipped jam). It would need an owner request through
+  `00-intake`. The as-built field is `AssetResources.power_w`; for satellites it is already a
+  dead field (`FR-5180`, `R111` §2).
+
+#### FR-1480 — A kinetic salvo is charged whether it hits or misses
+
+- **ID:** FR-1480
+- **Title:** Charge a kinetic engagement's salvo against the effector's ammunition whether the
+  engagement hits or misses
+- **Description:** The system shall deduct a kinetic engagement's salvo from the issuing
+  effector's remaining ammunition whenever the engagement is fired at its execution moment,
+  whether the engagement succeeds or fails, so that a missed salvo costs the same rounds as a
+  successful one.
+- **Rationale:** Project-owner decision 2026-10-17, closing `docs/pipeline/backlog.md` `BL-0249`
+  and promoting candidate `CR-28` ("A missed kinetic salvo consumes its rounds"): fired
+  interceptors are physically spent whether or not they hit. GDS-04 §1.2 "Persistent state" names
+  ammunition among an Asset's resource levels. As built (`IP-1320`, FS-132 Open Question 3), only a
+  successful engagement is charged, so a miss costs nothing; `FR-1460`'s Acceptance Criteria had
+  covered only the successful case and no input document stated a rule for a miss until this
+  decision.
+- **Priority:** Must (an explicit project-owner directive changing shipped behaviour; the same
+  tier as `FR-1460`, whose consumption step it governs)
+- **Inputs:** An accepted kinetic engagement reaching its execution moment; its salvo (the rounds
+  it consumes, the same figure `FR-1460`'s bound compares); the effector's remaining ammunition.
+- **Outputs:** The effector's ammunition reduced by the salvo; the engagement's effect outcome
+  (unchanged by this requirement).
+- **Preconditions:** The engagement was accepted at validation (`FR-1460`) and, at its execution
+  moment, the effector still holds at least the salvo (`FR-1460` Postcondition, `FR-3410`).
+- **Postconditions:** The effector's ammunition after execution equals its ammunition before
+  minus the salvo, for a hit and a miss alike; it is never negative (`FR-1460`).
+- **Acceptance Criteria:** Given an effector with `N` rounds and an accepted engagement whose
+  salvo `S` is no larger than `N`: after the engagement executes and **succeeds**, the effector
+  holds `N − S`; after it executes and **fails**, the effector also holds `N − S`. An engagement
+  that fails `FR-1460`'s execute-time re-check (the rounds no longer cover it) is not fired and
+  charges nothing. For the same initial state, event log and seed, each engagement's success or
+  failure and effect outcome are the same as before this requirement.
+- **Verification Method:** Test
+- **Dependencies:** FR-1460, FR-1410
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0249` (project-owner decision, 2026-10-17);
+  this document's Candidate Requirements `CR-28` (the candidate text promoted); GDS-04 §1.2
+  "Persistent state" (ammunition is a resource level).
+- **Related ADRs:** (none directly — a resource-bookkeeping rule on `FR-1410`'s existing
+  consumption side effect)
+- **Related Interfaces:** INT-0008
+- **Related Requirements:** FR-1410, FR-1460, FR-1470, FR-3410
+- **Notes:** *(new 2026-10-17, `BL-0249`)* The leaf does not distinguish *why* an executed
+  engagement failed. An engagement that reaches its execution moment and passes the re-check is
+  treated as fired, including one whose target was already destroyed by then: no source describes
+  an abort, and the owner's rule is "charge on every shot fired". Charging a miss changes shipped
+  behaviour and the operator manual's `RED-5` text ("Rounds are spent only on success"); both
+  follow downstream (`06` FS-132, `07`/`08` a package, `08-training-manual-authoring` for `RED-5`
+  once that package is `VERIFIED`).
+
 ### FR-1500 — Custody, tracks, and the weapons-quality gate
 
 #### FR-1510 — Track confidence decay and reset
@@ -342,6 +722,272 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0013
 - **Related Interfaces:** INT-0007
 - **Related Requirements:** FR-1510, FR-3110, FR-3400
+
+### FR-1600 — Sensor modality-specific access and effectiveness models *(new 2026-09, Should-tier external-validation-report intake batch)*
+
+`FR-1220` computes access windows for the six channels generically, including
+`sensor_observation`; the six leaves below add modality-specific access-predicate and
+effectiveness refinements for particular real sensor types, each layered on top of `FR-1220`'s
+existing generic computation rather than replacing it. This family complements, and does not
+duplicate, `FR-3200`'s sensor-*tasking*-workflow family (contention, SSN request/delivery) — these
+leaves constrain what a sensor *can* observe and how effectively, not how tasking is arbitrated.
+
+#### FR-1610 — Fence/dish radar beam-mode variants
+
+- **ID:** FR-1610
+- **Title:** Model a wide-field-of-regard, continuous-coverage radar variant alongside a
+  narrow-beam, cued radar variant
+- **Description:** The system shall support a radar sensor configured as a wide, low-gain,
+  continuous field-of-regard variant (a "fence," detecting objects transiting a fixed volume) in
+  addition to the existing narrow, high-gain, steerable-beam variant (a "dish," cued to one target
+  at a time), as a beam-mode parameterization rather than a distinct `Sensor.kind`.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B7); `R109` v1.2 §3.6 grounds the real Space Fence phased-array radar's continuous-coverage
+  sweep-and-catalog behavior against a cued tracking dish's narrower beam, and recommends modeling
+  the difference as a `BEAM_MODES` extreme (per the existing swath/resolution/power trade `FR-1220`
+  and the ground/space sensor model already support) rather than a new access predicate.
+- **Priority:** Should
+- **Inputs:** A ground-kind sensor's declared beam-mode parameterization (wide-field-of-regard/
+  low-gain vs. narrow-beam/high-gain).
+- **Outputs:** An access/effectiveness result consistent with the declared beam-mode's
+  swath/gain trade.
+- **Preconditions:** The sensor is declared with a beam-mode entry in the relevant `BEAM_MODES`-
+  style table.
+- **Postconditions:** No new `Sensor.kind` value is introduced; the existing ground/space access
+  predicate is unchanged.
+- **Acceptance Criteria:** Given a wide-field-of-regard sensor and a narrow-beam sensor observing
+  the same volume, the wide variant detects more transiting objects at lower per-object gain than
+  the narrow variant, consistent with each one's declared beam-mode parameters.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0073` (external validation report, 26 Sep
+  2026, item B7); `docs/research/encyclopedia/R109-sensor-operations.md` §3.6 (v1.2).
+- **Related ADRs:** ADR-0011
+- **Related Requirements:** FR-1220
+
+#### FR-1620 — Optical sensor solar/lunar exclusion angle
+
+- **ID:** FR-1620
+- **Title:** Reject an optical observation whose line of sight falls within a configured solar/lunar
+  exclusion angle
+- **Description:** The system shall support, for a ground-based optical sensor, a configurable
+  exclusion-angle radius around the Sun (and optionally the Moon) such that an otherwise
+  geometrically valid, correctly-lit access window is rejected if the excluded body falls within
+  that angular radius of the sensor's boresight.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B7); the baseline ground-optical predicate already checks target-sunlit/site-dark lighting
+  (`FR-1220`) but has no solar/lunar exclusion-angle concept. `R109` v1.2 §3.7 grounds this against
+  real GEODSS deep-space-surveillance practice (an exclusion cone commonly cited around 90° for
+  ground-based deep-space optical sensors, flagged in the research topic itself as a single-source,
+  order-of-magnitude figure, not a precise universal constant).
+- **Priority:** Should
+- **Inputs:** A declared `exclusion_angle_deg` (solar, and optionally lunar) on a ground-optical
+  sensor; the current Sun/Moon angular position relative to the sensor's boresight.
+- **Outputs:** An accept/reject decision for the access window, layered on top of the existing
+  lighting predicate.
+- **Preconditions:** The sensor declares a non-default `exclusion_angle_deg`; a sensor with no
+  declared value is unaffected (falls back to the existing lighting-only predicate).
+- **Postconditions:** An access window otherwise valid under the existing lighting predicate is
+  rejected only when the excluded body falls within the declared angular radius.
+- **Acceptance Criteria:** Given a sensor with a declared exclusion angle and a geometry placing the
+  Sun inside that angle, the access window is rejected; given the Sun outside that angle (all else
+  equal), the window is granted per the existing lighting predicate.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0073` (external validation report, 26 Sep
+  2026, item B7); `docs/research/encyclopedia/R109-sensor-operations.md` §3.7 (v1.2, including its
+  own single-source flag on the 90° figure).
+- **Related ADRs:** ADR-0011
+- **Related Requirements:** FR-1220
+
+#### FR-1630 — Space-based sensor minimum-range floor and altitude-band affinity
+
+- **ID:** FR-1630
+- **Title:** Model a minimum-range floor and an altitude-band effectiveness affinity for
+  space-based sensors
+- **Description:** The system shall support, for a space-based sensor, a configurable minimum-range
+  floor below which the sensor cannot resolve a target, and a configurable altitude-band affinity
+  that degrades the sensor's effective gain when observing outside its declared regime.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B7); the baseline treats all space-based sensors as uniformly effective at any range/regime.
+  `R109` v1.2 §3.8 grounds this against real fielded systems (SBSS/GSSAP specialized to the
+  geostationary belt) and peer-reviewed dual-altitude-band coverage analysis showing single-sensor
+  coverage across both LEO and GEO bands trades away performance in both.
+- **Priority:** Should
+- **Inputs:** A declared `min_range_km` floor and `altitude_band_affinity` on a space-based sensor;
+  the current range and altitude-band relationship between sensor and target.
+- **Outputs:** A rejected (below floor) or gain-degraded (outside declared band) observation
+  effectiveness result.
+- **Preconditions:** The sensor declares a non-default `min_range_km`/`altitude_band_affinity`; a
+  sensor with no declared values is unaffected.
+- **Postconditions:** Gain degradation outside the declared band composes with, rather than
+  replaces, the existing off-nadir `look_angle_deg` gain degradation.
+- **Acceptance Criteria:** Given a sensor with a declared minimum-range floor, an observation
+  attempt closer than that floor is rejected; given a declared altitude-band affinity, effective
+  gain against a target outside the declared band is measurably lower than against one inside it.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0073` (external validation report, 26 Sep
+  2026, item B7); `docs/research/encyclopedia/R109-sensor-operations.md` §3.8 (v1.2).
+- **Related ADRs:** ADR-0011
+- **Related Requirements:** FR-1220
+
+#### FR-1640 — Cue-dependent sensor tasking precondition
+
+- **ID:** FR-1640
+- **Title:** Require an existing track before a cue-dependent sensor (e.g. laser ranging) may be
+  tasked
+- **Description:** The system shall support declaring a sensor as cue-dependent, and shall reject
+  (at plan-time validation and `dry_run`) a tasking of that sensor against a target with no
+  existing `Track`, rather than treating it as a general-search, detect-from-scratch sensor.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B7, "cue-dependent laser-ranging sensor"); `R109` v1.2 §3.9 grounds this against real laser-
+  ranging practice (ILRS-coordinated ground stations achieving mm-to-cm-precision range only
+  against a cued, cooperative retroreflector-equipped target) — a laser-ranging sensor cannot
+  independently detect an uncued object the way a radar/EO sensor can.
+- **Priority:** Should
+- **Inputs:** A sensor declared `requires_cue: true`; a tasking request naming a target.
+- **Outputs:** An accept/reject decision for the tasking request.
+- **Preconditions:** The sensor is declared `requires_cue: true`.
+- **Postconditions:** A cue-dependent sensor tasked against a target with an existing `Track` is
+  accepted normally; one tasked against a target with no `Track` is rejected (or pre-disabled via
+  `dry_run`), not silently treated as a detection attempt.
+- **Acceptance Criteria:** Given a cue-dependent sensor and a target with no existing `Track`, the
+  tasking request is rejected; given the same sensor and a target with an existing `Track`, the
+  tasking request is accepted (subject to the normal access-window check).
+- **Verification Method:** Test
+- **Dependencies:** FR-1220, FR-1510
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0073` (external validation report, 26 Sep
+  2026, item B7); `docs/research/encyclopedia/R109-sensor-operations.md` §3.9 (v1.2).
+- **Related ADRs:** ADR-0011
+- **Related Requirements:** FR-1220, FR-1510
+
+#### FR-1650 — Passive-RF multilateration sensor network
+
+- **ID:** FR-1650
+- **Title:** Resolve a passive-RF geolocation fix from a network of receivers against an emitting
+  target
+- **Description:** The system shall support a passive-RF sensor network capable of producing a
+  geolocation fix only when (a) the target is actively emitting, and (b) at least three member
+  receivers (for a 2D fix) or at least four member receivers (for a 3D fix including altitude) of
+  the declared network simultaneously have access to that emission — a passive-RF sensor shall have
+  no independent single-sensor access predicate of its own.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B7, "passive RF sensor needing an emitting target and ≥3 receivers"); `R109` v1.2 §3.10 grounds
+  the ≥3/≥4-receiver minimum against real TDOA multilateration practice, and recommends reusing the
+  existing SSN network-aggregation pattern (`FR-3200` family) for a single fix rather than a new
+  aggregation mechanism.
+- **Priority:** Should
+- **Inputs:** A declared passive-RF sensor network (≥3 member receivers); the target's current
+  emission state; each member receiver's own access to that emission.
+- **Outputs:** A geolocation fix (2D or 3D, depending on receiver count meeting access) or no fix.
+- **Preconditions:** The target is actively emitting; the network has at least 3 member receivers.
+- **Postconditions:** No fix is produced against a non-emitting target regardless of receiver
+  count or geometry; no fix is produced with fewer than 3 receivers simultaneously having access.
+- **Acceptance Criteria:** Given an emitting target and exactly 3 member receivers with access, a 2D
+  fix is produced; given the same target and 4 member receivers with access, a 3D fix is produced;
+  given a non-emitting target, no fix is produced regardless of receiver count.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220, FR-3210
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0073` (external validation report, 26 Sep
+  2026, item B7); `docs/research/encyclopedia/R109-sensor-operations.md` §3.10 (v1.2).
+- **Related ADRs:** ADR-0011, ADR-0010
+- **Related Requirements:** FR-1220, FR-3210, FR-3220
+
+#### FR-1660 — Satellite-hosted sensor follows host orbit
+
+- **ID:** FR-1660
+- **Title:** A satellite-hosted sensor's position follows its host asset's orbit, including after
+  manoeuvres, and may be named directly in observe orders
+- **Description:** The system shall support a sensor hosted on a satellite Asset whose position is
+  derived from that Asset's own propagated orbital state (including after the Asset manoeuvres),
+  rather than the sensor carrying an independent orbit; an observe order shall be able to name
+  either the host Asset or its hosted sensor as the observer.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B17); the baseline's `space_based` sensor kind has its own orbit that follows no asset, and observe
+  orders are accepted only from sensor entities directly — no existing FR ties a hosted ISR/SDA
+  payload (`FR-5170`'s typed sub-schemas) to the sensor-observation channel this way.
+- **Priority:** Should
+- **Inputs:** A sensor declared as hosted on a named satellite Asset; an observe order naming
+  either the host Asset or the hosted sensor.
+- **Outputs:** The hosted sensor's position, recomputed from the host Asset's current propagated
+  orbital state at every access-window computation; an access/effectiveness result for the observe
+  order regardless of which of the two names it used.
+- **Preconditions:** The named host Asset exists and has a determinable propagated orbital state.
+- **Postconditions:** The hosted sensor's position always matches its host Asset's current orbital
+  state, including immediately after the host Asset manoeuvres (`FR-1310`) — it is never a stale
+  copy from before the manoeuvre.
+- **Acceptance Criteria:** Given a hosted sensor and a manoeuvre applied to its host Asset, the
+  hosted sensor's subsequent access-window computation reflects the post-manoeuvre orbital state;
+  an observe order naming the host Asset and one naming the hosted sensor directly produce the same
+  access/effectiveness result.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220, FR-1310
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0083` (external validation report, 26 Sep
+  2026, item B17); `FR-5170` (typed ISR/SDA payload sub-schemas this ties to the observation
+  channel).
+- **Related ADRs:** ADR-0011
+- **Related Requirements:** FR-1220, FR-1310, FR-5170
+
+#### FR-1670 — Phase-angle (CATS) based access-window refinement for passive EO sensors
+
+- **ID:** FR-1670
+- **Title:** Refine a passive electro-optical sensor's access window using the Sun-target-observer
+  illumination phase angle (CATS)
+- **Description:** The system shall support, for any passive electro-optical sensor (ground-based
+  or space-based), a configurable usable phase-angle range measured as the Sun-target-observer
+  illumination phase angle — the angle at the target between the target→Sun vector and the
+  target→sensor vector (0° = full illumination as seen from the sensor, 180° = backlit/
+  silhouetted) — such that an otherwise geometrically valid access window is rejected, or has its
+  observation effectiveness degraded, when the phase angle at the time of observation falls
+  outside the declared usable range. This is a distinct and more general predicate than `FR-1620`'s
+  existing solar/lunar exclusion angle, which is measured at the sensor's own boresight and applies
+  only to ground-based optical sensors.
+- **Rationale:** Project owner's explicit request (`docs/pipeline/backlog.md` `BL-0122`), broader
+  than the display-only use of the same angle requested by `BL-0111`/`FR-8220`: here the angle
+  gates or refines whether/how effectively an observation can occur at all, for any passive-EO
+  sensor tasking any target, not only within the `FR-8210` RIC-view context and not only
+  ground-based (`FR-1620`'s current scope). No existing FR covers a phase-angle-based access
+  criterion for a general passive-EO sensor. `BL-0112` (research-gap) found no R1xx encyclopedia
+  topic grounds this three-body phase angle directly, but identified one real Tier-B source during
+  intake — AGI, "New Feature in STK 11.1.1 - New Lighting Constraint"
+  (https://www.agi.com/products/stk/pro/new-feature-in-stk-11-1-1-new-lighting-constraint) —
+  describing an operationally used lighting constraint of exactly this kind (0°="full moon",
+  180°="new moon", constraining when an optical payload can achieve a usable detection magnitude
+  against a target in a different orbital regime). This requirement is baselined on that citation,
+  the same way `FR-1620` baselined on its own single-source-flagged 90° figure.
+- **Priority:** Should
+- **Inputs:** A declared usable phase-angle range on a passive EO sensor; the current Sun-target-
+  observer geometry at the time of the access-window computation.
+- **Outputs:** An accept/reject decision, or a degraded observation-effectiveness result, composed
+  with — not replacing — the sensor's existing lighting (`FR-1220`) and, where applicable,
+  exclusion-angle (`FR-1620`) predicates.
+- **Preconditions:** The sensor declares a non-default usable phase-angle range; a sensor with no
+  declared range is unaffected (falls back to its existing predicates unchanged).
+- **Postconditions:** This predicate composes with, rather than replaces, `FR-1220`'s lighting
+  predicate and, for a ground-based optical sensor that also declares one, `FR-1620`'s exclusion
+  angle.
+- **Acceptance Criteria:** Given a passive EO sensor with a declared usable phase-angle range and a
+  geometry producing a phase angle outside that range, the access window is rejected or the
+  observation effectiveness is measurably degraded; given a geometry producing a phase angle inside
+  the declared range (all else equal), the window/effectiveness is unaffected by this predicate.
+- **Verification Method:** Test
+- **Dependencies:** FR-1220, FR-1620
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0122`; `BL-0112` (research-gap, citing AGI,
+  "New Feature in STK 11.1.1 - New Lighting Constraint"); `FR-1620` (the narrower, ground-only,
+  boresight-measured predecessor concept).
+- **Related ADRs:** ADR-0011
+- **Related Interfaces:** INT-0008
+- **Related Requirements:** FR-1220, FR-1620, FR-1630, FR-8220
+- **Notes:** `BL-0112`'s revisit trigger ("before `06-feature-specification` designs `BL-0111`'s
+  overlay") applies equally here — the concrete default usable-phase-angle range and the shape of
+  the effectiveness-degradation curve are design-level choices this requirement deliberately does
+  not specify, pending that research pass closing with a fuller sourcing basis than the single AGI/
+  STK citation above. Whether this capability extends `FR-1620` directly or remains its own sibling
+  leaf is also a `06-feature-specification`-level design question (see `BL-0122`'s own Overlap
+  note), not decided here. `FR-8220` (the `BL-0111` display overlay) and this requirement should
+  share one underlying phase-angle computation, not two independently implemented ones — flagged
+  for whoever drafts the Feature Spec(s) for both.
 
 ---
 
@@ -430,6 +1076,38 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0007, INT-0008
 - **Related Requirements:** FR-2110, FR-6200
+
+#### FR-2320 — Per-asset telemetry CSV export over a time span
+
+- **ID:** FR-2320
+- **Title:** Export a cell's own pass-gated telemetry for a named asset over a time span as CSV
+- **Description:** The system shall support exporting, for a requested Asset and simulated time
+  span, the requesting cell's own pass-gated telemetry channel history as CSV, reflecting exactly
+  the same fog-of-war-filtered, pass-gated view that cell's own telemetry endpoints already show
+  (`FR-2310`) — never ground truth.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B9); the baseline exposes 19 telemetry parameters per asset via JSON endpoints
+  (`engine/telemetry.py`, read-time seeded) with no export path. A new-effect-type anomaly inject
+  (`FR-4430`) must perturb the relevant exported channel(s) the same way it perturbs the live
+  JSON-endpoint values, since both read the same underlying telemetry function.
+- **Priority:** Should
+- **Inputs:** A requested Asset id, cell, and simulated time span.
+- **Outputs:** A CSV file of the requesting cell's own pass-gated telemetry channel values across
+  the requested span.
+- **Preconditions:** The requesting cell has fog-of-war-filtered access to the named Asset's
+  telemetry, per `FR-6210`.
+- **Postconditions:** The exported values are identical to what the same cell's own live telemetry
+  endpoint would show at each sampled point — never another cell's or ground-truth values.
+- **Acceptance Criteria:** Given an Asset with an active anomaly-inject effect (`FR-4430`) perturbing
+  one telemetry channel, the CSV export for the affected cell shows the perturbation at the correct
+  simulated times; a different cell's export of the same Asset never shows data that cell's own
+  fog-of-war filter would not otherwise expose.
+- **Verification Method:** Test
+- **Dependencies:** FR-2310, FR-6210, FR-4430
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0075` (external validation report, 26 Sep
+  2026, item B9); `FR-2310`; `FR-6210`.
+- **Related ADRs:** ADR-0004
+- **Related Requirements:** FR-2310, FR-6210, FR-4430
 
 ### FR-2400 — Payload-type-specific operations
 
@@ -614,7 +1292,8 @@ review passes actually run against it).
   action (GDS-04 §6.5; build-spec/02 §5.3 FR-P3).
 - **Priority:** Must
 - **Inputs:** A Planned Activity of either `kind` (`command` or `collection`).
-- **Outputs:** A scheduled entry queryable through one queue/timeline regardless of kind.
+- **Outputs:** A scheduled entry whose queueing, cancellation before execution, undo and
+  time-travel behaviour is the same regardless of kind.
 - **Preconditions:** The activity has a valid `kind` and `actor_ref`.
 - **Postconditions:** Undo/time-travel operations apply identically to both kinds.
 - **Acceptance Criteria:** Given a rewind to a sim time before a collection-kind activity's
@@ -627,6 +1306,17 @@ review passes actually run against it).
 - **Related ADRs:** (none directly)
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-3110, FR-3210, FR-4300
+- **Notes:** *Amended 2026-10-17 (run #160, `BL-0050`).* The Outputs field said "queryable through
+  one queue/timeline". GDS-05 FR-P3, the governing statement, says the two kinds share one
+  scheduler "so queue, timeline, undo, and time-travel behave identically". That is a behavioural
+  parity requirement, not a single-list requirement, so the Outputs field now uses FR-P3's terms.
+  As built, the order system (`engine/orders.py`) carries commands and sensor-tasking `observe`
+  orders, and the SSN service (`engine/ssn.py`) carries SSN requests. Both schedule events on the
+  one deterministic `Scheduler`/`EventLog`, so undo and rewind replay both kinds through the same
+  path. The order queue and the SSN request list are separate operator surfaces. No test yet
+  exercises the Acceptance Criterion for an SSN request specifically (a rewind before collection,
+  then parity with a command); that gap is routed to `07` (`BL-0259`). Feature ownership of this
+  leaf is `06`'s (`BL-0050`).
 
 ### FR-3400 — Re-validation at execution time
 
@@ -691,6 +1381,69 @@ review passes actually run against it).
 - **Related Interfaces:** (none directly — an engine-internal validation change, not a new
   interface)
 - **Related Requirements:** FR-3410, FR-5160
+
+#### FR-3430 — Optional per-effect-type controller-role authorization gating
+
+- **ID:** FR-3430
+- **Title:** Optionally gate an effect's execution on a designated controller role's approval
+- **Description:** The system shall support an optional, vignette-declared gating rule under which
+  an effect (identified by type and/or reversibility category) requires approval by a designated
+  controller role before it executes, and shall log the approval request, the decision, and the
+  time taken to decide.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B10); the baseline enforces only fixed per-cell ROE flags (`FR-3420`) — kinetic and cyber — with
+  jamming not gated at all, and no approval-workflow concept exists for any effect type.
+- **Priority:** Should
+- **Inputs:** A vignette-declared gating rule (effect type/reversibility category → required
+  controller role); a pending effect order matching a gated rule.
+- **Outputs:** An approval request event; an approve/deny decision event; the gated effect's
+  execution proceeding only on approval.
+- **Preconditions:** A gating rule is declared for the effect's type/reversibility category; an
+  effect with no matching rule is unaffected (executes per its existing gates, e.g. `FR-3420`,
+  `FR-3410`).
+- **Postconditions:** The approval request, the decision, and the time taken to decide are all
+  recorded in the `EventLog`.
+- **Acceptance Criteria:** Given a gated effect type and a pending order of that type, the order
+  does not execute until the designated controller role records an approval decision; the
+  `EventLog` shows the request, the decision, and the elapsed time between them.
+- **Verification Method:** Test
+- **Dependencies:** FR-3420, FR-4210, FR-7110
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0076` (external validation report, 26 Sep
+  2026, item B10); `FR-3420`; `FR-4210` (roles).
+- **Related ADRs:** (none directly — an optional workflow layered on top of `FR-3420`'s existing
+  ROE gate, not a new effect-resolution rule)
+- **Related Requirements:** FR-3420, FR-4210, FR-7110, FR-3440
+
+#### FR-3440 — Live, logged mid-session Rules-of-Engagement changes
+
+- **ID:** FR-3440
+- **Title:** Allow a designated controller role to change ROE flags mid-session, logged for
+  deterministic replay
+- **Description:** The system shall allow a designated controller role to change a cell's ROE flags
+  (kinetic, cyber, and any per-effect-type gating rule from `FR-3430`) during a running session, and
+  shall record each change as an `EventLog` entry so replaying the same event log reproduces the
+  identical sequence of ROE states.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B10); `FR-3420`'s per-cell ROE is fixed from the vignette declaration for the session's duration,
+  and `FR-4720`'s existing live-parameter-adjustment mechanism (safe-mode dials) does not cover ROE
+  flags. A live ROE change must be an ordinary `EventLog` entry, not an out-of-band mutation, to
+  preserve the deterministic-core invariant (`CLAUDE.md` invariant 1; `ADR-0002`).
+- **Priority:** Should
+- **Inputs:** A controller-issued ROE-change request (cell, flag, new value).
+- **Outputs:** An updated ROE state for the named cell, effective from the simulated time of the
+  change; an `EventLog` entry recording the change.
+- **Preconditions:** The requesting operator holds the designated controller role.
+- **Postconditions:** Replaying the identical `(initial_state, ordered eventlog, seed)` reproduces
+  the identical sequence of ROE states at the identical simulated times.
+- **Acceptance Criteria:** Given a controller-issued ROE change at simulated time T, an order issued
+  by the affected cell before T is evaluated under the prior ROE value and one issued after T under
+  the new value; replaying the session reproduces this identically.
+- **Verification Method:** Test
+- **Dependencies:** FR-3420, FR-4720, FR-1120
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0076` (external validation report, 26 Sep
+  2026, item B10); `FR-3420`; `FR-4720`; `CLAUDE.md` invariant 1; `ADR-0002`.
+- **Related ADRs:** ADR-0002
+- **Related Requirements:** FR-3420, FR-4720, FR-1120, FR-3430
 
 ### FR-3500 — Role-scoped command catalog
 
@@ -965,6 +1718,200 @@ review passes actually run against it).
 - **Related Interfaces:** INT-0002
 - **Related Requirements:** FR-4710
 
+#### FR-4420 — Condition-triggered injects, evaluated deterministically
+
+- **ID:** FR-4420
+- **Title:** Fire an inject when a deterministic engine-evaluated condition becomes true
+- **Description:** The system shall allow White Cell to author an inject whose trigger is a
+  condition over engine state — range between two named assets crossing a threshold, a named
+  cell's custody confidence on a track crossing a threshold, or an objective reaching a declared
+  state — evaluated on each scheduled engine tick against the deterministic `WorldState`, never
+  against wall-clock time or an out-of-band poll.
+- **Rationale:** `FR-4410` covers only immediate and simulated-time-scheduled firing; the project
+  owner's explicit request (external validation report, 26 Sep 2026, item B4) asks for
+  condition-based triggers as well. Evaluating the condition on scheduled engine ticks, rather than
+  wall-clock or an external process, is required to preserve the deterministic-core invariant
+  (`(initial_state, ordered eventlog, seed) → byte-identical state`, `CLAUDE.md` invariant 1;
+  `ADR-0002`) — a condition trigger is itself a source of nondeterminism if it is evaluated
+  anywhere the sub-stepped `Scheduler` doesn't already visit (`ADR-0006`).
+- **Priority:** Must
+- **Inputs:** A condition-triggered Inject definition (range/custody/objective-state condition +
+  effect payload).
+- **Outputs:** The inject's effects, applied at the first scheduled engine tick where the condition
+  evaluates true; an `EventLog` entry recording the firing tick and the condition's evaluated
+  value.
+- **Preconditions:** The condition-triggered inject has not already fired. A condition-triggered
+  inject fires at most once on a session timeline; no source states a re-fire rule for one marked
+  `repeatable` (see Notes and candidate `CR-27`).
+- **Postconditions:** The inject fires at the same simulated tick on every replay of the same
+  `(initial_state, ordered eventlog, seed)`, regardless of wall-clock elapsed time during the
+  original run.
+- **Acceptance Criteria:** Given a condition-triggered inject (e.g. range < X between two named
+  assets) and a replayed event log reaching the same `WorldState` history, the inject fires at the
+  identical simulated tick on both the original run and the replay.
+- **Verification Method:** Test
+- **Dependencies:** FR-4410, FR-1120
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0070` (external validation report, 26 Sep
+  2026, item B4); `CLAUDE.md` invariant 1 (deterministic core); `ADR-0002`; `ADR-0006`;
+  `docs/FUTURE-WORK.md` §13 R18.
+- **Related ADRs:** ADR-0002, ADR-0005, ADR-0006
+- **Related Interfaces:** INT-0016
+- **Related Requirements:** FR-4410, FR-1120, FR-4430
+- **Notes:** *Amended 2026-10-17 (run #160, `BL-0130`, `VR-1062` Finding L1).* The Precondition
+  read "a non-repeatable ... inject must not have already fired", which implied that a
+  `repeatable` one may re-fire. Neither source (`BL-0070`/B4, FUTURE-WORK §13 R18) says so, and
+  none says when a re-fire would happen (every tick the condition holds, or each false-to-true
+  transition). As built, a condition-triggered inject fires once whatever its `repeatable` flag.
+  The Precondition now states that sourced behaviour. A re-fire rule is candidate `CR-27`.
+
+#### FR-4430 — New inject effect types (anomaly, sensor outage, forced custody loss, scripted manoeuvre)
+
+- **ID:** FR-4430
+- **Title:** Extend the inject effect vocabulary with anomaly, sensor-outage, custody-loss, and
+  scripted-manoeuvre effects
+- **Description:** The system shall support four additional inject effect types beyond the
+  existing set (`message`/`reveal_asset`/`political_consequence`/`patch_cyber_vuln`/`gs_outage`/
+  `space_weather`/`conjunction_warning`/`spawn_debris`): (a) a spacecraft anomaly effect with a
+  controller-set true cause (bus or telemetry subsystem), (b) a sensor-outage effect applicable to
+  any sensor (not only ground stations, which `gs_outage` already covers), (c) a forced
+  custody-loss effect that degrades or drops a named cell's track on a target, and (d) a scripted
+  manoeuvre effect that moves any named asset via a White-Cell-authored manoeuvre, independent of
+  that asset's owning cell issuing a plan-first order.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B4); the existing inject effect vocabulary has no equivalent for any of the four (baseline
+  effects enumerated from the current `Inject`/effect schema, `docs/pipeline/backlog.md` `BL-0070`).
+  A White-Cell-authored inject is the documented, accepted bypass of plan-first commanding
+  (`ADR-0005`), so a scripted manoeuvre fired this way does not violate `ADR-0005`'s plan-first
+  invariant for operator-issued orders.
+- **Priority:** Must
+- **Inputs:** An inject definition using one of the four new effect types, with its
+  type-appropriate payload (anomaly cause; target sensor id; target cell + track id + degrade/drop
+  mode; target asset + manoeuvre parameters).
+- **Outputs:** The corresponding applied effect on the targeted Asset/Sensor/Track/`BusState`; an
+  `EventLog` entry.
+- **Preconditions:** The targeted Asset/Sensor/Track exists in the current `WorldState`.
+- **Postconditions:** An anomaly effect's true cause is recorded in the event log exactly as the
+  controller set it, never re-derived; a forced custody-loss effect changes only the named cell's
+  own `Track`/`TrackCatalog` entry, never another cell's.
+- **Acceptance Criteria:** Given each of the four new effect types fired via an inject, the
+  targeted Asset/Sensor/Track/`BusState` shows the expected change, and no other cell's fog-of-war-
+  filtered view is affected by a forced custody-loss effect targeted at a different cell.
+- **Verification Method:** Test
+- **Dependencies:** FR-4410, FR-6100
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0070` (external validation report, 26 Sep
+  2026, item B4); `ADR-0005`; `ADR-0004` (fog-of-war boundary, for the custody-loss effect's
+  per-cell scoping).
+- **Related ADRs:** ADR-0004, ADR-0005
+- **Related Interfaces:** INT-0016
+- **Related Requirements:** FR-4410, FR-4420, FR-1510
+- **Notes:** *Added 2026-10-17 (run #172, `BL-0101`).* The requirement fixes the anomaly's cause
+  categories (bus or telemetry subsystem) and that the controller-set cause is recorded, never
+  re-derived (Postcondition). No source states which `BusState` change each category produces, so
+  "the expected change" in the Acceptance Criteria is the design's to define, not this leaf's. As
+  built (`IP-1062` Design Decision 4, as remediated under `BL-0128`): `bus` enters safe mode with
+  the controller-set cause, recoverable through the existing recovery loop; `telemetry` marks the
+  comms subsystem red. That mapping satisfies this leaf as written and is confirmed here; changing
+  it would be a design change at `06`/`07`, not a requirements change.
+
+#### FR-4440 — Space-weather-index-driven anomaly rate scaling
+
+- **ID:** FR-4440
+- **Title:** Scale the rate of environment-induced anomalies by the current space-weather index
+  values
+- **Description:** The system shall scale the rate at which environment-induced anomaly injects
+  (`FR-4430`'s anomaly effect type) fire, deterministically, according to the currently declared
+  space-weather index time series (`FR-1230`) — a higher-severity index period shall produce a
+  higher rate of environment-induced anomalies than a quiescent period, computed as a function of
+  the declared index values and simulated time.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B8); complements `FR-1230`'s drag coupling — both are the same index-driven-environment concept
+  applied to a different consequence (orbital decay vs. anomaly likelihood). Must remain
+  deterministic per the same invariant `FR-1230`/`FR-4420` already cite.
+- **Priority:** Should
+- **Inputs:** The currently declared space-weather index time series (`FR-1230`); the existing
+  anomaly inject mechanism (`FR-4430`).
+- **Outputs:** Environment-induced anomaly injects firing at a rate that varies with the declared
+  index values over simulated time.
+- **Preconditions:** A space-weather index time series is declared (`FR-1230`); with none declared,
+  no environment-induced anomaly rate scaling applies (baseline behavior unchanged).
+- **Postconditions:** Replaying the identical `(initial_state, ordered eventlog, seed)` reproduces
+  the identical sequence of environment-induced anomaly firings at the identical simulated times.
+- **Acceptance Criteria:** Given two runs differing only in their declared index time series (one
+  quiescent, one high-severity), the high-severity run's environment-induced anomaly rate is
+  measurably higher; replaying either run reproduces identical firing times.
+- **Verification Method:** Test
+- **Dependencies:** FR-1230, FR-4420, FR-4430, FR-1120
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0074` (external validation report, 26 Sep
+  2026, item B8); `FR-1230`; `FR-4420`; `FR-4430`.
+- **Related ADRs:** ADR-0002, ADR-0006
+- **Related Requirements:** FR-1230, FR-4420, FR-4430, FR-1120
+
+#### FR-4450 — Edit or cancel a scheduled inject before it fires
+
+- **ID:** FR-4450
+- **Title:** Edit or cancel a scheduled, not-yet-fired inject
+- **Description:** The system shall allow White Cell to edit the parameters of, or cancel, a
+  scheduled inject that has not yet fired, distinct from the existing `GET /injects` listing (which
+  is read-only) and from `FR-4410`'s/`FR-4420`'s existing immediate/scheduled/condition-triggered
+  firing mechanisms (which create or fire an inject, but do not let White Cell change or withdraw
+  one already scheduled).
+- **Rationale:** `docs/pipeline/backlog.md` `BL-0079` (Could-tier, external validation report, 26
+  Sep 2026, item B13). Baseline already supports god-view, pause, on-demand injects, and coaching
+  notes, and already lists pending injects via `GET /injects`, but no requirement covers editing or
+  cancelling an already-scheduled inject before it fires.
+- **Priority:** Could
+- **Inputs:** A White-Cell edit or cancel request naming a scheduled, not-yet-fired inject.
+- **Outputs:** The inject's updated parameters (edit), or its removal from the pending queue
+  (cancel).
+- **Preconditions:** The requester holds the White Cell role; the named inject is scheduled and has
+  not yet fired.
+- **Postconditions:** A cancelled inject never fires; an edited inject fires with its updated
+  parameters at its (possibly updated) scheduled time; an already-fired inject can no longer be
+  edited or cancelled.
+- **Acceptance Criteria:** Given a scheduled, not-yet-fired inject, a cancel request removes it
+  from the pending queue and it subsequently does not fire; given an edit request changing one
+  parameter, the inject later fires carrying the updated parameter value, not its original one.
+- **Verification Method:** Test
+- **Dependencies:** FR-4410, FR-4420
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0079` (external validation report, 26 Sep
+  2026, item B13); `FR-4410`; the existing `GET /injects` route (read-only baseline).
+- **Related ADRs:** ADR-0005
+- **Related Interfaces:** INT-0002, INT-0016
+- **Related Requirements:** FR-4410, FR-4420, FR-4620
+
+#### FR-4620 — Side-by-side controller view: each cell's picture beside truth
+
+- **ID:** FR-4620
+- **Title:** Present White Cell a side-by-side view of each cell's belief state alongside ground
+  truth
+- **Description:** The system shall provide White Cell a controller view that displays each cell's
+  own belief state side-by-side with ground truth simultaneously, distinct from the existing
+  god-view's sequential "switch to view-as-cell" mechanism (`FR-4610`), which shows one view at a
+  time rather than multiple views side-by-side.
+- **Rationale:** `docs/pipeline/backlog.md` `BL-0079` (Could-tier, external validation report, 26
+  Sep 2026, item B13). `FR-4610` already provides god-view plus sequential view-as-cell switching,
+  not a simultaneous side-by-side presentation of both cells' belief alongside truth.
+- **Priority:** Could
+- **Inputs:** A White-Cell request for the side-by-side controller view.
+- **Outputs:** A rendered display showing ground truth and each cell's `CellView` simultaneously.
+- **Preconditions:** The requester holds the White Cell role.
+- **Postconditions:** The side-by-side view never grants White Cell write access to a cell's state
+  through this display path (mirrors `FR-4610`'s existing postcondition).
+- **Acceptance Criteria:** Given a running session, White Cell's side-by-side view simultaneously
+  displays ground truth and both Red's and Blue's `CellView`s, each matching `FR-4610`'s own
+  exact-match acceptance criterion for its respective cell.
+- **Verification Method:** Test
+- **Dependencies:** FR-4610, FR-6210
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0079` (external validation report, 26 Sep
+  2026, item B13); `FR-4610`; `FR-6210`.
+- **Related ADRs:** ADR-0004
+- **Related Interfaces:** INT-0002, INT-0007
+- **Related Requirements:** FR-4610, FR-6210, FR-4450
+- **Notes:** `BL-0079`'s own backlog row bundles this side-by-side presentation together with the
+  editable pending-inject queue (`FR-4450`) as one requested feature; per this skill's atomicity
+  rule they are baselined as two independent leaves — a side-by-side controller view could exist
+  without inject editing, and inject editing (`FR-4450`) could exist without a side-by-side view.
+
 ---
 
 ## FR-5000 — Scenario / Vignette Authoring
@@ -1236,6 +2183,43 @@ review passes actually run against it).
 - **Related Interfaces:** INT-0013
 - **Related Requirements:** FR-1210, FR-5310
 
+#### FR-5220 — Bulk TLE and CCSDS OMM multi-object import
+
+- **ID:** FR-5220
+- **Title:** Import multiple objects from one TLE or CCSDS OMM file in a single operation
+- **Description:** The system shall accept a file containing multiple objects — either a
+  multi-object Two-Line Element file or a CCSDS Orbit Mean-Elements Message (OMM) file — and
+  import all objects in that file in one operation, with a per-object side (cell) assignment and
+  asset-template assignment specified alongside the import, distinct from the existing
+  one-TLE-per-call path.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B1). The baseline `POST /api/sessions/{sid}/force/tle` route and `FR-5140`'s manual paste both
+  accept exactly one TLE per call, with no OMM support and no per-object side/template mapping for
+  a batch — a distinct capability from either existing path, not a variant of them.
+- **Priority:** Must
+- **Inputs:** A multi-object TLE file or a CCSDS OMM file; a per-object side and asset-template
+  assignment.
+- **Outputs:** One populated `OrbitState`-backed `Asset` per object in the file, force-added to its
+  assigned side using its assigned asset template.
+- **Preconditions:** None for the manual/offline path — consistent with `FR-5210`'s existing
+  offline-first posture (`ADR-0018`); no network access is required for this requirement's file-
+  based import.
+- **Postconditions:** A file containing one object with malformed elements does not abort the
+  import of the file's other, well-formed objects; each object's failure/success is reported
+  individually.
+- **Acceptance Criteria:** Given a multi-object TLE file with nine valid objects and one malformed
+  object, the import produces nine force-added Assets with the specified side/template
+  assignments, and reports the tenth object's failure without aborting the other nine. Given a
+  CCSDS OMM file with multiple objects, the same holds.
+- **Verification Method:** Test
+- **Dependencies:** FR-1210, FR-5140
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0067` (external validation report, 26 Sep
+  2026, item B1); `spacesim/ui_web/server.py` (`POST /api/sessions/{sid}/force/tle`, current
+  one-object-per-call route); `ADR-0018` (offline-first runtime).
+- **Related ADRs:** ADR-0018
+- **Related Interfaces:** INT-0006, INT-0011 *(corrected 2026-10-17, run #172, `BL-0263`: ICD pass 3 assigns the file-based import to the console → `SessionAPI` path and C2's parse through C5; INT-0013 is the Space-Track network fetch only)*
+- **Related Requirements:** FR-5140, FR-5210
+
 ### FR-5300 — Vignette validation
 
 #### FR-5310 — Load-time vignette validation with precise errors
@@ -1262,6 +2246,260 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0007
 - **Related Interfaces:** INT-0011
 - **Related Requirements:** FR-4110, FR-5210
+
+#### FR-5311 — TLE-sourced orbits parse at load
+
+- **ID:** FR-5311
+- **Title:** Reject at load a vignette asset whose TLE does not parse
+- **Description:** The system shall reject, at vignette load, any asset whose orbit is given as a
+  two-line element set that does not parse into an element set the orbit propagator accepts. The
+  error shall name the asset.
+- **Rationale:** GDS-04 §1.3 "Constraints": "TLE-sourced orbits must parse at load or the Asset is
+  rejected with a clear error". This is `FR-5310`'s "well-formed TLEs" clause made atomic. As built
+  (2026-10-16, run #141), a malformed TLE loads and starts, then raises an SGP4 propagation error on
+  the first clock advance (`BL-0237`).
+- **Priority:** Must (inherits `FR-5310`)
+- **Inputs:** A vignette asset with a TLE-sourced orbit.
+- **Outputs:** A loaded asset, or a load rejection naming the asset.
+- **Preconditions:** None.
+- **Postconditions:** No session exists whose initial world holds a TLE the propagator cannot use.
+- **Acceptance Criteria:** Given a vignette whose only defect is one asset with malformed TLE
+  lines, loading it is refused, the error names that asset, and no session is created.
+- **Verification Method:** Test
+- **Dependencies:** FR-5310
+- **Source Documents:** GDS-04 §1.3 "Constraints"; `design/04-data-model.md` §9 (legacy reference
+  cited by GDS-04); `FR-5310` Description.
+- **Related ADRs:** ADR-0007
+- **Related Interfaces:** INT-0011
+- **Related Requirements:** FR-5310, FR-5210, FR-5220
+- **Notes:** *(new 2026-10-16, `BL-0235`, run #142)* "Parse" is the whole sourced rule. Two
+  further checks are not baselined and are candidate `CR-23`: line-checksum enforcement, and epoch
+  sanity relative to the vignette start. No input document asks for either. FS-131 elaborates
+  "parse" as initialising and propagating at the vignette start epoch, which is a design-level
+  reading of this leaf.
+
+#### FR-5312 — Space assets carry an orbit, terrestrial assets a location
+
+- **ID:** FR-5312
+- **Title:** Reject at load a satellite with no orbit or a terrestrial asset with no location
+- **Description:** The system shall reject, at vignette load, a satellite asset that declares no
+  orbit, and a terrestrial asset other than a cyber unit that declares no location. The error
+  shall name the asset. *(Amended 2026-10-16, run #144, `BL-0241`: cyber units are exempt from the
+  location rule.)*
+- **Rationale:** GDS-04 §1.2 "Constraints": "A satellite must have an Orbit; a terrestrial asset
+  must have a location instead". As built (2026-10-16, run #142), deleting the orbit from a
+  satellite (`03-gnss-ew-campaign` `BLUE-GNSS`), or the location from a jammer (`RED-JAM`), still
+  loads, starts and advances an hour without error. The asset is silently present but can never
+  have access, which is a silent partial load in `FR-5310`'s terms.
+- **Priority:** Must (inherits `FR-5310`)
+- **Inputs:** A vignette's force entries.
+- **Outputs:** A loaded force, or a load rejection naming the asset.
+- **Preconditions:** None.
+- **Postconditions:** Every satellite in a loaded world has an orbit, and every terrestrial asset
+  other than a cyber unit has a location.
+- **Acceptance Criteria:** Given a vignette whose only defect is a satellite entry without an
+  orbit, loading is refused and the error names the satellite. The same holds for a jammer, ground
+  station, interceptor, directed-energy or terrestrial-force entry without a location. A vignette
+  whose cyber unit declares no location loads.
+- **Verification Method:** Test
+- **Dependencies:** FR-5310
+- **Source Documents:** GDS-04 §1.2 "Purpose" and "Constraints"; `design/04-data-model.md` §9
+  (legacy reference cited by GDS-04); ADR-0012 "Decision" and "Rationale" (the cyber exception).
+- **Related ADRs:** ADR-0007, ADR-0012
+- **Related Interfaces:** INT-0011
+- **Related Requirements:** FR-5310, FR-1420
+- **Notes:** *(amended 2026-10-16, `BL-0241`, run #144)* GDS-04 §1.2 does not define "terrestrial".
+  Its Purpose lists satellites, terrestrial forces, jammers, interceptors and cyber units. A
+  location exists to place an asset in access geometry: a ground station, jammer or interceptor is
+  an endpoint of the access channels. ADR-0012 makes cyber "window-independent" because cyber
+  operations are "persistent compromise, not a live geometric pass", and `FR-1420` resolves cyber
+  "without requiring an open access window". A cyber unit therefore uses no geometry, and the
+  location rule does not apply to it. Seven shipped vignettes declare a location-less cyber unit
+  (`RED-CYBER`), and all of them stay valid. Any other non-satellite kind, including an
+  unrecognised free-text kind, is held to the rule. Whether unrecognised kinds should be refused
+  outright is candidate `CR-24`'s question, not this leaf's.
+  *(original, 2026-10-16, `BL-0234`, run #142)* The rule applies to assets. GDS-04 §1.5 says
+  a space-based Sensor "owns an Orbit exactly like a satellite Asset does", but as built a sensor
+  may instead name a host satellite (`host_asset_id`, FR-1660). Whether a dangling host reference
+  is invalid is one of the cross-references left as candidate `CR-24`.
+
+#### FR-5313 — Unique identifiers within a vignette
+
+- **ID:** FR-5313
+- **Title:** Reject at load a vignette that reuses an asset or sensor identifier
+- **Description:** The system shall reject, at vignette load, a vignette in which two asset
+  entries, or two sensor entries, share one identifier. The error shall name the identifier.
+- **Rationale:** `FR-5310` forbids "a partial or silent load". GDS-04 §1.2 and §1.5 give every
+  Asset and Sensor an "Identity" as persistent state. As built (2026-10-16, run #141), two force
+  entries with one id load without complaint and the later silently replaces the earlier. One
+  declared asset vanishes from the world: a silent partial load.
+- **Priority:** Must (inherits `FR-5310`)
+- **Inputs:** A vignette's force and sensor entries.
+- **Outputs:** A loaded world, or a load rejection naming the duplicated identifier.
+- **Preconditions:** None.
+- **Postconditions:** Every asset and sensor entry the vignette declares is present in the loaded
+  world.
+- **Acceptance Criteria:** Given a vignette that declares two force entries with one id (in the
+  same force list or in different ones), loading is refused and the error names that id. The same
+  holds for two sensor entries.
+- **Verification Method:** Test
+- **Dependencies:** FR-5310
+- **Source Documents:** `FR-5310` Description ("rather than a partial or silent load"); GDS-04 §1.2
+  and §1.5 "Persistent state" (Identity).
+- **Related ADRs:** ADR-0007
+- **Related Interfaces:** INT-0011
+- **Related Requirements:** FR-5310
+- **Notes:** *(new 2026-10-16, `BL-0234`, run #142)* No input says whether an asset and a sensor
+  may share an id, so this leaf does not require it either way. The as-built world keeps assets
+  and sensors in separate maps.
+
+#### FR-5314 — Declared roles name declared assets
+
+- **ID:** FR-5314
+- **Title:** Reject at load a staffing requirement that names no declared asset or constellation
+- **Description:** The system shall reject, at vignette load, a `roles_needed` entry whose asset
+  or constellation reference matches no asset and no constellation group the vignette declares.
+  The error shall name the reference.
+- **Rationale:** `FR-5310` requires "every declared `roles_needed` satisfiable". GDS-04 §1.10 says
+  a Role Assignment "references one or more Assets" and "can only reference Assets the Vignette's
+  `roles_needed` made available". A requirement that names nothing the vignette declares can only
+  be met by a seat bound to a non-existent asset, so it is not satisfiable. As built (2026-10-16,
+  run #141), such an entry loads and the session starts.
+- **Priority:** Must (inherits `FR-5310`)
+- **Inputs:** A vignette's `roles_needed` entries; its declared assets and constellation groups.
+- **Outputs:** A loaded vignette, or a load rejection naming the unresolved reference.
+- **Preconditions:** None.
+- **Postconditions:** Every `roles_needed` entry of a loaded vignette refers to something that
+  exists in its world.
+- **Acceptance Criteria:** Given a vignette whose `roles_needed` names an id that is neither an
+  asset id nor a constellation group of that vignette, loading is refused and the error names the
+  id. A `roles_needed` entry naming an existing asset or group loads as today.
+- **Verification Method:** Test
+- **Dependencies:** FR-5310, FR-4210
+- **Source Documents:** `FR-5310` Description; GDS-04 §1.10 "Relationships" and "Constraints".
+- **Related ADRs:** ADR-0007
+- **Related Interfaces:** INT-0011
+- **Related Requirements:** FR-5310, FR-4210
+- **Notes:** *(new 2026-10-16, `BL-0234`, run #142)* "Satisfiable" is read as "refers to something
+  that exists". Whether the seats present can cover every mandatory role is a start-time matter
+  that `FR-4210`'s staffing gate already owns, not a load-time one.
+
+### FR-5400 — External vignette directories
+
+#### FR-5410 — Load vignettes from configured external directories
+
+- **ID:** FR-5410
+- **Title:** Load vignettes from one or more configured external directories in addition to the
+  built-in library
+- **Description:** The system shall load vignettes from zero or more additional directories named
+  in `spacesim.config.yaml` (or an environment variable), alongside the built-in `VIGNETTE_DIR`
+  library, and shall present vignettes from external directories as a separately labeled group
+  distinct from the built-in library in any vignette-selection interface.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B16); baseline `spacesim/content/vignette.py` loads only from the single, hard-coded
+  `VIGNETTE_DIR` (`spacesim/content/vignette.py:22`), with no external-content-root capability, so
+  a user cannot keep authored scenarios outside the source tree.
+- **Priority:** Should
+- **Inputs:** Zero or more configured external directory paths; the built-in `VIGNETTE_DIR`.
+- **Outputs:** A combined vignette catalog, with each entry's origin (built-in vs. a named
+  external directory) preserved and surfaced.
+- **Preconditions:** A configured external directory, if any, exists and is readable.
+- **Postconditions:** A vignette id that collides between the built-in library and an external
+  directory is resolved deterministically and disclosed, never silently shadowing one with the
+  other.
+- **Acceptance Criteria:** Given a configured external directory containing a valid vignette file,
+  that vignette appears in the selection interface labeled as external, distinct from the
+  built-in-library group; given no configured external directory, behavior is unchanged from the
+  baseline.
+- **Verification Method:** Test
+- **Dependencies:** FR-5310
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0082` (external validation report, 26 Sep
+  2026, item B16); `spacesim/content/vignette.py:22` (`VIGNETTE_DIR`); `spacesim/config.py`
+  (existing `spacesim.config.yaml`/`SPACESIM_CONFIG` convention this requirement's configuration
+  extends).
+- **Related ADRs:** ADR-0007, ADR-0018
+- **Related Interfaces:** INT-0011
+- **Related Requirements:** FR-5310, FR-5420
+
+#### FR-5420 — `save_vignette` writes only to a configured user directory, with no path traversal
+
+- **ID:** FR-5420
+- **Title:** Restrict `save_vignette` to a configured user directory and reject path traversal
+- **Description:** The system shall write a vignette produced by `save_vignette` (or an equivalent
+  save-as-scenario/draft-save operation) only to a configured user directory — never to the
+  built-in `VIGNETTE_DIR` — and shall reject, without touching the filesystem, any vignette
+  identifier containing a path separator, a parent-directory traversal token, an absolute-path
+  marker, or a character outside the existing allowed charset, generalizing the same guard
+  `load_vignette` already applies.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B16); baseline `save_vignette` writes into `VIGNETTE_DIR` itself
+  (`spacesim/content/vignette_export.py`, "this is now a write path to `VIGNETTE_DIR`, at least as
+  sensitive as the read path" per that module's own comment), which is the built-in library, not a
+  user-owned location — and the existing traversal guard at
+  `spacesim/content/vignette.py:140-153` is specific to the load path and must be generalized to
+  cover this write path too.
+- **Priority:** Should
+- **Inputs:** A save-as-scenario/draft-save request with a user-supplied vignette identifier.
+- **Outputs:** A vignette file written to the configured user directory (never `VIGNETTE_DIR`); or
+  a rejection with no filesystem write, for a disallowed identifier.
+- **Preconditions:** A user directory is configured (`FR-5410`'s same configuration mechanism).
+- **Postconditions:** No save-as-scenario/draft-save write ever lands inside `VIGNETTE_DIR`; a
+  rejected identifier never reaches a filesystem call.
+- **Acceptance Criteria:** Given a vignette identifier containing `../` or an absolute path, the
+  save request is rejected before any filesystem access occurs; given a valid identifier, the file
+  is written to the configured user directory, not `VIGNETTE_DIR`.
+- **Verification Method:** Test
+- **Dependencies:** FR-5410
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0082` (external validation report, 26 Sep
+  2026, item B16); `spacesim/content/vignette_export.py` (`save_vignette`, current
+  `VIGNETTE_DIR`-writing behavior); `spacesim/content/vignette.py:140-153` (existing traversal
+  guard, generalized by this requirement); FS-117 (Vignette Creator draft save, `IP-1173`).
+- **Related ADRs:** ADR-0007, ADR-0022
+- **Related Interfaces:** INT-0011, INT-0012
+- **Related Requirements:** FR-5410, FR-5510
+
+### FR-5500 — Save-as-scenario (mid-exercise state → new starting vignette)
+
+#### FR-5510 — Save a running session's current state as a new starting vignette
+
+- **ID:** FR-5510
+- **Title:** Save a running session's current state as a new vignette starting at that moment
+- **Description:** The system shall allow White Cell to save a running session's current state as
+  a new vignette whose declared start epoch is the moment of save (not the original vignette's
+  start epoch), carrying forward each cell's current tracks, each side's remaining resources, each
+  asset's current health/bus state, and the current space-weather state; the written file shall
+  record the simulator version (source-control commit or package version) that produced it.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B5); this is distinct from both existing save-adjacent capabilities: `FR-7210`/`FR-7220` (session
+  save/resume) persist a session's own event-log/state history for resuming *that* session, not a
+  new vignette's starting content; the Vignette Creator's draft save (FS-117, `IP-1173`,
+  `export_vignette`/`save_vignette`) builds a `Vignette` from an unstarted draft session's state,
+  not a *running, already-started* session's mid-exercise state. Neither existing path carries
+  tracks forward (the Creator draft has none to carry; a resumed session save keeps the *original*
+  vignette's start epoch per `FR-7210`) or stamps a simulator version.
+- **Priority:** Should
+- **Inputs:** A save-as-scenario request against a running or paused session.
+- **Outputs:** A new vignette file (per `FR-5420`'s user-directory write target) whose start epoch
+  is the save moment, with each cell's current `TrackCatalog`, each side's remaining
+  `AssetResources`, each asset's current `BusState`/`PayloadState` health, and current space-weather
+  state embedded as that vignette's initial conditions; a simulator-version field in the file.
+- **Preconditions:** A running or paused session exists.
+- **Postconditions:** Loading the resulting vignette produces a fresh session whose initial state
+  matches the source session's state at the moment of save, for every field this requirement names.
+- **Acceptance Criteria:** Given a running session at sim time T with specific track/resource/
+  health/space-weather state, saving as a new scenario and then loading the resulting vignette
+  produces a session whose start epoch is T and whose initial tracks/resources/health/space-weather
+  match the source session's state at T; the file records a simulator version.
+- **Verification Method:** Test
+- **Dependencies:** FR-5420, FR-7210
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0071` (external validation report, 26 Sep
+  2026, item B5); `spacesim/content/vignette_export.py` (`export_vignette`/`save_vignette`, the
+  existing draft-session write path this requirement is distinct from); `FR-7210`/`FR-7220`
+  (session save/resume, the existing capability this requirement is distinct from); `ADR-0022`
+  (save-file ownership split).
+- **Related ADRs:** ADR-0022, ADR-0007
+- **Related Interfaces:** INT-0011, INT-0012
+- **Related Requirements:** FR-5420, FR-7210, FR-7220
 
 ---
 
@@ -1324,9 +2562,17 @@ review passes actually run against it).
 - **ID:** FR-6220
 - **Title:** Permit a documented, named set of no-cell ground-truth endpoints
 - **Description:** The system shall permit exactly the documented set of no-cell, ground-truth-
-  exposing interfaces (god-view, event log, save, AAR, objectives-equivalent flows) to bypass
-  per-cell filtering, as an explicit, accepted v1 trust-boundary exception rather than an
-  unbounded one.
+  exposing interfaces to bypass per-cell filtering, as an explicit, accepted v1 trust-boundary
+  exception rather than an unbounded one. The named set is:
+  - **session ground truth:** the god-view (`FR-4610`), the event log, the save file (`FR-7210`),
+    the AAR family including replay playback (`FR-7110`/`FR-7330`), the objectives read, the
+    competency assessment report (`FR-10110`), and the truth ephemeris export (`FR-7410`);
+  - **the Observer view (`FR-6510`)**, which dispatches unmodified to the god-view or to the
+    designated cell's view and adds no filtering path of its own;
+  - **White Cell facilitation and authoring reads whose content is scenario truth by nature:** the
+    inject list (`FR-4410`/`FR-4450`), the vignette catalogue and a vignette's source and tutorial
+    (`FR-4110`/`FR-5310`), the Vignette Creator's draft-session state, preview and seat
+    declaration (`FR-5120`/`FR-5130`/`FR-5160`), and the role staffing report (`FR-4210`).
 - **Rationale:** The LAN trust model names this exception explicitly rather than leaving it as an
   unaudited gap (GDS-01 §4; ADR-0015).
 - **Priority:** Must
@@ -1342,6 +2588,14 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0004, ADR-0015
 - **Related Interfaces:** INT-0001, INT-0005
 - **Related Requirements:** FR-6210
+- **Notes:** *Amended 2026-10-17 (run #160, `BL-0138`).* The original parenthesis listed five
+  flows (god-view, event log, save, AAR, objectives). A static review of the shipped route table
+  (`ui_web/server.py` at `e1e721c`, this requirement's own Inspection method) found further no-cell
+  routes that later baselined requirements already require to show scenario truth to White Cell:
+  the truth ephemeris export, the assessment report, the Observer view and the facilitation/authoring
+  reads above. Each is now named with its owning requirement. No route changed and no new exception
+  was created; the list now matches what those requirements already oblige. A future no-cell route
+  must be added here in the same change set, or it violates the Postcondition.
 
 ### FR-6300 — Server-authoritative multiplayer clock and locking
 
@@ -1611,6 +2865,260 @@ review passes actually run against it).
 - **Related Interfaces:** INT-0014
 - **Related Requirements:** FR-7310
 
+#### FR-7330 — Variable-speed AAR replay from truth or a single cell's viewpoint
+
+- **ID:** FR-7330
+- **Title:** Play back an exercise timeline at a variable speed, from ground truth or from a single
+  cell's fog-respecting viewpoint
+- **Description:** The system shall support timeline playback of a recorded exercise at a
+  configurable, variable speed, reconstructed either from ground truth or from a single named
+  cell's fog-of-war-respecting viewpoint (never another cell's or an unfiltered view presented as
+  that cell's own).
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B12); `FR-7310` already reconstructs state at any event sequence or simulated time for read-only
+  replay/scrub, but has no continuous variable-speed playback mode or per-cell-viewpoint
+  presentation — this requirement is additive to `FR-7310`'s existing point-in-time reconstruction,
+  not a replacement for it.
+- **Priority:** Should
+- **Inputs:** A recorded exercise's event log; a requested playback speed; a requested viewpoint
+  (ground truth, or a named cell).
+- **Outputs:** A continuously advancing reconstructed-state view at the requested speed, filtered to
+  the requested viewpoint.
+- **Preconditions:** The requested cell viewpoint is a cell that participated in the recorded
+  exercise.
+- **Postconditions:** A cell-viewpoint playback shows only what that cell's fog-of-war filter would
+  have shown at each played-back moment — never ground truth presented as that cell's belief.
+- **Acceptance Criteria:** Given a recorded exercise and a requested cell viewpoint, the played-back
+  state at any moment matches what `FR-6210`'s fog-of-war filter would produce for that cell at that
+  simulated time; given a requested ground-truth viewpoint, the played-back state matches `FR-6220`'s
+  no-cell ground-truth view. Playing back at a non-default speed does not disturb the live session
+  (`FR-7310`'s existing non-disturbance guarantee).
+- **Verification Method:** Test
+- **Dependencies:** FR-7310, FR-6210, FR-6220
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0078` (external validation report, 26 Sep
+  2026, item B12); `FR-7310`; `FR-6210`; `FR-6220`; `docs/FUTURE-WORK.md` §13 R10 (belief-vs-truth
+  analytics, adjacent).
+- **Related ADRs:** ADR-0002, ADR-0004
+- **Related Interfaces:** INT-0014
+- **Related Requirements:** FR-7310, FR-6210, FR-6220
+
+### FR-7400 — State-vector / ephemeris export
+
+#### FR-7410 — Truth ephemeris export (ECI and RIC), CSV and CCSDS OEM
+
+- **ID:** FR-7410
+- **Title:** Export ground-truth state vectors for a time span in ECI and RIC, as CSV and CCSDS OEM
+- **Description:** The system shall export ground-truth state vectors (ephemerides) for a named
+  asset over a specified simulated time span, in Earth-Centered Inertial (ECI) frame, as CSV
+  (ECI and RIC columns) and CCSDS Orbit Ephemeris Message (OEM, ECI only — see Notes); RIC-relative
+  state vectors for a chosen reference object shall additionally be available via a companion
+  RIC-specific export file (`FR-7430`). This export shall be available only as a member of the
+  no-cell, White-Cell-only ground-truth set `FR-6220` names, never through a cell-scoped endpoint.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B3). Baseline god-view already returns current truth as JSON with no ephemeris/time-span export,
+  and AAR export (`FR-7110`/`FR-10210`) covers the event log, not state vectors — no existing
+  requirement covers state/ephemeris export. Restricting truth export to the no-cell endpoints is
+  required by the existing fog-of-war trust boundary (`FR-6220`; `CLAUDE.md` "LAN trust model" —
+  the no-cell ground-truth endpoints deliberately expose ground truth without a cell binding, and a
+  truth ephemeris export must not become a new cell-scoped route that leaks ground truth through a
+  fog-filtered surface).
+- **Priority:** Must
+- **Inputs:** A time span, one asset identifier per export (several assets are exported by
+  repeated requests; see Notes), a reference-object identifier (for the RIC frame), and a
+  requested format (CSV or CCSDS OEM).
+- **Outputs:** A CSV file containing the requested assets' ground-truth state vectors across the
+  requested time span in both ECI and RIC-relative-to-the-reference-object form; a CCSDS OEM file
+  containing the same state vectors in ECI only (CCSDS OEM's native format); a companion
+  RIC-specific export file per `FR-7430` when RIC data is needed in a format other than CSV.
+- **Preconditions:** The requester holds the White Cell role (or Observer, where the no-cell
+  endpoint's existing access rule already permits it).
+- **Postconditions:** No cell-scoped route exposes this truth export; the export is reachable only
+  through the endpoints `FR-6220` already designates as ground-truth-exposing.
+- **Acceptance Criteria:** Given a time span and a reference object, the exported CSV file contains
+  state vectors matching the engine's own `WorldState`/`Propagator` truth at each sampled time in
+  both ECI and correctly-transformed RIC form; the exported CCSDS OEM file contains the same ECI
+  state vectors in conformant CCSDS OEM (KVN) format; the export endpoint is one of the existing
+  no-cell endpoints, not a new cell-scoped one.
+- **Verification Method:** Test
+- **Dependencies:** FR-6220, FR-1210
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0069` (external validation report, 26 Sep
+  2026, item B3); `FR-6220` (no-cell ground-truth endpoints); `CLAUDE.md` "LAN trust model"; `R101`
+  (frame conventions grounding the ECI/RIC transform); `engine/geometry.py` (existing GMST
+  ECI↔ECEF frame machinery this export's ECI output reuses).
+- **Related ADRs:** ADR-0004, ADR-0015
+- **Related Interfaces:** INT-0014
+- **Related Requirements:** FR-6220, FR-7420, FR-7430
+- **Notes:** *Amended 2026-09-27 (owner decision, closing `docs/pipeline/backlog.md` `BL-0136`,
+  a `VR-1210` finding): the original Acceptance Criteria required RIC-transformed state vectors in
+  **both** CSV and CCSDS OEM. `VR-1210` found this infeasible as written — CCSDS OEM has no native
+  RIC-relative representation for ephemeris data lines (only for covariance) — and reported the
+  tension rather than silently picking a convention. The project owner's direct decision: keep OEM
+  in its native ECI form, and satisfy the RIC-in-every-format intent with a new companion
+  RIC-specific file format (`FR-7430`) instead of stretching OEM to do something it cannot do. See
+  `FR-7430` for that companion format's own requirement.*
+  *Amended 2026-10-17 (run #160, `BL-0137`, `VR-1210` Finding L1).* The Description and Inputs
+  said "one or more" assets; the shipped export takes exactly one `object_id` per request. The
+  source (`BL-0069`, item B3) asks to "export truth ... state vectors/ephemerides for a time span"
+  and does not state a per-file object count, and the Acceptance Criteria were always per export.
+  "One or more" was this baseline's own sharpening, not a sourced commitment, so the leaf now says
+  one asset per export. A multi-object file (for example a multi-segment OEM) would be a new owner
+  request via `00-intake`. The Postcondition's endpoint wording now defers to `FR-6220`'s named
+  set, which includes this export (`BL-0138`).
+
+#### FR-7420 — Cell-observed ephemeris export (ECI and RIC), CSV and CCSDS OEM
+
+- **ID:** FR-7420
+- **Title:** Export a cell's observed (custody-estimated) state vectors for a time span, fog-of-
+  war-respecting, in ECI and RIC, as CSV and CCSDS OEM
+- **Description:** The system shall export a requesting cell's own observed/estimated state
+  vectors (as distinct from ground truth) for a named tracked object over a specified
+  simulated time span, as CSV (ECI and RIC columns) and CCSDS OEM (ECI only — see `FR-7410`'s
+  Notes on the companion RIC file, `FR-7430`), through a cell-scoped, fog-of-war-respecting
+  endpoint that returns only that cell's own belief state.
+- **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
+  B3), paired with `FR-7410`'s truth-side export. This leaf is **blocked on the per-cell estimated-
+  element-set history model** requested in `docs/pipeline/backlog.md` `BL-0068` (item B2): the
+  baseline `Track`/`TrackCatalog` (`engine/custody.py`) holds a confidence-decayed *copy of truth*,
+  not an independently-estimated element set whose error grows with time since last observation, so
+  there is currently no "cell-observed state vector" distinct from ground truth to export. This
+  requirement is baselined now (the capability is genuinely wanted and traces to the same source),
+  but its Acceptance Criteria cannot be verified until the domain-model change `BL-0068` requests is
+  itself specified and implemented.
+- **Priority:** Must
+- **Inputs:** A time span, one tracked-object identifier per export (same rationale as
+  `FR-7410`'s 2026-10-17 note, `BL-0137`), a reference-object identifier,
+  a requested format (CSV or CCSDS OEM); the requesting cell's identity (fog-of-war scoping).
+- **Outputs:** A file (CSV or CCSDS OEM) containing the requesting cell's own observed/estimated
+  state vectors (not ground truth) for the requested tracked objects, in ECI and RIC-relative-to-
+  the-reference-object form.
+- **Preconditions:** The requesting cell holds a `Track` on each requested object; the estimated-
+  state-history capability `BL-0068`/a future FR covering it exists and is populated.
+- **Postconditions:** The exported values equal the requesting cell's own belief state at each
+  sampled time, never the ground-truth value, and never another cell's belief state.
+- **Acceptance Criteria:** *(Cannot be finalized independent of the `BL-0068` domain-model change —
+  see Open Questions in the companion Requirements Review.)* Given the estimated-state-history
+  capability exists, an export request from cell C for object X returns C's own estimated state at
+  each sampled time, matching `CellController`'s existing fog-of-war filtering rule (no ground
+  truth, no other cell's belief state).
+- **Verification Method:** Test
+- **Dependencies:** FR-7410, FR-6100
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0069` (external validation report, 26 Sep
+  2026, item B3) and `BL-0068` (item B2, the blocking domain-model change); `ADR-0004` (fog-of-war
+  at the boundary); `engine/custody.py` (current `Track`/`TrackCatalog`, a confidence-decayed copy
+  of truth, not yet an independent estimate).
+- **Related ADRs:** ADR-0004, ADR-0013
+- **Related Interfaces:** INT-0007
+- **Related Requirements:** FR-7410, FR-1510, FR-7430
+- **Notes:** *Amended 2026-09-27 (owner decision, closing `BL-0136`) — same CSV/OEM split as
+  `FR-7410`'s Notes: OEM stays ECI-only (its native format); RIC data for the cell-observed variant
+  is available via CSV and via the companion `FR-7430` file, scoped to the requesting cell's own
+  belief state like every other output this requirement produces.*
+
+#### FR-7430 — Companion RIC-specific ephemeris export file
+
+- **ID:** FR-7430
+- **Title:** Export RIC-relative state vectors as a dedicated, non-OEM companion file
+- **Description:** The system shall support exporting RIC-relative state vectors (for either the
+  truth export, `FR-7410`, or the cell-observed export, `FR-7420`) as a dedicated companion file
+  format distinct from CCSDS OEM, for use in external tools that need machine-readable RIC data in
+  a format other than the CSV `FR-7410`/`FR-7420` already provide.
+- **Rationale:** Owner decision 2026-09-27, closing `docs/pipeline/backlog.md` `BL-0136`. `VR-1210`
+  found that CCSDS OEM has no native RIC-relative representation for ephemeris data lines (only for
+  covariance matrices), so `FR-7410`/`FR-7420`'s original "RIC in both CSV and OEM" Acceptance
+  Criteria could not be satisfied by a conformant OEM file. Rather than accept CSV-only RIC output,
+  the project owner chose to add this companion format so a non-CSV, machine-readable RIC export
+  remains available.
+- **Priority:** Should
+- **Inputs:** The same time span, asset/reference-object identifiers, and (for the cell-observed
+  variant) requesting-cell identity that `FR-7410`/`FR-7420` already take.
+- **Outputs:** A companion file containing RIC-relative state vectors for the requested span,
+  distinct from the CSV and CCSDS OEM files `FR-7410`/`FR-7420` already produce.
+- **Preconditions:** Same as whichever of `FR-7410`/`FR-7420` this export rides (truth: no-cell
+  White-Cell-only endpoint; cell-observed: the requesting cell holds a `Track` on each object).
+- **Postconditions:** The companion file's RIC values match the same RIC transform `FR-7410`/
+  `FR-7420`'s own CSV output already produces (`engine/maneuver.py::lvlh_frame`-based) — this is an
+  additional serialization of the same computed values, not a second, independently-computed RIC
+  transform.
+- **Acceptance Criteria:** Given a time span and reference object, the companion file's RIC values
+  match the corresponding CSV export's RIC columns exactly, for both the truth and cell-observed
+  variants.
+- **Verification Method:** Test
+- **Dependencies:** FR-7410, FR-7420
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0136` (owner decision, 2026-09-27);
+  [`VR-1210`](../implementation/verification/VR-1210-ephemeris-export.md) (the finding this
+  requirement closes).
+- **Related ADRs:** none directly — an additive export-format requirement, not a new mechanism.
+- **Related Interfaces:** INT-0014
+- **Related Requirements:** FR-7410, FR-7420
+- **Notes:** The exact companion file format (e.g. a simple RIC-only CSV variant, a small custom
+  JSON/YAML schema, or another standard format with a native relative-motion representation) is not
+  specified here — that is a `07-implementation-planning` design decision, consistent with this
+  skill's own rule against specifying implementation shape. `IP-1210`'s remediation package is
+  expected to make and document that choice.
+
+#### FR-7440 — Quick TLE export for a cell-visible satellite
+
+- **ID:** FR-7440
+- **Title:** Quick-export a current two-line element set for any satellite visible to the
+  requesting cell
+- **Description:** The system shall provide a quick, minimal-UI export — a copyable text field or
+  a copy-to-clipboard action, per the user's own stated minimal bar; no dedicated file-download
+  flow is required — of a current Two-Line Element (TLE) set for any satellite currently visible
+  to the requesting cell, where "visible" means exactly what `FR-6210` exposes to that cell: the
+  cell's **own** satellites, plus any other satellite on which the cell holds a `Track`. For a
+  tracked satellite the TLE reads the requesting cell's own belief state, never ground truth; for
+  the cell's own satellite it reads that satellite's actual state, which the cell already knows
+  exactly (`ADS-1500` Decision 5). For White Cell and the other no-cell ground-truth paths, this
+  mirrors `FR-6220`'s existing named exception. *(Amended 2026-10-15 — see Notes.)*
+- **Rationale:** Project owner's explicit request (`docs/pipeline/backlog.md` `BL-0109`) — "can
+  just be an easy place to cut and paste, or a cut-and-paste button next to it." Distinct from
+  `FR-5210`/`FR-5220` (TLE *import*, not export) and `FR-7410`/`FR-7420`/`FR-7430` (ECI/RIC
+  state-vector export, not TLE format) — no existing FR covers TLE export in either direction.
+- **Priority:** Should
+- **Inputs:** A target satellite identifier currently visible to the requesting cell (its own
+  satellite, or one it tracks).
+- **Outputs:** A current-epoch TLE (two lines) for that satellite, presented for copy/clipboard
+  use.
+- **Preconditions:** The requesting cell owns the named satellite or holds a `Track` on it
+  (fog-of-war, mirroring `FR-6210`); White Cell and the other no-cell ground-truth paths may
+  request any satellite per `FR-6220`'s existing exception.
+- **Postconditions:** No cell-scoped request returns a TLE for a satellite the requesting cell
+  neither owns nor holds a `Track` on; no cell-scoped TLE of a non-owned satellite is derived from
+  ground truth.
+- **Acceptance Criteria:** Given a cell holding a `Track` on another side's satellite X, a
+  TLE-export request for X returns a well-formed two-line element set derived from that cell's
+  belief; given the cell's own satellite Z (no `Track` needed), the request for Z returns a
+  well-formed TLE; given another side's satellite Y on which the cell has no `Track`, the request
+  for Y is rejected.
+- **Verification Method:** Test
+- **Dependencies:** FR-6210, FR-1210, FR-1510
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0109`; `BL-0110` (design-question — see
+  Notes); `FR-6210` (what a cell sees: its own assets plus held tracks); `ADS-1500` Decision 5 (a
+  cell knows its own assets' true state exactly; custody applies only to other objects);
+  `docs/pipeline/backlog.md` `BL-0159` (the amendment's trigger); `FR-7410`/`FR-7420` (the
+  sibling export family, different file format).
+- **Related ADRs:** ADR-0004
+- **Related Interfaces:** INT-0006, INT-0007
+- **Related Requirements:** FR-6210, FR-5210, FR-7410
+- **Notes:** `BL-0110` (design-question, filed alongside `BL-0109`) found that generating a
+  current-epoch TLE from an arbitrary propagated orbital state (the engine's Kepler+J2 *osculating*
+  state, not SGP4 *mean* elements) is not a simple algebraic/format conversion — a rigorous
+  conversion needs a mean-element-fitting procedure against SGP4, not an algebraic inverse. This
+  requirement's Acceptance Criteria are satisfiable by any of `BL-0110`'s three named options (a
+  full mean-element fit; re-epoching a TLE-sourced object's original elements with a documented,
+  bounded-error approximation; or restricting export to TLE-sourced objects only, with a clearly
+  stated limitation for Kepler-fictional ones) — which option is chosen is a
+  `06-feature-specification`/`07-implementation-planning` design decision (`BL-0110`'s own
+  disposition), not decided here.
+  **Amended 2026-10-15 (`BL-0159`):** the original text defined "visible" as "holds a `Track`",
+  which, read literally, excluded a cell's own satellites, because a cell holds no `Track` on its
+  own fleet. That was narrower than `FR-6210` (a cell's view exposes its own assets plus its held
+  tracks), than `ADS-1500` Decision 5, and than the owner's own wording in `BL-0109` ("any
+  satellite visible to the requesting cell"). The amendment aligns "visible" with `FR-6210`. The
+  shipped `IP-1211` implements the literal pre-amendment reading (Design Decision 5: an own asset
+  without a `Track` is rejected), so a remediation package is owed. No other leaf's behaviour
+  changes. See [`reviews/requirements-update-parked-questions-batch.md`](../reviews/requirements-update-parked-questions-batch.md).
+
 ---
 
 ## FR-8000 — Operator Console Presentation
@@ -1640,6 +3148,114 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0008
 - **Related Interfaces:** INT-0001
 - **Related Requirements:** FR-6110
+
+### FR-8200 — Relative-motion (RIC) frame view
+
+#### FR-8210 — Live, operator-selectable RIC-frame relative-motion view
+
+- **ID:** FR-8210
+- **Title:** Provide a live, operator-selectable RIC (Radial-In-track-Cross-track) relative-motion
+  frame view
+- **Description:** The system shall provide an interactive view in which the operator selects a
+  target satellite as the frame's origin, and the view renders other objects' (and/or the
+  operator's own assets') position and motion live, relative to that selected object, in the RIC/
+  RSW frame — distinct from the existing one-shot CSV/CCSDS-OEM RIC export (`FR-7410`/`FR-7420`/
+  `FR-7430`), which is non-interactive and not rendered live. For a cell-scoped operator this view
+  shall render only that cell's own belief state (fog-of-war), never ground truth, per `FR-6210`;
+  for White Cell it may render ground truth via the existing god-view path (`FR-4610`).
+- **Rationale:** Project owner's explicit request (`docs/pipeline/backlog.md` `BL-0107`, filed
+  live, this session, distinct from the external validation report). `FR-7410`/`FR-7420`/`FR-7430`
+  already reuse `engine/maneuver.py::lvlh_frame` via `session/ephemeris.py::to_ric()` for a batch
+  CSV/CCSDS-OEM export, so the RIC transform math itself is not new — but that path is a one-shot,
+  non-interactive export, not a live rendered view with an operator-selectable center. No existing
+  FR covers a live/interactive RIC-frame view or the operator interaction of choosing its center
+  satellite. Serves Blue/Red proximity/RPO situational awareness and White Cell oversight.
+- **Priority:** Should
+- **Inputs:** An operator selection of a target satellite as the RIC-frame origin; the live world/
+  belief state.
+- **Outputs:** A rendered view showing other objects' position/velocity relative to the selected
+  origin in RIC coordinates, updating live as the session clock advances.
+- **Preconditions:** The selected origin object exists and has a determinable state (ground truth
+  for White Cell/no-cell paths; the requesting cell's own `Track` for a cell-scoped view).
+- **Postconditions:** A cell-scoped rendering of this view never exposes another cell's belief
+  state or ground truth (mirrors `FR-6210`); switching the selected origin re-renders the view
+  relative to the new origin without a page or session reload.
+- **Acceptance Criteria:** Given a running session and an operator selecting satellite X as the
+  RIC-frame origin, the view's displayed relative positions for other objects match the values
+  `to_ric()` would compute against the live state at the current sim time; given the operator
+  reselects satellite Y, the view's displayed values update to be relative to Y; given a
+  cell-scoped request, the rendered objects are limited to that cell's own `TrackCatalog`/
+  `CellView`.
+- **Verification Method:** Test
+- **Dependencies:** FR-6210, FR-1210, FR-7410, FR-8110
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0107`; `FR-7410`/`FR-7420`/`FR-7430` (the
+  existing RIC-transform grounding — `engine/maneuver.py::lvlh_frame`, `session/ephemeris.py::
+  to_ric()`); `R112` (`lvlh` as an existing maneuver-entry-mode parameterization — transform-math
+  grounding only, not a display-concept grounding, see Notes); `FR-6210` (fog-of-war).
+- **Related ADRs:** ADR-0004, ADR-0008
+- **Related Interfaces:** INT-0001, INT-0006, INT-0007
+- **Related Requirements:** FR-7410, FR-7420, FR-7430, FR-6210, FR-4610, FR-8220
+- **Notes:** `BL-0108` (research-gap, filed alongside `BL-0107`) found that no R1xx encyclopedia
+  topic grounds RIC-frame relative-motion *display* as an operational/console concept (checked
+  `R101`, `R102`, `R112`, `R123` directly — none discusses RIC/LVLH/RSW-frame relative-motion
+  display, operator-selectable frame centers, or real ops-center RPO/conjunction-display
+  conventions). This requirement is baselined now on the existing transform-math grounding (`R112`,
+  `FR-7410`/`FR-7420`/`FR-7430`) per `BL-0108`'s own disposition, which defers its revisit trigger
+  to *before `06-feature-specification` drafts this requirement's design*, not before baselining
+  the requirement itself. A future `02-research-ow-orbital-mechanics` pass closing `BL-0108` should
+  inform, not gate, that design.
+
+#### FR-8220 — CATS illumination-phase-angle overlay for the RIC view's selected chase satellite
+
+- **ID:** FR-8220
+- **Title:** Display the CATS (Sun-target-observer illumination phase angle) for the RIC view's
+  selected chase satellite
+- **Description:** When a chase/observer satellite is selected within the `FR-8210` RIC-frame
+  view, the system shall compute and display, for the selected target in that frame, the
+  illumination phase angle (the "CATS angle," also known as the LOS Sun Illumination Angle) — the
+  angle at the target between the target→Sun vector and the target→chaser vector (0° = full
+  illumination as seen from the chaser, 90° = side-lit with visible shadow, 180° = backlit/
+  silhouetted) — as a live, updating readout alongside the RIC view, extending `FR-8210` rather
+  than standing alone.
+- **Rationale:** Project owner's explicit request (`docs/pipeline/backlog.md` `BL-0111`, clarified
+  via `AskUserQuestion` after "CATS angle" was not independently groundable). Directly predicts
+  whether the chaser's optical sensor will get a usable, glare-free, or silhouetted view of the
+  target. Distinct from the existing `engine/sun.py` `sun_unit_eci`/`is_sunlit`/`eclipse_fraction`
+  (illumination-by-the-Sun-in-isolation / eclipse state), which is not the three-body phase angle
+  this request asks for. `BL-0112` (research-gap) found zero R1xx encyclopedia topic grounding this
+  angle directly, but identified one real Tier-B source — AGI, "New Feature in STK 11.1.1 - New
+  Lighting Constraint" (https://www.agi.com/products/stk/pro/new-feature-in-stk-11-1-1-new-lighting-
+  constraint) — this requirement cites as its Source Document, the same precedent `FR-1620` set for
+  a single-source-flagged figure.
+- **Priority:** Should
+- **Inputs:** The RIC view's currently selected chase/observer satellite and target satellite; the
+  current Sun position (`engine/sun.py::sun_unit_eci`).
+- **Outputs:** A live, continuously updating numeric phase-angle readout (degrees) for the selected
+  chase-target pair.
+- **Preconditions:** `FR-8210`'s view is active, with both a chase/observer satellite and a target
+  satellite selected.
+- **Postconditions:** The displayed value is purely informational (read-only) and does not itself
+  gate or alter any access window or order — a distinct scope from `FR-1670`/`BL-0122`'s use of the
+  same angle as an access criterion.
+- **Acceptance Criteria:** Given a selected chase satellite and target with a known Sun position,
+  the displayed CATS angle matches the geometrically computed Sun-target-chaser angle at the
+  current sim time to within floating-point tolerance; reselecting a different chase or target
+  satellite updates the displayed angle accordingly.
+- **Verification Method:** Test
+- **Dependencies:** FR-8210, FR-1210
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0111`; `BL-0112` (research-gap, citing AGI,
+  "New Feature in STK 11.1.1 - New Lighting Constraint"); `engine/sun.py` (existing sunlit/eclipse
+  machinery this is distinct from).
+- **Related ADRs:** ADR-0004
+- **Related Interfaces:** INT-0001
+- **Related Requirements:** FR-8210, FR-1670
+- **Notes:** `BL-0112`'s revisit trigger ("before `06-feature-specification` designs `BL-0111`'s
+  overlay") applies here, not before baselining — this leaf cites the one real Tier-B source
+  `BL-0112` already identified, which is a usable starting anchor, not yet a full-quality-gate
+  research pass. `BL-0122`/`FR-1670` extends the same underlying phase-angle computation to a
+  broader, access-gating use; `FR-8220` and `FR-1670` should share one phase-angle computation
+  function, not two independently implemented ones — flagged for whoever drafts the Feature Spec(s)
+  for both.
 
 ---
 
@@ -2096,6 +3712,70 @@ by that promotion.
   program in the IRB sense, so this boundary remains unaddressed by their promotion. A requirement
   would still be vacuous until a concrete human-subjects-research feature is proposed; recorded
   here so the constraint is not silently forgotten if/when one is. **Source:** DOM-004 §6.
+- **CR-22 — Human-readable time bounds for time-span exports.** *(new 2026-10-15, `BL-0181`)* The
+  time-span exports (`FR-7410`, `FR-7420`, `FR-2320`) take their span bounds only as integer
+  microseconds of simulated time. The console never displays that unit, so an operator must read the
+  values out of the event log or a save file. A requirement that the exports accept ISO-8601 UTC
+  bounds, or that the console surface simulated time in the export's unit, cannot be baselined on
+  the current inputs. Its only source is a training-review usability observation (`REV-TRN-002` F7),
+  not an owner request or an approved architecture statement, and none of the three leaves' sources
+  specifies an input form. It is recorded here so the friction is not lost; promotion needs the
+  project owner to request it (the precedent every `BL-0067`…`BL-0083` intake leaf followed).
+  **Source:** `docs/pipeline/backlog.md` `BL-0181`; `docs/reviews/training-review-run97-scope.md`
+  F7.
+- **CR-23 — TLE checksum and epoch-sanity checks at load.** *(new 2026-10-16, `BL-0235`)*
+  `FR-5311` baselines the sourced rule: a TLE-sourced orbit must parse. Two stricter checks have no
+  source in any input document: rejecting a TLE whose line checksum is wrong, and rejecting one
+  whose epoch is implausibly far from the vignette start. A TLE can fail its checksum and still
+  propagate, and it can pass the checksum and still fail to propagate, so these checks are not
+  implied by "parse". If adopted, the same posture should apply to in-session TLE import
+  (`FR-5210`/`FR-5220`), so one TLE is judged the same way on both paths. **Source:**
+  `docs/pipeline/backlog.md` `BL-0235`; FS-131 Open Question 3.
+- **CR-24 — Load-time integrity of other in-vignette cross-references.** *(new 2026-10-16,
+  `BL-0234`)* Beyond `FR-5311`–`FR-5314`, a vignette carries references that load silently when
+  they point at nothing:
+  - a sensor's `host_asset_id`;
+  - an objective metric's object or target id;
+  - a scheduled inject effect's target, which is checked only when the inject fires (`FR-4430`,
+    `IP-1063`);
+  - a free-text asset `kind` (an unknown kind such as `starship` is accepted).
+
+  `NFR-1600`'s "invalid scenario JSON ... shall fail at load" is broad enough to cover any of
+  these. But no input document names them, and each new rule can refuse content that loads today.
+  The project owner, or an architecture statement, must say which are invalid before any is
+  baselined. **Source:** `docs/pipeline/backlog.md` `BL-0234`; FS-131 Open Question 2.
+- **CR-25 — Range rules for order parameters.** *(new 2026-10-16, `BL-0226`)* `IP-1052` validates
+  order parameters for type and finiteness only. Values in range for neither physics nor the
+  effector are accepted:
+  - a salvo of zero or less (consumed as 1) or a fractional salvo (truncated);
+  - a negative jam power, bandwidth or victim bandwidth;
+  - a negative cyber dwell.
+
+  `FR-1460` baselines only the ammunition bound, which GDS-04 §1.2's non-negative-resource rule
+  supports. No input document states rules for the others. **Source:** `docs/pipeline/backlog.md`
+  `BL-0226`; `IP-1052` Design Decision 5.
+- **CR-26 — An unreadable configured external vignette directory is skipped and disclosed.** *(new
+  2026-10-17, `BL-0100`)* `FR-5410`'s Precondition assumes a configured external directory exists
+  and is readable, and says nothing about one that does not. As built (`IP-1180` Design Decision 2),
+  such a directory is skipped, a server log line records it, and the catalog is built from the
+  rest. That is a planning-level decision. No input document states the rule, and a package is not
+  a requirements source. Promotion needs the owner or an architecture statement to choose between
+  skip-and-disclose and refuse-to-start. **Source:** `docs/pipeline/backlog.md` `BL-0100`; `IP-1180`
+  Design Decision 2.
+- **CR-27 — Re-fire rule for a repeatable condition-triggered inject.** *(new 2026-10-17,
+  `BL-0130`)* The inject schema carries a `repeatable` flag, but no source says whether a
+  repeatable condition-triggered inject fires again, and if so whether on every tick the condition
+  holds or on each false-to-true transition. `FR-4420` now states the as-built fire-once rule.
+  **Source:** `docs/pipeline/backlog.md` `BL-0130`; `VR-1062` Finding L1.
+- **CR-28 — A missed kinetic salvo consumes its rounds. `PROMOTED 2026-10-17 → FR-1480`, on the
+  project owner's decision (`BL-0249`): misses consume interceptors too.** *(new 2026-10-17,
+  `BL-0249`)* As built
+  (`IP-1320`, FS-132 Open Question 3), an engagement charges its salvo only when it succeeds, so a
+  missed salvo costs nothing, although fired interceptors are physically spent. `FR-1460`'s
+  Acceptance Criteria cover only the successful case, and no input document states a rule for a
+  miss. Charging a miss would change shipped behaviour (and `RED-5`'s text), so it is a game-rule
+  choice for the project owner. **Source:** `docs/pipeline/backlog.md` `BL-0249`; FS-132 Open
+  Question 3.
 
 - **CR-12 — Proliferated-Constellation Aggregation Layer.** No layer/mesh-level tasking, health
   rollup, or aggregated-custody construct exists for constellations larger than the ≤3-satellite cap

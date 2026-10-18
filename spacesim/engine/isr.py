@@ -70,6 +70,14 @@ BEAM_MODES: dict[str, dict[str, dict]] = {
         "scan":  {"swath_km": 20000.0, "resolution_m": 1000.0, "power_factor": 1.0, "duty_cycle": 0.95, "gain_factor": 1.00},
         "stare": {"swath_km":  1000.0, "resolution_m":  200.0, "power_factor": 1.3, "duty_cycle": 0.85, "gain_factor": 1.60},
     },
+    # IP-1220 (FR-1610) — ground-based radar beam-mode variants: "fence" is a wide-field-of-regard
+    # surveillance fence (detects more transiting objects per pass, at lower per-object gain/
+    # resolution); "dish" is a narrow, steerable tracking beam (the inverse trade). Reuses the
+    # existing schema unmodified — no new field shape.
+    "ground_radar": {
+        "fence": {"swath_km": 10000.0, "resolution_m": 500.0, "power_factor": 1.0, "duty_cycle": 0.90, "gain_factor": 0.50},
+        "dish":  {"swath_km":    50.0, "resolution_m":   2.0, "power_factor": 1.5, "duty_cycle": 0.40, "gain_factor": 1.60},
+    },
 }
 
 _DEFAULT_MODE: dict[str, str] = {
@@ -78,6 +86,7 @@ _DEFAULT_MODE: dict[str, str] = {
     "sda": "nominal",
     "weather": "conus",
     "mw": "scan",
+    "ground_radar": "dish",
 }
 
 # Base SoC drain for a full-duty 300-second stripmap pass on a healthy bus.
@@ -92,7 +101,9 @@ def beam_params(payload_type: str, beam_mode: Optional[str] = None) -> tuple[dic
     """
     modes = BEAM_MODES.get(payload_type) or BEAM_MODES.get("isr_eo", {})
     default = _DEFAULT_MODE.get(payload_type, "stripmap")
-    resolved = beam_mode if (beam_mode and beam_mode in modes) else default
+    # IP-1041 Design Decision 4 (BL-0217) — a non-string mode is unrecognised, so it falls back
+    # like any unknown name instead of raising on the membership test.
+    resolved = beam_mode if (isinstance(beam_mode, str) and beam_mode in modes) else default
     params = dict(modes.get(resolved) or modes.get(default) or next(iter(modes.values()),
         {"swath_km": 30.0, "resolution_m": 3.0, "power_factor": 1.0, "duty_cycle": 0.40, "gain_factor": 1.0}))
     return params, resolved
@@ -103,16 +114,64 @@ def available_modes(payload_type: str) -> list[str]:
     return list(BEAM_MODES.get(payload_type, BEAM_MODES["isr_eo"]).keys())
 
 
-def effective_gain(base_gain: float, look_angle_deg: float, bp: dict) -> float:
+_BAND_AFFINITY_MISMATCH_FACTOR = 0.5  # IP-1220 (FR-1630) — gain penalty outside a declared band
+
+
+def altitude_band(regime: str) -> str:
+    """IP-1222 Design Decision 5 (BL-0214) — the altitude band a regime belongs to, for the
+    `FR-1630` affinity comparison. ``LEO_SSO`` is an inclination/node-rate property inside the LEO
+    altitude band, so it maps to ``LEO``; every other regime is its own band."""
+    return "LEO" if regime == "LEO_SSO" else regime
+
+
+def phase_angle_factor(phase_angle_deg: float, usable_range: tuple[float, float]) -> float:
+    """IP-1221 (FR-1670, FS-122 v1.1 Design Decision 3) — the observation-gain multiplier for a
+    passive-EO sensor's declared usable Sun-target-sensor phase-angle range ``(lo, hi)``.
+
+    1.0 inside ``[lo, hi]`` (bounds inclusive). Outside, a linear fall-off: from 1 at ``hi`` to
+    0 at 180 deg above the range, and from 1 at ``lo`` to 0 at 0 deg below it — continuous at the
+    bound, non-increasing away from it, strictly below 1 everywhere outside (R109 v1.3 §3.11
+    "not a hard cliff"; the 0 endpoint matches the Lambertian phase function at full backlight).
+    Pure; a bound at the domain edge has no outside region on that side.
+    """
+    lo, hi = float(usable_range[0]), float(usable_range[1])
+    theta = float(phase_angle_deg)
+    if lo <= theta <= hi:
+        return 1.0
+    if theta > hi:
+        return max(0.0, (180.0 - theta) / (180.0 - hi))   # hi < theta <= 180 ⇒ hi < 180
+    return max(0.0, theta / lo)                            # 0 <= theta < lo ⇒ lo > 0
+
+
+def effective_gain(base_gain: float, look_angle_deg: float, bp: dict,
+                    target_regime: Optional[str] = None,
+                    band_affinity: Optional[str] = None,
+                    phase_angle_deg: Optional[float] = None,
+                    usable_phase_range: Optional[tuple[float, float]] = None) -> float:
     """Compute confidence-gain adjusted for beam-mode and off-nadir angle.
 
     EO: off-nadir degrades resolution and thus gain (cosine weighting).
     SAR: look angle is required for operation; little gain penalty within ±45°.
     The caller passes the per-mode gain_factor; look-angle penalty applies to both.
+
+    IP-1220 (FR-1630) — a space-based sensor's optional ``altitude_band_affinity`` (a
+    ``engine/orbit.py::Regime`` value) degrades gain when the target's own regime doesn't match
+    the sensor's declared affinity, composing with (applied after) the existing off-nadir term.
+    Additive: omitting either argument reproduces the pre-package gain exactly.
+
+    IP-1221 (FR-1670) — a passive-EO sensor's declared ``usable_phase_range`` scales gain by
+    ``phase_angle_factor(phase_angle_deg, usable_phase_range)``, applied after every existing term.
+    Additive: omitting either argument reproduces the pre-package gain exactly.
     """
     look_rad = math.radians(max(0.0, min(45.0, look_angle_deg)))
     angle_factor = math.cos(look_rad)        # 1.0 at nadir, 0.707 at 45°
-    return base_gain * bp["gain_factor"] * angle_factor
+    gain = base_gain * bp["gain_factor"] * angle_factor
+    if (band_affinity is not None and target_regime is not None
+            and altitude_band(target_regime) != altitude_band(band_affinity)):
+        gain *= _BAND_AFFINITY_MISMATCH_FACTOR
+    if phase_angle_deg is not None and usable_phase_range is not None:
+        gain *= phase_angle_factor(phase_angle_deg, usable_phase_range)
+    return gain
 
 
 def soc_drain(bp: dict, duration_s: float) -> float:

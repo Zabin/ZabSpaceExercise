@@ -1,7 +1,7 @@
 # GDS-03 — Architecture
 
 > **Document ID:** GDS-03
-> **Version:** 1.4
+> **Version:** 1.5
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-02
 > **Referenced By:** GDS-04
@@ -410,11 +410,14 @@ their own — called out so a future reader does not look for a "determinism mod
 
 - **Determinism** (`CLAUDE.md` invariant 1) — enforced entirely within §2.1 (seeded RNG, no
   wall-clock reads, ordered `EventLog`); every other subsystem inherits it by only ever driving the
-  engine through ordered, logged calls.
+  engine through ordered, logged calls. A handler that raises mid-advance is rolled back to the
+  replayed state and logged as a no-op failure record (`ADR-0038`), so the invariant also holds on
+  the failure path.
 - **Fog-of-war** (`CLAUDE.md` invariant 3) — enforced entirely within §2.2's `CellController`;
   §2.1 has no concept of "cell," and §2.4 trusts §2.2's output verbatim. This enforcement is total
-  for *cell-scoped* endpoints only — the no-cell god-view endpoints (`/godview`, `/eventlog`,
-  `/save`, `/aar*`, `/objectives`) deliberately bypass `CellController` filtering by design, not
+  for *cell-scoped* endpoints only — the no-cell ground-truth endpoints (`/godview`, `/eventlog`,
+  `/save`, `/aar*`, `/objectives`, and the rest of the named set `requirements/01` `FR-6220`
+  enumerates) deliberately bypass `CellController` filtering by design, not
   by omission (GDS-02 §8, `CLAUDE.md` "LAN trust model"). A reader should not infer that *every*
   path through §2.2 is fog-of-war-filtered — only the cell-scoped ones are (clarified per the
   architecture review — see "Review reconciliation" below).
@@ -430,6 +433,14 @@ their own — called out so a future reader does not look for a "determinism mod
   is §2.1's custody/`Track` confidence-decay chain feeding the weapons-quality gate before an
   `OrderSystem` effect — no separate "decision cycle module" exists; this entry exists so a future
   reader recognizes the pattern instead of treating it as ad hoc to custody/track.
+- **The training corpus is not a component** (2026-10-17, `BL-0246`). The C1–C12 set models
+  runtime components, external actors and external resources. The training corpus
+  (`docs/training/`, governed by `FR-11000`/`NFR-3400`–`NFR-3600`, co-equal with the code per
+  MSTR-001 §2) is a documentation product, deliberately outside that model, the same way the test
+  suite is. Its runtime-visible parts already belong to existing components: vignette
+  `intro_brief`/`tutorial`/`coaching` blocks are C5 content, and the in-app brief and tutorial
+  panels are C4. A Feature for the corpus (FEAT-11100/FEAT-11300) correctly names no component or
+  interface, or names C5/C4 for those in-app parts only.
 
 ## 5. Forward-looking architectural considerations (research-grounded, not built)
 
@@ -563,6 +574,17 @@ above:** §5 is explicitly forward-looking and not-built; no existing subsystem'
   ADR-0030; version bumped 1.3 → 1.4. Status remains `✅ Authored — merge gate closed`;
   explicitly-instructed amendment, not a gate reopening, consistent with this document's own prior
   reconciliation sections.
+
+## Maintenance reconciliation (2026-10-17, owner-prioritized backlog clearance)
+
+Changes landed in this document by pipeline run #161; version bumped 1.4 → 1.5. Status remains
+`✅ Authored — merge gate closed`: maintenance amendments, not a gate reopening, matching this
+document's earlier reconciliation sections. No subsystem description in §1–§3 changed.
+
+- §4 "Determinism" — cites `ADR-0038` (failure-atomic event application, `BL-0227`).
+- §4 "Fog-of-war" — the no-cell endpoint list now defers to `FR-6220`'s enumerated set.
+- §4 — new entry recording that the training corpus is deliberately outside the component model
+  (`BL-0246`).
 
 ## Merge gate (closed)
 

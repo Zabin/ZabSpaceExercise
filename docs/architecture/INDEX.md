@@ -98,6 +98,7 @@ Constraints, Risks, Open Questions, Decision Log. Size discipline: ~8-15 pages e
 | [ADS-3500](ADS-3500-role-scoped-command-enforcement.md) | Role-Scoped Command Enforcement | (GDS-04 §1.10-grounded; no owning DOM) | ✅ Authored |
 | [ADS-5100A](ADS-5100A-vignette-creator-session-and-ui.md) | Vignette Creator — Authoring Session & UI Architecture | (R1xx-grounded; no owning DOM) | ✅ Authored |
 | [ADS-5100B](ADS-5100B-typed-parameters-and-per-cell-roe.md) | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | (GDS-04-grounded; no owning DOM) | ✅ Authored |
+| [ADS-1500](ADS-1500-per-cell-custody-estimated-state-and-export.md) | Per-Cell Custody — Estimated-State History & Export | R105-grounded; FS-103 | ✅ Authored |
 
 **ADS-3500 (2026-07-05):** the first `ADS-xxx` authored in this project — resolves two
 architecture-level Open Questions [`FS-116`](../features/FS-116-role-scoped-command-catalog.md)
@@ -116,6 +117,16 @@ entry 2 revised: each of the eight `DEFENSE_VERBS` entries individually reclassi
 `apply_command()`'s actual implementation (six `bus`, two `payload` — `def.harden`/
 `def.set_deception_mode` mutate `payload_state` directly), superseding v1.0's wholesale
 `bus`-classification.
+
+**ADS-1500 (2026-09-26):** resolves `BL-0068` (external validation report item B2). Finds the
+requester's premise half-confirmed, half-already-solved: `Track.state_estimate` already does not
+leak an unobserved manoeuvre (a frozen, forward-propagated snapshot from last observation, verified
+by direct reading of `orders.py`/`ssn.py`/`scene.py`), so no engine change is needed for that part.
+The genuinely missing piece — a per-cell belief-state *history* for ephemeris export
+(`FR-7420`) — is resolved by reusing the existing deterministic `EventLog` replay (`ADR-0002`,
+`session/aar.py`'s existing `state_at`) rather than adding a new stored history structure, mirroring
+this project's established minimal-surgery-over-invention pattern. Unblocks `FR-7420`'s
+verifiability.
 
 **ADS-5100A/B (2026-07-05):** synthesize the Vignette Creator — a large, distinct White-Cell
 authoring feature the project owner explicitly required be documented on its own, not blended into
@@ -139,15 +150,19 @@ Operations), GDS-02 (System Context), GDS-03 (Architecture), and the research en
 distinct from both the sequential ladder in §1 and the per-cluster `ADS-xxx` in §2. Each
 `ADR-NNNN` carries Decision ID, Title, Context, Decision, Alternatives Considered, Rationale,
 Consequences, and a Status of `Accepted`, `Proposed`, or `Deferred`. See
-[`adr/INDEX.md`](adr/INDEX.md) for the full list (33 ADRs as of this writing, 32 `Accepted` and 1
-`Superseded`: 23 were already settled when first authored; 6 (ADR-0024–0029) originally recorded
+[`adr/INDEX.md`](adr/INDEX.md) for the full list (39 ADRs as of this writing, 37 `Accepted`, 1
+`Superseded` and 1 `Proposed`: 23 were already settled when first authored; 6 (ADR-0024–0029) originally recorded
 Open Questions the ladder left genuinely open and were resolved afterward by explicit
 project-owner decision; 2 (ADR-0030–0031) were added in direct response to
 [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) — see
 [`reviews/architecture-update.md`](../reviews/architecture-update.md); 2 more (ADR-0032–0033) were
 added to resolve conflicts a `04-requirements-engineering` pass found between `DOM-002`/`004` and
 `ADR-0017`/`ADR-0029` — see [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md).
-`ADR-0033` supersedes `ADR-0029`, this corpus's first `Superseded` entry).
+`ADR-0033` supersedes `ADR-0029`, this corpus's first `Superseded` entry; 2 (ADR-0034–0035) closed
+FS-105's directed-energy Open Questions; 2 (ADR-0036–0037) answer the load-validation batch's
+routed questions — `ADR-0037` decided, `ADR-0036` `Proposed` pending a project-owner decision; ADR-0038
+interprets invariant 1 for a raising event handler, `BL-0227`; and ADR-0039 closes FS-123's
+space-weather index-mapping Open Questions, `BL-0104`/`BL-0121`).
 
 ## Related
 

@@ -146,3 +146,14 @@ def test_staffing_report_and_assign_endpoints_over_http():
         "cell": "white", "seat": "blue-bus-op", "asset_or_constellation": "ISR-EO-1", "role": "bus",
     }).json()
     assert ack["ok"] is True
+
+
+def test_observer_cannot_assign_roles():
+    """IP-1131 (BL-0024) — the White-Cell-only gate refuses an Observer-seated caller too."""
+    api = InProcessSession()
+    vig = _vignette_with_roles([{"asset_or_constellation": "ISR-EO-1", "role": "bus", "mandatory": True}])
+    api._sessions["sess-test"] = SessionManager(vig, seed=1)
+    before = api._sessions["sess-test"].staffing_report()
+    ack = api.assign_role("sess-test", "observer", "obs-seat", "ISR-EO-1", "bus")
+    assert ack.ok is False
+    assert api._sessions["sess-test"].staffing_report() == before

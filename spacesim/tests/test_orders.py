@@ -7,6 +7,7 @@ OrderSystem (no GUI / session layer yet).
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from spacesim.engine.custody import Track
 from spacesim.engine.effects import is_link_denied
@@ -136,6 +137,122 @@ def test_kinetic_engage_requires_track_and_roe_then_spawns_debris():
     assert world.assets["INT"].resources.ammo == 0  # ammo consumed
 
 
+def test_gated_order_held_pending_until_decision_recorded():
+    """IP-1270 (FR-3430) — an order matching a declared gating rule does not execute until a
+    decision is recorded; the EventLog shows the request, decision, and elapsed time."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["RSAT"] = Asset(id="RSAT", owner="red", kind="satellite", orbit=sat)
+    world.assets["INT"] = Asset(id="INT", owner="blue", kind="interceptor",
+                                location=_subpoint(sat, 0), resources=AssetResources(ammo=1))
+    world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=1.0, characterized=True))
+    sim = Simulation(world, seed=7)
+    roe = {"blue": {"kinetic_authorized": True}, "red": {"kinetic_authorized": True}}
+    gating_rules = [{"action_type": "engage", "required_role": "white"}]
+    osys = OrderSystem(sim, roe=roe, gating_rules=gating_rules)
+
+    order = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT"))
+    assert order.status == "pending_approval"
+    sim.advance_to(sim.clock.now + 10_000_000)
+    assert world.assets["RSAT"].health == "nominal"  # never executed while pending
+
+    requests = [e for e in sim.eventlog.entries if e.kind == "effect_gate_request"]
+    assert len(requests) == 1 and requests[0].payload["order_id"] == order.id
+
+    ok, reason = osys.decide_gated_order("white", order.id, approve=True)
+    assert ok, reason
+    decisions = [e for e in sim.eventlog.entries if e.kind == "effect_gate_decision"]
+    assert len(decisions) == 1 and decisions[0].payload["approved"] is True
+    assert decisions[0].payload["elapsed_us"] >= 0
+    assert order.status == "queued"
+    sim.advance_to(order.earliest_window[0] + 1)
+    assert world.assets["RSAT"].health == "destroyed"
+
+
+def test_gated_order_denied_is_rejected():
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["RSAT"] = Asset(id="RSAT", owner="red", kind="satellite", orbit=sat)
+    world.assets["INT"] = Asset(id="INT", owner="blue", kind="interceptor",
+                                location=_subpoint(sat, 0), resources=AssetResources(ammo=1))
+    world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=1.0, characterized=True))
+    sim = Simulation(world, seed=7)
+    roe = {"blue": {"kinetic_authorized": True}, "red": {"kinetic_authorized": True}}
+    osys = OrderSystem(sim, roe=roe, gating_rules=[{"action_type": "engage", "required_role": "white"}])
+    order = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT"))
+    ok, reason = osys.decide_gated_order("white", order.id, approve=False)
+    assert ok, reason
+    assert order.status == "rejected" and order.fail_reason == "gate_denied"
+
+
+def test_gated_order_decision_requires_the_designated_controller_role():
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["RSAT"] = Asset(id="RSAT", owner="red", kind="satellite", orbit=sat)
+    world.assets["INT"] = Asset(id="INT", owner="blue", kind="interceptor",
+                                location=_subpoint(sat, 0), resources=AssetResources(ammo=1))
+    world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=1.0, characterized=True))
+    sim = Simulation(world, seed=7)
+    roe = {"blue": {"kinetic_authorized": True}, "red": {"kinetic_authorized": True}}
+    osys = OrderSystem(sim, roe=roe, gating_rules=[{"action_type": "engage", "required_role": "white"}])
+    order = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT"))
+    ok, reason = osys.decide_gated_order("blue", order.id, approve=True)
+    assert not ok and reason == "not_controller"
+    assert order.status == "pending_approval"
+
+
+def test_unmatched_order_is_unaffected_by_gating_rules():
+    """Regression: an order not matching any gating rule executes per its existing gates."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["TGT"] = Asset(id="TGT", owner="red", kind="satellite", orbit=sat)
+    world.sensors["RDR"] = Sensor(id="RDR", owner="blue", kind="ground_radar", location=_subpoint(sat, 0))
+    sim = Simulation(world, seed=7)
+    osys = OrderSystem(sim, gating_rules=[{"action_type": "engage", "required_role": "white"}])
+    order = osys.issue(Order(cell="blue", actor="RDR", action="observe", target="TGT",
+                             params={"intent": "characterize"}))
+    assert order.status == "queued"
+
+
+def test_live_roe_change_affects_orders_after_but_not_before():
+    """IP-1270 (FR-3440) — a controller-issued ROE change at simulated time T changes the
+    evaluated ROE value for orders issued after T but not before T; replay reproduces the
+    identical sequence of ROE states."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["RSAT"] = Asset(id="RSAT", owner="red", kind="satellite", orbit=sat)
+    world.assets["INT"] = Asset(id="INT", owner="blue", kind="interceptor",
+                                location=_subpoint(sat, 0), resources=AssetResources(ammo=2))
+    world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=1.0, characterized=True))
+    sim = Simulation(world, seed=7)
+    osys = OrderSystem(sim, roe={"blue": {"kinetic_authorized": False}})
+
+    before = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT"))
+    assert before.status == "rejected" and before.fail_reason == "roe_kinetic_not_authorized"
+
+    sim.advance_to(1_000_000)  # distinct sim time so the ROE change's timestamp differs from `before`'s
+    ok, reason = osys.issue_roe_change("white", "blue", "kinetic_authorized", True)
+    assert ok, reason
+    after = osys.issue(Order(cell="blue", actor="INT", action="engage", target="RSAT"))
+    assert after.status == "queued"
+
+    # Replay reproduces the identical ROE-state sequence: rebuild from the eventlog and confirm
+    # the same two order-issuance decisions would be made (the roe_change entry replays too).
+    sim.advance_to(after.earliest_window[0] + 1)
+    sim.rewind_to(after.earliest_window[0] + 1)
+    assert osys.roe.get("blue", {}).get("kinetic_authorized") is True  # replayed roe_change cache
+    assert osys._effective_roe("blue", before.issued_at).get("kinetic_authorized") is False
+    assert osys._effective_roe("blue", after.issued_at).get("kinetic_authorized") is True
+
+
+def test_only_controller_role_may_issue_a_roe_change():
+    world = WorldState(now=0)
+    sim = Simulation(world, seed=7)
+    osys = OrderSystem(sim)
+    ok, reason = osys.issue_roe_change("blue", "blue", "kinetic_authorized", True)
+    assert not ok and reason == "not_controller"
+
+
 def test_per_cell_roe_kinetic_divergent_gates_independently():
     # IP-1172 (FR-3420) — Blue authorized, Red not; each cell's order-issuance is independent.
     sat = _leo()
@@ -235,6 +352,47 @@ def test_observe_order_resets_custody_at_the_collection_window():
     assert tr.characterized and tr.current_confidence(world.now) > 0.9  # custody restored
 
 
+def test_cue_dependent_sensor_rejected_without_existing_track():
+    """IP-1220 (FR-1640) — a requires_cue sensor's tasking is rejected against a target the
+    tasking cell has no existing Track on."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["TGT"] = Asset(id="TGT", owner="red", kind="satellite", orbit=sat)
+    world.sensors["RDR"] = Sensor(id="RDR", owner="blue", kind="ground_radar",
+                                  location=_subpoint(sat, 0), requires_cue=True)
+    sim, osys = _sim_with(world)
+    order = osys.issue(Order(cell="blue", actor="RDR", action="observe", target="TGT",
+                             params={"intent": "track"}))
+    assert order.status == "rejected"
+    assert order.fail_reason == "requires_cue"
+
+
+def test_cue_dependent_sensor_accepted_with_existing_track():
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["TGT"] = Asset(id="TGT", owner="red", kind="satellite", orbit=sat)
+    world.sensors["RDR"] = Sensor(id="RDR", owner="blue", kind="ground_radar",
+                                  location=_subpoint(sat, 0), requires_cue=True)
+    world.tracks.append(Track(object="TGT", owner="blue", last_observation=0, confidence=0.5))
+    sim, osys = _sim_with(world)
+    order = osys.issue(Order(cell="blue", actor="RDR", action="observe", target="TGT",
+                             params={"intent": "track"}))
+    assert order.status == "queued"
+
+
+def test_cue_dependent_dry_run_also_rejects():
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["TGT"] = Asset(id="TGT", owner="red", kind="satellite", orbit=sat)
+    world.sensors["RDR"] = Sensor(id="RDR", owner="blue", kind="ground_radar",
+                                  location=_subpoint(sat, 0), requires_cue=True)
+    sim, osys = _sim_with(world)
+    order = osys.dry_run(Order(cell="blue", actor="RDR", action="observe", target="TGT",
+                               params={"intent": "track"}))
+    assert order.status == "rejected"
+    assert order.fail_reason == "requires_cue"
+
+
 def test_maneuver_consumes_delta_v_and_changes_orbit():
     sat = _leo()
     world = WorldState(now=0)
@@ -258,6 +416,75 @@ def test_maneuver_consumes_delta_v_and_changes_orbit():
     big = list(500.0 * v / np.linalg.norm(v))
     rej = osys.issue(Order(cell="blue", actor="SAT", action="maneuver", params={"dv": big, "via": "GS"}))
     assert rej.status == "rejected" and rej.fail_reason == "insufficient_delta_v"
+
+
+def test_maneuver_delivery_denied_by_active_uplink_jam_at_execute_time():
+    """IP-1290 (FR-1440) — a manoeuvre command whose delivery path is covered by an active
+    uplink jam fails at execute time (no delta-v consumed, no orbit change)."""
+    from spacesim.engine.effects import ActiveEffect
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", orbit=sat,
+                                resources=AssetResources(delta_v_ms=150.0))
+    world.assets["GS"] = Asset(id="GS", owner="blue", kind="ground_station", location=_subpoint(sat, 0))
+    sim, osys = _sim_with(world)
+    _, v = PROP.rv(sat, 0)
+    dv = list(10.0 * v / np.linalg.norm(v))
+    order = osys.issue(Order(cell="blue", actor="SAT", action="maneuver", params={"dv": dv, "via": "GS"}))
+    start, end = order.earliest_window
+    world.active_effects.append(ActiveEffect(target="SAT", outcome="deny", start=start - 1, end=end + 1,
+                                             link_target="uplink"))
+    a_before = world.assets["SAT"].orbit.a_m
+    sim.advance_to(start + 1)
+    assert world.assets["SAT"].orbit.a_m == a_before
+    assert world.assets["SAT"].resources.delta_v_ms == pytest.approx(150.0)
+    assert world.effect_log[-1]["achieved"] == "jammed" and world.effect_log[-1]["success"] is False
+
+
+def test_maneuver_delivery_unaffected_without_jam_regression():
+    """Regression: a command not covered by an active jam is unaffected."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", orbit=sat,
+                                resources=AssetResources(delta_v_ms=150.0))
+    world.assets["GS"] = Asset(id="GS", owner="blue", kind="ground_station", location=_subpoint(sat, 0))
+    sim, osys = _sim_with(world)
+    _, v = PROP.rv(sat, 0)
+    dv = list(10.0 * v / np.linalg.norm(v))
+    order = osys.issue(Order(cell="blue", actor="SAT", action="maneuver", params={"dv": dv, "via": "GS"}))
+    a_before = world.assets["SAT"].orbit.a_m
+    sim.advance_to(order.earliest_window[0] + 1)
+    assert world.assets["SAT"].orbit.a_m > a_before
+    assert world.assets["SAT"].resources.delta_v_ms == pytest.approx(140.0)
+
+
+def test_maneuver_purpose_tag_carried_to_eventlog_and_blank_default():
+    """IP-1250 (FR-1320) — an operator-supplied purpose_tag is carried through to the resulting
+    EventLog entry; an omitted tag is accepted and recorded as ""."""
+    sat = _leo()
+    world = WorldState(now=0)
+    world.assets["SAT"] = Asset(
+        id="SAT", owner="blue", kind="satellite", orbit=sat, resources=AssetResources(delta_v_ms=150.0),
+    )
+    world.assets["GS"] = Asset(id="GS", owner="blue", kind="ground_station", location=_subpoint(sat, 0))
+    sim, osys = _sim_with(world)
+    _, v = PROP.rv(sat, 0)
+    dv = list(10.0 * v / np.linalg.norm(v))
+
+    order = osys.issue(Order(cell="blue", actor="SAT", action="maneuver",
+                             params={"dv": dv, "via": "GS", "purpose_tag": "station-keeping"}))
+    sim.advance_to(order.earliest_window[0] + 1)
+    entries = [e for e in sim.eventlog.entries if e.kind == "execute_maneuver"]
+    assert len(entries) == 1
+    assert entries[0].payload["purpose_tag"] == "station-keeping"
+    assert entries[0].payload["applied"] is True
+    assert entries[0].payload["remaining_delta_v_ms"] == pytest.approx(140.0, abs=1e-6)
+
+    order2 = osys.issue(Order(cell="blue", actor="SAT", action="maneuver",
+                              params={"dv": dv, "via": "GS"}))  # no purpose_tag
+    sim.advance_to(order2.earliest_window[0] + 1)
+    entries2 = [e for e in sim.eventlog.entries if e.kind == "execute_maneuver"]
+    assert entries2[-1].payload["purpose_tag"] == ""
 
 
 def test_engage_sequence_replays_byte_identical():

@@ -1,10 +1,10 @@
 # FS-102 — Command Scheduling
 
 > **Document ID:** FS-102
-> **Version:** 1.0
+> **Version:** 1.1 *(2026-10-17, pipeline run #163: Requirements Implemented now cites `FR-3310`/`FR-3410` (`BL-0050`); order-lifecycle wording matched to the as-built statuses (`BL-0258`). No behaviour changed.)*
 > **Status:** ✅ Done
 > **Dependencies:** [R103](../research/encyclopedia/R103-satellite-command-and-control.md)
-> **Referenced By:** [R103](../research/encyclopedia/R103-satellite-command-and-control.md), [IMP-102A](../implementations/IMP-102A-command-scheduling.md)
+> **Referenced By:** [FS-132](FS-132-effect-resource-bounds.md) (execute-time ammunition re-check, `FR-1460`), [R103](../research/encyclopedia/R103-satellite-command-and-control.md), [IMP-102A](../implementations/IMP-102A-command-scheduling.md), [IP-1052](../implementation/packages/IP-1052-order-param-hardening.md) (🟢 `VERIFIED` 2026-10-16, `VR-1052`; order-parameter hardening, `BL-0222`) · [IP-1021](../implementation/packages/IP-1021-failure-atomic-event-application.md) (🟢 `VERIFIED` 2026-10-17, `VR-1021`; failure-atomic event application, `BL-0264`/`BL-0227`), [IP-1065](../implementation/packages/IP-1065-console-and-session-small-fixes.md) (✅ VERIFIED 2026-10-17, VR-1065), [IP-1131](../implementation/packages/IP-1131-verification-coverage-follow-ups.md) (✅ VERIFIED 2026-10-17, VR-1131)
 > **Produces:** the executed-order surface consumed by [FS-105](FS-105-spacecraft-operations.md)'s telemetry/confirmation views
 > **Feature Mapping:** FS-102 (this document)
 > **Related Topics:** [FS-101](FS-101-mission-planning.md) (plan-time preview of the same latency), [R107](../research/encyclopedia/R107-ground-segment-operations.md) (ground-segment access),
@@ -39,10 +39,18 @@ verb ([FS-105](FS-105-spacecraft-operations.md)).
 
 ## Requirements Implemented
 
-None identified — the FR-xxxx/NFR-xxxx requirements corpus (`docs/requirements/`) contains no
-explicit citation of this Feature ID. This is a traceability gap, not a deliberate
-non-applicability; closing it is Phase 8 traceability-review work (MSTR-006 §7), not something this
-rewrite may resolve by inference.
+*Updated 2026-10-17 (`BL-0050`).* `05-feature-review.md` maps this FS onto `FEAT-3300` and
+`FEAT-3400`. Their owned leaves this FS implements:
+
+| ID | Owning Feature | How this FS covers it |
+|---|---|---|
+| `FR-3310` — Single scheduler for commands and collection tasks | FEAT-3300 | Commands, sensor-tasking `observe` orders and SSN requests all schedule their execution as events on the one deterministic `Scheduler`/`EventLog`, so queueing, cancellation before execution, undo and rewind behave the same for every kind (`FR-3310` Notes record the as-built mapping). The order queue and the SSN request list are separate operator surfaces, which `FR-3310`'s amended Outputs permit. |
+| `FR-3410` — Execute-time re-validation | FEAT-3400 | The execution event re-checks the order when its window opens, not only at plan time (System Behaviour, *Execute*). |
+
+`FR-3110`/`FR-3120` (command creation and editability, FEAT-3100) belong to
+[FS-101](FS-101-mission-planning.md); `FR-3420`–`FR-3440` (FEAT-3400's ROE leaves) belong to
+[FS-127](FS-127-effect-authorization-gating-and-live-roe.md); `FR-1460`'s execute-time
+ammunition re-check belongs to [FS-132](FS-132-effect-resource-bounds.md).
 
 ## User Workflows
 
@@ -62,8 +70,13 @@ rewrite may resolve by inference.
 ## System Behaviour
 
 - **The validate→window→execute→confirm latency must be real, not collapsed.** Per [R103](../research/encyclopedia/R103-satellite-command-and-control.md) §5, the
-  scheduling system must not present command execution as instantaneous — queued, awaiting-window,
-  executed-unconfirmed, and confirmed are genuinely distinct observable states.
+  scheduling system must not present command execution as instantaneous — the four phases below are
+  genuinely distinct and each is observable. *(Corrected 2026-10-17, `BL-0258`.)* They are phases
+  the operator observes across two surfaces, not four stored order statuses. As built, an order's
+  stored status is `queued`, `rejected` or `cancelled`. The order queue shows a `queued` order with
+  its time until window (validate + window), and shows a derived, display-only `executed` label once
+  the clock has passed the window start (execute). Confirmation is observed through the pass-gated
+  telemetry of [FS-105](FS-105-spacecraft-operations.md), not as an order-queue status.
   - *Validate*: the command passes its plan-time gate (resource/state preconditions).
   - *Window*: the command waits for its access channel (uplink, or relevant channel) to open.
   - *Execute*: the command fires at the engine tick the window opens (or, for stored/ISL delivery,
@@ -138,8 +151,11 @@ Question below.
 
 Derived from the source document's capability requirements, restated as checkable conditions:
 
-- Queued, awaiting-window, executed-unconfirmed, and confirmed are visibly distinct states in the
-  scheduling surface.
+- A queued order awaiting its window, an executed order, and a confirmed post-execution state are
+  visibly distinct: the queue shows `queued` with a time-until-window, then `executed` once the
+  window start has passed (never before); confirmation appears in the asset's telemetry at the next
+  downlink contact. *(Restated 2026-10-17, `BL-0258`; was "queued, awaiting-window,
+  executed-unconfirmed, and confirmed are visibly distinct states in the scheduling surface".)*
 - A stored/ISL delivery command is visibly distinct from a direct-uplink command in the queue.
 - A queued order can be cancelled before execution; the cancel outcome (success or failed-race) is
   unambiguous.
@@ -176,8 +192,8 @@ material the document does discuss as constraints:
 
 ## Open Questions
 
-- No FR-xxxx/NFR-xxxx in `docs/requirements/` explicitly cites FS-102; this is a traceability gap
-  for Phase 8 review (MSTR-006 §7), not a deliberate non-applicability.
+- ~~No FR-xxxx/NFR-xxxx in `docs/requirements/` explicitly cites FS-102.~~ **Resolved 2026-10-17
+  (`BL-0050`):** FS-102 implements `FR-3310` and `FR-3410` (see Requirements Implemented).
 - The source document does not assign a per-subsystem Subsystem Responsibilities table; how the
   engine's `OrderSystem`, `Scheduler`, and `SimClock` divide the validate/window/execute lifecycle
   in terms of ownership is unresolved here.

@@ -12,6 +12,28 @@
 > expand into a full `FS-xxx` specification later — it is not itself a specification. See
 > `05-feature-review.md`'s mapping note for the full disposition, including how the 11 existing
 > `FS-1xx`/`FS-2xx`/`FS-3xx` documents map onto this catalog's `FEAT-xxxx` rows.
+>
+> **Amended 2026-10-03** (`05-feature-decomposition`, targeting six new FR leaves baselined this
+> run for `BL-0107`/`BL-0109`/`BL-0111`/`BL-0122`/`BL-0079`): added **FEAT-1600** (Sensor
+> Modality-Specific Access & Effectiveness Models, owning `FR-1610`-`FR-1670`), **FEAT-7400**
+> (State-Vector/Ephemeris & TLE Export, owning `FR-7410`-`FR-7440`), and **FEAT-8200** (Live
+> RIC-Frame Relative-Motion View & CATS Overlay, owning `FR-8210`/`FR-8220`, new parent `FR-8200`);
+> extended the existing **FEAT-4400** (+`FR-4450`) and **FEAT-4600** (+`FR-4620`). This run's scope
+> was explicitly the six new leaves only — it does **not** re-baseline this catalog against every
+> FR added to the requirements document since this catalog's original 49-FR pass (the Must-tier,
+> Should-tier, FS-117, and `FR-7430` intake batches between the original pass and this run remain
+> **not yet decomposed** outside the three leaves — `FR-1610`-`FR-1660`, `FR-7410`-`FR-7430` — that
+> rode into `FEAT-1600`/`FEAT-7400` as natural siblings of this run's own new leaves). See
+> `05-feature-review.md`'s Finding log for the full disposition of this partial-staleness gap.
+>
+> **Amended 2026-10-17 — full inventory sweep** (`05-feature-decomposition`, run #151, `BL-0153`,
+> with `BL-0238`/`BL-0245` riding): Step 0 re-run against the whole current baseline. The 37 FR and
+> 5 NFR leaves no Feature owned were assigned — 28 into existing Features by parentage (FEAT-1200,
+> 1300, 1400, 2300, 3400, 4200, 4400, 5100, 5200, 5300, 7300), the rest into **four new Features**:
+> **FEAT-5400** (external vignette directories), **FEAT-5500** (save-as-scenario), and, under new
+> Epic **EP-11000**, **FEAT-11100** (manuals) and **FEAT-11300** (learning path). `FR-1460`/`FR-1470`
+> (salvo ammunition bound; jammer power rating, ADR-0037) join FEAT-1400. Every baselined FR/NFR is
+> now owned exactly once. Each added leaf carries a *(sweep 2026-10-17, run #151)* tag.
 
 Source baseline read in full: `docs/requirements/01-functional-requirements.md` (49 baselined FR
 leaves + 18 Candidate Requirements CR-01–CR-18), `docs/requirements/02-non-functional-requirements.md`
@@ -48,7 +70,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-1110, FR-1120, FR-1130, NFR-1500, NFR-1700, NFR-1900, NFR-2400, NFR-2800 |
 | **Excluded Requirements** | FR-4310 (clock *control authority* — FEAT-4300); FR-7110 (event log *storage* — FEAT-7100, a dependency of this Feature, not part of it) |
 | **Dependencies** | FEAT-7100 (replay requires an ordered event log to replay against) |
-| **Dependent Features** | FEAT-4300, FEAT-4400, FEAT-6300 |
+| **Dependent Features** | FEAT-4300, FEAT-4400, FEAT-6300, FEAT-10200; FEAT-1200, FEAT-3400 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C1 Simulation Engine |
 | **Affected Interfaces** | INT-0008, INT-0014 |
 | **Related ADRs** | ADR-0016, ADR-0002, ADR-0006 |
@@ -68,10 +90,10 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Purpose** | Compute where every asset is and when any of the six access channels (command uplink, telemetry downlink, sensor observation, jam footprint, weapon engagement, RPO proximity) is geometrically possible. |
 | **Description** | Propagates each asset's orbit (Keplerian+J2 for fictional assets, SGP4-class for TLE-sourced real satellites) behind a common `Propagator` interface, and computes `AccessWindow` intervals for all six channels from that geometry. |
 | **Scope** | Orbit propagation and access-window computation only. Does not cover maneuver application (FEAT-1300, a dependent) or effect resolution once a window is open (FEAT-1400, a dependent). |
-| **Included Requirements** | FR-1210, FR-1220, NFR-2100, NFR-1300 |
-| **Excluded Requirements** | FR-1310 (maneuver application consumes propagated state but is owned by FEAT-1300) |
-| **Dependencies** | None |
-| **Dependent Features** | FEAT-1300, FEAT-1400, FEAT-1500, FEAT-2300, FEAT-3100, FEAT-3200, FEAT-5200 |
+| **Included Requirements** | FR-1210, FR-1220, FR-1230 *(sweep 2026-10-17, run #151)*, NFR-2100, NFR-1300 |
+| **Excluded Requirements** | FR-4440 (space-weather anomaly-rate scaling — FEAT-4400, which owns the anomaly inject it scales; it consumes FR-1230's index series) |
+| **Dependencies** | FEAT-1100 *(FR-1230: index-driven drag is computed from simulated time, FR-1120)* |
+| **Dependent Features** | FEAT-1300, FEAT-1400, FEAT-1500, FEAT-1600, FEAT-2300, FEAT-3100, FEAT-3200, FEAT-5200, FEAT-8200; FEAT-4400 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C1 Simulation Engine |
 | **Affected Interfaces** | INT-0008 |
 | **Related ADRs** | ADR-0009, ADR-0011, ADR-0019 |
@@ -91,9 +113,9 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Purpose** | Let an asset change its orbit while enforcing a hard, non-negative delta-v budget. |
 | **Description** | Applies impulsive maneuvers (six entry modes) that edit orbital elements and decrement `delta_v_ms`; rejects any maneuver that would drive the budget negative, at validation time, before any state change. |
 | **Scope** | Maneuver math and budget enforcement only; does not cover the plan-first scheduling wrapper around a maneuver order (FEAT-3100) or logistics/refueling (out of baseline scope — see CR-15/FC-05 in `05-feature-review.md`). |
-| **Included Requirements** | FR-1310 |
+| **Included Requirements** | FR-1310, FR-1320 *(sweep 2026-10-17, run #151)* |
 | **Excluded Requirements** | None adjacent. |
-| **Dependencies** | FEAT-1200 |
+| **Dependencies** | FEAT-1200; FEAT-3100 and FEAT-7100 *(FR-1320: purpose tags are entered at plan time and the ledger is read from the event log)* |
 | **Dependent Features** | FEAT-3400 |
 | **Affected Subsystems** | C1 Simulation Engine |
 | **Affected Interfaces** | INT-0008 |
@@ -113,20 +135,20 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Title** | Five-D's Counterspace Effect Resolution |
 | **Purpose** | Resolve a counterspace action to a doctrinally-grounded outcome (deceive/disrupt/deny/degrade/destroy) with reversibility, debris, attribution, and resource side effects tracked explicitly. |
 | **Description** | Resolves an `EffectInstance` in one of five categories (direct-ascent, co-orbital, EW, DE, cyber) to an `EffectOutcome`; cyber is the one category resolved outside the access-window gate, instead gated on access vector and target cyber posture/vulnerabilities. |
-| **Scope** | Effect resolution and its side-effect bookkeeping. Does not cover the custody/weapons-quality precondition an engagement-intent effect must satisfy (FEAT-1500, a peer dependency reached via order validation, not this Feature directly). |
-| **Included Requirements** | FR-1410, FR-1420 |
-| **Excluded Requirements** | None adjacent. |
-| **Dependencies** | FEAT-1200 |
-| **Dependent Features** | None direct (consumed by order execution in FEAT-3400, but no Feature-level build dependency runs the other way) |
+| **Scope** | Effect resolution and its side-effect bookkeeping. Does not cover the custody/weapons-quality precondition an engagement-intent effect must satisfy (FEAT-1500, a peer dependency reached via order validation, not this Feature directly). *(Sweep 2026-10-17:)* now also owns the resource-side-effect bounds (`FR-1460` ammunition, `FR-1470` jammer power rating, per ADR-0037), the debris-persistence estimate (`FR-1430`), delivery-path jamming (`FR-1440`) and per-class detectability (`FR-1450`) — all `FR-1400` children by parentage. |
+| **Included Requirements** | FR-1410, FR-1420, FR-1430, FR-1440, FR-1450, FR-1460, FR-1470 *(sweep 2026-10-17, run #151)* |
+| **Excluded Requirements** | FR-1310 (Δv bound — FEAT-1300); FR-3420 (ROE gate on engage/cyber — FEAT-3400) |
+| **Dependencies** | FEAT-1200; FEAT-3100 and FEAT-3400 *(FR-1440: uplink/crosslink jamming acts on the delivery path and the execute-time check)* |
+| **Dependent Features** | None |
 | **Affected Subsystems** | C1 Simulation Engine |
 | **Affected Interfaces** | INT-0008 |
-| **Related ADRs** | ADR-0012 |
+| **Related ADRs** | ADR-0012, ADR-0037 |
 | **User Value** | The five-D's-plus-cyber-exception taxonomy *is* the simulator's doctrinal model of counterspace operations — this Feature is what makes an order mean something doctrinally, not just numerically. |
 | **Technical Value** | A single resolution seam (`EffectResolver`) that every effect category routes through, keeping the five-D ontology consistent. |
 | **Complexity** | High — five categories, each with its own sub-model (`jam.py`, `engage.py`, `cyber.py`, `isr.py`), unified behind one outcome contract. |
 | **Risk** | The strategic review (A2) flags the fixed five-D ontology itself as a hidden assumption that doctrine may reframe; that is a requirements-tier question, out of this Feature's scope to resolve. |
 | **Suggested Verification Strategy** | Given a kinetic template with `debris_risk` set, a successful resolution always produces a `spawn_debris` side effect; given a reversible template, never. Given no open window, a cyber effect is still resolvable. |
-| **Open Questions** | None within baseline scope. |
+| **Open Questions** | `FR-1460`/`FR-1470` are unimplemented (RTM `UNASSIGNED`) and have no FS yet — `06` next (FS-105 or a new remediation FS). Both touch the same success-path consumption step and may share one package. |
 
 ### FEAT-1500 — Custody, Track Confidence & Weapons-Quality Gate
 
@@ -140,7 +162,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-1510, FR-1520 |
 | **Excluded Requirements** | FR-3210/FR-3220 (Track population via SSN tasking — FEAT-3200); FR-6210 (per-cell Track filtering — FEAT-6200) |
 | **Dependencies** | FEAT-1200 |
-| **Dependent Features** | FEAT-3400, FEAT-6200 |
+| **Dependent Features** | FEAT-3400, FEAT-6200, FEAT-10100 |
 | **Affected Subsystems** | C1 Simulation Engine |
 | **Affected Interfaces** | INT-0007, INT-0010 |
 | **Related ADRs** | ADR-0013 |
@@ -150,6 +172,29 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Risk** | Low. |
 | **Suggested Verification Strategy** | Given a Track observed at T0 with confidence C0, confidence at T1 > T0 with no observation is < C0; an engagement against a sub-threshold or uncharacterized Track is rejected at both plan-time and execute-time. |
 | **Open Questions** | None within baseline scope. |
+
+### FEAT-1600 — Sensor Modality-Specific Access & Effectiveness Models
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-1600 |
+| **Title** | Sensor Modality-Specific Access & Effectiveness Models |
+| **Purpose** | Model the real phenomenological differences between sensor modalities (radar beam modes, optical lighting/exclusion-angle constraints, space-based range/band specialization, cue-dependent sensors, passive-RF multilateration) as access/effectiveness refinements layered on the baseline `sensor_observation` channel, rather than treating every sensor as uniformly capable. |
+| **Description** | Adds fence/dish radar beam-mode variants, a configurable optical solar/lunar exclusion angle, a space-based minimum-range floor and altitude-band affinity, a cue-dependent tasking precondition, a passive-RF ≥3/≥4-receiver multilateration network, satellite-hosted-sensor orbit-following, and (newly, `FR-1670`, 2026-10-03) a general Sun-target-observer illumination phase-angle (CATS) access-window refinement for any passive EO sensor — each an optional, opt-in refinement a sensor declares; a sensor declaring none of them falls back to the baseline lighting-only predicate (`FR-1220`) unaffected. |
+| **Scope** | The seven sensor-modality-specific predicates/effectiveness models themselves. Does not cover the baseline access-window geometry they layer on top of (FEAT-1200, a dependency) or SSN network aggregation generally (FEAT-3200, a peer the passive-RF leaf, `FR-1650`, explicitly reuses rather than duplicates). |
+| **Included Requirements** | FR-1610, FR-1620, FR-1630, FR-1640, FR-1650, FR-1660, FR-1670 |
+| **Excluded Requirements** | FR-1210/FR-1220 (the baseline propagation/lighting predicate these all layer on — FEAT-1200); FR-3210/FR-3220 (SSN network aggregation `FR-1650` reuses — FEAT-3200) |
+| **Dependencies** | FEAT-1200 |
+| **Dependent Features** | None |
+| **Affected Subsystems** | C1 Simulation Engine, C2 Session/Application Layer, C3 Mock SSN |
+| **Affected Interfaces** | INT-0008, INT-0009, INT-0010 |
+| **Related ADRs** | ADR-0010, ADR-0011 |
+| **User Value** | Lets a vignette author or White Cell model real sensor-type differences (a GEODSS-class optical sensor cannot stare at the Sun; a laser-ranging sensor cannot cold-detect; a TDOA network needs ≥3 simultaneous receivers) rather than one undifferentiated "sensor" abstraction. |
+| **Technical Value** | Each predicate is additive and independently opt-in — no existing sensor's behavior changes unless it declares the new field, keeping the baseline `FR-1220` predicate's existing guarantees intact. |
+| **Complexity** | Medium-High — six independently-testable predicate/effectiveness models (`FR-1610`-`FR-1660`) plus a seventh, newer one (`FR-1670`) sharing the same opt-in, compose-don't-replace discipline. |
+| **Risk** | `FR-1610`-`FR-1660` are `VERIFIED` built (`IP-1220`, per `VR-1220` — `engine/isr.py`, `engine/access.py`, `engine/ssn.py`). `FR-1670` (2026-10-03) is a brand-new, unimplemented leaf with an open research gap on its concrete default phase-angle range/degradation curve (`BL-0112`/`BL-0151`, routed to `06-feature-specification`) — this Feature is **partially built**, not uniformly at one maturity level; a reader should not assume `FR-1670` carries the same verified status as its six siblings. |
+| **Suggested Verification Strategy** | Per-leaf acceptance criteria already stated in each FR; for `FR-1670` specifically, given a declared usable phase-angle range and a geometry outside it, the access window is rejected or degraded, composing with (not replacing) `FR-1220`/`FR-1620`. |
+| **Open Questions** | This Feature bundles one brand-new FR (`FR-1670`, this run's own scope) together with six pre-existing, already-`VERIFIED` siblings (`FR-1610`-`FR-1660`) that predate this `05-feature-decomposition` run and had no Feature Catalog entry of their own before now — a pre-existing gap this Feature closes as a side effect, flagged explicitly rather than silently; see `05-feature-review.md`. `FR-8220` (the CATS-angle *display* overlay, FEAT-8200) and `FR-1670` (CATS-angle *access-gating*) should share one phase-angle computation per `BL-0152` — a cross-Feature implementation note, not a dependency edge, since neither Feature's own behavior requires the other to exist first. |
 
 ---
 
@@ -210,9 +255,9 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Purpose** | Show the operator a ground-visible SOH snapshot that only updates at a telemetry-downlink contact — "belief, not ground truth" applied to health data. |
 | **Description** | Freezes the ground-visible SOH snapshot between contacts at its last-known, timestamped value; supports a stored-telemetry dump at the next contact revealing events that occurred out of contact. |
 | **Scope** | Telemetry visibility timing only; SOH value computation itself is FEAT-2100. |
-| **Included Requirements** | FR-2310 |
+| **Included Requirements** | FR-2310, FR-2320 *(sweep 2026-10-17, run #151)* |
 | **Excluded Requirements** | FR-2110 (SOH computation — FEAT-2100) |
-| **Dependencies** | FEAT-1200, FEAT-2100 |
+| **Dependencies** | FEAT-1200, FEAT-2100; FEAT-6200 and FEAT-4400 *(FR-2320: the export is cell-filtered and must show anomaly-inject perturbation, FR-4430)* |
 | **Dependent Features** | None |
 | **Affected Subsystems** | C1 Simulation Engine |
 | **Affected Interfaces** | INT-0007, INT-0008 |
@@ -286,7 +331,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-3110, FR-3120 |
 | **Excluded Requirements** | FR-3210 (collection-kind tasking — FEAT-3200); FR-3310 (shared scheduler — FEAT-3300) |
 | **Dependencies** | FEAT-1200 |
-| **Dependent Features** | FEAT-3300, FEAT-3400, FEAT-9100 |
+| **Dependent Features** | FEAT-3300, FEAT-3400, FEAT-9100; FEAT-1300, FEAT-1400 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C1 Simulation Engine, C2 Session/Application Layer |
 | **Affected Interfaces** | INT-0004, INT-0006, INT-0008 |
 | **Related ADRs** | ADR-0005 |
@@ -351,11 +396,11 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Title** | Execute-Time Re-Validation |
 | **Purpose** | Re-check ownership, window validity, resources, ROE, and the weapons-quality gate at the moment an activity actually executes, since state can change between plan-time and execute-time. |
 | **Description** | Re-validates every Planned Activity against five checks at its scheduled execution point; fails gracefully to a `FAILED` state with a recorded reason on any check failure, consuming no resources. |
-| **Scope** | The re-validation checks themselves. The activities being validated are created by FEAT-3100/FEAT-3200; the resource and custody rules being checked are owned by FEAT-1300/FEAT-1500 respectively. |
-| **Included Requirements** | FR-3410 |
+| **Scope** | The re-validation checks themselves. The activities being validated are created by FEAT-3100/FEAT-3200; the resource and custody rules being checked are owned by FEAT-1300/FEAT-1500 respectively. *(Sweep 2026-10-17:)* also owns per-cell ROE (`FR-3420`), optional role-authorization gating (`FR-3430`) and live logged ROE changes (`FR-3440`) — ROE is one of `FR-3410`'s five execute-time gates, so the family stays with its parent. |
+| **Included Requirements** | FR-3410, FR-3420, FR-3430, FR-3440 *(sweep 2026-10-17, run #151)* |
 | **Excluded Requirements** | FR-1310 (Δv rule itself — FEAT-1300); FR-1520 (weapons-quality rule itself — FEAT-1500) |
-| **Dependencies** | FEAT-3100, FEAT-1300, FEAT-1500 |
-| **Dependent Features** | FEAT-9100 |
+| **Dependencies** | FEAT-3100, FEAT-1300, FEAT-1500; FEAT-4200, FEAT-4700, FEAT-7100, FEAT-1100 *(FR-3430/FR-3440: role-authorization gating uses role assignments, live ROE changes are a manual-adjudication action, both logged and replay-safe)* |
+| **Dependent Features** | FEAT-9100, FEAT-10100; FEAT-1400 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C1 Simulation Engine |
 | **Affected Interfaces** | INT-0008 |
 | **Related ADRs** | ADR-0005, ADR-0013 |
@@ -405,7 +450,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-4110 |
 | **Excluded Requirements** | FR-5310 (vignette validation — FEAT-5300, a dependency); FR-5110 (vignette authoring — FEAT-5100) |
 | **Dependencies** | FEAT-5300 |
-| **Dependent Features** | FEAT-4200 |
+| **Dependent Features** | FEAT-4200; FEAT-11300 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C6 White Cell |
 | **Affected Interfaces** | INT-0002 |
 | **Related ADRs** | None directly |
@@ -424,11 +469,11 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Title** | Seat-to-Role Assignment |
 | **Purpose** | Let White Cell bind operator seats to roles/assets per the vignette's declared `roles_needed`, and refuse to silently understaff a mandatory seat. |
 | **Description** | Assigns each seat one or more roles (bus/payload/both) per Asset/constellation; reports any unmet mandatory `roles_needed` entry rather than allowing a silently understaffed start. |
-| **Scope** | Assignment creation/validation at setup. The runtime enforcement of an assignment's scope is FEAT-3500. |
-| **Included Requirements** | FR-4210 |
-| **Excluded Requirements** | FR-3510/FR-3520 (runtime scope enforcement — FEAT-3500) |
-| **Dependencies** | FEAT-4100 |
-| **Dependent Features** | None |
+| **Scope** | Assignment creation/validation at setup. The runtime enforcement of an assignment's scope is FEAT-3500. *(Sweep 2026-10-17:)* also owns the load-time check that each `roles_needed` entry names a declared asset or group (`FR-5314`), which is about the integrity of this Feature's own records; it runs inside FEAT-5300's gate. |
+| **Included Requirements** | FR-4210, FR-5314 *(sweep 2026-10-17, run #151)* |
+| **Excluded Requirements** | FR-5160 (the Vignette Creator's seat/role matrix — FEAT-5100, an authoring surface over this Feature's records) |
+| **Dependencies** | FEAT-4100; FEAT-5300 *(FR-5314 runs inside the load-time validation gate)* |
+| **Dependent Features** | FEAT-3400, FEAT-5100 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C6 White Cell |
 | **Affected Interfaces** | INT-0002 |
 | **Related ADRs** | None directly |
@@ -469,21 +514,21 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Feature ID** | FEAT-4400 |
 | **Title** | Inject Authoring & Firing |
 | **Purpose** | Let White Cell apply a scripted or manual inject immediately or at a scheduled simulated time, as the documented bypass of plan-first commanding for narrative control. |
-| **Description** | Applies an Inject's effects outside the normal Planned-Activity/access-window path, immediately or at a future `at_sim_t`; a scheduled inject survives save/resume and fires byte-identically. |
-| **Scope** | Inject application/scheduling. The *authoring UX* around this (templated/preview inject-authoring, the FS-108 candidate) is a presentation-layer concern layered on top, not part of this Feature's own requirement scope. |
-| **Included Requirements** | FR-4410 |
+| **Description** | Applies an Inject's effects outside the normal Planned-Activity/access-window path, immediately or at a future `at_sim_t`; a scheduled inject survives save/resume and fires byte-identically. Also lets White Cell edit the parameters of, or cancel, a scheduled inject before it fires (`FR-4450`, added 2026-10-03). |
+| **Scope** | Inject application/scheduling, plus pre-fire edit/cancel of an already-scheduled inject. The *authoring UX* around this (templated/preview inject-authoring, the FS-108 candidate) is a presentation-layer concern layered on top, not part of this Feature's own requirement scope. |
+| **Included Requirements** | FR-4410, FR-4420, FR-4430, FR-4440 *(sweep 2026-10-17, run #151)*, FR-4450 |
 | **Excluded Requirements** | None baselined-adjacent (the richer authoring UX has no baselined FR — it is FS-108, an unauthorized candidate spec per `docs/features/feature-index.md`). |
-| **Dependencies** | FEAT-1100 |
-| **Dependent Features** | None |
+| **Dependencies** | FEAT-1100; FEAT-6100 and FEAT-1200 *(FR-4430 delivers new inject types through the SessionAPI; FR-4440 reads FR-1230's index series)* |
+| **Dependent Features** | FEAT-2300 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C6 White Cell, C1 Simulation Engine |
 | **Affected Interfaces** | INT-0002, INT-0016 |
 | **Related ADRs** | ADR-0005 |
-| **User Value** | Injects are White Cell's accepted narrative-control tool — the mechanism behind every "unexpected debris event" or "GNSS jamming advisory" moment. |
+| **User Value** | Injects are White Cell's accepted narrative-control tool — the mechanism behind every "unexpected debris event" or "GNSS jamming advisory" moment; `FR-4450` adds the ability to correct or withdraw one before it fires, per `BL-0079` (Could-tier). |
 | **Technical Value** | A documented, bounded escape hatch from plan-first commanding rather than an ad hoc one. |
-| **Complexity** | Medium. |
-| **Risk** | Low; verified (`session/manager.py`). |
-| **Suggested Verification Strategy** | A session saved and resumed before a scheduled inject's `at_sim_t` still fires it at the correct time with identical effects to an unsaved run. |
-| **Open Questions** | None within baseline scope; FS-108's richer authoring UX remains a separate, unauthorized candidate (see `05-feature-review.md`). |
+| **Complexity** | Medium (the original `FR-4410` scheduling mechanism); Low (`FR-4450`'s edit/cancel addition — mutates/removes an already-modeled pending-inject record, no new mechanism). |
+| **Risk** | `FR-4410` low; verified (`session/manager.py`). `FR-4450` is a brand-new, unimplemented Could-tier leaf (RTM `UNASSIGNED`) — a genuine future-build item, not yet a traceability-only gap like the rest of this Feature. |
+| **Suggested Verification Strategy** | A session saved and resumed before a scheduled inject's `at_sim_t` still fires it at the correct time with identical effects to an unsaved run; a cancel request against a scheduled, not-yet-fired inject removes it from the pending queue and it does not subsequently fire. |
+| **Open Questions** | None within baseline scope for `FR-4410`; FS-108's richer authoring UX remains a separate, unauthorized candidate (see `05-feature-review.md`). `FR-4450` has no implementation yet — a future `06-feature-specification`/`07-implementation-planning` pass. |
 
 ### FEAT-4500 — Classification Banner
 
@@ -515,21 +560,21 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Feature ID** | FEAT-4600 |
 | **Title** | God-View & Per-Cell View-As |
 | **Purpose** | Let White Cell see ground truth plus both cells' belief states combined, and switch to viewing exactly as Red or Blue would, for fair adjudication. |
-| **Description** | Provides a combined god-view and a view-as-cell mode that never grants White Cell write access to that cell's state through the view-as path. |
-| **Scope** | The White Cell view mechanism. The underlying per-cell filtering it borrows is FEAT-6200 (a dependency). |
-| **Included Requirements** | FR-4610 |
+| **Description** | Provides a combined god-view and a view-as-cell mode that never grants White Cell write access to that cell's state through the view-as path. Also provides a simultaneous side-by-side presentation of ground truth plus each cell's belief state (`FR-4620`, added 2026-10-03), distinct from view-as-cell's sequential one-at-a-time switching. |
+| **Scope** | The White Cell view mechanism, both sequential (view-as) and simultaneous (side-by-side). The underlying per-cell filtering it borrows is FEAT-6200 (a dependency). |
+| **Included Requirements** | FR-4610, FR-4620 |
 | **Excluded Requirements** | FR-6210 (the underlying fog-of-war filter — FEAT-6200) |
 | **Dependencies** | FEAT-6200 |
 | **Dependent Features** | None |
 | **Affected Subsystems** | C6 White Cell |
 | **Affected Interfaces** | INT-0002, INT-0007 |
 | **Related ADRs** | ADR-0004 |
-| **User Value** | White Cell must adjudicate using each side's *actual* belief state, not an assumption about it — this Feature makes that literally checkable. |
-| **Technical Value** | Reuses FEAT-6200's filter rather than a separate, potentially-diverging White-Cell-only view path. |
-| **Complexity** | Medium. |
-| **Risk** | RTM Impl. Package `UNASSIGNED` — traceability gap; narratively covered by `FS-106`. |
-| **Suggested Verification Strategy** | White Cell viewing as Red sees exactly what a Red-seated operator would see via INT-0004, no more, no less. |
-| **Open Questions** | Close the RTM citation gap. |
+| **User Value** | White Cell must adjudicate using each side's *actual* belief state, not an assumption about it — this Feature makes that literally checkable; `FR-4620` additionally lets White Cell compare both cells' belief against truth at a glance rather than switching back and forth, per `BL-0079` (Could-tier). |
+| **Technical Value** | Reuses FEAT-6200's filter rather than a separate, potentially-diverging White-Cell-only view path, for both the sequential and simultaneous presentations. |
+| **Complexity** | Medium (`FR-4610`); Low-Medium (`FR-4620` — a layout/rendering addition over the same already-filtered data, no new filtering mechanism). |
+| **Risk** | `FR-4610`'s RTM Impl. Package `UNASSIGNED` — traceability gap; narratively covered by `FS-106`. `FR-4620` is a brand-new, unimplemented Could-tier leaf (RTM `UNASSIGNED`) — a genuine future-build item, not yet a traceability-only gap. |
+| **Suggested Verification Strategy** | White Cell viewing as Red sees exactly what a Red-seated operator would see via INT-0004, no more, no less; White Cell's side-by-side view simultaneously displays ground truth and both cells' `CellView`s, each matching that same exact-match standard. |
+| **Open Questions** | Close the RTM citation gap for `FR-4610`. `FR-4620` has no implementation yet — a future `06-feature-specification`/`07-implementation-planning` pass. |
 
 ### FEAT-4700 — Manual Adjudication & Live Parameter Adjustment
 
@@ -543,7 +588,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-4710, FR-4720 |
 | **Excluded Requirements** | None adjacent. |
 | **Dependencies** | None |
-| **Dependent Features** | None |
+| **Dependent Features** | FEAT-3400 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C6 White Cell |
 | **Affected Interfaces** | (none — FR-4710 is an absence-of-interface requirement); INT-0002 (FR-4720) |
 | **Related ADRs** | ADR-0017, ADR-0029 |
@@ -567,10 +612,10 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Purpose** | Let White Cell compose a vignette (force lay-down, parameters, injects, intro briefs) across multiple round trips before a single save/build emits a complete file. |
 | **Description** | Accumulates partial authoring state across an authoring session; emits a complete vignette file only on an explicit save/build action; no partial/incomplete file is ever written from an in-progress session. |
 | **Scope** | Iterative composition mechanics. TLE import during authoring is FEAT-5200; validation of the resulting file is FEAT-5300. |
-| **Included Requirements** | FR-5110, NFR-2000 |
-| **Excluded Requirements** | FR-5210 (TLE import — FEAT-5200); FR-5310 (validation — FEAT-5300) |
-| **Dependencies** | None |
-| **Dependent Features** | FEAT-4500 |
+| **Included Requirements** | FR-5110, FR-5120, FR-5130, FR-5140, FR-5150, FR-5160, FR-5170, FR-5180 *(sweep 2026-10-17, run #151)*, NFR-2000, NFR-2010 *(sweep 2026-10-17, run #151)* |
+| **Excluded Requirements** | FR-5210/FR-5220 (TLE/OMM import — FEAT-5200); FR-5310–FR-5313 (validation — FEAT-5300); FR-5420 (where `save_vignette` may write — FEAT-5400) |
+| **Dependencies** | FEAT-4200 *(FR-5160: the Creator's seat/role matrix authors role assignments)* |
+| **Dependent Features** | FEAT-4500; FEAT-5200 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C5 Content & Data, C6 White Cell |
 | **Affected Interfaces** | INT-0003 |
 | **Related ADRs** | ADR-0027, ADR-0007 |
@@ -590,9 +635,9 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Purpose** | Import real-satellite TLEs from Space-Track at build time when reachable, falling back to manual entry so the tool never depends on network reachability once a vignette exists. |
 | **Description** | Attempts Space-Track import at build time; accepts manual TLE/Keplerian entry as fallback; no network access is required after vignette creation. |
 | **Scope** | Import mechanics and offline-first guarantee. |
-| **Included Requirements** | FR-5210, NFR-3200 |
+| **Included Requirements** | FR-5210, FR-5220 *(sweep 2026-10-17, run #151)*, NFR-3200 |
 | **Excluded Requirements** | None adjacent. |
-| **Dependencies** | FEAT-1200 |
+| **Dependencies** | FEAT-1200; FEAT-5100 *(FR-5220: bulk import adds assets through the Creator's asset entry, FR-5140)* |
 | **Dependent Features** | None |
 | **Affected Subsystems** | C5 Content & Data, C10 Space-Track.org (external) |
 | **Affected Interfaces** | INT-0013 |
@@ -611,12 +656,12 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Feature ID** | FEAT-5300 |
 | **Title** | Load-Time Vignette Validation |
 | **Purpose** | Fail loudly and precisely on an invalid vignette at load time rather than partially or silently loading it. |
-| **Description** | Validates well-formed TLEs, satisfiable `roles_needed`, and existing referenced templates at load; rejects with a precise, actionable error identifying the failing element on any failure. |
+| **Description** | Validates each vignette in full at load — well-formed TLEs that propagate (`FR-5311`), an orbit or location per asset kind (`FR-5312`), unique identifiers (`FR-5313`), entity field rules — and rejects with a precise, actionable error identifying every failing element. The template clause of `FR-5310` awaits `ADR-0036` (owner decision). |
 | **Scope** | Validation logic and error precision. Secure-loading practice (no scenario-embedded code execution) is bundled here as the nearest architectural home. |
-| **Included Requirements** | FR-5310, NFR-1600, NFR-2200 |
-| **Excluded Requirements** | None adjacent. |
+| **Included Requirements** | FR-5310, FR-5311, FR-5312, FR-5313 *(sweep 2026-10-17, run #151)*, NFR-1600, NFR-2200 |
+| **Excluded Requirements** | FR-5314 (`roles_needed` references — owned by FEAT-4200, which owns the `roles_needed` concept, FR-4210; placing it here would make FEAT-5300 → FEAT-4200 → FEAT-4100 → FEAT-5300 circular — see `05-feature-review.md` F-14); FR-5410/FR-5420 (external directories — FEAT-5400) |
 | **Dependencies** | None |
-| **Dependent Features** | FEAT-4100 |
+| **Dependent Features** | FEAT-4100; FEAT-4200, FEAT-5400 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C5 Content & Data |
 | **Affected Interfaces** | INT-0011 |
 | **Related ADRs** | ADR-0007 |
@@ -624,8 +669,54 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Technical Value** | The gate every vignette (hand-authored, in-app-built, or TLE-imported) passes through before it can start a session. |
 | **Complexity** | Medium. |
 | **Risk** | Low. |
-| **Suggested Verification Strategy** | A vignette referencing a non-existent asset template is rejected with an error naming the missing template. |
-| **Open Questions** | None. |
+| **Suggested Verification Strategy** | A vignette with a missing satellite orbit, a duplicate id, or an unpropagatable TLE is refused at load with every problem named, and no session is created. (The template case waits for `ADR-0036`.) |
+| **Open Questions** | `FR-5310`'s template clause — `ADR-0036` `Proposed`, owner decision pending (`BL-0233`); FS-131 criterion 10 blocked until then. |
+
+### FEAT-5400 — External Vignette Library Directories *(sweep 2026-10-17, run #151)*
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-5400 |
+| **Title** | External Vignette Library Directories *(sweep 2026-10-17, run #151)* |
+| **Purpose** | Let a site keep its own vignettes outside the shipped library, and keep authored files out of the built-in directory. |
+| **Description** | Loads vignettes from configured external directories after the built-in library (built-in wins on an id collision, disclosed), and restricts `save_vignette` to a configured user directory, with the same path-traversal guard on every root. |
+| **Scope** | Where vignettes may be read from and written to. Validation of what is read is FEAT-5300. |
+| **Included Requirements** | FR-5410, FR-5420, NFR-3700 |
+| **Excluded Requirements** | FR-5310–FR-5313 (validation — FEAT-5300); NFR-2200 (built-in-root path safety — FEAT-5300, which NFR-3700 generalizes) |
+| **Dependencies** | FEAT-5300 (FR-5410 depends on FR-5310; NFR-3700 on NFR-2200) |
+| **Dependent Features** | FEAT-5500 |
+| **Affected Subsystems** | C5 Content & Data, C11 Local filesystem (external) |
+| **Affected Interfaces** | INT-0011, INT-0012 |
+| **Related ADRs** | ADR-0007, ADR-0018, ADR-0022 |
+| **User Value** | A facilitator's own scenario library survives upgrades and stays separate from shipped content (FR-5410/FR-5420 Rationale). |
+| **Technical Value** | One guarded resolution path for every content root. |
+| **Complexity** | Low-Medium. |
+| **Risk** | Low; built and verified (`IP-1180`, FS-118). Path safety across several roots is the main exposure, covered by NFR-3700. |
+| **Suggested Verification Strategy** | A vignette in a configured external directory loads by id; a built-in id wins a collision with a warning; a traversal id is refused for every root; `save_vignette` never writes into the built-in directory. |
+| **Open Questions** | None within baseline scope. |
+
+### FEAT-5500 — Save Running Session as a New Starting Vignette *(sweep 2026-10-17, run #151)*
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-5500 |
+| **Title** | Save Running Session as a New Starting Vignette *(sweep 2026-10-17, run #151)* |
+| **Purpose** | Let White Cell turn a mid-exercise state into the starting point of a new vignette, for follow-on or branched exercises. |
+| **Description** | Writes the running session's current state (assets, tracks, space weather) as a new vignette file that loads like any other, without altering the live session. |
+| **Scope** | The save-as-scenario export. Save/resume of a session itself is FEAT-7200. |
+| **Included Requirements** | FR-5510 |
+| **Excluded Requirements** | FR-7210 (session save/resume — FEAT-7200) |
+| **Dependencies** | FEAT-5400 (writes to the user directory, FR-5420), FEAT-7200 (FR-7210) |
+| **Dependent Features** | None |
+| **Affected Subsystems** | C5 Content & Data, C2 Session/Application Layer |
+| **Affected Interfaces** | INT-0011, INT-0012 |
+| **Related ADRs** | ADR-0022, ADR-0007 |
+| **User Value** | Campaign-style continuation without re-authoring (FR-5510 Rationale). |
+| **Technical Value** | Reuses the content model and export path rather than a parallel snapshot format. |
+| **Complexity** | Medium. |
+| **Risk** | Low; built and verified (`IP-1200`, FS-120). A single-requirement Feature — see `05-feature-review.md` F-15. |
+| **Suggested Verification Strategy** | Saving a running session produces a vignette that loads, carries the session's tracks and space weather, and leaves the live session unchanged. |
+| **Open Questions** | None within baseline scope. |
 
 ---
 
@@ -643,7 +734,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-6110 |
 | **Excluded Requirements** | FR-6210 (fog-of-war filtering at the boundary — FEAT-6200) |
 | **Dependencies** | None |
-| **Dependent Features** | FEAT-6200 |
+| **Dependent Features** | FEAT-6200; FEAT-4400 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C2 Session/Application Layer |
 | **Affected Interfaces** | INT-0006 |
 | **Related ADRs** | ADR-0002, ADR-0003 |
@@ -666,7 +757,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-6210, FR-6220, NFR-2300 |
 | **Excluded Requirements** | FR-4610 (White Cell's own god-view/view-as consumer — FEAT-4600) |
 | **Dependencies** | FEAT-6100, FEAT-1500 |
-| **Dependent Features** | FEAT-4600, FEAT-6500 |
+| **Dependent Features** | FEAT-4600, FEAT-6500, FEAT-7400, FEAT-8200; FEAT-2300, FEAT-7300 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C2 Session/Application Layer, C1 Simulation Engine |
 | **Affected Interfaces** | INT-0006, INT-0007, INT-0001, INT-0005 |
 | **Related ADRs** | ADR-0004, ADR-0015 |
@@ -785,7 +876,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-7110, NFR-2500, NFR-2600 |
 | **Excluded Requirements** | FR-1120 (determinism/replay guarantee — FEAT-1100) |
 | **Dependencies** | None |
-| **Dependent Features** | FEAT-1100, FEAT-7200, FEAT-7300 |
+| **Dependent Features** | FEAT-1100, FEAT-7200, FEAT-7300, FEAT-7400; FEAT-1300, FEAT-3400 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C1 Simulation Engine |
 | **Affected Interfaces** | INT-0008, INT-0014 |
 | **Related ADRs** | ADR-0002 |
@@ -808,7 +899,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-7210, FR-7220, NFR-1800 |
 | **Excluded Requirements** | None adjacent. |
 | **Dependencies** | FEAT-7100 |
-| **Dependent Features** | None |
+| **Dependent Features** | FEAT-5500 *(sweep 2026-10-17)* |
 | **Affected Subsystems** | C2 Session/Application Layer, C5 Content & Data, C11 Local filesystem (external) |
 | **Affected Interfaces** | INT-0011, INT-0012 |
 | **Related ADRs** | ADR-0022 |
@@ -828,10 +919,10 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Purpose** | Let White Cell (and designated Observers) replay/scrub the event log read-only, and compare two diverging branches from a common rewind point, without disturbing the live session. |
 | **Description** | Reconstructs `WorldState` at any scrubbed-to point for display only, never altering the live session; compares two branches sharing a common ancestor without altering either's underlying log. |
 | **Scope** | Replay/scrub/branch-compare mechanics. |
-| **Included Requirements** | FR-7310, FR-7320 |
+| **Included Requirements** | FR-7310, FR-7320, FR-7330 *(sweep 2026-10-17, run #151)* |
 | **Excluded Requirements** | None adjacent. |
-| **Dependencies** | FEAT-7100 |
-| **Dependent Features** | None |
+| **Dependencies** | FEAT-7100; FEAT-6200 *(FR-7330: a single-cell replay is fog-filtered)* |
+| **Dependent Features** | FEAT-10100 |
 | **Affected Subsystems** | C2 Session/Application Layer, C1 Simulation Engine |
 | **Affected Interfaces** | INT-0014 |
 | **Related ADRs** | ADR-0002 |
@@ -841,6 +932,29 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Risk** | Low; well-covered (`session/aar.py`, `test_aar.py` per `CLAUDE.md`'s code map). |
 | **Suggested Verification Strategy** | Scrubbing to `T-100s` from a live session at T does not change the live session's clock/state; two branches diverging at T each correctly attribute their own post-T state. |
 | **Open Questions** | None. |
+
+### FEAT-7400 — State-Vector/Ephemeris & TLE Export
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-7400 |
+| **Title** | State-Vector/Ephemeris & TLE Export |
+| **Purpose** | Let White Cell (truth) and any cell (its own belief) export orbital state out of the simulator for use in external tools — as time-span state vectors (ECI/RIC, CSV/CCSDS-OEM) and, separately, as a quick current-epoch TLE for any satellite the requesting cell can currently see. |
+| **Description** | Exports ground-truth and cell-observed state vectors over a time span in ECI and RIC-relative form, as CSV, CCSDS OEM (ECI only), and a dedicated RIC-only companion file; separately, exports a current two-line element set for any satellite the requesting cell holds a `Track` on, as a copyable/clipboard string (added `FR-7440`, 2026-10-03). Every cell-scoped export path is fog-of-war-filtered; the truth export rides only the existing no-cell ground-truth endpoints. |
+| **Scope** | The export mechanisms themselves (serialization + the fog-of-war/no-cell-endpoint rule they follow). Does not cover the underlying RIC-transform math (`engine/maneuver.py::lvlh_frame`, a shared utility, not owned by any one Feature) or the fog-of-war filter itself (FEAT-6200, a dependency). |
+| **Included Requirements** | FR-7410, FR-7420, FR-7430, FR-7440 |
+| **Excluded Requirements** | FR-6210/FR-6220 (the fog-of-war filter and its no-cell exception these all ride — FEAT-6200) |
+| **Dependencies** | FEAT-7100, FEAT-6200 |
+| **Dependent Features** | None |
+| **Affected Subsystems** | C2 Session/Application Layer, C1 Simulation Engine, C3 Mock SSN |
+| **Affected Interfaces** | INT-0014, INT-0007, INT-0006 |
+| **Related ADRs** | ADR-0004, ADR-0015, ADR-0013 |
+| **User Value** | Lets an operator or analyst take orbital state out of the simulator into real external orbital-mechanics tooling (STK, GMAT, a spreadsheet) for further analysis — the ECI/RIC export for rigorous state-vector work, the quick TLE export for anything that consumes two-line elements directly. |
+| **Technical Value** | All four leaves reuse the same underlying RIC-transform (`to_ric()`/`lvlh_frame()`) and the same fog-of-war posture, rather than each inventing its own export convention. |
+| **Complexity** | High (`FR-7410`/`FR-7420`/`FR-7430` — dual-format, dual-frame, truth-vs-cell-observed serialization); Medium (`FR-7440` — simpler output shape, but its Acceptance Criteria depend on resolving `BL-0110`'s mean-element-fit design question first). |
+| **Risk** | `FR-7410`/`FR-7420`/`FR-7430` are `VERIFIED` built (`IP-1210`, per `VR-1210` v2.0). `FR-7440` (2026-10-03) is a brand-new, unimplemented leaf, and its own Notes field flags that generating a current-epoch TLE from an arbitrary propagated state is not a simple format conversion (`BL-0110`) — a real implementation-shape decision a future `06`/`07` pass must make before this leaf can be built. This Feature is **partially built**, not uniformly at one maturity level. |
+| **Suggested Verification Strategy** | Per-leaf acceptance criteria already stated in each FR; for `FR-7440` specifically, given a cell holding a `Track` on satellite X, a TLE-export request for X returns a well-formed TLE, and the same request for an untracked satellite Y is rejected. |
+| **Open Questions** | This Feature bundles one brand-new FR (`FR-7440`, this run's own scope) together with three pre-existing, already-`VERIFIED` siblings (`FR-7410`-`FR-7430`) that predate this `05-feature-decomposition` run and had no Feature Catalog entry of their own before now — a pre-existing gap this Feature closes as a side effect, flagged explicitly rather than silently; see `05-feature-review.md`. `BL-0110`'s mean-element-fit design question remains open for `FR-7440` specifically. |
 
 ---
 
@@ -858,7 +972,7 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Included Requirements** | FR-8110, NFR-1100, NFR-1200, NFR-2700, NFR-2900, NFR-3000, NFR-3300 |
 | **Excluded Requirements** | None adjacent (this Feature intentionally absorbs the UI-wide cross-cutting NFRs rather than splitting them across every screen-owning Feature). |
 | **Dependencies** | None |
-| **Dependent Features** | None |
+| **Dependent Features** | FEAT-8200 |
 | **Affected Subsystems** | C4 Operator Console, C12 Browser client |
 | **Affected Interfaces** | INT-0001 |
 | **Related ADRs** | ADR-0008, ADR-0019, ADR-0020 |
@@ -868,6 +982,29 @@ Layer · **C3** Mock SSN · **C4** Operator Console · **C5** Content & Data · 
 | **Risk** | The strategic review (§1.4) flags framework-free JS as raising the cost of future UI-scale features (e.g. constellation aggregation, FC-06) — a noted future cost, not a current defect. |
 | **Suggested Verification Strategy** | Every documented user-facing capability in the baseline is reachable through a standards-compliant browser session; interactive frame rates hold on reference hardware (16 GB RAM, integrated graphics) up to the sizing guideline. |
 | **Open Questions** | None within baseline scope. |
+
+### FEAT-8200 — Live RIC-Frame Relative-Motion View & CATS Overlay
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-8200 |
+| **Title** | Live RIC-Frame Relative-Motion View & CATS Overlay |
+| **Purpose** | Let an operator select a target satellite as the origin of a live, interactive RIC (Radial-In-track-Cross-track) relative-motion view, and, for a selected chase satellite within that view, see a live illumination phase-angle (CATS) readout predicting whether an optical sensor would get a usable view of the target. |
+| **Description** | Renders other objects' position/motion live, relative to an operator-selected origin satellite, in the RIC frame, updating as the session clock advances and fog-of-war-filtered for a cell-scoped operator (`FR-8210`); when a chase/observer satellite is also selected, computes and displays the Sun-target-observer illumination phase angle for that pair as a live, read-only readout (`FR-8220`), extending `FR-8210` rather than standing alone. Distinct from the existing one-shot CSV/CCSDS-OEM RIC export (FEAT-7400), which is non-interactive and not rendered live. |
+| **Scope** | The live, interactive view and its CATS overlay. Does not cover the underlying RIC-transform math (`engine/maneuver.py::lvlh_frame`, a shared utility) or the one-shot export format (FEAT-7400, a sibling, not a dependency — neither Feature requires the other to exist first). Does not cover using the same CATS angle as an access-window *gate* for sensor tasking generally (`FR-1670`, FEAT-1600, a distinct, broader-scope capability). |
+| **Included Requirements** | FR-8210, FR-8220 |
+| **Excluded Requirements** | FR-7410/FR-7420/FR-7430 (the one-shot export this reuses transform grounding from — FEAT-7400); FR-1670 (the CATS angle used as an access-gating criterion rather than a display readout — FEAT-1600); FR-6210 (the underlying fog-of-war filter — FEAT-6200) |
+| **Dependencies** | FEAT-6200, FEAT-1200, FEAT-8100 |
+| **Dependent Features** | None |
+| **Affected Subsystems** | C4 Operator Console, C12 Browser client, C2 Session/Application Layer, C1 Simulation Engine |
+| **Affected Interfaces** | INT-0001, INT-0006, INT-0007 |
+| **Related ADRs** | ADR-0004, ADR-0008 |
+| **User Value** | Direct Blue/Red RPO/proximity situational-awareness tool, and White Cell oversight aid — an operator reasoning about a chase satellite's relative geometry and lighting no longer has to mentally reconstruct the RIC frame from a raw ECI readout or a one-shot export file. |
+| **Technical Value** | Reuses the already-implemented, already-tested RIC transform (`to_ric()`/`lvlh_frame()`, FEAT-7400's own underlying math) for a new, live rendering use, rather than a second implementation of the same geometry. |
+| **Complexity** | High (`FR-8210` — a new live, interactive, fog-of-war-aware rendering surface); Low-Medium (`FR-8220` — one additional computed readout layered on `FR-8210`'s existing selection state). |
+| **Risk** | Both leaves are brand-new and entirely unimplemented (RTM `UNASSIGNED` for both). `FR-8210` carries an open research gap on RIC-frame-display-as-operational-concept (`BL-0108`, no R1xx grounding exists yet, revisit before `06-feature-specification`). `FR-8220` carries an open research gap on the concrete default phase-angle range/degradation semantics (`BL-0112`/`BL-0151`) and a shared-computation note with `FR-1670` (`BL-0152`) that a future implementation should resolve by using one phase-angle function for both Features, not two. |
+| **Suggested Verification Strategy** | Given an operator selecting satellite X as the RIC-frame origin, displayed relative positions match `to_ric()`-computed values at the current sim time, and update when a different origin is selected; given a cell-scoped request, rendered objects are limited to that cell's own `TrackCatalog`; given a selected chase/target pair, the displayed CATS angle matches the geometrically computed Sun-target-chaser angle to within floating-point tolerance. |
+| **Open Questions** | Both `BL-0108` and `BL-0112`'s research gaps are correctly still open (their revisit trigger is before `06-feature-specification`, not before this decomposition) — flagged here so whoever specifies this Feature next knows to check their status first. |
 
 ---
 
@@ -953,26 +1090,80 @@ not a re-decomposition of the whole baseline.
 
 ---
 
+## Epic EP-11000 — Training Corpus & Learning Path *(new 2026-10-17, run #151 sweep)*
+
+Added for `01-functional-requirements.md`'s `FR-11000` family (training-corpus elevation, 2026-07-04),
+which no earlier pass of this catalog decomposed (`BL-0153`).
+
+### FEAT-11100 — Role-Scoped, Source-Anchored, Current Operator Manuals *(sweep 2026-10-17, run #151)*
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-11100 |
+| **Title** | Role-Scoped, Source-Anchored, Current Operator Manuals *(sweep 2026-10-17, run #151)* |
+| **Purpose** | Give every seat a manual that covers what that role does, says where each claim comes from, and stays true as the code changes (MSTR-001 §2 training-corpus elevation). |
+| **Description** | Role-scoped manual coverage per seat; a `Sources:` anchor per section; a bidirectional feature ⇄ manual index; manual updates riding the package that changes the behaviour; as-built-only accuracy; modular, learner-appropriate modules. |
+| **Scope** | The manuals and their traceability apparatus. The vignette learning path is FEAT-11300. |
+| **Included Requirements** | FR-11110, FR-11120, FR-11210, FR-11410, NFR-3400, NFR-3500, NFR-3600 |
+| **Excluded Requirements** | FR-11310/FR-11320/FR-11420 (learning path and playbook verification — FEAT-11300) |
+| **Dependencies** | None at Feature grain — it documents whatever has shipped; each manual section depends on the Feature it describes, tracked by `training/15`, not by graph edges |
+| **Dependent Features** | FEAT-11300 |
+| **Affected Subsystems** | None in the C1–C12 component set — the training corpus (`docs/training/`) is not an ICD component (see `05-feature-review.md` F-16) |
+| **Affected Interfaces** | None — documentation artifact |
+| **Related ADRs** | None identified (governed by MSTR-001 §2 and GDS-00/GDS-01 "Training-corpus elevation") |
+| **User Value** | A trainee or facilitator can learn the tool from its manual without a developer in the room (FR-11110 Rationale). |
+| **Technical Value** | The index makes manual impact of a code change mechanically findable. |
+| **Complexity** | Medium — breadth, not depth. |
+| **Risk** | Drift between prose and behaviour; mitigated by FR-11410 and independent `09-training-manual-review` passes. |
+| **Suggested Verification Strategy** | Inspection: each seat has role-scoped coverage; every section has a `Sources:` footer; the matrix agrees in both directions; a sampled feature change updated its mapped sections. |
+| **Open Questions** | None within baseline scope. |
+
+### FEAT-11300 — Vignette Learning Path & Verified Playbooks *(sweep 2026-10-17, run #151)*
+
+| Field | Content |
+|---|---|
+| **Feature ID** | FEAT-11300 |
+| **Title** | Vignette Learning Path & Verified Playbooks *(sweep 2026-10-17, run #151)* |
+| **Purpose** | Sequence the vignette library into a progression, link each rung to the manual sections it assumes, and prove each playbook's moves actually work. |
+| **Description** | A rung ladder over the shipped vignettes, each rung naming its manual prerequisites and verified playbook; playbook objective-flips are machine-verified. |
+| **Scope** | The learning path and playbook verification. |
+| **Included Requirements** | FR-11310, FR-11320, FR-11420 |
+| **Excluded Requirements** | FR-11110/FR-11210 (manuals and index — FEAT-11100) |
+| **Dependencies** | FEAT-11100 (FR-11320 links manual sections), FEAT-4100 (the vignette library it sequences, FR-11310/FR-11420's "FR-5000 family") |
+| **Dependent Features** | None |
+| **Affected Subsystems** | C5 Content & Data (vignette tutorial blocks); otherwise documentation (F-16) |
+| **Affected Interfaces** | None |
+| **Related ADRs** | None identified |
+| **User Value** | Trainees meet concepts in an order that builds (FR-11310 Rationale). |
+| **Technical Value** | `test_vignette_tutorials.py` turns playbook drift into a failing test. |
+| **Complexity** | Medium. |
+| **Risk** | Engine changes that break a playbook; caught by FR-11420's test. |
+| **Suggested Verification Strategy** | Each rung names prerequisites that exist; `test_vignette_tutorials.py` passes. |
+| **Open Questions** | None within baseline scope. |
+
+---
+
 ## Summary
 
 | Epic | Features | Count |
 |---|---|---|
-| EP-1000 Simulation Engine Core & Determinism | FEAT-1100–1500 | 5 |
+| EP-1000 Simulation Engine Core & Determinism | FEAT-1100–1600 | 6 |
 | EP-2000 Bus & Payload Operations | FEAT-2100–2500 | 5 |
 | EP-3000 Command Planning & Sensor Tasking | FEAT-3100–3500 | 5 |
 | EP-4000 White Cell Exercise Control | FEAT-4100–4700 | 7 |
-| EP-5000 Scenario / Vignette Authoring | FEAT-5100–5300 | 3 |
+| EP-5000 Scenario / Vignette Authoring | FEAT-5100–5500 *(5400/5500 new 2026-10-17)* | 5 |
 | EP-6000 Session, Multiplayer & Fog-of-War | FEAT-6100–6600 | 6 |
-| EP-7000 Logging, Replay & AAR | FEAT-7100–7300 | 3 |
-| EP-8000 Operator Console Presentation | FEAT-8100 | 1 |
+| EP-7000 Logging, Replay & AAR | FEAT-7100–7400 | 4 |
+| EP-8000 Operator Console Presentation | FEAT-8100–8200 | 2 |
 | EP-9000 AI-Red | FEAT-9100 | 1 |
 | EP-10000 Assessment & Research Instrumentation *(new 2026-07)* | FEAT-10100–10200 | 2 |
-| **Total** | | **38** |
+| EP-11000 Training Corpus & Learning Path *(new 2026-10-17)* | FEAT-11100, FEAT-11300 | 2 |
+| **Total** | | **45** |
 
-All 49 original baselined FR leaves, both new `FR-10000`-category leaves (`FR-10110`/`FR-10210`,
-promoted 2026-07 from `CR-19`/`CR-20`), and all 23 baselined NFR leaves are each owned by exactly
-one Feature above (verified in `05-feature-review.md`). The remaining 19 Candidate Requirements
-(`CR-01`–`CR-18`, `CR-21`) and 7 Candidate NFRs are deliberately **not** included in any Feature's
-`Included Requirements` — they are not yet an approved baseline to decompose (see
-`05-feature-review.md` for their disposition and what would be
-required to promote them).
+**As of the 2026-10-17 sweep (run #151, `BL-0153`), every baselined FR leaf (103) and every
+baselined NFR leaf (28) in `docs/requirements/` is owned by exactly one Feature above** — checked
+mechanically against the requirements documents' own leaf headings, with no leaf missing and none
+included twice (see `05-feature-review.md` F-13). The Candidate Requirements (`CR-01`–`CR-18`,
+`CR-21`–`CR-25`) and Candidate NFRs are deliberately **not** included in any Feature's `Included
+Requirements` — they are not yet an approved baseline to decompose (see `05-feature-review.md` for
+their disposition and what would be required to promote them).

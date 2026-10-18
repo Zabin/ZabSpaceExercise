@@ -61,6 +61,79 @@ def test_vignette_1_loads_and_builds_a_world():
     assert ctx.landing_deadline == ctx.start_epoch + 10800 * 1_000_000
 
 
+# -- IP-1180 (FR-5410, NFR-3700) — external vignette directories -----------------------------
+
+def _write_vignette_file(directory, vignette_id: str, title: str = "External") -> None:
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / f"{vignette_id}.yaml").write_text(
+        yaml.safe_dump({"vignette": {
+            "id": vignette_id, "title": title,
+            "start_epoch_utc": "2030-01-01T00:00:00Z",
+            "blue_forces": [], "red_forces": [], "neutral_forces": [], "sensors": [],
+        }}),
+        encoding="utf-8",
+    )
+
+
+def test_list_vignettes_empty_external_dirs_reproduces_baseline(tmp_path):
+    baseline = list_vignettes()
+    same = list_vignettes(external_dirs=[])
+    assert [v["id"] for v in baseline] == [v["id"] for v in same]
+    assert all(v["origin"] == "built-in" for v in same)
+
+
+def test_list_vignettes_enumerates_external_directory_with_origin_tag(tmp_path):
+    ext = tmp_path / "my-external-vignettes"
+    _write_vignette_file(ext, "ext-vig-1", "An External Vignette")
+    entries = {v["id"]: v for v in list_vignettes(external_dirs=[ext])}
+    assert "ext-vig-1" in entries
+    assert entries["ext-vig-1"]["origin"] == "my-external-vignettes"
+
+
+def test_list_vignettes_skips_unreadable_or_missing_external_directory(tmp_path):
+    missing = tmp_path / "does-not-exist"
+    entries = list_vignettes(external_dirs=[missing])
+    # The catalog build still succeeds and still contains every built-in entry.
+    assert any(v["id"] == "leo-isr-denial" for v in entries)
+
+
+def test_list_vignettes_id_collision_resolves_built_in_first(tmp_path):
+    ext = tmp_path / "colliding-dir"
+    _write_vignette_file(ext, "leo-isr-denial", "A Shadow Attempt")
+    entries = [v for v in list_vignettes(external_dirs=[ext]) if v["id"] == "leo-isr-denial"]
+    assert len(entries) == 1
+    assert entries[0]["origin"] == "built-in"
+    assert entries[0]["title"] != "A Shadow Attempt"
+
+
+def test_load_vignette_finds_object_that_exists_only_in_external_directory(tmp_path):
+    ext = tmp_path / "only-here"
+    _write_vignette_file(ext, "only-in-external", "Only External")
+    vig = load_vignette("only-in-external", external_dirs=[ext])
+    assert vig.title == "Only External"
+    with pytest.raises(FileNotFoundError):
+        load_vignette("only-in-external")  # not visible without the external dir
+
+
+@pytest.mark.parametrize("bad_id", [
+    "../../etc/passwd",
+    "/etc/passwd",
+    "..\\..\\windows\\system32\\config",
+    "~root/.ssh/id_rsa",
+    ".env",
+    "foo/bar",
+    "id with space",
+])
+def test_load_vignette_rejects_traversal_against_external_directory_too(tmp_path, bad_id):
+    """FS-118 Acceptance Criterion 3 — the traversal guard rejects identically whether checked
+    against VIGNETTE_DIR (existing coverage, test_defensive_audit_2026.py) or an external
+    directory, with no filesystem access on rejection."""
+    ext = tmp_path / "some-external-dir"
+    ext.mkdir()
+    with pytest.raises((ValueError, FileNotFoundError)):
+        load_vignette(bad_id, external_dirs=[ext])
+
+
 def test_parameter_override_flows_into_roe():
     vig = load_vignette("leo-isr-denial")
     _, ctx = build_world(vig, overrides={"red_kinetic_authorized": True})
@@ -98,14 +171,14 @@ def test_partial_per_cell_roe_block_defaults_missing_subkey_to_false():
 
 
 # ---------------------------------------------------------------------------
-# Satellite cap enforcement (build-spec/01-context-and-scope.md §3.1)
+# Satellite sizing is a soft guideline, not an engine cap (ADR-0019, NFR-1300).
+# IP-1061 removed the hard ValueError raises this section used to pin.
 # ---------------------------------------------------------------------------
 
-def test_total_satellite_cap_enforced():
-    """25 orbital assets must raise ValueError."""
+def test_vignette_above_24_satellites_loads():
+    """25 orbital assets must load without error — no engine-enforced cap (ADR-0019)."""
     vig = _make_vignette([_sat(i) for i in range(25)])
-    with pytest.raises(ValueError, match="≤24 satellite cap"):
-        build_world(vig)
+    build_world(vig)   # no exception
 
 
 def test_total_satellite_cap_at_limit_passes():
@@ -114,12 +187,11 @@ def test_total_satellite_cap_at_limit_passes():
     build_world(vig)   # no exception
 
 
-def test_per_constellation_cap_enforced():
-    """4 satellites in the same group must raise ValueError."""
+def test_constellation_above_3_loads():
+    """4 satellites in the same group must load without error — no engine-enforced cap (ADR-0019)."""
     sats = [_sat(i, group="ALPHA") for i in range(4)]
     vig = _make_vignette(sats)
-    with pytest.raises(ValueError, match="constellation.*cap"):
-        build_world(vig)
+    build_world(vig)   # no exception
 
 
 def test_per_constellation_cap_at_limit_passes():
@@ -133,3 +205,48 @@ def test_ungrouped_satellites_not_counted_per_constellation():
     """5 ungrouped orbital assets are fine — no group means not constellation-capped."""
     vig = _make_vignette([_sat(i) for i in range(5)])
     build_world(vig)   # no exception
+
+
+# -- IP-1200 (FR-5510) — save-as-scenario's carried-forward Vignette fields ------------------
+
+def test_all_library_vignettes_have_no_save_as_scenario_fields():
+    """Additive/absent regression (NFR-2010) — every one of the 19 shipped vignettes predates
+    IP-1200, so none declares initial_tracks/simulator_version/initial_space_weather."""
+    for entry in list_vignettes():
+        vig = load_vignette(entry["id"])
+        assert vig.initial_tracks == []
+        assert vig.simulator_version is None
+
+
+def test_build_world_consumes_initial_tracks():
+    raw = {
+        "id": "test-initial-tracks", "title": "Initial tracks",
+        "start_epoch_utc": "2030-01-01T00:00:00Z",
+        "blue_forces": [], "red_forces": [], "neutral_forces": [], "sensors": [],
+        "initial_tracks": [{"object": "SAT-RED", "owner": "blue", "confidence": 0.8,
+                             "last_observation": 0}],
+    }
+    vig = Vignette.model_validate(raw)
+    world, _ = build_world(vig)
+    tr = world.track_for("blue", "SAT-RED")
+    assert tr is not None
+    assert tr.confidence == pytest.approx(0.8)
+
+
+def test_build_world_consumes_initial_space_weather():
+    raw = {
+        "id": "test-initial-space-weather", "title": "Initial space weather",
+        "start_epoch_utc": "2030-01-01T00:00:00Z",
+        "blue_forces": [], "red_forces": [], "neutral_forces": [], "sensors": [],
+        "initial_space_weather": {"severity": "severe"},
+    }
+    vig = Vignette.model_validate(raw)
+    world, _ = build_world(vig)
+    assert world.space_weather == {"severity": "severe"}
+
+
+def test_build_world_with_no_initial_tracks_or_space_weather_is_unchanged():
+    vig = load_vignette("leo-isr-denial")
+    world, _ = build_world(vig)
+    assert world.tracks == []
+    assert world.space_weather == {"severity": "none"}

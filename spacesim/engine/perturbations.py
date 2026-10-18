@@ -174,3 +174,95 @@ def secular_drag_decay(altitude_m: float, ballistic_coeff: float,
     # da/dt = -ρ·BC·v·a (Curtis Eq. 10.51, low-eccentricity form)
     da_dt = -rho * ballistic_coeff * v * r
     return float(da_dt * dt_s)
+
+
+# ---------------------------------------------------------------------------------------------
+# IP-1230 (FS-123 v1.1, ADR-0039; FR-1230/FR-4440) — space-weather index series → multipliers.
+# Pure functions of declared data and sim time: no clock, no RNG. Anchors per ADR-0039 decisions
+# 2-3, grounded in R131 v1.2 §3 (NOAA G-scale Kp 5-9; F10.7 ~50-300 sfu; ~10x solar-cycle density
+# span at 400 km; 2-10x storm span). Linear interpolation between anchors.
+# ---------------------------------------------------------------------------------------------
+
+_F_SOLAR_ANCHORS: tuple[tuple[float, float], ...] = ((50.0, 0.3), (150.0, 1.0), (300.0, 3.0))
+_F_GEO_ANCHORS: tuple[tuple[float, float], ...] = ((0.0, 1.0), (4.0, 1.0), (5.0, 2.0), (9.0, 10.0))
+
+
+def _interp(anchors: tuple[tuple[float, float], ...], x: float) -> float:
+    x = min(max(float(x), anchors[0][0]), anchors[-1][0])
+    for (x0, y0), (x1, y1) in zip(anchors, anchors[1:]):
+        if x0 <= x <= x1:
+            return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
+    return anchors[-1][1]
+
+
+def f_solar(f107: float) -> float:
+    """Solar (F10.7) drag factor: 50/150/300 sfu → 0.3/1.0/3.0; positive values clamped to the
+    [50, 300] anchor span (ADR-0039 decision 2). 150 sfu is the reference at which
+    ``_ATMOS_TABLE`` applies unscaled — a declared convention, not a sourced claim."""
+    return _interp(_F_SOLAR_ANCHORS, f107)
+
+
+def f_geo(kp: float) -> float:
+    """Geomagnetic (Kp) factor: flat 1.0 to Kp 4, then 2.0 at Kp 5 (G1) to 10.0 at Kp 9 (G5)
+    (ADR-0039 decision 3)."""
+    return _interp(_F_GEO_ANCHORS, kp)
+
+
+def index_in_effect(series: Optional[list], t: int, key: str) -> Optional[float]:
+    """The step-held value of index ``key`` at sim time ``t``: the latest entry at or before ``t``
+    that carries ``key``, else ``None`` (ADR-0039 decision 1). ``series`` is the stored form
+    ``[{"t": micros, "f107"?: float, "kp"?: float}, ...]`` sorted by ``t``."""
+    value = None
+    for entry in series or ():
+        if entry["t"] > t:
+            break
+        if key in entry:
+            value = entry[key]
+    return value
+
+
+def drag_multiplier(series: Optional[list], t: int) -> float:
+    """``f_solar × f_geo`` at ``t``; an index not yet in effect contributes 1.0 (ADR-0039 d. 4)."""
+    f107 = index_in_effect(series, t, "f107")
+    kp = index_in_effect(series, t, "kp")
+    return (1.0 if f107 is None else f_solar(f107)) * (1.0 if kp is None else f_geo(kp))
+
+
+def anomaly_rate_multiplier(series: Optional[list], t: int) -> float:
+    """``f_geo`` alone — F10.7 does not scale anomaly rate (ADR-0039 decision 5)."""
+    kp = index_in_effect(series, t, "kp")
+    return 1.0 if kp is None else f_geo(kp)
+
+
+def _is_number(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def index_series_problems(entries, time_key: str, *, time_required: bool = True) -> list[str]:
+    """Every problem in a declared index series (ADR-0039 decision 6), one string each; ``[]`` when
+    valid. Shared by vignette load (``at_sim_s``/``t``) and the White inject boundary
+    (``offset_s``, optional). Kp outside [0, 9], F10.7 ≤ 0, non-finite or non-numeric values
+    (``bool`` included), an entry with neither index, and a bad time key are refused."""
+    if not isinstance(entries, list):
+        return ["index_series must be a list"]
+    problems: list[str] = []
+    for k, entry in enumerate(entries):
+        where = f"entry {k}"
+        if not isinstance(entry, dict):
+            problems.append(f"{where} is not an object")
+            continue
+        if time_key in entry or time_required:
+            tv = entry.get(time_key)
+            if not _is_number(tv) or not math.isfinite(tv) or tv < 0:
+                problems.append(f"{where}: {time_key} must be a finite number >= 0, got {tv!r}")
+        if "kp" not in entry and "f107" not in entry:
+            problems.append(f"{where} declares neither kp nor f107")
+        if "kp" in entry:
+            kp = entry["kp"]
+            if not _is_number(kp) or not math.isfinite(kp) or not 0.0 <= kp <= 9.0:
+                problems.append(f"{where}: kp must be a number in [0, 9], got {kp!r}")
+        if "f107" in entry:
+            f = entry["f107"]
+            if not _is_number(f) or not math.isfinite(f) or f <= 0.0:
+                problems.append(f"{where}: f107 must be a finite number > 0, got {f!r}")
+    return problems

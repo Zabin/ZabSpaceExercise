@@ -47,6 +47,17 @@ const api = {
     if (!r.ok) throw new Error(await r.text());
     return r.json();
   },
+  // IP-1174 — the Vignette Creator's PUT/PATCH/DELETE routes carry the same cell-query-param
+  // convention as post() above, for the same Observer-guard reason.
+  async _mutate(method, p, b) {
+    const url = p + (p.includes("?") ? "&" : "?") + "cell=" + encodeURIComponent(CELL);
+    const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  put(p, b) { return this._mutate("PUT", p, b); },
+  patch(p, b) { return this._mutate("PATCH", p, b); },
+  del(p) { return this._mutate("DELETE", p); },
 };
 // Drop sub-second precision so the displayed clock never shows .xxx ms — sim time advances
 // per-event but the readouts here are operator-grade, not millisecond-precise.
@@ -160,11 +171,17 @@ const REASON_TIPS = {
   roe_cyber_not_authorized: "ROE does not authorize cyber effects.",
   no_weapons_quality_track: "No weapons-quality track — task a sensor to characterize the target first.",
   no_ammo: "No munitions remaining on this effector.",
+  // IP-1320 (FR-1460) — some rounds remain, but fewer than the salvo asks for.
+  insufficient_ammo: "Salvo is larger than the rounds this effector has left — reduce the salvo.",
   insufficient_delta_v: "Insufficient delta-v for this maneuver.",
   not_owner: "This asset belongs to another cell.",
   no_such_asset: "Unknown asset.",
   no_such_sensor: "Unknown sensor.",
-  sensor_contended: "Sensor is busy — it can service this only at a later window.",
+  // IP-1041 — sensor_contended now means a window exists but every one in the horizon is booked.
+  sensor_contended: "Sensor is booked for every window in the planning horizon — cancel a queued task or try later.",
+  requires_cue: "This sensor needs a cue — get a first track on the target with another sensor.",
+  // IP-1052 — every action's params are checked now, not only observe's.
+  invalid_param: "An order parameter is malformed or not a finite number — check the order's fields (or the JSON params box).",
   unknown_action: "Action not supported for this asset.",
   unknown_command: "Command verb not supported.",
   no_payload_for_verb: "This asset's payload can't run that command.",
@@ -179,7 +196,15 @@ async function loadVignettes() {
       sel.innerHTML = '<option value="" disabled selected>(no vignettes found — check server)</option>';
       return;
     }
-    sel.innerHTML = list.map((v) => `<option value="${esc(v.id)}">${esc(v.title)}</option>`).join("");
+    // IP-1065 (BL-0267, FR-5410) — built-in vignettes first, then one labelled optgroup per
+    // external directory (each entry's `origin`), so external content is a distinct group.
+    const opt = (v) => `<option value="${esc(v.id)}">${esc(v.title)}</option>`;
+    const builtIn = list.filter((v) => !v.origin || v.origin === "built-in");
+    const origins = [...new Set(list.filter((v) => v.origin && v.origin !== "built-in").map((v) => v.origin))];
+    sel.innerHTML = (origins.length
+      ? `<optgroup label="Built-in library">${builtIn.map(opt).join("")}</optgroup>`
+      : builtIn.map(opt).join(""))
+      + origins.map((o) => `<optgroup label="External: ${esc(o)}">${list.filter((v) => v.origin === o).map(opt).join("")}</optgroup>`).join("");
   } catch (e) {
     sel.innerHTML = '<option value="" disabled selected>(failed to load — is the server running?)</option>';
     console.error("loadVignettes failed:", e);
@@ -207,10 +232,22 @@ async function loadSession() {
   const vselect = $("vignette");
   const vlabel = vselect && vselect.selectedOptions[0] ? vselect.selectedOptions[0].textContent : vselect.value;
   const classOverride = ($("classification-override") || {}).value || "";
-  const resp = await api.post("/api/sessions", {
-    vignette_id: vselect.value, seed: +$("seed").value,
-    classification: classOverride.trim() || undefined,
-  });
+  // IP-1310 (FS-131 W2, BL-0220) — a refused load is shown at Load, never swallowed silently.
+  let resp;
+  try {
+    resp = await api.post("/api/sessions", {
+      vignette_id: vselect.value, seed: +$("seed").value,
+      classification: classOverride.trim() || undefined,
+    });
+  } catch (e) {
+    let detail = String(e && e.message || e);
+    try { detail = JSON.parse(detail).detail ?? detail; } catch { /* plain text */ }
+    const msg = typeof detail === "object" ? (detail.message || JSON.stringify(detail)) : String(detail);
+    const probs = (detail && Array.isArray(detail.problems)) ? detail.problems : [];
+    $("session").innerHTML = `<b>Load failed:</b> ${esc(msg)}` +
+      (probs.length ? `<ul>${probs.map((p) => `<li>${esc(p.where)} — ${esc(p.reason)}</li>`).join("")}</ul>` : "");
+    return;
+  }
   SID = resp.session;
   setBanner(resp.classification);
   location.hash = SID;   // multiplayer: shareable URL — Blue/Red tabs open this to join
@@ -323,7 +360,30 @@ async function setServerClock(running) {
 }
 async function fireInject() {
   const id = $("inject-sel").value; if (!id || id === "(none)") return;
-  await api.post(`/api/sessions/${SID}/inject`, { inject: id }); await refresh();
+  const out = $("inject-result");
+  // IP-1065 (BL-0196) — a 400 (`inject rejected: …`) is shown, not thrown unhandled.
+  try {
+    await api.post(`/api/sessions/${SID}/inject`, { inject: id });
+    if (out) { out.style.color = ""; out.textContent = `✓ fired ${id}`; }
+  } catch (err) {
+    if (out) { out.style.color = "var(--red)"; out.textContent = "✗ server error: " + (err.message || err); }
+  }
+  await refresh();
+}
+
+// IP-1065 (BL-0145, FR-5510) — save this running session as a new starting vignette.
+async function saveAsScenario() {
+  const out = $("save-scenario-result");
+  if (!SID) { if (out) out.textContent = "No active session."; return; }
+  const vid = (prompt("New vignette id (letters, digits, - or _):") || "").trim();
+  if (!vid) return;
+  const title = (prompt("Title for the new vignette:", vid) || vid).trim();
+  try {
+    const r = await api.post(`/api/sessions/${SID}/save_vignette`, { vignette_id: vid, title, as_scenario: true });
+    if (out) { out.style.color = ""; out.textContent = `✓ saved ${r.path}`; }
+  } catch (err) {
+    if (out) { out.style.color = "var(--red)"; out.textContent = "✗ " + (err.message || err); }
+  }
 }
 
 // ---- FW §11.D.19 — Inject library + builder (White Cell) -----------------
@@ -393,6 +453,67 @@ function onInjectWhenChange() {
   const mode = $("inject-when").value;
   $("inject-rel-wrap").style.display = mode === "rel" ? "" : "none";
   $("inject-abs-wrap").style.display = mode === "abs" ? "" : "none";
+}
+
+// IP-1066 (FR-4450) — White Cell's pending-inject queue: every not-yet-fired inject, with
+// Cancel and Edit… controls. The server decides (White-only, already-fired, whole-inject
+// check); a refusal is shown in #inject-result, never thrown.
+async function renderPendingInjects() {
+  const box = $("pending-injects");
+  if (!box || !SID || CELL !== "white") return;
+  const rows = await api.get(`/api/sessions/${SID}/injects/pending`).catch(() => null);
+  if (!rows) return;
+  if (!rows.length) { box.innerHTML = '<span class="muted">(no pending injects)</span>'; return; }
+  box.innerHTML = rows.map((r) => `<div class="ctrl" style="font-size:11px;gap:6px">
+      <code>${esc(r.handle)}</code>
+      <span class="muted">${r.trigger === "time" ? esc(iso(r.at)) : "on condition"}</span>
+      <span>${esc((r.effects || []).map((e) => e.type).join(", "))}</span>
+      <button class="vbtn" data-pi-cancel="${esc(r.handle)}">Cancel</button>
+      <button class="vbtn" data-pi-edit="${esc(r.handle)}">Edit…</button></div>`).join("");
+  box.querySelectorAll("[data-pi-cancel]").forEach((b) => { b.onclick = () => pendingInjectAction(b.dataset.piCancel, "cancel"); });
+  box.querySelectorAll("[data-pi-edit]").forEach((b) => {
+    b.onclick = () => pendingInjectAction(b.dataset.piEdit, "edit", rows.find((r) => r.handle === b.dataset.piEdit));
+  });
+}
+
+async function pendingInjectAction(handle, action, row) {
+  const out = $("inject-result");
+  let body = {};
+  if (action === "edit") {
+    const raw = prompt(`Effects for ${handle} (JSON list):`, JSON.stringify(row.effects));
+    if (raw === null) return;
+    try { body.effects = JSON.parse(raw); }
+    catch (err) { if (out) { out.style.color = "var(--red)"; out.textContent = "✗ effects JSON invalid: " + err.message; } return; }
+    if (row.trigger === "time") {
+      const secs = (prompt("New fire time, seconds from now (blank = unchanged):", "") || "").trim();
+      if (secs) body.at_sim_t = Math.round(NOW + Number(secs) * 1e6);
+    }
+  }
+  try {
+    await api.post(`/api/sessions/${SID}/injects/${encodeURIComponent(handle)}/${action}`, body);
+    if (out) { out.style.color = ""; out.textContent = `✓ ${action === "cancel" ? "cancelled" : "edited"} ${handle}`; }
+  } catch (err) {
+    if (out) { out.style.color = "var(--red)"; out.textContent = "✗ server error: " + (err.message || err); }
+  }
+  await refresh();
+}
+
+// IP-1067 (FR-4620) — White's side-by-side controller view, rendered only from the one
+// composite /controller_view read (one simulated instant for all three columns).
+async function refreshComparePanel(force) {
+  const det = $("compare-details");
+  if (!SID || CELL !== "white" || !det || (!det.open && !force)) return;
+  const cv = await api.get(`/api/sessions/${SID}/controller_view?cell=white`).catch(() => null);
+  if (!cv) return;
+  $("compare-at").textContent = `at ${iso(cv.now)}`;
+  $("compare-truth").textContent = Object.values(cv.truth.assets || {})
+    .map((a) => `${a.id} [${a.owner}] ${a.health}`).join("\n") || "—";
+  const side = (v) => [
+    "own: " + ((v.own_assets || []).map((a) => a.id).join(", ") || "—"),
+    ...(v.known_tracks || []).map((t) => `track ${t.object}: conf ${Number(t.confidence ?? 0).toFixed(2)}`),
+  ].join("\n");
+  $("compare-blue").textContent = side(cv.blue);
+  $("compare-red").textContent = side(cv.red);
 }
 
 async function renderQueue() {
@@ -627,6 +748,43 @@ const ISR_BEAM_INFO = {
   fine:        { swath: "10 km",      res: "1 m",       power: "high", duty: "12%"    },
   polarimetric:{ swath: "30 km",      res: "5 m",       power: "high", duty: "20%"    },
 };
+
+// IP-1223 (FS-122 v1.2, FR-1610) — the beam modes the tasked sensor's modality offers, mirroring
+// the server's `OrderSystem._observe_modes` (engine/isr.py `BEAM_MODES`). The server stays
+// authoritative: a mode the executing sensor does not offer is refused `invalid_param`.
+const BEAM_MODES_BY_TYPE = {
+  isr_eo: ["wide_area", "stripmap", "spotlight", "scan"],
+  isr_sar: ["wide_area", "stripmap", "fine", "spotlight", "polarimetric"],
+  sda: ["wide_area", "nominal", "fine"],
+  weather: ["mesoscale", "conus", "full_disk"],
+  mw: ["scan", "stare"],
+  ground_radar: ["fence", "dish"],
+};
+let TASK_SENSOR_ENTRIES = [];
+
+function beamModesForSensor(id) {
+  const entries = TASK_SENSOR_ENTRIES.filter((a) => a.id === id);
+  if (entries.some((a) => a.kind === "ground_radar")) return BEAM_MODES_BY_TYPE.ground_radar;
+  const withPayload = entries.find((a) => a.payload_state && a.payload_state.type);
+  if (withPayload) return BEAM_MODES_BY_TYPE[withPayload.payload_state.type] || BEAM_MODES_BY_TYPE.isr_eo;
+  const sensor = entries.find((a) => "needs_lighting" in a);
+  if (sensor) return sensor.needs_lighting ? BEAM_MODES_BY_TYPE.isr_eo : BEAM_MODES_BY_TYPE.isr_sar;
+  return BEAM_MODES_BY_TYPE.isr_eo;
+}
+
+// `auto` lists the union of the cell's own tasking sensors' modes (the server then picks a
+// sensor that offers the chosen mode).
+function populateBeamModes() {
+  const sel = $("task-beam-mode"), tsel = $("task-sensor");
+  if (!sel || !tsel) return;
+  const ids = tsel.value === "auto" ? [...tsel.options].map((o) => o.value).filter((v) => v !== "auto") : [tsel.value];
+  const modes = [];
+  ids.forEach((id) => beamModesForSensor(id).forEach((m) => { if (!modes.includes(m)) modes.push(m); }));
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">auto</option>` + modes.map((m) => `<option value="${esc(m)}">${esc(m)}</option>`).join("");
+  sel.value = modes.includes(cur) ? cur : "";
+  updateIsrInfo();
+}
 
 function updateIsrInfo() {
   const el = $("task-isr-info"); if (!el) return;
@@ -1293,6 +1451,8 @@ async function refresh() {
     const sids = assets.filter((a) => !a.network && ((a.kind && a.kind.startsWith("ground_")) || a.kind === "space_based")).map((a) => a.id);
     tsel.innerHTML = `<option value="auto">auto</option>` + sids.map((i) => `<option>${i}</option>`).join("");
     if (cur && (cur === "auto" || sids.includes(cur))) tsel.value = cur;
+    TASK_SENSOR_ENTRIES = assets.filter((a) => sids.includes(a.id));
+    populateBeamModes();
   }
 
   // Viewers.
@@ -1314,6 +1474,8 @@ async function refresh() {
   });
   drawMap();
   renderQueue();
+  renderPendingInjects();   // IP-1066 — White only (a no-op for other seats)
+  refreshComparePanel();    // IP-1067 — only while the Compare panel is open
   renderAlarms();
   refreshAAR();
   renderConjunctions();   // FW §11.C.14
@@ -2083,6 +2245,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const st = await api.get(`/api/sessions/${SID}/clock`);
     await setServerClock(!st.running);
   };
+  if ($("save-scenario-btn")) $("save-scenario-btn").onclick = saveAsScenario;  // IP-1065
   $("fire-inject").onclick = fireInject; $("issue").onclick = issueOrder;
   // FW §11.D.19 — inject builder
   if ($("inject-lib-load")) $("inject-lib-load").onclick = loadInjectTemplate;
@@ -2094,6 +2257,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("loadfile").onchange = (e) => e.target.files[0] && loadSaveFile(e.target.files[0]);
   $("aar-slider").oninput = (e) => aarAt(e.target.value);
   if ($("assessment-refresh")) $("assessment-refresh").onclick = refreshAssessment;
+  if ($("compare-refresh")) $("compare-refresh").onclick = () => refreshComparePanel(true);   // IP-1067
   // IP-1130 — White Cell designates the read-only Observer seat's view.
   if ($("observer-designation")) $("observer-designation").onchange = (e) => {
     if (SID) api.post(`/api/sessions/${SID}/observer/view`, { cell: "white", designation: e.target.value });
@@ -2121,6 +2285,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("#task-mode .chip").forEach((b) => b.onclick = () => setTaskMode(b.dataset.tmode));
   $("task-regime").onchange = ssnCoverage;
   if ($("task-beam-mode")) $("task-beam-mode").onchange = updateIsrInfo;
+  if ($("task-sensor")) $("task-sensor").onchange = populateBeamModes;  // IP-1223
   if ($("task-look-angle")) $("task-look-angle").oninput = updateIsrInfo;
   const tzSel = document.getElementById("tz-select");
   if (tzSel) tzSel.onchange = () => {
@@ -2144,6 +2309,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // opening one closes the others, plus outside-click + Escape close any open menu.
   const menus = [
     { btn: $("session-btn"),  menu: $("session-menu") },
+    { btn: $("creator-btn"),  menu: $("creator-menu") },
     { btn: $("view-btn"),     menu: $("view-menu") },
     { btn: $("settings-btn"), menu: $("settings-menu") },
   ].filter((m) => m.btn && m.menu);
@@ -2933,3 +3099,7 @@ addEventListener("DOMContentLoaded", () => {
     if (el) el.addEventListener("change", cyberSummaryUpdate);
   });
 });
+
+// IP-1174 — Vignette Creator menu wiring (creator.js is a dedicated module, per the existing
+// globe.js/graph.js pattern of separate front-end files alongside this one).
+addEventListener("DOMContentLoaded", () => { window.Creator && Creator.init(); });

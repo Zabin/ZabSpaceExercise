@@ -34,10 +34,17 @@ per cell, server-side.
 | `GET /api/sessions/{sid}/view/{cell}` | Fog-filtered cell view |
 | `GET /api/sessions/{sid}/scene/{cell}` | Belief-render geometry (map/3D) |
 | `GET /api/sessions/{sid}/telemetry/{cell}/{asset}[/{param}]` | Subsystem telemetry DB · a parameter series |
+| `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv?t1&t2&interval_s` | One asset's telemetry over a span as CSV (`t,utc,asset,subsystem,param,value,unit,status`). Own assets only (White: any); bounds default to the recorded range |
+| `GET /api/sessions/{sid}/ric_view/{cell}?origin&chase&target` | Live RIC-frame relative motion about `origin`; with `chase` + `target` also the CATS phase angle. Own assets + own tracks only (White: truth); 404 outside custody |
+| `GET /api/sessions/{sid}/tle/{cell}?object_id` | Copyable current-epoch TLE for one satellite. Own satellites from their actual orbit, others only from a held track (White: truth); 404 with the reason otherwise |
+| `GET /api/sessions/{sid}/ephemeris/{cell}?object_id&reference_id&t1&t2&interval_s&format` | The cell's believed ephemeris over a span, ECI + RIC about `reference_id`. `format` = `csv` (default), `oem` (CCSDS OEM, ECI only) or `ric` |
+| `GET /api/sessions/{sid}/ephemeris/truth?…` (same query) | Ground-truth ephemeris, White only (no cell binding) |
+| `GET /api/sessions/{sid}/maneuver_ledger/{cell}/{asset}` · `…/export.csv` | Per-asset manoeuvre ledger (time, Δv cost, purpose tag, remaining Δv) as JSON · CSV |
 | `GET /api/sessions/{sid}/alarms/{cell}` | Fleet alarms / event feed |
 | `GET /api/sessions/{sid}/godview` | Ground truth (White only) |
 | `GET /api/sessions/{sid}/objectives` · `…/eventlog` | Objective status · event log |
 | `GET /api/sessions/{sid}/aar` · `…/aar/objectives?seq=` · `…/aar/at?seq=` | AAR report · objectives · snapshot at a point |
+| `GET /api/sessions/{sid}/aar/export.csv` · `…/aar/export.json` | AAR download as CSV · JSON |
 | `GET /api/sessions/{sid}/save` · `POST /api/sessions/load_save` | Save a session · resume from a saved state |
 
 Interactive API docs are auto-served at **http://127.0.0.1:8000/docs** (FastAPI/Swagger).
@@ -62,5 +69,16 @@ Common params:
   `sigint.task_collection` with `band`/`intercept_mode`/`dwell_s`).
 
 Rejected orders return a human-readable `reason`.
+
+Time-span bounds (`t1`, `t2`) are integer microseconds of sim UTC. A span that is wholly outside
+the recorded range is a 400. A request that would sample too many instants is also a 400, and
+the message names the ceiling. The role manuals walk through each export:
+[WCM-12–16](12a-white-cell-analysis-and-exports.md), [BLU-11–14](13-blue-cell-manual.md),
+[RED-10–13](14-red-cell-manual.md).
+
+> **Sources:** `spacesim/ui_web/server.py` (route table, incl. `get_ric_view`, `get_tle`,
+> `telemetry_export_csv`, `maneuver_ledger*`, `aar_export_*`, `ephemeris_truth`,
+> `ephemeris_cell_observed`) · `spacesim/session/ephemeris.py` (`MAX_EXPORT_SAMPLES`) ·
+> `spacesim/engine/orders.py` (order actions and params)
 
 ---

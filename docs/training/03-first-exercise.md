@@ -29,6 +29,8 @@ Because the engine is deterministic, White Cell can **rewind** and explore "what
 1. Click **Rewind to start**. Delivery is undone; the clock is back at the start.
 2. Click **Red**, then issue: **Actor** = `JAM-NORTH`, **Action** = `jam`,
    **Target** = `ISR-EO-1`, **Params** = `{"success_prob": 1.0, "outcome": "deny"}` → **Issue**.
+   Red holds no track on `ISR-EO-1` yet, so the **Target** dropdown reads *no known targets yet*.
+   Type `ISR-EO-1` in the **or id** box next to it.
 3. Click **Blue** and issue the same downlink as before.
 4. Advance time. This time the downlink is **blocked** — Red jammed it. Blue sees a *symptom* on
    `ISR-EO-1` (`deny — source unknown`) but cannot immediately attribute it. **Red wins.**

@@ -83,6 +83,17 @@ def _solve_kepler(mean_anom: float, e: float) -> float:
     return ecc
 
 
+def mean_to_true(mean_anom: float, e: float) -> float:
+    """Mean anomaly -> true anomaly (radians), the inverse of ``true_to_mean``.
+
+    Extracted from ``elements_to_rv``'s existing inline computation (IP-1190) with no change
+    to that function's behavior — reused directly by the CCSDS OMM import path, which supplies
+    a mean anomaly (per the OMM Keplerian-mean-elements set) where the TLE path never needed one.
+    """
+    ecc_anom = _solve_kepler(mean_anom, e)
+    return math.atan2(math.sqrt(1 - e * e) * math.sin(ecc_anom), math.cos(ecc_anom) - e)
+
+
 def _j2_rates(a: float, e: float, i: float) -> tuple[float, float, float]:
     """Secular RAAN, argument-of-perigee, and mean-anomaly rates (rad/s)."""
     n = math.sqrt(MU_EARTH / a ** 3)
@@ -111,8 +122,7 @@ def elements_to_rv(orbit: OrbitState, t_micros: int) -> tuple[np.ndarray, np.nda
     argp = argp0 + argp_dot * dt
     mean_anom = true_to_mean(nu0, e) + m_dot * dt
 
-    ecc_anom = _solve_kepler(mean_anom, e)
-    nu = math.atan2(math.sqrt(1 - e * e) * math.sin(ecc_anom), math.cos(ecc_anom) - e)
+    nu = mean_to_true(mean_anom, e)
 
     p = a * (1 - e * e)
     r = p / (1 + e * math.cos(nu))

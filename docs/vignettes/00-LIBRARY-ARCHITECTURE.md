@@ -177,8 +177,12 @@ through the ISL link, the maneuver consumes Δv, and the operator learns the
 
 When adding a vignette, follow these rules (encoded in the loader + tests):
 
-1. **Satellite caps.** ≤24 orbital assets total, ≤3 per `group` (see `build-spec/01-context-and-scope.md` §3.1).
-   Enforced by `content/vignette.build_world` since A1.
+1. **Satellite sizing.** ~24 orbital assets total, ≤3 per `group` is a soft sizing guideline for
+   typical White-Cell hardware, not an engine-enforced cap ([ADR-0019](../architecture/adr/ADR-0019-sizing-guideline-not-engine-cap.md),
+   `NFR-1300`). `content/vignette.build_world` does not reject vignettes above this guideline
+   (IP-1061, 2026-09-26 — the load-time `ValueError` it previously raised contradicted ADR-0019);
+   the clock-lag watchdog (`SessionManager._record_catch_up_lag`) is the intended backstop for
+   hardware that can't keep up with an oversized vignette.
 2. **Red doctrine profile must be in the canon.** One of `china_integrated`, `russia_ew_first`,
    `generic` — these are the profiles `session/redai.py` knows. Custom doctrines are future work.
 3. **At least one Blue + one Red objective.** Even "training" vignettes follow the metric DSL so

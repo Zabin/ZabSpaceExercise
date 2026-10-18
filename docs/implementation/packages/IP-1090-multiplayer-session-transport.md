@@ -3,6 +3,7 @@
 > **Package ID:** IP-1090
 > **Version:** 1.0
 > **Status:** ✅ VERIFIED
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0044`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-109
 > **Referenced By:** IP-1060 (the White-only clock-control trigger this mechanism serves), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the consistent-clock, consistent-lock substrate every cell-facing package reads through
@@ -136,3 +137,10 @@ Rollback surface: `spacesim/session/manager.py`'s clock-anchor fields and `sessi
 locking/discovery surface. Clock-anchor fields participate in the save/resume schema (IP-1100); a
 revert requires re-verification against `test_session.py` and the determinism property test before
 landing.
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0044` (`VR-1090` Finding 1).** Current `session/manager.py` anchors: `_catch_up_locked()`
+  `:309`, `_record_catch_up_lag()` `:334`, `catch_up()` `:367`, `clock_state()` `:371`.

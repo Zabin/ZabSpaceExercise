@@ -2,12 +2,43 @@
 
 > **Package ID:** IP-1174
 > **Version:** 1.0
-> **Status:** 🟡 READY *(MSTR-006 §3 authorization obtained 2026-07-05 — see Definition of Done.
-> All three dependencies — [IP-1171](IP-1171-typed-payload-bus-parameters.md),
-> [IP-1172](IP-1172-per-cell-roe-enforcement.md), and
-> [IP-1173](IP-1173-vignette-creator-draft-session.md) — are now `VERIFIED` (`IP-1171` the last to
-> clear, `VR-1171`, 2026-07-12). This is the last package to build in Tranche 3 — eligible for
-> `08-code-implementation`.)*
+> **Status:** 🔵 COMPLETE *(implemented 2026-09-26 by `08-code-implementation`. All five requirements
+> built as thin routes over `IP-1173`'s draft-session API: `creator/state` GET/PUT (FR-5120),
+> `creator/scene` (FR-5130, see the corrected ground-truth design note below), `force/tle`
+> (unmodified) + new `force/ground` + `GET /api/ground_sites` (FR-5140), `creator/asset/{id}`
+> PATCH/DELETE (FR-5150), `creator/seats` + the existing `roles/assign` (FR-5160). A dedicated
+> `creator.js` front-end module wires a new white-only "Creator ▾" menu into `index.html`/`app.js`.
+> 15 new tests in `test_vignette_creator_ui.py` + 4 new entries in `test_observer.py`'s mutating-
+> route Observer-guard parametrization (this package's own new mutating routes), full suite 622
+> passed/3 skipped (up from 603), both permanent gates green. Browser-driven golden-path check run
+> via Playwright (new draft → add TLE asset → asset list → JSON view → declare seat → matrix
+> assign → refresh preview): no functional console errors (one benign `/favicon.ico` 404).
+> **Material finding, resolved in place (see Risks):** this document's own Architecture/Objective
+> text claimed `build_scene(world, cell)` supports a "ground-truth-equivalent call" — false;
+> `build_scene()` filters internally to assets owned by exactly `cell`, and `Asset.owner` is never
+> "white", so that call as literally described would always return an empty scene. `FR-5130` is
+> instead satisfied by `SessionManager.creator_scene()`, which composes `build_scene()` once per
+> owner (`blue`/`red`/`neutral`) and merges the results — still no `CellController` import/call
+> anywhere in the new code, still `build_scene()` unmodified, still no engine change. Awaiting
+> `09-package-verification`.)*
+> **Remediation (2026-09-27, authorized by the project owner per MSTR-006 §3):** an independent
+> fresh-session verification pass ([VR-1174](../verification/VR-1174-vignette-creator-ui-surfaces.md))
+> found `declare_seats` (`FR-5160`) conflated caller identity with the seat's *target* cell —
+> `req.cell` gated both "is the caller White?" and "which cell are these seats for?", so only
+> White seats could ever be declared (`BL-0123`, High). Fixed: `declare_seats` now takes the
+> caller's identity as the `cell` query parameter (the convention every other mutating route in
+> this file already uses), leaving `req.cell` as the pure target cell. `creator.js`'s per-row
+> `roles/assign` matrix call was also sending the assigned seat's own cell prefix into
+> `RoleAssignmentRequest.cell` — a pure caller-identity field for a mechanism (`role_assignments`)
+> that carries no per-cell partitioning at all — so a Blue/Red seat's role assignment would have
+> failed the White-Cell-only check; fixed to send the literal caller identity (`"white"`) instead.
+> Folded into the same pass: `BL-0124` (an invalid `owner`/`kind`/out-of-range lat-long on
+> `POST /force/ground` raised an unhandled `ValidationError`/500 instead of `Ack(ok=False, ...)`)
+> and `BL-0125` (`GroundAssetRequest.owner` now shares `Asset`'s own `Literal["blue","red",
+> "neutral"]` vocabulary, with `lat_deg`/`lon_deg` range-validated). `BL-0127` (this document's own
+> stale `build_scene(world, cell)` prose in the Requirements Covered/Implementation Tasks tables)
+> corrected in place. New/updated tests in `test_vignette_creator_ui.py`. Re-verification is a
+> fresh `09-package-verification` pass, not yet run.
 > **Dependencies:** [FS-117](../../features/FS-117-vignette-creator.md) v1.1 (`FR-5120`, `FR-5130`,
 > `FR-5140`, `FR-5150`, `FR-5160`), [ADS-5100A](../../architecture/ADS-5100A-vignette-creator-session-and-ui.md)
 > §2/§4/§5/§6, [IP-1173](IP-1173-vignette-creator-draft-session.md) (the draft-session API this UI
@@ -67,7 +98,7 @@ clients over [IP-1173](IP-1173-vignette-creator-draft-session.md)'s draft-sessio
 | Req ID | Title (abridged) | How this package's design covers it |
 |---|---|---|
 | FR-5120 | Synchronized JSON view | A JSON panel reads/writes the same draft-session state the form UI does — every mutating call (asset add/edit/parameter change/ROE selection) goes through the same `IP-1173` draft-session API regardless of which view triggered it, then both views re-fetch the same current-state read endpoint, so neither view maintains independent client-side state. |
-| FR-5130 | 2D/3D initial-state preview | Calls `session/scene.py`'s `build_scene(world, cell)` directly against the draft session's `world` (ground-truth mode, no `CellController` filtering — the same pattern existing White-Cell-only godview surfaces use), rendered via the existing 2D-map/3D-globe front-end code (`app.js`/`globe.js`/`world.js`), refreshed on every mutation. |
+| FR-5130 | 2D/3D initial-state preview | `SessionManager.creator_scene()` composes `session/scene.py`'s `build_scene(world, owner)` once per real owner (`blue`/`red`/`neutral`) against the draft session's `world` and merges the results into one ground-truth scene (no `CellController` filtering — `build_scene()` itself is unmodified; there is no "white" owner to call it with, so a single call cannot produce a ground-truth view), rendered via the existing 2D-map/3D-globe front-end code (`app.js`/`globe.js`/`world.js`), refreshed on every mutation. |
 | FR-5140 | TLE and lat/long asset entry | A TLE-paste form posts to the existing `POST /api/sessions/{sid}/force/tle` route (unmodified) against the draft session id, paired with new asset-type/cell-assignment/name fields this package adds to the request; a lat/long entry form offers `docs/vignettes/GROUND-INFRASTRUCTURE.md`'s curated site list as a picker before a free-entry coordinate fallback, paired with the same three fields. |
 | FR-5150 | Asset menu (edit, reassign, delete) | A per-asset menu (in both the 2D/3D preview and a plain asset list) calls new edit/reassign/delete operations against the draft session's asset list, with the JSON view and 2D/3D preview both reflecting the change on the next state read. |
 | FR-5160 | Seat-count declaration and seat/role-assignment matrix | A new seat-count-declaration step (per cell) generates seat identifiers; a checkbox-grid matrix (seats × assets, bus/payload/both) calls `IP-1151`'s existing `assign_role(seat, asset_or_constellation, role)` for each checked cell — this package adds the declaration step and the matrix presentation only, reusing the existing assignment mechanism unmodified. |
@@ -157,8 +188,9 @@ sequence:
 3. Implement the JSON view read/write route pair and confirm the form UI and JSON view converge on
    one shared state (the single most likely implementation defect this Feature names — test this
    explicitly, not just individually).
-4. Implement the 2D/3D preview wiring (`build_scene(world, cell)` called against the draft
-   session's `world`, ground-truth mode), reusing existing globe/map rendering code.
+4. Implement the 2D/3D preview wiring (`SessionManager.creator_scene()` composing `build_scene()`
+   once per real owner against the draft session's `world` and merging the results, ground-truth
+   mode), reusing existing globe/map rendering code.
 5. Implement TLE-paste and lat/long asset entry, including the curated-site-list picker (reading
    `docs/vignettes/GROUND-INFRASTRUCTURE.md`'s site data — confirm at implementation time whether
    this needs a small loader or the existing content is already machine-readable; if not, add the
@@ -211,16 +243,16 @@ sequence:
 
 - [x] **Explicit user authorization obtained** for this package's Implementation Tasks (MSTR-006
   §3, 2026-07-05, project owner, recorded in `docs/pipeline/pipeline-journal.md` run #45).
-- [ ] The JSON view and form UI never disagree about the draft session's current state (`FR-5120`).
-- [ ] The 2D/3D preview updates to match every asset add/edit/reassign/delete within the same
+- [x] The JSON view and form UI never disagree about the draft session's current state (`FR-5120`) — both read/write the same `world.assets` dict; no second cached representation exists.
+- [x] The 2D/3D preview updates to match every asset add/edit/reassign/delete within the same
   authoring session, with no `CellController` fog-of-war filtering (`FR-5130`).
-- [ ] TLE-paste and lat/long entry both work with required type/cell/name fields, with the curated
+- [x] TLE-paste and lat/long entry both work with required type/cell/name fields, with the curated
   site list offered before free entry for lat/long (`FR-5140`).
-- [ ] The asset menu's edit/reassign/delete operations are reflected consistently across the asset
+- [x] The asset menu's edit/reassign/delete operations are reflected consistently across the asset
   list, JSON view, and 2D/3D preview (`FR-5150`).
-- [ ] A declared seat count + matrix assignment produces `role_assignments` state identical in
+- [x] A declared seat count + matrix assignment produces `role_assignments` state identical in
   shape to `assign_role`'s existing one-at-a-time mechanism (`FR-5160`).
-- [ ] No regression to any existing menu/panel/route.
+- [x] No regression to any existing menu/panel/route — full suite 622 passed/3 skipped (up from 603), no pre-existing test broken.
 
 ## Verification Checklist
 
@@ -277,6 +309,37 @@ sequence:
   `CLAUDE.md`'s own UI-testing guidance; flagged explicitly so `08-code-implementation` doesn't
   report this package complete on route-level tests alone without at least a `run-spacesim`-driven
   golden-path check.
+
+**Resolved at implementation time (2026-09-26):**
+
+- **This document's own `build_scene(world, cell)` "ground-truth-equivalent call" premise was
+  factually wrong**, discovered before any FR-5130 code was written. `build_scene()` (`session/
+  scene.py:81`) filters internally — `if a.owner != cell: continue` — to assets owned by exactly
+  `cell`, and `Asset.owner` (`engine/entities.py`) is `Literal["blue", "red", "neutral"]`, never
+  `"white"`; a literal `build_scene(world, "white")` call, as this document's Objective/Architecture
+  Components sections described, would always return an empty scene, not ground truth. Confirmed
+  by reading the live front end (`app.js`): the existing White-Cell map view already substitutes
+  `scene/blue` for White rather than calling any `scene/white`, consistent with no such pattern
+  existing. **Resolution:** `SessionManager.creator_scene()` composes `build_scene()` once per real
+  owner value (`blue`/`red`/`neutral`) and merges the three asset lists — genuine ground truth
+  (every owner's assets, unfiltered relative to each other), built entirely from the unmodified
+  `build_scene()` function, with no `CellController` import or call anywhere in the new code. This
+  is implementation-level composition of an existing pure function, not an architecture change —
+  `scene.py` itself was not modified. Routed to `07-implementation-planning` as a documentation
+  finding for this package's own next revision (correct the Objective/Architecture
+  Components/Verification Checklist prose to describe the per-owner-merge design rather than a
+  nonexistent single-call ground-truth mode); not re-escalated as a Blocking Report, since the
+  fix is a same-scope, no-architecture-change implementation-level correction, per this package's
+  own precedent above for low-stakes implementation-time UI/design judgment calls.
+- **Size:** implemented as one package, not split. All five requirements' backend routes and a
+  single `creator.js` module were built and tested in one focused run; the browser-driven check
+  confirmed the golden path end to end (new draft → TLE add → asset list → JSON view → seat
+  declaration → matrix assignment → preview refresh) with no functional console errors.
+- **`GROUND-INFRASTRUCTURE.md` was prose/markdown-only**, as anticipated — a small regex-based
+  table parser (`spacesim/content/ground_sites.py`) extracts `{code, site, lat_deg, lon_deg}` from
+  its consistent 5-column table rows across all five sections (52 sites), cached like
+  `inject_library.yaml`.
+- **A browser-driven Playwright check was run** (see Status header) — not merely HTTP-route tests.
 
 ## Rollback Considerations
 

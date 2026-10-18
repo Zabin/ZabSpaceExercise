@@ -70,7 +70,8 @@ the vulnerability, kill the jammer) before recovery sticks:
 ### Diagnosing attacks from telemetry
 Click any fleet row to open the **subsystem drill-down**: a parameter list (colored against its
 soft/hard limits), a **graph** of each parameter's recent history (realistic baseline + repeatable
-seeded noise), and a **symptom log**. The graphs are deliberately honest — they show *physics*, not
+seeded noise; each point is the asset's state *at that instant*, so an effect shows from its own
+onset onward), and a **symptom log**. The graphs are deliberately honest — they show *physics*, not
 a verdict. **The tool never tells you "you are being jammed";** you read the signature and infer the
 cause. Each attack vector leaves at least one sign:
 

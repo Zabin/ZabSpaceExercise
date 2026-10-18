@@ -13,7 +13,8 @@ against reality, executes the next step by invoking the owning skill, and logs w
 previous run surfaced is ever silently forgotten.
 
 It performs **no stage work itself**. It reads ledgers, invokes exactly one owning skill per
-advance, and writes exactly two files of its own: the journal and the backlog. A manager that
+advance, and writes exactly two files of its own: the journal and the backlog (plus their frozen
+archive companions, touched only under **Archives** below). A manager that
 starts doing the stages' work stops being trustworthy about where the pipeline is.
 
 ## The journal — `docs/pipeline/pipeline-journal.md`
@@ -32,7 +33,8 @@ The manager's persistent memory of **position**. Two parts:
    - **Open gates:** <human decisions pending: authorizations, GO calls, unadjudicated findings — or "none">
    ```
 
-2. **Run log** (append-only, newest last — never rewrite or delete old rows):
+2. **Run log** (append-only, newest last — never rewrite or delete old rows; old rows may only be
+   *moved*, per **Archives** below):
 
    ```markdown
    | # | Date | Mode | Skill invoked | Target | Outcome | Next step recorded |
@@ -47,7 +49,9 @@ The manager's persistent memory of **position**. Two parts:
 The manager's persistent memory of **obligations**: every finding, recommendation, Outstanding
 Issue, and Open Question a stage skill's run surfaced, plus every feature request and bug report
 filed by the `00-intake` skill. One table, `BL-xxxx` IDs, append entries / update statuses in
-place, never delete rows (rejected entries stay, marked `REJECTED` with the reason).
+place, never delete rows (rejected entries stay, marked `REJECTED` with the reason). Closed rows
+may only be *moved*, per **Archives** below. IDs are sequential **across the live file and its
+archive**: the next ID is the highest in either file + 1.
 
 | Field | Content |
 |---|---|
@@ -69,6 +73,25 @@ which is what guarantees a finding stated in a chat summary survives the session
 `10-integration-review`”); `NEEDS-USER` names the exact decision required. “We'll get to it” with
 no trigger is not a disposition.
 
+## Archives — `docs/pipeline/backlog-archive.md` · `docs/pipeline/pipeline-journal-archive.md`
+
+The live files hold the working state; history moves to a frozen archive so the live files stay
+readable. The archives are part of the same record, not a separate one:
+
+- **What may move.** Backlog rows whose Status is `DONE` / `CLOSED` / `REJECTED` / `DEDUPED`, and
+  run-log rows older than the last ~15 runs (plus any superseded Position block). Nothing open —
+  `NEW` / `SCHEDULED` / `DEFERRED` / `NEEDS-USER` / `DECIDED` / `IN PIPELINE` — ever leaves the
+  live backlog, however old.
+- **How it moves.** Verbatim and in original order, appended to the end of the archive's table;
+  never summarized, reworded, re-dispositioned, or dropped. A row lives in exactly one of the two
+  files. Archiving is optional bookkeeping — do it only when a live file has grown unwieldy, in
+  its own commit, and note it in that run's log row.
+- **Frozen once moved.** An archived row is never edited again. If a closed item needs reopening,
+  file a new live entry that cites the archived ID — don't move the old row back.
+- **When to read the archives.** Step 1 reads only the live files. Open an archive when a run-log
+  row, VR, spec, or package cites a `BL-xxxx` or run number that isn't in the live file, when
+  allocating the next ID (check the archive's highest ID too), and when deduping (search both).
+
 ## Modes
 
 | Invocation | Behavior |
@@ -76,7 +99,7 @@ no trigger is not a disposition.
 | *(no args)* | **Advance**: reconcile → triage backlog → determine next step → gate-check → invoke the owning skill → harvest + journal → report. One step per run. |
 | `status` | Read-only: reconcile in-memory, print the stage survey + backlog summary + recommendation. No writes unless drift was found and the user confirms syncing it. |
 | `triage` | Backlog only: harvest anything un-harvested from the last run, put a disposition on every `NEW` entry, re-check `DEFERRED` triggers and `NEEDS-USER` questions. No skill invoked. |
-| `log` | Print the Position block, the last ~10 run-log rows, and open backlog entries; no writes. |
+| `log` | Print the Position block, the last ~10 run-log rows (live journal), and open backlog entries; no writes. |
 | `sync` | Reconcile journal + backlog against the ledgers; invoke nothing. Use after doing pipeline work outside the manager. |
 | `run <skill> [target]` | Execute a specific step even if it isn't the recommendation (still gate-checked, never gate-bypassed). Journaled with mode `override` and the recommendation it superseded. |
 
@@ -158,7 +181,7 @@ any backlog entry this step resolved.
 
 Then append the run-log row (mode, skill, target, outcome — including "harvested N findings" —
 and next step) and rewrite the Position block from the post-run state, including the backlog
-line. Commit the journal + backlog together (and nothing else — the invoked skill committed its
+line. Commit the journal + backlog together (plus any archive file an archiving move touched, and nothing else — the invoked skill committed its
 own work per its own conventions).
 
 ### Step 7 — Report

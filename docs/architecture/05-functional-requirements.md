@@ -1,7 +1,7 @@
 # GDS-05 — Functional Requirements
 
 > **Document ID:** GDS-05
-> **Version:** 1.0
+> **Version:** 1.1 *(2026-10-17: §8 added, `BL-0056`)*
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-04
 > **Referenced By:** GDS-06
@@ -37,7 +37,9 @@ Three documents now describe functional requirements; each has a distinct, non-c
 
 Where this document and `requirements/01` would ever disagree on substance (not just grain), that
 is a defect to fix, not a feature — both trace to the same GDS-00–04/ICD/ADR baseline. No
-disagreement was found while authoring this document (see "Merge gate" below).
+disagreement was found while authoring this document (see "Merge gate" below). Leaves added to
+`requirements/01` after the merge are tagged in §8 (added 2026-10-17); a future leaf that has no tag
+here is a gap to close in the same `03`/`04` pass, not a second baseline.
 
 ---
 
@@ -135,7 +137,7 @@ of time control), ADR-0017 (manual adjudication).
 - **FR-W6** White Cell shall have a **god-view** (ground truth + both cells' belief) and the
   ability to view **as Red** or **as Blue** for adjudication. *(→ FR-4610)*
 - **FR-W7** White Cell shall be able to set the **safe-mode dials** and other live parameters
-  mid-exercise. *(→ FR-4710 scope; manual-adjudication boundary per ADR-0017)*
+  mid-exercise. *(→ FR-4710 scope, FR-4720; manual-adjudication boundary per ADR-0017)*
 
 ## 5. Scenario builder (FR-S)
 
@@ -149,7 +151,7 @@ boundary).
   otherwise accept **manual TLE entry/paste**; after creation, no network access is needed. *(→
   FR-5210; ADR-0018)*
 - **FR-S3** The builder shall **validate** a scenario (well-formed TLEs, all `roles_needed`
-  satisfiable, referenced templates exist) and report errors precisely. *(→ FR-5310)*
+  satisfiable, referenced templates exist) and report errors precisely. *(→ FR-5310, FR-5311–FR-5314)*
 
 ## 6. Logging (FR-L)
 
@@ -177,7 +179,7 @@ hot-seat swapping, genuine wall clock. Traces to GDS-01 §4 (operational environ
 - **OR-3 Soft handoff with screen blank.** The active user can invoke a **"blank screen / hand
   off" menu** that hides all sensitive content while White Cell selects the next user and the
   keyboard is physically passed. No hard login wall in v1; the blank is the privacy boundary. *(→
-  GDS-01 §4 "trust model"; no dedicated FR-1xxx leaf — see Open Questions)*
+  GDS-01 §4 "trust model"; FR-6610, the leaf added since — see Open Questions OQ1)*
 - **OR-4 Wall clock continues.** Time runs in real wall-clock by default during play; operators
   negotiate hot-seat time with White Cell, who may **pause** for a timeout or to manage handoffs.
   *(→ FR-4310)*
@@ -197,6 +199,109 @@ hot-seat swapping, genuine wall clock. Traces to GDS-01 §4 (operational environ
   A genuine autonomous opponent is a documented v2 seam (`docs/FUTURE-WORK.md` §1), not a v1
   deliverable. *(→ FR-9110; ADR-0021, ADR-0024)*
 
+## 8. Capability statements added after the merge (2026-07 → 2026-10)
+
+*Added 2026-10-17 (pipeline run #161, `BL-0056`).* Between this document's merge and this pass,
+`requirements/01` gained 65 leaves with no capability tag here: owner-requested intake batches
+(the 2026-09-26/27 external validation report, items B1–B17), the Vignette Creator design
+(`ADS-5100A`/`ADS-5100B`), the training-corpus elevation, the assessment/research ADRs
+(`ADR-0032`/`ADR-0033`), the load-validation and effect-resource-bounds batches (`ADR-0037`), and a
+handful of session-layer leaves the merge never tagged. Each tag below restates its leaves at
+capability grain. **No capability is introduced here:** every tag traces to its leaves' own Source
+Documents, which name the owner request, ADS or ADR. Tags continue each family's numbering; two
+new families cover assessment (`FR-A`) and the training corpus (`FR-T`).
+
+### 8.1 Simulation engine and effects (FR-E, continued)
+
+- **FR-E9** Space weather shall scale LEO drag and the anomaly rate through a space-weather index.
+  *(→ FR-1230, FR-4440)*
+- **FR-E10** Each manoeuvre shall be recorded in a per-asset ledger with a purpose tag, and the
+  ledger shall be exportable. *(→ FR-1320)*
+- **FR-E11** A kinetic kill shall carry a debris-field persistence estimate by altitude.
+  *(→ FR-1430)*
+- **FR-E12** Jamming an uplink or crosslink shall degrade the command and relay delivery paths it
+  covers, and each effect class's detectability and attribution difficulty shall be configurable.
+  *(→ FR-1440, FR-1450)*
+- **FR-E13** Effects shall respect resource bounds: a salvo never exceeds the remaining rounds, and
+  jamming does not consume the jammer's power rating. *(→ FR-1460, FR-1470; ADR-0037)*
+- **FR-E14** Sensors shall be modelled by modality: radar fence/dish beam modes, optical solar/lunar
+  exclusion, a space-based minimum range and altitude-band affinity, cue-dependent tasking,
+  passive-RF multilateration, hosted sensors following their host's orbit, and phase-angle (CATS)
+  refinement of passive-EO access windows. *(→ FR-1610–FR-1670)*
+
+### 8.2 Bus and payload operations (FR-B, continued)
+
+- **FR-B6** Payload and bus parameters shall be typed per payload type and per bus subsystem
+  (power, propulsion). *(→ FR-5170, FR-5180; ADS-5100B)*
+- **FR-B7** A cell shall export one asset's telemetry over a time span as CSV, fog-scoped like the
+  live telemetry view. *(→ FR-2320)*
+
+### 8.3 Command planning and authorization (FR-P, continued)
+
+- **FR-P7** Rules of engagement shall be held per cell, may optionally gate each effect type behind
+  a controller-role authorization, and may be changed live, with every change logged.
+  *(→ FR-3420, FR-3430, FR-3440)*
+- **FR-P8** A role assignment shall be scoped bus-only, payload-only or both. *(→ FR-3520; refines
+  OR-2/FR-W2)*
+
+### 8.4 White Cell control (FR-W, continued)
+
+- **FR-W8** White Cell shall author injects that fire when a deterministic engine-evaluated
+  condition becomes true, use the anomaly/sensor-outage/custody-loss/scripted-manoeuvre effect
+  types, and edit or cancel a scheduled inject before it fires. *(→ FR-4420, FR-4430, FR-4450)*
+- **FR-W9** White Cell shall see each cell's picture beside truth in a side-by-side controller
+  view. *(→ FR-4620)*
+
+### 8.5 Scenario builder (FR-S, continued)
+
+- **FR-S4** The Vignette Creator shall offer a synchronized JSON view, a 2D/3D initial-state
+  preview, TLE and lat/long asset entry, an asset menu (edit/reassign/delete) and a
+  seat-count/seat-role matrix. *(→ FR-5120–FR-5160; ADS-5100A)*
+- **FR-S5** The builder shall import many objects at once from a TLE or CCSDS OMM file.
+  *(→ FR-5220)*
+- **FR-S6** Vignettes shall load from configured external directories as well as the built-in
+  library, and saving shall write only to a configured user directory, never by path traversal.
+  *(→ FR-5410, FR-5420)*
+- **FR-S7** White Cell shall save a running session's current state as a new starting vignette.
+  *(→ FR-5510)*
+
+### 8.6 Logging, save and export (FR-L, continued)
+
+- **FR-L3** A session shall save and resume deterministically, with save-file content ownership
+  split from session ownership. *(→ FR-7210, FR-7220 — session-layer leaves the merge did not tag)*
+- **FR-L4** Replay shall be read-only against the live session and may run at variable speed from
+  truth or one cell's viewpoint. *(→ FR-7310, FR-7330)*
+- **FR-L5** State vectors shall export over a time span — truth through White Cell, a cell's own
+  observed picture through that cell — in ECI and RIC, as CSV and CCSDS OEM with a companion RIC
+  file, and a quick TLE export shall exist for a cell-visible satellite. *(→ FR-7410–FR-7440)*
+
+### 8.7 Session and presentation (OR, continued)
+
+- **OR-9 Session seam.** All non-engine access shall go through the `SessionAPI`; the clock is
+  server-authoritative and shared across connections; mutations lock per session; and exactly a
+  documented, named set of no-cell endpoints may expose ground truth. *(→ FR-6110, FR-6310,
+  FR-6320, FR-6220; ADR-0014, ADR-0015, ADR-0026 — session-layer leaves the merge did not tag)*
+- **OR-10 Presentation.** The console is a browser/web layer, with a live, operator-selectable
+  RIC-frame relative-motion view and a CATS phase-angle overlay for its chase satellite.
+  *(→ FR-8110, FR-8210, FR-8220)*
+
+### 8.8 Assessment and research (FR-A, new family)
+
+- **FR-A1** Competency rubric tiers shall be computed automatically per dimension, never
+  aggregated into a composite score. *(→ FR-10110; ADR-0032)*
+- **FR-A2** Multi-run and cohort research data shall export as structured files. *(→ FR-10210;
+  ADR-0033)*
+
+### 8.9 Training corpus (FR-T, new family)
+
+- **FR-T1** The training corpus shall give every seat role-scoped manual coverage, anchor each
+  section to its sources, and keep a bidirectional feature ⇄ manual index.
+  *(→ FR-11110, FR-11120, FR-11210)*
+- **FR-T2** A sequenced learning path shall order the vignette library, each rung linked to its
+  manual prerequisites. *(→ FR-11310, FR-11320)*
+- **FR-T3** A training-artifact update shall ride the package that changes the behaviour, and the
+  vignette playbooks shall be machine-verified. *(→ FR-11410, FR-11420)*
+
 ---
 
 ## Open Questions
@@ -206,6 +311,8 @@ hot-seat swapping, genuine wall clock. Traces to GDS-01 §4 (operational environ
   discussion but was not derived as a standalone leaf. Either add an `FR-6xxx` leaf for it in a
   future revision of `requirements/01`, or record here that it is intentionally treated as a UI
   affordance rather than a session-layer behavior. Left open rather than resolved unilaterally.
+  **Resolved (2026-10-17, `BL-0056`):** `requirements/01` now carries `FR-6610` ("Screen-blank
+  pending-handoff menu between hot-seat role changes"); OR-3 maps to it.
 - **OQ2 — OR-6 (single exercise per process) vs. multi-session discovery.** `build-spec/02` §6
   states "v1 runs a single exercise per process instance," but the shipped `/api/sessions`
   discovery endpoint (P8, LAN multiplayer) suggests multiple `Session` objects can coexist in one

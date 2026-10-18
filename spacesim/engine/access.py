@@ -21,6 +21,8 @@ from spacesim.engine.geometry import (
     R_EARTH_EQ,
     look_angles,
     elevation_from_unit_dir,
+    ecef_to_eci,
+    geodetic_to_ecef,
 )
 from spacesim.engine.orbit import OrbitState, period_s
 from spacesim.engine.propagator import ModeratePropagator, Propagator
@@ -121,6 +123,17 @@ class AccessProvider:
         self._cache[key] = out
         return out
 
+    def _sensor_id_for_actor(self, actor: str) -> Optional[str]:
+        """IP-1220 (FR-1660) — resolve either a sensor's own id or its host_asset_id to the
+        actual sensor id, so an observe order/window-query naming either identifier is treated
+        identically."""
+        if actor in self.scene.sensors:
+            return actor
+        for sid, s in self.scene.sensors.items():
+            if s.host_asset_id == actor:
+                return sid
+        return None
+
     def _endpoints_present(self, actor: str, target: str, channel: str) -> bool:
         """Both endpoints must exist in the scene for the channel, else there is simply no access.
 
@@ -133,7 +146,7 @@ class AccessProvider:
         if channel in (JAM_FOOTPRINT, WEAPON_ENGAGEMENT):
             return actor in sites and target in sats
         if channel == SENSOR_OBSERVATION:
-            return actor in sensors and target in sats
+            return self._sensor_id_for_actor(actor) is not None and target in sats
         if channel in (RPO_PROXIMITY, ISL_LINK):
             return actor in sats and target in sats
         return False
@@ -152,7 +165,7 @@ class AccessProvider:
             sat = self.scene.satellites[target]
             return self._weapon_predicate(launch, sat)
         if channel == SENSOR_OBSERVATION:
-            sensor = self.scene.sensors[actor]
+            sensor = self.scene.sensors[self._sensor_id_for_actor(actor)]
             sat = self.scene.satellites[target]
             return self._observation_predicate(sensor, sat)
         if channel == RPO_PROXIMITY:
@@ -221,6 +234,14 @@ class AccessProvider:
 
         return access, (lambda t: max(0.0, metrics(t)[0]) / 90.0)
 
+    def _sensor_orbit(self, sensor: Sensor, t: int) -> Optional[OrbitState]:
+        """IP-1220 (FR-1660) — a hosted sensor's position follows its host Asset's current
+        propagated orbital state instead of its own (typically absent) ``orbit``. Additive:
+        a sensor with no ``host_asset_id`` resolves to its own ``orbit`` exactly as before."""
+        if sensor.host_asset_id is not None and sensor.host_asset_id in self.scene.satellites:
+            return self.scene.satellites[sensor.host_asset_id]
+        return sensor.orbit
+
     def _observation_predicate(self, sensor: Sensor, sat: OrbitState):
         def sat_r(t: int) -> np.ndarray:
             r, _ = self.prop.rv(sat, t)
@@ -229,8 +250,13 @@ class AccessProvider:
         if sensor.kind == "space_based":
             def access(t: int) -> bool:
                 r_t = sat_r(t)
-                r_s, _ = self.prop.rv(sensor.orbit, t)
+                sensor_orbit = self._sensor_orbit(sensor, t)
+                r_s, _ = self.prop.rv(sensor_orbit, t)
                 rng = float(np.linalg.norm(r_t - r_s))
+                # IP-1220 (FR-1630) — a hard reject below the declared minimum-range floor,
+                # before the existing max-range/LOS/lighting checks.
+                if sensor.min_range_km is not None and rng < sensor.min_range_km * 1000.0:
+                    return False
                 if sensor.max_range_m is not None and rng > sensor.max_range_m:
                     return False
                 if not _has_line_of_sight(r_s, r_t):
@@ -242,7 +268,8 @@ class AccessProvider:
             def quality(t: int) -> float:
                 if sensor.max_range_m:
                     r_t = sat_r(t)
-                    r_s, _ = self.prop.rv(sensor.orbit, t)
+                    sensor_orbit = self._sensor_orbit(sensor, t)
+                    r_s, _ = self.prop.rv(sensor_orbit, t)
                     rng = float(np.linalg.norm(r_t - r_s))
                     return max(0.0, 1.0 - rng / sensor.max_range_m)
                 return 1.0
@@ -250,6 +277,20 @@ class AccessProvider:
             return access, quality
 
         # ground sensor
+        def _sun_exclusion_angle_deg(t: int, r_t: np.ndarray) -> float:
+            """Angular separation between the target's line of sight and the Sun's, as seen
+            from the sensor — Earth-centre Sun direction is an adequate approximation given
+            Earth's radius is negligible vs. 1 AU."""
+            r_site_eci = ecef_to_eci(geodetic_to_ecef(sensor.location), t)
+            los = r_t - r_site_eci
+            los_norm = float(np.linalg.norm(los))
+            if los_norm < 1e-6:
+                return 180.0
+            los_hat = los / los_norm
+            sun_hat = sun_unit_eci(t)
+            cos_ang = max(-1.0, min(1.0, float(np.dot(los_hat, sun_hat))))
+            return float(np.degrees(np.arccos(cos_ang)))
+
         def access(t: int) -> bool:
             r_t = sat_r(t)
             el, _, rng = look_angles(sensor.location, r_t, t)
@@ -262,6 +303,11 @@ class AccessProvider:
                     return False
                 sun_el = elevation_from_unit_dir(sensor.location, sun_unit_eci(t), t)
                 if sun_el >= self.cfg.twilight_deg:
+                    return False
+            # IP-1220 (FR-1620) — reject when the Sun falls inside the declared exclusion cone
+            # around the target line of sight, after the existing lighting check.
+            if sensor.exclusion_angle_deg is not None:
+                if _sun_exclusion_angle_deg(t, r_t) < sensor.exclusion_angle_deg:
                     return False
             return True
 

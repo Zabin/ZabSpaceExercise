@@ -3,6 +3,7 @@
 > **Package ID:** IP-1040
 > **Version:** 1.0
 > **Status:** ✅ VERIFIED
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0039`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-104
 > **Referenced By:** IP-1030 (consumes this package's `observe()` deliveries), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** fresh custody data consumed by IP-1030
@@ -144,3 +145,11 @@ Rollback surface: `spacesim/engine/orders.py` (`_plan_collection`) and `spacesim
 (all `SSNSystem` methods/handlers). `world.ssn_staged` is transient per-request state, not a
 long-lived schema; a revert requires re-verification against `spacesim/tests/test_ssn.py` and the
 determinism property test (both handlers participate in eventlog replay).
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0039` (`VR-1040` Finding 1).** Current `engine/orders.py` anchors: `_plan_collection()`
+  `:516`, `_candidate_sensors()` `:559`, `_contended()` `:580`. The `engine/ssn.py` citations still
+  match (`submit_request()` `:221`, `_h_deliver()` `:360`).

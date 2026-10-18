@@ -3,6 +3,7 @@
 > **Package ID:** IP-1020
 > **Version:** 1.0
 > **Status:** ✅ VERIFIED
+> **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0036`, `BL-0037`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
 > **Dependencies:** FS-102, IP-1010 (shares the validate path)
 > **Referenced By:** IP-1050 (consumes the `command` action's lifecycle), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the executed-order state IP-1050/IP-1051's console displays
@@ -85,7 +86,8 @@ None — this package documents shipped code; it proposes no changes.
 All **already complete**:
 
 1. ✅ Implement the four-state lifecycle (queued → executing → executed-unconfirmed → confirmed) with
-   no code path that jumps directly from `queued` to `confirmed`.
+   no code path that jumps directly from `queued` to `confirmed`. *(Corrected 2026-10-17, `BL-0036`:
+   see maintenance notes for the as-built vocabulary.)*
 2. ✅ Branch delivery path before computing the window: direct uplink/downlink, stored/ISL relay
    (`_best_isl_window`, `:270`), and the cyber non-windowed exception (`_plan_cyber`, `:573`).
 3. ✅ Implement `cancel()` returning an unambiguous `bool` — `True` only while still `queued`; once
@@ -108,6 +110,8 @@ execute) and cyber's dedicated non-windowed-exception test path.
 ## Definition of Done
 
 - [x] Four lifecycle states are each independently observable; no direct `queued → confirmed` path.
+  *(Corrected 2026-10-17, `BL-0036`: as built, three stored statuses plus a derived display-only
+  `executed` label — see maintenance notes.)*
 - [x] Stored/ISL delivery is visibly distinct from direct uplink via the `Order.via` field.
 - [x] `cancel()` never returns an ambiguous result.
 - [x] Sensor-tasking contention is visible via `list_orders()`, not silently resolved.
@@ -145,3 +149,26 @@ Rollback surface: `spacesim/engine/orders.py` (`issue`, `cancel`, `_plan_command
 persisted schema change; `Order`'s `via`/`status` fields are part of the existing eventlog/save
 format already exercised by the determinism property test, so any revert must be re-verified
 against that test rather than assumed safe.
+
+## Post-verification maintenance notes
+
+*Added 2026-10-17 by `07-implementation-planning` (pipeline run #159, owner-prioritized package-text maintenance pass). The body above is kept as the as-authored record; where it disagrees with a note here, **the note wins**. Line numbers anywhere in this package are as-of-authoring snapshots: the symbol name paired with each citation is the durable anchor. Current lines below are as of commit `e1e721c` and will drift again; resolve by symbol, not by number.*
+
+- **`BL-0036` (`VR-1020` Finding 1, Medium) — lifecycle vocabulary.** The Objective, the
+  Requirements Covered rows for `FR-3110`/`FR-3410`, Implementation Task 1 and Definition of Done
+  item 1 describe a "four-state lifecycle" (`queued → executing → executed-unconfirmed →
+  confirmed`). **None of `executing`, `executed-unconfirmed` or `confirmed` exists in the code.** The
+  as-built mechanism, which these items should be read as describing:
+  - `Order.status` stores only `queued`, `rejected` or `cancelled`.
+  - `SessionManager.list_orders()` (`session/manager.py:674`) derives a **display-only** `executed`
+    label once the clock has passed the order's window start. This is safe only because of the
+    sub-stepped-clock invariant (the clock never steps past a scheduled event).
+  - What the package calls the `executing` transition is the scheduled execution event firing.
+    There is no stored status for it. `cancel()` returns `True` only while the order is still
+    `queued` and its event has not fired.
+  - The functional guarantee (an order is never shown as done before its window opens, and states
+    are not collapsed to "instant") holds. Only the vocabulary was wrong. `FS-102` uses the same
+    invented vocabulary; that is routed to `06-feature-specification` (`BL-0036` follow-on).
+- **`BL-0037` (`VR-1020` Finding 2).** Current `engine/orders.py` anchors: `issue()` `:250`,
+  `cancel()` `:433`, `_best_isl_window()` `:504`, `_plan_collection()` `:516`, `_contended()` `:580`,
+  `_validate()` `:594`, `_plan_cyber()` `:954`. Content confirmed unchanged by symbol.

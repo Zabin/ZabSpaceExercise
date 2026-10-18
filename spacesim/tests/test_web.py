@@ -154,6 +154,101 @@ def test_telemetry_series_count():
     assert "points" in body and len(body["points"]) == 30
 
 
+def test_telemetry_series_route_matches_export_csv():
+    """IP-1261 (BL-0170 scenario D, FR-2320 parity) — the live series route and the CSV export
+    report the same value/status at every instant both sample; an anomaly is not back-dated."""
+    import csv, io
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
+    start = c.get(f"/api/sessions/{sid}/clock").json()["now"]
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    c.post(f"/api/sessions/{sid}/inject", json={"inject": {"effects": [
+        {"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus", "cause": "route test"}]}})
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    t1 = start + 1200 * 10**6
+    series = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/snr_db",
+                   params={"t0": start, "t1": t1, "n": 5}).json()["points"]
+    csv_r = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv",
+                  params={"t1": start, "t2": t1, "interval_s": 300})
+    exported = {int(r["t"]): r for r in csv.DictReader(io.StringIO(csv_r.text)) if r["param"] == "snr_db"}
+    assert [p["t"] for p in series] == sorted(exported)
+    for p in series:
+        assert p["value"] == pytest.approx(float(exported[p["t"]]["value"]))
+        assert p["status"] == exported[p["t"]]["status"]
+    assert all(p["status"] == "green" for p in series if p["t"] < start + 600 * 10**6)
+
+
+def test_maneuver_ledger_route_and_csv_export_are_fog_scoped():
+    """IP-1250 (FR-1320) — the ledger route/CSV export mirror /telemetry's fog-of-war behavior:
+    an operator cannot fetch another cell's Asset ledger."""
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/order", json={
+        "cell": "blue", "actor": "ISR-EO-1", "action": "maneuver",
+        "params": {"dv": [5.0, 0.0, 0.0], "via": "GS-NORTH", "purpose_tag": "test-tag"}})
+    assert r.json()["ok"], r.json()
+    win = r.json()["earliest_window"]
+    c.post(f"/api/sessions/{sid}/advance", json={"t": win[0] + 1})
+
+    ledger = c.get(f"/api/sessions/{sid}/maneuver_ledger/blue/ISR-EO-1")
+    assert ledger.status_code == 200
+    rows = ledger.json()
+    assert len(rows) == 1 and rows[0]["purpose_tag"] == "test-tag"
+
+    csv_r = c.get(f"/api/sessions/{sid}/maneuver_ledger/blue/ISR-EO-1/export.csv")
+    assert csv_r.status_code == 200
+    assert "test-tag" in csv_r.text
+
+    denied = c.get(f"/api/sessions/{sid}/maneuver_ledger/red/ISR-EO-1")
+    assert denied.status_code == 404
+
+
+def test_telemetry_export_csv_route_is_cell_scoped_like_telemetry():
+    """IP-1260 (FR-2320) — /telemetry/{cell}/{asset}/export.csv mirrors /telemetry/{cell}/{asset}'s
+    fog-of-war scoping (own assets only, White sees any; 404 otherwise), serializes CSV, clamps a
+    partially out-of-range span and rejects a wholly out-of-range one (400)."""
+    import csv, io
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    now = c.get(f"/api/sessions/{sid}/clock").json()["now"]
+
+    span = {"t1": now - 600 * 10**6, "t2": now, "interval_s": 300}
+    r = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv", params=span)
+    assert r.status_code == 200
+    rows = list(csv.DictReader(io.StringIO(r.text)))
+    assert list(rows[0]) == ["t", "utc", "asset", "subsystem", "param", "value", "unit", "status"]
+    assert {row["asset"] for row in rows} == {"ISR-EO-1"}
+    assert len({row["t"] for row in rows}) == 3 and int(rows[-1]["t"]) == now
+    # The final sample's values equal the live JSON endpoint's reading at the same sim time.
+    live = {p["id"]: p for sub in c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1").json()
+            ["subsystems"].values() for p in sub}
+    for row in rows:
+        if int(row["t"]) == now:
+            assert float(row["value"]) == pytest.approx(live[row["param"]]["value"])
+            assert row["status"] == live[row["param"]]["status"]
+
+    white = c.get(f"/api/sessions/{sid}/telemetry/white/ISR-EO-1/export.csv", params=span)
+    assert white.status_code == 200 and white.text == r.text
+    assert c.get(f"/api/sessions/{sid}/telemetry/red/ISR-EO-1/export.csv").status_code == 404
+    assert c.get(f"/api/sessions/{sid}/telemetry/blue/JAM-NORTH/export.csv").status_code == 404
+
+    clamped = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv",
+                    params={"t1": now - 10**12, "t2": now + 10**9, "interval_s": 60})
+    # A partially out-of-range span is clamped to the recorded range == the omitted-bounds default.
+    full = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv", params={"interval_s": 60})
+    assert clamped.status_code == 200 and full.status_code == 200 and clamped.text == full.text
+    clamped_t = sorted({int(row["t"]) for row in csv.DictReader(io.StringIO(clamped.text))})
+    assert clamped_t[-1] <= now and len(clamped_t) == 11
+    out = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv",
+                params={"t1": now + 10**9, "t2": now + 2 * 10**9})
+    assert out.status_code == 400 and "wholly outside" in out.json()["detail"]
+    # The /{param} series route is unaffected by the new sibling path.
+    assert c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/snr_db?n=5").status_code == 200
+
+
 def test_fog_cross_cell_telemetry():
     """Blue cell cannot read Red cell's asset telemetry."""
     c = _client()
@@ -385,8 +480,17 @@ def test_resumed_session_loads_paused():
     assert listing[sid2]["running"] is False   # resumed paused — must not silently fast-forward
 
 
-def test_draft_session_create_add_asset_and_save_as_vignette():
-    """IP-1173 (FR-5110) — the Vignette Creator's HTTP surface end to end."""
+def test_draft_session_create_add_asset_and_save_as_vignette(tmp_path, monkeypatch):
+    """IP-1173 (FR-5110) — the Vignette Creator's HTTP surface end to end. save_vignette() has
+    no implicit VIGNETTE_DIR default (IP-1180) — a user_save_dir must be configured."""
+    cfg_path = tmp_path / "spacesim.config.yaml"
+    save_dir = tmp_path / "user_saves"
+    save_dir.mkdir()
+    cfg_path.write_text(
+        f"content:\n  user_save_dir: {save_dir}\n  external_vignette_dirs:\n    - {save_dir}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SPACESIM_CONFIG", str(cfg_path))
     c = _client()
     sid = c.post("/api/sessions/draft", json={"title": "HTTP Draft"}).json()["session"]
     # A draft session exists and is registered like any other, but never started.
@@ -417,3 +521,376 @@ def test_draft_session_create_add_asset_and_save_as_vignette():
     finally:
         from pathlib import Path
         Path(resp["path"]).unlink(missing_ok=True)
+
+
+def test_bulk_import_tle_route_end_to_end():
+    """IP-1190 (FR-5220) — the new /force/bulk_import route, TLE format, end to end."""
+    c = _client()
+    sid = c.post("/api/sessions/draft", json={"title": "Bulk Import"}).json()["session"]
+    tle1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
+    tle2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+    content = "\n".join(["HTTP-BULK-1", tle1, tle2])
+    resp = c.post(f"/api/sessions/{sid}/force/bulk_import",
+                   json={"format": "tle", "content": content,
+                         "assignments": {"HTTP-BULK-1": {"asset_id": "HTTP-BULK-1", "owner": "blue"}}})
+    reports = resp.json()
+    assert len(reports) == 1
+    assert reports[0]["ok"] is True
+    assert reports[0]["asset_id"] == "HTTP-BULK-1"
+
+    # An unrecognizable file surfaces as a 400, not a per-object report.
+    bad_resp = c.post(f"/api/sessions/{sid}/force/bulk_import",
+                       json={"format": "tle", "content": "not a tle file", "assignments": {}})
+    assert bad_resp.status_code == 400
+
+
+def test_save_as_scenario_route_end_to_end(tmp_path, monkeypatch):
+    """IP-1200 (FR-5510) — start a session, advance it, save-as-scenario, load the result: the
+    new session's start epoch equals the save moment and initial state carries forward."""
+    cfg_path = tmp_path / "spacesim.config.yaml"
+    save_dir = tmp_path / "user_saves"
+    save_dir.mkdir()
+    cfg_path.write_text(
+        f"content:\n  user_save_dir: {save_dir}\n  external_vignette_dirs:\n    - {save_dir}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SPACESIM_CONFIG", str(cfg_path))
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600.0})
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})  # stop catch-up drift
+    save_moment = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+
+    resp = c.post(f"/api/sessions/{sid}/save_vignette",
+                  json={"vignette_id": "test-ip1200-http-scenario", "title": "HTTP Scenario",
+                        "as_scenario": True}).json()
+    try:
+        from spacesim.content.vignette import load_vignette
+        from spacesim.engine import simtime
+        vig = load_vignette("test-ip1200-http-scenario")
+        assert vig.start_epoch_utc == simtime.to_iso(save_moment)
+        assert vig.simulator_version
+    finally:
+        from pathlib import Path
+        Path(resp["path"]).unlink(missing_ok=True)
+
+    # A draft session's own "Save as Vignette" (as_scenario omitted/False) is unaffected.
+    draft_sid = c.post("/api/sessions/draft", json={"title": "Still Draft"}).json()["session"]
+    draft_resp = c.post(f"/api/sessions/{draft_sid}/save_vignette",
+                        json={"vignette_id": "test-ip1200-draft-unaffected", "title": "Draft"})
+    assert draft_resp.status_code == 200
+    from pathlib import Path
+    Path(draft_resp.json()["path"]).unlink(missing_ok=True)
+
+
+def test_ephemeris_truth_route_no_cell_binding():
+    """IP-1210 (FR-7410) — reachable with no cell query param, like /godview."""
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0})
+    assert r.status_code == 200
+    assert "eci_r_x_m" in r.text  # CSV header present
+
+
+def test_ephemeris_truth_route_wholly_out_of_range_is_400():
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0 + 10_000_000_000, "t2": t0 + 20_000_000_000})
+    assert r.status_code == 400
+
+
+def test_ephemeris_cell_observed_route_fog_of_war_enforced():
+    """IP-1210 (FR-7420) — a cell with no Track on the requested object gets an empty export,
+    never another cell's belief or ground truth, mirroring test_scene.py's fog-of-war pattern."""
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/red",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0})
+    assert r.status_code == 200
+    lines = r.text.strip().splitlines()
+    assert len(lines) == 1  # header only — red has no track on blue's ISR-EO-1
+
+
+def test_ephemeris_oem_format():
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0, "format": "oem"})
+    assert r.status_code == 200
+    assert "CCSDS_OEM_VERS" in r.text
+
+
+def test_roe_change_route_is_white_cell_only():
+    """IP-1270 (FR-3440) — only White Cell may issue a live ROE change."""
+    c = _client()
+    sid = _new_session(c)
+    denied = c.post(f"/api/sessions/{sid}/roe/change", json={
+        "cell": "blue", "target_cell": "blue", "flag": "kinetic_authorized", "value": True})
+    assert denied.json()["ok"] is False and denied.json()["reason"] == "not_controller"
+
+    allowed = c.post(f"/api/sessions/{sid}/roe/change", json={
+        "cell": "white", "target_cell": "blue", "flag": "kinetic_authorized", "value": True})
+    assert allowed.json()["ok"] is True
+
+
+def test_gate_decide_route_rejects_unknown_pending_order():
+    """IP-1270 (FR-3430) — the decision route rejects a nonexistent/unmatched pending order id
+    (this session's loaded vignette declares no gating rules, so nothing is ever pending)."""
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/gate/decide", json={
+        "cell": "white", "order_id": "no-such-order", "approve": True})
+    assert r.json()["ok"] is False and r.json()["reason"] == "no_such_pending_order"
+
+
+def test_aar_playback_start_advance_and_viewpoint_switch():
+    """IP-1280 (FR-7330) — the playback routes: start, advance, viewpoint switch."""
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/order", json={
+        "cell": "blue", "actor": "ISR-EO-1", "action": "downlink", "params": {"via": "GS-NORTH"}})
+
+    start = c.post(f"/api/sessions/{sid}/aar/playback/start", json={"viewpoint": "truth", "speed": 2.0})
+    assert start.json()["ok"] is True
+
+    adv = c.post(f"/api/sessions/{sid}/aar/playback/advance", json={"dt_s": 30.0})
+    assert adv.status_code == 200
+    assert "assets" in adv.json()  # ground-truth WorldState shape
+
+    switched = c.post(f"/api/sessions/{sid}/aar/playback/viewpoint", json={"viewpoint": "blue"})
+    assert switched.json()["ok"] is True
+    state = c.get(f"/api/sessions/{sid}/aar/playback/state")
+    assert "own_assets" in state.json()  # CellView shape, not ground truth
+
+
+def test_aar_playback_rejects_nonparticipating_cell():
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/aar/playback/start", json={"viewpoint": "not-a-real-cell"})
+    assert r.json()["ok"] is False
+
+
+def test_aar_playback_advance_without_start_is_404():
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/aar/playback/advance", json={"dt_s": 10.0})
+    assert r.status_code == 404
+
+
+def test_ephemeris_ric_companion_format():
+    """FR-7430 — the companion RIC-specific export file, reachable via format=ric on both the
+    truth and cell-observed ephemeris routes (BL-0136's resolution of the FR-7410/OEM tension)."""
+    c = _client()
+    sid = _new_session(c)
+    t0 = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth",
+              params={"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH",
+                      "t1": t0, "t2": t0, "interval_s": 1.0, "format": "ric"})
+    assert r.status_code == 200
+    assert "ric_r_x_m" in r.text
+    assert "eci_r_x_m" not in r.text
+
+
+# -- IP-1300 (FR-8210/FR-8220) — live RIC-frame view route -------------------------------------
+
+def _coorbital_session(c: TestClient) -> str:
+    sid = c.post("/api/sessions",
+                 json={"vignette_id": "co-orbital-threat-escort", "seed": 1}).json()["session"]
+    c.post(f"/api/sessions/{sid}/start")
+    return sid
+
+
+def test_ric_view_route_cell_scoped_returns_only_cells_own_picture():
+    c = _client()
+    sid = _coorbital_session(c)
+    r = c.get(f"/api/sessions/{sid}/ric_view/blue", params={"origin": "BLUE-HVA"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["origin"] == "BLUE-HVA" and body["cell"] == "blue"
+    ids = {o["id"] for o in body["objects"]}
+    assert ids == {"BLUE-ESCORT"}  # blue holds no Track on RED-COORB: never rendered
+    assert body["cats"] is None
+
+
+def test_ric_view_route_rejects_origin_outside_cells_custody():
+    c = _client()
+    sid = _coorbital_session(c)
+    r = c.get(f"/api/sessions/{sid}/ric_view/blue", params={"origin": "RED-COORB"})
+    assert r.status_code == 404
+    r = c.get(f"/api/sessions/{sid}/ric_view/blue",
+              params={"origin": "BLUE-HVA", "chase": "BLUE-ESCORT", "target": "RED-COORB"})
+    assert r.status_code == 404
+
+
+def test_ric_view_route_white_renders_every_object_from_ground_truth():
+    """Implementation Task 1/8 — `build_scene()` has no `cell == "white"` case, so the White
+    variant is wired explicitly through the `get_godview()` ground-truth world, not `cell="white"`
+    filtering; it renders every on-orbit object (FR-4610 exact-match standard)."""
+    c = _client()
+    sid = _coorbital_session(c)
+    r = c.get(f"/api/sessions/{sid}/ric_view/white",
+              params={"origin": "RED-COORB", "chase": "RED-COORB", "target": "BLUE-HVA"})
+    assert r.status_code == 200
+    body = r.json()
+    assert {o["id"] for o in body["objects"]} == {"BLUE-HVA", "BLUE-ESCORT"}
+    assert all(o["source"] == "asset" for o in body["objects"])
+    assert 0.0 <= body["cats"]["phase_angle_deg"] <= 180.0
+    # Ground truth agrees with the god-view state: co-orbital, same plane -> ~zero cross-track.
+    for o in body["objects"]:
+        assert abs(o["ric_r"][2]) < 1.0
+
+
+def test_ric_view_client_surface_is_served():
+    c = _client()
+    assert 'src="/ricview.js"' in c.get("/").text
+    js = c.get("/ricview.js")
+    assert js.status_code == 200 and "/ric_view/" in js.text
+
+
+def test_ric_view_route_requires_origin():
+    c = _client()
+    sid = _coorbital_session(c)
+    assert c.get(f"/api/sessions/{sid}/ric_view/blue").status_code == 422
+
+
+# -- IP-1211 (FR-7440) — quick TLE export route ------------------------------------------------
+
+def _coorbital_with_blue_track():
+    """A co-orbital session in which Blue holds a state-bearing Track on RED-COORB (seeded the same
+    way an observation does — a copy of the truth orbit at observation time, `orders.py`)."""
+    from spacesim.engine.custody import Track
+    from spacesim.session.inprocess import InProcessSession
+
+    api = InProcessSession()
+    c = TestClient(create_app(api))
+    sid = _coorbital_session(c)
+    world = api._sessions[sid].sim.world
+    world.tracks.append(Track(object="RED-COORB", owner="blue", last_observation=world.now,
+                              confidence=0.9,
+                              state_estimate=world.assets["RED-COORB"].orbit.model_copy(deep=True)))
+    return c, sid
+
+
+def test_tle_route_returns_lines_for_tracked_object():
+    pytest.importorskip("sgp4")
+    c, sid = _coorbital_with_blue_track()
+    r = c.get(f"/api/sessions/{sid}/tle/blue", params={"object_id": "RED-COORB"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["source"] == "track" and body["object_id"] == "RED-COORB" and body["cell"] == "blue"
+    assert len(body["line1"]) == 69 and len(body["line2"]) == 69
+    assert body["line1"].startswith("1 ") and body["line2"].startswith("2 ")
+    assert body["fit_error_m"] <= 1000.0 and body["note"]
+
+
+def test_tle_route_untracked_is_404():
+    pytest.importorskip("sgp4")
+    c = _client()
+    sid = _coorbital_session(c)
+    r = c.get(f"/api/sessions/{sid}/tle/blue", params={"object_id": "RED-COORB"})
+    assert r.status_code == 404
+    assert "track" in r.json()["detail"]
+
+
+def test_tle_route_requires_object_id():
+    c = _client()
+    sid = _coorbital_session(c)
+    assert c.get(f"/api/sessions/{sid}/tle/blue").status_code == 422
+
+
+def test_tle_route_white_reads_truth():
+    pytest.importorskip("sgp4")
+    c = _client()
+    sid = _coorbital_session(c)
+    r = c.get(f"/api/sessions/{sid}/tle/white", params={"object_id": "RED-COORB"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["source"] == "truth" and body["cell"] == "white"
+    assert len(body["line1"]) == 69
+
+
+def test_tle_route_own_satellite_200():
+    """IP-1212 (FR-7440 amended, FS-121 v2.1 AC11) — a cell exports its own satellite with no Track;
+    the other cell (no Track either) is still refused; an own asset with no orbit is refused."""
+    pytest.importorskip("sgp4")
+    c = _client()
+    sid = _coorbital_session(c)
+    assets = c.get(f"/api/sessions/{sid}/godview").json()["assets"]
+    own = next(a["id"] for a in assets.values() if a["owner"] == "blue" and a.get("orbit"))
+    r = c.get(f"/api/sessions/{sid}/tle/blue", params={"object_id": own})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["source"] == "own" and body["cell"] == "blue" and body["object_id"] == own
+    assert len(body["line1"]) == 69 and len(body["line2"]) == 69
+    assert c.get(f"/api/sessions/{sid}/tle/red", params={"object_id": own}).status_code == 404
+
+    sid2 = _new_session(c)   # leo-isr-denial: GS-NORTH is a Blue-owned asset with no orbit
+    r = c.get(f"/api/sessions/{sid2}/tle/blue", params={"object_id": "GS-NORTH"})
+    assert r.status_code == 404 and "orbit" in r.json()["detail"]
+
+
+def test_tle_export_client_lists_own_satellites():
+    """IP-1212 Design Decisions 2/5 — the served picker labels the new "own" source."""
+    js = _client().get("/tleexport.js").text
+    assert '"own"' in js
+
+
+def test_tle_export_client_surface_is_served():
+    c = _client()
+    assert 'src="/tleexport.js"' in c.get("/").text
+    js = c.get("/tleexport.js")
+    assert js.status_code == 200 and "/tle/" in js.text
+
+
+# -- IP-1262 (BL-0176) — export sampling bounds at the route ---------------------------------------
+
+def test_ephemeris_routes_reject_non_positive_interval_400():
+    """Test 5 — interval_s <= 0 is a 400 on both ephemeris routes (was a 1 us step / hang)."""
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    now = c.get(f"/api/sessions/{sid}/clock").json()["now"]
+    base = {"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH", "t1": now - 20_000, "t2": now}
+    r = c.get(f"/api/sessions/{sid}/ephemeris/truth", params={**base, "interval_s": 0})
+    assert r.status_code == 400
+    r = c.get(f"/api/sessions/{sid}/ephemeris/blue", params={**base, "interval_s": -1})
+    assert r.status_code == 400
+
+
+def test_telemetry_export_route_rejects_over_ceiling_interval_400():
+    """Test 6 — a tiny positive interval_s (passes gt=0) is a 400 naming the ceiling."""
+    from spacesim.session import ephemeris
+    c = _client()
+    sid = _new_session(c)
+    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    now = c.get(f"/api/sessions/{sid}/clock").json()["now"]
+    r = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv",
+              params={"t1": now - 20_000, "t2": now, "interval_s": 0.000001})
+    assert r.status_code == 400
+    assert str(ephemeris.MAX_EXPORT_SAMPLES) in r.json()["detail"]
+
+
+def test_inject_route_rejects_invalid_inject_400():
+    """IP-1063 (BL-0188) — an inject whose FR-4430 target precondition fails is a 400 naming the
+    target, not a 200 {"ok": true} that silently does nothing."""
+    c = _client()
+    sid = _new_session(c)
+    r = c.post(f"/api/sessions/{sid}/inject", json={"inject": {"effects": [
+        {"type": "anomaly", "target": "NO-SUCH-SAT", "subsystem": "bus"}]}})
+    assert r.status_code == 400
+    assert "NO-SUCH-SAT" in r.json()["detail"]
+    r = c.post(f"/api/sessions/{sid}/inject", json={"inject": {"effects": [
+        {"type": "message", "to": ["blue"], "text": "hello"}]}})
+    assert r.status_code == 200 and r.json()["ok"] is True
