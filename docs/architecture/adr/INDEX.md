@@ -70,6 +70,7 @@ ADR's own "Consequences" section.
 | [ADR-0036](ADR-0036-content-template-libraries-vs-inline-authoring.md) | Asset/effect/sensor template libraries vs. the shipped inline-authoring model (`FR-5310`'s template clause) | **Proposed — owner decision pending** |
 | [ADR-0037](ADR-0037-jammer-power-is-a-rating-not-a-consumable.md) | A jammer's `power_w` is a rating, not a consumable; the success-path subtraction is a defect | Accepted |
 | [ADR-0038](ADR-0038-failure-atomic-event-application.md) | Event application is failure-atomic: a raising handler is rolled back to the replayed state, logged as a no-op failure record, and the advance continues | Accepted |
+| [ADR-0039](ADR-0039-space-weather-index-to-multiplier-mapping.md) | A declared F10.7/Kp series scales LEO drag by `f_solar × f_geo` and an authored anomaly base rate by `f_geo` alone (piecewise-linear anchors); non-physical values refused at the boundary | Accepted |
 
 **ADR-0034/0035** close the two architecture-level Open Questions `06-feature-specification`
 carried in `FS-105` v1.1 for the directed-energy order/resolution path (backlog `BL-0066`,
@@ -86,6 +87,12 @@ recommendation (amend to inline authoring) and leaves the decision to the projec
 engine left uncovered: a handler that raises mid-advance. It makes event application
 failure-atomic (restore the replayed state, log a no-op failure record, keep advancing). It changes
 no success-path behaviour, and a remediation package is owed (`07`).
+
+**ADR-0039** (2026-10-18, `BL-0104`/`BL-0121`) closes FS-123's two Open Questions, following the
+`ADR-0034`/`0035` precedent. It fixes the space-weather index-to-multiplier anchors on
+[`R131`](../../research/encyclopedia/R131-space-environment-and-space-weather-operations.md) v1.2,
+the refusal rule for non-physical index values, and the opt-in drag and environmental-anomaly
+application model on the existing tick grid. No shipped vignette changes behaviour.
 
 ADR-0001 through ADR-0023 record decisions already settled and reflected in the shipped system at
 the time this ADR set was first authored. ADR-0024 through ADR-0029 originally recorded questions
@@ -119,7 +126,7 @@ asked directly per-conflict: `ADR-0032` **narrows** `ADR-0017` (a carve-out, not
 `ADR-0017` remains `Accepted` and its core "no composite score, no automated win/loss" prohibition
 is unchanged); `ADR-0033` **supersedes** `ADR-0029` outright (the project owner chose to authorize
 the dedicated research-export interface `ADR-0029` had previously rejected, rather than work around
-it). `ADR-0033` is this corpus's first `Superseded` entry. Of 38 ADRs, 36 are `Accepted`, 1 is
+it). `ADR-0033` is this corpus's first `Superseded` entry. Of 39 ADRs, 37 are `Accepted`, 1 is
 `Superseded` (`ADR-0029`), and 1 is `Proposed` (`ADR-0036`, awaiting the project owner).
 
 ## Related
