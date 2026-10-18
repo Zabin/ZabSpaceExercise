@@ -794,6 +794,40 @@ routed to `08-training-manual-authoring` after `VERIFIED`; the `FEAT-1400` catal
 
 No cross-package sequencing constraint.
 
+## Space-weather-index coupling (pipeline run #188, 2026-10-18)
+
+**Input:** [FS-123](../features/FS-123-space-weather-index-coupling.md) v1.1 (`FR-1230`,
+`FR-4440`), with its design basis in
+[ADR-0039](../architecture/adr/ADR-0039-space-weather-index-to-multiplier-mapping.md). This is the
+owner-prioritized stalled batch, `BL-0074` (item B8).
+
+| Unit | Work | Seam |
+|---|---|---|
+| 1 | Pure mapping, lookup and validator functions | C1 engine, `engine/perturbations.py` |
+| 2 | Opt-in drag step on the `bus_tick` grid, plus the `Asset.ballistic_coeff_m2_kg` field | C1 engine, `engine/busmodel.py`, `engine/entities.py` |
+| 3 | Vignette fields (`space_weather_series`, `environmental_anomalies`), load-time refusal, `build_world` conversion | C3 content, `content/vignette.py` |
+| 4 | Inject-boundary validation, series application (key update, not dict replacement), the `env_anomaly_check` tick | C2 session, `session/manager.py` |
+| 5 | Tests (mapping, drag, anomaly, replay, refusal, opt-out byte-identity) | `spacesim/tests/test_space_weather_index.py` |
+
+**Split / no-split rationale.** One package. Units 1–4 cannot be verified separately:
+
+- FS-123's acceptance criteria each need the series to flow end to end, from authored data
+  (Unit 3) or an inject (Unit 4), through the mapping (Unit 1), into an effect (Unit 2 or Unit 4).
+- Criterion 4 (opt-out byte-identity) is a property of all four units together.
+
+Splitting drag from anomalies would duplicate Units 1, 3 and 4's series plumbing across two
+packages that touch the same functions. The package is moderately sized: five files plus one test
+file, all additive.
+
+**Not packaged:** operator-manual prose, routed through §15.1 to `08-training-manual-authoring`
+after `VERIFIED`, and the `FR-4440` Notes line (`BL-0281`, `04`).
+
+| Package | FS | Status | Authorization |
+|---|---|---|---|
+| [IP-1230](packages/IP-1230-space-weather-index-coupling.md) | FS-123 v1.1 (`FR-1230`/`FR-4440`) | 🟢 READY | Pre-authorized (MSTR-006 §3: the standing 2026-10-11 pre-authorization plus the owner's 2026-10-18 stalled-batch instruction) |
+
+No cross-package sequencing constraint.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
