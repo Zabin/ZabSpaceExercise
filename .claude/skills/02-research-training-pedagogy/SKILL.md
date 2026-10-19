@@ -1,6 +1,6 @@
 ---
 name: 02-research-training-pedagogy
-description: Produce and refresh the R600-tier training-pedagogy encyclopedia (instructional systems design, adult learning, simulation-based learning and debriefing, cognitive load and scaffolding, learning-path/progression design, minimalist procedural documentation, assessment of learning in wargames, software onboarding/tutorial design) that grounds the training corpus elevated to co-equal product status (MSTR-001 §2, 2026-07-04). Use when asked to research how to teach people to use this tool, to author/extend `docs/research/encyclopedia/R6xx-*` topics, or to gather pedagogy grounding before a manual-authoring, vignette-development, or manual-review pass needs a citable basis for a sequencing/scaffolding/debrief decision. Tier R600 is scaffolded (index authored, 0/8 topics) — authoring must meet the full sources-and-methodology citation bar from the first draft; this tier never enters the uncited state R400/R500 had to be remediated out of. Not for writing the manuals themselves (08-training-manual-authoring) or vignettes (08-vignette-development) — this skill produces research, not training artifacts.
+description: Produce and refresh the R600-tier training-pedagogy encyclopedia (instructional systems design, adult learning, simulation-based learning and debriefing, cognitive load and scaffolding, learning-path/progression design, minimalist procedural documentation, assessment of learning in wargames, software onboarding/tutorial design) that grounds the training corpus elevated to co-equal product status (MSTR-001 §2, 2026-07-04). Use when asked to research how to teach people to use this tool, to author/extend `docs/research/encyclopedia/R6xx-*` topics, or to gather pedagogy grounding before a manual-authoring, vignette-development, or manual-review pass needs a citable basis for a sequencing/scaffolding/debrief decision. Tier R600 is authored (8/8 topics, 2026-07-04); new or refreshed topics must meet the full sources-and-methodology citation bar — this tier never enters the uncited state R400/R500 had to be remediated out of. Not for writing the manuals themselves (08-training-manual-authoring) or vignettes (08-vignette-development) — this skill produces research, not training artifacts.
 ---
 
 # Research — Training Pedagogy & Instructional Design (Tier R600)
@@ -31,15 +31,15 @@ It produces research documents only: `R6xx` topics and the R600 index's status c
 
 ## Current state (read this before choosing a workflow)
 
-Tier scaffolded 2026-07-04: index authored with 8 planned topics, **0 authored**. Every topic
-must meet [`docs/research/10-sources-and-methodology.md`](../../../docs/research/10-sources-and-methodology.md)
+Tier authored 2026-07-04: all 8 topics (`R601`–`R608`) are written, so this is now steady-state
+maintenance (refresh and gap-fill), not first authoring. Every new or refreshed topic must meet [`docs/research/10-sources-and-methodology.md`](../../../docs/research/10-sources-and-methodology.md)
 in full from its first draft — §2 Scope (MSTR-007 §4.2), inline citations at every substantive
 claim site, a `### Sources` subsection per `##` section (live URL + Wayback snapshot + accessed
 date), `Last Reviewed`/`Primary Sources Consulted` frontmatter. The index carries a starting
 bibliography (Gagné, Merrill, Knowles, Sweller, Ericsson, Carroll, Kirkpatrick, Fanning & Gaba,
 TC 25-20, van Merriënboer) — verify each citation live at authoring time; the list itself is not
-a citation. An unauthored topic is **not citable** by downstream skills (`NFR-3600` and the RTM
-already state this).
+a citation. A future topic stays **not citable** by downstream skills until it is authored (`NFR-3600`
+and the RTM already state this).
 
 ## Workflow
 

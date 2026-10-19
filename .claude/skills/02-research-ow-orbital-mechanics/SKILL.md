@@ -36,6 +36,8 @@ figures presented as fact without a source.
 | `docs/research/03-counterspace-taxonomy.md` | The five-D (deceive/disrupt/deny/degrade/destroy) effect taxonomy and the cyber exception — the "why" layer R1xx topics point back to. |
 | `docs/research/04-orbital-mechanics-primer.md` | Full derivations (regimes, Kepler+J2, access geometry, eclipse) — R101/R112/R120 are implementation-focused pointers into this, not duplicates. |
 | `docs/research/05-mission-types-and-counters.md` | Mission-type ↔ counter-mission mapping (ISR denial, RPO shadowing, GNSS EW, etc.). |
+| `docs/research/06-bus-and-payload-operations.md` | Bus and payload operations primer (subsystems, commanding, safe mode) — the "why" layer behind `buscommands.py`/`bus.py`. Owned here since 2026-10-19 (`BL-0293`). |
+| `docs/research/10-sources-and-methodology.md` | The citation standard every research skill (and the PR template) applies. Owned here since 2026-10-19 (`BL-0293`); the other `02-research-*` skills read it but route changes here, so the standard stays single-sourced. |
 | Engine grounding | `spacesim/engine/{orbit,propagator,access,custody,effects,jam,engage,cyber,sigint,isr,perturbations,sun,maneuver}.py` — every topic must trace to the real code module(s) it constrains. |
 | Feature Mapping targets | FS-101 (Mission Planning), FS-103 (Custody Management), FS-104 (SDA Tasking), FS-105 (Spacecraft Operations), and any new FS-xxx touching orbits/effects. |
 

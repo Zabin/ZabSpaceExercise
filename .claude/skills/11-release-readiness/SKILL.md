@@ -56,7 +56,8 @@ the Integration Report(s) for this scope (`docs/reviews/integration-review-*.md`
 5. **On the user's explicit GO — update the baseline** (this is the only mutating step, and it
    touches trackers only): flip the release bucket's state in `01-release-plan.md`; flip the
    delivered features'/packages' rows in `ROADMAP.md`; update `CLAUDE.md`'s status line if the
-   release changes the project's headline state; update affected `INDEX.md` files; date-stamp the
+   release changes the project's headline state; update `README.md`'s status and feature summary
+   to match (owned here since 2026-10-19, `BL-0293`); update affected `INDEX.md` files; date-stamp the
    baseline in the Release Assessment itself. Commit as
    `docs(release): <release> — assessment + baseline update`. On NO-GO (or GO not yet given),
    write the assessment only and leave every tracker untouched.

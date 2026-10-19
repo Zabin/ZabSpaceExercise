@@ -26,17 +26,24 @@ and routed to the pipeline stage where they belong), never by side-channel imple
 | # | Skill | Produces | Where |
 |---|---|---|---|
 | 00 | `00-pipeline-manager` · `00-intake` | Manager: pipeline journal (position + run log), backlog harvest + triage, and one-step-per-run execution of the next stage (`status`/`triage`/`log`/`sync`/`run` modes). Intake: files new features/bugs/observations into the backlog with a recommended entry stage. | `docs/pipeline/`, chat |
-| 01 | `01-vision` | Program vision, GDS-00, strategic assumptions register | `docs/master/`, `docs/architecture/` |
-| 02 | `02-research-ow-orbital-mechanics` · `02-research-doctrine-exercises` · `02-research-methods-and-validation` · `02-research-future-operations` · `02-research-training-pedagogy` | Research encyclopedia tiers R100/R300/R400/R500/R600 + primers | `docs/research/` |
-| 03 | `03-architecture-design-synthesis` | GDS-01…10 ladder (ConOps, System Context, Architecture, Domain Model, FR/NFR levels, Data Model, UI Architecture, API spec/ICD, RTM level), ADS-xxx, ADRs | `docs/architecture/` |
+| 01 | `01-vision` | Program vision, GDS-00, strategic assumptions register, the standing MSTR-002…007 principles | `docs/master/`, `docs/architecture/` |
+| 02 | `02-research-ow-orbital-mechanics` · `02-research-doctrine-exercises` · `02-research-methods-and-validation` · `02-research-future-operations` · `02-research-training-pedagogy` | Research encyclopedia tiers R100/R300/R400/R500/R600 + primers (`02-research-ow-orbital-mechanics` also owns `06-bus-and-payload-operations.md` and the `10-sources-and-methodology.md` citation standard) | `docs/research/` |
+| 03 | `03-architecture-design-synthesis` | GDS-01…10 ladder (ConOps, System Context, Architecture, Domain Model, FR/NFR levels, Data Model, UI Architecture, API spec/ICD, RTM level), ADS-xxx, ADRs, the ICD (`INT-xxxx`) | `docs/architecture/`, `docs/design/05-interface-control-document.md` (moves under `architecture/` with GDS-09) |
 | 04 | `04-requirements-engineering` | FR-xxxx, NFR-xxxx, Requirements Review, Requirements Traceability Matrix | `docs/requirements/` |
 | 05 | `05-feature-decomposition` | Release Plan, Epic Catalog, Feature Catalog, Feature Dependency Graph, Feature Review | `docs/feature-planning/` |
 | 06 | `06-feature-specification` | Feature Specifications (FS-xxx, 20-field template) | `docs/features/`, `docs/features/specifications/` |
 | 07 | `07-implementation-planning` | Technical Work Breakdown, Implementation Packages (IP-xxxx, 14-field template), Master Build Plan | `docs/implementation/` |
-| 08 | `08-code-implementation` · `08-training-manual-authoring` · `08-vignette-development` | Code: source + tests + docs + traceability for exactly one package (status → `COMPLETE`). Training peers: manual modules / learning path / traceability matrix (`docs/training/`), and vignette YAML + playbook/rung linkage + their verification tests. | `spacesim/`, `docs/training/`, ledgers |
+| 08 | `08-code-implementation` · `08-training-manual-authoring` · `08-vignette-development` | Code: source + tests + docs + traceability for exactly one package (status → `COMPLETE`). Training peers: manual modules / learning path / traceability matrix (`docs/training/`), and vignette YAML + playbook/rung linkage + the `docs/vignettes/` design docs + their verification tests. | `spacesim/`, `docs/training/`, `docs/vignettes/`, ledgers |
 | 09 | `09-package-verification` · `09-training-manual-review` | Verification Report (VR-xxxx); the **only** skill that writes `VERIFIED`. Training peer: Training Review report (accuracy/traceability/coverage/pedagogy) under `docs/reviews/`. | `docs/implementation/verification/`, `docs/reviews/` |
 | 10 | `10-integration-review` | Integration Report for an epic/release's verified package set | `docs/reviews/` |
-| 11 | `11-release-readiness` | Release Assessment (GO/NO-GO) + baseline update on GO | `docs/reviews/`, trackers |
+| 11 | `11-release-readiness` | Release Assessment (GO/NO-GO) + baseline update on GO (incl. `README.md` status) | `docs/reviews/`, trackers, `README.md` |
+
+**Every document has one owner (owner decision, 2026-10-19, `BL-0293`).** A document no stage above
+writes is either legacy (`docs/build-spec/` and `docs/design/` apart from the ICD, both retiring
+with GDS-06–10, `BL-0292`; `docs/domains/`, being merged into the GDS ladder and retired) or
+historical (one-off reviews and audits, scheduled for archiving). A new document needs an owning
+stage named here before it is created. Skill files themselves are changed only by owner-authorized
+maintenance commits, recorded in the pipeline journal.
 
 ## Iteration loops
 
