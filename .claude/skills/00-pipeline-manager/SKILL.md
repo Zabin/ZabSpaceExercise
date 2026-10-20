@@ -122,12 +122,6 @@ Drift (a status the journal didn't expect, work done outside the manager, a `VER
 Verification Report, a backlog item the tree shows already resolved) is corrected now and noted in
 this run's log row.
 
-**Retired-reference drift.** If the previous run deleted, archived or absorbed a document, re-run
-the search its summary reported. Any live reference still present that has no backlog entry is
-drift: file it now (`NEW`, `doc-defect`, entry stage = the owner of the referencing file). Frozen
-history (run log, archives, VRs, reviews, ADR records) is exempt, per the skills README's
-"Retiring a document" rule.
-
 ### Step 2 — Triage the backlog (review the last run's findings before choosing anything)
 
 This step is **mandatory before Step 3** — the previous run's findings and recommendations are
@@ -182,11 +176,8 @@ adds no shortcuts and removes no obligations. One skill invocation per advance r
 
 **Harvest first, while the invoked skill's completion summary is still in context:** every
 finding, recommendation, Outstanding Issue, and Open Question it reported becomes a backlog entry
-(`NEW`, sourced to this run) unless one already exists (then update that entry). This includes
-every out-of-scope leftover reference the skill listed after retiring or absorbing a document.
-A retirement whose summary reports no reference search is incomplete: record that as a
-finding. Flip to `DONE` any backlog entry this step resolved; a retirement entry flips to `DONE`
-only when its leftover-reference entries have closed.
+(`NEW`, sourced to this run) unless one already exists (then update that entry). Flip to `DONE`
+any backlog entry this step resolved.
 
 Then append the run-log row (mode, skill, target, outcome — including "harvested N findings" —
 and next step) and rewrite the Position block from the post-run state, including the backlog

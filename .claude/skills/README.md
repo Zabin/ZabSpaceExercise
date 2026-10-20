@@ -73,25 +73,3 @@ and flows forward from there:
   `VERIFIED`; only the user's explicit GO lets `11` flip the baseline.
 - MSTR-006 §3: a fully-specified package is **not** authorization to build it — the user grants
   that explicitly, per package.
-- **Retiring a document includes removing every live reference to it (owner rule, 2026-10-19).**
-  When a document or folder is deleted, archived, or absorbed into another (a GDS level absorbing
-  build-spec, `design/` or DOM content; a superseded tier deleted; a tracker migrated into the
-  backlog), the same change sweeps the live tree for it and leaves no reference to retired content:
-  - **What counts as a reference:** markdown links; path mentions (`docs/build-spec/…`);
-    ID and section citations (`IMP-xxxA`, `DOM-00x`, `build-spec §N`); index and table rows;
-    "retained / not deleted / stays authoritative" statements about it; and mentions in
-    `CLAUDE.md`, `ROADMAP.md`, `INDEX.md` files and skill files.
-  - **How:** repoint each reference to the absorbing document, or drop it if nothing replaces it.
-    Rewrite decision statements to the current state ("absorbed into GDS-07 §3"), not a history
-    lesson.
-  - **Ownership still applies:** fix references inside your own scope in the same commit. For any
-    outside it (production code docstrings → `08-code-implementation`; another stage's
-    documents → that stage; skill files → owner-authorized maintenance commit), list them in the
-    completion summary so the manager harvests each one as a backlog entry. The retirement is not
-    finished until those entries close.
-  - **Proof:** the completion summary states the search run (e.g. `grep -rn "build-spec" --exclude-dir=.git`)
-    and its result: zero live hits, or each remaining hit with its backlog ID.
-  - **Never rewrite frozen history:** the pipeline journal's run log, `backlog-archive.md`,
-    `pipeline-journal-archive.md`, Verification Reports, review reports, ADR decision records and git
-    history keep their references as written; they record what was true then. Only live,
-    current-state documents are swept.

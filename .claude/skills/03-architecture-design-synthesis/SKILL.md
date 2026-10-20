@@ -102,11 +102,6 @@ the ladder.
 - [ ] No production code, no literal API/schema definitions where the level doesn't call for them
       (e.g. `GDS-09` API Specification may sketch contracts; `GDS-00` Vision should not).
 - [ ] `architecture/INDEX.md` §1 and `ROADMAP.md`'s "Global ladder" table both updated, in sync.
-- [ ] When the level absorbs legacy content (a build-spec module, a `design/` doc, a DOM section),
-      the reference sweep in the skills README's "Retiring a document" rule ran: live references
-      to the absorbed text are repointed to this level, and any outside this skill's scope are listed
-      in the summary for harvest. The source file itself is deleted only when everything it held is
-      absorbed (for build-spec: after GDS-10, `BL-0292`).
 - [ ] Where the level departs from the legacy `docs/build-spec/` text, the departure is stated, not
       silent: the GDS level is authoritative, so the build-spec text never wins, but a real tension
       with shipped behavior is an Open Question, not a unilateral resolution.
