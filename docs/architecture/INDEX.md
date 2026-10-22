@@ -38,7 +38,7 @@ Both are produced by the `03-architecture-design-synthesis` skill
 | GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | The authoritative specification | `build-spec/02-requirements-and-operations.md` §5–6 | ✅ Authored — merge gate closed (build-spec/02 §5–6 superseded; GDS-05 is now authoritative — see its "Merge gate" section) |
 | GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | Performance, reliability, security, usability | `build-spec/04-nfr-milestones-and-risks.md` §9 | ✅ Authored — merge gate closed (build-spec/04 §9 superseded; GDS-06 is authoritative, `requirements/02` its leaf elaboration; gaps G1–G6 and corrections C1–C6 handed to `04`) |
 | GDS-07 | Data Model | `architecture/07-data-model.md` | Persistent data structures | `design/04-data-model.md` (schema portion — same source file as GDS-04, different concern) | ✅ Authored — merge gate closed (design/04 superseded in full: conceptual half in GDS-04, schema half here, corrected to as-built) |
-| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | Screens, navigation, workflows | `design/09-gui-principles.md` (+ `05-cell-interfaces.md`, `10-sda-3d-viewer.md`) | ⛔ Planned (scaffold only) |
+| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | Screens, navigation, workflows | `design/09-gui-principles.md` (+ `05-cell-interfaces.md`, `10-sda-3d-viewer.md`) | ✅ Authored — merge gate closed (design/09, /05, /10 superseded; build-spec/07 and design/06 superseded for UI content; browser client stated as unverified end to end) |
 | GDS-09 | API Specification | `architecture/09-api-specification.md` | Service boundaries and contracts | `design/07-api-and-networking.md` | ⛔ Planned (scaffold only) |
 | GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | Maps requirements to features, tests, and implementation | *(no existing counterpart — net-new; `ROADMAP.md` tracks documents, not requirement→test traceability)* | ⛔ Planned (scaffold only) |
 
@@ -50,11 +50,12 @@ both (a) authored and (b) has finished merging in whatever existing-corpus conte
 means for that level. Per the user's explicit instruction, this gate applies at every step of the
 top-to-bottom iteration the `03-architecture-design-synthesis` skill will run.
 
-**Progress:** GDS-00 through GDS-07 are authored with their merge gates closed (see their
+**Progress:** GDS-00 through GDS-08 are authored with their merge gates closed (see their
 Status cells above and each document's own "Merge gate" section for the recorded decision). GDS-05
 was the first level whose merge gate **supersedes** rather than retains its source as authoritative
-— see its own "Merge gate" section for why; GDS-06 does the same for `build-spec/04` §9, and GDS-07 for
-`design/04-data-model.md`. GDS-08 (UI Architecture) is the next level to author.
+— see its own "Merge gate" section for why; GDS-06 does the same for `build-spec/04` §9, GDS-07 for
+`design/04-data-model.md`, and GDS-08 for the UI design documents. GDS-09 (API Specification) is
+the next level to author.
 
 Where a level's "Merges from" column says no counterpart was identified, that is not a free pass —
 it means the authoring pass for that level must search the corpus itself before concluding there

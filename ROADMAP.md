@@ -259,16 +259,16 @@ gates; no level has been authored yet.
 | GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | build-spec/02 §5-6 | ✅ Authored, merge gate closed (supersedes build-spec/02 §5-6) |
 | GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | build-spec/04 §9 | ✅ Authored, merge gate closed (supersedes build-spec/04 §9) |
 | GDS-07 | Data Model | `architecture/07-data-model.md` | design/04 (schema portion) | ✅ Authored, merge gate closed (supersedes design/04) |
-| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | design/09, design/05, design/10 | ⛔ Planned (scaffold only) |
+| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | design/09, design/05, design/10 | ✅ Authored, merge gate closed (supersedes design/09, /05, /10) |
 | GDS-09 | API Specification | `architecture/09-api-specification.md` | design/07 | ⛔ Planned (scaffold only) |
 | GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | *(net-new — no counterpart)* | ⛔ Planned (scaffold only) |
 
-**Next:** GDS-00 through GDS-07 are authored with merge gates closed. The entire
+**Next:** GDS-00 through GDS-08 are authored with merge gates closed. The entire
 `docs/architecture/` ladder is authoritative over `docs/build-spec/` **in full** (see `CLAUDE.md`
-and `architecture/INDEX.md`). GDS-08–10 remain scaffold-only: until each is authored, its topic has
+and `architecture/INDEX.md`). GDS-09–10 remain scaffold-only: until each is authored, its topic has
 no authoritative content (the corresponding build-spec or design module is legacy reference, not a
-binding fallback). Author GDS-08 (UI Architecture, merging `design/09-gui-principles.md`, `05-cell-interfaces.md`
-and `10-sda-3d-viewer.md`) next, per the gate. Build-spec retires once GDS-10 closes (`BL-0292`).
+binding fallback). Author GDS-09 (API Specification, merging `design/07-api-and-networking.md` and moving the ICD
+under `architecture/`) next, per the gate. Build-spec retires once GDS-10 closes (`BL-0292`).
 
 **Strategic review disposition (2026-07):** [`reviews/strategic-review-2026-07.md`](docs/reviews/strategic-review-2026-07.md)
 was dispositioned in full by [`reviews/architecture-update.md`](docs/reviews/architecture-update.md)
