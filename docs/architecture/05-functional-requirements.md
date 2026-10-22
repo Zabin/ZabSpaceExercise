@@ -185,8 +185,10 @@ hot-seat swapping, genuine wall clock. Traces to GDS-01 §4 (operational environ
   *(→ FR-4310)*
 - **OR-5 Observer view.** Observers get a read-only view set by White Cell (god-view or a specific
   cell), with no command ability. *(→ FR-6510)*
-- **OR-6 One exercise at a time.** v1 runs a single exercise per process instance, in one sitting.
-  *(→ FR-6410 scope)*
+- **OR-6 One session per exercise.** Each exercise is one `Session`, run in one sitting and shared by
+  every seat (hot-seat or LAN). One server process may host several sessions at once (`/api/sessions`
+  discovery), up to a fixed cap, and a session can be saved and resumed in a new process; how well
+  this must hold is GDS-06 NFR-14. *(→ FR-6410 scope; reworded 2026-10-22, `BL-0300` — see OQ2)*
 - **OR-7 Unseated-role behavior.** Because only one operator is seated at a time while the wall
   clock keeps running, every role's assets must have defined behavior while *unseated*: assets
   continue executing their already-queued `PlannedActivity`s (commands fire at their scheduled
@@ -319,6 +321,9 @@ new families cover assessment (`FR-A`) and the training corpus (`FR-T`).
   process. This document restates OR-6 as written in the merge source rather than resolving the
   apparent tension; flagged for the build-spec/02 owner to confirm whether OR-6's wording is stale
   post-P8.
+  **Resolved (2026-10-22, `BL-0300`):** the wording was stale. OR-6 now states the as-built model —
+  one `Session` per exercise, several sessions per process up to a cap, save and resume into a new
+  process — and its quality attribute is [GDS-06](06-non-functional-requirements.md) NFR-14.
 
 ## Merge gate (closed)
 
