@@ -241,7 +241,7 @@ TLE/lat-long/asset entry, asset menu, seat/role matrix); **5100B** covers the tw
 extensions the UI surfaces but which are independently significant — typed per-payload-type/bus
 parameter sub-schemas and real per-cell ROE enforcement.
 
-### Global ladder (`GDS-00`…`GDS-10`, scaffolded this revision, content not yet authored)
+### Global ladder (`GDS-00`…`GDS-10`, complete 2026-10-22)
 
 A single, global, top-to-bottom design-synthesis ladder for the whole project, distinct from the
 per-cluster `ADS-xxx` table above. **Strictly gated**: `GDS-(N+1)` cannot start until `GDS-N` is
@@ -261,13 +261,12 @@ gates; no level has been authored yet.
 | GDS-07 | Data Model | `architecture/07-data-model.md` | design/04 (schema portion) | ✅ Authored, merge gate closed (supersedes design/04) |
 | GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | design/09, design/05, design/10 | ✅ Authored, merge gate closed (supersedes design/09, /05, /10) |
 | GDS-09 | API Specification | `architecture/09-api-specification.md` | design/07 | ✅ Authored, merge gate closed (supersedes design/07) |
-| GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | *(net-new — no counterpart)* | ⛔ Planned (scaffold only) |
+| GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | none (companion of requirements/03) | ✅ Authored, merge gate closed — ladder complete |
 
-**Next:** GDS-00 through GDS-09 are authored with merge gates closed. The entire
-`docs/architecture/` ladder is authoritative over `docs/build-spec/` **in full** (see `CLAUDE.md`
-and `architecture/INDEX.md`). GDS-10 remains scaffold-only: until each is authored, its topic has
-no authoritative content (the corresponding build-spec or design module is legacy reference, not a
-binding fallback). Author GDS-10 (Requirements Traceability Matrix) next, per the gate. Build-spec retires once GDS-10 closes (`BL-0292`).
+**Next:** GDS-00 through GDS-10 are authored with merge gates closed (2026-10-22): **the ladder is
+complete.** The entire `docs/architecture/` ladder is authoritative over `docs/build-spec/` and
+`docs/design/` (apart from the ICD), so both retire in the cleanup sweep (`BL-0292`), after the
+`04` pass that takes the ladder's hand-offs (`BL-0298`). Build-spec retires once GDS-10 closes (`BL-0292`).
 
 **Strategic review disposition (2026-07):** [`reviews/strategic-review-2026-07.md`](docs/reviews/strategic-review-2026-07.md)
 was dispositioned in full by [`reviews/architecture-update.md`](docs/reviews/architecture-update.md)
