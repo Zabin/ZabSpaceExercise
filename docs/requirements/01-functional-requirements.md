@@ -33,6 +33,9 @@
 > `docs/pipeline/backlog.md` `BL-0073`/`BL-0074`/`BL-0077`/`BL-0072`/`BL-0075`/`BL-0076`/`BL-0078`/
 > `BL-0081`/`BL-0083` (items B7/B8/B11/B6/B9/B10/B12/B15/B17) — see
 > [`reviews/requirements-update-should-tier-batch.md`](../reviews/requirements-update-should-tier-batch.md).)
+> further amended (GDS ladder alignment, 2026-10-23; **two numbered FR leaves added** — `FR-4320`,
+> `FR-7230`; `FR-5210` reworded (Space-Track dropped); notes on `FR-4310` and `FR-7220` recording that
+> neither is met as built — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md)).
 > **ADR range now ADR-0001 through ADR-0035** (34 `Accepted`, 1 `Superseded` — `ADR-0029` by
 > `ADR-0033`).
 > further amended (`FR-7410`/`FR-7420` OEM/RIC tension, 2026-09-27; **one numbered FR leaf
@@ -1583,7 +1586,41 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Source Documents:** GDS-01 §10; build-spec/02 §5.4 FR-W3 (binding statement); ADR-0016.
 - **Related ADRs:** ADR-0016
 - **Related Interfaces:** INT-0002
-- **Related Requirements:** FR-1110, FR-6300
+- **Related Requirements:** FR-1110, FR-6300, FR-4320
+- **Notes:** *(Added 2026-10-23, GDS ladder alignment.)* **Not met as built.** The HTTP clock
+  routes (`/clock`, `/step`, `/advance`, `/rewind`, `/undo`) refuse only the Observer seat; a Blue or
+  Red seat's request is accepted (GDS-09 §4, OQ1). `IP-1060` records the leaf as "enforced at the
+  `SessionAPI` layer" and VR-1060 accepted it, but no code enforces it and no test asserts the
+  Acceptance Criteria. The owner has decided to enforce it server-side (`BL-0307`).
+
+#### FR-4320 — White Cell controls refused for other seats
+
+*(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+
+- **ID:** FR-4320
+- **Title:** Refuse White Cell lifecycle and facilitation controls from any other seat
+- **Description:** The system shall refuse, with a reason, any request from a Blue, Red or Observer
+  seat to start a session, set a parameter, fire an inject, edit the force (TLE, bulk or ground
+  add), assign seats, designate the Observer, or load a save into a session.
+- **Rationale:** These are White Cell's controls (GDS-01; GDS-08 §7.6). As built only five
+  White-only actions are enforced server-side (GDS-09 §4). Owner decision (`BL-0307`, 2026-10-22):
+  enforce on the server, with the same check that already guards those five.
+- **Priority:** Must
+- **Inputs:** A control request and the seat it names.
+- **Outputs:** The control applied, or a refusal with a reason.
+- **Preconditions:** A session exists.
+- **Postconditions:** No request from a non-White seat changes session state through these
+  controls.
+- **Acceptance Criteria:** For each control listed, a request naming `blue`, `red` or `observer` is
+  refused and the session state is unchanged; the same request naming `white` succeeds.
+- **Verification Method:** Test
+- **Dependencies:** FR-4310
+- **Source Documents:** GDS-09 §4 and OQ1; GDS-08 §7.1, §7.6; `docs/pipeline/backlog.md` `BL-0307`.
+- **Related ADRs:** ADR-0016, ADR-0015 (the seat is still client-asserted)
+- **Related Interfaces:** INT-0002, INT-0003
+- **Related Requirements:** FR-4310, FR-6510, FR-6220
+- **Notes:** This is a structural check at the same trust level as the Observer rejection: a
+  participant who lies about their seat still bypasses it (GDS-09, the LAN trust model).
 
 ### FR-4400 — Inject authoring and firing
 
@@ -2157,31 +2194,32 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 
 ### FR-5200 — TLE import and fallback
 
-#### FR-5210 — Space-Track import with manual/Keplerian fallback
+#### FR-5210 — Manual TLE and Keplerian asset entry
+
+*(Reworded 2026-10-23, owner decision `BL-0299`: "Drop mention of space-track." The former title
+was "Space-Track import with manual/Keplerian fallback"; the Space-Track import was never built and
+is no longer required. Same ID, narrower scope.)*
 
 - **ID:** FR-5210
-- **Title:** Import TLEs from Space-Track at build time with a manual fallback
-- **Description:** The system shall attempt to import two-line elements from Space-Track.org at
-  scenario-build time when reachable, and shall accept manual TLE entry or Keplerian-element
-  synthesis as a fallback when Space-Track is unreachable or unavailable; no network access shall
-  be required after vignette creation.
-- **Rationale:** Offline-first runtime with an optional, build-time-only network dependency is a
-  load-bearing invariant (`CLAUDE.md` invariant; ADR-0018).
+- **Title:** Add a real or fictional satellite from pasted TLE lines or Keplerian elements
+- **Description:** The system shall create a force-added satellite's orbit from TLE lines the
+  author pastes or loads from a file, or from Keplerian elements the author enters, without any
+  network access.
+- **Rationale:** Real satellites enter a vignette as TLE text and fictional ones as elements; the
+  runtime is offline (GDS-06 NFR-1; ADR-0018).
 - **Priority:** Must
-- **Inputs:** A real-satellite identifier for TLE lookup, or manually entered TLE/Keplerian data.
+- **Inputs:** TLE lines, or Keplerian elements.
 - **Outputs:** A populated `OrbitState` for the force-added Asset.
-- **Preconditions:** None for the manual/Keplerian path; network reachability for the Space-Track
-  path.
-- **Postconditions:** Once a vignette is created, no further network access is required to run it.
-- **Acceptance Criteria:** Given Space-Track is unreachable, manual TLE entry still successfully
-  produces a valid `OrbitState` for the force-added Asset.
+- **Preconditions:** None.
+- **Postconditions:** The added asset propagates like any other; no network access was used.
+- **Acceptance Criteria:** Given valid pasted TLE lines with no network connection, the asset is
+  added with a valid orbit; given malformed TLE lines, the add is refused with a reason.
 - **Verification Method:** Test
 - **Dependencies:** FR-1210
-- **Source Documents:** GDS-01 §9; GDS-02 §3–§4; build-spec/02 §5.5 FR-S2 (binding statement);
-  ADR-0018.
-- **Related ADRs:** ADR-0018
-- **Related Interfaces:** INT-0013
-- **Related Requirements:** FR-1210, FR-5310
+- **Source Documents:** GDS-05 FR-S2; GDS-06 NFR-1; GDS-07 §5.
+- **Related ADRs:** ADR-0018 (its build-time Space-Track pull is not built)
+- **Related Interfaces:** INT-0003, INT-0011
+- **Related Requirements:** FR-1210, FR-5220, FR-5310
 
 #### FR-5220 — Bulk TLE and CCSDS OMM multi-object import
 
@@ -2815,7 +2853,42 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Source Documents:** ADR-0022; ICD INT-0012, §7 issue 4.
 - **Related ADRs:** ADR-0022
 - **Related Interfaces:** INT-0011, INT-0012
-- **Related Requirements:** FR-7210
+- **Related Requirements:** FR-7210, FR-7230
+- **Notes:** *(Added 2026-10-23, GDS ladder alignment.)* **Not met as built.** The save envelope
+  carries only the vignette's ID and parameter overrides, not its content (GDS-07 §6), so the
+  content portion cannot be extracted from the save itself; resume reloads the vignette file by
+  ID. FR-7230 (owner decision `BL-0302`) closes this.
+
+#### FR-7230 — Resume independent of the original vignette file
+
+*(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+
+- **ID:** FR-7230
+- **Title:** A save file resumes even if its original vignette file has changed or gone
+- **Description:** The system shall resume a session from a save file using only what the save
+  contains, so the resumed state is the same whether the vignette file the session was loaded from
+  is unchanged, edited, renamed or deleted.
+- **Rationale:** As built, resume reloads the vignette by ID, so a later edit silently changes the
+  replayed starting conditions and a deletion prevents resume (GDS-07 §6, OQ1). Owner decision
+  (`BL-0302`, 2026-10-22): "Save the active state in the scenario regardless of original vignette
+  file."
+- **Priority:** Must
+- **Inputs:** A save file.
+- **Outputs:** A resumed session.
+- **Preconditions:** A save file produced after this requirement is implemented.
+- **Postconditions:** The resumed state equals the state at the moment of save.
+- **Acceptance Criteria:** Save a session at sim time T; edit (and, separately, delete) the
+  vignette file it was loaded from; resuming the save reproduces the state at T exactly in both
+  cases.
+- **Verification Method:** Test
+- **Dependencies:** FR-7210, FR-7220
+- **Source Documents:** GDS-07 §6 and OQ1; `docs/pipeline/backlog.md` `BL-0302`.
+- **Related ADRs:** ADR-0022, ADR-0002
+- **Related Interfaces:** INT-0012
+- **Related Requirements:** FR-7210, FR-7220, NFR-1800
+- **Notes:** Whether saves also carry a format and simulator version, and whether the engine-level
+  `SavedSession` shape converges with the session save, are design choices for the feature
+  specification (GDS-07 OQ2–OQ3).
 
 ### FR-7300 — AAR replay, scrub, and branch-compare
 
