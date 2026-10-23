@@ -182,7 +182,7 @@ review passes actually run against it).
 - **NFR-1610 — Failure-atomic event application** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** If applying a scheduled event raises an error during a live advance, the system shall restore the world and RNG to exactly the state the event log reproduces before that event, record a no-op failure entry in the event log in the event's place, and continue the advance.
   - **Rationale:** A defect in one handler must degrade one event visibly, not corrupt state or stop the exercise; the failure record keeps live and replayed state identical (ADR-0038). GDS-06 NFR-6 states it; no leaf did (gap G2).
-  - **Metric or verification method:** Test — a handler that raises leaves world and RNG equal to the replayed state, logs a `handler_error` entry, and the advance continues (`spacesim/tests/test_failure_atomic_events.py`).
+  - **Metric or verification method:** Test — a handler that raises leaves world and RNG equal to the replayed state, logs a `handler_error` entry, and the advance continues (tests: the generated Test column, `NFR-2850`).
   - **Priority:** Must
   - **Affected subsystems:** `engine/simulation.py`, `engine/handlers.py`
   - **Dependencies:** NFR-1500, NFR-1600
@@ -215,8 +215,8 @@ review passes actually run against it).
     exercises are carried by save/resume (FS-110, FR-7210), not by keeping a process alive, and
     LAN multiplayer hosts several sessions in one process (`/api/sessions`).
   - **Metric or verification method:** Test — save at sim time T, load the save into a new
-    session, and the resumed state equals the saved state (`test_session_features.py`,
-    `test_web.py`); Inspection — no crash-recovery mechanism is claimed.
+    session, and the resumed state equals the saved state (tests: the generated Test column,
+    `NFR-2850`); Inspection — no crash-recovery mechanism is claimed.
   - **Priority:** Must
   - **Affected subsystems:** `session/` (`SessionManager.save_state`/`from_state`,
     `InProcessSession.save`/`load_save`, `MAX_LIVE_SESSIONS`)
@@ -268,8 +268,7 @@ review passes actually run against it).
     files or change their observed behavior; this is a distinct quality attribute from `NFR-2000`
     (content stays data, not code) and was not previously stated anywhere in this baseline.
   - **Metric or verification method:** Test — every currently shipped vignette's existing
-    loading/behavior tests (`spacesim/tests/test_content.py`,
-    `spacesim/tests/test_vignette_tutorials.py`) continue to pass unchanged after the schema
+    loading/behavior tests (the generated Test column, `NFR-2850`) continue to pass unchanged after the schema
     extension ships.
   - **Priority:** Must
   - **Affected subsystems:** `content/vignette.py`, `engine/bus.py`, `engine/orders.py`
@@ -375,7 +374,7 @@ review passes actually run against it).
 - **NFR-3710 — Bounded work on untrusted input** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** Inputs that could force unbounded work shall be capped before the work starts: the number of entries in a loaded save's event log, the number of live sessions per process, and the number of samples in a time-span export. An over-limit request is refused (or, for live sessions, the oldest session evicted) before any replay or sampling begins.
   - **Rationale:** A hostile or mistaken request on the LAN must not be able to exhaust the host (June 2026 audit §D7; IP-1262). GDS-06 NFR-15 states it; no leaf did (gap G3).
-  - **Metric or verification method:** Test — an over-limit save, export span and session count are each refused or evicted before work starts (`test_defensive_audit_2026.py`, `test_ephemeris.py`, `test_vignette_creator_session.py`).
+  - **Metric or verification method:** Test — an over-limit save, export span and session count are each refused or evicted before work starts (tests: the generated Test column, `NFR-2850`).
   - **Priority:** Must
   - **Affected subsystems:** `session/inprocess.py` (`MAX_EVENTLOG_REPLAY_ENTRIES`, `MAX_LIVE_SESSIONS`), `session/ephemeris.py` (`MAX_EXPORT_SAMPLES`)
   - **Dependencies:** NFR-2200
@@ -487,7 +486,7 @@ review passes actually run against it).
 - **NFR-2810 — Fidelity claims validated against cited reference values** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** Each moderate-fidelity behavior a training lesson depends on (for example the power budget, custody decay, jamming and engagement outcomes) shall be validated by a recorded comparison of simulated quantities against reference values cited in the research encyclopedia, not by judgment alone.
   - **Rationale:** Tests verify that the engine matches its specification; they do not show that the specification behaves plausibly (GDS-06 NFR-19, absorbing DOM-005 §3–§4). The June 2026 power-model recalibration is the worked precedent.
-  - **Metric or verification method:** Inspection — a comparison table exists for each such behavior, citing its reference values; a regression pin (e.g. `test_power_calibration.py`) keeps a validated calibration from drifting.
+  - **Metric or verification method:** Inspection — a comparison table exists for each such behavior, citing its reference values; a regression pin test keeps a validated calibration from drifting (tests: the generated Test column, `NFR-2850`).
   - **Priority:** Should
   - **Affected subsystems:** `engine/` (the calibrated models), `docs/research/encyclopedia/`
   - **Dependencies:** NFR-1500
@@ -523,6 +522,17 @@ review passes actually run against it).
   - **Dependencies:** NFR-3010, NFR-3020, FR-6210
   - **Source documents:** GDS-08 "Verification status" and OQ1; `docs/pipeline/backlog.md` `BL-0304` owner decision.
   - **Related ADRs:** ADR-0004, ADR-0008
+
+- **NFR-2850 — The traceability matrix's Test column is generated from declared test origins** *(new 2026-10-23, owner request — `BL-0322`)*
+  - **Description:** The Test column of the requirements traceability matrix shall be produced from the origins the tests themselves declare (`NFR-2820`), never edited by hand: a requirement's Test cell lists exactly the tests whose declared origin names it, and is `UNASSIGNED` when none does. Requirement text shall not name test files as verification evidence, except where the named test is itself the subject of the requirement (the two permanent gates, and the playbook and training-source tests that `FR-11420` and `NFR-3400` require).
+  - **Rationale:** Owner request (`BL-0322`, 2026-10-23): test-to-origin traceability must work in both directions without a hand-kept copy that can drift. The markers record test → requirement; generating the column gives requirement → tests from the same source. GDS-10 OQ1 asks the same of GDS-10's matrix.
+  - **Metric or verification method:** Test — regenerating the column from the current suite's declared origins yields exactly the committed column (a stale or hand-edited cell fails); Inspection — no requirement leaf outside the stated exceptions names a test file.
+  - **Priority:** Should
+  - **Affected subsystems:** `docs/requirements/03-requirements-traceability-matrix.md`, `spacesim/tests/` (the origin report)
+  - **Dependencies:** NFR-2820
+  - **Source documents:** `docs/pipeline/backlog.md` `BL-0322` owner request; GDS-10 §7 and OQ1.
+  - **Related ADRs:** None identified
+  - **Notes:** Until the suite is backfilled (`IP-1331`–`IP-1333`), most generated cells are `UNASSIGNED` — the honest state. The test files this pass removed from leaf text are listed in `requirements-change-log.md` CHG-020 as hints for the backfill.
 
 ## 13. Portability
 
@@ -572,7 +582,7 @@ review passes actually run against it).
 - **NFR-3020 — An unavailable action states its reason before it is committed** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** Any command the server would refuse shall be presented as unavailable, with the server's refusal reason in operator language, before the operator commits it.
   - **Rationale:** Operators must never discover "you can't do that" only after committing (GDS-06 NFR-9, absorbing DOM-007 §4; GDS-08 §6, the button-state contract).
-  - **Metric or verification method:** Test — the dry-run validation returns the reason without changing state (`test_validate_order.py`); NFR-2840 (b) for the rendered half.
+  - **Metric or verification method:** Test — the dry-run validation returns the reason without changing state (tests: the generated Test column, `NFR-2850`); NFR-2840 (b) for the rendered half.
   - **Priority:** Must
   - **Affected subsystems:** `engine/orders.py` (`dry_run`), `ui_web/static/app.js`
   - **Dependencies:** NFR-2410
@@ -643,7 +653,7 @@ review passes actually run against it).
   - **Rationale:** Training rooms may be offline or air-gapped (ADR-0018's offline-first runtime);
     as built, no code in `spacesim/` opens a network connection.
   - **Metric or verification method:** Test — TLE and OMM import succeed from pasted or file text
-    (`test_bulk_import_session.py`, `test_content.py`); Inspection — no network client is used
+    (tests: the generated Test column, `NFR-2850`); Inspection — no network client is used
     anywhere in `spacesim/`.
   - **Priority:** Must
   - **Affected subsystems:** `content/` (TLE/OMM parsing), `session/` (force-add), Vignette Creator
@@ -921,8 +931,8 @@ itself yielded nothing.
 
 ## Completion report
 
-- **Total NFR count (numbered baseline):** 47 as of 2026-10-23 (28 before the GDS ladder
-  alignment pass, which added 19); numbering leaves gaps per category, consistent with
+- **Total NFR count (numbered baseline):** 48 as of 2026-10-23 (28 before the GDS ladder
+  alignment pass, which added 19; `NFR-2850` added the same day for `BL-0322`); numbering leaves gaps per category, consistent with
   `requirements/01`'s scheme. *(The figure of 23 recorded here originally predates `NFR-2010`,
   `NFR-3400`–`NFR-3600` and `NFR-3700`.)* Unchanged by
   the 2026-07 strategic-review reconciliation pass and by the 2026-07 DOM-002/004/005 backfill pass.

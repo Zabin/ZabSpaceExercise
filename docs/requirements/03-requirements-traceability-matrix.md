@@ -11,6 +11,16 @@ GDS-10 was unauthored.)*
 
 ## Method and discipline
 
+> **Amended 2026-10-23, `BL-0322`** (see
+> [`reviews/requirements-update-bl-0322.md`](../reviews/requirements-update-bl-0322.md)): added row
+> `NFR-2850`. **The Test column is now to be generated, not edited** (`NFR-2850`): each cell lists
+> exactly the tests whose `@pytest.mark.verifies(...)` origin names that requirement, produced by
+> the origin report (`IP-1330`). The marker tooling is planned but not built, and no test carries a
+> marker yet, so the column could not be generated in this pass. **The Test cells below are the
+> earlier hand-filled values, kept as hints for the backfill (`IP-1331`–`IP-1333`), not as verified
+> traceability.** The first `04` pass after `IP-1330` lands replaces the whole column with the
+> generated one, `UNASSIGNED` wherever no test declares the requirement.
+
 > **Amended 2026-10-23** (GDS ladder alignment, see
 > [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md)):
 > added rows `FR-4320`, `FR-7230` and 19 NFR rows (`NFR-1510`, `1610`, `2410`, `2810`–`2840`,
@@ -402,6 +412,7 @@ unheaded ninth cell (`NFR-1300`/`1400`/`1500`/`1600`/`1800`/`2500`/`3100`).
 | NFR-2820 *(new 2026-10-23)* | Every test declares the requirement or feature it verifies | UNASSIGNED | (none identified) | (all) | `spacesim/tests/`, `pyproject.toml` | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | NFR-2830 *(new 2026-10-23)* | Test relevance audited at each major release | UNASSIGNED | (none identified) | (none — process) | `spacesim/tests/`, `docs/requirements/` | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | NFR-2840 *(new 2026-10-23)* | Load-bearing UI rules verified by automated browser tests | UNASSIGNED | ADR-0004, ADR-0008 | C4 | `ui_web/static/`, `spacesim/tests/` | UNASSIGNED | UNASSIGNED | UNASSIGNED |
+| NFR-2850 *(new 2026-10-23, `BL-0322`)* | Matrix Test column generated from declared test origins | UNASSIGNED | None | — | `requirements/03`, `spacesim/tests/` | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | NFR-2900 | Windows-first portability | UNASSIGNED | ADR-0020 | (all) | Build/dependency manifest, `spacesim/` | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | NFR-3000 | Accessible presentation | UNASSIGNED | (none identified) | C4 | `ui_web/static/` (app.js, style.css, globe.js) | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | NFR-3010 *(new 2026-10-23)* | Belief visibly distinguishable from ground truth | UNASSIGNED | (none identified) | C4 | `ui_web/static/` (globe.js, world.js, symbology.js) | UNASSIGNED | UNASSIGNED | UNASSIGNED |

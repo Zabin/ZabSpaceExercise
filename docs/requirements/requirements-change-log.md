@@ -263,6 +263,32 @@ Full derivation and findings: [`reviews/requirements-update-gds-ladder-batch.md`
 - **Reason:** Keep the matrix complete over the extended baseline; GDS-10 findings F2 and F4.
 - **Source review issue:** R1, R2, R8, R9.
 
+## Generated Test column (2026-10-23, `BL-0322`) — `02`, `03`
+
+Owner request: make test↔origin traceability bidirectional by generating the matrix's Test column
+from the tests' declared origins. Review: [`reviews/requirements-update-bl-0322.md`](../reviews/requirements-update-bl-0322.md).
+
+### CHG-020
+- **Files:** `02-non-functional-requirements.md`
+- **Change:** Added `NFR-2850` (§12 Testing). Removed test-file names from the verification text of
+  `NFR-1610`, `NFR-1800`, `NFR-2010`, `NFR-2810`, `NFR-3020`, `NFR-3200` and `NFR-3710`, replaced by
+  a pointer to the generated Test column. Kept the names where the test is the requirement's subject
+  (`NFR-1500`/`NFR-1900`/`NFR-2400`/`NFR-2800`'s permanent gates; `NFR-3400`'s playbook test;
+  `FR-11420`). **Removed names, as hints for the backfill:** `NFR-1610` → `test_failure_atomic_events.py`;
+  `NFR-1800` → `test_session_features.py`, `test_web.py`; `NFR-2010` → `test_content.py`,
+  `test_vignette_tutorials.py`; `NFR-2810` → `test_power_calibration.py`; `NFR-3020` →
+  `test_validate_order.py`; `NFR-3200` → `test_bulk_import_session.py`, `test_content.py`;
+  `NFR-3710` → `test_defensive_audit_2026.py`, `test_ephemeris.py`, `test_vignette_creator_session.py`.
+- **Reason:** `BL-0322`; a hand-kept copy of requirement → test drifts.
+- **Source review issue:** U1.
+
+### CHG-021
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Added row `NFR-2850`; header note that the Test column is to be generated and that its
+  current cells are hand-filled hints until `IP-1330` exists.
+- **Reason:** `BL-0322`.
+- **Source review issue:** U2.
+
 ---
 
 ## Findings deliberately left unactioned (with reason)
