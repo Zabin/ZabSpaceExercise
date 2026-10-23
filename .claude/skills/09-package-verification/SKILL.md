@@ -84,7 +84,11 @@ its `Requirements Covered` FR/NFRs and the Requirements Traceability Matrix
    ownership: this package's defect (fail the verification) or pre-existing (finding with
    evidence, e.g. the failure reproduces on the pre-package commit).
 5. **Audit traceability.** Every `Requirements Covered` ID must trace in the RTM to real files and
-   real tests this package shipped — no placeholder, no stale cell.
+   real tests this package shipped — no placeholder, no stale cell. **Every test the package added
+   carries `@pytest.mark.verifies(...)`** (owner direction, `BL-0310`) naming IDs that exist in
+   the baseline and that this package covers or tests; a missing or wrong origin tag is a finding
+   against the package, the same as a missing test. (The suite-wide relevance audit is not this
+   skill's job: it runs only at major-release verification, in `11-release-readiness`.)
 6. **Write the Verification Report**, update the ledger(s) per Outputs, and commit as
    `docs(verification): VR-xxxx — <result>`.
 
@@ -92,7 +96,8 @@ its `Requirements Covered` FR/NFRs and the Requirements Traceability Matrix
 
 - [ ] Every DoD and Verification Checklist item has recorded evidence — none waved through.
 - [ ] Full suite green; both permanent gates green, run by name.
-- [ ] Every covered requirement traces to real code and a real test in the RTM.
+- [ ] Every covered requirement traces to real code and a real test in the RTM, and every test the
+      package added carries a `verifies` marker naming valid IDs.
 - [ ] The implementing change stayed in scope, or every excursion is explained and accepted.
 - [ ] The report's Result matches the ledger status written — never `VERIFIED` in one place and
       hedged in the other.

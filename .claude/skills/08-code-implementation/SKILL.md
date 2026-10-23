@@ -210,6 +210,15 @@ If the repository's convention is test-first, alternate: write the next failing 
 to Add`, then the minimal implementation that makes it pass, then the next test — rather than
 writing all the implementation first and backfilling tests at the end.
 
+**Every test you write names its origin** (owner direction, `BL-0310`): mark it
+`@pytest.mark.verifies("<ID>", ...)` with the IDs `Tests to Add` gives it — a requirement leaf
+(`FR-xxxx`/`NFR-xxxx`) by preference, else the feature (`FS-xxx`), the package (`IP-xxxx`) only
+for a test of the package's own Definition of Done; use a module-level `pytestmark` when every test
+in a new file verifies the same IDs. A test with no origin is not done. If `Tests to Add` gives a
+test no ID, choose the requirement it plainly verifies and say so in the Implementation Summary.
+Until the `verifies` marker is registered in `pyproject.toml` (the `BL-0310` registration package),
+an unregistered marker only warns; apply it anyway so the backfill has nothing to redo.
+
 ### Step 6 — Run all available tests
 
 The full suite, not just the new tests this package added — a package's own Definition of Done is
@@ -256,7 +265,9 @@ changes (no operator-visible behavior) with no §15.1 row need no manual edit.
 Update whatever mechanism the repository uses to link a requirement to the code that implements
 it — a Traceability Matrix's reverse index, an in-code citation convention, a manifest file — so
 every requirement ID in this package's `Requirements Covered` now traces to the real file(s) you
-just wrote, replacing any placeholder value the matrix previously carried for those IDs.
+just wrote, replacing any placeholder value the matrix previously carried for those IDs. The
+tests' `verifies` markers (Step 5) are the test half of that trace; name the test files against
+the same IDs.
 
 ### Step 10 — Update the Master Build Plan
 
