@@ -34,7 +34,10 @@
 - **Backlog:** run #204 harvested `BL-0309` (clock-lag watchdog untested, `SCHEDULED` for `07` with `BL-0305`); added F2–F5 to `BL-0298` and OQ1 to `BL-0297`; `BL-0301`'s trigger fired, now `SCHEDULED` for the cleanup sweep. **Open owner decisions (ripe now, batched for the next run's gate):** `BL-0299` (pinning, coverage, Space-Track), `BL-0302` (save files), `BL-0304` (UI verification), `BL-0307` (White-only enforcement). Run #195's six `DECIDED` rows remain; `BL-0049` parked.
 - **Next step:** **owner gate — MSTR-006 §3 build go-ahead** for the planned packages, in this suggested order: `IP-1068` (High, `FR-4310` not met), `IP-1101` (self-contained saves + force-edit bug), `IP-1091` and `IP-1069` (small), `IP-1330` then `IP-1331`–`IP-1333`, `IP-1350`, `IP-1340`. On a go-ahead: `08-code-implementation` on the first, then `09` in a fresh session. Also open: `IP-1311` (`READY`, pre-authorized) — the regular thread. Pre-migration documentation work requested on 2026-10-23 is complete. Owner decisions waiting: `BL-0312` (friction rule in the spec template?), `BL-0319` (retired-documents register home), `BL-0318` (which releases are major; not yet ripe).
 - **Open gates:**
-  - None ripe and unanswered. Run #196's four owner decisions are recorded (`BL-0291`, `BL-0293` ×2, `BL-0296`); run #195's six remain `DECIDED`, not actioned.
+  - **MSTR-006 §3 build go-ahead** for the nine packages planned in runs #219–#224 (`IP-1068`, `IP-1069`, `IP-1091`, `IP-1101`, `IP-1330`–`IP-1333`, `IP-1340`, `IP-1350`).
+  - **`BL-0312`** (`NEEDS-USER`): should every console spec state its intentional friction (a `06` template rule), or stay guidance in GDS-06 NFR-9?
+  - **`BL-0319`** (`NEEDS-USER`): where the retired-documents register lives and who writes it; blocks only the `NFR-3810` check and should be settled before the `BL-0292` retirement sweep.
+  - Run #195's six owner decisions remain `DECIDED`, not actioned.
   - `IP-1160` authorization (MSTR-006 §3) is still deferred by the owner.
 
 ---
