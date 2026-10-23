@@ -170,6 +170,10 @@ headings and the catalog's own tables:
 | F-25 | Features that grew (judgment call) | FEAT-8100 (1 FR + 6 → 11 NFRs); FEAT-9100 (+`NFR-3060`); FEAT-6100 (+`NFR-3710`) | FEAT-8100 now holds the five human-factors leaves `NFR-3010`–`NFR-3050` on top of F-07's six cross-cutting NFRs. `NFR-3060` (White Cell can see the active Red doctrine preset) went to FEAT-9100, which owns presets, rather than FEAT-4600 (god-view). `NFR-3710` (bounded work on untrusted input) went to FEAT-6100, the seam untrusted requests cross, though its three caps live in `inprocess.py` and `ephemeris.py`. | Low | Keep. If the human-factors leaves get their own specification, split them out of FEAT-8100 into a "Console Human-Factors Rules" Feature at the next `05` touch rather than growing FEAT-8100 further. |
 | F-26 | Downstream gaps (next stage) | FEAT-7200, FEAT-12100, FEAT-12200, FEAT-12300; `BL-0305`, `BL-0309`, `BL-0312` | No specification yet covers `FR-7230`, `NFR-2820`/`NFR-2830`/`NFR-3840`/`NFR-1510`, `NFR-2840`, or `NFR-3800`–`NFR-3830`. `NFR-3030` (panel-manager contract) has a known gap in the Compare and Assessment panels (`BL-0305`); `NFR-1300` has no test (`BL-0309`). | Medium | `06-feature-specification`, one per run: FS-110 revision (`FR-7230`); a new FS for FEAT-12100 (marker registration and backfill); a new FS for FEAT-12200 (name the browser tooling and run mode, review R7, and decide `BL-0312`'s friction rule); FEAT-12300 after them (it rides `BL-0297`). `BL-0305`/`BL-0309` go straight to `07` as remediation. |
 
+| # | Finding type | IDs involved | Description | Severity | Recommendation |
+|---|---|---|---|---|---|
+| F-27 | Delta assignment (2026-10-23, `BL-0322`) | `NFR-2850`; FEAT-12100 | `NFR-2850` (the matrix's Test column is generated from declared test origins) joins FEAT-12100, beside `NFR-2820` which it depends on; no new edge, no bucket change. Mechanical check: 106 FR + 48 NFR leaves, each owned once. One Feature now owns both directions of the trace. | Info | `06`: revise FS-133 for `NFR-2850`. |
+
 ## Reconciling the 50–80 expectation
 
 This catalog, decomposed strictly from the **approved** requirements baseline, lands at **36

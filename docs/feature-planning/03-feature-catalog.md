@@ -1171,7 +1171,7 @@ them naturally (see `05-feature-review.md` F-22).
 | **Purpose** | Make every test say what it verifies, so the traceability matrix's Test column is read rather than inferred, and give each major release a relevance audit and a reproducible dependency set (owner directions `BL-0310`, `BL-0299`). |
 | **Description** | Every test declares its origin (requirement leaf, else feature specification, else package) in a machine-readable marker; every declared ID resolves to a live baseline item; at each major release the suite is audited for unmarked, orphaned and duplicate tests and for in-scope requirements with no test, and the release ships with every dependency locked to an exact version. |
 | **Scope** | The marker convention and its registration, the backfill of the existing suite, the resolution check, the major-release audit and the dependency lock. The audit's and lock's execution belongs to `11-release-readiness`; this Feature supplies what they check. |
-| **Included Requirements** | NFR-1510, NFR-2820, NFR-2830, NFR-3840 |
+| **Included Requirements** | NFR-1510, NFR-2820, NFR-2830, NFR-3840, NFR-2850 *(2026-10-23, `BL-0322`)* |
 | **Excluded Requirements** | NFR-2840 (browser suite — FEAT-12200); NFR-3800–NFR-3830 (documentation integrity — FEAT-12300); NFR-1900 (engine test coverage and import guard — FEAT-1100) |
 | **Dependencies** | FEAT-1100, FEAT-5300 (`NFR-1510` cites `NFR-1500` and `NFR-2200`) |
 | **Dependent Features** | None (the browser suite's tests will carry the marker, but no leaf there cites a leaf here) |
@@ -1261,3 +1261,4 @@ their disposition and what would be required to promote them).
 
 **As of the 2026-10-23 sweep (run #212), every baselined FR leaf (106) and NFR leaf (47) is owned by
 exactly one Feature** — re-checked mechanically the same way (`05-feature-review.md` F-21).
+*(Delta 2026-10-23, `BL-0322`: `NFR-2850` joins FEAT-12100 — 48 NFR leaves; re-checked, F-27.)*
