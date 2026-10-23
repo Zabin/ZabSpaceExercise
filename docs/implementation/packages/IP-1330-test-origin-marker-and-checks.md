@@ -63,6 +63,9 @@ After this package:
    running no tests. It needs no separate tool and reuses the same collection and reader.
 5. **The allow-list starts with all 72 modules** minus the files this package itself tags, and each
    backfill package removes its modules. The target is empty, reached when IP-1333 lands.
+6. **The dependency lock (`NFR-1510`) is not in this package.** It is produced at the first major
+   release (which releases are major: `BL-0318`); FS-133 criterion 8 is checked by
+   `11-release-readiness` then. The TWBS records this.
 7. *(v1.1)* **Matrix regeneration.** A second mode of the report option (for example
    `--origin-report=rtm`) rewrites only the Test cell of each baseline requirement row in the
    matrix: the tests whose origin names that requirement (`module::test`, grouped by module), or
@@ -72,9 +75,6 @@ After this package:
    memory against the committed file. This package runs the first regeneration, which replaces the
    hand-filled cells (hints preserved at `9d50ed6` and in change-log CHG-020) — after it, only the
    two gate modules are tagged, so nearly every cell reads `UNASSIGNED`, the honest state.
-6. **The dependency lock (`NFR-1510`) is not in this package.** It is produced at the first major
-   release (which releases are major: `BL-0318`); FS-133 criterion 8 is checked by
-   `11-release-readiness` then. The TWBS records this.
 
 ## Requirements Covered
 
