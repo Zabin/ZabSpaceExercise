@@ -18,7 +18,7 @@ def _client() -> TestClient:
 
 def _new_session(c: TestClient) -> str:
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     return sid
 
 

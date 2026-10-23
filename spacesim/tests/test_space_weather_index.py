@@ -217,7 +217,7 @@ def test_http_inject_with_out_of_range_series_is_400():
     sid = api.load_vignette("leo-isr-denial", seed=1)
     api.start(sid)
     c = TestClient(create_app(api))
-    r = c.post(f"/api/sessions/{sid}/inject",
+    r = c.post(f"/api/sessions/{sid}/inject?cell=white",
                json={"inject": [{"type": "space_weather", "index_series": [{"offset_s": 0, "f107": -1}]}]})
     assert r.status_code == 400
     assert "f107" in r.json()["detail"]

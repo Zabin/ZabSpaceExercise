@@ -165,7 +165,7 @@ def test_no_phantom_booking_after_malformed_attempts():
 def test_http_malformed_param_is_not_a_500():
     c = TestClient(app, raise_server_exceptions=False)
     sid = c.post("/api/sessions", json={"vignette_id": "training-basics", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     body = {"cell": "blue", "actor": "RADAR-TRN", "action": "observe", "target": "RED-TGT",
             "params": {"intent": "track", "beam_mode": ["fence"]}}
     for route in ("order/validate", "order"):

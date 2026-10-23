@@ -206,6 +206,7 @@ hostile participant on the LAN can read another cell's belief state through `/sc
 v1 PME training context (everyone in the room is on the same team learning together) and is
 documented as the explicit trust boundary; see `docs/AUDIT-2026-06.md` §D5 / §F1. Hardening
 options (per-cell tokens) are tracked in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
+**White Cell controls (clock, step/advance/rewind/undo, start, param, inject, force-add, save load) are refused to any request not naming the `white` seat (IP-1068, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication.**
 **The Observer seat's mutation-rejection (IP-1130) is enforced at this same trust level, not a
 stronger one** — the server rejects any request asserting `cell=observer`, a real structural
 enforcement (it holds even for a request that bypasses the UI entirely), but the seat assertion

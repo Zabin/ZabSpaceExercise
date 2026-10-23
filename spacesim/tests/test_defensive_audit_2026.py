@@ -164,7 +164,7 @@ def _client():
 
 def _sid(c) -> str:
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     return sid
 
 
@@ -181,7 +181,7 @@ def test_tle_id_charset_rejected(bad_id: str):
     c = _client()
     sid = _sid(c)
     body = {"id": bad_id, "line1": "1 25544U 98067A", "line2": "2 25544"}
-    r = c.post(f"/api/sessions/{sid}/force/tle", json=body)
+    r = c.post(f"/api/sessions/{sid}/force/tle?cell=white", json=body)
     assert r.status_code in (422, 400), f"hostile TLE id {bad_id!r} got status {r.status_code}"
 
 

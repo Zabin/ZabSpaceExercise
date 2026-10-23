@@ -180,7 +180,7 @@ def test_null_params_mean_absent(vignette, mgr):
 def test_http_malformed_jam_is_not_a_500():
     c = TestClient(app, raise_server_exceptions=False)
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 5}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     body = {"cell": "red", "actor": "JAM-NORTH", "action": "jam", "target": "ISR-EO-1",
             "params": {"modulation": "barrage", "power_w": "abc"}}
     for route in ("order/validate", "order"):

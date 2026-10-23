@@ -42,7 +42,7 @@ def test_json_view_write_is_visible_to_form_view_read():
 def test_form_view_add_is_visible_to_json_view_read():
     c = _client()
     sid = _draft(c)
-    r = c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-F1", "line1": _TLE1, "line2": _TLE2})
+    r = c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-F1", "line1": _TLE1, "line2": _TLE2})
     assert r.status_code == 200 and r.json()["ok"] is True
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
     assert any(a["id"] == "SAT-F1" for a in state["assets"])
@@ -52,7 +52,7 @@ def test_json_view_write_and_form_view_converge_on_the_same_edit():
     """The single most likely defect this Feature names: two data paths for one draft."""
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-C1", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-C1", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
     # Edit via the JSON view (replace the whole list, changing SAT-C1's owner)
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
     for a in state["assets"]:
@@ -71,7 +71,7 @@ def test_json_view_write_and_form_view_converge_on_the_same_edit():
 def test_json_view_write_rejects_malformed_asset_without_partial_apply():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-OK", "line1": _TLE1, "line2": _TLE2})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-OK", "line1": _TLE1, "line2": _TLE2})
     r = c.put(f"/api/sessions/{sid}/creator/state", json={"assets": [
         {"id": "SAT-OK", "owner": "blue"}, {"owner": "blue"},   # second entry missing required id
     ]})
@@ -86,8 +86,8 @@ def test_json_view_write_rejects_malformed_asset_without_partial_apply():
 def test_creator_scene_shows_assets_of_every_owner_with_no_filtering():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-BLUE", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-RED", "line1": _TLE1, "line2": _TLE2, "owner": "red"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-BLUE", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-RED", "line1": _TLE1, "line2": _TLE2, "owner": "red"})
     scene = c.get(f"/api/sessions/{sid}/creator/scene").json()
     ids = {a["id"] for a in scene["assets"]}
     assert {"SAT-BLUE", "SAT-RED"} <= ids   # both visible together — no CellController filtering
@@ -96,7 +96,7 @@ def test_creator_scene_shows_assets_of_every_owner_with_no_filtering():
 def test_creator_scene_reflects_asset_changes_within_the_same_authoring_session():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-REFRESH", "line1": _TLE1, "line2": _TLE2})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-REFRESH", "line1": _TLE1, "line2": _TLE2})
     before = {a["id"] for a in c.get(f"/api/sessions/{sid}/creator/scene").json()["assets"]}
     assert "SAT-REFRESH" in before
     c.delete(f"/api/sessions/{sid}/creator/asset/SAT-REFRESH")
@@ -109,7 +109,7 @@ def test_creator_scene_reflects_asset_changes_within_the_same_authoring_session(
 def test_tle_paste_with_type_cell_name_fields():
     c = _client()
     sid = _draft(c)
-    r = c.post(f"/api/sessions/{sid}/force/tle", json={
+    r = c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={
         "id": "SAT-TYPED", "line1": _TLE1, "line2": _TLE2, "owner": "red", "kind": "sensor",
     })
     assert r.json()["ok"] is True
@@ -121,7 +121,7 @@ def test_tle_paste_with_type_cell_name_fields():
 def test_lat_long_entry_with_type_cell_name_fields():
     c = _client()
     sid = _draft(c)
-    r = c.post(f"/api/sessions/{sid}/force/ground", json={
+    r = c.post(f"/api/sessions/{sid}/force/ground?cell=white", json={
         "id": "GS-TYPED", "lat_deg": 34.74, "lon_deg": -120.57, "owner": "blue", "kind": "ground_station",
     })
     assert r.json()["ok"] is True
@@ -138,7 +138,7 @@ def test_curated_site_list_offered_before_free_entry():
     assert any(s["code"] == "Vandenberg" for s in sites)
     # A free-entry coordinate not in the curated list is still accepted (fallback path)
     sid = _draft(c)
-    r = c.post(f"/api/sessions/{sid}/force/ground", json={
+    r = c.post(f"/api/sessions/{sid}/force/ground?cell=white", json={
         "id": "GS-FREE", "lat_deg": 12.34, "lon_deg": 56.78,
     })
     assert r.json()["ok"] is True
@@ -149,7 +149,7 @@ def test_curated_site_list_offered_before_free_entry():
 def test_asset_edit_reflected_in_json_view_and_scene():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-EDIT", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-EDIT", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
     r = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-EDIT", json={"patch": {"group": "ALPHA"}})
     assert r.json()["ok"] is True
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
@@ -159,7 +159,7 @@ def test_asset_edit_reflected_in_json_view_and_scene():
 def test_asset_reassign_is_an_owner_patch():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-REASSIGN", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-REASSIGN", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
     r = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-REASSIGN", json={"patch": {"owner": "red"}})
     assert r.json()["ok"] is True
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
@@ -169,7 +169,7 @@ def test_asset_reassign_is_an_owner_patch():
 def test_asset_delete_removed_from_list_and_edit_then_fails():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-DEL", "line1": _TLE1, "line2": _TLE2})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-DEL", "line1": _TLE1, "line2": _TLE2})
     r = c.delete(f"/api/sessions/{sid}/creator/asset/SAT-DEL")
     assert r.json()["ok"] is True
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
@@ -217,7 +217,7 @@ def test_matrix_assignment_produces_role_assignments_identical_to_direct_assign_
     the resulting role_assignments state must be identical in shape either way (FR-5160)."""
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-ROLE", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-ROLE", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
     c.post(f"/api/sessions/{sid}/creator/seats?cell=white", json={"cell": "white", "count": 1})
     r = c.post(f"/api/sessions/{sid}/roles/assign", json={
         "cell": "white", "seat": "white-1", "asset_or_constellation": "SAT-ROLE", "role": "both",

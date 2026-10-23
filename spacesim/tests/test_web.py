@@ -21,7 +21,7 @@ def _client() -> TestClient:
 def _new_session(c: TestClient) -> str:
     assert any(v["id"] == "leo-isr-denial" for v in c.get("/api/vignettes").json())
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     return sid
 
 
@@ -98,12 +98,12 @@ def test_full_flow_order_advance_objectives_and_rewind():
         "cell": "blue", "actor": "ISR-EO-1", "action": "downlink", "params": {"via": "GS-NORTH"}}).json()
     assert ack["ok"] and ack["status"] == "queued" and ack["earliest_window"] is not None
 
-    c.post(f"/api/sessions/{sid}/advance", json={"t": start + 800 * 1_000_000})
+    c.post(f"/api/sessions/{sid}/advance?cell=white", json={"t": start + 800 * 1_000_000})
     objs = c.get(f"/api/sessions/{sid}/objectives").json()
     assert objs["blue"]["deliver_isr"] is True
 
     # Rewind clears the delivery (exact replay-based rewind through the API).
-    c.post(f"/api/sessions/{sid}/rewind", json={"t": 0})
+    c.post(f"/api/sessions/{sid}/rewind?cell=white", json={"t": 0})
     assert c.get(f"/api/sessions/{sid}/objectives").json()["blue"]["deliver_isr"] is False
 
 
@@ -120,7 +120,7 @@ def test_inject_reveals_track_to_blue_over_api():
     c = _client()
     sid = _new_session(c)
     assert c.get(f"/api/sessions/{sid}/view/blue").json()["known_tracks"] == []
-    c.post(f"/api/sessions/{sid}/inject", json={"inject": "commercial_imagery_leak"})
+    c.post(f"/api/sessions/{sid}/inject?cell=white", json={"inject": "commercial_imagery_leak"})
     tracks = c.get(f"/api/sessions/{sid}/view/blue").json()["known_tracks"]
     assert any(t["object"] == "RED-SURF" for t in tracks)
 
@@ -160,12 +160,12 @@ def test_telemetry_series_route_matches_export_csv():
     import csv, io
     c = _client()
     sid = _new_session(c)
-    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
+    c.post(f"/api/sessions/{sid}/clock?cell=white", json={"running": False})
     start = c.get(f"/api/sessions/{sid}/clock").json()["now"]
-    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
-    c.post(f"/api/sessions/{sid}/inject", json={"inject": {"effects": [
+    c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 600})
+    c.post(f"/api/sessions/{sid}/inject?cell=white", json={"inject": {"effects": [
         {"type": "anomaly", "target": "ISR-EO-1", "subsystem": "bus", "cause": "route test"}]}})
-    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 600})
     t1 = start + 1200 * 10**6
     series = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/snr_db",
                    params={"t0": start, "t1": t1, "n": 5}).json()["points"]
@@ -189,7 +189,7 @@ def test_maneuver_ledger_route_and_csv_export_are_fog_scoped():
         "params": {"dv": [5.0, 0.0, 0.0], "via": "GS-NORTH", "purpose_tag": "test-tag"}})
     assert r.json()["ok"], r.json()
     win = r.json()["earliest_window"]
-    c.post(f"/api/sessions/{sid}/advance", json={"t": win[0] + 1})
+    c.post(f"/api/sessions/{sid}/advance?cell=white", json={"t": win[0] + 1})
 
     ledger = c.get(f"/api/sessions/{sid}/maneuver_ledger/blue/ISR-EO-1")
     assert ledger.status_code == 200
@@ -211,8 +211,8 @@ def test_telemetry_export_csv_route_is_cell_scoped_like_telemetry():
     import csv, io
     c = _client()
     sid = _new_session(c)
-    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
-    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    c.post(f"/api/sessions/{sid}/clock?cell=white", json={"running": False})
+    c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 600})
     now = c.get(f"/api/sessions/{sid}/clock").json()["now"]
 
     span = {"t1": now - 600 * 10**6, "t2": now, "interval_s": 300}
@@ -279,7 +279,7 @@ def test_ssn_endpoint_available():
     # Use a vignette with SSN enabled (training-basics has ssn_blue_dispersion parameter)
     sid = c.post("/api/sessions", json={"vignette_id": "training-basics", "seed": 1,
                                         "overrides": {"ssn_blue_dispersion": "regional"}}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     r = c.get(f"/api/sessions/{sid}/view/blue")
     assert r.status_code == 200   # session started cleanly with SSN enabled
 
@@ -300,7 +300,7 @@ def test_lazy_clock_advances_on_read(monkeypatch):
     c = _client()
     _patch_wall(monkeypatch, 1000.0)
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")   # auto-arms the clock at wall=1000
+    c.post(f"/api/sessions/{sid}/start?cell=white")   # auto-arms the clock at wall=1000
     now0 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     _patch_wall(monkeypatch, 1010.0)        # +10s wall
     now1 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
@@ -315,7 +315,7 @@ def test_lazy_clock_idempotent_for_multi_reader(monkeypatch):
     c = _client()
     _patch_wall(monkeypatch, 2000.0)
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     now0 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     _patch_wall(monkeypatch, 2010.0)        # +10s wall, frozen for all 3 reads
     # Simulate 3 tabs polling at the same wall instant.
@@ -333,20 +333,20 @@ def test_clock_pause_freezes_then_resumes(monkeypatch):
     c = _client()
     _patch_wall(monkeypatch, 5000.0)
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     now0 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     _patch_wall(monkeypatch, 5010.0)
     now_running = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     assert now_running - now0 == 10 * 1_000_000
     # Pause.
-    state = c.post(f"/api/sessions/{sid}/clock", json={"running": False}).json()
+    state = c.post(f"/api/sessions/{sid}/clock?cell=white", json={"running": False}).json()
     assert state["running"] is False
     paused_at = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     _patch_wall(monkeypatch, 5025.0)        # +15s wall while paused
     after_paused = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     assert after_paused == paused_at        # sim frozen
     # Resume — re-anchors at the current wall.
-    c.post(f"/api/sessions/{sid}/clock", json={"running": True})
+    c.post(f"/api/sessions/{sid}/clock?cell=white", json={"running": True})
     _patch_wall(monkeypatch, 5030.0)        # +5s after resume
     after_resume = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     assert after_resume - paused_at == 5 * 1_000_000
@@ -357,14 +357,14 @@ def test_rewind_re_anchors_clock(monkeypatch):
     c = _client()
     _patch_wall(monkeypatch, 7000.0)
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     start_now = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     _patch_wall(monkeypatch, 7030.0)        # run +30s of wall time
     advanced = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     assert advanced - start_now == 30 * 1_000_000
     # Rewind sets sim.clock.now back; re-anchor must reset wall_anchor to wall=now and
     # sim_anchor to the new sim time. So +5s of further wall time should yield +5s of sim.
-    c.post(f"/api/sessions/{sid}/rewind", json={"t": 0})
+    c.post(f"/api/sessions/{sid}/rewind?cell=white", json={"t": 0})
     after_rewind = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     _patch_wall(monkeypatch, 7035.0)        # +5s after rewind
     after_5s = c.get(f"/api/sessions/{sid}/godview").json()["now"]
@@ -376,7 +376,7 @@ def test_session_discovery_lists_sessions():
     c = _client()
     s1 = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
     s2 = c.post("/api/sessions", json={"vignette_id": "training-basics", "seed": 2}).json()["session"]
-    c.post(f"/api/sessions/{s1}/start")
+    c.post(f"/api/sessions/{s1}/start?cell=white")
     listing = c.get("/api/sessions").json()
     by_sid = {s["sid"]: s for s in listing}
     assert s1 in by_sid and s2 in by_sid
@@ -417,7 +417,7 @@ def test_aar_csv_export_embeds_classification_over_http():
     sid = c.post("/api/sessions", json={
         "vignette_id": "leo-isr-denial", "seed": 1, "classification": "UNCLASSIFIED//EXERCISE",
     }).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     csv_text = c.get(f"/api/sessions/{sid}/aar/export.csv").text
     assert "UNCLASSIFIED//EXERCISE" in csv_text
 
@@ -436,11 +436,11 @@ def test_concurrent_reads_and_writes_lock_safe():
     import concurrent.futures as cf
     c = _client()
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     # Pause the clock so wall-time noise doesn't mask the lock test.
-    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
+    c.post(f"/api/sessions/{sid}/clock?cell=white", json={"running": False})
 
-    def step():       return c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 1.0}).status_code
+    def step():       return c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 1.0}).status_code
     def view_b():     return c.get(f"/api/sessions/{sid}/view/blue").status_code
     def view_w():     return c.get(f"/api/sessions/{sid}/view/white").status_code
     def godview():    return c.get(f"/api/sessions/{sid}/godview").status_code
@@ -460,7 +460,7 @@ def test_advance_guard_no_op_at_same_wall_time(monkeypatch):
     c = _client()
     _patch_wall(monkeypatch, 9000.0)
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     _patch_wall(monkeypatch, 9010.0)        # +10s
     n1 = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     # Same wall time, second read: catch_up sees target == current, must be a no-op.
@@ -472,9 +472,9 @@ def test_resumed_session_loads_paused():
     """A saved + resumed session starts with the clock paused (anchor cleared)."""
     c = _client()
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     state = c.get(f"/api/sessions/{sid}/save").json()
-    sid2 = c.post("/api/sessions/load_save", json=state).json()["session"]
+    sid2 = c.post("/api/sessions/load_save?cell=white", json=state).json()["session"]
     listing = {s["sid"]: s for s in c.get("/api/sessions").json()}
     assert listing[sid2]["started"] is True
     assert listing[sid2]["running"] is False   # resumed paused — must not silently fast-forward
@@ -498,13 +498,13 @@ def test_draft_session_create_add_asset_and_save_as_vignette(tmp_path, monkeypat
     assert listing[sid]["started"] is False
 
     # Time control is refused against it.
-    step = c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 60.0}).json()
+    step = c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 60.0}).json()
     assert step["ok"] is False
 
     # Force-add an asset the same way any session's asset entry already works.
     tle1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
     tle2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
-    ack = c.post(f"/api/sessions/{sid}/force/tle",
+    ack = c.post(f"/api/sessions/{sid}/force/tle?cell=white",
                  json={"id": "HTTP-SAT", "line1": tle1, "line2": tle2, "owner": "blue"}).json()
     assert ack["ok"] is True
 
@@ -530,7 +530,7 @@ def test_bulk_import_tle_route_end_to_end():
     tle1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
     tle2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
     content = "\n".join(["HTTP-BULK-1", tle1, tle2])
-    resp = c.post(f"/api/sessions/{sid}/force/bulk_import",
+    resp = c.post(f"/api/sessions/{sid}/force/bulk_import?cell=white",
                    json={"format": "tle", "content": content,
                          "assignments": {"HTTP-BULK-1": {"asset_id": "HTTP-BULK-1", "owner": "blue"}}})
     reports = resp.json()
@@ -539,7 +539,7 @@ def test_bulk_import_tle_route_end_to_end():
     assert reports[0]["asset_id"] == "HTTP-BULK-1"
 
     # An unrecognizable file surfaces as a 400, not a per-object report.
-    bad_resp = c.post(f"/api/sessions/{sid}/force/bulk_import",
+    bad_resp = c.post(f"/api/sessions/{sid}/force/bulk_import?cell=white",
                        json={"format": "tle", "content": "not a tle file", "assignments": {}})
     assert bad_resp.status_code == 400
 
@@ -557,8 +557,8 @@ def test_save_as_scenario_route_end_to_end(tmp_path, monkeypatch):
     monkeypatch.setenv("SPACESIM_CONFIG", str(cfg_path))
     c = _client()
     sid = _new_session(c)
-    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600.0})
-    c.post(f"/api/sessions/{sid}/clock", json={"running": False})  # stop catch-up drift
+    c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 600.0})
+    c.post(f"/api/sessions/{sid}/clock?cell=white", json={"running": False})  # stop catch-up drift
     save_moment = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
 
     resp = c.post(f"/api/sessions/{sid}/save_vignette",
@@ -660,10 +660,10 @@ def test_aar_playback_start_advance_and_viewpoint_switch():
     c.post(f"/api/sessions/{sid}/order", json={
         "cell": "blue", "actor": "ISR-EO-1", "action": "downlink", "params": {"via": "GS-NORTH"}})
 
-    start = c.post(f"/api/sessions/{sid}/aar/playback/start", json={"viewpoint": "truth", "speed": 2.0})
+    start = c.post(f"/api/sessions/{sid}/aar/playback/start?cell=white", json={"viewpoint": "truth", "speed": 2.0})
     assert start.json()["ok"] is True
 
-    adv = c.post(f"/api/sessions/{sid}/aar/playback/advance", json={"dt_s": 30.0})
+    adv = c.post(f"/api/sessions/{sid}/aar/playback/advance?cell=white", json={"dt_s": 30.0})
     assert adv.status_code == 200
     assert "assets" in adv.json()  # ground-truth WorldState shape
 
@@ -676,14 +676,14 @@ def test_aar_playback_start_advance_and_viewpoint_switch():
 def test_aar_playback_rejects_nonparticipating_cell():
     c = _client()
     sid = _new_session(c)
-    r = c.post(f"/api/sessions/{sid}/aar/playback/start", json={"viewpoint": "not-a-real-cell"})
+    r = c.post(f"/api/sessions/{sid}/aar/playback/start?cell=white", json={"viewpoint": "not-a-real-cell"})
     assert r.json()["ok"] is False
 
 
 def test_aar_playback_advance_without_start_is_404():
     c = _client()
     sid = _new_session(c)
-    r = c.post(f"/api/sessions/{sid}/aar/playback/advance", json={"dt_s": 10.0})
+    r = c.post(f"/api/sessions/{sid}/aar/playback/advance?cell=white", json={"dt_s": 10.0})
     assert r.status_code == 404
 
 
@@ -706,7 +706,7 @@ def test_ephemeris_ric_companion_format():
 def _coorbital_session(c: TestClient) -> str:
     sid = c.post("/api/sessions",
                  json={"vignette_id": "co-orbital-threat-escort", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     return sid
 
 
@@ -858,8 +858,8 @@ def test_ephemeris_routes_reject_non_positive_interval_400():
     """Test 5 — interval_s <= 0 is a 400 on both ephemeris routes (was a 1 us step / hang)."""
     c = _client()
     sid = _new_session(c)
-    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
-    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    c.post(f"/api/sessions/{sid}/clock?cell=white", json={"running": False})
+    c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 600})
     now = c.get(f"/api/sessions/{sid}/clock").json()["now"]
     base = {"object_id": "ISR-EO-1", "reference_id": "JAM-NORTH", "t1": now - 20_000, "t2": now}
     r = c.get(f"/api/sessions/{sid}/ephemeris/truth", params={**base, "interval_s": 0})
@@ -873,8 +873,8 @@ def test_telemetry_export_route_rejects_over_ceiling_interval_400():
     from spacesim.session import ephemeris
     c = _client()
     sid = _new_session(c)
-    c.post(f"/api/sessions/{sid}/clock", json={"running": False})
-    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600})
+    c.post(f"/api/sessions/{sid}/clock?cell=white", json={"running": False})
+    c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 600})
     now = c.get(f"/api/sessions/{sid}/clock").json()["now"]
     r = c.get(f"/api/sessions/{sid}/telemetry/blue/ISR-EO-1/export.csv",
               params={"t1": now - 20_000, "t2": now, "interval_s": 0.000001})
@@ -887,10 +887,10 @@ def test_inject_route_rejects_invalid_inject_400():
     target, not a 200 {"ok": true} that silently does nothing."""
     c = _client()
     sid = _new_session(c)
-    r = c.post(f"/api/sessions/{sid}/inject", json={"inject": {"effects": [
+    r = c.post(f"/api/sessions/{sid}/inject?cell=white", json={"inject": {"effects": [
         {"type": "anomaly", "target": "NO-SUCH-SAT", "subsystem": "bus"}]}})
     assert r.status_code == 400
     assert "NO-SUCH-SAT" in r.json()["detail"]
-    r = c.post(f"/api/sessions/{sid}/inject", json={"inject": {"effects": [
+    r = c.post(f"/api/sessions/{sid}/inject?cell=white", json={"inject": {"effects": [
         {"type": "message", "to": ["blue"], "text": "hello"}]}})
     assert r.status_code == 200 and r.json()["ok"] is True

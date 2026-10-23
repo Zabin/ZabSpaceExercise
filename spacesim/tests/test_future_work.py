@@ -49,7 +49,7 @@ def test_aar_json_export_endpoint_serves_csv_and_json():
     from spacesim.ui_web.server import create_app
     c = TestClient(create_app())
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     csv = c.get(f"/api/sessions/{sid}/aar/export.csv")
     assert csv.status_code == 200 and "META" in csv.text
     js = c.get(f"/api/sessions/{sid}/aar/export.json").json()
