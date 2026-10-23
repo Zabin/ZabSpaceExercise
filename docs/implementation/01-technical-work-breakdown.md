@@ -873,6 +873,21 @@ remediation exists for (a package claim without a test is how R1 happened); spli
 existing-test calling-convention update into its own package would leave the suite red between
 them.
 
+## Self-contained saves (pipeline run #220, 2026-10-23)
+
+**Input:** [FS-110](../features/FS-110-save-and-resume.md) v2.0 (`FEAT-7200`): `FR-7230`, `FR-7220`,
+`FR-7210` (force-edit defect `BL-0315`), `NFR-1800`.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Save gains content portion, replay baseline, versions; resume from them; legacy branch | C2 `session/manager.py` | IP-1101 |
+| 2 | Load-time validation and warnings | C2 `session/inprocess.py` | IP-1101 |
+| 3 | Route returns warnings; console shows them | C4 `server.py`, `app.js` | IP-1101 |
+
+**One package.** The three units change one round trip and are verified by one test file; the
+client change is a few lines. FS-110 Open Question 4 is decided in the package (resume from the
+carried baseline; the exporter drops injects, briefs and parameters, so a rebuild cannot be exact).
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
