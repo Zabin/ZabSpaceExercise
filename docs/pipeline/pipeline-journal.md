@@ -13,7 +13,7 @@
 
 ## Position
 
-- **Updated:** 2026-10-23 (runs #225–#229: `BL-0322` — generated RTM Test column — carried `04`→`05`→`06`→`07` plus a skill edit; `IP-1330` v1.1. Runs #219–#224: nine packages planned, none authorized. Branch `claude/gds-06-10` (PR #58).)
+- **Updated:** 2026-10-23 (runs #230–#236: the owner authorized all nine planned packages; seven were built, each on its own stacked branch and draft PR — #59 `IP-1068`, #60 `IP-1101`, #61 `IP-1091`, #62 `IP-1069`, #63 `IP-1330`, #64 `IP-1350`, #65 `IP-1340`. All seven are `COMPLETE`, none `VERIFIED`.)
 - **Increment:** **Owner priority (2026-10-18/19/22):** the GDS ladder, now complete. Next: owner decisions → the `04` pass (`BL-0298`) → the single cleanup sweep that retires build-spec and `design/` (`BL-0287`, `0292`, `0293`, `0296`, `0301`). The `BL-0068`–`BL-0083` batch closed at run #194.
 - **Owner decisions recorded this session (run #195), none yet actioned:**
   - `BL-0080` (coalition/multi-partner play): **(B)** keep deferred — recorded as a future-expansion idea only.
@@ -32,9 +32,9 @@
   - `07-implementation-planning` owed: `BL-0284`. Plus now: `BL-0215`'s `FR-1610` AC amendment and `BL-0181`'s `CR-22` promotion ride the next `04-requirements-engineering` pass; `BL-0233`'s (A) amendment to GDS-03/GDS-04/ADR-0007/`FR-5310` rides the next `03`/`04` pass.
   - `IP-1160` is `BLOCKED` on authorization (left alone).
 - **Backlog:** run #204 harvested `BL-0309` (clock-lag watchdog untested, `SCHEDULED` for `07` with `BL-0305`); added F2–F5 to `BL-0298` and OQ1 to `BL-0297`; `BL-0301`'s trigger fired, now `SCHEDULED` for the cleanup sweep. **Open owner decisions (ripe now, batched for the next run's gate):** `BL-0299` (pinning, coverage, Space-Track), `BL-0302` (save files), `BL-0304` (UI verification), `BL-0307` (White-only enforcement). Run #195's six `DECIDED` rows remain; `BL-0049` parked.
-- **Next step (run #230):** all nine packages are now owner-authorized; `IP-1068` is `COMPLETE` — fresh-session `09-package-verification` on it, then `08` on `IP-1101`, `1091`, `1069`, `1330`… in order. *(Superseded text follows.)* **owner gate — MSTR-006 §3 build go-ahead** for the planned packages, in this suggested order: `IP-1068` (High, `FR-4310` not met), `IP-1101` (self-contained saves + force-edit bug), `IP-1091` and `IP-1069` (small), `IP-1330` then `IP-1331`–`IP-1333`, `IP-1350`, `IP-1340`. On a go-ahead: `08-code-implementation` on the first, then `09` in a fresh session. Also open: `IP-1311` (`READY`, pre-authorized) — the regular thread. Pre-migration documentation work requested on 2026-10-23 is complete. Owner decisions waiting: `BL-0312` (friction rule in the spec template?), `BL-0319` (retired-documents register home), `BL-0318` (which releases are major; not yet ripe).
+- **Next step:** **fresh-session `09-package-verification`**, one package per invocation, on `IP-1068`, `IP-1101`, `IP-1091`, `IP-1069`, `IP-1330`, `IP-1350`, `IP-1340` (the skill forbids verifying work from the implementing session). When `IP-1330` is `VERIFIED`, `08` on `IP-1331`–`IP-1333` (the backfill; owner-authorized). `IP-1311` (`READY`, pre-authorized) is also open. Finding `BL-0323` is `SCHEDULED`. Owner decisions still waiting: `BL-0312`, `BL-0319`, `BL-0318`.
 - **Open gates:**
-  - ~~**MSTR-006 §3 build go-ahead**~~ *(given 2026-10-23, run #230)* for the nine packages planned in runs #219–#224 (`IP-1068`, `IP-1069`, `IP-1091`, `IP-1101`, `IP-1330`–`IP-1333`, `IP-1340`, `IP-1350`).
+  - ~~**MSTR-006 §3 build go-ahead**~~ *(given 2026-10-23, run #230)* for the nine packages planned in runs #219–#224; seven built, `IP-1331`–`IP-1333` wait on `IP-1330` `VERIFIED` (`IP-1068`, `IP-1069`, `IP-1091`, `IP-1101`, `IP-1330`–`IP-1333`, `IP-1340`, `IP-1350`).
   - **`BL-0312`** (`NEEDS-USER`): should every console spec state its intentional friction (a `06` template rule), or stay guidance in GDS-06 NFR-9?
   - **`BL-0319`** (`NEEDS-USER`): where the retired-documents register lives and who writes it; blocks only the `NFR-3810` check and should be settled before the `BL-0292` retirement sweep.
   - Run #195's six owner decisions remain `DECIDED`, not actioned.
