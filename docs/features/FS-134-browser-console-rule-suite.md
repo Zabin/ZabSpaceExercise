@@ -7,7 +7,7 @@
 > [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md),
 > following the FS-130–FS-133 convention. Owner decision it elaborates: `BL-0304` ("Add a small
 > browser suite"), answering [GDS-08](../architecture/08-ui-architecture.md) OQ1.
-> **Referenced By:** [feature index](feature-index.md); `FEAT-12200`
+> **Referenced By:** [feature index](feature-index.md); `FEAT-12200`; [IP-1340](../implementation/packages/IP-1340-browser-console-rule-suite.md) (planned 2026-10-23)
 > **Related Topics:** [GDS-08](../architecture/08-ui-architecture.md) "Verification status";
 > [FS-133](FS-133-test-origin-traceability.md) (every test here carries the origin marker);
 > `tools/record_walkthrough.py` (the existing headless-browser driver)

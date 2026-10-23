@@ -906,6 +906,20 @@ functions that each need a judgment about what they assert, too much for one rev
 is cut by layer (the grouping came from each module's imports). The allow-list lets the suite stay
 green between packages; it may only shrink.
 
+## Browser suite (pipeline run #222, 2026-10-23)
+
+**Input:** [FS-134](../features/FS-134-browser-console-rule-suite.md) (`FEAT-12200`): `NFR-2840`.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Browser lookup, in-process server fixture, canvas-label init script | `spacesim/tests/` | IP-1340 |
+| 2 | Rules (a)–(c) tests, skip-with-reason | `spacesim/tests/` | IP-1340 |
+| 3 | Dependency, marker, hook, `CLAUDE.md` | `pyproject.toml`, `.claude/hooks/` | IP-1340 |
+
+**One package:** a handful of tests on one fixture. FS-134 Open Question 1 decided in the package
+(wrap the drawing calls; no client change). Measured: Playwright 1.64.1 needs an explicit executable
+for the installed Chromium 1194 build.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
