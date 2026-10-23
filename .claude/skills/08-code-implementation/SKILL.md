@@ -266,8 +266,9 @@ Update whatever mechanism the repository uses to link a requirement to the code 
 it — a Traceability Matrix's reverse index, an in-code citation convention, a manifest file — so
 every requirement ID in this package's `Requirements Covered` now traces to the real file(s) you
 just wrote, replacing any placeholder value the matrix previously carried for those IDs. The
-tests' `verifies` markers (Step 5) are the test half of that trace; name the test files against
-the same IDs.
+tests' `verifies` markers (Step 5) are the test half of that trace. **Never hand-edit the
+matrix's Test column** (`NFR-2850`, `BL-0322`): once the origin report exists (`IP-1330`),
+regenerate the column with it in the same commit; until then, leave the Test cells alone.
 
 ### Step 10 — Update the Master Build Plan
 
