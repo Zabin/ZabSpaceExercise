@@ -933,6 +933,16 @@ for the installed Chromium 1194 build.
 **Why split here:** unit 2 cannot be planned without the owner's decision on where the register
 lives; units in 1 need nothing more.
 
+## Small remediations: panel registry and watchdog test (pipeline run #224, 2026-10-23)
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Register the Compare and Assessment panels; hide White-only panels from other seats' menu | C4 `panels.js` | IP-1069 (`BL-0305`, `NFR-3030`) |
+| 2 | Test the clock-lag watchdog | `spacesim/tests/` | IP-1091 (`BL-0309`, `NFR-1300`) |
+
+**Two packages, not one:** different seams, different specs (FS-106/FS-201 vs FS-109), no shared
+files; each is small enough to build and verify on its own.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
