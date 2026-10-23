@@ -858,6 +858,91 @@ Definition of Done mix a determinism-sensitive change with a read-only one.
 No cross-package sequencing constraint. **Not packaged:** the manual prose (`WCM-5` and the
 god-view section), routed via §15.1 after `VERIFIED`.
 
+## White-only controls enforced at the server (pipeline run #219, 2026-10-23)
+
+**Input:** [FS-106](../features/FS-106-white-cell-dashboard.md) v2.4: `FR-4310` (corrected) and
+`FR-4320` (`FEAT-4300`), owner decision `BL-0307`; requirements review R1 (High).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | White-only guard at the route boundary for the 12 routes; `load_save` gains the seat parameter | C2 HTTP boundary, `server.py` | IP-1068 |
+| 2 | One refusal test per control and seat; existing tests name `white` | `spacesim/tests/` | IP-1068 |
+
+**One package, not two.** The guard is a few lines at one seam, and the tests are what the
+remediation exists for (a package claim without a test is how R1 happened); splitting the
+existing-test calling-convention update into its own package would leave the suite red between
+them.
+
+## Self-contained saves (pipeline run #220, 2026-10-23)
+
+**Input:** [FS-110](../features/FS-110-save-and-resume.md) v2.0 (`FEAT-7200`): `FR-7230`, `FR-7220`,
+`FR-7210` (force-edit defect `BL-0315`), `NFR-1800`.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Save gains content portion, replay baseline, versions; resume from them; legacy branch | C2 `session/manager.py` | IP-1101 |
+| 2 | Load-time validation and warnings | C2 `session/inprocess.py` | IP-1101 |
+| 3 | Route returns warnings; console shows them | C4 `server.py`, `app.js` | IP-1101 |
+
+**One package.** The three units change one round trip and are verified by one test file; the
+client change is a few lines. FS-110 Open Question 4 is decided in the package (resume from the
+carried baseline; the exporter drops injects, briefs and parameters, so a rebuild cannot be exact).
+
+## Test-origin traceability (pipeline run #221, 2026-10-23)
+
+**Input:** [FS-133](../features/FS-133-test-origin-traceability.md) (`FEAT-12100`): `NFR-2820`,
+`NFR-3840`, `NFR-2830`, `NFR-1510`.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Marker registration, strict markers, collection recorder, ledger reader, checks, allow-list, report option; tag the two gate modules | `pyproject.toml`, `spacesim/tests/` | IP-1330 |
+| 2 | Tag 22 engine and content modules | `spacesim/tests/` | IP-1331 |
+| 3 | Tag 32 session-layer modules | `spacesim/tests/` | IP-1332 |
+| 4 | Tag 16 web and cross-cutting modules; allow-list empty | `spacesim/tests/` | IP-1333 |
+| — | Dependency lock (`NFR-1510`) | release | none now: produced at the first major release and checked by `11` (`BL-0318`) |
+
+**Why four packages.** The infrastructure is small and must land first; the backfill is ~914 test
+functions that each need a judgment about what they assert, too much for one reviewable run, so it
+is cut by layer (the grouping came from each module's imports). The allow-list lets the suite stay
+green between packages; it may only shrink.
+
+## Browser suite (pipeline run #222, 2026-10-23)
+
+**Input:** [FS-134](../features/FS-134-browser-console-rule-suite.md) (`FEAT-12200`): `NFR-2840`.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Browser lookup, in-process server fixture, canvas-label init script | `spacesim/tests/` | IP-1340 |
+| 2 | Rules (a)–(c) tests, skip-with-reason | `spacesim/tests/` | IP-1340 |
+| 3 | Dependency, marker, hook, `CLAUDE.md` | `pyproject.toml`, `.claude/hooks/` | IP-1340 |
+
+**One package:** a handful of tests on one fixture. FS-134 Open Question 1 decided in the package
+(wrap the drawing calls; no client change). Measured: Playwright 1.64.1 needs an explicit executable
+for the installed Chromium 1194 build.
+
+## Documentation integrity (pipeline run #223, 2026-10-23)
+
+**Input:** [FS-135](../features/FS-135-documentation-integrity-checks.md) (`FEAT-12300`): `NFR-3800`,
+`NFR-3810`, `NFR-3820`, `NFR-3830`.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Live-set walk; links, indexes, ledger-pair checks; allow-lists | `spacesim/tests/` | IP-1350 |
+| 2 | Retired-documents register and check (`NFR-3810`) | `spacesim/tests/` + the register | not yet planned — blocked on `BL-0319` (owner) |
+
+**Why split here:** unit 2 cannot be planned without the owner's decision on where the register
+lives; units in 1 need nothing more.
+
+## Small remediations: panel registry and watchdog test (pipeline run #224, 2026-10-23)
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Register the Compare and Assessment panels; hide White-only panels from other seats' menu | C4 `panels.js` | IP-1069 (`BL-0305`, `NFR-3030`) |
+| 2 | Test the clock-lag watchdog | `spacesim/tests/` | IP-1091 (`BL-0309`, `NFR-1300`) |
+
+**Two packages, not one:** different seams, different specs (FS-106/FS-201 vs FS-109), no shared
+files; each is small enough to build and verify on its own.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·

@@ -241,7 +241,7 @@ TLE/lat-long/asset entry, asset menu, seat/role matrix); **5100B** covers the tw
 extensions the UI surfaces but which are independently significant — typed per-payload-type/bus
 parameter sub-schemas and real per-cell ROE enforcement.
 
-### Global ladder (`GDS-00`…`GDS-10`, scaffolded this revision, content not yet authored)
+### Global ladder (`GDS-00`…`GDS-10`, complete 2026-10-22)
 
 A single, global, top-to-bottom design-synthesis ladder for the whole project, distinct from the
 per-cluster `ADS-xxx` table above. **Strictly gated**: `GDS-(N+1)` cannot start until `GDS-N` is
@@ -257,19 +257,16 @@ gates; no level has been authored yet.
 | GDS-03 | Architecture | `architecture/03-architecture.md` | design/01 | ✅ Authored, merge gate closed |
 | GDS-04 | Domain Model | `architecture/04-domain-model.md` | design/04 (entity/relationship portion) | ✅ Authored, merge gate closed |
 | GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | build-spec/02 §5-6 | ✅ Authored, merge gate closed (supersedes build-spec/02 §5-6) |
-| GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | build-spec/04 §9 | ⛔ Planned (scaffold only) |
-| GDS-07 | Data Model | `architecture/07-data-model.md` | design/04 (schema portion) | ⛔ Planned (scaffold only) |
-| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | design/09, design/05, design/10 | ⛔ Planned (scaffold only) |
-| GDS-09 | API Specification | `architecture/09-api-specification.md` | design/07 | ⛔ Planned (scaffold only) |
-| GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | *(net-new — no counterpart)* | ⛔ Planned (scaffold only) |
+| GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | build-spec/04 §9 | ✅ Authored, merge gate closed (supersedes build-spec/04 §9) |
+| GDS-07 | Data Model | `architecture/07-data-model.md` | design/04 (schema portion) | ✅ Authored, merge gate closed (supersedes design/04) |
+| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | design/09, design/05, design/10 | ✅ Authored, merge gate closed (supersedes design/09, /05, /10) |
+| GDS-09 | API Specification | `architecture/09-api-specification.md` | design/07 | ✅ Authored, merge gate closed (supersedes design/07) |
+| GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | none (companion of requirements/03) | ✅ Authored, merge gate closed — ladder complete |
 
-**Next:** GDS-00 through GDS-05 are authored with merge gates closed. As of this revision, the
-entire `docs/architecture/` ladder is declared authoritative over `docs/build-spec/` **in full**,
-not just module-by-module as levels close their gates (see `CLAUDE.md` and `architecture/INDEX.md`
-for the supersession declaration). GDS-06–10 remain scaffold-only and now carry added urgency:
-until each is authored, its topic has no authoritative content at all (the corresponding
-build-spec module is legacy reference, not a binding fallback). Author GDS-06 (Non-functional
-Requirements, merging `build-spec/04-nfr-milestones-and-risks.md` §9) next, per the gate.
+**Next:** GDS-00 through GDS-10 are authored with merge gates closed (2026-10-22): **the ladder is
+complete.** The entire `docs/architecture/` ladder is authoritative over `docs/build-spec/` and
+`docs/design/` (apart from the ICD), so both retire in the cleanup sweep (`BL-0292`), after the
+`04` pass that takes the ladder's hand-offs (`BL-0298`). Build-spec retires once GDS-10 closes (`BL-0292`).
 
 **Strategic review disposition (2026-07):** [`reviews/strategic-review-2026-07.md`](docs/reviews/strategic-review-2026-07.md)
 was dispositioned in full by [`reviews/architecture-update.md`](docs/reviews/architecture-update.md)
@@ -572,6 +569,16 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1230 | Space-Weather-Index Coupling (index-driven LEO drag + environmental-anomaly rate) | `implementation/packages/IP-1230-space-weather-index-coupling.md` | FS-123 v1.1 `FR-1230`/`FR-4440` + ADR-0039 | Forward design | ✅ VERIFIED 2026-10-18 (run #194, `VR-1230`, fresh session, clean — ADR-0039 math + drag/impulse physics independently re-derived) — implemented run #189, authored run #188; closes `BL-0074` |
 | IP-1066 | Pending-Inject Queue (White edit / cancel before firing) | `implementation/packages/IP-1066-pending-inject-edit-cancel.md` | FS-106 v2.3 `FR-4450` | Forward design | ✅ VERIFIED 2026-10-18 (run #194, `VR-1066`, fresh session — `BL-0284`/`BL-0285` adjudicated, no new findings) — implemented run #192, authored run #191; `BL-0079` |
 | IP-1067 | Side-by-Side Controller View (truth + both cells, one instant) | `implementation/packages/IP-1067-side-by-side-controller-view.md` | FS-106 v2.3 `FR-4620` | Forward design | ✅ VERIFIED 2026-10-18 (run #194, `VR-1067`, fresh session, clean) — implemented run #193, authored run #191; `BL-0079` |
+| IP-1068 | White-Only Controls Enforced at the Server Boundary | `implementation/packages/IP-1068-white-only-controls-server-enforcement.md` | FS-106 v2.4 `FR-4310`/`FR-4320` | Remediation | 🟢 READY — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0307` |
+| IP-1069 | Compare and Assessment Panels Join the Panel Manager | `implementation/packages/IP-1069-white-only-panels-registered.md` | FS-106/FS-201; `NFR-3030` | Remediation | 🟢 READY — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0305` |
+| IP-1091 | Clock-Lag Watchdog Test | `implementation/packages/IP-1091-clock-lag-watchdog-test.md` | FS-109; `NFR-1300` | Remediation (test-only) | 🟢 READY — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0309` |
+| IP-1101 | Self-Contained Saves | `implementation/packages/IP-1101-self-contained-saves.md` | FS-110 v2.0 `FR-7210`/`FR-7220`/`FR-7230` | Remediation + forward design | 🟢 READY — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0302`, `BL-0315` |
+| IP-1330 | Test-Origin Marker, Origin Checks and Origin Report | `implementation/packages/IP-1330-test-origin-marker-and-checks.md` | FS-133 `NFR-2820`/`NFR-3840`/`NFR-2830` | Forward design | 🟢 READY — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0310` |
+| IP-1331 | Test-Origin Backfill: Engine and Content Modules | `implementation/packages/IP-1331-test-origin-backfill-engine-content.md` | FS-133 `NFR-2820` | Forward design (test-only) | 🔴 BLOCKED — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0310`; blocked on IP-1330 |
+| IP-1332 | Test-Origin Backfill: Session-Layer Modules | `implementation/packages/IP-1332-test-origin-backfill-session.md` | FS-133 `NFR-2820` | Forward design (test-only) | 🔴 BLOCKED — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0310`; blocked on IP-1330 |
+| IP-1333 | Test-Origin Backfill: Web and Cross-Cutting Modules | `implementation/packages/IP-1333-test-origin-backfill-web.md` | FS-133 `NFR-2820` | Forward design (test-only) | 🔴 BLOCKED — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0310`; blocked on IP-1330 |
+| IP-1340 | Browser Suite for the Load-Bearing Console Rules | `implementation/packages/IP-1340-browser-console-rule-suite.md` | FS-134 `NFR-2840` | Forward design (test-only) | 🟢 READY — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0304` |
+| IP-1350 | Documentation Integrity Checks: Links, Indexes, Ledgers | `implementation/packages/IP-1350-documentation-integrity-checks.md` | FS-135 `NFR-3800`/`NFR-3820`/`NFR-3830` | Forward design (test-only) | 🟢 READY — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0297` |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1220,
 IP-1240, IP-1250, IP-1260, IP-1270, IP-1280, and IP-1290 are new (2026-09-27, run #78)** — seven

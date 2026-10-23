@@ -16,6 +16,9 @@
 > directories and the user-save directory — closing `docs/pipeline/backlog.md` `BL-0082` item B16's
 > security-generalization concern; see `01-functional-requirements.md`'s companion note and
 > `03-requirements-review.md`).
+> further amended (GDS ladder alignment, 2026-10-23; **nineteen numbered NFR leaves added** and
+> **six corrected** against the newly authored GDS-06…GDS-10 and the owner decisions of
+> 2026-10-22/23 — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md)).
 > **Authoritative inputs:**
 > [`build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §9
 > (NFR-1…NFR-10 — the legacy, pre-GDS NFR tag scheme),
@@ -35,21 +38,14 @@
 > default field list):** ID, Description, Rationale, Metric or verification method, Priority,
 > Affected subsystems, Dependencies, Source documents, Related ADRs.
 
-## A note on a pre-existing requirement tag scheme — read before using this document
+## A note on the requirement tag schemes — read before using this document
 
-`docs/build-spec/04-nfr-milestones-and-risks.md` §9 contains a legacy, pre-GDS
-non-functional-requirement tag scheme: **NFR-1** (Offline) through **NFR-10** (Classification
-hygiene). Per `CLAUDE.md`'s "Authoritative source & reading order," GDS-06 (Non-Functional
-Requirements) — the architecture-ladder level that would eventually supersede build-spec/04 §9 the
-way GDS-05 superseded build-spec/02 §5–6 — **has not been authored** (it remains
-`⛔ Planned (scaffold only)`, per `architecture/INDEX.md` §1). **Corrected 2026-07** (see
-`reviews/requirements-update-report.md`): per `CLAUDE.md`'s current text, an unauthored GDS level's
-corresponding build-spec module is "deprecated legacy reference, not a binding tie-breaker" — the
-prior wording here ("Build-spec/04 §9 therefore remains the binding NFR statement") predates that
-blanket-supersession declaration and is corrected to match it, mirroring
-[`ADR-0031`](../architecture/adr/ADR-0031-governance-record-consistency.md)'s identical fix to
-`architecture/00-vision.md` §7. Build-spec/04 §9 is read here only because GDS-06 has authored
-nothing yet to read instead — not because it binds.
+**Updated 2026-10-23.** GDS-06 (Non-functional Requirements) is now authored with its merge gate
+closed and **supersedes** `docs/build-spec/04-nfr-milestones-and-risks.md` §9. GDS-06 states each
+quality attribute as a tag (`NFR-1`…`NFR-19`; `NFR-1`…`NFR-10` keep the legacy build-spec numbers);
+this document elaborates each tag into leaves (`NFR-1100`…) with full traceability fields. Every
+leaf's **Source documents** field now names its GDS-06 tag first. The legacy build-spec citations
+that remain are historical only and go when build-spec retires (`BL-0292`).
 
 This document is a hierarchical, traceable **elaboration** of that legacy tag scheme, in the same
 non-competing relationship `requirements/01-functional-requirements.md` holds with build-spec/02 §5
@@ -85,7 +81,7 @@ review passes actually run against it).
   - **Affected subsystems:** `engine/` (propagator, access provider), `session/` (clock
     catch-up), `ui_web/` (client poll loop)
   - **Dependencies:** NFR-1200 (hardware floor)
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-4; §11 Risks row
+  - **Source documents:** `GDS-06 NFR-4; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-4; §11 Risks row
     "Wall-clock + heavy propagation stalls the UI"
   - **Related ADRs:** ADR-0009 (moderate orbital fidelity), ADR-0014 (lazy-clock multiplayer)
 
@@ -100,7 +96,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `ui_web/` (globe.js, world.js, graph.js rendering)
   - **Dependencies:** None
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-2
+  - **Source documents:** `GDS-06 NFR-2; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-2
   - **Related ADRs:** ADR-0019 (sizing guideline, not engine cap), ADR-0020 (tech stack)
 
 ## 2. Scalability
@@ -118,7 +114,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `engine/`, `session/` (clock-lag watchdog)
   - **Dependencies:** NFR-1100
-  - **Source documents:** `CLAUDE.md` "Key facts"; `architecture/adr/ADR-0019-sizing-guideline-not-engine-cap.md`
+  - **Source documents:** `GDS-06 NFR-2; CLAUDE.md` "Key facts"; `architecture/adr/ADR-0019-sizing-guideline-not-engine-cap.md`
   - **Related ADRs:** ADR-0019
 
 - **NFR-1400 — LAN multiplayer concurrency ceiling is a documented, untested estimate**
@@ -134,7 +130,7 @@ review passes actually run against it).
   - **Priority:** Should
   - **Affected subsystems:** `session/inprocess.py` (`_locked` critical section), `ui_web/server.py`
   - **Dependencies:** NFR-1100
-  - **Source documents:** `architecture/adr/ADR-0026-rlock-lan-scaling-ceiling.md`
+  - **Source documents:** `GDS-06 NFR-4; architecture/adr/ADR-0026-rlock-lan-scaling-ceiling.md`
   - **Related ADRs:** ADR-0026, ADR-0014
 
 ## 3. Reliability
@@ -152,9 +148,19 @@ review passes actually run against it).
   - **Affected subsystems:** `engine/` (all modules — no wall-clock reads, no global RNG outside
     `rng.py`), `engine/eventlog.py`, `engine/simulation.py`
   - **Dependencies:** None
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-3; `CLAUDE.md`
+  - **Source documents:** `GDS-06 NFR-3; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-3; `CLAUDE.md`
     "Load-bearing invariants" #1
   - **Related ADRs:** ADR-0002 (deterministic core)
+
+- **NFR-1510 — Released builds install identical dependency versions** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Every major release shall ship with each dependency, including indirect ones, locked to an exact version, so every install of that release resolves the same versions. Between major releases, dependencies are declared with minimum versions only.
+  - **Rationale:** Determinism (NFR-1500) is tested within one environment; a different numpy or sgp4 version on another machine could change numeric results, so saves and replays could diverge between installs of the same release. Owner decision (`BL-0299`, 2026-10-23): "defer pinning to major releases".
+  - **Metric or verification method:** Inspection at major-release readiness — a lock file committed for the release resolves every dependency to an exact version (`11-release-readiness` major-release check; a missing lock is NO-GO).
+  - **Priority:** Must (at each major release)
+  - **Affected subsystems:** Build/dependency manifest (`pyproject.toml` and the release's lock file)
+  - **Dependencies:** NFR-1500, NFR-2200
+  - **Source documents:** GDS-06 NFR-5 (as corrected); `docs/pipeline/backlog.md` `BL-0299` owner decision.
+  - **Related ADRs:** ADR-0002, ADR-0020
 
 - **NFR-1600 — Robustness to invalid input and illegal actions**
   - **Description:** Invalid scenario JSON or TLEs shall fail at load with a precise, actionable
@@ -170,8 +176,18 @@ review passes actually run against it).
   - **Affected subsystems:** `content/vignette.py` (load/validate), `engine/orders.py`
     (validate/dry_run)
   - **Dependencies:** NFR-1500
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-6, §3.3
+  - **Source documents:** `GDS-06 NFR-6; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-6, §3.3
   - **Related ADRs:** None identified
+
+- **NFR-1610 — Failure-atomic event application** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** If applying a scheduled event raises an error during a live advance, the system shall restore the world and RNG to exactly the state the event log reproduces before that event, record a no-op failure entry in the event log in the event's place, and continue the advance.
+  - **Rationale:** A defect in one handler must degrade one event visibly, not corrupt state or stop the exercise; the failure record keeps live and replayed state identical (ADR-0038). GDS-06 NFR-6 states it; no leaf did (gap G2).
+  - **Metric or verification method:** Test — a handler that raises leaves world and RNG equal to the replayed state, logs a `handler_error` entry, and the advance continues (tests: the generated Test column, `NFR-2850`).
+  - **Priority:** Must
+  - **Affected subsystems:** `engine/simulation.py`, `engine/handlers.py`
+  - **Dependencies:** NFR-1500, NFR-1600
+  - **Source documents:** GDS-06 NFR-6 (gap G2); ADR-0038.
+  - **Related ADRs:** ADR-0038, ADR-0002
 
 - **NFR-1700 — Sub-stepped clock advancement**
   - **Description:** The simulation clock shall advance to the next scheduled event, never skipping
@@ -183,49 +199,48 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `engine/clock.py` (`SimClock`, `Scheduler`)
   - **Dependencies:** NFR-1500
-  - **Source documents:** `CLAUDE.md` "Load-bearing invariants" #5
+  - **Source documents:** `GDS-06 NFR-11; CLAUDE.md` "Load-bearing invariants" #5
   - **Related ADRs:** ADR-0002
 
 ## 4. Availability
 
-- **NFR-1800 — Single-sitting, single-process exercise availability**
-  - **Description:** v1 is designed to run a single exercise per process instance, for the duration
-    of one sitting; there is no mid-exercise save/resume across process restarts in v1 (the
-    `/save`/`/aar` ground-truth dump is for end-of-exercise/AAR use, not crash recovery).
-  - **Rationale:** This is the documented v1 scope boundary; the source material frames anything
-    beyond single-sitting availability (cross-restart resume, multi-exercise-per-process) as
-    explicitly deferred.
-  - **Metric or verification method:** Inspection — `build-spec/01-context-and-scope.md`'s decision
-    log lists "Save/resume mid-exercise" as v2-deferred; no v1 acceptance criterion requires
-    crash-recoverable availability beyond the running process's lifetime.
-  - **Priority:** Should
-  - **Affected subsystems:** `session/` (`SessionManager`)
-  - **Dependencies:** None
-  - **Source documents:** `build-spec/01-context-and-scope.md` (decision log, "Save / resume
-    mid-exercise" row); `architecture/05-functional-requirements.md` OR-6
-  - **Related ADRs:** None identified
-
-  > **Open issue flagged, not resolved here:** GDS-05's own Open Questions (OQ2) already note an
-  > unresolved tension between OR-6's "single exercise per process" wording and the shipped
-  > `/api/sessions` multi-session discovery endpoint (P8 LAN multiplayer). This NFR restates the
-  > documented v1 boundary as written rather than resolving that tension; see GDS-05 OQ2 for the
-  > open question of record.
+- **NFR-1800 — Exercise availability: one sitting per session, save and resume across processes**
+  *(corrected 2026-10-23, GDS-06 correction C1: the prior text said there was no mid-exercise
+  save/resume across process restarts; FS-110 ships one.)*
+  - **Description:** An exercise runs as one Session inside a server process for the length of a
+    sitting; one process may host several sessions at once, up to a fixed live-session cap; and a
+    session shall be resumable in a new process from a save file taken mid-exercise. There is no
+    automatic crash recovery: a session not saved before a process stops is lost.
+  - **Rationale:** States the as-built availability model (GDS-06 NFR-14): multi-sitting
+    exercises are carried by save/resume (FS-110, FR-7210), not by keeping a process alive, and
+    LAN multiplayer hosts several sessions in one process (`/api/sessions`).
+  - **Metric or verification method:** Test — save at sim time T, load the save into a new
+    session, and the resumed state equals the saved state (tests: the generated Test column,
+    `NFR-2850`); Inspection — no crash-recovery mechanism is claimed.
+  - **Priority:** Must
+  - **Affected subsystems:** `session/` (`SessionManager.save_state`/`from_state`,
+    `InProcessSession.save`/`load_save`, `MAX_LIVE_SESSIONS`)
+  - **Dependencies:** FR-7210, NFR-3710
+  - **Source documents:** GDS-06 NFR-14; GDS-05 OR-6 (reworded 2026-10-22); FS-110.
+  - **Related ADRs:** ADR-0022
 
 ## 5. Maintainability
 
 - **NFR-1900 — UI-agnostic engine with enforced test coverage**
-  - **Description:** The simulation engine shall remain UI-agnostic (no UI or transport imports in
-    `engine/`, enforced by an import guard) and shall carry at least 80% unit-test coverage on
-    engine logic.
+  - **Description:** The simulation engine shall remain UI-agnostic: no UI or transport imports in
+    `engine/`, enforced by an import guard. *(Corrected 2026-10-23, GDS-06 C4, owner decision
+    `BL-0299`: the former "at least 80% unit-test coverage" clause is removed. No coverage target is
+    required or enforced; what matters is that tests verify the features and requirements —
+    NFR-2820.)*
   - **Rationale:** Keeping the engine importable and testable independent of any UI is what allows
     the documented v2 seams (high-fidelity propagator swap, alternate front ends) without a
     rewrite.
   - **Metric or verification method:** Test — `spacesim/tests/test_import_guard.py` (AST-scans
-    `engine/` for forbidden imports); coverage tool run against `engine/` reporting ≥80%.
+    `engine/` for forbidden imports).
   - **Priority:** Must
   - **Affected subsystems:** `engine/` (all modules), test suite
   - **Dependencies:** NFR-1500
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-7; `CLAUDE.md`
+  - **Source documents:** `GDS-06 NFR-7; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-7; `CLAUDE.md`
     "Load-bearing invariants" #2
   - **Related ADRs:** ADR-0002, ADR-0007 (content-as-data)
 
@@ -239,7 +254,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `content/vignette.py`, `content/vignettes/*.yaml`
   - **Dependencies:** None
-  - **Source documents:** `CLAUDE.md` "Load-bearing invariants" #6
+  - **Source documents:** `GDS-06 NFR-7; CLAUDE.md` "Load-bearing invariants" #6
   - **Related ADRs:** ADR-0007
 
 - **NFR-2010 — Additive vignette-schema evolution**
@@ -253,13 +268,12 @@ review passes actually run against it).
     files or change their observed behavior; this is a distinct quality attribute from `NFR-2000`
     (content stays data, not code) and was not previously stated anywhere in this baseline.
   - **Metric or verification method:** Test — every currently shipped vignette's existing
-    loading/behavior tests (`spacesim/tests/test_content.py`,
-    `spacesim/tests/test_vignette_tutorials.py`) continue to pass unchanged after the schema
+    loading/behavior tests (the generated Test column, `NFR-2850`) continue to pass unchanged after the schema
     extension ships.
   - **Priority:** Must
   - **Affected subsystems:** `content/vignette.py`, `engine/bus.py`, `engine/orders.py`
   - **Dependencies:** NFR-2000
-  - **Source documents:** `docs/architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` §6
+  - **Source documents:** `GDS-06 NFR-7; docs/architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` §6
     (Non-functional Requirements — Backward compatibility).
   - **Related ADRs:** (none directly)
 
@@ -279,7 +293,7 @@ review passes actually run against it).
   - **Priority:** Should
   - **Affected subsystems:** `engine/propagator.py`, `engine/access.py`, `engine/effects.py`
   - **Dependencies:** NFR-1900
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-7; `CLAUDE.md`
+  - **Source documents:** `GDS-06 NFR-7; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-7; `CLAUDE.md`
     "Orbital fidelity" key fact; `FUTURE-WORK.md` §2
   - **Related ADRs:** ADR-0009
 
@@ -287,21 +301,22 @@ review passes actually run against it).
 
 - **NFR-2200 — Research-grade secure development practice**
   - **Description:** The system shall follow standard secure development practices — input
-    validation on all loaded files, no execution of scenario-embedded code, dependency pinning,
+    validation on all loaded files, no execution of scenario-embedded code, declared dependency
+    versions (minimum versions during development; locked at each major release — NFR-1510),
     least-privilege file access — without requiring formal accreditation in v1, while avoiding any
     practice that would block a later RMF/ITSG-33 review (no telemetry phone-home, no hard-coded
-    secrets).
+    secrets). *(Corrected 2026-10-23, GDS-06 C3, owner decision `BL-0299`: "dependency pinning"
+    did not match the as-built floors.)*
   - **Rationale:** This is a research/training tool, not an accredited system, but the source
     material is explicit that v1 choices should not foreclose a future formal review.
   - **Metric or verification method:** Inspection — scenario loader rejects/validates rather than
-    `eval`s content; dependency versions pinned in the project's dependency manifest; no outbound
-    telemetry call exists in `engine/`/`session/`/`ui_web/` except the documented optional
-    Space-Track TLE import.
+    `eval`s content; every dependency declared with a minimum version in `pyproject.toml`; no
+    outbound network call exists anywhere in `spacesim/`.
   - **Priority:** Must
   - **Affected subsystems:** `content/vignette.py` (load/validate), all subsystems (no
     scenario-embedded code execution)
   - **Dependencies:** NFR-2300
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-5
+  - **Source documents:** `GDS-06 NFR-5; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-5
   - **Related ADRs:** ADR-0018 (offline-first runtime)
 
 - **NFR-2300 — Documented LAN trust boundary (client-side cell selection)**
@@ -320,7 +335,7 @@ review passes actually run against it).
   - **Priority:** Must (as a *documented* boundary — hardening itself is explicitly Won't for v1)
   - **Affected subsystems:** `session/api.py` (`SessionAPI`, `CellView`), `ui_web/server.py`
   - **Dependencies:** None
-  - **Source documents:** `CLAUDE.md` "LAN trust model (load-bearing)"; `architecture/adr/ADR-0015-lan-trust-model.md`;
+  - **Source documents:** `GDS-06 NFR-5; CLAUDE.md` "LAN trust model (load-bearing)"; `architecture/adr/ADR-0015-lan-trust-model.md`;
     `AUDIT-2026-06.md` §D5, §F1
   - **Related ADRs:** ADR-0015
 
@@ -351,10 +366,20 @@ review passes actually run against it).
   - **Affected subsystems:** `content/vignette.py` (`load_vignette`'s existing guard,
     `spacesim/content/vignette.py:140-153`), `content/vignette_export.py` (`save_vignette`)
   - **Dependencies:** NFR-2200
-  - **Source documents:** `docs/pipeline/backlog.md` `BL-0082` (external validation report, 26 Sep
+  - **Source documents:** `GDS-06 NFR-5; docs/pipeline/backlog.md` `BL-0082` (external validation report, 26 Sep
     2026, item B16); `requirements/01-functional-requirements.md` `FR-5410`, `FR-5420`;
     `spacesim/content/vignette.py:140-153` (existing guard, the pattern this NFR generalizes).
   - **Related ADRs:** ADR-0007, ADR-0018
+
+- **NFR-3710 — Bounded work on untrusted input** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Inputs that could force unbounded work shall be capped before the work starts: the number of entries in a loaded save's event log, the number of live sessions per process, and the number of samples in a time-span export. An over-limit request is refused (or, for live sessions, the oldest session evicted) before any replay or sampling begins.
+  - **Rationale:** A hostile or mistaken request on the LAN must not be able to exhaust the host (June 2026 audit §D7; IP-1262). GDS-06 NFR-15 states it; no leaf did (gap G3).
+  - **Metric or verification method:** Test — an over-limit save, export span and session count are each refused or evicted before work starts (tests: the generated Test column, `NFR-2850`).
+  - **Priority:** Must
+  - **Affected subsystems:** `session/inprocess.py` (`MAX_EVENTLOG_REPLAY_ENTRIES`, `MAX_LIVE_SESSIONS`), `session/ephemeris.py` (`MAX_EXPORT_SAMPLES`)
+  - **Dependencies:** NFR-2200
+  - **Source documents:** GDS-06 NFR-15 (gap G3); GDS-09 §8.
+  - **Related ADRs:** ADR-0015
 
 ## 8. Data integrity
 
@@ -371,7 +396,17 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `engine/eventlog.py` (`Snapshot`, state hashing), `engine/world.py`
   - **Dependencies:** NFR-1500
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-3
+  - **Source documents:** `GDS-06 NFR-3; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-3
+  - **Related ADRs:** ADR-0002
+
+- **NFR-2410 — Read paths leave state unchanged** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Every read or derived view — cell views, the belief scene, telemetry, order dry-run validation, AAR replay and scrub, time-span exports, the RIC view and the controller view — shall leave the live world state, the RNG state and the event log unchanged.
+  - **Rationale:** Looking must never change what happens: the UI polls these reads continuously and at any rate, and a read that mutated state would break determinism silently. The codebase treats this as a rule module by module; GDS-06 NFR-13 states it; no leaf did (gap G1).
+  - **Metric or verification method:** Test — for each read path, the world-state hash, RNG state and event-log length are identical before and after the call. Today per-module tests cover some paths; a cross-cutting test is owed.
+  - **Priority:** Must
+  - **Affected subsystems:** `session/scene.py`, `engine/telemetry.py`, `engine/orders.py` (`dry_run`), `session/aar.py`, `session/ephemeris.py`, `session/manager.py` (`controller_view`, `telemetry_export`)
+  - **Dependencies:** NFR-1500
+  - **Source documents:** GDS-06 NFR-13 (gap G1); GDS-09 §1 (reads have no side effects).
   - **Related ADRs:** ADR-0002
 
 - **NFR-2500 — Action log sufficiency for reconstruction**
@@ -384,7 +419,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `engine/eventlog.py`, `session/aar.py`
   - **Dependencies:** NFR-2400
-  - **Source documents:** `architecture/05-functional-requirements.md` FR-L1/FR-L2;
+  - **Source documents:** `GDS-06 NFR-12; architecture/05-functional-requirements.md` FR-L1/FR-L2;
     `build-spec/04-nfr-milestones-and-risks.md` §10 M7
   - **Related ADRs:** ADR-0002
 
@@ -406,16 +441,18 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `engine/eventlog.py`, `engine/orders.py`, `engine/handlers.py`
   - **Dependencies:** NFR-2500
-  - **Source documents:** `architecture/05-functional-requirements.md` FR-L1;
+  - **Source documents:** `GDS-06 NFR-12; architecture/05-functional-requirements.md` FR-L1;
     `architecture/adr/ADR-0017-manual-adjudication.md`
   - **Related ADRs:** ADR-0017, ADR-0002
 
 ## 11. Configuration
 
 - **NFR-2700 — File-based server configuration with override**
-  - **Description:** Host, port, and reload behavior for the web server shall be configurable via a
-    single YAML file at the repository root (`spacesim.config.yaml`), with its path overridable via
-    an environment variable (`SPACESIM_CONFIG`), without requiring a code change.
+  - **Description:** Deployment settings — the web server's host, port and reload behavior, and
+    the optional `content:` section (external vignette directories, user-save directory) — shall be
+    configurable via a single YAML file at the repository root (`spacesim.config.yaml`), with its
+    path overridable via an environment variable (`SPACESIM_CONFIG`), without requiring a code
+    change. *(Corrected 2026-10-23, GDS-06 C5: the `content:` section added by IP-1180.)*
   - **Rationale:** White Cell facilitators (not developers) need to change the bind address (e.g.
     to expose on a LAN) without editing source.
   - **Metric or verification method:** Demonstration — editing `spacesim.config.yaml`'s `host`/
@@ -424,7 +461,7 @@ review passes actually run against it).
   - **Priority:** Should
   - **Affected subsystems:** `spacesim/config.py`, `spacesim/ui_web/server.py`
   - **Dependencies:** None
-  - **Source documents:** `training/01-install-and-run.md` (configuration section); `CLAUDE.md`
+  - **Source documents:** `GDS-06 NFR-16; training/01-install-and-run.md` (configuration section); `CLAUDE.md`
     "Server config."
   - **Related ADRs:** None identified
 
@@ -443,8 +480,59 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** All (`spacesim/tests/`)
   - **Dependencies:** NFR-1500, NFR-1900
-  - **Source documents:** `CLAUDE.md` "Test-driven workflow (mandatory)"; `build-spec/06-test-plan-and-schedule.md`
+  - **Source documents:** `GDS-06 NFR-7; CLAUDE.md` "Test-driven workflow (mandatory)"; `build-spec/06-test-plan-and-schedule.md`
   - **Related ADRs:** ADR-0002
+
+- **NFR-2810 — Fidelity claims validated against cited reference values** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Each moderate-fidelity behavior a training lesson depends on (for example the power budget, custody decay, jamming and engagement outcomes) shall be validated by a recorded comparison of simulated quantities against reference values cited in the research encyclopedia, not by judgment alone.
+  - **Rationale:** Tests verify that the engine matches its specification; they do not show that the specification behaves plausibly (GDS-06 NFR-19, absorbing DOM-005 §3–§4). The June 2026 power-model recalibration is the worked precedent.
+  - **Metric or verification method:** Inspection — a comparison table exists for each such behavior, citing its reference values; a regression pin test keeps a validated calibration from drifting (tests: the generated Test column, `NFR-2850`).
+  - **Priority:** Should
+  - **Affected subsystems:** `engine/` (the calibrated models), `docs/research/encyclopedia/`
+  - **Dependencies:** NFR-1500
+  - **Source documents:** GDS-06 NFR-19 (gap G6); DOM-005 §3–§4 as absorbed into GDS-06.
+  - **Related ADRs:** ADR-0009
+
+- **NFR-2820 — Every test declares the requirement or feature it verifies** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Every automated test shall declare, in a form a tool can read, the requirement leaf (`FR-xxxx`/`NFR-xxxx`) it verifies; where no leaf fits, the feature specification (`FS-xxx`); and a package ID (`IP-xxxx`) only for a test of a package's own completion criteria. Every declared ID shall exist in the baseline.
+  - **Rationale:** Owner direction (`BL-0310`, 2026-10-23): "Tests should be traceable to their origin, eg feature/requirement they were written to verify." Today no test cites a requirement ID, so test traceability is inference (GDS-10 finding F3). The declared form is the `@pytest.mark.verifies(...)` marker.
+  - **Metric or verification method:** Test — collecting the suite lists a `verifies` declaration for every test, and every declared ID resolves to a live baseline requirement, feature or package (the documentation-integrity check, NFR-3840); Inspection — `09-package-verification` checks each new test's declaration.
+  - **Priority:** Must
+  - **Affected subsystems:** `spacesim/tests/` (all tests), `pyproject.toml` (marker registration)
+  - **Dependencies:** None
+  - **Source documents:** `docs/pipeline/backlog.md` `BL-0310` owner direction; GDS-10 §6 F3, OQ2.
+  - **Related ADRs:** None identified
+
+- **NFR-2830 — Test relevance audited at each major release** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** At each major release, the whole test suite shall be audited for relevance: tests with no declared origin, tests whose declared requirement is retired or superseded, tests that duplicate another test's check, and requirements in the release's scope with no test. Each finding shall be routed to its owning stage.
+  - **Rationale:** Owner direction (`BL-0310`, 2026-10-23): auditing tests for relevance is part of verification, and runs only at major-release verification.
+  - **Metric or verification method:** Inspection — the major-release Release Assessment records the audit's results (`11-release-readiness`).
+  - **Priority:** Must (at each major release)
+  - **Affected subsystems:** `spacesim/tests/`, `docs/requirements/`
+  - **Dependencies:** NFR-2820
+  - **Source documents:** `docs/pipeline/backlog.md` `BL-0310` owner direction and run #209 cadence decision.
+  - **Related ADRs:** None identified
+
+- **NFR-2840 — Load-bearing UI rules verified by automated browser tests** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** An automated browser test shall verify, in the shipped browser client, that (a) a Red or Blue seat's views never display ground truth for objects the cell does not hold custody of, (b) a command the server would refuse is shown disabled with the refusal reason before it is issued, and (c) kinetic and cyber orders require an explicit consequence confirmation before they are sent.
+  - **Rationale:** Every backend path is tested, but nothing verifies what the browser actually shows (GDS-08 "Verification status"). Owner decision (`BL-0304`, 2026-10-23): add a small browser suite for the load-bearing UI rules.
+  - **Metric or verification method:** Test — a headless-browser test drives the console for each rule (a), (b) and (c) and asserts the rendered result.
+  - **Priority:** Must
+  - **Affected subsystems:** `spacesim/ui_web/static/`, `spacesim/tests/`
+  - **Dependencies:** NFR-3010, NFR-3020, FR-6210
+  - **Source documents:** GDS-08 "Verification status" and OQ1; `docs/pipeline/backlog.md` `BL-0304` owner decision.
+  - **Related ADRs:** ADR-0004, ADR-0008
+
+- **NFR-2850 — The traceability matrix's Test column is generated from declared test origins** *(new 2026-10-23, owner request — `BL-0322`)*
+  - **Description:** The Test column of the requirements traceability matrix shall be produced from the origins the tests themselves declare (`NFR-2820`), never edited by hand: a requirement's Test cell lists exactly the tests whose declared origin names it, and is `UNASSIGNED` when none does. Requirement text shall not name test files as verification evidence, except where the named test is itself the subject of the requirement (the two permanent gates, and the playbook and training-source tests that `FR-11420` and `NFR-3400` require).
+  - **Rationale:** Owner request (`BL-0322`, 2026-10-23): test-to-origin traceability must work in both directions without a hand-kept copy that can drift. The markers record test → requirement; generating the column gives requirement → tests from the same source. GDS-10 OQ1 asks the same of GDS-10's matrix.
+  - **Metric or verification method:** Test — regenerating the column from the current suite's declared origins yields exactly the committed column (a stale or hand-edited cell fails); Inspection — no requirement leaf outside the stated exceptions names a test file.
+  - **Priority:** Should
+  - **Affected subsystems:** `docs/requirements/03-requirements-traceability-matrix.md`, `spacesim/tests/` (the origin report)
+  - **Dependencies:** NFR-2820
+  - **Source documents:** `docs/pipeline/backlog.md` `BL-0322` owner request; GDS-10 §7 and OQ1.
+  - **Related ADRs:** None identified
+  - **Notes:** Until the suite is backfilled (`IP-1331`–`IP-1333`), most generated cells are `UNASSIGNED` — the honest state. The test files this pass removed from leaf text are listed in `requirements-change-log.md` CHG-020 as hints for the backfill.
 
 ## 13. Portability
 
@@ -460,7 +548,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** Build/dependency manifest, `spacesim/` (no OS-specific imports)
   - **Dependencies:** None
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-8
+  - **Source documents:** `GDS-06 NFR-8; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-8
   - **Related ADRs:** ADR-0020 (tech stack)
 
 ## 14. Usability
@@ -477,8 +565,68 @@ review passes actually run against it).
   - **Priority:** Should
   - **Affected subsystems:** `ui_web/static/` (`app.js`, `style.css`, `globe.js`)
   - **Dependencies:** None
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-9;
+  - **Source documents:** `GDS-06 NFR-9; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-9;
     `design/09-gui-principles.md`
+  - **Related ADRs:** None identified
+
+- **NFR-3010 — Belief is visibly distinguishable from ground truth** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** A cell's custody and confidence picture shall be visually distinguishable from ground truth at a glance: every displayed object of another cell carries its confidence encoding (current, aging, propagated-only or uncharacterized), and objects the cell has not detected are not drawn.
+  - **Rationale:** Conflating belief and truth in the UI undermines the fog-of-war lesson even when the backend enforces the boundary (GDS-06 NFR-9, absorbing DOM-007 §4; GDS-08 §5).
+  - **Metric or verification method:** Test — NFR-2840 (a); Inspection of the render-from-custody layer (`symbology.js`, `globe.js`, `world.js`).
+  - **Priority:** Must
+  - **Affected subsystems:** `ui_web/static/` (`globe.js`, `world.js`, `symbology.js`)
+  - **Dependencies:** FR-6210
+  - **Source documents:** GDS-06 NFR-9 (gap G4); GDS-08 §2, §4–§6.
+  - **Related ADRs:** None identified
+
+- **NFR-3020 — An unavailable action states its reason before it is committed** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Any command the server would refuse shall be presented as unavailable, with the server's refusal reason in operator language, before the operator commits it.
+  - **Rationale:** Operators must never discover "you can't do that" only after committing (GDS-06 NFR-9, absorbing DOM-007 §4; GDS-08 §6, the button-state contract).
+  - **Metric or verification method:** Test — the dry-run validation returns the reason without changing state (tests: the generated Test column, `NFR-2850`); NFR-2840 (b) for the rendered half.
+  - **Priority:** Must
+  - **Affected subsystems:** `engine/orders.py` (`dry_run`), `ui_web/static/app.js`
+  - **Dependencies:** NFR-2410
+  - **Source documents:** GDS-06 NFR-9 (gap G4); GDS-08 §2, §4–§6.
+  - **Related ADRs:** None identified
+
+- **NFR-3030 — Every panel obeys the panel-manager contract** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Every console panel shall be closable, floatable, resizable and resettable to its dock through the panel manager from its first release.
+  - **Rationale:** A panel bolted into a fixed grid is accidental friction that later needs retrofitting (GDS-06 NFR-9, absorbing DOM-007 §5; GDS-08 §4). As built, the Compare and Assessment panels are not registered (`BL-0305`).
+  - **Metric or verification method:** Inspection — every panel in `index.html` is registered in `panels.js`.
+  - **Priority:** Should
+  - **Affected subsystems:** `ui_web/static/panels.js`, `index.html`
+  - **Dependencies:** None
+  - **Source documents:** GDS-06 NFR-9 (gap G4); GDS-08 §2, §4–§6.
+  - **Related ADRs:** None identified
+
+- **NFR-3040 — Summary and detail views agree** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Any element that previews a fuller view (a sparkline, badge or thumbnail graph) shall use the same data source, time window and scaling as the view it previews.
+  - **Rationale:** An operator correctly distrusts a preview that disagrees with its detail view (GDS-06 NFR-9, absorbing DOM-007 §4).
+  - **Metric or verification method:** Inspection — each preview and its detail view read the same series endpoint with the same window.
+  - **Priority:** Should
+  - **Affected subsystems:** `ui_web/static/graph.js`, `app.js`
+  - **Dependencies:** None
+  - **Source documents:** GDS-06 NFR-9 (gap G4); GDS-08 §2, §4–§6.
+  - **Related ADRs:** None identified
+
+- **NFR-3050 — The cause of a moving telemetry value is shown** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Where a telemetry value changes because of a modelled condition (for example eclipse-driven battery drain), the console shall show that condition next to the value.
+  - **Rationale:** A falling value with no visible cause reads as a bug and defeats the lesson (GDS-06 NFR-9, absorbing DOM-007 §4; the eclipse-drain precedent).
+  - **Metric or verification method:** Inspection — eclipse state is shown beside the power telemetry it drives.
+  - **Priority:** Should
+  - **Affected subsystems:** `engine/telemetry.py`, `ui_web/static/app.js`
+  - **Dependencies:** None
+  - **Source documents:** GDS-06 NFR-9 (gap G4); GDS-08 §2, §4–§6.
+  - **Related ADRs:** None identified
+
+- **NFR-3060 — White Cell can see the active Red doctrine preset** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** When AI-Red is active, White Cell shall be able to see which Red doctrine preset is active.
+  - **Rationale:** A facilitator needs to know what Red is doing for pacing and debrief honesty (GDS-06 NFR-9, absorbing DOM-008 §3).
+  - **Metric or verification method:** Inspection — the active preset is shown on a White Cell surface.
+  - **Priority:** Should
+  - **Affected subsystems:** `session/redai.py`, `ui_web/static/app.js`
+  - **Dependencies:** None
+  - **Source documents:** GDS-06 NFR-9 (gap G4); GDS-08 §2, §4–§6.
   - **Related ADRs:** None identified
 
 - **NFR-3100 — Classification banner on every screen and export**
@@ -491,28 +639,29 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `ui_web/static/` (banner component), `session/aar.py` (export paths)
   - **Dependencies:** None
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-10;
+  - **Source documents:** `GDS-06 NFR-10; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-10;
     `architecture/05-functional-requirements.md` FR-W5
   - **Related ADRs:** None identified
 
 ## 15. Interoperability
 
-- **NFR-3200 — TLE import from Space-Track with offline fallback**
-  - **Description:** The scenario builder shall import TLEs from Space-Track.org at build time when
-    reachable, and shall otherwise accept manual TLE entry/paste; after scenario creation, no
-    network access shall be required to run the exercise.
-  - **Rationale:** Space-Track is the only named external system in GDS-02's system context; the
-    runtime must not depend on it being reachable, since training rooms may be offline or
-    air-gapped.
-  - **Metric or verification method:** Test — scenario builder succeeds with manually pasted TLEs
-    when Space-Track is unreachable; a built scenario runs with no outbound network call.
+- **NFR-3200 — No network access; TLE/OMM import by paste or file**
+  *(corrected 2026-10-23, GDS-06 C2, owner decision `BL-0299`: the Space-Track import this leaf
+  described was never built and is dropped.)*
+  - **Description:** The system shall make no network call at any time: TLE and CCSDS OMM (KVN)
+    data enter by paste or file, and a vignette runs with no network connection.
+  - **Rationale:** Training rooms may be offline or air-gapped (ADR-0018's offline-first runtime);
+    as built, no code in `spacesim/` opens a network connection.
+  - **Metric or verification method:** Test — TLE and OMM import succeed from pasted or file text
+    (tests: the generated Test column, `NFR-2850`); Inspection — no network client is used
+    anywhere in `spacesim/`.
   - **Priority:** Must
-  - **Affected subsystems:** `content/` (TLE import), scenario builder UI
+  - **Affected subsystems:** `content/` (TLE/OMM parsing), `session/` (force-add), Vignette Creator
   - **Dependencies:** None
-  - **Source documents:** `architecture/02-system-context.md` (external systems table);
-    `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-1; `architecture/05-functional-requirements.md`
-    FR-S2
-  - **Related ADRs:** ADR-0018 (offline-first runtime)
+  - **Source documents:** GDS-06 NFR-1; `architecture/02-system-context.md`;
+    `architecture/05-functional-requirements.md` FR-S2.
+  - **Related ADRs:** ADR-0018 (its build-time Space-Track pull is not built; revision note owed —
+    see the GDS ladder alignment review)
 
 - **NFR-3300 — Browser-only client, no external identity/LMS/scoring integration**
   - **Description:** The client surface shall be a standard browser reachable over HTTP(S) from the
@@ -527,10 +676,10 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `ui_web/server.py`
   - **Dependencies:** NFR-3200
-  - **Source documents:** `architecture/02-system-context.md` §2–§4
+  - **Source documents:** `GDS-06 NFR-8; architecture/02-system-context.md` §2–§4
   - **Related ADRs:** None identified
 
-## 16. Training-artifact quality *(new 2026-07-04, training-corpus elevation)*
+## 16. Training-artifact quality and documentation integrity *(new 2026-07-04, training-corpus elevation; documentation integrity added 2026-10-23)*
 
 Qualities of the training corpus itself — the manuals, learning path, and vignette
 briefs/tutorials elevated to co-equal product status by MSTR-001 §2 and the GDS-00/GDS-01
@@ -555,7 +704,7 @@ these are the *how well* constraints.
   - **Affected subsystems:** `docs/training/`, `spacesim/content/vignettes/*.yaml` (briefs and
     tutorial blocks)
   - **Dependencies:** FR-11210, FR-11410
-  - **Source documents:** GDS-01 "Training-corpus elevation (2026-07-04)";
+  - **Source documents:** GGDS-06 NFR-17; DS-01 "Training-corpus elevation (2026-07-04)";
     `strategic-assumptions-register.md` A12
   - **Related ADRs:** None identified
 
@@ -573,7 +722,7 @@ these are the *how well* constraints.
   - **Priority:** Should
   - **Affected subsystems:** `docs/training/`
   - **Dependencies:** None
-  - **Source documents:** `docs/DOCUMENTATION-PLAN.md` ("Keep modules small"); MSTR-001 §3
+  - **Source documents:** `GDS-06 NFR-17; docs/DOCUMENTATION-PLAN.md` ("Keep modules small"); MSTR-001 §3
   - **Related ADRs:** None identified
 
 - **NFR-3600 — Learner-appropriate presentation**
@@ -583,8 +732,8 @@ these are the *how well* constraints.
     understandable without reading source code. Pedagogical choices (sequencing, scaffolding,
     debrief structure) shall cite their R600 grounding once the corresponding topic is authored.
   - **Rationale:** MSTR-003 (educational philosophy); the R600 tier exists precisely so
-    "teachable" is a researched property, not a vibe — this NFR becomes fully verifiable as R600
-    topics close (tier scaffolded 0/8 as of 2026-07-04).
+    "teachable" is a researched property, not a vibe. The R600 tier is fully authored (8/8,
+    2026-07-04), so this NFR is fully verifiable.
   - **Metric or verification method:** Inspection at `09-training-manual-review` passes —
     audience check against MSTR-003; R600 citations present where the tier has authored topics;
     glossary linkage for introduced terms.
@@ -592,7 +741,57 @@ these are the *how well* constraints.
   - **Affected subsystems:** `docs/training/`, vignette `intro_brief`/`tutorial`/`coaching`
     blocks
   - **Dependencies:** NFR-3400
-  - **Source documents:** MSTR-003; `docs/research/encyclopedia/R600-index.md`
+  - **Source documents:** MGDS-06 NFR-17; STR-003; `docs/research/encyclopedia/R600-index.md`
+  - **Related ADRs:** None identified
+
+- **NFR-3800 — Relative links in live documents resolve** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Every relative link in a live document shall resolve to an existing file.
+  - **Rationale:** Broken links make the documentation tree unreliable; a read-only scan on 2026-10-19 found 82 in live files. GDS-06 NFR-18 (gap G5).
+  - **Metric or verification method:** Test — the documentation-integrity suite (`BL-0297`) checks it on every run; frozen history (journal run log and archives, Verification Reports, review reports, ADR records) is exempt.
+  - **Priority:** Should
+  - **Affected subsystems:** `docs/` (live documents), `spacesim/tests/` (the suite)
+  - **Dependencies:** NFR-3400
+  - **Source documents:** GDS-06 NFR-18 (gap G5); `docs/pipeline/backlog.md` `BL-0297`, `BL-0310`.
+  - **Related ADRs:** None identified
+
+- **NFR-3810 — No live reference to a retired document** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** No live document shall reference a path or ID recorded in the retired-documents register.
+  - **Rationale:** Retiring a document must not leave live references to it (owner direction 2026-10-19; `BL-0297`). GDS-06 NFR-18 (gap G5).
+  - **Metric or verification method:** Test — the documentation-integrity suite (`BL-0297`) checks it on every run; frozen history (journal run log and archives, Verification Reports, review reports, ADR records) is exempt.
+  - **Priority:** Should
+  - **Affected subsystems:** `docs/` (live documents), `spacesim/tests/` (the suite)
+  - **Dependencies:** NFR-3400
+  - **Source documents:** GDS-06 NFR-18 (gap G5); `docs/pipeline/backlog.md` `BL-0297`, `BL-0310`.
+  - **Related ADRs:** None identified
+
+- **NFR-3820 — Each index agrees with its folder** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Each `INDEX.md` shall list exactly the documents in its folder.
+  - **Rationale:** Indexes are how readers and agents find documents; a stale index hides or invents documents. GDS-06 NFR-18 (gap G5).
+  - **Metric or verification method:** Test — the documentation-integrity suite (`BL-0297`) checks it on every run; frozen history (journal run log and archives, Verification Reports, review reports, ADR records) is exempt.
+  - **Priority:** Should
+  - **Affected subsystems:** `docs/` (live documents), `spacesim/tests/` (the suite)
+  - **Dependencies:** NFR-3400
+  - **Source documents:** GDS-06 NFR-18 (gap G5); `docs/pipeline/backlog.md` `BL-0297`, `BL-0310`.
+  - **Related ADRs:** None identified
+
+- **NFR-3830 — Status ledgers agree** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** The status ledgers (`ROADMAP.md`, the Master Build Plan, the package index, `architecture/INDEX.md` §1, the feature index) shall report the same status for the same item.
+  - **Rationale:** Ledgers drift when one is updated and another is not; GDS-10 is built from them. GDS-06 NFR-18 (gap G5).
+  - **Metric or verification method:** Test — the documentation-integrity suite (`BL-0297`) checks it on every run; frozen history (journal run log and archives, Verification Reports, review reports, ADR records) is exempt.
+  - **Priority:** Should
+  - **Affected subsystems:** `docs/` (live documents), `spacesim/tests/` (the suite)
+  - **Dependencies:** NFR-3400
+  - **Source documents:** GDS-06 NFR-18 (gap G5); `docs/pipeline/backlog.md` `BL-0297`, `BL-0310`.
+  - **Related ADRs:** None identified
+
+- **NFR-3840 — Every declared test origin resolves** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** Every requirement, feature or package ID a test declares as its origin (NFR-2820) shall exist in the live baseline and shall not be retired or superseded.
+  - **Rationale:** A declared origin is only traceable if it points at something real and current (owner direction `BL-0310`). GDS-06 NFR-18 (gap G5).
+  - **Metric or verification method:** Test — the documentation-integrity suite (`BL-0297`) checks it on every run; frozen history (journal run log and archives, Verification Reports, review reports, ADR records) is exempt.
+  - **Priority:** Should
+  - **Affected subsystems:** `docs/` (live documents), `spacesim/tests/` (the suite)
+  - **Dependencies:** NFR-2820
+  - **Source documents:** GDS-06 NFR-18 (gap G5); `docs/pipeline/backlog.md` `BL-0297`, `BL-0310`.
   - **Related ADRs:** None identified
 
 ---
@@ -732,8 +931,10 @@ itself yielded nothing.
 
 ## Completion report
 
-- **Total NFR count (numbered baseline):** 23 (`NFR-1100` through `NFR-3300`, leaving numbering
-  gaps for future insertion per category, consistent with `requirements/01`'s scheme). Unchanged by
+- **Total NFR count (numbered baseline):** 48 as of 2026-10-23 (28 before the GDS ladder
+  alignment pass, which added 19; `NFR-2850` added the same day for `BL-0322`); numbering leaves gaps per category, consistent with
+  `requirements/01`'s scheme. *(The figure of 23 recorded here originally predates `NFR-2010`,
+  `NFR-3400`–`NFR-3600` and `NFR-3700`.)* Unchanged by
   the 2026-07 strategic-review reconciliation pass and by the 2026-07 DOM-002/004/005 backfill pass.
 - **Candidate requirement count:** 7 (`CNFR-01`…`CNFR-07`). Unchanged by the DOM-002/004/005
   backfill pass — see that section above for why.
@@ -756,7 +957,8 @@ itself yielded nothing.
   3. **No numeric performance targets exist in any source document** for Performance (NFR-1100/
      NFR-1200) — every Metric/verification-method field for those two items is qualitative by
      necessity, not by choice; see `CNFR-02`.
-  4. **GDS-06 remains unauthored** — this document is explicitly *not* a substitute for the
+  4. **Resolved 2026-10-23:** GDS-06 is authored, and every leaf now cites its GDS-06 tag. *(Original
+     text:)* GDS-06 remains unauthored — this document is explicitly *not* a substitute for the
      architecture ladder's own Non-Functional Requirements level; when GDS-06 is eventually
      authored and closes its merge gate against `build-spec/04` §9, this document's "pre-existing
      tag scheme" note and Source documents fields will need a pass to add GDS-06 cross-references,

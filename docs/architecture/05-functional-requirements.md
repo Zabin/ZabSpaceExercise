@@ -1,7 +1,7 @@
 # GDS-05 — Functional Requirements
 
 > **Document ID:** GDS-05
-> **Version:** 1.1 *(2026-10-17: §8 added, `BL-0056`)*
+> **Version:** 1.2 *(2026-10-23, run #217: FR-W3 + `FR-4320`, FR-L3 + `FR-7230`)*; 1.1 *(2026-10-17: §8 added, `BL-0056`)*
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-04
 > **Referenced By:** GDS-06
@@ -128,7 +128,9 @@ of time control), ADR-0017 (manual adjudication).
   which assets, and bus vs. payload split), informed by the vignette's `roles_needed`. *(→
   FR-4210)*
 - **FR-W3** White Cell shall control **wall-clock time**: run at a selectable multiplier, **pause**,
-  **fast-forward**, and **rewind** (rewind via deterministic replay). *(→ FR-4310; ADR-0016)*
+  **fast-forward**, and **rewind** (rewind via deterministic replay). Clock control and the White
+  Cell's other lifecycle and facilitation controls are refused, on the server, to any other seat.
+  *(→ FR-4310, FR-4320; ADR-0016; FR-4320 added 2026-10-23, owner decision `BL-0307`)*
 - **FR-W4** White Cell shall fire **injects** (scripted or manual), immediately or scheduled for a
   future sim time, from a reusable inject library; future-dated injects replay byte-identical on
   save/resume. *(→ FR-4410)*
@@ -185,8 +187,10 @@ hot-seat swapping, genuine wall clock. Traces to GDS-01 §4 (operational environ
   *(→ FR-4310)*
 - **OR-5 Observer view.** Observers get a read-only view set by White Cell (god-view or a specific
   cell), with no command ability. *(→ FR-6510)*
-- **OR-6 One exercise at a time.** v1 runs a single exercise per process instance, in one sitting.
-  *(→ FR-6410 scope)*
+- **OR-6 One session per exercise.** Each exercise is one `Session`, run in one sitting and shared by
+  every seat (hot-seat or LAN). One server process may host several sessions at once (`/api/sessions`
+  discovery), up to a fixed cap, and a session can be saved and resumed in a new process; how well
+  this must hold is GDS-06 NFR-14. *(→ FR-6410 scope; reworded 2026-10-22, `BL-0300` — see OQ2)*
 - **OR-7 Unseated-role behavior.** Because only one operator is seated at a time while the wall
   clock keeps running, every role's assets must have defined behavior while *unseated*: assets
   continue executing their already-queued `PlannedActivity`s (commands fire at their scheduled
@@ -268,7 +272,9 @@ new families cover assessment (`FR-A`) and the training corpus (`FR-T`).
 ### 8.6 Logging, save and export (FR-L, continued)
 
 - **FR-L3** A session shall save and resume deterministically, with save-file content ownership
-  split from session ownership. *(→ FR-7210, FR-7220 — session-layer leaves the merge did not tag)*
+  split from session ownership, and resume from the save's own contents whatever has since happened
+  to the vignette file. *(→ FR-7210, FR-7220, FR-7230 — FR-7230 added 2026-10-23, owner decision
+  `BL-0302`)*
 - **FR-L4** Replay shall be read-only against the live session and may run at variable speed from
   truth or one cell's viewpoint. *(→ FR-7310, FR-7330)*
 - **FR-L5** State vectors shall export over a time span — truth through White Cell, a cell's own
@@ -319,6 +325,9 @@ new families cover assessment (`FR-A`) and the training corpus (`FR-T`).
   process. This document restates OR-6 as written in the merge source rather than resolving the
   apparent tension; flagged for the build-spec/02 owner to confirm whether OR-6's wording is stale
   post-P8.
+  **Resolved (2026-10-22, `BL-0300`):** the wording was stale. OR-6 now states the as-built model —
+  one `Session` per exercise, several sessions per process up to a cap, save and resume into a new
+  process — and its quality attribute is [GDS-06](06-non-functional-requirements.md) NFR-14.
 
 ## Merge gate (closed)
 

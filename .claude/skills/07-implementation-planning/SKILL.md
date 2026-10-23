@@ -110,7 +110,11 @@ honestly marked "to create"). A package whose `Files to Modify` list is guessed 
 checked is the single most expensive defect this skill can produce, because
 `08-code-implementation` treats drift as a hard Blocking condition. `Tests to Add` must honor the
 repository's test-first mandate and name the two permanent gates (`test_determinism.py`,
-`test_import_guard.py`) in the Verification Checklist.
+`test_import_guard.py`) in the Verification Checklist. **Every test in `Tests to Add` names the
+IDs it verifies** (owner direction, `BL-0310`): a requirement leaf from `Requirements Covered`
+(`FR-xxxx`/`NFR-xxxx`) by preference, else the feature (`FS-xxx`), the package ID (`IP-xxxx`)
+only for a test of the package's own Definition of Done. These are the IDs the implementer puts
+in the test's `@pytest.mark.verifies(...)` marker, so a test with no origin is a planning defect.
 
 ### Step 3 — Update the Master Build Plan and package index
 

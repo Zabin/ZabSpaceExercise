@@ -81,6 +81,21 @@ not itself a baselined requirement's Feature.
 
 ## Quality-gate verification
 
+**Re-verified 2026-10-23 (run #212, GDS ladder alignment sweep) — supersedes the 2026-10-17 block
+below where they differ.** Same mechanical checks, against the requirements documents as updated by
+run #211 ([`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md)):
+
+- **Completeness:** all **106** baselined FR leaves and all **47** baselined NFR leaves are each
+  owned by exactly one of the **48** Features; none missing, none owned twice, no Feature owns an ID
+  that is not a baselined leaf. The 21 run #211 leaves were placed this run, plus `FR-1480`, which
+  no Feature owned (F-21).
+- **Epic assignment:** all 48 Features in exactly one Epic (6+5+5+7+5+6+4+2+1+2+2+3 = 48, twelve
+  Epics).
+- **Release assignment:** 4 Prototype + 4 MVP + 29 Release 1 + 11 Release 2 + 0 Future = 48, and
+  no Feature is bucketed before any prerequisite (F-23).
+- **Dependencies:** 75 edges, each recorded on both ends; **no cycle**; the diagram's edge set
+  equals the catalog's. Longest chain still 7 edges.
+
 **Re-verified 2026-10-17 (run #151, full inventory sweep, `BL-0153`) — supersedes the bullets
 below where they differ.** Checked mechanically against the requirements documents' own leaf
 headings and the catalog's own tables:
@@ -143,6 +158,21 @@ headings and the catalog's own tables:
 | F-18 | Release buckets inconsistent with dependencies — **fixed in Step 4 this run** | FEAT-7100, FEAT-1300, FEAT-1400, FEAT-5100, FEAT-4400 | Six Feature-before-prerequisite placements: FEAT-1100 (Prototype) on FEAT-7100 (MVP) — pre-existing and missed by earlier passes; FEAT-1300, FEAT-1400 (MVP) on FEAT-3100/3400 (Release 1); FEAT-5100 (MVP) on FEAT-4200 (Release 1); FEAT-2300 (Release 1) on FEAT-4400 (Release 2). Fixed by moving FEAT-7100 → Prototype, FEAT-1300/1400/5100 → Release 1, FEAT-4400 → Release 1, each justified in `01-release-plan.md`. This is Step 4's own output, not a review edit. | Low | None further. The plan reconstructs a shipped system; no move changes what is built. |
 | F-19 | Features that grew (judgment call) | FEAT-1400 (2 → 7 FRs), FEAT-3400 (1 → 4), FEAT-5100 (1 → 7 FRs + 2 NFRs) | Each grew by its own `FR-x400`/`FR-5100` children, all one stakeholder need and one subsystem; none is split. FEAT-1400 now mixes resolution math with resource-bound validation (`FR-1460`/`FR-1470`), which are verified together in the consumption step. | Low | Keep. Revisit FEAT-5100 if the Creator gains a second, separable workflow. |
 | F-20 | Downstream gaps (next stage) | `FR-1460`, `FR-1470` (FEAT-1400); `FR-1230` (FEAT-1200), `FR-4440` (FEAT-4400) | `FR-1460`/`FR-1470` are Must, unimplemented, with no FS. `FR-1230`/`FR-4440` (space weather, `BL-0074`) are Should, unimplemented, with no FS, and carry open design questions (`BL-0104`, `BL-0121`). The FS ⇄ FEAT mapping table at the top of this review also predates FS-116–FS-131. | Medium (`FR-1460`/`FR-1470` are Must) | `06-feature-specification` next on `FR-1460` + `FR-1470` (extend FS-105, which owns `FR-1410`, or a small remediation FS), then one `07` remediation package. Space-weather stays where its backlog entries route it. Refresh the mapping table at the next `05` touch. |
+
+### Findings added 2026-10-23 (run #212, GDS ladder alignment sweep)
+
+| # | Finding type | IDs involved | Description | Severity | Recommendation |
+|---|---|---|---|---|---|
+| F-21 | Requirement not assigned (found by the mechanical check) — **fixed this run** | `FR-1480`; FEAT-1400 | `FR-1480` (a fired salvo is charged whether it hits or misses, `IP-1321`, owner decision `BL-0249`) was baselined after the run #151 sweep by a `04` pass that no `05` delta followed, so no Feature owned it. It joins FEAT-1400 beside `FR-1460`, which it refines. | Low | None further. As F-13 already says: run the mechanical check on every `04` delta, not only on large sweeps. |
+| F-22 | Architectural inconsistency (deliberate, disclosed) | EP-12000; FEAT-12100, FEAT-12200, FEAT-12300 | Every other Epic follows one `FR-x000` group; EP-12000 holds only NFRs (`NFR-1510`, `NFR-2820`–`NFR-2840`, `NFR-3800`–`NFR-3840`). These constrain how the product is verified, released and documented, so distributing them across product Features (the F-07 bundling pattern) would put the test-marker backfill or a link checker inside, say, FEAT-1100, where no specification would naturally pick it up. | Low | Keep. The three Features map one-to-one onto the three pieces of work the owner decided (`BL-0310`, `BL-0304`, `BL-0297`). |
+| F-23 | Release buckets inconsistent with new dependencies — **fixed in Step 4 this run** | FEAT-5300, FEAT-6200, FEAT-1100, FEAT-8100 | `NFR-1610` (FEAT-1100, Prototype) cites `NFR-1600` (FEAT-5300, MVP); `NFR-3010` (FEAT-8100, MVP) cites `FR-6210` (FEAT-6200, Release 1). Fixed by moving the prerequisites earlier: FEAT-5300 → Prototype, FEAT-6200 → MVP; both have only earlier-bucketed prerequisites. | Low | None further. As with F-18, the plan reconstructs a shipped system; no move changes what is built. |
+| F-24 | Verified requirements not met as built (carried from the requirements review) | FEAT-4300 (`FR-4310`, `FR-4320`); FEAT-7200 (`FR-7220`, `FR-7230`) | Requirements review R1: `FR-4310` is recorded verified (`IP-1060`/VR-1060) but the server accepts clock, step, advance, rewind and undo from any non-Observer seat. R2: `FR-7220` is recorded verified (VR-1100) but a save holds only the vignette ID and overrides. The new leaf in each Feature (`FR-4320`, `FR-7230`) is the owner decision that fixes it. | **High** (FEAT-4300) / Medium (FEAT-7200) | FEAT-4300: `07` remediation package for `FR-4310` + `FR-4320` (`BL-0307`); FS-106 v2.0 already specifies clock authority, so check at `07` whether it needs a revision for the `FR-4320` control list. FEAT-7200: `06` revision of FS-110 for `FR-7230`, stating how it also satisfies `FR-7220`. |
+| F-25 | Features that grew (judgment call) | FEAT-8100 (1 FR + 6 → 11 NFRs); FEAT-9100 (+`NFR-3060`); FEAT-6100 (+`NFR-3710`) | FEAT-8100 now holds the five human-factors leaves `NFR-3010`–`NFR-3050` on top of F-07's six cross-cutting NFRs. `NFR-3060` (White Cell can see the active Red doctrine preset) went to FEAT-9100, which owns presets, rather than FEAT-4600 (god-view). `NFR-3710` (bounded work on untrusted input) went to FEAT-6100, the seam untrusted requests cross, though its three caps live in `inprocess.py` and `ephemeris.py`. | Low | Keep. If the human-factors leaves get their own specification, split them out of FEAT-8100 into a "Console Human-Factors Rules" Feature at the next `05` touch rather than growing FEAT-8100 further. |
+| F-26 | Downstream gaps (next stage) | FEAT-7200, FEAT-12100, FEAT-12200, FEAT-12300; `BL-0305`, `BL-0309`, `BL-0312` | No specification yet covers `FR-7230`, `NFR-2820`/`NFR-2830`/`NFR-3840`/`NFR-1510`, `NFR-2840`, or `NFR-3800`–`NFR-3830`. `NFR-3030` (panel-manager contract) has a known gap in the Compare and Assessment panels (`BL-0305`); `NFR-1300` has no test (`BL-0309`). | Medium | `06-feature-specification`, one per run: FS-110 revision (`FR-7230`); a new FS for FEAT-12100 (marker registration and backfill); a new FS for FEAT-12200 (name the browser tooling and run mode, review R7, and decide `BL-0312`'s friction rule); FEAT-12300 after them (it rides `BL-0297`). `BL-0305`/`BL-0309` go straight to `07` as remediation. |
+
+| # | Finding type | IDs involved | Description | Severity | Recommendation |
+|---|---|---|---|---|---|
+| F-27 | Delta assignment (2026-10-23, `BL-0322`) | `NFR-2850`; FEAT-12100 | `NFR-2850` (the matrix's Test column is generated from declared test origins) joins FEAT-12100, beside `NFR-2820` which it depends on; no new edge, no bucket change. Mechanical check: 106 FR + 48 NFR leaves, each owned once. One Feature now owns both directions of the trace. | Info | `06`: revise FS-133 for `NFR-2850`. |
 
 ## Reconciling the 50–80 expectation
 

@@ -6,6 +6,14 @@
 - **Title:** Runtime requires no network; Space-Track TLE import is optional and build-time-only
 - **Status:** Accepted
 
+> **Revision note (2026-10-23, pipeline run #217).** The optional build-time Space-Track pull this
+> record describes was never built, and the project owner has dropped it (`BL-0299`, recorded in
+> `docs/pipeline/backlog.md`). The decision now stands in a stronger form: **the application makes
+> no network call at all.** Real TLEs and CCSDS OMM enter by pasted text or local file
+> (`FR-5210`, `FR-5220`); `NFR-3200` states the requirement. The record below is kept as written;
+> read "Space-Track" in it as history, not as a supported path. Any future network data source
+> needs a new ADR.
+
 ## Context
 
 The deployment context (government laptops, possibly air-gapped training environments) requires

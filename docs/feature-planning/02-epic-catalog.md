@@ -1,6 +1,6 @@
 # Epic Catalog
 
-Eleven Epics *(nine at original authoring; EP-10000 added 2026-07, EP-11000 2026-10-17)*, one per top-level `FR-x000` grouping in `docs/requirements/01-functional-requirements.md`
+Twelve Epics *(nine at original authoring; EP-10000 added 2026-07, EP-11000 2026-10-17, EP-12000 2026-10-23 — the one Epic with no `FR-x000` group, holding verification and documentation-integrity NFRs)*, one per top-level `FR-x000` grouping in `docs/requirements/01-functional-requirements.md`
 — the requirements baseline's own hierarchy already draws these lines, so Epic boundaries are taken
 directly from it rather than redrawn (per this skill's Best Practices). Every Feature in
 `03-feature-catalog.md` belongs to exactly one Epic below.
@@ -18,7 +18,7 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Subsystems** | C1 Simulation Engine, C2 Session/Application Layer, C3 Mock SSN *(FEAT-1600's own additional subsystem touches)* |
 | **Estimated Scope** | Very Large — this Epic underpins the project's single load-bearing invariant (determinism) and the six-access-channel geometry every other Epic schedules against. |
 | **Risks** | Any change here risks violating the determinism gate that the whole documentation-driven build discipline treats as permanent; the two resolved circular-citation findings (FEAT-1100↔FEAT-4300, FEAT-1100↔FEAT-7100) originate in this Epic's own requirements text. `FEAT-1600` is partially built — six of its seven leaves are `VERIFIED`, one (`FR-1670`) is brand new and unimplemented. |
-| **Dependencies** | EP-7000 (FEAT-1100 depends on FEAT-7100's event log); EP-3000 *(sweep 2026-10-17: FEAT-1300's manoeuvre ledger reads plan-time purpose tags, and FEAT-1400's delivery-path jamming acts on FEAT-3100/FEAT-3400 — EP-3000 also depends on EP-1000, an Epic-level mutual dependency with no Feature-level cycle, see `05-feature-review.md` F-17)* |
+| **Dependencies** | EP-7000 (FEAT-1100 depends on FEAT-7100's event log); EP-3000 *(sweep 2026-10-17: FEAT-1300's manoeuvre ledger reads plan-time purpose tags, and FEAT-1400's delivery-path jamming acts on FEAT-3100/FEAT-3400 — EP-3000 also depends on EP-1000, an Epic-level mutual dependency with no Feature-level cycle, see `05-feature-review.md` F-17)*; EP-5000 *(sweep 2026-10-23: FEAT-1100's failure-atomic events (`NFR-1610`) build on FEAT-5300's invalid-input robustness (`NFR-1600`))* |
 
 ### EP-2000 — Bus & Payload Operations
 
@@ -152,25 +152,39 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Risks** | Prose drifting from behaviour; mitigated by `FR-11410` and independent manual reviews. |
 | **Dependencies** | EP-4000 (FEAT-11300 sequences the vignette library FEAT-4100 selects from) |
 
+### EP-12000 — Verification & Documentation Integrity *(new 2026-10-23)*
+
+| Field | Content |
+|---|---|
+| **Epic ID** | EP-12000 |
+| **Title** | Verification & Documentation Integrity |
+| **Purpose** | How the product is verified, released and documented: every test names its origin, each major release audits the suite and locks its dependencies, a browser suite checks the load-bearing console rules, and the live documentation stays internally consistent. Baselined as `NFR-1510`, `NFR-2820`–`NFR-2840` and `NFR-3800`–`NFR-3840` (run #211, owner directions `BL-0297`, `BL-0299`, `BL-0304`, `BL-0310`). No `FR-x000` group exists for it; it is the catalog's only NFR-only Epic. |
+| **Features Included** | FEAT-12100, FEAT-12200, FEAT-12300 |
+| **Subsystems** | C12 Browser client and C4 Operator Console (FEAT-12200 only); otherwise test configuration and documentation, outside C1–C12 (F-16) |
+| **Estimated Scope** | Medium — three small-to-medium Features; the test-origin backfill is the widest, touching every test module. |
+| **Risks** | Checks that pass falsely against stale inputs (a stale retired-document list, origin tags assigned by file name); a browser suite brittle enough to be skipped. |
+| **Dependencies** | EP-1000, EP-5000 (FEAT-12100), EP-6000, EP-8000 (FEAT-12200), EP-11000 (FEAT-12300) |
+
 ---
 
 ## Summary
 
 | Epic | Features | Epic-level Dependencies |
 |---|---|---|
-| EP-1000 Simulation Engine Core & Determinism | 6 | EP-7000, EP-3000 *(2026-10-17)* |
+| EP-1000 Simulation Engine Core & Determinism | 6 | EP-7000, EP-3000 *(2026-10-17)*, EP-5000 *(2026-10-23)* |
 | EP-2000 Bus & Payload Operations | 5 | EP-1000, EP-6000, EP-4000 *(2026-10-17)* |
 | EP-3000 Command Planning & Sensor Tasking | 5 | EP-1000, EP-4000, EP-7000 *(2026-10-17)* |
 | EP-4000 White Cell Exercise Control | 7 | EP-1000, EP-5000, EP-6000 |
 | EP-5000 Scenario / Vignette Authoring | 5 *(+2, 2026-10-17: FEAT-5400, FEAT-5500)* | EP-1000, EP-4000, EP-7000 *(2026-10-17)* |
 | EP-6000 Session, Multiplayer & Fog-of-War | 6 | EP-1000 |
 | EP-7000 Logging, Replay & After-Action Review | 4 | EP-6000 |
-| EP-8000 Operator Console Presentation | 2 | EP-6000, EP-1000 |
+| EP-8000 Operator Console Presentation | 2 | EP-6000, EP-1000 *(edges via FEAT-8100 since 2026-10-23)* |
 | EP-9000 AI-Red | 1 | EP-3000 |
 | EP-10000 Assessment & Research Instrumentation *(new 2026-07)* | 2 | EP-1000, EP-3000, EP-7000 |
 | EP-11000 Training Corpus & Learning Path *(new 2026-10-17)* | 2 | EP-4000 |
-| **Total** | **45** | |
+| EP-12000 Verification & Documentation Integrity *(new 2026-10-23)* | 3 | EP-1000, EP-5000, EP-6000, EP-8000, EP-11000 |
+| **Total** | **48** | |
 
 Every Feature in `03-feature-catalog.md` appears in exactly one Epic's `Features Included` list
 above — cross-checked against the catalog's own Epic headers (45 Features total, matching the
-catalog's Summary table; 6+5+5+7+5+6+4+2+1+2+2 = 45).
+catalog's Summary table; 6+5+5+7+5+6+4+2+1+2+2+3 = 48, as of 2026-10-23).

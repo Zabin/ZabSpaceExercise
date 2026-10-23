@@ -234,6 +234,63 @@ code. Numbering stability maintained: a new top-level family after the existing 
 
 ---
 
+## GDS ladder alignment (2026-10-23) — `01`, `02`, `03`
+
+Full derivation and findings: [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md).
+
+### CHG-017
+- **Files:** `01-functional-requirements.md`
+- **Change:** Added `FR-4320` (White Cell controls refused for other seats) and `FR-7230` (resume
+  independent of the original vignette file). Reworded `FR-5210` to manual TLE/Keplerian entry
+  (Space-Track dropped). Added "not met as built" notes to `FR-4310` and `FR-7220`.
+- **Reason:** Owner decisions `BL-0307`, `BL-0302`, `BL-0299`; GDS-07 §6 and GDS-09 §4.
+- **Source review issue:** R1, R2, R4.
+
+### CHG-018
+- **Files:** `02-non-functional-requirements.md`
+- **Change:** Added 19 leaves: `NFR-1510`, `NFR-1610`, `NFR-2410`, `NFR-2810`–`NFR-2840`,
+  `NFR-3010`–`NFR-3060`, `NFR-3710`, `NFR-3800`–`NFR-3840`. Corrected `NFR-1800`, `NFR-1900`,
+  `NFR-2200`, `NFR-2700`, `NFR-3200` and `NFR-3600`. Every leaf now cites its GDS-06 tag first.
+- **Reason:** GDS-06 gaps G1–G6 and corrections C1–C6; owner decisions `BL-0299`, `BL-0304`,
+  `BL-0310`.
+- **Source review issue:** R3, R5–R8.
+
+### CHG-019
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** 21 rows added; `FR-5210`, `NFR-1900`, `NFR-3200` reworded; `FR-3120` title corrected;
+  `FR-4310`/`FR-7220` marked not met as built; six foundational leaves marked pre-package; the header
+  and the Test and Implementation Package index notes corrected.
+- **Reason:** Keep the matrix complete over the extended baseline; GDS-10 findings F2 and F4.
+- **Source review issue:** R1, R2, R8, R9.
+
+## Generated Test column (2026-10-23, `BL-0322`) — `02`, `03`
+
+Owner request: make test↔origin traceability bidirectional by generating the matrix's Test column
+from the tests' declared origins. Review: [`reviews/requirements-update-bl-0322.md`](../reviews/requirements-update-bl-0322.md).
+
+### CHG-020
+- **Files:** `02-non-functional-requirements.md`
+- **Change:** Added `NFR-2850` (§12 Testing). Removed test-file names from the verification text of
+  `NFR-1610`, `NFR-1800`, `NFR-2010`, `NFR-2810`, `NFR-3020`, `NFR-3200` and `NFR-3710`, replaced by
+  a pointer to the generated Test column. Kept the names where the test is the requirement's subject
+  (`NFR-1500`/`NFR-1900`/`NFR-2400`/`NFR-2800`'s permanent gates; `NFR-3400`'s playbook test;
+  `FR-11420`). **Removed names, as hints for the backfill:** `NFR-1610` → `test_failure_atomic_events.py`;
+  `NFR-1800` → `test_session_features.py`, `test_web.py`; `NFR-2010` → `test_content.py`,
+  `test_vignette_tutorials.py`; `NFR-2810` → `test_power_calibration.py`; `NFR-3020` →
+  `test_validate_order.py`; `NFR-3200` → `test_bulk_import_session.py`, `test_content.py`;
+  `NFR-3710` → `test_defensive_audit_2026.py`, `test_ephemeris.py`, `test_vignette_creator_session.py`.
+- **Reason:** `BL-0322`; a hand-kept copy of requirement → test drifts.
+- **Source review issue:** U1.
+
+### CHG-021
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Added row `NFR-2850`; header note that the Test column is to be generated and that its
+  current cells are hand-filled hints until `IP-1330` exists.
+- **Reason:** `BL-0322`.
+- **Source review issue:** U2.
+
+---
+
 ## Findings deliberately left unactioned (with reason)
 
 These review findings were re-examined against the current document text and intentionally not

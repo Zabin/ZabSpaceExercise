@@ -5,7 +5,7 @@ Router for `docs/architecture/`. Two things live here, at two different granular
 1. **`GDS-00`…`GDS-10`** — a single, global, top-to-bottom design-synthesis ladder for the whole
    project (Vision → Concept of Operations → System Context → Architecture → Domain Model →
    Functional Requirements → Non-functional Requirements → Data Model → UI Architecture → API
-   Specification → Requirements Traceability Matrix). **Scaffolded now, content incomplete** — see
+   Specification → Requirements Traceability Matrix). **All eleven levels are authored with closed merge gates (2026-10-22)** — see
    §1 below for the gating rule.
 2. **`ADS-xxx`** — the optional, per-capability-cluster Design Synthesis document (ten internal
    sections) defined in `MSTR-005` §3a, used when one capability cluster needs its own deep-dive
@@ -36,11 +36,11 @@ Both are produced by the `03-architecture-design-synthesis` skill
 | GDS-03 | Architecture | `architecture/03-architecture.md` | High-level subsystem decomposition | `design/01-architecture-overview.md` | ✅ Authored — merge gate closed (design/01 and build-spec/03 §7-8 stay authoritative; GDS-03 is a subsystem-decomposition extraction restated against the as-built system) |
 | GDS-04 | Domain Model | `architecture/04-domain-model.md` | Core entities and relationships | `design/04-data-model.md` (entity/relationship portion) | ✅ Authored — merge gate closed (design/04-data-model.md stays authoritative for the schema; GDS-04 is a conceptual extraction, the schema portion remains GDS-07's merge target) |
 | GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | The authoritative specification | `build-spec/02-requirements-and-operations.md` §5–6 | ✅ Authored — merge gate closed (build-spec/02 §5–6 superseded; GDS-05 is now authoritative — see its "Merge gate" section) |
-| GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | Performance, reliability, security, usability | `build-spec/04-nfr-milestones-and-risks.md` §9 | ⛔ Planned (scaffold only) |
-| GDS-07 | Data Model | `architecture/07-data-model.md` | Persistent data structures | `design/04-data-model.md` (schema portion — same source file as GDS-04, different concern) | ⛔ Planned (scaffold only) |
-| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | Screens, navigation, workflows | `design/09-gui-principles.md` (+ `05-cell-interfaces.md`, `10-sda-3d-viewer.md`) | ⛔ Planned (scaffold only) |
-| GDS-09 | API Specification | `architecture/09-api-specification.md` | Service boundaries and contracts | `design/07-api-and-networking.md` | ⛔ Planned (scaffold only) |
-| GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | Maps requirements to features, tests, and implementation | *(no existing counterpart — net-new; `ROADMAP.md` tracks documents, not requirement→test traceability)* | ⛔ Planned (scaffold only) |
+| GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | Performance, reliability, security, usability | `build-spec/04-nfr-milestones-and-risks.md` §9 | ✅ Authored — merge gate closed (build-spec/04 §9 superseded; GDS-06 is authoritative, `requirements/02` its leaf elaboration; gaps G1–G6 and corrections C1–C6 handed to `04`) |
+| GDS-07 | Data Model | `architecture/07-data-model.md` | Persistent data structures | `design/04-data-model.md` (schema portion — same source file as GDS-04, different concern) | ✅ Authored — merge gate closed (design/04 superseded in full: conceptual half in GDS-04, schema half here, corrected to as-built) |
+| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | Screens, navigation, workflows | `design/09-gui-principles.md` (+ `05-cell-interfaces.md`, `10-sda-3d-viewer.md`) | ✅ Authored — merge gate closed (design/09, /05, /10 superseded; build-spec/07 and design/06 superseded for UI content; browser client stated as unverified end to end) |
+| GDS-09 | API Specification | `architecture/09-api-specification.md` | Service boundaries and contracts | `design/07-api-and-networking.md` | ✅ Authored — merge gate closed (design/07 superseded; the ICD stays the companion interface inventory, its file move deferred to the cleanup sweep) |
+| GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | Maps requirements to features, tests, and implementation | *(searched: `requirements/03-requirements-traceability-matrix.md` exists at leaf grain — companion, not merged; `ROADMAP.md`/`MSTR-005` §4 track documents only)* | ✅ Authored — merge gate closed (tag-grain chain completeness; `requirements/03` stays the leaf-grain matrix) |
 
 ### Gating rule (binding)
 
@@ -50,11 +50,14 @@ both (a) authored and (b) has finished merging in whatever existing-corpus conte
 means for that level. Per the user's explicit instruction, this gate applies at every step of the
 top-to-bottom iteration the `03-architecture-design-synthesis` skill will run.
 
-**Progress:** GDS-00 through GDS-05 are authored with their merge gates closed (see their
+**Progress:** GDS-00 through GDS-10 are authored — the ladder is complete with their merge gates closed (see their
 Status cells above and each document's own "Merge gate" section for the recorded decision). GDS-05
-is the first level whose merge gate **supersedes** rather than retains its source as authoritative
-— see its own "Merge gate" section for why. GDS-06 (Non-functional Requirements) is the next level
-to author.
+was the first level whose merge gate **supersedes** rather than retains its source as authoritative
+— see its own "Merge gate" section for why; GDS-06 does the same for `build-spec/04` §9, GDS-07 for
+`design/04-data-model.md`, GDS-08 for the UI design documents, and GDS-09 for
+`design/07-api-and-networking.md`; GDS-10 traces the requirements to code and tests. Every topic
+`docs/build-spec/` and `docs/design/` covered now has an authoritative GDS level, so both can be
+retired (`BL-0292`).
 
 Where a level's "Merges from" column says no counterpart was identified, that is not a free pass —
 it means the authoring pass for that level must search the corpus itself before concluding there

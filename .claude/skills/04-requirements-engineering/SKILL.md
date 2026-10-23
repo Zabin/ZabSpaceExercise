@@ -210,6 +210,18 @@ an `UNASSIGNED` cell is the correct, honest state for a requirement that hasn't 
 stage of planning. A matrix with no `UNASSIGNED` cells on a fresh baseline is a sign something was
 guessed, not a sign of thoroughness.
 
+**The Test column comes from the tests themselves** (owner direction, `BL-0310`): every test
+declares the requirement, feature or package it verifies with `@pytest.mark.verifies(...)`, so a
+requirement's tests are the ones whose marker names it. **The column is generated, never
+edited by hand** (`NFR-2850`, owner request `BL-0322`): regenerate it with the origin report
+(`IP-1330`'s `--origin-report` matrix mode), which rewrites only the Test cells; the suite fails if
+the committed column differs from the generated one. Until the existing suite is backfilled, a
+requirement whose tests carry no marker reads `UNASSIGNED` — the honest state. Requirement text does
+not name test files as evidence, except where the named test is itself the requirement's subject
+(the permanent gates; the playbook and training-source tests). When a requirement is retired or superseded, record it so the
+release-time relevance audit (`11-release-readiness`, major releases) can find tests still citing
+it.
+
 ## Quality gate (before calling the baseline done)
 
 - [ ] Every FR/NFR has all required fields populated (or explicitly `None` with a reason, never
