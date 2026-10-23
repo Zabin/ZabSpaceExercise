@@ -858,6 +858,21 @@ Definition of Done mix a determinism-sensitive change with a read-only one.
 No cross-package sequencing constraint. **Not packaged:** the manual prose (`WCM-5` and the
 god-view section), routed via §15.1 after `VERIFIED`.
 
+## White-only controls enforced at the server (pipeline run #219, 2026-10-23)
+
+**Input:** [FS-106](../features/FS-106-white-cell-dashboard.md) v2.4: `FR-4310` (corrected) and
+`FR-4320` (`FEAT-4300`), owner decision `BL-0307`; requirements review R1 (High).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | White-only guard at the route boundary for the 12 routes; `load_save` gains the seat parameter | C2 HTTP boundary, `server.py` | IP-1068 |
+| 2 | One refusal test per control and seat; existing tests name `white` | `spacesim/tests/` | IP-1068 |
+
+**One package, not two.** The guard is a few lines at one seam, and the tests are what the
+remediation exists for (a package claim without a test is how R1 happened); splitting the
+existing-test calling-convention update into its own package would leave the suite red between
+them.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
