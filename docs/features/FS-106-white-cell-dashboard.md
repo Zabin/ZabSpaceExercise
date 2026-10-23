@@ -1,9 +1,18 @@
 # FS-106 — White Cell Dashboard
 
 > **Document ID:** FS-106
-> **Version:** 2.3
-> **Status:** ✅ Ready for implementation planning (v2.3 additions `FR-4450`/`FR-4620`). Everything up to
-> v2.2 is ✅ Done.
+> **Version:** 2.4
+> **Status:** ✅ Ready for implementation planning (v2.4: `FR-4320` and the corrected `FR-4310`
+> enforcement; v2.3 additions `FR-4450`/`FR-4620`). Everything up to v2.2 is ✅ Done, except that
+> `FR-4310`'s enforcement was found not built (see v2.4).
+> **Changelog (v2.4, 2026-10-23, pipeline run #218):** Adds `FR-4320` (White Cell lifecycle and
+> facilitation controls refused for any other seat, owner decision `BL-0307`) and corrects the
+> enforcement point for `FR-4310`: earlier versions placed the role check in `SessionManager`, which
+> never sees the caller's seat; it belongs at the server boundary where the Observer refusal
+> (`IP-1130`) already sits. Requirements review R1 found `FR-4310` recorded verified (VR-1060) but
+> not enforced. Updated Requirements Implemented, System Behaviour, Subsystem Responsibilities,
+> Error Handling, Security Considerations, Acceptance Criteria, Verification Plan and Open
+> Questions.
 > **Changelog (v2.1, 2026-09-26):** Added `FR-4420` (condition-triggered injects, evaluated
 > deterministically) and `FR-4430` (four new inject effect types: anomaly, sensor outage, forced
 > custody loss, scripted manoeuvre) to `Requirements Implemented`, closing backlog `BL-0070`
@@ -119,6 +128,9 @@ new capability requiring a new Feature.
 Both are Could-tier leaves the Feature Catalog already assigns to this document's Features
 (run #83). `FEAT-4400`'s `FR-4440` is specified by FS-123, not here.
 
+**Added v2.4:** `FR-4320` (refuse White Cell lifecycle and facilitation controls from any other
+seat), in `FEAT-4300` beside `FR-4310` (run #212 sweep).
+
 ## User Workflows
 
 - The White Cell facilitator opens the god-view, observing both cells' belief states and ground
@@ -176,6 +188,22 @@ Both are Could-tier leaves the Feature Catalog already assigns to this document'
   identically to every connected client — no per-tab pacing negotiation (ADR-0016). The mechanism
   that propagates a pause/resume/rate-change to every connected client is
   [FS-109](FS-109-multiplayer-session-transport.md)'s responsibility, not this Feature's.
+- *(v2.4)* **Only a request that names the White Cell seat may use a White Cell control**
+  (`FR-4310`, `FR-4320`). The controls are: clock control (start of the clock is the session start,
+  pause/resume/rate, step, advance, rewind, undo — `FR-4310`); and session start, setting an
+  exercise parameter, firing an inject, editing the force (TLE add, bulk import, ground-asset add),
+  assigning seats to roles, designating the Observer's view, and loading a save into a new session
+  (`FR-4320`). A request naming `blue`, `red` or `observer` is refused with a reason before it
+  reaches the session, and the session is unchanged; the same request naming `white` proceeds
+  exactly as today.
+  - **A request that names no seat is refused too.** `FR-4310`'s Postcondition is that no
+    request not issued by White Cell changes the clock; a request with no seat is not issued by
+    White Cell. This matches how the server already enforces its existing White-only actions
+    (GDS-09 §4: seat declaration, inject cancel and edit, the controller view, live ROE change —
+    each refuses any caller not naming `white`), so every White-only action follows one rule. The browser client always
+    names its seat on a mutating request (it defaults to `white`), so no operator flow changes.
+  - Seat assignment and Observer designation already refuse a non-White caller inside the session
+    layer (`IP-1151`, `IP-1130`); they keep that check and gain nothing new except a test.
 - **God-view/view-as (FR-4610) must never grant write access to the viewed cell's state.** A
   view-as-Red request returns exactly the data INT-0004 would return to a Red-seated operator, no
   more.
@@ -237,7 +265,8 @@ Both are Could-tier leaves the Feature Catalog already assigns to this document'
 
 | Subsystem | Responsibility |
 |---|---|
-| `session/manager.py` (`SessionManager`) | Accepts clock-control requests (pause/resume/rewind/undo/branch trigger) only from the White Cell role; rejects others (FR-4310). Delegates the actual multi-client clock propagation to the mechanism specified in FS-109. |
+| `session/manager.py` (`SessionManager`) | Applies clock-control requests (pause/resume/rewind/undo/branch trigger); delegates the multi-client clock propagation to FS-109. *(v2.4: it does not see the caller's seat, so it is not where `FR-4310` is enforced — see the next row.)* |
+| `ui_web/server.py` (the HTTP boundary) | *(v2.4)* Refuses every White Cell control listed under System Behaviour unless the request names the `white` seat (`FR-4310`, `FR-4320`), at the point where the Observer refusal (`IP-1130`) already sits, before the request reaches `SessionAPI`. |
 | `session/manager.py` (`InProcessSession.inject_library()`) | Loads/exposes the five reusable inject templates and applies scheduled/immediate injects (FR-4410). |
 | `session/api.py` (`SessionAPI`) | Serves god-view and view-as-cell requests (FR-4610), reusing the fog-of-war filter FS-106 does not itself implement (that filter's own Feature is `FEAT-6200` in the Feature Catalog, specified by a different, not-yet-authored FS). |
 | `session/redai.py` | Exposes the currently-selected doctrine preset for display and accepts a facilitator's preset-switch/hand-tune request (DOM-003 §7); the preset's own generation behavior is FS-111's subsystem responsibility, not this row's. |
@@ -288,6 +317,10 @@ state only.
 
 - Clock-control requests from a non-White-Cell role are rejected with the clock state unchanged
   (FR-4310) — the propagation mechanism that keeps all clients consistent is FS-109's concern.
+- *(v2.4)* A White Cell control requested by any seat other than `white`, or by no seat, is refused
+  with a "forbidden" outcome and a reason naming the control and that only White Cell may use it;
+  nothing in the session changes (`FR-4320`). An unknown session is still reported as unknown
+  first, as today.
 - *(v2.2 — ratified from `IP-1063` Design Decision 2, grounded in `FR-4430`'s Precondition
   "the targeted Asset/Sensor/Track exists in the current `WorldState`" and `FR-4410`)*
   **White-Cell-originated inject, fired now or scheduled: checked whole, rejected atomically.**
@@ -350,6 +383,10 @@ state only.
 - *(Added v2.3)* The side-by-side controller view and the inject edit/cancel controls are
   White-only, at the same client-side-trust level as every other White surface (`CLAUDE.md` LAN
   trust model). Neither exposes ground truth to a Red or Blue seat.
+- *(v2.4)* The White-only refusal (`FR-4310`, `FR-4320`) is a structural check at the same trust
+  level as the Observer refusal: the seat is asserted by the client, so a participant who lies about
+  their seat still passes it (ADR-0015). It closes accidental use from a Blue or Red seat in
+  hot-seat and LAN play; it is not authentication, and nothing here claims it is.
 
 ## Acceptance Criteria
 
@@ -359,6 +396,12 @@ state only.
   editable-JSON + Now/+seconds/absolute-UTC scheduling; no duplicate inject-execution path exists.
 - Clock pause/resume/rewind/undo/branch **trigger** requests are accepted only from the White Cell
   role; a Blue- or Red-role request is rejected with no clock-state change.
+- *(v2.4)* For each control listed under System Behaviour — clock rate/pause, step, advance,
+  rewind, undo, session start, parameter set, inject fire, TLE add, bulk import, ground-asset add,
+  seat assignment, Observer designation, save load — a request naming `blue`, `red` or
+  `observer`, and one naming no seat, is refused and leaves the session unchanged (sim time,
+  started flag, parameters, assets, event-log length, seat assignments, session count); the same
+  request naming `white` succeeds.
 - No outbound interface returns a computed score/win-loss field; a live safe-mode-dial adjustment
   takes effect on the next evaluation with no session restart.
 - Red doctrine preset is viewable and switchable/hand-tunable mid-exercise from this dashboard.
@@ -396,7 +439,10 @@ state only.
 
 ## Verification Plan
 
-Test (automated) for clock-authority role rejection (FR-4310) and the no-automated-scoring
+Test (automated) for clock-authority role rejection (FR-4310) — *(v2.4)* and for every `FR-4320`
+control, one test per control and refused seat, each asserting both the refusal and the unchanged
+session state, tagged `@pytest.mark.verifies("FR-4310")` or `("FR-4320")` (a package claim
+without such a test is how R1 happened) — and the no-automated-scoring
 inspection sweep (FR-4710); Demonstration for inject-scheduling UX, doctrine-preset switching, and
 live parameter adjustment (FR-4720), consistent with those requirements' own stated Verification
 Methods in `docs/requirements/01-functional-requirements.md`.
@@ -458,6 +504,13 @@ dependencies.
   `FR-4450`'s acceptance criterion. A request for it would come through `00-intake`.
 
 ## Open Questions
+
+- *(v2.4)* **Other White surfaces not in `FR-4320`'s list.** The Vignette Creator's draft-session
+  edits, the AI-Red step trigger, save (`GET`), save-as-vignette and save-as-scenario are White
+  surfaces in the client but not named by `FR-4320`, so v2.4 does not require their refusal. Matters
+  because a Blue seat could still trigger them by accident. **Resolution path:** `04` decides at
+  its next pass whether to widen `FR-4320`; until then, leaving them as they are is consistent with
+  the baseline.
 
 - **DOM-003 §6 framing tension (new in v2.0):** DOM-003 explicitly claims "session administration
   (save/resume, multiplayer session discovery)" as White-Cell-domain territory, reasoned as a
