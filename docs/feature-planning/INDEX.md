@@ -12,9 +12,9 @@ and for the row-by-row reconciliation between the 11 existing `FS-xxx` documents
 
 | Doc | Content |
 |---|---|
-| [`01-release-plan.md`](01-release-plan.md) | Bucket assignment (Prototype/MVP/Release 1/Release 2/Future) for all 45 Features *(as of 2026-10-17)*, with justification. |
+| [`01-release-plan.md`](01-release-plan.md) | Bucket assignment (Prototype/MVP/Release 1/Release 2/Future) for all 48 Features *(as of 2026-10-23)*, with justification. |
 | [`02-epic-catalog.md`](02-epic-catalog.md) | 11 Epics (`EP-1000`–`EP-11000`), one per top-level requirements-baseline grouping. |
-| [`03-feature-catalog.md`](03-feature-catalog.md) | 45 Features (`FEAT-1100`–`FEAT-11300`), full template, tracing every baselined FR/NFR leaf (103 FR + 28 NFR, 2026-10-17) exactly once. |
+| [`03-feature-catalog.md`](03-feature-catalog.md) | 48 Features (`FEAT-1100`–`FEAT-12300`), full template, tracing every baselined FR/NFR leaf (106 FR + 47 NFR, 2026-10-23) exactly once. |
 | [`04-feature-dependency-graph.md`](04-feature-dependency-graph.md) | Mermaid dependency diagram, critical path, blocking Features, parallel-build opportunities, 2 resolved circular-citation findings. |
 | [`05-feature-review.md`](05-feature-review.md) | Findings (oversized/undersized/missing/duplicate Features, traceability gaps) and the reconciliation of "36 today" vs. the ~50–80 expected once upstream requirements/domain work closes the gap. |
 

@@ -1,6 +1,6 @@
 # Feature Dependency Graph
 
-Analysis of all 45 Features' *(39 at original authoring; 45 after the 2026-10-17 sweep)* `Dependencies`/`Dependent Features` fields from
+Analysis of all 48 Features' *(39 at original authoring; 45 after the 2026-10-17 sweep; 48 after the 2026-10-23 sweep)* `Dependencies`/`Dependent Features` fields from
 `03-feature-catalog.md`, cross-checked bidirectionally (every edge appears on both the depending
 and depended-upon Feature's entry).
 
@@ -22,6 +22,16 @@ and depended-upon Feature's entry).
 > graph has **no cycle**. One cycle the sweep would have created (`FEAT-5300 → FEAT-4200 →
 > FEAT-4100 → FEAT-5300`, had `FR-5314` gone to its parent's FEAT-5300) was avoided by assigning
 > `FR-5314` to FEAT-4200, which owns the `roles_needed` concept — see `05-feature-review.md` F-14.
+>
+> **Amended 2026-10-23** (run #212, GDS ladder alignment sweep): the 22 newly assigned leaves bring
+> **8 new edges**, each from an added leaf's own `Dependencies` field: `5300→1100` (`NFR-1610` cites
+> `NFR-1600`), `6200→8100` (`NFR-3010` cites `FR-6210`), `1100→8100` (`NFR-3020` cites `NFR-2410`),
+> `1100→12100`, `5300→12100` (`NFR-1510` cites `NFR-1500`, `NFR-2200`), `8100→12200`, `6200→12200`
+> (`NFR-2840` cites `NFR-3010`, `NFR-3020`, `FR-6210`) and `11100→12300` (`NFR-3800`–`NFR-3830` cite
+> `NFR-3400`). The other new leaves cite only leaves in their own Feature. Checked mechanically:
+> 75 edges, every edge recorded on both ends, **no cycle**. Two edges made a Feature depend on a
+> later-bucketed one; `01-release-plan.md` moves FEAT-5300 to Prototype and FEAT-6200 to MVP
+> (`05-feature-review.md` F-23). FEAT-8100 is no longer dependency-free.
 
 ## Circular dependencies found (Critical — reported, not silently resolved)
 
@@ -86,16 +96,20 @@ schedule-determining chain for the already-shipped core is unchanged in practice
 FEAT-6600 chain above (4 edges) is no longer the longest. FEAT-1400 and FEAT-9100 sit one edge
 short of it (6 edges) via FEAT-3400.
 
+**Updated 2026-10-23 (sweep):** the longest chain is still 7 edges, now with two equal heads —
+FEAT-5300 as well as FEAT-7100 precedes FEAT-1100 (`NFR-1610`). FEAT-8200 and the new FEAT-12200
+sit one edge short (6 edges) via FEAT-1100 → FEAT-1200 → FEAT-1500 → FEAT-6200 → FEAT-8100.
+
 ## Blocking Features (highest fan-out)
 
 | Feature | Direct dependents | Why it's high-leverage |
 |---|---|---|
 | **FEAT-1200** Orbital Propagation & Access-Window Geometry | 10 (FEAT-1300, 1400, 1500, 2300, 3100, 3200, 5200, 1600 *(new 2026-10-03)*, 8200 *(new 2026-10-03)*, 4400 *(2026-10-17)*) | The geometric substrate nearly every other Feature schedules against — the single highest-leverage early-build target in the catalog. |
 | **FEAT-7100** Ordered Event Log | 6 direct (FEAT-1100, 7200, 7300, 7400, and *(2026-10-17)* 1300, 3400), plus everything downstream of FEAT-1100 | Foundational to determinism itself, not merely a logging convenience — its position at the head of the critical path is not an accident of citation, it reflects real structural precedence. |
-| **FEAT-1100** Deterministic, Sub-Stepped Simulation Clock | 6 (FEAT-4300, 4400, 6300, 10200, and *(2026-10-17)* 1200, 3400) | Gates all White-Cell time authority and the entire multiplayer transport. |
+| **FEAT-1100** Deterministic, Sub-Stepped Simulation Clock | 8 (FEAT-4300, 4400, 6300, 10200, and *(2026-10-17)* 1200, 3400, and *(2026-10-23)* 8100, 12100) | Gates all White-Cell time authority and the entire multiplayer transport. |
 | **FEAT-2100** Bus Subsystem SOH Modeling | 3 (FEAT-2200, 2300, 2500) | Gates the whole bus/payload Epic's remaining Features. |
 | **FEAT-3100** Plan-First Command Authoring | 5 (FEAT-3300, 3400, 9100, and *(2026-10-17)* 1300, 1400) | Gates the shared scheduler, execute-time re-validation, and AI-Red. |
-| **FEAT-6200** Fog-of-War Filtering at the Session Boundary | 6 (FEAT-4600, 6500, 7400 *(new 2026-10-03)*, 8200 *(new 2026-10-03)*, 2300, 7300 *(2026-10-17)*) | Gates White Cell's god-view/view-as, Observer access, and now both new export/view Features that read a cell's own belief state. |
+| **FEAT-6200** Fog-of-War Filtering at the Session Boundary | 8 (FEAT-4600, 6500, 7400 *(new 2026-10-03)*, 8200 *(new 2026-10-03)*, 2300, 7300 *(2026-10-17)*, 8100, 12200 *(2026-10-23)*) | Gates White Cell's god-view/view-as, Observer access, and now both new export/view Features that read a cell's own belief state. |
 
 ## Parallel development opportunities
 
@@ -125,6 +139,11 @@ node in the catalog), EP-7000 because FEAT-7100 is a prerequisite for FEAT-1100.
 longer holds — FEAT-5100 now depends on FEAT-4200 (`FR-5160`) and FEAT-5200 on FEAT-5100
 (`FR-5220`). EP-11000's FEAT-11100 has no Feature-level dependency and can be maintained in
 parallel with everything; FEAT-11300 follows FEAT-11100 and FEAT-4100.
+
+**Updated 2026-10-23 (sweep):** FEAT-8100 now depends on FEAT-6200 and FEAT-1100, so the console
+is no longer "parallel-buildable from day one". In the new EP-12000, FEAT-12100 (after FEAT-1100
+and FEAT-5300) and FEAT-12300 (after FEAT-11100) are independent of each other and of FEAT-12200,
+so the three specifications can proceed in any order.
 
 ## Dependency diagram — whole catalog (inter-Feature edges, cross-Epic)
 
@@ -197,6 +216,11 @@ graph TD
         F11100["FEAT-11100 Operator Manuals"]
         F11300["FEAT-11300 Learning Path & Playbooks"]
     end
+    subgraph EP12["EP-12000 Verification & Doc Integrity (2026-10-23)"]
+        F12100["FEAT-12100 Test Origins & Release Verification"]
+        F12200["FEAT-12200 Browser Rule Suite"]
+        F12300["FEAT-12300 Documentation Integrity"]
+    end
 
     F7100 --> F1100
     F1200 --> F1300
@@ -267,6 +291,15 @@ graph TD
     F7200 --> F5500
     F11100 --> F11300
     F4100 --> F11300
+
+    F5300 --> F1100
+    F6200 --> F8100
+    F1100 --> F8100
+    F1100 --> F12100
+    F5300 --> F12100
+    F8100 --> F12200
+    F6200 --> F12200
+    F11100 --> F12300
 ```
 
 *(Edges are drawn `prerequisite --> dependent`, i.e. arrow points from the Feature that must exist

@@ -31,6 +31,14 @@
 > **FEAT-5500** (Release 2), **FEAT-11100**, **FEAT-11300** (Release 1). Since this plan
 > reconstructs a shipped system, no move changes what is built; it makes the buckets agree with the
 > graph. Checked mechanically: no Feature is now bucketed before any prerequisite.
+>
+> **Amended 2026-10-23** (run #212, GDS ladder alignment sweep): the 8 new edges put two Features
+> before a prerequisite — FEAT-1100 (Prototype) on FEAT-5300 (MVP), and FEAT-8100 (MVP) on
+> FEAT-6200 (Release 1). Fixed by moving the prerequisites earlier: **FEAT-5300** MVP → Prototype
+> (it has no prerequisites of its own) and **FEAT-6200** Release 1 → MVP (its prerequisites
+> FEAT-6100 and FEAT-1500 are MVP). The three new Features, **FEAT-12100**, **FEAT-12200** and
+> **FEAT-12300**, go to Release 1. Checked mechanically again: no Feature is bucketed before any
+> prerequisite. Totals: 4 Prototype + 4 MVP + 29 Release 1 + 11 Release 2 = 48.
 
 ## Bucket assignments
 
@@ -40,6 +48,7 @@
 |---|---|
 | **FEAT-1100** Deterministic, Sub-Stepped Simulation Clock | The single load-bearing invariant (`CLAUDE.md` #1); nothing else in the catalog is buildable/testable without it. Foundational per the dependency graph. |
 | **FEAT-1200** Orbital Propagation & Access-Window Geometry | Highest fan-out Feature in the catalog (10 direct dependents as of 2026-10-17); the geometric substrate every other Epic schedules against. |
+| **FEAT-5300** Load-Time Vignette Validation *(moved from MVP, 2026-10-23)* | Must-priority; a dependency of FEAT-4100 — no session can start without a validated vignette. Now also a prerequisite of FEAT-1100 (`NFR-1610`, failure-atomic event application, builds on `NFR-1600`, robustness to invalid input), so it cannot sit after the Prototype clock. It has no prerequisites of its own. |
 | **FEAT-7100** Ordered Event Log *(moved from MVP, 2026-10-17)* | Head of the catalog's critical path, and a prerequisite of FEAT-1100 itself — so it cannot sit in a later bucket than the Prototype clock. Its earlier MVP placement contradicted its own stated reason ("FEAT-1100 itself depends on it"). |
 
 ### MVP
@@ -48,8 +57,8 @@
 |---|---|
 | **FEAT-1500** Custody, Track Confidence & Weapons-Quality Gate | Must-priority; gates every engagement-intent action, a dependency of FEAT-3400 and FEAT-6200. |
 | **FEAT-6100** SessionAPI Single Seam | Must-priority; the architectural boundary (ADR-0002/0003) that makes the engine UI-agnostic — needed before any UI-facing Feature can be built safely. |
-| **FEAT-5300** Load-Time Vignette Validation | Must-priority; a dependency of FEAT-4100 — no session can start without a validated vignette. |
-| **FEAT-8100** Browser-Based Operator Console Presentation | Must-priority; without a presentation layer no other Feature is reachable by a human. Zero Feature-level dependencies — buildable in parallel with the engine core. |
+| **FEAT-6200** Fog-of-War Filtering at the Session Boundary *(moved from Release 1, 2026-10-23)* | Must-priority, RTM-verified built (`session/cells.py`). FEAT-8100 (this bucket) now depends on it through `NFR-3010` (belief visibly distinct from truth, citing `FR-6210`): a console without its fog-of-war boundary is not a minimum viable trainer. Its prerequisites FEAT-6100 and FEAT-1500 are both MVP. |
+| **FEAT-8100** Browser-Based Operator Console Presentation | Must-priority; without a presentation layer no other Feature is reachable by a human. *(2026-10-23)* Now depends on FEAT-6200 (MVP) and FEAT-1100 (Prototype) through its human-factors leaves `NFR-3010`/`NFR-3020`, so it is no longer buildable from day one. |
 
 ### Release 1
 
@@ -61,13 +70,16 @@
 | **FEAT-3500** Role-Scoped Command Catalog & Assignment Scoping | Must-priority; both included FRs show RTM `UNASSIGNED` — same verification-task framing as FEAT-3300. |
 | **FEAT-4100, 4200, 4300, 4600, 4700** (Vignette Selection, Seat Assignment, Clock Control Authority, God-View/View-As, Manual Adjudication) | All Must-priority and narratively covered by the existing `FS-106-white-cell-dashboard.md` (confirming real, shipped White Cell control-plane functionality) despite `UNASSIGNED` RTM citations — placed at Release 1 on priority/narrative-coverage grounds, with the citation gap flagged as Release-1-scoped verification work. |
 | **FEAT-5200** TLE Import with Manual/Keplerian Fallback | Must-priority, RTM-verified built; depends only on Prototype-bucketed FEAT-1200. |
-| **FEAT-6200, 6300, 6400** (Fog-of-War Filter, Lazy Clock/Locking, Hot-Seat/LAN Sharing) | All Must-priority, RTM-verified built (`session/cells.py`, `session/manager.py`, `session/inprocess.py`); this is the entire P8 multiplayer transport plus the fog-of-war boundary — foundational to every cell-facing Feature. |
+| **FEAT-6300, 6400** (Lazy Clock/Locking, Hot-Seat/LAN Sharing) | All Must-priority, RTM-verified built (`session/manager.py`, `session/inprocess.py`); this is the entire P8 multiplayer transport. *(FEAT-6200, the fog-of-war boundary, moved to MVP 2026-10-23.)* |
 | **FEAT-1300** Impulsive Maneuver & Δv Budget Accounting *(moved from MVP, 2026-10-17)* | Must-priority; the core resource-scarcity mechanic every order type checks. Now depends on FEAT-3100 (Release 1) through `FR-1320`'s plan-time purpose tags, so it cannot precede it. FEAT-3400 (Release 1) still depends on it — consistent. |
 | **FEAT-1400** Five-D's Counterspace Effect Resolution *(moved from MVP, 2026-10-17)* | Must-priority; the doctrinal core of the simulator. Now depends on FEAT-3100/FEAT-3400 (Release 1) through `FR-1440`'s delivery-path jamming. Also carries the two unimplemented Must leaves `FR-1460`/`FR-1470` (resource bounds), which go to `06` next. |
 | **FEAT-4400** Inject Authoring & Firing *(moved from Release 2, 2026-10-17)* | Must-priority and RTM-verified built. FEAT-2300 (Release 1) now depends on it through `FR-2320`, and its old Release-2 placement rested only on phase history (P4.5), so it moves up rather than pulling the bus-operator core back. Its prerequisites (FEAT-1100, 1200, 6100) are all earlier. Carries unimplemented `FR-4440` (Should) and `FR-4450` (Could). |
 | **FEAT-5100** In-App Iterative Vignette Builder *(moved from MVP, 2026-10-17)* | Must-priority; built in Tranche 3 (`IP-1171`–`IP-1174`), not with the MVP core. Now depends on FEAT-4200 (Release 1) through `FR-5160`'s seat/role matrix. FEAT-4500 and FEAT-5200 depend on it, both in this bucket or later. |
 | **FEAT-11100** Role-Scoped, Source-Anchored, Current Operator Manuals *(new 2026-10-17)* | Must-priority (`FR-11000` family) and already in place (`docs/training/`, run continuously since 2026-07-04). No Feature-level prerequisite; bucketed with the shipped core it documents. |
 | **FEAT-11300** Vignette Learning Path & Verified Playbooks *(new 2026-10-17)* | Must-priority and in place (`training/16`, `test_vignette_tutorials.py`). Depends on FEAT-11100 and FEAT-4100, both Release 1 or earlier. |
+| **FEAT-12100** Test-Origin Traceability & Major-Release Verification *(new 2026-10-23)* | Must-priority (`NFR-2820`, `NFR-3840`; `NFR-1510`/`NFR-2830` at each major release). Owner direction `BL-0310`. Prerequisites FEAT-1100 and FEAT-5300 are Prototype. Not yet implemented — the next `06` candidates include it. |
+| **FEAT-12200** Automated Browser Verification of Load-Bearing Console Rules *(new 2026-10-23)* | Must-priority (`NFR-2840`), owner decision `BL-0304`. Prerequisites FEAT-8100 and FEAT-6200 are MVP. Not yet implemented. |
+| **FEAT-12300** Documentation Integrity Checks *(new 2026-10-23)* | Must/Should leaves `NFR-3800`–`NFR-3830` (owner direction on `BL-0297`); needed before the build-spec/design retirement (`BL-0292`) can be checked. Prerequisite FEAT-11100 is Release 1. Not yet implemented. |
 | **FEAT-7200, 7300** (Save/Resume, AAR Replay/Scrub/Branch-Compare) | Both Must-priority (branch-compare is Should for FR-7320 specifically), RTM-verified built (`session/manager.py`, `session/aar.py`). |
 
 ### Release 2
@@ -129,7 +141,7 @@ needed before any of them could enter this catalog.
 
 ### Foundational (critical path or blocking, per `04-feature-dependency-graph.md`)
 
-FEAT-1200, FEAT-7100, FEAT-1100, FEAT-2100, FEAT-3100, FEAT-6200 — see the dependency graph's
+FEAT-1200, FEAT-7100, FEAT-1100, FEAT-2100, FEAT-3100, FEAT-6200, and *(2026-10-23)* FEAT-5300 (now a co-head of the longest chain) — see the dependency graph's
 "Blocking Features" table for fan-out counts. *(2026-10-17:)* FEAT-1300 and FEAT-3400 are now on
 the longest chain too (FEAT-7100 → 1100 → 1200 → 3100 → 1300 → 3400 → 10100 → 10200).
 
@@ -138,7 +150,7 @@ anything; this is a dependency-graph property, not a statement about priority or
 
 *(Recomputed from the graph 2026-10-17.)* FEAT-1400, FEAT-1600, FEAT-2300, FEAT-2400, FEAT-2500,
 FEAT-3300, FEAT-3500, FEAT-4300, FEAT-4500, FEAT-4600, FEAT-5200, FEAT-5500, FEAT-6500, FEAT-6600,
-FEAT-7400, FEAT-8200, FEAT-9100, FEAT-10200, FEAT-11300. **Removed 2026-10-17** (each now has a
+FEAT-7400, FEAT-8200, FEAT-9100, FEAT-10200, FEAT-11300, and *(2026-10-23)* FEAT-12100, FEAT-12200, FEAT-12300. **Removed 2026-10-17** (each now has a
 dependent): FEAT-4200 (FEAT-3400, FEAT-5100), FEAT-4400 (FEAT-2300), FEAT-4700 (FEAT-3400),
 FEAT-7200 (FEAT-5500), FEAT-8100 (FEAT-8200 — already true since 2026-10-03, missed then). Several of these (e.g.
 FEAT-2500 Safe-Mode Loop, FEAT-6600 Hot-Seat Hand-Off) are Must-priority, high-value Features in
