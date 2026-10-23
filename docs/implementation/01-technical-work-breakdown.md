@@ -888,6 +888,24 @@ them.
 client change is a few lines. FS-110 Open Question 4 is decided in the package (resume from the
 carried baseline; the exporter drops injects, briefs and parameters, so a rebuild cannot be exact).
 
+## Test-origin traceability (pipeline run #221, 2026-10-23)
+
+**Input:** [FS-133](../features/FS-133-test-origin-traceability.md) (`FEAT-12100`): `NFR-2820`,
+`NFR-3840`, `NFR-2830`, `NFR-1510`.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Marker registration, strict markers, collection recorder, ledger reader, checks, allow-list, report option; tag the two gate modules | `pyproject.toml`, `spacesim/tests/` | IP-1330 |
+| 2 | Tag 22 engine and content modules | `spacesim/tests/` | IP-1331 |
+| 3 | Tag 32 session-layer modules | `spacesim/tests/` | IP-1332 |
+| 4 | Tag 16 web and cross-cutting modules; allow-list empty | `spacesim/tests/` | IP-1333 |
+| — | Dependency lock (`NFR-1510`) | release | none now: produced at the first major release and checked by `11` (`BL-0318`) |
+
+**Why four packages.** The infrastructure is small and must land first; the backfill is ~914 test
+functions that each need a judgment about what they assert, too much for one reviewable run, so it
+is cut by layer (the grouping came from each module's imports). The allow-list lets the suite stay
+green between packages; it may only shrink.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
