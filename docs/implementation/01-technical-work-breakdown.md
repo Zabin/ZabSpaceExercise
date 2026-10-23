@@ -920,6 +920,19 @@ green between packages; it may only shrink.
 (wrap the drawing calls; no client change). Measured: Playwright 1.64.1 needs an explicit executable
 for the installed Chromium 1194 build.
 
+## Documentation integrity (pipeline run #223, 2026-10-23)
+
+**Input:** [FS-135](../features/FS-135-documentation-integrity-checks.md) (`FEAT-12300`): `NFR-3800`,
+`NFR-3810`, `NFR-3820`, `NFR-3830`.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Live-set walk; links, indexes, ledger-pair checks; allow-lists | `spacesim/tests/` | IP-1350 |
+| 2 | Retired-documents register and check (`NFR-3810`) | `spacesim/tests/` + the register | not yet planned — blocked on `BL-0319` (owner) |
+
+**Why split here:** unit 2 cannot be planned without the owner's decision on where the register
+lives; units in 1 need nothing more.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·

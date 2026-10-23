@@ -10,7 +10,7 @@
 > following the FS-130–FS-134 convention. Owner direction it elaborates: `BL-0297` (2026-10-20: "a
 > holistic documentation-integrity test scheme, part of release verification", replacing the
 > reverted tier-level cleanup rule), in [`docs/pipeline/backlog.md`](../pipeline/backlog.md).
-> **Referenced By:** [feature index](feature-index.md); `FEAT-12300`
+> **Referenced By:** [feature index](feature-index.md); `FEAT-12300`; [IP-1350](../implementation/packages/IP-1350-documentation-integrity-checks.md) (planned 2026-10-23; checks 1, 3, 4)
 > **Related Topics:** [FS-133](FS-133-test-origin-traceability.md) (the origin check shares this
 > runner, FS-133 OQ2; the retirement question, FS-133 OQ1); `spacesim/tests/test_training_sources.py`
 > (the existing `Sources:` footer check, `NFR-3400`, the model for this suite);
