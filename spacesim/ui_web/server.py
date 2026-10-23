@@ -1030,7 +1030,11 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     @app.post("/api/sessions/load_save")
     def load_save(state: dict, cell: Optional[str] = None) -> dict:
         _require_white(cell)
-        return {"session": api.load_save(state)}
+        try:
+            sid, warnings = api.load_save_with_warnings(state)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        return {"session": sid, "warnings": warnings}
 
     if STATIC_DIR.exists():
         app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
