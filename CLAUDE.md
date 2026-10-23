@@ -174,6 +174,10 @@ verifies — else its `FS-xxx`, or an `IP-xxxx` for a package's own completion t
 untagged test (modules still on `spacesim/tests/test_origin_allowlist.txt` are tolerated; that list only
 shrinks) and on an ID that is not a live baseline item. The RTM's Test column is **generated, never hand
 edited** (`NFR-2850`): regenerate it with `python3 -m pytest --origin-report=rtm` in the same commit.
+**Documentation checks run with the suite** (IP-1350, `NFR-3800`/`3820`/`3830`): a new broken relative link,
+an `INDEX.md` that omits a document in its folder, or a status-ledger disagreement fails the suite. Known
+defects sit on `spacesim/tests/doc_integrity_allow_*.txt`; those lists only shrink (fix the defect, delete its
+line in the same commit).
 
 ## Build/test commands
 
