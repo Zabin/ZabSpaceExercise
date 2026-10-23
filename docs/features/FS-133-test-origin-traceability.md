@@ -1,7 +1,7 @@
 # FS-133 — Test-Origin Traceability & Major-Release Verification
 
 > **Document ID:** FS-133
-> **Version:** 1.0 (2026-10-23, pipeline run #214)
+> **Version:** 1.1 (2026-10-23, pipeline run #228: adds `NFR-2850` — the matrix's Test column is generated from the markers, `BL-0322`). v1.0: run #214.
 > **Status:** ✅ Ready for implementation planning
 > **Approved input:** the Feature Catalog entry `FEAT-12100` (Test-Origin Traceability &
 > Major-Release Verification, Epic `EP-12000`) in
@@ -60,7 +60,8 @@ judgment half of the audit, done by a person at `11`).
 
 NFR-1510 (released builds install identical dependency versions), NFR-2820 (every test declares
 the requirement or feature it verifies), NFR-2830 (test relevance audited at each major release),
-NFR-3840 (every declared test origin resolves) — per `FEAT-12100`'s `Included Requirements`.
+NFR-3840 (every declared test origin resolves), *(v1.1)* NFR-2850 (the traceability matrix's Test
+column is generated from declared test origins) — per `FEAT-12100`'s `Included Requirements`.
 
 ## Design Decisions
 
@@ -91,8 +92,11 @@ Settled by the owner (`BL-0310` run #209, `BL-0299`) and carried forward verbati
 3. **Verifying a package** — `09` runs the full suite; the origin checks fail if any test the
    package added is untagged or names an ID that does not exist; `09` also reads each new tag
    against the package's covered requirements (a judgment the check cannot make).
-4. **Filling the RTM** — a `04` pass runs the origin report and fills each requirement's Test cell
-   from the tests that name it; a requirement no test names stays `UNASSIGNED`.
+4. **Regenerating the RTM Test column** *(v1.1, `NFR-2850`)* — whoever changes a test's origin (an
+   `08` implementer, a backfill package) or a requirement leaf (`04`) regenerates the matrix's Test
+   column with the origin report in the same commit. Regeneration is mechanical — no judgment, no
+   hand edits — so any stage may run it. The suite fails if the committed column differs from what
+   the report would generate.
 5. **Retiring a requirement** — a `04` pass retires or supersedes a leaf; the next suite run fails on
    every test still citing it, naming the test and the retired ID; the owning stage retags or
    retires the test.
@@ -127,6 +131,19 @@ Settled by the owner (`BL-0310` run #209, `BL-0299`) and carried forward verbati
   the tests that name it, and the requirements no test names — optionally limited to a set of
   requirement IDs (a release's scope). It writes nothing into the repository and changes no test
   state. It is what lets the RTM's Test column be generated rather than inferred (GDS-10 OQ1/OQ2).
+- *(v1.1)* **Generated Test column** (`NFR-2850`): the report has a second mode that rewrites only
+  the Test cells of `docs/requirements/03-requirements-traceability-matrix.md` — each requirement
+  row's cell becomes the list of tests whose origin names it (by module and test name), or
+  `UNASSIGNED`; every other column and every other line of the file is left byte-identical.
+  Candidate rows stay as they are. A suite check regenerates the column in memory and fails,
+  naming the rows, if it differs from the committed file — so a hand edit, a stale cell, or a
+  tagged test whose row was not regenerated is caught. Edge cases: a requirement row the report
+  doesn't know (not a baseline leaf) is reported, not silently skipped; a test naming a feature or
+  package ID appears in no requirement row (those IDs have no row).
+- *(v1.1)* **When the check turns on.** The first regeneration replaces today's hand-filled cells
+  (kept as hints in git history at `9d50ed6` and listed in `requirements-change-log.md` CHG-020)
+  with mostly `UNASSIGNED` cells; each backfill package then regenerates as it tags. The check is
+  on from the package that delivers the generator.
 - **Backfill accuracy**: each marker names what the test *asserts*, not what its file name
   suggests; a test that asserts no requirement-level behavior gets the package ID that introduced
   it (Decision 2). Edge case: a test with no traceable origin at all is recorded for the
@@ -201,6 +218,9 @@ does not by itself screen dependencies for vulnerabilities, and nothing here cla
    leaf per Decision 3.
 6. The origin report, run on the backfilled tree, lists for a given requirement ID the tests that
    name it, and lists the requirements no test names; running it changes no file.
+6a. *(v1.1)* Regenerating the matrix changes only Test cells; a second regeneration changes nothing;
+   hand-editing one Test cell, or tagging a test without regenerating, makes the suite fail naming
+   the row.
 7. A sample of at least one test per backfilled module, read by the verifier, asserts behavior that
    its marker's requirement describes (checked at `09`).
 8. At the first major release: a committed lock file resolves every dependency (core, extras, test
@@ -213,7 +233,9 @@ does not by itself screen dependencies for vulnerabilities, and nothing here cla
 - Criterion 7: Inspection at `09`.
 - Criterion 8: Inspection plus a clean-install test run at the first major release, recorded in its
   Release Assessment (`NFR-1510`'s verification method).
-- Every new test carries `@pytest.mark.verifies(...)` naming `NFR-2820`, `NFR-3840` or `NFR-2830`.
+- Criterion 6a: Test (against a copy of the matrix in a temporary directory, not the real file).
+- Every new test carries `@pytest.mark.verifies(...)` naming `NFR-2820`, `NFR-3840`, `NFR-2830` or
+  `NFR-2850`.
 
 ## Dependencies
 
