@@ -1,7 +1,7 @@
 # GDS-06 — Non-functional Requirements
 
 > **Document ID:** GDS-06
-> **Version:** 1.0
+> **Version:** 1.1 (2026-10-23, pipeline run #217 maintenance: owner decisions on OQ1–OQ3 recorded, `BL-0299`; the `04` hand-off marked applied, run #211). v1.0: run #200.
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-05
 > **Referenced By:** GDS-07
@@ -117,15 +117,15 @@ Traces to GDS-02 trust boundary; ADR-0015, ADR-0018; `CLAUDE.md` "LAN trust mode
 
 - **NFR-1 Offline runtime.** A running exercise needs no network access. **As built, the
   application makes no network call at all**: TLE and CCSDS OMM import take pasted or file text,
-  and the optional build-time Space-Track pull described in ADR-0018 was never built (see
-  correction C2). *(→ `NFR-3200`; ADR-0018)*
+  and the optional build-time Space-Track pull ADR-0018 once described was never built and has
+  been dropped (owner decision, `BL-0299`; ADR-0018 revised 2026-10-23). *(→ `NFR-3200`; ADR-0018)*
 - **NFR-5 Research-grade secure development.** Every loaded file is validated, never executed
   (no scenario-embedded code); file access is confined to configured content roots by the
   path-traversal guard, applied identically to built-in, external and user-save directories; no
   telemetry phone-home; no hard-coded secrets; nothing that would block a later RMF/ITSG-33
   review. No formal accreditation is required. **Dependency versions are declared as minimum
-  floors (`>=`) in `pyproject.toml`, not pinned** — the legacy statement and leaf `NFR-2200` both
-  claim pinning (see correction C3). *(→ `NFR-2200`, `NFR-3700`)*
+  versions (`>=`) during development, and every dependency is locked to an exact version at each
+  major release** (owner decision, `BL-0299`). *(→ `NFR-2200`, `NFR-1510`, `NFR-3700`)*
 - **NFR-15 Bounded resource use on untrusted input.** Inputs that could force unbounded work are
   capped before the work starts: a loaded save's event log (`MAX_EVENTLOG_REPLAY_ENTRIES`,
   100,000), live sessions per process (`MAX_LIVE_SESSIONS`, 32; the oldest is evicted at the cap),
@@ -154,9 +154,11 @@ Traces to invariants 2 and 6; ADR-0001, ADR-0007, ADR-0009, ADR-0023.
   vignette still loads and behaves identically after a schema extension. The three fidelity seams
   (`Propagator`, `AccessProvider`, `EffectResolver`) are documented and independently testable, so
   a higher-fidelity model substitutes without call-site changes. Development is test-first with
-  the full suite green before every commit. **Engine test coverage of at least 80% is stated in the
-  legacy text and leaf `NFR-1900`, but no coverage tool is configured, so the figure is not
-  measured** (see correction C4). *(→ `NFR-1900`, `NFR-2000`, `NFR-2010`, `NFR-2100`, `NFR-2800`)*
+  the full suite green before every commit. **There is no coverage target** (owner decision,
+  `BL-0299`): what matters is that tests are written to show each feature and requirement is
+  satisfied, and every test declares the requirement it verifies (`BL-0310`, `NFR-2820`). The
+  legacy 80% figure is withdrawn. The whole suite is audited for relevance at each major release.
+  *(→ `NFR-1900`, `NFR-2000`, `NFR-2010`, `NFR-2100`, `NFR-2800`, `NFR-2820`, `NFR-2830`)*
 - **NFR-16 Configuration.** Deployment settings (server host, port, reload; external vignette
   directories; user-save directory) live in one optional YAML file, its path overridable by
   `SPACESIM_CONFIG`, so a facilitator changes them without editing code. *(→ `NFR-2700`; the
@@ -178,7 +180,9 @@ Traces to GDS-02 §2–§4; ADR-0008, ADR-0018, ADR-0020.
 
 Traces to GDS-01 user classes; MSTR-003. Absorbs DOM-007 §3–§6 in full.
 
-- **NFR-9 Accessible, legible presentation.**
+- **NFR-9 Accessible, legible presentation.** *(Added 2026-10-23: the load-bearing rules below —
+  belief not truth, affordances reflect permission, kinetic confirmation — are verified in a real
+  browser by an automated suite, owner decision `BL-0304` → `NFR-2840`.)*
   - Affiliation and confidence are conveyed by shape and label, never color alone; a high-contrast
     presentation mode exists for projector and classroom use; common actions have keyboard
     shortcuts, extended consistently (`j/k/c/g`) rather than forked per feature.
@@ -267,6 +271,12 @@ for completeness.
 
 ## Gaps handed to 04
 
+*Applied 2026-10-23 by `04-requirements-engineering`, run #211 (`BL-0298` done): G1 → `NFR-2410`,
+G2 → `NFR-1610`, G3 → `NFR-3710`, G4 → `NFR-3010`–`NFR-3060`, G5 → `NFR-3800`–`NFR-3840`,
+G6 → `NFR-2810`; corrections C1–C6 below applied to their leaves. See
+[`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md).
+The text below is kept as the hand-off record.*
+
 Attributes this document states that have no `requirements/02` leaf. Each is for
 `04-requirements-engineering` to derive as a leaf (or record why not):
 
@@ -301,30 +311,30 @@ Attributes this document states that have no `requirements/02` leaf. Each is for
 
 ## Open Questions
 
-- **OQ1 — Dependency pinning (C3).** Should SpaceSim pin exact dependency versions with a lock file,
-  or is a declared floor the intended posture? Owner decision; the answer determines whether C3 is a
-  code change or a wording change.
-- **OQ2 — Coverage measurement (C4).** Should engine coverage be measured in the suite (a tool and a
-  threshold), or is the import guard plus test-first discipline the intended maintainability check?
-- **OQ3 — Space-Track import (C2).** Is a build-time Space-Track pull still wanted? If not, ADR-0018
-  needs a revision note; if so, it is an unbuilt feature.
+- ~~**OQ1 — Dependency pinning (C3).**~~ **Resolved 2026-10-23 (owner, `BL-0299`):** minimum
+  versions during development; every dependency locked to an exact version at each major release
+  (`NFR-1510`). Which releases count as major is open (`BL-0318`).
+- ~~**OQ2 — Coverage measurement (C4).**~~ **Resolved 2026-10-23 (owner, `BL-0299`):** no coverage
+  target; tests must show features and requirements are satisfied, and declare what they verify
+  (`NFR-2820`, `BL-0310`).
+- ~~**OQ3 — Space-Track import (C2).**~~ **Resolved 2026-10-23 (owner, `BL-0299`):** dropped. The
+  application makes no network call; ADR-0018 carries a revision note.
 - **OQ4 — Numeric performance targets.** No source states a frame-rate or latency number for NFR-2 or
   NFR-4 (`CNFR-02`). Left qualitative until a measured baseline exists.
 - **OQ5 — Accreditation horizon.** NFR-5's "nothing that blocks a later RMF/ITSG-33 review" and the
   accepted unauthenticated cell selection are each consistent for v1 but conflict at an
   accreditation horizon. Carried from `requirements/02`'s open issue 2; not adjudicated here.
-- **OQ6 — Single-exercise wording (GDS-05 OQ2).** NFR-14 states the as-built multi-session reality;
-  GDS-05's OR-6 still says "single exercise per process". Resolving OR-6's wording belongs to GDS-05's
-  open question, which this document now answers in fact.
+- ~~**OQ6 — Single-exercise wording (GDS-05 OQ2).**~~ **Resolved 2026-10-22:** GDS-05's OR-6 was
+  reworded to the multi-session reality and its OQ2 closed; `NFR-1800` was corrected in run #211.
 
 ## Departures from the legacy build-spec text
 
 The GDS level is authoritative; these are stated so no one mistakes them for drift:
 
-- `NFR-1`: the legacy text implies a Space-Track pull exists; as built there is no network call.
-- `NFR-5`: "dependency pinning" is not the as-built posture (floors only).
+- `NFR-1`: the legacy text implies a Space-Track pull exists; as built there is no network call, and the pull is now dropped (`BL-0299`).
+- `NFR-5`: "dependency pinning" is not the as-built posture (minimum versions; a lock only at major releases, `BL-0299`).
 - `NFR-6`: extended with failure atomicity (ADR-0038), which postdates the legacy text.
-- `NFR-7`: the 80% coverage figure is not measured; schema additivity (`NFR-2010`) added.
+- `NFR-7`: the 80% coverage figure was never measured and is withdrawn (no coverage target, `BL-0299`); schema additivity (`NFR-2010`) added.
 - `NFR-9`: extended with the DOM-007 human-factors constraints.
 - `NFR-11`–`NFR-19`: new tags for attributes the legacy list never named.
 
@@ -358,4 +368,4 @@ The GDS level is authoritative; these are stated so no one mistakes them for dri
 ## Next
 
 `GDS-07` (Data Model) may now begin. `04-requirements-engineering` owes gaps G1–G6 and corrections
-C1–C6; Open Questions OQ1–OQ3 need owner decisions before `04` can close C2–C4.
+C1–C6 (both applied in run #211); Open Questions OQ1–OQ3 were decided by the owner on 2026-10-23 (`BL-0299`).

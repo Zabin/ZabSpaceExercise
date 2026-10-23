@@ -1,7 +1,7 @@
 # GDS-05 — Functional Requirements
 
 > **Document ID:** GDS-05
-> **Version:** 1.1 *(2026-10-17: §8 added, `BL-0056`)*
+> **Version:** 1.2 *(2026-10-23, run #217: FR-W3 + `FR-4320`, FR-L3 + `FR-7230`)*; 1.1 *(2026-10-17: §8 added, `BL-0056`)*
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-04
 > **Referenced By:** GDS-06
@@ -128,7 +128,9 @@ of time control), ADR-0017 (manual adjudication).
   which assets, and bus vs. payload split), informed by the vignette's `roles_needed`. *(→
   FR-4210)*
 - **FR-W3** White Cell shall control **wall-clock time**: run at a selectable multiplier, **pause**,
-  **fast-forward**, and **rewind** (rewind via deterministic replay). *(→ FR-4310; ADR-0016)*
+  **fast-forward**, and **rewind** (rewind via deterministic replay). Clock control and the White
+  Cell's other lifecycle and facilitation controls are refused, on the server, to any other seat.
+  *(→ FR-4310, FR-4320; ADR-0016; FR-4320 added 2026-10-23, owner decision `BL-0307`)*
 - **FR-W4** White Cell shall fire **injects** (scripted or manual), immediately or scheduled for a
   future sim time, from a reusable inject library; future-dated injects replay byte-identical on
   save/resume. *(→ FR-4410)*
@@ -270,7 +272,9 @@ new families cover assessment (`FR-A`) and the training corpus (`FR-T`).
 ### 8.6 Logging, save and export (FR-L, continued)
 
 - **FR-L3** A session shall save and resume deterministically, with save-file content ownership
-  split from session ownership. *(→ FR-7210, FR-7220 — session-layer leaves the merge did not tag)*
+  split from session ownership, and resume from the save's own contents whatever has since happened
+  to the vignette file. *(→ FR-7210, FR-7220, FR-7230 — FR-7230 added 2026-10-23, owner decision
+  `BL-0302`)*
 - **FR-L4** Replay shall be read-only against the live session and may run at variable speed from
   truth or one cell's viewpoint. *(→ FR-7310, FR-7330)*
 - **FR-L5** State vectors shall export over a time span — truth through White Cell, a cell's own

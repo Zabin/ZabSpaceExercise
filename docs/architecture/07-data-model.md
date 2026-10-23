@@ -1,7 +1,7 @@
 # GDS-07 — Data Model
 
 > **Document ID:** GDS-07
-> **Version:** 1.0
+> **Version:** 1.1 (2026-10-23, run #217: OQ1–OQ3 decisions recorded). v1.0: run #201.
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-06
 > **Referenced By:** GDS-08
@@ -260,6 +260,7 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
 
 ## Open Questions
 
+- **OQ1–OQ3 decided 2026-10-23** (pipeline run #217; to take effect when the self-contained save ships). OQ1: the owner chose to embed (`BL-0302`, "save the active state in the scenario regardless of original vignette file"), elaborated as [FS-110](../features/FS-110-save-and-resume.md) v2.0 Design Decisions 1–2: the save carries its replay baseline (the loaded vignette plus every White Cell force edit folded in) in vignette form, and resume reads only the save (`FR-7230`). OQ2: FS-110 Decision 3 — saves carry a save-format version and the simulator version; a save with no format version resumes by vignette ID as today; a simulator-version mismatch warns, never refuses. OQ3: FS-110 Decision 4 — `SavedSession` stays as it is (the determinism test's shape); no convergence. §6 is updated to the new envelope when the package that builds it is verified. The three entries below are kept as the question record.
 - **OQ1 — Saves do not embed their vignette.** Resume reloads the vignette by ID, so a save made
   against a vignette that is later edited, renamed or removed either fails to load or, worse,
   replays against different initial conditions without warning. Options: embed the vignette (or a
