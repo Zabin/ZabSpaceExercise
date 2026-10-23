@@ -66,6 +66,8 @@ None.
   test in the file verifies the same IDs; per-test markers otherwise). Nothing else in the file
   changes.
 - **Modify** `spacesim/tests/test_origin_allowlist.txt` — remove these modules.
+- **Modify** `docs/requirements/03-requirements-traceability-matrix.md` — Test cells only, by
+  regeneration.
 - Untraceable tests (task 3) are listed in this package's completion note, for `04` (FS-133 Open
   Question 3); no new file.
 
@@ -78,7 +80,10 @@ None.
    Add` and the RTM as hints, never as the answer — the test's assertions decide.
 3. A test with no traceable origin: tag it with the package that introduced it if one exists
    (`git log` of the test), and list it in the completion note for `04`. Never invent an ID.
-4. Remove the modules from the allow-list; run the full suite (the origin checks must pass).
+4. Remove the modules from the allow-list; regenerate the matrix's Test column with the origin
+   report (`NFR-2850`, IP-1330 v1.1 — never edit a cell by hand); run the full suite (the origin
+   checks and the column check must pass). The pre-generation hints for these modules' tests are in
+   git at `9d50ed6` and in change-log CHG-020.
 5. Run `--origin-report` for the requirements these modules touch and include the summary in the
    completion note.
 
