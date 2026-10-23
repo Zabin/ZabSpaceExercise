@@ -46,9 +46,11 @@ It treats the following as **authoritative inputs**, never as something it edits
 - `docs/research/` — grounding facts; read for context on *why* a requirement exists, never a
   source of new facts to add.
 - `docs/architecture/` — the architecture ladder (vision, ConOps, system context, architecture,
-  domain model, ADRs, ICD/API spec where authored). Subsystem and interface boundaries here are
+  domain model, ADRs, API spec where authored). Subsystem and interface boundaries here are
   load-bearing inputs to Feature/Epic boundary decisions.
-- `docs/requirements/` — the Functional Requirements, Non-Functional Requirements, ICD, and
+- The Interface Control Document (`INT-xxxx`) — currently `docs/design/05-interface-control-document.md`,
+  owned by `03-architecture-design-synthesis`; it moves under `docs/architecture/` with GDS-09.
+- `docs/requirements/` — the Functional Requirements, Non-Functional Requirements, and
   Traceability Matrix. This is the primary material being decomposed.
 
 **If the input documents conflict with each other, or a requirement has no defensible home in any
@@ -88,7 +90,7 @@ Read, in this order, before grouping anything:
 |---|---|
 | `docs/research/` | Encyclopedia / grounding facts — context for *why*, never a source of new capabilities. |
 | `docs/architecture/` | Vision, ConOps, System Context, Architecture, Domain Model, ADRs, and (where authored) Data Model / UI Architecture / API Specification. Subsystem decomposition and interface list are the primary structural inputs for Epic and Feature boundaries. |
-| `docs/requirements/` | Functional Requirements, Non-Functional Requirements, ICD, Requirements Traceability Matrix — the material being decomposed. Every Feature's `Included Requirements` must trace here. |
+| `docs/requirements/` | Functional Requirements, Non-Functional Requirements, Requirements Traceability Matrix — the material being decomposed. (The ICD is `docs/design/05-interface-control-document.md`, owned by `03`; it moves under `docs/architecture/` with GDS-09.) Every Feature's `Included Requirements` must trace here. |
 
 If a project's actual layout differs from these three top-level paths, adapt the *reading*, not
 the *output structure* — the five deliverables below are fixed regardless of how the inputs are

@@ -37,6 +37,9 @@ sources, per the vignette PR checklist).
   vignette pass extends it).
 - The per-vignette entries in `docs/training/11-vignette-playbooks.md`, the rungs of
   `docs/training/16-learning-path.md`, and `docs/vignettes/` index rows.
+- The vignette design docs in `docs/vignettes/`: `00-vignette-framework.md`,
+  `00-LIBRARY-ARCHITECTURE.md` and `GROUND-INFRASTRUCTURE.md` (owned here since 2026-10-19,
+  `BL-0293`). Keep them in step with the YAML schema and library they describe.
 - `spacesim/tests/test_vignette_tutorials.py` (and the vignette-load tests) — the one place this
   skill writes test code, because FR-11420 makes the test part of the artifact.
 

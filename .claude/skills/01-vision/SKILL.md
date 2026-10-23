@@ -17,6 +17,7 @@ deliberate: it changes rarely, and every change it makes ripples.
 | `docs/master/MSTR-001-program-vision.md` | The program vision — purpose, audience (PME wargaming), scope commitments, the authority rules other documents cite. |
 | `docs/architecture/00-vision.md` (GDS-00) | The architecture ladder's Vision level — the design-facing restatement the rest of the GDS ladder builds on. Owned here, not by `03-architecture-design-synthesis` (which owns GDS-01 onward). |
 | `docs/architecture/strategic-assumptions-register.md` | The explicit assumptions the vision rests on — each with its trigger ("if this stops being true, revisit X"). |
+| `docs/master/MSTR-002`…`MSTR-007` + `docs/master/INDEX.md` | The program's standing principles: architecture principles, educational philosophy, glossary, documentation map, governance, research philosophy. Owned here since 2026-10-19 (`BL-0293`, owner decision); before that no skill maintained them. Keep them consistent with `CLAUDE.md` and the GDS ladder. `docs/DOCUMENTATION-PLAN.md` is being merged into MSTR-005 and then retired. |
 
 It SHALL NOT make architecture decisions, originate requirements or research claims, or edit any
 downstream artifact — when a vision change invalidates downstream content, it *names* the affected

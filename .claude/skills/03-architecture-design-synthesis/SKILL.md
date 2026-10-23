@@ -54,8 +54,9 @@ multiple plausible architectures, or load-bearing assumptions nobody has written
 
 | Asset | Role |
 |---|---|
-| [`architecture/INDEX.md`](../../../docs/architecture/INDEX.md) + `00-vision.md`…`10-requirements-traceability-matrix.md` + `ADS-xxx-*.md` | The Design Synthesis tier this skill authors. |
-| Grounding inputs | `docs/domains/DOM-xxx-*.md`, `docs/research/encyclopedia/R1xx-R5xx` + `docs/research/01-07` primers, `docs/build-spec/` (binding v1 spec — wins on any conflict), `docs/design/`, `docs/training/`, `MSTR-001` — and, for the ladder specifically, the per-level "merges from" existing document named in `architecture/INDEX.md` §1. |
+| [`architecture/INDEX.md`](../../../docs/architecture/INDEX.md) + `01-concept-of-operations.md`…`10-requirements-traceability-matrix.md` + `ADS-xxx-*.md` + `adr/` | The Design Synthesis tier this skill authors (`00-vision.md` is `01-vision`'s). |
+| The Interface Control Document | `docs/design/05-interface-control-document.md` (`INT-xxxx`) — owned here (`BL-0294`); it is `GDS-09` material and moves under `docs/architecture/` when GDS-09 is authored. |
+| Grounding inputs | `docs/domains/DOM-xxx-*.md`, `docs/research/encyclopedia/R1xx-R6xx` + `docs/research/01-07` primers, `docs/design/`, `docs/training/`, `MSTR-001` — and, for the ladder specifically, the per-level "merges from" existing document named in `architecture/INDEX.md` §1. `docs/build-spec/` and `docs/design/` (apart from the ICD) are **legacy, non-binding reference** (`CLAUDE.md` "Authoritative source"): read them for orientation, never cite them as binding. |
 | Downstream consumer | `docs/features/FS-xxx-*.md` — the next stage in the chain; both the ladder's `GDS-05`/`GDS-06` and a cluster's `ADS-xxx` Decision Log should read as direct inputs to drafting or revising an FS-xxx. |
 
 ## Workflow A — the global ladder (`GDS-00`…`GDS-10`)
@@ -76,7 +77,10 @@ the ladder.
    - The "Merges from" document(s) named in its own file and in `architecture/INDEX.md` §1 — pull
      the actual content in, don't just cite it from a distance.
    - Cross-cutting grounding as relevant: `CLAUDE.md` load-bearing invariants, `docs/build-spec/`
-     (wins on conflict), `docs/domains/`, `docs/research/` for any domain claim the level needs.
+     (legacy, non-binding), `docs/domains/`, `docs/research/` for any domain claim the level needs.
+   - **DOM content merge (`BL-0293`):** the DOM files are being merged into the ladder and then
+     retired. Fold any DOM content the level covers into the level itself (not as a citation to the
+     DOM file), and record in the level's merge-gate section which DOM sections it absorbed.
 4. **Close that level's merge gate**, checking off each box in its "Merge gate" section and
    recording the actual merge decision (not just "done") — e.g. whether the existing document
    becomes a pointer to this one, stays authoritative, or some other resolution.
@@ -98,8 +102,9 @@ the ladder.
 - [ ] No production code, no literal API/schema definitions where the level doesn't call for them
       (e.g. `GDS-09` API Specification may sketch contracts; `GDS-00` Vision should not).
 - [ ] `architecture/INDEX.md` §1 and `ROADMAP.md`'s "Global ladder" table both updated, in sync.
-- [ ] The level does not silently contradict `docs/build-spec/` (`MSTR-001` §7 — build spec wins);
-      a real tension is an Open Question, not a unilateral resolution.
+- [ ] Where the level departs from the legacy `docs/build-spec/` text, the departure is stated, not
+      silent: the GDS level is authoritative, so the build-spec text never wins, but a real tension
+      with shipped behavior is an Open Question, not a unilateral resolution.
 
 ## Workflow B — per-cluster `ADS-xxx`
 
@@ -142,12 +147,12 @@ doesn't resolve at the system level — see `MSTR-005` §3a.
 - Don't write an `ADS-xxx` for a feature that doesn't need one — per `MSTR-005` §4 this is optional,
   and a one-paragraph-scope feature absorbing the synthesis into its own `FS-xxx` §1-2 is the
   expected, lighter-weight path.
-- `docs/build-spec/` still wins on any conflict (`MSTR-001` §7) — an `ADS-xxx`'s System Architecture
-  or Constraints section cannot quietly contradict the binding spec; flag the tension as an Open
-  Question instead of resolving it unilaterally.
-- This skill does not touch `docs/design/` (architecture for capabilities already built) or
-  `docs/scenarios/` (still an open, unresolved directory per `ROADMAP.md` — do not start populating
-  it under this skill's authority).
+- `docs/build-spec/` is superseded in its entirety by the GDS ladder (`CLAUDE.md` "Authoritative
+  source"); it never wins a conflict. Where a level or an `ADS-xxx` departs from it, say so, and
+  where it conflicts with shipped behavior, raise an Open Question instead of resolving it
+  unilaterally. It is retired once GDS-06–GDS-10 close (`BL-0292`).
+- This skill does not edit `docs/design/` (legacy architecture for capabilities already built,
+  retiring with build-spec), except the ICD it owns.
 - An `ADS-xxx`'s Decision Log is the load-bearing artifact for whoever drafts the downstream
   `FS-xxx` — if a decision isn't recorded there with its rationale, the synthesis effectively didn't
   happen.
@@ -156,10 +161,10 @@ doesn't resolve at the system level — see `MSTR-005` §3a.
 - Never start `GDS-(N+1)` before `GDS-N`'s merge gate is **fully closed and the merge decision
   recorded in prose** — a checked box with no recorded decision, or a merge gate left partially
   open, means `GDS-N` is not actually done, regardless of whether its file exists and reads well.
-- The ladder is new, separate content layered on top of the existing corpus — it does not silently
-  supersede `MSTR-001`, `build-spec/`, or `design/`. Those stay authoritative until a given
-  `GDS-NN`'s merge step explicitly folds their content in and records that decision; don't treat a
-  `GDS-NN` file's mere existence as having already superseded its merge target.
+- Authority: `MSTR-001` stays authoritative for vision (GDS-00 restates it). `build-spec/` and
+  `design/` are already superseded as a whole and are legacy reference only. A level's merge step
+  still folds their content in explicitly and records that decision; don't treat a `GDS-NN`
+  file's mere existence as having absorbed its merge target.
 
 ## Pipeline position & completion summary (mandatory, every run)
 
@@ -175,7 +180,7 @@ blocked stop — with a chat summary containing exactly these three parts:
 1. **What changed** — every GDS level/ADS document produced or updated (paths), every merge gate
    closed, every index/ROADMAP status flipped.
 2. **Recommendations** — Open Questions raised, domain-knowledge gaps handed to `02-research-*`,
-   tensions with the legacy build-spec flagged, and who owns each follow-up.
+   departures from the legacy build-spec noted, and who owns each follow-up.
 3. **Next step** — say explicitly what to run next and why: if a domain-knowledge gap blocked this
    run, name the owning `02-research-*` skill, then re-invoke this skill; if more GDS levels remain
    unauthored, re-invoke this skill for the next level (one level per pass); once the levels the
