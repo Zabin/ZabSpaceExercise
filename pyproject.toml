@@ -22,7 +22,10 @@ dev = ["pytest>=7.0", "hypothesis>=6.0", "skyfield>=1.45", "fastapi>=0.110", "ht
 # Make the repo root importable so tests can `import spacesim...`.
 pythonpath = ["."]
 testpaths = ["spacesim/tests"]
-addopts = "-q"
+addopts = "-q --strict-markers"
+markers = [
+    "verifies(*ids): the requirement leaf / feature / package IDs this test verifies (FS-133)",
+]
 
 [tool.setuptools.packages.find]
 include = ["spacesim*"]

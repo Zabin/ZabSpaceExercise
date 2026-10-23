@@ -168,7 +168,12 @@ Build every phase **test-first**: encode that phase's roadmap "**done when**" ch
 `pytest` test, then implement until it passes. Never write production code without a failing test
 driving it. Add a regression test for each design gap you resolve (see `memory.md`). Run `pytest`
 before every commit and keep the suite green on the branch. The Phase-1 determinism property test
-is the canonical permanent gate.
+is the canonical permanent gate. **Every test names its origin** (`BL-0310`, IP-1330): mark it
+`@pytest.mark.verifies("FR-xxxx", …)` (or a module-level `pytestmark`) with the requirement leaf it
+verifies — else its `FS-xxx`, or an `IP-xxxx` for a package's own completion test. The suite fails on an
+untagged test (modules still on `spacesim/tests/test_origin_allowlist.txt` are tolerated; that list only
+shrinks) and on an ID that is not a live baseline item. The RTM's Test column is **generated, never hand
+edited** (`NFR-2850`): regenerate it with `python3 -m pytest --origin-report=rtm` in the same commit.
 
 ## Build/test commands
 
@@ -180,6 +185,8 @@ uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload       # LAN multiplay
 python3 -m pytest                                                # runs the whole suite (testpaths = spacesim/tests)
 python3 -m pytest spacesim/tests/test_determinism.py             # the Phase-1 determinism gate
 python3 -m pytest spacesim/tests/test_import_guard.py            # the Phase-0 engine guardrails
+python3 -m pytest --origin-report [--origin-ids=FR-1120,…]       # read-only: tests by declared origin; requirements no test names
+python3 -m pytest --origin-report=rtm                            # regenerate the RTM Test column (runs no tests)
 ```
 
 **Server config.** Host, port, and reload come from `spacesim.config.yaml` at the repo root
