@@ -182,13 +182,15 @@ line in the same commit).
 ## Build/test commands
 
 ```bash
-pip install pydantic numpy sgp4 pyyaml pytest hypothesis skyfield fastapi uvicorn httpx
+pip install pydantic numpy sgp4 pyyaml pytest hypothesis skyfield fastapi uvicorn httpx playwright
 python3 -m spacesim.ui_web                                       # reads host/port/reload from spacesim.config.yaml (defaults 127.0.0.1:8000)
 uvicorn spacesim.ui_web.server:app                               # equivalent if you prefer uvicorn's CLI
 uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload       # LAN multiplayer: bind to host IP, share URL
 python3 -m pytest                                                # runs the whole suite (testpaths = spacesim/tests)
 python3 -m pytest spacesim/tests/test_determinism.py             # the Phase-1 determinism gate
 python3 -m pytest spacesim/tests/test_import_guard.py            # the Phase-0 engine guardrails
+python3 -m pytest -m browser                                     # headless-Chromium console-rule tests (IP-1340); skip loudly where Playwright/Chromium is absent
+python3 -m pytest -m "not browser"                                # everything except the browser tests
 python3 -m pytest --origin-report [--origin-ids=FR-1120,…]       # read-only: tests by declared origin; requirements no test names
 python3 -m pytest --origin-report=rtm                            # regenerate the RTM Test column (runs no tests)
 ```

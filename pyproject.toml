@@ -16,7 +16,7 @@ ui = ["fastapi>=0.110", "uvicorn>=0.27"]
 mapdata = ["basemap", "basemap-data"]
 # skyfield is an independent reference in the Phase-2 tests; httpx powers the FastAPI TestClient;
 # pillow renders the UI preview images in tools/render_screens.py.
-dev = ["pytest>=7.0", "hypothesis>=6.0", "skyfield>=1.45", "fastapi>=0.110", "httpx>=0.27", "pillow>=10.0"]
+dev = ["pytest>=7.0", "hypothesis>=6.0", "skyfield>=1.45", "fastapi>=0.110", "httpx>=0.27", "pillow>=10.0", "playwright>=1.44"]
 
 [tool.pytest.ini_options]
 # Make the repo root importable so tests can `import spacesim...`.
@@ -24,6 +24,7 @@ pythonpath = ["."]
 testpaths = ["spacesim/tests"]
 addopts = "-q --strict-markers"
 markers = [
+    "browser: drives the console in a headless Chromium (needs Playwright + a Chromium build; skips where absent)",
     "verifies(*ids): the requirement leaf / feature / package IDs this test verifies (FS-133)",
 ]
 
