@@ -48,6 +48,13 @@
 > `FR-4310` and `FR-7220` made current (`BL-0325`, `BL-0329`, `BL-0356`); new candidates
 > `CR-29`–`CR-33` for shipped behavior with no approved source — see
 > [`requirements-change-log.md`](requirements-change-log.md) CHG-022…CHG-030.)
+> further amended (baseline-maintenance pass 3, 2026-10-24; **two numbered FR leaves added** —
+> `FR-1140` (simulated time as integer microseconds) and `FR-7350` (the after-action report export);
+> **two candidates added** — `CR-34`, `CR-35`; `FR-4330` and `FR-7340` Notes made current (met as built:
+> `IP-1074`/`IP-1075`/`IP-1076` and `IP-1077`, all `VERIFIED`) and the rewind-versus-running-clock question
+> recorded as unspecified and not release-blocking; `FR-7230` Acceptance Criteria and Notes extended to
+> the event-log cap and the save-validation refusals — see [`requirements-change-log.md`](requirements-change-log.md)
+> CHG-037…CHG-045.)
 > **ADR range now ADR-0001 through ADR-0035** (34 `Accepted`, 1 `Superseded` — `ADR-0029` by
 > `ADR-0033`).
 > further amended (`FR-7410`/`FR-7420` OEM/RIC tension, 2026-09-27; **one numbered FR leaf
@@ -228,6 +235,43 @@ review passes actually run against it).
 - **Related ADRs:** ADR-0006
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-1110, FR-1220
+
+#### FR-1140 — Simulated time is an exact integer count of microseconds
+
+*(new 2026-10-24, baseline-maintenance pass 3 — shipped behavior; closes the sim-time part of `BL-0369`)*
+
+- **ID:** FR-1140
+- **Title:** Represent simulated time as integer microseconds, and convert to ISO-8601 UTC only at the boundary
+- **Description:** The system shall represent every simulated instant inside the engine as an integer
+  count of microseconds since the Unix epoch, and shall convert it to or from an ISO-8601 UTC
+  timestamp only where it crosses the system boundary (vignette files, API responses, exports). Where
+  a time appears on the wire as a bare number, it is an integer count of microseconds unless the field
+  is documented as ISO-8601.
+- **Rationale:** Integer time keeps ordering and arithmetic exact, so replay, rewind and branch are
+  byte-identical (`NFR-1500`); a float or a string would drift or compare unreliably. GDS-07 §1 states
+  the convention; GDS-09 §3 states the wire form.
+- **Priority:** Must
+- **Inputs:** A simulated instant, or an ISO-8601 timestamp read at a boundary.
+- **Outputs:** An integer microsecond count; or an ISO-8601 UTC string for display and files.
+- **Preconditions:** None.
+- **Postconditions:** Converting an instant to ISO-8601 and back returns the same integer; adding two
+  durations in microseconds loses no precision.
+- **Acceptance Criteria:** (1) For a set of instants including fractional seconds, converting each to
+  ISO-8601 UTC and back returns exactly the original integer. (2) A simulated clock advanced in two
+  steps reaches the same integer as one advance of the same total. (3) A vignette's ISO-8601 start
+  epoch reads as the integer microsecond count of that instant in UTC.
+- **Verification Method:** Test
+- **Dependencies:** FR-1110
+- **Source Documents:** `docs/architecture/07-data-model.md` (GDS-07) §1 "Time" and the "Time is
+  integer microseconds" line of its Domain-model mapping; `docs/architecture/09-api-specification.md`
+  (GDS-09) §3 (the "Times on the wire" rule); `docs/pipeline/backlog.md` `BL-0369`.
+- **Related ADRs:** ADR-0002
+- **Related Interfaces:** INT-0001, INT-0002
+- **Related Requirements:** FR-1110, FR-1120, FR-7450, NFR-1500
+- **Notes:** Shipped (`engine/simtime.py`). This leaf records what the build already does; it adds no
+  feature. `FR-7450` is the one place the wire form is extended (ISO-8601 accepted as an export bound),
+  and is not yet built. Whether a timestamp without a zone designator is read as UTC is a design
+  choice, not stated here.
 
 ### FR-1200 — Orbital propagation and access geometry
 
@@ -1703,7 +1747,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   recorded the extension as "not yet built"; that note was stale after `IP-1072`.)* How a creation request names its seat is a design matter for
   `06`/`07`; this leaf requires only that a creation request naming a non-White seat is refused.
   Reads of a draft's state remain ground-truth reads under `FR-6220`, not controls.
-  *Pass 2:* the `aar/playback/*` routes are not in this list; their seat rule is `FR-7340`.
+  *Pass 2:* the `aar/playback/*` routes are not in this list; their seat rule is `FR-7340` (met as built since `IP-1077`, `VERIFIED`, `VR-1077`).
 
 #### FR-4330 — Time control bounded to the exercise span
 
@@ -1745,15 +1789,18 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Related ADRs:** ADR-0016, ADR-0002
 - **Related Interfaces:** INT-0002
 - **Related Requirements:** FR-4310, FR-7230, NFR-1600
-- **Notes:** **Met as built for rewind and undo** (`IP-1074`, `IP-1075`, `VERIFIED`; the start epoch
-  is exposed as `start_epoch` on the clock state) **and for the save-side cap** (`IP-1103`,
-  `SessionManager.MAX_SAVE_SPAN_US`). **The advance bound, including refusing a backwards step or
-  advance, is required, not yet built**: `POST /advance` and `/step` have no upper bound, so an
-  advance of 370 days can be saved but not loaded, and a backwards target gives HTTP 500
-  (review `M-2`, `L-1`). Package `IP-1076` will build it. The 366-day figure is the shipped save cap
-  restated; whether it should be configurable is an owner decision, not made here. Whether a running
-  clock keeps running after a rewind is an open owner question (review `L-6`) and is not stated
-  here.
+- **Notes:** **Met as built (2026-10-24, pass 3).** Rewind and undo: `IP-1074`, `IP-1075` (`VERIFIED`,
+  `VR-1074`, `VR-1075`; the start epoch is exposed as `start_epoch` on the clock state). Save-side cap:
+  `IP-1103` (`VERIFIED`, `VR-1103`; `SessionManager.MAX_SAVE_SPAN_US`). Time advance: `IP-1076`
+  (`VERIFIED`, `VR-1076`; a step or advance outside the span, a backwards target, or a non-finite step is
+  refused with a reason as HTTP 400, never 500; the running clock stops at the end of the span). *(The
+  advance bound was recorded as "required, not yet built" in pass 2; that note is superseded.)*
+  The 366-day figure is the shipped save cap restated; whether it should be configurable is an owner
+  decision, not made here. **Rewind and a running clock — unspecified, either is conformant.** Whether a
+  rewind pauses a clock that is running is not stated by this leaf: the owner said it "can pause on rewind
+  but doesn't matter" (2026-10-24). Current behavior keeps a running clock running, re-anchored at the
+  rewound time. This is not release-blocking, and a build that paused on rewind would conform equally
+  (review `L-6`, closed as unspecified).
 
 ### FR-4400 — Inject authoring and firing
 
@@ -3053,6 +3100,14 @@ is no longer required. Same ID, narrower scope.)*
   A save whose `final_time` is earlier than the start epoch or later than 366 days after it is
   refused with a reason naming `final_time` before any replay, and no session is created; a
   `final_time` exactly at either bound loads. The span is the one stated in `FR-4330`.
+  A save whose event log holds more than 100,000 entries is refused with a reason that gives the entry
+  count and the limit, whether the log is stored as a bare list or as the object a real save writes
+  (`{"entries": [...]}`); the check runs before the log is parsed or replayed, no session is created and
+  the session registry is unchanged; a log of exactly 100,000 entries passes this check. A save that
+  is unusable for any other reason — a legacy save naming a vignette that is not available, a missing
+  required key, `overrides` that is not an object, a `classification` that is not text, a `pending`,
+  `orders` or `ssn_requests` row that cannot be built (the refusal names the key and the row index) — is
+  refused with a reason naming the problem, before any replay, and no session is created.
 - **Verification Method:** Test
 - **Dependencies:** FR-7210, FR-7220
 - **Source Documents:** GDS-07 §6 and OQ1; `docs/pipeline/backlog.md` `BL-0302`.
@@ -3065,6 +3120,12 @@ is no longer required. Same ID, narrower scope.)*
   (`VERIFIED`, `VR-1101`; feature specification `FS-110` v2.0): a save carries `save_format` and
   `simulator_version`, a legacy save reloads by ID with a warning. The `final_time` span check is met
   as built since `IP-1103` (`VERIFIED`, `VR-1103`; `SessionManager.MAX_SAVE_SPAN_US`, 366 days).
+  *(Extended pass 3, 2026-10-24.)* **The refusals above are met as built:** the unusable-save refusals
+  since `IP-1102` (`VERIFIED`, `VR-1102`) and the remaining malformed fields since `IP-1103`; the
+  100,000-entry event-log cap since `IP-1081` (`VERIFIED`, `VR-1081`), where it is the first check of
+  save validation and counts both log shapes (before `IP-1081` it counted a bare list only, so a real
+  save's log was never counted). The cap is the one `NFR-3710` requires; its figure is the shipped
+  constant restated, not a figure an approved source sets.
 
 ### FR-7300 — AAR replay, scrub, and branch-compare
 
@@ -3187,12 +3248,54 @@ is no longer required. Same ID, narrower scope.)*
 - **Related ADRs:** ADR-0015, ADR-0016
 - **Related Interfaces:** INT-0014
 - **Related Requirements:** FR-7330, FR-4320, FR-6210, FR-6220
-- **Notes:** **Required, not yet built.** `server.py` `aar/playback/*` routes call no seat check; any
-  seat can drive them. The seat is client-asserted, so this is the same trust level as `FR-4320`
-  (GDS-09, LAN trust model). Playback is one cursor per session; whether a player seat's start
-  replaces White's cursor or each seat gets its own is a design matter for `06`/`07`, not decided
-  here. The unchanged `FR-6220` ground-truth reads (`/aar`, `/godview` and the like) are out of this
-  leaf's scope.
+- **Notes:** **Met as built (2026-10-24, pass 3)** since `IP-1077` (`VERIFIED`, `VR-1077`): the five
+  `aar/playback/*` routes take the requesting seat, apply the rule above and answer a refusal as HTTP 403
+  before any state change or disclosure. *(Recorded as "required, not yet built" in pass 2; superseded.)*
+  The seat is client-asserted, so this is the same trust level as `FR-4320` (GDS-09, LAN trust model).
+  Playback is one cursor per session; whether a player seat's start replaces White's cursor or each seat
+  gets its own is a design matter, still undecided (a single shared cursor is built). The unchanged
+  `FR-6220` ground-truth reads (`/aar`, `/godview` and the like) are out of this leaf's scope.
+
+#### FR-7350 — After-action report export as CSV and JSON
+
+*(new 2026-10-24, baseline-maintenance pass 3 — shipped behavior; closes the AAR-export part of `BL-0369`)*
+
+- **ID:** FR-7350
+- **Title:** Export a session's after-action report as CSV and as JSON
+- **Description:** The system shall export a session's after-action report on request in two forms,
+  CSV and JSON. The report carries the session's vignette identifier, active classification banner,
+  final simulated time and number of recorded events; the recorded timeline, one entry per event with
+  its sequence number, simulated time, kind, actor and summary; and each side's final objective
+  status. The JSON form also carries the consequences the report records.
+- **Rationale:** Facilitators and researchers take an exercise's record out of the tool for analysis;
+  `ADR-0029` and `ADR-0033` both rely on this export as the existing per-session record, and GDS-07 §7
+  and GDS-09 §3 list it among the exports. `NFR-3100` requires every export to carry the
+  classification banner.
+- **Priority:** Should
+- **Inputs:** A session identifier and the requested form.
+- **Outputs:** The report as CSV text or as a JSON object.
+- **Preconditions:** A session exists.
+- **Postconditions:** The session is unchanged; exporting twice with no change between returns
+  identical content.
+- **Acceptance Criteria:** For a session that has run, the CSV export holds the vignette identifier,
+  classification, final simulated time and event count; one timeline row per recorded event in order,
+  with the five fields above; and one row per objective per side with its met status. The JSON export
+  holds the same facts and the same number of timeline entries as the CSV. Changing the active
+  classification before exporting changes the banner string both exports carry.
+- **Verification Method:** Test
+- **Dependencies:** FR-7110, FR-4510
+- **Source Documents:** `docs/architecture/07-data-model.md` (GDS-07) §7 "Exports" (AAR timeline, CSV);
+  `docs/architecture/09-api-specification.md` (GDS-09) §3 (the `GET /aar/export.csv` and
+  `/aar/export.json` routes); `docs/architecture/adr/ADR-0033-dedicated-research-export-interface.md`
+  and `ADR-0029` (the existing export as the per-session record); `docs/pipeline/backlog.md` `BL-0369`.
+- **Related ADRs:** ADR-0033, ADR-0029, ADR-0015
+- **Related Interfaces:** INT-0014
+- **Related Requirements:** FR-7110, FR-6220, FR-10210, FR-4510, NFR-3100
+- **Notes:** Shipped (`session/aar.py::export_csv`; the two export routes). This leaf records behavior
+  the build already has; it adds no feature. The export is a ground-truth read with no cell binding and
+  is one of the `FR-6220` exceptions, so it is for the White Cell and Observer under the LAN trust model.
+  GDS-07 §7 lists the CSV form only; the JSON form is listed by GDS-09 §3 and `ADR-0033`. The exact
+  columns beyond the five timeline fields are not fixed by any approved source and are not required here.
 
 ### FR-7400 — State-vector / ephemeris export
 
@@ -4193,6 +4296,25 @@ by that promotion.
   but no approved statement commits the system to this scaling law. **Shipped; not baselined.**
   **Source:** `docs/pipeline/backlog.md` `BL-0345`; `docs/research/encyclopedia/R129-sigint-collection-and-geolocation-accuracy.md`.
 
+- **CR-34 — Telemetry series reflect the state at each sampled instant; pass-gating of historical
+  points.** *(new 2026-10-24, pass 3, `BL-0369`, `BL-0170`, `BL-0171`)* The console's telemetry
+  graphs and the telemetry CSV export (`FR-2320`) return, for each sampled instant in the requested
+  span, the subsystem values as they were at that instant (one forward replay, with a ceiling on
+  samples under `NFR-3710`). `FR-2310` pass-gates live telemetry, but neither route applies that
+  gate to historical points, so a graph shows values for instants between passes; `FR-2320` itself
+  describes the export as pass-gated. Which behavior is intended is an open design question
+  (`BL-0171`), and no approved input says what the history shape or its cost bound must be.
+  **Shipped; not baselined.** **Source:** `docs/pipeline/backlog.md` `BL-0369`, `BL-0170`, `BL-0171`;
+  `docs/architecture/08-ui-architecture.md` §7.3 (graphs, without the history rule).
+- **CR-35 — Space-weather severity names and the coercion of an unrecognised value.** *(new
+  2026-10-24, pass 3, `BL-0369`)* A `space_weather` inject sets a severity of `none`, `minor` or
+  `severe`; the build reads `clear` as `none` and replaces any other value with `minor` rather than
+  rejecting the inject, so a malformed inject cannot stop a running exercise (`IP-1061`, `BL-0064`).
+  `FR-4410` names the severity field and `ADR-0039` leaves the enumeration unchanged, but no approved
+  input defines the names, their effect, or the fallback. **Shipped; not baselined.** **Source:**
+  `docs/pipeline/backlog.md` `BL-0369`, `BL-0064`; `docs/architecture/adr/ADR-0039-space-weather-index-to-multiplier-mapping.md`
+  (the enumeration "keeps driving only what it drives today").
+
 *Decided to be implementation detail or already covered (2026-10-24, `BL-0342`/`BL-0345`/`BL-0348`),
 so neither leaf nor candidate:* access-window caching (a performance device of the sub-stepped clock,
 `ADR-0006`/`ADR-0011`; its observable effect is `NFR-1500` determinism and the performance NFRs);
@@ -4202,6 +4324,16 @@ third-body functions (pure functions not wired into the shipped propagator — `
 shipped perturbation, index-driven drag); vignette-library content and ground-site placement checks
 (content quality under `FR-5310` and `NFR-2010`); the vignette YAML-source endpoint (in `FR-6220`'s
 named set); tutorial delivery (`FR-11420`).
+
+*Disposition of the twelve gap areas of `BL-0369` (pass 3, 2026-10-24):* **numbered leaf** — sim-time
+microsecond/ISO representation (`FR-1140`), AAR CSV/JSON export (`FR-7350`); **candidate, no approved
+source** — telemetry series history shape and cost (`CR-34`), space-weather severity coercion (`CR-35`),
+operations-fidelity levels (`CR-30`), scene orbital elements and subsolar point (`CR-32`), SIGINT
+geolocation scaling (`CR-33`); **already covered by an existing leaf** — scene ground track (`FR-1210`),
+phase-angle definition (`FR-1670`, `FR-8220`), the SSN smoke test (`FR-3210`, `FR-3220`); **implementation
+detail or content, neither leaf nor candidate** — bus and defence command verbs, perturbation functions,
+vignette-library content and site placement, tutorial delivery, access-window cache, ISR beam-mode
+database (reasons above). Tests for these areas keep their current tags until `08` retags them.
 
 ---
 

@@ -24,6 +24,9 @@
 > documents with no register (`BL-0319`); `NFR-3830` narrowed to the three ledger pairs the check
 > compares (`BL-0320`); a status note added to `NFR-2820` — see
 > [`requirements-change-log.md`](requirements-change-log.md) CHG-026…CHG-029.)
+> further amended (baseline-maintenance pass 3, 2026-10-24; **no numbered NFR added** — `NFR-1510`
+> restated as the owner's check-latest, try, validate, hold-back, then pin procedure with the lock file
+> `requirements.lock` named — see [`requirements-change-log.md`](requirements-change-log.md) CHG-037.)
 > **Authoritative inputs:**
 > [`build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §9
 > (NFR-1…NFR-10 — the legacy, pre-GDS NFR tag scheme),
@@ -157,15 +160,16 @@ review passes actually run against it).
     "Load-bearing invariants" #1
   - **Related ADRs:** ADR-0002 (deterministic core)
 
-- **NFR-1510 — Released builds install identical dependency versions** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
-  - **Description:** Every release shall ship with each dependency, including indirect ones, locked to an exact version, so every install of that release resolves the same versions. During development, dependencies are declared with minimum versions only.
-  - **Rationale:** Determinism (NFR-1500) is tested within one environment; a different numpy or sgp4 version on another machine could change numeric results, so saves and replays could diverge between installs of the same release. Owner decision (`BL-0299`, 2026-10-23): defer pinning to release time; refined by `BL-0318` (2026-10-24): the lock applies at every release, with no special class of release, and is reviewed at the end of the pipeline in `11-release-readiness`.
-  - **Metric or verification method:** Inspection at release readiness — a lock file committed for the release resolves every dependency to an exact version (`11-release-readiness` check, run at every release; a missing lock is NO-GO).
+- **NFR-1510 — Released builds install identical dependency versions** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md); procedure amended 2026-10-24, baseline-maintenance pass 3)*
+  - **Description:** At each release readiness the project shall check the latest available version of every dependency, try updating to those versions, validate the result with the full test suite in both modes (the browser tests excluded, and the browser tests alone), fix, or hold back at its newest compatible version, any dependency whose update breaks something, and then lock every dependency, including indirect ones, to an exact version in the committed lock file `requirements.lock` at the repository root, so every install of that release resolves the same versions. During development, dependencies are declared with minimum versions only.
+  - **Rationale:** Determinism (NFR-1500) is tested within one environment; a different numpy or sgp4 version on another machine could change numeric results, so saves and replays could diverge between installs of the same release. Owner decision (`BL-0299`, 2026-10-23): defer pinning to release time; refined by `BL-0318` (2026-10-24): the lock applies at every release, with no special class of release, and is reviewed at the end of the pipeline in `11-release-readiness`. Owner decision (release preparation, 2026-10-24): "Pin each release but check if the most up to date versions break anything and attempt to update to them before re-pinning" — a release should not freeze versions that are already stale when it ships, but must not take an update that has not been validated.
+  - **Metric or verification method:** Inspection at release readiness, with test runs as evidence — (1) `requirements.lock` is committed at the repository root and names every dependency, direct and indirect, with an exact version (`==`); (2) the release record shows that the latest versions were checked and tried, that both suite modes passed on the pinned set, and which packages, if any, were held back and why; (3) installing from the lock file in a fresh environment passes the same two suite runs (`11-release-readiness` check, run at every release; a missing or unvalidated lock is NO-GO).
   - **Priority:** Must (at each release)
-  - **Affected subsystems:** Build/dependency manifest (`pyproject.toml` and the release's lock file)
+  - **Affected subsystems:** Build/dependency manifest (`pyproject.toml` minimum versions and the release's `requirements.lock`)
   - **Dependencies:** NFR-1500, NFR-2200
-  - **Source documents:** GDS-06 NFR-5 (as corrected); `docs/pipeline/backlog.md` `BL-0299`, `BL-0318` owner decisions.
+  - **Source documents:** GDS-06 NFR-5 (as corrected); `docs/pipeline/backlog.md` `BL-0299`, `BL-0318` owner decisions; owner decision of 2026-10-24 quoted in the Rationale (release-preparation instruction to `04`); `CLAUDE.md` "Release dependency lock" (the working procedure).
   - **Related ADRs:** ADR-0002, ADR-0020
+  - **Notes:** The word "major" is dropped here as before (`BL-0318`); the lock is made at every release. The release procedure is written out in `CLAUDE.md`; this leaf states the required outcome, not the commands. Held-back packages are a reported exception, not a failure, provided the pinned set passes both suite modes. Some text outside this baseline still says the lock is made at "the first major release" (`docs/features/FS-133-test-origin-traceability.md`, status line and the `BL-0299` sentence); it is routed to `06`, not edited here.
 
 - **NFR-1600 — Robustness to invalid input and illegal actions**
   - **Description:** Invalid scenario JSON or TLEs shall fail at load with a precise, actionable
