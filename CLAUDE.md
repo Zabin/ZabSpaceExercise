@@ -195,6 +195,17 @@ python3 -m pytest --origin-report [--origin-ids=FR-1120,…]       # read-only: 
 python3 -m pytest --origin-report=rtm                            # regenerate the RTM Test column (runs no tests)
 ```
 
+**Release dependency lock (NFR-1510).** `pyproject.toml` declares minimum versions only; each release
+ships `requirements.lock`, an exact pin of every direct and indirect dependency. To regenerate: (1) check
+latest — fresh venv, `pip install -U -e ".[content,ui,dev]"`, record what moved; (2) try the update — run
+the full suite (`-m "not browser"` and `-m browser`, plus the determinism gate); (3) fix or hold — a
+minimal compatibility fix in non-engine code goes in test-first; anything needing an engine or
+determinism change is not made, hold that one package at its newest compatible version and report why;
+(4) validate and re-pin — raise the `pyproject.toml` floors to the validated versions,
+`pip freeze --exclude-editable` into `requirements.lock` (keep its header comment), install it into
+another fresh venv (`pip install -r requirements.lock && pip install --no-deps -e .`) and re-run both
+suites; (5) commit the lock with the floors. Install a release from the lock, not from `pyproject.toml`.
+
 **Server config.** Host, port, and reload come from `spacesim.config.yaml` at the repo root
 (loaded by `spacesim/config.py`). Override the path with `SPACESIM_CONFIG=/some/path.yaml`. The
 `uvicorn …` CLI form still works for one-off overrides; `python3 -m spacesim.ui_web` is the
