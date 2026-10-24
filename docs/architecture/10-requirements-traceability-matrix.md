@@ -110,7 +110,7 @@ Package column: verified packages, then any that are not yet verified, with thei
 | FR-P6 | FR-1310, FR-3110 | FS-101, FS-102, FS-105 | IP-1010, IP-1020, IP-1052 | `test_bus_commands.py`, `test_derived_probabilities.py`, `test_jam.py` +7 |
 | FR-W1 | FR-4110 | FS-115 | IP-1150 | `test_content.py`, `test_web.py` |
 | FR-W2 | FR-4210 | FS-102, FS-105, FS-113 +1 | IP-1131, IP-1151 | `test_content.py`, `test_session_setup.py`, `test_training_sources.py` +1 |
-| FR-W3 | FR-4310, FR-4320 | FS-106, FS-108 | IP-1060 (FR-4310 not met as built, `BL-0307`) | `test_session.py` |
+| FR-W3 | FR-4310, FR-4320 | FS-106, FS-108 | IP-1060, IP-1068, IP-1072, IP-1073, IP-1074, IP-1075, IP-1076 (all `VERIFIED`; `FR-4310` met since `IP-1068`, `FR-4320` as extended since `IP-1072`; the related leaves `FR-4330` and `FR-7340` are built by `IP-1074`–`IP-1076` and `IP-1077`) | `test_session.py`, `test_white_only_controls.py`, `test_browser_console_rules.py` +4 |
 | FR-W4 | FR-4410 | FS-102, FS-106, FS-108 +4 | IP-1060, IP-1061, IP-1063 +2 | `test_bulk_import_session.py`, `test_cell_activity.py`, `test_content.py` +5 |
 | FR-W5 | FR-4510 | FS-112 | IP-1120 | `test_classification_banner.py`, `test_content.py` |
 | FR-W6 | FR-4610 | FS-106, FS-108 | IP-1060 | `test_session.py` |
@@ -136,8 +136,8 @@ Package column: verified packages, then any that are not yet verified, with thei
 | FR-S5 | FR-5220 | FS-102, FS-106, FS-118 +2 | IP-1065, IP-1190 | `test_bulk_import.py`, `test_bulk_import_session.py`, `test_cell_activity.py` +4 |
 | FR-S6 | FR-5410, FR-5420 | FS-102, FS-106, FS-117 +3 | IP-1065, IP-1180 | `test_bulk_import_session.py`, `test_cell_activity.py`, `test_config.py` +4 |
 | FR-S7 | FR-5510 | FS-102, FS-106, FS-118 +2 | IP-1065, IP-1200 | `test_bulk_import_session.py`, `test_cell_activity.py`, `test_content.py` +5 |
-| FR-L3 | FR-7210, FR-7220, FR-7230 | FS-106, FS-110 | IP-1100 (FR-7220 not met; FR-7230 specified in FS-110 v2.0, unplanned) | `test_session.py` |
-| FR-L4 | FR-7310, FR-7330 | FS-107, FS-128, FS-201 | IP-1070, IP-1280, IP-2010 | `test_aar.py`, `test_assessment.py`, `test_orders.py` +1 |
+| FR-L3 | FR-7210, FR-7220, FR-7230 | FS-106, FS-110 | IP-1100, IP-1101, IP-1102, IP-1103 (all `VERIFIED`; `FR-7220` and `FR-7230` met) | `test_session.py`, `test_save_load_robustness.py` +2 |
+| FR-L4 | FR-7310, FR-7330 | FS-107, FS-128, FS-201 | IP-1070, IP-1077, IP-1280, IP-2010 | `test_aar.py`, `test_assessment.py`, `test_orders.py` +1 |
 | FR-L5 | FR-7410, FR-7440 | FS-103, FS-106, FS-121 +1 | IP-1210, IP-1211, IP-1212 +2 | `test_aar.py`, `test_effects.py`, `test_ephemeris.py` +5 |
 | FR-A1 | FR-10110 | FS-201, FS-301 | IP-2010, IP-3010 | `test_assessment.py`, `test_orders.py`, `test_research_batch.py` |
 | FR-A2 | FR-10210 | FS-301 | IP-3010 | `test_research_batch.py` |
@@ -148,8 +148,9 @@ Package column: verified packages, then any that are not yet verified, with thei
 ## 5. Non-functional requirements (GDS-06 tags)
 
 *Refreshed 2026-10-23 (run #217) for the 19 NFR leaves `04` added in run #211; §4 gains `FR-4320`
-(FR-W3) and `FR-7230` (FR-L3), which GDS-05 now tags. Neither new FR leaf has a package yet, so
-§4's other columns are unchanged.*
+(FR-W3) and `FR-7230` (FR-L3), which GDS-05 now tags. Status cells for FR-W3, FR-L3, FR-L4 and the
+NFR-2, NFR-7, NFR-9 and NFR-18 rows below were restated 2026-10-24 (stale-documentation pass) to the
+shipped and `VERIFIED` packages; the other rows were not re-derived.*
 
 | Tag | Leaves (`requirements/02`) | Enforced by |
 |---|---|---|
@@ -159,9 +160,9 @@ Package column: verified packages, then any that are not yet verified, with thei
 | NFR-4 Responsiveness | `NFR-1100`, `NFR-1400` | Lazy-clock and multiplayer tests in `test_web.py`; no latency measurement (GDS-06 OQ4); the ~16-participant ceiling is untested by design (ADR-0026). |
 | NFR-5 Security | `NFR-2200`, `NFR-2300`, `NFR-3700`, `NFR-1510` | `test_content.py`, `test_vignette_load_validation.py`, `test_vignette_export.py`, `test_defensive_audit_2026.py` (traversal and validation); `test_observer.py` (Observer rejection); fog: `test_scene.py`, `test_controller_view.py`. |
 | NFR-6 Robustness | `NFR-1600`, `NFR-1610` | `test_vignette_load_validation.py`, `test_validate_order.py`, `test_failure_atomic_events.py` (`NFR-1610`); `IP-1311` (ready) extends load validation. |
-| NFR-7 Maintainability | `NFR-1900`, `NFR-2000`, `NFR-2010`, `NFR-2100`, `NFR-2800`, `NFR-2820`, `NFR-2830` | `test_import_guard.py` (gate); `test_content.py`, `test_vignette_library.py` (schema additivity); no coverage target (`BL-0299`). Test origins (`NFR-2820`) and the major-release audit (`NFR-2830`) are specified (FS-133), not built. |
+| NFR-7 Maintainability | `NFR-1900`, `NFR-2000`, `NFR-2010`, `NFR-2100`, `NFR-2800`, `NFR-2820`, `NFR-2830` | `test_import_guard.py` (gate); `test_content.py`, `test_vignette_library.py` (schema additivity); no coverage target (`BL-0299`). Test origins (`NFR-2820`, `NFR-2850`) are built (`IP-1330`–`IP-1335`, `VERIFIED`; every test names its origin and the suite fails on an untagged one); the release audit (`NFR-2830`) rests on the origin report that `IP-1330` built. |
 | NFR-8 Portability | `NFR-2900`, `NFR-3300` | Inspection of the dependency list. |
-| NFR-9 Usability | `NFR-3000`, `NFR-3010`–`NFR-3060`, `NFR-2840` | Inspection; `test_validate_order.py` (the reason half of `NFR-3020`). The browser client is unverified; the browser suite (`NFR-2840`) is specified (FS-134), not built. `NFR-3030` has a known gap (`BL-0305`). |
+| NFR-9 Usability | `NFR-3000`, `NFR-3010`–`NFR-3060`, `NFR-2840` | Inspection; `test_validate_order.py` (the reason half of `NFR-3020`); `test_browser_console_rules.py` (`NFR-2840`, `IP-1340` `VERIFIED`: fog, plan-first and consequence-confirm rules in headless Chromium, plus the console's handling of server refusals, `IP-1073`/`IP-1076`). The rest of the client is not browser-asserted (GDS-08 OQ1). The `NFR-3030` panel-manager gap is closed (`IP-1069`). |
 | NFR-10 Classification | `NFR-3100` | `test_classification_banner.py` |
 | NFR-11 Sub-stepped time | `NFR-1700` | `test_clock_and_time.py` |
 | NFR-12 Event-log completeness | `NFR-2500`, `NFR-2600` | `test_determinism.py`, `test_aar.py`, `test_failure_atomic_events.py` |
@@ -170,10 +171,15 @@ Package column: verified packages, then any that are not yet verified, with thei
 | NFR-15 Bounded resources | `NFR-3710` | `test_ephemeris.py` (`MAX_EXPORT_SAMPLES`), `test_defensive_audit_2026.py` (event-log cap), `test_vignette_creator_session.py` (session cap) |
 | NFR-16 Configuration | `NFR-2700` | `test_config.py` |
 | NFR-17 Training quality | `NFR-3400`, `NFR-3500`, `NFR-3600` | `test_training_sources.py`, `test_vignette_tutorials.py`, `test_training.py`; human review (`09-training-manual-review`) |
-| NFR-18 Documentation integrity | `NFR-3800`–`NFR-3840` | Only the `Sources:` footer check (`test_training_sources.py`); `NFR-3800`–`NFR-3830` are specified (FS-135) and `NFR-3840` (FS-133), none built. |
+| NFR-18 Documentation integrity | `NFR-3800`–`NFR-3840` | `test_doc_integrity.py` (`NFR-3800`, `NFR-3820`, `NFR-3830`, `IP-1350` `VERIFIED`: links, index completeness, three status-ledger pairs, with shrink-only allow-lists) and `test_test_origins.py` (`NFR-3840`); the `Sources:` footer check (`test_training_sources.py`). `NFR-3810` (retired documents deleted) is not built (`BL-0319`). |
 | NFR-19 Model credibility | `NFR-2810` | `test_power_calibration.py` pins one recalibrated model; no comparison tables exist yet. |
 
 ## 6. Coverage and findings
+
+*Status note, 2026-10-24: the counts below are the run #217 figures and have not been regenerated;
+since then the ledger has moved on (the Master Build Plan's tally is authoritative for package
+statuses). The two leaves this section lists as "not met as built" (`FR-4310`, `FR-7220`) are now
+met (`IP-1068`, `IP-1101`/`IP-1102`). Regenerating this section is the work of OQ1.*
 
 *Update 2026-10-23 (run #217): the counts below are as of run #204. Run #211 added 2 FR leaves
 (106; neither yet has a package) and 19 NFR leaves (47; none has a package — six are already
@@ -204,15 +210,16 @@ invariants, gates and inspection (§5) rather than by a feature.
 
 **Findings** (for `04` unless noted):
 
-- **F1 — The clock-lag watchdog has no test.** `NFR-1300` gives "Test — watchdog fires a warning" as
-  its verification, and `SessionManager._record_catch_up_lag` is untested. (A `07` remediation test,
-  or correct the leaf's verification method.)
+- **F1 — The clock-lag watchdog has no test. Closed 2026-10-24:** `IP-1091` (`VERIFIED`) added
+  `test_clock_lag_watchdog.py`, which feeds synthetic costs to `SessionManager._record_catch_up_lag`
+  and is tagged `NFR-1300`.
 - **F2 — `requirements/03` is stale in two places.** Its header says GDS-10 is unauthored, and its
   requirement-to-test and requirement-to-package indexes say no feature or package convention exists;
   59 packages and their verification reports now carry that trace.
-- **F3 — No test cites a requirement ID.** Leaf-grain test attribution is therefore inference. Either
-  tests (or package "Tests to Add" entries) name the leaves they verify, or the matrices keep
-  stating package-grain attribution as this one does.
+- **F3 — No test cites a requirement ID. Closed 2026-10-24:** the owner chose leaf-grain origins
+  (`BL-0310`); every test now carries `@pytest.mark.verifies(...)` (`NFR-2820`, `IP-1330`–`IP-1335`)
+  and the leaf-grain matrix's Test column is generated from them (`NFR-2850`). This document keeps
+  tag-grain attribution; its Test cells name files, not leaves.
 - **F4 — Foundational leaves have no package.** The six pre-package leaves above are built and tested
   but not traced; a one-time attribution pass in `requirements/03` closes it (no code needed).
 - **F5 — 16 test files are named by no package** (`test_bus.py`, `test_clock_and_time.py`,
