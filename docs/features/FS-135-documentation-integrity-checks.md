@@ -2,9 +2,9 @@
 
 > **Document ID:** FS-135
 > **Version:** 1.0 (2026-10-23, pipeline run #216)
-> **Status:** ✅ Ready for implementation planning (Open Question 1 — where the register lives —
-> needs an owner decision before the `NFR-3810` half can be built; the other three checks do not
-> wait on it)
+> **Status:** ✅ Done for the three checks `NFR-3800`/`NFR-3820`/`NFR-3830` (built by `IP-1350`,
+> `VERIFIED`). The `NFR-3810` retired-document check is unbuilt: Open Question 1 — where the
+> register lives (`BL-0319`) — needs an owner decision first.
 > **Approved input:** the Feature Catalog entry `FEAT-12300` (Epic `EP-12000`) in
 > [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md),
 > following the FS-130–FS-134 convention. Owner direction it elaborates: `BL-0297` (2026-10-20: "a

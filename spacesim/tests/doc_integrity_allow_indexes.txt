@@ -1,2 +1,1 @@
 # IP-1350 — INDEX.md files that omit a document in their folder (`index -> document | owning stage`). Shrink-only.
-docs/architecture/INDEX.md -> strategic-assumptions-register.md | 03-architecture-design-synthesis
