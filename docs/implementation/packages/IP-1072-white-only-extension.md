@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1072
 > **Version:** 1.0
-> **Status:** ✅ COMPLETE 2026-10-24 (`08-code-implementation`; awaiting `09-package-verification`) — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass).
+> **Status:** ✅ VERIFIED 2026-10-24 ([VR-1072](../verification/VR-1072-white-only-extension.md); implemented by `08-code-implementation`) — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass).
 > Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive of 2026-10-24,
 > recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256, authorizes
