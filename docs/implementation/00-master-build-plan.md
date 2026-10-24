@@ -910,6 +910,7 @@ day (MSTR-006 §3, project owner's direct instruction, batched together).** `IP-
 (`IP-1240`/`IP-1250`/`IP-1270`/`IP-1280`/`IP-1290`) stay `READY`, authorized, queued for
 implementation in this same session.
 
+- **Package Status (2026-10-24, release candidate 1, merged tally recomputed from this table):** Tally: 81 `VERIFIED`, 0 `COMPLETE`, 1 `READY` (`IP-1080`), 1 `BLOCKED` (`IP-1160`) — 83 packages.
 - **Package Status (2026-10-24, `09-package-verification` on `IP-1081`):** `IP-1081` `VERIFIED` ([VR-1081](verification/VR-1081-save-eventlog-cap-counts-real-saves.md)). Tally: 80 `VERIFIED`, 1 `COMPLETE` (`IP-1079`), 1 `READY` (`IP-1080`), 1 `BLOCKED` (`IP-1160`) — 83 packages.
 - **Package Status (2026-10-24, `08-code-implementation` on `IP-1079`):** `IP-1079` `COMPLETE` (test-only; awaiting `09-package-verification`). Tally: 79 `VERIFIED`, 1 `COMPLETE` (`IP-1079`), 2 `READY` (`IP-1080`, `IP-1081`), 1 `BLOCKED` (`IP-1160`) — 83 packages.
 - **Package Status (2026-10-24, `08-code-implementation` on `IP-1081`):** `IP-1081` `COMPLETE` (awaiting `09-package-verification`). Tally: 79 `VERIFIED`, 2 `COMPLETE` (`IP-1079`, `IP-1081`), 1 `READY` (`IP-1080`), 1 `BLOCKED` (`IP-1160`) — 83 packages.
