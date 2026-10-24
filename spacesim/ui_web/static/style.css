@@ -58,7 +58,12 @@ body.popout #globe, body.popout #map { width: 100% !important; height: calc(100v
   border-radius: 8px; padding: 6px; min-width: 220px;
   box-shadow: 0 16px 40px rgba(0,0,0,0.55);
   display: flex; flex-direction: column; gap: 2px;
+  /* IP-1073 (NFR-3030) — scroll within the viewport (toolbar height + gap subtracted) so every entry is reachable */
+  max-height: calc(100vh - 70px); overflow-y: auto;
 }
+/* IP-1073 — control-refusal status line; empty means zero height, so layout is unchanged */
+.control-status { color: var(--red, #e5484d); font-size: 11px; }
+.control-status:empty { display: none; }
 .menu-pop[hidden] { display: none; }
 .menu-pop .menu-section { display: flex; flex-direction: column; gap: 2px; padding: 4px 0; }
 .menu-pop .menu-section + .menu-section { border-top: 1px solid #1b2531; margin-top: 2px; }

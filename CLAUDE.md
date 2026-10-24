@@ -219,7 +219,7 @@ hostile participant on the LAN can read another cell's belief state through `/sc
 v1 PME training context (everyone in the room is on the same team learning together) and is
 documented as the explicit trust boundary; see `docs/AUDIT-2026-06.md` §D5 / §F1. Hardening
 options (per-cell tokens) are tracked in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
-**White Cell controls (clock, step/advance/rewind/undo, start, param, inject, force-add, save load) are refused to any request not naming the `white` seat (IP-1068, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication.**
+**White Cell controls (clock, step/advance/rewind/undo, start, param, inject, force-add, save load) are refused to any request not naming the `white` seat (IP-1068, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication. IP-1072 extends the same refusal to the Vignette Creator edits (`creator/state`, `creator/asset`, `creator/seats`), `save_vignette`, and `red_step`; session and draft creation (`POST /api/sessions`, `/draft`) is refused only when the request *names* `blue`/`red`/`observer` — a request naming no seat may still create (deliberate asymmetry).**
 **The Observer seat's mutation-rejection (IP-1130) is enforced at this same trust level, not a
 stronger one** — the server rejects any request asserting `cell=observer`, a real structural
 enforcement (it holds even for a request that bypasses the UI entirely), but the seat assertion
@@ -439,7 +439,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **Build / schedule inject** panel with editable JSON + Now/+seconds/absolute-UTC scheduler
   (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
-  **IP-1101 (FR-7210/FR-7220/FR-7230):** a save is self-contained — `save_state` adds `save_format`, `simulator_version`, a `content` portion (the vignette as loaded plus force-added assets) and the replay `baseline`; `from_state` builds from them (legacy saves reload by id), `validate_save` refuses a bad save before replay, and `InProcessSession.load_save_with_warnings` returns the resume warnings (`load_save` route: `{session, warnings}`),
+  **IP-1101 (FR-7210/FR-7220/FR-7230):** a save is self-contained — `save_state` adds `save_format`, `simulator_version`, a `content` portion (the vignette as loaded plus force-added assets) and the replay `baseline`; `from_state` builds from them (legacy saves reload by id), `validate_save` refuses a bad save before replay, **IP-1102 (FR-7220/FR-7230):** `validate_save` also checks required keys/types for both formats and a legacy save's vignette file (each unusable save is a 400 naming the problem, never a 500) and `save_state`'s `content` reflects pre-start edits/deletes of built assets (untouched ones verbatim from the as-authored vignette), and `InProcessSession.load_save_with_warnings` returns the resume warnings (`load_save` route: `{session, warnings}`),
   **IP-1063 (BL-0129/BL-0188):** pure `validate_inject_effects` — `fire_inject` rejects a
   malformed or FR-4430-precondition-failing inject atomically (`ValueError` → `Ack(ok=False)` →
   `/inject` 400; e.g. an `anomaly` on an asset with no `bus_state`), and `_apply_inject_effects`
@@ -552,7 +552,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   speed AAR playback routes over `session/aar.py::PlaybackSession`;
   **IP-1270 (FR-3430/FR-3440):** `/gate/decide` + `/roe/change` — role-gated (checked inside
   `SessionManager`/`OrderSystem`) pending-order decision and live ROE-flag-change routes;
-  **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
+  **IP-1072:** `_require_white` now also guards `save_vignette`/`creator/*`/`red_step`, and `_refuse_player_seat_on_create(cell)` refuses a creation request naming a player seat (absent seat allowed); **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
   route table at implementation time, not merely IP-1130's own enumerated list, per that package's
   own Risks note — plus `/observer/view` + `/observer/designation`) + `static/`
   front end: `app.js` (command menu with live dry-run preview + pre-disabled Issue + kinetic
@@ -562,7 +562,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   attaches the caller's own seat as a `cell` query param to every mutating call; IP-1066
   `renderPendingInjects` lists pending injects with Cancel / Edit…; IP-1067 `refreshComparePanel`
   renders the ⚖ Compare panel (truth / Blue / Red) from one `/controller_view` read; `api.put/patch/del`
-  extend the same cell-query-param convention for IP-1174's routes below), `globe.js` (3D
+  extend the same cell-query-param convention for IP-1174's routes below; IP-1073 — palette time entries offered to the White seat only, a `#control-status` aria-live line for refused time controls / save loads, and a latest-edit token discarding superseded dry-run responses), `globe.js` (3D
   orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`
   (telemetry line graphs), `creator.js` (IP-1174 — the Vignette Creator's White-Cell UI: synchronized
   JSON view, ground-truth 2D/3D preview, TLE/lat-long asset entry with a curated-site picker,

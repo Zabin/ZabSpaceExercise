@@ -14,9 +14,10 @@ import baseline_ids as bi
 
 pytestmark = pytest.mark.verifies("NFR-2820")
 
-# Collected items before the retag (2026-10-24, 1,284), excluding this module's own items. The
+# Collected items before the retag (2026-10-24: 1,371 once the IP-1311..IP-1073 stack is merged),
+# excluding this module's own items. The
 # upper bound leaves room for tests later packages add; tag edits alone must not move the count.
-COLLECTED_BEFORE = 1284
+COLLECTED_BEFORE = 1371
 COLLECTED_UPPER = 1500
 
 EXPECTED = [
@@ -24,6 +25,7 @@ EXPECTED = [
     ('test_aar.py', 'test_worlds_at_times_matches_state_at_time', ('FR-7310', 'NFR-2410')),
     ('test_assessment.py', 'test_assessment_report_presents_dimensions_side_by_side_never_a_composite', ('FR-4710', 'FS-201')),
     ('test_assessment.py', 'test_scoring_functions_never_mutate_world_state', ('FS-201', 'NFR-2410')),
+    ('test_browser_console_rules.py', 'test_a_player_seat_loading_a_vignette_sees_the_refusal', ('FR-4320', 'NFR-2840')),
     ('test_bus_commands.py', 'test_adcs_desaturate_restores_pointing', ('FS-105',)),
     ('test_bus_commands.py', 'test_adcs_point_payload_slews_attitude', ('FS-105',)),
     ('test_bus_commands.py', 'test_batch3_verbs_mutate_observably', ('FS-105',)),
@@ -109,6 +111,12 @@ EXPECTED = [
     ('test_pending_inject_queue.py', 'test_http_non_white_is_403', ('FR-4320', 'FR-4450')),
     ('test_planning.py', 'test_sensor_contention_serializes_tasks_onto_later_windows', ('FR-3210',)),
     ('test_power_calibration.py', 'test_eclipse_flag_exposed_in_soh_snapshot', ('FR-2110', 'NFR-3050')),
+    ('test_save_load_robustness.py', 'test_bad_save_is_400_naming_the_problem_and_leaves_no_trace', ('FR-7230', 'NFR-1600')),
+    ('test_save_load_robustness.py', 'test_content_equals_the_saved_force_after_pre_start_edits', ('FR-7220',)),
+    ('test_save_load_robustness.py', 'test_refused_loads_do_not_consume_a_session_id', ('NFR-1600',)),
+    ('test_save_load_robustness.py', 'test_resume_unchanged_and_content_alone_builds_same_force', ('FR-7210', 'FR-7220')),
+    ('test_save_load_robustness.py', 'test_untouched_session_content_is_the_authored_vignette', ('FR-7220',)),
+    ('test_save_load_robustness.py', 'test_valid_saves_still_load_with_same_warnings', ('FR-7210', 'FR-7230')),
     ('test_self_contained_save.py', 'test_content_portion_extracts_and_loads_as_a_fresh_vignette', ('FR-7220',)),
     ('test_self_contained_save.py', 'test_content_portion_world_matches_baseline_without_force_edits', ('FR-7220',)),
     ('test_self_contained_save.py', 'test_force_added_assets_survive', ('FR-7210',)),

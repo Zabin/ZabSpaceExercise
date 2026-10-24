@@ -173,11 +173,18 @@ def run() -> None:
         snap()
         snap()
 
-        # === Beat 6: Advance time +10m (use stepBy directly — white-only buttons hidden in Blue) ===
+        # === Beat 6: Advance time +10m — as the White seat through the API (Blue may not advance
+        # the clock, IP-1068); the visible seat stays Blue, so the recording is still a Blue view ===
         page.evaluate("window.scrollTo(0, 0)")
         page.wait_for_timeout(400)
-        page.evaluate("stepBy(600)")
-        page.wait_for_timeout(1400)
+        now = page.evaluate("SCENE.now")
+        sid = page.evaluate("SID")
+        resp = page.request.post(
+            f"{URL}api/sessions/{sid}/advance?cell=white", data={"t": now + 600 * 1_000_000})
+        if resp.status != 200:
+            raise RuntimeError(f"Beat 6: the server refused the White-seat advance ({resp.status}): {resp.text()}")
+        page.evaluate("refresh()")
+        page.wait_for_function(f"SCENE && SCENE.now > {now}")
         snap()
         snap()
 

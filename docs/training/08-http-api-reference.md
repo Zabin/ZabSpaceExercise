@@ -3,7 +3,9 @@
 ## 9. HTTP API reference
 
 All UI actions go through these endpoints (base `http://127.0.0.1:8000`). Reads are fog-filtered
-per cell, server-side.
+per cell, server-side. White Cell controls (start, step/advance/rewind/undo, clock, param, inject,
+red_step, force-add, save load and the Creator routes) are refused with 403 unless the request names
+the White seat (`?cell=white`); a player seat that names itself on session creation is refused too.
 
 | Method & path | Purpose |
 |---|---|
@@ -45,7 +47,7 @@ per cell, server-side.
 | `GET /api/sessions/{sid}/objectives` · `…/eventlog` | Objective status · event log |
 | `GET /api/sessions/{sid}/aar` · `…/aar/objectives?seq=` · `…/aar/at?seq=` | AAR report · objectives · snapshot at a point |
 | `GET /api/sessions/{sid}/aar/export.csv` · `…/aar/export.json` | AAR download as CSV · JSON |
-| `GET /api/sessions/{sid}/save` · `POST /api/sessions/load_save` | Save a session · resume from a saved state |
+| `GET /api/sessions/{sid}/save` · `POST /api/sessions/load_save` | Save a session · resume from a saved state (a save that cannot be used — missing keys, malformed parts, or a legacy save whose vignette file is gone — is refused with HTTP 400 and a reason) |
 
 Interactive API docs are auto-served at **http://127.0.0.1:8000/docs** (FastAPI/Swagger).
 

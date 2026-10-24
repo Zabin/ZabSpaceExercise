@@ -115,7 +115,7 @@ decision, and **compare two branches** to show how a choice changed the outcome:
 ![Red doctrine campaign + AAR](../manual/13-doctrine-and-aar.png)
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/sessions/<SID>/red_step     # AI-Red issues one round of orders
+curl -X POST 'http://127.0.0.1:8000/api/sessions/<SID>/red_step?cell=white'     # AI-Red issues one round of orders
 curl      http://127.0.0.1:8000/api/sessions/<SID>/aar             # decision timeline + final objectives
 ```
 

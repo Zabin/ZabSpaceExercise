@@ -227,6 +227,28 @@ function setBanner(text) {
   if (el && text) el.textContent = text;
 }
 
+// IP-1073 — one parser for a server refusal (JSON `detail`, a `problems` list, or raw text), shared
+// by the Load button, a save-file load and the control-error status line.
+function refusalParts(e) {
+  let detail = String(e && e.message || e);
+  try { detail = JSON.parse(detail).detail ?? detail; } catch { /* plain text */ }
+  const msg = typeof detail === "object" ? (detail.message || JSON.stringify(detail)) : String(detail);
+  const probs = (detail && Array.isArray(detail.problems)) ? detail.problems : [];
+  return { msg, probs };
+}
+function showLoadFailure(e) {
+  const { msg, probs } = refusalParts(e);
+  $("session").innerHTML = `<b>Load failed:</b> ${esc(msg)}` +
+    (probs.length ? `<ul>${probs.map((p) => `<li>${esc(p.where)} — ${esc(p.reason)}</li>`).join("")}</ul>` : "");
+}
+// IP-1073 (FR-4310, NFR-1600) — a control the server refused is reported in an aria-live status line
+// beside the session readout, never left as an unhandled rejection. Cleared by the next success.
+function reportControlError(label, e) {
+  const el = $("control-status"); if (!el) return;
+  el.textContent = `${label}: ${refusalParts(e).msg}`;
+}
+function clearControlError() { const el = $("control-status"); if (el) el.textContent = ""; }
+
 async function loadSession() {
   stopRealtimeClock();
   const vselect = $("vignette");
@@ -240,12 +262,7 @@ async function loadSession() {
       classification: classOverride.trim() || undefined,
     });
   } catch (e) {
-    let detail = String(e && e.message || e);
-    try { detail = JSON.parse(detail).detail ?? detail; } catch { /* plain text */ }
-    const msg = typeof detail === "object" ? (detail.message || JSON.stringify(detail)) : String(detail);
-    const probs = (detail && Array.isArray(detail.problems)) ? detail.problems : [];
-    $("session").innerHTML = `<b>Load failed:</b> ${esc(msg)}` +
-      (probs.length ? `<ul>${probs.map((p) => `<li>${esc(p.where)} — ${esc(p.reason)}</li>`).join("")}</ul>` : "");
+    showLoadFailure(e);
     return;
   }
   SID = resp.session;
@@ -620,12 +637,15 @@ function actionsFor(a) {
 
 // Plan-first "why can't I?" preview (P4 / §12): dry-run the composed order on every edit and
 // pre-disable Issue with the validator's reason — without mutating session state.
+let PREVIEW_EDIT = 0;   // IP-1073 (NFR-3020) — latest-edit token: a superseded dry-run response is discarded
 async function previewOrder() {
   const btn = $("issue"), out = $("o-preview");
   if (!SID || !out) return;
+  const mine = ++PREVIEW_EDIT;
   const body = composeBody();
   if (!body) { btn.disabled = true; btn.title = "Fix params JSON"; out.className = "preview bad"; out.textContent = "✗ invalid params JSON"; return; }
   let ack; try { ack = await api.post(`/api/sessions/${SID}/order/validate`, body); } catch { return; }
+  if (mine !== PREVIEW_EDIT) return;
   if (ack.ok) {
     btn.disabled = false; btn.title = "";
     out.className = "preview ok";
@@ -637,15 +657,16 @@ async function previewOrder() {
     out.textContent = `✗ ${tip}`;
   }
   // FW §11.D.18 — live consequence preview alongside the validity preview.
-  renderConsequencePreview(body);
+  renderConsequencePreview(body, mine);
 }
 
-async function renderConsequencePreview(body) {
+async function renderConsequencePreview(body, mine) {
   const el = $("consequence-preview"); if (!el) return;
   if (!body || !body.action) { el.textContent = ""; return; }
   let res; try {
     res = await api.post(`/api/sessions/${SID}/preview/consequence`, body);
-  } catch { el.textContent = ""; return; }
+  } catch { if (mine === PREVIEW_EDIT) el.textContent = ""; return; }
+  if (mine !== PREVIEW_EDIT) return;
   const sev = res.severity || "low";
   const sevColor = { high: "var(--red)", medium: "var(--yellow)", low: "var(--muted)" }[sev];
   el.style.color = sevColor;
@@ -1859,9 +1880,17 @@ async function saveSession() {
   a.href = URL.createObjectURL(blob); a.download = `${state.vignette_id}-save.json`; a.click();
 }
 async function loadSaveFile(file) {
-  const state = JSON.parse(await file.text());
+  // IP-1073 (BL-0327) — a refused or unparseable file is reported and leaves the session and its
+  // polling untouched; the clock is stopped only once the server has accepted the load.
+  let state, loaded;
+  try {
+    state = JSON.parse(await file.text());
+    loaded = await api.post("/api/sessions/load_save", state);
+  } catch (e) {
+    showLoadFailure(e instanceof SyntaxError ? new Error("not a valid save file (" + e.message + ")") : e);
+    return;
+  }
   stopRealtimeClock();
-  const loaded = await api.post("/api/sessions/load_save", state);
   SID = loaded.session;
   if ((loaded.warnings || []).length) alert("Save loaded with warnings:\n" + loaded.warnings.join("\n"));   // IP-1101
   location.hash = SID;   // multiplayer: resumed session is also shareable
@@ -2525,8 +2554,8 @@ function renderBookmarks() {
       } else {
         const b = bmList()[+c.dataset.i];
         if (!SID) return;
-        await api.post(`/api/sessions/${SID}/rewind`, { t: b.t });
-        refresh();
+        if (CELL !== "white") { reportControlError("Rewind", new Error("only the White Cell can rewind the exercise clock")); return; }
+        await rewindTo(b.t);
       }
     });
   });
@@ -2608,10 +2637,12 @@ const PALETTE = {
     items.push({ label: "switch to Blue cell",  tag: "cell",  run: () => setCell("blue") });
     items.push({ label: "switch to Red cell",   tag: "cell",  run: () => setCell("red") });
     items.push({ label: "switch to White cell", tag: "cell",  run: () => setCell("white") });
-    items.push({ label: "advance +1 min",       tag: "time",  run: () => stepBy(60) });
-    items.push({ label: "advance +10 min",      tag: "time",  run: () => stepBy(600) });
-    items.push({ label: "advance +1 hour",      tag: "time",  run: () => stepBy(3600) });
-    items.push({ label: "rewind to start",      tag: "time",  run: () => rewindTo(0) });
+    if (CELL === "white") {   // IP-1073 (FR-4310) — time control is White's; the server's 403 stays the enforcement
+      items.push({ label: "advance +1 min",       tag: "time",  run: () => stepBy(60) });
+      items.push({ label: "advance +10 min",      tag: "time",  run: () => stepBy(600) });
+      items.push({ label: "advance +1 hour",      tag: "time",  run: () => stepBy(3600) });
+      items.push({ label: "rewind to start",      tag: "time",  run: () => rewindTo(0) });
+    }
     items.push({ label: "export AAR (CSV)",     tag: "aar",   run: () => SID && (location.href = `/api/sessions/${SID}/aar/export.csv`) });
     items.push({ label: "export AAR (JSON)",    tag: "aar",   run: () => SID && (location.href = `/api/sessions/${SID}/aar/export.json`) });
     items.push({ label: "toggle projector mode", tag: "view", run: () => { const cb = $("projector"); cb.checked = !cb.checked; cb.dispatchEvent(new Event("change")); }});
@@ -2690,8 +2721,18 @@ addEventListener("DOMContentLoaded", () => {
 });
 
 // Helpers used by the palette (extracted from the existing toolbar handlers).
-async function stepBy(s) { if (!SID) return; await api.post(`/api/sessions/${SID}/advance`, { t: (SCENE ? SCENE.now : 0) + s * 1_000_000 }); refresh(); }
-async function rewindTo(t) { if (!SID) return; await api.post(`/api/sessions/${SID}/rewind`, { t }); refresh(); }
+async function stepBy(s) {
+  if (!SID) return;
+  try { await api.post(`/api/sessions/${SID}/advance`, { t: (SCENE ? SCENE.now : 0) + s * 1_000_000 }); clearControlError(); }
+  catch (e) { reportControlError("Advance", e); return; }
+  refresh();
+}
+async function rewindTo(t) {
+  if (!SID) return;
+  try { await api.post(`/api/sessions/${SID}/rewind`, { t }); clearControlError(); }
+  catch (e) { reportControlError("Rewind", e); return; }
+  refresh();
+}
 
 // §10.B.8 — Multi-asset batch selection. Shift-click a fleet row to toggle; "Issue to all" runs
 // the current compose against each batched asset (substituting actor).

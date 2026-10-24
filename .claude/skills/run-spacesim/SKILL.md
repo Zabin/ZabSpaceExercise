@@ -81,8 +81,8 @@ B=http://127.0.0.1:8000
 SID=$(curl -s -X POST $B/api/sessions -H 'Content-Type: application/json' \
       -d '{"vignette_id":"training-basics","seed":0}' \
       | python3 -c 'import sys,json;print(json.load(sys.stdin)["session"])')
-curl -s -X POST $B/api/sessions/$SID/start
-curl -s -X POST $B/api/sessions/$SID/step -H 'Content-Type: application/json' -d '{"dt_sim_s":600}'
+curl -s -X POST "$B/api/sessions/$SID/start?cell=white"
+curl -s -X POST "$B/api/sessions/$SID/step?cell=white" -H 'Content-Type: application/json' -d '{"dt_sim_s":600}'
 curl -s $B/api/sessions/$SID/scene/blue       # fog-filtered belief scene for the Blue cell
 curl -s $B/api/sessions/$SID/godview          # White-cell ground truth
 curl -s $B/api/sessions/$SID/objectives

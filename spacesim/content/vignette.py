@@ -250,6 +250,22 @@ def list_vignettes(external_dirs: Optional[Sequence[Path]] = None) -> list[dict]
     return out
 
 
+def _declared_vignette_id(path: Path) -> Optional[str]:
+    """IP-1311 (FR-5310, NFR-1600): the ``vignette.id`` a file declares, or ``None`` when the file
+    is unreadable, not valid YAML, not a mapping, or has no mapping ``vignette`` block with an id.
+    Shared by both id-resolution scans so one bad neighbour never blocks a lookup."""
+    try:
+        raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (yaml.YAMLError, OSError, UnicodeDecodeError):
+        return None
+    if not isinstance(raw, dict):
+        return None
+    block = raw.get("vignette")
+    if not isinstance(block, dict):
+        return None
+    return block.get("id")
+
+
 def load_vignette(path_or_id: str, external_dirs: Optional[Sequence[Path]] = None) -> Vignette:
     """Load a vignette by its declared id.
 
@@ -271,10 +287,7 @@ def load_vignette(path_or_id: str, external_dirs: Optional[Sequence[Path]] = Non
     else:  # resolve by the vignette's declared id (filenames are numbered, ids are not)
         path = None
         for p in sorted(VIGNETTE_DIR.glob("*.yaml")):
-            data_inner = yaml.safe_load(p.read_text(encoding="utf-8"))
-            if not isinstance(data_inner, dict) or "vignette" not in data_inner:
-                continue
-            if data_inner["vignette"].get("id") == path_or_id:
+            if _declared_vignette_id(p) == path_or_id:
                 path = p
                 break
         if path is None:
@@ -288,13 +301,7 @@ def load_vignette(path_or_id: str, external_dirs: Optional[Sequence[Path]] = Non
                     path = ext_candidate
                     break
                 for p in sorted(ext_dir.glob("*.yaml")):
-                    try:
-                        data_inner = yaml.safe_load(p.read_text(encoding="utf-8"))
-                    except (yaml.YAMLError, OSError):
-                        continue
-                    if not isinstance(data_inner, dict) or "vignette" not in data_inner:
-                        continue
-                    if data_inner["vignette"].get("id") == path_or_id:
+                    if _declared_vignette_id(p) == path_or_id:
                         path = p
                         break
                 if path is not None:

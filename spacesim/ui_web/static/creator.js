@@ -182,17 +182,30 @@ window.Creator = (function () {
     window.Globe && Globe.render(scene);
   }
 
+  // IP-1073 (FR-4320, NFR-1600) — a Creator call the server refuses (a non-White seat, an invalid
+  // asset) is shown in the result line rather than left as an unhandled rejection.
+  function guard(fn) {
+    return async (...args) => {
+      try { return await fn(...args); }
+      catch (e) {
+        let msg = String((e && e.message) || e);
+        try { const d = JSON.parse(msg).detail; if (d !== undefined) msg = typeof d === "string" ? d : JSON.stringify(d); } catch { /* raw text */ }
+        $("creator-save-result").textContent = `error: ${msg}`;
+      }
+    };
+  }
+
   function init() {
     if (!$("creator-btn")) return;   // menu absent (e.g. a pop-out layout) — nothing to wire
-    $("creator-new").onclick = newDraft;
-    $("creator-save").onclick = saveVignette;
-    $("creator-tle-add").onclick = addTle;
-    $("creator-gnd-add").onclick = addGroundAsset;
-    $("creator-refresh").onclick = refreshAssetList;
-    $("creator-json-load").onclick = jsonLoad;
-    $("creator-json-save").onclick = jsonSave;
-    $("creator-seat-declare").onclick = declareSeats;
-    $("creator-preview").onclick = refreshPreview;
+    $("creator-new").onclick = guard(newDraft);
+    $("creator-save").onclick = guard(saveVignette);
+    $("creator-tle-add").onclick = guard(addTle);
+    $("creator-gnd-add").onclick = guard(addGroundAsset);
+    $("creator-refresh").onclick = guard(refreshAssetList);
+    $("creator-json-load").onclick = guard(jsonLoad);
+    $("creator-json-save").onclick = guard(jsonSave);
+    $("creator-seat-declare").onclick = guard(declareSeats);
+    $("creator-preview").onclick = guard(refreshPreview);
     loadGroundSites();
   }
 

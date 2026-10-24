@@ -149,10 +149,16 @@ class SessionManager:
         # authoring. Same placement rationale as role_assignments above: UI-setup state, not
         # exercise state.
         self.seats_declared: dict[str, list[str]] = {}
+        # IP-1102 (FR-7220) — the vignette exactly as authored, captured before ``build_world``
+        # (which stamps defaults such as an orbit epoch onto the shared model in place).
+        self._authored_content = vignette.model_dump(mode="json")
         self.world, self.ctx = build_world(vignette, overrides)
         # IP-1101 — the assets the loaded vignette itself produced; anything later in the replay
         # baseline is a White Cell force edit and is written into the save's content portion.
         self._built_asset_ids = frozenset(self.world.assets)
+        # IP-1102 (FR-7220) — each built asset's form at construction, to tell a pre-start edit
+        # (differs from the baseline later) from an untouched asset (left verbatim in content).
+        self._built_asset_forms = {i: a.model_dump() for i, a in self.world.assets.items()}
         self.load_warnings: list[str] = []   # IP-1101 — set by from_state; never part of the world
         self.sim = Simulation(self.world, seed=seed)
         self.sim.register_handler("inject", self._h_inject)
@@ -979,12 +985,26 @@ class SessionManager:
         baseline = copy.deepcopy(self.sim._initial_state)
         # IP-1101 (FR-7220, Design Decision 2) — the vignette as originally loaded, verbatim, with
         # each force-added asset appended to its owner's list in the vignette file format.
-        content = self.vignette.model_dump(mode="json")
+        content = copy.deepcopy(self._authored_content)
         buckets = {"blue": content["blue_forces"], "red": content["red_forces"],
                    "neutral": content["neutral_forces"]}
+
+        def _entry(adict: dict) -> dict:
+            return {k: v for k, v in adict.items() if k != "owner"}
+
+        # IP-1102 (FR-7220, BL-0352) — a built asset deleted or edited before start is reflected;
+        # an untouched one stays exactly as authored.
+        for aid in self._built_asset_ids:
+            now = baseline["assets"].get(aid)
+            if now is not None and now == self._built_asset_forms[aid]:
+                continue
+            for lst in buckets.values():
+                lst[:] = [e for e in lst if e.get("id") != aid]
+            if now is not None:
+                buckets.setdefault(now["owner"], []).append(_entry(now))
         for aid, adict in baseline["assets"].items():
             if aid not in self._built_asset_ids:
-                buckets[adict["owner"]].append({k: v for k, v in adict.items() if k != "owner"})
+                buckets[adict["owner"]].append(_entry(adict))
         return {
             "save_format": SAVE_FORMAT,
             "simulator_version": simulator_version(),
@@ -1005,9 +1025,47 @@ class SessionManager:
 
     @staticmethod
     def validate_save(state: dict) -> None:
-        """IP-1101 (Design Decision 5) — refuse a malformed self-contained save before any replay.
-        A legacy save (no format version) has nothing to check here. Raises ``ValueError``."""
-        if not (state or {}).get("save_format"):
+        """IP-1101 (Design Decision 5) / IP-1102 (FR-7230, NFR-1600) — refuse an unusable save
+        before any replay: required keys and types for both formats, the self-contained content
+        and baseline, and (legacy) that the vignette file the save depends on is available.
+        Raises ``ValueError`` naming the problem."""
+        from spacesim.engine.eventlog import EventLog
+        if not isinstance(state, dict):
+            raise ValueError("save is not a JSON object")
+        selfc = bool(state.get("save_format"))
+        required = (("content", "baseline", "seed", "eventlog", "final_time") if selfc
+                    else ("vignette_id", "seed", "eventlog", "final_time"))
+        for key in required:
+            if key not in state or state[key] is None:
+                raise ValueError(f"save is missing required key '{key}'")
+        for key in ("seed", "final_time"):
+            if isinstance(state[key], bool) or not isinstance(state[key], int):
+                raise ValueError(f"save key '{key}' must be an integer")
+        if not selfc and not isinstance(state["vignette_id"], str):
+            raise ValueError("save key 'vignette_id' must be a string")
+        try:
+            EventLog.model_validate(state["eventlog"])
+        except Exception as exc:  # noqa: BLE001
+            raise ValueError(f"save key 'eventlog' is malformed: {exc}") from exc
+        for key, need in (("pending", ("t", "kind")), ("orders", ("cell", "actor", "action")),
+                          ("ssn_requests", ("id", "cell", "intent", "target", "regime", "priority"))):
+            rows = state.get(key)
+            if rows is None:
+                continue
+            if not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
+                raise ValueError(f"save key '{key}' must be a list of objects")
+            for r in rows:
+                miss = [n for n in need if n not in r]
+                if miss:
+                    raise ValueError(f"save key '{key}' has an entry missing {', '.join(miss)}")
+        if not selfc:
+            # IP-1102 Design Decision 2 — a legacy save resumes by id; say so when the file is gone.
+            from spacesim.content.vignette import load_vignette as _load
+            try:
+                _load(state["vignette_id"])
+            except FileNotFoundError as exc:
+                raise ValueError(f"the save depends on vignette '{state['vignette_id']}', which is "
+                                 f"not available in the content directories") from exc
             return
         from spacesim.content.vignette import validate_vignette
         try:

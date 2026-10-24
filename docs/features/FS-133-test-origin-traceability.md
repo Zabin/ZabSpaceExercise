@@ -10,7 +10,7 @@
 > input). Owner directions it elaborates: `BL-0310` (test origins; audit at major releases only;
 > the marker form, run #209) and `BL-0299` (dependencies locked at major releases), in
 > [`docs/pipeline/backlog.md`](../pipeline/backlog.md).
-> **Referenced By:** [feature index](feature-index.md); `FEAT-12100`; [IP-1330](../implementation/packages/IP-1330-test-origin-marker-and-checks.md)–[IP-1333](../implementation/packages/IP-1333-test-origin-backfill-web.md) (planned 2026-10-23)
+> **Referenced By:** [feature index](feature-index.md); `FEAT-12100`; [IP-1330](../implementation/packages/IP-1330-test-origin-marker-and-checks.md)–[IP-1333](../implementation/packages/IP-1333-test-origin-backfill-web.md) (planned 2026-10-23); [IP-1334](../implementation/packages/IP-1334-test-origin-retag.md) (retag, 2026-10-24)
 > **Related Topics:** `FEAT-12300` (documentation-integrity checks, `BL-0297` — shares the check
 > runner, not yet specified); [GDS-10](../architecture/10-requirements-traceability-matrix.md) §6
 > F3 and OQ1–OQ2; [GDS-06](../architecture/06-non-functional-requirements.md) NFR-5, NFR-7, NFR-18

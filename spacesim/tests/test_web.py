@@ -539,7 +539,7 @@ def test_draft_session_create_add_asset_and_save_as_vignette(tmp_path, monkeypat
     assert ack["ok"] is True
 
     # Save as vignette — a real, loadable file.
-    resp = c.post(f"/api/sessions/{sid}/save_vignette",
+    resp = c.post(f"/api/sessions/{sid}/save_vignette?cell=white",
                   json={"vignette_id": "test-ip1173-http-draft", "title": "HTTP Draft Saved"}).json()
     assert resp["vignette_id"] == "test-ip1173-http-draft"
     try:
@@ -593,7 +593,7 @@ def test_save_as_scenario_route_end_to_end(tmp_path, monkeypatch):
     c.post(f"/api/sessions/{sid}/clock?cell=white", json={"running": False})  # stop catch-up drift
     save_moment = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
 
-    resp = c.post(f"/api/sessions/{sid}/save_vignette",
+    resp = c.post(f"/api/sessions/{sid}/save_vignette?cell=white",
                   json={"vignette_id": "test-ip1200-http-scenario", "title": "HTTP Scenario",
                         "as_scenario": True}).json()
     try:
@@ -608,7 +608,7 @@ def test_save_as_scenario_route_end_to_end(tmp_path, monkeypatch):
 
     # A draft session's own "Save as Vignette" (as_scenario omitted/False) is unaffected.
     draft_sid = c.post("/api/sessions/draft", json={"title": "Still Draft"}).json()["session"]
-    draft_resp = c.post(f"/api/sessions/{draft_sid}/save_vignette",
+    draft_resp = c.post(f"/api/sessions/{draft_sid}/save_vignette?cell=white",
                         json={"vignette_id": "test-ip1200-draft-unaffected", "title": "Draft"})
     assert draft_resp.status_code == 200
     from pathlib import Path
