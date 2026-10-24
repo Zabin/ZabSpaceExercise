@@ -183,7 +183,11 @@ one; every declared ID resolves) are the second gate and must pass unchanged.
 
 ## Dependencies
 
-`IP-1330`, `IP-1331`, `IP-1332`, `IP-1333` (all `VERIFIED`). Ordering: build **last** in the release
+`IP-1330`, `IP-1331`, `IP-1332`, `IP-1333` (all `VERIFIED`). **Carve-out (release-push pass 2):**
+the `test_assessment.py` (13) and `test_research_batch.py` (7) rows of the table above need `FR-10110`/
+`FR-10210`, which the origin reader cannot accept until [`IP-1335`](IP-1335-test-origin-id-widening.md)
+(`BL-0368`) widens it; `IP-1335` delivers those 20 retags and `IP-1334` builds after it and omits those
+two modules from its guard table. Ordering: build **last** in the release
 push. `IP-1102`, `IP-1072` and `IP-1073` add and edit tests in several of the same modules
 (`test_web.py`, `test_self_contained_save.py`, `test_browser_console_rules.py`) and regenerate the
 same RTM column; retagging after them avoids merge conflicts and a stale matrix. It is otherwise
