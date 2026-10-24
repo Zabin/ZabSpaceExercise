@@ -108,8 +108,12 @@ A rewind must land inside the exercise, between its start and the current moment
 Rewind and the palette's "rewind to start" go to the vignette's first instant, and the server
 refuses anything outside that span. Undo obeys the same rule: undoing past the first logged
 event returns the clock to the exercise start, and an undo with nothing to undo is refused.
+When a jump or rewind is refused, the reason appears in the red status line under the session label
+in the **Cell & Time** panel; nothing about the exercise changes. Only the White seat can rewind: a
+Blue or Red tab, or a bookmark clicked from one, gets a refusal instead.
 
-> **Sources:** `spacesim/session/manager.py` (`set_clock`/`catch_up`/rewind/undo) ·
+> **Sources:** `spacesim/session/manager.py` (`set_clock`/`catch_up`/`rewind_to`/`undo_last`) ·
+> `spacesim/ui_web/static/app.js` (`rewindTo`, `reportControlError`; `#control-status`) ·
 > `POST /api/sessions/{sid}/clock` · `POST /api/sessions/{sid}/rewind` · `spacesim/engine/clock.py`
 
 ### WCM-5 · Injects: script the friction
@@ -200,7 +204,14 @@ notes (WCM-6) and the objective flips.
 **clock-lag watchdog** warns you (consider fewer satellites or a lower rate). For everything
 else, start at [`09-troubleshooting-and-glossary.md`](09-troubleshooting-and-glossary.md).
 
-> **Sources:** `spacesim/engine/simulation.py` (`SavedSession`) · `GET /api/sessions/{sid}/save` ·
+**If Load of a save is refused.** The file is checked before anything is replayed. A file that is not
+JSON, lacks required parts, has a damaged event log, claims an end time earlier than its own last
+event or more than 366 days past the exercise start, depends on a vignette file that is gone (older
+saves), or embeds an invalid vignette is refused with a reason shown as **Load failed:** in the
+session label. Nothing is loaded and your current session is untouched. Only the White seat can load
+a save; from a Blue or Red tab the server refuses it.
+
+> **Sources:** `spacesim/engine/simulation.py` (`SavedSession`) · `POST /api/sessions/load_save` (`validate_save`, `_check_final_time_span`) · `GET /api/sessions/{sid}/save` ·
 > `SessionManager._record_catch_up_lag` · `SessionManager.save_state` · `SessionManager.from_state`
 
 ### WCM-11 · Competency assessment: rubric, not a score

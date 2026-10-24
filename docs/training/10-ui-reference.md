@@ -54,7 +54,7 @@ operator switches to Blue or Red.
 | 4 | White / Blue / Red | buttons | Switch the operator's seat (client-side `data-cell` swap; fog-of-war is enforced server-side). |
 | 5 | ⏸ Pause / ▶ Resume | button (white-only) | `POST /api/sessions/{sid}/clock {running}` — drives the server-authoritative clock for **every** connected tab. |
 | 6 | +1m / +10m / +1h | buttons (white-only) | `POST /step` for manual sim-time jumps. Server re-anchors so the wall clock doesn't snap the jump back. |
-| 7 | ⟲ Rewind | button (white-only) | `POST /rewind` to the exercise's `start_epoch` (the vignette's first instant, read from `GET /clock`); a target outside `[start_epoch, now]` is refused with a 400. Deterministic replay re-derives state byte-identical; the server re-anchors the clock at the rewound moment. |
+| 7 | ⟲ Rewind | button (white-only) | `POST /rewind` to the exercise's `start_epoch` (the vignette's first instant, read from `GET /clock`; the palette's **rewind to start** does the same). A target outside `[start_epoch, now]` is refused with a 400, and the refusal reason shows in the status line (§10.2, row 9). Deterministic replay re-derives state byte-identical; the server re-anchors the clock at the rewound moment. |
 | 8 | ⏸ Handover | button | Blur the screen + show "HANDING OFF" overlay (hot-seat seat-swap between cells). |
 | 9 | 📋 Session ▾ | menu (white-only) | See §10.1.1 below. |
 | 10 | ▦ View ▾ | menu | See §10.1.2 below. |
@@ -64,16 +64,28 @@ operator switches to Blue or Red.
 The three dropdown menus share the same wiring: click to open, click outside or press
 **Esc** to close, opening one closes the others.
 
+**When the server refuses a control.** The toolbar hiding White-only controls is a convenience; the
+server is what enforces it (it answers 403 to any White Cell control not sent from the White seat, see
+[§9](08-http-api-reference.md#9-http-api-reference)). When a time jump or rewind (the +1m/+10m/+1h buttons, Rewind, the palette's time entries
+or a rewind bookmark) is refused, or a rewind
+lands outside the exercise, the reason appears in the red **status line** under the session label in the
+Cell & Time panel (§10.2, row 9), for example `Rewind: only the White Cell can rewind the exercise clock`.
+The line clears after the next time jump or rewind that succeeds.
+
 #### 10.1.1 Session menu (white-only)
 
 | Section | Item | Effect |
 |---|---|---|
 | Vignette | Vignette dropdown | Pick a scenario from the library before Load. |
 | Vignette | Seed input | Deterministic RNG seed (any non-negative integer; default 1). |
-| Vignette | **Load** button | `POST /api/sessions` → creates the session id. The page URL gets `#sess-N` appended so it can be shared. |
+| Vignette | **Load** button | `POST /api/sessions` → creates the session id. The page URL gets `#sess-N` appended so it can be shared. A refused load (a vignette that fails validation, or Load pressed while Blue, Red or Observer is the active seat: 403, "sessions are created by the white seat") creates nothing and shows **Load failed:** and the reason in the session label (§10.2, row 4). |
 | Vignette | **▶ Start** button | `POST /api/sessions/{sid}/start` + arms the server clock. Disabled until Load. |
+| Save as scenario | **💾 Save as scenario…** button | Prompts for a new vignette id and title, then `POST /save_vignette` writes the live state as a new starting vignette (needs `content.user_save_dir`). The result line under the button shows `✓ saved <path>`, or `✗` and the server's reason in red (a non-White seat gets the 403 text; nothing is written). |
 
 #### 10.1.2 View menu
+
+The menu panel scrolls inside the window: on a short screen or a zoomed-in browser, scroll within
+the open menu to reach the lower entries (Pop out) instead of finding them cut off.
 
 | Section | Item | Effect |
 |---|---|---|
@@ -97,13 +109,13 @@ pop-out polls the server at 1.5 s like any other tab, so closing the parent does
 | Section | Item | Effect |
 |---|---|---|
 | Session | ⬇ Save session | `GET /save` → download session JSON. |
-| Session | ⬆ Load session | File picker + `POST /load_save` (the loaded session starts paused — White must Resume). A save that cannot be used is refused with a reason (HTTP 400), including a legacy save whose vignette file is no longer available. |
+| Session | ⬆ Load session | File picker + `POST /load_save` (the loaded session starts paused — White must Resume). A save that cannot be used is refused with a reason (HTTP 400), including a legacy save whose vignette file is no longer available. Any seat can click it, but the server accepts a load only from the White seat; a refusal (403 for a player seat, 400 for an unusable file, or "not a valid save file" for text that is not JSON) is shown as **Load failed:** in the session label, and the session you were in is untouched (the label may keep showing the failure text). |
 | Tools | ? Coachmark tour | Walk the UI itself with a spotlight tip. |
 | Tools | Tutorial panel | Per-vignette tutorial steps for the active cell. |
 | Tools | Inspect vignette YAML | Open the vignette YAML inspector modal. |
 | Tools | ? Help | Open the help modal (shortcuts + glossary + workflow tips). |
 
-> **Sources:** `spacesim/ui_web/static/index.html` (toolbar, Session / View / Settings menus) · `spacesim/ui_web/static/app.js` (`loadSession`, `setServerClock`, `stepBy`, `rewindTo`, `popOut`, `LAYOUT_PANELS`, `saveSession`, `loadSaveFile`, `coachOpen`, `tutorialOpen`, `inspectorOpen`) · `spacesim/ui_web/server.py` (`/clock`, `/start`, `/step`, `/rewind`, `/save`, `/load_save`)
+> **Sources:** `spacesim/ui_web/static/index.html` (toolbar, Session / View / Settings menus) · `spacesim/ui_web/static/app.js` (`loadSession`, `setServerClock`, `stepBy`, `rewindTo`, `popOut`, `LAYOUT_PANELS`, `saveSession`, `loadSaveFile`, `saveAsScenario`, `showLoadFailure`, `exerciseStartEpoch`, `coachOpen`, `tutorialOpen`, `inspectorOpen`) · `spacesim/ui_web/static/style.css` (`.menu-pop` scroll) · `spacesim/ui_web/server.py` (`/clock`, `/start`, `/step`, `/rewind`, `/save`, `/load_save`, `/save_vignette`, `_require_white`)
 
 ---
 
@@ -121,11 +133,12 @@ pop-out polls the server at 1.5 s like any other tab, so closing the parent does
 | 6 | Messages | read-only `<ul>` | Inbox for this cell (sorted newest first). |
 | 7 | Coaching | read-only list | `GET /coaching/{cell}` — facilitator notes due-now for this cell. |
 | 8 | Conjunctions | list + Evade buttons | `GET /conjunctions/{cell}` — each row carries a per-asset Evade button. |
+| 9 | Status line | read-only, red, hidden when empty | `#control-status`, announced to screen readers. Shows `<Control>: <reason>` when the server refuses a time control (`Advance`, `Rewind`). Empty (and takes no space) otherwise. |
 
 The **Evade** button on a conjunction row issues a `command` order with `verb: prop.collision_avoid`
 on the own asset, queued to the next command-uplink window.
 
-> **Sources:** `spacesim/ui_web/static/app.js` (`localTimeStr`, `renderObjectives`, `prettyObjectiveId`, `renderCoaching`, `renderConjunctions`) · `spacesim/ui_web/server.py` (`/coaching/{cell}`, `/conjunctions/{cell}`)
+> **Sources:** `spacesim/ui_web/static/app.js` (`localTimeStr`, `renderObjectives`, `prettyObjectiveId`, `renderCoaching`, `renderConjunctions`, `reportControlError`, `clearControlError`, `showLoadFailure`) · `spacesim/ui_web/static/index.html` (`#control-status`) · `spacesim/ui_web/server.py` (`/coaching/{cell}`, `/conjunctions/{cell}`)
 
 ---
 
