@@ -106,7 +106,8 @@ continue differently) are byte-exact; use rewind-and-branch deliberately as a te
 sub-steps to the next scheduled event, so fast-forwarding never skips a short LEO pass.
 A rewind must land inside the exercise, between its start and the current moment; the toolbar
 Rewind and the palette's "rewind to start" go to the vignette's first instant, and the server
-refuses anything outside that span.
+refuses anything outside that span. Undo obeys the same rule: undoing past the first logged
+event returns the clock to the exercise start, and an undo with nothing to undo is refused.
 
 > **Sources:** `spacesim/session/manager.py` (`set_clock`/`catch_up`/rewind/undo) ·
 > `POST /api/sessions/{sid}/clock` · `POST /api/sessions/{sid}/rewind` · `spacesim/engine/clock.py`

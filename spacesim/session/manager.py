@@ -490,8 +490,18 @@ class SessionManager:
             self._sim_anchor = self.sim.clock.now
 
     def undo_last(self, n: int = 1) -> None:
+        # IP-1075 (FR-4310, NFR-1600) — nothing to undo (or n < 1) is refused before any state
+        # changes; an undo that drops every entry lands on start_epoch, never before it.
+        if n < 1 or not self.sim.eventlog.entries:
+            raise ValueError("nothing to undo" if n >= 1 else f"undo count must be at least 1 (got {n})")
         self.sim.undo_last(n)
+        floor = self.ctx.start_epoch
+        if self.sim.clock.now < floor:      # belt and braces; the engine already lands >= start
+            self.sim._rebuild(stop_time=floor)
         self._rebind()
+        if self.started:
+            # Like rewind_to: the rebuild dropped the scheduler, so re-queue ticks/injects.
+            self._arm_schedule(self.sim.clock.now)
         if self._clock_running:
             self._wall_anchor = _time.time()
             self._sim_anchor = self.sim.clock.now

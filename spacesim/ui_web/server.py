@@ -494,7 +494,10 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     @app.post("/api/sessions/{sid}/undo")
     def undo(sid: str, req: UndoRequest, cell: Optional[str] = None) -> Ack:
         _require(sid); _require_white(cell)
-        return api.undo_last(sid, req.n)
+        ack = api.undo_last(sid, req.n)
+        if not ack.ok:
+            raise HTTPException(status_code=400, detail=ack.reason)
+        return ack
 
     @app.post("/api/sessions/{sid}/inject")
     def inject(sid: str, req: InjectRequest, cell: Optional[str] = None) -> Ack:

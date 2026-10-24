@@ -557,3 +557,27 @@ def test_rewind_to_start_sends_the_exercise_start_epoch_not_zero(console):
     advance_then(palette)
     advance_then(lambda: c.page.click("#rewind"))
     assert c.errors == []
+
+
+# -- IP-1075: Undo on a fresh started session never sends the clock to 1970 -----------------------
+@pytest.mark.verifies("FR-4310", "NFR-1600")
+def test_undo_in_the_console_never_sends_the_clock_before_the_exercise_start(console):
+    """The shipped client has no Undo control, so the White seat's own page issues the same
+    ``POST /undo`` its ``api.post`` helper would (seat attached as ``cell``)."""
+    c = console("leo-isr-denial")
+    c.seat("white")
+    start = c.http.get(f"/api/sessions/{c.sid}/clock").json()["start_epoch"]
+    c.http.post(f"/api/sessions/{c.sid}/clock", params=W, json={"running": False})
+
+    def undo(n):
+        return c.page.evaluate(
+            """async ([sid, n]) => { const r = await fetch(`/api/sessions/${sid}/undo?cell=white`,
+                 {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({n})});
+               return r.status; }""", [c.sid, n])
+
+    assert undo(1) == 400                                  # nothing to undo: refused, not applied
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] >= start
+    assert c.http.post(f"/api/sessions/{c.sid}/step", params=W, json={"dt_sim_s": 400.0}).status_code == 200
+    assert undo(99) == 200                                 # drop everything: lands on the start epoch
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == start
+    assert c.http.post(f"/api/sessions/{c.sid}/rewind", params=W, json={"t": start}).status_code == 200

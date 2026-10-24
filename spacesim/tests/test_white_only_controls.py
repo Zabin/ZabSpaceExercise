@@ -95,8 +95,9 @@ def test_clock_controls_refused_for_non_white(name, seat):
 def test_clock_controls_accepted_for_white(name):
     c, api = _client()
     sid = _session(c, started=True)
-    # Give undo/rewind something to act on.
-    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 120.0}, params={"cell": "white"})
+    # Give undo/rewind something to act on (IP-1075: an undo with an empty log is refused, so
+    # step past the first bus tick; 120 s logged nothing).
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600.0}, params={"cell": "white"})
     before = _snapshot(api, sid)
     route, body = CLOCK_ROUTES[name]
     r = c.post(f"/api/sessions/{sid}/{route}", json=_body(api, sid, name, body), params={"cell": "white"})
