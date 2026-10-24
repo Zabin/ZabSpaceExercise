@@ -62,7 +62,7 @@ After this package:
 5. **The allow-list starts with all 72 modules** minus the files this package itself tags, and each
    backfill package removes its modules. The target is empty, reached when IP-1333 lands.
 6. **The dependency lock (`NFR-1510`) is not in this package.** It is produced at the first major
-   release (which releases are major: `BL-0318`); FS-133 criterion 8 is checked by
+   release (which releases are major: `BL-0318`) *(Superseded by BL-0318, 2026-10-24: applies at every release.)*; FS-133 criterion 8 is checked by
    `11-release-readiness` then. The TWBS records this.
 7. *(v1.1)* **Matrix regeneration.** A second mode of the report option (for example
    `--origin-report=rtm`) rewrites only the Test cell of each baseline requirement row in the
@@ -76,9 +76,9 @@ After this package:
 
 ## Requirements Covered
 
-NFR-2820, NFR-3840, NFR-2830 (the report the major-release audit reads), *(v1.1)* NFR-2850 (the
+NFR-2820, NFR-3840, NFR-2830 (the report the major-release audit reads*(Superseded by BL-0318, 2026-10-24: applies at every release.)*), *(v1.1)* NFR-2850 (the
 generated Test column). `NFR-1510` is FS-133's
-but deferred to the first major release (Design Decision 6).
+but deferred to the first major release (Design Decision 6). *(Superseded by BL-0318, 2026-10-24: applies at every release.)*
 
 ## Architecture Components
 

@@ -1,14 +1,14 @@
-# FS-133 — Test-Origin Traceability & Major-Release Verification
+# FS-133 — Test-Origin Traceability & Release Verification
 
 > **Document ID:** FS-133
 > **Version:** 1.1 (2026-10-23, pipeline run #228: adds `NFR-2850` — the matrix's Test column is generated from the markers, `BL-0322`). v1.0: run #214.
-> **Status:** ✅ Done (v1.1 built by `IP-1330`–`IP-1333`, with `IP-1334`/`IP-1335`, all `VERIFIED`). The `NFR-1510` dependency lock is not a package: it is produced at the first major release and checked by `11-release-readiness` (criterion 8).
+> **Status:** ✅ Done (v1.1 built by `IP-1330`–`IP-1333`, with `IP-1334`/`IP-1335`, all `VERIFIED`). The `NFR-1510` dependency lock is not a package: it is produced at every release (checked-and-updated procedure per `NFR-1510`, `requirements.lock` at the repo root) and checked by `11-release-readiness` (criterion 8).
 > **Approved input:** the Feature Catalog entry `FEAT-12100` (Test-Origin Traceability &
-> Major-Release Verification, Epic `EP-12000`) in
+> Release Verification, Epic `EP-12000`) in
 > [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md),
 > following the FS-130–FS-132 convention (a catalog row, not a DOM/ADS chain, is the approved
-> input). Owner directions it elaborates: `BL-0310` (test origins; audit at major releases only;
-> the marker form, run #209) and `BL-0299` (dependencies locked at major releases), in
+> input). Owner directions it elaborates: `BL-0310` (test origins; audit at releases, refined by `BL-0318`;
+> the marker form, run #209) and `BL-0299` (dependencies locked at release, refined by `BL-0318`), in
 > [`docs/pipeline/backlog.md`](../pipeline/backlog.md).
 > **Referenced By:** [feature index](feature-index.md); `FEAT-12100`; [IP-1330](../implementation/packages/IP-1330-test-origin-marker-and-checks.md)–[IP-1333](../implementation/packages/IP-1333-test-origin-backfill-web.md) (planned 2026-10-23); [IP-1334](../implementation/packages/IP-1334-test-origin-retag.md) (retag, 2026-10-24)
 > **Related Topics:** `FEAT-12300` (documentation-integrity checks, `BL-0297` — shares the check
@@ -27,12 +27,12 @@ FS-133
 
 ## Title
 
-Test-Origin Traceability & Major-Release Verification
+Test-Origin Traceability & Release Verification
 
 ## Purpose
 
 Make every test say what it verifies, so the traceability matrix's Test column is read rather than
-inferred, and give each major release a relevance audit and a reproducible dependency set — per
+inferred, and give each release a relevance audit and a reproducible dependency set — per
 `FEAT-12100`'s Purpose (owner directions `BL-0310`, `BL-0299`). Today no test cites a requirement
 ID (GDS-10 F3); the suite holds 1,111 collected tests in 72 modules (collection on 2026-10-23), none
 of them tagged.
@@ -45,9 +45,9 @@ In scope:
 - the backfill of every existing test with a marker;
 - an automated check, run with the full suite, that every test declares an origin and every
   declared ID resolves to a live baseline item;
-- a read-only origin report that the RTM's Test column (`04`) and the major-release relevance audit
+- a read-only origin report that the RTM's Test column (`04`) and the release relevance audit
   (`11`) read;
-- the major-release dependency lock: what it must contain and how its presence is checked.
+- the release dependency lock: what it must contain and how its presence is checked.
 
 Out of scope: the browser suite (`NFR-2840`, FEAT-12200 — its tests will carry the marker like any
 other); the documentation-integrity checks `NFR-3800`–`NFR-3830` (FEAT-12300), though the
@@ -59,7 +59,7 @@ judgment half of the audit, done by a person at `11`).
 ## Requirements Implemented
 
 NFR-1510 (released builds install identical dependency versions), NFR-2820 (every test declares
-the requirement or feature it verifies), NFR-2830 (test relevance audited at each major release),
+the requirement or feature it verifies), NFR-2830 (test relevance audited at each release),
 NFR-3840 (every declared test origin resolves), *(v1.1)* NFR-2850 (the traceability matrix's Test
 column is generated from declared test origins) — per `FEAT-12100`'s `Included Requirements`.
 
@@ -77,11 +77,14 @@ Settled by the owner (`BL-0310` run #209, `BL-0299`) and carried forward verbati
 3. **Gate tests tag their invariant's leaf.** No separate invariant tag: invariant 1 → `NFR-1500`
    or `FR-1120`, 2 → `NFR-1900`, 3 → `NFR-2300` or `FR-6210`, 4 → `FR-3110`, 5 → `NFR-1700`,
    6 → `NFR-2000` (GDS-06 invariant table).
-4. **The relevance audit runs only at major-release verification**, in `11-release-readiness`; the
+4. **The relevance audit runs at every release**, at the end of the pipeline, in `11-release-readiness`; the
    mechanical checks (every test tagged, every tag resolves) run with the full suite on every run
    (`BL-0297`: the integrity checks are part of the suite, so every `09` run gates on them).
-5. **Minimum versions during development, an exact lock at each major release** (`BL-0299`,
-   `NFR-1510`).
+5. **Minimum versions during development, an exact lock at every release** (`BL-0299`, refined by
+   `BL-0318`; `NFR-1510`): at each release, check the latest dependency versions, try updating to
+   them, validate with the full suite (both modes), fix or hold back what breaks, then pin exact
+   versions in the committed `requirements.lock` at the repo root. No release is "major"; the
+   review is at the end of the pipeline, in `11-release-readiness`.
 
 ## User Workflows
 
@@ -100,13 +103,15 @@ Settled by the owner (`BL-0310` run #209, `BL-0299`) and carried forward verbati
 5. **Retiring a requirement** — a `04` pass retires or supersedes a leaf; the next suite run fails on
    every test still citing it, naming the test and the retired ID; the owning stage retags or
    retires the test.
-6. **Major-release verification** — `11` runs the origin report for the release's scope and records
+6. **Release verification** — `11` runs the origin report for the release's scope and records
    untagged tests, tests citing retired IDs, in-scope requirements with no test, and likely
    duplicates (tests naming the same IDs, which a person then compares); it confirms a dependency
    lock file is committed for the release, and records a missing lock as NO-GO.
-7. **Cutting the lock** — at a major release, a maintainer generates the lock from the current
-   declared dependencies, installs from it in a clean environment, runs the full suite against it,
-   and commits it with the release.
+7. **Cutting the lock** — at a release, a maintainer checks the latest version of every dependency,
+   tries updating to them, validates with the full suite (browser tests excluded, then alone),
+   fixes or holds back (and records) any package whose update breaks something, generates
+   `requirements.lock` from the resulting set, installs from it in a clean environment, reruns the
+   suite, and commits it with the release.
 
 ## System Behaviour
 
@@ -147,10 +152,10 @@ Settled by the owner (`BL-0310` run #209, `BL-0299`) and carried forward verbati
 - **Backfill accuracy**: each marker names what the test *asserts*, not what its file name
   suggests; a test that asserts no requirement-level behavior gets the package ID that introduced
   it (Decision 2). Edge case: a test with no traceable origin at all is recorded for the
-  major-release audit rather than given an invented ID (Open Question 3).
-- **Major-release lock** (NFR-1510): the release's lock file resolves every dependency, including
+  release audit rather than given an invented ID (Open Question 3).
+- **Release lock** (NFR-1510): the release's lock file resolves every dependency, including
   indirect ones, to an exact version, for every dependency group the release supports (core, the
-  content and UI extras, and the test group). Between major releases, the declared dependencies
+  content and UI extras, and the test group). Between releases, the declared dependencies
   stay as minimum versions and no lock is required. Edge case: a lock that no clean install has
   been tested against does not count — the suite must pass in an environment installed from it.
 
@@ -164,7 +169,7 @@ or the release process (feature review F-16 and F-22); these rows name the exist
 | `pyproject.toml` (pytest configuration, dependency declarations) | Registers the `verifies` marker; enables strict-marker mode once the backfill lands; keeps dependencies as minimum versions. |
 | `spacesim/tests/` (every test module) | Carries the markers (backfill); hosts the origin-check test, which reads `docs/` the way `test_training_sources.py` already does (`NFR-3400`). |
 | The origin report (a read-only command, location chosen at `07`) | Lists tests by origin and requirements by test; shared by `04` and `11`. |
-| The release's lock file (committed at each major release) | Records exact versions (`NFR-1510`). |
+| The release's lock file (committed at every release) | Records exact versions (`NFR-1510`). |
 | `docs/requirements/`, `docs/features/feature-index.md`, `docs/implementation/packages/INDEX.md` | Read-only sources of the live baseline IDs. |
 
 ## Interfaces Used
@@ -176,12 +181,12 @@ neither of which is an ICD interface (consistent with FEAT-12100's catalog entry
 ## Data Model Changes
 
 None to the Domain Model or any runtime data. The repository gains one registered marker, one lock
-file per major release, and no new documentation format.
+file per release, and no new documentation format.
 
 ## State Changes
 
 None at runtime. Repository state: markers added to tests; strict-marker mode switched on once
-(after the backfill); a lock file added at each major release.
+(after the backfill); a lock file added at each release.
 
 ## Error Handling
 
@@ -191,7 +196,7 @@ None at runtime. Repository state: markers added to tests; strict-marker mode sw
 - Misspelt marker name → collection fails under strict-marker mode.
 - A baseline ledger unreadable or missing (renamed file) → the check fails with a message naming the
   ledger, rather than silently resolving nothing.
-- No lock committed at a major release → NO-GO at `11` (that skill's existing rule); a lock whose
+- No lock committed at a release → NO-GO at `11` (that skill's existing rule); a lock whose
   install fails the suite → NO-GO.
 
 ## Performance Considerations
@@ -223,7 +228,7 @@ does not by itself screen dependencies for vulnerabilities, and nothing here cla
    the row.
 7. A sample of at least one test per backfilled module, read by the verifier, asserts behavior that
    its marker's requirement describes (checked at `09`).
-8. At the first major release: a committed lock file resolves every dependency (core, extras, test
+8. At every release: a committed lock file resolves every dependency (core, extras, test
    group) to an exact version, and the full suite passes in a clean environment installed from it.
 
 ## Verification Plan
@@ -231,7 +236,7 @@ does not by itself screen dependencies for vulnerabilities, and nothing here cla
 - Criteria 1–6: Test (the origin check is itself a test; criteria 3–4 are checked by tests that run
   the check against a small synthetic test set, not by breaking the real suite).
 - Criterion 7: Inspection at `09`.
-- Criterion 8: Inspection plus a clean-install test run at the first major release, recorded in its
+- Criterion 8: Inspection plus a clean-install test run at every release, recorded in its
   Release Assessment (`NFR-1510`'s verification method).
 - Criterion 6a: Test (against a copy of the matrix in a temporary directory, not the real file).
 - Every new test carries `@pytest.mark.verifies(...)` naming `NFR-2820`, `NFR-3840`, `NFR-2830` or
@@ -246,7 +251,7 @@ built. No `FS-xxx` prerequisite. Coordinates with FEAT-12300 (shared runner, Ope
 
 - **Tagging by file name.** A backfill that tags `test_jam.py` with whatever leaf mentions jamming,
   without reading what each test asserts, would recreate the inference GDS-10 F3 found. Mitigation:
-  criterion 7, and the audit at each major release.
+  criterion 7, and the audit at each release.
 - **Size of the backfill.** 72 modules in one package is large to review; `07` may split it into
   several packages by module group, with strict mode and the completeness check enabled only when
   the last lands (or with an allow-list that may only shrink, the pattern `BL-0297` sets for
@@ -271,12 +276,11 @@ built. No `FS-xxx` prerequisite. Coordinates with FEAT-12300 (shared runner, Ope
    whether each reveals a missing requirement or a test to retire. The completeness check needs them
    tagged, so the backfill tags each with the package that introduced it where one exists and
    records the rest for `04`.
-4. **What counts as a major release.** `NFR-1510` and `NFR-2830` apply "at each major release",
-   but the release plan's buckets (Prototype, MVP, Release 1, Release 2) do not say which are major;
-   `11-release-readiness` defers to "a bucket the release plan marks as major, or one the owner
-   names". **Resolution path:** owner decision, recorded in `01-release-plan.md` by `05`.
+4. ~~**What counts as a major release.**~~ *Resolved 2026-10-24 (`BL-0318`, owner decision):* the
+   word "major" is dropped; `NFR-1510` and `NFR-2830` apply at every release, reviewed at the end of
+   the pipeline in `11-release-readiness`.
 5. **Lock tooling.** No ADR names a lock tool (ADR-0020 lists the stack, not packaging tools).
-   **Resolution path:** `07` chooses for the first major release; if the choice constrains
+   **Resolution path:** `07` chooses for the first release; if the choice constrains
    contributors, `03` records it as an ADR.
 
 ## Related ADRs

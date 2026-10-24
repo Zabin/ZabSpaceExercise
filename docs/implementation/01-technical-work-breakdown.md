@@ -899,7 +899,7 @@ carried baseline; the exporter drops injects, briefs and parameters, so a rebuil
 | 2 | Tag 22 engine and content modules | `spacesim/tests/` | IP-1331 |
 | 3 | Tag 32 session-layer modules | `spacesim/tests/` | IP-1332 |
 | 4 | Tag 16 web and cross-cutting modules; allow-list empty | `spacesim/tests/` | IP-1333 |
-| — | Dependency lock (`NFR-1510`) | release | none now: produced at the first major release and checked by `11` (`BL-0318`) |
+| — | Dependency lock (`NFR-1510`) | release | none now: produced at the first major release and checked by `11` (`BL-0318`) *(Superseded by BL-0318, 2026-10-24: applies at every release.)* |
 
 **Why four packages.** The infrastructure is small and must land first; the backfill is ~914 test
 functions that each need a judgment about what they assert, too much for one reviewable run, so it

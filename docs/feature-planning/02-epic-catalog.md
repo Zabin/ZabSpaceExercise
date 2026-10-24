@@ -158,7 +158,7 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 |---|---|
 | **Epic ID** | EP-12000 |
 | **Title** | Verification & Documentation Integrity |
-| **Purpose** | How the product is verified, released and documented: every test names its origin, each major release audits the suite and locks its dependencies, a browser suite checks the load-bearing console rules, and the live documentation stays internally consistent. Baselined as `NFR-1510`, `NFR-2820`–`NFR-2840` and `NFR-3800`–`NFR-3840` (run #211, owner directions `BL-0297`, `BL-0299`, `BL-0304`, `BL-0310`). No `FR-x000` group exists for it; it is the catalog's only NFR-only Epic. |
+| **Purpose** | How the product is verified, released and documented: every test names its origin, each release audits the suite and locks its dependencies, a browser suite checks the load-bearing console rules, and the live documentation stays internally consistent. Baselined as `NFR-1510`, `NFR-2820`–`NFR-2840` and `NFR-3800`–`NFR-3840` (run #211, owner directions `BL-0297`, `BL-0299`, `BL-0304`, `BL-0310`). No `FR-x000` group exists for it; it is the catalog's only NFR-only Epic. |
 | **Features Included** | FEAT-12100, FEAT-12200, FEAT-12300 |
 | **Subsystems** | C12 Browser client and C4 Operator Console (FEAT-12200 only); otherwise test configuration and documentation, outside C1–C12 (F-16) |
 | **Estimated Scope** | Medium — three small-to-medium Features; the test-origin backfill is the widest, touching every test module. |

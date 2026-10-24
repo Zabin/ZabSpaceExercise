@@ -42,26 +42,34 @@ the Integration Report(s) for this scope (`docs/reviews/integration-review-*.md`
 3. **Sweep residual risk.** Outstanding Issues from Implementation Summaries, Low/Medium findings
    accepted through verification and integration review, open Candidate Requirements touching this
    scope, and known-stale docs. None of these necessarily blocks GO — unstated ones do.
-3a. **Major releases only** (a bucket the release plan marks as a major release, or one the owner
-   names as major). Two extra checks, both owner decisions:
-   - **Test relevance audit** (`BL-0310`). Read every test's `@pytest.mark.verifies(...)` origin
+3a. **Every release** (owner decision `BL-0318`: no special class of release; both checks run at
+   the end of the pipeline, here). Two extra checks:
+   - **Test relevance audit** (`BL-0310`, `NFR-2830`). Read every test's `@pytest.mark.verifies(...)` origin
      (collect with `python3 -m pytest --collect-only -q` and the marker, or read the files) and
      report: tests with no origin; tests whose origin ID is retired, superseded or absent from the
      baseline; tests that duplicate another test's check; and requirements in this release's scope
      with no test at all. Read-only, like the rest of this skill: each finding routes to its owner
      (`04` for a requirement question, `07` for a test to add, retire or retag). This is the only
      place the audit runs; package verification checks new tests' tags, not the whole suite.
-   - **Dependencies locked** (`BL-0299`). A major release ships with every dependency locked to an
-     exact version (a lock file committed for the release). During development the project
-     declares minimum versions only. A missing lock is a NO-GO item, fixed by a `07`→`08` package,
-     never by this skill.
+   - **Dependencies locked** (`BL-0299`, `NFR-1510`). Every release ships with every dependency
+     locked to an exact version in the committed `requirements.lock` at the repository root. During
+     development the project declares minimum versions only. The procedure is the "Release
+     dependency lock" paragraph of `CLAUDE.md`:
+     1. Check the latest version of every dependency (fresh venv, `pip install -U -e ".[content,ui,dev]"`, record what moved).
+     2. Try updating to them: run the full suite in both modes (`-m "not browser"` and `-m browser`, plus the determinism gate).
+     3. Fix or hold back: a minimal compatibility fix in non-engine code goes in test-first; anything needing an engine or determinism change is not made, so hold that package at its newest compatible version and report why.
+     4. Validate and re-pin: raise the `pyproject.toml` floors to the validated versions, `pip freeze --exclude-editable` into `requirements.lock`, install it in a second fresh venv and re-run both suites.
+     5. Record in the Release Assessment that the latest versions were checked and tried, that both modes passed on the pinned set, and which packages were held back and why.
+
+     This skill only checks the result; the lock itself is produced by a `07`→`08` package. A
+     missing or unvalidated lock is a NO-GO item.
 4. **Write the Release Assessment** → `docs/reviews/release-assessment-<release>.md`:
 
    | Section | Content |
    |---|---|
    | **Release** | Bucket, date, commit hash assessed |
    | **Scope audit** | One row per planned Feature: FS → IP(s) → VR(s) → integration coverage → delivered/deviated |
-   | **Evidence** | Test-suite state, permanent gates, the VR and Integration Report inventory relied on; for a major release, the test relevance audit's results and the dependency lock |
+   | **Evidence** | Test-suite state, permanent gates, the VR and Integration Report inventory relied on; the test relevance audit's results and the dependency lock (latest-version check, both suite modes, held-back packages) |
    | **Deviations** | Everything delivered differently than planned, each with its authorization trail |
    | **Residual risks** | Accepted findings and open issues shipping with the release |
    | **Assessment** | **GO** or **NO-GO**, with the blocking items enumerated on NO-GO |
