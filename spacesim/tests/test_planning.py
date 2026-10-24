@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.engine.entities import Asset, AssetResources, Sensor
 from spacesim.engine.geometry import GeoPoint, R_EARTH_EQ, ecef_to_geodetic, eci_to_ecef
 from spacesim.engine.orbit import OrbitState
@@ -34,6 +35,7 @@ def _sim(world, roe=None, seed=5):
     return sim, OrderSystem(sim, roe=roe)
 
 
+@pytest.mark.verifies("FR-3110")
 def test_command_delivered_via_isl_when_sooner_than_a_distant_ground_pass():
     world = WorldState(now=0)
     world.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", orbit=_leo(),
@@ -56,6 +58,7 @@ def test_command_delivered_via_isl_when_sooner_than_a_distant_ground_pass():
     assert world.assets["SAT"].orbit.a_m != a_before  # command actually executed
 
 
+@pytest.mark.verifies("FR-3110")
 def test_stored_program_executes_at_its_preloaded_time_without_a_pass():
     world = WorldState(now=0)
     world.assets["SAT"] = Asset(id="SAT", owner="blue", kind="satellite", orbit=_leo(),
@@ -69,6 +72,7 @@ def test_stored_program_executes_at_its_preloaded_time_without_a_pass():
     assert world.assets["SAT"].resources.delta_v_ms < 100.0  # burned onboard at the stored time
 
 
+@pytest.mark.verifies("FR-1520", "FR-3310")
 def test_task_then_custody_then_unlock_engagement():
     world = WorldState(now=0)
     sat = _leo()
@@ -97,6 +101,7 @@ def test_task_then_custody_then_unlock_engagement():
     assert ok.status == "queued"
 
 
+@pytest.mark.verifies("FR-3310")
 def test_sensor_contention_serializes_tasks_onto_later_windows():
     world = WorldState(now=0)
     sat = _leo()
@@ -111,6 +116,7 @@ def test_sensor_contention_serializes_tasks_onto_later_windows():
     assert second.earliest_window[0] >= first.earliest_window[1]
 
 
+@pytest.mark.verifies("FR-3310")
 def test_sensor_bookings_reconstructed_after_rewind():
     """Bookings for executed observe events are restored from the eventlog after a rewind.
 

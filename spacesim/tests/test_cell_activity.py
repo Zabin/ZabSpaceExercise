@@ -28,6 +28,7 @@ def _api_session():
 # Envelope + lane structure
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-101")
 def test_activity_envelope_keys():
     api, sid = _api_session()
     res = api.cell_activity(sid, "white")
@@ -37,18 +38,21 @@ def test_activity_envelope_keys():
     assert isinstance(res["cells"], list)
 
 
+@pytest.mark.verifies("FR-4610")
 def test_activity_white_lists_all_three_lanes():
     api, sid = _api_session()
     res = api.cell_activity(sid, "white")
     assert res["cells"] == ["blue", "red", "neutral"]
 
 
+@pytest.mark.verifies("FR-6210")
 def test_activity_blue_lists_only_blue_lane():
     api, sid = _api_session()
     res = api.cell_activity(sid, "blue")
     assert res["cells"] == ["blue"]
 
 
+@pytest.mark.verifies("FR-6210")
 def test_activity_red_lists_only_red_lane():
     api, sid = _api_session()
     res = api.cell_activity(sid, "red")
@@ -59,6 +63,7 @@ def test_activity_red_lists_only_red_lane():
 # Fog-of-war filtering on orders
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-6210")
 def test_blue_order_appears_in_blue_feed_only():
     api, sid = _api_session()
     mgr = api._sessions[sid]
@@ -85,6 +90,7 @@ def test_blue_order_appears_in_blue_feed_only():
     assert any(a["actor"] == blue_sat.id and a["cell"] == "blue" for a in white_orders)
 
 
+@pytest.mark.verifies("FR-6210")
 def test_red_order_appears_in_red_feed_only():
     api, sid = _api_session()
     mgr = api._sessions[sid]
@@ -108,6 +114,7 @@ def test_red_order_appears_in_red_feed_only():
 # Order statuses
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-101")
 def test_cancelled_order_present_with_cancelled_status():
     api, sid = _api_session()
     mgr = api._sessions[sid]
@@ -126,6 +133,7 @@ def test_cancelled_order_present_with_cancelled_status():
     assert any(a["status"] == "cancelled" for a in match)
 
 
+@pytest.mark.verifies("FS-101")
 def test_rejected_order_appears_as_marker():
     """A rejected order has no earliest_window — it still shows as a point marker."""
     api, sid = _api_session()
@@ -146,6 +154,7 @@ def test_rejected_order_appears_as_marker():
 # Scheduled injects
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4410")
 def test_scheduled_inject_appears_as_inject_row():
     api, sid = _api_session()
     mgr = api._sessions[sid]
@@ -158,6 +167,7 @@ def test_scheduled_inject_appears_as_inject_row():
     assert any(a["status"] == "scheduled" for a in injects)
 
 
+@pytest.mark.verifies("FR-4410")
 def test_scheduled_inject_skipped_when_past_window():
     """An inject far outside the display window should not appear."""
     api, sid = _api_session()
@@ -174,6 +184,7 @@ def test_scheduled_inject_skipped_when_past_window():
 # Display window controls
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-101")
 def test_default_window_30min_past_2h_future():
     api, sid = _api_session()
     res = api.cell_activity(sid, "white")
@@ -181,6 +192,7 @@ def test_default_window_30min_past_2h_future():
     assert res["t_end"] == res["now"] + 7200 * 1_000_000
 
 
+@pytest.mark.verifies("FS-101")
 def test_custom_window_respected():
     api, sid = _api_session()
     res = api.cell_activity(sid, "white", past_window_s=60, future_window_s=300)

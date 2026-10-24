@@ -40,11 +40,13 @@ def _two_sat_manager_with_track(estimate_ta_deg: float = 30.0) -> SessionManager
 
 # -- sample_times() -----------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-7410")
 def test_sample_times_explicit_interval():
     times = ephemeris.sample_times(0, 1000, interval_s=0.0005)
     assert times == [0, 500, 1000]
 
 
+@pytest.mark.verifies("FR-7410")
 def test_sample_times_default_interval_is_span_over_100_clamped_to_bus_tick():
     # A short span: span/100 << BUS_TICK_PERIOD_S, so the clamp applies.
     span_us = int(20 * BUS_TICK_PERIOD_S * 1_000_000)
@@ -53,12 +55,14 @@ def test_sample_times_default_interval_is_span_over_100_clamped_to_bus_tick():
     assert step_us == int(BUS_TICK_PERIOD_S * 1_000_000)
 
 
+@pytest.mark.verifies("FR-7410")
 def test_sample_times_reversed_range_is_empty():
     assert ephemeris.sample_times(1000, 0) == []
 
 
 # -- truth_ephemeris() ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-7410")
 def test_truth_ephemeris_eci_and_ric_correctness():
     mgr = _two_sat_manager_with_track()
     t0 = mgr.sim.clock.now
@@ -80,6 +84,7 @@ def test_truth_ephemeris_eci_and_ric_correctness():
 
 # -- to_ric() velocity correctness (BL-0136/VR-1210 Finding H1 regression) -----------------------
 
+@pytest.mark.verifies("FR-7410")
 def test_to_ric_velocity_zero_for_co_orbital_ric_stationary_neighbour():
     """Two satellites in the identical circular orbit, offset only in true anomaly, orbit at the
     same angular rate — their RIC-frame separation is constant, so the *true* RIC-relative
@@ -96,6 +101,7 @@ def test_to_ric_velocity_zero_for_co_orbital_ric_stationary_neighbour():
     assert np.linalg.norm(ric_r) > 1000.0  # sanity: the two satellites are genuinely separated
 
 
+@pytest.mark.verifies("FR-7410")
 def test_to_ric_velocity_matches_finite_difference_of_ric_position():
     """Cross-check `to_ric`'s velocity against a finite-difference derivative of `ric_r` computed
     at two nearby true anomalies for a non-co-orbital (different-period) pair, so the frame-
@@ -124,6 +130,7 @@ def test_to_ric_velocity_matches_finite_difference_of_ric_position():
     assert np.allclose(ric_v0, finite_diff_v, atol=0.5)
 
 
+@pytest.mark.verifies("FR-7410")
 def test_truth_ephemeris_wholly_out_of_range_raises():
     mgr = _two_sat_manager_with_track()
     lo, hi = ephemeris._valid_range(mgr)
@@ -131,6 +138,7 @@ def test_truth_ephemeris_wholly_out_of_range_raises():
         ephemeris.truth_ephemeris(mgr, "SAT-RED", "SAT-BLUE", hi + 10_000_000, hi + 20_000_000)
 
 
+@pytest.mark.verifies("FR-7410")
 def test_truth_ephemeris_partial_range_clamps_not_rejects():
     mgr = _two_sat_manager_with_track()
     lo, hi = ephemeris._valid_range(mgr)
@@ -139,6 +147,7 @@ def test_truth_ephemeris_partial_range_clamps_not_rejects():
     assert len(rows) >= 1  # clamped to [lo, hi], not rejected
 
 
+@pytest.mark.verifies("FR-7410")
 def test_truth_ephemeris_deterministic_across_repeated_calls():
     mgr = _two_sat_manager_with_track()
     t0 = mgr.sim.clock.now
@@ -149,6 +158,7 @@ def test_truth_ephemeris_deterministic_across_repeated_calls():
 
 # -- cell_observed_ephemeris() --------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-7420")
 def test_cell_observed_ephemeris_uses_state_estimate_and_own_asset_reference():
     mgr = _two_sat_manager_with_track()
     t0 = mgr.sim.clock.now
@@ -163,6 +173,7 @@ def test_cell_observed_ephemeris_uses_state_estimate_and_own_asset_reference():
     assert np.allclose(rows[0]["eci_r"], r_expected)
 
 
+@pytest.mark.verifies("FR-7420")
 def test_cell_observed_ephemeris_no_track_produces_no_row_not_an_error():
     mgr = _two_sat_manager_with_track()
     t0 = mgr.sim.clock.now
@@ -170,6 +181,7 @@ def test_cell_observed_ephemeris_no_track_produces_no_row_not_an_error():
     assert rows == []  # red never observed blue — empty, not fabricated, not an error
 
 
+@pytest.mark.verifies("FR-7420")
 def test_cell_observed_ephemeris_never_leaks_ground_truth_or_another_cells_belief():
     """Negative assertion (ADR-0004) — blue's own export of SAT-RED uses its own state_estimate,
     never the object's actual ground-truth orbit, and red (which has no track) gets nothing."""
@@ -185,6 +197,7 @@ def test_cell_observed_ephemeris_never_leaks_ground_truth_or_another_cells_belie
     assert red_rows == []
 
 
+@pytest.mark.verifies("FR-7420")
 def test_cell_observed_ephemeris_reference_object_only_tracked_uses_stale_state_estimate():
     """FS-121/ADS-1500 Decision 5 — when the reference object is only tracked (not the cell's own
     asset), the RIC transform must use the cell's own (possibly stale) state_estimate for it, not
@@ -210,6 +223,7 @@ def test_cell_observed_ephemeris_reference_object_only_tracked_uses_stale_state_
 
 # -- write_csv() / write_oem() --------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-7410")
 def test_write_csv_round_trips_expected_fields():
     rows = [{"t": 0, "eci_r": [1.0, 2.0, 3.0], "eci_v": [4.0, 5.0, 6.0],
              "ric_r": [7.0, 8.0, 9.0], "ric_v": [10.0, 11.0, 12.0],
@@ -221,6 +235,7 @@ def test_write_csv_round_trips_expected_fields():
     assert "1.0" in lines[1] and "0.9" in lines[1]
 
 
+@pytest.mark.verifies("FR-7410")
 def test_write_oem_round_trips_expected_fields():
     rows = [{"t": 0, "eci_r": [1000.0, 2000.0, 3000.0], "eci_v": [4000.0, 5000.0, 6000.0]}]
     oem_text = ephemeris.write_oem(rows, "SAT-RED")
@@ -229,6 +244,7 @@ def test_write_oem_round_trips_expected_fields():
     assert "1.000000" in oem_text  # km conversion of 1000.0 m
 
 
+@pytest.mark.verifies("FR-7410")
 def test_write_oem_is_ccsds_conformant():
     """BL-0136/VR-1210 Finding M1 remediation: META_START/META_STOP actually wrap the metadata
     block, CREATION_DATE/ORIGINATOR/START_TIME/STOP_TIME are present, epochs carry no '+00:00'
@@ -251,6 +267,7 @@ def test_write_oem_is_ccsds_conformant():
     assert "+00:00" not in oem_text
 
 
+@pytest.mark.verifies("FR-7430")
 def test_write_ric_csv_carries_only_ric_fields():
     """FR-7430 — the companion RIC-specific export file, since CCSDS OEM has no native RIC-relative
     data-line representation."""
@@ -276,6 +293,7 @@ def _obj(view, obj_id):
     return matches[0]
 
 
+@pytest.mark.verifies("FR-8210")
 def test_live_ric_view_truth_matches_to_ric_at_current_sim_time():
     """FR-8210 AC — the displayed relative state equals what `to_ric()` computes against the
     live state at the current sim time (no-cell / ground-truth path)."""
@@ -295,6 +313,7 @@ def test_live_ric_view_truth_matches_to_ric_at_current_sim_time():
     assert view["cats"] is None
 
 
+@pytest.mark.verifies("FR-8210")
 def test_live_ric_view_reselecting_origin_rerenders_relative_to_new_origin():
     mgr = _two_sat_manager_with_track()
     world = mgr.get_godview()
@@ -305,6 +324,7 @@ def test_live_ric_view_reselecting_origin_rerenders_relative_to_new_origin():
     np.testing.assert_allclose(_obj(view, "SAT-BLUE")["ric_r"], exp_r, rtol=0, atol=1e-6)
 
 
+@pytest.mark.verifies("FR-8210")
 def test_live_ric_view_cell_scoped_renders_belief_not_truth():
     """FR-8210/FR-6210 — a tracked object renders from the cell's own `state_estimate` (here
     deliberately offset from truth), never ground truth; an own asset renders at its true state."""
@@ -324,6 +344,7 @@ def test_live_ric_view_cell_scoped_renders_belief_not_truth():
     assert red["confidence"] is not None and red["uncertainty_km"] is not None
 
 
+@pytest.mark.verifies("FR-8210")
 def test_live_ric_view_cell_scoped_limits_objects_to_cells_own_picture():
     """Red holds no Track on SAT-BLUE: red's view from its own asset shows no SAT-BLUE."""
     mgr = _two_sat_manager_with_track()
@@ -331,6 +352,7 @@ def test_live_ric_view_cell_scoped_limits_objects_to_cells_own_picture():
     assert view["objects"] == []
 
 
+@pytest.mark.verifies("FR-8210")
 def test_live_ric_view_rejects_origin_outside_cells_custody():
     mgr = _two_sat_manager_with_track()
     with pytest.raises(ValueError):
@@ -339,6 +361,7 @@ def test_live_ric_view_rejects_origin_outside_cells_custody():
         ephemeris.live_ric_view(mgr.sim.world, None, "NO-SUCH-SAT")
 
 
+@pytest.mark.verifies("FR-8210")
 def test_live_ric_view_rejects_chase_or_target_outside_cells_custody():
     mgr = _two_sat_manager_with_track()
     with pytest.raises(ValueError):
@@ -347,6 +370,7 @@ def test_live_ric_view_rejects_chase_or_target_outside_cells_custody():
         ephemeris.live_ric_view(mgr.sim.world, "red", "SAT-RED", chase="SAT-BLUE", target="SAT-RED")
 
 
+@pytest.mark.verifies("FR-8220")
 def test_live_ric_view_cats_only_when_both_chase_and_target_supplied():
     """FR-8220 — the CATS readout equals the shared engine phase-angle function evaluated on the
     same live state; absent unless BOTH chase and target are selected, and its absence leaves the
@@ -373,6 +397,7 @@ def test_live_ric_view_cats_only_when_both_chase_and_target_supplied():
         cats_phase_angle_deg(r_chaser, r_target, world.now))
 
 
+@pytest.mark.verifies("FR-8210")
 def test_live_ric_view_is_read_only_and_deterministic():
     mgr = _two_sat_manager_with_track()
     before = mgr.sim.world.model_dump_json()
@@ -393,6 +418,7 @@ def _tle_position_m(out):
     return np.array(r_km) * 1000.0
 
 
+@pytest.mark.verifies("FR-7440")
 def test_quick_tle_cell_uses_own_track_belief():
     """FS-121 AC4/AC6/AC8 — after the target manoeuvres post-observation, the cell's TLE
     reproduces its own (stale) belief, never the new ground truth; White's reproduces truth."""
@@ -421,6 +447,7 @@ def test_quick_tle_cell_uses_own_track_belief():
     assert np.linalg.norm(_tle_position_m(white) - r_truth) <= ROUND_TRIP_BOUND_M
 
 
+@pytest.mark.verifies("FR-7440")
 def test_quick_tle_rejects_untracked_and_stateless_track():
     """FR-7440 AC/Postcondition — no Track (or a Track with no state_estimate) → rejected."""
     pytest.importorskip("sgp4")
@@ -435,6 +462,7 @@ def test_quick_tle_rejects_untracked_and_stateless_track():
         ephemeris.quick_tle(world, None, "NO-SUCH-SAT")
 
 
+@pytest.mark.verifies("FR-7440")
 def test_quick_tle_own_satellite_uses_actual_orbit():
     """IP-1212 (FR-7440 amended 2026-10-15, FS-121 v2.1 AC11) — a cell's own satellite, on which it
     holds no Track, exports from its actual orbit (ADS-1500 Decision 5). Supersedes IP-1211 DD5."""
@@ -451,6 +479,7 @@ def test_quick_tle_own_satellite_uses_actual_orbit():
     assert np.linalg.norm(_tle_position_m(out) - r_actual) <= ROUND_TRIP_BOUND_M
 
 
+@pytest.mark.verifies("FR-7440")
 def test_quick_tle_other_cell_still_rejected_for_untracked_satellite():
     """IP-1212 — FS-121 AC7 / AC11's cross-cell negative: Red neither owns nor tracks SAT-BLUE."""
     pytest.importorskip("sgp4")
@@ -459,6 +488,7 @@ def test_quick_tle_other_cell_still_rejected_for_untracked_satellite():
         ephemeris.quick_tle(mgr.sim.world, "red", "SAT-BLUE")
 
 
+@pytest.mark.verifies("FR-7440")
 def test_quick_tle_ownership_beats_a_held_track():
     """IP-1212 Design Decision 1 — even with a (deliberately wrong) Track on its own satellite, the
     cell's TLE reproduces the actual orbit, never the estimate."""
@@ -482,6 +512,7 @@ def test_quick_tle_ownership_beats_a_held_track():
     assert np.linalg.norm(_tle_position_m(out) - r_offset) > 10e3
 
 
+@pytest.mark.verifies("FR-7440")
 def test_quick_tle_is_read_only():
     """FS-121 AC9 — producing a TLE mutates no world, RNG, or event-log state."""
     pytest.importorskip("sgp4")
@@ -507,6 +538,7 @@ def _reference_rows(mgr, row_fn, t1, t2, interval_s):
             for row in row_fn(aar.state_at_time(mgr, t), t)]
 
 
+@pytest.mark.verifies("FR-7410")
 def test_ephemeris_exports_unchanged_after_migration():
     mgr = _two_sat_manager_with_track()
     t0 = mgr.sim.clock.now
@@ -549,6 +581,7 @@ def test_ephemeris_exports_unchanged_after_migration():
 
 # -- IP-1262 (BL-0176) — export sampling bounds ---------------------------------------------------
 
+@pytest.mark.verifies("NFR-3710")
 @pytest.mark.parametrize("bad", [0.0, -5.0, float("inf"), float("nan")])
 def test_sample_times_rejects_non_positive_or_non_finite_interval(bad):
     """Test 1 — an explicit interval_s must be finite and > 0 (it used to floor to a 1 us step)."""
@@ -556,6 +589,7 @@ def test_sample_times_rejects_non_positive_or_non_finite_interval(bad):
         ephemeris.sample_times(0, 10_000_000, interval_s=bad)
 
 
+@pytest.mark.verifies("NFR-3710")
 def test_sample_times_enforces_sample_count_ceiling_arithmetically():
     """Test 2 — over-ceiling requests are rejected before any list is built; at the ceiling OK."""
     import time
@@ -573,6 +607,7 @@ def test_sample_times_enforces_sample_count_ceiling_arithmetically():
     assert time.perf_counter() - t < 0.5
 
 
+@pytest.mark.verifies("NFR-3710")
 def test_ephemeris_exports_propagate_over_ceiling_rejection():
     """Test 3 — both ephemeris exports surface the ValueError for an over-ceiling request."""
     mgr = _two_sat_manager_with_track()

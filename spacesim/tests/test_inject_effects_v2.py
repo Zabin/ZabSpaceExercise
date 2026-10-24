@@ -36,11 +36,13 @@ def _orbit(ta_deg: float = 0.0) -> OrbitState:
 
 # -- Sensor.health default + AccessProvider filter regression --------------------------------
 
+@pytest.mark.verifies("FR-4430")
 def test_sensor_health_defaults_to_nominal_when_absent_from_yaml():
     sensor = Sensor.model_validate({"id": "S-1", "owner": "blue"})
     assert sensor.health == "nominal"
 
 
+@pytest.mark.verifies("FR-4430")
 def test_scene_from_world_excludes_degraded_sensor():
     mgr = _bare_manager()
     mgr.world.sensors["S-1"] = Sensor(id="S-1", owner="blue", health="nominal")
@@ -52,6 +54,7 @@ def test_scene_from_world_excludes_degraded_sensor():
 
 # -- anomaly -----------------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4430")
 def test_anomaly_bus_subsystem_sets_safe_mode_and_restore_clears_it():
     mgr = _bare_manager()
     mgr.world.assets["SAT-1"] = Asset(id="SAT-1", owner="blue", bus_state=BusState())
@@ -75,6 +78,7 @@ def test_anomaly_bus_subsystem_sets_safe_mode_and_restore_clears_it():
     assert bus.safe_mode.active is False
 
 
+@pytest.mark.verifies("FR-4430")
 def test_anomaly_safed_asset_is_accepted_by_begin_recovery():
     """BL-0128 remediation regression: an anomaly-safed asset must be recoverable through the
     existing RecoverySystem loop (Design Decision 4's actual intent), not refused with
@@ -88,6 +92,7 @@ def test_anomaly_safed_asset_is_accepted_by_begin_recovery():
     assert result["reason"] != "not_safed"
 
 
+@pytest.mark.verifies("FR-4430")
 def test_anomaly_telemetry_subsystem_degrades_comms():
     mgr = _bare_manager()
     mgr.world.assets["SAT-1"] = Asset(id="SAT-1", owner="blue", bus_state=BusState())
@@ -103,6 +108,7 @@ def test_anomaly_telemetry_subsystem_degrades_comms():
 
 # -- sensor_outage -----------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4430")
 def test_sensor_outage_degrades_and_restore_clears():
     mgr = _bare_manager()
     mgr.world.sensors["S-1"] = Sensor(id="S-1", owner="blue")
@@ -118,6 +124,7 @@ def test_sensor_outage_degrades_and_restore_clears():
 
 # -- forced_custody_loss ------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4430")
 def test_forced_custody_loss_degrade_sets_confidence():
     mgr = _bare_manager()
     mgr.world.tracks.append(Track(object="SAT-RED", owner="blue", confidence=1.0, last_observation=0))
@@ -130,6 +137,7 @@ def test_forced_custody_loss_degrade_sets_confidence():
     assert tr.confidence == pytest.approx(0.1)
 
 
+@pytest.mark.verifies("FR-4430")
 def test_forced_custody_loss_drop_removes_track():
     mgr = _bare_manager()
     mgr.world.tracks.append(Track(object="SAT-RED", owner="blue", confidence=1.0, last_observation=0))
@@ -139,6 +147,7 @@ def test_forced_custody_loss_drop_removes_track():
     assert mgr.world.track_for("blue", "SAT-RED") is None
 
 
+@pytest.mark.verifies("FR-4430")
 def test_forced_custody_loss_never_touches_another_cells_track():
     """Negative assertion (FR-4430's Postcondition, ADR-0004) — a forced_custody_loss on blue's
     own track must never affect red's independent track on the same object."""
@@ -154,6 +163,7 @@ def test_forced_custody_loss_never_touches_another_cells_track():
     assert red_tr.confidence == pytest.approx(0.9)
 
 
+@pytest.mark.verifies("FR-4430")
 def test_forced_custody_loss_missing_target_is_a_no_op():
     mgr = _bare_manager()
     # No exception, no track created — Design Decision 2's posture.
@@ -165,6 +175,7 @@ def test_forced_custody_loss_missing_target_is_a_no_op():
 
 # -- scripted_manoeuvre -------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4430")
 def test_scripted_manoeuvre_changes_orbit_via_eci_mode_bypassing_delta_v_budget():
     mgr = _bare_manager()
     mgr.world.assets["SAT-1"] = Asset(id="SAT-1", owner="blue", orbit=_orbit())
@@ -180,6 +191,7 @@ def test_scripted_manoeuvre_changes_orbit_via_eci_mode_bypassing_delta_v_budget(
     assert after.resources.delta_v_ms == 0.0
 
 
+@pytest.mark.verifies("FR-4430")
 def test_scripted_manoeuvre_changes_orbit_via_hohmann_mode():
     mgr = _bare_manager()
     mgr.world.assets["SAT-1"] = Asset(id="SAT-1", owner="blue", orbit=_orbit())
@@ -193,6 +205,7 @@ def test_scripted_manoeuvre_changes_orbit_via_hohmann_mode():
     assert mgr.world.assets["SAT-1"].resources.delta_v_ms == 0.0
 
 
+@pytest.mark.verifies("FR-4430")
 def test_scripted_manoeuvre_missing_asset_is_a_no_op():
     mgr = _bare_manager()
     mgr._apply_inject_effects(mgr.world, [
@@ -225,6 +238,7 @@ def _bus_less_manager() -> SessionManager:
     return mgr
 
 
+@pytest.mark.verifies("FR-4430")
 @pytest.mark.parametrize("effect", [
     {"type": "anomaly", "subsystem": "bus"},                                      # no target
     {"type": "anomaly", "target": "SAT-1", "subsystem": "power"},                 # bad subsystem
@@ -241,6 +255,7 @@ def test_validator_flags_malformed_effects(effect):
     assert len(problems) == 1
 
 
+@pytest.mark.verifies("FR-4430")
 def test_validator_accepts_well_formed_fr4430_effects():
     mgr = _bare_manager()
     mgr.world.assets["SAT-1"] = Asset(id="SAT-1", owner="blue", orbit=_orbit(), bus_state=BusState())
@@ -255,6 +270,7 @@ def test_validator_accepts_well_formed_fr4430_effects():
     assert _validate(mgr.world, effects, check_targets=True) == []
 
 
+@pytest.mark.verifies("FR-4430")
 def test_fire_inject_rejects_anomaly_on_bus_less_asset_and_changes_nothing():
     """BL-0188 — previously accepted with ok:true and silently a no-op."""
     mgr = _bus_less_manager()
@@ -269,6 +285,7 @@ def test_fire_inject_rejects_anomaly_on_bus_less_asset_and_changes_nothing():
     assert mgr.world.assets["SAT-BUS"].bus_state.mode == "safe_mode"
 
 
+@pytest.mark.verifies("FR-4430")
 def test_fire_inject_is_atomic_on_a_partly_invalid_inject():
     mgr = _bus_less_manager()
     with pytest.raises(ValueError):
@@ -277,6 +294,7 @@ def test_fire_inject_is_atomic_on_a_partly_invalid_inject():
     assert not any(m.get("text") == "IP1063-atomic" for m in mgr.world.messages)
 
 
+@pytest.mark.verifies("FR-4430")
 def test_handler_skips_malformed_effect_without_raising():
     """BL-0129 — a malformed effect used to raise mid-handler after earlier effects mutated."""
     mgr = _bare_manager()
@@ -293,6 +311,7 @@ def test_handler_skips_malformed_effect_without_raising():
     assert len(skipped) == 1
 
 
+@pytest.mark.verifies("FR-4430")
 def test_skip_path_replays_identically():
     """BL-0129 — a vignette-style scheduled inject (bypassing fire_inject's boundary) with a
     malformed effect and a scripted manoeuvre whose params make compute_maneuver raise: live
@@ -312,6 +331,7 @@ def test_skip_path_replays_identically():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
+@pytest.mark.verifies("FR-4430")
 def test_all_shipped_injects_and_library_templates_validate_clean():
     """Regression guard: the validator's known-type set and required keys match shipped content."""
     from pathlib import Path

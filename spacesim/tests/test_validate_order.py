@@ -8,6 +8,7 @@ probe every candidate command on each tick without polluting the queue or breaki
 
 from __future__ import annotations
 
+import pytest
 from spacesim.content.vignette import load_vignette
 from spacesim.engine.orders import Order
 from spacesim.session.manager import SessionManager
@@ -23,6 +24,7 @@ def _downlink(actor="ISR-EO-1", via="GS-TRN"):
     return Order(cell="blue", actor=actor, action="downlink", params={"via": via})
 
 
+@pytest.mark.verifies("NFR-3020")
 def test_dry_run_is_side_effect_free():
     mgr = _mgr()
     before = mgr.world.model_dump_json()
@@ -42,6 +44,7 @@ def test_dry_run_is_side_effect_free():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
+@pytest.mark.verifies("NFR-3020")
 def test_dry_run_matches_issue_for_accepted_order():
     preview = _mgr().validate_order("blue", _downlink())
 
@@ -56,6 +59,7 @@ def test_dry_run_matches_issue_for_accepted_order():
     assert mgr.osys._order_counter == 1
 
 
+@pytest.mark.verifies("NFR-3020")
 def test_dry_run_surfaces_rejection_reasons():
     mgr = _mgr()
     # Unauthorized kinetic engage -> the validator's own reason string, verbatim (§12.2).
@@ -70,6 +74,7 @@ def test_dry_run_surfaces_rejection_reasons():
     assert mgr.osys.orders == {}
 
 
+@pytest.mark.verifies("FR-6210")
 def test_dry_run_enforces_ownership_fog():
     mgr = _mgr()
     # Red probing a Blue-owned asset is rejected as not_owner (fog/authority at the boundary).
@@ -77,6 +82,7 @@ def test_dry_run_enforces_ownership_fog():
     assert not ack.ok and ack.reason == "not_owner"
 
 
+@pytest.mark.verifies("NFR-1600")
 def test_window_search_handles_unknown_station_gracefully():
     """A command 'via' a station not in the force yields no_window, not a KeyError crash.
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.engine.orders import Order
 from spacesim.session import InProcessSession
 
@@ -13,6 +14,7 @@ def _loaded(seed=1):
     return api, sid
 
 
+@pytest.mark.verifies("FR-6210")
 def test_fog_of_war_hides_other_cells_assets():
     api, sid = _loaded()
     red = api.get_view(sid, "red")
@@ -32,6 +34,7 @@ def test_fog_of_war_hides_other_cells_assets():
     assert {"ISR-EO-1", "JAM-NORTH"} <= set(god.assets.keys())
 
 
+@pytest.mark.verifies("FR-4410")
 def test_reveal_asset_inject_grants_blue_a_track_on_red():
     api, sid = _loaded()
     assert api.get_view(sid, "blue").known_tracks == []
@@ -40,6 +43,7 @@ def test_reveal_asset_inject_grants_blue_a_track_on_red():
     assert any(t["object"] == "RED-SURF" for t in tracks)
 
 
+@pytest.mark.verifies("FR-1120")
 def test_blue_delivers_imagery_then_rewind_lets_red_deny_it():
     api, sid = _loaded()
     mgr = api._sessions[sid]

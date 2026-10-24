@@ -24,6 +24,11 @@ import ast
 import textwrap
 from pathlib import Path
 
+import pytest
+
+# FS-133 Decision 3: the gate tags its invariant's leaf (invariant 2).
+pytestmark = pytest.mark.verifies("NFR-1900")
+
 ENGINE_DIR = Path(__file__).resolve().parent.parent / "engine"
 
 # Modules the deterministic core may never depend on (UI / application / transport).

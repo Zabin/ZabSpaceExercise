@@ -129,6 +129,9 @@ def validate_inject_effects(world: WorldState, effects, *, check_targets: bool, 
     return problems
 
 
+SAVE_FORMAT = 2   # IP-1101 — absent (legacy) saves reload their vignette by id
+
+
 class SessionManager:
     def __init__(
         self, vignette: Vignette, overrides: Optional[dict] = None, seed: int = 0,
@@ -147,6 +150,10 @@ class SessionManager:
         # exercise state.
         self.seats_declared: dict[str, list[str]] = {}
         self.world, self.ctx = build_world(vignette, overrides)
+        # IP-1101 — the assets the loaded vignette itself produced; anything later in the replay
+        # baseline is a White Cell force edit and is written into the save's content portion.
+        self._built_asset_ids = frozenset(self.world.assets)
+        self.load_warnings: list[str] = []   # IP-1101 — set by from_state; never part of the world
         self.sim = Simulation(self.world, seed=seed)
         self.sim.register_handler("inject", self._h_inject)
         self.sim.register_handler("condition_check", self._h_condition_check)
@@ -967,7 +974,22 @@ class SessionManager:
         Resume is exact because the deterministic core re-derives state from (initial, seed,
         eventlog); pending scheduled events and the order registry are persisted alongside so
         queued orders, bus ticks, and scripted injects survive a save/load."""
+        import copy
+        from spacesim.version import simulator_version
+        baseline = copy.deepcopy(self.sim._initial_state)
+        # IP-1101 (FR-7220, Design Decision 2) — the vignette as originally loaded, verbatim, with
+        # each force-added asset appended to its owner's list in the vignette file format.
+        content = self.vignette.model_dump(mode="json")
+        buckets = {"blue": content["blue_forces"], "red": content["red_forces"],
+                   "neutral": content["neutral_forces"]}
+        for aid, adict in baseline["assets"].items():
+            if aid not in self._built_asset_ids:
+                buckets[adict["owner"]].append({k: v for k, v in adict.items() if k != "owner"})
         return {
+            "save_format": SAVE_FORMAT,
+            "simulator_version": simulator_version(),
+            "content": content,
+            "baseline": baseline,
             "vignette_id": self.vignette.id,
             "overrides": dict(self.ctx.param_values),
             "classification": self.classification,
@@ -981,12 +1003,48 @@ class SessionManager:
             "ssn_requests": [vars(r) for r in self.ssn.requests.values()],
         }
 
+    @staticmethod
+    def validate_save(state: dict) -> None:
+        """IP-1101 (Design Decision 5) — refuse a malformed self-contained save before any replay.
+        A legacy save (no format version) has nothing to check here. Raises ``ValueError``."""
+        if not (state or {}).get("save_format"):
+            return
+        from spacesim.content.vignette import validate_vignette
+        try:
+            vig = Vignette.model_validate(state["content"])
+        except Exception as exc:  # noqa: BLE001
+            raise ValueError(f"save content portion is not a valid vignette: {exc}") from exc
+        problems = validate_vignette(vig)
+        if problems:
+            raise ValueError("save content portion refused: " + "; ".join(
+                f"{p['where']}: {p['reason']}" for p in problems))
+        try:
+            WorldState.model_validate(state["baseline"])
+        except Exception as exc:  # noqa: BLE001
+            raise ValueError(f"save replay baseline is not a valid world: {exc}") from exc
+
     @classmethod
     def from_state(cls, state: dict) -> "SessionManager":
         from spacesim.content.vignette import load_vignette as _load
         from spacesim.engine.eventlog import EventLog
-        mgr = cls(_load(state["vignette_id"]), overrides=state.get("overrides"), seed=state["seed"],
-                  classification=state.get("classification"))
+        from spacesim.version import simulator_version
+        warnings: list[str] = []
+        if state.get("save_format"):
+            # IP-1101 (Design Decision 1) — build from the save's own content portion and install
+            # its replay baseline; no vignette file is consulted.
+            mgr = cls(Vignette.model_validate(state["content"]), overrides=state.get("overrides"),
+                      seed=state["seed"], classification=state.get("classification"))
+            mgr.sim._initial_state = state["baseline"]
+            saved_v = state.get("simulator_version")
+            if saved_v != simulator_version():
+                warnings.append(f"this save was written by simulator version {saved_v}; "
+                                f"this is {simulator_version()}")
+        else:
+            mgr = cls(_load(state["vignette_id"]), overrides=state.get("overrides"), seed=state["seed"],
+                      classification=state.get("classification"))
+            warnings.append(f"legacy save: it depended on the vignette file '{state['vignette_id']}' "
+                            f"as it is now, not as it was when saved")
+        mgr.load_warnings = warnings
         mgr.sim.eventlog = EventLog.model_validate(state["eventlog"])
         mgr.sim._rebuild(stop_time=state["final_time"])   # replay history → world + rng at save time
         mgr._rebind()

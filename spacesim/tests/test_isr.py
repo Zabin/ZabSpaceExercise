@@ -28,6 +28,7 @@ from spacesim.engine.isr import (
 # beam_params
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-104")
 def test_beam_params_known_type_and_mode():
     bp, mode = beam_params("isr_eo", "spotlight")
     assert mode == "spotlight"
@@ -35,40 +36,47 @@ def test_beam_params_known_type_and_mode():
     assert bp["gain_factor"] == pytest.approx(1.5)
 
 
+@pytest.mark.verifies("FS-104")
 def test_beam_params_fallback_to_default_mode():
     bp, mode = beam_params("isr_eo")
     assert mode == "stripmap"
     assert bp["swath_km"] == pytest.approx(30.0)
 
 
+@pytest.mark.verifies("FS-104")
 def test_beam_params_unknown_mode_falls_back():
     bp, mode = beam_params("isr_eo", "super_secret")
     assert mode == "stripmap"  # default for isr_eo
 
 
+@pytest.mark.verifies("FS-104")
 def test_beam_params_unknown_payload_type_returns_safe():
     bp, mode = beam_params("laser_cannon")
     assert bp["gain_factor"] > 0
     assert bp["swath_km"] > 0
 
 
+@pytest.mark.verifies("FS-104")
 def test_beam_params_sda_type():
     bp, mode = beam_params("sda", "fine")
     assert mode == "fine"
     assert bp["swath_km"] == pytest.approx(100.0)
 
 
+@pytest.mark.verifies("FS-104")
 def test_beam_params_sar_wide_area():
     bp, mode = beam_params("isr_sar", "wide_area")
     assert mode == "wide_area"
     assert bp["swath_km"] == pytest.approx(500.0)
 
 
+@pytest.mark.verifies("FS-104")
 def test_available_modes_eo():
     modes = available_modes("isr_eo")
     assert set(modes) == {"wide_area", "stripmap", "spotlight", "scan"}
 
 
+@pytest.mark.verifies("FS-104")
 def test_available_modes_sar():
     modes = available_modes("isr_sar")
     assert "polarimetric" in modes
@@ -79,22 +87,26 @@ def test_available_modes_sar():
 # beam_params — weather & mw (IP-1170, BL-0053)
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("IP-1170")
 def test_available_modes_weather_not_eo_fallback():
     modes = available_modes("weather")
     assert set(modes) == {"mesoscale", "conus", "full_disk"}
 
 
+@pytest.mark.verifies("IP-1170")
 def test_available_modes_mw_not_eo_fallback():
     modes = available_modes("mw")
     assert set(modes) == {"scan", "stare"}
 
 
+@pytest.mark.verifies("IP-1170")
 def test_beam_params_weather_default_mode_is_conus():
     bp, mode = beam_params("weather")
     assert mode == "conus"
     assert bp["resolution_m"] == pytest.approx(1000.0)
 
 
+@pytest.mark.verifies("IP-1170")
 def test_beam_params_weather_mesoscale_is_finest_and_fastest():
     bp, mode = beam_params("weather", "mesoscale")
     assert mode == "mesoscale"
@@ -103,6 +115,7 @@ def test_beam_params_weather_mesoscale_is_finest_and_fastest():
     assert bp["duty_cycle"] > beam_params("weather", "full_disk")[0]["duty_cycle"]
 
 
+@pytest.mark.verifies("IP-1170")
 def test_beam_params_weather_full_disk_is_coarsest_and_slowest():
     bp, mode = beam_params("weather", "full_disk")
     assert mode == "full_disk"
@@ -110,11 +123,13 @@ def test_beam_params_weather_full_disk_is_coarsest_and_slowest():
     assert bp["duty_cycle"] < beam_params("weather", "mesoscale")[0]["duty_cycle"]
 
 
+@pytest.mark.verifies("IP-1170")
 def test_beam_params_mw_default_mode_is_scan():
     bp, mode = beam_params("mw")
     assert mode == "scan"
 
 
+@pytest.mark.verifies("IP-1170")
 def test_beam_params_mw_stare_has_higher_gain_than_scan():
     scan_bp, _ = beam_params("mw", "scan")
     stare_bp, _ = beam_params("mw", "stare")
@@ -122,6 +137,7 @@ def test_beam_params_mw_stare_has_higher_gain_than_scan():
     assert stare_bp["swath_km"] < scan_bp["swath_km"]
 
 
+@pytest.mark.verifies("IP-1170")
 def test_beam_params_weather_mw_distinct_from_isr_eo_defaults():
     # BL-0053's original symptom: weather/mw silently fell back to isr_eo's
     # generic stripmap numbers. Confirm the numbers are now type-specific.
@@ -132,6 +148,7 @@ def test_beam_params_weather_mw_distinct_from_isr_eo_defaults():
     assert mw_bp != eo_bp
 
 
+@pytest.mark.verifies("IP-1170")
 def test_beam_params_isr_eo_sar_sda_unchanged_by_weather_mw_addition():
     # Regression: adding weather/mw must not touch any existing entry.
     bp, mode = beam_params("isr_eo", "spotlight")
@@ -148,12 +165,14 @@ def test_beam_params_isr_eo_sar_sda_unchanged_by_weather_mw_addition():
 # effective_gain
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-104")
 def test_effective_gain_nadir_is_full_base_times_factor():
     bp, _ = beam_params("isr_eo", "stripmap")  # gain_factor = 1.0
     g = effective_gain(1.0, 0.0, bp)
     assert g == pytest.approx(1.0, abs=1e-9)
 
 
+@pytest.mark.verifies("FS-104")
 def test_effective_gain_spotlight_is_higher():
     bp_strip, _ = beam_params("isr_eo", "stripmap")   # gain_factor 1.0
     bp_spot, _ = beam_params("isr_eo", "spotlight")   # gain_factor 1.5
@@ -162,6 +181,7 @@ def test_effective_gain_spotlight_is_higher():
     assert g_spot > g_strip
 
 
+@pytest.mark.verifies("FS-104")
 def test_effective_gain_degrades_with_look_angle():
     bp, _ = beam_params("isr_eo", "stripmap")
     g0 = effective_gain(1.0, 0.0, bp)
@@ -171,6 +191,7 @@ def test_effective_gain_degrades_with_look_angle():
     assert g45 < g30
 
 
+@pytest.mark.verifies("FS-104")
 def test_effective_gain_45deg_approx_cosine():
     bp, _ = beam_params("isr_eo", "stripmap")  # gain_factor 1.0
     g = effective_gain(1.0, 45.0, bp)
@@ -178,6 +199,7 @@ def test_effective_gain_45deg_approx_cosine():
     assert g == pytest.approx(expected, rel=1e-6)
 
 
+@pytest.mark.verifies("FS-104")
 def test_effective_gain_clamps_look_angle_at_45():
     bp, _ = beam_params("isr_eo", "stripmap")
     g45 = effective_gain(1.0, 45.0, bp)
@@ -185,6 +207,7 @@ def test_effective_gain_clamps_look_angle_at_45():
     assert g45 == pytest.approx(g60, rel=1e-6)
 
 
+@pytest.mark.verifies("FR-1630")
 def test_effective_gain_band_affinity_mismatch_degrades_gain():
     """IP-1220 (FR-1630) — a declared altitude_band_affinity degrades gain when the target's
     regime doesn't match; omitting either argument reproduces the pre-package gain exactly."""
@@ -200,6 +223,7 @@ def test_effective_gain_band_affinity_mismatch_degrades_gain():
 # ground_radar fence/dish beam modes (IP-1220, FR-1610)
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1610")
 def test_ground_radar_fence_vs_dish_trade():
     """A wide-field-of-regard fence radar covers more swath at lower per-object gain than a
     narrow-beam dish radar observing the same volume."""
@@ -211,6 +235,7 @@ def test_ground_radar_fence_vs_dish_trade():
     assert g_fence < g_dish
 
 
+@pytest.mark.verifies("FR-1610")
 def test_ground_radar_default_mode_is_dish():
     _, resolved = beam_params("ground_radar")
     assert resolved == "dish"
@@ -220,6 +245,7 @@ def test_ground_radar_default_mode_is_dish():
 # soc_drain
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-104")
 def test_soc_drain_baseline_300s():
     bp, _ = beam_params("isr_eo", "stripmap")  # power_factor 1.2
     drain = soc_drain(bp, 300.0)
@@ -227,12 +253,14 @@ def test_soc_drain_baseline_300s():
     assert drain == pytest.approx(0.05 * 1.2, rel=1e-6)
 
 
+@pytest.mark.verifies("FS-104")
 def test_soc_drain_spotlight_greater_than_wide_area():
     bp_wa, _ = beam_params("isr_eo", "wide_area")
     bp_sp, _ = beam_params("isr_eo", "spotlight")
     assert soc_drain(bp_sp, 300.0) > soc_drain(bp_wa, 300.0)
 
 
+@pytest.mark.verifies("FS-104")
 def test_soc_drain_proportional_to_duration():
     bp, _ = beam_params("isr_eo", "stripmap")
     d1 = soc_drain(bp, 300.0)
@@ -240,6 +268,7 @@ def test_soc_drain_proportional_to_duration():
     assert d2 == pytest.approx(2 * d1, rel=1e-6)
 
 
+@pytest.mark.verifies("FS-104")
 def test_soc_drain_zero_duration():
     bp, _ = beam_params("isr_eo", "stripmap")
     assert soc_drain(bp, 0.0) == pytest.approx(0.0)
@@ -249,6 +278,7 @@ def test_soc_drain_zero_duration():
 # footprint_polygon
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-104")
 def test_footprint_returns_4_corners():
     bp, _ = beam_params("isr_eo", "stripmap")
     corners = footprint_polygon(0.0, 0.0, 500_000.0, 0.0, bp, 0.0)
@@ -257,6 +287,7 @@ def test_footprint_returns_4_corners():
         assert len(c) == 2
 
 
+@pytest.mark.verifies("FS-104")
 def test_footprint_nadir_centered_on_subsatellite():
     """Nadir (0° look) footprint center should be directly below the satellite."""
     bp, _ = beam_params("isr_eo", "stripmap")
@@ -269,6 +300,7 @@ def test_footprint_nadir_centered_on_subsatellite():
     assert avg_lon == pytest.approx(lon, abs=0.01)
 
 
+@pytest.mark.verifies("FS-104")
 def test_footprint_off_nadir_shifts_cross_track():
     """A right-side look angle shifts the footprint away from the ground track."""
     bp, _ = beam_params("isr_eo", "stripmap")
@@ -281,6 +313,7 @@ def test_footprint_off_nadir_shifts_cross_track():
     assert avg_lat_look != pytest.approx(avg_lat_nadir, abs=0.5)
 
 
+@pytest.mark.verifies("FS-104")
 def test_footprint_width_shrinks_with_look_angle():
     """Off-nadir footprint cross-track swath should be narrower (cos roll-off)."""
     bp, _ = beam_params("isr_eo", "wide_area")
@@ -292,6 +325,7 @@ def test_footprint_width_shrinks_with_look_angle():
     assert lon_span_30 < lon_span_0
 
 
+@pytest.mark.verifies("FS-104")
 def test_footprint_spotlight_smaller_than_wide_area():
     bp_wa, _ = beam_params("isr_eo", "wide_area")
     bp_sp, _ = beam_params("isr_eo", "spotlight")
@@ -308,6 +342,7 @@ def test_footprint_spotlight_smaller_than_wide_area():
 # ground_heading_deg
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-104")
 def test_heading_prograde_leo_is_northeast():
     """A prograde LEO orbit at the ascending node should head northeast (0–90°).
 
@@ -328,6 +363,7 @@ def test_heading_prograde_leo_is_northeast():
     assert 0.0 < heading < 90.0
 
 
+@pytest.mark.verifies("FS-104")
 def test_heading_retrograde_orbit_is_westward():
     """A retrograde orbit (i>90°) should have a westward heading component (>270° or <0°)."""
     from spacesim.engine.orbit import OrbitState
@@ -404,6 +440,7 @@ def _sim_with_orders(world):
     return sim, osys
 
 
+@pytest.mark.verifies("FR-1510")
 def test_observe_stores_footprint_on_track():
     from spacesim.engine.orders import Order
     world = _make_world_with_eo_satellite()
@@ -421,6 +458,7 @@ def test_observe_stores_footprint_on_track():
     assert track.last_collection_t >= 0  # may be 0 if the window opens immediately
 
 
+@pytest.mark.verifies("FR-1510")
 def test_observe_applies_soc_drain():
     from spacesim.engine.orders import Order
     world = _make_world_with_eo_satellite()
@@ -435,6 +473,7 @@ def test_observe_applies_soc_drain():
     assert final_soc < initial_soc
 
 
+@pytest.mark.verifies("FR-1510")
 def test_observe_wide_area_less_drain_than_spotlight():
     from spacesim.engine.orders import Order
     import copy
@@ -460,6 +499,7 @@ def test_observe_wide_area_less_drain_than_spotlight():
     assert soc_sp < soc_wa  # spotlight drains more
 
 
+@pytest.mark.verifies("FR-1510")
 def test_observe_spotlight_higher_confidence_gain():
     """Spotlight beam gives higher effective gain than wide_area for same base gain."""
     from spacesim.engine.orders import Order
@@ -485,6 +525,7 @@ def test_observe_spotlight_higher_confidence_gain():
     assert conf_sp > conf_wa
 
 
+@pytest.mark.verifies("FR-1510")
 def test_observe_footprint_in_scene():
     """build_scene() should include collection footprints in SceneView."""
     from spacesim.engine.orders import Order
@@ -504,6 +545,7 @@ def test_observe_footprint_in_scene():
     assert len(fp.corners) == 4
 
 
+@pytest.mark.verifies("FR-1510")
 def test_observe_ground_sensor_no_footprint():
     """A ground sensor (no orbit) observing a space target should leave footprint None.
 

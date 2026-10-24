@@ -1,0 +1,2 @@
+# IP-1330 — modules whose tests do not all declare a `verifies` origin yet (FS-133).
+# The list only shrinks: IP-1331–IP-1333 remove modules as they backfill; the target is empty.

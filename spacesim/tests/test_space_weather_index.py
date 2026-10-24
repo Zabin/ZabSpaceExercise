@@ -50,16 +50,19 @@ def _run(vig: Vignette, hours: float, seed: int = 7) -> SessionManager:
 
 # --- 1. mapping anchors (AC 2) ---------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1230")
 @pytest.mark.parametrize("f107,want", [(50, 0.3), (150, 1.0), (300, 3.0), (40, 0.3), (400, 3.0), (100, 0.65)])
 def test_f_solar_anchors(f107, want):
     assert pt.f_solar(f107) == pytest.approx(want)
 
 
+@pytest.mark.verifies("FR-1230")
 @pytest.mark.parametrize("kp,want", [(0, 1.0), (2, 1.0), (4, 1.0), (5, 2.0), (7, 6.0), (9, 10.0)])
 def test_f_geo_anchors(kp, want):
     assert pt.f_geo(kp) == pytest.approx(want)
 
 
+@pytest.mark.verifies("FR-4440")
 def test_drag_and_anomaly_multipliers():
     t0 = 1_000
     assert pt.drag_multiplier([{"t": 0, "f107": 150, "kp": 7}], t0) == pytest.approx(6.0)
@@ -71,6 +74,7 @@ def test_drag_and_anomaly_multipliers():
 
 # --- 2. step-held lookup -----------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1230")
 def test_index_in_effect_is_step_held_per_index():
     series = [{"t": 10, "f107": 200, "kp": 3}, {"t": 20, "kp": 6}]
     assert pt.index_in_effect(series, 5, "kp") is None
@@ -82,11 +86,13 @@ def test_index_in_effect_is_step_held_per_index():
 
 # --- 3. validator ------------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1230")
 def test_index_series_problems_accepts_valid_series():
     assert pt.index_series_problems([{"at_sim_s": 0, "f107": 150, "kp": 2}, {"at_sim_s": 60, "kp": 9}],
                                     "at_sim_s") == []
 
 
+@pytest.mark.verifies("FR-1230")
 @pytest.mark.parametrize("entry", [
     {"at_sim_s": 0, "kp": -1}, {"at_sim_s": 0, "kp": 9.5}, {"at_sim_s": 0, "kp": float("nan")},
     {"at_sim_s": 0, "f107": 0}, {"at_sim_s": 0, "f107": -5}, {"at_sim_s": 0, "kp": True},
@@ -102,6 +108,7 @@ def _a(mgr, asset="LEO-1") -> float:
     return mgr.world.assets[asset].orbit.a_m
 
 
+@pytest.mark.verifies("FR-1230")
 def test_active_series_decays_faster_than_quiescent_and_both_decay():
     quiet = _run(_vig(series=[{"at_sim_s": 0, "f107": 70, "kp": 1}]), 6)
     active = _run(_vig(series=[{"at_sim_s": 0, "f107": 250, "kp": 7}]), 6)
@@ -109,6 +116,7 @@ def test_active_series_decays_faster_than_quiescent_and_both_decay():
     assert _a(active) < _a(quiet)
 
 
+@pytest.mark.verifies("FR-1230")
 def test_drag_run_replays_byte_identically():
     mgr = _run(_vig(series=[{"at_sim_s": 0, "f107": 250, "kp": 7}]), 3)
     assert mgr.sim.replay().model_dump() == mgr.world.model_dump()
@@ -125,6 +133,7 @@ def _mixed_fleet():
     ]
 
 
+@pytest.mark.verifies("FR-1230")
 def test_only_qualifying_assets_are_drag_coupled():
     with_series = _run(_vig(assets=_mixed_fleet(), series=[{"at_sim_s": 0, "f107": 300, "kp": 9}]), 2)
     control = _run(_vig(assets=_mixed_fleet()), 2)
@@ -143,6 +152,7 @@ def _firings(mgr) -> list[tuple[int, str]]:
             if e.kind == "env_anomaly_check" for f in e.payload.get("fired", [])]
 
 
+@pytest.mark.verifies("FR-4440")
 def test_high_kp_fires_more_environmental_anomalies():
     quiet = _run(_vig(assets=_ANOM_ASSETS, anomalies=dict(_ANOM_BLOCK), series=[{"at_sim_s": 0, "kp": 1}]), 24, seed=3)
     storm = _run(_vig(assets=_ANOM_ASSETS, anomalies=dict(_ANOM_BLOCK), series=[{"at_sim_s": 0, "kp": 8}]), 24, seed=3)
@@ -152,12 +162,14 @@ def test_high_kp_fires_more_environmental_anomalies():
     assert any("anomaly declared (space_weather)" in m["text"] for m in storm.world.messages)
 
 
+@pytest.mark.verifies("FR-4440")
 def test_environmental_anomaly_firings_replay_identically():
     mgr = _run(_vig(assets=_ANOM_ASSETS, anomalies=dict(_ANOM_BLOCK), series=[{"at_sim_s": 0, "kp": 8}]), 6, seed=5)
     assert _firings(mgr)
     assert mgr.sim.replay().model_dump() == mgr.world.model_dump()
 
 
+@pytest.mark.verifies("FR-4440")
 def test_bus_anomaly_skips_an_already_safed_asset():
     block = {"base_rate_per_day": 500, "assets": ["SAT-0"], "subsystem": "bus"}
     mgr = _run(_vig(assets=_ANOM_ASSETS[:1], anomalies=block, series=[{"at_sim_s": 0, "kp": 9}]), 2, seed=1)
@@ -168,6 +180,7 @@ def test_bus_anomaly_skips_an_already_safed_asset():
 
 # --- 9. refusal at load (AC 5) ------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1230")
 @pytest.mark.parametrize("kwargs,where", [
     ({"series": [{"at_sim_s": 0, "kp": 12}]}, "space_weather_series"),
     ({"series": [{"at_sim_s": 0, "f107": -5}]}, "space_weather_series"),
@@ -183,6 +196,7 @@ def test_load_refuses_non_physical_values(kwargs, where):
     assert problems and any(where in p["where"] for p in problems), problems
 
 
+@pytest.mark.verifies("FR-1230")
 def test_load_vignette_raises_validation_error(tmp_path, monkeypatch):
     import yaml
     from spacesim.content import vignette as vmod
@@ -197,6 +211,7 @@ def test_load_vignette_raises_validation_error(tmp_path, monkeypatch):
 
 # --- 10. refusal at the inject boundary (AC 5) ---------------------------------------------------
 
+@pytest.mark.verifies("FR-1230")
 def test_fire_inject_refuses_out_of_range_series_and_changes_nothing():
     mgr = SessionManager(_vig(), seed=0)
     mgr.start()
@@ -209,6 +224,7 @@ def test_fire_inject_refuses_out_of_range_series_and_changes_nothing():
     assert len(mgr.sim.eventlog.entries) == n_events
 
 
+@pytest.mark.verifies("FR-1230")
 def test_http_inject_with_out_of_range_series_is_400():
     from fastapi.testclient import TestClient
     from spacesim.session.inprocess import InProcessSession
@@ -217,12 +233,13 @@ def test_http_inject_with_out_of_range_series_is_400():
     sid = api.load_vignette("leo-isr-denial", seed=1)
     api.start(sid)
     c = TestClient(create_app(api))
-    r = c.post(f"/api/sessions/{sid}/inject",
+    r = c.post(f"/api/sessions/{sid}/inject?cell=white",
                json={"inject": [{"type": "space_weather", "index_series": [{"offset_s": 0, "f107": -1}]}]})
     assert r.status_code == 400
     assert "f107" in r.json()["detail"]
 
 
+@pytest.mark.verifies("FR-1230")
 def test_series_inject_applies_from_fire_time_and_drives_drag():
     mgr = SessionManager(_vig(), seed=0)
     mgr.start()
@@ -239,6 +256,7 @@ def test_series_inject_applies_from_fire_time_and_drives_drag():
 
 # --- 11. opt-out byte-identity (AC 4) ------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1230")
 def test_shipped_vignette_unaffected_by_empty_series_and_no_bcs():
     from spacesim.content.vignette import load_vignette
     base = load_vignette("leo-isr-denial")
@@ -254,6 +272,7 @@ def test_shipped_vignette_unaffected_by_empty_series_and_no_bcs():
     assert not any(e.kind == "env_anomaly_check" for e in a.sim.eventlog.entries)
 
 
+@pytest.mark.verifies("FR-4440")
 def test_series_without_bcs_or_anomaly_block_changes_no_orbit():
     assets = [{"id": "LEO-NOBC", "kind": "satellite", "orbit": dict(_LEO_ORBIT)}]
     with_series = _run(_vig(assets=assets, series=[{"at_sim_s": 0, "f107": 300, "kp": 9}]), 2)
@@ -264,6 +283,7 @@ def test_series_without_bcs_or_anomaly_block_changes_no_orbit():
 
 # --- 12. severity / series coexistence (Design Decision 3) ---------------------------------------
 
+@pytest.mark.verifies("FR-1230")
 def test_series_inject_leaves_severity_and_severity_inject_keeps_series():
     mgr = SessionManager(_vig(), seed=0)
     mgr.start()
@@ -278,6 +298,7 @@ def test_series_inject_leaves_severity_and_severity_inject_keeps_series():
     assert len(mgr.world.space_weather["index_series"]) == 1
 
 
+@pytest.mark.verifies("FR-1230")
 def test_later_series_inject_replaces_entries_at_or_after_its_start():
     mgr = SessionManager(_vig(series=[{"at_sim_s": 0, "kp": 1}, {"at_sim_s": 7200, "kp": 8}]), seed=0)
     mgr.start()
@@ -288,6 +309,7 @@ def test_later_series_inject_replaces_entries_at_or_after_its_start():
     assert kps == [1, 3]      # the t=+2h Kp 8 entry is superseded by the inject's own series
 
 
+@pytest.mark.verifies("FR-1230")
 def test_vignette_series_is_stored_in_absolute_sim_time():
     mgr = SessionManager(_vig(series=[{"at_sim_s": 60, "f107": 120}]), seed=0)
     start = mgr.ctx.start_epoch

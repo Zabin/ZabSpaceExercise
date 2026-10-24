@@ -20,6 +20,7 @@ def _perpendicular(u: np.ndarray) -> np.ndarray:
     return p / np.linalg.norm(p)
 
 
+@pytest.mark.verifies("FR-8220")
 def test_zero_degrees_when_chaser_sits_between_target_and_sun():
     """Chaser on the target->Sun line: the target is fully lit as seen from the chaser."""
     sun = sun_unit_eci(_T)
@@ -27,6 +28,7 @@ def test_zero_degrees_when_chaser_sits_between_target_and_sun():
     assert cats_phase_angle_deg(_R_TARGET, chaser, _T) == pytest.approx(0.0, abs=1e-6)
 
 
+@pytest.mark.verifies("FR-8220")
 def test_one_eighty_degrees_when_chaser_is_behind_target_from_sun():
     """Chaser opposite the Sun as seen from the target: backlit / silhouette."""
     sun = sun_unit_eci(_T)
@@ -34,6 +36,7 @@ def test_one_eighty_degrees_when_chaser_is_behind_target_from_sun():
     assert cats_phase_angle_deg(_R_TARGET, chaser, _T) == pytest.approx(180.0, abs=1e-6)
 
 
+@pytest.mark.verifies("FR-8220")
 def test_ninety_degrees_when_chaser_is_perpendicular_to_sun_line():
     """Chaser perpendicular to the target->Sun direction: side-lit."""
     sun = sun_unit_eci(_T)
@@ -41,6 +44,7 @@ def test_ninety_degrees_when_chaser_is_perpendicular_to_sun_line():
     assert cats_phase_angle_deg(_R_TARGET, chaser, _T) == pytest.approx(90.0, abs=1e-6)
 
 
+@pytest.mark.verifies("FR-8220")
 def test_sixty_degrees_intermediate_geometry():
     sun = sun_unit_eci(_T)
     perp = _perpendicular(sun)
@@ -49,11 +53,13 @@ def test_sixty_degrees_intermediate_geometry():
     assert cats_phase_angle_deg(_R_TARGET, chaser, _T) == pytest.approx(60.0, abs=1e-6)
 
 
+@pytest.mark.verifies("FR-8220")
 def test_coincident_chaser_and_target_is_rejected():
     with pytest.raises(ValueError):
         cats_phase_angle_deg(_R_TARGET, _R_TARGET.copy(), _T)
 
 
+@pytest.mark.verifies("FR-8220")
 def test_phase_angle_is_defined_only_once_in_engine():
     """VC item (Design Decision 2 / BL-0152): one shared phase-angle function in `engine/`."""
     from pathlib import Path
@@ -63,6 +69,7 @@ def test_phase_angle_is_defined_only_once_in_engine():
     assert hits == ["sun.py"]
 
 
+@pytest.mark.verifies("FR-1670")
 def test_fr1670_observe_path_reuses_the_shared_phase_angle_function():
     """IP-1221 Test 8 (FS-122 AC11, BL-0152): the FR-1670 observe-gain refinement calls the one
     shared `cats_phase_angle_deg` rather than re-deriving the geometry."""

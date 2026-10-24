@@ -21,6 +21,7 @@ def api_sid():
     return api, sid, mgr
 
 
+@pytest.mark.verifies("FR-4620")
 def test_panels_equal_godview_and_each_cells_view(api_sid):
     api, sid, mgr = api_sid
     cv = mgr.controller_view()
@@ -31,12 +32,14 @@ def test_panels_equal_godview_and_each_cells_view(api_sid):
     assert cv["red"] == mgr.get_view("red").model_dump()
 
 
+@pytest.mark.verifies("FR-4620")
 def test_single_instant_through_the_locked_api(api_sid):
     api, sid, mgr = api_sid
     cv = api.controller_view(sid)
     assert cv["truth"]["now"] == cv["blue"]["now"] == cv["red"]["now"] == cv["now"]
 
 
+@pytest.mark.verifies("FR-4620")
 def test_each_cell_panel_is_fog_filtered(api_sid):
     api, sid, mgr = api_sid
     cv = mgr.controller_view()
@@ -46,6 +49,7 @@ def test_each_cell_panel_is_fog_filtered(api_sid):
     assert all(t["owner"] == "red" for t in cv["red"]["known_tracks"])
 
 
+@pytest.mark.verifies("FR-4620")
 def test_read_only(api_sid):
     api, sid, mgr = api_sid
     before = mgr.world.model_dump()
@@ -64,6 +68,7 @@ def client(api_sid):
     return TestClient(create_app(api)), sid
 
 
+@pytest.mark.verifies("FR-4620")
 def test_http_white_gets_the_four_panels(client):
     c, sid = client
     r = c.get(f"/api/sessions/{sid}/controller_view?cell=white")
@@ -71,6 +76,7 @@ def test_http_white_gets_the_four_panels(client):
     assert set(r.json()) == {"now", "truth", "blue", "red"}
 
 
+@pytest.mark.verifies("FR-4620")
 @pytest.mark.parametrize("cell", ["blue", "red", "observer", None])
 def test_http_non_white_is_403(client, cell):
     c, sid = client
@@ -78,6 +84,7 @@ def test_http_non_white_is_403(client, cell):
     assert c.get(f"/api/sessions/{sid}/controller_view{q}").status_code == 403
 
 
+@pytest.mark.verifies("FR-4620")
 def test_http_unknown_session_is_404(client):
     c, sid = client
     assert c.get("/api/sessions/nope/controller_view?cell=white").status_code == 404

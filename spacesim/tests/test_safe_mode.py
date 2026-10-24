@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.engine.bus import BusState, PayloadState, refresh_ground_view
 from spacesim.engine.busmodel import BusSystem
 from spacesim.engine.effects import EffectInstance, ModerateEffectResolver
@@ -32,6 +33,7 @@ def _cyber_safe_effect(**kw) -> EffectInstance:
     )
 
 
+@pytest.mark.verifies("FR-2510", "FR-1420")
 def test_cyber_induces_safe_mode_and_disables_payload():
     w = WorldState(now=5000)
     w.assets["SAT"] = _sat()
@@ -42,6 +44,7 @@ def test_cyber_induces_safe_mode_and_disables_payload():
     assert bus.safe_mode.entered_at == 5000 and bus.safe_mode.cause == "cyber"
 
 
+@pytest.mark.verifies("FR-2510")
 def test_hardening_and_patching_block_safe_mode():
     res = ModerateEffectResolver()
     # Fully hardened → susceptibility 0.
@@ -56,6 +59,7 @@ def test_hardening_and_patching_block_safe_mode():
     assert not res.resolve(_cyber_safe_effect(), patched, SeededRng(1)).success
 
 
+@pytest.mark.verifies("FR-2310")
 def test_safe_mode_is_discovered_only_at_the_next_telemetry_contact():
     w = WorldState(now=0)
     sat = _sat()
@@ -77,6 +81,7 @@ def test_safe_mode_is_discovered_only_at_the_next_telemetry_contact():
     assert sat.bus_state.ground_view["safe_mode_entered_at"] == hours(1) < contact
 
 
+@pytest.mark.verifies("FR-1120")
 def test_bus_evolution_runs_through_event_loop_and_replays_identically():
     w = WorldState(now=0)
     sat = _sat()

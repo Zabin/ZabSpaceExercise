@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.content.vignette import load_vignette
 from spacesim.engine.custody import Track, observe
 from spacesim.engine.entities import Asset
@@ -14,6 +15,7 @@ from spacesim.session.scene import build_scene
 from spacesim.engine.world import WorldState
 
 
+@pytest.mark.verifies("FR-6210")
 def test_scene_renders_own_assets_and_respects_fog():
     mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
     mgr.start()
@@ -28,6 +30,7 @@ def test_scene_renders_own_assets_and_respects_fog():
     assert "JAM-NORTH" not in blue_ids
 
 
+@pytest.mark.verifies("FR-1510")
 def test_track_uncertainty_grows_between_looks_and_collapses_on_report():
     sat = OrbitState(a_m=42_164e3, e=0.0, i_deg=0.0, raan_deg=0, argp_deg=0, ta_deg=0, epoch=0)  # a GEO object
     world = WorldState(now=0)
@@ -50,6 +53,7 @@ def test_track_uncertainty_grows_between_looks_and_collapses_on_report():
     assert snapped.confidence == 1.0
 
 
+@pytest.mark.verifies("FR-8110")
 def test_scene_carries_classical_orbital_elements():
     """Every on-orbit own asset reports a/e/i/Ω/ω/ν + period to the UI."""
     mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
@@ -68,6 +72,7 @@ def test_scene_carries_classical_orbital_elements():
         assert gs.a_km is None and gs.period_min is None
 
 
+@pytest.mark.verifies("FR-8110", "FR-1310")
 def test_scene_coes_update_after_maneuver():
     """Issuing a maneuver and advancing past its execution window changes the
     reported COEs — proves the 3D/2D views (both consumers of the scene) get a

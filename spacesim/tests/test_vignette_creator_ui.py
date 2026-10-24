@@ -28,6 +28,7 @@ def _draft(c: TestClient) -> str:
 
 # -- FR-5120: JSON view and form view share one state --------------------------------------------
 
+@pytest.mark.verifies("FR-5120")
 def test_json_view_write_is_visible_to_form_view_read():
     c = _client()
     sid = _draft(c)
@@ -39,20 +40,22 @@ def test_json_view_write_is_visible_to_form_view_read():
     assert any(a["id"] == "SAT-J1" for a in state["assets"])
 
 
+@pytest.mark.verifies("FR-5120")
 def test_form_view_add_is_visible_to_json_view_read():
     c = _client()
     sid = _draft(c)
-    r = c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-F1", "line1": _TLE1, "line2": _TLE2})
+    r = c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-F1", "line1": _TLE1, "line2": _TLE2})
     assert r.status_code == 200 and r.json()["ok"] is True
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
     assert any(a["id"] == "SAT-F1" for a in state["assets"])
 
 
+@pytest.mark.verifies("FR-5120")
 def test_json_view_write_and_form_view_converge_on_the_same_edit():
     """The single most likely defect this Feature names: two data paths for one draft."""
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-C1", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-C1", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
     # Edit via the JSON view (replace the whole list, changing SAT-C1's owner)
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
     for a in state["assets"]:
@@ -68,10 +71,11 @@ def test_json_view_write_and_form_view_converge_on_the_same_edit():
     assert edited["owner"] == "red"   # JSON-view edit preserved through the form-view op
 
 
+@pytest.mark.verifies("FR-5120")
 def test_json_view_write_rejects_malformed_asset_without_partial_apply():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-OK", "line1": _TLE1, "line2": _TLE2})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-OK", "line1": _TLE1, "line2": _TLE2})
     r = c.put(f"/api/sessions/{sid}/creator/state", json={"assets": [
         {"id": "SAT-OK", "owner": "blue"}, {"owner": "blue"},   # second entry missing required id
     ]})
@@ -83,20 +87,22 @@ def test_json_view_write_rejects_malformed_asset_without_partial_apply():
 
 # -- FR-5130: 2D/3D preview is ground truth, no fog-of-war filtering ------------------------------
 
+@pytest.mark.verifies("FR-5130")
 def test_creator_scene_shows_assets_of_every_owner_with_no_filtering():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-BLUE", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-RED", "line1": _TLE1, "line2": _TLE2, "owner": "red"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-BLUE", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-RED", "line1": _TLE1, "line2": _TLE2, "owner": "red"})
     scene = c.get(f"/api/sessions/{sid}/creator/scene").json()
     ids = {a["id"] for a in scene["assets"]}
     assert {"SAT-BLUE", "SAT-RED"} <= ids   # both visible together — no CellController filtering
 
 
+@pytest.mark.verifies("FR-5130")
 def test_creator_scene_reflects_asset_changes_within_the_same_authoring_session():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-REFRESH", "line1": _TLE1, "line2": _TLE2})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-REFRESH", "line1": _TLE1, "line2": _TLE2})
     before = {a["id"] for a in c.get(f"/api/sessions/{sid}/creator/scene").json()["assets"]}
     assert "SAT-REFRESH" in before
     c.delete(f"/api/sessions/{sid}/creator/asset/SAT-REFRESH")
@@ -106,10 +112,11 @@ def test_creator_scene_reflects_asset_changes_within_the_same_authoring_session(
 
 # -- FR-5140: TLE-paste and lat/long asset entry --------------------------------------------------
 
+@pytest.mark.verifies("FR-5140")
 def test_tle_paste_with_type_cell_name_fields():
     c = _client()
     sid = _draft(c)
-    r = c.post(f"/api/sessions/{sid}/force/tle", json={
+    r = c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={
         "id": "SAT-TYPED", "line1": _TLE1, "line2": _TLE2, "owner": "red", "kind": "sensor",
     })
     assert r.json()["ok"] is True
@@ -118,10 +125,11 @@ def test_tle_paste_with_type_cell_name_fields():
     assert asset["owner"] == "red" and asset["kind"] == "sensor"
 
 
+@pytest.mark.verifies("FR-5140")
 def test_lat_long_entry_with_type_cell_name_fields():
     c = _client()
     sid = _draft(c)
-    r = c.post(f"/api/sessions/{sid}/force/ground", json={
+    r = c.post(f"/api/sessions/{sid}/force/ground?cell=white", json={
         "id": "GS-TYPED", "lat_deg": 34.74, "lon_deg": -120.57, "owner": "blue", "kind": "ground_station",
     })
     assert r.json()["ok"] is True
@@ -131,6 +139,7 @@ def test_lat_long_entry_with_type_cell_name_fields():
     assert asset["location"]["lat_deg"] == 34.74
 
 
+@pytest.mark.verifies("FR-5140")
 def test_curated_site_list_offered_before_free_entry():
     c = _client()
     sites = c.get("/api/ground_sites").json()
@@ -138,7 +147,7 @@ def test_curated_site_list_offered_before_free_entry():
     assert any(s["code"] == "Vandenberg" for s in sites)
     # A free-entry coordinate not in the curated list is still accepted (fallback path)
     sid = _draft(c)
-    r = c.post(f"/api/sessions/{sid}/force/ground", json={
+    r = c.post(f"/api/sessions/{sid}/force/ground?cell=white", json={
         "id": "GS-FREE", "lat_deg": 12.34, "lon_deg": 56.78,
     })
     assert r.json()["ok"] is True
@@ -146,30 +155,33 @@ def test_curated_site_list_offered_before_free_entry():
 
 # -- FR-5150: asset menu (edit, reassign, delete) -------------------------------------------------
 
+@pytest.mark.verifies("FR-5120")
 def test_asset_edit_reflected_in_json_view_and_scene():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-EDIT", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-EDIT", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
     r = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-EDIT", json={"patch": {"group": "ALPHA"}})
     assert r.json()["ok"] is True
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
     assert next(a for a in state["assets"] if a["id"] == "SAT-EDIT")["group"] == "ALPHA"
 
 
+@pytest.mark.verifies("FR-5150")
 def test_asset_reassign_is_an_owner_patch():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-REASSIGN", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-REASSIGN", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
     r = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-REASSIGN", json={"patch": {"owner": "red"}})
     assert r.json()["ok"] is True
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
     assert next(a for a in state["assets"] if a["id"] == "SAT-REASSIGN")["owner"] == "red"
 
 
+@pytest.mark.verifies("FR-5150")
 def test_asset_delete_removed_from_list_and_edit_then_fails():
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-DEL", "line1": _TLE1, "line2": _TLE2})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-DEL", "line1": _TLE1, "line2": _TLE2})
     r = c.delete(f"/api/sessions/{sid}/creator/asset/SAT-DEL")
     assert r.json()["ok"] is True
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
@@ -180,6 +192,7 @@ def test_asset_delete_removed_from_list_and_edit_then_fails():
 
 # -- FR-5160: seat-count declaration + seat/role-assignment matrix --------------------------------
 
+@pytest.mark.verifies("FR-5160")
 def test_seat_declaration_generates_seat_ids():
     c = _client()
     sid = _draft(c)
@@ -190,6 +203,7 @@ def test_seat_declaration_generates_seat_ids():
     assert read["white"] == ["white-1", "white-2", "white-3"]
 
 
+@pytest.mark.verifies("FR-5160")
 def test_seat_declaration_rejects_non_white_caller():
     """BL-0123 remediation: the White-Cell-only gate checks the *caller's own* seat (the ``cell``
     query param every mutating route uses), not the target cell being declared for."""
@@ -199,6 +213,7 @@ def test_seat_declaration_rejects_non_white_caller():
     assert r.status_code == 403
 
 
+@pytest.mark.verifies("FR-5160")
 def test_seat_declaration_allows_white_caller_to_declare_non_white_target_cell():
     """BL-0123 remediation: a White-Cell caller (query param) may declare seats for any target
     cell (body field) — Blue and Red seats were previously unreachable because the route
@@ -212,12 +227,13 @@ def test_seat_declaration_allows_white_caller_to_declare_non_white_target_cell()
     assert read["blue"] == ["blue-1", "blue-2"]
 
 
+@pytest.mark.verifies("FR-5160")
 def test_matrix_assignment_produces_role_assignments_identical_to_direct_assign_role():
     """A declared seat + matrix checkbox calls the existing assign_role mechanism unmodified —
     the resulting role_assignments state must be identical in shape either way (FR-5160)."""
     c = _client()
     sid = _draft(c)
-    c.post(f"/api/sessions/{sid}/force/tle", json={"id": "SAT-ROLE", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
+    c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-ROLE", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
     c.post(f"/api/sessions/{sid}/creator/seats?cell=white", json={"cell": "white", "count": 1})
     r = c.post(f"/api/sessions/{sid}/roles/assign", json={
         "cell": "white", "seat": "white-1", "asset_or_constellation": "SAT-ROLE", "role": "both",

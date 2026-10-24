@@ -12,6 +12,7 @@ RNG is not restored. Replay does not reproduce such state either, so this is not
 
 from __future__ import annotations
 
+import pytest
 from spacesim.engine import SavedSession, Simulation, WorldState
 from spacesim.engine.simulation import replay
 
@@ -55,6 +56,7 @@ def _replayed(sim: Simulation) -> tuple[str, dict]:
     return w.model_dump_json(), rng.export_state()
 
 
+@pytest.mark.verifies("NFR-1610", "FR-1120")
 def test_raising_handler_leaves_live_state_equal_to_replay():
     sim = _sim()
     sim.advance_to(100)
@@ -66,6 +68,7 @@ def test_raising_handler_leaves_live_state_equal_to_replay():
     assert sim.replay().model_dump_json() == sim.world.model_dump_json()
 
 
+@pytest.mark.verifies("NFR-1610")
 def test_advance_continues_past_the_failure():
     sim = _sim()
     sim.advance_to(100)  # must not raise
@@ -75,6 +78,7 @@ def test_advance_continues_past_the_failure():
     assert kinds == ["inc_counter", "random_roll", FAILURE_KIND, "random_roll", "inc_counter"]
 
 
+@pytest.mark.verifies("NFR-1610")
 def test_pending_events_after_the_target_survive():
     sim = _sim()
     sim.advance_to(100)
@@ -82,6 +86,7 @@ def test_pending_events_after_the_target_survive():
     assert sim.world.counters.get("late") == 1
 
 
+@pytest.mark.verifies("NFR-1610", "FR-1120")
 def test_failure_record_carries_the_failed_event_and_replays_as_noop():
     sim = _sim()
     sim.advance_to(100)
@@ -103,6 +108,7 @@ def test_failure_record_carries_the_failed_event_and_replays_as_noop():
     assert rng.export_state() == snapshot_rng
 
 
+@pytest.mark.verifies("NFR-1610", "FR-1120")
 def test_save_round_trip_with_a_failure_record_reproduces_state():
     sim = _sim()
     sim.advance_to(100)
@@ -112,6 +118,7 @@ def test_save_round_trip_with_a_failure_record_reproduces_state():
     assert rebuilt.model_dump_json() == sim.world.model_dump_json()
 
 
+@pytest.mark.verifies("NFR-1610")
 def test_raise_without_prior_mutation_behaves_the_same():
     sim = Simulation(WorldState(now=0), seed=3)
     sim.register_handler("bad_clean", _raise_only)
@@ -123,6 +130,7 @@ def test_raise_without_prior_mutation_behaves_the_same():
     assert sim.replay().model_dump_json() == sim.world.model_dump_json()
 
 
+@pytest.mark.verifies("NFR-1610")
 def test_world_identity_is_kept_so_session_references_stay_valid():
     """Design Decision 2: rollback restores in place; SessionManager's references stay valid."""
     from spacesim.content.vignette import load_vignette

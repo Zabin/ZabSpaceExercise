@@ -20,6 +20,8 @@
     { id: "activity-panel",  label: "Activity timeline" },
     { id: "aar-panel",       label: "After-action review" },
     { id: "drill-panel",     label: "Subsystem drill-down" },
+    { id: "compare-panel",   label: "Compare (truth / Blue / Red)", handle: "summary" },   // IP-1069 — White-only; a <details>, no <h2>
+    { id: "assessment-panel", label: "Competency assessment" },          // IP-1069 — White-only
   ];
 
   let state = loadState();
@@ -105,12 +107,23 @@
     const maxL = window.innerWidth - 80, maxT = window.innerHeight - 40;
     s.left = Math.max(0, Math.min(maxL, e.clientX - drag.dx));
     s.top = Math.max(0, Math.min(maxT, e.clientY - drag.dy));
+    drag.moved = true;
     drag.el.style.left = s.left + "px";
     drag.el.style.top = s.top + "px";
   }
   function endDrag() {
     window.removeEventListener("pointermove", onDrag);
-    if (drag) { saveState(); drag = null; }
+    if (drag) {
+      // A drag that began on a <summary> must not also toggle its <details> on release: swallow the
+      // click that follows a real move, and only that one (dropped on the next task either way).
+      if (drag.moved) {
+        const el = drag.el;
+        const swallow = (ev) => { ev.preventDefault(); ev.stopPropagation(); };
+        el.addEventListener("click", swallow, true);
+        setTimeout(() => el.removeEventListener("click", swallow, true), 0);
+      }
+      saveState(); drag = null;
+    }
   }
 
   // Capture user resizes of floating panels (the native CSS resize handle) into persisted state.
@@ -135,8 +148,12 @@
     sec.className = "menu-section";
     sec.id = "panels-section";
     sec.innerHTML = `<div class="menu-head">Panels</div>` +
-      PANELS.map((p) =>
-        `<label class="menu-item"><input type="checkbox" data-panel="${p.id}"> ${p.label}</label>`).join("") +
+      PANELS.map((p) => {
+        // IP-1069 (NFR-3030) — a panel the page marks `white-only` is not offered to other seats;
+        // the shared `.white-only` rule hides the menu item exactly as it hides the panel itself.
+        const wo = document.getElementById(p.id)?.classList.contains("white-only") ? " white-only" : "";
+        return `<label class="menu-item${wo}"><input type="checkbox" data-panel="${p.id}"> ${p.label}</label>`;
+      }).join("") +
       `<button class="menu-item" id="panels-reset" title="Restore every panel to the default docked layout">↺ Reset layout</button>`;
     menu.appendChild(sec);
     sec.querySelectorAll("input[data-panel]").forEach((cb) => {

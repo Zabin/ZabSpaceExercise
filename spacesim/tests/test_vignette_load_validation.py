@@ -60,6 +60,7 @@ def _sat(v: dict) -> dict:
 # --------------------------------------------------------------------------- #
 # Test 1 — sensor field rules surface at load (criteria 1–2, BL-0220)
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("FR-5310")
 @pytest.mark.parametrize("field,value", [
     ("beam_mode", "Fence"),
     ("usable_phase_angle_deg", [100, 20]),
@@ -86,6 +87,7 @@ def test_sensor_field_rules_refused_at_load(tmp_path, field, value):
 # --------------------------------------------------------------------------- #
 # Test 2 — TLE parse (criterion 3, FR-5311, BL-0237)
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("FR-5311")
 def test_malformed_tle_refused_naming_asset(tmp_path):
     def mutate(v):
         _sat(v)["orbit"] = {"source": "tle", "tle_line1": "1 99999U garbage", "tle_line2": "2 nonsense"}
@@ -95,6 +97,7 @@ def test_malformed_tle_refused_naming_asset(tmp_path):
     assert sat_id in _wheres(err)
 
 
+@pytest.mark.verifies("FR-5311")
 def test_good_tle_loads(tmp_path):
     def mutate(v):
         _sat(v)["orbit"] = {"source": "tle", "tle_line1": GOOD_TLE1, "tle_line2": GOOD_TLE2}
@@ -106,6 +109,7 @@ def test_good_tle_loads(tmp_path):
 # --------------------------------------------------------------------------- #
 # Test 3 — orbit / location presence (criterion 11, FR-5312; cyber units exempt)
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("FR-5312")
 def test_satellite_without_orbit_refused(tmp_path):
     def mutate(v):
         _sat(v).pop("orbit")
@@ -113,6 +117,7 @@ def test_satellite_without_orbit_refused(tmp_path):
     assert "BLUE-GNSS" in _wheres(err) and "orbit" in _wheres(err)
 
 
+@pytest.mark.verifies("FR-5312")
 def test_jammer_without_location_refused(tmp_path):
     def mutate(v):
         next(a for a in v["red_forces"] if a["kind"] == "jammer").pop("location")
@@ -120,6 +125,7 @@ def test_jammer_without_location_refused(tmp_path):
     assert "RED-JAM" in _wheres(err) and "location" in _wheres(err)
 
 
+@pytest.mark.verifies("FR-5312")
 def test_cyber_unit_without_location_loads():
     raw = _raw("06-satcom-cyber-link.yaml")["vignette"]
     cyber = [a for a in raw["red_forces"] if a.get("kind") == "cyber_unit"]
@@ -130,6 +136,7 @@ def test_cyber_unit_without_location_loads():
 # --------------------------------------------------------------------------- #
 # Test 4 — duplicate ids (criterion 5, FR-5313)
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("FR-5313")
 def test_duplicate_asset_id_across_forces_refused(tmp_path):
     def mutate(v):
         clone = copy.deepcopy(_sat(v))
@@ -138,6 +145,7 @@ def test_duplicate_asset_id_across_forces_refused(tmp_path):
     assert "BLUE-GNSS" in _wheres(err)
 
 
+@pytest.mark.verifies("FR-5313")
 def test_duplicate_sensor_id_refused(tmp_path):
     def mutate(v):
         v["sensors"].append(copy.deepcopy(v["sensors"][0]))
@@ -150,6 +158,7 @@ def test_duplicate_sensor_id_refused(tmp_path):
 # --------------------------------------------------------------------------- #
 # Test 5 — roles_needed references (criterion 4, FR-5314)
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("FR-5314")
 def test_roles_needed_unknown_reference_refused(tmp_path):
     def mutate(v):
         v["roles_needed"] = [{"asset_or_constellation": "NO-SUCH-SAT", "role": "bus"}]
@@ -157,6 +166,7 @@ def test_roles_needed_unknown_reference_refused(tmp_path):
     assert "NO-SUCH-SAT" in _wheres(err)
 
 
+@pytest.mark.verifies("FR-5314")
 def test_roles_needed_asset_and_group_references_load(tmp_path):
     def mutate(v):
         _sat(v)["group"] = "NAV-GROUP"
@@ -169,6 +179,7 @@ def test_roles_needed_asset_and_group_references_load(tmp_path):
 # --------------------------------------------------------------------------- #
 # Test 6 — every problem is collected
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("FR-5310")
 def test_all_problems_collected(tmp_path):
     def mutate(v):
         _sat(v).pop("orbit")
@@ -179,6 +190,7 @@ def test_all_problems_collected(tmp_path):
     assert len(err.problems) >= 2
 
 
+@pytest.mark.verifies("FR-5310")
 def test_schema_error_is_a_validation_error(tmp_path):
     def mutate(v):
         v["estimated_duration_min"] = "long"
@@ -186,6 +198,7 @@ def test_schema_error_is_a_validation_error(tmp_path):
     assert "estimated_duration_min" in _wheres(err)
 
 
+@pytest.mark.verifies("FR-5310")
 def test_bad_start_epoch_refused(tmp_path):
     def mutate(v):
         v["start_epoch_utc"] = "yesterday"
@@ -203,6 +216,7 @@ def client(tmp_path, monkeypatch):
     return TestClient(create_app(api), raise_server_exceptions=False), api
 
 
+@pytest.mark.verifies("FR-5310")
 def test_http_invalid_vignette_is_400(tmp_path, client):
     c, _ = client
 
@@ -221,6 +235,7 @@ def test_http_invalid_vignette_is_400(tmp_path, client):
     assert t.status_code == 400
 
 
+@pytest.mark.verifies("FR-5310")
 def test_http_unknown_id_is_404(client):
     c, _ = client
     r = c.post("/api/sessions", json={"vignette_id": "no-such-vignette", "seed": 1})
@@ -228,6 +243,7 @@ def test_http_unknown_id_is_404(client):
     assert "no-such-vignette" in r.json()["detail"]
 
 
+@pytest.mark.verifies("FR-5310")
 def test_http_traversal_id_is_400(client):
     c, _ = client
     r = c.post("/api/sessions", json={"vignette_id": "../etc", "seed": 1})
@@ -237,6 +253,7 @@ def test_http_traversal_id_is_400(client):
 # --------------------------------------------------------------------------- #
 # Test 8 — registry untouched on refusal (criterion 8, FS-131 OQ5)
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("FR-5310")
 def test_refused_load_leaves_registry_untouched(tmp_path, monkeypatch):
     monkeypatch.setattr(vmod, "_configured_external_dirs", lambda: [tmp_path])
 
@@ -250,6 +267,7 @@ def test_refused_load_leaves_registry_untouched(tmp_path, monkeypatch):
     assert api.load_vignette("training-basics") == "sess-1"
 
 
+@pytest.mark.verifies("FR-5310")
 def test_refused_load_at_cap_evicts_nothing(tmp_path, monkeypatch):
     monkeypatch.setattr(vmod, "_configured_external_dirs", lambda: [tmp_path])
     monkeypatch.setattr(InProcessSession, "MAX_LIVE_SESSIONS", 2)
@@ -270,6 +288,7 @@ def test_refused_load_at_cap_evicts_nothing(tmp_path, monkeypatch):
 # --------------------------------------------------------------------------- #
 # Test 9 — the shipped library is unchanged (criterion 9)
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("FR-5310")
 def test_every_shipped_vignette_loads():
     built_in = [v["id"] for v in list_vignettes(external_dirs=[]) if v["origin"] == "built-in"]
     assert len(built_in) == 19
@@ -277,6 +296,7 @@ def test_every_shipped_vignette_loads():
         assert load_vignette(vid, external_dirs=[]).id == vid
 
 
+@pytest.mark.verifies("FR-5310")
 @pytest.mark.parametrize("filename", ["03-gnss-ew-campaign.yaml", "06-satcom-cyber-link.yaml"])
 def test_gate_does_not_change_the_built_session(filename):
     raw = _raw(filename)["vignette"]

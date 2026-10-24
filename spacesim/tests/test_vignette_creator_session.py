@@ -38,6 +38,7 @@ _TLE1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
 _TLE2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
 
 
+@pytest.mark.verifies("FR-5110")
 def test_draft_session_created_and_registered_never_started():
     api = InProcessSession()
     sid = api.create_draft_session(title="My Draft")
@@ -47,6 +48,7 @@ def test_draft_session_created_and_registered_never_started():
     assert mgr.sim.eventlog.entries == []
 
 
+@pytest.mark.verifies("FR-5110")
 def test_draft_session_accepts_force_edit_before_any_save():
     api = InProcessSession()
     sid = api.create_draft_session()
@@ -55,6 +57,7 @@ def test_draft_session_accepts_force_edit_before_any_save():
     assert "SAT-1" in api._sessions[sid].world.assets
 
 
+@pytest.mark.verifies("FR-5110")
 def test_no_partial_vignette_file_written_before_save(user_save_dir):
     api = InProcessSession()
     sid = api.create_draft_session(title="Partial")
@@ -62,6 +65,7 @@ def test_no_partial_vignette_file_written_before_save(user_save_dir):
     assert not (user_save_dir / "test-partial-draft-not-saved.yaml").exists()
 
 
+@pytest.mark.verifies("FR-5110")
 def test_save_as_vignette_produces_a_loadable_file():
     api = InProcessSession()
     sid = api.create_draft_session(title="Round Trip")
@@ -80,6 +84,7 @@ def test_save_as_vignette_produces_a_loadable_file():
         Path(path).unlink(missing_ok=True)
 
 
+@pytest.mark.verifies("FR-5110")
 def test_no_time_control_route_succeeds_against_a_draft_session():
     api = InProcessSession()
     sid = api.create_draft_session()
@@ -99,6 +104,7 @@ def test_no_time_control_route_succeeds_against_a_draft_session():
 
 # -- IP-1200 (FR-5510) — save-as-scenario ------------------------------------------------------
 
+@pytest.mark.verifies("FR-5510")
 def test_save_as_scenario_rejected_against_unstarted_session():
     api = InProcessSession()
     sid = api.create_draft_session(title="Never Started")
@@ -106,6 +112,7 @@ def test_save_as_scenario_rejected_against_unstarted_session():
         api.save_vignette(sid, "test-save-as-scenario-unstarted", "Unstarted", as_scenario=True)
 
 
+@pytest.mark.verifies("FR-5510")
 def test_save_as_scenario_stamps_the_save_moment_as_new_start_epoch():
     api = InProcessSession()
     sid = api.load_vignette("leo-isr-denial", seed=1)
@@ -126,6 +133,7 @@ def test_save_as_scenario_stamps_the_save_moment_as_new_start_epoch():
         Path(path).unlink(missing_ok=True)
 
 
+@pytest.mark.verifies("FR-5110")
 def test_draft_session_evicted_by_existing_max_live_sessions_cap():
     api = InProcessSession()
     api.MAX_LIVE_SESSIONS = 2

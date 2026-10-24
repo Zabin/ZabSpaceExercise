@@ -337,6 +337,14 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         if cell == "observer":
             raise HTTPException(status_code=403, detail="the Observer seat is read-only")
 
+    def _require_white(cell: Optional[str]) -> None:
+        """IP-1068 (FR-4310/FR-4320) — White Cell controls are refused unless the request names
+        the ``white`` seat (Blue, Red, Observer, or no seat at all). Same client-asserted-seat trust
+        level as ``_reject_observer`` — a structural rejection, not authentication."""
+        if cell != "white":
+            raise HTTPException(status_code=403,
+                                detail="White Cell control: refused unless the request names the white seat")
+
     @app.post("/api/sessions/{sid}/observer/view")
     def set_observer_view(sid: str, req: ObserverViewRequest) -> Ack:
         _require(sid)
@@ -429,7 +437,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     @app.post("/api/sessions/{sid}/clock")
     def set_clock(sid: str, req: ClockRequest, cell: Optional[str] = None) -> dict:
         """Arm/disarm the server-authoritative real-time clock (multiplayer)."""
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.set_clock(sid, req.running, req.rate)
 
     @app.get("/api/sessions/{sid}/clock")
@@ -439,32 +447,32 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions/{sid}/param")
     def set_parameter(sid: str, req: ParamRequest, cell: Optional[str] = None) -> Ack:
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.set_parameter(sid, req.param_id, req.value)
 
     @app.post("/api/sessions/{sid}/start")
     def start(sid: str, cell: Optional[str] = None) -> Ack:
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.start(sid)
 
     @app.post("/api/sessions/{sid}/step")
     def step(sid: str, req: StepRequest, cell: Optional[str] = None) -> Ack:
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.step(sid, req.dt_sim_s)
 
     @app.post("/api/sessions/{sid}/advance")
     def advance(sid: str, req: TimeRequest, cell: Optional[str] = None) -> Ack:
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.advance_to(sid, req.t)
 
     @app.post("/api/sessions/{sid}/rewind")
     def rewind(sid: str, req: TimeRequest, cell: Optional[str] = None) -> Ack:
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.rewind_to(sid, req.t)
 
     @app.post("/api/sessions/{sid}/undo")
     def undo(sid: str, req: UndoRequest, cell: Optional[str] = None) -> Ack:
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.undo_last(sid, req.n)
 
     @app.post("/api/sessions/{sid}/inject")
@@ -472,7 +480,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Fire or schedule an inject. IP-1063 (BL-0188/BL-0129): a malformed inject, or one whose
         FR-4430 target precondition fails (e.g. an `anomaly` on an asset with no bus), is a 400
         naming the reason, with nothing applied — the console's `api.post` only surfaces non-2xx."""
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         ack = api.fire_inject(sid, req.inject, at_sim_t=req.at_sim_t)
         if not ack.ok:
             raise HTTPException(status_code=400, detail=ack.reason)
@@ -486,7 +494,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions/{sid}/force/tle")
     def add_tle(sid: str, req: TleRequest, cell: Optional[str] = None) -> Ack:
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.add_tle(sid, req.id, req.line1, req.line2, owner=req.owner, kind=req.kind)
 
     @app.post("/api/sessions/{sid}/force/bulk_import")
@@ -494,7 +502,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """IP-1190 (FR-5220) — multi-object TLE/CCSDS OMM (KVN) import, additive alongside
         `force/tle` above. A file recognized as neither format (Design Decision 1) surfaces as
         a 400, not a per-object report."""
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         try:
             return api.bulk_import(sid, req.format, req.content, req.assignments)
         except ValueError as exc:
@@ -504,7 +512,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     @app.post("/api/sessions/{sid}/force/ground")
     def add_ground_asset(sid: str, req: GroundAssetRequest, cell: Optional[str] = None) -> Ack:
         """FR-5140 — lat/long asset entry, the ground-based sibling of ``force/tle`` above."""
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.add_ground_asset(sid, req.id, req.lat_deg, req.lon_deg,
                                     owner=req.owner, kind=req.kind)
 
@@ -1020,8 +1028,13 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         return api.save(sid)
 
     @app.post("/api/sessions/load_save")
-    def load_save(state: dict) -> dict:
-        return {"session": api.load_save(state)}
+    def load_save(state: dict, cell: Optional[str] = None) -> dict:
+        _require_white(cell)
+        try:
+            sid, warnings = api.load_save_with_warnings(state)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        return {"session": sid, "warnings": warnings}
 
     if STATIC_DIR.exists():
         app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")

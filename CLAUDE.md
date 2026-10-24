@@ -168,18 +168,31 @@ Build every phase **test-first**: encode that phase's roadmap "**done when**" ch
 `pytest` test, then implement until it passes. Never write production code without a failing test
 driving it. Add a regression test for each design gap you resolve (see `memory.md`). Run `pytest`
 before every commit and keep the suite green on the branch. The Phase-1 determinism property test
-is the canonical permanent gate.
+is the canonical permanent gate. **Every test names its origin** (`BL-0310`, IP-1330): mark it
+`@pytest.mark.verifies("FR-xxxx", …)` (or a module-level `pytestmark`) with the requirement leaf it
+verifies — else its `FS-xxx`, or an `IP-xxxx` for a package's own completion test. The suite fails on an
+untagged test (modules still on `spacesim/tests/test_origin_allowlist.txt` are tolerated; that list only
+shrinks) and on an ID that is not a live baseline item. The RTM's Test column is **generated, never hand
+edited** (`NFR-2850`): regenerate it with `python3 -m pytest --origin-report=rtm` in the same commit.
+**Documentation checks run with the suite** (IP-1350, `NFR-3800`/`3820`/`3830`): a new broken relative link,
+an `INDEX.md` that omits a document in its folder, or a status-ledger disagreement fails the suite. Known
+defects sit on `spacesim/tests/doc_integrity_allow_*.txt`; those lists only shrink (fix the defect, delete its
+line in the same commit).
 
 ## Build/test commands
 
 ```bash
-pip install pydantic numpy sgp4 pyyaml pytest hypothesis skyfield fastapi uvicorn httpx
+pip install pydantic numpy sgp4 pyyaml pytest hypothesis skyfield fastapi uvicorn httpx playwright
 python3 -m spacesim.ui_web                                       # reads host/port/reload from spacesim.config.yaml (defaults 127.0.0.1:8000)
 uvicorn spacesim.ui_web.server:app                               # equivalent if you prefer uvicorn's CLI
 uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload       # LAN multiplayer: bind to host IP, share URL
 python3 -m pytest                                                # runs the whole suite (testpaths = spacesim/tests)
 python3 -m pytest spacesim/tests/test_determinism.py             # the Phase-1 determinism gate
 python3 -m pytest spacesim/tests/test_import_guard.py            # the Phase-0 engine guardrails
+python3 -m pytest -m browser                                     # headless-Chromium console-rule tests (IP-1340); skip loudly where Playwright/Chromium is absent
+python3 -m pytest -m "not browser"                                # everything except the browser tests
+python3 -m pytest --origin-report [--origin-ids=FR-1120,…]       # read-only: tests by declared origin; requirements no test names
+python3 -m pytest --origin-report=rtm                            # regenerate the RTM Test column (runs no tests)
 ```
 
 **Server config.** Host, port, and reload come from `spacesim.config.yaml` at the repo root
@@ -206,6 +219,7 @@ hostile participant on the LAN can read another cell's belief state through `/sc
 v1 PME training context (everyone in the room is on the same team learning together) and is
 documented as the explicit trust boundary; see `docs/AUDIT-2026-06.md` §D5 / §F1. Hardening
 options (per-cell tokens) are tracked in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
+**White Cell controls (clock, step/advance/rewind/undo, start, param, inject, force-add, save load) are refused to any request not naming the `white` seat (IP-1068, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication.**
 **The Observer seat's mutation-rejection (IP-1130) is enforced at this same trust level, not a
 stronger one** — the server rejects any request asserting `cell=observer`, a real structural
 enforcement (it holds even for a request that bypasses the UI entirely), but the seat assertion
@@ -425,6 +439,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **Build / schedule inject** panel with editable JSON + Now/+seconds/absolute-UTC scheduler
   (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
+  **IP-1101 (FR-7210/FR-7220/FR-7230):** a save is self-contained — `save_state` adds `save_format`, `simulator_version`, a `content` portion (the vignette as loaded plus force-added assets) and the replay `baseline`; `from_state` builds from them (legacy saves reload by id), `validate_save` refuses a bad save before replay, and `InProcessSession.load_save_with_warnings` returns the resume warnings (`load_save` route: `{session, warnings}`),
   **IP-1063 (BL-0129/BL-0188):** pure `validate_inject_effects` — `fire_inject` rejects a
   malformed or FR-4430-precondition-failing inject atomically (`ValueError` → `Ack(ok=False)` →
   `/inject` 400; e.g. an `anomaly` on an asset with no `bus_state`), and `_apply_inject_effects`

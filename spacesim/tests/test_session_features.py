@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.content.vignette import load_vignette
 from spacesim.engine.orders import Order
 from spacesim.session import aar
@@ -16,6 +17,7 @@ def _capstone():
     return mgr
 
 
+@pytest.mark.verifies("FR-7210")
 def test_save_resume_reproduces_state_and_queue():
     mgr = SessionManager(load_vignette("training-basics"), seed=1)
     mgr.start()
@@ -41,6 +43,7 @@ def test_save_resume_reproduces_state_and_queue():
     assert resumed.get_godview().model_dump_json() == mgr.get_godview().model_dump_json()
 
 
+@pytest.mark.verifies("FR-7310")
 def test_aar_snapshot_scrubs_read_only_across_the_campaign():
     mgr = _capstone()
     RedDoctrine(mgr).step()
@@ -54,6 +57,7 @@ def test_aar_snapshot_scrubs_read_only_across_the_campaign():
     assert mgr.sim.clock.now == live_now                  # scrubbing never disturbs the live session
 
 
+@pytest.mark.verifies("FR-2110", "FR-6210")
 def test_alarms_feed_lists_symptoms_for_own_assets_only():
     mgr = _capstone()
     RedDoctrine(mgr).step()
@@ -64,6 +68,7 @@ def test_alarms_feed_lists_symptoms_for_own_assets_only():
     assert all(a["asset"] != "SATCOM-1" for a in mgr.alarms("red"))
 
 
+@pytest.mark.verifies("FR-1320")
 def test_maneuver_ledger_returns_rows_matching_eventlog_and_is_fog_scoped():
     """IP-1250 (FR-1320) — maneuver_ledger() returns exactly N rows for an Asset with N recorded
     manoeuvres, matching the EventLog; fog-scoped identically to get_telemetry (own assets only,
@@ -118,6 +123,7 @@ def _gated_manager():
     return mgr
 
 
+@pytest.mark.verifies("FR-3430")
 def test_session_decide_gated_order_role_gated():
     mgr = _gated_manager()
     ack = mgr.issue_order("blue", Order(cell="blue", actor="INT", action="engage", target="RSAT"))
@@ -128,6 +134,7 @@ def test_session_decide_gated_order_role_gated():
     assert ok, reason
 
 
+@pytest.mark.verifies("FR-3440")
 def test_session_issue_roe_change_role_gated():
     mgr = _gated_manager()
     ok, reason = mgr.issue_roe_change("blue", "blue", "kinetic_authorized", False)
@@ -136,6 +143,7 @@ def test_session_issue_roe_change_role_gated():
     assert ok, reason
 
 
+@pytest.mark.verifies("FR-3430")
 def test_pending_gated_order_discarded_on_rewind():
     """IP-1270 Design Decision 2 — a pending-approval order still awaiting a decision at rewind
     is discarded, with no persisted cross-session pending state."""

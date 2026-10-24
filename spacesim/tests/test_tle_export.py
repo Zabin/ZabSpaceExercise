@@ -47,6 +47,7 @@ def _kepler_rv(a_m, e, i_deg, raan=40.0, argp=30.0, ta=10.0):
     return elements_to_rv(orb, _T)
 
 
+@pytest.mark.verifies("FR-7440")
 def test_tle_lines_are_well_formed():
     r, v = _kepler_rv(R_EARTH_EQ + 550e3, 0.0005, 51.6)
     out = state_to_tle(r, v, _T)
@@ -57,6 +58,7 @@ def test_tle_lines_are_well_formed():
     Satrec.twoline2rv(l1, l2)  # the project's own TLE-import parser accepts it
 
 
+@pytest.mark.verifies("FR-7440")
 @pytest.mark.parametrize("a_m,e,i_deg", [
     (R_EARTH_EQ + 400e3, 0.0005, 51.6),      # ISS-like LEO
     (R_EARTH_EQ + 700e3, 0.0, 98.2),          # sun-synchronous, circular
@@ -76,6 +78,7 @@ def test_tle_fit_round_trip_within_bound(a_m, e, i_deg):
     assert out["fit_error_m"] == pytest.approx(err, abs=1e-6)
 
 
+@pytest.mark.verifies("FR-7440")
 @pytest.mark.parametrize("iso", ["2026-05-17T13:00:00Z", "2030-01-01T06:00:00Z", "2031-08-02T00:00:00Z"])
 @pytest.mark.parametrize("i_deg", [0.0, 0.001, 0.01])
 def test_tle_never_emits_outside_bound_for_degenerate_geo(iso, i_deg):
@@ -91,6 +94,7 @@ def test_tle_never_emits_outside_bound_for_degenerate_geo(iso, i_deg):
     assert _round_trip_error_m(out["line1"], out["line2"], r) <= ROUND_TRIP_BOUND_M
 
 
+@pytest.mark.verifies("FR-7440")
 def test_tle_fits_every_shipped_vignette_orbit():
     """Every on-orbit asset in every shipped vignette (at its start epoch) exports within bound."""
     import glob
@@ -117,6 +121,7 @@ def test_tle_fits_every_shipped_vignette_orbit():
     assert count > 0
 
 
+@pytest.mark.verifies("FR-7440")
 def test_tle_epoch_is_given_sim_time():
     r, v = _kepler_rv(R_EARTH_EQ + 550e3, 0.001, 45.0)
     out = state_to_tle(r, v, _T)
@@ -125,6 +130,7 @@ def test_tle_epoch_is_given_sim_time():
     assert (sat.jdsatepoch + sat.jdsatepochF) == pytest.approx(micros_to_jd(_T), abs=2e-8)
 
 
+@pytest.mark.verifies("FR-7440")
 def test_tle_sourced_identity_and_bstar_carried():
     src = OrbitState(source="tle", tle_line1=_ISS_L1, tle_line2=_ISS_L2)
     ident = tle_identity(src)
@@ -146,6 +152,7 @@ def test_tle_sourced_identity_and_bstar_carried():
     assert line1[2:7] == "99999" and line1[9:17].strip() == ""
 
 
+@pytest.mark.verifies("FR-7440")
 def test_tle_rejects_unrepresentable():
     r = np.array([R_EARTH_EQ + 500e3, 0.0, 0.0])
     v_esc = np.array([0.0, 12_000.0, 0.0])  # hyperbolic at LEO radius
@@ -156,6 +163,7 @@ def test_tle_rejects_unrepresentable():
         state_to_tle(r_lo, v_lo, _T)
 
 
+@pytest.mark.verifies("FR-7440")
 def test_tle_export_is_deterministic():
     r, v = _kepler_rv(R_EARTH_EQ + 800e3, 0.002, 70.0)
     a = state_to_tle(r, v, _T)

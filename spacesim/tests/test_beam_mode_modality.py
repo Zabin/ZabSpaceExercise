@@ -71,6 +71,7 @@ def _observe(world: WorldState, actor: str, params: dict, method: str = "issue")
     return order, events
 
 
+@pytest.mark.verifies("FR-1610")
 @pytest.mark.parametrize("method", ["issue", "dry_run"])
 def test_radar_refuses_a_sar_mode(method):
     order, events = _observe(_world(_radar()), "RDR", {"beam_mode": "spotlight"}, method)
@@ -79,6 +80,7 @@ def test_radar_refuses_a_sar_mode(method):
     assert events == []
 
 
+@pytest.mark.verifies("FR-1610")
 def test_radar_own_modes_and_absent_mode_unchanged():
     gains = {}
     for mode in ("fence", "dish", None, "auto", ""):
@@ -93,6 +95,7 @@ def test_radar_own_modes_and_absent_mode_unchanged():
     assert gains[None] == gains["auto"] == gains[""] == legacy
 
 
+@pytest.mark.verifies("FR-1610")
 @pytest.mark.parametrize("method", ["issue", "dry_run"])
 def test_optical_sensor_refuses_a_radar_mode(method):
     order, events = _observe(_world(_optical()), "OPT", {"beam_mode": "fence"}, method)
@@ -101,6 +104,7 @@ def test_optical_sensor_refuses_a_radar_mode(method):
     assert events == []
 
 
+@pytest.mark.verifies("FR-1610")
 def test_auto_picks_a_sensor_offering_the_requested_mode():
     order, events = _observe(_world(_optical("A-OPT"), _radar("Z-RDR")), "auto", {"beam_mode": "dish"})
     assert order.status == "queued", order.fail_reason
@@ -108,6 +112,7 @@ def test_auto_picks_a_sensor_offering_the_requested_mode():
     assert events[0].payload["beam_mode"] == "dish"
 
 
+@pytest.mark.verifies("FR-1610")
 @pytest.mark.parametrize("method", ["issue", "dry_run"])
 def test_auto_refuses_a_mode_no_own_sensor_offers(method):
     order, events = _observe(_world(_radar("R1"), _radar("R2")), "auto", {"beam_mode": "polarimetric"},
@@ -117,6 +122,7 @@ def test_auto_refuses_a_mode_no_own_sensor_offers(method):
     assert events == []
 
 
+@pytest.mark.verifies("FR-1610")
 def test_console_builds_the_mode_list_from_the_tasked_sensor():
     js = APP_JS.read_text(encoding="utf-8")
     assert "function beamModesForSensor" in js

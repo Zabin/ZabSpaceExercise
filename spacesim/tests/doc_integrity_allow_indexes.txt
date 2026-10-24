@@ -1,0 +1,4 @@
+# IP-1350 — INDEX.md files that omit a document in their folder (`index -> document | owning stage`). Shrink-only.
+docs/INDEX.md -> AUDIT-2026-06-COMMANDS.md | owner of docs/INDEX.md (BL-0292 sweep / docs coherence)
+docs/INDEX.md -> AUDIT-2026-06-UI-TTC.md | owner of docs/INDEX.md (BL-0292 sweep / docs coherence)
+docs/architecture/INDEX.md -> strategic-assumptions-register.md | 03-architecture-design-synthesis

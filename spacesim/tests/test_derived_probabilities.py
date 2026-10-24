@@ -31,6 +31,7 @@ from spacesim.engine.engage import INTERCEPTORS, kill_probability_from_class
 # §M2 — INTERCEPTORS database structure and Pk math.
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1410")
 def test_interceptors_database_has_four_classes_with_required_fields():
     assert set(INTERCEPTORS) == {"bmd_adapted", "mrbm_kkv", "abm_heavy", "coorbital"}
     for name, spec in INTERCEPTORS.items():
@@ -42,6 +43,7 @@ def test_interceptors_database_has_four_classes_with_required_fields():
             assert spec["max_alt_km"] > 0, name
 
 
+@pytest.mark.verifies("FR-1410")
 def test_altitude_reach_is_a_hard_cap_not_a_soft_decay():
     """Real interceptor classes have hard ceiling — beyond it the engagement is impossible."""
     # MRBM-derived KKV maxes at 1000 km (Mission Shakti / FY-1C envelope).
@@ -51,6 +53,7 @@ def test_altitude_reach_is_a_hard_cap_not_a_soft_decay():
     assert p_over_envelope == 0.0
 
 
+@pytest.mark.verifies("FR-1410")
 def test_coorbital_has_no_altitude_ceiling():
     """SJ-21 / Burevestnik-class co-orbital phases to anywhere it can dwell-time reach."""
     p_leo = kill_probability_from_class("coorbital", target_alt_km=600)
@@ -58,6 +61,7 @@ def test_coorbital_has_no_altitude_ceiling():
     assert p_leo > 0.0 and p_geo > 0.0
 
 
+@pytest.mark.verifies("FR-1410")
 def test_salvo_increases_pk_but_correlation_caps_it():
     """1 - (1-p1)^n with a correlated-failure floor (a bad track defeats every round)."""
     p1 = kill_probability_from_class("mrbm_kkv", target_alt_km=500, salvo_n=1)
@@ -66,6 +70,7 @@ def test_salvo_increases_pk_but_correlation_caps_it():
     assert p1 < p4 <= p10 <= 0.95
 
 
+@pytest.mark.verifies("FR-1410")
 def test_pk_clamped_in_unit_interval():
     for name in INTERCEPTORS:
         for alt in (100, 500, 1500, 36000):
@@ -74,6 +79,7 @@ def test_pk_clamped_in_unit_interval():
                 assert 0.0 <= p <= 0.99
 
 
+@pytest.mark.verifies("FR-1410")
 def test_unknown_interceptor_class_returns_zero():
     """Bad input is a soft-fail (Pk=0), never an exception — the validator catches it earlier."""
     assert kill_probability_from_class("not_a_class", target_alt_km=500) == 0.0
@@ -104,6 +110,7 @@ def _issue_through_api(api, sid, body):
     return api.issue_order(sid, cell, order)
 
 
+@pytest.mark.verifies("FR-1410")
 def test_jam_ignores_operator_success_prob_override(session):
     """A jam order with ``success_prob: 0.01`` resolves at the same Pₛ as without — the
     operator's number is read out of the params dict (back-compat parse) but never feeds
@@ -144,6 +151,7 @@ def test_jam_ignores_operator_success_prob_override(session):
             )
 
 
+@pytest.mark.verifies("FR-1420")
 def test_cyber_requires_vector_no_raw_success_prob_fallback(session):
     """The legacy `if vector else base_prob` path is gone — cyber without a vector
     must be rejected at validation."""
@@ -176,6 +184,7 @@ def test_cyber_requires_vector_no_raw_success_prob_fallback(session):
 # §C3 — observe.gain / classification operator overrides removed.
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1510")
 def test_observe_ignores_operator_gain_override(session):
     """An operator typing `gain: 100` cannot fast-track custody."""
     api, sid = session
@@ -207,18 +216,21 @@ def test_observe_ignores_operator_gain_override(session):
 # §M3 — pnt.set_integrity replaced by pnt.flex_power + pnt.set_health_flag.
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-2410")
 def test_pnt_flex_power_is_a_real_verb():
     from spacesim.engine.buscommands import COMMAND_VERBS, PAYLOAD_VERBS
     assert "pnt.flex_power" in COMMAND_VERBS
     assert "pnt.flex_power" in PAYLOAD_VERBS
 
 
+@pytest.mark.verifies("FR-2410")
 def test_pnt_set_health_flag_is_a_real_verb():
     from spacesim.engine.buscommands import COMMAND_VERBS, PAYLOAD_VERBS
     assert "pnt.set_health_flag" in COMMAND_VERBS
     assert "pnt.set_health_flag" in PAYLOAD_VERBS
 
 
+@pytest.mark.verifies("FR-2410")
 def test_pnt_flex_power_changes_payload_state():
     from spacesim.engine.bus import BusState, PayloadState
     from spacesim.engine.buscommands import apply_command
@@ -237,6 +249,7 @@ def test_pnt_flex_power_changes_payload_state():
     assert w.assets["SV"].payload_state.detail.get("flex_power_signal") == "M-code"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_pnt_set_health_flag_logs_consequence():
     from spacesim.engine.bus import BusState, PayloadState
     from spacesim.engine.buscommands import apply_command

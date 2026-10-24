@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 import math
 
 import numpy as np
@@ -22,6 +23,7 @@ LEO_A = R_EARTH_EQ + 550e3
 GEO_A = 42_164e3
 
 
+@pytest.mark.verifies("FR-5220")
 def test_mean_to_true_round_trips_with_true_to_mean():
     """IP-1190 — mean_to_true() is true_to_mean()'s inverse (mean -> true -> mean recovers)."""
     for e in (0.0, 0.001, 0.3, 0.7):
@@ -33,6 +35,7 @@ def test_mean_to_true_round_trips_with_true_to_mean():
             assert abs(recovered_m - m) < 1e-9
 
 
+@pytest.mark.verifies("FR-5220")
 def test_mean_to_true_extraction_did_not_change_elements_to_rv():
     """IP-1190 — elements_to_rv() calling the extracted mean_to_true() produces the exact same
     ECI state as before the refactor (regression on a known Keplerian element set)."""
@@ -52,6 +55,7 @@ def test_mean_to_true_extraction_did_not_change_elements_to_rv():
     assert r is not None and v is not None
 
 
+@pytest.mark.verifies("FR-1210")
 def test_circular_period_matches_vis_viva():
     assert period_s(LEO_A) == math.sqrt(LEO_A ** 3 / MU_EARTH) * 2 * math.pi
     # ~90 min LEO, ~24 h GEO
@@ -59,6 +63,7 @@ def test_circular_period_matches_vis_viva():
     assert abs(period_s(GEO_A) / 3600 - 23.93) < 0.1
 
 
+@pytest.mark.verifies("FR-1210")
 def test_circular_orbit_keeps_constant_radius_and_returns_after_one_period():
     orbit = OrbitState(a_m=LEO_A, e=0.0, i_deg=51.6, raan_deg=10, argp_deg=0, ta_deg=0, epoch=0)
     radii = []
@@ -74,6 +79,7 @@ def test_circular_orbit_keeps_constant_radius_and_returns_after_one_period():
     assert np.linalg.norm(r_period - r0) < 60_000.0
 
 
+@pytest.mark.verifies("FR-1210")
 def test_element_state_round_trip():
     orbit = OrbitState(a_m=LEO_A, e=0.02, i_deg=53.0, raan_deg=120, argp_deg=45, ta_deg=200, epoch=0)
     t = minutes(33)
@@ -84,6 +90,7 @@ def test_element_state_round_trip():
     assert np.linalg.norm(v2 - v) < 1e-3
 
 
+@pytest.mark.verifies("FR-1210")
 def test_regime_classification():
     assert classify_regime(LEO_A, 0.0, 51.6) == "LEO"
     assert classify_regime(R_EARTH_EQ + 700e3, 0.0, 98.0) == "LEO_SSO"

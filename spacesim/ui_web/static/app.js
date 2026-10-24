@@ -1861,7 +1861,9 @@ async function saveSession() {
 async function loadSaveFile(file) {
   const state = JSON.parse(await file.text());
   stopRealtimeClock();
-  SID = (await api.post("/api/sessions/load_save", state)).session;
+  const loaded = await api.post("/api/sessions/load_save", state);
+  SID = loaded.session;
+  if ((loaded.warnings || []).length) alert("Save loaded with warnings:\n" + loaded.warnings.join("\n"));   // IP-1101
   location.hash = SID;   // multiplayer: resumed session is also shareable
   $("session").textContent = "session " + SID; $("start").disabled = false;
   updateSessionSummary(state.vignette_id || "resumed", state.started);

@@ -54,12 +54,14 @@ def _scripted_inject_manager(at_sim_s: float, text: str = "t0") -> SessionManage
 # Library loading
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-108")
 def test_inject_library_loads_nonempty():
     api = InProcessSession()
     lib = api.inject_library()
     assert isinstance(lib, list) and len(lib) >= 5
 
 
+@pytest.mark.verifies("FS-108")
 def test_library_entries_have_required_fields():
     api = InProcessSession()
     for entry in api.inject_library():
@@ -68,6 +70,7 @@ def test_library_entries_have_required_fields():
         assert isinstance(entry.get("effects"), list) and entry["effects"]
 
 
+@pytest.mark.verifies("FS-108")
 def test_library_effects_use_supported_types():
     api = InProcessSession()
     for entry in api.inject_library():
@@ -76,6 +79,7 @@ def test_library_effects_use_supported_types():
                 f"{entry['id']} uses unsupported effect type: {eff.get('type')}"
 
 
+@pytest.mark.verifies("FS-108")
 def test_library_is_cached():
     """The cache attribute must be populated and survive across calls.
 
@@ -98,6 +102,7 @@ def test_library_is_cached():
 # Scheduled firing
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4410")
 def test_fire_inject_immediate_applies_now():
     api, sid = _api_session()
     mgr = api._sessions[sid]
@@ -108,6 +113,7 @@ def test_fire_inject_immediate_applies_now():
     assert len(mgr.world.messages) == before + 1
 
 
+@pytest.mark.verifies("FR-4410")
 def test_fire_inject_scheduled_does_not_apply_until_advance():
     api, sid = _api_session()
     mgr = api._sessions[sid]
@@ -123,6 +129,7 @@ def test_fire_inject_scheduled_does_not_apply_until_advance():
     assert any(m.get("text") == "later" for m in mgr.world.messages)
 
 
+@pytest.mark.verifies("FR-4410")
 def test_fire_inject_past_timestamp_applies_immediately():
     api, sid = _api_session()
     mgr = api._sessions[sid]
@@ -137,6 +144,7 @@ def test_fire_inject_past_timestamp_applies_immediately():
 # spawn_debris handler
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4410")
 def test_spawn_debris_effect_creates_debris_field():
     api, sid = _api_session()
     mgr = api._sessions[sid]
@@ -159,6 +167,7 @@ def test_spawn_debris_effect_creates_debris_field():
 # End-to-end: pick a library entry, fire it through the API
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4410")
 def test_library_entry_roundtrip_through_fire_inject():
     api, sid = _api_session()
     mgr = api._sessions[sid]
@@ -171,6 +180,7 @@ def test_library_entry_roundtrip_through_fire_inject():
     assert len(mgr.world.debris) == before + 1
 
 
+@pytest.mark.verifies("FR-4410", "FR-1120")
 def test_library_entry_scheduled_replays_through_eventlog():
     """A scheduled inject must show up in the event log so a save/resume round-trips."""
     api, sid = _api_session()
@@ -188,6 +198,7 @@ def test_library_entry_scheduled_replays_through_eventlog():
 # IP-1061 (BL-0062/BL-0064) — scripted time-inject arming/re-arming, space_weather validation
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4410")
 def test_time_inject_at_zero_fires_at_start():
     """A1: a scripted inject at at_sim_s: 0 must fire at session start, not be skipped."""
     mgr = _scripted_inject_manager(0, text="t0")
@@ -199,6 +210,7 @@ def test_time_inject_at_zero_fires_at_start():
     assert matches[0]["t"] == mgr.ctx.start_epoch
 
 
+@pytest.mark.verifies("FR-4410")
 def test_rewind_does_not_refire_fired_inject():
     """A1: a rewind to (or past) an inject's firing time must not refire it."""
     # Case 1: inject at 5s, rewind to exactly its firing time after it already fired.
@@ -226,6 +238,7 @@ def test_rewind_does_not_refire_fired_inject():
     assert len(inject_events2) == 1
 
 
+@pytest.mark.verifies("FR-4410")
 def test_rewind_to_start_before_first_advance_keeps_zero_inject():
     """A1: rewinding to start_epoch before ever advancing must not lose a 0s inject."""
     mgr = _scripted_inject_manager(0, text="t0c")
@@ -237,6 +250,7 @@ def test_rewind_to_start_before_first_advance_keeps_zero_inject():
     assert len(matches) == 1
 
 
+@pytest.mark.verifies("FR-4410")
 def test_space_weather_invalid_severity_coerced():
     """A3: an invalid severity value is coerced to 'minor', not stored verbatim."""
     api, sid = _api_session()
@@ -246,6 +260,7 @@ def test_space_weather_invalid_severity_coerced():
     assert any(m.get("text") == "Space weather: severity=minor" for m in mgr.world.messages)
 
 
+@pytest.mark.verifies("FR-4410")
 def test_space_weather_clear_alias_and_message():
     """A3: the 'clear' alias resolves to 'none' and posts exactly one message to all cells."""
     api, sid = _api_session()

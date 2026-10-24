@@ -82,6 +82,7 @@ def _engage(target: str = "RSAT0", **params) -> Order:
 
 # -- FR-1460: validation bound -------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1460")
 def test_oversized_salvo_refused_by_dry_run_and_issue():
     world = _kinetic_world(ammo=2)
     sim, osys = _osys(world)
@@ -95,6 +96,7 @@ def test_oversized_salvo_refused_by_dry_run_and_issue():
     assert world.assets["INT"].resources.ammo == 2
 
 
+@pytest.mark.verifies("FR-1460")
 def test_exact_salvo_accepted_and_charged_on_success():
     world = _kinetic_world(ammo=2)
     sim, osys = _osys(world, resolver=_ForcedResolver(success=True))
@@ -104,6 +106,7 @@ def test_exact_salvo_accepted_and_charged_on_success():
     assert world.assets["INT"].resources.ammo == 0
 
 
+@pytest.mark.verifies("FR-1460")
 @pytest.mark.parametrize("params", [{}, {"salvo_n": None}])
 def test_absent_or_null_salvo_counts_as_one_round(params):
     world = _kinetic_world(ammo=1)
@@ -111,6 +114,7 @@ def test_absent_or_null_salvo_counts_as_one_round(params):
     assert osys.dry_run(_engage(**params)).status == "queued"
 
 
+@pytest.mark.verifies("FR-1460")
 def test_zero_rounds_still_no_ammo():
     world = _kinetic_world(ammo=0)
     _, osys = _osys(world)
@@ -132,6 +136,7 @@ def _queued_overdraw():
     return world, sim, resolver
 
 
+@pytest.mark.verifies("FR-1460")
 def test_queued_engagements_cannot_overdraw():
     world, _, resolver = _queued_overdraw()
     assert world.assets["INT"].resources.ammo == 0
@@ -145,6 +150,7 @@ def test_queued_engagements_cannot_overdraw():
     assert world.assets[failed[0]["target"]].health != "destroyed"
 
 
+@pytest.mark.verifies("FR-1460")
 def test_queued_overdraw_replays_identically():
     world, sim, _ = _queued_overdraw()
     replayed = sim.replay()
@@ -168,6 +174,7 @@ def _missed_engagement():
     return world, sim, osys
 
 
+@pytest.mark.verifies("FR-1480")
 def test_missed_salvo_is_charged():
     world, _, osys = _missed_engagement()
     (rec,) = _kinetic_log(world)
@@ -179,6 +186,7 @@ def test_missed_salvo_is_charged():
     assert osys.issue(_engage(salvo_n=2)).fail_reason == "insufficient_ammo"
 
 
+@pytest.mark.verifies("FR-1480")
 def test_salvo_at_already_destroyed_target_is_charged():
     world = _kinetic_world(ammo=2)
     sim, osys = _osys(world)                                 # the real resolver
@@ -191,6 +199,7 @@ def test_salvo_at_already_destroyed_target_is_charged():
     assert world.assets["INT"].resources.ammo == 1
 
 
+@pytest.mark.verifies("FR-1480")
 def test_exact_salvo_charged_on_a_miss():
     world = _kinetic_world(ammo=2)
     sim, osys = _osys(world, resolver=_ForcedResolver(success=False))
@@ -203,6 +212,7 @@ def test_exact_salvo_charged_on_a_miss():
 
 # Recorded at `8b690d8` (before IP-1321) with the real resolver: seed 1 hits, seed 2 misses; the
 # rounds left were 1 and 2. The outcomes must not change; only the miss's rounds now drop to 1.
+@pytest.mark.verifies("FR-1480")
 @pytest.mark.parametrize("seed,achieved,success", [(1, "destroy", True), (2, "none", False)])
 def test_engagement_outcome_unchanged_and_charged_for_seed(seed, achieved, success):
     world = _kinetic_world(ammo=2)
@@ -214,6 +224,7 @@ def test_engagement_outcome_unchanged_and_charged_for_seed(seed, achieved, succe
     assert world.assets["INT"].resources.ammo == 1
 
 
+@pytest.mark.verifies("FR-1480")
 def test_missed_salvo_replays_identically():
     world, sim, _ = _missed_engagement()
     replayed = sim.replay()
@@ -223,6 +234,7 @@ def test_missed_salvo_replays_identically():
 
 # -- FR-1470: jamming leaves the power rating alone ----------------------------------------------
 
+@pytest.mark.verifies("FR-1470")
 @pytest.mark.parametrize("rating", [0.0, 250.0])
 @pytest.mark.parametrize("success", [True, False])
 def test_jam_leaves_power_rating_unchanged(rating, success):
@@ -250,6 +262,7 @@ _RECORDED_JAM_OUTCOMES = [
 ]
 
 
+@pytest.mark.verifies("FR-1470")
 @pytest.mark.parametrize("seed", [5, 11])
 def test_jam_outcomes_unchanged_for_seed(seed):
     m = SessionManager(load_vignette("leo-isr-denial"), seed=seed)

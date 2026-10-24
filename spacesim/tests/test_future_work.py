@@ -19,6 +19,7 @@ from spacesim.session.manager import SessionManager
 # §10.E.20 AAR export
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-7310")
 def test_aar_csv_export_has_three_sections():
     mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
     mgr.start()
@@ -32,6 +33,7 @@ def test_aar_csv_export_has_three_sections():
     assert "leo-isr-denial" in csv
 
 
+@pytest.mark.verifies("FR-7310")
 def test_aar_csv_export_round_trips_objectives():
     """Every objective in the live report appears in the CSV."""
     mgr = SessionManager(load_vignette("training-basics"), seed=1)
@@ -43,13 +45,14 @@ def test_aar_csv_export_round_trips_objectives():
             assert oid in csv, f"objective {side}.{oid} missing from CSV export"
 
 
+@pytest.mark.verifies("FR-7310")
 def test_aar_json_export_endpoint_serves_csv_and_json():
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
     from spacesim.ui_web.server import create_app
     c = TestClient(create_app())
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
-    c.post(f"/api/sessions/{sid}/start")
+    c.post(f"/api/sessions/{sid}/start?cell=white")
     csv = c.get(f"/api/sessions/{sid}/aar/export.csv")
     assert csv.status_code == 200 and "META" in csv.text
     js = c.get(f"/api/sessions/{sid}/aar/export.json").json()
@@ -60,6 +63,7 @@ def test_aar_json_export_endpoint_serves_csv_and_json():
 # §10.D.15 ground-station outage inject
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4410")
 def test_gs_outage_inject_degrades_station_and_clears_on_restore():
     mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
     mgr.start()
@@ -73,6 +77,7 @@ def test_gs_outage_inject_degrades_station_and_clears_on_restore():
     assert mgr.world.assets["GS-NORTH"].health == "nominal"
 
 
+@pytest.mark.verifies("FR-4410")
 def test_gs_outage_blocks_downlink_orders():
     """A downlink via a degraded station rejects with no_window (scene_from_world excludes it)."""
     mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
@@ -87,18 +92,21 @@ def test_gs_outage_blocks_downlink_orders():
 # §10.C.13 atmospheric refraction
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1220")
 def test_refraction_lifts_horizon_by_about_half_a_degree():
     """At true elevation = 0°, refraction adds ~0.55° (Saemundsson)."""
     h_app = _refracted_elevation(0.0)
     assert 0.4 < h_app < 0.7
 
 
+@pytest.mark.verifies("FR-1220")
 def test_refraction_negligible_aloft():
     """At true elevation ≥ 20°, refraction is < 0.05°."""
     h_app = _refracted_elevation(20.0)
     assert 19.95 < h_app < 20.05
 
 
+@pytest.mark.verifies("FR-4410")
 def test_space_weather_inject_increases_eclipse_drain():
     """§10.C.11 — severe storm doubles eclipse drain; a sat in eclipse loses SoC faster."""
     from spacesim.engine.bus import BusState, advance_bus
@@ -117,6 +125,7 @@ def test_space_weather_inject_increases_eclipse_drain():
     assert nominal > minor > severe   # storm drains battery faster
 
 
+@pytest.mark.verifies("FR-4410")
 def test_space_weather_inject_round_trips_through_session():
     """Firing a space-weather inject persists severity on WorldState and survives replay."""
     mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
@@ -126,6 +135,7 @@ def test_space_weather_inject_round_trips_through_session():
     assert mgr.world.space_weather["severity"] == "severe"
 
 
+@pytest.mark.verifies("FR-1220")
 def test_refraction_extends_pass_duration_marginally():
     """Toggle refraction on for a known orbit + station and confirm windows widen, not shrink."""
     from spacesim.engine.access import AccessProvider
@@ -154,6 +164,7 @@ def test_refraction_extends_pass_duration_marginally():
 # §10.C.12 variable elevation masks (terrain-aware horizon)
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1220")
 def test_mask_table_shrinks_passes_relative_to_scalar_mask():
     """A high mask_table value across the whole sky shrinks pass durations vs. the default mask."""
     from spacesim.engine.access import AccessProvider, COMMAND_UPLINK
@@ -181,6 +192,7 @@ def test_mask_table_shrinks_passes_relative_to_scalar_mask():
     assert blocked_total < clear_total / 2   # the wall cuts available access in half or more
 
 
+@pytest.mark.verifies("FR-1220")
 def test_mask_table_per_azimuth_arc():
     """A mask that blocks only one azimuth wedge leaves passes in other wedges intact."""
     from spacesim.engine.access import _refracted_elevation  # noqa: F401  (sanity import)
@@ -197,6 +209,7 @@ def test_mask_table_per_azimuth_arc():
 # §10.C.14 GNSS spoof (distinct from jam)
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1410")
 def test_spoof_outcome_does_not_register_as_link_denied():
     """A spoof effect leaves the link 'up' for the denial helper — only is_link_spoofed catches it."""
     from spacesim.engine.effects import ActiveEffect, is_link_denied, is_link_spoofed
@@ -211,6 +224,7 @@ def test_spoof_outcome_does_not_register_as_link_denied():
     assert is_link_spoofed(mgr.world, "ISR-EO-1", t) is True
 
 
+@pytest.mark.verifies("FR-1410")
 def test_spoof_drives_integrity_flag_telemetry_signature():
     """Under active spoof, integrity_flag drops far below 1.0; nominal sample stays ≈1.0."""
     from spacesim.engine import telemetry as tel
@@ -232,6 +246,7 @@ def test_spoof_drives_integrity_flag_telemetry_signature():
 # §10.D.16 civilian bystander assets — denying them raises political consequence
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1410")
 def test_civilian_link_denial_appends_political_consequence():
     """When an EW effect denies a CIVILIAN asset's link, a political consequence is logged."""
     from spacesim.engine.effects import EffectInstance, ModerateEffectResolver
@@ -252,6 +267,7 @@ def test_civilian_link_denial_appends_political_consequence():
     assert any("civilian_collateral" in s.get("cause", "") for s in side)
 
 
+@pytest.mark.verifies("FR-1410")
 def test_non_civilian_link_denial_does_not_raise_consequence():
     """Denying a normal (military) asset's link should NOT raise a civilian-collateral consequence."""
     from spacesim.engine.effects import EffectInstance, ModerateEffectResolver
@@ -276,6 +292,7 @@ def test_non_civilian_link_denial_does_not_raise_consequence():
 # §10.D.17 vignette inspector — /api/vignettes/{id}/source endpoint
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4110")
 def test_vignette_source_endpoint_returns_yaml():
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
@@ -286,6 +303,7 @@ def test_vignette_source_endpoint_returns_yaml():
     assert "vignette:" in r.text and "leo-isr-denial" in r.text
 
 
+@pytest.mark.verifies("FR-4110")
 def test_vignette_source_endpoint_404s_unknown_id():
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
@@ -299,6 +317,7 @@ def test_vignette_source_endpoint_404s_unknown_id():
 # §5 per-step recovery deep-links
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-2510")
 def test_recovery_steps_advance_through_chain():
     """A full recovery confirms first-pass steps and ends with current_step='done'."""
     from spacesim.engine.bus import enter_safe_mode
@@ -327,6 +346,7 @@ def test_recovery_steps_advance_through_chain():
     assert "re_enable" in sm2.steps_done
 
 
+@pytest.mark.verifies("FR-2510")
 def test_recovery_blocked_when_root_cause_persists():
     """Unpatched cyber vuln → recovery finishes 'blocked', not 'done'."""
     from spacesim.engine.bus import enter_safe_mode
@@ -347,6 +367,7 @@ def test_recovery_blocked_when_root_cause_persists():
 # §5 EW safe-mode inducement (vs. the cyber path already exercised)
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-2510")
 def test_ew_safe_mode_routes_cause_as_ew():
     """An EW (electronic_warfare) effect with outcome=safe_mode safes the bus with cause='ew'."""
     from spacesim.engine.effects import EffectInstance, ModerateEffectResolver
@@ -369,6 +390,7 @@ def test_ew_safe_mode_routes_cause_as_ew():
 # §7 SSN auto-cue (organic → SSN characterize)
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-3210")
 def test_auto_cue_files_ssn_characterize_after_organic_observe():
     """Organic observe with intermediate confidence auto-files an SSN characterize request."""
     from spacesim.engine.orders import Order
@@ -388,6 +410,7 @@ def test_auto_cue_files_ssn_characterize_after_organic_observe():
     assert chars, "no SSN characterize request auto-cued"
 
 
+@pytest.mark.verifies("FR-3210")
 def test_auto_cue_disabled_by_default():
     """With ssn_auto_cue unset, no SSN request is filed automatically."""
     from spacesim.engine.orders import Order
@@ -408,6 +431,7 @@ def test_auto_cue_disabled_by_default():
 # §2 conjunction screening + conjunction_warning inject
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-105")
 def test_predict_conjunctions_finds_close_pair():
     """Two satellites in nearly-identical orbits should show up as a conjunction."""
     from spacesim.engine.conjunction import predict_conjunctions
@@ -419,6 +443,7 @@ def test_predict_conjunctions_finds_close_pair():
     assert any({o["a"], o["b"]} <= {"BLUE-HVA", "BLUE-ESCORT", "RED-COORB"} for o in out)
 
 
+@pytest.mark.verifies("FR-4410")
 def test_conjunction_warning_inject_populates_world_conjunctions():
     """Firing a conjunction_warning inject appends to WorldState.conjunctions."""
     mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
@@ -428,6 +453,7 @@ def test_conjunction_warning_inject_populates_world_conjunctions():
     assert any(c["a"] == "ISR-EO-1" and c["b"] == "DEBRIS-X" for c in mgr.world.conjunctions)
 
 
+@pytest.mark.verifies("FR-1120", "FS-105")
 def test_prop_collision_avoid_through_session_and_replay():
     """The full path: warning → verb queued → executed → Δv consumed → replay-safe."""
     from spacesim.engine.orders import Order
@@ -452,6 +478,7 @@ def test_prop_collision_avoid_through_session_and_replay():
 # §7 SSN budget triage + commercial third-party feed
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-3210")
 def test_ssn_budget_exhaustion_rejects_request():
     """Once the cell's budget is spent, further requests reject with budget_exhausted."""
     from spacesim.engine.ssn import SSNRequest
@@ -469,6 +496,7 @@ def test_ssn_budget_exhaustion_rejects_request():
     assert not ack2.ok and ack2.reason == "budget_exhausted"
 
 
+@pytest.mark.verifies("FR-3210")
 def test_ssn_budget_unlimited_when_not_set():
     """With no budget configured, the legacy unlimited-tasking behaviour stays."""
     from spacesim.engine.ssn import SSNRequest
@@ -484,6 +512,7 @@ def test_ssn_budget_unlimited_when_not_set():
             assert ack.reason != "budget_exhausted"
 
 
+@pytest.mark.verifies("FR-3210")
 def test_ssn_commercial_network_instantiated_and_routable():
     """ssn_commercial_dispersion adds a 'commercial' network usable by either cell."""
     from spacesim.engine.ssn import SSNRequest
@@ -498,6 +527,7 @@ def test_ssn_commercial_network_instantiated_and_routable():
     assert ack.ok, ack.reason
 
 
+@pytest.mark.verifies("FR-3210")
 def test_commercial_costs_double_against_budget():
     """A commercial-network request costs 2× the priority's base PRIORITY_COST."""
     from spacesim.engine.ssn import SSNRequest, PRIORITY_COST
@@ -516,6 +546,7 @@ def test_commercial_costs_double_against_budget():
 # User-added FW #1/#2 — orbital paths in scene
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-8110")
 def test_scene_render_asset_carries_ground_track():
     """build_scene includes a non-empty 60-point track for each orbital own-asset."""
     from spacesim.session.scene import build_scene
@@ -530,6 +561,7 @@ def test_scene_render_asset_carries_ground_track():
             assert -90 <= pt[0] <= 90 and -180 <= pt[1] <= 180 and pt[2] >= 0
 
 
+@pytest.mark.verifies("FR-8110")
 def test_scene_ground_asset_has_empty_track():
     """Ground stations / jammers (non-orbital) carry no track points."""
     from spacesim.session.scene import build_scene

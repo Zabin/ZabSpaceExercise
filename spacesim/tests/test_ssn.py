@@ -7,6 +7,7 @@ narrow on the request lifecycle and on observable end-state effects.
 
 from __future__ import annotations
 
+import pytest
 from spacesim.content.vignette import load_vignette
 from spacesim.engine.access import AccessProvider, COMMAND_UPLINK, Scene, SENSOR_OBSERVATION
 from spacesim.engine.bus import BusState
@@ -54,12 +55,14 @@ def _mgr_with_network(dispersion: str, *, target_factory=_leo_target) -> Session
 
 # ---- coverage matrix (§5) ----------------------------------------------------
 
+@pytest.mark.verifies("FR-3210")
 def test_sparse_radar_net_cannot_service_geo():
     mgr = _mgr_with_network("sparse", target_factory=_geo_target)
     ack = mgr.submit_ssn_request("blue", "characterize", "TGT", "GEO", "priority")
     assert not ack.ok and ack.reason == "no_coverage_regime"
 
 
+@pytest.mark.verifies("FR-3210")
 def test_global_net_services_geo_request():
     mgr = _mgr_with_network("global", target_factory=_geo_target)
     cov = mgr.ssn_coverage("blue", "GEO")
@@ -70,6 +73,7 @@ def test_global_net_services_geo_request():
     assert ack.reason != "no_coverage_regime"
 
 
+@pytest.mark.verifies("FR-3210")
 def test_leo_serviceable_by_every_non_empty_dispersion():
     for d in ("sparse", "regional", "global", "proliferated"):
         cov = _mgr_with_network(d).ssn_coverage("blue", "LEO")
@@ -78,6 +82,7 @@ def test_leo_serviceable_by_every_non_empty_dispersion():
 
 # ---- hybrid turnaround (§7) --------------------------------------------------
 
+@pytest.mark.verifies("FR-3210")
 def test_hybrid_turnaround_within_sla_and_processing_delay_applied():
     mgr = _mgr_with_network("global")
     ack = mgr.submit_ssn_request("blue", "track", "TGT", "LEO", "priority")
@@ -91,6 +96,7 @@ def test_hybrid_turnaround_within_sla_and_processing_delay_applied():
     assert ack.product_at == ack.collect_at + expected_delay
 
 
+@pytest.mark.verifies("FR-3210")
 def test_national_red_network_uses_raw_processing_delay():
     mgr = SessionManager(load_vignette("training-basics"), seed=2)
     mgr.world.assets.clear()
@@ -107,6 +113,7 @@ def test_national_red_network_uses_raw_processing_delay():
 
 # ---- fog (§8) ----------------------------------------------------------------
 
+@pytest.mark.verifies("FR-6210")
 def test_fog_blocks_other_cell_from_seeing_requests_and_coverage():
     mgr = _mgr_with_network("global")
     mgr.submit_ssn_request("blue", "track", "TGT", "LEO", "priority")
@@ -120,6 +127,7 @@ def test_fog_blocks_other_cell_from_seeing_requests_and_coverage():
 
 # ---- delivery + custody loop (§7.3, §15) -------------------------------------
 
+@pytest.mark.verifies("FR-3220")
 def test_delivery_updates_track_and_replay_is_byte_identical():
     mgr = _mgr_with_network("global")
     ack = mgr.submit_ssn_request("blue", "characterize", "TGT", "LEO", "priority")
@@ -132,6 +140,7 @@ def test_delivery_updates_track_and_replay_is_byte_identical():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
+@pytest.mark.verifies("FR-3120")
 def test_cancel_before_collect_is_replay_safe():
     mgr = _mgr_with_network("global")
     ack = mgr.submit_ssn_request("blue", "track", "TGT", "LEO", "routine")
@@ -144,6 +153,7 @@ def test_cancel_before_collect_is_replay_safe():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
+@pytest.mark.verifies("FR-3220")
 def test_window_quality_scales_product_confidence():
     """A grazing-pass collection (low window quality) delivers a measurably lower-confidence track.
 
@@ -172,6 +182,7 @@ def test_window_quality_scales_product_confidence():
     assert confidences["blue"] > confidences["red"] + 0.1
 
 
+@pytest.mark.verifies("FR-7210")
 def test_ssn_requests_survive_save_resume():
     """An in-flight SSN request survives save/resume; its scheduled events still fire."""
     # Use a vignette that already has Blue SSN configured (V7 → Blue global) so from_state, which
@@ -187,6 +198,7 @@ def test_ssn_requests_survive_save_resume():
     assert any(t.owner == "blue" and t.object == "RED-OBJ" for t in mgr2.world.tracks)
 
 
+@pytest.mark.verifies("FR-2510")
 def test_harden_reduces_safe_mode_probability():
     """def.harden (payload_state.hardened) is observable at the effect resolver: p drops."""
     from spacesim.engine.bus import BusState, PayloadState
@@ -212,6 +224,7 @@ def test_harden_reduces_safe_mode_probability():
     assert safed <= 14, f"hardening expected to reduce safe-mode incidence; got {safed}/20"
 
 
+@pytest.mark.verifies("FR-1520")
 def test_characterize_via_ssn_unlocks_engage_gate():
     """An SSN characterize that yields a weapons-quality track unlocks a previously-blocked engage."""
     mgr = _mgr_with_network("global")
@@ -252,6 +265,7 @@ def _clustered_receivers(prefix: str, n: int, sub: GeoPoint) -> tuple[SSNNetwork
     return net, sensors
 
 
+@pytest.mark.verifies("FR-1650")
 def test_passive_rf_fix_requires_min_receivers_and_emitting_target():
     sat = OrbitState(a_m=R_EARTH_EQ + 550e3, e=0.0, i_deg=51.6, raan_deg=0, argp_deg=0, ta_deg=0, epoch=0)
     prop = ModeratePropagator()
@@ -283,6 +297,7 @@ def test_passive_rf_fix_requires_min_receivers_and_emitting_target():
 
 # ---- FR-3310 rewind parity (IP-1131, BL-0259) ----------------------------------
 
+@pytest.mark.verifies("FR-3310")
 def test_ssn_request_and_command_behave_identically_under_rewind():
     """FR-3310 — commands and collection tasks share one scheduler, so a rewind to before their
     execution treats both kinds the same way: neither survives as a pending activity, neither's

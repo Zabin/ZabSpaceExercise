@@ -29,22 +29,26 @@ from spacesim.engine.jam import (
 # modulation_params
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1410")
 def test_modulation_params_known():
     mp, name = modulation_params("spot")
     assert name == "spot"
     assert mp["effectiveness"] == pytest.approx(0.95)
 
 
+@pytest.mark.verifies("FR-1410")
 def test_modulation_params_fallback_to_barrage():
     mp, name = modulation_params(None)
     assert name == "barrage"
 
 
+@pytest.mark.verifies("FR-1410")
 def test_modulation_params_unknown_falls_back():
     mp, name = modulation_params("magnetic_resonance_disruptor")
     assert name == "barrage"
 
 
+@pytest.mark.verifies("FR-1410")
 def test_available_modulations_has_four_known():
     mods = available_modulations()
     assert set(mods) >= {"barrage", "spot", "sweep", "deceptive"}
@@ -54,16 +58,19 @@ def test_available_modulations_has_four_known():
 # effective_radius_km
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1410")
 def test_radius_scales_with_sqrt_power():
     r1 = effective_radius_km(100.0, "barrage")
     r4 = effective_radius_km(400.0, "barrage")
     assert r4 == pytest.approx(2 * r1, rel=1e-3)
 
 
+@pytest.mark.verifies("FR-1410")
 def test_radius_zero_power():
     assert effective_radius_km(0.0, "barrage") == 0.0
 
 
+@pytest.mark.verifies("FR-1410")
 def test_radius_spot_larger_than_barrage_same_power():
     """Spot focuses energy → larger effective denial radius than barrage at same power."""
     r_spot = effective_radius_km(100.0, "spot")
@@ -71,6 +78,7 @@ def test_radius_spot_larger_than_barrage_same_power():
     assert r_spot > r_barr
 
 
+@pytest.mark.verifies("FR-1410")
 def test_radius_at_reference_power_is_baseline():
     """Barrage at 100 W → 50 km reference radius."""
     r = effective_radius_km(100.0, "barrage")
@@ -81,17 +89,20 @@ def test_radius_at_reference_power_is_baseline():
 # effective_success_prob
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1410")
 def test_prob_deceptive_higher_than_barrage():
     p_dec = effective_success_prob(0.5, "deceptive", 1e6, 1e6)
     p_bar = effective_success_prob(0.5, "barrage", 1e6, 1e6)
     assert p_dec > p_bar
 
 
+@pytest.mark.verifies("FR-1410")
 def test_prob_capped_at_99():
     p = effective_success_prob(0.99, "deceptive", 1e6, 1e6)
     assert p <= 0.99
 
 
+@pytest.mark.verifies("FR-1410")
 def test_prob_bandwidth_mismatch_hurts_sweep():
     """Sweep has effectiveness < 1.0, so bandwidth coverage matters."""
     p_full = effective_success_prob(0.9, "sweep", 1e6, 1e6)
@@ -99,6 +110,7 @@ def test_prob_bandwidth_mismatch_hurts_sweep():
     assert p_partial < p_full
 
 
+@pytest.mark.verifies("FR-1410")
 def test_prob_zero_victim_bandwidth_safe():
     """Pathological zero victim bandwidth should not divide by zero."""
     p = effective_success_prob(0.9, "barrage", 1e6, 0.0)
@@ -109,15 +121,18 @@ def test_prob_zero_victim_bandwidth_safe():
 # jam_footprint_polygon
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1410")
 def test_footprint_zero_radius_empty():
     assert jam_footprint_polygon(0.0, 0.0, 0.0) == []
 
 
+@pytest.mark.verifies("FR-1410")
 def test_footprint_default_24_points():
     fp = jam_footprint_polygon(0.0, 0.0, 50.0)
     assert len(fp) == 24
 
 
+@pytest.mark.verifies("FR-1410")
 def test_footprint_centered_on_input():
     fp = jam_footprint_polygon(30.0, -120.0, 100.0)
     avg_lat = sum(p[0] for p in fp) / len(fp)
@@ -126,6 +141,7 @@ def test_footprint_centered_on_input():
     assert avg_lon == pytest.approx(-120.0, abs=0.05)
 
 
+@pytest.mark.verifies("FR-1410")
 def test_footprint_radius_about_right():
     """A 100 km radius footprint at the equator spans ~2 × 100 km = ~1.8° lon."""
     fp = jam_footprint_polygon(0.0, 0.0, 100.0)
@@ -137,11 +153,13 @@ def test_footprint_radius_about_right():
 # power_draw_w
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1410")
 def test_power_draw_barrage_higher_than_spot():
     """Barrage's wider noise floor wastes power → higher draw at same emitted P."""
     assert power_draw_w(100.0, "barrage") > power_draw_w(100.0, "spot")
 
 
+@pytest.mark.verifies("FR-1410")
 def test_power_draw_zero():
     assert power_draw_w(0.0, "barrage") == 0.0
 
@@ -170,6 +188,7 @@ def _api_with_jammer():
     return api, sid, actor_id
 
 
+@pytest.mark.verifies("FR-1410")
 def test_compute_jam_returns_radius_and_footprint():
     api, sid, actor = _api_with_jammer()
     res = api.compute_jam(sid, "blue", actor,
@@ -181,6 +200,7 @@ def test_compute_jam_returns_radius_and_footprint():
     assert 0.0 < res["success_prob"] <= 0.99
 
 
+@pytest.mark.verifies("FR-1410")
 def test_compute_jam_higher_power_larger_radius():
     api, sid, actor = _api_with_jammer()
     r_low = api.compute_jam(sid, "blue", actor, {"power_w": 50.0})["effective_radius_km"]
@@ -188,12 +208,14 @@ def test_compute_jam_higher_power_larger_radius():
     assert r_high > r_low
 
 
+@pytest.mark.verifies("FR-1410")
 def test_compute_jam_deceptive_overt_attribution():
     api, sid, actor = _api_with_jammer()
     res = api.compute_jam(sid, "blue", actor, {"modulation": "deceptive"})
     assert res["attribution_default"] == "overt"
 
 
+@pytest.mark.verifies("FR-1410")
 def test_compute_jam_unknown_actor_returns_error():
     api, sid, _actor = _api_with_jammer()
     res = api.compute_jam(sid, "blue", "NOPE_GHOST_JAMMER", {})

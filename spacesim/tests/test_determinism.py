@@ -9,10 +9,14 @@ roadmap this test must stay green forever.
 from __future__ import annotations
 
 from hypothesis import given, settings
+import pytest
 from hypothesis import strategies as st
 
 from spacesim.engine import SavedSession, Simulation, WorldState
 from spacesim.engine.simulation import replay
+
+# FS-133 Decision 3: the gate tags its invariant's leaves (invariant 1).
+pytestmark = pytest.mark.verifies("NFR-1500", "FR-1120")
 
 
 def _build(events: list[tuple[int, str, dict]], seed: int) -> Simulation:

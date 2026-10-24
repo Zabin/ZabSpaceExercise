@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.engine.custody import Track, observe
 from spacesim.engine.simtime import minutes
 
 
+@pytest.mark.verifies("FR-1510")
 def test_confidence_decays_with_time_and_resets_on_observation():
     tr = Track(object="OBJ", owner="blue", last_observation=0, confidence=1.0, characterized=True)
     assert tr.current_confidence(0) == 1.0
@@ -18,6 +20,7 @@ def test_confidence_decays_with_time_and_resets_on_observation():
     assert tr.current_confidence(minutes(60)) == 1.0
 
 
+@pytest.mark.verifies("FR-1520")
 def test_weapons_quality_requires_characterized_and_confidence():
     tr = Track(object="OBJ", owner="blue", last_observation=0, confidence=1.0, characterized=False)
     assert not tr.is_weapons_quality(0)            # not characterized yet
@@ -26,6 +29,7 @@ def test_weapons_quality_requires_characterized_and_confidence():
     assert not tr.is_weapons_quality(minutes(120))  # confidence decayed below threshold
 
 
+@pytest.mark.verifies("FR-1510")
 def test_uncertainty_grows_between_observations_and_collapses_on_report():
     tr = Track(object="OBJ", owner="blue", last_observation=0)
     assert tr.current_uncertainty_km(0) == 0.0

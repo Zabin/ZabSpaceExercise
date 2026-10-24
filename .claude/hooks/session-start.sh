@@ -9,4 +9,4 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
 fi
 
 python3 -m pip install --quiet --disable-pip-version-check --root-user-action=ignore \
-  pydantic numpy sgp4 pyyaml pytest hypothesis skyfield fastapi uvicorn httpx
+  pydantic numpy sgp4 pyyaml pytest hypothesis skyfield fastapi uvicorn httpx playwright

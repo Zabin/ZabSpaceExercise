@@ -49,6 +49,7 @@ def _sim_with(world: WorldState, roe=None, seed=7) -> tuple[Simulation, OrderSys
     return sim, osys
 
 
+@pytest.mark.verifies("FR-3110", "FR-1410")
 def test_order_queues_to_a_future_window_then_jam_denies_link_during_it():
     sat = _leo()
     world = WorldState(now=0)
@@ -70,6 +71,7 @@ def test_order_queues_to_a_future_window_then_jam_denies_link_during_it():
     assert not is_link_denied(world, "SAT", end + minutes(5))  # link recovers after the window
 
 
+@pytest.mark.verifies("FR-1440")
 def test_jam_link_target_scopes_which_link_is_denied():
     """AUDIT-2026-06-COMMANDS.md §N9 — jam.link_target ∈ {uplink, downlink, crosslink}.
 
@@ -92,6 +94,7 @@ def test_jam_link_target_scopes_which_link_is_denied():
     assert not is_link_denied(world, "SAT", start + 1, link="downlink")
 
 
+@pytest.mark.verifies("FR-1440")
 def test_jam_link_target_defaults_to_downlink():
     sat = _leo()
     world = WorldState(now=0)
@@ -107,6 +110,7 @@ def test_jam_link_target_defaults_to_downlink():
     assert is_link_denied(world, "SAT", start + 1, link="downlink")
 
 
+@pytest.mark.verifies("FR-1520", "FR-3420")
 def test_kinetic_engage_requires_track_and_roe_then_spawns_debris():
     sat = _leo()
     world = WorldState(now=0)
@@ -137,6 +141,7 @@ def test_kinetic_engage_requires_track_and_roe_then_spawns_debris():
     assert world.assets["INT"].resources.ammo == 0  # ammo consumed
 
 
+@pytest.mark.verifies("FR-3430")
 def test_gated_order_held_pending_until_decision_recorded():
     """IP-1270 (FR-3430) — an order matching a declared gating rule does not execute until a
     decision is recorded; the EventLog shows the request, decision, and elapsed time."""
@@ -169,6 +174,7 @@ def test_gated_order_held_pending_until_decision_recorded():
     assert world.assets["RSAT"].health == "destroyed"
 
 
+@pytest.mark.verifies("FR-3430")
 def test_gated_order_denied_is_rejected():
     sat = _leo()
     world = WorldState(now=0)
@@ -185,6 +191,7 @@ def test_gated_order_denied_is_rejected():
     assert order.status == "rejected" and order.fail_reason == "gate_denied"
 
 
+@pytest.mark.verifies("FR-3430")
 def test_gated_order_decision_requires_the_designated_controller_role():
     sat = _leo()
     world = WorldState(now=0)
@@ -201,6 +208,7 @@ def test_gated_order_decision_requires_the_designated_controller_role():
     assert order.status == "pending_approval"
 
 
+@pytest.mark.verifies("FR-3430")
 def test_unmatched_order_is_unaffected_by_gating_rules():
     """Regression: an order not matching any gating rule executes per its existing gates."""
     sat = _leo()
@@ -214,6 +222,7 @@ def test_unmatched_order_is_unaffected_by_gating_rules():
     assert order.status == "queued"
 
 
+@pytest.mark.verifies("FR-3440")
 def test_live_roe_change_affects_orders_after_but_not_before():
     """IP-1270 (FR-3440) — a controller-issued ROE change at simulated time T changes the
     evaluated ROE value for orders issued after T but not before T; replay reproduces the
@@ -245,6 +254,7 @@ def test_live_roe_change_affects_orders_after_but_not_before():
     assert osys._effective_roe("blue", after.issued_at).get("kinetic_authorized") is True
 
 
+@pytest.mark.verifies("FR-3440")
 def test_only_controller_role_may_issue_a_roe_change():
     world = WorldState(now=0)
     sim = Simulation(world, seed=7)
@@ -253,6 +263,7 @@ def test_only_controller_role_may_issue_a_roe_change():
     assert not ok and reason == "not_controller"
 
 
+@pytest.mark.verifies("FR-3420")
 def test_per_cell_roe_kinetic_divergent_gates_independently():
     # IP-1172 (FR-3420) — Blue authorized, Red not; each cell's order-issuance is independent.
     sat = _leo()
@@ -281,6 +292,7 @@ def test_per_cell_roe_kinetic_divergent_gates_independently():
     assert red_order.status == "rejected" and red_order.fail_reason == "roe_kinetic_not_authorized"
 
 
+@pytest.mark.verifies("FR-3420")
 def test_per_cell_roe_cyber_divergent_gates_independently():
     # IP-1172 (FR-3420) — mirror image of the kinetic case, for cyber ROE.
     world = WorldState(now=0)
@@ -306,6 +318,7 @@ def test_per_cell_roe_cyber_divergent_gates_independently():
     assert blue_order.status == "rejected" and blue_order.fail_reason == "roe_cyber_not_authorized"
 
 
+@pytest.mark.verifies("FR-1420")
 def test_cyber_resolves_outside_any_pass_window():
     sat = _leo()
     world = WorldState(now=0)
@@ -335,6 +348,7 @@ def test_cyber_resolves_outside_any_pass_window():
                 for ae in world.active_effects)
 
 
+@pytest.mark.verifies("FR-1510")
 def test_observe_order_resets_custody_at_the_collection_window():
     sat = _leo()
     world = WorldState(now=0)
@@ -352,6 +366,7 @@ def test_observe_order_resets_custody_at_the_collection_window():
     assert tr.characterized and tr.current_confidence(world.now) > 0.9  # custody restored
 
 
+@pytest.mark.verifies("FR-1640")
 def test_cue_dependent_sensor_rejected_without_existing_track():
     """IP-1220 (FR-1640) — a requires_cue sensor's tasking is rejected against a target the
     tasking cell has no existing Track on."""
@@ -367,6 +382,7 @@ def test_cue_dependent_sensor_rejected_without_existing_track():
     assert order.fail_reason == "requires_cue"
 
 
+@pytest.mark.verifies("FR-1640")
 def test_cue_dependent_sensor_accepted_with_existing_track():
     sat = _leo()
     world = WorldState(now=0)
@@ -380,6 +396,7 @@ def test_cue_dependent_sensor_accepted_with_existing_track():
     assert order.status == "queued"
 
 
+@pytest.mark.verifies("FR-1640")
 def test_cue_dependent_dry_run_also_rejects():
     sat = _leo()
     world = WorldState(now=0)
@@ -393,6 +410,7 @@ def test_cue_dependent_dry_run_also_rejects():
     assert order.fail_reason == "requires_cue"
 
 
+@pytest.mark.verifies("FR-1310")
 def test_maneuver_consumes_delta_v_and_changes_orbit():
     sat = _leo()
     world = WorldState(now=0)
@@ -418,6 +436,7 @@ def test_maneuver_consumes_delta_v_and_changes_orbit():
     assert rej.status == "rejected" and rej.fail_reason == "insufficient_delta_v"
 
 
+@pytest.mark.verifies("FR-1440")
 def test_maneuver_delivery_denied_by_active_uplink_jam_at_execute_time():
     """IP-1290 (FR-1440) — a manoeuvre command whose delivery path is covered by an active
     uplink jam fails at execute time (no delta-v consumed, no orbit change)."""
@@ -441,6 +460,7 @@ def test_maneuver_delivery_denied_by_active_uplink_jam_at_execute_time():
     assert world.effect_log[-1]["achieved"] == "jammed" and world.effect_log[-1]["success"] is False
 
 
+@pytest.mark.verifies("FR-1440")
 def test_maneuver_delivery_unaffected_without_jam_regression():
     """Regression: a command not covered by an active jam is unaffected."""
     sat = _leo()
@@ -458,6 +478,7 @@ def test_maneuver_delivery_unaffected_without_jam_regression():
     assert world.assets["SAT"].resources.delta_v_ms == pytest.approx(140.0)
 
 
+@pytest.mark.verifies("FR-1320")
 def test_maneuver_purpose_tag_carried_to_eventlog_and_blank_default():
     """IP-1250 (FR-1320) — an operator-supplied purpose_tag is carried through to the resulting
     EventLog entry; an omitted tag is accepted and recorded as ""."""
@@ -487,6 +508,7 @@ def test_maneuver_purpose_tag_carried_to_eventlog_and_blank_default():
     assert entries2[-1].payload["purpose_tag"] == ""
 
 
+@pytest.mark.verifies("FR-1120")
 def test_engage_sequence_replays_byte_identical():
     sat = _leo()
     world = WorldState(now=0)
@@ -508,6 +530,7 @@ def test_engage_sequence_replays_byte_identical():
 
 # -- IP-2010 v1.1 (BL-0002) — custody_confidence_at_decision capture -------------------------
 
+@pytest.mark.verifies("IP-2010")
 def test_custody_confidence_at_decision_captured_for_targeted_actions():
     """engage/observe orders against an owned track record the live confidence at issue time —
     the same number scene.py's RenderTrack.confidence already surfaces to the operator."""
@@ -534,6 +557,7 @@ def test_custody_confidence_at_decision_captured_for_targeted_actions():
     assert entry.payload["custody_confidence_at_decision"] == round(expected, 3)
 
 
+@pytest.mark.verifies("IP-2010")
 def test_custody_confidence_at_decision_none_without_target_or_track():
     """downlink (no target concept) and an engage-like target with no owned track both record
     None — the field must never be silently fabricated."""
@@ -550,6 +574,7 @@ def test_custody_confidence_at_decision_none_without_target_or_track():
     assert entry.payload["custody_confidence_at_decision"] is None
 
 
+@pytest.mark.verifies("IP-2010")
 def test_dry_run_never_captures_custody_confidence():
     """dry_run() must stay a zero-footprint preview — it never reaches _exec_payload at all,
     so it can't touch the new capture step either (no eventlog entry is produced to check)."""
@@ -569,6 +594,7 @@ def test_dry_run_never_captures_custody_confidence():
     assert not osys._sensor_bookings and not osys._pass_bookings   # zero booking writes
 
 
+@pytest.mark.verifies("IP-2010")
 def test_custody_confidence_at_decision_replays_byte_identically():
     """The captured value is stored event-log data, not recomputed on replay — a dedicated
     regression guard alongside test_engage_sequence_replays_byte_identical above."""

@@ -6,6 +6,7 @@ walkthrough a *verified* sequence even though the browser GUI is unverified head
 
 from __future__ import annotations
 
+import pytest
 from spacesim.content.vignette import load_vignette
 from spacesim.engine.orders import Order
 from spacesim.session.manager import SessionManager
@@ -17,6 +18,7 @@ def _mgr():
     return mgr
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_vignette_has_at_least_five_steps_per_cell():
     vig = load_vignette("training-basics")
     assert len(vig.tutorial.get("blue", [])) >= 5
@@ -28,6 +30,7 @@ def test_vignette_has_at_least_five_steps_per_cell():
                 assert step.get("actor"), step
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_blue_walkthrough_executes_and_wins():
     mgr = _mgr()
 
@@ -55,6 +58,7 @@ def test_blue_walkthrough_executes_and_wins():
     assert mv.status == "queued"
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_red_walkthrough_executes_and_denies():
     mgr = _mgr()
 
@@ -87,6 +91,7 @@ def test_red_walkthrough_executes_and_denies():
     assert mgr.objectives()["red"]["deny_isr"] is True
 
 
+@pytest.mark.verifies("FR-8110")
 def test_scene_exposes_subsolar_point_for_globe_shading():
     mgr = _mgr()
     scene = mgr.get_scene("blue")

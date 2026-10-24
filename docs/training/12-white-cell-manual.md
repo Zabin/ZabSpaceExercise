@@ -192,12 +192,12 @@ notes (WCM-6) and the objective flips.
 ### WCM-10 · Save, resume, and when things go wrong
 
 **Save** (toolbar) writes a complete snapshot — history, order queue, pending events — to JSON;
-**Load** resumes it byte-exact. If the host hardware can't keep the clock at rate, the
+**Load** resumes it byte-exact. A save carries the vignette it was started from, so it resumes even if that vignette file has since been edited, renamed or deleted (older saves reload the file by id, and Load tells you so). If the host hardware can't keep the clock at rate, the
 **clock-lag watchdog** warns you (consider fewer satellites or a lower rate). For everything
 else, start at [`09-troubleshooting-and-glossary.md`](09-troubleshooting-and-glossary.md).
 
 > **Sources:** `spacesim/engine/simulation.py` (`SavedSession`) · `GET /api/sessions/{sid}/save` ·
-> `SessionManager._record_catch_up_lag`
+> `SessionManager._record_catch_up_lag` · `SessionManager.save_state` · `SessionManager.from_state`
 
 ### WCM-11 · Competency assessment: rubric, not a score
 

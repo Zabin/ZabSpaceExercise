@@ -1,6 +1,7 @@
 """IP-1190 (FR-5220) — SessionManager.bulk_import()'s per-object report shape and gating."""
 from __future__ import annotations
 
+import pytest
 from spacesim.session import InProcessSession
 
 _TLE1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
@@ -31,6 +32,7 @@ def _assignments_for(n_valid: int, bad_name: str) -> dict[str, dict]:
     return assignments
 
 
+@pytest.mark.verifies("FR-5220")
 def test_bulk_import_tle_nine_valid_one_malformed_no_exception():
     api, sid = _unstarted()
     mgr = api._sessions[sid]
@@ -80,6 +82,7 @@ _OMM_NINE_PLUS_ONE = "\n".join(
 )
 
 
+@pytest.mark.verifies("FR-5220")
 def test_bulk_import_omm_nine_valid_one_malformed_no_exception():
     api, sid = _unstarted()
     mgr = api._sessions[sid]
@@ -96,6 +99,7 @@ def test_bulk_import_omm_nine_valid_one_malformed_no_exception():
         assert f"OMMBULK-{i}" in mgr.world.assets
 
 
+@pytest.mark.verifies("FR-5220")
 def test_bulk_import_unrecognizable_file_raises():
     api, sid = _unstarted()
     mgr = api._sessions[sid]
@@ -106,6 +110,7 @@ def test_bulk_import_unrecognizable_file_raises():
         pass
 
 
+@pytest.mark.verifies("FR-5220")
 def test_bulk_import_object_missing_assignment_reported_as_failure_not_dropped():
     api, sid = _unstarted()
     mgr = api._sessions[sid]
@@ -117,6 +122,7 @@ def test_bulk_import_object_missing_assignment_reported_as_failure_not_dropped()
     assert "no side/template assignment" in reports[0]["reason"]
 
 
+@pytest.mark.verifies("FR-5220")
 def test_bulk_import_against_started_session_returns_empty_no_assets_added():
     api, sid = _unstarted()
     mgr = api._sessions[sid]

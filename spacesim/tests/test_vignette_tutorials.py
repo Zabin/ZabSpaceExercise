@@ -37,6 +37,7 @@ def _issue(mgr, cell, **kw):
 
 # -- layer 1: structure -------------------------------------------------------
 
+@pytest.mark.verifies("NFR-3400")
 @pytest.mark.parametrize("vid", NUMBERED)
 def test_every_vignette_has_a_two_cell_tutorial(vid):
     vig = load_vignette(vid)
@@ -53,6 +54,7 @@ def test_every_vignette_has_a_two_cell_tutorial(vid):
 
 # -- layer 2: the winning moves actually flip the objective -------------------
 
+@pytest.mark.verifies("NFR-3400")
 def test_01_blue_delivers_and_red_denies():
     mgr = _mgr("leo-isr-denial")
     dl = _issue(mgr, "blue", actor="ISR-EO-1", action="downlink", params={"via": "GS-NORTH"})
@@ -71,6 +73,7 @@ def test_01_blue_delivers_and_red_denies():
     assert eng.status == "rejected" and eng.reason == "roe_kinetic_not_authorized"
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_02_blue_holds_geo_custody():
     mgr = _mgr("geo-rpo-shadowing")
     ob = _issue(mgr, "blue", actor="BLUE-OPT", action="observe", target="RED-INSP",
@@ -80,6 +83,7 @@ def test_02_blue_holds_geo_custody():
     assert mgr.objectives()["blue"]["maintain_custody"] is True
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_03_blue_keeps_pnt_and_red_denies():
     mgr = _mgr("gnss-ew-campaign", red_ew_intensity="none")
     mgr.advance_to(mgr.ctx.landing_deadline + 1)
@@ -93,6 +97,7 @@ def test_03_blue_keeps_pnt_and_red_denies():
     assert mgr.objectives()["red"]["deny_pnt"] is True
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_04_blue_hva_survives_without_roe():
     mgr = _mgr("co-orbital-threat-escort")
     ob = _issue(mgr, "blue", actor="BLUE-RADAR", action="observe", target="RED-COORB",
@@ -104,6 +109,7 @@ def test_04_blue_hva_survives_without_roe():
     assert mgr.objectives()["red"]["neutralize_hva"] is False
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_05_red_destroys_with_weapons_quality_track():
     mgr = _mgr("da-asat-crisis")
     ob = _issue(mgr, "red", actor="RED-RADAR", action="observe", target="BLUE-SAT",
@@ -120,6 +126,7 @@ def test_05_red_destroys_with_weapons_quality_track():
     assert len(mgr.world.debris) > 0  # the irreversible cost the vignette teaches
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_06_red_safes_satcom_off_pass():
     mgr = _mgr("satcom-cyber-link")
     cy = _issue(mgr, "red", actor="RED-CYBER", action="cyber", target="BLUE-SATCOM",
@@ -129,6 +136,7 @@ def test_06_red_safes_satcom_off_pass():
     assert mgr.objectives()["red"]["disable_satcom"] is True
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_07_blue_holds_custody_and_red_breaks_it_on_lapse():
     mgr = _mgr("sda-custody-hunt")
     ob = _issue(mgr, "blue", actor="BLUE-RADAR-1", action="observe", target="RED-OBJ",
@@ -143,6 +151,7 @@ def test_07_blue_holds_custody_and_red_breaks_it_on_lapse():
     assert mgr.objectives()["red"]["break_custody"] is True
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_08_capstone_blue_isr_and_red_cyber():
     mgr = _mgr("multi-domain-taiwan")
     dl = _issue(mgr, "blue", actor="ISR-EO-1", action="downlink", params={"via": "GS-NORTH"})

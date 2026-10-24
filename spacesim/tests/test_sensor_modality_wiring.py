@@ -74,6 +74,7 @@ def _observe_payload(world: WorldState, actor: str, params: dict | None = None) 
 # Tests 1-3 — FR-1610 radar beam modes reached end to end (BL-0212)
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1610")
 def test_radar_beam_mode_by_order_param_end_to_end():
     fence = _observe_payload(_world(_radar()), "RDR", {"beam_mode": "fence"})
     dish = _observe_payload(_world(_radar()), "RDR", {"beam_mode": "dish"})
@@ -87,6 +88,7 @@ def test_radar_beam_mode_by_order_param_end_to_end():
     assert none["gain"] == effective_gain(1.0, 0.0, legacy_bp)
 
 
+@pytest.mark.verifies("FR-1610")
 def test_radar_beam_mode_by_sensor_declaration_and_param_override():
     declared = _observe_payload(_world(_radar(beam_mode="fence")), "RDR")
     assert declared["beam_mode"] == "fence"
@@ -95,6 +97,7 @@ def test_radar_beam_mode_by_sensor_declaration_and_param_override():
     assert declared["gain"] < overridden["gain"]
 
 
+@pytest.mark.verifies("FR-1610")
 def test_radar_beam_mode_validator():
     with pytest.raises(ValidationError):
         _radar(beam_mode="wiggle")
@@ -109,6 +112,7 @@ def test_radar_beam_mode_validator():
 # Tests 4-6 — FR-1640 cue gate on auto-selection (BL-0213)
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1640")
 @pytest.mark.parametrize("method", ["issue", "dry_run"])
 def test_auto_respects_cue_gate(method):
     world = _world(_radar(requires_cue=True))
@@ -126,6 +130,7 @@ def test_auto_respects_cue_gate(method):
     assert order.actor == "RDR"
 
 
+@pytest.mark.verifies("FR-1640")
 def test_auto_falls_through_to_sensor_without_cue_requirement():
     world = _world(_radar("CUE", requires_cue=True), _radar("PLAIN"))
     _, osys = _osys(world)
@@ -135,6 +140,7 @@ def test_auto_falls_through_to_sensor_without_cue_requirement():
     assert order.actor == "PLAIN"
 
 
+@pytest.mark.verifies("FR-1640")
 def test_auto_with_no_sensor_keeps_existing_reason():
     world = _world()
     _, osys = _osys(world)
@@ -148,6 +154,7 @@ def test_auto_with_no_sensor_keeps_existing_reason():
 # Tests 7-8 — FR-1630 typed, band-compared affinity (BL-0214)
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1630")
 def test_altitude_band_affinity_is_typed():
     with pytest.raises(ValidationError):
         Sensor(id="S", owner="blue", kind="space_based", orbit=_leo(), altitude_band_affinity="leo")
@@ -155,6 +162,7 @@ def test_altitude_band_affinity_is_typed():
         Sensor(id="S", owner="blue", kind="space_based", orbit=_leo(), altitude_band_affinity=regime)
 
 
+@pytest.mark.verifies("FR-1630")
 def test_band_affinity_treats_leo_and_leo_sso_as_one_band():
     bp, _ = beam_params("sda", "nominal")
     base = effective_gain(1.0, 0.0, bp)
@@ -168,6 +176,7 @@ def test_band_affinity_treats_leo_and_leo_sso_as_one_band():
 # Test 9 — shipped content unchanged
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("NFR-2010")
 def test_shipped_vignettes_declare_none_of_the_remediated_fields():
     from spacesim.content.vignette import build_world, load_vignette
 

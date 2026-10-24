@@ -1051,6 +1051,10 @@ class InProcessSession:
             return mgr.save_state()
 
     def load_save(self, state: dict) -> str:
+        return self.load_save_with_warnings(state)[0]
+
+    def load_save_with_warnings(self, state: dict) -> tuple[str, list[str]]:
+        """IP-1101 — as ``load_save`` plus the resume warnings (legacy save, version mismatch)."""
         # Audit Jun 2026 §D7 — bound the eventlog so a hostile load_save can't
         # force an unbounded replay.
         eventlog = (state or {}).get("eventlog") or []
@@ -1059,8 +1063,10 @@ class InProcessSession:
                 f"eventlog has {len(eventlog)} entries; limit is "
                 f"{self.MAX_EVENTLOG_REPLAY_ENTRIES}"
             )
+        SessionManager.validate_save(state)   # IP-1101 — refuse before any replay or session
+        mgr = SessionManager.from_state(state)
         self._evict_if_full()
         self._counter += 1
         sid = f"sess-{self._counter}"
-        self._sessions[sid] = SessionManager.from_state(state)
-        return sid
+        self._sessions[sid] = mgr
+        return sid, list(mgr.load_warnings)
