@@ -219,7 +219,7 @@ hostile participant on the LAN can read another cell's belief state through `/sc
 v1 PME training context (everyone in the room is on the same team learning together) and is
 documented as the explicit trust boundary; see `docs/AUDIT-2026-06.md` §D5 / §F1. Hardening
 options (per-cell tokens) are tracked in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
-**White Cell controls (clock, step/advance/rewind/undo, start, param, inject, force-add, save load) are refused to any request not naming the `white` seat (IP-1068, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication.**
+**White Cell controls (clock, step/advance/rewind/undo, start, param, inject, force-add, save load) are refused to any request not naming the `white` seat (IP-1068, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication. IP-1072 extends the same refusal to the Vignette Creator edits (`creator/state`, `creator/asset`, `creator/seats`), `save_vignette`, and `red_step`; session and draft creation (`POST /api/sessions`, `/draft`) is refused only when the request *names* `blue`/`red`/`observer` — a request naming no seat may still create (deliberate asymmetry).**
 **The Observer seat's mutation-rejection (IP-1130) is enforced at this same trust level, not a
 stronger one** — the server rejects any request asserting `cell=observer`, a real structural
 enforcement (it holds even for a request that bypasses the UI entirely), but the seat assertion
@@ -552,7 +552,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   speed AAR playback routes over `session/aar.py::PlaybackSession`;
   **IP-1270 (FR-3430/FR-3440):** `/gate/decide` + `/roe/change` — role-gated (checked inside
   `SessionManager`/`OrderSystem`) pending-order decision and live ROE-flag-change routes;
-  **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
+  **IP-1072:** `_require_white` now also guards `save_vignette`/`creator/*`/`red_step`, and `_refuse_player_seat_on_create(cell)` refuses a creation request naming a player seat (absent seat allowed); **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
   route table at implementation time, not merely IP-1130's own enumerated list, per that package's
   own Risks note — plus `/observer/view` + `/observer/designation`) + `static/`
   front end: `app.js` (command menu with live dry-run preview + pre-disabled Issue + kinetic

@@ -345,6 +345,17 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=403,
                                 detail="White Cell control: refused unless the request names the white seat")
 
+    def _refuse_player_seat_on_create(cell: Optional[str]) -> None:
+        """IP-1072 (FR-4320 as extended) — creating a session or a Vignette Creator draft is refused
+        when the request *names* a player seat (blue/red/observer). Unlike ``_require_white`` an
+        absent seat is allowed: creation precedes seat selection in the hot-seat flow and in the
+        documented curl recipes/tools, and the requirement speaks of a request that names a
+        non-White seat. The asymmetry is deliberate. Same client-asserted-seat trust level."""
+        if cell in ("blue", "red", "observer"):
+            raise HTTPException(status_code=403,
+                                detail="White Cell control: sessions are created by the white seat, not "
+                                       f"the {cell} seat")
+
     @app.post("/api/sessions/{sid}/observer/view")
     def set_observer_view(sid: str, req: ObserverViewRequest) -> Ack:
         _require(sid)
@@ -403,16 +414,18 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         return api.session_brief(sid, cell)
 
     @app.post("/api/sessions")
-    def load(req: LoadRequest) -> dict:
+    def load(req: LoadRequest, cell: Optional[str] = None) -> dict:
+        _refuse_player_seat_on_create(cell)
         with _vignette_load_errors(req.vignette_id):
             sid = api.load_vignette(req.vignette_id, overrides=req.overrides or None, seed=req.seed,
                                     classification=req.classification)
         return {"session": sid, "classification": api.classification(sid)}
 
     @app.post("/api/sessions/draft")
-    def create_draft(req: DraftRequest) -> dict:
+    def create_draft(req: DraftRequest, cell: Optional[str] = None) -> dict:
         """IP-1173 (FR-5110) — open a Vignette Creator draft session: an unstarted SessionManager
         backed by a near-empty Vignette, registered/evicted the same way a normal session is."""
+        _refuse_player_seat_on_create(cell)
         sid = api.create_draft_session(title=req.title)
         return {"session": sid}
 
@@ -420,7 +433,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def save_vignette(sid: str, req: SaveVignetteRequest, cell: Optional[str] = None) -> dict:
         """IP-1173 (FR-5110) — the only route that writes an authored vignette file. Works for
         any session (draft or normal); no partial file is ever written by any other path."""
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         try:
             path = api.save_vignette(sid, req.vignette_id, req.title,
                                      classification=req.classification or "UNCLASSIFIED-TRAINING",
@@ -531,7 +544,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     @app.put("/api/sessions/{sid}/creator/state")
     def creator_set_state(sid: str, req: CreatorStateRequest, cell: Optional[str] = None) -> Ack:
         """FR-5120 — the JSON view's write: replace the whole asset list atomically."""
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.creator_set_state(sid, req.assets)
 
     @app.patch("/api/sessions/{sid}/creator/asset/{asset_id}")
@@ -539,13 +552,13 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
                            cell: Optional[str] = None) -> Ack:
         """FR-5150 — the asset menu's edit/reassign operation (owner reassignment is just a
         patch of the ``owner`` field, so no separate reassign route is needed)."""
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.creator_edit_asset(sid, asset_id, req.patch)
 
     @app.delete("/api/sessions/{sid}/creator/asset/{asset_id}")
     def creator_delete_asset(sid: str, asset_id: str, cell: Optional[str] = None) -> Ack:
         """FR-5150 — the asset menu's delete operation."""
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.creator_delete_asset(sid, asset_id)
 
     @app.get("/api/sessions/{sid}/creator/scene")
@@ -564,8 +577,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         ``creator_edit_asset``, etc.) — only a White-Cell caller may declare seats for *any*
         target cell, including White's own."""
         _require(sid)
-        if cell != "white":
-            raise HTTPException(status_code=403, detail="only White Cell may declare seats")
+        _require_white(cell)
         return api.declare_seats(sid, req.cell, req.count)
 
     @app.get("/api/sessions/{sid}/creator/seats")
@@ -575,7 +587,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions/{sid}/red_step")
     def red_step(sid: str, cell: Optional[str] = None) -> list[OrderAck]:
-        _require(sid); _reject_observer(cell)
+        _require(sid); _require_white(cell)
         return api.red_doctrine_step(sid)
 
     @app.post("/api/sessions/{sid}/order")

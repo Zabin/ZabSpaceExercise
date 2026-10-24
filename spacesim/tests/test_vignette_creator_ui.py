@@ -32,7 +32,7 @@ def _draft(c: TestClient) -> str:
 def test_json_view_write_is_visible_to_form_view_read():
     c = _client()
     sid = _draft(c)
-    r = c.put(f"/api/sessions/{sid}/creator/state", json={"assets": [
+    r = c.put(f"/api/sessions/{sid}/creator/state" + "?cell=white", json={"assets": [
         {"id": "SAT-J1", "owner": "blue", "kind": "satellite"},
     ]})
     assert r.status_code == 200 and r.json()["ok"] is True
@@ -61,10 +61,10 @@ def test_json_view_write_and_form_view_converge_on_the_same_edit():
     for a in state["assets"]:
         if a["id"] == "SAT-C1":
             a["owner"] = "red"
-    r = c.put(f"/api/sessions/{sid}/creator/state", json={"assets": state["assets"]})
+    r = c.put(f"/api/sessions/{sid}/creator/state" + "?cell=white", json={"assets": state["assets"]})
     assert r.json()["ok"] is True
     # The form-view-equivalent edit route (asset menu) sees the JSON-view edit
-    r2 = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-C1", json={"patch": {"kind": "satellite"}})
+    r2 = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-C1" + "?cell=white", json={"patch": {"kind": "satellite"}})
     assert r2.json()["ok"] is True
     state2 = c.get(f"/api/sessions/{sid}/creator/state").json()
     edited = next(a for a in state2["assets"] if a["id"] == "SAT-C1")
@@ -76,7 +76,7 @@ def test_json_view_write_rejects_malformed_asset_without_partial_apply():
     c = _client()
     sid = _draft(c)
     c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-OK", "line1": _TLE1, "line2": _TLE2})
-    r = c.put(f"/api/sessions/{sid}/creator/state", json={"assets": [
+    r = c.put(f"/api/sessions/{sid}/creator/state" + "?cell=white", json={"assets": [
         {"id": "SAT-OK", "owner": "blue"}, {"owner": "blue"},   # second entry missing required id
     ]})
     assert r.json()["ok"] is False
@@ -105,7 +105,7 @@ def test_creator_scene_reflects_asset_changes_within_the_same_authoring_session(
     c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-REFRESH", "line1": _TLE1, "line2": _TLE2})
     before = {a["id"] for a in c.get(f"/api/sessions/{sid}/creator/scene").json()["assets"]}
     assert "SAT-REFRESH" in before
-    c.delete(f"/api/sessions/{sid}/creator/asset/SAT-REFRESH")
+    c.delete(f"/api/sessions/{sid}/creator/asset/SAT-REFRESH" + "?cell=white")
     after = {a["id"] for a in c.get(f"/api/sessions/{sid}/creator/scene").json()["assets"]}
     assert "SAT-REFRESH" not in after
 
@@ -160,7 +160,7 @@ def test_asset_edit_reflected_in_json_view_and_scene():
     c = _client()
     sid = _draft(c)
     c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-EDIT", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
-    r = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-EDIT", json={"patch": {"group": "ALPHA"}})
+    r = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-EDIT" + "?cell=white", json={"patch": {"group": "ALPHA"}})
     assert r.json()["ok"] is True
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
     assert next(a for a in state["assets"] if a["id"] == "SAT-EDIT")["group"] == "ALPHA"
@@ -171,7 +171,7 @@ def test_asset_reassign_is_an_owner_patch():
     c = _client()
     sid = _draft(c)
     c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-REASSIGN", "line1": _TLE1, "line2": _TLE2, "owner": "blue"})
-    r = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-REASSIGN", json={"patch": {"owner": "red"}})
+    r = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-REASSIGN" + "?cell=white", json={"patch": {"owner": "red"}})
     assert r.json()["ok"] is True
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
     assert next(a for a in state["assets"] if a["id"] == "SAT-REASSIGN")["owner"] == "red"
@@ -182,11 +182,11 @@ def test_asset_delete_removed_from_list_and_edit_then_fails():
     c = _client()
     sid = _draft(c)
     c.post(f"/api/sessions/{sid}/force/tle?cell=white", json={"id": "SAT-DEL", "line1": _TLE1, "line2": _TLE2})
-    r = c.delete(f"/api/sessions/{sid}/creator/asset/SAT-DEL")
+    r = c.delete(f"/api/sessions/{sid}/creator/asset/SAT-DEL" + "?cell=white")
     assert r.json()["ok"] is True
     state = c.get(f"/api/sessions/{sid}/creator/state").json()
     assert not any(a["id"] == "SAT-DEL" for a in state["assets"])
-    r2 = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-DEL", json={"patch": {"owner": "red"}})
+    r2 = c.patch(f"/api/sessions/{sid}/creator/asset/SAT-DEL" + "?cell=white", json={"patch": {"owner": "red"}})
     assert r2.json()["ok"] is False
 
 
