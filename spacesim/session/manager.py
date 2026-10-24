@@ -181,6 +181,10 @@ SAVE_FORMAT = 2   # IP-1101 — absent (legacy) saves reload their vignette by i
 
 
 class SessionManager:
+    # IP-1081 (NFR-3710) — a loaded save's event-log size cap (audit Jun 2026 §D7); the
+    # constant's home, aliased on ``InProcessSession``.
+    MAX_EVENTLOG_REPLAY_ENTRIES = 100_000
+
     def __init__(
         self, vignette: Vignette, overrides: Optional[dict] = None, seed: int = 0,
         classification: Optional[str] = None,
@@ -1140,6 +1144,16 @@ class SessionManager:
                              f"({SessionManager.MAX_SAVE_SPAN_US // (86400 * 1_000_000)} days past the start epoch)")
 
     @staticmethod
+    def _eventlog_entry_count(log) -> "int | None":
+        """IP-1081 — entries in a save's event log, whichever shape carries them: a bare list, or
+        the ``{"entries": [...]}`` object ``save_state`` writes. ``None`` = not countable."""
+        if isinstance(log, list):
+            return len(log)
+        if isinstance(log, dict) and isinstance(log.get("entries"), list):
+            return len(log["entries"])
+        return None
+
+    @staticmethod
     def validate_save(state: dict) -> None:
         """IP-1101 (Design Decision 5) / IP-1102 (FR-7230, NFR-1600) — refuse an unusable save
         before any replay: required keys and types for both formats, the self-contained content
@@ -1159,6 +1173,11 @@ class SessionManager:
                 raise ValueError(f"save key '{key}' must be an integer")
         if not selfc and not isinstance(state["vignette_id"], str):
             raise ValueError("save key 'vignette_id' must be a string")
+        # IP-1081 (NFR-3710) — bound the log before it is model-validated or replayed.
+        n_entries = SessionManager._eventlog_entry_count(state["eventlog"])
+        if n_entries is not None and n_entries > SessionManager.MAX_EVENTLOG_REPLAY_ENTRIES:
+            raise ValueError(f"eventlog has {n_entries} entries; limit is "
+                             f"{SessionManager.MAX_EVENTLOG_REPLAY_ENTRIES}")
         try:
             EventLog.model_validate(state["eventlog"])
         except Exception as exc:  # noqa: BLE001

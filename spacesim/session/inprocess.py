@@ -55,7 +55,7 @@ class InProcessSession:
     MAX_LIVE_SESSIONS = 32
     # Audit Jun 2026 §D7 — refuse a load_save payload whose eventlog would
     # require an enormous replay (compute / memory amplifier; unauthenticated).
-    MAX_EVENTLOG_REPLAY_ENTRIES = 100_000
+    MAX_EVENTLOG_REPLAY_ENTRIES = SessionManager.MAX_EVENTLOG_REPLAY_ENTRIES   # IP-1081 alias
 
     def __init__(self) -> None:
         self._sessions: dict[str, SessionManager] = {}
@@ -1117,15 +1117,7 @@ class InProcessSession:
 
     def load_save_with_warnings(self, state: dict) -> tuple[str, list[str]]:
         """IP-1101 — as ``load_save`` plus the resume warnings (legacy save, version mismatch)."""
-        # Audit Jun 2026 §D7 — bound the eventlog so a hostile load_save can't
-        # force an unbounded replay.
-        eventlog = (state or {}).get("eventlog") or []
-        if isinstance(eventlog, list) and len(eventlog) > self.MAX_EVENTLOG_REPLAY_ENTRIES:
-            raise ValueError(
-                f"eventlog has {len(eventlog)} entries; limit is "
-                f"{self.MAX_EVENTLOG_REPLAY_ENTRIES}"
-            )
-        SessionManager.validate_save(state)   # IP-1101 — refuse before any replay or session
+        SessionManager.validate_save(state)   # IP-1101/IP-1081 — refuse (incl. the NFR-3710 log cap) before any replay or session
         mgr = SessionManager.from_state(state)
         self._evict_if_full()
         self._counter += 1

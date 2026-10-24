@@ -70,7 +70,7 @@ seat enforcement on a trusted LAN, not authentication.
 | `POST /api/sessions` naming a player seat | 403, "sessions are created by the white seat, not the blue seat" |
 | `rewind` to a time before `start_epoch` or after now | 400, message gives `[start_epoch, now]` in sim microseconds; the session is unchanged |
 | `undo` with nothing logged | 400, "nothing to undo"; `n` below 1 is 400 "undo count must be at least 1" |
-| `load_save` with an unusable save | 400 with the reason, and no session is created. Reasons include: not a JSON object; a missing or mistyped required key (e.g. `vignette_id`, `seed`); a malformed `eventlog` or list entry; `final_time` earlier than the save's last logged event or the exercise start, or more than 366 days past the start; a legacy save whose vignette file is no longer available; an embedded vignette that fails validation |
+| `load_save` with an unusable save | 400 with the reason, and no session is created. Reasons include: not a JSON object; a missing or mistyped required key (e.g. `vignette_id`, `seed`); an `eventlog` with more than 100,000 entries (in either the `{"entries": [...]}` or bare-list shape; the reason names the count and the limit, and the check runs before the log is validated or replayed); a malformed `eventlog` or list entry; `final_time` earlier than the save's last logged event or the exercise start, or more than 366 days past the start; a legacy save whose vignette file is no longer available; an embedded vignette that fails validation |
 | `inject` that is malformed, or targets something it cannot (e.g. an `anomaly` on an asset with no bus) | 400 naming the reason; nothing is applied |
 
 Interactive API docs are auto-served at **http://127.0.0.1:8000/docs** (FastAPI/Swagger).
