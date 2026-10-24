@@ -370,10 +370,38 @@ class SessionManager:
                                   {"effects": ov["effects"], "inject_id": handle, "rev": ov["rev"]})
 
     # -- time control ----------------------------------------------------------
+    def _span_ceiling(self) -> int:
+        """IP-1076 (FR-4330) — the last instant a clock advance may reach: ``start_epoch`` plus the
+        same 366-day span a save may carry (``MAX_SAVE_SPAN_US``), so controls and save agree."""
+        return self.ctx.start_epoch + self.MAX_SAVE_SPAN_US
+
     def step(self, dt_sim_s: float) -> None:
+        # IP-1076 (FR-4330, NFR-1600) — refuse a non-finite / negative / out-of-span step before
+        # the integer conversion (a huge float must not reach ``int()`` as an OverflowError).
+        import math
+        if not isinstance(dt_sim_s, (int, float)) or not math.isfinite(dt_sim_s):
+            raise ValueError(f"step must be a finite number of sim seconds (got {dt_sim_s!r})")
+        if dt_sim_s < 0:
+            raise ValueError(f"step cannot move time backwards (dt_sim_s={dt_sim_s}); use rewind")
+        if dt_sim_s * 1_000_000 > self.MAX_SAVE_SPAN_US:
+            raise ValueError(self._span_message(self.sim.clock.now + self.MAX_SAVE_SPAN_US + 1))
         self.advance_to(self.sim.clock.now + int(dt_sim_s * 1_000_000))
 
+    def _span_message(self, t: int) -> str:
+        days = self.MAX_SAVE_SPAN_US // (86400 * 1_000_000)
+        return (f"advance target {t} is beyond the exercise span "
+                f"(start_epoch + {days} days = {self._span_ceiling()}, sim microseconds); "
+                "state and clock unchanged")
+
     def advance_to(self, t: int) -> None:
+        # IP-1076 (FR-4330, NFR-1600) — an advance stays inside [now, start_epoch + 366 days];
+        # raised before any state changes. ``Simulation.advance_to`` is unchanged.
+        now = self.sim.clock.now
+        if t < now:
+            raise ValueError(f"advance target {t} is earlier than now={now}; "
+                             "time cannot move backwards (use rewind); state and clock unchanged")
+        if t > self._span_ceiling():
+            raise ValueError(self._span_message(t))
         self.sim.advance_to(t)
         self.world = self.sim.world
         # Re-anchor so a manual jump doesn't get instantly "undone" by a stale wall-clock anchor.
@@ -413,6 +441,8 @@ class SessionManager:
             return
         elapsed_before = _time.time() - self._wall_anchor
         target = self._sim_anchor + int(elapsed_before * self._rate * 1_000_000)
+        # IP-1076 (FR-4330) — the running clock stops at the span's end (pinned, not paused).
+        target = min(target, self._span_ceiling())
         if target > self.sim.clock.now:
             wall_before = _time.time()
             self.sim.advance_to(target)

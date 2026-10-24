@@ -15,7 +15,7 @@ from spacesim.engine.simulation import Simulation  # noqa: E402
 from spacesim.session.manager import SessionManager  # noqa: E402
 from spacesim.ui_web.server import create_app  # noqa: E402
 
-pytestmark = pytest.mark.verifies("FR-4310", "NFR-1600")
+pytestmark = pytest.mark.verifies("FR-4330", "NFR-1600")
 
 W = {"cell": "white"}
 VIG = "leo-isr-denial"
@@ -170,7 +170,7 @@ def test_running_clock_reanchors_at_start_after_undo(monkeypatch):
 
 
 # 10
-@pytest.mark.verifies("FR-4310")
+@pytest.mark.verifies("FR-4330")
 def test_engine_undo_on_empty_log_keeps_initial_time():
     m = _mgr()
     sim: Simulation = m.sim
@@ -181,7 +181,7 @@ def test_engine_undo_on_empty_log_keeps_initial_time():
 
 
 # 11
-@pytest.mark.verifies("FR-7220")
+@pytest.mark.verifies("FR-7220", "FR-4330")
 def test_save_after_undo_to_start_validates_and_reloads():
     m = _mgr()
     _step_until_logged(m)
@@ -196,7 +196,7 @@ def test_save_after_undo_to_start_validates_and_reloads():
 
 
 # 12
-@pytest.mark.verifies("FR-4310")
+@pytest.mark.verifies("FR-4330")
 @pytest.mark.parametrize("seat", ["observer", "blue", "red", None])
 def test_undo_still_403_for_non_white(seat):
     c, api = _client()

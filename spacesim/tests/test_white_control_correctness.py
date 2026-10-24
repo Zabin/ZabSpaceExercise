@@ -40,7 +40,7 @@ def _rewind(c, sid, t, **kw):
 
 # -- Part A ---------------------------------------------------------------------------------------
 
-@pytest.mark.verifies("FR-4310", "NFR-1600")
+@pytest.mark.verifies("FR-4330", "NFR-1600")
 def test_rewind_to_zero_is_refused_with_the_span_and_changes_nothing():
     c, api = _client()
     sid = _started(c)
@@ -52,7 +52,7 @@ def test_rewind_to_zero_is_refused_with_the_span_and_changes_nothing():
     assert _state(api, sid) == before
 
 
-@pytest.mark.verifies("FR-4310", "NFR-1600")
+@pytest.mark.verifies("FR-4330", "NFR-1600")
 def test_rewind_before_start_and_after_now_is_refused():
     c, api = _client()
     sid = _started(c)
@@ -65,7 +65,7 @@ def test_rewind_before_start_and_after_now_is_refused():
     assert _state(api, sid) == before
 
 
-@pytest.mark.verifies("FR-4310")
+@pytest.mark.verifies("FR-4330")
 def test_the_span_edges_are_allowed():
     c, api = _client()
     sid = _started(c)
@@ -78,7 +78,7 @@ def test_the_span_edges_are_allowed():
     assert m.sim.clock.now == m.ctx.start_epoch
 
 
-@pytest.mark.verifies("FR-4310", "NFR-1600")
+@pytest.mark.verifies("FR-4330", "NFR-1600")
 def test_rewind_to_start_leaves_a_start_sized_save():
     c, api = _client()
     sid = _started(c)

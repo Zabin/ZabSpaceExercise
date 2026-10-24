@@ -528,8 +528,8 @@ def test_draft_session_create_add_asset_and_save_as_vignette(tmp_path, monkeypat
     assert listing[sid]["started"] is False
 
     # Time control is refused against it.
-    step = c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 60.0}).json()
-    assert step["ok"] is False
+    step = c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 60.0})
+    assert step.status_code == 400 and "draft" in step.json()["detail"]    # IP-1076: refusal is a 400
 
     # Force-add an asset the same way any session's asset entry already works.
     tle1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"

@@ -483,7 +483,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   catch_up / clock_state`, re-anchor on `start/rewind/undo/advance` so the wall clock can't snap
   the sim back; **IP-1074 (FR-4310):** `rewind_to` raises `ValueError` outside `[ctx.start_epoch, now]`
   (→ `Ack(ok=False)` → HTTP 400) and `clock_state` carries `start_epoch`; `roles/assign` + `observer/view`
-  are `_require_white` on the query seat, 403); **IP-1075 (FR-4310, NFR-1600):** `undo_last` raises `ValueError` on an empty log or `n < 1` (→ `Ack(ok=False)` → HTTP 400), an undo that drops every entry lands on `start_epoch` (never 1970; `Simulation.undo_last` falls back to the initial state's time), and the tick/inject schedule is re-armed after undo like `rewind_to`,
+  are `_require_white` on the query seat, 403); **IP-1075 (FR-4310, NFR-1600):** `undo_last` raises `ValueError` on an empty log or `n < 1` (→ `Ack(ok=False)` → HTTP 400), an undo that drops every entry lands on `start_epoch` (never 1970; `Simulation.undo_last` falls back to the initial state's time), and the tick/inject schedule is re-armed after undo like `rewind_to`; **IP-1076 (FR-4330, NFR-1600):** `advance_to`/`step` raise `ValueError` (→ `Ack(ok=False)` → HTTP 400) for a target before now, after `start_epoch` + `MAX_SAVE_SPAN_US` (366 days), or a non-finite/negative step, and the running (lazy) clock is clamped to that ceiling and stops there,
   `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`
   (**multiplayer:** `_locked(sid)` cm wraps every mutation; every read pass-through calls
   `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added;

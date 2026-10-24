@@ -78,7 +78,7 @@ The line clears after the next time jump or rewind that succeeds.
 |---|---|---|
 | Vignette | Vignette dropdown | Pick a scenario from the library before Load. |
 | Vignette | Seed input | Deterministic RNG seed (any non-negative integer; default 1). |
-| Vignette | **Load** button | `POST /api/sessions` → creates the session id. The page URL gets `#sess-N` appended so it can be shared. A refused load (a vignette that fails validation, or Load pressed while Blue, Red or Observer is the active seat: 403, "sessions are created by the white seat") creates nothing and shows **Load failed:** and the reason in the session label (§10.2, row 4). |
+| Vignette | **Load** button | `POST /api/sessions` → creates the session id. The page URL gets `#sess-N` appended so it can be shared. A refused load (a vignette that fails validation, or Load pressed while Blue, Red or Observer is the active seat: 403, "sessions are created by the white seat") creates nothing and shows **Load failed:** and the reason in the session label (§10.2, row 4); a tab already joined to a session keeps its session label and shows the reason in the status line instead. |
 | Vignette | **▶ Start** button | `POST /api/sessions/{sid}/start` + arms the server clock. Disabled until Load. |
 | Save as scenario | **💾 Save as scenario…** button | Prompts for a new vignette id and title, then `POST /save_vignette` writes the live state as a new starting vignette (needs `content.user_save_dir`). The result line under the button shows `✓ saved <path>`, or `✗` and the server's reason in red (a non-White seat gets the 403 text; nothing is written). |
 

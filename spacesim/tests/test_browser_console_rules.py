@@ -408,7 +408,7 @@ def test_a_non_white_bookmark_click_sends_nothing_and_says_why(console):
 def test_a_refused_time_control_is_reported_not_thrown(console):
     c = console("leo-isr-denial")
     c.seat("white")
-    c.page.route("**/advance*", lambda r: r.fulfill(
+    c.page.route("**/step*", lambda r: r.fulfill(
         status=403, content_type="application/json", body=json.dumps({"detail": "clock is locked by test"})))
     c.page.keyboard.press("Control+k")
     c.page.fill("#palette-input", "advance +1 min")
@@ -433,8 +433,10 @@ def test_a_refused_load_shows_its_reason_and_leaves_the_session_running(console,
     c = console("leo-isr-denial")
     c.seat(seat)
     _ensure_polling(c)
+    readout = c.page.inner_text("#session")
     _choose_file(c, "bad.json", '{"save_format": 1}')
-    c.page.wait_for_function("document.getElementById('session').textContent.includes('Load failed')")
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.includes('Load failed')")
+    assert c.page.inner_text("#session") == readout        # IP-1076 (L-2) — the live tab keeps its readout
     assert c.page.evaluate("REALTIME_ON") is True and c.page.evaluate("SID") == c.sid
     assert c.errors == []
 
@@ -445,7 +447,7 @@ def test_an_unparseable_save_file_is_reported(console):
     c.seat("white")
     _ensure_polling(c)
     _choose_file(c, "junk.json", "not json")
-    c.page.wait_for_function("document.getElementById('session').textContent.includes('Load failed')")
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.includes('Load failed')")
     assert c.page.evaluate("REALTIME_ON") is True and c.page.evaluate("SID") == c.sid
     assert c.errors == []
 
@@ -467,8 +469,8 @@ def test_a_player_seat_loading_a_vignette_sees_the_refusal(console):
     c = console("leo-isr-denial")
     c.seat("blue")
     c.page.evaluate("loadSession()")
-    c.page.wait_for_function("document.getElementById('session').textContent.includes('Load failed')")
-    assert "white" in c.page.inner_text("#session").lower() and c.errors == []
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.includes('Load failed')")
+    assert "white" in c.page.inner_text(STATUS).lower() and c.errors == []
 
 
 def _hold_first_validate(c):
@@ -581,3 +583,103 @@ def test_undo_in_the_console_never_sends_the_clock_before_the_exercise_start(con
     assert undo(99) == 200                                 # drop everything: lands on the start epoch
     assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == start
     assert c.http.post(f"/api/sessions/{c.sid}/rewind", params=W, json={"t": start}).status_code == 200
+
+
+# -- IP-1076: palette gating, inject refusal, quiet console, palette advance ---------------------
+@pytest.mark.verifies("FR-4310")
+@pytest.mark.parametrize("seat", ["blue", "red", "observer"])
+def test_a_non_white_seat_is_not_offered_inject_entries_in_the_palette(console, seat):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    assert _palette_labels(c, "fire inject") and _palette_labels(c, "inject lib")   # White keeps them
+    c.seat(seat)
+    assert _palette_labels(c, "fire inject") == [] and _palette_labels(c, "inject lib") == []
+
+
+@pytest.mark.verifies("NFR-1600")
+def test_a_refused_inject_is_reported_in_the_visible_status_line(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    c.page.route("**/inject*", lambda r: r.fulfill(
+        status=403, content_type="application/json", body=json.dumps({"detail": "inject locked by test"})))
+    c.page.evaluate("document.getElementById('inject-sel').value = document.getElementById('inject-sel').options[0].value")
+    labels = _palette_labels(c, "fire inject")
+    assert labels
+    c.page.keyboard.press("Control+k")
+    c.page.fill("#palette-input", "fire inject")
+    c.page.keyboard.press("Enter")
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.includes('inject locked by test')")
+    assert c.errors == []
+
+
+@pytest.mark.verifies("NFR-3030", "NFR-1600")
+def test_the_console_asks_for_no_windows_of_a_sensor_and_no_observer_dry_run(console):
+    c = console("leo-isr-denial")
+    reqs = []
+    c.page.on("request", lambda r: reqs.append(r.url))
+    c.seat("white")
+    c.page.evaluate("$('o-actor').value = 'BLUE-RADAR'; onActorChange()")
+    c.settle()
+    c.page.select_option("#o-actor", index=0)
+    c.settle()
+    assert not any("/windows/" in u and "BLUE-RADAR" in u for u in reqs), reqs
+    # a satellite still gets its ribbon request
+    sat = c.page.evaluate("Object.keys(ASSETS).find(k => ASSETS[k].kind === 'satellite' && ASSETS[k].owner === 'blue')")
+    assert sat
+    n0 = len([u for u in reqs if "/windows/" in u])
+    c.page.evaluate(f"$('o-actor').value = '{sat}'; onActorChange()")
+    c.page.wait_for_function(f"1")        # let the request fire
+    c.page.wait_for_timeout(300)
+    assert len([u for u in reqs if "/windows/" in u]) > n0
+    # Observer: no dry-run is posted
+    c.seat("observer")
+    reqs.clear()
+    c.page.evaluate("previewOrder()")
+    c.page.wait_for_timeout(300)
+    assert not any("/order/validate" in u for u in reqs), reqs
+    assert c.errors == []
+
+
+@pytest.mark.verifies("FR-4330")
+def test_palette_advance_posts_a_step_and_is_accepted_at_a_high_clock_rate(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    assert c.http.post(f"/api/sessions/{c.sid}/clock", params=W, json={"running": True, "rate": 600}).status_code == 200
+    posted = []
+    c.page.on("request", lambda r: posted.append((r.url, r.post_data)) if r.method == "POST" else None)
+    c.page.keyboard.press("Control+k")
+    c.page.fill("#palette-input", "advance +1 min")
+    c.page.keyboard.press("Enter")
+    c.page.wait_for_function("window.__inflight === 0")
+    steps = [(u, d) for u, d in posted if "/step" in u]
+    assert steps and json.loads(steps[0][1]) == {"dt_sim_s": 60}
+    assert not any("/advance" in u for u, _ in posted)
+    assert c.page.inner_text(STATUS).strip() == "" and c.errors == []
+    c.http.post(f"/api/sessions/{c.sid}/clock", params=W, json={"running": False})
+
+
+@pytest.mark.verifies("FR-4330", "NFR-1600")
+def test_advance_beyond_the_span_is_refused_visibly_and_the_running_clock_stops_at_the_end(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    clock = c.http.get(f"/api/sessions/{c.sid}/clock").json()
+    ceiling = clock["start_epoch"] + 366 * 86400 * 1_000_000
+    assert c.http.post(f"/api/sessions/{c.sid}/advance", params=W, json={"t": ceiling - 600_000_000}).status_code == 200
+    c.page.keyboard.press("Control+k")
+    c.page.fill("#palette-input", "advance +1 hour")
+    c.page.keyboard.press("Enter")
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.length > 0")
+    assert "span" in c.page.inner_text(STATUS).lower() and c.errors == []
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] <= ceiling
+    # run the clock fast: it pins at the end and the save still loads
+    assert c.http.post(f"/api/sessions/{c.sid}/clock", params=W, json={"running": True, "rate": 600}).status_code == 200
+    deadline = time.time() + 20
+    while time.time() < deadline:
+        now = c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"]
+        if now == ceiling:
+            break
+        time.sleep(0.3)
+    assert now == ceiling
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == ceiling
+    save = c.http.get(f"/api/sessions/{c.sid}/save").json()
+    assert c.http.post("/api/sessions/load_save", params=W, json=save).status_code == 200

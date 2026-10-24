@@ -25,7 +25,7 @@ seat enforcement on a trusted LAN, not authentication.
 | `POST /api/sessions` `{vignette_id, overrides, seed}` | Load a scenario → returns a session id |
 | `POST /api/sessions/{sid}/param` `{param_id, value}` | Set a dial (before start) |
 | `POST /api/sessions/{sid}/start` | Start the exercise |
-| `POST /api/sessions/{sid}/step` `{dt_sim_s}` / `…/advance` `{t}` | Advance time |
+| `POST /api/sessions/{sid}/step` `{dt_sim_s}` / `…/advance` `{t}` | Advance time. The target must lie in `[now, start_epoch + 366 days]` and a step must be finite and not negative; anything else is a 400 with the reason and nothing changes. A running clock stops at the span end. |
 | `POST /api/sessions/{sid}/rewind` `{t}` · `…/undo` `{n}` | Time travel; rewind `t` must lie in `[start_epoch, now]` (`start_epoch` is on `GET …/clock`), else 400 naming the span; `undo` with nothing to undo (or `n` below 1) is a 400, and an undo that drops every logged action lands on `start_epoch` |
 | `POST /api/sessions/{sid}/inject` `{inject, at_sim_t?}` | Fire an inject (id or `{effects}`); `at_sim_t` (µs UTC) schedules for later |
 | `GET /api/sessions/{sid}/inject_library` | List reusable inject templates from `content/inject_library.yaml` |

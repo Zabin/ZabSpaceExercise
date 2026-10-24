@@ -205,14 +205,20 @@ class InProcessSession:
         if session in self._draft_sessions:
             return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
-            mgr.step(dt_sim_s)
+            try:
+                mgr.step(dt_sim_s)
+            except ValueError as e:      # IP-1076 (FR-4330) — out-of-span / backwards; nothing changed
+                return Ack(ok=False, reason=str(e))
         return Ack()
 
     def advance_to(self, session: str, t: int) -> Ack:
         if session in self._draft_sessions:
             return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
-            mgr.advance_to(t)
+            try:
+                mgr.advance_to(t)
+            except ValueError as e:      # IP-1076 (FR-4330) — out-of-span / backwards; nothing changed
+                return Ack(ok=False, reason=str(e))
         return Ack()
 
     def rewind_to(self, session: str, t: int) -> Ack:

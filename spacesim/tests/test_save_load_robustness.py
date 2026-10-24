@@ -274,7 +274,7 @@ def test_out_of_range_final_time_is_400_naming_final_time(which):
     _refused(_client(), _with(good, final_time=ft), "final_time")
 
 
-@pytest.mark.verifies("FR-7230", "NFR-1600")
+@pytest.mark.verifies("FR-7230", "NFR-1600", "FR-4330")
 def test_final_time_boundaries_load():
     good = _good_state()
     c = _client()
@@ -283,7 +283,7 @@ def test_final_time_boundaries_load():
     assert c.post(LOAD, json=good).status_code == 200
 
 
-@pytest.mark.verifies("FR-7230", "NFR-1600")
+@pytest.mark.verifies("FR-7230", "NFR-1600", "FR-4330")
 def test_final_time_ceiling_is_one_year_and_exceeds_shipped_horizons():
     assert SessionManager.MAX_SAVE_SPAN_US == 366 * 86400 * 1_000_000
     from spacesim.content.vignette import list_vignettes

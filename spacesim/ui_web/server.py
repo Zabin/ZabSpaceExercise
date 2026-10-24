@@ -473,13 +473,23 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions/{sid}/step")
     def step(sid: str, req: StepRequest, cell: Optional[str] = None) -> Ack:
+        """IP-1076 (FR-4330, NFR-1600) — ``dt_sim_s`` must be finite and >= 0 and the result must not
+        pass ``start_epoch`` + 366 days; anything else is a 400 with a reason, nothing changed."""
         _require(sid); _require_white(cell)
-        return api.step(sid, req.dt_sim_s)
+        ack = api.step(sid, req.dt_sim_s)
+        if not ack.ok:
+            raise HTTPException(status_code=400, detail=ack.reason)
+        return ack
 
     @app.post("/api/sessions/{sid}/advance")
     def advance(sid: str, req: TimeRequest, cell: Optional[str] = None) -> Ack:
+        """IP-1076 (FR-4330, NFR-1600) — ``t`` must lie in ``[now, start_epoch + 366 days]``; anything
+        else is a 400 naming the span, nothing changed."""
         _require(sid); _require_white(cell)
-        return api.advance_to(sid, req.t)
+        ack = api.advance_to(sid, req.t)
+        if not ack.ok:
+            raise HTTPException(status_code=400, detail=ack.reason)
+        return ack
 
     @app.post("/api/sessions/{sid}/rewind")
     def rewind(sid: str, req: TimeRequest, cell: Optional[str] = None) -> Ack:

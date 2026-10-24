@@ -238,8 +238,13 @@ function refusalParts(e) {
 }
 function showLoadFailure(e) {
   const { msg, probs } = refusalParts(e);
-  $("session").innerHTML = `<b>Load failed:</b> ${esc(msg)}` +
+  const html = `<b>Load failed:</b> ${esc(msg)}` +
     (probs.length ? `<ul>${probs.map((p) => `<li>${esc(p.where)} — ${esc(p.reason)}</li>`).join("")}</ul>` : "");
+  // IP-1076 (L-2, NFR-1600) — a tab still joined to a live session keeps its #session readout; the
+  // refusal goes to the aria-live #control-status line. Only a tab with no session uses #session.
+  const cs = $("control-status");
+  if (SID && cs) { cs.innerHTML = html; return; }
+  $("session").innerHTML = html;
 }
 // IP-1073 (FR-4310, NFR-1600) — a control the server refused is reported in an aria-live status line
 // beside the session readout, never left as an unhandled rejection. Cleared by the next success.
@@ -396,6 +401,7 @@ async function fireInject() {
     if (out) { out.style.color = ""; out.textContent = `✓ fired ${id}`; }
   } catch (err) {
     if (out) { out.style.color = "var(--red)"; out.textContent = "✗ server error: " + (err.message || err); }
+    reportControlError("Inject", err);   // IP-1076 (M-4) — #inject-result is in a White-only panel; also show it where every seat can see it
   }
   await refresh();
 }
@@ -566,7 +572,11 @@ async function renderQueue() {
 
 async function drawRibbon(actor) {
   const c = $("ribbon"), x = c.getContext("2d");
-  const wa = await api.get(`/api/sessions/${SID}/windows/${CELL}/${actor}`).catch(() => null);
+  // IP-1076 (L-3) — a sensor (not in world.assets) or an Observer (owns nothing) has no windows to
+  // ask for; the route's 404 is the ownership contract, so the client does not ask.
+  const kind = (ASSETS[actor] || {}).kind;
+  const askable = CELL !== "observer" && !["ground_radar", "ground_optical", "space_based"].includes(kind);
+  const wa = askable ? await api.get(`/api/sessions/${SID}/windows/${CELL}/${actor}`).catch(() => null) : null;
   x.fillStyle = "#0a0f15"; x.fillRect(0, 0, c.width, c.height);
   if (!wa || !wa.windows.length) { x.fillStyle = "#7a8aa0"; x.font = "11px monospace"; x.fillText("no passes / not a satellite", 8, 26); return; }
   const span = wa.horizon_s * 1e6, now = wa.now;
@@ -654,6 +664,9 @@ async function previewOrder() {
   const btn = $("issue"), out = $("o-preview");
   if (!SID || !out) return;
   const mine = ++PREVIEW_EDIT;
+  // IP-1076 (L-3) — Observer cannot issue (the button is disabled for that seat) and the server's
+  // 403 on a dry-run stays; do not post. Clear a stale preview.
+  if (CELL === "observer") { out.className = "preview"; out.textContent = ""; return; }
   const body = composeBody();
   if (!body) { btn.disabled = true; btn.title = "Fix params JSON"; out.className = "preview bad"; out.textContent = "✗ invalid params JSON"; return; }
   let ack; try { ack = await api.post(`/api/sessions/${SID}/order/validate`, body); } catch { return; }
@@ -2676,11 +2689,11 @@ const PALETTE = {
     }
     // Active injects from the white-cell dropdown.
     const isel = $("inject-sel");
-    if (isel) [...isel.options].forEach((o) => {
+    if (isel && CELL === "white") [...isel.options].forEach((o) => {
       if (o.value) items.push({ label: `fire inject ${o.value}`, tag: "inject", run: () => { isel.value = o.value; $("fire-inject").click(); } });
     });
     // FW §11.D.19 — library entries surface as palette commands too.
-    INJECT_LIBRARY.forEach((lib, idx) => {
+    if (CELL === "white") INJECT_LIBRARY.forEach((lib, idx) => {   // IP-1076 (M-4) — White-only, like the time entries
       items.push({
         label: `inject lib: ${lib.label || lib.id}`,
         tag: "inject",
@@ -2735,7 +2748,8 @@ addEventListener("DOMContentLoaded", () => {
 // Helpers used by the palette (extracted from the existing toolbar handlers).
 async function stepBy(s) {
   if (!SID) return;
-  try { await api.post(`/api/sessions/${SID}/advance`, { t: (SCENE ? SCENE.now : 0) + s * 1_000_000 }); clearControlError(); }
+  // IP-1076 — post /step: the server computes the target from its own now (SCENE.now lags a running clock)
+  try { await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: s }); clearControlError(); }
   catch (e) { reportControlError("Advance", e); return; }
   refresh();
 }
