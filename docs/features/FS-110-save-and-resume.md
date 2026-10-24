@@ -2,11 +2,11 @@
 
 > **Document ID:** FS-110
 > **Version:** 2.0
-> **Status:** ✅ Ready for implementation planning (v2.0 additions); v1.0 scope ✅ Done
+> **Status:** ✅ Done (v1.0 built; v2.0 additions built by `IP-1101`/`IP-1102`/`IP-1103`, all `VERIFIED` 2026-10-24)
 > **Dependencies:** [ADR-0022](../architecture/adr/ADR-0022-save-file-ownership-split.md), [GDS-07](../architecture/07-data-model.md) §6, [DOM-003](../domains/DOM-003-white-cell-framework.md) §6
 > **Referenced By:** [IP-1102](../implementation/packages/IP-1102-save-load-robustness.md), [FS-106](FS-106-white-cell-dashboard.md) (the White-only save/resume trigger surface this mechanism serves), [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-7200`
 > **Produces:** the persisted session artifact [FS-107](FS-107-after-action-review.md)'s AAR replay reads from
-> **Implementation:** [IP-1100](../implementation/packages/IP-1100-save-and-resume.md) (v1.0, ✅ VERIFIED); [IP-1101](../implementation/packages/IP-1101-self-contained-saves.md) (v2.0, 🟢 READY 2026-10-23)
+> **Implementation:** [IP-1100](../implementation/packages/IP-1100-save-and-resume.md) (v1.0, ✅ VERIFIED); [IP-1101](../implementation/packages/IP-1101-self-contained-saves.md) (v2.0, ✅ VERIFIED 2026-10-24, [VR-1101](../implementation/verification/VR-1101-self-contained-saves.md)); [IP-1102](../implementation/packages/IP-1102-save-load-robustness.md) (✅ VERIFIED 2026-10-24, VR-1102); [IP-1103](../implementation/packages/IP-1103-save-validation-completion.md) (✅ VERIFIED 2026-10-24, VR-1103)
 > **Feature Mapping:** FS-110 (this document) → `FEAT-7200`
 > **Related Topics:** [FS-106](FS-106-white-cell-dashboard.md) (facilitator-facing save/resume trigger), [FS-107](FS-107-after-action-review.md) (AAR replay over a saved/resumed event log), [FS-120](FS-120-save-as-scenario.md) (save the *current* state as a new vignette — a different capability, see Scope), [FS-131](FS-131-load-time-vignette-validation.md) (the load-time validation a resumed save's content must pass)
 

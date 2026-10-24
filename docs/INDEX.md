@@ -6,8 +6,10 @@ open a theme index, then the one module you need. Structure & rationale (legacy 
 expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implementations/`,
 `architecture/`, `scenarios/`): [`master/MSTR-005-documentation-map.md`](master/MSTR-005-documentation-map.md).
 
-> **Authority:** on any conflict the **Build Spec** wins — enter it at
-> [`build-spec/INDEX.md`](build-spec/INDEX.md).
+> **Authority:** [`architecture/INDEX.md`](architecture/INDEX.md) (the GDS-00…GDS-10 ladder) is the
+> authoritative architecture and requirements source; the Build Spec is deprecated legacy reference,
+> not a tie-breaker (see `../CLAUDE.md`). Where no GDS level is authored yet, enter the legacy text at
+> [`build-spec/INDEX.md`](build-spec/INDEX.md) for orientation only.
 
 ## Themes
 
@@ -32,6 +34,11 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
   project produces: IDs, dependencies, and completion status. Start here to see what's done, in
   progress, or still planned without re-deriving it from the directories below.
 - [`FUTURE-WORK.md`](FUTURE-WORK.md) — the single-source v1.1+ TODO (deferred items).
+- [`AUDIT-2026-06.md`](AUDIT-2026-06.md) — the Jun 2026 whole-project audit (findings, LAN trust
+  boundary §D5/§F1); two companion audits cover narrower scopes:
+  [`AUDIT-2026-06-COMMANDS.md`](AUDIT-2026-06-COMMANDS.md) (command realism, order-form UX,
+  probability mechanics) and [`AUDIT-2026-06-UI-TTC.md`](AUDIT-2026-06-UI-TTC.md) (panel layout,
+  TT&C/power logic, telemetry graphs, target picker).
 - [`manual/INDEX.md`](manual/INDEX.md) — generated UI screenshots (`tools/render_manual.py`); the
   training modules embed these.
 

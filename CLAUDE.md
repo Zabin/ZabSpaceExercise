@@ -16,7 +16,7 @@ command, observe, or attack when access windows permit). Most effects are revers
 cooperative — every browser tab points at one FastAPI server, fog-of-war is enforced server-side
 at the `SessionAPI` / `CellController` boundary.
 
-**Status: backend feature-complete through Phase 8; commands-layer audit completed Jun 2026 (469 tests green, 3 skipped).** Deterministic engine
+**Status: backend feature-complete through Phase 8; commands-layer audit completed Jun 2026; the suite is 1671 tests (full run, Oct 2026: 1668 passed, 3 skipped, 0 failed; the 3 are data-dependent vignette skips in `test_defensive_audit_2026.py` ×2 and `test_derived_probabilities.py`). Skip counts differ by marker mode: `-m "not browser"` collects 1641 and reports 6 skipped (the same 3 plus 3 whole-suite guards that skip on any partial collection: `test_origin_retag.py` ×2, `test_test_origins.py` ×1); `-m browser` is 30 tests, 0 skipped where Playwright + Chromium are present (all 30 skip, with a named reason, where they are absent).** Deterministic engine
 (P0–P4.5), the web layer (P5, FastAPI + browser front end), the render-from-custody belief
 scene + 2D map (P5.5), the full **19-vignette library** (the canonical 8 numbered + the
 training-basics onboarding + 5 Red COA + 3 mission-set + 1 learning + 1 novel) as YAML +
@@ -24,7 +24,8 @@ TLE force-add + Red doctrine presets (P6 + library expansion), the **capstone Vi
 AAR replay** (P7), and the **LAN multiplayer transport** (P8:
 server-authoritative lazy clock + per-session RLock + session discovery + join-by-hash URL +
 multi-monitor pop-out windows). Code under `spacesim/`; content is YAML; UI stack = **web**.
-The browser GUI is unverified headless, but every backend path (endpoints, fog, objectives,
+The browser GUI is not verified end to end; a headless-Chromium suite (`-m browser`, IP-1340)
+covers its load-bearing console rules, and every backend path (endpoints, fog, objectives,
 AAR, multiplayer clock + locking) is test-covered.
 
 ## Authoritative source & reading order
@@ -36,36 +37,29 @@ the prior rule (under which a build-spec module stayed authoritative only until 
 level's own merge gate closed). The supersession is no longer gated module-by-module: build-spec is
 superseded as a whole, immediately, including for GDS levels that have not yet been authored.
 
-**What this means where a GDS level is not yet authored.** Per
-[`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) §1, GDS-06 (Non-Functional
-Requirements) through GDS-10 (Requirements Traceability Matrix) are currently
-`⛔ Planned (scaffold only)` — there is no authored content at those levels yet. The corresponding
-`build-spec/` module may still be read as the only available descriptive text on that topic, but it
-is now **deprecated legacy reference, not a binding tie-breaker**. The old rule ("on any conflict,
-the build spec wins") no longer applies anywhere in this project. Where a topic has no authored GDS
-level yet, treat it as **not yet having an authoritative statement** — read the legacy build-spec
-text for orientation, but do not cite it as binding, and flag a gap rather than treating its
-wording as settled. Authoring GDS-06 through GDS-10 to close this gap is now a standing priority.
-
-**Current GDS-ladder status** (full table: [`docs/architecture/INDEX.md`](docs/architecture/INDEX.md)
-§1): GDS-00 through GDS-05 are authored with closed merge gates and are fully authoritative.
-GDS-06–GDS-10 are scaffold-only; their build-spec counterparts (`04-nfr-milestones-and-risks.md`
-§9, `design/04-data-model.md` schema portion, `design/09-gui-principles.md` +
-`05-cell-interfaces.md` + `10-sda-3d-viewer.md`, `design/07-api-and-networking.md`, none) are legacy
-reference only, per the rule above.
+**Current GDS-ladder status.** Per [`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) §1,
+all eleven levels GDS-00 through GDS-10 are authored with closed merge gates and are authoritative
+(GDS-06 NFRs, GDS-07 data model, GDS-08 UI architecture, GDS-09 API specification, GDS-10
+requirements traceability matrix).
+The `build-spec/` modules they replaced are **deprecated legacy reference, not a binding
+tie-breaker**; the old rule ("on any conflict, the build spec wins") applies nowhere in this project.
+Read build-spec text only for orientation on a topic the ladder does not cover, never cite it as
+binding, and flag a gap rather than treating its wording as settled. Per-level caveats (gaps handed to
+`04`, companion documents such as the ICD and `requirements/03` that stay as leaf-grain companions) are
+in the index's status column.
 
 1. [`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) — the GDS ladder; the authoritative
    entry point for architecture and requirements, full stop.
 2. [`docs/architecture/05-functional-requirements.md`](docs/architecture/05-functional-requirements.md)
    (GDS-05) for functional/operational requirements, elaborated in full traceability detail at
    [`docs/requirements/01-functional-requirements.md`](docs/requirements/01-functional-requirements.md).
-3. For any topic with no authored GDS level yet, [`docs/build-spec/INDEX.md`](docs/build-spec/INDEX.md)
-   as **legacy, non-binding reference** pending migration into the GDS ladder.
-4. `docs/design/01-architecture-overview.md` + `docs/design/04-data-model.md` — architecture/data
-   reference pending their own GDS-03 (already merged)/GDS-07 (pending) migration.
+3. For any topic the ladder does not cover, [`docs/build-spec/INDEX.md`](docs/build-spec/INDEX.md)
+   as **legacy, non-binding reference**.
+4. `docs/design/01-architecture-overview.md` — architecture reference behind GDS-03 (merged); the
+   data model is GDS-07 (`docs/design/04-data-model.md` is superseded).
 5. [`docs/research/INDEX.md`](docs/research/INDEX.md) (`01`–`06`) — *why* the rules are what they are.
 6. `docs/build-spec/04-nfr-milestones-and-risks.md` §10 — the consolidated phase plan (M0–M7) with
-   current status (legacy reference; not yet migrated to a GDS level). Deferred items live in
+   current status (legacy reference; the phase plan is not a GDS level). Deferred items live in
    [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
 7. Remaining [`docs/design/`](docs/design/INDEX.md) docs and [`docs/vignettes/`](docs/vignettes/INDEX.md)
    as each phase needs them.
@@ -171,13 +165,15 @@ before every commit and keep the suite green on the branch. The Phase-1 determin
 is the canonical permanent gate. **Every test names its origin** (`BL-0310`, IP-1330): mark it
 `@pytest.mark.verifies("FR-xxxx", …)` (or a module-level `pytestmark`) with the requirement leaf it
 verifies — else its `FS-xxx`, or an `IP-xxxx` for a package's own completion test. The suite fails on an
-untagged test (modules still on `spacesim/tests/test_origin_allowlist.txt` are tolerated; that list only
-shrinks) and on an ID that is not a live baseline item. The RTM's Test column is **generated, never hand
+untagged test and on an ID that is not a live baseline item. The tolerance list
+`spacesim/tests/test_origin_allowlist.txt` is now **empty** (the FS-133 backfill is complete, so every
+test must be tagged); the mechanism remains shrink-only (`BL-0358`). The RTM's Test column is **generated, never hand
 edited** (`NFR-2850`): regenerate it with `python3 -m pytest --origin-report=rtm` in the same commit.
 **Documentation checks run with the suite** (IP-1350, `NFR-3800`/`3820`/`3830`): a new broken relative link,
 an `INDEX.md` that omits a document in its folder, or a status-ledger disagreement fails the suite. Known
 defects sit on `spacesim/tests/doc_integrity_allow_*.txt`; those lists only shrink (fix the defect, delete its
-line in the same commit).
+line in the same commit — the suite also fails on a stale line). The `docs/research/` primer-link lines in
+`doc_integrity_allow_links.txt` are the remaining known defects (owner: `02-research`, `BL-0292` sweep).
 
 ## Build/test commands
 
@@ -189,8 +185,9 @@ uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload       # LAN multiplay
 python3 -m pytest                                                # runs the whole suite (testpaths = spacesim/tests)
 python3 -m pytest spacesim/tests/test_determinism.py             # the Phase-1 determinism gate
 python3 -m pytest spacesim/tests/test_import_guard.py            # the Phase-0 engine guardrails
-python3 -m pytest -m browser                                     # headless-Chromium console-rule tests (IP-1340); skip loudly where Playwright/Chromium is absent
-python3 -m pytest -m "not browser"                                # everything except the browser tests
+python3 -m pytest -m browser                                     # headless-Chromium console-rule tests (IP-1340, 30 tests); skip loudly where Playwright/Chromium is absent
+python3 -m pytest -m "not browser"                                # everything except the browser tests (the default CI-style run)
+python3 -m pytest spacesim/tests/test_doc_integrity.py spacesim/tests/test_test_origins.py   # documentation-integrity + test-origin gates (IP-1350 / IP-1330)
 python3 -m pytest --origin-report [--origin-ids=FR-1120,…]       # read-only: tests by declared origin; requirements no test names
 python3 -m pytest --origin-report=rtm                            # regenerate the RTM Test column (runs no tests)
 ```
@@ -219,7 +216,7 @@ hostile participant on the LAN can read another cell's belief state through `/sc
 v1 PME training context (everyone in the room is on the same team learning together) and is
 documented as the explicit trust boundary; see `docs/AUDIT-2026-06.md` §D5 / §F1. Hardening
 options (per-cell tokens) are tracked in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
-**White Cell controls (clock, step/advance/rewind/undo, start, param, inject, force-add, save load, `roles/assign`, `observer/view`) are refused to any request not naming the `white` seat (IP-1068/IP-1074, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication. IP-1072 extends the same refusal to the Vignette Creator edits (`creator/state`, `creator/asset`, `creator/seats`), `save_vignette`, and `red_step`; session and draft creation (`POST /api/sessions`, `/draft`) is refused only when the request *names* `blue`/`red`/`observer` — a request naming no seat may still create (deliberate asymmetry).**
+**White Cell controls (clock start/pause/resume/multiplier, step/advance/rewind/undo, start, param, inject fire/edit/cancel, force-add (TLE/bulk/ground), save load, `roles/assign`, `observer/designation` + `observer/view`) are refused to any request not naming the `white` seat (IP-1068/IP-1074, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication. Time controls are also bounded to the exercise span (`FR-4330`, IP-1074/1075/1076): rewind only within `[start epoch, now]`, undo lands on the last surviving entry or the start epoch (empty undo refused 400), advance/step only forward to at most 366 days after the start epoch. The AAR playback routes obey the requesting seat (`FR-7340`, IP-1077): White may request any viewpoint, Blue/Red only their own cell's, Observer may read playback state but not start or change it; refusals are 403 before any state change. IP-1072 extends the same refusal to the Vignette Creator edits (`creator/state`, `creator/asset`, `creator/seats`), `save_vignette`, and `red_step`; session and draft creation (`POST /api/sessions`, `/draft`) is refused only when the request *names* `blue`/`red`/`observer` — a request naming no seat may still create (deliberate asymmetry).**
 **The Observer seat's mutation-rejection (IP-1130) is enforced at this same trust level, not a
 stronger one** — the server rejects any request asserting `cell=observer`, a real structural
 enforcement (it holds even for a request that bypasses the UI entirely), but the seat assertion
@@ -439,7 +436,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **Build / schedule inject** panel with editable JSON + Now/+seconds/absolute-UTC scheduler
   (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
-  **IP-1101 (FR-7210/FR-7220/FR-7230):** a save is self-contained — `save_state` adds `save_format`, `simulator_version`, a `content` portion (the vignette as loaded plus force-added assets) and the replay `baseline`; `from_state` builds from them (legacy saves reload by id), `validate_save` refuses a bad save before replay, **IP-1102 (FR-7220/FR-7230):** `validate_save` also checks required keys/types for both formats and a legacy save's vignette file (each unusable save is a 400 naming the problem, never a 500) and `save_state`'s `content` reflects pre-start edits/deletes of built assets (untouched ones verbatim from the as-authored vignette), and `InProcessSession.load_save_with_warnings` returns the resume warnings (`load_save` route: `{session, warnings}`),
+  **IP-1101 (FR-7210/FR-7220/FR-7230):** a save is self-contained — `save_state` adds `save_format`, `simulator_version`, a `content` portion (the vignette as loaded plus force-added assets) and the replay `baseline`; `from_state` builds from them (legacy saves reload by id), `validate_save` refuses a bad save before replay, **IP-1102 (FR-7220/FR-7230):** `validate_save` also checks required keys/types for both formats and a legacy save's vignette file (each unusable save is a 400 naming the problem, never a 500) and `save_state`'s `content` reflects pre-start edits/deletes of built assets (untouched ones verbatim from the as-authored vignette), **IP-1103 (FR-7230):** `validate_save` completes the set — non-object overrides, malformed pending/orders/SSN rows, an out-of-range `final_time` (more than 366 days past the start) and a non-string classification are each a 400, and `InProcessSession.load_save_with_warnings` returns the resume warnings (`load_save` route: `{session, warnings}`),
   **IP-1063 (BL-0129/BL-0188):** pure `validate_inject_effects` — `fire_inject` rejects a
   malformed or FR-4430-precondition-failing inject atomically (`ValueError` → `Ack(ok=False)` →
   `/inject` 400; e.g. an `anomaly` on an asset with no `bus_state`), and `_apply_inject_effects`
@@ -541,6 +538,15 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   estimated-duration horizon if omitted), and reads `session/assessment.py`'s `assessment_report`
   once per run. Distinct from the repo-root `tools/` directory (non-package build scripts like
   `tools/build_coastlines.py`) — this one must be importable by `spacesim/tests/`.
+- `spacesim/tests/` support files (not tests themselves): `conftest.py` (IP-1330 — records each collected
+  test's `verifies` origin once at collection; registers `--origin-report[=list|rtm]`/`--origin-ids`),
+  `baseline_ids.py` (IP-1330/IP-1335 — the baseline-ledger reader, origin checks and RTM Test-column
+  generator, plain functions reusable by `test_doc_integrity.py`), `test_browser_console_rules.py`
+  (IP-1340 — `@pytest.mark.browser`, starts the real server on loopback and drives Chromium via
+  Playwright; fog of war, plan-first disabled Issue, irreversible-effect confirm; skips with a named
+  reason where Playwright/Chromium is absent), `test_doc_integrity.py` (IP-1350 — broken links,
+  `INDEX.md` omissions, status-ledger agreement), and the shrink-only `test_origin_allowlist.txt` (empty)
+  and `doc_integrity_allow_{links,indexes,ledgers}.txt`.
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`;
   **IP-1300 (FR-8210/FR-8220):** `GET /ric_view/{cell}?origin=&chase=&target=` — live RIC-frame
   view (+ CATS angle), 404 on an out-of-custody selection, rendered by `static/ricview.js`
