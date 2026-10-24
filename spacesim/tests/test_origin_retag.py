@@ -1,9 +1,14 @@
-"""IP-1334 (FS-133) — guard for the test-origin retag.
+"""IP-1334 / IP-1079 (FS-133) — guard for the test-origin retag.
 
 Pins each retagged test's declared origin set (``(module, function) -> expected IDs``) so the
-retag cannot drift back, re-checks that no test lost its last ID or declares an unresolvable one,
-and that the retag added or removed no test. Reads the records ``conftest.py`` collected in this
-run; a row whose module was not collected (a partial run) is skipped, not failed.
+retag cannot drift back, and re-checks that no test lost its last ID or declares an unresolvable
+one. It reads the records ``conftest.py`` collected in this run (only the *selected* items, so a
+``-m`` filter or a partial path run leaves out what it deselected). Per pinned row: module file gone
+from disk -> fail ("module removed or renamed"); file present but not collected in this run -> not
+applicable (passes vacuously, never skips); collected -> the function must exist with exactly the
+pinned tag set. The suite growing is not this guard's business (IP-1079: no collected-count bounds).
+The browser module's rows are checked by a ``browser``-marked test, so ``-m browser`` checks them
+and ``-m "not browser"`` checks the rest; the unfiltered run checks all. No check skips.
 """
 
 from __future__ import annotations
@@ -14,11 +19,8 @@ import baseline_ids as bi
 
 pytestmark = pytest.mark.verifies("NFR-2820")
 
-# Collected items before the retag (2026-10-24: 1,464 once the IP-1311..IP-1075 stack is merged),
-# excluding this module's own items. The
-# upper bound leaves room for tests later packages add; tag edits alone must not move the count.
-COLLECTED_BEFORE = 1464
-COLLECTED_UPPER = 1700
+# Modules whose tests carry the ``browser`` marker (their rows are checked under ``-m browser``).
+BROWSER_MODULES = {"test_browser_console_rules.py"}
 
 EXPECTED = [
     ('test_aar.py', 'test_state_at_time_reconstructs_world_at_arbitrary_time', ('FR-7310', 'NFR-2410')),
@@ -194,12 +196,6 @@ EXPECTED = [
     ('test_white_only_controls.py', 'test_unknown_session_is_404_before_the_seat_check', ('FR-4310', 'FR-4320')),
 ]
 
-
-@pytest.fixture(scope="session")
-def records(request):
-    return request.config._verifies_records
-
-
 def _ids_by_test(records):
     out: dict[tuple[str, str], set[str]] = {}
     for rec in records:
@@ -207,18 +203,53 @@ def _ids_by_test(records):
     return out
 
 
-def _whole_suite(records):
-    return {r.module for r in records} >= {p.name for p in bi.TESTS_DIR.glob("test_*.py")}
+def check_rows(records, expected, files_on_disk, collected_modules=None):
+    """Pure core of the guard: ``(problems, not_applicable)`` for the pinned ``expected`` rows.
 
-
-@pytest.mark.parametrize("module,func,expected", EXPECTED, ids=[f"{m}::{f}" for m, f, _ in EXPECTED])
-def test_each_listed_retag_is_in_place(records, module, func, expected):
+    ``files_on_disk`` is the set of ``test_*.py`` names present; ``collected_modules`` defaults to
+    the modules appearing in ``records`` (the records hold selected items only).
+    """
     got = _ids_by_test(records)
-    if not any(m == module for m, _ in got):
-        pytest.skip(f"{module} not collected in this run")
-    assert (module, func) in got, f"{module}::{func} no longer exists (renamed or removed?)"
-    assert got[(module, func)] == set(expected), (
-        f"{module}::{func} declares {sorted(got[(module, func)])}, expected {sorted(expected)}")
+    collected = {r.module for r in records} if collected_modules is None else set(collected_modules)
+    problems, not_applicable = [], []
+    for module, func, tags in expected:
+        if module not in files_on_disk:
+            problems.append(f"{module}::{func}: module removed or renamed")
+        elif module not in collected:
+            not_applicable.append((module, func))
+        elif (module, func) not in got:
+            problems.append(f"{module}::{func} no longer exists (renamed or removed?)")
+        elif got[(module, func)] != set(tags):
+            problems.append(f"{module}::{func} declares {sorted(got[(module, func)])}, "
+                            f"expected {sorted(tags)}")
+    return problems, not_applicable
+
+
+@pytest.fixture(scope="session")
+def records(request):
+    return request.config._verifies_records
+
+
+def _disk():
+    return {p.name for p in bi.TESTS_DIR.glob("test_*.py")}
+
+
+def _assert_row_in_place(records, row):
+    problems, _not_applicable = check_rows(records, [row], _disk())   # not applicable: outside this run
+    assert not problems, "\n".join(problems)
+
+
+@pytest.mark.parametrize("module,func,expected", [r for r in EXPECTED if r[0] not in BROWSER_MODULES],
+                         ids=[f"{m}::{f}" for m, f, _ in EXPECTED if m not in BROWSER_MODULES])
+def test_each_listed_retag_is_in_place(records, module, func, expected):
+    _assert_row_in_place(records, (module, func, expected))
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize("module,func,expected", [r for r in EXPECTED if r[0] in BROWSER_MODULES],
+                         ids=[f"{m}::{f}" for m, f, _ in EXPECTED if m in BROWSER_MODULES])
+def test_each_listed_browser_retag_is_in_place(records, module, func, expected):
+    _assert_row_in_place(records, (module, func, expected))
 
 
 def test_no_retagged_test_lost_its_last_id_or_declares_an_unresolvable_one(records):
@@ -236,8 +267,116 @@ def test_no_retagged_test_lost_its_last_id_or_declares_an_unresolvable_one(recor
     assert not problems, "\n".join(problems)
 
 
-def test_collected_count_unchanged_by_the_retag(records):
-    if not _whole_suite(records):
-        pytest.skip("partial run: the count is only meaningful over the whole suite")
-    n = sum(1 for r in records if r.module != "test_origin_retag.py")
-    assert COLLECTED_BEFORE <= n <= COLLECTED_UPPER, n
+# -- IP-1079: tests of the guard's own logic (written first; they fail until check_rows exists) ----
+import ast
+import subprocess
+import sys
+from pathlib import Path
+
+_THIS = Path(__file__).resolve()
+_DISK = {p.name for p in bi.TESTS_DIR.glob("test_*.py")}
+
+
+def _consistent_records():
+    """Synthetic records in which every pinned row is present with exactly its pinned tag set."""
+    recs = [bi.OriginRecord(nodeid=f"spacesim/tests/{m}::{f}", module=m, func=f, ids=tuple(t))
+            for m, f, t in EXPECTED]
+    # every module also holds an unpinned test, as in a real run (a module is "collected" if any item is)
+    recs += [bi.OriginRecord(f"spacesim/tests/{m}::test_unpinned", m, "test_unpinned", ("FS-133",))
+             for m in sorted({m for m, _, _ in EXPECTED})]
+    return recs
+
+
+@pytest.mark.verifies("FS-133")
+def test_a_consistent_record_set_has_no_problems_and_every_row_applicable():
+    problems, n_a = check_rows(_consistent_records(), EXPECTED, _DISK)
+    assert problems == [] and n_a == []
+
+
+@pytest.mark.verifies("FS-133")
+@pytest.mark.parametrize("victim", [EXPECTED[0], EXPECTED[2], EXPECTED[40], EXPECTED[-1]],
+                         ids=lambda r: f"{r[0]}::{r[1]}")
+def test_mutation_a_deleted_pinned_test_fails(victim):
+    recs = [r for r in _consistent_records() if (r.module, r.func) != victim[:2]]
+    problems, _ = check_rows(recs, EXPECTED, _DISK)
+    assert len(problems) == 1
+    assert f"{victim[0]}::{victim[1]}" in problems[0] and "no longer exists" in problems[0]
+
+
+@pytest.mark.verifies("FS-133")
+@pytest.mark.parametrize("mutate", [lambda ids: ids + ("FR-9999",), lambda ids: ids[1:], lambda ids: ()],
+                         ids=["add-a-tag", "drop-a-tag", "empty-set"])
+def test_mutation_a_retagged_pinned_test_fails(mutate):
+    victim = next(r for r in EXPECTED if len(r[2]) >= 2)
+    recs = [bi.OriginRecord(r.nodeid, r.module, r.func, mutate(r.ids)) if (r.module, r.func) == victim[:2] else r
+            for r in _consistent_records()]
+    problems, _ = check_rows(recs, EXPECTED, _DISK)
+    assert len(problems) == 1
+    assert f"{victim[0]}::{victim[1]}" in problems[0]
+    assert str(sorted(victim[2])) in problems[0] and "expected" in problems[0] and "declares" in problems[0]
+
+
+@pytest.mark.verifies("FS-133")
+def test_mutation_a_removed_module_fails_but_a_deselected_module_does_not():
+    module = EXPECTED[0][0]
+    rows = [r for r in EXPECTED if r[0] == module]
+    recs = [r for r in _consistent_records() if r.module != module]
+    problems, n_a = check_rows(recs, EXPECTED, _DISK - {module})
+    assert len(problems) == len(rows) and all("module removed or renamed" in p for p in problems)
+    problems, n_a = check_rows(recs, EXPECTED, _DISK | {module})   # file present, just not collected
+    assert problems == [] and sorted(n_a) == sorted(r[:2] for r in rows)
+
+
+@pytest.mark.verifies("IP-1079")
+def test_growth_in_unpinned_tests_does_not_fail_the_guard():
+    recs = _consistent_records()
+    recs += [bi.OriginRecord(f"spacesim/tests/test_new.py::test_n{i}", "test_new.py", f"test_n{i}", ("FS-133",))
+             for i in range(500)]
+    problems, n_a = check_rows(recs, EXPECTED, _DISK | {"test_new.py"})
+    assert problems == [] and n_a == []
+
+
+@pytest.mark.verifies("IP-1079")
+def test_the_count_bounds_and_their_test_are_gone():
+    src = _THIS.read_text("utf-8")
+    for dead in ("COLLECTED" + "_BEFORE", "COLLECTED" + "_UPPER", "def test_collected" + "_count"):
+        assert dead not in src
+
+
+@pytest.mark.verifies("IP-1079")
+def test_browser_rows_are_exactly_the_browser_marked_modules():
+    for module in {m for m, _, _ in EXPECTED}:
+        marked = "pytest.mark.browser" in (bi.TESTS_DIR / module).read_text("utf-8")
+        assert (module in BROWSER_MODULES) == marked, module
+
+
+@pytest.mark.verifies("IP-1079")
+def test_no_check_in_the_guard_calls_skip_or_is_skipif_marked():
+    tree = ast.parse(_THIS.read_text("utf-8"))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            f = ast.unparse(node.func)
+            assert f not in ("pytest.skip", "pytest.importorskip", "pytest.xfail"), ast.unparse(node)
+            assert f != "pytest.mark.skip" and f != "pytest.mark.skipif", ast.unparse(node)
+
+
+def _run_guard(tmp_path, *marker_args):
+    xml = tmp_path / ("j%d.xml" % len(marker_args))
+    cmd = [sys.executable, "-m", "pytest", str(_THIS), "-q", "-p", "no:cacheprovider", "--junitxml", str(xml),
+           "-k", "not test_no_double_skip_across_the_three_ways", *marker_args]
+    proc = subprocess.run(cmd, cwd=bi.TESTS_DIR.parent.parent, capture_output=True, text=True, timeout=300)
+    import xml.etree.ElementTree as ET
+    suite = ET.parse(xml).getroot().iter("testcase")
+    cases = list(suite)
+    skipped = [c.get("name") for c in cases if c.find("skipped") is not None]
+    return proc.returncode, len(cases), skipped, proc.stdout[-400:]
+
+
+@pytest.mark.verifies("IP-1079")
+def test_no_double_skip_across_the_three_ways_the_suite_is_run(tmp_path):
+    rc_all, n_all, sk_all, out = _run_guard(tmp_path)
+    rc_b, n_b, sk_b, out_b = _run_guard(tmp_path, "-m", "browser")
+    rc_nb, n_nb, sk_nb, out_nb = _run_guard(tmp_path, "-m", "not browser")
+    assert (rc_all, rc_b, rc_nb) == (0, 0, 0), (out, out_b, out_nb)
+    assert sk_all == [] and sk_b == [] and sk_nb == []
+    assert n_b >= 1 and n_nb >= 1 and n_all >= n_b and n_all >= n_nb   # each filtered run actually runs guard checks

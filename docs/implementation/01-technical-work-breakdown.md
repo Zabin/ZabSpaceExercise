@@ -1105,7 +1105,7 @@ carve-out); the rest is conflict avoidance.
 **Not planned here (and why).**
 - `M-1` (three training curl examples without `?cell=white`): `docs/training/` belongs to `08-training-manual-authoring`, reviewed by `09-training-manual-review`; not a code or `docs/implementation/` item. The packages above list the training pages they affect but do not edit them.
 - `M-5`, `L-7` (`CLAUDE.md` status text, GDS-07/08/09/10 statements, `feature-index.md` `FS-106`/`FS-110` rows and the two `doc_integrity_allow_ledgers.txt` lines, GDS coverage of `start_epoch` and the 366-day cap): owned by `03`, `04`, `06`, `11`; `FR-4330` already states the cap in the requirements, which closes the requirements half of `L-7`.
-- `L-5` (count-pinned guards): a test-guard redesign, not a bug fix for the release; the packages report the headroom (about 63 tests at the review tip; `IP-1076` and `IP-1077` use about 38) and a follow-up should re-express the guard as "no test lost".
+- `L-5` (count-pinned guards): a test-guard redesign, not a bug fix for the release; the packages report the headroom (about 63 tests at the review tip; `IP-1076` and `IP-1077` use about 38) and a follow-up should re-express the guard as "no test lost". (Built as `IP-1079`.)
 - `L-6` (does rewind or undo pause the running clock): an open owner decision.
 - A check that compares package-file headers with the ledger: a new capability (`IP-1350` family); recommended to `00-intake` by `IP-1078`.
 - `VR-1073` F1, F4, F5 and the other deferred `BL-` items listed in the pass 2 section: unchanged.
