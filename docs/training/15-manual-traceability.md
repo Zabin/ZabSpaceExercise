@@ -40,7 +40,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | `ops_fidelity` (tactical/realistic/full_ttc) | `content/vignette.py`, `bus.py` | WCM-2 | BLU-5 | RED-7 |
 | Hot-seat / LAN / pop-out transport | `session/inprocess.py`, `server.py` | WCM-3 | — | — |
 | Server-authoritative clock, pause/jump | `session/manager.py`, `engine/clock.py` | WCM-4 | — | — |
-| Rewind / undo / branch (determinism) | `session/manager.py`, `engine/simulation.py` | WCM-4, WCM-9 | — | — |
+| Rewind / undo / branch (determinism); rewind bounds and refusal status line (`#control-status`) | `session/manager.py` (`rewind_to`, `undo_last`), `engine/simulation.py`, `server.py` (`/rewind`, `/undo`), `app.js` (`reportControlError`, `rewindTo`) | WCM-4, WCM-9 | — | — |
 | Injects + builder + library (incl. fire-time validation) | `content/inject_library.yaml`, `server.py` `/inject`, `session/manager.py` (`fire_inject`, `validate_inject_effects`, `_skip_inject_effect`), `app.js` (`fireBuiltInject`) | WCM-5 | — | — |
 | Activity timeline (Gantt) | `ui_web/static/app.js`, `session/scene.py` | WCM-6 | BLU-2 | RED-2 |
 | Coaching notes | `content/vignette.py` (`Vignette.coaching`) | WCM-6 | — | — |
@@ -48,7 +48,8 @@ most likely to be edited; the manual sections are every place that behavior is d
 | TLE force-add | `engine/propagator.py`, `server.py` `/force/tle` | WCM-7 | — | — |
 | Red doctrine presets + `red_step` | `session/redai.py` | WCM-8 | — | RED-8 |
 | AAR replay / scrub / branch-compare | `session/aar.py` | WCM-9 | — | — |
-| Save / resume | `engine/simulation.py`, `server.py` `/save` | WCM-10 | — | — |
+| Save / resume (incl. refused load: `validate_save`, 366-day span cap) | `engine/simulation.py`, `session/manager.py` (`validate_save`), `server.py` `/save`, `/load_save` | WCM-10 | — | — |
+| White-only seat enforcement (403 without `?cell=white`; creation refusal; seat-aware palette time entries; refusal messages on Load / Save as scenario / Creator) | `server.py` (`_require_white`, `_refuse_player_seat_on_create`, `_reject_observer`), `app.js` (`PALETTE`, `reportControlError`, `showLoadFailure`, `saveAsScenario`), `creator.js` | WCM-4, WCM-10 | — | — |
 | Clock-lag watchdog | `session/manager.py` (`_record_catch_up_lag`) | WCM-10 | — | — |
 | Plan-first commanding + delivery paths | `engine/orders.py`, `engine/access.py` | — | BLU-2 | RED-2 |
 | Dry-run validity preview | `engine/orders.py` (`dry_run`) | — | BLU-3 | RED-3 |
@@ -100,7 +101,8 @@ names are the module's own headings.
 | Mission brief | `02` "Mission brief — read this first" |
 | Fog-of-war, god-view, Observer | `02` "White Cell god-view", "A player cell (fog-of-war)" |
 | Hot-seat, LAN, pop-outs | `01` §2.1 · `10` §10.1 (Handover), §10.1.2 · `10b` §10.14 |
-| Clock, pause/jump, rewind/undo/branch | `03` Steps 3–4 · `10` §10.1 · `05` "Red doctrine & After-Action Review" |
+| Clock, pause/jump, rewind/undo/branch, refusal status line | `03` Steps 3–4 · `10` §10.1, §10.2 · `05` "Red doctrine & After-Action Review" |
+| White-only seat enforcement, command-palette seat entries, scrollable View menu | `08` §9 · `10` §10.1, §10.1.2 · `10b` §10.14 · `05` "Adding real satellites by TLE", "Save & resume" · `07` §8 |
 | Compose form, target picker, params, dry-run, `invalid_param`, reason tips | `02` "Commanding & White Cell menus", "Order-composition assistants" · `03` Step 2 · `04` (all three walkthroughs) · `05` "Plan-first commanding", "Live previews before commit" · `09` §10 · `10a` §10.6 · `11` (every playbook) |
 | Maneuver / jam / engage / cyber assistants, consequence preview | `02` "Order-composition assistants", "Consequence preview & conjunction screening" · `05` "Live previews before commit" · `10a` §10.7–§10.8 |
 | Sensor tasking, SSN, beam modes, custody, weapons-quality gate, sensor modality fields | `04` Blue/Red Step 2 · `05` "SDA sensor tasking → custody → unlock" · `06` "Authoring sensors: optional modality fields" · `10a` §10.5 · `11` |
@@ -112,7 +114,7 @@ names are the module's own headings.
 | Conjunctions / collision avoid | `02` "Consequence preview & conjunction screening" · `05` "Conjunctions & collision avoidance" · `10` §10.2 |
 | TLE force-add | `05` "Adding real satellites by TLE" |
 | AAR, Red doctrine | `05` "Red doctrine & After-Action Review" · `10b` §10.12 |
-| Save / resume | `05` "Save & resume" · `10` §10.1.3 |
+| Save / resume | `05` "Save & resume" · `08` §9 · `10` §10.1.3 |
 | Viewers (globe, map), accessibility, local time | `02` "Viewers — 2D map and 3D globe", "Local time + accessibility toggles" · `10` §10.1.2, §10.2 · `10b` §10.10–§10.11 |
 | Any HTTP route added, renamed or reshaped | `08` §9 |
 | Vignette library, playbooks, learning path | `06` (track tables) · `11` · `16` |
@@ -136,13 +138,13 @@ mirrors each section's inline `> Sources:` footer.
 | WCM-1 | Role and view | `session/manager.py`, `session/cells.py` (`CellController`), `session/inprocess.py` (Observer, FR-6510) |
 | WCM-2 | Set up the exercise | `content/vignette.py`, `vignettes/*.yaml`, `/brief/{cell}`, `session/manager.py` (classification, seat-to-role), `engine/entities.py` (`Sensor` modality fields, `_check_radar_beam_mode`), `content/vignette.py` (`validate_vignette`, `VignetteValidationError`, `list_vignettes`), `app.js` (`loadSession`, Load-failed readout) |
 | WCM-3 | Hot-seat / LAN / pop-out | `session/inprocess.py`, `server.py` (`/api/sessions`) |
-| WCM-4 | Time control | `session/manager.py`, `engine/clock.py`, `/clock` |
+| WCM-4 | Time control | `session/manager.py` (`rewind_to`, `undo_last`), `engine/clock.py`, `/clock`, `/rewind`, `/undo`, `app.js` (`rewindTo`, `reportControlError`), `#control-status` |
 | WCM-5 | Injects | `content/inject_library.yaml`, `/inject`, `session/manager.py` (`fire_inject`, `validate_inject_effects`, `_skip_inject_effect`), `app.js` (`fireBuiltInject`, `fireInject`) |
 | WCM-6 | Monitor both sides | `session/scene.py`, `app.js` (incl. `openDrill`), `Vignette.coaching`, `session/manager.py` (`get_telemetry`/`get_series`) |
 | WCM-7 | TLE add | `engine/propagator.py`, `/force/tle` |
 | WCM-8 | AI-Red doctrine | `session/redai.py`, `/red_step` |
 | WCM-9 | After-Action Review | `session/aar.py`, `/aar*` |
-| WCM-10 | Save/resume + lag watchdog | `engine/simulation.py`, `/save`, `_record_catch_up_lag` |
+| WCM-10 | Save/resume + lag watchdog | `engine/simulation.py`, `/save`, `/load_save` (`validate_save`), `_record_catch_up_lag` |
 | WCM-11 | Competency assessment | `session/assessment.py`, `/assessment` |
 | WCM-12 | Offline research batch exports | `tools/research_batch.py`, `session/research_export.py` |
 | WCM-13 | RIC frame view & CATS phase angle (ground truth) | `engine/sun.py`, `session/ephemeris.py` (`live_ric_view`), `/ric_view/{cell}` |

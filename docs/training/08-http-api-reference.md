@@ -3,9 +3,21 @@
 ## 9. HTTP API reference
 
 All UI actions go through these endpoints (base `http://127.0.0.1:8000`). Reads are fog-filtered
-per cell, server-side. White Cell controls (start, step/advance/rewind/undo, clock, param, inject,
-red_step, force-add, save load and the Creator routes) are refused with 403 unless the request names
-the White seat (`?cell=white`); a player seat that names itself on session creation is refused too.
+per cell, server-side. The seat is a `cell` query parameter (`?cell=white`, `blue`, `red` or `observer`)
+that the caller asserts about itself; the console attaches it to every change it makes. This is
+seat enforcement on a trusted LAN, not authentication.
+
+- **White Cell controls need `?cell=white`.** These are refused with **403** when the request names any
+  other seat or none at all: `clock` (set), `param`, `start`, `step`, `advance`, `rewind`, `undo`,
+  `inject`, `force/tle`, `force/bulk_import`, `force/ground`, `red_step`, `load_save`, `save_vignette`,
+  the Creator routes (`creator/state`, `creator/asset`, `creator/seats`), `roles/assign`,
+  pending-inject cancel/edit, and `observer/view`. Only the query-string seat counts; a `cell` inside
+  a request body is not authority. Nothing changes on a refusal.
+- **Creating a session** (`POST /api/sessions`, `…/draft`) is refused with 403 only if the request
+  *names* Blue, Red or Observer; leaving `cell` off is allowed, so a script can create a session
+  before choosing seats.
+- **Player-facing changes** (orders, previews, `cancel`, `gate/decide`, `roe/change`, `recovery`, SSN
+  requests) accept Blue, Red or White but refuse `cell=observer` with 403 ("the Observer seat is read-only").
 
 | Method & path | Purpose |
 |---|---|
@@ -14,7 +26,7 @@ the White seat (`?cell=white`); a player seat that names itself on session creat
 | `POST /api/sessions/{sid}/param` `{param_id, value}` | Set a dial (before start) |
 | `POST /api/sessions/{sid}/start` | Start the exercise |
 | `POST /api/sessions/{sid}/step` `{dt_sim_s}` / `…/advance` `{t}` | Advance time |
-| `POST /api/sessions/{sid}/rewind` `{t}` · `…/undo` `{n}` | Time travel; rewind `t` must lie in `[start_epoch, now]` (`start_epoch` is on `GET …/clock`), else 400 |
+| `POST /api/sessions/{sid}/rewind` `{t}` · `…/undo` `{n}` | Time travel; rewind `t` must lie in `[start_epoch, now]` (`start_epoch` is on `GET …/clock`), else 400 naming the span; `undo` with nothing to undo (or `n` below 1) is a 400, and an undo that drops every logged action lands on `start_epoch` |
 | `POST /api/sessions/{sid}/inject` `{inject, at_sim_t?}` | Fire an inject (id or `{effects}`); `at_sim_t` (µs UTC) schedules for later |
 | `GET /api/sessions/{sid}/inject_library` | List reusable inject templates from `content/inject_library.yaml` |
 | `POST /api/sessions/{sid}/order` `{cell, actor, action, target, params}` | Issue an order |
@@ -47,7 +59,18 @@ the White seat (`?cell=white`); a player seat that names itself on session creat
 | `GET /api/sessions/{sid}/objectives` · `…/eventlog` | Objective status · event log |
 | `GET /api/sessions/{sid}/aar` · `…/aar/objectives?seq=` · `…/aar/at?seq=` | AAR report · objectives · snapshot at a point |
 | `GET /api/sessions/{sid}/aar/export.csv` · `…/aar/export.json` | AAR download as CSV · JSON |
-| `GET /api/sessions/{sid}/save` · `POST /api/sessions/load_save` | Save a session · resume from a saved state (a save that cannot be used — missing keys, malformed parts, or a legacy save whose vignette file is gone — is refused with HTTP 400 and a reason) |
+| `GET /api/sessions/{sid}/save` · `POST /api/sessions/load_save` | Save a session · resume from a saved state (a save that cannot be used — missing keys, malformed parts, or a legacy save whose vignette file is gone — is refused with HTTP 400 and a reason; see below) |
+
+**Refusal summary (what a script sees).**
+
+| Situation | Response |
+|---|---|
+| White Cell route without `?cell=white` | 403, "White Cell control: refused unless the request names the white seat" |
+| `POST /api/sessions` naming a player seat | 403, "sessions are created by the white seat, not the blue seat" |
+| `rewind` to a time before `start_epoch` or after now | 400, message gives `[start_epoch, now]` in sim microseconds; the session is unchanged |
+| `undo` with nothing logged | 400, "nothing to undo"; `n` below 1 is 400 "undo count must be at least 1" |
+| `load_save` with an unusable save | 400 with the reason, and no session is created. Reasons include: not a JSON object; a missing or mistyped required key (e.g. `vignette_id`, `seed`); a malformed `eventlog` or list entry; `final_time` earlier than the save's last logged event or the exercise start, or more than 366 days past the start; a legacy save whose vignette file is no longer available; an embedded vignette that fails validation |
+| `inject` that is malformed, or targets something it cannot (e.g. an `anomaly` on an asset with no bus) | 400 naming the reason; nothing is applied |
 
 Interactive API docs are auto-served at **http://127.0.0.1:8000/docs** (FastAPI/Swagger).
 
@@ -78,7 +101,8 @@ the message names the ceiling. The role manuals walk through each export:
 [WCM-12–16](12a-white-cell-analysis-and-exports.md), [BLU-11–14](13-blue-cell-manual.md),
 [RED-10–13](14-red-cell-manual.md).
 
-> **Sources:** `spacesim/ui_web/server.py` (route table, incl. `get_ric_view`, `get_tle`,
+> **Sources:** `spacesim/ui_web/server.py` (route table, `_require_white`, `_reject_observer`,
+> `_refuse_player_seat_on_create`, `rewind`, `undo`, `load_save`, incl. `get_ric_view`, `get_tle`,
 > `telemetry_export_csv`, `maneuver_ledger*`, `aar_export_*`, `ephemeris_truth`,
 > `ephemeris_cell_observed`) · `spacesim/session/ephemeris.py` (`MAX_EXPORT_SAMPLES`) ·
 > `spacesim/engine/orders.py` (order actions and params)

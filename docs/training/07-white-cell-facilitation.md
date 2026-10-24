@@ -50,7 +50,7 @@ backwards time travel.
 
 ```bash
 # Schedule a severe space-weather storm to fire 60 s from now
-curl -X POST http://127.0.0.1:8000/api/sessions/<SID>/inject -H 'Content-Type: application/json' -d '{
+curl -X POST 'http://127.0.0.1:8000/api/sessions/<SID>/inject?cell=white' -H 'Content-Type: application/json' -d '{
   "inject": {"effects": [
     {"type": "space_weather", "severity": "severe"},
     {"type": "message", "to": ["white","blue","red"], "text": "Geomag storm advisory"}
