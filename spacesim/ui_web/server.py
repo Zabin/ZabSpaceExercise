@@ -1032,7 +1032,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require_white(cell)
         try:
             sid, warnings = api.load_save_with_warnings(state)
-        except ValueError as exc:
+        except (ValueError, FileNotFoundError) as exc:   # IP-1102 — never a 500 for an unusable save
             raise HTTPException(status_code=400, detail=str(exc))
         return {"session": sid, "warnings": warnings}
 

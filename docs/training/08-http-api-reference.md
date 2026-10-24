@@ -45,7 +45,7 @@ per cell, server-side.
 | `GET /api/sessions/{sid}/objectives` · `…/eventlog` | Objective status · event log |
 | `GET /api/sessions/{sid}/aar` · `…/aar/objectives?seq=` · `…/aar/at?seq=` | AAR report · objectives · snapshot at a point |
 | `GET /api/sessions/{sid}/aar/export.csv` · `…/aar/export.json` | AAR download as CSV · JSON |
-| `GET /api/sessions/{sid}/save` · `POST /api/sessions/load_save` | Save a session · resume from a saved state |
+| `GET /api/sessions/{sid}/save` · `POST /api/sessions/load_save` | Save a session · resume from a saved state (a save that cannot be used — missing keys, malformed parts, or a legacy save whose vignette file is gone — is refused with HTTP 400 and a reason) |
 
 Interactive API docs are auto-served at **http://127.0.0.1:8000/docs** (FastAPI/Swagger).
 

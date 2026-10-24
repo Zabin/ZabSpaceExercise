@@ -97,7 +97,7 @@ pop-out polls the server at 1.5 s like any other tab, so closing the parent does
 | Section | Item | Effect |
 |---|---|---|
 | Session | ⬇ Save session | `GET /save` → download session JSON. |
-| Session | ⬆ Load session | File picker + `POST /load_save` (the loaded session starts paused — White must Resume). |
+| Session | ⬆ Load session | File picker + `POST /load_save` (the loaded session starts paused — White must Resume). A save that cannot be used is refused with a reason (HTTP 400), including a legacy save whose vignette file is no longer available. |
 | Tools | ? Coachmark tour | Walk the UI itself with a spotlight tip. |
 | Tools | Tutorial panel | Per-vignette tutorial steps for the active cell. |
 | Tools | Inspect vignette YAML | Open the vignette YAML inspector modal. |
