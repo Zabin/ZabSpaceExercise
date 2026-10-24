@@ -3,7 +3,9 @@
 ## 9. HTTP API reference
 
 All UI actions go through these endpoints (base `http://127.0.0.1:8000`). Reads are fog-filtered
-per cell, server-side.
+per cell, server-side. White Cell controls (start, step/advance/rewind/undo, clock, param, inject,
+red_step, force-add, save load and the Creator routes) are refused with 403 unless the request names
+the White seat (`?cell=white`); a player seat that names itself on session creation is refused too.
 
 | Method & path | Purpose |
 |---|---|

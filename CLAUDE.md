@@ -562,7 +562,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   attaches the caller's own seat as a `cell` query param to every mutating call; IP-1066
   `renderPendingInjects` lists pending injects with Cancel / Edit…; IP-1067 `refreshComparePanel`
   renders the ⚖ Compare panel (truth / Blue / Red) from one `/controller_view` read; `api.put/patch/del`
-  extend the same cell-query-param convention for IP-1174's routes below), `globe.js` (3D
+  extend the same cell-query-param convention for IP-1174's routes below; IP-1073 — palette time entries offered to the White seat only, a `#control-status` aria-live line for refused time controls / save loads, and a latest-edit token discarding superseded dry-run responses), `globe.js` (3D
   orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`
   (telemetry line graphs), `creator.js` (IP-1174 — the Vignette Creator's White-Cell UI: synchronized
   JSON view, ground-truth 2D/3D preview, TLE/lat-long asset entry with a curated-site picker,

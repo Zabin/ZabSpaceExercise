@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1073
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass).
+> **Status:** ✅ COMPLETE 2026-10-24 (awaiting `09-package-verification`) — built by `08-code-implementation`; originally authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass).
 > Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive of 2026-10-24,
 > recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256, authorizes
