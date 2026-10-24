@@ -1074,6 +1074,42 @@ carve-out); the rest is conflict avoidance.
 
 **Why one package, and why not folded into `IP-1074`.** `IP-1074` is `VERIFIED`; the defect is outside its scope and checklist, and a verified package is not reopened. The engine line, the manager guard, the route mapping and the tests are one behaviour and one verification pass. **Other callers audited, no separate unit:** `rewind_to` is already guarded, `advance_to`/catch-up cannot move backwards, `from_state` is protected by `IP-1103`'s `validate_save`; they get pinning tests inside `IP-1075`. **Ordering:** after `IP-1335`/`IP-1334` only to avoid test-file conflicts. **Not planned:** a `FR-4310` sentence on undo/rewind bounds (recommended to `04`), and auto-pause on undo (owner question, as for rewind).
 
+## Release-push remediation, pass 4 (2026-10-24)
+
+**Input:** the tranche 3 integration review (`docs/reviews/integration-review-tranche-3-release-push-remediation.md`: `M-2`, `M-3`, `M-4`, `L-1` to `L-4`) and the two requirements added by baseline-maintenance pass 2: `FR-4330` (time control bounded to the exercise span; the advance half "required, not yet built") and `FR-7340` (AAR playback obeys the requesting seat; "required, not yet built"). Same owner directive (journal run #256: bugs, in-progress and critical items only; no new features). Every package corrects a defect in a `VERIFIED` package or builds a requirement that already exists; no Feature Specification is new.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Advance and step accepted only in `[now, start_epoch + 366 days]`; backwards or beyond-span or non-finite is a 400, never a 500; the running clock stops at the span's end; `stepBy` uses `/step` | `session/manager.py`, `session/inprocess.py`, `ui_web/server.py`, `app.js::stepBy` | IP-1076 |
+| 2 | Palette inject entries White-only (plus audit of the other palette entries); refused inject shown in the visible status line | `app.js` palette, `fireInject` | IP-1076 |
+| 3 | Refused Load does not overwrite a live tab's `#session`; Observer dry-run not sent; no `GET /windows/<sensor>` (cause: the ribbon asks for windows of a sensor id, which `ASSETS` holds beside assets) | `app.js` `showLoadFailure`, `previewOrder`, `drawRibbon` | IP-1076 |
+| 4 | Tag-only retag of the existing rewind, undo and save-ceiling tests to `FR-4330`, with the matching `IP-1334` guard rows | `test_white_control_correctness.py`, `test_undo_clock_floor.py`, `test_save_load_robustness.py`, `test_origin_retag.py` `EXPECTED` rows | IP-1076 |
+| 5 | Seat check on the five `aar/playback/*` routes (white any; player own viewpoint; observer read-only; no seat refused; 403 before any change or disclosure) | `session/inprocess.py`, `ui_web/server.py` | IP-1077 |
+| 6 | 14 package headers and 3 ledger notes reconciled with their `VERIFIED` rows; recorded sweep | `docs/implementation/` only | IP-1078 |
+
+**Why three packages, and why this cut.** The brief asked for one package and a split "if large".
+
+- *Units 1-4 are one package* (`IP-1076`): they share `manager.py`, `inprocess.py`, `server.py` and `app.js`, one clock concept (the span) and one browser harness, and each is small. The palette, load-readout and console-noise items are all "the console does not show or send the right thing for a refusal"; splitting them from the bound would force `IP-1076`'s `stepBy` change (palette advance uses `/step`, which the bound makes necessary) to land in two packages. About 18 new tests; the largest package in the pass but one verification pass. The tag-only retag rides with it because the retagged tests are exactly the ones the bound's new tests sit beside, and because the `IP-1334` guard pins the tag sets, which forces the same-commit `EXPECTED` row edit.
+- *Unit 5 is its own package* (`IP-1077`): a different feature (`FS-107`, AAR), a different requirement (`FR-7340`), no console surface, no browser case, and a separate verification story (a seat matrix plus a no-disclosure check). Bundling it would make `IP-1076`'s checklist mix a clock bound with a fog-of-war boundary. It touches `server.py` and `inprocess.py` in different regions from `IP-1076`.
+- *Unit 6 is its own package* (`IP-1078`): documentation only; `07` may not write `VERIFIED`, so the planner cannot make the edit in the planning pass; fourteen unrelated file edits would bury `IP-1076`'s diff; the edit is independent of every code package and can run in any order.
+
+**Ordering and file conflicts.** `IP-1076` then `IP-1077` (both edit `server.py`, both add to the RTM Test column and push the count-pinned guard in `test_origin_retag.py`); `IP-1078` any time, last by preference so its Master Build Plan note edits do not collide with the code packages' status rows. No content dependency among the three.
+
+**Decisions made while planning (recorded, owner may override).**
+- The span is the save cap restated (366 days from `start_epoch`), reused from `SessionManager.MAX_SAVE_SPAN_US`; no `end_epoch` is exposed and nothing is configurable (`FR-4330` Notes).
+- The lazy real-time clock is clamped at the span's end rather than left to run past it (otherwise Play bypasses the bound); it is not auto-paused (owner question, same family as `L-6`).
+- Playback keeps its single shared cursor per session; per-seat cursors are an open design question (`FR-7340` Notes), not built. An absent seat is refused on every playback route, because no tool or console surface calls them without one.
+- Observer may read playback state exactly as `FR-7340` states; whether that read should honour the Observer's designation is a requirements question, recorded.
+- The `GET /windows/blue/BLUE-RADAR` 404 was investigated: a real client defect, not noise to suppress. The ribbon requests windows for the first actor in the picker, and the picker lists sensors (`BLUE-RADAR` is a `sensors:` entry) as well as assets; the route correctly answers 404 for an id not in `world.assets`. Fixed in the client; the route's fog/ownership contract is unchanged.
+
+**Not planned here (and why).**
+- `M-1` (three training curl examples without `?cell=white`): `docs/training/` belongs to `08-training-manual-authoring`, reviewed by `09-training-manual-review`; not a code or `docs/implementation/` item. The packages above list the training pages they affect but do not edit them.
+- `M-5`, `L-7` (`CLAUDE.md` status text, GDS-07/08/09/10 statements, `feature-index.md` `FS-106`/`FS-110` rows and the two `doc_integrity_allow_ledgers.txt` lines, GDS coverage of `start_epoch` and the 366-day cap): owned by `03`, `04`, `06`, `11`; `FR-4330` already states the cap in the requirements, which closes the requirements half of `L-7`.
+- `L-5` (count-pinned guards): a test-guard redesign, not a bug fix for the release; the packages report the headroom (about 63 tests at the review tip; `IP-1076` and `IP-1077` use about 38) and a follow-up should re-express the guard as "no test lost".
+- `L-6` (does rewind or undo pause the running clock): an open owner decision.
+- A check that compares package-file headers with the ledger: a new capability (`IP-1350` family); recommended to `00-intake` by `IP-1078`.
+- `VR-1073` F1, F4, F5 and the other deferred `BL-` items listed in the pass 2 section: unchanged.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
