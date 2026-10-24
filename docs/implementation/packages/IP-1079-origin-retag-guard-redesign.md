@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1079
 > **Version:** 1.0
-> **Status:** READY — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass 5). Every dependency is `VERIFIED`.
+> **Status:** VERIFIED 2026-10-24 ([VR-1079](../verification/VR-1079-origin-retag-guard-redesign.md), fresh session; READY before that) — authored 2026-10-24 by `07-implementation-planning`.
+> **Earlier status record (superseded by the line above; retained as history, unedited):** READY — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass 5). Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive of 2026-10-24, recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256, covers it; the owner then told this session to "resolve it as you see fit" (integration review `L-5`, the count-pinned guard). Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [IP-1334](IP-1334-test-origin-retag.md) (`VERIFIED`; owns `test_origin_retag.py`), [IP-1330](IP-1330-test-origin-marker-and-checks.md) (`VERIFIED`; the `verifies` marker and the collected-origin records), [IP-1340](IP-1340-browser-console-rule-suite.md) (`VERIFIED`; the `browser` marker whose split creates the always-skipped check).
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [`01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) ("Release-push remediation, pass 5"), [the tranche 3 integration review](../../reviews/integration-review-tranche-3-release-push-remediation.md) (`L-5`)

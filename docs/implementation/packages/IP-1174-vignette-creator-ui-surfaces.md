@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1174
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implemented 2026-09-26 by `08-code-implementation`. All five requirements
+> **Status:** VERIFIED 2026-09-28 ([VR-1174](../verification/VR-1174-vignette-creator-ui-surfaces.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE *(implemented 2026-09-26 by `08-code-implementation`. All five requirements
 > built as thin routes over `IP-1173`'s draft-session API: `creator/state` GET/PUT (FR-5120),
 > `creator/scene` (FR-5130, see the corrected ground-truth design note below), `force/tle`
 > (unmodified) + new `force/ground` + `GET /api/ground_sites` (FR-5140), `creator/asset/{id}`

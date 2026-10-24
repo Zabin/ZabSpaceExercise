@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1220
 > **Version:** 1.0
-> **Status:** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3 — see Objective)*
+> **Status:** VERIFIED 2026-09-28 ([VR-1220](../verification/VR-1220-sensor-modality-models.md), fresh session; READY before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3 — see Objective)*
 > **Dependencies:** [FS-122](../../features/FS-122-sensor-modality-models.md) v1.0
 > (`FR-1610`-`FR-1660`), `engine/entities.py`/`engine/access.py`/`engine/isr.py`/`engine/orders.py`/
 > `engine/custody.py`/`engine/ssn.py` (all `VERIFIED` baseline code)

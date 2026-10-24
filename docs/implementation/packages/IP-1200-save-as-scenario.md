@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1200
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
+> **Status:** VERIFIED 2026-09-27 ([VR-1200](../verification/VR-1200-save-as-scenario.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
 > built against `IP-1180`'s actual landed diff, per this package's own coordination note — awaiting
 > `09-package-verification` in a fresh session, since this session implemented it)*
 > **Maintenance:** 2026-10-17 package-text maintenance note appended (`BL-0144`) — see [Post-verification maintenance notes](#post-verification-maintenance-notes); the notes win over the body where they disagree.
