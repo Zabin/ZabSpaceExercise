@@ -2,10 +2,8 @@
 
 > **Package ID:** IP-1340
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-23 by `07-implementation-planning`, pipeline run #222.
-> No package dependencies.
-> **Authorization (MSTR-006 §3):** **not yet given.** The owner decided to add the suite
-> (`BL-0304`); the build go-ahead is separate.
+> **Status:** VERIFIED 2026-10-24 ([VR-1340](../verification/VR-1340-browser-console-rule-suite.md), fresh session; READY before that) — authored 2026-10-23 by `07-implementation-planning`, pipeline run #222.
+> **Authorization (MSTR-006 §3):** **given.** The owner decided to add the suite (`BL-0304`); the `run #230` ledger note records the owner's go-ahead of 2026-10-23. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [FS-134](../../features/FS-134-browser-console-rule-suite.md) v1.0 (the spec).
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md),
 > [`backlog.md`](../../pipeline/backlog.md) `BL-0304`

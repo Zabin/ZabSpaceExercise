@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1078
 > **Version:** 1.0
-> **Status:** READY — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass 4). No code dependency; every package it edits is already `VERIFIED` on the ledger.
+> **Status:** COMPLETE — implemented 2026-10-24 by `08-code-implementation` (awaiting `09-package-verification`); authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass 4). No code dependency; every package it edits is already `VERIFIED` on the ledger.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive of 2026-10-24, recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256 (bugs, in-progress and critical items only), covers a documentation defect that makes the tree contradict itself (`M-3` of the tranche 3 integration review, Medium). Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** none on code. Reads the `VR-xxxx` reports of the packages named below.
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [`01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) ("Release-push remediation, pass 4"), [the tranche 3 integration review](../../reviews/integration-review-tranche-3-release-push-remediation.md) (`M-3`)

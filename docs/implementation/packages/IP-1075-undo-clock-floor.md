@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1075
 > **Version:** 1.0
-> **Status:** READY — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass 3). Every dependency is `VERIFIED`.
+> **Status:** VERIFIED 2026-10-24 ([VR-1075](../verification/VR-1075-undo-clock-floor.md), fresh session; READY before that) — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass 3). Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive of 2026-10-24, recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256 (bugs, in-progress and critical items only), authorizes this bug-fix package. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.4 (the spec); [IP-1074](IP-1074-white-control-correctness.md) (`VERIFIED`; supplies the `[start_epoch, now]` rewind guard and `start_epoch` on `clock_state`); [IP-1103](IP-1103-save-validation-completion.md) (`VERIFIED`; supplies the `final_time >= start_epoch` save check this package pins)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [`VR-1074`](../verification/VR-1074-white-control-correctness.md) F1

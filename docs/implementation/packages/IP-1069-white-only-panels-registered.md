@@ -2,9 +2,8 @@
 
 > **Package ID:** IP-1069
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-23 by `07-implementation-planning`, pipeline run #224.
-> Every dependency is `VERIFIED`.
-> **Authorization (MSTR-006 §3):** **not yet given.**
+> **Status:** VERIFIED 2026-10-24 ([VR-1069](../verification/VR-1069-white-only-panels-registered.md), fresh session; READY before that) — authored 2026-10-23 by `07-implementation-planning`, pipeline run #224. Every dependency is `VERIFIED`.
+> **Authorization (MSTR-006 §3):** **given.** Owner-authorized 2026-10-23 (master build plan row; `run #230` ledger note). Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [IP-1067](IP-1067-side-by-side-controller-view.md) (the Compare panel) and
 > [IP-2010](IP-2010-competency-assessment.md) (the Assessment panel), both `VERIFIED`.
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md),

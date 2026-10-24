@@ -2,11 +2,8 @@
 
 > **Package ID:** IP-1311
 > **Version:** 1.0
-> **Status:** ✅ COMPLETE 2026-10-24 (awaiting `09`) — authored 2026-10-17 by `07-implementation-planning`, pipeline run #158.
-> Every dependency is `VERIFIED`. **Authorization (MSTR-006 §3):** this package falls under the
-> project owner's standing pre-authorization of 2026-10-11 for the packages this iteration
-> reaches (same precedent as `IP-1310`/`IP-1320`). Authoring the package is not itself the
-> authorization; that standing decision is.
+> **Status:** VERIFIED 2026-10-24 ([VR-1311](../verification/VR-1311-vignette-id-scan-robustness.md), fresh session; COMPLETE before that) — authored 2026-10-17 by `07-implementation-planning`, pipeline run #158. Every dependency is `VERIFIED`.
+> **Authorization (MSTR-006 §3):** this package falls under the project owner's standing pre-authorization of 2026-10-11 for the packages this iteration reaches (same precedent as `IP-1310`/`IP-1320`); the master build plan row also records the owner's release-push authorization of run #256 for its 2026-10-24 build. Authoring the package is not itself the authorization; that standing decision is.
 > **Dependencies:** [FS-131](../../features/FS-131-load-time-vignette-validation.md) v1.1 (the spec);
 > [IP-1310](IP-1310-load-time-vignette-validation.md) (the load gate this hardens) and
 > [IP-1180](IP-1180-external-vignette-directories.md) (the external-root scan it mirrors), both

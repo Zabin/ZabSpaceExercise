@@ -2,8 +2,7 @@
 
 > **Package ID:** IP-1102
 > **Version:** 1.0
-> **Status:** COMPLETE 2026-10-24 (awaiting `09`; `IN PROGRESS` during the build) — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass).
-> Every dependency is `VERIFIED`.
+> **Status:** VERIFIED 2026-10-24 ([VR-1102](../verification/VR-1102-save-load-robustness.md), fresh session; COMPLETE before that) — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass). Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive of 2026-10-24,
 > recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256, authorizes
 > remediation packages for bugs, in-progress and critical items. This package covers three open

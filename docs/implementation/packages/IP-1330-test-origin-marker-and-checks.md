@@ -2,10 +2,8 @@
 
 > **Package ID:** IP-1330
 > **Version:** 1.1 (2026-10-23, run #229: adds the generated RTM Test column, FS-133 v1.1 `NFR-2850`, `BL-0322`). v1.0: run #221.
-> **Status:** 🟢 READY — authored 2026-10-23 by `07-implementation-planning`, pipeline run #221.
-> No package dependencies.
-> **Authorization (MSTR-006 §3):** **not yet given.** Owner direction `BL-0310` decided the
-> marker form and cadence; the build go-ahead is separate.
+> **Status:** VERIFIED 2026-10-24 ([VR-1330](../verification/VR-1330-test-origin-marker-and-checks.md), fresh session; READY before that) — authored 2026-10-23 by `07-implementation-planning`, pipeline run #221.
+> **Authorization (MSTR-006 §3):** **given.** Owner direction `BL-0310` decided the marker form and cadence; the `run #230` ledger note records the owner's go-ahead of 2026-10-23. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [FS-133](../../features/FS-133-test-origin-traceability.md) v1.0 (the spec).
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md),
 > [IP-1331](IP-1331-test-origin-backfill-engine-content.md), [IP-1332](IP-1332-test-origin-backfill-session.md),

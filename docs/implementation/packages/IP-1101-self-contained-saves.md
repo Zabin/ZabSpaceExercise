@@ -2,10 +2,8 @@
 
 > **Package ID:** IP-1101
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-23 by `07-implementation-planning`, pipeline run #220.
-> Every dependency is `VERIFIED`.
-> **Authorization (MSTR-006 §3):** **not yet given for this package.** The owner decided the
-> behavior (`BL-0302`); the build go-ahead is a separate decision, asked before `08` runs.
+> **Status:** VERIFIED 2026-10-24 ([VR-1101](../verification/VR-1101-self-contained-saves.md), fresh session; READY before that) — authored 2026-10-23 by `07-implementation-planning`, pipeline run #220. Every dependency is `VERIFIED`.
+> **Authorization (MSTR-006 §3):** **given.** The owner decided the behavior (`BL-0302`); the master build plan row records the build as owner-authorized, and the `run #230` ledger note records the owner's go-ahead of 2026-10-23. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [FS-110](../../features/FS-110-save-and-resume.md) v2.0 (the spec);
 > [IP-1100](IP-1100-save-and-resume.md) (save/resume as built), [IP-1310](IP-1310-load-time-vignette-validation.md)
 > (`validate_vignette`), [IP-1200](IP-1200-save-as-scenario.md) (`simulator_version()`) — all `VERIFIED`.

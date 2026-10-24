@@ -2,10 +2,8 @@
 
 > **Package ID:** IP-1332
 > **Version:** 1.0
-> **Status:** 🔴 BLOCKED — on [IP-1330](IP-1330-test-origin-marker-and-checks.md) reaching
-> `VERIFIED` (the marker, the checks and the allow-list this package shrinks). Authored 2026-10-23
-> by `07-implementation-planning`, pipeline run #221.
-> **Authorization (MSTR-006 §3):** **not yet given.**
+> **Status:** VERIFIED 2026-10-24 ([VR-1332](../verification/VR-1332-test-origin-backfill-session.md), fresh session; BLOCKED on `IP-1330` before that) — authored 2026-10-23 by `07-implementation-planning`, pipeline run #221.
+> **Authorization (MSTR-006 §3):** **given.** Owner-authorized 2026-10-23 (master build plan row). Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [FS-133](../../features/FS-133-test-origin-traceability.md) v1.0;
 > [IP-1330](IP-1330-test-origin-marker-and-checks.md).
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md),
