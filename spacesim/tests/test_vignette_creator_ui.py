@@ -237,7 +237,7 @@ def test_matrix_assignment_produces_role_assignments_identical_to_direct_assign_
     c.post(f"/api/sessions/{sid}/creator/seats?cell=white", json={"cell": "white", "count": 1})
     r = c.post(f"/api/sessions/{sid}/roles/assign", json={
         "cell": "white", "seat": "white-1", "asset_or_constellation": "SAT-ROLE", "role": "both",
-    })
+    }, params={"cell": "white"})
     assert r.json()["ok"] is True
     report = c.get(f"/api/sessions/{sid}/roles/staffing").json()
     assert isinstance(report, list)

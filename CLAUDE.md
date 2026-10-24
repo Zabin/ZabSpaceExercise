@@ -219,7 +219,7 @@ hostile participant on the LAN can read another cell's belief state through `/sc
 v1 PME training context (everyone in the room is on the same team learning together) and is
 documented as the explicit trust boundary; see `docs/AUDIT-2026-06.md` §D5 / §F1. Hardening
 options (per-cell tokens) are tracked in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
-**White Cell controls (clock, step/advance/rewind/undo, start, param, inject, force-add, save load) are refused to any request not naming the `white` seat (IP-1068, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication. IP-1072 extends the same refusal to the Vignette Creator edits (`creator/state`, `creator/asset`, `creator/seats`), `save_vignette`, and `red_step`; session and draft creation (`POST /api/sessions`, `/draft`) is refused only when the request *names* `blue`/`red`/`observer` — a request naming no seat may still create (deliberate asymmetry).**
+**White Cell controls (clock, step/advance/rewind/undo, start, param, inject, force-add, save load, `roles/assign`, `observer/view`) are refused to any request not naming the `white` seat (IP-1068/IP-1074, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication. IP-1072 extends the same refusal to the Vignette Creator edits (`creator/state`, `creator/asset`, `creator/seats`), `save_vignette`, and `red_step`; session and draft creation (`POST /api/sessions`, `/draft`) is refused only when the request *names* `blue`/`red`/`observer` — a request naming no seat may still create (deliberate asymmetry).**
 **The Observer seat's mutation-rejection (IP-1130) is enforced at this same trust level, not a
 stronger one** — the server rejects any request asserting `cell=observer`, a real structural
 enforcement (it holds even for a request that bypasses the UI entirely), but the seat assertion
@@ -481,7 +481,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   White-only at `/controller_view`, one `_locked_read`); **multiplayer:** server-authoritative
   lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /
   catch_up / clock_state`, re-anchor on `start/rewind/undo/advance` so the wall clock can't snap
-  the sim back),
+  the sim back; **IP-1074 (FR-4310):** `rewind_to` raises `ValueError` outside `[ctx.start_epoch, now]`
+  (→ `Ack(ok=False)` → HTTP 400) and `clock_state` carries `start_epoch`; `roles/assign` + `observer/view`
+  are `_require_white` on the query seat, 403),
   `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`
   (**multiplayer:** `_locked(sid)` cm wraps every mutation; every read pass-through calls
   `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added;

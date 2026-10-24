@@ -525,3 +525,35 @@ def test_a_menu_reaches_its_last_entry_at_low_height(console):
     last.click()                                # Playwright hit-tests the point: it fails if anything covers the entry
     p.wait_for_function("window.__hit === true")
     assert (last.get_attribute("id") or last.inner_text()).strip()    # the last entry (e.g. Reset layout)
+
+
+# -- IP-1074: "rewind to start" means the exercise's start_epoch, never 0 ------------------------
+@pytest.mark.verifies("FR-4310", "NFR-1600")
+def test_rewind_to_start_sends_the_exercise_start_epoch_not_zero(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    start = c.http.get(f"/api/sessions/{c.sid}/clock").json()["start_epoch"]
+    assert start > 0
+    bodies = []
+    c.page.on("request", lambda r: bodies.append(json.loads(r.post_data or "{}"))
+              if r.method == "POST" and r.url.split("?")[0].endswith("/rewind") else None)
+
+    def advance_then(trigger):
+        assert c.http.post(f"/api/sessions/{c.sid}/step", params=W, json={"dt_sim_s": 300.0}).status_code == 200
+        assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] > start
+        n = len(bodies)
+        with c.page.expect_response(lambda r: r.url.split("?")[0].endswith("/rewind")) as resp:
+            trigger()
+        assert resp.value.status == 200
+        assert len(bodies) == n + 1 and bodies[-1] == {"t": start}
+        clock = c.http.get(f"/api/sessions/{c.sid}/clock").json()
+        assert clock["now"] == start and clock["running"] is False   # clock state unchanged by a rewind
+
+    def palette():
+        c.page.keyboard.press("Control+k")
+        c.page.fill("#palette-input", "rewind to start")
+        c.page.keyboard.press("Enter")
+
+    advance_then(palette)
+    advance_then(lambda: c.page.click("#rewind"))
+    assert c.errors == []

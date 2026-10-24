@@ -109,7 +109,7 @@ def test_full_flow_order_advance_objectives_and_rewind():
     assert objs["blue"]["deliver_isr"] is True
 
     # Rewind clears the delivery (exact replay-based rewind through the API).
-    c.post(f"/api/sessions/{sid}/rewind?cell=white", json={"t": 0})
+    c.post(f"/api/sessions/{sid}/rewind?cell=white", json={"t": start})
     assert c.get(f"/api/sessions/{sid}/objectives").json()["blue"]["deliver_isr"] is False
 
 
@@ -385,7 +385,7 @@ def test_rewind_re_anchors_clock(monkeypatch):
     assert advanced - start_now == 30 * 1_000_000
     # Rewind sets sim.clock.now back; re-anchor must reset wall_anchor to wall=now and
     # sim_anchor to the new sim time. So +5s of further wall time should yield +5s of sim.
-    c.post(f"/api/sessions/{sid}/rewind?cell=white", json={"t": 0})
+    c.post(f"/api/sessions/{sid}/rewind?cell=white", json={"t": start_now})
     after_rewind = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     _patch_wall(monkeypatch, 7035.0)        # +5s after rewind
     after_5s = c.get(f"/api/sessions/{sid}/godview").json()["now"]

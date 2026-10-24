@@ -14,7 +14,7 @@ the White seat (`?cell=white`); a player seat that names itself on session creat
 | `POST /api/sessions/{sid}/param` `{param_id, value}` | Set a dial (before start) |
 | `POST /api/sessions/{sid}/start` | Start the exercise |
 | `POST /api/sessions/{sid}/step` `{dt_sim_s}` / `…/advance` `{t}` | Advance time |
-| `POST /api/sessions/{sid}/rewind` `{t}` · `…/undo` `{n}` | Time travel |
+| `POST /api/sessions/{sid}/rewind` `{t}` · `…/undo` `{n}` | Time travel; rewind `t` must lie in `[start_epoch, now]` (`start_epoch` is on `GET …/clock`), else 400 |
 | `POST /api/sessions/{sid}/inject` `{inject, at_sim_t?}` | Fire an inject (id or `{effects}`); `at_sim_t` (µs UTC) schedules for later |
 | `GET /api/sessions/{sid}/inject_library` | List reusable inject templates from `content/inject_library.yaml` |
 | `POST /api/sessions/{sid}/order` `{cell, actor, action, target, params}` | Issue an order |

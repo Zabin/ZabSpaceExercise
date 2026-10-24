@@ -466,11 +466,20 @@ class SessionManager:
             "running": self._clock_running,
             "rate": self._rate,
             "now": self.sim.clock.now,
+            # IP-1074 — the exercise's first instant; the lower bound of a valid rewind.
+            "start_epoch": self.ctx.start_epoch,
             # Audit Jun 2026 §F2 — None when healthy, dict when lagging.
             "lag_warning": self._clock_lag_warning,
         }
 
     def rewind_to(self, t: int) -> None:
+        # IP-1074 (FR-4310, NFR-1600) — a rewind stays inside the exercise's own span
+        # [start_epoch, now]; raised before any state changes. ``Simulation.rewind_to`` is unchanged.
+        lo, hi = self.ctx.start_epoch, self.sim.clock.now
+        if not (lo <= t <= hi):
+            raise ValueError(
+                f"rewind target {t} is outside the exercise span [start_epoch={lo}, now={hi}] "
+                "(sim microseconds); use start_epoch to rewind to the start")
         self.sim.rewind_to(t)
         self._rebind()
         if self.started:
