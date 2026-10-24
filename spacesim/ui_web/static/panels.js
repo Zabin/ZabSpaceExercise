@@ -20,7 +20,7 @@
     { id: "activity-panel",  label: "Activity timeline" },
     { id: "aar-panel",       label: "After-action review" },
     { id: "drill-panel",     label: "Subsystem drill-down" },
-    { id: "compare-panel",   label: "Compare (truth / Blue / Red)" },   // IP-1069 — White-only
+    { id: "compare-panel",   label: "Compare (truth / Blue / Red)", handle: "summary" },   // IP-1069 — White-only; a <details>, no <h2>
     { id: "assessment-panel", label: "Competency assessment" },          // IP-1069 — White-only
   ];
 
@@ -107,12 +107,23 @@
     const maxL = window.innerWidth - 80, maxT = window.innerHeight - 40;
     s.left = Math.max(0, Math.min(maxL, e.clientX - drag.dx));
     s.top = Math.max(0, Math.min(maxT, e.clientY - drag.dy));
+    drag.moved = true;
     drag.el.style.left = s.left + "px";
     drag.el.style.top = s.top + "px";
   }
   function endDrag() {
     window.removeEventListener("pointermove", onDrag);
-    if (drag) { saveState(); drag = null; }
+    if (drag) {
+      // A drag that began on a <summary> must not also toggle its <details> on release: swallow the
+      // click that follows a real move, and only that one (dropped on the next task either way).
+      if (drag.moved) {
+        const el = drag.el;
+        const swallow = (ev) => { ev.preventDefault(); ev.stopPropagation(); };
+        el.addEventListener("click", swallow, true);
+        setTimeout(() => el.removeEventListener("click", swallow, true), 0);
+      }
+      saveState(); drag = null;
+    }
   }
 
   // Capture user resizes of floating panels (the native CSS resize handle) into persisted state.
