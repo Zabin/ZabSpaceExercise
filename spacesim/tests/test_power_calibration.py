@@ -13,12 +13,14 @@ These tests pin the corrected behaviour:
 """
 from __future__ import annotations
 
+import pytest
 from spacesim.content.vignette import load_vignette
 from spacesim.engine.bus import BusState, advance_bus
 from spacesim.engine.simtime import minutes
 from spacesim.session.manager import SessionManager
 
 
+@pytest.mark.verifies("FR-2110")
 def test_baseline_soc_stays_healthy_over_several_orbits():
     """No attacks, no commands — just advance ~3 LEO orbits and watch the ISR battery.
 
@@ -43,6 +45,7 @@ def test_baseline_soc_stays_healthy_over_several_orbits():
     )
 
 
+@pytest.mark.verifies("FR-2110")
 def test_penumbra_tick_blends_charge_and_drain():
     """A half-lit tick (lit fraction 0.5) nets charge-minus-drain, not a binary switch."""
     bus = BusState(last_update=0)
@@ -56,6 +59,7 @@ def test_penumbra_tick_blends_charge_and_drain():
     assert bus.power.in_eclipse is False
 
 
+@pytest.mark.verifies("FR-2110")
 def test_full_umbra_still_drains_and_full_sun_still_charges():
     bus = BusState(last_update=0)
     bus.power.battery_soc = 0.5
@@ -70,6 +74,7 @@ def test_full_umbra_still_drains_and_full_sun_still_charges():
     assert bus2.power.battery_soc > 0.5 and bus2.power.in_eclipse is False
 
 
+@pytest.mark.verifies("FR-2110")
 def test_eclipse_flag_exposed_in_soh_snapshot():
     """The fleet rail / drill-down must be able to SHOW the operator why SoC is falling."""
     from spacesim.engine.bus import soh_snapshot

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.content.vignette import load_vignette
 from spacesim.engine.orders import MAX_COMMANDS_PER_PASS, Order
 from spacesim.session.manager import SessionManager
@@ -13,6 +14,7 @@ def _mgr():
     return mgr
 
 
+@pytest.mark.verifies("FR-3110")
 def test_queue_lists_issued_orders():
     mgr = _mgr()
     mgr.issue_order("blue", Order(cell="blue", actor="ISR-EO-1", action="downlink", params={"via": "GS-TRN"}))
@@ -23,6 +25,7 @@ def test_queue_lists_issued_orders():
     assert all(o["cell"] == "red" for o in mgr.list_orders("red"))
 
 
+@pytest.mark.verifies("FR-3120")
 def test_cancel_prevents_execution_and_is_replay_safe():
     mgr = _mgr()
     ack = mgr.issue_order("blue", Order(cell="blue", actor="ISR-EO-1", action="downlink", params={"via": "GS-TRN"}))
@@ -40,6 +43,7 @@ def test_cancel_prevents_execution_and_is_replay_safe():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
+@pytest.mark.verifies("FR-3120")
 def test_cancel_observe_frees_sensor_for_rebooking():
     """Cancelling an observe order must release the sensor booking so the same slot can be reused."""
     mgr = _mgr()
@@ -70,6 +74,7 @@ def test_cancel_observe_frees_sensor_for_rebooking():
     assert all("issued_at" in r for r in rows)
 
 
+@pytest.mark.verifies("FR-3110")
 def test_pass_capacity_limits_commands_per_window():
     """At most MAX_COMMANDS_PER_PASS commands can be queued for the same access window."""
     mgr = _mgr()
@@ -100,6 +105,7 @@ def test_pass_capacity_limits_commands_per_window():
     assert mgr.osys._pass_bookings.get(("ISR-EO-1", wins[0][0]), 0) == MAX_COMMANDS_PER_PASS - 1
 
 
+@pytest.mark.verifies("FR-1220")
 def test_windows_ahead_returns_upcoming_passes_by_channel():
     mgr = _mgr()
     wa = mgr.windows_ahead("blue", "ISR-EO-1")
@@ -110,6 +116,7 @@ def test_windows_ahead_returns_upcoming_passes_by_channel():
     assert mgr.windows_ahead("red", "ISR-EO-1") is None          # fog
 
 
+@pytest.mark.verifies("FR-6210")
 def test_next_contacts_matches_pass_timeline_and_respects_fog():
     mgr = _mgr()
     nc = mgr.next_contacts("blue")
@@ -122,6 +129,7 @@ def test_next_contacts_matches_pass_timeline_and_respects_fog():
     assert "ISR-EO-1" not in mgr.next_contacts("red")["next"]
 
 
+@pytest.mark.verifies("FR-4410")
 def test_inject_list_exposes_vignette_injects():
     mgr = SessionManager(load_vignette("multi-domain-taiwan"), seed=1)
     mgr.start()

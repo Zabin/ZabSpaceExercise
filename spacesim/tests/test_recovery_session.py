@@ -8,6 +8,7 @@ while staying replay-safe. Built on the training-basics vignette (Blue ISR-EO-1 
 
 from __future__ import annotations
 
+import pytest
 from spacesim.content.vignette import load_vignette
 from spacesim.engine.bus import enter_safe_mode
 from spacesim.session.manager import SessionManager
@@ -24,6 +25,7 @@ def _mgr(difficulty="quick", patched=False):
     return mgr
 
 
+@pytest.mark.verifies("FR-2510")
 def test_recovery_status_reports_safe_mode_and_fog():
     mgr = _mgr()
     st = mgr.recovery_status("blue", "ISR-EO-1")
@@ -32,6 +34,7 @@ def test_recovery_status_reports_safe_mode_and_fog():
     assert mgr.recovery_status("red", "ISR-EO-1") is None      # fog: not Red's asset
 
 
+@pytest.mark.verifies("FR-2510")
 def test_begin_recovery_requires_safed_asset():
     mgr = _mgr()
     sat = mgr.world.assets["ISR-EO-1"].bus_state
@@ -40,6 +43,7 @@ def test_begin_recovery_requires_safed_asset():
     assert mgr.begin_recovery("red", "ISR-EO-1", "GS-TRN")["reason"] == "not_owner"
 
 
+@pytest.mark.verifies("FR-2510")
 def test_recovery_resafes_until_patched_then_sticks_and_replays():
     mgr = _mgr(difficulty="quick", patched=False)
     res = mgr.begin_recovery("blue", "ISR-EO-1", "GS-TRN")

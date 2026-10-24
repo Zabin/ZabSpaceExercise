@@ -39,6 +39,7 @@ def _fired_count(mgr) -> int:
     return sum(1 for m in mgr.world.messages if m["text"] == "condition-fired")
 
 
+@pytest.mark.verifies("FR-4420")
 def test_condition_inject_fires_at_first_true_tick_and_records_fired_payload():
     vig = _custody_condition_vignette({"kind": "custody", "side": "blue", "object": "SAT-RED", "min_conf": 0.5})
     mgr = SessionManager(vig, seed=0)
@@ -56,6 +57,7 @@ def test_condition_inject_fires_at_first_true_tick_and_records_fired_payload():
     assert 0.5 <= fired["value"] <= 1.0
 
 
+@pytest.mark.verifies("FR-4420")
 def test_condition_inject_never_refires_once_fired():
     vig = _custody_condition_vignette({"kind": "custody", "side": "blue", "object": "SAT-RED", "min_conf": 0.5})
     mgr = SessionManager(vig, seed=0)
@@ -65,6 +67,7 @@ def test_condition_inject_never_refires_once_fired():
     assert _fired_count(mgr) == 1  # not once per tick despite the condition staying true
 
 
+@pytest.mark.verifies("FR-4420")
 def test_condition_inject_targeting_deleted_object_never_fires():
     vig = _custody_condition_vignette({"kind": "custody", "side": "blue", "object": "GHOST", "min_conf": 0.5})
     mgr = SessionManager(vig, seed=0)
@@ -75,6 +78,7 @@ def test_condition_inject_targeting_deleted_object_never_fires():
     # No exception was raised getting here — Design Decision 2's "no-op forever" posture.
 
 
+@pytest.mark.verifies("FR-4420")
 def test_vignette_with_no_condition_injects_schedules_zero_condition_check_events():
     api_vig = Vignette.model_validate({
         "id": "test-no-condition-injects", "title": "No condition injects",
@@ -92,6 +96,7 @@ def test_vignette_with_no_condition_injects_schedules_zero_condition_check_event
     assert not any(e.kind == "condition_check" for e in mgr.sim.eventlog.entries)
 
 
+@pytest.mark.verifies("FR-4420")
 def test_condition_inject_fires_at_identical_tick_under_replay():
     """FS-106 v2.1's own Acceptance Criterion — deterministic replay reproduces the same firing
     tick exactly, since firing is a pure function of replayed WorldState."""
@@ -118,6 +123,7 @@ def test_condition_inject_fires_at_identical_tick_under_replay():
 # IP-1064 — evaluated value for range metrics, anchored tick grids, one scan per tick
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-4420")
 def test_condition_record_carries_measured_range_for_a_proximity_metric():
     """BL-0131 — a range metric records the measured range in km (at or below the threshold)."""
     vig = _custody_condition_vignette({"kind": "proximity", "a": "SAT-BLUE", "b": "SAT-RED",
@@ -140,6 +146,7 @@ def _tick_times(mgr, after: int) -> list[tuple[str, int]]:
             if e.kind in ("bus_tick", "condition_check") and e.sim_time > after]
 
 
+@pytest.mark.verifies("FR-4420")
 def test_tick_grids_stay_on_the_start_anchored_grid_after_an_off_grid_rewind():
     """BL-0132 — rewinding to a time between ticks, then re-advancing unchanged, reproduces the
     original tick timeline (both bus_tick and condition_check)."""
@@ -161,6 +168,7 @@ def test_tick_grids_stay_on_the_start_anchored_grid_after_an_off_grid_rewind():
     assert _tick_times(plain, off_grid)  # the comparison is not vacuous
 
 
+@pytest.mark.verifies("FR-4420")
 def test_two_condition_injects_each_fire_once_at_the_same_tick():
     """BL-0133 — the one-scan fired lookup keeps fire-once semantics for every inject."""
     vig = _custody_condition_vignette({"kind": "custody", "side": "blue", "object": "SAT-RED", "min_conf": 0.5})
@@ -191,6 +199,7 @@ def _fired_value(mgr) -> float:
     return fired["value"]
 
 
+@pytest.mark.verifies("FR-4420")
 @pytest.mark.parametrize("loss", [{"degrade_to": 0.0}, {"mode": "drop"}])
 def test_custody_record_value_is_measured_before_a_self_affecting_custody_loss(loss):
     """BL-0278 — a `custody >= 0.5` condition whose own effect is `forced_custody_loss` on the
@@ -214,6 +223,7 @@ def test_custody_record_value_is_measured_before_a_self_affecting_custody_loss(l
     assert _fired_value(mgr) == decided_at
 
 
+@pytest.mark.verifies("FR-4420")
 def test_deny_custody_record_value_is_measured_before_a_self_affecting_reveal():
     """BL-0278, other direction — a `deny_custody` condition that fires with no track (the
     decision saw 0.0) and whose own effect is `reveal_asset` on that object records 0.0, not 1.0."""

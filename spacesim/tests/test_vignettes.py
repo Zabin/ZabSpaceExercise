@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.content.vignette import list_vignettes, load_vignette
 from spacesim.engine.access import AccessProvider, COMMAND_UPLINK
 from spacesim.engine.orders import scene_from_world
@@ -17,6 +18,7 @@ EXPECTED = {"leo-isr-denial", "geo-rpo-shadowing", "gnss-ew-campaign", "co-orbit
             "da-asat-crisis", "satcom-cyber-link", "sda-custody-hunt"}
 
 
+@pytest.mark.verifies("FR-4110")
 def test_all_seven_vignettes_load_start_and_evaluate():
     ids = {v["id"] for v in list_vignettes()}
     assert EXPECTED <= ids
@@ -28,6 +30,7 @@ def test_all_seven_vignettes_load_start_and_evaluate():
         mgr.get_view("blue"); mgr.get_view("red"); mgr.get_scene("blue")  # no errors
 
 
+@pytest.mark.verifies("FR-5210")
 def test_real_satellite_added_by_tle_propagates_and_generates_passes():
     api = InProcessSession()
     sid = api.load_vignette("leo-isr-denial", seed=1)
@@ -47,6 +50,7 @@ def test_real_satellite_added_by_tle_propagates_and_generates_passes():
     assert wins
 
 
+@pytest.mark.verifies("FR-5210")
 def test_invalid_tle_is_rejected_with_reason():
     api = InProcessSession()
     sid = api.load_vignette("leo-isr-denial", seed=1)
@@ -54,6 +58,7 @@ def test_invalid_tle_is_rejected_with_reason():
     assert ack.ok is False and "invalid TLE" in ack.reason
 
 
+@pytest.mark.verifies("FR-9110")
 def test_doctrine_profiles_drive_different_red_behavior():
     # russia_ew_first jams the GNSS link.
     mgr = SessionManager(load_vignette("gnss-ew-campaign"), seed=1)

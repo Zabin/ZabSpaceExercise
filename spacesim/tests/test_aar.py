@@ -17,6 +17,7 @@ def _campaign(overrides=None):
     return mgr
 
 
+@pytest.mark.verifies("FR-9110")
 def test_capstone_runs_a_synchronized_red_campaign():
     mgr = _campaign()
     acks = RedDoctrine(mgr).step()  # china_integrated: jam + cyber together
@@ -29,6 +30,7 @@ def test_capstone_runs_a_synchronized_red_campaign():
     assert rep.timeline and any("cyber" in e.summary for e in rep.timeline)
 
 
+@pytest.mark.verifies("FR-7410", "FR-7420")
 def test_state_at_time_reconstructs_world_at_arbitrary_time():
     """IP-1210 (FR-7410/FR-7420) — state_at_time()'s applied-event set matches exactly the
     events with sim_time <= t, and world.now == t (not the last applied event's own time)."""
@@ -50,6 +52,7 @@ def test_state_at_time_reconstructs_world_at_arbitrary_time():
     assert mgr.sim.clock.now == live_now
 
 
+@pytest.mark.verifies("FR-7310")
 def test_aar_scrub_is_read_only_and_reconstructs_earlier_state():
     mgr = _campaign()
     RedDoctrine(mgr).step()
@@ -65,6 +68,7 @@ def test_aar_scrub_is_read_only_and_reconstructs_earlier_state():
     assert mgr.world.assets["SATCOM-1"].bus_state.mode == "safe_mode"
 
 
+@pytest.mark.verifies("FR-7320")
 def test_branch_comparison_shows_objective_flip():
     # Branch A: Red cyber safes the SATCOM (modem unpatched).
     a = _campaign()
@@ -88,6 +92,7 @@ def test_branch_comparison_shows_objective_flip():
 
 # ---- IP-1280 (FR-7330) — variable-speed AAR playback -----------------------------------------
 
+@pytest.mark.verifies("FR-7330")
 def test_playback_at_nondefault_speed_does_not_disturb_live_session():
     mgr = _campaign()
     RedDoctrine(mgr).step()
@@ -103,6 +108,7 @@ def test_playback_at_nondefault_speed_does_not_disturb_live_session():
     assert mgr.world.model_dump() == live_dump
 
 
+@pytest.mark.verifies("FR-7330")
 def test_playback_cell_viewpoint_matches_cell_controller_at_sampled_moments():
     from spacesim.session.cells import CellController
     mgr = _campaign()
@@ -116,6 +122,7 @@ def test_playback_cell_viewpoint_matches_cell_controller_at_sampled_moments():
     assert pb.state() == expected
 
 
+@pytest.mark.verifies("FR-7330")
 def test_playback_truth_viewpoint_matches_ground_truth_reconstruction():
     mgr = _campaign()
     RedDoctrine(mgr).step()
@@ -127,6 +134,7 @@ def test_playback_truth_viewpoint_matches_ground_truth_reconstruction():
     assert pb.state() == expected
 
 
+@pytest.mark.verifies("FR-7330")
 def test_playback_viewpoint_switch_continues_from_same_moment():
     mgr = _campaign()
     RedDoctrine(mgr).step()
@@ -139,6 +147,7 @@ def test_playback_viewpoint_switch_continues_from_same_moment():
     assert pb.t == t_before_switch  # switching viewpoint never resets the played-back moment
 
 
+@pytest.mark.verifies("FR-7330")
 def test_playback_rejects_a_nonparticipating_cell_viewpoint():
     mgr = _campaign()
     with pytest.raises(ValueError):
@@ -161,6 +170,7 @@ def _campaign_with_history():
     return mgr
 
 
+@pytest.mark.verifies("FR-7410", "FR-7420")
 def test_worlds_at_times_matches_state_at_time():
     mgr = _campaign_with_history()
     entries = mgr.sim.eventlog.entries
@@ -190,6 +200,7 @@ def test_worlds_at_times_matches_state_at_time():
         list(aar.worlds_at_times(mgr, [now, start]))
 
 
+@pytest.mark.verifies("FR-1120")
 def test_stepwise_replay_matches_replay_at_every_position():
     from spacesim.engine.simulation import replay, replay_stepwise
     mgr = _campaign_with_history()

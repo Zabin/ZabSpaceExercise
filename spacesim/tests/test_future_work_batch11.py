@@ -17,6 +17,7 @@ from spacesim.engine import cyber, engage, perturbations, sigint, sun
 # Item 2 — engage targeting math
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1410")
 def test_engage_closing_geometry_straight_on_approach():
     r_a = np.array([7_000_000.0, 0.0, 0.0])
     v_a = np.array([0.0, 7500.0, 0.0])
@@ -28,23 +29,27 @@ def test_engage_closing_geometry_straight_on_approach():
     assert geom["closing_speed_kms"] == pytest.approx(0.1, abs=0.01)
 
 
+@pytest.mark.verifies("FR-1410")
 def test_engage_pk_higher_with_salvo():
     pk1 = engage.kill_probability(0.6, miss_km=0.0, interceptor_dv_ms=300.0, salvo_n=1)
     pk3 = engage.kill_probability(0.6, miss_km=0.0, interceptor_dv_ms=300.0, salvo_n=3)
     assert pk3 > pk1
 
 
+@pytest.mark.verifies("FR-1410")
 def test_engage_pk_capped_at_99():
     pk = engage.kill_probability(0.99, miss_km=0.0, interceptor_dv_ms=500.0, salvo_n=10)
     assert pk <= 0.99
 
 
+@pytest.mark.verifies("FR-1410")
 def test_engage_pk_low_when_interceptor_underpowered():
     pk_low = engage.kill_probability(0.9, miss_km=0.0, interceptor_dv_ms=20.0)
     pk_high = engage.kill_probability(0.9, miss_km=0.0, interceptor_dv_ms=300.0)
     assert pk_low < pk_high
 
 
+@pytest.mark.verifies("FR-1410")
 def test_engage_debris_cone_scales_with_velocity():
     d_low = engage.debris_cone_estimate(0.0, 5.0)
     d_high = engage.debris_cone_estimate(0.0, 15.0)
@@ -55,18 +60,21 @@ def test_engage_debris_cone_scales_with_velocity():
 # Item 3 — cyber vectors
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1420")
 def test_cyber_supply_chain_more_successful_than_rf():
     s_supply = cyber.effective_success("supply_chain", "medium", dwell_s=0.0)
     s_rf = cyber.effective_success("rf", "medium", dwell_s=0.0)
     assert s_supply > s_rf
 
 
+@pytest.mark.verifies("FR-1420")
 def test_cyber_high_posture_reduces_success():
     s_low = cyber.effective_success("rf", "low")
     s_high = cyber.effective_success("rf", "high")
     assert s_low > s_high
 
 
+@pytest.mark.verifies("FR-1420")
 def test_cyber_dwell_increases_success_capped():
     s_short = cyber.effective_success("rf", "medium", dwell_s=0.0)
     s_long = cyber.effective_success("rf", "medium", dwell_s=600.0)
@@ -74,11 +82,13 @@ def test_cyber_dwell_increases_success_capped():
     assert s_long <= 0.99
 
 
+@pytest.mark.verifies("FR-1420")
 def test_cyber_attribution_supply_chain_is_covert():
     attr = cyber.attribution_score("supply_chain", dwell_s=0.0, persistence_h=1.0)
     assert attr["attribution_bias"] == "covert"
 
 
+@pytest.mark.verifies("FR-1420")
 def test_cyber_payloads_wiper_irreversible():
     pp, _ = cyber.payload_params("wiper")
     assert pp["reversible"] is False
@@ -89,18 +99,21 @@ def test_cyber_payloads_wiper_irreversible():
 # Item 6 — SIGINT geolocation accuracy
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-104")
 def test_sigint_longer_dwell_better_geoloc():
     e_short = sigint.geolocation_error_km("L", "geolocate", dwell_s=60.0)
     e_long = sigint.geolocation_error_km("L", "geolocate", dwell_s=600.0)
     assert e_long < e_short
 
 
+@pytest.mark.verifies("FS-104")
 def test_sigint_more_collectors_better_geoloc():
     e_one = sigint.geolocation_error_km("L", "geolocate", 180.0, n_collectors=1)
     e_four = sigint.geolocation_error_km("L", "geolocate", 180.0, n_collectors=4)
     assert e_four < e_one
 
 
+@pytest.mark.verifies("FS-104")
 def test_sigint_higher_freq_worse_geoloc():
     """Ka band has higher atmospheric loss than L band → worse geoloc."""
     e_L = sigint.geolocation_error_km("L", "geolocate", 180.0)
@@ -108,6 +121,7 @@ def test_sigint_higher_freq_worse_geoloc():
     assert e_Ka > e_L
 
 
+@pytest.mark.verifies("FS-104")
 def test_sigint_scan_mode_drains_less_than_geolocate():
     d_scan = sigint.soc_drain("scan", 60.0)
     d_geo = sigint.soc_drain("geolocate", 60.0)
@@ -118,22 +132,26 @@ def test_sigint_scan_mode_drains_less_than_geolocate():
 # Item 7 — atmospheric drag / decay
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1210")
 def test_atmospheric_density_decreases_with_altitude():
     rho_low = perturbations.atmospheric_density(200_000.0)
     rho_high = perturbations.atmospheric_density(800_000.0)
     assert rho_low > rho_high
 
 
+@pytest.mark.verifies("FR-1210")
 def test_atmospheric_density_zero_above_1000km():
     assert perturbations.atmospheric_density(1_200_000.0) == 0.0
 
 
+@pytest.mark.verifies("FR-1210")
 def test_drag_decay_negative_for_leo():
     """A LEO sat with positive ballistic coefficient should lose altitude over time."""
     decay = perturbations.secular_drag_decay(400_000.0, ballistic_coeff=0.01, dt_s=86400.0)
     assert decay < 0
 
 
+@pytest.mark.verifies("FR-1210")
 def test_drag_acceleration_opposes_velocity():
     r = np.array([6_778_000.0, 0.0, 0.0])    # 400 km altitude
     v = np.array([0.0, 7670.0, 0.0])
@@ -146,6 +164,7 @@ def test_drag_acceleration_opposes_velocity():
 # Item 8 — J3/J4 perturbations
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1210")
 def test_j3_acceleration_nonzero_off_equator():
     r = np.array([6_778_000.0 * math.cos(math.radians(45)),
                   0.0,
@@ -154,6 +173,7 @@ def test_j3_acceleration_nonzero_off_equator():
     assert np.linalg.norm(a) > 0
 
 
+@pytest.mark.verifies("FR-1210")
 def test_j4_acceleration_radial_direction():
     r = np.array([6_778_000.0, 0.0, 0.0])
     a = perturbations.j4_acceleration(r)
@@ -166,6 +186,7 @@ def test_j4_acceleration_radial_direction():
 # Item 9 — solar radiation pressure
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1210")
 def test_srp_zero_in_eclipse():
     r = np.array([7_000_000.0, 0.0, 0.0])
     sun_vec = np.array([1.0, 0.0, 0.0])
@@ -174,6 +195,7 @@ def test_srp_zero_in_eclipse():
     assert np.linalg.norm(a) == 0.0
 
 
+@pytest.mark.verifies("FR-1210")
 def test_srp_nonzero_when_sunlit():
     r = np.array([7_000_000.0, 0.0, 0.0])
     sun_vec = np.array([1.0, 0.0, 0.0])
@@ -182,6 +204,7 @@ def test_srp_nonzero_when_sunlit():
     assert np.linalg.norm(a) > 0
 
 
+@pytest.mark.verifies("FR-1210")
 def test_srp_scales_with_area():
     r = np.array([7_000_000.0, 0.0, 0.0])
     sun_vec = np.array([1.0, 0.0, 0.0])
@@ -194,6 +217,7 @@ def test_srp_scales_with_area():
 # Item 10 — penumbra / eclipse fraction
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1220")
 def test_eclipse_fraction_full_sunlight_on_sun_side():
     r_sat = np.array([1e7, 0.0, 0.0])
     # At t=0 the Sun is roughly in the +x direction (close to vernal equinox geometry)
@@ -202,6 +226,7 @@ def test_eclipse_fraction_full_sunlight_on_sun_side():
     assert frac == 1.0
 
 
+@pytest.mark.verifies("FR-1220")
 def test_eclipse_fraction_zero_in_full_umbra():
     sun_vec = sun.sun_unit_eci(0)
     # Place sat directly behind Earth from the Sun (anti-sun) but inside Earth's umbra
@@ -210,6 +235,7 @@ def test_eclipse_fraction_zero_in_full_umbra():
     assert frac == 0.0
 
 
+@pytest.mark.verifies("FR-1220")
 def test_eclipse_fraction_in_range():
     """A few off-axis points behind Earth should land in [0, 1]."""
     sun_vec = sun.sun_unit_eci(0)
@@ -235,12 +261,14 @@ def _api_with_session():
     return api, sid
 
 
+@pytest.mark.verifies("FS-106")
 def test_coaching_notes_empty_by_default():
     api, sid = _api_with_session()
     notes = api.coaching_notes(sid, "blue")
     assert notes == []
 
 
+@pytest.mark.verifies("FS-106")
 def test_coaching_notes_respects_cell_filter():
     """Inject coaching notes directly on the vignette and verify the per-cell filter."""
     api, sid = _api_with_session()
@@ -255,6 +283,7 @@ def test_coaching_notes_respects_cell_filter():
     assert titles == ["All cells", "Blue only"]
 
 
+@pytest.mark.verifies("FS-106")
 def test_coaching_notes_time_filter():
     api, sid = _api_with_session()
     mgr = api._sessions[sid]
@@ -269,6 +298,7 @@ def test_coaching_notes_time_filter():
     assert "Future" not in titles
 
 
+@pytest.mark.verifies("FS-101")
 def test_consequence_preview_kinetic_is_high():
     api, sid = _api_with_session()
     res = api.preview_consequence(sid, "blue", "engage", "RED-TGT", {})
@@ -277,12 +307,14 @@ def test_consequence_preview_kinetic_is_high():
     assert res["reversible"] is False
 
 
+@pytest.mark.verifies("FS-101")
 def test_consequence_preview_observe_is_low():
     api, sid = _api_with_session()
     res = api.preview_consequence(sid, "blue", "observe", "RED-TGT", {})
     assert res["severity"] == "low"
 
 
+@pytest.mark.verifies("FR-1420")
 def test_consequence_preview_cyber_wiper_irreversible():
     api, sid = _api_with_session()
     res = api.preview_consequence(sid, "blue", "cyber", "RED-TGT",
@@ -295,6 +327,7 @@ def test_consequence_preview_cyber_wiper_irreversible():
 # Compute endpoints round-trip — engage, cyber, sigint
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1410")
 def test_compute_engage_returns_geometry_and_pk():
     api, sid = _api_with_session()
     mgr = api._sessions[sid]
@@ -309,6 +342,7 @@ def test_compute_engage_returns_geometry_and_pk():
     assert res["salvo_n"] == 2
 
 
+@pytest.mark.verifies("FR-1420")
 def test_compute_cyber_returns_attribution():
     api, sid = _api_with_session()
     mgr = api._sessions[sid]
@@ -320,6 +354,7 @@ def test_compute_cyber_returns_attribution():
     assert res["attribution_default"] in ("covert", "ambiguous", "overt")
 
 
+@pytest.mark.verifies("FS-104")
 def test_compute_sigint_returns_geolocation_error():
     api, sid = _api_with_session()
     mgr = api._sessions[sid]

@@ -25,6 +25,7 @@ def _leo_orbit(alt_km: float = 500.0, i_deg: float = 28.5) -> OrbitState:
 # LVLH frame helpers
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1310")
 def test_lvlh_frame_orthonormal():
     orbit = _leo_orbit()
     r, v = PROP.rv(orbit, 0)
@@ -36,6 +37,7 @@ def test_lvlh_frame_orthonormal():
     assert abs(np.dot(T_hat, N_hat)) < 1e-10
 
 
+@pytest.mark.verifies("FR-1310")
 def test_lvlh_radial_is_outward():
     orbit = _leo_orbit()
     r, v = PROP.rv(orbit, 0)
@@ -43,6 +45,7 @@ def test_lvlh_radial_is_outward():
     assert float(np.dot(r / np.linalg.norm(r), R_hat)) > 0.999
 
 
+@pytest.mark.verifies("FR-1310")
 def test_lvlh_normal_aligns_with_angular_momentum():
     orbit = _leo_orbit()
     r, v = PROP.rv(orbit, 0)
@@ -56,6 +59,7 @@ def test_lvlh_normal_aligns_with_angular_momentum():
 # Mode: eci
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1310")
 def test_eci_mode_passthrough():
     orbit = _leo_orbit()
     dv_in = [1.0, 2.0, -3.0]
@@ -65,6 +69,7 @@ def test_eci_mode_passthrough():
     assert res["second_burn"] is None
 
 
+@pytest.mark.verifies("FR-1310")
 def test_eci_zero_dv_gives_same_orbit():
     orbit = _leo_orbit()
     res = compute_maneuver(orbit, "eci", {"dv": [0, 0, 0]}, 0, PROP)
@@ -76,6 +81,7 @@ def test_eci_zero_dv_gives_same_orbit():
 # Mode: lvlh
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1310")
 def test_lvlh_along_track_raises_energy():
     orbit = _leo_orbit(alt_km=400.0)
     # Prograde burn raises the orbit's semi-major axis.
@@ -86,6 +92,7 @@ def test_lvlh_along_track_raises_energy():
     assert res_neg["new_orbit"]["a_km"] < a_orig
 
 
+@pytest.mark.verifies("FR-1310")
 def test_lvlh_normal_dv_parallel_to_orbit_normal():
     """The N-component burn must produce a dv aligned with the orbit angular momentum."""
     orbit = _leo_orbit(i_deg=28.5)
@@ -98,6 +105,7 @@ def test_lvlh_normal_dv_parallel_to_orbit_normal():
     assert cos_angle > 0.9999
 
 
+@pytest.mark.verifies("FR-1310")
 def test_lvlh_normal_changes_inclination_at_node():
     """Normal burn at the ascending node (ta≈270° for argp=90°) changes inclination."""
     orbit = OrbitState(source="kepler", epoch=0, a_m=6871e3, e=0.0001,
@@ -107,12 +115,14 @@ def test_lvlh_normal_changes_inclination_at_node():
     assert abs(res["new_orbit"]["i_deg"] - 28.5) > 0.5
 
 
+@pytest.mark.verifies("FR-1310")
 def test_lvlh_radial_changes_eccentricity():
     orbit = _leo_orbit()
     res = compute_maneuver(orbit, "lvlh", {"dv_r": 20.0, "dv_t": 0, "dv_n": 0}, 0, PROP)
     assert res["new_orbit"]["e"] > orbit.e
 
 
+@pytest.mark.verifies("FR-1310")
 def test_lvlh_eci_equivalence():
     """A purely-along-track LVLH burn equals the same magnitude in the v̂ direction."""
     orbit = _leo_orbit()
@@ -128,6 +138,7 @@ def test_lvlh_eci_equivalence():
 # Mode: finite_burn
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1310")
 def test_finite_burn_along_track():
     orbit = _leo_orbit()
     res = compute_maneuver(orbit, "finite_burn",
@@ -138,6 +149,7 @@ def test_finite_burn_along_track():
     assert res["duration_s"] == pytest.approx(120.0)
 
 
+@pytest.mark.verifies("FR-1310")
 def test_finite_burn_normalises_direction():
     orbit = _leo_orbit()
     res_unit = compute_maneuver(orbit, "finite_burn",
@@ -149,6 +161,7 @@ def test_finite_burn_normalises_direction():
     assert np.allclose(res_unit["dv"], res_scaled["dv"], atol=1e-5)
 
 
+@pytest.mark.verifies("FR-1310")
 def test_finite_burn_zero_direction_raises():
     orbit = _leo_orbit()
     with pytest.raises(ValueError, match="zero"):
@@ -161,6 +174,7 @@ def test_finite_burn_zero_direction_raises():
 # Mode: target_coe
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1310")
 def test_target_coe_same_orbit_zero_dv():
     """Targeting the current orbit should yield ~zero Δv."""
     orbit = _leo_orbit(alt_km=500.0, i_deg=28.5)
@@ -172,6 +186,7 @@ def test_target_coe_same_orbit_zero_dv():
     assert res["cost"] < 0.01   # essentially zero
 
 
+@pytest.mark.verifies("FR-1310")
 def test_target_coe_inclination_change_nonzero_at_equatorial_crossing():
     """Target-COE inclination change at the equatorial crossing (node) is non-zero."""
     # argp=0, ta=0 puts the satellite at the ascending node, where velocity has a z-component
@@ -183,6 +198,7 @@ def test_target_coe_inclination_change_nonzero_at_equatorial_crossing():
     assert res["cost"] > 10.0   # non-trivial burn required for 5° inclination change
 
 
+@pytest.mark.verifies("FR-1310")
 def test_target_coe_partial_override():
     """Omitting elements should use current orbit defaults; specified elements are applied."""
     # Use argp=0 so inclination changes are visible at ta=0 (velocity has z component).
@@ -198,6 +214,7 @@ def test_target_coe_partial_override():
 # Mode: hohmann
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1310")
 def test_hohmann_raise_positive_dv1():
     orbit = _leo_orbit(alt_km=400.0)
     res = compute_maneuver(orbit, "hohmann", {"target_alt_km": 600.0}, 0, PROP)
@@ -205,6 +222,7 @@ def test_hohmann_raise_positive_dv1():
     assert res["second_burn"] is not None
 
 
+@pytest.mark.verifies("FR-1310")
 def test_hohmann_lower_negative_dv1():
     orbit = _leo_orbit(alt_km=600.0)
     res = compute_maneuver(orbit, "hohmann", {"target_alt_km": 400.0}, 0, PROP)
@@ -213,6 +231,7 @@ def test_hohmann_lower_negative_dv1():
     assert res["second_burn"]["dv_t_ms"] < 0   # second burn also retrograde
 
 
+@pytest.mark.verifies("FR-1310")
 def test_hohmann_second_burn_delay():
     orbit = _leo_orbit(alt_km=400.0)
     a_transfer = ((400e3 + R_EARTH_EQ) + (600e3 + R_EARTH_EQ)) / 2.0
@@ -221,6 +240,7 @@ def test_hohmann_second_burn_delay():
     assert abs(res["second_burn"]["delay_s"] - expected_delay) < 1.0
 
 
+@pytest.mark.verifies("FR-1310")
 def test_hohmann_total_cost_matches_analytic():
     """Total Δv (burn1 + burn2) should match the textbook Hohmann formula."""
     alt1_km, alt2_km = 400.0, 600.0
@@ -237,6 +257,7 @@ def test_hohmann_total_cost_matches_analytic():
     assert abs(res["second_burn"]["cost_ms"] - dv2_expected) < 0.5
 
 
+@pytest.mark.verifies("FR-1310")
 def test_hohmann_same_altitude_raises():
     # Use a purely circular orbit (e=0) so current radius matches the nominal altitude exactly.
     orbit = OrbitState(source="kepler", epoch=0, a_m=6871e3, e=0.0,
@@ -250,6 +271,7 @@ def test_hohmann_same_altitude_raises():
 # Mode: plane_change
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1310")
 def test_plane_change_magnitude_formula():
     """Cost ≈ 2 v sin(Δi/2) — the classic textbook result."""
     orbit = _leo_orbit(alt_km=500.0)
@@ -263,12 +285,14 @@ def test_plane_change_magnitude_formula():
     assert abs(res["cost"] - expected_cost) < 0.5   # within 0.5 m/s (position-dependent approx)
 
 
+@pytest.mark.verifies("FR-1310")
 def test_plane_change_zero_delta_zero_dv():
     orbit = _leo_orbit()
     res = compute_maneuver(orbit, "plane_change", {"delta_i_deg": 0.0}, 0, PROP)
     assert res["cost"] < 1e-6
 
 
+@pytest.mark.verifies("FR-1310")
 def test_plane_change_changes_inclination():
     # At the node (argp=0, ta=0) the inclination change is most effective.
     orbit = OrbitState(source="kepler", epoch=0, a_m=6871e3, e=0.0001,
@@ -278,6 +302,7 @@ def test_plane_change_changes_inclination():
     assert abs(res["new_orbit"]["i_deg"] - 28.5) > 5.0
 
 
+@pytest.mark.verifies("FR-1310")
 def test_plane_change_negative_decreases_inclination():
     orbit = _leo_orbit(i_deg=30.0)
     res_pos = compute_maneuver(orbit, "plane_change", {"delta_i_deg": 5.0}, 0, PROP)
@@ -290,6 +315,7 @@ def test_plane_change_negative_decreases_inclination():
 # Orbit preview output shape
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1310")
 def test_new_orbit_contains_required_keys():
     orbit = _leo_orbit()
     res = compute_maneuver(orbit, "eci", {"dv": [0, 5, 0]}, 0, PROP)
@@ -297,6 +323,7 @@ def test_new_orbit_contains_required_keys():
         assert key in res["new_orbit"], key
 
 
+@pytest.mark.verifies("FR-1310")
 def test_new_orbit_regime_is_leo():
     orbit = _leo_orbit()
     res = compute_maneuver(orbit, "eci", {"dv": [0, 1, 0]}, 0, PROP)
@@ -307,6 +334,7 @@ def test_new_orbit_regime_is_leo():
 # Server endpoint integration
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-1310")
 def test_compute_maneuver_via_session():
     """Full round-trip through InProcessSession (no HTTP)."""
     from spacesim.content.vignette import load_vignette
@@ -331,6 +359,7 @@ def test_compute_maneuver_via_session():
     assert "new_orbit" in res
 
 
+@pytest.mark.verifies("FR-1310")
 def test_compute_maneuver_unknown_mode_returns_error_via_session():
     """Unknown mode returns {"error": ...} at the session layer (errors are caught there)."""
     from spacesim.session.inprocess import InProcessSession

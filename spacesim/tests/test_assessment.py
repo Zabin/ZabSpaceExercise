@@ -7,6 +7,7 @@ the only two attributes ``session/assessment.py`` and ``aar.state_at`` actually 
 
 from __future__ import annotations
 
+import pytest
 from dataclasses import dataclass
 
 from spacesim.engine.custody import Track
@@ -69,6 +70,7 @@ def _read_only_tests_setup():
 
 # -- score_custody_quality ---------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-201")
 def test_custody_quality_disciplined_when_confidence_stays_high():
     sat, world = _read_only_tests_setup()
     world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=0.95, characterized=True))
@@ -77,6 +79,7 @@ def test_custody_quality_disciplined_when_confidence_stays_high():
     assert assessment.score_custody_quality(mgr, "blue") == "disciplined"
 
 
+@pytest.mark.verifies("FS-201")
 def test_custody_quality_speculative_when_confidence_is_low():
     sat, world = _read_only_tests_setup()
     world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=0.2, characterized=True))
@@ -85,6 +88,7 @@ def test_custody_quality_speculative_when_confidence_is_low():
     assert assessment.score_custody_quality(mgr, "blue") == "speculative"
 
 
+@pytest.mark.verifies("FS-201")
 def test_custody_quality_defaults_to_speculative_with_no_qualifying_decisions():
     _, world = _read_only_tests_setup()
     mgr = _mgr(world)
@@ -94,6 +98,7 @@ def test_custody_quality_defaults_to_speculative_with_no_qualifying_decisions():
 
 # -- score_window_discipline --------------------------------------------------------------------
 
+@pytest.mark.verifies("FS-201")
 def test_window_discipline_disciplined_with_zero_rejections():
     sat, world = _read_only_tests_setup()
     world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=0.9, characterized=True))
@@ -102,6 +107,7 @@ def test_window_discipline_disciplined_with_zero_rejections():
     assert assessment.score_window_discipline(mgr, "blue") == "disciplined"
 
 
+@pytest.mark.verifies("FS-201")
 def test_window_discipline_frequent_invalid_attempts_with_high_rejection_rate():
     sat = _leo()
     world = WorldState(now=0)
@@ -114,6 +120,7 @@ def test_window_discipline_frequent_invalid_attempts_with_high_rejection_rate():
     assert assessment.score_window_discipline(mgr, "blue") == "frequent-invalid-attempts"
 
 
+@pytest.mark.verifies("FS-201")
 def test_window_discipline_no_orders_defaults_to_disciplined():
     _, world = _read_only_tests_setup()
     mgr = _mgr(world)
@@ -122,6 +129,7 @@ def test_window_discipline_no_orders_defaults_to_disciplined():
 
 # -- score_belief_truth_divergence ----------------------------------------------------------------
 
+@pytest.mark.verifies("FS-201")
 def test_belief_truth_divergence_low_when_belief_matches_truth():
     sat, world = _read_only_tests_setup()
     # The track's believed orbit IS the true orbit — no divergence.
@@ -132,6 +140,7 @@ def test_belief_truth_divergence_low_when_belief_matches_truth():
     assert assessment.score_belief_truth_divergence(mgr, "blue") == "low-divergence"
 
 
+@pytest.mark.verifies("FS-201")
 def test_belief_truth_divergence_unaware_when_confidence_is_high_but_belief_is_wrong():
     sat, world = _read_only_tests_setup()
     # Believed position is the opposite side of the orbit (ta=180) from the true position
@@ -146,6 +155,7 @@ def test_belief_truth_divergence_unaware_when_confidence_is_high_but_belief_is_w
     assert assessment.score_belief_truth_divergence(mgr, "blue") == "high-divergence-unaware"
 
 
+@pytest.mark.verifies("FS-201")
 def test_belief_truth_divergence_aware_when_confidence_is_low_and_belief_is_wrong():
     sat, world = _read_only_tests_setup()
     wrong_belief = _leo(ta=180.0)
@@ -156,6 +166,7 @@ def test_belief_truth_divergence_aware_when_confidence_is_low_and_belief_is_wron
     assert assessment.score_belief_truth_divergence(mgr, "blue") == "high-divergence-aware"
 
 
+@pytest.mark.verifies("FS-201")
 def test_belief_truth_divergence_defaults_to_low_with_no_qualifying_decisions():
     _, world = _read_only_tests_setup()
     mgr = _mgr(world)
@@ -164,6 +175,7 @@ def test_belief_truth_divergence_defaults_to_low_with_no_qualifying_decisions():
 
 # -- read-only / no composite score ---------------------------------------------------------------
 
+@pytest.mark.verifies("FS-201")
 def test_scoring_functions_never_mutate_world_state():
     sat, world = _read_only_tests_setup()
     world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=0.9,
@@ -178,6 +190,7 @@ def test_scoring_functions_never_mutate_world_state():
     assert mgr.sim.world.model_dump_json() == before
 
 
+@pytest.mark.verifies("FS-201")
 def test_assessment_report_presents_dimensions_side_by_side_never_a_composite():
     sat, world = _read_only_tests_setup()
     world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=0.9,
@@ -198,6 +211,7 @@ def test_assessment_report_presents_dimensions_side_by_side_never_a_composite():
         assert not isinstance(cell_report["custody_quality"], (int, float))
 
 
+@pytest.mark.verifies("FS-201")
 def test_belief_truth_divergence_reads_recorded_confidence_not_replay_recomputed():
     """The classic differentiating fixture (IP-2010 v1.1 Tests to Add): decay the track further
     between issue and this check so a post-hoc recompute via current_confidence() would give a

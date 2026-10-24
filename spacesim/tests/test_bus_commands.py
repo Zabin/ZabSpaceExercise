@@ -8,6 +8,7 @@ change, re-validate at execution, and leave ``Simulation.replay()`` byte-identic
 
 from __future__ import annotations
 
+import pytest
 from spacesim.content.vignette import load_vignette
 from spacesim.engine import telemetry as tel
 from spacesim.engine.bus import BusState, PayloadState, advance_bus, enter_safe_mode
@@ -34,6 +35,7 @@ def _cmd(actor, verb, **params):
 
 
 # -- direct verb effects (unit) -----------------------------------------------
+@pytest.mark.verifies("FR-2410")
 def test_shed_load_slows_battery_drain():
     """eps.shed_load cuts the eclipse drain, so SoC sits higher after the same eclipse span."""
     def soc_after_eclipse(shed: bool) -> float:
@@ -53,6 +55,7 @@ def _one(bus):
     return w
 
 
+@pytest.mark.verifies("FR-2410")
 def test_restore_load_undoes_shed():
     w = _one(BusState())
     apply_command(w, "SAT", "eps.shed_load", {}, 0)
@@ -61,12 +64,14 @@ def test_restore_load_undoes_shed():
     assert w.assets["SAT"].bus_state.power.loads_shed is False
 
 
+@pytest.mark.verifies("FR-2410")
 def test_set_mode_changes_attitude():
     w = _one(BusState())
     ok, label = apply_command(w, "SAT", "adcs.set_mode", {"mode": "slew"}, 0)
     assert ok and label == "mode_slew" and w.assets["SAT"].bus_state.attitude.mode == "slew"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_mitigate_interference_shrinks_jam_signature():
     """The central troubleshooting loop: anti-jam shrinks the RX-power jam signature in telemetry."""
     w = WorldState(now=minutes(20))
@@ -82,6 +87,7 @@ def test_mitigate_interference_shrinks_jam_signature():
     assert after > nominal             # ...but not fully gone (mitigation is capped)
 
 
+@pytest.mark.verifies("FR-2410")
 def test_set_charge_mode_scales_charging():
     """eps.set_charge_mode 'fast' charges the battery faster while sunlit."""
     def soc_after_sun(mode: str) -> float:
@@ -94,6 +100,7 @@ def test_set_charge_mode_scales_charging():
     assert soc_after_sun("fast") > soc_after_sun("nominal") > soc_after_sun("trickle")
 
 
+@pytest.mark.verifies("FR-2410")
 def test_dump_storage_refreshes_ground_view():
     w = _one(BusState())
     ok, label = apply_command(w, "SAT", "cdh.dump_storage", {}, minutes(5))
@@ -102,6 +109,7 @@ def test_dump_storage_refreshes_ground_view():
     assert bus.ground_view is not None and bus.last_telemetry_time == minutes(5)
 
 
+@pytest.mark.verifies("FR-2410")
 def test_collect_now_starts_filling_storage():
     bus = BusState()
     w = WorldState(now=0)
@@ -113,6 +121,7 @@ def test_collect_now_starts_filling_storage():
     assert bus.cdh.storage_frac > 0.0          # storage actually fills once collecting
 
 
+@pytest.mark.verifies("FR-2210")
 def test_collect_blocked_when_storage_full():
     bus = BusState()
     bus.cdh.storage_frac = 1.0
@@ -123,12 +132,14 @@ def test_collect_blocked_when_storage_full():
     assert not ok and label == "cannot_collect"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_isr_verb_rejected_on_satcom_payload():
     mgr = _mgr()
     mgr.world.assets["ISR-EO-1"].payload_state = PayloadState(type="satcom")
     assert mgr.validate_order("blue", _cmd("ISR-EO-1", "isr.collect_now")).reason == "no_payload_for_verb"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_batch3_verbs_mutate_observably():
     """Each batch-3 verb produces a real, observable mutation; clear_fault undoes a safe fsw_mode."""
     w = _one(BusState())
@@ -150,6 +161,7 @@ def test_batch3_verbs_mutate_observably():
     assert w.assets["SAT"].bus_state.cdh.fsw_mode == "nominal"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_frequency_hop_shrinks_jam_signature_in_telemetry():
     """def.frequency_hop on the bus reduces the jam term scaling like a payload mitigation does."""
     w = _one(BusState())                            # SAT with BusState (no payload)
@@ -162,6 +174,7 @@ def test_frequency_hop_shrinks_jam_signature_in_telemetry():
     assert after < before - 8                        # signature shrinks (operator counters the jam)
 
 
+@pytest.mark.verifies("FR-2410")
 def test_sigint_and_weather_payload_gates():
     """Sigint/weather verbs require a payload of the matching type, like ISR/SATCOM."""
     w = _one(BusState())
@@ -175,6 +188,7 @@ def test_sigint_and_weather_payload_gates():
     assert can_issue(w, "SAT", "wx.schedule_collection")[0] is True
 
 
+@pytest.mark.verifies("FR-2510")
 def test_patch_cyber_lets_recovery_stick():
     """def.patch_cyber removes a cyber root cause so the next recovery attempt actually sticks."""
     from spacesim.engine.bus import enter_safe_mode
@@ -199,6 +213,7 @@ def test_patch_cyber_lets_recovery_stick():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
+@pytest.mark.verifies("FR-2410")
 def test_lost_asset_command_fails_gracefully():
     w = _one(BusState())
     w.assets["SAT"].health = "destroyed"
@@ -207,6 +222,7 @@ def test_lost_asset_command_fails_gracefully():
 
 
 # -- order-system integration + validation ------------------------------------
+@pytest.mark.verifies("FR-2410", "FR-1120")
 def test_command_order_executes_and_is_replay_safe():
     mgr = _mgr()
     ack = mgr.issue_order("blue", _cmd("ISR-EO-1", "eps.shed_load"))
@@ -218,6 +234,7 @@ def test_command_order_executes_and_is_replay_safe():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
+@pytest.mark.verifies("FR-2410")
 def test_command_validation_reasons():
     mgr = _mgr()
     # Unknown verb.
@@ -231,6 +248,7 @@ def test_command_validation_reasons():
     assert mgr.validate_order("red", _cmd("ISR-EO-1", "eps.shed_load")).reason == "not_owner"
 
 
+@pytest.mark.verifies("FR-2210")
 def test_payload_verb_blocked_in_safe_mode():
     mgr = _mgr()
     a = mgr.world.assets["ISR-EO-1"]
@@ -253,6 +271,7 @@ def _sat_with_payload(payload_type: str = "isr_eo", dv: float = 50.0):
     return w
 
 
+@pytest.mark.verifies("FR-2410")
 def test_cdh_reset_subsystem_exits_fault_state():
     w = _sat_with_payload()
     bus = w.assets["SAT"].bus_state
@@ -266,6 +285,7 @@ def test_cdh_reset_subsystem_exits_fault_state():
     assert bus.attitude.pointing_ok is True
 
 
+@pytest.mark.verifies("FR-2410", "FR-1120")
 def test_cdh_reset_subsystem_replay_safe():
     mgr = _mgr()
     ack = mgr.issue_order("blue", _cmd("ISR-EO-1", "cdh.reset_subsystem"))
@@ -275,6 +295,7 @@ def test_cdh_reset_subsystem_replay_safe():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
+@pytest.mark.verifies("FR-2410")
 def test_adcs_desaturate_restores_pointing():
     w = _sat_with_payload()
     bus = w.assets["SAT"].bus_state
@@ -288,6 +309,7 @@ def test_adcs_desaturate_restores_pointing():
     assert bus.attitude.status == "green"
 
 
+@pytest.mark.verifies("FR-2410", "FR-1120")
 def test_adcs_desaturate_replay_safe():
     mgr = _mgr()
     ack = mgr.issue_order("blue", _cmd("ISR-EO-1", "adcs.desaturate"))
@@ -299,6 +321,7 @@ def test_adcs_desaturate_replay_safe():
 
 
 
+@pytest.mark.verifies("FR-2410")
 def test_isr_set_mode_changes_payload_mode():
     w = _sat_with_payload("isr_eo")
     ok, label = apply_command(w, "SAT", "isr.set_mode", {"mode": "narrow"}, 0)
@@ -306,6 +329,7 @@ def test_isr_set_mode_changes_payload_mode():
     assert w.assets["SAT"].payload_state.mode == "narrow"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_isr_set_mode_standby_stops_collecting():
     w = _sat_with_payload("isr_eo")
     w.assets["SAT"].payload_state.collecting = True
@@ -313,6 +337,7 @@ def test_isr_set_mode_standby_stops_collecting():
     assert ok and w.assets["SAT"].payload_state.collecting is False
 
 
+@pytest.mark.verifies("FR-2410", "FR-1120")
 def test_isr_set_mode_replay_safe():
     mgr = _mgr()
     ack = mgr.issue_order("blue", _cmd("ISR-EO-1", "isr.set_mode", mode="wide"))
@@ -322,6 +347,7 @@ def test_isr_set_mode_replay_safe():
     assert mgr.sim.replay().model_dump_json() == mgr.world.model_dump_json()
 
 
+@pytest.mark.verifies("FR-2410")
 def test_pnt_set_integrity_changes_mode():
     w = _sat_with_payload("pnt")
     ok, label = apply_command(w, "SAT", "pnt.set_integrity", {"mode": "protected"}, 0)
@@ -329,6 +355,7 @@ def test_pnt_set_integrity_changes_mode():
     assert w.assets["SAT"].payload_state.integrity_mode == "protected"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_pnt_set_integrity_wrong_payload_rejected():
     w = _sat_with_payload("isr_eo")
     # isr asset should fail can_issue for pnt.set_integrity
@@ -337,6 +364,7 @@ def test_pnt_set_integrity_wrong_payload_rejected():
     assert not ok and reason == "no_payload_for_verb"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_def_maneuver_evade_consumes_dv_and_sets_flag():
     w = _sat_with_payload(dv=50.0)
     ok, label = apply_command(w, "SAT", "def.maneuver_evade", {"dv_cost": 10.0}, 0)
@@ -345,12 +373,14 @@ def test_def_maneuver_evade_consumes_dv_and_sets_flag():
     assert w.assets["SAT"].payload_state.evasion_active is True
 
 
+@pytest.mark.verifies("FR-2410")
 def test_def_maneuver_evade_rejected_when_dv_insufficient():
     w = _sat_with_payload(dv=0.5)
     ok, label = apply_command(w, "SAT", "def.maneuver_evade", {"dv_cost": 5.0}, 0)
     assert not ok and label == "insufficient_delta_v"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_def_maneuver_evade_can_issue_gate():
     from spacesim.engine.buscommands import can_issue
     w = _sat_with_payload(dv=0.0)
@@ -358,6 +388,7 @@ def test_def_maneuver_evade_can_issue_gate():
     assert not ok and reason == "insufficient_delta_v"
 
 
+@pytest.mark.verifies("FR-2410", "FR-1120")
 def test_def_maneuver_evade_replay_safe():
     # ISR-EO-1 starts with 80.0 m/s Δv in training-basics; evasion costs 5.0 by default.
     mgr = _mgr()
@@ -371,6 +402,7 @@ def test_def_maneuver_evade_replay_safe():
 
 # ---- Batch 5: catalog-verb gap fill -----------------------------------------
 
+@pytest.mark.verifies("FR-2410")
 def test_eps_select_bus_changes_charge_mode():
     w = _sat_with_payload()
     ok, label = apply_command(w, "SAT", "eps.select_bus", {"bus": "secondary"}, 0)
@@ -378,6 +410,7 @@ def test_eps_select_bus_changes_charge_mode():
     assert w.assets["SAT"].bus_state.power.charge_mode == "trickle"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_cdh_load_stored_program_succeeds_when_enabled():
     w = _sat_with_payload()
     w.assets["SAT"].stored_program = True
@@ -385,6 +418,7 @@ def test_cdh_load_stored_program_succeeds_when_enabled():
     assert ok and label == "program_loaded"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_cdh_load_stored_program_rejected_when_disabled():
     w = _sat_with_payload()
     w.assets["SAT"].stored_program = False
@@ -393,6 +427,7 @@ def test_cdh_load_stored_program_rejected_when_disabled():
 
 
 
+@pytest.mark.verifies("FR-2410")
 def test_isr_prioritize_downlink_sets_detail():
     w = _sat_with_payload(payload_type="isr_eo")
     ok, _ = apply_command(w, "SAT", "isr.prioritize_downlink", {"priority": "high"}, 0)
@@ -402,6 +437,7 @@ def test_isr_prioritize_downlink_sets_detail():
 
 
 
+@pytest.mark.verifies("FR-2410")
 def test_pnt_report_status_records_mode():
     w = _sat_with_payload(payload_type="pnt")
     w.assets["SAT"].payload_state.integrity_mode = "protected"
@@ -410,6 +446,7 @@ def test_pnt_report_status_records_mode():
 
 
 
+@pytest.mark.verifies("FR-2410")
 def test_def_escort_posture_logs_consequence():
     w = _sat_with_payload()
     w.assets["BLUE-HVA"] = Asset(id="BLUE-HVA", owner="blue", kind="satellite")
@@ -418,6 +455,7 @@ def test_def_escort_posture_logs_consequence():
     assert any(c["type"] == "escort_posture" and c["target"] == "BLUE-HVA" for c in w.consequences)
 
 
+@pytest.mark.verifies("FR-2410")
 def test_new_verbs_are_in_command_verbs_set():
     """Verbs that survived the Audit 2026-06 Commands Phase D cut are still registered.
     The Dead/Cosmetic verbs (comms.set_crypto / isr.assess_quality / sigint.set_band /
@@ -435,6 +473,7 @@ def test_new_verbs_are_in_command_verbs_set():
 
 # ---- Batch 6a: second tranche (catalog verbs + conjunction integration) -----
 
+@pytest.mark.verifies("FR-2410")
 def test_batch6_verbs_registered():
     """Batch-6 verbs that survived the Phase-D Dead/Cosmetic cut are still registered.
     Removed: isr.calibrate, sigint.geolocate, sigint.downlink, satcom.set_transponder,
@@ -447,6 +486,7 @@ def test_batch6_verbs_registered():
     assert not missing, f"missing: {missing}"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_adcs_point_payload_slews_attitude():
     w = _sat_with_payload()
     ok, label = apply_command(w, "SAT", "adcs.point_payload", {"target": "RED-INSP"}, 0)
@@ -455,6 +495,7 @@ def test_adcs_point_payload_slews_attitude():
 
 
 
+@pytest.mark.verifies("FR-2410")
 def test_sda_task_track_records_target():
     w = _sat_with_payload("sda")
     ok, _ = apply_command(w, "SAT", "sda.task_track", {"target": "X"}, 0)
@@ -463,18 +504,21 @@ def test_sda_task_track_records_target():
     assert w.assets["SAT"].payload_state.collecting is True
 
 
+@pytest.mark.verifies("FR-2410")
 def test_satcom_reconfigure_beam_sets_spot():
     w = _sat_with_payload("satcom")
     ok, label = apply_command(w, "SAT", "satcom.reconfigure_beam", {"spot": "AOR1"}, 0)
     assert ok and label == "beam_AOR1"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_prop_collision_avoid_requires_pending_warning():
     w = _sat_with_payload(dv=50.0)
     ok, reason = apply_command(w, "SAT", "prop.collision_avoid", {}, 0)
     assert not ok and reason == "no_conjunction"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_prop_collision_avoid_consumes_dv_and_clears_warning():
     w = _sat_with_payload(dv=50.0)
     w.conjunctions.append({"a": "SAT", "b": "DEBRIS-1", "range_km": 1.0, "t_close": 100})
@@ -484,6 +528,7 @@ def test_prop_collision_avoid_consumes_dv_and_clears_warning():
     assert w.conjunctions == []   # warning consumed
 
 
+@pytest.mark.verifies("FR-2410")
 def test_def_disperse_sets_flags():
     w = _sat_with_payload("satcom")
     ok, _ = apply_command(w, "SAT", "def.disperse", {}, 7)
@@ -493,6 +538,7 @@ def test_def_disperse_sets_flags():
 
 
 # -- final catalog-verb fill --------------------------------------------------
+@pytest.mark.verifies("FR-2410")
 def test_satcom_set_frequency_plan_records_plan():
     w = _sat_with_payload("satcom")
     ok, label = apply_command(w, "SAT", "satcom.set_frequency_plan", {"plan": "alt-A"}, 0)
@@ -500,6 +546,7 @@ def test_satcom_set_frequency_plan_records_plan():
     assert w.assets["SAT"].payload_state.detail["frequency_plan"] == "alt-A"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_sda_task_characterize_sets_mode_and_target():
     w = _sat_with_payload("sda")
     ok, label = apply_command(w, "SAT", "sda.task_characterize", {"target": "RSO-7"}, 0)
@@ -512,6 +559,7 @@ def test_sda_task_characterize_sets_mode_and_target():
 
 
 
+@pytest.mark.verifies("FR-2410")
 def test_payload_type_gates_block_wrong_payload():
     # An ISR payload cannot run a satcom or SDA verb (payload-type fit check).
     from spacesim.engine.buscommands import can_issue
@@ -536,6 +584,7 @@ def test_payload_type_gates_block_wrong_payload():
 #    angle-specific and has a hard cap.
 
 
+@pytest.mark.verifies("FR-2410")
 def test_def_set_deception_mode_toggles_payload_flag():
     """def.set_deception_mode raises a payload-side posture flag observable in telemetry."""
     w = _sat_with_payload("isr_eo")
@@ -547,6 +596,7 @@ def test_def_set_deception_mode_toggles_payload_flag():
     assert w.assets["SAT"].payload_state.deception_active is False
 
 
+@pytest.mark.verifies("FR-2410")
 def test_def_set_deception_mode_requires_payload():
     """Defensive verb still needs a payload to flip the flag against."""
     w = _one(BusState())     # no payload
@@ -554,6 +604,7 @@ def test_def_set_deception_mode_requires_payload():
     assert not ok and reason == "no_payload"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_def_set_deception_mode_in_verb_set():
     """def.set_deception_mode is registered in DEFENSE_VERBS and can_issue accepts it."""
     from spacesim.engine.buscommands import DEFENSE_VERBS, COMMAND_VERBS, can_issue
@@ -564,6 +615,7 @@ def test_def_set_deception_mode_in_verb_set():
     assert ok is True
 
 
+@pytest.mark.verifies("FR-2410")
 def test_satcom_null_steer_records_targets_under_cap():
     """satcom.null_steer adds jammer targets to the null list, capped at receiver_count - 1."""
     w = _sat_with_payload("satcom")
@@ -579,6 +631,7 @@ def test_satcom_null_steer_records_targets_under_cap():
     assert len(p.detail["null_targets"]) == 3
 
 
+@pytest.mark.verifies("FR-2410")
 def test_satcom_null_steer_rejects_over_cap():
     """The N-1 cap rejects the fourth simultaneous null on a 4-receiver chain."""
     w = _sat_with_payload("satcom")
@@ -589,6 +642,7 @@ def test_satcom_null_steer_rejects_over_cap():
     assert not ok and reason == "null_cap_reached"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_satcom_null_steer_payload_type_gate():
     """Null-steering requires a satcom payload; ISR cannot use it."""
     from spacesim.engine.buscommands import can_issue
@@ -597,6 +651,7 @@ def test_satcom_null_steer_payload_type_gate():
     assert not ok and reason == "no_payload_for_verb"
 
 
+@pytest.mark.verifies("FR-2410", "FR-1120")
 def test_satcom_null_steer_replay_safe():
     """Null-steering through the order pipeline is replay-byte-identical.
 
@@ -628,6 +683,7 @@ def test_satcom_null_steer_replay_safe():
 #  * isr.shutter_sensor — closes the optical shutter to protect the sensor
 #    from laser dazzle/blinding; while shut the sensor cannot collect.
 
+@pytest.mark.verifies("FR-2410")
 def test_prop_station_keep_consumes_delta_v():
     """A routine station-keeping burn spends Δv and succeeds with no precondition."""
     w = _sat_with_payload("isr_eo", dv=10.0)
@@ -636,6 +692,7 @@ def test_prop_station_keep_consumes_delta_v():
     assert w.assets["SAT"].resources.delta_v_ms == 9.0
 
 
+@pytest.mark.verifies("FR-2410")
 def test_prop_station_keep_insufficient_delta_v():
     """Station-keeping fails cleanly when the Δv budget is exhausted."""
     w = _sat_with_payload("isr_eo", dv=0.1)
@@ -644,12 +701,14 @@ def test_prop_station_keep_insufficient_delta_v():
     assert w.assets["SAT"].resources.delta_v_ms == 0.1
 
 
+@pytest.mark.verifies("FR-2410")
 def test_prop_station_keep_in_verb_set():
     from spacesim.engine.buscommands import BUS_VERBS, COMMAND_VERBS
     assert "prop.station_keep" in BUS_VERBS
     assert "prop.station_keep" in COMMAND_VERBS
 
 
+@pytest.mark.verifies("FR-2410")
 def test_isr_shutter_sensor_closes_and_blocks_collection():
     """Closing the shutter sets the posture flag and stands down active collection."""
     w = _sat_with_payload("isr_eo")
@@ -661,6 +720,7 @@ def test_isr_shutter_sensor_closes_and_blocks_collection():
     assert p.collecting is False
 
 
+@pytest.mark.verifies("FR-2410")
 def test_isr_shutter_sensor_reopens():
     w = _sat_with_payload("isr_eo")
     apply_command(w, "SAT", "isr.shutter_sensor", {"on": True}, 0)
@@ -669,6 +729,7 @@ def test_isr_shutter_sensor_reopens():
     assert w.assets["SAT"].payload_state.shutter_closed is False
 
 
+@pytest.mark.verifies("FR-2410")
 def test_isr_shutter_sensor_blocks_subsequent_collect_now():
     """A shuttered sensor cannot be commanded to collect until the shutter reopens."""
     w = _sat_with_payload("isr_eo")
@@ -677,6 +738,7 @@ def test_isr_shutter_sensor_blocks_subsequent_collect_now():
     assert not ok and reason == "shuttered"
 
 
+@pytest.mark.verifies("FR-2410")
 def test_isr_shutter_sensor_payload_type_gate():
     """Shutter control requires an ISR payload; satcom cannot use it."""
     from spacesim.engine.buscommands import can_issue
@@ -685,6 +747,7 @@ def test_isr_shutter_sensor_payload_type_gate():
     assert not ok and reason == "no_payload_for_verb"
 
 
+@pytest.mark.verifies("FR-2410", "FR-1120")
 def test_prop_station_keep_and_shutter_sensor_replay_safe():
     """Both new verbs through the order pipeline are replay-byte-identical."""
     mgr = _mgr()

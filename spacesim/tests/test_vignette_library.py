@@ -22,6 +22,7 @@ NOVEL_CONCEPTS = {"nv-isl-relay-debris"}
 NEW_VIGNETTES = MISSION_TRIALS | RED_COA | LEARNING_STREAM | NOVEL_CONCEPTS
 
 
+@pytest.mark.verifies("FR-4110")
 @pytest.mark.parametrize("vid", sorted(NEW_VIGNETTES))
 def test_new_vignette_loads_and_starts(vid: str):
     """Every new vignette: loads, starts a session, has both cells' objectives, renders views."""
@@ -36,6 +37,7 @@ def test_new_vignette_loads_and_starts(vid: str):
     mgr.get_scene("blue")
 
 
+@pytest.mark.verifies("FR-4110")
 def test_new_vignettes_are_in_the_registry():
     """All 10 new vignette IDs must be discoverable by list_vignettes()."""
     ids = {v["id"] for v in list_vignettes()}
@@ -43,6 +45,7 @@ def test_new_vignettes_are_in_the_registry():
     assert not missing, f"missing from registry: {missing}"
 
 
+@pytest.mark.verifies("FR-5170")
 def test_mission_trials_use_correct_payload_types():
     """Each mission-set trial must instantiate the correct payload type on its primary Blue sat."""
     expected = {
@@ -58,6 +61,7 @@ def test_mission_trials_use_correct_payload_types():
         assert payload_type in payloads, f"{vid}: missing payload type {payload_type}"
 
 
+@pytest.mark.verifies("FR-4110")
 def test_red_coa_library_covers_three_actors():
     """The Red COA library must cover Russia, China, and at least one Misc actor."""
     russia = {v for v in RED_COA if "russia" in v}
@@ -68,12 +72,14 @@ def test_red_coa_library_covers_three_actors():
     assert misc, "missing Misc COA vignettes"
 
 
+@pytest.mark.verifies("FR-4110")
 def test_russia_and_china_have_ml_and_md_pairs():
     """Architecture §3: each major actor must have both ML and MD COAs."""
     assert "coa-russia-ml" in RED_COA and "coa-russia-md" in RED_COA
     assert "coa-china-ml" in RED_COA and "coa-china-md" in RED_COA
 
 
+@pytest.mark.verifies("FR-3420")
 def test_red_kinetic_authorized_only_in_md_vignettes():
     """ML scenarios should not pre-authorize kinetic Red action; MD scenarios should."""
     for vid in RED_COA:
@@ -88,6 +94,7 @@ def test_red_kinetic_authorized_only_in_md_vignettes():
             assert kinetic_default is False, f"{vid}: ML COA should default kinetic_authorized=False"
 
 
+@pytest.mark.verifies("FR-4110")
 def test_isl_relay_vignette_marks_assets_as_isl_capable():
     """The novel ISL-relay vignette must have at least two ISL-capable Blue satellites."""
     mgr = SessionManager(load_vignette("nv-isl-relay-debris"), seed=1)
@@ -97,6 +104,7 @@ def test_isl_relay_vignette_marks_assets_as_isl_capable():
     assert len(isl) >= 2, "ISL-relay vignette needs ≥2 ISL-capable blue sats"
 
 
+@pytest.mark.verifies("FR-4110")
 def test_recovery_learning_vignette_has_tutorial_script():
     """The intermediate recovery vignette ships a per-cell tutorial script."""
     vig = load_vignette("learn-intermediate-recovery")
@@ -164,6 +172,7 @@ def _all_ground_locations() -> list[tuple[str, str, float, float]]:
     return out
 
 
+@pytest.mark.verifies("FR-5312")
 def test_no_ground_assets_at_origin():
     """No ground asset should be at (0, 0) — the Atlantic null-island placeholder."""
     bad = [(vid, aid) for (vid, aid, lat, lon) in _all_ground_locations()
@@ -171,6 +180,7 @@ def test_no_ground_assets_at_origin():
     assert not bad, f"ground assets at (~0, 0): {bad}"
 
 
+@pytest.mark.verifies("FR-5312")
 def test_no_ground_assets_in_ocean_dead_zones():
     """No ground asset should be in the South Atlantic dead zone (-30..0 lat, -30..0 lon)
     — that band is the open ocean between Africa and South America with no plausible bases."""
@@ -181,6 +191,7 @@ def test_no_ground_assets_in_ocean_dead_zones():
     assert not bad, f"ground assets in South Atlantic dead zone: {bad}"
 
 
+@pytest.mark.verifies("FR-5312")
 def test_known_site_coords_match_canonical():
     """If a vignette uses a canonical site name's coords, they must match the catalog precisely.
 
