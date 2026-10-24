@@ -578,7 +578,7 @@ no longer the document of record; see the Master Build Plan's "Relationship to t
 | IP-1332 | Test-Origin Backfill: Session-Layer Modules | `implementation/packages/IP-1332-test-origin-backfill-session.md` | FS-133 `NFR-2820` | Forward design (test-only) | 🔴 BLOCKED — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0310`; blocked on IP-1330 |
 | IP-1333 | Test-Origin Backfill: Web and Cross-Cutting Modules | `implementation/packages/IP-1333-test-origin-backfill-web.md` | FS-133 `NFR-2820` | Forward design (test-only) | 🔴 BLOCKED — authored 2026-10-23 (runs #219–#224); not yet authorized; `BL-0310`; blocked on IP-1330 |
 | IP-1340 | Browser Suite for the Load-Bearing Console Rules | `implementation/packages/IP-1340-browser-console-rule-suite.md` | FS-134 `NFR-2840` | Forward design (test-only) | 🔵 COMPLETE — implemented 2026-10-23, awaiting `09`; `BL-0304` |
-| IP-1350 | Documentation Integrity Checks: Links, Indexes, Ledgers | `implementation/packages/IP-1350-documentation-integrity-checks.md` | FS-135 `NFR-3800`/`NFR-3820`/`NFR-3830` | Forward design (test-only) | 🔵 COMPLETE — implemented 2026-10-23, awaiting `09`; `BL-0297` |
+| IP-1350 | Documentation Integrity Checks: Links, Indexes, Ledgers | `implementation/packages/IP-1350-documentation-integrity-checks.md` | FS-135 `NFR-3800`/`NFR-3820`/`NFR-3830` | Forward design (test-only) | ✅ VERIFIED — VR-1350, 2026-10-24; `BL-0297` |
 
 FS-108/FS-202 have no Implementation Package (unauthorized candidates, MSTR-006 §3). **IP-1220,
 IP-1240, IP-1250, IP-1260, IP-1270, IP-1280, and IP-1290 are new (2026-09-27, run #78)** — seven
