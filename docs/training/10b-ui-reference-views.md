@@ -97,7 +97,7 @@ log under the graph is read-only.
 
 | Modal | Trigger | Controls |
 |---|---|---|
-| Command palette | `⌘K` / `Ctrl+K` | text input · result list · `↑/↓` navigate · `Enter` run · `Esc` close. Entries depend on the seat: the time entries (advance +1 min / +10 min / +1 hour, rewind to start) are listed only while White is the active seat. Seat switches, AAR exports, display toggles, asset select/focus and inject entries are offered to every seat; the inject entries are still refused by the server (403) for a non-White seat, and that refusal is not shown in the palette. |
+| Command palette | `⌘K` / `Ctrl+K` | text input · result list · `↑/↓` navigate · `Enter` run · `Esc` close. Entries depend on the seat: the time entries (advance +1 min / +10 min / +1 hour, rewind to start) are listed only while White is the active seat. The inject entries (fire a vignette inject; load a library template) are also listed only while White is the active seat. Seat switches, AAR exports, display toggles and asset select/focus are offered to every seat. A palette time action the server refuses shows its reason in the status line (§10.2, row 9). |
 | Handover | ⏸ Handover button | **Resume** button |
 | Help | ? Help button | **Close** button |
 | Tutorial | Tutorial button | **✕** close · clickable steps |
@@ -126,7 +126,7 @@ log under the graph is read-only.
 | AAR scrubber | Drag the slider thumb to scrub event-by-event |
 | Fleet row | Click = open drill-down · shift+click = batch toggle |
 
-> **Sources:** `spacesim/ui_web/static/app.js` (`onShortcut`, `PALETTE` (seat-conditional time entries), `paletteOpen`, `COACH_STEPS`, `coachOpen`, `tutorialOpen`, `inspectorOpen`) · `spacesim/ui_web/static/index.html` (`handover`)
+> **Sources:** `spacesim/ui_web/static/app.js` (`onShortcut`, `PALETTE` (White-only time and inject entries), `paletteOpen`, `COACH_STEPS`, `coachOpen`, `tutorialOpen`, `inspectorOpen`) · `spacesim/ui_web/static/index.html` (`handover`)
 
 ---
 

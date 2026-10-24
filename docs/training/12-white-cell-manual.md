@@ -104,17 +104,25 @@ deterministic, **rewind** to any point, **undo** the last actions, or **branch**
 continue differently) are byte-exact; use rewind-and-branch deliberately as a teaching move
 ("let's replay that decision"), then show the fork in the AAR branch-compare (WCM-9). The engine
 sub-steps to the next scheduled event, so fast-forwarding never skips a short LEO pass.
+**Advance bounds.** A jump (the `+1m / +10m / +1h` buttons, the palette's advance entries) can
+only move time forward and never past the end of the exercise's span, which is the vignette's start
+plus 366 days. A request that goes backwards, is not a finite number, or reaches beyond the span is
+refused (HTTP 400) with the reason, and the clock and world are unchanged; use rewind to go back. A
+running clock does not stop at the end of the span with an error: it is pinned there, so it simply
+stops advancing at the span end while still showing as running.
 A rewind must land inside the exercise, between its start and the current moment; the toolbar
 Rewind and the palette's "rewind to start" go to the vignette's first instant, and the server
 refuses anything outside that span. Undo obeys the same rule: undoing past the first logged
 event returns the clock to the exercise start, and an undo with nothing to undo is refused.
-When a jump or rewind is refused, the reason appears in the red status line under the session label
-in the **Cell & Time** panel; nothing about the exercise changes. Only the White seat can rewind: a
+Rewind and undo do not pause a running clock: it keeps running from the rewound moment, so pause
+first (▶/⏸) if you want to stand at the earlier instant. When a jump, rewind or inject is refused,
+the reason appears in the red status line under the session label in the **Cell & Time** panel
+(prefixed `Advance:`, `Rewind:` or `Inject:`); nothing about the exercise changes. Only the White seat can rewind: a
 Blue or Red tab, or a bookmark clicked from one, gets a refusal instead.
 
-> **Sources:** `spacesim/session/manager.py` (`set_clock`/`catch_up`/`rewind_to`/`undo_last`) ·
-> `spacesim/ui_web/static/app.js` (`rewindTo`, `reportControlError`; `#control-status`) ·
-> `POST /api/sessions/{sid}/clock` · `POST /api/sessions/{sid}/rewind` · `spacesim/engine/clock.py`
+> **Sources:** `spacesim/session/manager.py` (`step`/`advance_to`/`_span_ceiling`/`_catch_up_locked`/`rewind_to`/`undo_last`) ·
+> `spacesim/ui_web/static/app.js` (`stepBy`, `rewindTo`, `reportControlError`; `#control-status`) ·
+> `POST /api/sessions/{sid}/clock` · `…/step` · `…/advance` · `…/rewind` · `…/undo` · `spacesim/engine/clock.py`
 
 ### WCM-5 · Injects: script the friction
 
@@ -191,11 +199,18 @@ COA vignettes (RC-01…RC-05) are pre-built campaigns around these profiles.
 The AAR is read-only — it never disturbs the live session. **Replay** the whole exercise,
 **scrub** to any decision point and read the exact world state (objectives, asset states,
 debris), and **branch-compare** a rewind fork against the main timeline to show how a choice
-changed the outcome. Structure the debrief around the decision points you flagged with coaching
+changed the outcome. A variable-speed **playback** of the recorded exercise also exists, but only
+as the HTTP routes under `/aar/playback/` (the console has no playback control). A session holds
+one playback cursor, shared by every seat: starting one replaces the last, and it is not kept per
+seat. You (White) may start it from ground truth or either cell's viewpoint; Blue and Red may
+play back only their own viewpoint, and only while the shared playback is on their own cell;
+Observer may only read its state. A refused request is a 403 and nothing changes. The seat is
+asserted by the request, not authenticated (WCM-3 trust model). Structure the debrief around the decision points you flagged with coaching
 notes (WCM-6) and the objective flips.
 
 > **Sources:** `spacesim/session/aar.py` (`snapshot_at`, branch compare) ·
-> `GET /api/sessions/{sid}/aar*` · [`05-core-concepts.md`](05-core-concepts.md) §"Red doctrine & AAR"
+> `GET /api/sessions/{sid}/aar*` · `POST …/aar/playback/*` ·
+> `spacesim/session/inprocess.py` (`playback_seat_decision`) · [`05-core-concepts.md`](05-core-concepts.md) §"Red doctrine & AAR"
 
 ### WCM-10 · Save, resume, and when things go wrong
 

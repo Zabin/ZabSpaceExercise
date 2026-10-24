@@ -43,13 +43,13 @@ are in [10b](10b-ui-reference-views.md).
 | 3 | Action | dropdown | Legal actions for the actor's `kind`: e.g. satellite ⇒ `downlink/maneuver/command`, jammer ⇒ `jam`. |
 | 4 | Target | dropdown + **or id** text input | Uses the same known-target list as §10.5 row 5, with the selected actor's own side left out. The **or id** box takes precedence. Both fields are **enabled only for `jam` / `engage` / `cyber` / `observe`**. For any other action they are blanked and disabled because that order takes no target. |
 | 5 | Params | JSON text, under **Advanced (raw JSON params)** | Pre-filled per action (see PARAM_TEMPLATE in `app.js`). Live dry-run on every keystroke. A field with the wrong type or a non-finite number (`"inf"`, a `dv` without exactly three numbers) shows ✗ `invalid_param`. A field set to `null` counts as left out. |
-| 6 | Validity preview | read-only | ✓ queue · delivery_path · window OR ✗ reason (from `POST /order/validate`). |
+| 6 | Validity preview | read-only | ✓ queue · delivery_path · window OR ✗ reason (from `POST /order/validate`). The Observer seat cannot issue orders, so its tab sends no dry-run and the preview stays blank. |
 | 7 | Consequence preview | read-only | severity / esc / reversible / debris / attribution (from `POST /preview/consequence`). |
 | 8 | Issue order | primary button | `POST /order`. Disabled while validity preview is ✗. |
 | 9 | ★ Save preset | button | Save the current order as a named playbook (`localStorage`, per vignette). |
 | 10 | ? Coachmark tour | button | Start the in-page coachmark tour over compose form. |
 | 11 | Playbook list | clickable rows | Click to load a saved preset back into the form. |
-| 12 | Pass-timeline ribbon | read-only canvas | Three lanes (**cmd / tlm / obs**) for the selected actor, next 6 h. Hourly tick marks. |
+| 12 | Pass-timeline ribbon | read-only canvas | Three lanes (**cmd / tlm / obs**) for the selected actor, next 6 h. Hourly tick marks. Shows "no passes / not a satellite" for a sensor and for the Observer seat, which owns nothing and asks the server for no windows. |
 | 13 | Queue rows | per-row [✕] cancel | `POST /cancel` (replay-safe — Scheduler skips the cancelled event). |
 
 When **Action** is set to `maneuver` or `jam`, an additional assistant panel appears below

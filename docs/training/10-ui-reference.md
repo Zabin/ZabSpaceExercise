@@ -53,8 +53,8 @@ operator switches to Blue or Red.
 | 3 | Session summary chip | label (white-only) | `<vignette> · <sid> · loaded \| ▶ running` once a session is loaded. |
 | 4 | White / Blue / Red | buttons | Switch the operator's seat (client-side `data-cell` swap; fog-of-war is enforced server-side). |
 | 5 | ⏸ Pause / ▶ Resume | button (white-only) | `POST /api/sessions/{sid}/clock {running}` — drives the server-authoritative clock for **every** connected tab. |
-| 6 | +1m / +10m / +1h | buttons (white-only) | `POST /step` for manual sim-time jumps. Server re-anchors so the wall clock doesn't snap the jump back. |
-| 7 | ⟲ Rewind | button (white-only) | `POST /rewind` to the exercise's `start_epoch` (the vignette's first instant, read from `GET /clock`; the palette's **rewind to start** does the same). A target outside `[start_epoch, now]` is refused with a 400, and the refusal reason shows in the status line (§10.2, row 9). Deterministic replay re-derives state byte-identical; the server re-anchors the clock at the rewound moment. |
+| 6 | +1m / +10m / +1h | buttons (white-only) | `POST /step` for manual sim-time jumps. Server re-anchors so the wall clock doesn't snap the jump back. A jump is forward-only and cannot pass the exercise's end (start + 366 days); otherwise it is refused with a reason in the status line (§10.2, row 9). A running clock is pinned at that end rather than refused. |
+| 7 | ⟲ Rewind | button (white-only) | `POST /rewind` to the exercise's `start_epoch` (the vignette's first instant, read from `GET /clock`; the palette's **rewind to start** does the same). A target outside `[start_epoch, now]` is refused with a 400, and the refusal reason shows in the status line (§10.2, row 9). Deterministic replay re-derives state byte-identical; the server re-anchors the clock at the rewound moment, and a running clock keeps running from there (it is not paused). |
 | 8 | ⏸ Handover | button | Blur the screen + show "HANDING OFF" overlay (hot-seat seat-swap between cells). |
 | 9 | 📋 Session ▾ | menu (white-only) | See §10.1.1 below. |
 | 10 | ▦ View ▾ | menu | See §10.1.2 below. |
@@ -67,8 +67,8 @@ The three dropdown menus share the same wiring: click to open, click outside or 
 **When the server refuses a control.** The toolbar hiding White-only controls is a convenience; the
 server is what enforces it (it answers 403 to any White Cell control not sent from the White seat, see
 [§9](08-http-api-reference.md#9-http-api-reference)). When a time jump or rewind (the +1m/+10m/+1h buttons, Rewind, the palette's time entries
-or a rewind bookmark) is refused, or a rewind
-lands outside the exercise, the reason appears in the red **status line** under the session label in the
+or a rewind bookmark) is refused, a jump runs past the exercise's end or backwards, a rewind
+lands outside the exercise, or a fired inject is rejected, the reason appears in the red **status line** under the session label in the
 Cell & Time panel (§10.2, row 9), for example `Rewind: only the White Cell can rewind the exercise clock`.
 The line clears after the next time jump or rewind that succeeds.
 
@@ -109,7 +109,7 @@ pop-out polls the server at 1.5 s like any other tab, so closing the parent does
 | Section | Item | Effect |
 |---|---|---|
 | Session | ⬇ Save session | `GET /save` → download session JSON. |
-| Session | ⬆ Load session | File picker + `POST /load_save` (the loaded session starts paused — White must Resume). A save that cannot be used is refused with a reason (HTTP 400), including a legacy save whose vignette file is no longer available. Any seat can click it, but the server accepts a load only from the White seat; a refusal (403 for a player seat, 400 for an unusable file, or "not a valid save file" for text that is not JSON) is shown as **Load failed:** in the session label, and the session you were in is untouched (the label may keep showing the failure text). |
+| Session | ⬆ Load session | File picker + `POST /load_save` (the loaded session starts paused — White must Resume). A save that cannot be used is refused with a reason (HTTP 400), including a legacy save whose vignette file is no longer available. Any seat can click it, but the server accepts a load only from the White seat; a refusal (403 for a player seat, 400 for an unusable file, or "not a valid save file" for text that is not JSON) is shown as **Load failed:** in the session label, and the session you were in is untouched. A tab still joined to a session keeps its session label and shows **Load failed:** and the reason in the status line (§10.2, row 9); only a tab with no session shows it in the label. |
 | Tools | ? Coachmark tour | Walk the UI itself with a spotlight tip. |
 | Tools | Tutorial panel | Per-vignette tutorial steps for the active cell. |
 | Tools | Inspect vignette YAML | Open the vignette YAML inspector modal. |
@@ -133,7 +133,7 @@ pop-out polls the server at 1.5 s like any other tab, so closing the parent does
 | 6 | Messages | read-only `<ul>` | Inbox for this cell (sorted newest first). |
 | 7 | Coaching | read-only list | `GET /coaching/{cell}` — facilitator notes due-now for this cell. |
 | 8 | Conjunctions | list + Evade buttons | `GET /conjunctions/{cell}` — each row carries a per-asset Evade button. |
-| 9 | Status line | read-only, red, hidden when empty | `#control-status`, announced to screen readers. Shows `<Control>: <reason>` when the server refuses a time control (`Advance`, `Rewind`). Empty (and takes no space) otherwise. |
+| 9 | Status line | read-only, red, hidden when empty | `#control-status`, announced to screen readers. Shows `<Control>: <reason>` when the server refuses a time control (`Advance`, `Rewind`) or an inject (`Inject`). Empty (and takes no space) otherwise. |
 
 The **Evade** button on a conjunction row issues a `command` order with `verb: prop.collision_avoid`
 on the own asset, queued to the next command-uplink window.
@@ -149,7 +149,7 @@ on the own asset, queued to the next command-uplink window.
 | # | Control | Type | Effect / valid values |
 |---|---|---|---|
 | 1 | Inject dropdown | dropdown | Vignette-defined injects from `GET /injects`. |
-| 2 | Fire | button | `POST /inject` with `{inject: <id>}` — fires immediately. If the server rejects the inject (HTTP 400, see below), nothing is applied and **nothing appears on screen**: this button has no result line. If an expected message never shows in **Messages**, re-check the inject in the builder, which does report the reason. |
+| 2 | Fire | button | `POST /inject` with `{inject: <id>}` — fires immediately. If the server rejects the inject (HTTP 400, see below), nothing is applied and the reason shows as `✗ server error: …` in the panel's result line (row 11) and as `Inject: <reason>` in the status line (§10.2, row 9); success shows `✓ fired <id>`. |
 | 3 | Build / schedule inject | `<details>` toggle | Expands the builder panel below. |
 | 4 | Template | dropdown | 5 library entries from `GET /inject_library` + `(custom)`. |
 | 5 | Load | button | Pre-fills the JSON editor with the selected template's effects. |
