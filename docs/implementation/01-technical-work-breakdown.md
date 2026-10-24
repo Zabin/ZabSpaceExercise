@@ -1110,6 +1110,26 @@ carve-out); the rest is conflict avoidance.
 - A check that compares package-file headers with the ledger: a new capability (`IP-1350` family); recommended to `00-intake` by `IP-1078`.
 - `VR-1073` F1, F4, F5 and the other deferred `BL-` items listed in the pass 2 section: unchanged.
 
+## Release-push remediation, pass 5 (2026-10-24)
+
+**Input:** the tranche 3 integration review `L-5` (count-pinned guards), `VR-1078` F1/F2/F3 (31 stale package headers, three "Not yet authorized" rows, nine "Awaiting 09" sentences, `IP-1078`'s own header) and GDS-07 `OQ5` (the event-log cap does not see a real save's log; branch `claude/stale-docs-gds`, commit `4eac964`). Same owner directive (journal run #256: bugs, in-progress and critical items), plus the owner's instruction in this session to fix stale documents before the release and to resolve the guard "as you see fit".
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Remove the collected-count bounds and their test from the retag guard; keep the pinned tag sets; fail a removed module, do not fail a deselected one; no check skips under both browser filters; mutation tests pin that a deleted or retagged pinned test fails | `spacesim/tests/test_origin_retag.py` (and `baseline_ids.py` if the pure helper lives there) | IP-1079 |
+| 2 | 31 older headers plus `IP-1078`'s reconciled with the ledger; three "Not yet authorized" and the "Awaiting 09" sentences removed; sweep recorded in the tree | `docs/implementation/` only | IP-1080 |
+| 3 | The 100,000-entry cap counts a real save's `{"entries": [...]}` log, first in `validate_save`, before model validation and replay; the constant moves to `SessionManager` with an alias on `InProcessSession` | `session/manager.py`, `session/inprocess.py`, a new test file | IP-1081 |
+
+**Why three packages, and why this cut.** Three unrelated seams with three different verification stories, each small.
+
+- *Unit 1 (`IP-1079`) is its own package*: test-only, one file, verified by mutation; it must not ride with a production fix because the point is that the guard stops gating growth. Decision recorded: remove, do not widen. Widening `COLLECTED_UPPER` repeats `L-5` at the next threshold, and the count test protects nothing the per-row checks do not (each pinned row already fails if its test is deleted, renamed or retagged). The skip rule is made precise instead (absent from disk fails, present but not collected is not applicable), which also removes the check that skipped under both `-m browser` and `-m "not browser"`. The frozen `VR` notes that cite the 1700 ceiling are not edited.
+- *Unit 2 (`IP-1080`) is its own package*: `07` may not write `VERIFIED`, so it cannot do the edits now; 32 header edits would bury a code diff; same rules as `IP-1078`. It is deliberately a second pass rather than an extension of `IP-1078` (which is `VERIFIED` and not reopened).
+- *Unit 3 (`IP-1081`) is its own package*: a production bug in `FS-110`'s save path with a boundary-heavy test matrix. Design decision: the cap becomes the first rung of `validate_save` (one refusal path, ahead of the double `EventLog.model_validate`), rather than patching the inline check to accept a dict, so every caller of `validate_save` is protected and the amplifier the cap exists to stop is stopped before pydantic runs. The constant moves down a layer because `session/manager.py` cannot import `session/inprocess.py`; the old name stays as an alias. A bare list over the cap is still refused as oversize (the audit test stays valid); at or under the cap it remains "malformed", as today.
+
+**Ordering and file conflicts.** `IP-1079` → `IP-1081` → `IP-1080`. `IP-1081` adds about 9 tests and `IP-1079` about 5 net, so the suite moves from 1671 to about 1685; the `IP-1334` ceiling of 1700 would not yet fail, but `IP-1079` removes it first so that nothing is gated on the count. `IP-1080` last: its Master Build Plan note edits sit near the status rows the other two update. No content dependency among the three.
+
+**Not planned here (and why).** Closing GDS-07 `OQ5` (owned by `03`, after `IP-1081` is `VERIFIED`); a check comparing package-file headers with the ledger (a new capability, `IP-1350` family, via `00-intake`; `IP-1080` ends with a recorded sweep instead); any edit of a `VR-xxxx`; HTTP request-body size limits (a deployment concern, noted in `IP-1081` Risks).
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
