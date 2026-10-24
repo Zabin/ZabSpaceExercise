@@ -59,6 +59,7 @@ seat enforcement on a trusted LAN, not authentication.
 | `GET /api/sessions/{sid}/objectives` · `…/eventlog` | Objective status · event log |
 | `GET /api/sessions/{sid}/aar` · `…/aar/objectives?seq=` · `…/aar/at?seq=` | AAR report · objectives · snapshot at a point |
 | `GET /api/sessions/{sid}/aar/export.csv` · `…/aar/export.json` | AAR download as CSV · JSON |
+| `POST …/aar/playback/start` `{viewpoint, speed}` · `…/viewpoint` · `…/advance` `{dt_s}` · `…/speed` · `GET …/aar/playback/state` (all take `?cell=<seat>`) | Variable-speed AAR playback. White: any viewpoint (`truth`, `blue`, `red`). Blue/Red: only their own cell as viewpoint, and advance/speed/state only while the playback's viewpoint is their own. Observer: `state` only. No or unknown seat: refused. A refusal is a 403 before any state changes or is read (a client-asserted seat, not authentication). |
 | `GET /api/sessions/{sid}/save` · `POST /api/sessions/load_save` | Save a session · resume from a saved state (a save that cannot be used — missing keys, malformed parts, or a legacy save whose vignette file is gone — is refused with HTTP 400 and a reason; see below) |
 
 **Refusal summary (what a script sees).**

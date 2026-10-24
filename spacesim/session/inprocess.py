@@ -18,6 +18,36 @@ from spacesim.session.manager import SessionManager
 from spacesim.session.redai import RedDoctrine
 
 
+PLAYBACK_REFUSED = "playback_seat_refused"
+
+
+class PlaybackSeatRefused(PermissionError):
+    """IP-1077 (FR-7340) — raised by the value-returning playback methods when the requesting
+    seat may not perform the action; the route maps it (and an ``Ack`` reason starting with
+    ``PLAYBACK_REFUSED``) to HTTP 403."""
+
+
+def playback_seat_decision(seat: Optional[str], action: str, requested: Optional[str],
+                           current: Optional[str]) -> Optional[str]:
+    """IP-1077 (FR-7340) — pure seat rule for the AAR playback. Returns a refusal reason, or
+    None when permitted. ``requested`` is the viewpoint asked for (start/viewpoint); ``current``
+    is the playback's present viewpoint (None when no playback exists)."""
+    def refuse(why: str) -> str:
+        return f"{PLAYBACK_REFUSED}: {why}"
+
+    if seat == "white":
+        return None
+    if seat == "observer":
+        return None if action == "state" else refuse("the Observer seat is read-only")
+    if seat not in ("blue", "red"):
+        return refuse("playback requires a named seat")
+    if action in ("start", "viewpoint"):
+        return None if requested == seat else refuse("a player seat may play back only its own viewpoint")
+    if current == seat:
+        return None
+    return refuse("a player seat may play back only its own viewpoint")
+
+
 class InProcessSession:
     # Audit Jun 2026 §D7 — bound the live-session table so a hostile client
     # can't grow it without limit by spamming /api/sessions. Soft cap; sessions
@@ -994,42 +1024,62 @@ class InProcessSession:
         return aar.snapshot_at(self._sessions[session], seq)
 
     # -- IP-1280 (FR-7330) — variable-speed AAR playback -----------------------
-    def playback_start(self, session: str, viewpoint: str = "truth", speed: float = 1.0) -> Ack:
-        try:
-            self._playbacks[session] = aar.PlaybackSession(
-                self._sessions[session], viewpoint=viewpoint, speed=speed)
-        except ValueError as exc:
-            return Ack(ok=False, reason=str(exc))
-        return Ack(ok=True)
+    def playback_start(self, session: str, viewpoint: str = "truth", speed: float = 1.0,
+                       seat: Optional[str] = None) -> Ack:
+        with self._locked(session) as mgr:
+            why = playback_seat_decision(seat, "start", viewpoint, None)
+            if why:
+                return Ack(ok=False, reason=why)
+            try:
+                self._playbacks[session] = aar.PlaybackSession(mgr, viewpoint=viewpoint, speed=speed)
+            except ValueError as exc:
+                return Ack(ok=False, reason=str(exc))
+            return Ack(ok=True)
 
-    def playback_advance(self, session: str, dt_s: float) -> Optional[dict]:
+    def _playback_current(self, session: str) -> Optional[str]:
         pb = self._playbacks.get(session)
-        if pb is None:
-            return None
-        return pb.advance(dt_s)
+        return None if pb is None else pb.viewpoint
 
-    def playback_state(self, session: str) -> Optional[dict]:
-        pb = self._playbacks.get(session)
-        if pb is None:
-            return None
-        return pb.state()
+    def playback_advance(self, session: str, dt_s: float, seat: Optional[str] = None) -> Optional[dict]:
+        with self._locked(session):
+            why = playback_seat_decision(seat, "advance", None, self._playback_current(session))
+            if why:
+                raise PlaybackSeatRefused(why)
+            pb = self._playbacks.get(session)
+            return None if pb is None else pb.advance(dt_s)
 
-    def playback_set_viewpoint(self, session: str, viewpoint: str) -> Ack:
-        pb = self._playbacks.get(session)
-        if pb is None:
-            return Ack(ok=False, reason="no_playback_session")
-        try:
-            pb.set_viewpoint(viewpoint)
-        except ValueError as exc:
-            return Ack(ok=False, reason=str(exc))
-        return Ack(ok=True)
+    def playback_state(self, session: str, seat: Optional[str] = None) -> Optional[dict]:
+        with self._locked(session):
+            why = playback_seat_decision(seat, "state", None, self._playback_current(session))
+            if why:
+                raise PlaybackSeatRefused(why)
+            pb = self._playbacks.get(session)
+            return None if pb is None else pb.state()
 
-    def playback_set_speed(self, session: str, speed: float) -> Ack:
-        pb = self._playbacks.get(session)
-        if pb is None:
-            return Ack(ok=False, reason="no_playback_session")
-        pb.set_speed(speed)
-        return Ack(ok=True)
+    def playback_set_viewpoint(self, session: str, viewpoint: str, seat: Optional[str] = None) -> Ack:
+        with self._locked(session):
+            why = playback_seat_decision(seat, "viewpoint", viewpoint, self._playback_current(session))
+            if why:
+                return Ack(ok=False, reason=why)
+            pb = self._playbacks.get(session)
+            if pb is None:
+                return Ack(ok=False, reason="no_playback_session")
+            try:
+                pb.set_viewpoint(viewpoint)
+            except ValueError as exc:
+                return Ack(ok=False, reason=str(exc))
+            return Ack(ok=True)
+
+    def playback_set_speed(self, session: str, speed: float, seat: Optional[str] = None) -> Ack:
+        with self._locked(session):
+            why = playback_seat_decision(seat, "speed", None, self._playback_current(session))
+            if why:
+                return Ack(ok=False, reason=why)
+            pb = self._playbacks.get(session)
+            if pb is None:
+                return Ack(ok=False, reason="no_playback_session")
+            pb.set_speed(speed)
+            return Ack(ok=True)
 
     # -- competency assessment (IP-2010) ----------------------------------------
     def assessment_report(self, session: str) -> dict:

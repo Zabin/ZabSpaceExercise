@@ -706,9 +706,9 @@ def test_aar_playback_start_advance_and_viewpoint_switch():
     assert adv.status_code == 200
     assert "assets" in adv.json()  # ground-truth WorldState shape
 
-    switched = c.post(f"/api/sessions/{sid}/aar/playback/viewpoint", json={"viewpoint": "blue"})
+    switched = c.post(f"/api/sessions/{sid}/aar/playback/viewpoint?cell=white", json={"viewpoint": "blue"})
     assert switched.json()["ok"] is True
-    state = c.get(f"/api/sessions/{sid}/aar/playback/state")
+    state = c.get(f"/api/sessions/{sid}/aar/playback/state?cell=white")
     assert "own_assets" in state.json()  # CellView shape, not ground truth
 
 

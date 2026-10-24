@@ -554,7 +554,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   speed AAR playback routes over `session/aar.py::PlaybackSession`;
   **IP-1270 (FR-3430/FR-3440):** `/gate/decide` + `/roe/change` — role-gated (checked inside
   `SessionManager`/`OrderSystem`) pending-order decision and live ROE-flag-change routes;
-  **IP-1072:** `_require_white` now also guards `save_vignette`/`creator/*`/`red_step`, and `_refuse_player_seat_on_create(cell)` refuses a creation request naming a player seat (absent seat allowed); **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
+  **IP-1072:** `_require_white` now also guards `save_vignette`/`creator/*`/`red_step`, and `_refuse_player_seat_on_create(cell)` refuses a creation request naming a player seat (absent seat allowed); **IP-1077 (FR-7340):** the five `aar/playback/*` routes take the query seat (`playback_seat_decision` in `session/inprocess.py`; White any viewpoint, a player only its own cell, Observer state-read only, no/unknown seat refused, all 403 before any state change);
+  **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
   route table at implementation time, not merely IP-1130's own enumerated list, per that package's
   own Risks note — plus `/observer/view` + `/observer/designation`) + `static/`
   front end: `app.js` (command menu with live dry-run preview + pre-disabled Issue + kinetic

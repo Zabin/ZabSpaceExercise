@@ -23,7 +23,7 @@ from pydantic import BaseModel, field_validator
 from spacesim.engine.orders import Order
 from spacesim.session import ephemeris
 from spacesim.session.api import Ack, CellView, OrderAck
-from spacesim.session.inprocess import InProcessSession
+from spacesim.session.inprocess import PLAYBACK_REFUSED, InProcessSession, PlaybackSeatRefused
 from spacesim.session.scene import SceneView
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -967,40 +967,58 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.aar_report(sid).model_dump()
 
+    def _playback_ack(ack: Ack) -> Ack:
+        """IP-1077 — an Ack refused by the playback seat rule is a 403, not a 200 ``ok: false``."""
+        if not ack.ok and (ack.reason or "").startswith(PLAYBACK_REFUSED):
+            raise HTTPException(status_code=403, detail=ack.reason)
+        return ack
+
     @app.post("/api/sessions/{sid}/aar/playback/start")
-    def playback_start(sid: str, req: PlaybackStartRequest) -> Ack:
+    def playback_start(sid: str, req: PlaybackStartRequest, cell: Optional[str] = None) -> Ack:
         """IP-1280 (FR-7330) — start (or replace) this session's variable-speed AAR playback,
         from ground truth or a named cell's fog-of-war-respecting viewpoint; rejected at the
-        request boundary if the cell did not participate in the recorded exercise."""
+        request boundary if the cell did not participate in the recorded exercise.
+        IP-1077 (FR-7340) — seat rule via the ``cell`` query seat: White any viewpoint, a player
+        only its own cell, Observer/no seat refused (403, before any other check)."""
         _require(sid)
-        return api.playback_start(sid, req.viewpoint, req.speed)
+        return _playback_ack(api.playback_start(sid, req.viewpoint, req.speed, seat=cell))
 
     @app.post("/api/sessions/{sid}/aar/playback/advance")
-    def playback_advance(sid: str, req: PlaybackAdvanceRequest) -> dict:
+    def playback_advance(sid: str, req: PlaybackAdvanceRequest, cell: Optional[str] = None) -> dict:
+        """IP-1077 — White, or a player while the viewpoint is its own cell; else 403."""
         _require(sid)
-        r = api.playback_advance(sid, req.dt_s)
+        try:
+            r = api.playback_advance(sid, req.dt_s, seat=cell)
+        except PlaybackSeatRefused as exc:
+            raise HTTPException(status_code=403, detail=str(exc))
         if r is None:
             raise HTTPException(status_code=404, detail="no playback session — call .../playback/start first")
         return r
 
     @app.get("/api/sessions/{sid}/aar/playback/state")
-    def playback_state(sid: str) -> dict:
+    def playback_state(sid: str, cell: Optional[str] = None) -> dict:
+        """IP-1077 — White or Observer, or a player while the viewpoint is its own cell; else 403."""
         _require(sid)
-        r = api.playback_state(sid)
+        try:
+            r = api.playback_state(sid, seat=cell)
+        except PlaybackSeatRefused as exc:
+            raise HTTPException(status_code=403, detail=str(exc))
         if r is None:
             raise HTTPException(status_code=404, detail="no playback session — call .../playback/start first")
         return r
 
     @app.post("/api/sessions/{sid}/aar/playback/viewpoint")
-    def playback_set_viewpoint(sid: str, req: PlaybackViewpointRequest) -> Ack:
-        """Design Decision 1 — a viewpoint switch continues from the same simulated moment."""
+    def playback_set_viewpoint(sid: str, req: PlaybackViewpointRequest, cell: Optional[str] = None) -> Ack:
+        """Design Decision 1 — a viewpoint switch continues from the same simulated moment.
+        IP-1077 — White any viewpoint, a player only its own cell; else 403."""
         _require(sid)
-        return api.playback_set_viewpoint(sid, req.viewpoint)
+        return _playback_ack(api.playback_set_viewpoint(sid, req.viewpoint, seat=cell))
 
     @app.post("/api/sessions/{sid}/aar/playback/speed")
-    def playback_set_speed(sid: str, req: PlaybackSpeedRequest) -> Ack:
+    def playback_set_speed(sid: str, req: PlaybackSpeedRequest, cell: Optional[str] = None) -> Ack:
+        """IP-1077 — White, or a player while the viewpoint is its own cell; else 403."""
         _require(sid)
-        return api.playback_set_speed(sid, req.speed)
+        return _playback_ack(api.playback_set_speed(sid, req.speed, seat=cell))
 
     @app.get("/api/sessions/{sid}/assessment")
     def assessment_report(sid: str) -> dict:
