@@ -92,3 +92,4 @@ formal `VR-xxxx` report.**
 
 [`00-master-build-plan.md`](../00-master-build-plan.md) · [`packages/INDEX.md`](../packages/INDEX.md) ·
 [`docs/requirements/03-requirements-traceability-matrix.md`](../../requirements/03-requirements-traceability-matrix.md)
+| [VR-1101](VR-1101-self-contained-saves.md) | [IP-1101](../packages/IP-1101-self-contained-saves.md) — Self-Contained Saves (`FR-7210`/`FR-7220`/`FR-7230`/`NFR-1800`) | 2026-10-24 | ✅ VERIFIED | Full suite 1280 passed/3 skipped, gates green; 30 of 50 failed-first reproduced; reverting `from_state` fails 6 tests. Findings: Medium — legacy save with missing vignette file returns 500; Low — `loadSaveFile` has no error handling, failing-first count 30 not 31, module-level tag over-claims. |
