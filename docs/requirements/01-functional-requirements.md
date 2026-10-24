@@ -36,6 +36,10 @@
 > further amended (GDS ladder alignment, 2026-10-23; **two numbered FR leaves added** — `FR-4320`,
 > `FR-7230`; `FR-5210` reworded (Space-Track dropped); notes on `FR-4310` and `FR-7220` recording that
 > neither is met as built — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md)).
+> further amended (baseline-maintenance pass 2, 2026-10-24; **two numbered FR leaves added** —
+> `FR-4330` (time control bounded to the exercise span) and `FR-7340` (AAR playback obeys the
+> requesting seat); `FR-4310`, `FR-4320`, `FR-7230` Notes/Acceptance Criteria made current — see
+> [`requirements-change-log.md`](requirements-change-log.md) CHG-031…CHG-036.)
 > further amended (baseline-maintenance pass 1, 2026-10-24; **three numbered FR leaves added** —
 > `FR-2330` (telemetry attack signatures and the nominal comparison), `FR-4460` (the reusable inject
 > library) and `FR-7450` (ISO-8601 span bounds, promoted from `CR-22`, `BL-0181`); `FR-4320` extended
@@ -1637,13 +1641,14 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Preconditions:** The requester holds the White Cell role for the session.
 - **Postconditions:** No non-White-Cell-issued clock-control request changes the clock state.
 - **Acceptance Criteria:** Given a clock-control request issued by a Blue or Red cell role, the
-  request is rejected and the clock state is unchanged.
+  request is rejected and the clock state is unchanged. The bounds on what White may set the clock
+  to are stated in `FR-4330`.
 - **Verification Method:** Test
 - **Dependencies:** FR-1110
 - **Source Documents:** GDS-01 §10; build-spec/02 §5.4 FR-W3 (binding statement); ADR-0016.
 - **Related ADRs:** ADR-0016
 - **Related Interfaces:** INT-0002
-- **Related Requirements:** FR-1110, FR-6300, FR-4320
+- **Related Requirements:** FR-1110, FR-6300, FR-4320, FR-4330
 - **Notes:** *(Added 2026-10-23, GDS ladder alignment; made current 2026-10-24, `BL-0325`/`BL-0356`.)*
   **Met as built since `IP-1068`** (`VERIFIED` 2026-10-24, `VR-1068`): the HTTP clock routes
   (`/clock`, `/step`, `/advance`, `/rewind`, `/undo`) refuse a request that does not name the White
@@ -1692,11 +1697,63 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Notes:** This is a structural check at the same trust level as the Observer rejection: a
   participant who lies about their seat still bypasses it (GDS-09, the LAN trust model).
   *Scope extended 2026-10-24 (baseline-maintenance pass 1).* **The original list is met as built
-  (`IP-1068`); the extension is not yet built** — the Creator edit routes, `save_vignette`, the
-  Red-step route and session and draft creation still refuse only the Observer. A `07`
-  remediation package is owed. How a creation request names its seat is a design matter for
+  (`IP-1068`, `VR-1068`) and so is the extension (`IP-1072`, `VERIFIED`, `VR-1072`; seat assignment
+  and Observer designation also refuse a player seat since `IP-1074`)** — the Creator edit routes,
+  `save_vignette`, the Red-step route and session and draft creation refuse a non-White seat. *(Pass 1
+  recorded the extension as "not yet built"; that note was stale after `IP-1072`.)* How a creation request names its seat is a design matter for
   `06`/`07`; this leaf requires only that a creation request naming a non-White seat is refused.
   Reads of a draft's state remain ground-truth reads under `FR-6220`, not controls.
+  *Pass 2:* the `aar/playback/*` routes are not in this list; their seat rule is `FR-7340`.
+
+#### FR-4330 — Time control bounded to the exercise span
+
+*(new 2026-10-24, baseline-maintenance pass 2; integration review of tranche 3, `M-2`, `L-7`)*
+
+- **ID:** FR-4330
+- **Title:** Rewind, undo and time advance stay within the exercise span
+- **Description:** The system shall bound every White Cell change of the simulated time to the
+  exercise span, which runs from the session's start epoch to at most 366 days after it. Rewind
+  shall accept a target only from the start epoch up to the current simulated time, and
+  "rewind to start" shall mean the start epoch. Undo shall land on the time of the last surviving
+  event-log entry, or on the start epoch when none survives, and shall be refused, changing
+  nothing, when there is nothing to undo. Time advance (step or advance-to) shall accept a target
+  only from the current simulated time up to 366 days after the start epoch.
+- **Rationale:** A clock set outside the span (1970 after an undo, a target before the start or
+  in the future) produced states no save could reproduce (`IP-1074`, `IP-1075`). A save refuses a
+  `final_time` more than 366 days past the start (`FR-7230`), so a session advanced past the same
+  span could be saved but not loaded (integration review of tranche 3, `M-2`). One span, stated once,
+  keeps the controls and the save consistent.
+- **Priority:** Must
+- **Inputs:** A rewind, undo, step or advance request and the session's start epoch.
+- **Outputs:** The clock moved within the span, or a refusal with a reason.
+- **Preconditions:** A started session; the request names the White seat (`FR-4310`).
+- **Postconditions:** The simulated time is never earlier than the start epoch nor later than 366 days
+  after it; a refused request changes nothing.
+- **Acceptance Criteria:** (1) A rewind to a time before the start epoch, or after the current time,
+  is refused and the clock is unchanged; a rewind to exactly the start epoch or exactly the current
+  time succeeds. (2) Undo on a session with an empty event log is refused and the clock is
+  unchanged; undoing every entry leaves the clock at the start epoch. (3) An advance or step whose
+  target is after the start epoch plus 366 days, or earlier than the current time, is refused and
+  the clock is unchanged. (4) Any session reachable through (1)–(3) can be saved and the save
+  loaded.
+- **Verification Method:** Test
+- **Dependencies:** FR-4310, FR-7230
+- **Source Documents:** `docs/implementation/verification/VR-1074-white-control-correctness.md`;
+  `docs/implementation/verification/VR-1075-undo-clock-floor.md`; `VR-1103`;
+  `docs/reviews/integration-review-tranche-3-release-push-remediation.md` `M-2`, `L-1`, `L-7`;
+  ADR-0016.
+- **Related ADRs:** ADR-0016, ADR-0002
+- **Related Interfaces:** INT-0002
+- **Related Requirements:** FR-4310, FR-7230, NFR-1600
+- **Notes:** **Met as built for rewind and undo** (`IP-1074`, `IP-1075`, `VERIFIED`; the start epoch
+  is exposed as `start_epoch` on the clock state) **and for the save-side cap** (`IP-1103`,
+  `SessionManager.MAX_SAVE_SPAN_US`). **The advance bound, including refusing a backwards step or
+  advance, is required, not yet built**: `POST /advance` and `/step` have no upper bound, so an
+  advance of 370 days can be saved but not loaded, and a backwards target gives HTTP 500
+  (review `M-2`, `L-1`). Package `IP-1076` will build it. The 366-day figure is the shipped save cap
+  restated; whether it should be configurable is an owner decision, not made here. Whether a running
+  clock keeps running after a rewind is an open owner question (review `L-6`) and is not stated
+  here.
 
 ### FR-4400 — Inject authoring and firing
 
@@ -2993,17 +3050,21 @@ is no longer required. Same ID, narrower scope.)*
 - **Acceptance Criteria:** Save a session at sim time T; edit (and, separately, delete) the
   vignette file it was loaded from; resuming the save reproduces the state at T exactly in both
   cases.
+  A save whose `final_time` is earlier than the start epoch or later than 366 days after it is
+  refused with a reason naming `final_time` before any replay, and no session is created; a
+  `final_time` exactly at either bound loads. The span is the one stated in `FR-4330`.
 - **Verification Method:** Test
 - **Dependencies:** FR-7210, FR-7220
 - **Source Documents:** GDS-07 §6 and OQ1; `docs/pipeline/backlog.md` `BL-0302`.
 - **Related ADRs:** ADR-0022, ADR-0002
 - **Related Interfaces:** INT-0012
-- **Related Requirements:** FR-7210, FR-7220, NFR-1800
+- **Related Requirements:** FR-7210, FR-7220, FR-4330, NFR-1800
 - **Notes:** Whether saves also carry a format and simulator version, and whether the engine-level
   `SavedSession` shape converges with the session save, are design choices for the feature
   specification (GDS-07 OQ2–OQ3). *(Made current 2026-10-24.)* Met as built since `IP-1101`
   (`VERIFIED`, `VR-1101`; feature specification `FS-110` v2.0): a save carries `save_format` and
-  `simulator_version`, a legacy save reloads by ID with a warning.
+  `simulator_version`, a legacy save reloads by ID with a warning. The `final_time` span check is met
+  as built since `IP-1103` (`VERIFIED`, `VR-1103`; `SessionManager.MAX_SAVE_SPAN_US`, 366 days).
 
 ### FR-7300 — AAR replay, scrub, and branch-compare
 
@@ -3088,7 +3149,50 @@ is no longer required. Same ID, narrower scope.)*
   analytics, adjacent).
 - **Related ADRs:** ADR-0002, ADR-0004
 - **Related Interfaces:** INT-0014
-- **Related Requirements:** FR-7310, FR-6210, FR-6220
+- **Related Requirements:** FR-7310, FR-6210, FR-6220, FR-7340
+
+#### FR-7340 — AAR playback controls obey the requesting seat
+
+*(new 2026-10-24, baseline-maintenance pass 2; integration review of tranche 3, `L-4`; `VR-1072` F3)*
+
+- **ID:** FR-7340
+- **Title:** Playback is a White Cell facilitation read; a player seat may request only its own viewpoint
+- **Description:** The system shall check the requesting seat on every AAR playback request (start,
+  advance, viewpoint change, speed change, state read). The White seat may request any viewpoint.
+  A Blue or Red seat may request only its own cell's viewpoint, and shall be refused, with a
+  reason, any request that would start, switch to or read a ground-truth or other cell's
+  viewpoint. The Observer seat may read playback state but shall be refused every request that
+  starts or changes playback.
+- **Rationale:** Playback reconstructs the recorded exercise from ground truth or from one cell's
+  fog-filtered view (`FR-7330`). The routes name no seat today, so any seat, including Observer, can
+  retarget the one playback shared by the session, and a player seat can request the ground-truth
+  viewpoint, which is the fog-of-war boundary (`FR-6210`) applied backwards. This states the owner's
+  default: playback is a White facilitation read, and a player sees at most its own belief.
+- **Priority:** Must
+- **Inputs:** A playback request and the seat it names.
+- **Outputs:** The playback action applied, or a refusal with a reason.
+- **Preconditions:** A session exists.
+- **Postconditions:** A refused request leaves the playback (cursor, viewpoint, speed) unchanged; no
+  response to a player seat contains state from any viewpoint other than its own cell's.
+- **Acceptance Criteria:** (1) A start or viewpoint request naming `blue` with viewpoint `truth` or
+  `red` is refused and the playback is unchanged; naming `blue` with viewpoint `blue` succeeds.
+  (2) A `red` seat reading the state of a playback whose viewpoint is `truth` or `blue` is refused.
+  (3) An `observer` start, advance, viewpoint or speed request is refused and the playback is
+  unchanged. (4) The `white` seat succeeds for every viewpoint.
+- **Verification Method:** Test
+- **Dependencies:** FR-7330, FR-4320, FR-6210
+- **Source Documents:** `docs/reviews/integration-review-tranche-3-release-push-remediation.md` `L-4`;
+  `docs/implementation/verification/VR-1072-white-only-extension.md` F3; GDS-09 §4;
+  `docs/FUTURE-WORK.md` (hardening) for the trust level.
+- **Related ADRs:** ADR-0015, ADR-0016
+- **Related Interfaces:** INT-0014
+- **Related Requirements:** FR-7330, FR-4320, FR-6210, FR-6220
+- **Notes:** **Required, not yet built.** `server.py` `aar/playback/*` routes call no seat check; any
+  seat can drive them. The seat is client-asserted, so this is the same trust level as `FR-4320`
+  (GDS-09, LAN trust model). Playback is one cursor per session; whether a player seat's start
+  replaces White's cursor or each seat gets its own is a design matter for `06`/`07`, not decided
+  here. The unchanged `FR-6220` ground-truth reads (`/aar`, `/godview` and the like) are out of this
+  leaf's scope.
 
 ### FR-7400 — State-vector / ephemeris export
 

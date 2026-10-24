@@ -396,6 +396,64 @@ pass 1" below instead of in a new file.
 
 ---
 
+## Baseline-maintenance pass 2 (2026-10-24) — `01`, `03`
+
+Record of shipped or verified behaviour only, plus two rules the integration review of tranche 3
+([`reviews/integration-review-tranche-3-release-push-remediation.md`](../reviews/integration-review-tranche-3-release-push-remediation.md))
+found unowned (`M-2`, `L-4`, `L-7`). No new capability.
+
+### CHG-031
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added `FR-4330` (time control bounded to the exercise span: rewind in `[start_epoch,
+  now]`, rewind-to-start is the start epoch, undo with nothing to undo refused, advance bounded to the
+  same span). Rewind, undo and the save-side cap are met as built; the **advance bound is marked
+  required, not yet built** (`IP-1076` will build it). New RTM row.
+- **Reason:** `M-2`, `L-1`, `L-7`; `IP-1074`, `IP-1075`, `IP-1103`.
+
+### CHG-032
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-7230` Acceptance Criteria gain the `final_time` span check (start..start+366 days,
+  refused before replay, bounds inclusive); Notes record it met as built (`IP-1103`). `FR-4310`
+  Acceptance Criteria and Related Requirements point to `FR-4330`.
+- **Reason:** `L-7`; `IP-1103`, `VR-1103`.
+
+### CHG-033
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added `FR-7340` (AAR playback controls obey the requesting seat: White any viewpoint, a
+  player seat only its own, Observer reads but cannot change). **Required, not yet built.** `FR-7330`
+  and `FR-4320` cross-reference it. New RTM row.
+- **Reason:** `L-4`; `VR-1072` F3.
+
+### CHG-034
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-4320` Notes: "the extension is not yet built" rewritten as met as built (`IP-1072`,
+  `VR-1072`; seat assignment and Observer designation since `IP-1074`), history kept.
+- **Reason:** Stale after `IP-1072`.
+
+### CHG-035
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Impl. Package cells of `FR-4310`, `FR-4320`, `FR-7220`, `FR-7230`, `NFR-1600`,
+  `NFR-3020`, `NFR-3030`: `IP-1072`, `IP-1073`, `IP-1074`, `IP-1075`, `IP-1102` changed from
+  `COMPLETE` to `VERIFIED` with their VR. Two stale `COMPLETE ... awaiting 09` cells for `IP-1261`/
+  `IP-1262` (`FR-2320`-family and ephemeris rows) were not touched; they are outside this tranche.
+- **Reason:** Integration review tranche 3 (stale status text); ledger says `VERIFIED`.
+
+### CHG-036
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
+- **Reason:** `NFR-2850`.
+
+### Review findings, pass 2
+
+| # | Finding type | IDs | Description | Severity | Recommendation |
+|---|---|---|---|---|---|
+| P2-1 | Not built | `FR-4330` (advance bound), `FR-7340` | Both rules are baselined ahead of the build. | Medium | `07` package `IP-1076` (advance bound, backwards step/advance 400); a `07` package for playback seat checks. |
+| P2-2 | Test tagging | `FR-4330`, `FR-7340` | Existing rewind/undo/save-span tests name `FR-4310`/`FR-7230`/`NFR-1600`, not `FR-4330`. | Low | `08` retag with `IP-1076`. |
+| P2-3 | Stale record | `IP-1261`, `IP-1262` RTM cells | Still say `COMPLETE ... awaiting 09`. | Low | `00-pipeline-manager`: confirm ledger status, then `04` next pass. |
+| P2-4 | Owner question | rewind vs running clock (`L-6`); 366-day cap configurable? | Not decided; left out of the leaves. | Low | Project owner. |
+
+---
+
 ## Findings deliberately left unactioned (with reason)
 
 These review findings were re-examined against the current document text and intentionally not
