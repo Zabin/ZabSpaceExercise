@@ -36,7 +36,7 @@ and routed to the pipeline stage where they belong), never by side-channel imple
 | 08 | `08-code-implementation` · `08-training-manual-authoring` · `08-vignette-development` | Code: source + tests + docs + traceability for exactly one package (status → `COMPLETE`). Training peers: manual modules / learning path / traceability matrix (`docs/training/`), and vignette YAML + playbook/rung linkage + the `docs/vignettes/` design docs + their verification tests. | `spacesim/`, `docs/training/`, `docs/vignettes/`, ledgers |
 | 09 | `09-package-verification` · `09-training-manual-review` | Verification Report (VR-xxxx); the **only** skill that writes `VERIFIED`. Training peer: Training Review report (accuracy/traceability/coverage/pedagogy) under `docs/reviews/`. | `docs/implementation/verification/`, `docs/reviews/` |
 | 10 | `10-integration-review` | Integration Report for an epic/release's verified package set | `docs/reviews/` |
-| 11 | `11-release-readiness` | Release Assessment (GO/NO-GO) + baseline update on GO (incl. `README.md` status); at major releases also the test relevance audit and the dependency-lock check | `docs/reviews/`, trackers, `README.md` |
+| 11 | `11-release-readiness` | Release Assessment (GO/NO-GO) + baseline update on GO (incl. `README.md` status); at every release also the test relevance audit and the dependency-lock check | `docs/reviews/`, trackers, `README.md` |
 
 **Every document has one owner (owner decision, 2026-10-19, `BL-0293`).** A document no stage above
 writes is either legacy (`docs/build-spec/` and `docs/design/` apart from the ICD, both retiring
@@ -77,4 +77,4 @@ and flows forward from there:
   `@pytest.mark.verifies(...)` with the requirement (`FR-xxxx`/`NFR-xxxx`), feature (`FS-xxx`) or
   package (`IP-xxxx`) it verifies. `07` names the IDs in `Tests to Add`, `08` applies the marker, `09`
   checks each new test's tag, `04` builds its matrix's Test column from the markers, and `11` audits
-  the whole suite for relevance at major releases only.
+  the whole suite for relevance at every release.

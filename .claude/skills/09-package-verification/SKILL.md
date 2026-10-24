@@ -88,7 +88,7 @@ its `Requirements Covered` FR/NFRs and the Requirements Traceability Matrix
    carries `@pytest.mark.verifies(...)`** (owner direction, `BL-0310`) naming IDs that exist in
    the baseline and that this package covers or tests; a missing or wrong origin tag is a finding
    against the package, the same as a missing test. (The suite-wide relevance audit is not this
-   skill's job: it runs only at major-release verification, in `11-release-readiness`.)
+   skill's job: it runs at every release, in `11-release-readiness`.)
 6. **Write the Verification Report**, update the ledger(s) per Outputs, and commit as
    `docs(verification): VR-xxxx — <result>`.
 
