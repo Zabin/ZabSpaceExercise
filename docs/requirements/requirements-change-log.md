@@ -454,6 +454,85 @@ found unowned (`M-2`, `L-4`, `L-7`). No new capability.
 
 ---
 
+## Baseline-maintenance pass 3 (2026-10-24) — `01`, `02`, `03`
+
+Release-preparation pass on the owner's decisions of 2026-10-24 and the `BL-0342`/`BL-0345`/`BL-0348`/
+`BL-0369` coverage gaps. Behaviour already shipped and verified, plus one policy restatement. No new
+capability.
+
+### CHG-037
+- **Files:** `02-non-functional-requirements.md`
+- **Change:** `NFR-1510` Description, Rationale, Metric and Notes restated as the owner's procedure: at each
+  release readiness check the latest dependency versions, try updating to them, validate with the full
+  suite in both modes, fix or hold back what breaks, then lock exact versions in the committed
+  `requirements.lock` at the repository root; minimum versions only during development; "major" stays dropped.
+- **Reason:** Owner decision, 2026-10-24: "Pin each release but check if the most up to date versions break
+  anything and attempt to update to them before re-pinning."
+
+### CHG-038
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-4330` Notes: advance bound, backwards/non-finite refusal and running-clock stop recorded as
+  met as built (`IP-1076`, `VR-1076`); rewind and undo as met (`IP-1074`, `IP-1075`); the pass-2 "required,
+  not yet built" text marked superseded. New statement that whether a rewind pauses a running clock is
+  unspecified, either is conformant, current behavior keeps it running, and it is not release-blocking.
+- **Reason:** `IP-1076` `VERIFIED`; owner: the clock "can pause on rewind but doesn't matter" (closes `L-6`).
+
+### CHG-039
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-7340` Notes recorded as met as built (`IP-1077`, `VR-1077`); `FR-4320` Notes cross-reference
+  made current.
+- **Reason:** `IP-1077` `VERIFIED`.
+
+### CHG-040
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-7230` Acceptance Criteria extended with the 100,000-entry event-log cap (both log shapes,
+  refused before parsing or replay, exactly the cap passes) and the unusable-save refusals; Notes record them
+  as met as built (`IP-1081`, `IP-1102`, `IP-1103`).
+- **Reason:** `IP-1081` `VERIFIED`; `NFR-3710` states the cap, the leaf did not.
+
+### CHG-041
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added `FR-1140` (simulated time as integer microseconds; ISO-8601 only at the boundary).
+- **Reason:** `BL-0369`; approved source GDS-07 §1, GDS-09 §3.
+
+### CHG-042
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added `FR-7350` (after-action report export as CSV and JSON).
+- **Reason:** `BL-0369`; approved sources GDS-07 §7, GDS-09 §3, `ADR-0033`/`ADR-0029`.
+
+### CHG-043
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added candidates `CR-34` (telemetry series history shape, pass-gating of historical points;
+  open design question `BL-0171`) and `CR-35` (space-weather severity names and coercion). Recorded the
+  disposition of all twelve `BL-0369` gap areas in the candidates section.
+- **Reason:** `BL-0369`; no approved source commits the system to either behavior.
+
+### CHG-044
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Impl. Package and Future Feature cells of `FR-4330` (`IP-1076` `VERIFIED`, `FS-106` v2.4) and
+  `FR-7340` (`IP-1077` `VERIFIED`, `FS-107`); the `FR-4310`/`FR-4320` notes made current. Stale "`COMPLETE`,
+  awaiting `09`" cells for `IP-1081`, `IP-1261`, `IP-1262`, `IP-1210`, `IP-1171`, `IP-1063` set to `VERIFIED`
+  per the Master Build Plan (closes `P2-3`).
+- **Reason:** Ledger agreement (`NFR-3830`).
+
+### CHG-045
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
+- **Reason:** `NFR-2850`.
+
+### Review findings, pass 3
+
+| # | Finding type | IDs | Description | Severity | Recommendation |
+|---|---|---|---|---|---|
+| P3-1 | Stale text outside scope | `docs/features/FS-133-test-origin-traceability.md` (status line; `BL-0299` "locked at major releases") | Still says the lock is made "at the first major release". `NFR-1510` no longer says "major". | Low | `06` (feature specification FS-133). |
+| P3-2 | Requirement lacking tests | `FR-1140`, `FR-7350` | New leaves; existing tests of these behaviors carry other tags. | Low | `08` retag (`test_clock_and_time.py`, `test_web.py` AAR export tests). |
+| P3-3 | Not built | `FR-7450` | Still baselined ahead of the build. | Medium | `06`/`07` package (unchanged from pass 1, `P1-1`). |
+| P3-4 | Open design question | `CR-34` / `BL-0171` | Pass-gating of historical telemetry points; `FR-2320` calls the export pass-gated but it is not. | Low | Project owner, then `03`/`04`. |
+| P3-5 | Owner decision recorded | `FR-4330` | Rewind versus a running clock: unspecified, not release-blocking. | Info | None. |
+| P3-6 | Open | `FR-4330` | Whether the 366-day span is configurable. | Low | Project owner. |
+
+---
+
 ## Findings deliberately left unactioned (with reason)
 
 These review findings were re-examined against the current document text and intentionally not
