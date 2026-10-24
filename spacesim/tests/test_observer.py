@@ -41,7 +41,8 @@ def test_observer_view_defaults_to_godview():
 def test_white_can_designate_observer_view_to_a_cell():
     c = _client()
     sid = _new_unstarted_session(c)
-    ack = c.post(f"/api/sessions/{sid}/observer/view", json={"cell": "white", "designation": "blue"}).json()
+    ack = c.post(f"/api/sessions/{sid}/observer/view", json={"cell": "white", "designation": "blue"},
+                 params={"cell": "white"}).json()
     assert ack["ok"] is True
 
     blue_view = c.get(f"/api/sessions/{sid}/view/blue").json()
@@ -56,7 +57,8 @@ def test_observer_designation_endpoint_lets_client_reuse_the_same_view_endpoints
     c = _client()
     sid = _new_unstarted_session(c)
     assert c.get(f"/api/sessions/{sid}/observer/designation").json() == {"designation": "godview"}
-    c.post(f"/api/sessions/{sid}/observer/view", json={"cell": "white", "designation": "red"})
+    c.post(f"/api/sessions/{sid}/observer/view", json={"cell": "white", "designation": "red"},
+           params={"cell": "white"})
     assert c.get(f"/api/sessions/{sid}/observer/designation").json() == {"designation": "red"}
 
 
@@ -64,8 +66,9 @@ def test_observer_designation_endpoint_lets_client_reuse_the_same_view_endpoints
 def test_non_white_cannot_designate_observer_view():
     c = _client()
     sid = _new_unstarted_session(c)
-    ack = c.post(f"/api/sessions/{sid}/observer/view", json={"cell": "blue", "designation": "red"}).json()
-    assert ack["ok"] is False
+    r = c.post(f"/api/sessions/{sid}/observer/view", json={"cell": "blue", "designation": "red"},
+               params={"cell": "blue"})
+    assert r.status_code == 403      # IP-1074: refused by the query seat, like every White control
     # Designation is unchanged (still defaults to godview) — the rejected request had no effect.
     god = c.get(f"/api/sessions/{sid}/godview").json()
     obs = c.get(f"/api/sessions/{sid}/observer/view").json()
@@ -163,9 +166,9 @@ def test_non_observer_seats_still_work_normally():
 def test_observer_cannot_set_the_observer_view():
     c = _client()
     sid = _new_unstarted_session(c)
-    ack = c.post(f"/api/sessions/{sid}/observer/view",
-                 json={"cell": "observer", "designation": "red"}).json()
-    assert ack["ok"] is False
+    r = c.post(f"/api/sessions/{sid}/observer/view",
+               json={"cell": "observer", "designation": "red"}, params={"cell": "observer"})
+    assert r.status_code == 403      # IP-1074: refused by the query seat
     assert c.get(f"/api/sessions/{sid}/observer/designation").json()["designation"] == "godview"
 
 
@@ -174,8 +177,8 @@ def test_observer_cannot_assign_roles_over_http():
     c = _client()
     sid = _new_unstarted_session(c)
     before = c.get(f"/api/sessions/{sid}/roles/staffing").json()
-    ack = c.post(f"/api/sessions/{sid}/roles/assign",
-                 json={"cell": "observer", "seat": "obs-seat", "asset_or_constellation": "ISR-EO-1",
-                       "role": "bus"}).json()
-    assert ack["ok"] is False
+    r = c.post(f"/api/sessions/{sid}/roles/assign",
+               json={"cell": "observer", "seat": "obs-seat", "asset_or_constellation": "ISR-EO-1",
+                     "role": "bus"}, params={"cell": "observer"})
+    assert r.status_code == 403      # IP-1074: refused by the query seat
     assert c.get(f"/api/sessions/{sid}/roles/staffing").json() == before

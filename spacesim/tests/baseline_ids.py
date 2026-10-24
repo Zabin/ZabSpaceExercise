@@ -22,7 +22,10 @@ MATRIX = REPO / "docs" / "requirements" / "03-requirements-traceability-matrix.m
 ALLOWLIST = Path(__file__).resolve().parent / "test_origin_allowlist.txt"
 TESTS_DIR = Path(__file__).resolve().parent
 
-WELL_FORMED = re.compile(r"^(?:FR-\d{4}|NFR-\d{4}|FS-\d{3,4}|IP-\d{4})$")
+# One shared FR identifier pattern (four- or five-digit leaves, e.g. FR-5310, FR-10110) so the
+# well-formed check, the ledger reader and the matrix generator cannot drift apart (IP-1335).
+FR_ID = r"FR-\d{4,5}"
+WELL_FORMED = re.compile(rf"^(?:{FR_ID}|NFR-\d{{4}}|FS-\d{{3,4}}|IP-\d{{4}})$")
 CANDIDATE = re.compile(r"^(?:CR|CNFR)-\d+$")
 UNASSIGNED = "UNASSIGNED"
 
@@ -52,7 +55,7 @@ def _need(ids: set[str], ledger: Path, what: str) -> set[str]:
 
 
 def load_baseline() -> dict[str, set[str]]:
-    fr = _need(set(re.findall(r"^#### (FR-\d{4})\b", _before_candidates(FR_LEDGER.read_text("utf-8")), re.M)),
+    fr = _need(set(re.findall(rf"^#### ({FR_ID})\b", _before_candidates(FR_LEDGER.read_text("utf-8")), re.M)),
                FR_LEDGER, "FR")
     nfr = _need(set(re.findall(r"^- \*\*(NFR-\d{4})\b", _before_candidates(NFR_LEDGER.read_text("utf-8")), re.M)),
                 NFR_LEDGER, "NFR")
@@ -67,7 +70,7 @@ def resolve_problem(req_id: str, baseline: dict[str, set[str]]) -> str | None:
     if CANDIDATE.match(req_id):
         return "a Candidate Requirement is not a baseline item"
     if not WELL_FORMED.match(req_id):
-        return "malformed ID (expected FR-nnnn, NFR-nnnn, FS-nnn or IP-nnnn)"
+        return "malformed ID (expected FR-nnnn or FR-nnnnn, NFR-nnnn, FS-nnn or IP-nnnn)"
     kind = req_id.split("-", 1)[0]
     if req_id not in baseline[kind]:
         return "not in the baseline ledger (unknown, or retired — retirement is not yet marked, BL-0317)"
@@ -173,7 +176,7 @@ def regenerate_matrix(text: str, records: list[OriginRecord], baseline: dict[str
         if test_col is None or re.match(r"^\s*\|[-| :]+\|\s*$", line):
             out.append(line)
             continue
-        m = re.match(r"^((?:FR|NFR)-\d{4})\b", names[1] if len(names) > 1 else "")
+        m = re.match(rf"^((?:{FR_ID}|NFR-\d{{4}}))\b", names[1] if len(names) > 1 else "")
         if m and test_col < len(cells) - 1:
             if m.group(1) in leaves:
                 cells[test_col] = cell_for(m.group(1), by_req)

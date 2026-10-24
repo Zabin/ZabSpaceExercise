@@ -357,9 +357,12 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
                                        f"the {cell} seat")
 
     @app.post("/api/sessions/{sid}/observer/view")
-    def set_observer_view(sid: str, req: ObserverViewRequest) -> Ack:
-        _require(sid)
-        return api.set_observer_view(sid, req.cell, req.designation)
+    def set_observer_view(sid: str, req: ObserverViewRequest, cell: Optional[str] = None) -> Ack:
+        """IP-1074 (FR-4320) — White-Cell-only by the *query* seat (403 otherwise). The body ``cell``
+        is accepted for compatibility but is not authority: White is passed to the session layer,
+        whose own check stays as defence in depth."""
+        _require(sid); _require_white(cell)
+        return api.set_observer_view(sid, "white", req.designation)
 
     @app.get("/api/sessions/{sid}/observer/view")
     def observer_view(sid: str) -> dict:
@@ -374,12 +377,12 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         return {"designation": api.observer_designation(sid)}
 
     @app.post("/api/sessions/{sid}/roles/assign")
-    def assign_role(sid: str, req: RoleAssignmentRequest) -> Ack:
-        """IP-1151 — White-Cell-only. Not itself listed among IP-1130's guarded routes (it postdates
-        that package), but the White-Cell-only check already excludes an Observer-seated caller the
-        same way it excludes Blue/Red, so no separate _reject_observer call is needed here."""
-        _require(sid)
-        return api.assign_role(sid, req.cell, req.seat, req.asset_or_constellation, req.role)
+    def assign_role(sid: str, req: RoleAssignmentRequest, cell: Optional[str] = None) -> Ack:
+        """IP-1151/IP-1074 (FR-4320) — White-Cell-only by the *query* seat (403 for Blue, Red,
+        Observer or no seat). The body ``cell`` is accepted for compatibility but is not authority;
+        the session layer's own White check stays as defence in depth."""
+        _require(sid); _require_white(cell)
+        return api.assign_role(sid, "white", req.seat, req.asset_or_constellation, req.role)
 
     @app.get("/api/sessions/{sid}/roles/staffing")
     def staffing_report(sid: str) -> list[dict]:
@@ -480,13 +483,21 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.post("/api/sessions/{sid}/rewind")
     def rewind(sid: str, req: TimeRequest, cell: Optional[str] = None) -> Ack:
+        """IP-1074 (FR-4310, NFR-1600) — ``t`` must lie in ``[start_epoch, now]`` (``GET /clock``
+        carries ``start_epoch``); anything else is a 400 naming the span, nothing changed."""
         _require(sid); _require_white(cell)
-        return api.rewind_to(sid, req.t)
+        ack = api.rewind_to(sid, req.t)
+        if not ack.ok:
+            raise HTTPException(status_code=400, detail=ack.reason)
+        return ack
 
     @app.post("/api/sessions/{sid}/undo")
     def undo(sid: str, req: UndoRequest, cell: Optional[str] = None) -> Ack:
         _require(sid); _require_white(cell)
-        return api.undo_last(sid, req.n)
+        ack = api.undo_last(sid, req.n)
+        if not ack.ok:
+            raise HTTPException(status_code=400, detail=ack.reason)
+        return ack
 
     @app.post("/api/sessions/{sid}/inject")
     def inject(sid: str, req: InjectRequest, cell: Optional[str] = None) -> Ack:

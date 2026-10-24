@@ -104,9 +104,13 @@ deterministic, **rewind** to any point, **undo** the last actions, or **branch**
 continue differently) are byte-exact; use rewind-and-branch deliberately as a teaching move
 ("let's replay that decision"), then show the fork in the AAR branch-compare (WCM-9). The engine
 sub-steps to the next scheduled event, so fast-forwarding never skips a short LEO pass.
+A rewind must land inside the exercise, between its start and the current moment; the toolbar
+Rewind and the palette's "rewind to start" go to the vignette's first instant, and the server
+refuses anything outside that span. Undo obeys the same rule: undoing past the first logged
+event returns the clock to the exercise start, and an undo with nothing to undo is refused.
 
 > **Sources:** `spacesim/session/manager.py` (`set_clock`/`catch_up`/rewind/undo) ·
-> `POST /api/sessions/{sid}/clock` · `spacesim/engine/clock.py`
+> `POST /api/sessions/{sid}/clock` · `POST /api/sessions/{sid}/rewind` · `spacesim/engine/clock.py`
 
 ### WCM-5 · Injects: script the friction
 

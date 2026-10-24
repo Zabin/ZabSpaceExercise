@@ -246,3 +246,11 @@ build serially (see the Master Build Plan note) to avoid a merge conflict in tha
 Revert the commit. No format version change and no persisted-state change: saves written by this
 code load under the old code (the content values differ only after pre-start edits), and saves
 written before load under this code.
+
+## Completion Note: Design Decision 4 Outcome (added by IP-1103, VR-1102 F-3)
+
+Ground sites are assets (`Asset` with a `location`), so they are carried by the same
+`_built_asset_ids` loop and a pre-start edit or delete of one is reflected in the saved `content`.
+The vignette `sensors` list has no pre-start edit route (no Creator or force-edit path touches
+it), so there is nothing to reconcile and no extra test. Notes-only addition; the verified package
+body above is unchanged.

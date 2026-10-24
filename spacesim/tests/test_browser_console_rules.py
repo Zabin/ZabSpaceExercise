@@ -525,3 +525,59 @@ def test_a_menu_reaches_its_last_entry_at_low_height(console):
     last.click()                                # Playwright hit-tests the point: it fails if anything covers the entry
     p.wait_for_function("window.__hit === true")
     assert (last.get_attribute("id") or last.inner_text()).strip()    # the last entry (e.g. Reset layout)
+
+
+# -- IP-1074: "rewind to start" means the exercise's start_epoch, never 0 ------------------------
+@pytest.mark.verifies("FR-4310", "NFR-1600")
+def test_rewind_to_start_sends_the_exercise_start_epoch_not_zero(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    start = c.http.get(f"/api/sessions/{c.sid}/clock").json()["start_epoch"]
+    assert start > 0
+    bodies = []
+    c.page.on("request", lambda r: bodies.append(json.loads(r.post_data or "{}"))
+              if r.method == "POST" and r.url.split("?")[0].endswith("/rewind") else None)
+
+    def advance_then(trigger):
+        assert c.http.post(f"/api/sessions/{c.sid}/step", params=W, json={"dt_sim_s": 300.0}).status_code == 200
+        assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] > start
+        n = len(bodies)
+        with c.page.expect_response(lambda r: r.url.split("?")[0].endswith("/rewind")) as resp:
+            trigger()
+        assert resp.value.status == 200
+        assert len(bodies) == n + 1 and bodies[-1] == {"t": start}
+        clock = c.http.get(f"/api/sessions/{c.sid}/clock").json()
+        assert clock["now"] == start and clock["running"] is False   # clock state unchanged by a rewind
+
+    def palette():
+        c.page.keyboard.press("Control+k")
+        c.page.fill("#palette-input", "rewind to start")
+        c.page.keyboard.press("Enter")
+
+    advance_then(palette)
+    advance_then(lambda: c.page.click("#rewind"))
+    assert c.errors == []
+
+
+# -- IP-1075: Undo on a fresh started session never sends the clock to 1970 -----------------------
+@pytest.mark.verifies("FR-4310", "NFR-1600")
+def test_undo_in_the_console_never_sends_the_clock_before_the_exercise_start(console):
+    """The shipped client has no Undo control, so the White seat's own page issues the same
+    ``POST /undo`` its ``api.post`` helper would (seat attached as ``cell``)."""
+    c = console("leo-isr-denial")
+    c.seat("white")
+    start = c.http.get(f"/api/sessions/{c.sid}/clock").json()["start_epoch"]
+    c.http.post(f"/api/sessions/{c.sid}/clock", params=W, json={"running": False})
+
+    def undo(n):
+        return c.page.evaluate(
+            """async ([sid, n]) => { const r = await fetch(`/api/sessions/${sid}/undo?cell=white`,
+                 {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({n})});
+               return r.status; }""", [c.sid, n])
+
+    assert undo(1) == 400                                  # nothing to undo: refused, not applied
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] >= start
+    assert c.http.post(f"/api/sessions/{c.sid}/step", params=W, json={"dt_sim_s": 400.0}).status_code == 200
+    assert undo(99) == 200                                 # drop everything: lands on the start epoch
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == start
+    assert c.http.post(f"/api/sessions/{c.sid}/rewind", params=W, json={"t": start}).status_code == 200

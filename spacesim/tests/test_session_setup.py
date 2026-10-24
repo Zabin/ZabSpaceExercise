@@ -156,7 +156,7 @@ def test_staffing_report_and_assign_endpoints_over_http():
     assert c.get(f"/api/sessions/{sid}/roles/staffing").json() == []
     ack = c.post(f"/api/sessions/{sid}/roles/assign", json={
         "cell": "white", "seat": "blue-bus-op", "asset_or_constellation": "ISR-EO-1", "role": "bus",
-    }).json()
+    }, params={"cell": "white"}).json()
     assert ack["ok"] is True
 
 

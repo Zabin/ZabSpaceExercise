@@ -1002,6 +1002,78 @@ GDS-09 §4 / OQ1 and `design/07` still describe the shorter White-only list. `IP
 the requirement leaf, which is binding and names the routes; a v2.5 note on FS-106 (`06`) and the GDS
 update (`03`) are recommended.
 
+## Release-push remediation, pass 2 (2026-10-24)
+
+**Input:** the open bugs the independent verifiers of `IP-1311`, `IP-1102`, `IP-1072` and `IP-1073`
+found (`VR-1311` F-1, `VR-1102` F-1/F-2/F-3, `VR-1072` F1, `VR-1073` F3; backlog `BL-0361`–`BL-0364`,
+`BL-0368`), under the same owner release-push directive (journal run #256: bugs, in-progress and
+critical items only; no new features). Every package cited corrects a defect in a `VERIFIED` package;
+no Feature Specification is new.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | `validate_save` completion: non-object `overrides`, bad `pending`/`orders`/`ssn_requests` rows, `final_time` range, `classification` type; pin the legacy wording and the server backstop; `IP-1102` Decision 4 note | `session/manager.py::validate_save`; `test_save_load_robustness.py` | IP-1103 (`BL-0362`, `BL-0363`) |
+| 2 | Rewind bounded to `[start_epoch, now]`; "rewind to start" means the exercise start; `start_epoch` on the clock state; palette and toolbar use it | `session/manager.py`, `session/inprocess.py`, `ui_web/server.py`, `static/app.js` | IP-1074 Part A (`VR-1073` F3) |
+| 3 | `roles/assign` and `observer/view` refuse by query seat with 403; docstring corrected | `ui_web/server.py` | IP-1074 Part B (`BL-0364`, `VR-1072` F1) |
+| 4 | Origin reader and RTM generator accept five-digit `FR-` IDs; 20 assessment/research tests retagged | `spacesim/tests/baseline_ids.py`, two test modules, RTM column | IP-1335 Parts A, B (`BL-0368`) |
+| 5 | Top-level list/scalar YAML case for the vignette id scan | `test_vignette_id_scan.py` | IP-1335 Part C (`BL-0361`) |
+
+**Why this cut (three packages).**
+
+- **Save validation is its own package (unit 1).** One function, one test module, HTTP/unit style;
+  it completes `IP-1102` and has no overlap with the console or clock work.
+- **Rewind and the two seat routes share a package (units 2, 3).** Different bugs, but both are
+  White Cell control correctness in the same files (`ui_web/server.py`, `session/manager.py`), the
+  same requirement family (`FR-4310`/`FR-4320`) and the same test style (HTTP against a started
+  session). Separately each is small enough that a verification cycle apiece would cost more than the
+  change; split them if the build finds Part A larger than expected (Part A is the Medium and is
+  written first so it can ship alone). The rewind range guard sits in `SessionManager`, not in the
+  route, so every caller is protected, and the engine's `rewind_to` is untouched.
+- **Retag infrastructure, retag and the scan test share a package (units 4, 5).** All test-only. The
+  scan test (`BL-0361`) is one case and was proposed by the backlog for the "retag/hardening sweep";
+  `BL-0368` is the defect that blocks 20 of `IP-1334`'s retags, so it must precede `IP-1334` and
+  carries those 20 itself. `IP-1334` is adjusted by a dependency note only (its two modules' rows are
+  delivered by `IP-1335`); it is not replanned.
+- **Not split further:** the `final_time` ceiling, the `orders` row checks and the `classification`
+  check are one function's worth of validation; the `start_epoch` field, the guard and the client
+  change are one behaviour.
+
+**Ordering and file conflicts.** `IP-1103` and `IP-1074` both edit `session/manager.py` and
+`ui_web/server.py` in different regions; `IP-1074` and `IP-1335` both add tests that the RTM
+regeneration must include; `IP-1334` retags decorator lines in modules the others edit. Order:
+`IP-1103` → `IP-1074` → `IP-1335` → `IP-1334`. Content dependencies: only `IP-1335` → `IP-1334` (the
+carve-out); the rest is conflict avoidance.
+
+**Deliberately not planned (not bugs, too design-heavy, or owned elsewhere):**
+
+- **Auto-pause on rewind.** Whether a rewound exercise should pause the lazy clock is a change to the
+  clock model (`FR-4310`), not a bug. `IP-1074` preserves current behaviour and pins it; the question
+  goes to the owner and `04`.
+- **A requirement leaf for the rewind range.** None states it; `IP-1074` derives it from `FR-4310`
+  and the AAR/ephemeris span (`FR-7330`/`FR-7410`). Recommend `04` add a sentence to `FR-4310`.
+- **`BL-0366`** (`aar/playback/*` has no seat check): needs a scope decision on `FR-4320` (`04`);
+  Info, deferred in the backlog.
+- **`BL-0370`** (`build_world` mutates its input vignette): a design question with one consumer
+  working around it; deferred in the backlog.
+- **`BL-0365`** (documentation: `CLAUDE.md` code map, `FR-4320` Notes, GDS-09 §4, FS-106 v2.5,
+  training pages): documentation defects owned by `04`/`03`/`06`/`08-training-manual-authoring`.
+- **`BL-0367`** (skip count 4 versus 3): a currency item for the `CLAUDE.md` sweep (`BL-0358`).
+- **`BL-0369`** (no-leaf test gaps): `04` work.
+- **`VR-1073` F1** (View menu `max-height` assumes a one-row toolbar; at 1100x700 with the White
+  toolbar wrapped one entry fails the actionability check), **F4** (recorder hard-codes browser and
+  `ffmpeg` paths), **F5** (cosmetic status line): not in this pass's brief; F1 is a Low console bug
+  that a later pass may take, F4 is environment fragility.
+
+## Release-push remediation, pass 3 (2026-10-24)
+
+**Input:** `VR-1074` F1 (Medium): undo past the first event puts the sim clock at epoch 0 (1970); pre-existing, made visible by `IP-1074`'s rewind bound. Same owner directive (journal run #256: bugs only).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Undo lands on `start_epoch` (never 0); undo with nothing to undo refused; `now >= start_epoch` invariant pinned across undo, rewind, advance and load | `engine/simulation.py::undo_last`, `session/manager.py::undo_last`, `session/inprocess.py`, `ui_web/server.py` `/undo` | IP-1075 |
+
+**Why one package, and why not folded into `IP-1074`.** `IP-1074` is `VERIFIED`; the defect is outside its scope and checklist, and a verified package is not reopened. The engine line, the manager guard, the route mapping and the tests are one behaviour and one verification pass. **Other callers audited, no separate unit:** `rewind_to` is already guarded, `advance_to`/catch-up cannot move backwards, `from_state` is protected by `IP-1103`'s `validate_save`; they get pinning tests inside `IP-1075`. **Ordering:** after `IP-1335`/`IP-1334` only to avoid test-file conflicts. **Not planned:** a `FR-4310` sentence on undo/rewind bounds (recommended to `04`), and auto-pause on undo (owner question, as for rewind).
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·

@@ -363,9 +363,21 @@ const start = async () => {
 };
 // Manual time-jump (White +1m/+10m/+1h): server re-anchors after advance_to.
 const step = async (dt) => { await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: dt }); await refresh(); };
+// IP-1074 — "rewind to start" means the exercise's own first instant, which the server reports as
+// `start_epoch` on /clock. Never a guessed 0: read it from the server for the current session each
+// time (one cheap GET), so a session switch can never reuse another session's start.
+async function exerciseStartEpoch() {
+  if (!SID) return null;
+  const s = await api.get(`/api/sessions/${SID}/clock`);
+  return s && s.start_epoch != null ? s.start_epoch : null;
+}
 const rewind = async () => {
+  if (!SID) return;
   stopRealtimeClock();
-  await api.post(`/api/sessions/${SID}/rewind`, { t: 0 });
+  try {
+    const t0 = await exerciseStartEpoch();
+    if (t0 != null) { await api.post(`/api/sessions/${SID}/rewind`, { t: t0 }); clearControlError(); }
+  } catch (e) { reportControlError("Rewind", e); }
   startRealtimeClock();   // server re-anchors on rewind; resume poll loop
   await refresh();
 };
@@ -2641,7 +2653,7 @@ const PALETTE = {
       items.push({ label: "advance +1 min",       tag: "time",  run: () => stepBy(60) });
       items.push({ label: "advance +10 min",      tag: "time",  run: () => stepBy(600) });
       items.push({ label: "advance +1 hour",      tag: "time",  run: () => stepBy(3600) });
-      items.push({ label: "rewind to start",      tag: "time",  run: () => rewindTo(0) });
+      items.push({ label: "rewind to start",      tag: "time",  run: async () => { try { const t0 = await exerciseStartEpoch(); if (t0 != null) await rewindTo(t0); } catch (e) { reportControlError("Rewind", e); } } });
     }
     items.push({ label: "export AAR (CSV)",     tag: "aar",   run: () => SID && (location.href = `/api/sessions/${SID}/aar/export.csv`) });
     items.push({ label: "export AAR (JSON)",    tag: "aar",   run: () => SID && (location.href = `/api/sessions/${SID}/aar/export.json`) });

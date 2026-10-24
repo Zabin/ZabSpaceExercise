@@ -139,7 +139,10 @@ class Simulation:
         """Drop the last ``n`` event-log entries and re-derive state."""
         if n > 0:
             self.eventlog.entries = self.eventlog.entries[:-n] if n < len(self.eventlog.entries) else []
-        stop = self.eventlog.entries[-1].sim_time if self.eventlog.entries else 0
+        # IP-1075 — with no entries left the landing time is the initial state's own instant (the
+        # exercise start), never epoch 0. Deterministic: read from the stored initial state.
+        stop = (self.eventlog.entries[-1].sim_time if self.eventlog.entries
+                else int(self._initial_state.get("now", 0)))
         self._rebuild(stop_time=stop)
 
     def _rebuild(self, stop_time: int) -> None:

@@ -68,6 +68,8 @@ CONFIG_ROUTES = {
 def _body(api, sid, name, body):
     if name == "advance":
         return {"t": api._sessions[sid].sim.clock.now + 60 * 1_000_000}
+    if name == "rewind":      # IP-1074: "rewind to start" is start_epoch, never 0
+        return {"t": api._sessions[sid].ctx.start_epoch}
     return body
 
 
@@ -92,8 +94,9 @@ def test_clock_controls_refused_for_non_white(name, seat):
 def test_clock_controls_accepted_for_white(name):
     c, api = _client()
     sid = _session(c, started=True)
-    # Give undo/rewind something to act on.
-    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 120.0}, params={"cell": "white"})
+    # Give undo/rewind something to act on (IP-1075: an undo with an empty log is refused, so
+    # step past the first bus tick; 120 s logged nothing).
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600.0}, params={"cell": "white"})
     before = _snapshot(api, sid)
     route, body = CLOCK_ROUTES[name]
     r = c.post(f"/api/sessions/{sid}/{route}", json=_body(api, sid, name, body), params={"cell": "white"})
@@ -101,7 +104,7 @@ def test_clock_controls_accepted_for_white(name):
     if name == "clock":
         assert api._sessions[sid]._clock_running is False
     elif name == "rewind":
-        assert api._sessions[sid].sim.clock.now == 0
+        assert api._sessions[sid].sim.clock.now == api._sessions[sid].ctx.start_epoch
     else:
         assert _snapshot(api, sid) != before
 
@@ -163,11 +166,12 @@ def test_seat_assignment_and_observer_designation_refused_for_player_seats(seat)
     sid = _session(c, started=False)
     staffing = c.get(f"/api/sessions/{sid}/roles/staffing").json()
     designation = c.get(f"/api/sessions/{sid}/observer/designation").json()
-    a = c.post(f"/api/sessions/{sid}/roles/assign",
-               json={"cell": seat, "seat": "seat-1", "asset_or_constellation": "ISR-EO-1", "role": "both"}).json()
-    assert a["ok"] is False and a["reason"]
-    o = c.post(f"/api/sessions/{sid}/observer/view", json={"cell": seat, "designation": "red"}).json()
-    assert o["ok"] is False and o["reason"]
+    a = c.post(f"/api/sessions/{sid}/roles/assign", params={"cell": seat},
+               json={"cell": seat, "seat": "seat-1", "asset_or_constellation": "ISR-EO-1", "role": "both"})
+    assert a.status_code == 403      # IP-1074: refused by the query seat, not an ok:false 200
+    o = c.post(f"/api/sessions/{sid}/observer/view", params={"cell": seat},
+               json={"cell": seat, "designation": "red"})
+    assert o.status_code == 403
     assert c.get(f"/api/sessions/{sid}/roles/staffing").json() == staffing
     assert c.get(f"/api/sessions/{sid}/observer/designation").json() == designation
 

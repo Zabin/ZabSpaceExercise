@@ -54,7 +54,7 @@ operator switches to Blue or Red.
 | 4 | White / Blue / Red | buttons | Switch the operator's seat (client-side `data-cell` swap; fog-of-war is enforced server-side). |
 | 5 | ⏸ Pause / ▶ Resume | button (white-only) | `POST /api/sessions/{sid}/clock {running}` — drives the server-authoritative clock for **every** connected tab. |
 | 6 | +1m / +10m / +1h | buttons (white-only) | `POST /step` for manual sim-time jumps. Server re-anchors so the wall clock doesn't snap the jump back. |
-| 7 | ⟲ Rewind | button (white-only) | `POST /rewind` to t=0. Deterministic replay re-derives state byte-identical; the server re-anchors the clock at the rewound moment. |
+| 7 | ⟲ Rewind | button (white-only) | `POST /rewind` to the exercise's `start_epoch` (the vignette's first instant, read from `GET /clock`); a target outside `[start_epoch, now]` is refused with a 400. Deterministic replay re-derives state byte-identical; the server re-anchors the clock at the rewound moment. |
 | 8 | ⏸ Handover | button | Blur the screen + show "HANDING OFF" overlay (hot-seat seat-swap between cells). |
 | 9 | 📋 Session ▾ | menu (white-only) | See §10.1.1 below. |
 | 10 | ▦ View ▾ | menu | See §10.1.2 below. |

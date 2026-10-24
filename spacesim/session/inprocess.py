@@ -219,14 +219,20 @@ class InProcessSession:
         if session in self._draft_sessions:
             return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
-            mgr.rewind_to(t)
+            try:
+                mgr.rewind_to(t)
+            except ValueError as e:      # IP-1074 — out-of-span target; nothing was changed
+                return Ack(ok=False, reason=str(e))
         return Ack()
 
     def undo_last(self, session: str, n: int = 1) -> Ack:
         if session in self._draft_sessions:
             return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
-            mgr.undo_last(n)
+            try:
+                mgr.undo_last(n)
+            except ValueError as e:      # IP-1075 — nothing to undo; nothing was changed
+                return Ack(ok=False, reason=str(e))
         return Ack()
 
     # -- injects & orders ------------------------------------------------------

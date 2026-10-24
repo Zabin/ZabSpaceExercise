@@ -97,3 +97,23 @@ def test_schema_broken_file_found_by_declared_id_is_refused(folder, client):
 def test_shipped_library_ids_all_resolve():
     for entry in list_vignettes():
         assert load_vignette(entry["id"]).id == entry["id"]
+
+
+def test_top_level_list_or_scalar_file_skipped_in_both_roots(folder, client, tmp_path):
+    """VR-1311 F-1 (BL-0361): a file whose whole top-level YAML is a list or a scalar is skipped
+    by the id scan, never an AttributeError. Pins `_declared_vignette_id`'s non-mapping branch."""
+    (folder / "aaa-toplist.yaml").write_text("- a\n- b\n", encoding="utf-8")
+    (folder / "aab-topscalar.yaml").write_text("just text\n", encoding="utf-8")
+    ext = tmp_path / "ext2"
+    ext.mkdir()
+    (ext / "aaa-toplist.yaml").write_text("- a\n- b\n", encoding="utf-8")
+    (ext / "aab-topscalar.yaml").write_text("just text\n", encoding="utf-8")
+    shutil.copy(VIGNETTE_DIR / "03-gnss-ew-campaign.yaml", ext / "03-gnss-ew-campaign.yaml")
+    with pytest.raises(FileNotFoundError):
+        load_vignette("nosuch")
+    with pytest.raises(FileNotFoundError):
+        load_vignette("nosuch", external_dirs=[ext])
+    assert load_vignette("sda-custody-hunt").id == "sda-custody-hunt"
+    ext_id = yaml.safe_load((ext / "03-gnss-ew-campaign.yaml").read_text())["vignette"]["id"]
+    assert load_vignette(ext_id, external_dirs=[ext]).id == ext_id
+    assert client.post("/api/sessions", json={"vignette_id": "nosuch", "seed": 1}).status_code == 404
