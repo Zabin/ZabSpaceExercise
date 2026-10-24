@@ -1,7 +1,7 @@
 # GDS-07 — Data Model
 
 > **Document ID:** GDS-07
-> **Version:** 1.1 (2026-10-23, run #217: OQ1–OQ3 decisions recorded). v1.0: run #201.
+> **Version:** 1.2 (2026-10-24, stale-documentation pass: §6 and OQ1–OQ3 restated to the shipped self-contained save, `IP-1101`–`IP-1103`). v1.1: run #217. v1.0: run #201.
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-06
 > **Referenced By:** GDS-08
@@ -153,26 +153,53 @@ every shipped vignette loads and behaves identically when the schema grows (NFR-
 
 ## 6. Save file
 
-The save is an envelope around the event log, not a dump of world state. `SessionManager.save_state`
+The save is a self-contained envelope around the event log, not a dump of world state
+(`FR-7210`, `FR-7220`, `FR-7230`; `IP-1101`–`IP-1103`, all `VERIFIED`). `SessionManager.save_state`
 writes:
 
 | Key | Holds |
 |---|---|
-| `vignette_id` | Which vignette to reload. **The vignette itself is not embedded** (see OQ1). |
+| `save_format` | The envelope version (`SAVE_FORMAT`, currently `2`). Absent in a save written before `IP-1101` (a *legacy* save). |
+| `simulator_version` | The short git commit hash, or the package version when no working tree exists (`spacesim/version.py`). |
+| `content` | The vignette as originally loaded, verbatim, with every force-added or edited asset folded in, in vignette-file form. |
+| `baseline` | The replay baseline: the `WorldState` the event log replays from. |
+| `vignette_id` | The loaded vignette's id, kept for display and for legacy resume; a format-2 resume does not read the vignette file. |
 | `overrides`, `classification` | White Cell parameter values and the classification banner. |
 | `seed`, `final_time`, `started` | RNG seed, the sim time saved at, whether the exercise had started. |
 | `eventlog` | The full `EventLog`. |
 | `pending` | Scheduled-but-unfired events (time, kind, actor, payload, tag). |
 | `orders`, `ssn_requests` | The order registry and SSN request registry, with their states. |
 
-**Resume** reloads the vignette by ID, rebuilds the world by replaying the event log to
+**Resume** (`SessionManager.from_state`) builds the session from the save's own `content`,
+installs `baseline` as the replay start, rebuilds the world by replaying the event log to
 `final_time` (the deterministic core makes this exact), re-schedules the pending events, and
-restores both registries and their ID counters. A loaded event log longer than
-`MAX_EVENTLOG_REPLAY_ENTRIES` (100,000) is refused before any replay (NFR-15).
+restores both registries and their ID counters. No vignette file is consulted, so the resumed
+state is the same whether the original file is unchanged, edited, renamed or deleted (`FR-7230`).
+
+- **Legacy saves** (no `save_format`) still resume, by reloading the vignette by id, and the resume
+  returns a warning that the save depends on the vignette file as it is now, not as it was when
+  saved. If that file is gone the load is refused with a reason (HTTP 400), not a server error.
+- **Version mismatch** between the save's `simulator_version` and the running simulator is a
+  warning, never a refusal.
+- **Validation before any replay** (`SessionManager.validate_save`, run by
+  `InProcessSession.load_save_with_warnings`; `IP-1101`–`IP-1103`, `NFR-1600`): the save must be a
+  JSON object carrying the required keys for its format with the right types (`seed` and
+  `final_time` integers); `eventlog` must parse; `pending`, `orders` and `ssn_requests` must be
+  lists of well-formed objects; `overrides` an object and `classification` a string when present;
+  `final_time` must not precede the last logged event; for a format-2 save, `content` must pass the
+  vignette load gate and `baseline` must parse as a world. `final_time` must also lie between the
+  start epoch and 366 days after it (`SessionManager.MAX_SAVE_SPAN_US`, the one exercise span
+  `FR-4330` also applies to the clock controls). A refused save creates no session.
+- **Warnings** reach the client: `POST /api/sessions/load_save` returns `{session, warnings}`
+  (GDS-09 §3).
+
+The loaded event-log size cap (`MAX_EVENTLOG_REPLAY_ENTRIES`, 100,000, NFR-15) is checked in
+`InProcessSession.load_save_with_warnings` only when `eventlog` is a bare list; see OQ5 for the
+shape `save_state` actually writes.
 
 A second, engine-level save shape exists: `engine/simulation.py::SavedSession` (initial state,
 seed, final time, snapshots, event log). Only the determinism test uses it; the web save path does
-not (see OQ3).
+not. Keeping the two is a recorded decision (OQ3).
 
 ## 7. Exports (derived, write-only)
 
@@ -260,20 +287,27 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
 
 ## Open Questions
 
-- **OQ1–OQ3 decided 2026-10-23** (pipeline run #217; to take effect when the self-contained save ships). OQ1: the owner chose to embed (`BL-0302`, "save the active state in the scenario regardless of original vignette file"), elaborated as [FS-110](../features/FS-110-save-and-resume.md) v2.0 Design Decisions 1–2: the save carries its replay baseline (the loaded vignette plus every White Cell force edit folded in) in vignette form, and resume reads only the save (`FR-7230`). OQ2: FS-110 Decision 3 — saves carry a save-format version and the simulator version; a save with no format version resumes by vignette ID as today; a simulator-version mismatch warns, never refuses. OQ3: FS-110 Decision 4 — `SavedSession` stays as it is (the determinism test's shape); no convergence. §6 is updated to the new envelope when the package that builds it is verified. The three entries below are kept as the question record.
-- **OQ1 — Saves do not embed their vignette.** Resume reloads the vignette by ID, so a save made
-  against a vignette that is later edited, renamed or removed either fails to load or, worse,
-  replays against different initial conditions without warning. Options: embed the vignette (or a
-  content hash) in the save, or refuse to resume on a hash mismatch. Needs an owner decision.
-- **OQ2 — No format version on save files.** A save carries no schema or simulator version
-  (only exported vignettes carry `simulator_version`), so a save from an older build cannot be
-  recognized as such. Should saves carry `simulator_version` and a format version?
-- **OQ3 — Two save shapes.** `SavedSession` (engine) and `save_state` (session) both describe "a
-  saved run". Keep both (engine-level for tests, envelope for the web), or converge on one?
+- **OQ1 — Saves embed their vignette. Decided 2026-10-23 (owner, `BL-0302`); shipped and `VERIFIED`
+  (`IP-1101`).** The save carries its replay baseline and the vignette as loaded, with force edits
+  folded in; resume reads only the save (`FR-7230`, FS-110 v2.0 Decisions 1–2). Kept as a closed
+  record; §6 describes the shipped envelope.
+- **OQ2 — Saves carry a format version and the simulator version. Decided 2026-10-23; shipped
+  (`IP-1101`).** A save with no format version resumes by vignette id with a warning; a
+  simulator-version mismatch warns and never refuses (FS-110 Decision 3).
+- **OQ3 — Two save shapes. Decided 2026-10-23: keep both.** `SavedSession` (engine, the determinism
+  test's shape) and `save_state` (session envelope for the web) stay separate; no convergence
+  (FS-110 Decision 4).
 - **OQ4 — No persistent learner identity.** DOM-002 §7 asks for per-trainee competency reporting
   across exercises. Nothing stores a trainee identity or links runs over time; `RunRecord` is per
   run and per cell. This is a capability gap, not a data-model defect, and it is a feature
   decision (FS-201 scope), recorded here so the data model does not imply it exists.
+
+- **OQ5 — The event-log cap does not see a real save's log.** `save_state` writes `eventlog` as an
+  object (`{"entries": [...]}`), but the 100,000-entry check in `load_save_with_warnings` counts
+  entries only when `eventlog` is a bare list, so a dict-shaped log is not counted at that point
+  (the test that pins the cap, `test_defensive_audit_2026.py`, passes a list). This is a defect
+  against NFR-15 as GDS-06 states it, not a design question; it is routed to `07-implementation-planning`
+  for a remediation package, and this document does not change the cap.
 
 ## Merge gate (closed)
 
@@ -300,5 +334,4 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
 
 ## Next
 
-`GDS-08` (UI Architecture) may now begin. OQ1–OQ3 are for an owner decision; OQ4 belongs to
-FS-201's scope.
+OQ1–OQ3 are decided and shipped; OQ4 belongs to FS-201's scope; OQ5 is a defect for `07`.
