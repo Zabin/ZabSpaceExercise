@@ -1064,6 +1064,16 @@ carve-out); the rest is conflict avoidance.
   `ffmpeg` paths), **F5** (cosmetic status line): not in this pass's brief; F1 is a Low console bug
   that a later pass may take, F4 is environment fragility.
 
+## Release-push remediation, pass 3 (2026-10-24)
+
+**Input:** `VR-1074` F1 (Medium): undo past the first event puts the sim clock at epoch 0 (1970); pre-existing, made visible by `IP-1074`'s rewind bound. Same owner directive (journal run #256: bugs only).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Undo lands on `start_epoch` (never 0); undo with nothing to undo refused; `now >= start_epoch` invariant pinned across undo, rewind, advance and load | `engine/simulation.py::undo_last`, `session/manager.py::undo_last`, `session/inprocess.py`, `ui_web/server.py` `/undo` | IP-1075 |
+
+**Why one package, and why not folded into `IP-1074`.** `IP-1074` is `VERIFIED`; the defect is outside its scope and checklist, and a verified package is not reopened. The engine line, the manager guard, the route mapping and the tests are one behaviour and one verification pass. **Other callers audited, no separate unit:** `rewind_to` is already guarded, `advance_to`/catch-up cannot move backwards, `from_state` is protected by `IP-1103`'s `validate_save`; they get pinning tests inside `IP-1075`. **Ordering:** after `IP-1335`/`IP-1334` only to avoid test-file conflicts. **Not planned:** a `FR-4310` sentence on undo/rewind bounds (recommended to `04`), and auto-pause on undo (owner question, as for rewind).
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
