@@ -943,6 +943,65 @@ lives; units in 1 need nothing more.
 **Two packages, not one:** different seams, different specs (FS-106/FS-201 vs FS-109), no shared
 files; each is small enough to build and verify on its own.
 
+## Release-push remediation (2026-10-24)
+
+**Input:** the open bug rows of `docs/pipeline/backlog.md` and the in-progress item `IP-1311`, under the
+owner's release-push directive (journal run #256: pause new features; remediation packages for bugs,
+in-progress and critical items only). Sources: `BL-0323`, `0326`, `0327`, `0333`, `0350`, `0352`,
+`0353`; `BL-0359` F-13; integration review of tranche 2 F-01–F-04; the `FR-4320` scope extension
+(`BL-0321`, `BL-0324`, `BL-0351`); the weak-tag findings `BL-0341`, `BL-0344`, `BL-0347`;
+`BL-0252` (`IP-1311`, already planned). Every package cited is a remediation of a defect in a
+`VERIFIED` package; no Feature Specification is new.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Vignette id scan skips an unreadable file (already planned) | `content/vignette.py` | IP-1311 (`BL-0252`) |
+| 2 | Legacy save with a missing vignette; missing-key saves; content portion = saved force | `session/manager.py` `validate_save`/`save_state`; `ui_web/server.py` `load_save` | IP-1102 (`BL-0326`, `BL-0352`, `BL-0359` F-13) |
+| 3 | Creator edits, `save_vignette`, `red_step`, seats route White-only; creation refuses a player seat | `ui_web/server.py` guards | IP-1072 (`BL-0321`, `BL-0324`, `BL-0351`) |
+| 4 | Palette/bookmark time entries by seat; control-error reporting; `loadSaveFile` refusals; dry-run race; menu scroll; recorder and skill recipe | `static/app.js`, `index.html`, `style.css`; `tools/`; `.claude/skills/run-spacesim` | IP-1073 (`BL-0323`, `0327`, `0333`, `0350`, `0353`) |
+| 5 | Weak origin tags to fitting leaves, with a guard test | `spacesim/tests/`, RTM column | IP-1334 (`BL-0341`, `0344`, `0347`) |
+
+**Why this cut.** The cut follows the repository's own seams and the backlog's grouping:
+
+- **Save robustness is its own package (units 2).** `BL-0326`, `BL-0359` F-13 and `BL-0352` are all
+  in `IP-1101`'s code (`validate_save`, `save_state`) and share fixtures (a temporary content
+  directory); the console's reaction to a refused load is a different seam and is unit 4. The
+  backlog proposed putting `BL-0352` and F-13 "with the client package"; they are server-side
+  defects and splitting them from the console keeps each package to one seam and one test style
+  (HTTP/unit vs browser).
+- **The `FR-4320` extension is a server-only package (unit 3), not part of the client package.**
+  It changes guards in one file and needs no browser; its risk (existing tests that call the newly
+  guarded routes without a seat) is different from the client package's (browser flakiness).
+- **One client package for five console/tooling bugs (unit 4).** They share files (`app.js`), one
+  new status element, and the browser-suite harness. The tooling items (`BL-0353`) ride along
+  because they are the same defect class (a caller that assumes unguarded time control) and are
+  tiny; they would not justify a package alone.
+- **Retag is last and separate (unit 5).** Test-only, but it touches decorator lines in modules the
+  other packages edit and regenerates the RTM column, so it follows them.
+- **Not split further:** `BL-0323` (race) and `BL-0333` (CSS) are one-line to few-line fixes in
+  files unit 4 already touches; separate packages would each cost a verification cycle for a
+  trivial change.
+- **`IP-1311` is not replanned.** It is complete as a plan and `READY`; only its slot in the order
+  is recorded here.
+
+**Ordering and file conflicts.** `IP-1102` and `IP-1072` both edit `ui_web/server.py` (different
+routes); `IP-1073` edits `test_browser_console_rules.py`; `IP-1334` edits tag lines across ~20 test
+modules. Order: `IP-1311` ∥ `IP-1102` → `IP-1072` → `IP-1073` → `IP-1334`. Content dependencies:
+only `IP-1102` → `IP-1073` (test 4's real 400); the rest is conflict avoidance.
+
+**Deliberately excluded from this tranche (not bugs / not release-blocking):** `FR-7450` ISO export
+bounds (a feature, `06`→`07`), `IP-1160` (feature), GDS-06…GDS-10 authoring, the vignette cleanup
+sweep, `BL-0355` package-header corrections (a documentation defect, not a bug), `BL-0359` F-10–F-12
+and F-14–F-16 (Low; documentation, optional consolidation, a test-coverage extension, a design
+note, an exit code), integration review F-05 (training-manual curl examples, owned by
+`08-training-manual-authoring`), F-06–F-09 (documentation owners), and the no-leaf test findings for
+`04` (`BL-0342`, `0345`, `0348`).
+
+**Spec lag flagged upstream.** FS-106 v2.4 predates the 2026-10-24 `FR-4320` extension, and
+GDS-09 §4 / OQ1 and `design/07` still describe the shorter White-only list. `IP-1072` proceeds on
+the requirement leaf, which is binding and names the routes; a v2.5 note on FS-106 (`06`) and the GDS
+update (`03`) are recommended.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
