@@ -397,7 +397,7 @@ def test_live_ric_view_cats_only_when_both_chase_and_target_supplied():
         cats_phase_angle_deg(r_chaser, r_target, world.now))
 
 
-@pytest.mark.verifies("FR-8210")
+@pytest.mark.verifies("FR-8210", "NFR-2410")
 def test_live_ric_view_is_read_only_and_deterministic():
     mgr = _two_sat_manager_with_track()
     before = mgr.sim.world.model_dump_json()
@@ -512,7 +512,7 @@ def test_quick_tle_ownership_beats_a_held_track():
     assert np.linalg.norm(_tle_position_m(out) - r_offset) > 10e3
 
 
-@pytest.mark.verifies("FR-7440")
+@pytest.mark.verifies("FR-7440", "NFR-2410")
 def test_quick_tle_is_read_only():
     """FS-121 AC9 — producing a TLE mutates no world, RNG, or event-log state."""
     pytest.importorskip("sgp4")
@@ -538,7 +538,7 @@ def _reference_rows(mgr, row_fn, t1, t2, interval_s):
             for row in row_fn(aar.state_at_time(mgr, t), t)]
 
 
-@pytest.mark.verifies("FR-7410")
+@pytest.mark.verifies("FR-7410", "FR-7420")
 def test_ephemeris_exports_unchanged_after_migration():
     mgr = _two_sat_manager_with_track()
     t0 = mgr.sim.clock.now

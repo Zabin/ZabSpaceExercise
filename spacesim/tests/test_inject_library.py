@@ -54,14 +54,14 @@ def _scripted_inject_manager(at_sim_s: float, text: str = "t0") -> SessionManage
 # Library loading
 # ---------------------------------------------------------------------------
 
-@pytest.mark.verifies("FS-108")
+@pytest.mark.verifies("FR-4460")
 def test_inject_library_loads_nonempty():
     api = InProcessSession()
     lib = api.inject_library()
     assert isinstance(lib, list) and len(lib) >= 5
 
 
-@pytest.mark.verifies("FS-108")
+@pytest.mark.verifies("FR-4460")
 def test_library_entries_have_required_fields():
     api = InProcessSession()
     for entry in api.inject_library():
@@ -70,7 +70,7 @@ def test_library_entries_have_required_fields():
         assert isinstance(entry.get("effects"), list) and entry["effects"]
 
 
-@pytest.mark.verifies("FS-108")
+@pytest.mark.verifies("FR-4460")
 def test_library_effects_use_supported_types():
     api = InProcessSession()
     for entry in api.inject_library():
@@ -79,7 +79,7 @@ def test_library_effects_use_supported_types():
                 f"{entry['id']} uses unsupported effect type: {eff.get('type')}"
 
 
-@pytest.mark.verifies("FS-108")
+@pytest.mark.verifies("FR-4460")
 def test_library_is_cached():
     """The cache attribute must be populated and survive across calls.
 
@@ -144,7 +144,7 @@ def test_fire_inject_past_timestamp_applies_immediately():
 # spawn_debris handler
 # ---------------------------------------------------------------------------
 
-@pytest.mark.verifies("FR-4410")
+@pytest.mark.verifies("FR-4410", "FR-1430")
 def test_spawn_debris_effect_creates_debris_field():
     api, sid = _api_session()
     mgr = api._sessions[sid]
@@ -167,7 +167,7 @@ def test_spawn_debris_effect_creates_debris_field():
 # End-to-end: pick a library entry, fire it through the API
 # ---------------------------------------------------------------------------
 
-@pytest.mark.verifies("FR-4410")
+@pytest.mark.verifies("FR-4410", "FR-4460")
 def test_library_entry_roundtrip_through_fire_inject():
     api, sid = _api_session()
     mgr = api._sessions[sid]

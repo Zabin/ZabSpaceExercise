@@ -198,7 +198,7 @@ def test_ssn_requests_survive_save_resume():
     assert any(t.owner == "blue" and t.object == "RED-OBJ" for t in mgr2.world.tracks)
 
 
-@pytest.mark.verifies("FR-2510")
+@pytest.mark.verifies("FR-1420")
 def test_harden_reduces_safe_mode_probability():
     """def.harden (payload_state.hardened) is observable at the effect resolver: p drops."""
     from spacesim.engine.bus import BusState, PayloadState

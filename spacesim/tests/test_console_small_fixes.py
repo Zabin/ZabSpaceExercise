@@ -76,7 +76,7 @@ def test_bulk_import_duplicate_asset_id_in_one_file_keeps_the_first():
     assert mgr.world.assets["DUP-1"].orbit.tle_line2 == _TLE2  # the first object's orbit kept
 
 
-@pytest.mark.verifies("FR-4410")
+@pytest.mark.verifies("NFR-1600")
 def test_fire_inject_reports_a_rejection():
     js = (STATIC / "app.js").read_text(encoding="utf-8")
     start = js.index("async function fireInject")

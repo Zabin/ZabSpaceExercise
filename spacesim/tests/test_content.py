@@ -43,7 +43,7 @@ def _sat(i: int, group: str | None = None) -> dict:
     return d
 
 
-@pytest.mark.verifies("FR-4110")
+@pytest.mark.verifies("FR-5310")
 def test_vignette_1_loads_and_builds_a_world():
     assert any(v["id"] == "leo-isr-denial" for v in list_vignettes())
     vig = load_vignette("leo-isr-denial")

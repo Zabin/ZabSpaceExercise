@@ -71,7 +71,6 @@ def _body(api, sid, name, body):
     return body
 
 
-pytestmark = pytest.mark.verifies("FR-4310", "FR-4320")
 
 
 @pytest.mark.verifies("FR-4310")
@@ -173,7 +172,7 @@ def test_seat_assignment_and_observer_designation_refused_for_player_seats(seat)
     assert c.get(f"/api/sessions/{sid}/observer/designation").json() == designation
 
 
-@pytest.mark.verifies("FR-4320")
+@pytest.mark.verifies("FR-4310", "FR-4320")
 @pytest.mark.parametrize("name", list(CLOCK_ROUTES) + list(CONFIG_ROUTES))
 def test_unknown_session_is_404_before_the_seat_check(name):
     c, _ = _client()

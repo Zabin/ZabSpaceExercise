@@ -133,7 +133,7 @@ def test_save_as_scenario_stamps_the_save_moment_as_new_start_epoch():
         Path(path).unlink(missing_ok=True)
 
 
-@pytest.mark.verifies("FR-5110")
+@pytest.mark.verifies("FR-5110", "NFR-3710")
 def test_draft_session_evicted_by_existing_max_live_sessions_cap():
     api = InProcessSession()
     api.MAX_LIVE_SESSIONS = 2

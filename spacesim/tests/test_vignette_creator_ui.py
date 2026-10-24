@@ -155,7 +155,7 @@ def test_curated_site_list_offered_before_free_entry():
 
 # -- FR-5150: asset menu (edit, reassign, delete) -------------------------------------------------
 
-@pytest.mark.verifies("FR-5120")
+@pytest.mark.verifies("FR-5150", "FR-5120")
 def test_asset_edit_reflected_in_json_view_and_scene():
     c = _client()
     sid = _draft(c)
@@ -203,7 +203,7 @@ def test_seat_declaration_generates_seat_ids():
     assert read["white"] == ["white-1", "white-2", "white-3"]
 
 
-@pytest.mark.verifies("FR-5160")
+@pytest.mark.verifies("FR-5160", "FR-4320")
 def test_seat_declaration_rejects_non_white_caller():
     """BL-0123 remediation: the White-Cell-only gate checks the *caller's own* seat (the ``cell``
     query param every mutating route uses), not the target cell being declared for."""

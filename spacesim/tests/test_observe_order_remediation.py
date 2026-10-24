@@ -194,13 +194,13 @@ def _payload_for(**params) -> dict:
     return p
 
 
-@pytest.mark.verifies("FR-3210")
+@pytest.mark.verifies("NFR-1600")
 def test_null_params_mean_absent():
     nulls = _payload_for(look_angle_deg=None, duration_s=None, gain=None, beam_mode=None)
     assert nulls == _payload_for()
 
 
-@pytest.mark.verifies("FR-3210")
+@pytest.mark.verifies("NFR-1600")
 def test_well_formed_orders_unchanged():
     assert _payload_for(look_angle_deg="10", duration_s="120") == \
         _payload_for(look_angle_deg=10.0, duration_s=120.0)

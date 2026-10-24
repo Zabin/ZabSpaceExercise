@@ -47,7 +47,7 @@ def test_classify_regime_real_geo():
     assert classify_regime(a_m=26_560_000.0, e=0.0, i_deg=55.0) == "MEO"
 
 
-@pytest.mark.verifies("FR-1210")
+@pytest.mark.verifies("NFR-1600")
 def test_period_s_invalid_a():
     """``period_s`` must return NaN for non-positive a rather than raising (audit §C4)."""
     from spacesim.engine.orbit import period_s
@@ -66,7 +66,7 @@ def _seed_session(seed: int = 1):
     return mgr
 
 
-@pytest.mark.verifies("FR-3310")
+@pytest.mark.verifies("FR-3210")
 def test_executed_observe_releases_sensor_booking():
     """After an observe order executes, its sensor booking is no longer in the dict (audit §C3)."""
     from spacesim.engine.orders import Order
@@ -381,7 +381,7 @@ def test_fog_red_cannot_see_blue_assets(endpoint_tpl: str):
 # --------------------------------------------------------------------------- #
 # E5 — Replace the tautological inject-library cache test.
 # --------------------------------------------------------------------------- #
-@pytest.mark.verifies("FS-108")
+@pytest.mark.verifies("FR-4460")
 def test_inject_library_is_cached_for_real():
     """Two consecutive calls must return the **same list object** — that's caching (audit §E5)."""
     from spacesim.session.inprocess import InProcessSession

@@ -530,7 +530,7 @@ def test_engage_sequence_replays_byte_identical():
 
 # -- IP-2010 v1.1 (BL-0002) — custody_confidence_at_decision capture -------------------------
 
-@pytest.mark.verifies("IP-2010")
+@pytest.mark.verifies("FS-201")
 def test_custody_confidence_at_decision_captured_for_targeted_actions():
     """engage/observe orders against an owned track record the live confidence at issue time —
     the same number scene.py's RenderTrack.confidence already surfaces to the operator."""
@@ -557,7 +557,7 @@ def test_custody_confidence_at_decision_captured_for_targeted_actions():
     assert entry.payload["custody_confidence_at_decision"] == round(expected, 3)
 
 
-@pytest.mark.verifies("IP-2010")
+@pytest.mark.verifies("FS-201")
 def test_custody_confidence_at_decision_none_without_target_or_track():
     """downlink (no target concept) and an engage-like target with no owned track both record
     None — the field must never be silently fabricated."""
@@ -574,7 +574,7 @@ def test_custody_confidence_at_decision_none_without_target_or_track():
     assert entry.payload["custody_confidence_at_decision"] is None
 
 
-@pytest.mark.verifies("IP-2010")
+@pytest.mark.verifies("NFR-2410", "FS-201")
 def test_dry_run_never_captures_custody_confidence():
     """dry_run() must stay a zero-footprint preview — it never reaches _exec_payload at all,
     so it can't touch the new capture step either (no eventlog entry is produced to check)."""
@@ -594,7 +594,7 @@ def test_dry_run_never_captures_custody_confidence():
     assert not osys._sensor_bookings and not osys._pass_bookings   # zero booking writes
 
 
-@pytest.mark.verifies("IP-2010")
+@pytest.mark.verifies("FR-1120")
 def test_custody_confidence_at_decision_replays_byte_identically():
     """The captured value is stored event-log data, not recomputed on replay — a dedicated
     regression guard alongside test_engage_sequence_replays_byte_identical above."""

@@ -154,7 +154,7 @@ def test_rejected_order_appears_as_marker():
 # Scheduled injects
 # ---------------------------------------------------------------------------
 
-@pytest.mark.verifies("FR-4410")
+@pytest.mark.verifies("FS-101")
 def test_scheduled_inject_appears_as_inject_row():
     api, sid = _api_session()
     mgr = api._sessions[sid]
@@ -167,7 +167,7 @@ def test_scheduled_inject_appears_as_inject_row():
     assert any(a["status"] == "scheduled" for a in injects)
 
 
-@pytest.mark.verifies("FR-4410")
+@pytest.mark.verifies("FS-101")
 def test_scheduled_inject_skipped_when_past_window():
     """An inject far outside the display window should not appear."""
     api, sid = _api_session()

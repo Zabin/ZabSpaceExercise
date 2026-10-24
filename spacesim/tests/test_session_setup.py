@@ -130,7 +130,7 @@ def test_start_succeeds_once_the_mandatory_role_is_assigned():
     assert api._sessions["sess-test"].started is True
 
 
-@pytest.mark.verifies("FR-4210")
+@pytest.mark.verifies("FR-4210", "FR-4320")
 def test_only_white_cell_can_assign_roles():
     api = InProcessSession()
     vig = _vignette_with_roles([{"asset_or_constellation": "ISR-EO-1", "role": "bus", "mandatory": True}])
@@ -160,7 +160,7 @@ def test_staffing_report_and_assign_endpoints_over_http():
     assert ack["ok"] is True
 
 
-@pytest.mark.verifies("FR-4210")
+@pytest.mark.verifies("FR-4210", "FR-4320")
 def test_observer_cannot_assign_roles():
     """IP-1131 (BL-0024) — the White-Cell-only gate refuses an Observer-seated caller too."""
     api = InProcessSession()

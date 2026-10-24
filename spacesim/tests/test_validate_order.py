@@ -24,7 +24,7 @@ def _downlink(actor="ISR-EO-1", via="GS-TRN"):
     return Order(cell="blue", actor=actor, action="downlink", params={"via": via})
 
 
-@pytest.mark.verifies("NFR-3020")
+@pytest.mark.verifies("NFR-3020", "NFR-2410")
 def test_dry_run_is_side_effect_free():
     mgr = _mgr()
     before = mgr.world.model_dump_json()

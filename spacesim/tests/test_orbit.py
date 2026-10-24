@@ -23,7 +23,7 @@ LEO_A = R_EARTH_EQ + 550e3
 GEO_A = 42_164e3
 
 
-@pytest.mark.verifies("FR-5220")
+@pytest.mark.verifies("FR-1210")
 def test_mean_to_true_round_trips_with_true_to_mean():
     """IP-1190 — mean_to_true() is true_to_mean()'s inverse (mean -> true -> mean recovers)."""
     for e in (0.0, 0.001, 0.3, 0.7):
@@ -35,7 +35,7 @@ def test_mean_to_true_round_trips_with_true_to_mean():
             assert abs(recovered_m - m) < 1e-9
 
 
-@pytest.mark.verifies("FR-5220")
+@pytest.mark.verifies("FR-1210")
 def test_mean_to_true_extraction_did_not_change_elements_to_rv():
     """IP-1190 — elements_to_rv() calling the extracted mean_to_true() produces the exact same
     ECI state as before the refactor (regression on a known Keplerian element set)."""

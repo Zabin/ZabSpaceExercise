@@ -243,7 +243,7 @@ def test_http_unknown_id_is_404(client):
     assert "no-such-vignette" in r.json()["detail"]
 
 
-@pytest.mark.verifies("FR-5310")
+@pytest.mark.verifies("FR-5310", "NFR-3700")
 def test_http_traversal_id_is_400(client):
     c, _ = client
     r = c.post("/api/sessions", json={"vignette_id": "../etc", "seed": 1})

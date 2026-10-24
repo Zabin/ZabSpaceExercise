@@ -19,7 +19,6 @@ from spacesim.content.vignette import (Vignette, VIGNETTE_DIR, build_world, list
 from spacesim.session.inprocess import InProcessSession
 from spacesim.session.manager import SessionManager
 
-pytestmark = pytest.mark.verifies("FR-7210", "FR-7230")
 
 TLE1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
 TLE2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"

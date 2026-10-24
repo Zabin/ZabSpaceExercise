@@ -19,7 +19,7 @@ from spacesim.session.manager import SessionManager
 # §10.E.20 AAR export
 # ---------------------------------------------------------------------------
 
-@pytest.mark.verifies("FR-7310")
+@pytest.mark.verifies("FS-107")
 def test_aar_csv_export_has_three_sections():
     mgr = SessionManager(load_vignette("leo-isr-denial"), seed=1)
     mgr.start()
@@ -33,7 +33,7 @@ def test_aar_csv_export_has_three_sections():
     assert "leo-isr-denial" in csv
 
 
-@pytest.mark.verifies("FR-7310")
+@pytest.mark.verifies("FS-107")
 def test_aar_csv_export_round_trips_objectives():
     """Every objective in the live report appears in the CSV."""
     mgr = SessionManager(load_vignette("training-basics"), seed=1)
@@ -45,7 +45,7 @@ def test_aar_csv_export_round_trips_objectives():
             assert oid in csv, f"objective {side}.{oid} missing from CSV export"
 
 
-@pytest.mark.verifies("FR-7310")
+@pytest.mark.verifies("FS-107")
 def test_aar_json_export_endpoint_serves_csv_and_json():
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
@@ -224,7 +224,7 @@ def test_spoof_outcome_does_not_register_as_link_denied():
     assert is_link_spoofed(mgr.world, "ISR-EO-1", t) is True
 
 
-@pytest.mark.verifies("FR-1410")
+@pytest.mark.verifies("FR-1410", "FR-2330")
 def test_spoof_drives_integrity_flag_telemetry_signature():
     """Under active spoof, integrity_flag drops far below 1.0; nominal sample stays ≈1.0."""
     from spacesim.engine import telemetry as tel
@@ -292,7 +292,7 @@ def test_non_civilian_link_denial_does_not_raise_consequence():
 # §10.D.17 vignette inspector — /api/vignettes/{id}/source endpoint
 # ---------------------------------------------------------------------------
 
-@pytest.mark.verifies("FR-4110")
+@pytest.mark.verifies("FS-115")
 def test_vignette_source_endpoint_returns_yaml():
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
@@ -303,7 +303,7 @@ def test_vignette_source_endpoint_returns_yaml():
     assert "vignette:" in r.text and "leo-isr-denial" in r.text
 
 
-@pytest.mark.verifies("FR-4110")
+@pytest.mark.verifies("FS-115")
 def test_vignette_source_endpoint_404s_unknown_id():
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient

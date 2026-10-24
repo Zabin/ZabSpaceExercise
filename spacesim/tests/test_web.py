@@ -135,7 +135,7 @@ def test_inject_reveals_track_to_blue_over_api():
 
 # -- Stage C: critical-path API smoke tests -----------------------------------
 
-@pytest.mark.verifies("FR-6210")
+@pytest.mark.verifies("FR-8110")
 def test_scene_returns_assets():
     c = _client()
     sid = _new_session(c)
@@ -155,7 +155,7 @@ def test_telemetry_param_list():
     assert "subsystems" in body and len(body["subsystems"]) > 0
 
 
-@pytest.mark.verifies("FR-2110")
+@pytest.mark.verifies("FR-2310")
 def test_telemetry_series_count():
     c = _client()
     sid = _new_session(c)
@@ -191,7 +191,7 @@ def test_telemetry_series_route_matches_export_csv():
     assert all(p["status"] == "green" for p in series if p["t"] < start + 600 * 10**6)
 
 
-@pytest.mark.verifies("FR-6210")
+@pytest.mark.verifies("FR-1320", "FR-6210")
 def test_maneuver_ledger_route_and_csv_export_are_fog_scoped():
     """IP-1250 (FR-1320) — the ledger route/CSV export mirror /telemetry's fog-of-war behavior:
     an operator cannot fetch another cell's Asset ledger."""
@@ -393,7 +393,7 @@ def test_rewind_re_anchors_clock(monkeypatch):
     assert after_5s - after_rewind == 5 * 1_000_000
 
 
-@pytest.mark.verifies("FR-6310")
+@pytest.mark.verifies("FR-6410")
 def test_session_discovery_lists_sessions():
     c = _client()
     s1 = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
@@ -639,7 +639,7 @@ def test_ephemeris_truth_route_wholly_out_of_range_is_400():
     assert r.status_code == 400
 
 
-@pytest.mark.verifies("FR-6210")
+@pytest.mark.verifies("FR-7420")
 def test_ephemeris_cell_observed_route_fog_of_war_enforced():
     """IP-1210 (FR-7420) — a cell with no Track on the requested object gets an empty export,
     never another cell's belief or ground truth, mirroring test_scene.py's fog-of-war pattern."""

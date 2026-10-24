@@ -257,7 +257,7 @@ def test_http_pending_list_cancel_and_edit(client_and_sid):
     assert "white-1" not in [p["handle"] for p in c.get(f"/api/sessions/{sid}/injects/pending").json()]
 
 
-@pytest.mark.verifies("FR-4450")
+@pytest.mark.verifies("FR-4450", "FR-4320")
 @pytest.mark.parametrize("cell", ["blue", "red", "observer", None])
 def test_http_non_white_is_403(client_and_sid, cell):
     c, sid, mgr = client_and_sid

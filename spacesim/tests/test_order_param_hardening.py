@@ -98,7 +98,7 @@ def _assert_refused_by_both(mgr, make) -> None:
 # Tests 1-5 — every action's malformed params are refused by dry_run and issue alike
 # --------------------------------------------------------------------------- #
 
-@pytest.mark.verifies("FR-1410")
+@pytest.mark.verifies("NFR-1600")
 @pytest.mark.parametrize("params", [
     {"power_w": "abc"}, {"power_w": "inf"}, {"power_w": NAN},
     {"bandwidth_hz": [1]}, {"victim_bandwidth_hz": {"a": 1}}, {"modulation": ["spot"]},
@@ -108,7 +108,7 @@ def test_jam_params_refused(mgr, params):
     _assert_refused_by_both(mgr, lambda: _jam(**params))
 
 
-@pytest.mark.verifies("FR-1410")
+@pytest.mark.verifies("NFR-1600")
 @pytest.mark.parametrize("params", [
     {"salvo_n": "abc"}, {"salvo_n": "nan"}, {"salvo_n": INF}, {"salvo_n": NAN},
     {"interceptor_class": 3},
@@ -117,7 +117,7 @@ def test_engage_params_refused(mgr, params):
     _assert_refused_by_both(mgr, lambda: _engage(**params))
 
 
-@pytest.mark.verifies("FR-1420")
+@pytest.mark.verifies("NFR-1600")
 @pytest.mark.parametrize("params", [
     {"dwell_s": "abc"}, {"persistence_h": "inf"}, {"sm_susceptibility": [1]},
     {"persistence_bonus": NAN}, {"vector": ["x"]}, {"payload": 7}, {"segment": {"a": 1}},
@@ -126,7 +126,7 @@ def test_cyber_params_refused(mgr, params):
     _assert_refused_by_both(mgr, lambda: _cyber(**params))
 
 
-@pytest.mark.verifies("FR-1310")
+@pytest.mark.verifies("NFR-1600")
 @pytest.mark.parametrize("dv", ["abc", [1, "x", 0], [1, 2], [1, 2, 3, 4], [NAN, 0, 0], [0, INF, 0], 5])
 def test_maneuver_dv_refused_and_state_untouched(mgr, dv):
     asset = mgr.world.assets["ISR-EO-1"]
@@ -138,7 +138,7 @@ def test_maneuver_dv_refused_and_state_untouched(mgr, dv):
     assert math.isfinite(asset.orbit.a_m) and asset.orbit.a_m == orbit_before.a_m
 
 
-@pytest.mark.verifies("FR-3110")
+@pytest.mark.verifies("NFR-1600")
 @pytest.mark.parametrize("make", [
     lambda: _command(stored_at="abc"), lambda: _command(stored_at=NAN), lambda: _command(verb=[1]),
     lambda: _command(via=[1]), lambda: _maneuver(dv=[0, 0, 0], via={"a": 1}),
@@ -168,7 +168,7 @@ def _payload_for(vignette, make) -> dict:
     return _scheduled(m.osys, order.id)
 
 
-@pytest.mark.verifies("FR-3110")
+@pytest.mark.verifies("NFR-1600")
 def test_null_params_mean_absent(vignette, mgr):
     assert _payload_for(vignette, lambda: _jam(power_w=None, bandwidth_hz=None, victim_bandwidth_hz=None)) \
         == _payload_for(vignette, lambda: _jam())
@@ -228,7 +228,7 @@ def test_failed_plan_leaves_no_state(mgr, monkeypatch, make):
     assert retry.status == "queued" and retry.earliest_window == expected
 
 
-@pytest.mark.verifies("FR-1420")
+@pytest.mark.verifies("NFR-1600")
 def test_failed_cyber_plan_leaves_no_state(mgr, monkeypatch):
     import spacesim.engine.cyber as cyber
     before = _snapshot(mgr.osys)
@@ -248,7 +248,7 @@ def test_failed_cyber_plan_leaves_no_state(mgr, monkeypatch):
 # Tests 9-10 — well-formed orders unchanged; observe unchanged
 # --------------------------------------------------------------------------- #
 
-@pytest.mark.verifies("FR-3110")
+@pytest.mark.verifies("NFR-1600")
 def test_numeric_strings_still_accepted_with_identical_payloads(vignette):
     assert _payload_for(vignette, lambda: _jam(power_w="200", bandwidth_hz="1000000")) \
         == _payload_for(vignette, lambda: _jam(power_w=200.0, bandwidth_hz=1e6))
@@ -281,7 +281,7 @@ def test_salvo_float_truncation_unchanged(vignette, mgr):
     assert _scheduled(mgr.osys, order.id)["consume"]["ammo"] == 2
 
 
-@pytest.mark.verifies("FR-3210")
+@pytest.mark.verifies("NFR-1600")
 def test_observe_param_check_unchanged(mgr):
     _assert_refused_by_both(mgr, lambda: Order(cell="blue", actor="BLUE-RADAR", action="observe",
                                                target="ISR-EO-1",

@@ -144,14 +144,14 @@ def test_atmospheric_density_zero_above_1000km():
     assert perturbations.atmospheric_density(1_200_000.0) == 0.0
 
 
-@pytest.mark.verifies("FR-1210")
+@pytest.mark.verifies("FR-1230")
 def test_drag_decay_negative_for_leo():
     """A LEO sat with positive ballistic coefficient should lose altitude over time."""
     decay = perturbations.secular_drag_decay(400_000.0, ballistic_coeff=0.01, dt_s=86400.0)
     assert decay < 0
 
 
-@pytest.mark.verifies("FR-1210")
+@pytest.mark.verifies("FR-1230")
 def test_drag_acceleration_opposes_velocity():
     r = np.array([6_778_000.0, 0.0, 0.0])    # 400 km altitude
     v = np.array([0.0, 7670.0, 0.0])
@@ -217,7 +217,7 @@ def test_srp_scales_with_area():
 # Item 10 — penumbra / eclipse fraction
 # ---------------------------------------------------------------------------
 
-@pytest.mark.verifies("FR-1220")
+@pytest.mark.verifies("FR-1210")
 def test_eclipse_fraction_full_sunlight_on_sun_side():
     r_sat = np.array([1e7, 0.0, 0.0])
     # At t=0 the Sun is roughly in the +x direction (close to vernal equinox geometry)
@@ -226,7 +226,7 @@ def test_eclipse_fraction_full_sunlight_on_sun_side():
     assert frac == 1.0
 
 
-@pytest.mark.verifies("FR-1220")
+@pytest.mark.verifies("FR-1210")
 def test_eclipse_fraction_zero_in_full_umbra():
     sun_vec = sun.sun_unit_eci(0)
     # Place sat directly behind Earth from the Sun (anti-sun) but inside Earth's umbra
@@ -235,7 +235,7 @@ def test_eclipse_fraction_zero_in_full_umbra():
     assert frac == 0.0
 
 
-@pytest.mark.verifies("FR-1220")
+@pytest.mark.verifies("FR-1210")
 def test_eclipse_fraction_in_range():
     """A few off-axis points behind Earth should land in [0, 1]."""
     sun_vec = sun.sun_unit_eci(0)

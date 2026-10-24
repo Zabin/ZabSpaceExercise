@@ -175,7 +175,7 @@ def test_belief_truth_divergence_defaults_to_low_with_no_qualifying_decisions():
 
 # -- read-only / no composite score ---------------------------------------------------------------
 
-@pytest.mark.verifies("FS-201")
+@pytest.mark.verifies("FS-201", "NFR-2410")
 def test_scoring_functions_never_mutate_world_state():
     sat, world = _read_only_tests_setup()
     world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=0.9,
@@ -190,7 +190,7 @@ def test_scoring_functions_never_mutate_world_state():
     assert mgr.sim.world.model_dump_json() == before
 
 
-@pytest.mark.verifies("FS-201")
+@pytest.mark.verifies("FS-201", "FR-4710")
 def test_assessment_report_presents_dimensions_side_by_side_never_a_composite():
     sat, world = _read_only_tests_setup()
     world.tracks.append(Track(object="RSAT", owner="blue", last_observation=0, confidence=0.9,
