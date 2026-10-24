@@ -12,7 +12,6 @@ from fastapi.testclient import TestClient  # noqa: E402
 from spacesim.session.api import Ack  # noqa: E402
 from spacesim.ui_web.server import create_app  # noqa: E402
 
-pytestmark = pytest.mark.verifies("FR-4310", "FR-4320", "NFR-1600")
 
 W = {"cell": "white"}
 

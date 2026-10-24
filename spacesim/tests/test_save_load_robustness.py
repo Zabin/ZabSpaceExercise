@@ -189,17 +189,20 @@ def _last_event_time(state: dict) -> int:
     return max((e["sim_time"] for e in ents), default=0)
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 @pytest.mark.parametrize("bad", ["a string", ["x"], 7], ids=["str", "list", "num"])
 def test_non_mapping_overrides_is_400_naming_overrides(bad):
     _refused(_client(), _with(_good_state(), overrides=bad), "overrides")
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 @pytest.mark.parametrize("t", [None, "5", 1.5, True], ids=["null", "str", "float", "bool"])
 def test_pending_row_with_bad_t_is_400(t):
     row = {"t": t, "kind": "bus_tick", "actor": "system", "payload": {}, "tag": ""}
     _refused(_client(), _with(_good_state(), pending=[row]), "pending")
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 @pytest.mark.parametrize("row", [{"t": 5}, {"t": 5, "kind": ""}, {"t": 5, "kind": 3},
                                  {"t": 5, "kind": "x", "payload": "no"}],
                          ids=["no-kind", "empty-kind", "int-kind", "str-payload"])
@@ -207,6 +210,7 @@ def test_pending_row_with_bad_kind_or_payload_is_400(row):
     _refused(_client(), _with(_good_state(), pending=[row]), "pending")
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 def test_valid_pending_rows_still_load():
     good = _good_state()
     r = _client().post(LOAD, json=_with(good, pending=good["pending"]))
@@ -221,6 +225,7 @@ def _order(**kw) -> dict:
     return o
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 @pytest.mark.parametrize("kw", [{"cell": "green"}, {"actor": 5}, {"action": ["a"]}, {"id": 7},
                                 {"bogus_field": 1}, {"params": "x"}],
                          ids=["cell", "actor", "action", "id", "unknown-field", "params"])
@@ -240,6 +245,7 @@ def _ssn(**kw) -> dict:
     return s
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 @pytest.mark.parametrize("kw", [{"cell": "green"}, {"id": 4}, {"intent": 3}, {"bogus": 1},
                                 {"collect_at": "soon"}],
                          ids=["cell", "id", "intent", "unknown-field", "collect_at"])
@@ -247,6 +253,7 @@ def test_junk_ssn_row_is_400_naming_ssn_requests(kw):
     _refused(_client(), _with(_good_state(), ssn_requests=[_ssn(**kw)]), "ssn_requests")
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 def test_valid_order_and_ssn_rows_still_load():
     r = _client().post(LOAD, json=_with(_good_state(), orders=[_order()], ssn_requests=[_ssn()]))
     assert r.status_code == 200, r.text
@@ -257,6 +264,7 @@ def _start_us(state: dict) -> int:
     return simtime.from_iso(state["content"]["start_epoch_utc"])
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 @pytest.mark.parametrize("which", ["negative", "before-start", "below-last-event", "above-ceiling"])
 def test_out_of_range_final_time_is_400_naming_final_time(which):
     good = _good_state()
@@ -266,6 +274,7 @@ def test_out_of_range_final_time_is_400_naming_final_time(which):
     _refused(_client(), _with(good, final_time=ft), "final_time")
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 def test_final_time_boundaries_load():
     good = _good_state()
     c = _client()
@@ -274,6 +283,7 @@ def test_final_time_boundaries_load():
     assert c.post(LOAD, json=good).status_code == 200
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 def test_final_time_ceiling_is_one_year_and_exceeds_shipped_horizons():
     assert SessionManager.MAX_SAVE_SPAN_US == 366 * 86400 * 1_000_000
     from spacesim.content.vignette import list_vignettes
@@ -282,11 +292,13 @@ def test_final_time_ceiling_is_one_year_and_exceeds_shipped_horizons():
     assert longest * 60 * 4 * 1_000_000 < SessionManager.MAX_SAVE_SPAN_US
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 @pytest.mark.parametrize("bad", [5, {"a": 1}, ["x"]], ids=["num", "obj", "list"])
 def test_non_string_classification_is_400(bad):
     _refused(_client(), _with(_good_state(), classification=bad), "classification")
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 def test_absent_and_string_classification_load():
     good = _good_state()
     c = _client()
@@ -295,6 +307,7 @@ def test_absent_and_string_classification_load():
     assert c.post(LOAD, json=_with(good, classification="UNCLASSIFIED")).status_code == 200
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 def test_whole_refused_set_leaves_registry_unchanged_and_valid_saves_unchanged():
     c = _client()
     good = _good_state()
@@ -315,6 +328,7 @@ def _legacy_missing() -> dict:
     return s
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 def test_legacy_missing_vignette_wording_is_pinned():
     r = _client().post(LOAD, json=_legacy_missing())
     assert r.status_code == 400
@@ -322,12 +336,14 @@ def test_legacy_missing_vignette_wording_is_pinned():
     assert "no-such-vignette-file" in r.json()["detail"]
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 def test_server_backstop_alone_turns_missing_vignette_into_400(monkeypatch):
     monkeypatch.setattr(SessionManager, "validate_save", staticmethod(lambda state: None))
     r = _client().post(LOAD, json=_legacy_missing())
     assert r.status_code == 400, r.text
 
 
+@pytest.mark.verifies("FR-7230", "NFR-1600")
 def test_validate_save_reraises_missing_vignette_as_value_error():
     with pytest.raises(ValueError) as ei:
         SessionManager.validate_save(_legacy_missing())

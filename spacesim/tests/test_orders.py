@@ -530,7 +530,7 @@ def test_engage_sequence_replays_byte_identical():
 
 # -- IP-2010 v1.1 (BL-0002) — custody_confidence_at_decision capture -------------------------
 
-@pytest.mark.verifies("FS-201")
+@pytest.mark.verifies("FR-10110")
 def test_custody_confidence_at_decision_captured_for_targeted_actions():
     """engage/observe orders against an owned track record the live confidence at issue time —
     the same number scene.py's RenderTrack.confidence already surfaces to the operator."""
@@ -557,7 +557,7 @@ def test_custody_confidence_at_decision_captured_for_targeted_actions():
     assert entry.payload["custody_confidence_at_decision"] == round(expected, 3)
 
 
-@pytest.mark.verifies("FS-201")
+@pytest.mark.verifies("FR-10110")
 def test_custody_confidence_at_decision_none_without_target_or_track():
     """downlink (no target concept) and an engage-like target with no owned track both record
     None — the field must never be silently fabricated."""

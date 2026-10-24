@@ -212,21 +212,22 @@ previous values.
 
 - **Scope as built.** I reviewed every test function independently, not only the report tables:
   977 functions (1,284 collected), plus the tests that the merged `IP-1311`/`IP-1102`/`IP-1072`/`IP-1073`
-  stack added (1,371 collected without the guard). 138 functions were retagged. Every change is to a
+  stack and the later `IP-1103`/`IP-1074`/`IP-1335`/`IP-1075` stack added (1,464 collected without the guard). 170 functions
+  were retagged (the 20 assessment/research tests are `IP-1335`'s FR-10110/FR-10210 retag, kept as it landed). Every change is to a
   `verifies(...)` argument, or a dropped/re-homed module-level mark; no assertion, fixture or production line changed.
 - **Beyond the report tables.** Read paths tagged `NFR-2410` (controller view, RIC view, quick TLE,
   telemetry export, dry-run, AAR reconstruction). White-only refusals tagged `FR-4320` (inject
   edit/cancel, seat assignment, Creator seats, vignette load). New leaves applied: `FR-2330` (telemetry
   attack signatures and nominal trace, 15 tests) and `FR-4460` (inject library, 6 tests). Module-level
   over-claims dropped in `test_self_contained_save.py`, `test_white_only_controls.py` and
-  `test_save_load_robustness.py`. Bus/defence verb tests → `FS-105`, AAR export → `FS-107`, and the
+  `test_save_load_robustness.py` and `test_white_control_correctness.py` (the save-validation tests that relied on the
+  module mark now carry `FR-7230`/`NFR-1600` each). Bus/defence verb tests → `FS-105`, AAR export → `FS-107`, and the
   vignette-source endpoint → `FS-115`, because no leaf fits them.
-- **Declined.** `FR-10110` (13 `test_assessment.py` tests and 2 `test_orders.py` tests) and `FR-10210`
-  (7 `test_research_batch.py` tests) do not resolve, because `baseline_ids.py` accepts 4-digit `FR-` IDs only.
-  Those tests keep or receive `FS-201`/`FS-301`; the reader limit is a finding for `07`/`08`. `test_collect_blocked_when_storage_full` stays on `FR-2210`, whose
+- **Five-digit IDs.** `IP-1335` widened `baseline_ids.py`, so `FR-10110`/`FR-10210` now resolve: the two
+  `test_orders.py` confidence-at-decision tests now carry `FR-10110`. `test_collect_blocked_when_storage_full` stays on `FR-2210`, whose
   AC states the storage-full rejection. `FS-106` vs `NFR-1600` for the inject-rejection test: chose the leaf.
-- **Guard.** `spacesim/tests/test_origin_retag.py` pins 143 `(module, function)` origin sets. I saw it
-  fail on the old tags before the retag. Collected-count bounds: 1,371 to 1,500, excluding the guard module.
+- **Guard.** `spacesim/tests/test_origin_retag.py` pins 171 `(module, function)` origin sets. I saw it
+  fail on the old tags before the retag. Collected-count bounds: 1,464 to 1,700, excluding the guard module.
 - **No-leaf tests for `04`** (left on the nearest ID): bus/defence verbs; perturbation functions;
   AAR export; sim-time representation; SIGINT geolocation; telemetry series history shape/cost;
   vignette library content/placement; scene content fields; tutorial endpoint and SSN smoke check;

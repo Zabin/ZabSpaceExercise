@@ -170,7 +170,7 @@ def test_running_clock_reanchors_at_start_after_undo(monkeypatch):
 
 
 # 10
-@pytest.mark.verifies("IP-1075")
+@pytest.mark.verifies("FR-4310")
 def test_engine_undo_on_empty_log_keeps_initial_time():
     m = _mgr()
     sim: Simulation = m.sim
@@ -196,7 +196,7 @@ def test_save_after_undo_to_start_validates_and_reloads():
 
 
 # 12
-@pytest.mark.verifies("FR-4320")
+@pytest.mark.verifies("FR-4310")
 @pytest.mark.parametrize("seat", ["observer", "blue", "red", None])
 def test_undo_still_403_for_non_white(seat):
     c, api = _client()
