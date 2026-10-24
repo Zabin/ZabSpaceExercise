@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1081
 > **Version:** 1.0
-> **Status:** READY — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass 5). Every dependency is `VERIFIED`.
+> **Status:** VERIFIED 2026-10-24 ([VR-1081](../verification/VR-1081-save-eventlog-cap-counts-real-saves.md), fresh session; READY before that) — authored 2026-10-24 by `07-implementation-planning`. Shipped test count: 10 test functions (16 collected) in `test_save_eventlog_cap.py`; the body's "about 9" / "Nine new tests" are the planning estimate ([VR-1081](../verification/VR-1081-save-eventlog-cap-counts-real-saves.md) F4), left as written.
+> **Earlier status record (superseded by the line above; retained as history, unedited):** READY — authored 2026-10-24 by `07-implementation-planning` (release-push remediation pass 5). Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive of 2026-10-24, recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256 (bugs, in-progress and critical items), covers it: a bounded-work guard that does not fire on real saves is a bug in a `VERIFIED` package's behaviour. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [IP-1101](IP-1101-self-contained-saves.md) (`VERIFIED`; `validate_save`, the save envelope), [IP-1102](IP-1102-save-load-robustness.md) and [IP-1103](IP-1103-save-validation-completion.md) (`VERIFIED`; the 400-with-reason and no-session-consumed contract), the June 2026 audit item §D7 that introduced the cap (`test_defensive_audit_2026.py`).
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [`01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) ("Release-push remediation, pass 5"); the defect is recorded as `OQ5` in [GDS-07](../../architecture/07-data-model.md) on branch `claude/stale-docs-gds` (commit `4eac964`).

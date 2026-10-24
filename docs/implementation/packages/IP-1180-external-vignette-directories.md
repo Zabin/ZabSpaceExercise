@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1180
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
+> **Status:** VERIFIED 2026-09-27 ([VR-1180](../verification/VR-1180-external-vignette-directories.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
 > awaiting `09-package-verification` in a fresh session — this session implemented it and may not
 > verify its own work)*
 > **Dependencies:** [FS-118](../../features/FS-118-external-vignette-directories.md) v1.0

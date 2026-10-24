@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1170
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implemented 2026-07-05 by `08-code-implementation` — `BEAM_MODES["weather"]`/
+> **Status:** VERIFIED 2026-07-05 ([VR-1170](../verification/VR-1170-isr-beam-mode-coverage.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE *(implemented 2026-07-05 by `08-code-implementation` — `BEAM_MODES["weather"]`/
 > `["mw"]` + `_DEFAULT_MODE` entries added to `spacesim/engine/isr.py`, 9 new tests in
 > `spacesim/tests/test_isr.py`, full suite 575 passed/3 skipped (up from 566/3, +9), both permanent
 > gates green. Awaiting `09-package-verification` to advance to `VERIFIED`.)*

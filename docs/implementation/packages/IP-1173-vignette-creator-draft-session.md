@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1173
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implemented 2026-07-05 by `08-code-implementation` —
+> **Status:** VERIFIED 2026-07-11 ([VR-1173](../verification/VR-1173-vignette-creator-draft-session.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE *(implemented 2026-07-05 by `08-code-implementation` —
 > `InProcessSession.create_draft_session`/`save_vignette` added, the new
 > `content/vignette_export.py` reverse-serialization module, two new HTTP routes
 > (`POST /api/sessions/draft`, `POST /api/sessions/{sid}/save_vignette`), and every time-control
