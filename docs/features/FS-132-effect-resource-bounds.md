@@ -4,8 +4,8 @@
 > **Version:** 1.1 (2026-10-17, run #175: adds `FR-1480` — a salvo is charged whether it hits or
 > misses — and closes Open Question 3 with the project owner's answer; see the change note at the
 > end). v1.0: 2026-10-17, run #152.
-> **Status:** ✅ Ready for implementation planning (v1.1 delta: `FR-1480`). The v1.0 scope
-> (`FR-1460`, `FR-1470`) is built: `IP-1320` `VERIFIED` (`VR-1320`).
+> **Status:** ✅ Done. The v1.0 scope (`FR-1460`, `FR-1470`) is built: `IP-1320` `VERIFIED`
+> (`VR-1320`); the v1.1 delta (`FR-1480`) is built: `IP-1321` `VERIFIED`.
 > *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Approved input:** the Feature Catalog entry `FEAT-1400` (Five-D's Counterspace Effect
 > Resolution) in [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md),

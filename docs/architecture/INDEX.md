@@ -167,6 +167,12 @@ routed questions — `ADR-0037` decided, `ADR-0036` `Proposed` pending a project
 interprets invariant 1 for a raising event handler, `BL-0227`; and ADR-0039 closes FS-123's
 space-weather index-mapping Open Questions, `BL-0104`/`BL-0121`).
 
+## 4. Living registers
+
+| Document | Purpose | Owning stage | Status |
+|---|---|---|---|
+| [strategic-assumptions-register.md](strategic-assumptions-register.md) | The hidden strategic assumptions behind the vision and the triggers that make each one worth re-examining (from `reviews/strategic-review-2026-07.md` §1.3, R6.1-R3). | `01-vision` | ♻️ Living |
+
 ## Related
 
 [`MSTR-005`](../master/MSTR-005-documentation-map.md) §3a/§4 (document shape, chain placement),

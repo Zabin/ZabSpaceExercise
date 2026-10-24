@@ -3,10 +3,10 @@
 > **Document ID:** FS-131
 > **Version:** 1.1 (2026-10-16, run #143: aligned to `FR-5311`–`FR-5314`, added in run #142; see
 > the change note at the end)
-> **Status:** ✅ Ready for implementation planning, **except** the `FR-5310` template-reference
-> clause. That clause and its Acceptance Criterion name a construct the shipped content model does
-> not carry (Open Question 1, routed to `04-requirements-engineering`). Every other clause is
-> specified in full below, so a package can be planned from it now.
+> **Status:** ✅ Done (built by `IP-1310` and `IP-1311`, both `VERIFIED`), **except** the `FR-5310`
+> template-reference clause. That clause and its Acceptance Criterion name a construct the shipped
+> content model does not carry (Open Question 1, `BL-0233`, routed to `04-requirements-engineering`),
+> so it is unbuilt and blocked. Every other clause is built.
 > **Approved input:** the Feature Catalog entry `FEAT-5300` in
 > [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md),
 > following the FS-130 convention. `Purpose`/`Scope`/`Dependencies`/`Affected Subsystems`/

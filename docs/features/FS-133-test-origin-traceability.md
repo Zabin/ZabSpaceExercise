@@ -2,7 +2,7 @@
 
 > **Document ID:** FS-133
 > **Version:** 1.1 (2026-10-23, pipeline run #228: adds `NFR-2850` — the matrix's Test column is generated from the markers, `BL-0322`). v1.0: run #214.
-> **Status:** ✅ Ready for implementation planning
+> **Status:** ✅ Done (v1.1 built by `IP-1330`–`IP-1333`, with `IP-1334`/`IP-1335`, all `VERIFIED`). The `NFR-1510` dependency lock is not a package: it is produced at the first major release and checked by `11-release-readiness` (criterion 8).
 > **Approved input:** the Feature Catalog entry `FEAT-12100` (Test-Origin Traceability &
 > Major-Release Verification, Epic `EP-12000`) in
 > [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md),
