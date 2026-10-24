@@ -129,6 +129,54 @@ def validate_inject_effects(world: WorldState, effects, *, check_targets: bool, 
     return problems
 
 
+def _is_int(v) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def _row_problem(key: str, r: dict) -> Optional[str]:
+    """IP-1103 (Design Decision 1) — why one ``pending``/``orders``/``ssn_requests`` row is unusable,
+    or None. ``orders`` and ``ssn_requests`` rows are built into the same model ``from_state`` builds
+    (so the check cannot drift from the loader), then type-checked, since the models are plain
+    dataclasses that accept any value."""
+    if key == "pending":
+        if not _is_int(r["t"]):
+            return "'t' must be an integer"
+        if not isinstance(r["kind"], str) or not r["kind"]:
+            return "'kind' must be a non-empty string"
+        if r.get("payload") is not None and not isinstance(r["payload"], dict):
+            return "'payload' must be an object"
+        return None
+    try:
+        obj = Order(**r) if key == "orders" else SSNRequest(**r)
+    except TypeError as exc:
+        return str(exc)
+    def strs(*names):
+        return next((n for n in names if not isinstance(getattr(obj, n), str)), None)
+    if key == "orders":
+        bad = strs("cell", "actor", "action", "status", "id")
+        if bad:
+            return f"'{bad}' must be a string"
+        if obj.cell not in ("blue", "red"):
+            return "'cell' must be 'blue' or 'red'"
+        if obj.target is not None and not isinstance(obj.target, str):
+            return "'target' must be a string or null"
+        if not isinstance(obj.params, dict):
+            return "'params' must be an object"
+        if not _is_int(obj.issued_at):
+            return "'issued_at' must be an integer"
+        return None
+    bad = strs("id", "cell", "intent", "target", "regime", "priority", "state")
+    if bad:
+        return f"'{bad}' must be a string"
+    if obj.cell not in ("blue", "red"):
+        return "'cell' must be 'blue' or 'red'"
+    for n in ("collect_at", "product_at"):
+        v = getattr(obj, n)
+        if v is not None and not _is_int(v):
+            return f"'{n}' must be an integer or null"
+    return None
+
+
 SAVE_FORMAT = 2   # IP-1101 — absent (legacy) saves reload their vignette by id
 
 
@@ -1023,6 +1071,25 @@ class SessionManager:
             "ssn_requests": [vars(r) for r in self.ssn.requests.values()],
         }
 
+    # IP-1103 (Design Decision 2) — the longest span a save's replay may be asked to cover past the
+    # exercise start epoch: one calendar year (366 days) of sim time. It exists to stop a
+    # replay-cost request, not to model the exercise; it exceeds every shipped vignette's
+    # 4x-estimated-duration horizon (the longest is 120 min x 4 = 8 h) and any test save.
+    MAX_SAVE_SPAN_US = 366 * 86400 * 1_000_000
+
+    @staticmethod
+    def _check_final_time_span(final_time: int, vig) -> None:
+        from spacesim.engine import simtime
+        try:
+            start = simtime.from_iso(vig.start_epoch_utc)
+        except Exception:  # noqa: BLE001 — an unparseable epoch is refused by validate_vignette
+            return
+        if final_time < start:
+            raise ValueError("save key 'final_time' is earlier than the exercise start epoch")
+        if final_time > start + SessionManager.MAX_SAVE_SPAN_US:
+            raise ValueError("save key 'final_time' is beyond the maximum span "
+                             f"({SessionManager.MAX_SAVE_SPAN_US // (86400 * 1_000_000)} days past the start epoch)")
+
     @staticmethod
     def validate_save(state: dict) -> None:
         """IP-1101 (Design Decision 5) / IP-1102 (FR-7230, NFR-1600) — refuse an unusable save
@@ -1054,18 +1121,31 @@ class SessionManager:
                 continue
             if not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
                 raise ValueError(f"save key '{key}' must be a list of objects")
-            for r in rows:
+            for i, r in enumerate(rows):
                 miss = [n for n in need if n not in r]
                 if miss:
                     raise ValueError(f"save key '{key}' has an entry missing {', '.join(miss)}")
+                problem = _row_problem(key, r)
+                if problem:
+                    raise ValueError(f"save key '{key}' entry {i} is malformed: {problem}")
+        # IP-1103 (Design Decision 3) — optional scalars the loader hands straight to the session.
+        if state.get("overrides") is not None and not isinstance(state["overrides"], dict):
+            raise ValueError("save key 'overrides' must be an object")
+        if state.get("classification") is not None and not isinstance(state["classification"], str):
+            raise ValueError("save key 'classification' must be a string")
+        # IP-1103 (Design Decision 2) — final_time lower bound: not before the last logged event.
+        last_event = max((e.sim_time for e in EventLog.model_validate(state["eventlog"]).entries), default=0)
+        if state["final_time"] < max(0, last_event):
+            raise ValueError("save key 'final_time' is earlier than the save's last logged event")
         if not selfc:
             # IP-1102 Design Decision 2 — a legacy save resumes by id; say so when the file is gone.
             from spacesim.content.vignette import load_vignette as _load
             try:
-                _load(state["vignette_id"])
+                legacy_vig = _load(state["vignette_id"])
             except FileNotFoundError as exc:
                 raise ValueError(f"the save depends on vignette '{state['vignette_id']}', which is "
                                  f"not available in the content directories") from exc
+            SessionManager._check_final_time_span(state["final_time"], legacy_vig)
             return
         from spacesim.content.vignette import validate_vignette
         try:
@@ -1076,6 +1156,7 @@ class SessionManager:
         if problems:
             raise ValueError("save content portion refused: " + "; ".join(
                 f"{p['where']}: {p['reason']}" for p in problems))
+        SessionManager._check_final_time_span(state["final_time"], vig)
         try:
             WorldState.model_validate(state["baseline"])
         except Exception as exc:  # noqa: BLE001
