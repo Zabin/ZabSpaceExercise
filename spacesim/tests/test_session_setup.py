@@ -39,6 +39,7 @@ def _vignette_with_roles(roles_needed: list[dict]) -> Vignette:
 
 # -- content/vignette.py schema ------------------------------------------------------------------
 
+@pytest.mark.verifies("FR-4210")
 def test_roles_needed_defaults_to_empty_on_existing_vignettes():
     """All 19 existing vignette YAML files declare no roles_needed — this must default cleanly,
     not error, per Implementation Task 1's explicit backward-compatibility requirement."""
@@ -48,12 +49,14 @@ def test_roles_needed_defaults_to_empty_on_existing_vignettes():
 
 # -- session/manager.py registry + staffing gate -------------------------------------------------
 
+@pytest.mark.verifies("FR-4210")
 def test_staffing_report_empty_and_start_unblocked_with_no_roles_needed():
     vig = _vignette_with_roles([])
     mgr = SessionManager(vig, seed=1)
     assert mgr.staffing_report() == []
 
 
+@pytest.mark.verifies("FR-4210")
 def test_mandatory_unassigned_role_is_reported_unsatisfied():
     vig = _vignette_with_roles([
         {"asset_or_constellation": "ISR-EO-1", "role": "bus", "mandatory": True},
@@ -64,6 +67,7 @@ def test_mandatory_unassigned_role_is_reported_unsatisfied():
     assert report[0]["asset_or_constellation"] == "ISR-EO-1" and report[0]["role"] == "bus"
 
 
+@pytest.mark.verifies("FR-4210")
 def test_optional_unassigned_role_is_never_reported():
     vig = _vignette_with_roles([
         {"asset_or_constellation": "ISR-EO-1", "role": "bus", "mandatory": False},
@@ -72,6 +76,7 @@ def test_optional_unassigned_role_is_never_reported():
     assert mgr.staffing_report() == []
 
 
+@pytest.mark.verifies("FR-4210")
 def test_assigning_the_exact_role_satisfies_the_requirement():
     vig = _vignette_with_roles([
         {"asset_or_constellation": "ISR-EO-1", "role": "bus", "mandatory": True},
@@ -81,6 +86,7 @@ def test_assigning_the_exact_role_satisfies_the_requirement():
     assert mgr.staffing_report() == []
 
 
+@pytest.mark.verifies("FR-4210")
 def test_a_both_assignment_satisfies_either_a_bus_or_payload_requirement():
     vig = _vignette_with_roles([
         {"asset_or_constellation": "ISR-EO-1", "role": "payload", "mandatory": True},
@@ -90,6 +96,7 @@ def test_a_both_assignment_satisfies_either_a_bus_or_payload_requirement():
     assert mgr.staffing_report() == []
 
 
+@pytest.mark.verifies("FR-4210")
 def test_a_bus_only_assignment_does_not_satisfy_a_payload_requirement():
     vig = _vignette_with_roles([
         {"asset_or_constellation": "ISR-EO-1", "role": "payload", "mandatory": True},
@@ -101,6 +108,7 @@ def test_a_bus_only_assignment_does_not_satisfy_a_payload_requirement():
 
 # -- InProcessSession / HTTP: the actual hard gate on Start --------------------------------------
 
+@pytest.mark.verifies("FR-4210")
 def test_start_refused_with_unmet_mandatory_role_via_api():
     api = InProcessSession()
     vig = _vignette_with_roles([{"asset_or_constellation": "ISR-EO-1", "role": "bus", "mandatory": True}])
@@ -111,6 +119,7 @@ def test_start_refused_with_unmet_mandatory_role_via_api():
     assert api._sessions["sess-test"].started is False
 
 
+@pytest.mark.verifies("FR-4210")
 def test_start_succeeds_once_the_mandatory_role_is_assigned():
     api = InProcessSession()
     vig = _vignette_with_roles([{"asset_or_constellation": "ISR-EO-1", "role": "bus", "mandatory": True}])
@@ -121,6 +130,7 @@ def test_start_succeeds_once_the_mandatory_role_is_assigned():
     assert api._sessions["sess-test"].started is True
 
 
+@pytest.mark.verifies("FR-4210")
 def test_only_white_cell_can_assign_roles():
     api = InProcessSession()
     vig = _vignette_with_roles([{"asset_or_constellation": "ISR-EO-1", "role": "bus", "mandatory": True}])
@@ -130,6 +140,7 @@ def test_only_white_cell_can_assign_roles():
     assert api._sessions["sess-test"].staffing_report()   # unchanged — assignment had no effect
 
 
+@pytest.mark.verifies("FR-4210")
 def test_existing_vignette_starts_without_any_role_assignment():
     """All 19 shipped vignettes declare no roles_needed — Start must never be blocked for them."""
     api = InProcessSession()
@@ -138,6 +149,7 @@ def test_existing_vignette_starts_without_any_role_assignment():
     assert ack.ok is True
 
 
+@pytest.mark.verifies("FR-4210")
 def test_staffing_report_and_assign_endpoints_over_http():
     c = _client()
     sid = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
@@ -148,6 +160,7 @@ def test_staffing_report_and_assign_endpoints_over_http():
     assert ack["ok"] is True
 
 
+@pytest.mark.verifies("FR-4210")
 def test_observer_cannot_assign_roles():
     """IP-1131 (BL-0024) — the White-Cell-only gate refuses an Observer-seated caller too."""
     api = InProcessSession()

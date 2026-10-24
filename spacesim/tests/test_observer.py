@@ -28,6 +28,7 @@ def _new_unstarted_session(c: TestClient) -> str:
     return c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
 
 
+@pytest.mark.verifies("FR-6510")
 def test_observer_view_defaults_to_godview():
     c = _client()
     sid = _new_unstarted_session(c)
@@ -36,6 +37,7 @@ def test_observer_view_defaults_to_godview():
     assert obs == god
 
 
+@pytest.mark.verifies("FR-6510")
 def test_white_can_designate_observer_view_to_a_cell():
     c = _client()
     sid = _new_unstarted_session(c)
@@ -47,6 +49,7 @@ def test_white_can_designate_observer_view_to_a_cell():
     assert obs_view == blue_view   # byte-for-byte identical to what Blue's own operator would see
 
 
+@pytest.mark.verifies("FR-6510")
 def test_observer_designation_endpoint_lets_client_reuse_the_same_view_endpoints():
     """app.js's refresh() fetches this, then calls /godview or /view/{designation} directly —
     the same call every other seat already makes, no merged-shape parsing needed client-side."""
@@ -57,6 +60,7 @@ def test_observer_designation_endpoint_lets_client_reuse_the_same_view_endpoints
     assert c.get(f"/api/sessions/{sid}/observer/designation").json() == {"designation": "red"}
 
 
+@pytest.mark.verifies("FR-6510")
 def test_non_white_cannot_designate_observer_view():
     c = _client()
     sid = _new_unstarted_session(c)
@@ -108,6 +112,7 @@ _MUTATING_ROUTES = [
 ]
 
 
+@pytest.mark.verifies("FR-6510")
 @pytest.mark.parametrize("method,path,kwargs", _MUTATING_ROUTES,
                          ids=[p for _, p, _ in _MUTATING_ROUTES])
 def test_every_mutating_route_rejects_observer(method, path, kwargs):
@@ -125,6 +130,7 @@ def test_every_mutating_route_rejects_observer(method, path, kwargs):
     assert after == before   # no WorldState change occurred
 
 
+@pytest.mark.verifies("FR-6510")
 def test_observer_rejection_holds_even_calling_the_route_directly_bypassing_any_ui():
     """The parametrized test above already calls raw HTTP routes with no JS/UI involved at all —
     this test just makes that property explicit for a representative sample, per FS-113's own
@@ -137,6 +143,7 @@ def test_observer_rejection_holds_even_calling_the_route_directly_bypassing_any_
     assert resp.status_code == 403
 
 
+@pytest.mark.verifies("FR-6510")
 def test_non_observer_seats_still_work_normally():
     """The guard must reject Observer specifically, not accidentally break White/Blue/Red."""
     c = _client()
@@ -152,6 +159,7 @@ def test_non_observer_seats_still_work_normally():
 # _reject_observer also refuse an Observer-seated caller explicitly.
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-6510")
 def test_observer_cannot_set_the_observer_view():
     c = _client()
     sid = _new_unstarted_session(c)
@@ -161,6 +169,7 @@ def test_observer_cannot_set_the_observer_view():
     assert c.get(f"/api/sessions/{sid}/observer/designation").json()["designation"] == "godview"
 
 
+@pytest.mark.verifies("FR-6510")
 def test_observer_cannot_assign_roles_over_http():
     c = _client()
     sid = _new_unstarted_session(c)

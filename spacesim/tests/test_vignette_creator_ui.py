@@ -28,6 +28,7 @@ def _draft(c: TestClient) -> str:
 
 # -- FR-5120: JSON view and form view share one state --------------------------------------------
 
+@pytest.mark.verifies("FR-5120")
 def test_json_view_write_is_visible_to_form_view_read():
     c = _client()
     sid = _draft(c)
@@ -39,6 +40,7 @@ def test_json_view_write_is_visible_to_form_view_read():
     assert any(a["id"] == "SAT-J1" for a in state["assets"])
 
 
+@pytest.mark.verifies("FR-5120")
 def test_form_view_add_is_visible_to_json_view_read():
     c = _client()
     sid = _draft(c)
@@ -48,6 +50,7 @@ def test_form_view_add_is_visible_to_json_view_read():
     assert any(a["id"] == "SAT-F1" for a in state["assets"])
 
 
+@pytest.mark.verifies("FR-5120")
 def test_json_view_write_and_form_view_converge_on_the_same_edit():
     """The single most likely defect this Feature names: two data paths for one draft."""
     c = _client()
@@ -68,6 +71,7 @@ def test_json_view_write_and_form_view_converge_on_the_same_edit():
     assert edited["owner"] == "red"   # JSON-view edit preserved through the form-view op
 
 
+@pytest.mark.verifies("FR-5120")
 def test_json_view_write_rejects_malformed_asset_without_partial_apply():
     c = _client()
     sid = _draft(c)
@@ -83,6 +87,7 @@ def test_json_view_write_rejects_malformed_asset_without_partial_apply():
 
 # -- FR-5130: 2D/3D preview is ground truth, no fog-of-war filtering ------------------------------
 
+@pytest.mark.verifies("FR-5130")
 def test_creator_scene_shows_assets_of_every_owner_with_no_filtering():
     c = _client()
     sid = _draft(c)
@@ -93,6 +98,7 @@ def test_creator_scene_shows_assets_of_every_owner_with_no_filtering():
     assert {"SAT-BLUE", "SAT-RED"} <= ids   # both visible together — no CellController filtering
 
 
+@pytest.mark.verifies("FR-5130")
 def test_creator_scene_reflects_asset_changes_within_the_same_authoring_session():
     c = _client()
     sid = _draft(c)
@@ -106,6 +112,7 @@ def test_creator_scene_reflects_asset_changes_within_the_same_authoring_session(
 
 # -- FR-5140: TLE-paste and lat/long asset entry --------------------------------------------------
 
+@pytest.mark.verifies("FR-5140")
 def test_tle_paste_with_type_cell_name_fields():
     c = _client()
     sid = _draft(c)
@@ -118,6 +125,7 @@ def test_tle_paste_with_type_cell_name_fields():
     assert asset["owner"] == "red" and asset["kind"] == "sensor"
 
 
+@pytest.mark.verifies("FR-5140")
 def test_lat_long_entry_with_type_cell_name_fields():
     c = _client()
     sid = _draft(c)
@@ -131,6 +139,7 @@ def test_lat_long_entry_with_type_cell_name_fields():
     assert asset["location"]["lat_deg"] == 34.74
 
 
+@pytest.mark.verifies("FR-5140")
 def test_curated_site_list_offered_before_free_entry():
     c = _client()
     sites = c.get("/api/ground_sites").json()
@@ -146,6 +155,7 @@ def test_curated_site_list_offered_before_free_entry():
 
 # -- FR-5150: asset menu (edit, reassign, delete) -------------------------------------------------
 
+@pytest.mark.verifies("FR-5120")
 def test_asset_edit_reflected_in_json_view_and_scene():
     c = _client()
     sid = _draft(c)
@@ -156,6 +166,7 @@ def test_asset_edit_reflected_in_json_view_and_scene():
     assert next(a for a in state["assets"] if a["id"] == "SAT-EDIT")["group"] == "ALPHA"
 
 
+@pytest.mark.verifies("FR-5150")
 def test_asset_reassign_is_an_owner_patch():
     c = _client()
     sid = _draft(c)
@@ -166,6 +177,7 @@ def test_asset_reassign_is_an_owner_patch():
     assert next(a for a in state["assets"] if a["id"] == "SAT-REASSIGN")["owner"] == "red"
 
 
+@pytest.mark.verifies("FR-5150")
 def test_asset_delete_removed_from_list_and_edit_then_fails():
     c = _client()
     sid = _draft(c)
@@ -180,6 +192,7 @@ def test_asset_delete_removed_from_list_and_edit_then_fails():
 
 # -- FR-5160: seat-count declaration + seat/role-assignment matrix --------------------------------
 
+@pytest.mark.verifies("FR-5160")
 def test_seat_declaration_generates_seat_ids():
     c = _client()
     sid = _draft(c)
@@ -190,6 +203,7 @@ def test_seat_declaration_generates_seat_ids():
     assert read["white"] == ["white-1", "white-2", "white-3"]
 
 
+@pytest.mark.verifies("FR-5160")
 def test_seat_declaration_rejects_non_white_caller():
     """BL-0123 remediation: the White-Cell-only gate checks the *caller's own* seat (the ``cell``
     query param every mutating route uses), not the target cell being declared for."""
@@ -199,6 +213,7 @@ def test_seat_declaration_rejects_non_white_caller():
     assert r.status_code == 403
 
 
+@pytest.mark.verifies("FR-5160")
 def test_seat_declaration_allows_white_caller_to_declare_non_white_target_cell():
     """BL-0123 remediation: a White-Cell caller (query param) may declare seats for any target
     cell (body field) — Blue and Red seats were previously unreachable because the route
@@ -212,6 +227,7 @@ def test_seat_declaration_allows_white_caller_to_declare_non_white_target_cell()
     assert read["blue"] == ["blue-1", "blue-2"]
 
 
+@pytest.mark.verifies("FR-5160")
 def test_matrix_assignment_produces_role_assignments_identical_to_direct_assign_role():
     """A declared seat + matrix checkbox calls the existing assign_role mechanism unmodified —
     the resulting role_assignments state must be identical in shape either way (FR-5160)."""

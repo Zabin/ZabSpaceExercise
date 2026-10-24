@@ -80,6 +80,7 @@ def _windowless_worlds():
                         min_range_km=1.0e6))
 
 
+@pytest.mark.verifies("FR-3210")
 @pytest.mark.parametrize("actor", ["RDR", "auto"])
 @pytest.mark.parametrize("method", ["issue", "dry_run"])
 def test_windowless_sensor_is_no_window(actor, method):
@@ -91,6 +92,7 @@ def test_windowless_sensor_is_no_window(actor, method):
         assert osys._sensor_bookings == {} or all(not b for b in osys._sensor_bookings.values())
 
 
+@pytest.mark.verifies("FR-3210")
 def test_every_window_booked_is_sensor_contended():
     _, osys = _osys(_world(_radar()))
     reasons = []
@@ -104,6 +106,7 @@ def test_every_window_booked_is_sensor_contended():
     assert osys.dry_run(_obs()).fail_reason == "sensor_contended"
 
 
+@pytest.mark.verifies("FR-3210")
 def test_existing_reasons_unchanged():
     _, osys = _osys(_world(_radar(), Sensor(id="RED-RDR", owner="red", kind="ground_radar",
                                              location=_subpoint(_leo(), 0))))
@@ -113,6 +116,7 @@ def test_existing_reasons_unchanged():
     assert osys.dry_run(_obs("auto")).fail_reason == "no_window"
 
 
+@pytest.mark.verifies("FR-3210")
 def test_unknown_target_on_shipped_radar_is_no_window():
     mgr = SessionManager(load_vignette("training-basics"), seed=1)
     mgr.start()
@@ -140,6 +144,7 @@ MALFORMED = [
 ]
 
 
+@pytest.mark.verifies("NFR-1600")
 @pytest.mark.parametrize("bad", MALFORMED, ids=lambda b: f"{next(iter(b))}={b[next(iter(b))]!r}")
 @pytest.mark.parametrize("actor", ["RDR", "auto"])
 def test_malformed_param_rejected_by_both_paths(bad, actor):
@@ -149,6 +154,7 @@ def test_malformed_param_rejected_by_both_paths(bad, actor):
     assert order.status == "rejected" and order.fail_reason == "invalid_param"
 
 
+@pytest.mark.verifies("NFR-1600")
 def test_no_phantom_booking_after_malformed_attempts():
     _, fresh = _osys(_world(_radar()))
     expected = fresh.issue(_obs()).earliest_window
@@ -162,6 +168,7 @@ def test_no_phantom_booking_after_malformed_attempts():
     assert order.earliest_window == expected
 
 
+@pytest.mark.verifies("NFR-1600")
 def test_http_malformed_param_is_not_a_500():
     c = TestClient(app, raise_server_exceptions=False)
     sid = c.post("/api/sessions", json={"vignette_id": "training-basics", "seed": 1}).json()["session"]
@@ -187,11 +194,13 @@ def _payload_for(**params) -> dict:
     return p
 
 
+@pytest.mark.verifies("FR-3210")
 def test_null_params_mean_absent():
     nulls = _payload_for(look_angle_deg=None, duration_s=None, gain=None, beam_mode=None)
     assert nulls == _payload_for()
 
 
+@pytest.mark.verifies("FR-3210")
 def test_well_formed_orders_unchanged():
     assert _payload_for(look_angle_deg="10", duration_s="120") == \
         _payload_for(look_angle_deg=10.0, duration_s=120.0)

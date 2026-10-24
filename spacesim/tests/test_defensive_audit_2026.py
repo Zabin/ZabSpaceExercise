@@ -35,6 +35,7 @@ import pytest
 # --------------------------------------------------------------------------- #
 # C2 — GEO regime classification.
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("FR-1210")
 def test_classify_regime_real_geo():
     """Real GEO sat (a≈42,164 km) must classify GEO, not MEO (audit §C2)."""
     from spacesim.engine.orbit import classify_regime
@@ -46,6 +47,7 @@ def test_classify_regime_real_geo():
     assert classify_regime(a_m=26_560_000.0, e=0.0, i_deg=55.0) == "MEO"
 
 
+@pytest.mark.verifies("FR-1210")
 def test_period_s_invalid_a():
     """``period_s`` must return NaN for non-positive a rather than raising (audit §C4)."""
     from spacesim.engine.orbit import period_s
@@ -64,6 +66,7 @@ def _seed_session(seed: int = 1):
     return mgr
 
 
+@pytest.mark.verifies("FR-3310")
 def test_executed_observe_releases_sensor_booking():
     """After an observe order executes, its sensor booking is no longer in the dict (audit §C3)."""
     from spacesim.engine.orders import Order
@@ -92,6 +95,7 @@ def test_executed_observe_releases_sensor_booking():
     )
 
 
+@pytest.mark.verifies("FR-3310")
 def test_executed_command_releases_pass_booking():
     """After a command (or maneuver) executes, its pass-booking row is released (audit §C3)."""
     from spacesim.engine.orders import Order
@@ -135,6 +139,7 @@ def test_executed_command_releases_pass_booking():
 # server lays out the message-text field unmodified (correct: scrubbing
 # belongs at render time), and the front end escapes via ``esc()``.
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("NFR-2200")
 def test_inject_message_text_round_trips_escaped():
     """The app.js render path must HTML-escape inject text (audit §D1)."""
     from pathlib import Path
@@ -168,6 +173,7 @@ def _sid(c) -> str:
     return sid
 
 
+@pytest.mark.verifies("NFR-2200")
 @pytest.mark.parametrize("bad_id", [
     "<script>alert(1)</script>",
     "../../etc/passwd",
@@ -185,6 +191,7 @@ def test_tle_id_charset_rejected(bad_id: str):
     assert r.status_code in (422, 400), f"hostile TLE id {bad_id!r} got status {r.status_code}"
 
 
+@pytest.mark.verifies("NFR-2200")
 @pytest.mark.parametrize("bad_id", [
     "<img src=x onerror=alert(1)>",
     "../../etc/passwd",
@@ -202,6 +209,7 @@ def test_order_actor_charset_rejected(bad_id: str):
 # --------------------------------------------------------------------------- #
 # D4 — Vignette path traversal and YAML safety.
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("NFR-3700")
 @pytest.mark.parametrize("bad_id", [
     "../../etc/passwd",
     "/etc/passwd",
@@ -219,6 +227,7 @@ def test_load_vignette_rejects_path_traversal(bad_id: str):
         load_vignette(bad_id)
 
 
+@pytest.mark.verifies("NFR-3700")
 def test_load_vignette_rejects_absolute_path():
     from spacesim.content.vignette import load_vignette, VIGNETTE_DIR
     # Even pointing at a legitimate file inside VIGNETTE_DIR by absolute path
@@ -228,6 +237,7 @@ def test_load_vignette_rejects_absolute_path():
         load_vignette(legit)
 
 
+@pytest.mark.verifies("NFR-2200")
 def test_yaml_safe_load_no_code_execution(tmp_path, monkeypatch):
     """A YAML file containing ``!!python/object/apply:os.system`` must load safely.
 
@@ -258,6 +268,7 @@ def test_yaml_safe_load_no_code_execution(tmp_path, monkeypatch):
 # --------------------------------------------------------------------------- #
 # D6 — Telemetry series ``n`` clamp.
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("NFR-3710")
 def test_telemetry_series_n_clamped():
     c = _client()
     sid = _sid(c)
@@ -274,6 +285,7 @@ def test_telemetry_series_n_clamped():
 # --------------------------------------------------------------------------- #
 # D7 — Session-table bound + load_save replay bound.
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("NFR-3710")
 def test_session_table_evicts_when_full():
     """Creating MAX_LIVE_SESSIONS + 1 sessions must not unbound-grow the table (audit §D7)."""
     from spacesim.session.inprocess import InProcessSession
@@ -286,6 +298,7 @@ def test_session_table_evicts_when_full():
     )
 
 
+@pytest.mark.verifies("NFR-3710")
 def test_load_save_rejects_huge_eventlog():
     """``load_save`` must refuse an eventlog beyond MAX_EVENTLOG_REPLAY_ENTRIES (audit §D7)."""
     from spacesim.session.inprocess import InProcessSession
@@ -341,6 +354,7 @@ _AUTHORED_CONTENT_EXEMPT = [
 ]
 
 
+@pytest.mark.verifies("FR-6210")
 @pytest.mark.parametrize("endpoint_tpl", FOG_READ_ENDPOINTS)
 def test_fog_red_cannot_see_blue_assets(endpoint_tpl: str):
     """For every Red-cell read endpoint, no Blue asset id may appear in the response (audit §E2).
@@ -367,6 +381,7 @@ def test_fog_red_cannot_see_blue_assets(endpoint_tpl: str):
 # --------------------------------------------------------------------------- #
 # E5 — Replace the tautological inject-library cache test.
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("FS-108")
 def test_inject_library_is_cached_for_real():
     """Two consecutive calls must return the **same list object** — that's caching (audit §E5)."""
     from spacesim.session.inprocess import InProcessSession
@@ -392,6 +407,7 @@ def test_inject_library_is_cached_for_real():
 # --------------------------------------------------------------------------- #
 # E6 — Third-body perturbation has a real test.
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("FR-1210")
 def test_third_body_acceleration_points_toward_body():
     """Sun's third-body acceleration on a LEO sat points toward the Sun.
 
@@ -415,6 +431,7 @@ def test_third_body_acceleration_points_toward_body():
 # --------------------------------------------------------------------------- #
 # F2 — Clock-lag watchdog field exists in clock_state.
 # --------------------------------------------------------------------------- #
+@pytest.mark.verifies("NFR-1300")
 def test_clock_state_carries_lag_warning_field():
     """``SessionManager.clock_state()`` must always carry a ``lag_warning`` key
     (None when healthy) so the UI can surface hardware warnings (audit §F2)."""

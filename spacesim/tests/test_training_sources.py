@@ -9,6 +9,7 @@ Route segments (`/api/...`) and globs are not checked.
 """
 from __future__ import annotations
 
+import pytest
 import re
 from pathlib import Path
 
@@ -65,6 +66,7 @@ def check_footer(footer: str) -> list[str]:
     return problems
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_every_training_footer_resolves():
     problems = []
     count = 0
@@ -76,6 +78,7 @@ def test_every_training_footer_resolves():
     assert not problems, "\n".join(problems)
 
 
+@pytest.mark.verifies("NFR-3400")
 def test_checker_fails_on_a_broken_footer():
     """Self-test: the checker is shown to fail on a renamed symbol and on a moved file."""
     assert check_footer("**Sources:** `spacesim/engine/orders.py` (`_validate`)") == []

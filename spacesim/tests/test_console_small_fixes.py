@@ -10,6 +10,7 @@
 """
 from __future__ import annotations
 
+import pytest
 from pathlib import Path
 
 from spacesim.engine.orders import Order
@@ -40,6 +41,7 @@ def _bar(api, sid, actor):
     return [a for a in feed["activities"] if a["kind"] == "order" and a["actor"] == actor]
 
 
+@pytest.mark.verifies("FS-101")
 def test_activity_reports_executed_once_the_bar_has_ended():
     api, sid, mgr, ack, actor = _downlink_session()
     (before,) = _bar(api, sid, actor)
@@ -52,6 +54,7 @@ def test_activity_reports_executed_once_the_bar_has_ended():
     assert row["status"] == "executed"
 
 
+@pytest.mark.verifies("FS-101")
 def test_activity_reports_active_while_the_bar_straddles_now():
     api, sid, mgr, ack, actor = _downlink_session()
     (before,) = _bar(api, sid, actor)
@@ -60,6 +63,7 @@ def test_activity_reports_active_while_the_bar_straddles_now():
     assert during["status"] == "active"
 
 
+@pytest.mark.verifies("FR-5220")
 def test_bulk_import_duplicate_asset_id_in_one_file_keeps_the_first():
     api = InProcessSession()
     sid = api.load_vignette("leo-isr-denial", seed=1)
@@ -72,6 +76,7 @@ def test_bulk_import_duplicate_asset_id_in_one_file_keeps_the_first():
     assert mgr.world.assets["DUP-1"].orbit.tle_line2 == _TLE2  # the first object's orbit kept
 
 
+@pytest.mark.verifies("FR-4410")
 def test_fire_inject_reports_a_rejection():
     js = (STATIC / "app.js").read_text(encoding="utf-8")
     start = js.index("async function fireInject")
@@ -79,6 +84,7 @@ def test_fire_inject_reports_a_rejection():
     assert "catch" in body and "inject-result" in body
 
 
+@pytest.mark.verifies("FR-5410")
 def test_vignette_picker_groups_by_origin():
     js = (STATIC / "app.js").read_text(encoding="utf-8")
     start = js.index("async function loadVignettes")
@@ -86,6 +92,7 @@ def test_vignette_picker_groups_by_origin():
     assert "origin" in body and "optgroup" in body
 
 
+@pytest.mark.verifies("FR-5510")
 def test_save_as_scenario_console_control_is_white_only():
     html = (STATIC / "index.html").read_text(encoding="utf-8")
     js = (STATIC / "app.js").read_text(encoding="utf-8")

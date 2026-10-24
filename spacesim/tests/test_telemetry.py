@@ -29,6 +29,7 @@ def _val(w, param, t=None):
     return tel.sample(w, "SAT", param, t if t is not None else w.now, SEED)["value"]
 
 
+@pytest.mark.verifies("NFR-2410")
 def test_sampling_is_deterministic_and_repeatable():
     w = _world()
     assert tel.sample(w, "SAT", "rx_power_dbm", 12345, SEED) == tel.sample(w, "SAT", "rx_power_dbm", 12345, SEED)
@@ -39,6 +40,7 @@ def test_sampling_is_deterministic_and_repeatable():
     assert tel.series(w, "SAT", "cn0_dbhz", 0, minutes(60), 50, SEED + 1) != s1
 
 
+@pytest.mark.verifies("NFR-2410")
 def test_sampling_is_read_only():
     w = _world()
     before = w.model_dump_json()
@@ -47,6 +49,7 @@ def test_sampling_is_read_only():
     assert w.model_dump_json() == before  # never mutates world state
 
 
+@pytest.mark.verifies("FR-2110")
 def test_sampler_returns_physical_values_only_no_cause_label():
     w = _world()
     w.active_effects.append(ActiveEffect(target="SAT", outcome="deny", start=0, end=minutes(60),
@@ -57,6 +60,7 @@ def test_sampler_returns_physical_values_only_no_cause_label():
         assert "cause" not in entry and "attack" not in entry
 
 
+@pytest.mark.verifies("NFR-3050")
 def test_ew_jam_signature_raises_rx_power_and_recovers():
     clean = _world()
     nominal_rx = _val(clean, "rx_power_dbm", minutes(20))
@@ -72,6 +76,7 @@ def test_ew_jam_signature_raises_rx_power_and_recovers():
     assert _val(w, "rx_power_dbm", minutes(50)) < nominal_rx + 5    # back to nominal after the window
 
 
+@pytest.mark.verifies("FR-2320")
 def test_nominal_series_strips_attack_signature_for_compare_overlay():
     """The 'compare-to-nominal' ghost (§5.3) is baseline+noise with no attack term.
 
@@ -92,6 +97,7 @@ def test_nominal_series_strips_attack_signature_for_compare_overlay():
                - tel.sample(w, "SAT", "rx_power_dbm", minutes(50), SEED, nominal=True)["value"]) < 5
 
 
+@pytest.mark.verifies("FR-2320")
 def test_nominal_series_is_deterministic_and_read_only():
     w = _world()
     w.active_effects.append(ActiveEffect(target="SAT", outcome="deny", start=0, end=minutes(40),
@@ -102,6 +108,7 @@ def test_nominal_series_is_deterministic_and_read_only():
     assert s1 == s2 and w.model_dump_json() == before
 
 
+@pytest.mark.verifies("NFR-3050")
 def test_cyber_signature_ramps_fsw_errors_under_safe_mode():
     w = _world()
     enter_safe_mode(w.assets["SAT"].bus_state, now=0, cause="cyber")
@@ -112,6 +119,7 @@ def test_cyber_signature_ramps_fsw_errors_under_safe_mode():
     assert tel.sample(w, "SAT", "fsw_error_count", minutes(30), SEED)["status"] in ("yellow", "red")
 
 
+@pytest.mark.verifies("NFR-3050")
 def test_directed_energy_signature_drops_snr_and_heats_optics():
     w = _world()
     w.active_effects.append(ActiveEffect(target="SAT", outcome="degrade", start=0, end=minutes(40),
@@ -120,6 +128,7 @@ def test_directed_energy_signature_drops_snr_and_heats_optics():
     assert _val(w, "optics_temp_c", minutes(20)) > _val(_world(), "optics_temp_c", minutes(20)) + 6
 
 
+@pytest.mark.verifies("NFR-3050")
 def test_power_sag_and_kinetic_loss_of_signal():
     w = _world()
     w.assets["SAT"].bus_state.power.battery_soc = 0.1  # power-red
@@ -133,6 +142,7 @@ def test_power_sag_and_kinetic_loss_of_signal():
     assert s["value"] is None and s["status"] == "los"   # loss of signal after a kill
 
 
+@pytest.mark.verifies("FR-6210")
 def test_fog_blocks_other_cells_telemetry():
     mgr = SessionManager(load_vignette("training-basics"), seed=1)
     mgr.start()
@@ -140,6 +150,7 @@ def test_fog_blocks_other_cells_telemetry():
     assert mgr.get_telemetry("red", "ISR-EO-1") is None           # other cell's asset → fog
 
 
+@pytest.mark.verifies("FR-8110")
 def test_world_map_data_present_and_nontrivial():
     p = Path(__file__).resolve().parent.parent / "ui_web" / "static" / "world.json"
     data = json.loads(p.read_text())
@@ -168,6 +179,7 @@ def _by_param(rows, param):
     return [r for r in rows if r["param"] == param]
 
 
+@pytest.mark.verifies("FR-2320")
 def test_telemetry_export_reflects_anomaly_perturbation_at_correct_times():
     mgr, t0, t_anom = _export_mgr()
     rows = mgr.telemetry_export("blue", "ISR-EO-1", t0, mgr.sim.clock.now, interval_s=60)
@@ -185,6 +197,7 @@ def test_telemetry_export_reflects_anomaly_perturbation_at_correct_times():
     assert all(r["value"] > 1.0 for r in att if r["t"] >= t_anom)
 
 
+@pytest.mark.verifies("FR-2320")
 def test_telemetry_export_matches_live_endpoint_and_engine_sample_at_each_point():
     from spacesim.session import aar
     mgr, t0, _ = _export_mgr()
@@ -204,6 +217,7 @@ def test_telemetry_export_matches_live_endpoint_and_engine_sample_at_each_point(
         assert (r["value"], r["status"]) == (live[r["param"]]["value"], live[r["param"]]["status"])
 
 
+@pytest.mark.verifies("FR-2320")
 def test_telemetry_export_is_fog_scoped_per_requesting_cell():
     mgr, t0, _ = _export_mgr()
     now = mgr.sim.clock.now
@@ -215,6 +229,7 @@ def test_telemetry_export_is_fog_scoped_per_requesting_cell():
     assert blue == white   # White sees any asset, exactly as /telemetry/{cell}/{asset} does
 
 
+@pytest.mark.verifies("FR-2320")
 def test_telemetry_export_is_read_only_and_deterministic():
     mgr, t0, _ = _export_mgr()
     now = mgr.sim.clock.now
@@ -227,6 +242,7 @@ def test_telemetry_export_is_read_only_and_deterministic():
     assert len(mgr.sim.eventlog.entries) == n_events and mgr.sim.clock.now == now
 
 
+@pytest.mark.verifies("FR-2320")
 def test_telemetry_export_wholly_out_of_range_rejected():
     import pytest
     mgr, t0, _ = _export_mgr()
@@ -237,6 +253,7 @@ def test_telemetry_export_wholly_out_of_range_rejected():
         mgr.telemetry_export("blue", "ISR-EO-1", t0 - minutes(2), t0 - minutes(1))
 
 
+@pytest.mark.verifies("FR-2320")
 def test_telemetry_export_partially_out_of_range_clamped():
     mgr, t0, _ = _export_mgr()
     now = mgr.sim.clock.now
@@ -246,6 +263,7 @@ def test_telemetry_export_partially_out_of_range_clamped():
     assert len(times) == 21   # clamped to [t0, now], sampled every 60 s
 
 
+@pytest.mark.verifies("FR-2320")
 def test_telemetry_export_default_span_is_the_recorded_range():
     mgr, t0, _ = _export_mgr()
     rows = mgr.telemetry_export("blue", "ISR-EO-1", interval_s=600)
@@ -275,6 +293,7 @@ def _paused_mgr():
     return mgr, mgr.ctx.start_epoch
 
 
+@pytest.mark.verifies("FR-2320")
 def test_series_pre_onset_matches_replay():
     """Scenario A — a bus anomaly at +600 s must not be back-dated onto pre-onset points."""
     mgr, t0, t_anom = _export_mgr()
@@ -288,6 +307,7 @@ def test_series_pre_onset_matches_replay():
     _assert_series_matches_replay(mgr, "ISR-EO-1", "battery_soc", t0, now, 7, nominal=True)
 
 
+@pytest.mark.verifies("FR-2320")
 def test_series_cyber_cpu_load_pre_onset_matches_replay():
     """Scenario B — a cyber-cause anomaly's CPU-load signature starts at its own onset."""
     mgr, t0 = _paused_mgr()
@@ -300,6 +320,7 @@ def test_series_cyber_cpu_load_pre_onset_matches_replay():
     assert max(pre) < min(post)
 
 
+@pytest.mark.verifies("FR-2320")
 def test_series_cleared_episode_stays_in_history():
     """Scenario C — a safe-mode episode that was later cleared must still show in history."""
     mgr, t0 = _paused_mgr()
@@ -313,6 +334,7 @@ def test_series_cleared_episode_stays_in_history():
     assert in_episode and all(p["status"] == "red" for p in in_episode)
 
 
+@pytest.mark.verifies("FR-2320")
 def test_series_destroyed_asset_not_los_before_kill():
     from spacesim.engine.effects import EffectInstance
     mgr, t0 = _paused_mgr()
@@ -327,6 +349,7 @@ def test_series_destroyed_asset_not_los_before_kill():
     assert all(p["status"] == "los" for p in pts if p["t"] > t0 + minutes(10))
 
 
+@pytest.mark.verifies("FR-2320")
 def test_series_instants_and_shape_unchanged():
     mgr, t0, _ = _export_mgr()
     now = mgr.sim.clock.now
@@ -340,6 +363,7 @@ def test_series_instants_and_shape_unchanged():
     assert d[0]["t"] == t0 and d[-1]["t"] == now and len(d) == 120
 
 
+@pytest.mark.verifies("FR-2320")
 def test_series_replay_cost_is_single_pass():
     """Cost guard — one series call applies each event-log entry at most once (a single forward
     pass), however many distinct event-log positions its window spans."""
@@ -367,6 +391,7 @@ def test_series_replay_cost_is_single_pass():
 
 # -- IP-1262 (BL-0176, rider BL-0174) -------------------------------------------------------------
 
+@pytest.mark.verifies("NFR-3710", "FR-2320")
 def test_telemetry_export_over_ceiling_rejected_without_replay(monkeypatch):
     """Test 4 — a pathological interval_s is rejected before any replay is run."""
     from spacesim.session import aar
@@ -384,6 +409,7 @@ def test_telemetry_export_over_ceiling_rejected_without_replay(monkeypatch):
     assert called["n"] == 0
 
 
+@pytest.mark.verifies("FR-2320")
 def test_series_reversed_window_matches_forward_reversed():
     """Test 7 (BL-0174 rider) — get_series with t0 > t1 does not raise and returns the forward
     call's points in reverse order, value/status identical at every shared instant."""

@@ -52,6 +52,7 @@ def _handles(m) -> list[str]:
 
 
 # 1 -------------------------------------------------------------------------------------------
+@pytest.mark.verifies("FR-4450")
 def test_pending_listing_shows_vignette_and_white_scheduled_injects():
     m = _mgr()
     m.fire_inject([{"type": "message", "to": ["blue"], "text": "white-later"}], at_sim_t=_at(m, 3))
@@ -67,6 +68,7 @@ def test_pending_listing_shows_vignette_and_white_scheduled_injects():
 
 
 # 2-4 cancel ----------------------------------------------------------------------------------
+@pytest.mark.verifies("FR-4450")
 def test_cancelled_vignette_time_inject_never_fires_and_is_logged_skipped():
     m = _mgr()
     m.cancel_inject("timed")
@@ -77,6 +79,7 @@ def test_cancelled_vignette_time_inject_never_fires_and_is_logged_skipped():
     assert entry.payload["skipped"] == "cancelled"
 
 
+@pytest.mark.verifies("FR-4450")
 def test_cancelled_condition_inject_never_fires():
     m = _mgr()
     m.cancel_inject("cond")
@@ -84,12 +87,14 @@ def test_cancelled_condition_inject_never_fires():
     assert "cond-fired" not in _texts(m)
 
 
+@pytest.mark.verifies("FR-4450")
 def test_condition_inject_still_fires_when_not_cancelled():
     m = _mgr()
     m.advance_to(_at(m, 2.5))
     assert _texts(m).count("cond-fired") == 1
 
 
+@pytest.mark.verifies("FR-4450")
 def test_cancelled_white_inject_never_fires():
     m = _mgr()
     m.fire_inject([{"type": "message", "to": ["blue"], "text": "white-later"}], at_sim_t=_at(m, 1))
@@ -99,6 +104,7 @@ def test_cancelled_white_inject_never_fires():
 
 
 # 5-7 edit ------------------------------------------------------------------------------------
+@pytest.mark.verifies("FR-4450")
 def test_edited_effects_fire_once_with_the_edited_value():
     m = _mgr()
     m.edit_inject("timed", effects=[{"type": "message", "to": ["blue"], "text": "timed-edited"}])
@@ -108,6 +114,7 @@ def test_edited_effects_fire_once_with_the_edited_value():
     assert "timed-original" not in _texts(m)
 
 
+@pytest.mark.verifies("FR-4450")
 def test_edited_fire_time_moves_the_firing():
     m = _mgr()
     m.edit_inject("timed", at_sim_t=_at(m, 2.25))
@@ -120,6 +127,7 @@ def test_edited_fire_time_moves_the_firing():
     assert [e.sim_time for e in fired] == [_at(m, 2.25)]
 
 
+@pytest.mark.verifies("FR-4450")
 def test_second_edit_supersedes_the_first():
     m = _mgr()
     m.edit_inject("timed", effects=[{"type": "message", "to": ["blue"], "text": "v1"}])
@@ -128,6 +136,7 @@ def test_second_edit_supersedes_the_first():
     assert "v1" not in _texts(m) and _texts(m).count("v2") == 1
 
 
+@pytest.mark.verifies("FR-4450")
 def test_edited_white_inject_fires_edited():
     m = _mgr()
     m.fire_inject([{"type": "message", "to": ["blue"], "text": "w0"}], at_sim_t=_at(m, 1))
@@ -136,6 +145,7 @@ def test_edited_white_inject_fires_edited():
     assert "w0" not in _texts(m) and _texts(m).count("w1") == 1
 
 
+@pytest.mark.verifies("FR-4450")
 def test_edited_condition_inject_fires_with_edited_effects():
     m = _mgr()
     m.edit_inject("cond", effects=[{"type": "message", "to": ["blue"], "text": "cond-edited"}])
@@ -148,6 +158,7 @@ def _snapshot(m):
     return m.world.model_dump(), len(m.sim.eventlog.entries), m.pending_injects()
 
 
+@pytest.mark.verifies("FR-4450")
 @pytest.mark.parametrize("call", [
     lambda m: m.cancel_inject("nope"),
     lambda m: m.edit_inject("nope", effects=[{"type": "message", "to": ["blue"], "text": "x"}]),
@@ -164,6 +175,7 @@ def test_refusals_change_nothing(call):
     assert _snapshot(m) == before
 
 
+@pytest.mark.verifies("FR-4450")
 def test_already_fired_and_already_cancelled_are_refused():
     m = _mgr()
     m.advance_to(_at(m, 1.5))
@@ -175,6 +187,7 @@ def test_already_fired_and_already_cancelled_are_refused():
 
 
 # 9-10 replay / rewind -------------------------------------------------------------------------
+@pytest.mark.verifies("FR-4450", "FR-1120")
 def test_session_with_cancel_and_edit_replays_byte_identically():
     m = _mgr()
     m.cancel_inject("reveal-2h")
@@ -183,6 +196,7 @@ def test_session_with_cancel_and_edit_replays_byte_identically():
     assert m.sim.replay().model_dump() == m.world.model_dump()
 
 
+@pytest.mark.verifies("FR-4450")
 def test_rewind_to_before_the_edit_restores_the_original():
     m = _mgr()
     m.advance_to(_at(m, 0.25))
@@ -196,6 +210,7 @@ def test_rewind_to_before_the_edit_restores_the_original():
     assert _texts(m).count("timed-original") == 1 and "timed-edited" not in _texts(m)
 
 
+@pytest.mark.verifies("FR-4450")
 def test_rewind_to_after_the_edit_keeps_it():
     m = _mgr()
     m.advance_to(_at(m, 0.25))
@@ -229,6 +244,7 @@ def client_and_sid():
     return c, sid, mgr
 
 
+@pytest.mark.verifies("FR-4450")
 def test_http_pending_list_cancel_and_edit(client_and_sid):
     c, sid, mgr = client_and_sid
     r = c.get(f"/api/sessions/{sid}/injects/pending")
@@ -241,6 +257,7 @@ def test_http_pending_list_cancel_and_edit(client_and_sid):
     assert "white-1" not in [p["handle"] for p in c.get(f"/api/sessions/{sid}/injects/pending").json()]
 
 
+@pytest.mark.verifies("FR-4450")
 @pytest.mark.parametrize("cell", ["blue", "red", "observer", None])
 def test_http_non_white_is_403(client_and_sid, cell):
     c, sid, mgr = client_and_sid
@@ -251,6 +268,7 @@ def test_http_non_white_is_403(client_and_sid, cell):
     assert "white-1" in [p["handle"] for p in mgr.pending_injects()]
 
 
+@pytest.mark.verifies("FR-4450")
 def test_http_refused_edit_is_400(client_and_sid):
     c, sid, mgr = client_and_sid
     r = c.post(f"/api/sessions/{sid}/injects/white-1/edit?cell=white", json={"effects": [{"type": "bogus"}]})
@@ -259,6 +277,7 @@ def test_http_refused_edit_is_400(client_and_sid):
 
 
 # 12 save / resume ------------------------------------------------------------------------------
+@pytest.mark.verifies("FR-4450")
 def test_save_resume_keeps_an_edited_pending_inject_and_the_white_counter(client_and_sid):
     c, sid, mgr = client_and_sid
     mgr.edit_inject("white-1", effects=[{"type": "message", "to": ["blue"], "text": "h-edited"}])

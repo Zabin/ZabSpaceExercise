@@ -1,18 +1,2 @@
 # IP-1330 — modules whose tests do not all declare a `verifies` origin yet (FS-133).
 # The list only shrinks: IP-1331–IP-1333 remove modules as they backfill; the target is empty.
-test_beam_mode_modality.py
-test_console_small_fixes.py
-test_controller_view.py
-test_defensive_audit_2026.py
-test_future_work.py
-test_observe_order_remediation.py
-test_observer.py
-test_order_param_hardening.py
-test_pending_inject_queue.py
-test_session_setup.py
-test_space_weather_index.py
-test_telemetry.py
-test_training_sources.py
-test_vignette_creator_ui.py
-test_vignette_load_validation.py
-test_web.py
