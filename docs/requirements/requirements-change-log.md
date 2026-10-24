@@ -289,6 +289,111 @@ from the tests' declared origins. Review: [`reviews/requirements-update-bl-0322.
 - **Reason:** `BL-0322`.
 - **Source review issue:** U2.
 
+## Baseline-maintenance pass 1 (2026-10-24) — `01`, `02`, `03`
+
+Owner-decided and stale-note items from the backlog and the tranche-2 integration review
+([`reviews/integration-review-tranche-2-white-controls-saves-test-origins.md`](../reviews/integration-review-tranche-2-white-controls-saves-test-origins.md)
+F-02, F-07). No new capability: three new leaves restate behavior the build already ships or an owner
+decision already made. This repository has no standalone `03-requirements-review.md` (the
+requirements-review role is filled by [`reviews/requirements-review.md`](../reviews/requirements-review.md)
+and the per-batch reports in `reviews/`); this pass's review findings are recorded in "Review findings,
+pass 1" below instead of in a new file.
+
+### CHG-022
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added `FR-7450` (ISO-8601 UTC span bounds on the time-span exports), promoting candidate
+  `CR-22` (marked `PROMOTED` in place). Added `FR-7450` to the Related Requirements of `FR-2320`,
+  `FR-7410`, `FR-7420`. New RTM row; `CR-22` row annotated. Marked **not yet built**.
+- **Reason:** Owner decision on `BL-0181`, 2026-10-18 (human-readable timestamps).
+- **Source review issue:** CR-22.
+
+### CHG-023
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-1610` Acceptance Criteria amended from "detects more transiting objects" to the
+  gain/footprint trade with unchanged access windows; Notes record the history; Source Documents add
+  `BL-0215`.
+- **Reason:** Owner decision (A) on `BL-0215`, 2026-10-18; matches the build and `VR-1220`. Resolves
+  finding F2 of the load-validation batch.
+- **Source review issue:** F2 (load-validation batch).
+
+### CHG-024
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-4320` scope extended: refuse Blue, Red and Observer requests to fire, edit or cancel
+  an inject, create a session or a Vignette Creator draft, edit a draft (state, assets, seat
+  declaration), save a draft or session as a vignette or scenario, or trigger the Red AI step. Player
+  routes (orders, compute and preview helpers, cancel, recovery, SSN) and cell-scoped reads are
+  explicitly out of scope. Notes record that the original list is met (`IP-1068`) and the extension is
+  not yet built; a `07` package is owed. Rationale, Source Documents, Related Requirements, AC and
+  Postconditions updated.
+- **Reason:** `BL-0321`, `BL-0324`, `BL-0351`; `VR-1068` F1; integration review tranche 2 F-02.
+- **Source review issue:** F-02.
+
+### CHG-025
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-4310` and `FR-7220` Notes rewritten from "Not met as built" to "met as built" (with
+  the history kept); `FR-7230` Notes record the shipped save format. RTM: `FR-7220` Impl. Package
+  cell and `FR-7230` Future Feature cell (`FS-110`) made current; `NFR-2820`, `NFR-2830`, `NFR-2850`
+  and `NFR-3840` cells updated from "COMPLETE, awaiting 09" to `VERIFIED` (`VR-1330`), and
+  `NFR-2820` now names `IP-1331`–`IP-1333`.
+- **Reason:** `BL-0325`, `BL-0329`, `BL-0356` (F-07). The GDS-10 `FR-W3` row and GDS-07 §6 are not
+  this stage's to edit (see findings).
+- **Source review issue:** F-07.
+
+### CHG-026
+- **Files:** `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `NFR-1510` and `NFR-2830` (and the `NFR-2200` cross-reference) no longer say "major"
+  release: the dependency lock and the test relevance audit apply at every release and are reviewed
+  at the end of the pipeline in `11-release-readiness`. Priorities read "Must (at each release)".
+- **Reason:** Owner decision on `BL-0318`, 2026-10-24.
+- **Source review issue:** BL-0318.
+
+### CHG-027
+- **Files:** `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `NFR-3810` reworded: a retired document is deleted (no archive folder, no register
+  file); git history is the archive; no live document names a deleted path or ID in plain text,
+  except the supersession note that records the deletion. Title and RTM row updated.
+- **Reason:** Owner decision on `BL-0319`, 2026-10-24. The register option is not adopted; the list
+  of deleted paths lives in the supersession note.
+- **Source review issue:** BL-0319.
+
+### CHG-028
+- **Files:** `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `NFR-3830` narrowed from five named ledgers to the three pairs the check compares
+  (Master Build Plan vs package index; `architecture/INDEX.md` §1 vs `ROADMAP.md`; feature index vs
+  spec headers). `NFR-3820` is unchanged; Notes route the feature-index naming question to `05`.
+- **Reason:** `BL-0320`.
+- **Source review issue:** BL-0320.
+
+### CHG-029
+- **Files:** `02-non-functional-requirements.md`
+- **Change:** Status note on `NFR-2820` (marker and backfill met; allow-list empty). No leaf added.
+- **Reason:** `BL-0356` (F-07).
+- **Source review issue:** F-07.
+
+### CHG-030
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added leaves for two shipped behaviors with an approved source: `FR-2330` (telemetry
+  attack signatures as symptoms and the nominal comparison trace; `R121`, GDS-08 §7.3) and `FR-4460`
+  (the reusable inject library; GDS-05 FR-W4, `ADR-0036`). Added candidates `CR-29`–`CR-33`
+  (defender countermeasure modifiers; ops-fidelity levels; activity-feed lanes; scene orbital
+  elements and subsolar point; SIGINT geolocation scaling) — shipped, but no approved input commits
+  the system to them. Recorded, in the candidates section, the items decided to be implementation
+  detail or already covered.
+- **Reason:** `BL-0342`, `BL-0345`, `BL-0348`.
+- **Source review issue:** BL-0342, BL-0345, BL-0348.
+
+### Review findings, pass 1
+
+| # | Finding type | IDs | Description | Severity | Recommendation |
+|---|---|---|---|---|---|
+| P1-1 | Not built | `FR-4320` (extension), `FR-7450` | The extension and the ISO-8601 leaf are baselined ahead of the build. | Medium | `07` remediation package for the route guards (`BL-0324`, `BL-0351`); `06`/`07` for `FR-7450`. |
+| P1-2 | Stale record | GDS-10 `FR-W3` row; GDS-07 §6; GDS-09 §4/OQ1 | Still carry "not met as built" wording. Outside `docs/requirements/`. | Low | `03-architecture-design-synthesis` (GDS-07, GDS-10); `10-integration-review` (GDS-09), per `BL-0329`, `BL-0356`. |
+| P1-3 | Inconsistent evidence | `BL-0321`/`BL-0324`/`BL-0351` | The backlog rows read `DEFERRED`/`SCHEDULED`, not `DECIDED`; the scope extension was applied on the caller's instruction that the owner decided it. | Low | `00-pipeline-manager` to record the decision. |
+| P1-4 | Requirement lacking tests | `FR-3410`, `FR-3510`, `FR-3520`, `FR-4710`, `FR-4720`, `FR-6110`, `FR-6220`, `FR-6410`, `FR-6610`, `FR-7110`, `NFR-1100`, `NFR-1200`, `NFR-1400`, `NFR-1510`, `NFR-2000`, `NFR-2100`, `NFR-2300`, `NFR-2400`, `NFR-2500`, `NFR-2600`, `NFR-2800`, `NFR-2900`, `NFR-3000`, `NFR-3040`, `NFR-3060`, `NFR-3200`, `NFR-3300`, `NFR-3500`, `NFR-3600`, `NFR-3810` | The origin report lists these baseline leaves as named by no test. Several are Inspection/Analysis leaves (`NFR-1510`, `NFR-3500`, `NFR-3600`, `NFR-3810`), expected to have none. No leaf was changed. | Low | `08` retag/new tests for the Test-method leaves; `11-release-readiness` relevance audit (`NFR-2830`) for the rest. |
+| P1-5 | Missing requirement (candidate) | `CR-29`–`CR-33` | Shipped behavior with no approved source. | Low | Owner request via `00-intake`, or `03` to author the source statement, before baselining. |
+| P1-6 | Ambiguity | `NFR-3820` | Names `INDEX.md`; `docs/features/feature-index.md` is unchecked. | Low | `05-feature-decomposition` (rename or widen), `BL-0320`. |
+| P1-7 | Code lags requirement | `NFR-3810` | The integration test's docstring still says the check waits on `BL-0319`; no test names the leaf. | Low | `08` with `BL-0292`'s deletion sweep. |
+
 ---
 
 ## Findings deliberately left unactioned (with reason)
