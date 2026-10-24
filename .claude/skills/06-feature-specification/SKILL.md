@@ -168,7 +168,8 @@ update this Feature's row. Do not let the index drift from the specs it lists.
 ## Feature Specification Template
 
 Every spec carries this fixed field set, in this order — an empty-looking field (e.g.
-"Dependencies: None") is informative; a missing field is not:
+"Dependencies: None") is informative; a missing field is not. (The 20 fields below plus `Console Friction`, which is
+required only for console-touching Features.)
 
 | Field | Content |
 |---|---|
@@ -186,6 +187,7 @@ Every spec carries this fixed field set, in this order — an empty-looking fiel
 | **Error Handling** | Failure modes implied by the requirements/workflows and the observable behavior on each — not implementation-level exception types, the user/system-visible contract |
 | **Performance Considerations** | Any NFR-driven constraint (latency, throughput, determinism, replay-safety) this Feature must respect, cited to its NFR ID |
 | **Security Considerations** | Any NFR/ADR-driven trust-boundary, authorization, or fog-of-war constraint this Feature must respect, cited to its source |
+| **Console Friction** | *Required only when the Feature changes something an operator sees or drives (owner decision `BL-0312`, 2026-10-24); otherwise write "Not applicable: no console surface".* Which friction the design introduces **on purpose** — each item with the training objective that justifies it (for example a consequence confirmation, a disabled Issue until the dry-run passes) — and which friction is **accidental** (extra clicks, stale or buried state), with how the design minimizes it. Cite DOM-007 §3 / GDS-06 NFR-9. |
 | **Acceptance Criteria** | Concrete, checkable conditions a reviewer could verify pass/fail without consulting this spec's own author — derived from, but not necessarily identical to, the underlying requirements' own Acceptance Criteria |
 | **Verification Plan** | How completion will be checked — Test/Demonstration/Analysis/Inspection per criterion, consistent with the requirements' own Verification Method fields |
 | **Dependencies** | Other `FS-xxxx` IDs (or subsystems) this Feature requires to exist first, per the catalog entry |
@@ -220,6 +222,7 @@ Every spec carries this fixed field set, in this order — an empty-looking fiel
       Question if the behavior needs an interface that doesn't yet exist.
 - [ ] No field contains a concrete data structure, schema, function signature, or algorithm that
       isn't already committed to by an approved architecture document or ADR.
+- [ ] A Feature that changes something an operator sees or drives states its intentional and accidental friction in `Console Friction`; any other Feature says "Not applicable" there.
 - [ ] Every Open Question states why it matters and what upstream artifact would need to change to
       resolve it — not just "TBD."
 - [ ] Acceptance Criteria are checkable by a reviewer with no other context beyond this spec and the
