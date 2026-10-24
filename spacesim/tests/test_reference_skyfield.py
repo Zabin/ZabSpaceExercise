@@ -45,6 +45,7 @@ def _epoch_micros() -> int:
     return round((jd - JD_UNIX_EPOCH) * 86400 * 1_000_000)
 
 
+@pytest.mark.verifies("NFR-2810", "FR-1210")
 def test_tle_elevation_matches_skyfield_within_tolerance():
     EarthSatellite, ts, wgs84 = _skyfield()
     sat = EarthSatellite(TLE1, TLE2, "ISS", ts)
@@ -67,6 +68,7 @@ def test_tle_elevation_matches_skyfield_within_tolerance():
     assert worst < 1.0, f"max elevation error {worst:.3f} deg exceeds tolerance"
 
 
+@pytest.mark.verifies("FR-1220")
 def test_access_provider_finds_passes_for_tle_asset():
     orbit = OrbitState(source="tle", tle_line1=TLE1, tle_line2=TLE2, epoch=0)
     station = GroundSite(id="ST", location=SITE, elevation_mask_deg=5.0)

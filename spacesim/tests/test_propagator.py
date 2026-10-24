@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 import numpy as np
 
 from spacesim.engine.geometry import (
@@ -18,6 +19,7 @@ from spacesim.engine.simtime import minutes
 LEO_A = R_EARTH_EQ + 550e3
 
 
+@pytest.mark.verifies("FR-1210")
 def test_satellite_directly_overhead_has_elevation_90():
     prop = ModeratePropagator()
     orbit = OrbitState(a_m=LEO_A, e=0.0, i_deg=51.6, raan_deg=33, argp_deg=0, ta_deg=120, epoch=0)
@@ -30,6 +32,7 @@ def test_satellite_directly_overhead_has_elevation_90():
     assert abs(rng - (np.linalg.norm(r) - R_EARTH_EQ)) < 50_000  # range ≈ altitude when overhead
 
 
+@pytest.mark.verifies("FR-1210")
 def test_ground_track_altitude_is_orbital_altitude():
     prop = ModeratePropagator()
     orbit = OrbitState(a_m=LEO_A, e=0.0, i_deg=51.6, raan_deg=0, argp_deg=0, ta_deg=0, epoch=0)
@@ -40,6 +43,7 @@ def test_ground_track_altitude_is_orbital_altitude():
     assert max(lats) <= 52.0 and min(lats) >= -52.0  # inclination bounds latitude
 
 
+@pytest.mark.verifies("FR-1310")
 def test_prograde_impulse_raises_orbit():
     prop = ModeratePropagator()
     orbit = OrbitState(a_m=LEO_A, e=0.0, i_deg=51.6, raan_deg=0, argp_deg=0, ta_deg=0, epoch=0)

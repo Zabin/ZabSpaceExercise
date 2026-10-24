@@ -11,6 +11,7 @@ _TLE1B = "1 43013U 17073A   24001.50000000  .00000023  00000-0  12345-4 0  9995"
 _TLE2B = "2 43013  98.5691 100.1234 0001234  90.1234 270.1234 14.19560570123456"
 
 
+@pytest.mark.verifies("FR-5220")
 def test_parse_multi_tle_with_and_without_name_lines():
     text = "\n".join([
         "ISS (ZARYA)",
@@ -27,11 +28,13 @@ def test_parse_multi_tle_with_and_without_name_lines():
     assert objects[1]["raw_id"] == "43013"
 
 
+@pytest.mark.verifies("FR-5220")
 def test_parse_multi_tle_zero_recognizable_blocks_raises():
     with pytest.raises(ValueError):
         parse_multi_tle("this is not a TLE file\njust some text\n")
 
 
+@pytest.mark.verifies("FR-5220")
 def test_parse_multi_tle_malformed_block_still_returned_for_later_per_object_failure():
     # Nine well-formed objects + one malformed (short/garbled second line).
     lines = []
@@ -85,6 +88,7 @@ MEAN_ANOMALY = 20.0
 """
 
 
+@pytest.mark.verifies("FR-5220")
 def test_parse_ccsds_omm_multiple_blocks():
     objects = parse_ccsds_omm(_OMM_TEXT)
     assert len(objects) == 2
@@ -95,11 +99,13 @@ def test_parse_ccsds_omm_multiple_blocks():
     assert objects[1]["mean_anomaly_deg"] == pytest.approx(20.0)
 
 
+@pytest.mark.verifies("FR-5220")
 def test_parse_ccsds_omm_zero_recognizable_blocks_raises():
     with pytest.raises(ValueError):
         parse_ccsds_omm("this is not an OMM file\njust some text\n")
 
 
+@pytest.mark.verifies("FR-5220")
 def test_parse_ccsds_omm_malformed_block_still_returned_missing_element_is_none():
     text = _OMM_TEXT + "\nMETA_START\nOBJECT_NAME = SAT-C\nMETA_STOP\nEPOCH = 2024-003T00:00:00\nSEMI_MAJOR_AXIS = 7100.0\n"
     objects = parse_ccsds_omm(text)
@@ -108,6 +114,7 @@ def test_parse_ccsds_omm_malformed_block_still_returned_missing_element_is_none(
     assert objects[2]["e"] is None  # missing ECCENTRICITY — a per-object failure downstream
 
 
+@pytest.mark.verifies("FR-5220")
 def test_neither_tle_nor_omm_shaped_file_raises_from_both_parsers():
     text = "totally unrelated free text\nwith no structure at all\n"
     with pytest.raises(ValueError):

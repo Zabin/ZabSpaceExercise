@@ -43,6 +43,7 @@ def _sat(i: int, group: str | None = None) -> dict:
     return d
 
 
+@pytest.mark.verifies("FR-4110")
 def test_vignette_1_loads_and_builds_a_world():
     assert any(v["id"] == "leo-isr-denial" for v in list_vignettes())
     vig = load_vignette("leo-isr-denial")
@@ -75,6 +76,7 @@ def _write_vignette_file(directory, vignette_id: str, title: str = "External") -
     )
 
 
+@pytest.mark.verifies("FR-5410")
 def test_list_vignettes_empty_external_dirs_reproduces_baseline(tmp_path):
     baseline = list_vignettes()
     same = list_vignettes(external_dirs=[])
@@ -82,6 +84,7 @@ def test_list_vignettes_empty_external_dirs_reproduces_baseline(tmp_path):
     assert all(v["origin"] == "built-in" for v in same)
 
 
+@pytest.mark.verifies("FR-5410")
 def test_list_vignettes_enumerates_external_directory_with_origin_tag(tmp_path):
     ext = tmp_path / "my-external-vignettes"
     _write_vignette_file(ext, "ext-vig-1", "An External Vignette")
@@ -90,6 +93,7 @@ def test_list_vignettes_enumerates_external_directory_with_origin_tag(tmp_path):
     assert entries["ext-vig-1"]["origin"] == "my-external-vignettes"
 
 
+@pytest.mark.verifies("FR-5410")
 def test_list_vignettes_skips_unreadable_or_missing_external_directory(tmp_path):
     missing = tmp_path / "does-not-exist"
     entries = list_vignettes(external_dirs=[missing])
@@ -97,6 +101,7 @@ def test_list_vignettes_skips_unreadable_or_missing_external_directory(tmp_path)
     assert any(v["id"] == "leo-isr-denial" for v in entries)
 
 
+@pytest.mark.verifies("FR-5410")
 def test_list_vignettes_id_collision_resolves_built_in_first(tmp_path):
     ext = tmp_path / "colliding-dir"
     _write_vignette_file(ext, "leo-isr-denial", "A Shadow Attempt")
@@ -106,6 +111,7 @@ def test_list_vignettes_id_collision_resolves_built_in_first(tmp_path):
     assert entries[0]["title"] != "A Shadow Attempt"
 
 
+@pytest.mark.verifies("FR-5410")
 def test_load_vignette_finds_object_that_exists_only_in_external_directory(tmp_path):
     ext = tmp_path / "only-here"
     _write_vignette_file(ext, "only-in-external", "Only External")
@@ -115,6 +121,7 @@ def test_load_vignette_finds_object_that_exists_only_in_external_directory(tmp_p
         load_vignette("only-in-external")  # not visible without the external dir
 
 
+@pytest.mark.verifies("FR-5410", "NFR-3700")
 @pytest.mark.parametrize("bad_id", [
     "../../etc/passwd",
     "/etc/passwd",
@@ -134,6 +141,7 @@ def test_load_vignette_rejects_traversal_against_external_directory_too(tmp_path
         load_vignette(bad_id, external_dirs=[ext])
 
 
+@pytest.mark.verifies("FR-4110", "FR-3420")
 def test_parameter_override_flows_into_roe():
     vig = load_vignette("leo-isr-denial")
     _, ctx = build_world(vig, overrides={"red_kinetic_authorized": True})
@@ -141,6 +149,7 @@ def test_parameter_override_flows_into_roe():
     assert ctx.roe["red"]["kinetic_authorized"] is True
 
 
+@pytest.mark.verifies("FR-3420", "NFR-2010")
 def test_explicit_per_cell_roe_gates_independently_and_is_backward_compatible():
     """IP-1172 (FR-3420, NFR-2010) — explicit roe: block vs. legacy-only fallback."""
     vig = load_vignette("leo-isr-denial")
@@ -158,6 +167,7 @@ def test_explicit_per_cell_roe_gates_independently_and_is_backward_compatible():
     assert ctx.roe["red"] == {"kinetic_authorized": False, "cyber_authorized": True}
 
 
+@pytest.mark.verifies("FR-3420")
 def test_partial_per_cell_roe_block_defaults_missing_subkey_to_false():
     """IP-1172 (FR-3420) — a roe: block that only sets one sub-key for one cell defaults the
     rest to False (fail safe), never raises and never silently authorizes."""
@@ -175,18 +185,21 @@ def test_partial_per_cell_roe_block_defaults_missing_subkey_to_false():
 # IP-1061 removed the hard ValueError raises this section used to pin.
 # ---------------------------------------------------------------------------
 
+@pytest.mark.verifies("NFR-1300")
 def test_vignette_above_24_satellites_loads():
     """25 orbital assets must load without error — no engine-enforced cap (ADR-0019)."""
     vig = _make_vignette([_sat(i) for i in range(25)])
     build_world(vig)   # no exception
 
 
+@pytest.mark.verifies("NFR-1300")
 def test_total_satellite_cap_at_limit_passes():
     """Exactly 24 orbital assets must not raise."""
     vig = _make_vignette([_sat(i) for i in range(24)])
     build_world(vig)   # no exception
 
 
+@pytest.mark.verifies("NFR-1300")
 def test_constellation_above_3_loads():
     """4 satellites in the same group must load without error — no engine-enforced cap (ADR-0019)."""
     sats = [_sat(i, group="ALPHA") for i in range(4)]
@@ -194,6 +207,7 @@ def test_constellation_above_3_loads():
     build_world(vig)   # no exception
 
 
+@pytest.mark.verifies("NFR-1300")
 def test_per_constellation_cap_at_limit_passes():
     """3 satellites in the same group must not raise."""
     sats = [_sat(i, group="ALPHA") for i in range(3)]
@@ -201,6 +215,7 @@ def test_per_constellation_cap_at_limit_passes():
     build_world(vig)   # no exception
 
 
+@pytest.mark.verifies("NFR-1300")
 def test_ungrouped_satellites_not_counted_per_constellation():
     """5 ungrouped orbital assets are fine — no group means not constellation-capped."""
     vig = _make_vignette([_sat(i) for i in range(5)])
@@ -209,6 +224,7 @@ def test_ungrouped_satellites_not_counted_per_constellation():
 
 # -- IP-1200 (FR-5510) — save-as-scenario's carried-forward Vignette fields ------------------
 
+@pytest.mark.verifies("NFR-2010")
 def test_all_library_vignettes_have_no_save_as_scenario_fields():
     """Additive/absent regression (NFR-2010) — every one of the 19 shipped vignettes predates
     IP-1200, so none declares initial_tracks/simulator_version/initial_space_weather."""
@@ -218,6 +234,7 @@ def test_all_library_vignettes_have_no_save_as_scenario_fields():
         assert vig.simulator_version is None
 
 
+@pytest.mark.verifies("FR-5510")
 def test_build_world_consumes_initial_tracks():
     raw = {
         "id": "test-initial-tracks", "title": "Initial tracks",
@@ -233,6 +250,7 @@ def test_build_world_consumes_initial_tracks():
     assert tr.confidence == pytest.approx(0.8)
 
 
+@pytest.mark.verifies("FR-5510")
 def test_build_world_consumes_initial_space_weather():
     raw = {
         "id": "test-initial-space-weather", "title": "Initial space weather",
@@ -245,6 +263,7 @@ def test_build_world_consumes_initial_space_weather():
     assert world.space_weather == {"severity": "severe"}
 
 
+@pytest.mark.verifies("FR-5510")
 def test_build_world_with_no_initial_tracks_or_space_weather_is_unchanged():
     vig = load_vignette("leo-isr-denial")
     world, _ = build_world(vig)

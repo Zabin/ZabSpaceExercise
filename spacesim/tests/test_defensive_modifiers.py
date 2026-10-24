@@ -26,6 +26,7 @@ the seed.
 """
 from __future__ import annotations
 
+import pytest
 from spacesim.engine.bus import BusState, CommsState, PayloadState
 from spacesim.engine.effects import EffectInstance, ModerateEffectResolver
 from spacesim.engine.entities import Asset
@@ -79,6 +80,7 @@ def _engage_effect(success_prob: float = 1.0) -> EffectInstance:
 # C1.a — def.frequency_hop must reduce jam success probability.
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1410")
 def test_frequency_hop_reduces_jam_probability():
     """def.frequency_hop ON must lower the effective jam Pₛ — not just the telemetry display."""
     resolver = ModerateEffectResolver()
@@ -92,6 +94,7 @@ def test_frequency_hop_reduces_jam_probability():
     )
 
 
+@pytest.mark.verifies("FR-1410", "FR-1420")
 def test_frequency_hop_does_not_help_against_cyber():
     """Frequency-hop is an RF technique; cyber attacks don't traverse the RF link."""
     resolver = ModerateEffectResolver()
@@ -115,6 +118,7 @@ def test_frequency_hop_does_not_help_against_cyber():
 # C1.b — satcom.mitigate_interference / shift_users must reduce jam Pₛ.
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1410")
 def test_interference_mitigation_reduces_jam_probability():
     resolver = ModerateEffectResolver()
     eff = _jam_effect(success_prob=1.0)
@@ -126,6 +130,7 @@ def test_interference_mitigation_reduces_jam_probability():
     )
 
 
+@pytest.mark.verifies("FR-1410")
 def test_mitigation_compounds_with_frequency_hop():
     """Both defenses applied gives stricter reduction than either alone."""
     resolver = ModerateEffectResolver()
@@ -141,6 +146,7 @@ def test_mitigation_compounds_with_frequency_hop():
 # C1.c — def.maneuver_evade must reduce kinetic engage Pₖ.
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1410")
 def test_evasion_active_reduces_engage_probability():
     """An evasion burn during fly-out must materially cut engage Pₖ.
 
@@ -157,6 +163,7 @@ def test_evasion_active_reduces_engage_probability():
     assert p_on <= 0.6 * p_off
 
 
+@pytest.mark.verifies("FR-1410")
 def test_evasion_does_not_help_against_jam():
     """An evasion burn is an orbital action; it doesn't change RF link denial."""
     resolver = ModerateEffectResolver()
@@ -171,6 +178,7 @@ def test_evasion_does_not_help_against_jam():
 #        patched cyber vuln, cyber posture).
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-2510")
 def test_harden_still_reduces_safe_mode_susceptibility():
     """def.harden was already wired; lock it against regression."""
     resolver = ModerateEffectResolver()
@@ -213,6 +221,7 @@ def test_harden_still_reduces_safe_mode_susceptibility():
     assert soft_safed > hard_safed
 
 
+@pytest.mark.verifies("FR-1410", "FR-1420")
 def test_patched_vuln_still_blocks_cyber():
     resolver = ModerateEffectResolver()
     eff = EffectInstance(
@@ -223,6 +232,7 @@ def test_patched_vuln_still_blocks_cyber():
     assert resolver._effective_probability(eff, w) == 0.0
 
 
+@pytest.mark.verifies("FR-1410", "FR-1420")
 def test_cyber_posture_still_modulates_probability():
     resolver = ModerateEffectResolver()
     eff = EffectInstance(
@@ -244,6 +254,7 @@ def test_cyber_posture_still_modulates_probability():
 # C1.e — Property: modifiers never push Pₛ below zero, never lift above input.
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1410")
 def test_modifiers_stay_in_unit_interval():
     """No combination of defender flags can push p outside [0, base]."""
     resolver = ModerateEffectResolver()

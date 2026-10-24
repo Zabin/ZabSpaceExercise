@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.engine import Simulation, WorldState
 from spacesim.engine import simtime
 
 
+@pytest.mark.verifies("FR-1130")
 def test_events_fire_in_time_order_then_insertion_order():
     sim = Simulation(WorldState(now=0), seed=0)
     # Schedule out of order; two events share t=10.
@@ -24,6 +26,7 @@ def test_events_fire_in_time_order_then_insertion_order():
     ]
 
 
+@pytest.mark.verifies("FR-1130", "NFR-1700")
 def test_advance_in_two_steps_matches_single_step():
     def run(steps):
         sim = Simulation(WorldState(now=0), seed=3)
@@ -37,6 +40,7 @@ def test_advance_in_two_steps_matches_single_step():
     assert run([100]) == run([25, 55, 100])
 
 
+@pytest.mark.verifies("FR-1110")
 def test_simtime_iso_round_trip_is_exact():
     micros = simtime.from_iso("2026-05-24T12:34:56.123456+00:00")
     assert simtime.to_iso(micros) == "2026-05-24T12:34:56.123456+00:00"

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.engine.bus import BusState, PayloadState
 from spacesim.engine.effects import EffectInstance, ModerateEffectResolver
 from spacesim.engine.entities import Asset
@@ -46,6 +47,7 @@ def _safe_the_sat(world):
     assert world.assets["SAT"].bus_state.mode == "safe_mode"
 
 
+@pytest.mark.verifies("FR-2510")
 def test_difficulty_maps_to_pass_count():
     sim = Simulation(WorldState(), seed=0)
     assert RecoverySystem(sim, difficulty="quick").passes_needed() == 1
@@ -53,6 +55,7 @@ def test_difficulty_maps_to_pass_count():
     assert RecoverySystem(sim, difficulty="punishing").passes_needed() == 3
 
 
+@pytest.mark.verifies("FR-2510")
 def test_recovery_resafes_until_root_cause_patched():
     world = _world(patched=False)
     _safe_the_sat(world)
@@ -76,6 +79,7 @@ def test_recovery_resafes_until_root_cause_patched():
     assert world.assets["SAT"].bus_state.safe_mode.active is False
 
 
+@pytest.mark.verifies("FR-2510")
 def test_realistic_recovery_takes_multiple_passes_when_cause_is_resolved():
     from spacesim.engine.bus import enter_safe_mode
     world = _world(patched=True)

@@ -24,6 +24,7 @@ def _world_with_target(**asset_kw) -> WorldState:
     return w
 
 
+@pytest.mark.verifies("FR-1410")
 def test_kinetic_destroy_spawns_debris_and_political_consequence():
     w = _world_with_target()
     eff = EffectInstance(
@@ -38,6 +39,7 @@ def test_kinetic_destroy_spawns_debris_and_political_consequence():
     assert any(se["type"] == "political_consequence" and se["severity"] == "high" for se in out.side_effects)
 
 
+@pytest.mark.verifies("FR-1430")
 def test_kinetic_destroy_debris_persistence_estimate_monotonic_with_altitude():
     """IP-1240 (FR-1430) — a lower-altitude DebrisField's persistence_estimate is shorter than a
     higher-altitude one's; neither changes Access Window computation (FR-1220) — the estimate is
@@ -63,10 +65,12 @@ def test_kinetic_destroy_debris_persistence_estimate_monotonic_with_altitude():
     assert order.index(mid.persistence_estimate) < order.index(high.persistence_estimate)
 
 
+@pytest.mark.verifies("FR-1430")
 def test_persistence_estimate_altitude_not_determinable_returns_none():
     assert _persistence_estimate(None) is None
 
 
+@pytest.mark.verifies("FR-1430")
 def test_debris_persistence_estimate_does_not_gate_access_or_conjunction():
     """IP-1240 Implementation Task 4 — a regression guard against wiring the estimate into
     gating: creating a DebrisField (with any persistence_estimate) must not appear anywhere in
@@ -85,6 +89,7 @@ def test_debris_persistence_estimate_does_not_gate_access_or_conjunction():
     assert w.conjunctions == []  # unaffected by debris creation
 
 
+@pytest.mark.verifies("FR-1450")
 def test_per_effect_class_detectability_resolves_independently_of_fixed_setting():
     """IP-1290 (FR-1450) — a declared per-effect-class detectability override resolves
     independently of the existing single fixed attribution-confidence setting; an undeclared
@@ -119,6 +124,7 @@ def test_per_effect_class_detectability_resolves_independently_of_fixed_setting(
     assert sig3["confidence"] == pytest.approx(0.5)  # the fixed "ambiguous" value, unaffected
 
 
+@pytest.mark.verifies("FR-1410")
 def test_reversible_deny_creates_active_link_effect_for_its_window():
     w = _world_with_target()
     eff = EffectInstance(
@@ -132,6 +138,7 @@ def test_reversible_deny_creates_active_link_effect_for_its_window():
     assert w.assets["TGT"].health == "nominal"   # reversible: no permanent damage
 
 
+@pytest.mark.verifies("FR-1410")
 def test_failed_effect_changes_nothing():
     w = _world_with_target()
     eff = EffectInstance(target="TGT", intended_outcome="deny", success_prob=0.0)
@@ -140,6 +147,7 @@ def test_failed_effect_changes_nothing():
     assert not w.active_effects
 
 
+@pytest.mark.verifies("FR-1420")
 def test_cyber_blocked_by_patched_or_missing_vector():
     res = ModerateEffectResolver()
 
@@ -152,6 +160,7 @@ def test_cyber_blocked_by_patched_or_missing_vector():
     assert not res.resolve(eff, no_vector, SeededRng(1)).success  # no foothold
 
 
+@pytest.mark.verifies("FR-1420")
 def test_cyber_succeeds_through_open_vector_and_respects_posture():
     res = ModerateEffectResolver()
     w = _world_with_target(

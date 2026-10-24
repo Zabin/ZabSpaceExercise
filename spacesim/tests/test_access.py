@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.engine.access import (
     AccessConfig,
     AccessProvider,
@@ -39,6 +40,7 @@ def _provider(scene: Scene, cfg: AccessConfig | None = None) -> AccessProvider:
     return AccessProvider(scene, propagator=PROP, config=cfg)
 
 
+@pytest.mark.verifies("FR-1220")
 def test_leo_uplink_has_several_short_passes_per_day():
     station = GroundSite(id="ST", location=GeoPoint(lat_deg=45.0, lon_deg=0.0), elevation_mask_deg=5.0)
     ap = _provider(Scene(satellites={"SAT": LEO}, sites={"ST": station}))
@@ -50,6 +52,7 @@ def test_leo_uplink_has_several_short_passes_per_day():
         assert 0.0 < w.quality <= 1.0
 
 
+@pytest.mark.verifies("FR-1220")
 def test_geo_gives_continuous_regional_access():
     sub = _subpoint(GEO, 0)
     station = GroundSite(id="EQ", location=GeoPoint(lat_deg=0.0, lon_deg=sub.lon_deg))
@@ -59,6 +62,7 @@ def test_geo_gives_continuous_regional_access():
     assert (wins[0].end - wins[0].start) / 1e6 > 23 * 3600  # essentially always in view
 
 
+@pytest.mark.verifies("FR-1220")
 def test_meo_passes_are_long():
     sub = _subpoint(MEO, 0)
     station = GroundSite(id="MS", location=GeoPoint(lat_deg=sub.lat_deg, lon_deg=sub.lon_deg))
@@ -68,6 +72,7 @@ def test_meo_passes_are_long():
     assert max((w.end - w.start) for w in wins) / 1e6 / 3600 > 1.0  # hours, not minutes
 
 
+@pytest.mark.verifies("FR-1220")
 def test_weapon_engagement_reaches_leo_but_not_geo():
     sub = _subpoint(LEO, 0)
     launch = GroundSite(id="LP", location=GeoPoint(lat_deg=sub.lat_deg, lon_deg=sub.lon_deg))
@@ -81,6 +86,7 @@ def test_weapon_engagement_reaches_leo_but_not_geo():
     assert ap.windows("LP", "GEO", WEAPON_ENGAGEMENT, 0, DAY) == []  # altitude beyond interceptor
 
 
+@pytest.mark.verifies("FR-1220")
 def test_rpo_proximity_continuous_when_co_located_and_empty_when_far():
     # Co-located chaser (same elements) stays at zero range.
     scene = Scene(satellites={"CHASE": LEO.model_copy(), "TGT": LEO})
@@ -95,6 +101,7 @@ def test_rpo_proximity_continuous_when_co_located_and_empty_when_far():
     assert ap2.windows("CHASE", "TGT", RPO_PROXIMITY, 0, hours(3)) == []
 
 
+@pytest.mark.verifies("FR-1220")
 def test_optical_sensor_lighting_reduces_access_versus_radar():
     sub = _subpoint(LEO, 0)
     loc = GeoPoint(lat_deg=sub.lat_deg, lon_deg=sub.lon_deg)
@@ -109,6 +116,7 @@ def test_optical_sensor_lighting_reduces_access_versus_radar():
     assert optical_dur <= radar_dur  # lighting constraint never adds access
 
 
+@pytest.mark.verifies("FR-1220")
 def test_jam_footprint_tracks_satellite_visibility():
     sub = _subpoint(LEO, 0)
     jammer = GroundSite(id="JAM", location=GeoPoint(lat_deg=sub.lat_deg, lon_deg=sub.lon_deg))
@@ -117,6 +125,7 @@ def test_jam_footprint_tracks_satellite_visibility():
     assert wins  # jammer can hit the sat while it is above the local horizon
 
 
+@pytest.mark.verifies("FR-1220")
 def test_window_cache_and_invalidate():
     station = GroundSite(id="ST", location=GeoPoint(lat_deg=45.0, lon_deg=0.0))
     ap = _provider(Scene(satellites={"SAT": LEO}, sites={"ST": station}))
@@ -128,6 +137,7 @@ def test_window_cache_and_invalidate():
 
 # -- IP-1220 (FR-1610-FR-1660) — sensor modality models -------------------------------------------
 
+@pytest.mark.verifies("NFR-2010")
 def test_sensor_new_fields_default_absent_zero_behavior_change():
     """The six new fields must not change any existing sensor's observed behavior when unset."""
     sub = _subpoint(LEO, 0)
@@ -141,6 +151,7 @@ def test_sensor_new_fields_default_absent_zero_behavior_change():
     assert ap_old.windows("OPT", "SAT", SENSOR_OBSERVATION, 0, DAY) == ap_new.windows("OPT", "SAT", SENSOR_OBSERVATION, 0, DAY)
 
 
+@pytest.mark.verifies("FR-1620")
 def test_exclusion_angle_rejects_near_sun_and_accepts_far_from_sun():
     """FR-1620 — a ground-optical sensor's declared solar exclusion cone rejects an observation
     whose target line of sight falls too close to the Sun, and accepts one that doesn't."""
@@ -179,6 +190,7 @@ def test_exclusion_angle_rejects_near_sun_and_accepts_far_from_sun():
     assert access_fn(far_t) is True
 
 
+@pytest.mark.verifies("FR-1630")
 def test_min_range_floor_rejects_too_close_space_sensor():
     """FR-1630 — a space-based sensor's declared minimum-range floor hard-rejects a target closer
     than the threshold; a target beyond it is unaffected."""
@@ -194,6 +206,7 @@ def test_min_range_floor_rejects_too_close_space_sensor():
     assert access_far(0) is True
 
 
+@pytest.mark.verifies("FR-1660")
 def test_hosted_sensor_follows_host_asset_orbit_and_both_identifiers_match():
     """FR-1660 — a hosted sensor's position is read from its host Asset's current orbit, not its
     own (absent) orbit; both the sensor's own id and its host_asset_id query the same access."""

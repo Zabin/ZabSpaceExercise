@@ -7,6 +7,7 @@ generic key-value bag, never a mismatched sub-model populated by accident.
 """
 from __future__ import annotations
 
+import pytest
 from spacesim.engine.bus import (
     IsrEoParams,
     IsrSarParams,
@@ -28,6 +29,7 @@ def _other_fields_are_none(payload: PayloadState, populated: str) -> bool:
     return all(getattr(payload, f) is None for f in _ALL_PARAM_FIELDS if f != populated)
 
 
+@pytest.mark.verifies("FR-5170")
 def test_isr_eo_payload_populates_only_isr_eo_params_with_named_fields():
     payload = PayloadState(type="isr_eo")
     assert isinstance(payload.isr_eo, IsrEoParams)
@@ -36,6 +38,7 @@ def test_isr_eo_payload_populates_only_isr_eo_params_with_named_fields():
     assert _other_fields_are_none(payload, "isr_eo")
 
 
+@pytest.mark.verifies("FR-5170")
 def test_satcom_payload_populates_only_satcom_params_with_bandwidth_fields():
     payload = PayloadState(type="satcom")
     assert isinstance(payload.satcom, SatcomParams)
@@ -44,12 +47,14 @@ def test_satcom_payload_populates_only_satcom_params_with_bandwidth_fields():
     assert _other_fields_are_none(payload, "satcom")
 
 
+@pytest.mark.verifies("FR-5170")
 def test_isr_sar_payload_populates_only_isr_sar_params():
     payload = PayloadState(type="isr_sar")
     assert isinstance(payload.isr_sar, IsrSarParams)
     assert _other_fields_are_none(payload, "isr_sar")
 
 
+@pytest.mark.verifies("FR-5170")
 def test_sigint_payload_populates_only_sigint_params():
     payload = PayloadState(type="sigint")
     assert isinstance(payload.sigint, SigintParams)
@@ -58,12 +63,14 @@ def test_sigint_payload_populates_only_sigint_params():
     assert _other_fields_are_none(payload, "sigint")
 
 
+@pytest.mark.verifies("FR-5170")
 def test_sda_payload_populates_only_sda_params():
     payload = PayloadState(type="sda")
     assert isinstance(payload.sda, SdaParams)
     assert _other_fields_are_none(payload, "sda")
 
 
+@pytest.mark.verifies("FR-5170")
 def test_pnt_payload_populates_only_pnt_params_with_sps_baseline_accuracy():
     payload = PayloadState(type="pnt")
     assert isinstance(payload.pnt, PntParams)
@@ -72,6 +79,7 @@ def test_pnt_payload_populates_only_pnt_params_with_sps_baseline_accuracy():
     assert _other_fields_are_none(payload, "pnt")
 
 
+@pytest.mark.verifies("FR-5170")
 def test_weather_and_mw_payloads_populate_typed_params_grounded_in_now_verified_beam_modes():
     """IP-1170 (BL-0053) has reached VERIFIED — weather/mw are no longer 'plausible but inert';
     their typed sub-models mirror the real, R109-grounded BEAM_MODES default-mode entries."""
@@ -92,6 +100,7 @@ def test_weather_and_mw_payloads_populate_typed_params_grounded_in_now_verified_
     assert mw.mw.duty_cycle == scan["duty_cycle"]
 
 
+@pytest.mark.verifies("FR-5170")
 def test_isr_eo_isr_sar_sda_authored_defaults_mirror_their_own_beam_modes_default_mode():
     """The three lowest-risk types (already grounded via BEAM_MODES before this package)
     mirror their own default-mode entry exactly — an authored baseline, not a copy of a
@@ -112,11 +121,13 @@ def test_isr_eo_isr_sar_sda_authored_defaults_mirror_their_own_beam_modes_defaul
     assert sda.resolution_m == sda_default["resolution_m"]
 
 
+@pytest.mark.verifies("FR-5170")
 def test_unrecognized_payload_type_populates_no_typed_sub_model():
     payload = PayloadState(type="space_control")
     assert all(getattr(payload, f) is None for f in _ALL_PARAM_FIELDS)
 
 
+@pytest.mark.verifies("FR-5170")
 def test_explicit_vignette_authored_values_are_not_overwritten_by_auto_population():
     payload = PayloadState(type="satcom", satcom=SatcomParams(bandwidth_class="wideband_ka_hts",
                                                                 data_rate_kbps_max=16384))
@@ -124,6 +135,7 @@ def test_explicit_vignette_authored_values_are_not_overwritten_by_auto_populatio
     assert payload.satcom.data_rate_kbps_max == 16384
 
 
+@pytest.mark.verifies("FR-5180")
 def test_bus_power_and_propulsion_overrides_reach_live_fields_not_power_w():
     """FR-5180 — confirms (not adds) that Asset.model_validate() already routes per-asset
     vignette overrides to PowerState.charge_rate_per_s/drain_rate_per_s and
@@ -142,6 +154,7 @@ def test_bus_power_and_propulsion_overrides_reach_live_fields_not_power_w():
     assert asset.resources.power_w == 999.0
 
 
+@pytest.mark.verifies("NFR-2010", "FR-5170")
 def test_all_19_vignettes_load_and_build_unchanged_with_new_optional_fields():
     from spacesim.content.vignette import build_world, list_vignettes, load_vignette
     vignettes = list_vignettes()

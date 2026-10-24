@@ -33,11 +33,13 @@ def _leo(ta: float = 0.0, alt_km: float = 550.0, raan: float = 33.0) -> OrbitSta
 # Test 1 — factor shape (Design Decision 3)
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1670")
 def test_factor_is_one_inside_the_range_including_both_bounds():
     for theta in (10.0, 20.0, 55.0, 90.0):
         assert phase_angle_factor(theta, (10.0, 90.0)) == 1.0
 
 
+@pytest.mark.verifies("FR-1670")
 def test_factor_falls_linearly_to_zero_at_180_above_the_range():
     rng = (0.0, 90.0)
     assert phase_angle_factor(180.0, rng) == pytest.approx(0.0)
@@ -51,6 +53,7 @@ def test_factor_falls_linearly_to_zero_at_180_above_the_range():
     assert all(v < 1.0 for v in vals)
 
 
+@pytest.mark.verifies("FR-1670")
 def test_factor_falls_linearly_to_zero_at_0_below_the_range():
     rng = (40.0, 150.0)
     assert phase_angle_factor(0.0, rng) == pytest.approx(0.0)
@@ -60,6 +63,7 @@ def test_factor_falls_linearly_to_zero_at_0_below_the_range():
     assert all(a >= b for a, b in zip(vals, vals[1:]))
 
 
+@pytest.mark.verifies("FR-1670")
 def test_factor_with_bound_at_the_domain_edge_has_no_outside_region():
     assert phase_angle_factor(180.0, (0.0, 180.0)) == 1.0
     assert phase_angle_factor(0.0, (0.0, 180.0)) == 1.0
@@ -69,6 +73,7 @@ def test_factor_with_bound_at_the_domain_edge_has_no_outside_region():
 # Test 2 — effective_gain composition + regression (Design Decision 1)
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1670")
 def test_effective_gain_without_phase_argument_is_unchanged():
     bp, _ = beam_params("isr_eo", None)
     base = effective_gain(1.0, 20.0, bp)
@@ -78,6 +83,7 @@ def test_effective_gain_without_phase_argument_is_unchanged():
                           phase_angle_deg=170.0, usable_phase_range=None) == banded
 
 
+@pytest.mark.verifies("FR-1670")
 def test_effective_gain_applies_factor_after_existing_terms():
     bp, _ = beam_params("isr_eo", None)
     base = effective_gain(1.0, 20.0, bp)
@@ -125,6 +131,7 @@ def _theta_space(observer_orbit: OrbitState, t: int) -> float:
     return cats_phase_angle_deg(r_t, r_o, t)
 
 
+@pytest.mark.verifies("FR-1670")
 def test_no_declared_range_leaves_scheduled_gain_unchanged_space_based():
     """Test 3 / AC10 — a sensor without a range behaves exactly as before, at any geometry."""
     g_plain, t_plain = _observe(_space_world(_space_sensor()), "SBO", "TGT")
@@ -134,6 +141,7 @@ def test_no_declared_range_leaves_scheduled_gain_unchanged_space_based():
     assert g_plain > 0.0
 
 
+@pytest.mark.verifies("FR-1670")
 def test_space_based_gain_unchanged_inside_and_strictly_lower_outside():
     """Test 5 / AC9 — space-based optical sensor; the angle is evaluated at win.start."""
     g_plain, t0 = _observe(_space_world(_space_sensor()), "SBO", "TGT")
@@ -151,6 +159,7 @@ def test_space_based_gain_unchanged_inside_and_strictly_lower_outside():
     assert g_out == pytest.approx(g_plain * phase_angle_factor(theta, outside))
 
 
+@pytest.mark.verifies("FR-1670", "FR-1660")
 def test_hosted_sensor_uses_host_orbit_as_observer_position():
     """Test 5 / AC9 + FR-1660 — observer position is the host asset's current orbit."""
     host_orbit = _leo(3.0)
@@ -169,6 +178,7 @@ def test_hosted_sensor_uses_host_orbit_as_observer_position():
     assert g_out == pytest.approx(g_plain * phase_angle_factor(theta_host, rng))
 
 
+@pytest.mark.verifies("FR-1670")
 def test_ground_optical_gain_unchanged_inside_and_strictly_lower_outside():
     """Test 4 / AC7 — a ground-optical sensor (observer = ground site ECI at win.start)."""
     from spacesim.engine.access import AccessConfig  # noqa: F401  (documents the default twilight rule)
@@ -214,6 +224,7 @@ def test_ground_optical_gain_unchanged_inside_and_strictly_lower_outside():
 # Test 6 — validator (Design Decisions 4-5)
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("FR-1670")
 @pytest.mark.parametrize("rng", [(90.0, 10.0), (-1.0, 90.0), (0.0, 181.0)])
 def test_malformed_range_is_rejected(rng):
     with pytest.raises(ValidationError):
@@ -221,11 +232,13 @@ def test_malformed_range_is_rejected(rng):
                                "usable_phase_angle_deg": list(rng)})
 
 
+@pytest.mark.verifies("FR-1670")
 def test_range_on_a_non_passive_eo_sensor_is_rejected():
     with pytest.raises(ValidationError, match="usable_phase_angle_deg"):
         Sensor.model_validate({"id": "R", "kind": "ground_radar", "usable_phase_angle_deg": [0, 90]})
 
 
+@pytest.mark.verifies("FR-1670")
 def test_valid_range_on_a_passive_eo_sensor_is_accepted():
     s = Sensor.model_validate({"id": "X", "kind": "space_based", "needs_lighting": True,
                                "usable_phase_angle_deg": [0, 150]})
@@ -237,6 +250,7 @@ def test_valid_range_on_a_passive_eo_sensor_is_accepted():
 # Test 7 — shipped content unchanged (AC10)
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.verifies("NFR-2010")
 def test_no_shipped_vignette_sensor_declares_a_range():
     from spacesim.content.vignette import build_world, list_vignettes, load_vignette
 

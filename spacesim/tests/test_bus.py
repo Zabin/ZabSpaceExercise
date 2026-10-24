@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from spacesim.engine.bus import (
     BusState,
     PayloadState,
@@ -18,6 +19,7 @@ from spacesim.engine.bus import (
 from spacesim.engine.simtime import minutes
 
 
+@pytest.mark.verifies("FR-2110")
 def test_limit_coloring():
     assert status_low(0.8, 0.3, 0.15) == "green"
     assert status_low(0.25, 0.3, 0.15) == "yellow"
@@ -27,6 +29,7 @@ def test_limit_coloring():
     assert status_high(0.99, 0.85, 0.98) == "red"
 
 
+@pytest.mark.verifies("FR-2110")
 def test_battery_drains_in_eclipse_and_trips_yellow_then_red():
     bus = BusState(last_update=0)
     bus.power.battery_soc = 0.5
@@ -40,6 +43,7 @@ def test_battery_drains_in_eclipse_and_trips_yellow_then_red():
     assert "yellow" in seen and "red" in seen  # crossed both alarm thresholds
 
 
+@pytest.mark.verifies("FR-2110")
 def test_sunlit_recharges_battery():
     bus = BusState(last_update=0)
     bus.power.battery_soc = 0.2
@@ -49,6 +53,7 @@ def test_sunlit_recharges_battery():
     assert not bus.power.in_eclipse
 
 
+@pytest.mark.verifies("FR-2210")
 def test_payload_gated_by_safe_mode_and_power():
     bus = BusState()
     assert payload_available(bus)
@@ -61,6 +66,7 @@ def test_payload_gated_by_safe_mode_and_power():
     assert bus2.mode == "safe_mode"
 
 
+@pytest.mark.verifies("FR-2210")
 def test_isr_storage_fills_blocks_collection_until_downlink():
     bus = BusState(last_update=0)
     payload = PayloadState(type="isr_eo", collecting=True, collect_rate_per_s=1.0 / 600)
@@ -73,6 +79,7 @@ def test_isr_storage_fills_blocks_collection_until_downlink():
     assert can_collect(bus)            # downlink frees storage
 
 
+@pytest.mark.verifies("FR-2110")
 def test_ops_fidelity_collapses_or_expands_the_bus_view():
     bus = BusState()
     bus.power.battery_soc = 0.1  # red
