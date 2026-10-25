@@ -16,8 +16,8 @@ from spacesim.ui_web.server import create_app  # noqa: E402
 
 pytestmark = pytest.mark.verifies("FR-4320")
 
-TLE1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
-TLE2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+from tle_helpers import in_epoch_tle  # noqa: E402 — IP-1086: a TLE valid at the 2030 exercise start
+TLE1, TLE2 = in_epoch_tle()
 
 NON_WHITE = ["blue", "red", "observer", None]
 PLAYER_SEATS = ["blue", "red", "observer"]

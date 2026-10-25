@@ -421,13 +421,17 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `Vignette.initial_tracks`/`simulator_version`/`initial_space_weather` (IP-1200, FR-5510) —
   save-as-scenario's carried-forward mid-exercise state; absent/empty for every vignette shipped
   before this package, in which case `build_world()`'s consumption of them is a no-op.
+  **IP-1086 (FR-5310/FR-5311):** `asset_authoring_problems(asset, start_epoch)` — the one shared, pure asset
+  validator (TLE propagates at the start epoch; Keplerian `0<=e<1`, perigee above the equatorial radius,
+  `0<=i<=180`; non-negative resources; id charset), called by `validate_vignette`, force-add TLE, OMM/bulk
+  import and the Creator's `creator_set_state`/`creator_edit_asset`; orbit/location presence stays a save/load rule.
   `list_vignettes()`/`load_vignette()` (IP-1180, FR-5410) — enumerate/search zero or more
   configured external directories alongside `VIGNETTE_DIR`, each entry tagged `origin`
   (`"built-in"` or the external directory's basename); a same-id collision resolves built-in-first,
   external order thereafter, loser skipped + logged. `_validate_id`/`_resolve_within_root`
   (NFR-3700) — the traversal guard, extracted/generalized to any content root, shared with the
   save path below.
-- `spacesim/content/vignette_export.py` (IP-1173, FR-5110) — reverse serialization:
+- `spacesim/content/vignette_export.py` (IP-1173, FR-5110; **IP-1086:** `save_vignette` runs `validate_vignette` on the exported model first — an invalid draft is a 400 and nothing is written) — reverse serialization:
   `export_vignette()`/`save_vignette()` convert a draft session's live `WorldState`+
   `VignetteContext` into a `Vignette` model and write it to a configured `user_save_dir`
   (IP-1180, FR-5420 — retargeted from `VIGNETTE_DIR`; raises if unconfigured) — the mirror image of
@@ -497,6 +501,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   the sim back; **IP-1074 (FR-4310):** `rewind_to` raises `ValueError` outside `[ctx.start_epoch, now]`
   (→ `Ack(ok=False)` → HTTP 400) and `clock_state` carries `start_epoch`; `roles/assign` + `observer/view`
   are `_require_white` on the query seat, 403); **IP-1075 (FR-4310, NFR-1600):** `undo_last` raises `ValueError` on an empty log or `n < 1` (→ `Ack(ok=False)` → HTTP 400), an undo that drops every entry lands on `start_epoch` (never 1970; `Simulation.undo_last` falls back to the initial state's time), and the tick/inject schedule is re-armed after undo like `rewind_to`; **IP-1076 (FR-4330, NFR-1600):** `advance_to`/`step` raise `ValueError` (→ `Ack(ok=False)` → HTTP 400) for a target before now, after `start_epoch` + `MAX_SAVE_SPAN_US` (366 days), or a non-finite/negative step, and the running (lazy) clock is clamped to that ceiling and stops there,
+  **IP-1086 (NFR-1600):** the scene (`scene.py::build_scene`), `windows_ahead` (`error: propagation_failed`) and
+  `next_contacts` skip an un-propagatable asset instead of 500ing; read-only,
   `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`
   (**multiplayer:** `_locked(sid)` cm wraps every mutation; every read pass-through calls
   `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added;

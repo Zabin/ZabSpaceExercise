@@ -392,6 +392,62 @@ def _environmental_anomaly_problems(block, asset_ids, bused) -> list[dict]:
     return out
 
 
+def asset_authoring_problems(asset: Asset, start_epoch: Optional[int], prop=None) -> list[str]:
+    """IP-1086 (FR-5310, FR-5311, FR-5220) — the one shared asset-authoring validator.
+
+    Pure (no clock, no RNG, mutates nothing). Returns one human-readable reason per violation
+    (empty when valid) for an already-model-validated ``Asset``: (a) a ``tle`` orbit must
+    initialise and propagate at ``start_epoch`` (skipped when it is ``None``); (b) Keplerian
+    elements are finite with ``0 <= e < 1``, a perigee radius above the equatorial radius and
+    ``0 <= i_deg <= 180``; (c) resources are non-negative; (d) the id uses the system id charset.
+    Orbit/location *presence* is not checked here (FR-5312 stays a save/load rule). Called by the
+    load gate (``validate_vignette``), force-add TLE, OMM/bulk import and the Creator edit routes,
+    so every path gives the same verdict for the same asset."""
+    from spacesim.engine.geometry import R_EARTH_EQ
+
+    out: list[str] = []
+    if not (isinstance(asset.id, str) and _ID_RE.fullmatch(asset.id)
+            and not asset.id.startswith((".", "~"))):
+        out.append(f"asset id {asset.id!r} is not valid (letters, digits, '_', '.', '-'; 1-128 chars; "
+                   f"no leading '.' or '~')")
+    res = asset.resources
+    for name in ("delta_v_ms", "power_w", "ammo"):
+        v = getattr(res, name)
+        if not (math.isfinite(v) and v >= 0):
+            out.append(f"resources.{name} must be a finite number >= 0, got {v!r}")
+    orbit = asset.orbit
+    if orbit is None:
+        return out
+    if orbit.source == "tle":
+        if start_epoch is not None:
+            if prop is None:
+                from spacesim.engine.propagator import ModeratePropagator
+                prop = ModeratePropagator()
+            try:
+                prop.rv(orbit, start_epoch)
+            except Exception as exc:  # noqa: BLE001 — any init/propagate failure is a content problem
+                out.append(f"TLE does not parse/propagate: {exc}")
+        return out
+    elems = {"a_m": orbit.a_m, "e": orbit.e, "i_deg": orbit.i_deg, "raan_deg": orbit.raan_deg,
+             "argp_deg": orbit.argp_deg, "ta_deg": orbit.ta_deg}
+    nonfinite = [f"orbit.{n} must be finite, got {v!r}" for n, v in elems.items()
+                 if v is not None and not math.isfinite(v)]
+    if nonfinite:
+        return out + nonfinite
+    a, e, i = orbit.a_m, orbit.e if orbit.e is not None else 0.0, orbit.i_deg
+    if a is None:
+        out.append("a Keplerian orbit must declare a_m")
+        return out
+    if not (0.0 <= e < 1.0):
+        out.append(f"orbit.e must satisfy 0 <= e < 1, got {e!r}")
+    elif not a > 0 or a * (1.0 - e) <= R_EARTH_EQ:
+        out.append(f"orbit perigee radius a_m*(1-e) = {a * (1.0 - e):.0f} m must exceed the Earth's "
+                   f"equatorial radius ({R_EARTH_EQ:.0f} m); a_m={a!r}, e={e!r}")
+    if i is not None and not (0.0 <= i <= 180.0):
+        out.append(f"orbit.i_deg must satisfy 0 <= i <= 180, got {i!r}")
+    return out
+
+
 def validate_vignette(vignette: Vignette) -> list[dict]:
     """IP-1310 (FS-131; FR-5310–FR-5314, NFR-1600) — every load-time problem in ``vignette``.
 
@@ -441,13 +497,11 @@ def validate_vignette(vignette: Vignette) -> list[dict]:
             elif asset.kind not in ("satellite", "cyber_unit") and asset.location is None:
                 problems.append({"where": f"{where}.location",
                                  "reason": f"a {asset.kind} must declare a location"})
-            # FR-5311 — a TLE orbit must initialise and propagate at the vignette start epoch.
-            if asset.orbit is not None and asset.orbit.source == "tle" and start is not None:
-                try:
-                    prop.rv(asset.orbit, start)
-                except Exception as exc:  # noqa: BLE001
-                    problems.append({"where": f"{where}.orbit",
-                                     "reason": f"TLE does not parse/propagate: {exc}"})
+            # FR-5311 / FR-5310 — the one shared asset validator (IP-1086): TLE propagation at the
+            # start epoch, Keplerian physical bounds, non-negative resources, id charset.
+            for reason in asset_authoring_problems(asset, start, prop):
+                problems.append({"where": f"{where}.orbit" if "orbit" in reason or "TLE" in reason
+                                 else where, "reason": reason})
 
     # FR-5313 — asset ids unique across the three force lists.
     for asset_id, sections in asset_sections.items():

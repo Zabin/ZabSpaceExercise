@@ -532,8 +532,8 @@ def test_draft_session_create_add_asset_and_save_as_vignette(tmp_path, monkeypat
     assert step.status_code == 400 and "draft" in step.json()["detail"]    # IP-1076: refusal is a 400
 
     # Force-add an asset the same way any session's asset entry already works.
-    tle1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
-    tle2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+    from tle_helpers import in_epoch_tle  # IP-1086: a TLE valid at the 2030 exercise start
+    tle1, tle2 = in_epoch_tle()
     ack = c.post(f"/api/sessions/{sid}/force/tle?cell=white",
                  json={"id": "HTTP-SAT", "line1": tle1, "line2": tle2, "owner": "blue"}).json()
     assert ack["ok"] is True
@@ -558,8 +558,8 @@ def test_bulk_import_tle_route_end_to_end():
     """IP-1190 (FR-5220) — the new /force/bulk_import route, TLE format, end to end."""
     c = _client()
     sid = c.post("/api/sessions/draft", json={"title": "Bulk Import"}).json()["session"]
-    tle1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
-    tle2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+    from tle_helpers import in_epoch_tle  # IP-1086: a TLE valid at the 2030 exercise start
+    tle1, tle2 = in_epoch_tle()
     content = "\n".join(["HTTP-BULK-1", tle1, tle2])
     resp = c.post(f"/api/sessions/{sid}/force/bulk_import?cell=white",
                    json={"format": "tle", "content": content,

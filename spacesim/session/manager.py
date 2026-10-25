@@ -615,6 +615,12 @@ class SessionManager:
             delivery_path=result.delivery_path,
         )
 
+    def _authoring_problems(self, asset: Asset) -> list[str]:
+        """IP-1086 — the shared asset validator (``content/vignette.py``) at this session's own
+        exercise start epoch (equal to the vignette's ``start_epoch_utc`` by construction)."""
+        from spacesim.content.vignette import asset_authoring_problems
+        return asset_authoring_problems(asset, self.ctx.start_epoch)
+
     def add_tle(self, asset_id: str, line1: str, line2: str, owner: str = "blue", kind: str = "satellite") -> tuple[bool, str]:
         """White-Cell force edit: add a real named satellite by TLE (validated via sgp4)."""
         if self.started:
@@ -628,16 +634,16 @@ class SessionManager:
         l1, l2 = line1.strip(), line2.strip()
         if not (l1.startswith("1 ") and l2.startswith("2 ") and len(l1) >= 69 and len(l2) >= 69):
             return False, "invalid TLE: expected two 69-char lines starting with '1 ' and '2 '"
-        try:
-            from sgp4.api import Satrec
-            sat = Satrec.twoline2rv(l1, l2)
-            err, _, _ = sat.sgp4(sat.jdsatepoch, sat.jdsatepochF)
-            if err != 0:
-                return False, f"invalid TLE: sgp4 error {err}"
-        except Exception as exc:  # malformed TLE is a normal rejection, not a crash
-            return False, f"invalid TLE: {exc}"
         orbit = OrbitState(source="tle", tle_line1=line1, tle_line2=line2, epoch=self.ctx.start_epoch)
-        self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
+        try:
+            asset = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
+        except Exception as exc:  # malformed TLE/asset is a normal rejection, not a crash
+            return False, f"invalid TLE: {exc}"
+        # IP-1086 — the shared validator: the TLE must propagate at the exercise start epoch.
+        problems = self._authoring_problems(asset)
+        if problems:
+            return False, f"invalid TLE for asset {asset_id!r}: " + "; ".join(problems)
+        self.world.assets[asset_id] = asset
         self.sim._initial_state = self.world.model_dump()  # re-baseline so rewind keeps the edit
         return True, ""
 
@@ -659,7 +665,9 @@ class SessionManager:
             from spacesim.engine.orbit import mean_to_true
             e = float(elements["e"])
             mean_anom_rad = math.radians(float(elements["mean_anomaly_deg"]))
-            ta_deg = math.degrees(mean_to_true(mean_anom_rad, e))
+            # An e outside [0, 1) has no mean->true conversion; leave ta at 0 and let the shared
+            # IP-1086 validator below refuse the object with the same reason every path gives.
+            ta_deg = math.degrees(mean_to_true(mean_anom_rad, e)) if 0.0 <= e < 1.0 else 0.0
             orbit = OrbitState(
                 source="kepler",
                 a_m=float(elements["a_m"]),
@@ -670,9 +678,13 @@ class SessionManager:
                 ta_deg=ta_deg,
                 epoch=self.ctx.start_epoch,
             )
+            asset = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
         except Exception as exc:  # malformed OMM elements are a normal rejection, not a crash
             return False, f"invalid OMM element set: {exc}"
-        self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
+        problems = self._authoring_problems(asset)   # IP-1086 — physical bounds, shared validator
+        if problems:
+            return False, f"invalid OMM element set for asset {asset_id!r}: " + "; ".join(problems)
+        self.world.assets[asset_id] = asset
         self.sim._initial_state = self.world.model_dump()
         return True, ""
 
@@ -785,6 +797,11 @@ class SessionManager:
             validated = {a["id"]: Asset.model_validate(a) for a in assets}
         except Exception as exc:
             return False, f"invalid asset list: {exc}"
+        # IP-1086 — never-valid values are refused at edit time; incompleteness (FR-5312) is not.
+        for aid, asset in validated.items():
+            problems = self._authoring_problems(asset)
+            if problems:
+                return False, f"invalid asset {aid!r}: " + "; ".join(problems)
         self.world.assets = validated
         self.sim._initial_state = self.world.model_dump()
         return True, ""
@@ -798,9 +815,13 @@ class SessionManager:
             return False, f"no such asset: {asset_id}"
         merged = {**asset.model_dump(), **patch, "id": asset_id}
         try:
-            self.world.assets[asset_id] = Asset.model_validate(merged)
+            edited = Asset.model_validate(merged)
         except Exception as exc:
             return False, f"invalid edit: {exc}"
+        problems = self._authoring_problems(edited)   # IP-1086
+        if problems:
+            return False, f"invalid edit of asset {asset_id!r}: " + "; ".join(problems)
+        self.world.assets[asset_id] = edited
         self.sim._initial_state = self.world.model_dump()
         return True, ""
 
@@ -891,11 +912,16 @@ class SessionManager:
         stations = [i for i, a in self.sim.world.assets.items()
                     if a.owner == asset.owner and a.location is not None]
         wins = []
-        for st in stations:
-            for ch in (COMMAND_UPLINK, TELEMETRY_DOWNLINK):
-                for w in ap.windows(st, asset_id, ch, now, hz):
-                    wins.append({"channel": ch, "via": st, "start": w.start, "end": w.end,
-                                 "quality": round(w.quality, 2)})
+        try:
+            for st in stations:
+                for ch in (COMMAND_UPLINK, TELEMETRY_DOWNLINK):
+                    for w in ap.windows(st, asset_id, ch, now, hz):
+                        wins.append({"channel": ch, "via": st, "start": w.start, "end": w.end,
+                                     "quality": round(w.quality, 2)})
+        except (ValueError, ArithmeticError):
+            # IP-1086 — an asset (or a peer in the scene) that cannot be propagated yields an empty,
+            # flagged answer rather than a 500; read-only, nothing is logged or mutated.
+            return {"asset": asset_id, "now": now, "windows": [], "error": "propagation_failed"}
         wins.sort(key=lambda w: w["start"])
         return {"asset": asset_id, "now": now, "horizon_s": horizon_s, "windows": wins[:limit]}
 

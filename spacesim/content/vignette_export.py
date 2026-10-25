@@ -77,6 +77,12 @@ def save_vignette(
     """
     vignette = export_vignette(world, ctx, vignette_id, title, classification=classification,
                                 start_epoch=start_epoch)
+    # IP-1086 (FR-5110) — validate the exported model with the exact check the load gate runs, so a
+    # saved file always loads; on any problem nothing is written and an existing file is untouched.
+    from spacesim.content.vignette import VignetteValidationError, validate_vignette
+    problems = validate_vignette(vignette)
+    if problems:
+        raise VignetteValidationError(vignette_id, problems)
     user_save_dir = load_content_config().user_save_dir
     if not user_save_dir:
         raise ValueError(

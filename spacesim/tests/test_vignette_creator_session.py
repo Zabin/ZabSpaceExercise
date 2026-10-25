@@ -34,8 +34,8 @@ def user_save_dir(tmp_path, monkeypatch):
 
 # A real, valid TLE pair (ISS, arbitrary epoch) — mirrors the existing force/tle test fixtures'
 # convention of using a real satellite's elements so sgp4 validation passes.
-_TLE1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
-_TLE2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+from tle_helpers import in_epoch_tle  # noqa: E402 — IP-1086: a TLE valid at the 2030 exercise start
+_TLE1, _TLE2 = in_epoch_tle()
 
 
 @pytest.mark.verifies("FR-5110")
