@@ -322,6 +322,42 @@ class OrderSystem:
             return rule
         return None
 
+    def rebuild_pending(self) -> list[str]:
+        """IP-1087 (FR-3430, FR-7220) — re-derive ``_pending`` after a resume from the restored
+        order registry, the restored event log and the content's gating rules (no persisted
+        copy). An order that cannot be rebuilt (no ``effect_gate_request`` entry, a decision
+        already logged after it, or no gate rule matching) is rejected ``gate_lost_on_resume``
+        and a warning naming it is returned. Pure: no clock, RNG or eventlog append."""
+        warnings: list[str] = []
+        for order in self.orders.values():
+            if order.status != "pending_approval":
+                continue
+            req_idx = dec_idx = -1
+            for i, e in enumerate(self.sim.eventlog.entries):
+                if e.payload.get("order_id") != order.id:
+                    continue
+                if e.kind == "effect_gate_request":
+                    req_idx = i
+                elif e.kind == "effect_gate_decision":
+                    dec_idx = i
+            cause = ""
+            gate = None
+            if req_idx < 0:
+                cause = "no gate request is recorded in the event log"
+            elif dec_idx > req_idx:
+                cause = "a gate decision is already recorded for it"
+            else:
+                gate = self._matching_gate(order)
+                if gate is None:
+                    cause = "no gating rule in the content matches it"
+            if gate is None:
+                order.status, order.fail_reason = "rejected", "gate_lost_on_resume"
+                warnings.append(f"order {order.id} was awaiting an approval decision but its gate "
+                                f"could not be reconstructed ({cause}); it was rejected")
+            else:
+                self._pending[order.id] = (order, gate)
+        return warnings
+
     def decide_gated_order(self, cell: str, order_id: str, approve: bool) -> tuple[bool, str]:
         """IP-1270 (FR-3430) — only the gate's ``required_role`` cell may decide. Approving
         resumes normal planning (window/delivery-path selection + scheduling); denying rejects

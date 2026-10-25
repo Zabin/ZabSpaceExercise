@@ -305,6 +305,9 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `delivery_path`/`relay` (`_delivery_keys`, from the planned window's channel) and `_delivery_jammed`
   denies `ground_uplink` on an `uplink` jam on the actor, `isl_relay` on a `crosslink` jam on the actor
   or relay, and never `stored_program`; a payload without the keys keeps the old uplink-on-actor rule.
+  `rebuild_pending()` (IP-1087, FR-3430) — re-derives `_pending` on resume from the restored order registry, the
+  event log's `effect_gate_request`/`effect_gate_decision` entries and the content's gating rules (no new save key);
+  an unreconstructable pending order is rejected `gate_lost_on_resume` with a returned warning.
   ROE (`engage`/`cyber`) is resolved per issuing cell against `_effective_roe(cell, order.issued_at)`
   (IP-1172/FR-3420, IP-1270/FR-3440) — the vignette-declared static `_static_roe` overlaid with any
   `roe_change` eventlog entries at or before the order's own issue time, a pure point-in-time
@@ -503,6 +506,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   are `_require_white` on the query seat, 403); **IP-1075 (FR-4310, NFR-1600):** `undo_last` raises `ValueError` on an empty log or `n < 1` (→ `Ack(ok=False)` → HTTP 400), an undo that drops every entry lands on `start_epoch` (never 1970; `Simulation.undo_last` falls back to the initial state's time), and the tick/inject schedule is re-armed after undo like `rewind_to`; **IP-1076 (FR-4330, NFR-1600):** `advance_to`/`step` raise `ValueError` (→ `Ack(ok=False)` → HTTP 400) for a target before now, after `start_epoch` + `MAX_SAVE_SPAN_US` (366 days), or a non-finite/negative step, and the running (lazy) clock is clamped to that ceiling and stops there,
   **IP-1086 (NFR-1600):** the scene (`scene.py::build_scene`), `windows_ahead` (`error: propagation_failed`) and
   `next_contacts` skip an un-propagatable asset instead of 500ing; read-only,
+  **IP-1087 (FR-3430):** `from_state` calls `osys.rebuild_pending()` once, after the order registry is restored, and appends its warnings to `load_warnings` (`_rebind`/rewind still discard pending orders),
   `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`
   (**multiplayer:** `_locked(sid)` cm wraps every mutation; every read pass-through calls
   `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added;

@@ -1317,6 +1317,8 @@ class SessionManager:
             mgr.osys.orders[o.id] = o
         nums = [int(o.id.split("-")[1]) for o in mgr.osys.orders.values() if o.id.startswith("ord-")]
         mgr.osys._order_counter = max(nums, default=0)
+        # IP-1087 (FR-3430) — gated orders awaiting a decision stay decidable across a resume.
+        warnings.extend(mgr.osys.rebuild_pending())
         # SSN requests: rebuild the registry, in-flight counters, and sensor bookings from saved state.
         for rd in state.get("ssn_requests", []):
             r = SSNRequest(**rd)
