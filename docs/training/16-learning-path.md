@@ -38,6 +38,10 @@ Each rung names:
   window, advance time, watch it execute — on a minimum-viable fleet (1 satellite + 1 ground
   station) so nothing distracts from the loop itself.
 - **Playbook:** the in-app **Tutorial panel** (View ▾) drives this one step-by-step for each cell.
+  Machine-verified by `test_vignette_tutorials.py` (FR-11420): Blue's script meets both objectives
+  by the T+1 h deadline (its closing maneuver lands about T+11 h and cannot affect scoring); Red's
+  jam always denies, while the cyber step is chance-based (~62% per attempt) and is retried. Cyber
+  is ON by default (`cyber_authorized = true`); Red kinetic is OFF. Walkthrough: [04](04-guided-vignette.md).
 
 ### Stage 1 — Core mechanics ladder (the canonical 8)
 

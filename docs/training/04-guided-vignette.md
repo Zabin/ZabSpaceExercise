@@ -41,19 +41,23 @@ collects on RADAR-TRN's early pass. *Result:* a characterized track on RED-TGT �
 ![Blue step 3](../manual/20-train-blue-3.png)
 
 **Step 4 — Advance to the downlink window.** Click **+10m** until the clock passes the window.
-*Result:* imagery delivered — `deliver_isr` MET.
+*Result:* imagery delivered — `deliver_isr` MET. Stop at or before T+60 min: the next step reads the objectives, and they are live, not latched.
 
 ![Blue step 4](../manual/21-train-blue-4.png)
 
-**Step 5 — Maneuver to preserve the orbit.** Actor `ISR-EO-1`, Action `maneuver`, Params
-`{"dv":[0,5,0],"via":"GS-TRN"}`. *When:* queues to the next command pass. *Result:* `queued`; the
-5 m/s burn is debited from the fuel budget on execution.
+**Step 5 — Confirm both objectives.** At the T+1 h deadline (T+60 min — do **not** click past it), review the objectives panel:
+`deliver_isr` and `keep_custody` are both MET — Blue delivered imagery in time and still holds the
+track on `RED-TGT`. The panel is live: `keep_custody` is custody confidence decaying in real time, so one more **+10m** click (T+70 min) shows it unmet.
 
-![Blue step 5](../manual/22-train-blue-5.png)
+![Blue step 5](../manual/23-train-blue-6.png)
 
-**Step 6 — Confirm the objective.** Review the objectives panel: Blue delivered imagery in time.
+**Step 6 — Maneuver to preserve the orbit (optional, after the exercise).** Actor `ISR-EO-1`,
+Action `maneuver`, Params `{"dv":[0,5,0],"via":"GS-TRN"}`. *When:* queues to the next `GS-TRN`
+command pass, about T+11 h. *Result:* `queued`; the 5 m/s burn is debited from the fuel budget on
+execution. That pass is long after the T+1 h deadline, so it cannot change your score — and by then
+`keep_custody` has decayed, which is expected. The point is plan-first: the order waits for its pass.
 
-![Blue step 6](../manual/23-train-blue-6.png)
+![Blue step 6](../manual/22-train-blue-5.png)
 
 ### Red — deny the imagery with reversible effects
 
@@ -70,31 +74,37 @@ on `ISR-EO-1`.
 ![Red step 2](../manual/25-train-red-2.png)
 
 **Step 3 — Jam the downlink.** Actor `JAM-TRN`, Action `jam`, Target `ISR-EO-1`, Params
-`{"success_prob":1.0,"outcome":"deny"}`. *When:* queues to the footprint window over the station.
+`{"modulation":"barrage","power_w":200.0}`. *When:* queues to the footprint window over the station.
 *Result:* the link is denied during that window — a Blue downlink in this window would fail.
 
 ![Red step 3](../manual/26-train-red-3.png)
 
 **Step 4 — Cyber the modem (off-pass).** Actor `RED-CYBER`, Action `cyber`, Target `ISR-EO-1`,
-Params `{"access_vector":"ground_modem","outcome":"safe_mode","success_prob":1.0}`. *When:* any
-time — cyber is **not** window-gated. *Result:* `ISR-EO-1` drops to **safe mode**; `disable_isr` MET.
+Params `{"vector":"ground_modem","payload":"seize_c2"}`. *When:* any time — cyber is **not**
+window-gated (and is ON by default: `cyber_authorized = true`). *Result:* a **chance** — about 62%
+per attempt against `ISR-EO-1`'s low cyber posture. On success it drops to **safe mode** and
+`disable_isr` is MET; on failure nothing happens, so re-issue the order. This is what cyber is
+like: the outcome depends on the dice, not just your plan. To see which happened, advance about
+1 minute and read the **Objectives** panel: `disable_isr` MET means it worked; still unmet means the
+attempt failed (re-issue). The `ISR-EO-1` bus mode reads `safe_mode` only on success.
 
 ![Red step 4](../manual/27-train-red-4.png)
 
-**Step 5 — Attempt a kinetic strike (ROE check).** Actor `RED-ASAT`, Action `engage`, Target
+**Step 5 — Advance and assess.** Keep clicking **+10m** until the clock passes T+1 h (3600 s),
+past the delivery window. With nothing delivered, `deny_isr` is MET — Red denied the imagery using
+only reversible effects.
+
+![Red step 5](../manual/29-train-red-6.png)
+
+**Step 6 — Attempt a kinetic strike (ROE check).** Actor `RED-ASAT`, Action `engage`, Target
 `ISR-EO-1`. *Result:* **REJECTED — `roe_kinetic_not_authorized`.** Kinetic ASAT is off by default;
 this teaches escalation restraint (White Cell can enable it with the `red_kinetic_authorized` dial).
 
-![Red step 5](../manual/28-train-red-5.png)
-
-**Step 6 — Advance and assess.** Click **+10m** past the delivery window. With nothing delivered,
-`deny_isr` is MET — Red denied the imagery using only reversible effects.
-
-![Red step 6](../manual/29-train-red-6.png)
+![Red step 6](../manual/28-train-red-5.png)
 
 ### Blue — recover from the cyber attack
 
-Red's cyber on `ground_modem` flipped `ISR-EO-1` into **safe mode**: the payload is off, the bus
+*(This half assumes Red's cyber attempt succeeded. If it failed — `disable_isr` stayed unmet — `ISR-EO-1` is nominal and there is nothing to recover: have Red re-issue the order, or have White Cell fire it, before continuing.)* Red's successful cyber on `ground_modem` flipped `ISR-EO-1` into **safe mode**: the payload is off, the bus
 survives, the orbit is unchanged. Reversible effects are only operationally meaningful if the
 defender can clear them, so the recovery loop is the second half of the lesson. **Switch back to
 Blue** (or reload the session and run Red's steps again as White Cell, then switch) and walk
