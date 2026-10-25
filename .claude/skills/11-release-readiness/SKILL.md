@@ -27,7 +27,9 @@ the recommendation is advisory and the user makes the call before any baseline f
 
 The release plan + feature catalog (`docs/feature-planning/`), the Master Build Plan + package
 index (`docs/implementation/`), the Verification Reports (`docs/implementation/verification/`),
-the Integration Report(s) for this scope (`docs/reviews/integration-review-*.md`), the RTM
+the Integration Report(s) for this scope (`docs/reviews/integration-review-*.md`), the Training
+Review report(s) (`docs/reviews/training-review-*.md`), `docs/training/15-manual-traceability.md`,
+the open Manual-impact items in `docs/pipeline/backlog.md`, the RTM
 (`docs/requirements/03-requirements-traceability-matrix.md`), and `ROADMAP.md`.
 
 ## Workflow
@@ -63,13 +65,28 @@ the Integration Report(s) for this scope (`docs/reviews/integration-review-*.md`
 
      This skill only checks the result; the lock itself is produced by a `07`→`08` package. A
      missing or unvalidated lock is a NO-GO item.
+3b. **Documentation verified** (owner direction 2026-10-25; MSTR-001 §2, FR-11410, A12) — an
+   explicit evidence item, checked every release:
+   - a `09-training-manual-review` **learner-walkthrough gate** report exists for this release
+     scope, names a commit at or after the last change to `docs/training/` or vignette YAML in
+     scope (current), and walked every role;
+   - **matrix coverage complete**: every feature in the scope audit appears in §15.1 with at least
+     one manual section or a stated not-operator-visible reason, and every VR in scope has a passed
+     Documentation audit (or an owner-accepted deferral on record);
+   - **tutorials machine-verified**: `python3 -m pytest spacesim/tests/test_vignette_tutorials.py`
+     green on the assessed commit;
+   - **no open Manual-impact item** for the release scope remains in the backlog.
+
+   **NO-GO** if the learner-walkthrough review is missing, not current, or has an open High (or
+   Critical) finding, or if any of the other three fails — unless the owner records an explicit
+   deferral, listed under Deviations.
 4. **Write the Release Assessment** → `docs/reviews/release-assessment-<release>.md`:
 
    | Section | Content |
    |---|---|
    | **Release** | Bucket, date, commit hash assessed |
    | **Scope audit** | One row per planned Feature: FS → IP(s) → VR(s) → integration coverage → delivered/deviated |
-   | **Evidence** | Test-suite state, permanent gates, the VR and Integration Report inventory relied on; the test relevance audit's results and the dependency lock (latest-version check, both suite modes, held-back packages) |
+   | **Evidence** | Test-suite state, permanent gates, the VR and Integration Report inventory relied on; the test relevance audit's results and the dependency lock (latest-version check, both suite modes, held-back packages); **documentation verified** — the training-review gate report (path, commit, open findings by severity), §15.1 coverage result, tutorial-test result, open Manual-impact items |
    | **Deviations** | Everything delivered differently than planned, each with its authorization trail |
    | **Residual risks** | Accepted findings and open issues shipping with the release |
    | **Assessment** | **GO** or **NO-GO**, with the blocking items enumerated on NO-GO |
@@ -88,6 +105,9 @@ the Integration Report(s) for this scope (`docs/reviews/integration-review-*.md`
 - [ ] Every Feature the release plan put in this bucket appears in the scope audit — none quietly
       dropped from the checklist.
 - [ ] Every "delivered" row is backed by a named VR and integration coverage, not by memory.
+- [ ] The documentation-verified evidence item is filled in from a current learner-walkthrough
+      review; a missing review, an open High finding, incomplete §15.1 coverage, a red tutorial
+      test, or an open Manual-impact item is NO-GO unless owner-deferred on record.
 - [ ] Every deviation has its authorization trail recorded, or is flagged as unauthorized drift.
 - [ ] The GO/NO-GO reasoning is stated in the assessment, and no baseline record was flipped
       without the user's explicit GO.
