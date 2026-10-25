@@ -328,6 +328,10 @@ class SessionManager:
         ``roles_needed`` entry covers, and only when a seat is named."""
         if not seat or order.action != "command":
             return None
+        params = order.params
+        verb = params.get("verb") if isinstance(params, dict) else None
+        if verb is not None and not isinstance(verb, str):
+            return None                  # a malformed verb is the engine's `invalid_param`, never a 500
         asset = self.sim.world.assets.get(order.actor)
         if asset is None or not self._roles_needed_covers(asset):
             return None
@@ -335,22 +339,27 @@ class SessionManager:
         if (binding is None or not self._entry_covers(binding["asset_or_constellation"], asset)
                 or binding["role"] not in ("bus", "payload", "both")):
             return "role_scope_not_assigned"
-        scope = ROLE_SCOPE_BY_VERB.get((order.params or {}).get("verb"))
+        scope = ROLE_SCOPE_BY_VERB.get(verb) if verb is not None else None
         if scope is None:
             return None                                  # the engine answers unknown_command
         if not self._role_covers(binding["role"], scope):
             return "role_scope_out_of_scope"
         return None
 
-    def role_scope_for(self, seat: Optional[str]) -> dict:
-        """Read-only scope of one operator seat (the table is global; no other seat's binding is
-        reported): the seat's binding, the role-gated assets, and which of those it is bound to."""
+    def role_scope_for(self, seat: Optional[str], cell: str = "white") -> dict:
+        """Read-only scope of one operator seat as seen from console seat ``cell``: the seat's
+        binding, the role-gated assets, and which of those it is bound to. Fog: a Blue/Red caller
+        sees only assets its own cell owns, and a binding that covers none of them is reported as
+        unbound (indistinguishable from no binding), so one cell learns nothing of the other's
+        assets or assignments. White sees every asset (facilitator)."""
         seat = seat or ""
         binding = self.role_assignments.get(seat)
-        assets = self.sim.world.assets.values()
+        assets = [a for a in self.sim.world.assets.values() if cell == "white" or a.owner == cell]
         gated = sorted(a.id for a in assets if self._roles_needed_covers(a))
         bound = sorted(a.id for a in assets if binding is not None and a.id in gated
                        and self._entry_covers(binding["asset_or_constellation"], a))
+        if cell != "white" and not bound:
+            binding = None
         return {"seat": seat, "bound": binding is not None,
                 "asset_or_constellation": binding["asset_or_constellation"] if binding else None,
                 "role": binding["role"] if binding else None,

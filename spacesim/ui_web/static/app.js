@@ -180,7 +180,7 @@ function roleCovers(role, scope) { return role === "both" || role === scope; }
 async function refreshRoleScope() {
   if (!SID) return;
   if (!OP_SEAT) { const had = ROLE_SCOPE !== null; ROLE_SCOPE = null; return had; }
-  const next = await api.get(`/api/sessions/${SID}/roles/scope?seat=${encodeURIComponent(OP_SEAT)}`).catch(() => null);
+  const next = await api.get(`/api/sessions/${SID}/roles/scope?seat=${encodeURIComponent(OP_SEAT)}&cell=${CELL}`).catch(() => null);
   const changed = JSON.stringify(next) !== JSON.stringify(ROLE_SCOPE);
   ROLE_SCOPE = next;
   return changed;
@@ -1790,6 +1790,8 @@ async function renderConjunctions() {
     const o = { cell: ASSETS[actor]?.owner || cell, actor,
                 action: "command", target: null,
                 params: { verb: "prop.collision_avoid" } };
+    const seat = ($("o-seat")?.value || "").trim();     // IP-1160 — same operator seat as every order path
+    if (seat) o.seat = seat;
     try {
       const ack = await api.post(`/api/sessions/${SID}/order`, o);
       b.textContent = ack.ok ? "Queued" : "REJECT";

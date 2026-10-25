@@ -327,6 +327,11 @@ class RoleAssignmentRequest(BaseModel):
     asset_or_constellation: str
     role: str = "both"
 
+    @field_validator("seat")
+    @classmethod
+    def _seat_charset(cls, v: str) -> str:
+        return _validate_seat(v, field="RoleAssignmentRequest.seat")
+
 
 class SSNCancelBody(BaseModel):
     request_id: str
@@ -527,16 +532,22 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         return api.staffing_report(sid)
 
     @app.get("/api/sessions/{sid}/roles/scope")
-    def role_scope(sid: str, seat: Optional[str] = None) -> dict:
-        """IP-1160 (FR-3510) — the named operator seat's scope and the global verb-scope table the
-        console filters its command list with. A no-cell read like ``roles/staffing``; it reports
-        only the seat asked about (never the other seats' bindings)."""
+    def role_scope(sid: str, seat: Optional[str] = None, cell: Optional[str] = None) -> dict:
+        """IP-1160 (FR-3510) — without ``seat``: ONLY the static verb->scope table (no assets, no
+        assignments; nothing session-specific, so safe for any caller). With ``seat`` the caller
+        must name its console seat (``cell``: white/blue/red; the Observer has none -> 403) and gets
+        that operator seat's scope fog-scoped to the cell: Blue/Red see only their own cell's
+        role-gated assets and an unbound answer for anything else; White sees every asset."""
         _require(sid)
+        if not seat:
+            return {"verbs": api.role_scope(sid, None)["verbs"]}
         try:
             _validate_seat(seat, field="seat")
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc))
-        return api.role_scope(sid, seat)
+        if cell not in ("white", "blue", "red"):
+            raise HTTPException(status_code=403, detail="a seat-specific scope read must name the white, blue or red console seat")
+        return api.role_scope(sid, seat, cell)
 
     @app.get("/api/vignettes")
     def list_vignettes() -> list[dict]:

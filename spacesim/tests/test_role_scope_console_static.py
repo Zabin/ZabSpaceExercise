@@ -46,3 +46,15 @@ def test_20_the_client_carries_the_operator_seat_through_compose_reasons_and_mar
     tips = re.search(r"const REASON_TIPS = \{(.*?)\n\};", src, re.S).group(1)
     assert "role_scope_not_assigned" in tips and "role_scope_out_of_scope" in tips
     assert 'id="o-seat"' in (STATIC / "index.html").read_text(encoding="utf-8")
+
+
+def test_drill_down_and_evade_paths_carry_the_asset_id_and_the_operator_seat():
+    src = _app_js()
+    # L-3: the subsystem drill-down filter must be given the asset id (ASSETS entries carry none)
+    assert re.search(r"verbsForSubsystem\(a, sub, assetId\)", src)
+    assert re.search(r"function verbsForSubsystem\(a, sub, id\) \{\s*return actionsFor\(a, id\)", src)
+    # L-2: the conjunction "Evade" quick action sends the operator seat like every other order path
+    evade = re.search(r"data-evade\]\"\)\.forEach(.*?)\} catch", src, re.S)
+    assert evade and "seat" in evade.group(1)
+    # M-2: the client asks for its own seat's scope with its console seat
+    assert re.search(r"roles/scope\?seat=.*cell=", src)

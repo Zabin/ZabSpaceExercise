@@ -285,8 +285,10 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
   `seat` (operator seat; see INT-0004). A role-scope refusal is a normal rejected `OrderAck`
   (`role_scope_not_assigned` / `role_scope_out_of_scope`) returned before the order system is
   reached — no order is registered and nothing is logged. One additive read,
-  `role_scope(session, seat)` (`GET /api/sessions/{sid}/roles/scope?seat=`, no cell), returns the
-  named seat's binding, the role-gated assets and the global verb-scope table.
+  `role_scope(session, seat, cell)` (`GET /api/sessions/{sid}/roles/scope`) returns, without a seat,
+  only the static verb-scope table; with a seat and console seat it returns that seat's binding and
+  role-gated assets, fog-scoped to the caller's cell (White sees all). Role is checked at
+  submission only (a rebinding applies to later submissions).
 - **Postconditions:** Every mutating call is logged to the `EventLog` (C1); every read is
   fog-of-war-filtered for cell-scoped calls, unfiltered for the documented no-cell god-view
   exception (ADR-0004, ADR-0015).

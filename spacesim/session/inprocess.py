@@ -229,10 +229,11 @@ class InProcessSession:
         with self._locked_read(session) as mgr:
             return mgr.staffing_report()
 
-    def role_scope(self, session: str, seat: Optional[str]) -> dict:
-        """IP-1160 (FR-3510) — one operator seat's scope plus the global verb-scope table."""
+    def role_scope(self, session: str, seat: Optional[str], cell: str = "white") -> dict:
+        """IP-1160 (FR-3510) — one operator seat's scope plus the global verb-scope table, as seen
+        from console seat ``cell`` (fog-scoped; see ``SessionManager.role_scope_for``)."""
         with self._locked_read(session) as mgr:
-            return mgr.role_scope_for(seat)
+            return mgr.role_scope_for(seat, cell)
 
     # -- time control ----------------------------------------------------------
     # IP-1173 (FR-5110) — a draft session must never advance its clock (it produces no event

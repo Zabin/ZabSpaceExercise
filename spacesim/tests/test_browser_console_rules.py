@@ -794,3 +794,22 @@ def test_23_a_verb_outside_the_seats_scope_disables_issue_with_the_role_reason_b
     assert "other role" in c.page.inner_text("#o-preview")
     assert c.orders("blue") == 0                       # nothing was issued to learn this
     assert c.errors == []
+
+
+@pytest.mark.verifies("FR-3510", "NFR-2840")
+def test_24_the_subsystem_drill_down_buttons_follow_the_operator_seats_role(console):
+    c = _role_console(console)
+    _bind(c, "bus-op", "bus"); _bind(c, "pl-op", "payload")
+
+    def drill_verbs():
+        c.page.evaluate("openDrill('ISR-EO-1')")
+        c.page.wait_for_function("document.querySelectorAll('#drill-params .vbtn').length > 0")
+        return c.page.eval_on_selector_all("#drill-params .vbtn", "els => els.map(e => e.dataset.verb)")
+
+    _enter_seat(c, "bus-op")
+    bus = drill_verbs()
+    assert any(v.startswith("eps.") for v in bus) and not [v for v in bus if v.startswith("isr.") or v == "def.harden"]
+    _enter_seat(c, "pl-op")
+    pl = drill_verbs()
+    assert any(v.startswith("isr.") for v in pl) and not [v for v in pl if v.startswith(("eps.", "adcs.", "cdh."))]
+    assert c.errors == []

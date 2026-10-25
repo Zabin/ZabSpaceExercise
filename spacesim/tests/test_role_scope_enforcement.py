@@ -244,20 +244,99 @@ def test_16_accepted_role_scoped_orders_replay_byte_identically_and_refusals_wri
 
 
 # -- read-only scope resolver ----------------------------------------------------------------------
-def test_role_scope_for_reports_only_the_named_seat():
+def test_role_scope_for_reports_only_the_named_seat_within_the_callers_cell():
     mgr = _mgr(roles=((SAT, "both"),))
     mgr.assign_role("bus-op", SAT, "bus")
     mgr.assign_role("pl-op", SAT, "payload")
-    s = mgr.role_scope_for("bus-op")
+    s = mgr.role_scope_for("bus-op", "blue")
     assert s["seat"] == "bus-op" and s["bound"] is True and s["role"] == "bus"
     assert s["asset_or_constellation"] == SAT
     assert s["gated_assets"] == [SAT] and s["bound_assets"] == [SAT]
     assert s["verbs"] == ROLE_SCOPE_BY_VERB
     assert "pl-op" not in json.dumps(s)                                  # another seat's binding is not leaked
-    u = mgr.role_scope_for("nobody")
+    u = mgr.role_scope_for("nobody", "white")
     assert u["bound"] is False and u["role"] is None and u["bound_assets"] == []
-    assert u["gated_assets"] == [SAT]
-    assert _mgr(roles=()).role_scope_for("x")["gated_assets"] == []
+    assert u["gated_assets"] == [SAT]                                    # White sees every gated asset
+    assert _mgr(roles=()).role_scope_for("x", "white")["gated_assets"] == []
+    # Red owns none of the gated assets: nothing about Blue's assets or bindings is reportable
+    r = mgr.role_scope_for("bus-op", "red")
+    assert r["bound"] is False and r["gated_assets"] == [] and r["bound_assets"] == []
+    assert SAT not in json.dumps(r) and r["role"] is None and r["asset_or_constellation"] is None
+
+
+# -- M-1: a non-string verb is never a 500 ---------------------------------------------------------
+BAD_VERBS = [[1], ["isr.collect_now"], {"a": 1}, 5, 1.5, None, True, False, "", "x" * 20000, "isr.nope"]
+
+
+@pytest.mark.verifies("NFR-1600")
+@pytest.mark.parametrize("seat", ["bus-op", "stranger"])
+def test_m1_any_verb_value_gets_the_same_ack_as_without_a_seat_at_manager_level(seat):
+    mgr = _mgr()
+    mgr.assign_role("bus-op", SAT, "bus")
+    for verb in BAD_VERBS:
+        o = Order(cell="blue", actor=SAT, action="command", params={"verb": verb, "via": "GS-NORTH"})
+        plain = mgr.validate_order("blue", o)
+        o = Order(cell="blue", actor=SAT, action="command", params={"verb": verb, "via": "GS-NORTH"})
+        seated = mgr.validate_order("blue", o, seat=seat)
+        if isinstance(verb, str) and verb in ROLE_SCOPE_BY_VERB:
+            continue
+        if seat == "stranger" and (verb is None or isinstance(verb, str)):
+            assert seated.reason == "role_scope_not_assigned"            # a string verb: gate as before
+        else:
+            assert (seated.ok, seated.reason, seated.status) == (plain.ok, plain.reason, plain.status), verb
+    o = Order(cell="blue", actor=SAT, action="command", params={"via": "GS-NORTH"})   # no verb key at all
+    assert mgr.validate_order("blue", o, seat="bus-op").ok == mgr.validate_order("blue", o).ok
+
+
+@pytest.mark.verifies("NFR-1600")
+def test_m1_any_verb_value_is_a_normal_200_ack_over_http_on_both_routes():
+    c, api, sid = _http()
+    api._sessions[sid].assign_role("bus-op", SAT, "bus")
+    for route in ("order", "order/validate"):
+        for verb in BAD_VERBS:
+            base = {"cell": "blue", "actor": SAT, "action": "command", "params": {"verb": verb, "via": "GS-NORTH"}}
+            plain = c.post(f"/api/sessions/{sid}/{route}", json=base)
+            seated = c.post(f"/api/sessions/{sid}/{route}", json={**base, "seat": "bus-op"})
+            assert plain.status_code == 200 and seated.status_code == 200, (route, verb, seated.text)
+            p, q = plain.json(), seated.json()
+            assert (q["ok"], q["reason"], q["status"]) == (p["ok"], p["reason"], p["status"]), (route, verb)
+
+
+# -- M-2: GET /roles/scope discloses nothing about other cells' assets or assignments ----------------
+@pytest.mark.verifies("FR-6220")
+def test_m2_the_public_scope_read_is_only_the_static_verb_table():
+    c, api, sid = _http()
+    api._sessions[sid].assign_role("bus-op", SAT, "bus")
+    r = c.get(f"/api/sessions/{sid}/roles/scope")
+    assert r.status_code == 200 and r.json() == {"verbs": ROLE_SCOPE_BY_VERB}
+    assert SAT not in r.text and "bus-op" not in r.text
+
+
+@pytest.mark.verifies("FR-6220")
+def test_m2_red_cannot_learn_blues_role_gated_assets_or_assignments():
+    c, api, sid = _http()
+    api._sessions[sid].assign_role("bus-op", SAT, "bus")
+    for q in ({"seat": "bus-op", "cell": "red"}, {"seat": "ghost", "cell": "red"}):
+        r = c.get(f"/api/sessions/{sid}/roles/scope", params=q)
+        assert r.status_code == 200
+        j = r.json()
+        assert j["bound"] is False and j["gated_assets"] == [] and j["bound_assets"] == []
+        assert SAT not in r.text
+        assert j == c.get(f"/api/sessions/{sid}/roles/scope", params={"seat": "nobody-at-all", "cell": "red"}).json() | {"seat": q["seat"]}
+    # a seat-specific read must name a console seat; the Observer has none
+    assert c.get(f"/api/sessions/{sid}/roles/scope", params={"seat": "bus-op"}).status_code == 403
+    assert c.get(f"/api/sessions/{sid}/roles/scope", params={"seat": "bus-op", "cell": "observer"}).status_code == 403
+    # Blue gets its own; White gets any seat
+    for cell in ("blue", "white"):
+        j = c.get(f"/api/sessions/{sid}/roles/scope", params={"seat": "bus-op", "cell": cell}).json()
+        assert j["bound"] is True and j["bound_assets"] == [SAT] and j["gated_assets"] == [SAT]
+
+
+def test_lows_roles_assign_rejects_seat_names_the_order_route_rejects():
+    c, api, sid = _http()
+    body = {"cell": "white", "seat": "é/x", "asset_or_constellation": SAT, "role": "bus"}
+    assert c.post(f"/api/sessions/{sid}/roles/assign", json=body, params={"cell": "white"}).status_code == 422
+    assert api._sessions[sid].role_assignments == {}
 
 
 # -- 17: HTTP --------------------------------------------------------------------------------------
@@ -304,15 +383,14 @@ def test_17_http_refusal_is_a_200_order_ack_not_an_error_and_console_seat_rules_
 def test_17b_http_roles_scope_shape_and_seat_validation():
     c, api, sid = _http()
     api._sessions[sid].assign_role("bus-op", SAT, "bus")
-    r = c.get(f"/api/sessions/{sid}/roles/scope", params={"seat": "bus-op"})
+    r = c.get(f"/api/sessions/{sid}/roles/scope", params={"seat": "bus-op", "cell": "blue"})
     assert r.status_code == 200
     j = r.json()
     assert set(j) == {"seat", "bound", "asset_or_constellation", "role", "verbs", "gated_assets", "bound_assets"}
     assert j["role"] == "bus" and j["bound_assets"] == [SAT] and j["verbs"]["isr.collect_now"] == "payload"
-    assert c.get(f"/api/sessions/{sid}/roles/scope", params={"seat": "a;b"}).status_code == 422
-    assert c.get(f"/api/sessions/{sid}/roles/scope", params={"seat": "x" * 65}).status_code == 422
-    assert c.get("/api/sessions/nope/roles/scope", params={"seat": "x"}).status_code == 404
-    assert c.get(f"/api/sessions/{sid}/roles/scope").json()["bound"] is False      # no seat: nothing bound
+    assert c.get(f"/api/sessions/{sid}/roles/scope", params={"seat": "a;b", "cell": "blue"}).status_code == 422
+    assert c.get(f"/api/sessions/{sid}/roles/scope", params={"seat": "x" * 65, "cell": "blue"}).status_code == 422
+    assert c.get("/api/sessions/nope/roles/scope", params={"seat": "x", "cell": "blue"}).status_code == 404
 
 
 # -- 18: regression across the shipped library -----------------------------------------------------
