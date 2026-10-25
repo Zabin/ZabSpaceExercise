@@ -66,6 +66,7 @@ def _first_nonfinite(value: Any, path: str = "body") -> Optional[str]:
 _NUMBER_ONLY = {
     "/clock": ("rate",), "/step": ("dt_sim_s",), "/advance": ("t",), "/rewind": ("t",), "/undo": ("n",),
     "/aar/playback/start": ("speed",), "/aar/playback/advance": ("dt_s",), "/aar/playback/speed": ("speed",),
+    "/inject": ("at_sim_t",), "/edit": ("at_sim_t",),      # IP-1084 — a boolean would coerce to 1
 }
 
 

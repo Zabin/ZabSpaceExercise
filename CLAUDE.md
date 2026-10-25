@@ -485,7 +485,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `cancel_inject`/`edit_inject`) logged as `inject_admin` events whose overrides fold from the event
   log strictly before the fire instant (`_inject_overrides`); a stale event is logged `skipped`, edits
   re-arm after a rewind, White future injects carry `white-<n>` handles and are themselves logged as
-  `inject_admin` `schedule` entries so rewind/undo re-arms them (`IP-1083`, `BL-0284`); **IP-1067 (FR-4620):**
+  `inject_admin` `schedule` entries so rewind/undo re-arms them (`IP-1083`, `BL-0284`); **IP-1084 (H-1, FR-6210):** `_notice_by_owner()` — the one addressing helper for a controller-set `anomaly`/`sensor_outage` notice (White gets the true cause, the owning cell the fact only, the opposing cell nothing; a neutral target is White only), also reached by the condition and env-anomaly paths; `fire_inject`/`edit_inject` reject a boolean `at_sim_t`; **IP-1067 (FR-4620):**
   `controller_view()` composes the god-view and both cells' `get_view` for one instant (served
   White-only at `/controller_view`, one `_locked_read`); **multiplayer:** server-authoritative
   lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /

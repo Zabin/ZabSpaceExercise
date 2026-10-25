@@ -1055,6 +1055,8 @@ class SessionManager:
         """FR-4450 — replace a pending inject's effects and/or (time injects only) fire time. The
         edited effects pass the IP-1063 whole-inject check; the edit is refused whole otherwise."""
         row = self._pending_row(handle)
+        if isinstance(at_sim_t, bool):
+            raise ValueError("edit rejected: at_sim_t must be a number, not a boolean")
         if effects is None and at_sim_t is None:
             raise ValueError("edit rejected: nothing to change (give effects and/or at_sim_t)")
         if at_sim_t is not None:
@@ -1332,6 +1334,8 @@ class SessionManager:
         against FR-4430's target Precondition in the current world — and an invalid inject raises
         ``ValueError`` naming every problem, with nothing scheduled, applied, or logged (atomic).
         """
+        if isinstance(at_sim_t, bool):     # IP-1084 (IP-1082 family): True would coerce to 1 = "now"
+            raise ValueError("inject rejected: at_sim_t must be a number, not a boolean")
         effects = inject if isinstance(inject, list) else self._inject_effects(inject)
         problems = validate_inject_effects(self.sim.world, effects, check_targets=True,
                                            prop=self.osys.prop)
@@ -1635,17 +1639,21 @@ class SessionManager:
                             enter_safe_mode(asset.bus_state, world.now, cause)
                     elif eff.get("subsystem") == "telemetry":
                         asset.bus_state.comms.status = "green" if restore else "red"
-                    world.messages.append({"to": ["white", "blue", "red"],
-                                           "text": f"{eff['target']}: anomaly {'cleared' if restore else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
-                                           "t": world.now})
+                    # IP-1084 (H-1, FR-6210): White is told the controller's true cause, the owning
+                    # cell the fact only, the opposing cell nothing.
+                    self._notice_by_owner(
+                        world, asset.owner,
+                        f"{eff['target']}: anomaly {'cleared' if restore else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
+                        f"{eff['target']}: anomaly {'cleared' if restore else 'declared'}")
             elif kind == "sensor_outage":
                 # IP-1062 (FR-4430) — mirrors gs_outage's health-flag pattern for a sensor.
                 sensor = world.sensors.get(eff["target"])
                 if sensor is not None:
                     sensor.health = "nominal" if eff.get("restore") is True else "degraded"
-                    world.messages.append({"to": ["white", "blue", "red"],
-                                           "text": f"{eff['target']}: sensor outage {'cleared' if sensor.health == 'nominal' else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
-                                           "t": world.now})
+                    self._notice_by_owner(
+                        world, sensor.owner,
+                        f"{eff['target']}: sensor outage {'cleared' if sensor.health == 'nominal' else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
+                        f"{eff['target']}: sensor outage {'cleared' if sensor.health == 'nominal' else 'declared'}")
             elif kind == "forced_custody_loss":
                 # IP-1062 (FR-4430) — a missing target is a no-op (Design Decision 2's posture),
                 # never another cell's Track (world.track_for is already cell-scoped, ADR-0004).
@@ -1710,6 +1718,17 @@ class SessionManager:
                                                     "subsystem": subsystem, "cause": cause}], rng)
                 fired.append({"asset": aid, "p": p})
         payload["fired"] = fired
+
+    @staticmethod
+    def _notice_by_owner(world: WorldState, owner: str, white_text: str, owner_text: str) -> None:
+        """IP-1084 (H-1, FR-6210) — the one addressing policy for a controller-set notice about one
+        side's private asset/sensor state: White gets ``white_text`` (with the true cause), the
+        owning ``blue``/``red`` cell gets ``owner_text`` (the fact, no cause), the opposing cell
+        nothing; a ``neutral`` target is White only. ``CellController.view`` filters on ``to``
+        unchanged. Pure in ``(world, owner, texts)``: no clock, no RNG."""
+        world.messages.append({"to": ["white"], "text": white_text, "t": world.now})
+        if owner in ("blue", "red"):
+            world.messages.append({"to": [owner], "text": owner_text, "t": world.now})
 
     @staticmethod
     def _skip_inject_effect(world: WorldState, eff, problem: str) -> None:

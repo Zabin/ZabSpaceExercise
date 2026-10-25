@@ -159,7 +159,8 @@ def test_high_kp_fires_more_environmental_anomalies():
     assert len(_firings(quiet)) > 0
     assert len(_firings(storm)) > len(_firings(quiet))
     # a firing applies the existing anomaly effect (telemetry -> comms red + a message)
-    assert any("anomaly declared (space_weather)" in m["text"] for m in storm.world.messages)
+    assert any("anomaly declared (space_weather)" in m["text"] and m["to"] == ["white"]
+               for m in storm.world.messages)   # IP-1084: the true cause is White-addressed
 
 
 @pytest.mark.verifies("FR-4440")
