@@ -484,7 +484,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `index_series`; **IP-1066 (FR-4450):** a White-only pending-inject queue (`pending_injects`/
   `cancel_inject`/`edit_inject`) logged as `inject_admin` events whose overrides fold from the event
   log strictly before the fire instant (`_inject_overrides`); a stale event is logged `skipped`, edits
-  re-arm after a rewind, White future injects carry `white-<n>` handles; **IP-1067 (FR-4620):**
+  re-arm after a rewind, White future injects carry `white-<n>` handles and are themselves logged as
+  `inject_admin` `schedule` entries so rewind/undo re-arms them (`IP-1083`, `BL-0284`); **IP-1067 (FR-4620):**
   `controller_view()` composes the god-view and both cells' `get_view` for one instant (served
   White-only at `/controller_view`, one `_locked_read`); **multiplayer:** server-authoritative
   lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /

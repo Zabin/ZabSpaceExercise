@@ -113,11 +113,13 @@ against `packages/INDEX.md` for collisions — unclaimed):
 
 | Package | Feature | Situation | Entry status |
 |---|---|---|---|
-| [IP-1160](packages/IP-1160-role-scoped-command-enforcement.md) | FS-116 | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; every dependency package already `VERIFIED`) |
+| [IP-1160](packages/IP-1160-role-scoped-command-enforcement.md) | FS-116 | Forward design | 🟢 READY (authorized 2026-10-25, journal run #262; re-validated as v1.2 — see "Release-push remediation, pass 7") |
 
 `IP-1160` is not authorized for coding — per MSTR-006 §3, being fully specified (and every
 dependency already `VERIFIED`) is not itself an authorization; a separate, explicit user go-ahead
 is required before any Implementation Task begins.
+
+*(2026-10-25: the separate, explicit go-ahead was given — project owner, journal run #262 — and the package is `READY`; the paragraph above is the position as first written.)*
 
 ## Tranche 3 (2026-07-05): FS-117
 
@@ -1194,6 +1196,39 @@ carve-out); the rest is conflict avoidance.
 - `M-6` (training-corpus catch-up): the scheduled `BL-0271`...`BL-0286` batch for `08-training-manual-authoring`; the packages above route their own manual-impact findings (`07-white-cell-facilitation.md` lines 78-80 for `IP-1084`, the delivery-path table for `IP-1085`, the TLE-epoch rule for `IP-1086`).
 - Requirement text (who is told for `FR-4430`; element bounds for `FR-5310`; same-validation wording for `FR-5220`/`FR-5110`; pending-order persistence Note for `FR-3430`): owned by `04`; the builds do not wait on it.
 - The adjacent exposure of `bus_state.safe_mode.cause` to the owner through the existing own-asset view (noted in `IP-1084` Decision 3): an owner question, not part of `H-1`.
+## Release-push remediation, pass 7 (2026-10-25)
+
+**Input:** journal run #262 (owner answers to the release assessment `REV-REL-002`): authorize `IP-1160`
+(`FEAT-3500` stays in Release 1) and fix `BL-0284` before release.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Re-validate `IP-1160` against the current tree and flip it `READY` (v1.2): console-seat vs operator-seat, check order against the IP-1068/1130 rules, server-served verb-scope table, `role_assignments` in the save, unregistered refusals, test matrix incl. browser and a static drift test | `session/manager.py`, `session/inprocess.py`, `session/api.py`, `ui_web/server.py`, `ui_web/static/app.js`, `index.html` | IP-1160 |
+| 2 | A future-dated White inject is recorded in the event log, so a rewind or undo re-arms it | `session/manager.py` (`fire_inject`, `_h_inject_admin`, `_arm_schedule`) | IP-1083 |
+
+**Why `IP-1160` stays one package.** Re-validation found no new seam: the server gate, the route field,
+the scope read and the client filter all depend on one verb-scope table, and a split would let the client
+and server tables drift. The new facts (a second meaning of "seat" in the server; `role_assignments`
+missing from the save; `app.js` offering `pnt.set_integrity` untagged) are folded into the one package.
+
+**Why `IP-1083` is its own package and not part of `IP-1066`.** `IP-1066` is `VERIFIED`; reopening it would
+disturb its record. The defect is pre-existing and was filed (not fixed) there.
+
+**Design choice for `IP-1083` and the alternatives refused.** The fix reuses the logged `inject_admin`
+fold and the existing re-arm loop by recording the *schedule* as one more admin action. Refused: (a) a
+side list of scheduled injects on `SessionManager` (hidden state outside the log, against `FR-1120`);
+(b) having `Simulation._rebuild` keep the scheduler (it would break exact rewind for every other pending
+event); (c) re-deriving White injects from the save's `pending` (a rewind has no save). The cost, one
+more log entry per scheduled White inject and a changed undo count, is recorded in the package's Risks.
+
+**Ordering and file conflicts.** `IP-1083` → `IP-1160`: both edit `session/manager.py` in different
+places; `IP-1083` is smaller, has no UI and is a release blocker. `IP-1160` no longer touches
+`engine/orders.py`, so the older "rebase over `_validate`" notes (`IP-1052`, `IP-1320`) lapse.
+
+**Not planned here (and why).** The operator `seat` becoming mandatory (`ADS-3500` §9 Q1, a requirements
+question for the owner, recorded in `IP-1160`); validating `role` at `assign_role` (`IP-1151`'s surface,
+fail-closed in the gate instead); the training-basics tutorial and brief errors (`08-vignette-development`);
+the integration review of the 40 unreviewed packages (`10`).
 
 ## Related
 
