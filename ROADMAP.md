@@ -853,6 +853,14 @@ the maneuver pass is T+11 h not "about T+10 h", `04` Red Step 3 params differ fr
 guidance on detecting a failed cyber attempt, `keep_custody` lapses one click after the deadline. Seven
 strict-xfail brief/deadline disagreements and five late-observe items await an author decision.
 
+**Training review (2026-10-25):** [`reviews/training-review-release-walkthrough.md`](docs/reviews/training-review-release-walkthrough.md)
+(REV-TRN-010) independently walked the corpus as a first-time learner on the live app (01, 03, 04, the in-app
+tutorials, `mt-isr-sar`/`mt-weather-collect`/`nv-isl-relay-debris`/`learn-intermediate-recovery`, label and
+refusal-string checks across 12-14a). 1 High, 9 Medium, 5 Low: `03` Step 4 says Red's `Deny ISR` is met at
+T+30 min (it flips only after T+3 h); the tutorials' `command` + `verb` has no Action-menu entry; `RED-DAZZLE`
+cannot choose **engage**; the cyber confirm dialog is unmentioned in `04`; Resume resets a custom clock rate;
+five COA rungs have no playbook; `15.1` lacks rows for FS-123/FS-124; glossary gaps.
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
