@@ -4,8 +4,11 @@
 
 The **bidirectional cross-reference** that keeps the three role-scoped cell manuals
 ([White](12-white-cell-manual.md), with `WCM-12`–`WCM-16` in
-[12a](12a-white-cell-analysis-and-exports.md) · [Blue](13-blue-cell-manual.md) ·
-[Red](14-red-cell-manual.md)) cheap to maintain. It exists so a change is never silently stranded
+[12a](12a-white-cell-analysis-and-exports.md), `WCM-17` in [12b](12b-white-cell-vignette-creator.md),
+`WCM-18`–`WCM-20` in [12c](12c-white-cell-rules-and-staffing.md) and `WCM-21`–`WCM-24` in
+[12d](12d-white-cell-clock-saves-and-controls.md) · [Blue](13-blue-cell-manual.md), `BLU-15`–`BLU-18` in
+[13a](13a-blue-cell-rules-and-delivery.md) · [Red](14-red-cell-manual.md), `RED-14`–`RED-17` in
+[14a](14a-red-cell-rules-and-delivery.md)) cheap to maintain. It exists so a change is never silently stranded
 from its documentation:
 
 - **Feature → manual (§15.1):** when you change a code feature, look it up here to see exactly
@@ -71,7 +74,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Cyber (off-pass exception) | `engine/cyber.py` | — | BLU-9 | RED-6 |
 | Five D's effects | `engine/effects.py` | — | — | RED-5 |
 | Kinetic engagement + ROE gate | `engine/engage.py` | — | — | RED-5 |
-| Effect resource bounds (salvo limited to rounds left: `no_ammo`/`insufficient_ammo` at preview + issue, execute-time re-check of queued strikes, rounds spent only on success; jamming leaves the jammer's `power_w` unchanged), `09` §10 | `engine/orders.py` (`_validate`, `_engage_rounds`, `_h_effect`, jam plan), `app.js` (`REASON_TIPS.insufficient_ammo`) | — | — | RED-3, RED-5 |
+| Effect resource bounds (salvo limited to rounds left: `no_ammo`/`insufficient_ammo` at preview + issue, execute-time re-check of queued strikes, every fired salvo charged, hit or miss; jamming leaves the jammer's `power_w` unchanged), `09` §10 | `engine/orders.py` (`_validate`, `_engage_rounds`, `_h_effect`, jam plan), `app.js` (`REASON_TIPS.insufficient_ammo`) | — | — | RED-3, RED-5 |
 | RPO / co-orbital proximity | `engine/access.py` (`rpo_proximity`) | — | BLU-6 | RED-5 |
 | Per-cell playbooks / tutorial (incl. the `training-basics` onboarding script, `04-guided-vignette.md`, §11.0) | `test_vignette_tutorials.py`, `test_training.py`, `/vignettes/{id}/tutorial` | WCM-2 | BLU-10 | RED-9 |
 | Vignette library (add/move/retire) | `content/vignettes/*.yaml` | WCM-2 | BLU-10 | RED-9 |
@@ -87,6 +90,16 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Quick TLE export (own satellites at actual orbit + tracked objects at belief; White: ground truth) | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `GET /tle/{cell}`, `tleexport.js` (`candidates`, `SOURCE_LABEL`) | WCM-14 | BLU-12 | RED-11 |
 | Ephemeris export, time-span (ECI/RIC, CSV/CCSDS OEM, truth + cell-observed) | `session/ephemeris.py` (`truth_ephemeris`, `cell_observed_ephemeris`, `write_csv`/`write_oem`/`write_ric_csv`, `sample_times`/`MAX_EXPORT_SAMPLES`), `session/aar.py` (`worlds_at_times`), `GET /ephemeris/truth`, `GET /ephemeris/{cell}` | WCM-15 | BLU-13 | RED-12 |
 | Per-asset telemetry CSV export, time-span | `session/manager.py` (`telemetry_export`), `engine/telemetry.py` (`sample`, per-instant replay), `session/aar.py` (`worlds_at_times`), `session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`), `GET /telemetry/{cell}/{asset}/export.csv` | WCM-16 | BLU-14 | RED-13 |
+| Vignette Creator (draft session, TLE / lat-long asset entry, curated site picker, asset menu, JSON view, preview, seat declaration, save as vignette, play it) | `static/creator.js`, `session/manager.py` (`creator_*`, `declare_seats`), `content/vignette_export.py`, `config.py` (`ContentConfig`), `POST /api/sessions/draft`, `PUT /creator/state`, `POST /save_vignette` | WCM-17 | — | — |
+| Operator seat + role-scoped commands (`roles_needed`, assign, staffing report, `role_scope_*` refusals, scope read) | `session/manager.py` (`assign_role`, `role_scope_check`, `staffing_report`), `static/app.js` (`o-seat`, `REASON_TIPS`), `GET /roles/scope`, `POST /roles/assign` | WCM-2, WCM-18 | BLU-15 | RED-14 |
+| Approval gates (`pending_approval`, decide) and live ROE changes | `engine/orders.py` (`decide_gated_order`, `issue_roe_change`, `_matching_gate`, `rebuild_pending`), `POST /gate/decide`, `POST /roe/change` | WCM-19 | BLU-16 | RED-15 |
+| Pending-inject queue, edit/cancel, condition injects, owner-fact fog (`_notice_by_owner`) | `session/manager.py` (`pending_injects`, `edit_inject`, `cancel_inject`, `_h_condition_check`, `_notice_by_owner`), `static/app.js` (`renderPendingInjects`) | WCM-5, WCM-20 | — | — |
+| Time-control bounds and refusal messages; clock-rate bounds | `session/manager.py` (`step`, `advance_to`, `rewind_to`, `undo_last`, `set_clock`), `ui_web/server.py` | WCM-4, WCM-21 | — | — |
+| Save contents, Load refusals/warnings, save-as-scenario carry-over | `session/manager.py` (`save_state`, `validate_save`, `from_state`), `content/vignette_export.py`, `POST /load_save` | WCM-10, WCM-22 | — | — |
+| Force-add before Start (TLE, bulk TLE/OMM) and its refusals | `session/manager.py` (`add_tle`, `bulk_import`, `_force_add_omm_object`), `content/bulk_import.py` | WCM-7, WCM-23 | — | — |
+| Which seat sees which console controls | `static/app.js` (`setCell`), `static/index.html` (`white-only`), `ui_web/server.py` (`_require_white`, `_reject_observer`) | WCM-24 | — | — |
+| Delivery paths and link-scoped jamming (`ground_uplink` / `isl_relay` / `stored_program`; `link_target`) | `engine/orders.py` (`_delivery_jammed`), `engine/effects.py` (`is_link_denied`) | — | BLU-17 | RED-16 |
+| Manoeuvre ledger and export time formats | `session/manager.py` (`maneuver_ledger`), `GET /maneuver_ledger/{cell}/{asset}` | WCM-15, WCM-16 | BLU-18 | RED-17 |
 
 ### 15.1a Feature → shared modules (`01`–`11`)
 
@@ -133,7 +146,9 @@ mirrors each section's inline `> Sources:` footer.
 #### White Cell manual (`WCM-n`)
 
 `WCM-1`–`WCM-11` are in [`12-white-cell-manual.md`](12-white-cell-manual.md);
-`WCM-12`–`WCM-16` are in [`12a-white-cell-analysis-and-exports.md`](12a-white-cell-analysis-and-exports.md).
+`WCM-12`–`WCM-16` are in [`12a-white-cell-analysis-and-exports.md`](12a-white-cell-analysis-and-exports.md);
+`WCM-17` is in [`12b`](12b-white-cell-vignette-creator.md), `WCM-18`–`WCM-20` in [`12c`](12c-white-cell-rules-and-staffing.md)
+and `WCM-21`–`WCM-24` in [`12d`](12d-white-cell-clock-saves-and-controls.md).
 
 | § | Topic | Backing code / endpoints |
 |---|---|---|
@@ -153,6 +168,14 @@ mirrors each section's inline `> Sources:` footer.
 | WCM-14 | Quick TLE export (ground truth) | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`), `session/manager.py` (`get_tle`), `/tle/{cell}`, `tleexport.js` |
 | WCM-15 | Ephemeris export, ground truth (URL-only) | `session/ephemeris.py` (`truth_ephemeris`, `sample_times`/`MAX_EXPORT_SAMPLES`), `session/aar.py` (`worlds_at_times`), `/ephemeris/truth` |
 | WCM-16 | Per-asset telemetry CSV export (URL-only) | `session/manager.py` (`telemetry_export`), `engine/telemetry.py`, `session/aar.py` (`worlds_at_times`), `session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`), `/telemetry/{cell}/{asset}/export.csv` |
+| WCM-17 | Vignette Creator | `static/creator.js`, `session/manager.py` (`creator_set_state`, `creator_edit_asset`, `declare_seats`), `content/vignette.py` (`asset_authoring_problems`), `content/vignette_export.py`, `config.py` (`ContentConfig`) |
+| WCM-18 | Operator seats and roles | `session/manager.py` (`assign_role`, `staffing_report`, `role_scope_check`), `session/inprocess.py` (`start`), `static/app.js` |
+| WCM-19 | Approval gates and live ROE | `engine/orders.py` (`decide_gated_order`, `issue_roe_change`), `/gate/decide`, `/roe/change` |
+| WCM-20 | Injects in depth | `session/manager.py` (`pending_injects`, `edit_inject`, `_h_condition_check`, `_notice_by_owner`), `static/app.js` |
+| WCM-21 | Time controls: bounds and messages | `session/manager.py` (`step`, `advance_to`, `rewind_to`, `undo_last`, `set_clock`), `/step`, `/advance`, `/rewind`, `/undo`, `/clock` |
+| WCM-22 | Save and resume | `session/manager.py` (`save_state`, `validate_save`, `from_state`), `/save`, `/load_save`, `content/vignette_export.py` |
+| WCM-23 | Add satellites before Start | `session/manager.py` (`add_tle`, `bulk_import`), `content/bulk_import.py`, `/force/tle`, `/force/bulk_import` |
+| WCM-24 | Which controls each seat sees | `static/app.js` (`setCell`), `static/index.html`, `ui_web/server.py` (`_require_white`, `_reject_observer`) |
 
 #### Blue cell manual (`BLU-n`)
 
@@ -172,6 +195,10 @@ mirrors each section's inline `> Sources:` footer.
 | BLU-12 | Quick TLE export | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`, own-satellite branch), `/tle/{cell}`, `tleexport.js` (`candidates`, `SOURCE_LABEL`) |
 | BLU-13 | Ephemeris export, your own belief (URL-only) | `session/ephemeris.py` (`cell_observed_ephemeris`, `sample_times`/`MAX_EXPORT_SAMPLES`), `session/aar.py` (`worlds_at_times`), `/ephemeris/{cell}` |
 | BLU-14 | Your telemetry CSV export (URL-only) | `session/manager.py` (`telemetry_export`), `engine/telemetry.py`, `session/aar.py` (`worlds_at_times`), `session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`), `/telemetry/{cell}/{asset}/export.csv` |
+| BLU-15 | Operator seat field | `static/app.js` (`REASON_TIPS`, `refreshRoleScope`), `session/manager.py` (`role_scope_check`) |
+| BLU-16 | Orders awaiting approval; ROE changes | `engine/orders.py` (`decide_gated_order`, `_effective_roe`), `session/manager.py` (`list_orders`) |
+| BLU-17 | Delivery paths and jamming | `engine/orders.py` (`_delivery_jammed`), `engine/effects.py` (`is_link_denied`) |
+| BLU-18 | Manoeuvre ledger; export time formats | `session/manager.py` (`maneuver_ledger`), `session/ephemeris.py` (`sample_times`) |
 
 #### Red cell manual (`RED-n`)
 
@@ -190,6 +217,10 @@ mirrors each section's inline `> Sources:` footer.
 | RED-11 | Quick TLE export | `engine/tle_export.py`, `session/ephemeris.py` (`quick_tle`, own-satellite branch), `/tle/{cell}`, `tleexport.js` (`candidates`, `SOURCE_LABEL`) |
 | RED-12 | Ephemeris export, your own belief (URL-only) | `session/ephemeris.py` (`cell_observed_ephemeris`, `sample_times`/`MAX_EXPORT_SAMPLES`), `session/aar.py` (`worlds_at_times`), `/ephemeris/{cell}` |
 | RED-13 | Your telemetry CSV export (URL-only) | `session/manager.py` (`telemetry_export`), `engine/telemetry.py`, `session/aar.py` (`worlds_at_times`), `session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`), `/telemetry/{cell}/{asset}/export.csv` |
+| RED-14 | Operator seat field | `static/app.js` (`REASON_TIPS`, `refreshRoleScope`), `session/manager.py` (`role_scope_check`) |
+| RED-15 | Orders awaiting approval; ROE changes | `engine/orders.py` (`decide_gated_order`, `_effective_roe`) |
+| RED-16 | Which link to jam | `engine/orders.py` (`_delivery_jammed`), `engine/effects.py` (`is_link_denied`) |
+| RED-17 | Manoeuvre ledger | `session/manager.py` (`maneuver_ledger`) |
 
 ### 15.3 Maintenance protocol (how this stays true)
 

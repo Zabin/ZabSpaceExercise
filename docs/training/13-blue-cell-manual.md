@@ -11,6 +11,9 @@ mechanics — this manual frames them from Blue's defensive posture; the Red man
 ([`14-red-cell-manual.md`](14-red-cell-manual.md)) frames the same mechanics offensively, and
 both defer to the shared concept modules rather than duplicating them.
 
+**More sections** (BLU-15 to BLU-18) are in [13a](13a-blue-cell-rules-and-delivery.md): the Operator seat field, orders waiting for approval and live ROE changes, which link a jam attacks and what stops a command, and the manoeuvre ledger.
+
+
 ### BLU-1 · Your view: fog-of-war
 
 You see **only Blue's own assets** at true position, plus whatever Blue's sensors have detected —

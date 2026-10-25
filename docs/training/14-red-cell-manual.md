@@ -11,6 +11,9 @@ this manual frames them from Red's offensive posture, and defers to the shared c
 rather than duplicating them. The mirror-image defensive framing is
 [`13-blue-cell-manual.md`](13-blue-cell-manual.md).
 
+
+**More sections** (RED-14 to RED-17) are in [14a](14a-red-cell-rules-and-delivery.md): the Operator seat field, orders waiting for approval and live ROE changes, which link a jam attacks and what stops a command, and the manoeuvre ledger.
+
 ### RED-1 · Your view: fog-of-war
 
 You see **only Red's own assets** at true position, plus whatever Red's sensors have detected —
@@ -98,8 +101,9 @@ authorizes it and you accept the debris and attribution cost the consequence pre
 - **Engage** (kinetic) — closing geometry, salvo Pₖ, debris-cone estimate; gated on
   weapons-quality custody *and* `red_kinetic_authorized` ROE. The salvo (`salvo_n`, default 1)
   must fit in the rounds the effector has left. With none left the preview says `no_ammo`; with
-  too few for the salvo it says `insufficient_ammo`, so reduce the salvo. Rounds are spent only
-  by a strike that succeeds; a miss spends none.
+  too few for the salvo it says `insufficient_ammo`, so reduce the salvo. Every salvo that is
+  fired is charged, whether it hits or misses; only an order that fails its check at the window
+  (no rounds left, target already gone) spends nothing.
   - **Queued strikes share the rounds.** If you queue several engagements on one effector, the
     first to execute spends its rounds. A later one that no longer fits does nothing at its
     window: no roll, no rounds spent, target untouched. The ground-truth effect log shows it as
@@ -108,7 +112,7 @@ authorizes it and you accept the debris and attribution cost the consequence pre
 
 > **Sources:** `spacesim/engine/effects.py` (5 D's) · `spacesim/engine/{jam,engage}.py` ·
 > `spacesim/engine/orders.py` (`_validate` `no_ammo`/`insufficient_ammo`, `_engage_rounds`,
-> `_h_effect` rounds re-check and success-only charge, jam plan with no `power_w` consumption) ·
+> `_h_effect` rounds re-check and fired-salvo charge, jam plan with no `power_w` consumption) ·
 > `spacesim/ui_web/static/app.js` (`REASON_TIPS.insufficient_ammo`) · FR-1460 · FR-1470 ·
 > [`05-core-concepts.md`](05-core-concepts.md) · [`../research/INDEX.md`](../research/INDEX.md)
 

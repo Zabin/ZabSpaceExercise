@@ -10,6 +10,12 @@ developer which sections to re-check when a feature changes, and tells you which
 each section. Shared mechanics (interface tour, core concepts, full control tables) are
 deep-linked, not duplicated — this manual is the *facilitator's procedure layer* on top of them.
 
+**More White Cell procedures** are in [12a](12a-white-cell-analysis-and-exports.md) (analysis and exports,
+WCM-12–16), [12b](12b-white-cell-vignette-creator.md) (build your own vignette, WCM-17),
+[12c](12c-white-cell-rules-and-staffing.md) (operator seats, approval gates, ROE changes, injects in depth,
+WCM-18–20) and [12d](12d-white-cell-clock-saves-and-controls.md) (clock refusals, saves, adding assets,
+which seat sees which controls, WCM-21–24).
+
 ### WCM-1 · Role and view
 
 White Cell is the exercise director, adjudicator, and coach. You see **ground truth** — every
@@ -47,7 +53,8 @@ to affect the exercise.
    Start is allowed). The **Seat-to-role assignment** section of the same menu lets you bind a
    seat name to an asset/constellation and a role (Bus / Payload / Both); the **staffing report**
    readout beneath it lists any mandatory requirement still unmet. Most vignettes declare none — no
-   assignment is needed and Start is never blocked by this step for them.
+   assignment is needed and Start is never blocked by this step for them. What the operator seat does for
+   players, and how re-binding works, is in [WCM-18](12c-white-cell-rules-and-staffing.md).
 4. **Load → Start.** The **Mission brief panel** auto-opens; you see Blue's and Red's briefs
    side-by-side (the players each see only their own). Confirm the ROE chips and objective
    deadlines match your training intent before you let anyone act. If a mandatory seat-to-role
@@ -118,7 +125,8 @@ Rewind and undo do not pause a running clock: it keeps running from the rewound 
 first (▶/⏸) if you want to stand at the earlier instant. When a jump, rewind or inject is refused,
 the reason appears in the red status line under the session label in the **Cell & Time** panel
 (prefixed `Advance:`, `Rewind:` or `Inject:`); nothing about the exercise changes. Only the White seat can rewind: a
-Blue or Red tab, or a bookmark clicked from one, gets a refusal instead.
+Blue or Red tab, or a bookmark clicked from one, gets a refusal instead. The exact refusal text for every bound, the
+clock-rate limits and the HTTP-only undo are tabulated in [WCM-21](12d-white-cell-clock-saves-and-controls.md).
 
 > **Sources:** `spacesim/session/manager.py` (`step`/`advance_to`/`_span_ceiling`/`_catch_up_locked`/`rewind_to`/`undo_last`) ·
 > `spacesim/ui_web/static/app.js` (`stepBy`, `rewindTo`, `reportControlError`; `#control-status`) ·
@@ -174,14 +182,19 @@ next session load. Facilitation patterns — when to inject what — are in
 > `openDrill`) · `spacesim/session/manager.py` (`get_telemetry`/`get_series`, White reads any asset) ·
 > `Vignette.coaching` in `spacesim/content/vignette.py`
 
-### WCM-7 · Change the force mid-exercise: TLE add
+### WCM-7 · Add real satellites by TLE or OMM (before Start)
 
-Paste a real satellite's two-line element set into the TLE force-add form (or
-`POST /force/tle`); it validates and then propagates with SGP4 alongside the fictional assets,
-owned by the cell you assign. Use it to drop a real-world reference object into a scenario or to
-surprise a cell with a new track to characterize.
+You can drop a real satellite into a scenario from its two-line element set (TLE), or a whole file of
+them (multi-object TLE or CCSDS OMM), but **only between Load and Start**. Once the exercise is running
+the server refuses with `cannot edit force after start`. There is no console form for a loaded session;
+it is an API call (`POST /force/tle`, `POST /force/bulk_import`) or part of building a vignette in the
+Creator ([WCM-17](12b-white-cell-vignette-creator.md)). The object propagates with SGP4 alongside the
+fictional assets, owned by the cell you assign. Use it to drop a real-world reference object into a
+scenario or to give a cell a new track to characterize. Step-by-step calls, every refusal message and the
+silent-replace and empty-reply traps are in [WCM-23](12d-white-cell-clock-saves-and-controls.md).
 
 > **Sources:** `spacesim/engine/propagator.py` (sgp4 path) · `POST /api/sessions/{sid}/force/tle` ·
+> `spacesim/session/manager.py` (`add_tle`, `bulk_import`) ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"Adding real satellites by TLE"
 
 ### WCM-8 · AI-Red doctrine presets
@@ -214,10 +227,11 @@ notes (WCM-6) and the objective flips.
 
 ### WCM-10 · Save, resume, and when things go wrong
 
-**Save** (toolbar) writes a complete snapshot — history, order queue, pending events — to JSON;
-**Load** resumes it byte-exact. A save carries the vignette it was started from, so it resumes even if that vignette file has since been edited, renamed or deleted (older saves reload the file by id, and Load tells you so). If the host hardware can't keep the clock at rate, the
+**Save** (**⚙ Settings ▾ → ⬇ Save session**) writes a complete snapshot — history, order queue, pending events — to JSON;
+**⬆ Load session** (same menu) resumes it byte-exact, with the clock paused. A save carries the vignette it was started from, so it resumes even if that vignette file has since been edited, renamed or deleted (older saves reload the file by id, and Load tells you so). If the host hardware can't keep the clock at rate, the
 **clock-lag watchdog** warns you (consider fewer satellites or a lower rate). For everything
-else, start at [`09-troubleshooting-and-glossary.md`](09-troubleshooting-and-glossary.md).
+else, start at [`09-troubleshooting-and-glossary.md`](09-troubleshooting-and-glossary.md). The full
+list of Load refusals and what to do about each is in [WCM-22](12d-white-cell-clock-saves-and-controls.md).
 
 **If Load of a save is refused.** The file is checked before anything is replayed. A file that is not
 JSON, lacks required parts, has a damaged event log, claims an end time earlier than its own last
