@@ -335,6 +335,8 @@ class SessionManager:
         asset = self.sim.world.assets.get(order.actor)
         if asset is None or not self._roles_needed_covers(asset):
             return None
+        if order.cell != "white" and asset.owner != order.cell:
+            return None          # ownership first (VR-1160 M-4): the engine answers `not_owner`, seat-independent
         binding = self.role_assignments.get(seat)
         if (binding is None or not self._entry_covers(binding["asset_or_constellation"], asset)
                 or binding["role"] not in ("bus", "payload", "both")):

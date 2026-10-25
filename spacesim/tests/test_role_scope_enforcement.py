@@ -412,3 +412,80 @@ def test_18_a_request_without_a_seat_is_unchanged_on_every_shipped_vignette():
         for act in ("maneuver", "observe", "downlink", "jam", "engage", "cyber"):
             o = Order(cell="blue", actor=sat, action=act, target=None, params={})
             assert mgr.validate_order("blue", o).reason not in ROLE_CODES
+
+
+# -- M-4: ownership runs first; the gate never discloses another cell's assets or bindings ------------
+RED_SAT_FOR_FOG = "RED-ASAT"      # a Red asset that no roles_needed entry covers (ungated)
+
+
+def _fog_cases():
+    # (cell, actor) pairs: own asset, other cell's gated asset, other cell's ungated asset
+    return [("blue", SAT), ("blue", RED_SAT_FOR_FOG), ("red", SAT), ("red", RED_SAT_FOR_FOG),
+            ("red", "GS-NORTH")]
+
+
+SEATS_FOR_FOG = [None, "bus-op", "guess-op", "ghost"]
+
+
+def _fog_mgr():
+    m = _mgr()
+    m.assign_role("bus-op", SAT, "bus")          # Blue's own seat, covering Blue's gated satellite
+    return m
+
+
+def _ack_key(a):
+    d = a.model_dump()
+    d.pop("id", None)
+    return json.dumps(d, sort_keys=True, default=str)
+
+
+@pytest.mark.verifies("FR-3520", "NFR-2300")
+def test_m4_a_request_for_another_cells_asset_gets_the_no_seat_ack_whatever_seat_is_supplied():
+    for cell, actor in _fog_cases():
+        mgr = _fog_mgr()
+        for verb in ("eps.shed_load", "isr.collect_now", "def.harden"):
+            def o():
+                return Order(cell=cell, actor=actor, action="command", params={"verb": verb, "via": "GS-NORTH"})
+            base = _ack_key(mgr.validate_order(cell, o()))
+            for seat in SEATS_FOR_FOG:
+                if cell == "blue" and actor == SAT and seat in ("bus-op",):
+                    continue                                       # own asset + own seat: gated normally
+                if cell == "blue" and actor == SAT:
+                    continue                                       # own gated asset: the gate applies
+                assert _ack_key(mgr.validate_order(cell, o(), seat=seat)) == base, (cell, actor, verb, seat)
+                before = _snapshot(mgr)
+                a = mgr.issue_order(cell, o(), seat=seat)
+                assert a.reason not in ROLE_CODES, (cell, actor, verb, seat)
+                mgr2 = _fog_mgr()
+                b = mgr2.issue_order(cell, o())
+                assert (a.ok, a.reason, a.status) == (b.ok, b.reason, b.status)
+                del before
+
+
+@pytest.mark.verifies("FR-3520", "NFR-2300")
+def test_m4_red_naming_blues_gated_asset_gets_not_owner_never_a_role_code_over_http():
+    c, api, sid = _http(_fog_mgr())
+    for route in ("order", "order/validate"):
+        replies = set()
+        for seat in SEATS_FOR_FOG:
+            body = {"cell": "red", "actor": SAT, "action": "command",
+                    "params": {"verb": "isr.collect_now", "via": "GS-NORTH"}}
+            if seat:
+                body["seat"] = seat
+            r = c.post(f"/api/sessions/{sid}/{route}", json=body)
+            assert r.status_code == 200
+            j = r.json(); j.pop("id", None)
+            replies.add(json.dumps(j, sort_keys=True))
+        assert len(replies) == 1, replies
+        assert json.loads(replies.pop())["reason"] == "not_owner"
+
+
+@pytest.mark.verifies("FR-3520")
+def test_m4_the_owning_cell_still_gets_the_role_refusals_and_white_keeps_its_behaviour():
+    mgr = _fog_mgr()
+    _refused_without_trace(mgr, "isr.collect_now", "bus-op", "role_scope_out_of_scope")
+    _refused_without_trace(mgr, "eps.shed_load", "guess-op", "role_scope_not_assigned")
+    o = Order(cell="white", actor=SAT, action="command", params={"verb": "isr.collect_now", "via": "GS-NORTH"})
+    assert mgr.validate_order("white", o).reason not in ROLE_CODES                 # no seat: ungated
+    o = Order(cell="white", actor=SAT, action="command", params={"verb": "isr.collect_now", "via": "GS-NORTH"})
+    assert mgr.validate_order("white", o, seat="bus-op").reason == "role_scope_out_of_scope"
