@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1082
 > **Version:** 1.0
-> **Status:** READY — authored 2026-10-25 by `07-implementation-planning` (release-push remediation pass 6). Every dependency is `VERIFIED`.
+> **Status:** VERIFIED 2026-10-25 ([VR-1082](../verification/VR-1082-white-control-nonfinite-input-and-toolbar-refusal.md) v2.0, fresh-session re-verification after the RETURNED v1.0, 0 failed checks) — authored 2026-10-25 by `07-implementation-planning` (release-push remediation pass 6; `READY` before that). Every dependency was `VERIFIED`.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive of 2026-10-24, recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256 (fix bugs; no new features) and confirmed at run #260, covers it: the three Mediums of the release-candidate integration review are bugs in `VERIFIED` packages' behaviour or documentation. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [IP-1068](IP-1068-white-only-controls-server-enforcement.md), [IP-1074](IP-1074-white-control-correctness.md), [IP-1076](IP-1076-time-bound-and-console-refusals.md), [IP-1077](IP-1077-aar-playback-seat-checks.md), [IP-1340](IP-1340-browser-console-rule-suite.md) (all `VERIFIED`); the doc step also describes `IP-1081` and `IP-1103` (`VERIFIED`).
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [`01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) ("Release-push remediation, pass 6"); source: [`integration-review-release-candidate-1.md`](../../reviews/integration-review-release-candidate-1.md) `M-1`, `M-2`, `M-3`, `L-2`, `L-4`.
