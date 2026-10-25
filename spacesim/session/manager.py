@@ -371,7 +371,7 @@ class SessionManager:
         if not initial:
             for handle, ov in self._inject_overrides(from_t + 1).items():
                 if (ov["cancelled"] or ov.get("trigger") != "time" or ov.get("at") is None
-                        or ov["at"] <= from_t or self._inject_applied(handle, from_t + 1)):
+                        or ov["at"] < from_t or self._inject_applied(handle, from_t + 1)):
                     continue
                 self.sim.schedule(ov["at"], "inject",
                                   {"effects": ov["effects"], "inject_id": handle, "rev": ov["rev"]})
@@ -1093,6 +1093,8 @@ class SessionManager:
 
     def _h_inject_admin(self, world: WorldState, payload: dict, rng) -> None:
         """IP-1066 — the logged White action; its only state change is a White-only message."""
+        if payload.get("action") == "schedule":     # IP-1083 — pure log record; no state, no message
+            return
         verb = "cancelled" if payload.get("action") == "cancel" else "edited"
         world.messages.append({"to": ["white"], "text": f"inject {payload.get('handle')} {verb}", "t": world.now})
 
@@ -1343,7 +1345,12 @@ class SessionManager:
             # IP-1066 (FR-4450, Design Decision 1) — a stable handle so White can edit/cancel it.
             self._white_inject_seq += 1
             handle = f"white-{self._white_inject_seq}"
-            self.sim.schedule(when, "inject", {"effects": effects, "inject_id": handle}, tag=handle)
+            # IP-1083 (BL-0284) — the scheduling is itself a logged White action (an `inject_admin`
+            # `schedule` entry at the instant it is made), so a rewind/undo that rebuilds the
+            # scheduler re-arms it from the log; no state outside the event log.
+            rev = self._log_inject_admin({"handle": handle, "trigger": "time"}, "schedule", effects, when)
+            self.sim.schedule(when, "inject", {"effects": effects, "inject_id": handle, "rev": rev},
+                              tag=handle)
             return
         self.sim.schedule(when, "inject", {"effects": effects})
         self.sim.advance_to(when)  # apply + log immediately (so it replays through the event log)
