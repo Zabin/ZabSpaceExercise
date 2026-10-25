@@ -24,9 +24,9 @@ power, attitude and defence verbs; payload verbs include collection and SATCOM c
 
 **Refusals** (preview line in red, Issue disabled):
 
-- `This operator seat is not assigned to that asset - ask White Cell to bind it, or clear the Operator
+- `This operator seat is not assigned to that asset — ask White Cell to bind it, or clear the Operator
   seat field.` - wrong spelling, or no binding for that asset.
-- `That command belongs to the other role on this asset - your operator seat covers only its own role.`
+- `That command belongs to the other role on this asset — your operator seat covers only its own role.`
 
 A role refusal creates no order and no log entry. Role is checked when you press Issue; if White re-binds
 your seat later, only your next submissions are affected. Details and the White side are in

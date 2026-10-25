@@ -15,25 +15,25 @@ the server anyway the result line reads `REJECTED: <reason code>`.
 
 | Reason code / console text | Cause | Fix |
 |---|---|---|
-| `no_window` - "No access window in the planning horizon - wait for the next pass." | No pass in the next 24 simulated hours | Advance time, or pick another station or sensor |
-| `no_command_station` - "No command path - set a ground station ('via') or a stored-program time." | Maneuver or command with no `via` and no `stored_at` | Choose a station in the form, or add `stored_at` (BLU-17) |
-| `no_downlink_station` - "No downlink station - set a ground station ('via')." | Downlink with no station | Choose a station |
-| `roe_kinetic_not_authorized` - "ROE does not authorize kinetic effects." | ROE forbids it, possibly changed by White during play | Ask White; BLU-16 / RED-15 |
-| `roe_cyber_not_authorized` - "ROE does not authorize cyber effects." | Same, for cyber | Ask White |
-| `no_weapons_quality_track` - "No weapons-quality track - task a sensor to characterize the target first." | Not enough custody for a strike | Build custody (BLU-4 / RED-4) |
-| `no_ammo` - "No munitions remaining on this effector." | Magazine empty | Use another effector |
-| `insufficient_ammo` - "Salvo is larger than the rounds this effector has left - reduce the salvo." | `salvo_n` too big | Lower the salvo; count rounds across queued strikes |
-| `insufficient_delta_v` - "Insufficient delta-v for this maneuver." | Not enough Δv left | Smaller burn; check the manoeuvre ledger (BLU-18) |
-| `not_owner` - "This asset belongs to another cell." | Ordering the other side's asset | Choose one of your own |
-| `no_such_asset` / `no_such_sensor` - "Unknown asset." / "Unknown sensor." | Typo or asset destroyed | Pick from the list |
-| `sensor_contended` - "Sensor is booked for every window in the planning horizon - cancel a queued task or try later." | All passes taken | Cancel a queued task |
-| `requires_cue` - "This sensor needs a cue - get a first track on the target with another sensor." | Cue-only sensor | Detect with another sensor first |
-| `invalid_param` - "An order parameter is malformed or not a finite number - check the order's fields (or the JSON params box)." | Wrong type or non-number in a field | Fix the field; `null` counts as left out |
-| `unknown_action` - "Action not supported for this asset." / `unknown_command` - "Command verb not supported." | The asset cannot do that | Pick from the Action list |
-| `no_payload_for_verb` - "This asset's payload can't run that command." | Wrong payload type | Use a verb for this payload |
-| `payload_unavailable` - "Payload unavailable - bus is safed or power-red (clear that first)." | Safe mode or low power | Recover the bus (BLU-7) |
-| `role_scope_not_assigned` - "This operator seat is not assigned to that asset - ask White Cell to bind it, or clear the Operator seat field." | Seat name wrong or unbound | BLU-15 / RED-14 |
-| `role_scope_out_of_scope` - "That command belongs to the other role on this asset - your operator seat covers only its own role." | Bus seat sent a payload verb, or reverse | BLU-15 / RED-14 |
+| `no_window` — "No access window in the planning horizon — wait for the next pass." | No pass in the next 24 simulated hours | Advance time, or pick another station or sensor |
+| `no_command_station` — "No command path — set a ground station ('via') or a stored-program time." | Maneuver or command with no `via` and no `stored_at` | Choose a station in the form, or add `stored_at` (BLU-17) |
+| `no_downlink_station` — "No downlink station — set a ground station ('via')." | Downlink with no station | Choose a station |
+| `roe_kinetic_not_authorized` — "ROE does not authorize kinetic effects." | ROE forbids it, possibly changed by White during play | Ask White; BLU-16 / RED-15 |
+| `roe_cyber_not_authorized` — "ROE does not authorize cyber effects." | Same, for cyber | Ask White |
+| `no_weapons_quality_track` — "No weapons-quality track — task a sensor to characterize the target first." | Not enough custody for a strike | Build custody (BLU-4 / RED-4) |
+| `no_ammo` — "No munitions remaining on this effector." | Magazine empty | Use another effector |
+| `insufficient_ammo` — "Salvo is larger than the rounds this effector has left — reduce the salvo." | `salvo_n` too big | Lower the salvo; count rounds across queued strikes |
+| `insufficient_delta_v` — "Insufficient delta-v for this maneuver." | Not enough Δv left | Smaller burn; check the manoeuvre ledger (BLU-18) |
+| `not_owner` — "This asset belongs to another cell." | Ordering the other side's asset | Choose one of your own |
+| `no_such_asset` / `no_such_sensor` — "Unknown asset." / "Unknown sensor." | Typo or asset destroyed | Pick from the list |
+| `sensor_contended` — "Sensor is booked for every window in the planning horizon — cancel a queued task or try later." | All passes taken | Cancel a queued task |
+| `requires_cue` — "This sensor needs a cue — get a first track on the target with another sensor." | Cue-only sensor | Detect with another sensor first |
+| `invalid_param` — "An order parameter is malformed or not a finite number — check the order's fields (or the JSON params box)." | Wrong type or non-number in a field | Fix the field; `null` counts as left out |
+| `unknown_action` — "Action not supported for this asset." / `unknown_command` — "Command verb not supported." | The asset cannot do that | Pick from the Action list |
+| `no_payload_for_verb` — "This asset's payload can't run that command." | Wrong payload type | Use a verb for this payload |
+| `payload_unavailable` — "Payload unavailable — bus is safed or power-red (clear that first)." | Safe mode or low power | Recover the bus (BLU-7) |
+| `role_scope_not_assigned` — "This operator seat is not assigned to that asset — ask White Cell to bind it, or clear the Operator seat field." | Seat name wrong or unbound | BLU-15 / RED-14 |
+| `role_scope_out_of_scope` — "That command belongs to the other role on this asset — your operator seat covers only its own role." | Bus seat sent a payload verb, or reverse | BLU-15 / RED-14 |
 | `no_cyber_vector` (no console text; the raw code shows) | A cyber order with no `vector` | Choose a vector in the cyber form |
 | status `pending_approval` (not a refusal) | Waiting for a gate decision | BLU-16 / RED-15 |
 | `gate_denied` / `gate_lost_on_resume` (shown as the order's reason) | White denied it, or its gate vanished across a resume | Re-plan; WCM-19 |

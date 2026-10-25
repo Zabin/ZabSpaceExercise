@@ -24,7 +24,7 @@ with the station), `RED-CYBER`, `RED-RDR`, and `RED-ASAT` (kinetic, off by defau
 ### Blue — maintain custody and deliver imagery
 
 **Step 1 — Review fleet & objectives.** Click **Blue**. Confirm `ISR-EO-1` is nominal and both
-objectives read *pending*.
+objectives show ✗ (not yet met).
 
 ![Blue step 1](../manual/18-train-blue-1.png)
 
@@ -80,7 +80,10 @@ on `ISR-EO-1`.
 ![Red step 3](../manual/26-train-red-3.png)
 
 **Step 4 — Cyber the modem (off-pass).** Actor `RED-CYBER`, Action `cyber`, Target `ISR-EO-1`,
-Params `{"vector":"ground_modem","payload":"seize_c2"}`. *When:* any time — cyber is **not**
+Params `{"vector":"ground_modem","payload":"seize_c2"}`. Pressing **Issue order** raises a
+**confirmation box** ("Cyber effect. Covert but escalatory ... Proceed with cyber on ISR-EO-1?"): click **OK**.
+Cancelling or dismissing it cancels the order (the result line reads `cancelled (consequence not confirmed)`).
+*When:* any time — cyber is **not**
 window-gated (and is ON by default: `cyber_authorized = true`). *Result:* a **chance** — about 62%
 per attempt against `ISR-EO-1`'s low cyber posture. On success it drops to **safe mode** and
 `disable_isr` is MET; on failure nothing happens, so re-issue the order. This is what cyber is
@@ -97,7 +100,8 @@ only reversible effects.
 ![Red step 5](../manual/29-train-red-6.png)
 
 **Step 6 — Attempt a kinetic strike (ROE check).** Actor `RED-ASAT`, Action `engage`, Target
-`ISR-EO-1`. *Result:* **REJECTED — `roe_kinetic_not_authorized`.** Kinetic ASAT is off by default;
+`ISR-EO-1`. *Result:* the preview line under the form turns red — `✗ ROE does not authorize kinetic effects.`
+(reason `roe_kinetic_not_authorized`) — and **Issue order** is disabled, so the order cannot be sent. Kinetic ASAT is off by default;
 this teaches escalation restraint (White Cell can enable it with the `red_kinetic_authorized` dial).
 
 ![Red step 6](../manual/28-train-red-5.png)
@@ -120,8 +124,9 @@ returns telemetry. The fleet rollup dot turns red as soon as that telemetry land
 ![Safe-mode recovery strip](../manual/10-safe-mode-recovery.png)
 
 **Step 8 — Patch the vulnerability FIRST.** In the recovery strip, click **Patch (def.patch_cyber)**
-(or compose it manually: Actor `ISR-EO-1`, Action `command`, Params
-`{"verb":"def.patch_cyber","vector":"ground_modem","via":"GS-TRN"}`). *When:* queues to the next
+(or compose it manually: Actor `ISR-EO-1`, Action `def.patch_cyber` — the Action menu lists each verb by name;
+there is no item called `command` — Params `{"vector":"ground_modem","via":"GS-TRN"}`; the console adds the
+verb for you). *When:* queues to the next
 command-uplink pass and executes there. *Result:* the matching entry in `ISR-EO-1`'s
 `cyber_vulnerabilities` flips `patched: true`. **This is the root cause — the cyber attack
 exploited an unpatched modem; until you patch it, the access vector is still open and the

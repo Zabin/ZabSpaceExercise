@@ -35,10 +35,10 @@ the field is a rehearsal of crew discipline, not a lock.
 
 **What a refusal looks like.** The preview shows a red line, and Issue is disabled:
 
-- `This operator seat is not assigned to that asset - ask White Cell to bind it, or clear the Operator
+- `This operator seat is not assigned to that asset — ask White Cell to bind it, or clear the Operator
   seat field.` (reason `role_scope_not_assigned`). Your seat name is wrong, or White has not bound it to this
   satellite. Check the spelling, or ask White.
-- `That command belongs to the other role on this asset - your operator seat covers only its own role.`
+- `That command belongs to the other role on this asset — your operator seat covers only its own role.`
   (reason `role_scope_out_of_scope`). A bus operator tried a payload command, or the reverse. Hand it to
   your crewmate, or ask White to bind your seat as Both.
 

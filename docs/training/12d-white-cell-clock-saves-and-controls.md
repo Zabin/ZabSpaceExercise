@@ -26,14 +26,18 @@ by the control (`Advance:`, `Rewind:`); the next successful jump clears it. The 
 
 Things the table does not show:
 
-- **Pause / Resume** (the toolbar button) only starts and stops the shared clock; the **rate** has no
-  console control. Set it through HTTP: `POST /api/sessions/{sid}/clock` with `{"running":true,"rate":60}`
+- **Pause / Resume** (the toolbar button) starts and stops the shared clock, **and Resume resets the rate to
+  the default 1.0** (verified: rate 60, Pause, Resume gives 1.0). The rate has no console control. After every
+  Resume, re-send the rate through HTTP: `POST /api/sessions/{sid}/clock` with `{"running":true,"rate":60}`
   (rate 1 is real time; 0.001 and 10000 are accepted, 0 and 10001 are not).
 - A **running clock at the end of the span** does not raise an error. It is pinned at start + 366 days: the
   clock still reads as running but stops advancing. Rewind to continue.
 - **Undo** has no console button. `POST /api/sessions/{sid}/undo` with `{"n":1}` removes the last `n`
   actions (undoing past the first logged event returns to the start). Rewind and undo do not pause a
   running clock; pause first if you want to stand at the earlier moment.
+- `/start` also works on a Creator draft session (it then runs a clock on a scratch force); do not start a draft.
+  The Observer check reads the `cell` in the query string (`?cell=observer` is refused with 403); a request that
+  puts `observer` only inside its JSON body is not caught, which is why trusted-LAN use is assumed.
 - A time jump on a session you loaded but have not started also works; **▶ Start** is what arms the clock.
 - Rewinding is exact: orders issued after the target are removed and replay differently if you act differently.
 

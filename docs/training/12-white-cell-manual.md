@@ -95,7 +95,7 @@ not in the vignette. The full list is in
 - **LAN cooperative:** launch with `--host 0.0.0.0`, load + start, and share the session URL
   (`…/#sess-N`). Each player opens it and clicks their cell. The server-authoritative clock
   advances exactly once no matter how many tabs are open; every tab converges within ~1.5 s.
-- **Multi-monitor:** View ▾ → **Pop out ▸** opens any panel (globe, 2D map, fleet & telemetry,
+- **Multi-monitor:** View ▾ → **Pop out (multi-screen)** opens any panel (globe, 2D map, fleet & telemetry,
   order compose, AAR timeline, tracks & objectives) as a separate window joined to the same
   session — spread your god-view across the facilitator station.
 
@@ -105,7 +105,7 @@ not in the vignette. The full list is in
 
 ### WCM-4 · Time control: pause, jump, rewind, undo, branch
 
-Only the White tab carries the ⏸ Pause / ▶ Resume toolbar button and the `+1m / +10m / +1h`
+Only the White tab carries the ⏸ Pause / ▶ Resume toolbar button (Resume resets the clock rate to 1; see WCM-21) and the `+1m / +10m / +1h`
 jumps — they drive the shared clock for every connected client. Because the engine is
 deterministic, **rewind** to any point, **undo** the last actions, or **branch** (rewind, then
 continue differently) are byte-exact; use rewind-and-branch deliberately as a teaching move
