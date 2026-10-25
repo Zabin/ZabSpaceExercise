@@ -90,6 +90,16 @@
 - **Inject handle / pending inject** — `white-1`, `white-2`... name scheduled White injects that have not fired; you can Edit or Cancel them.
 - **Condition inject** — an inject that fires when a stated condition becomes true, checked every 5 simulated minutes.
 - **Save as scenario** — writes the current state as a new vignette that starts now; not the same as Save session.
+- **SOH (state of health)** — the set of readings that say whether a satellite is well: power, attitude, thermal, comms, storage, each green / yellow / red against its limits.
+- **TLE (two-line element set)** — two 69-character lines of text describing a real satellite's orbit; paste it to add that satellite (before Start). **OMM** is the newer CCSDS file form of the same idea.
+- **RIC (radial / in-track / cross-track)** — a frame centred on one satellite: R points away from Earth, I along its direction of travel, C sideways. The RIC view shows where another object is *relative to* your chosen origin. **LVLH** is the same idea used by the manoeuvre assistant.
+- **CATS (Sun–target–sensor phase) angle** — the angle at the target between the Sun and the sensor; passive optical sensors work only inside a usable range of it.
+- **SSN (Space Surveillance Network)** — the simulated network of ground sensors a cell can ask for tracking data; a request is `accepted` or fails with a reason such as `no_network`.
+- **TDOA / FDOA** — time / frequency difference of arrival: how several receivers locate a radio emitter; used by the SIGINT geolocation vignette.
+- **Seed** — the number that fixes the exercise's chance events (a jam's success, a cyber attempt). Same seed and same orders give the same result; change it for a different outcome.
+- **Hot-seat** — several cells sharing one browser by switching seats (with **⏸ Handover** to hide the screen), as opposed to each player on their own tab or machine.
+- **A2/AD (anti-access / area denial)** — a defender's layered weapons and sensors meant to keep an opponent out of, or hamper them inside, an area; the setting of the China COA vignettes.
+- **Gantt (activity timeline)** — the bar-per-activity chart of past, present and scheduled orders and effects.
 - **Planning horizon** — how far ahead the engine searches for a window when you plan an order or
   task a sensor: the next 24 hours of sim time. No window inside it gives `no_window`. The console's
   rejection tips use this term.

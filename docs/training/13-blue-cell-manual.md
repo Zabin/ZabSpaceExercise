@@ -23,6 +23,8 @@ You never see Red's ground truth; the filter is enforced server-side at the
 on load; reopen from View ▾ → Mission brief) for situation, mission, friendly forces, threat
 picture, ROE, deadline, and success criteria before acting.
 
+**Hand-off in a shared browser.** When one machine is passed between cells, click **⏸ Handover**; the screen blurs and reads `HANDING OFF → RED`. Pass the keyboard, and the next operator clicks the overlay's **Resume**, which switches the console to their seat. It only hides the screen; it is not security.
+
 > **Sources:** `spacesim/session/cells.py` (`CellController`, fog filter) · `spacesim/session/scene.py` ·
 > `GET /api/sessions/{sid}/brief/blue` · [`02-interface.md`](02-interface.md) §"A player cell"
 
@@ -173,7 +175,7 @@ deadline in your Mission brief.
 
 ### BLU-11 · RIC frame view & CATS phase angle
 
-**View ▾ → Proximity → ⊕ RIC frame view** opens a live, relative-motion plot: pick an **Origin**
+**View ▾ → Proximity → ⊕ [RIC](09-troubleshooting-and-glossary.md#11-glossary) frame view** opens a live, relative-motion plot: pick an **Origin**
 and, optionally, a **Chase** and a **Target**. Unlike the god-view (WCM-13), your picker only
 offers objects you **own or hold a Track on** — the same fog-of-war rule as every other
 cell-scoped view. Selecting anything else is rejected outright (a clear error, never a silent
@@ -183,7 +185,7 @@ centre) and the R/I/C-km table re-render continuously as the clock runs.
 This is your tool for reading a true relative-motion picture **from your own belief**, not the
 2D map's compressed symbol view — useful when flying a defensive manoeuvre (BLU-8) or escort
 (evade a closing track, or hold station on an escorted asset). Selecting your own
-sensor/interceptor as **Chase** and the threat as **Target** adds the **CATS phase angle** (0°
+sensor/interceptor as **Chase** and the threat as **Target** adds the **[CATS](09-troubleshooting-and-glossary.md#11-glossary) phase angle** (0°
 front-lit · 90° side-lit · 180° backlit): a quick read on whether your optical sensor would get a
 usable look at the target right now, or a silhouette.
 
@@ -196,7 +198,7 @@ view from the targeting side.*
 
 ### BLU-12 · Quick TLE export
 
-**View ▾ → Proximity → ⧉ TLE export** gives you a copyable, current-epoch TLE for one object.
+**View ▾ → Proximity → ⧉ [TLE](09-troubleshooting-and-glossary.md#11-glossary) export** gives you a copyable, current-epoch TLE for one object.
 The picker lists two kinds of object, and the line under the text box says which one you got:
 
 - **Your own satellites** (every Blue on-orbit asset; ground stations are not listed). The TLE is

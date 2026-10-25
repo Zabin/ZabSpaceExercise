@@ -14,7 +14,7 @@ deep-linked, not duplicated — this manual is the *facilitator's procedure laye
 WCM-12–16), [12b](12b-white-cell-vignette-creator.md) (build your own vignette, WCM-17),
 [12c](12c-white-cell-rules-and-staffing.md) (operator seats, approval gates, ROE changes, injects in depth,
 WCM-18–20) and [12d](12d-white-cell-clock-saves-and-controls.md) (clock refusals, saves, adding assets,
-which seat sees which controls, WCM-21–24).
+which seat sees which controls, WCM-21–25).
 
 ### WCM-1 · Role and view
 
@@ -44,7 +44,7 @@ to affect the exercise.
    authorities/ROE (`red_kinetic_authorized`), Red behavior (`red_doctrine_profile`,
    `red_ew_intensity`), environment, and fidelity/fog (`fog_of_war`, `ops_fidelity`,
    `safe_mode_susceptibility`). `ops_fidelity` picks the training altitude: `tactical` collapses
-   each bus to one health bar, `realistic` (default) shows SOH, `full_ttc` adds full subsystem
+   each bus to one health bar, `realistic` (default) shows [SOH](09-troubleshooting-and-glossary.md#11-glossary), `full_ttc` adds full subsystem
    telemetry for TT&C-operator training. The same panel's **Classification** field overrides the
    vignette's default banner text — set it once here; it is fixed for the session's lifetime and
    carries into every screen, AAR export, and save file.
@@ -75,7 +75,7 @@ naming where it is in the YAML and why. Fix them all and press **Load** again; a
 leaves any open session alone. The last check (listed under `build`) runs only once nothing else
 is wrong, so a retry can turn up one new item. A file that is not valid YAML does not appear in
 the vignette picker at all. Besides the sensor rules, Load refuses a satellite with no orbit,
-another asset (except a cyber unit) with no location, a TLE that will not propagate to the start
+another asset (except a cyber unit) with no location, a [TLE](09-troubleshooting-and-glossary.md#11-glossary) that will not propagate to the start
 time, a duplicate asset or sensor id, and a `roles_needed` entry naming an asset or group that is
 not in the vignette. The full list is in
 [`06-the-vignette-library.md`](06-the-vignette-library.md#when-a-vignette-wont-load).
@@ -91,7 +91,7 @@ not in the vignette. The full list is in
 ### WCM-3 · Run the room: hot-seat and LAN
 
 - **Hot-seat (one browser):** switch seats with the cell buttons between turns; the ⏸ Handover
-  button blurs the screen so the incoming player doesn't see the outgoing cell's picture.
+  button blurs the screen so the incoming player doesn't see the outgoing cell's picture. Pressing it shows a full-screen `HANDING OFF → RED` (from Blue; from Red it says BLUE, from White it says WHITE) with "Pass the keyboard to the RED operator and click Resume." The overlay's **Resume** button switches the console to that seat. (It is a different button from the clock's ▶ Resume.) It hides the screen only; it is not security.
 - **LAN cooperative:** launch with `--host 0.0.0.0`, load + start, and share the session URL
   (`…/#sess-N`). Each player opens it and clicks their cell. The server-authoritative clock
   advances exactly once no matter how many tabs are open; every tab converges within ~1.5 s.
@@ -263,7 +263,7 @@ as `BL-0019`/`BL-0020` in the pipeline backlog, not a bug — the panel does exa
 
 ### Analysis and data exports (WCM-12 to WCM-16)
 
-The analysis and export sections (offline research batches, the RIC frame view and CATS phase
+The analysis and export sections (offline research batches, the [RIC](09-troubleshooting-and-glossary.md#11-glossary) frame view and CATS phase
 angle, quick TLE export, the time-span ephemeris export and the per-asset telemetry CSV export)
 are in [`12a-white-cell-analysis-and-exports.md`](12a-white-cell-analysis-and-exports.md). They keep
 their IDs, `WCM-12` to `WCM-16`.

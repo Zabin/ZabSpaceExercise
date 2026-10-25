@@ -171,3 +171,32 @@ trusted - there is no password - so run on a trusted LAN (see [`01-install-and-r
 
 > **Sources:** `spacesim/ui_web/static/app.js` (`setCell`) · `spacesim/ui_web/static/index.html`
 > (`white-only` controls) · `spacesim/ui_web/server.py` (`_require_white`, `_reject_observer`) · FR-4320, FR-6220
+
+### WCM-25 · Space weather, debris persistence and attribution settings (White)
+
+Three smaller facilitation features, none with a dedicated console panel.
+
+**Space weather.** The inject library template `space_weather_severe` (Build / schedule inject, WCM-5) sends
+every cell a message (`Geomag storm advisory — eclipse drain elevated, watch SoC margins`). A custom
+`space_weather` effect may also carry an `index_series`: a list of `{offset_s, kp, f107}` entries (Kp 0-9,
+F10.7 above 0; a bad entry is refused with the reason, for example `kp must be a number in [0, 9]`). While a
+series is in force, low-orbit satellites that have a ballistic coefficient set decay faster, and a vignette may
+add a random environmental-anomaly rate; both are authored in the vignette YAML
+(`space_weather_series`, `environmental_anomalies`), and no shipped vignette uses them. Players see
+the effect only as messages and as changes in their own telemetry.
+
+**Debris persistence.** A debris-creating event (the `debris_field_500km` template, or a destructive strike)
+records how long the cloud is expected to last, by altitude: below 400 km `weeks_to_months`, 400-900 km
+`years_to_decades`, above that `centuries`. White reads it in the ground-truth JSON (`GET /api/sessions/{sid}/godview`,
+`debris[].persistence_estimate`); there is no console display and players do not see debris fields.
+It is a teaching figure only and does not change access windows or conjunction screening.
+
+**Attribution confidence.** When a jam or cyber effect lands, the victim gets an attribution signal whose
+confidence normally depends only on how overt the effect was (95%, 50% or 15%). A vignette can set its own
+figure per effect class with `effect_detectability_config` entries `{action_type?, reversibility_category?,
+confidence}`, so a facilitator can make, say, all jams easy to attribute. Authored in YAML only.
+
+> **Sources:** `spacesim/session/manager.py` (`_apply_inject_effects`) · `spacesim/engine/perturbations.py`
+> (`index_series_problems`) · `spacesim/engine/effects.py` (`_persistence_estimate`, `DebrisField`,
+> `ModerateEffectResolver`) · `spacesim/content/inject_library.yaml` · `spacesim/content/vignette.py`
+> (`effect_detectability_config`) · FR-1230, FR-1430, FR-1450, FR-4440
