@@ -838,6 +838,14 @@ findings. 2 Medium, 4 Low:
 - F5 Low: the `06` raw-JSON radar example drops the pre-filled `intent`.
 - F6 Low: `10` §10.5 row 8 calls the **Mode** control "Beam mode".
 
+**Training review (2026-10-25):** [`reviews/training-review-training-basics-n2-fix.md`](docs/reviews/training-review-training-basics-n2-fix.md)
+(REV-TRN-009) independently reviewed the `training-basics` N2 fix (`ade5f66`): tutorial blocks, briefs,
+`04`/`11` §11.0/`15`/`16` and the new `test_vignette_tutorials.py` checks. Driven live (seeds 0-11, all three
+cells); N2's cyber/ROE/ordering defects are closed and mutation-tested. No Critical/High. 4 Medium, 3 Low:
+the maneuver pass is T+11 h not "about T+10 h", `04` Red Step 3 params differ from the in-app script, no
+guidance on detecting a failed cyber attempt, `keep_custody` lapses one click after the deadline. Seven
+strict-xfail brief/deadline disagreements and five late-observe items await an author decision.
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
