@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1084
 > **Version:** 1.0
-> **Status:** READY — authored 2026-10-25 by `07-implementation-planning` (release-push remediation pass 8). Every dependency is `VERIFIED`.
+> **Status:** ✅ VERIFIED — authored 2026-10-25 by `07-implementation-planning`; implemented by `08-code-implementation`; verified by `09-package-verification` ([VR-1084](../verification/VR-1084-fog-correct-controller-notices.md)). Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive, recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256 (fix bugs before release; no new features) and the run #262 go-ahead (review the unreviewed packages, then fix before release), covers it: finding `H-1` of the unreviewed-packages integration review is a fog-of-war violation (load-bearing invariant 3) in `VERIFIED` code. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [IP-1062](IP-1062-condition-triggered-injects-and-new-effects.md), [IP-1063](IP-1063-inject-effect-fire-time-validation.md), [IP-1064](IP-1064-condition-inject-follow-ups.md), [IP-1230](IP-1230-space-weather-index-coupling.md) (all `VERIFIED`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [`01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) ("Release-push remediation, pass 8"); source: [`integration-review-unreviewed-packages.md`](../../reviews/integration-review-unreviewed-packages.md) `H-1`.

@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1085
 > **Version:** 1.0
-> **Status:** READY — authored 2026-10-25 by `07-implementation-planning` (release-push remediation pass 8). Every dependency is `VERIFIED`.
+> **Status:** ✅ VERIFIED — authored 2026-10-25 by `07-implementation-planning`; implemented by `08-code-implementation`; verified by `09-package-verification` ([VR-1085](../verification/VR-1085-jam-check-follows-delivery-path.md)). Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive, recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256 (fix bugs before release; no new features) and the run #262 go-ahead, covers it: finding `H-2` of the unreviewed-packages integration review is a defect against `FR-1440`'s own Postcondition in a `VERIFIED` package. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [IP-1290](IP-1290-jamming-delivery-and-effect-detectability.md), [IP-1052](IP-1052-order-param-hardening.md), [IP-1250](IP-1250-maneuver-ledger.md) (all `VERIFIED`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [`01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) ("Release-push remediation, pass 8"); source: [`integration-review-unreviewed-packages.md`](../../reviews/integration-review-unreviewed-packages.md) `H-2`.
