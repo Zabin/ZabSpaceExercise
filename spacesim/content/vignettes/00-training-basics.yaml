@@ -81,14 +81,14 @@ vignette:
       - {n: 3, title: "Plan the imagery downlink", when: "queues to the next GS-TRN pass",
          action: downlink, actor: ISR-EO-1, params: {via: GS-TRN},
          expect: "queued via ground_uplink with a scheduled window"}
-      - {n: 4, title: "Advance to the downlink window", when: "+10 min (past the window)",
+      - {n: 4, title: "Advance to the downlink window", when: "past the end of the GS-TRN window (about T+52 min)",
          action: advance, params: {to: order_window},
          expect: "imagery delivered; deliver_isr MET"}
-      - {n: 5, title: "Maneuver to preserve the orbit", when: "at the next GS-TRN command pass",
+      - {n: 5, title: "Confirm both objectives", when: "before the T+1 h deadline (3600 s)",
+         action: review, expect: "deliver_isr MET and keep_custody MET - both Blue objectives are scored at the T+1 h deadline"}
+      - {n: 6, title: "Maneuver to preserve the orbit (optional, after the exercise)", when: "next GS-TRN command pass, about T+10 h",
          action: maneuver, actor: ISR-EO-1, params: {dv: [0.0, 5.0, 0.0], via: GS-TRN},
-         expect: "queued; Δv decremented on execution"}
-      - {n: 6, title: "Confirm the objective", when: "after execution",
-         action: review, expect: "deliver_isr MET and custody held"}
+         expect: "queued for a pass about 10 h out - long after the T+1 h deadline, so it cannot affect scoring (keep_custody will have decayed by then; that is expected); the 5 m/s delta-v is deducted when it executes"}
     red:
       - {n: 1, title: "Review own assets", when: "at start", action: review,
          expect: "jammer, cyber unit, radar, interceptor"}
@@ -101,8 +101,8 @@ vignette:
       - {n: 4, title: "Cyber the modem (off-pass)", when: "any time — cyber isn't window-gated",
          action: cyber, actor: RED-CYBER, target: ISR-EO-1,
          params: {vector: ground_modem, payload: seize_c2},
-         expect: "ISR-EO-1 enters safe mode; disable_isr MET"}
-      - {n: 5, title: "Advance and assess", when: "+10 min, past the delivery window",
+         expect: "Chance-based, about 62% per attempt (ground_modem vs ISR-EO-1's low cyber posture), so the result depends on the dice: on success ISR-EO-1 enters safe mode and disable_isr is MET; on failure nothing happens - re-issue the order. Not window-gated either way"}
+      - {n: 5, title: "Advance and assess", when: "to the T+1 h deadline (3601 s from start), past the delivery window",
          action: advance, params: {dt_s: 3601},
          expect: "Blue payload down; deny_isr MET"}
       - {n: 6, title: "Attempt a kinetic strike (ROE check)", when: "any pass",
@@ -116,15 +116,15 @@ vignette:
       friendly_forces: "ISR-EO-1 (LEO imager). GS-TRN (training ground station). RADAR-TRN (training radar sensor)."
       threat_picture: "RED-TGT (target), JAM-TRN (jammer), RED-CYBER (cyber), RED-ASAT (kinetic — gated OFF)."
       deadline_note: "T+1 h (3600 s)."
-      roe_note: "Red kinetic OFF. Cyber OFF for both sides by default."
+      roe_note: "Red kinetic OFF (red_kinetic_authorized = false). Cyber ON for both sides by default (cyber_authorized = true); White Cell can switch it off."
       success_criteria: "Both deliver_isr AND keep_custody met by T+1 h."
       tool_tips: "Use this vignette to learn the UI before the canonical 8 numbered scenarios or any of the expansion-track vignettes. Tutorial panel (View ▾) has a step-by-step. The minimum viable Blue play: observe RED-TGT with RADAR-TRN → downlink via GS-TRN → advance time."
     red:
       situation: "Training: practice the reversible-effects toolkit (jam, cyber) against a Blue trainee. Kinetic is OFF so you cannot solve via ASAT."
       mission: "Deny Blue's imagery (deny_isr) and ideally drop the bird to safe mode (disable_isr) before T+1 h."
       friendly_forces: "JAM-TRN (jammer), RED-CYBER (cyber), RED-TGT (target), RED-ASAT (kinetic OFF)."
-      threat_picture: "Blue has ISR-EO-1 + GS-TRN. Jam GS-TRN during Blue's downlink pass to deny delivery."
+      threat_picture: "Blue has ISR-EO-1 + GS-TRN. Jam ISR-EO-1's downlink to GS-TRN during Blue's pass to deny delivery."
       deadline_note: "T+1 h."
-      roe_note: "Kinetic OFF. Cyber gated by cyber_authorized parameter."
-      success_criteria: "deny_isr (no delivery) and/or disable_isr (BLUE-SAT safed)."
-      tool_tips: "Two paths: (1) jam · JAM-TRN → ISR-EO-1 during the Blue downlink pass; (2) cyber · RED-CYBER → ISR-EO-1 to safe-mode the bird (cyber must be authorized)."
+      roe_note: "Kinetic OFF. Cyber ON by default (cyber_authorized = true); White Cell can switch it off, in which case a cyber order is rejected."
+      success_criteria: "deny_isr (no delivery) and/or disable_isr (ISR-EO-1 safed)."
+      tool_tips: "Two paths: (1) jam · JAM-TRN → ISR-EO-1 during the Blue downlink pass; (2) cyber · RED-CYBER → ISR-EO-1 to safe-mode the bird (cyber must be authorized; it is on by default). Cyber is chance-based (about 62% per attempt): if disable_isr does not flip, re-issue."

@@ -72,7 +72,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Kinetic engagement + ROE gate | `engine/engage.py` | — | — | RED-5 |
 | Effect resource bounds (salvo limited to rounds left: `no_ammo`/`insufficient_ammo` at preview + issue, execute-time re-check of queued strikes, rounds spent only on success; jamming leaves the jammer's `power_w` unchanged), `09` §10 | `engine/orders.py` (`_validate`, `_engage_rounds`, `_h_effect`, jam plan), `app.js` (`REASON_TIPS.insufficient_ammo`) | — | — | RED-3, RED-5 |
 | RPO / co-orbital proximity | `engine/access.py` (`rpo_proximity`) | — | BLU-6 | RED-5 |
-| Per-cell playbooks / tutorial | `test_vignette_tutorials.py`, `/vignettes/{id}/tutorial` | WCM-2 | BLU-10 | RED-9 |
+| Per-cell playbooks / tutorial (incl. the `training-basics` onboarding script, `04-guided-vignette.md`, §11.0) | `test_vignette_tutorials.py`, `test_training.py`, `/vignettes/{id}/tutorial` | WCM-2 | BLU-10 | RED-9 |
 | Vignette library (add/move/retire) | `content/vignettes/*.yaml` | WCM-2 | BLU-10 | RED-9 |
 | Learning-path sequence & rung linkage | `16-learning-path.md`, `content/vignettes/*.yaml` | WCM-2 | BLU-10 | RED-9 |
 | Classification banner | `content/vignette.py` (`Vignette.classification`), `session/manager.py`, `session/aar.py` | WCM-2 | — | — |

@@ -31,6 +31,24 @@ panel.
 
 ---
 
+### 11.0 — Training: Basics (`training-basics`)
+
+The Stage 0 onboarding fleet: `ISR-EO-1` + `GS-TRN` against `JAM-TRN`, `RED-CYBER`, `RED-ASAT`.
+Deadline **+1 h**. Walked screenshot-by-screenshot in [§4](04-guided-vignette.md).
+
+| Cell | Objectives |
+|---|---|
+| Blue | `deliver_isr` · `keep_custody` (on `RED-TGT`) |
+| Red | `deny_isr` · `disable_isr` (safe-mode `ISR-EO-1`) |
+
+**Blue.** 1. *Review.* 2. `RADAR-TRN` → **observe** `RED-TGT` `{intent: characterize, classification: hostile}` (`keep_custody` MET). 3. `ISR-EO-1` → **downlink** `{via: GS-TRN}`. 4. Advance past the window (~T+52 min) → `deliver_isr` MET. 5. *Confirm both objectives* before T+1 h. 6. Optional: **maneuver** `{dv: [0, 5, 0], via: GS-TRN}` queues to a pass ~T+10 h — after the deadline, so it cannot change scoring (and `keep_custody` will have decayed by then).
+
+**Red.** 1. *Review.* 2. `RED-RDR` → **observe** `ISR-EO-1`. 3. `JAM-TRN` → **jam** `ISR-EO-1` `{modulation: barrage, power_w: 200.0}` during the `GS-TRN` pass. 4. `RED-CYBER` → **cyber** `ISR-EO-1` `{vector: ground_modem, payload: seize_c2}` — off-pass and **chance-based (~62% per attempt)**: success safes the bird (`disable_isr` MET), failure does nothing, so re-issue. 5. Advance past T+1 h → `deny_isr` MET (independent of the dice). 6. `RED-ASAT` → **engage** → **REJECTED (`roe_kinetic_not_authorized`)**.
+
+**ROE defaults.** Red kinetic OFF (`red_kinetic_authorized = false`); cyber **ON** for both sides (`cyber_authorized = true`; White Cell can switch it off).
+
+---
+
 ### 11.1 — LEO ISR Denial (`leo-isr-denial`)
 
 | Cell | Objective | Win condition |
