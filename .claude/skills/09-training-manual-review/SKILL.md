@@ -20,9 +20,17 @@ vignette/playbook/rung defects, `00-intake` for code bugs the review exposes, up
 for requirements/research gaps). It never reviews training artifacts authored in its own
 session — independence is the point.
 
+**Two roles.** Per training artifact it reviews an authoring run's output (the common case). Per
+release / per batch it is also **the learner-walkthrough gate** (owner direction 2026-10-25): the
+release-scope review `11-release-readiness` requires as evidence, run with the *Learner
+walkthrough* dimension below. Per-package documentation accuracy is checked earlier, by
+`09-package-verification`'s Documentation audit; this review is the end-to-end, whole-role check
+that those per-package edits add up to a corpus a newcomer can learn from.
+
 ## Scope selection
 
-One of: the sections touched by a named authoring run (the common case, its "Next step"), a
+One of: **the release/batch scope** (every role, the learning path's core rungs, and every
+section touched by the release's packages and Manual-impact items — the gate run), or the sections touched by a named authoring run (the common case, its "Next step"), a
 named module set ("review the White-facing corpus"), the learning path end-to-end, or the whole
 corpus (a periodic audit — expect to sample rather than exhaust; say what was sampled).
 
@@ -41,11 +49,24 @@ corpus (a periodic audit — expect to sample rather than exhaust; say what was 
 3. **Coverage** — every operator-visible capability in the forward index reaches role-scoped
    content for every role that can exercise it (FR-11110); every shipped vignette on exactly one
    rung (FR-11310); recently shipped features (check the Master Build Plan's latest COMPLETE/
-   VERIFIED packages) present in the index at all.
+   VERIFIED packages) present in the index at all. **Feature-spec coverage check:** every
+   `VERIFIED` Feature Specification (via the Master Build Plan's VERIFIED packages → their FS)
+   appears in §15.1 with at least one manual section, or with an explicit not-operator-visible
+   reason; each miss is a High finding. List any open Manual-impact backlog items in the scope
+   and whether the sections they name now exist.
 4. **Pedagogy** — audience fit per MSTR-003/NFR-3600 (operator actions, jargon introduced or
    glossary-linked, module sizes per NFR-3500); sequencing/scaffolding choices cite authored
    R600 topics; where R600 is unauthored, record "ungrounded, pending R6xx" as a tracked gap,
    not a violation.
+
+5. **Learner walkthrough** (mandatory in a release/batch gate run; sampled otherwise) — for each
+   role (White, Blue, Red, Observer where shipped), start from a fresh install and follow the
+   manual and that role's tutorials **as a first-time learner**: only what the text says, in its
+   order, via `run-spacesim`. Record per procedure: completed as written / needed a guess / could
+   not complete. Grade against the content standards in `08-training-manual-authoring` (numbered
+   steps, exact labels and messages, expected result, failure modes with the real message, why it
+   matters, Sources footer). A procedure a learner cannot complete as written is High; a missing
+   expected-result or failure-mode is Medium.
 
 ## Output
 
@@ -57,7 +78,12 @@ Critical/High/Medium/Low scale. Update ROADMAP's review theme if it tracks revie
 
 ## Quality gate
 
-- [ ] All four dimensions exercised and evidenced; sampling stated where sampling was used.
+- [ ] All four dimensions exercised and evidenced (plus the Learner walkthrough for every role in
+      a release/batch gate run); sampling stated where sampling was used.
+- [ ] Feature-spec coverage check recorded: every VERIFIED FS in §15.1 with a manual section or
+      a not-operator-visible reason.
+- [ ] A gate run names the release scope and commit, so `11-release-readiness` can tell whether
+      it is current.
 - [ ] Playbook verification suite run against the reviewed commit, result recorded.
 - [ ] Every finding has severity + concrete recommended owner; nothing was fixed in-pass.
 - [ ] Independence held: nothing reviewed was authored in this session.
