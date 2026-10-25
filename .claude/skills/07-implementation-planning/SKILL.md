@@ -58,6 +58,17 @@ All under `docs/implementation/` (this skill's sole write scope):
    Package ID · Objective · Requirements Covered · Architecture Components · Interfaces ·
    Files to Create/Modify · Implementation Tasks · Tests to Add · Documentation Updates ·
    Definition of Done · Verification Checklist · Dependencies · Risks · Rollback Considerations.
+   **`Documentation Updates` must open with a `Manual impact:` entry** (owner direction,
+   2026-10-25 — operator documentation is a co-equal product, MSTR-001 §2, FR-11000 family, NFR
+   §16): the `docs/training/15-manual-traceability.md` §15.1 rows, manual sections (`WCM-`/`BLU-`/
+   `RED-`/shared modules), vignette tutorials/`intro_brief`s, and HTTP/UI-reference or
+   troubleshooting entries the package touches — each marked *create* or *update* and assigned to
+   its writer (`08-code-implementation` for the narrow lines it may write; otherwise
+   `08-training-manual-authoring` / `08-vignette-development`) — or `none — <reason>` (e.g. "no
+   operator-visible change: internal refactor"). It stays inside field 9, so the template remains
+   14 fields. **`Definition of Done` must include** "documentation created/updated per Manual
+   impact, and §15.1/§15.2 rows in sync with the shipped change (or each hand-off recorded as a
+   Manual-impact item)", and the `Verification Checklist` an objectively checkable item for it.
    Carry the standard MSTR-006 §5 metadata block (Document ID, Version, Status, Dependencies,
    Referenced By, Produces, Feature Mapping, Related Topics) exactly as the existing `IP-1010`…
    `IP-3010` files do.
@@ -116,6 +127,14 @@ IDs it verifies** (owner direction, `BL-0310`): a requirement leaf from `Require
 only for a test of the package's own Definition of Done. These are the IDs the implementer puts
 in the test's `@pytest.mark.verifies(...)` marker, so a test with no origin is a planning defect.
 
+**Assess the Manual impact while the files are in front of you.** For every operator-visible
+change the package makes — a new or changed route, button, menu label, panel, refusal/error
+message, order verb, vignette field, or default — look it up in §15.1 and name the manual
+sections, tutorials/briefs, and reference/troubleshooting entries it lands in; a capability with
+no §15.1 row gets a *create* entry for one. `none` is legitimate only with a stated reason a
+learner would accept (no label, message, or procedure changes). A package with an empty or
+unreasoned Manual impact is a planning defect, exactly like a test with no origin.
+
 ### Step 3 — Update the Master Build Plan and package index
 
 Add the new package rows (status, blocking dependencies, authorization state), extend the
@@ -140,6 +159,10 @@ implementation-theme rows, and commit as `docs(implementation): IP-xxxx — <wha
       Build Plan's graph, and `packages/INDEX.md`.
 - [ ] No package is marked `READY` whose dependencies aren't all `VERIFIED`; no package is marked
       authorized without an explicit user go-ahead on record.
+- [ ] Every package's `Documentation Updates` opens with a reasoned `Manual impact:` entry
+      (§15.1 rows, manual sections, tutorials/briefs, reference/troubleshooting — each with its
+      writer — or `none — <reason>`), and its `Definition of Done` + `Verification Checklist`
+      carry the documentation-in-sync item.
 - [ ] The TWBS records the rationale for every split/no-split decision made this pass.
 
 ## Gotchas

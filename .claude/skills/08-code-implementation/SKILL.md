@@ -128,6 +128,7 @@ these roles map onto this repository specifically.
   | **Tests Passed** | Full-suite result (pass count, fail count, skip count) — never a partial run presented as if it were the whole suite |
   | **Requirements Implemented** | The `Requirements Covered` IDs this run satisfies, cross-checked against the Definition of Done |
   | **Documentation Updated** | Path list |
+  | **Manual Impact** | `none — <reason>`, or one line per item: written here (path + §15.1 row) / handed off as a Manual-impact item (package · operator-visible change with exact labels/messages · §15.1 row + sections · owner `08-training-manual-authoring` or `08-vignette-development` · due before release) |
   | **Traceability Updated** | What changed, where |
   | **Outstanding Issues** | Anything noticed but explicitly out of this package's scope (a pre-existing unrelated test failure, a Risk from the package that materialized, an Open Question this run couldn't resolve) — named, not fixed |
 
@@ -239,7 +240,7 @@ package's changes or pre-existing on the branch before touching anything:
   set breaks the traceability this whole pipeline exists to preserve — that fix belongs to its own
   package or a dedicated maintenance package, not a rider on this one.
 
-### Step 8 — Update documentation referenced by the package
+### Step 8 — Documentation step: update the docs the package names and its Manual impact
 
 Exactly the locations named in the package's `Documentation Updates` field (a code map, a module
 docstring convention, an architecture doc's file-listing section, etc.). If the package names none
@@ -248,17 +249,36 @@ other module in this subsystem is listed in a central code map), follow that con
 the addition in the Implementation Summary — but do not go looking for unrelated documentation to
 "also" update.
 
-**Per-cell training manuals.** If this package changed a user-facing feature (a behavior an
-operator sees or drives), consult the feature→manual forward index in
-[`docs/training/15-manual-traceability.md`](../../../docs/training/15-manual-traceability.md) §15.1
-for the code you touched. Any cell-manual section it maps to
-([White](../../../docs/training/12-white-cell-manual.md) `WCM-n` /
-[Blue](../../../docs/training/13-blue-cell-manual.md) `BLU-n` /
-[Red](../../../docs/training/14-red-cell-manual.md) `RED-n`) is in scope for this package: update
-that section's prose *and* its `> Sources:` footer, and update the matching matrix row if the
-backing code moved. This is not "unrelated documentation" — the traceability matrix makes it part
-of the named `Documentation Updates` surface for any feature-changing package. Purely internal
-changes (no operator-visible behavior) with no §15.1 row need no manual edit.
+**Documentation step (mandatory — owner direction 2026-10-25; MSTR-001 §2, FR-11000 family, NFR
+§16).** Operator documentation is a co-equal product, so this step is not optional for any
+operator-visible change — a new or changed route, button, menu label, panel, order verb,
+refusal/error message, vignette field, or default. Start from the package's `Manual impact:` entry
+(07's template) and check it against your actual diff using the feature→manual forward index,
+[`docs/training/15-manual-traceability.md`](../../../docs/training/15-manual-traceability.md)
+§15.1/§15.1a. For each item, do exactly one of:
+
+1. **Write it yourself — narrow scope only.** This skill may write, in `docs/training/`: the
+   §15.1/§15.1a/§15.2 matrix rows for the code it touched; `> Sources:` footers; factual line
+   corrections inside an already-mapped section (a renamed label, a changed default, a moved
+   file — [White](../../../docs/training/12-white-cell-manual.md) `WCM-n` /
+   [Blue](../../../docs/training/13-blue-cell-manual.md) `BLU-n` /
+   [Red](../../../docs/training/14-red-cell-manual.md) `RED-n` or a shared module); and single
+   entries in the reference/troubleshooting modules (`08-http-api-reference.md`, `10*-ui-reference*.md`,
+   `09-troubleshooting-and-glossary.md`) — one route/control/message per entry, quoting the exact
+   label or refusal text the code emits. Nothing else in `docs/training/`, and never vignette YAML.
+2. **Hand it off.** Anything larger — a new procedure or section, a rewritten walkthrough, a new
+   manual module, a tutorial/`intro_brief`/playbook change, a learning-path rung — is recorded as a
+   **Manual-impact item** in the Implementation Summary (see Outputs): the package ID, what changed
+   for the operator (exact labels/messages), the §15.1 row and sections affected, and the owning
+   writer (`08-training-manual-authoring` for `docs/training/` prose; `08-vignette-development`
+   for vignette YAML, `docs/training/11`/`16` entries and `test_vignette_tutorials.py`).
+   `00-pipeline-manager` harvests each into the backlog with a **due-before-release** disposition.
+
+A capability with no §15.1 row gets one (item 1) even when its prose is handed off (item 2) — the
+row is how the hand-off is found again. Purely internal changes (no operator-visible behavior)
+need no edit, but say so: record `Manual impact: none — <reason>` in the Implementation Summary.
+**No package is marked `COMPLETE` with an operator-visible change that is neither documented here
+nor recorded as a Manual-impact item** — that is the gap `09-package-verification` returns.
 
 ### Step 9 — Update traceability
 
@@ -499,6 +519,10 @@ Use this as the final gate before presenting a package as `COMPLETE`:
       traceability mechanism the repository maintains — no ID left pointing at a placeholder.
 - [ ] Every `Documentation Updates` location named by the package was actually updated; no
       unrelated documentation was touched.
+- [ ] Every operator-visible change in the diff is either documented within this skill's narrow
+      `docs/training/` scope (matrix rows, Sources footers, factual line fixes,
+      reference/troubleshooting entries quoting the exact label/message) or recorded as a
+      Manual-impact item in the summary; `Manual impact: none` carries a reason.
 - [ ] Any test failure surfaced during the run was either fixed (if caused by this package) or
       recorded in Outstanding Issues with enough detail to act on (if pre-existing/unrelated) —
       none silently ignored.
@@ -540,7 +564,8 @@ The Implementation Summary (Step 11) already carries the run's factual record; i
 message, additionally state:
 
 1. **Recommendations** — every Outstanding Issue with its suggested owner (a follow-up package via
-   `07-implementation-planning`, an upstream artifact owner, or the user).
+   `07-implementation-planning`, an upstream artifact owner, or the user), and every Manual-impact
+   item with its owning writer and a due-before-release disposition.
 2. **Next step** — say explicitly what to run next and why: after a package reaches `COMPLETE`,
    the next step is always `09-package-verification` for that same package — never another
    implementation run first, and never chained automatically by this run; after a Blocking Report,
