@@ -284,6 +284,59 @@ everything, so triage. Deadline +90 min.
 
 **Red.** `RED-CYBER` → **cyber** `ISR-EO-LEARN` `{vector: ground_modem, payload: seize_c2}` (about 62%; not window-gated). If the bird is still green after a minute, fire again. Once Blue patches, the exploit no longer works.
 
+### 11.14 — Red COA: Russia ML, Sustained EW (`coa-russia-ml`)
+
+*These five COA vignettes (11.14-11.18) have no scripted `tutorial:` block, so no Tutorial panel; the recipes below were driven by hand on Seed 1 against the engine. Red has no sensors in any of them.*
+
+| Cell | Objective | Judged |
+|---|---|---|
+| Blue | `pnt_avail`, `satcom_avail` (`BLUE-PNT`, `BLUE-SATCOM` operational) | at T+60 min |
+| Red | `deny_pnt`, `deny_satcom` (a link to each denied) | true as soon as the jam is active |
+
+Red cyber is **off** here (`cyber_authorized` false); kinetic off.
+**Red.** `RED-JAM-TIRADA` → **jam** `BLUE-PNT` and `RED-JAM-POLE` → **jam** `BLUE-SATCOM`, each `{modulation: barrage, power_w: 200}`; both queue at once. **+10m**: both `deny_*` flip to ✓ by T+30 min.
+**Blue.** You see a `deny` symptom on both satellites, source unknown. Counter with `BLUE-PNT` → `def.frequency_hop` and `BLUE-SATCOM` → `satcom.mitigate_interference`, both `{via: GS-EUROPE}` (each queues to the next pass). Note: `pnt_avail`/`satcom_avail` read ✗ until the T+60 min deadline and then ✓ even under jamming (a jammed link does not make the satellite non-operational), so both sides can finish with their objectives met; judge the outcome in the AAR, not by the flags alone.
+
+### 11.15 — Red COA: Russia MD, DA-ASAT + Cyber (`coa-russia-md`)
+
+| Cell | Objective | Judged |
+|---|---|---|
+| Blue | `isr_survives` (T+30), `satcom_op` (T+60), `no_debris` (T+60) | deadlines |
+| Red | `destroy_isr`, `safe_satcom` | by T+60 min |
+
+Kinetic and cyber are both **on**. **Red.** `RED-CYBER` → **cyber** `BLUE-SATCOM` `{vector: ground_modem, payload: seize_c2}` (not window-gated, chance-based): on success `safe_satcom` flips ✓ (it did on Seed 1) and Blue's `satcom_op` stays ✗. `RED-NUDOL` → **engage** `BLUE-ISR-LEO` is refused `no_weapons_quality_track` (preview red, Issue order disabled): Red has no sensor and an SSN request answers `no_network`, so `destroy_isr` cannot be reached by a human Red as shipped; White can raise the gate by adding a track. **Blue.** Task `BLUE-RADAR-W`/`-E` to watch; patch the modem first with `BLUE-SATCOM` → `def.patch_cyber` `{vector: ground_modem, via: GS-PRIME}` and keep `BLUE-ISR-LEO` ready with `def.maneuver_evade` `{via: GS-PRIME}`. The `nudol_alert` inject (White) warns Blue of the launcher spin-up.
+
+### 11.16 — Red COA: China ML, Early Integrated Disruption (`coa-china-ml`)
+
+| Cell | Objective | Judged |
+|---|---|---|
+| Blue | `isr_delivers`, `satcom_op`, `geo_custody` (on `RED-SJ-INSPECTOR`) | T+30 min |
+| Red | `deny_isr`, `safe_satcom`, `rpo_close` (inspector within 50 km of `BLUE-GEO-COMM`) | T+30 min |
+
+**Red.** `RED-CYBER` → **cyber** `BLUE-SATCOM` (ground_modem / seize_c2): `safe_satcom` ✓. `RED-JAM-COASTAL` → **jam** `BLUE-ISR` queues, but its pass is about T+95 min, after the window, so `deny_isr` stays ✗ inside T+30 min. **Blue.** `BLUE-ISR` → **downlink** `{via: GS-WESTPAC}` runs at once and `isr_delivers` flips ✓; `geo_custody` stays ✗ until a radar or optical sensor tracks the inspector; the `h_hour` inject marks the start of the Red package. `rpo_close` was not reached in a hand run.
+
+### 11.17 — Red COA: China MD, Decisive Strike (`coa-china-md`)
+
+| Cell | Objective | Judged |
+|---|---|---|
+| Blue | `any_isr`, `pnt_op`, `satcom_op` | T+45 min |
+| Red | `kill_isr`, `deny_pnt`, `safe_satcom` | T+45 min |
+
+**Red.** Cyber: `RED-CYBER` → **cyber** `BLUE-SATCOM-PRIMARY` → `safe_satcom` ✓. `RED-JAM-PNT` → **jam** `BLUE-PNT`: its first pass is about T+157 min, so `deny_pnt` stays ✗ inside the window. `kill_isr` needs a weapons-quality track Red does not have (as 11.15). **Blue.** `BLUE-ISR-PRIMARY` → **downlink** `{via: GS-WP}` runs near T+37 min: `any_isr` ✓ by T+50 min; `pnt_op` ✓; `satcom_op` ✗ once the cyber lands, so patch/recover `BLUE-SATCOM-PRIMARY` (11.13). The `decisive_warning` inject says kinetic strikes are authorized.
+
+### 11.18 — Red COA: Iran ML, Regional EW Spoiler (`coa-misc-iran-ml`)
+
+| Cell | Objective | Judged |
+|---|---|---|
+| Blue | `pnt_op`, `satcom_op` | T+45 min |
+| Red | `deny_pnt`, `deny_satcom` | T+45 min |
+
+**Red.** `RED-MOBILE-JAM-1` → **jam** `BLUE-PNT` queues but its pass is about T+650 min; `RED-MOBILE-JAM-2` → **jam** `BLUE-SATCOM` is refused `no_window`. With the shipped geometry Red cannot deny anything inside the 45 minutes (both `deny_*` stay ✗), which makes it a lesson in ground-segment geometry. **Blue.** Nothing is attacked: both objectives flip ✓ at T+45 min. `BLUE-SATCOM` → `satcom.mitigate_interference` is `no_window` here too. The `jammer_moves` inject (White) degrades SSN custody of the jammers.
+
+> **Sources:** `spacesim/content/vignettes/coa-russia-ml.yaml` · `spacesim/content/vignettes/coa-russia-md.yaml` ·
+> `spacesim/content/vignettes/coa-china-ml.yaml` · `spacesim/content/vignettes/coa-china-md.yaml` ·
+> `spacesim/content/vignettes/coa-misc-iran-ml.yaml` · `spacesim/session/redai.py` · FR-11320
+
 ---
 
 > **Want to drive these headless?** Every step is a real `Order` through the `SessionAPI`. See the

@@ -256,6 +256,30 @@ maintained by `08-vignette-development` and reviewed by `09-training-manual-revi
   check fails the suite) and asserts each brief states the engine's real deadline, so a re-timed
   scenario fails here before it misleads a learner.
 
+**Per-vignette linkage table** (rung ⇄ playbook ⇄ library; 19 rows, one per vignette):
+
+| Vignette | Learning-path rung | Playbook (`11`) | Library row (`06`) |
+|---|---|---|---|
+| `training-basics` | Stage 0 | [11.0](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `leo-isr-denial` | Stage 1 | [11.1](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `geo-rpo-shadowing` | Stage 1 | [11.2](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `gnss-ew-campaign` | Stage 1 | [11.3](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `co-orbital-threat-escort` | Stage 1 | [11.4](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `da-asat-crisis` | Stage 1 | [11.5](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `satcom-cyber-link` | Stage 1 | [11.6](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `sda-custody-hunt` | Stage 1 | [11.7](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `multi-domain-taiwan` | Stage 1 | [11.8](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `mt-isr-sar` | Stage 2 | [11.9](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `mt-sigint-geolocate` | Stage 2 | [11.12](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `mt-weather-collect` | Stage 2 | [11.10](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `coa-russia-ml` | Stage 3 | [11.14](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `coa-russia-md` | Stage 3 | [11.15](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `coa-china-ml` | Stage 3 | [11.16](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `coa-china-md` | Stage 3 | [11.17](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `coa-misc-iran-ml` | Stage 3 | [11.18](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `learn-intermediate-recovery` | Stage 4 | [11.13](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+| `nv-isl-relay-debris` | Stage 4 | [11.11](11-vignette-playbooks.md) | [06](06-the-vignette-library.md) |
+
 ### 15.5 Requirements footing
 
 This apparatus is not just convention — it satisfies a requirements-baseline family:
