@@ -81,14 +81,14 @@ vignette:
       - {n: 3, title: "Plan the imagery downlink", when: "queues to the next GS-TRN pass",
          action: downlink, actor: ISR-EO-1, params: {via: GS-TRN},
          expect: "queued via ground_uplink with a scheduled window"}
-      - {n: 4, title: "Advance to the downlink window", when: "past the end of the GS-TRN window (about T+52 min)",
+      - {n: 4, title: "Advance to the downlink window", when: "past the end of the GS-TRN window (about T+52 min) but no later than T+60 min",
          action: advance, params: {to: order_window},
          expect: "imagery delivered; deliver_isr MET"}
-      - {n: 5, title: "Confirm both objectives", when: "before the T+1 h deadline (3600 s)",
-         action: review, expect: "deliver_isr MET and keep_custody MET - both Blue objectives are scored at the T+1 h deadline"}
-      - {n: 6, title: "Maneuver to preserve the orbit (optional, after the exercise)", when: "next GS-TRN command pass, about T+10 h",
+      - {n: 5, title: "Confirm both objectives", when: "at the T+1 h deadline (3600 s) - do not advance past it",
+         action: review, expect: "deliver_isr MET and keep_custody MET - read them at T+60 min: the panel is live (custody decays), so advancing past the deadline can show keep_custody unmet"}
+      - {n: 6, title: "Maneuver to preserve the orbit (optional, after the exercise)", when: "next GS-TRN command pass, about T+11 h",
          action: maneuver, actor: ISR-EO-1, params: {dv: [0.0, 5.0, 0.0], via: GS-TRN},
-         expect: "queued for a pass about 10 h out - long after the T+1 h deadline, so it cannot affect scoring (keep_custody will have decayed by then; that is expected); the 5 m/s delta-v is deducted when it executes"}
+         expect: "queued for a pass about 11 h out (about T+11 h) - long after the T+1 h deadline, so it cannot affect scoring (keep_custody will have decayed by then; that is expected); the 5 m/s delta-v is deducted when it executes"}
     red:
       - {n: 1, title: "Review own assets", when: "at start", action: review,
          expect: "jammer, cyber unit, radar, interceptor"}
@@ -101,7 +101,7 @@ vignette:
       - {n: 4, title: "Cyber the modem (off-pass)", when: "any time — cyber isn't window-gated",
          action: cyber, actor: RED-CYBER, target: ISR-EO-1,
          params: {vector: ground_modem, payload: seize_c2},
-         expect: "Chance-based, about 62% per attempt (ground_modem vs ISR-EO-1's low cyber posture), so the result depends on the dice: on success ISR-EO-1 enters safe mode and disable_isr is MET; on failure nothing happens - re-issue the order. Not window-gated either way"}
+         expect: "Chance-based, about 62% per attempt (ground_modem vs ISR-EO-1's low cyber posture), so the result depends on the dice: on success ISR-EO-1 enters safe mode and disable_isr is MET; on failure nothing happens - re-issue the order. Advance about 1 min and read the Objectives panel (and the ISR-EO-1 bus mode): disable_isr still unmet means the attempt failed. Not window-gated either way"}
       - {n: 5, title: "Advance and assess", when: "to the T+1 h deadline (3601 s from start), past the delivery window",
          action: advance, params: {dt_s: 3601},
          expect: "Blue payload down; deny_isr MET"}

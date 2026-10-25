@@ -305,3 +305,46 @@ def test_every_brief_deadline_note_states_the_real_deadline(vid):
             continue
         stated = float(m.group(1)) * (60 if m.group(2) == "min" else 3600)
         assert stated == secs, f"{vid}.{cell}: deadline_note says {m.group(0)!r} but landing_window_start_s={secs}"
+
+
+# -- training-basics: the numbers and names the script states are the engine's, not keywords -----
+
+def _doc(name):
+    from pathlib import Path
+    return (Path(__file__).resolve().parents[2] / "docs" / "training" / name).read_text(encoding="utf-8")
+
+
+@pytest.mark.verifies("FR-11420")
+def test_tb_stated_times_and_numbers_are_derived_from_the_engine():
+    from spacesim.engine.cyber import effective_success
+    mgr = _mgr(_TB)
+    t0, deadline = mgr.world.now, mgr.ctx.landing_deadline
+    ob = _issue(mgr, "blue", **_RADAR_OBS)
+    mgr.advance_to(ob.earliest_window[0] + 1)
+    dl = _issue(mgr, "blue", actor="ISR-EO-1", action="downlink", params={"via": "GS-TRN"})
+    end_min = round((dl.earliest_window[1] - t0) / 60e6)
+    mgr.advance_to(dl.earliest_window[1] + 1)
+    mv = _issue(mgr, "blue", actor="ISR-EO-1", action="maneuver", params={"dv": [0.0, 5.0, 0.0], "via": "GS-TRN"})
+    mv_h = round((mv.earliest_window[0] - t0) / 3600e6)
+    assert end_min < (deadline - t0) / 60e6
+    blue = _tb_steps("blue")
+    assert f"T+{end_min} min" in blue[4]["when"], blue[4]["when"]
+    assert f"T+{mv_h} h" in blue[6]["when"] and f"T+{mv_h} h" in blue[6]["expect"]
+    assert "do not advance" in blue[5]["when"].lower()
+    for doc in ("04-guided-vignette.md", "11-vignette-playbooks.md", "16-learning-path.md"):
+        assert f"T+{mv_h} h" in _doc(doc), f"{doc} must state the engine's maneuver pass (about T+{mv_h} h)"
+    assert f"T+{end_min} min" in _doc("11-vignette-playbooks.md")
+    pct = f"{round(effective_success('ground_modem', 'low') * 100)}%"
+    assert pct in _tb_steps("red")[4]["expect"] and pct in _doc("04-guided-vignette.md")
+
+
+@pytest.mark.verifies("FR-11420")
+def test_tb_red_brief_names_and_manual_recipe_match_the_yaml():
+    import json
+    vig = load_vignette(_TB)
+    red = vig.intro_brief["red"]
+    assert "ISR-EO-1" in red["success_criteria"] and "BLUE-SAT" not in str(vig.intro_brief)
+    assert "Jam GS-TRN" not in red["threat_picture"] and "ISR-EO-1" in red["threat_picture"]
+    jam = _tb_steps("red")[3]["params"]
+    assert json.dumps(jam, separators=(",", ":")).replace(".0,", ".0,") .replace(" ", "") in _doc("04-guided-vignette.md").replace(" ", "")
+    assert [o["id"] for o in vig.objectives["red"]] == ["deny_isr", "disable_isr"]   # each declared once
