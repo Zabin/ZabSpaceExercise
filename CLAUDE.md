@@ -122,7 +122,7 @@ spacesim/
 - **P4** Session layer (SessionManager / CellController / SessionAPI) + Vignette 1 end-to-end with
   fog-of-war. *(Note: this header is missing in the roadmap — its bullets are appended to P3.5.)*
 - **P4.5** Planning & tasking scheduler + safe-mode recovery chain. ✓
-- **P5** UI over the API (FastAPI + web). ✓ (backend tested; browser GUI unverified headless)
+- **P5** UI over the API (FastAPI + web). ✓ (backend tested; the console's load-bearing rules are checked in headless Chromium by `-m browser`, IP-1340; the full browser GUI is not verified end to end)
   **P5.5** Render-from-custody belief scene + 2D map + self-contained orthographic 3D globe. ✓
 - **P6** Vignettes 2–7 (data) + TLE force-add + Red doctrine profiles. ✓ (all 19 vignette files
   load/run: 8 canonical + training-basics + 5 COA + 3 mission-set + 1 learning + 1 novel)
@@ -185,7 +185,7 @@ uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload       # LAN multiplay
 python3 -m pytest                                                # runs the whole suite (testpaths = spacesim/tests)
 python3 -m pytest spacesim/tests/test_determinism.py             # the Phase-1 determinism gate
 python3 -m pytest spacesim/tests/test_import_guard.py            # the Phase-0 engine guardrails
-python3 -m pytest -m browser                                     # headless-Chromium console-rule tests (IP-1340, 30 tests); skip loudly where Playwright/Chromium is absent
+python3 -m pytest -m browser                                     # headless-Chromium console-rule tests (IP-1340, 33 tests); skip loudly where Playwright/Chromium is absent
 python3 -m pytest -m "not browser"                                # everything except the browser tests (the default CI-style run)
 python3 -m pytest spacesim/tests/test_doc_integrity.py spacesim/tests/test_test_origins.py   # documentation-integrity + test-origin gates (IP-1350 / IP-1330)
 python3 -m pytest --origin-report [--origin-ids=FR-1120,…]       # read-only: tests by declared origin; requirements no test names
@@ -541,6 +541,33 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `research_export.py` (IP-3010 — `RunRecord` pydantic schema: `vignette_id`/`seed`/
   `condition_label` + IP-2010's `assessment_report` output verbatim, never reimplemented;
   `export_csv`/`export_json` extend `aar.export_csv()`'s flattening pattern to a multi-run table).
+- **Control-boundary bullets (IP-1076 / IP-1077 / IP-1081 / IP-1103 / IP-1082).**
+  `IP-1076` (FR-4330): `SessionManager._span_ceiling()` (start + `MAX_SAVE_SPAN_US`, 366 days) bounds
+  `step`/`advance_to` and the lazy clock; a refused step/advance is a `ValueError` mapped to
+  `Ack(ok=False)` and HTTP 400, and the running clock pins at the ceiling instead of pausing.
+  `IP-1077` (FR-7340): `playback_seat_decision()` and `PlaybackSeatRefused` in `session/inprocess.py`
+  gate the five `aar/playback/*` routes by the requesting seat (White any viewpoint, a player its own
+  cell, Observer state-read only; 403 before any change).
+  `IP-1081` (NFR-3710): the 100,000-entry load cap lives at `SessionManager.MAX_EVENTLOG_REPLAY_ENTRIES`
+  (alias on `InProcessSession`), the first rung of `validate_save`, counting a real save's
+  `{"entries": [...]}` log as well as a bare list.
+  `IP-1103` (FR-7230): `MAX_SAVE_SPAN_US` and `_check_final_time_span` refuse a save whose `final_time`
+  is more than 366 days past its start.
+- **`IP-1082` (NFR-1600, FR-4330, FR-7330) on `server.py` / `manager.py` / `aar.py`:** `ui_web/server.py`
+  `_refuse_nonfinite`/`_first_nonfinite` are the one place the non-finite policy lives; every
+  mutating route in the live route table carries a shared guard (`_finite_json_guard` on White controls:
+  404, then 403, then the check; `_inject_finite_guard` on pending-inject edit/cancel; `_finite_json_guard_open`
+  on the rest; `_playback_finite_guard` on `aar/playback/*`, where a seat `playback_seat_decision` refuses
+  still gets its 403); a `NaN`/`Infinity` anywhere in the JSON body, or a boolean in a numeric field
+  (`rate`, `t`, `n`, `dt_sim_s`, `speed`, `dt_s`), is a 400 naming the field. A route-table test derived
+  from the live table pins them. `PlaybackSession.MAX_SPEED` (10,000) bounds `|speed|` and an
+  overflowing advance is a 400. `SessionManager.MAX_CLOCK_RATE` (10,000) bounds
+  `set_clock` to `(0, MAX_CLOCK_RATE]` when running (any rate must be finite), and
+  `_require_finite` backs `step`/`advance_to`/`rewind_to`/`undo_last` for non-HTTP callers; a refused
+  `set_clock` is `Ack(ok=False)` from `InProcessSession` and a 400 at the route. `PlaybackSession`
+  clamps and stores its cursor to `[start_epoch, live now]` on every read and rejects a non-finite
+  `speed`/`dt_s`. Console: the toolbar `+1m/+10m/+1h` buttons call `stepBy`, which reports a refusal in
+  `#control-status`.
 - `spacesim/tools/` (IP-3010 — first subpackage of its kind: offline/CLI-style utilities that
   drive the deterministic engine externally, not through the live `ui_web`/`session` request
   path) — `research_batch.py`'s `run_batch(vignette_id, seeds, condition_label,

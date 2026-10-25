@@ -1130,6 +1130,24 @@ carve-out); the rest is conflict avoidance.
 
 **Not planned here (and why).** Closing GDS-07 `OQ5` (owned by `03`, after `IP-1081` is `VERIFIED`); a check comparing package-file headers with the ledger (a new capability, `IP-1350` family, via `00-intake`; `IP-1080` ends with a recorded sweep instead); any edit of a `VR-xxxx`; HTTP request-body size limits (a deployment concern, noted in `IP-1081` Risks).
 
+## Release-push remediation, pass 6 (2026-10-25)
+
+**Input:** the release-candidate integration review ([`integration-review-release-candidate-1.md`](../reviews/integration-review-release-candidate-1.md)): `M-1` (JSON `NaN`/`Infinity` as the clock rate poisons every read of a session; `NaN` time targets are 500s), `M-2` (toolbar `+1m/+10m/+1h` unwrapped), `M-3` (`CLAUDE.md` code map omits `IP-1076`/`1077`/`1081`/`1103`) and the cheap Lows `L-2`, `L-4`. Same owner directive (journal run #256, confirmed run #260: fix bugs; no new features).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | One shared non-finite check on every White control route (400 with reason, after the seat rule); clock rate bounded to `(0, 10,000]`; manager-level backstop; poisoned-session regression; playback `speed`/`dt_s` | `ui_web/server.py`, `session/manager.py`, `session/inprocess.py`, `session/aar.py`, a new test file | IP-1082 |
+| 2 | Toolbar step buttons routed through the palette's catching handler; browser test | `ui_web/static/app.js`, `test_browser_console_rules.py` | IP-1082 |
+| 3 | Code-map bullets for four packages; `CLAUDE.md:125`; `ROADMAP.md:26` | `CLAUDE.md`, `ROADMAP.md` | IP-1082 |
+
+**Why one package, and why this cut.** The three defects are small, share one reviewer story ("a White control request must not break the session or the console") and touch disjoint files; splitting would add packages without adding independent verification stories. The documentation unit rides along because the code-map bullets describe the packages this one sits beside, and the builder's doc step is the owner the review names for it (`M-3`: "docs-only package from `07`", folded here rather than a fourth documentation-only package). Decisions: the check is one helper at the route layer with a manager backstop (not per-route `isfinite`), and a route-table test pins it so a new White route cannot omit it; the rate ceiling (10,000) is a design decision because the requirements give only the floor (`NFR-1100`, "at least 600x"), routed to `04` to state; the toolbar reuses the palette's `stepBy` rather than gaining a second catch block.
+
+**Taken from the Lows, and why.** `L-2` (playback cursor beyond the recorded span after a rewind or undo) is an invalid state by `PlaybackSession.advance`'s own invariant and is a read-time clamp in the same module family; it is taken. `L-4`'s two stale lines are in files the doc step already edits.
+
+**Not planned here (and why).** `L-1`, the unbounded live event log (a design question: cap or document, owned by `04`); `L-3`, `--origin-report` exit code 5 (cosmetic; a read-only report that runs no tests, and the exit status is part of its contract); `L-5`/`F-12`, parser duplication (consolidation, not a bug); `L-6`, rewind and the running clock (decided immaterial, `FR-4330` Notes); GDS-10 §6 counts (`03`); training-manual text for the clock route (`08-training-manual-authoring` via `15-manual-traceability.md` §15.1).
+
+**Ordering and file conflicts.** None with other open work; the suite grows by about 12 test functions.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
