@@ -27,6 +27,7 @@ from spacesim.session import ephemeris
 from spacesim.session.api import Ack, CellView, OrderAck
 from spacesim.session.inprocess import (PLAYBACK_REFUSED, InProcessSession, PlaybackSeatRefused,
                                         playback_seat_decision)
+from spacesim.session.aar import PlaybackSession
 from spacesim.session.scene import SceneView
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -61,20 +62,46 @@ def _first_nonfinite(value: Any, path: str = "body") -> Optional[str]:
     return None
 
 
-async def _refuse_nonfinite(request: Request) -> None:
-    """The one place the non-finite policy lives: a 400 naming the field, before any state changes.
-    A body that is not JSON is left to the route's own validation."""
+# Fields that must be JSON numbers: pydantic would coerce ``true`` to 1.0 / 1 (IP-1082, review F4).
+_NUMBER_ONLY = {
+    "/clock": ("rate",), "/step": ("dt_sim_s",), "/advance": ("t",), "/rewind": ("t",), "/undo": ("n",),
+    "/aar/playback/start": ("speed",), "/aar/playback/advance": ("dt_s",), "/aar/playback/speed": ("speed",),
+}
+
+
+def _body_problem(decoded: Any, path: str) -> Optional[str]:
+    """The first refusal reason for a decoded JSON body, or None: a non-finite number anywhere, or a
+    boolean where one of the route's numeric fields is expected."""
+    hit = _first_nonfinite(decoded)
+    if hit:
+        return f"{hit}: a non-finite number (NaN or Infinity) is not allowed"
+    if isinstance(decoded, dict):
+        for suffix, fields in _NUMBER_ONLY.items():
+            if path.endswith(suffix):
+                for f in fields:
+                    if isinstance(decoded.get(f), bool):
+                        return f"body.{f}: must be a number, not a boolean"
+    return None
+
+
+async def _body_refusal(request: Request) -> Optional[str]:
+    """The reason to refuse this request's JSON body, or None. A body that is not JSON is left to
+    the route's own validation."""
     raw = await request.body()
     if not raw:
-        return
+        return None
     try:
         decoded = json.loads(raw)
     except ValueError:
-        return
-    hit = _first_nonfinite(decoded)
-    if hit:
-        raise HTTPException(status_code=400,
-                            detail=f"{hit}: a non-finite number (NaN or Infinity) is not allowed")
+        return None
+    return _body_problem(decoded, request.url.path)
+
+
+async def _refuse_nonfinite(request: Request) -> None:
+    """The one place the non-finite policy lives: a 400 naming the field, before any state changes."""
+    why = await _body_refusal(request)
+    if why:
+        raise HTTPException(status_code=400, detail=why)
 
 
 # -- request bodies ------------------------------------------------------------
@@ -393,20 +420,48 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require_white(cell)
         await _refuse_nonfinite(request)
 
-    async def _playback_finite_guard(request: Request, sid: str, cell: Optional[str] = None) -> None:
-        """IP-1082 (FR-7330) — the same check for the AAR playback value routes. Those are not
-        White-only, so the seat rule is IP-1077's own: a seat it refuses still gets its 403 first."""
+    async def _finite_json_guard_open(request: Request, sid: Optional[str] = None) -> None:
+        """IP-1082 (F1) — the same non-finite check for every other mutating route (orders, compute
+        previews, SSN, recovery, gate/ROE, session creation): not White-only, so the route keeps its
+        own seat rule; 404 for an unknown session first, then a 400 naming the non-finite field."""
+        if sid is not None:
+            _require(sid)
+        await _refuse_nonfinite(request)
+
+    async def _inject_finite_guard(request: Request, sid: str, cell: Optional[str] = None) -> None:
+        """IP-1082 (F1) — pending-inject cancel/edit: White-only with this family's own 403 wording
+        (``only White Cell may ...``), kept; then the shared check."""
         _require(sid)
-        try:
-            await _refuse_nonfinite(request)
-        except HTTPException:
+        if cell != "white":
+            verb = "cancel" if request.url.path.endswith("/cancel") else "edit"
+            raise HTTPException(status_code=403, detail=f"only White Cell may {verb} an inject")
+        await _refuse_nonfinite(request)
+
+    async def _playback_finite_guard(request: Request, sid: str, cell: Optional[str] = None) -> None:
+        """IP-1082 (FR-7330) — the same check for the AAR playback value routes, plus the speed range
+        ``|speed| <= PlaybackSession.MAX_SPEED``. Those routes are not White-only, so the seat rule is
+        IP-1077's own: a seat it refuses still gets its 403 first."""
+        _require(sid)
+        why = await _body_refusal(request)
+        if why is None:
+            raw = await request.body()
+            body = json.loads(raw) if raw else None
+            sp = body.get("speed") if isinstance(body, dict) else None
+            if isinstance(sp, (int, float)) and abs(sp) > PlaybackSession.MAX_SPEED:
+                why = (f"body.speed: {sp!r} is outside the playback speed range "
+                       f"[-{PlaybackSession.MAX_SPEED:g}, {PlaybackSession.MAX_SPEED:g}]")
+        if why:
             action = request.url.path.rsplit("/", 1)[-1]
-            raw = json.loads(await request.body())
-            requested = raw.get("viewpoint") if isinstance(raw, dict) else None
-            why = playback_seat_decision(cell, action, requested, api._playback_current(sid))
-            if why:
-                raise HTTPException(status_code=403, detail=why)
-            raise
+            raw = await request.body()
+            try:
+                body = json.loads(raw)
+            except ValueError:
+                body = None
+            requested = body.get("viewpoint") if isinstance(body, dict) else None
+            seat = playback_seat_decision(cell, action, requested, api._playback_current(sid))
+            if seat:
+                raise HTTPException(status_code=403, detail=seat)
+            raise HTTPException(status_code=400, detail=why)
 
     def _refuse_player_seat_on_create(cell: Optional[str]) -> None:
         """IP-1072 (FR-4320 as extended) — creating a session or a Vignette Creator draft is refused
@@ -479,7 +534,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         deadlines + computed ROE.  White sees both cells."""
         return api.session_brief(sid, cell)
 
-    @app.post("/api/sessions")
+    @app.post("/api/sessions", dependencies=[Depends(_finite_json_guard_open)])
     def load(req: LoadRequest, cell: Optional[str] = None) -> dict:
         _refuse_player_seat_on_create(cell)
         with _vignette_load_errors(req.vignette_id):
@@ -487,7 +542,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
                                     classification=req.classification)
         return {"session": sid, "classification": api.classification(sid)}
 
-    @app.post("/api/sessions/draft")
+    @app.post("/api/sessions/draft", dependencies=[Depends(_finite_json_guard_open)])
     def create_draft(req: DraftRequest, cell: Optional[str] = None) -> dict:
         """IP-1173 (FR-5110) — open a Vignette Creator draft session: an unstarted SessionManager
         backed by a near-empty Vignette, registered/evicted the same way a normal session is."""
@@ -677,13 +732,13 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid); _require_white(cell)
         return api.red_doctrine_step(sid)
 
-    @app.post("/api/sessions/{sid}/order")
+    @app.post("/api/sessions/{sid}/order", dependencies=[Depends(_finite_json_guard_open)])
     def issue_order(sid: str, req: OrderRequest) -> OrderAck:
         _require(sid); _reject_observer(req.cell)
         order = Order(cell=req.cell, actor=req.actor, action=req.action, target=req.target, params=req.params)
         return api.issue_order(sid, req.cell, order)
 
-    @app.post("/api/sessions/{sid}/order/validate")
+    @app.post("/api/sessions/{sid}/order/validate", dependencies=[Depends(_finite_json_guard_open)])
     def validate_order(sid: str, req: OrderRequest) -> OrderAck:
         """Dry-run an order: accepted (window/path) or rejected (reason), mutating no session state."""
         _require(sid); _reject_observer(req.cell)
@@ -695,37 +750,37 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.list_orders(sid, cell)
 
-    @app.post("/api/sessions/{sid}/maneuver/compute")
+    @app.post("/api/sessions/{sid}/maneuver/compute", dependencies=[Depends(_finite_json_guard_open)])
     def maneuver_compute(sid: str, req: ManeuverComputeRequest) -> dict:
         """Compute an ECI impulse from a higher-level maneuver description (read-only)."""
         _require(sid); _reject_observer(req.cell)
         return api.compute_maneuver(sid, req.cell, req.actor, req.mode, req.params)
 
-    @app.post("/api/sessions/{sid}/jam/compute")
+    @app.post("/api/sessions/{sid}/jam/compute", dependencies=[Depends(_finite_json_guard_open)])
     def jam_compute(sid: str, req: JamComputeRequest) -> dict:
         """Preview a jam order's effective radius, success probability, and footprint."""
         _require(sid); _reject_observer(req.cell)
         return api.compute_jam(sid, req.cell, req.actor, req.params)
 
-    @app.post("/api/sessions/{sid}/engage/compute")
+    @app.post("/api/sessions/{sid}/engage/compute", dependencies=[Depends(_finite_json_guard_open)])
     def engage_compute(sid: str, req: EngageComputeRequest) -> dict:
         """Preview an engage order: closing geometry, Pₖ, debris cone (read-only)."""
         _require(sid); _reject_observer(req.cell)
         return api.compute_engage(sid, req.cell, req.actor, req.target, req.params)
 
-    @app.post("/api/sessions/{sid}/cyber/compute")
+    @app.post("/api/sessions/{sid}/cyber/compute", dependencies=[Depends(_finite_json_guard_open)])
     def cyber_compute(sid: str, req: CyberComputeRequest) -> dict:
         """Preview a cyber order: success/detect prob, attribution, payload effect."""
         _require(sid); _reject_observer(req.cell)
         return api.compute_cyber(sid, req.cell, req.actor, req.target, req.params)
 
-    @app.post("/api/sessions/{sid}/sigint/compute")
+    @app.post("/api/sessions/{sid}/sigint/compute", dependencies=[Depends(_finite_json_guard_open)])
     def sigint_compute(sid: str, req: SigintComputeRequest) -> dict:
         """Preview a SIGINT collection: geolocation accuracy + power draw."""
         _require(sid); _reject_observer(req.cell)
         return api.compute_sigint(sid, req.cell, req.actor, req.params)
 
-    @app.post("/api/sessions/{sid}/preview/consequence")
+    @app.post("/api/sessions/{sid}/preview/consequence", dependencies=[Depends(_finite_json_guard_open)])
     def preview_consequence(sid: str, req: OrderRequest) -> dict:
         """FW §11.D.18 — political-cost / escalation preview before order commit."""
         _require(sid); _reject_observer(req.cell)
@@ -766,19 +821,19 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
                     out.append({**c, "now": mgr.world.now})
             return out
 
-    @app.post("/api/sessions/{sid}/cancel")
+    @app.post("/api/sessions/{sid}/cancel", dependencies=[Depends(_finite_json_guard_open)])
     def cancel_order(sid: str, req: CancelRequest) -> Ack:
         _require(sid); _reject_observer(req.cell)
         return api.cancel_order(sid, req.cell, req.order_id)
 
-    @app.post("/api/sessions/{sid}/gate/decide")
+    @app.post("/api/sessions/{sid}/gate/decide", dependencies=[Depends(_finite_json_guard_open)])
     def decide_gated_order(sid: str, req: GateDecisionRequest) -> Ack:
         """IP-1270 (FR-3430) — approve/deny a pending-approval order; role-gated inside
         SessionManager/OrderSystem against the matched rule's own required_role."""
         _require(sid); _reject_observer(req.cell)
         return api.decide_gated_order(sid, req.cell, req.order_id, req.approve)
 
-    @app.post("/api/sessions/{sid}/roe/change")
+    @app.post("/api/sessions/{sid}/roe/change", dependencies=[Depends(_finite_json_guard_open)])
     def issue_roe_change(sid: str, req: RoeChangeRequest) -> Ack:
         """IP-1270 (FR-3440) — a live, logged mid-session ROE-flag change; White-Cell-only
         (checked inside SessionManager/OrderSystem)."""
@@ -807,14 +862,14 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=404, detail="no recovery state (fog/ownership/no bus)")
         return r
 
-    @app.post("/api/sessions/{sid}/recovery/{cell}/{asset}")
+    @app.post("/api/sessions/{sid}/recovery/{cell}/{asset}", dependencies=[Depends(_finite_json_guard_open)])
     def begin_recovery(sid: str, cell: str, asset: str, req: RecoveryRequest) -> dict:
         """Schedule the multi-pass safe-mode recovery chain over command-uplink windows."""
         _require(sid); _reject_observer(cell)
         return api.begin_recovery(sid, cell, asset, req.via)
 
     # ---- SSN (mock Space Surveillance Network) -------------------------------
-    @app.post("/api/sessions/{sid}/ssn/{cell}/request")
+    @app.post("/api/sessions/{sid}/ssn/{cell}/request", dependencies=[Depends(_finite_json_guard_open)])
     def ssn_submit(sid: str, cell: str, body: SSNRequestBody) -> dict:
         """Submit an SSN collection request — accepted (scheduled) or FAILED with reason."""
         _require(sid); _reject_observer(cell)
@@ -828,7 +883,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.list_ssn_requests(sid, cell)
 
-    @app.post("/api/sessions/{sid}/ssn/{cell}/cancel")
+    @app.post("/api/sessions/{sid}/ssn/{cell}/cancel", dependencies=[Depends(_finite_json_guard_open)])
     def ssn_cancel(sid: str, cell: str, body: SSNCancelBody) -> Ack:
         _require(sid); _reject_observer(cell)
         ok = api.cancel_ssn_request(sid, cell, body.request_id)
@@ -852,7 +907,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.pending_injects(sid)
 
-    @app.post("/api/sessions/{sid}/injects/{handle}/cancel")
+    @app.post("/api/sessions/{sid}/injects/{handle}/cancel", dependencies=[Depends(_inject_finite_guard)])
     def inject_cancel(sid: str, handle: str, cell: Optional[str] = None) -> Ack:
         _require(sid)
         if cell != "white":
@@ -862,7 +917,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=400, detail=ack.reason)
         return ack
 
-    @app.post("/api/sessions/{sid}/injects/{handle}/edit")
+    @app.post("/api/sessions/{sid}/injects/{handle}/edit", dependencies=[Depends(_inject_finite_guard)])
     def inject_edit(sid: str, handle: str, req: InjectEditRequest, cell: Optional[str] = None) -> Ack:
         _require(sid)
         if cell != "white":
@@ -1057,6 +1112,8 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             r = api.playback_advance(sid, req.dt_s, seat=cell)
         except PlaybackSeatRefused as exc:
             raise HTTPException(status_code=403, detail=str(exc))
+        except ValueError as exc:          # IP-1082 (F2) — an advance that overflows is a 400, never a 500
+            raise HTTPException(status_code=400, detail=str(exc))
         if r is None:
             raise HTTPException(status_code=404, detail="no playback session — call .../playback/start first")
         return r
@@ -1073,7 +1130,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=404, detail="no playback session — call .../playback/start first")
         return r
 
-    @app.post("/api/sessions/{sid}/aar/playback/viewpoint")
+    @app.post("/api/sessions/{sid}/aar/playback/viewpoint", dependencies=[Depends(_playback_finite_guard)])
     def playback_set_viewpoint(sid: str, req: PlaybackViewpointRequest, cell: Optional[str] = None) -> Ack:
         """Design Decision 1 — a viewpoint switch continues from the same simulated moment.
         IP-1077 — White any viewpoint, a player only its own cell; else 403."""

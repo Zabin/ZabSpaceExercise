@@ -1083,7 +1083,10 @@ class InProcessSession:
             pb = self._playbacks.get(session)
             if pb is None:
                 return Ack(ok=False, reason="no_playback_session")
-            pb.set_speed(speed)
+            try:
+                pb.set_speed(speed)
+            except ValueError as exc:          # IP-1082 — a refused speed leaves the playback unchanged
+                return Ack(ok=False, reason=str(exc))
             return Ack(ok=True)
 
     # -- competency assessment (IP-2010) ----------------------------------------

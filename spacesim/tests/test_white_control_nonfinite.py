@@ -186,38 +186,64 @@ def test_an_unknown_session_is_still_404_before_the_seat_and_value_checks():
 
 
 # -- the route table pins the shared check ---------------------------------------------------------
+GUARDS = {"_finite_json_guard", "_finite_json_guard_open", "_inject_finite_guard", "_playback_finite_guard"}
+
+
 def _routes(app):
     return [r for r in app.routes if isinstance(r, APIRoute)
             and r.methods & {"POST", "PUT", "PATCH", "DELETE"}]
-
-
-def _is_white_control(route: APIRoute) -> bool:
-    return "_require_white(" in inspect.getsource(route.endpoint)
 
 
 def _guards(route: APIRoute) -> set[str]:
     return {getattr(d.call, "__name__", "") for d in route.dependant.dependencies}
 
 
+def _url(route: APIRoute, sid: str) -> str:
+    path = route.path.replace("{sid}", sid)
+    for k, v in (("cell", "blue"), ("asset", "x"), ("handle", "x"), ("asset_id", "x")):
+        path = path.replace("{" + k + "}", v)
+    return path
+
+
 @pytest.mark.verifies("NFR-1600", "FR-4330")
-def test_every_white_control_route_in_the_live_route_table_has_the_shared_non_finite_check():
+def test_every_mutating_route_in_the_live_route_table_has_a_shared_non_finite_guard():
+    """Derived from the live table, not from source text: a new POST/PUT/PATCH/DELETE route without
+    one of the shared guards fails here (review F1: the pending-inject routes had been missed)."""
     _, app = _client()
-    white = [r for r in _routes(app) if _is_white_control(r)]
-    names = {r.path.rsplit("/", 1)[-1] for r in white}
-    # the discovery is not vacuous: the routes the package names are all found
-    assert {"clock", "param", "step", "advance", "rewind", "undo", "start", "inject"} <= names, names
-    missing = sorted(f"{sorted(r.methods)[0]} {r.path}" for r in white if "_finite_json_guard" not in _guards(r))
-    assert not missing, f"White control routes without the shared non-finite check: {missing}"
+    routes = _routes(app)
+    names = {r.path.rsplit("/", 1)[-1] for r in routes}
+    assert {"clock", "param", "step", "advance", "rewind", "undo", "start", "inject", "edit", "cancel",
+            "speed", "order", "load_save"} <= names, names          # the discovery is not vacuous
+    missing = sorted(f"{sorted(r.methods)[0]} {r.path}" for r in routes if not (_guards(r) & GUARDS))
+    assert not missing, f"mutating routes without a shared non-finite guard: {missing}"
 
 
-@pytest.mark.verifies("FR-7330", "NFR-1600")
-def test_the_playback_value_routes_have_the_shared_check_too():
-    _, app = _client()
-    pb = [r for r in _routes(app) if "/aar/playback/" in r.path and r.path.rsplit("/", 1)[-1] in
-          ("start", "advance", "speed")]
-    assert len(pb) == 3
-    missing = [r.path for r in pb if "_playback_finite_guard" not in _guards(r)]
-    assert not missing, missing
+@pytest.mark.verifies("NFR-1600", "FR-4330")
+def test_a_nan_in_the_body_of_any_mutating_route_is_a_400_never_a_500():
+    """Behavioural sweep over the same live table: every mutating route, White seat, a body carrying
+    NaN, a real session where the path has one. The guard answers before body validation."""
+    c, app = _client()
+    sid = _started(c)
+    bad = []
+    for r in _routes(app):
+        for body in ('{"x": NaN}', '{"a": [1, {"b": -Infinity}]}'):
+            resp = c.request(sorted(r.methods)[0], _url(r, sid), content=body, headers=JSON, params=W)
+            if resp.status_code != 400:
+                bad.append((sorted(r.methods)[0], r.path, body, resp.status_code))
+    assert not bad, bad
+
+
+@pytest.mark.verifies("NFR-1600", "FR-4310")
+def test_pending_inject_edit_and_cancel_refuse_nan_after_the_seat_rule():
+    c, app = _client()
+    sid = _started(c)
+    for route in ("injects/white-1/edit", "injects/white-1/cancel"):
+        for lit in NONFINITE:
+            _assert_refused(_post(c, sid, route, f'{{"at_sim_t": {lit}}}'))
+        r = _post(c, sid, route, '{"at_sim_t": NaN}', params={"cell": "blue"})
+        assert r.status_code == 403 and "only White Cell may" in r.json()["detail"]
+    _assert_refused(_post(c, sid, "injects/white-1/edit", '{"effects": [{"v": NaN}]}'))
+    assert _post(c, "nope", "injects/white-1/edit", '{"at_sim_t": NaN}').status_code == 404
 
 
 # -- in-process backstop -----------------------------------------------------------------------------
@@ -274,3 +300,72 @@ def test_playback_never_reports_a_moment_beyond_the_recorded_span(how, viewpoint
     now_in_state = st.json().get("now")
     if now_in_state is not None:
         assert start <= now_in_state <= live
+
+
+# -- F2: playback speed range and overflow ------------------------------------------------------------
+@pytest.mark.verifies("FR-7330", "NFR-1600")
+@pytest.mark.parametrize("speed", ["1e308", "-1e308", "10001", "10000.0001"])
+def test_an_absurd_playback_speed_is_a_400_and_leaves_the_playback_unchanged(speed):
+    c, app = _client()
+    sid = _started(c)
+    _assert_refused(_post(c, sid, "aar/playback/start", f'{{"speed": {speed}}}'))
+    assert _post(c, sid, "aar/playback/start", '{"speed": 2}').status_code == 200
+    _assert_refused(_post(c, sid, "aar/playback/speed", f'{{"speed": {speed}}}'))
+    assert app.state.api._playbacks[sid].speed == 2.0
+
+
+@pytest.mark.verifies("FR-7330", "NFR-1600")
+def test_playback_speed_at_the_ceiling_is_accepted_and_an_overflowing_advance_is_a_400():
+    c, app = _client()
+    sid = _started(c)
+    assert _post(c, sid, "step", '{"dt_sim_s": 600}').status_code == 200
+    assert _post(c, sid, "aar/playback/start", '{"speed": 10000}').status_code == 200
+    _assert_refused(_post(c, sid, "aar/playback/advance", '{"dt_s": 1e308}'))      # product overflows
+    assert _post(c, sid, "aar/playback/speed", '{"speed": 1}').status_code == 200
+    r = _post(c, sid, "aar/playback/advance", '{"dt_s": 1e308}')                   # finite: clamps to the span
+    assert r.status_code == 200
+    assert c.get(f"/api/sessions/{sid}/aar/playback/state", params=W).status_code == 200
+
+
+@pytest.mark.verifies("FR-7330", "FR-4310")
+def test_an_out_of_range_speed_from_a_refused_seat_is_still_403():
+    c, app = _client()
+    sid = _started(c)
+    assert _post(c, sid, "aar/playback/start", '{"viewpoint": "truth"}').status_code == 200
+    assert _post(c, sid, "aar/playback/speed", '{"speed": 1e308}', params={"cell": "blue"}).status_code == 403
+
+
+# -- F3: the ceiling is pinned to its literal value ---------------------------------------------------
+@pytest.mark.verifies("NFR-1600", "NFR-1100")
+def test_the_ceilings_are_pinned_to_their_documented_literal_values():
+    from spacesim.session.aar import PlaybackSession
+    assert SessionManager.MAX_CLOCK_RATE == 10_000          # Design Decision 3; widening needs a new decision
+    assert PlaybackSession.MAX_SPEED == 10_000.0
+    c, app = _client()
+    sid = _started(c)
+    assert _post(c, sid, "clock", '{"running": true, "rate": 10000}').status_code == 200
+    _assert_refused(_post(c, sid, "clock", '{"running": true, "rate": 10000.0001}'))
+    _post(c, sid, "clock", '{"running": false}')
+
+
+# -- F4: a boolean is not a number ---------------------------------------------------------------------
+@pytest.mark.verifies("NFR-1600", "FR-4330")
+@pytest.mark.parametrize("route,body", [
+    ("clock", '{"running": true, "rate": true}'), ("step", '{"dt_sim_s": true}'),
+    ("advance", '{"t": true}'), ("rewind", '{"t": false}'), ("undo", '{"n": true}'),
+    ("aar/playback/start", '{"speed": true}'), ("aar/playback/speed", '{"speed": true}'),
+    ("aar/playback/advance", '{"dt_s": true}')])
+def test_a_boolean_in_a_numeric_field_is_a_400(route, body):
+    c, app = _client()
+    sid = _started(c)
+    assert _post(c, sid, "aar/playback/start", '{"speed": 1}').status_code == 200
+    before = _state(app, sid)
+    _assert_refused(_post(c, sid, route, body))
+    assert _state(app, sid) == before
+
+
+@pytest.mark.verifies("NFR-1600")
+def test_a_paused_clock_request_with_a_real_boolean_running_flag_still_works():
+    c, app = _client()
+    sid = _started(c)
+    assert _post(c, sid, "clock", '{"running": false}').status_code == 200

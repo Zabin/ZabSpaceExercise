@@ -8,6 +8,7 @@ two event logs and diff the outcomes), and an exportable campaign summary.
 
 from __future__ import annotations
 
+import math
 from bisect import bisect_right
 from collections.abc import Iterable, Iterator
 from typing import Optional
@@ -185,12 +186,16 @@ class PlaybackSession:
     read-only like `state_at`/`state_at_time` themselves — never disturbs the live session.
     """
 
+    # IP-1082 (F2, NFR-1600) — the playback speed range: |speed| <= MAX_SPEED. No range was shipped;
+    # this matches the clock-rate ceiling (SessionManager.MAX_CLOCK_RATE), well above any hand-driven use.
+    MAX_SPEED = 10_000.0
+
     def __init__(self, mgr, viewpoint: str = "truth", speed: float = 1.0,
                  start_t: Optional[int] = None) -> None:
         self.mgr = mgr
         self._validate_viewpoint(viewpoint)
         self.viewpoint = viewpoint
-        self.speed = self._finite("speed", speed)
+        self.speed = self._speed(speed)
         self.t = start_t if start_t is not None else mgr.ctx.start_epoch
 
     def _validate_viewpoint(self, viewpoint: str) -> None:
@@ -212,8 +217,7 @@ class PlaybackSession:
     def set_speed(self, speed: float) -> None:
         # IP-1082 (FR-7330) — the route layer refuses a non-finite value with a 400; this is the
         # backstop for a non-HTTP caller. Nothing changes on a refusal.
-        sp = self._finite("speed", speed)
-        self.speed = sp
+        self.speed = self._speed(speed)
 
     @staticmethod
     def _finite(name: str, value) -> float:
@@ -221,6 +225,12 @@ class PlaybackSession:
         if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
             raise ValueError(f"playback {name} must be a finite number (got {value!r})")
         return float(value)
+
+    def _speed(self, speed) -> float:
+        sp = self._finite("speed", speed)
+        if abs(sp) > self.MAX_SPEED:
+            raise ValueError(f"playback speed {sp!r} is outside [-{self.MAX_SPEED:g}, {self.MAX_SPEED:g}]")
+        return sp
 
     def _clamp(self) -> None:
         """IP-1082 (FR-7330, review L-2) — keep the cursor inside the recorded span
@@ -235,7 +245,11 @@ class PlaybackSession:
         state at the new moment. Read-only: never touches ``mgr.sim``'s own clock/eventlog."""
         dt = self._finite("dt_s", dt_s)
         self._clamp()
-        self.t += int(dt * self.speed * 1_000_000)
+        delta_s = dt * self.speed
+        if not math.isfinite(delta_s):
+            raise ValueError(f"playback advance dt_s={dt_s!r} at speed {self.speed!r} is out of range")
+        span_us = self.mgr.MAX_SAVE_SPAN_US          # a larger step clamps to the span anyway
+        self.t += int(max(-span_us, min(span_us, delta_s * 1_000_000)))
         self._clamp()
         return self.state()
 

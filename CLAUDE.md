@@ -554,11 +554,14 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `IP-1103` (FR-7230): `MAX_SAVE_SPAN_US` and `_check_final_time_span` refuse a save whose `final_time`
   is more than 366 days past its start.
 - **`IP-1082` (NFR-1600, FR-4330, FR-7330) on `server.py` / `manager.py` / `aar.py`:** `ui_web/server.py`
-  `_refuse_nonfinite`/`_first_nonfinite` are the one place the non-finite policy lives; the
-  `_finite_json_guard` dependency (seat rule first: 404, then 403, then the check) is on every route that
-  calls `_require_white`, and `_playback_finite_guard` is on `aar/playback/{start,advance,speed}` (a seat
-  `playback_seat_decision` refuses still gets its 403); a `NaN`/`Infinity` anywhere in the JSON body is a
-  400 naming the field. A route-table test pins both. `SessionManager.MAX_CLOCK_RATE` (10,000) bounds
+  `_refuse_nonfinite`/`_first_nonfinite` are the one place the non-finite policy lives; every
+  mutating route in the live route table carries a shared guard (`_finite_json_guard` on White controls:
+  404, then 403, then the check; `_inject_finite_guard` on pending-inject edit/cancel; `_finite_json_guard_open`
+  on the rest; `_playback_finite_guard` on `aar/playback/*`, where a seat `playback_seat_decision` refuses
+  still gets its 403); a `NaN`/`Infinity` anywhere in the JSON body, or a boolean in a numeric field
+  (`rate`, `t`, `n`, `dt_sim_s`, `speed`, `dt_s`), is a 400 naming the field. A route-table test derived
+  from the live table pins them. `PlaybackSession.MAX_SPEED` (10,000) bounds `|speed|` and an
+  overflowing advance is a 400. `SessionManager.MAX_CLOCK_RATE` (10,000) bounds
   `set_clock` to `(0, MAX_CLOCK_RATE]` when running (any rate must be finite), and
   `_require_finite` backs `step`/`advance_to`/`rewind_to`/`undo_last` for non-HTTP callers; a refused
   `set_clock` is `Ack(ok=False)` from `InProcessSession` and a 400 at the route. `PlaybackSession`
