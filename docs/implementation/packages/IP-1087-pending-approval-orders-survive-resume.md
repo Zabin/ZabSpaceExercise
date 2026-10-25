@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1087
 > **Version:** 1.0
-> **Status:** READY — authored 2026-10-25 by `07-implementation-planning` (release-push remediation pass 8). Every dependency is `VERIFIED`.
+> **Status:** ✅ VERIFIED — authored 2026-10-25 by `07-implementation-planning` (release-push remediation pass 8). Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive, recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256 (fix bugs before release; no new features) and the run #262 go-ahead, covers it: finding `M-2` of the unreviewed-packages integration review is a bug in the interaction of two `VERIFIED` packages. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [IP-1270](IP-1270-effect-authorization-gating-and-live-roe.md), [IP-1101](IP-1101-self-contained-saves.md), [IP-1102](IP-1102-save-load-robustness.md), [IP-1103](IP-1103-save-validation-completion.md) (all `VERIFIED`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [`01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) ("Release-push remediation, pass 8"); source: [`integration-review-unreviewed-packages.md`](../../reviews/integration-review-unreviewed-packages.md) `M-2`.

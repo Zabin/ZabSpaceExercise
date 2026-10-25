@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1086
 > **Version:** 1.0
-> **Status:** READY — authored 2026-10-25 by `07-implementation-planning` (release-push remediation pass 8). Every dependency is `VERIFIED`.
+> **Status:** ✅ VERIFIED — authored 2026-10-25 by `07-implementation-planning` (release-push remediation pass 8). Every dependency is `VERIFIED`.
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive, recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256 (fix bugs before release; no new features) and the run #262 go-ahead, covers it: findings `H-3`, `M-1` and `M-3` of the unreviewed-packages integration review are bugs in `VERIFIED` packages (a 500 on the headline use of the Creator and bulk import). Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [IP-1310](IP-1310-load-time-vignette-validation.md), [IP-1190](IP-1190-bulk-tle-omm-import.md), [IP-1173](IP-1173-vignette-creator-draft-session.md), [IP-1174](IP-1174-vignette-creator-ui-surfaces.md), [IP-1180](IP-1180-external-vignette-directories.md), [IP-1101](IP-1101-self-contained-saves.md), [IP-1200](IP-1200-save-as-scenario.md) (all `VERIFIED`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [`01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) ("Release-push remediation, pass 8"); source: [`integration-review-unreviewed-packages.md`](../../reviews/integration-review-unreviewed-packages.md) `H-3`, `M-1`, `M-3`.

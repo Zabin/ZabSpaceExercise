@@ -4,7 +4,7 @@
 > **Version:** 1.2 *(2026-10-25, `07-implementation-planning`: authorized, re-validated against the
 > current tree and made build-ready — see "Re-validation against the tree of 2026-10-25" below. v1.1
 > corrected the per-verb `DEFENSE_VERBS` classification; the classification itself is unchanged.)*
-> **Status:** 🟢 READY *(authorized 2026-10-25 — MSTR-006 §3 go-ahead given by the project owner and
+> **Status:** ✅ VERIFIED *(authorized 2026-10-25 — MSTR-006 §3 go-ahead given by the project owner and
 > recorded at pipeline-journal run #262: "authorize `IP-1160` now"; `FEAT-3500` stays in Release 1.
 > Every dependency package is `VERIFIED`, so the "`READY` means fully specified and every dependency
 > `VERIFIED`" rule is met.)*
