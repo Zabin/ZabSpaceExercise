@@ -29,7 +29,8 @@ the field is a rehearsal of crew discipline, not a lock.
    It is remembered for this session in your browser.
 3. Choose your **Actor** (the crewed satellite). The **Action** list now offers only the bus or payload
    commands your seat covers; commands for the other role are not listed. Base actions such as
-   Maneuver, Observe, Downlink are not role-gated and stay listed.
+   Maneuver, Observe, Downlink are not role-gated and stay listed. If your name is not bound to that
+   satellite, only those base actions are offered.
 4. Compose the command as usual. The green/red preview line under the form checks your seat too.
 
 **What a refusal looks like.** The preview shows a red line, and Issue is disabled:

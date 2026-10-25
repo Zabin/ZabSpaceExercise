@@ -29,7 +29,7 @@ does not write `roles_needed`; add it to the saved YAML). Each entry names an as
 2. Type the **Seat** name (letters, digits, `-`, `_`, `.`, space; up to 64 characters), the **Asset /
    constellation** (an asset id or a group name from the vignette), and choose **Role**: **Both**,
    **Bus** or **Payload**. Press **Assign**. If either text box is empty nothing happens.
-3. Read the line under the button, the **staffing report**. It lists every mandatory requirement
+3. Read the line under the button, the **staffing report** (it shows `—` until the first time you press **Assign** or **Start**). It lists every mandatory requirement
    still uncovered, one per line as `unmet: ISR-EO-1 / bus`, or says `fully staffed (or this vignette
    declares no roles_needed)`. A `both` assignment covers a `bus` or `payload` requirement.
 4. Press **▶ Start**. If anything mandatory is still unmet, a pop-up shows `unstaffed mandatory

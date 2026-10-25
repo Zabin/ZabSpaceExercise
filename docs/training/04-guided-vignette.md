@@ -7,7 +7,7 @@ that walks each cell through the core loop. Both sides have a **six-step** seque
 exact actor, action, parameters, *when* to issue, and the expected result. Every step is the real
 order the engine executes (these steps are verified by `spacesim/tests/test_training.py`).
 
-**Set up:** pick **Training: Basics**, **Seed = 1**, **Load** → **Start**. The order of battle:
+**Set up:** in **📋 Session ▾** pick **Training: Basics**, **Seed = 1**, **Load** → **▶ Start**. The order of battle:
 Blue `ISR-EO-1` (LEO imager, modem vulnerability, fuel) with `GS-TRN` ground station and the
 `RADAR-TRN` sensor; Red `RED-TGT` (a satellite Blue images), `JAM-TRN` (downlink jammer co-located
 with the station), `RED-CYBER`, `RED-RDR`, and `RED-ASAT` (kinetic, off by default).
