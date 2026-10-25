@@ -43,13 +43,15 @@ window.Creator = (function () {
 
   async function addTle() {
     if (!ensureDraft()) return;
-    await api.post(`/api/sessions/${sid}/force/tle`, {
+    const ack = await api.post(`/api/sessions/${sid}/force/tle`, {
       id: $("creator-tle-id").value.trim(),
       line1: $("creator-tle-l1").value.trim(),
       line2: $("creator-tle-l2").value.trim(),
       owner: $("creator-tle-owner").value,
       kind: $("creator-tle-kind").value.trim() || "satellite",
     });
+    // IP-1086 — a refused TLE (stale epoch, bad lines) is an Ack(ok=false), not an HTTP error: show why.
+    $("creator-save-result").textContent = ack && ack.ok === false ? `refused: ${ack.reason}` : "TLE added";
     await refreshAssetList();
   }
 
@@ -66,13 +68,14 @@ window.Creator = (function () {
 
   async function addGroundAsset() {
     if (!ensureDraft()) return;
-    await api.post(`/api/sessions/${sid}/force/ground`, {
+    const ack = await api.post(`/api/sessions/${sid}/force/ground`, {
       id: $("creator-gnd-id").value.trim(),
       lat_deg: parseFloat($("creator-gnd-lat").value),
       lon_deg: parseFloat($("creator-gnd-lon").value),
       owner: $("creator-gnd-owner").value,
       kind: $("creator-gnd-kind").value.trim() || "ground_station",
     });
+    $("creator-save-result").textContent = ack && ack.ok === false ? `refused: ${ack.reason}` : "asset added";
     await refreshAssetList();
   }
 

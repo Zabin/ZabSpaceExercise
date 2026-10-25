@@ -759,6 +759,9 @@ class SessionManager:
                           location=GeoPoint(lat_deg=lat_deg, lon_deg=lon_deg))
         except Exception as exc:
             return False, f"invalid ground asset: {exc}"
+        problems = self._authoring_problems(asset)   # IP-1086 — same id-charset rule as every path
+        if problems:
+            return False, f"invalid ground asset {asset_id!r}: " + "; ".join(problems)
         self.world.assets[asset_id] = asset
         self.sim._initial_state = self.world.model_dump()
         return True, ""
