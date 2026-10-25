@@ -156,10 +156,41 @@ const VERB_ROLE = {
   "pnt.flex_power": "payload", "pnt.set_health_flag": "payload",
   "def.patch_cyber": "bus", "def.frequency_hop": "bus",
   "def.harden": "payload", "def.set_threat_warning": "bus", "def.maneuver_evade": "bus",
+  // IP-1160 — pinned to the server's ROLE_SCOPE_BY_VERB by test_role_scope_console_static.py.
+  "pnt.set_integrity": "payload", "def.escort_posture": "bus", "def.disperse": "bus",
+  "def.set_deception_mode": "payload",
   "satcom.set_frequency_plan": "payload",
   "sda.task_search": "sda", "sda.task_track": "sda", "sda.task_characterize": "sda",
 };
 let ROLE_FILTER = "all";
+
+// IP-1160 (FR-3510) — the OPERATOR seat (a Role Assignment key; NOT the console seat CELL) and the
+// server's scope for it. Empty seat = no gate = today's full command list. Display filter only:
+// the server's gate (FR-3520) is the control and rejects an out-of-scope verb whether or not it was
+// offered. Remembered per session in localStorage (every access wrapped; the page works without it).
+let OP_SEAT = "", OP_SEAT_SID = null, ROLE_SCOPE = null;
+function opSeatKey() { return `op-seat-${SID}`; }
+function loadOpSeat() {
+  if (OP_SEAT_SID === SID) return;
+  OP_SEAT_SID = SID;
+  let v = ""; try { v = localStorage.getItem(opSeatKey()) || ""; } catch { /* storage blocked */ }
+  OP_SEAT = v; if ($("o-seat")) $("o-seat").value = v; ROLE_SCOPE = null;
+}
+function roleCovers(role, scope) { return role === "both" || role === scope; }
+async function refreshRoleScope() {
+  if (!SID) return;
+  if (!OP_SEAT) { const had = ROLE_SCOPE !== null; ROLE_SCOPE = null; return had; }
+  const next = await api.get(`/api/sessions/${SID}/roles/scope?seat=${encodeURIComponent(OP_SEAT)}`).catch(() => null);
+  const changed = JSON.stringify(next) !== JSON.stringify(ROLE_SCOPE);
+  ROLE_SCOPE = next;
+  return changed;
+}
+async function onOpSeatChange() {
+  OP_SEAT = ($("o-seat").value || "").trim();
+  try { localStorage.setItem(opSeatKey(), OP_SEAT); } catch { /* storage blocked */ }
+  await refreshRoleScope();
+  onActorChange();          // rebuild the Action list for the new seat; re-runs the dry-run preview
+}
 
 // Plain-language tooltips for the engine's own validator reason strings (00-BUILD-SPECIFICATION.md §16.9).
 // Keys mirror OrderSystem._validate verbatim so UI and engine never drift.
@@ -184,6 +215,9 @@ const REASON_TIPS = {
   invalid_param: "An order parameter is malformed or not a finite number — check the order's fields (or the JSON params box).",
   unknown_action: "Action not supported for this asset.",
   unknown_command: "Command verb not supported.",
+  // IP-1160 (FR-3520) — the operator seat's Role Assignment gate.
+  role_scope_not_assigned: "This operator seat is not assigned to that asset — ask White Cell to bind it, or clear the Operator seat field.",
+  role_scope_out_of_scope: "That command belongs to the other role on this asset — your operator seat covers only its own role.",
   no_payload_for_verb: "This asset's payload can't run that command.",
   payload_unavailable: "Payload unavailable — bus is safed or power-red (clear that first).",
 };
@@ -626,11 +660,14 @@ function composeBody() {
   // most importantly, tasking a sensor at all (the "observe" action IS how custody gets built,
   // so its target can never come pre-populated from a track the operator doesn't have yet).
   const target = $("o-target-manual")?.value || $("o-target")?.value || null;
-  return { cell, actor, action, target, params };
+  const body = { cell, actor, action, target, params };
+  const seat = ($("o-seat")?.value || "").trim();     // IP-1160 — operator seat; omitted when empty
+  if (seat) body.seat = seat;
+  return body;
 }
 
 // Verbs offered for an asset: kind-based core actions + bus verbs for satellites + payload verbs by type.
-function actionsFor(a) {
+function actionsFor(a, id = a.id) {
   const acts = (ACTIONS_BY_KIND[a.kind] || ["observe"]).slice();
   if (a.kind === "satellite") {
     acts.push("eps.shed_load", "eps.restore_load", "eps.set_charge_mode",
@@ -652,9 +689,21 @@ function actionsFor(a) {
     if (a.payload === "pnt") acts.push("pnt.set_integrity");
     if ((a.cyber_vulns || []).length) acts.push("def.patch_cyber");      // defender's root-cause fix
   }
+  // IP-1160 (FR-3510): for a role-gated asset, offer a bus/payload/defense verb only when the
+  // operator seat is bound to it and the server's table puts the verb inside the binding's role.
+  // Base actions (jam/engage/observe/maneuver/downlink/cyber) are out of scope and stay offered.
+  let offered = acts;
+  if (ROLE_SCOPE && (ROLE_SCOPE.gated_assets || []).includes(id)) {
+    const bound = (ROLE_SCOPE.bound_assets || []).includes(id);
+    offered = acts.filter((v) => {
+      if (!v.includes(".")) return true;
+      const scope = (ROLE_SCOPE.verbs || {})[v];
+      return scope === undefined || (bound && roleCovers(ROLE_SCOPE.role, scope));
+    });
+  }
   // Role filter (§1.2): All shows everything; Bus/Payload/SDA narrow by VERB_ROLE.
-  if (ROLE_FILTER !== "all") return acts.filter((v) => (VERB_ROLE[v] || "bus") === ROLE_FILTER);
-  return acts;
+  if (ROLE_FILTER !== "all") return offered.filter((v) => (VERB_ROLE[v] || "bus") === ROLE_FILTER);
+  return offered;
 }
 
 // Plan-first "why can't I?" preview (P4 / §12): dry-run the composed order on every edit and
@@ -1091,7 +1140,7 @@ function onActorChange() {
   const id = $("o-actor").value, a = ASSETS[id] || {};
   $("actor-info").textContent = a.kind ? `${a.kind} · ${a.owner}${a.payload ? " · " + a.payload : ""}` : "";
   const prevAction = $("o-action").value;
-  $("o-action").innerHTML = actionsFor(a).map((x) => `<option>${x}</option>`).join("");
+  $("o-action").innerHTML = actionsFor(a, id).map((x) => `<option>${x}</option>`).join("");
   if (prevAction && [...$("o-action").options].some((o) => o.value === prevAction))
     $("o-action").value = prevAction;
   onActionChange(prevAction !== $("o-action").value);  // also repopulates target (owner + gating)
@@ -1480,6 +1529,11 @@ async function refresh() {
   renderObjectives(objectives);
   renderBrief();
 
+  // IP-1160 — pick up the remembered operator seat and any change to its assignment (White may
+  // bind it mid-session); a changed scope rebuilds the Action list below.
+  loadOpSeat();
+  const scopeChanged = await refreshRoleScope();
+  if (stale()) return;
   // Command menu: populate actor list (own assets + sensors that can act; network sensors excluded).
   const actorIds = assets.filter((a) => ACTIONS_BY_KIND[a.kind] && !a.network).map((a) => a.id);
   const prev = $("o-actor").value;
@@ -1488,6 +1542,8 @@ async function refresh() {
   if (prevList !== newList) {
     $("o-actor").innerHTML = actorIds.map((i) => `<option>${i}</option>`).join("");
     if (actorIds.includes(prev)) $("o-actor").value = prev;
+    onActorChange();
+  } else if (scopeChanged) {
     onActorChange();
   }
   // Tasking rail sensor picker (P-UI-6): own organic sensors + auto (network sensors are SSN-only).
@@ -2176,7 +2232,7 @@ async function openDrill(assetId) {
     const chips = params.map((p) =>
       `<span class="pchip ${p.status}" data-param="${p.id}" data-acronym="${(p.label || "").split(" ")[0]}">${p.label} ${p.value ?? "LOS"}` +
       ` <canvas class="spark" data-param="${p.id}" width="48" height="12"></canvas></span>`).join(" ");
-    const verbs = verbsForSubsystem(a, sub).map((v) =>
+    const verbs = verbsForSubsystem(a, sub, assetId).map((v) =>
       `<button class="vbtn" data-verb="${v}" data-actor="${assetId}">${v}</button>`).join(" ");
     return `<div class="sub"><b data-acronym="${sub.toUpperCase()}">${sub}</b> ${chips}${verbs ? `<div class="vbtns">${verbs}</div>` : ""}</div>`;
   }).join("");
@@ -2259,8 +2315,8 @@ const VERB_SUBSYSTEM = {
   "sda.task_search": "payload", "sda.task_track": "payload", "sda.task_characterize": "payload",
   "def.maneuver_evade": "propulsion",
 };
-function verbsForSubsystem(a, sub) {
-  return actionsFor(a).filter((v) => v.includes(".") && VERB_SUBSYSTEM[v] === sub);
+function verbsForSubsystem(a, sub, id) {
+  return actionsFor(a, id).filter((v) => v.includes(".") && VERB_SUBSYSTEM[v] === sub);
 }
 
 // Load a subsystem-card verb into the compose form and preview it (operator reviews, then Issues).
@@ -2330,6 +2386,7 @@ window.addEventListener("DOMContentLoaded", () => {
     refreshStaffingReport();
   };
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
+  if ($("o-seat")) $("o-seat").onchange = onOpSeatChange;      // IP-1160
   $("o-target").onchange = previewOrder; $("o-params").oninput = previewOrder;
   $("o-target-manual").oninput = previewOrder;
   $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);

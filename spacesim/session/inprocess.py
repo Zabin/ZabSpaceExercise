@@ -229,6 +229,11 @@ class InProcessSession:
         with self._locked_read(session) as mgr:
             return mgr.staffing_report()
 
+    def role_scope(self, session: str, seat: Optional[str]) -> dict:
+        """IP-1160 (FR-3510) — one operator seat's scope plus the global verb-scope table."""
+        with self._locked_read(session) as mgr:
+            return mgr.role_scope_for(seat)
+
     # -- time control ----------------------------------------------------------
     # IP-1173 (FR-5110) — a draft session must never advance its clock (it produces no event
     # log; determinism has nothing to test it against). Rejected here, at the InProcessSession
@@ -367,15 +372,15 @@ class InProcessSession:
                     self._inject_library_cache = []
         return list(self._inject_library_cache)
 
-    def issue_order(self, session: str, cell: str, order: Order) -> OrderAck:
+    def issue_order(self, session: str, cell: str, order: Order, seat: Optional[str] = None) -> OrderAck:
         with self._locked(session) as mgr:
-            return mgr.issue_order(cell, order)
+            return mgr.issue_order(cell, order, seat=seat)
 
-    def validate_order(self, session: str, cell: str, order: Order) -> OrderAck:
+    def validate_order(self, session: str, cell: str, order: Order, seat: Optional[str] = None) -> OrderAck:
         # dry-run is read-only but still touches order-system state; lock anyway for safety.
         with self._locked(session) as mgr:
             mgr._catch_up_locked()
-            return mgr.validate_order(cell, order)
+            return mgr.validate_order(cell, order, seat=seat)
 
     def list_orders(self, session: str, cell: str) -> list:
         with self._locked_read(session) as mgr:

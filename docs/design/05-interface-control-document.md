@@ -222,6 +222,12 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
   command-kind activities (GDS-04 §1.6).
 - **Preconditions:** A valid Role Assignment binding the operator's seat to the targeted Asset/
   Sensor (GDS-04 §1.10); for engagement intents, a weapons-quality Track (GDS-04 §1.9).
+  *(IP-1160, `FR-3510`/`FR-3520`, ADS-3500 Decision 1.)* The operator names its **operator seat** —
+  the Role Assignment key, not the console seat (`cell`) — in an optional `seat` field on the
+  order and dry-run calls. When the field is present and a `roles_needed` entry covers the targeted
+  Asset, a bus/payload/defense command is offered and accepted only inside the seat's binding;
+  omitting the field skips the gate (client-asserted seat, LAN trust model: a rejection rule, not
+  authentication).
 - **Postconditions:** A Planned Activity is created in `DRAFT`/`PLANNED` state (GDS-04 §1.7
   lifecycle); execution and its resulting Effect/Track update happen later, gated by the window.
 - **Error handling:** Rejections (ownership/window/resources/ROE/track-gate failures) are returned
@@ -275,6 +281,12 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Direction:** Bidirectional (call/response).
 - **Frequency/timing:** Every operator/White-Cell action and every view read goes through this seam.
 - **Preconditions:** None beyond a constructed Session object.
+- **Operator seat (IP-1160, `FR-3520`):** `issue_order` and `validate_order` take an optional
+  `seat` (operator seat; see INT-0004). A role-scope refusal is a normal rejected `OrderAck`
+  (`role_scope_not_assigned` / `role_scope_out_of_scope`) returned before the order system is
+  reached — no order is registered and nothing is logged. One additive read,
+  `role_scope(session, seat)` (`GET /api/sessions/{sid}/roles/scope?seat=`, no cell), returns the
+  named seat's binding, the role-gated assets and the global verb-scope table.
 - **Postconditions:** Every mutating call is logged to the `EventLog` (C1); every read is
   fog-of-war-filtered for cell-scoped calls, unfiltered for the documented no-cell god-view
   exception (ADR-0004, ADR-0015).
@@ -868,6 +880,7 @@ the changes landed in *this* document, across both passes.
 | 3 (2026-10-17, run #161) | `BL-0092` | INT-0011, INT-0013 | File-based TLE/OMM import (`FR-5220`) assigned to INT-0006 + INT-0011; INT-0013 scoped to the Space-Track network fetch. |
 | 3 | `BL-0093` | INT-0014 | Shape generalized to single-point, sampled-series and paced reads; the two "stretched shape" notes superseded. |
 | 3 | — | Header metadata | Status line notes the third pass. |
+| IP-1160 (2026-10-25) | `FR-3510`/`FR-3520`, ADS-3500 Decision 1 | INT-0004, INT-0006 | Added the optional operator `seat` to the order/dry-run calls and the read-only `role_scope` read; closes the staleness ADS-3500 flagged. |
 
 **Scope note (pass 2):** this pass reviewed the Strategic Review specifically for interface
 concerns — interface ownership, missing interfaces, data ownership, interface contracts, and

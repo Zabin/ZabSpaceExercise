@@ -116,6 +116,12 @@ def content(tmp_path_factory):
             lambda v, s: [_track("RED-OBJ", "blue", orbit_of(v, "red", "RED-OBJ"), s, False, 0.9)])
     variant("01-leo-isr-denial.yaml", "br-red-tracks-blue",
             lambda v, s: [_track("ISR-EO-1", "red", orbit_of(v, "blue", "ISR-EO-1"), s, True, 1.0)])
+    # IP-1160 — a role-gated variant: roles_needed covers the satellite (optional, so Start is not
+    # blocked); the tests bind operator seats through the White-only roles/assign route.
+    raw = yaml.safe_load((VIGNETTE_DIR / "01-leo-isr-denial.yaml").read_text(encoding="utf-8"))
+    raw["vignette"]["id"] = "br-role-gated"
+    raw["vignette"]["roles_needed"] = [{"asset_or_constellation": "ISR-EO-1", "role": "both", "mandatory": False}]
+    (ext / "br-role-gated.yaml").write_text(yaml.safe_dump(raw), encoding="utf-8")
     cfg = ext / "cfg.yaml"
     cfg.write_text(yaml.safe_dump({"content": {"external_vignette_dirs": [str(ext)]}}), encoding="utf-8")
     mp = pytest.MonkeyPatch()
@@ -707,4 +713,84 @@ def test_a_refused_toolbar_step_shows_its_reason_and_raises_no_page_error(consol
     c.page.click('button[data-step="60"]')
     c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent === ''")
     assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == clock["start_epoch"] + 60_000_000
+    assert c.errors == []
+
+
+# -- IP-1160 (FR-3510): role-scoped command list ---------------------------------------------------
+def _action_values(c):
+    return c.page.eval_on_selector_all("#o-action option", "els => els.map(e => e.value)")
+
+
+def _bind(c, seat, role):
+    r = c.http.post(f"/api/sessions/{c.sid}/roles/assign", params=W, json={
+        "cell": "white", "seat": seat, "asset_or_constellation": "ISR-EO-1", "role": role})
+    assert r.status_code == 200 and r.json()["ok"], r.text
+
+
+def _enter_seat(c, seat):
+    """Type an operator seat and wait for the scope fetch it triggers to land (non-empty seats)."""
+    c.page.fill("#o-seat", seat)
+    c.page.dispatch_event("#o-seat", "change")
+    c.page.wait_for_function(
+        f"({seat!r} === '' && ROLE_SCOPE === null) || (ROLE_SCOPE && ROLE_SCOPE.seat === {seat!r})")
+    c.settle()
+
+
+def _role_console(console):
+    c = console("br-role-gated")
+    c.seat("blue")
+    c.page.select_option("#o-actor", "ISR-EO-1")
+    c.settle()
+    return c
+
+
+@pytest.mark.verifies("FR-3510", "NFR-2840")
+def test_21_the_action_list_follows_the_operator_seats_role(console):
+    c = _role_console(console)
+    _bind(c, "bus-op", "bus"); _bind(c, "pl-op", "payload"); _bind(c, "all-op", "both")
+    _enter_seat(c, "bus-op")
+    c.page.wait_for_function("![...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    bus = _action_values(c)
+    assert "eps.shed_load" in bus and "def.frequency_hop" in bus and "downlink" in bus
+    assert not [v for v in bus if v.startswith("isr.") or v == "def.harden"]
+    _enter_seat(c, "pl-op")
+    c.page.wait_for_function("[...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    pl = _action_values(c)
+    assert "isr.collect_now" in pl and "def.harden" in pl and "downlink" in pl
+    assert not [v for v in pl if v.startswith(("eps.", "adcs.", "cdh.")) or v == "def.frequency_hop"]
+    _enter_seat(c, "all-op")
+    c.page.wait_for_function("[...document.querySelectorAll('#o-action option')].some(o => o.value === 'eps.shed_load')"
+                             " && [...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    assert {"eps.shed_load", "isr.collect_now", "def.harden", "def.frequency_hop"} <= set(_action_values(c))
+    assert c.errors == []
+
+
+@pytest.mark.verifies("FR-3510", "NFR-2840")
+def test_22_with_the_seat_field_empty_the_list_is_the_full_list(console):
+    c = _role_console(console)
+    full = _action_values(c)
+    assert {"eps.shed_load", "isr.collect_now", "def.harden"} <= set(full)
+    _bind(c, "bus-op", "bus")
+    _enter_seat(c, "bus-op")
+    c.page.wait_for_function("![...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    _enter_seat(c, "")
+    c.page.wait_for_function("[...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    assert _action_values(c) == full
+    assert c.errors == []
+
+
+@pytest.mark.verifies("FR-3510", "NFR-2840")
+def test_23_a_verb_outside_the_seats_scope_disables_issue_with_the_role_reason_before_any_send(console):
+    c = _role_console(console)
+    _bind(c, "bus-op", "bus")
+    _enter_seat(c, "bus-op")
+    c.page.wait_for_function("![...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    # The list no longer offers the payload verb; force it into the control the way a hand-edited
+    # page would, so the dry-run (which does not trust the list) is what answers.
+    c.page.evaluate("""() => { const s = document.getElementById('o-action');
+        s.add(new Option('isr.collect_now')); s.value = 'isr.collect_now'; s.dispatchEvent(new Event('change')); }""")
+    c.settle()
+    c.page.wait_for_function("document.getElementById('issue').disabled")
+    assert "other role" in c.page.inner_text("#o-preview")
+    assert c.orders("blue") == 0                       # nothing was issued to learn this
     assert c.errors == []

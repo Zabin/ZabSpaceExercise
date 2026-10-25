@@ -17,6 +17,7 @@ from spacesim.content.vignette import Vignette, build_world, evaluate_objectives
 from spacesim.engine import telemetry
 from spacesim.engine.access import AccessProvider, COMMAND_UPLINK, TELEMETRY_DOWNLINK
 from spacesim.engine.bus import enter_safe_mode, exit_safe_mode
+from spacesim.engine.buscommands import BUS_VERBS, PAYLOAD_VERBS
 from spacesim.engine.busmodel import BusSystem
 from spacesim.engine.custody import Track
 from spacesim.engine.entities import Asset
@@ -31,6 +32,18 @@ from spacesim.session.cells import CellController
 from spacesim.session.scene import build_scene
 
 BUS_TICK_PERIOD_S = 300.0
+
+# IP-1160 (FR-3510/FR-3520, ADS-3500 §3) — which operator role a bus/payload/defense verb belongs to.
+# There is no third "defense" scope: every verb is `bus` or `payload`. `BUS_VERBS`/`PAYLOAD_VERBS`
+# are imported, not copied; the eight `DEFENSE_VERBS` members are each named once (six bus, two
+# payload). The partition against `COMMAND_VERBS` is pinned by a test, not an import-time assert.
+ROLE_SCOPE_BY_VERB: dict[str, str] = {
+    **{v: "bus" for v in BUS_VERBS},
+    **{v: "bus" for v in ("def.frequency_hop", "def.patch_cyber", "def.set_threat_warning",
+                          "def.maneuver_evade", "def.escort_posture", "def.disperse")},
+    **{v: "payload" for v in PAYLOAD_VERBS},
+    **{v: "payload" for v in ("def.harden", "def.set_deception_mode")},
+}
 
 # IP-1063 (BL-0129/BL-0188) — the inject effect types `SessionManager._apply_inject_effects`
 # dispatches. Extend this (and `_INJECT_REQUIRED_KEYS`) alongside that dispatch: an effect type
@@ -296,6 +309,57 @@ class SessionManager:
     def _role_covers(assigned: str, required: str) -> bool:
         """A "both" assignment covers any requirement; otherwise the roles must match exactly."""
         return assigned == "both" or assigned == required
+
+    # -- role-scoped command enforcement (IP-1160, FR-3510/FR-3520) -------------------------------
+    # "seat" here is the OPERATOR seat (the key of ``role_assignments``), not the console seat
+    # (``cell``). It is client-asserted like every seat in the LAN trust model: omitting it skips
+    # the gate; this adds a structural rejection rule, not authentication.
+    @staticmethod
+    def _entry_covers(name: str, asset) -> bool:
+        """A roles_needed entry / a binding names an asset by its id or by its ``group``."""
+        return name == asset.id or (asset.group is not None and name == asset.group)
+
+    def _roles_needed_covers(self, asset) -> bool:
+        return any(self._entry_covers(r.asset_or_constellation, asset) for r in self.vignette.roles_needed)
+
+    def role_scope_check(self, seat: Optional[str], order: Order) -> Optional[str]:
+        """Pure. A reason code if this operator ``seat`` may not send ``order``, else ``None``.
+        Gate applies only to a ``command`` (bus/payload/defense verb) on a known asset that some
+        ``roles_needed`` entry covers, and only when a seat is named."""
+        if not seat or order.action != "command":
+            return None
+        asset = self.sim.world.assets.get(order.actor)
+        if asset is None or not self._roles_needed_covers(asset):
+            return None
+        binding = self.role_assignments.get(seat)
+        if (binding is None or not self._entry_covers(binding["asset_or_constellation"], asset)
+                or binding["role"] not in ("bus", "payload", "both")):
+            return "role_scope_not_assigned"
+        scope = ROLE_SCOPE_BY_VERB.get((order.params or {}).get("verb"))
+        if scope is None:
+            return None                                  # the engine answers unknown_command
+        if not self._role_covers(binding["role"], scope):
+            return "role_scope_out_of_scope"
+        return None
+
+    def role_scope_for(self, seat: Optional[str]) -> dict:
+        """Read-only scope of one operator seat (the table is global; no other seat's binding is
+        reported): the seat's binding, the role-gated assets, and which of those it is bound to."""
+        seat = seat or ""
+        binding = self.role_assignments.get(seat)
+        assets = self.sim.world.assets.values()
+        gated = sorted(a.id for a in assets if self._roles_needed_covers(a))
+        bound = sorted(a.id for a in assets if binding is not None and a.id in gated
+                       and self._entry_covers(binding["asset_or_constellation"], a))
+        return {"seat": seat, "bound": binding is not None,
+                "asset_or_constellation": binding["asset_or_constellation"] if binding else None,
+                "role": binding["role"] if binding else None,
+                "verbs": dict(ROLE_SCOPE_BY_VERB), "gated_assets": gated, "bound_assets": bound}
+
+    @staticmethod
+    def _role_refusal(reason: str) -> OrderAck:
+        # Not registered with OrderSystem: no order id, no event-log entry, nothing to replay.
+        return OrderAck(ok=False, id="", reason=reason, status="rejected")
 
     def staffing_report(self) -> list[dict]:
         """Every mandatory ``roles_needed`` entry with no covering seat assignment. Empty for a
@@ -589,18 +653,24 @@ class SessionManager:
         self.ssn._counter = 0
 
     # -- intents ---------------------------------------------------------------
-    def issue_order(self, cell: str, order: Order) -> OrderAck:
+    def issue_order(self, cell: str, order: Order, seat: Optional[str] = None) -> OrderAck:
         order.cell = cell
+        refused = self.role_scope_check(seat, order)       # IP-1160 (FR-3520): before OrderSystem
+        if refused:
+            return self._role_refusal(refused)
         result = self.osys.issue(order)
         return self._order_ack(result)
 
-    def validate_order(self, cell: str, order: Order) -> OrderAck:
+    def validate_order(self, cell: str, order: Order, seat: Optional[str] = None) -> OrderAck:
         """Dry-run an order for the UI: would it be accepted, with which window/path, or why not?
 
         Read-only (no scheduling, no registry, no bookings) so the console can pre-disable buttons
         and preview the scheduled window without mutating the session (`docs/build-spec/07-operator-console.md` §16.9).
         """
         order.cell = cell
+        refused = self.role_scope_check(seat, order)       # IP-1160 (FR-3520): mirrors issue_order
+        if refused:
+            return self._role_refusal(refused)
         result = self.osys.dry_run(order)
         return self._order_ack(result)
 
@@ -1172,6 +1242,8 @@ class SessionManager:
             "seed": self.sim._seed,
             "final_time": self.sim.clock.now,
             "started": self.started,
+            # IP-1160 (FR-3520) — operator-seat bindings, so the role gate survives a resume.
+            "role_assignments": copy.deepcopy(self.role_assignments),
             "eventlog": self.sim.eventlog.model_dump(),
             "pending": [{"t": ev.t, "kind": ev.kind, "actor": ev.actor, "payload": ev.payload, "tag": ev.tag}
                         for ev in self.sim.scheduler.pending()],
@@ -1256,6 +1328,14 @@ class SessionManager:
             raise ValueError("save key 'overrides' must be an object")
         if state.get("classification") is not None and not isinstance(state["classification"], str):
             raise ValueError("save key 'classification' must be a string")
+        # IP-1160 — optional operator-seat bindings: {seat: {asset_or_constellation, role}}.
+        ra = state.get("role_assignments")
+        if ra is not None and (not isinstance(ra, dict) or not all(
+                isinstance(k, str) and isinstance(v, dict)
+                and isinstance(v.get("asset_or_constellation"), str) and isinstance(v.get("role"), str)
+                for k, v in ra.items())):
+            raise ValueError("save key 'role_assignments' must map seat names to "
+                             "{asset_or_constellation, role} objects")
         # IP-1103 (Design Decision 2) — final_time lower bound: not before the last logged event.
         last_event = max((e.sim_time for e in EventLog.model_validate(state["eventlog"]).entries), default=0)
         if state["final_time"] < max(0, last_event):
@@ -1337,6 +1417,7 @@ class SessionManager:
                                      if isinstance(h, str) and h.startswith("white-")
                                      and h.split("-", 1)[1].isdigit()), default=0)
         mgr.started = state.get("started", False)
+        mgr.role_assignments = {k: dict(v) for k, v in (state.get("role_assignments") or {}).items()}
         return mgr
 
     # -- fleet SOH rollup & alarms --------------------------------------------

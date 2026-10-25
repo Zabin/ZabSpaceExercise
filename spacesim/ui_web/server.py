@@ -43,6 +43,16 @@ def _validate_id(value: str, *, field: str) -> str:
     return value
 
 
+_SEAT_RE = re.compile(r"^[A-Za-z0-9_. -]{0,64}$")
+
+
+def _validate_seat(value: Optional[str], *, field: str) -> Optional[str]:
+    """IP-1160 — operator-seat names: letters, digits, ``-``, ``_``, ``.`` and space; at most 64."""
+    if value is not None and not _SEAT_RE.match(value):
+        raise ValueError(f"{field} must match {_SEAT_RE.pattern}")
+    return value
+
+
 def _first_nonfinite(value: Any, path: str = "body") -> Optional[str]:
     """IP-1082 (NFR-1600, FR-4330) — the path of the first ``NaN``/``Infinity``/``-Infinity`` number
     anywhere in a decoded JSON value (nested lists/objects included), else None. Starlette's JSON
@@ -187,6 +197,14 @@ class OrderRequest(BaseModel):
     action: str
     target: Optional[str] = None
     params: dict = {}
+    # IP-1160 (FR-3520) — the OPERATOR seat (key of the Role Assignment registry), not the console
+    # seat ``cell``. Optional: omitting it skips the role-scope gate (client-asserted, LAN trust).
+    seat: Optional[str] = None
+
+    @field_validator("seat")
+    @classmethod
+    def _seat_charset(cls, v: Optional[str]) -> Optional[str]:
+        return _validate_seat(v, field="OrderRequest.seat")
 
     @field_validator("actor")
     @classmethod
@@ -508,6 +526,18 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.staffing_report(sid)
 
+    @app.get("/api/sessions/{sid}/roles/scope")
+    def role_scope(sid: str, seat: Optional[str] = None) -> dict:
+        """IP-1160 (FR-3510) — the named operator seat's scope and the global verb-scope table the
+        console filters its command list with. A no-cell read like ``roles/staffing``; it reports
+        only the seat asked about (never the other seats' bindings)."""
+        _require(sid)
+        try:
+            _validate_seat(seat, field="seat")
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc))
+        return api.role_scope(sid, seat)
+
     @app.get("/api/vignettes")
     def list_vignettes() -> list[dict]:
         return api.list_vignettes()
@@ -737,14 +767,14 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     def issue_order(sid: str, req: OrderRequest) -> OrderAck:
         _require(sid); _reject_observer(req.cell)
         order = Order(cell=req.cell, actor=req.actor, action=req.action, target=req.target, params=req.params)
-        return api.issue_order(sid, req.cell, order)
+        return api.issue_order(sid, req.cell, order, seat=req.seat)
 
     @app.post("/api/sessions/{sid}/order/validate", dependencies=[Depends(_finite_json_guard_open)])
     def validate_order(sid: str, req: OrderRequest) -> OrderAck:
         """Dry-run an order: accepted (window/path) or rejected (reason), mutating no session state."""
         _require(sid); _reject_observer(req.cell)
         order = Order(cell=req.cell, actor=req.actor, action=req.action, target=req.target, params=req.params)
-        return api.validate_order(sid, req.cell, order)
+        return api.validate_order(sid, req.cell, order, seat=req.seat)
 
     @app.get("/api/sessions/{sid}/orders/{cell}")
     def list_orders(sid: str, cell: str) -> list:

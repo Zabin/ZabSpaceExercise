@@ -234,6 +234,7 @@ enforcement (it holds even for a request that bypasses the UI entirely), but the
 itself is still client-side trust like every other cell: a hostile participant simply lying about
 `cell` bypasses it the same way they could already impersonate another cell today. This adds a new
 rejection rule, not a new authentication mechanism.
+**The operator seat (`seat` on `/order` and `/order/validate`, IP-1160) is client-asserted at the same trust level:** the role-scope gate refuses an out-of-scope command for a request that names its operator seat, but a participant who omits `seat` or names another operator's seat skips or borrows the gate — a rejection rule, not authentication.
 
 The import-guard is a plain pytest test (`test_import_guard.py`), not import-linter — it AST-scans
 `spacesim/engine/` for forbidden imports, wall-clock reads, and any `random` use outside `rng.py`.
@@ -507,6 +508,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **IP-1086 (NFR-1600):** the scene (`scene.py::build_scene`), `windows_ahead` (`error: propagation_failed`) and
   `next_contacts` skip an un-propagatable asset instead of 500ing; read-only,
   **IP-1087 (FR-3430):** `from_state` calls `osys.rebuild_pending()` once, after the order registry is restored, and appends its warnings to `load_warnings` (`_rebind`/rewind still discard pending orders),
+  **IP-1160 (FR-3510/FR-3520):** `ROLE_SCOPE_BY_VERB` (every `COMMAND_VERBS` member is `bus` or `payload`; no third "defense" scope — six `def.*` bus, `def.harden`/`def.set_deception_mode` payload), `role_scope_check(seat, order)` (pure; `role_scope_not_assigned` / `role_scope_out_of_scope`) and `role_scope_for(seat)`; `issue_order`/`validate_order` take an optional **operator** `seat` (the `role_assignments` key — not the console seat `cell`) and refuse before `OrderSystem` is reached, so a refusal registers no order, consumes no id and writes no log entry; `OrderRequest.seat` (bounded) and `GET /roles/scope?seat=` serve the console's offer-time filter (`app.js` `actionsFor`); `role_assignments` is now carried in `save_state` (`validate_save` checks its shape; a save without the key loads as `{}`),
   `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`
   (**multiplayer:** `_locked(sid)` cm wraps every mutation; every read pass-through calls
   `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added;
