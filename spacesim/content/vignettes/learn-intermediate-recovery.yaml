@@ -15,7 +15,7 @@ vignette:
   blue_forces:
     - id: ISR-EO-LEARN
       kind: satellite
-      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 0.0}
+      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 114, argp_deg: 0, ta_deg: 0.0}
       resources: {delta_v_ms: 60.0}
       cyber_posture: low
       cyber_vulnerabilities: [{vector: ground_modem, patchable: true, patched: false}]
@@ -42,6 +42,7 @@ vignette:
   parameters:
     - {id: cyber_authorized, label: "Cyber Authorized", type: bool, default: true}
     - {id: safe_mode_susceptibility, label: "Safe-Mode Susceptibility", type: enum, options: [robust, realistic, fragile], default: fragile}
+    - {id: safe_mode_recovery_difficulty, label: "Recovery Passes", type: enum, options: [quick, realistic, punishing], default: quick}
     - {id: safe_mode_root_cause_persists, label: "Root Cause Persists", type: bool, default: true}
     - {id: red_doctrine_profile, label: "Red Doctrine", type: enum, options: [china_integrated, russia_ew_first, generic], default: china_integrated}
     - {id: fog_of_war, label: "Fog of War", type: enum, options: [full_god_view, realistic_sda, heavy_fog], default: realistic_sda}
@@ -60,18 +61,31 @@ vignette:
         - {type: message, to: [blue, white], text: "Modem vulnerability patched. Re-safing should stop; complete the recovery chain."}
   tutorial:
     blue:
-      - {n: 1, title: "Read SOH", action: "Open the bus card; note the green status. Watch FSW error counter."}
-      - {n: 2, title: "Notice the attack", action: "Watch CPU load and FSW error climb (cyber signature). Asset will safe."}
-      - {n: 3, title: "Establish contact", action: "Wait for the next ground pass; observe pass-gated telemetry update."}
-      - {n: 4, title: "Diagnose", action: "Confirm safe-mode cause via telemetry signatures; identify the modem vector."}
-      - {n: 5, title: "Patch root cause", action: "Issue def.patch_cyber with vector=ground_modem. Verify the vulnerability shows patched."}
-      - {n: 6, title: "Re-enable", action: "Issue cdh.clear_fault and adcs.set_mode=nominal. Confirm the bus returns to green."}
+      - {n: 1, title: "Read the bus health", when: "at start", action: review,
+         expect: "EXPLANATORY. Click ISR-EO-LEARN in the Fleet panel and open its bus card: everything is green. Note the FSW error counter - it is your baseline. The only ground station that can command the bird is GS-LEARN, and its first pass opens about T+41 min."}
+      - {n: 2, title: "Notice the attack", when: "after Red fires the exploit (Red cell step 2), click +1m twice", action: advance, params: {dt_s: 120},
+         expect: "ISR-EO-LEARN drops into safe mode: the bus card turns red and CPU load and FSW errors spike - a cyber signature, not a jam. The attack is chance-based; if the bird is still green ask Red to fire again."}
+      - {n: 3, title: "Plan the root-cause patch", when: "issue now - the command goes up on the GS-LEARN pass that opens about T+41 min",
+         action: command, actor: ISR-EO-LEARN, params: {verb: def.patch_cyber, vector: ground_modem, via: GS-LEARN},
+         expect: "Queued. A reset alone would not hold: the ground-modem hole is still open and Red could safe the bird again. The patch closes it when the pass opens."}
+      - {n: 4, title: "Start the recovery chain", when: "issue now - open the bird's drill-down and click Begin recovery",
+         action: recovery, actor: ISR-EO-LEARN, params: {via: GS-LEARN},
+         expect: "'recovery scheduled (1 pass)'. Recovery is a procedure that runs over the pass, not a button that fixes things at once."}
+      - {n: 5, title: "Advance through the pass", when: "click +10m until the clock is past the T+45 min deadline", action: advance, params: {dt_s: 2581},
+         expect: "ISR-EO-LEARN is back to nominal and recover_to_nominal is MET at the T+45 min deadline."}
+      - {n: 6, title: "What if you skip the patch?", when: "EXPLANATORY - try it in a second run", action: review,
+         expect: "Without step 3 the recovery strip reports 'root cause persists (cyber)' and the bird stays in safe mode. Always remove the root cause."}
     red:
-      - {n: 1, title: "Build the picture", action: "Task a sensor on the Blue ISR to confirm its orbit."}
-      - {n: 2, title: "Fire the exploit", action: "Use the manual inject to fire the modem exploit; watch Blue's bus safe."}
-      - {n: 3, title: "Re-fire when ready", action: "If Blue does not patch the vulnerability, fire again — the bus will re-safe."}
-      - {n: 4, title: "Concede when patched", action: "Once Blue patches the modem, the exploit no longer works; the round is over."}
-      - {n: 5, title: "After action", action: "Review the AAR to see how many safe-mode entries you achieved."}
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "EXPLANATORY. Open the Mission brief. You win (keep_safed) if ISR-EO-LEARN is in safe mode at the end. Cyber is authorized; the bird has an unpatched ground-modem vulnerability."}
+      - {n: 2, title: "Fire the exploit", when: "issue now", action: cyber, actor: RED-CYBER, target: ISR-EO-LEARN, params: {vector: ground_modem, payload: seize_c2},
+         expect: "Queued. Cyber is not window-gated. It resolves by chance (about 62%); advance a minute and check Blue's bus card."}
+      - {n: 3, title: "Confirm the safe mode", when: "click +1m twice", action: advance, params: {dt_s: 120},
+         expect: "ISR-EO-LEARN is in safe mode and keep_safed is MET. If not, fire again - a failed attempt costs nothing."}
+      - {n: 4, title: "Re-fire if Blue resets without patching", when: "EXPLANATORY - after Blue's first recovery attempt", action: review,
+         expect: "While the vulnerability is open, firing again safes the bird again. This is the persistence the vignette teaches."}
+      - {n: 5, title: "Concede when patched", when: "EXPLANATORY - once Blue has patched the modem", action: review,
+         expect: "The exploit no longer works: further cyber orders do not safe the bird. Open the AAR to count your safe-mode entries."}
   intro_brief:
     blue:
       situation: "Training scenario for the recovery loop. A Red cyber unit has dropped your ISR bird into safe mode via an unpatched ground-modem vulnerability. You must diagnose, recover, and PATCH the vector — a reset alone won't hold."
@@ -81,7 +95,7 @@ vignette:
       deadline_note: "T+45 min (2700 s)."
       roe_note: "Cyber only. The lesson is the recovery LOOP: telemetry diagnosis → reset → root-cause patch."
       success_criteria: "ISR-EO-LEARN not in safe mode at T+45 min."
-      tool_tips: "Open the Telemetry drill-down on the bird. CPU load + FSW error spike = cyber signature (not jam, not DE). Sequence: cdh.clear_fault → cdh.reset_subsystem → def.patch_cyber. Without the patch, RED-CYBER will re-exploit and you lose the deadline."
+      tool_tips: "Open the Telemetry drill-down on the bird. CPU load + FSW error spike = cyber signature (not jam, not DE). Sequence: queue def.patch_cyber (vector ground_modem) via GS-LEARN, then click Begin recovery in the bird's drill-down; the recovery chain clears the fault and restores the bus over the GS-LEARN pass (about T+41 min). Without the patch, RED-CYBER will re-exploit and you lose the deadline."
     red:
       situation: "Training: practice persistent cyber. Blue must learn to root-cause-patch, not just reset."
       mission: "keep_safed: keep ISR-EO-LEARN in safe mode at T+45 min."

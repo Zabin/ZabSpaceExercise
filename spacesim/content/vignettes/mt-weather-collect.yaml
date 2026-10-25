@@ -36,6 +36,8 @@ vignette:
   sensors:
     # BLUE-WX-RADAR = Cape Cod SFS (PAVE PAWS UEWR) — supports weather-asset custody on US east coast.
     - {id: BLUE-WX-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 41.75, lon_deg: -70.54}}
+    # RED-SDA-SENSOR = the passive space-domain-awareness payload carried by RED-SDA-PASSIVE (taskable by Red).
+    - {id: RED-SDA-SENSOR, owner: red, kind: space_based, host_asset_id: RED-SDA-PASSIVE, max_range_m: 4000000.0}
   objectives:
     blue:
       - {id: deliver_wx, desc: "Deliver at least one weather product per orbit cycle",
@@ -55,6 +57,31 @@ vignette:
       trigger: {type: time, at_sim_s: 900}
       effects:
         - {type: message, to: [blue, white], text: "Tropical cyclone in formation; joint commander requests surge collection cadence over the basin."}
+  tutorial:
+    blue:
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. WX-1 collects weather data. You win by delivering one product (deliver_wx) and keeping WX-1 operational (wx_op) at T+60 min. A hurricane advisory arrives at T+15 min (read it in Messages)."}
+      - {n: 2, title: "Plan the downlink at the primary station", when: "issue now - GS-WX-PRIMARY's pass opens about T+34 min",
+         action: downlink, actor: WX-1, params: {via: GS-WX-PRIMARY},
+         expect: "Queued for the pass that opens about T+34 min. You plan now; the satellite delivers when it is in view."}
+      - {n: 3, title: "Advance through the pass", when: "click +10m until the clock is past T+40 min (4 clicks)", action: advance, params: {dt_s: 2400},
+         expect: "Objectives panel: deliver_wx MET."}
+      - {n: 4, title: "Hold to the deadline", when: "click +10m until the clock is past T+60 min",
+         action: advance, params: {dt_s: 1201},
+         expect: "wx_op MET: WX-1 is still operational."}
+      - {n: 5, title: "Check the backup station", when: "optional, any time", action: downlink, actor: WX-1, params: {via: GS-WX-BACKUP},
+         expect: "Queued, but its pass opens about T+230 min, far past the deadline. The backup is only useful on a later orbit, so the primary pass at T+34 min is the only one that counts for this deadline."}
+    red:
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. RED-SDA-PASSIVE carries a passive tracking payload (RED-SDA-SENSOR). You win (track_blue) while your track on WX-1 stays at 0.5 confidence or better. You cannot affect WX-1; you only watch."}
+      - {n: 2, title: "Task the tracker on WX-1", when: "issue now - the pass opens about T+16 min",
+         action: observe, actor: RED-SDA-SENSOR, target: WX-1, params: {intent: track},
+         expect: "Queued for a window that opens about T+16 min."}
+      - {n: 3, title: "Advance to the look", when: "click +10m twice (the clock is now T+20 min)", action: advance, params: {dt_s: 1200},
+         expect: "track_blue MET: WX-1 appears as a track in your Fleet panel."}
+      - {n: 4, title: "Watch the track decay", when: "click +10m until the clock is past T+60 min",
+         action: advance, params: {dt_s: 2401},
+         expect: "Confidence halves about every 30 min without a new look, so track_blue falls back to unmet by T+60 min. Your next window opens about T+66 min. Custody is a cadence problem for the watcher too."}
   intro_brief:
     blue:
       situation: "Mid-latitude continental coverage, hurricane season. Routine weather collection is a CADENCE problem — SoC budget, eclipse passes, on-board storage, and downlink-window timing all interact."
@@ -64,7 +91,7 @@ vignette:
       deadline_note: "T+60 min (3600 s)."
       roe_note: "Doctrinal: peacetime weather op. No kinetic."
       success_criteria: "Delivered product + operational bird at deadline."
-      tool_tips: "Watch SoC: if too low entering eclipse, collection fails. Downlink at PRIMARY first; BACKUP is the fallback."
+      tool_tips: "Action: downlink · actor: WX-1 · params: {via: GS-WX-PRIMARY}. Its pass opens about T+34 min and is the only one before the deadline; GS-WX-BACKUP's pass is about T+230 min. Watch SoC: if too low entering eclipse, collection fails."
     red:
       situation: "Passive watch — observe Blue's cadence."
       mission: "track_blue: maintain track on Blue assets."
@@ -73,4 +100,4 @@ vignette:
       deadline_note: "T+60 min."
       roe_note: "Passive. No interaction."
       success_criteria: "Track held."
-      tool_tips: "No active play — advance the clock; the tracker stays nominal."
+      tool_tips: "Action: observe · actor: RED-SDA-SENSOR · target: WX-1 · params: {intent: track}. The pass opens about T+16 min; the track decays below 0.5 by T+60 min and your next look is about T+66 min."

@@ -350,11 +350,14 @@ def test_tb_red_brief_names_and_manual_recipe_match_the_yaml():
 # any step of the cell has no check, so a new or re-ordered step cannot go unverified.
 
 class _Learner:
-    def __init__(self, vid, cell, seed=1, **overrides):
+    def __init__(self, vid, cell, seed=1, share=None, **overrides):
         self.vid, self.cell = vid, cell
-        self.mgr = SessionManager(load_vignette(vid), seed=seed, overrides=overrides or None)
-        self.mgr.start()
-        self.t0 = self.mgr.world.now
+        if share is not None:                      # the other cell's learner on the same live session
+            self.mgr = share.mgr
+        else:
+            self.mgr = SessionManager(load_vignette(vid), seed=seed, overrides=overrides or None)
+            self.mgr.start()
+        self.t0 = share.t0 if share is not None else self.mgr.world.now
         self.steps = {s["n"]: s for s in load_vignette(vid).tutorial[cell]}
 
     def minutes(self, t):
@@ -373,6 +376,8 @@ class _Learner:
             assert "dt_s" in p, f"{self.vid}.{self.cell} step {n}: advance step must state dt_s"
             self.mgr.advance_to(self.mgr.world.now + int(p["dt_s"] * 1_000_000))
             return None
+        if act == "recovery":
+            return self.mgr.begin_recovery(self.cell, st["actor"], p["via"])
         if act == "ssn_request":
             return self.mgr.submit_ssn_request(self.cell, p["intent"], st["target"], p["regime"], p["priority"])
         return _issue(self.mgr, self.cell, actor=st["actor"], action=act, target=st.get("target"), params=p)
@@ -564,3 +569,216 @@ def test_script_sda_red():
     def s4(run, res, st):
         assert run.clock_min >= 90 and run.obj() == {"break_custody": True}      # Blue did nothing
     _script("sda-custody-hunt", "red", {1: _noop, 2: _noop, 3: s3, 4: s4})
+
+
+# -- the library-wide tutorial contract ------------------------------------------------------------------
+
+_STEP_ACTIONS = {"review", "advance", "observe", "downlink", "jam", "engage", "maneuver", "cyber", "command",
+                 "recovery", "ssn_request"}
+_WITH_TUTORIAL = NUMBERED + ["training-basics", "mt-isr-sar", "mt-sigint-geolocate", "mt-weather-collect",
+                             "nv-isl-relay-debris", "learn-intermediate-recovery"]
+
+
+@pytest.mark.verifies("FR-11420")
+@pytest.mark.parametrize("vid", _WITH_TUTORIAL)
+def test_every_tutorial_step_is_executable_or_explicitly_explanatory(vid):
+    """No free-text 'action' sentences: each step is a real action the driver can run, or a labelled review."""
+    vig = load_vignette(vid)
+    for side in ("blue", "red"):
+        steps = vig.tutorial[side]
+        assert len(steps) >= 3, f"{vid}.{side}: tutorial too short"
+        assert [s["n"] for s in steps] == list(range(1, len(steps) + 1)), f"{vid}.{side}: steps must be numbered 1..N"
+        for st in steps:
+            assert st["action"] in _STEP_ACTIONS, f"{vid}.{side} step {st['n']}: action {st['action']!r} is not executable"
+            assert st.get("title") and st.get("when") and st.get("expect"), f"{vid}.{side} step {st['n']}: needs title/when/expect"
+            if st["action"] not in ("review", "advance"):
+                assert st.get("actor") or st["action"] == "ssn_request", f"{vid}.{side} step {st['n']}: needs an actor"
+            if st["action"] == "advance":
+                assert "dt_s" in st["params"] or st["params"].get("to") == "order_window", \
+                    f"{vid}.{side} step {st['n']}: advance must state dt_s (or to: order_window)"
+
+
+@pytest.mark.verifies("FR-11420")
+@pytest.mark.parametrize("vid", ["mt-isr-sar", "mt-sigint-geolocate", "mt-weather-collect", "nv-isl-relay-debris"])
+def test_mission_trial_tutorials_end_by_advancing_past_the_stated_deadline(vid):
+    """Each script's last advance carries the learner to (just past) the deadline its brief states."""
+    vig = load_vignette(vid)
+    deadline = {p.id: p.default for p in vig.parameters}["landing_window_start_s"]
+    for side in ("blue", "red"):
+        total = sum(s["params"]["dt_s"] for s in vig.tutorial[side] if s["action"] == "advance")
+        assert deadline <= total <= deadline + 60, f"{vid}.{side}: script ends at {total}s, deadline is {deadline}s"
+
+
+# -- mt-isr-sar -------------------------------------------------------------------------------------------
+
+@pytest.mark.verifies("FR-11420")
+def test_script_sar_blue():
+    def s2(run, res, st):
+        _starts_at(run, res, st, 19); assert res.delivery_path == "ground_uplink"
+    def s3(run, res, st):
+        _starts_at(run, res, st, 19)
+    def s4(run, res, st):
+        assert run.clock_min == 20 and run.obj()["collect_sar"] is True
+        assert run.mgr.world.assets["SAR-1"].payload_state.collecting is True
+    def s5(run, res, st):
+        assert run.obj() == {"collect_sar": True, "survive": True} and run.other() == {"deny_downlink": False}
+    _script("mt-isr-sar", "blue", {1: _noop, 2: s2, 3: s3, 4: s4, 5: s5})
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_sar_red_and_the_jam_really_denies_the_product():
+    def s2(run, res, st):
+        assert res.status == "rejected" and res.reason == "roe_kinetic_not_authorized"
+    def s5(run, res, st):
+        assert run.obj() == {"deny_downlink": True}
+    red = _script("mt-isr-sar", "red", {
+        1: _noop, 2: s2, 3: lambda r, res, st: _starts_at(r, res, st, 17), 4: _noop, 5: s5})
+    # Together on one session: Red's jam from step 3 beats Blue's steps 2-3 downlink.
+    red = _Learner("mt-isr-sar", "red"); blue = _Learner("mt-isr-sar", "blue", share=red)
+    red.do(3); blue.do(2); blue.do(3); red.do(4)
+    assert blue.obj()["collect_sar"] is False                                    # red step 4's claim
+    red.do(5)
+    assert red.obj() == {"deny_downlink": True} and blue.obj() == {"collect_sar": False, "survive": True}
+
+
+# -- mt-weather-collect -----------------------------------------------------------------------------------
+
+@pytest.mark.verifies("FR-11420")
+def test_script_weather_blue():
+    def s2(run, res, st):
+        _starts_at(run, res, st, 34); assert res.delivery_path == "ground_uplink"
+    def s3(run, res, st):
+        assert run.clock_min == 40 and run.obj()["deliver_wx"] is True
+    def s4(run, res, st):
+        assert run.obj() == {"deliver_wx": True, "wx_op": True}
+    def s5(run, res, st):
+        assert res.status == "queued" and run.minutes(res.earliest_window[0]) == 230
+        assert res.earliest_window[0] > run.mgr.ctx.landing_deadline         # "far past the deadline"
+        _said(st, "T+230 min")
+    _script("mt-weather-collect", "blue", {1: _noop, 2: s2, 3: s3, 4: s4, 5: s5})
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_weather_red():
+    holder = {}
+    def s3(run, res, st):
+        assert run.clock_min == 20 and run.obj() == {"track_blue": True}
+    def s4(run, res, st):
+        assert run.clock_min >= 60 and run.obj() == {"track_blue": False}
+        nxt = _issue(run.mgr, "red", actor="RED-SDA-SENSOR", action="observe", target="WX-1", params={"intent": "track"})
+        assert run.minutes(nxt.earliest_window[0]) == 66
+        _said(st, "T+66 min")
+    _script("mt-weather-collect", "red", {
+        1: _noop, 2: lambda r, res, st: _starts_at(r, res, st, 16), 3: s3, 4: s4})
+
+
+# -- nv-isl-relay-debris ----------------------------------------------------------------------------------
+
+@pytest.mark.verifies("FR-11420")
+def test_script_isl_relay_blue():
+    run0 = _Learner("nv-isl-relay-debris", "blue")
+    ap, t0 = run0.mgr.osys._ap(), run0.t0
+    a_view = ap.windows("GS-NORTH", "ISR-A", "command_uplink", t0, t0 + 3 * 3600 * 10**6)
+    assert a_view and run0.minutes(a_view[0].start) == 0 and 7 <= run0.minutes(a_view[0].end) <= 9   # "first 8 minutes"
+    assert not ap.windows("GS-NORTH", "ISR-B", "command_uplink", t0, t0 + 3 * 3600 * 10**6)           # B never in view
+    def s2(run, res, st):
+        assert run.clock_min == 10
+        assert any("Conjunction advisory" in m["text"] for m in run.mgr.world.messages if "blue" in m["to"])
+        _said(st, "T+5 min", "T+17 min")
+    def s3(run, res, st):
+        assert res.status == "queued" and res.delivery_path == "isl_relay"
+        _said(st, "isl_relay", "95 m/s")
+    def s4(run, res, st):
+        assert run.mgr.world.assets["ISR-B"].resources.delta_v_ms == pytest.approx(95.0) and run.clock_min < 17
+    def s5(run, res, st):
+        assert run.obj() == {"isr_b_survives": True, "isr_b_op": True}
+    _script("nv-isl-relay-debris", "blue", {1: _noop, 2: s2, 3: s3, 4: s4, 5: s5})
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_isl_relay_red():
+    def s2(run, res, st):
+        assert res.status == "queued" and run.minutes(res.earliest_window[0]) == 0
+    def s3(run, res, st):
+        assert run.clock_min == 10 and run.obj() == {"track_blue": True}
+    def s4(run, res, st):
+        assert run.clock_min >= 30 and run.obj() == {"track_blue": False}
+    _script("nv-isl-relay-debris", "red", {1: _noop, 2: s2, 3: s3, 4: s4})
+
+
+# -- mt-sigint-geolocate (engine limitation documented, not papered over) ---------------------------------
+
+@pytest.mark.verifies("FR-11420")
+def test_script_sigint_blue_and_red_state_the_known_limitation():
+    def s2(run, res, st):
+        assert res.status == "rejected" and res.reason == "no_window"; _said(st, "no_window")
+    def s3(run, res, st):
+        assert res.status == "rejected" and res.reason == "no_such_sensor"; _said(st, "no_such_sensor")
+    def s4(run, res, st):
+        assert run.clock_min >= 60
+        assert run.obj() == {"characterize_emitter": False, "preserve_constellation": True}
+        assert run.other() == {"deny_characterization": True}
+    blue = _script("mt-sigint-geolocate", "blue", {1: _noop, 2: s2, 3: s3, 4: s4})
+    _said(blue.steps[1], "KNOWN LIMITATION")
+    inj = {i.id: i for i in load_vignette("mt-sigint-geolocate").injects}["emitter_silent"]
+    assert inj.trigger["type"] == "manual"                                       # red step 2's claim
+    _script("mt-sigint-geolocate", "red", {1: _noop, 2: _noop, 3: lambda r, res, st: _noop(r, res, st) or
+            (r.obj() == {"deny_characterization": True} or pytest.fail("deny_characterization not MET"))})
+
+
+# -- learn-intermediate-recovery --------------------------------------------------------------------------
+
+def _learn_pair(seed=1, **ov):
+    red = _Learner("learn-intermediate-recovery", "red", seed=seed, **ov)
+    return red, _Learner("learn-intermediate-recovery", "blue", share=red)
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_recovery_blue_and_red_together_recover_by_the_deadline():
+    from spacesim.engine.cyber import effective_success
+    red, blue = _learn_pair()
+    bus = lambda: red.mgr.world.assets["ISR-EO-LEARN"].bus_state.mode
+    blue.do(1); assert bus() == "nominal"
+    _said(blue.steps[1], "T+41 min"); red.do(1)
+    cy = red.do(2); assert cy.status == "queued" and cy.earliest_window is None                # not window-gated
+    assert f"{round(effective_success('ground_modem', 'low') * 100)}%" in red.steps[2]["expect"]
+    red.do(3); assert bus() == "safe_mode" and red.obj() == {"keep_safed": True}
+    blue.do(2); assert bus() == "safe_mode" and blue.obj() == {"recover_to_nominal": False}
+    patch = blue.do(3); _starts_at(blue, patch, blue.steps[3], 41)
+    rec = blue.do(4); assert rec["ok"] and rec["passes_used"] == 1; _said(blue.steps[4], "1 pass")
+    blue.do(5)
+    assert blue.clock_min >= 45 and bus() == "nominal"
+    assert blue.obj() == {"recover_to_nominal": True} and red.obj() == {"keep_safed": False}
+    # red step 5: once patched, further exploits do not safe the bird (and step 4's persistence while open is below)
+    for _ in range(6):
+        red.do(2); red.mgr.advance_to(red.mgr.world.now + 60_000_000)
+        assert bus() == "nominal"
+    red.do(4); red.do(5)
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_recovery_without_the_patch_does_not_stick():
+    red, blue = _learn_pair()
+    red.do(2); red.do(3)
+    blue.do(2); blue.do(4)                                    # skip step 3, as step 6 warns
+    blue.do(5)
+    assert red.mgr.world.assets["ISR-EO-LEARN"].bus_state.mode == "safe_mode"
+    assert blue.obj() == {"recover_to_nominal": False} and red.obj() == {"keep_safed": True}
+    st = red.mgr.recovery_status("blue", "ISR-EO-LEARN")
+    assert "root cause persists" in st["blocked_reason"]
+    _said(blue.steps[6], "root cause persists (cyber)")
+    # red step 4: while the hole is open, re-firing is how the bird is held in safe mode.
+    assert red.steps[4]["action"] == "review"
+
+
+@pytest.mark.verifies("FR-11420")
+@pytest.mark.parametrize("seed", [2, 3])
+def test_script_recovery_failed_exploit_is_retried(seed):
+    """Red step 3/2: the exploit is chance-based - some seeds need a re-fire, as the text says."""
+    red, blue = _learn_pair(seed=seed)
+    for _ in range(8):
+        red.do(2); red.do(3)
+        if red.obj() == {"keep_safed": True}:
+            break
+    assert red.obj() == {"keep_safed": True}
+    _said(red.steps[3], "fire again")
