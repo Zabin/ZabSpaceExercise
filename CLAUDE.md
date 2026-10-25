@@ -301,6 +301,10 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `_h_command` (IP-1290, FR-1440) — an active uplink jam covering the command's delivery path at
   execute time fails delivery (`achieved="jammed"`), checked via the existing `is_link_denied`,
   mirroring `_h_downlink`'s own jam-check pattern.
+  IP-1085 (FR-1440) — the jam check is path-aware: the maneuver/command execute payloads carry
+  `delivery_path`/`relay` (`_delivery_keys`, from the planned window's channel) and `_delivery_jammed`
+  denies `ground_uplink` on an `uplink` jam on the actor, `isl_relay` on a `crosslink` jam on the actor
+  or relay, and never `stored_program`; a payload without the keys keeps the old uplink-on-actor rule.
   ROE (`engage`/`cyber`) is resolved per issuing cell against `_effective_roe(cell, order.issued_at)`
   (IP-1172/FR-3420, IP-1270/FR-3440) — the vignette-declared static `_static_roe` overlaid with any
   `roe_change` eventlog entries at or before the order's own issue time, a pure point-in-time
