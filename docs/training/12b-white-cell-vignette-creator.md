@@ -15,7 +15,9 @@ Blue, Red or Observer, and the server refuses every Creator call that does not n
 It works on a **draft** — an unstarted session of its own, separate from any exercise you have
 loaded. Nothing reaches disk until you press **💾 Save as vignette**.
 
-**What it does not do.** The Creator builds assets only. It does not write objectives, a mission
+**What it does not do.** The Creator builds assets only. The forms make a satellite with an orbit but no bus
+or payload, and there is no way to add sensors, so edit the saved YAML to give an asset a payload or a sensor.
+It does not write objectives, a mission
 brief, ROE, injects, a tutorial, or Red doctrine; a saved file carries the defaults for all of them
 (a 60-minute estimated duration, start time `2030-01-01T00:00:00Z`, no objectives). Add those by
 editing the saved YAML afterwards. The seat counts and roles you set in the matrix (step 8) are
@@ -46,7 +48,7 @@ by id answers `vignette 'my-scn' not found`). See [`01-install-and-run.md`](01-i
    answers `create a draft first` (Save) or does nothing.
 3. **Add a ground site.** Under **Add asset — ground (lat/long)** type an **Id** (letters, digits,
    `_`, `.`, `-`, up to 64 characters), pick the **Cell** (Blue / Red / Neutral), leave **Kind** as
-   `ground_station` (or type another, for example `ground_radar`), then either choose a **Curated
+   `ground_station` (any text is accepted; only the name changes), then either choose a **Curated
    site** or type **Lat** and **Lon** yourself. The picker lists 52 real-world sites by name (for
    example `Schriever — Schriever SFB (AFSCN master), CO`); choosing one fills **Lat**/**Lon**, and
    you can still overtype them. Choose `(free entry)` to type coordinates freely. Press **Add
