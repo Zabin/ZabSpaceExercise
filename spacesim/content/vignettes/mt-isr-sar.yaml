@@ -60,10 +60,10 @@ vignette:
   intro_brief:
     blue:
       situation: "Arctic littoral, persistent cloud cover and polar night. EO imaging is useless — SAR is the only sensor that works."
-      mission: "Collect SAR imagery (collect_sar) and keep the bird alive (survive) through T+30 min."
+      mission: "Collect SAR imagery (collect_sar) and keep the bird alive (survive) through T+90 min."
       friendly_forces: "SAR-1 (LEO SAR imager), GS-POLAR, BLUE-RADAR-POLAR."
       threat_picture: "RED-JAM (downlink jammer) + RED-DAZZLE (optical dazzler — wouldn't matter against SAR but contests the bird in general)."
-      deadline_note: "T+30 min (1800 s)."
+      deadline_note: "T+90 min (5400 s)."
       roe_note: "No kinetic this vignette."
       success_criteria: "SAR collect delivered + bird survives at the deadline."
       tool_tips: "Action: observe · SAR-1 → target. SAR has its own beam-mode parameter — choose stripmap for area, spotlight for resolution. Downlink via GS-POLAR."
@@ -72,7 +72,7 @@ vignette:
       mission: "deny_downlink during Blue's GS-POLAR pass."
       friendly_forces: "RED-JAM (downlink jammer), RED-DAZZLE (optical dazzler)."
       threat_picture: "Blue SAR-1 + GS-POLAR. SAR is all-weather so dazzle alone is useless."
-      deadline_note: "T+30 min."
+      deadline_note: "T+90 min."
       roe_note: "No kinetic. Reversible only."
       success_criteria: "deny_downlink during the Blue downlink window."
       tool_tips: "Jam GS-POLAR during the downlink pass. Dazzle would matter against EO; this is SAR — focus on the link."

@@ -277,20 +277,12 @@ def test_every_roe_note_agrees_with_the_cyber_default(vid):
             f"{vid}.{cell}: roe_note says cyber off but cyber_authorized defaults true: {note!r}"
 
 
-# Known, reported-not-fixed mismatches (release-candidate-1 N2 sweep): the brief's stated deadline
-# differs from ``landing_window_start_s``. Which one is wrong needs an author decision per vignette.
-# strict xfail: fixing a vignette makes its entry XPASS-fail, forcing its removal here (list only shrinks).
-_DEADLINE_NOTE_KNOWN_WRONG = {
-    "geo-rpo-shadowing", "co-orbital-threat-escort", "coa-china-md", "coa-china-ml",
-    "mt-isr-sar", "mt-sigint-geolocate", "mt-weather-collect",
-}
+# Owner decision 2026-10-25: the engine's ``landing_window_start_s`` (== the objectives' own ``by_s``) is the
+# deadline; every brief states it.
 
 
 @pytest.mark.verifies("FR-11420")
-@pytest.mark.parametrize("vid", [
-    pytest.param(v["id"], marks=pytest.mark.xfail(strict=True, reason="brief deadline_note disagrees with landing_window_start_s"))
-    if v["id"] in _DEADLINE_NOTE_KNOWN_WRONG else v["id"]
-    for v in list_vignettes()])
+@pytest.mark.parametrize("vid", [v["id"] for v in list_vignettes()])
 def test_every_brief_deadline_note_states_the_real_deadline(vid):
     """A brief's ``T+N min|h (S s)`` deadline must equal the vignette's ``landing_window_start_s``."""
     import re
