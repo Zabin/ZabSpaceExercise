@@ -109,7 +109,8 @@ these roles map onto this repository specifically.
   own Definition of Done implies but didn't enumerate — flag that gap rather than silently
   expanding scope without noting it).
 - Updated documentation, at exactly the locations the package's `Documentation Updates` field
-  names — no unrelated documentation rewritten "while you're in there."
+  names (including its `Manual impact` entry, worked per Step 8's Documentation step) — no
+  unrelated documentation rewritten "while you're in there."
 - Updated traceability — whatever mechanism the repository already uses to link a requirement to
   the file(s) that implement it (a Traceability Matrix's reverse index, a code comment convention,
   a manifest) gets the executed package's `Requirements Covered` entries filled in with real,

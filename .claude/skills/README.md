@@ -32,9 +32,9 @@ and routed to the pipeline stage where they belong), never by side-channel imple
 | 04 | `04-requirements-engineering` | FR-xxxx, NFR-xxxx, Requirements Review, Requirements Traceability Matrix | `docs/requirements/` |
 | 05 | `05-feature-decomposition` | Release Plan, Epic Catalog, Feature Catalog, Feature Dependency Graph, Feature Review | `docs/feature-planning/` |
 | 06 | `06-feature-specification` | Feature Specifications (FS-xxx, 20-field template) | `docs/features/`, `docs/features/specifications/` |
-| 07 | `07-implementation-planning` | Technical Work Breakdown, Implementation Packages (IP-xxxx, 14-field template), Master Build Plan | `docs/implementation/` |
-| 08 | `08-code-implementation` · `08-training-manual-authoring` · `08-vignette-development` | Code: source + tests + docs + traceability for exactly one package (status → `COMPLETE`). Training peers: manual modules / learning path / traceability matrix (`docs/training/`), and vignette YAML + playbook/rung linkage + the `docs/vignettes/` design docs + their verification tests. | `spacesim/`, `docs/training/`, `docs/vignettes/`, ledgers |
-| 09 | `09-package-verification` · `09-training-manual-review` | Verification Report (VR-xxxx); the **only** skill that writes `VERIFIED`. Training peer: Training Review report (accuracy/traceability/coverage/pedagogy) under `docs/reviews/`. | `docs/implementation/verification/`, `docs/reviews/` |
+| 07 | `07-implementation-planning` | Technical Work Breakdown, Implementation Packages (IP-xxxx, 14-field template; `Documentation Updates` opens with a mandatory **Manual impact** entry), Master Build Plan | `docs/implementation/` |
+| 08 | `08-code-implementation` · `08-training-manual-authoring` · `08-vignette-development` | Code: source + tests + docs + traceability for exactly one package (status → `COMPLETE`), including its mandatory **Documentation step** (narrow `docs/training/` slice, or Manual-impact hand-offs). Training peers: manual modules / learning path / traceability matrix (`docs/training/`), and vignette YAML + playbook/rung linkage + the `docs/vignettes/` design docs + their verification tests. | `spacesim/`, `docs/training/`, `docs/vignettes/`, ledgers |
+| 09 | `09-package-verification` · `09-training-manual-review` | Verification Report (VR-xxxx, incl. the mandatory **Documentation audit**); the **only** skill that writes `VERIFIED`. Training peer: Training Review report (accuracy/traceability/coverage/pedagogy, plus the per-release **learner-walkthrough gate**) under `docs/reviews/`. | `docs/implementation/verification/`, `docs/reviews/` |
 | 10 | `10-integration-review` | Integration Report for an epic/release's verified package set | `docs/reviews/` |
 | 11 | `11-release-readiness` | Release Assessment (GO/NO-GO) + baseline update on GO (incl. `README.md` status); at every release also the test relevance audit and the dependency-lock check | `docs/reviews/`, trackers, `README.md` |
 
@@ -57,7 +57,19 @@ and flows forward from there:
   package (08) that touches operator-visible behavior creates the manual impact this loop works
   off (`docs/training/15-manual-traceability.md` §15.1 is the routing table) — training-corpus
   currency is release-gating (FR-11410; assumption A12).
-- **Per release:** 10 → 11; integration findings loop back through 07 → 08 → 09 before 10 re-runs.
+- **Per package, documentation (owner direction 2026-10-25).** Documentation is built and
+  verified inside the package loop, not after it: `07` names each package's **Manual impact**
+  (§15.1 rows, manual sections, tutorials/briefs, reference/troubleshooting entries — or `none —
+  reason`) and puts "documentation in sync" in its Definition of Done; `08-code-implementation`'s
+  **Documentation step** writes the narrow slice it may write and records every larger item as a
+  **Manual-impact item**, which `00-pipeline-manager` harvests into the backlog as *due before
+  release*; the 08 training peers work those items off in their **maintain loop** (walking each
+  procedure as a first-time learner); `09-package-verification`'s **Documentation audit** returns
+  a package with an undocumented, unrecorded operator-visible change (Medium).
+- **Per release:** 10 → 11 (10's documentation-coherence dimension sweeps the set's Documentation
+  audits and open Manual-impact items; 11 needs a current `09-training-manual-review`
+  learner-walkthrough gate report, complete §15.1 coverage, green tutorial tests and no open
+  Manual-impact item, else NO-GO; the manager will not recommend 11 before then); integration findings loop back through 07 → 08 → 09 before 10 re-runs.
 - **Upstream findings never get fixed downstream.** A requirements conflict found at stage 05 goes
   back to 04; an architecture gap found at 06 goes back to 03; a domain-knowledge gap anywhere
   goes to the owning 02 skill. Each skill's summary routes its findings to the owning stage.
@@ -69,6 +81,12 @@ and flows forward from there:
   Within stage 08, the peers split the write surface: only `08-code-implementation` writes
   `spacesim/` Python; `08-vignette-development` writes vignette/content YAML and its
   verification tests; `08-training-manual-authoring` writes `docs/training/` only.
+  `08-code-implementation` may also write a **narrow** `docs/training/` slice for its own package —
+  §15.1/§15.1a/§15.2 matrix rows, `> Sources:` footers, factual line fixes in already-mapped
+  sections, and single reference/troubleshooting entries (`08`, `09`, `10*` modules) quoting the
+  exact label/message — and hands everything larger to the training peers as a Manual-impact item.
+- **No package is `COMPLETE` or `VERIFIED` with an operator-visible change that is neither
+  documented nor recorded as a Manual-impact item** (or deferred by the owner on record).
 - Statuses are honest ledgers: `08` may write `IN PROGRESS`/`COMPLETE`/`BLOCKED`; only `09` writes
   `VERIFIED`; only the user's explicit GO lets `11` flip the baseline.
 - MSTR-006 §3: a fully-specified package is **not** authorization to build it — the user grants
