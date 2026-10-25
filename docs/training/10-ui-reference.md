@@ -57,6 +57,7 @@ operator switches to Blue or Red.
 | 7 | ⟲ Rewind | button (white-only) | `POST /rewind` to the exercise's `start_epoch` (the vignette's first instant, read from `GET /clock`; the palette's **rewind to start** does the same). A target outside `[start_epoch, now]` is refused with a 400, and the refusal reason shows in the status line (§10.2, row 9). Deterministic replay re-derives state byte-identical; the server re-anchors the clock at the rewound moment, and a running clock keeps running from there (it is not paused). |
 | 8 | ⏸ Handover | button | Blur the screen + show "HANDING OFF" overlay (hot-seat seat-swap between cells). |
 | 9 | 📋 Session ▾ | menu (white-only) | See §10.1.1 below. |
+| 9a | 🛠 Creator ▾ | menu (white-only) | Build a new vignette from scratch in an unstarted draft session: assets by TLE or lat/long, asset list, JSON view, seats and roles, preview, **Save as vignette**. Walkthrough with every message: [WCM-17](12b-white-cell-vignette-creator.md). |
 | 10 | ▦ View ▾ | menu | See §10.1.2 below. |
 | 11 | ⚙ Settings ▾ | menu | See §10.1.3 below. |
 | 12 | UNCLASSIFIED // TRAINING | banner | Always-visible classification marking. |
@@ -80,6 +81,8 @@ The line clears after the next time jump or rewind that succeeds.
 | Vignette | Seed input | Deterministic RNG seed (any non-negative integer; default 1). |
 | Vignette | **Load** button | `POST /api/sessions` → creates the session id. The page URL gets `#sess-N` appended so it can be shared. A refused load (a vignette that fails validation, or Load pressed while Blue, Red or Observer is the active seat: 403, "sessions are created by the white seat") creates nothing and shows **Load failed:** and the reason in the session label (§10.2, row 4); a tab already joined to a session keeps its session label and shows the reason in the status line instead. |
 | Vignette | **▶ Start** button | `POST /api/sessions/{sid}/start` + arms the server clock. Disabled until Load. |
+| Observer | **View** dropdown | What the read-only Observer seat shows: Godview, Blue's picture or Red's picture (`POST /observer/view`). |
+| Seat-to-role assignment | **Seat**, **Asset / constellation**, **Role** (Both / Bus / Payload), **Assign** | Binds an operator seat name to an asset and role (`POST /roles/assign`). The **staffing report** line below lists unmet mandatory roles as `unmet: ISR-EO-1 / bus`, or `fully staffed (or this vignette declares no roles_needed)`. See [WCM-18](12c-white-cell-rules-and-staffing.md). |
 | Save as scenario | **💾 Save as scenario…** button | Prompts for a new vignette id and title, then `POST /save_vignette` writes the live state as a new starting vignette (needs `content.user_save_dir`). The result line under the button shows `✓ saved <path>`, or `✗` and the server's reason in red (a non-White seat gets the 403 text; nothing is written). |
 
 #### 10.1.2 View menu
@@ -115,7 +118,7 @@ pop-out polls the server at 1.5 s like any other tab, so closing the parent does
 | Tools | Inspect vignette YAML | Open the vignette YAML inspector modal. |
 | Tools | ? Help | Open the help modal (shortcuts + glossary + workflow tips). |
 
-> **Sources:** `spacesim/ui_web/static/index.html` (toolbar, Session / View / Settings menus) · `spacesim/ui_web/static/app.js` (`loadSession`, `setServerClock`, `stepBy`, `rewindTo`, `popOut`, `LAYOUT_PANELS`, `saveSession`, `loadSaveFile`, `saveAsScenario`, `showLoadFailure`, `exerciseStartEpoch`, `coachOpen`, `tutorialOpen`, `inspectorOpen`) · `spacesim/ui_web/static/style.css` (`.menu-pop` scroll) · `spacesim/ui_web/server.py` (`/clock`, `/start`, `/step`, `/rewind`, `/save`, `/load_save`, `/save_vignette`, `_require_white`)
+> **Sources:** `spacesim/ui_web/static/index.html` (toolbar, Session / View / Settings menus) · `spacesim/ui_web/static/app.js` (`loadSession`, `setServerClock`, `stepBy`, `rewindTo`, `popOut`, `LAYOUT_PANELS`, `saveSession`, `loadSaveFile`, `saveAsScenario`, `showLoadFailure`, `exerciseStartEpoch`, `coachOpen`, `tutorialOpen`, `inspectorOpen`) · `spacesim/ui_web/static/style.css` (`.menu-pop` scroll) · `spacesim/ui_web/server.py` (`/clock`, `/start`, `/step`, `/rewind`, `/save`, `/load_save`, `/save_vignette`, `_require_white`) · `spacesim/ui_web/static/creator.js` (`newDraft`, `saveVignette`) · `spacesim/session/manager.py` (`staffing_report`)
 
 ---
 

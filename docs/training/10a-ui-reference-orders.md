@@ -40,6 +40,7 @@ are in [10b](10b-ui-reference-views.md).
 |---|---|---|---|
 | 1 | Role filter chips | 4 chips | **All** / **Bus** / **Payload** / **SDA** — filters the Actor dropdown. |
 | 2 | Actor | dropdown | Own assets (filtered by role chip + current cell). |
+| 2a | Operator seat | text (max 64 characters) | Optional; hint `optional - your Role Assignment name`. The name White bound to a bus/payload role; with it set, the Action list drops commands of the other role and the server refuses them (`role_scope_not_assigned`, `role_scope_out_of_scope`). Empty = no role check. Remembered per session. Not the White/Blue/Red button. See [BLU-15](13a-blue-cell-rules-and-delivery.md). |
 | 3 | Action | dropdown | Legal actions for the actor's `kind`: e.g. satellite ⇒ `downlink/maneuver/command`, jammer ⇒ `jam`. |
 | 4 | Target | dropdown + **or id** text input | Uses the same known-target list as §10.5 row 5, with the selected actor's own side left out. The **or id** box takes precedence. Both fields are **enabled only for `jam` / `engage` / `cyber` / `observe`**. For any other action they are blanked and disabled because that order takes no target. |
 | 5 | Params | JSON text, under **Advanced (raw JSON params)** | Pre-filled per action (see PARAM_TEMPLATE in `app.js`). Live dry-run on every keystroke. A field with the wrong type or a non-finite number (`"inf"`, a `dv` without exactly three numbers) shows ✗ `invalid_param`. A field set to `null` counts as left out. |
@@ -59,7 +60,7 @@ Params — see §10.7 / §10.8 below.
 picker shipped and still show **Target** as a single text box. Where a screenshot and a table row
 disagree, follow the table row (§10.5 row 5, §10.6 row 4).
 
-> **Sources:** `spacesim/ui_web/static/app.js` (`ACTIONS_BY_KIND`, `TARGET_REQUIRED_ACTIONS`, `PARAM_TEMPLATE`, `composeBody`, `previewOrder`, `renderConsequencePreview`, `issueOrder`, `pbSave`, `renderPlaybooks`, `drawRibbon`, `renderQueue`) · `spacesim/ui_web/server.py` (`/order`, `/order/validate`, `/preview/consequence`, `/cancel`)
+> **Sources:** `spacesim/ui_web/static/app.js` (`ACTIONS_BY_KIND`, `TARGET_REQUIRED_ACTIONS`, `PARAM_TEMPLATE`, `composeBody`, `onOpSeatChange`, `previewOrder`, `renderConsequencePreview`, `issueOrder`, `pbSave`, `renderPlaybooks`, `drawRibbon`, `renderQueue`) · `spacesim/ui_web/server.py` (`/order`, `/order/validate`, `/preview/consequence`, `/cancel`)
 
 ---
 

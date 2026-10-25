@@ -43,7 +43,11 @@ seat enforcement on a trusted LAN, not authentication.
 | `GET /api/sessions/{sid}/coaching/{cell}` | Coaching notes from `vignette.coaching` due-now for this cell |
 | `GET /api/sessions/{sid}/activity/{cell}?past_window_s&future_window_s` | Per-cell Gantt feed (past · present · scheduled). White=all cells; Blue/Red=own only |
 | `GET /api/sessions/{sid}/injects` | List the vignette's injects |
-| `POST /api/sessions/{sid}/force/tle` `{id, owner, line1, line2}` | Add a real satellite by TLE |
+| `POST /api/sessions/{sid}/force/tle` `{id, owner, line1, line2}` | Add a real satellite by TLE (before Start only: `cannot edit force after start`; see [WCM-23](12d-white-cell-clock-saves-and-controls.md)) |
+| `GET /api/sessions/{sid}/injects/pending` · `POST …/injects/{handle}/cancel` · `…/edit` `{effects?, at_sim_t?}` | White's queue of not-yet-fired injects; cancel or edit one ([WCM-20](12c-white-cell-rules-and-staffing.md)) |
+| `GET /api/sessions/{sid}/roles/staffing` · `GET …/roles/scope[?seat=&cell=]` | Unmet mandatory roles · the verb-to-role table, or one operator seat's binding ([WCM-18](12c-white-cell-rules-and-staffing.md)) |
+| `POST /api/sessions/draft` `{title}` · `GET /api/ground_sites` | Start a Creator draft · the 52 curated ground sites ([WCM-17](12b-white-cell-vignette-creator.md)) |
+| `GET /api/sessions/{sid}/controller_view` | White-only: truth plus both cells' views for one instant (the Compare panel) |
 | `POST /api/sessions/{sid}/red_step` | AI-Red issues one doctrine round |
 | `GET /api/sessions/{sid}/view/{cell}` | Fog-filtered cell view |
 | `GET /api/sessions/{sid}/scene/{cell}` | Belief-render geometry (map/3D) |

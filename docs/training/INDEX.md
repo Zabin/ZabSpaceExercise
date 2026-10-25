@@ -44,6 +44,7 @@ is no separate "multiplayer build." See module 01 for the workflow.
 | [07-white-cell-facilitation](07-white-cell-facilitation.md) | Running an exercise as White Cell. |
 | [08-http-api-reference](08-http-api-reference.md) | The HTTP API surface for clients/integration. |
 | [09-troubleshooting-and-glossary](09-troubleshooting-and-glossary.md) | Common issues + glossary. |
+| [09a-refusal-messages](09a-refusal-messages.md) | Lookup of every order, control, session and save refusal message: exact words, cause, fix. |
 | [10-ui-reference](10-ui-reference.md) | Exhaustive UI reference — every control, dropdown, input, keyboard shortcut, and mouse interaction across all 15 panels, with annotated screenshots. This module holds the index and the always-visible panels (§10.1–§10.4). |
 | [10a-ui-reference-orders](10a-ui-reference-orders.md) | UI reference, order panels: sensor tasking, compose form, maneuver/jam assistants, batch bar (§10.5–§10.9). |
 | [10b-ui-reference-views](10b-ui-reference-views.md) | UI reference, viewers and review panels: globe, map, AAR, drill-down, modals/keys, activity timeline (§10.10–§10.15). |
