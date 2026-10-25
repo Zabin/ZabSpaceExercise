@@ -340,3 +340,227 @@ def test_tb_red_brief_names_and_manual_recipe_match_the_yaml():
     jam = _tb_steps("red")[3]["params"]
     assert json.dumps(jam, separators=(",", ":")).replace(".0,", ".0,") .replace(" ", "") in _doc("04-guided-vignette.md").replace(" ", "")
     assert [o["id"] for o in vig.objectives["red"]] == ["deny_isr", "disable_isr"]   # each declared once
+
+
+# -- step-by-step scripts: a learner follows each cell's tutorial in order (BL-owner priority 2026-10-25) -----
+#
+# ``_Learner`` executes a step exactly as the Tutorial panel states it (review = no-op; advance = the stated
+# ``dt_s``; ``ssn_request`` = the SSN request chip; anything else = an order) on a fixed seed, and a
+# per-vignette ``checks`` table asserts what the step's ``when``/``expect`` text claims. ``_script`` fails if
+# any step of the cell has no check, so a new or re-ordered step cannot go unverified.
+
+class _Learner:
+    def __init__(self, vid, cell, seed=1, **overrides):
+        self.vid, self.cell = vid, cell
+        self.mgr = SessionManager(load_vignette(vid), seed=seed, overrides=overrides or None)
+        self.mgr.start()
+        self.t0 = self.mgr.world.now
+        self.steps = {s["n"]: s for s in load_vignette(vid).tutorial[cell]}
+
+    def minutes(self, t):
+        return round((t - self.t0) / 60e6)
+
+    @property
+    def clock_min(self):
+        return self.minutes(self.mgr.world.now)
+
+    def do(self, n):
+        st = self.steps[n]
+        act, p = st["action"], dict(st.get("params") or {})
+        if act == "review":
+            return None
+        if act == "advance":
+            assert "dt_s" in p, f"{self.vid}.{self.cell} step {n}: advance step must state dt_s"
+            self.mgr.advance_to(self.mgr.world.now + int(p["dt_s"] * 1_000_000))
+            return None
+        if act == "ssn_request":
+            return self.mgr.submit_ssn_request(self.cell, p["intent"], st["target"], p["regime"], p["priority"])
+        return _issue(self.mgr, self.cell, actor=st["actor"], action=act, target=st.get("target"), params=p)
+
+    def obj(self):
+        return self.mgr.objectives()[self.cell]
+
+    def other(self):
+        return self.mgr.objectives()["red" if self.cell == "blue" else "blue"]
+
+
+def _script(vid, cell, checks, seed=1, **overrides):
+    run = _Learner(vid, cell, seed=seed, **overrides)
+    assert set(checks) == set(run.steps), \
+        f"{vid}.{cell}: every tutorial step needs a machine check (missing {set(run.steps) - set(checks)}, " \
+        f"stale {set(checks) - set(run.steps)})"
+    for n in sorted(run.steps):
+        res = run.do(n)
+        checks[n](run, res, run.steps[n])
+    return run
+
+
+def _noop(run, res, st):
+    pass
+
+
+def _said(st, *needles, keys=("when", "expect")):
+    text = " ".join(str(st.get(k, "")) for k in keys).lower()
+    for w in needles:
+        assert w.lower() in text, f"step {st['n']} must say {w!r}: {text[:160]}"
+
+
+def _starts_at(run, res, st, minute):
+    assert res.status == "queued" and res.earliest_window
+    assert run.minutes(res.earliest_window[0]) == minute
+    _said(st, f"T+{minute} min")
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_gnss_blue():
+    def s3(run, res, st):
+        assert run.clock_min == 10 and run.mgr.world.track_for("blue", "BLUE-GNSS") is not None
+    def s4(run, res, st):
+        assert run.clock_min >= 60 and run.obj() == {"maintain_service": True}
+    _script("gnss-ew-campaign", "blue", {
+        1: _noop, 2: lambda r, res, st: _starts_at(r, res, st, 4), 3: s3, 4: s4, 5: _noop})
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_gnss_blue_holds_service_even_while_red_jams():
+    mgr = _mgr("gnss-ew-campaign")
+    assert _issue(mgr, "red", actor="RED-JAM", action="jam", target="BLUE-GNSS",
+                  params={"modulation": "barrage", "power_w": 200.0}).status == "queued"
+    mgr.advance_to(mgr.world.now + 3601 * 1_000_000)
+    assert mgr.objectives()["blue"]["maintain_service"] is True      # step 4's "even if Red is jamming"
+    assert mgr.objectives()["red"]["deny_pnt"] is True
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_gnss_red():
+    def s2(run, res, st):
+        assert res.status == "queued" and run.minutes(res.earliest_window[0]) <= 0     # "already open"
+        _said(st, "already open")
+        run.mgr.advance_to(run.mgr.world.now + 60_000_000)
+        assert run.obj() == {"deny_pnt": True}                                          # "after you advance a minute"
+    def s3(run, res, st):
+        assert run.obj() == {"deny_pnt": True} and run.other() == {"maintain_service": True}
+    _script("gnss-ew-campaign", "red", {1: _noop, 2: s2, 3: s3})
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_co_orbital_blue():
+    def s3(run, res, st):
+        assert run.clock_min == 20 and run.mgr.world.track_for("blue", "RED-COORB") is not None
+    def s4(run, res, st):
+        assert res.status == "rejected" and res.reason == "no_command_station"
+        _said(st, "no_command_station", "refused")
+    def s5(run, res, st):
+        assert run.obj() == {"hva_survives": True} and run.other() == {"neutralize_hva": False}
+    _script("co-orbital-threat-escort", "blue", {
+        1: _noop, 2: lambda r, res, st: _starts_at(r, res, st, 17), 3: s3, 4: s4, 5: s5})
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_co_orbital_red():
+    def s2(run, res, st):
+        assert res.status == "rejected" and res.reason == "no_command_station"
+        _said(st, "no_command_station", "refused")
+    def s3(run, res, st):
+        assert run.obj() == {"neutralize_hva": False}
+    _script("co-orbital-threat-escort", "red", {1: _noop, 2: s2, 3: s3})
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_da_asat_blue():
+    def s2(run, res, st):
+        assert res.status == "rejected" and res.reason == "no_command_station"
+        assert run.mgr.world.assets["BLUE-SAT"].resources.delta_v_ms == 20.0
+        _said(st, "no_command_station", "20 m/s")
+    def s3(run, res, st):
+        assert run.obj() == {"avoid_debris": True}
+    _script("da-asat-crisis", "blue", {1: _noop, 2: s2, 3: s3})
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_da_asat_red_strikes_inside_the_hour():
+    deadline_min = 60
+    def s3(run, res, st):
+        tr = run.mgr.world.track_for("red", "BLUE-SAT")
+        assert run.clock_min == 20 and tr is not None and tr.is_weapons_quality(run.mgr.world.now)
+    def s4(run, res, st):
+        assert res.status == "queued" and res.earliest_window
+        lo, hi = (run.minutes(t) for t in res.earliest_window)
+        assert hi < deadline_min and run.clock_min <= hi
+        _said(st, f"T+{lo} to T+{hi} min", "T+20")
+    def s5(run, res, st):
+        assert run.clock_min == 30 < deadline_min
+        assert run.obj() == {"destroy_sat": True} and run.other() == {"avoid_debris": False}
+        assert len(run.mgr.world.debris) > 0
+    _script("da-asat-crisis", "red", {
+        1: _noop, 2: lambda r, res, st: _starts_at(r, res, st, 17), 3: s3, 4: s4, 5: s5})
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_da_asat_engage_before_the_track_is_refused():
+    run = _Learner("da-asat-crisis", "red")
+    eng = _issue(run.mgr, "red", actor="RED-ASAT", action="engage", target="BLUE-SAT", params={"interceptor_class": "mrbm_kkv"})
+    assert eng.status == "rejected" and eng.reason == "no_weapons_quality_track"
+    _said(run.steps[2], "no_weapons_quality_track")
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_sda_blue_requests_keep_custody_unbroken_to_the_deadline():
+    mgr_run = _Learner("sda-custody-hunt", "blue")
+    mgr = mgr_run.mgr
+    gaps = []
+    orig_do = mgr_run.do
+    def watch_advance(n):
+        # step through the clock a minute at a time so a lapse inside a long advance is caught
+        st = mgr_run.steps[n]
+        if st["action"] == "advance":
+            end = mgr.world.now + int(st["params"]["dt_s"] * 1_000_000)
+            while mgr.world.now < end:
+                mgr.advance_to(min(end, mgr.world.now + 60_000_000))
+                if mgr_run.clock_min >= 15 and not mgr.objectives()["blue"]["maintain_custody"]:
+                    gaps.append(mgr_run.clock_min)
+            return None
+        return orig_do(n)
+    steps = mgr_run.steps
+    # step 1 review; 2 request at T+0 (product ~T+15); 3 +10m; 4 request; 5 repeat at T+30/50/70; 6 deadline
+    r = watch_advance
+    r(1)
+    ack = r(2); assert ack.ok and mgr_run.minutes(ack.product_at) == 15; _said(steps[2], "T+15 min")
+    r(3); assert mgr_run.clock_min == 10 and mgr.objectives()["blue"]["maintain_custody"] is False
+    ack = r(4); assert ack.ok and mgr_run.minutes(ack.product_at) == 25; _said(steps[4], "T+25 min")
+    for at in (30, 50, 70):                      # step 5: "file the same request again at T+30, T+50 and T+70"
+        _said(steps[5], f"T+{at}")
+        while mgr_run.clock_min < at:
+            mgr.advance_to(mgr.world.now + 60_000_000)
+            if mgr_run.clock_min >= 15 and not mgr.objectives()["blue"]["maintain_custody"]:
+                gaps.append(mgr_run.clock_min)
+        assert mgr_run.clock_min == at
+        ack = r(5); assert ack.ok, (at, ack.reason)
+    r(6)
+    assert mgr_run.clock_min >= 90
+    assert gaps == [], f"custody lapsed at minutes {gaps}"
+    assert mgr_run.obj() == {"maintain_custody": True} and mgr_run.other() == {"break_custody": False}
+    _said(steps[6], "T+134 min")
+    # the claim that the organic radar cannot help in time
+    ob = _issue(mgr_run.mgr, "blue", actor="BLUE-RADAR-1", action="observe", target="RED-OBJ", params={"intent": "track"})
+    assert mgr_run.minutes(ob.earliest_window[0]) == 134
+    _said(steps[1], "T+134 min")
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_sda_blue_skipping_requests_loses_custody():
+    run = _Learner("sda-custody-hunt", "blue")
+    run.do(2)
+    run.mgr.advance_to(run.t0 + 5401 * 1_000_000)      # one request, then straight to the deadline
+    assert run.obj() == {"maintain_custody": False} and run.other() == {"break_custody": True}
+    _said(run.steps[5], "below 0.5")
+
+
+@pytest.mark.verifies("FR-11420")
+def test_script_sda_red():
+    def s3(run, res, st):
+        assert res.status == "rejected" and res.reason == "no_command_station"
+        _said(st, "no_command_station")
+    def s4(run, res, st):
+        assert run.clock_min >= 90 and run.obj() == {"break_custody": True}      # Blue did nothing
+    _script("sda-custody-hunt", "red", {1: _noop, 2: _noop, 3: s3, 4: s4})

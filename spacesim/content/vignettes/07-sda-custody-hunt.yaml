@@ -36,32 +36,32 @@ vignette:
   injects: []
   tutorial:
     blue:
-      - {n: 1, title: "Review the scarce sensors", when: "at start", action: review,
-         expect: "BLUE-RADAR-1 + BLUE-OPT-1 (contended); maintain_custody of RED-OBJ pending (min_conf 0.5)"}
-      - {n: 2, title: "Characterize the object", when: "BLUE-RADAR-1 has a pass",
-         action: observe, actor: BLUE-RADAR-1, target: RED-OBJ, params: {intent: characterize, classification: hostile},
-         expect: "characterized track on RED-OBJ; confidence 1.0"}
-      - {n: 3, title: "Advance to the look", when: "+10 min to the collection",
-         action: advance, params: {to: order_window},
-         expect: "maintain_custody MET while fresh"}
-      - {n: 4, title: "Re-task before the half-life", when: "confidence halves every 30 min",
-         action: observe, actor: BLUE-OPT-1, target: RED-OBJ, params: {intent: track},
-         expect: "the optical look (needs lighting) refreshes confidence — prioritize the scarce sensors"}
-      - {n: 5, title: "Sustain to the deadline", when: "through +90 min", action: review,
-         expect: "keep confidence >= 0.5 at +90 min to win the hunt"}
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. You win (maintain_custody) if your track on RED-OBJ has confidence 0.5 or better at T+90 min. Confidence halves every 30 min without a new look. Your own radar and optical sensor cannot see RED-OBJ until about T+134 min, so the Space Surveillance Network (SSN) is your only source in time."}
+      - {n: 2, title: "Ask the SSN for a first look", when: "issue now - Command bar chip 'SSN request'",
+         action: ssn_request, actor: SSN, target: RED-OBJ, params: {intent: characterize, regime: LEO, priority: priority},
+         expect: "Accepted: state SCHEDULED, product due about T+15 min. The SSN is a shared service: you request, it collects when a sensor can see the target, then it delivers the track."}
+      - {n: 3, title: "Advance ten minutes", when: "click +10m once (now T+10 min)", action: advance, params: {dt_s: 600},
+         expect: "Nothing has arrived yet (maintain_custody is still unmet) - products take time."}
+      - {n: 4, title: "Re-task before the first look decays", when: "issue now (T+10 min)",
+         action: ssn_request, actor: SSN, target: RED-OBJ, params: {intent: characterize, regime: LEO, priority: priority},
+         expect: "A second request, product due about T+25 min. Rule of thumb: keep one request in flight at all times. After the first product arrives (T+15 min) maintain_custody becomes MET."}
+      - {n: 5, title: "Keep re-tasking every 20 minutes", when: "advance with +10m and file the same request again at T+30, T+50 and T+70 min",
+         action: ssn_request, actor: SSN, target: RED-OBJ, params: {intent: characterize, regime: LEO, priority: priority},
+         expect: "Each product lands before the previous one decays below 0.5, so maintain_custody never lapses. If you skip a request, confidence drops below 0.5 about 30 min after the last product."}
+      - {n: 6, title: "Hold to the deadline", when: "click +10m until the clock is past T+90 min",
+         action: advance, params: {dt_s: 1201},
+         expect: "maintain_custody MET and Red's break_custody NOT met. Your own radar's first pass (BLUE-RADAR-1 at about T+134 min) comes after the deadline - an optional observe order then adds a second source."}
     red:
-      - {n: 1, title: "Review the evader", when: "at start", action: review,
-         expect: "RED-OBJ (150 m/s Δv); break_custody by +90 min pending (deny_custody)"}
-      - {n: 2, title: "Force a custody lapse", when: "exploit sensor contention",
-         action: review,
-         expect: "if Blue can't re-task before the 30-min half-life, confidence decays below 0.5"}
-      - {n: 3, title: "Evade between looks", when: "Red-doctrine / White-Cell maneuvers",
-         action: maneuver, actor: RED-OBJ, params: {dv: [0.0, 5.0, 0.0]},
-         expect: "a burn timed outside a pass enlarges the uncertainty volume — needs a Red command-uplink path"}
-      - {n: 4, title: "Run out the clock", when: "+ advance to +90 min",
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. You win (break_custody) if Blue's track on RED-OBJ is below 0.5 confidence at T+90 min. You cannot touch the sensors; you win by Blue's neglect or by denying looks."}
+      - {n: 2, title: "Understand the contention", when: "throughout", action: review,
+         expect: "If Blue never files a request, break_custody is MET by default at T+90 min. A diligent Blue refreshes every 20 minutes; your pressure comes from timing, deception and dispersal, not from firepower."}
+      - {n: 3, title: "Try a burn", when: "issue now", action: maneuver, actor: RED-OBJ, params: {dv: [0.0, 5.0, 0.0]},
+         expect: "REFUSED (no_command_station): RED-OBJ needs a Red command path. White Cell can add a ground station with Force add; a burn timed outside a Blue pass enlarges Blue's uncertainty."}
+      - {n: 4, title: "Run out the clock", when: "click +10m until the clock is past T+90 min",
          action: advance, params: {dt_s: 5401},
-         expect: "custody below 0.5 at the deadline -> break_custody MET"}
-
+         expect: "If Blue did nothing, break_custody is MET: custody below 0.5 at the deadline. If Blue re-tasked in time, it is not."}
   intro_brief:
     blue:
       situation: "LEO, March 2030. A Red object of interest (RED-OBJ) has been intermittently characterized. National command requires sustained custody — but our two sensors are CONTENDED (each can service one target at a time)."
@@ -71,7 +71,7 @@ vignette:
       deadline_note: "T+90 min (5400 s). Confidence halves every 30 min without observation."
       roe_note: "No kinetic option. The fight is custody."
       success_criteria: "custody MET: track confidence on RED-OBJ ≥ 0.5 at T+90 min."
-      tool_tips: "Action: observe · actor: BLUE-RADAR OR BLUE-OPT-1 · target: RED-OBJ. Alternate between sensors to beat the half-life. The Tracks (custody) table shows current confidence (decays continuously between observations)."
+      tool_tips: "Your own sensors (BLUE-RADAR-1, BLUE-OPT-1) cannot see RED-OBJ before about T+134 min, so use the Space Surveillance Network: Command bar → SSN request · intent characterize · target RED-OBJ · regime LEO · priority priority. Each product lands 15-25 min after you ask, so file a new request about every 20 min (T+0, +10, +30, +50, +70) to beat the 30-min half-life. The Tracks (custody) table shows current confidence (decays continuously between observations)."
     red:
       situation: "LEO, March 2030. Mission tasking: break Blue's custody hold on RED-OBJ. Blue has two sensors but they're contended — your job is to maneuver between looks so that no single sensor window catches you cleanly."
       mission: "Stay below confidence 0.5 in Blue's track at T+90 min. The lesson: SDA contention is a finite resource — exploit it by timing burns outside sensor windows."

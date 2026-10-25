@@ -11,17 +11,17 @@ vignette:
   blue_forces:
     - id: BLUE-HVA
       kind: satellite
-      orbit: {a_m: 7078137.0, e: 0.0, i_deg: 53.0, raan_deg: 20, argp_deg: 0, ta_deg: 0.0}
+      orbit: {a_m: 7078137.0, e: 0.0, i_deg: 53.0, raan_deg: 180, argp_deg: 0, ta_deg: 0.0}
       resources: {delta_v_ms: 120.0}
       bus_state: {power: {battery_soc: 0.95}}
     - id: BLUE-ESCORT
       kind: satellite
-      orbit: {a_m: 7078137.0, e: 0.0, i_deg: 53.0, raan_deg: 20, argp_deg: 0, ta_deg: 1.0}
+      orbit: {a_m: 7078137.0, e: 0.0, i_deg: 53.0, raan_deg: 180, argp_deg: 0, ta_deg: 1.0}
       resources: {delta_v_ms: 200.0}
   red_forces:
     - id: RED-COORB
       kind: satellite
-      orbit: {a_m: 7078137.0, e: 0.0, i_deg: 53.0, raan_deg: 20, argp_deg: 0, ta_deg: 3.0}
+      orbit: {a_m: 7078137.0, e: 0.0, i_deg: 53.0, raan_deg: 180, argp_deg: 0, ta_deg: 3.0}
       resources: {delta_v_ms: 300.0}
   sensors:
     # BLUE-RADAR = RAF Fylingdales (UEWR), UK — UK Space Command SDA flagship.
@@ -40,26 +40,26 @@ vignette:
   injects: []
   tutorial:
     blue:
-      - {n: 1, title: "Review HVA + escort", when: "at start", action: review,
-         expect: "BLUE-HVA + BLUE-ESCORT in LEO; hva_survives by +1 h pending"}
-      - {n: 2, title: "Track the co-orbital threat", when: "BLUE-RADAR sees RED-COORB",
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. BLUE-HVA is your high-value satellite and BLUE-ESCORT flies with it. You win (hva_survives) if BLUE-HVA is still alive at T+1 h. RED-COORB is a Red satellite flying in the same orbit."}
+      - {n: 2, title: "Task the radar on the co-orbital threat", when: "issue now - BLUE-RADAR's pass opens about T+17 min",
          action: observe, actor: BLUE-RADAR, target: RED-COORB, params: {intent: characterize, classification: hostile},
-         expect: "characterized track on the approaching threat"}
-      - {n: 3, title: "Hold to the deadline", when: "+ advance to +1 h",
-         action: advance, params: {dt_s: 3601},
-         expect: "RED-COORB has no kinetic ROE and no organic safing path — hva_survives MET"}
-      - {n: 4, title: "Active defense (if enabled)", when: "with a TT&C command uplink",
-         action: maneuver, actor: BLUE-HVA, params: {dv: [0.0, 5.0, 0.0]},
-         expect: "evade or interpose the escort — needs a command station (White-Cell can add one)"}
+         expect: "The order is queued with a window starting about T+17 min. Plan first, then the sensor collects. Characterizing gives you a track on the approaching threat."}
+      - {n: 3, title: "Advance to the radar pass", when: "click +10m twice (the clock is now T+20 min, inside the pass)", action: advance, params: {dt_s: 1200},
+         expect: "RED-COORB appears as a hostile track in your Fleet panel."}
+      - {n: 4, title: "Try an evasive burn", when: "after you have the track", action: maneuver, actor: BLUE-HVA, params: {dv: [0.0, 5.0, 0.0]},
+         expect: "REFUSED (no_command_station): nothing in this scenario can send commands to BLUE-HVA. The refusal is the lesson - active defense needs a command path. White Cell can add a ground station with Force add."}
+      - {n: 5, title: "Hold to the deadline", when: "click +10m until the clock is past T+1 h (about 6 clicks)",
+         action: advance, params: {dt_s: 2401},
+         expect: "hva_survives MET. Red has no kinetic authority and no way to safe the HVA here, so it can pressure but not win."}
     red:
-      - {n: 1, title: "Review the co-orbital", when: "at start", action: review,
-         expect: "RED-COORB (300 m/s Δv); neutralize_hva (asset_safed) pending"}
-      - {n: 2, title: "Close on the HVA", when: "Red-doctrine / White-Cell closing burns",
-         action: maneuver, actor: RED-COORB, params: {dv: [0.0, 3.0, 0.0]},
-         expect: "aggressive RPO toward BLUE-HVA — needs a Red command-uplink path"}
-      - {n: 3, title: "Pressure, don't destroy", when: "throughout", action: review,
-         expect: "without White-Cell kinetic ROE + a weapons-quality track, neutralize_hva can't complete — the lesson is restraint"}
-
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. RED-COORB (300 m/s of delta-v) must safe BLUE-HVA (neutralize_hva). You have no kinetic authority."}
+      - {n: 2, title: "Try a closing burn", when: "issue now", action: maneuver, actor: RED-COORB, params: {dv: [0.0, 3.0, 0.0]},
+         expect: "REFUSED (no_command_station): you have no command path to RED-COORB either. Maneuvers need an uplink to a ground station; White Cell can add one with Force add."}
+      - {n: 3, title: "Hold to the deadline", when: "click +10m until the clock is past T+1 h (about 6 clicks)",
+         action: advance, params: {dt_s: 3601},
+         expect: "neutralize_hva stays unmet. The lesson is restraint: pressure short of an irreversible act, and the signalling value of proximity."}
   intro_brief:
     blue:
       situation: "LEO, March 2030. A Red co-orbital satellite has been observed maneuvering toward our high-value LEO asset (BLUE-HVA). Closing geometry suggests a posture demonstration rather than imminent attack — but intent is unclear."

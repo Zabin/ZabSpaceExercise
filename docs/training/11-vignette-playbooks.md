@@ -94,12 +94,12 @@ Deadline **+1 h**. Walked screenshot-by-screenshot in [§4](04-guided-vignette.m
 | Red | `deny_pnt` | PNT link denied in the user bubble |
 
 **Blue — keep service up.**
-1. `BLUE-RADAR` → **observe** `BLUE-GNSS` `{intent: track}` — a health track so you can read the jamming signature.
-2. **+10m** to the +1 h deadline. If the link is up, **`maintain_service` MET**. *Reality check:* MEO is effectively safe from kinetic — the fight is electromagnetic and **local to the user bubble**, so there's no satellite to "save," only a link to keep clean.
+1. `BLUE-RADAR` → **observe** `BLUE-GNSS` `{intent: track}` — a health track so you can read the jamming signature. The radar's pass opens about **T+4 min**, so click **+10m** once and the track appears in your Fleet panel.
+2. **+10m** until the clock is past **T+1 h**. `maintain_service` is **MET** — even while Red is jamming, because the satellite stays healthy. *Reality check:* MEO is effectively safe from kinetic — the fight is electromagnetic and **local to the user bubble**, so there's no satellite to "save," only a link to keep clean.
 
 **Red — deny PNT.**
-1. `RED-JAM` → **jam** `BLUE-GNSS` `{modulation: barrage, power_w: 200.0}` — denies the link in the bubble → **`deny_pnt` MET**.
-2. **+10m** to sustain it. The denial is local and **reversible** — nothing is destroyed.
+1. `RED-JAM` → **jam** `BLUE-GNSS` `{modulation: barrage, power_w: 200.0}` — the window is already open at T+0; advance a minute and **`deny_pnt` MET**.
+2. **+10m** until past T+1 h to sustain it (both cells end up MET). The denial is local and **reversible** — nothing is destroyed.
 
 ---
 
@@ -111,12 +111,12 @@ Deadline **+1 h**. Walked screenshot-by-screenshot in [§4](04-guided-vignette.m
 | Red | `neutralize_hva` | Drive `BLUE-HVA` into safe mode |
 
 **Blue — keep the HVA alive.**
-1. `BLUE-RADAR` → **observe** `RED-COORB` `{intent: characterize, classification: hostile}` — track the approaching co-orbital.
-2. **+10m** to +1 h → **`hva_survives` MET**. With no kinetic ROE and no organic safing path, the threat can pressure but not kill.
-3. *Active defense (if White-Cell adds a TT&C station):* `BLUE-HVA` → **maneuver** to evade, `BLUE-ESCORT` → **maneuver** to interpose. Δv spent vs. mission life is the tradeoff to teach.
+1. `BLUE-RADAR` → **observe** `RED-COORB` `{intent: characterize, classification: hostile}` — queued; the pass opens about **T+17 min**. Click **+10m** twice and the hostile track appears.
+2. `BLUE-HVA` → **maneuver** `{dv: [0, 5, 0]}` is **refused** (`no_command_station`): active defense needs a command path. *If White-Cell adds a TT&C station* the same order can evade, and `BLUE-ESCORT` → **maneuver** can interpose; Δv spent vs. mission life is the tradeoff to teach.
+3. **+10m** until past **T+1 h** → **`hva_survives` MET**. With no kinetic ROE and no organic safing path, the threat can pressure but not kill.
 
 **Red — neutralize it.**
-1. `RED-COORB` → **maneuver** aggressive RPO toward `BLUE-HVA` (needs a Red command-uplink path).
+1. `RED-COORB` → **maneuver** aggressive RPO toward `BLUE-HVA` — **refused** (`no_command_station`) until White Cell adds a Red command-uplink path.
 2. *Gate:* without White-Cell kinetic ROE **and** a weapons-quality track, `neutralize_hva` cannot complete. The vignette's lesson is **restraint** — pressure short of an irreversible act.
 
 ---
@@ -129,14 +129,14 @@ Deadline **+1 h**. Walked screenshot-by-screenshot in [§4](04-guided-vignette.m
 | Red | `destroy_sat` | Destroy `BLUE-SAT` (kinetic **authorized** here) |
 
 **Blue — survive the crisis.**
-1. **+10m** to +1 h. If no strike occurs, **`avoid_debris` MET**.
-2. *Evade (if White-Cell adds a TT&C station):* `BLUE-SAT` → **maneuver** out of the predicted intercept corridor.
+1. `BLUE-SAT` → **maneuver** `{dv: [0, 5, 0]}` is **refused** (`no_command_station`) — `BLUE-SAT` has 20 m/s of Δv but nothing can command it. *If White-Cell adds a TT&C station* the same order shifts it out of the intercept corridor.
+2. **+10m** until past T+1 h. If no strike occurs, **`avoid_debris` MET**; a Red strike lands around **T+20–26 min**.
 
 **Red — execute the intercept.** *(This is the one vignette where kinetic is on by default.)*
-1. `RED-RADAR` → **observe** `BLUE-SAT` `{intent: characterize, classification: hostile}` — builds a **weapons-quality** track (confidence ≥ 0.8).
-2. **+10m** to the look so the track lands.
-3. `RED-ASAT` → **engage** `BLUE-SAT` `{interceptor_class: mrbm_kkv}` — **queued** (kinetic authorized). Pₖ derives from the `INTERCEPTORS` database (4 classes sourced from the four open-source DA-ASAT test records; Audit 2026-06 Commands §M2). Target altitude is a hard reach cap; defender `def.maneuver_evade` halves Pₖ.
-4. **+10m** past intercept → **`destroy_sat` MET**, **but** a debris field forms, `avoid_debris` flips to failed, and the `un_condemnation` inject fires. *Teaching point:* the strike works and is **irreversible** — debris denies the regime to both sides.
+1. `RED-RADAR` → **observe** `BLUE-SAT` `{intent: characterize, classification: hostile}` — builds a **weapons-quality** track (confidence ≥ 0.8). The pass opens about **T+17 min**. (An `engage` issued before the track exists is refused: `no_weapons_quality_track`.)
+2. **+10m** twice (T+20 min) so the track lands.
+3. `RED-ASAT` → **engage** `BLUE-SAT` `{interceptor_class: mrbm_kkv}` — **queued** for about **T+20 to T+26 min** (kinetic authorized). Pₖ derives from the `INTERCEPTORS` database (4 classes sourced from the four open-source DA-ASAT test records; Audit 2026-06 Commands §M2). Target altitude is a hard reach cap; defender `def.maneuver_evade` halves Pₖ.
+4. **+10m** once more (T+30 min, past the intercept) → **`destroy_sat` MET**, **but** a debris field forms, `avoid_debris` flips to failed, and White Cell can fire the manual `un_condemnation` inject. *Teaching point:* the strike works and is **irreversible** — debris denies the regime to both sides.
 
 ---
 
@@ -166,13 +166,14 @@ Deadline **+1 h**. Walked screenshot-by-screenshot in [§4](04-guided-vignette.m
 | Red | `break_custody` | Custody below 0.5 at +90 min |
 
 **Blue — keep the track alive with scarce sensors.**
-1. `BLUE-RADAR-1` → **observe** `RED-OBJ` `{intent: characterize, classification: hostile}`. Confidence 1.0 → **`maintain_custody` MET** while fresh.
-2. **Re-task before the 30-min half-life** — alternate to `BLUE-OPT-1` `{intent: track}` (needs lighting). The two sensors are **contended**, so prioritize: a missed re-task is a lost track.
-3. Sustain confidence ≥ 0.5 all the way to +90 min.
+Your own sensors cannot see `RED-OBJ` in time (`BLUE-RADAR-1`'s first pass is about **T+134 min**, after the deadline), so the **Space Surveillance Network** carries the hunt.
+1. Command bar → **SSN request** `{intent: characterize, target: RED-OBJ, regime: LEO, priority: priority}` — state SCHEDULED, product due about **T+15 min** → **`maintain_custody` MET** once it lands.
+2. **+10m** once, then file the **same request again** at T+10 (product about T+25 min). **Re-task before the 30-min half-life** — a missed re-task is a lost track.
+3. Keep filing at **T+30, T+50 and T+70** with **+10m** clicks between; custody never lapses and **`maintain_custody` is MET** at T+90 min. With a single request, custody drops below 0.5 about 30 min after it lands and Red wins.
 
 **Red — break the chain.**
 1. The simplest win is to **make Blue lapse**: if Blue can't re-task before the half-life, confidence decays below 0.5 and **`break_custody` MET** at the deadline.
-2. `RED-OBJ` → **maneuver** a burn timed **outside** a pass enlarges the uncertainty volume (needs a Red command-uplink path; otherwise Red-doctrine / White-Cell driven).
+2. `RED-OBJ` → **maneuver** `{dv: [0, 5, 0]}` is **refused** (`no_command_station`); with a Red command-uplink path a burn timed **outside** a pass enlarges the uncertainty volume (otherwise Red-doctrine / White-Cell driven).
 
 ---
 
