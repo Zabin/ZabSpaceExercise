@@ -44,6 +44,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Injects + builder + library (incl. fire-time validation) | `content/inject_library.yaml`, `server.py` `/inject`, `session/manager.py` (`fire_inject`, `validate_inject_effects`, `_skip_inject_effect`), `app.js` (`fireBuiltInject`) | WCM-5 | — | — |
 | Activity timeline (Gantt) | `ui_web/static/app.js`, `session/scene.py` | WCM-6 | BLU-2 | RED-2 |
 | Coaching notes | `content/vignette.py` (`Vignette.coaching`) | WCM-6 | — | — |
+| Vignette tutorial step scripts (executable steps, both cells; deadlines stated in briefs) | `content/vignette.py` (`Vignette.tutorial`, `intro_brief`), `ui_web/static/app.js` (Tutorial panel), `tests/test_vignette_tutorials.py` (`_Learner`, `_script`) | — | — | — |
 | Objectives / deadlines | `content/vignette.py`, `server.py` `/objectives` | WCM-6 | BLU-10 | RED-9 |
 | TLE force-add | `engine/propagator.py`, `server.py` `/force/tle` | WCM-7 | — | — |
 | Red doctrine presets + `red_step` | `session/redai.py` | WCM-8 | — | RED-8 |
@@ -219,7 +220,10 @@ maintained by `08-vignette-development` and reviewed by `09-training-manual-revi
   must update the rung too.
 - **The playbooks the rungs link to are machine-verified** by
   `spacesim/tests/test_vignette_tutorials.py` (FR-11420) — that test is the one automated staleness
-  gate in the whole training corpus; keep it green when a vignette script changes.
+  gate in the whole training corpus; keep it green when a vignette script changes. Since 2026-10-25 it
+  also *executes* every step of the scripted vignettes' tutorials on a fixed seed (a step without a
+  check fails the suite) and asserts each brief states the engine's real deadline, so a re-timed
+  scenario fails here before it misleads a learner.
 
 ### 15.5 Requirements footing
 

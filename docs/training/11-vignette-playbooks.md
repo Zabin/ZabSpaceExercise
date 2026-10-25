@@ -201,8 +201,97 @@ everything, so triage. Deadline +90 min.
 
 ---
 
+### 11.9 — Mission Trial: SAR ISR (`mt-isr-sar`)
+
+| Cell | Objective | Win condition |
+|---|---|---|
+| Blue | `collect_sar` · `survive` | A SAR product reaches the ground, and `SAR-1` is operational at +90 min |
+| Red | `deny_downlink` | No product delivered by +90 min |
+
+**Blue — image through cloud and night.**
+1. `SAR-1` → **command** `{verb: isr.collect_now, via: GS-POLAR}` — queued for the `GS-POLAR` pass that opens about **T+19 min**; the payload then shows *collecting*. (A weather advisory at T+10 min says EO would be useless; SAR is unaffected.)
+2. `SAR-1` → **downlink** `{via: GS-POLAR}` — same pass.
+3. **+10m** twice (T+20 min) → **`collect_sar` MET**. **+10m** to past T+90 min → **`survive` MET**.
+
+**Red — contest the pass.**
+1. `RED-DAZZLE` → **engage** `SAR-1` is **refused** (`roe_kinetic_not_authorized`) — and dazzle blinds optics, which SAR does not use.
+2. `RED-JAM` → **jam** `SAR-1` `{modulation: barrage, power_w: 200.0}` — window opens about **T+17 min**, just before Blue's pass. Blue's downlink inside the jam fails: `collect_sar` stays unmet and **`deny_downlink` MET** at the deadline.
+
+---
+
+### 11.10 — Mission Trial: Weather Collection (`mt-weather-collect`)
+
+| Cell | Objective | Win condition |
+|---|---|---|
+| Blue | `deliver_wx` · `wx_op` | One product delivered, `WX-1` operational at +60 min |
+| Red | `track_blue` | Hold a track on `WX-1` at confidence ≥ 0.5 |
+
+**Blue — cadence.**
+1. `WX-1` → **downlink** `{via: GS-WX-PRIMARY}` — the pass opens about **T+34 min**. **+10m** to past T+40 min → **`deliver_wx` MET**; to past T+60 min → **`wx_op` MET**.
+2. *Optional:* `{via: GS-WX-BACKUP}` queues but its pass is about **T+230 min** — useless for this deadline, so the primary pass is the one that counts.
+
+**Red — passive watch.**
+1. `RED-SDA-SENSOR` (carried by `RED-SDA-PASSIVE`) → **observe** `WX-1` `{intent: track}` — window opens about **T+16 min**. **+10m** twice → **`track_blue` MET**.
+2. Advance to past T+60 min: the track has decayed below 0.5 (next window about T+66 min). Custody is a cadence problem for the watcher too.
+
+---
+
+### 11.11 — Novel: ISL Relay + Debris Corridor (`nv-isl-relay-debris`)
+
+| Cell | Objective | Win condition |
+|---|---|---|
+| Blue | `isr_b_survives` · `isr_b_op` | `ISR-B` alive and operational at +30 min |
+| Red | `track_blue` | Hold a track on `ISR-A` |
+
+**Blue — command around the gap.**
+1. **+10m** once; read the advisory (sent at T+5 min): `ISR-B` closes with debris at about **T+17 min**. `ISR-A` is in view of `GS-NORTH` for the first 8 min; `ISR-B` is not.
+2. `ISR-B` → **maneuver** `{dv: [0, 5, 0], via: GS-NORTH}` — queued with delivery path **`isl_relay`** (ground → `ISR-A` → `ISR-B`); Δv drops 100 → 95 m/s.
+3. **+1m**, then **+10m** to past T+30 min → both objectives MET.
+
+**Red — watch.** `RED-SDA-SENSOR` → **observe** `ISR-A` `{intent: track}` (window open from the start); **`track_blue` MET** at T+10 min, then decays below 0.5 by T+30 min unless re-tasked.
+
+---
+
+### 11.12 — Mission Trial: SIGINT Geolocation (`mt-sigint-geolocate`)
+
+> **Known limitation.** Sensors can only observe orbiting objects, and the SIGINT payloads are not
+> taskable sensors, so `characterize_emitter` cannot yet be reached by orders (an `observe` on
+> `RED-EMITTER` is refused: `no_window` / `no_such_sensor`). Filed for the engine; the script below
+> says so in-app. `preserve_constellation` is achievable.
+
+| Cell | Objective | Win condition |
+|---|---|---|
+| Blue | `characterize_emitter` · `preserve_constellation` | Characterized track on `RED-EMITTER`; satellites alive at +60 min |
+| Red | `deny_characterization` | No characterized track at +60 min |
+
+**Blue.** Try `BLUE-OPTICAL` and `SIGINT-1` → **observe** `RED-EMITTER` (both refused, as above); **+10m** to past T+60 min → `preserve_constellation` MET.
+**Red.** No orders; White Cell can fire the manual `emitter_silent` inject. Advance to past T+60 min → `deny_characterization` MET.
+
+---
+
+### 11.13 — Learning: Safe-Mode Recovery (`learn-intermediate-recovery`)
+
+| Cell | Objective | Win condition |
+|---|---|---|
+| Blue | `recover_to_nominal` | `ISR-EO-LEARN` not in safe mode at +45 min |
+| Red | `keep_safed` | `ISR-EO-LEARN` in safe mode |
+
+**Blue — diagnose, patch, recover.**
+1. *(Explanatory)* Read the green bus card; the only command path is `GS-LEARN`, whose pass opens about **T+41 min**.
+2. After Red fires, **+1m** twice: the bird is in safe mode with a cyber signature.
+3. `ISR-EO-LEARN` → **command** `{verb: def.patch_cyber, vector: ground_modem, via: GS-LEARN}` — closes the root cause.
+4. Drill-down → **Begin recovery** (1 pass) → **+10m** past T+45 min → bus nominal, **`recover_to_nominal` MET**. Skip step 3 and the strip reports *root cause persists (cyber)*: the bird stays safed.
+
+**Red.** `RED-CYBER` → **cyber** `ISR-EO-LEARN` `{vector: ground_modem, payload: seize_c2}` (about 62%; not window-gated). If the bird is still green after a minute, fire again. Once Blue patches, the exploit no longer works.
+
+---
+
 > **Want to drive these headless?** Every step is a real `Order` through the `SessionAPI`. See the
 > Python snippets in [§3 your first exercise](03-first-exercise.md) and
 > [§4 guided vignette](04-guided-vignette.md); the same `actor / action / params` apply here.
 
 ---
+
+> **Sources:** `spacesim/content/vignettes/*.yaml` (`tutorial:` blocks and `intro_brief:` deadlines) ·
+> `spacesim/tests/test_vignette_tutorials.py` (`_Learner` / `_script` step drivers) ·
+> [`16-learning-path.md`](16-learning-path.md) · FR-11320/11420

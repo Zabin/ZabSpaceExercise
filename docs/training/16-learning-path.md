@@ -61,13 +61,14 @@ verified [§11 playbook](11-vignette-playbooks.md).
 
 ### Stage 2 — Mission-set specialization (Track A)
 
-After the ladder, go deep on a payload specialty. Order among these is free — pick your seat.
+After the ladder, go deep on a payload specialty. Order among these is free — pick your seat. Each has
+a machine-verified step-by-step tutorial for both cells (in-app **View ▾ → Tutorial**) and a [§11 playbook](11-vignette-playbooks.md) entry.
 
 | Vignette | New this rung | Read first |
 |---|---|---|
-| **`mt-isr-sar`** — SAR ISR | SAR is all-weather/day-night; succeeds where EO fails | [BLU-3/4](13-blue-cell-manual.md) (ISR beam modes) |
-| **`mt-sigint-geolocate`** — SIGINT Geolocation | Multi-pass TDOA/FDOA convergence | [BLU-4](13-blue-cell-manual.md); R129 (SIGINT geolocation) |
-| **`mt-weather-collect`** — Weather Collection | Operations cadence: SoC, eclipse, storage, downlink timing | [BLU-5](13-blue-cell-manual.md) (bus health) |
+| **`mt-isr-sar`** — SAR ISR | SAR is all-weather/day-night; succeeds where EO fails (deadline T+90 min) | [BLU-3/4](13-blue-cell-manual.md) (ISR beam modes); playbook [§11.9](11-vignette-playbooks.md) |
+| **`mt-sigint-geolocate`** — SIGINT Geolocation | Multi-pass TDOA/FDOA convergence (deadline T+60 min). **Known limitation:** `characterize_emitter` is not yet reachable by orders; the tutorial says so and verifies the refusals | [BLU-4](13-blue-cell-manual.md); R129 (SIGINT geolocation); playbook [§11.12](11-vignette-playbooks.md) |
+| **`mt-weather-collect`** — Weather Collection | Operations cadence: SoC, eclipse, storage, downlink timing (deadline T+60 min) | [BLU-5](13-blue-cell-manual.md) (bus health); playbook [§11.10](11-vignette-playbooks.md) |
 
 ### Stage 3 — Adversary doctrine (Track B, Red-focused)
 
@@ -88,8 +89,8 @@ Standalone deep-dives; take them when the relevant mechanic needs reinforcement.
 
 | Vignette | New this rung | Read first |
 |---|---|---|
-| **`learn-intermediate-recovery`** — Safe-Mode Recovery | Diagnose signature → reset → root-cause patch, end-to-end | [BLU-6/7](13-blue-cell-manual.md) (diagnose + recover); [05](05-core-concepts.md) "Safe-mode recovery" |
-| **`nv-isl-relay-debris`** — ISL Relay + Debris-Corridor Maneuver | Command an out-of-LOS bird via cross-link | [BLU-2](13-blue-cell-manual.md) (delivery paths); [05](05-core-concepts.md) "delivery paths" |
+| **`learn-intermediate-recovery`** — Safe-Mode Recovery | Diagnose signature → root-cause patch → recovery chain, end-to-end (deadline T+45 min; one-pass recovery by default) | [BLU-6/7](13-blue-cell-manual.md) (diagnose + recover); [05](05-core-concepts.md) "Safe-mode recovery"; playbook [§11.13](11-vignette-playbooks.md) |
+| **`nv-isl-relay-debris`** — ISL Relay + Debris-Corridor Maneuver | Command an out-of-LOS bird via cross-link (deadline T+30 min) | [BLU-2](13-blue-cell-manual.md) (delivery paths); [05](05-core-concepts.md) "delivery paths"; playbook [§11.11](11-vignette-playbooks.md) |
 
 ---
 
@@ -104,6 +105,7 @@ move with it. The per-vignette playbooks the rungs link to are machine-verified 
 `spacesim/tests/test_vignette_tutorials.py` (FR-11420).
 
 > **Sources:** `spacesim/content/vignettes/*.yaml` · [`06-the-vignette-library.md`](06-the-vignette-library.md) ·
-> [`11-vignette-playbooks.md`](11-vignette-playbooks.md) · FR-11310/11320/11420
+> [`11-vignette-playbooks.md`](11-vignette-playbooks.md) · `spacesim/tests/test_vignette_tutorials.py` ·
+> FR-11310/11320/11420
 
 ---
