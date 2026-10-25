@@ -68,6 +68,9 @@ seat enforcement on a trusted LAN, not authentication.
 |---|---|
 | White Cell route without `?cell=white` | 403, "White Cell control: refused unless the request names the white seat" |
 | `POST /api/sessions` naming a player seat | 403, "sessions are created by the white seat, not the blue seat" |
+| Any White Cell route with a `NaN`, `Infinity` or `-Infinity` number anywhere in its JSON body (a time target, `undo` count, `param` value including nested ones, a coordinate) | 400 naming the field ("a non-finite number (NaN or Infinity) is not allowed"); nothing changes and the session stays readable. A request without `?cell=white` still gets its 403 first |
+| `clock` with `running: true` and a `rate` that is not above 0 and at most 10,000 (negative, zero, `1e18`), or any non-finite `rate` | 400 with the reason; the clock is unchanged. A `rate` sent with `running: false` is ignored but must still be finite. 600 is accepted |
+| `aar/playback/start`, `…/advance` or `…/speed` with a non-finite `speed` or `dt_s` | 400 with the reason; the playback is unchanged. A seat the playback rule refuses still gets its 403 first |
 | `rewind` to a time before `start_epoch` or after now | 400, message gives `[start_epoch, now]` in sim microseconds; the session is unchanged |
 | `step` with a negative, non-finite or over-366-day `dt_sim_s`; `advance` to a time before now or after `start_epoch` + 366 days | 400, message names the span (`start_epoch + 366 days`) or "time cannot move backwards (use rewind)"; "state and clock unchanged". A running clock is not refused: it stops at the span end |
 | `aar/playback/*` from a seat that may not use it | 403 `playback_seat_refused: …` (Observer anything but `state`; Blue/Red naming another cell as viewpoint or driving a playback not on their own cell; no or unknown seat), before anything changes. `advance`/`state` with no playback started: 404 |

@@ -366,8 +366,8 @@ const start = async () => {
   startRealtimeClock();                                     // begin client poll loop
   await refresh();
 };
-// Manual time-jump (White +1m/+10m/+1h): server re-anchors after advance_to.
-const step = async (dt) => { await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: dt }); await refresh(); };
+// Manual time-jump (White +1m/+10m/+1h): the toolbar buttons call the palette's `stepBy` (IP-1082),
+// the one place that posts /step, reports a refusal in #control-status and clears it on success.
 // IP-1074 — "rewind to start" means the exercise's own first instant, which the server reports as
 // `start_epoch` on /clock. Never a guessed 0: read it from the server for the current session each
 // time (one cheap GET), so a session switch can never reuse another session's start.
@@ -2348,7 +2348,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const localEl = document.getElementById("now-local");
     if (localEl) localEl.textContent = localTimeStr(NOW);
   };
-  document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => step(+b.dataset.step));
+  document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => stepBy(+b.dataset.step));
   document.querySelectorAll(".cell").forEach((b) => b.onclick = () => setCell(b.dataset.cell));
   document.querySelectorAll("#fleet-filter .chip").forEach((b) => b.onclick = () => {
     FLEET_FILTER = b.dataset.filter;

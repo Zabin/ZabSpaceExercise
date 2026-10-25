@@ -9,13 +9,15 @@ Everything the UI does goes through these endpoints; the browser never touches t
 
 from __future__ import annotations
 
+import json
+import math
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Literal, Optional
 
 import re
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, field_validator
@@ -23,7 +25,8 @@ from pydantic import BaseModel, field_validator
 from spacesim.engine.orders import Order
 from spacesim.session import ephemeris
 from spacesim.session.api import Ack, CellView, OrderAck
-from spacesim.session.inprocess import PLAYBACK_REFUSED, InProcessSession, PlaybackSeatRefused
+from spacesim.session.inprocess import (PLAYBACK_REFUSED, InProcessSession, PlaybackSeatRefused,
+                                        playback_seat_decision)
 from spacesim.session.scene import SceneView
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -37,6 +40,41 @@ def _validate_id(value: str, *, field: str) -> str:
     if not isinstance(value, str) or not _ID_RE.match(value):
         raise ValueError(f"{field} must match {_ID_RE.pattern}")
     return value
+
+
+def _first_nonfinite(value: Any, path: str = "body") -> Optional[str]:
+    """IP-1082 (NFR-1600, FR-4330) — the path of the first ``NaN``/``Infinity``/``-Infinity`` number
+    anywhere in a decoded JSON value (nested lists/objects included), else None. Starlette's JSON
+    parser accepts those literals, so a pydantic ``float``/``int`` field would otherwise admit them."""
+    if isinstance(value, float):
+        return None if math.isfinite(value) else path
+    if isinstance(value, dict):
+        for k, v in value.items():
+            hit = _first_nonfinite(v, f"{path}.{k}")
+            if hit:
+                return hit
+    elif isinstance(value, list):
+        for i, v in enumerate(value):
+            hit = _first_nonfinite(v, f"{path}[{i}]")
+            if hit:
+                return hit
+    return None
+
+
+async def _refuse_nonfinite(request: Request) -> None:
+    """The one place the non-finite policy lives: a 400 naming the field, before any state changes.
+    A body that is not JSON is left to the route's own validation."""
+    raw = await request.body()
+    if not raw:
+        return
+    try:
+        decoded = json.loads(raw)
+    except ValueError:
+        return
+    hit = _first_nonfinite(decoded)
+    if hit:
+        raise HTTPException(status_code=400,
+                            detail=f"{hit}: a non-finite number (NaN or Infinity) is not allowed")
 
 
 # -- request bodies ------------------------------------------------------------
@@ -345,6 +383,31 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=403,
                                 detail="White Cell control: refused unless the request names the white seat")
 
+    async def _finite_json_guard(request: Request, sid: Optional[str] = None,
+                                 cell: Optional[str] = None) -> None:
+        """IP-1082 — dependency on every White control route (pinned by a route-table test): the
+        session (404) and the seat rule (403, FR-4310) answer first, then a non-finite number
+        anywhere in the JSON body is a 400 with a reason (never a 500 or a poisoned clock)."""
+        if sid is not None:
+            _require(sid)
+        _require_white(cell)
+        await _refuse_nonfinite(request)
+
+    async def _playback_finite_guard(request: Request, sid: str, cell: Optional[str] = None) -> None:
+        """IP-1082 (FR-7330) — the same check for the AAR playback value routes. Those are not
+        White-only, so the seat rule is IP-1077's own: a seat it refuses still gets its 403 first."""
+        _require(sid)
+        try:
+            await _refuse_nonfinite(request)
+        except HTTPException:
+            action = request.url.path.rsplit("/", 1)[-1]
+            raw = json.loads(await request.body())
+            requested = raw.get("viewpoint") if isinstance(raw, dict) else None
+            why = playback_seat_decision(cell, action, requested, api._playback_current(sid))
+            if why:
+                raise HTTPException(status_code=403, detail=why)
+            raise
+
     def _refuse_player_seat_on_create(cell: Optional[str]) -> None:
         """IP-1072 (FR-4320 as extended) — creating a session or a Vignette Creator draft is refused
         when the request *names* a player seat (blue/red/observer). Unlike ``_require_white`` an
@@ -356,7 +419,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
                                 detail="White Cell control: sessions are created by the white seat, not "
                                        f"the {cell} seat")
 
-    @app.post("/api/sessions/{sid}/observer/view")
+    @app.post("/api/sessions/{sid}/observer/view", dependencies=[Depends(_finite_json_guard)])
     def set_observer_view(sid: str, req: ObserverViewRequest, cell: Optional[str] = None) -> Ack:
         """IP-1074 (FR-4320) — White-Cell-only by the *query* seat (403 otherwise). The body ``cell``
         is accepted for compatibility but is not authority: White is passed to the session layer,
@@ -376,7 +439,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return {"designation": api.observer_designation(sid)}
 
-    @app.post("/api/sessions/{sid}/roles/assign")
+    @app.post("/api/sessions/{sid}/roles/assign", dependencies=[Depends(_finite_json_guard)])
     def assign_role(sid: str, req: RoleAssignmentRequest, cell: Optional[str] = None) -> Ack:
         """IP-1151/IP-1074 (FR-4320) — White-Cell-only by the *query* seat (403 for Blue, Red,
         Observer or no seat). The body ``cell`` is accepted for compatibility but is not authority;
@@ -432,7 +495,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         sid = api.create_draft_session(title=req.title)
         return {"session": sid}
 
-    @app.post("/api/sessions/{sid}/save_vignette")
+    @app.post("/api/sessions/{sid}/save_vignette", dependencies=[Depends(_finite_json_guard)])
     def save_vignette(sid: str, req: SaveVignetteRequest, cell: Optional[str] = None) -> dict:
         """IP-1173 (FR-5110) — the only route that writes an authored vignette file. Works for
         any session (draft or normal); no partial file is ever written by any other path."""
@@ -450,28 +513,31 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Multiplayer discovery: list every live session so other tabs/machines can join one."""
         return api.list_sessions()
 
-    @app.post("/api/sessions/{sid}/clock")
+    @app.post("/api/sessions/{sid}/clock", dependencies=[Depends(_finite_json_guard)])
     def set_clock(sid: str, req: ClockRequest, cell: Optional[str] = None) -> dict:
         """Arm/disarm the server-authoritative real-time clock (multiplayer)."""
         _require(sid); _require_white(cell)
-        return api.set_clock(sid, req.running, req.rate)
+        r = api.set_clock(sid, req.running, req.rate)
+        if isinstance(r, Ack):          # IP-1082 — a refused rate is a 400 with the reason, nothing changed
+            raise HTTPException(status_code=400, detail=r.reason)
+        return r
 
     @app.get("/api/sessions/{sid}/clock")
     def get_clock(sid: str) -> dict:
         _require(sid)
         return api.clock_state(sid)
 
-    @app.post("/api/sessions/{sid}/param")
+    @app.post("/api/sessions/{sid}/param", dependencies=[Depends(_finite_json_guard)])
     def set_parameter(sid: str, req: ParamRequest, cell: Optional[str] = None) -> Ack:
         _require(sid); _require_white(cell)
         return api.set_parameter(sid, req.param_id, req.value)
 
-    @app.post("/api/sessions/{sid}/start")
+    @app.post("/api/sessions/{sid}/start", dependencies=[Depends(_finite_json_guard)])
     def start(sid: str, cell: Optional[str] = None) -> Ack:
         _require(sid); _require_white(cell)
         return api.start(sid)
 
-    @app.post("/api/sessions/{sid}/step")
+    @app.post("/api/sessions/{sid}/step", dependencies=[Depends(_finite_json_guard)])
     def step(sid: str, req: StepRequest, cell: Optional[str] = None) -> Ack:
         """IP-1076 (FR-4330, NFR-1600) — ``dt_sim_s`` must be finite and >= 0 and the result must not
         pass ``start_epoch`` + 366 days; anything else is a 400 with a reason, nothing changed."""
@@ -481,7 +547,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=400, detail=ack.reason)
         return ack
 
-    @app.post("/api/sessions/{sid}/advance")
+    @app.post("/api/sessions/{sid}/advance", dependencies=[Depends(_finite_json_guard)])
     def advance(sid: str, req: TimeRequest, cell: Optional[str] = None) -> Ack:
         """IP-1076 (FR-4330, NFR-1600) — ``t`` must lie in ``[now, start_epoch + 366 days]``; anything
         else is a 400 naming the span, nothing changed."""
@@ -491,7 +557,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=400, detail=ack.reason)
         return ack
 
-    @app.post("/api/sessions/{sid}/rewind")
+    @app.post("/api/sessions/{sid}/rewind", dependencies=[Depends(_finite_json_guard)])
     def rewind(sid: str, req: TimeRequest, cell: Optional[str] = None) -> Ack:
         """IP-1074 (FR-4310, NFR-1600) — ``t`` must lie in ``[start_epoch, now]`` (``GET /clock``
         carries ``start_epoch``); anything else is a 400 naming the span, nothing changed."""
@@ -501,7 +567,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=400, detail=ack.reason)
         return ack
 
-    @app.post("/api/sessions/{sid}/undo")
+    @app.post("/api/sessions/{sid}/undo", dependencies=[Depends(_finite_json_guard)])
     def undo(sid: str, req: UndoRequest, cell: Optional[str] = None) -> Ack:
         _require(sid); _require_white(cell)
         ack = api.undo_last(sid, req.n)
@@ -509,7 +575,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=400, detail=ack.reason)
         return ack
 
-    @app.post("/api/sessions/{sid}/inject")
+    @app.post("/api/sessions/{sid}/inject", dependencies=[Depends(_finite_json_guard)])
     def inject(sid: str, req: InjectRequest, cell: Optional[str] = None) -> Ack:
         """Fire or schedule an inject. IP-1063 (BL-0188/BL-0129): a malformed inject, or one whose
         FR-4430 target precondition fails (e.g. an `anomaly` on an asset with no bus), is a 400
@@ -526,12 +592,12 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.inject_library()
 
-    @app.post("/api/sessions/{sid}/force/tle")
+    @app.post("/api/sessions/{sid}/force/tle", dependencies=[Depends(_finite_json_guard)])
     def add_tle(sid: str, req: TleRequest, cell: Optional[str] = None) -> Ack:
         _require(sid); _require_white(cell)
         return api.add_tle(sid, req.id, req.line1, req.line2, owner=req.owner, kind=req.kind)
 
-    @app.post("/api/sessions/{sid}/force/bulk_import")
+    @app.post("/api/sessions/{sid}/force/bulk_import", dependencies=[Depends(_finite_json_guard)])
     def bulk_import(sid: str, req: BulkImportRequest, cell: Optional[str] = None) -> list[dict]:
         """IP-1190 (FR-5220) — multi-object TLE/CCSDS OMM (KVN) import, additive alongside
         `force/tle` above. A file recognized as neither format (Design Decision 1) surfaces as
@@ -543,7 +609,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=400, detail=str(exc))
 
     # -- Vignette Creator UI surfaces (IP-1174) --------------------------------
-    @app.post("/api/sessions/{sid}/force/ground")
+    @app.post("/api/sessions/{sid}/force/ground", dependencies=[Depends(_finite_json_guard)])
     def add_ground_asset(sid: str, req: GroundAssetRequest, cell: Optional[str] = None) -> Ack:
         """FR-5140 — lat/long asset entry, the ground-based sibling of ``force/tle`` above."""
         _require(sid); _require_white(cell)
@@ -562,13 +628,13 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.creator_state(sid)
 
-    @app.put("/api/sessions/{sid}/creator/state")
+    @app.put("/api/sessions/{sid}/creator/state", dependencies=[Depends(_finite_json_guard)])
     def creator_set_state(sid: str, req: CreatorStateRequest, cell: Optional[str] = None) -> Ack:
         """FR-5120 — the JSON view's write: replace the whole asset list atomically."""
         _require(sid); _require_white(cell)
         return api.creator_set_state(sid, req.assets)
 
-    @app.patch("/api/sessions/{sid}/creator/asset/{asset_id}")
+    @app.patch("/api/sessions/{sid}/creator/asset/{asset_id}", dependencies=[Depends(_finite_json_guard)])
     def creator_edit_asset(sid: str, asset_id: str, req: CreatorAssetPatchRequest,
                            cell: Optional[str] = None) -> Ack:
         """FR-5150 — the asset menu's edit/reassign operation (owner reassignment is just a
@@ -576,7 +642,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid); _require_white(cell)
         return api.creator_edit_asset(sid, asset_id, req.patch)
 
-    @app.delete("/api/sessions/{sid}/creator/asset/{asset_id}")
+    @app.delete("/api/sessions/{sid}/creator/asset/{asset_id}", dependencies=[Depends(_finite_json_guard)])
     def creator_delete_asset(sid: str, asset_id: str, cell: Optional[str] = None) -> Ack:
         """FR-5150 — the asset menu's delete operation."""
         _require(sid); _require_white(cell)
@@ -588,7 +654,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.creator_scene(sid)
 
-    @app.post("/api/sessions/{sid}/creator/seats")
+    @app.post("/api/sessions/{sid}/creator/seats", dependencies=[Depends(_finite_json_guard)])
     def declare_seats(sid: str, req: SeatDeclarationRequest, cell: Optional[str] = None) -> dict:
         """FR-5160 — seat-count declaration; White-Cell-only. BL-0123 remediation: unlike
         ``roles/assign`` (which is not cell-partitioned at all — ``cell`` there is purely caller
@@ -606,7 +672,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.seats_declared(sid)
 
-    @app.post("/api/sessions/{sid}/red_step")
+    @app.post("/api/sessions/{sid}/red_step", dependencies=[Depends(_finite_json_guard)])
     def red_step(sid: str, cell: Optional[str] = None) -> list[OrderAck]:
         _require(sid); _require_white(cell)
         return api.red_doctrine_step(sid)
@@ -973,7 +1039,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
             raise HTTPException(status_code=403, detail=ack.reason)
         return ack
 
-    @app.post("/api/sessions/{sid}/aar/playback/start")
+    @app.post("/api/sessions/{sid}/aar/playback/start", dependencies=[Depends(_playback_finite_guard)])
     def playback_start(sid: str, req: PlaybackStartRequest, cell: Optional[str] = None) -> Ack:
         """IP-1280 (FR-7330) — start (or replace) this session's variable-speed AAR playback,
         from ground truth or a named cell's fog-of-war-respecting viewpoint; rejected at the
@@ -983,7 +1049,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return _playback_ack(api.playback_start(sid, req.viewpoint, req.speed, seat=cell))
 
-    @app.post("/api/sessions/{sid}/aar/playback/advance")
+    @app.post("/api/sessions/{sid}/aar/playback/advance", dependencies=[Depends(_playback_finite_guard)])
     def playback_advance(sid: str, req: PlaybackAdvanceRequest, cell: Optional[str] = None) -> dict:
         """IP-1077 — White, or a player while the viewpoint is its own cell; else 403."""
         _require(sid)
@@ -1014,7 +1080,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return _playback_ack(api.playback_set_viewpoint(sid, req.viewpoint, seat=cell))
 
-    @app.post("/api/sessions/{sid}/aar/playback/speed")
+    @app.post("/api/sessions/{sid}/aar/playback/speed", dependencies=[Depends(_playback_finite_guard)])
     def playback_set_speed(sid: str, req: PlaybackSpeedRequest, cell: Optional[str] = None) -> Ack:
         """IP-1077 — White, or a player while the viewpoint is its own cell; else 403."""
         _require(sid)
@@ -1078,7 +1144,7 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         _require(sid)
         return api.save(sid)
 
-    @app.post("/api/sessions/load_save")
+    @app.post("/api/sessions/load_save", dependencies=[Depends(_finite_json_guard)])
     def load_save(state: dict, cell: Optional[str] = None) -> dict:
         _require_white(cell)
         try:

@@ -190,7 +190,7 @@ class PlaybackSession:
         self.mgr = mgr
         self._validate_viewpoint(viewpoint)
         self.viewpoint = viewpoint
-        self.speed = speed
+        self.speed = self._finite("speed", speed)
         self.t = start_t if start_t is not None else mgr.ctx.start_epoch
 
     def _validate_viewpoint(self, viewpoint: str) -> None:
@@ -210,18 +210,38 @@ class PlaybackSession:
         self.viewpoint = viewpoint
 
     def set_speed(self, speed: float) -> None:
-        self.speed = float(speed)
+        # IP-1082 (FR-7330) — the route layer refuses a non-finite value with a 400; this is the
+        # backstop for a non-HTTP caller. Nothing changes on a refusal.
+        sp = self._finite("speed", speed)
+        self.speed = sp
+
+    @staticmethod
+    def _finite(name: str, value) -> float:
+        import math
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise ValueError(f"playback {name} must be a finite number (got {value!r})")
+        return float(value)
+
+    def _clamp(self) -> None:
+        """IP-1082 (FR-7330, review L-2) — keep the cursor inside the recorded span
+        ``[start_epoch, live now]``. A live rewind/undo after the cursor was advanced shortens that
+        span; clamp-and-store, so the reported moment and the stored cursor agree."""
+        lo, hi = self.mgr.ctx.start_epoch, self.mgr.sim.clock.now
+        self.t = max(lo, min(hi, self.t))
 
     def advance(self, dt_s: float) -> dict:
         """Move the played-back moment forward by ``dt_s * speed`` seconds, clamped to the
         recorded exercise's own span (``[ctx.start_epoch, live sim clock]``), and return the
         state at the new moment. Read-only: never touches ``mgr.sim``'s own clock/eventlog."""
-        lo, hi = self.mgr.ctx.start_epoch, self.mgr.sim.clock.now
-        self.t = max(lo, min(hi, self.t + int(dt_s * self.speed * 1_000_000)))
+        dt = self._finite("dt_s", dt_s)
+        self._clamp()
+        self.t += int(dt * self.speed * 1_000_000)
+        self._clamp()
         return self.state()
 
     def state(self) -> dict:
         """The state at the current played-back moment, through the current viewpoint."""
+        self._clamp()
         world = state_at_time(self.mgr, self.t)
         if self.viewpoint == "truth":
             return world.model_dump()

@@ -99,9 +99,14 @@ class InProcessSession:
             mgr._catch_up_locked()
             yield mgr
 
-    def set_clock(self, session: str, running: bool, rate: float = 1.0) -> dict:
+    def set_clock(self, session: str, running: bool, rate: float = 1.0):
+        """Clock state on success; IP-1082 — a refused rate (non-finite / out of range) is a returned
+        ``Ack(ok=False)`` like the sibling time controls, nothing changed."""
         with self._locked(session) as mgr:
-            mgr.set_clock(running, rate=rate)
+            try:
+                mgr.set_clock(running, rate=rate)
+            except ValueError as e:
+                return Ack(ok=False, reason=str(e))
             return mgr.clock_state()
 
     def clock_state(self, session: str) -> dict:

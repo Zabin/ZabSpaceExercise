@@ -184,6 +184,9 @@ class SessionManager:
     # IP-1081 (NFR-3710) — a loaded save's event-log size cap (audit Jun 2026 §D7); the
     # constant's home, aliased on ``InProcessSession``.
     MAX_EVENTLOG_REPLAY_ENTRIES = 100_000
+    # IP-1082 (NFR-1600, FR-4330; Design Decision 3) — the highest real-time clock multiplier
+    # ``set_clock`` accepts: headroom over the 600x NFR-1100 names.
+    MAX_CLOCK_RATE = 10_000
 
     def __init__(
         self, vignette: Vignette, overrides: Optional[dict] = None, seed: int = 0,
@@ -379,11 +382,19 @@ class SessionManager:
         same 366-day span a save may carry (``MAX_SAVE_SPAN_US``), so controls and save agree."""
         return self.ctx.start_epoch + self.MAX_SAVE_SPAN_US
 
+    @staticmethod
+    def _require_finite(name: str, value) -> None:
+        """IP-1082 (NFR-1600, FR-4330) — the manager-level backstop behind the route layer's shared
+        non-finite check: a non-HTTP caller cannot poison a session with ``NaN``/``Infinity`` either."""
+        import math
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise ValueError(f"{name} must be a finite number (got {value!r}); state and clock unchanged")
+
     def step(self, dt_sim_s: float) -> None:
         # IP-1076 (FR-4330, NFR-1600) — refuse a non-finite / negative / out-of-span step before
         # the integer conversion (a huge float must not reach ``int()`` as an OverflowError).
-        import math
-        if not isinstance(dt_sim_s, (int, float)) or not math.isfinite(dt_sim_s):
+        if isinstance(dt_sim_s, bool) or not isinstance(dt_sim_s, (int, float)) \
+                or dt_sim_s != dt_sim_s or dt_sim_s in (float("inf"), float("-inf")):
             raise ValueError(f"step must be a finite number of sim seconds (got {dt_sim_s!r})")
         if dt_sim_s < 0:
             raise ValueError(f"step cannot move time backwards (dt_sim_s={dt_sim_s}); use rewind")
@@ -400,6 +411,7 @@ class SessionManager:
     def advance_to(self, t: int) -> None:
         # IP-1076 (FR-4330, NFR-1600) — an advance stays inside [now, start_epoch + 366 days];
         # raised before any state changes. ``Simulation.advance_to`` is unchanged.
+        self._require_finite("advance target", t)
         now = self.sim.clock.now
         if t < now:
             raise ValueError(f"advance target {t} is earlier than now={now}; "
@@ -419,7 +431,15 @@ class SessionManager:
 
         Pausing folds the elapsed real time into the sim first, so the clock freezes at the
         correct sim instant. Resuming starts a fresh anchor from the current sim time.
+
+        IP-1082 (NFR-1600, FR-4330) — refused with ``ValueError`` before anything changes: a
+        non-finite ``rate`` (even when pausing, where it is otherwise ignored), or, when running,
+        a ``rate`` outside ``(0, MAX_CLOCK_RATE]``.
         """
+        self._require_finite("clock rate", rate)
+        if running and not (0 < rate <= self.MAX_CLOCK_RATE):
+            raise ValueError(f"clock rate {rate!r} is outside (0, {self.MAX_CLOCK_RATE}] sim seconds per "
+                             "wall second; the clock is unchanged")
         if running:
             self._wall_anchor = _time.time()
             self._sim_anchor = self.sim.clock.now
@@ -509,6 +529,7 @@ class SessionManager:
     def rewind_to(self, t: int) -> None:
         # IP-1074 (FR-4310, NFR-1600) — a rewind stays inside the exercise's own span
         # [start_epoch, now]; raised before any state changes. ``Simulation.rewind_to`` is unchanged.
+        self._require_finite("rewind target", t)
         lo, hi = self.ctx.start_epoch, self.sim.clock.now
         if not (lo <= t <= hi):
             raise ValueError(
@@ -526,6 +547,7 @@ class SessionManager:
     def undo_last(self, n: int = 1) -> None:
         # IP-1075 (FR-4310, NFR-1600) — nothing to undo (or n < 1) is refused before any state
         # changes; an undo that drops every entry lands on start_epoch, never before it.
+        self._require_finite("undo count", n)
         if n < 1 or not self.sim.eventlog.entries:
             raise ValueError("nothing to undo" if n >= 1 else f"undo count must be at least 1 (got {n})")
         self.sim.undo_last(n)

@@ -683,3 +683,28 @@ def test_advance_beyond_the_span_is_refused_visibly_and_the_running_clock_stops_
     assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == ceiling
     save = c.http.get(f"/api/sessions/{c.sid}/save").json()
     assert c.http.post("/api/sessions/load_save", params=W, json=save).status_code == 200
+
+
+@pytest.mark.verifies("NFR-2840", "FR-4330")
+@pytest.mark.parametrize("button", ["+1h", "+1m"])
+def test_a_refused_toolbar_step_shows_its_reason_and_raises_no_page_error(console, button):
+    """IP-1082 (review M-2) — the toolbar +1m/+10m/+1h buttons report a refusal in #control-status
+    exactly as the palette does; a successful step clears it."""
+    c = console("leo-isr-denial")
+    c.seat("white")
+    clock = c.http.get(f"/api/sessions/{c.sid}/clock").json()
+    ceiling = clock["start_epoch"] + 366 * 86400 * 1_000_000
+    near = ceiling - (30 if button == "+1m" else 600) * 1_000_000
+    assert c.http.post(f"/api/sessions/{c.sid}/advance", params=W, json={"t": near}).status_code == 200
+    before = c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"]
+    c.page.click(f'button[data-step="{ {"+1h": 3600, "+1m": 60}[button] }"]')
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.length > 0")
+    assert "span" in c.page.inner_text(STATUS).lower()
+    assert c.errors == []
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == before
+    # a rewind, then a toolbar step that succeeds, clears the message
+    assert c.http.post(f"/api/sessions/{c.sid}/rewind", params=W, json={"t": clock["start_epoch"]}).status_code == 200
+    c.page.click('button[data-step="60"]')
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent === ''")
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == clock["start_epoch"] + 60_000_000
+    assert c.errors == []
