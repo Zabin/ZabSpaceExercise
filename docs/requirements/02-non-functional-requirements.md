@@ -19,6 +19,11 @@
 > further amended (GDS ladder alignment, 2026-10-23; **nineteen numbered NFR leaves added** and
 > **six corrected** against the newly authored GDS-06…GDS-10 and the owner decisions of
 > 2026-10-22/23 — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md)).
+> further amended (baseline-maintenance pass 1, 2026-10-24; **no numbered NFR added** — `NFR-1510` and
+> `NFR-2830` no longer say "major" release (`BL-0318`); `NFR-3810` reworded to deletion of retired
+> documents with no register (`BL-0319`); `NFR-3830` narrowed to the three ledger pairs the check
+> compares (`BL-0320`); a status note added to `NFR-2820` — see
+> [`requirements-change-log.md`](requirements-change-log.md) CHG-026…CHG-029.)
 > **Authoritative inputs:**
 > [`build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §9
 > (NFR-1…NFR-10 — the legacy, pre-GDS NFR tag scheme),
@@ -153,13 +158,13 @@ review passes actually run against it).
   - **Related ADRs:** ADR-0002 (deterministic core)
 
 - **NFR-1510 — Released builds install identical dependency versions** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
-  - **Description:** Every major release shall ship with each dependency, including indirect ones, locked to an exact version, so every install of that release resolves the same versions. Between major releases, dependencies are declared with minimum versions only.
-  - **Rationale:** Determinism (NFR-1500) is tested within one environment; a different numpy or sgp4 version on another machine could change numeric results, so saves and replays could diverge between installs of the same release. Owner decision (`BL-0299`, 2026-10-23): "defer pinning to major releases".
-  - **Metric or verification method:** Inspection at major-release readiness — a lock file committed for the release resolves every dependency to an exact version (`11-release-readiness` major-release check; a missing lock is NO-GO).
-  - **Priority:** Must (at each major release)
+  - **Description:** Every release shall ship with each dependency, including indirect ones, locked to an exact version, so every install of that release resolves the same versions. During development, dependencies are declared with minimum versions only.
+  - **Rationale:** Determinism (NFR-1500) is tested within one environment; a different numpy or sgp4 version on another machine could change numeric results, so saves and replays could diverge between installs of the same release. Owner decision (`BL-0299`, 2026-10-23): defer pinning to release time; refined by `BL-0318` (2026-10-24): the lock applies at every release, with no special class of release, and is reviewed at the end of the pipeline in `11-release-readiness`.
+  - **Metric or verification method:** Inspection at release readiness — a lock file committed for the release resolves every dependency to an exact version (`11-release-readiness` check, run at every release; a missing lock is NO-GO).
+  - **Priority:** Must (at each release)
   - **Affected subsystems:** Build/dependency manifest (`pyproject.toml` and the release's lock file)
   - **Dependencies:** NFR-1500, NFR-2200
-  - **Source documents:** GDS-06 NFR-5 (as corrected); `docs/pipeline/backlog.md` `BL-0299` owner decision.
+  - **Source documents:** GDS-06 NFR-5 (as corrected); `docs/pipeline/backlog.md` `BL-0299`, `BL-0318` owner decisions.
   - **Related ADRs:** ADR-0002, ADR-0020
 
 - **NFR-1600 — Robustness to invalid input and illegal actions**
@@ -302,7 +307,7 @@ review passes actually run against it).
 - **NFR-2200 — Research-grade secure development practice**
   - **Description:** The system shall follow standard secure development practices — input
     validation on all loaded files, no execution of scenario-embedded code, declared dependency
-    versions (minimum versions during development; locked at each major release — NFR-1510),
+    versions (minimum versions during development; locked at each release — NFR-1510),
     least-privilege file access — without requiring formal accreditation in v1, while avoiding any
     practice that would block a later RMF/ITSG-33 review (no telemetry phone-home, no hard-coded
     secrets). *(Corrected 2026-10-23, GDS-06 C3, owner decision `BL-0299`: "dependency pinning"
@@ -502,15 +507,16 @@ review passes actually run against it).
   - **Dependencies:** None
   - **Source documents:** `docs/pipeline/backlog.md` `BL-0310` owner direction; GDS-10 §6 F3, OQ2.
   - **Related ADRs:** None identified
+  - **Notes:** *(Added 2026-10-24.)* Met as built: `IP-1330` (the marker and checks) and the backfill packages `IP-1331`, `IP-1332` and `IP-1333` are `VERIFIED` (`VR-1330`–`VR-1333`); the untagged-test allow-list is empty.
 
-- **NFR-2830 — Test relevance audited at each major release** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
-  - **Description:** At each major release, the whole test suite shall be audited for relevance: tests with no declared origin, tests whose declared requirement is retired or superseded, tests that duplicate another test's check, and requirements in the release's scope with no test. Each finding shall be routed to its owning stage.
-  - **Rationale:** Owner direction (`BL-0310`, 2026-10-23): auditing tests for relevance is part of verification, and runs only at major-release verification.
-  - **Metric or verification method:** Inspection — the major-release Release Assessment records the audit's results (`11-release-readiness`).
-  - **Priority:** Must (at each major release)
+- **NFR-2830 — Test relevance audited at each release** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+  - **Description:** At each release, the whole test suite shall be audited for relevance: tests with no declared origin, tests whose declared requirement is retired or superseded, tests that duplicate another test's check, and requirements in the release's scope with no test. Each finding shall be routed to its owning stage.
+  - **Rationale:** Owner direction (`BL-0310`, 2026-10-23): auditing tests for relevance is part of verification, and runs at the end of the pipeline, at every release, in `11-release-readiness` (`BL-0318`, owner decision 2026-10-24: no special class of release).
+  - **Metric or verification method:** Inspection — the Release Assessment records the audit's results (`11-release-readiness`).
+  - **Priority:** Must (at each release)
   - **Affected subsystems:** `spacesim/tests/`, `docs/requirements/`
   - **Dependencies:** NFR-2820
-  - **Source documents:** `docs/pipeline/backlog.md` `BL-0310` owner direction and run #209 cadence decision.
+  - **Source documents:** `docs/pipeline/backlog.md` `BL-0310` owner direction and run #209 cadence decision; `BL-0318` owner decision.
   - **Related ADRs:** None identified
 
 - **NFR-2840 — Load-bearing UI rules verified by automated browser tests** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
@@ -754,15 +760,16 @@ these are the *how well* constraints.
   - **Source documents:** GDS-06 NFR-18 (gap G5); `docs/pipeline/backlog.md` `BL-0297`, `BL-0310`.
   - **Related ADRs:** None identified
 
-- **NFR-3810 — No live reference to a retired document** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
-  - **Description:** No live document shall reference a path or ID recorded in the retired-documents register.
-  - **Rationale:** Retiring a document must not leave live references to it (owner direction 2026-10-19; `BL-0297`). GDS-06 NFR-18 (gap G5).
-  - **Metric or verification method:** Test — the documentation-integrity suite (`BL-0297`) checks it on every run; frozen history (journal run log and archives, Verification Reports, review reports, ADR records) is exempt.
+- **NFR-3810 — A retired document is deleted, and no live document names it** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md); reworded 2026-10-24, `BL-0319`)*
+  - **Description:** A retired document shall be deleted, not moved to an archive folder; the repository's version history is its archive. No live document shall name the path or ID of a deleted document in plain text, except the supersession note that records the deletion.
+  - **Rationale:** Retiring a document must not leave live references to it (owner direction 2026-10-19; `BL-0297`). Owner decision (`BL-0319`, 2026-10-24): delete retired documents, with no archive folder and no separate register file; git history is the archive, and a git tag on the last commit that holds them is the preserved pointer if one is wanted. With deletion, `NFR-3800` already fails any live link to a deleted file, so this leaf covers the one case links miss: a deleted path or ID named in plain text (for example a build-spec module number). GDS-06 NFR-18 (gap G5).
+  - **Metric or verification method:** Test — the documentation-integrity suite (`BL-0297`) fails a live document that names a deleted path or ID listed in the supersession note that recorded its deletion; frozen history (journal run log and archives, Verification Reports, review reports, ADR records) is exempt. Inspection — no archive folder holds a retired document.
   - **Priority:** Should
   - **Affected subsystems:** `docs/` (live documents), `spacesim/tests/` (the suite)
-  - **Dependencies:** NFR-3400
-  - **Source documents:** GDS-06 NFR-18 (gap G5); `docs/pipeline/backlog.md` `BL-0297`, `BL-0310`.
+  - **Dependencies:** NFR-3400, NFR-3800
+  - **Source documents:** GDS-06 NFR-18 (gap G5); `docs/pipeline/backlog.md` `BL-0297`, `BL-0310`, `BL-0319` owner decision.
   - **Related ADRs:** None identified
+  - **Notes:** The check cannot run until a deletion exists and its supersession note lists what it removed (`BL-0292`'s retirement sweep); until then no test names this leaf. Frozen-history folders that already exist (`docs/reviews/`, `docs/implementation/verification/`, `docs/architecture/adr/`, the pipeline archives) are unchanged by this leaf.
 
 - **NFR-3820 — Each index agrees with its folder** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** Each `INDEX.md` shall list exactly the documents in its folder.
@@ -775,14 +782,15 @@ these are the *how well* constraints.
   - **Related ADRs:** None identified
 
 - **NFR-3830 — Status ledgers agree** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
-  - **Description:** The status ledgers (`ROADMAP.md`, the Master Build Plan, the package index, `architecture/INDEX.md` §1, the feature index) shall report the same status for the same item.
-  - **Rationale:** Ledgers drift when one is updated and another is not; GDS-10 is built from them. GDS-06 NFR-18 (gap G5).
+  - **Description:** Where two status ledgers use a shared status vocabulary, they shall report the same status for the same item. Three pairs are in scope: the Master Build Plan and the package index (packages); `architecture/INDEX.md` §1 and `ROADMAP.md` (GDS levels); the feature index and each feature specification's header (features).
+  - **Rationale:** Ledgers drift when one is updated and another is not; GDS-10 is built from them. GDS-06 NFR-18 (gap G5). `BL-0320` (2026-10-24): `ROADMAP.md`'s free-text package and phase statuses use no vocabulary a program can map, so they are outside this leaf rather than checked by guesswork.
   - **Metric or verification method:** Test — the documentation-integrity suite (`BL-0297`) checks it on every run; frozen history (journal run log and archives, Verification Reports, review reports, ADR records) is exempt.
   - **Priority:** Should
   - **Affected subsystems:** `docs/` (live documents), `spacesim/tests/` (the suite)
   - **Dependencies:** NFR-3400
   - **Source documents:** GDS-06 NFR-18 (gap G5); `docs/pipeline/backlog.md` `BL-0297`, `BL-0310`.
   - **Related ADRs:** None identified
+  - **Notes:** *(Reworded 2026-10-24, `BL-0320`.)* The earlier text named five ledgers; the check as built (`IP-1350`, `VR-1350`) compares only the three pairs above. Defining a shared vocabulary for `ROADMAP.md`'s free-text statuses would widen the leaf (a `05`/`03` decision). `NFR-3820` names `INDEX.md` files; `docs/features/feature-index.md` is a catalogue read by `NFR-3830`, not an `INDEX.md`, and whether to rename it or widen `NFR-3820` is routed to `05-feature-decomposition`.
 
 - **NFR-3840 — Every declared test origin resolves** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** Every requirement, feature or package ID a test declares as its origin (NFR-2820) shall exist in the live baseline and shall not be retired or superseded.

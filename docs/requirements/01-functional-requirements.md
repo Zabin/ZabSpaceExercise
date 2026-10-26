@@ -36,6 +36,14 @@
 > further amended (GDS ladder alignment, 2026-10-23; **two numbered FR leaves added** — `FR-4320`,
 > `FR-7230`; `FR-5210` reworded (Space-Track dropped); notes on `FR-4310` and `FR-7220` recording that
 > neither is met as built — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md)).
+> further amended (baseline-maintenance pass 1, 2026-10-24; **three numbered FR leaves added** —
+> `FR-2330` (telemetry attack signatures and the nominal comparison), `FR-4460` (the reusable inject
+> library) and `FR-7450` (ISO-8601 span bounds, promoted from `CR-22`, `BL-0181`); `FR-4320` extended
+> to the routes that configure a session (`BL-0321`, `BL-0324`, `BL-0351`); `FR-1610`'s Acceptance
+> Criteria amended to the gain/footprint trade (`BL-0215`); the stale "not met as built" notes on
+> `FR-4310` and `FR-7220` made current (`BL-0325`, `BL-0329`, `BL-0356`); new candidates
+> `CR-29`–`CR-33` for shipped behavior with no approved source — see
+> [`requirements-change-log.md`](requirements-change-log.md) CHG-022…CHG-030.)
 > **ADR range now ADR-0001 through ADR-0035** (34 `Accepted`, 1 `Superseded` — `ADR-0029` by
 > `ADR-0033`).
 > further amended (`FR-7410`/`FR-7420` OEM/RIC tension, 2026-09-27; **one numbered FR leaf
@@ -759,14 +767,23 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Postconditions:** No new `Sensor.kind` value is introduced; the existing ground/space access
   predicate is unchanged.
 - **Acceptance Criteria:** Given a wide-field-of-regard sensor and a narrow-beam sensor observing
-  the same volume, the wide variant detects more transiting objects at lower per-object gain than
-  the narrow variant, consistent with each one's declared beam-mode parameters.
+  the same target from the same geometry, the wide variant's recorded footprint is wider and its
+  gain lower than the narrow variant's, each consistent with its declared beam-mode parameters, and
+  both variants have the same access windows (the access predicate is unchanged, per the
+  Postcondition).
 - **Verification Method:** Test
 - **Dependencies:** FR-1220
 - **Source Documents:** `docs/pipeline/backlog.md` `BL-0073` (external validation report, 26 Sep
-  2026, item B7); `docs/research/encyclopedia/R109-sensor-operations.md` §3.6 (v1.2).
+  2026, item B7), `BL-0215` (owner decision, 2026-10-18); `docs/research/encyclopedia/R109-sensor-operations.md` §3.6 (v1.2).
 - **Related ADRs:** ADR-0011
 - **Related Requirements:** FR-1220
+- **Notes:** *Amended 2026-10-24 (`BL-0215`, owner decision (A) of 2026-10-18).* The earlier
+  Acceptance Criteria said the fence "detects more transiting objects" than the dish. That pulled
+  against this leaf's own Postcondition (the access predicate is unchanged) and against `R109`'s
+  recommendation to model the difference as a beam-mode extreme. As built (`IP-1220`, `IP-1222`,
+  accepted by `VR-1220`) the fence's wider swath changes the gain and the recorded footprint, never
+  the number of access windows. The Acceptance Criteria now state that trade. A fence that sees
+  more objects per pass would be new access behaviour (option (B)), and is not required.
 
 #### FR-1620 — Optical sensor solar/lunar exclusion angle
 
@@ -1110,7 +1127,47 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Source Documents:** `docs/pipeline/backlog.md` `BL-0075` (external validation report, 26 Sep
   2026, item B9); `FR-2310`; `FR-6210`.
 - **Related ADRs:** ADR-0004
-- **Related Requirements:** FR-2310, FR-6210, FR-4430
+- **Related Requirements:** FR-2310, FR-6210, FR-4430, FR-7450
+
+#### FR-2330 — Telemetry attack signatures and a nominal comparison trace
+
+*(new 2026-10-24, baseline-maintenance pass 1 — shipped behavior; closes the telemetry part of `BL-0348`)*
+
+- **ID:** FR-2330
+- **Title:** Show a hostile effect as a telemetry symptom, and offer a clean comparison trace
+- **Description:** The system shall show an active hostile effect against an Asset (jamming, cyber,
+  directed energy, kinetic) as a change in that Asset's ordinary subsystem telemetry parameters, with
+  no label naming the attack, and shall offer for any telemetry parameter a nominal comparison trace
+  that is the same parameter's series with the hostile-effect change removed.
+- **Rationale:** Operators diagnose from symptoms, not from a label, and compare a trace to what it
+  would have been (`R121` v1.0 "Attack signatures are deliberately symptoms, not labels" and "The
+  nominal-baseline overlay is the same function with the attack term suppressed"; GDS-08 §7.3).
+- **Priority:** Should
+- **Inputs:** An Asset, a telemetry parameter, a simulated time span, and a request for the nominal
+  trace.
+- **Outputs:** The parameter's series as the requesting cell may see it; on request, the same series
+  without the hostile-effect change.
+- **Preconditions:** The requesting cell has fog-of-war-filtered access to the Asset's telemetry
+  (`FR-2310`, `FR-6210`).
+- **Postconditions:** Neither trace changes `WorldState` or the random-number state; the nominal trace
+  differs from the live trace only where a hostile effect was active.
+- **Acceptance Criteria:** Given an Asset under a jam, a cyber effect, a directed-energy effect and a
+  kinetic effect in turn, the live series for a parameter that effect disturbs departs from its
+  baseline while it is active and returns afterwards where the effect is reversible, and no returned
+  field names the attack type; the nominal trace for the same parameter and span equals the live trace
+  outside the active spans and the clean baseline inside them; requesting either trace twice returns
+  identical values.
+- **Verification Method:** Test
+- **Dependencies:** FR-2310, FR-6210
+- **Source Documents:** `docs/research/encyclopedia/R121-telemetry-logging-and-attack-signatures.md`
+  (the four-vector signature table; the nominal-baseline overlay); `docs/architecture/08-ui-architecture.md`
+  §7.3 (compare-to-nominal ghost); `docs/pipeline/backlog.md` `BL-0348`.
+- **Related ADRs:** ADR-0004
+- **Related Interfaces:** INT-0007
+- **Related Requirements:** FR-2310, FR-2320, FR-1430
+- **Notes:** Shipped (`engine/telemetry.py`, the telemetry series endpoint's nominal option). This leaf
+  records behavior the build already has; it adds no feature. The exact magnitudes of each signature
+  are calibration data, not requirements.
 
 ### FR-2400 — Payload-type-specific operations
 
@@ -1587,40 +1644,59 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Related ADRs:** ADR-0016
 - **Related Interfaces:** INT-0002
 - **Related Requirements:** FR-1110, FR-6300, FR-4320
-- **Notes:** *(Added 2026-10-23, GDS ladder alignment.)* **Not met as built.** The HTTP clock
-  routes (`/clock`, `/step`, `/advance`, `/rewind`, `/undo`) refuse only the Observer seat; a Blue or
-  Red seat's request is accepted (GDS-09 §4, OQ1). `IP-1060` records the leaf as "enforced at the
-  `SessionAPI` layer" and VR-1060 accepted it, but no code enforces it and no test asserts the
-  Acceptance Criteria. The owner has decided to enforce it server-side (`BL-0307`).
+- **Notes:** *(Added 2026-10-23, GDS ladder alignment; made current 2026-10-24, `BL-0325`/`BL-0356`.)*
+  **Met as built since `IP-1068`** (`VERIFIED` 2026-10-24, `VR-1068`): the HTTP clock routes
+  (`/clock`, `/step`, `/advance`, `/rewind`, `/undo`) refuse a request that does not name the White
+  seat, and a test asserts the Acceptance Criteria. Before `IP-1068` the routes refused only the
+  Observer seat (GDS-09 §4, OQ1) and `IP-1060`/`VR-1060` had recorded the leaf as met without any code
+  or test enforcing it; the owner decided to enforce it server-side (`BL-0307`). The check is a
+  client-asserted seat, not authentication (`FR-4320` Notes).
 
 #### FR-4320 — White Cell controls refused for other seats
 
-*(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
+*(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md); scope extended 2026-10-24, `BL-0321`/`BL-0324`/`BL-0351`)*
 
 - **ID:** FR-4320
-- **Title:** Refuse White Cell lifecycle and facilitation controls from any other seat
+- **Title:** Refuse White Cell lifecycle, facilitation and session-configuration controls from any other seat
 - **Description:** The system shall refuse, with a reason, any request from a Blue, Red or Observer
-  seat to start a session, set a parameter, fire an inject, edit the force (TLE, bulk or ground
-  add), assign seats, designate the Observer, or load a save into a session.
-- **Rationale:** These are White Cell's controls (GDS-01; GDS-08 §7.6). As built only five
-  White-only actions are enforced server-side (GDS-09 §4). Owner decision (`BL-0307`, 2026-10-22):
-  enforce on the server, with the same check that already guards those five.
+  seat to start a session, set a parameter, fire, edit or cancel an inject, edit the force (TLE, bulk
+  or ground add), assign seats, designate the Observer, load a save into a session, create a session
+  or a Vignette Creator draft, edit a Creator draft (its state, its assets or its seat declaration),
+  save a draft or a running session as a vignette or a scenario, or trigger the Red doctrine AI's
+  step. Clock control is covered by `FR-4310`.
+- **Rationale:** These are White Cell's controls (GDS-01; GDS-08 §7.6). `IP-1068` (`VERIFIED`,
+  `VR-1068`) enforces the original list on the server. Further controls still accepted a Blue or Red seat
+  although they configure or alter the session for everyone
+  (`BL-0321`, `BL-0324`, `BL-0351`; `VR-1068` F1; integration review of tranche 2, F-02), and a
+  Blue or Red seat could trigger them by accident. The scope is extended to them so "every White
+  Cell control" is literally true of the server. Player-facing routes are deliberately not in scope:
+  orders and their dry-run and compute helpers, order cancellation, recovery, SSN requests, and every
+  cell-scoped read.
 - **Priority:** Must
 - **Inputs:** A control request and the seat it names.
 - **Outputs:** The control applied, or a refusal with a reason.
-- **Preconditions:** A session exists.
-- **Postconditions:** No request from a non-White seat changes session state through these
-  controls.
+- **Preconditions:** A session exists, or, for session and draft creation, the request names a seat.
+- **Postconditions:** No request from a non-White seat changes session state, creates a session or
+  draft, writes a vignette file, or advances the Red AI through these controls.
 - **Acceptance Criteria:** For each control listed, a request naming `blue`, `red` or `observer` is
-  refused and the session state is unchanged; the same request naming `white` succeeds.
+  refused and the session state (or, for creation and save, the session registry and the save
+  directory) is unchanged; the same request naming `white` succeeds.
 - **Verification Method:** Test
 - **Dependencies:** FR-4310
-- **Source Documents:** GDS-09 §4 and OQ1; GDS-08 §7.1, §7.6; `docs/pipeline/backlog.md` `BL-0307`.
+- **Source Documents:** GDS-09 §4 and OQ1; GDS-08 §7.1, §7.6; `docs/pipeline/backlog.md` `BL-0307`,
+  `BL-0321`, `BL-0324`, `BL-0351`; `docs/implementation/verification/VR-1068-white-only-controls-server-enforcement.md`
+  (live route-table re-derivation, F1); `docs/reviews/integration-review-tranche-2-white-controls-saves-test-origins.md` F-02.
 - **Related ADRs:** ADR-0016, ADR-0015 (the seat is still client-asserted)
 - **Related Interfaces:** INT-0002, INT-0003
-- **Related Requirements:** FR-4310, FR-6510, FR-6220
+- **Related Requirements:** FR-4310, FR-4450, FR-5110, FR-5510, FR-6510, FR-6220
 - **Notes:** This is a structural check at the same trust level as the Observer rejection: a
   participant who lies about their seat still bypasses it (GDS-09, the LAN trust model).
+  *Scope extended 2026-10-24 (baseline-maintenance pass 1).* **The original list is met as built
+  (`IP-1068`); the extension is not yet built** — the Creator edit routes, `save_vignette`, the
+  Red-step route and session and draft creation still refuse only the Observer. A `07`
+  remediation package is owed. How a creation request names its seat is a design matter for
+  `06`/`07`; this leaf requires only that a creation request naming a non-White seat is refused.
+  Reads of a draft's state remain ground-truth reads under `FR-6220`, not controls.
 
 ### FR-4400 — Inject authoring and firing
 
@@ -1915,6 +1991,39 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Related ADRs:** ADR-0005
 - **Related Interfaces:** INT-0002, INT-0016
 - **Related Requirements:** FR-4410, FR-4420, FR-4620
+
+#### FR-4460 — Reusable inject library
+
+*(new 2026-10-24, baseline-maintenance pass 1 — shipped behavior; closes the inject-library part of `BL-0345`)*
+
+- **ID:** FR-4460
+- **Title:** Offer White Cell a library of reusable inject templates
+- **Description:** The system shall offer White Cell a library of reusable inject templates, each
+  carrying its effects, from which an inject can be started and edited before it is fired or
+  scheduled.
+- **Rationale:** GDS-05 FR-W4 says injects are fired "from a reusable inject library"; no leaf stated
+  the library itself (GDS-05 §6, FR-W4; ADR-0036 keeps the inject library as a separate template
+  library from the vignette's inline injects).
+- **Priority:** Should
+- **Inputs:** A request for the library.
+- **Outputs:** The list of templates, each with its name and effects payload.
+- **Preconditions:** A session exists.
+- **Postconditions:** Listing the library changes no session state; a template used to build an
+  inject is a copy, so editing it does not change the library.
+- **Acceptance Criteria:** A request for the library returns at least one template with its effects
+  payload; an inject built from a template and edited fires with the edited effects; the library is
+  unchanged afterwards.
+- **Verification Method:** Test
+- **Dependencies:** FR-4410
+- **Source Documents:** `docs/architecture/05-functional-requirements.md` FR-W4;
+  `docs/architecture/adr/ADR-0036-content-template-libraries-vs-inline-authoring.md`;
+  `docs/architecture/04-domain-model.md` (inject library); `docs/pipeline/backlog.md` `BL-0345`.
+- **Related ADRs:** ADR-0036, ADR-0005
+- **Related Interfaces:** INT-0002
+- **Related Requirements:** FR-4410, FR-4430, FR-4450
+- **Notes:** Shipped (`content/inject_library.yaml`, `GET …/inject_library`). Which templates the
+  library holds is content, not a requirement. Severity-name handling inside a template's
+  space-weather effect is a validation detail of `FR-4430`, not restated here.
 
 #### FR-4620 — Side-by-side controller view: each cell's picture beside truth
 
@@ -2854,10 +2963,14 @@ is no longer required. Same ID, narrower scope.)*
 - **Related ADRs:** ADR-0022
 - **Related Interfaces:** INT-0011, INT-0012
 - **Related Requirements:** FR-7210, FR-7230
-- **Notes:** *(Added 2026-10-23, GDS ladder alignment.)* **Not met as built.** The save envelope
-  carries only the vignette's ID and parameter overrides, not its content (GDS-07 §6), so the
-  content portion cannot be extracted from the save itself; resume reloads the vignette file by
-  ID. FR-7230 (owner decision `BL-0302`) closes this.
+- **Notes:** *(Added 2026-10-23, GDS ladder alignment; made current 2026-10-24, `BL-0329`/`BL-0356`.)*
+  **Met as built since `IP-1101`** (`VERIFIED` 2026-10-24, `VR-1101`): a save is self-contained — it
+  carries the vignette as loaded plus force-added assets as its content portion, and the replay
+  baseline as its session portion — so the content portion can be extracted and loaded as a fresh
+  vignette. Before `IP-1101` the save envelope carried only the vignette's ID and parameter
+  overrides (GDS-07 §6) and resume reloaded the vignette file by ID. `FR-7230` (owner decision
+  `BL-0302`) states the resume consequence. GDS-07 §6 still carries the old wording (`03`'s to
+  update, `BL-0329`).
 
 #### FR-7230 — Resume independent of the original vignette file
 
@@ -2888,7 +3001,9 @@ is no longer required. Same ID, narrower scope.)*
 - **Related Requirements:** FR-7210, FR-7220, NFR-1800
 - **Notes:** Whether saves also carry a format and simulator version, and whether the engine-level
   `SavedSession` shape converges with the session save, are design choices for the feature
-  specification (GDS-07 OQ2–OQ3).
+  specification (GDS-07 OQ2–OQ3). *(Made current 2026-10-24.)* Met as built since `IP-1101`
+  (`VERIFIED`, `VR-1101`; feature specification `FS-110` v2.0): a save carries `save_format` and
+  `simulator_version`, a legacy save reloads by ID with a warning.
 
 ### FR-7300 — AAR replay, scrub, and branch-compare
 
@@ -3020,7 +3135,7 @@ is no longer required. Same ID, narrower scope.)*
   ECI↔ECEF frame machinery this export's ECI output reuses).
 - **Related ADRs:** ADR-0004, ADR-0015
 - **Related Interfaces:** INT-0014
-- **Related Requirements:** FR-6220, FR-7420, FR-7430
+- **Related Requirements:** FR-6220, FR-7420, FR-7430, FR-7450
 - **Notes:** *Amended 2026-09-27 (owner decision, closing `docs/pipeline/backlog.md` `BL-0136`,
   a `VR-1210` finding): the original Acceptance Criteria required RIC-transformed state vectors in
   **both** CSV and CCSDS OEM. `VR-1210` found this infeasible as written — CCSDS OEM has no native
@@ -3081,7 +3196,7 @@ is no longer required. Same ID, narrower scope.)*
   of truth, not yet an independent estimate).
 - **Related ADRs:** ADR-0004, ADR-0013
 - **Related Interfaces:** INT-0007
-- **Related Requirements:** FR-7410, FR-1510, FR-7430
+- **Related Requirements:** FR-7410, FR-1510, FR-7430, FR-7450
 - **Notes:** *Amended 2026-09-27 (owner decision, closing `BL-0136`) — same CSV/OEM split as
   `FR-7410`'s Notes: OEM stays ECI-only (its native format); RIC data for the cell-observed variant
   is available via CSV and via the companion `FR-7430` file, scoped to the requesting cell's own
@@ -3191,6 +3306,42 @@ is no longer required. Same ID, narrower scope.)*
   shipped `IP-1211` implements the literal pre-amendment reading (Design Decision 5: an own asset
   without a `Track` is rejected), so a remediation package is owed. No other leaf's behaviour
   changes. See [`reviews/requirements-update-parked-questions-batch.md`](../reviews/requirements-update-parked-questions-batch.md).
+
+#### FR-7450 — ISO-8601 UTC bounds on time-span exports
+
+*(new 2026-10-24, baseline-maintenance pass 1 — promoted from candidate `CR-22`, `BL-0181`, owner decision of 2026-10-18)*
+
+- **ID:** FR-7450
+- **Title:** Accept ISO-8601 UTC timestamps as the span bounds of every time-span export
+- **Description:** The system shall accept the start and end of a time-span export (the telemetry CSV
+  export, the truth and cell-observed ephemeris exports, and the companion RIC export) as ISO-8601
+  UTC timestamps, in addition to integer microseconds of simulated time.
+- **Rationale:** The exports took their bounds only as integer microseconds, a unit the console never
+  displays, so an operator had to read values out of the event log or a save file (`REV-TRN-002` F7).
+  Project-owner decision (`BL-0181`, 2026-10-18): human-readable ISO-8601 timestamps. The console is
+  not required to surface microseconds.
+- **Priority:** Should
+- **Inputs:** A span start and end, each either an ISO-8601 UTC timestamp or an integer number of
+  microseconds of simulated time.
+- **Outputs:** The export for the span, identical to the export for the same instants given as
+  microseconds; or a refusal naming the bound that cannot be read.
+- **Preconditions:** The export's own preconditions (`FR-2320`, `FR-7410`, `FR-7420`, `FR-7430`).
+- **Postconditions:** The form of a bound never changes the exported values, the span ceiling
+  (`NFR-3710`) or the clamping of a partly out-of-range span.
+- **Acceptance Criteria:** For each export, a span given as ISO-8601 UTC bounds returns exactly the
+  rows returned for the same span given as microseconds; a bound that is neither form is refused with
+  a reason naming it and nothing is exported.
+- **Verification Method:** Test
+- **Dependencies:** FR-2320, FR-7410, FR-7420, FR-7430
+- **Source Documents:** `docs/pipeline/backlog.md` `BL-0181` (owner decision, 2026-10-18);
+  `docs/reviews/training-review-run97-scope.md` F7; candidate `CR-22` (promoted).
+- **Related ADRs:** ADR-0004, ADR-0015
+- **Related Interfaces:** INT-0014
+- **Related Requirements:** FR-2320, FR-7410, FR-7420, FR-7430, NFR-3710
+- **Notes:** **Not yet built** — the routes take integer microseconds only; a `06`/`07` package is
+  owed. Simulated time is already converted to ISO form at the boundary (`CLAUDE.md`, `simtime`), so
+  the requirement adds no new time model. Whether a bound without a zone designator is read as UTC is
+  a design choice for the feature specification.
 
 ---
 
@@ -3785,7 +3936,7 @@ by that promotion.
   program in the IRB sense, so this boundary remains unaddressed by their promotion. A requirement
   would still be vacuous until a concrete human-subjects-research feature is proposed; recorded
   here so the constraint is not silently forgotten if/when one is. **Source:** DOM-004 §6.
-- **CR-22 — Human-readable time bounds for time-span exports.** *(new 2026-10-15, `BL-0181`)* The
+- **CR-22 — Human-readable time bounds for time-span exports. `PROMOTED 2026-10-24 → FR-7450`, on the project owner's decision (`BL-0181`, 2026-10-18): ISO-8601 UTC bounds.** *(new 2026-10-15, `BL-0181`)* The
   time-span exports (`FR-7410`, `FR-7420`, `FR-2320`) take their span bounds only as integer
   microseconds of simulated time. The console never displays that unit, so an operator must read the
   values out of the event log or a save file. A requirement that the exports accept ISO-8601 UTC
@@ -3909,6 +4060,44 @@ by that promotion.
   FR-1410's own intentional, documented v1 scope, tracked as assumption A2 in the
   [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md). **Source:**
   GDS-01 §12 "Negative training" risk row; `strategic-review-2026-07.md` §4.5, §6.1 R6; ADR-0031.
+
+- **CR-29 — Defender countermeasure modifiers on electronic-warfare and kinetic outcomes.**
+  *(new 2026-10-24, `BL-0342`)* Beyond cyber posture (`FR-1420`), the build lets a defender's
+  frequency hopping, interference mitigation and evasion manoeuvre change the outcome of a jam or an
+  engagement. `R115` and `R110` describe the real countermeasures and `ADS-3500` lists the verbs, but
+  no approved architecture or domain statement commits the system to these modifiers or to their
+  strength, so a requirement would invent the numbers. **Shipped; not baselined.** **Source:**
+  `docs/pipeline/backlog.md` `BL-0342`; `docs/research/encyclopedia/R115-electronic-warfare-in-space-operations.md`;
+  `docs/architecture/ADS-3500-role-scoped-command-enforcement.md`.
+- **CR-30 — Operations-fidelity levels of the bus view.** *(new 2026-10-24, `BL-0342`)* The bus view
+  shown to an operator is scaled by the vignette's operations-fidelity dial (tactical, realistic, full
+  TT&C). GDS-03 §3 names the dial in passing; no input document defines the levels or what each one
+  shows. **Shipped; not baselined.** **Source:** `docs/pipeline/backlog.md` `BL-0342`; GDS-03 (the
+  ops-fidelity dial).
+- **CR-31 — Per-cell activity feed with lanes.** *(new 2026-10-24, `BL-0345`)* The console shows each
+  cell a feed of its recent activity in lanes. Only the traceability matrix mentions it; no
+  architecture or domain statement describes the feed, its lanes or what each lane may disclose
+  (a fog-of-war question). **Shipped; not baselined.** **Source:** `docs/pipeline/backlog.md`
+  `BL-0345`.
+- **CR-32 — Scene content: osculating orbital elements and the subsolar point.** *(new 2026-10-24,
+  `BL-0345`, `BL-0348`)* The belief scene carries each object's orbital elements and the subsolar
+  point, beside the ground track that `FR-1210` already requires. No input document commits the scene
+  to either. **Shipped; not baselined.** **Source:** `docs/pipeline/backlog.md` `BL-0345`, `BL-0348`.
+- **CR-33 — SIGINT geolocation error scaling.** *(new 2026-10-24, `BL-0345`)* The geolocation error of
+  a SIGINT collection scales with dwell time, the number of collectors and atmospheric loss
+  (`engine/sigint.py`). `R129` grounds the practice, and `FR-1650` baselines the passive-RF fix itself,
+  but no approved statement commits the system to this scaling law. **Shipped; not baselined.**
+  **Source:** `docs/pipeline/backlog.md` `BL-0345`; `docs/research/encyclopedia/R129-sigint-collection-and-geolocation-accuracy.md`.
+
+*Decided to be implementation detail or already covered (2026-10-24, `BL-0342`/`BL-0345`/`BL-0348`),
+so neither leaf nor candidate:* access-window caching (a performance device of the sub-stepped clock,
+`ADR-0006`/`ADR-0011`; its observable effect is `NFR-1500` determinism and the performance NFRs);
+ISR beam-mode values (calibration data under `FR-1220` and `FR-1610`); bus and defence command verbs
+(the catalogue is content under `FR-2400`/`FR-3510`); the J3/J4, solar-radiation-pressure and
+third-body functions (pure functions not wired into the shipped propagator — `FR-1230` covers the one
+shipped perturbation, index-driven drag); vignette-library content and ground-site placement checks
+(content quality under `FR-5310` and `NFR-2010`); the vignette YAML-source endpoint (in `FR-6220`'s
+named set); tutorial delivery (`FR-11420`).
 
 ---
 

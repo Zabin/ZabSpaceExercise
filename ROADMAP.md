@@ -728,6 +728,8 @@ overclaim that Role Assignments are persisted), `IP-1110` with zero findings —
 finding anywhere in the sweep. The tranche's evidence base for `11-release-readiness` is now
 complete.
 
+**Integration review (2026-10-24):** [`reviews/integration-review-tranche-2-white-controls-saves-test-origins.md`](docs/reviews/integration-review-tranche-2-white-controls-saves-test-origins.md) reviewed ten `VERIFIED` packages as one tranche (`IP-1068`, `1101`, `1091`, `1069`, `1330`, `1350`, `1340`, `1331`, `1332`, `1333`) — full suite 1284 tests (0 failed, 3 skipped), both permanent gates and the browser suite green; 0 Critical, 0 High, 9 Medium, 7 Low (half-wired console/tool call sites, an `FR-4320` scope gap, a stale save `content` portion after Creator edits, and stale status text in package headers, the RTM, GDS-07/08/09 and `CLAUDE.md`); the 22-branch stacked chain (#59-#80) merges cleanly in order with merge commits and conflicts if squashed one PR at a time.
+
 **Training review (2026-07-05):** [`reviews/training-review-runs16-19-scope.md`](docs/reviews/training-review-runs16-19-scope.md)
 independently reviewed the training-corpus scope runs #16/#19 touched (`training/02`, `12`, `13`,
 `14`, `15`, `INDEX`) against shipped behavior — all Observer/classification/staffing/assessment/
