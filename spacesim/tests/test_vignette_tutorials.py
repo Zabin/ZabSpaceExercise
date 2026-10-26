@@ -13,6 +13,8 @@ Two layers of protection:
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from spacesim.content.vignette import list_vignettes, load_vignette
@@ -380,6 +382,8 @@ class _Learner:
             return self.mgr.begin_recovery(self.cell, st["actor"], p["via"])
         if act == "ssn_request":
             return self.mgr.submit_ssn_request(self.cell, p["intent"], st["target"], p["regime"], p["priority"])
+        if "." in act:             # a bus/payload verb is picked by name in the Action menu; the console posts it as
+            p, act = {**p, "verb": act}, "command"      # action "command" + params.verb (app.js)
         return _issue(self.mgr, self.cell, actor=st["actor"], action=act, target=st.get("target"), params=p)
 
     def obj(self):
@@ -573,6 +577,10 @@ def test_script_sda_red():
 
 # -- the library-wide tutorial contract ------------------------------------------------------------------
 
+def _is_verb(a):
+    return "." in a
+
+
 _STEP_ACTIONS = {"review", "advance", "observe", "downlink", "jam", "engage", "maneuver", "cyber", "command",
                  "recovery", "ssn_request"}
 _WITH_TUTORIAL = NUMBERED + ["training-basics", "mt-isr-sar", "mt-sigint-geolocate", "mt-weather-collect",
@@ -589,7 +597,7 @@ def test_every_tutorial_step_is_executable_or_explicitly_explanatory(vid):
         assert len(steps) >= 3, f"{vid}.{side}: tutorial too short"
         assert [s["n"] for s in steps] == list(range(1, len(steps) + 1)), f"{vid}.{side}: steps must be numbered 1..N"
         for st in steps:
-            assert st["action"] in _STEP_ACTIONS, f"{vid}.{side} step {st['n']}: action {st['action']!r} is not executable"
+            assert st["action"] in _STEP_ACTIONS or _is_verb(st["action"]), f"{vid}.{side} step {st['n']}: action {st['action']!r} is not executable"
             assert st.get("title") and st.get("when") and st.get("expect"), f"{vid}.{side} step {st['n']}: needs title/when/expect"
             if st["action"] not in ("review", "advance"):
                 assert st.get("actor") or st["action"] == "ssn_request", f"{vid}.{side} step {st['n']}: needs an actor"
@@ -628,7 +636,10 @@ def test_script_sar_blue():
 @pytest.mark.verifies("FR-11420")
 def test_script_sar_red_and_the_jam_really_denies_the_product():
     def s2(run, res, st):
-        assert res.status == "rejected" and res.reason == "roe_kinetic_not_authorized"
+        # the dazzler's menu offers only jam (browser test below); the refusal the text cites is real
+        eng = _issue(run.mgr, "red", actor="RED-DAZZLE", action="engage", target="SAR-1", params={})
+        assert eng.status == "rejected" and eng.reason == "roe_kinetic_not_authorized"
+        _said(st, "only jam", "roe_kinetic_not_authorized")
     def s5(run, res, st):
         assert run.obj() == {"deny_downlink": True}
     red = _script("mt-isr-sar", "red", {
@@ -782,3 +793,33 @@ def test_script_recovery_failed_exploit_is_retried(seed):
             break
     assert red.obj() == {"keep_safed": True}
     _said(red.steps[3], "fire again")
+
+
+# -- the console really offers what the steps say (headless Chromium; skipped where absent) ----------------
+from spacesim.tests.test_browser_console_rules import console, server, pw_browser, browser_path, content  # noqa: E402,F401
+
+
+def _menu(c, actor):
+    c.page.select_option("#o-actor", actor)
+    c.settle()
+    return c.page.eval_on_selector_all("#o-action option", "o => o.map(x => x.value)")
+
+
+@pytest.mark.browser
+@pytest.mark.verifies("FR-11420")
+def test_console_offers_the_verbs_and_menus_the_tutorial_steps_name(console):
+    c = console("mt-isr-sar")
+    c.seat("blue")
+    assert "isr.collect_now" in _menu(c, "SAR-1")
+    c.page.select_option("#o-action", "isr.collect_now")
+    c.settle()
+    assert c.page.input_value("#o-params").replace(" ", "") == '{"via":"GS-POLAR"}'      # step 2's Params
+    c.page.wait_for_function("document.getElementById('o-preview').textContent.includes('will queue')")
+    c.seat("red")
+    assert _menu(c, "RED-DAZZLE") == ["jam"]                                             # Red step 2
+    c = console("learn-intermediate-recovery")
+    c.seat("blue")
+    assert "def.patch_cyber" in _menu(c, "ISR-EO-LEARN")
+    c.page.select_option("#o-action", "def.patch_cyber")
+    c.settle()
+    assert json.loads(c.page.input_value("#o-params")) == {"via": "GS-LEARN", "vector": "ground_modem"}
