@@ -68,22 +68,41 @@ vignette:
       trigger: {type: manual}
       effects:
         - {type: message, to: [blue, white], text: "RED-EMITTER ceased transmission; SIGINT passes during this window will yield nothing."}
+  tutorial:
+    blue:
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. Three SIGINT satellites should characterize RED-EMITTER, a radio emitter on the ground, and all three must survive. KNOWN LIMITATION in this release: sensors can only observe orbiting objects, and the SIGINT payloads are not taskable sensors, so the characterize_emitter objective cannot yet be reached by orders. Steps 2 and 3 show this honestly."}
+      - {n: 2, title: "Try the optical sensor on the emitter", when: "issue now", action: observe, actor: BLUE-OPTICAL, target: RED-EMITTER, params: {intent: characterize, classification: hostile},
+         expect: "REFUSED (no_window): a ground sensor never has access to a ground emitter. This is the engine limit above, not a mistake you made."}
+      - {n: 3, title: "Try tasking a SIGINT satellite", when: "issue now", action: observe, actor: SIGINT-1, target: RED-EMITTER, params: {intent: characterize, classification: hostile},
+         expect: "REFUSED (no_such_sensor): SIGINT-1 is a satellite with a SIGINT payload, not a registered sensor. Geolocation by TDOA/FDOA across three passes is the intended lesson but is not yet playable."}
+      - {n: 4, title: "Keep the constellation safe", when: "click +10m until the clock is past T+60 min",
+         action: advance, params: {dt_s: 3601},
+         expect: "preserve_constellation MET: nothing in this scenario threatens the satellites. characterize_emitter stays unmet."}
+    red:
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. You win (deny_characterization) if Blue has no characterized track on RED-EMITTER at T+60 min. You have no orders; your emitter is passive."}
+      - {n: 2, title: "Know your EMCON option", when: "any time", action: review,
+         expect: "White Cell can fire the manual 'emitter_silent' inject (Inject menu): your emitter goes quiet for 10 minutes and Blue's SIGINT passes yield nothing. In this release Blue cannot characterize the emitter anyway."}
+      - {n: 3, title: "Run out the clock", when: "click +10m until the clock is past T+60 min",
+         action: advance, params: {dt_s: 3601},
+         expect: "deny_characterization MET."}
   intro_brief:
     blue:
       situation: "Open ocean — a sea-based emitter of interest must be characterized. SIGINT geolocation is a MULTI-PASS problem: three look angles converge via TDOA/FDOA on the emitter location."
-      mission: "Characterize RED-EMITTER (characterize_emitter) using your three-bird SIGINT constellation, while keeping the constellation alive (preserve_constellation), by T+45 min."
+      mission: "Characterize RED-EMITTER (characterize_emitter) using your three-bird SIGINT constellation, while keeping the constellation alive (preserve_constellation), by T+60 min."
       friendly_forces: "SIGINT-1, SIGINT-2, SIGINT-3 (3-bird constellation), GS-MIDLAT, BLUE-OPTICAL."
       threat_picture: "RED-EMITTER (the target — passive RF emitter)."
-      deadline_note: "T+45 min (2700 s)."
+      deadline_note: "T+60 min (3600 s)."
       roe_note: "Doctrinal: no kinetic. The mission is intelligence collection."
       success_criteria: "Characterized track on RED-EMITTER + all three birds alive at the deadline."
-      tool_tips: "Task each SIGINT bird on RED-EMITTER through its access window. Geolocation error scales as 1/√(N collectors × dwell time)."
+      tool_tips: "KNOWN LIMITATION: sensors can only observe orbiting objects and the SIGINT payloads are not taskable sensors, so an observe order on RED-EMITTER is refused (no_window / no_such_sensor) and characterize_emitter cannot yet be reached. preserve_constellation is achievable. Geolocation error would scale as 1/√(N collectors × dwell time)."
     red:
       situation: "Mission trial: prevent Blue from characterizing the emitter. Passive presence — your only move is to time the emitter's pattern around Blue's access windows."
-      mission: "deny_characterization through T+45 min."
+      mission: "deny_characterization through T+60 min."
       friendly_forces: "RED-EMITTER (RF emitter)."
       threat_picture: "Blue 3-bird SIGINT constellation + GS-MIDLAT + an optical sensor."
-      deadline_note: "T+45 min."
+      deadline_note: "T+60 min."
       roe_note: "Passive only."
       success_criteria: "Block characterization on RED-EMITTER (confidence < threshold + not characterized at deadline)."
       tool_tips: "Mostly observational — advance time. The emitter's signature is what Blue collects on."

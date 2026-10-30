@@ -95,8 +95,8 @@ time, subject to the defender's posture and whether the vulnerability is patched
 SATCOM/Viasat-style lesson and the wildcard in the game.
 
 ### Adding real satellites by TLE
-White Cell can drop a **real named satellite** into a scenario by pasting its two-line element set
-(TLE). It is validated and then propagates with sgp4 alongside the fictional assets:
+Before you press **Start**, White Cell can drop a **real named satellite** into a scenario by supplying its
+two-line element set (TLE); after Start the server refuses (`cannot edit force after start`). It is validated and then propagates with sgp4 alongside the fictional assets:
 
 ![TLE force-add](../manual/12-tle-force-add.png)
 

@@ -16,7 +16,7 @@ vignette:
     # ISR-A is in early-pass view of GS-NORTH — direct uplink is available.
     - id: ISR-A
       kind: satellite
-      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 0.0}
+      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 52, argp_deg: 0, ta_deg: 0.0}
       group: ISR-CONST
       isl_capable: true
       isl_peers: [ISR-B]
@@ -26,7 +26,7 @@ vignette:
     # ISR-B is over the far side of the Earth — no GS-NORTH window for ~40+ min; relay via ISR-A.
     - id: ISR-B
       kind: satellite
-      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 180.0}
+      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 52, argp_deg: 0, ta_deg: 35.0}
       group: ISR-CONST
       isl_capable: true
       isl_peers: [ISR-A]
@@ -45,6 +45,8 @@ vignette:
   sensors:
     # BLUE-RADAR = Caribbean SDA radar (notional Antigua/Curaçao) co-located with GS-NORTH pass area.
     - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 12.10, lon_deg: -68.93}}
+    # RED-SDA-SENSOR = the passive space-domain-awareness payload carried by RED-SDA-PASSIVE (taskable by Red).
+    - {id: RED-SDA-SENSOR, owner: red, kind: space_based, host_asset_id: RED-SDA-PASSIVE, max_range_m: 4000000.0}
   objectives:
     blue:
       - {id: isr_b_survives, desc: "ISR-B survives the debris-corridor window",
@@ -64,6 +66,30 @@ vignette:
       trigger: {type: time, at_sim_s: 300}
       effects:
         - {type: message, to: [blue, white], text: "Conjunction advisory: ISR-B predicted within 1 km of cataloged debris in 12 min. Plan a Δv maneuver via ISL relay (ISR-A is the only Blue asset in GS-NORTH view)."}
+  tutorial:
+    blue:
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. ISR-A is in view of the ground station GS-NORTH for the first 8 minutes; ISR-B is not, but the two satellites can talk to each other over a cross-link (ISL). You win by keeping ISR-B alive and operational at T+30 min."}
+      - {n: 2, title: "Wait for the debris advisory", when: "click +10m once (the clock is now T+10 min)", action: advance, params: {dt_s: 600},
+         expect: "Open Messages: at T+5 min a conjunction advisory said ISR-B will pass within 1 km of debris in 12 minutes (about T+17 min). You have time to act."}
+      - {n: 3, title: "Command ISR-B through the cross-link", when: "issue now", action: maneuver, actor: ISR-B, params: {dv: [0.0, 5.0, 0.0], via: GS-NORTH},
+         expect: "Queued with delivery path isl_relay: ISR-B cannot see GS-NORTH, so the order goes ground -> ISR-A -> ISR-B. The 5 m/s burn spends delta-v (100 m/s -> 95 m/s)."}
+      - {n: 4, title: "Advance past the burn", when: "click +1m once", action: advance, params: {dt_s: 60},
+         expect: "ISR-B's delta-v reads 95 m/s: the burn ran, well before the closest approach at T+17 min."}
+      - {n: 5, title: "Hold to the deadline", when: "click +10m until the clock is past T+30 min",
+         action: advance, params: {dt_s: 1141},
+         expect: "isr_b_survives and isr_b_op both MET."}
+    red:
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. RED-SDA-PASSIVE carries a passive tracker (RED-SDA-SENSOR). You win (track_blue) while your track on ISR-A stays at 0.5 confidence or better. You cannot interfere; you only watch."}
+      - {n: 2, title: "Task the tracker on ISR-A", when: "issue now - the window is open from the start",
+         action: observe, actor: RED-SDA-SENSOR, target: ISR-A, params: {intent: track},
+         expect: "Queued; the window is already open."}
+      - {n: 3, title: "Advance to build the track", when: "click +10m once (the clock is now T+10 min)", action: advance, params: {dt_s: 600},
+         expect: "track_blue MET: ISR-A appears in your Fleet panel."}
+      - {n: 4, title: "Watch the track decay", when: "click +10m until the clock is past T+30 min",
+         action: advance, params: {dt_s: 1201},
+         expect: "Without a fresh look the track halves about every 30 min and drops below 0.5, so track_blue is unmet by the deadline. Re-task before it decays."}
   intro_brief:
     blue:
       situation: "Novel teaching scenario. You operate two LEO ISR sats from a single ground station — only ONE bird is in view of GS-NORTH at a time. A debris conjunction warning has been issued against ISR-B, which is currently out of GS-NORTH LOS. You must command an evasive maneuver via ISR-A as an ISL relay."

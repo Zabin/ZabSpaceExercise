@@ -11,7 +11,8 @@ vignette:
   blue_forces:
     - id: BLUE-SAT
       kind: satellite
-      orbit: {a_m: 6978137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 0.0}
+      orbit: {a_m: 6978137.0, e: 0.0, i_deg: 51.6, raan_deg: 228, argp_deg: 0, ta_deg: 0.0}
+      resources: {delta_v_ms: 20.0}
       bus_state: {power: {battery_soc: 0.95}}
   red_forces:
     # RED-ASAT = Plesetsk Cosmodrome (PL-19 Nudol DA-ASAT test launches — canonical Russian site).
@@ -44,30 +45,27 @@ vignette:
         - {type: message, to: [white, red], text: "International condemnation; debris threatens the regime."}
   tutorial:
     blue:
-      - {n: 1, title: "Review the target", when: "at start", action: review,
-         expect: "BLUE-SAT in LEO; avoid_debris by +1 h pending (no_debris)"}
-      - {n: 2, title: "Hold without provoking", when: "+ advance to +1 h",
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. BLUE-SAT is your only satellite. You win (avoid_debris) only if no debris exists at T+1 h. You have no sensor on the threat and no kinetic counter."}
+      - {n: 2, title: "Try an evasive burn", when: "issue now", action: maneuver, actor: BLUE-SAT, params: {dv: [0.0, 5.0, 0.0]},
+         expect: "REFUSED (no_command_station): BLUE-SAT has 20 m/s of delta-v but no ground station can command it. Without a command path there is no defense. White Cell can add a station with Force add."}
+      - {n: 3, title: "Hold to the deadline", when: "click +10m until the clock is past T+1 h (about 6 clicks)",
          action: advance, params: {dt_s: 3601},
-         expect: "if no kinetic strike occurs, avoid_debris MET"}
-      - {n: 3, title: "Evade (if enabled)", when: "with a TT&C command uplink",
-         action: maneuver, actor: BLUE-SAT, params: {dv: [0.0, 5.0, 0.0]},
-         expect: "shift out of the predicted intercept corridor — needs a command station"}
+         expect: "If Red does not strike, avoid_debris is MET. If Red does strike (around T+20 to T+26 min), debris exists and avoid_debris fails for both cells - there is no clean kinetic answer."}
     red:
-      - {n: 1, title: "Review the interceptor", when: "at start", action: review,
-         expect: "RED-ASAT (1x round; kinetic AUTHORIZED here) + RED-RADAR; destroy_sat pending"}
-      - {n: 2, title: "Build a weapons-quality track", when: "RED-RADAR sees BLUE-SAT",
+      - {n: 1, title: "Read the mission", when: "at start", action: review,
+         expect: "Open the Mission brief. Kinetic action is AUTHORIZED here. You need a weapons-quality track (confidence 0.8 or better and characterized) before RED-ASAT can engage."}
+      - {n: 2, title: "Build a weapons-quality track", when: "issue now - RED-RADAR's pass opens about T+17 min",
          action: observe, actor: RED-RADAR, target: BLUE-SAT, params: {intent: characterize, classification: hostile},
-         expect: "characterized track, confidence >= 0.8 — the weapons-quality gate for engage"}
-      - {n: 3, title: "Advance to the track", when: "+10 min to the collection",
-         action: advance, params: {to: order_window},
-         expect: "RED-RADAR returns a weapons-quality track on BLUE-SAT"}
-      - {n: 4, title: "Engage with the ASAT", when: "at the intercept window",
+         expect: "Queued, window from about T+17 min. Trying to engage before this track exists is refused (no_weapons_quality_track)."}
+      - {n: 3, title: "Advance to the radar pass", when: "click +10m twice (the clock is now T+20 min, inside the pass)", action: advance, params: {dt_s: 1200},
+         expect: "RED-RADAR returns a weapons-quality track on BLUE-SAT."}
+      - {n: 4, title: "Engage with the ASAT", when: "issue it at T+20 min, as soon as the track arrives (the intercept window opens about T+20 min)",
          action: engage, actor: RED-ASAT, target: BLUE-SAT, params: {interceptor_class: mrbm_kkv},
-         expect: "queued — kinetic is authorized in this vignette"}
-      - {n: 5, title: "Assess the consequences", when: "after intercept",
-         action: advance, params: {to: order_window},
-         expect: "BLUE-SAT destroyed; destroy_sat MET — but a debris field forms and the un_condemnation inject fires (debris threatens Red too)"}
-
+         expect: "Queued with an intercept window of about T+20 to T+26 min. Kinetic is authorized in this vignette, so it is allowed - but it cannot be undone."}
+      - {n: 5, title: "Assess the consequences", when: "click +10m once (T+30 min, past the intercept window)",
+         action: advance, params: {dt_s: 600},
+         expect: "BLUE-SAT destroyed: destroy_sat MET, a debris field forms and Blue's avoid_debris fails. White Cell can now fire the manual un_condemnation inject - debris threatens Red's own future orbits too."}
   intro_brief:
     blue:
       situation: "LEO, March 2030. A direct-ascent ASAT capability has been declared operational by Red. National command has lifted Red's kinetic ROE for the exercise. Your operating bird BLUE-SAT is the most likely first target."

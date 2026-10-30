@@ -11,6 +11,9 @@ this manual frames them from Red's offensive posture, and defers to the shared c
 rather than duplicating them. The mirror-image defensive framing is
 [`13-blue-cell-manual.md`](13-blue-cell-manual.md).
 
+
+**More sections** (RED-14 to RED-17) are in [14a](14a-red-cell-rules-and-delivery.md): the Operator seat field, orders waiting for approval and live ROE changes, which link a jam attacks and what stops a command, and the manoeuvre ledger.
+
 ### RED-1 · Your view: fog-of-war
 
 You see **only Red's own assets** at true position, plus whatever Red's sensors have detected —
@@ -19,6 +22,8 @@ The filter is enforced server-side at the `SessionAPI`/`CellController` boundary
 **Mission brief** (auto-opens on load; View ▾ → Mission brief) for situation, mission, forces,
 threat picture, ROE, and success criteria — Red's brief never reveals Blue's hidden dispositions
 and vice versa.
+
+**Hand-off in a shared browser.** When one machine is passed between cells, click **⏸ Handover**; the screen blurs and reads `HANDING OFF → BLUE`. Pass the keyboard, and the next operator clicks the overlay's **Resume**, which switches the console to their seat. It only hides the screen; it is not security.
 
 > **Sources:** `spacesim/session/cells.py` (`CellController`, fog filter) · `spacesim/session/scene.py` ·
 > `GET /api/sessions/{sid}/brief/red` · [`02-interface.md`](02-interface.md) §"A player cell"
@@ -98,8 +103,9 @@ authorizes it and you accept the debris and attribution cost the consequence pre
 - **Engage** (kinetic) — closing geometry, salvo Pₖ, debris-cone estimate; gated on
   weapons-quality custody *and* `red_kinetic_authorized` ROE. The salvo (`salvo_n`, default 1)
   must fit in the rounds the effector has left. With none left the preview says `no_ammo`; with
-  too few for the salvo it says `insufficient_ammo`, so reduce the salvo. Rounds are spent only
-  by a strike that succeeds; a miss spends none.
+  too few for the salvo it says `insufficient_ammo`, so reduce the salvo. Every salvo that is
+  fired is charged, whether it hits or misses; only an order that fails its check at the window
+  (no rounds left, target already gone) spends nothing.
   - **Queued strikes share the rounds.** If you queue several engagements on one effector, the
     first to execute spends its rounds. A later one that no longer fits does nothing at its
     window: no roll, no rounds spent, target untouched. The ground-truth effect log shows it as
@@ -108,7 +114,7 @@ authorizes it and you accept the debris and attribution cost the consequence pre
 
 > **Sources:** `spacesim/engine/effects.py` (5 D's) · `spacesim/engine/{jam,engage}.py` ·
 > `spacesim/engine/orders.py` (`_validate` `no_ammo`/`insufficient_ammo`, `_engage_rounds`,
-> `_h_effect` rounds re-check and success-only charge, jam plan with no `power_w` consumption) ·
+> `_h_effect` rounds re-check and fired-salvo charge, jam plan with no `power_w` consumption) ·
 > `spacesim/ui_web/static/app.js` (`REASON_TIPS.insufficient_ammo`) · FR-1460 · FR-1470 ·
 > [`05-core-concepts.md`](05-core-concepts.md) · [`../research/INDEX.md`](../research/INDEX.md)
 
@@ -132,7 +138,7 @@ Blue can hit back. Its jam, cyber and directed-energy effects leave the same tel
 on your satellites that yours leave on Blue's. Diagnose them from the drill-down (same table as
 [`13-blue-cell-manual.md`](13-blue-cell-manual.md) §BLU-6).
 
-**Bus health depends on the vignette.** The engine applies Blue's **bus** SOH and safe-mode model
+**Bus health depends on the vignette.** The engine applies Blue's **bus** [SOH](09-troubleshooting-and-glossary.md#11-glossary) and safe-mode model
 to any satellite whose vignette gives it a bus. **None of the shipped vignettes gives a Red
 satellite a bus yet**, so in practice you will see:
 
@@ -178,14 +184,14 @@ side of the escalation line.
 
 ### RED-10 · RIC frame view & CATS phase angle
 
-**View ▾ → Proximity → ⊕ RIC frame view** opens a live relative-motion plot: pick an **Origin**
+**View ▾ → Proximity → ⊕ [RIC](09-troubleshooting-and-glossary.md#11-glossary) frame view** opens a live relative-motion plot: pick an **Origin**
 and, optionally, a **Chase** and a **Target**. The picker only offers objects Red **owns or holds
 a Track on** (fog-of-war, same rule as every other cell-scoped view) — naming anything else is
 rejected outright, never silently substituted. The in-track/radial plot and R/I/C-km table update
 continuously as the clock runs, relative to whichever origin you've selected.
 
 This is your targeting tool for a true relative-geometry read **from Red's own belief**: select
-your chaser/interceptor as **Chase** and Blue's asset as **Target** to add the **CATS phase
+your chaser/interceptor as **Chase** and Blue's asset as **Target** to add the **[CATS](09-troubleshooting-and-glossary.md#11-glossary) phase
 angle** (0° front-lit · 90° side-lit · 180° backlit) — a direct read on whether your own optical
 sensor would get a usable look at Blue's bird right now, or a silhouette, before you commit to an
 RPO/engagement window (RED-5).
@@ -199,7 +205,7 @@ view from the defender's side.*
 
 ### RED-11 · Quick TLE export
 
-**View ▾ → Proximity → ⧉ TLE export** gives you a copyable, current-epoch TLE for one object.
+**View ▾ → Proximity → ⧉ [TLE](09-troubleshooting-and-glossary.md#11-glossary) export** gives you a copyable, current-epoch TLE for one object.
 The picker lists:
 
 - **Red's own satellites** (on-orbit assets only). These are fitted to the satellite's **actual

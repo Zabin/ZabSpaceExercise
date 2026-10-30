@@ -853,6 +853,14 @@ the maneuver pass is T+11 h not "about T+10 h", `04` Red Step 3 params differ fr
 guidance on detecting a failed cyber attempt, `keep_custody` lapses one click after the deadline. Seven
 strict-xfail brief/deadline disagreements and five late-observe items await an author decision.
 
+**Training review (2026-10-25):** [`reviews/training-review-release-walkthrough.md`](docs/reviews/training-review-release-walkthrough.md)
+(REV-TRN-010) independently walked the corpus as a first-time learner on the live app (01, 03, 04, the in-app
+tutorials, `mt-isr-sar`/`mt-weather-collect`/`nv-isl-relay-debris`/`learn-intermediate-recovery`, label and
+refusal-string checks across 12-14a). 1 High, 9 Medium, 5 Low: `03` Step 4 says Red's `Deny ISR` is met at
+T+30 min (it flips only after T+3 h); the tutorials' `command` + `verb` has no Action-menu entry; `RED-DAZZLE`
+cannot choose **engage**; the cyber confirm dialog is unmentioned in `04`; Resume resets a custom clock rate;
+five COA rungs have no playbook; `15.1` lacks rows for FS-123/FS-124; glossary gaps.
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
@@ -948,8 +956,14 @@ FS → IMP → Code → Tests) for all 11 Feature Specifications:
 | TR-11 | Per-vignette playbooks — how each cell completes objectives, move by move, verified against the engine | `training/11-vignette-playbooks.md` | VG-IDX, TR-06 | ✅ |
 | TR-12 | Role-scoped **White Cell** manual (facilitator procedure layer; sections `WCM-n`) | `training/12-white-cell-manual.md` | TR-02, TR-05, TR-07, TR-15 | ✅ |
 | TR-12a | Role-scoped **White Cell** manual, part 2 — analysis and data exports (`WCM-12`–`WCM-16`), split from TR-12 for NFR-3500 module size | `training/12a-white-cell-analysis-and-exports.md` | TR-12, TR-15 | ✅ |
+| TR-12b | Role-scoped **White Cell** manual, part 2 — Vignette Creator walkthrough (`WCM-17`; addresses `BL-0268`) | `training/12b-white-cell-vignette-creator.md` | TR-12, TR-15 | ✅ |
+| TR-12c | Role-scoped **White Cell** manual, part 3 — operator seats and staffing, approval gates and ROE changes, injects in depth (`WCM-18`–`WCM-20`) | `training/12c-white-cell-rules-and-staffing.md` | TR-12, TR-15 | ✅ |
+| TR-12d | Role-scoped **White Cell** manual, part 4 — time-control refusals, save/resume, force-add before Start, seat-visible controls (`WCM-21`–`WCM-24`) | `training/12d-white-cell-clock-saves-and-controls.md` | TR-12, TR-15 | ✅ |
 | TR-13 | Role-scoped **Blue cell** manual (defender procedure layer; sections `BLU-n`) | `training/13-blue-cell-manual.md` | TR-02, TR-05, TR-15 | ✅ |
+| TR-13a | Role-scoped **Blue cell** manual, part 2 — operator seat, approval-pending orders, delivery paths and jamming, manoeuvre ledger (`BLU-15`–`BLU-18`) | `training/13a-blue-cell-rules-and-delivery.md` | TR-13, TR-15 | ✅ |
 | TR-14 | Role-scoped **Red cell** manual (adversary procedure layer; sections `RED-n`) | `training/14-red-cell-manual.md` | TR-02, TR-05, TR-15 | ✅ |
+| TR-14a | Role-scoped **Red cell** manual, part 2 — operator seat, approval-pending orders, which link to jam, manoeuvre ledger (`RED-14`–`RED-17`) | `training/14a-red-cell-rules-and-delivery.md` | TR-14, TR-15 | ✅ |
+| TR-09a | Refusal and error message catalog (order reasons, White controls, session/save/clock messages) | `training/09a-refusal-messages.md` | TR-09 | ✅ |
 | TR-15 | Per-cell manual **traceability matrix** — bidirectional feature ⇄ manual-section index; hooked into skills 08 (doc-update step) and 10 (doc-coherence dimension) | `training/15-manual-traceability.md` | TR-12, TR-13, TR-14 | ✅ |
 | TR-17 | **Vignette learning path** — 19 vignettes sequenced onboarding→ladder→mission-set/doctrine tracks; each rung linked to manual prerequisites + verified playbook (FR-11310/11320) | `training/16-learning-path.md` | TR-06, TR-11, TR-15 | ✅ |
 | TR-16 | Browser-GUI verification harness guide (Playwright e2e) | *not yet created* | TR-10 | ⛔ Planned — blocked on the harness itself existing; AU-03 confirms ad hoc Playwright verification was used for the panel-manager audit but no committed harness/doc exists yet |
