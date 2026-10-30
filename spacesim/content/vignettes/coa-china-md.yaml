@@ -57,6 +57,8 @@ vignette:
   sensors:
     # BLUE-RADAR = Andersen AFB Guam (AFSCN GTS co-located SDA).
     - {id: BLUE-RADAR, owner: blue, kind: ground_radar, location: {lat_deg: 13.62, lon_deg: 144.86}}
+    # RED-RADAR = Korla - the Red tracker that gives the ASAT a weapons-quality track.
+    - {id: RED-RADAR, owner: red, kind: ground_radar, location: {lat_deg: 41.64, lon_deg: 86.24}}
     # BLUE-OPTICAL = GEODSS Maui (AMOS, Haleakalā) — Pacific GEO optical SDA.
     - {id: BLUE-OPTICAL, owner: blue, kind: ground_optical, location: {lat_deg: 20.71, lon_deg: -156.26}, needs_lighting: true}
   objectives:

@@ -15,7 +15,7 @@ vignette:
   blue_forces:
     - id: BLUE-ISR-LEO
       kind: satellite
-      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 33, argp_deg: 0, ta_deg: 0.0}
+      orbit: {a_m: 6928137.0, e: 0.0, i_deg: 51.6, raan_deg: 153, argp_deg: 0, ta_deg: 0.0}
       resources: {delta_v_ms: 100.0}             # Δv reserves needed for evasion
       payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
       bus_state: {power: {battery_soc: 0.90, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}}
@@ -50,6 +50,8 @@ vignette:
     - {id: BLUE-RADAR-W, owner: blue, kind: ground_radar, location: {lat_deg: 41.75, lon_deg: -70.54}}
     # BLUE-RADAR-E = RAF Fylingdales (UEWR), UK — eastern coverage of trans-Atlantic threat.
     - {id: BLUE-RADAR-E, owner: blue, kind: ground_radar, location: {lat_deg: 54.36, lon_deg: -0.67}}
+    # RED-RADAR = Don-2N (Pushkino) - the Red tracker that gives the Nudol a weapons-quality track.
+    - {id: RED-RADAR, owner: red, kind: ground_radar, location: {lat_deg: 56.17, lon_deg: 37.77}}
   objectives:
     blue:
       - {id: isr_survives, desc: "BLUE-ISR-LEO survives the kinetic threat window",
