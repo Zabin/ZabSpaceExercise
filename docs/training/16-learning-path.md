@@ -78,10 +78,10 @@ White to give Blue a doctrinally-flavored opponent. Assumes Stage 1 mechanics.
 | Vignette | New this rung | Read first |
 |---|---|---|
 | **`coa-russia-ml`** — Russia ML, Sustained EW | Reversible deniable EW, coordinated | [RED-5/8](14-red-cell-manual.md); [WCM-8](12-white-cell-manual.md) ; playbook [11.14](11-vignette-playbooks.md) |
-| **`coa-russia-md`** — Russia MD, DA-ASAT + Cyber | Kinetic with cyber surprise | [RED-5/6/8](14-red-cell-manual.md) ; playbook [11.15](11-vignette-playbooks.md) |
-| **`coa-china-ml`** — China ML, Early Integrated Disruption | Jam + cyber + RPO opening | [RED-4/5/6/8](14-red-cell-manual.md) ; playbook [11.16](11-vignette-playbooks.md) |
-| **`coa-china-md`** — China MD, Decisive Strike | Late-crisis A2/AD: kinetic + RPO + cyber + EW | full [RED manual](14-red-cell-manual.md) ; playbook [11.17](11-vignette-playbooks.md) |
-| **`coa-misc-iran-ml`** — Iran ML, Regional EW Spoiler | Non-spacefaring adversary contests the ground segment | [RED-5](14-red-cell-manual.md); [BLU-9](13-blue-cell-manual.md) (GS as terrain) ; playbook [11.18](11-vignette-playbooks.md) |
+| **`coa-russia-md`** — Russia MD, DA-ASAT + Cyber | Kinetic with cyber surprise (Red has a ground radar; the kill lands about T+24 min) | [RED-5/6/8](14-red-cell-manual.md) ; playbook [11.15](11-vignette-playbooks.md) |
+| **`coa-china-ml`** — China ML, Early Integrated Disruption | Jam + cyber + RPO opening (`rpo_close` via Red's TT&C station) | [RED-4/5/6/8](14-red-cell-manual.md) ; playbook [11.16](11-vignette-playbooks.md) |
+| **`coa-china-md`** — China MD, Decisive Strike | Late-crisis A2/AD: kinetic + RPO + cyber + EW (all three Red objectives reachable) | full [RED manual](14-red-cell-manual.md) ; playbook [11.17](11-vignette-playbooks.md) |
+| **`coa-misc-iran-ml`** — Iran ML, Regional EW Spoiler | Non-spacefaring adversary contests the ground segment (jam windows open from T+0) | [RED-5](14-red-cell-manual.md); [BLU-9](13-blue-cell-manual.md) (GS as terrain) ; playbook [11.18](11-vignette-playbooks.md) |
 
 ### Stage 4 — Depth & novelty (Tracks C, D)
 

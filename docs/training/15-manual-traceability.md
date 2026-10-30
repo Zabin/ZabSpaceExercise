@@ -258,7 +258,7 @@ maintained by `08-vignette-development` and reviewed by `09-training-manual-revi
 - **The playbooks the rungs link to are machine-verified** by
   `spacesim/tests/test_vignette_tutorials.py` (FR-11420) — that test is the one automated staleness
   gate in the whole training corpus; keep it green when a vignette script changes. Since 2026-10-25 it
-  also *executes* every step of the scripted vignettes' tutorials on a fixed seed (a step without a
+  also drives the five Red COA recipes (11.14-11.18) and *executes* every step of the scripted vignettes' tutorials on a fixed seed (a step without a
   check fails the suite) and asserts each brief states the engine's real deadline, so a re-timed
   scenario fails here before it misleads a learner.
 
