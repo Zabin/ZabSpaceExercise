@@ -94,7 +94,7 @@ vignette:
       deadline_note: "T+90 min (5400 s)."
       roe_note: "No kinetic this vignette."
       success_criteria: "SAR collect delivered + bird survives at the deadline."
-      tool_tips: "Order a collection: actor SAR-1, Action isr.collect_now (pick it by name in the Action menu), Params {"via":"GS-POLAR"}; then downlink · SAR-1 · via GS-POLAR. GS-POLAR's pass opens about T+19 min; the product is delivered then. Red's jammer window opens just before it (about T+17 min)."
+      tool_tips: "Order a collection: actor SAR-1, Action isr.collect_now (pick it by name in the Action menu), Params {via: GS-POLAR}; then downlink · SAR-1 · via GS-POLAR. GS-POLAR's pass opens about T+19 min; the product is delivered then. Red's jammer window opens just before it (about T+17 min)."
     red:
       situation: "Mission trial: contest Blue's polar SAR operation."
       mission: "deny_downlink during Blue's GS-POLAR pass."
