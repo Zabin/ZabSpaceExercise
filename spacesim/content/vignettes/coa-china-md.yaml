@@ -28,7 +28,7 @@ vignette:
       bus_state: {power: {battery_soc: 0.95}}
     - id: BLUE-PNT
       kind: satellite
-      orbit: {a_m: 26560000.0, e: 0.0, i_deg: 55.0, raan_deg: 100, argp_deg: 0, ta_deg: 0.0}
+      orbit: {a_m: 26560000.0, e: 0.0, i_deg: 55.0, raan_deg: 100, argp_deg: 0, ta_deg: 100.0}
       payload_state: {type: pnt}
       bus_state: {power: {battery_soc: 0.95}}
     # GS-WP = Andersen AFB AFSCN GTS, Guam — western Pacific Blue node.
@@ -98,7 +98,7 @@ vignette:
       threat_picture: "RED-ASAT (direct-ascent, kinetic ON), RED-SJ-INSPECTOR (GEO shadow), RED-JAM-PNT (PNT jammer), RED-CYBER (cyber). All in play simultaneously."
       deadline_note: "T+45 min (2700 s). Each objective evaluated at the deadline."
       roe_note: "Red kinetic AUTHORIZED. Plan for asset losses; the lesson is triage, not full sweep."
-      success_criteria: "Hold any_isr + pnt_op + satcom_op at the deadline. Expect to drop one."
+      success_criteria: "Hold any_isr + pnt_op + satcom_op at the deadline. Expect to drop one. NOTE: pnt_op measures the satellite, not the link - a jammed PNT bubble still reads MET."
       tool_tips: "Open the Activity Gantt (bottom) to see all three concurrent Red lines. Patch the SATCOM modem (White-Cell patch_modem) before cyber lands. Maneuver BLUE-ISR-PRIMARY to evade if intercept geometry is visible."
     red:
       situation: "PLA SSF doctrine in the decisive A2/AD phase. Leadership has authorized concurrent kinetic + RPO + cyber + EW. Mission: destroy Blue's ISR, deny Blue PNT, and force Blue SATCOM into safe mode."
@@ -108,4 +108,4 @@ vignette:
       deadline_note: "All three objectives by T+45 min."
       roe_note: "Kinetic ON, cyber ON. Maximum doctrinal latitude — and maximum political cost on debris."
       success_criteria: "Three concurrent denials. Track the debris consequence — a successful kinetic strike creates the un_condemnation inject."
-      tool_tips: "Sequence: cyber first (no window), then queue jam for the PNT user bubble, then build weapons-quality track on BLUE-ISR-PRIMARY (observe RED-RADAR) before engage. Engage requires confidence ≥ 0.8 + characterized."
+      tool_tips: "Sequence: cyber first (no window), then queue jam for the PNT user bubble, then build weapons-quality track on BLUE-ISR-PRIMARY (actor RED-RADAR, observe; pass about T+18 min) before engage (RED-ASAT, window about T+22-28 min). Engage requires confidence ≥ 0.8 + characterized."

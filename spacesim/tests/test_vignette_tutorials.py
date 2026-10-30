@@ -823,3 +823,88 @@ def test_console_offers_the_verbs_and_menus_the_tutorial_steps_name(console):
     c.page.select_option("#o-action", "def.patch_cyber")
     c.settle()
     assert json.loads(c.page.input_value("#o-params")) == {"via": "GS-LEARN", "vector": "ground_modem"}
+
+
+# -- Red COA vignettes (no tutorial block; the 11.14-11.18 recipes, driven on seed 1) ---------------------
+
+_TRACK = {"intent": "characterize", "classification": "hostile"}
+
+
+def _red_kill(vid, target, shooter, obs_min, eng_lo_min, eng_hi_min, objective):
+    mgr = _mgr(vid)
+    t0 = mgr.world.now
+    mn = lambda t: round((t - t0) / 60e6)
+    ob = _issue(mgr, "red", actor="RED-RADAR", action="observe", target=target, params=_TRACK)
+    assert ob.status == "queued" and mn(ob.earliest_window[0]) == obs_min
+    mgr.advance_to(ob.earliest_window[0] + 1)
+    assert mgr.world.track_for("red", target).is_weapons_quality(mgr.world.now)
+    eng = _issue(mgr, "red", actor=shooter, action="engage", target=target, params={"interceptor_class": "mrbm_kkv"})
+    assert eng.status == "queued" and (mn(eng.earliest_window[0]), mn(eng.earliest_window[1])) == (eng_lo_min, eng_hi_min)
+    mgr.advance_to(eng.earliest_window[1] + 1)
+    assert mgr.objectives()["red"][objective] is True
+    return mgr
+
+
+@pytest.mark.verifies("FR-11420")
+def test_coa_russia_md_red_can_reach_the_kill_inside_the_window():
+    mgr = _red_kill("coa-russia-md", "BLUE-ISR-LEO", "RED-NUDOL", 16, 19, 24, "destroy_isr")
+    assert mgr.world.now < mgr.ctx.landing_deadline and mgr.objectives()["blue"]["isr_survives"] is False
+    brief = load_vignette("coa-russia-md").intro_brief["red"]["tool_tips"]
+    assert "T+16 min" in brief and "T+19-24 min" in brief
+
+
+@pytest.mark.verifies("FR-11420")
+def test_coa_china_md_red_can_reach_kill_isr_pnt_denial_and_safe_satcom():
+    mgr = _red_kill("coa-china-md", "BLUE-ISR-PRIMARY", "RED-ASAT", 18, 22, 28, "kill_isr")
+    mgr = _mgr("coa-china-md")
+    jam = _issue(mgr, "red", actor="RED-JAM-PNT", action="jam", target="BLUE-PNT", params={"modulation": "barrage", "power_w": 200.0})
+    assert jam.status == "queued" and jam.earliest_window[0] <= mgr.world.now + 60_000_000      # open from T+0
+    mgr.advance_to(mgr.world.now + 60_000_000)
+    assert mgr.objectives()["red"]["deny_pnt"] is True
+    assert mgr.objectives()["blue"]["pnt_op"] is False            # not yet scored (deadline), and see the semantics test
+    brief = load_vignette("coa-china-md").intro_brief["red"]["tool_tips"]
+    assert "T+18 min" in brief and "T+22-28 min" in brief
+
+
+@pytest.mark.verifies("FR-11420")
+def test_coa_iran_ml_red_has_usable_jam_windows_inside_the_scenario():
+    mgr = _mgr("coa-misc-iran-ml")
+    horizon = mgr.ctx.landing_deadline
+    for jammer in ("RED-MOBILE-JAM-1", "RED-MOBILE-JAM-2"):
+        for tgt in ("BLUE-PNT", "BLUE-SATCOM"):
+            o = _issue(mgr, "red", actor=jammer, action="jam", target=tgt, params={"modulation": "barrage", "power_w": 200.0})
+            assert o.status == "queued" and o.earliest_window[0] < horizon, (jammer, tgt)
+    mgr.advance_to(mgr.world.now + 60_000_000)
+    assert mgr.objectives()["red"] == {"deny_pnt": True, "deny_satcom": True}
+
+
+@pytest.mark.verifies("FR-11420")
+def test_coa_china_ml_rpo_close_is_reachable_with_the_red_tt_and_c_station():
+    from spacesim.content.vignette import _range_km
+    mgr = _mgr("coa-china-ml")
+    assert _range_km(mgr.world, "RED-SJ-INSPECTOR", "BLUE-GEO-COMM") > 50.0         # not already met
+    mv = _issue(mgr, "red", actor="RED-SJ-INSPECTOR", action="maneuver", params={"dv": [0.0, 20.0, 0.0], "via": "RED-TTC"})
+    assert mv.status == "queued"
+    mgr.advance_to(mgr.world.now + 1800 * 1_000_000)
+    assert mgr.objectives()["red"]["rpo_close"] is True
+    tips = load_vignette("coa-china-ml").intro_brief["red"]["tool_tips"]
+    assert "RED-TTC" in tips and "within 50 km" in load_vignette("coa-china-ml").intro_brief["red"]["mission"]
+
+
+@pytest.mark.verifies("FR-11420")
+@pytest.mark.parametrize("vid,obj,jam", [
+    ("coa-russia-ml", "pnt_avail", ("RED-JAM-TIRADA", "BLUE-PNT")),
+    ("coa-misc-iran-ml", "pnt_op", ("RED-MOBILE-JAM-1", "BLUE-PNT")),
+    ("coa-china-md", "pnt_op", ("RED-JAM-PNT", "BLUE-PNT")),
+])
+def test_blue_availability_objectives_measure_the_satellite_not_the_link(vid, obj, jam):
+    """Engine semantics (asset_operational): a jammed link still reads MET; the briefs say so."""
+    vig = load_vignette(vid)
+    metric = next(o["metric"] for o in vig.objectives["blue"] if o["id"] == obj)
+    assert metric["kind"] == "asset_operational"
+    mgr = _mgr(vid)
+    assert _issue(mgr, "red", actor=jam[0], action="jam", target=jam[1], params={"modulation": "barrage", "power_w": 200.0}).status == "queued"
+    mgr.advance_to(mgr.ctx.landing_deadline + 1_000_000)
+    assert mgr.objectives()["red"]["deny_pnt"] is True and mgr.objectives()["blue"][obj] is True
+    assert "measures the satellite" in vig.intro_brief["blue"]["success_criteria"] or \
+        "measures the satellite" in vig.intro_brief["red"]["success_criteria"]

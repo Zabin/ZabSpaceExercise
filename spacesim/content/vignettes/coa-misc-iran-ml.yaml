@@ -15,12 +15,12 @@ vignette:
   blue_forces:
     - id: BLUE-PNT
       kind: satellite
-      orbit: {a_m: 26560000.0, e: 0.0, i_deg: 55.0, raan_deg: 60, argp_deg: 0, ta_deg: 0.0}
+      orbit: {a_m: 26560000.0, e: 0.0, i_deg: 55.0, raan_deg: 60, argp_deg: 0, ta_deg: 150.0}
       payload_state: {type: pnt}
       bus_state: {power: {battery_soc: 0.95}}
     - id: BLUE-SATCOM
       kind: satellite
-      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 50, argp_deg: 0, ta_deg: 0.0}
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.05, raan_deg: 50, argp_deg: 0, ta_deg: 240.0}
       payload_state: {type: satcom}
       bus_state: {power: {battery_soc: 0.95}}
     # GS-GULF = Al Yah (Yahsat / coalition teleport) — Al Ain, UAE.
@@ -73,7 +73,7 @@ vignette:
       threat_picture: "RED-MOBILE-JAM-1 and -2 (two mobile EW vehicles, regional bubble)."
       deadline_note: "T+45 min (2700 s)."
       roe_note: "No kinetic in either direction. The fight is electromagnetic."
-      success_criteria: "Both BLUE-PNT and BLUE-SATCOM remain operational at the deadline."
+      success_criteria: "Both BLUE-PNT and BLUE-SATCOM remain operational at the deadline. NOTE: this objective measures the satellite's health, not the link - a jammed ground bubble still reads MET, so Red's denial shows on Red's side (link_denied), not here."
       tool_tips: "Mostly passive — the jam is local to a ground bubble and the satellites stay healthy. Watch the link-state indicators."
     red:
       situation: "Regional EW spoiler doctrine. You operate mobile ground jammers from dispersed sites."
@@ -83,4 +83,4 @@ vignette:
       deadline_note: "Sustain denial through T+45 min."
       roe_note: "No kinetic this vignette — reversible EW only."
       success_criteria: "Both denials sustained at the deadline."
-      tool_tips: "Queue jam from each mobile unit on its corresponding Blue link, then advance the clock."
+      tool_tips: "Queue jam from each mobile unit on its corresponding Blue link (the windows are open from T+0), then advance the clock."

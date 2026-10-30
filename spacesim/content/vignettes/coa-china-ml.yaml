@@ -45,8 +45,13 @@ vignette:
       kind: cyber_unit
     - id: RED-SJ-INSPECTOR                       # Shijian-class GEO inspector posturing toward BLUE-GEO-COMM
       kind: satellite
-      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.1, raan_deg: 140, argp_deg: 0, ta_deg: 0.5}
+      orbit: {a_m: 42164000.0, e: 0.0, i_deg: 0.1, raan_deg: 140, argp_deg: 0, ta_deg: 0.1}
       resources: {delta_v_ms: 50.0}
+    # RED-TTC = Hainan TT&C station - the Red command-uplink path the inspector's burn needs.
+    - id: RED-TTC
+      kind: ground_station
+      location: {lat_deg: 18.23, lon_deg: 109.70, alt_m: 0.0}
+      elevation_mask_deg: 5.0
   sensors:
     # BLUE-RADAR-WP = Andersen AFB Guam (AFSCN GTS co-located SDA).
     - {id: BLUE-RADAR-WP, owner: blue, kind: ground_radar, location: {lat_deg: 13.62, lon_deg: 144.86}}
@@ -88,14 +93,14 @@ vignette:
       threat_picture: "RED-JAM-COASTAL (ISR downlink jam), RED-CYBER (SATCOM), RED-SJ-INSPECTOR (GEO shadow)."
       deadline_note: "T+30 min."
       roe_note: "Red kinetic OFF. Cyber ON for Red."
-      success_criteria: "All three concurrent objectives at the deadline."
+      success_criteria: "All three concurrent objectives at the deadline. NOTE: this objective measures the satellite's health, not the link - a jammed ground bubble still reads MET, so Red's denial shows on Red's side (link_denied), not here."
       tool_tips: "Cyber will land off-pass — watch BLUE-SATCOM safe-mode alarms. Task BLUE-OPTICAL-WP on RED-SJ-INSPECTOR to maintain the GEO custody objective."
     red:
       situation: "PLA SSF: seize the initiative in the opening minutes of conflict with integrated jam + cyber + RPO. No kinetic this scenario — the lesson is doctrine, not damage."
-      mission: "deny_isr (Blue downlink jammed), safe_satcom (cyber-safe-mode the GEO bird), rpo_close (close inspector inside 100 km of BLUE-GEO-COMM) by T+30 min."
+      mission: "deny_isr (Blue downlink jammed), safe_satcom (cyber-safe-mode the GEO bird), rpo_close (close the inspector to within 50 km of BLUE-GEO-COMM) by T+30 min."
       friendly_forces: "RED-JAM-COASTAL (jammer), RED-CYBER (cyber unit), RED-SJ-INSPECTOR (GEO inspector, 150 m/s Δv)."
       threat_picture: "Blue has ISR, SATCOM, GEO comms HVA, plus optical + radar sensors."
       deadline_note: "All three by T+30 min."
       roe_note: "Kinetic OFF. Cyber AUTHORIZED. Inspector closing burns adjudicated."
       success_criteria: "Sustain all three concurrent denials."
-      tool_tips: "Cyber first (off-pass, fires now). Jam during Blue's downlink pass. Inspector closing burns are White-Cell adjudicated when no Red ground station exists."
+      tool_tips: "Cyber first (off-pass, fires now). Jam during Blue's downlink pass. Inspector closing burn: RED-SJ-INSPECTOR, maneuver, Params {dv: [0, 20, 0], via: RED-TTC} (Red's Hainan TT&C station) - the range falls from about 74 km to under 50 km in roughly 28 min. Ask RED-JAM-COASTAL to jam Blue's downlink pass for deny_isr."

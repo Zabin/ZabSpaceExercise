@@ -102,4 +102,4 @@ vignette:
       deadline_note: "T+60 min."
       roe_note: "Kinetic AUTHORIZED, cyber AUTHORIZED."
       success_criteria: "Both denials at the deadline. Track debris consequence and political cost."
-      tool_tips: "Build weapons-quality track on BLUE-ISR-LEO (observe) before engage. Cyber first (fires now), then engage when characterized."
+      tool_tips: "Build weapons-quality track on BLUE-ISR-LEO (actor RED-RADAR, observe; pass about T+16 min) before engage (RED-NUDOL, window about T+19-24 min). Cyber first (fires now), then engage when characterized."
