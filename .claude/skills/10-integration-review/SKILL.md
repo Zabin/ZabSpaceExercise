@@ -51,6 +51,15 @@ isn't, stop and report which, rather than reviewing around the hole.
    `docs/training/15-manual-traceability.md` §15.1 to spot-check that the mapped White/Blue/Red
    manual sections (and their `> Sources:` footers) were updated to match the shipped behavior — a
    feature that moved but left its cell-manual section stale is a documentation-coherence finding.
+   Then check the documentation loop held across the set (owner direction 2026-10-25): every
+   package's VR has a passed **Documentation audit** (or a recorded owner-accepted deferral);
+   every Manual-impact item the set's packages handed off is either closed (sections exist and a
+   `09-training-manual-review` covering them is on file) or still open in the backlog with its
+   due-before-release disposition — list the open ones; where two packages changed the same
+   procedure, the manual describes the combined behavior, not either package alone; refusal
+   messages the set introduced appear in the troubleshooting/reference modules; and every
+   tutorial the set depends on is green in `test_vignette_tutorials.py`. An operator-visible change
+   in scope with no manual coverage and no Manual-impact item is a High finding.
 
 ## Output
 
@@ -67,6 +76,8 @@ what was actually exercised to earn the "clean," not just an absence of rows. Up
 - [ ] Every package in scope confirmed `VERIFIED` before the review began.
 - [ ] All five dimensions were actually exercised — a dimension with nothing to report says what
       was checked, not just "OK."
+- [ ] Documentation coherence includes the per-package Documentation-audit sweep and the list
+      of Manual-impact items still open for the scope.
 - [ ] Full suite + permanent gates run against the reviewed commit, results recorded.
 - [ ] Every finding has a severity and a concrete recommended owner; none was fixed in-pass.
 - [ ] Nothing but the report (and review-tracker rows) was written.

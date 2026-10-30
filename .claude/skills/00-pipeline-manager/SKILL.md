@@ -57,7 +57,7 @@ archive**: the next ID is the highest in either file + 1.
 |---|---|
 | **ID** | `BL-xxxx`, sequential |
 | **Filed** | Date + source (which run/VR/report/intake produced it) |
-| **Type** | `feature` / `bug` / `finding` / `recommendation` / `design-question` / `gate` / `research-gap` / `doc-defect` |
+| **Type** | `feature` / `bug` / `finding` / `recommendation` / `design-question` / `gate` / `research-gap` / `doc-defect` / `manual-impact` |
 | **Summary** | One sentence; link the source artifact |
 | **Sev/Pri** | The source's severity, or the user's stated priority for intake items |
 | **Entry stage** | The pipeline stage where the item enters when worked (e.g. a code bug → `07`, a spec gap → `06`, a research gap → `02`) |
@@ -72,6 +72,15 @@ which is what guarantees a finding stated in a chat summary survives the session
 (“adjudicate during `09` on IP-1140”); `DEFERRED` names its revisit trigger (“before the first
 `10-integration-review`”); `NEEDS-USER` names the exact decision required. “We'll get to it” with
 no trigger is not a disposition.
+
+**Manual-impact items** (owner direction 2026-10-25). A `manual-impact` entry is operator
+documentation a package's change requires but `08-code-implementation` handed off (its
+Implementation Summary's *Manual Impact* row), or that a VR / integration / training review found
+missing. Its Entry stage is the owning writer (`08-training-manual-authoring` or
+`08-vignette-development`), and its disposition is always **`SCHEDULED — due before release
+<bucket>`** (the release whose scope contains the package); it may be `DEFERRED` past that
+release only with the owner's explicit agreement, recorded in the entry. It is `DONE` only when
+the sections it names exist and a `09-training-manual-review` covering them is on file.
 
 ## Archives — `docs/pipeline/backlog-archive.md` · `docs/pipeline/pipeline-journal-archive.md`
 
@@ -146,7 +155,11 @@ reviewed at the start of this run, not left to memory:
 From the reconciled position **and the triaged backlog**, pick the highest-leverage unblocked
 step, using the pipeline's ordering rules (see `README.md`): upstream findings before downstream
 work; a due backlog item outranks new scope at the same stage; within a stage, critical-path
-first; the per-feature loop (06→07→08→09) drains before the per-release stages (10→11) run. If
+first; the per-feature loop (06→07→08→09) drains before the per-release stages (10→11) run.
+**Documentation gate:** for a release-bound run, `11-release-readiness` may not be recommended
+while any `manual-impact` entry for that release is open — the next step is the owning 08
+training peer (then `09-training-manual-review`); and once none is open, a current
+learner-walkthrough `09-training-manual-review` for the release scope must exist before 11. If
 the journal's recorded next step is still valid and no due backlog entry outranks it, that's the
 default. If several steps are genuinely parallel, pick one and name the others in the report.
 
@@ -160,6 +173,8 @@ Before invoking anything, stop and ask the user (via `AskUserQuestion`) if the s
 - **adjudication** — the step builds on a review with unadjudicated Critical/High findings;
 - **a ripe `NEEDS-USER` backlog entry** — the decision the entry is waiting on is needed now (or
   is cheap to batch into this stop);
+- **an owner-accepted documentation deferral** — a `manual-impact` entry would be deferred past
+  its release, or a VR would record a deferral instead of returning the package;
 - **spending judgment the user reserved** — anything a stage skill's own rules say needs the user.
 
 A gate stop is a complete, successful run: journal it (`GATE: …`), record the user's answers in
@@ -176,8 +191,10 @@ adds no shortcuts and removes no obligations. One skill invocation per advance r
 
 **Harvest first, while the invoked skill's completion summary is still in context:** every
 finding, recommendation, Outstanding Issue, and Open Question it reported becomes a backlog entry
-(`NEW`, sourced to this run) unless one already exists (then update that entry). Flip to `DONE`
-any backlog entry this step resolved.
+(`NEW`, sourced to this run) unless one already exists (then update that entry). **Every
+Manual-impact item** in an `08-code-implementation` summary (or a missing-documentation finding
+from 09/10/11) becomes a `manual-impact` entry, dispositioned `SCHEDULED — due before release
+<bucket>` in the same harvest. Flip to `DONE` any backlog entry this step resolved.
 
 Then append the run-log row (mode, skill, target, outcome — including "harvested N findings" —
 and next step) and rewrite the Position block from the post-run state, including the backlog
@@ -216,6 +233,11 @@ so the user can simply run the manager again.
       user's explicit agreement.
 - [ ] The invoked skill's findings were harvested into the backlog before the run ended — none
       exist only in chat.
+- [ ] Every Manual-impact item the invoked skill reported is a `manual-impact` backlog entry with
+      a due-before-release disposition; a package summary with an operator-visible change and
+      neither docs written nor a Manual-impact item was harvested as a finding for `09`.
+- [ ] No `11-release-readiness` step was recommended or run while a `manual-impact` entry for
+      that release was open or no current learner-walkthrough training review existed.
 - [ ] Exactly one skill was invoked (or zero, for status/log/sync/triage/gate runs).
 - [ ] Every gate the step touched was stopped at and asked about — none assumed.
 - [ ] The run-log row, Position block, and backlog updates were written and committed, and match

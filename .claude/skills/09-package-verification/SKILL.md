@@ -55,6 +55,7 @@ its `Requirements Covered` FR/NFRs and the Requirements Traceability Matrix
    | **Verification Checklist audit** | Same, for every checklist item |
    | **Requirements audit** | One row per `Requirements Covered` ID: where implemented · where tested · RTM cell state · pass/fail |
    | **Test run** | Full-suite counts (pass/fail/skip) + the permanent gates by name, with the exact commands run |
+   | **Documentation audit** | The package's `Manual impact` claim vs. the diff: each §15.1 row / manual section / tutorial / reference or troubleshooting entry · exists? · accurate against the shipped app (procedure driven, labels/messages compared)? · Sources footer resolves? · or the Manual-impact hand-off item recorded · pass/fail |
    | **Scope audit** | Whether the implementing diff stayed inside `Files to Create`/`Files to Modify` (+ implied tests/docs) — name any file touched outside scope |
    | **Findings** | One row per failure/concern: description · severity · recommended owner (`08-code-implementation` re-run, `07-implementation-planning` package repair, upstream) |
 
@@ -89,7 +90,28 @@ its `Requirements Covered` FR/NFRs and the Requirements Traceability Matrix
    the baseline and that this package covers or tests; a missing or wrong origin tag is a finding
    against the package, the same as a missing test. (The suite-wide relevance audit is not this
    skill's job: it runs at every release, in `11-release-readiness`.)
-6. **Write the Verification Report**, update the ledger(s) per Outputs, and commit as
+6. **Documentation verification (mandatory — owner direction 2026-10-25).** Confirm the
+   package's `Manual impact` claim is true, independently of the Implementation Summary:
+   - Re-derive the operator-visible changes from the diff (routes, buttons/menu labels, panels,
+     order verbs, refusal/error messages, vignette fields, defaults). `Manual impact: none` is
+     false if any exist.
+   - For each: the `docs/training/15-manual-traceability.md` §15.1 row exists and names the code;
+     the named manual sections exist and are **accurate** — drive the described procedure against
+     the shipped app (`run-spacesim`) and compare every quoted label and message to the screen.
+   - Tutorials/briefs the package touches or depends on still run:
+     `python3 -m pytest spacesim/tests/test_vignette_tutorials.py` green.
+   - Every refusal/error message the package introduces appears verbatim in
+     `docs/training/09-troubleshooting-and-glossary.md` or the HTTP/UI reference (`08`, `10*`).
+   - Every `> Sources:` footer the package touched resolves to real files/symbols, and the
+     §15.2 reverse rows agree with §15.1.
+   - Work handed off rather than written is acceptable **only** if recorded as a Manual-impact item
+     (owner + due-before-release) — verify it is in `docs/pipeline/backlog.md` or the summary.
+
+   An operator-visible change that is neither documented nor recorded as a Manual-impact item is a
+   **Medium** finding and the package is **`RETURNED`**, unless the VR records an explicit
+   owner-accepted deferral (who, when, until which release). An inaccurate label/message in
+   prose the package wrote is likewise Medium; a stale Sources path alone is Low.
+7. **Write the Verification Report**, update the ledger(s) per Outputs, and commit as
    `docs(verification): VR-xxxx — <result>`.
 
 ## Quality gate (before writing `VERIFIED`)
@@ -98,6 +120,10 @@ its `Requirements Covered` FR/NFRs and the Requirements Traceability Matrix
 - [ ] Full suite green; both permanent gates green, run by name.
 - [ ] Every covered requirement traces to real code and a real test in the RTM, and every test the
       package added carries a `verifies` marker naming valid IDs.
+- [ ] The Documentation audit is filled in: every operator-visible change is documented
+      (accurate against the live app, messages in troubleshooting/reference, Sources resolving,
+      tutorials green) or recorded as a Manual-impact item, or deferred by the owner on record —
+      otherwise the result is `RETURNED`.
 - [ ] The implementing change stayed in scope, or every excursion is explained and accepted.
 - [ ] The report's Result matches the ledger status written — never `VERIFIED` in one place and
       hedged in the other.
