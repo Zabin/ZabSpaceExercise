@@ -270,8 +270,8 @@ review passes actually run against it).
 - **Related Requirements:** FR-1110, FR-1120, FR-7450, NFR-1500
 - **Notes:** Shipped (`engine/simtime.py`). This leaf records what the build already does; it adds no
   feature. `FR-7450` is the one place the wire form is extended (ISO-8601 accepted as an export bound),
-  and is not yet built. Whether a timestamp without a zone designator is read as UTC is a design
-  choice, not stated here.
+  and is met as built since `IP-1089` (`VERIFIED`). A timestamp without a zone designator is refused
+  there (`FR-7450`), not read as UTC.
 
 ### FR-1200 — Orbital propagation and access geometry
 
@@ -1619,6 +1619,14 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   failure. Logged rebinding (an event-log entry per rebinding) is not built and not required.
   `FS-116`'s "execution time" statements (lines 72, 132, 184, 200) are owed a matching amendment by
   `06`.
+  *(Updated 2026-10-31, pass 5.)* **Met as built by `IP-1160`** (v3.0, `VERIFIED`, `VR-1160`): the
+  postcondition above is the shipped behaviour, checked on all three entry points (`SessionManager`
+  `role_scope_check`, `InProcessSession`, the order route's `seat` field). The verifier's `M-3`
+  (check at submission, not at execution) and `L-1` (an order submitted without a seat skips the role
+  gate) are the two deviations from the earlier wording; both are now stated in the Postconditions and
+  accepted under `BL-0388`, so neither remains open against this leaf. A seat-less submission is
+  therefore not covered by the acceptance criterion: the criterion applies to a submission that names
+  its seat.
 
 ---
 
@@ -2518,6 +2526,11 @@ is no longer required. Same ID, narrower scope.)*
   `FR-5314`. Option D (curated sample asset/sensor/effect snippets as copy-paste starting points in
   the manuals and vignette-authoring documents; no runtime construct) is an additive authoring aid
   routed to `08-training-manual-authoring`/`08-vignette-development`, not a requirement of this leaf.
+  *(Updated 2026-10-31, pass 5.)* **The amended text is met as built.** The load gate (`IP-1310`,
+  `VERIFIED` 2026-10-17, `VR-1310`) validates the references the content model has; it contains no
+  template-reference check because the model has no such construct (`ADR-0036`). Nothing in the
+  shipped code or the 19-vignette library names a template, so the removed clause leaves no
+  unmet obligation.
 
 #### FR-5311 — TLE-sourced orbits parse at load
 
@@ -2869,6 +2882,56 @@ is no longer required. Same ID, narrower scope.)*
   was created; the list now matches what those requirements already oblige. A future no-cell route
   must be added here in the same change set, or it violates the Postcondition.
 
+#### FR-6230 — Per-cell activity feed is fog-filtered
+
+*(new 2026-10-31, baseline-maintenance pass 5; promoted from `CR-31`; `IP-1088`)*
+
+- **ID:** FR-6230
+- **Title:** The activity feed shows a cell only what that cell may know, and an unknown cell nothing
+- **Description:** The system shall serve an activity feed (past, current and scheduled activity, in
+  lanes) filtered at the `SessionAPI`/`CellController` boundary. White Cell's feed shall hold every
+  order, every effect (including those on neutral-owned assets) and every pending inject, in Blue,
+  Red and neutral lanes. A Blue or Red feed shall hold only (a) that cell's own orders, in every
+  state, and (b) one row for each effect that has started on an asset that cell owns, carrying
+  only the target, the category, the symptom, the window and whether the effect is overtly
+  attributed, and never the effect's template name or its covert cause. A Blue or Red feed shall
+  hold no row for any inject, scheduled, pending, edited, cancelled or fired, and nothing about
+  White's schedule, edits or cancellations. A feed requested for an unknown cell shall be refused;
+  the Observer seat shall receive the feed of the cell it is designated to view (`FR-6510`).
+- **Rationale:** A feed that is richer than the cell's own view discloses what fog-of-war withholds.
+  The leaf states what GDS-08 §4 ("fog-filtered: one lane for a player cell; Blue, Red and neutral
+  lanes for White") leaves to `FR-6210`: a cell's feed is no richer than its `CellView`. The defect
+  that prompted it leaked White's scheduled injects and effect template names to Blue and Red
+  (integration review `M-1`, `IP-1088`).
+- **Priority:** Must
+- **Inputs:** An activity-feed request naming a cell (`white`, `blue`, `red` or `observer`).
+- **Outputs:** The rows that cell may see, or a refusal for an unknown cell.
+- **Preconditions:** A started session.
+- **Postconditions:** Reading the feed changes no state, the event log or the random-number
+  stream. A kind of row that has no explicit rule for a cell is withheld from Blue and Red and shown
+  to White (the filter fails closed).
+- **Acceptance Criteria:** Given an inject scheduled by White for a later time, a Blue, a Red and an
+  Observer-as-Blue read of the feed contain no inject row and nothing from which one can be
+  inferred, and White's feed contains it. Given a covert cyber effect on a Blue asset, Blue's feed
+  shows a symptom row with no template name and no attribution, and Red's feed shows nothing of it.
+  A read for `bogus` or `neutral` is refused.
+- **Verification Method:** Test
+- **Dependencies:** FR-6210, FR-4450
+- **Source Documents:** GDS-08 §4 (screen architecture, "Timeline" view); GDS-09 §3 (the cell-scoped
+  `GET /activity/{cell}` route in the "Cell picture" group); `FR-6210`; `IP-1088` Design Decisions
+  1-5.
+- **Related ADRs:** ADR-0004, ADR-0015
+- **Related Interfaces:** INT-0001, INT-0005
+- **Related Requirements:** FR-6210, FR-6220, FR-6510, FR-4450
+- **Notes:** **Met as built by `IP-1088`** (`VERIFIED`, `VR-1088` v3.0): the assembly is in
+  `InProcessSession.cell_activity`, the allow-list filter is in `CellController`, and the route
+  answers 400 for an unknown cell. The activity feed is a cell-scoped read, so it is not in the
+  no-cell set of `FR-6220`. **Routed to `03`/`06`:** GDS-08 and GDS-09 ground the feed's existence,
+  lanes and fog-filtering but do not state which rows a lane may hold; the row rules above are
+  derived from `FR-6210` and `IP-1088`, and no feature specification describes the feed. Which rows
+  Blue and Red may see in an effect's "symptom" is `CellView`'s definition, restated, not new policy.
+  Tests (`test_activity_fog_matrix.py`, `test_cell_activity.py`) tag `FR-6210`/`FR-6220`; retag candidates.
+
 ### FR-6300 — Server-authoritative multiplayer clock and locking
 
 #### FR-6310 — Server-authoritative lazy clock shared across connections
@@ -3147,6 +3210,45 @@ is no longer required. Same ID, narrower scope.)*
   save validation and counts both log shapes (before `IP-1081` it counted a bare list only, so a real
   save's log was never counted). The cap is the one `NFR-3710` requires; its figure is the shipped
   constant restated, not a figure an approved source sets.
+
+#### FR-7240 — A save in an unsupported format is refused
+
+*(new 2026-10-31, baseline-maintenance pass 5; `IP-1094`, routed to `04` by release assessment rc5 `S-1`)*
+
+- **ID:** FR-7240
+- **Title:** A save whose declared format is not a supported format is refused before replay
+- **Description:** The system shall refuse a save whose `save_format` is present and is not a
+  supported value (currently only `2`), with an error that names the supported formats, before any
+  replay, and shall create no session. A save with no `save_format` is a legacy save and is not
+  refused by this leaf (`FR-7230`).
+- **Rationale:** The save envelope carries a format version (`save_format`, GDS-07 §6) so that a reader
+  can tell what it has been given. A save written by a newer or different build, or a corrupted
+  value, must not be read as a format it is not: before `IP-1094` any non-empty value was silently
+  treated as format 2 and loaded wrongly or failed late. `FR-5310`'s "rather than a partial or
+  silent load" applies to saves as it does to vignettes.
+- **Priority:** Must
+- **Inputs:** A save file whose `save_format` is present.
+- **Outputs:** A refusal naming the unsupported value and the supported formats, or, for a supported
+  value, the load that `FR-7230` describes.
+- **Preconditions:** None.
+- **Postconditions:** When refused, no session exists and the session registry is unchanged.
+- **Acceptance Criteria:** A save carrying `save_format: 999` (and, separately, a text, boolean,
+  fractional or null value) is refused with a reason that names the supported formats, and no
+  session is created. A save carrying `save_format: 2` loads, and a save with no `save_format` loads
+  as a legacy save with its warning.
+- **Verification Method:** Test
+- **Dependencies:** FR-7210, FR-7230
+- **Source Documents:** GDS-07 §6 (the `save_format` envelope field and the legacy-save rule);
+  `FR-7230` Description and Notes; release assessment rc5 `S-1`; `IP-1094`.
+- **Related ADRs:** ADR-0022
+- **Related Interfaces:** INT-0012
+- **Related Requirements:** FR-7210, FR-7220, FR-7230, FR-5310
+- **Notes:** **Met as built by `IP-1094`** (`VERIFIED` 2026-10-31, `VR-1094` v2.0):
+  `SessionManager.validate_save` checks the format first (`SUPPORTED_SAVE_FORMATS`; a boolean is
+  not accepted as `1`) and raises a `ValueError` that `load_save` returns as HTTP 400. The tests that
+  verify it (`spacesim/tests/test_save_format_gate.py`) still tag `FR-7230`; they are a retag
+  candidate for `08`. Which values count as supported is the shipped constant restated: a future
+  format 3 adds a value here, it does not need a new leaf.
 
 ### FR-7300 — AAR replay, scrub, and branch-compare
 
@@ -3534,6 +3636,9 @@ is no longer required. Same ID, narrower scope.)*
   shipped `IP-1211` implements the literal pre-amendment reading (Design Decision 5: an own asset
   without a `Track` is rejected), so a remediation package is owed. No other leaf's behaviour
   changes. See [`reviews/requirements-update-parked-questions-batch.md`](../reviews/requirements-update-parked-questions-batch.md).
+  *(Updated 2026-10-31, pass 5.)* **The remediation is built:** `IP-1212` (`VERIFIED` 2026-10-15, `VR-1212`)
+  exports a cell's own satellite from its actual orbit, so the amended "visible" reading is met as built
+  and no remediation package is owed.
 
 #### FR-7450 — ISO-8601 UTC bounds on time-span exports
 
@@ -3590,12 +3695,10 @@ is no longer required. Same ID, narrower scope.)*
 - **Related ADRs:** ADR-0004, ADR-0015
 - **Related Interfaces:** INT-0014
 - **Related Requirements:** FR-2320, FR-7410, FR-7420, FR-7430, NFR-3710
-- **Notes:** **Not yet built** — the three routes take `t1`/`t2` as integers only; a `06`/`07` package
-  is owed (owner decision 2026-10-31: build before release). Simulated time is already converted to
-  ISO form at the boundary (`CLAUDE.md`, `simtime`), so the requirement adds no new time model. The
-  former open question (is a bound without a zone designator read as UTC) is closed here: it is
-  refused. Remaining design for `06`: the error code and wording, and whether the three routes share
-  one parser at the session boundary.
+- **Notes:** **Met as built by `IP-1089`** (`VERIFIED` 2026-10-31, `VR-1089` v2.0; feature specification `FS-121` v2.3): the three routes accept an ISO-8601 UTC bound or an integer, through one parser (`spacesim/session/span_bounds.py`) shared at the session boundary and applied in `ephemeris._clamp_or_reject`. *(Updated 2026-10-31, pass 5; before `IP-1089` the routes took integers only.)* Simulated time is already converted to
+  ISO form at the boundary (`CLAUDE.md`, `simtime`), so the requirement adds no new time model. A bound
+  without a zone designator is refused (decided in pass 4). The error code and wording are the shipped
+  ones, not restated here.
 
 ---
 
@@ -4328,7 +4431,7 @@ by that promotion.
   TT&C). GDS-03 §3 names the dial in passing; no input document defines the levels or what each one
   shows. **Shipped; not baselined.** **Source:** `docs/pipeline/backlog.md` `BL-0342`; GDS-03 (the
   ops-fidelity dial).
-- **CR-31 — Per-cell activity feed with lanes.** *(new 2026-10-24, `BL-0345`)* The console shows each
+- **CR-31 — Per-cell activity feed with lanes. `PROMOTED 2026-10-31 → FR-6230`** *(new 2026-10-24, `BL-0345`; GDS-08 §4 and GDS-09 §3 ground it)* The console shows each
   cell a feed of its recent activity in lanes. Only the traceability matrix mentions it; no
   architecture or domain statement describes the feed, its lanes or what each lane may disclose
   (a fog-of-war question). **Shipped; not baselined.** **Source:** `docs/pipeline/backlog.md`

@@ -562,6 +562,74 @@ capability.
 - **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
 - **Reason:** `NFR-2850`.
 
+### CHG-051
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** New leaf `FR-7240` (a save whose `save_format` is present and not a supported value,
+  currently only `2`, is refused before replay with an error naming the supported formats, and no
+  session is created; absent = legacy, unchanged). Marked met as built by `IP-1094` (`VERIFIED`,
+  `VR-1094` v2.0). Sourced to GDS-07 §6 and `FR-7230`. RTM row, ADR-0022 and INT-0012 lists added.
+- **Reason:** Release assessment rc5 `S-1` routed "is a format check required?" to `04`; `IP-1094`
+  built the check with no leaf stating it. The tests tag `FR-7230` (retag candidate, see pass 5 findings).
+- **Source review issue:** rc5 `S-1`.
+
+### CHG-052
+- **Files:** `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `NFR-3810` Notes: marked met as built by `IP-1092` (`VERIFIED`, `VR-1092` v2.0); records the
+  owner-accepted choices (declaration in a `Retired documents` section of the `INDEX.md` of the folder
+  that held the file; a retired root-level document declared in `docs/INDEX.md`'s section with its
+  repo-root path, the root having no `INDEX.md`). RTM Impl. cell moved from `COMPLETE` to `VERIFIED`.
+- **Reason:** Owner acceptance in the 04/06 passes; `IP-1092` verified.
+- **Source review issue:** BL-0319, `FS-135` OQ6.
+
+### CHG-053
+- **Files:** `01-functional-requirements.md`, `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-7450` marked met as built by `IP-1089` (`VERIFIED`, `VR-1089` v2.0) in its own Notes and in
+  `FR-1140`'s Notes (which said "not yet built"); `NFR-1510` Notes: lock procedure met by `IP-1093`
+  (`VERIFIED`, `VR-1093`; `requirements.lock` re-pinned, `test_release_lock` pins floors to the lock).
+  RTM Impl. cells set to the `VERIFIED` versions; `FR-7450`'s "build before release" Feature cell
+  annotation removed.
+- **Reason:** Packages verified 2026-10-31; closes pass 3 finding `P3-3`.
+- **Source review issue:** `P3-3`.
+
+### CHG-054
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-5310` Notes: the `BL-0233` option A amendment (template clause removed) recorded as
+  met as built; the load gate (`IP-1310`, `VERIFIED`, `VR-1310`) checks the references the content model
+  has and there is no template construct to check (`ADR-0036`).
+- **Reason:** Closes the pass 4 follow-up on the template clause.
+- **Source review issue:** BL-0233.
+
+### CHG-055
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `CR-31` promoted to new leaf `FR-6230` (activity feed is fog-filtered): White's full feed; Blue
+  and Red see only their own orders and their own started effects as category + symptom, never a
+  template name, never any inject row (White's schedule, edits, cancels); unknown cells refused;
+  Observer follows its designation; fail-closed filter. Cites GDS-08 §4 (Timeline view) and GDS-09 §3
+  (`GET /activity/{cell}`). Met as built by `IP-1088` (`VERIFIED`, `VR-1088` v3.0).
+- **Reason:** Grounding exists in the GDS ladder for the feed, its lanes and its fog-filtering; the
+  row rules are derived from `FR-6210`. **Routed to `03`/`06`:** GDS-08/GDS-09 do not state the per-lane
+  row rules, and no `FS-` describes the feed.
+- **Source review issue:** `BL-0345`, integration review `M-1`.
+
+### CHG-056
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-3520` Notes: met as built by `IP-1160` (v3.0, `VERIFIED`, `VR-1160`); the verifier's `M-3`
+  (submission-time check) and `L-1` (a seat-less submission skips the role gate) stated as the accepted
+  deviations, the acceptance criterion scoped to a submission that names its seat. Postconditions
+  already matched. `FR-7440` Notes: the "remediation package owed" sentence superseded (`IP-1212`
+  `VERIFIED`). RTM Impl. cells that still said `COMPLETE`/"awaiting verification" for `IP-1082`,
+  `1083`, `1085`, `1086`, `1087`, `1094`, `1160` set to `VERIFIED` with their `VR-` ids.
+- **Reason:** All 94 packages are `VERIFIED`; pass 5 sweep of "required, not yet built" and `COMPLETE` cells.
+  `FR-4330` (advance bound, `IP-1076`) and `FR-7340` (`IP-1077`) already read met as built in text and
+  RTM Impl. cells; no change needed.
+- **Source review issue:** `BL-0388`, `VR-1160` `M-3`/`L-1`.
+
+### CHG-057
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
+  Pass 5 findings table added below (requirements no test names, classified).
+- **Reason:** `NFR-2850`; pass 5 task 7.
+
 ### Review findings, pass 3
 
 | # | Finding type | IDs | Description | Severity | Recommendation |
@@ -572,6 +640,20 @@ capability.
 | P3-4 | Open design question | `CR-34` / `BL-0171` | Pass-gating of historical telemetry points; `FR-2320` calls the export pass-gated but it is not. | Low | Project owner, then `03`/`04`. |
 | P3-5 | Owner decision recorded | `FR-4330` | Rewind versus a running clock: unspecified, not release-blocking. | Info | None. |
 | P3-6 | Open | `FR-4330` | Whether the 366-day span is configurable. | Low | Project owner. |
+
+
+### Review findings, pass 5
+
+`python3 -m pytest --origin-report` lists 32 requirements no test names (0 untagged tests). Classification:
+
+| # | Class | IDs | Description | Recommendation |
+|---|---|---|---|---|
+| P5-1 | Inspection / demonstration / analysis by method (21) | `FR-4710`, `FR-4720`, `FR-6110`, `FR-6610`, `FR-11110`, `FR-11120`, `FR-11210`, `FR-11310`, `FR-11320`, `FR-11410`, `NFR-1200`, `NFR-1400`, `NFR-2000`, `NFR-2100`, `NFR-2900`, `NFR-3000`, `NFR-3040`, `NFR-3060`, `NFR-3300`, `NFR-3500`, `NFR-3600` | Verification Method is Inspection, Demonstration or Analysis, so no tagged test is expected. | None; evidence is a review or a demonstration record. |
+| P5-2 | Retag candidates (10) | `FR-1140`, `FR-7350` (pass 3 `P3-2`), `FR-3410`, `FR-7110`, `NFR-2400`, `NFR-2500`, `NFR-2600`, `NFR-3200`, `FR-7240`, `FR-6230` | Test-method leaves whose behaviour is exercised by existing tests that carry other tags (`test_determinism.py`, `test_aar.py`, `test_orders.py`, the TLE/OMM import tests, `test_save_format_gate.py` tags `FR-7230`, `test_activity_fog_matrix.py` and `test_cell_activity.py` tag `FR-6210`/`FR-6220`). | `08` retag; the tests' own file lists the mapping. |
+| P5-3 | Self-referential | `NFR-2800` | Method is the suite itself (`python3 -m pytest` green, gated). | Accept as met by the gate, or `08` tags `test_determinism.py`/`test_import_guard.py`. |
+| P5-4 | Gap (partial, already stated in the leaf) | `NFR-2410` | Has tagged tests per module; the cross-cutting hash-before/after test over every read path is still owed. | `07`/`08` package. |
+| P5-5 | Routed | `FR-6230` | GDS-08 §4 and GDS-09 §3 do not state per-lane row rules; no `FS-` describes the activity feed. | `03` (add to GDS-08), `06` (specify). |
+| P5-6 | Routed | `FS-110`, `FS-116`, `FS-121`, `FS-135` | `FS-116` "execution time" wording (`FR-3520`); `FS-135` check 2 and Open Questions 1, 4, 5, 6 to align with the accepted `NFR-3810` choices; `FS-110` to state the save-format gate (`FR-7240`). | `06`. |
 
 ---
 
