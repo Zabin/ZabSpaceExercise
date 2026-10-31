@@ -1599,8 +1599,11 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Preconditions:** The requester holds the White Cell role (only White Cell may create/modify
   Role Assignments, GDS-04 §1.10 Constraints).
 - **Postconditions:** A command outside a Role Assignment's scope (e.g., a payload-verb command
-  attempted under a bus-only scope) is rejected at execution time, whether or not it was also
-  filtered from the order panel.
+  attempted under a bus-only scope) is rejected when the order is submitted, whether or not it was
+  also filtered from the order panel. The role is checked once, at submission, against the Role
+  Assignment in force at that moment; a later rebinding of the seat applies to later submissions and
+  does not re-judge an order already submitted. A submission that omits the operator seat skips the
+  role gate (ownership and the engine's other checks still apply).
 - **Acceptance Criteria:** Given a Role Assignment scoped to bus-only for Asset X, a payload-verb
   command submitted directly for Asset X (bypassing the order panel) is rejected.
 - **Verification Method:** Test
@@ -1610,6 +1613,12 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0004, INT-0006
 - **Related Requirements:** FR-3510
+- **Notes:** *(amended 2026-10-31, `BL-0388`, owner decision: accept as v1 behaviour)* Earlier text
+  said "rejected at execution time"; the shipped check runs at submission, and the operator seat is
+  client-asserted like every seat in the LAN trust model, so omitting it is not an authentication
+  failure. Logged rebinding (an event-log entry per rebinding) is not built and not required.
+  `FS-116`'s "execution time" statements (lines 72, 132, 184, 200) are owed a matching amendment by
+  `06`.
 
 ---
 
@@ -2478,8 +2487,11 @@ is no longer required. Same ID, narrower scope.)*
 - **ID:** FR-5310
 - **Title:** Validate a vignette at load time and report errors precisely
 - **Description:** The system shall validate a vignette at load time (well-formed TLEs, every
-  declared `roles_needed` satisfiable, every referenced template exists) and shall reject an
-  invalid vignette with a precise, actionable error rather than a partial or silent load.
+  declared `roles_needed` satisfiable, every reference from one element of the vignette to another
+  resolves) and shall reject an invalid vignette with a precise, actionable error rather than a
+  partial or silent load. Assets, sensors and effects are authored inline in the vignette; the
+  content model has no template library and no template reference to validate (`BL-0233` option A,
+  `ADR-0036`).
 - **Rationale:** "Invalid scenario data fails loudly at load" is a stated error-handling posture
   (GDS-01 §10; GDS-04 §9; build-spec/02 §5.5 FR-S3).
 - **Priority:** Must
@@ -2488,15 +2500,24 @@ is no longer required. Same ID, narrower scope.)*
   identifying the failing element.
 - **Preconditions:** None.
 - **Postconditions:** No partially loaded `WorldState` exists after a failed validation.
-- **Acceptance Criteria:** Given a vignette referencing a non-existent asset template, the load is
-  rejected and the error identifies the missing template by name.
+- **Acceptance Criteria:** Given a vignette that references an element it does not contain (for
+  example a `roles_needed` entry naming an asset or constellation the vignette does not define,
+  `FR-5314`), the load is rejected and the error
+  identifies the missing element by name.
 - **Verification Method:** Test
 - **Dependencies:** None
 - **Source Documents:** GDS-04 §1.1 "Constraints", §9; build-spec/02 §5.5 FR-S3 (binding
   statement).
-- **Related ADRs:** ADR-0007
+- **Related ADRs:** ADR-0007, ADR-0036
 - **Related Interfaces:** INT-0011
 - **Related Requirements:** FR-4110, FR-5210
+- **Notes:** *(amended 2026-10-31, `BL-0233`, owner decision option A)* The original clause "every
+  referenced template exists" and its only Acceptance Criterion named a template-reference construct
+  the shipped content model never had; both are replaced as above, and GDS-03 §2.5, GDS-04 §1.2 and
+  `ADR-0007` are amended to match. The unique-identifier and declared-role checks are `FR-5313`/
+  `FR-5314`. Option D (curated sample asset/sensor/effect snippets as copy-paste starting points in
+  the manuals and vignette-authoring documents; no runtime construct) is an additive authoring aid
+  routed to `08-training-manual-authoring`/`08-vignette-development`, not a requirement of this leaf.
 
 #### FR-5311 — TLE-sourced orbits parse at load
 
@@ -3516,28 +3537,52 @@ is no longer required. Same ID, narrower scope.)*
 
 #### FR-7450 — ISO-8601 UTC bounds on time-span exports
 
-*(new 2026-10-24, baseline-maintenance pass 1 — promoted from candidate `CR-22`, `BL-0181`, owner decision of 2026-10-18)*
+*(new 2026-10-24, baseline-maintenance pass 1 — promoted from candidate `CR-22`, `BL-0181`, owner decision of 2026-10-18; made implementation-ready 2026-10-31, pass 4)*
 
 - **ID:** FR-7450
 - **Title:** Accept ISO-8601 UTC timestamps as the span bounds of every time-span export
-- **Description:** The system shall accept the start and end of a time-span export (the telemetry CSV
-  export, the truth and cell-observed ephemeris exports, and the companion RIC export) as ISO-8601
-  UTC timestamps, in addition to integer microseconds of simulated time.
+- **Description:** The system shall accept the start and end of a time-span export as either an
+  ISO-8601 UTC timestamp or an integer number of microseconds of simulated time, and shall refuse
+  anything else. The time-span exports are exactly: the per-asset telemetry CSV export (`FR-2320`),
+  the truth ephemeris export (`FR-7410`) and the cell-observed ephemeris export (`FR-7420`), each
+  including its companion RIC export (`FR-7430`). No other route takes a span. The telemetry graph
+  window (`t0`/`t1` on the series read), the live RIC view and the AAR/ledger exports are not
+  time-span exports and are unchanged.
+  - **Accepted ISO-8601 form.** Extended format `YYYY-MM-DDThh:mm:ss`, optional fraction of one to
+    six digits (`.f` to `.ffffff`), then a zone designator `Z` or `+00:00` (a lower-case `z` or `t`
+    is refused). The result is the same integer microseconds of simulated time (microseconds since
+    the Unix epoch, UTC) that `simtime.to_iso` renders.
+  - **Refused:** a timestamp with no zone designator (naive), with a non-zero UTC offset, with more
+    than six fractional digits (no silent rounding), a date alone, basic format (`20261031T...`),
+    a week or ordinal date, a leap second (`:60`), an out-of-range field, and any other string.
+  - **Integer microseconds stay accepted.** A bound made only of decimal digits (optionally a
+    leading `-`) is read as integer microseconds exactly as today, so existing callers, saves and
+    documentation keep working. A bound is never both: a digits-only string is never read as a date.
 - **Rationale:** The exports took their bounds only as integer microseconds, a unit the console never
   displays, so an operator had to read values out of the event log or a save file (`REV-TRN-002` F7).
   Project-owner decision (`BL-0181`, 2026-10-18): human-readable ISO-8601 timestamps. The console is
-  not required to surface microseconds.
+  not required to surface microseconds. Keeping integer microseconds is the backward-compatible
+  reading of "accept ... in addition to"; dropping it would break every stored caller for no gain.
+  Naive timestamps are refused rather than assumed to be UTC because the general `simtime.from_iso`
+  assumes UTC for a naive string, which would turn an operator's local-time slip into a silently
+  wrong span; the export bound parser is therefore stricter than `from_iso` and does not reuse its
+  leniency.
 - **Priority:** Should
-- **Inputs:** A span start and end, each either an ISO-8601 UTC timestamp or an integer number of
-  microseconds of simulated time.
+- **Inputs:** A span start and end, each either an ISO-8601 UTC timestamp in the form above or an
+  integer number of microseconds of simulated time. The two bounds may use different forms.
 - **Outputs:** The export for the span, identical to the export for the same instants given as
-  microseconds; or a refusal naming the bound that cannot be read.
+  microseconds; or a refusal that names the bound (start or end) and the reason it cannot be read,
+  with nothing exported.
 - **Preconditions:** The export's own preconditions (`FR-2320`, `FR-7410`, `FR-7420`, `FR-7430`).
-- **Postconditions:** The form of a bound never changes the exported values, the span ceiling
-  (`NFR-3710`) or the clamping of a partly out-of-range span.
-- **Acceptance Criteria:** For each export, a span given as ISO-8601 UTC bounds returns exactly the
-  rows returned for the same span given as microseconds; a bound that is neither form is refused with
-  a reason naming it and nothing is exported.
+- **Postconditions:** The form of a bound never changes the exported values, the sampling interval,
+  the span ceiling (`NFR-3710`) or the clamping of a partly out-of-range span. Parsing happens
+  before any replay, so a refused bound costs no replay.
+- **Acceptance Criteria:** (1) For each of the three exports, a span given as ISO-8601 UTC bounds
+  returns exactly the rows returned for the same span given as microseconds, including a fractional
+  second and a `+00:00` designator. (2) A span given as integer microseconds is accepted unchanged.
+  (3) A naive timestamp, a non-zero offset, seven fractional digits, a date alone and a non-time
+  string are each refused naming the bound and the reason, and nothing is exported. (4) A mixed pair
+  (one ISO bound, one integer) is accepted.
 - **Verification Method:** Test
 - **Dependencies:** FR-2320, FR-7410, FR-7420, FR-7430
 - **Source Documents:** `docs/pipeline/backlog.md` `BL-0181` (owner decision, 2026-10-18);
@@ -3545,10 +3590,12 @@ is no longer required. Same ID, narrower scope.)*
 - **Related ADRs:** ADR-0004, ADR-0015
 - **Related Interfaces:** INT-0014
 - **Related Requirements:** FR-2320, FR-7410, FR-7420, FR-7430, NFR-3710
-- **Notes:** **Not yet built** — the routes take integer microseconds only; a `06`/`07` package is
-  owed. Simulated time is already converted to ISO form at the boundary (`CLAUDE.md`, `simtime`), so
-  the requirement adds no new time model. Whether a bound without a zone designator is read as UTC is
-  a design choice for the feature specification.
+- **Notes:** **Not yet built** — the three routes take `t1`/`t2` as integers only; a `06`/`07` package
+  is owed (owner decision 2026-10-31: build before release). Simulated time is already converted to
+  ISO form at the boundary (`CLAUDE.md`, `simtime`), so the requirement adds no new time model. The
+  former open question (is a bound without a zone designator read as UTC) is closed here: it is
+  refused. Remaining design for `06`: the error code and wording, and whether the three routes share
+  one parser at the session boundary.
 
 ---
 

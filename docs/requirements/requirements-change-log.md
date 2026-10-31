@@ -520,6 +520,48 @@ capability.
 - **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
 - **Reason:** `NFR-2850`.
 
+### CHG-046
+- **Files:** `01-functional-requirements.md`, `docs/architecture/03-architecture.md`, `04-domain-model.md`, `adr/ADR-0007`, `adr/ADR-0036`, `adr/INDEX.md`, `architecture/INDEX.md`
+- **Change:** `FR-5310`'s "every referenced template exists" clause and its only Acceptance Criterion
+  replaced: assets, sensors and effects are authored inline and the content model has no template
+  reference; the criterion now tests an unresolvable `roles_needed` reference by name. GDS-03 §2.5 (and
+  its diagram), GDS-04 §1.2 Asset persistent state and `ADR-0007` amended to the inline-authoring model;
+  `ADR-0036` set `Accepted` (Option A; Option D noted as an additive authoring aid).
+- **Reason:** Owner decision on `BL-0233` (2026-10-18), applied 2026-10-31.
+- **Source review issue:** BL-0233.
+
+### CHG-047
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-3520` Postcondition: the operator-seat role is checked when an order is submitted
+  against the assignment in force then; a later rebinding applies to later submissions; omitting the
+  operator seat skips the role gate. Note added; `FS-116`'s "execution time" statements listed for `06`.
+- **Reason:** Owner decision on `BL-0388`, 2026-10-31: accept as v1 behaviour.
+- **Source review issue:** BL-0388.
+
+### CHG-048
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-7450` made implementation-ready: the three time-span exports enumerated (telemetry
+  CSV, truth ephemeris, cell-observed ephemeris, each with its RIC companion); exact ISO-8601 form
+  (extended, 1-6 fractional digits, `Z` or `+00:00`); naive, non-zero-offset, over-precise and
+  date-only strings refused; integer microseconds stay accepted; mixed pairs allowed; the former
+  open question on naive timestamps closed. Four acceptance criteria. RTM cell notes build-before-release.
+- **Reason:** Owner decision 2026-10-31 (build before release); `BL-0181`/`CR-22`.
+- **Source review issue:** BL-0181.
+
+### CHG-049
+- **Files:** `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `NFR-3810` made checkable: defines a retired document; declaration is a `Retired
+  documents` section in the `INDEX.md` of the folder that held it (path, former ID, date, successor);
+  check fails on a declared path still present, a live reference outside the section, or an incomplete
+  row. Dependency on `NFR-3820` added; two design choices flagged for the owner in Notes.
+- **Reason:** Owner decisions `BL-0319` (2026-10-24) and 2026-10-31 (build before release).
+- **Source review issue:** BL-0319.
+
+### CHG-050
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
+- **Reason:** `NFR-2850`.
+
 ### Review findings, pass 3
 
 | # | Finding type | IDs | Description | Severity | Recommendation |

@@ -5,7 +5,7 @@
 - **Decision ID:** ADR-0036
 - **Title:** Whether the content model keeps (and builds) asset/effect/sensor template libraries,
   or the architecture is amended to the inline-authoring model the build actually ships
-- **Status:** **Proposed — decision reserved for the project owner** (backlog `BL-0233`)
+- **Status:** **Accepted** — Option A (owner decision 2026-10-18, applied 2026-10-31; backlog `BL-0233`)
 
 ## Context
 
@@ -87,7 +87,7 @@ any behaviour; Option B is new scope with no requesting stakeholder on record.
 
 ## Decision
 
-**None yet.** Pending the project owner's choice of A, B or C (backlog `BL-0233`, `NEEDS-USER`).
+**Option A**, with Option D as an additive follow-up (owner decision 2026-10-18, `BL-0233`). The content model is inline authoring; GDS-03 §2.5, GDS-04 §1.2 and `ADR-0007` are amended to say so (2026-10-31). Option D: curated sample asset/sensor/effect snippets are offered as copy-paste starting points in the manuals and vignette-authoring documents, with no runtime template construct (routed to `08-training-manual-authoring` / `08-vignette-development`). Options B and C are not taken.
 
 ## Consequences (by option, once decided)
 

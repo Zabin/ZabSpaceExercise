@@ -90,7 +90,7 @@ Access Windows gate visibility of.
 (nominal ⇄ degraded ⇄ safe-mode, per GDS-01 §7's bus-mode state machine) for the Session's
 duration → may be destroyed by a kinetic Effect (terminal) or simply persists to Session end.
 
-**Persistent state.** Identity, ownership, kind, template reference, resource levels (fuel/power/
+**Persistent state.** Identity, ownership, kind (assets are defined inline in the Vignette; there is no template reference, ADR-0036), resource levels (fuel/power/
 ammo), posture toggles, current health, ground-segment/comms configuration, current bus/payload
 state-of-health, cyber vulnerability list — all carried in `WorldState` and therefore in every
 Snapshot.

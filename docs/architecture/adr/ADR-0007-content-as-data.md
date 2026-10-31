@@ -3,7 +3,7 @@
 [↑ ADR index](INDEX.md)
 
 - **Decision ID:** ADR-0007
-- **Title:** Vignettes, asset/effect/sensor templates, and TLE sources are data files, not Python
+- **Title:** Vignettes, the inject library, and TLE sources are data files, not Python
 - **Status:** Accepted
 
 ## Context
@@ -16,8 +16,8 @@ JSON vignettes from an in-app builder).
 
 ## Decision
 
-Vignette definitions, asset/effect/sensor template libraries, and the inject-template library are
-authored as YAML/JSON files (`spacesim/content/`), loaded and validated by pydantic v2 schemas,
+Vignette definitions (with assets, sensors and effects authored inline) and the inject-template
+library are authored as YAML/JSON files (`spacesim/content/`), loaded and validated by pydantic v2 schemas,
 not embedded as Python logic.
 
 ## Alternatives Considered
@@ -41,6 +41,13 @@ out as a discipline check: "If scenario logic starts leaking into code, move it 
 - Any new scenario mechanic must be expressible as data (parameters/dials/injects) before it can
   ship, constraining feature design.
 - Save-file format ownership inherits this same data-not-code split — see ADR-0022.
+
+## Amendment (2026-10-31, `BL-0233`)
+
+The original wording also named asset/effect/sensor template libraries. None was ever built; assets,
+sensors and effects are authored inline in the vignette. By owner decision (`BL-0233` option A,
+`ADR-0036`) this ADR is amended to the inline-authoring model. The decision (content is data, not
+Python) is unchanged.
 
 ## Related
 

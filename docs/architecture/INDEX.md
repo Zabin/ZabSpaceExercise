@@ -163,7 +163,7 @@ added to resolve conflicts a `04-requirements-engineering` pass found between `D
 `ADR-0017`/`ADR-0029` — see [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md).
 `ADR-0033` supersedes `ADR-0029`, this corpus's first `Superseded` entry; 2 (ADR-0034–0035) closed
 FS-105's directed-energy Open Questions; 2 (ADR-0036–0037) answer the load-validation batch's
-routed questions — `ADR-0037` decided, `ADR-0036` `Proposed` pending a project-owner decision; ADR-0038
+routed questions — `ADR-0037` decided, `ADR-0036` `Accepted` (Option A, 2026-10-31); ADR-0038
 interprets invariant 1 for a raising event handler, `BL-0227`; and ADR-0039 closes FS-123's
 space-weather index-mapping Open Questions, `BL-0104`/`BL-0121`).
 
