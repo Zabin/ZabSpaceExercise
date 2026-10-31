@@ -270,8 +270,8 @@ review passes actually run against it).
 - **Related Requirements:** FR-1110, FR-1120, FR-7450, NFR-1500
 - **Notes:** Shipped (`engine/simtime.py`). This leaf records what the build already does; it adds no
   feature. `FR-7450` is the one place the wire form is extended (ISO-8601 accepted as an export bound),
-  and is not yet built. Whether a timestamp without a zone designator is read as UTC is a design
-  choice, not stated here.
+  and is met as built since `IP-1089` (`VERIFIED`). A timestamp without a zone designator is refused
+  there (`FR-7450`), not read as UTC.
 
 ### FR-1200 — Orbital propagation and access geometry
 
@@ -3629,12 +3629,10 @@ is no longer required. Same ID, narrower scope.)*
 - **Related ADRs:** ADR-0004, ADR-0015
 - **Related Interfaces:** INT-0014
 - **Related Requirements:** FR-2320, FR-7410, FR-7420, FR-7430, NFR-3710
-- **Notes:** **Not yet built** — the three routes take `t1`/`t2` as integers only; a `06`/`07` package
-  is owed (owner decision 2026-10-31: build before release). Simulated time is already converted to
-  ISO form at the boundary (`CLAUDE.md`, `simtime`), so the requirement adds no new time model. The
-  former open question (is a bound without a zone designator read as UTC) is closed here: it is
-  refused. Remaining design for `06`: the error code and wording, and whether the three routes share
-  one parser at the session boundary.
+- **Notes:** **Met as built by `IP-1089`** (`VERIFIED` 2026-10-31, `VR-1089` v2.0; feature specification `FS-121` v2.3): the three routes accept an ISO-8601 UTC bound or an integer, through one parser (`spacesim/session/span_bounds.py`) shared at the session boundary and applied in `ephemeris._clamp_or_reject`. *(Updated 2026-10-31, pass 5; before `IP-1089` the routes took integers only.)* Simulated time is already converted to
+  ISO form at the boundary (`CLAUDE.md`, `simtime`), so the requirement adds no new time model. A bound
+  without a zone designator is refused (decided in pass 4). The error code and wording are the shipped
+  ones, not restated here.
 
 ---
 

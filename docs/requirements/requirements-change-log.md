@@ -581,6 +581,16 @@ capability.
 - **Reason:** Owner acceptance in the 04/06 passes; `IP-1092` verified.
 - **Source review issue:** BL-0319, `FS-135` OQ6.
 
+### CHG-053
+- **Files:** `01-functional-requirements.md`, `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-7450` marked met as built by `IP-1089` (`VERIFIED`, `VR-1089` v2.0) in its own Notes and in
+  `FR-1140`'s Notes (which said "not yet built"); `NFR-1510` Notes: lock procedure met by `IP-1093`
+  (`VERIFIED`, `VR-1093`; `requirements.lock` re-pinned, `test_release_lock` pins floors to the lock).
+  RTM Impl. cells set to the `VERIFIED` versions; `FR-7450`'s "build before release" Feature cell
+  annotation removed.
+- **Reason:** Packages verified 2026-10-31; closes pass 3 finding `P3-3`.
+- **Source review issue:** `P3-3`.
+
 ### Review findings, pass 3
 
 | # | Finding type | IDs | Description | Severity | Recommendation |
