@@ -930,3 +930,59 @@ def test_console_shows_the_blocked_previews_the_steps_describe(console):
     assert "No access window" in preview(c, "blue", "BLUE-OPTICAL", "observe", target="RED-EMITTER")
     c.page.select_option("#o-actor", "SIGINT-1"); c.settle()
     assert "observe" not in c.page.eval_on_selector_all("#o-action option", "o => o.map(x => x.value)")
+
+
+@pytest.mark.verifies("FR-11420")
+def test_recovery_objective_flips_exactly_at_the_deadline_not_before():
+    red, blue = _learn_pair()
+    red.do(2); red.do(3); blue.do(2); blue.do(3); blue.do(4)
+    mgr, t0 = red.mgr, red.t0
+    mgr.advance_to(t0 + 44 * 60_000_000)
+    assert mgr.world.assets["ISR-EO-LEARN"].bus_state.mode == "nominal" and blue.obj() == {"recover_to_nominal": False}
+    mgr.advance_to(t0 + 45 * 60_000_000)
+    assert blue.obj() == {"recover_to_nominal": True}
+    _said(blue.steps[5], "at or past T+45 min", "T+52")
+
+
+@pytest.mark.verifies("FR-11420")
+def test_recovery_seed_2_red_misses_and_there_is_nothing_to_recover():
+    red, blue = _learn_pair(seed=2)
+    cy = red.do(2); red.do(3)
+    assert red.mgr.world.assets["ISR-EO-LEARN"].bus_state.mode == "nominal" and red.obj() == {"keep_safed": False}
+    assert blue.do(4) == {"ok": False, "reason": "not_safed"}                       # Begin recovery has nothing to do
+    _said(blue.steps[2], "Seed 2", "Red missed", "nothing to recover")
+
+
+@pytest.mark.verifies("FR-11420")
+@pytest.mark.parametrize("vid,tgt,shooter,obj,cyber_tgt", [
+    ("coa-russia-md", "BLUE-ISR-LEO", "RED-NUDOL", "destroy_isr", "BLUE-SATCOM"),
+    ("coa-china-md", "BLUE-ISR-PRIMARY", "RED-ASAT", "kill_isr", "BLUE-SATCOM-PRIMARY"),
+])
+def test_coa_md_kill_is_chance_based_and_the_documented_order_hits_on_seed_1(vid, tgt, shooter, obj, cyber_tgt):
+    """N5: observe -> engage FIRST (Seed 1 hits), cyber/jam after; ordering them first changes the draw."""
+    def run(seed, cyber_first):
+        mgr = _mgr(vid) if seed == 1 else SessionManager(load_vignette(vid), seed=seed)
+        if seed != 1:
+            mgr.start()
+        cy = dict(actor="RED-CYBER", action="cyber", target=cyber_tgt, params={"vector": "ground_modem", "payload": "seize_c2"})
+        if cyber_first:
+            _issue(mgr, "red", **cy)
+        ob = _issue(mgr, "red", actor="RED-RADAR", action="observe", target=tgt, params=_TRACK)
+        mgr.advance_to(ob.earliest_window[0] + 1)
+        eng = _issue(mgr, "red", actor=shooter, action="engage", target=tgt, params={"interceptor_class": "mrbm_kkv"})
+        mgr.advance_to(eng.earliest_window[1] + 1)
+        return mgr, mgr.objectives()["red"][obj]
+    mgr, hit = run(1, False)
+    assert hit is True
+    for _ in range(6):                                  # then cyber after the intercept, retried (chance-based)
+        _issue(mgr, "red", actor="RED-CYBER", action="cyber", target=cyber_tgt, params={"vector": "ground_modem", "payload": "seize_c2"})
+        mgr.advance_to(mgr.world.now + 60_000_000)
+        if mgr.objectives()["red"]["safe_satcom"]:
+            break
+    assert mgr.objectives()["red"]["safe_satcom"] is True and mgr.objectives()["red"][obj] is True
+    assert run(1, True)[1] is False                     # the review's finding: cyber first, same Seed, misses
+    assert any(run(s, False)[1] is False for s in range(8))      # genuinely chance-based
+    text = open(__import__("pathlib").Path(__file__).resolve().parents[2] / "docs/training/11-vignette-playbooks.md",
+                encoding="utf-8").read()
+    for w in ("chance-based", "Seed 1", "Rewind"):
+        assert w in text.split(f"`{vid}`")[1].split("###")[0], (vid, w)

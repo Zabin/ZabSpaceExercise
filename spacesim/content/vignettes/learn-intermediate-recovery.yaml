@@ -64,7 +64,7 @@ vignette:
       - {n: 1, title: "Read the bus health", when: "at start", action: review,
          expect: "EXPLANATORY. Click ISR-EO-LEARN in the Fleet panel and open its bus card: everything is green. Note the FSW error counter - it is your baseline. The only ground station that can command the bird is GS-LEARN, and its first pass opens about T+41 min."}
       - {n: 2, title: "Notice the attack (Red must fire first - switch to the Red seat, do Red step 2, switch back)", when: "after Red fires the exploit (Red cell step 2), click +1m twice", action: advance, params: {dt_s: 120},
-         expect: "ISR-EO-LEARN drops into safe mode: the bus card turns red and CPU load and FSW errors spike - a cyber signature, not a jam. The attack is chance-based; if the bird is still green ask Red to fire again."}
+         expect: "ISR-EO-LEARN drops into safe mode: the bus card turns red and CPU load and FSW errors spike - a cyber signature, not a jam. The attack is chance-based (about 62%; on the documented Seed 1 the first shot lands, on Seed 2 it misses). If the bird is still green, Red missed: have Red fire again (Red step 2) until it safes, or - with nothing in safe mode, Begin recovery does not appear - there is nothing to recover and steps 3-5 do not apply."}
       - {n: 3, title: "Plan the root-cause patch", when: "issue now - the command goes up on the GS-LEARN pass that opens about T+41 min",
          action: def.patch_cyber, actor: ISR-EO-LEARN, params: {vector: ground_modem, via: GS-LEARN},
          expect: "In the Action menu choose def.patch_cyber (listed by name); Params fill in {\"via\":\"GS-LEARN\",\"vector\":\"ground_modem\"}. Queued. A reset alone would not hold: the ground-modem hole is still open and Red could safe the bird again. The patch closes it when the pass opens."}
@@ -72,7 +72,7 @@ vignette:
          action: recovery, actor: ISR-EO-LEARN, params: {via: GS-LEARN},
          expect: "'recovery scheduled (1 pass)'. Recovery is a procedure that runs over the pass, not a button that fixes things at once."}
       - {n: 5, title: "Advance through the pass", when: "click +10m until the clock is past the T+45 min deadline", action: advance, params: {dt_s: 2581},
-         expect: "ISR-EO-LEARN is back to nominal and recover_to_nominal is MET at the T+45 min deadline."}
+         expect: "The bird is nominal from the pass (about T+41 min), but recover_to_nominal is only scored at the deadline: it reads MET the first time the clock is at or past T+45 min. With +10m clicks that is the click that lands on or after T+45 (for example T+52 if you clicked from T+2), not before."}
       - {n: 6, title: "What if you skip the patch?", when: "EXPLANATORY - try it in a second run", action: review,
          expect: "Without step 3 the recovery strip reports 'root cause persists (cyber)' and the bird stays in safe mode. Always remove the root cause."}
     red:
