@@ -246,8 +246,8 @@ empty result, not a fabricated one) — if your custody lapsed, the gap in the e
 honest record of that lapse. The reference object resolves to ground truth only when it is your
 own asset; otherwise your own belief of it, same rule as RED-10's live view. `format=csv`
 (default) carries both frames; `format=oem` is ECI-only CCSDS OEM; `format=ric` is the RIC-only
-companion file. `t1`/`t2` are sim time as integer microseconds, the same units the event log
-uses — not a clock-face time.
+companion file. `t1`/`t2` are sim times, each either an ISO-8601 UTC clock time
+(`2030-03-15T06:00:00Z`) or integer microseconds; a bad bound gets a 400 naming `t1`/`t2` (see [`08`](08-http-api-reference.md)).
 
 This export reads **only your tracks**. Red holds no track on its own assets, so naming one of
 them as `object_id` returns a file with the header row and no data. The live RIC view (RED-10)
@@ -264,6 +264,7 @@ custody's drift against White's ground-truth export (WCM-15) during an AAR debri
 > `spacesim/session/aar.py` (`worlds_at_times`, per-instant replay) ·
 > `GET /api/sessions/{sid}/ephemeris/{cell}` ·
 > [FS-121](../features/FS-121-ephemeris-export.md) (`FR-7420`/`FR-7430`)
+> `spacesim/session/span_bounds.py` (`parse_span_bound`) · FR-7450
 
 ### RED-13 · Your telemetry CSV export (URL-only)
 
@@ -289,5 +290,6 @@ with a **422** on this route.
 > `spacesim/session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`) ·
 > `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv` ·
 > [FS-126](../features/FS-126-telemetry-csv-export.md) (`FR-2320`)
+> `spacesim/session/span_bounds.py` (`parse_span_bound`) · FR-7450
 
 ---

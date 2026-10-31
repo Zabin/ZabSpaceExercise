@@ -113,6 +113,7 @@
 - **ASAT / DA-ASAT** — anti-satellite weapon / direct-ascent ASAT, a ground-launched kinetic interceptor (`da-asat-crisis`, `11.5`).
 - **SGP4** — the standard model that turns a TLE into a position; the tool uses it for TLE-sourced satellites.
 - **ML / MD** — tags in the Red COA vignette names, normally read as "most likely" and "most dangerous" courses of action; the vignette files do not spell them out.
+- **ISO-8601 / UTC** — the written clock-time format `2030-03-15T06:00:00Z` (year-month-day, `T`, hour:minute:second, `Z` = UTC, the world time standard). Export time bounds accept it, or integer microseconds since 1970-01-01 UTC.
 - **Planning horizon** — how far ahead the engine searches for a window when you plan an order or
   task a sensor: the next 24 hours of sim time. No window inside it gives `no_window`. The console's
   rejection tips use this term.

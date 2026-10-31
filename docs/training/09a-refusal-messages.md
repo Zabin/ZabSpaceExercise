@@ -53,6 +53,9 @@ link was jammed (BLU-17) or a re-check failed (no rounds left).
 | `unknown session sess-N` (HTTP 404) | Wrong id, or the server restarted, or 32 sessions were open and the oldest was dropped | Load again; resume from a save (WCM-22) |
 | `vignette 'ID' not found` | Load of an unknown id | Pick from the picker; see Creator set-up in WCM-17 |
 | `unknown cell 'purple'` (HTTP 400, `GET /activity/{cell}`) | A cell name other than white, blue, red or the observer designations | Use `white`, `blue` or `red` |
+| `t1: '2030-03-15T06:00:00' is not an ISO-8601 UTC timestamp (...) or integer microseconds` (HTTP 400; also `t2:`) | A time bound with no `Z`/`+00:00`, another offset, more than 6 decimal digits, a date only, or text | Write `2030-03-15T06:00:00Z` or integer microseconds ([08](08-http-api-reference.md)) |
+| `requested time span [...] is wholly outside the session's recorded range [...]` (HTTP 400) | The export span does not overlap the exercise so far | Choose times between the start and now |
+| `requested sampling yields N instants, over the export ceiling of MAX_EXPORT_SAMPLES=10000; use interval_s >= X for this span` (HTTP 400) | Span too long for the sample step | Use the `interval_s` the message names |
 | `body.dt_sim_s: a non-finite number (NaN or Infinity) is not allowed` | A number field holds NaN or Infinity | Send a real number |
 | `cannot change parameters after start` | Changing a dial after Start | Set dials before Start (WCM-2) |
 | `unstaffed mandatory role(s): ISR-EO-1/bus` (pop-up on Start) | Required seat bindings missing | WCM-18 |

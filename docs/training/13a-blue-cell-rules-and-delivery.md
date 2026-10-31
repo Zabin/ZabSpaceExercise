@@ -132,8 +132,9 @@ satellite that is not yours, or does not exist, answers `404 no maneuver ledger 
 appear here.
 
 **Time in every export.** The URL parameters `t1` and `t2` of the telemetry CSV and ephemeris exports are
-integer microseconds, as above; an ISO date such as `2030-03-15T06:00:00Z` gets a `422` with `Input should be
-a valid integer`. The *files* you get back show both: the CSV has a `t` column (microseconds) and a `utc`
+either ISO-8601 UTC clock times (`2030-03-15T06:00:00Z` or `…+00:00`, up to 6 decimal digits) or integer
+microseconds as above, mixed freely. A bound with no zone, another offset (`+02:00`), 7+ decimal digits, a date only or a
+word gets a `400` such as `t1: '2030-03-15T06:00:00' is not an ISO-8601 UTC timestamp (...) or integer microseconds`. The *files* you get back show both: the CSV has a `t` column (microseconds) and a `utc`
 column (ISO). A span entirely outside the recorded exercise is refused (`requested time span [0, 5] is
 wholly outside the session's recorded range [...]`); a span partly outside is quietly clipped to the range.
 The ephemeris export also needs `reference_id` (the object the frame is relative to), and the live

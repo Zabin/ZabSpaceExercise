@@ -111,6 +111,33 @@ the message names the ceiling. The role manuals walk through each export:
 [WCM-12–16](12a-white-cell-analysis-and-exports.md), [BLU-11–14](13-blue-cell-manual.md),
 [RED-10–13](14-red-cell-manual.md).
 
+**Worked example — the same telemetry export asked two ways.** Replace `sess-1` with your session id and
+use your own seat in the path (`blue` here). Both requests return the same CSV (a `t,utc,asset,subsystem,param,value,unit,status`
+header, then rows at 06:00 and 06:15, and so on):
+
+```bash
+# ISO-8601 UTC clock times (easiest to type)
+curl 'http://127.0.0.1:8000/api/sessions/sess-1/telemetry/blue/ISR-EO-1/export.csv?t1=2030-03-15T06:00:00Z&t2=2030-03-15T06:30:00Z&interval_s=900'
+# the equivalent integer microseconds (Unix epoch)
+curl 'http://127.0.0.1:8000/api/sessions/sess-1/telemetry/blue/ISR-EO-1/export.csv?t1=1899784800000000&t2=1899786600000000&interval_s=900'
+```
+
+You may mix the two forms (`t1=2030-03-15T06:00:00Z&t2=1899786600000000`). In a browser address bar write the
+`+` of `+00:00` as `%2B`, or just use `Z`. Accepted: `Z` or `+00:00`, with 0 to 6 decimal digits of seconds.
+
+**Refusals** (each is an HTTP 400 and nothing is exported):
+
+| You send | Message |
+|---|---|
+| `t1=2030-03-15T06:00:00` (no zone), `+02:00`, `2030-03-15T06:00:00.1234567Z` (7 digits), `2030-03-15` (date only) or `banana` | `t1: '<what you sent>' is not an ISO-8601 UTC timestamp (YYYY-MM-DDThh:mm:ss[.ffffff]Z or +00:00; a zone designator is required, no other offset) or integer microseconds` (`t2:` for the second bound) |
+| A span wholly outside the exercise | `requested time span [1893456000000000, 1893542400000000] is wholly outside the session's recorded range [1899784800000000, 1899788400000000]` |
+| Too many samples | `requested sampling yields 3600001 instants, over the export ceiling of MAX_EXPORT_SAMPLES=10000; use interval_s >= 0.360038 for this span` |
+
+A span only partly inside the exercise is clipped to the overlap with no message. Swapping `t1` and `t2` gives a
+header-only CSV rather than an error. The ground-truth ephemeris (`/ephemeris/truth`) and the cell ephemeris
+(`/ephemeris/{cell}`), including their `format=ric` companions, take the same bounds and give the same messages.
+
+
 > **Sources:** `spacesim/ui_web/server.py` (route table, `_require_white`, `_reject_observer`,
 > `_refuse_player_seat_on_create`, `rewind`, `undo`, `load_save`, incl. `get_ric_view`, `get_tle`,
 > `telemetry_export_csv`, `maneuver_ledger*`, `aar_export_*`, `ephemeris_truth`,

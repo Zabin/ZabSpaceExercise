@@ -99,7 +99,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Force-add before Start (TLE, bulk TLE/OMM) and its refusals | `session/manager.py` (`add_tle`, `bulk_import`, `_force_add_omm_object`), `content/bulk_import.py` | WCM-7, WCM-23 | — | — | FS-119 |
 | Which seat sees which console controls | `static/app.js` (`setCell`), `static/index.html` (`white-only`), `ui_web/server.py` (`_require_white`, `_reject_observer`) | WCM-24 | — | — | FS-113 |
 | Delivery paths and link-scoped jamming (`ground_uplink` / `isl_relay` / `stored_program`; `link_target`) | `engine/orders.py` (`_delivery_jammed`), `engine/effects.py` (`is_link_denied`) | — | BLU-17 | RED-16 | FS-129 |
-| Manoeuvre ledger and export time formats | `session/manager.py` (`maneuver_ledger`), `GET /maneuver_ledger/{cell}/{asset}` | WCM-15, WCM-16 | BLU-18 | RED-17 | FS-125 |
+| Manoeuvre ledger and export time formats (export bounds: ISO-8601 UTC or integer microseconds, `FR-7450`) | `session/manager.py` (`maneuver_ledger`), `GET /maneuver_ledger/{cell}/{asset}` | WCM-15, WCM-16 | BLU-18 | RED-17 | FS-125 |
 | Space-weather index coupling (`space_weather` inject with `index_series`; drag / anomaly rate; vignette `space_weather_series`) | `engine/perturbations.py`, `session/manager.py` (`_apply_inject_effects`) | WCM-25 | — | — | FS-123 |
 | Debris persistence estimate (`persistence_estimate` in ground-truth `debris`; weeks / years / centuries by altitude) | `engine/effects.py` (`_persistence_estimate`, `DebrisField`) | WCM-25 | — | — | FS-124 |
 | Per-effect-class attribution / detectability configuration (`effect_detectability_config`) | `engine/effects.py` (`ModerateEffectResolver`), `content/vignette.py` | WCM-25 | — | — | FS-129 |

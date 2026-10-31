@@ -92,8 +92,8 @@ spreadsheet; columns `t,cost,purpose_tag,remaining_delta_v_ms`). `t` is sim time
 Unix epoch; `cost` and `remaining_delta_v_ms` are metres per second. Tag a manoeuvre by adding
 `"purpose_tag":"inspect"` under **Advanced (raw JSON params)** when you plan it. Queued, jammed or refused
 manoeuvres are not listed; the other side's satellites answer `404 no maneuver ledger for this asset
-(fog/ownership)`. As with every export, URL times are integer microseconds (an ISO date gets `422 Input
-should be a valid integer`), and a span wholly outside the recorded exercise is refused. Spend Δv
+(fog/ownership)`. As with every export, `t1`/`t2` are ISO-8601 UTC (`2030-03-15T06:00:00Z`) or integer microseconds (a bad bound gets a `400` naming
+`t1`/`t2`), and a span wholly outside the recorded exercise is refused. Spend Δv
 deliberately: the ledger is the quickest way to see how many burns you can still afford. The full
 reference for Red's exports is RED-10 to RED-13.
 
