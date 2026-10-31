@@ -60,3 +60,12 @@ def test_no_hardcoded_build_and_probe_fixed():
     skill = ROOT / ".claude" / "skills" / "run-spacesim"
     d = (skill / "driver.py").read_text()
     assert "o-target-pick" not in d and "'o-target'" in d
+
+
+@pytest.mark.parametrize("tool", TOOLS, ids=lambda p: p.name)
+def test_newest_is_numeric_not_lexical_and_ignores_non_numeric(tool, tmp_path, monkeypatch):
+    _mk(tmp_path, "chromium-999/chrome-linux/chrome")
+    new = _mk(tmp_path, "chromium-1243/chrome-linux64/chrome")
+    _mk(tmp_path, "chromium-latest/chrome-linux/chrome")
+    monkeypatch.setenv("PLAYWRIGHT_BROWSERS_PATH", str(tmp_path))
+    assert _finder(tool)() == new

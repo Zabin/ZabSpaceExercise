@@ -74,10 +74,14 @@ def find_chromium() -> str:
     """IP-1094 — newest chromium-*/chrome-linux*/chrome under PLAYWRIGHT_BROWSERS_PATH (default /opt/pw-browsers)."""
     import glob, os, sys
     root = os.environ.get("PLAYWRIGHT_BROWSERS_PATH") or "/opt/pw-browsers"
-    builds = sorted(glob.glob(os.path.join(root, "chromium-*", "chrome-linux*", "chrome")))
+    builds = []
+    for p in glob.glob(os.path.join(root, "chromium-*", "chrome-linux*", "chrome")):
+        rev = os.path.basename(os.path.dirname(os.path.dirname(p))).split("-", 1)[1]
+        if rev.isdigit():
+            builds.append((int(rev), p))
     if not builds:
         sys.exit(f"No Chromium found under {root} (set PLAYWRIGHT_BROWSERS_PATH).")
-    return builds[-1]
+    return max(builds)[1]
 
 
 def run() -> None:
