@@ -105,7 +105,7 @@ Common params:
 
 Rejected orders return a human-readable `reason`.
 
-Time-span bounds (`t1`, `t2`) are integer microseconds of sim UTC. A span that is wholly outside
+Time-span bounds (`t1`, `t2`) are an ISO-8601 UTC timestamp (`2030-03-15T06:10:00Z` or `+00:00`; zone designator required) or integer microseconds of sim UTC; anything else is a 400 naming `t1`/`t2` and the reason (IP-1089, `FR-7450`). A span that is wholly outside
 the recorded range is a 400. A request that would sample too many instants is also a 400, and
 the message names the ceiling. The role manuals walk through each export:
 [WCM-12–16](12a-white-cell-analysis-and-exports.md), [BLU-11–14](13-blue-cell-manual.md),

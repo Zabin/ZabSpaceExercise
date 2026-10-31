@@ -533,7 +533,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   single-cell viewpoint (`_participant_cells()` rejects a non-participating cell at construction/
   `set_viewpoint()`; switching viewpoint never resets the played-back moment); one instance per
   session, held in `InProcessSession._playbacks`, never in `SessionManager` itself),
-  `ephemeris.py` (IP-1210, FR-7410/FR-7420 — truth/cell-observed ephemeris export: `sample_times()`/
+  `span_bounds.py` (IP-1089, FR-7450 — `parse_span_bound(value, name)`: the one pure parser for the `t1`/`t2` bounds of the telemetry CSV, truth-ephemeris and cell-observed-ephemeris exports, ISO-8601 UTC (`Z`/`+00:00`) or integer microseconds, else `ValueError("t1: <reason>")` -> 400; called only from `ephemeris._clamp_or_reject`), `ephemeris.py` (IP-1210, FR-7410/FR-7420 — truth/cell-observed ephemeris export: `sample_times()`/
   `truth_ephemeris()`/`cell_observed_ephemeris()`/`to_ric()` (reuses `engine/maneuver.py::
   lvlh_frame` directly for the RIC transform)/`write_csv()`/`write_oem()`; a wholly-out-of-range
   time span is rejected, a partially-out-of-range span is silently clamped; **IP-1262:**
