@@ -72,6 +72,7 @@ your session is untouched.
 | Reason shown | Cause | What to do |
 |---|---|---|
 | `not a valid save file (...)` | The file is not JSON | Pick the right file; do not edit saves by hand |
+| `save_format 3 is not supported; supported formats: legacy (absent), 2` | The save was written by a newer (or damaged) version: its `save_format` is not 2 and not absent. A text value such as `"2"`, `true` or `null` is refused too, in the same words | Resume it with the version that wrote it, or use an earlier save. Do not edit the number by hand |
 | `save is missing required key 'content'` (also `baseline`, `seed`, `eventlog`, `final_time`) | Truncated or wrong file | Use the original download |
 | `save key 'seed' must be an integer` (also `final_time`) | Damaged value | As above |
 | `eventlog has 100002 entries; limit is 100000` | Too long to replay safely (cap 100,000 entries) | Resume an earlier save, or run shorter exercises |
@@ -84,6 +85,8 @@ your session is untouched.
 | `save replay baseline is not a valid world: ...` | Damaged starting world | Use the original |
 | `save key 'orders' has an entry missing actor, action` (also `pending`, `ssn_requests`) | Damaged list | Use the original |
 | `White Cell control: refused unless the request names the white seat` | Loaded from a Blue, Red or Observer tab | Switch to White |
+
+Every save the simulator writes now carries `save_format` 2; a save with no `save_format` at all is an old ("legacy") save and still loads, with the `legacy save:` warning above.
 
 A save does not hold browser-only state: panel layout, the Operator seat you typed, the mission-brief
 collapse state.

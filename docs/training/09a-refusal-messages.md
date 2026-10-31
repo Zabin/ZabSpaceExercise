@@ -61,6 +61,7 @@ link was jammed (BLU-17) or a re-check failed (no rounds left).
 | `unstaffed mandatory role(s): ISR-EO-1/bus` (pop-up on Start) | Required seat bindings missing | WCM-18 |
 | `cannot edit force after start` | Adding assets after Start | WCM-23 |
 | `not_controller` / `unknown_flag` / `no_such_pending_order` | Gate and ROE replies | WCM-19 |
+| `save_format N is not supported; supported formats: legacy (absent), 2` (HTTP 400, shown as **Load failed:**) | A save from a newer version, or with a damaged `save_format` | WCM-22 |
 | `Load failed: ...` | Vignette or save refused | WCM-2 (vignette), WCM-22 (save) |
 
 Time-control messages (`step cannot move time backwards ...`, `advance target ... is beyond the exercise span ...`,
