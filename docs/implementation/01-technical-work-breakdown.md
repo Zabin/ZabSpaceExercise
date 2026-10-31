@@ -1230,6 +1230,23 @@ question for the owner, recorded in `IP-1160`); validating `role` at `assign_rol
 fail-closed in the gate instead); the training-basics tutorial and brief errors (`08-vignette-development`);
 the integration review of the 40 unreviewed packages (`10`).
 
+## Release-push remediation, pass 9 (2026-10-31)
+
+**Input:** [`integration-review-rc3-delta.md`](../reviews/integration-review-rc3-delta.md) `M-1` (owner directive, journal runs #256/#262: bugs before release; fog of war is a load-bearing invariant).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Split `cell_activity` into ground-truth row assembly and one pure, fail-closed per-kind filter in `CellController`; no inject row for a cell; effect rows carry the symptom, not the template; unknown cell refused, `observer` follows its designation | `session/cells.py`, `session/inprocess.py`, `ui_web/server.py` (route) | IP-1088 |
+| 2 | Fog matrix over every entry kind x White/Blue/Red/Observer; replay-equals-live; `IP-1083` schedule-entry regression | `tests/test_activity_fog_matrix.py` | IP-1088 |
+
+**Why one package.** One function, one defect family (the feed's fog rule), and the matrix is the deliverable. Splitting the inject leak from the unknown-cell and template findings would leave a second package editing the same lines; all three are the same missing allow-list.
+
+**Why the filter moves to `CellController`.** The leak came from a per-cell `if` inside the assembly loop that allowed the White actor for every cell. An allow-list by kind in the boundary class, applied to rows after assembly, cannot be bypassed by a new source adding a row.
+
+**Alternatives refused.** (a) Delete the inject branch for non-White cells only: fixes the repro, leaves `neutral`/`observer`/template findings and the next new lane. (b) Filter in `app.js`: violates invariant 3.
+
+**Not planned here.** The requirement leaf for the activity feed (`CR-31`, routed to `04`); the renderer's lack of a lane for White's `white`-cell inject row.
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
