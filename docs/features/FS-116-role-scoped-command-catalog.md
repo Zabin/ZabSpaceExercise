@@ -1,7 +1,7 @@
 # FS-116 — Role-Scoped Command Catalog & Assignment Scoping
 
 > **Document ID:** FS-116
-> **Version:** 1.2
+> **Version:** 1.3 (2026-10-31 — the role check is stated at order submission, not at execution, per `FR-3520` as amended in `CHG-047` and the owner decision on `BL-0388` (accept as v1); accepted limitation recorded in Risks. Nothing else changed.) Prior: 1.2
 > **Status:** ✅ Ready for implementation planning (both Open Questions closed — see below)
 > **Dependencies:** [FS-115](FS-115-session-setup.md) (produces the Role Assignment record this
 > Feature enforces, `FR-4210`), [FS-105](FS-105-spacecraft-operations.md) (the bus/payload command
@@ -69,7 +69,7 @@ Ensure an operator only ever sees, and can only ever execute, commands legal for
 
 In scope: filtering the order/command interface to the commands legal for the operator's seated
 role and targeted Asset (`FR-3510`); independently enforcing a Role Assignment's bus-only/
-payload-only/both scope as a system behavior at command-execution time, not merely as a UI filter,
+payload-only/both scope as a system behavior at order submission, not merely as a UI filter,
 so a command outside scope is rejected even if it bypassed the order panel entirely (`FR-3520`).
 
 Out of scope, per the Feature Catalog's own `Excluded Requirements`/`Scope` fields: creating or
@@ -128,22 +128,23 @@ none invented.
   `seat`/Role-Assignment pair is checked against that scope for the targeted Asset before it is
   accepted into the existing plan-first pipeline (`FS-101`'s window/ownership/resource checks,
   `FS-102`'s execute-time re-validation). A command outside the Role Assignment's scope is rejected
-  with a role-scope-specific reason, at both submission time and (per `FR-3520`'s postcondition)
-  again at execution time if state could have changed between the two — mirroring the
-  re-validation pattern `FR-3410`/`FS-102` already establishes for other plan-first checks, applied
-  to this new gate rather than duplicating its mechanism.
+  with a role-scope-specific reason, at submission. The role is checked once, at submission, against
+  the Role Assignment in force at that moment (`FR-3520` Postcondition as amended, `CHG-047`); it is
+  **not** re-checked when the order later executes. A later rebinding of the seat applies to later
+  submissions and does not re-judge an order already submitted. A submission that omits the operator
+  seat skips the role gate (ownership and the engine's other checks still apply).
 - **Both-scoped or no-Role-Assignment-required actors:** an operator with a `both` scope, or an
   action White Cell issues directly (not subject to any Role Assignment per `GDS-04` §1.10), is
   unaffected by either check above.
 - **Edge case — the targeted Asset has no covering Role Assignment for the acting seat at all:**
-  treated identically to an out-of-scope command (rejected, both offer-time and execution-time),
+  treated identically to an out-of-scope command (rejected, both at offer time and at submission),
   since an uncovered Asset is a strict subset of "not covered by this Role Assignment's scope."
 
 ## Subsystem Responsibilities
 
 | Subsystem | Responsibility |
 |---|---|
-| **C2 Session / Application Layer** (`GDS-03` §2.2) | Owns the execution-time enforcement (`FR-3520`), including resolving the submitted `seat` identifier against the existing Role Assignment mapping (`ADS-3500` Decision Log entry 1). `GDS-04` §1.10's own Domain Model text already commits to this: a Role Assignment "determines which Planned Activities a given human... may legally issue (**checked by the Session layer's permission logic**, `GDS-03` §2.2)." This is the same seam that already owns the Role Assignment mapping itself (`GDS-03` §2.2 "Ownership of data" — the seat→asset mapping, `FS-115`'s `SessionManager.assign_role`/`role_assignments`) and the same architectural pattern `ADR-0004` establishes for the structurally similar fog-of-war boundary (enforce once, server-side, at this exact seam — not the UI, not the engine). |
+| **C2 Session / Application Layer** (`GDS-03` §2.2) | Owns the submission-time enforcement (`FR-3520`), including resolving the submitted `seat` identifier against the existing Role Assignment mapping (`ADS-3500` Decision Log entry 1). `GDS-04` §1.10's own Domain Model text already commits to this: a Role Assignment "determines which Planned Activities a given human... may legally issue (**checked by the Session layer's permission logic**, `GDS-03` §2.2)." This is the same seam that already owns the Role Assignment mapping itself (`GDS-03` §2.2 "Ownership of data" — the seat→asset mapping, `FS-115`'s `SessionManager.assign_role`/`role_assignments`) and the same architectural pattern `ADR-0004` establishes for the structurally similar fog-of-war boundary (enforce once, server-side, at this exact seam — not the UI, not the engine). |
 | **C4 Operator Console** (presentation) | Owns the offer-time filtering (`FR-3510`'s UI-filtering consequence) — trusts the Session Layer's role-scope data the same way it already trusts `CellController`'s fog-of-war output verbatim (`ADR-0004`'s established pattern), rather than deciding legality itself. |
 | **C1 Simulation Engine** | **Not** a home for this Feature's logic — `engine/buscommands.py`'s `can_issue()` takes no operator/seat/cell parameter today and, per `CLAUDE.md` invariant 2 (UI-agnostic engine, no concept of "cell"), must not gain one; role-scope enforcement is session-layer state (the Role Assignment mapping) applied to the engine's existing verb catalog (`BUS_VERBS`/`PAYLOAD_VERBS`), not a new engine capability. |
 
@@ -155,7 +156,7 @@ none invented.
   interface concern. Its concrete realization gains an optional `seat` field per `ADS-3500` Decision
   Log entry 1.
 - **INT-0006** (Operator Console → Session Layer, `SessionAPI`, the single seam) — the boundary
-  where `FR-3520`'s execution-time enforcement lives, per the reasoning in Subsystem Responsibilities
+  where `FR-3520`'s submission-time enforcement lives, per the reasoning in Subsystem Responsibilities
   above. Its concrete realization (`SessionManager.issue_order`/`InProcessSession.issue_order`)
   gains the same optional `seat` parameter, per `ADS-3500` Decision Log entry 1 — additive and
   backward-compatible with every existing call site.
@@ -181,7 +182,7 @@ its own.
 - A command submission outside the acting seat's Role Assignment scope for the targeted Asset is
   rejected with a role-scope-specific failure reason (distinct from `no_such_asset`/
   `no_payload_for_verb`/window/ownership failure reasons `FS-101`/`FS-102`/`FS-105` already define),
-  at both submission and (if applicable) execution time.
+  at submission.
 - An Asset with no Role Assignment at all covering the acting seat is treated as a rejection, not a
   crash or silent no-op (see System Behaviour's edge case).
 - This Feature's checks are additive to, and independent of, every existing plan-first/execute-time
@@ -197,7 +198,7 @@ I/O or computation cost class.
 
 ## Security Considerations
 
-This Feature's `FR-3520` postcondition — reject at execution time "whether or not it was also
+This Feature's `FR-3520` postcondition — reject at submission "whether or not it was also
 filtered from the order panel" — is this project's standard defense-in-depth posture applied to a
 new boundary: the UI filter is a convenience, never the enforcement (the same posture `ADR-0004`
 established for fog-of-war and `IP-1130`/`FS-113` established for the Observer seat's mutation
@@ -277,6 +278,11 @@ enforces against, without modifying; already `VERIFIED`).
   domain-model text (which does explicitly commit to "the Session layer's permission logic" for
   Role Assignment enforcement) rather than stretching `ADR-0004` to cover a decision it does not
   actually make. Flagged for `05-feature-decomposition`'s catalog owner, not corrected here.
+- **Accepted limitation (v1, owner decision on `BL-0388`, 2026-10-31).** Because the role is checked
+  only at submission, an order submitted under a role assignment that White Cell later changes
+  still executes at its window; the later change affects later submissions only. A facilitator who
+  rebinds a seat to withdraw a capability must also cancel that seat's queued orders. This is the
+  accepted v1 behaviour, not a defect; a re-check at execution would be a new requirement.
 
 ## Open Questions
 
@@ -305,7 +311,7 @@ should become mandatory once more vignettes declare `roles_needed`) — it does 
 
 ADR-0004 (cited by the Feature Catalog; see Risks for why this document does not lean on it as the
 governing decision for this Feature's own enforcement seam — `GDS-04` §1.10 is the more precise
-source), ADR-0005 (plan-first order validation, the existing mechanism this Feature's execution-time
+source), ADR-0005 (plan-first order validation, the existing mechanism this Feature's submission-time
 check attaches to).
 
 ## Related Interfaces
@@ -313,5 +319,5 @@ check attaches to).
 INT-0007 (Session Layer → Engine, the boundary `CellController` already uses for its own
 per-cell-view filtering — cited for architectural analogy, not directly used by this Feature),
 INT-0008 (Session Layer ↔ Engine, the seam `FS-101`/`FS-102`'s existing order validation/scheduling
-already crosses — this Feature's execution-time check sits alongside that existing traffic, not
+already crosses — this Feature's submission-time check sits alongside that existing traffic, not
 inside it).
