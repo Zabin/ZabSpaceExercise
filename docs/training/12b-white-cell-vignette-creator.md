@@ -118,7 +118,86 @@ by id answers `vignette 'my-scn' not found`). See [`01-install-and-run.md`](01-i
 answers `draft sessions cannot advance time`); to see it run, save it and load it. Drafts stay in the
 session list (`/api/sessions`) like any other session until the server evicts the oldest.
 
-> **Sources:** `spacesim/ui_web/static/creator.js` (`newDraft`, `addTle`, `addGroundAsset`, `jsonSave`,
+### Starter snippets: copy, paste, change the ids
+
+Vignettes are **authored inline**: every asset, sensor and inject is written out in full inside the
+vignette file. There are no template references or includes, so to reuse a piece you copy it and edit it.
+The snippets below are lifted from the shipped `spacesim/content/vignettes/01-leo-isr-denial.yaml`
+(sensor `beam_mode` line from the rules in [`06`](06-the-vignette-library.md#authoring-sensors-optional-modality-fields)).
+Put them under the matching key of a vignette file (`blue_forces:`, `red_forces:`, `sensors:`, `objectives:`,
+`injects:`). Each runs as shown; the combined file below was loaded, started and played as a check.
+
+**Imaging satellite with bus and payload** (`blue_forces:`; the Creator forms cannot make the bus or payload):
+
+```yaml
+- id: ISR-EO-1
+  kind: satellite
+  orbit: {source: kepler, a_m: 6978137.0, e: 0.0, i_deg: 97.8, raan_deg: 342.0, argp_deg: 0.0, ta_deg: 0.0}
+  resources: {delta_v_ms: 80.0, power_w: 1500.0}
+  payload_state: {type: isr_eo, collect_rate_per_s: 0.002}
+  bus_state:
+    power: {battery_soc: 0.9, charge_rate_per_s: 0.00012, drain_rate_per_s: 0.0001}
+```
+
+**Ground station** (`blue_forces:`; this is the one the Creator's lat/long form makes):
+
+```yaml
+- id: GS-NORTH
+  kind: ground_station
+  location: {lat_deg: 24.25, lon_deg: 54.55, alt_m: 0.0}
+  elevation_mask_deg: 5.0
+```
+
+**Jammer and one-round interceptor** (`red_forces:`):
+
+```yaml
+- id: JAM-NORTH
+  kind: jammer
+  location: {lat_deg: 27.13, lon_deg: 56.21, alt_m: 0.0}
+  elevation_mask_deg: 0.0
+- id: RED-ASAT
+  kind: interceptor
+  location: {lat_deg: 41.64, lon_deg: 86.24, alt_m: 0.0}
+  resources: {ammo: 1}
+```
+
+**Ground radar sensor** (`sensors:`; delete `beam_mode` to use the default `dish`; the other value is `fence`):
+
+```yaml
+- id: BLUE-RADAR
+  owner: blue
+  kind: ground_radar
+  beam_mode: fence
+  location: {lat_deg: 30.57, lon_deg: -86.21, alt_m: 0.0}
+  elevation_mask_deg: 5.0
+```
+
+**Objectives** (`objectives:`):
+
+```yaml
+blue:
+  - {id: deliver_isr, desc: "Deliver confirmed imagery before the landing window", metric: {kind: deliver_before}}
+red:
+  - {id: deny_isr, desc: "Deny Blue imagery delivery during the window", metric: {kind: deny_delivery}}
+```
+
+**Timed inject** (`injects:`; fires 45 simulated minutes in; use `trigger: {type: manual}` for a button instead):
+
+```yaml
+- id: commercial_imagery_leak
+  label: "Commercial SAR imagery reveals the surface group"
+  trigger: {type: time, at_sim_s: 2700}
+  effects:
+    - {type: message, to: [blue, white], text: "OSINT leak: commercial SAR shows the surface group."}
+```
+
+A file needs `id`, `title` and `start_epoch_utc` at the top of the `vignette:` block. After saving the file in a
+folder listed under `content.external_vignette_dirs`, reload the page: it appears under `External: <folder>`.
+**Load** then checks every piece and lists any problem as **Load failed:** (WCM-2); a missing orbit or
+location, a bad id or a TLE that will not propagate are caught there. With all six snippets above in one
+file, Load succeeded, **Start** worked, a Blue downlink queued over `ground_uplink`, and `deliver_isr` turned met.
+
+> **Sources:** `spacesim/content/vignettes/01-leo-isr-denial.yaml` (starter snippets) · `spacesim/ui_web/static/creator.js` (`newDraft`, `addTle`, `addGroundAsset`, `jsonSave`,
 > `declareSeats`, `saveVignette`, `refreshPreview`) · `spacesim/ui_web/static/index.html` (`creator-menu`) ·
 > `spacesim/session/manager.py` (`creator_set_state`, `creator_edit_asset`, `creator_delete_asset`,
 > `declare_seats`, `_authoring_problems`) · `spacesim/content/vignette.py` (`asset_authoring_problems`,
