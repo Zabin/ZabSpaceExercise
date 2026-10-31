@@ -41,7 +41,7 @@ seat enforcement on a trusted LAN, not authentication.
 | `GET /api/sessions/{sid}/windows/{cell}/{asset}` | Upcoming passes (pass-timeline ribbon — cmd/tlm/obs lanes) |
 | `GET /api/sessions/{sid}/conjunctions/{cell}` | Upcoming close approaches (filtered by ownership) |
 | `GET /api/sessions/{sid}/coaching/{cell}` | Coaching notes from `vignette.coaching` due-now for this cell |
-| `GET /api/sessions/{sid}/activity/{cell}?past_window_s&future_window_s` | Per-cell Gantt feed (past · present · scheduled). White=all cells; Blue/Red=own only |
+| `GET /api/sessions/{sid}/activity/{cell}?past_window_s&future_window_s` | Per-cell Gantt feed (past · present · scheduled). White=all cells; Blue/Red=own orders + started effects on own assets only (scheduled injects: White only); `observer` follows its designation; an unknown cell is refused (400) |
 | `GET /api/sessions/{sid}/injects` | List the vignette's injects |
 | `POST /api/sessions/{sid}/force/tle` `{id, owner, line1, line2}` | Add a real satellite by TLE (before Start only: `cannot edit force after start`; see [WCM-23](12d-white-cell-clock-saves-and-controls.md)) |
 | `GET /api/sessions/{sid}/injects/pending` · `POST …/injects/{handle}/cancel` · `…/edit` `{effects?, at_sim_t?}` | White's queue of not-yet-fired injects; cancel or edit one ([WCM-20](12c-white-cell-rules-and-staffing.md)) |

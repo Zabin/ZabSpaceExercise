@@ -110,7 +110,7 @@ activity for the current cell. The fog-of-war contract is enforced server-side:
 
 - **White Cell** sees three lanes — BLUE, RED, NEUTRAL — every order, every active effect,
   every scheduled inject across the exercise.
-- **Blue / Red** see only their own lane — own orders and effects on own assets.
+- **Blue / Red** see only their own lane — own orders and effects on own assets; never White's scheduled injects.
 
 Bars are colour-coded per cell and status-coded by style:
 
@@ -119,7 +119,7 @@ Bars are colour-coded per cell and status-coded by style:
 - ▮ dashed outline — queued / scheduled (future)
 - ▮ grey strikethrough — cancelled
 - ✗ red marker — rejected at issue
-- ▮ dashed neutral — scheduled inject (from the white-cell builder)
+- ▮ dashed neutral — scheduled inject (from the white-cell builder; White Cell only)
 
 Click any bar to print `cell · actor · action · status · window · delivery_path` in the detail
 line below the canvas. Past- and future-window selectors let you zoom from 10 min back to 6 h

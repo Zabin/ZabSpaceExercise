@@ -45,7 +45,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Server-authoritative clock, pause/jump; advance/step span bound (start + 366 days, forward-only, running clock pinned at the end) | `session/manager.py` (`step`, `advance_to`, `_span_ceiling`, `_catch_up_locked`), `engine/clock.py`, `app.js` (`stepBy`) | WCM-4 | — | — | FS-109 |
 | Rewind / undo / branch (determinism); rewind bounds and refusal status line (`#control-status`; time, rewind and inject refusals; rewind/undo keep a running clock running) | `session/manager.py` (`rewind_to`, `undo_last`), `engine/simulation.py`, `server.py` (`/rewind`, `/undo`), `app.js` (`reportControlError`, `rewindTo`) | WCM-4, WCM-9 | — | — | FS-109, FS-110 |
 | Injects + builder + library (incl. fire-time validation) | `content/inject_library.yaml`, `server.py` `/inject`, `session/manager.py` (`fire_inject`, `validate_inject_effects`, `_skip_inject_effect`), `app.js` (`fireBuiltInject`) | WCM-5 | — | — | FS-106, FS-108 |
-| Activity timeline (Gantt) | `ui_web/static/app.js`, `session/scene.py` | WCM-6 | BLU-2 | RED-2 | FS-106 |
+| Activity timeline (Gantt) | `ui_web/static/app.js`, `session/scene.py`, `session/cells.py` (`activity_rows`, IP-1088) | WCM-6 | BLU-2 | RED-2 | FS-106 |
 | Coaching notes | `content/vignette.py` (`Vignette.coaching`) | WCM-6 | — | — | FS-106 |
 | Vignette tutorial step scripts (executable steps, both cells; deadlines stated in briefs) | `content/vignette.py` (`Vignette.tutorial`, `intro_brief`), `ui_web/static/app.js` (Tutorial panel), `tests/test_vignette_tutorials.py` (`_Learner`, `_script`) | — | — | — | FS-115 |
 | Objectives / deadlines | `content/vignette.py`, `server.py` `/objectives` | WCM-6 | BLU-10 | RED-9 | FS-106 |

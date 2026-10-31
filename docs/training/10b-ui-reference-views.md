@@ -139,8 +139,11 @@ scheduled. **Fog-of-war applies at the API boundary:**
 
 - **White Cell** sees three lanes: BLUE, RED, NEUTRAL — every order, every active effect,
   every scheduled inject.
-- **Blue Cell** sees only the BLUE lane — only its own orders and effects on its own assets.
+- **Blue Cell** sees only the BLUE lane — only its own orders and the started effects on its own assets
+  (the bar names the category and the symptom, not the effect template). **Never a scheduled inject.**
 - **Red Cell** sees only the RED lane — same fog-of-war contract.
+- The **Observer** seat follows White's designation (the White feed, or the designated cell's feed). Any
+  other cell name is refused with HTTP 400.
 
 The data feed is `GET /api/sessions/{sid}/activity/{cell}` — read-only, replay-safe, derived
 from `osys.orders`, `world.active_effects`, and `sim.scheduler.pending()`.
@@ -156,7 +159,7 @@ from `osys.orders`, `world.active_effects`, and `sim.scheduler.pending()`.
 | 7 | Queued / scheduled bar | read-only | Dashed cell-coloured outline. The order is waiting for its window, or (as built) its window has already passed. Check the order queue ([§10.6](10a-ui-reference-orders.md#106-satellite-command-compose-form) row 13) to see whether it has executed. |
 | 8 | Cancelled bar | read-only | Grey strikethrough. The order was cancelled before firing. |
 | 9 | Rejected marker | read-only | Red **×**. The order was rejected at issue (no window). |
-| 10 | Scheduled inject | read-only | Dashed neutral-coloured rectangle at the inject's `at_sim_t`. |
+| 10 | Scheduled inject | read-only | **White Cell only.** Dashed neutral-coloured rectangle at the inject's `at_sim_t`; Blue and Red never receive it. |
 | 11 | Bar click | mouse | Shows `cell · actor · action · status · window · delivery_path` in the detail line below. |
 
 Bars within a lane are stacked vertically per **actor** (asset id) so a single satellite's
@@ -171,7 +174,7 @@ activity reads as one row; multiple satellites stack within the same cell lane.
 | `queued` | Order has a future window but has not fired yet | `osys.orders` |
 | `cancelled` | Cancelled before firing (`POST /cancel`) | `osys.orders` |
 | `rejected` | Rejected at issue (`Order.status == "rejected"`) | `osys.orders` |
-| `scheduled` | Future inject in `sim.scheduler.pending()` | scheduler |
+| `scheduled` | Future inject in White's pending-inject queue (White only; edits applied, cancelled injects absent) | scheduler |
 
 **Endpoint:** `GET /api/sessions/{sid}/activity/{cell}?past_window_s=<int>&future_window_s=<int>`
 returns
@@ -189,7 +192,7 @@ returns
 }
 ```
 
-> **Sources:** `spacesim/ui_web/static/app.js` (`renderActivity`, `drawActivityGantt`, `drawActivityBar`) · `spacesim/session/inprocess.py` (`cell_activity`) · `spacesim/ui_web/server.py` (`/activity/{cell}`)
+> **Sources:** `spacesim/ui_web/static/app.js` (`renderActivity`, `drawActivityGantt`, `drawActivityBar`) · `spacesim/session/inprocess.py` (`cell_activity`) · `spacesim/session/cells.py` (`CellController.activity_rows`) · `spacesim/ui_web/server.py` (`/activity/{cell}`)
 
 ---
 
