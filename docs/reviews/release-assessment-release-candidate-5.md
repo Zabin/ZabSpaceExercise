@@ -137,7 +137,7 @@ recipe in its header; `pyproject.toml` declares floors equal to the locked direc
    `httpx` test-client deprecation, REV-REL-002 N7, still open).
 3. **Fix / hold back** — nothing to fix; nothing held back.
 4. **Locked set validated** — second fresh venv, `pip install -r requirements.lock && pip install --no-deps -e .`,
-   unfiltered suite: LOCK_RESULT_PLACEHOLDER
+   unfiltered suite: **exit 0, 2165 tests, 2161 passed, 4 skipped** (browser tests included), installed set identical to the 33 pins (`pip freeze` diff empty).
 5. **Recommendation:** the newer set passes completely, so the lock *should* be re-pinned to it before tagging
    (raise the `pydantic`, `hypothesis`, `pytest` floors, re-freeze, re-validate in a fresh venv). This
    assessment did **not** change the lock: per the skill the lock is produced by a `07`→`08` package, and the
