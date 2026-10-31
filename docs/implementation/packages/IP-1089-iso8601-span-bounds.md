@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1089
 > **Version:** 1.0
-> **Status:** READY (authored 2026-10-31 by `07-implementation-planning`; every dependency `VERIFIED`)
+> **Status:** VERIFIED 2026-10-31 via [VR-1089 v2.0](../verification/VR-1089-iso8601-span-bounds.md) (`09-package-verification`; authorized: MSTR-006 §3, project owner go-ahead 2026-10-31)
 > **Authorization (MSTR-006 §3):** **given.** The project owner's go-ahead of 2026-10-31, in the planning session that commissioned this package ("build before release `FR-7450`", `BL-0181`, owner decision of 2026-10-18 promoted in `CHG-046`…`CHG-050`), covers this package and no other.
 > **Dependencies:** [FS-121](../../features/FS-121-ephemeris-export.md) v2.3 (`FR-7450`, owns the parser), [FS-126](../../features/FS-126-telemetry-csv-export.md) (`FR-2320`), [IP-1210](IP-1210-ephemeris-export.md), [IP-1260](IP-1260-telemetry-csv-export.md), [IP-1261](IP-1261-telemetry-series-history-remediation.md), [IP-1262](IP-1262-export-sampling-bounds.md), [IP-1082](IP-1082-white-control-nonfinite-input-and-toolbar-refusal.md) (all `VERIFIED`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [01-technical-work-breakdown.md](../01-technical-work-breakdown.md)

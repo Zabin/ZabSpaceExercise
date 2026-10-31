@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1092
 > **Version:** 1.0
-> **Status:** READY (authored 2026-10-31 by `07-implementation-planning`; every dependency `VERIFIED`)
+> **Status:** VERIFIED 2026-10-31 via [VR-1092 v2.0](../verification/VR-1092-retired-documents-check.md) (`09-package-verification`; authorized: MSTR-006 §3, project owner go-ahead 2026-10-31)
 > **Authorization (MSTR-006 §3):** **given.** The project owner's go-ahead of 2026-10-31, in the planning session that commissioned this package ("build before release `NFR-3810`"), covers this package and no other.
 > **Dependencies:** [FS-135](../../features/FS-135-documentation-integrity-checks.md) v1.1, [IP-1350](IP-1350-documentation-integrity-checks.md) (`VERIFIED`, `VR-1350`; supplies the live-set walker, link reader and allow-list gate)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [01-technical-work-breakdown.md](../01-technical-work-breakdown.md)

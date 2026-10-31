@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1093
 > **Version:** 1.0
-> **Status:** READY (authored 2026-10-31 by `07-implementation-planning`; no package dependency)
+> **Status:** VERIFIED 2026-10-31 via [VR-1093](../verification/VR-1093-release-lock-repin.md) (`09-package-verification`; authorized: MSTR-006 §3, project owner go-ahead 2026-10-31)
 > **Authorization (MSTR-006 §3):** **given.** The project owner's go-ahead of 2026-10-31, in the planning session that commissioned this package ("build before release ... the dependency lock re-pin"), covers this package and no other.
 > **Dependencies:** none (the procedure is `CLAUDE.md` "Release dependency lock"; input is [release-assessment-release-candidate-5.md](../../reviews/release-assessment-release-candidate-5.md) §2.4, finding `S-3`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [01-technical-work-breakdown.md](../01-technical-work-breakdown.md)

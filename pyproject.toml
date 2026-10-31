@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Space Control & Orbital Warfare Exercise Simulator (PME wargaming tool)"
 requires-python = ">=3.11"
 dependencies = [
-    "pydantic>=2.14.1",
+    "pydantic>=2.14.2",
     "numpy>=2.5.4",
     "sgp4>=2.27",       # TLE propagation for real named satellites
 ]
@@ -16,7 +16,7 @@ ui = ["fastapi>=0.162.0", "uvicorn>=0.54.0"]
 mapdata = ["basemap", "basemap-data"]
 # skyfield is an independent reference in the Phase-2 tests; httpx powers the FastAPI TestClient;
 # pillow renders the UI preview images in tools/render_screens.py.
-dev = ["pytest>=9.1.1", "hypothesis>=6.170.9", "skyfield>=1.55", "fastapi>=0.162.0", "httpx>=0.28.1", "pillow>=13.0.0", "playwright>=1.64.1"]
+dev = ["pytest>=9.2.0", "hypothesis>=6.170.14", "skyfield>=1.55", "fastapi>=0.162.0", "httpx>=0.28.1", "pillow>=13.0.0", "playwright>=1.64.1"]
 
 [tool.pytest.ini_options]
 # Make the repo root importable so tests can `import spacesim...`.
