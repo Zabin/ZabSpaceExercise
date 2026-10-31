@@ -1247,6 +1247,27 @@ the integration review of the 40 unreviewed packages (`10`).
 
 **Not planned here.** The requirement leaf for the activity feed (`CR-31`, routed to `04`); the renderer's lack of a lane for White's `white`-cell inject row.
 
+## Release-push remediation, pass 10 (2026-10-31)
+
+**Input:** project owner go-ahead of 2026-10-31 (MSTR-006 §3) to build before release `FR-7450` (`FS-121` v2.3), `NFR-3810` (`FS-135` v1.1), the dependency lock re-pin (release assessment rc5 §2.4, `S-3`) and small release polish (rc5 `S-1`, `N3`).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Pure span-bound parser; wired once at `ephemeris._clamp_or_reject`; three routes take string bounds; parity/boundary matrix | `session/`, `ui_web/server.py` | IP-1089 |
+| 2 | Retired-documents check: section reader, modes (a)/(b)/(c), empty allow-list, `docs/INDEX.md` section | `tests/` | IP-1092 |
+| 3 | Check-latest / try / validate / pin; floors and lock | packaging | IP-1093 |
+| 4 | `validate_save` format gate; Chromium lookup in two run tools | `session/manager.py`, `tools/`, run skill | IP-1094 |
+
+**Why four packages.** Four independent seams with different files, owners of review and rollback: a parser (session + routes), a test-only doc check, packaging metadata, and two unrelated polish fixes. `IP-1094` bundles the save-format gate with the Chromium lookup only because both are single-hunk release polish with no design content; neither would justify a package alone.
+
+**Why the parser sits in `_clamp_or_reject`.** It is already the one function all three exports call before sampling and replay, so parsing there satisfies "shared, before any replay" without touching `SessionAPI`'s protocol or the engine (FS-121 OQ10 resolved here: session-layer helper `span_bounds.py`, `ValueError` -> 400).
+
+**Root-level retired document (FS-135 OQ6).** Chosen: declared in `docs/INDEX.md`'s `Retired documents` section with the repo-root path; no root `INDEX.md`. Flagged for the owner; no code special case.
+
+**Ordering.** `IP-1089` and `IP-1094` both edit `session/manager.py` (different regions): run one after the other. `IP-1092` and `IP-1093` are independent of everything.
+
+**Not planned here.** README refresh and `BL-0271` (manual impact, training author); training option-D snippets; rc5 `N7`, `R-2` (see `IP-1094`); a requirement leaf for the save-format gate (routed to `04`).
+
 ## Related
 
 [`00-master-build-plan.md`](00-master-build-plan.md) · [`packages/INDEX.md`](packages/INDEX.md) ·
