@@ -155,9 +155,9 @@ from `osys.orders`, `world.active_effects`, and `sim.scheduler.pending()`.
 | 2 | Future window | dropdown | **30 min / 1 h / 2 h / 6 h** — how far ahead to show. |
 | 3 | NOW vertical line | read-only | Bright-green line at the current sim time. |
 | 4 | Lane label | read-only | One lane per visible cell (BLUE / RED / NEUTRAL for White; single lane for Blue or Red). |
-| 5 | Executed bar | read-only | Filled cell-coloured rectangle, meant for an order that completed. As built it does not appear: a past order keeps its dashed **queued** outline (row 7; `BL-0266`). |
+| 5 | Executed bar | read-only | Filled cell-coloured rectangle: the order's window has passed. The timeline marks a queued order `executed` once the clock is past the end of its window (the Command queue list flips earlier, as soon as the window opens). It means the window came and went, not that the effect succeeded: a jammed command still reads `executed`; see BLU-17. |
 | 6 | Active bar | read-only | Filled + bright-green outline. The order's window straddles NOW (currently executing). |
-| 7 | Queued / scheduled bar | read-only | Dashed cell-coloured outline. The order is waiting for its window, or (as built) its window has already passed. Check the order queue ([§10.6](10a-ui-reference-orders.md#106-satellite-command-compose-form) row 13) to see whether it has executed. |
+| 7 | Queued / scheduled bar | read-only | Dashed cell-coloured outline. The order is waiting for its window, which has not opened yet. Once the window opens the bar is **active** (row 6) and after it passes **executed** (row 5). |
 | 8 | Cancelled bar | read-only | Grey strikethrough. The order was cancelled before firing. |
 | 9 | Rejected marker | read-only | Red **×**. The order was rejected at issue (no window). |
 | 10 | Scheduled inject | read-only | **White Cell only.** Dashed neutral-coloured rectangle at the inject's `at_sim_t`; Blue and Red never receive it. |
@@ -170,7 +170,7 @@ activity reads as one row; multiple satellites stack within the same cell lane.
 
 | Status | Meaning | Source |
 |---|---|---|
-| `executed` | Order has fired. **As built this status is never sent** (`Order.status` holds only `queued`/`cancelled`/`rejected`), so a past order's bar still draws as **queued** (dashed). Filed as a code bug, `BL-0266`. | `osys.orders` |
+| `executed` | The order's window has opened and passed. Derived by the timeline feed from a `queued` order once NOW is past the window end (verified live: queued → active mid-window → executed after). | derived from `osys.orders` |
 | `active` | The bar's window contains NOW | computed at request time |
 | `queued` | Order has a future window but has not fired yet | `osys.orders` |
 | `cancelled` | Cancelled before firing (`POST /cancel`) | `osys.orders` |
