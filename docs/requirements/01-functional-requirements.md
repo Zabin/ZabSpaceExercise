@@ -2874,6 +2874,56 @@ is no longer required. Same ID, narrower scope.)*
   was created; the list now matches what those requirements already oblige. A future no-cell route
   must be added here in the same change set, or it violates the Postcondition.
 
+#### FR-6230 — Per-cell activity feed is fog-filtered
+
+*(new 2026-10-31, baseline-maintenance pass 5; promoted from `CR-31`; `IP-1088`)*
+
+- **ID:** FR-6230
+- **Title:** The activity feed shows a cell only what that cell may know, and an unknown cell nothing
+- **Description:** The system shall serve an activity feed (past, current and scheduled activity, in
+  lanes) filtered at the `SessionAPI`/`CellController` boundary. White Cell's feed shall hold every
+  order, every effect (including those on neutral-owned assets) and every pending inject, in Blue,
+  Red and neutral lanes. A Blue or Red feed shall hold only (a) that cell's own orders, in every
+  state, and (b) one row for each effect that has started on an asset that cell owns, carrying
+  only the target, the category, the symptom, the window and whether the effect is overtly
+  attributed, and never the effect's template name or its covert cause. A Blue or Red feed shall
+  hold no row for any inject, scheduled, pending, edited, cancelled or fired, and nothing about
+  White's schedule, edits or cancellations. A feed requested for an unknown cell shall be refused;
+  the Observer seat shall receive the feed of the cell it is designated to view (`FR-6510`).
+- **Rationale:** A feed that is richer than the cell's own view discloses what fog-of-war withholds.
+  The leaf states what GDS-08 §4 ("fog-filtered: one lane for a player cell; Blue, Red and neutral
+  lanes for White") leaves to `FR-6210`: a cell's feed is no richer than its `CellView`. The defect
+  that prompted it leaked White's scheduled injects and effect template names to Blue and Red
+  (integration review `M-1`, `IP-1088`).
+- **Priority:** Must
+- **Inputs:** An activity-feed request naming a cell (`white`, `blue`, `red` or `observer`).
+- **Outputs:** The rows that cell may see, or a refusal for an unknown cell.
+- **Preconditions:** A started session.
+- **Postconditions:** Reading the feed changes no state, the event log or the random-number
+  stream. A kind of row that has no explicit rule for a cell is withheld from Blue and Red and shown
+  to White (the filter fails closed).
+- **Acceptance Criteria:** Given an inject scheduled by White for a later time, a Blue, a Red and an
+  Observer-as-Blue read of the feed contain no inject row and nothing from which one can be
+  inferred, and White's feed contains it. Given a covert cyber effect on a Blue asset, Blue's feed
+  shows a symptom row with no template name and no attribution, and Red's feed shows nothing of it.
+  A read for `bogus` or `neutral` is refused.
+- **Verification Method:** Test
+- **Dependencies:** FR-6210, FR-4450
+- **Source Documents:** GDS-08 §4 (screen architecture, "Timeline" view); GDS-09 §3 (the cell-scoped
+  `GET /activity/{cell}` route in the "Cell picture" group); `FR-6210`; `IP-1088` Design Decisions
+  1-5.
+- **Related ADRs:** ADR-0004, ADR-0015
+- **Related Interfaces:** INT-0001, INT-0005
+- **Related Requirements:** FR-6210, FR-6220, FR-6510, FR-4450
+- **Notes:** **Met as built by `IP-1088`** (`VERIFIED`, `VR-1088` v3.0): the assembly is in
+  `InProcessSession.cell_activity`, the allow-list filter is in `CellController`, and the route
+  answers 400 for an unknown cell. The activity feed is a cell-scoped read, so it is not in the
+  no-cell set of `FR-6220`. **Routed to `03`/`06`:** GDS-08 and GDS-09 ground the feed's existence,
+  lanes and fog-filtering but do not state which rows a lane may hold; the row rules above are
+  derived from `FR-6210` and `IP-1088`, and no feature specification describes the feed. Which rows
+  Blue and Red may see in an effect's "symptom" is `CellView`'s definition, restated, not new policy.
+  Tests (`test_activity_fog_matrix.py`, `test_cell_activity.py`) tag `FR-6210`/`FR-6220`; retag candidates.
+
 ### FR-6300 — Server-authoritative multiplayer clock and locking
 
 #### FR-6310 — Server-authoritative lazy clock shared across connections
@@ -4370,7 +4420,7 @@ by that promotion.
   TT&C). GDS-03 §3 names the dial in passing; no input document defines the levels or what each one
   shows. **Shipped; not baselined.** **Source:** `docs/pipeline/backlog.md` `BL-0342`; GDS-03 (the
   ops-fidelity dial).
-- **CR-31 — Per-cell activity feed with lanes.** *(new 2026-10-24, `BL-0345`)* The console shows each
+- **CR-31 — Per-cell activity feed with lanes. `PROMOTED 2026-10-31 → FR-6230`** *(new 2026-10-24, `BL-0345`; GDS-08 §4 and GDS-09 §3 ground it)* The console shows each
   cell a feed of its recent activity in lanes. Only the traceability matrix mentions it; no
   architecture or domain statement describes the feed, its lanes or what each lane may disclose
   (a fog-of-war question). **Shipped; not baselined.** **Source:** `docs/pipeline/backlog.md`

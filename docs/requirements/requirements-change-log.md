@@ -599,6 +599,18 @@ capability.
 - **Reason:** Closes the pass 4 follow-up on the template clause.
 - **Source review issue:** BL-0233.
 
+### CHG-055
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `CR-31` promoted to new leaf `FR-6230` (activity feed is fog-filtered): White's full feed; Blue
+  and Red see only their own orders and their own started effects as category + symptom, never a
+  template name, never any inject row (White's schedule, edits, cancels); unknown cells refused;
+  Observer follows its designation; fail-closed filter. Cites GDS-08 §4 (Timeline view) and GDS-09 §3
+  (`GET /activity/{cell}`). Met as built by `IP-1088` (`VERIFIED`, `VR-1088` v3.0).
+- **Reason:** Grounding exists in the GDS ladder for the feed, its lanes and its fog-filtering; the
+  row rules are derived from `FR-6210`. **Routed to `03`/`06`:** GDS-08/GDS-09 do not state the per-lane
+  row rules, and no `FS-` describes the feed.
+- **Source review issue:** `BL-0345`, integration review `M-1`.
+
 ### Review findings, pass 3
 
 | # | Finding type | IDs | Description | Severity | Recommendation |
