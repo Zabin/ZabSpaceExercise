@@ -562,6 +562,16 @@ capability.
 - **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
 - **Reason:** `NFR-2850`.
 
+### CHG-051
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** New leaf `FR-7240` (a save whose `save_format` is present and not a supported value,
+  currently only `2`, is refused before replay with an error naming the supported formats, and no
+  session is created; absent = legacy, unchanged). Marked met as built by `IP-1094` (`VERIFIED`,
+  `VR-1094` v2.0). Sourced to GDS-07 §6 and `FR-7230`. RTM row, ADR-0022 and INT-0012 lists added.
+- **Reason:** Release assessment rc5 `S-1` routed "is a format check required?" to `04`; `IP-1094`
+  built the check with no leaf stating it. The tests tag `FR-7230` (retag candidate, see pass 5 findings).
+- **Source review issue:** rc5 `S-1`.
+
 ### Review findings, pass 3
 
 | # | Finding type | IDs | Description | Severity | Recommendation |

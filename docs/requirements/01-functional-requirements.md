@@ -3148,6 +3148,45 @@ is no longer required. Same ID, narrower scope.)*
   save's log was never counted). The cap is the one `NFR-3710` requires; its figure is the shipped
   constant restated, not a figure an approved source sets.
 
+#### FR-7240 — A save in an unsupported format is refused
+
+*(new 2026-10-31, baseline-maintenance pass 5; `IP-1094`, routed to `04` by release assessment rc5 `S-1`)*
+
+- **ID:** FR-7240
+- **Title:** A save whose declared format is not a supported format is refused before replay
+- **Description:** The system shall refuse a save whose `save_format` is present and is not a
+  supported value (currently only `2`), with an error that names the supported formats, before any
+  replay, and shall create no session. A save with no `save_format` is a legacy save and is not
+  refused by this leaf (`FR-7230`).
+- **Rationale:** The save envelope carries a format version (`save_format`, GDS-07 §6) so that a reader
+  can tell what it has been given. A save written by a newer or different build, or a corrupted
+  value, must not be read as a format it is not: before `IP-1094` any non-empty value was silently
+  treated as format 2 and loaded wrongly or failed late. `FR-5310`'s "rather than a partial or
+  silent load" applies to saves as it does to vignettes.
+- **Priority:** Must
+- **Inputs:** A save file whose `save_format` is present.
+- **Outputs:** A refusal naming the unsupported value and the supported formats, or, for a supported
+  value, the load that `FR-7230` describes.
+- **Preconditions:** None.
+- **Postconditions:** When refused, no session exists and the session registry is unchanged.
+- **Acceptance Criteria:** A save carrying `save_format: 999` (and, separately, a text, boolean,
+  fractional or null value) is refused with a reason that names the supported formats, and no
+  session is created. A save carrying `save_format: 2` loads, and a save with no `save_format` loads
+  as a legacy save with its warning.
+- **Verification Method:** Test
+- **Dependencies:** FR-7210, FR-7230
+- **Source Documents:** GDS-07 §6 (the `save_format` envelope field and the legacy-save rule);
+  `FR-7230` Description and Notes; release assessment rc5 `S-1`; `IP-1094`.
+- **Related ADRs:** ADR-0022
+- **Related Interfaces:** INT-0012
+- **Related Requirements:** FR-7210, FR-7220, FR-7230, FR-5310
+- **Notes:** **Met as built by `IP-1094`** (`VERIFIED` 2026-10-31, `VR-1094` v2.0):
+  `SessionManager.validate_save` checks the format first (`SUPPORTED_SAVE_FORMATS`; a boolean is
+  not accepted as `1`) and raises a `ValueError` that `load_save` returns as HTTP 400. The tests that
+  verify it (`spacesim/tests/test_save_format_gate.py`) still tag `FR-7230`; they are a retag
+  candidate for `08`. Which values count as supported is the shipped constant restated: a future
+  format 3 adds a value here, it does not need a new leaf.
+
 ### FR-7300 — AAR replay, scrub, and branch-compare
 
 #### FR-7310 — Read-only replay/scrub without disturbing the live session
