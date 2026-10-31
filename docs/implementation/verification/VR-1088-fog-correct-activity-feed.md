@@ -122,3 +122,21 @@ Tests, one run by name (`test_doc_integrity`, `test_training*`, `test_test_origi
 | O2 | MBP tally line arithmetic (88 + 1 ≠ 90; recount 89 + 1) | Info | `07-implementation-planning` |
 
 The package header was not edited (verifiers do not edit packages; it stays `READY`/as authored). Next step: fix F4, then a short re-verification.
+
+---
+
+## v3.0 — Re-verification (fresh session, 2026-10-31, tree `14906bb`)
+
+**Result: VERIFIED** — the only open item (F4, `RED-2` wording) is closed; 0 findings.
+
+| Check | Evidence | Result |
+|---|---|---|
+| Code diff since `42d029d` | `git diff 42d029d..HEAD -- spacesim/` is empty | pass |
+| `RED-2` (`14-red-cell-manual.md` line 39) | Now says Red's timeline shows Red's own orders and any effect started on Red's own assets, by category and symptom only; never Blue's orders, effects on Blue's assets, or White's schedule/edits/cancels | pass |
+| Live feed, `leo-isr-denial` (seed 1, driven through `InProcessSession.cell_activity`, the `/activity/{cell}` source): Blue `downlink` order, Red `jam` order, one effect on Blue's `ISR-EO-1`, one on Red's `RED-SURF`, two White-scheduled injects | Red: `cyber → RED-SURF (degrade)`, `JAM-NORTH jam → ISR-EO-1` (no template, no Blue order, no Blue-asset effect, no inject). Blue: `electronic_warfare → ISR-EO-1 (degrade)`, `ISR-EO-1 downlink` (no Red order/effect, no inject). White: all of the above with template labels (`BLUE-TPL`, `REDOWN-TPL`) plus both injects | pass |
+| `BLU-2` / `WCM-6` | Same run: Blue sees own order + own-asset effect by category only; injects appear on White's feed only. Matches the text of both sections. Code path `CellController.activity_rows` is an allow-list (own-owner orders; own-owner started effects relabelled to category + symptom; every other kind dropped) | pass |
+| Tests, one run: `test_doc_integrity`, `test_training_sources`, `test_training*`, `test_test_origins` | exit 0 (all pass, 1 skip) | pass |
+
+**MBP tally (own recount of the package table in `00-master-build-plan.md`):** 90 package rows (90 distinct ids) before this verification = 89 `VERIFIED` + 1 `IN PROGRESS` (`IP-1088`). After: 90 `VERIFIED` + 0 `IN PROGRESS` = 90. The earlier "88 + 1 = 90" line was off by one; the ledger line written this run states the recounted figures.
+
+IP-1088 rows set to `VERIFIED`: verification INDEX, MBP row and tally, packages INDEX, ROADMAP. No `docs/pipeline/` or package/spec edits. The ROADMAP citation is plain text (no new link).
