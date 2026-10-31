@@ -9,12 +9,19 @@
 > in implementing, verifying, integration-reviewing or training-reviewing any package)
 > **Date:** 2026-10-31
 > **Commit assessed:** `f7cdc6d` (branch `claude/release-assessment-2`, tip = `origin/claude/release-candidate-5`)
-> **Status:** IN PROGRESS — sections are filled as evidence arrives.
+> **Status:** Final (advisory). Evidence gathered by this session; nothing taken from summaries.
 > **Decision owner:** the project owner. This document is advisory. **No baseline record was flipped.**
 
 ## 0. Recommendation (summary)
 
-_Pending evidence._
+**NO-GO as the candidate stands, converting to GO on three procedural conditions (§8): B-1 `IP-1088` outside
+every integration review; B-2 the learner-walkthrough gate is not current (three training/vignette commits
+after the re-check) plus one open Manual-impact item; B-3 three unbuilt partials with no recorded bucket move.**
+No code defect blocks: 90/90 `VERIFIED`; unfiltered 2165 (2161 pass / 4 skip), non-browser 2123 (2118 / 5),
+browser 42 (42 / 0), all exit 0; same green on the latest dependency set and on `requirements.lock`; NFR-1510
+met (re-pin advisable); NFR-2830 met with Low findings; REV-REL-001 and REV-REL-002 blockers closed by delivery.
+Owner decisions needed: B-3, `BL-0388` (O-1), dormant role scoping (O-2), and optionally recorded deferral of
+B-1/B-2.
 
 ## 1. Scope audit
 
@@ -179,16 +186,164 @@ tests), class B retag (9), class A unbuilt (2), retirement marking undefined. No
 one Manual-impact item is open (`BL-0271`). The substance is good: every changed step this assessment drove
 behaves as written, and nothing found here is High.
 
-## 3. Closure of REV-REL-002 and REV-REL-001 findings
+## 3. Closure of REV-REL-002 and REV-REL-001 findings — with evidence
 
-## 4. Deviations
+### 3.1 REV-REL-002 (release candidate 1, 2026-10-25, NO-GO)
 
-## 5. Residual risks and open backlog
+| Item | Status now | Evidence |
+|---|---|---|
+| **B1** — 40 `VERIFIED` packages never inside an integration review | **Closed** | [integration-review-unreviewed-packages.md](integration-review-unreviewed-packages.md) scoped exactly those 40 (+`IP-1082`), found 3 High; `IP-1084`/`1085`/`1086` fixed them and the [RC-3 delta](integration-review-rc3-delta.md) §4.1 records H-1..H-3 **Closed** with probes. The same gap has re-opened at size one: `IP-1088` (→ **B-1**) |
+| **B2** — `FEAT-3500` unbuilt, `IP-1160` unauthorized, no descope recorded | **Closed by delivery** | `IP-1160` authorized, `VERIFIED` (`VR-1160` v3.0), RC-3 delta scope. Two owner-decision deviations remain (`BL-0388`, §4). The B2 *recording* half for the partials (`FR-7450`, `FR-5310` clause, `NFR-3810`) is **not done**: `01-release-plan.md` is unchanged since before RC-1 (last commit `9b491a4`) → **B-3** |
+| Medium `BL-0284` — rewind drops White's future injects | **Fixed in code** (`IP-1083`) | Live probe (`leo-isr-denial`): White future inject at T+2 h, step 10 min, rewind to T+1 min → pending count **2 before, 2 after**. Backlog row still `SCHEDULED` (bookkeeping) |
+| Medium N2 — `training-basics` tutorial errors, not machine-verified | **Closed** | [REV-TRN-009](training-review-training-basics-n2-fix.md) (no Critical/High); `test_vignette_tutorials.py` now covers it (115 tests green) |
+| Medium `BL-0268` — no Creator / bulk-import / save-as-scenario procedure | **Closed in the tree** | `12b-white-cell-vignette-creator.md`, `12d` (bulk import, save-as-scenario); re-check REV-TRN-011 drove Creator `12b` "as written". Backlog row still `SCHEDULED` |
+| Medium `BL-0139` (OMM epoch discarded), `BL-0140` (bulk import batch abort) | **Open** | Backlog `SCHEDULED`; known deviations (§5) |
+| Medium `BL-0233` (`FR-5310` template clause), `BL-0334` (link allow-list keying) | **Open** | §4 / §5 |
+| N3 Low — `run-spacesim` driver stale (Chromium glob, `#o-target-pick`) | **Open** | Reproduced this run: "No Chromium found under /opt/pw-browsers/" (build is `chrome-linux64/`) |
+| N4 Low — `README.md` stale (419 tests), `--host 0.0.0.0 --reload`, no trust warning, no lock install | **Open** | `README.md` lines 18, 42, 123; owned by this skill on GO (§9) |
+| N5 Low — `CLAUDE.md` counts stale | **Closed** | `CLAUDE.md` line 19 states 2165 / 2161 passed / 4 skipped, matching §2.1 |
+| N6 Low — `01-release-plan.md` body stale | **Open** | Line 70 still says `FEAT-3500` FRs are RTM `UNASSIGNED` |
+| N7 Low — Starlette `httpx` test-client deprecation | **Open** | Warning in the latest-versions run |
 
-## 6. LAN trust model
+### 3.2 REV-REL-001 (FS-tracked baseline, 2026-07-05, NO-GO)
 
-## 7. End-to-end smoke
+Its sole NO-GO reason, **Finding 2 — `FEAT-3500` undelivered (High)**, is **closed by delivery** (above). The
+backlog row `BL-0049` still reads `SCHEDULED` (stale). Its other items were closed or owner-accepted as
+REV-REL-002 §3 recorded; unchanged: hot-seat fog risk `BL-0015` (owner-accepted) and the LAN trust model (§6).
+
+## 4. Deviations (delivered differently from the plan)
+
+| Deviation | Authorization trail |
+|---|---|
+| `FR-3520` role scope checked at **submission**, not at command-execution time as `FR-3520`/`FS-116` say; a rebinding applies only to later submissions; omitting `seat` skips the gate (`BL-0388`, RC-3 `M-2`, `VR-1160` `M-3`/`L-1`) | **None yet** — `NEEDS-USER`. Reviewers judged it not release-blocking; the owner must accept-and-amend (`04` edits `FR-3520`) or build (`07`) → **decision O-1** |
+| **D-1** `FEAT-3500` is dormant in shipped content: no shipped vignette declares `roles_needed`; the Creator saves `roles_needed: []` (`BL-0390`) | Documented in `BLU-15`, `12b`, `12c`; no recorded owner acceptance → **decision O-2** (accept, or add a crewed vignette via `08-vignette-development`) |
+| `FR-7450` (ISO-8601 export bounds, Should) not built; `FR-5310` template-reference clause unbuilt (`BL-0233`); `NFR-3810` retired-document check unbuilt (`BL-0319` decided: delete retired docs) | Disclosed in `feature-index.md`/RTM; **no bucket move recorded in `01-release-plan.md`** → **B-3** |
+| Save-as-scenario omits gating rules, detectability config, space-weather series, inject schedule (`BL-0389`, RC-3 `M-3`) | `DEFERRED` — "documented v1.1 items"; the manuals say so (`12b`/`12d`) |
+| Console has no control for gate approve/deny, live ROE change, manoeuvre ledger (RC-3 `M-4`) | Documented "HTTP only" in `12`/`12c`/`12d`; no owner record beyond the review's GO-conditional |
+| Hot-seat hand-off not automatic (`FR-6610`, `BL-0015`) | Owner-accepted |
+| AI-Red reads ground truth (`ADR-0024`) | Documented design boundary |
+
+## 5. Residual risks and open backlog (read-only; `docs/pipeline/` untouched)
+
+**Open backlog** (`docs/pipeline/backlog.md`, rows not `DONE`/`CLOSED`/`REJECTED`/`DEDUPED`): **82 open** —
+3 High, 16 Medium, 1 Low-Medium, 61 Low, 1 priority-"C" request; **no Critical**. Note also that the live file
+still holds many rows already marked `DONE` (its own rule moves them to the archive) — bookkeeping for
+`00-pipeline-manager`.
+
+| ID | Sev | What | Disposition for this release |
+|---|---|---|---|
+| `BL-0049` | High | `FEAT-3500` undelivered | **Stale** — delivered by `IP-1160`; close in triage |
+| `BL-0292` | High | Author GDS-06..10 | **Stale** — `architecture/INDEX.md` shows GDS-06..10 authored, gates closed |
+| `BL-0310` | High | Test-origin traceability (owner direction) | **Stale** — IP-1330 series delivered; 0 untagged tests |
+| `BL-0388` | Medium | Role gate at submission / omitted seat | Owner decision O-1 (§4) |
+| `BL-0389` | Medium | Save-as-scenario omissions | Known deviation, deferred v1.1 |
+| `BL-0390` | Low-Med | Behaviour defects found while documenting (Pause/Resume resets rate; Creator seat matrix not saved; `/start` works on a Creator draft — **reproduced**: 200; junk role accepted; bulk import after Start returns `[]`; jammed command shows `executed`; Observer check reads body cell only; raw-JSON Creator errors; `mt-sigint-geolocate` `characterize_emitter` unreachable; availability objectives MET while jammed) | `DEFERRED` to `00-intake` after release; known deviations. The last two touch scoring of shipped vignettes — the owner should know |
+| `BL-0139`, `BL-0140` | Medium | OMM epoch discarded; bulk-import batch abort | Known deviations (fidelity / authoring), `07` |
+| `BL-0233` | Medium | `FR-5310` template clause | B-3 |
+| `BL-0252`, `BL-0315` | Medium | `IN PIPELINE` — check: `BL-0315` (force edits lost on resume) was addressed by `IP-1101`/`1102` per REV-REL-002 (stale) | Triage |
+| `BL-0284` | Medium | Rewind drops future injects | **Stale** — fixed (§3.1) |
+| `BL-0268` | Medium | Creator etc. manual gap | **Stale** — covered (§2.6) |
+| `BL-0028` | Medium | R600 citations unverified by fetch | Research-confidence caveat |
+| `BL-0288`, `BL-0293`, `BL-0297`, `BL-0299`, `BL-0379`, `BL-0334` | Medium | Governance / doc scope / dependency policy (implemented) / allow-list keying | Not product defects; several stale |
+| `BL-0271` | Low | Manual impact `IP-1223` — `10a` §10.5 row 8 wrong | **Open Manual-impact item** (§2.6) → `08-training-manual-authoring` |
+| `BL-0272`, `0276`, `0283`, `0286` | Low | Manual-impact items | **Stale** — done in the tree (§2.6) |
+
+**New findings of this assessment** (none Critical):
+
+| # | Sev | Finding | Route |
+|---|---|---|---|
+| B-1 | High (process) | `IP-1088` (fog boundary) outside every integration review | `10-integration-review` delta on `IP-1088`, or owner acceptance |
+| B-2 | High (process) | Learner-walkthrough gate not current: `8de366b`, `e2e1342`, `d86c845` unreviewed | `09-training-manual-review` delta re-check of those three commits |
+| B-3 | Medium (process) | Partials (`FR-7450`, `FR-5310` clause, `NFR-3810`) still have no recorded bucket move | Owner decision, then `05-feature-decomposition` |
+| D-1 | Medium | `FEAT-3500` dormant in shipped content | Owner (O-2) |
+| V-1 | Low | `VR-1088` header/Result still say v2.0 RETURNED | `09-package-verification` |
+| R-2 | Low | 4 tests skip on every run (never assert) | `07` |
+| S-1 | Low | `load_save` accepts `save_format: 999` (unknown future format) silently — `validate_save` tests only truthiness (`manager.py:1303`, `:1385`); a `simulator_version` mismatch *is* warned | `04` (is a format check required?) then `07` |
+| S-2 | Low | `BL-0271` (`10a` row 8) | `08-training-manual-authoring` |
+| S-3 | Low | Lock refresh available (5 patch/minor bumps pass) | `07`→`08` |
+
+**Residual risks shipping on a GO:** the LAN trust model (§6); hot-seat fog `BL-0015`; AI-Red truth;
+role-scope gate is advisory (O-1/O-2); save-as-scenario omissions; the `BL-0390` behaviour defects (two of which
+can mis-score shipped vignettes); unbounded live event log (RC `L-1`); the browser GUI covered by 42 browser
+tests and this smoke, not by an exhaustive UI test.
+
+## 6. The LAN trust model — the product's accepted security boundary (stated plainly)
+
+**There is no authentication.** Every request names its own seat (`cell=white|blue|red|observer`, plus an
+optional operator `seat`) and the server believes it. Fog-of-war is enforced server-side on every cell-scoped
+response; White-only controls and Observer mutations are refused server-side — against the *asserted* seat.
+Re-checked this run: a request naming `red` reads Red's scene (200); `/godview` with no cell returns truth (200);
+any client sending `?cell=white` can step the clock (200); an Observer order is refused (403); a Blue `step`
+is refused (403). The operator-seat role gate (`IP-1160`) is skipped by omitting `seat`.
+
+**What a deployer must do:** run only on an isolated, trusted LAN or loopback with cooperative participants;
+never expose the port to the internet or an untrusted network (bind `127.0.0.1` single-machine; bind the LAN
+address only behind a host firewall limited to participants' machines); do not use `--reload` in an exercise;
+install from `requirements.lock`; treat every participant as able to see ground truth and act as White; brief
+participants that seat selection and operator seats are an honour system. Plain HTTP, no TLS, no audit beyond the
+event log's asserted seat. Per-cell tokens are in `docs/FUTURE-WORK.md`. Sources: `ADR-0015`, `NFR-2300`,
+`FR-6220`, `CLAUDE.md` "LAN trust model", `training/01` §2.1, `WCM-3`.
+
+## 7. End-to-end smoke of the shipped app (this assessment)
+
+`uvicorn spacesim.ui_web.server:app` on `127.0.0.1:8791`, headless Chromium
+`/opt/pw-browsers/chromium-1243/chrome-linux64/chrome` (own Playwright script; the `run-spacesim` driver fails, N3).
+
+| Drive | Result |
+|---|---|
+| Console as **White / Blue / Red** on `training-basics`, `leo-isr-denial`, `coa-russia-md` (9 runs): Session ▾ → Load → Start → +10m ×3 → switch cell → drill into the first fleet row | All 9 rendered: clock advanced (`06:30:01Z` / `14:30:01Z`), fleet rows 3–9 per cell (fog-sized), actor options 2–8, 19 sparklines; **0 page errors**, one console 404 (`/favicon.ico`). Server log: ~960 requests 200, **0 × 5xx** over the whole session |
+| `training-basics` tutorial path (the `04` guided vignette, Red then Blue) | Red observe/jam/cyber accepted; `disable_isr` MET; Blue telemetry shows the symptoms as `04` Step 7 says (§2.6) |
+| Learner playbooks `11.15`/`11.17` (Seed 1) | `destroy_isr` / `kill_isr` MET following the text literally (§2.6) |
+| **Creator** | Draft session created; `creator/state` GET/PUT 200 as White, **403 as Blue**; `creator/scene` 200; step on a draft **400** "draft sessions cannot advance time"; save without `user_save_dir` → 400 with the message `12b` quotes; `/start` on a draft → **200** (`BL-0390`, known) |
+| **Operator seat / role scope** (`IP-1160`) | `roles/assign` 200; `roles/scope` fog-scoped (Red asking about a Blue seat sees `bound: false`); with `roles_needed` declared (in-process) a bus seat's payload verb → `role_scope_out_of_scope`; omitted seat → gate skipped (`BL-0388`) |
+| **Time bounds** | `step` 400 days → 400 naming the 366-day span; `NaN` → 400; Blue `step` → 403; ephemeris without required ids → 422 |
+| **Save / resume with warnings** (`IP-1101`) | `GET /save` → self-contained (`baseline`, `content`, `save_format`, `simulator_version`); `load_save` → `{session, warnings: []}`; with `simulator_version` altered → warning "this save was written by simulator version deadbee; this is d862ef6"; as Blue → 403; `save_format: 999` → accepted silently (S-1) |
+| **Activity feed fog** (`IP-1088`) | Blue downlink + Red jam + White future inject on `leo-isr-denial`: White sees both orders, the effect by template and both injects; **Blue** sees its own order and the effect as `electronic_warfare` (category, no template, no inject); **Red** sees only its own jam order; unknown cell `purple` → 400. Observer follows its designation (god view by default) |
+| **Rewind keeps future injects** (`IP-1083`) | 2 pending before and after rewind |
 
 ## 8. Assessment
 
-## 9. Records that would flip on a GO
+**Recommendation: NO-GO as the candidate stands, converting to GO on three procedural conditions. No code
+defect blocks the release.** The engineering evidence is strong: 90/90 packages `VERIFIED` with VRs; every
+suite green in every mode in the system interpreter, at the latest dependency versions and on the locked set;
+determinism and import guard green; zero untagged tests; all allow-lists but the 38 known links empty; every
+blocker of REV-REL-001 and REV-REL-002 closed by delivery; the shipped app ran end to end for White, Blue and Red
+on three vignettes with zero 5xx; no open Critical or High product defect.
+
+The release does not yet meet this skill's own gates in three places:
+
+| # | Blocking condition | Gate | Clears when |
+|---|---|---|---|
+| **B-1** | `IP-1088` (changes `CellController`, the fog-of-war boundary) was built after the RC-3 delta and is inside **no** integration review | Quality gate: every delivered row needs integration coverage | A `10-integration-review` delta on `IP-1088` returns no Critical/High — **or** the owner records acceptance (this assessment's probe in §7 and `VR-1088` v3.0's are supporting evidence) |
+| **B-2** | The learner-walkthrough gate is **not current**: three commits (`8de366b`, `e2e1342`, `d86c845`) changed `docs/training/` and vignette YAML after REV-TRN-011 (`461d43a`) with no independent re-review; plus one open Manual-impact item (`BL-0271`, Low) | Step 3b: review must be current; no open Manual-impact item | A `09-training-manual-review` delta re-check of those commits finds no High, and `BL-0271` is fixed or owner-deferred. This assessment drove every changed step and found them correct (§2.6), so the re-check should be short |
+| **B-3** | `FR-7450`, the `FR-5310` template clause and `NFR-3810` are unbuilt with **no recorded bucket move** in `01-release-plan.md` (REV-REL-002 B2's recording half) | Step 2: deviations need an authorization trail | The owner decides; `05-feature-decomposition` records it |
+
+**Conditions to attach to a GO** (non-blocking): owner decision O-1 on `BL-0388` (accept submission-time check
+and amend `FR-3520`, or build); O-2 on D-1 (accept that role scoping ships dormant, or add a crewed vignette);
+re-pin the lock to the passing newer set (S-3); fix `README.md` (N4) in the GO flip; accept the §5 residual
+risks and the §6 trust model explicitly.
+
+**Alternative the owner may choose:** record explicit deferrals/acceptances for B-1 and B-2 (the skill allows an
+owner-recorded deferral listed under Deviations) and decide B-3 — the evidence in this document then supports GO.
+
+## 9. Records that WOULD flip on a GO (none touched by this assessment)
+
+| Record | Change |
+|---|---|
+| `docs/feature-planning/01-release-plan.md` | Mark the Prototype, MVP, Release 1 and Release 2 buckets released at the GO commit; record the B-3 bucket moves for `FR-7450`, `FR-5310` clause, `NFR-3810`; fix N6 (line 70 `FEAT-3500` "UNASSIGNED"; other stale body text) |
+| `ROADMAP.md` | Add a "Release 1 — released" status entry dated at GO with the commit; update this assessment's entry with the owner's decision |
+| `CLAUDE.md` | Status line: released at the commit (counts already current: 2165 / 2161 passed / 4 skipped; non-browser 2123 / 5; browser 42) |
+| `README.md` | Status and counts (419 → 2165); install from `requirements.lock`; LAN section: drop `--reload`, add the §6 trust warning |
+| `docs/INDEX.md`, `docs/feature-planning/INDEX.md` | Point at this assessment as the release record |
+| `docs/implementation/00-master-build-plan.md` | Summary line naming the release commit (package statuses unchanged, 90 `VERIFIED`) |
+| `requirements.lock` / `pyproject.toml` | Only if the re-pin (S-3) is done first by `07`→`08` |
+| This document | Date-stamp the baseline and record the owner's GO |
+
+Commit as `docs(release): release candidate 5 — assessment + baseline update` at that time.
+
+## 10. Pipeline position
+
+Stage 11 (final). **Next step:** owner decides B-3, O-1, O-2 (and whether to defer B-1/B-2); then
+`10-integration-review` on `IP-1088` and `09-training-manual-review` on the three post-recheck training commits
+(both small, independent, can run in parallel); then a short delta of this skill or the owner's GO on this
+document plus those two reports.
