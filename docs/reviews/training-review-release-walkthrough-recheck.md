@@ -2,7 +2,7 @@
 
 # Training review (REV-TRN-011): release learner-walkthrough re-check (RC4)
 
-Independent fresh-session review (authored none of this). Commit reviewed: `461d43a` (release candidate 4, branch `claude/release-candidate-4`). Review-only: no prose, YAML or code was changed. This is the re-check of [REV-TRN-010](training-review-release-walkthrough.md) (1 High, 10 Medium, 5 Low).
+Independent fresh-session review (authored none of this). Commit reviewed: `461d43a` (release candidate 4, branch `claude/release-candidate-4`). Review-only: no prose, YAML or code was changed. This is the re-check of [REV-TRN-010](training-review-release-walkthrough.md) (1 High, 10 Medium, 5 Low as summarised; 15 itemised rows F1-F15).
 
 **Method.** Real app (uvicorn on loopback 8771) driven by headless Chromium (Playwright, `/opt/pw-browsers`) as a first-time learner, plus the HTTP API for HTTP-only claims. Exercised: `01` (server start), `02`, `03` end to end (Blue win, rewind, Red branch to T+3 h 30 min), `04` Blue and Red literally (Seeds 1 and 2) including the cyber confirm dialog, the recovery strip, and the manual `def.patch_cyber` compose; the in-app Tutorial panel for `training-basics` (Blue and Red, Seeds 1 and 2) and, by executing every tutorial step in the GUI, `mt-isr-sar`, `mt-weather-collect`, `nv-isl-relay-debris`, `learn-intermediate-recovery` (Seeds 1, 2), `gnss-ew-campaign`, `co-orbital-threat-escort`, `da-asat-crisis`, `sda-custody-hunt` (SSN request chip, five re-tasks); the four requested Red COA recipes (`coa-russia-md`, `coa-china-md`, `coa-misc-iran-ml`, `coa-china-ml`); manual `12b` (Creator: menu, draft, curated-site picker, bad latitude, save), `12c`/`12d`/`13a`/`14a` labels and procedures (sampled, labels scripted against `index.html` and `static/*.js`); `09a`: 15 refusal messages triggered live and compared; the activity-feed paragraphs WCM-6/BLU-2/RED-2 against `GET /activity/{cell}`. Sampling: `12`, `13`, `14`, `05`-`08`, `10`, `10b` read by label scan only, not walked.
 
@@ -57,7 +57,6 @@ None. Every procedure walked completes as written for a learner who follows the 
 | L1 | `learn-intermediate-recovery` Blue step 5 / `11` 11.13 | `expect` says `recover_to_nominal` is MET at the T+45 min deadline. Live (Seed 1, patch pass 10:40:44): `✗` at 10:42 and at the first click past the deadline when stepping by 1 min; `✓` at 10:52 (with +10m clicks). | "MET a few minutes after the patch pass (about T+50 min); keep clicking +10m". | `08-vignette-development` |
 | L2 | `learn-intermediate-recovery` Blue (Seed 2) | Seed 2: Red's cyber misses, the bird stays nominal, and Blue steps 3-4 have nothing to recover (**Begin recovery** does not appear). Step 2's title warns "Red must fire first" but not that Red can miss. | Add "if the bird stays nominal Red missed; have Red fire again (about 62%)" to Blue step 2 (the Red step has it). | `08-vignette-development` |
 | L3 | `12b` Save refusal | `12b` quotes `error: no user-save directory configured — set content.user_save_dir in spacesim.config.yaml`; the app shows `error: {"detail":"no user-save directory configured — ..."}` (raw JSON wrapper). | Quote the line as shown, or note the JSON wrapper. | `08-training-manual-authoring` |
-| L4 | `04` Blue Step 7 text vs screenshot | "The fleet rollup dot turns red as soon as that telemetry lands": live the row reads `safe_mode ⚠5` at +10 min (fine), but the wording "badge turned red" was not distinguishable headless. Informational: re-check against the screenshot. | None unless the screenshot disagrees. | `08-training-manual-authoring` |
 
 ## Dimension evidence
 
@@ -70,8 +69,12 @@ None. Every procedure walked completes as written for a learner who follows the 
 
 ## Tests (this commit)
 
-See the end of the file (filled after the final runs).
+Run once each against `461d43a` (worktree):
+
+- `test_doc_integrity.py`, `test_training_sources.py`, `test_training*.py`, `test_vignette_tutorials.py`, `test_test_origins.py`: all pass (one skip).
+- `python3 -m pytest -m "not browser"` (full suite): 2114 passed, 5 skipped, 0 failed (counted from the progress output; the run printed no summary line).
+- `python3 -m pytest -m browser`: 41 passed, 0 failed (headless Chromium present).
 
 ## Routing
 
-N1, N2, N4, L3, L4: `08-training-manual-authoring`. N3, N5, L1, L2: `08-vignette-development`. No code defects newly found (the Resume-rate behaviour is the earlier `00-intake` item). Next step: one authoring + one vignette pass for the five Medium items; no release blocker (zero High).
+N1, N2, N4, L3: `08-training-manual-authoring`. N3, N5, L1, L2: `08-vignette-development`. No code defects newly found (the Resume-rate behaviour is the earlier `00-intake` item). Next step: one authoring + one vignette pass for the five Medium items; no release blocker (zero High).

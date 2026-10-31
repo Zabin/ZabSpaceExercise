@@ -864,6 +864,15 @@ T+30 min (it flips only after T+3 h); the tutorials' `command` + `verb` has no A
 cannot choose **engage**; the cyber confirm dialog is unmentioned in `04`; Resume resets a custom clock rate;
 five COA rungs have no playbook; `15.1` lacks rows for FS-123/FS-124; glossary gaps.
 
+**Training review (2026-10-31):** [`reviews/training-review-release-walkthrough-recheck.md`](docs/reviews/training-review-release-walkthrough-recheck.md)
+(REV-TRN-011) re-walked the corpus on the live app at RC4 (`461d43a`): 14 of the first review's 15 itemised findings closed (F1
+`03` Step 4 timing, F3 verb-by-name menu entries, F5/F6 confirm and disabled-preview wording, F7 COA playbooks + `15.4`
+table, F9 FS coverage rows), F10 glossary partly. 0 High, 5 Medium, 3 Low: `04` Step 7 names a nonexistent
+`cdh.faults` log line; "Order panel"/"Order queue" are titled Satellite command / Command queue on screen; four
+tutorials promise `REFUSED` and a "Force add" control the console lacks; acronyms (SAR, PNT, GNSS, SDA, EW, TT&C) are
+undefined; COA kills `11.15`/`11.17` are chance-based but written as certain. FS coverage check: 36 of 36 VERIFIED
+specs in `15.1`, no misses.
+
 ### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
 
 | ID | Document | Path | FS | Situation | Status |
