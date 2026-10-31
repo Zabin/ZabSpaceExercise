@@ -11,11 +11,11 @@ an access window permits.
 > Regenerate with `python3 tools/record_walkthrough.py` (requires a running server +
 > Playwright Chromium).
 
-> **Status:** Backend feature-complete through Phase 8. Deterministic engine (P0–P4.5), FastAPI web
-> layer (P5), belief scene + 2D map (P5.5), the full **19-vignette library** (P6), capstone
-> Vignette 8 + AAR replay (P7), and **LAN multiplayer transport** (P8 — server-authoritative lazy
-> clock, per-session locking, session discovery, join-by-URL, multi-monitor pop-outs).
-> **419 tests pass.** Stack: **Python + FastAPI/web**.
+> **Status:** Backend feature-complete through Phase 8. Deterministic engine, FastAPI web layer,
+> belief scene + 2D map, the full **19-vignette library**, the capstone vignette with AAR replay,
+> and **LAN multiplayer transport** (server-authoritative clock, per-session locking, session
+> discovery, join-by-URL, multi-monitor pop-outs). Stack: **Python + FastAPI/web**. Run the
+> test suite (below) for the current pass count.
 >
 > **New here?** Read the **[training manual](docs/training/INDEX.md)** to install and run, follow
 > the **[vignette learning path](docs/training/16-learning-path.md)** from onboarding through the
@@ -28,25 +28,34 @@ an access window permits.
 
 ## Quick start
 
+Needs Python 3.11 or newer. From the repository root (the folder containing `spacesim/`):
+
 ```bash
-# Runtime dependencies
-pip install pydantic numpy sgp4 pyyaml fastapi uvicorn skyfield
+python3 -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
+# For a release, install the exact pinned versions:
+pip install -r requirements.lock && pip install --no-deps -e .
+# (Developing instead? pip install -e ".[content,ui,dev]")
 
-# Test dependencies
-pip install pytest hypothesis httpx
-
-# Launch the web server (host/port read from spacesim.config.yaml — default 127.0.0.1:8000)
-python3 -m spacesim.ui_web
-
-# For LAN multiplayer: bind to all interfaces so other machines can join
-uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload
-
-# Run the full test suite
-python3 -m pytest
+python3 -m spacesim.ui_web        # reads host/port from spacesim.config.yaml (default 127.0.0.1:8000)
+python3 -m pytest                 # run the test suite
 ```
 
-Open **http://127.0.0.1:8000/** in a browser. Pick a vignette, click **Load**, then **Start**. The
-**Mission brief panel** opens automatically — read it before touching anything else.
+Open **http://127.0.0.1:8000/** in a browser. Open **📋 Session ▾**, pick a vignette, click **Load**,
+then **▶ Start**. The **Mission brief panel** opens automatically — read it before touching anything
+else. Step-by-step help for first-time users: [`docs/training/01-install-and-run.md`](docs/training/01-install-and-run.md)
+and [`docs/training/03-first-exercise.md`](docs/training/03-first-exercise.md).
+
+## Security and the LAN trust model — read before sharing a session
+
+- **There is no authentication.** The Blue / Red / White / Observer seat is whatever each request says
+  it is; the server believes it. Anyone who can reach the port can act as White Cell, read the other
+  side's picture, or read ground truth.
+- Run on **loopback (127.0.0.1)** or on an **isolated, trusted LAN** behind a firewall, with cooperative
+  participants. **Never expose the port to the internet.**
+- Brief participants that choosing a seat is an **honour system**.
+- To let other machines join, set `host: 0.0.0.0` in `spacesim.config.yaml` (or pass `--host 0.0.0.0`
+  to uvicorn) and share `http://<host-LAN-IP>:8000/#sess-N`. **Do not use `--reload` for a shared
+  session** — it is a development switch that restarts the server (and drops every session) on any code change.
 
 ## What this is
 
@@ -71,24 +80,20 @@ real-time rate exactly once regardless of how many tabs are open. Every tab sees
 within ~1.5 s. The White **⏸ / ▶** toolbar button pauses and resumes the shared clock for all
 connected clients.
 
-**Multi-monitor:** View ▾ → **Pop out ▸** opens any panel (3D globe, 2D map, fleet & telemetry,
+**Multi-monitor:** View ▾ → **Pop out (multi-screen)** opens any panel (3D globe, 2D map, fleet & telemetry,
 order compose, AAR timeline, tracks & objectives) as a separate window that joins the same session.
 
 ## The 19-vignette library
 
-| Track | Vignettes |
-|---|---|
-| **Canonical** (numbered exercises) | 01 LEO ISR Denial, 02 GEO SATCOM Disruption, 03 GNSS Spoofing, 04 RPO Inspection/Shadow, 05 DA-ASAT Crisis, 06 Cyber GS Intrusion, 07 EW Campaign, 08 Multi-Domain Taiwan |
-| **Onboarding** | 00 Training: Basics (guided tutorial, both cells, ~30 min) |
-| **Red COA** | RC-01 Layered Denial, RC-02 Cyber-First Access Denial, RC-03 Progressive Escalation, RC-04 High-Altitude ASAT, RC-05 Allied Targeting |
-| **Mission-set** | MS-01 SIGINT/ELINT Tasking, MS-02 Space Logistics & Resupply, MS-03 SSA Coalition Sharing |
-| **Learning** | LRN-01 Orbital Mechanics & Maneuver |
-| **Novel** | NOV-01 Dual-Use Rendezvous Ambiguity |
+One onboarding vignette (`training-basics`), the eight canonical exercises (`leo-isr-denial` through
+`multi-domain-taiwan`), three mission-set trials, five Red course-of-action vignettes (`coa-*`), a
+learning vignette and a novel one. The full list, what each teaches and the recommended order are in
+[`docs/training/06-the-vignette-library.md`](docs/training/06-the-vignette-library.md) and the
+[learning path](docs/training/16-learning-path.md).
 
 Every vignette carries a **per-cell Mission brief** (situation, mission, friendly forces, threat
 picture, ROE, deadline, success criteria, tool tips) that surfaces in the UI at session start.
-The 8 canonical vignettes also carry a step-by-step **Tutorial** (View ▾) verified against the
-engine.
+Scripted vignettes also carry a step-by-step **Tutorial** (View ▾) verified against the engine.
 
 ## Key features
 
@@ -120,13 +125,13 @@ space-control-sim/
 │   ├── session/                 SessionManager, CellController (fog), SessionAPI, AAR
 │   ├── content/                 19 vignettes (YAML) + inject library
 │   ├── ui_web/                  FastAPI server + browser front end (app.js, globe.js, …)
-│   └── tests/                   419 pytest tests (incl. determinism + import-guard)
+│   └── tests/                   pytest suite (incl. determinism + import-guard)
 └── docs/
     ├── INDEX.md                 ★ START HERE — master documentation router
     ├── DOCUMENTATION-PLAN.md    information architecture & rationale
     ├── FUTURE-WORK.md           single-source v1.1+ TODO
     ├── build-spec/              ★ the binding v1 spec, 8 modules
-    ├── training/                user manual, 16 modules (install → UI → exercises → API → troubleshooting
+    ├── training/                user manual (start at `INDEX.md`) (install → UI → exercises → API → troubleshooting
     │                            + role-scoped per-cell manuals: 12 White / 13 Blue / 14 Red + 15 traceability
     │                            + 16 vignette learning path). Co-equal product with the code (MSTR-001 §2).
     ├── design/                  architecture & design corpus
