@@ -1,11 +1,11 @@
 # VR-1094 — Verification Report: Release Polish, Unknown Save Format Refused and Chromium Discovery (FR-7230)
 
 > **Document ID:** VR-1094
-> **Version:** 1.0
+> **Version:** 2.0
 > **Status:** Final
 > **Dependencies:** [IP-1094](../packages/IP-1094-release-polish-save-format-and-chromium.md) v1.0
 > **Referenced By:** [INDEX.md](INDEX.md), [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](../packages/INDEX.md)
-> **Produces:** the `COMPLETE -> IN PROGRESS` return of `IP-1094`
+> **Produces:** v1.0 the `COMPLETE -> IN PROGRESS` return of `IP-1094`; v2.0 its `COMPLETE -> VERIFIED`
 > **Feature Mapping:** FS-110 (`FR-7230`)
 
 [Verification index](INDEX.md) · [Master Build Plan](../00-master-build-plan.md) · [Packages index](../packages/INDEX.md)
@@ -18,7 +18,7 @@
 
 ## Result
 
-**RETURNED** - 0 failed code or behaviour checks; 1 Medium ledger finding (F1) and 1 Low (F2). The returned item is a one-line ROADMAP correction; nothing in `spacesim/`, the tools or the manuals needs rework except F2's optional selection fix.
+**RETURNED (v1.0)** - 0 failed code or behaviour checks; 1 Medium ledger finding (F1) and 1 Low (F2). The returned item is a one-line ROADMAP correction; nothing in `spacesim/`, the tools or the manuals needs rework except F2's optional selection fix.
 
 ## Definition of Done audit
 
@@ -95,3 +95,26 @@ Files touched are all in the package's list plus tests, the two RTM files (gener
 | O2 | `record_walkthrough.py` surfaces the missing-ffmpeg condition as a raw Playwright traceback with an install hint; clear enough, environment-bound. | Info | none |
 
 Ledger recount after this run: 91 `VERIFIED`, 0 `COMPLETE`, 1 `IN PROGRESS`, 2 `READY`, 0 `BLOCKED`, 94 packages. Only the `IP-1094` rows changed.
+
+---
+
+## v2.0 Re-verification (independent fresh session)
+
+**Result: VERIFIED.** Tree: branch `claude/ip-1094-build`, fix commit `061b505` on `c67a723`; engine unchanged (`git diff HEAD~2 -- spacesim/engine` empty).
+
+| Finding | Re-check | Result |
+|---|---|---|
+| F1 (Medium) ledger | Diff of `ROADMAP.md`, the Master Build Plan and `packages/INDEX.md` against parent `origin/claude/ip-1089-build`: only `IP-1094` rows and added status lines differ. Header-vs-rows script over all 94 packages: `IP-1092`/`IP-1093` `READY` in header, plan and ROADMAP (VERIFIED elsewhere is expected, other lineages). | closed |
+| F2 (Low) sort | Fake tree (`chromium-999`, `-1243`, `-foo`, `-1243.1`): both `find_chromium()` copies (`tools/record_walkthrough.py`, run-spacesim `driver.py`) return `chromium-1243`; non-numeric ignored; empty dir exits with `No Chromium found under <dir> (set PLAYWRIGHT_BROWSERS_PATH).` Mutation (revert both to string order): both parametrised cases of `test_newest_is_numeric_not_lexical_and_ignores_non_numeric` fail; restored. | closed |
+| F3 (Low) | `04` leaf routing, not this package; still open for `00-pipeline-manager`. | carried |
+
+Behaviour re-probed over real routes (`POST /api/sessions/load_save`): `save_format` 999, 0, null, true and `"2"` -> 400 naming `legacy (absent), 2`; absent key loads (legacy warning); 2 loads. Gate position unchanged (right after the dict check). `o-target` present once in `index.html`; `run-spacesim/SKILL.md` diff is browser-path text only.
+
+| Mode | Result |
+|---|---|
+| Doc-integrity, test-origins, origin-retag, both IP-1094 files, determinism, import guard (by name) | pass |
+| Unfiltered `--junitxml` | exit 0; 2229 tests, 0 failures, 0 errors, 4 skipped |
+| `-m "not browser"` | exit 0; 2187 tests, 0 failures, 5 skipped |
+| `-m browser` | exit 0; 42 tests, 0 failures, 0 skipped |
+
+Ledger recount after this run: 92 `VERIFIED`, 0 `COMPLETE`, 0 `IN PROGRESS`, 2 `READY`, 94 packages (before: 91 / 1 / 0 / 2). Only `IP-1094` rows changed. No `docs/pipeline/` edit.
