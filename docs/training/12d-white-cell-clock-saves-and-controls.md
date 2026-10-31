@@ -72,7 +72,7 @@ your session is untouched.
 | Reason shown | Cause | What to do |
 |---|---|---|
 | `not a valid save file (...)` | The file is not JSON | Pick the right file; do not edit saves by hand |
-| `save_format 3 is not supported; supported formats: legacy (absent), 2` | The save was written by a newer (or damaged) version: its `save_format` is not 2 and not absent. A text value such as `"2"`, `true` or `null` is refused too, in the same words | Resume it with the version that wrote it, or use an earlier save. Do not edit the number by hand |
+| `save_format 3 is not supported; supported formats: legacy (absent), 2` | The save was written by a newer (or damaged) version: its `save_format` is not 2 and not absent. A text value is refused too, with the value echoed as the app prints it: `save_format '2' is not supported; ...`, `save_format True is not supported; ...`, `save_format None is not supported; ...` (the rest of the line is identical) | Resume it with the version that wrote it, or use an earlier save. Do not edit the number by hand |
 | `save is missing required key 'content'` (also `baseline`, `seed`, `eventlog`, `final_time`) | Truncated or wrong file | Use the original download |
 | `save key 'seed' must be an integer` (also `final_time`) | Damaged value | As above |
 | `eventlog has 100002 entries; limit is 100000` | Too long to replay safely (cap 100,000 entries) | Resume an earlier save, or run shorter exercises |

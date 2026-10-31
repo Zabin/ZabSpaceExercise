@@ -256,8 +256,7 @@ maintained by `08-vignette-development` and reviewed by `09-training-manual-revi
   real sections here in the corpus. A renamed manual section that a rung's "Read first" points at
   must update the rung too.
 - **The playbooks the rungs link to are machine-verified** by
-  `spacesim/tests/test_vignette_tutorials.py` (FR-11420) — that test is the one automated staleness
-  gate in the whole training corpus; keep it green when a vignette script changes. Since 2026-10-25 it
+  `spacesim/tests/test_vignette_tutorials.py` (FR-11420) — that test is the automated gate for the playbooks and tutorials (keep it green when a vignette script changes). The other automated gates are `test_training_sources.py` (every `> Sources:` footer still points at real code), `test_doc_integrity.py` (links, INDEX listings, ledgers) and the matrix coverage check (every verified FS spec appears in §15.1). Since 2026-10-25 it
   also drives the five Red COA recipes (11.14-11.18, including the chance-based kill ordering and the console's blocked-order previews) and *executes* every step of the scripted vignettes' tutorials on a fixed seed (a step without a
   check fails the suite) and asserts each brief states the engine's real deadline, so a re-timed
   scenario fails here before it misleads a learner.
