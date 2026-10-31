@@ -80,6 +80,7 @@ your session is untouched.
 | `save key 'final_time' is beyond the maximum span (366 days past the start epoch)` or `... earlier than the exercise start epoch` | End time outside the exercise span | Use the original |
 | `the save depends on vignette 'ID', which is not available in the content directories` | An older save whose vignette file is gone | Restore the file, or add its folder to `content.external_vignette_dirs` |
 | `save content portion refused: blue_forces[ID].orbit: a satellite must declare an orbit` (and similar) | The embedded vignette fails the same checks as Load | Fix the vignette inside the save, or use an earlier save |
+| `save_format 999 is not supported; supported formats: legacy (absent), 2` | A save written by a newer simulator version (or a damaged format value) | Load it in the version that wrote it; do not edit `save_format` by hand |
 | `save replay baseline is not a valid world: ...` | Damaged starting world | Use the original |
 | `save key 'orders' has an entry missing actor, action` (also `pending`, `ssn_requests`) | Damaged list | Use the original |
 | `White Cell control: refused unless the request names the white seat` | Loaded from a Blue, Red or Observer tab | Switch to White |

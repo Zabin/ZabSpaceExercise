@@ -178,7 +178,7 @@ and `WCM-21`–`WCM-25` in [`12d`](12d-white-cell-clock-saves-and-controls.md).
 | WCM-19 | Approval gates and live ROE | `engine/orders.py` (`decide_gated_order`, `issue_roe_change`), `/gate/decide`, `/roe/change` |
 | WCM-20 | Injects in depth | `session/manager.py` (`pending_injects`, `edit_inject`, `_h_condition_check`, `_notice_by_owner`), `static/app.js` |
 | WCM-21 | Time controls: bounds and messages | `session/manager.py` (`step`, `advance_to`, `rewind_to`, `undo_last`, `set_clock`), `/step`, `/advance`, `/rewind`, `/undo`, `/clock` |
-| WCM-22 | Save and resume | `session/manager.py` (`save_state`, `validate_save`, `from_state`), `/save`, `/load_save`, `content/vignette_export.py` |
+| WCM-22 | Save and resume | `session/manager.py` (`save_state`, `validate_save` incl. IP-1094 `SUPPORTED_SAVE_FORMATS` gate, `from_state`), `/save`, `/load_save`, `content/vignette_export.py` |
 | WCM-23 | Add satellites before Start | `session/manager.py` (`add_tle`, `bulk_import`), `content/bulk_import.py`, `/force/tle`, `/force/bulk_import` |
 | WCM-24 | Which controls each seat sees | `static/app.js` (`setCell`), `static/index.html`, `ui_web/server.py` (`_require_white`, `_reject_observer`) |
 | WCM-25 | Space weather, debris persistence, attribution settings | `engine/perturbations.py` (`index_series_problems`), `engine/effects.py` (`_persistence_estimate`, `ModerateEffectResolver`), `session/manager.py` (`_apply_inject_effects`) |

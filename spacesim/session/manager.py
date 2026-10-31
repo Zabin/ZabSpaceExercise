@@ -190,6 +190,7 @@ def _row_problem(key: str, r: dict) -> Optional[str]:
     return None
 
 
+SUPPORTED_SAVE_FORMATS = (2,)   # IP-1094 — single source for the validate_save format gate (legacy = key absent)
 SAVE_FORMAT = 2   # IP-1101 — absent (legacy) saves reload their vignette by id
 
 
@@ -1300,6 +1301,13 @@ class SessionManager:
         from spacesim.engine.eventlog import EventLog
         if not isinstance(state, dict):
             raise ValueError("save is not a JSON object")
+        if "save_format" in state:   # IP-1094 (FR-7230) — an unknown/future format is refused up front
+            fmt = state["save_format"]
+            if (isinstance(fmt, bool) or not isinstance(fmt, int)
+                    or fmt not in SUPPORTED_SAVE_FORMATS):
+                supported = ", ".join(str(f) for f in SUPPORTED_SAVE_FORMATS)
+                raise ValueError(f"save_format {fmt!r} is not supported; "
+                                 f"supported formats: legacy (absent), {supported}")
         selfc = bool(state.get("save_format"))
         required = (("content", "baseline", "seed", "eventlog", "final_time") if selfc
                     else ("vignette_id", "seed", "eventlog", "final_time"))

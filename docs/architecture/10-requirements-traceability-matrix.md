@@ -136,7 +136,7 @@ Package column: verified packages, then any that are not yet verified, with thei
 | FR-S5 | FR-5220 | FS-102, FS-106, FS-118 +2 | IP-1065, IP-1190 | `test_bulk_import.py`, `test_bulk_import_session.py`, `test_cell_activity.py` +4 |
 | FR-S6 | FR-5410, FR-5420 | FS-102, FS-106, FS-117 +3 | IP-1065, IP-1180 | `test_bulk_import_session.py`, `test_cell_activity.py`, `test_config.py` +4 |
 | FR-S7 | FR-5510 | FS-102, FS-106, FS-118 +2 | IP-1065, IP-1200 | `test_bulk_import_session.py`, `test_cell_activity.py`, `test_content.py` +5 |
-| FR-L3 | FR-7210, FR-7220, FR-7230 | FS-106, FS-110 | IP-1100, IP-1101, IP-1102, IP-1103 (all `VERIFIED`; `FR-7220` and `FR-7230` met) | `test_session.py`, `test_save_load_robustness.py` +2 |
+| FR-L3 | FR-7210, FR-7220, FR-7230 | FS-106, FS-110 | IP-1100, IP-1101, IP-1102, IP-1103 (all `VERIFIED`), IP-1094 (`COMPLETE`, format gate; `FR-7220` and `FR-7230` met) | `test_session.py`, `test_save_load_robustness.py` +2 |
 | FR-L4 | FR-7310, FR-7330 | FS-107, FS-128, FS-201 | IP-1070, IP-1077, IP-1280, IP-2010 | `test_aar.py`, `test_assessment.py`, `test_orders.py` +1 |
 | FR-L5 | FR-7410, FR-7440 | FS-103, FS-106, FS-121 +1 | IP-1210, IP-1211, IP-1212 +2 | `test_aar.py`, `test_effects.py`, `test_ephemeris.py` +5 |
 | FR-A1 | FR-10110 | FS-201, FS-301 | IP-2010, IP-3010 | `test_assessment.py`, `test_orders.py`, `test_research_batch.py` |

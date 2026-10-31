@@ -27,7 +27,7 @@ pip install pydantic numpy sgp4 pyyaml pytest hypothesis skyfield fastapi uvicor
 ```
 
 The driver does **not** use Playwright's pinned browser revision (it's missing on disk). It
-auto-detects the Chromium that ships under `/opt/pw-browsers/chromium-*/chrome-linux/chrome`
+auto-detects the Chromium that ships under `$PLAYWRIGHT_BROWSERS_PATH` (default `/opt/pw-browsers`), newest `chromium-*/chrome-linux*/chrome`
 and launches it headless with `--no-sandbox` (no `xvfb` needed).
 
 ## Run (agent path) — drive the UI + screenshot
@@ -102,10 +102,10 @@ python3 -m pytest spacesim/tests/test_determinism.py    # the canonical determin
 ## Gotchas
 
 - **Playwright's pinned browser is missing.** A plain `p.chromium.launch()` fails with
-  `Executable doesn't exist at .../chrome-headless-shell-1223/...`. The on-disk browser is
-  `chromium-1194`. The driver works around this with `executable_path=` to the real binary —
+  `Executable doesn't exist at .../chrome-headless-shell-1223/...`. The on-disk browser is the
+  newest `chromium-*` build. The driver works around this with `executable_path=` to the real binary —
   do **not** run `playwright install` (it tries to fetch over the network). Reuse the driver's
-  `CHROME_EXE` detection if you write your own browser script.
+  `find_chromium()` lookup if you write your own browser script.
 - **API routes live under `/api`**, but the static front end is mounted at `/` with
   `html=True`. `GET /` returns the SPA; `GET /api/vignettes` returns JSON. Don't hit `/scene`
   expecting JSON — it's `/api/sessions/{sid}/scene/{cell}`.
@@ -132,7 +132,7 @@ python3 -m pytest spacesim/tests/test_determinism.py    # the canonical determin
 - `server did not come up at http://127.0.0.1:8000` → a previous uvicorn may hold the port.
   `pkill -f 'uvicorn spacesim'` (note: that pattern also matches the driver's own command line
   if it's running) or pass `--port 8001`.
-- `No Chromium found under /opt/pw-browsers/` → the bundled browser isn't present; this skill's
+- `No Chromium found under /opt/pw-browsers/` (or under `$PLAYWRIGHT_BROWSERS_PATH`) → the bundled browser isn't present; this skill's
   screenshot path won't work, but the backend/curl path and `pytest` still do.
 - Screenshot looks blank/partial → give the sim more motion: the driver already steps time 3×;
   increase the loop or step size in `driver.py` if a vignette starts with assets below the

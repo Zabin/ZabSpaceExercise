@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1094
 > **Version:** 1.0
-> **Status:** READY (authored 2026-10-31 by `07-implementation-planning`; every dependency `VERIFIED`)
+> **Status:** COMPLETE (built 2026-10-31 by `08-code-implementation`; authored by `07-implementation-planning`; every dependency `VERIFIED`)
 > **Authorization (MSTR-006 §3):** **given.** The project owner's go-ahead of 2026-10-31, in the planning session that commissioned this package ("the small release polish items"), covers this package and no other. The owner also approved editing the `run-spacesim` skill files for this seat/path class only; edits stay minimal.
 > **Dependencies:** [IP-1101](IP-1101-self-contained-saves.md), [IP-1102](IP-1102-save-load-robustness.md), [IP-1103](IP-1103-save-validation-completion.md), [IP-1340](IP-1340-browser-console-rule-suite.md) (all `VERIFIED`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [01-technical-work-breakdown.md](../01-technical-work-breakdown.md)

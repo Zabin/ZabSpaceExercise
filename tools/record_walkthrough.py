@@ -70,6 +70,16 @@ def click_if(page, selector: str, timeout: int = 2000) -> bool:
         return False
 
 
+def find_chromium() -> str:
+    """IP-1094 — newest chromium-*/chrome-linux*/chrome under PLAYWRIGHT_BROWSERS_PATH (default /opt/pw-browsers)."""
+    import glob, os, sys
+    root = os.environ.get("PLAYWRIGHT_BROWSERS_PATH") or "/opt/pw-browsers"
+    builds = sorted(glob.glob(os.path.join(root, "chromium-*", "chrome-linux*", "chrome")))
+    if not builds:
+        sys.exit(f"No Chromium found under {root} (set PLAYWRIGHT_BROWSERS_PATH).")
+    return builds[-1]
+
+
 def run() -> None:
     frames_dir = TMP_DIR / "frames"
     if frames_dir.exists():
@@ -77,7 +87,7 @@ def run() -> None:
     frames_dir.mkdir(parents=True)
 
     with sync_playwright() as pw:
-        chrome_bin = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
+        chrome_bin = find_chromium()
         browser = pw.chromium.launch(headless=True, executable_path=chrome_bin)
         ctx = browser.new_context(
             viewport=VIEWPORT,

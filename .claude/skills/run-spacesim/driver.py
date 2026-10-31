@@ -11,7 +11,7 @@ This is the agent-facing harness for the FastAPI + browser front end. It:
 
 The container has no `chromium-cli` and the Python Playwright's pinned browser revision does
 not match the one on disk, so we point Playwright at the Chromium that EXISTS via
-`executable_path` (see CHROME_EXE below). Run from the repo root.
+`executable_path` (see find_chromium() below). Run from the repo root.
 
 Usage:
     python3 .claude/skills/run-spacesim/driver.py                 # boot server + screenshot
@@ -22,7 +22,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import glob
 import subprocess
 import sys
 import time
@@ -30,8 +29,14 @@ import urllib.request
 
 # The Chromium that actually ships in this container. Playwright's bundled-revision lookup
 # fails ("Executable doesn't exist at .../chrome-headless-shell-..."), so pin the real one.
-_CANDIDATES = sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))
-CHROME_EXE = _CANDIDATES[-1] if _CANDIDATES else None
+def find_chromium() -> str:
+    """IP-1094 — newest chromium-*/chrome-linux*/chrome under PLAYWRIGHT_BROWSERS_PATH (default /opt/pw-browsers)."""
+    import glob, os, sys
+    root = os.environ.get("PLAYWRIGHT_BROWSERS_PATH") or "/opt/pw-browsers"
+    builds = sorted(glob.glob(os.path.join(root, "chromium-*", "chrome-linux*", "chrome")))
+    if not builds:
+        sys.exit(f"No Chromium found under {root} (set PLAYWRIGHT_BROWSERS_PATH).")
+    return builds[-1]
 
 
 def wait_for(url: str, timeout: float = 30.0) -> bool:
@@ -49,8 +54,7 @@ def wait_for(url: str, timeout: float = 30.0) -> bool:
 def drive(base: str, vignette: str, cell: str, shot: str) -> None:
     from playwright.sync_api import sync_playwright
 
-    if not CHROME_EXE:
-        sys.exit("No Chromium found under /opt/pw-browsers/. Cannot drive the browser.")
+    CHROME_EXE = find_chromium()
 
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path=CHROME_EXE, args=["--no-sandbox"])
@@ -108,7 +112,7 @@ def drive(base: str, vignette: str, cell: str, shot: str) -> None:
         feature = page.evaluate("""() => ({
             panel_tools: document.querySelectorAll('.panel-tools').length,
             panels_menu: !!document.getElementById('panels-section'),
-            target_picker: !!document.getElementById('o-target-pick'),
+            target_picker: !!document.getElementById('o-target'),
             sparklines: document.querySelectorAll('#drill-params .spark').length,
         })""")
         page.screenshot(path=shot, full_page=True)
