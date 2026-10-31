@@ -42,6 +42,12 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 - [`manual/INDEX.md`](manual/INDEX.md) — generated UI screenshots (`tools/render_manual.py`); the
   training modules embed these.
 
+> **Retired-documents convention.** A retired document is deleted, declared here in the same commit, and named by no live document ([`NFR-3810`](requirements/02-non-functional-requirements.md); checked by `spacesim/tests/test_doc_integrity.py`). One row per retired path (trailing `/` retires a folder): former path, former ID (blank if none), retirement date (ISO), successor path or `none` — plain text or backticks, never a link. A retired root-level document is declared here with its repo-relative path (for example `ROADMAP.md`). Format: `| Former path | Former ID | Retired | Successor |`.
+
+## Retired documents
+
+none
+
 ## Root-level guides (not under `docs/`)
 
 - `../README.md` — project overview & quick start.

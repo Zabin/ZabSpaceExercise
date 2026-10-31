@@ -1,6 +1,7 @@
 """IP-1350 (FS-135; NFR-3800, NFR-3820, NFR-3830) — documentation-integrity checks that run with
 the full suite: relative links resolve, each INDEX.md lists its folder's documents, and the
-status ledgers agree. Check 2 (NFR-3810, retired documents) waits on BL-0319.
+status ledgers agree. Check 2 (NFR-3810, retired documents; IP-1092) reads the `Retired documents` section of every
+INDEX.md.
 
 Each check is a pure function of a repository root, so the synthetic-tree tests seed one defect in
 a temporary tree. The real tree runs against a committed shrink-only allow-list (one text file per
@@ -11,6 +12,7 @@ fails; a listed defect that no longer occurs fails too, so the lists can only sh
 from __future__ import annotations
 
 import re
+from datetime import date
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -87,6 +89,131 @@ def broken_links(root: Path) -> list[tuple[str, int, str]]:
 
 def link_keys(root: Path) -> set[str]:
     return {f"{rel} -> {t}" for rel, _, t in broken_links(root)}
+
+
+# -- check 2: retired documents are deleted, declared, and named by no live document (NFR-3810) -
+RETIRED_HEADING = re.compile(r"^##\s+Retired documents\s*$")
+ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+TABLE_SEP = re.compile(r"^\|[\s:|\-]+\|\s*$")
+
+
+def _section_bounds(lines: list[str]) -> list[tuple[int, int]]:
+    """(first, last) 1-based line numbers of every `## Retired documents` section, heading included,
+    ending before the next heading of level 1 or 2."""
+    out = []
+    for i, line in enumerate(lines):
+        if RETIRED_HEADING.match(line):
+            end = len(lines)
+            for j in range(i + 1, len(lines)):
+                if re.match(r"^#{1,2}\s", lines[j]):
+                    end = j
+                    break
+            out.append((i + 1, end))
+    return out
+
+
+def _unquote_cell(cell: str) -> str:
+    return cell.replace("`", "").strip()
+
+
+def retired_declarations(root: Path):
+    """-> (rows, problems, exempt). rows: dicts {index, line, path, id, date, successor}; problems:
+    (mode, index, detail) for an unreadable section ('unreadable'); exempt: {index: {line numbers}} —
+    the declaring sections, the only lines the reference scan skips."""
+    rows, problems, exempt = [], [], {}
+    for f in live_md_files(root):
+        if f.name != "INDEX.md":
+            continue
+        rel = _rel(root, f)
+        lines = live_text(root, f).split("\n")
+        for first, last in _section_bounds(lines):
+            exempt.setdefault(rel, set()).update(range(first, last + 1))
+            body = [(n, lines[n - 1]) for n in range(first + 1, last + 1) if lines[n - 1].strip()]
+            table = [(n, ln) for n, ln in body if ln.lstrip().startswith("|")]
+            if not table:
+                if body and all(ln.strip().rstrip(".").lower() == "none" for _, ln in body):
+                    continue                                  # `none` body: zero rows
+                problems.append(("unreadable", rel, f"line {first}: no table under the heading"))
+                continue
+            if len(table) < 2 or not TABLE_SEP.match(table[1][1].strip()) or len(_cells(table[0][1])) != 4:
+                problems.append(("unreadable", rel, f"line {first}: need a 4-column header row and separator"))
+                continue
+            for n, ln in table[2:]:
+                c = _cells(ln)
+                if len(c) != 4:
+                    problems.append(("unreadable", rel, f"line {n}: row has {len(c)} columns, not 4"))
+                    continue
+                rows.append({"index": rel, "line": n, "path": _unquote_cell(c[0]), "id": _unquote_cell(c[1]),
+                             "date": _unquote_cell(c[2]), "successor": _unquote_cell(c[3])})
+    return rows, problems, exempt
+
+
+def _date_ok(s: str) -> bool:
+    if not ISO_DATE.match(s):
+        return False
+    try:
+        date.fromisoformat(s)
+    except ValueError:
+        return False
+    return True
+
+
+def _entry_regex(entry: str, is_id: bool) -> re.Pattern:
+    if is_id:
+        return re.compile(r"(?<![\w-])" + re.escape(entry) + r"(?![\w-])")
+    base = entry.rstrip("/")
+    return re.compile(r"(?<![\w.\-])" + re.escape(base) + r"(?!\w|-|\.\w)")
+
+
+def retired_findings(root: Path) -> set[tuple[str, str, str]]:
+    """(mode, where, detail): 'a' declared path still present; 'b' live reference outside the
+    declaring section; 'c' incomplete row; 'unreadable' section table. Unlike check 1, fenced code and
+    code spans are scanned — a command naming a retired path is still a live mention."""
+    rows, problems, exempt = retired_declarations(root)
+    out = set(problems)
+    entries = []                                            # (regex, text, declaring index)
+    for r in rows:
+        where, tag = r["index"], f"line {r['line']}"
+        if not r["path"]:
+            out.add(("c", where, f"{tag}: no former path"))
+            continue
+        if not _date_ok(r["date"]):
+            out.add(("c", where, f"{tag}: {r['path']}: missing or non-ISO retirement date"))
+        succ = r["successor"]
+        if not succ:
+            out.add(("c", where, f"{tag}: {r['path']}: no successor (write `none` if there is none)"))
+        elif succ.lower() != "none" and not ((root / succ).exists() or ((root / where).parent / succ).exists()):
+            out.add(("c", where, f"{tag}: {r['path']}: successor {succ} does not exist"))
+        if (root / r["path"].rstrip("/")).exists():
+            out.add(("a", where, f"{tag}: {r['path']} is declared retired but still present"))
+        entries.append((_entry_regex(r["path"], False), r["path"], where))
+        if r["id"]:
+            entries.append((_entry_regex(r["id"], True), r["id"], where))
+    if not entries:
+        return out
+    for f in live_md_files(root):
+        rel = _rel(root, f)
+        skip = exempt.get(rel, set())
+        for n, line in enumerate(live_text(root, f).split("\n"), 1):
+            if n in skip:
+                continue
+            for rx, text, decl in entries:
+                for m in rx.finditer(line):
+                    if "/" not in text.rstrip("/") and m.start() and line[m.start() - 1] == "/" \
+                            and not line[:m.start()].endswith(("../", "./")):
+                        continue                              # root name under another folder: a different path
+                    out.add(("b", f"{rel}:{n}", f"{text} (declared in {decl})"))
+                    break
+    return out
+
+
+def retired_keys(root: Path) -> set[str]:
+    """Allow-list keys: failure mode (b) only — (a), (c) and an unreadable table are never allow-listable."""
+    keys = set()
+    for mode, where, detail in retired_findings(root):
+        if mode == "b":
+            keys.add(f"{where.rsplit(':', 1)[0]} -> {detail.split(' (declared in ')[0]}")
+    return keys
 
 
 # -- check 3: indexes agree with their folders (NFR-3820) --------------------------------------
@@ -343,3 +470,131 @@ def test_allow_list_gate_is_shrink_only():
         _gate({"a", "b"}, {"a"}, "x")
     with pytest.raises(AssertionError, match="no longer occur"):
         _gate({"a"}, {"a", "b"}, "x")
+
+
+# -- check 2: retired documents (NFR-3810, IP-1092) — synthetic trees written before the code ----
+def _idx(*rows: str, body: str | None = None) -> str:
+    head = "| Former path | Former ID | Retired | Successor |\n|---|---|---|---|\n"
+    sect = body if body is not None else head + "".join(r + "\n" for r in rows)
+    return "# Idx\n\n## Retired documents\n\n" + sect + "\n## Other\n\nbody\n"
+
+
+def _modes(root: Path) -> set[str]:
+    return {m for m, _, _ in retired_findings(root)}
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_no_section_passes_and_none_body_is_zero_rows(tmp_path):
+    _w(tmp_path, "docs/INDEX.md", "# Idx\n\n[a](a.md)\n")
+    _w(tmp_path, "docs/a.md", "x\n")
+    assert retired_findings(tmp_path) == set()
+    _w(tmp_path, "docs/INDEX.md", _idx(body="none\n") + "[a](a.md)\n")
+    assert retired_findings(tmp_path) == set()
+    assert retired_declarations(tmp_path)[0] == []
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_mode_a_declared_path_still_present(tmp_path):
+    _w(tmp_path, "docs/INDEX.md", _idx("| `docs/old.md` | DOC-1 | 2026-10-01 | none |"))
+    assert retired_findings(tmp_path) == set()
+    _w(tmp_path, "docs/old.md", "x\n")
+    found = retired_findings(tmp_path)
+    assert [(m, w) for m, w, _ in found] == [("a", "docs/INDEX.md")]
+    assert "docs/old.md" in next(iter(found))[2]
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_mode_b_live_reference_in_every_form_reported_with_file_line_entry_index(tmp_path):
+    _w(tmp_path, "docs/INDEX.md", _idx("| `docs/old.md` | DOC-1 | 2026-10-01 | none |") + "mention DOC-1 here\n")
+    _w(tmp_path, "docs/l.md", "[x](old.md)\n")
+    _w(tmp_path, "docs/t.md", "see `docs/old.md`\nplain docs/old.md.\n```\ncat docs/old.md\n```\n")
+    _w(tmp_path, "docs/sib/INDEX.md", "sibling docs/old.md\n")
+    f = {(w, d) for m, w, d in retired_findings(tmp_path) if m == "b"}
+    assert ("docs/t.md:1", "docs/old.md (declared in docs/INDEX.md)") in f
+    assert ("docs/t.md:2", "docs/old.md (declared in docs/INDEX.md)") in f
+    assert ("docs/t.md:4", "docs/old.md (declared in docs/INDEX.md)") in f       # fenced code is scanned
+    assert ("docs/sib/INDEX.md:1", "docs/old.md (declared in docs/INDEX.md)") in f
+    assert any(w.startswith("docs/INDEX.md:") and d.startswith("DOC-1") for w, d in f)  # rest of declaring index
+    assert not any(w.startswith("docs/l.md") for w, _ in f)   # bare relative link is check 1's business
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_declaring_section_and_frozen_history_exempt(tmp_path):
+    _w(tmp_path, "docs/INDEX.md", _idx("| `docs/old.md` | DOC-1 | 2026-10-01 | `docs/new.md` |"))
+    _w(tmp_path, "docs/new.md", "x\n")
+    _w(tmp_path, "docs/reviews/r.md", "docs/old.md DOC-1\n")
+    _w(tmp_path, "docs/pipeline/pipeline-journal.md", "pos\n## Run log\ndocs/old.md\n")
+    assert retired_findings(tmp_path) == set()
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_id_is_a_whole_token_and_path_a_whole_boundary(tmp_path):
+    _w(tmp_path, "docs/INDEX.md", _idx("| `docs/a.md` | FR-1210 | 2026-10-01 | none |"))
+    _w(tmp_path, "docs/x.md", "FR-12100 and XFR-1210 and docs/a.md.bak and docs/a.mdx and xdocs/a.md\n")
+    assert retired_findings(tmp_path) == set()
+    _w(tmp_path, "docs/y.md", "FR-1210, ok\n")
+    assert {m for m, _, _ in retired_findings(tmp_path)} == {"b"}
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_folder_row_covers_everything_beneath(tmp_path):
+    _w(tmp_path, "docs/INDEX.md", _idx("| `docs/oldf/` |  | 2026-10-01 | none |"))
+    _w(tmp_path, "docs/x.md", "see docs/oldf/deep/file.md and docs/oldfolder/z.md\n")
+    f = retired_findings(tmp_path)
+    assert [(m, w) for m, w, _ in f] == [("b", "docs/x.md:1")]
+    (tmp_path / "docs/oldf").mkdir()
+    assert "a" in _modes(tmp_path)
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_mode_c_incomplete_rows_each_reported(tmp_path):
+    rows = ["| `docs/p1.md` |  |  | none |",                          # no date
+            "| `docs/p2.md` |  | 20-10-2026 | none |",              # bad date
+            "| `docs/p3.md` |  | 2026-10-01 |  |",                  # no successor
+            "|  | X-1 | 2026-10-01 | none |",                       # no path
+            "| `docs/p5.md` |  | 2026-10-01 | `docs/missing.md` |"]  # successor absent
+    _w(tmp_path, "docs/INDEX.md", _idx(*rows))
+    found = retired_findings(tmp_path)
+    assert [m for m, _, _ in found] == ["c"] * 5
+    assert len({d for _, _, d in found}) == 5
+    _w(tmp_path, "docs/INDEX.md", _idx("| `docs/p3.md` |  | 2026-10-01 | none |"))
+    assert retired_findings(tmp_path) == set()
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_unreadable_table_fails_naming_the_index(tmp_path):
+    _w(tmp_path, "docs/sub/INDEX.md", _idx(body="some prose, no table\n"))
+    _w(tmp_path, "docs/INDEX.md", _idx(body="| a | b |\n|---|---|\n| x | y |\n"))
+    found = retired_findings(tmp_path)
+    assert {(m, w) for m, w, _ in found} == {("unreadable", "docs/sub/INDEX.md"), ("unreadable", "docs/INDEX.md")}
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_root_path_declared_in_docs_index_is_enforced(tmp_path):
+    _w(tmp_path, "docs/INDEX.md", _idx("| `ROADMAP.md` |  | 2026-10-01 | none |"))
+    _w(tmp_path, "docs/x.md", "see ../ROADMAP.md and docs/ROADMAP.md\n")
+    assert [(m, w) for m, w, _ in retired_findings(tmp_path)] == [("b", "docs/x.md:1")]
+    _w(tmp_path, "ROADMAP.md", "x\n")
+    assert "a" in _modes(tmp_path)
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_allow_list_gates_mode_b_only_and_is_shrink_only(tmp_path):
+    _w(tmp_path, "docs/INDEX.md", _idx("| `docs/old.md` | DOC-1 | 2026-10-01 | none |"))
+    _w(tmp_path, "docs/x.md", "docs/old.md\n")
+    keys = retired_keys(tmp_path)
+    assert keys == {"docs/x.md -> docs/old.md"}
+    _gate(keys, set(keys), "retired")
+    with pytest.raises(AssertionError, match="no longer occur"):
+        _gate(set(), set(keys), "retired")
+    _w(tmp_path, "docs/old.md", "x\n")                       # mode (a) is not a key: never allow-listable
+    assert retired_keys(tmp_path) == keys
+    assert "a" in _modes(tmp_path)
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_real_tree_retired_documents_check_is_clean_with_empty_allow_list():
+    assert read_allow("doc_integrity_allow_retired.txt") == set()
+    hard = [f for f in retired_findings(REPO) if f[0] != "b"]
+    assert not hard, f"retired-documents defect(s) (never allow-listable): {hard}"
+    _gate(retired_keys(REPO), read_allow("doc_integrity_allow_retired.txt"), "retired")

@@ -169,8 +169,11 @@ untagged test and on an ID that is not a live baseline item. The tolerance list
 `spacesim/tests/test_origin_allowlist.txt` is now **empty** (the FS-133 backfill is complete, so every
 test must be tagged); the mechanism remains shrink-only (`BL-0358`). The RTM's Test column is **generated, never hand
 edited** (`NFR-2850`): regenerate it with `python3 -m pytest --origin-report=rtm` in the same commit.
-**Documentation checks run with the suite** (IP-1350, `NFR-3800`/`3820`/`3830`): a new broken relative link,
-an `INDEX.md` that omits a document in its folder, or a status-ledger disagreement fails the suite. Known
+**Documentation checks run with the suite** (IP-1350/IP-1092, `NFR-3800`/`3810`/`3820`/`3830`): a new broken relative link,
+an `INDEX.md` that omits a document in its folder, a status-ledger disagreement, or a retired document (a row in a
+`Retired documents` section of an `INDEX.md`; `docs/INDEX.md` for root files) that is still present or named by a
+live document fails the suite — the retired-documents allow-list `doc_integrity_allow_retired.txt` is empty and covers
+live references only. Known
 defects sit on `spacesim/tests/doc_integrity_allow_*.txt`; those lists only shrink (fix the defect, delete its
 line in the same commit — the suite also fails on a stale line). The `docs/research/` primer-link lines in
 `doc_integrity_allow_links.txt` are the remaining known defects (owner: `02-research`, `BL-0292` sweep).
