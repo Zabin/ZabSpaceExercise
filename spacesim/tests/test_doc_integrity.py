@@ -93,16 +93,19 @@ def link_keys(root: Path) -> set[str]:
 
 # -- check 2: retired documents are deleted, declared, and named by no live document (NFR-3810) -
 RETIRED_HEADING = re.compile(r"^##\s+Retired documents\s*$")
+RETIRED_LOOSE = re.compile(r"^\s*#{1,6}\s*retired\s+documents\s*$", re.I)     # looks like it; must be exact
+MD_LINK_CELL = re.compile(r"^\[[^\]]*\]\(\s*<?([^)\s>]+)>?[^)]*\)$")
+NO_ID = {"", "-", "–", "—", "n/a", "na", "none", "tbd", "?"}
 ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 TABLE_SEP = re.compile(r"^\|[\s:|\-]+\|\s*$")
 
 
-def _section_bounds(lines: list[str]) -> list[tuple[int, int]]:
+def _section_bounds(lines: list[str], loose: bool = False) -> list[tuple[int, int]]:
     """(first, last) 1-based line numbers of every `## Retired documents` section, heading included,
     ending before the next heading of level 1 or 2."""
     out = []
     for i, line in enumerate(lines):
-        if RETIRED_HEADING.match(line):
+        if (RETIRED_LOOSE if loose else RETIRED_HEADING).match(line):
             end = len(lines)
             for j in range(i + 1, len(lines)):
                 if re.match(r"^#{1,2}\s", lines[j]):
@@ -113,7 +116,9 @@ def _section_bounds(lines: list[str]) -> list[tuple[int, int]]:
 
 
 def _unquote_cell(cell: str) -> str:
-    return cell.replace("`", "").strip()
+    cell = cell.strip()
+    m = MD_LINK_CELL.match(cell.replace("`", ""))
+    return (m.group(1) if m else cell.replace("`", "")).strip()
 
 
 def retired_declarations(root: Path):
@@ -126,7 +131,9 @@ def retired_declarations(root: Path):
             continue
         rel = _rel(root, f)
         lines = live_text(root, f).split("\n")
-        for first, last in _section_bounds(lines):
+        for first, last in _section_bounds(lines, loose=True):
+            if not RETIRED_HEADING.match(lines[first - 1]):
+                problems.append(("unreadable", rel, f"line {first}: heading must be exactly '## Retired documents'"))
             exempt.setdefault(rel, set()).update(range(first, last + 1))
             body = [(n, lines[n - 1]) for n in range(first + 1, last + 1) if lines[n - 1].strip()]
             table = [(n, ln) for n, ln in body if ln.lstrip().startswith("|")]
@@ -187,7 +194,7 @@ def retired_findings(root: Path) -> set[tuple[str, str, str]]:
         if (root / r["path"].rstrip("/")).exists():
             out.add(("a", where, f"{tag}: {r['path']} is declared retired but still present"))
         entries.append((_entry_regex(r["path"], False), r["path"], where))
-        if r["id"]:
+        if r["id"].lower() not in NO_ID:
             entries.append((_entry_regex(r["id"], True), r["id"], where))
     if not entries:
         return out
@@ -598,3 +605,30 @@ def test_real_tree_retired_documents_check_is_clean_with_empty_allow_list():
     hard = [f for f in retired_findings(REPO) if f[0] != "b"]
     assert not hard, f"retired-documents defect(s) (never allow-listable): {hard}"
     _gate(retired_keys(REPO), read_allow("doc_integrity_allow_retired.txt"), "retired")
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_mistyped_heading_fails_loudly_and_is_still_enforced(tmp_path):
+    for heading in ("## retired documents", "### Retired documents", "##  Retired  documents", "# Retired Documents"):
+        _w(tmp_path, "docs/INDEX.md", "# Idx\n\n" + heading + "\n\n| Former path | Former ID | Retired | Successor |\n"
+           "|---|---|---|---|\n| `docs/old.md` |  | 2026-10-01 | none |\n")
+        _w(tmp_path, "docs/old.md", "x\n")
+        modes = _modes(tmp_path)
+        assert "unreadable" in modes and "a" in modes, heading
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_link_or_backtick_wrapped_cells_are_unwrapped(tmp_path):
+    _w(tmp_path, "docs/INDEX.md", _idx("| [old](docs/old.md) |  | 2026-10-01 | [new](docs/new.md) |"))
+    _w(tmp_path, "docs/old.md", "x\n")
+    _w(tmp_path, "docs/new.md", "x\n")
+    found = retired_findings(tmp_path)
+    assert [m for m, _, _ in found] == ["a"]
+
+
+@pytest.mark.verifies("NFR-3810")
+def test_retired_placeholder_id_is_no_former_id(tmp_path):
+    for ph in ("—", "–", "-", "n/a", "N/A", "none", ""):
+        _w(tmp_path, "docs/INDEX.md", _idx(f"| `docs/old.md` | {ph} | 2026-10-01 | none |"))
+        _w(tmp_path, "docs/x.md", f"a {ph or 'blank'} - n/a none — here\n")
+        assert retired_findings(tmp_path) == set(), ph
