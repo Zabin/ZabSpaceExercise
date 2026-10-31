@@ -835,10 +835,15 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         """Cell activity Gantt feed: past + present + scheduled rows for the cell.
 
         White sees all cells (blue / red / neutral); Blue and Red see only their own
-        orders and own-asset active effects (fog-of-war respected at this seam).
+        orders and the started effects on their own assets (category + symptom); a scheduled
+        inject is White-only. ``observer`` follows the Observer designation; any other cell is
+        refused with 400 (IP-1088, FR-6210).
         """
         _require(sid)
-        return api.cell_activity(sid, cell, past_window_s, future_window_s)
+        try:
+            return api.cell_activity(sid, cell, past_window_s, future_window_s)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
 
     @app.get("/api/sessions/{sid}/coaching/{cell}")
     def coaching(sid: str, cell: str) -> list[dict]:

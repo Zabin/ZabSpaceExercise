@@ -13,6 +13,7 @@ from typing import Iterator, Optional
 from spacesim.content.vignette import Vignette, list_vignettes, load_vignette
 from spacesim.engine.orders import Order
 from spacesim.session.api import Ack, CellView, OrderAck
+from spacesim.session.cells import CellController
 from spacesim.session import aar, assessment
 from spacesim.session.manager import SessionManager
 from spacesim.session.redai import RedDoctrine
@@ -634,23 +635,25 @@ class InProcessSession:
         kind: "order" | "inject" | "effect"
         status: "executed" | "queued" | "cancelled" | "rejected" | "active" | "scheduled"
         """
+        # IP-1088 - resolve the requested seat first: ``observer`` follows its designation
+        # (no parallel filtering path, IP-1130); anything but white/blue/red is refused.
+        if cell == "observer":
+            cell = self.observer_designation(session)
+            if cell == "godview":
+                cell = "white"
+        if cell not in ("white", "blue", "red"):
+            raise ValueError(f"unknown cell {cell!r}")
         self.catch_up(session)   # multiplayer: surface the live now in the Gantt
         mgr = self._sessions[session]
         now = mgr.world.now
         t_start = now - past_window_s * 1_000_000
         t_end = now + future_window_s * 1_000_000
 
-        def _own_asset(actor_id: str, target_cell: str) -> bool:
-            a = mgr.world.assets.get(actor_id) or mgr.world.sensors.get(actor_id)
-            return a is not None and getattr(a, "owner", None) == target_cell
-
-        activities: list[dict] = []
+        tagged: list[dict] = []   # ground-truth rows; CellController.activity_rows filters per cell
 
         # 1) Orders (past, queued, cancelled, rejected).
         from spacesim.engine.orders import BAR_DURATION_S
         for o in mgr.osys.orders.values():
-            if cell != "white" and o.cell != cell:
-                continue
             label = f"{o.actor} {o.action}" + (f" → {o.target}" if o.target else "")
             if o.earliest_window is not None:
                 win_start, win_end = o.earliest_window
@@ -680,7 +683,7 @@ class InProcessSession:
                 # IP-1065 (BL-0266) — the window has passed, so the order has executed: the same
                 # derived label `SessionManager.list_orders()` shows (`Order.status` never holds it).
                 status = "executed"
-            activities.append({
+            tagged.append({"owner": o.cell, "effect": None, "row": {
                 "kind": "order",
                 "cell": o.cell,
                 "actor": o.actor,
@@ -691,44 +694,37 @@ class InProcessSession:
                 "status": status,
                 "label": label,
                 "delivery_path": o.delivery_path,
-            })
+            }})
 
-        # 2) Scheduled non-order events (injects).  Skip bus ticks and per-order execute_*
-        #    events (already represented by their order above).
-        order_tags = {o.id for o in mgr.osys.orders.values()}
-        for ev in mgr.sim.scheduler.pending():
-            if ev.kind != "inject":
+        # 2) Scheduled injects.  Read the White pending-inject queue (IP-1066: edits applied,
+        #    cancellations removed) rather than raw scheduler events, so an edited or cancelled
+        #    inject leaves no stale ghost row at its old time.  Ground truth: the filter
+        #    (CellController.activity_rows) drops these for Blue and Red.
+        for pi in mgr.pending_injects():
+            at = pi.get("at")
+            if at is None or at < t_start or at > t_end:
                 continue
-            if ev.tag and ev.tag in order_tags:
-                continue
-            if ev.t < t_start or ev.t > t_end:
-                continue
-            ev_cell = ev.actor if ev.actor in ("blue", "red", "white", "neutral") else "white"
-            if cell != "white" and ev_cell not in (cell, "white"):
-                continue
-            n_eff = len((ev.payload or {}).get("effects", []) or [])
-            activities.append({
+            n_eff = len(pi.get("effects") or [])
+            tagged.append({"owner": "white", "effect": None, "row": {
                 "kind": "inject",
-                "cell": ev_cell,
+                "cell": "white",
                 "actor": "white-cell",
                 "action": "inject",
                 "target": None,
-                "start": int(ev.t),
-                "end": int(ev.t + 60_000_000),
+                "start": int(at),
+                "end": int(at + 60_000_000),
                 "status": "scheduled",
                 "label": f"inject ({n_eff} effects)",
                 "delivery_path": None,
-            })
+            }})
 
         # 3) Active effects — currently in progress on own assets (cell scope).
         for eff in mgr.world.active_effects:
             target_asset = mgr.world.assets.get(eff.target)
             target_owner = getattr(target_asset, "owner", None)
-            if cell != "white" and target_owner != cell:
-                continue
             if eff.end < t_start or eff.start > t_end:
                 continue
-            activities.append({
+            tagged.append({"owner": target_owner or "neutral", "row": {
                 "kind": "effect",
                 "cell": target_owner or "neutral",
                 "actor": eff.target,
@@ -739,8 +735,10 @@ class InProcessSession:
                 "status": "active" if eff.start <= now <= eff.end else "scheduled",
                 "label": f"{eff.template or eff.category} → {eff.target} ({eff.outcome})",
                 "delivery_path": None,
-            })
+            }, "effect": {"template": eff.template, "category": eff.category or eff.template,
+                          "outcome": eff.outcome, "overt": eff.attribution == "overt"}})
 
+        activities = CellController.activity_rows(tagged, cell, now)
         # Sort by start time so the renderer can stack bars deterministically.
         activities.sort(key=lambda a: (a["cell"], a["start"], a["actor"]))
 
