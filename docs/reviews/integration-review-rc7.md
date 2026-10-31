@@ -13,12 +13,12 @@ All five packages are `VERIFIED` in their own headers, the Master Build Plan, `p
 
 | Run | Command | Exit | Result |
 |---|---|---|---|
-| Unfiltered | `python3 -m pytest --junitxml` | see note | 2244 tests, 0 failures, 0 errors, **4 skipped** |
+| Unfiltered | `python3 -m pytest --junitxml` | 0 (second run; see note) | 2244 tests, 0 failures, 0 errors, **4 skipped** |
 | Non-browser | `-m "not browser"` | 0 | 2202 tests, 0 failures, 0 errors, **5 skipped** |
 | Browser | `-m browser` | 0 | 42 tests, 0 failures, **0 skipped** |
 | Doc integrity | `test_doc_integrity.py` | 0 | green, also inside a fresh venv built from `requirements.lock` |
 
-Note on the unfiltered run: its first run completed (`--junitxml`: 2244/0/0/4) but the chained exit-code capture was lost to a harness fault, so it was run a second time to obtain a real exit code; the second run's result is in section 8 (`UNFILTERED_RESULT`). The determinism gate and the import guard are inside the unfiltered run and green.
+Note on the unfiltered run: its first run completed (`--junitxml`: 2244/0/0/4) but the chained exit-code capture was lost to a harness fault, so it was run a second time to obtain a real exit code; the second run exited 0 with the same 2244/0/0/4. The determinism gate and the import guard are inside the unfiltered run and green.
 
 The skip counts equal `CLAUDE.md`'s statement (4 / 5 / 0). **The test totals do not**: `CLAUDE.md` line 19 says 2227 / 2185 / 42; the measured collection is **2244 / 2202 / 42**, +17 tests that arrived with `IP-1089`/`IP-1092`/`IP-1094` after the count was last written (`L-1`).
 
@@ -103,4 +103,4 @@ Determinism gate and import guard: green in the unfiltered run and again in the 
 
 ## 8. Final suite record
 
-* Unfiltered second run (real exit code): `UNFILTERED_RESULT`.
+* Unfiltered second run: exit 0, 2244 tests, 0 failures, 0 errors, 4 skipped (`--junitxml`). Non-browser: exit 0, 2202 / 5 skipped. Browser: exit 0, 42 / 0 skipped. `test_doc_integrity.py` re-run after this report and the ROADMAP entry were added: green.
