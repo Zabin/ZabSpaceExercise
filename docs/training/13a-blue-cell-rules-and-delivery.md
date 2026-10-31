@@ -23,7 +23,7 @@ the field is a rehearsal of crew discipline, not a lock.
 
 **Procedure.**
 
-1. In the order form (**Order compose** panel) find **Operator seat** under **Actor**. The grey hint
+1. In the order form (the **Satellite command** panel) find **Operator seat** under **Actor**. The grey hint
    reads `optional - your Role Assignment name`.
 2. Type the exact name White gave you (up to 64 characters: letters, digits, space, `-`, `_`, `.`).
    It is remembered for this session in your browser.
@@ -57,7 +57,7 @@ for an asset the other cell owns are refused first with `This asset belongs to a
 
 Some exercises put certain orders (for example a jam, a cyber action or a strike) behind an
 **approval gate**: White Cell, or another named role, must approve before the order is planned. If you
-issue one you see status `pending_approval` in your **Order queue**, with no window and no delivery
+issue one you see status `pending_approval` in your **Command queue**, with no window and no delivery
 path yet. That is not an error: nothing has been scheduled, nothing will fire until it is decided.
 
 1. Tell White (voice or chat) which order is waiting; give the order id (`ord-3`).
@@ -79,7 +79,7 @@ issued them. Re-read your **Mission brief** ROE line after White announces a cha
 
 ### BLU-17 · How a command gets to your satellite, and what a jam can stop
 
-Every command picks one of three routes; the Order queue shows it as the **delivery path**.
+Every command picks one of three routes; the **Command queue** shows it as the **delivery path**.
 
 | Delivery path | In plain terms | Can an enemy uplink jam stop it? |
 |---|---|---|

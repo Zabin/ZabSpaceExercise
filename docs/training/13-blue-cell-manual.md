@@ -14,6 +14,8 @@ both defer to the shared concept modules rather than duplicating them.
 **More sections** (BLU-15 to BLU-18) are in [13a](13a-blue-cell-rules-and-delivery.md): the Operator seat field, orders waiting for approval and live ROE changes, which link a jam attacks and what stops a command, and the manoeuvre ledger.
 
 
+**Acronyms.** ISR, SAR, SDA, SATCOM, PNT, GNSS, EW, TT&C, SoC, MEO and the rest are defined in the [glossary](09-troubleshooting-and-glossary.md#11-glossary).
+
 ### BLU-1 · Your view: fog-of-war
 
 You see **only Blue's own assets** at true position, plus whatever Blue's sensors have detected —
@@ -140,6 +142,8 @@ unpatched modem vulnerability) the satellite is **re-safed** — you must remove
 vulnerability with `def.patch_cyber`, or get the jammer killed) before recovery sticks. Drive it
 from the recovery strip; the bus commands (EPS shed/restore, ADCS mode, storage dump) are issued
 like any other command via the command action.
+
+**Nothing to recover?** Red's cyber attempt is a chance event (about 62%). If your satellite stays nominal and **Begin recovery** never appears, Red's attempt missed (this happens with some seeds, for example Seed 2 of the recovery lesson); there is nothing to patch yet. Ask Red to fire again, or carry on; do not hunt for a fault that did not happen.
 
 > **Sources:** `spacesim/engine/recovery.py` · `spacesim/engine/buscommands.py` ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"Safe-mode recovery"

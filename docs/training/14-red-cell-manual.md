@@ -14,6 +14,8 @@ rather than duplicating them. The mirror-image defensive framing is
 
 **More sections** (RED-14 to RED-17) are in [14a](14a-red-cell-rules-and-delivery.md): the Operator seat field, orders waiting for approval and live ROE changes, which link a jam attacks and what stops a command, and the manoeuvre ledger.
 
+**Acronyms.** ISR, SAR, SDA, SATCOM, PNT, GNSS, EW, TT&C, SoC, MEO and the rest are defined in the [glossary](09-troubleshooting-and-glossary.md#11-glossary).
+
 ### RED-1 · Your view: fog-of-war
 
 You see **only Red's own assets** at true position, plus whatever Red's sensors have detected —
@@ -50,7 +52,7 @@ the same access window is Red's tempo problem.
    set to `null` counts as left out.
    [`09` §10](09-troubleshooting-and-glossary.md#10-troubleshooting) lists every reason.
 2. **Consequence preview** — severity, escalation weight, reversibility, debris risk, and
-   **attribution**: Red's escalation-management dashboard. A reversible EW/cyber effect keeps you
+   **attribution**: Red's escalation-management dashboard. A reversible [EW](09-troubleshooting-and-glossary.md#11-glossary)/cyber effect keeps you
    below the threshold a kinetic strike crosses.
 3. **Verb assistants** — `maneuver` (six modes, live Δv), `observe` (beam mode + look angle), `jam`
    (modulation/power/bandwidth with an on-map denial footprint).
@@ -124,7 +126,7 @@ authorizes it and you accept the debris and attribution cost the consequence pre
 
 Cyber is the **exception** — not window-gated. With a modeled access vector it resolves any time
 against `{access_vector, success_prob, persistence, patchable}` subject to Blue's cyber posture.
-This is Red's fastest, hardest-to-attribute lever (the SATCOM/Viasat-style lesson): you can act
+This is Red's fastest, hardest-to-attribute lever (the [SATCOM](09-troubleshooting-and-glossary.md#11-glossary)/Viasat-style lesson): you can act
 between passes when Blue is watching the wrong timeline. A **persistent** unpatched vulnerability
 keeps re-safing the target through its recovery attempts.
 
@@ -168,7 +170,7 @@ the same value at any instant both of them sample.
 When Red is played by AI (or you want a doctrinal template), the doctrine presets
 `china_integrated`, `russia_ew_first`, and `generic` prioritize Red's COA differently. The five
 Red COA vignettes (RC-01 Layered Denial, RC-02 Cyber-First Access Denial, RC-03 Progressive
-Escalation, RC-04 High-Altitude ASAT, RC-05 Allied Targeting) are built around these patterns —
+Escalation, RC-04 High-Altitude [ASAT](09-troubleshooting-and-glossary.md#11-glossary), RC-05 Allied Targeting) are built around these patterns —
 study them as Red's playbook of campaign shapes.
 
 > **Sources:** `spacesim/session/redai.py` · [`06-the-vignette-library.md`](06-the-vignette-library.md) ·

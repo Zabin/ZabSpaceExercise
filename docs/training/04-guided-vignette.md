@@ -116,8 +116,11 @@ through the procedure below in order. The order matters: skip the patch and reco
 re-safe the satellite on the next pass.
 
 **Step 7 — Discover it on the next telemetry contact.** Click **Blue**, then click `ISR-EO-1` in
-the fleet rail. The badge turned **red**, the bus mode reads `safe_mode`, and the drill-down
-shows the `cdh.faults` log line that flagged the modem. Cyber is **not** window-gated, so the
+the fleet rail. The badge turned **red**, the bus mode reads `safe_mode`, and the drill-down's
+**Subsystem log (symptoms — diagnose the cause yourself)** lists the symptoms: `bus mode = SAFE_MODE; payload
+disabled` and `payload.snr_db ... [RED]` at once, and a few minutes later `cdh.fsw_error_count ... [RED]` and
+`cdh.cmd_reject_count ... [RED]` (rising flight-software errors and rejected commands: the modem was attacked).
+The log never names the attacker; you infer the cause. Cyber is **not** window-gated, so the
 attack landed when Red issued it — but you only **see** it when the next downlink contact
 returns telemetry. The fleet rollup dot turns red as soon as that telemetry lands.
 

@@ -33,8 +33,8 @@ content:
   external_vignette_dirs: [/home/me/my-vignettes]
 ```
 
-Without `user_save_dir`, **Save as vignette** answers `error: no user-save directory configured — set
-content.user_save_dir in spacesim.config.yaml`. Without the directory also listed under
+Without `user_save_dir`, **Save as vignette** answers `error: {"detail":"no user-save directory configured — set
+content.user_save_dir in spacesim.config.yaml"}` (the JSON wrapper is how the console shows it). Without the directory also listed under
 `external_vignette_dirs`, the save succeeds but the vignette never appears in the picker (a **Load**
 by id answers `vignette 'my-scn' not found`). See [`01-install-and-run.md`](01-install-and-run.md).
 

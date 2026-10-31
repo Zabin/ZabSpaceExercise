@@ -75,7 +75,7 @@ the status `pending_approval` until that role approves or denies it. Only a vign
 gates; there is no console form to add one, and no built-in vignette declares any.
 
 **What players see while an order waits.** The order is accepted (`ok`) with status `pending_approval`.
-It appears in the player's **Order queue** with that status, no window and no delivery path. The
+It appears in the player's **Command queue** with that status, no window and no delivery path. The
 compose form's preview and the Issue button behave as for any valid order. The player cannot cancel
 it (`order not found / not cancellable`); they wait for White. Nothing is scheduled, so nothing
 executes, and the other cell sees nothing.
@@ -88,7 +88,7 @@ curl -X POST 'http://127.0.0.1:8000/api/sessions/<SID>/gate/decide' -H 'Content-
   -d '{"cell":"white","order_id":"ord-1","approve":true}'
 ```
 
-Find `order_id` in White's order queue (or the Orders panel's list for that cell). Replies:
+Find `order_id` in White's **Command queue** (or the **Command queue** panel for that cell). Replies:
 
 | Reply | Meaning |
 |---|---|
