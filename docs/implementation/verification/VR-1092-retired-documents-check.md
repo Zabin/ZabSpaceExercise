@@ -1,16 +1,49 @@
 # VR-1092 — Verification Report: Retired-Documents Check (NFR-3810)
 
 > **Document ID:** VR-1092
-> **Version:** 1.0
+> **Version:** 2.0 (supersedes v1.0, which `RETURNED` the package)
 > **Status:** ✅ Final
 > **Dependencies:** [IP-1092](../packages/IP-1092-retired-documents-check.md) v1.0,
 > [FS-135](../../features/FS-135-documentation-integrity-checks.md) v1.1
 > **Referenced By:** [INDEX.md](INDEX.md), [00-master-build-plan.md](../00-master-build-plan.md),
 > [packages/INDEX.md](../packages/INDEX.md)
-> **Produces:** the `COMPLETE → IN PROGRESS` (`RETURNED`) transition of `IP-1092`
+> **Produces:** the `COMPLETE → VERIFIED` transition of `IP-1092` (this v2.0 pass; v1.0 produced `COMPLETE → RETURNED`)
 > **Feature Mapping:** FS-135 (`FEAT-12300`)
 
 [↑ Verification index](INDEX.md) · [Master Build Plan](../00-master-build-plan.md) · [Packages index](../packages/INDEX.md)
+
+## v2.0 re-verification (supersedes the v1.0 result below)
+
+**Result: VERIFIED** - 0 failed checks. Fix commit `2bfedf9` (on `7b4a9ee` and the v1.0 report `f955c5f`, branch `claude/ip-1092-build`). Fresh session, separate worktree; took no part in the implementation, the fix or v1.0.
+
+| v1.0 | Re-check (own probes on synthetic trees, own mutations) | Result |
+|---|---|---|
+| F1 ROADMAP rows | Scripted ledger comparison over all 94 packages (package header, Master Build Plan, packages INDEX, ROADMAP): `IP-1089`, `IP-1093`, `IP-1094` read `READY` in the ROADMAP, MBP and INDEX. One disagreement remains: the `IP-1092` ROADMAP row still read `IN PROGRESS (RETURNED...)` although the fix claims the IP-1092 rows were put back to `COMPLETE` (new finding N1, Low; closed by this pass's own ledger update). Package headers still read `READY` (not this run's to edit; same for the other three) | Closed (N1 Low) |
+| F2 mistyped heading | `## retired documents`, `### Retired documents`, `## Retired  documents`, `#Retired documents`, 3-space indent, `## RETIRED DOCUMENTS`: each reports `unreadable` (heading must be exactly `## Retired documents`) and a present declared file still reports mode a (still enforced). Non-sections (`## Retired documents policy`, `### Retired documents archive`) are ignored; a loose heading in a sub-folder INDEX with no table reports `unreadable`; a non-INDEX file is not scanned | Closed |
+| F3 link/backtick cells | `[o](docs/old.md)`, ``[`docs/old.md`](docs/old.md)``, `[o](<docs/old.md> "t")` in the path cell: mode a fires for a present file; successor in link form resolves; absent successor reports mode c | Closed |
+| F4 placeholder ID | `—`, `–`, `-`, `n/a`, `N/A`, `none`, `TBD`, `?`, empty: no former ID, so live text containing the placeholder is not a mode-b hit; a real ID (`IP-9999`) is still matched | Closed |
+
+Earlier behaviours re-probed and unchanged: modes a, b, c (bad date `2026-13-45` plus nonexistent successor), `none` body, folder retirement (a plus b beneath), root-level `ROADMAP.md`, fenced and `~~~` references reported, frozen-history exclusion; the real tree passes with the empty allow-list (`test_real_tree_retired_documents_check_is_clean_with_empty_allow_list`).
+
+Mutations (test module only, restored by `git checkout`, each run against `-k retired`): loose heading scan off, unreadable report off (both fail `test_retired_mistyped_heading_fails_loudly_and_is_still_enforced`); link unwrap off (fails `test_retired_link_or_backtick_wrapped_cells_are_unwrapped`); placeholder rule off, placeholder set emptied (both fail `test_retired_placeholder_id_is_no_former_id`). All killed. The three new tests carry `verifies("NFR-3810")`; `--origin-report=rtm` regenerates the RTM Test column unchanged.
+
+**Test run (each mode once, real exit codes, `--junitxml`):** named files (`test_doc_integrity.py`, `test_test_origins.py`, `test_origin_retag.py`, `test_determinism.py`, `test_import_guard.py`): exit 0. Unfiltered: exit 0, 2179 tests, 0 failed, 0 errors, 4 skipped. `-m "not browser"`: exit 0, 2137 tests, 0 failed, 5 skipped. `-m browser`: exit 0, 42 passed, 0 skipped.
+
+**MBP tally recounted before this update:** 90 `VERIFIED`, 1 `COMPLETE` (`IP-1092`), 3 `READY` (`IP-1089`, `IP-1093`, `IP-1094`), 94 packages. After: 91 / 0 / 3 / 94.
+
+### v2.0 findings
+
+| ID | Description | Severity | Owner |
+|---|---|---|---|
+| N1 | The fix pass left the `IP-1092` ROADMAP row at `IN PROGRESS (RETURNED...)`; the doc suite does not compare ROADMAP to the MBP. Corrected by this pass's ledger update (IP-1092 row only) | Low | none further |
+| N2 | A trailing-punctuation near-miss (`## Retired documents:`) is not a section and a present declared file passes silently; a heading example inside a fenced block of an INDEX is read as a section and reports `unreadable` (fail-closed) | Info | none required |
+| N3 | The package header `Status:` of `IP-1092` still reads `READY`; headers are reconciled by a separate pass (as for `IP-1088`) | Info | `00-pipeline-manager` |
+
+Next step: `IP-1092` is `VERIFIED`. `IP-1089`, `IP-1093`, `IP-1094` remain `READY`; run `08-code-implementation` on the next of them.
+
+---
+
+# v1.0 (historical, RETURNED)
 
 ## Package
 
