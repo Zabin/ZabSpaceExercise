@@ -458,7 +458,7 @@ def test_script_co_orbital_blue():
         assert run.clock_min == 20 and run.mgr.world.track_for("blue", "RED-COORB") is not None
     def s4(run, res, st):
         assert res.status == "rejected" and res.reason == "no_command_station"
-        _said(st, "no_command_station", "greyed out", "No command path"); assert "Force add" not in st["expect"]
+        _said(st, "no_command_station", "greyed out", "No access window in the planning horizon", "No command path"); assert "Force add" not in st["expect"]
     def s5(run, res, st):
         assert run.obj() == {"hva_survives": True} and run.other() == {"neutralize_hva": False}
     _script("co-orbital-threat-escort", "blue", {
@@ -469,7 +469,7 @@ def test_script_co_orbital_blue():
 def test_script_co_orbital_red():
     def s2(run, res, st):
         assert res.status == "rejected" and res.reason == "no_command_station"
-        _said(st, "no_command_station", "greyed out", "No command path"); assert "Force add" not in st["expect"]
+        _said(st, "no_command_station", "greyed out", "No access window in the planning horizon", "No command path"); assert "Force add" not in st["expect"]
     def s3(run, res, st):
         assert run.obj() == {"neutralize_hva": False}
     _script("co-orbital-threat-escort", "red", {1: _noop, 2: s2, 3: s3})
@@ -480,7 +480,7 @@ def test_script_da_asat_blue():
     def s2(run, res, st):
         assert res.status == "rejected" and res.reason == "no_command_station"
         assert run.mgr.world.assets["BLUE-SAT"].resources.delta_v_ms == 20.0
-        _said(st, "no_command_station", "greyed out", "20 m/s"); assert "Force add" not in st["expect"]
+        _said(st, "no_command_station", "greyed out", "No access window in the planning horizon", "20 m/s"); assert "Force add" not in st["expect"]
     def s3(run, res, st):
         assert run.obj() == {"avoid_debris": True}
     _script("da-asat-crisis", "blue", {1: _noop, 2: s2, 3: s3})
@@ -569,7 +569,7 @@ def test_script_sda_blue_skipping_requests_loses_custody():
 def test_script_sda_red():
     def s3(run, res, st):
         assert res.status == "rejected" and res.reason == "no_command_station"
-        _said(st, "no_command_station", "greyed out"); assert "Force add" not in st["expect"]
+        _said(st, "no_command_station", "greyed out", "No access window in the planning horizon"); assert "Force add" not in st["expect"]
     def s4(run, res, st):
         assert run.clock_min >= 90 and run.obj() == {"break_custody": True}      # Blue did nothing
     _script("sda-custody-hunt", "red", {1: _noop, 2: _noop, 3: s3, 4: s4})

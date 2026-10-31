@@ -112,11 +112,11 @@ Deadline **+1 h**. Walked screenshot-by-screenshot in [§4](04-guided-vignette.m
 
 **Blue — keep the HVA alive.**
 1. `BLUE-RADAR` → **observe** `RED-COORB` `{intent: characterize, classification: hostile}` — queued; the pass opens about **T+17 min**. Click **+10m** twice and the hostile track appears.
-2. `BLUE-HVA` → **maneuver** `{dv: [0, 5, 0]}` is **blocked** (**Issue order** stays greyed out; the red preview reads *No command path*, engine reason `no_command_station`): active defense needs a command path. *If a facilitator adds a TT&C station before Start (HTTP force-add, WCM-23; not possible mid-exercise)* the same order can evade, and `BLUE-ESCORT` → **maneuver** can interpose; Δv spent vs. mission life is the tradeoff to teach.
+2. `BLUE-HVA` → **maneuver** `{dv: [0, 5, 0]}` is **blocked** (**Issue order** stays greyed out; the red preview reads *No access window in the planning horizon* (or *No command path* when the Params carry no `via`), engine reason `no_command_station`): active defense needs a command path. *If a facilitator adds a TT&C station before Start (HTTP force-add, WCM-23; not possible mid-exercise)* the same order can evade, and `BLUE-ESCORT` → **maneuver** can interpose; Δv spent vs. mission life is the tradeoff to teach.
 3. **+10m** until past **T+1 h** → **`hva_survives` MET**. With no kinetic ROE and no organic safing path, the threat can pressure but not kill.
 
 **Red — neutralize it.**
-1. `RED-COORB` → **maneuver** aggressive RPO toward `BLUE-HVA` — **blocked** (greyed-out Issue, *No command path*; `no_command_station`) unless a facilitator added a Red command-uplink path before Start.
+1. `RED-COORB` → **maneuver** aggressive RPO toward `BLUE-HVA` — **blocked** (greyed-out Issue, *No access window in the planning horizon* / *No command path*; `no_command_station`) unless a facilitator added a Red command-uplink path before Start.
 2. *Gate:* without White-Cell kinetic ROE **and** a weapons-quality track, `neutralize_hva` cannot complete. The vignette's lesson is **restraint** — pressure short of an irreversible act.
 
 ---
