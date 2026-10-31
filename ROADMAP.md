@@ -872,6 +872,12 @@ T+30 min (it flips only after T+3 h); the tutorials' `command` + `verb` has no A
 cannot choose **engage**; the cyber confirm dialog is unmentioned in `04`; Resume resets a custom clock rate;
 five COA rungs have no playbook; `15.1` lacks rows for FS-123/FS-124; glossary gaps.
 
+**Training review (2026-10-31, final RC8):** [`reviews/training-review-final-rc8.md`](docs/reviews/training-review-final-rc8.md)
+(REV-TRN-012) is the independent learner-walkthrough gate for release candidate 8 (`92c56c8`): every REV-TRN-011 finding
+(N1-N5, L1-L3) verified closed on the live app; README install, 12b starter snippets, WCM-22 and the ISO-bound examples walked
+as written; FS coverage 36 of 36, no misses. 0 High, 1 Medium (COA "only then cyber/jam" ordering), 3 Low. The review is
+current for this release scope with no open High findings (closes release-assessment blocker B-2).
+
 **Training review (2026-10-31):** [`reviews/training-review-release-walkthrough-recheck.md`](docs/reviews/training-review-release-walkthrough-recheck.md)
 (REV-TRN-011) re-walked the corpus on the live app at RC4 (`461d43a`): 14 of the first review's 15 itemised findings closed (F1
 `03` Step 4 timing, F3 verb-by-name menu entries, F5/F6 confirm and disabled-preview wording, F7 COA playbooks + `15.4`
