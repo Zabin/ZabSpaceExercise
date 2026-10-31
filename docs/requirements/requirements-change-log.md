@@ -624,6 +624,12 @@ capability.
   RTM Impl. cells; no change needed.
 - **Source review issue:** `BL-0388`, `VR-1160` `M-3`/`L-1`.
 
+### CHG-057
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
+  Pass 5 findings table added below (requirements no test names, classified).
+- **Reason:** `NFR-2850`; pass 5 task 7.
+
 ### Review findings, pass 3
 
 | # | Finding type | IDs | Description | Severity | Recommendation |
@@ -634,6 +640,20 @@ capability.
 | P3-4 | Open design question | `CR-34` / `BL-0171` | Pass-gating of historical telemetry points; `FR-2320` calls the export pass-gated but it is not. | Low | Project owner, then `03`/`04`. |
 | P3-5 | Owner decision recorded | `FR-4330` | Rewind versus a running clock: unspecified, not release-blocking. | Info | None. |
 | P3-6 | Open | `FR-4330` | Whether the 366-day span is configurable. | Low | Project owner. |
+
+
+### Review findings, pass 5
+
+`python3 -m pytest --origin-report` lists 32 requirements no test names (0 untagged tests). Classification:
+
+| # | Class | IDs | Description | Recommendation |
+|---|---|---|---|---|
+| P5-1 | Inspection / demonstration / analysis by method (21) | `FR-4710`, `FR-4720`, `FR-6110`, `FR-6610`, `FR-11110`, `FR-11120`, `FR-11210`, `FR-11310`, `FR-11320`, `FR-11410`, `NFR-1200`, `NFR-1400`, `NFR-2000`, `NFR-2100`, `NFR-2900`, `NFR-3000`, `NFR-3040`, `NFR-3060`, `NFR-3300`, `NFR-3500`, `NFR-3600` | Verification Method is Inspection, Demonstration or Analysis, so no tagged test is expected. | None; evidence is a review or a demonstration record. |
+| P5-2 | Retag candidates (10) | `FR-1140`, `FR-7350` (pass 3 `P3-2`), `FR-3410`, `FR-7110`, `NFR-2400`, `NFR-2500`, `NFR-2600`, `NFR-3200`, `FR-7240`, `FR-6230` | Test-method leaves whose behaviour is exercised by existing tests that carry other tags (`test_determinism.py`, `test_aar.py`, `test_orders.py`, the TLE/OMM import tests, `test_save_format_gate.py` tags `FR-7230`, `test_activity_fog_matrix.py` and `test_cell_activity.py` tag `FR-6210`/`FR-6220`). | `08` retag; the tests' own file lists the mapping. |
+| P5-3 | Self-referential | `NFR-2800` | Method is the suite itself (`python3 -m pytest` green, gated). | Accept as met by the gate, or `08` tags `test_determinism.py`/`test_import_guard.py`. |
+| P5-4 | Gap (partial, already stated in the leaf) | `NFR-2410` | Has tagged tests per module; the cross-cutting hash-before/after test over every read path is still owed. | `07`/`08` package. |
+| P5-5 | Routed | `FR-6230` | GDS-08 §4 and GDS-09 §3 do not state per-lane row rules; no `FS-` describes the activity feed. | `03` (add to GDS-08), `06` (specify). |
+| P5-6 | Routed | `FS-110`, `FS-116`, `FS-121`, `FS-135` | `FS-116` "execution time" wording (`FR-3520`); `FS-135` check 2 and Open Questions 1, 4, 5, 6 to align with the accepted `NFR-3810` choices; `FS-110` to state the save-format gate (`FR-7240`). | `06`. |
 
 ---
 
