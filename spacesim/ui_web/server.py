@@ -1021,15 +1021,17 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
     # IP-1260 (FR-2320) — declared BEFORE the /{param} series route so "export.csv" is never
     # captured as a parameter id.
     @app.get("/api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv", response_class=PlainTextResponse)
-    def telemetry_export_csv(sid: str, cell: str, asset: str, t1: Optional[int] = None,
-                             t2: Optional[int] = None,
+    def telemetry_export_csv(sid: str, cell: str, asset: str, t1: Optional[str] = None,
+                             t2: Optional[str] = None,
                              interval_s: Optional[float] = Query(None, gt=0)) -> str:
         """IP-1260 (FR-2320) — the cell's own telemetry for one asset over a sim-time span, as CSV
         (one row per sampled instant x parameter). Fog-scoped identically to
         `/telemetry/{cell}/{asset}` (own assets only, White sees any; 404 otherwise). Omitted
         bounds default to the recorded range; a partially out-of-range span is clamped, a wholly
         out-of-range one is a 400 (same rule as `/ephemeris`). IP-1262: a request whose sampling
-        would exceed `ephemeris.MAX_EXPORT_SAMPLES` instants is also a 400 naming the ceiling."""
+        would exceed `ephemeris.MAX_EXPORT_SAMPLES` instants is also a 400 naming the ceiling.
+        IP-1089 (FR-7450): `t1`/`t2` are an ISO-8601 UTC timestamp (`...Z` or `+00:00`) or integer
+        microseconds; anything else is a 400 naming the bound and the reason."""
         _require(sid)
         try:
             rows = api.telemetry_export(sid, cell, asset, t1=t1, t2=t2, interval_s=interval_s)
@@ -1204,12 +1206,13 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
         return api.alarms(sid, cell)
 
     @app.get("/api/sessions/{sid}/ephemeris/truth", response_class=PlainTextResponse)
-    def ephemeris_truth(sid: str, object_id: str, reference_id: str, t1: int, t2: int,
+    def ephemeris_truth(sid: str, object_id: str, reference_id: str, t1: str, t2: str,
                          interval_s: Optional[float] = None, format: str = "csv") -> str:
         """IP-1210 (FR-7410) — ground-truth ephemeris export over a time span, ECI + RIC. A
         no-cell, White-Cell-only endpoint (`FR-6220`), like `/godview`/`/eventlog`/`/aar*`.
         IP-1262: a non-finite or non-positive `interval_s`, or sampling over
-        `ephemeris.MAX_EXPORT_SAMPLES` instants, is a 400."""
+        `ephemeris.MAX_EXPORT_SAMPLES` instants, is a 400. IP-1089 (FR-7450): `t1`/`t2` are an
+        ISO-8601 UTC timestamp or integer microseconds; a bad bound is a 400 naming it."""
         _require(sid)
         try:
             rows = api.truth_ephemeris(sid, object_id, reference_id, t1, t2, interval_s=interval_s)
@@ -1225,12 +1228,13 @@ def create_app(api: Optional[InProcessSession] = None) -> FastAPI:
 
     @app.get("/api/sessions/{sid}/ephemeris/{cell}", response_class=PlainTextResponse)
     def ephemeris_cell_observed(sid: str, cell: str, object_id: str, reference_id: str,
-                                t1: int, t2: int, interval_s: Optional[float] = None,
+                                t1: str, t2: str, interval_s: Optional[float] = None,
                                 format: str = "csv") -> str:
         """IP-1210 (FR-7420) — `cell`'s own believed ephemeris over a time span, ECI + RIC. Same
         fog-of-war trust level as every other cell-scoped read (`/view/{cell}`, `/scene/{cell}`).
         IP-1262: a non-finite or non-positive `interval_s`, or sampling over
-        `ephemeris.MAX_EXPORT_SAMPLES` instants, is a 400."""
+        `ephemeris.MAX_EXPORT_SAMPLES` instants, is a 400. IP-1089 (FR-7450): `t1`/`t2` are an
+        ISO-8601 UTC timestamp or integer microseconds; a bad bound is a 400 naming it."""
         _require(sid)
         try:
             rows = api.cell_observed_ephemeris(sid, cell, object_id, reference_id, t1, t2,

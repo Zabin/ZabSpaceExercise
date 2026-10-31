@@ -11,7 +11,7 @@ from __future__ import annotations
 import math
 import threading
 import time as _time
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 from spacesim.content.vignette import Vignette, build_world, evaluate_objectives
 from spacesim.engine import telemetry
@@ -1571,8 +1571,8 @@ class SessionManager:
             points.reverse()
         return {"asset": asset_id, "param": param, "nominal": nominal, "points": points}
 
-    def telemetry_export(self, cell: str, asset_id: str, t1: Optional[int] = None,
-                         t2: Optional[int] = None,
+    def telemetry_export(self, cell: str, asset_id: str, t1: Optional[Union[int, str]] = None,
+                         t2: Optional[Union[int, str]] = None,
                          interval_s: Optional[float] = None) -> Optional[list[dict]]:
         """IP-1260 (FR-2320) — the requesting cell's telemetry for one asset over a sim-time span,
         as flat rows (one per sampled instant x parameter) for CSV export.
@@ -1593,8 +1593,8 @@ class SessionManager:
         if not self._owns(cell, asset_id):
             return None
         lo, hi = ephemeris._valid_range(self)
-        t1, t2 = ephemeris._clamp_or_reject(self, lo if t1 is None else int(t1),
-                                            hi if t2 is None else int(t2))
+        t1, t2 = ephemeris._clamp_or_reject(self, lo if t1 is None else t1,
+                                            hi if t2 is None else t2)
         seed = self.sim._seed
         rows: list[dict] = []
         for t, world in aar.worlds_at_times(self, ephemeris.sample_times(t1, t2, interval_s)):

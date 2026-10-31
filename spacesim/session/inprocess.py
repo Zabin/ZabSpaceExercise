@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Union
 
 from spacesim.content.vignette import Vignette, list_vignettes, load_vignette
 from spacesim.engine.orders import Order
@@ -1103,7 +1103,7 @@ class InProcessSession:
             return mgr.alarms(cell)
 
     # -- ephemeris export (IP-1210, FR-7410/FR-7420) ----------------------------
-    def truth_ephemeris(self, session: str, object_id: str, reference_id: str, t1: int, t2: int,
+    def truth_ephemeris(self, session: str, object_id: str, reference_id: str, t1: Union[int, str], t2: Union[int, str],
                         interval_s: Optional[float] = None) -> list[dict]:
         from spacesim.session import ephemeris
         with self._locked_read(session) as mgr:
@@ -1111,7 +1111,7 @@ class InProcessSession:
                                              interval_s=interval_s)
 
     def cell_observed_ephemeris(self, session: str, cell: str, object_id: str, reference_id: str,
-                                t1: int, t2: int, interval_s: Optional[float] = None) -> list[dict]:
+                                t1: Union[int, str], t2: Union[int, str], interval_s: Optional[float] = None) -> list[dict]:
         from spacesim.session import ephemeris
         with self._locked_read(session) as mgr:
             return ephemeris.cell_observed_ephemeris(mgr, cell, object_id, reference_id, t1, t2,

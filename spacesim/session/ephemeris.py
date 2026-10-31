@@ -38,10 +38,15 @@ def _valid_range(mgr) -> tuple[int, int]:
     return mgr.ctx.start_epoch, mgr.sim.clock.now
 
 
-def _clamp_or_reject(mgr, t1: int, t2: int) -> tuple[int, int]:
+def _clamp_or_reject(mgr, t1, t2) -> tuple[int, int]:
     """Design Decision 1 (IP-1210, BL-0098) — a span wholly outside the session's recorded range
     is rejected outright, naming the actual valid range; a partially-overlapping span is
-    silently clamped to the overlap."""
+    silently clamped to the overlap. IP-1089 (FR-7450): each bound is first parsed by
+    `span_bounds.parse_span_bound` (ISO-8601 UTC or integer microseconds; ``ValueError`` -> 400
+    naming ``t1``/``t2``) — the only place the three time-span exports parse a bound."""
+    from spacesim.session.span_bounds import parse_span_bound
+    t1 = parse_span_bound(t1, "t1")
+    t2 = parse_span_bound(t2, "t2")
     lo, hi = _valid_range(mgr)
     if t2 < lo or t1 > hi:
         raise ValueError(
@@ -258,7 +263,7 @@ def quick_tle(world, cell: Optional[str], object_id: str) -> dict:
     }
 
 
-def truth_ephemeris(mgr, object_id: str, reference_id: str, t1: int, t2: int,
+def truth_ephemeris(mgr, object_id: str, reference_id: str, t1: "int | str", t2: "int | str",
                      interval_s: Optional[float] = None) -> list[dict]:
     """FR-7410 — ground-truth state vectors over a time span, ECI + RIC relative to
     ``reference_id``'s own ground-truth state. No-cell (White-Cell-only) per `FR-6220`."""
@@ -279,7 +284,7 @@ def truth_ephemeris(mgr, object_id: str, reference_id: str, t1: int, t2: int,
     return rows
 
 
-def cell_observed_ephemeris(mgr, cell: str, object_id: str, reference_id: str, t1: int, t2: int,
+def cell_observed_ephemeris(mgr, cell: str, object_id: str, reference_id: str, t1: "int | str", t2: "int | str",
                              interval_s: Optional[float] = None) -> list[dict]:
     """FR-7420 — ``cell``'s own believed state vectors over a time span. A time T at which the
     cell holds no Track on ``object_id`` produces no row for that T (an empty result, never a
