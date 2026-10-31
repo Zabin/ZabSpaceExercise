@@ -2,7 +2,7 @@
 
 > **Document ID:** FS-116
 > **Version:** 1.3 (2026-10-31 — the role check is stated at order submission, not at execution, per `FR-3520` as amended in `CHG-047` and the owner decision on `BL-0388` (accept as v1); accepted limitation recorded in Risks. Nothing else changed.) Prior: 1.2
-> **Status:** ✅ Ready for implementation planning (both Open Questions closed — see below)
+> **Status:** ✅ Done (built by `IP-1160`, `VERIFIED` 2026-10-25, [VR-1160](../implementation/verification/VR-1160-role-scoped-command-enforcement.md) v3.0; both Open Questions closed — see below)
 > **Dependencies:** [FS-115](FS-115-session-setup.md) (produces the Role Assignment record this
 > Feature enforces, `FR-4210`), [FS-105](FS-105-spacecraft-operations.md) (the bus/payload command
 > catalog — `BUS_VERBS`/`PAYLOAD_VERBS`/`DEFENSE_VERBS` — this Feature filters/enforces against),

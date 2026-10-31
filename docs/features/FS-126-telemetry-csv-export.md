@@ -1,6 +1,6 @@
 > **Document ID:** FS-126
 > **Version:** 1.1 (2026-10-31 — pointer amendment: the export's `t1`/`t2` bound form is now governed by `FR-7450`, specified in [FS-121](FS-121-ephemeris-export.md) v2.3; nothing else changed.) Prior: 1.0
-> **Status:** 🟢 Ready for new work — `FR-2320` built (`IP-1260`, `IP-1261`, `IP-1262` `VERIFIED`); the `FR-7450` bound-form change is specified in FS-121 v2.3 and unbuilt.
+> **Status:** ✅ Done — `FR-2320` built (`IP-1260`, `IP-1261`, `IP-1262` `VERIFIED`) and the `FR-7450` bound-form change specified in FS-121 v2.3 built by [IP-1089](../implementation/packages/IP-1089-iso8601-span-bounds.md), `VERIFIED`; no clause is unbuilt.
 > *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Note on this repository's chain:** no `05-feature-decomposition` Feature Catalog exists here
 > (per this skill's own Gotchas); this document's approved input is the just-baselined requirement
@@ -8,7 +8,7 @@
 > code it extends (`engine/telemetry.py`, `spacesim/ui_web/server.py`).
 > **Dependencies:** [FS-106](FS-106-white-cell-dashboard.md) v2.1 (`FR-4430`'s `anomaly` inject
 > effect — the channel-perturbation source this Feature's export must reflect faithfully)
-> **Referenced By:** [IP-1260](../implementation/packages/IP-1260-telemetry-csv-export.md)
+> **Referenced By:** [IP-1089](../implementation/packages/IP-1089-iso8601-span-bounds.md) (`FR-7450` bound form), [IP-1260](../implementation/packages/IP-1260-telemetry-csv-export.md)
 > (Implementation Package — ✅ `VERIFIED`, [VR-1260](../implementation/verification/VR-1260-telemetry-csv-export.md)),
 > [IP-1261](../implementation/packages/IP-1261-telemetry-series-history-remediation.md)
 > (remediation package — live series route parity with this export, `BL-0170`; ✅ `VERIFIED`, [VR-1261](../implementation/verification/VR-1261-telemetry-series-history-remediation.md)),
