@@ -2,13 +2,13 @@
 
 > **Document ID:** FS-135
 > **Version:** 1.1 (2026-10-31 — check 2 aligned to `NFR-3810` as made checkable in `CHG-049`: the register file is replaced by a `Retired documents` section in the owning folder's `INDEX.md`; owner decisions of 2026-10-31 applied; Open Questions 1, 4 and 5 closed or realigned.) Prior: 1.0 (2026-10-23, pipeline run #216)
-> **Status:** 🟢 Ready for new work — `NFR-3800`/`NFR-3820`/`NFR-3830` built (`IP-1350`, `VERIFIED`); the `NFR-3810` check (check 2) is specified here and unbuilt, owner decision 2026-10-31: build before release.
+> **Status:** ✅ Done — `NFR-3800`/`NFR-3820`/`NFR-3830` built (`IP-1350`, `VERIFIED`) and the `NFR-3810` check (check 2) built by [IP-1092](../implementation/packages/IP-1092-retired-documents-check.md), `VERIFIED` 2026-10-31; no clause is unbuilt.
 > **Approved input:** the Feature Catalog entry `FEAT-12300` (Epic `EP-12000`) in
 > [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md),
 > following the FS-130–FS-134 convention. Owner direction it elaborates: `BL-0297` (2026-10-20: "a
 > holistic documentation-integrity test scheme, part of release verification", replacing the
 > reverted tier-level cleanup rule), in [`docs/pipeline/backlog.md`](../pipeline/backlog.md).
-> **Referenced By:** [feature index](feature-index.md); `FEAT-12300`; [IP-1350](../implementation/packages/IP-1350-documentation-integrity-checks.md) (planned 2026-10-23; checks 1, 3, 4)
+> **Referenced By:** [feature index](feature-index.md); `FEAT-12300`; [IP-1350](../implementation/packages/IP-1350-documentation-integrity-checks.md) (planned 2026-10-23; checks 1, 3, 4), [IP-1092](../implementation/packages/IP-1092-retired-documents-check.md) (check 2, `NFR-3810`, `VERIFIED`)
 > **Related Topics:** [FS-133](FS-133-test-origin-traceability.md) (the origin check shares this
 > runner, FS-133 OQ2; the retirement question, FS-133 OQ1); `spacesim/tests/test_training_sources.py`
 > (the existing `Sources:` footer check, `NFR-3400`, the model for this suite);

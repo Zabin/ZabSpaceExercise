@@ -6,7 +6,7 @@
 > export, `BL-0109`) and records `FR-7430` (companion RIC file, already built/`VERIFIED` under
 > `IP-1210`, closing the RTM's "FS-121 (amendment pending)" note). The `FR-7410`/`FR-7420` content
 > of v1.0 is unchanged in substance.)
-> **Status:** 🟢 Ready for new work — `FR-7410`–`FR-7440` built (`IP-1210`, `IP-1211`, `IP-1212`, `IP-1261`, `IP-1262` all `VERIFIED`); `FR-7450` (v2.3) is specified and unbuilt, awaiting an Implementation Package.
+> **Status:** ✅ Done — `FR-7410`–`FR-7440` built (`IP-1210`, `IP-1211`, `IP-1212`, `IP-1261`, `IP-1262` all `VERIFIED`) and `FR-7450` (v2.3) built by [IP-1089](../implementation/packages/IP-1089-iso8601-span-bounds.md), `VERIFIED` ([VR-1089](../implementation/verification/VR-1089-iso8601-span-bounds.md) v2.0, 2026-10-31); no clause is unbuilt.
 > *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Note on this repository's chain:** v1.0's approved input was `FR-7410`/`FR-7420` directly ("no
 > Feature Catalog exists here"). As of v2.0 the approved input **is** a real Feature Catalog entry —
@@ -20,7 +20,7 @@
 > (`FR-7310`/`session/aar.py::state_at` — the replay mechanism both `FR-7410`'s and `FR-7420`'s
 > time-span sampling are built on), `FR-6220` (no-cell ground-truth endpoints, the binding `FR-7410`
 > must use), `FR-6210` (fog-of-war, the binding `FR-7440`'s cell-scoped path must use)
-> **Referenced By:** [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0069` (external
+> **Referenced By:** [IP-1089](../implementation/packages/IP-1089-iso8601-span-bounds.md) (`FR-7450`, `VERIFIED`), [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0069` (external
 > validation report, 26 Sep 2026, item B3), `BL-0109` (quick TLE export request), `BL-0110` (the
 > TLE-generation design question), [IP-1210](../implementation/packages/IP-1210-ephemeris-export.md)
 > (Implementation Package for `FR-7410`-`FR-7430`, ✅ `VERIFIED` 2026-09-28),
