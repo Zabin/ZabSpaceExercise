@@ -572,6 +572,15 @@ capability.
   built the check with no leaf stating it. The tests tag `FR-7230` (retag candidate, see pass 5 findings).
 - **Source review issue:** rc5 `S-1`.
 
+### CHG-052
+- **Files:** `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `NFR-3810` Notes: marked met as built by `IP-1092` (`VERIFIED`, `VR-1092` v2.0); records the
+  owner-accepted choices (declaration in a `Retired documents` section of the `INDEX.md` of the folder
+  that held the file; a retired root-level document declared in `docs/INDEX.md`'s section with its
+  repo-root path, the root having no `INDEX.md`). RTM Impl. cell moved from `COMPLETE` to `VERIFIED`.
+- **Reason:** Owner acceptance in the 04/06 passes; `IP-1092` verified.
+- **Source review issue:** BL-0319, `FS-135` OQ6.
+
 ### Review findings, pass 3
 
 | # | Finding type | IDs | Description | Severity | Recommendation |
