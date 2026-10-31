@@ -78,7 +78,7 @@ White to give Blue a doctrinally-flavored opponent. Assumes Stage 1 mechanics.
 | Vignette | New this rung | Read first |
 |---|---|---|
 | **`coa-russia-ml`** — Russia ML, Sustained EW | Reversible deniable EW, coordinated | [RED-5/8](14-red-cell-manual.md); [WCM-8](12-white-cell-manual.md) ; playbook [11.14](11-vignette-playbooks.md) |
-| **`coa-russia-md`** — Russia MD, DA-ASAT + Cyber | Kinetic with cyber surprise (Red has a ground radar; the kill lands about T+24 min) | [RED-5/6/8](14-red-cell-manual.md) ; playbook [11.15](11-vignette-playbooks.md) |
+| **`coa-russia-md`** — Russia MD, DA-ASAT + Cyber | Kinetic with cyber surprise (Red has a ground radar; the kill is a chance shot, about 6 in 10 - observe then engage first on Seed 1 hits, about T+24 min) | [RED-5/6/8](14-red-cell-manual.md) ; playbook [11.15](11-vignette-playbooks.md) |
 | **`coa-china-ml`** — China ML, Early Integrated Disruption | Jam + cyber + RPO opening (`rpo_close` via Red's TT&C station) | [RED-4/5/6/8](14-red-cell-manual.md) ; playbook [11.16](11-vignette-playbooks.md) |
 | **`coa-china-md`** — China MD, Decisive Strike | Late-crisis A2/AD: kinetic + RPO + cyber + EW (all three Red objectives reachable) | full [RED manual](14-red-cell-manual.md) ; playbook [11.17](11-vignette-playbooks.md) |
 | **`coa-misc-iran-ml`** — Iran ML, Regional EW Spoiler | Non-spacefaring adversary contests the ground segment (jam windows open from T+0) | [RED-5](14-red-cell-manual.md); [BLU-9](13-blue-cell-manual.md) (GS as terrain) ; playbook [11.18](11-vignette-playbooks.md) |
@@ -89,7 +89,7 @@ Standalone deep-dives; take them when the relevant mechanic needs reinforcement.
 
 | Vignette | New this rung | Read first |
 |---|---|---|
-| **`learn-intermediate-recovery`** — Safe-Mode Recovery | Diagnose signature → root-cause patch → recovery chain, end-to-end (deadline T+45 min; one-pass recovery by default) | [BLU-6/7](13-blue-cell-manual.md) (diagnose + recover); [05](05-core-concepts.md) "Safe-mode recovery"; playbook [§11.13](11-vignette-playbooks.md) |
+| **`learn-intermediate-recovery`** — Safe-Mode Recovery | Diagnose signature → root-cause patch → recovery chain, end-to-end (deadline T+45 min; one-pass recovery by default; needs Red's chance-based exploit to land - Seed 1 does, Seed 2 misses) | [BLU-6/7](13-blue-cell-manual.md) (diagnose + recover); [05](05-core-concepts.md) "Safe-mode recovery"; playbook [§11.13](11-vignette-playbooks.md) |
 | **`nv-isl-relay-debris`** — ISL Relay + Debris-Corridor Maneuver | Command an out-of-LOS bird via cross-link (deadline T+30 min) | [BLU-2](13-blue-cell-manual.md) (delivery paths); [05](05-core-concepts.md) "delivery paths"; playbook [§11.11](11-vignette-playbooks.md) |
 
 ---

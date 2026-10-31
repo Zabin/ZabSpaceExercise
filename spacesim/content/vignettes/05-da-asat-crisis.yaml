@@ -48,7 +48,7 @@ vignette:
       - {n: 1, title: "Read the mission", when: "at start", action: review,
          expect: "Open the Mission brief. BLUE-SAT is your only satellite. You win (avoid_debris) only if no debris exists at T+1 h. You have no sensor on the threat and no kinetic counter."}
       - {n: 2, title: "Try an evasive burn", when: "issue now", action: maneuver, actor: BLUE-SAT, params: {dv: [0.0, 5.0, 0.0]},
-         expect: "REFUSED (no_command_station): BLUE-SAT has 20 m/s of delta-v but no ground station can command it. Without a command path there is no defense. White Cell can add a station with Force add."}
+         expect: "BLOCKED: Issue order stays greyed out and the preview turns red: 'No command path - set a ground station (via) or a stored-program time' (if the form adds a via, 'No access window in the planning horizon'). The engine reason is no_command_station. BLUE-SAT has 20 m/s of delta-v but no ground station can command it. Without a command path there is no defense. A facilitator can only add a ground station before Start (HTTP force-add, see the White Cell manual); it cannot be added mid-exercise."}
       - {n: 3, title: "Hold to the deadline", when: "click +10m until the clock is past T+1 h (about 6 clicks)",
          action: advance, params: {dt_s: 3601},
          expect: "If Red does not strike, avoid_debris is MET. If Red does strike (around T+20 to T+26 min), debris exists and avoid_debris fails for both cells - there is no clean kinetic answer."}

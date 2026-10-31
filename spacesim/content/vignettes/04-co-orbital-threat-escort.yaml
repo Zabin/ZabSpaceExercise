@@ -48,7 +48,7 @@ vignette:
       - {n: 3, title: "Advance to the radar pass", when: "click +10m twice (the clock is now T+20 min, inside the pass)", action: advance, params: {dt_s: 1200},
          expect: "RED-COORB appears as a hostile track in your Fleet panel."}
       - {n: 4, title: "Try an evasive burn", when: "after you have the track", action: maneuver, actor: BLUE-HVA, params: {dv: [0.0, 5.0, 0.0]},
-         expect: "REFUSED (no_command_station): nothing in this scenario can send commands to BLUE-HVA. The refusal is the lesson - active defense needs a command path. White Cell can add a ground station with Force add."}
+         expect: "BLOCKED: Issue order stays greyed out and the preview turns red: 'No command path - set a ground station (via) or a stored-program time' (if the form adds a via, 'No access window in the planning horizon'). The engine reason is no_command_station. Nothing in this scenario can send commands to BLUE-HVA. The block is the lesson - active defense needs a command path. A facilitator can only add a ground station before Start (HTTP force-add, see the White Cell manual); it cannot be added mid-exercise."}
       - {n: 5, title: "Hold to the deadline", when: "click +10m until the clock is past T+1 h (about 6 clicks)",
          action: advance, params: {dt_s: 2401},
          expect: "hva_survives MET. Red has no kinetic authority and no way to safe the HVA here, so it can pressure but not win."}
@@ -56,7 +56,7 @@ vignette:
       - {n: 1, title: "Read the mission", when: "at start", action: review,
          expect: "Open the Mission brief. RED-COORB (300 m/s of delta-v) must safe BLUE-HVA (neutralize_hva). You have no kinetic authority."}
       - {n: 2, title: "Try a closing burn", when: "issue now", action: maneuver, actor: RED-COORB, params: {dv: [0.0, 3.0, 0.0]},
-         expect: "REFUSED (no_command_station): you have no command path to RED-COORB either. Maneuvers need an uplink to a ground station; White Cell can add one with Force add."}
+         expect: "BLOCKED: Issue order stays greyed out and the preview turns red: 'No command path - set a ground station (via) or a stored-program time' (if the form adds a via, 'No access window in the planning horizon'). The engine reason is no_command_station. You have no command path to RED-COORB either; maneuvers need an uplink to a ground station. A facilitator can only add a ground station before Start (HTTP force-add, see the White Cell manual); it cannot be added mid-exercise."}
       - {n: 3, title: "Hold to the deadline", when: "click +10m until the clock is past T+1 h (about 6 clicks)",
          action: advance, params: {dt_s: 3601},
          expect: "neutralize_hva stays unmet. The lesson is restraint: pressure short of an irreversible act, and the signalling value of proximity."}

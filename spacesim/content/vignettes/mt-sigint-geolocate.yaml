@@ -73,9 +73,9 @@ vignette:
       - {n: 1, title: "Read the mission", when: "at start", action: review,
          expect: "Open the Mission brief. Three SIGINT satellites should characterize RED-EMITTER, a radio emitter on the ground, and all three must survive. KNOWN LIMITATION in this release: sensors can only observe orbiting objects, and the SIGINT payloads are not taskable sensors, so the characterize_emitter objective cannot yet be reached by orders. Steps 2 and 3 show this honestly."}
       - {n: 2, title: "Try the optical sensor on the emitter", when: "issue now", action: observe, actor: BLUE-OPTICAL, target: RED-EMITTER, params: {intent: characterize, classification: hostile},
-         expect: "REFUSED (no_window): a ground sensor never has access to a ground emitter. This is the engine limit above, not a mistake you made."}
+         expect: "BLOCKED: Issue order stays greyed out and the preview turns red ('No access window in the planning horizon'; engine reason no_window) - a ground sensor never has access to a ground emitter. This is the engine limit above, not a mistake you made."}
       - {n: 3, title: "Try tasking a SIGINT satellite", when: "issue now", action: observe, actor: SIGINT-1, target: RED-EMITTER, params: {intent: characterize, classification: hostile},
-         expect: "REFUSED (no_such_sensor): SIGINT-1 is a satellite with a SIGINT payload, not a registered sensor. Geolocation by TDOA/FDOA across three passes is the intended lesson but is not yet playable."}
+         expect: "NOT OFFERED: pick SIGINT-1 as the actor and the Action menu has no observe entry (an observe order would be refused, no_such_sensor) - it is a satellite with a SIGINT payload, not a registered sensor. Geolocation by TDOA/FDOA across three passes is the intended lesson but is not yet playable."}
       - {n: 4, title: "Keep the constellation safe", when: "click +10m until the clock is past T+60 min",
          action: advance, params: {dt_s: 3601},
          expect: "preserve_constellation MET: nothing in this scenario threatens the satellites. characterize_emitter stays unmet."}
