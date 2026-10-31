@@ -2,7 +2,7 @@
 
 > **Package ID:** IP-1088
 > **Version:** 1.0
-> **Status:** READY — authored 2026-10-31 by `07-implementation-planning`; every dependency is `VERIFIED`; not yet implemented.
+> **Status:** ✅ VERIFIED — see [VR-1088](../verification/VR-1088-fog-correct-activity-feed.md) v3.0 and the Master Build Plan ledger (authored 2026-10-31 by `07-implementation-planning`).
 > **Authorization (MSTR-006 §3):** **given.** The owner's release-push directive, recorded in [`pipeline-journal.md`](../../pipeline/pipeline-journal.md) run #256 (fix bugs before release; no new features) and the run #262 go-ahead, covers it: finding `M-1` of the release-candidate-3 delta review is a fog-of-war violation (load-bearing invariant 3) in `VERIFIED` code. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [IP-1066](IP-1066-pending-inject-edit-cancel.md), [IP-1083](IP-1083-rewind-keeps-future-white-injects.md), [IP-1084](IP-1084-fog-correct-controller-notices.md), [IP-1130](IP-1130-observer-read-only-access.md) (all `VERIFIED`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md), [`01-technical-work-breakdown.md`](../01-technical-work-breakdown.md) ("Release-push remediation, pass 9")
