@@ -1,6 +1,6 @@
 > **Document ID:** FS-126
-> **Version:** 1.0
-> **Status:** ✅ Done — built: `IP-1260`, `IP-1261`, `IP-1262` `VERIFIED`.
+> **Version:** 1.1 (2026-10-31 — pointer amendment: the export's `t1`/`t2` bound form is now governed by `FR-7450`, specified in [FS-121](FS-121-ephemeris-export.md) v2.3; nothing else changed.) Prior: 1.0
+> **Status:** 🟢 Ready for new work — `FR-2320` built (`IP-1260`, `IP-1261`, `IP-1262` `VERIFIED`); the `FR-7450` bound-form change is specified in FS-121 v2.3 and unbuilt.
 > *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Note on this repository's chain:** no `05-feature-decomposition` Feature Catalog exists here
 > (per this skill's own Gotchas); this document's approved input is the just-baselined requirement
@@ -49,6 +49,7 @@ only requires that the export faithfully reflects whatever that mechanism alread
 ## Requirements Implemented
 
 - `FR-2320` — Per-asset telemetry CSV export over a time span.
+- Governed, not owned: `FR-7450` (ISO-8601 UTC span bounds) applies to this export's `t1`/`t2` and is specified once in [FS-121](FS-121-ephemeris-export.md) v2.3, with the shared parser, errors, console friction, acceptance criteria 12-15 and manual impact. This spec adds no behavior of its own for it; an omitted `t1`/`t2` keeps its existing default.
 
 ## User Workflows
 

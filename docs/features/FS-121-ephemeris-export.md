@@ -1,12 +1,12 @@
 > **Document ID:** FS-121
-> **Version:** 2.2 (2026-10-17 — `FR-7410`/`FR-7420` restated upstream as one asset per export
+> **Version:** 2.3 (2026-10-31 — adds `FR-7450` (ISO-8601 UTC span bounds on the three time-span exports, owner decision to build before release, `BL-0181`); the span-bound parser is owned here and shared with `FS-126`. All `FR-7410`–`FR-7440` content unchanged.) Prior: 2.2 (2026-10-17 — `FR-7410`/`FR-7420` restated upstream as one asset per export
 > (`BL-0137`); User Workflows 1–2 follow (`BL-0262`). Nothing else changed.) Prior: 2.1 (2026-10-15 — `FR-7440` amended upstream (`BL-0159`): a cell's **own** satellites
 > are now in scope; the fields that amendment affects are updated and Open Question 5 is closed.
 > Nothing else changed.) Prior: 2.0 (2026-10-10 — extended to cover all of `FEAT-7400`: adds `FR-7440` (quick TLE
 > export, `BL-0109`) and records `FR-7430` (companion RIC file, already built/`VERIFIED` under
 > `IP-1210`, closing the RTM's "FS-121 (amendment pending)" note). The `FR-7410`/`FR-7420` content
 > of v1.0 is unchanged in substance.)
-> **Status:** ✅ Done — built: `IP-1210`, `IP-1211`, `IP-1212`, `IP-1261`, `IP-1262` all `VERIFIED` — all four leaves (`FR-7410`–`FR-7440`) built.
+> **Status:** 🟢 Ready for new work — `FR-7410`–`FR-7440` built (`IP-1210`, `IP-1211`, `IP-1212`, `IP-1261`, `IP-1262` all `VERIFIED`); `FR-7450` (v2.3) is specified and unbuilt, awaiting an Implementation Package.
 > *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Note on this repository's chain:** v1.0's approved input was `FR-7410`/`FR-7420` directly ("no
 > Feature Catalog exists here"). As of v2.0 the approved input **is** a real Feature Catalog entry —
@@ -72,6 +72,13 @@ copy-to-clipboard action — no file-download flow — for any satellite the req
 holds a `Track` on (cell-scoped, fog-of-war-filtered, `FR-6210`; own satellites added v2.1), or any
 on-orbit satellite for White Cell via the no-cell exception (`FR-6220`) (`FR-7440`).
 
+**(v2.3) Also in scope — `FR-7450`:** the form of the span `t1`/`t2` bounds on exactly three
+exports — per-asset telemetry CSV (`FR-2320`, spec `FS-126`), truth ephemeris (`FR-7410`) and
+cell-observed ephemeris (`FR-7420`), each with its RIC companion (`FR-7430`). **Not changed:** the
+telemetry graph window (`t0`/`t1` on the series read), the live RIC view, the AAR/ledger exports,
+the quick TLE export (no span), the exported values, `interval_s`, the sample-count ceiling
+(`NFR-3710`) and the clamp/reject rule for out-of-range spans.
+
 **Out of scope:** TLE *import* (`FR-5210`/`FR-5220`, a different Feature); a time-span or bulk
 multi-object TLE export (`FR-7440` names one target satellite per request); any change to the
 `Propagator` seam's propagation behavior (`ADR-0009`) — `FR-7440` serializes a state the existing
@@ -81,6 +88,12 @@ itself (`FEAT-6200`, a dependency, per `FEAT-7400`'s `Excluded Requirements`); t
 replay mechanism, both of which this Feature consumes unchanged.
 
 ## Requirements Implemented
+
+**(v2.3)** `FR-7450` (ISO-8601 UTC bounds on time-span exports) is added. It spans three exports
+(telemetry CSV, truth ephemeris, cell-observed ephemeris, each with its `FR-7430` RIC companion),
+so it is specified once, here, because two of the three exports and the shared span rule
+(`_clamp_or_reject`/`sample_times`) already live in this Feature; `FS-126` (telemetry CSV) points
+here. `FEAT-7400`'s catalog `Included Requirements` do not list `FR-7450` — see Open Question 9.
 
 `FR-7410` (truth ephemeris export), `FR-7420` (cell-observed ephemeris export), `FR-7430`
 (companion RIC-specific export file — v2.0, as built), `FR-7440` (quick TLE export for a
@@ -113,6 +126,25 @@ added, none dropped.
    object does not exist, or has no orbit — rejected with a reason.
 
 ## System Behaviour
+
+**(v2.3, `FR-7450`) Span-bound parsing.** Each of `t1` and `t2` on the three exports is read by one
+shared bound parser at the session boundary (the three routes do not each keep their own;
+whether it sits in `SessionAPI` or the route layer is a `07` decision, Open Question 10). It runs
+before the existing out-of-range check and before any replay, so a refused bound costs no replay.
+- *Integer microseconds:* a bound of decimal digits only, optionally one leading `-`, is read as
+  integer microseconds exactly as today. It is never read as a date.
+- *ISO-8601 UTC:* extended form `YYYY-MM-DDThh:mm:ss`, optional fraction of 1-6 digits, then `Z` or
+  `+00:00`. The result is the integer microseconds (Unix epoch, UTC) that `simtime.to_iso` renders,
+  so an ISO bound and its microsecond equivalent give identical exports.
+- *Refused:* no zone designator (naive), non-zero offset, more than six fractional digits (no
+  rounding), date alone, basic format, week/ordinal date, leap second (`:60`), out-of-range field,
+  lower-case `z`/`t`, anything else. The parser is stricter than `simtime.from_iso`, which assumes UTC
+  for a naive string, and does not reuse its leniency.
+- *Mixed pair:* one ISO bound and one integer is accepted.
+- *Omitted bound:* the telemetry export's existing defaults for an omitted `t1`/`t2` are unchanged.
+- The form never changes the exported values, `interval_s`, the span ceiling or the clamping of a
+  partly out-of-range span (`FR-7450` Postconditions). The parsed values feed the same `sample_times`
+  and `_clamp_or_reject` path as today.
 
 - **Truth export** samples ground truth (`Asset.orbit`, propagated via the existing `Propagator`
   seam) at each requested time in the span, transforms to ECI directly and to RIC relative to the
@@ -226,6 +258,11 @@ RNG state, or event-log entry is created; the clipboard copy is a purely client-
 
 ## Error Handling
 
+- **(v2.3, `FR-7450`)** A bound that cannot be read is refused with a 400 that names the bound
+  (`t1` or `t2`) and the reason (for example "no zone designator", "non-zero UTC offset", "more than
+  six fractional digits", "date without time", "not a timestamp or integer"), and nothing is
+  exported. A refusal is distinct from the out-of-range and sample-ceiling errors. The error code and
+  exact wording are a `07` decision (Open Question 10).
 - A requested time span outside the session's own recorded event-log range: not addressed by
   `FR-7410`/`FR-7420`'s own text — see Open Questions.
 - A cell-observed export request for an object the requesting cell never held a `Track` on at any
@@ -248,6 +285,9 @@ RNG state, or event-log entry is created; the clipboard copy is a purely client-
 
 ## Performance Considerations
 
+**(v2.3, `FR-7450`)** Parsing is constant-time string work done before any replay; the ceiling
+`NFR-3710` and the replay cost are unchanged. A refused bound triggers no replay.
+
 - **Replay cost scales with sample count × eventlog length** (`ADS-1500` Constraints/Risks) — a
   naive per-sample full replay from `initial_state` could be slow for a fine-grained sample rate
   over a long time span. `ADS-1500` explicitly leaves the mitigation (coarser default sampling,
@@ -260,6 +300,11 @@ RNG state, or event-log entry is created; the clipboard copy is a purely client-
   from sim time.
 
 ## Security Considerations
+
+**(v2.3, `FR-7450`)** The parser adds no new route and no new trust surface: the three routes keep
+their existing bindings (`/ephemeris/truth` no-cell and White-only; the cell-observed and telemetry
+routes cell-scoped under `FR-6210`). A bound is data, never evaluated; the strict grammar rejects
+everything outside it.
 
 - Truth export must remain reachable only through the existing no-cell endpoints (`FR-6220`,
   `ADR-0015`'s documented LAN trust boundary) — never a new cell-scoped route, per `FR-7410`'s own
@@ -279,6 +324,25 @@ RNG state, or event-log entry is created; the clipboard copy is a purely client-
 - **(v2.0)** If the console's copy-to-clipboard uses the browser Clipboard API, it needs a secure
   context in most browsers; on a plain-HTTP LAN deployment the copyable text field is the
   guaranteed fallback (the project owner's own bar accepts either).
+
+## Console Friction
+
+**(v2.3, `FR-7450`)** Not applicable: no console surface. The three exports are URL-only today
+(manual sections `WCM-15`, `WCM-16`, `BLU-13`, `BLU-14`, `RED-12`, `RED-13`) and `FR-7450` changes only what the query
+string accepts. The deliberate strictness (naive timestamps refused rather than assumed UTC) is
+friction at the API, justified by a local-time slip otherwise yielding a silently wrong span; the
+refusal message names the bound and reason so it is self-correcting. The `FR-7440` TLE console
+surface is unchanged.
+
+## Manual Impact
+
+**(v2.3)** On build, `08-training-manual-authoring` updates `docs/training/08-http-api-reference.md`
+(the sentence at line ~108 that bounds are "integer microseconds of sim UTC" becomes: ISO-8601 UTC
+or integer microseconds, with the accepted form, refused forms and one worked example) and the
+export sections named by `docs/training/15-manual-traceability.md` §15.1 for the two export rows
+(ephemeris time-span; telemetry CSV): `WCM-15`, `WCM-16`, `BLU-13`, `BLU-14`, `RED-12`, `RED-13`, so an
+operator is shown a timestamp rather than microseconds. Documents as-built behavior only; nothing
+is written before the build lands.
 
 ## Acceptance Criteria
 
@@ -315,6 +379,16 @@ RNG state, or event-log entry is created; the clipboard copy is a purely client-
     propagation to its own epoch reproduces Z's actual position within the same bound as criterion
     6. The same request made by the other cell, which holds no `Track` on Z, is still rejected
     (criterion 7).
+12. *(`FR-7450`)* For each of the three exports and its RIC companion, a span given as ISO-8601 UTC
+    bounds (including a fractional second and a `+00:00` designator) returns exactly the rows
+    returned for the same span given as integer microseconds.
+13. *(`FR-7450`)* A span given as integer microseconds, and a mixed pair (one ISO bound, one
+    integer), are accepted unchanged.
+14. *(`FR-7450`)* A naive timestamp, a non-zero offset, seven fractional digits, a date alone, a
+    basic-format string and a non-time string are each refused with an error naming the bound
+    (`t1` or `t2`) and the reason, and nothing is exported; no replay runs for a refused bound.
+15. *(`FR-7450`)* The telemetry graph window, the live RIC view and the AAR/ledger exports behave as
+    before (a bound that is not an integer is not newly accepted there).
 
 ## Verification Plan
 
@@ -330,6 +404,12 @@ project's established UI-verification posture — `CLAUDE.md` status line), back
 Test that the payload carries the two TLE lines.
 **(v2.1)** Criterion 11: Test (automated) at the session layer and the HTTP route, including the
 cross-cell negative (the other cell's request for Z is still rejected).
+**(v2.3)** Criteria 12-15: Test (automated, `FR-7450`'s Verification Method), tagged
+`@pytest.mark.verifies("FR-7450")`: a table-driven parser unit test for the accepted and refused
+grammar (every refused form in the System Behaviour list), then a route-level parity test per export
+(ISO vs microseconds, row-for-row equal), the mixed pair, the refusal naming the bound, and a
+spy asserting no replay on a refused bound. Criterion 15: Test that the series route's `t0`/`t1`
+still take integers only.
 
 ## Dependencies
 
@@ -424,6 +504,13 @@ unchanged as historical record. Questions 4-8 below are new in v2.0, all for `FR
    carry its originals forward, a fictional one has none. Options include a fixed placeholder or a
    deterministic derived number; must not silently imply a real object's identity. A
    `07-implementation-planning` decision.
+9. **(v2.3) `FR-7450` is in no Feature Catalog entry.** `FEAT-7400` lists `FR-7410`-`FR-7440`; the
+   telemetry export's `FEAT` lists `FR-2320`. This spec carries `FR-7450` as the owning home by
+   judgement; the catalog should record where it belongs. Owner: `05-feature-decomposition`
+   (catalog entry), not this spec.
+10. **(v2.3) Where the shared bound parser lives, and the error code and wording.** `FR-7450`'s Notes
+    leave both to `06`/`07`. This spec requires one parser shared by all three routes, run before
+    replay; its module placement and the exact 400 body are `07-implementation-planning` decisions.
 
 ## Related ADRs
 
@@ -431,7 +518,7 @@ unchanged as historical record. Questions 4-8 below are new in v2.0, all for `FR
 (fog-of-war at the boundary), `ADR-0015` (LAN trust model — the no-cell endpoint binding `FR-7410`
 must respect). **(v2.0)** `ADR-0013` (custody / `Track` — `FEAT-7400`'s catalog Related ADRs;
 `FR-7440` reads the `Track` this ADR governs), `ADR-0009` (moderate orbital fidelity — bounds
-`FR-7440`'s TLE accuracy expectation and the two orbit kinds it must handle).
+`FR-7440`'s TLE accuracy expectation and the two orbit kinds it must handle). **(v2.3, `FR-7450`)** `ADR-0004`, `ADR-0015` (unchanged bindings), per `FR-7450`'s Related ADRs.
 
 ## Related Interfaces
 
