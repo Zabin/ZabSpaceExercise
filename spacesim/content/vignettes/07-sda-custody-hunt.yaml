@@ -58,7 +58,7 @@ vignette:
       - {n: 2, title: "Understand the contention", when: "throughout", action: review,
          expect: "If Blue never files a request, break_custody is MET by default at T+90 min. A diligent Blue refreshes every 20 minutes; your pressure comes from timing, deception and dispersal, not from firepower."}
       - {n: 3, title: "Try a burn", when: "issue now", action: maneuver, actor: RED-OBJ, params: {dv: [0.0, 5.0, 0.0]},
-         expect: "REFUSED (no_command_station): RED-OBJ needs a Red command path. White Cell can add a ground station with Force add; a burn timed outside a Blue pass enlarges Blue's uncertainty."}
+         expect: "BLOCKED: Issue order stays greyed out and the preview turns red: 'No command path - set a ground station (via) or a stored-program time' (if the form adds a via, 'No access window in the planning horizon'). The engine reason is no_command_station. RED-OBJ needs a Red command path; with one, a burn timed outside a Blue pass would enlarge Blue's uncertainty. A facilitator can only add a ground station before Start (HTTP force-add, see the White Cell manual); it cannot be added mid-exercise."}
       - {n: 4, title: "Run out the clock", when: "click +10m until the clock is past T+90 min",
          action: advance, params: {dt_s: 5401},
          expect: "If Blue did nothing, break_custody is MET: custody below 0.5 at the deadline. If Blue re-tasked in time, it is not."}
