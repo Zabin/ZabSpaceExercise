@@ -44,7 +44,12 @@ def parse_span_bound(value: Union[int, str, None], name: str) -> int:
     if not isinstance(value, str):
         raise ValueError(f"{name}: required; give an ISO-8601 UTC timestamp or integer microseconds")
     if _INT.fullmatch(value):  # digits-only is microseconds, never a date
-        return int(value)
+        try:
+            return int(value)
+        except ValueError:  # CPython's int-string digit limit (4300): name the bound, not the limit
+            raise ValueError(f"{name}: integer microseconds has too many digits "
+                             f"({len(value.lstrip('-'))}); give an ISO-8601 UTC timestamp or a "
+                             f"smaller integer") from None
     m = _ISO.fullmatch(value)
     if not m:
         raise ValueError(
