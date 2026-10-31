@@ -591,6 +591,14 @@ capability.
 - **Reason:** Packages verified 2026-10-31; closes pass 3 finding `P3-3`.
 - **Source review issue:** `P3-3`.
 
+### CHG-054
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-5310` Notes: the `BL-0233` option A amendment (template clause removed) recorded as
+  met as built; the load gate (`IP-1310`, `VERIFIED`, `VR-1310`) checks the references the content model
+  has and there is no template construct to check (`ADR-0036`).
+- **Reason:** Closes the pass 4 follow-up on the template clause.
+- **Source review issue:** BL-0233.
+
 ### Review findings, pass 3
 
 | # | Finding type | IDs | Description | Severity | Recommendation |

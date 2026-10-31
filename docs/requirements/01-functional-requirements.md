@@ -2518,6 +2518,11 @@ is no longer required. Same ID, narrower scope.)*
   `FR-5314`. Option D (curated sample asset/sensor/effect snippets as copy-paste starting points in
   the manuals and vignette-authoring documents; no runtime construct) is an additive authoring aid
   routed to `08-training-manual-authoring`/`08-vignette-development`, not a requirement of this leaf.
+  *(Updated 2026-10-31, pass 5.)* **The amended text is met as built.** The load gate (`IP-1310`,
+  `VERIFIED` 2026-10-17, `VR-1310`) validates the references the content model has; it contains no
+  template-reference check because the model has no such construct (`ADR-0036`). Nothing in the
+  shipped code or the 19-vignette library names a template, so the removed clause leaves no
+  unmet obligation.
 
 #### FR-5311 — TLE-sourced orbits parse at load
 
