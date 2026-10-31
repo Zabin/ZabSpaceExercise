@@ -2,6 +2,38 @@
 
 [↑ Verification index](INDEX.md) · [Package](../packages/IP-1089-iso8601-span-bounds.md) · [Master Build Plan](../00-master-build-plan.md)
 
+
+## Version
+**v2.0 — VERIFIED** (fresh-session re-verification, tree `1163b3d`, on top of `b53a2a1` tests/message and `d9d64b3` v1.0). v1.0 (RETURNED, tree `d1b0232`) is kept below as history.
+
+## Result (v2.0)
+**VERIFIED** — 0 failed checks. F1 (Medium) and F2/F3/F4 (Low) are closed. Code, tests, gates, RTM, ledgers and every training page that mentions the bounds are true against the shipped app.
+
+## Re-verification evidence
+| Finding | Evidence | Result |
+|---|---|---|
+| F1 training pages | Driven live (uvicorn loopback, vignette 01, `ISR-EO-1`). `08` worked example run both ways: ISO `Z`, integer, and mixed bounds give identical telemetry CSV, ephemeris csv and ric; OEM differs only in `CREATION_DATE`. First row `2030-03-15T06:00:00+00:00`, matching the doc. `09a` messages triggered and equal to the quoted text: no-zone (`t1: ... is not an ISO-8601 UTC timestamp (YYYY-MM-DDThh:mm:ss[.ffffff]Z or +00:00; ...) or integer microseconds`), `t2: 'banana'`, wholly-outside span, over-ceiling sampling. Read and grep: `12a:92,127`, `13:247`, `13a:134-137`, `14:250`, `14a:95`, `08:108-136`, glossary, `15` row, WCM-15/16 (12a), BLU-13/14, RED-12/13 all state ISO-or-integer and a 400 naming the bound; no page still says 422 or integer-only (grep for `valid integer`/`422` on the bounds finds none) | pass |
+| F2 | Parity test now builds a co-orbital session with a Blue-owned track and asserts bodies longer than 5 lines. Mutation: ISO path shifted by 1 s in `span_bounds.py` -> `test_http_iso_and_integer_bodies_identical_all_routes_and_formats` (and 3 others) FAIL; reverted | pass |
+| F3 | 5000-digit string -> 400 `t1: integer microseconds has too many digits (5000); give an ISO-8601 UTC timestamp or a smaller integer` | pass |
+| F4 | `2100-02-29` -> 400 `t2: ... has an out-of-range date field`; `2032-02-29` accepted (200, rows); `2000-02-29` parses (refused only as a wholly-outside span) | pass |
+| Earlier behaviours | formats, refusals, clamp/reject, guard order and fog covered by `test_span_bounds.py` (all pass) plus the probes above | pass |
+
+## Observation (Low, not a defect)
+Swapping `t1` and `t2` returns 200 with a header-only file (confirmed for telemetry csv, ephemeris csv and oem, and with integer bounds too). It is pre-existing, deliberate behaviour (`sample_times` returns `[]` when `t2 < t1`), unchanged by this package, and `08:136` states it plainly ("gives a header-only CSV rather than an error"). A 400 would be friendlier; route to the backlog if wanted. Not a finding against IP-1089.
+
+## Test run (v2.0)
+Named: `test_doc_integrity.py`, `test_training_sources.py`, `test_training*.py`, `test_test_origins.py`, `test_origin_retag.py`, `test_span_bounds.py`, `test_determinism.py`, `test_import_guard.py` all pass. Each mode once with `--junitxml`: unfiltered 2203 tests, 0 fail, 0 error, 4 skip, exit 0; `-m "not browser"` 2161, 0 fail, 5 skip, exit 0; `-m browser` 42, 0 fail, exit 0. Worktree clean afterwards.
+
+## Ledgers
+Master Build Plan package table recounted: 91 `VERIFIED` (90 before this update), 0 `COMPLETE`, 3 `READY` (`IP-1092/1093/1094`), 94 packages; the status line and the row agree. Header-vs-rows script: the only mismatch is the `IP-1089` package file's own `Status:` header, still `READY` since authoring (not touched by `09`; reconcile in the next ledger reconciliation, as was done for `IP-1088`). Not a verification failure.
+
+## Pipeline note
+Verified in a fresh session; the implementer's and the v1.0 verifier's sessions are not this one.
+
+---
+
+# v1.0 (history) — RETURNED
+
 ## Package
 `IP-1089` (`FR-7450`; FS-121 v2.3), implementing commits `ee2bf73` + `d1b0232` on `claude/ip-1089-build`, parent `dbce510`. Verified in a fresh session (independent of the implementer) on tree `d1b0232`.
 
