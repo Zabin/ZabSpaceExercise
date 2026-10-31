@@ -153,7 +153,7 @@ boundary).
   otherwise accept **manual TLE entry/paste**; after creation, no network access is needed. *(→
   FR-5210; ADR-0018)*
 - **FR-S3** The builder shall **validate** a scenario (well-formed TLEs, all `roles_needed`
-  satisfiable, referenced templates exist) and report errors precisely. *(→ FR-5310, FR-5311–FR-5314)*
+  satisfiable, every reference from one element of the vignette to another resolves; assets, sensors and effects are authored inline, with no template reference — `BL-0233`) and report errors precisely. *(→ FR-5310, FR-5311–FR-5314)*
 
 ## 6. Logging (FR-L)
 
