@@ -611,6 +611,19 @@ capability.
   row rules, and no `FS-` describes the feed.
 - **Source review issue:** `BL-0345`, integration review `M-1`.
 
+### CHG-056
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-3520` Notes: met as built by `IP-1160` (v3.0, `VERIFIED`, `VR-1160`); the verifier's `M-3`
+  (submission-time check) and `L-1` (a seat-less submission skips the role gate) stated as the accepted
+  deviations, the acceptance criterion scoped to a submission that names its seat. Postconditions
+  already matched. `FR-7440` Notes: the "remediation package owed" sentence superseded (`IP-1212`
+  `VERIFIED`). RTM Impl. cells that still said `COMPLETE`/"awaiting verification" for `IP-1082`,
+  `1083`, `1085`, `1086`, `1087`, `1094`, `1160` set to `VERIFIED` with their `VR-` ids.
+- **Reason:** All 94 packages are `VERIFIED`; pass 5 sweep of "required, not yet built" and `COMPLETE` cells.
+  `FR-4330` (advance bound, `IP-1076`) and `FR-7340` (`IP-1077`) already read met as built in text and
+  RTM Impl. cells; no change needed.
+- **Source review issue:** `BL-0388`, `VR-1160` `M-3`/`L-1`.
+
 ### Review findings, pass 3
 
 | # | Finding type | IDs | Description | Severity | Recommendation |

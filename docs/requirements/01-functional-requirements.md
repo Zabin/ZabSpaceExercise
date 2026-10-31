@@ -1619,6 +1619,14 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   failure. Logged rebinding (an event-log entry per rebinding) is not built and not required.
   `FS-116`'s "execution time" statements (lines 72, 132, 184, 200) are owed a matching amendment by
   `06`.
+  *(Updated 2026-10-31, pass 5.)* **Met as built by `IP-1160`** (v3.0, `VERIFIED`, `VR-1160`): the
+  postcondition above is the shipped behaviour, checked on all three entry points (`SessionManager`
+  `role_scope_check`, `InProcessSession`, the order route's `seat` field). The verifier's `M-3`
+  (check at submission, not at execution) and `L-1` (an order submitted without a seat skips the role
+  gate) are the two deviations from the earlier wording; both are now stated in the Postconditions and
+  accepted under `BL-0388`, so neither remains open against this leaf. A seat-less submission is
+  therefore not covered by the acceptance criterion: the criterion applies to a submission that names
+  its seat.
 
 ---
 
@@ -3628,6 +3636,9 @@ is no longer required. Same ID, narrower scope.)*
   shipped `IP-1211` implements the literal pre-amendment reading (Design Decision 5: an own asset
   without a `Track` is rejected), so a remediation package is owed. No other leaf's behaviour
   changes. See [`reviews/requirements-update-parked-questions-batch.md`](../reviews/requirements-update-parked-questions-batch.md).
+  *(Updated 2026-10-31, pass 5.)* **The remediation is built:** `IP-1212` (`VERIFIED` 2026-10-15, `VR-1212`)
+  exports a cell's own satellite from its actual orbit, so the amended "visible" reading is met as built
+  and no remediation package is owed.
 
 #### FR-7450 — ISO-8601 UTC bounds on time-span exports
 
