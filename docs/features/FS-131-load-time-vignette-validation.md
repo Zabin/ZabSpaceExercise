@@ -1,12 +1,8 @@
 # FS-131 — Load-Time Vignette Validation
 
 > **Document ID:** FS-131
-> **Version:** 1.1 (2026-10-16, run #143: aligned to `FR-5311`–`FR-5314`, added in run #142; see
-> the change note at the end)
-> **Status:** ✅ Done (built by `IP-1310` and `IP-1311`, both `VERIFIED`), **except** the `FR-5310`
-> template-reference clause. That clause and its Acceptance Criterion name a construct the shipped
-> content model does not carry (Open Question 1, `BL-0233`, routed to `04-requirements-engineering`),
-> so it is unbuilt and blocked. Every other clause is built.
+> **Version:** 1.2 (2026-10-31: `FR-5310` re-aligned to inline authoring per the `BL-0233` option-A amendment, `CHG-046`; criterion 10 and Open Question 1 closed; see the change note at the end.) Prior: 1.1 (2026-10-16, run #143: aligned to `FR-5311`–`FR-5314`, added in run #142)
+> **Status:** ✅ Done (built by `IP-1310` and `IP-1311`, both `VERIFIED`). Since v1.2 no clause is unbuilt: `FR-5310`'s template clause was removed upstream (`BL-0233`, option A), and its replacement criterion is criterion 4, already built.
 > **Approved input:** the Feature Catalog entry `FEAT-5300` in
 > [`docs/feature-planning/03-feature-catalog.md`](../feature-planning/03-feature-catalog.md),
 > following the FS-130 convention. `Purpose`/`Scope`/`Dependencies`/`Affected Subsystems`/
@@ -79,7 +75,7 @@ fails loudly at load". A facilitator gets a fixable error message, not a mysteri
 
 | ID | Coverage in this spec |
 |---|---|
-| **FR-5310** | Full, except the template-reference clause (Open Question 1): well-formed TLEs, every declared `roles_needed` satisfiable, rejection with a precise error rather than a partial or silent load, and the postcondition that no partly built `WorldState` survives a failed validation. |
+| **FR-5310** | Full: well-formed TLEs, every declared `roles_needed` satisfiable (every reference from one element of the vignette to another resolves), rejection with a precise error rather than a partial or silent load, and the postcondition that no partly built `WorldState` survives a failed validation. |
 | **FR-5311** | TLE-sourced orbits parse at load, or the asset is rejected by name (System Behaviour 2). |
 | **FR-5312** | A satellite needs an orbit and a terrestrial asset needs a location, or the asset is rejected by name (System Behaviour 7). What counts as "terrestrial" is Open Question 6. |
 | **FR-5313** | Asset ids, and sensor ids, are each unique within a vignette (System Behaviour 4). |
@@ -292,8 +288,12 @@ Every refusal leaves the registry unchanged (State Changes).
    full).
 9. Every one of the 19 shipped vignettes still loads, and for a fixed seed produces the same
    initial world and event log as before. The determinism and import-guard gates stay green.
-10. *(Blocked on Open Question 1.)* `FR-5310`'s own criterion: "a vignette referencing a
-    non-existent asset template is rejected with an error naming the missing template".
+10. *(`FR-5310`'s own criterion, as amended by `CHG-046`.)* A vignette that references an element it
+    does not contain (for example a `roles_needed` entry naming an asset or constellation the
+    vignette does not define, `FR-5314`) is rejected, and the error names the missing element. This
+    is criterion 4 restated at `FR-5310`'s level, and one test may carry both tags. Assets, sensors
+    and effects are authored inline: there is no template library and no template reference to
+    validate (`BL-0233` option A, `ADR-0036`), so no criterion tests one.
 11. Loading a vignette whose only defect is a satellite entry without an orbit is refused, naming
     the satellite. The same holds for a `jammer` (or `ground_station`) entry without a location.
     A vignette whose `cyber_unit` has no location still loads, as all 7 shipped ones do
@@ -331,26 +331,19 @@ surfaces already exist (FS-122 / `IP-1220`–`1222`).
   vignette: objective metrics, inject targets, sensor hosts, asset `kind` values. This spec
   commits only to the references `FR-5310` names, plus id uniqueness, and lists the rest as Open
   Question 2.
-- **Requirement/as-built mismatch.** `FR-5310`'s template clause cannot be tested against the
-  shipped content model (Open Question 1).
+- **Template-authoring aid.** `ADR-0036` notes a template library (option D) as an additive authoring aid for later. If it is ever built, its references become new validation rules and a new requirement; this spec does not anticipate them.
 - **Over-broad `FR-5312`.** Implementing "terrestrial" as "not a satellite" would refuse 7
   shipped vignettes (Open Question 6). Criterion 9 and the narrow reading in System Behaviour 7
   guard against it.
 
 ## Open Questions
 
-1. **The template-reference clause has nothing to check** (→ `03-architecture-design-synthesis`,
-   re-routed from `04` in run #142: the requirement agrees with GDS-03 §2.5, GDS-04 §1.2 and
-   ADR-0007, which all describe template libraries the build lacks; `BL-0233`). `FR-5310` requires "every referenced template
-   exists", and its only Acceptance Criterion is a vignette "referencing a non-existent asset
-   template". GDS-03 §2.5 describes asset/effect/sensor template libraries, and GDS-04 §1.2 lists
-   a "template reference" on Asset. The shipped content model has neither: assets and sensors are
-   authored inline in the vignette, no template library exists under `spacesim/content/`, and no
-   vignette field references one. Either `FR-5310` is amended to cite a reference the model does
-   carry (the clause and AC would then be re-pointed, perhaps at the `roles_needed` or id rules
-   above), or the template libraries are first built as their own Feature. Until then criterion
-   10 cannot be planned. **It matters because** `FR-5310` is Must, and its only stated acceptance
-   test cannot currently be run.
+1. ~~**The template-reference clause has nothing to check**~~ **Closed 2026-10-31 (`CHG-046`,
+   owner decision on `BL-0233`, option A).** `FR-5310` no longer requires a template to exist:
+   assets, sensors and effects are authored inline and the content model has no template reference
+   (GDS-03 §2.5, GDS-04 §1.2 and `ADR-0007` amended; `ADR-0036` Accepted). The requirement's
+   acceptance criterion now tests an unresolvable `roles_needed` reference by name, which criterion
+   4 already verifies.
 2. ~~**Which other in-file cross-references are "invalid scenario data"?**~~ **Closed (run #142,
    `04`):** the baseline answers with `FR-5312`–`FR-5314`. The rest (`host_asset_id`, objective
    ids, scheduled inject targets, free-text `kind`) is candidate `CR-24`, not baselined, so this
@@ -409,3 +402,9 @@ import — the in-session sibling path, FS-119).
   Re-routed Open Question 1 to `03` (`BL-0233`). Added Open Question 6 (the definition of
   "terrestrial"), found by scanning the shipped library while adding `FR-5312`'s rule.
   Status unchanged: ready for implementation planning except criterion 10.
+- **v1.2 (2026-10-31, `06`).** Re-aligned to `FR-5310` after `CHG-046` (`BL-0233`, option A, inline
+  authoring; no template-reference construct): status line, Requirements Implemented row for
+  `FR-5310`, criterion 10 (now the amended `FR-5310` criterion, covered by criterion 4), the
+  Requirement/as-built risk (replaced by a note on the template-authoring aid), and Open Question 1
+  (closed). Status moves to Done: nothing remains unbuilt. No behaviour, interface or other
+  criterion changed.
