@@ -51,7 +51,7 @@ seat enforcement on a trusted LAN, not authentication.
 | `POST /api/sessions/{sid}/red_step` | AI-Red issues one doctrine round |
 | `GET /api/sessions/{sid}/view/{cell}` | Fog-filtered cell view |
 | `GET /api/sessions/{sid}/scene/{cell}` | Belief-render geometry (map/3D) |
-| `GET /api/sessions/{sid}/telemetry/{cell}/{asset}[/{param}]` | Subsystem telemetry DB · a parameter series |
+| `GET /api/sessions/{sid}/telemetry/{cell}/{asset}` · `…/{param}?t0&t1&n&nominal` | Current subsystem telemetry and log · one parameter's **series** (the console's graphs); see the series note below: `t0` is the start and `t1` the **end**, integer microseconds only |
 | `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv?t1&t2&interval_s` | One asset's telemetry over a span as CSV (`t,utc,asset,subsystem,param,value,unit,status`). Own assets only (White: any); bounds default to the recorded range |
 | `GET /api/sessions/{sid}/ric_view/{cell}?origin&chase&target` | Live RIC-frame relative motion about `origin`; with `chase` + `target` also the CATS phase angle. Own assets + own tracks only (White: truth); 404 outside custody |
 | `GET /api/sessions/{sid}/tle/{cell}?object_id` | Copyable current-epoch TLE for one satellite. Own satellites from their actual orbit, others only from a held track (White: truth); 404 with the reason otherwise |
@@ -125,6 +125,32 @@ curl 'http://127.0.0.1:8000/api/sessions/sess-1/telemetry/blue/ISR-EO-1/export.c
 You may mix the two forms (`t1=2030-03-15T06:00:00Z&t2=1899786600000000`). In a browser address bar write the
 `+` of `+00:00` as `%2B`, or just use `Z`. Accepted: `Z` or `+00:00`, with 0 to 6 decimal digits of seconds.
 
+**The telemetry series read (the graphs) uses different bounds from the exports.** `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/{param}`
+returns one parameter over a window; the drill-down graph calls it. Its query parameters:
+
+| Parameter | Meaning | Default |
+|---|---|---|
+| `t0` | **Start** of the window, integer microseconds | an hour before now (not before the exercise start) |
+| `t1` | **End** of the window, integer microseconds | now |
+| `n` | Number of evenly spaced points, 2 to 2000 | 120 |
+| `nominal` | `true` returns the clean no-attack baseline (the graph's "compare to nominal" ghost) | `false` |
+
+Note the difference: on the series read `t1` is the **end**; on the CSV and ephemeris exports above `t1` is the **start** (and `t2` the end). The series read takes **integer microseconds only**; an
+ISO time such as `2030-03-15T06:00:00Z` gets a 422 (`Input should be a valid integer`). `param` is the bare name
+(`battery_soc`, not `power.battery_soc`). Example (ran live; replace `sess-1`; the exercise started at
+`1899784800000000` and 30 minutes have passed):
+
+```bash
+curl 'http://127.0.0.1:8000/api/sessions/sess-1/telemetry/blue/ISR-EO-1/battery_soc?t0=1899784800000000&t1=1899786600000000&n=4'
+# {"asset":"ISR-EO-1","param":"battery_soc","nominal":false,"points":[
+#   {"t":1899784800000000,"value":0.894674,"status":"green"}, {"t":1899785400000000,"value":0.992039,...},
+#   {"t":1899786000000000,"value":1.0,...}, {"t":1899786600000000,"value":0.932684,...}]}
+```
+
+The four points fall at the start, 10 min, 20 min and the end of the window. Refusals: `n=1` or `n=5000` → 422
+(`Input should be greater than or equal to 2` / `less than or equal to 2000`); an unknown parameter name, or an asset
+your seat does not own (a Red request for a Blue asset) → 404 `no such telemetry series`.
+
 **Refusals** (each is an HTTP 400 and nothing is exported):
 
 | You send | Message |
@@ -138,7 +164,7 @@ header-only CSV rather than an error. The ground-truth ephemeris (`/ephemeris/tr
 (`/ephemeris/{cell}`), including their `format=ric` companions, take the same bounds and give the same messages.
 
 
-> **Sources:** `spacesim/ui_web/server.py` (route table, `_require_white`, `_reject_observer`,
+> **Sources:** `spacesim/ui_web/server.py` (`telemetry_series`, route table, `_require_white`, `_reject_observer`,
 > `_refuse_player_seat_on_create`, `rewind`, `undo`, `load_save`, incl. `get_ric_view`, `get_tle`,
 > `telemetry_export_csv`, `maneuver_ledger*`, `aar_export_*`, `ephemeris_truth`,
 > `ephemeris_cell_observed`) · `spacesim/session/ephemeris.py` (`MAX_EXPORT_SAMPLES`) ·

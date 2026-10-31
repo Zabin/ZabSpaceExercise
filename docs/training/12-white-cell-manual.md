@@ -33,6 +33,7 @@ mutating request from an Observer-seated session is rejected at the server, not 
 the UI — the rejection holds even against a request that bypasses the browser client entirely.
 Use it to seat an extra trainee, an evaluator, or a second facilitator without giving them any way
 to affect the exercise.
+**Use only the dropdown values.** The server does not check the designation you send: an unrecognised word sent by script (for example `x`) is accepted with `ok`, but the Observer then has no usable view (its timeline feed answers HTTP 400 `unknown cell 'x'` and its picture is empty). Pick Godview, Blue or Red from the menu; if the Observer screen looks blank, set the View again.
 
 > **Sources:** `spacesim/session/manager.py` · `spacesim/session/cells.py` (`CellController`, fog boundary) ·
 > `spacesim/session/inprocess.py` (`set_observer_view`/`get_observer_view`, FR-6510) ·

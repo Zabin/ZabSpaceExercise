@@ -77,7 +77,7 @@ always-visible panels (§10.1–§10.4) are in [10](10-ui-reference.md); the ord
 | 2 | Parameter chips | clickable chips | Click to graph that telemetry parameter. |
 | 3 | compare to nominal | checkbox | Overlay the clean baseline (`?nominal=1`). |
 | 4 | overlay | dropdown | Pick a second parameter to overlay on the graph. |
-| 5 | Graph canvas | read-only | 120-point line graph of the last hour of sim time (or since exercise start) from `GET /telemetry/{cell}/{asset}/{param}?n=120`; each point is that instant's own state. |
+| 5 | Graph canvas | read-only | 120-point line graph of the last hour of sim time (or since exercise start) from `GET /telemetry/{cell}/{asset}/{param}?n=120` (the series read: `t0` start / `t1` end in integer microseconds, unlike the export routes; see [`08`](08-http-api-reference.md)); each point is that instant's own state. |
 | 6 | Verb buttons | per-subsystem cards | One-click load the command verb into the compose form. |
 | 7 | Begin recovery | button | (Recovery strip) `POST /recovery/{cell}/{asset}` — start the multi-pass chain. |
 | 8 | Patch (def.patch_cyber) | button | (Recovery strip) Load the patch-cyber command pre-filled with the first unpatched vector. |
