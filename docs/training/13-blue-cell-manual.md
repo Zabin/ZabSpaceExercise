@@ -37,6 +37,8 @@ peer, or a **stored program** run onboard. Every issued order lands in the **com
 its window and delivery path, and stays **cancellable until it uplinks**. Up to four commands
 ride one pass.
 
+**Your Timeline panel.** The Timeline (activity) panel shows your own orders and any effect that has started on your own assets. An effect appears by category and symptom only, for example `electronic_warfare → ISR-EO-1 (deny)`: you are told something is hitting the link, not which jammer or template did it. You never see Red's orders, and never White's schedule, edits or cancels. This is fog of war: you learn effects by their symptoms, as a real operator would.
+
 > **Sources:** `spacesim/engine/orders.py` (`OrderSystem`, delivery paths) ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"Plan-first commanding"
 

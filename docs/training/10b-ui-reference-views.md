@@ -142,8 +142,9 @@ scheduled. **Fog-of-war applies at the API boundary:**
 - **Blue Cell** sees only the BLUE lane — only its own orders and the started effects on its own assets
   (the bar names the category and the symptom, not the effect template). **Never a scheduled inject.**
 - **Red Cell** sees only the RED lane — same fog-of-war contract.
+- **Effect labels.** White's bar names the effect template (`ew_jam → ISR-EO-1 (deny)`); a Blue or Red bar names only the category and symptom (`electronic_warfare → ISR-EO-1 (deny)`), and only for effects on that cell's own assets.
 - The **Observer** seat follows White's designation (the White feed, or the designated cell's feed). Any
-  other cell name is refused with HTTP 400.
+  other cell name is refused with HTTP 400 `unknown cell '<name>'`.
 
 The data feed is `GET /api/sessions/{sid}/activity/{cell}` — read-only, replay-safe, derived
 from `osys.orders`, `world.active_effects`, and `sim.scheduler.pending()`.

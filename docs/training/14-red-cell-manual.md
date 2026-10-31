@@ -36,6 +36,8 @@ knowledge. A command reaches a satellite via **ground-station uplink**, **ISL re
 **cancellable until they uplink**; up to four ride one pass. Sequencing your effects to land inside
 the same access window is Red's tempo problem.
 
+**Your Timeline panel.** The Timeline (activity) panel shows only your own orders (for example `JAM-NORTH jam → ISR-EO-1`). You do not see effects on Blue's assets, Blue's orders, or White's schedule, edits or cancels; to learn whether a jam worked you must observe it, as a real operator would. This is fog of war.
+
 > **Sources:** `spacesim/engine/orders.py` (`OrderSystem`, delivery paths) ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"Plan-first commanding"
 

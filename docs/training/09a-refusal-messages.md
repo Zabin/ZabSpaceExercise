@@ -52,6 +52,7 @@ link was jammed (BLU-17) or a re-check failed (no rounds left).
 | `only White Cell may cancel an inject` / `... may edit an inject` | Inject queue from a non-White seat | Switch to White |
 | `unknown session sess-N` (HTTP 404) | Wrong id, or the server restarted, or 32 sessions were open and the oldest was dropped | Load again; resume from a save (WCM-22) |
 | `vignette 'ID' not found` | Load of an unknown id | Pick from the picker; see Creator set-up in WCM-17 |
+| `unknown cell 'purple'` (HTTP 400, `GET /activity/{cell}`) | A cell name other than white, blue, red or the observer designations | Use `white`, `blue` or `red` |
 | `body.dt_sim_s: a non-finite number (NaN or Infinity) is not allowed` | A number field holds NaN or Infinity | Send a real number |
 | `cannot change parameters after start` | Changing a dial after Start | Set dials before Start (WCM-2) |
 | `unstaffed mandatory role(s): ISR-EO-1/bus` (pop-up on Start) | Required seat bindings missing | WCM-18 |

@@ -178,6 +178,8 @@ next session load. Facilitation patterns — when to inject what — are in
   what that cell's operators read in BLU-6/RED-7, so use it to see an attack's signature land.
   Controls: [UI reference §10.13](10b-ui-reference-views.md#1013-subsystem-drill-down).
 
+**Scheduled injects are on your timeline only.** Injects you schedule (including future-dated ones) appear as `inject (N effects)` bars on White's own Activity timeline. Blue and Red never see them, nor your edits or cancels; they only see the effect once it starts on their own assets.
+
 > **Sources:** `spacesim/session/scene.py` · `spacesim/ui_web/static/app.js` (Gantt, objectives,
 > `openDrill`) · `spacesim/session/manager.py` (`get_telemetry`/`get_series`, White reads any asset) ·
 > `Vignette.coaching` in `spacesim/content/vignette.py`
