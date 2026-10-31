@@ -86,7 +86,20 @@ fog-of-war boundary, a load-bearing invariant — and no Stage-10 report has rea
 This assessment's own probe (§7) supports the fix but is not an integration review → **finding B-1** (§0).
 ### 2.4 NFR-1510 — dependency lock
 ### 2.5 NFR-2830 — test-relevance audit
-### 2.6 Documentation verified
+### 2.6 Documentation verified (skill step 3b)
+
+| Evidence item | Result | Detail |
+|---|---|---|
+| Learner-walkthrough gate report exists and walked every role | **Yes** | [REV-TRN-010](training-review-release-walkthrough.md) (1 High, 10 Medium, 5 Low) and its re-check [REV-TRN-011](training-review-release-walkthrough-recheck.md) at `461d43a`: White/Blue/Red "Yes" (newcomer can finish); F1 (the High) **Closed**; **0 High, 5 Medium (N1–N5), 3 Low (L1–L3)** open at that commit. [REV-TRN-009](training-review-training-basics-n2-fix.md) closed REV-REL-002's training-basics finding (no Critical/High). |
+| The review is **current** (names a commit at/after the last change to `docs/training/` or vignette YAML) | **No** | Three commits after `461d43a` change exactly those paths: `8de366b` (N1, N2, N4, L2, L3 prose), `e2e1342` (N3 tutorial YAML in `04`/`05`/`07`/`mt-sigint-geolocate` + a browser test), `d86c845` (N5, L1, L2: `learn-intermediate-recovery.yaml`, `11`/`15`/`16` + tests). No `09-training-manual-review` has read them → **finding B-2**. |
+| This assessment's own learner drive of the changed steps (supporting evidence, not a substitute for the gate) | **All hold** | **N1** (`04` Step 7): `training-basics` Seed 1, Red observe → jam → cyber `seize_c2`, Blue telemetry by minute: `bus mode = SAFE_MODE; payload disabled` and `payload.snr_db … [RED]` from minute 1; `cdh.fsw_error_count` YELLOW at 3 min, RED by 10 min; `cdh.cmd_reject_count` RED by 20 min — matches "at once … a few minutes later". The panel heading `Subsystem log (symptoms — diagnose the cause yourself)` exists (`index.html:716`). **N2**: no "Order panel"/"Order queue" left in `docs/training/`; `03`, `13a` name **Satellite command**, `14a` names **Command queue**, both real headings (`index.html:385`, `:586`). **N3**: the four tutorials' blocked steps now say *Issue greyed out, red preview, `no_command_station`*, no mid-exercise Force add (YAML read); `test_console_shows_the_blocked_previews_the_steps_describe` (browser) green. **N4**: glossary has ISR, EO/SAR, SDA, SATCOM, PNT/GNSS, EW, TT&C, FSW, SoC, LEO/MEO/GEO/HEO, ASAT, SGP4, ML/MD; `13`/`14` link it. **N5**: driven literally over HTTP on Seed 1 — `RED-RADAR` observe, +10m ×2, engage `mrbm_kkv`, +10m ×2: `coa-russia-md` `destroy_isr` **true**, `coa-china-md` `kill_isr` **true**; the playbooks now call the kill chance-based with the hitting order (test `test_coa_md_kill_is_chance_based_…` green, incl. "cyber first misses on Seed 1"). **L1** (`learn-intermediate-recovery`): `test_recovery_objective_flips_exactly_at_the_deadline_not_before` asserts unmet at T+44 min with the bus nominal, met at T+45 min; YAML step 5 says so. |
+| Matrix coverage (§15.1) for the scope | **Complete except one stale row** | Creator (`12b`), bulk import, save-as-scenario (`12d`), Compare panel (`12d`), space-weather `index_series` (`12d`), missed-salvo charge (`RED-5`) are now covered — so `BL-0268`, `BL-0272`, `BL-0276`, `BL-0283`, `BL-0286` are **done in the tree but still open in the backlog** (bookkeeping). **`BL-0271` is genuinely open:** `10a` §10.5 row 8 still says "On a ground radar keep `auto` … The radar modes are not listed here", but since `IP-1223` the console's Mode list is built from the tasked sensor and offers `fence`/`dish` for a radar (`app.js` `BEAM_MODES_BY_TYPE`, `beamModesForSensor`). Low, → `08-training-manual-authoring`. |
+| Tutorials machine-verified | **Green** | `test_vignette_tutorials.py` 115/115 in the unfiltered run (§2.1). |
+| No open Manual-impact item for the scope | **Fails (one Low)** | `BL-0271` above; the other five Manual-impact rows are stale. |
+
+**Result: documentation is *not verified* to the step-3b standard** — the gate review is not current (B-2) and
+one Manual-impact item is open (`BL-0271`). The substance is good: every changed step this assessment drove
+behaves as written, and nothing found here is High.
 
 ## 3. Closure of REV-REL-002 and REV-REL-001 findings
 
