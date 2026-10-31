@@ -1,0 +1,96 @@
+# VR-1088 — Verification Report: The Per-Cell Activity Feed Is Filtered at the Session Boundary (FR-6210, FR-6220, FR-4450; M-1)
+
+> **Document ID:** VR-1088
+> **Version:** 1.0
+> **Status:** ✅ Final
+> **Dependencies:** [IP-1088](../packages/IP-1088-fog-correct-activity-feed.md) v1.0
+> **Referenced By:** [INDEX.md](INDEX.md), [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](../packages/INDEX.md)
+> **Produces:** the `COMPLETE → IN PROGRESS` return of `IP-1088` (not `VERIFIED`)
+> **Feature Mapping:** [FS-106](../../features/FS-106-white-cell-dashboard.md)
+
+[↑ Verification index](INDEX.md) · [Master Build Plan](../00-master-build-plan.md) · [Packages index](../packages/INDEX.md)
+
+## Package
+
+IP-1088, branch `claude/ip-1088-build`, tree `42d029d` (code and fog matrix in `f4f1ccb`), parent `83defa6`. Fresh-session verifier; not the implementing session.
+
+## Result
+
+**RETURNED** — 3 failed checks, all documentation (Medium). The code, the fog behaviour and every test gate pass; 0 code findings.
+
+## Reproduction on the parent, and the fix
+
+Parent `session/cells.py` and `session/inprocess.py` were swapped in from `83defa6` (then restored with `git checkout`). A future White inject (`fire_inject`, T+45 min and T+90 min, one `message` effect each) plus two directly-injected effects (a covert cyber on a Blue asset, an overt jam on a Red asset):
+
+| Read | Parent | Fix |
+|---|---|---|
+| `/activity/blue` | effect row with template `cyber-secret-payload` + 3 inject rows | one row `cyber → ISR-EO-1 (degrade)`, no template, no inject |
+| `/activity/red` | `barrage-X` template row + 3 inject rows | one row `jam → RED-SURF (deny) (attributed)` |
+| `/activity/observer` (default designation) | 200, 3 inject rows | equals White |
+| `/activity/neutral`, `/activity/bogus` | 200, inject rows | 400 `unknown cell '…'` |
+
+Blue and Red JSON, with `now` normalised, is byte-identical between a session with the White items and one without, at two instants. No `WSECRET` sentinel, template name, opposing-cell id, count of effects or firing time appears in either body. White's feed equals the parent's for the same script (differences are only the few-microsecond wall-clock jitter of `now`). Further refusals: `White`, `WHITE`, `godview`, `observer `, `blue%20`, `neutral` give 400; an empty segment gives 404 (routing). Edit then cancel of two White injects leaves White with the edited time and no ghost; Blue and Red stay empty. After a rewind White still has its injects (2) and Blue/Red 0. Observer designated `blue`, `red`, `godview`, `white` returns exactly that cell's feed (`white`/`godview` equal White); only White may set the designation.
+
+## Fog matrix (own, over the sources `cell_activity` reads)
+
+Kinds enumerated from the code: orders (all states), pending injects (vignette, White-scheduled, edited, cancelled, re-armed after rewind), condition-triggered injects (no row), active effects (Blue-, Red-, neutral-owned, future-start), and the non-sources (gate request/decision, `condition_check`, `env_anomaly_check`, role assignment, SSN, recovery, messages, debris, save/load, `inject_admin`, IP-1083 `schedule`, IP-1084 notices), which are event-log or other-scheduler kinds that the feed does not read. Against the 12 package rows in `test_activity_fog_matrix.py` (12 tests, exact sets) and the own checks above: pass for White, Blue, Red, Observer (both designations), unknown cells.
+
+## Mutation testing
+
+9 of 9 mutations killed by `test_activity_fog_matrix.py`: allow the inject kind through; return the template label; skip the filter for observer; revert to raw scheduler events; accept unknown cells; show a future-start effect; show another cell's effects; show another cell's orders; fail-open on an unknown kind.
+
+## Definition of Done and Verification Checklist audit
+
+| Item | Evidence | Result |
+|---|---|---|
+| Reproduction: Blue/Red/`bogus` no inject row, no sentinel; White does | above | pass |
+| Matrix rows 1-12 each have a named test, exact sets | `test_activity_fog_matrix.py`, 12 tests | pass |
+| Filter in `cells.py`, allow-list by kind, only path for non-White; `inprocess.py` has no per-cell `if` over rows | `CellController.activity_rows`; `inprocess.py` only assembles and calls it | pass |
+| Invented kind dropped for a cell | `test_filter_is_fail_closed_on_unknown_kind`; mutation killed | pass |
+| Log, scheduler, RNG identical across reads; rewind+advance reproduces feeds | `test_reads_do_not_touch_log_scheduler_rng_and_replay_equals_live`; engine diff empty | pass |
+| Determinism and import-guard green; full suite green | below | pass |
+| Documentation per Manual impact exists (`10b` §10.15, `02`, `08` row, `WCM-6`, `BLU-2`, `RED-2`, §15.1/§15.2) | see Documentation audit | **fail** |
+
+## Requirements audit
+
+`FR-6210`, `FR-6220`, `FR-4450`, `FR-4410`, `FR-6510`, `FR-1120`: implemented in `cells.py`/`inprocess.py`; tested in `test_activity_fog_matrix.py`; the regenerated RTM Test column equals the tool output (`--origin-report=rtm` run in the worktree leaves no diff). Pass. The activity feed has no requirement leaf (`CR-31`, known, routed upstream).
+
+## Test run (exact commands, real exit codes)
+
+| Command | Result |
+|---|---|
+| `python3 -m pytest -q --junitxml=…` (unfiltered) | exit 0; 2160 tests, 0 failed, 4 skipped |
+| `python3 -m pytest -q -m "not browser"` | exit 0; 2119 tests, 0 failed, 5 skipped |
+| `python3 -m pytest -q -m browser` | exit 0; 41 tests, 0 failed, 0 skipped |
+| `test_determinism.py`, `test_import_guard.py`, `test_doc_integrity.py`, `test_test_origins.py`, `test_origin_retag.py`, `test_vignette_tutorials.py`, `test_cell_activity.py` (by name) | exit 0 |
+
+The unfiltered and non-browser runs were started concurrently in one worktree; the one-skip difference (4 vs 5) is attributed to that and is not a finding (2119 + 41 = 2160). Own headless-Chromium check (White, Blue, Red, with a pending White inject): the activity panel renders its canvas for all three seats with no page error; the only console error is one 404 on first load for White (a static resource, unrelated to `/activity`).
+
+## Documentation audit
+
+| Item | Exists / accurate | Result |
+|---|---|---|
+| `10b` §10.15 fog bullets, row 10, `scheduled` row, Sources, cell-refusal line | present and accurate against the shipped feed | pass |
+| `10b` §10.15 JSON/effect-label note (package: "the JSON note for effect labels") | not written; the JSON block is unchanged and says nothing about category+symptom labels | fail (Low) |
+| `02` Gantt bullets; `08` row 44; `15` §15.1 row and Sources footer | present, accurate; `cells.py` named | pass |
+| `12` WCM-6, `13` BLU-2, `14` RED-2 sentences (package: required, a create gap for BLU/RED) | not written (files untouched); no Manual-impact hand-off in the package, the Master Build Plan note, or `docs/pipeline/backlog.md` | **fail (Medium)** |
+| Refusal message `unknown cell '<x>'` (HTTP 400) verbatim in `09`/`09a`/reference | `08` says "refused (400)" without the message; `09a` and `09` do not list it (`09a` line 72 still describes an unknown cell as harmless on a different route) | **fail (Medium)** |
+| `15` §15.2 reverse row names the BLU-2/RED-2 anchors | `15` §15.1 row updated; the BLU/RED anchors rely on sections that were not written | covered by the WCM/BLU/RED finding |
+| Tutorials | `test_vignette_tutorials.py` green | pass |
+
+## Scope audit
+
+Diff `83defa6..42d029d`: `cells.py`, `inprocess.py`, `server.py`, the new test, `CLAUDE.md`, `ROADMAP.md`, MBP, packages INDEX, RTM, and training docs `02`, `08`, `10b`, `15`. All in scope; `engine/` and `app.js` untouched.
+
+## Findings
+
+| # | Finding | Severity | Owner |
+|---|---|---|---|
+| F1 | `WCM-6`, `BLU-2`, `RED-2` sentences promised by Manual impact are not written, and no hand-off item is recorded (none in the package, MBP or backlog) | Medium | `08-training-manual-authoring` (or record the hand-off), via `08-code-implementation` re-run |
+| F2 | The new 400 refusal (`unknown cell '<x>'`) appears in no refusal catalogue (`09a`/`09`) or verbatim in the reference | Medium | `08-training-manual-authoring` |
+| F3 | `10b` §10.15 effect-label (category + symptom, no template) note not written | Low | `08-training-manual-authoring` |
+| O1 | `/activity/white` is open to any request (LAN trust model, same as `/godview`); it is deliberately outside `FR-6220`'s named set. Observation, not a defect | Info | `04-requirements-engineering` (`CR-31`) |
+
+## Next step
+
+Re-run `08-code-implementation` (with `08-training-manual-authoring`) on IP-1088 to write or hand off F1-F3, then re-verify. No code change is needed.
