@@ -1,7 +1,7 @@
 # VR-1088 — Verification Report: The Per-Cell Activity Feed Is Filtered at the Session Boundary (FR-6210, FR-6220, FR-4450; M-1)
 
 > **Document ID:** VR-1088
-> **Version:** 1.0
+> **Version:** 2.0
 > **Status:** ✅ Final
 > **Dependencies:** [IP-1088](../packages/IP-1088-fog-correct-activity-feed.md) v1.0
 > **Referenced By:** [INDEX.md](INDEX.md), [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](../packages/INDEX.md)
@@ -94,3 +94,31 @@ Diff `83defa6..42d029d`: `cells.py`, `inprocess.py`, `server.py`, the new test, 
 ## Next step
 
 Re-run `08-code-implementation` (with `08-training-manual-authoring`) on IP-1088 to write or hand off F1-F3, then re-verify. No code change is needed.
+
+---
+
+## v2.0 — Re-verification (fresh session, 2026-10-31, tree `5b43524` on top of `3c27fc7`)
+
+**Result: RETURNED again** — F2 and F3 are fixed; F1 is fixed for `WCM-6` and `BLU-2` but `RED-2` is inaccurate against the live feed (1 Low/Medium documentation finding, 0 code findings).
+
+| Check | Evidence | Result |
+|---|---|---|
+| Code diff since `42d029d` | `git diff 42d029d..HEAD -- spacesim/` is empty | pass |
+| `WCM-6`: scheduled injects appear on White's timeline only | Live `/activity/{cell}` (session with a White-scheduled inject, a Blue downlink order, a Red jam order, a Blue-asset effect and a Red-asset effect): White shows 2 `inject` rows; Blue and Red show none | pass |
+| `BLU-2`: own orders and started effects on own assets, category + symptom only | Blue feed = `electronic_warfare → ISR-EO-1 (deny)` + `ISR-EO-1 downlink`; no template, no Red order, no inject | pass |
+| `RED-2`: same for Red | Red feed = `cyber → RED-SURF (deny)` + `JAM-NORTH jam → ISR-EO-1`. The paragraph (`14-red-cell-manual.md` line 39) says the panel "shows only your own orders", but Red's feed also carries started effects on Red's own assets | **fail (Low-Medium)** |
+| `09a` / `08` list `unknown cell '<x>'` | `/activity/purple` returns 400 `{"detail":"unknown cell 'purple'"}`; `09a` and `08` carry that text | pass |
+| `10b` §10.15 effect-label note | White shows the template label (`jam-spot → ISR-EO-1 (deny)`), Blue/Red show category only (`electronic_warfare → …`, `cyber → …`); the note matches | pass |
+| Sources footers / links | `test_doc_integrity.py` and `test_training_sources.py` green | pass |
+| Browser | Headless Chromium (`/opt/pw-browsers`), session with a pending White inject: the Timeline panel renders its canvas, no page error. The seat switch in my script did not demonstrably change the seat, so the per-seat content was verified over HTTP, not in the browser | pass (limited) |
+
+Tests, one run by name (`test_doc_integrity`, `test_training*`, `test_test_origins`, `test_origin_retag`, `test_activity_fog_matrix`, `test_determinism`, `test_import_guard`): exit 0, all pass. The full-suite modes were not re-run; I relied on the v1.0 runs (unfiltered 2160/0/4, non-browser 2119/0/5, browser 41/0/0), valid because the code is unchanged.
+
+**MBP tally recount:** 90 package rows; 1 `IN PROGRESS` (`IP-1088`); the other 89 rows carry a `VERIFIED` status. The stated "88 VERIFIED + 1 IN PROGRESS — 90" sums to 89, so the MBP tally line has an off-by-one against its own total (pre-existing; not corrected here).
+
+| # | Finding | Severity | Owner |
+|---|---|---|---|
+| F4 | `RED-2` says Red's timeline "shows only your own orders"; the live feed also shows started effects on Red's own assets (category + symptom). Add that, mirroring `BLU-2` | Low-Medium | `08-training-manual-authoring` |
+| O2 | MBP tally line arithmetic (88 + 1 ≠ 90; recount 89 + 1) | Info | `07-implementation-planning` |
+
+The package header was not edited (verifiers do not edit packages; it stays `READY`/as authored). Next step: fix F4, then a short re-verification.
