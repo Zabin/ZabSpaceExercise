@@ -16,6 +16,8 @@ WCM-12–16), [12b](12b-white-cell-vignette-creator.md) (build your own vignette
 WCM-18–20) and [12d](12d-white-cell-clock-saves-and-controls.md) (clock refusals, saves, adding assets,
 which seat sees which controls, WCM-21–25).
 
+**Acronyms.** ISR, SAR, SDA, SATCOM, PNT, GNSS, EW, TT&C, SoC, MEO and the rest are defined in the [glossary](09-troubleshooting-and-glossary.md#11-glossary).
+
 ### WCM-1 · Role and view
 
 White Cell is the exercise director, adjudicator, and coach. You see **ground truth** — every

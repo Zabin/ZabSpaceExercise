@@ -156,7 +156,7 @@ The server decides what each seat may do; the toolbar only hides what it will re
 | Control | White | Blue / Red | Observer |
 |---|---|---|---|
 | Seat buttons, **⏸ Handover**, **▦ View ▾**, **⚙ Settings ▾** (save/load/help) | yes | yes | yes |
-| Order compose, fleet rail, tasking, orders queue, graphs | yes | yes (own assets only, own belief) | shown but every action is disabled and refused by the server |
+| Satellite command (order form), fleet rail, tasking, Command queue, graphs | yes | yes (own assets only, own belief) | shown but every action is disabled and refused by the server |
 | **⏸ Pause / ▶ Resume**, **+1m / +10m / +1h**, **⟲ Rewind** | yes | hidden | hidden |
 | **📋 Session ▾** (Load, Start, Save as scenario, Observer view, Seat-to-role assignment) | yes | hidden | hidden |
 | **🛠 Creator ▾** | yes | hidden | hidden |

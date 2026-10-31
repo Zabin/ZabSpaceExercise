@@ -100,6 +100,19 @@
 - **Hot-seat** — several cells sharing one browser by switching seats (with **⏸ Handover** to hide the screen), as opposed to each player on their own tab or machine.
 - **A2/AD (anti-access / area denial)** — a defender's layered weapons and sensors meant to keep an opponent out of, or hamper them inside, an area; the setting of the China COA vignettes.
 - **Gantt (activity timeline)** — the bar-per-activity chart of past, present and scheduled orders and effects.
+- **ISR** — intelligence, surveillance and reconnaissance: imaging or sensing satellites such as `ISR-EO-1`. Matters in the LEO ISR Denial vignette (`11.1`).
+- **EO / SAR** — electro-optical (a camera: needs daylight) and synthetic-aperture radar (sees through cloud and night) imaging payloads; see the SAR trial `mt-isr-sar` (`11.9`).
+- **SDA** — space domain awareness: knowing what is where in orbit. In the tool it is the sensor-tasking → custody loop (BLU-4 / RED-4).
+- **SATCOM** — satellite communications payloads, the usual jamming and cyber target (`satcom-cyber-link`, `11.6`).
+- **PNT / GNSS** — positioning, navigation and timing; GNSS is the satellite navigation family (GPS and similar) that provides it. Matters in `gnss-ew-campaign` (`11.3`).
+- **EW** — electronic warfare: jamming and spoofing of radio links; one of the five D's effects (RED-5).
+- **TT&C** — telemetry, tracking and command: the radio link a ground station uses to read a satellite's health and send it commands.
+- **FSW** — flight software, the satellite's onboard computer program; the `cdh.fsw_error_count` log line counts its errors.
+- **SoC (state of charge)** — how full a satellite's battery is, shown as a percentage in the fleet rail.
+- **LEO / MEO / GEO / HEO** — orbit regimes: low Earth (hundreds of km, passes last minutes), medium Earth (navigation satellites), geostationary (about 36,000 km, appears fixed), highly elliptical.
+- **ASAT / DA-ASAT** — anti-satellite weapon / direct-ascent ASAT, a ground-launched kinetic interceptor (`da-asat-crisis`, `11.5`).
+- **SGP4** — the standard model that turns a TLE into a position; the tool uses it for TLE-sourced satellites.
+- **ML / MD** — tags in the Red COA vignette names, normally read as "most likely" and "most dangerous" courses of action; the vignette files do not spell them out.
 - **Planning horizon** — how far ahead the engine searches for a window when you plan an order or
   task a sensor: the next 24 hours of sim time. No window inside it gives `no_window`. The console's
   rejection tips use this term.

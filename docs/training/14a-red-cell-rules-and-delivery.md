@@ -40,7 +40,7 @@ and [`WCM-18`](12c-white-cell-rules-and-staffing.md).
 ### RED-15 · My jam, cyber or strike is "pending_approval"
 
 If the exercise puts your kind of action behind an **approval gate**, the order is accepted but shows
-status `pending_approval` in your **Order queue**, with no window or delivery path. Nothing is scheduled
+status `pending_approval` in your **Command queue**, with no window or delivery path. Nothing is scheduled
 until the approver (usually White) decides. Tell White which order (`ord-4`) is waiting. You cannot cancel
 it meanwhile (`order not found / not cancellable`).
 
@@ -74,7 +74,7 @@ for example `{"modulation":"barrage","power_w":200,"link_target":"uplink"}`. Acc
 
 Practical notes: a defender who stores a command in advance (`stored_program`) is immune to an uplink jam,
 so look for the moment a defender has no other choice. Your jam must still be *active* when the
-command's window executes - a footprint on the map is only a preview. The defender's order queue
+command's window executes - a footprint on the map is only a preview. The defender's **Command queue**
 still reads `executed` for a command you jammed; they have to notice the missing effect, so expect them
 to infer it from telemetry. Jamming uses nothing up; the jammer's power rating does not change. The
 defender's frequency hopping and interference mitigation lower your success chance.

@@ -17,7 +17,7 @@ imagery before a landing window; Red wants to deny it without escalating to a ki
 ### Step 2 — Become Blue and plan a downlink
 1. Click **Blue** (the seat buttons at the top). The **Objectives** panel shows `✗ Deliver ISR` — not met yet.
    The **+1m / +10m / +1h** and **⟲ Rewind** buttons disappear: only White controls time.
-2. In the **Order panel**, set **Actor** = `ISR-EO-1` and **Action** = `downlink`. The command
+2. In the **Satellite command** panel (the order form), set **Actor** = `ISR-EO-1` and **Action** = `downlink`. The command
    parameters are in the collapsed **Advanced (raw JSON params)** line below; it is already filled with
    `{"via":"GS-NORTH"}`, which is what we want. Under the form a green line reads `✓ will queue ·
    ground_uplink · window 2030-03-15T06:05:19Z`. Click **Issue order**.
@@ -25,7 +25,7 @@ imagery before a landing window; Red wants to deny it without escalating to a ki
    its **delivery path** is a ground uplink, and it will run at that **window** — you do not act instantly;
    the command waits for the next station pass.
 
-![Order panel](../manual/05-order-panel.png)
+![Satellite command panel](../manual/05-order-panel.png)
 
 ### Step 3 — Advance time to the window
 Click **White**, then **+10m** once or twice. When the clock passes the downlink window, the order executes.
