@@ -186,8 +186,7 @@ next session load. Facilitation patterns — when to inject what — are in
   Observer screens (checked: Blue sees no Compare panel), and the server answers `GET /controller_view` only
   to the White seat (anything else gets 403 `only White Cell may open the controller view`). **Where:** scroll the White main column to the panel titled **⚖ Compare — truth beside
   each cell's picture** (in the White-only part of the page); it is collapsed at first, so click its
-  title to open it. (It has no entry in the View menu; if you closed it with its ✕, **View ▾ → Reset
-  layout** brings it back.)
+  title to open it. (If you closed it with ✕, tick **Compare (truth / Blue / Red)** under **View ▾ → Panels**; **↺ Reset layout** also restores it, along with every other panel.)
   1. Click the title to open it, then press **🔄 Refresh**. The grey text beside it, `at 2030-03-15T06:40:08Z`,
      is the exercise moment the three columns describe. While the panel is open it also refreshes with the
      console's normal polling; closed, it costs nothing.
