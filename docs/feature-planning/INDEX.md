@@ -17,6 +17,7 @@ and for the row-by-row reconciliation between the 11 existing `FS-xxx` documents
 | [`03-feature-catalog.md`](03-feature-catalog.md) | 48 Features (`FEAT-1100`–`FEAT-12300`), full template, tracing every baselined FR/NFR leaf (106 FR + 48 NFR, 2026-10-23) exactly once. |
 | [`04-feature-dependency-graph.md`](04-feature-dependency-graph.md) | Mermaid dependency diagram, critical path, blocking Features, parallel-build opportunities, 2 resolved circular-citation findings. |
 | [`05-feature-review.md`](05-feature-review.md) | Findings (oversized/undersized/missing/duplicate Features, traceability gaps) and the reconciliation of "36 today" vs. the ~50–80 expected once upstream requirements/domain work closes the gap. |
+| [`06-release-2-plan.md`](06-release-2-plan.md) | **Release 2.0 planning proposal** (2026-11-01, not authorized work): inventory of every candidate item after Release 1.0 (bugs, defects, backlog, candidate requirements, review findings), recommended theme, Must/Should/Could/Out scope, milestones M0–M3, quality gates, branching strategy, owner decisions and proposed intake rows. |
 
 **Status:** complete for the approved FR/NFR baseline as of 2026-10-17 (full inventory sweep, run #151; first pass 2026-07). Candidate
 Requirements (CR-01–18, CNFR-01–07) and the July-2026 Strategic Review's Future Concepts/Gaps
