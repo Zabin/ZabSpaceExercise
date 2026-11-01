@@ -12,11 +12,13 @@ and for the row-by-row reconciliation between the 11 existing `FS-xxx` documents
 
 | Doc | Content |
 |---|---|
-| [`01-release-plan.md`](01-release-plan.md) | Bucket assignment (Prototype/MVP/Release 1/Release 2/Future) for all 48 Features *(as of 2026-10-23)*, with justification, plus the **Release state**: all buckets released, GO declared by the owner 2026-11-01. Release record: [REV-REL-004](../reviews/release-assessment-release-candidate-10.md). |
+| [`01-release-plan.md`](01-release-plan.md) | Bucket assignment (legacy tranche labels Prototype/MVP/Release 1/Release 2, all released as R1.0, plus Future; new buckets are named by release ID, e.g. R2.0) for all 48 Features *(as of 2026-10-23)*, with justification, plus the **Release state**: all buckets released, GO declared by the owner 2026-11-01. Release record: [REV-REL-004](../reviews/release-assessment-release-candidate-10.md). |
 | [`02-epic-catalog.md`](02-epic-catalog.md) | 11 Epics (`EP-1000`–`EP-11000`), one per top-level requirements-baseline grouping. |
 | [`03-feature-catalog.md`](03-feature-catalog.md) | 48 Features (`FEAT-1100`–`FEAT-12300`), full template, tracing every baselined FR/NFR leaf (106 FR + 48 NFR, 2026-10-23) exactly once. |
 | [`04-feature-dependency-graph.md`](04-feature-dependency-graph.md) | Mermaid dependency diagram, critical path, blocking Features, parallel-build opportunities, 2 resolved circular-citation findings. |
 | [`05-feature-review.md`](05-feature-review.md) | Findings (oversized/undersized/missing/duplicate Features, traceability gaps) and the reconciliation of "36 today" vs. the ~50–80 expected once upstream requirements/domain work closes the gap. |
+| [`06-release-2-plan.md`](06-release-2-plan.md) | **Release 2.0 planning proposal** (2026-11-01, not authorized work): inventory of every candidate item after Release 1.0 (bugs, defects, backlog, candidate requirements, review findings), recommended theme, Must/Should/Could/Out scope, milestones M0–M3, quality gates, branching strategy, owner decisions and proposed intake rows. |
+| [`06a-release-2-d3-d4-research.md`](06a-release-2-d3-d4-research.md) | Research memo for Release 2.0 owner decisions D3 (availability objective → interval-scored service availability, Must) and D4 (SIGINT characterization → corrected option (a′)), grounded in [R138](../research/encyclopedia/R138-satellite-service-availability-and-link-denial-measurement.md)/[R139](../research/encyclopedia/R139-passive-rf-emitter-characterization-and-geolocation.md). Companion to the Release 2.0 plan (`06-release-2-plan.md`, branch `claude/release-2-plan`). |
 
 **Status:** complete for the approved FR/NFR baseline as of 2026-10-17 (full inventory sweep, run #151; first pass 2026-07). Candidate
 Requirements (CR-01–18, CNFR-01–07) and the July-2026 Strategic Review's Future Concepts/Gaps
