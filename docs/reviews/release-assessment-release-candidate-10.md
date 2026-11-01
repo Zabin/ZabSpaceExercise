@@ -403,3 +403,131 @@ Stage 11 (final). **Next step:** the owner decides C-1/C-2 (deferral or fix) and
 `08-training-manual-authoring` (`BL-0286`, F-1, optionally F-3 via `08-vignette-development`), then
 `09-training-manual-review` delta, then the owner's GO on this document plus that report. If deferring: the
 owner's GO, then this skill's baseline flip (§9).
+
+## Final confirmation (REV-REL-004 addendum)
+
+**Date:** 2026-11-01. **Commit assessed:** `935fd44` (`claude/release-candidate-12`), worktree branch
+`claude/release-assessment-final`. A fresh session that did not author any of the work since `cfcf47f`. Read-only
+except for this section. `docs/pipeline/` was not touched.
+
+### A.1 What changed since `cfcf47f` (`git diff --stat cfcf47f..935fd44`: 8 files, +512 / −8)
+
+| File class | Paths |
+|---|---|
+| Training manuals | `docs/training/11-vignette-playbooks.md`, `12-white-cell-manual.md`, `15-manual-traceability.md` |
+| Review records | `docs/reviews/release-assessment-release-candidate-10.md` (this assessment, `79c485e`), `docs/reviews/training-review-final-rc11.md` (REV-TRN-013) |
+| Ledgers | `ROADMAP.md` (status entries), `docs/pipeline/backlog.md`, `docs/pipeline/pipeline-journal.md` |
+| Production code (`spacesim/`), tests, vignette YAML, `requirements.lock`, `pyproject.toml`, UI static files | **none** |
+
+Every change since the evidence commit is documentation. No code gate needs re-running because of the diff. I re-ran
+the gates anyway.
+
+### A.2 Gates, one run per mode, real exit codes, `--junitxml`
+
+| Run | Exit | Tests | Failures / errors | Skipped |
+|---|---|---|---|---|
+| Unfiltered `python3 -m pytest` | 0 | **2244** | 0 / 0 | 4 |
+| `-m "not browser"` | 0 | **2202** | 0 / 0 | 5 |
+| `-m browser` | 0 | **42** | 0 / 0 | 0 |
+| Named gates: `test_doc_integrity`, `test_training`, `test_training_sources`, `test_vignette_tutorials`, `test_test_origins`, `test_origin_id_widening`, `test_origin_retag`, `test_determinism`, `test_import_guard` | 0 | 375 | 0 / 0 | 1 |
+
+These match REV-REL-004 §2.1 exactly.
+
+### A.3 Conditions C-1, C-2 and finding F-1
+
+- **C-1 (learner review current): closed.** REV-TRN-013 (`e12311a`) reviewed `70fb36c` and found 0 High, 1 Medium,
+  2 Low. The only later change to `docs/training/` or vignette YAML is `4ce7fb2`, which fixes exactly those three
+  findings (`git log e12311a..HEAD -- docs/training spacesim/content/vignettes` lists only it). I checked each fix myself:
+  - **M-1:** WCM-6 now says "tick **Compare (truth / Blue / Red)** under **View ▾ → Panels**; **↺ Reset layout**
+    also restores it". `panels.js` builds a **Panels** section with that exact label and a `↺ Reset layout` button.
+    Driven live (leo-isr-denial, Seed 1, White): unticking hides the panel, ticking shows it again; untick then Reset
+    layout shows it again. On Blue and Red the panel is not shown.
+  - **L-1:** §15.3 now names `test_vignette_tutorials.py` as the subject of "Since 2026-10-25 … also drives the
+    five Red COA recipes".
+  - **L-2:** §11.15 and §11.17 now say the kill lands by T+26 and the ✓ shows at the first **+10m** click past it,
+    T+30. That matches the +10m step grid from T+20. `test_vignette_tutorials.py` is green.
+- **C-2 (Compare panel in WCM-6): closed.** WCM-6 has the complete Compare procedure: White-only, the 403 for other
+  seats, where to find it, how to open it, the reopen path, refresh, and the worked example.
+- **F-1 (false §15.3 automated-gate sentence): closed.** §15.3 says there is no repository test for the §15.1
+  coverage check, and that the learner-walkthrough review performs it.
+
+### A.4 Ledger and allow-lists (recounted)
+
+Master Build Plan, `docs/implementation/packages/INDEX.md` and `ROADMAP.md` each have **94** `IP-` rows. All 94 ids
+are distinct and all 94 rows are `VERIFIED`. Allow-list entries (comments excluded): `test_origin_allowlist` 0,
+`doc_integrity_allow_indexes` 0, `_ledgers` 0, `_retired` 0, `_links` **38**. Nothing has changed since §2.1.
+
+### A.5 Lock sanity (informational; lock unchanged)
+
+I built a fresh venv from `requirements.lock` (CPython 3.13.17) and ran `pip list --outdated`. One newer version
+has appeared since REV-REL-004: **`pyee` 14.0.0 → 16.0.1**. It is not adoptable: the locked `playwright` 1.64.1
+requires `pyee<15,>=13`. It is a test-only, transitive dependency of the browser harness. No action is needed for
+this release; the next lock refresh (`07`) picks it up together with N7 (the Starlette `httpx` deprecation).
+**NFR-1510 still met.**
+
+### A.6 Smoke (README path)
+
+I started from the same fresh venv (`pip install -r requirements.lock && pip install --no-deps -e .`) and ran
+`python3 -m spacesim.ui_web`, which came up on `127.0.0.1:8000` with `GET /` returning 200. I drove it with
+headless Chromium.
+
+- **leo-isr-denial, Seed 1:** Load gave `#sess-1`. Start worked, followed by +10m ×3. I switched White → Blue →
+  Red → White, and every seat rendered with the correct `data-cell`. The Compare panel is visible only on White.
+- **training-basics:** Load gave `#sess-2`. The Tutorial panel opens for Blue (6 steps) and for Red (6 steps).
+- **Page errors: 0.** Server log: 424 requests, 0 × 5xx. The only 4xx were two `favicon.ico` 404s, which are benign.
+
+### A.7 What ships: the owner-accepted release baseline (journal run #266)
+
+The owner accepted these as the release baseline. Their authorization trails are in §4.
+
+1. `FR-3520`: the role gate is checked at submission, and omitting `seat` skips it (`BL-0388`; `FR-3520` amended).
+2. **D-1 / O-2:** role scoping (`FEAT-3500`) ships as an **opt-in, dormant** feature. No shipped vignette declares
+   `roles_needed`, and the Creator saves `roles_needed: []` (`BL-0390`). The owner accepted this; it closes O-2.
+3. The `FR-5310` template-reference clause was dropped (`BL-0233`, `ADR-0036`).
+4. Save-as-scenario omits gating rules, detectability config, the space-weather series and the inject schedule
+   (`BL-0389`; v1.1).
+5. These controls are **HTTP only**, with no console control: gate approve/deny, live ROE change, manoeuvre
+   ledger, undo, clock rate (`BL-0389`).
+6. The remaining §4 rows:
+   - Pause/Resume resets a custom clock rate.
+   - The Creator role matrix is not saved.
+   - `mt-sigint-geolocate` `characterize_emitter` cannot be reached by orders.
+   - The Blue availability objectives score the satellite's health, not link availability.
+7. The hot-seat hand-off is not automatic (`FR-6610`, `BL-0015`).
+8. AI-Red reads ground truth (`ADR-0024`).
+9. The `NFR-3810` retired-document check has nothing to check on the real tree (`BL-0393` deferred).
+10. The LAN trust model (§6): cell seats are client-asserted, with no authentication. The product is for a
+    trusted LAN only.
+
+### A.8 Records that WOULD flip on a GO (checklist; none touched here)
+
+- [ ] `ROADMAP.md`: add a "Release 1 — released" entry dated at the GO, with the commit, and record the owner's
+      decision against the REV-REL-004 entry.
+- [ ] `docs/feature-planning/01-release-plan.md`: mark the Prototype, MVP, Release 1 and Release 2 buckets
+      released; fix N6 (line ~70 `FEAT-3500` stale RTM text); record the C-1/C-2 closure and the O-2 acceptance.
+- [ ] `CLAUDE.md`: change the status line to "released at `<commit>`". The counts are already current
+      (2244 / 4 skipped; non-browser 2202 / 5; browser 42).
+- [ ] `README.md`: change the status line to released, with the version and commit.
+- [ ] `docs/INDEX.md` and `docs/feature-planning/INDEX.md`: point at this assessment as the release record.
+- [ ] `docs/implementation/00-master-build-plan.md`: add a summary line naming the release commit (94 `VERIFIED`
+      unchanged).
+- [ ] This document: date-stamp the baseline and record the owner's GO.
+
+### A.9 FINAL RECOMMENDATION: **GO**
+
+Nothing blocks the release. There is no code, test, dependency, verification, integration or documentation-gate
+blocker:
+
+- C-1, C-2 and F-1 are closed, with evidence above.
+- O-2 is closed by the owner's acceptance.
+- Everything changed since the evidence commit is documentation.
+- All three suite modes are green at the expected counts.
+- The smoke run had 0 page errors.
+
+**The GO assumes three conditions:**
+
+1. The release is cut from `935fd44`, or a descendant whose diff from it is documentation only.
+2. The §A.7 deviations are published as the release's known-deviation list.
+3. The deployment stays on a trusted LAN (§6).
+
+The §A.8 flip runs only after the owner's explicit GO. **The GO/NO-GO decision is the owner's.**
