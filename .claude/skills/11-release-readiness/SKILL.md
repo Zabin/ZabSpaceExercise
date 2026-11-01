@@ -23,6 +23,10 @@ verification or integration review itself (it consumes their reports — a missi
 NO-GO input, not a gap to fill in-pass); deploy anything; or declare GO on the user's behalf —
 the recommendation is advisory and the user makes the call before any baseline flip.
 
+**Output scope:** the Release Assessment (`docs/reviews/`), the baseline trackers flipped on GO
+(release plan, `ROADMAP.md`, `CLAUDE.md` status line, `README.md`, affected `INDEX.md` files), and the
+release archive — `docs/releases/` (manifests + `INDEX.md`) and the `archive/release-<n>.<m>` ref / `release-<n>.<m>` tag.
+
 ## Inputs (all read-only)
 
 The release plan + feature catalog (`docs/feature-planning/`), the Master Build Plan + package
@@ -91,14 +95,39 @@ the open Manual-impact items in `docs/pipeline/backlog.md`, the RTM
    | **Residual risks** | Accepted findings and open issues shipping with the release |
    | **Assessment** | **GO** or **NO-GO**, with the blocking items enumerated on NO-GO |
 
-5. **On the user's explicit GO — update the baseline** (this is the only mutating step, and it
-   touches trackers only): flip the release bucket's state in `01-release-plan.md`; flip the
+5. **On the user's explicit GO — update the baseline** (with step 6, the only mutating steps; they
+   touch trackers, `docs/releases/` and git refs only): flip the release bucket's state in `01-release-plan.md`; flip the
    delivered features'/packages' rows in `ROADMAP.md`; update `CLAUDE.md`'s status line if the
    release changes the project's headline state; update `README.md`'s status and feature summary
    to match (owned here since 2026-10-19, `BL-0293`); update affected `INDEX.md` files; date-stamp the
    baseline in the Release Assessment itself. Commit as
    `docs(release): <release> — assessment + baseline update`. On NO-GO (or GO not yet given),
    write the assessment only and leave every tracker untouched.
+6. **Release archive (mandatory; owner decision 2026-11-01 — "tag + release manifest", git history
+   is the archive).** Runs after the owner's GO and the step-5 baseline flip, and **before any further
+   change** to the release line. A release is not finished until this step is done:
+   1. **Merge** the release commit (the baseline-flip commit) to the release line (`main`). The commit
+      that lands there is the *release commit*.
+   2. **Create the archive ref** `archive/release-<n>.<m>` — a branch ref — on that exact release
+      commit, and push it. **Also** create the annotated tag `release-<n>.<m>` on the same commit and
+      push it where the environment permits pushing tags; where it does not, record in the manifest
+      `tag: pending (push blocked by the environment; …)`.
+   3. **Write the Release Manifest** `docs/releases/release-<n>.<m>.md` and add its row to
+      `docs/releases/INDEX.md`. Contents, every fact read from the release commit (`git show
+      <commit>:<path>`, `sha256sum`), none guessed: release number and date; release commit (full hash);
+      archive ref(s) and tag status; links to the Release Assessment and the earlier ones; counts
+      (packages `VERIFIED`, each suite mode's tests/failed/skipped); the dependency lock (sha256 of
+      `requirements.lock` at the release commit, the key pinned versions, the Python version validated);
+      the owner-accepted known deviations, verbatim from the assessment; the integration and
+      learner-walkthrough reviews relied on; the branches merged (names only); the owner's decisions;
+      how to run (pointer to `README.md`); the trust-model statement.
+   4. **Verify:** `git rev-parse origin/archive/release-<n>.<m>` (and the tag, if pushed) resolves to
+      the release commit, and the manifest's commit, sha256 and counts match it. Run
+      `test_doc_integrity.py`. Commit as `docs(release): <release> — archive manifest`.
+
+   The step's output is the manifest. Report it to `00-pipeline-manager`, which records the archive as
+   done in the journal; until then no new feature, bug or package work starts. A hotfix to the archived
+   release is the one exception: it runs on a maintenance branch cut from the archive ref.
 
 ## Quality gate
 
@@ -113,6 +142,9 @@ the open Manual-impact items in `docs/pipeline/backlog.md`, the RTM
       without the user's explicit GO.
 - [ ] After a GO flip, release plan, ROADMAP, Master Build Plan, and CLAUDE.md agree — no tracker
       left telling the old story.
+- [ ] After the flip, the release archive step ran before any further change: `archive/release-<n>.<m>`
+      (and the tag, or a recorded "tag: pending") resolves to the release commit, and
+      `docs/releases/release-<n>.<m>.md` + `docs/releases/INDEX.md` hold facts that match that commit.
 
 ## Pipeline position & completion summary (mandatory, every run)
 
@@ -123,14 +155,15 @@ Upstream: `10-integration-review`. Downstream: the next increment's planning.
 
 End **every** invocation with a chat summary containing exactly these three parts:
 
-1. **What changed** — the Release Assessment written (path + GO/NO-GO), and any baseline records
-   flipped (only after an explicit user GO).
+1. **What changed** — the Release Assessment written (path + GO/NO-GO), any baseline records
+   flipped (only after an explicit user GO), and, after a GO, the archive ref(s) and the Release
+   Manifest under `docs/releases/`.
 2. **Recommendations** — on NO-GO, the blocking items each with its owning skill; on GO, the
    residual risks the user is accepting and any deferred scope now owed to a future bucket.
 3. **Next step** — say explicitly what to run next and why: on NO-GO, the highest-leverage
    blocking item's owning skill (usually `07-implementation-planning` →
    `08-code-implementation` → `09-package-verification`, then re-run `10-integration-review`);
-   on GO with baseline updated, the next increment — `00-pipeline-manager` to survey the tree, then
+   on GO with baseline updated and the release archived, the next increment — `00-pipeline-manager` to survey the tree, then
    typically `05-feature-decomposition`/`06-feature-specification` for the next release bucket, or
    `01-vision`/`02-research-*` if the increment changes direction.
 

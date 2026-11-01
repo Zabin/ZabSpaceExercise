@@ -177,6 +177,14 @@ Before invoking anything, stop and ask the user (via `AskUserQuestion`) if the s
   its release, or a VR would record a deferral instead of returning the package;
 - **spending judgment the user reserved** — anything a stage skill's own rules say needs the user.
 
+**Release-archive gate (owner decision 2026-11-01).** Once a release GO is recorded in the journal,
+no new feature, bug or package work may start — no stage 04–10 step for new scope, no `00-intake`
+item scheduled into work, and no new branch from `main` for such work — until
+`11-release-readiness`'s **Release archive** step (archive ref on the release commit + manifest in
+`docs/releases/`) is recorded as done in the journal. Until then the only valid next step is that
+archive step. The one exception is a hotfix to the archived release, which runs on a maintenance
+branch cut from the `archive/release-<n>.<m>` ref.
+
 A gate stop is a complete, successful run: journal it (`GATE: …`), record the user's answers in
 the backlog/journal when they come, report what decision unblocks the pipeline, and end.
 
@@ -238,6 +246,9 @@ so the user can simply run the manager again.
       neither docs written nor a Manual-impact item was harvested as a finding for `09`.
 - [ ] No `11-release-readiness` step was recommended or run while a `manual-impact` entry for
       that release was open or no current learner-walkthrough training review existed.
+- [ ] No new feature/bug/package work was started (or branched from `main`) after a recorded GO
+      while the release-archive step was not yet journaled as done (hotfixes on a maintenance branch
+      from the archive ref excepted).
 - [ ] Exactly one skill was invoked (or zero, for status/log/sync/triage/gate runs).
 - [ ] Every gate the step touched was stopped at and asked about — none assumed.
 - [ ] The run-log row, Position block, and backlog updates were written and committed, and match
