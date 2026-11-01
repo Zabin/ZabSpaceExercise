@@ -45,8 +45,10 @@ should have at least one topic here an implementer extending it would read first
 | [R135](R135-ground-segment-operations-as-contested-terrain.md) | Ground Segment Operations as Contested Terrain | Cyber/physical attack surface of stations and networks, extending R107's cooperative-only treatment — closes GAP-12. | [R107](R107-ground-segment-operations.md), [R116](R116-cyber-operations-against-space-systems.md) | ✅ Done |
 | [R136](R136-cislunar-and-xgeo-operations.md) | Cislunar and xGEO Operations | Custody/sensing regimes beyond GEO — research-first, closes GAP-04. | [R101](R101-orbital-mechanics-for-operations.md), [R102](R102-space-domain-awareness.md) | ✅ Done |
 | [R137](R137-bus-and-payload-parameter-catalog.md) | Bus and Payload Configuration Parameter Catalog | Completeness/navigation index of every bus-subsystem and payload-type configuration parameter in the engine, cross-referenced to the topic that characterizes each — not a characterization document itself. | [R109](R109-sensor-operations.md), [R110](R110-communications.md), [R111](R111-power-and-thermal-operations.md), [R112](R112-propulsion-and-maneuver-planning.md), [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R115](R115-electronic-warfare-in-space-operations.md), [R116](R116-cyber-operations-against-space-systems.md), [R118](R118-space-surveillance-networks.md), [R121](R121-telemetry-logging-and-attack-signatures.md), [R129](R129-sigint-collection-and-geolocation-accuracy.md), [R134](R134-pnt-warfare-and-navigation-denial-operations.md) | ✅ Done |
+| [R138](R138-satellite-service-availability-and-link-denial-measurement.md) | Satellite Service Availability and Link-Denial Measurement | Service (user-end, time-fraction) availability vs. asset health; outage entry rules, margin consumed by fade/jamming, uplink-vs-downlink denial scope, PNT integrity — grounds Release 2.0 D3's availability objective. | [R110](R110-communications.md), [R115](R115-electronic-warfare-in-space-operations.md), [R134](R134-pnt-warfare-and-navigation-denial-operations.md) | ✅ Done |
+| [R139](R139-passive-rf-emitter-characterization-and-geolocation.md) | Passive-RF Emitter Characterization and Geolocation from Space | What "characterized" means for an emitter (parameters, identity, located fix with error ellipse); TDOA/FDOA/AOA/single-satellite Doppler; accuracy drivers; common-view and emission preconditions — grounds Release 2.0 D4's SIGINT characterization path. | [R129](R129-sigint-collection-and-geolocation-accuracy.md), [R109](R109-sensor-operations.md), [R120](R120-access-window-and-geometry-planning.md) | ✅ Done |
 
-**Status: 36 of 36 topics complete — tier fully closed.** All
+**Status: 39 of 39 topics complete — tier fully closed** *(R137 added 2026-07-05; R138/R139 added 2026-11-01 — see the Release 2.0 D3/D4 pass below; the "36" body text that follows predates both)*. All
 36 authored topics (R101-R136) have substantive §1 Purpose/§2 Scope/§3 Concepts/§4 Operational
 Context/§5 Implementation Guidance/§6 Feature Mapping/§7 Related Topics content. A remediation pass
 (2026-06-27) resolved the two systemic defects a prior MSTR-007 re-check had found in the original
@@ -185,3 +187,13 @@ candidate gaps (`Asset.hardening`'s numeric effect, `PayloadState.last_effect_as
 `deception_active`'s custody/attribution consequence, `Asset.civilian`'s political-cost
 consequence) — none blocking, all flagged as future maintenance work rather than silently left
 implicit. Cross-linked bidirectionally into all twelve topics it indexes.
+
+**Release 2.0 D3/D4 grounding pass (2026-11-01): new topics [R138](R138-satellite-service-availability-and-link-denial-measurement.md) and [R139](R139-passive-rf-emitter-characterization-and-geolocation.md), tier now 39/39.**
+The owner asked for Release 2.0 decisions D3 (availability objective) and D4 (SIGINT characterization
+path) to rest on physical reality. Existing coverage ([R110](R110-communications.md),
+[R115](R115-electronic-warfare-in-space-operations.md), [R129](R129-sigint-collection-and-geolocation-accuracy.md),
+[R134](R134-pnt-warfare-and-navigation-denial-operations.md), [R109](R109-sensor-operations.md) §3.10) had
+no topic defining *service* availability or emitter *characterization*, and none covering FDOA, AOA,
+single-satellite Doppler or common-view geometry. R138 and R139 close those gaps. Both carry a
+verification note: fetch was blocked in the authoring environment, so they are queued for the
+methodology §5.3 pass. Decision memo: [`06a-release-2-d3-d4-research.md`](../../feature-planning/06a-release-2-d3-d4-research.md).
