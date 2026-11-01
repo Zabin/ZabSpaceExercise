@@ -1,11 +1,11 @@
 # VR-1088 — Verification Report: The Per-Cell Activity Feed Is Filtered at the Session Boundary (FR-6210, FR-6220, FR-4450; M-1)
 
 > **Document ID:** VR-1088
-> **Version:** 2.0
+> **Version:** 3.0
 > **Status:** ✅ Final
 > **Dependencies:** [IP-1088](../packages/IP-1088-fog-correct-activity-feed.md) v1.0
 > **Referenced By:** [INDEX.md](INDEX.md), [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](../packages/INDEX.md)
-> **Produces:** the `COMPLETE → IN PROGRESS` return of `IP-1088` (not `VERIFIED`)
+> **Produces:** the `COMPLETE → VERIFIED` advance of `IP-1088` (v3.0, 2026-10-31; v1.0 and v2.0 below are the earlier RETURNED verdicts, kept as history)
 > **Feature Mapping:** [FS-106](../../features/FS-106-white-cell-dashboard.md)
 
 [↑ Verification index](INDEX.md) · [Master Build Plan](../00-master-build-plan.md) · [Packages index](../packages/INDEX.md)
@@ -14,7 +14,7 @@
 
 IP-1088, branch `claude/ip-1088-build`, tree `42d029d` (code and fog matrix in `f4f1ccb`), parent `83defa6`. Fresh-session verifier; not the implementing session.
 
-## Result
+## Result (v1.0 — superseded by v3.0, **VERIFIED**)
 
 **RETURNED** — 3 failed checks, all documentation (Medium). The code, the fog behaviour and every test gate pass; 0 code findings.
 

@@ -11,7 +11,9 @@ an access window permits.
 > Regenerate with `python3 tools/record_walkthrough.py` (requires a running server +
 > Playwright Chromium).
 
-> **Status:** Backend feature-complete through Phase 8. Deterministic engine, FastAPI web layer,
+> **Status:** **Released: Release 1 was declared GO by the owner on 2026-11-01** (release assessment
+> [REV-REL-004](docs/reviews/release-assessment-release-candidate-10.md); known deviations in its addendum §A.7).
+> Backend feature-complete through Phase 8. Deterministic engine, FastAPI web layer,
 > belief scene + 2D map, the full **19-vignette library**, the capstone vignette with AAR replay,
 > and **LAN multiplayer transport** (server-authoritative clock, per-session locking, session
 > discovery, join-by-URL, multi-monitor pop-outs). Stack: **Python + FastAPI/web**. Run the

@@ -9,7 +9,7 @@
 > in implementing, verifying, integration-reviewing or training-reviewing any package)
 > **Date:** 2026-10-31
 > **Commit assessed:** `cfcf47f` (branch `claude/release-assessment-3`, tip = `origin/claude/release-candidate-10`)
-> **Status:** Final (advisory). Every number below was produced by this session; nothing is taken from summaries.
+> **Status:** Final. **GO declared by the owner, 2026-11-01** (see the final-confirmation addendum below; baseline flipped on `claude/release-flip`). Originally advisory. Every number below was produced by this session; nothing is taken from summaries.
 > **Decision owner:** the project owner. This document is advisory. **No baseline record was flipped.**
 
 ## 0. Recommendation (summary)
@@ -512,6 +512,12 @@ The owner accepted these as the release baseline. Their authorization trails are
 - [ ] `docs/implementation/00-master-build-plan.md`: add a summary line naming the release commit (94 `VERIFIED`
       unchanged).
 - [ ] This document: date-stamp the baseline and record the owner's GO.
+
+### A.8a Owner decision and baseline flip (2026-11-01)
+
+**The owner declared GO on 2026-11-01** (via AskUserQuestion, in the release-flip session), on the strength of this addendum. The A.8 records were flipped on branch `claude/release-flip`: `ROADMAP.md`, `docs/feature-planning/01-release-plan.md` (Release state; stale `FEAT-3500` text corrected; also `02-epic-catalog.md`, `05-feature-review.md`), `CLAUDE.md`, `README.md`, `docs/INDEX.md`, `docs/feature-planning/INDEX.md`, `docs/implementation/00-master-build-plan.md`, and the `VR-1088` header (V-1). `docs/pipeline/` was left to the manager. Baseline date: **2026-11-01**.
+
+**Known-deviation list: exactly what ships.** The ten §A.7 items, as accepted by the owner, are the release's known deviations. Item 6 covers four sub-items (Pause/Resume rate reset; Creator role matrix not saved; `characterize_emitter` unreachable by orders; Blue availability objectives score health). Item 2 closes O-2. The three GO conditions in A.9 stand: release from `935fd44` or a documentation-only descendant, publish this list, deploy on a trusted LAN only.
 
 ### A.9 FINAL RECOMMENDATION: **GO**
 

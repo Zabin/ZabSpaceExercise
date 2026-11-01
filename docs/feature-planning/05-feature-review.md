@@ -36,7 +36,7 @@ other leaves live in another FS. The table was originally written for the first 
 | FS-113 Observer Read-Only Access | FEAT-6500 | 1:1 — Finding F-02 (cites `FR-4610`, owned by FEAT-4600, as a dependency) |
 | FS-114 Hot-Seat Hand-Off | FEAT-6600 | 1:1 — Finding F-02 |
 | FS-115 Session Setup | FEAT-4100, FEAT-4200 | One FS covers two catalog Features — Finding F-10 |
-| FS-116 Role-Scoped Command Catalog | FEAT-3500 | 1:1 (`IP-1160` `BLOCKED` on authorization) |
+| FS-116 Role-Scoped Command Catalog | FEAT-3500 | 1:1 (`IP-1160` delivered, `VERIFIED`) |
 | FS-117 Vignette Creator | FEAT-5100 | 1:1 — consolidates the catalog entry (`ADS-5100A`/`ADS-5100B`) |
 | FS-118 External Vignette Directories | FEAT-5400 | 1:1 (`FR-5410`/`FR-5420`/`NFR-3700`) |
 | FS-119 Bulk TLE/OMM Import | FEAT-5200 | Slice: `FR-5220` only; `FR-5210` was already built |

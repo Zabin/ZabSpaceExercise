@@ -43,7 +43,7 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Features Included** | FEAT-3100, FEAT-3200, FEAT-3300, FEAT-3400, FEAT-3500 |
 | **Subsystems** | C1 Simulation Engine, C2 Session/Application Layer, C3 Mock SSN |
 | **Estimated Scope** | Large — the mechanism every operator action and every AI-Red action (EP-9000) ultimately flows through. |
-| **Risks** | FEAT-3300 and FEAT-3500 both show `UNASSIGNED` RTM traceability on their included FRs — a documentation gap on an Epic that is otherwise clearly built and tested per `CLAUDE.md`'s code map. |
+| **Risks** | FEAT-3300 and FEAT-3500 both show `UNASSIGNED` RTM traceability on their included FRs — a documentation gap on an Epic that is otherwise clearly built and tested per `CLAUDE.md`'s code map. *(Release 1, 2026-11-01: `FEAT-3500` was delivered by `IP-1160`, `VERIFIED`.)* |
 | **Dependencies** | EP-1000 (access geometry gates every plan; Δv and custody gate execute-time validation); EP-4000 and EP-7000 *(sweep 2026-10-17: FEAT-3400's ROE family uses role assignments and manual adjudication, logged)* |
 
 ### EP-4000 — White Cell Exercise Control

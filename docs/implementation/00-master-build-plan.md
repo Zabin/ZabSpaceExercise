@@ -104,6 +104,8 @@ package in this plan to reach that state.
 
 ## Package status
 
+> **Release (2026-11-01):** Release 1 was declared GO by the owner on 2026-11-01 ([REV-REL-004](../reviews/release-assessment-release-candidate-10.md), assessed at `935fd44`). All 94 packages are `VERIFIED`; package statuses are unchanged by the release.
+
 | ID | Feature | Situation | Status | Blocking dependency |
 |---|---|---|---|---|
 | [IP-1010](packages/IP-1010-mission-planning.md) | FS-101 Mission Planning | As-built | ✅ VERIFIED | none — **retro-verified 2026-07-04 (run #18)**, [`VR-1010`](verification/VR-1010-mission-planning.md), the first of 11 as-built packages closing the `BL-0004` evidence gap; full suite 566 passed/3 skipped, both permanent gates green |
