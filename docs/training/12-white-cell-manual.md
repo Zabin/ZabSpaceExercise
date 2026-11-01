@@ -181,11 +181,36 @@ next session load. Facilitation patterns — when to inject what — are in
   what that cell's operators read in BLU-6/RED-7, so use it to see an attack's signature land.
   Controls: [UI reference §10.13](10b-ui-reference-views.md#1013-subsystem-drill-down).
 
+- **Compare panel (⚖) — truth beside each cell's picture.** Use it to see, at a glance, what is really
+  true versus what each side believes. It is **White-only**: the panel does not exist on the Blue, Red or
+  Observer screens (checked: Blue sees no Compare panel), and the server answers `GET /controller_view` only
+  to the White seat (anything else gets 403 `only White Cell may open the controller view`). **Where:** scroll the White main column to the panel titled **⚖ Compare — truth beside
+  each cell's picture** (in the White-only part of the page); it is collapsed at first, so click its
+  title to open it. (It has no entry in the View menu; if you closed it with its ✕, **View ▾ → Reset
+  layout** brings it back.)
+  1. Click the title to open it, then press **🔄 Refresh**. The grey text beside it, `at 2030-03-15T06:40:08Z`,
+     is the exercise moment the three columns describe. While the panel is open it also refreshes with the
+     console's normal polling; closed, it costs nothing.
+  2. Read the three columns, all taken from one read so they are consistent with each other:
+     - **Truth** — every asset in the exercise, one per line: `ISR-EO-1 [blue] nominal` (id, owner, true
+       health: nominal, degraded, safed or destroyed).
+     - **Blue's picture** — `own:` lists the assets Blue owns and can see; each `track RED-TGT: conf 1.00`
+       line is an object Blue has custody of and how confident it is (0 to 1; confidence decays between looks).
+     - **Red's picture** — the same for Red.
+  3. Use the differences. An object in Truth but absent from a side's `track` lines is one that side has not
+     found; a track whose confidence is low is going stale; a Truth line reading `destroyed` that a side still
+     lists as a track shows a belief that has not caught up. In the worked example (Training: Basics, Blue
+     tasked `RADAR-TRN` on `RED-TGT`, 40 minutes in) Truth listed six assets, Blue's picture was
+     `own: ISR-EO-1, GS-TRN` plus `track RED-TGT: conf 1.00`, and Red held no tracks.
+  It is plain text, not a map; for geometry use the god-view map and globe above. Players never see this
+  panel or its contents.
+
 **Scheduled injects are on your timeline only.** Injects you schedule (including future-dated ones) appear as `inject (N effects)` bars on White's own Activity timeline. Blue and Red never see them, nor your edits or cancels; they only see the effect once it starts on their own assets.
 
 > **Sources:** `spacesim/session/scene.py` · `spacesim/ui_web/static/app.js` (Gantt, objectives,
 > `openDrill`) · `spacesim/session/manager.py` (`get_telemetry`/`get_series`, White reads any asset) ·
-> `Vignette.coaching` in `spacesim/content/vignette.py`
+> `Vignette.coaching` in `spacesim/content/vignette.py` · `spacesim/ui_web/static/app.js` (`refreshComparePanel`) ·
+> `spacesim/session/manager.py` (`controller_view`) · `spacesim/ui_web/server.py` (`controller_view`) · FR-4620
 
 ### WCM-7 · Add real satellites by TLE or OMM (before Start)
 

@@ -93,6 +93,7 @@ most likely to be edited; the manual sections are every place that behavior is d
 | Vignette Creator and starter snippets (draft session, TLE / lat-long asset entry, curated site picker, asset menu, JSON view, preview, seat declaration, save as vignette, play it) | `static/creator.js`, `session/manager.py` (`creator_*`, `declare_seats`), `content/vignette_export.py`, `config.py` (`ContentConfig`), `POST /api/sessions/draft`, `PUT /creator/state`, `POST /save_vignette` | WCM-17 | — | — | FS-117 |
 | Operator seat + role-scoped commands (`roles_needed`, assign, staffing report, `role_scope_*` refusals, scope read) | `session/manager.py` (`assign_role`, `role_scope_check`, `staffing_report`), `static/app.js` (`o-seat`, `REASON_TIPS`), `GET /roles/scope`, `POST /roles/assign` | WCM-2, WCM-18 | BLU-15 | RED-14 | FS-116 |
 | Approval gates (`pending_approval`, decide) and live ROE changes | `engine/orders.py` (`decide_gated_order`, `issue_roe_change`, `_matching_gate`, `rebuild_pending`), `POST /gate/decide`, `POST /roe/change` | WCM-19 | BLU-16 | RED-15 | FS-127 |
+| Compare panel (⚖ truth beside Blue's and Red's pictures, one `/controller_view` read; White-only) | `static/app.js` (`refreshComparePanel`), `session/manager.py` (`controller_view`), `GET /controller_view` | WCM-6 | — | — | FS-106 |
 | Pending-inject queue, edit/cancel, condition injects, owner-fact fog (`_notice_by_owner`) | `session/manager.py` (`pending_injects`, `edit_inject`, `cancel_inject`, `_h_condition_check`, `_notice_by_owner`), `static/app.js` (`renderPendingInjects`) | WCM-5, WCM-20 | — | — | FS-106, FS-108 |
 | Time-control bounds and refusal messages; clock-rate bounds | `session/manager.py` (`step`, `advance_to`, `rewind_to`, `undo_last`, `set_clock`), `ui_web/server.py` | WCM-4, WCM-21 | — | — | FS-109 |
 | Save contents, Load refusals/warnings (incl. unsupported `save_format`, `IP-1094`), save-as-scenario carry-over | `session/manager.py` (`save_state`, `validate_save`, `from_state`), `content/vignette_export.py`, `POST /load_save` | WCM-10, WCM-22 | — | — | FS-110, FS-120 |
@@ -162,7 +163,7 @@ and `WCM-21`–`WCM-25` in [`12d`](12d-white-cell-clock-saves-and-controls.md).
 | WCM-3 | Hot-seat / LAN / pop-out | `session/inprocess.py`, `server.py` (`/api/sessions`) |
 | WCM-4 | Time control | `session/manager.py` (`step`, `advance_to`, `_span_ceiling`, `rewind_to`, `undo_last`), `engine/clock.py`, `/clock`, `/step`, `/advance`, `/rewind`, `/undo`, `app.js` (`stepBy`, `rewindTo`, `reportControlError`), `#control-status` |
 | WCM-5 | Injects | `content/inject_library.yaml`, `/inject`, `session/manager.py` (`fire_inject`, `validate_inject_effects`, `_skip_inject_effect`), `app.js` (`fireBuiltInject`, `fireInject`) |
-| WCM-6 | Monitor both sides | `session/scene.py`, `app.js` (incl. `openDrill`), `Vignette.coaching`, `session/manager.py` (`get_telemetry`/`get_series`) |
+| WCM-6 | Monitor both sides | `static/app.js` (`refreshComparePanel`), `session/manager.py` (`controller_view`), `session/scene.py`, `app.js` (incl. `openDrill`), `Vignette.coaching`, `session/manager.py` (`get_telemetry`/`get_series`) |
 | WCM-7 | TLE add | `engine/propagator.py`, `/force/tle` |
 | WCM-8 | AI-Red doctrine | `session/redai.py`, `/red_step` |
 | WCM-9 | After-Action Review | `session/aar.py`, `/aar*`, `/aar/playback/*`, `session/inprocess.py` (`playback_seat_decision`) |
@@ -256,7 +257,7 @@ maintained by `08-vignette-development` and reviewed by `09-training-manual-revi
   real sections here in the corpus. A renamed manual section that a rung's "Read first" points at
   must update the rung too.
 - **The playbooks the rungs link to are machine-verified** by
-  `spacesim/tests/test_vignette_tutorials.py` (FR-11420) — that test is the automated gate for the playbooks and tutorials (keep it green when a vignette script changes). The other automated gates are `test_training_sources.py` (every `> Sources:` footer still points at real code), `test_doc_integrity.py` (links, INDEX listings, ledgers) and the matrix coverage check (every verified FS spec appears in §15.1). Since 2026-10-25 it
+  `spacesim/tests/test_vignette_tutorials.py` (FR-11420) — that test is the automated gate for the playbooks and tutorials (keep it green when a vignette script changes). The other automated gates are `test_training_sources.py` (every `> Sources:` footer still points at real code), `test_doc_integrity.py` (links, INDEX listings, ledgers) and the test-origin checks (`test_test_origins.py`). There is **no** repository test that checks §15.1 against the verified specs: that coverage check (every verified FS spec has a row) is performed as a script by the learner-walkthrough review (`09-training-manual-review`), so rerun it when specs are added. Since 2026-10-25 it
   also drives the five Red COA recipes (11.14-11.18, including the chance-based kill ordering and the console's blocked-order previews) and *executes* every step of the scripted vignettes' tutorials on a fixed seed (a step without a
   check fails the suite) and asserts each brief states the engine's real deadline, so a re-timed
   scenario fails here before it misleads a learner.
