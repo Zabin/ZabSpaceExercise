@@ -874,6 +874,13 @@ T+30 min (it flips only after T+3 h); the tutorials' `command` + `verb` has no A
 cannot choose **engage**; the cyber confirm dialog is unmentioned in `04`; Resume resets a custom clock rate;
 five COA rungs have no playbook; `15.1` lacks rows for FS-123/FS-124; glossary gaps.
 
+**Training review (2026-11-01, delta RC11):** [`reviews/training-review-final-rc11.md`](docs/reviews/training-review-final-rc11.md)
+(REV-TRN-013) is the independent delta learner-walkthrough gate at `70fb36c`, closing release-assessment conditions C-1 (gate not
+current) and C-2 (`BL-0286` Compare panel) and finding F-1 (`15` §15.3): `11.15`/`11.17` ordered recipes, the four "No access
+window" tutorial previews, WCM-22 `save_format` echoes, five `09a` refusals and the WCM-6 Compare panel all driven on the live
+app. 0 High, 1 Medium (WCM-6 says the Compare panel has no View-menu entry; **View ▾ → Panels → Compare** reopens it after ✕),
+2 Low (`15` §15.3 dangling "it"; "✓ at T+26" vs the +10m click). The review is current for this release scope with no open High findings.
+
 **Training review (2026-10-31, final RC8):** [`reviews/training-review-final-rc8.md`](docs/reviews/training-review-final-rc8.md)
 (REV-TRN-012) is the independent learner-walkthrough gate for release candidate 8 (`92c56c8`): every REV-TRN-011 finding
 (N1-N5, L1-L3) verified closed on the live app; README install, 12b starter snippets, WCM-22 and the ISO-bound examples walked
