@@ -78,6 +78,32 @@ def _geo(orbit, t):
     return ecef_to_geodetic(eci_to_ecef(r, t))
 
 
+def _render_orbit_asset(a, now) -> RenderAsset:
+    """One own orbital asset at ``now`` (raises ``ValueError``/``ArithmeticError`` if it cannot be
+    propagated — ``build_scene`` omits such an asset, IP-1086)."""
+    g = _geo(a.orbit, now)
+    regime = a.orbit.regime or (classify_regime(a.orbit.a_m, a.orbit.e or 0.0, a.orbit.i_deg or 0.0) if a.orbit.a_m else None)
+    # User-added FW #1/#2 — sample the next-orbit ground track for the 2D map AND the
+    # orbital arc (lat/lon/alt) for the 3D globe. ~90 min for LEO, ~24 h for GEO; cap to
+    # 60 samples for payload size and pick the step accordingly.
+    track_period = 90 * 60 if (regime in ("LEO", "LEO_SSO") or (a.orbit.a_m or 0) < 8e6) else \
+                   12 * 3600 if regime == "MEO" else 24 * 3600
+    step_s = max(60.0, track_period / 60.0)
+    pts: list[list[float]] = []
+    for i in range(1, 61):
+        gp = _geo(a.orbit, now + int(i * step_s * 1_000_000))
+        pts.append([round(gp.lat_deg, 3), round(gp.lon_deg, 3), round(gp.alt_m, 1)])
+    a_km = round(a.orbit.a_m / 1000.0, 2) if a.orbit.a_m is not None else None
+    per_min = round(period_s(a.orbit.a_m) / 60.0, 2) if a.orbit.a_m is not None else None
+    return RenderAsset(
+        id=a.id, kind=a.kind, lat_deg=g.lat_deg, lon_deg=g.lon_deg,
+        alt_m=g.alt_m, regime=regime, on_orbit=True, track=pts,
+        a_km=a_km, e=a.orbit.e, i_deg=a.orbit.i_deg,
+        raan_deg=a.orbit.raan_deg, argp_deg=a.orbit.argp_deg,
+        ta_deg=a.orbit.ta_deg, period_min=per_min,
+    )
+
+
 def build_scene(world, cell: str) -> SceneView:
     now = world.now
     s = eci_to_ecef(sun_unit_eci(now), now)  # Sun direction in ECEF (unit vector)
@@ -88,27 +114,12 @@ def build_scene(world, cell: str) -> SceneView:
         if a.owner != cell:
             continue
         if a.orbit is not None:
-            g = _geo(a.orbit, now)
-            regime = a.orbit.regime or (classify_regime(a.orbit.a_m, a.orbit.e or 0.0, a.orbit.i_deg or 0.0) if a.orbit.a_m else None)
-            # User-added FW #1/#2 — sample the next-orbit ground track for the 2D map AND the
-            # orbital arc (lat/lon/alt) for the 3D globe. ~90 min for LEO, ~24 h for GEO; cap to
-            # 60 samples for payload size and pick the step accordingly.
-            track_period = 90 * 60 if (regime in ("LEO", "LEO_SSO") or (a.orbit.a_m or 0) < 8e6) else \
-                           12 * 3600 if regime == "MEO" else 24 * 3600
-            step_s = max(60.0, track_period / 60.0)
-            pts: list[list[float]] = []
-            for i in range(1, 61):
-                gp = _geo(a.orbit, now + int(i * step_s * 1_000_000))
-                pts.append([round(gp.lat_deg, 3), round(gp.lon_deg, 3), round(gp.alt_m, 1)])
-            a_km = round(a.orbit.a_m / 1000.0, 2) if a.orbit.a_m is not None else None
-            per_min = round(period_s(a.orbit.a_m) / 60.0, 2) if a.orbit.a_m is not None else None
-            assets.append(RenderAsset(
-                id=a.id, kind=a.kind, lat_deg=g.lat_deg, lon_deg=g.lon_deg,
-                alt_m=g.alt_m, regime=regime, on_orbit=True, track=pts,
-                a_km=a_km, e=a.orbit.e, i_deg=a.orbit.i_deg,
-                raan_deg=a.orbit.raan_deg, argp_deg=a.orbit.argp_deg,
-                ta_deg=a.orbit.ta_deg, period_min=per_min,
-            ))
+            try:
+                assets.append(_render_orbit_asset(a, now))
+            except (ValueError, ArithmeticError):
+                # IP-1086 (NFR-1600) — an asset that cannot be propagated is omitted from its
+                # owner's picture instead of 500ing the whole scene; read-only, deterministic.
+                continue
         elif a.location is not None:
             assets.append(RenderAsset(id=a.id, kind=a.kind, lat_deg=a.location.lat_deg,
                                       lon_deg=a.location.lon_deg, alt_m=a.location.alt_m, on_orbit=False))
@@ -119,13 +130,17 @@ def build_scene(world, cell: str) -> SceneView:
         if t.owner != cell:
             continue
         if t.state_estimate is not None:
-            g = _geo(t.state_estimate, now)
-            tracks.append(RenderTrack(
-                object=t.object, lat_deg=g.lat_deg, lon_deg=g.lon_deg, alt_m=g.alt_m,
-                confidence=round(t.current_confidence(now), 3),
-                uncertainty_km=round(t.current_uncertainty_km(now), 2),
-                characterized=t.characterized, classification=t.classification,
-            ))
+            try:
+                g = _geo(t.state_estimate, now)
+            except (ValueError, ArithmeticError):
+                g = None   # IP-1086 — an un-propagatable belief estimate is omitted, not a 500
+            if g is not None:
+                tracks.append(RenderTrack(
+                    object=t.object, lat_deg=g.lat_deg, lon_deg=g.lon_deg, alt_m=g.alt_m,
+                    confidence=round(t.current_confidence(now), 3),
+                    uncertainty_km=round(t.current_uncertainty_km(now), 2),
+                    characterized=t.characterized, classification=t.classification,
+                ))
         if t.last_footprint:
             footprints.append(CollectionFootprint(
                 target=t.object, corners=t.last_footprint,

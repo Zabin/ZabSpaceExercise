@@ -2,10 +2,8 @@
 
 > **Package ID:** IP-1350
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-23 by `07-implementation-planning`, pipeline run #223.
-> No package dependencies.
-> **Authorization (MSTR-006 §3):** **not yet given.** Owner direction `BL-0297` chose the scheme;
-> the build go-ahead is separate.
+> **Status:** VERIFIED 2026-10-24 ([VR-1350](../verification/VR-1350-documentation-integrity-checks.md), fresh session; READY before that) — authored 2026-10-23 by `07-implementation-planning`, pipeline run #223.
+> **Authorization (MSTR-006 §3):** **given.** Owner direction `BL-0297` chose the scheme; the master build plan row and the `run #230` ledger note record the owner's go-ahead of 2026-10-23. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [FS-135](../../features/FS-135-documentation-integrity-checks.md) v1.0 (the spec).
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md),
 > [`backlog.md`](../../pipeline/backlog.md) `BL-0297`

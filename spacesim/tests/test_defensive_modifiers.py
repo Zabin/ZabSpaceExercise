@@ -178,7 +178,7 @@ def test_evasion_does_not_help_against_jam():
 #        patched cyber vuln, cyber posture).
 # --------------------------------------------------------------------------- #
 
-@pytest.mark.verifies("FR-2510")
+@pytest.mark.verifies("FR-1420")
 def test_harden_still_reduces_safe_mode_susceptibility():
     """def.harden was already wired; lock it against regression."""
     resolver = ModerateEffectResolver()

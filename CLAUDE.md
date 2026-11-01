@@ -16,7 +16,7 @@ command, observe, or attack when access windows permit). Most effects are revers
 cooperative — every browser tab points at one FastAPI server, fog-of-war is enforced server-side
 at the `SessionAPI` / `CellController` boundary.
 
-**Status: backend feature-complete through Phase 8; commands-layer audit completed Jun 2026 (469 tests green, 3 skipped).** Deterministic engine
+**Status: RELEASED. The owner declared GO on 2026-11-01 (release assessment [REV-REL-004](docs/reviews/release-assessment-release-candidate-10.md) and its final-confirmation addendum, assessed at `935fd44`); the ten owner-accepted known deviations that ship are listed in that addendum §A.7. All 94 Implementation Packages are `VERIFIED`. Backend feature-complete through Phase 8; commands-layer audit completed Jun 2026; the suite is 2244 tests (full run, Oct 2026: 2240 passed, 4 skipped, 0 failed; the 4 are data-dependent vignette skips: `test_activity_fog_matrix.py` ×1 (row 10, neutral-owned effect), `test_defensive_audit_2026.py` ×2 (observe order `no_window`; maneuver order `no_command_station`) and `test_derived_probabilities.py` ×1 (training-basics has no SATCOM target)). Skip counts differ by marker mode: `-m "not browser"` collects 2202 and reports 5 skipped (the same 4 plus 1 whole-suite guard that skips on any partial collection: `test_test_origins.py` ×1); `-m browser` is 42 tests, 0 skipped where Playwright + Chromium are present (all 42 skip, with a named reason, where they are absent).** Deterministic engine
 (P0–P4.5), the web layer (P5, FastAPI + browser front end), the render-from-custody belief
 scene + 2D map (P5.5), the full **19-vignette library** (the canonical 8 numbered + the
 training-basics onboarding + 5 Red COA + 3 mission-set + 1 learning + 1 novel) as YAML +
@@ -24,7 +24,8 @@ TLE force-add + Red doctrine presets (P6 + library expansion), the **capstone Vi
 AAR replay** (P7), and the **LAN multiplayer transport** (P8:
 server-authoritative lazy clock + per-session RLock + session discovery + join-by-hash URL +
 multi-monitor pop-out windows). Code under `spacesim/`; content is YAML; UI stack = **web**.
-The browser GUI is unverified headless, but every backend path (endpoints, fog, objectives,
+The browser GUI is not verified end to end; a headless-Chromium suite (`-m browser`, IP-1340)
+covers its load-bearing console rules, and every backend path (endpoints, fog, objectives,
 AAR, multiplayer clock + locking) is test-covered.
 
 ## Authoritative source & reading order
@@ -36,36 +37,29 @@ the prior rule (under which a build-spec module stayed authoritative only until 
 level's own merge gate closed). The supersession is no longer gated module-by-module: build-spec is
 superseded as a whole, immediately, including for GDS levels that have not yet been authored.
 
-**What this means where a GDS level is not yet authored.** Per
-[`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) §1, GDS-06 (Non-Functional
-Requirements) through GDS-10 (Requirements Traceability Matrix) are currently
-`⛔ Planned (scaffold only)` — there is no authored content at those levels yet. The corresponding
-`build-spec/` module may still be read as the only available descriptive text on that topic, but it
-is now **deprecated legacy reference, not a binding tie-breaker**. The old rule ("on any conflict,
-the build spec wins") no longer applies anywhere in this project. Where a topic has no authored GDS
-level yet, treat it as **not yet having an authoritative statement** — read the legacy build-spec
-text for orientation, but do not cite it as binding, and flag a gap rather than treating its
-wording as settled. Authoring GDS-06 through GDS-10 to close this gap is now a standing priority.
-
-**Current GDS-ladder status** (full table: [`docs/architecture/INDEX.md`](docs/architecture/INDEX.md)
-§1): GDS-00 through GDS-05 are authored with closed merge gates and are fully authoritative.
-GDS-06–GDS-10 are scaffold-only; their build-spec counterparts (`04-nfr-milestones-and-risks.md`
-§9, `design/04-data-model.md` schema portion, `design/09-gui-principles.md` +
-`05-cell-interfaces.md` + `10-sda-3d-viewer.md`, `design/07-api-and-networking.md`, none) are legacy
-reference only, per the rule above.
+**Current GDS-ladder status.** Per [`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) §1,
+all eleven levels GDS-00 through GDS-10 are authored with closed merge gates and are authoritative
+(GDS-06 NFRs, GDS-07 data model, GDS-08 UI architecture, GDS-09 API specification, GDS-10
+requirements traceability matrix).
+The `build-spec/` modules they replaced are **deprecated legacy reference, not a binding
+tie-breaker**; the old rule ("on any conflict, the build spec wins") applies nowhere in this project.
+Read build-spec text only for orientation on a topic the ladder does not cover, never cite it as
+binding, and flag a gap rather than treating its wording as settled. Per-level caveats (gaps handed to
+`04`, companion documents such as the ICD and `requirements/03` that stay as leaf-grain companions) are
+in the index's status column.
 
 1. [`docs/architecture/INDEX.md`](docs/architecture/INDEX.md) — the GDS ladder; the authoritative
    entry point for architecture and requirements, full stop.
 2. [`docs/architecture/05-functional-requirements.md`](docs/architecture/05-functional-requirements.md)
    (GDS-05) for functional/operational requirements, elaborated in full traceability detail at
    [`docs/requirements/01-functional-requirements.md`](docs/requirements/01-functional-requirements.md).
-3. For any topic with no authored GDS level yet, [`docs/build-spec/INDEX.md`](docs/build-spec/INDEX.md)
-   as **legacy, non-binding reference** pending migration into the GDS ladder.
-4. `docs/design/01-architecture-overview.md` + `docs/design/04-data-model.md` — architecture/data
-   reference pending their own GDS-03 (already merged)/GDS-07 (pending) migration.
+3. For any topic the ladder does not cover, [`docs/build-spec/INDEX.md`](docs/build-spec/INDEX.md)
+   as **legacy, non-binding reference**.
+4. `docs/design/01-architecture-overview.md` — architecture reference behind GDS-03 (merged); the
+   data model is GDS-07 (`docs/design/04-data-model.md` is superseded).
 5. [`docs/research/INDEX.md`](docs/research/INDEX.md) (`01`–`06`) — *why* the rules are what they are.
 6. `docs/build-spec/04-nfr-milestones-and-risks.md` §10 — the consolidated phase plan (M0–M7) with
-   current status (legacy reference; not yet migrated to a GDS level). Deferred items live in
+   current status (legacy reference; the phase plan is not a GDS level). Deferred items live in
    [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
 7. Remaining [`docs/design/`](docs/design/INDEX.md) docs and [`docs/vignettes/`](docs/vignettes/INDEX.md)
    as each phase needs them.
@@ -128,7 +122,7 @@ spacesim/
 - **P4** Session layer (SessionManager / CellController / SessionAPI) + Vignette 1 end-to-end with
   fog-of-war. *(Note: this header is missing in the roadmap — its bullets are appended to P3.5.)*
 - **P4.5** Planning & tasking scheduler + safe-mode recovery chain. ✓
-- **P5** UI over the API (FastAPI + web). ✓ (backend tested; browser GUI unverified headless)
+- **P5** UI over the API (FastAPI + web). ✓ (backend tested; the console's load-bearing rules are checked in headless Chromium by `-m browser`, IP-1340; the full browser GUI is not verified end to end)
   **P5.5** Render-from-custody belief scene + 2D map + self-contained orthographic 3D globe. ✓
 - **P6** Vignettes 2–7 (data) + TLE force-add + Red doctrine profiles. ✓ (all 19 vignette files
   load/run: 8 canonical + training-basics + 5 COA + 3 mission-set + 1 learning + 1 novel)
@@ -171,13 +165,18 @@ before every commit and keep the suite green on the branch. The Phase-1 determin
 is the canonical permanent gate. **Every test names its origin** (`BL-0310`, IP-1330): mark it
 `@pytest.mark.verifies("FR-xxxx", …)` (or a module-level `pytestmark`) with the requirement leaf it
 verifies — else its `FS-xxx`, or an `IP-xxxx` for a package's own completion test. The suite fails on an
-untagged test (modules still on `spacesim/tests/test_origin_allowlist.txt` are tolerated; that list only
-shrinks) and on an ID that is not a live baseline item. The RTM's Test column is **generated, never hand
+untagged test and on an ID that is not a live baseline item. The tolerance list
+`spacesim/tests/test_origin_allowlist.txt` is now **empty** (the FS-133 backfill is complete, so every
+test must be tagged); the mechanism remains shrink-only (`BL-0358`). The RTM's Test column is **generated, never hand
 edited** (`NFR-2850`): regenerate it with `python3 -m pytest --origin-report=rtm` in the same commit.
-**Documentation checks run with the suite** (IP-1350, `NFR-3800`/`3820`/`3830`): a new broken relative link,
-an `INDEX.md` that omits a document in its folder, or a status-ledger disagreement fails the suite. Known
+**Documentation checks run with the suite** (IP-1350/IP-1092, `NFR-3800`/`3810`/`3820`/`3830`): a new broken relative link,
+an `INDEX.md` that omits a document in its folder, a status-ledger disagreement, or a retired document (a row in a
+`Retired documents` section of an `INDEX.md`; `docs/INDEX.md` for root files) that is still present or named by a
+live document fails the suite — the retired-documents allow-list `doc_integrity_allow_retired.txt` is empty and covers
+live references only. Known
 defects sit on `spacesim/tests/doc_integrity_allow_*.txt`; those lists only shrink (fix the defect, delete its
-line in the same commit).
+line in the same commit — the suite also fails on a stale line). The `docs/research/` primer-link lines in
+`doc_integrity_allow_links.txt` are the remaining known defects (owner: `02-research`, `BL-0292` sweep).
 
 ## Build/test commands
 
@@ -189,11 +188,23 @@ uvicorn spacesim.ui_web.server:app --host 0.0.0.0 --reload       # LAN multiplay
 python3 -m pytest                                                # runs the whole suite (testpaths = spacesim/tests)
 python3 -m pytest spacesim/tests/test_determinism.py             # the Phase-1 determinism gate
 python3 -m pytest spacesim/tests/test_import_guard.py            # the Phase-0 engine guardrails
-python3 -m pytest -m browser                                     # headless-Chromium console-rule tests (IP-1340); skip loudly where Playwright/Chromium is absent
-python3 -m pytest -m "not browser"                                # everything except the browser tests
+python3 -m pytest -m browser                                     # headless-Chromium console-rule tests (IP-1340, 33 tests); skip loudly where Playwright/Chromium is absent
+python3 -m pytest -m "not browser"                                # everything except the browser tests (the default CI-style run)
+python3 -m pytest spacesim/tests/test_doc_integrity.py spacesim/tests/test_test_origins.py   # documentation-integrity + test-origin gates (IP-1350 / IP-1330)
 python3 -m pytest --origin-report [--origin-ids=FR-1120,…]       # read-only: tests by declared origin; requirements no test names
 python3 -m pytest --origin-report=rtm                            # regenerate the RTM Test column (runs no tests)
 ```
+
+**Release dependency lock (NFR-1510).** `pyproject.toml` declares minimum versions only; each release
+ships `requirements.lock`, an exact pin of every direct and indirect dependency. To regenerate: (1) check
+latest — fresh venv, `pip install -U -e ".[content,ui,dev]"`, record what moved; (2) try the update — run
+the full suite (`-m "not browser"` and `-m browser`, plus the determinism gate); (3) fix or hold — a
+minimal compatibility fix in non-engine code goes in test-first; anything needing an engine or
+determinism change is not made, hold that one package at its newest compatible version and report why;
+(4) validate and re-pin — raise the `pyproject.toml` floors to the validated versions,
+`pip freeze --exclude-editable` into `requirements.lock` (keep its header comment), install it into
+another fresh venv (`pip install -r requirements.lock && pip install --no-deps -e .`) and re-run both
+suites; (5) commit the lock with the floors. Install a release from the lock, not from `pyproject.toml`.
 
 **Server config.** Host, port, and reload come from `spacesim.config.yaml` at the repo root
 (loaded by `spacesim/config.py`). Override the path with `SPACESIM_CONFIG=/some/path.yaml`. The
@@ -219,13 +230,14 @@ hostile participant on the LAN can read another cell's belief state through `/sc
 v1 PME training context (everyone in the room is on the same team learning together) and is
 documented as the explicit trust boundary; see `docs/AUDIT-2026-06.md` §D5 / §F1. Hardening
 options (per-cell tokens) are tracked in [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md).
-**White Cell controls (clock, step/advance/rewind/undo, start, param, inject, force-add, save load) are refused to any request not naming the `white` seat (IP-1068, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication.**
+**White Cell controls (clock start/pause/resume/multiplier, step/advance/rewind/undo, start, param, inject fire/edit/cancel, force-add (TLE/bulk/ground), save load, `roles/assign`, `observer/designation` + `observer/view`) are refused to any request not naming the `white` seat (IP-1068/IP-1074, `FR-4310`/`FR-4320`) — again a client-asserted-seat rejection, not authentication. Time controls are also bounded to the exercise span (`FR-4330`, IP-1074/1075/1076): rewind only within `[start epoch, now]`, undo lands on the last surviving entry or the start epoch (empty undo refused 400), advance/step only forward to at most 366 days after the start epoch. The AAR playback routes obey the requesting seat (`FR-7340`, IP-1077): White may request any viewpoint, Blue/Red only their own cell's, Observer may read playback state but not start or change it; refusals are 403 before any state change. IP-1072 extends the same refusal to the Vignette Creator edits (`creator/state`, `creator/asset`, `creator/seats`), `save_vignette`, and `red_step`; session and draft creation (`POST /api/sessions`, `/draft`) is refused only when the request *names* `blue`/`red`/`observer` — a request naming no seat may still create (deliberate asymmetry).**
 **The Observer seat's mutation-rejection (IP-1130) is enforced at this same trust level, not a
 stronger one** — the server rejects any request asserting `cell=observer`, a real structural
 enforcement (it holds even for a request that bypasses the UI entirely), but the seat assertion
 itself is still client-side trust like every other cell: a hostile participant simply lying about
 `cell` bypasses it the same way they could already impersonate another cell today. This adds a new
 rejection rule, not a new authentication mechanism.
+**The operator seat (`seat` on `/order` and `/order/validate`, IP-1160) is client-asserted at the same trust level:** the role-scope gate refuses an out-of-scope command for a request that names its operator seat, but a participant who omits `seat` or names another operator's seat skips or borrows the gate — a rejection rule, not authentication.
 
 The import-guard is a plain pytest test (`test_import_guard.py`), not import-linter — it AST-scans
 `spacesim/engine/` for forbidden imports, wall-clock reads, and any `random` use outside `rng.py`.
@@ -293,6 +305,13 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `_h_command` (IP-1290, FR-1440) — an active uplink jam covering the command's delivery path at
   execute time fails delivery (`achieved="jammed"`), checked via the existing `is_link_denied`,
   mirroring `_h_downlink`'s own jam-check pattern.
+  IP-1085 (FR-1440) — the jam check is path-aware: the maneuver/command execute payloads carry
+  `delivery_path`/`relay` (`_delivery_keys`, from the planned window's channel) and `_delivery_jammed`
+  denies `ground_uplink` on an `uplink` jam on the actor, `isl_relay` on a `crosslink` jam on the actor
+  or relay, and never `stored_program`; a payload without the keys keeps the old uplink-on-actor rule.
+  `rebuild_pending()` (IP-1087, FR-3430) — re-derives `_pending` on resume from the restored order registry, the
+  event log's `effect_gate_request`/`effect_gate_decision` entries and the content's gating rules (no new save key);
+  an unreconstructable pending order is rejected `gate_lost_on_resume` with a returned warning.
   ROE (`engage`/`cyber`) is resolved per issuing cell against `_effective_roe(cell, order.issued_at)`
   (IP-1172/FR-3420, IP-1270/FR-3440) — the vignette-declared static `_static_roe` overlaid with any
   `roe_change` eventlog entries at or before the order's own issue time, a pure point-in-time
@@ -409,13 +428,17 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `Vignette.initial_tracks`/`simulator_version`/`initial_space_weather` (IP-1200, FR-5510) —
   save-as-scenario's carried-forward mid-exercise state; absent/empty for every vignette shipped
   before this package, in which case `build_world()`'s consumption of them is a no-op.
+  **IP-1086 (FR-5310/FR-5311):** `asset_authoring_problems(asset, start_epoch)` — the one shared, pure asset
+  validator (TLE propagates at the start epoch; Keplerian `0<=e<1`, perigee above the equatorial radius,
+  `0<=i<=180`; non-negative resources; id charset), called by `validate_vignette`, force-add TLE, OMM/bulk
+  import and the Creator's `creator_set_state`/`creator_edit_asset`; orbit/location presence stays a save/load rule.
   `list_vignettes()`/`load_vignette()` (IP-1180, FR-5410) — enumerate/search zero or more
   configured external directories alongside `VIGNETTE_DIR`, each entry tagged `origin`
   (`"built-in"` or the external directory's basename); a same-id collision resolves built-in-first,
   external order thereafter, loser skipped + logged. `_validate_id`/`_resolve_within_root`
   (NFR-3700) — the traversal guard, extracted/generalized to any content root, shared with the
   save path below.
-- `spacesim/content/vignette_export.py` (IP-1173, FR-5110) — reverse serialization:
+- `spacesim/content/vignette_export.py` (IP-1173, FR-5110; **IP-1086:** `save_vignette` runs `validate_vignette` on the exported model first — an invalid draft is a 400 and nothing is written) — reverse serialization:
   `export_vignette()`/`save_vignette()` convert a draft session's live `WorldState`+
   `VignetteContext` into a `Vignette` model and write it to a configured `user_save_dir`
   (IP-1180, FR-5420 — retargeted from `VIGNETTE_DIR`; raises if unconfigured) — the mirror image of
@@ -439,7 +462,8 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   **Build / schedule inject** panel with editable JSON + Now/+seconds/absolute-UTC scheduler
   (FW §11.D.19).
 - `spacesim/session/` — `SessionManager` (clock/rewind/inject/TLE-add/save-resume/queue/alarms,
-  **IP-1101 (FR-7210/FR-7220/FR-7230):** a save is self-contained — `save_state` adds `save_format`, `simulator_version`, a `content` portion (the vignette as loaded plus force-added assets) and the replay `baseline`; `from_state` builds from them (legacy saves reload by id), `validate_save` refuses a bad save before replay, and `InProcessSession.load_save_with_warnings` returns the resume warnings (`load_save` route: `{session, warnings}`),
+  **IP-1101 (FR-7210/FR-7220/FR-7230):** a save is self-contained — `save_state` adds `save_format`, `simulator_version`, a `content` portion (the vignette as loaded plus force-added assets) and the replay `baseline`; `from_state` builds from them (legacy saves reload by id), `validate_save` refuses a bad save before replay, **IP-1102 (FR-7220/FR-7230):** `validate_save` also checks required keys/types for both formats and a legacy save's vignette file (each unusable save is a 400 naming the problem, never a 500) and `save_state`'s `content` reflects pre-start edits/deletes of built assets (untouched ones verbatim from the as-authored vignette), **IP-1103 (FR-7230):** `validate_save` completes the set — non-object overrides, malformed pending/orders/SSN rows, an out-of-range `final_time` (more than 366 days past the start) and a non-string classification are each a 400, and `InProcessSession.load_save_with_warnings` returns the resume warnings (`load_save` route: `{session, warnings}`),
+  **IP-1094 (FR-7230):** `SUPPORTED_SAVE_FORMATS` (beside `SAVE_FORMAT`) is the single source for `validate_save`'s first gate after the dict check — a present `save_format` that is not a supported value (`999`, `0`, a string, a bool, `None`) raises `ValueError` naming the supported formats (`legacy (absent), 2`) → `load_save` 400; an absent key (legacy) and `2` unchanged; `tools/record_walkthrough.py` and the `run-spacesim` driver find Chromium via `find_chromium()` (`PLAYWRIGHT_BROWSERS_PATH`, newest `chromium-*/chrome-linux*/chrome`),
   **IP-1063 (BL-0129/BL-0188):** pure `validate_inject_effects` — `fire_inject` rejects a
   malformed or FR-4430-precondition-failing inject atomically (`ValueError` → `Ack(ok=False)` →
   `/inject` 400; e.g. an `anomaly` on an asset with no `bus_state`), and `_apply_inject_effects`
@@ -476,13 +500,20 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `index_series`; **IP-1066 (FR-4450):** a White-only pending-inject queue (`pending_injects`/
   `cancel_inject`/`edit_inject`) logged as `inject_admin` events whose overrides fold from the event
   log strictly before the fire instant (`_inject_overrides`); a stale event is logged `skipped`, edits
-  re-arm after a rewind, White future injects carry `white-<n>` handles; **IP-1067 (FR-4620):**
+  re-arm after a rewind, White future injects carry `white-<n>` handles and are themselves logged as
+  `inject_admin` `schedule` entries so rewind/undo re-arms them (`IP-1083`, `BL-0284`); **IP-1084 (H-1, FR-6210):** `_notice_by_owner()` — the one addressing helper for a controller-set `anomaly`/`sensor_outage` notice (White gets the true cause, the owning cell the fact only, the opposing cell nothing; a neutral target is White only), also reached by the condition and env-anomaly paths; `fire_inject`/`edit_inject` reject a boolean `at_sim_t`; **IP-1067 (FR-4620):**
   `controller_view()` composes the god-view and both cells' `get_view` for one instant (served
   White-only at `/controller_view`, one `_locked_read`); **multiplayer:** server-authoritative
   lazy-clock fields `(_wall_anchor, _sim_anchor, _rate, _clock_running)` + `RLock`, `set_clock /
   catch_up / clock_state`, re-anchor on `start/rewind/undo/advance` so the wall clock can't snap
-  the sim back),
-  `CellController` (fog-of-war), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`
+  the sim back; **IP-1074 (FR-4310):** `rewind_to` raises `ValueError` outside `[ctx.start_epoch, now]`
+  (→ `Ack(ok=False)` → HTTP 400) and `clock_state` carries `start_epoch`; `roles/assign` + `observer/view`
+  are `_require_white` on the query seat, 403); **IP-1075 (FR-4310, NFR-1600):** `undo_last` raises `ValueError` on an empty log or `n < 1` (→ `Ack(ok=False)` → HTTP 400), an undo that drops every entry lands on `start_epoch` (never 1970; `Simulation.undo_last` falls back to the initial state's time), and the tick/inject schedule is re-armed after undo like `rewind_to`; **IP-1076 (FR-4330, NFR-1600):** `advance_to`/`step` raise `ValueError` (→ `Ack(ok=False)` → HTTP 400) for a target before now, after `start_epoch` + `MAX_SAVE_SPAN_US` (366 days), or a non-finite/negative step, and the running (lazy) clock is clamped to that ceiling and stops there,
+  **IP-1086 (NFR-1600):** the scene (`scene.py::build_scene`), `windows_ahead` (`error: propagation_failed`) and
+  `next_contacts` skip an un-propagatable asset instead of 500ing; read-only,
+  **IP-1087 (FR-3430):** `from_state` calls `osys.rebuild_pending()` once, after the order registry is restored, and appends its warnings to `load_warnings` (`_rebind`/rewind still discard pending orders),
+  **IP-1160 (FR-3510/FR-3520):** `ROLE_SCOPE_BY_VERB` (every `COMMAND_VERBS` member is `bus` or `payload`; no third "defense" scope — six `def.*` bus, `def.harden`/`def.set_deception_mode` payload), `role_scope_check(seat, order)` (pure; `role_scope_not_assigned` / `role_scope_out_of_scope`) and `role_scope_for(seat)`; `issue_order`/`validate_order` take an optional **operator** `seat` (the `role_assignments` key — not the console seat `cell`) and refuse before `OrderSystem` is reached, so a refusal registers no order, consumes no id and writes no log entry; `OrderRequest.seat` (bounded) and `GET /roles/scope` serve the console's offer-time filter (`app.js` `actionsFor`) — without `seat` it returns only the static verb table, with `seat` + console `cell` it returns that seat's scope fog-scoped to the caller's cell (Blue/Red see only their own cell's role-gated assets; White all); a non-string `params.verb` skips the gate (the engine answers `invalid_param`); ownership is checked before the role gate (a cell naming an asset it does not own gets `not_owner` whatever the seat — VR-1160 M-4); **limitation (VR-1160 M-3): role is checked at submission; a rebinding applies to later submissions, already queued orders still execute** (an execute-time re-check would need rebinding to be a logged event); `role_assignments` is now carried in `save_state` (`validate_save` checks its shape; a save without the key loads as `{}`),
+  `CellController` (fog-of-war; **IP-1088 (FR-6210/FR-6220):** `activity_rows()` is the single fail-closed, allow-list-by-kind filter for the per-cell activity feed — Blue/Red get only their own orders and the started effects on their own assets (category + symptom, never the template), never a scheduled inject; White unfiltered; `InProcessSession.cell_activity` only assembles tagged ground-truth rows, resolves `observer` through its designation and raises `ValueError` for any cell but white/blue/red (`/activity/{cell}` -> 400)), `api.py` (`SessionAPI` + `CellView`/`Ack`), `inprocess.py`
   (**multiplayer:** `_locked(sid)` cm wraps every mutation; every read pass-through calls
   `catch_up(sid)` first; `list_sessions / set_clock / clock_state` added;
   **IP-1130:** `set_observer_view`/`get_observer_view`/`observer_designation` — a fourth,
@@ -506,7 +537,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   single-cell viewpoint (`_participant_cells()` rejects a non-participating cell at construction/
   `set_viewpoint()`; switching viewpoint never resets the played-back moment); one instance per
   session, held in `InProcessSession._playbacks`, never in `SessionManager` itself),
-  `ephemeris.py` (IP-1210, FR-7410/FR-7420 — truth/cell-observed ephemeris export: `sample_times()`/
+  `span_bounds.py` (IP-1089, FR-7450 — `parse_span_bound(value, name)`: the one pure parser for the `t1`/`t2` bounds of the telemetry CSV, truth-ephemeris and cell-observed-ephemeris exports, ISO-8601 UTC (`Z`/`+00:00`) or integer microseconds, else `ValueError("t1: <reason>")` -> 400; called only from `ephemeris._clamp_or_reject`), `ephemeris.py` (IP-1210, FR-7410/FR-7420 — truth/cell-observed ephemeris export: `sample_times()`/
   `truth_ephemeris()`/`cell_observed_ephemeris()`/`to_ric()` (reuses `engine/maneuver.py::
   lvlh_frame` directly for the RIC transform)/`write_csv()`/`write_oem()`; a wholly-out-of-range
   time span is rejected, a partially-out-of-range span is silently clamped; **IP-1262:**
@@ -531,6 +562,33 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   `research_export.py` (IP-3010 — `RunRecord` pydantic schema: `vignette_id`/`seed`/
   `condition_label` + IP-2010's `assessment_report` output verbatim, never reimplemented;
   `export_csv`/`export_json` extend `aar.export_csv()`'s flattening pattern to a multi-run table).
+- **Control-boundary bullets (IP-1076 / IP-1077 / IP-1081 / IP-1103 / IP-1082).**
+  `IP-1076` (FR-4330): `SessionManager._span_ceiling()` (start + `MAX_SAVE_SPAN_US`, 366 days) bounds
+  `step`/`advance_to` and the lazy clock; a refused step/advance is a `ValueError` mapped to
+  `Ack(ok=False)` and HTTP 400, and the running clock pins at the ceiling instead of pausing.
+  `IP-1077` (FR-7340): `playback_seat_decision()` and `PlaybackSeatRefused` in `session/inprocess.py`
+  gate the five `aar/playback/*` routes by the requesting seat (White any viewpoint, a player its own
+  cell, Observer state-read only; 403 before any change).
+  `IP-1081` (NFR-3710): the 100,000-entry load cap lives at `SessionManager.MAX_EVENTLOG_REPLAY_ENTRIES`
+  (alias on `InProcessSession`), the first rung of `validate_save`, counting a real save's
+  `{"entries": [...]}` log as well as a bare list.
+  `IP-1103` (FR-7230): `MAX_SAVE_SPAN_US` and `_check_final_time_span` refuse a save whose `final_time`
+  is more than 366 days past its start.
+- **`IP-1082` (NFR-1600, FR-4330, FR-7330) on `server.py` / `manager.py` / `aar.py`:** `ui_web/server.py`
+  `_refuse_nonfinite`/`_first_nonfinite` are the one place the non-finite policy lives; every
+  mutating route in the live route table carries a shared guard (`_finite_json_guard` on White controls:
+  404, then 403, then the check; `_inject_finite_guard` on pending-inject edit/cancel; `_finite_json_guard_open`
+  on the rest; `_playback_finite_guard` on `aar/playback/*`, where a seat `playback_seat_decision` refuses
+  still gets its 403); a `NaN`/`Infinity` anywhere in the JSON body, or a boolean in a numeric field
+  (`rate`, `t`, `n`, `dt_sim_s`, `speed`, `dt_s`), is a 400 naming the field. A route-table test derived
+  from the live table pins them. `PlaybackSession.MAX_SPEED` (10,000) bounds `|speed|` and an
+  overflowing advance is a 400. `SessionManager.MAX_CLOCK_RATE` (10,000) bounds
+  `set_clock` to `(0, MAX_CLOCK_RATE]` when running (any rate must be finite), and
+  `_require_finite` backs `step`/`advance_to`/`rewind_to`/`undo_last` for non-HTTP callers; a refused
+  `set_clock` is `Ack(ok=False)` from `InProcessSession` and a 400 at the route. `PlaybackSession`
+  clamps and stores its cursor to `[start_epoch, live now]` on every read and rejects a non-finite
+  `speed`/`dt_s`. Console: the toolbar `+1m/+10m/+1h` buttons call `stepBy`, which reports a refusal in
+  `#control-status`.
 - `spacesim/tools/` (IP-3010 — first subpackage of its kind: offline/CLI-style utilities that
   drive the deterministic engine externally, not through the live `ui_web`/`session` request
   path) — `research_batch.py`'s `run_batch(vignette_id, seeds, condition_label,
@@ -539,6 +597,15 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   estimated-duration horizon if omitted), and reads `session/assessment.py`'s `assessment_report`
   once per run. Distinct from the repo-root `tools/` directory (non-package build scripts like
   `tools/build_coastlines.py`) — this one must be importable by `spacesim/tests/`.
+- `spacesim/tests/` support files (not tests themselves): `conftest.py` (IP-1330 — records each collected
+  test's `verifies` origin once at collection; registers `--origin-report[=list|rtm]`/`--origin-ids`),
+  `baseline_ids.py` (IP-1330/IP-1335 — the baseline-ledger reader, origin checks and RTM Test-column
+  generator, plain functions reusable by `test_doc_integrity.py`), `test_browser_console_rules.py`
+  (IP-1340 — `@pytest.mark.browser`, starts the real server on loopback and drives Chromium via
+  Playwright; fog of war, plan-first disabled Issue, irreversible-effect confirm; skips with a named
+  reason where Playwright/Chromium is absent), `test_doc_integrity.py` (IP-1350 — broken links,
+  `INDEX.md` omissions, status-ledger agreement), and the shrink-only `test_origin_allowlist.txt` (empty)
+  and `doc_integrity_allow_{links,indexes,ledgers}.txt`.
 - `spacesim/ui_web/` — `server.py` (FastAPI over the SessionAPI; `/scene`, `/telemetry`;
   **IP-1300 (FR-8210/FR-8220):** `GET /ric_view/{cell}?origin=&chase=&target=` — live RIC-frame
   view (+ CATS angle), 404 on an out-of-custody selection, rendered by `static/ricview.js`
@@ -552,6 +619,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   speed AAR playback routes over `session/aar.py::PlaybackSession`;
   **IP-1270 (FR-3430/FR-3440):** `/gate/decide` + `/roe/change` — role-gated (checked inside
   `SessionManager`/`OrderSystem`) pending-order decision and live ROE-flag-change routes;
+  **IP-1072:** `_require_white` now also guards `save_vignette`/`creator/*`/`red_step`, and `_refuse_player_seat_on_create(cell)` refuses a creation request naming a player seat (absent seat allowed); **IP-1077 (FR-7340):** the five `aar/playback/*` routes take the query seat (`playback_seat_decision` in `session/inprocess.py`; White any viewpoint, a player only its own cell, Observer state-read only, no/unknown seat refused, all 403 before any state change);
   **IP-1130:** `_reject_observer(cell)` guards every mutating route — re-derived from the live
   route table at implementation time, not merely IP-1130's own enumerated list, per that package's
   own Risks note — plus `/observer/view` + `/observer/designation`) + `static/`
@@ -562,7 +630,7 @@ The import-guard is a plain pytest test (`test_import_guard.py`), not import-lin
   attaches the caller's own seat as a `cell` query param to every mutating call; IP-1066
   `renderPendingInjects` lists pending injects with Cancel / Edit…; IP-1067 `refreshComparePanel`
   renders the ⚖ Compare panel (truth / Blue / Red) from one `/controller_view` read; `api.put/patch/del`
-  extend the same cell-query-param convention for IP-1174's routes below), `globe.js` (3D
+  extend the same cell-query-param convention for IP-1174's routes below; IP-1073 — palette time entries offered to the White seat only, a `#control-status` aria-live line for refused time controls / save loads, and a latest-edit token discarding superseded dry-run responses), `globe.js` (3D
   orthographic globe), `world.js` (+committed `world.json` coastlines/borders), `graph.js`
   (telemetry line graphs), `creator.js` (IP-1174 — the Vignette Creator's White-Cell UI: synchronized
   JSON view, ground-truth 2D/3D preview, TLE/lat-long asset entry with a curated-site picker,

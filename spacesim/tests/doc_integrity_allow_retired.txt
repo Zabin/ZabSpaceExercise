@@ -1,0 +1,2 @@
+# IP-1092 — known live references to a retired document (failure mode (b) only; one per line: `file -> entry | owning stage`). Shrink-only (FS-135 Decision 3):
+# remove the reference and delete its line in the same commit; the suite fails on a stale line. Modes (a) and (c) are never allow-listable. Target: empty.

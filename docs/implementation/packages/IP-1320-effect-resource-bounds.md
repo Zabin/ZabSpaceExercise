@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1320
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE — 2026-10-17, `08-code-implementation`, pipeline run #154, awaiting a
+> **Status:** VERIFIED 2026-10-17 ([VR-1320](../verification/VR-1320-effect-resource-bounds.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE — 2026-10-17, `08-code-implementation`, pipeline run #154, awaiting a
 > **fresh-session** `09-package-verification`. `engine/orders.py`: `_engage_rounds` (shared by
 > `_validate`'s new `insufficient_ammo` check — after `no_ammo`, before the weapons-quality gate —
 > and the engage plan's `consume`); `_h_effect` re-checks rounds before resolving (failed record

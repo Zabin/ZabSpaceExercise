@@ -113,11 +113,13 @@ against `packages/INDEX.md` for collisions — unclaimed):
 
 | Package | Feature | Situation | Entry status |
 |---|---|---|---|
-| [IP-1160](packages/IP-1160-role-scoped-command-enforcement.md) | FS-116 | Forward design | 🔴 BLOCKED (not authorized — MSTR-006 §3; every dependency package already `VERIFIED`) |
+| [IP-1160](packages/IP-1160-role-scoped-command-enforcement.md) | FS-116 | Forward design | 🟢 READY (authorized 2026-10-25, journal run #262; re-validated as v1.2 — see "Release-push remediation, pass 7") |
 
 `IP-1160` is not authorized for coding — per MSTR-006 §3, being fully specified (and every
 dependency already `VERIFIED`) is not itself an authorization; a separate, explicit user go-ahead
 is required before any Implementation Task begins.
+
+*(2026-10-25: the separate, explicit go-ahead was given — project owner, journal run #262 — and the package is `READY`; the paragraph above is the position as first written.)*
 
 ## Tranche 3 (2026-07-05): FS-117
 
@@ -899,7 +901,7 @@ carried baseline; the exporter drops injects, briefs and parameters, so a rebuil
 | 2 | Tag 22 engine and content modules | `spacesim/tests/` | IP-1331 |
 | 3 | Tag 32 session-layer modules | `spacesim/tests/` | IP-1332 |
 | 4 | Tag 16 web and cross-cutting modules; allow-list empty | `spacesim/tests/` | IP-1333 |
-| — | Dependency lock (`NFR-1510`) | release | none now: produced at the first major release and checked by `11` (`BL-0318`) |
+| — | Dependency lock (`NFR-1510`) | release | none now: produced at the first major release and checked by `11` (`BL-0318`) *(Superseded by BL-0318, 2026-10-24: applies at every release.)* |
 
 **Why four packages.** The infrastructure is small and must land first; the backfill is ~914 test
 functions that each need a judgment about what they assert, too much for one reviewable run, so it
@@ -942,6 +944,329 @@ lives; units in 1 need nothing more.
 
 **Two packages, not one:** different seams, different specs (FS-106/FS-201 vs FS-109), no shared
 files; each is small enough to build and verify on its own.
+
+## Release-push remediation (2026-10-24)
+
+**Input:** the open bug rows of `docs/pipeline/backlog.md` and the in-progress item `IP-1311`, under the
+owner's release-push directive (journal run #256: pause new features; remediation packages for bugs,
+in-progress and critical items only). Sources: `BL-0323`, `0326`, `0327`, `0333`, `0350`, `0352`,
+`0353`; `BL-0359` F-13; integration review of tranche 2 F-01–F-04; the `FR-4320` scope extension
+(`BL-0321`, `BL-0324`, `BL-0351`); the weak-tag findings `BL-0341`, `BL-0344`, `BL-0347`;
+`BL-0252` (`IP-1311`, already planned). Every package cited is a remediation of a defect in a
+`VERIFIED` package; no Feature Specification is new.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Vignette id scan skips an unreadable file (already planned) | `content/vignette.py` | IP-1311 (`BL-0252`) |
+| 2 | Legacy save with a missing vignette; missing-key saves; content portion = saved force | `session/manager.py` `validate_save`/`save_state`; `ui_web/server.py` `load_save` | IP-1102 (`BL-0326`, `BL-0352`, `BL-0359` F-13) |
+| 3 | Creator edits, `save_vignette`, `red_step`, seats route White-only; creation refuses a player seat | `ui_web/server.py` guards | IP-1072 (`BL-0321`, `BL-0324`, `BL-0351`) |
+| 4 | Palette/bookmark time entries by seat; control-error reporting; `loadSaveFile` refusals; dry-run race; menu scroll; recorder and skill recipe | `static/app.js`, `index.html`, `style.css`; `tools/`; `.claude/skills/run-spacesim` | IP-1073 (`BL-0323`, `0327`, `0333`, `0350`, `0353`) |
+| 5 | Weak origin tags to fitting leaves, with a guard test | `spacesim/tests/`, RTM column | IP-1334 (`BL-0341`, `0344`, `0347`) |
+
+**Why this cut.** The cut follows the repository's own seams and the backlog's grouping:
+
+- **Save robustness is its own package (units 2).** `BL-0326`, `BL-0359` F-13 and `BL-0352` are all
+  in `IP-1101`'s code (`validate_save`, `save_state`) and share fixtures (a temporary content
+  directory); the console's reaction to a refused load is a different seam and is unit 4. The
+  backlog proposed putting `BL-0352` and F-13 "with the client package"; they are server-side
+  defects and splitting them from the console keeps each package to one seam and one test style
+  (HTTP/unit vs browser).
+- **The `FR-4320` extension is a server-only package (unit 3), not part of the client package.**
+  It changes guards in one file and needs no browser; its risk (existing tests that call the newly
+  guarded routes without a seat) is different from the client package's (browser flakiness).
+- **One client package for five console/tooling bugs (unit 4).** They share files (`app.js`), one
+  new status element, and the browser-suite harness. The tooling items (`BL-0353`) ride along
+  because they are the same defect class (a caller that assumes unguarded time control) and are
+  tiny; they would not justify a package alone.
+- **Retag is last and separate (unit 5).** Test-only, but it touches decorator lines in modules the
+  other packages edit and regenerates the RTM column, so it follows them.
+- **Not split further:** `BL-0323` (race) and `BL-0333` (CSS) are one-line to few-line fixes in
+  files unit 4 already touches; separate packages would each cost a verification cycle for a
+  trivial change.
+- **`IP-1311` is not replanned.** It is complete as a plan and `READY`; only its slot in the order
+  is recorded here.
+
+**Ordering and file conflicts.** `IP-1102` and `IP-1072` both edit `ui_web/server.py` (different
+routes); `IP-1073` edits `test_browser_console_rules.py`; `IP-1334` edits tag lines across ~20 test
+modules. Order: `IP-1311` ∥ `IP-1102` → `IP-1072` → `IP-1073` → `IP-1334`. Content dependencies:
+only `IP-1102` → `IP-1073` (test 4's real 400); the rest is conflict avoidance.
+
+**Deliberately excluded from this tranche (not bugs / not release-blocking):** `FR-7450` ISO export
+bounds (a feature, `06`→`07`), `IP-1160` (feature), GDS-06…GDS-10 authoring, the vignette cleanup
+sweep, `BL-0355` package-header corrections (a documentation defect, not a bug), `BL-0359` F-10–F-12
+and F-14–F-16 (Low; documentation, optional consolidation, a test-coverage extension, a design
+note, an exit code), integration review F-05 (training-manual curl examples, owned by
+`08-training-manual-authoring`), F-06–F-09 (documentation owners), and the no-leaf test findings for
+`04` (`BL-0342`, `0345`, `0348`).
+
+**Spec lag flagged upstream.** FS-106 v2.4 predates the 2026-10-24 `FR-4320` extension, and
+GDS-09 §4 / OQ1 and `design/07` still describe the shorter White-only list. `IP-1072` proceeds on
+the requirement leaf, which is binding and names the routes; a v2.5 note on FS-106 (`06`) and the GDS
+update (`03`) are recommended.
+
+## Release-push remediation, pass 2 (2026-10-24)
+
+**Input:** the open bugs the independent verifiers of `IP-1311`, `IP-1102`, `IP-1072` and `IP-1073`
+found (`VR-1311` F-1, `VR-1102` F-1/F-2/F-3, `VR-1072` F1, `VR-1073` F3; backlog `BL-0361`–`BL-0364`,
+`BL-0368`), under the same owner release-push directive (journal run #256: bugs, in-progress and
+critical items only; no new features). Every package cited corrects a defect in a `VERIFIED` package;
+no Feature Specification is new.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | `validate_save` completion: non-object `overrides`, bad `pending`/`orders`/`ssn_requests` rows, `final_time` range, `classification` type; pin the legacy wording and the server backstop; `IP-1102` Decision 4 note | `session/manager.py::validate_save`; `test_save_load_robustness.py` | IP-1103 (`BL-0362`, `BL-0363`) |
+| 2 | Rewind bounded to `[start_epoch, now]`; "rewind to start" means the exercise start; `start_epoch` on the clock state; palette and toolbar use it | `session/manager.py`, `session/inprocess.py`, `ui_web/server.py`, `static/app.js` | IP-1074 Part A (`VR-1073` F3) |
+| 3 | `roles/assign` and `observer/view` refuse by query seat with 403; docstring corrected | `ui_web/server.py` | IP-1074 Part B (`BL-0364`, `VR-1072` F1) |
+| 4 | Origin reader and RTM generator accept five-digit `FR-` IDs; 20 assessment/research tests retagged | `spacesim/tests/baseline_ids.py`, two test modules, RTM column | IP-1335 Parts A, B (`BL-0368`) |
+| 5 | Top-level list/scalar YAML case for the vignette id scan | `test_vignette_id_scan.py` | IP-1335 Part C (`BL-0361`) |
+
+**Why this cut (three packages).**
+
+- **Save validation is its own package (unit 1).** One function, one test module, HTTP/unit style;
+  it completes `IP-1102` and has no overlap with the console or clock work.
+- **Rewind and the two seat routes share a package (units 2, 3).** Different bugs, but both are
+  White Cell control correctness in the same files (`ui_web/server.py`, `session/manager.py`), the
+  same requirement family (`FR-4310`/`FR-4320`) and the same test style (HTTP against a started
+  session). Separately each is small enough that a verification cycle apiece would cost more than the
+  change; split them if the build finds Part A larger than expected (Part A is the Medium and is
+  written first so it can ship alone). The rewind range guard sits in `SessionManager`, not in the
+  route, so every caller is protected, and the engine's `rewind_to` is untouched.
+- **Retag infrastructure, retag and the scan test share a package (units 4, 5).** All test-only. The
+  scan test (`BL-0361`) is one case and was proposed by the backlog for the "retag/hardening sweep";
+  `BL-0368` is the defect that blocks 20 of `IP-1334`'s retags, so it must precede `IP-1334` and
+  carries those 20 itself. `IP-1334` is adjusted by a dependency note only (its two modules' rows are
+  delivered by `IP-1335`); it is not replanned.
+- **Not split further:** the `final_time` ceiling, the `orders` row checks and the `classification`
+  check are one function's worth of validation; the `start_epoch` field, the guard and the client
+  change are one behaviour.
+
+**Ordering and file conflicts.** `IP-1103` and `IP-1074` both edit `session/manager.py` and
+`ui_web/server.py` in different regions; `IP-1074` and `IP-1335` both add tests that the RTM
+regeneration must include; `IP-1334` retags decorator lines in modules the others edit. Order:
+`IP-1103` → `IP-1074` → `IP-1335` → `IP-1334`. Content dependencies: only `IP-1335` → `IP-1334` (the
+carve-out); the rest is conflict avoidance.
+
+**Deliberately not planned (not bugs, too design-heavy, or owned elsewhere):**
+
+- **Auto-pause on rewind.** Whether a rewound exercise should pause the lazy clock is a change to the
+  clock model (`FR-4310`), not a bug. `IP-1074` preserves current behaviour and pins it; the question
+  goes to the owner and `04`.
+- **A requirement leaf for the rewind range.** None states it; `IP-1074` derives it from `FR-4310`
+  and the AAR/ephemeris span (`FR-7330`/`FR-7410`). Recommend `04` add a sentence to `FR-4310`.
+- **`BL-0366`** (`aar/playback/*` has no seat check): needs a scope decision on `FR-4320` (`04`);
+  Info, deferred in the backlog.
+- **`BL-0370`** (`build_world` mutates its input vignette): a design question with one consumer
+  working around it; deferred in the backlog.
+- **`BL-0365`** (documentation: `CLAUDE.md` code map, `FR-4320` Notes, GDS-09 §4, FS-106 v2.5,
+  training pages): documentation defects owned by `04`/`03`/`06`/`08-training-manual-authoring`.
+- **`BL-0367`** (skip count 4 versus 3): a currency item for the `CLAUDE.md` sweep (`BL-0358`).
+- **`BL-0369`** (no-leaf test gaps): `04` work.
+- **`VR-1073` F1** (View menu `max-height` assumes a one-row toolbar; at 1100x700 with the White
+  toolbar wrapped one entry fails the actionability check), **F4** (recorder hard-codes browser and
+  `ffmpeg` paths), **F5** (cosmetic status line): not in this pass's brief; F1 is a Low console bug
+  that a later pass may take, F4 is environment fragility.
+
+## Release-push remediation, pass 3 (2026-10-24)
+
+**Input:** `VR-1074` F1 (Medium): undo past the first event puts the sim clock at epoch 0 (1970); pre-existing, made visible by `IP-1074`'s rewind bound. Same owner directive (journal run #256: bugs only).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Undo lands on `start_epoch` (never 0); undo with nothing to undo refused; `now >= start_epoch` invariant pinned across undo, rewind, advance and load | `engine/simulation.py::undo_last`, `session/manager.py::undo_last`, `session/inprocess.py`, `ui_web/server.py` `/undo` | IP-1075 |
+
+**Why one package, and why not folded into `IP-1074`.** `IP-1074` is `VERIFIED`; the defect is outside its scope and checklist, and a verified package is not reopened. The engine line, the manager guard, the route mapping and the tests are one behaviour and one verification pass. **Other callers audited, no separate unit:** `rewind_to` is already guarded, `advance_to`/catch-up cannot move backwards, `from_state` is protected by `IP-1103`'s `validate_save`; they get pinning tests inside `IP-1075`. **Ordering:** after `IP-1335`/`IP-1334` only to avoid test-file conflicts. **Not planned:** a `FR-4310` sentence on undo/rewind bounds (recommended to `04`), and auto-pause on undo (owner question, as for rewind).
+
+## Release-push remediation, pass 4 (2026-10-24)
+
+**Input:** the tranche 3 integration review (`docs/reviews/integration-review-tranche-3-release-push-remediation.md`: `M-2`, `M-3`, `M-4`, `L-1` to `L-4`) and the two requirements added by baseline-maintenance pass 2: `FR-4330` (time control bounded to the exercise span; the advance half "required, not yet built") and `FR-7340` (AAR playback obeys the requesting seat; "required, not yet built"). Same owner directive (journal run #256: bugs, in-progress and critical items only; no new features). Every package corrects a defect in a `VERIFIED` package or builds a requirement that already exists; no Feature Specification is new.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Advance and step accepted only in `[now, start_epoch + 366 days]`; backwards or beyond-span or non-finite is a 400, never a 500; the running clock stops at the span's end; `stepBy` uses `/step` | `session/manager.py`, `session/inprocess.py`, `ui_web/server.py`, `app.js::stepBy` | IP-1076 |
+| 2 | Palette inject entries White-only (plus audit of the other palette entries); refused inject shown in the visible status line | `app.js` palette, `fireInject` | IP-1076 |
+| 3 | Refused Load does not overwrite a live tab's `#session`; Observer dry-run not sent; no `GET /windows/<sensor>` (cause: the ribbon asks for windows of a sensor id, which `ASSETS` holds beside assets) | `app.js` `showLoadFailure`, `previewOrder`, `drawRibbon` | IP-1076 |
+| 4 | Tag-only retag of the existing rewind, undo and save-ceiling tests to `FR-4330`, with the matching `IP-1334` guard rows | `test_white_control_correctness.py`, `test_undo_clock_floor.py`, `test_save_load_robustness.py`, `test_origin_retag.py` `EXPECTED` rows | IP-1076 |
+| 5 | Seat check on the five `aar/playback/*` routes (white any; player own viewpoint; observer read-only; no seat refused; 403 before any change or disclosure) | `session/inprocess.py`, `ui_web/server.py` | IP-1077 |
+| 6 | 14 package headers and 3 ledger notes reconciled with their `VERIFIED` rows; recorded sweep | `docs/implementation/` only | IP-1078 |
+
+**Why three packages, and why this cut.** The brief asked for one package and a split "if large".
+
+- *Units 1-4 are one package* (`IP-1076`): they share `manager.py`, `inprocess.py`, `server.py` and `app.js`, one clock concept (the span) and one browser harness, and each is small. The palette, load-readout and console-noise items are all "the console does not show or send the right thing for a refusal"; splitting them from the bound would force `IP-1076`'s `stepBy` change (palette advance uses `/step`, which the bound makes necessary) to land in two packages. About 18 new tests; the largest package in the pass but one verification pass. The tag-only retag rides with it because the retagged tests are exactly the ones the bound's new tests sit beside, and because the `IP-1334` guard pins the tag sets, which forces the same-commit `EXPECTED` row edit.
+- *Unit 5 is its own package* (`IP-1077`): a different feature (`FS-107`, AAR), a different requirement (`FR-7340`), no console surface, no browser case, and a separate verification story (a seat matrix plus a no-disclosure check). Bundling it would make `IP-1076`'s checklist mix a clock bound with a fog-of-war boundary. It touches `server.py` and `inprocess.py` in different regions from `IP-1076`.
+- *Unit 6 is its own package* (`IP-1078`): documentation only; `07` may not write `VERIFIED`, so the planner cannot make the edit in the planning pass; fourteen unrelated file edits would bury `IP-1076`'s diff; the edit is independent of every code package and can run in any order.
+
+**Ordering and file conflicts.** `IP-1076` then `IP-1077` (both edit `server.py`, both add to the RTM Test column and push the count-pinned guard in `test_origin_retag.py`); `IP-1078` any time, last by preference so its Master Build Plan note edits do not collide with the code packages' status rows. No content dependency among the three.
+
+**Decisions made while planning (recorded, owner may override).**
+- The span is the save cap restated (366 days from `start_epoch`), reused from `SessionManager.MAX_SAVE_SPAN_US`; no `end_epoch` is exposed and nothing is configurable (`FR-4330` Notes).
+- The lazy real-time clock is clamped at the span's end rather than left to run past it (otherwise Play bypasses the bound); it is not auto-paused (owner question, same family as `L-6`).
+- Playback keeps its single shared cursor per session; per-seat cursors are an open design question (`FR-7340` Notes), not built. An absent seat is refused on every playback route, because no tool or console surface calls them without one.
+- Observer may read playback state exactly as `FR-7340` states; whether that read should honour the Observer's designation is a requirements question, recorded.
+- The `GET /windows/blue/BLUE-RADAR` 404 was investigated: a real client defect, not noise to suppress. The ribbon requests windows for the first actor in the picker, and the picker lists sensors (`BLUE-RADAR` is a `sensors:` entry) as well as assets; the route correctly answers 404 for an id not in `world.assets`. Fixed in the client; the route's fog/ownership contract is unchanged.
+
+**Not planned here (and why).**
+- `M-1` (three training curl examples without `?cell=white`): `docs/training/` belongs to `08-training-manual-authoring`, reviewed by `09-training-manual-review`; not a code or `docs/implementation/` item. The packages above list the training pages they affect but do not edit them.
+- `M-5`, `L-7` (`CLAUDE.md` status text, GDS-07/08/09/10 statements, `feature-index.md` `FS-106`/`FS-110` rows and the two `doc_integrity_allow_ledgers.txt` lines, GDS coverage of `start_epoch` and the 366-day cap): owned by `03`, `04`, `06`, `11`; `FR-4330` already states the cap in the requirements, which closes the requirements half of `L-7`.
+- `L-5` (count-pinned guards): a test-guard redesign, not a bug fix for the release; the packages report the headroom (about 63 tests at the review tip; `IP-1076` and `IP-1077` use about 38) and a follow-up should re-express the guard as "no test lost". (Built as `IP-1079`.)
+- `L-6` (does rewind or undo pause the running clock): an open owner decision.
+- A check that compares package-file headers with the ledger: a new capability (`IP-1350` family); recommended to `00-intake` by `IP-1078`.
+- `VR-1073` F1, F4, F5 and the other deferred `BL-` items listed in the pass 2 section: unchanged.
+
+## Release-push remediation, pass 5 (2026-10-24)
+
+**Input:** the tranche 3 integration review `L-5` (count-pinned guards), `VR-1078` F1/F2/F3 (31 stale package headers, three "Not yet authorized" rows, nine "Awaiting 09" sentences, `IP-1078`'s own header) and GDS-07 `OQ5` (the event-log cap does not see a real save's log; branch `claude/stale-docs-gds`, commit `4eac964`). Same owner directive (journal run #256: bugs, in-progress and critical items), plus the owner's instruction in this session to fix stale documents before the release and to resolve the guard "as you see fit".
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Remove the collected-count bounds and their test from the retag guard; keep the pinned tag sets; fail a removed module, do not fail a deselected one; no check skips under both browser filters; mutation tests pin that a deleted or retagged pinned test fails | `spacesim/tests/test_origin_retag.py` (and `baseline_ids.py` if the pure helper lives there) | IP-1079 |
+| 2 | 31 older headers plus `IP-1078`'s reconciled with the ledger; three "Not yet authorized" and the "Awaiting 09" sentences removed; sweep recorded in the tree | `docs/implementation/` only | IP-1080 |
+| 3 | The 100,000-entry cap counts a real save's `{"entries": [...]}` log, first in `validate_save`, before model validation and replay; the constant moves to `SessionManager` with an alias on `InProcessSession` | `session/manager.py`, `session/inprocess.py`, a new test file | IP-1081 |
+
+**Why three packages, and why this cut.** Three unrelated seams with three different verification stories, each small.
+
+- *Unit 1 (`IP-1079`) is its own package*: test-only, one file, verified by mutation; it must not ride with a production fix because the point is that the guard stops gating growth. Decision recorded: remove, do not widen. Widening `COLLECTED_UPPER` repeats `L-5` at the next threshold, and the count test protects nothing the per-row checks do not (each pinned row already fails if its test is deleted, renamed or retagged). The skip rule is made precise instead (absent from disk fails, present but not collected is not applicable), which also removes the check that skipped under both `-m browser` and `-m "not browser"`. The frozen `VR` notes that cite the 1700 ceiling are not edited.
+- *Unit 2 (`IP-1080`) is its own package*: `07` may not write `VERIFIED`, so it cannot do the edits now; 32 header edits would bury a code diff; same rules as `IP-1078`. It is deliberately a second pass rather than an extension of `IP-1078` (which is `VERIFIED` and not reopened).
+- *Unit 3 (`IP-1081`) is its own package*: a production bug in `FS-110`'s save path with a boundary-heavy test matrix. Design decision: the cap becomes the first rung of `validate_save` (one refusal path, ahead of the double `EventLog.model_validate`), rather than patching the inline check to accept a dict, so every caller of `validate_save` is protected and the amplifier the cap exists to stop is stopped before pydantic runs. The constant moves down a layer because `session/manager.py` cannot import `session/inprocess.py`; the old name stays as an alias. A bare list over the cap is still refused as oversize (the audit test stays valid); at or under the cap it remains "malformed", as today.
+
+**Ordering and file conflicts.** `IP-1079` → `IP-1081` → `IP-1080`. `IP-1081` adds about 9 tests and `IP-1079` about 5 net, so the suite moves from 1671 to about 1685; the `IP-1334` ceiling of 1700 would not yet fail, but `IP-1079` removes it first so that nothing is gated on the count. `IP-1080` last: its Master Build Plan note edits sit near the status rows the other two update. No content dependency among the three.
+
+**Not planned here (and why).** Closing GDS-07 `OQ5` (owned by `03`, after `IP-1081` is `VERIFIED`); a check comparing package-file headers with the ledger (a new capability, `IP-1350` family, via `00-intake`; `IP-1080` ends with a recorded sweep instead); any edit of a `VR-xxxx`; HTTP request-body size limits (a deployment concern, noted in `IP-1081` Risks).
+
+## Release-push remediation, pass 6 (2026-10-25)
+
+**Input:** the release-candidate integration review ([`integration-review-release-candidate-1.md`](../reviews/integration-review-release-candidate-1.md)): `M-1` (JSON `NaN`/`Infinity` as the clock rate poisons every read of a session; `NaN` time targets are 500s), `M-2` (toolbar `+1m/+10m/+1h` unwrapped), `M-3` (`CLAUDE.md` code map omits `IP-1076`/`1077`/`1081`/`1103`) and the cheap Lows `L-2`, `L-4`. Same owner directive (journal run #256, confirmed run #260: fix bugs; no new features).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | One shared non-finite check on every White control route (400 with reason, after the seat rule); clock rate bounded to `(0, 10,000]`; manager-level backstop; poisoned-session regression; playback `speed`/`dt_s` | `ui_web/server.py`, `session/manager.py`, `session/inprocess.py`, `session/aar.py`, a new test file | IP-1082 |
+| 2 | Toolbar step buttons routed through the palette's catching handler; browser test | `ui_web/static/app.js`, `test_browser_console_rules.py` | IP-1082 |
+| 3 | Code-map bullets for four packages; `CLAUDE.md:125`; `ROADMAP.md:26` | `CLAUDE.md`, `ROADMAP.md` | IP-1082 |
+
+**Why one package, and why this cut.** The three defects are small, share one reviewer story ("a White control request must not break the session or the console") and touch disjoint files; splitting would add packages without adding independent verification stories. The documentation unit rides along because the code-map bullets describe the packages this one sits beside, and the builder's doc step is the owner the review names for it (`M-3`: "docs-only package from `07`", folded here rather than a fourth documentation-only package). Decisions: the check is one helper at the route layer with a manager backstop (not per-route `isfinite`), and a route-table test pins it so a new White route cannot omit it; the rate ceiling (10,000) is a design decision because the requirements give only the floor (`NFR-1100`, "at least 600x"), routed to `04` to state; the toolbar reuses the palette's `stepBy` rather than gaining a second catch block.
+
+**Taken from the Lows, and why.** `L-2` (playback cursor beyond the recorded span after a rewind or undo) is an invalid state by `PlaybackSession.advance`'s own invariant and is a read-time clamp in the same module family; it is taken. `L-4`'s two stale lines are in files the doc step already edits.
+
+**Not planned here (and why).** `L-1`, the unbounded live event log (a design question: cap or document, owned by `04`); `L-3`, `--origin-report` exit code 5 (cosmetic; a read-only report that runs no tests, and the exit status is part of its contract); `L-5`/`F-12`, parser duplication (consolidation, not a bug); `L-6`, rewind and the running clock (decided immaterial, `FR-4330` Notes); GDS-10 §6 counts (`03`); training-manual text for the clock route (`08-training-manual-authoring` via `15-manual-traceability.md` §15.1).
+
+**Ordering and file conflicts.** None with other open work; the suite grows by about 12 test functions.
+
+## Release-push remediation, pass 8 (2026-10-25)
+
+**Input:** the integration review of the 40 `VERIFIED` packages no earlier review covered ([`integration-review-unreviewed-packages.md`](../reviews/integration-review-unreviewed-packages.md): 0 Critical, 3 High, 6 Medium, 9 Low). Same owner directive (journal run #256: fix bugs before release, no new features) and the run #262 go-ahead. Each finding was reproduced read-only over HTTP with the FastAPI `TestClient` in the planning worktree before it was planned; the causes below are as found, in file and function terms.
+
+| Finding | Reproduced as | Cause | Package |
+|---|---|---|---|
+| `H-1` (High) | `POST /inject` with `anomaly` on Blue's `ISR-EO-1` and `sensor_outage` on `BLUE-RADAR`; `GET /view/red` returns both texts with the cause | `session/manager.py::_apply_inject_effects`, the `anomaly` branch (about line 1631) and `sensor_outage` branch (about line 1639) address the message `["white","blue","red"]`; `session/cells.py::CellController.view` (line 40) filters on `cell in m["to"]`, so the address is the fog decision; `_h_env_anomaly_check` (line 1677) and `_h_condition_check` reach the same branches | IP-1084 |
+| `H-2` (High) | Red jams `ISR-EO-1` uplink; Blue queues a `maneuver` with `stored_at` inside the jam window; `execute_maneuver` `applied: False`, `effect_log` `jammed` | `engine/orders.py::_h_maneuver` (line 1090) and `_h_command` (line 1143) call `is_link_denied(..., link="uplink")` with no delivery path; `_plan_command` (line 466) knows the path but `_exec_payload` (line 758) does not record it; nothing consults `link="crosslink"` | IP-1085 |
+| `H-3` (High) | `POST /force/tle` and `/force/bulk_import` with the 2024 ISS TLE accepted (200); after `start`, `GET /scene/blue`, `/windows/blue/ISS`, `/next_contacts/blue` 500 (`sgp4 error 6`); draft `GET /creator/scene` 500 | `session/manager.py::_force_add_tle_object` (line 627) propagates only at the TLE's own epoch, while `engine/propagator.py::_tle_rv` (line 87) uses absolute sim time and ignores the stamped epoch; `content/vignette.py::validate_vignette` (line 445) does check the start epoch, so the gates disagree; the sinks `session/scene.py::build_scene`/`_geo` and `engine/access.py::elevation_and_az` have no per-asset guard | IP-1086 |
+| `M-1` | draft with `e: 1.5` / `a_m: -5` accepted by `PUT /creator/state`, saved (200), `GET /scene/blue` 500; `a_m: 1000` accepted | no element bounds in `validate_vignette`, `creator_set_state` (line 778), `creator_edit_asset` (line 792) or `_force_add_omm_object` (line 653); requirements `FR-5310`-`FR-5314` state none (gap routed to `04`) | IP-1086 |
+| `M-2` | gated Red jam pending, `GET /save`, `POST /load_save`: order listed `pending_approval`, `POST /gate/decide` `no_such_pending_order`; the original session decides fine | `from_state` (line 1256) restores the order registry after `_rebind` (line 565) cleared `OrderSystem._pending` (line 572); nothing rebuilds the map | IP-1087 |
+| `M-3` | Creator saves a satellite with no orbit, a station with no location and a bad TLE with 200; `POST /api/sessions` then 400 `invalid_vignette` | `content/vignette_export.py::save_vignette` (line 62) writes `export_vignette`'s output with no `validate_vignette` pass | IP-1086 |
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Address anomaly and sensor-outage notices by ownership (White with cause, owner without, opposing cell none); one addressing helper; recipient matrix over every message-emitting effect and the env tick | `session/manager.py`, a new test file | IP-1084 |
+| 2 | Path-aware jam denial: record `delivery_path` and `relay` in the maneuver/command payloads, one shared rule for both handlers, missing key = old behaviour | `engine/orders.py`, a new test file | IP-1085 |
+| 3 | One pure asset validator (TLE at the start epoch, element bounds, non-negative resources, id charset) called by the load gate, force-add TLE/OMM/bulk and the Creator edits | `content/vignette.py`, `session/manager.py` | IP-1086 |
+| 4 | Pre-save validation in the Creator save | `content/vignette_export.py` | IP-1086 |
+| 5 | Per-asset guard in scene, windows and next-contacts reads | `session/scene.py`, `session/manager.py` | IP-1086 |
+| 6 | Rebuild `OrderSystem._pending` on resume from the registry and the event log; warn on an unreconstructable gate | `engine/orders.py`, `session/manager.py` | IP-1087 |
+
+**Why four packages, and why this cut.** Four different verification stories on four seams; grouping by finding would have produced six packages, grouping by file would have buried a High behind a Medium.
+- *`IP-1084` is first and alone*: a load-bearing-invariant violation (fog of war) with a bounded one-function fix and a test matrix that is itself the deliverable. Nothing else should delay it.
+- *`IP-1085` is separate from `IP-1084`*: `engine/orders.py` versus `session/manager.py`, a different matrix (path x link), and it can run in parallel.
+- *`IP-1086` holds three findings and the read guard because they are one root cause*: the load gate checks what the other authoring paths do not. Splitting `H-3` (force-add), `M-1` (bounds) and `M-3` (pre-save) would have produced three packages editing the same new function and the same fixtures; the issue statement itself asks for "shared validator, no duplicate logic". The read guard rides with it because it is the review's second half of `H-3` and its tests share the 500-reproduction fixtures.
+- *`IP-1087` is its own package*: the only change to save/resume behaviour, different files from the other three, a save-format-adjacent change that deserves a separate verification.
+
+**Disclosure policy for `H-1` (derived, not invented).** `FR-4430`/`FR-4440` do not say who is told; the answer comes from `FR-6210` (a `CellView` carries only the cell's own assets, perceivable effects and *addressed* messages; no other cell's private state), `ADR-0004`, `CellController`'s own header ("effects on its assets as symptoms whose source is hidden unless the effect is overtly attributable") and `FR-4430`'s Postcondition (the true cause is a controller-side record, never re-derived). Result: White sees the notice with the cause; the owning cell sees the fact without the cause; the opposing cell sees nothing, learning of the other side's spacecraft only through its own custody. Recorded as a requirements gap for `04` (a "who is told" Postcondition on `FR-4430`).
+
+**Decisions made.**
+- *`M-2`: pending orders persist across a resume, derived from the registry and the log (no new save key).* `FR-3430` says the order does not execute until a decision is recorded; nothing ends the wait at a save; `FR-7220` makes resume exact; the log already holds the request. A rewind or undo still discards pending orders (the recorded `IP-1270` Decision 2 about time travel). `IP-1160`'s role scoping does not touch the save, but its possible new `Order` fields are pinned by a round-trip test.
+- *`M-4`: not a bug, so not planned.* `FR-5510` lists tracks, remaining resources, asset health/bus state, space weather and the simulator version, and its Postcondition holds "for every field this requirement names"; `IP-1200` met that, and the requirement is silent on SSN networks, Red doctrine profile, parameters, injects, gating, detectability, environmental anomalies, escalation thresholds, briefs and debris. `FR-5110`'s Creator draft path likewise carries assets, sensors, ROE and objectives only. This is a documented limitation and an owner decision (should those rules travel? that is a requirement and a feature, `03`/`04` then `06`), and a one-line statement of the limit in the file and the manual is cheap. If the owner decides the rules must travel before release, it needs a requirement first.
+- *Bounds are conservative* (`0 <= e < 1`, perigee above the equatorial radius, `0 <= i <= 180`, finite, non-negative resources, id charset), each checked against all 19 vignettes before it is enabled, with a drop-the-rule clause on evidence.
+- *Completeness stays a save rule.* The Creator's edit routes stay tolerant of an incomplete asset because `FR-5110`/`FR-5120` are iterative composition.
+- *The check epoch is the exercise start* (as `IP-1310` already does); a TLE that decays later is covered by the read guard, not by a new horizon.
+
+**Ordering and file conflicts.** `IP-1084` and `IP-1085` in parallel (disjoint files) → `IP-1086` (after `IP-1084`: `manager.py`; large fixture migration, about ten test modules force-add the 2024 ISS TLE into 2030-epoch sessions and must move to an in-epoch TLE generated with `engine/tle_export.py`) → `IP-1087` (after `IP-1085`: `engine/orders.py`; after `IP-1086`: `manager.py`). No package of this pass edits `ui_web/server.py`. `IP-1160` and `IP-1083` (other planning passes) edit other regions of `manager.py`, and `IP-1160` also `server.py` and `engine/orders.py`: textual merge only, with `IP-1087` after `IP-1083` if both are in flight. The suite grows by about 60 test functions.
+
+**Lows.** Folded in: `L-3` (the `IP-1082` header read `READY` against a `VERIFIED` ledger; corrected in this pass, a docs-only edit inside `docs/implementation/`). Cheap, safe and recommended for a later sweep or an owner nod, **not** folded in because each changes a verified response contract or a console surface and so needs its own pinned-test changes: `L-1` (`POST /roe/change` answers a non-White seat 200 `not_controller` instead of 403), `L-5` (`bulk_import` after `start` returns a silent empty 200 where `force/tle` says `ok: false`; no object cap; assignment ids not charset-checked; the existing test `test_bulk_import_against_started_session_returns_empty_no_assets_added` pins today's behaviour), `L-7` (the RIC/TLE pickers offer a non-orbital asset as the default origin; JavaScript filter plus a browser test). Left: `L-2` (the `CLAUDE.md` status counts are refreshed at release), `L-4` (absolute file paths in `GET /api/vignettes`, an API shape change), `L-6` (rewind resets SSN and order registries, no wrong state produced), `L-8` (a spec question for `06`), `L-9` (informational; `08-vignette-development`).
+
+**Not planned here (and why).**
+- `M-5` (console Approve/Deny and manoeuvre-ledger surfaces for `IP-1270`/`IP-1250`): feature work; the owner's directive excludes new features. Until it ships, a gated exercise needs `curl` for decisions; `IP-1087` makes the decision durable, not easier.
+- `M-6` (training-corpus catch-up): the scheduled `BL-0271`...`BL-0286` batch for `08-training-manual-authoring`; the packages above route their own manual-impact findings (`07-white-cell-facilitation.md` lines 78-80 for `IP-1084`, the delivery-path table for `IP-1085`, the TLE-epoch rule for `IP-1086`).
+- Requirement text (who is told for `FR-4430`; element bounds for `FR-5310`; same-validation wording for `FR-5220`/`FR-5110`; pending-order persistence Note for `FR-3430`): owned by `04`; the builds do not wait on it.
+- The adjacent exposure of `bus_state.safe_mode.cause` to the owner through the existing own-asset view (noted in `IP-1084` Decision 3): an owner question, not part of `H-1`.
+## Release-push remediation, pass 7 (2026-10-25)
+
+**Input:** journal run #262 (owner answers to the release assessment `REV-REL-002`): authorize `IP-1160`
+(`FEAT-3500` stays in Release 1) and fix `BL-0284` before release.
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Re-validate `IP-1160` against the current tree and flip it `READY` (v1.2): console-seat vs operator-seat, check order against the IP-1068/1130 rules, server-served verb-scope table, `role_assignments` in the save, unregistered refusals, test matrix incl. browser and a static drift test | `session/manager.py`, `session/inprocess.py`, `session/api.py`, `ui_web/server.py`, `ui_web/static/app.js`, `index.html` | IP-1160 |
+| 2 | A future-dated White inject is recorded in the event log, so a rewind or undo re-arms it | `session/manager.py` (`fire_inject`, `_h_inject_admin`, `_arm_schedule`) | IP-1083 |
+
+**Why `IP-1160` stays one package.** Re-validation found no new seam: the server gate, the route field,
+the scope read and the client filter all depend on one verb-scope table, and a split would let the client
+and server tables drift. The new facts (a second meaning of "seat" in the server; `role_assignments`
+missing from the save; `app.js` offering `pnt.set_integrity` untagged) are folded into the one package.
+
+**Why `IP-1083` is its own package and not part of `IP-1066`.** `IP-1066` is `VERIFIED`; reopening it would
+disturb its record. The defect is pre-existing and was filed (not fixed) there.
+
+**Design choice for `IP-1083` and the alternatives refused.** The fix reuses the logged `inject_admin`
+fold and the existing re-arm loop by recording the *schedule* as one more admin action. Refused: (a) a
+side list of scheduled injects on `SessionManager` (hidden state outside the log, against `FR-1120`);
+(b) having `Simulation._rebuild` keep the scheduler (it would break exact rewind for every other pending
+event); (c) re-deriving White injects from the save's `pending` (a rewind has no save). The cost, one
+more log entry per scheduled White inject and a changed undo count, is recorded in the package's Risks.
+
+**Ordering and file conflicts.** `IP-1083` → `IP-1160`: both edit `session/manager.py` in different
+places; `IP-1083` is smaller, has no UI and is a release blocker. `IP-1160` no longer touches
+`engine/orders.py`, so the older "rebase over `_validate`" notes (`IP-1052`, `IP-1320`) lapse.
+
+**Not planned here (and why).** The operator `seat` becoming mandatory (`ADS-3500` §9 Q1, a requirements
+question for the owner, recorded in `IP-1160`); validating `role` at `assign_role` (`IP-1151`'s surface,
+fail-closed in the gate instead); the training-basics tutorial and brief errors (`08-vignette-development`);
+the integration review of the 40 unreviewed packages (`10`).
+
+## Release-push remediation, pass 9 (2026-10-31)
+
+**Input:** [`integration-review-rc3-delta.md`](../reviews/integration-review-rc3-delta.md) `M-1` (owner directive, journal runs #256/#262: bugs before release; fog of war is a load-bearing invariant).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Split `cell_activity` into ground-truth row assembly and one pure, fail-closed per-kind filter in `CellController`; no inject row for a cell; effect rows carry the symptom, not the template; unknown cell refused, `observer` follows its designation | `session/cells.py`, `session/inprocess.py`, `ui_web/server.py` (route) | IP-1088 |
+| 2 | Fog matrix over every entry kind x White/Blue/Red/Observer; replay-equals-live; `IP-1083` schedule-entry regression | `tests/test_activity_fog_matrix.py` | IP-1088 |
+
+**Why one package.** One function, one defect family (the feed's fog rule), and the matrix is the deliverable. Splitting the inject leak from the unknown-cell and template findings would leave a second package editing the same lines; all three are the same missing allow-list.
+
+**Why the filter moves to `CellController`.** The leak came from a per-cell `if` inside the assembly loop that allowed the White actor for every cell. An allow-list by kind in the boundary class, applied to rows after assembly, cannot be bypassed by a new source adding a row.
+
+**Alternatives refused.** (a) Delete the inject branch for non-White cells only: fixes the repro, leaves `neutral`/`observer`/template findings and the next new lane. (b) Filter in `app.js`: violates invariant 3.
+
+**Not planned here.** The requirement leaf for the activity feed (`CR-31`, routed to `04`); the renderer's lack of a lane for White's `white`-cell inject row.
+
+## Release-push remediation, pass 10 (2026-10-31)
+
+**Input:** project owner go-ahead of 2026-10-31 (MSTR-006 §3) to build before release `FR-7450` (`FS-121` v2.3), `NFR-3810` (`FS-135` v1.1), the dependency lock re-pin (release assessment rc5 §2.4, `S-3`) and small release polish (rc5 `S-1`, `N3`).
+
+| Unit | Work | Seam | Package |
+|---|---|---|---|
+| 1 | Pure span-bound parser; wired once at `ephemeris._clamp_or_reject`; three routes take string bounds; parity/boundary matrix | `session/`, `ui_web/server.py` | IP-1089 |
+| 2 | Retired-documents check: section reader, modes (a)/(b)/(c), empty allow-list, `docs/INDEX.md` section | `tests/` | IP-1092 |
+| 3 | Check-latest / try / validate / pin; floors and lock | packaging | IP-1093 |
+| 4 | `validate_save` format gate; Chromium lookup in two run tools | `session/manager.py`, `tools/`, run skill | IP-1094 |
+
+**Why four packages.** Four independent seams with different files, owners of review and rollback: a parser (session + routes), a test-only doc check, packaging metadata, and two unrelated polish fixes. `IP-1094` bundles the save-format gate with the Chromium lookup only because both are single-hunk release polish with no design content; neither would justify a package alone.
+
+**Why the parser sits in `_clamp_or_reject`.** It is already the one function all three exports call before sampling and replay, so parsing there satisfies "shared, before any replay" without touching `SessionAPI`'s protocol or the engine (FS-121 OQ10 resolved here: session-layer helper `span_bounds.py`, `ValueError` -> 400).
+
+**Root-level retired document (FS-135 OQ6).** Chosen: declared in `docs/INDEX.md`'s `Retired documents` section with the repo-root path; no root `INDEX.md`. Flagged for the owner; no code special case.
+
+**Ordering.** `IP-1089` and `IP-1094` both edit `session/manager.py` (different regions): run one after the other. `IP-1092` and `IP-1093` are independent of everything.
+
+**Not planned here.** README refresh and `BL-0271` (manual impact, training author); training option-D snippets; rc5 `N7`, `R-2` (see `IP-1094`); a requirement leaf for the save-format gate (routed to `04`).
 
 ## Related
 

@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1260
 > **Version:** 1.0
-> **Status:** 🔴 BLOCKED *(fully specified; not authorization-blocked — blocked on a dependency
+> **Status:** VERIFIED 2026-10-10 ([VR-1260](../verification/VR-1260-telemetry-csv-export.md), fresh session; BLOCKED before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔴 BLOCKED *(fully specified; not authorization-blocked — blocked on a dependency
 > package reaching `VERIFIED`, see Dependencies)*
 > **Dependencies:** [FS-126](../../features/FS-126-telemetry-csv-export.md) v1.0 (`FR-2320`),
 > `engine/telemetry.py` (`VERIFIED` baseline code), [IP-1062](IP-1062-condition-triggered-injects-and-new-effects.md)

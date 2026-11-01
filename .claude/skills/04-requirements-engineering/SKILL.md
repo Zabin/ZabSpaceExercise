@@ -219,7 +219,7 @@ the committed column differs from the generated one. Until the existing suite is
 requirement whose tests carry no marker reads `UNASSIGNED` — the honest state. Requirement text does
 not name test files as evidence, except where the named test is itself the requirement's subject
 (the permanent gates; the playbook and training-source tests). When a requirement is retired or superseded, record it so the
-release-time relevance audit (`11-release-readiness`, major releases) can find tests still citing
+release-time relevance audit (`11-release-readiness`, every release) can find tests still citing
 it.
 
 ## Quality gate (before calling the baseline done)

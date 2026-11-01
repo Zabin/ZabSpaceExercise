@@ -322,6 +322,42 @@ class OrderSystem:
             return rule
         return None
 
+    def rebuild_pending(self) -> list[str]:
+        """IP-1087 (FR-3430, FR-7220) — re-derive ``_pending`` after a resume from the restored
+        order registry, the restored event log and the content's gating rules (no persisted
+        copy). An order that cannot be rebuilt (no ``effect_gate_request`` entry, a decision
+        already logged after it, or no gate rule matching) is rejected ``gate_lost_on_resume``
+        and a warning naming it is returned. Pure: no clock, RNG or eventlog append."""
+        warnings: list[str] = []
+        for order in self.orders.values():
+            if order.status != "pending_approval":
+                continue
+            req_idx = dec_idx = -1
+            for i, e in enumerate(self.sim.eventlog.entries):
+                if e.payload.get("order_id") != order.id:
+                    continue
+                if e.kind == "effect_gate_request":
+                    req_idx = i
+                elif e.kind == "effect_gate_decision":
+                    dec_idx = i
+            cause = ""
+            gate = None
+            if req_idx < 0:
+                cause = "no gate request is recorded in the event log"
+            elif dec_idx > req_idx:
+                cause = "a gate decision is already recorded for it"
+            else:
+                gate = self._matching_gate(order)
+                if gate is None:
+                    cause = "no gating rule in the content matches it"
+            if gate is None:
+                order.status, order.fail_reason = "rejected", "gate_lost_on_resume"
+                warnings.append(f"order {order.id} was awaiting an approval decision but its gate "
+                                f"could not be reconstructed ({cause}); it was rejected")
+            else:
+                self._pending[order.id] = (order, gate)
+        return warnings
+
     def decide_gated_order(self, cell: str, order_id: str, approve: bool) -> tuple[bool, str]:
         """IP-1270 (FR-3430) — only the gate's ``required_role`` cell may decide. Approving
         resumes normal planning (window/delivery-path selection + scheduling); denying rejects
@@ -755,6 +791,44 @@ class OrderSystem:
         except ValueError:
             return None
 
+    @staticmethod
+    def _delivery_keys(win: AccessWindow) -> dict:
+        """IP-1085 (FR-1440) — the delivery path planning chose, from the planned window's channel.
+
+        Carried in the execution payload so the execute-time jam test is a pure function of the
+        logged payload (replay-exact); ``relay`` names the crosslink relay for ``isl_relay`` only.
+        """
+        path = {"stored": "stored_program", "isl_link": "isl_relay"}.get(win.channel, "ground_uplink")
+        return {"delivery_path": path, "relay": win.actor if path == "isl_relay" else None}
+
+    @staticmethod
+    def _delivery_jammed(world: WorldState, payload: dict) -> Optional[str]:
+        """IP-1085 (FR-1440) — the jammed link on this payload's delivery path at ``world.now``, else None.
+
+        ``stored_program`` runs onboard (no link); ``isl_relay`` needs the crosslink on the actor and
+        on the relay; ``ground_uplink`` needs the uplink on the actor. A payload recorded before this
+        package has no ``delivery_path`` and keeps the old rule (an uplink jam on the actor).
+        """
+        path = payload.get("delivery_path") or "ground_uplink"
+        actor, now = payload["actor"], world.now
+        if path == "stored_program":
+            return None
+        if path == "isl_relay":
+            ends = [actor] + ([payload["relay"]] if payload.get("relay") else [])
+            return "crosslink" if any(is_link_denied(world, e, now, link="crosslink") for e in ends) else None
+        return "uplink" if is_link_denied(world, actor, now, link="uplink") else None
+
+    @staticmethod
+    def _jammed_record(world: WorldState, template, payload: dict, link: str) -> dict:
+        """The ``effect_log`` failure record for a jam-denied command. The additive ``path`` key
+        (path and jammed link) is written only for a payload that carries ``delivery_path``, so an
+        event recorded before IP-1085 replays to the byte-identical record it always produced."""
+        rec = {"t": world.now, "template": template, "target": payload["actor"],
+               "achieved": "jammed", "success": False}
+        if payload.get("delivery_path"):
+            rec["path"] = f"{payload['delivery_path']}:{link}"
+        return rec
+
     def _exec_payload(self, order: Order, win: AccessWindow) -> tuple[str, dict]:
         p = order.params
         # IP-2010 v1.1 (BL-0002) — capture the issuing cell's live track confidence for
@@ -972,6 +1046,7 @@ class OrderSystem:
         if order.action == "command":
             return "execute_command", {
                 "actor": order.actor, "verb": p.get("verb"), "params": dict(p),
+                **self._delivery_keys(win),
                 "custody_confidence_at_decision": custody_confidence,
             }
 
@@ -979,6 +1054,7 @@ class OrderSystem:
         dv = list(np.asarray(p.get("dv", [0, 0, 0]), dtype=float))
         return "execute_maneuver", {
             "actor": order.actor,
+            **self._delivery_keys(win),
             "dv": dv,
             "cost": float(np.linalg.norm(dv)),
             "custody_confidence_at_decision": custody_confidence,
@@ -1086,10 +1162,10 @@ class OrderSystem:
         actor = world.assets.get(payload["actor"])
         if actor is None or actor.orbit is None:
             return
-        # IP-1290 (FR-1440) — an uplink jam covering the manoeuvre command's delivery path.
-        if is_link_denied(world, payload["actor"], world.now, link="uplink"):
-            world.effect_log.append({"t": world.now, "template": "maneuver", "target": payload["actor"],
-                                     "achieved": "jammed", "success": False})
+        # IP-1290/IP-1085 (FR-1440) — a jam covering the link this command's delivery path uses.
+        jammed = self._delivery_jammed(world, payload)
+        if jammed:
+            world.effect_log.append(self._jammed_record(world, "maneuver", payload, jammed))
             payload["applied"] = False
             return
         # Re-validate at execute time (resources may have changed since planning).
@@ -1138,11 +1214,11 @@ class OrderSystem:
     def _h_command(self, world: WorldState, payload: dict, rng) -> None:
         """Apply a bus/payload verb at its window (re-validates at execute time, like the others)."""
         self._release_bookings_on_execute(payload.get("__order_id"))
-        # IP-1290 (FR-1440) — an uplink jam covering the command's delivery path at execute time
-        # fails delivery, mirroring _h_downlink's existing jam-check pattern.
-        if is_link_denied(world, payload["actor"], world.now, link="uplink"):
-            world.effect_log.append({"t": world.now, "template": payload.get("verb"),
-                                     "target": payload["actor"], "achieved": "jammed", "success": False})
+        # IP-1290/IP-1085 (FR-1440) — a jam covering the link the command's delivery path uses, at
+        # execute time, fails delivery (mirrors _h_downlink's jam-check pattern).
+        jammed = self._delivery_jammed(world, payload)
+        if jammed:
+            world.effect_log.append(self._jammed_record(world, payload.get("verb"), payload, jammed))
             return
         ok, label = apply_command(world, payload["actor"], payload.get("verb") or "",
                                    payload.get("params", {}), world.now)

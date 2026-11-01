@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1230
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE — 2026-10-18, `08-code-implementation`, pipeline run #189, awaiting a
+> **Status:** VERIFIED 2026-10-18 ([VR-1230](../verification/VR-1230-space-weather-index-coupling.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE — 2026-10-18, `08-code-implementation`, pipeline run #189, awaiting a
 > **fresh-session** `09-package-verification`. 46 tests in `test_space_weather_index.py`; **42 seen failing first** on a pre-fix copy of the tree. 4 passed on arrival: the opt-out pins, the qualifying-asset pin, and the no-op replay. Full suite **1071 passed / 3 skipped** (baseline 1025/3, plus 46); gates 14/14. Deviations, disclosed: (1) Design Decision 8's validator is a pydantic `field_validator` rather than a `model_validator`, so a load refusal names `…ballistic_coeff_m2_kg`. (2) `index_series_problems` takes a `time_required` keyword, because an inject's `offset_s` defaults to 0 (Design Decision 2). (3) FS-123's `Referenced By` was not edited; `08` does not edit specs, so that is left for `09`, per the run #182 precedent.
 > *(Was 🟡 IN PROGRESS — 2026-10-18, pipeline run #189.)*
 > *(Was 🟢 READY. Authored 2026-10-18 by `07-implementation-planning` in pipeline run #188.)*

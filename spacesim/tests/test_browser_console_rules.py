@@ -30,8 +30,8 @@ BROWSER_ROOT_DEFAULT = "/opt/pw-browsers"
 
 # Wrap the 2D canvas text calls before any console script runs and record every label drawn.
 INIT_SCRIPT = """
-window.__inflight = 0;      // dry-run (order/validate) requests in flight: the client has no
-const __fetch = window.fetch;   // supersede guard on them, so tests settle each step before the next
+window.__inflight = 0;      // dry-run (order/validate) requests in flight; `settle()` waits on it
+const __fetch = window.fetch;   // (harmless now that the client discards superseded responses, IP-1073)
 window.fetch = function (u, o) {
   const watch = String(u).includes('/order/validate');
   if (watch) window.__inflight++;
@@ -116,6 +116,12 @@ def content(tmp_path_factory):
             lambda v, s: [_track("RED-OBJ", "blue", orbit_of(v, "red", "RED-OBJ"), s, False, 0.9)])
     variant("01-leo-isr-denial.yaml", "br-red-tracks-blue",
             lambda v, s: [_track("ISR-EO-1", "red", orbit_of(v, "blue", "ISR-EO-1"), s, True, 1.0)])
+    # IP-1160 — a role-gated variant: roles_needed covers the satellite (optional, so Start is not
+    # blocked); the tests bind operator seats through the White-only roles/assign route.
+    raw = yaml.safe_load((VIGNETTE_DIR / "01-leo-isr-denial.yaml").read_text(encoding="utf-8"))
+    raw["vignette"]["id"] = "br-role-gated"
+    raw["vignette"]["roles_needed"] = [{"asset_or_constellation": "ISR-EO-1", "role": "both", "mandatory": False}]
+    (ext / "br-role-gated.yaml").write_text(yaml.safe_dump(raw), encoding="utf-8")
     cfg = ext / "cfg.yaml"
     cfg.write_text(yaml.safe_dump({"content": {"external_vignette_dirs": [str(ext)]}}), encoding="utf-8")
     mp = pytest.MonkeyPatch()
@@ -161,15 +167,17 @@ def pw_browser(browser_path):
 
 
 class Console:
-    def __init__(self, base, browser, vignette):
+    def __init__(self, base, browser, vignette, viewport=None):
         import httpx
         self.base, self.http = base, httpx.Client(base_url=base, timeout=30)
         self.sid = self.http.post("/api/sessions", json={"vignette_id": vignette, "seed": 1}).json()["session"]
         assert self.http.post(f"/api/sessions/{self.sid}/start", params=W).status_code == 200
         assert self.http.post(f"/api/sessions/{self.sid}/clock", params=W, json={"running": False}).status_code == 200
-        self.ctx = browser.new_context(viewport={"width": 1500, "height": 1000})
+        self.ctx = browser.new_context(viewport=viewport or {"width": 1500, "height": 1000})
+        self.errors: list[str] = []          # uncaught page errors (an unhandled rejection is one)
         self.ctx.add_init_script(INIT_SCRIPT)
         self.page = self.ctx.new_page()
+        self.page.on("pageerror", lambda e: self.errors.append(str(e)))
         self.dialogs: list[str] = []
         self.accept = False
         self.page.on("dialog", self._on_dialog)
@@ -239,8 +247,8 @@ class Console:
 def console(server, pw_browser):
     made = []
 
-    def open_(vignette):
-        c = Console(server, pw_browser, vignette)
+    def open_(vignette, viewport=None):
+        c = Console(server, pw_browser, vignette, viewport)
         made.append(c)
         return c
 
@@ -365,3 +373,443 @@ def test_observe_issues_with_no_confirmation(console):
     c.page.click("#issue")
     c.page.wait_for_function("document.getElementById('order-result').textContent.length > 0")
     assert c.dialogs == [] and c.orders("blue") == before + 1
+
+
+# -- IP-1073: the console follows the server's refusals ------------------------------------------
+STATUS = "#control-status"
+
+
+def _palette_labels(c, text):
+    p = c.page
+    p.keyboard.press("Control+k")
+    p.fill("#palette-input", text)
+    labels = p.eval_on_selector_all("#palette-list li", "els => els.map(e => e.firstChild.textContent)")
+    p.keyboard.press("Escape")
+    return labels
+
+
+@pytest.mark.verifies("FR-4310")
+def test_a_non_white_seat_is_not_offered_time_control_in_the_palette(console):
+    c = console("leo-isr-denial")
+    c.seat("blue")
+    assert _palette_labels(c, "advance") == [] and _palette_labels(c, "rewind") == []
+    c.seat("white")
+    assert len(_palette_labels(c, "advance")) == 3 and len(_palette_labels(c, "rewind")) == 1
+
+
+@pytest.mark.verifies("FR-4310")
+def test_a_non_white_bookmark_click_sends_nothing_and_says_why(console):
+    c = console("leo-isr-denial")
+    c.seat("blue")
+    c.page.evaluate("bmSave([{name: 'mark', t: SCENE.now}])")
+    sent = []
+    c.page.on("request", lambda r: sent.append(r.url) if "/rewind" in r.url else None)
+    # the bookmark list lives in the White-only AAR panel, hidden from this seat: dispatch the click
+    c.page.dispatch_event(".bookmark-chip", "click")
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.includes('White')")
+    assert sent == [] and c.errors == []
+
+
+@pytest.mark.verifies("NFR-1600")
+def test_a_refused_time_control_is_reported_not_thrown(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    c.page.route("**/step*", lambda r: r.fulfill(
+        status=403, content_type="application/json", body=json.dumps({"detail": "clock is locked by test"})))
+    c.page.keyboard.press("Control+k")
+    c.page.fill("#palette-input", "advance +1 min")
+    c.page.keyboard.press("Enter")
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.includes('clock is locked by test')")
+    assert c.errors == []
+
+
+def _choose_file(c, name, text):
+    c.page.set_input_files("#loadfile", files=[{"name": name, "mimeType": "application/json",
+                                                "buffer": text.encode("utf-8")}])
+
+
+def _ensure_polling(c):
+    c.page.evaluate("startRealtimeClock()")      # idempotent; the join path already armed it
+    assert c.page.evaluate("REALTIME_ON") is True
+
+
+@pytest.mark.verifies("NFR-1600")
+@pytest.mark.parametrize("seat", ["white", "blue"])
+def test_a_refused_load_shows_its_reason_and_leaves_the_session_running(console, seat):
+    c = console("leo-isr-denial")
+    c.seat(seat)
+    _ensure_polling(c)
+    readout = c.page.inner_text("#session")
+    _choose_file(c, "bad.json", '{"save_format": 1}')
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.includes('Load failed')")
+    assert c.page.inner_text("#session") == readout        # IP-1076 (L-2) — the live tab keeps its readout
+    assert c.page.evaluate("REALTIME_ON") is True and c.page.evaluate("SID") == c.sid
+    assert c.errors == []
+
+
+@pytest.mark.verifies("NFR-1600")
+def test_an_unparseable_save_file_is_reported(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    _ensure_polling(c)
+    _choose_file(c, "junk.json", "not json")
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.includes('Load failed')")
+    assert c.page.evaluate("REALTIME_ON") is True and c.page.evaluate("SID") == c.sid
+    assert c.errors == []
+
+
+@pytest.mark.verifies("FR-7230")
+def test_a_legacy_saves_resume_warning_is_shown(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    save = c.http.get(f"/api/sessions/{c.sid}/save", params=W).json()
+    for k in ("save_format", "content", "baseline"):
+        save.pop(k, None)
+    _choose_file(c, "legacy.json", json.dumps(save))
+    c.page.wait_for_function(f"SID !== '{c.sid}'")
+    assert any("legacy save" in d for d in c.dialogs), c.dialogs
+
+
+@pytest.mark.verifies("FR-4320")
+def test_a_player_seat_loading_a_vignette_sees_the_refusal(console):
+    c = console("leo-isr-denial")
+    c.seat("blue")
+    c.page.evaluate("loadSession()")
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.includes('Load failed')")
+    assert "white" in c.page.inner_text(STATUS).lower() and c.errors == []
+
+
+def _hold_first_validate(c):
+    held = []
+    def handler(route):
+        if not held:
+            held.append(route)          # the first response is held until the test releases it
+        else:
+            route.continue_()
+    c.page.route("**/order/validate*", handler)
+    return held
+
+
+GOOD = '{"via":"GS-NORTH"}'
+BAD = '{"via":"NO-SUCH-STATION"}'
+
+
+@pytest.mark.verifies("NFR-3020")
+@pytest.mark.parametrize("first,last,accepted", [(BAD, GOOD, True), (GOOD, BAD, False)])
+def test_the_dry_run_preview_follows_the_last_edit(console, first, last, accepted):
+    c = console("leo-isr-denial")
+    c.seat("blue")
+    c.compose("ISR-EO-1", "downlink", params=last if accepted is False else first)   # settled start
+    p = c.page
+    held = _hold_first_validate(c)
+    p.fill("#o-params", first)                  # request A: held
+    p.wait_for_function("window.__inflight >= 1")
+    while not held:
+        p.wait_for_timeout(20)
+    p.fill("#o-params", last)                   # request B: the last edit, answered at once
+    p.wait_for_function("window.__inflight === 1")
+    want = "will queue" if accepted else "✗"
+    p.wait_for_function(f"document.getElementById('o-preview').textContent.includes('{want}')")
+    held[0].continue_()                         # the stale response lands last
+    p.wait_for_function("window.__inflight === 0")
+    p.evaluate("new Promise(r => setTimeout(r, 50))")        # let the client process the response
+    text = p.inner_text("#o-preview")
+    assert ("will queue" in text) is accepted and p.is_enabled("#issue") is accepted
+
+
+@pytest.mark.verifies("NFR-3030")
+def test_a_menu_reaches_its_last_entry_at_low_height(console):
+    c = console("leo-isr-denial", viewport={"width": 1500, "height": 700})
+    p = c.page
+    p.click("#view-btn")
+    m = p.evaluate("""() => { const e = document.getElementById('view-menu'), r = e.getBoundingClientRect();
+                              return {bottom: r.bottom, sh: e.scrollHeight, ch: e.clientHeight}; }""")
+    assert m["bottom"] <= 700 and m["sh"] > m["ch"]
+    last = p.locator("#view-menu .menu-item").last
+    last.scroll_into_view_if_needed()
+    box = last.bounding_box()
+    assert 0 <= box["y"] and box["y"] + box["height"] <= 700
+    p.evaluate("window.__hit = false; document.getElementById('view-menu').addEventListener('click', () => { window.__hit = true; }); 0")
+    last.click()                                # Playwright hit-tests the point: it fails if anything covers the entry
+    p.wait_for_function("window.__hit === true")
+    assert (last.get_attribute("id") or last.inner_text()).strip()    # the last entry (e.g. Reset layout)
+
+
+# -- IP-1074: "rewind to start" means the exercise's start_epoch, never 0 ------------------------
+@pytest.mark.verifies("FR-4310", "NFR-1600")
+def test_rewind_to_start_sends_the_exercise_start_epoch_not_zero(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    start = c.http.get(f"/api/sessions/{c.sid}/clock").json()["start_epoch"]
+    assert start > 0
+    bodies = []
+    c.page.on("request", lambda r: bodies.append(json.loads(r.post_data or "{}"))
+              if r.method == "POST" and r.url.split("?")[0].endswith("/rewind") else None)
+
+    def advance_then(trigger):
+        assert c.http.post(f"/api/sessions/{c.sid}/step", params=W, json={"dt_sim_s": 300.0}).status_code == 200
+        assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] > start
+        n = len(bodies)
+        with c.page.expect_response(lambda r: r.url.split("?")[0].endswith("/rewind")) as resp:
+            trigger()
+        assert resp.value.status == 200
+        assert len(bodies) == n + 1 and bodies[-1] == {"t": start}
+        clock = c.http.get(f"/api/sessions/{c.sid}/clock").json()
+        assert clock["now"] == start and clock["running"] is False   # clock state unchanged by a rewind
+
+    def palette():
+        c.page.keyboard.press("Control+k")
+        c.page.fill("#palette-input", "rewind to start")
+        c.page.keyboard.press("Enter")
+
+    advance_then(palette)
+    advance_then(lambda: c.page.click("#rewind"))
+    assert c.errors == []
+
+
+# -- IP-1075: Undo on a fresh started session never sends the clock to 1970 -----------------------
+@pytest.mark.verifies("FR-4310", "NFR-1600")
+def test_undo_in_the_console_never_sends_the_clock_before_the_exercise_start(console):
+    """The shipped client has no Undo control, so the White seat's own page issues the same
+    ``POST /undo`` its ``api.post`` helper would (seat attached as ``cell``)."""
+    c = console("leo-isr-denial")
+    c.seat("white")
+    start = c.http.get(f"/api/sessions/{c.sid}/clock").json()["start_epoch"]
+    c.http.post(f"/api/sessions/{c.sid}/clock", params=W, json={"running": False})
+
+    def undo(n):
+        return c.page.evaluate(
+            """async ([sid, n]) => { const r = await fetch(`/api/sessions/${sid}/undo?cell=white`,
+                 {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({n})});
+               return r.status; }""", [c.sid, n])
+
+    assert undo(1) == 400                                  # nothing to undo: refused, not applied
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] >= start
+    assert c.http.post(f"/api/sessions/{c.sid}/step", params=W, json={"dt_sim_s": 400.0}).status_code == 200
+    assert undo(99) == 200                                 # drop everything: lands on the start epoch
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == start
+    assert c.http.post(f"/api/sessions/{c.sid}/rewind", params=W, json={"t": start}).status_code == 200
+
+
+# -- IP-1076: palette gating, inject refusal, quiet console, palette advance ---------------------
+@pytest.mark.verifies("FR-4310")
+@pytest.mark.parametrize("seat", ["blue", "red", "observer"])
+def test_a_non_white_seat_is_not_offered_inject_entries_in_the_palette(console, seat):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    assert _palette_labels(c, "fire inject") and _palette_labels(c, "inject lib")   # White keeps them
+    c.seat(seat)
+    assert _palette_labels(c, "fire inject") == [] and _palette_labels(c, "inject lib") == []
+
+
+@pytest.mark.verifies("NFR-1600")
+def test_a_refused_inject_is_reported_in_the_visible_status_line(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    c.page.route("**/inject*", lambda r: r.fulfill(
+        status=403, content_type="application/json", body=json.dumps({"detail": "inject locked by test"})))
+    c.page.evaluate("document.getElementById('inject-sel').value = document.getElementById('inject-sel').options[0].value")
+    labels = _palette_labels(c, "fire inject")
+    assert labels
+    c.page.keyboard.press("Control+k")
+    c.page.fill("#palette-input", "fire inject")
+    c.page.keyboard.press("Enter")
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.includes('inject locked by test')")
+    assert c.errors == []
+
+
+@pytest.mark.verifies("NFR-3030", "NFR-1600")
+def test_the_console_asks_for_no_windows_of_a_sensor_and_no_observer_dry_run(console):
+    c = console("leo-isr-denial")
+    reqs = []
+    c.page.on("request", lambda r: reqs.append(r.url))
+    c.seat("white")
+    c.page.evaluate("$('o-actor').value = 'BLUE-RADAR'; onActorChange()")
+    c.settle()
+    c.page.select_option("#o-actor", index=0)
+    c.settle()
+    assert not any("/windows/" in u and "BLUE-RADAR" in u for u in reqs), reqs
+    # a satellite still gets its ribbon request
+    sat = c.page.evaluate("Object.keys(ASSETS).find(k => ASSETS[k].kind === 'satellite' && ASSETS[k].owner === 'blue')")
+    assert sat
+    n0 = len([u for u in reqs if "/windows/" in u])
+    c.page.evaluate(f"$('o-actor').value = '{sat}'; onActorChange()")
+    c.page.wait_for_function(f"1")        # let the request fire
+    c.page.wait_for_timeout(300)
+    assert len([u for u in reqs if "/windows/" in u]) > n0
+    # Observer: no dry-run is posted
+    c.seat("observer")
+    reqs.clear()
+    c.page.evaluate("previewOrder()")
+    c.page.wait_for_timeout(300)
+    assert not any("/order/validate" in u for u in reqs), reqs
+    assert c.errors == []
+
+
+@pytest.mark.verifies("FR-4330")
+def test_palette_advance_posts_a_step_and_is_accepted_at_a_high_clock_rate(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    assert c.http.post(f"/api/sessions/{c.sid}/clock", params=W, json={"running": True, "rate": 600}).status_code == 200
+    posted = []
+    c.page.on("request", lambda r: posted.append((r.url, r.post_data)) if r.method == "POST" else None)
+    c.page.keyboard.press("Control+k")
+    c.page.fill("#palette-input", "advance +1 min")
+    c.page.keyboard.press("Enter")
+    c.page.wait_for_function("window.__inflight === 0")
+    steps = [(u, d) for u, d in posted if "/step" in u]
+    assert steps and json.loads(steps[0][1]) == {"dt_sim_s": 60}
+    assert not any("/advance" in u for u, _ in posted)
+    assert c.page.inner_text(STATUS).strip() == "" and c.errors == []
+    c.http.post(f"/api/sessions/{c.sid}/clock", params=W, json={"running": False})
+
+
+@pytest.mark.verifies("FR-4330", "NFR-1600")
+def test_advance_beyond_the_span_is_refused_visibly_and_the_running_clock_stops_at_the_end(console):
+    c = console("leo-isr-denial")
+    c.seat("white")
+    clock = c.http.get(f"/api/sessions/{c.sid}/clock").json()
+    ceiling = clock["start_epoch"] + 366 * 86400 * 1_000_000
+    assert c.http.post(f"/api/sessions/{c.sid}/advance", params=W, json={"t": ceiling - 600_000_000}).status_code == 200
+    c.page.keyboard.press("Control+k")
+    c.page.fill("#palette-input", "advance +1 hour")
+    c.page.keyboard.press("Enter")
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.length > 0")
+    assert "span" in c.page.inner_text(STATUS).lower() and c.errors == []
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] <= ceiling
+    # run the clock fast: it pins at the end and the save still loads
+    assert c.http.post(f"/api/sessions/{c.sid}/clock", params=W, json={"running": True, "rate": 600}).status_code == 200
+    deadline = time.time() + 20
+    while time.time() < deadline:
+        now = c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"]
+        if now == ceiling:
+            break
+        time.sleep(0.3)
+    assert now == ceiling
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == ceiling
+    save = c.http.get(f"/api/sessions/{c.sid}/save").json()
+    assert c.http.post("/api/sessions/load_save", params=W, json=save).status_code == 200
+
+
+@pytest.mark.verifies("NFR-2840", "FR-4330")
+@pytest.mark.parametrize("button", ["+1h", "+1m"])
+def test_a_refused_toolbar_step_shows_its_reason_and_raises_no_page_error(console, button):
+    """IP-1082 (review M-2) — the toolbar +1m/+10m/+1h buttons report a refusal in #control-status
+    exactly as the palette does; a successful step clears it."""
+    c = console("leo-isr-denial")
+    c.seat("white")
+    clock = c.http.get(f"/api/sessions/{c.sid}/clock").json()
+    ceiling = clock["start_epoch"] + 366 * 86400 * 1_000_000
+    near = ceiling - (30 if button == "+1m" else 600) * 1_000_000
+    assert c.http.post(f"/api/sessions/{c.sid}/advance", params=W, json={"t": near}).status_code == 200
+    before = c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"]
+    c.page.click(f'button[data-step="{ {"+1h": 3600, "+1m": 60}[button] }"]')
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent.length > 0")
+    assert "span" in c.page.inner_text(STATUS).lower()
+    assert c.errors == []
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == before
+    # a rewind, then a toolbar step that succeeds, clears the message
+    assert c.http.post(f"/api/sessions/{c.sid}/rewind", params=W, json={"t": clock["start_epoch"]}).status_code == 200
+    c.page.click('button[data-step="60"]')
+    c.page.wait_for_function(f"document.querySelector('{STATUS}').textContent === ''")
+    assert c.http.get(f"/api/sessions/{c.sid}/clock").json()["now"] == clock["start_epoch"] + 60_000_000
+    assert c.errors == []
+
+
+# -- IP-1160 (FR-3510): role-scoped command list ---------------------------------------------------
+def _action_values(c):
+    return c.page.eval_on_selector_all("#o-action option", "els => els.map(e => e.value)")
+
+
+def _bind(c, seat, role):
+    r = c.http.post(f"/api/sessions/{c.sid}/roles/assign", params=W, json={
+        "cell": "white", "seat": seat, "asset_or_constellation": "ISR-EO-1", "role": role})
+    assert r.status_code == 200 and r.json()["ok"], r.text
+
+
+def _enter_seat(c, seat):
+    """Type an operator seat and wait for the scope fetch it triggers to land (non-empty seats)."""
+    c.page.fill("#o-seat", seat)
+    c.page.dispatch_event("#o-seat", "change")
+    c.page.wait_for_function(
+        f"({seat!r} === '' && ROLE_SCOPE === null) || (ROLE_SCOPE && ROLE_SCOPE.seat === {seat!r})")
+    c.settle()
+
+
+def _role_console(console):
+    c = console("br-role-gated")
+    c.seat("blue")
+    c.page.select_option("#o-actor", "ISR-EO-1")
+    c.settle()
+    return c
+
+
+@pytest.mark.verifies("FR-3510", "NFR-2840")
+def test_21_the_action_list_follows_the_operator_seats_role(console):
+    c = _role_console(console)
+    _bind(c, "bus-op", "bus"); _bind(c, "pl-op", "payload"); _bind(c, "all-op", "both")
+    _enter_seat(c, "bus-op")
+    c.page.wait_for_function("![...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    bus = _action_values(c)
+    assert "eps.shed_load" in bus and "def.frequency_hop" in bus and "downlink" in bus
+    assert not [v for v in bus if v.startswith("isr.") or v == "def.harden"]
+    _enter_seat(c, "pl-op")
+    c.page.wait_for_function("[...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    pl = _action_values(c)
+    assert "isr.collect_now" in pl and "def.harden" in pl and "downlink" in pl
+    assert not [v for v in pl if v.startswith(("eps.", "adcs.", "cdh.")) or v == "def.frequency_hop"]
+    _enter_seat(c, "all-op")
+    c.page.wait_for_function("[...document.querySelectorAll('#o-action option')].some(o => o.value === 'eps.shed_load')"
+                             " && [...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    assert {"eps.shed_load", "isr.collect_now", "def.harden", "def.frequency_hop"} <= set(_action_values(c))
+    assert c.errors == []
+
+
+@pytest.mark.verifies("FR-3510", "NFR-2840")
+def test_22_with_the_seat_field_empty_the_list_is_the_full_list(console):
+    c = _role_console(console)
+    full = _action_values(c)
+    assert {"eps.shed_load", "isr.collect_now", "def.harden"} <= set(full)
+    _bind(c, "bus-op", "bus")
+    _enter_seat(c, "bus-op")
+    c.page.wait_for_function("![...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    _enter_seat(c, "")
+    c.page.wait_for_function("[...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    assert _action_values(c) == full
+    assert c.errors == []
+
+
+@pytest.mark.verifies("FR-3510", "NFR-2840")
+def test_23_a_verb_outside_the_seats_scope_disables_issue_with_the_role_reason_before_any_send(console):
+    c = _role_console(console)
+    _bind(c, "bus-op", "bus")
+    _enter_seat(c, "bus-op")
+    c.page.wait_for_function("![...document.querySelectorAll('#o-action option')].some(o => o.value === 'isr.collect_now')")
+    # The list no longer offers the payload verb; force it into the control the way a hand-edited
+    # page would, so the dry-run (which does not trust the list) is what answers.
+    c.page.evaluate("""() => { const s = document.getElementById('o-action');
+        s.add(new Option('isr.collect_now')); s.value = 'isr.collect_now'; s.dispatchEvent(new Event('change')); }""")
+    c.settle()
+    c.page.wait_for_function("document.getElementById('issue').disabled")
+    assert "other role" in c.page.inner_text("#o-preview")
+    assert c.orders("blue") == 0                       # nothing was issued to learn this
+    assert c.errors == []
+
+
+@pytest.mark.verifies("FR-3510", "NFR-2840")
+def test_24_the_subsystem_drill_down_buttons_follow_the_operator_seats_role(console):
+    c = _role_console(console)
+    _bind(c, "bus-op", "bus"); _bind(c, "pl-op", "payload")
+
+    def drill_verbs():
+        c.page.evaluate("openDrill('ISR-EO-1')")
+        c.page.wait_for_function("document.querySelectorAll('#drill-params .vbtn').length > 0")
+        return c.page.eval_on_selector_all("#drill-params .vbtn", "els => els.map(e => e.dataset.verb)")
+
+    _enter_seat(c, "bus-op")
+    bus = drill_verbs()
+    assert any(v.startswith("eps.") for v in bus) and not [v for v in bus if v.startswith("isr.") or v == "def.harden"]
+    _enter_seat(c, "pl-op")
+    pl = drill_verbs()
+    assert any(v.startswith("isr.") for v in pl) and not [v for v in pl if v.startswith(("eps.", "adcs.", "cdh."))]
+    assert c.errors == []

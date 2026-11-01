@@ -58,6 +58,7 @@ def test_replay_from_midway_snapshot_matches_live():
     assert sim.replay().model_dump_json() == live
 
 
+@pytest.mark.verifies("FR-7210")
 def test_save_round_trip_reproduces_state():
     sim = _build(_fixed_events(), seed=7)
     sim.advance_to(50)
@@ -85,6 +86,7 @@ def test_different_seed_changes_random_outcome():
     assert a.world.counters["rolls"] != b.world.counters["rolls"]
 
 
+@pytest.mark.verifies("FR-1110")
 def test_cannot_advance_backwards():
     sim = _build([], seed=1)
     sim.advance_to(50)

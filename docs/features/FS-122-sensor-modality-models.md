@@ -3,7 +3,7 @@
 > choices and a mode the sensor does not offer); a remediation package is owed. Nothing else
 > changed.) Prior: 1.1 (2026-10-15 — adds `FR-1670`, the CATS illumination phase-angle refinement, the
 > seventh leaf `FEAT-1600` bundles; v1.0 covered `FR-1610`-`FR-1660`, now built and `VERIFIED`)
-> **Status:** ✅ Done for the v1.1 scope — built: `IP-1220`, `IP-1221`, `IP-1222`, `IP-1041` all `VERIFIED` — all seven leaves (`FR-1610`–`FR-1670`) built. The v1.2 beam-mode behaviour (`BL-0224`) is ✅ Ready for implementation planning (a remediation package is owed).
+> **Status:** ✅ Done — built: `IP-1220`, `IP-1221`, `IP-1222`, `IP-1041` all `VERIFIED` — all seven leaves (`FR-1610`–`FR-1670`) built. The v1.2 beam-mode behaviour (`BL-0224`) is built by `IP-1223` (`VERIFIED`, `VR-1223`).
 > *(Status line updated 2026-10-17, pipeline run #163, `BL-0200`: it described the spec's readiness for planning, which lagged the built Feature. Open Questions recorded below are historical unless marked otherwise; the cited package's Design Decisions record how each was settled where the build needed it.)*
 > **Approved Feature (v1.1):** [`FEAT-1600`](../feature-planning/03-feature-catalog.md) (Sensor
 > Modality-Specific Access & Effectiveness Models; Included Requirements `FR-1610`-`FR-1670`). A

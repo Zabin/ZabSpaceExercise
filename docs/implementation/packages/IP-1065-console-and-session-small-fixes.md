@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1065
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-17 by `07-implementation-planning`, pipeline run #166.
+> **Status:** VERIFIED 2026-10-17 ([VR-1065](../verification/VR-1065-console-and-session-small-fixes.md), fresh session; READY before that) — authored 2026-10-17 by `07-implementation-planning`.
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🟢 READY — authored 2026-10-17 by `07-implementation-planning`, pipeline run #166.
 > Every dependency is `VERIFIED`. **Authorization (MSTR-006 §3):** falls under the project owner's
 > standing pre-authorization of 2026-10-11 for the packages this iteration reaches. Authoring the
 > package is not itself the authorization.

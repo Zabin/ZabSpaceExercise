@@ -2,10 +2,8 @@
 
 > **Package ID:** IP-1330
 > **Version:** 1.1 (2026-10-23, run #229: adds the generated RTM Test column, FS-133 v1.1 `NFR-2850`, `BL-0322`). v1.0: run #221.
-> **Status:** 🟢 READY — authored 2026-10-23 by `07-implementation-planning`, pipeline run #221.
-> No package dependencies.
-> **Authorization (MSTR-006 §3):** **not yet given.** Owner direction `BL-0310` decided the
-> marker form and cadence; the build go-ahead is separate.
+> **Status:** VERIFIED 2026-10-24 ([VR-1330](../verification/VR-1330-test-origin-marker-and-checks.md), fresh session; READY before that) — authored 2026-10-23 by `07-implementation-planning`, pipeline run #221.
+> **Authorization (MSTR-006 §3):** **given.** Owner direction `BL-0310` decided the marker form and cadence; the `run #230` ledger note records the owner's go-ahead of 2026-10-23. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [FS-133](../../features/FS-133-test-origin-traceability.md) v1.0 (the spec).
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md),
 > [IP-1331](IP-1331-test-origin-backfill-engine-content.md), [IP-1332](IP-1332-test-origin-backfill-session.md),
@@ -64,7 +62,7 @@ After this package:
 5. **The allow-list starts with all 72 modules** minus the files this package itself tags, and each
    backfill package removes its modules. The target is empty, reached when IP-1333 lands.
 6. **The dependency lock (`NFR-1510`) is not in this package.** It is produced at the first major
-   release (which releases are major: `BL-0318`); FS-133 criterion 8 is checked by
+   release (which releases are major: `BL-0318`) *(Superseded by BL-0318, 2026-10-24: applies at every release.)*; FS-133 criterion 8 is checked by
    `11-release-readiness` then. The TWBS records this.
 7. *(v1.1)* **Matrix regeneration.** A second mode of the report option (for example
    `--origin-report=rtm`) rewrites only the Test cell of each baseline requirement row in the
@@ -78,9 +76,9 @@ After this package:
 
 ## Requirements Covered
 
-NFR-2820, NFR-3840, NFR-2830 (the report the major-release audit reads), *(v1.1)* NFR-2850 (the
+NFR-2820, NFR-3840, NFR-2830 (the report the major-release audit reads*(Superseded by BL-0318, 2026-10-24: applies at every release.)*), *(v1.1)* NFR-2850 (the
 generated Test column). `NFR-1510` is FS-133's
-but deferred to the first major release (Design Decision 6).
+but deferred to the first major release (Design Decision 6). *(Superseded by BL-0318, 2026-10-24: applies at every release.)*
 
 ## Architecture Components
 

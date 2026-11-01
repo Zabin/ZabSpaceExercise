@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1211
 > **Version:** 1.0
-> **Status:** 🟡 READY *(fully specified; every cited dependency is `VERIFIED` — see Dependencies.)*
+> **Status:** VERIFIED 2026-10-10 ([VR-1211](../verification/VR-1211-quick-tle-export.md), fresh session; READY before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🟡 READY *(fully specified; every cited dependency is `VERIFIED` — see Dependencies.)*
 > **Authorization (MSTR-006 §3):** ✅ **Pre-authorized by the project owner** (relayed in the
 > 2026-10-10 session task instruction: `08-code-implementation` is pre-authorized for the package(s) that directly
 > implement `BL-0109`/`FR-7440`). This authorization covers this package only — it does not

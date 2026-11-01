@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1240
 > **Version:** 1.0
-> **Status:** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
+> **Status:** VERIFIED 2026-09-28 ([VR-1240](../verification/VR-1240-debris-field-persistence-estimate.md), fresh session; READY before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
 > **Dependencies:** [FS-124](../../features/FS-124-debris-field-persistence-estimate.md) v1.0
 > (`FR-1430`), `engine/effects.py` (`VERIFIED` baseline code, `IP-1051`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md),

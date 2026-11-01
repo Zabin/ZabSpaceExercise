@@ -1,7 +1,7 @@
 # GDS-09 — API Specification
 
 > **Document ID:** GDS-09
-> **Version:** 1.0
+> **Version:** 1.1 (2026-10-24, stale-documentation pass: §4 and OQ1 restated to the shipped White-only enforcement, span bounds, save validation and playback seat rule)
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-08
 > **Referenced By:** GDS-10
@@ -62,7 +62,7 @@ implementation, used by both hot-seat and LAN play. Method groups, as built:
 | Authorization | `issue_roe_change`, `decide_gated_order`, `assign_role`, `staffing_report`, `set_observer_view` | White Cell, or a gate's required role |
 | Orders | `issue_order`, `validate_order` (dry run), `cancel_order` | Red, Blue (White when driving a side) |
 | Reads | `get_view` (fog-filtered `CellView`), `get_godview` (truth), `get_eventlog(since_seq)`, `objectives`, scene, telemetry, windows, alarms, recovery, exports | Per cell; truth reads unfiltered |
-| Persistence | `save` (returns the save envelope), `load_save` (state → new session ID) | White Cell |
+| Persistence | `save` (returns the save envelope), `load_save` / `load_save_with_warnings` (state → new session ID, plus resume warnings; refuses an unusable save before any replay, GDS-07 §6) | White Cell |
 
 **Message types** (`session/api.py`):
 
@@ -97,16 +97,16 @@ FastAPI, JSON over HTTP, 91 API routes; the console page is served at `/`.
 | Code | Meaning |
 |---|---|
 | 200 | Success, **including a refused order**: `OrderAck` with `ok = false` and a reason is a normal result, not an error. |
-| 400 | Invalid input: an invalid vignette (`invalid_vignette`, with every problem listed), a malformed or precondition-failing inject, an out-of-range export span or sample count, an oversized save. |
-| 403 | The seat may not do this: the Observer on any mutation; a non-White seat on a server-enforced White-only route (§4). |
+| 400 | Invalid input: an invalid vignette (`invalid_vignette`, with every problem listed), a malformed or precondition-failing inject, an out-of-range export span or sample count, an unusable save (missing or mistyped keys, a bad content or baseline portion, a `final_time` outside the exercise span, a legacy save whose vignette file is gone, an oversized log), a rewind, undo, step or advance that leaves the exercise span (`FR-4330`; below). |
+| 403 | The seat may not do this: the Observer on any mutation; a seat other than `white` on a White-only route (§4); a player seat on a playback request outside its own viewpoint (§4, `FR-7340`). |
 | 404 | Not found: unknown session or vignette, or an object outside the caller's custody (RIC view, TLE export). |
 
 **Route families** (paths relative to `/api/sessions/{sid}` unless absolute):
 
 | Family | Routes |
 |---|---|
-| Discovery and lifecycle | `GET /api/sessions`, `POST /api/sessions` (load), `POST /api/sessions/draft`, `POST /api/sessions/load_save`, `GET /api/vignettes`, `GET /api/vignettes/{vid}/source`, `GET /api/vignettes/{vid}/tutorial`, `GET /api/ground_sites`, `POST /start`, `POST /param`, `GET /save`, `POST /save_vignette` |
-| Time | `GET /clock`, `POST /clock`, `POST /step`, `POST /advance`, `POST /rewind`, `POST /undo`, `POST /red_step` |
+| Discovery and lifecycle | `GET /api/sessions`, `POST /api/sessions` (load), `POST /api/sessions/draft`, `POST /api/sessions/load_save` (returns `{session, warnings}`), `GET /api/vignettes`, `GET /api/vignettes/{vid}/source`, `GET /api/vignettes/{vid}/tutorial`, `GET /api/ground_sites`, `POST /start`, `POST /param`, `GET /save`, `POST /save_vignette` |
+| Time (White-only to change; `GET /clock` returns `running`, `rate`, `now`, `start_epoch`, `lag_warning`) | `GET /clock`, `POST /clock`, `POST /step`, `POST /advance`, `POST /rewind`, `POST /undo`, `POST /red_step` |
 | Cell picture | `GET /view/{cell}`, `GET /scene/{cell}`, `GET /brief/{cell}`, `GET /windows/{cell}/{asset}`, `GET /next_contacts/{cell}`, `GET /alarms/{cell}`, `GET /activity/{cell}`, `GET /conjunctions/{cell}`, `GET /coaching/{cell}`, `GET /ric_view/{cell}` |
 | Telemetry | `GET /telemetry/{cell}/{asset}`, `GET /telemetry/{cell}/{asset}/{param}` (`&nominal=1` for the clean baseline), `GET /telemetry/{cell}/{asset}/export.csv` |
 | Orders | `POST /order/validate`, `POST /order`, `POST /cancel`, `GET /orders/{cell}`, `POST /preview/consequence`, `POST /maneuver/compute`, `/jam/compute`, `/engage/compute`, `/cyber/compute`, `/sigint/compute` |
@@ -125,33 +125,64 @@ table is the contract surface.
 ## 4. Authorization (as built)
 
 Cell selection is **client-side trust** (ADR-0015, GDS-06 NFR-5): there is no authentication, and
-the server believes the seat a request names. Within that, the server enforces three rules:
+the server believes the seat a request names. Within that, the server enforces four rules, each a
+structural check at that same trust level:
 
 1. **Fog on every cell-scoped read.** A request for `/view/blue` gets Blue's filtered picture and
    nothing more, whoever sent it.
-2. **The Observer seat never mutates.** Every mutating route refuses `cell = observer` (403).
-3. **Server-enforced White-only actions** — refused (403, or `ok = false`) for any other seat:
-   declaring seats (`/creator/seats`), cancelling or editing a pending inject, the controller view,
-   changing ROE (`issue_roe_change`), and deciding a gated order (only the gate's `required_role`).
+2. **The Observer seat never mutates.** Every player-facing mutating route (orders, cancellation,
+   recovery, SSN requests, ROE change, gate decision, Observer view) refuses `cell = observer`
+   (403, `IP-1130`).
+3. **White Cell controls are refused to any request that does not name the `white` seat**
+   (403; `FR-4310`, `FR-4320`; `IP-1068`, `IP-1072`, `IP-1074`, all `VERIFIED`). A request naming
+   Blue, Red, Observer, or no seat at all is refused. The controls are:
+   - *Clock and time:* `POST /clock`, `/step`, `/advance`, `/rewind`, `/undo`.
+   - *Session lifecycle:* `POST /start`, `/param`, `/save_vignette` (draft or running session, as a
+     vignette or a scenario), `POST /api/sessions/load_save`, and `/red_step`.
+   - *Facilitation:* `POST /inject`, `/injects/{handle}/cancel`, `/injects/{handle}/edit`,
+     `GET /controller_view`, `POST /roles/assign`, `POST /observer/view`.
+   - *Force edits:* `POST /force/tle`, `/force/bulk_import`, `/force/ground`.
+   - *Creator edits:* `PUT /creator/state`, `PATCH`/`DELETE /creator/asset/{asset_id}`,
+     `POST /creator/seats`.
+   - *Creation:* `POST /api/sessions` and `POST /api/sessions/draft` refuse a request that *names*
+     Blue, Red or Observer; a creation request that names no seat is allowed, because creation
+     precedes seat selection in the hot-seat flow (`IP-1072`, a deliberate asymmetry).
+   Changing ROE (`/roe/change`) and deciding a gated order (`/gate/decide`) are not seat-checked
+   here: they refuse the Observer, and the session layer then checks the cell's role (a gate's
+   `required_role`; White for ROE changes).
+4. **AAR playback obeys the requesting seat** (`FR-7340`, `IP-1077`, `VERIFIED`). The five
+   `aar/playback/*` routes take the query seat. White may start, advance, set speed and read any
+   viewpoint; a Blue or Red seat may use only its own cell's viewpoint (a start or viewpoint request
+   for truth or the other cell, or a state read while the playback shows another viewpoint, is 403);
+   the Observer may read playback state but any start or change is 403; a missing or unknown seat is
+   403. There is one playback cursor per session, so a player's own-cell start replaces White's
+   (OQ4).
 
-**Everything else White Cell does is White-only by UI convention only.** Start, parameters, the
-clock (pause, resume, rate), step, advance, rewind, undo, firing an inject, force edits, seat
-assignment, Observer designation and loading a save are offered only on White Cell's screens, but
-the server accepts them from any non-Observer seat. ADR-0016 says time control is "reachable only
-through the White Cell's session-layer calls", and the API does not yet enforce that (OQ1).
+**Time controls are bounded to the exercise span** (`FR-4330`; `IP-1074`, `IP-1075`, `IP-1076`, all
+`VERIFIED`; the span is the one a save may carry, GDS-07 §6). The span runs from the session's start
+epoch, exposed as `start_epoch` on `GET /clock`, to 366 days after it. Rewind accepts a target from
+the start epoch up to the current time; undo lands on the last surviving event or the start epoch and
+is refused when there is nothing to undo; step and advance accept a target from the current time to
+start epoch + 366 days (no negative or non-finite step). Anything else is a 400 naming the span, with
+nothing changed. Whether the span should be configurable, and whether a running clock keeps running
+after a rewind, are open owner questions (OQ5), not decided here.
+
+**Everything else is player- or read-facing.** Orders and their dry-run and compute helpers, order
+cancellation, recovery, SSN requests and every cell-scoped read are deliberately not White-only.
 
 **Ground-truth reads have no cell binding** by design: `/godview`, `/eventlog`, `/save`, `/aar*`,
 `/objectives`, `/assessment`, `/ephemeris/truth`, the Observer view and White Cell's facilitation
-reads (the full named set is `FR-6220`).
+reads (the full named set is `FR-6220`). The AAR playback routes are the exception (rule 4).
 
 ### The LAN trust model (carried over from `CLAUDE.md` and ADR-0015)
 
 Deploy only on a trusted LAN with cooperative participants. A hostile participant can read another
-cell's picture by naming that cell in a URL, read ground truth from the unbound endpoints, and — per
-the gap above — drive White Cell's unenforced controls. This is accepted for v1's PME context, where
+cell's picture by naming that cell in a URL, read ground truth from the unbound endpoints, and
+assert the `white` seat to drive White Cell's controls. This is accepted for v1's PME context, where
 everyone in the room is on the same team learning together; per-cell tokens are deferred hardening
-(`CNFR-04`). The Observer rejection and the five White-only checks are real structural rules, but
-at the same trust level: a participant who lies about their seat bypasses them.
+(`CNFR-04`). The Observer rejection, the White-only refusals and the playback seat rule are real structural
+rules (they hold even for a request that bypasses the UI), but at the same trust level: a
+participant who lies about their seat bypasses them. They close accidental misuse, not hostile misuse.
 
 ## 5. State delivery
 
@@ -206,24 +237,27 @@ event-log entries in a loaded save; 10,000 samples per time-span export.
 - **Force edits.** `edit_force` became `/force/tle`, `/force/bulk_import` and `/force/ground`.
 - **Push.** WebSocket push was not built (§5).
 - **Authentication and per-role authorization** (`design/07` §5 step 3) were deliberately not added;
-  the trust model above replaces them for v1, and only five White-only checks exist (§4).
+  the trust model above replaces them for v1. What exists is the seat-assertion checks of §4, not authorization.
 
 ## Open Questions
 
-- **OQ1 — White-only controls are not enforced server-side.** Start, parameters, clock, step,
-  advance, rewind, undo, inject firing, force edits, seat assignment, Observer designation and
-  loading a save accept any non-Observer seat. Under the trust model this is consistent (a liar
-  bypasses any seat check), but it contradicts ADR-0016's wording and `design/07`'s authorization
-  table, and the same cheap structural check already guards the five White-only actions. Should
-  the remaining White Cell controls be refused for non-White seats (closing an accidental-misuse
-  path in hot-seat and LAN play), or should ADR-0016 be revised to say "by UI convention"? Owner
-  decision.
+- **OQ1 — White-only controls enforced server-side. Decided (owner, `BL-0307`) and shipped.** The
+  server refuses every White Cell control to a non-White seat (§4 rule 3; `FR-4310`, `FR-4320`;
+  `IP-1068`, `IP-1072`, `IP-1074`), so ADR-0016's wording now holds as a structural check at the
+  client-asserted-seat trust level. Kept as a closed record. What remains open is real
+  authentication (OQ4 below and `CNFR-04`).
 - **OQ2 — No API versioning.** Routes carry no version, and a client and server from different
   builds have no way to detect a mismatch. Acceptable while the client is served by the same server
   that hosts the API; a question only if a separate client ever appears.
 - **OQ3 — ICD re-issue.** The ICD asks to be re-issued once GDS-07 and GDS-09 exist, to replace its
   "not specified" fields with citations of them (its own merge gate). That, plus its move under
   `docs/architecture/`, is `03`'s follow-up work (`BL-0294`).
+- **OQ4 — Playback cursor per session or per seat.** There is one playback cursor per session, so a
+  player's own-cell start replaces White's cursor (`FR-7340` Notes; `VR-1077`, accepted as shipped).
+  Whether each seat should get its own cursor is a design question for `06`/`07`, not decided here.
+- **OQ5 — The time span.** The 366-day span is the shipped save cap restated (`FR-4330`); whether it
+  should be configurable, and whether a running clock keeps running after a rewind (integration review
+  of tranche 3, `L-6`), are owner decisions, not made here.
 
 ## Merge gate (closed)
 
@@ -236,7 +270,7 @@ event-log entries in a loaded save; 10,000 samples per time-span export.
   - State delivery (§3) → §5; authority and fog (§4) → §1 and §4; error contract (§6) → §7.
   Every difference is listed under "Departures".
 - [x] **Reconciled with the shipped API.** The route table was taken from `ui_web/server.py` (91
-  routes); the authorization rules were read from its guards, which is how OQ1 surfaced.
+  routes); the authorization rules were read from its guards (restated 2026-10-24 against the shipped White-only enforcement).
 - [x] **ICD placement decided.** The ICD stays the authoritative interface inventory, as this
   document's companion, rather than being merged into it: an inventory of sixteen component
   interfaces and a contract for two programmatic ones are different jobs. **The file move under
@@ -250,5 +284,4 @@ event-log entries in a loaded save; 10,000 samples per time-span export.
 
 ## Next
 
-`GDS-10` (Requirements Traceability Matrix) may now begin. OQ1 needs an owner decision; OQ3 is `03`
-follow-up work.
+OQ1 is decided and shipped; OQ3 is `03` follow-up work; OQ4 and OQ5 need owner decisions.

@@ -73,7 +73,7 @@ vignette:
       threat_picture: "RED-JAM-TIRADA (SATCOM jammer, Kaliningrad), RED-JAM-POLE (GNSS/PNT jammer, Dzhankoy). Reversible and deniable — no kinetic."
       deadline_note: "T+60 min (3600 s)."
       roe_note: "No kinetic. EW only."
-      success_criteria: "Both EW-survival objectives at the deadline."
+      success_criteria: "Both EW-survival objectives at the deadline. NOTE: this objective measures the satellite's health, not the link - a jammed ground bubble still reads MET, so Red's denial shows on Red's side (link_denied), not here."
       tool_tips: "Watch the link-denied indicator. The teaching point: satellites are healthy; the user bubble is denied; routing around the bubble (ground rebroadcast) is the operational answer."
     red:
       situation: "Sustained EW campaign across the Russian arc. Tirada-2 (SATCOM) + Pole-21 (GNSS) deny Blue's links in the regional bubble without committing to escalation."

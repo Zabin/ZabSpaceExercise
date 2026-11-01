@@ -2,7 +2,9 @@
 
 > **Package ID:** IP-1300
 > **Version:** 1.0
-> **Status:** 🟡 READY *(fully specified; every cited dependency — `FS-121`/`IP-1210`,
+> **Status:** VERIFIED 2026-10-10 ([VR-1300](../verification/VR-1300-ric-frame-view-and-cats-overlay.md), fresh session; READY before that).
+> **Authorization (MSTR-006 §3):** **given.** Authorized 2026-10-10 by explicit project-owner go-ahead (MSTR-006 §3), as the Master Build Plan row records; the "not authorized for coding" wording in the earlier status record below was true only at authoring time (2026-10-03).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🟡 READY *(fully specified; every cited dependency — `FS-121`/`IP-1210`,
 > `FS-105`, `FS-106` — is `VERIFIED`. **Not authorized for coding** — MSTR-006 §3 authorization is
 > a separate, explicit project-owner decision not given as part of this planning pass.)*
 > **Dependencies:** [FS-130](../../features/FS-130-ric-frame-view-and-cats-overlay.md) v1.0

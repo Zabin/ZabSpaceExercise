@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1261
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implemented 2026-10-11 by `08-code-implementation`; authorized by the
+> **Status:** VERIFIED 2026-10-11 ([VR-1261](../verification/VR-1261-telemetry-series-history-remediation.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE *(implemented 2026-10-11 by `08-code-implementation`; authorized by the
 > project owner 2026-10-11, MSTR-006 §3. `engine/simulation.py::replay_stepwise()` (additive;
 > `replay()` untouched) + `session/aar.py::worlds_at_times()` (single forward pass, live-tail
 > shortcut); `get_series`, `telemetry_export`, `truth_ephemeris`, `cell_observed_ephemeris` all

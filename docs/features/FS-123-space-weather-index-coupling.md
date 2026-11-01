@@ -1,6 +1,6 @@
 > **Document ID:** FS-123
 > **Version:** 1.1
-> **Status:** ✅ Ready for implementation planning. Both v1.0 Open Questions are closed by
+> **Status:** ✅ Done (built by `IP-1230`, `VERIFIED`). Both v1.0 Open Questions are closed by
 > [ADR-0039](../architecture/adr/ADR-0039-space-weather-index-to-multiplier-mapping.md).
 > **Note on this repository's chain:** the approved Feature inputs are the Feature Catalog's
 > `FEAT-1200` (Included Requirements: `FR-1230`) and `FEAT-4400` (Included Requirements:

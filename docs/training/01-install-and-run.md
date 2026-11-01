@@ -213,10 +213,12 @@ content:
 - **Duplicate ids.** If one of your vignettes uses the same `id` as a built-in one (or as one in
   an earlier folder in the list), the first one found wins: built-in first, then your folders in
   the order listed. The server terminal prints a warning naming the skipped id and its folder.
-- **Where they appear.** Your vignettes appear in the same **Session ▾** vignette list as the
-  built-in ones. As built, the list does not label or group them separately.
-- The file is read on each request, so reloading the page picks up a new vignette file; changing
-  `spacesim.config.yaml` itself needs no restart for these two keys.
+- **Where they appear.** In the **Session ▾** vignette list the built-in library is under
+  **Built-in library** and each of your folders gets its own group labelled `External: <folder name>`
+  (the folder's last path segment). Vignettes saved by the Creator land here too; they are listed under the
+  **Title** you gave them ([WCM-17](12b-white-cell-vignette-creator.md)).
+- The vignette list is rebuilt on each request, so reloading the page picks up a new vignette file; the
+  `content:` keys are re-read from `spacesim.config.yaml` each time, so editing them needs no restart.
 
 > **Sources:** `spacesim/config.py` (`ContentConfig`, `load_content_config`) ·
 > `spacesim/content/vignette.py` (`list_vignettes`, `_configured_external_dirs`) ·

@@ -43,7 +43,7 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 | **Features Included** | FEAT-3100, FEAT-3200, FEAT-3300, FEAT-3400, FEAT-3500 |
 | **Subsystems** | C1 Simulation Engine, C2 Session/Application Layer, C3 Mock SSN |
 | **Estimated Scope** | Large — the mechanism every operator action and every AI-Red action (EP-9000) ultimately flows through. |
-| **Risks** | FEAT-3300 and FEAT-3500 both show `UNASSIGNED` RTM traceability on their included FRs — a documentation gap on an Epic that is otherwise clearly built and tested per `CLAUDE.md`'s code map. |
+| **Risks** | FEAT-3300 and FEAT-3500 both show `UNASSIGNED` RTM traceability on their included FRs — a documentation gap on an Epic that is otherwise clearly built and tested per `CLAUDE.md`'s code map. *(Release 1, 2026-11-01: `FEAT-3500` was delivered by `IP-1160`, `VERIFIED`.)* |
 | **Dependencies** | EP-1000 (access geometry gates every plan; Δv and custody gate execute-time validation); EP-4000 and EP-7000 *(sweep 2026-10-17: FEAT-3400's ROE family uses role assignments and manual adjudication, logged)* |
 
 ### EP-4000 — White Cell Exercise Control
@@ -158,7 +158,7 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 |---|---|
 | **Epic ID** | EP-12000 |
 | **Title** | Verification & Documentation Integrity |
-| **Purpose** | How the product is verified, released and documented: every test names its origin, each major release audits the suite and locks its dependencies, a browser suite checks the load-bearing console rules, and the live documentation stays internally consistent. Baselined as `NFR-1510`, `NFR-2820`–`NFR-2840` and `NFR-3800`–`NFR-3840` (run #211, owner directions `BL-0297`, `BL-0299`, `BL-0304`, `BL-0310`). No `FR-x000` group exists for it; it is the catalog's only NFR-only Epic. |
+| **Purpose** | How the product is verified, released and documented: every test names its origin, each release audits the suite and locks its dependencies, a browser suite checks the load-bearing console rules, and the live documentation stays internally consistent. Baselined as `NFR-1510`, `NFR-2820`–`NFR-2840` and `NFR-3800`–`NFR-3840` (run #211, owner directions `BL-0297`, `BL-0299`, `BL-0304`, `BL-0310`). No `FR-x000` group exists for it; it is the catalog's only NFR-only Epic. |
 | **Features Included** | FEAT-12100, FEAT-12200, FEAT-12300 |
 | **Subsystems** | C12 Browser client and C4 Operator Console (FEAT-12200 only); otherwise test configuration and documentation, outside C1–C12 (F-16) |
 | **Estimated Scope** | Medium — three small-to-medium Features; the test-origin backfill is the widest, touching every test module. |

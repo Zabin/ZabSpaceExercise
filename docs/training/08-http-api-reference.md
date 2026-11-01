@@ -3,7 +3,21 @@
 ## 9. HTTP API reference
 
 All UI actions go through these endpoints (base `http://127.0.0.1:8000`). Reads are fog-filtered
-per cell, server-side.
+per cell, server-side. The seat is a `cell` query parameter (`?cell=white`, `blue`, `red` or `observer`)
+that the caller asserts about itself; the console attaches it to every change it makes. This is
+seat enforcement on a trusted LAN, not authentication.
+
+- **White Cell controls need `?cell=white`.** These are refused with **403** when the request names any
+  other seat or none at all: `clock` (set), `param`, `start`, `step`, `advance`, `rewind`, `undo`,
+  `inject`, `force/tle`, `force/bulk_import`, `force/ground`, `red_step`, `load_save`, `save_vignette`,
+  the Creator routes (`creator/state`, `creator/asset`, `creator/seats`), `roles/assign`,
+  pending-inject cancel/edit, and `observer/view`. Only the query-string seat counts; a `cell` inside
+  a request body is not authority. Nothing changes on a refusal.
+- **Creating a session** (`POST /api/sessions`, `…/draft`) is refused with 403 only if the request
+  *names* Blue, Red or Observer; leaving `cell` off is allowed, so a script can create a session
+  before choosing seats.
+- **Player-facing changes** (orders, previews, `cancel`, `gate/decide`, `roe/change`, `recovery`, SSN
+  requests) accept Blue, Red or White but refuse `cell=observer` with 403 ("the Observer seat is read-only").
 
 | Method & path | Purpose |
 |---|---|
@@ -11,8 +25,8 @@ per cell, server-side.
 | `POST /api/sessions` `{vignette_id, overrides, seed}` | Load a scenario → returns a session id |
 | `POST /api/sessions/{sid}/param` `{param_id, value}` | Set a dial (before start) |
 | `POST /api/sessions/{sid}/start` | Start the exercise |
-| `POST /api/sessions/{sid}/step` `{dt_sim_s}` / `…/advance` `{t}` | Advance time |
-| `POST /api/sessions/{sid}/rewind` `{t}` · `…/undo` `{n}` | Time travel |
+| `POST /api/sessions/{sid}/step` `{dt_sim_s}` / `…/advance` `{t}` | Advance time. The target must lie in `[now, start_epoch + 366 days]` and a step must be finite and not negative; anything else is a 400 with the reason and nothing changes. A running clock stops at the span end. |
+| `POST /api/sessions/{sid}/rewind` `{t}` · `…/undo` `{n}` | Time travel; rewind `t` must lie in `[start_epoch, now]` (`start_epoch` is on `GET …/clock`), else 400 naming the span; `undo` with nothing to undo (or `n` below 1) is a 400, and an undo that drops every logged action lands on `start_epoch` |
 | `POST /api/sessions/{sid}/inject` `{inject, at_sim_t?}` | Fire an inject (id or `{effects}`); `at_sim_t` (µs UTC) schedules for later |
 | `GET /api/sessions/{sid}/inject_library` | List reusable inject templates from `content/inject_library.yaml` |
 | `POST /api/sessions/{sid}/order` `{cell, actor, action, target, params}` | Issue an order |
@@ -27,13 +41,17 @@ per cell, server-side.
 | `GET /api/sessions/{sid}/windows/{cell}/{asset}` | Upcoming passes (pass-timeline ribbon — cmd/tlm/obs lanes) |
 | `GET /api/sessions/{sid}/conjunctions/{cell}` | Upcoming close approaches (filtered by ownership) |
 | `GET /api/sessions/{sid}/coaching/{cell}` | Coaching notes from `vignette.coaching` due-now for this cell |
-| `GET /api/sessions/{sid}/activity/{cell}?past_window_s&future_window_s` | Per-cell Gantt feed (past · present · scheduled). White=all cells; Blue/Red=own only |
+| `GET /api/sessions/{sid}/activity/{cell}?past_window_s&future_window_s` | Per-cell Gantt feed (past · present · scheduled). White=all cells; Blue/Red=own orders + started effects on own assets only (scheduled injects: White only); `observer` follows its designation; an unknown cell is refused (400); an unknown cell is HTTP 400 `unknown cell '<x>'` |
 | `GET /api/sessions/{sid}/injects` | List the vignette's injects |
-| `POST /api/sessions/{sid}/force/tle` `{id, owner, line1, line2}` | Add a real satellite by TLE |
+| `POST /api/sessions/{sid}/force/tle` `{id, owner, line1, line2}` | Add a real satellite by TLE (before Start only: `cannot edit force after start`; see [WCM-23](12d-white-cell-clock-saves-and-controls.md)) |
+| `GET /api/sessions/{sid}/injects/pending` · `POST …/injects/{handle}/cancel` · `…/edit` `{effects?, at_sim_t?}` | White's queue of not-yet-fired injects; cancel or edit one ([WCM-20](12c-white-cell-rules-and-staffing.md)) |
+| `GET /api/sessions/{sid}/roles/staffing` · `GET …/roles/scope[?seat=&cell=]` | Unmet mandatory roles · the verb-to-role table, or one operator seat's binding ([WCM-18](12c-white-cell-rules-and-staffing.md)) |
+| `POST /api/sessions/draft` `{title}` · `GET /api/ground_sites` | Start a Creator draft · the 52 curated ground sites ([WCM-17](12b-white-cell-vignette-creator.md)) |
+| `GET /api/sessions/{sid}/controller_view` | White-only: truth plus both cells' views for one instant (the Compare panel) |
 | `POST /api/sessions/{sid}/red_step` | AI-Red issues one doctrine round |
 | `GET /api/sessions/{sid}/view/{cell}` | Fog-filtered cell view |
 | `GET /api/sessions/{sid}/scene/{cell}` | Belief-render geometry (map/3D) |
-| `GET /api/sessions/{sid}/telemetry/{cell}/{asset}[/{param}]` | Subsystem telemetry DB · a parameter series |
+| `GET /api/sessions/{sid}/telemetry/{cell}/{asset}` · `…/{param}?t0&t1&n&nominal` | Current subsystem telemetry and log · one parameter's **series** (the console's graphs); see the series note below: `t0` is the start and `t1` the **end**, integer microseconds only |
 | `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv?t1&t2&interval_s` | One asset's telemetry over a span as CSV (`t,utc,asset,subsystem,param,value,unit,status`). Own assets only (White: any); bounds default to the recorded range |
 | `GET /api/sessions/{sid}/ric_view/{cell}?origin&chase&target` | Live RIC-frame relative motion about `origin`; with `chase` + `target` also the CATS phase angle. Own assets + own tracks only (White: truth); 404 outside custody |
 | `GET /api/sessions/{sid}/tle/{cell}?object_id` | Copyable current-epoch TLE for one satellite. Own satellites from their actual orbit, others only from a held track (White: truth); 404 with the reason otherwise |
@@ -45,7 +63,24 @@ per cell, server-side.
 | `GET /api/sessions/{sid}/objectives` · `…/eventlog` | Objective status · event log |
 | `GET /api/sessions/{sid}/aar` · `…/aar/objectives?seq=` · `…/aar/at?seq=` | AAR report · objectives · snapshot at a point |
 | `GET /api/sessions/{sid}/aar/export.csv` · `…/aar/export.json` | AAR download as CSV · JSON |
-| `GET /api/sessions/{sid}/save` · `POST /api/sessions/load_save` | Save a session · resume from a saved state |
+| `POST …/aar/playback/start` `{viewpoint, speed}` · `…/viewpoint` · `…/advance` `{dt_s}` · `…/speed` · `GET …/aar/playback/state` (all take `?cell=<seat>`) | Variable-speed AAR playback. White: any viewpoint (`truth`, `blue`, `red`). Blue/Red: only their own cell as viewpoint, and advance/speed/state only while the playback's viewpoint is their own. Observer: `state` only. No or unknown seat: refused. A session has one playback, shared by every seat: `start` replaces it, and there are no per-seat cursors. A refusal is a 403 before any state changes or is read (a client-asserted seat, not authentication). |
+| `GET /api/sessions/{sid}/save` · `POST /api/sessions/load_save` | Save a session · resume from a saved state (a save that cannot be used — missing keys, malformed parts, or a legacy save whose vignette file is gone — is refused with HTTP 400 and a reason; see below) |
+
+**Refusal summary (what a script sees).**
+
+| Situation | Response |
+|---|---|
+| White Cell route without `?cell=white` | 403, "White Cell control: refused unless the request names the white seat" |
+| `POST /api/sessions` naming a player seat | 403, "sessions are created by the white seat, not the blue seat" |
+| Any mutating route (White Cell controls, pending-inject edit/cancel, orders, previews and the rest) with a `NaN`, `Infinity` or `-Infinity` number anywhere in its JSON body; a boolean in a numeric field (`rate`, `t`, `n`, `dt_sim_s`, `speed`, `dt_s`) (a time target, `undo` count, `param` value including nested ones, a coordinate) | 400 naming the field ("a non-finite number (NaN or Infinity) is not allowed"); nothing changes and the session stays readable. A request without `?cell=white` still gets its 403 first |
+| `clock` with `running: true` and a `rate` that is not above 0 and at most 10,000 (negative, zero, `1e18`), or any non-finite `rate` | 400 with the reason; the clock is unchanged. A `rate` sent with `running: false` is ignored but must still be finite. 600 is accepted |
+| `aar/playback/start`, `…/advance` or `…/speed` with a non-finite `speed` or `dt_s`, or a `speed` outside `[-10000, 10000]`, or an advance whose `dt_s` × `speed` overflows | 400 with the reason; the playback is unchanged. A seat the playback rule refuses still gets its 403 first |
+| `rewind` to a time before `start_epoch` or after now | 400, message gives `[start_epoch, now]` in sim microseconds; the session is unchanged |
+| `step` with a negative, non-finite or over-366-day `dt_sim_s`; `advance` to a time before now or after `start_epoch` + 366 days | 400, message names the span (`start_epoch + 366 days`) or "time cannot move backwards (use rewind)"; "state and clock unchanged". A running clock is not refused: it stops at the span end |
+| `aar/playback/*` from a seat that may not use it | 403 `playback_seat_refused: …` (Observer anything but `state`; Blue/Red naming another cell as viewpoint or driving a playback not on their own cell; no or unknown seat), before anything changes. `advance`/`state` with no playback started: 404 |
+| `undo` with nothing logged | 400, "nothing to undo"; `n` below 1 is 400 "undo count must be at least 1" |
+| `load_save` with an unusable save | 400 with the reason, and no session is created. Reasons include: not a JSON object; a missing or mistyped required key (e.g. `vignette_id`, `seed`); an `eventlog` with more than 100,000 entries (in either the `{"entries": [...]}` or bare-list shape; the reason names the count and the limit, and the check runs before the log is validated or replayed); a `save_format` that is present but not a supported value (the reason is `save_format <value> is not supported; supported formats: legacy (absent), 2`); a malformed `eventlog` or list entry; `final_time` earlier than the save's last logged event or the exercise start, or more than 366 days past the start; a legacy save whose vignette file is no longer available; an embedded vignette that fails validation |
+| `inject` that is malformed, or targets something it cannot (e.g. an `anomaly` on an asset with no bus) | 400 naming the reason; nothing is applied |
 
 Interactive API docs are auto-served at **http://127.0.0.1:8000/docs** (FastAPI/Swagger).
 
@@ -70,13 +105,67 @@ Common params:
 
 Rejected orders return a human-readable `reason`.
 
-Time-span bounds (`t1`, `t2`) are integer microseconds of sim UTC. A span that is wholly outside
+Time-span bounds (`t1`, `t2`) are an ISO-8601 UTC timestamp (`2030-03-15T06:10:00Z` or `+00:00`; zone designator required) or integer microseconds of sim UTC; anything else is a 400 naming `t1`/`t2` and the reason (IP-1089, `FR-7450`). A span that is wholly outside
 the recorded range is a 400. A request that would sample too many instants is also a 400, and
 the message names the ceiling. The role manuals walk through each export:
 [WCM-12–16](12a-white-cell-analysis-and-exports.md), [BLU-11–14](13-blue-cell-manual.md),
 [RED-10–13](14-red-cell-manual.md).
 
-> **Sources:** `spacesim/ui_web/server.py` (route table, incl. `get_ric_view`, `get_tle`,
+**Worked example — the same telemetry export asked two ways.** Replace `sess-1` with your session id and
+use your own seat in the path (`blue` here). Both requests return the same CSV (a `t,utc,asset,subsystem,param,value,unit,status`
+header, then rows at 06:00 and 06:15, and so on):
+
+```bash
+# ISO-8601 UTC clock times (easiest to type)
+curl 'http://127.0.0.1:8000/api/sessions/sess-1/telemetry/blue/ISR-EO-1/export.csv?t1=2030-03-15T06:00:00Z&t2=2030-03-15T06:30:00Z&interval_s=900'
+# the equivalent integer microseconds (Unix epoch)
+curl 'http://127.0.0.1:8000/api/sessions/sess-1/telemetry/blue/ISR-EO-1/export.csv?t1=1899784800000000&t2=1899786600000000&interval_s=900'
+```
+
+You may mix the two forms (`t1=2030-03-15T06:00:00Z&t2=1899786600000000`). In a browser address bar write the
+`+` of `+00:00` as `%2B`, or just use `Z`. Accepted: `Z` or `+00:00`, with 0 to 6 decimal digits of seconds.
+
+**The telemetry series read (the graphs) uses different bounds from the exports.** `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/{param}`
+returns one parameter over a window; the drill-down graph calls it. Its query parameters:
+
+| Parameter | Meaning | Default |
+|---|---|---|
+| `t0` | **Start** of the window, integer microseconds | an hour before now (not before the exercise start) |
+| `t1` | **End** of the window, integer microseconds | now |
+| `n` | Number of evenly spaced points, 2 to 2000 | 120 |
+| `nominal` | `true` returns the clean no-attack baseline (the graph's "compare to nominal" ghost) | `false` |
+
+Note the difference: on the series read `t1` is the **end**; on the CSV and ephemeris exports above `t1` is the **start** (and `t2` the end). The series read takes **integer microseconds only**; an
+ISO time such as `2030-03-15T06:00:00Z` gets a 422 (`Input should be a valid integer`). `param` is the bare name
+(`battery_soc`, not `power.battery_soc`). Example (ran live; replace `sess-1`; the exercise started at
+`1899784800000000` and 30 minutes have passed):
+
+```bash
+curl 'http://127.0.0.1:8000/api/sessions/sess-1/telemetry/blue/ISR-EO-1/battery_soc?t0=1899784800000000&t1=1899786600000000&n=4'
+# {"asset":"ISR-EO-1","param":"battery_soc","nominal":false,"points":[
+#   {"t":1899784800000000,"value":0.894674,"status":"green"}, {"t":1899785400000000,"value":0.992039,...},
+#   {"t":1899786000000000,"value":1.0,...}, {"t":1899786600000000,"value":0.932684,...}]}
+```
+
+The four points fall at the start, 10 min, 20 min and the end of the window. Refusals: `n=1` or `n=5000` → 422
+(`Input should be greater than or equal to 2` / `less than or equal to 2000`); an unknown parameter name, or an asset
+your seat does not own (a Red request for a Blue asset) → 404 `no such telemetry series`.
+
+**Refusals** (each is an HTTP 400 and nothing is exported):
+
+| You send | Message |
+|---|---|
+| `t1=2030-03-15T06:00:00` (no zone), `+02:00`, `2030-03-15T06:00:00.1234567Z` (7 digits), `2030-03-15` (date only) or `banana` | `t1: '<what you sent>' is not an ISO-8601 UTC timestamp (YYYY-MM-DDThh:mm:ss[.ffffff]Z or +00:00; a zone designator is required, no other offset) or integer microseconds` (`t2:` for the second bound) |
+| A span wholly outside the exercise | `requested time span [1893456000000000, 1893542400000000] is wholly outside the session's recorded range [1899784800000000, 1899788400000000]` |
+| Too many samples | `requested sampling yields 3600001 instants, over the export ceiling of MAX_EXPORT_SAMPLES=10000; use interval_s >= 0.360038 for this span` |
+
+A span only partly inside the exercise is clipped to the overlap with no message. Swapping `t1` and `t2` gives a
+header-only CSV rather than an error. The ground-truth ephemeris (`/ephemeris/truth`) and the cell ephemeris
+(`/ephemeris/{cell}`), including their `format=ric` companions, take the same bounds and give the same messages.
+
+
+> **Sources:** `spacesim/ui_web/server.py` (`telemetry_series`, route table, `_require_white`, `_reject_observer`,
+> `_refuse_player_seat_on_create`, `rewind`, `undo`, `load_save`, incl. `get_ric_view`, `get_tle`,
 > `telemetry_export_csv`, `maneuver_ledger*`, `aar_export_*`, `ephemeris_truth`,
 > `ephemeris_cell_observed`) · `spacesim/session/ephemeris.py` (`MAX_EXPORT_SAMPLES`) ·
 > `spacesim/engine/orders.py` (order actions and params)

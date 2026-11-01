@@ -14,9 +14,11 @@ owner decision 2026-07-04); this skill is how that product gets built and kept c
 
 Three kinds of run:
 
-1. **Feature-driven update** (the common case): a code change touched operator-visible behavior;
-   the `training/15` forward index names the affected sections; this skill brings them — prose,
-   `> Sources:` footers, matrix rows, learning-path rungs — back to as-built truth (FR-11410).
+1. **Feature-driven update — the maintain loop** (the common case): a code change touched
+   operator-visible behavior; an open **Manual-impact backlog item** (handed off by
+   `08-code-implementation`'s Documentation step, due before release) or a `training/15` §15.1
+   lookup names the affected sections; this skill brings them — prose, `> Sources:` footers,
+   matrix rows, learning-path rungs — back to as-built truth (FR-11410). See *The maintain loop*.
 2. **Coverage work**: a capability shipped without role-scoped manual coverage (an FR-11110 gap),
    or a new module is needed; this skill writes it.
 3. **Restructuring**: the corpus layout itself changes (e.g., away from per-cell monoliths toward
@@ -36,6 +38,11 @@ rather than the manual, that's a bug — route it to `00-intake`, don't paper ov
 - Screenshots referenced from modules are regenerated via `tools/render_manual.py` /
   `run-spacesim` when the UI changed; the generated files under `docs/manual/` may be refreshed
   as part of a run.
+
+**Shared write boundary.** `08-code-implementation` may also write a narrow slice of
+`docs/training/` for its own package (matrix rows, Sources footers, factual line fixes in mapped
+sections, single reference/troubleshooting entries); everything larger arrives here as a
+Manual-impact item. This skill owns the corpus as a whole and may revise any of those lines.
 
 ## Inputs (read before writing)
 
@@ -65,6 +72,32 @@ haven't personally observed this session).
 6. **Run the checkable slice**: `python3 -m pytest spacesim/tests/test_vignette_tutorials.py`
    still green if playbook-adjacent prose moved; link-resolution spot-check on everything edited.
 
+## The maintain loop (owner direction 2026-10-25 — clear, thorough tutorials and instructions)
+
+**Triggers:** every open Manual-impact backlog item routed to this skill (work them oldest-first;
+each is due before release), and any §15.1 row whose backing code changed since its sections were
+last verified. Close the item in the summary by naming the sections written — the manager marks
+it done only when `09-training-manual-review` has reviewed them.
+
+**Run each procedure as a first-time learner would.** Start the app (`run-spacesim`), take the
+seat the procedure is for, follow the prose literally from a fresh session, and do nothing the
+text does not tell you to. Every place you had to guess, every label that differs, and every
+message you saw that the text does not mention is a defect to fix in this run.
+
+**Content standards — every procedure must have all of these:**
+
+- **Plain language** for the MSTR-003/NFR-3600 audience — operator actions, not code internals;
+  define a term on first use or link the glossary (`09-troubleshooting-and-glossary.md`).
+- **Numbered steps**, one action each, in the order the learner performs them.
+- **Exact labels and messages** — button/menu/panel text and refusal/error text quoted verbatim
+  as the shipped app shows them (copy from the screen or the code, never paraphrase).
+- **Expected result** after each step or step group — what the learner should now see.
+- **Failure modes** — what goes wrong, the real message shown, and what to do; each refusal
+  message also gets an entry in the troubleshooting/reference module.
+- **Why it matters** — one or two sentences tying the procedure to the exercise purpose
+  (the learning objective, not the implementation).
+- **A `> Sources:` footer** naming the backing code, with the matching §15.1/§15.2 rows.
+
 ## Quality gate (before calling a run done)
 
 - [ ] Every claim in touched prose matches behavior verified this run (code or live drive).
@@ -72,6 +105,11 @@ haven't personally observed this session).
       agree; no dangling section ID anywhere in the matrix or learning path.
 - [ ] Module size/audience conventions held (NFR-3500/3600); pedagogy choices cite authored R600
       topics or the gap is flagged in the summary.
+- [ ] Every procedure touched was walked live as a first-time learner this run, and meets the
+      content standards (numbered steps, exact labels/messages, expected result, failure modes
+      with the real message, why it matters, Sources footer).
+- [ ] Every Manual-impact item worked this run is named with the sections that close it; any
+      left open says why.
 - [ ] INDEX/ROADMAP rows match the files on disk.
 - [ ] Nothing outside `docs/training/` (+ its tracker rows + regenerated `docs/manual/`
       screenshots) was written.
@@ -87,7 +125,7 @@ never reviews its own same-session work.
 End **every** invocation with a chat summary containing exactly these three parts:
 
 1. **What changed** — modules/sections written or updated, matrix and learning-path rows moved,
-   which FR-11xxx leaves the work served.
+   which FR-11xxx leaves the work served, and which Manual-impact items they close.
 2. **Recommendations** — code bugs found (→ `00-intake`), R600 grounding gaps
    (→ `02-research-training-pedagogy`), vignette-side staleness (→ `08-vignette-development`).
 3. **Next step** — normally `09-training-manual-review` on the touched scope; name anything else

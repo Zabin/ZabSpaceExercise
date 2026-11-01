@@ -89,9 +89,7 @@ your chosen `reference_id` — the same R/T/N radial-in-track-cross-track frame 
 uses, now sampled across the span instead of read live. `format=csv` (the default) carries both
 frames in one file; `format=oem` writes a CCSDS OEM 2.0 (Orbit Ephemeris Message) KVN file,
 ECI-only (OEM has no native RIC representation); `format=ric` writes a RIC-only companion CSV
-pairing with the OEM file. `t1`/`t2` are sim time as **integer microseconds since the Unix
-epoch** — the same units `world.now` and the event log use, not a clock-face time you type in
-directly; read one off the event log or a save file first. `interval_s` is optional (defaults to
+pairing with the OEM file. `t1`/`t2` are sim times, each given as a clock-face time in **ISO-8601 UTC** (`2030-03-15T06:00:00Z` or `…+00:00`, with a `Z` or `+00:00` ending and up to 6 decimal digits of seconds) or **integer microseconds** since the Unix epoch (`1899784800000000`); you may mix the two in one request. Anything else (no zone, another offset such as `+02:00`, 7+ decimal digits, a date only, a word) gets a 400 naming `t1` or `t2` (see the 08 reference for the exact text). Example: `t1=2030-03-15T06:00:00Z&t2=2030-03-15T06:30:00Z`. `interval_s` is optional (defaults to
 a coarse span/100 sampling, floored at one bus-tick period, so at most 101 rows). If you set it,
 it must be a finite number greater than zero, or the request is rejected (HTTP 400). Any request
 that would sample more than **10,000 instants** is also rejected with HTTP 400. The error message
@@ -112,6 +110,7 @@ live JSON god-view (current instant only) cannot do.
 > `spacesim/session/aar.py` (`worlds_at_times`, per-instant replay) ·
 > `GET /api/sessions/{sid}/ephemeris/truth` ·
 > [FS-121](../features/FS-121-ephemeris-export.md) (`FR-7410`/`FR-7430`)
+> `spacesim/session/span_bounds.py` (`parse_span_bound`) · FR-7450
 
 ### WCM-16 · Per-asset telemetry CSV export (URL-only)
 
@@ -125,7 +124,7 @@ is URL-only, by design (`FS-126`'s own scope names only the backing code, no UI 
 
 As White Cell you can request **any** asset's export (`cell=white` bypasses the ownership check
 the way every other `/telemetry/{cell}/...` route already does); Blue and Red can only export
-their own assets (see BLU-14/RED-13). `t1`/`t2` are the same integer-microsecond sim time units as
+their own assets (see BLU-14/RED-13). `t1`/`t2` take the same ISO-8601 UTC or integer-microsecond bounds as
 WCM-15's ephemeris export; a partially out-of-range span clamps, a wholly out-of-range one is
 rejected (400), identically. The same 10,000-instant ceiling applies (400, naming the smallest
 usable `interval_s`). A zero, negative or NaN `interval_s` is also refused, but on this route
@@ -148,5 +147,6 @@ trustworthy for AAR analysis.
 > `spacesim/session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`) ·
 > `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv` ·
 > [FS-126](../features/FS-126-telemetry-csv-export.md) (`FR-2320`)
+> `spacesim/session/span_bounds.py` (`parse_span_bound`) · FR-7450
 
 ---

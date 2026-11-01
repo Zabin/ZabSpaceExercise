@@ -70,6 +70,20 @@ def click_if(page, selector: str, timeout: int = 2000) -> bool:
         return False
 
 
+def find_chromium() -> str:
+    """IP-1094 — newest chromium-*/chrome-linux*/chrome under PLAYWRIGHT_BROWSERS_PATH (default /opt/pw-browsers)."""
+    import glob, os, sys
+    root = os.environ.get("PLAYWRIGHT_BROWSERS_PATH") or "/opt/pw-browsers"
+    builds = []
+    for p in glob.glob(os.path.join(root, "chromium-*", "chrome-linux*", "chrome")):
+        rev = os.path.basename(os.path.dirname(os.path.dirname(p))).split("-", 1)[1]
+        if rev.isdigit():
+            builds.append((int(rev), p))
+    if not builds:
+        sys.exit(f"No Chromium found under {root} (set PLAYWRIGHT_BROWSERS_PATH).")
+    return max(builds)[1]
+
+
 def run() -> None:
     frames_dir = TMP_DIR / "frames"
     if frames_dir.exists():
@@ -77,7 +91,7 @@ def run() -> None:
     frames_dir.mkdir(parents=True)
 
     with sync_playwright() as pw:
-        chrome_bin = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
+        chrome_bin = find_chromium()
         browser = pw.chromium.launch(headless=True, executable_path=chrome_bin)
         ctx = browser.new_context(
             viewport=VIEWPORT,
@@ -173,11 +187,18 @@ def run() -> None:
         snap()
         snap()
 
-        # === Beat 6: Advance time +10m (use stepBy directly — white-only buttons hidden in Blue) ===
+        # === Beat 6: Advance time +10m — as the White seat through the API (Blue may not advance
+        # the clock, IP-1068); the visible seat stays Blue, so the recording is still a Blue view ===
         page.evaluate("window.scrollTo(0, 0)")
         page.wait_for_timeout(400)
-        page.evaluate("stepBy(600)")
-        page.wait_for_timeout(1400)
+        now = page.evaluate("SCENE.now")
+        sid = page.evaluate("SID")
+        resp = page.request.post(
+            f"{URL}api/sessions/{sid}/advance?cell=white", data={"t": now + 600 * 1_000_000})
+        if resp.status != 200:
+            raise RuntimeError(f"Beat 6: the server refused the White-seat advance ({resp.status}): {resp.text()}")
+        page.evaluate("refresh()")
+        page.wait_for_function(f"SCENE && SCENE.now > {now}")
         snap()
         snap()
 

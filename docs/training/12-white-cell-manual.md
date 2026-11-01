@@ -10,6 +10,14 @@ developer which sections to re-check when a feature changes, and tells you which
 each section. Shared mechanics (interface tour, core concepts, full control tables) are
 deep-linked, not duplicated — this manual is the *facilitator's procedure layer* on top of them.
 
+**More White Cell procedures** are in [12a](12a-white-cell-analysis-and-exports.md) (analysis and exports,
+WCM-12–16), [12b](12b-white-cell-vignette-creator.md) (build your own vignette, WCM-17),
+[12c](12c-white-cell-rules-and-staffing.md) (operator seats, approval gates, ROE changes, injects in depth,
+WCM-18–20) and [12d](12d-white-cell-clock-saves-and-controls.md) (clock refusals, saves, adding assets,
+which seat sees which controls, WCM-21–25).
+
+**Acronyms.** ISR, SAR, SDA, SATCOM, PNT, GNSS, EW, TT&C, SoC, MEO and the rest are defined in the [glossary](09-troubleshooting-and-glossary.md#11-glossary).
+
 ### WCM-1 · Role and view
 
 White Cell is the exercise director, adjudicator, and coach. You see **ground truth** — every
@@ -25,6 +33,7 @@ mutating request from an Observer-seated session is rejected at the server, not 
 the UI — the rejection holds even against a request that bypasses the browser client entirely.
 Use it to seat an extra trainee, an evaluator, or a second facilitator without giving them any way
 to affect the exercise.
+**Use only the dropdown values.** The server does not check the designation you send: an unrecognised word sent by script (for example `x`) is accepted with `ok`, but the Observer then has no usable view (its timeline feed answers HTTP 400 `unknown cell 'x'` and its picture is empty). Pick Godview, Blue or Red from the menu; if the Observer screen looks blank, set the View again.
 
 > **Sources:** `spacesim/session/manager.py` · `spacesim/session/cells.py` (`CellController`, fog boundary) ·
 > `spacesim/session/inprocess.py` (`set_observer_view`/`get_observer_view`, FR-6510) ·
@@ -38,7 +47,7 @@ to affect the exercise.
    authorities/ROE (`red_kinetic_authorized`), Red behavior (`red_doctrine_profile`,
    `red_ew_intensity`), environment, and fidelity/fog (`fog_of_war`, `ops_fidelity`,
    `safe_mode_susceptibility`). `ops_fidelity` picks the training altitude: `tactical` collapses
-   each bus to one health bar, `realistic` (default) shows SOH, `full_ttc` adds full subsystem
+   each bus to one health bar, `realistic` (default) shows [SOH](09-troubleshooting-and-glossary.md#11-glossary), `full_ttc` adds full subsystem
    telemetry for TT&C-operator training. The same panel's **Classification** field overrides the
    vignette's default banner text — set it once here; it is fixed for the session's lifetime and
    carries into every screen, AAR export, and save file.
@@ -47,7 +56,8 @@ to affect the exercise.
    Start is allowed). The **Seat-to-role assignment** section of the same menu lets you bind a
    seat name to an asset/constellation and a role (Bus / Payload / Both); the **staffing report**
    readout beneath it lists any mandatory requirement still unmet. Most vignettes declare none — no
-   assignment is needed and Start is never blocked by this step for them.
+   assignment is needed and Start is never blocked by this step for them. What the operator seat does for
+   players, and how re-binding works, is in [WCM-18](12c-white-cell-rules-and-staffing.md).
 4. **Load → Start.** The **Mission brief panel** auto-opens; you see Blue's and Red's briefs
    side-by-side (the players each see only their own). Confirm the ROE chips and objective
    deadlines match your training intent before you let anyone act. If a mandatory seat-to-role
@@ -68,7 +78,7 @@ naming where it is in the YAML and why. Fix them all and press **Load** again; a
 leaves any open session alone. The last check (listed under `build`) runs only once nothing else
 is wrong, so a retry can turn up one new item. A file that is not valid YAML does not appear in
 the vignette picker at all. Besides the sensor rules, Load refuses a satellite with no orbit,
-another asset (except a cyber unit) with no location, a TLE that will not propagate to the start
+another asset (except a cyber unit) with no location, a [TLE](09-troubleshooting-and-glossary.md#11-glossary) that will not propagate to the start
 time, a duplicate asset or sensor id, and a `roles_needed` entry naming an asset or group that is
 not in the vignette. The full list is in
 [`06-the-vignette-library.md`](06-the-vignette-library.md#when-a-vignette-wont-load).
@@ -84,11 +94,11 @@ not in the vignette. The full list is in
 ### WCM-3 · Run the room: hot-seat and LAN
 
 - **Hot-seat (one browser):** switch seats with the cell buttons between turns; the ⏸ Handover
-  button blurs the screen so the incoming player doesn't see the outgoing cell's picture.
+  button blurs the screen so the incoming player doesn't see the outgoing cell's picture. Pressing it shows a full-screen `HANDING OFF → RED` (from Blue; from Red it says BLUE, from White it says WHITE) with "Pass the keyboard to the RED operator and click Resume." The overlay's **Resume** button switches the console to that seat. (It is a different button from the clock's ▶ Resume.) It hides the screen only; it is not security.
 - **LAN cooperative:** launch with `--host 0.0.0.0`, load + start, and share the session URL
   (`…/#sess-N`). Each player opens it and clicks their cell. The server-authoritative clock
   advances exactly once no matter how many tabs are open; every tab converges within ~1.5 s.
-- **Multi-monitor:** View ▾ → **Pop out ▸** opens any panel (globe, 2D map, fleet & telemetry,
+- **Multi-monitor:** View ▾ → **Pop out (multi-screen)** opens any panel (globe, 2D map, fleet & telemetry,
   order compose, AAR timeline, tracks & objectives) as a separate window joined to the same
   session — spread your god-view across the facilitator station.
 
@@ -98,15 +108,32 @@ not in the vignette. The full list is in
 
 ### WCM-4 · Time control: pause, jump, rewind, undo, branch
 
-Only the White tab carries the ⏸ Pause / ▶ Resume toolbar button and the `+1m / +10m / +1h`
+Only the White tab carries the ⏸ Pause / ▶ Resume toolbar button (Resume resets the clock rate to 1; see WCM-21) and the `+1m / +10m / +1h`
 jumps — they drive the shared clock for every connected client. Because the engine is
 deterministic, **rewind** to any point, **undo** the last actions, or **branch** (rewind, then
 continue differently) are byte-exact; use rewind-and-branch deliberately as a teaching move
 ("let's replay that decision"), then show the fork in the AAR branch-compare (WCM-9). The engine
 sub-steps to the next scheduled event, so fast-forwarding never skips a short LEO pass.
+**Advance bounds.** A jump (the `+1m / +10m / +1h` buttons, the palette's advance entries) can
+only move time forward and never past the end of the exercise's span, which is the vignette's start
+plus 366 days. A request that goes backwards, is not a finite number, or reaches beyond the span is
+refused (HTTP 400) with the reason, and the clock and world are unchanged; use rewind to go back. A
+running clock does not stop at the end of the span with an error: it is pinned there, so it simply
+stops advancing at the span end while still showing as running.
+A rewind must land inside the exercise, between its start and the current moment; the toolbar
+Rewind and the palette's "rewind to start" go to the vignette's first instant, and the server
+refuses anything outside that span. Undo obeys the same rule: undoing past the first logged
+event returns the clock to the exercise start, and an undo with nothing to undo is refused.
+Rewind and undo do not pause a running clock: it keeps running from the rewound moment, so pause
+first (▶/⏸) if you want to stand at the earlier instant. When a jump, rewind or inject is refused,
+the reason appears in the red status line under the session label in the **Cell & Time** panel
+(prefixed `Advance:`, `Rewind:` or `Inject:`); nothing about the exercise changes. Only the White seat can rewind: a
+Blue or Red tab, or a bookmark clicked from one, gets a refusal instead. The exact refusal text for every bound, the
+clock-rate limits and the HTTP-only undo are tabulated in [WCM-21](12d-white-cell-clock-saves-and-controls.md).
 
-> **Sources:** `spacesim/session/manager.py` (`set_clock`/`catch_up`/rewind/undo) ·
-> `POST /api/sessions/{sid}/clock` · `spacesim/engine/clock.py`
+> **Sources:** `spacesim/session/manager.py` (`step`/`advance_to`/`_span_ceiling`/`_catch_up_locked`/`rewind_to`/`undo_last`) ·
+> `spacesim/ui_web/static/app.js` (`stepBy`, `rewindTo`, `reportControlError`; `#control-status`) ·
+> `POST /api/sessions/{sid}/clock` · `…/step` · `…/advance` · `…/rewind` · `…/undo` · `spacesim/engine/clock.py`
 
 ### WCM-5 · Injects: script the friction
 
@@ -154,18 +181,49 @@ next session load. Facilitation patterns — when to inject what — are in
   what that cell's operators read in BLU-6/RED-7, so use it to see an attack's signature land.
   Controls: [UI reference §10.13](10b-ui-reference-views.md#1013-subsystem-drill-down).
 
+- **Compare panel (⚖) — truth beside each cell's picture.** Use it to see, at a glance, what is really
+  true versus what each side believes. It is **White-only**: the panel does not exist on the Blue, Red or
+  Observer screens (checked: Blue sees no Compare panel), and the server answers `GET /controller_view` only
+  to the White seat (anything else gets 403 `only White Cell may open the controller view`). **Where:** scroll the White main column to the panel titled **⚖ Compare — truth beside
+  each cell's picture** (in the White-only part of the page); it is collapsed at first, so click its
+  title to open it. (If you closed it with ✕, tick **Compare (truth / Blue / Red)** under **View ▾ → Panels**; **↺ Reset layout** also restores it, along with every other panel.)
+  1. Click the title to open it, then press **🔄 Refresh**. The grey text beside it, `at 2030-03-15T06:40:08Z`,
+     is the exercise moment the three columns describe. While the panel is open it also refreshes with the
+     console's normal polling; closed, it costs nothing.
+  2. Read the three columns, all taken from one read so they are consistent with each other:
+     - **Truth** — every asset in the exercise, one per line: `ISR-EO-1 [blue] nominal` (id, owner, true
+       health: nominal, degraded, safed or destroyed).
+     - **Blue's picture** — `own:` lists the assets Blue owns and can see; each `track RED-TGT: conf 1.00`
+       line is an object Blue has custody of and how confident it is (0 to 1; confidence decays between looks).
+     - **Red's picture** — the same for Red.
+  3. Use the differences. An object in Truth but absent from a side's `track` lines is one that side has not
+     found; a track whose confidence is low is going stale; a Truth line reading `destroyed` that a side still
+     lists as a track shows a belief that has not caught up. In the worked example (Training: Basics, Blue
+     tasked `RADAR-TRN` on `RED-TGT`, 40 minutes in) Truth listed six assets, Blue's picture was
+     `own: ISR-EO-1, GS-TRN` plus `track RED-TGT: conf 1.00`, and Red held no tracks.
+  It is plain text, not a map; for geometry use the god-view map and globe above. Players never see this
+  panel or its contents.
+
+**Scheduled injects are on your timeline only.** Injects you schedule (including future-dated ones) appear as `inject (N effects)` bars on White's own Activity timeline. Blue and Red never see them, nor your edits or cancels; they only see the effect once it starts on their own assets.
+
 > **Sources:** `spacesim/session/scene.py` · `spacesim/ui_web/static/app.js` (Gantt, objectives,
 > `openDrill`) · `spacesim/session/manager.py` (`get_telemetry`/`get_series`, White reads any asset) ·
-> `Vignette.coaching` in `spacesim/content/vignette.py`
+> `Vignette.coaching` in `spacesim/content/vignette.py` · `spacesim/ui_web/static/app.js` (`refreshComparePanel`) ·
+> `spacesim/session/manager.py` (`controller_view`) · `spacesim/ui_web/server.py` (`controller_view`) · FR-4620
 
-### WCM-7 · Change the force mid-exercise: TLE add
+### WCM-7 · Add real satellites by TLE or OMM (before Start)
 
-Paste a real satellite's two-line element set into the TLE force-add form (or
-`POST /force/tle`); it validates and then propagates with SGP4 alongside the fictional assets,
-owned by the cell you assign. Use it to drop a real-world reference object into a scenario or to
-surprise a cell with a new track to characterize.
+You can drop a real satellite into a scenario from its two-line element set (TLE), or a whole file of
+them (multi-object TLE or CCSDS OMM), but **only between Load and Start**. Once the exercise is running
+the server refuses with `cannot edit force after start`. There is no console form for a loaded session;
+it is an API call (`POST /force/tle`, `POST /force/bulk_import`) or part of building a vignette in the
+Creator ([WCM-17](12b-white-cell-vignette-creator.md)). The object propagates with SGP4 alongside the
+fictional assets, owned by the cell you assign. Use it to drop a real-world reference object into a
+scenario or to give a cell a new track to characterize. Step-by-step calls, every refusal message and the
+silent-replace and empty-reply traps are in [WCM-23](12d-white-cell-clock-saves-and-controls.md).
 
 > **Sources:** `spacesim/engine/propagator.py` (sgp4 path) · `POST /api/sessions/{sid}/force/tle` ·
+> `spacesim/session/manager.py` (`add_tle`, `bulk_import`) ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"Adding real satellites by TLE"
 
 ### WCM-8 · AI-Red doctrine presets
@@ -183,20 +241,35 @@ COA vignettes (RC-01…RC-05) are pre-built campaigns around these profiles.
 The AAR is read-only — it never disturbs the live session. **Replay** the whole exercise,
 **scrub** to any decision point and read the exact world state (objectives, asset states,
 debris), and **branch-compare** a rewind fork against the main timeline to show how a choice
-changed the outcome. Structure the debrief around the decision points you flagged with coaching
+changed the outcome. A variable-speed **playback** of the recorded exercise also exists, but only
+as the HTTP routes under `/aar/playback/` (the console has no playback control). A session holds
+one playback cursor, shared by every seat: starting one replaces the last, and it is not kept per
+seat. You (White) may start it from ground truth or either cell's viewpoint; Blue and Red may
+play back only their own viewpoint, and only while the shared playback is on their own cell;
+Observer may only read its state. A refused request is a 403 and nothing changes. The seat is
+asserted by the request, not authenticated (WCM-3 trust model). Structure the debrief around the decision points you flagged with coaching
 notes (WCM-6) and the objective flips.
 
 > **Sources:** `spacesim/session/aar.py` (`snapshot_at`, branch compare) ·
-> `GET /api/sessions/{sid}/aar*` · [`05-core-concepts.md`](05-core-concepts.md) §"Red doctrine & AAR"
+> `GET /api/sessions/{sid}/aar*` · `POST …/aar/playback/*` ·
+> `spacesim/session/inprocess.py` (`playback_seat_decision`) · [`05-core-concepts.md`](05-core-concepts.md) §"Red doctrine & AAR"
 
 ### WCM-10 · Save, resume, and when things go wrong
 
-**Save** (toolbar) writes a complete snapshot — history, order queue, pending events — to JSON;
-**Load** resumes it byte-exact. A save carries the vignette it was started from, so it resumes even if that vignette file has since been edited, renamed or deleted (older saves reload the file by id, and Load tells you so). If the host hardware can't keep the clock at rate, the
+**Save** (**⚙ Settings ▾ → ⬇ Save session**) writes a complete snapshot — history, order queue, pending events — to JSON;
+**⬆ Load session** (same menu) resumes it byte-exact, with the clock paused. A save carries the vignette it was started from, so it resumes even if that vignette file has since been edited, renamed or deleted (older saves reload the file by id, and Load tells you so). If the host hardware can't keep the clock at rate, the
 **clock-lag watchdog** warns you (consider fewer satellites or a lower rate). For everything
-else, start at [`09-troubleshooting-and-glossary.md`](09-troubleshooting-and-glossary.md).
+else, start at [`09-troubleshooting-and-glossary.md`](09-troubleshooting-and-glossary.md). The full
+list of Load refusals and what to do about each is in [WCM-22](12d-white-cell-clock-saves-and-controls.md).
 
-> **Sources:** `spacesim/engine/simulation.py` (`SavedSession`) · `GET /api/sessions/{sid}/save` ·
+**If Load of a save is refused.** The file is checked before anything is replayed. A file that is not
+JSON, lacks required parts, has a damaged event log, claims an end time earlier than its own last
+event or more than 366 days past the exercise start, depends on a vignette file that is gone (older
+saves), or embeds an invalid vignette is refused with a reason shown as **Load failed:** in the
+session label. Nothing is loaded and your current session is untouched. Only the White seat can load
+a save; from a Blue or Red tab the server refuses it.
+
+> **Sources:** `spacesim/engine/simulation.py` (`SavedSession`) · `POST /api/sessions/load_save` (`validate_save`, `_check_final_time_span`) · `GET /api/sessions/{sid}/save` ·
 > `SessionManager._record_catch_up_lag` · `SessionManager.save_state` · `SessionManager.from_state`
 
 ### WCM-11 · Competency assessment: rubric, not a score
@@ -219,7 +292,7 @@ as `BL-0019`/`BL-0020` in the pipeline backlog, not a bug — the panel does exa
 
 ### Analysis and data exports (WCM-12 to WCM-16)
 
-The analysis and export sections (offline research batches, the RIC frame view and CATS phase
+The analysis and export sections (offline research batches, the [RIC](09-troubleshooting-and-glossary.md#11-glossary) frame view and CATS phase
 angle, quick TLE export, the time-span ephemeris export and the per-asset telemetry CSV export)
 are in [`12a-white-cell-analysis-and-exports.md`](12a-white-cell-analysis-and-exports.md). They keep
 their IDs, `WCM-12` to `WCM-16`.

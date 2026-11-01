@@ -77,7 +77,7 @@ always-visible panels (§10.1–§10.4) are in [10](10-ui-reference.md); the ord
 | 2 | Parameter chips | clickable chips | Click to graph that telemetry parameter. |
 | 3 | compare to nominal | checkbox | Overlay the clean baseline (`?nominal=1`). |
 | 4 | overlay | dropdown | Pick a second parameter to overlay on the graph. |
-| 5 | Graph canvas | read-only | 120-point line graph of the last hour of sim time (or since exercise start) from `GET /telemetry/{cell}/{asset}/{param}?n=120`; each point is that instant's own state. |
+| 5 | Graph canvas | read-only | 120-point line graph of the last hour of sim time (or since exercise start) from `GET /telemetry/{cell}/{asset}/{param}?n=120` (the series read: `t0` start / `t1` end in integer microseconds, unlike the export routes; see [`08`](08-http-api-reference.md)); each point is that instant's own state. |
 | 6 | Verb buttons | per-subsystem cards | One-click load the command verb into the compose form. |
 | 7 | Begin recovery | button | (Recovery strip) `POST /recovery/{cell}/{asset}` — start the multi-pass chain. |
 | 8 | Patch (def.patch_cyber) | button | (Recovery strip) Load the patch-cyber command pre-filled with the first unpatched vector. |
@@ -97,7 +97,7 @@ log under the graph is read-only.
 
 | Modal | Trigger | Controls |
 |---|---|---|
-| Command palette | `⌘K` / `Ctrl+K` | text input · result list · `↑/↓` navigate · `Enter` run · `Esc` close |
+| Command palette | `⌘K` / `Ctrl+K` | text input · result list · `↑/↓` navigate · `Enter` run · `Esc` close. Entries depend on the seat: the time entries (advance +1 min / +10 min / +1 hour, rewind to start) are listed only while White is the active seat. The inject entries (fire a vignette inject; load a library template) are also listed only while White is the active seat. Seat switches, AAR exports, display toggles and asset select/focus are offered to every seat. A palette time action the server refuses shows its reason in the status line (§10.2, row 9). |
 | Handover | ⏸ Handover button | **Resume** button |
 | Help | ? Help button | **Close** button |
 | Tutorial | Tutorial button | **✕** close · clickable steps |
@@ -126,7 +126,7 @@ log under the graph is read-only.
 | AAR scrubber | Drag the slider thumb to scrub event-by-event |
 | Fleet row | Click = open drill-down · shift+click = batch toggle |
 
-> **Sources:** `spacesim/ui_web/static/app.js` (`onShortcut`, `PALETTE`, `paletteOpen`, `COACH_STEPS`, `coachOpen`, `tutorialOpen`, `inspectorOpen`) · `spacesim/ui_web/static/index.html` (`handover`)
+> **Sources:** `spacesim/ui_web/static/app.js` (`onShortcut`, `PALETTE` (White-only time and inject entries), `paletteOpen`, `COACH_STEPS`, `coachOpen`, `tutorialOpen`, `inspectorOpen`) · `spacesim/ui_web/static/index.html` (`handover`)
 
 ---
 
@@ -139,8 +139,12 @@ scheduled. **Fog-of-war applies at the API boundary:**
 
 - **White Cell** sees three lanes: BLUE, RED, NEUTRAL — every order, every active effect,
   every scheduled inject.
-- **Blue Cell** sees only the BLUE lane — only its own orders and effects on its own assets.
+- **Blue Cell** sees only the BLUE lane — only its own orders and the started effects on its own assets
+  (the bar names the category and the symptom, not the effect template). **Never a scheduled inject.**
 - **Red Cell** sees only the RED lane — same fog-of-war contract.
+- **Effect labels.** White's bar names the effect template (`ew_jam → ISR-EO-1 (deny)`); a Blue or Red bar names only the category and symptom (`electronic_warfare → ISR-EO-1 (deny)`), and only for effects on that cell's own assets.
+- The **Observer** seat follows White's designation (the White feed, or the designated cell's feed). Any
+  other cell name is refused with HTTP 400 `unknown cell '<name>'`.
 
 The data feed is `GET /api/sessions/{sid}/activity/{cell}` — read-only, replay-safe, derived
 from `osys.orders`, `world.active_effects`, and `sim.scheduler.pending()`.
@@ -151,12 +155,12 @@ from `osys.orders`, `world.active_effects`, and `sim.scheduler.pending()`.
 | 2 | Future window | dropdown | **30 min / 1 h / 2 h / 6 h** — how far ahead to show. |
 | 3 | NOW vertical line | read-only | Bright-green line at the current sim time. |
 | 4 | Lane label | read-only | One lane per visible cell (BLUE / RED / NEUTRAL for White; single lane for Blue or Red). |
-| 5 | Executed bar | read-only | Filled cell-coloured rectangle, meant for an order that completed. As built it does not appear: a past order keeps its dashed **queued** outline (row 7; `BL-0266`). |
+| 5 | Executed bar | read-only | Filled cell-coloured rectangle: the order's window has passed. The timeline marks a queued order `executed` once the clock is past the end of its window (the Command queue list flips earlier, as soon as the window opens). It means the window came and went, not that the effect succeeded: a jammed command still reads `executed`; see BLU-17. |
 | 6 | Active bar | read-only | Filled + bright-green outline. The order's window straddles NOW (currently executing). |
-| 7 | Queued / scheduled bar | read-only | Dashed cell-coloured outline. The order is waiting for its window, or (as built) its window has already passed. Check the order queue ([§10.6](10a-ui-reference-orders.md#106-satellite-command-compose-form) row 13) to see whether it has executed. |
+| 7 | Queued / scheduled bar | read-only | Dashed cell-coloured outline. The order is waiting for its window, which has not opened yet. Once the window opens the bar is **active** (row 6) and after it passes **executed** (row 5). |
 | 8 | Cancelled bar | read-only | Grey strikethrough. The order was cancelled before firing. |
 | 9 | Rejected marker | read-only | Red **×**. The order was rejected at issue (no window). |
-| 10 | Scheduled inject | read-only | Dashed neutral-coloured rectangle at the inject's `at_sim_t`. |
+| 10 | Scheduled inject | read-only | **White Cell only.** Dashed neutral-coloured rectangle at the inject's `at_sim_t`; Blue and Red never receive it. |
 | 11 | Bar click | mouse | Shows `cell · actor · action · status · window · delivery_path` in the detail line below. |
 
 Bars within a lane are stacked vertically per **actor** (asset id) so a single satellite's
@@ -166,12 +170,12 @@ activity reads as one row; multiple satellites stack within the same cell lane.
 
 | Status | Meaning | Source |
 |---|---|---|
-| `executed` | Order has fired. **As built this status is never sent** (`Order.status` holds only `queued`/`cancelled`/`rejected`), so a past order's bar still draws as **queued** (dashed). Filed as a code bug, `BL-0266`. | `osys.orders` |
+| `executed` | The order's window has opened and passed. Derived by the timeline feed from a `queued` order once NOW is past the window end (verified live: queued → active mid-window → executed after). | derived from `osys.orders` |
 | `active` | The bar's window contains NOW | computed at request time |
 | `queued` | Order has a future window but has not fired yet | `osys.orders` |
 | `cancelled` | Cancelled before firing (`POST /cancel`) | `osys.orders` |
 | `rejected` | Rejected at issue (`Order.status == "rejected"`) | `osys.orders` |
-| `scheduled` | Future inject in `sim.scheduler.pending()` | scheduler |
+| `scheduled` | Future inject in White's pending-inject queue (White only; edits applied, cancelled injects absent) | scheduler |
 
 **Endpoint:** `GET /api/sessions/{sid}/activity/{cell}?past_window_s=<int>&future_window_s=<int>`
 returns
@@ -189,7 +193,7 @@ returns
 }
 ```
 
-> **Sources:** `spacesim/ui_web/static/app.js` (`renderActivity`, `drawActivityGantt`, `drawActivityBar`) · `spacesim/session/inprocess.py` (`cell_activity`) · `spacesim/ui_web/server.py` (`/activity/{cell}`)
+> **Sources:** `spacesim/ui_web/static/app.js` (`renderActivity`, `drawActivityGantt`, `drawActivityBar`) · `spacesim/session/inprocess.py` (`cell_activity`) · `spacesim/session/cells.py` (`CellController.activity_rows`) · `spacesim/ui_web/server.py` (`/activity/{cell}`)
 
 ---
 

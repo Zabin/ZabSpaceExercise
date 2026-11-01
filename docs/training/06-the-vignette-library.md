@@ -63,6 +63,8 @@ Every vignette is a YAML data file in `spacesim/content/vignettes/` — copy one
 
 ### Authoring sensors: optional modality fields
 
+> **Copy-paste starting points** for assets, a radar sensor, objectives and an inject (all taken from a shipped vignette and checked by loading them) are in [`12b` — Starter snippets](12b-white-cell-vignette-creator.md#starter-snippets-copy-paste-change-the-ids). Vignettes are written inline; there are no template references.
+
 Each entry under a vignette's `sensors:` list needs only `id`, `owner`, `kind` (`ground_radar`,
 `ground_optical` or `space_based`) and a `location` (ground) or `orbit` (space). Ground optical
 sensors also set `needs_lighting: true`: the target must be sunlit and the site dark. The fields

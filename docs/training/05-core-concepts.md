@@ -95,13 +95,13 @@ time, subject to the defender's posture and whether the vulnerability is patched
 SATCOM/Viasat-style lesson and the wildcard in the game.
 
 ### Adding real satellites by TLE
-White Cell can drop a **real named satellite** into a scenario by pasting its two-line element set
-(TLE). It is validated and then propagates with sgp4 alongside the fictional assets:
+Before you press **Start**, White Cell can drop a **real named satellite** into a scenario by supplying its
+two-line element set (TLE); after Start the server refuses (`cannot edit force after start`). It is validated and then propagates with sgp4 alongside the fictional assets:
 
 ![TLE force-add](../manual/12-tle-force-add.png)
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/sessions/<SID>/force/tle -H 'Content-Type: application/json' \
+curl -X POST 'http://127.0.0.1:8000/api/sessions/<SID>/force/tle?cell=white' -H 'Content-Type: application/json' \
   -d '{"id":"ISS","owner":"blue",
        "line1":"1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927",
        "line2":"2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537"}'
@@ -115,7 +115,7 @@ decision, and **compare two branches** to show how a choice changed the outcome:
 ![Red doctrine campaign + AAR](../manual/13-doctrine-and-aar.png)
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/sessions/<SID>/red_step     # AI-Red issues one round of orders
+curl -X POST 'http://127.0.0.1:8000/api/sessions/<SID>/red_step?cell=white'     # AI-Red issues one round of orders
 curl      http://127.0.0.1:8000/api/sessions/<SID>/aar             # decision timeline + final objectives
 ```
 
@@ -161,7 +161,11 @@ from `(initial state, seed, event log)` and restores queued orders byte-for-byte
 
 ```bash
 curl http://127.0.0.1:8000/api/sessions/<SID>/save > save.json        # download a session
-curl -X POST http://127.0.0.1:8000/api/sessions/load_save -d @save.json -H 'Content-Type: application/json'
+curl -X POST 'http://127.0.0.1:8000/api/sessions/load_save?cell=white' -d @save.json -H 'Content-Type: application/json'
 ```
+
+White Cell controls need `?cell=white` on the URL; without it (or naming Blue, Red or Observer) the server
+answers 403. A save the server cannot use is refused with a 400 and a reason, and nothing is loaded
+(see [§9](08-http-api-reference.md#9-http-api-reference)).
 
 ---

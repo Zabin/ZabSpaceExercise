@@ -2,11 +2,8 @@
 
 > **Package ID:** IP-1068
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-23 by `07-implementation-planning`, pipeline run #219.
-> Every dependency is `VERIFIED`.
-> **Authorization (MSTR-006 §3):** **not yet given for this package.** The owner decided *what* to
-> do (`BL-0307`: "Enforce server-side"); the go-ahead to build it is a separate decision, to be
-> asked before `08` runs.
+> **Status:** VERIFIED 2026-10-24 ([VR-1068](../verification/VR-1068-white-only-controls-server-enforcement.md), fresh session; READY before that) — authored 2026-10-23 by `07-implementation-planning`, pipeline run #219. Every dependency is `VERIFIED`.
+> **Authorization (MSTR-006 §3):** **given.** The owner decided *what* to do (`BL-0307`: "Enforce server-side"); the master build plan row records the build as owner-authorized per MSTR-006 §3, and the `run #230` ledger note records the owner's go-ahead of 2026-10-23. Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [FS-106](../../features/FS-106-white-cell-dashboard.md) v2.4 (the spec);
 > [IP-1060](IP-1060-white-cell-dashboard.md) (clock authority, as recorded),
 > [IP-1130](IP-1130-observer-read-only-access.md) (the Observer refusal this sits beside),

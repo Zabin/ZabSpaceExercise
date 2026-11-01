@@ -156,10 +156,41 @@ const VERB_ROLE = {
   "pnt.flex_power": "payload", "pnt.set_health_flag": "payload",
   "def.patch_cyber": "bus", "def.frequency_hop": "bus",
   "def.harden": "payload", "def.set_threat_warning": "bus", "def.maneuver_evade": "bus",
+  // IP-1160 — pinned to the server's ROLE_SCOPE_BY_VERB by test_role_scope_console_static.py.
+  "pnt.set_integrity": "payload", "def.escort_posture": "bus", "def.disperse": "bus",
+  "def.set_deception_mode": "payload",
   "satcom.set_frequency_plan": "payload",
   "sda.task_search": "sda", "sda.task_track": "sda", "sda.task_characterize": "sda",
 };
 let ROLE_FILTER = "all";
+
+// IP-1160 (FR-3510) — the OPERATOR seat (a Role Assignment key; NOT the console seat CELL) and the
+// server's scope for it. Empty seat = no gate = today's full command list. Display filter only:
+// the server's gate (FR-3520) is the control and rejects an out-of-scope verb whether or not it was
+// offered. Remembered per session in localStorage (every access wrapped; the page works without it).
+let OP_SEAT = "", OP_SEAT_SID = null, ROLE_SCOPE = null;
+function opSeatKey() { return `op-seat-${SID}`; }
+function loadOpSeat() {
+  if (OP_SEAT_SID === SID) return;
+  OP_SEAT_SID = SID;
+  let v = ""; try { v = localStorage.getItem(opSeatKey()) || ""; } catch { /* storage blocked */ }
+  OP_SEAT = v; if ($("o-seat")) $("o-seat").value = v; ROLE_SCOPE = null;
+}
+function roleCovers(role, scope) { return role === "both" || role === scope; }
+async function refreshRoleScope() {
+  if (!SID) return;
+  if (!OP_SEAT) { const had = ROLE_SCOPE !== null; ROLE_SCOPE = null; return had; }
+  const next = await api.get(`/api/sessions/${SID}/roles/scope?seat=${encodeURIComponent(OP_SEAT)}&cell=${CELL}`).catch(() => null);
+  const changed = JSON.stringify(next) !== JSON.stringify(ROLE_SCOPE);
+  ROLE_SCOPE = next;
+  return changed;
+}
+async function onOpSeatChange() {
+  OP_SEAT = ($("o-seat").value || "").trim();
+  try { localStorage.setItem(opSeatKey(), OP_SEAT); } catch { /* storage blocked */ }
+  await refreshRoleScope();
+  onActorChange();          // rebuild the Action list for the new seat; re-runs the dry-run preview
+}
 
 // Plain-language tooltips for the engine's own validator reason strings (00-BUILD-SPECIFICATION.md §16.9).
 // Keys mirror OrderSystem._validate verbatim so UI and engine never drift.
@@ -184,6 +215,9 @@ const REASON_TIPS = {
   invalid_param: "An order parameter is malformed or not a finite number — check the order's fields (or the JSON params box).",
   unknown_action: "Action not supported for this asset.",
   unknown_command: "Command verb not supported.",
+  // IP-1160 (FR-3520) — the operator seat's Role Assignment gate.
+  role_scope_not_assigned: "This operator seat is not assigned to that asset — ask White Cell to bind it, or clear the Operator seat field.",
+  role_scope_out_of_scope: "That command belongs to the other role on this asset — your operator seat covers only its own role.",
   no_payload_for_verb: "This asset's payload can't run that command.",
   payload_unavailable: "Payload unavailable — bus is safed or power-red (clear that first).",
 };
@@ -227,6 +261,33 @@ function setBanner(text) {
   if (el && text) el.textContent = text;
 }
 
+// IP-1073 — one parser for a server refusal (JSON `detail`, a `problems` list, or raw text), shared
+// by the Load button, a save-file load and the control-error status line.
+function refusalParts(e) {
+  let detail = String(e && e.message || e);
+  try { detail = JSON.parse(detail).detail ?? detail; } catch { /* plain text */ }
+  const msg = typeof detail === "object" ? (detail.message || JSON.stringify(detail)) : String(detail);
+  const probs = (detail && Array.isArray(detail.problems)) ? detail.problems : [];
+  return { msg, probs };
+}
+function showLoadFailure(e) {
+  const { msg, probs } = refusalParts(e);
+  const html = `<b>Load failed:</b> ${esc(msg)}` +
+    (probs.length ? `<ul>${probs.map((p) => `<li>${esc(p.where)} — ${esc(p.reason)}</li>`).join("")}</ul>` : "");
+  // IP-1076 (L-2, NFR-1600) — a tab still joined to a live session keeps its #session readout; the
+  // refusal goes to the aria-live #control-status line. Only a tab with no session uses #session.
+  const cs = $("control-status");
+  if (SID && cs) { cs.innerHTML = html; return; }
+  $("session").innerHTML = html;
+}
+// IP-1073 (FR-4310, NFR-1600) — a control the server refused is reported in an aria-live status line
+// beside the session readout, never left as an unhandled rejection. Cleared by the next success.
+function reportControlError(label, e) {
+  const el = $("control-status"); if (!el) return;
+  el.textContent = `${label}: ${refusalParts(e).msg}`;
+}
+function clearControlError() { const el = $("control-status"); if (el) el.textContent = ""; }
+
 async function loadSession() {
   stopRealtimeClock();
   const vselect = $("vignette");
@@ -240,12 +301,7 @@ async function loadSession() {
       classification: classOverride.trim() || undefined,
     });
   } catch (e) {
-    let detail = String(e && e.message || e);
-    try { detail = JSON.parse(detail).detail ?? detail; } catch { /* plain text */ }
-    const msg = typeof detail === "object" ? (detail.message || JSON.stringify(detail)) : String(detail);
-    const probs = (detail && Array.isArray(detail.problems)) ? detail.problems : [];
-    $("session").innerHTML = `<b>Load failed:</b> ${esc(msg)}` +
-      (probs.length ? `<ul>${probs.map((p) => `<li>${esc(p.where)} — ${esc(p.reason)}</li>`).join("")}</ul>` : "");
+    showLoadFailure(e);
     return;
   }
   SID = resp.session;
@@ -344,11 +400,23 @@ const start = async () => {
   startRealtimeClock();                                     // begin client poll loop
   await refresh();
 };
-// Manual time-jump (White +1m/+10m/+1h): server re-anchors after advance_to.
-const step = async (dt) => { await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: dt }); await refresh(); };
+// Manual time-jump (White +1m/+10m/+1h): the toolbar buttons call the palette's `stepBy` (IP-1082),
+// the one place that posts /step, reports a refusal in #control-status and clears it on success.
+// IP-1074 — "rewind to start" means the exercise's own first instant, which the server reports as
+// `start_epoch` on /clock. Never a guessed 0: read it from the server for the current session each
+// time (one cheap GET), so a session switch can never reuse another session's start.
+async function exerciseStartEpoch() {
+  if (!SID) return null;
+  const s = await api.get(`/api/sessions/${SID}/clock`);
+  return s && s.start_epoch != null ? s.start_epoch : null;
+}
 const rewind = async () => {
+  if (!SID) return;
   stopRealtimeClock();
-  await api.post(`/api/sessions/${SID}/rewind`, { t: 0 });
+  try {
+    const t0 = await exerciseStartEpoch();
+    if (t0 != null) { await api.post(`/api/sessions/${SID}/rewind`, { t: t0 }); clearControlError(); }
+  } catch (e) { reportControlError("Rewind", e); }
   startRealtimeClock();   // server re-anchors on rewind; resume poll loop
   await refresh();
 };
@@ -367,6 +435,7 @@ async function fireInject() {
     if (out) { out.style.color = ""; out.textContent = `✓ fired ${id}`; }
   } catch (err) {
     if (out) { out.style.color = "var(--red)"; out.textContent = "✗ server error: " + (err.message || err); }
+    reportControlError("Inject", err);   // IP-1076 (M-4) — #inject-result is in a White-only panel; also show it where every seat can see it
   }
   await refresh();
 }
@@ -537,7 +606,11 @@ async function renderQueue() {
 
 async function drawRibbon(actor) {
   const c = $("ribbon"), x = c.getContext("2d");
-  const wa = await api.get(`/api/sessions/${SID}/windows/${CELL}/${actor}`).catch(() => null);
+  // IP-1076 (L-3) — a sensor (not in world.assets) or an Observer (owns nothing) has no windows to
+  // ask for; the route's 404 is the ownership contract, so the client does not ask.
+  const kind = (ASSETS[actor] || {}).kind;
+  const askable = CELL !== "observer" && !["ground_radar", "ground_optical", "space_based"].includes(kind);
+  const wa = askable ? await api.get(`/api/sessions/${SID}/windows/${CELL}/${actor}`).catch(() => null) : null;
   x.fillStyle = "#0a0f15"; x.fillRect(0, 0, c.width, c.height);
   if (!wa || !wa.windows.length) { x.fillStyle = "#7a8aa0"; x.font = "11px monospace"; x.fillText("no passes / not a satellite", 8, 26); return; }
   const span = wa.horizon_s * 1e6, now = wa.now;
@@ -587,11 +660,14 @@ function composeBody() {
   // most importantly, tasking a sensor at all (the "observe" action IS how custody gets built,
   // so its target can never come pre-populated from a track the operator doesn't have yet).
   const target = $("o-target-manual")?.value || $("o-target")?.value || null;
-  return { cell, actor, action, target, params };
+  const body = { cell, actor, action, target, params };
+  const seat = ($("o-seat")?.value || "").trim();     // IP-1160 — operator seat; omitted when empty
+  if (seat) body.seat = seat;
+  return body;
 }
 
 // Verbs offered for an asset: kind-based core actions + bus verbs for satellites + payload verbs by type.
-function actionsFor(a) {
+function actionsFor(a, id = a.id) {
   const acts = (ACTIONS_BY_KIND[a.kind] || ["observe"]).slice();
   if (a.kind === "satellite") {
     acts.push("eps.shed_load", "eps.restore_load", "eps.set_charge_mode",
@@ -613,19 +689,37 @@ function actionsFor(a) {
     if (a.payload === "pnt") acts.push("pnt.set_integrity");
     if ((a.cyber_vulns || []).length) acts.push("def.patch_cyber");      // defender's root-cause fix
   }
+  // IP-1160 (FR-3510): for a role-gated asset, offer a bus/payload/defense verb only when the
+  // operator seat is bound to it and the server's table puts the verb inside the binding's role.
+  // Base actions (jam/engage/observe/maneuver/downlink/cyber) are out of scope and stay offered.
+  let offered = acts;
+  if (ROLE_SCOPE && (ROLE_SCOPE.gated_assets || []).includes(id)) {
+    const bound = (ROLE_SCOPE.bound_assets || []).includes(id);
+    offered = acts.filter((v) => {
+      if (!v.includes(".")) return true;
+      const scope = (ROLE_SCOPE.verbs || {})[v];
+      return scope === undefined || (bound && roleCovers(ROLE_SCOPE.role, scope));
+    });
+  }
   // Role filter (§1.2): All shows everything; Bus/Payload/SDA narrow by VERB_ROLE.
-  if (ROLE_FILTER !== "all") return acts.filter((v) => (VERB_ROLE[v] || "bus") === ROLE_FILTER);
-  return acts;
+  if (ROLE_FILTER !== "all") return offered.filter((v) => (VERB_ROLE[v] || "bus") === ROLE_FILTER);
+  return offered;
 }
 
 // Plan-first "why can't I?" preview (P4 / §12): dry-run the composed order on every edit and
 // pre-disable Issue with the validator's reason — without mutating session state.
+let PREVIEW_EDIT = 0;   // IP-1073 (NFR-3020) — latest-edit token: a superseded dry-run response is discarded
 async function previewOrder() {
   const btn = $("issue"), out = $("o-preview");
   if (!SID || !out) return;
+  const mine = ++PREVIEW_EDIT;
+  // IP-1076 (L-3) — Observer cannot issue (the button is disabled for that seat) and the server's
+  // 403 on a dry-run stays; do not post. Clear a stale preview.
+  if (CELL === "observer") { out.className = "preview"; out.textContent = ""; return; }
   const body = composeBody();
   if (!body) { btn.disabled = true; btn.title = "Fix params JSON"; out.className = "preview bad"; out.textContent = "✗ invalid params JSON"; return; }
   let ack; try { ack = await api.post(`/api/sessions/${SID}/order/validate`, body); } catch { return; }
+  if (mine !== PREVIEW_EDIT) return;
   if (ack.ok) {
     btn.disabled = false; btn.title = "";
     out.className = "preview ok";
@@ -637,15 +731,16 @@ async function previewOrder() {
     out.textContent = `✗ ${tip}`;
   }
   // FW §11.D.18 — live consequence preview alongside the validity preview.
-  renderConsequencePreview(body);
+  renderConsequencePreview(body, mine);
 }
 
-async function renderConsequencePreview(body) {
+async function renderConsequencePreview(body, mine) {
   const el = $("consequence-preview"); if (!el) return;
   if (!body || !body.action) { el.textContent = ""; return; }
   let res; try {
     res = await api.post(`/api/sessions/${SID}/preview/consequence`, body);
-  } catch { el.textContent = ""; return; }
+  } catch { if (mine === PREVIEW_EDIT) el.textContent = ""; return; }
+  if (mine !== PREVIEW_EDIT) return;
   const sev = res.severity || "low";
   const sevColor = { high: "var(--red)", medium: "var(--yellow)", low: "var(--muted)" }[sev];
   el.style.color = sevColor;
@@ -1045,7 +1140,7 @@ function onActorChange() {
   const id = $("o-actor").value, a = ASSETS[id] || {};
   $("actor-info").textContent = a.kind ? `${a.kind} · ${a.owner}${a.payload ? " · " + a.payload : ""}` : "";
   const prevAction = $("o-action").value;
-  $("o-action").innerHTML = actionsFor(a).map((x) => `<option>${x}</option>`).join("");
+  $("o-action").innerHTML = actionsFor(a, id).map((x) => `<option>${x}</option>`).join("");
   if (prevAction && [...$("o-action").options].some((o) => o.value === prevAction))
     $("o-action").value = prevAction;
   onActionChange(prevAction !== $("o-action").value);  // also repopulates target (owner + gating)
@@ -1434,6 +1529,11 @@ async function refresh() {
   renderObjectives(objectives);
   renderBrief();
 
+  // IP-1160 — pick up the remembered operator seat and any change to its assignment (White may
+  // bind it mid-session); a changed scope rebuilds the Action list below.
+  loadOpSeat();
+  const scopeChanged = await refreshRoleScope();
+  if (stale()) return;
   // Command menu: populate actor list (own assets + sensors that can act; network sensors excluded).
   const actorIds = assets.filter((a) => ACTIONS_BY_KIND[a.kind] && !a.network).map((a) => a.id);
   const prev = $("o-actor").value;
@@ -1442,6 +1542,8 @@ async function refresh() {
   if (prevList !== newList) {
     $("o-actor").innerHTML = actorIds.map((i) => `<option>${i}</option>`).join("");
     if (actorIds.includes(prev)) $("o-actor").value = prev;
+    onActorChange();
+  } else if (scopeChanged) {
     onActorChange();
   }
   // Tasking rail sensor picker (P-UI-6): own organic sensors + auto (network sensors are SSN-only).
@@ -1688,6 +1790,8 @@ async function renderConjunctions() {
     const o = { cell: ASSETS[actor]?.owner || cell, actor,
                 action: "command", target: null,
                 params: { verb: "prop.collision_avoid" } };
+    const seat = ($("o-seat")?.value || "").trim();     // IP-1160 — same operator seat as every order path
+    if (seat) o.seat = seat;
     try {
       const ack = await api.post(`/api/sessions/${SID}/order`, o);
       b.textContent = ack.ok ? "Queued" : "REJECT";
@@ -1859,9 +1963,17 @@ async function saveSession() {
   a.href = URL.createObjectURL(blob); a.download = `${state.vignette_id}-save.json`; a.click();
 }
 async function loadSaveFile(file) {
-  const state = JSON.parse(await file.text());
+  // IP-1073 (BL-0327) — a refused or unparseable file is reported and leaves the session and its
+  // polling untouched; the clock is stopped only once the server has accepted the load.
+  let state, loaded;
+  try {
+    state = JSON.parse(await file.text());
+    loaded = await api.post("/api/sessions/load_save", state);
+  } catch (e) {
+    showLoadFailure(e instanceof SyntaxError ? new Error("not a valid save file (" + e.message + ")") : e);
+    return;
+  }
   stopRealtimeClock();
-  const loaded = await api.post("/api/sessions/load_save", state);
   SID = loaded.session;
   if ((loaded.warnings || []).length) alert("Save loaded with warnings:\n" + loaded.warnings.join("\n"));   // IP-1101
   location.hash = SID;   // multiplayer: resumed session is also shareable
@@ -2122,7 +2234,7 @@ async function openDrill(assetId) {
     const chips = params.map((p) =>
       `<span class="pchip ${p.status}" data-param="${p.id}" data-acronym="${(p.label || "").split(" ")[0]}">${p.label} ${p.value ?? "LOS"}` +
       ` <canvas class="spark" data-param="${p.id}" width="48" height="12"></canvas></span>`).join(" ");
-    const verbs = verbsForSubsystem(a, sub).map((v) =>
+    const verbs = verbsForSubsystem(a, sub, assetId).map((v) =>
       `<button class="vbtn" data-verb="${v}" data-actor="${assetId}">${v}</button>`).join(" ");
     return `<div class="sub"><b data-acronym="${sub.toUpperCase()}">${sub}</b> ${chips}${verbs ? `<div class="vbtns">${verbs}</div>` : ""}</div>`;
   }).join("");
@@ -2205,8 +2317,8 @@ const VERB_SUBSYSTEM = {
   "sda.task_search": "payload", "sda.task_track": "payload", "sda.task_characterize": "payload",
   "def.maneuver_evade": "propulsion",
 };
-function verbsForSubsystem(a, sub) {
-  return actionsFor(a).filter((v) => v.includes(".") && VERB_SUBSYSTEM[v] === sub);
+function verbsForSubsystem(a, sub, id) {
+  return actionsFor(a, id).filter((v) => v.includes(".") && VERB_SUBSYSTEM[v] === sub);
 }
 
 // Load a subsystem-card verb into the compose form and preview it (operator reviews, then Issues).
@@ -2276,6 +2388,7 @@ window.addEventListener("DOMContentLoaded", () => {
     refreshStaffingReport();
   };
   $("o-actor").onchange = onActorChange; $("o-action").onchange = onActionChange;
+  if ($("o-seat")) $("o-seat").onchange = onOpSeatChange;      // IP-1160
   $("o-target").onchange = previewOrder; $("o-params").oninput = previewOrder;
   $("o-target-manual").oninput = previewOrder;
   $("drill-nominal").onchange = () => DRILL.param && drawParam(DRILL.param);
@@ -2294,7 +2407,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const localEl = document.getElementById("now-local");
     if (localEl) localEl.textContent = localTimeStr(NOW);
   };
-  document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => step(+b.dataset.step));
+  document.querySelectorAll("[data-step]").forEach((b) => b.onclick = () => stepBy(+b.dataset.step));
   document.querySelectorAll(".cell").forEach((b) => b.onclick = () => setCell(b.dataset.cell));
   document.querySelectorAll("#fleet-filter .chip").forEach((b) => b.onclick = () => {
     FLEET_FILTER = b.dataset.filter;
@@ -2525,8 +2638,8 @@ function renderBookmarks() {
       } else {
         const b = bmList()[+c.dataset.i];
         if (!SID) return;
-        await api.post(`/api/sessions/${SID}/rewind`, { t: b.t });
-        refresh();
+        if (CELL !== "white") { reportControlError("Rewind", new Error("only the White Cell can rewind the exercise clock")); return; }
+        await rewindTo(b.t);
       }
     });
   });
@@ -2608,10 +2721,12 @@ const PALETTE = {
     items.push({ label: "switch to Blue cell",  tag: "cell",  run: () => setCell("blue") });
     items.push({ label: "switch to Red cell",   tag: "cell",  run: () => setCell("red") });
     items.push({ label: "switch to White cell", tag: "cell",  run: () => setCell("white") });
-    items.push({ label: "advance +1 min",       tag: "time",  run: () => stepBy(60) });
-    items.push({ label: "advance +10 min",      tag: "time",  run: () => stepBy(600) });
-    items.push({ label: "advance +1 hour",      tag: "time",  run: () => stepBy(3600) });
-    items.push({ label: "rewind to start",      tag: "time",  run: () => rewindTo(0) });
+    if (CELL === "white") {   // IP-1073 (FR-4310) — time control is White's; the server's 403 stays the enforcement
+      items.push({ label: "advance +1 min",       tag: "time",  run: () => stepBy(60) });
+      items.push({ label: "advance +10 min",      tag: "time",  run: () => stepBy(600) });
+      items.push({ label: "advance +1 hour",      tag: "time",  run: () => stepBy(3600) });
+      items.push({ label: "rewind to start",      tag: "time",  run: async () => { try { const t0 = await exerciseStartEpoch(); if (t0 != null) await rewindTo(t0); } catch (e) { reportControlError("Rewind", e); } } });
+    }
     items.push({ label: "export AAR (CSV)",     tag: "aar",   run: () => SID && (location.href = `/api/sessions/${SID}/aar/export.csv`) });
     items.push({ label: "export AAR (JSON)",    tag: "aar",   run: () => SID && (location.href = `/api/sessions/${SID}/aar/export.json`) });
     items.push({ label: "toggle projector mode", tag: "view", run: () => { const cb = $("projector"); cb.checked = !cb.checked; cb.dispatchEvent(new Event("change")); }});
@@ -2633,11 +2748,11 @@ const PALETTE = {
     }
     // Active injects from the white-cell dropdown.
     const isel = $("inject-sel");
-    if (isel) [...isel.options].forEach((o) => {
+    if (isel && CELL === "white") [...isel.options].forEach((o) => {
       if (o.value) items.push({ label: `fire inject ${o.value}`, tag: "inject", run: () => { isel.value = o.value; $("fire-inject").click(); } });
     });
     // FW §11.D.19 — library entries surface as palette commands too.
-    INJECT_LIBRARY.forEach((lib, idx) => {
+    if (CELL === "white") INJECT_LIBRARY.forEach((lib, idx) => {   // IP-1076 (M-4) — White-only, like the time entries
       items.push({
         label: `inject lib: ${lib.label || lib.id}`,
         tag: "inject",
@@ -2690,8 +2805,19 @@ addEventListener("DOMContentLoaded", () => {
 });
 
 // Helpers used by the palette (extracted from the existing toolbar handlers).
-async function stepBy(s) { if (!SID) return; await api.post(`/api/sessions/${SID}/advance`, { t: (SCENE ? SCENE.now : 0) + s * 1_000_000 }); refresh(); }
-async function rewindTo(t) { if (!SID) return; await api.post(`/api/sessions/${SID}/rewind`, { t }); refresh(); }
+async function stepBy(s) {
+  if (!SID) return;
+  // IP-1076 — post /step: the server computes the target from its own now (SCENE.now lags a running clock)
+  try { await api.post(`/api/sessions/${SID}/step`, { dt_sim_s: s }); clearControlError(); }
+  catch (e) { reportControlError("Advance", e); return; }
+  refresh();
+}
+async function rewindTo(t) {
+  if (!SID) return;
+  try { await api.post(`/api/sessions/${SID}/rewind`, { t }); clearControlError(); }
+  catch (e) { reportControlError("Rewind", e); return; }
+  refresh();
+}
 
 // §10.B.8 — Multi-asset batch selection. Shift-click a fleet row to toggle; "Issue to all" runs
 // the current compose against each batched asset (substituting actor).

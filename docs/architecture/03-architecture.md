@@ -56,8 +56,8 @@ SpaceSim is a **layered, single-process application** with one hard internal sea
    per-cell belief views; sends operator intents back. Swappable in principle (GDS-00/`design/01`
    originally scoped PyQt as an alternative); shipped as FastAPI + browser (`design/02`
    "Option A").
-4. **Content & data** (`spacesim/content/` + on-disk files) — vignettes, asset/effect/sensor
-   templates, TLE sources, save files. Data, not code (`CLAUDE.md` invariant 6).
+4. **Content & data** (`spacesim/content/` + on-disk files) — vignettes (assets, sensors and effects authored inline;
+   no template libraries, ADR-0036), TLE sources, save files. Data, not code (`CLAUDE.md` invariant 6).
 
 A fifth element, the **mock Space Surveillance Network (SSN)**, sits inside the engine/session
 boundary but is called out as its own subsystem (§2.3) because it has an external-service *flavor*
@@ -89,7 +89,7 @@ flowchart TB
     end
     subgraph data["Content & Data"]
         VIG[(Vignette files)]
-        TPL[(Asset / effect / sensor templates)]
+        INJ[(Inject-template library)]
         TLE[(TLE sources)]
         SAVE[(Save files)]
     end
@@ -348,9 +348,11 @@ or a second tab must never be able to derive state the session layer didn't alre
   coaching notes. All 19 shipped vignettes live here.
 - Provide the inject-template library (`inject_library.yaml`) surfaced in the White Cell build/
   schedule-inject panel.
-- Hold asset/effect/sensor template libraries (regime defaults, payload type, telemetry/command
-  databases, vulnerabilities, available defenses) referenced by the engine when building a
-  `WorldState`.
+- Author assets, sensors and effects inline in each vignette; the content model carries no asset/
+  effect/sensor template library or template reference (owner decision `BL-0233` option A, 2026-10-31;
+  `ADR-0036`). Reference defaults (regime defaults, telemetry/command databases) live in engine tables,
+  not a content library. Curated sample snippets are offered as copy-paste starting points in the
+  authoring documentation (option D), not as a runtime construct.
 - Provide the TLE import path: optional Space-Track pull at build time, bundled snapshot fallback,
   or manual/Keplerian entry (`build-spec/01` Decision D2; GDS-02 §4).
 - Own the save-file format: a complete deterministic session snapshot (history, order queue,
@@ -363,14 +365,14 @@ call to Space-Track.org at scenario-build time. No runtime network dependency
 **Inputs.** Author-written or in-app-builder-produced vignette files; Space-Track API responses
 (optional); manually entered TLEs/Keplerian elements; a session's exported save file (on resume).
 
-**Outputs.** A parsed vignette object the session layer uses to build a `WorldState`; template
-data the engine consults when constructing assets/effects/sensors; save files written at session
+**Outputs.** A parsed vignette object the session layer uses to build a `WorldState`; the
+inline asset/sensor/effect definitions the engine uses when constructing them; save files written at session
 end or on demand.
 
 **Dependencies.** None on the engine, session, or presentation subsystems' *code* — only on the
 data shapes they expect (a one-directional, schema-level dependency, not a code dependency).
 
-**Ownership of data.** Sole owner of the on-disk vignette/template/save/TLE-cache file formats.
+**Ownership of data.** Sole owner of the on-disk vignette/inject-library/save/TLE-cache file formats.
 Once loaded into a `WorldState`, the engine (§2.1) owns the in-memory representation; this
 subsystem does not reach back into a running session. For save files specifically: this subsystem
 owns the *format* of the file on disk; the Session layer (§2.2) owns the act of producing/writing

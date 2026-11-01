@@ -43,13 +43,15 @@ window.Creator = (function () {
 
   async function addTle() {
     if (!ensureDraft()) return;
-    await api.post(`/api/sessions/${sid}/force/tle`, {
+    const ack = await api.post(`/api/sessions/${sid}/force/tle`, {
       id: $("creator-tle-id").value.trim(),
       line1: $("creator-tle-l1").value.trim(),
       line2: $("creator-tle-l2").value.trim(),
       owner: $("creator-tle-owner").value,
       kind: $("creator-tle-kind").value.trim() || "satellite",
     });
+    // IP-1086 — a refused TLE (stale epoch, bad lines) is an Ack(ok=false), not an HTTP error: show why.
+    $("creator-save-result").textContent = ack && ack.ok === false ? `refused: ${ack.reason}` : "TLE added";
     await refreshAssetList();
   }
 
@@ -66,13 +68,14 @@ window.Creator = (function () {
 
   async function addGroundAsset() {
     if (!ensureDraft()) return;
-    await api.post(`/api/sessions/${sid}/force/ground`, {
+    const ack = await api.post(`/api/sessions/${sid}/force/ground`, {
       id: $("creator-gnd-id").value.trim(),
       lat_deg: parseFloat($("creator-gnd-lat").value),
       lon_deg: parseFloat($("creator-gnd-lon").value),
       owner: $("creator-gnd-owner").value,
       kind: $("creator-gnd-kind").value.trim() || "ground_station",
     });
+    $("creator-save-result").textContent = ack && ack.ok === false ? `refused: ${ack.reason}` : "asset added";
     await refreshAssetList();
   }
 
@@ -182,17 +185,30 @@ window.Creator = (function () {
     window.Globe && Globe.render(scene);
   }
 
+  // IP-1073 (FR-4320, NFR-1600) — a Creator call the server refuses (a non-White seat, an invalid
+  // asset) is shown in the result line rather than left as an unhandled rejection.
+  function guard(fn) {
+    return async (...args) => {
+      try { return await fn(...args); }
+      catch (e) {
+        let msg = String((e && e.message) || e);
+        try { const d = JSON.parse(msg).detail; if (d !== undefined) msg = typeof d === "string" ? d : JSON.stringify(d); } catch { /* raw text */ }
+        $("creator-save-result").textContent = `error: ${msg}`;
+      }
+    };
+  }
+
   function init() {
     if (!$("creator-btn")) return;   // menu absent (e.g. a pop-out layout) — nothing to wire
-    $("creator-new").onclick = newDraft;
-    $("creator-save").onclick = saveVignette;
-    $("creator-tle-add").onclick = addTle;
-    $("creator-gnd-add").onclick = addGroundAsset;
-    $("creator-refresh").onclick = refreshAssetList;
-    $("creator-json-load").onclick = jsonLoad;
-    $("creator-json-save").onclick = jsonSave;
-    $("creator-seat-declare").onclick = declareSeats;
-    $("creator-preview").onclick = refreshPreview;
+    $("creator-new").onclick = guard(newDraft);
+    $("creator-save").onclick = guard(saveVignette);
+    $("creator-tle-add").onclick = guard(addTle);
+    $("creator-gnd-add").onclick = guard(addGroundAsset);
+    $("creator-refresh").onclick = guard(refreshAssetList);
+    $("creator-json-load").onclick = guard(jsonLoad);
+    $("creator-json-save").onclick = guard(jsonSave);
+    $("creator-seat-declare").onclick = guard(declareSeats);
+    $("creator-preview").onclick = guard(refreshPreview);
     loadGroundSites();
   }
 

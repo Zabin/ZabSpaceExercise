@@ -49,7 +49,7 @@ def test_each_cell_panel_is_fog_filtered(api_sid):
     assert all(t["owner"] == "red" for t in cv["red"]["known_tracks"])
 
 
-@pytest.mark.verifies("FR-4620")
+@pytest.mark.verifies("FR-4620", "NFR-2410")
 def test_read_only(api_sid):
     api, sid, mgr = api_sid
     before = mgr.world.model_dump()

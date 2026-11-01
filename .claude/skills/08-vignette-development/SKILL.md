@@ -19,9 +19,12 @@ carry the same co-equal-product status (MSTR-001 §2) and currency requirements 
    parameters, and — for anything on the learning path's core progression — a `tutorial:` step
    script; place it on exactly one learning-path rung with prerequisites (FR-11310/11320); add
    its playbook entry; extend the verification test to drive its script.
-2. **Currency update**: shipped behavior changed under an existing vignette (a verb renamed, a
-   gate tightened, an objective now unreachable); re-verify the script against the engine, fix
-   the YAML/brief/playbook/rung, keep `test_vignette_tutorials.py` green.
+2. **Currency update — the maintain loop**: shipped behavior changed under an existing vignette
+   (a verb renamed, a gate tightened, an objective now unreachable), signalled by an open
+   **Manual-impact backlog item** routed here (handed off by `08-code-implementation`'s
+   Documentation step, due before release) or a `training/15` §15.1/§15.4 row whose backing code
+   changed; re-verify the script against the engine, fix the YAML/brief/playbook/rung, keep
+   `test_vignette_tutorials.py` green. See *The maintain loop*.
 3. **Learning-path re-sequencing**: move/re-rank rungs as the library grows — every vignette on
    exactly one rung, prerequisites still a DAG a novice can actually walk.
 
@@ -64,6 +67,25 @@ sources, per the vignette PR checklist).
 6. **Full suite green** (`python3 -m pytest`) before calling it done — vignettes are load-bearing
    test fixtures for half the session-layer suite.
 
+## The maintain loop (owner direction 2026-10-25 — clear, thorough tutorials and instructions)
+
+**Triggers:** every open Manual-impact backlog item routed to this skill (oldest first; each is
+due before release) and every vignette whose tutorial/brief names a label, verb, gate, or message
+the code just changed (find them via §15.1/§15.4 and a grep of the YAML for the old text).
+
+**Play each touched tutorial as a first-time learner.** Load the vignette in the app
+(`run-spacesim`), take each cell's seat, and follow the `intro_brief` and `tutorial` steps
+literally — only what the text says, in its order. A step that cannot be done as written, a label
+that differs from the screen, or an outcome the `expect` does not predict is a defect fixed in
+this run; then make `test_vignette_tutorials.py` assert the same flips.
+
+**Content standards for `tutorial:` steps, briefs and playbook entries:** plain language for a
+first-time operator; numbered/ordered steps, one action each; exact UI labels, order verbs, and
+refusal messages quoted verbatim; the expected result of each step (the objective flip or what
+appears on screen); failure modes with the real message and the recovery (incl. the ROE /
+weapons-quality / window gates in `expect`); why the step matters to the scenario's learning
+objective; and, in the playbook entry, a `> Sources:` footer naming the YAML and test.
+
 ## Quality gate (before calling a run done)
 
 - [ ] YAML loads and runs; full suite + `test_vignette_tutorials.py` green.
@@ -71,6 +93,8 @@ sources, per the vignette PR checklist).
       blocking gate (ROE / weapons-quality / window) is documented in the block's `expect`.
 - [ ] The vignette sits on exactly one learning-path rung; prerequisites resolve; playbook entry
       exists and matches the script.
+- [ ] Every tutorial/brief touched was played live as a first-time learner this run and meets
+      the content standards; every Manual-impact item worked is named with what closes it.
 - [ ] Briefs leak nothing across the fog boundary; realism claims carry research sources.
 - [ ] No engine/session/UI code was touched; any needed mechanic was filed, not built.
 
@@ -84,7 +108,8 @@ research. Downstream: `09-training-manual-review` reviews the training-facing su
 
 End **every** invocation with a chat summary containing exactly these three parts:
 
-1. **What changed** — vignettes authored/updated, rungs/playbooks/tests moved, suite result.
+1. **What changed** — vignettes authored/updated, rungs/playbooks/tests moved, suite result,
+   and which Manual-impact items they close.
 2. **Recommendations** — engine gaps filed via `00-intake`, manual-side impacts routed to
    `08-training-manual-authoring`, R600 grounding gaps to `02-research-training-pedagogy`.
 3. **Next step** — normally `09-training-manual-review` on the touched training surface, or the

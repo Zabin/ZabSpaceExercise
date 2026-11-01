@@ -30,7 +30,7 @@ def test_capstone_runs_a_synchronized_red_campaign():
     assert rep.timeline and any("cyber" in e.summary for e in rep.timeline)
 
 
-@pytest.mark.verifies("FR-7410", "FR-7420")
+@pytest.mark.verifies("FR-7310", "NFR-2410")
 def test_state_at_time_reconstructs_world_at_arbitrary_time():
     """IP-1210 (FR-7410/FR-7420) — state_at_time()'s applied-event set matches exactly the
     events with sim_time <= t, and world.now == t (not the last applied event's own time)."""
@@ -170,7 +170,7 @@ def _campaign_with_history():
     return mgr
 
 
-@pytest.mark.verifies("FR-7410", "FR-7420")
+@pytest.mark.verifies("FR-7310", "NFR-2410")
 def test_worlds_at_times_matches_state_at_time():
     mgr = _campaign_with_history()
     entries = mgr.sim.eventlog.entries

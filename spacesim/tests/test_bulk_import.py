@@ -5,8 +5,8 @@ import pytest
 
 from spacesim.content.bulk_import import parse_ccsds_omm, parse_multi_tle
 
-_TLE1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
-_TLE2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+from tle_helpers import in_epoch_tle  # noqa: E402 — IP-1086: a TLE valid at the 2030 exercise start
+_TLE1, _TLE2 = in_epoch_tle()
 _TLE1B = "1 43013U 17073A   24001.50000000  .00000023  00000-0  12345-4 0  9995"
 _TLE2B = "2 43013  98.5691 100.1234 0001234  90.1234 270.1234 14.19560570123456"
 

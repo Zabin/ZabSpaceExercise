@@ -14,7 +14,7 @@ from spacesim.tools.research_batch import run_batch
 VIGNETTE_ID = "leo-isr-denial"
 
 
-@pytest.mark.verifies("FS-301")
+@pytest.mark.verifies("FR-10210")
 def test_run_batch_returns_one_record_per_seed_with_correct_metadata():
     records = run_batch(VIGNETTE_ID, seeds=[1, 2, 3], condition_label="baseline", n_steps_or_until=600)
     assert len(records) == 3
@@ -26,7 +26,7 @@ def test_run_batch_returns_one_record_per_seed_with_correct_metadata():
         assert set(rec.assessment.keys()) == {"blue", "red"}
 
 
-@pytest.mark.verifies("FS-301")
+@pytest.mark.verifies("FR-10210")
 def test_identical_vignette_and_seed_produce_byte_identical_run_records():
     """The reproducibility property this whole feature exists to provide (FS-301 Acceptance
     Criteria): two independent batch runs of the same (vignette_id, seed) must match exactly."""
@@ -35,7 +35,7 @@ def test_identical_vignette_and_seed_produce_byte_identical_run_records():
     assert first[0].model_dump_json() == second[0].model_dump_json()
 
 
-@pytest.mark.verifies("FS-301")
+@pytest.mark.verifies("FR-10210")
 def test_varying_the_seed_produces_the_known_deterministic_outcome_per_seed():
     """This fixture vignette drives no cell-issued order during the batch window (``run_batch``
     only advances the clock — it does not automate Red doctrine or issue Blue orders, per this
@@ -60,7 +60,7 @@ def test_varying_the_seed_produces_the_known_deterministic_outcome_per_seed():
             assert rec.assessment[cell]["belief_truth_divergence"] == expected["belief_truth_divergence"]
 
 
-@pytest.mark.verifies("FS-301")
+@pytest.mark.verifies("FR-10210")
 def test_run_batch_never_reimplements_ip2010_scoring(monkeypatch):
     """``run_batch`` must call ``assessment_report`` exactly once per run, never duplicate its
     scoring logic (FS-301's explicit non-goal, per its own Risks section)."""
@@ -78,7 +78,7 @@ def test_run_batch_never_reimplements_ip2010_scoring(monkeypatch):
     assert len(calls) == 2  # exactly once per seed, never zero, never duplicated
 
 
-@pytest.mark.verifies("FS-301")
+@pytest.mark.verifies("FR-10210")
 def test_run_batch_uses_a_fresh_session_manager_per_seed_no_shared_state():
     """No shared mutable state between runs (this package's own Risks section) — each run must
     start from a clean seeded initial state, not accumulate state across seeds."""
@@ -86,7 +86,7 @@ def test_run_batch_uses_a_fresh_session_manager_per_seed_no_shared_state():
     assert records[0].model_dump_json() == records[1].model_dump_json()
 
 
-@pytest.mark.verifies("FS-301")
+@pytest.mark.verifies("FR-10210")
 def test_export_csv_has_one_row_per_run_and_one_column_per_dimension():
     records = run_batch(VIGNETTE_ID, seeds=[1, 2], condition_label="export-check", n_steps_or_until=600)
     csv_text = export_csv(records)
@@ -98,7 +98,7 @@ def test_export_csv_has_one_row_per_run_and_one_column_per_dimension():
     assert "red_belief_truth_divergence" in header
 
 
-@pytest.mark.verifies("FS-301")
+@pytest.mark.verifies("FR-10210")
 def test_export_json_round_trips_every_record():
     records = run_batch(VIGNETTE_ID, seeds=[1, 2], condition_label="export-check", n_steps_or_until=600)
     import json

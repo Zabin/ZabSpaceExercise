@@ -29,7 +29,7 @@ def _val(w, param, t=None):
     return tel.sample(w, "SAT", param, t if t is not None else w.now, SEED)["value"]
 
 
-@pytest.mark.verifies("NFR-2410")
+@pytest.mark.verifies("FR-2330")
 def test_sampling_is_deterministic_and_repeatable():
     w = _world()
     assert tel.sample(w, "SAT", "rx_power_dbm", 12345, SEED) == tel.sample(w, "SAT", "rx_power_dbm", 12345, SEED)
@@ -49,7 +49,7 @@ def test_sampling_is_read_only():
     assert w.model_dump_json() == before  # never mutates world state
 
 
-@pytest.mark.verifies("FR-2110")
+@pytest.mark.verifies("FR-2330")
 def test_sampler_returns_physical_values_only_no_cause_label():
     w = _world()
     w.active_effects.append(ActiveEffect(target="SAT", outcome="deny", start=0, end=minutes(60),
@@ -60,7 +60,7 @@ def test_sampler_returns_physical_values_only_no_cause_label():
         assert "cause" not in entry and "attack" not in entry
 
 
-@pytest.mark.verifies("NFR-3050")
+@pytest.mark.verifies("FR-2330")
 def test_ew_jam_signature_raises_rx_power_and_recovers():
     clean = _world()
     nominal_rx = _val(clean, "rx_power_dbm", minutes(20))
@@ -76,7 +76,7 @@ def test_ew_jam_signature_raises_rx_power_and_recovers():
     assert _val(w, "rx_power_dbm", minutes(50)) < nominal_rx + 5    # back to nominal after the window
 
 
-@pytest.mark.verifies("FR-2320")
+@pytest.mark.verifies("FR-2330")
 def test_nominal_series_strips_attack_signature_for_compare_overlay():
     """The 'compare-to-nominal' ghost (§5.3) is baseline+noise with no attack term.
 
@@ -97,7 +97,7 @@ def test_nominal_series_strips_attack_signature_for_compare_overlay():
                - tel.sample(w, "SAT", "rx_power_dbm", minutes(50), SEED, nominal=True)["value"]) < 5
 
 
-@pytest.mark.verifies("FR-2320")
+@pytest.mark.verifies("FR-2330", "NFR-2410")
 def test_nominal_series_is_deterministic_and_read_only():
     w = _world()
     w.active_effects.append(ActiveEffect(target="SAT", outcome="deny", start=0, end=minutes(40),
@@ -108,7 +108,7 @@ def test_nominal_series_is_deterministic_and_read_only():
     assert s1 == s2 and w.model_dump_json() == before
 
 
-@pytest.mark.verifies("NFR-3050")
+@pytest.mark.verifies("FR-2330")
 def test_cyber_signature_ramps_fsw_errors_under_safe_mode():
     w = _world()
     enter_safe_mode(w.assets["SAT"].bus_state, now=0, cause="cyber")
@@ -119,7 +119,7 @@ def test_cyber_signature_ramps_fsw_errors_under_safe_mode():
     assert tel.sample(w, "SAT", "fsw_error_count", minutes(30), SEED)["status"] in ("yellow", "red")
 
 
-@pytest.mark.verifies("NFR-3050")
+@pytest.mark.verifies("FR-2330")
 def test_directed_energy_signature_drops_snr_and_heats_optics():
     w = _world()
     w.active_effects.append(ActiveEffect(target="SAT", outcome="degrade", start=0, end=minutes(40),
@@ -128,7 +128,7 @@ def test_directed_energy_signature_drops_snr_and_heats_optics():
     assert _val(w, "optics_temp_c", minutes(20)) > _val(_world(), "optics_temp_c", minutes(20)) + 6
 
 
-@pytest.mark.verifies("NFR-3050")
+@pytest.mark.verifies("FR-2330")
 def test_power_sag_and_kinetic_loss_of_signal():
     w = _world()
     w.assets["SAT"].bus_state.power.battery_soc = 0.1  # power-red
@@ -229,7 +229,7 @@ def test_telemetry_export_is_fog_scoped_per_requesting_cell():
     assert blue == white   # White sees any asset, exactly as /telemetry/{cell}/{asset} does
 
 
-@pytest.mark.verifies("FR-2320")
+@pytest.mark.verifies("FR-2320", "NFR-2410")
 def test_telemetry_export_is_read_only_and_deterministic():
     mgr, t0, _ = _export_mgr()
     now = mgr.sim.clock.now
@@ -293,7 +293,7 @@ def _paused_mgr():
     return mgr, mgr.ctx.start_epoch
 
 
-@pytest.mark.verifies("FR-2320")
+@pytest.mark.verifies("FR-2330")
 def test_series_pre_onset_matches_replay():
     """Scenario A — a bus anomaly at +600 s must not be back-dated onto pre-onset points."""
     mgr, t0, t_anom = _export_mgr()
@@ -307,7 +307,7 @@ def test_series_pre_onset_matches_replay():
     _assert_series_matches_replay(mgr, "ISR-EO-1", "battery_soc", t0, now, 7, nominal=True)
 
 
-@pytest.mark.verifies("FR-2320")
+@pytest.mark.verifies("FR-2330")
 def test_series_cyber_cpu_load_pre_onset_matches_replay():
     """Scenario B — a cyber-cause anomaly's CPU-load signature starts at its own onset."""
     mgr, t0 = _paused_mgr()
@@ -320,7 +320,7 @@ def test_series_cyber_cpu_load_pre_onset_matches_replay():
     assert max(pre) < min(post)
 
 
-@pytest.mark.verifies("FR-2320")
+@pytest.mark.verifies("FR-2330")
 def test_series_cleared_episode_stays_in_history():
     """Scenario C — a safe-mode episode that was later cleared must still show in history."""
     mgr, t0 = _paused_mgr()
@@ -334,7 +334,7 @@ def test_series_cleared_episode_stays_in_history():
     assert in_episode and all(p["status"] == "red" for p in in_episode)
 
 
-@pytest.mark.verifies("FR-2320")
+@pytest.mark.verifies("FR-2330")
 def test_series_destroyed_asset_not_los_before_kill():
     from spacesim.engine.effects import EffectInstance
     mgr, t0 = _paused_mgr()

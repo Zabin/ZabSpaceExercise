@@ -289,6 +289,372 @@ from the tests' declared origins. Review: [`reviews/requirements-update-bl-0322.
 - **Reason:** `BL-0322`.
 - **Source review issue:** U2.
 
+## Baseline-maintenance pass 1 (2026-10-24) — `01`, `02`, `03`
+
+Owner-decided and stale-note items from the backlog and the tranche-2 integration review
+([`reviews/integration-review-tranche-2-white-controls-saves-test-origins.md`](../reviews/integration-review-tranche-2-white-controls-saves-test-origins.md)
+F-02, F-07). No new capability: three new leaves restate behavior the build already ships or an owner
+decision already made. This repository has no standalone `03-requirements-review.md` (the
+requirements-review role is filled by [`reviews/requirements-review.md`](../reviews/requirements-review.md)
+and the per-batch reports in `reviews/`); this pass's review findings are recorded in "Review findings,
+pass 1" below instead of in a new file.
+
+### CHG-022
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added `FR-7450` (ISO-8601 UTC span bounds on the time-span exports), promoting candidate
+  `CR-22` (marked `PROMOTED` in place). Added `FR-7450` to the Related Requirements of `FR-2320`,
+  `FR-7410`, `FR-7420`. New RTM row; `CR-22` row annotated. Marked **not yet built**.
+- **Reason:** Owner decision on `BL-0181`, 2026-10-18 (human-readable timestamps).
+- **Source review issue:** CR-22.
+
+### CHG-023
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-1610` Acceptance Criteria amended from "detects more transiting objects" to the
+  gain/footprint trade with unchanged access windows; Notes record the history; Source Documents add
+  `BL-0215`.
+- **Reason:** Owner decision (A) on `BL-0215`, 2026-10-18; matches the build and `VR-1220`. Resolves
+  finding F2 of the load-validation batch.
+- **Source review issue:** F2 (load-validation batch).
+
+### CHG-024
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-4320` scope extended: refuse Blue, Red and Observer requests to fire, edit or cancel
+  an inject, create a session or a Vignette Creator draft, edit a draft (state, assets, seat
+  declaration), save a draft or session as a vignette or scenario, or trigger the Red AI step. Player
+  routes (orders, compute and preview helpers, cancel, recovery, SSN) and cell-scoped reads are
+  explicitly out of scope. Notes record that the original list is met (`IP-1068`) and the extension is
+  not yet built; a `07` package is owed. Rationale, Source Documents, Related Requirements, AC and
+  Postconditions updated.
+- **Reason:** `BL-0321`, `BL-0324`, `BL-0351`; `VR-1068` F1; integration review tranche 2 F-02.
+- **Source review issue:** F-02.
+
+### CHG-025
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-4310` and `FR-7220` Notes rewritten from "Not met as built" to "met as built" (with
+  the history kept); `FR-7230` Notes record the shipped save format. RTM: `FR-7220` Impl. Package
+  cell and `FR-7230` Future Feature cell (`FS-110`) made current; `NFR-2820`, `NFR-2830`, `NFR-2850`
+  and `NFR-3840` cells updated from "COMPLETE, awaiting 09" to `VERIFIED` (`VR-1330`), and
+  `NFR-2820` now names `IP-1331`–`IP-1333`.
+- **Reason:** `BL-0325`, `BL-0329`, `BL-0356` (F-07). The GDS-10 `FR-W3` row and GDS-07 §6 are not
+  this stage's to edit (see findings).
+- **Source review issue:** F-07.
+
+### CHG-026
+- **Files:** `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `NFR-1510` and `NFR-2830` (and the `NFR-2200` cross-reference) no longer say "major"
+  release: the dependency lock and the test relevance audit apply at every release and are reviewed
+  at the end of the pipeline in `11-release-readiness`. Priorities read "Must (at each release)".
+- **Reason:** Owner decision on `BL-0318`, 2026-10-24.
+- **Source review issue:** BL-0318.
+
+### CHG-027
+- **Files:** `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `NFR-3810` reworded: a retired document is deleted (no archive folder, no register
+  file); git history is the archive; no live document names a deleted path or ID in plain text,
+  except the supersession note that records the deletion. Title and RTM row updated.
+- **Reason:** Owner decision on `BL-0319`, 2026-10-24. The register option is not adopted; the list
+  of deleted paths lives in the supersession note.
+- **Source review issue:** BL-0319.
+
+### CHG-028
+- **Files:** `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `NFR-3830` narrowed from five named ledgers to the three pairs the check compares
+  (Master Build Plan vs package index; `architecture/INDEX.md` §1 vs `ROADMAP.md`; feature index vs
+  spec headers). `NFR-3820` is unchanged; Notes route the feature-index naming question to `05`.
+- **Reason:** `BL-0320`.
+- **Source review issue:** BL-0320.
+
+### CHG-029
+- **Files:** `02-non-functional-requirements.md`
+- **Change:** Status note on `NFR-2820` (marker and backfill met; allow-list empty). No leaf added.
+- **Reason:** `BL-0356` (F-07).
+- **Source review issue:** F-07.
+
+### CHG-030
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added leaves for two shipped behaviors with an approved source: `FR-2330` (telemetry
+  attack signatures as symptoms and the nominal comparison trace; `R121`, GDS-08 §7.3) and `FR-4460`
+  (the reusable inject library; GDS-05 FR-W4, `ADR-0036`). Added candidates `CR-29`–`CR-33`
+  (defender countermeasure modifiers; ops-fidelity levels; activity-feed lanes; scene orbital
+  elements and subsolar point; SIGINT geolocation scaling) — shipped, but no approved input commits
+  the system to them. Recorded, in the candidates section, the items decided to be implementation
+  detail or already covered.
+- **Reason:** `BL-0342`, `BL-0345`, `BL-0348`.
+- **Source review issue:** BL-0342, BL-0345, BL-0348.
+
+### Review findings, pass 1
+
+| # | Finding type | IDs | Description | Severity | Recommendation |
+|---|---|---|---|---|---|
+| P1-1 | Not built | `FR-4320` (extension), `FR-7450` | The extension and the ISO-8601 leaf are baselined ahead of the build. | Medium | `07` remediation package for the route guards (`BL-0324`, `BL-0351`); `06`/`07` for `FR-7450`. |
+| P1-2 | Stale record | GDS-10 `FR-W3` row; GDS-07 §6; GDS-09 §4/OQ1 | Still carry "not met as built" wording. Outside `docs/requirements/`. | Low | `03-architecture-design-synthesis` (GDS-07, GDS-10); `10-integration-review` (GDS-09), per `BL-0329`, `BL-0356`. |
+| P1-3 | Inconsistent evidence | `BL-0321`/`BL-0324`/`BL-0351` | The backlog rows read `DEFERRED`/`SCHEDULED`, not `DECIDED`; the scope extension was applied on the caller's instruction that the owner decided it. | Low | `00-pipeline-manager` to record the decision. |
+| P1-4 | Requirement lacking tests | `FR-3410`, `FR-3510`, `FR-3520`, `FR-4710`, `FR-4720`, `FR-6110`, `FR-6220`, `FR-6410`, `FR-6610`, `FR-7110`, `NFR-1100`, `NFR-1200`, `NFR-1400`, `NFR-1510`, `NFR-2000`, `NFR-2100`, `NFR-2300`, `NFR-2400`, `NFR-2500`, `NFR-2600`, `NFR-2800`, `NFR-2900`, `NFR-3000`, `NFR-3040`, `NFR-3060`, `NFR-3200`, `NFR-3300`, `NFR-3500`, `NFR-3600`, `NFR-3810` | The origin report lists these baseline leaves as named by no test. Several are Inspection/Analysis leaves (`NFR-1510`, `NFR-3500`, `NFR-3600`, `NFR-3810`), expected to have none. No leaf was changed. | Low | `08` retag/new tests for the Test-method leaves; `11-release-readiness` relevance audit (`NFR-2830`) for the rest. |
+| P1-5 | Missing requirement (candidate) | `CR-29`–`CR-33` | Shipped behavior with no approved source. | Low | Owner request via `00-intake`, or `03` to author the source statement, before baselining. |
+| P1-6 | Ambiguity | `NFR-3820` | Names `INDEX.md`; `docs/features/feature-index.md` is unchecked. | Low | `05-feature-decomposition` (rename or widen), `BL-0320`. |
+| P1-7 | Code lags requirement | `NFR-3810` | The integration test's docstring still says the check waits on `BL-0319`; no test names the leaf. | Low | `08` with `BL-0292`'s deletion sweep. |
+
+---
+
+## Baseline-maintenance pass 2 (2026-10-24) — `01`, `03`
+
+Record of shipped or verified behaviour only, plus two rules the integration review of tranche 3
+([`reviews/integration-review-tranche-3-release-push-remediation.md`](../reviews/integration-review-tranche-3-release-push-remediation.md))
+found unowned (`M-2`, `L-4`, `L-7`). No new capability.
+
+### CHG-031
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added `FR-4330` (time control bounded to the exercise span: rewind in `[start_epoch,
+  now]`, rewind-to-start is the start epoch, undo with nothing to undo refused, advance bounded to the
+  same span). Rewind, undo and the save-side cap are met as built; the **advance bound is marked
+  required, not yet built** (`IP-1076` will build it). New RTM row.
+- **Reason:** `M-2`, `L-1`, `L-7`; `IP-1074`, `IP-1075`, `IP-1103`.
+
+### CHG-032
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-7230` Acceptance Criteria gain the `final_time` span check (start..start+366 days,
+  refused before replay, bounds inclusive); Notes record it met as built (`IP-1103`). `FR-4310`
+  Acceptance Criteria and Related Requirements point to `FR-4330`.
+- **Reason:** `L-7`; `IP-1103`, `VR-1103`.
+
+### CHG-033
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added `FR-7340` (AAR playback controls obey the requesting seat: White any viewpoint, a
+  player seat only its own, Observer reads but cannot change). **Required, not yet built.** `FR-7330`
+  and `FR-4320` cross-reference it. New RTM row.
+- **Reason:** `L-4`; `VR-1072` F3.
+
+### CHG-034
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-4320` Notes: "the extension is not yet built" rewritten as met as built (`IP-1072`,
+  `VR-1072`; seat assignment and Observer designation since `IP-1074`), history kept.
+- **Reason:** Stale after `IP-1072`.
+
+### CHG-035
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Impl. Package cells of `FR-4310`, `FR-4320`, `FR-7220`, `FR-7230`, `NFR-1600`,
+  `NFR-3020`, `NFR-3030`: `IP-1072`, `IP-1073`, `IP-1074`, `IP-1075`, `IP-1102` changed from
+  `COMPLETE` to `VERIFIED` with their VR. Two stale `COMPLETE ... awaiting 09` cells for `IP-1261`/
+  `IP-1262` (`FR-2320`-family and ephemeris rows) were not touched; they are outside this tranche.
+- **Reason:** Integration review tranche 3 (stale status text); ledger says `VERIFIED`.
+
+### CHG-036
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
+- **Reason:** `NFR-2850`.
+
+### Review findings, pass 2
+
+| # | Finding type | IDs | Description | Severity | Recommendation |
+|---|---|---|---|---|---|
+| P2-1 | Not built | `FR-4330` (advance bound), `FR-7340` | Both rules are baselined ahead of the build. | Medium | `07` package `IP-1076` (advance bound, backwards step/advance 400); a `07` package for playback seat checks. |
+| P2-2 | Test tagging | `FR-4330`, `FR-7340` | Existing rewind/undo/save-span tests name `FR-4310`/`FR-7230`/`NFR-1600`, not `FR-4330`. | Low | `08` retag with `IP-1076`. |
+| P2-3 | Stale record | `IP-1261`, `IP-1262` RTM cells | Still say `COMPLETE ... awaiting 09`. | Low | `00-pipeline-manager`: confirm ledger status, then `04` next pass. |
+| P2-4 | Owner question | rewind vs running clock (`L-6`); 366-day cap configurable? | Not decided; left out of the leaves. | Low | Project owner. |
+
+---
+
+## Baseline-maintenance pass 3 (2026-10-24) — `01`, `02`, `03`
+
+Release-preparation pass on the owner's decisions of 2026-10-24 and the `BL-0342`/`BL-0345`/`BL-0348`/
+`BL-0369` coverage gaps. Behaviour already shipped and verified, plus one policy restatement. No new
+capability.
+
+### CHG-037
+- **Files:** `02-non-functional-requirements.md`
+- **Change:** `NFR-1510` Description, Rationale, Metric and Notes restated as the owner's procedure: at each
+  release readiness check the latest dependency versions, try updating to them, validate with the full
+  suite in both modes, fix or hold back what breaks, then lock exact versions in the committed
+  `requirements.lock` at the repository root; minimum versions only during development; "major" stays dropped.
+- **Reason:** Owner decision, 2026-10-24: "Pin each release but check if the most up to date versions break
+  anything and attempt to update to them before re-pinning."
+
+### CHG-038
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-4330` Notes: advance bound, backwards/non-finite refusal and running-clock stop recorded as
+  met as built (`IP-1076`, `VR-1076`); rewind and undo as met (`IP-1074`, `IP-1075`); the pass-2 "required,
+  not yet built" text marked superseded. New statement that whether a rewind pauses a running clock is
+  unspecified, either is conformant, current behavior keeps it running, and it is not release-blocking.
+- **Reason:** `IP-1076` `VERIFIED`; owner: the clock "can pause on rewind but doesn't matter" (closes `L-6`).
+
+### CHG-039
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-7340` Notes recorded as met as built (`IP-1077`, `VR-1077`); `FR-4320` Notes cross-reference
+  made current.
+- **Reason:** `IP-1077` `VERIFIED`.
+
+### CHG-040
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-7230` Acceptance Criteria extended with the 100,000-entry event-log cap (both log shapes,
+  refused before parsing or replay, exactly the cap passes) and the unusable-save refusals; Notes record them
+  as met as built (`IP-1081`, `IP-1102`, `IP-1103`).
+- **Reason:** `IP-1081` `VERIFIED`; `NFR-3710` states the cap, the leaf did not.
+
+### CHG-041
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added `FR-1140` (simulated time as integer microseconds; ISO-8601 only at the boundary).
+- **Reason:** `BL-0369`; approved source GDS-07 §1, GDS-09 §3.
+
+### CHG-042
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added `FR-7350` (after-action report export as CSV and JSON).
+- **Reason:** `BL-0369`; approved sources GDS-07 §7, GDS-09 §3, `ADR-0033`/`ADR-0029`.
+
+### CHG-043
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** Added candidates `CR-34` (telemetry series history shape, pass-gating of historical points;
+  open design question `BL-0171`) and `CR-35` (space-weather severity names and coercion). Recorded the
+  disposition of all twelve `BL-0369` gap areas in the candidates section.
+- **Reason:** `BL-0369`; no approved source commits the system to either behavior.
+
+### CHG-044
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Impl. Package and Future Feature cells of `FR-4330` (`IP-1076` `VERIFIED`, `FS-106` v2.4) and
+  `FR-7340` (`IP-1077` `VERIFIED`, `FS-107`); the `FR-4310`/`FR-4320` notes made current. Stale "`COMPLETE`,
+  awaiting `09`" cells for `IP-1081`, `IP-1261`, `IP-1262`, `IP-1210`, `IP-1171`, `IP-1063` set to `VERIFIED`
+  per the Master Build Plan (closes `P2-3`).
+- **Reason:** Ledger agreement (`NFR-3830`).
+
+### CHG-045
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
+- **Reason:** `NFR-2850`.
+
+### CHG-046
+- **Files:** `01-functional-requirements.md`, `docs/architecture/03-architecture.md`, `04-domain-model.md`, `adr/ADR-0007`, `adr/ADR-0036`, `adr/INDEX.md`, `architecture/INDEX.md`
+- **Change:** `FR-5310`'s "every referenced template exists" clause and its only Acceptance Criterion
+  replaced: assets, sensors and effects are authored inline and the content model has no template
+  reference; the criterion now tests an unresolvable `roles_needed` reference by name. GDS-03 §2.5 (and
+  its diagram), GDS-04 §1.2 Asset persistent state and `ADR-0007` amended to the inline-authoring model;
+  `ADR-0036` set `Accepted` (Option A; Option D noted as an additive authoring aid).
+- **Reason:** Owner decision on `BL-0233` (2026-10-18), applied 2026-10-31.
+- **Source review issue:** BL-0233.
+
+### CHG-047
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-3520` Postcondition: the operator-seat role is checked when an order is submitted
+  against the assignment in force then; a later rebinding applies to later submissions; omitting the
+  operator seat skips the role gate. Note added; `FS-116`'s "execution time" statements listed for `06`.
+- **Reason:** Owner decision on `BL-0388`, 2026-10-31: accept as v1 behaviour.
+- **Source review issue:** BL-0388.
+
+### CHG-048
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-7450` made implementation-ready: the three time-span exports enumerated (telemetry
+  CSV, truth ephemeris, cell-observed ephemeris, each with its RIC companion); exact ISO-8601 form
+  (extended, 1-6 fractional digits, `Z` or `+00:00`); naive, non-zero-offset, over-precise and
+  date-only strings refused; integer microseconds stay accepted; mixed pairs allowed; the former
+  open question on naive timestamps closed. Four acceptance criteria. RTM cell notes build-before-release.
+- **Reason:** Owner decision 2026-10-31 (build before release); `BL-0181`/`CR-22`.
+- **Source review issue:** BL-0181.
+
+### CHG-049
+- **Files:** `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `NFR-3810` made checkable: defines a retired document; declaration is a `Retired
+  documents` section in the `INDEX.md` of the folder that held it (path, former ID, date, successor);
+  check fails on a declared path still present, a live reference outside the section, or an incomplete
+  row. Dependency on `NFR-3820` added; two design choices flagged for the owner in Notes.
+- **Reason:** Owner decisions `BL-0319` (2026-10-24) and 2026-10-31 (build before release).
+- **Source review issue:** BL-0319.
+
+### CHG-050
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
+- **Reason:** `NFR-2850`.
+
+### CHG-051
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** New leaf `FR-7240` (a save whose `save_format` is present and not a supported value,
+  currently only `2`, is refused before replay with an error naming the supported formats, and no
+  session is created; absent = legacy, unchanged). Marked met as built by `IP-1094` (`VERIFIED`,
+  `VR-1094` v2.0). Sourced to GDS-07 §6 and `FR-7230`. RTM row, ADR-0022 and INT-0012 lists added.
+- **Reason:** Release assessment rc5 `S-1` routed "is a format check required?" to `04`; `IP-1094`
+  built the check with no leaf stating it. The tests tag `FR-7230` (retag candidate, see pass 5 findings).
+- **Source review issue:** rc5 `S-1`.
+
+### CHG-052
+- **Files:** `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `NFR-3810` Notes: marked met as built by `IP-1092` (`VERIFIED`, `VR-1092` v2.0); records the
+  owner-accepted choices (declaration in a `Retired documents` section of the `INDEX.md` of the folder
+  that held the file; a retired root-level document declared in `docs/INDEX.md`'s section with its
+  repo-root path, the root having no `INDEX.md`). RTM Impl. cell moved from `COMPLETE` to `VERIFIED`.
+- **Reason:** Owner acceptance in the 04/06 passes; `IP-1092` verified.
+- **Source review issue:** BL-0319, `FS-135` OQ6.
+
+### CHG-053
+- **Files:** `01-functional-requirements.md`, `02-non-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-7450` marked met as built by `IP-1089` (`VERIFIED`, `VR-1089` v2.0) in its own Notes and in
+  `FR-1140`'s Notes (which said "not yet built"); `NFR-1510` Notes: lock procedure met by `IP-1093`
+  (`VERIFIED`, `VR-1093`; `requirements.lock` re-pinned, `test_release_lock` pins floors to the lock).
+  RTM Impl. cells set to the `VERIFIED` versions; `FR-7450`'s "build before release" Feature cell
+  annotation removed.
+- **Reason:** Packages verified 2026-10-31; closes pass 3 finding `P3-3`.
+- **Source review issue:** `P3-3`.
+
+### CHG-054
+- **Files:** `01-functional-requirements.md`
+- **Change:** `FR-5310` Notes: the `BL-0233` option A amendment (template clause removed) recorded as
+  met as built; the load gate (`IP-1310`, `VERIFIED`, `VR-1310`) checks the references the content model
+  has and there is no template construct to check (`ADR-0036`).
+- **Reason:** Closes the pass 4 follow-up on the template clause.
+- **Source review issue:** BL-0233.
+
+### CHG-055
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `CR-31` promoted to new leaf `FR-6230` (activity feed is fog-filtered): White's full feed; Blue
+  and Red see only their own orders and their own started effects as category + symptom, never a
+  template name, never any inject row (White's schedule, edits, cancels); unknown cells refused;
+  Observer follows its designation; fail-closed filter. Cites GDS-08 §4 (Timeline view) and GDS-09 §3
+  (`GET /activity/{cell}`). Met as built by `IP-1088` (`VERIFIED`, `VR-1088` v3.0).
+- **Reason:** Grounding exists in the GDS ladder for the feed, its lanes and its fog-filtering; the
+  row rules are derived from `FR-6210`. **Routed to `03`/`06`:** GDS-08/GDS-09 do not state the per-lane
+  row rules, and no `FS-` describes the feed.
+- **Source review issue:** `BL-0345`, integration review `M-1`.
+
+### CHG-056
+- **Files:** `01-functional-requirements.md`, `03-requirements-traceability-matrix.md`
+- **Change:** `FR-3520` Notes: met as built by `IP-1160` (v3.0, `VERIFIED`, `VR-1160`); the verifier's `M-3`
+  (submission-time check) and `L-1` (a seat-less submission skips the role gate) stated as the accepted
+  deviations, the acceptance criterion scoped to a submission that names its seat. Postconditions
+  already matched. `FR-7440` Notes: the "remediation package owed" sentence superseded (`IP-1212`
+  `VERIFIED`). RTM Impl. cells that still said `COMPLETE`/"awaiting verification" for `IP-1082`,
+  `1083`, `1085`, `1086`, `1087`, `1094`, `1160` set to `VERIFIED` with their `VR-` ids.
+- **Reason:** All 94 packages are `VERIFIED`; pass 5 sweep of "required, not yet built" and `COMPLETE` cells.
+  `FR-4330` (advance bound, `IP-1076`) and `FR-7340` (`IP-1077`) already read met as built in text and
+  RTM Impl. cells; no change needed.
+- **Source review issue:** `BL-0388`, `VR-1160` `M-3`/`L-1`.
+
+### CHG-057
+- **Files:** `03-requirements-traceability-matrix.md`
+- **Change:** Test column regenerated with `python3 -m pytest --origin-report=rtm` (not hand edited).
+  Pass 5 findings table added below (requirements no test names, classified).
+- **Reason:** `NFR-2850`; pass 5 task 7.
+
+### Review findings, pass 3
+
+| # | Finding type | IDs | Description | Severity | Recommendation |
+|---|---|---|---|---|---|
+| P3-1 | Stale text outside scope | `docs/features/FS-133-test-origin-traceability.md` (status line; `BL-0299` "locked at major releases") | Still says the lock is made "at the first major release". `NFR-1510` no longer says "major". | Low | `06` (feature specification FS-133). |
+| P3-2 | Requirement lacking tests | `FR-1140`, `FR-7350` | New leaves; existing tests of these behaviors carry other tags. | Low | `08` retag (`test_clock_and_time.py`, `test_web.py` AAR export tests). |
+| P3-3 | Not built | `FR-7450` | Still baselined ahead of the build. | Medium | `06`/`07` package (unchanged from pass 1, `P1-1`). |
+| P3-4 | Open design question | `CR-34` / `BL-0171` | Pass-gating of historical telemetry points; `FR-2320` calls the export pass-gated but it is not. | Low | Project owner, then `03`/`04`. |
+| P3-5 | Owner decision recorded | `FR-4330` | Rewind versus a running clock: unspecified, not release-blocking. | Info | None. |
+| P3-6 | Open | `FR-4330` | Whether the 366-day span is configurable. | Low | Project owner. |
+
+
+### Review findings, pass 5
+
+`python3 -m pytest --origin-report` lists 32 requirements no test names (0 untagged tests). Classification:
+
+| # | Class | IDs | Description | Recommendation |
+|---|---|---|---|---|
+| P5-1 | Inspection / demonstration / analysis by method (21) | `FR-4710`, `FR-4720`, `FR-6110`, `FR-6610`, `FR-11110`, `FR-11120`, `FR-11210`, `FR-11310`, `FR-11320`, `FR-11410`, `NFR-1200`, `NFR-1400`, `NFR-2000`, `NFR-2100`, `NFR-2900`, `NFR-3000`, `NFR-3040`, `NFR-3060`, `NFR-3300`, `NFR-3500`, `NFR-3600` | Verification Method is Inspection, Demonstration or Analysis, so no tagged test is expected. | None; evidence is a review or a demonstration record. |
+| P5-2 | Retag candidates (10) | `FR-1140`, `FR-7350` (pass 3 `P3-2`), `FR-3410`, `FR-7110`, `NFR-2400`, `NFR-2500`, `NFR-2600`, `NFR-3200`, `FR-7240`, `FR-6230` | Test-method leaves whose behaviour is exercised by existing tests that carry other tags (`test_determinism.py`, `test_aar.py`, `test_orders.py`, the TLE/OMM import tests, `test_save_format_gate.py` tags `FR-7230`, `test_activity_fog_matrix.py` and `test_cell_activity.py` tag `FR-6210`/`FR-6220`). | `08` retag; the tests' own file lists the mapping. |
+| P5-3 | Self-referential | `NFR-2800` | Method is the suite itself (`python3 -m pytest` green, gated). | Accept as met by the gate, or `08` tags `test_determinism.py`/`test_import_guard.py`. |
+| P5-4 | Gap (partial, already stated in the leaf) | `NFR-2410` | Has tagged tests per module; the cross-cutting hash-before/after test over every read path is still owed. | `07`/`08` package. |
+| P5-5 | Routed | `FR-6230` | GDS-08 §4 and GDS-09 §3 do not state per-lane row rules; no `FS-` describes the activity feed. | `03` (add to GDS-08), `06` (specify). |
+| P5-6 | Routed | `FS-110`, `FS-116`, `FS-121`, `FS-135` | `FS-116` "execution time" wording (`FR-3520`); `FS-135` check 2 and Open Questions 1, 4, 5, 6 to align with the accepted `NFR-3810` choices; `FS-110` to state the save-format gate (`FR-7240`). | `06`. |
+
 ---
 
 ## Findings deliberately left unactioned (with reason)

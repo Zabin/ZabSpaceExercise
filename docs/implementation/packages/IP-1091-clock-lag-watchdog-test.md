@@ -2,9 +2,8 @@
 
 > **Package ID:** IP-1091
 > **Version:** 1.0
-> **Status:** 🟢 READY — authored 2026-10-23 by `07-implementation-planning`, pipeline run #224.
-> Every dependency is `VERIFIED`.
-> **Authorization (MSTR-006 §3):** **not yet given.**
+> **Status:** VERIFIED 2026-10-24 ([VR-1091](../verification/VR-1091-clock-lag-watchdog-test.md), fresh session; READY before that) — authored 2026-10-23 by `07-implementation-planning`, pipeline run #224. Every dependency is `VERIFIED`.
+> **Authorization (MSTR-006 §3):** **given.** Owner-authorized 2026-10-23 (master build plan row; `run #230` ledger note). Authoring is not itself the authorization; that recorded decision is.
 > **Dependencies:** [IP-1090](IP-1090-multiplayer-session-transport.md) (the lazy clock and the
 > watchdog), `VERIFIED`.
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md), [packages/INDEX.md](INDEX.md),

@@ -11,12 +11,13 @@ from __future__ import annotations
 import math
 import threading
 import time as _time
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 from spacesim.content.vignette import Vignette, build_world, evaluate_objectives
 from spacesim.engine import telemetry
 from spacesim.engine.access import AccessProvider, COMMAND_UPLINK, TELEMETRY_DOWNLINK
 from spacesim.engine.bus import enter_safe_mode, exit_safe_mode
+from spacesim.engine.buscommands import BUS_VERBS, PAYLOAD_VERBS
 from spacesim.engine.busmodel import BusSystem
 from spacesim.engine.custody import Track
 from spacesim.engine.entities import Asset
@@ -31,6 +32,18 @@ from spacesim.session.cells import CellController
 from spacesim.session.scene import build_scene
 
 BUS_TICK_PERIOD_S = 300.0
+
+# IP-1160 (FR-3510/FR-3520, ADS-3500 §3) — which operator role a bus/payload/defense verb belongs to.
+# There is no third "defense" scope: every verb is `bus` or `payload`. `BUS_VERBS`/`PAYLOAD_VERBS`
+# are imported, not copied; the eight `DEFENSE_VERBS` members are each named once (six bus, two
+# payload). The partition against `COMMAND_VERBS` is pinned by a test, not an import-time assert.
+ROLE_SCOPE_BY_VERB: dict[str, str] = {
+    **{v: "bus" for v in BUS_VERBS},
+    **{v: "bus" for v in ("def.frequency_hop", "def.patch_cyber", "def.set_threat_warning",
+                          "def.maneuver_evade", "def.escort_posture", "def.disperse")},
+    **{v: "payload" for v in PAYLOAD_VERBS},
+    **{v: "payload" for v in ("def.harden", "def.set_deception_mode")},
+}
 
 # IP-1063 (BL-0129/BL-0188) — the inject effect types `SessionManager._apply_inject_effects`
 # dispatches. Extend this (and `_INJECT_REQUIRED_KEYS`) alongside that dispatch: an effect type
@@ -129,10 +142,66 @@ def validate_inject_effects(world: WorldState, effects, *, check_targets: bool, 
     return problems
 
 
+def _is_int(v) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def _row_problem(key: str, r: dict) -> Optional[str]:
+    """IP-1103 (Design Decision 1) — why one ``pending``/``orders``/``ssn_requests`` row is unusable,
+    or None. ``orders`` and ``ssn_requests`` rows are built into the same model ``from_state`` builds
+    (so the check cannot drift from the loader), then type-checked, since the models are plain
+    dataclasses that accept any value."""
+    if key == "pending":
+        if not _is_int(r["t"]):
+            return "'t' must be an integer"
+        if not isinstance(r["kind"], str) or not r["kind"]:
+            return "'kind' must be a non-empty string"
+        if r.get("payload") is not None and not isinstance(r["payload"], dict):
+            return "'payload' must be an object"
+        return None
+    try:
+        obj = Order(**r) if key == "orders" else SSNRequest(**r)
+    except TypeError as exc:
+        return str(exc)
+    def strs(*names):
+        return next((n for n in names if not isinstance(getattr(obj, n), str)), None)
+    if key == "orders":
+        bad = strs("cell", "actor", "action", "status", "id")
+        if bad:
+            return f"'{bad}' must be a string"
+        if obj.cell not in ("blue", "red"):
+            return "'cell' must be 'blue' or 'red'"
+        if obj.target is not None and not isinstance(obj.target, str):
+            return "'target' must be a string or null"
+        if not isinstance(obj.params, dict):
+            return "'params' must be an object"
+        if not _is_int(obj.issued_at):
+            return "'issued_at' must be an integer"
+        return None
+    bad = strs("id", "cell", "intent", "target", "regime", "priority", "state")
+    if bad:
+        return f"'{bad}' must be a string"
+    if obj.cell not in ("blue", "red"):
+        return "'cell' must be 'blue' or 'red'"
+    for n in ("collect_at", "product_at"):
+        v = getattr(obj, n)
+        if v is not None and not _is_int(v):
+            return f"'{n}' must be an integer or null"
+    return None
+
+
+SUPPORTED_SAVE_FORMATS = (2,)   # IP-1094 — single source for the validate_save format gate (legacy = key absent)
 SAVE_FORMAT = 2   # IP-1101 — absent (legacy) saves reload their vignette by id
 
 
 class SessionManager:
+    # IP-1081 (NFR-3710) — a loaded save's event-log size cap (audit Jun 2026 §D7); the
+    # constant's home, aliased on ``InProcessSession``.
+    MAX_EVENTLOG_REPLAY_ENTRIES = 100_000
+    # IP-1082 (NFR-1600, FR-4330; Design Decision 3) — the highest real-time clock multiplier
+    # ``set_clock`` accepts: headroom over the 600x NFR-1100 names.
+    MAX_CLOCK_RATE = 10_000
+
     def __init__(
         self, vignette: Vignette, overrides: Optional[dict] = None, seed: int = 0,
         classification: Optional[str] = None,
@@ -149,10 +218,16 @@ class SessionManager:
         # authoring. Same placement rationale as role_assignments above: UI-setup state, not
         # exercise state.
         self.seats_declared: dict[str, list[str]] = {}
+        # IP-1102 (FR-7220) — the vignette exactly as authored, captured before ``build_world``
+        # (which stamps defaults such as an orbit epoch onto the shared model in place).
+        self._authored_content = vignette.model_dump(mode="json")
         self.world, self.ctx = build_world(vignette, overrides)
         # IP-1101 — the assets the loaded vignette itself produced; anything later in the replay
         # baseline is a White Cell force edit and is written into the save's content portion.
         self._built_asset_ids = frozenset(self.world.assets)
+        # IP-1102 (FR-7220) — each built asset's form at construction, to tell a pre-start edit
+        # (differs from the baseline later) from an untouched asset (left verbatim in content).
+        self._built_asset_forms = {i: a.model_dump() for i, a in self.world.assets.items()}
         self.load_warnings: list[str] = []   # IP-1101 — set by from_state; never part of the world
         self.sim = Simulation(self.world, seed=seed)
         self.sim.register_handler("inject", self._h_inject)
@@ -236,6 +311,68 @@ class SessionManager:
         """A "both" assignment covers any requirement; otherwise the roles must match exactly."""
         return assigned == "both" or assigned == required
 
+    # -- role-scoped command enforcement (IP-1160, FR-3510/FR-3520) -------------------------------
+    # "seat" here is the OPERATOR seat (the key of ``role_assignments``), not the console seat
+    # (``cell``). It is client-asserted like every seat in the LAN trust model: omitting it skips
+    # the gate; this adds a structural rejection rule, not authentication.
+    @staticmethod
+    def _entry_covers(name: str, asset) -> bool:
+        """A roles_needed entry / a binding names an asset by its id or by its ``group``."""
+        return name == asset.id or (asset.group is not None and name == asset.group)
+
+    def _roles_needed_covers(self, asset) -> bool:
+        return any(self._entry_covers(r.asset_or_constellation, asset) for r in self.vignette.roles_needed)
+
+    def role_scope_check(self, seat: Optional[str], order: Order) -> Optional[str]:
+        """Pure. A reason code if this operator ``seat`` may not send ``order``, else ``None``.
+        Gate applies only to a ``command`` (bus/payload/defense verb) on a known asset that some
+        ``roles_needed`` entry covers, and only when a seat is named."""
+        if not seat or order.action != "command":
+            return None
+        params = order.params
+        verb = params.get("verb") if isinstance(params, dict) else None
+        if verb is not None and not isinstance(verb, str):
+            return None                  # a malformed verb is the engine's `invalid_param`, never a 500
+        asset = self.sim.world.assets.get(order.actor)
+        if asset is None or not self._roles_needed_covers(asset):
+            return None
+        if order.cell != "white" and asset.owner != order.cell:
+            return None          # ownership first (VR-1160 M-4): the engine answers `not_owner`, seat-independent
+        binding = self.role_assignments.get(seat)
+        if (binding is None or not self._entry_covers(binding["asset_or_constellation"], asset)
+                or binding["role"] not in ("bus", "payload", "both")):
+            return "role_scope_not_assigned"
+        scope = ROLE_SCOPE_BY_VERB.get(verb) if verb is not None else None
+        if scope is None:
+            return None                                  # the engine answers unknown_command
+        if not self._role_covers(binding["role"], scope):
+            return "role_scope_out_of_scope"
+        return None
+
+    def role_scope_for(self, seat: Optional[str], cell: str = "white") -> dict:
+        """Read-only scope of one operator seat as seen from console seat ``cell``: the seat's
+        binding, the role-gated assets, and which of those it is bound to. Fog: a Blue/Red caller
+        sees only assets its own cell owns, and a binding that covers none of them is reported as
+        unbound (indistinguishable from no binding), so one cell learns nothing of the other's
+        assets or assignments. White sees every asset (facilitator)."""
+        seat = seat or ""
+        binding = self.role_assignments.get(seat)
+        assets = [a for a in self.sim.world.assets.values() if cell == "white" or a.owner == cell]
+        gated = sorted(a.id for a in assets if self._roles_needed_covers(a))
+        bound = sorted(a.id for a in assets if binding is not None and a.id in gated
+                       and self._entry_covers(binding["asset_or_constellation"], a))
+        if cell != "white" and not bound:
+            binding = None
+        return {"seat": seat, "bound": binding is not None,
+                "asset_or_constellation": binding["asset_or_constellation"] if binding else None,
+                "role": binding["role"] if binding else None,
+                "verbs": dict(ROLE_SCOPE_BY_VERB), "gated_assets": gated, "bound_assets": bound}
+
+    @staticmethod
+    def _role_refusal(reason: str) -> OrderAck:
+        # Not registered with OrderSystem: no order id, no event-log entry, nothing to replay.
+        return OrderAck(ok=False, id="", reason=reason, status="rejected")
+
     def staffing_report(self) -> list[dict]:
         """Every mandatory ``roles_needed`` entry with no covering seat assignment. Empty for a
         vignette that declares nothing (every vignette shipped before this package) — this method
@@ -310,16 +447,53 @@ class SessionManager:
         if not initial:
             for handle, ov in self._inject_overrides(from_t + 1).items():
                 if (ov["cancelled"] or ov.get("trigger") != "time" or ov.get("at") is None
-                        or ov["at"] <= from_t or self._inject_applied(handle, from_t + 1)):
+                        or ov["at"] < from_t or self._inject_applied(handle, from_t + 1)):
                     continue
                 self.sim.schedule(ov["at"], "inject",
                                   {"effects": ov["effects"], "inject_id": handle, "rev": ov["rev"]})
 
     # -- time control ----------------------------------------------------------
+    def _span_ceiling(self) -> int:
+        """IP-1076 (FR-4330) — the last instant a clock advance may reach: ``start_epoch`` plus the
+        same 366-day span a save may carry (``MAX_SAVE_SPAN_US``), so controls and save agree."""
+        return self.ctx.start_epoch + self.MAX_SAVE_SPAN_US
+
+    @staticmethod
+    def _require_finite(name: str, value) -> None:
+        """IP-1082 (NFR-1600, FR-4330) — the manager-level backstop behind the route layer's shared
+        non-finite check: a non-HTTP caller cannot poison a session with ``NaN``/``Infinity`` either."""
+        import math
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise ValueError(f"{name} must be a finite number (got {value!r}); state and clock unchanged")
+
     def step(self, dt_sim_s: float) -> None:
+        # IP-1076 (FR-4330, NFR-1600) — refuse a non-finite / negative / out-of-span step before
+        # the integer conversion (a huge float must not reach ``int()`` as an OverflowError).
+        if isinstance(dt_sim_s, bool) or not isinstance(dt_sim_s, (int, float)) \
+                or dt_sim_s != dt_sim_s or dt_sim_s in (float("inf"), float("-inf")):
+            raise ValueError(f"step must be a finite number of sim seconds (got {dt_sim_s!r})")
+        if dt_sim_s < 0:
+            raise ValueError(f"step cannot move time backwards (dt_sim_s={dt_sim_s}); use rewind")
+        if dt_sim_s * 1_000_000 > self.MAX_SAVE_SPAN_US:
+            raise ValueError(self._span_message(self.sim.clock.now + self.MAX_SAVE_SPAN_US + 1))
         self.advance_to(self.sim.clock.now + int(dt_sim_s * 1_000_000))
 
+    def _span_message(self, t: int) -> str:
+        days = self.MAX_SAVE_SPAN_US // (86400 * 1_000_000)
+        return (f"advance target {t} is beyond the exercise span "
+                f"(start_epoch + {days} days = {self._span_ceiling()}, sim microseconds); "
+                "state and clock unchanged")
+
     def advance_to(self, t: int) -> None:
+        # IP-1076 (FR-4330, NFR-1600) — an advance stays inside [now, start_epoch + 366 days];
+        # raised before any state changes. ``Simulation.advance_to`` is unchanged.
+        self._require_finite("advance target", t)
+        now = self.sim.clock.now
+        if t < now:
+            raise ValueError(f"advance target {t} is earlier than now={now}; "
+                             "time cannot move backwards (use rewind); state and clock unchanged")
+        if t > self._span_ceiling():
+            raise ValueError(self._span_message(t))
         self.sim.advance_to(t)
         self.world = self.sim.world
         # Re-anchor so a manual jump doesn't get instantly "undone" by a stale wall-clock anchor.
@@ -333,7 +507,15 @@ class SessionManager:
 
         Pausing folds the elapsed real time into the sim first, so the clock freezes at the
         correct sim instant. Resuming starts a fresh anchor from the current sim time.
+
+        IP-1082 (NFR-1600, FR-4330) — refused with ``ValueError`` before anything changes: a
+        non-finite ``rate`` (even when pausing, where it is otherwise ignored), or, when running,
+        a ``rate`` outside ``(0, MAX_CLOCK_RATE]``.
         """
+        self._require_finite("clock rate", rate)
+        if running and not (0 < rate <= self.MAX_CLOCK_RATE):
+            raise ValueError(f"clock rate {rate!r} is outside (0, {self.MAX_CLOCK_RATE}] sim seconds per "
+                             "wall second; the clock is unchanged")
         if running:
             self._wall_anchor = _time.time()
             self._sim_anchor = self.sim.clock.now
@@ -359,6 +541,8 @@ class SessionManager:
             return
         elapsed_before = _time.time() - self._wall_anchor
         target = self._sim_anchor + int(elapsed_before * self._rate * 1_000_000)
+        # IP-1076 (FR-4330) — the running clock stops at the span's end (pinned, not paused).
+        target = min(target, self._span_ceiling())
         if target > self.sim.clock.now:
             wall_before = _time.time()
             self.sim.advance_to(target)
@@ -412,11 +596,21 @@ class SessionManager:
             "running": self._clock_running,
             "rate": self._rate,
             "now": self.sim.clock.now,
+            # IP-1074 — the exercise's first instant; the lower bound of a valid rewind.
+            "start_epoch": self.ctx.start_epoch,
             # Audit Jun 2026 §F2 — None when healthy, dict when lagging.
             "lag_warning": self._clock_lag_warning,
         }
 
     def rewind_to(self, t: int) -> None:
+        # IP-1074 (FR-4310, NFR-1600) — a rewind stays inside the exercise's own span
+        # [start_epoch, now]; raised before any state changes. ``Simulation.rewind_to`` is unchanged.
+        self._require_finite("rewind target", t)
+        lo, hi = self.ctx.start_epoch, self.sim.clock.now
+        if not (lo <= t <= hi):
+            raise ValueError(
+                f"rewind target {t} is outside the exercise span [start_epoch={lo}, now={hi}] "
+                "(sim microseconds); use start_epoch to rewind to the start")
         self.sim.rewind_to(t)
         self._rebind()
         if self.started:
@@ -427,8 +621,19 @@ class SessionManager:
             self._sim_anchor = self.sim.clock.now
 
     def undo_last(self, n: int = 1) -> None:
+        # IP-1075 (FR-4310, NFR-1600) — nothing to undo (or n < 1) is refused before any state
+        # changes; an undo that drops every entry lands on start_epoch, never before it.
+        self._require_finite("undo count", n)
+        if n < 1 or not self.sim.eventlog.entries:
+            raise ValueError("nothing to undo" if n >= 1 else f"undo count must be at least 1 (got {n})")
         self.sim.undo_last(n)
+        floor = self.ctx.start_epoch
+        if self.sim.clock.now < floor:      # belt and braces; the engine already lands >= start
+            self.sim._rebuild(stop_time=floor)
         self._rebind()
+        if self.started:
+            # Like rewind_to: the rebuild dropped the scheduler, so re-queue ticks/injects.
+            self._arm_schedule(self.sim.clock.now)
         if self._clock_running:
             self._wall_anchor = _time.time()
             self._sim_anchor = self.sim.clock.now
@@ -460,18 +665,24 @@ class SessionManager:
         self.ssn._counter = 0
 
     # -- intents ---------------------------------------------------------------
-    def issue_order(self, cell: str, order: Order) -> OrderAck:
+    def issue_order(self, cell: str, order: Order, seat: Optional[str] = None) -> OrderAck:
         order.cell = cell
+        refused = self.role_scope_check(seat, order)       # IP-1160 (FR-3520): before OrderSystem
+        if refused:
+            return self._role_refusal(refused)
         result = self.osys.issue(order)
         return self._order_ack(result)
 
-    def validate_order(self, cell: str, order: Order) -> OrderAck:
+    def validate_order(self, cell: str, order: Order, seat: Optional[str] = None) -> OrderAck:
         """Dry-run an order for the UI: would it be accepted, with which window/path, or why not?
 
         Read-only (no scheduling, no registry, no bookings) so the console can pre-disable buttons
         and preview the scheduled window without mutating the session (`docs/build-spec/07-operator-console.md` §16.9).
         """
         order.cell = cell
+        refused = self.role_scope_check(seat, order)       # IP-1160 (FR-3520): mirrors issue_order
+        if refused:
+            return self._role_refusal(refused)
         result = self.osys.dry_run(order)
         return self._order_ack(result)
 
@@ -486,6 +697,12 @@ class SessionManager:
             delivery_path=result.delivery_path,
         )
 
+    def _authoring_problems(self, asset: Asset) -> list[str]:
+        """IP-1086 — the shared asset validator (``content/vignette.py``) at this session's own
+        exercise start epoch (equal to the vignette's ``start_epoch_utc`` by construction)."""
+        from spacesim.content.vignette import asset_authoring_problems
+        return asset_authoring_problems(asset, self.ctx.start_epoch)
+
     def add_tle(self, asset_id: str, line1: str, line2: str, owner: str = "blue", kind: str = "satellite") -> tuple[bool, str]:
         """White-Cell force edit: add a real named satellite by TLE (validated via sgp4)."""
         if self.started:
@@ -499,16 +716,16 @@ class SessionManager:
         l1, l2 = line1.strip(), line2.strip()
         if not (l1.startswith("1 ") and l2.startswith("2 ") and len(l1) >= 69 and len(l2) >= 69):
             return False, "invalid TLE: expected two 69-char lines starting with '1 ' and '2 '"
-        try:
-            from sgp4.api import Satrec
-            sat = Satrec.twoline2rv(l1, l2)
-            err, _, _ = sat.sgp4(sat.jdsatepoch, sat.jdsatepochF)
-            if err != 0:
-                return False, f"invalid TLE: sgp4 error {err}"
-        except Exception as exc:  # malformed TLE is a normal rejection, not a crash
-            return False, f"invalid TLE: {exc}"
         orbit = OrbitState(source="tle", tle_line1=line1, tle_line2=line2, epoch=self.ctx.start_epoch)
-        self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
+        try:
+            asset = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
+        except Exception as exc:  # malformed TLE/asset is a normal rejection, not a crash
+            return False, f"invalid TLE: {exc}"
+        # IP-1086 — the shared validator: the TLE must propagate at the exercise start epoch.
+        problems = self._authoring_problems(asset)
+        if problems:
+            return False, f"invalid TLE for asset {asset_id!r}: " + "; ".join(problems)
+        self.world.assets[asset_id] = asset
         self.sim._initial_state = self.world.model_dump()  # re-baseline so rewind keeps the edit
         return True, ""
 
@@ -530,7 +747,9 @@ class SessionManager:
             from spacesim.engine.orbit import mean_to_true
             e = float(elements["e"])
             mean_anom_rad = math.radians(float(elements["mean_anomaly_deg"]))
-            ta_deg = math.degrees(mean_to_true(mean_anom_rad, e))
+            # An e outside [0, 1) has no mean->true conversion; leave ta at 0 and let the shared
+            # IP-1086 validator below refuse the object with the same reason every path gives.
+            ta_deg = math.degrees(mean_to_true(mean_anom_rad, e)) if 0.0 <= e < 1.0 else 0.0
             orbit = OrbitState(
                 source="kepler",
                 a_m=float(elements["a_m"]),
@@ -541,9 +760,13 @@ class SessionManager:
                 ta_deg=ta_deg,
                 epoch=self.ctx.start_epoch,
             )
+            asset = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
         except Exception as exc:  # malformed OMM elements are a normal rejection, not a crash
             return False, f"invalid OMM element set: {exc}"
-        self.world.assets[asset_id] = Asset(id=asset_id, owner=owner, kind=kind, orbit=orbit)
+        problems = self._authoring_problems(asset)   # IP-1086 — physical bounds, shared validator
+        if problems:
+            return False, f"invalid OMM element set for asset {asset_id!r}: " + "; ".join(problems)
+        self.world.assets[asset_id] = asset
         self.sim._initial_state = self.world.model_dump()
         return True, ""
 
@@ -618,6 +841,9 @@ class SessionManager:
                           location=GeoPoint(lat_deg=lat_deg, lon_deg=lon_deg))
         except Exception as exc:
             return False, f"invalid ground asset: {exc}"
+        problems = self._authoring_problems(asset)   # IP-1086 — same id-charset rule as every path
+        if problems:
+            return False, f"invalid ground asset {asset_id!r}: " + "; ".join(problems)
         self.world.assets[asset_id] = asset
         self.sim._initial_state = self.world.model_dump()
         return True, ""
@@ -656,6 +882,11 @@ class SessionManager:
             validated = {a["id"]: Asset.model_validate(a) for a in assets}
         except Exception as exc:
             return False, f"invalid asset list: {exc}"
+        # IP-1086 — never-valid values are refused at edit time; incompleteness (FR-5312) is not.
+        for aid, asset in validated.items():
+            problems = self._authoring_problems(asset)
+            if problems:
+                return False, f"invalid asset {aid!r}: " + "; ".join(problems)
         self.world.assets = validated
         self.sim._initial_state = self.world.model_dump()
         return True, ""
@@ -669,9 +900,13 @@ class SessionManager:
             return False, f"no such asset: {asset_id}"
         merged = {**asset.model_dump(), **patch, "id": asset_id}
         try:
-            self.world.assets[asset_id] = Asset.model_validate(merged)
+            edited = Asset.model_validate(merged)
         except Exception as exc:
             return False, f"invalid edit: {exc}"
+        problems = self._authoring_problems(edited)   # IP-1086
+        if problems:
+            return False, f"invalid edit of asset {asset_id!r}: " + "; ".join(problems)
+        self.world.assets[asset_id] = edited
         self.sim._initial_state = self.world.model_dump()
         return True, ""
 
@@ -762,11 +997,16 @@ class SessionManager:
         stations = [i for i, a in self.sim.world.assets.items()
                     if a.owner == asset.owner and a.location is not None]
         wins = []
-        for st in stations:
-            for ch in (COMMAND_UPLINK, TELEMETRY_DOWNLINK):
-                for w in ap.windows(st, asset_id, ch, now, hz):
-                    wins.append({"channel": ch, "via": st, "start": w.start, "end": w.end,
-                                 "quality": round(w.quality, 2)})
+        try:
+            for st in stations:
+                for ch in (COMMAND_UPLINK, TELEMETRY_DOWNLINK):
+                    for w in ap.windows(st, asset_id, ch, now, hz):
+                        wins.append({"channel": ch, "via": st, "start": w.start, "end": w.end,
+                                     "quality": round(w.quality, 2)})
+        except (ValueError, ArithmeticError):
+            # IP-1086 — an asset (or a peer in the scene) that cannot be propagated yields an empty,
+            # flagged answer rather than a 500; read-only, nothing is logged or mutated.
+            return {"asset": asset_id, "now": now, "windows": [], "error": "propagation_failed"}
         wins.sort(key=lambda w: w["start"])
         return {"asset": asset_id, "now": now, "horizon_s": horizon_s, "windows": wins[:limit]}
 
@@ -926,6 +1166,8 @@ class SessionManager:
         """FR-4450 — replace a pending inject's effects and/or (time injects only) fire time. The
         edited effects pass the IP-1063 whole-inject check; the edit is refused whole otherwise."""
         row = self._pending_row(handle)
+        if isinstance(at_sim_t, bool):
+            raise ValueError("edit rejected: at_sim_t must be a number, not a boolean")
         if effects is None and at_sim_t is None:
             raise ValueError("edit rejected: nothing to change (give effects and/or at_sim_t)")
         if at_sim_t is not None:
@@ -964,6 +1206,8 @@ class SessionManager:
 
     def _h_inject_admin(self, world: WorldState, payload: dict, rng) -> None:
         """IP-1066 — the logged White action; its only state change is a White-only message."""
+        if payload.get("action") == "schedule":     # IP-1083 — pure log record; no state, no message
+            return
         verb = "cancelled" if payload.get("action") == "cancel" else "edited"
         world.messages.append({"to": ["white"], "text": f"inject {payload.get('handle')} {verb}", "t": world.now})
 
@@ -979,12 +1223,26 @@ class SessionManager:
         baseline = copy.deepcopy(self.sim._initial_state)
         # IP-1101 (FR-7220, Design Decision 2) — the vignette as originally loaded, verbatim, with
         # each force-added asset appended to its owner's list in the vignette file format.
-        content = self.vignette.model_dump(mode="json")
+        content = copy.deepcopy(self._authored_content)
         buckets = {"blue": content["blue_forces"], "red": content["red_forces"],
                    "neutral": content["neutral_forces"]}
+
+        def _entry(adict: dict) -> dict:
+            return {k: v for k, v in adict.items() if k != "owner"}
+
+        # IP-1102 (FR-7220, BL-0352) — a built asset deleted or edited before start is reflected;
+        # an untouched one stays exactly as authored.
+        for aid in self._built_asset_ids:
+            now = baseline["assets"].get(aid)
+            if now is not None and now == self._built_asset_forms[aid]:
+                continue
+            for lst in buckets.values():
+                lst[:] = [e for e in lst if e.get("id") != aid]
+            if now is not None:
+                buckets.setdefault(now["owner"], []).append(_entry(now))
         for aid, adict in baseline["assets"].items():
             if aid not in self._built_asset_ids:
-                buckets[adict["owner"]].append({k: v for k, v in adict.items() if k != "owner"})
+                buckets[adict["owner"]].append(_entry(adict))
         return {
             "save_format": SAVE_FORMAT,
             "simulator_version": simulator_version(),
@@ -996,6 +1254,8 @@ class SessionManager:
             "seed": self.sim._seed,
             "final_time": self.sim.clock.now,
             "started": self.started,
+            # IP-1160 (FR-3520) — operator-seat bindings, so the role gate survives a resume.
+            "role_assignments": copy.deepcopy(self.role_assignments),
             "eventlog": self.sim.eventlog.model_dump(),
             "pending": [{"t": ev.t, "kind": ev.kind, "actor": ev.actor, "payload": ev.payload, "tag": ev.tag}
                         for ev in self.sim.scheduler.pending()],
@@ -1003,11 +1263,111 @@ class SessionManager:
             "ssn_requests": [vars(r) for r in self.ssn.requests.values()],
         }
 
+    # IP-1103 (Design Decision 2) — the longest span a save's replay may be asked to cover past the
+    # exercise start epoch: one calendar year (366 days) of sim time. It exists to stop a
+    # replay-cost request, not to model the exercise; it exceeds every shipped vignette's
+    # 4x-estimated-duration horizon (the longest is 120 min x 4 = 8 h) and any test save.
+    MAX_SAVE_SPAN_US = 366 * 86400 * 1_000_000
+
+    @staticmethod
+    def _check_final_time_span(final_time: int, vig) -> None:
+        from spacesim.engine import simtime
+        try:
+            start = simtime.from_iso(vig.start_epoch_utc)
+        except Exception:  # noqa: BLE001 — an unparseable epoch is refused by validate_vignette
+            return
+        if final_time < start:
+            raise ValueError("save key 'final_time' is earlier than the exercise start epoch")
+        if final_time > start + SessionManager.MAX_SAVE_SPAN_US:
+            raise ValueError("save key 'final_time' is beyond the maximum span "
+                             f"({SessionManager.MAX_SAVE_SPAN_US // (86400 * 1_000_000)} days past the start epoch)")
+
+    @staticmethod
+    def _eventlog_entry_count(log) -> "int | None":
+        """IP-1081 — entries in a save's event log, whichever shape carries them: a bare list, or
+        the ``{"entries": [...]}`` object ``save_state`` writes. ``None`` = not countable."""
+        if isinstance(log, list):
+            return len(log)
+        if isinstance(log, dict) and isinstance(log.get("entries"), list):
+            return len(log["entries"])
+        return None
+
     @staticmethod
     def validate_save(state: dict) -> None:
-        """IP-1101 (Design Decision 5) — refuse a malformed self-contained save before any replay.
-        A legacy save (no format version) has nothing to check here. Raises ``ValueError``."""
-        if not (state or {}).get("save_format"):
+        """IP-1101 (Design Decision 5) / IP-1102 (FR-7230, NFR-1600) — refuse an unusable save
+        before any replay: required keys and types for both formats, the self-contained content
+        and baseline, and (legacy) that the vignette file the save depends on is available.
+        Raises ``ValueError`` naming the problem."""
+        from spacesim.engine.eventlog import EventLog
+        if not isinstance(state, dict):
+            raise ValueError("save is not a JSON object")
+        if "save_format" in state:   # IP-1094 (FR-7230) — an unknown/future format is refused up front
+            fmt = state["save_format"]
+            if (isinstance(fmt, bool) or not isinstance(fmt, int)
+                    or fmt not in SUPPORTED_SAVE_FORMATS):
+                supported = ", ".join(str(f) for f in SUPPORTED_SAVE_FORMATS)
+                raise ValueError(f"save_format {fmt!r} is not supported; "
+                                 f"supported formats: legacy (absent), {supported}")
+        selfc = bool(state.get("save_format"))
+        required = (("content", "baseline", "seed", "eventlog", "final_time") if selfc
+                    else ("vignette_id", "seed", "eventlog", "final_time"))
+        for key in required:
+            if key not in state or state[key] is None:
+                raise ValueError(f"save is missing required key '{key}'")
+        for key in ("seed", "final_time"):
+            if isinstance(state[key], bool) or not isinstance(state[key], int):
+                raise ValueError(f"save key '{key}' must be an integer")
+        if not selfc and not isinstance(state["vignette_id"], str):
+            raise ValueError("save key 'vignette_id' must be a string")
+        # IP-1081 (NFR-3710) — bound the log before it is model-validated or replayed.
+        n_entries = SessionManager._eventlog_entry_count(state["eventlog"])
+        if n_entries is not None and n_entries > SessionManager.MAX_EVENTLOG_REPLAY_ENTRIES:
+            raise ValueError(f"eventlog has {n_entries} entries; limit is "
+                             f"{SessionManager.MAX_EVENTLOG_REPLAY_ENTRIES}")
+        try:
+            EventLog.model_validate(state["eventlog"])
+        except Exception as exc:  # noqa: BLE001
+            raise ValueError(f"save key 'eventlog' is malformed: {exc}") from exc
+        for key, need in (("pending", ("t", "kind")), ("orders", ("cell", "actor", "action")),
+                          ("ssn_requests", ("id", "cell", "intent", "target", "regime", "priority"))):
+            rows = state.get(key)
+            if rows is None:
+                continue
+            if not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
+                raise ValueError(f"save key '{key}' must be a list of objects")
+            for i, r in enumerate(rows):
+                miss = [n for n in need if n not in r]
+                if miss:
+                    raise ValueError(f"save key '{key}' has an entry missing {', '.join(miss)}")
+                problem = _row_problem(key, r)
+                if problem:
+                    raise ValueError(f"save key '{key}' entry {i} is malformed: {problem}")
+        # IP-1103 (Design Decision 3) — optional scalars the loader hands straight to the session.
+        if state.get("overrides") is not None and not isinstance(state["overrides"], dict):
+            raise ValueError("save key 'overrides' must be an object")
+        if state.get("classification") is not None and not isinstance(state["classification"], str):
+            raise ValueError("save key 'classification' must be a string")
+        # IP-1160 — optional operator-seat bindings: {seat: {asset_or_constellation, role}}.
+        ra = state.get("role_assignments")
+        if ra is not None and (not isinstance(ra, dict) or not all(
+                isinstance(k, str) and isinstance(v, dict)
+                and isinstance(v.get("asset_or_constellation"), str) and isinstance(v.get("role"), str)
+                for k, v in ra.items())):
+            raise ValueError("save key 'role_assignments' must map seat names to "
+                             "{asset_or_constellation, role} objects")
+        # IP-1103 (Design Decision 2) — final_time lower bound: not before the last logged event.
+        last_event = max((e.sim_time for e in EventLog.model_validate(state["eventlog"]).entries), default=0)
+        if state["final_time"] < max(0, last_event):
+            raise ValueError("save key 'final_time' is earlier than the save's last logged event")
+        if not selfc:
+            # IP-1102 Design Decision 2 — a legacy save resumes by id; say so when the file is gone.
+            from spacesim.content.vignette import load_vignette as _load
+            try:
+                legacy_vig = _load(state["vignette_id"])
+            except FileNotFoundError as exc:
+                raise ValueError(f"the save depends on vignette '{state['vignette_id']}', which is "
+                                 f"not available in the content directories") from exc
+            SessionManager._check_final_time_span(state["final_time"], legacy_vig)
             return
         from spacesim.content.vignette import validate_vignette
         try:
@@ -1018,6 +1378,7 @@ class SessionManager:
         if problems:
             raise ValueError("save content portion refused: " + "; ".join(
                 f"{p['where']}: {p['reason']}" for p in problems))
+        SessionManager._check_final_time_span(state["final_time"], vig)
         try:
             WorldState.model_validate(state["baseline"])
         except Exception as exc:  # noqa: BLE001
@@ -1055,6 +1416,8 @@ class SessionManager:
             mgr.osys.orders[o.id] = o
         nums = [int(o.id.split("-")[1]) for o in mgr.osys.orders.values() if o.id.startswith("ord-")]
         mgr.osys._order_counter = max(nums, default=0)
+        # IP-1087 (FR-3430) — gated orders awaiting a decision stay decidable across a resume.
+        warnings.extend(mgr.osys.rebuild_pending())
         # SSN requests: rebuild the registry, in-flight counters, and sensor bookings from saved state.
         for rd in state.get("ssn_requests", []):
             r = SSNRequest(**rd)
@@ -1073,6 +1436,7 @@ class SessionManager:
                                      if isinstance(h, str) and h.startswith("white-")
                                      and h.split("-", 1)[1].isdigit()), default=0)
         mgr.started = state.get("started", False)
+        mgr.role_assignments = {k: dict(v) for k, v in (state.get("role_assignments") or {}).items()}
         return mgr
 
     # -- fleet SOH rollup & alarms --------------------------------------------
@@ -1101,6 +1465,8 @@ class SessionManager:
         against FR-4430's target Precondition in the current world — and an invalid inject raises
         ``ValueError`` naming every problem, with nothing scheduled, applied, or logged (atomic).
         """
+        if isinstance(at_sim_t, bool):     # IP-1084 (IP-1082 family): True would coerce to 1 = "now"
+            raise ValueError("inject rejected: at_sim_t must be a number, not a boolean")
         effects = inject if isinstance(inject, list) else self._inject_effects(inject)
         problems = validate_inject_effects(self.sim.world, effects, check_targets=True,
                                            prop=self.osys.prop)
@@ -1114,7 +1480,12 @@ class SessionManager:
             # IP-1066 (FR-4450, Design Decision 1) — a stable handle so White can edit/cancel it.
             self._white_inject_seq += 1
             handle = f"white-{self._white_inject_seq}"
-            self.sim.schedule(when, "inject", {"effects": effects, "inject_id": handle}, tag=handle)
+            # IP-1083 (BL-0284) — the scheduling is itself a logged White action (an `inject_admin`
+            # `schedule` entry at the instant it is made), so a rewind/undo that rebuilds the
+            # scheduler re-arms it from the log; no state outside the event log.
+            rev = self._log_inject_admin({"handle": handle, "trigger": "time"}, "schedule", effects, when)
+            self.sim.schedule(when, "inject", {"effects": effects, "inject_id": handle, "rev": rev},
+                              tag=handle)
             return
         self.sim.schedule(when, "inject", {"effects": effects})
         self.sim.advance_to(when)  # apply + log immediately (so it replays through the event log)
@@ -1208,8 +1579,8 @@ class SessionManager:
             points.reverse()
         return {"asset": asset_id, "param": param, "nominal": nominal, "points": points}
 
-    def telemetry_export(self, cell: str, asset_id: str, t1: Optional[int] = None,
-                         t2: Optional[int] = None,
+    def telemetry_export(self, cell: str, asset_id: str, t1: Optional[Union[int, str]] = None,
+                         t2: Optional[Union[int, str]] = None,
                          interval_s: Optional[float] = None) -> Optional[list[dict]]:
         """IP-1260 (FR-2320) — the requesting cell's telemetry for one asset over a sim-time span,
         as flat rows (one per sampled instant x parameter) for CSV export.
@@ -1230,8 +1601,8 @@ class SessionManager:
         if not self._owns(cell, asset_id):
             return None
         lo, hi = ephemeris._valid_range(self)
-        t1, t2 = ephemeris._clamp_or_reject(self, lo if t1 is None else int(t1),
-                                            hi if t2 is None else int(t2))
+        t1, t2 = ephemeris._clamp_or_reject(self, lo if t1 is None else t1,
+                                            hi if t2 is None else t2)
         seed = self.sim._seed
         rows: list[dict] = []
         for t, world in aar.worlds_at_times(self, ephemeris.sample_times(t1, t2, interval_s)):
@@ -1399,17 +1770,21 @@ class SessionManager:
                             enter_safe_mode(asset.bus_state, world.now, cause)
                     elif eff.get("subsystem") == "telemetry":
                         asset.bus_state.comms.status = "green" if restore else "red"
-                    world.messages.append({"to": ["white", "blue", "red"],
-                                           "text": f"{eff['target']}: anomaly {'cleared' if restore else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
-                                           "t": world.now})
+                    # IP-1084 (H-1, FR-6210): White is told the controller's true cause, the owning
+                    # cell the fact only, the opposing cell nothing.
+                    self._notice_by_owner(
+                        world, asset.owner,
+                        f"{eff['target']}: anomaly {'cleared' if restore else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
+                        f"{eff['target']}: anomaly {'cleared' if restore else 'declared'}")
             elif kind == "sensor_outage":
                 # IP-1062 (FR-4430) — mirrors gs_outage's health-flag pattern for a sensor.
                 sensor = world.sensors.get(eff["target"])
                 if sensor is not None:
                     sensor.health = "nominal" if eff.get("restore") is True else "degraded"
-                    world.messages.append({"to": ["white", "blue", "red"],
-                                           "text": f"{eff['target']}: sensor outage {'cleared' if sensor.health == 'nominal' else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
-                                           "t": world.now})
+                    self._notice_by_owner(
+                        world, sensor.owner,
+                        f"{eff['target']}: sensor outage {'cleared' if sensor.health == 'nominal' else 'declared (' + str(eff.get('cause', 'unspecified')) + ')'}",
+                        f"{eff['target']}: sensor outage {'cleared' if sensor.health == 'nominal' else 'declared'}")
             elif kind == "forced_custody_loss":
                 # IP-1062 (FR-4430) — a missing target is a no-op (Design Decision 2's posture),
                 # never another cell's Track (world.track_for is already cell-scoped, ADR-0004).
@@ -1474,6 +1849,17 @@ class SessionManager:
                                                     "subsystem": subsystem, "cause": cause}], rng)
                 fired.append({"asset": aid, "p": p})
         payload["fired"] = fired
+
+    @staticmethod
+    def _notice_by_owner(world: WorldState, owner: str, white_text: str, owner_text: str) -> None:
+        """IP-1084 (H-1, FR-6210) — the one addressing policy for a controller-set notice about one
+        side's private asset/sensor state: White gets ``white_text`` (with the true cause), the
+        owning ``blue``/``red`` cell gets ``owner_text`` (the fact, no cause), the opposing cell
+        nothing; a ``neutral`` target is White only. ``CellController.view`` filters on ``to``
+        unchanged. Pure in ``(world, owner, texts)``: no clock, no RNG."""
+        world.messages.append({"to": ["white"], "text": white_text, "t": world.now})
+        if owner in ("blue", "red"):
+            world.messages.append({"to": [owner], "text": owner_text, "t": world.now})
 
     @staticmethod
     def _skip_inject_effect(world: WorldState, eff, problem: str) -> None:

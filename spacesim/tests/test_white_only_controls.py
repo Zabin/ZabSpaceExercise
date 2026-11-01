@@ -12,8 +12,8 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 from spacesim.ui_web.server import create_app  # noqa: E402
 
-TLE1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
-TLE2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+from tle_helpers import in_epoch_tle  # noqa: E402 — IP-1086: a TLE valid at the 2030 exercise start
+TLE1, TLE2 = in_epoch_tle()
 
 # seat -> request params. `None` is "no seat named at all".
 NON_WHITE = ["blue", "red", "observer", None]
@@ -68,10 +68,11 @@ CONFIG_ROUTES = {
 def _body(api, sid, name, body):
     if name == "advance":
         return {"t": api._sessions[sid].sim.clock.now + 60 * 1_000_000}
+    if name == "rewind":      # IP-1074: "rewind to start" is start_epoch, never 0
+        return {"t": api._sessions[sid].ctx.start_epoch}
     return body
 
 
-pytestmark = pytest.mark.verifies("FR-4310", "FR-4320")
 
 
 @pytest.mark.verifies("FR-4310")
@@ -93,8 +94,9 @@ def test_clock_controls_refused_for_non_white(name, seat):
 def test_clock_controls_accepted_for_white(name):
     c, api = _client()
     sid = _session(c, started=True)
-    # Give undo/rewind something to act on.
-    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 120.0}, params={"cell": "white"})
+    # Give undo/rewind something to act on (IP-1075: an undo with an empty log is refused, so
+    # step past the first bus tick; 120 s logged nothing).
+    c.post(f"/api/sessions/{sid}/step", json={"dt_sim_s": 600.0}, params={"cell": "white"})
     before = _snapshot(api, sid)
     route, body = CLOCK_ROUTES[name]
     r = c.post(f"/api/sessions/{sid}/{route}", json=_body(api, sid, name, body), params={"cell": "white"})
@@ -102,7 +104,7 @@ def test_clock_controls_accepted_for_white(name):
     if name == "clock":
         assert api._sessions[sid]._clock_running is False
     elif name == "rewind":
-        assert api._sessions[sid].sim.clock.now == 0
+        assert api._sessions[sid].sim.clock.now == api._sessions[sid].ctx.start_epoch
     else:
         assert _snapshot(api, sid) != before
 
@@ -164,16 +166,17 @@ def test_seat_assignment_and_observer_designation_refused_for_player_seats(seat)
     sid = _session(c, started=False)
     staffing = c.get(f"/api/sessions/{sid}/roles/staffing").json()
     designation = c.get(f"/api/sessions/{sid}/observer/designation").json()
-    a = c.post(f"/api/sessions/{sid}/roles/assign",
-               json={"cell": seat, "seat": "seat-1", "asset_or_constellation": "ISR-EO-1", "role": "both"}).json()
-    assert a["ok"] is False and a["reason"]
-    o = c.post(f"/api/sessions/{sid}/observer/view", json={"cell": seat, "designation": "red"}).json()
-    assert o["ok"] is False and o["reason"]
+    a = c.post(f"/api/sessions/{sid}/roles/assign", params={"cell": seat},
+               json={"cell": seat, "seat": "seat-1", "asset_or_constellation": "ISR-EO-1", "role": "both"})
+    assert a.status_code == 403      # IP-1074: refused by the query seat, not an ok:false 200
+    o = c.post(f"/api/sessions/{sid}/observer/view", params={"cell": seat},
+               json={"cell": seat, "designation": "red"})
+    assert o.status_code == 403
     assert c.get(f"/api/sessions/{sid}/roles/staffing").json() == staffing
     assert c.get(f"/api/sessions/{sid}/observer/designation").json() == designation
 
 
-@pytest.mark.verifies("FR-4320")
+@pytest.mark.verifies("FR-4310", "FR-4320")
 @pytest.mark.parametrize("name", list(CLOCK_ROUTES) + list(CONFIG_ROUTES))
 def test_unknown_session_is_404_before_the_seat_check(name):
     c, _ = _client()

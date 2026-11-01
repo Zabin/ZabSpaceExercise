@@ -31,6 +31,24 @@ panel.
 
 ---
 
+### 11.0 — Training: Basics (`training-basics`)
+
+The Stage 0 onboarding fleet: `ISR-EO-1` + `GS-TRN` against `JAM-TRN`, `RED-CYBER`, `RED-ASAT`.
+Deadline **+1 h**. Walked screenshot-by-screenshot in [§4](04-guided-vignette.md).
+
+| Cell | Objectives |
+|---|---|
+| Blue | `deliver_isr` · `keep_custody` (on `RED-TGT`) |
+| Red | `deny_isr` · `disable_isr` (safe-mode `ISR-EO-1`) |
+
+**Blue.** 1. *Review.* 2. `RADAR-TRN` → **observe** `RED-TGT` `{intent: characterize, classification: hostile}` (`keep_custody` MET). 3. `ISR-EO-1` → **downlink** `{via: GS-TRN}`. 4. Advance past the window (~T+52 min, no later than T+60 min) → `deliver_isr` MET. 5. *Confirm both objectives* at T+60 min (the panel is live; do not advance past the deadline). 6. Optional: **maneuver** `{dv: [0, 5, 0], via: GS-TRN}` queues to a pass about T+11 h — after the deadline, so it cannot change scoring (and `keep_custody` will have decayed by then).
+
+**Red.** 1. *Review.* 2. `RED-RDR` → **observe** `ISR-EO-1`. 3. `JAM-TRN` → **jam** `ISR-EO-1` `{modulation: barrage, power_w: 200.0}` during the `GS-TRN` pass. 4. `RED-CYBER` → **cyber** `ISR-EO-1` `{vector: ground_modem, payload: seize_c2}` — off-pass and **chance-based (~62% per attempt)**: success safes the bird (`disable_isr` MET), failure does nothing — advance ~1 min and check the Objectives panel (`disable_isr` unmet = failed), then re-issue. 5. Advance past T+1 h → `deny_isr` MET (independent of the dice). 6. `RED-ASAT` → **engage** → **REJECTED (`roe_kinetic_not_authorized`)**.
+
+**ROE defaults.** Red kinetic OFF (`red_kinetic_authorized = false`); cyber **ON** for both sides (`cyber_authorized = true`; White Cell can switch it off).
+
+---
+
 ### 11.1 — LEO ISR Denial (`leo-isr-denial`)
 
 | Cell | Objective | Win condition |
@@ -76,12 +94,12 @@ panel.
 | Red | `deny_pnt` | PNT link denied in the user bubble |
 
 **Blue — keep service up.**
-1. `BLUE-RADAR` → **observe** `BLUE-GNSS` `{intent: track}` — a health track so you can read the jamming signature.
-2. **+10m** to the +1 h deadline. If the link is up, **`maintain_service` MET**. *Reality check:* MEO is effectively safe from kinetic — the fight is electromagnetic and **local to the user bubble**, so there's no satellite to "save," only a link to keep clean.
+1. `BLUE-RADAR` → **observe** `BLUE-GNSS` `{intent: track}` — a health track so you can read the jamming signature. The radar's pass opens about **T+4 min**, so click **+10m** once and the track appears in your Fleet panel.
+2. **+10m** until the clock is past **T+1 h**. `maintain_service` is **MET** — even while Red is jamming, because the satellite stays healthy. *Reality check:* MEO is effectively safe from kinetic — the fight is electromagnetic and **local to the user bubble**, so there's no satellite to "save," only a link to keep clean.
 
 **Red — deny PNT.**
-1. `RED-JAM` → **jam** `BLUE-GNSS` `{modulation: barrage, power_w: 200.0}` — denies the link in the bubble → **`deny_pnt` MET**.
-2. **+10m** to sustain it. The denial is local and **reversible** — nothing is destroyed.
+1. `RED-JAM` → **jam** `BLUE-GNSS` `{modulation: barrage, power_w: 200.0}` — the window is already open at T+0; advance a minute and **`deny_pnt` MET**.
+2. **+10m** until past T+1 h to sustain it (both cells end up MET). The denial is local and **reversible** — nothing is destroyed.
 
 ---
 
@@ -93,12 +111,12 @@ panel.
 | Red | `neutralize_hva` | Drive `BLUE-HVA` into safe mode |
 
 **Blue — keep the HVA alive.**
-1. `BLUE-RADAR` → **observe** `RED-COORB` `{intent: characterize, classification: hostile}` — track the approaching co-orbital.
-2. **+10m** to +1 h → **`hva_survives` MET**. With no kinetic ROE and no organic safing path, the threat can pressure but not kill.
-3. *Active defense (if White-Cell adds a TT&C station):* `BLUE-HVA` → **maneuver** to evade, `BLUE-ESCORT` → **maneuver** to interpose. Δv spent vs. mission life is the tradeoff to teach.
+1. `BLUE-RADAR` → **observe** `RED-COORB` `{intent: characterize, classification: hostile}` — queued; the pass opens about **T+17 min**. Click **+10m** twice and the hostile track appears.
+2. `BLUE-HVA` → **maneuver** `{dv: [0, 5, 0]}` is **blocked** (**Issue order** stays greyed out; the red preview reads *No access window in the planning horizon* (or *No command path* when the Params carry no `via`), engine reason `no_command_station`): active defense needs a command path. *If a facilitator adds a TT&C station before Start (HTTP force-add, WCM-23; not possible mid-exercise)* the same order can evade, and `BLUE-ESCORT` → **maneuver** can interpose; Δv spent vs. mission life is the tradeoff to teach.
+3. **+10m** until past **T+1 h** → **`hva_survives` MET**. With no kinetic ROE and no organic safing path, the threat can pressure but not kill.
 
 **Red — neutralize it.**
-1. `RED-COORB` → **maneuver** aggressive RPO toward `BLUE-HVA` (needs a Red command-uplink path).
+1. `RED-COORB` → **maneuver** aggressive RPO toward `BLUE-HVA` — **blocked** (greyed-out Issue, *No access window in the planning horizon* / *No command path*; `no_command_station`) unless a facilitator added a Red command-uplink path before Start.
 2. *Gate:* without White-Cell kinetic ROE **and** a weapons-quality track, `neutralize_hva` cannot complete. The vignette's lesson is **restraint** — pressure short of an irreversible act.
 
 ---
@@ -111,14 +129,14 @@ panel.
 | Red | `destroy_sat` | Destroy `BLUE-SAT` (kinetic **authorized** here) |
 
 **Blue — survive the crisis.**
-1. **+10m** to +1 h. If no strike occurs, **`avoid_debris` MET**.
-2. *Evade (if White-Cell adds a TT&C station):* `BLUE-SAT` → **maneuver** out of the predicted intercept corridor.
+1. `BLUE-SAT` → **maneuver** `{dv: [0, 5, 0]}` is **blocked** (greyed-out Issue, red preview; `no_command_station`) — `BLUE-SAT` has 20 m/s of Δv but nothing can command it. *If a facilitator adds a TT&C station before Start* the same order shifts it out of the intercept corridor.
+2. **+10m** until past T+1 h. If no strike occurs, **`avoid_debris` MET**; a Red strike lands around **T+20–26 min**.
 
 **Red — execute the intercept.** *(This is the one vignette where kinetic is on by default.)*
-1. `RED-RADAR` → **observe** `BLUE-SAT` `{intent: characterize, classification: hostile}` — builds a **weapons-quality** track (confidence ≥ 0.8).
-2. **+10m** to the look so the track lands.
-3. `RED-ASAT` → **engage** `BLUE-SAT` `{interceptor_class: mrbm_kkv}` — **queued** (kinetic authorized). Pₖ derives from the `INTERCEPTORS` database (4 classes sourced from the four open-source DA-ASAT test records; Audit 2026-06 Commands §M2). Target altitude is a hard reach cap; defender `def.maneuver_evade` halves Pₖ.
-4. **+10m** past intercept → **`destroy_sat` MET**, **but** a debris field forms, `avoid_debris` flips to failed, and the `un_condemnation` inject fires. *Teaching point:* the strike works and is **irreversible** — debris denies the regime to both sides.
+1. `RED-RADAR` → **observe** `BLUE-SAT` `{intent: characterize, classification: hostile}` — builds a **weapons-quality** track (confidence ≥ 0.8). The pass opens about **T+17 min**. (An `engage` issued before the track exists is refused: `no_weapons_quality_track`.)
+2. **+10m** twice (T+20 min) so the track lands.
+3. `RED-ASAT` → **engage** `BLUE-SAT` `{interceptor_class: mrbm_kkv}` — **queued** for about **T+20 to T+26 min** (kinetic authorized). Pₖ derives from the `INTERCEPTORS` database (4 classes sourced from the four open-source DA-ASAT test records; Audit 2026-06 Commands §M2). Target altitude is a hard reach cap; defender `def.maneuver_evade` halves Pₖ.
+4. **+10m** once more (T+30 min, past the intercept) → **`destroy_sat` MET**, **but** a debris field forms, `avoid_debris` flips to failed, and White Cell can fire the manual `un_condemnation` inject. *Teaching point:* the strike works and is **irreversible** — debris denies the regime to both sides.
 
 ---
 
@@ -148,13 +166,14 @@ panel.
 | Red | `break_custody` | Custody below 0.5 at +90 min |
 
 **Blue — keep the track alive with scarce sensors.**
-1. `BLUE-RADAR-1` → **observe** `RED-OBJ` `{intent: characterize, classification: hostile}`. Confidence 1.0 → **`maintain_custody` MET** while fresh.
-2. **Re-task before the 30-min half-life** — alternate to `BLUE-OPT-1` `{intent: track}` (needs lighting). The two sensors are **contended**, so prioritize: a missed re-task is a lost track.
-3. Sustain confidence ≥ 0.5 all the way to +90 min.
+Your own sensors cannot see `RED-OBJ` in time (`BLUE-RADAR-1`'s first pass is about **T+134 min**, after the deadline), so the **Space Surveillance Network** carries the hunt.
+1. Command bar → **SSN request** `{intent: characterize, target: RED-OBJ, regime: LEO, priority: priority}` — state SCHEDULED, product due about **T+15 min** → **`maintain_custody` MET** once it lands.
+2. **+10m** once, then file the **same request again** at T+10 (product about T+25 min). **Re-task before the 30-min half-life** — a missed re-task is a lost track.
+3. Keep filing at **T+30, T+50 and T+70** with **+10m** clicks between; custody never lapses and **`maintain_custody` is MET** at T+90 min. With a single request, custody drops below 0.5 about 30 min after it lands and Red wins.
 
 **Red — break the chain.**
 1. The simplest win is to **make Blue lapse**: if Blue can't re-task before the half-life, confidence decays below 0.5 and **`break_custody` MET** at the deadline.
-2. `RED-OBJ` → **maneuver** a burn timed **outside** a pass enlarges the uncertainty volume (needs a Red command-uplink path; otherwise Red-doctrine / White-Cell driven).
+2. `RED-OBJ` → **maneuver** `{dv: [0, 5, 0]}` is **blocked** (greyed-out Issue, red preview; `no_command_station`); with a Red command-uplink path a burn timed **outside** a pass enlarges the uncertainty volume (otherwise Red-doctrine / White-Cell driven).
 
 ---
 
@@ -182,8 +201,162 @@ everything, so triage. Deadline +90 min.
 
 ---
 
+### 11.9 — Mission Trial: SAR ISR (`mt-isr-sar`)
+
+| Cell | Objective | Win condition |
+|---|---|---|
+| Blue | `collect_sar` · `survive` | A SAR product reaches the ground, and `SAR-1` is operational at +90 min |
+| Red | `deny_downlink` | No product delivered by +90 min |
+
+**Blue — image through cloud and night.**
+1. `SAR-1` → Action **`isr.collect_now`** (picked by name in the Action menu), Params `{via: GS-POLAR}` — queued for the `GS-POLAR` pass that opens about **T+19 min**; the payload then shows *collecting*. (A weather advisory at T+10 min says EO would be useless; SAR is unaffected.)
+2. `SAR-1` → **downlink** `{via: GS-POLAR}` — same pass.
+3. **+10m** twice (T+20 min) → **`collect_sar` MET**. **+10m** to past T+90 min → **`survive` MET**.
+
+**Red — contest the pass.**
+1. Click `RED-DAZZLE`: its Action menu offers only **jam** (an `engage` order would be refused, `roe_kinetic_not_authorized`), and dazzle blinds optics, which SAR does not use.
+2. `RED-JAM` → **jam** `SAR-1` `{modulation: barrage, power_w: 200.0}` — window opens about **T+17 min**, just before Blue's pass. Blue's downlink inside the jam fails: `collect_sar` stays unmet and **`deny_downlink` MET** at the deadline.
+
+---
+
+### 11.10 — Mission Trial: Weather Collection (`mt-weather-collect`)
+
+| Cell | Objective | Win condition |
+|---|---|---|
+| Blue | `deliver_wx` · `wx_op` | One product delivered, `WX-1` operational at +60 min |
+| Red | `track_blue` | Hold a track on `WX-1` at confidence ≥ 0.5 |
+
+**Blue — cadence.**
+1. `WX-1` → **downlink** `{via: GS-WX-PRIMARY}` — the pass opens about **T+34 min**. **+10m** to past T+40 min → **`deliver_wx` MET**; to past T+60 min → **`wx_op` MET**.
+2. *Optional:* `{via: GS-WX-BACKUP}` queues but its pass is about **T+230 min** — useless for this deadline, so the primary pass is the one that counts.
+
+**Red — passive watch.**
+1. `RED-SDA-SENSOR` (carried by `RED-SDA-PASSIVE`) → **observe** `WX-1` `{intent: track}` — window opens about **T+16 min**. **+10m** twice → **`track_blue` MET**.
+2. Advance to past T+60 min: the track has decayed below 0.5 (next window about T+66 min). Custody is a cadence problem for the watcher too.
+
+---
+
+### 11.11 — Novel: ISL Relay + Debris Corridor (`nv-isl-relay-debris`)
+
+| Cell | Objective | Win condition |
+|---|---|---|
+| Blue | `isr_b_survives` · `isr_b_op` | `ISR-B` alive and operational at +30 min |
+| Red | `track_blue` | Hold a track on `ISR-A` |
+
+**Blue — command around the gap.**
+1. **+10m** once; read the advisory (sent at T+5 min): `ISR-B` closes with debris at about **T+17 min**. `ISR-A` is in view of `GS-NORTH` for the first 8 min; `ISR-B` is not.
+2. `ISR-B` → **maneuver** `{dv: [0, 5, 0], via: GS-NORTH}` — queued with delivery path **`isl_relay`** (ground → `ISR-A` → `ISR-B`); Δv drops 100 → 95 m/s.
+3. **+1m**, then **+10m** to past T+30 min → both objectives MET.
+
+**Red — watch.** `RED-SDA-SENSOR` → **observe** `ISR-A` `{intent: track}` (window open from the start); **`track_blue` MET** at T+10 min, then decays below 0.5 by T+30 min unless re-tasked.
+
+---
+
+### 11.12 — Mission Trial: SIGINT Geolocation (`mt-sigint-geolocate`)
+
+> **Known limitation.** Sensors can only observe orbiting objects, and the SIGINT payloads are not
+> taskable sensors, so `characterize_emitter` cannot yet be reached by orders (an `observe` on
+> `RED-EMITTER` is blocked: greyed-out Issue with a red *No access window* preview for `BLUE-OPTICAL`; `SIGINT-1` has no observe entry at all). Filed for the engine; the script below
+> says so in-app. `preserve_constellation` is achievable.
+
+| Cell | Objective | Win condition |
+|---|---|---|
+| Blue | `characterize_emitter` · `preserve_constellation` | Characterized track on `RED-EMITTER`; satellites alive at +60 min |
+| Red | `deny_characterization` | No characterized track at +60 min |
+
+**Blue.** Try `BLUE-OPTICAL` and `SIGINT-1` → **observe** `RED-EMITTER` (blocked / not offered, as above); **+10m** to past T+60 min → `preserve_constellation` MET.
+**Red.** No orders; White Cell can fire the manual `emitter_silent` inject. Advance to past T+60 min → `deny_characterization` MET.
+
+---
+
+### 11.13 — Learning: Safe-Mode Recovery (`learn-intermediate-recovery`)
+
+| Cell | Objective | Win condition |
+|---|---|---|
+| Blue | `recover_to_nominal` | `ISR-EO-LEARN` not in safe mode at +45 min |
+| Red | `keep_safed` | `ISR-EO-LEARN` in safe mode |
+
+**Blue — diagnose, patch, recover.**
+1. *(Explanatory)* Read the green bus card; the only command path is `GS-LEARN`, whose pass opens about **T+41 min**.
+2. *(Needs Red first: switch to the Red seat, fire, switch back.)* **+1m** twice: the bird is in safe mode with a cyber signature.
+3. `ISR-EO-LEARN` → Action **`def.patch_cyber`** (by name in the Action menu), Params `{vector: ground_modem, via: GS-LEARN}` — closes the root cause.
+4. Drill-down → **Begin recovery** (1 pass) → bus nominal from the pass (about T+41 min); **`recover_to_nominal`** is scored at the deadline and reads **MET** the first time the clock is at or past T+45 min (with +10m clicks, the click that lands on or after it). If Red's chance-based exploit missed (Seed 2) the bird stays nominal and there is nothing to recover: have Red fire again. Skip step 3 and the strip reports *root cause persists (cyber)*: the bird stays safed.
+
+**Red.** `RED-CYBER` → **cyber** `ISR-EO-LEARN` `{vector: ground_modem, payload: seize_c2}` (about 62%; not window-gated). If the bird is still green after a minute, fire again. Once Blue patches, the exploit no longer works.
+
+### 11.14 — Red COA: Russia ML, Sustained EW (`coa-russia-ml`)
+
+*These five COA vignettes (11.14-11.18) have no scripted `tutorial:` block, so no Tutorial panel; the recipes below are driven on Seed 1 by `test_vignette_tutorials.py` (the Red COA tests). Red's ISR-kill COAs (11.15, 11.17) now carry a Red ground radar, `RED-RADAR`; the other three have no Red sensors.*
+
+**Reading Blue's "available" flags.** `pnt_avail`/`satcom_avail`/`pnt_op`/`satcom_op` measure whether the **satellite** is healthy at the deadline, not whether its link is jammed, so a jammed link still reads ✓ (engine semantics, stated in each brief); judge jamming in the AAR and on Red's `deny_*` flags.
+
+| Cell | Objective | Judged |
+|---|---|---|
+| Blue | `pnt_avail`, `satcom_avail` (`BLUE-PNT`, `BLUE-SATCOM` operational) | at T+60 min |
+| Red | `deny_pnt`, `deny_satcom` (a link to each denied) | true as soon as the jam is active |
+
+Red cyber is **off** here (`cyber_authorized` false); kinetic off.
+**Red.** `RED-JAM-TIRADA` → **jam** `BLUE-PNT` and `RED-JAM-POLE` → **jam** `BLUE-SATCOM`, each `{modulation: barrage, power_w: 200}`; both queue at once. **+10m**: both `deny_*` flip to ✓ by T+30 min.
+**Blue.** You see a `deny` symptom on both satellites, source unknown. Counter with `BLUE-PNT` → `def.frequency_hop` and `BLUE-SATCOM` → `satcom.mitigate_interference`, both `{via: GS-EUROPE}` (each queues to the next pass). Note: `pnt_avail`/`satcom_avail` read ✗ until the T+60 min deadline and then ✓ even under jamming (a jammed link does not make the satellite non-operational), so both sides can finish with their objectives met; judge the outcome in the AAR, not by the flags alone.
+
+### 11.15 — Red COA: Russia MD, DA-ASAT + Cyber (`coa-russia-md`)
+
+| Cell | Objective | Judged |
+|---|---|---|
+| Blue | `isr_survives` (T+30), `satcom_op` (T+60), `no_debris` (T+60) | deadlines |
+| Red | `destroy_isr`, `safe_satcom` | by T+60 min |
+
+Kinetic and cyber are both **on**. **Red.** First `RED-RADAR` → **observe** `BLUE-ISR-LEO` `{intent: characterize, classification: hostile}` (pass about **T+16 min**; click **+10m** twice), then `RED-NUDOL` → **engage** `BLUE-ISR-LEO` `{interceptor_class: mrbm_kkv}` (window about **T+19-24 min**; before the track exists it is refused `no_weapons_quality_track`). **`destroy_isr` ✓** (Seed 1) inside the T+30 min survival window, with debris. **The kill is a chance-based shot (roughly 6 in 10 per attempt), and other chance orders share the same random draw, so order matters. Follow this order (Seed 1):**
+1. `RED-RADAR` → **observe**; **+10m** twice (T+20).
+2. `RED-NUDOL` → **engage** (window about T+20).
+3. **+10m** until the Red Objectives panel shows `destroy_isr ✓` (driven live: the kill lands by T+26, so you see ✓ at the first **+10m** click past it, T+30), **before** ordering any cyber. Ordering cyber (or jam) *ahead of* the observe and engage makes the same shot miss on Seed 1.
+4. Then order the cyber (next sentences).
+If it misses (debris appears but the target survives) use **Rewind** and re-issue in this order, or start a new session on a different Seed. *After* the intercept, `RED-CYBER` → **cyber** `BLUE-SATCOM` `{vector: ground_modem, payload: seize_c2}` (not window-gated, chance-based; re-issue after a minute if the bird stays nominal — on Seed 1 the second attempt lands): `safe_satcom` ✓ and Blue's `satcom_op` ✗. **Blue.** Task `BLUE-RADAR-W`/`-E` to watch; patch the modem first with `BLUE-SATCOM` → `def.patch_cyber` `{vector: ground_modem, via: GS-PRIME}` and keep `BLUE-ISR-LEO` ready with `def.maneuver_evade` `{via: GS-PRIME}`. The `nudol_alert` inject (White) warns Blue of the launcher spin-up.
+
+### 11.16 — Red COA: China ML, Early Integrated Disruption (`coa-china-ml`)
+
+| Cell | Objective | Judged |
+|---|---|---|
+| Blue | `isr_delivers`, `satcom_op`, `geo_custody` (on `RED-SJ-INSPECTOR`) | T+30 min |
+| Red | `deny_isr`, `safe_satcom`, `rpo_close` (inspector within 50 km of `BLUE-GEO-COMM`) | T+30 min |
+
+**Red.** `RED-CYBER` → **cyber** `BLUE-SATCOM` (ground_modem / seize_c2): `safe_satcom` ✓. `RED-JAM-COASTAL` → **jam** `BLUE-ISR` queues, but its pass is about T+95 min, after the window, so `deny_isr` stays ✗ inside T+30 min. `RED-SJ-INSPECTOR` → **maneuver** `{dv: [0, 20, 0], via: RED-TTC}` (Red's Hainan TT&C station) closes the inspector from about 74 km to under 50 km by about T+28 min: **`rpo_close` ✓**. **Blue.** `BLUE-ISR` → **downlink** `{via: GS-WESTPAC}` runs at once and `isr_delivers` flips ✓; `geo_custody` stays ✗ until a radar or optical sensor tracks the inspector; the `h_hour` inject marks the start of the Red package. 
+
+### 11.17 — Red COA: China MD, Decisive Strike (`coa-china-md`)
+
+| Cell | Objective | Judged |
+|---|---|---|
+| Blue | `any_isr`, `pnt_op`, `satcom_op` | T+45 min |
+| Red | `kill_isr`, `deny_pnt`, `safe_satcom` | T+45 min |
+
+**Red.** First `RED-RADAR` → **observe** `BLUE-ISR-PRIMARY` `{intent: characterize, classification: hostile}` (pass about **T+18 min**; **+10m** twice) then `RED-ASAT` → **engage** `BLUE-ISR-PRIMARY` `{interceptor_class: mrbm_kkv}` (window about **T+22-28 min**): **`kill_isr` ✓** (Seed 1). **The kill is a chance-based shot (roughly 6 in 10 per attempt), and every other chance order consumes the same random draw, so the order of play matters. Follow this order exactly (Seed 1):**
+1. `RED-RADAR` → **observe** (above). **+10m** twice (T+20).
+2. `RED-ASAT` → **engage** (above). It queues for about T+22.
+3. **Do nothing else yet.** Click **+10m** until the clock is past T+26 and the Red Objectives panel shows `kill_isr ✓`. (Driven live: the kill lands by T+26, so you see ✓ at the first **+10m** click past it, T+30.)
+4. **Only now** order the jam and the cyber (the sentence after this list). If you queue them straight after the engage, in the same sitting, the jam fires at once, takes the draw first, and the shot misses (`kill_isr` stays ✗ at T+26 and T+32). If that happens, **Rewind** and redo steps 1 to 4, or pick another Seed.
+Then `RED-JAM-PNT` → **jam** `BLUE-PNT` (the window is open from T+0, so `deny_pnt` ✓ after a minute) and `RED-CYBER` → **cyber** `BLUE-SATCOM-PRIMARY` (chance-based, re-issue if needed) → `safe_satcom` ✓. **Blue.** `BLUE-ISR-PRIMARY` → **downlink** `{via: GS-WP}` runs near T+37 min: `any_isr` ✓ by T+50 min; `pnt_op` ✓; `satcom_op` ✗ once the cyber lands, so patch/recover `BLUE-SATCOM-PRIMARY` (11.13). The `decisive_warning` inject says kinetic strikes are authorized.
+
+### 11.18 — Red COA: Iran ML, Regional EW Spoiler (`coa-misc-iran-ml`)
+
+| Cell | Objective | Judged |
+|---|---|---|
+| Blue | `pnt_op`, `satcom_op` | T+45 min |
+| Red | `deny_pnt`, `deny_satcom` | T+45 min |
+
+**Red.** Both mobile jammers can jam both satellites from T+0 (the satellites were re-phased so the windows fall inside the scenario): `RED-MOBILE-JAM-1` → **jam** `BLUE-PNT`, `RED-MOBILE-JAM-2` → **jam** `BLUE-SATCOM`, each `{modulation: barrage, power_w: 200}`; after a minute both `deny_*` are ✓. **Blue.** Both objectives read ✓ at T+45 min even while jammed (satellite health, see above). The `jammer_moves` inject (White) degrades SSN custody of the jammers.
+
+> **Sources:** `spacesim/content/vignettes/coa-russia-ml.yaml` · `spacesim/content/vignettes/coa-russia-md.yaml` ·
+> `spacesim/content/vignettes/coa-china-ml.yaml` · `spacesim/content/vignettes/coa-china-md.yaml` ·
+> `spacesim/content/vignettes/coa-misc-iran-ml.yaml` · `spacesim/session/redai.py` · FR-11320
+
+---
+
 > **Want to drive these headless?** Every step is a real `Order` through the `SessionAPI`. See the
 > Python snippets in [§3 your first exercise](03-first-exercise.md) and
 > [§4 guided vignette](04-guided-vignette.md); the same `actor / action / params` apply here.
 
 ---
+
+> **Sources:** `spacesim/content/vignettes/*.yaml` (`tutorial:` blocks and `intro_brief:` deadlines) ·
+> `spacesim/tests/test_vignette_tutorials.py` (`_Learner` / `_script` step drivers) ·
+> [`16-learning-path.md`](16-learning-path.md) · FR-11320/11420

@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1310
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE — 2026-10-17, `08-code-implementation`, pipeline run #146, awaiting a
+> **Status:** VERIFIED 2026-10-17 ([VR-1310](../verification/VR-1310-load-time-vignette-validation.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE — 2026-10-17, `08-code-implementation`, pipeline run #146, awaiting a
 > **fresh-session** `09-package-verification`. `VignetteValidationError(ValueError)` + pure
 > `validate_vignette` in `content/vignette.py` (with `_asset_data`/`_force_sections` shared with
 > `build_world`, whose behaviour is unchanged); `load_vignette` converts YAML/missing-key/schema/

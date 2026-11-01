@@ -6,8 +6,10 @@ open a theme index, then the one module you need. Structure & rationale (legacy 
 expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implementations/`,
 `architecture/`, `scenarios/`): [`master/MSTR-005-documentation-map.md`](master/MSTR-005-documentation-map.md).
 
-> **Authority:** on any conflict the **Build Spec** wins — enter it at
-> [`build-spec/INDEX.md`](build-spec/INDEX.md).
+> **Authority:** [`architecture/INDEX.md`](architecture/INDEX.md) (the GDS-00…GDS-10 ladder) is the
+> authoritative architecture and requirements source; the Build Spec is deprecated legacy reference,
+> not a tie-breaker (see `../CLAUDE.md`). Where no GDS level is authored yet, enter the legacy text at
+> [`build-spec/INDEX.md`](build-spec/INDEX.md) for orientation only.
 
 ## Themes
 
@@ -17,7 +19,7 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 | **Domains** | Capability frameworks (training, assessment, White Cell, research, validation, governance, human factors, AI integration, doctrine development) that generate Feature Specifications. | [`domains/INDEX.md`](domains/INDEX.md) |
 | **Architecture** | Design Synthesis documents (`ADS-xxx`) — domain+research synthesized into architecture/domain-model/requirements/constraints/risks/decisions, upstream of a Feature Spec. | [`architecture/INDEX.md`](architecture/INDEX.md) |
 | **Features** | Feature Specifications (`FS-xxx`) — what each capability must do, with no implementation detail. | [`features/feature-index.md`](features/feature-index.md) |
-| **Feature Planning** | `05-feature-decomposition` skill output — Release Plan, Epic Catalog, Feature Catalog (`FEAT-xxxx`), Dependency Graph, and Review, decomposed from the approved requirements baseline. Upstream of, and distinct from, `docs/features/`'s `FS-xxx` specs. | [`feature-planning/INDEX.md`](feature-planning/INDEX.md) |
+| **Feature Planning** | `05-feature-decomposition` skill output — Release Plan, Epic Catalog, Feature Catalog (`FEAT-xxxx`), Dependency Graph, and Review, decomposed from the approved requirements baseline. Upstream of, and distinct from, `docs/features/`'s `FS-xxx` specs. **Release record:** [REV-REL-004](reviews/release-assessment-release-candidate-10.md) — Release 1 declared GO by the owner, 2026-11-01. | [`feature-planning/INDEX.md`](feature-planning/INDEX.md) |
 | **Implementation** | Implementation Packages (`IP-xxxx`) — how each Feature Spec is (or would be) built, as-built docs for FS-101-107 and forward designs for FS-201/FS-301, plus the Master Build Plan (sequence/critical path/dependency graph). Supersedes the prior `implementations/` (`IMP-xxxA`) tier, retained for history. | [`implementation/00-master-build-plan.md`](implementation/00-master-build-plan.md) · [`implementation/packages/INDEX.md`](implementation/packages/INDEX.md) |
 | **Pipeline** | The pipeline's persistent memory: the `00-pipeline-manager` journal (position + append-only run log) and the backlog (findings harvested from every run + `00-intake`-filed features/bugs, each with a triage disposition). Writers: the manager (both files) and `00-intake` (backlog appends); the tree's ledgers stay authoritative. Closed backlog entries and pre-#181 journal history are frozen, verbatim, in the two archive files. | [`pipeline/pipeline-journal.md`](pipeline/pipeline-journal.md) · [`pipeline/backlog.md`](pipeline/backlog.md) · archives: [`pipeline/pipeline-journal-archive.md`](pipeline/pipeline-journal-archive.md) · [`pipeline/backlog-archive.md`](pipeline/backlog-archive.md) |
 | **Build Spec** | The binding v1 specification — context, requirements, architecture, milestones, operator console, SSN. | [`build-spec/INDEX.md`](build-spec/INDEX.md) |
@@ -32,8 +34,19 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
   project produces: IDs, dependencies, and completion status. Start here to see what's done, in
   progress, or still planned without re-deriving it from the directories below.
 - [`FUTURE-WORK.md`](FUTURE-WORK.md) — the single-source v1.1+ TODO (deferred items).
+- [`AUDIT-2026-06.md`](AUDIT-2026-06.md) — the Jun 2026 whole-project audit (findings, LAN trust
+  boundary §D5/§F1); two companion audits cover narrower scopes:
+  [`AUDIT-2026-06-COMMANDS.md`](AUDIT-2026-06-COMMANDS.md) (command realism, order-form UX,
+  probability mechanics) and [`AUDIT-2026-06-UI-TTC.md`](AUDIT-2026-06-UI-TTC.md) (panel layout,
+  TT&C/power logic, telemetry graphs, target picker).
 - [`manual/INDEX.md`](manual/INDEX.md) — generated UI screenshots (`tools/render_manual.py`); the
   training modules embed these.
+
+> **Retired-documents convention.** A retired document is deleted, declared here in the same commit, and named by no live document ([`NFR-3810`](requirements/02-non-functional-requirements.md); checked by `spacesim/tests/test_doc_integrity.py`). One row per retired path (trailing `/` retires a folder): former path, former ID (blank if none), retirement date (ISO), successor path or `none` — plain text or backticks, never a link. A retired root-level document is declared here with its repo-relative path (for example `ROADMAP.md`). Format: `| Former path | Former ID | Retired | Successor |`.
+
+## Retired documents
+
+none
 
 ## Root-level guides (not under `docs/`)
 

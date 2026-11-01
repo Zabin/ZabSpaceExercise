@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1280
 > **Version:** 1.0
-> **Status:** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
+> **Status:** VERIFIED 2026-09-28 ([VR-1280](../verification/VR-1280-variable-speed-aar-replay.md), fresh session; READY before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
 > **Dependencies:** [FS-128](../../features/FS-128-variable-speed-aar-replay.md) v1.0 (`FR-7330`),
 > `session/aar.py` (`IP-1070`, `VERIFIED`), `session/cells.py` (baseline, `VERIFIED`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md),

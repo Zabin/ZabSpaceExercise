@@ -1162,15 +1162,15 @@ Added for the verification and documentation-integrity leaves `04` baselined in 
 verified, released and documented rather than what it does for a cell, so no product Feature owns
 them naturally (see `05-feature-review.md` F-22).
 
-### FEAT-12100 — Test-Origin Traceability & Major-Release Verification *(sweep 2026-10-23, run #212)*
+### FEAT-12100 — Test-Origin Traceability & Release Verification *(sweep 2026-10-23, run #212)*
 
 | Field | Content |
 |---|---|
 | **Feature ID** | FEAT-12100 |
-| **Title** | Test-Origin Traceability & Major-Release Verification *(sweep 2026-10-23, run #212)* |
-| **Purpose** | Make every test say what it verifies, so the traceability matrix's Test column is read rather than inferred, and give each major release a relevance audit and a reproducible dependency set (owner directions `BL-0310`, `BL-0299`). |
-| **Description** | Every test declares its origin (requirement leaf, else feature specification, else package) in a machine-readable marker; every declared ID resolves to a live baseline item; at each major release the suite is audited for unmarked, orphaned and duplicate tests and for in-scope requirements with no test, and the release ships with every dependency locked to an exact version. |
-| **Scope** | The marker convention and its registration, the backfill of the existing suite, the resolution check, the major-release audit and the dependency lock. The audit's and lock's execution belongs to `11-release-readiness`; this Feature supplies what they check. |
+| **Title** | Test-Origin Traceability & Release Verification *(sweep 2026-10-23, run #212)* |
+| **Purpose** | Make every test say what it verifies, so the traceability matrix's Test column is read rather than inferred, and give each release a relevance audit and a reproducible dependency set (owner directions `BL-0310`, `BL-0299`). |
+| **Description** | Every test declares its origin (requirement leaf, else feature specification, else package) in a machine-readable marker; every declared ID resolves to a live baseline item; at every release the suite is audited for unmarked, orphaned and duplicate tests and for in-scope requirements with no test, and the release ships with every dependency locked to an exact version. |
+| **Scope** | The marker convention and its registration, the backfill of the existing suite, the resolution check, the release audit and the dependency lock. The audit's and lock's execution belongs to `11-release-readiness`; this Feature supplies what they check. |
 | **Included Requirements** | NFR-1510, NFR-2820, NFR-2830, NFR-3840, NFR-2850 *(2026-10-23, `BL-0322`)* |
 | **Excluded Requirements** | NFR-2840 (browser suite — FEAT-12200); NFR-3800–NFR-3830 (documentation integrity — FEAT-12300); NFR-1900 (engine test coverage and import guard — FEAT-1100) |
 | **Dependencies** | FEAT-1100, FEAT-5300 (`NFR-1510` cites `NFR-1500` and `NFR-2200`) |
@@ -1181,7 +1181,7 @@ them naturally (see `05-feature-review.md` F-22).
 | **User Value** | Indirect — a reviewer can see which requirement each test protects, and a release can show which requirements have none (`NFR-2820` Rationale). |
 | **Technical Value** | Closes GDS-10 finding F3 (test traceability by inference) and lets `04` fill the RTM Test column mechanically. |
 | **Complexity** | Medium — mechanical, but the backfill touches every test module and needs a judgment per test about its origin. |
-| **Risk** | A backfill that tags by file name rather than by what a test asserts would reproduce the inference it replaces; mitigated by `09` checking new tags and the major-release audit. |
+| **Risk** | A backfill that tags by file name rather than by what a test asserts would reproduce the inference it replaces; mitigated by `09` checking new tags and the release audit. |
 | **Suggested Verification Strategy** | Collecting the suite lists a `verifies` origin for every test; every declared ID resolves; `--strict-markers` passes; a deliberately unknown ID fails the resolution check. |
 | **Open Questions** | Whether the resolution check (NFR-3840) runs in the default suite or a separate documentation-check run — the same question FEAT-12300 raises. |
 

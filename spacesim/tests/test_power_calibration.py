@@ -74,7 +74,7 @@ def test_full_umbra_still_drains_and_full_sun_still_charges():
     assert bus2.power.battery_soc > 0.5 and bus2.power.in_eclipse is False
 
 
-@pytest.mark.verifies("FR-2110")
+@pytest.mark.verifies("FR-2110", "NFR-3050")
 def test_eclipse_flag_exposed_in_soh_snapshot():
     """The fleet rail / drill-down must be able to SHOW the operator why SoC is falling."""
     from spacesim.engine.bus import soh_snapshot

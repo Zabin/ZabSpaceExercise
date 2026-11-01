@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1150
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implementation exists, tested, in production use; entered `COMPLETE`,
+> **Status:** VERIFIED 2026-07-03 ([VR-1150](../verification/VR-1150-vignette-selection.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE *(implementation exists, tested, in production use; entered `COMPLETE`,
 > not `VERIFIED`, per this skill's rule that an as-built package may be born `VERIFIED` only after
 > an actual `09-package-verification` pass — this authoring pass confirmed the cited code and test
 > exist, but is not that independent pass.)*

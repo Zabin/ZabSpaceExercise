@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1290
 > **Version:** 1.0
-> **Status:** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
+> **Status:** VERIFIED 2026-09-28 ([VR-1290](../verification/VR-1290-jamming-delivery-and-effect-detectability.md), fresh session; READY before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
 > **Dependencies:** [FS-129](../../features/FS-129-jamming-delivery-and-effect-detectability.md)
 > v1.0 (`FR-1440`/`FR-1450`), `engine/effects.py`/`engine/orders.py` (`IP-1051`/`IP-1010`/`IP-1020`,
 > `VERIFIED`), [IP-1270](IP-1270-effect-authorization-gating-and-live-roe.md) (the shared

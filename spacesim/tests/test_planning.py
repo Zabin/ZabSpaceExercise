@@ -101,7 +101,7 @@ def test_task_then_custody_then_unlock_engagement():
     assert ok.status == "queued"
 
 
-@pytest.mark.verifies("FR-3310")
+@pytest.mark.verifies("FR-3210")
 def test_sensor_contention_serializes_tasks_onto_later_windows():
     world = WorldState(now=0)
     sat = _leo()

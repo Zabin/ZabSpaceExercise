@@ -1,3 +1,1 @@
 # IP-1350 — status-ledger disagreements (`pair: item …| owning stage`). Shrink-only.
-fs: FS-106 is done in feature-index.md but ready in the spec header | 05-feature-decomposition / 06 (feature-index status wording vs spec header: v1 Done, later version Ready)
-fs: FS-110 is done in feature-index.md but ready in the spec header | 05-feature-decomposition / 06 (feature-index status wording vs spec header: v1 Done, later version Ready)

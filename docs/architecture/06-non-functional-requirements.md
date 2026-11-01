@@ -125,7 +125,7 @@ Traces to GDS-02 trust boundary; ADR-0015, ADR-0018; `CLAUDE.md` "LAN trust mode
   telemetry phone-home; no hard-coded secrets; nothing that would block a later RMF/ITSG-33
   review. No formal accreditation is required. **Dependency versions are declared as minimum
   versions (`>=`) during development, and every dependency is locked to an exact version at each
-  major release** (owner decision, `BL-0299`). *(→ `NFR-2200`, `NFR-1510`, `NFR-3700`)*
+  release** (owner decisions `BL-0299`, `BL-0318`). *(→ `NFR-2200`, `NFR-1510`, `NFR-3700`)*
 - **NFR-15 Bounded resource use on untrusted input.** Inputs that could force unbounded work are
   capped before the work starts: a loaded save's event log (`MAX_EVENTLOG_REPLAY_ENTRIES`,
   100,000), live sessions per process (`MAX_LIVE_SESSIONS`, 32; the oldest is evicted at the cap),
@@ -157,7 +157,7 @@ Traces to invariants 2 and 6; ADR-0001, ADR-0007, ADR-0009, ADR-0023.
   the full suite green before every commit. **There is no coverage target** (owner decision,
   `BL-0299`): what matters is that tests are written to show each feature and requirement is
   satisfied, and every test declares the requirement it verifies (`BL-0310`, `NFR-2820`). The
-  legacy 80% figure is withdrawn. The whole suite is audited for relevance at each major release.
+  legacy 80% figure is withdrawn. The whole suite is audited for relevance at each release.
   *(→ `NFR-1900`, `NFR-2000`, `NFR-2010`, `NFR-2100`, `NFR-2800`, `NFR-2820`, `NFR-2830`)*
 - **NFR-16 Configuration.** Deployment settings (server host, port, reload; external vignette
   directories; user-save directory) live in one optional YAML file, its path overridable by
@@ -312,8 +312,9 @@ Attributes this document states that have no `requirements/02` leaf. Each is for
 ## Open Questions
 
 - ~~**OQ1 — Dependency pinning (C3).**~~ **Resolved 2026-10-23 (owner, `BL-0299`):** minimum
-  versions during development; every dependency locked to an exact version at each major release
-  (`NFR-1510`). Which releases count as major is open (`BL-0318`).
+  versions during development; every dependency locked to an exact version at each release
+  (`NFR-1510`). Refined 2026-10-24 (`BL-0318`): the word "major" is dropped; the lock and the
+  relevance audit apply at every release, reviewed in `11-release-readiness`.
 - ~~**OQ2 — Coverage measurement (C4).**~~ **Resolved 2026-10-23 (owner, `BL-0299`):** no coverage
   target; tests must show features and requirements are satisfied, and declare what they verify
   (`NFR-2820`, `BL-0310`).
@@ -332,7 +333,7 @@ Attributes this document states that have no `requirements/02` leaf. Each is for
 The GDS level is authoritative; these are stated so no one mistakes them for drift:
 
 - `NFR-1`: the legacy text implies a Space-Track pull exists; as built there is no network call, and the pull is now dropped (`BL-0299`).
-- `NFR-5`: "dependency pinning" is not the as-built posture (minimum versions; a lock only at major releases, `BL-0299`).
+- `NFR-5`: "dependency pinning" is not the as-built posture (minimum versions; a lock at each release, `BL-0299`/`BL-0318`).
 - `NFR-6`: extended with failure atomicity (ADR-0038), which postdates the legacy text.
 - `NFR-7`: the 80% coverage figure was never measured and is withdrawn (no coverage target, `BL-0299`); schema additivity (`NFR-2010`) added.
 - `NFR-9`: extended with the DOM-007 human-factors constraints.

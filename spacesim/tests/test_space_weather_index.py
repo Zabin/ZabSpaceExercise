@@ -62,7 +62,7 @@ def test_f_geo_anchors(kp, want):
     assert pt.f_geo(kp) == pytest.approx(want)
 
 
-@pytest.mark.verifies("FR-4440")
+@pytest.mark.verifies("FR-1230", "FR-4440")
 def test_drag_and_anomaly_multipliers():
     t0 = 1_000
     assert pt.drag_multiplier([{"t": 0, "f107": 150, "kp": 7}], t0) == pytest.approx(6.0)
@@ -159,7 +159,8 @@ def test_high_kp_fires_more_environmental_anomalies():
     assert len(_firings(quiet)) > 0
     assert len(_firings(storm)) > len(_firings(quiet))
     # a firing applies the existing anomaly effect (telemetry -> comms red + a message)
-    assert any("anomaly declared (space_weather)" in m["text"] for m in storm.world.messages)
+    assert any("anomaly declared (space_weather)" in m["text"] and m["to"] == ["white"]
+               for m in storm.world.messages)   # IP-1084: the true cause is White-addressed
 
 
 @pytest.mark.verifies("FR-4440")
@@ -272,7 +273,7 @@ def test_shipped_vignette_unaffected_by_empty_series_and_no_bcs():
     assert not any(e.kind == "env_anomaly_check" for e in a.sim.eventlog.entries)
 
 
-@pytest.mark.verifies("FR-4440")
+@pytest.mark.verifies("FR-1230")
 def test_series_without_bcs_or_anomaly_block_changes_no_orbit():
     assets = [{"id": "LEO-NOBC", "kind": "satellite", "orbit": dict(_LEO_ORBIT)}]
     with_series = _run(_vig(assets=assets, series=[{"at_sim_s": 0, "f107": 300, "kp": 9}]), 2)

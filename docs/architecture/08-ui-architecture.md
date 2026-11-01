@@ -1,7 +1,7 @@
 # GDS-08 — UI Architecture
 
 > **Document ID:** GDS-08
-> **Version:** 1.0
+> **Version:** 1.1 (2026-10-24, stale-documentation pass: verification status, panel manager, White-only time controls, save-load refusals)
 > **Status:** ✅ Authored — merge gate closed (see "Merge gate" below)
 > **Dependencies:** GDS-07
 > **Referenced By:** GDS-09
@@ -27,14 +27,29 @@ rules they follow, and leaves endpoints and payloads to GDS-09.
 
 ## Verification status (read first)
 
-The browser client is **unverified end to end.** Every backend path a screen depends on
-(endpoints, fog filtering, validation reasons, objectives, AAR, multiplayer clock and locking) is
-covered by the pytest suite, but no automated test drives the browser and asserts what it shows.
-`tools/record_walkthrough.py` and `tools/render_manual.py` drive a headless browser to produce the
-manual's screenshots and walkthrough video; they assert nothing. So this document describes the
-UI **as implemented** in `spacesim/ui_web/static/`, read from its source, and does not claim
-behavior has been verified in a browser. Where it says a control "is disabled with the reason",
-the backend half of that (the reason) is tested and the rendering half is not.
+The browser client is **verified for three load-bearing rules and for its wiring to the server's
+refusals, and unverified elsewhere.** A headless-Chromium suite (`spacesim/tests/test_browser_console_rules.py`,
+marker `browser`, `IP-1340`, `NFR-2840`; 30 browser tests as of `VR-1077`) starts the real server
+and drives the shipped client. It asserts: **(a) fog of war** — a player cell's views name no object
+that cell has not detected, and a tracked object is drawn with its confidence encoding; **(b)
+plan-first** — a refused or malformed order disables Issue with its reason before any issue, and a
+click while disabled sends nothing; **(c) irreversible effects** — `engage` and `cyber` ask for a
+consequence confirmation, `observe` does not. Since `IP-1073` and `IP-1076` it also asserts the
+console's behavior toward the server's refusals (`FR-4310`, `NFR-1600`): a non-White seat is not
+offered time-control or inject entries in the command palette; a non-White bookmark click sends
+nothing and says why; a refused time control, inject or load is reported in the visible status line
+(`#control-status`) or load-failure message, not thrown, and an unparseable save file is reported;
+rewind-to-start and undo send the exercise start epoch, never zero; a dry-run preview follows the
+last edit; a View-menu entry is reachable at low window height; and an advance past the exercise
+span is refused visibly while a running clock stops at the span's end.
+
+Outside those rules the client is **not** asserted end to end: layout, the 3D globe and 2D map
+rendering, the panel manager's drag and resize, the rest of the menus and the AAR and Creator
+screens have no browser test. `tools/record_walkthrough.py` and `tools/render_manual.py` drive a
+headless browser for the manual's screenshots and video and assert nothing. The suite skips with a
+named reason where Playwright or a Chromium build is absent, so a run without it proves nothing
+about the browser. This document describes the UI **as implemented** in `spacesim/ui_web/static/`,
+read from its source; a behavior is called verified only where it is among the asserted rules above.
 
 ---
 
@@ -134,8 +149,9 @@ the decision rail, timeline and drill-down together.
 **Panel manager** (`panels.js`). Each managed panel can be dragged out to float, resized, closed and
 reopened (View → Panels), and the arrangement persists per browser. Floating a panel takes it out of
 the grid so the rest reflow, which stops one tall panel from shoving the others around (GDS-06
-NFR-9, panel-manager contract). **As built, the Compare and Assessment panels are not registered
-with the panel manager** (see OQ2).
+NFR-9, panel-manager contract). The White-only Compare and Assessment panels are registered
+with the panel manager too (`IP-1069`, `VERIFIED`: grip, dock and close, reopened from View → Panels,
+hidden from Blue and Red menus).
 
 **Multiple screens.** View → Pop out opens a second window that joins the same session and shows
 only the panels for one layout token (`globe`, `map`, `globe+map`, `fleet`, `order`, `aar`, or
@@ -236,7 +252,11 @@ enemy satellite and read its truth".
 ### 7.6 Facilitate (White Cell)
 
 - **Time:** pause and resume for everyone; rewind; undo; the clock advances only through White Cell
-  and logs every control.
+  and logs every control. Time controls are offered only to the White seat (a Blue or Red seat's
+  palette and bookmarks carry none), and the server independently refuses them from any other seat
+  (GDS-09 §4). Rewind and undo stay within the exercise span (start epoch to now), and step and
+  advance stop at 366 days after the start (`FR-4330`); a refusal is shown in the status line with
+  its reason, and a running clock stops at the end of the span.
 - **Injects:** fire a vignette inject, or build one from the inject library (template → JSON editor →
   now, +seconds or absolute UTC → schedule). Pending injects can be edited or cancelled before they
   fire.
@@ -245,6 +265,10 @@ enemy satellite and read its truth".
 - **Watch:** god view; view as either cell; the Compare panel (truth beside both pictures at one
   instant); objectives; coaching notes; conjunction screening.
 - **Save:** download a save file; load one to resume; save the current state as a new scenario.
+  The server refuses an unusable save with a reason and creates no session; the console shows that
+  reason (or the reason a player seat's load was refused) and leaves the running session and its
+  clock untouched, and shows a warning when the save is a legacy one or from another simulator
+  version (GDS-07 §6).
 
 ### 7.7 After-action review (White Cell)
 
@@ -270,8 +294,9 @@ changes, so the next person does not see the previous cell's picture.
 - **Menus:** Session (vignette, load, start, save-as-scenario, observer, seats and roles), Creator,
   View (display mode, briefing and tutorial, panels, RIC frame view, TLE export, pop-out), Settings
   (save, load, coaching, inspect vignette), Help.
-- **Command palette** (Ctrl-K / ⌘K): a fuzzy menu over assets, time advances, seats, injects,
-  inject-library templates and display toggles.
+- **Command palette** (Ctrl-K / ⌘K): a fuzzy menu over assets, seats and display toggles for every
+  seat, plus, for the White seat only, time advances and rewind, injects and inject-library
+  templates.
 - **Keyboard:** `j`/`k` cycle the selected asset, `c` focuses composition, `g` opens the drill-down;
   ignored while a text field has focus.
 - **Display modes:** presentation mode (larger, high contrast, for projectors), colorblind-safe
@@ -305,14 +330,16 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
 
 ## Open Questions
 
-- **OQ1 — No automated UI verification.** The client is unverified end to end. Should a browser test
-  (the walkthrough tool's headless browser already exists) assert the load-bearing UI rules — no
-  ground truth in a player cell's views, the disabled-with-reason contract, consequence confirm — or
-  does backend coverage stay the accepted bar for v1? Owner decision; it sets how much of this
-  document can ever be called verified.
-- **OQ2 — Compare and Assessment panels are outside the panel manager.** Both White-only panels are
-  missing from `panels.js`'s registry, so they cannot be floated, resized, closed or reopened like
-  every other panel — contrary to the panel-manager contract (GDS-06 NFR-9). A small UI fix.
+- **OQ1 — How far browser verification extends. Partly answered: the owner chose to build the
+  browser suite (`BL-0304`, `IP-1340`, `NFR-2840`), and it shipped.** The three load-bearing rules and
+  the console's handling of server refusals are asserted (see "Verification status"). What stays open
+  is breadth: whether the globe and map rendering, the panel manager, and the AAR and Creator screens
+  should also gain browser tests, or whether backend coverage plus this suite stays the accepted bar
+  for v1. Owner decision; it sets how much more of this document can be called verified.
+- **OQ2 — Compare and Assessment panels outside the panel manager. Resolved by `IP-1069`
+  (`VERIFIED`, `VR-1069`).** Both panels are registered (`panels.js`); kept as a closed record. Two Low
+  findings from that verification (the menu not scrolling, a plain click also floating a panel) were
+  routed onward; the menu-height one is closed by `IP-1073`.
 - **OQ3 — APP-6 conformance.** Symbology is APP-6-adapted, not conformant. Is a conformant symbol
   pack wanted (it is listed as future work), or is the adapted convention the intended standard?
 
@@ -333,8 +360,10 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
   per-cell consoles, button-state contract, accessibility, inject builder, activity timeline,
   conjunctions and coaching) into §1–§8; its per-panel endpoint table goes to GDS-09; its verb
   catalog stays with `design/13` and the code. `design/06` §2–§5 → §7.6 and departures.
-- [x] **Did not claim verified UI behavior.** "Verification status" states the client is unverified
-  end to end and why; OQ1 asks whether that should change.
+- [x] **Did not claim verified UI behavior beyond what a test asserts.** "Verification status" lists
+  the rules the browser suite asserts and states that the rest of the client is not asserted end to
+  end; OQ1 asks how far that should extend. (Restated 2026-10-24: the original text said no browser
+  test existed.)
 - [x] **DOM content (`BL-0293`).** DOM-007 was already absorbed into GDS-06 NFR-9, which this
   document applies rather than restates (§2, §4). No other DOM section has UI content.
 - [x] **Decision recorded:** **this document is the authoritative UI architecture.**
@@ -345,4 +374,4 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
 ## Next
 
 `GDS-09` (API Specification) may now begin; it takes this document's screen-to-endpoint binding.
-OQ1 and OQ3 need owner decisions; OQ2 is a UI defect for `07`.
+OQ1 (breadth) and OQ3 need owner decisions; OQ2 is closed.

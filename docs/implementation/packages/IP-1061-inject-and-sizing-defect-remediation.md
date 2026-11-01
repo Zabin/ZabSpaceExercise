@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1061
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implemented 2026-09-26 by `08-code-implementation`. All four defects
+> **Status:** VERIFIED 2026-09-27 ([VR-1061](../verification/VR-1061-inject-and-sizing-defect-remediation.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE *(implemented 2026-09-26 by `08-code-implementation`. All four defects
 > fixed test-first: `_arm_schedule()` gained an initial-vs-re-arm distinction (A1), the two
 > `space_weather` branches in `_h_inject()` were merged into one validating branch (A3), the
 > `inject_library.yaml` comment was corrected (A2), and both hard-cap `ValueError` raises were

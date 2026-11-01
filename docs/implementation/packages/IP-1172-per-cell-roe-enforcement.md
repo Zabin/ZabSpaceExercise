@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1172
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implemented 2026-07-05 by `08-code-implementation` — `Vignette.roe`
+> **Status:** VERIFIED 2026-07-11 ([VR-1172](../verification/VR-1172-per-cell-roe-enforcement.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE *(implemented 2026-07-05 by `08-code-implementation` — `Vignette.roe`
 > added, `build_world()`'s roe construction made cell-keyed with a legacy fallback,
 > `engine/orders.py`'s two `_validate()` check sites resolve per `order.cell`. Discovered and fixed
 > material drift beyond this package's own file list: `session/inprocess.py`'s per-cell brief

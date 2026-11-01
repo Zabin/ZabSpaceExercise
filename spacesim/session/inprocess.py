@@ -8,14 +8,45 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Union
 
 from spacesim.content.vignette import Vignette, list_vignettes, load_vignette
 from spacesim.engine.orders import Order
 from spacesim.session.api import Ack, CellView, OrderAck
+from spacesim.session.cells import CellController
 from spacesim.session import aar, assessment
 from spacesim.session.manager import SessionManager
 from spacesim.session.redai import RedDoctrine
+
+
+PLAYBACK_REFUSED = "playback_seat_refused"
+
+
+class PlaybackSeatRefused(PermissionError):
+    """IP-1077 (FR-7340) — raised by the value-returning playback methods when the requesting
+    seat may not perform the action; the route maps it (and an ``Ack`` reason starting with
+    ``PLAYBACK_REFUSED``) to HTTP 403."""
+
+
+def playback_seat_decision(seat: Optional[str], action: str, requested: Optional[str],
+                           current: Optional[str]) -> Optional[str]:
+    """IP-1077 (FR-7340) — pure seat rule for the AAR playback. Returns a refusal reason, or
+    None when permitted. ``requested`` is the viewpoint asked for (start/viewpoint); ``current``
+    is the playback's present viewpoint (None when no playback exists)."""
+    def refuse(why: str) -> str:
+        return f"{PLAYBACK_REFUSED}: {why}"
+
+    if seat == "white":
+        return None
+    if seat == "observer":
+        return None if action == "state" else refuse("the Observer seat is read-only")
+    if seat not in ("blue", "red"):
+        return refuse("playback requires a named seat")
+    if action in ("start", "viewpoint"):
+        return None if requested == seat else refuse("a player seat may play back only its own viewpoint")
+    if current == seat:
+        return None
+    return refuse("a player seat may play back only its own viewpoint")
 
 
 class InProcessSession:
@@ -25,7 +56,7 @@ class InProcessSession:
     MAX_LIVE_SESSIONS = 32
     # Audit Jun 2026 §D7 — refuse a load_save payload whose eventlog would
     # require an enormous replay (compute / memory amplifier; unauthenticated).
-    MAX_EVENTLOG_REPLAY_ENTRIES = 100_000
+    MAX_EVENTLOG_REPLAY_ENTRIES = SessionManager.MAX_EVENTLOG_REPLAY_ENTRIES   # IP-1081 alias
 
     def __init__(self) -> None:
         self._sessions: dict[str, SessionManager] = {}
@@ -69,9 +100,14 @@ class InProcessSession:
             mgr._catch_up_locked()
             yield mgr
 
-    def set_clock(self, session: str, running: bool, rate: float = 1.0) -> dict:
+    def set_clock(self, session: str, running: bool, rate: float = 1.0):
+        """Clock state on success; IP-1082 — a refused rate (non-finite / out of range) is a returned
+        ``Ack(ok=False)`` like the sibling time controls, nothing changed."""
         with self._locked(session) as mgr:
-            mgr.set_clock(running, rate=rate)
+            try:
+                mgr.set_clock(running, rate=rate)
+            except ValueError as e:
+                return Ack(ok=False, reason=str(e))
             return mgr.clock_state()
 
     def clock_state(self, session: str) -> dict:
@@ -194,6 +230,12 @@ class InProcessSession:
         with self._locked_read(session) as mgr:
             return mgr.staffing_report()
 
+    def role_scope(self, session: str, seat: Optional[str], cell: str = "white") -> dict:
+        """IP-1160 (FR-3510) — one operator seat's scope plus the global verb-scope table, as seen
+        from console seat ``cell`` (fog-scoped; see ``SessionManager.role_scope_for``)."""
+        with self._locked_read(session) as mgr:
+            return mgr.role_scope_for(seat, cell)
+
     # -- time control ----------------------------------------------------------
     # IP-1173 (FR-5110) — a draft session must never advance its clock (it produces no event
     # log; determinism has nothing to test it against). Rejected here, at the InProcessSession
@@ -205,28 +247,40 @@ class InProcessSession:
         if session in self._draft_sessions:
             return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
-            mgr.step(dt_sim_s)
+            try:
+                mgr.step(dt_sim_s)
+            except ValueError as e:      # IP-1076 (FR-4330) — out-of-span / backwards; nothing changed
+                return Ack(ok=False, reason=str(e))
         return Ack()
 
     def advance_to(self, session: str, t: int) -> Ack:
         if session in self._draft_sessions:
             return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
-            mgr.advance_to(t)
+            try:
+                mgr.advance_to(t)
+            except ValueError as e:      # IP-1076 (FR-4330) — out-of-span / backwards; nothing changed
+                return Ack(ok=False, reason=str(e))
         return Ack()
 
     def rewind_to(self, session: str, t: int) -> Ack:
         if session in self._draft_sessions:
             return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
-            mgr.rewind_to(t)
+            try:
+                mgr.rewind_to(t)
+            except ValueError as e:      # IP-1074 — out-of-span target; nothing was changed
+                return Ack(ok=False, reason=str(e))
         return Ack()
 
     def undo_last(self, session: str, n: int = 1) -> Ack:
         if session in self._draft_sessions:
             return Ack(ok=False, reason="draft sessions cannot advance time")
         with self._locked(session) as mgr:
-            mgr.undo_last(n)
+            try:
+                mgr.undo_last(n)
+            except ValueError as e:      # IP-1075 — nothing to undo; nothing was changed
+                return Ack(ok=False, reason=str(e))
         return Ack()
 
     # -- injects & orders ------------------------------------------------------
@@ -320,15 +374,15 @@ class InProcessSession:
                     self._inject_library_cache = []
         return list(self._inject_library_cache)
 
-    def issue_order(self, session: str, cell: str, order: Order) -> OrderAck:
+    def issue_order(self, session: str, cell: str, order: Order, seat: Optional[str] = None) -> OrderAck:
         with self._locked(session) as mgr:
-            return mgr.issue_order(cell, order)
+            return mgr.issue_order(cell, order, seat=seat)
 
-    def validate_order(self, session: str, cell: str, order: Order) -> OrderAck:
+    def validate_order(self, session: str, cell: str, order: Order, seat: Optional[str] = None) -> OrderAck:
         # dry-run is read-only but still touches order-system state; lock anyway for safety.
         with self._locked(session) as mgr:
             mgr._catch_up_locked()
-            return mgr.validate_order(cell, order)
+            return mgr.validate_order(cell, order, seat=seat)
 
     def list_orders(self, session: str, cell: str) -> list:
         with self._locked_read(session) as mgr:
@@ -581,23 +635,25 @@ class InProcessSession:
         kind: "order" | "inject" | "effect"
         status: "executed" | "queued" | "cancelled" | "rejected" | "active" | "scheduled"
         """
+        # IP-1088 - resolve the requested seat first: ``observer`` follows its designation
+        # (no parallel filtering path, IP-1130); anything but white/blue/red is refused.
+        if cell == "observer":
+            cell = self.observer_designation(session)
+            if cell == "godview":
+                cell = "white"
+        if cell not in ("white", "blue", "red"):
+            raise ValueError(f"unknown cell {cell!r}")
         self.catch_up(session)   # multiplayer: surface the live now in the Gantt
         mgr = self._sessions[session]
         now = mgr.world.now
         t_start = now - past_window_s * 1_000_000
         t_end = now + future_window_s * 1_000_000
 
-        def _own_asset(actor_id: str, target_cell: str) -> bool:
-            a = mgr.world.assets.get(actor_id) or mgr.world.sensors.get(actor_id)
-            return a is not None and getattr(a, "owner", None) == target_cell
-
-        activities: list[dict] = []
+        tagged: list[dict] = []   # ground-truth rows; CellController.activity_rows filters per cell
 
         # 1) Orders (past, queued, cancelled, rejected).
         from spacesim.engine.orders import BAR_DURATION_S
         for o in mgr.osys.orders.values():
-            if cell != "white" and o.cell != cell:
-                continue
             label = f"{o.actor} {o.action}" + (f" → {o.target}" if o.target else "")
             if o.earliest_window is not None:
                 win_start, win_end = o.earliest_window
@@ -627,7 +683,7 @@ class InProcessSession:
                 # IP-1065 (BL-0266) — the window has passed, so the order has executed: the same
                 # derived label `SessionManager.list_orders()` shows (`Order.status` never holds it).
                 status = "executed"
-            activities.append({
+            tagged.append({"owner": o.cell, "effect": None, "row": {
                 "kind": "order",
                 "cell": o.cell,
                 "actor": o.actor,
@@ -638,44 +694,37 @@ class InProcessSession:
                 "status": status,
                 "label": label,
                 "delivery_path": o.delivery_path,
-            })
+            }})
 
-        # 2) Scheduled non-order events (injects).  Skip bus ticks and per-order execute_*
-        #    events (already represented by their order above).
-        order_tags = {o.id for o in mgr.osys.orders.values()}
-        for ev in mgr.sim.scheduler.pending():
-            if ev.kind != "inject":
+        # 2) Scheduled injects.  Read the White pending-inject queue (IP-1066: edits applied,
+        #    cancellations removed) rather than raw scheduler events, so an edited or cancelled
+        #    inject leaves no stale ghost row at its old time.  Ground truth: the filter
+        #    (CellController.activity_rows) drops these for Blue and Red.
+        for pi in mgr.pending_injects():
+            at = pi.get("at")
+            if at is None or at < t_start or at > t_end:
                 continue
-            if ev.tag and ev.tag in order_tags:
-                continue
-            if ev.t < t_start or ev.t > t_end:
-                continue
-            ev_cell = ev.actor if ev.actor in ("blue", "red", "white", "neutral") else "white"
-            if cell != "white" and ev_cell not in (cell, "white"):
-                continue
-            n_eff = len((ev.payload or {}).get("effects", []) or [])
-            activities.append({
+            n_eff = len(pi.get("effects") or [])
+            tagged.append({"owner": "white", "effect": None, "row": {
                 "kind": "inject",
-                "cell": ev_cell,
+                "cell": "white",
                 "actor": "white-cell",
                 "action": "inject",
                 "target": None,
-                "start": int(ev.t),
-                "end": int(ev.t + 60_000_000),
+                "start": int(at),
+                "end": int(at + 60_000_000),
                 "status": "scheduled",
                 "label": f"inject ({n_eff} effects)",
                 "delivery_path": None,
-            })
+            }})
 
         # 3) Active effects — currently in progress on own assets (cell scope).
         for eff in mgr.world.active_effects:
             target_asset = mgr.world.assets.get(eff.target)
             target_owner = getattr(target_asset, "owner", None)
-            if cell != "white" and target_owner != cell:
-                continue
             if eff.end < t_start or eff.start > t_end:
                 continue
-            activities.append({
+            tagged.append({"owner": target_owner or "neutral", "row": {
                 "kind": "effect",
                 "cell": target_owner or "neutral",
                 "actor": eff.target,
@@ -686,8 +735,10 @@ class InProcessSession:
                 "status": "active" if eff.start <= now <= eff.end else "scheduled",
                 "label": f"{eff.template or eff.category} → {eff.target} ({eff.outcome})",
                 "delivery_path": None,
-            })
+            }, "effect": {"template": eff.template, "category": eff.category or eff.template,
+                          "outcome": eff.outcome, "overt": eff.attribution == "overt"}})
 
+        activities = CellController.activity_rows(tagged, cell, now)
         # Sort by start time so the renderer can stack bars deterministically.
         activities.sort(key=lambda a: (a["cell"], a["start"], a["actor"]))
 
@@ -982,42 +1033,65 @@ class InProcessSession:
         return aar.snapshot_at(self._sessions[session], seq)
 
     # -- IP-1280 (FR-7330) — variable-speed AAR playback -----------------------
-    def playback_start(self, session: str, viewpoint: str = "truth", speed: float = 1.0) -> Ack:
-        try:
-            self._playbacks[session] = aar.PlaybackSession(
-                self._sessions[session], viewpoint=viewpoint, speed=speed)
-        except ValueError as exc:
-            return Ack(ok=False, reason=str(exc))
-        return Ack(ok=True)
+    def playback_start(self, session: str, viewpoint: str = "truth", speed: float = 1.0,
+                       seat: Optional[str] = None) -> Ack:
+        with self._locked(session) as mgr:
+            why = playback_seat_decision(seat, "start", viewpoint, None)
+            if why:
+                return Ack(ok=False, reason=why)
+            try:
+                self._playbacks[session] = aar.PlaybackSession(mgr, viewpoint=viewpoint, speed=speed)
+            except ValueError as exc:
+                return Ack(ok=False, reason=str(exc))
+            return Ack(ok=True)
 
-    def playback_advance(self, session: str, dt_s: float) -> Optional[dict]:
+    def _playback_current(self, session: str) -> Optional[str]:
         pb = self._playbacks.get(session)
-        if pb is None:
-            return None
-        return pb.advance(dt_s)
+        return None if pb is None else pb.viewpoint
 
-    def playback_state(self, session: str) -> Optional[dict]:
-        pb = self._playbacks.get(session)
-        if pb is None:
-            return None
-        return pb.state()
+    def playback_advance(self, session: str, dt_s: float, seat: Optional[str] = None) -> Optional[dict]:
+        with self._locked(session):
+            why = playback_seat_decision(seat, "advance", None, self._playback_current(session))
+            if why:
+                raise PlaybackSeatRefused(why)
+            pb = self._playbacks.get(session)
+            return None if pb is None else pb.advance(dt_s)
 
-    def playback_set_viewpoint(self, session: str, viewpoint: str) -> Ack:
-        pb = self._playbacks.get(session)
-        if pb is None:
-            return Ack(ok=False, reason="no_playback_session")
-        try:
-            pb.set_viewpoint(viewpoint)
-        except ValueError as exc:
-            return Ack(ok=False, reason=str(exc))
-        return Ack(ok=True)
+    def playback_state(self, session: str, seat: Optional[str] = None) -> Optional[dict]:
+        with self._locked(session):
+            why = playback_seat_decision(seat, "state", None, self._playback_current(session))
+            if why:
+                raise PlaybackSeatRefused(why)
+            pb = self._playbacks.get(session)
+            return None if pb is None else pb.state()
 
-    def playback_set_speed(self, session: str, speed: float) -> Ack:
-        pb = self._playbacks.get(session)
-        if pb is None:
-            return Ack(ok=False, reason="no_playback_session")
-        pb.set_speed(speed)
-        return Ack(ok=True)
+    def playback_set_viewpoint(self, session: str, viewpoint: str, seat: Optional[str] = None) -> Ack:
+        with self._locked(session):
+            why = playback_seat_decision(seat, "viewpoint", viewpoint, self._playback_current(session))
+            if why:
+                return Ack(ok=False, reason=why)
+            pb = self._playbacks.get(session)
+            if pb is None:
+                return Ack(ok=False, reason="no_playback_session")
+            try:
+                pb.set_viewpoint(viewpoint)
+            except ValueError as exc:
+                return Ack(ok=False, reason=str(exc))
+            return Ack(ok=True)
+
+    def playback_set_speed(self, session: str, speed: float, seat: Optional[str] = None) -> Ack:
+        with self._locked(session):
+            why = playback_seat_decision(seat, "speed", None, self._playback_current(session))
+            if why:
+                return Ack(ok=False, reason=why)
+            pb = self._playbacks.get(session)
+            if pb is None:
+                return Ack(ok=False, reason="no_playback_session")
+            try:
+                pb.set_speed(speed)
+            except ValueError as exc:          # IP-1082 — a refused speed leaves the playback unchanged
+                return Ack(ok=False, reason=str(exc))
+            return Ack(ok=True)
 
     # -- competency assessment (IP-2010) ----------------------------------------
     def assessment_report(self, session: str) -> dict:
@@ -1029,7 +1103,7 @@ class InProcessSession:
             return mgr.alarms(cell)
 
     # -- ephemeris export (IP-1210, FR-7410/FR-7420) ----------------------------
-    def truth_ephemeris(self, session: str, object_id: str, reference_id: str, t1: int, t2: int,
+    def truth_ephemeris(self, session: str, object_id: str, reference_id: str, t1: Union[int, str], t2: Union[int, str],
                         interval_s: Optional[float] = None) -> list[dict]:
         from spacesim.session import ephemeris
         with self._locked_read(session) as mgr:
@@ -1037,7 +1111,7 @@ class InProcessSession:
                                              interval_s=interval_s)
 
     def cell_observed_ephemeris(self, session: str, cell: str, object_id: str, reference_id: str,
-                                t1: int, t2: int, interval_s: Optional[float] = None) -> list[dict]:
+                                t1: Union[int, str], t2: Union[int, str], interval_s: Optional[float] = None) -> list[dict]:
         from spacesim.session import ephemeris
         with self._locked_read(session) as mgr:
             return ephemeris.cell_observed_ephemeris(mgr, cell, object_id, reference_id, t1, t2,
@@ -1055,15 +1129,7 @@ class InProcessSession:
 
     def load_save_with_warnings(self, state: dict) -> tuple[str, list[str]]:
         """IP-1101 — as ``load_save`` plus the resume warnings (legacy save, version mismatch)."""
-        # Audit Jun 2026 §D7 — bound the eventlog so a hostile load_save can't
-        # force an unbounded replay.
-        eventlog = (state or {}).get("eventlog") or []
-        if isinstance(eventlog, list) and len(eventlog) > self.MAX_EVENTLOG_REPLAY_ENTRIES:
-            raise ValueError(
-                f"eventlog has {len(eventlog)} entries; limit is "
-                f"{self.MAX_EVENTLOG_REPLAY_ENTRIES}"
-            )
-        SessionManager.validate_save(state)   # IP-1101 — refuse before any replay or session
+        SessionManager.validate_save(state)   # IP-1101/IP-1081 — refuse (incl. the NFR-3710 log cap) before any replay or session
         mgr = SessionManager.from_state(state)
         self._evict_if_full()
         self._counter += 1

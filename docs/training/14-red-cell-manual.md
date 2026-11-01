@@ -11,6 +11,11 @@ this manual frames them from Red's offensive posture, and defers to the shared c
 rather than duplicating them. The mirror-image defensive framing is
 [`13-blue-cell-manual.md`](13-blue-cell-manual.md).
 
+
+**More sections** (RED-14 to RED-17) are in [14a](14a-red-cell-rules-and-delivery.md): the Operator seat field, orders waiting for approval and live ROE changes, which link a jam attacks and what stops a command, and the manoeuvre ledger.
+
+**Acronyms.** ISR, SAR, SDA, SATCOM, PNT, GNSS, EW, TT&C, SoC, MEO and the rest are defined in the [glossary](09-troubleshooting-and-glossary.md#11-glossary).
+
 ### RED-1 · Your view: fog-of-war
 
 You see **only Red's own assets** at true position, plus whatever Red's sensors have detected —
@@ -19,6 +24,8 @@ The filter is enforced server-side at the `SessionAPI`/`CellController` boundary
 **Mission brief** (auto-opens on load; View ▾ → Mission brief) for situation, mission, forces,
 threat picture, ROE, and success criteria — Red's brief never reveals Blue's hidden dispositions
 and vice versa.
+
+**Hand-off in a shared browser.** When one machine is passed between cells, click **⏸ Handover**; the screen blurs and reads `HANDING OFF → BLUE`. Pass the keyboard, and the next operator clicks the overlay's **Resume**, which switches the console to their seat. It only hides the screen; it is not security.
 
 > **Sources:** `spacesim/session/cells.py` (`CellController`, fog filter) · `spacesim/session/scene.py` ·
 > `GET /api/sessions/{sid}/brief/red` · [`02-interface.md`](02-interface.md) §"A player cell"
@@ -30,6 +37,8 @@ knowledge. A command reaches a satellite via **ground-station uplink**, **ISL re
 **stored program**, whichever is soonest. Orders queue with their window and delivery path and are
 **cancellable until they uplink**; up to four ride one pass. Sequencing your effects to land inside
 the same access window is Red's tempo problem.
+
+**Your Timeline panel.** The Timeline (activity) panel shows your own orders (for example `JAM-NORTH jam → ISR-EO-1`) and any effect that has started on your own assets, by category and symptom only (for example `cyber → RED-SURF (deny)`). You never see Blue's orders, effects on Blue's assets, or White's schedule, edits or cancels; to learn whether your jam worked you must observe it, as a real operator would. This is fog of war.
 
 > **Sources:** `spacesim/engine/orders.py` (`OrderSystem`, delivery paths) ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"Plan-first commanding"
@@ -43,7 +52,7 @@ the same access window is Red's tempo problem.
    set to `null` counts as left out.
    [`09` §10](09-troubleshooting-and-glossary.md#10-troubleshooting) lists every reason.
 2. **Consequence preview** — severity, escalation weight, reversibility, debris risk, and
-   **attribution**: Red's escalation-management dashboard. A reversible EW/cyber effect keeps you
+   **attribution**: Red's escalation-management dashboard. A reversible [EW](09-troubleshooting-and-glossary.md#11-glossary)/cyber effect keeps you
    below the threshold a kinetic strike crosses.
 3. **Verb assistants** — `maneuver` (six modes, live Δv), `observe` (beam mode + look angle), `jam`
    (modulation/power/bandwidth with an on-map denial footprint).
@@ -98,8 +107,9 @@ authorizes it and you accept the debris and attribution cost the consequence pre
 - **Engage** (kinetic) — closing geometry, salvo Pₖ, debris-cone estimate; gated on
   weapons-quality custody *and* `red_kinetic_authorized` ROE. The salvo (`salvo_n`, default 1)
   must fit in the rounds the effector has left. With none left the preview says `no_ammo`; with
-  too few for the salvo it says `insufficient_ammo`, so reduce the salvo. Rounds are spent only
-  by a strike that succeeds; a miss spends none.
+  too few for the salvo it says `insufficient_ammo`, so reduce the salvo. Every salvo that is
+  fired is charged, whether it hits or misses; only an order that fails its check at the window
+  (no rounds left, target already gone) spends nothing.
   - **Queued strikes share the rounds.** If you queue several engagements on one effector, the
     first to execute spends its rounds. A later one that no longer fits does nothing at its
     window: no roll, no rounds spent, target untouched. The ground-truth effect log shows it as
@@ -108,7 +118,7 @@ authorizes it and you accept the debris and attribution cost the consequence pre
 
 > **Sources:** `spacesim/engine/effects.py` (5 D's) · `spacesim/engine/{jam,engage}.py` ·
 > `spacesim/engine/orders.py` (`_validate` `no_ammo`/`insufficient_ammo`, `_engage_rounds`,
-> `_h_effect` rounds re-check and success-only charge, jam plan with no `power_w` consumption) ·
+> `_h_effect` rounds re-check and fired-salvo charge, jam plan with no `power_w` consumption) ·
 > `spacesim/ui_web/static/app.js` (`REASON_TIPS.insufficient_ammo`) · FR-1460 · FR-1470 ·
 > [`05-core-concepts.md`](05-core-concepts.md) · [`../research/INDEX.md`](../research/INDEX.md)
 
@@ -116,7 +126,7 @@ authorizes it and you accept the debris and attribution cost the consequence pre
 
 Cyber is the **exception** — not window-gated. With a modeled access vector it resolves any time
 against `{access_vector, success_prob, persistence, patchable}` subject to Blue's cyber posture.
-This is Red's fastest, hardest-to-attribute lever (the SATCOM/Viasat-style lesson): you can act
+This is Red's fastest, hardest-to-attribute lever (the [SATCOM](09-troubleshooting-and-glossary.md#11-glossary)/Viasat-style lesson): you can act
 between passes when Blue is watching the wrong timeline. A **persistent** unpatched vulnerability
 keeps re-safing the target through its recovery attempts.
 
@@ -132,7 +142,7 @@ Blue can hit back. Its jam, cyber and directed-energy effects leave the same tel
 on your satellites that yours leave on Blue's. Diagnose them from the drill-down (same table as
 [`13-blue-cell-manual.md`](13-blue-cell-manual.md) §BLU-6).
 
-**Bus health depends on the vignette.** The engine applies Blue's **bus** SOH and safe-mode model
+**Bus health depends on the vignette.** The engine applies Blue's **bus** [SOH](09-troubleshooting-and-glossary.md#11-glossary) and safe-mode model
 to any satellite whose vignette gives it a bus. **None of the shipped vignettes gives a Red
 satellite a bus yet**, so in practice you will see:
 
@@ -160,7 +170,7 @@ the same value at any instant both of them sample.
 When Red is played by AI (or you want a doctrinal template), the doctrine presets
 `china_integrated`, `russia_ew_first`, and `generic` prioritize Red's COA differently. The five
 Red COA vignettes (RC-01 Layered Denial, RC-02 Cyber-First Access Denial, RC-03 Progressive
-Escalation, RC-04 High-Altitude ASAT, RC-05 Allied Targeting) are built around these patterns —
+Escalation, RC-04 High-Altitude [ASAT](09-troubleshooting-and-glossary.md#11-glossary), RC-05 Allied Targeting) are built around these patterns —
 study them as Red's playbook of campaign shapes.
 
 > **Sources:** `spacesim/session/redai.py` · [`06-the-vignette-library.md`](06-the-vignette-library.md) ·
@@ -178,14 +188,14 @@ side of the escalation line.
 
 ### RED-10 · RIC frame view & CATS phase angle
 
-**View ▾ → Proximity → ⊕ RIC frame view** opens a live relative-motion plot: pick an **Origin**
+**View ▾ → Proximity → ⊕ [RIC](09-troubleshooting-and-glossary.md#11-glossary) frame view** opens a live relative-motion plot: pick an **Origin**
 and, optionally, a **Chase** and a **Target**. The picker only offers objects Red **owns or holds
 a Track on** (fog-of-war, same rule as every other cell-scoped view) — naming anything else is
 rejected outright, never silently substituted. The in-track/radial plot and R/I/C-km table update
 continuously as the clock runs, relative to whichever origin you've selected.
 
 This is your targeting tool for a true relative-geometry read **from Red's own belief**: select
-your chaser/interceptor as **Chase** and Blue's asset as **Target** to add the **CATS phase
+your chaser/interceptor as **Chase** and Blue's asset as **Target** to add the **[CATS](09-troubleshooting-and-glossary.md#11-glossary) phase
 angle** (0° front-lit · 90° side-lit · 180° backlit) — a direct read on whether your own optical
 sensor would get a usable look at Blue's bird right now, or a silhouette, before you commit to an
 RPO/engagement window (RED-5).
@@ -199,7 +209,7 @@ view from the defender's side.*
 
 ### RED-11 · Quick TLE export
 
-**View ▾ → Proximity → ⧉ TLE export** gives you a copyable, current-epoch TLE for one object.
+**View ▾ → Proximity → ⧉ [TLE](09-troubleshooting-and-glossary.md#11-glossary) export** gives you a copyable, current-epoch TLE for one object.
 The picker lists:
 
 - **Red's own satellites** (on-orbit assets only). These are fitted to the satellite's **actual
@@ -236,8 +246,8 @@ empty result, not a fabricated one) — if your custody lapsed, the gap in the e
 honest record of that lapse. The reference object resolves to ground truth only when it is your
 own asset; otherwise your own belief of it, same rule as RED-10's live view. `format=csv`
 (default) carries both frames; `format=oem` is ECI-only CCSDS OEM; `format=ric` is the RIC-only
-companion file. `t1`/`t2` are sim time as integer microseconds, the same units the event log
-uses — not a clock-face time.
+companion file. `t1`/`t2` are sim times, each either an ISO-8601 UTC clock time
+(`2030-03-15T06:00:00Z`) or integer microseconds; a bad bound gets a 400 naming `t1`/`t2` (see [`08`](08-http-api-reference.md)).
 
 This export reads **only your tracks**. Red holds no track on its own assets, so naming one of
 them as `object_id` returns a file with the header row and no data. The live RIC view (RED-10)
@@ -254,6 +264,7 @@ custody's drift against White's ground-truth export (WCM-15) during an AAR debri
 > `spacesim/session/aar.py` (`worlds_at_times`, per-instant replay) ·
 > `GET /api/sessions/{sid}/ephemeris/{cell}` ·
 > [FS-121](../features/FS-121-ephemeris-export.md) (`FR-7420`/`FR-7430`)
+> `spacesim/session/span_bounds.py` (`parse_span_bound`) · FR-7450
 
 ### RED-13 · Your telemetry CSV export (URL-only)
 
@@ -279,5 +290,6 @@ with a **422** on this route.
 > `spacesim/session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`) ·
 > `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv` ·
 > [FS-126](../features/FS-126-telemetry-csv-export.md) (`FR-2320`)
+> `spacesim/session/span_bounds.py` (`parse_span_bound`) · FR-7450
 
 ---

@@ -40,6 +40,19 @@
 > **FEAT-12300**, go to Release 1. Checked mechanically again: no Feature is bucketed before any
 > prerequisite. Totals: 4 Prototype + 4 MVP + 29 Release 1 + 11 Release 2 = 48.
 
+## Release state
+
+**Released — declared GO by the owner on 2026-11-01** on the strength of
+[REV-REL-004](../reviews/release-assessment-release-candidate-10.md) and its final-confirmation addendum
+(assessed at `935fd44`). The Prototype, MVP, Release 1 and Release 2 buckets are all **released**; the Future bucket is
+empty by design. All 94 Implementation Packages are `VERIFIED`. The owner closed condition C-1 (learner review
+REV-TRN-013), C-2 (Compare panel in WCM-6) and O-2 (role scoping ships dormant). The ten owner-accepted known
+deviations are listed in the assessment's addendum §A.7. Delivery notes for items this plan once marked unbuilt:
+`FEAT-3500` was delivered by `IP-1160`; `FEAT-7400`'s `FR-7450` is delivered by `IP-1089` (`FS-121`);
+the `FR-5310` template-reference clause was dropped (`BL-0233`, `ADR-0036`); the `NFR-3810` retired-document check
+has nothing to check on the real tree (`BL-0393`, deferred). The "unimplemented" wording on `FEAT-1600`/`FEAT-7400`/`FEAT-8200`
+below is the historical 2026-10-03 planning state: their new leaves (`FR-1670`, `FR-7440`, `FR-8210`/`FR-8220`) are since built and `VERIFIED`.
+
 ## Bucket assignments
 
 ### Prototype
@@ -67,7 +80,7 @@
 | **FEAT-2100–2500** (Bus SOH, Bus-Gates-Payload, Pass-Gated Telemetry, Payload-Type Actions, Safe-Mode Loop) | All Must-priority; RTM cites real built files for all five (`engine/bus.py`, `busmodel.py`, `buscommands.py`, `recovery.py`). Complete bus-operator training core, depends only on MVP-bucketed FEAT-1200. |
 | **FEAT-3100–3200, 3400** (Plan-First Commands, SSN Tasking, Execute-Time Re-Validation) | All Must-priority, RTM-verified built (`engine/orders.py`, `engine/ssn.py`). |
 | **FEAT-3300** Unified Planned-Activity Scheduler | Must-priority per requirements, but RTM Impl. Package is `UNASSIGNED` — placed here on priority/dependency grounds; the traceability gap itself is a Release-1-scoped verification task, not new development (see `05-feature-review.md`). |
-| **FEAT-3500** Role-Scoped Command Catalog & Assignment Scoping | Must-priority; both included FRs show RTM `UNASSIGNED` — same verification-task framing as FEAT-3300. |
+| **FEAT-3500** Role-Scoped Command Catalog & Assignment Scoping | Must-priority. **Delivered (`IP-1160`, `VERIFIED` 2026-10-25, VR-1160 v3.0)** — not descoped. `FR-3510`/`FR-3520` are built and test-named. `FR-3520`'s role gate is checked at submission, and omitting `seat` skips it (`BL-0388`, `FR-3520` amended). It ships as an **opt-in, dormant** feature: no shipped vignette declares `roles_needed`, and the Creator saves `roles_needed: []` (`BL-0390`; owner acceptance REV-REL-004 D-1/O-2). |
 | **FEAT-4100, 4200, 4300, 4600, 4700** (Vignette Selection, Seat Assignment, Clock Control Authority, God-View/View-As, Manual Adjudication) | All Must-priority and narratively covered by the existing `FS-106-white-cell-dashboard.md` (confirming real, shipped White Cell control-plane functionality) despite `UNASSIGNED` RTM citations — placed at Release 1 on priority/narrative-coverage grounds, with the citation gap flagged as Release-1-scoped verification work. |
 | **FEAT-5200** TLE Import with Manual/Keplerian Fallback | Must-priority, RTM-verified built; depends only on Prototype-bucketed FEAT-1200. |
 | **FEAT-6300, 6400** (Lazy Clock/Locking, Hot-Seat/LAN Sharing) | All Must-priority, RTM-verified built (`session/manager.py`, `session/inprocess.py`); this is the entire P8 multiplayer transport. *(FEAT-6200, the fog-of-war boundary, moved to MVP 2026-10-23.)* |
@@ -77,7 +90,7 @@
 | **FEAT-5100** In-App Iterative Vignette Builder *(moved from MVP, 2026-10-17)* | Must-priority; built in Tranche 3 (`IP-1171`–`IP-1174`), not with the MVP core. Now depends on FEAT-4200 (Release 1) through `FR-5160`'s seat/role matrix. FEAT-4500 and FEAT-5200 depend on it, both in this bucket or later. |
 | **FEAT-11100** Role-Scoped, Source-Anchored, Current Operator Manuals *(new 2026-10-17)* | Must-priority (`FR-11000` family) and already in place (`docs/training/`, run continuously since 2026-07-04). No Feature-level prerequisite; bucketed with the shipped core it documents. |
 | **FEAT-11300** Vignette Learning Path & Verified Playbooks *(new 2026-10-17)* | Must-priority and in place (`training/16`, `test_vignette_tutorials.py`). Depends on FEAT-11100 and FEAT-4100, both Release 1 or earlier. |
-| **FEAT-12100** Test-Origin Traceability & Major-Release Verification *(new 2026-10-23)* | Must-priority (`NFR-2820`, `NFR-3840`; `NFR-1510`/`NFR-2830` at each major release). Owner direction `BL-0310`. Prerequisites FEAT-1100 and FEAT-5300 are Prototype. Not yet implemented — the next `06` candidates include it. |
+| **FEAT-12100** Test-Origin Traceability & Release Verification *(new 2026-10-23)* | Must-priority (`NFR-2820`, `NFR-3840`; `NFR-1510`/`NFR-2830` at every release). Owner direction `BL-0310`. Prerequisites FEAT-1100 and FEAT-5300 are Prototype. Not yet implemented — the next `06` candidates include it. |
 | **FEAT-12200** Automated Browser Verification of Load-Bearing Console Rules *(new 2026-10-23)* | Must-priority (`NFR-2840`), owner decision `BL-0304`. Prerequisites FEAT-8100 and FEAT-6200 are MVP. Not yet implemented. |
 | **FEAT-12300** Documentation Integrity Checks *(new 2026-10-23)* | Must/Should leaves `NFR-3800`–`NFR-3830` (owner direction on `BL-0297`); needed before the build-spec/design retirement (`BL-0292`) can be checked. Prerequisite FEAT-11100 is Release 1. Not yet implemented. |
 | **FEAT-7200, 7300** (Save/Resume, AAR Replay/Scrub/Branch-Compare) | Both Must-priority (branch-compare is Should for FR-7320 specifically), RTM-verified built (`session/manager.py`, `session/aar.py`). |

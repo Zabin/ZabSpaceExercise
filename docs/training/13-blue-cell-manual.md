@@ -11,6 +11,11 @@ mechanics — this manual frames them from Blue's defensive posture; the Red man
 ([`14-red-cell-manual.md`](14-red-cell-manual.md)) frames the same mechanics offensively, and
 both defer to the shared concept modules rather than duplicating them.
 
+**More sections** (BLU-15 to BLU-18) are in [13a](13a-blue-cell-rules-and-delivery.md): the Operator seat field, orders waiting for approval and live ROE changes, which link a jam attacks and what stops a command, and the manoeuvre ledger.
+
+
+**Acronyms.** ISR, SAR, SDA, SATCOM, PNT, GNSS, EW, TT&C, SoC, MEO and the rest are defined in the [glossary](09-troubleshooting-and-glossary.md#11-glossary).
+
 ### BLU-1 · Your view: fog-of-war
 
 You see **only Blue's own assets** at true position, plus whatever Blue's sensors have detected —
@@ -19,6 +24,8 @@ You never see Red's ground truth; the filter is enforced server-side at the
 `SessionAPI`/`CellController` boundary, not in the browser. Read your **Mission brief** (auto-opens
 on load; reopen from View ▾ → Mission brief) for situation, mission, friendly forces, threat
 picture, ROE, deadline, and success criteria before acting.
+
+**Hand-off in a shared browser.** When one machine is passed between cells, click **⏸ Handover**; the screen blurs and reads `HANDING OFF → RED`. Pass the keyboard, and the next operator clicks the overlay's **Resume**, which switches the console to their seat. It only hides the screen; it is not security.
 
 > **Sources:** `spacesim/session/cells.py` (`CellController`, fog filter) · `spacesim/session/scene.py` ·
 > `GET /api/sessions/{sid}/brief/blue` · [`02-interface.md`](02-interface.md) §"A player cell"
@@ -31,6 +38,8 @@ soonest: **ground-station uplink**, **inter-satellite link (ISL) relay** via a c
 peer, or a **stored program** run onboard. Every issued order lands in the **command queue** with
 its window and delivery path, and stays **cancellable until it uplinks**. Up to four commands
 ride one pass.
+
+**Your Timeline panel.** The Timeline (activity) panel shows your own orders and any effect that has started on your own assets. An effect appears by category and symptom only, for example `electronic_warfare → ISR-EO-1 (deny)`: you are told something is hitting the link, not which jammer or template did it. You never see Red's orders, and never White's schedule, edits or cancels. This is fog of war: you learn effects by their symptoms, as a real operator would.
 
 > **Sources:** `spacesim/engine/orders.py` (`OrderSystem`, delivery paths) ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"Plan-first commanding"
@@ -134,6 +143,8 @@ vulnerability with `def.patch_cyber`, or get the jammer killed) before recovery 
 from the recovery strip; the bus commands (EPS shed/restore, ADCS mode, storage dump) are issued
 like any other command via the command action.
 
+**Nothing to recover?** Red's cyber attempt is a chance event (about 62%). If your satellite stays nominal and **Begin recovery** never appears, Red's attempt missed (this happens with some seeds, for example Seed 2 of the recovery lesson); there is nothing to patch yet. Ask Red to fire again, or carry on; do not hunt for a fault that did not happen.
+
 > **Sources:** `spacesim/engine/recovery.py` · `spacesim/engine/buscommands.py` ·
 > [`05-core-concepts.md`](05-core-concepts.md) §"Safe-mode recovery"
 
@@ -170,7 +181,7 @@ deadline in your Mission brief.
 
 ### BLU-11 · RIC frame view & CATS phase angle
 
-**View ▾ → Proximity → ⊕ RIC frame view** opens a live, relative-motion plot: pick an **Origin**
+**View ▾ → Proximity → ⊕ [RIC](09-troubleshooting-and-glossary.md#11-glossary) frame view** opens a live, relative-motion plot: pick an **Origin**
 and, optionally, a **Chase** and a **Target**. Unlike the god-view (WCM-13), your picker only
 offers objects you **own or hold a Track on** — the same fog-of-war rule as every other
 cell-scoped view. Selecting anything else is rejected outright (a clear error, never a silent
@@ -180,7 +191,7 @@ centre) and the R/I/C-km table re-render continuously as the clock runs.
 This is your tool for reading a true relative-motion picture **from your own belief**, not the
 2D map's compressed symbol view — useful when flying a defensive manoeuvre (BLU-8) or escort
 (evade a closing track, or hold station on an escorted asset). Selecting your own
-sensor/interceptor as **Chase** and the threat as **Target** adds the **CATS phase angle** (0°
+sensor/interceptor as **Chase** and the threat as **Target** adds the **[CATS](09-troubleshooting-and-glossary.md#11-glossary) phase angle** (0°
 front-lit · 90° side-lit · 180° backlit): a quick read on whether your optical sensor would get a
 usable look at the target right now, or a silhouette.
 
@@ -193,7 +204,7 @@ view from the targeting side.*
 
 ### BLU-12 · Quick TLE export
 
-**View ▾ → Proximity → ⧉ TLE export** gives you a copyable, current-epoch TLE for one object.
+**View ▾ → Proximity → ⧉ [TLE](09-troubleshooting-and-glossary.md#11-glossary) export** gives you a copyable, current-epoch TLE for one object.
 The picker lists two kinds of object, and the line under the text box says which one you got:
 
 - **Your own satellites** (every Blue on-orbit asset; ground stations are not listed). The TLE is
@@ -232,8 +243,9 @@ instant** (an empty result, not a fabricated one) — if your custody lapsed par
 span, the gap in the export is the honest record of that lapse. The reference object resolves to
 ground truth only when it is your own asset; otherwise it uses your own belief of it too, same
 rule as BLU-11's live view. `format=csv` (default) carries both frames; `format=oem` is
-ECI-only CCSDS OEM; `format=ric` is the RIC-only companion file. `t1`/`t2` are sim time as
-integer microseconds, the same units the event log uses — not a clock-face time.
+ECI-only CCSDS OEM; `format=ric` is the RIC-only companion file. `t1`/`t2` are sim times, each either an
+ISO-8601 UTC clock time (`2030-03-15T06:00:00Z`) or integer microseconds; a bad bound gets a 400 naming `t1`/`t2`
+(see [`08`](08-http-api-reference.md)).
 
 This export reads **only your tracks**. You hold no track on your own satellites, so naming one
 of your own assets as `object_id` returns a file with the header row and no data. The live RIC
@@ -251,6 +263,7 @@ belief's drift against White's ground-truth export (WCM-15) during a debrief.
 > `spacesim/session/aar.py` (`worlds_at_times`, per-instant replay) ·
 > `GET /api/sessions/{sid}/ephemeris/{cell}` ·
 > [FS-121](../features/FS-121-ephemeris-export.md) (`FR-7420`/`FR-7430`)
+> `spacesim/session/span_bounds.py` (`parse_span_bound`) · FR-7450
 
 ### BLU-14 · Your telemetry CSV export (URL-only)
 
@@ -276,5 +289,6 @@ refused with a **422** on this route.
 > `spacesim/session/ephemeris.py` (`sample_times`/`MAX_EXPORT_SAMPLES`) ·
 > `GET /api/sessions/{sid}/telemetry/{cell}/{asset}/export.csv` ·
 > [FS-126](../features/FS-126-telemetry-csv-export.md) (`FR-2320`)
+> `spacesim/session/span_bounds.py` (`parse_span_bound`) · FR-7450
 
 ---

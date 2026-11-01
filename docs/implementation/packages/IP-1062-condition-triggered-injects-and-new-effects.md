@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1062
 > **Version:** 1.0
-> **Status:** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
+> **Status:** VERIFIED 2026-09-28 ([VR-1062](../verification/VR-1062-condition-triggered-injects-and-new-effects.md), fresh session; COMPLETE before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🔵 COMPLETE *(implemented 2026-09-27, MSTR-006 §3 authorization granted the same day;
 > awaiting `09-package-verification` in a fresh session — this session implemented it and may not
 > verify its own work)*
 > **Remediation (2026-09-27/28, authorized by the project owner per MSTR-006 §3):** an independent

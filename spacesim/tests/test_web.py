@@ -109,7 +109,7 @@ def test_full_flow_order_advance_objectives_and_rewind():
     assert objs["blue"]["deliver_isr"] is True
 
     # Rewind clears the delivery (exact replay-based rewind through the API).
-    c.post(f"/api/sessions/{sid}/rewind?cell=white", json={"t": 0})
+    c.post(f"/api/sessions/{sid}/rewind?cell=white", json={"t": start})
     assert c.get(f"/api/sessions/{sid}/objectives").json()["blue"]["deliver_isr"] is False
 
 
@@ -135,7 +135,7 @@ def test_inject_reveals_track_to_blue_over_api():
 
 # -- Stage C: critical-path API smoke tests -----------------------------------
 
-@pytest.mark.verifies("FR-6210")
+@pytest.mark.verifies("FR-8110")
 def test_scene_returns_assets():
     c = _client()
     sid = _new_session(c)
@@ -155,7 +155,7 @@ def test_telemetry_param_list():
     assert "subsystems" in body and len(body["subsystems"]) > 0
 
 
-@pytest.mark.verifies("FR-2110")
+@pytest.mark.verifies("FR-2310")
 def test_telemetry_series_count():
     c = _client()
     sid = _new_session(c)
@@ -191,7 +191,7 @@ def test_telemetry_series_route_matches_export_csv():
     assert all(p["status"] == "green" for p in series if p["t"] < start + 600 * 10**6)
 
 
-@pytest.mark.verifies("FR-6210")
+@pytest.mark.verifies("FR-1320", "FR-6210")
 def test_maneuver_ledger_route_and_csv_export_are_fog_scoped():
     """IP-1250 (FR-1320) — the ledger route/CSV export mirror /telemetry's fog-of-war behavior:
     an operator cannot fetch another cell's Asset ledger."""
@@ -385,7 +385,7 @@ def test_rewind_re_anchors_clock(monkeypatch):
     assert advanced - start_now == 30 * 1_000_000
     # Rewind sets sim.clock.now back; re-anchor must reset wall_anchor to wall=now and
     # sim_anchor to the new sim time. So +5s of further wall time should yield +5s of sim.
-    c.post(f"/api/sessions/{sid}/rewind?cell=white", json={"t": 0})
+    c.post(f"/api/sessions/{sid}/rewind?cell=white", json={"t": start_now})
     after_rewind = c.get(f"/api/sessions/{sid}/godview").json()["now"]
     _patch_wall(monkeypatch, 7035.0)        # +5s after rewind
     after_5s = c.get(f"/api/sessions/{sid}/godview").json()["now"]
@@ -393,7 +393,7 @@ def test_rewind_re_anchors_clock(monkeypatch):
     assert after_5s - after_rewind == 5 * 1_000_000
 
 
-@pytest.mark.verifies("FR-6310")
+@pytest.mark.verifies("FR-6410")
 def test_session_discovery_lists_sessions():
     c = _client()
     s1 = c.post("/api/sessions", json={"vignette_id": "leo-isr-denial", "seed": 1}).json()["session"]
@@ -528,18 +528,18 @@ def test_draft_session_create_add_asset_and_save_as_vignette(tmp_path, monkeypat
     assert listing[sid]["started"] is False
 
     # Time control is refused against it.
-    step = c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 60.0}).json()
-    assert step["ok"] is False
+    step = c.post(f"/api/sessions/{sid}/step?cell=white", json={"dt_sim_s": 60.0})
+    assert step.status_code == 400 and "draft" in step.json()["detail"]    # IP-1076: refusal is a 400
 
     # Force-add an asset the same way any session's asset entry already works.
-    tle1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
-    tle2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+    from tle_helpers import in_epoch_tle  # IP-1086: a TLE valid at the 2030 exercise start
+    tle1, tle2 = in_epoch_tle()
     ack = c.post(f"/api/sessions/{sid}/force/tle?cell=white",
                  json={"id": "HTTP-SAT", "line1": tle1, "line2": tle2, "owner": "blue"}).json()
     assert ack["ok"] is True
 
     # Save as vignette — a real, loadable file.
-    resp = c.post(f"/api/sessions/{sid}/save_vignette",
+    resp = c.post(f"/api/sessions/{sid}/save_vignette?cell=white",
                   json={"vignette_id": "test-ip1173-http-draft", "title": "HTTP Draft Saved"}).json()
     assert resp["vignette_id"] == "test-ip1173-http-draft"
     try:
@@ -558,8 +558,8 @@ def test_bulk_import_tle_route_end_to_end():
     """IP-1190 (FR-5220) — the new /force/bulk_import route, TLE format, end to end."""
     c = _client()
     sid = c.post("/api/sessions/draft", json={"title": "Bulk Import"}).json()["session"]
-    tle1 = "1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9994"
-    tle2 = "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.49560570999999"
+    from tle_helpers import in_epoch_tle  # IP-1086: a TLE valid at the 2030 exercise start
+    tle1, tle2 = in_epoch_tle()
     content = "\n".join(["HTTP-BULK-1", tle1, tle2])
     resp = c.post(f"/api/sessions/{sid}/force/bulk_import?cell=white",
                    json={"format": "tle", "content": content,
@@ -593,7 +593,7 @@ def test_save_as_scenario_route_end_to_end(tmp_path, monkeypatch):
     c.post(f"/api/sessions/{sid}/clock?cell=white", json={"running": False})  # stop catch-up drift
     save_moment = c.get(f"/api/sessions/{sid}/save").json()["final_time"]
 
-    resp = c.post(f"/api/sessions/{sid}/save_vignette",
+    resp = c.post(f"/api/sessions/{sid}/save_vignette?cell=white",
                   json={"vignette_id": "test-ip1200-http-scenario", "title": "HTTP Scenario",
                         "as_scenario": True}).json()
     try:
@@ -608,7 +608,7 @@ def test_save_as_scenario_route_end_to_end(tmp_path, monkeypatch):
 
     # A draft session's own "Save as Vignette" (as_scenario omitted/False) is unaffected.
     draft_sid = c.post("/api/sessions/draft", json={"title": "Still Draft"}).json()["session"]
-    draft_resp = c.post(f"/api/sessions/{draft_sid}/save_vignette",
+    draft_resp = c.post(f"/api/sessions/{draft_sid}/save_vignette?cell=white",
                         json={"vignette_id": "test-ip1200-draft-unaffected", "title": "Draft"})
     assert draft_resp.status_code == 200
     from pathlib import Path
@@ -639,7 +639,7 @@ def test_ephemeris_truth_route_wholly_out_of_range_is_400():
     assert r.status_code == 400
 
 
-@pytest.mark.verifies("FR-6210")
+@pytest.mark.verifies("FR-7420")
 def test_ephemeris_cell_observed_route_fog_of_war_enforced():
     """IP-1210 (FR-7420) — a cell with no Track on the requested object gets an empty export,
     never another cell's belief or ground truth, mirroring test_scene.py's fog-of-war pattern."""
@@ -706,9 +706,9 @@ def test_aar_playback_start_advance_and_viewpoint_switch():
     assert adv.status_code == 200
     assert "assets" in adv.json()  # ground-truth WorldState shape
 
-    switched = c.post(f"/api/sessions/{sid}/aar/playback/viewpoint", json={"viewpoint": "blue"})
+    switched = c.post(f"/api/sessions/{sid}/aar/playback/viewpoint?cell=white", json={"viewpoint": "blue"})
     assert switched.json()["ok"] is True
-    state = c.get(f"/api/sessions/{sid}/aar/playback/state")
+    state = c.get(f"/api/sessions/{sid}/aar/playback/state?cell=white")
     assert "own_assets" in state.json()  # CellView shape, not ground truth
 
 

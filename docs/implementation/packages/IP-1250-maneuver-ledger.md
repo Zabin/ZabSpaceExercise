@@ -2,7 +2,8 @@
 
 > **Package ID:** IP-1250
 > **Version:** 1.0
-> **Status:** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
+> **Status:** VERIFIED 2026-09-28 ([VR-1250](../verification/VR-1250-maneuver-ledger.md), fresh session; READY before that).
+> **Earlier status record (superseded by the line above; retained as history, unedited):** 🟡 READY *(authorized 2026-09-27 by the project owner's direct instruction, MSTR-006 §3)*
 > **Dependencies:** [FS-125](../../features/FS-125-maneuver-ledger.md) v1.0 (`FR-1320`),
 > `engine/orders.py`/`engine/eventlog.py` (`VERIFIED` baseline code, `IP-1010`)
 > **Referenced By:** [00-master-build-plan.md](../00-master-build-plan.md),
