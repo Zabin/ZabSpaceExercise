@@ -12,6 +12,16 @@ history is the archive. Each release gets:
   counts, dependency lock, known deviations, reviews relied on, merged branches, owner decisions, how to
   run, and the trust model.
 
+## Naming convention (owner decision D1, 2026-11-01)
+
+- A release is named **MAJOR.MINOR**: "Release 1.0", "Release 2.0". No "Release 1", "release candidate N" or other forms.
+- Git: archive branch `archive/release-X.Y`, annotated tag `release-X.Y`; manifest `docs/releases/release-X.Y.md`.
+- Planning: the release-plan bucket for a release is named by the same ID (`R1.0`, `R2.0`).
+- Review documents: `release-assessment-release-X.Y.md` / `integration-review-release-X.Y-<scope>.md`, not `release-candidate-N`.
+- Candidate builds during a release are `X.Y-rcN` tags, never a separate "release".
+- Historical documents keep their file names (they are linked from journals and reviews); see
+  [`../feature-planning/06-release-2-plan.md`](../feature-planning/06-release-2-plan.md) section 8 for the legacy-name list.
+
 ## Releases
 
 | Release | Date | Commit | Archive ref | Manifest |

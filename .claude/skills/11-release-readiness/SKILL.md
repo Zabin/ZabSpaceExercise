@@ -5,7 +5,7 @@ description: Make the evidence-based go/no-go assessment for one release bucket 
 
 # Release Readiness & Baseline Update
 
-Closes the loop on **one release bucket** (Prototype / MVP / Release 1 / Release 2, per
+Closes the loop on **one release bucket** (named by release ID `R<MAJOR>.<MINOR>`, e.g. R1.0, R2.0; the pre-2.0 tranche labels Prototype / MVP / Release 1 / Release 2 are legacy sub-tranches of R1.0, per
 `docs/feature-planning/01-release-plan.md`): assembles the evidence that the bucket's promised
 scope was delivered, verified, and integration-reviewed; states an explicit **GO / NO-GO**
 recommendation with the reasoning; and — on the user's GO — updates the engineering baseline so

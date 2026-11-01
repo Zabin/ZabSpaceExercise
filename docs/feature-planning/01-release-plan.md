@@ -53,6 +53,12 @@ the `FR-5310` template-reference clause was dropped (`BL-0233`, `ADR-0036`); the
 has nothing to check on the real tree (`BL-0393`, deferred). The "unimplemented" wording on `FEAT-1600`/`FEAT-7400`/`FEAT-8200`
 below is the historical 2026-10-03 planning state: their new leaves (`FR-1670`, `FR-7440`, `FR-8210`/`FR-8220`) are since built and `VERIFIED`.
 
+> **Naming (owner decision D1, 2026-11-01).** Buckets are now named by release ID, `R<MAJOR>.<MINOR>`. The five
+> labels below -- Prototype, MVP, Release 1, Release 2, Future -- are **legacy tranche labels**; all four released
+> tranches shipped together as **R1.0** (Release 1.0). They are kept verbatim here because the Feature rationale
+> text and the review documents cite them. The next bucket is **R2.0** (see
+> [`06-release-2-plan.md`](06-release-2-plan.md) section 8). Convention: [`../releases/INDEX.md`](../releases/INDEX.md).
+
 ## Bucket assignments
 
 ### Prototype

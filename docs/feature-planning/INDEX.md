@@ -12,7 +12,7 @@ and for the row-by-row reconciliation between the 11 existing `FS-xxx` documents
 
 | Doc | Content |
 |---|---|
-| [`01-release-plan.md`](01-release-plan.md) | Bucket assignment (Prototype/MVP/Release 1/Release 2/Future) for all 48 Features *(as of 2026-10-23)*, with justification, plus the **Release state**: all buckets released, GO declared by the owner 2026-11-01. Release record: [REV-REL-004](../reviews/release-assessment-release-candidate-10.md). |
+| [`01-release-plan.md`](01-release-plan.md) | Bucket assignment (legacy tranche labels Prototype/MVP/Release 1/Release 2, all released as R1.0, plus Future; new buckets are named by release ID, e.g. R2.0) for all 48 Features *(as of 2026-10-23)*, with justification, plus the **Release state**: all buckets released, GO declared by the owner 2026-11-01. Release record: [REV-REL-004](../reviews/release-assessment-release-candidate-10.md). |
 | [`02-epic-catalog.md`](02-epic-catalog.md) | 11 Epics (`EP-1000`–`EP-11000`), one per top-level requirements-baseline grouping. |
 | [`03-feature-catalog.md`](03-feature-catalog.md) | 48 Features (`FEAT-1100`–`FEAT-12300`), full template, tracing every baselined FR/NFR leaf (106 FR + 48 NFR, 2026-10-23) exactly once. |
 | [`04-feature-dependency-graph.md`](04-feature-dependency-graph.md) | Mermaid dependency diagram, critical path, blocking Features, parallel-build opportunities, 2 resolved circular-citation findings. |

@@ -15,9 +15,13 @@
 > needs MSTR-006 §3 authorization. The `01-release-plan.md` bucket table is unchanged by this document; a
 > `05-feature-decomposition` delta pass adds the new bucket once the owner accepts the scope (Decision 1).
 >
-> **Naming.** The existing 5-bucket scheme (`01-release-plan.md`) already has a bucket called "Release 2",
-> and it **shipped inside Release 1.0**. To avoid a second meaning, this document calls the next product
-> release **Release 2.0** and its bucket **R2.0** (Decision 1).
+> **Naming (D1 decided, 2026-11-01).** Releases are named MAJOR.MINOR; the bucket carries the same ID. The old
+> "Release 2" tranche label in `01-release-plan.md` **shipped inside Release 1.0**, so the next product release is
+> **Release 2.0** and its bucket **R2.0**. Convention and legacy cleanup: section 8.
+>
+> **Decision status (2026-11-01).** Owner decisions recorded: **D1, D5, D6, D7, D11**. **D3 and D4: pending
+> research, see `06a-release-2-d3-d4-research.md`.** D2, D8, D9, D10, D12, D13, D14 remain *recommendation,
+> awaiting owner*.
 >
 > **File number.** This folder numbers its documents `01`–`05` in sequence; this is `06`.
 >
@@ -52,27 +56,28 @@ persistence, per-seat authentication). Those all change the fog-of-war boundary 
 research or architecture, and would be built on top of the same half-wired seams. Finishing first makes the
 next big theme cheaper and safer.
 
-**Size (estimate).** About **18–22 code packages**, **4–5 vignette/training runs**, **2 requirements passes**,
+**Size (estimate).** About **18–22 code packages** (D5 removed one package, D7 added a small one), **4–5 vignette/training runs**, **2 requirements passes**,
 **1 documentation-retirement sweep**, in four milestones (M0–M3). Release 1.0 took 94 packages. Release 2.0 is
 roughly a fifth of that. Session limits make the per-package fresh verification the real pacing item, not the
 coding.
 
 | Tier | Items | What |
 |---|---|---|
-| **Must** | 23 | Trust, seat, validation and save-integrity bugs; the manuals' behaviour findings; test and ledger hygiene the gates need |
-| **Should** | 24 | Console surfaces for the five HTTP-only controls; Creator completeness; link-availability metric; SIGINT characterization path; crewed vignettes; save-as-scenario completeness; build-spec retirement |
+| **Must** | 24 | Trust, seat, validation and save-integrity bugs (incl. the `save_format` bump); the manuals' behaviour findings; test and ledger hygiene the gates need |
+| **Should** | 23 | Console surfaces for the five HTTP-only controls; Creator completeness; link-availability metric; SIGINT characterization path; crewed vignettes; save-as-scenario completeness; build-spec retirement |
 | **Could** (stretch) | 13 | Hardening, small fidelity items, owner-deferred questions if decided "yes" |
 | **Later / Out** | 22 | Architecture-scale themes (coalition, proliferated, campaign, auth), research-blocked items, low-value asks |
-| **Drop / close** | 7 | Stale rows already delivered, or verified fixed |
+| **Drop / close** | 8 | Stale rows already delivered, verified fixed, or closed by an owner decision (F-08) |
 
 **Process changes for Release 2.0 (§5).** Integration review **per milestone tranche**, not at the end;
 short-lived branches merged to `main` by PR per package (or small batch), not a stack of ~90 branches;
 manual-impact and documentation verification inside every package; the dependency check-latest-then-pin step at
 M0 and again at the release; the release archive step at the end.
 
-**Top owner decisions (§6):** accept the theme and the R2.0 naming (D1, D2); link-availability semantics and
-tier (D3); the SIGINT characterization path (D4); make role scoping live in shipped vignettes and close the
-seat-less bypass (D5); the live event-log cap (D6); `save_format` policy (D7); the branching strategy (D11).
+**Owner decisions (§6):** decided -- R2.0 naming (D1), crewed vignettes with the seat-less bypass kept and
+`roles_needed` derived by the Creator (D5), configurable measured live-log caps (D6), no cross-release save
+compatibility (D7), trunk-based branching (D11). Pending research: link-availability semantics and tier (D3), the
+SIGINT characterization path (D4). Still awaiting the owner: theme (D2) and D8-D10, D12-D14.
 
 ---
 
@@ -87,7 +92,7 @@ for IN and STRETCH rows. Dependencies name other rows in this table.
 | # | Id / source | Item | Sev | Effort | Depends | Disp. | Tier |
 |---|---|---|---|---|---|---|---|
 | B-01 | `BL-0390`; REV-REL-004 §A.7 item 6 | Pause/Resume resets a custom clock rate to 1.0 | Medium | S | — | IN | Must |
-| B-02 | `BL-0390`; §A.7 items 2, 6 (D-1) | Creator seat/role matrix is not saved; every Creator vignette has `roles_needed: []` | Medium | S–M | — | IN | Must |
+| B-02 | `BL-0390`; §A.7 items 2, 6 (D-1); D5 | Creator seat/role matrix is not saved; every Creator vignette has `roles_needed: []`. **D5:** the Creator derives `roles_needed` automatically from its seat/role matrix, so authors declare it once | Medium | S–M | — | IN | Must |
 | B-03 | `BL-0390` | A saved vignette is invisible in the library unless `user_save_dir` is also listed in `external_vignette_dirs` | Medium | S | — | IN | Must |
 | B-04 | `BL-0390`; REV-REL-004 §5 (reproduced: 200) | `/start` succeeds on a Creator draft session | Medium | S | — | IN | Must |
 | B-05 | `BL-0390` | `roles/assign` accepts a role id the vignette does not declare | Low–Med | S | — | IN | Must |
@@ -100,11 +105,11 @@ for IN and STRETCH rows. Dependencies name other rows in this table.
 | B-12 | `BL-0392` | Swapped `t1`/`t2` on the time-span exports returns a header-only file with no error | Low | S | — | IN | Must |
 | B-13 | unreviewed L-4 | `GET /api/vignettes` returns absolute server file paths to every LAN client; external ids not charset-checked at listing | Low | S | — | IN | Must |
 | B-14 | `BL-0140` | A malformed per-object owner (`owner: "purple"`) aborts the whole bulk-import batch | Medium | S | — | IN | Must |
-| B-15 | `BL-0386`; §5 residual risk | Live event log has no cap, but load refuses a save with more than 100,000 entries: a long exercise can produce an unloadable save (same class as the fixed `BL-0371` span bug) | Medium | S–M | D6 | IN | Must |
+| B-15 | `BL-0386`; §5 residual risk; D6 | Live event log has no cap, but load refuses a save with more than 100,000 entries: a long exercise can produce an unloadable save (same class as the fixed `BL-0371` span bug). **D6:** configurable caps (entries and save size on disk) with defaults set from a measurement of replay time and save size at the cap; warn White at 80 %, refuse further advance at the cap; align the loader limit with the live cap | Medium | M | D6 (decided) | IN | Must |
 | B-16 | REV-REL-004 R-2; `BL-0367` | Four tests skip on every run (data-dependent fixtures), so their assertions (`FR-6220` row 10, sensor/pass-booking release, operator `success_prob` override) never execute | Low (gate hole) | S | — | IN | Must |
 | B-17 | `BL-0386` | `--origin-report` exits 5 (pytest "no tests collected") — scripts treat the report as a failure | Low | S | — | IN | Must |
-| B-18 | §A.7 item 6; `BL-0390` | Blue availability objectives (`pnt_avail`, `satcom_avail`) score satellite health, not link availability: MET while jammed | **High for trust** | M | D3 | IN | Should (D3: promote to Must) |
-| B-19 | §A.7 item 6; `BL-0390`; `BL-0150` | `mt-sigint-geolocate`: Blue cannot reach `characterize_emitter` by orders; `passive_rf_fix()` has no caller | Medium | M | D4 | IN | Should |
+| B-18 | §A.7 item 6; `BL-0390` | Blue availability objectives (`pnt_avail`, `satcom_avail`) score satellite health, not link availability: MET while jammed | **High for trust** | M | D3 (pending research) | IN | Should (D3 pending research) |
+| B-19 | §A.7 item 6; `BL-0390`; `BL-0150` | `mt-sigint-geolocate`: Blue cannot reach `characterize_emitter` by orders; `passive_rf_fix()` has no caller | Medium | M | D4 (pending research) | IN | Should |
 | B-20 | owner brief (vignette finding) | `mt-sigint-geolocate` `preserve_constellation` checks only `SIGINT-1`, not the whole constellation | Low | S | B-19 | IN | Should |
 | B-21 | rc3 L-4 | A stale-epoch TLE is accepted by `/force/tle` with `ok:true` and no warning | Low | S | F-22 | IN | Should |
 | B-22 | unreviewed L-6 | Rewind/undo resets the SSN and order registries: an orphaned staged SSN product and a reused id remain | Low–Med (replay-adjacent) | M | — | IN | Should |
@@ -117,6 +122,7 @@ for IN and STRETCH rows. Dependencies name other rows in this table.
 | B-29 | `BL-0252` | `yaml.safe_load` without `YAMLError` guard in the built-in id scan — **checked: `content/vignette.py` now guards all four scans** | — | — | — | DROP | verify + close |
 | B-30 | `BL-0284`, `BL-0315`, `BL-0233` | Rewind drops injects; force edits lost on resume; template clause — fixed (`IP-1083`, `IP-1101`/`1102`) or amended per REV-REL-004 §5 | — | — | — | DROP | close |
 | B-31 | REV-TRN-013 M-1, L-1, L-2 | WCM-6 Compare sentence; `15` §15.3 pronoun; `11` T+26 note — **checked: fixed in the tree** | — | — | — | DROP | close |
+| B-32 | D7 (owner, 2026-11-01) | **No cross-release save compatibility:** bump `save_format`; `validate_save` refuses an older save with a clear message naming the format and release; remove the legacy "reload by vignette id" path (`IP-1101`) and its tests. No migration code or migration test | Medium (removes a path) | S | D7 (decided) | IN | Must |
 
 ### 2.2 Documentation, ledger and test-hygiene defects
 
@@ -145,12 +151,12 @@ for IN and STRETCH rows. Dependencies name other rows in this table.
 |---|---|---|---|---|---|---|---|
 | F-01 | `BL-0389`; §A.7 item 5; rc3 M-4; unreviewed M-5; FS-125, FS-127 | **Console surfaces for the HTTP-only controls:** (a) gate approve/deny queue (`FR-3430`); (b) live ROE change (`FR-3440`); (c) manoeuvre ledger view + CSV (`FR-1320`); (d) undo; (e) clock-rate control | High | L (3 pkgs) | B-01, B-10 | IN | Should |
 | F-02 | §A.7; `BL-0390`; FS-117 | **Creator completeness:** save the role matrix (B-02), human-readable validation messages instead of raw JSON, pre-validate before save, show saved vignettes (B-03) | High | M (2 pkgs) | B-02, B-03 | IN | Should |
-| F-03 | §A.7 item 6 | **Link-availability objective metric** (time fraction a link is usable, honouring `is_link_denied`), replacing health-based `pnt_avail`/`satcom_avail` | High (trust) | M | D3, `04` | IN | Should (D3) |
-| F-04 | `BL-0150`; `FR-1650` | **SIGINT characterization path:** wire `passive_rf_fix()` into an order so a SIGINT collection can yield a characterized track | Medium–High | M | D4 | IN | Should |
-| F-05 | §A.7 item 2 (D-1 / O-2) | **Crewed vignettes:** at least two shipped vignettes declare `roles_needed`, with briefs, tutorials, playbook entries and a learning-path rung | High (makes FEAT-3500 live) | M (vignette runs) | F-02, D5 | IN | Should |
-| F-06 | `BL-0389`; §A.7 item 4; unreviewed M-4 | **Save-as-scenario completeness:** carry `effect_gating_rules`, `effect_detectability_config`, `space_weather_series` + environmental-anomaly rate, and the inject schedule | High | M (1–2 pkgs) | D7 | IN | Should |
+| F-03 | §A.7 item 6 | **Link-availability objective metric** (semantics and tier pending research, D3), replacing health-based `pnt_avail`/`satcom_avail` | High (trust) | M | D3 (pending research), `04` | IN | Should (D3 pending research) |
+| F-04 | `BL-0150`; `FR-1650` | **SIGINT characterization path** (approach pending research, D4); `passive_rf_fix()` today has no caller | Medium–High | M | D4 (pending research) | IN | Should |
+| F-05 | §A.7 item 2 (D-1 / O-2); D5 | **Crewed vignettes (D5: at least two):** shipped vignettes declare `roles_needed` (authored once through the Creator matrix, B-02/F-02), with briefs, tutorials, playbook entries and a learning-path rung. The seat-less hot-seat path is unchanged | High (makes FEAT-3500 live) | M (vignette runs) | F-02, B-02 | IN | Should |
+| F-06 | `BL-0389`; §A.7 item 4; unreviewed M-4 | **Save-as-scenario completeness:** carry `effect_gating_rules`, `effect_detectability_config`, `space_weather_series` + environmental-anomaly rate, and the inject schedule | High | M (1–2 pkgs) | B-32 | IN | Should |
 | F-07 | unreviewed L-9 | **Mechanics coverage in content:** no shipped vignette uses `roe:`, `effect_gating_rules`, `effect_detectability_config`, `space_weather_series`, `environmental_anomalies` | Medium–High | M (vignette run) | F-01, F-06 | IN | Should |
-| F-08 | `BL-0388`; `FR-3520` amended | Role gate at submission only, seat-less submission skips it. Becomes material once F-05 makes scoping live | Medium | S–M | D5, F-05 | IN | Should (D5) |
+| F-08 | `BL-0388`; `FR-3520` amended | Close the seat-less bypass. **Closed by D5:** the bypass is kept (no mandatory seat requirement); the `BL-0388` behaviour is recorded as intended and `FR-3520`'s amendment note kept | — | — | D5 (decided) | DROP | close with a note |
 | F-09 | `BL-0181`, `BL-0393`; `FR-7450` | Telemetry **series** route still integer-microsecond only (exports got ISO bounds via `IP-1089`); console never shows µs | Low–Med | S | — | IN | Should |
 | F-10 | CR-29, CR-30, CR-32, CR-33, CR-35; `BL-0342`/`0345`/`0348`/`0369` | Built behaviour with no requirement leaf (countermeasure modifiers, bus view levels, scene orbital elements, SIGINT error scaling, space-weather names) — baseline it or record "implementation detail" | Low | S (`04` only) | — | IN | Should |
 | F-11 | `BL-0316` | Failure modes for a malformed save session portion are not enumerated (most are now refused by `IP-1103`) | Low | S | `04` | IN | Should |
@@ -179,16 +185,16 @@ for IN and STRETCH rows. Dependencies name other rows in this table.
 | F-34 | `BL-0308` | HTTP API versioning | Low (no second client) | S | trigger | LATER | — |
 | F-35 | `BL-0215` | Fence radar "detects more objects" acceptance wording | Low | S | `04` | LATER | — |
 | F-36 | `BL-0281`; CR-27 | Environmental anomaly semantics; repeatable condition-inject re-fire rule | Low | S | `04` | LATER | — |
-| F-37 | CR-03 … CR-11 | Push delivery, command-relationship layering, sustained degradation, observer reassignment, AI-Red preset guidance, save cross-version compatibility, PlannedActivity supertype, AccessWindow persistence, partial authoring-state ownership | mixed | mixed | — | LATER | — (CR-08 is partly addressed by D7) |
+| F-37 | CR-03 … CR-11 | Push delivery, command-relationship layering, sustained degradation, observer reassignment, AI-Red preset guidance, save cross-version compatibility (CR-08: **closed by D7**, no compatibility promised), PlannedActivity supertype, AccessWindow persistence, partial authoring-state ownership | mixed | mixed | — | LATER | — |
 | F-38 | FUTURE-WORK §2; R12, R20–R22, R24 | High-fidelity propagator; environment term; human-AI teaming lab; AI-vs-AI; cislunar; training-transfer study | mixed | XL | research | LATER | — |
 | F-39 | `BL-0370` | `build_world` mutates its input vignette | Low | S | trigger | LATER | — |
 | F-40 | `BL-0306` | Formally APP-6-conformant symbology pack | Low | M | D8 | DROP | (recommend keep "APP-6-adapted") |
 | F-41 | R8 | Headless Monte Carlo harness — delivered as `spacesim/tools/research_batch.py` (`IP-3010`) | — | — | — | DROP | close the FUTURE-WORK line in D-08 |
 | F-42 | FUTURE-WORK §8 | Browser-GUI verification harness — delivered (`IP-1340`, 42 browser tests) | — | — | — | DROP | close in D-08 |
 
-Totals: 31 bug rows, 16 documentation rows, 42 feature rows (89). **Must 23** (B-01–B-17, D-01, D-04, D-06,
-D-07, D-10, D-13). **Should 24** (B-18–B-24, D-02, D-03, D-05, D-08, D-09, D-11, F-01–F-11). **Could 13**. **Later 22**.
-**Drop 7**. Each row counted once; F-01 alone is five console surfaces and D-08 is a whole sweep.
+Totals: 32 bug rows, 16 documentation rows, 42 feature rows (90). **Must 24** (B-01–B-17, B-32, D-01, D-04, D-06,
+D-07, D-10, D-13). **Should 23** (B-18–B-24, D-02, D-03, D-05, D-08, D-09, D-11, F-01–F-07, F-09–F-11). **Could 13**. **Later 22**.
+**Drop 8** (B-29–B-31, D-14, F-08, F-40–F-42). Each row counted once; F-01 alone is five console surfaces and D-08 is a whole sweep.
 
 ---
 
@@ -201,7 +207,7 @@ a hole in a gate the release relies on.
 
 - **Seat and fog rules uniform:** B-08, B-09, B-10, B-13 (and B-04: a draft cannot be started).
 - **Validation that refuses with a reason:** B-05, B-06, B-11, B-12, B-14.
-- **Session and save integrity:** B-01 (resume keeps the rate), B-15 (live log cannot outgrow what load accepts),
+- **Session and save integrity:** B-01 (resume keeps the rate), B-15 (measured, configurable caps; live log cannot outgrow what load accepts), B-32 (`save_format` bump; old saves refused),
   B-02/B-03 (a Creator save keeps what the author entered and shows up in the library).
 - **Honest status:** B-07 (a jammed command reads `jammed`, not `executed`).
 - **Gate hygiene:** B-16 (no always-skipped test), B-17, D-01 (retags), D-04 (dependency refresh), D-06, D-07,
@@ -211,9 +217,9 @@ a hole in a gate the release relies on.
 
 - **F-01** console surfaces for gate approve/deny, ROE change, manoeuvre ledger, undo, clock rate.
 - **F-02** Creator completeness (role matrix saved, readable validation messages, pre-save validation).
-- **F-03 + B-18** link-availability objective metric (recommend promoting to Must, D3).
-- **F-04 + B-19 + B-20** SIGINT characterization path and the `mt-sigint-geolocate` objectives.
-- **F-05 + F-08** crewed vignettes that exercise role scoping, and the seat-less bypass closed for them.
+- **F-03 + B-18** link-availability objective metric (semantics and tier pending research, D3).
+- **F-04 + B-19 + B-20** SIGINT characterization path and the `mt-sigint-geolocate` objectives (approach pending research, D4).
+- **F-05** at least two crewed vignettes that exercise role scoping (seat-less hot-seat bypass kept, D5; F-08 closed).
 - **F-06** save-as-scenario completeness; **F-07** vignettes that exercise the R1 mechanics.
 - **F-09, F-10, F-11, D-02** small requirement/route gaps; **B-21–B-24** small fidelity and content items.
 - **D-03, D-05, D-08 (+D-09), D-11** documentation: allow-list burn-down and the retirement sweep.
@@ -261,7 +267,7 @@ flowchart LR
 | Backlog triage + archive of the 71 closed rows; close stale rows | D-06, B-29, B-30, B-31, D-14, F-41, F-42 | `00-pipeline-manager` |
 | File the §7 intake rows | all IN rows not already one row each | `00-intake` |
 | Owner decisions D1–D12 | §6 | owner |
-| One requirements pass | F-03 (link-availability leaf), B-15/D6 (live-log cap figure), F-09, F-10, F-11, D-02, F-08/D5 (if the seat-less rule changes), D-13 note | `04-requirements-engineering` |
+| One requirements pass | F-03 (link-availability leaf, after D3 research), B-15/D6 (configurable caps and the 80 % warn / refuse rule; the default figures come from the measurement, not the pass), B-32/D7 (`save_format` refusal), B-02/D5 (`roles_needed` derivation), F-09, F-10, F-11, D-02, D-13 note | `04-requirements-engineering` |
 | `05` delta: add the R2.0 bucket, bucket each IN Feature | this plan, D-13 | `05-feature-decomposition` |
 | Dependency check-latest-then-pin dry run (fix N7 early) | D-04, D-05 | `08-code-implementation` (one package) |
 | `CLAUDE.md` currency | D-07 | `08-code-implementation` doc step |
@@ -277,11 +283,12 @@ pacing item.
 | P2 Seat/observer uniformity + listing leak | B-08, B-09, B-13 | `07` |
 | P3 Authoring/import validation | B-05, B-06, B-12, B-14 | `07` |
 | P4 Honest jammed status | B-07 | `07` |
-| P5 Live event-log cap | B-15 | `07` after the `04` leaf |
+| P5 Live event-log cap | B-15: measure replay time and save size at the cap on reference hardware, set the defaults from that measurement, warn at 80 %, refuse at the cap, align the loader limit with the live cap | `07` after the `04` leaf |
+| P5a `save_format` bump | B-32: refuse old saves with a clear message, remove the legacy by-id path and its tests | `07` after the `04` leaf |
 | P6 Test and ledger hygiene | B-16, B-17, D-01, D-10 | `07` (tag/fixture only) |
 
-Size: ~6 packages, all S. Parallelism: P1–P4 touch different routes and can run in parallel branches; P5 touches
-`SessionManager` save/advance paths, so serialize it after P1. P6 last (it retags tests the others may add).
+Size: ~7 packages, all S except P5 (M). Parallelism: P1–P4 touch different routes and can run in parallel branches; P5 and P5a touch
+`SessionManager` save/advance paths, so serialize them after P1 (P5a before P5, since both change the save). P6 last (it retags tests the others may add).
 **Integration review tranche 1** on the merged result (seat sweep, refusal codes, replay equality).
 
 ### M2 — Console and Creator completeness (Should)
@@ -291,7 +298,7 @@ Size: ~6 packages, all S. Parallelism: P1–P4 touch different routes and can ru
 | P7 Gate-approval queue + ROE change panel (White) | F-01a, F-01b | `07` (FS-127 already names the console half) |
 | P8 Toolbar: undo + clock-rate control | F-01d, F-01e | `06` (no spec covers these surfaces) |
 | P9 Manoeuvre ledger view | F-01c | `07` (FS-125) |
-| P10 Creator: role matrix saved + saved vignettes visible | B-02, B-03 | `07` |
+| P10 Creator: role matrix saved (`roles_needed` derived automatically from the seat/role matrix) + saved vignettes visible | B-02, B-03 | `07` |
 | P11 Creator: readable validation, pre-save validation | F-02 | `06` (FS-117 revision) |
 | P12 Series route ISO bounds | F-09 | `07` after `04` |
 
@@ -306,13 +313,12 @@ it. Parallelism: P7/P9 and P10/P11 are independent pairs; P8 shares the toolbar 
 |---|---|---|
 | P13 Link-availability metric | F-03, B-18 | `06` (after the `04` leaf) |
 | P14 SIGINT characterization path | F-04, B-19 | `06` |
-| P15 Save-as-scenario completeness | F-06 | `07` (FR-5510 covers it; spec revision if `save_format` changes, D7) |
-| P16 Role gate for crewed vignettes | F-08 | `07` (if D5 changes the rule) |
-| P17–P18 Fidelity small items | B-21, B-22, B-23 | `07` |
+| P15 Save-as-scenario completeness | F-06 | `07` (FR-5510 covers it; builds on the P5a `save_format`) |
+| P16–P17 Fidelity small items | B-21, B-22, B-23 | `07` |
 | V1 Crewed vignettes (≥2) | F-05 | `08-vignette-development` |
 | V2 Mechanics vignettes + `mt-*` fixes | F-07, B-20, B-24 | `08-vignette-development` |
 
-Size: ~6 packages + 2 vignette runs. V1/V2 depend on P13–P16. **Integration review tranche 3**, then the release
+Size: ~5 packages + 2 vignette runs (the D5 role-gate package is gone: the Creator derives `roles_needed`, the seat-less bypass stays). V1/V2 depend on P13–P15. **Integration review tranche 3**, then the release
 close: a final `10` delta over the whole R2.0 set (small, because tranches 1–3 were reviewed), a current
 `09-training-manual-review` learner walkthrough, the release-time dependency refresh, `11-release-readiness`, and
 the archive step.
@@ -327,9 +333,9 @@ peers write against the final doc tree. It makes the `NFR-3810` retired-document
 
 | # | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|---|
-| R1 | **Determinism:** P5 (log cap), P15 (save content), B-22 (SSN registry on rewind) and P13 (metric reads denial state) touch replay paths | Medium | High | Determinism test stays a permanent gate; add replay-equals-live checks at the tranche review for every touched path (as the unreviewed-packages review did) |
+| R1 | **Determinism:** P5 (log cap), P5a/P15 (save format and content), B-22 (SSN registry on rewind) and P13 (metric reads denial state) touch replay paths | Medium | High | Determinism test stays a permanent gate; add replay-equals-live checks at the tranche review for every touched path (as the unreviewed-packages review did) |
 | R2 | **Fog of war:** F-01 adds White panels; F-03 metric and F-04 track delivery could leak truth into a cell view | Medium | High | Browser fog tests (`IP-1340`) extended per surface; seat sweep in every tranche review; F-04 delivers only into the requester's `TrackCatalog` |
-| R3 | **Save/replay compatibility:** P15 and P5 may change what a save holds; legacy saves must still load | Medium | High | D7 policy; a `save_format` bump only with a migration test that loads every R1.0 save shape; keep `validate_save` refusing before replay |
+| R3 | **Save/replay integrity:** P15, P5 and P5a change what a save holds | Medium | High | D7: no cross-release compatibility, so no migration code or test; a bumped `save_format` makes `validate_save` refuse any older save before replay with a clear message; replay-equals-live checks on the new format |
 | R4 | **Vignette scoring change** (F-03) changes outcomes of shipped vignettes and their playbooks | High | Medium | Update `test_vignette_tutorials.py` expectations in the same package; manual-impact rows for `11`/`16` |
 | R5 | **Doc/training debt:** M2 changes many manual sections at once | High | Medium | Manual-impact inside each package (DoD); a training run inside M2; learner walkthrough before `11` |
 | R6 | **Retirement sweep breaks links** across the tree | Medium | Low | Doc-integrity suite catches it; one sweep on one branch; retired-documents register entries in the same commit |
@@ -340,7 +346,33 @@ peers write against the final doc tree. It makes the `NFR-3810` retired-document
 
 ---
 
-## 5. Quality gates for Release 2.0
+## 5. Branching and change management
+
+*Decided by the owner (D11, 2026-11-01): git best practice, trunk-based development.*
+
+### 5.1 Branching
+
+- **Trunk-based.** `main` is always releasable and green; no long-lived release or integration branch.
+- **One short-lived branch per package** (`r2/ip-xxxx-<slug>`, or `r2/doc-<slug>` for doc, pipeline and training
+  runs), cut from current `main`, lifetime **<= ~2 days**. A package too big for that is split.
+- **No stacked branches.** A branch never builds on another open branch. If two packages share code, merge the
+  first before starting the second.
+- **Rebase onto (or merge) `main` daily** while a branch is open, so ledger and index conflicts surface early.
+- **PR to `main`** after the package's `09` verification passes, with **required checks**: the full test suite
+  (determinism and import-guard gates included) and the doc-integrity tests.
+- **Squash-merge** so `main` stays linear: one commit per package. **Delete the branch after merge.**
+- **Branch protection on `main`:** required checks, PR required, no direct pushes, no force-push, linear history.
+- **Commit messages:** conventional-commit style with the package ID, e.g. `fix(session): refuse /start on a draft (IP-1400)`,
+  `docs(training): ... (TR-xxx)`; the squash commit keeps that subject. Types: `feat`, `fix`, `docs`, `test`,
+  `refactor`, `chore`.
+- **Ledgers** (`ROADMAP.md`, Master Build Plan, package header, feature index) change only in the PR that changes
+  the status, so a merge carries the status with the work.
+- **Tranche reviews** run on `main` at a named commit, tagged `r2.0-m1-review` etc. (lightweight tags).
+- **Release tags are annotated** (`release-2.0`) and are created in the release step (`11`), on the release commit
+  on `main`, together with the **archive ref** `archive/release-2.0` and the manifest (naming: section 8).
+- The release candidate is a commit on `main`; candidate builds are tagged `2.0-rcN`.
+
+### 5.2 Quality gates for Release 2.0
 
 **Gates every package passes (already process rules):**
 
@@ -365,7 +397,7 @@ peers write against the final doc tree. It makes the `NFR-3810` retired-document
 9. Dependency **check-latest-then-pin** (`NFR-1510`, `BL-0379`): check latest versions, try them, run the full
    suite, fix or hold back, then pin. Also run it at M0 so the release-time run is small.
 10. A current learner-walkthrough review, full §15.1 coverage, green tutorial tests, no open Manual-impact item.
-11. `11-release-readiness` GO/NO-GO, then the **archive step** (merge to `main`, `archive/release-2.0` ref,
+11. `11-release-readiness` GO/NO-GO, then the **archive step** (merge to `main`, annotated tag `release-2.0`, `archive/release-2.0` ref,
     `docs/releases/release-2.0.md`) before any new work.
 12. The always-skipped count is zero (B-16) or each skip is justified in the assessment.
 
@@ -374,22 +406,10 @@ peers write against the final doc tree. It makes the `NFR-3810` retired-document
 | Release 1 failure mode | Release 2.0 counter |
 |---|---|
 | Integration reviews late; 40 packages never reviewed until near release | Tranche review after every milestone (gate 6) |
-| ~90 stacked branches; ledger drift between them (repeated "package header says READY" findings, `BL-0355`, `BL-0375`) | Branching strategy below; ledger edits only in the package's own PR; extend the ledger check to package headers |
+| ~90 stacked branches; ledger drift between them (repeated "package header says READY" findings, `BL-0355`, `BL-0375`) | Branching strategy in 5.1; ledger edits only in the package's own PR; extend the ledger check to package headers |
 | Known deviations accumulated as "documented v1.1" rather than fixed | Must tier is exactly those deviations; a new deviation needs an owner decision on record when it is accepted |
 | Behaviour defects found by manual authors after code was verified | Manual impact inside the package; the learner walkthrough per milestone |
 | Owner decisions requested late (`BL-0360` merge decision, O-2) | All §6 decisions at M0 |
-
-**Recommended branching strategy (D11).** Trunk-based with short-lived branches:
-
-- `main` is always releasable and green.
-- One branch per package (`r2/ip-xxxx-<slug>`) from current `main`, merged by **PR** after the package's `09`
-  verification passes; squash or merge commit per owner preference, but never stacked on another open package
-  branch. When two packages must share code, merge the first before starting the second.
-- Doc-only work (pipeline runs, training runs, the retirement sweep) uses the same rule: one branch, one PR.
-- The tranche integration review runs on `main` at a named commit (tagged `r2-m1-review` etc.).
-- Ledgers (`ROADMAP.md`, Master Build Plan, package header, feature index) change only in the PR that changes the
-  status, so a merge carries the status with the work.
-- The release candidate is a commit on `main`; no long-lived release branch.
 
 ---
 
@@ -397,20 +417,20 @@ peers write against the final doc tree. It makes the `NFR-3810` retired-document
 
 | # | Decision | Options | Recommendation |
 |---|---|---|---|
-| D1 | Release name and bucket | (a) "Release 2.0" + new `R2.0` bucket in `01-release-plan.md`; (b) reuse "Release 2" | **(a)** — the "Release 2" bucket already shipped in 1.0 |
-| D2 | Theme | (a) finish-and-trust (this plan); (b) a new-capability theme (coalition or proliferated); (c) mix | **(a)**; do (b) as Release 3.0 on cleaner seams |
-| D3 | Availability objective | (a) link availability = fraction of the scoring interval with a usable, un-denied link to the asset's users, computed from replayed state; (b) health AND not-denied at the deadline instant; (c) keep health, rename the objective | **(a)**, and promote it to **Must** — a MET-while-jammed score teaches the wrong lesson |
-| D4 | SIGINT characterization path | (a) wire `passive_rf_fix()` into a SIGINT observe/geolocate order that delivers a characterized track; (b) make the `sigint.geolocate` bus verb produce the characterized track; (c) change the vignette objective to something reachable | **(a)** — uses the built, tested function and the existing order/track path |
-| D5 | Role scoping | (a) ship ≥2 crewed vignettes and require `seat` when a vignette declares `roles_needed`; (b) crewed vignettes, keep seat-less bypass; (c) keep dormant | **(a)** |
-| D6 | Live event-log cap | (a) same 100,000 figure: warn White at 80 %, refuse further advance at the cap; (b) raise the load limit; (c) make it configurable | **(a)**; it keeps "every live session can be saved and reloaded" true |
-| D7 | `save_format` policy | (a) additive fields only, `save_format` minor bump, a migration test over R1.0 saves; (b) major bump, refuse old saves | **(a)** |
-| D8 | Owner-deferred questions | Red `bus_state` (`BL-0187`) yes/no; pass-gate historical telemetry (`BL-0171`) yes/no; per-seat playback cursor; configurable 366-day span; APP-6 pack | Red `bus_state` **yes (Could)**; pass-gating **yes (Could)**; per-seat cursor **no**; span **keep fixed**; APP-6 **keep adapted, close** |
-| D9 | LAN trust model in R2.0 | (a) stay trusted-LAN, write the security growth-path document (F-19); (b) build per-cell tokens | **(a)** |
-| D10 | Coalition play (`BL-0080`) | (a) out of R2.0; (b) a `03` design study only; (c) build | **(a)**, or (b) if external demand is firm |
-| D11 | Branching | (a) per-package short-lived branches, PR to `main` (§5); (b) per-tranche branch merged by PR at tranche close; (c) stacked branches as in R1 | **(a)**; (b) acceptable if session limits make per-package PRs costly |
-| D12 | Python floor | (a) validate 3.11 and 3.13 at the release; (b) raise the floor to the validated version | **(b)** unless a user needs 3.11 |
-| D13 | Retirement sweep in R2.0 | (a) yes, doc track; (b) defer | **(a)** — the trees it retires confuse every skill run |
-| D14 | Candidate specs FS-108 / FS-202 | authorize FS-108 as Could; FS-202 later | FS-108 **Could**, FS-202 **Later** |
+| D1 | Release name and bucket | Naming convention (owner delegated the choice) | **DECIDED 2026-11-01:** releases are MAJOR.MINOR ("Release 1.0", "Release 2.0"); tags/archives `release-X.Y`; plan buckets named by the same ID (`R1.0`, `R2.0`); review documents named `release-X.Y`, not `release-candidate-N`. Legacy cleanup list: section 8 |
+| D2 | Theme | (a) finish-and-trust (this plan); (b) a new-capability theme (coalition or proliferated); (c) mix | *Recommendation, awaiting owner:* **(a)**; do (b) as Release 3.0 on cleaner seams |
+| D3 | Availability objective | (a) link availability = fraction of the scoring interval with a usable, un-denied link to the asset's users, computed from replayed state; (b) health AND not-denied at the deadline instant; (c) keep health, rename the objective | **Pending research: see 06a-release-2-d3-d4-research.md** |
+| D4 | SIGINT characterization path | (a) wire `passive_rf_fix()` into a SIGINT observe/geolocate order that delivers a characterized track; (b) make the `sigint.geolocate` bus verb produce the characterized track; (c) change the vignette objective to something reachable | **Pending research: see 06a-release-2-d3-d4-research.md** |
+| D5 | Role scoping | (a) ≥2 crewed vignettes and require `seat`; (b) crewed vignettes, keep seat-less bypass; (c) keep dormant | **DECIDED 2026-11-01: (b), chosen for authoring and implementation efficiency.** Ship **≥2 crewed vignettes**; **keep the seat-less hot-seat bypass** (no mandatory seat requirement); the Vignette Creator **derives `roles_needed` automatically from its seat/role matrix**, so authors declare it once. Effects: F-08 closed, P16 removed, B-02 widened |
+| D6 | Live event-log cap | Fixed 100,000 / raise load limit / configurable | **DECIDED 2026-11-01:** reasonable limits on file size and runtime (the 100,000 figure is not owner-directed and is no longer the rationale). **Configurable caps with sensible defaults chosen from a measured basis** (save-file size on disk, replay runtime); **warn White at 80 %, refuse at the cap**. Plan item (P5): measure replay time and save size at the cap, set defaults from that, and align the loader limit with the live cap |
+| D7 | `save_format` policy | Additive + migration test / major bump, refuse old saves | **DECIDED 2026-11-01: no backwards compatibility between releases.** Bump `save_format`; refuse old saves with a clear message; drop the legacy-save-by-id path and any migration test or work (P5a, B-32). Efficiency gain: no migration code, no old-shape fixtures, no dual-format replay tests, and each later save change is a plain format change |
+| D8 | Owner-deferred questions | Red `bus_state` (`BL-0187`) yes/no; pass-gate historical telemetry (`BL-0171`) yes/no; per-seat playback cursor; configurable 366-day span; APP-6 pack | *Recommendation, awaiting owner:* Red `bus_state` **yes (Could)**; pass-gating **yes (Could)**; per-seat cursor **no**; span **keep fixed**; APP-6 **keep adapted, close** |
+| D9 | LAN trust model in R2.0 | (a) stay trusted-LAN, write the security growth-path document (F-19); (b) build per-cell tokens | *Recommendation, awaiting owner:* **(a)** |
+| D10 | Coalition play (`BL-0080`) | (a) out of R2.0; (b) a `03` design study only; (c) build | *Recommendation, awaiting owner:* **(a)**, or (b) if external demand is firm |
+| D11 | Branching | Per-package / per-tranche / stacked | **DECIDED 2026-11-01:** trunk-based, short-lived branch per package, PR with required checks, squash-merge, branch protection. Full rules: section 5.1 |
+| D12 | Python floor | (a) validate 3.11 and 3.13 at the release; (b) raise the floor to the validated version | *Recommendation, awaiting owner:* **(b)** unless a user needs 3.11 |
+| D13 | Retirement sweep in R2.0 | (a) yes, doc track; (b) defer | *Recommendation, awaiting owner:* **(a)** — the trees it retires confuse every skill run |
+| D14 | Candidate specs FS-108 / FS-202 | authorize FS-108 as Could; FS-202 later | *Recommendation, awaiting owner:* FS-108 **Could**, FS-202 **Later** |
 
 ---
 
@@ -435,7 +455,7 @@ For `00-pipeline-manager` to file through `00-intake` at M0 (IDs assigned at fil
 | P-11 | bug | `/gate/decide`, `/roe/change` return 200 `not_controller` instead of 403 (rc3 L-1) | Low | `07` |
 | P-12 | bug | `POST /param` accepts an enum value outside `options` (rc3 L-5) | Low | `07` |
 | P-13 | bug | `GET /api/vignettes` exposes absolute server paths (unreviewed L-4) | Low | `07` |
-| P-14 | bug | Live event log uncapped vs 100,000-entry load limit (split from `BL-0386`) | Medium | `04` (figure), then `07` |
+| P-14 | bug | Live event log uncapped vs load limit; configurable measured caps, warn 80 %, refuse at cap (D6; split from `BL-0386`) | Medium | `04`, then `07` |
 | P-15 | bug | Four tests skip on every run (REV-REL-004 R-2) | Low | `07` |
 | P-16 | bug | `--origin-report` exits 5 (split from `BL-0386`) | Low | `07` |
 | P-17 | bug | Blue availability objectives score health, not link availability (split from `BL-0390`) | High | `04` |
@@ -448,15 +468,47 @@ For `00-pipeline-manager` to file through `00-intake` at M0 (IDs assigned at fil
 | P-24 | feature | Console: manoeuvre ledger view (split from `BL-0389`) | Medium | `07` |
 | P-25 | feature | Creator readable validation messages + pre-save validation (split from `BL-0390`) | Medium | `06` |
 | P-26 | feature | Save-as-scenario carries gating rules, detectability, space-weather series, inject schedule (split from `BL-0389`) | Medium | `06` |
-| P-27 | feature | Crewed vignettes (≥2) declaring `roles_needed`; seat required when declared (update `BL-0388`) | Medium | `04` (seat rule), then `08-vignette-development` |
+| P-27 | feature | Crewed vignettes (≥2) declaring `roles_needed` via the Creator-derived matrix; seat-less bypass kept (D5; update `BL-0388`, close as intended) | Medium | `08-vignette-development` |
 | P-28 | feature | Vignettes exercising ROE, gating, detectability, space weather, environmental anomalies (unreviewed L-9) | Medium | `08-vignette-development` |
 | P-29 | feature | Telemetry series route ISO-8601 bounds (update `BL-0181`/`BL-0393`) | Low | `04` |
 | P-30 | doc-defect | Retag 11 requirements tested under sibling ids (update `BL-0381`) | Low | `07` |
 | P-31 | doc-defect | Origin report: exclude non-Test verification methods (REV-REL-004 class C) | Low | `04` |
 | P-32 | doc-defect | Burn down the 38 research-primer links on the link allow-list | Low | `02-research-*` owners |
 | P-33 | doc-defect | Archive the 71 closed rows in the live backlog; close stale `BL-0049`/`0252`/`0284`/`0292`/`0310`/`0315`/`0233` | Low | `00-pipeline-manager` |
-| P-34 | design-question | Branching strategy for Release 2.0 (D11) | Medium | owner (`NEEDS-USER`) |
-| P-35 | design-question | Release 2.0 theme, name and bucket (D1, D2) | Medium | owner, then `05` |
+| P-34 | design-question | Branching strategy for Release 2.0 (D11): **decided**, record in backlog as DONE | Medium | `00-pipeline-manager` |
+| P-35 | design-question | Release 2.0 theme (D2: awaiting owner); name and bucket (D1: decided) | Medium | owner, then `05` |
+| P-36 | feature | `save_format` bump; refuse old saves; remove legacy by-id path (D7; B-32) | Medium | `04`, then `07` |
+| P-37 | doc-defect | Legacy naming cleanup (section 8) | Low | `00-pipeline-manager` |
+
+---
+
+## 8. Naming convention and legacy cleanup
+
+**Convention (D1, owner-delegated, decided 2026-11-01).**
+
+| Thing | Form | Example |
+|---|---|---|
+| Release | `MAJOR.MINOR` | Release 1.0, Release 2.0 |
+| Git tag (annotated) / archive branch | `release-X.Y` / `archive/release-X.Y` | `release-2.0` |
+| Candidate build tag | `X.Y-rcN` | `2.0-rc1` |
+| Release-plan bucket | `R<X.Y>` | `R1.0`, `R2.0` (plus `Future`) |
+| Manifest | `docs/releases/release-X.Y.md` | `release-2.0.md` |
+| Review documents | `release-assessment-release-X.Y.md`, `integration-review-release-X.Y-<scope>.md` | not `release-candidate-N` |
+
+Documented in `docs/releases/INDEX.md`.
+
+**Legacy names found and what was done.**
+
+| Legacy name | Where | Action |
+|---|---|---|
+| Bucket labels "Prototype / MVP / Release 1 / Release 2" | `docs/feature-planning/01-release-plan.md` headings and Feature rationales (about 40 uses) | **Applied:** a naming note added stating they are legacy sub-tranches of R1.0. Headings kept verbatim (the rationales and reviews cite them). The `05` delta adds the new `R2.0` bucket by ID |
+| Same bucket list | `docs/feature-planning/INDEX.md` line 15 | **Applied:** reworded |
+| Same bucket list | `.claude/skills/05-feature-decomposition/SKILL.md` (assignment step, rule list), `.claude/skills/11-release-readiness/SKILL.md` (opening) | **Applied:** buckets named by release ID, legacy labels noted |
+| "Release 1 was declared GO" / "Release 1 — released" | `README.md`, `ROADMAP.md` | **Applied:** now "Release 1.0" |
+| `release-assessment-release-candidate-{1,5,10}.md`, `integration-review-release-candidate-1.md`, `integration-review-rc3-delta.md`, `integration-review-rc7.md`, `training-review-final-rc8.md`, `-rc11.md`, `training-review-release-walkthrough*.md` | `docs/reviews/` | **Not renamed** (linked from journals, the manifest, ROADMAP, backlog). Redirect: REV-REL-004 `release-candidate-10` is the Release 1.0 GO assessment; the `rc` numbers are build numbers, not releases. New reviews use the convention |
+| Branches `claude/release-candidate-N`, `test-tag-review-1` | git history, `docs/releases/release-1.0.md` | **Not renamed** (history); the manifest already records them |
+| "release candidate N" prose | `ROADMAP.md`, `docs/releases/release-1.0.md`, pipeline journal and backlog | **Left** (historical record; renaming would falsify the journal). Follow-up: none |
+| Git branching/PR rules | no skill has a git or process section | **Follow-up:** add section 5.1 to `.claude/skills/README.md` (a "Branching and change management" paragraph) and have `08-code-implementation`, `11-release-readiness` cite it; not done now because no existing section fits |
 
 ---
 

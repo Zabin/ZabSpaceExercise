@@ -239,8 +239,8 @@ blocking Features, and parallel opportunities above the diagram(s).
 
 ### Step 4 — Release Planning → `01-release-plan.md`
 
-Assign **every** Feature to exactly one of: **Prototype**, **MVP**, **Release 1**, **Release 2**,
-**Future**. For each assignment, **document why** — the reasoning must cite at least one of: the
+Assign **every** Feature to exactly one release bucket named by release ID (`R<MAJOR>.<MINOR>`, e.g. **R2.0**), or **Future**
+(the pre-2.0 labels Prototype / MVP / Release 1 / Release 2 are legacy sub-tranches of R1.0). For each assignment, **document why** — the reasoning must cite at least one of: the
 Feature's `User Value`/`Technical Value`, its position in the dependency graph (Step 3), its
 `Risk`/`Complexity`, or an explicit project constraint. A release plan with unjustified bucket
 assignments is not acceptable output.
@@ -322,7 +322,7 @@ before being considered complete:
 
 - **Every Functional Requirement shall belong to exactly one Feature.**
 - **Every Feature shall belong to exactly one Epic.**
-- **Every Feature shall map to one planned release** (Prototype/MVP/Release 1/Release 2/Future).
+- **Every Feature shall map to one planned release** (an `R<MAJOR>.<MINOR>` bucket, or Future).
 - **Features should be independently implementable whenever practical** — a Feature with an
   unavoidable hard dependency must say so explicitly in `Dependencies`, not hide the coupling.
 - **Feature boundaries should align with subsystem boundaries** — deviations must be justified in
