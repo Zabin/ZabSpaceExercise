@@ -154,7 +154,7 @@ same backlog (classified, deduped, routed to an entry stage), never implemented 
 only its own output scope, routes findings to the owning stage instead of fixing them locally,
 and ends every run by saying in chat what changed, what it recommends, and which skill to run
 next. Only `08-code-implementation` writes `spacesim/` production code; only `09-package-verification`
-writes `VERIFIED`; a specified package is not an authorized one (MSTR-006 §3).
+writes `VERIFIED`; a specified package is not an authorized one (MSTR-006 §3). Every release is archived as it ships — an `archive/release-<n>.<m>` ref on the release commit plus a manifest under `docs/releases/` — before any new work starts (see `11-release-readiness`).
 
 ## Test-driven workflow (mandatory)
 

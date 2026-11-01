@@ -36,7 +36,7 @@ and routed to the pipeline stage where they belong), never by side-channel imple
 | 08 | `08-code-implementation` · `08-training-manual-authoring` · `08-vignette-development` | Code: source + tests + docs + traceability for exactly one package (status → `COMPLETE`), including its mandatory **Documentation step** (narrow `docs/training/` slice, or Manual-impact hand-offs). Training peers: manual modules / learning path / traceability matrix (`docs/training/`), and vignette YAML + playbook/rung linkage + the `docs/vignettes/` design docs + their verification tests. | `spacesim/`, `docs/training/`, `docs/vignettes/`, ledgers |
 | 09 | `09-package-verification` · `09-training-manual-review` | Verification Report (VR-xxxx, incl. the mandatory **Documentation audit**); the **only** skill that writes `VERIFIED`. Training peer: Training Review report (accuracy/traceability/coverage/pedagogy, plus the per-release **learner-walkthrough gate**) under `docs/reviews/`. | `docs/implementation/verification/`, `docs/reviews/` |
 | 10 | `10-integration-review` | Integration Report for an epic/release's verified package set | `docs/reviews/` |
-| 11 | `11-release-readiness` | Release Assessment (GO/NO-GO) + baseline update on GO (incl. `README.md` status); at every release also the test relevance audit and the dependency-lock check | `docs/reviews/`, trackers, `README.md` |
+| 11 | `11-release-readiness` | Release Assessment (GO/NO-GO) + baseline update on GO (incl. `README.md` status); at every release also the test relevance audit and the dependency-lock check; after the GO, the mandatory **release archive** (`archive/release-<n>.<m>` ref + tag, Release Manifest) | `docs/reviews/`, trackers, `README.md`, `docs/releases/` |
 
 **Every document has one owner (owner decision, 2026-10-19, `BL-0293`).** A document no stage above
 writes is either legacy (`docs/build-spec/` and `docs/design/` apart from the ICD, both retiring
@@ -69,7 +69,7 @@ and flows forward from there:
 - **Per release:** 10 → 11 (10's documentation-coherence dimension sweeps the set's Documentation
   audits and open Manual-impact items; 11 needs a current `09-training-manual-review`
   learner-walkthrough gate report, complete §15.1 coverage, green tutorial tests and no open
-  Manual-impact item, else NO-GO; the manager will not recommend 11 before then); integration findings loop back through 07 → 08 → 09 before 10 re-runs.
+  Manual-impact item, else NO-GO; the manager will not recommend 11 before then); integration findings loop back through 07 → 08 → 09 before 10 re-runs. **After a GO, 11 archives the release** (merge to `main`, `archive/release-<n>.<m>` ref on the release commit, manifest in `docs/releases/`) before anything else changes; the manager starts no new work until the archive is journaled as done (a hotfix on a maintenance branch from the archive ref is the exception).
 - **Upstream findings never get fixed downstream.** A requirements conflict found at stage 05 goes
   back to 04; an architecture gap found at 06 goes back to 03; a domain-knowledge gap anywhere
   goes to the owning 02 skill. Each skill's summary routes its findings to the owning stage.
