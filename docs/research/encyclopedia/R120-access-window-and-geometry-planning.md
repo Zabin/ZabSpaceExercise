@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md)
-> **Referenced By:** [R102](R102-space-domain-awareness.md), [R103](R103-satellite-command-and-control.md), [R104](R104-collection-management.md), [R107](R107-ground-segment-operations.md), [R109](R109-sensor-operations.md), [R110](R110-communications.md), [R115](R115-electronic-warfare-in-space-operations.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R118](R118-space-surveillance-networks.md), FS-101, FS-105
+> **Referenced By:** [R102](R102-space-domain-awareness.md), [R103](R103-satellite-command-and-control.md), [R104](R104-collection-management.md), [R107](R107-ground-segment-operations.md), [R109](R109-sensor-operations.md), [R110](R110-communications.md), [R115](R115-electronic-warfare-in-space-operations.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R118](R118-space-surveillance-networks.md), FS-101, FS-105, [R139](R139-passive-rf-emitter-characterization-and-geolocation.md)
 > **Produces:** implementation constraints for [`engine/access.py`](../../../spacesim/engine/access.py)
 > **Feature Mapping:** FS-101 (Mission Planning), FS-105 (Spacecraft Operations)
 > **Related Topics:** [R101](R101-orbital-mechanics-for-operations.md) (Orbital Mechanics — the geometry this topic gates on), MSTR-002 §4 (the
