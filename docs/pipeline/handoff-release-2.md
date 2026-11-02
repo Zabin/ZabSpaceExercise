@@ -34,5 +34,18 @@ Then M1 trust and integrity, M2 console and Creator, M3 scoring/content/saves, r
 ## Open items
 Post-release intake candidates: Pause/Resume resets the clock rate; Creator role matrix not saved; t1/t2 swap caught only in the header; observer seat set by body in one route and by query in another; mt-sigint `characterize_emitter` unreachable; save-as-scenario omissions; about 11 test retags; 4 always-skipped tests; Starlette `httpx` deprecation.
 
+## Owner cleanup (the cloud session's git proxy blocks branch deletes and tag pushes)
+Run these from a machine with normal GitHub access.
+1. Tag the release: `git tag -a release-1.0 82436ba -m "Release 1.0" && git push origin release-1.0` (or create it in the GitHub UI on 82436ba).
+2. Delete the merged remote branches (every `claude/*` branch except the two below; their commits are in `main`, or were squash-merged by PRs #86/#87):
+   ```bash
+   git fetch --prune origin
+   git branch -r | sed 's#^ *origin/##' | grep '^claude/' \
+     | grep -v -E '^claude/(pipeline-skill-h31gs5|planning-docs-review-rmZwP)$' \
+     | xargs -n 20 git push origin --delete
+   ```
+   Keep `main` and `archive/release-1.0`. Review the two excluded branches (old June/July work with commits never merged to `main`) and delete them too if that work is not wanted.
+3. In GitHub Settings, enable "Automatically delete head branches" so PR branches vanish on merge (matches the D11 branching rules).
+
 ## First message for the new chat
 "Read CLAUDE.md, the journal Position block, docs/pipeline/handoff-release-2.md, docs/releases/release-1.0.md and the Release 2.0 plan. Then run 00-intake for the plan's section 7 rows and continue M0."
