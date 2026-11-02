@@ -48,4 +48,4 @@ Run these from a machine with normal GitHub access.
 3. In GitHub Settings, enable "Automatically delete head branches" so PR branches vanish on merge (matches the D11 branching rules).
 
 ## First message for the new chat
-"Read CLAUDE.md, the journal Position block, docs/pipeline/handoff-release-2.md, docs/releases/release-1.0.md and the Release 2.0 plan. Then run 00-intake for the plan's section 7 rows and continue M0."
+"Read CLAUDE.md, the journal Position block, docs/pipeline/handoff-release-2.md, docs/releases/release-1.0.md and the Release 2.0 plan. Then check whether the release-1.0 tag exists (git ls-remote --tags origin release-1.0); if not, remind me to create it on 82436ba (the cloud proxy blocks tag pushes) and to run the owner cleanup steps in the handoff note. Then run 00-intake for the plan's section 7 rows and continue M0."
