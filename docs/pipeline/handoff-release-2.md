@@ -35,7 +35,7 @@ Then M1 trust and integrity, M2 console and Creator, M3 scoring/content/saves, r
 Post-release intake candidates: Pause/Resume resets the clock rate; Creator role matrix not saved; t1/t2 swap caught only in the header; observer seat set by body in one route and by query in another; mt-sigint `characterize_emitter` unreachable; save-as-scenario omissions; about 11 test retags; 4 always-skipped tests; Starlette `httpx` deprecation.
 
 ## Owner cleanup (the cloud session's git proxy blocks branch deletes and tag pushes)
-Run these from a machine with normal GitHub access.
+The new session should first TRY these itself (the previous session's proxy refused them; another may not). Only if refused, the owner runs them from a machine with normal GitHub access.
 1. Tag the release: `git tag -a release-1.0 82436ba -m "Release 1.0" && git push origin release-1.0` (or create it in the GitHub UI on 82436ba).
 2. Delete the merged remote branches (every `claude/*` branch except the two below; their commits are in `main`, or were squash-merged by PRs #86/#87):
    ```bash
@@ -48,4 +48,4 @@ Run these from a machine with normal GitHub access.
 3. In GitHub Settings, enable "Automatically delete head branches" so PR branches vanish on merge (matches the D11 branching rules).
 
 ## First message for the new chat
-"Read CLAUDE.md, the journal Position block, docs/pipeline/handoff-release-2.md, docs/releases/release-1.0.md and the Release 2.0 plan. Then check whether the release-1.0 tag exists (git ls-remote --tags origin release-1.0); if not, remind me to create it on 82436ba (the cloud proxy blocks tag pushes) and to run the owner cleanup steps in the handoff note. Then run 00-intake for the plan's section 7 rows and continue M0."
+"Read CLAUDE.md, the journal Position block, docs/pipeline/handoff-release-2.md, docs/releases/release-1.0.md and the Release 2.0 plan. Then do the owner cleanup yourself, do not remind me: try to create and push the annotated release-1.0 tag on 82436ba (git ls-remote --tags origin release-1.0 first), then try to delete the merged remote branches with the snippet in the handoff note; a different session or network path may not be blocked by the proxy. Only if an attempt is actually refused, leave it, say so in one line, and carry on. Then run 00-intake for the plan's section 7 rows and continue M0."
