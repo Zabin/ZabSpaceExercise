@@ -105,3 +105,5 @@ Proposed order. Each step is a separate, reviewable change.
 | 3 | May superseded records and documents leave the working tree, given `archive/release-1.0` holds them? | Yes |
 | 4 | May a GitHub Actions workflow be added? | Yes |
 | 5 | Who merges? The refactor is many small PRs; they stall if each waits days. | Owner grants merge-on-green for this track, or reviews in batches |
+
+**Owner decisions (2026-11-09).** The owner answered "go with your recommendations" to all five: (1) the restructuring is behaviour-preserving and defect fixes are separate packages; (2) code goes through packages and independent verification, while records, documents and skills are owner-authorized maintenance changes; (3) superseded records and documents may leave the working tree; (4) a GitHub Actions workflow may be added; (5) refactor-track pull requests merge on green. The behaviour baseline in step 1 moves to the start of step 6, where it is first needed, so that it enters as a tested package.
