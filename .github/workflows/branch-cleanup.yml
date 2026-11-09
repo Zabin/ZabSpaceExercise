@@ -1,0 +1,79 @@
+# Branch housekeeping, run on GitHub so it does not depend on any session's network access.
+#  - When a pull request closes (merged or not), its head branch is deleted.
+#  - Run by hand ("Run workflow"), it deletes every claude/* branch that has no open pull request,
+#    except the branches listed in KEEP, and can create the release-1.0 tag. It starts as a dry run.
+name: Branch cleanup
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "List what would be deleted without deleting"
+        type: boolean
+        default: true
+      tag_release_1_0:
+        description: "Create the annotated tag release-1.0 on 82436ba if it is missing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  delete-merged-head:
+    name: Delete the closed pull request's branch
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete head branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          case "$HEAD_REF" in
+            main|archive/*) echo "keeping $HEAD_REF"; exit 0 ;;
+          esac
+          gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${HEAD_REF}" || echo "already gone"
+
+  sweep:
+    name: Sweep stale claude/* branches
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DRY_RUN: ${{ inputs.dry_run }}
+      # Old branches with work that never reached main; the owner decides these by hand.
+      KEEP: "claude/pipeline-skill-h31gs5 claude/planning-docs-review-rmZwP"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create the release-1.0 tag
+        if: inputs.tag_release_1_0
+        run: |
+          if git ls-remote --exit-code --tags origin release-1.0 >/dev/null; then
+            echo "release-1.0 already exists"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a release-1.0 82436ba2e592d9a9afb91d4f93f8df8fffe07e00 -m "Release 1.0"
+          git push origin release-1.0
+      - name: Delete branches
+        run: |
+          open_heads=$(gh pr list --state open --limit 200 --json headRefName -q '.[].headRefName')
+          deleted=0; kept=0
+          for b in $(git for-each-ref --format='%(refname:lstrip=3)' 'refs/remotes/origin/claude/*'); do
+            if echo " $KEEP " | grep -q " $b " || echo "$open_heads" | grep -qx "$b"; then
+              echo "keep    $b"; kept=$((kept+1)); continue
+            fi
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "would delete  $b"
+            else
+              git push origin --delete "$b" && echo "deleted $b"
+            fi
+            deleted=$((deleted+1))
+          done
+          echo "branches matched for deletion: $deleted; kept: $kept; dry run: $DRY_RUN"
