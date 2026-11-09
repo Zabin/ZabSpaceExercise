@@ -1,0 +1,51 @@
+# Continuous integration: every pull request and every push to main runs the whole suite on the
+# release's locked dependencies. The suite includes the permanent gates (determinism, import guard,
+# documentation integrity, test origins) and the headless-Chromium console tests.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Full suite (locked dependencies)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - name: Install from the lock
+        run: |
+          python -m pip install -r requirements.lock
+          python -m pip install --no-deps -e .
+      - name: Install Chromium for the browser tests
+        run: python -m playwright install --with-deps chromium
+      - name: Run the suite
+        run: python -m pytest -rs
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Check the locked dependencies for known vulnerabilities
+        run: |
+          python -m pip install pip-audit
+          pip-audit -r requirements.lock --no-deps --disable-pip
