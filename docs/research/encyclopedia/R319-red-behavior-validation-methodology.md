@@ -132,7 +132,7 @@ leave the exercise with confidence that has not been earned.
   are different validation targets that can diverge; a preset design process that only iterates
   against playability risks converging on a Red that is fun to play against but doctrinally
   unrepresentative, which is the negative-training failure mode this topic exists to name.
-- **Any future AI-Red epistemic-parity fix (ADR-0024, `FUTURE-WORK.md` §1) should be sequenced
+- **Any future AI-Red epistemic-parity fix (ADR-0024, the former future-work list §1) should be sequenced
   before, or explicitly scoped alongside, any fidelity-validation effort** — per §3's precondition
   argument, validating a ground-truth-reading Red's fidelity against real (information-constrained)
   adversary behavior is not a meaningful comparison regardless of method sophistication.

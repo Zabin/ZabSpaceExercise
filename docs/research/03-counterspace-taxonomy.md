@@ -17,7 +17,7 @@ per-system depth (specific interceptor classes, specific jammers, specific RPO
 maneuvers, specific cyber vectors) lives in the per-class child files
 (`03a-da-asat-systems.md`, `03b-coorbital-rpo.md`, `03c-ew-jamming.md`,
 `03d-directed-energy.md`, `03e-cyber.md`, `03f-nuclear-emp.md`) authored in Tier 3 of the
-[corpus expansion](../FUTURE-WORK.md#125-tier-1--citation-backfill--methodology). When
+corpus expansion. When
 this file mentions a system at "first name" level the child file carries the per-system
 deep-dive with the primary-source numbers.
 

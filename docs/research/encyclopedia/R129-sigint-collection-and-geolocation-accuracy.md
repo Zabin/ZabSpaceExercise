@@ -153,7 +153,7 @@ geolocation into a single "more time = better fix" knob.
 
 FS-104 (SDA Tasking) is the direct consumer — `buscommands.sigint.task_collection`'s
 `band`/`intercept_mode`/`dwell_s`/`confidence_threshold` parameters and the planned
-`POST /sigint/compute` preview endpoint (`docs/FUTURE-WORK.md` §11.A.6) are the implemented feature
+`POST /sigint/compute` preview endpoint (former future-work list §11.A.6) are the implemented feature
 this topic grounds.
 
 ## 7. Related Topics

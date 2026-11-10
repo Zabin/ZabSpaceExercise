@@ -7,7 +7,7 @@
 > itself — `docs/requirements/01-functional-requirements.md` `FR-1430` — plus
 > [`R117` v1.2](../research/encyclopedia/R117-directed-energy-and-kinetic-effects.md) §3.1 and the
 > real baseline code it extends (`engine/effects.py`, the `DebrisField` concept named in
-> `docs/FUTURE-WORK.md` §13 R16/GAP-02).
+> the former future-work list §13 R16/GAP-02).
 > **Dependencies:** None (this Feature is additive, presentational-only, and touches no other
 > Feature's own scope)
 > **Referenced By:** [IP-1240](../implementation/packages/IP-1240-debris-field-persistence-estimate.md)
@@ -34,7 +34,7 @@
 Show players and facilitator an estimated persistence figure for any spawned debris field, derived
 from its altitude, so a destructive-effect or `spawn_debris` inject decision carries a visible,
 realistic consequence signal — without building the fuller, deferred mechanism (persistent debris
-that gates future Access Windows) `docs/FUTURE-WORK.md` §13 R16/GAP-02 and Candidate Requirement
+that gates future Access Windows) the former future-work list §13 R16/GAP-02 and Candidate Requirement
 `CR-17` still describe. `FR-1430`'s own Rationale states this distinction directly: this Feature is
 **deliberately narrower** than `CR-17`.
 
@@ -90,7 +90,7 @@ environment layer `CR-17` describes remains unbaselined and untouched by this Fe
 
 ## Data Model Changes
 
-`DebrisField` (the entity named in `docs/FUTURE-WORK.md` §13 R16/GAP-02, produced by
+`DebrisField` (the entity named in the former future-work list §13 R16/GAP-02, produced by
 `engine/effects.py`) gains a `persistence_estimate` attribute, additive, computed once at creation
 time from the field's altitude. No other entity changes.
 

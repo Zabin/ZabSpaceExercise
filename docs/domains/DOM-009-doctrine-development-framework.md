@@ -73,7 +73,7 @@ Doctrine is not static — counterspace doctrine and legal norms evolve. DOM-009
 periodic (not necessarily fixed-calendar) review pass: when `docs/research/01-03`/`07` are
 substantively revised, a follow-up pass should check whether existing vignette threat
 pictures/ROE/Red-preset parameters still reflect the updated doctrine, recording any drift as a
-`ROADMAP.md`/`FUTURE-WORK.md` item rather than silently leaving stale content in place.
+`ROADMAP.md`/the former future-work list item rather than silently leaving stale content in place.
 
 ## 6. Open work
 

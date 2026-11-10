@@ -84,7 +84,7 @@ module against this tier (not just the `CLAUDE.md` Code map list) found one furt
 subsystem with implemented, user-facing behavior but no R1xx topic grounding it:
 `engine/sigint.py` (the SIGINT band/mode database and the √dwell × √N-collector geolocation-error
 formula reachable via `buscommands.sigint.task_collection` and the planned `POST /sigint/compute`
-preview endpoint — see `docs/FUTURE-WORK.md` §11.A). The doctrine primers
+preview endpoint — see the former future-work list §11.A). The doctrine primers
 ([`research/02`](../02-doctrine-non-western.md), [`research/05`](../05-mission-types-and-counters.md))
 mention SIGINT only in passing (mission-type taxonomy, non-Western programs) and never cite or
 justify the specific accuracy model the code implements. **R129** (above) now closes this gap,

@@ -346,7 +346,7 @@ Asset-template loading is driven by [`engine/buscommands.py:_PAYLOAD_TYPES_FOR`]
 - **Tier 2 per-mission deep-dives (deferred).** [`05a-isr-eo-sar.md`](05a-isr-eo-sar.md)
   for ISR / SIGINT, [`05b-satcom-pnt.md`](05b-satcom-pnt.md) for SATCOM / PNT,
   [`05c-sda-and-orbital-warfare.md`](05c-sda-and-orbital-warfare.md) for SDA / RPO.
-  Queued in [`FUTURE-WORK.md` §12.5.2](../FUTURE-WORK.md#1252-tier-2--per-mission-and-per-actor-deep-dives).
+  Queued in the former future-work list §12.5.2.
 - **Engine modules sourced by this file.** [`engine/buscommands.py`](../../spacesim/engine/buscommands.py)
   (payload-ops verb catalogue + `_PAYLOAD_TYPES_FOR` gating); [`engine/isr.py:BEAM_MODES`](../../spacesim/engine/isr.py)
   (per-mission beam-mode db); [`engine/sigint.py:geolocation_error_km`](../../spacesim/engine/sigint.py)

@@ -114,7 +114,7 @@ rather than silently skipped or force-fitted.
 - **New state:** Extended FR-9110's Rationale with two sentences: one justifying the Should tier
   (a vignette remains fully playable without AI-Red, unlike Must-tier dependencies), and one
   disclosing the AI-Red ground-truth-read epistemic asymmetry as an intentional, ADR-0024-tracked
-  v1 trade-off, citing `FUTURE-WORK.md` §1.
+  v1 trade-off, citing the former future-work list §1.
 - **Reason:** REQ-023 (Should-priority justification) plus a corrected application of REQ-071
   (the fairness disclosure REQ-071 assumed already existed did not; it has now actually been
   added).

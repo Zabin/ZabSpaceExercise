@@ -4,7 +4,7 @@
 
 **Status:** ✅ Implemented — `spacesim/engine/ssn.py`, `spacesim/session/manager.py`,
 `spacesim/ui_web/server.py`, `spacesim/ui_web/static/app.js`, `spacesim/tests/test_ssn.py`.
-Incomplete items are in `docs/FUTURE-WORK.md` §7.
+Incomplete items are in the former future-work list §7.
 
 ### 17.1 Purpose
 

@@ -59,7 +59,7 @@ Sequencing follows §10 above; this is the milestone-level view with relative ef
 | M6 Content (7 vignettes + builder polish; expanded to 19 in library expansion) | M | M5 | full 19-vignette library |
 | M7 Logging persistence & AAR | S | M5 | written log; AAR replay (scrub, branch-compare) |
 | M8 LAN multiplayer + multi-monitor pop-outs | M | M7 | server-authoritative lazy clock + RLock + `/api/sessions` discovery + join-by-hash + `?layout=` pop-outs |
-| **v1.1** 3D belief-state globe enhancements; constellation aggregation; per-cell auth tokens | L | M8 | see [`../FUTURE-WORK.md`](../FUTURE-WORK.md) |
+| **v1.1** 3D belief-state globe enhancements; constellation aggregation; per-cell auth tokens | L | M8 | see `../FUTURE-WORK.md` |
 
 **Critical path:** M1→M2→M3→M3.5→M4→M4.5→M5→M7→M8 (all complete as of June 2026).
 The 2D views and scenario builder were the long poles in M5.

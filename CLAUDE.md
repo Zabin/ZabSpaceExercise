@@ -33,7 +33,7 @@ repository refactor is in progress: [`docs/pipeline/refactor-plan.md`](docs/pipe
 | Where the pipeline stands, and what is owed | `docs/pipeline/pipeline-journal.md` (Position block), `docs/pipeline/backlog.md` |
 | Document and package ledgers | [`ROADMAP.md`](ROADMAP.md), `docs/implementation/00-master-build-plan.md` |
 | Operator manuals | `docs/training/` (a co-equal product; `15-manual-traceability.md` maps features to manual sections) |
-| Deferred ideas | [`docs/FUTURE-WORK.md`](docs/FUTURE-WORK.md) |
+| Deferred ideas | `docs/pipeline/backlog.md` (`DEFERRED` rows) and the LATER rows of the Release 2.0 plan |
 
 `docs/build-spec/` is **deprecated legacy reference**. The GDS ladder supersedes it entirely, by
 owner instruction. Never cite it as binding; flag a gap instead.

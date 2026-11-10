@@ -57,7 +57,7 @@ not restate it.
 | `bus_state` | `Optional[BusState]` | §3.3 below |
 | `payload_state` | `Optional[PayloadState]` | §3.4 below |
 | `group` | `Optional[str]`, constellation identifier | [R108](R108-constellation-operations.md) |
-| `civilian` | bool | `docs/FUTURE-WORK.md` §10.D.16 — not yet R1xx-characterized (political-cost consequence unmodeled) |
+| `civilian` | bool | The former future-work list §10.D.16 — not yet R1xx-characterized (political-cost consequence unmodeled) |
 | `isl_capable` / `isl_peers` | bool / `list[str]` | [R103](R103-satellite-command-and-control.md) (C2 chain, ISL relay) |
 | `stored_program` | bool, default true | [R103](R103-satellite-command-and-control.md), [R114](R114-command-and-data-handling.md) |
 | `threat_warning` | bool, informational posture | `docs/architecture/ADS-3500-role-scoped-command-enforcement.md` §3 (role-scope classification — bus-scope), no R1xx characterization (informational-only field) |
@@ -156,7 +156,7 @@ authoring surface is planned.
   in current vignettes), `PayloadState.deception_active`'s full behavioral consequence (code comment
   cites USSF SWF passive measure #2 but no R1xx topic elaborates the custody/attribution
   consequence the comment itself says is "left as a separate change"), and `Asset.civilian`'s
-  political-cost consequence (declared in `FUTURE-WORK.md`, not yet modeled or characterized). None
+  political-cost consequence (declared in the former future-work list, not yet modeled or characterized). None
   block `BL-0052`'s typed sub-schemas (none are fields that pass currently exposes for authoring),
   but each is a real, named gap for whoever eventually wires them — flag as future
   `02-research-ow-orbital-mechanics` maintenance work, not silently left implicit.

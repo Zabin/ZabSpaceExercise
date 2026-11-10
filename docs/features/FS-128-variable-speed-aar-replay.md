@@ -13,7 +13,7 @@
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0078` (item B12),
 > `BL-0093` (the `INT-0014` interface-stretch note, now covering this Feature's own stretch too),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
-> `FR-7330`, `docs/FUTURE-WORK.md` §13 R10 (belief-vs-truth analytics, adjacent)
+> `FR-7330`, the former future-work list §13 R10 (belief-vs-truth analytics, adjacent)
 > **Produces:** variable-speed timeline playback from ground truth or a single cell's fog-respecting
 > viewpoint, satisfying `FR-7330` in full
 > **Feature Mapping:** FS-128 (this document)

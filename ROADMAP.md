@@ -3,7 +3,7 @@
 Single authoritative tracker for **every document this project produces or has planned** — what
 exists, what depends on what, and what's still open. Humans and future Claude Code sessions
 should read this file first to answer "what's done, what's in flight, what's left" without
-re-deriving it from `git log`, `docs/FUTURE-WORK.md` §12, or scanning the docs tree.
+re-deriving it from `git log`, the former future-work list §12, or scanning the docs tree.
 
 **Update this file whenever a document's status changes.** Finish a doc → flip it to ✅ (note the
 commit if useful, the research-expansion tables already do this). Start one → flip it to 🚧.
@@ -35,7 +35,7 @@ with — not a build order. On any conflict the `docs/architecture/` GDS ladder 
 | RT-CLAUDE | Durable agent guide | `CLAUDE.md` | BS-00, all themes | ♻️ |
 | RT-ROADMAP | This file | `ROADMAP.md` | all IDs below | ♻️ |
 | RT-INDEX | Master docs router | `docs/INDEX.md` | all theme indexes | ✅ |
-| RT-FUTURE | Cross-cutting v1.1+ TODO (also the source of the §12 research-expansion plan tracked below) | `docs/FUTURE-WORK.md` | — | ♻️ |
+| RT-FUTURE | Cross-cutting v1.1+ TODO (also the source of the §12 research-expansion plan tracked below) | The former future-work list | — | ♻️ |
 
 ## Audit reports (point-in-time deliverables, not living docs)
 

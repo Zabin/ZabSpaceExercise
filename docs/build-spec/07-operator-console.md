@@ -4,7 +4,7 @@
 
 This section is the **authoritative v1 UI specification**. It consolidates the previously
 separate `docs/OPERATOR-UI-DESIGN.md` (now retired) for everything the v1 console actually does;
-future enhancements live in `docs/FUTURE-WORK.md`. The companion docs
+future enhancements live in the former future-work list. The companion docs
 `09-gui-principles.md`, `05-cell-interfaces.md`, `06-bus-and-payload-operations.md`,
 `10-sda-3d-viewer.md`, `11-command-planning-and-tasking.md`, `12-safe-mode-loop.md`,
 and `13-operator-command-catalog.md` provide the underlying research and verb catalog; this
@@ -279,7 +279,7 @@ loop (replay-safe, observable in SOH/telemetry).
 Every verb is regression-tested in `spacesim/tests/test_bus_commands.py` (mutation observable +
 replay-identical). Verbs not listed here either remain on their existing core actions
 (`jam`/`engage`/`cyber`/`observe`/`maneuver`/`downlink`) or are catalogued in
-`docs/FUTURE-WORK.md` §3 for future engine work.
+The former future-work list §3 for future engine work.
 
 ### 16.11 Data / API binding
 
@@ -328,7 +328,7 @@ player cell's view) is fixed with a supersede token (`REFRESH_SEQ`).
   "toggle large-text mode").
 - **Multi-display reflow.** A toolbar **Detach viewers** action pops a second window rendering
   the cell's belief scene on a slow tick — sufficient for a second-screen setup. A full
-  multi-region detach with shared selection state is in `FUTURE-WORK.md` §8.
+  multi-region detach with shared selection state is in the former future-work list §8.
 - **Time-display block (FW user request).** The header's clock area is split into two rows:
   the canonical **UTC** clock (everything the engine touches is UTC microseconds) and a
   selectable **local timezone** row (Eastern default; Central / Mountain / Pacific /

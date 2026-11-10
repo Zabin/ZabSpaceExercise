@@ -7,7 +7,7 @@
 > **Referenced By:** DOM-004, all R1xx-R5xx encyclopedia documents, `docs/research/encyclopedia/R*00-index.md`
 > **Produces:** the design rules for the entire research encyclopedia (R100-R500)
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`docs/FUTURE-WORK.md`](../FUTURE-WORK.md) §12 (the precedent corpus-expansion plan),
+> **Related Topics:** the former future-work list §12 (the precedent corpus-expansion plan),
 > [`docs/research/INDEX.md`](../research/INDEX.md) (the existing doctrine/physics primers)
 
 [↑ Docs index](../INDEX.md) · [Master index](MSTR-005-documentation-map.md)
@@ -87,10 +87,10 @@ Per MSTR-006 §3-4, the encyclopedia is **not** authored as one giant batch job:
 
 - Each tier has its own index document built first, enumerating every planned topic with ID,
   dependencies, and status, **before** the topic documents themselves are written — this mirrors
-  the precedent in `FUTURE-WORK.md` §12 (file-by-file scoping ahead of authoring).
+  the precedent in the former future-work list §12 (file-by-file scoping ahead of authoring).
 - Topics within a tier may be authored incrementally; later tiers (especially R300-R500, which are
   larger lifts and more speculative/forward-looking) should be explicitly authorized before bulk
-  authoring begins, exactly as `FUTURE-WORK.md` §12's Tier 2-4 research items are marked 🅿️ pending
+  authoring begins, exactly as the former future-work list §12's Tier 2-4 research items are marked 🅿️ pending
   user go-ahead.
 - Per-document size stays in the 3-8 page band (MSTR-006 §4) — depth comes from having many focused
   topics, not from a few sprawling ones.

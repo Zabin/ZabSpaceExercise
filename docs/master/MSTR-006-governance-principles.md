@@ -7,7 +7,7 @@
 > **Referenced By:** DOM-006, DOM-008, all FS-*, all IMP-*, `ROADMAP.md`
 > **Produces:** the authoring/versioning/authorization rules every document and package must follow
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`docs/FUTURE-WORK.md`](../FUTURE-WORK.md) §12.5.0 (authoring-cadence precedent),
+> **Related Topics:** the former future-work list §12.5.0 (authoring-cadence precedent),
 > [`docs/master/MSTR-005-documentation-map.md`](MSTR-005-documentation-map.md)
 
 [↑ Docs index](../INDEX.md) · [Master index](MSTR-005-documentation-map.md)
@@ -42,7 +42,7 @@ fine; it is tracked, not hidden, in `ROADMAP.md`.
 
 Some scoped work is large enough (in token cost, review burden, or strategic commitment) that it
 should not start merely because it has been specified. The precedent is
-`docs/FUTURE-WORK.md` §12's research-corpus-expansion plan: fully scoped (file IDs, line-count
+The former future-work list §12's research-corpus-expansion plan: fully scoped (file IDs, line-count
 targets, dependencies) but marked "planned, not yet authorized," with later tiers explicitly
 requiring the user to be asked before starting.
 
@@ -71,7 +71,7 @@ files. Concretely:
     packages** (`IMP-101A`, `IMP-101B`, ...) rather than writing one oversized package.
 - **Token-budget discipline for batch authoring.** When a coding/authoring agent is asked to
   produce several documents in one pass (e.g. an R1xx tier), cap the unit of work per subagent
-  invocation (the precedent in `FUTURE-WORK.md` §12.5.0 is ≤20k tokens per invocation) — whole-tier,
+  invocation (the precedent in the former future-work list §12.5.0 is ≤20k tokens per invocation) — whole-tier,
   whole-file-dump invocations have previously blown token budgets and produced shallow output.
   Prefer one-document or small-batch invocations with explicit per-document review.
 - **Every document carries the full metadata block** (§5) so an agent can determine relevance and
@@ -106,7 +106,7 @@ If two documents disagree:
    IMP package's design seems to contradict its parent FS's stated purpose, that's a defect in the
    IMP package, not a silent reinterpretation of the FS.
 3. Genuine ambiguity that isn't resolved by (1)/(2) should be raised explicitly (flagged in the
-   document with a `> **Open question:**` callout, recorded in `FUTURE-WORK.md`, or — for anything
+   document with a `> **Open question:**` callout, recorded in the former future-work list, or — for anything
    that changes scope or strategic direction — asked of the user) rather than resolved by silent
    authorial choice.
 

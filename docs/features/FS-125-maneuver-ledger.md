@@ -12,7 +12,7 @@
 > (Implementation Package, ✅ `VERIFIED`, [VR-1250](../implementation/verification/VR-1250-maneuver-ledger.md)),
 > [docs/pipeline/backlog.md](../pipeline/backlog.md) `BL-0072` (item B6),
 > [docs/requirements/01-functional-requirements.md](../requirements/01-functional-requirements.md)
-> `FR-1320`, `docs/FUTURE-WORK.md` "Δv panel" item
+> `FR-1320`, the former future-work list "Δv panel" item
 > **Produces:** a per-asset, purpose-tagged manoeuvre ledger view and CSV export, satisfying
 > `FR-1320` in full
 > **Feature Mapping:** FS-125 (this document)
@@ -29,7 +29,7 @@
 
 Give an operator or facilitator a per-asset, chronological record of every manoeuvre applied
 against an Asset — with an operator-entered purpose tag — viewable in the console and exportable as
-CSV, closing the gap `docs/FUTURE-WORK.md`'s "Δv panel" item and `FR-1320`'s own Rationale both
+CSV, closing the gap the former future-work list's "Δv panel" item and `FR-1320`'s own Rationale both
 name: every manoeuvre is already deducted from `delta_v_ms` and logged in the `EventLog`, but
 neither is presented as a reviewable, purpose-tagged ledger.
 

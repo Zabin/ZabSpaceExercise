@@ -200,7 +200,7 @@ hot-seat swapping, genuine wall clock. Traces to GDS-01 §4 (operational environ
 - **OR-8 "AI-Red"/"AI-Blue" is NOT an autonomous AI in v1.** Where vignette parameters mention
   "AI-Red aggressiveness," v1 means **White-Cell-driven scripted behavior**: the parameter scales
   the pre-scripted injects/plans the facilitator runs for an unseated or facilitator-played cell.
-  A genuine autonomous opponent is a documented v2 seam (`docs/FUTURE-WORK.md` §1), not a v1
+  A genuine autonomous opponent is a documented v2 seam (former future-work list §1), not a v1
   deliverable. *(→ FR-9110; ADR-0021, ADR-0024)*
 
 ## 8. Capability statements added after the merge (2026-07 → 2026-10)

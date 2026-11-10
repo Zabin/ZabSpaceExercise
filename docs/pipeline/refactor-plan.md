@@ -31,7 +31,8 @@
 | 3 | Short backlog and journal rows, full text kept in the archive files; 14 review findings harvested | Done (PR #96) |
 | 4a | Retired: the earlier `IMP-xxxA` package folder, the earlier documentation plan (now MSTR-005 §1a), the root decision log | Done (PR #97) |
 | 4b | The three June audit files moved into `docs/reviews/` | Done (PR #98) |
-| 4c–4f, 5, 6, 7 | See the packets below | Paused |
+| 4d (B2) | `FUTURE-WORK.md` retired: open items not already in the Release 2.0 plan filed as `BL-0445`–`BL-0450`; 59 documents reworded | Done (this pull request) |
+| 4c, 4e, 4f, 5, 6, 7 | See the packets below | Paused |
 
 ## 3. Rules for every session, whatever its tier
 
@@ -111,9 +112,9 @@ Each packet has a Tier A input. Do not start one whose input does not exist yet.
    (most of its lines are research-primer links into build-spec), and no live document names
    either folder.
 
-### B2 — Retire `FUTURE-WORK.md` (step 4d). No Tier A input.
+### B2 — Retire the former future-work list (step 4d). No Tier A input.
 
-1. Read all of `docs/FUTURE-WORK.md` (about 1,400 lines). For each item decide: already built
+1. Read all of the former future-work list (about 1,400 lines). For each item decide: already built
    (cite the package or code), already in the backlog (cite the row), in the Release 2.0 plan
    (cite the plan row), or still open.
 2. File each still-open item as one short backlog row (`00-intake` shape, Status `DEFERRED`,
@@ -121,7 +122,7 @@ Each packet has a Tier A input. Do not start one whose input does not exist yet.
 3. Put the disposition table (item → where it went) in the pull request description, not in the
    repository.
 4. Run the retirement loop. 55 documents and 22 code files name it. The code files are comments
-   of the form `FUTURE-WORK §n`: list them for C4.
+   of the form `former future-work list §n`: list them for C4.
 5. Backlog: close `BL-0296`, `BL-0306` if answered by the plan's symbology decision.
 6. Done when: the file is gone, every open idea in it has a backlog row, the test passes.
 
@@ -213,7 +214,7 @@ comparison of every touched file before and after). Scope:
 - citations of moved or retired documents: the retired root decision log in `engine/effects.py`
   (find it with `git grep -n 'memory' spacesim/engine/effects.py`); the June audit
   paths in `engine/buscommands.py`, `engine/engage.py`, `tests/test_bus_commands.py`,
-  `tests/test_defensive_audit_2026.py`; build-spec and `FUTURE-WORK` citations listed by B1 and B2;
+  `tests/test_defensive_audit_2026.py`; build-spec citations listed by B1; future-work-list citations (`FUTURE-WORK §n` comments) in: `spacesim/engine/access.py`, `spacesim/engine/bus.py`, `spacesim/engine/buscommands.py`, `spacesim/engine/conjunction.py`, `spacesim/engine/effects.py`, `spacesim/engine/entities.py`, `spacesim/engine/orders.py`, `spacesim/engine/propagator.py`, `spacesim/engine/recovery.py`, `spacesim/engine/ssn.py`, `spacesim/engine/telemetry.py`, `spacesim/engine/world.py`, `spacesim/session/aar.py`, `spacesim/session/manager.py`, `spacesim/tests/test_future_work.py`, `spacesim/tests/test_future_work_batch11.py`, `spacesim/ui_web/server.py`, `spacesim/ui_web/static/app.js`, `spacesim/ui_web/static/graph.js`, `spacesim/ui_web/static/logo.svg`, `spacesim/ui_web/static/style.css`, `spacesim/ui_web/static/symbology.js`;
 - nothing else. Package history in comments (`IP-xxxx`, `BL-xxxx`) is left for A5 to rule on.
 
 ### C5 — Low-severity defect packages

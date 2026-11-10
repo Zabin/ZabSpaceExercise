@@ -155,7 +155,7 @@ swapping, genuine wall clock.**
   "AI-Red aggressiveness," this v1 means **White-Cell-driven scripted behavior**: the parameter
   scales the *pre-scripted* injects/plans the facilitator runs for an unseated or
   facilitator-played cell (e.g., how many jammers activate, whether kinetic is authorized). A
-  genuine autonomous opponent is a documented **v2 seam** (`docs/FUTURE-WORK.md` §1), not a
+  genuine autonomous opponent is a documented **v2 seam** (former future-work list §1), not a
   v1 deliverable. Vignette text and the parameter tooltips shall be worded accordingly.
 
 ---

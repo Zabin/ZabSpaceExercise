@@ -34,7 +34,6 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 - [`../ROADMAP.md`](../ROADMAP.md) — the single authoritative tracker of every document this
   project produces: IDs, dependencies, and completion status. Start here to see what's done, in
   progress, or still planned without re-deriving it from the directories below.
-- [`FUTURE-WORK.md`](FUTURE-WORK.md) — the single-source v1.1+ TODO (deferred items).
 - [`AUDIT-2026-06.md`](reviews/AUDIT-2026-06.md) — the Jun 2026 whole-project audit (findings, LAN trust
   boundary §D5/§F1); two companion audits cover narrower scopes:
   [`AUDIT-2026-06-COMMANDS.md`](reviews/AUDIT-2026-06-COMMANDS.md) (command realism, order-form UX,
@@ -56,6 +55,7 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 | `docs/AUDIT-2026-06.md` |  | 2026-11-10 | `docs/reviews/AUDIT-2026-06.md` |
 | `docs/AUDIT-2026-06-COMMANDS.md` |  | 2026-11-10 | `docs/reviews/AUDIT-2026-06-COMMANDS.md` |
 | `docs/AUDIT-2026-06-UI-TTC.md` |  | 2026-11-10 | `docs/reviews/AUDIT-2026-06-UI-TTC.md` |
+| `docs/FUTURE-WORK.md` |  | 2026-11-10 | `docs/feature-planning/06-release-2-plan.md` |
 
 ## Root-level guides (not under `docs/`)
 

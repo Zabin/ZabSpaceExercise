@@ -67,7 +67,7 @@ products are shared/queued) rather than a difficulty dial.
 
 **Priority has a budget cost, forcing triage on a finite resource.** `PRIORITY_COST`
 (`immediate`/`priority`/`routine`: 20/7/2) consumes a finite collection-management budget
-(FUTURE-WORK §7) — calibrated so a 100-unit budget covers roughly 5 immediate / 15 priority / 50
+(former future-work list §7) — calibrated so a 100-unit budget covers roughly 5 immediate / 15 priority / 50
 routine requests per session, forcing White Cell and operators to genuinely triage rather than
 mark everything "immediate."
 
