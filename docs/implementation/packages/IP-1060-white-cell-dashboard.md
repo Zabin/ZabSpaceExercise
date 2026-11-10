@@ -11,7 +11,7 @@
 > this dashboard's preset selector controls), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the facilitation control surface a future authorized FS-108 (Inject Authoring, currently unauthorized) would extend
 > **Feature Reference:** [FS-106 — White Cell Dashboard](../../features/FS-106-white-cell-dashboard.md) (v2.0)
-> **Supersedes:** [`docs/implementations/IMP-106A-white-cell-dashboard.md`](../../implementations/IMP-106A-white-cell-dashboard.md)
+> **Supersedes:** `IMP-106A` (earlier package tier, retired 2026-11-10)
 > **Related Topics:** [`spacesim/session/manager.py`](../../../spacesim/session/manager.py), [`spacesim/session/redai.py`](../../../spacesim/session/redai.py)
 
 [↑ Master Build Plan](../00-master-build-plan.md) · [Packages index](INDEX.md) · [Docs index](../../INDEX.md)
@@ -117,7 +117,7 @@ inject-library test suite.
 
 ## Documentation Updates
 
-- Supersedes [`docs/implementations/IMP-106A-white-cell-dashboard.md`](../../implementations/IMP-106A-white-cell-dashboard.md)
+- Supersedes `IMP-106A` (earlier package tier, retired 2026-11-10)
   (unchanged from v1.0; that document now additionally carries a forward-pointer note to the three
   new sibling packages, per its own "Superseded" banner's maintenance rule).
 - `ROADMAP.md` Implementation Packages theme updated for the v2.0 narrowing and the three new

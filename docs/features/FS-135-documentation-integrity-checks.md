@@ -288,7 +288,7 @@ pattern) — built. No `FS-xxx` prerequisite. Coordinates with FS-133 (shared ru
    requirement leaves out of scope (`BL-0317`); this check covers documents and their IDs only.
    Recording retired leaves, if wanted, is `04`'s call and would be a separate leaf. No action here.
 6. **A root-level retired document.** `NFR-3810` says the declaration lives in the `INDEX.md` of the
-   folder that held the file, but a root file such as `ROADMAP.md` or `memory.md` has no folder
+   folder that held the file, but a root file such as `ROADMAP.md` has no folder
    index (the root has none). Needs the owner or `04` to name the carrier (most naturally the
    `docs/INDEX.md`, which already routes the root documents); until then the check reads every
    `INDEX.md`, so a declaration there works, and the gap is unexercised.

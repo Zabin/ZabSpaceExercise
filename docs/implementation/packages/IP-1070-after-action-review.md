@@ -8,7 +8,7 @@
 > **Referenced By:** IP-1060 (White-only trigger controls that invoke this instrument), IP-2010 (belief-truth-divergence data source), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the replay/snapshot surface IP-2010's belief-truth-divergence dimension reads from
 > **Feature Reference:** [FS-107 — After Action Review](../../features/FS-107-after-action-review.md)
-> **Supersedes:** [`docs/implementations/IMP-107A-after-action-review.md`](../../implementations/IMP-107A-after-action-review.md)
+> **Supersedes:** `IMP-107A` (earlier package tier, retired 2026-11-10)
 > **Related Topics:** [`spacesim/session/aar.py`](../../../spacesim/session/aar.py), [`spacesim/engine/simulation.py`](../../../spacesim/engine/simulation.py), [`spacesim/session/scene.py`](../../../spacesim/session/scene.py)
 
 [↑ Master Build Plan](../00-master-build-plan.md) · [Packages index](INDEX.md) · [Docs index](../../INDEX.md)
@@ -104,7 +104,7 @@ suite.
 
 ## Documentation Updates
 
-- Supersedes [`docs/implementations/IMP-107A-after-action-review.md`](../../implementations/IMP-107A-after-action-review.md).
+- Supersedes `IMP-107A` (earlier package tier, retired 2026-11-10).
 - `ROADMAP.md` Implementation Packages theme updated.
 
 ## Definition of Done

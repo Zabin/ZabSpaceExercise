@@ -167,10 +167,8 @@ implementation-theme rows, and commit as `docs(implementation): IP-xxxx — <wha
 
 ## Gotchas
 
-- **Two implementation trees exist in this repository.** `docs/implementation/` (`IP-xxxx`) is
-  canonical; `docs/implementations/` (`IMP-xxxA`) is the superseded prior corpus, kept with
-  banners. Never write into the old tree, never reuse its IDs, and keep the "Relationship to the
-  prior corpus" section of the Master Build Plan accurate if the relationship evolves.
+- **One implementation tree.** `docs/implementation/` (`IP-xxxx`) is the only one. The earlier
+  `IMP-xxxA` tier was retired 2026-11-10; never reuse its IDs.
 - **Don't let a package become a second Feature Specification.** The FS owns behavior; the package
   owns files/tasks/tests/sequencing. A package restating the whole spec is bloat; a package
   contradicting the spec is a defect.

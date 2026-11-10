@@ -7,8 +7,7 @@
 > **Referenced By:** `docs/INDEX.md`, `ROADMAP.md`, MSTR-006, all DOM-*, all FS-*, all IMP-*
 > **Produces:** the routing rules every new document must follow
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`docs/DOCUMENTATION-PLAN.md`](../DOCUMENTATION-PLAN.md) (legacy five-theme rationale),
-> [`ROADMAP.md`](../../ROADMAP.md) (per-document completion tracker)
+> **Related Topics:** > [`ROADMAP.md`](../../ROADMAP.md) (per-document completion tracker)
 
 [↑ Docs index](../INDEX.md)
 
@@ -17,17 +16,28 @@
 This is the map of the *entire* `docs/` tree after the documentation-driven-development expansion —
 both the pre-existing five themes (`build-spec/`, `design/`, `research/`, `training/`, `vignettes/`)
 and the six new directories this expansion adds (`master/`, `domains/`, `features/`,
-`implementations/`, `architecture/`, `scenarios/`). `docs/INDEX.md` is the live router; this
+`implementation/`, `architecture/`, `scenarios/`). `docs/INDEX.md` is the live router; this
 document is the rationale and the rule set for where a new document belongs. `ROADMAP.md` is the
 per-document status tracker — this document answers "where does X go," `ROADMAP.md` answers "is X
 done."
+
+### 1a. Documentation principles
+
+Carried over from the earlier documentation plan (retired 2026-11-10), which this document succeeds:
+
+1. **Single-topic files a reader can take in whole.** A file is small enough (about 50 to 300
+   lines) to be opened fully and read for one topic, not scrolled as a monolith.
+2. **An index at every level.** A master `docs/INDEX.md` plus one `INDEX.md` per theme act as
+   routers: read the index, then open exactly the module needed.
+3. **Stable, descriptive filenames.** Files are named by topic; a numeric prefix only sets reading
+   order within a theme.
+4. **Themed directories.** Each theme is a directory with its own index.
 
 ## 2. Full directory tree
 
 ```
 docs/
 ├── INDEX.md                      ← master router
-├── DOCUMENTATION-PLAN.md         ← legacy five-theme rationale (build-spec/design/research/training/vignettes)
 ├── FUTURE-WORK.md                ← cross-cutting living TODO (v1.1+), incl. §12 research-expansion plan
 ├── AUDIT-2026-06*.md             ← point-in-time audit reports (commands, UI/TT&C, master audit)
 │
@@ -67,9 +77,9 @@ docs/
 │   ├── feature-index.md
 │   └── FS-101-mission-planning.md …
 │
-├── implementations/               ← NEW: IMP-xxx, implementation plans (no production code)
-│   ├── implementation-index.md
-│   └── IMP-101A-… .md
+├── implementation/                ← IP-xxxx Implementation Packages, the Master Build Plan, verification reports
+│   ├── 00-master-build-plan.md
+│   └── packages/IP-1010-… .md
 │
 ├── architecture/                  ← NEW: ADS-xxx Design Synthesis documents (the bridge from
 │   │                                  Domain+Research into a Feature Specification)
@@ -223,7 +233,7 @@ Each document in the chain must carry, in its metadata block, the IDs of its imm
 4. Does it describe *what* a capability must do, with no implementation detail? → `features/`,
    authored using the `06-feature-specification` skill's 20-field template.
 5. Does it describe *how* to build a specific Feature Spec (data model, API, tests, migration)? →
-   `implementations/`.
+   `implementation/packages/`.
 6. Does it synthesize a capability cluster's domain+research inputs into an architecture, domain
    model, requirements, constraints, risks, and decisions *before* a Feature Specification commits
    to a shape? → `architecture/` as `ADS-xxx` (see §3a). Produced by the

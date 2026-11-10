@@ -417,7 +417,7 @@
   achievable objective-flips are verified by `spacesim/tests/test_vignette_tutorials.py`; ROE /
   weapons-quality / command-station gates that block the rest are documented in each block's `expect`.
 - **Docs are modular under `docs/`** — routed by `docs/INDEX.md` (structure & rationale in
-  `docs/DOCUMENTATION-PLAN.md`). Themes: `docs/build-spec/` (the binding spec, 8 modules),
+  `docs/master/MSTR-005-documentation-map.md`). Themes: `docs/build-spec/` (the binding spec, 8 modules),
   `docs/training/` (user manual, 16 modules — shared onboarding 01–11 plus the role-scoped
   **per-cell manuals** 12 White / 13 Blue / 14 Red, their 15 traceability matrix, and the 16
   vignette learning path), `docs/design/`, `docs/research/`, `docs/vignettes/`, each with its own

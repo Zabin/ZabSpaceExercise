@@ -33,10 +33,8 @@ with — not a build order. On any conflict the `docs/architecture/` GDS ladder 
 |---|---|---|---|---|
 | RT-README | Project overview & quick start | `README.md` | — | ✅ |
 | RT-CLAUDE | Durable agent guide | `CLAUDE.md` | BS-00, all themes | ♻️ |
-| RT-MEMORY | Rolling design-decision log | `memory.md` | — | ♻️ |
 | RT-ROADMAP | This file | `ROADMAP.md` | all IDs below | ♻️ |
 | RT-INDEX | Master docs router | `docs/INDEX.md` | all theme indexes | ✅ |
-| RT-PLAN | Documentation IA rationale | `docs/DOCUMENTATION-PLAN.md` | RT-INDEX | ✅ |
 | RT-FUTURE | Cross-cutting v1.1+ TODO (also the source of the §12 research-expansion plan tracked below) | `docs/FUTURE-WORK.md` | — | ♻️ |
 
 ## Audit reports (point-in-time deliverables, not living docs)
@@ -357,7 +355,7 @@ each document explicitly flags its own **build status as unverified** and is rea
 Implementation Package if confirmed unbuilt, or needs only an RTM-citation closure if confirmed
 already shipped.
 
-**Next:** Phase 5 (Implementation Packages, `docs/implementations/`) is complete (below), but see
+**Next:** Phase 5 (Implementation Packages) is complete (below), but see
 the FS-106-split note above for its now-stale scope alignment. FS-112/113/114/115's build-status
 verification is now done and each has an Implementation Package
 (`IP-1120`/`IP-1130`/`IP-1140`/`IP-1150`/`IP-1151` — see the Implementation Packages theme below).
@@ -476,7 +474,7 @@ was needed — the existing specs already fully describe what their new owning F
 `CR-01–18,21`/`CNFR-01–07` as the project owner authorizes for the ones with no ADR-level blocker
 (Finding F-04), then re-run this skill's Step 0 incrementally against the delta.
 
-## Theme: Implementation Packages (the *how* — `docs/implementation/packages/`, canonical; `docs/implementations/`, superseded)
+## Theme: Implementation Packages (the *how* — `docs/implementation/packages/`)
 
 Phase 5 of the documentation-driven-development expansion (MSTR-005 §4 chain: ... → Feature
 Specification → **Implementation Package** → Code → Tests). Each `IP-xxxx` describes architecture,
@@ -500,11 +498,10 @@ dependency-graph/critical-path in [`implementation/00-master-build-plan.md`](doc
 work-breakdown rationale in [`implementation/01-technical-work-breakdown.md`](docs/implementation/01-technical-work-breakdown.md).
 
 **Canonical tier as of this revision.** `docs/implementation/packages/` (`IP-xxxx` IDs) supersedes
-the prior `docs/implementations/` tier (`IMP-xxxA` IDs) in full — same underlying design content,
+the earlier `IMP-xxxA` package tier in full — same underlying design content,
 re-derived and re-verified against the current source tree under a different template/ID
-scheme/location. The prior tier's files are retained (each carries a superseded-by banner) but are
-no longer the document of record; see the Master Build Plan's "Relationship to the prior
-`docs/implementations/` corpus" section for the full rationale.
+scheme/location. The earlier tier's files were retired 2026-11-10 and remain in Git history; see the Master Build Plan's
+"Relationship to the earlier `IMP-xxxA` package tier" section for the full rationale.
 
 | ID | Document | Path | FS | Situation | Status |
 |---|---|---|---|---|---|
@@ -636,8 +633,7 @@ package pending only its own `09-package-verification` pass.
 **IP-1090/IP-1100/IP-1110 are new (2026-07, tranche 1)**, split out of IP-1060 v1.0 per
 `docs/feature-planning/05-feature-review.md` Finding F-03, mirroring the FS-106 split — no new code
 verification was performed, these three packages reorganize `IP-1060` v1.0's already-verified
-citations under the new Feature boundaries. `docs/implementations/IMP-106A-white-cell-
-dashboard.md` (superseded, frozen historical content) gained a forward-pointer note to the three
+citations under the new Feature boundaries. `IMP-106A` (the earlier package tier, since retired) gained a forward-pointer note to the three
 new packages without otherwise being altered.
 
 **IP-1120/IP-1130/IP-1140/IP-1150/IP-1151 are new (2026-07, tranche 2)** — the first Implementation
@@ -902,24 +898,19 @@ tutorials promise `REFUSED` and a "Force add" control the console lacks; acronym
 undefined; COA kills `11.15`/`11.17` are chance-based but written as certain. FS coverage check: 36 of 36 VERIFIED
 specs in `15.1`, no misses.
 
-### Superseded prior tier (`docs/implementations/`, `IMP-xxxA` IDs — retained, not deleted)
+### Earlier package tier (`IMP-xxxA` IDs)
 
-| ID | Document | Path | FS | Situation | Status |
-|---|---|---|---|---|---|
-| IMP-00 | Implementation index (now carries a supersession banner) | `implementations/INDEX.md` | — | — | ♻️ superseded |
-| IMP-101A…IMP-107A/B | (7 as-built packages) | `implementations/IMP-*.md` | FS-101–107 | As-built | ♻️ superseded by IP-1010…IP-1070/1051 |
-| IMP-201A | Competency Assessment — rubric computation design | `implementations/IMP-201A-competency-assessment.md` | FS-201 | Forward design | ♻️ superseded by IP-2010 |
-| IMP-301A | Research Analytics — multi-run export design | `implementations/IMP-301A-research-analytics.md` | FS-301 | Forward design | ♻️ superseded by IP-3010 |
+The ten `IMP-xxxA` packages (`IMP-101A`…`IMP-107A/B`, `IMP-201A`, `IMP-301A`) were superseded by `IP-1010`…`IP-1070`/`IP-1051`, `IP-2010` and `IP-3010`, and their folder was retired 2026-11-10. They remain in Git history.
 
 **Next:** Phase 6-8 (Consistency/Dependency/Traceability review, MSTR-006 §7) is complete (below).
 Re-running that review against the new `docs/implementation/packages/` tier (rather than assuming
-its findings carry over unchanged from the superseded `docs/implementations/` pass) is not yet
+its findings carry over unchanged from the pass over the earlier `IMP-xxxA` tier) is not yet
 done — flagged here as an open item, not silently assumed equivalent.
 
 ## Theme: Phase 6-8 review (Consistency / Dependency / Traceability, MSTR-006 §7)
 
 Scope: every document under `docs/master/`, `docs/domains/`, `docs/research/encyclopedia/`,
-`docs/features/`, `docs/implementations/`, `docs/architecture/`, `docs/scenarios/` (MSTR-006 §5).
+`docs/features/`, the earlier `IMP-xxxA` package tier, `docs/architecture/`, `docs/scenarios/` (MSTR-006 §5).
 
 **Phase 6 — Consistency.** Scanned all 115 in-scope content documents (excludes the 13 `INDEX.md`/
 tier-index router files, see open question below) for the required 7-field metadata block. All 115

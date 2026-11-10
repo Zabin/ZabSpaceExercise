@@ -14,12 +14,10 @@ citation exists.
 Feature Specification (FS-xxx) → Implementation Package (IP-xxxx, here) → Code → Tests
 ```
 
-**This tree supersedes [`docs/implementations/`](../../implementations/INDEX.md) (`IMP-xxxA`) as the
+**This tree superseded the earlier `IMP-xxxA` package tier as the
 canonical Implementation Package corpus.** See
-[`../00-master-build-plan.md`](../00-master-build-plan.md) §"Relationship to the prior
-`docs/implementations/` corpus" for the full rationale; the prior corpus's files remain in place
-with a superseded-by banner, not deleted, since they carry the same underlying design content this
-tree re-derives under a different template/ID scheme/location.
+[`../00-master-build-plan.md`](../00-master-build-plan.md) §"Relationship to the earlier `IMP-xxxA` package tier" for the full rationale. The earlier tier's files were
+retired 2026-11-10 (they carried the same design content this tree re-derives); they remain in Git history.
 
 ## Two distinct situations this tier covers
 

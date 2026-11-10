@@ -1,7 +1,7 @@
 # Future work
 
 Consolidated list of capabilities **not** included in v1 — moved here from the now-merged
-`docs/OPERATOR-UI-DESIGN.md` (UI plan) and `memory.md`'s rolling "still open" notes. The
+`docs/OPERATOR-UI-DESIGN.md` (UI plan) and the root decision log's rolling "still open" notes. The
 v1 spec lives in `build-spec/INDEX.md` (the operator console in `build-spec/07-operator-console.md`); this file is
 the single source of truth for "what's deliberately not built."
 

@@ -66,7 +66,7 @@ Concretely, this means:
 - The existing `docs/build-spec/`, `docs/design/`, `docs/research/`, `docs/training/`,
   `docs/vignettes/` corpus is **not replaced**. It is the load-bearing foundation this tree builds
   on top of and cross-references; see [`MSTR-005`](MSTR-005-documentation-map.md) §3 for exactly how
-  the new (`master/`, `domains/`, `features/`, `implementations/`, `architecture/`, `scenarios/`,
+  the new (`master/`, `domains/`, `features/`, `implementation/`, `architecture/`, `scenarios/`,
   expanded `research/`) directories relate to the pre-existing five.
 
 ## 3. Audience
@@ -76,11 +76,11 @@ Concretely, this means:
 | White Cell facilitators | `docs/training/`, `docs/vignettes/`, Mission brief panels | Run exercises, write injects, debrief |
 | Operators (Red/Blue trainees) | `docs/training/`, in-app tutorial panel | Learn the tool and the doctrine it encodes |
 | Human maintainers | `docs/build-spec/` (binding), `docs/design/`, `CLAUDE.md` | Understand what is built and why |
-| **Future coding LLM agents** | `docs/master/`, `docs/domains/`, `docs/research/` (R1xx–R5xx), `docs/features/`, `docs/implementations/` | Implement new capability without inferring intent from code |
+| **Future coding LLM agents** | `docs/master/`, `docs/domains/`, `docs/research/` (R1xx–R5xx), `docs/features/`, `docs/implementation/` | Implement new capability without inferring intent from code |
 | Researchers / assessment designers | `docs/domains/DOM-002`, `DOM-004`, `DOM-005`, `docs/research/R200`, `R400` | Build measurement and validation on top of the simulator |
 
 The fifth row is the new audience this expansion is built for. Every document in `docs/master/`,
-`docs/domains/`, `docs/features/`, `docs/implementations/`, and the `R1xx`–`R5xx` research tiers is
+`docs/domains/`, `docs/features/`, `docs/implementation/`, and the `R1xx`–`R5xx` research tiers is
 written so it is **independently retrievable** — an agent that opens exactly one file should have
 enough context to act correctly, with explicit pointers (not implicit assumptions) to whatever else
 it needs. See [`MSTR-006`](MSTR-006-governance-principles.md) §4 "AI authoring constraints".

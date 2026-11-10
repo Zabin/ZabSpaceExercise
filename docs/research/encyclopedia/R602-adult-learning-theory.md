@@ -68,7 +68,7 @@ worth their attention.
 **Self-direction implies a manual is a reference, not a forced sequence.** Adults prefer to choose
 their own path through material and self-assess progress — this is the direct grounding for why the
 training corpus is organized as independently-retrievable modules with an index router (per
-`DOCUMENTATION-PLAN.md`'s goals) rather than a single linear document a reader must traverse start to
+MSTR-005 §1a's principles) rather than a single linear document a reader must traverse start to
 finish, and for why the vignette learning path (`training/16`) is framed as a *recommendation* a
 facilitator can enter at any rung matched to trainee level, not a mandatory single-file march.
 
@@ -96,7 +96,7 @@ adjacent professional judgment; the manuals should activate that judgment (Merri
   `09-training-manual-review`'s pedagogy dimension should flag a section that opens directly with
   steps and no stated rationale.
 - **Never force a linear read order.** Keep the module-plus-index-router structure
-  (`DOCUMENTATION-PLAN.md` goals 1-2) rather than merging modules into a monolith "for completeness" —
+  (MSTR-005 §1a principles 1-2) rather than merging modules into a monolith "for completeness" —
   self-direction is a *design constraint*, not a nice-to-have, given this audience.
 - **Don't write down to the audience.** Assume professional-adult prior competence in an adjacent
   domain (per assumption A8's CAF/allied-operator framing); jargon specific to *this tool* should be

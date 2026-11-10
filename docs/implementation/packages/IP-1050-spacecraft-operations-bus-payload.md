@@ -8,7 +8,7 @@
 > **Referenced By:** IP-1051 (sibling package, effect resolution & console UX), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the executed-state surface IP-1070 replays and IP-2010 assesses
 > **Feature Reference:** [FS-105 — Spacecraft Operations](../../features/FS-105-spacecraft-operations.md) (§3.1, "Bus and subsystem operations")
-> **Supersedes:** [`docs/implementations/IMP-105A-spacecraft-operations-bus-payload.md`](../../implementations/IMP-105A-spacecraft-operations-bus-payload.md)
+> **Supersedes:** `IMP-105A` (earlier package tier, retired 2026-11-10)
 > **Related Topics:** [`spacesim/engine/buscommands.py`](../../../spacesim/engine/buscommands.py), [`spacesim/engine/bus.py`](../../../spacesim/engine/bus.py), [`spacesim/engine/orders.py`](../../../spacesim/engine/orders.py)
 
 [↑ Master Build Plan](../00-master-build-plan.md) · [Packages index](INDEX.md) · [Docs index](../../INDEX.md)
@@ -107,7 +107,7 @@ the record of the cut/kept verb decisions this catalog reflects.
 
 ## Documentation Updates
 
-- Supersedes [`docs/implementations/IMP-105A-spacecraft-operations-bus-payload.md`](../../implementations/IMP-105A-spacecraft-operations-bus-payload.md).
+- Supersedes `IMP-105A` (earlier package tier, retired 2026-11-10).
 - `ROADMAP.md` Implementation Packages theme updated.
 
 ## Definition of Done

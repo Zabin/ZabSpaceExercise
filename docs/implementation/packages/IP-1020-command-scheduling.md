@@ -8,7 +8,7 @@
 > **Referenced By:** IP-1050 (consumes the `command` action's lifecycle), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the executed-order state IP-1050/IP-1051's console displays
 > **Feature Reference:** [FS-102 — Command Scheduling](../../features/FS-102-command-scheduling.md)
-> **Supersedes:** [`docs/implementations/IMP-102A-command-scheduling.md`](../../implementations/IMP-102A-command-scheduling.md)
+> **Supersedes:** `IMP-102A` (earlier package tier, retired 2026-11-10)
 > **Related Topics:** [`spacesim/engine/orders.py`](../../../spacesim/engine/orders.py), [`spacesim/engine/access.py`](../../../spacesim/engine/access.py)
 
 [↑ Master Build Plan](../00-master-build-plan.md) · [Packages index](INDEX.md) · [Docs index](../../INDEX.md)
@@ -103,7 +103,7 @@ execute) and cyber's dedicated non-windowed-exception test path.
 
 ## Documentation Updates
 
-- Supersedes [`docs/implementations/IMP-102A-command-scheduling.md`](../../implementations/IMP-102A-command-scheduling.md)
+- Supersedes `IMP-102A` (earlier package tier, retired 2026-11-10)
   (banner added).
 - `ROADMAP.md` Implementation Packages theme updated.
 

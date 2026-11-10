@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ♻️ Living (extend as new terms enter the corpus)
 > **Dependencies:** MSTR-001
-> **Referenced By:** all documents in `docs/domains/`, `docs/research/`, `docs/features/`, `docs/implementations/`
+> **Referenced By:** all documents in `docs/domains/`, `docs/research/`, `docs/features/`, `docs/implementation/`
 > **Produces:** the canonical term set new documents must reuse rather than re-define
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** [`docs/build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §12,

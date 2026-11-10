@@ -72,11 +72,11 @@ Concretely:
 | White Cell facilitators | `docs/training/`, `docs/vignettes/`, Mission brief panels | Run exercises, write injects, debrief |
 | Operators (Red/Blue trainees) | `docs/training/`, in-app tutorial panel | Learn the tool and the doctrine it encodes |
 | Human maintainers | `docs/build-spec/` (binding), `docs/design/`, `CLAUDE.md` | Understand what is built and why |
-| Future coding LLM agents | `docs/master/`, `docs/domains/`, `docs/research/` (R1xx–R5xx), `docs/features/`, `docs/implementations/` | Implement new capability without inferring intent from code |
+| Future coding LLM agents | `docs/master/`, `docs/domains/`, `docs/research/` (R1xx–R5xx), `docs/features/`, `docs/implementation/` | Implement new capability without inferring intent from code |
 | Researchers / assessment designers | `docs/domains/DOM-002`, `DOM-004`, `DOM-005`, `docs/research/R200`, `R400` | Build measurement and validation on top of the simulator |
 
 (MSTR-001 §3; the LLM-agent row is the newest addition to this audience list and the one the
-`master/`/`domains/`/`features/`/`implementations/` tiers are written for — independently
+`master/`/`domains/`/`features/`/`implementation/` tiers are written for — independently
 retrievable, with explicit pointers rather than implicit assumptions, per MSTR-006 §4.)
 
 ## 4. Problem statement
@@ -129,7 +129,7 @@ The program succeeds when (MSTR-001 §5):
   `CLAUDE.md` "LAN trust model").
 - **Not** a vehicle for generating code in the documentation-expansion effort — that phase produces
   **only** documentation (MSTR-006 §5: describe code changes, never write them in `master/`/
-  `domains/`/`features/`/`implementations/`/`architecture/`).
+  `domains/`/`features/`/`implementation/`/`architecture/`).
 
 (MSTR-001 §6.)
 

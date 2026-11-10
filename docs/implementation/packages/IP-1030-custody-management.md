@@ -8,7 +8,7 @@
 > **Referenced By:** IP-1040 (produces the `observe()` calls this model consumes), IP-1050/IP-1051 (the `engage` gate), IP-1070 (AAR custody replay), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the custody-confidence surface IP-1051's console and IP-1070's AAR consume
 > **Feature Reference:** [FS-103 — Custody Management](../../features/FS-103-custody-management.md)
-> **Supersedes:** [`docs/implementations/IMP-103A-custody-management.md`](../../implementations/IMP-103A-custody-management.md)
+> **Supersedes:** `IMP-103A` (earlier package tier, retired 2026-11-10)
 > **Related Topics:** [`spacesim/engine/custody.py`](../../../spacesim/engine/custody.py), [`spacesim/session/scene.py`](../../../spacesim/session/scene.py)
 
 [↑ Master Build Plan](../00-master-build-plan.md) · [Packages index](INDEX.md) · [Docs index](../../INDEX.md)
@@ -100,7 +100,7 @@ order-system test suite (the `engage`-order rejection path).
 
 ## Documentation Updates
 
-- Supersedes [`docs/implementations/IMP-103A-custody-management.md`](../../implementations/IMP-103A-custody-management.md).
+- Supersedes `IMP-103A` (earlier package tier, retired 2026-11-10).
 - `ROADMAP.md` Implementation Packages theme updated.
 
 ## Definition of Done

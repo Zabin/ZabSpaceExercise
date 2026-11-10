@@ -8,7 +8,7 @@
 > **Referenced By:** IP-1030 (consumes this package's `observe()` deliveries), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** fresh custody data consumed by IP-1030
 > **Feature Reference:** [FS-104 — SDA Tasking](../../features/FS-104-sda-tasking.md)
-> **Supersedes:** [`docs/implementations/IMP-104A-sda-tasking.md`](../../implementations/IMP-104A-sda-tasking.md)
+> **Supersedes:** `IMP-104A` (earlier package tier, retired 2026-11-10)
 > **Related Topics:** [`spacesim/engine/orders.py`](../../../spacesim/engine/orders.py), [`spacesim/engine/ssn.py`](../../../spacesim/engine/ssn.py)
 
 [↑ Master Build Plan](../00-master-build-plan.md) · [Packages index](INDEX.md) · [Docs index](../../INDEX.md)
@@ -103,7 +103,7 @@ tasking contention).
 
 ## Documentation Updates
 
-- Supersedes [`docs/implementations/IMP-104A-sda-tasking.md`](../../implementations/IMP-104A-sda-tasking.md).
+- Supersedes `IMP-104A` (earlier package tier, retired 2026-11-10).
 - `ROADMAP.md` Implementation Packages theme updated.
 
 ## Definition of Done
