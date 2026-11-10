@@ -210,7 +210,8 @@ baseline must pass unchanged. When a rule is clean, make CI enforce that rule.
 One package, through `07` → `08` → `09`. Change comments and docstrings only; the diff must
 contain no executable line (the verifier checks this with `python -m compileall` plus an AST
 comparison of every touched file before and after). Scope:
-- citations of moved or retired documents: `memory.md` in `engine/effects.py`; the June audit
+- citations of moved or retired documents: the retired root decision log in `engine/effects.py`
+  (find it with `git grep -n 'memory' spacesim/engine/effects.py`); the June audit
   paths in `engine/buscommands.py`, `engine/engage.py`, `tests/test_bus_commands.py`,
   `tests/test_defensive_audit_2026.py`; build-spec and `FUTURE-WORK` citations listed by B1 and B2;
 - nothing else. Package history in comments (`IP-xxxx`, `BL-xxxx`) is left for A5 to rule on.
