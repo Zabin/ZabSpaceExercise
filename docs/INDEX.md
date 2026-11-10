@@ -35,10 +35,10 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
   project produces: IDs, dependencies, and completion status. Start here to see what's done, in
   progress, or still planned without re-deriving it from the directories below.
 - [`FUTURE-WORK.md`](FUTURE-WORK.md) — the single-source v1.1+ TODO (deferred items).
-- [`AUDIT-2026-06.md`](AUDIT-2026-06.md) — the Jun 2026 whole-project audit (findings, LAN trust
+- [`AUDIT-2026-06.md`](reviews/AUDIT-2026-06.md) — the Jun 2026 whole-project audit (findings, LAN trust
   boundary §D5/§F1); two companion audits cover narrower scopes:
-  [`AUDIT-2026-06-COMMANDS.md`](AUDIT-2026-06-COMMANDS.md) (command realism, order-form UX,
-  probability mechanics) and [`AUDIT-2026-06-UI-TTC.md`](AUDIT-2026-06-UI-TTC.md) (panel layout,
+  [`AUDIT-2026-06-COMMANDS.md`](reviews/AUDIT-2026-06-COMMANDS.md) (command realism, order-form UX,
+  probability mechanics) and [`AUDIT-2026-06-UI-TTC.md`](reviews/AUDIT-2026-06-UI-TTC.md) (panel layout,
   TT&C/power logic, telemetry graphs, target picker).
 - [`manual/INDEX.md`](manual/INDEX.md) — generated UI screenshots (`tools/render_manual.py`); the
   training modules embed these.
@@ -53,6 +53,9 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 | `docs/implementations/` |  | 2026-11-10 | `docs/implementation/packages/` |
 | `docs/DOCUMENTATION-PLAN.md` |  | 2026-11-10 | `docs/master/MSTR-005-documentation-map.md` |
 | `memory.md` |  | 2026-11-10 | none |
+| `docs/AUDIT-2026-06.md` |  | 2026-11-10 | `docs/reviews/AUDIT-2026-06.md` |
+| `docs/AUDIT-2026-06-COMMANDS.md` |  | 2026-11-10 | `docs/reviews/AUDIT-2026-06-COMMANDS.md` |
+| `docs/AUDIT-2026-06-UI-TTC.md` |  | 2026-11-10 | `docs/reviews/AUDIT-2026-06-UI-TTC.md` |
 
 ## Root-level guides (not under `docs/`)
 
@@ -63,6 +66,6 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 
 Earlier drafts of the Build Spec referred to companions in `01-research/`,
 `02-vignettes/`, and `03-software-design/`. Those legacy paths were rewritten
-during the Jun 2026 audit (see [`AUDIT-2026-06.md`](AUDIT-2026-06.md) §B3) and
+during the Jun 2026 audit (see [`AUDIT-2026-06.md`](reviews/AUDIT-2026-06.md) §B3) and
 now resolve as `docs/research/`, `docs/vignettes/`, and `docs/design/`. Any
 remaining `01-research/` reference in committed prose is a regression.

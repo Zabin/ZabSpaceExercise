@@ -7,7 +7,7 @@
 > **Referenced By:** [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R131](R131-space-environment-and-space-weather-operations.md), [R137](R137-bus-and-payload-parameter-catalog.md), DOM-007, FS-105
 > **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py), [`engine/busmodel.py`](../../../spacesim/engine/busmodel.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
-> **Related Topics:** [`docs/AUDIT-2026-06-UI-TTC.md`](../../AUDIT-2026-06-UI-TTC.md) §2 (the precedent worked example),
+> **Related Topics:** [`docs/reviews/AUDIT-2026-06-UI-TTC.md`](../../reviews/AUDIT-2026-06-UI-TTC.md) §2 (the precedent worked example),
 > DOM-005 §4 (fidelity-claim validation method), DOM-007 §4 (causality must be surfaced)
 > **Last Reviewed:** 2026-07-05
 > **Primary Sources Consulted:** 3

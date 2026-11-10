@@ -24,7 +24,7 @@ Justifies assessment/validation work (DOM-002, DOM-005). 13 topics.
 Every topic now carries the mandatory §2 Scope section (MSTR-007 §4.2) and is cited per
 `docs/research/10-sources-and-methodology.md`'s convention — inline citations at every substantive
 statistical/methodological claim site, a `### Sources` subsection on every `##` section (live URL +
-Wayback snapshot + accessed date, or a cited `docs/AUDIT-2026-06-UI-TTC.md`/`spacesim/engine/rng.py`/
+Wayback snapshot + accessed date, or a cited `docs/reviews/AUDIT-2026-06-UI-TTC.md`/`spacesim/engine/rng.py`/
 `spacesim/tests/test_determinism.py` file:line for claims about this project's own practice). Tier A
 sources include NIST Technical Note 1297 (uncertainty), the NIST/SEMATECH e-Handbook of Statistical
 Methods, DoDI 5000.61 and Sargent's simulation V&V framework (modeling/verification/validation),

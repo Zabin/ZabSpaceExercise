@@ -272,7 +272,7 @@ interceptor:
 authority + the salvo-correlation floor of shared track and target-maneuver failure
 modes) the dominant variable; operator-typed Δv is a derived value. This is the model
 encoded in [`engine/engage.py:INTERCEPTORS`](../../spacesim/engine/engage.py) and
-documented in [`docs/AUDIT-2026-06-COMMANDS.md`](../AUDIT-2026-06-COMMANDS.md) §M2;
+documented in [`docs/reviews/AUDIT-2026-06-COMMANDS.md`](../reviews/AUDIT-2026-06-COMMANDS.md) §M2;
 per-class numbers and the salvo-correlation floor are sourced in
 [`03a-da-asat-systems.md`](03a-da-asat-systems.md).
 
@@ -447,7 +447,7 @@ category that has been used in every armed conflict since 2014
   [SpaceNews, "U.S. Space Force declares 'offensive' communications jammer ready"](https://spacenews.com/u-s-space-force-declares-offensive-communications-jammer-ready-for-deployment/)).
   CCS is **uplink-only** — a doctrinally important choice that is captured in the
   engine by `jam.link_target ∈ {uplink, downlink, crosslink}`
-  ([docs/AUDIT-2026-06-COMMANDS.md §N9](../AUDIT-2026-06-COMMANDS.md)).
+  ([docs/reviews/AUDIT-2026-06-COMMANDS.md §N9](../reviews/AUDIT-2026-06-COMMANDS.md)).
 - **Downlink jamming** — jam the receiver where users *consume* the signal. Local in
   effect (a GPS-denied bubble over a city), wide in deployment (every receiver in the
   bubble is denied). The Russian **Pole-21** networked jammer is the canonical
@@ -631,7 +631,7 @@ In May 2022 the US, EU, UK, and the Five Eyes formally attributed the attack to 
 GRU — one of the largest formal cyber-attribution events to date. The case is the
 load-bearing precedent for the engine's `ground_modem` cyber vector in
 [`engine/cyber.py:VECTORS`](../../spacesim/engine/cyber.py)
-([docs/AUDIT-2026-06-COMMANDS.md §C2](../AUDIT-2026-06-COMMANDS.md)).
+([docs/reviews/AUDIT-2026-06-COMMANDS.md §C2](../reviews/AUDIT-2026-06-COMMANDS.md)).
 
 **Why cyber is the engine's "wildcard."** Cyber is the **only** category not gated by
 the access-channel windows in [`engine/access.py`](../../spacesim/engine/access.py).
@@ -813,7 +813,7 @@ schema this YAML maps to); [`content/vignette.py`](../../spacesim/content/vignet
   (OST Article IV, the 2022 moratorium, UNGA 77/41, the engine's ROE flags).
 - **Mission counters.** [`05-mission-types-and-counters.md`](05-mission-types-and-counters.md)
   — the per-mission counter matrix this file's §2 is the column-key for.
-- **Audit predecessor.** [`docs/AUDIT-2026-06-COMMANDS.md`](../AUDIT-2026-06-COMMANDS.md)
+- **Audit predecessor.** [`docs/reviews/AUDIT-2026-06-COMMANDS.md`](../reviews/AUDIT-2026-06-COMMANDS.md)
   — the commands-layer audit that produced the interceptor-class model (§M2), the
   defender-side modifiers (§C1), and the `ground_modem` cyber vector (§C2) cited
   throughout.

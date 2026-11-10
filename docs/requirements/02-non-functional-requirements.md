@@ -339,7 +339,7 @@ review passes actually run against it).
     boundary as appropriate for the v1 PME training context (everyone in the room is cooperating),
     and names per-cell tokens as a deferred hardening option rather than a v1 requirement.
   - **Metric or verification method:** Inspection — ADR-0015's own Consequences section and
-    `docs/AUDIT-2026-06.md` §D5/§F1 are the recorded verification; no penetration test is required
+    `docs/reviews/AUDIT-2026-06.md` §D5/§F1 are the recorded verification; no penetration test is required
     or claimed for v1.
   - **Priority:** Must (as a *documented* boundary — hardening itself is explicitly Won't for v1)
   - **Affected subsystems:** `session/api.py` (`SessionAPI`, `CellView`), `ui_web/server.py`
