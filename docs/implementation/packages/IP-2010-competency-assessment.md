@@ -35,7 +35,7 @@
 > output), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the per-cell/per-exercise rubric output IP-3010 would aggregate across runs
 > **Feature Reference:** [FS-201 — Competency Assessment](../../features/FS-201-competency-assessment.md)
-> **Supersedes:** [`docs/implementations/IMP-201A-competency-assessment.md`](../../implementations/IMP-201A-competency-assessment.md)
+> **Supersedes:** `IMP-201A` (earlier package tier, retired 2026-11-10)
 > **Related Topics:** [`spacesim/engine/custody.py`](../../../spacesim/engine/custody.py), [`spacesim/engine/orders.py`](../../../spacesim/engine/orders.py), [`spacesim/session/aar.py`](../../../spacesim/session/aar.py)
 
 [↑ Master Build Plan](../00-master-build-plan.md) · [Packages index](INDEX.md) · [Docs index](../../INDEX.md)
@@ -217,7 +217,7 @@ sequence for `08-code-implementation`:
 
 ## Documentation Updates
 
-- Supersedes [`docs/implementations/IMP-201A-competency-assessment.md`](../../implementations/IMP-201A-competency-assessment.md).
+- Supersedes `IMP-201A` (earlier package tier, retired 2026-11-10).
 - `ROADMAP.md` Implementation Packages theme updated.
 - `CLAUDE.md`'s Code Map should gain a `spacesim/session/assessment.py` entry once implemented (not
   added by this package, which contains no code changes).

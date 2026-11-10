@@ -79,7 +79,7 @@ files. Concretely:
 
 ## 5. Required metadata block
 
-Every document in `master/`, `domains/`, `research/encyclopedia/`, `features/`, `implementations/`,
+Every document in `master/`, `domains/`, `research/encyclopedia/`, `features/`, `implementation/`,
 `architecture/`, and `scenarios/` opens with:
 
 ```

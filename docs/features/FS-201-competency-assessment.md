@@ -6,10 +6,10 @@
 > `BL-0020`); Status note updated. No delivered behaviour changed.)*
 > **Status:** ✅ Done *(the per-cell per-exercise report is built: [IP-2010](../implementation/packages/IP-2010-competency-assessment.md),
 > `VERIFIED` via `VR-2010`. Two criteria are explicitly deferred — see Acceptance Criteria. The
-> earlier note that the capability "remains ⛔ Planned" predates `IP-2010`. [IMP-201A](../implementations/IMP-201A-competency-assessment.md)
+> earlier note that the capability "remains ⛔ Planned" predates `IP-2010`. IMP-201A
 > is the superseded design-only package.)*
 > **Dependencies:** [DOM-002](../domains/DOM-002-assessment-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md) §7, [DOM-001](../domains/DOM-001-training-framework.md), [R306](../research/encyclopedia/R306-operational-assessment.md), [R310](../research/encyclopedia/R310-effects-based-operations.md)
-> **Referenced By:** [DOM-002](../domains/DOM-002-assessment-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md), [DOM-001](../domains/DOM-001-training-framework.md), [R306](../research/encyclopedia/R306-operational-assessment.md), [R310](../research/encyclopedia/R310-effects-based-operations.md), [IMP-201A](../implementations/IMP-201A-competency-assessment.md), [FS-202](FS-202-rubric-authoring.md)
+> **Referenced By:** [DOM-002](../domains/DOM-002-assessment-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md), [DOM-001](../domains/DOM-001-training-framework.md), [R306](../research/encyclopedia/R306-operational-assessment.md), [R310](../research/encyclopedia/R310-effects-based-operations.md), IMP-201A, [FS-202](FS-202-rubric-authoring.md)
 > **Produces:** the per-cell/per-exercise and longitudinal competency report; export data consumed by
 > [FS-301](FS-301-research-analytics.md)
 > **Feature Mapping:** FS-201 (this document)

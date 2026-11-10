@@ -89,7 +89,7 @@ that task, wins.
 Technical-writing practice broadly converged on task-oriented, minimalist documentation over the
 comprehensive-reference model Carroll critiqued — modern software help systems, API quickstarts, and
 procedural runbooks are near-universally organized around "how do I do X" rather than "here is
-everything the system can do, alphabetically." This simulator's own `DOCUMENTATION-PLAN.md` (goals 1-2:
+everything the system can do, alphabetically." This simulator's own documentation principles (MSTR-005 §1a, principles 1-2:
 single-topic files an agent/reader can read whole, an index at every level) already embodies Carroll's
 principles for the *engineering* documentation; this topic is the citation that says the same craft
 applies to the *training* corpus, closing a gap where the engineering docs had an implicit rationale

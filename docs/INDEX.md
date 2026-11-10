@@ -2,7 +2,7 @@
 
 Master router for the project's prose docs. Each theme is a directory with its own `INDEX.md`;
 open a theme index, then the one module you need. Structure & rationale (legacy five-theme corpus):
-[`DOCUMENTATION-PLAN.md`](DOCUMENTATION-PLAN.md). Full tree incl. the documentation-driven-development
+`DOCUMENTATION-PLAN.md`. Full tree incl. the documentation-driven-development
 expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implementations/`,
 `architecture/`, `scenarios/`): [`master/MSTR-005-documentation-map.md`](master/MSTR-005-documentation-map.md).
 
@@ -50,12 +50,14 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 | Former path | Former ID | Retired | Successor |
 |---|---|---|---|
 | `docs/pipeline/handoff-release-2.md` |  | 2026-11-10 | `docs/pipeline/refactor-plan.md` |
+| `docs/implementations/` |  | 2026-11-10 | `docs/implementation/packages/` |
+| `docs/DOCUMENTATION-PLAN.md` |  | 2026-11-10 | `docs/master/MSTR-005-documentation-map.md` |
+| `memory.md` |  | 2026-11-10 | none |
 
 ## Root-level guides (not under `docs/`)
 
 - `../README.md` — project overview & quick start.
 - `../CLAUDE.md` — durable agent guide: invariants, trust model, working rules, commands (the code map is `architecture/code-map.md`).
-- `../memory.md` — rolling design-decision log.
 
 ## Theme-directory mapping (historical note)
 

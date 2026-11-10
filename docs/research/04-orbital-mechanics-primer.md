@@ -562,7 +562,7 @@ precision, but the moderate-fidelity GMST approximation in
 
 The simulator stores sim time as **integer microseconds since the Unix epoch**, never as
 a float ([`engine/simtime.py`](../../spacesim/engine/simtime.py); the choice is recorded
-in the [`memory.md` decision log, 2026-05-24](../../memory.md)). The reason is the
+in the project's root decision log, entry of 2026-05-24; the log has since been retired and is in Git history). The reason is the
 load-bearing replay invariant from `CLAUDE.md`: `(initial_state, ordered eventlog, seed)
 → byte-identical state`. Float seconds drift — `0.1 + 0.2 ≠ 0.3` — and a 600× fast-forward
 that accumulates 10⁶ float increments will not bit-match a single advance to the same
@@ -621,7 +621,7 @@ keyed by `(t, seq, tag)` so replay is byte-identical).
 - *gps.gov, "Towards Continuous Universal Time and the Future of the Leap Second"* (GPS time continuous; no leap seconds; 18 s offset from UTC) — [live](https://www.gps.gov/sites/default/files/2025-06/CGSICMeetings_Coleman_Sept2024.pdf)
   · [snapshot](https://web.archive.org/web/2026*/https://www.gps.gov/sites/default/files/2025-06/CGSICMeetings_Coleman_Sept2024.pdf)
   · accessed 2026-06-12.
-- *Project decision log* (`memory.md`, 2026-05-24: sim time stored as integer microseconds since the Unix epoch so replay is byte-identical) — [local file](../../memory.md).
+- *Project decision log* (the root decision log, since retired and kept in Git history; entry of 2026-05-24: sim time stored as integer microseconds since the Unix epoch so replay is byte-identical).
 
 ---
 

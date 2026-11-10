@@ -114,4 +114,4 @@ frontmatter and any explicit "What this framework expects from FS-xxx" section; 
 research-encyclopedia topics whose own "Feature Mapping" section names that FS as a consumer; and
 (c) verified ADR and ICD interface cross-references cited in each file's Related ADRs and Related
 Interfaces fields. No FS file in this set introduces implementation detail (data models, API shapes,
-code) — that is Phase 5's job (`docs/implementations/`, not yet authorized).
+code) — that is Phase 5's job (the Implementation Packages, not yet authorized when this was written).

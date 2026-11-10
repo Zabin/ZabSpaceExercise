@@ -19,7 +19,7 @@
 > day** — this closes the six-package Must-tier tranche; FS-121/FS-103 v1.1 are not yet reflected
 > in this Feature Mapping line's own list above, a bookkeeping catch-up left for the next pass that
 > touches this frontmatter.)
-> **Related Topics:** [`packages/INDEX.md`](packages/INDEX.md), [`docs/implementations/INDEX.md`](../implementations/INDEX.md) (the superseded prior corpus), [`.claude/skills/08-code-implementation/SKILL.md`](../../.claude/skills/08-code-implementation/SKILL.md) (the downstream skill that executes packages against this plan)
+> **Related Topics:** [`packages/INDEX.md`](packages/INDEX.md), the earlier `IMP-xxxA` package tier (retired 2026-11-10), [`.claude/skills/08-code-implementation/SKILL.md`](../../.claude/skills/08-code-implementation/SKILL.md) (the downstream skill that executes packages against this plan)
 
 [↑ Docs index](../INDEX.md) · [Packages index](packages/INDEX.md) · [Feature index](../features/feature-index.md)
 
@@ -46,8 +46,8 @@ FS-201, FS-301). **FS-108** (Inject Authoring) and **FS-202** (Rubric Authoring)
 excluded: both are marked "(candidate)" / 🅿️ *Scoped, not authorized* per
 [MSTR-006](../master/MSTR-006-governance-principles.md) §3 — the Feature Catalog's own governance
 rule is that no Implementation Package work may begin against an unauthorized Feature
-Specification. This mirrors the exclusion already applied by the prior `docs/implementations/`
-corpus (see §"Relationship to the prior corpus" below); it is not a new decision introduced by this
+Specification. This mirrors the exclusion already applied by the earlier `IMP-xxxA` package
+tier (see §"Relationship to the prior corpus" below); it is not a new decision introduced by this
 plan.
 
 **FS-112/113/114/115 (2026-07 tranche):** these four were approved with their build status
@@ -59,19 +59,18 @@ time, none of the five resulting packages (`IP-1120`, `IP-1130`, `IP-1140`, `IP-
 was `VERIFIED`; `IP-1150` and `IP-1140` have since passed independent `09-package-verification`
 (`VR-1150`, `VR-1140`) and are now `VERIFIED` — see Package status below for current state.
 
-## Relationship to the prior `docs/implementations/` corpus
+## Relationship to the earlier `IMP-xxxA` package tier
 
-This project previously produced an equivalent Implementation Package tier at
-[`docs/implementations/`](../implementations/INDEX.md) (`IMP-xxxA` IDs, 10 packages covering the
+This project previously produced an equivalent Implementation Package tier
+(`IMP-xxxA` IDs, 10 packages covering the
 same 9 Feature Specifications). **This new `docs/implementation/packages/` tree (`IP-xxxx` IDs)
 supersedes that corpus as the canonical Implementation Package record.** The two trees describe the
 same underlying architecture, files, and design content — re-derived and re-verified against the
 current source tree under this task's required template (Package ID, Objective, Requirements
 Covered, Architecture Components, Interfaces, Files to Create/Modify, Implementation Tasks, Tests to
 Add, Documentation Updates, Definition of Done, Verification Checklist, Dependencies, Risks,
-Rollback Considerations) rather than the prior corpus's own template. The prior corpus's files are
-**not deleted** — each carries a superseded-by banner pointing at its `IP-xxxx` successor, since
-they remain useful historical/narrative reading and nothing in the corpus depends on their removal.
+Rollback Considerations) rather than the prior corpus's own template. The earlier tier's files were
+retired on 2026-11-10 and remain in Git history.
 
 Every package in this pass observes the same hard governance rules the prior corpus established and
 that continue to bind this tree ([MSTR-006](../master/MSTR-006-governance-principles.md)):
@@ -1234,7 +1233,7 @@ implementation in this same session.
 ## Related
 
 [`packages/INDEX.md`](packages/INDEX.md) · [`docs/features/feature-index.md`](../features/feature-index.md) ·
-[`docs/implementations/INDEX.md`](../implementations/INDEX.md) (superseded prior corpus) ·
+the earlier `IMP-xxxA` package tier (retired 2026-11-10) ·
 [`docs/master/MSTR-006-governance-principles.md`](../master/MSTR-006-governance-principles.md) ·
 [`docs/requirements/03-requirements-traceability-matrix.md`](../requirements/03-requirements-traceability-matrix.md) ·
 `ROADMAP.md` (Theme: Implementation Packages)

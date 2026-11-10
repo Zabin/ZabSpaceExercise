@@ -723,7 +723,7 @@ these are the *how well* constraints.
     (~50–300 lines, the corpus-wide convention), routed by the theme index, so a reader (human or
     agent) can open exactly the module they need; role-scoped content shall be reachable within
     two links from the training index.
-  - **Rationale:** `DOCUMENTATION-PLAN.md` goals 1–2 applied to the corpus that now carries
+  - **Rationale:** MSTR-005 §1a principles 1–2 applied to the corpus that now carries
     requirement weight; MSTR-001 §3's independently-retrievable standard extended to the
     operator-facing tier.
   - **Metric or verification method:** Inspection — module line counts within the convention
@@ -732,7 +732,7 @@ these are the *how well* constraints.
   - **Priority:** Should
   - **Affected subsystems:** `docs/training/`
   - **Dependencies:** None
-  - **Source documents:** `GDS-06 NFR-17; docs/DOCUMENTATION-PLAN.md` ("Keep modules small"); MSTR-001 §3
+  - **Source documents:** `GDS-06 NFR-17; MSTR-005 §1a` (principle 1, single-topic files); MSTR-001 §3
   - **Related ADRs:** None identified
 
 - **NFR-3600 — Learner-appropriate presentation**
@@ -773,7 +773,7 @@ these are the *how well* constraints.
   - **Dependencies:** NFR-3400, NFR-3800, NFR-3820
   - **Source documents:** GDS-06 NFR-18 (gap G5); `docs/pipeline/backlog.md` `BL-0297`, `BL-0310`, `BL-0319` owner decision.
   - **Related ADRs:** None identified
-  - **Notes:** **Met as built by `IP-1092`** (`VERIFIED` 2026-10-31, `VR-1092` v2.0; `FS-135` check 2; the check lives in `spacesim/tests/test_doc_integrity.py`). *(Updated 2026-10-31, pass 5.)* The two design choices that earlier text flagged for the owner were accepted as written in the 04 and 06 passes, and the build follows them: (1) a retirement is declared in a `Retired documents` section of the `INDEX.md` of the folder that held the file (replacing `FS-135`'s register file and its Open Questions 1 and 4); (2) a declared path or ID may be named nowhere live except its declaring row, so a supersession note elsewhere names the successor, not the retired file. A retired **root-level** document (`ROADMAP.md`, `memory.md`, `CLAUDE.md`-class files) is declared in `docs/INDEX.md`'s `Retired documents` section with its repo-root path, because the repository root has no `INDEX.md` (`FS-135` Open Question 6, resolved the same way). Nothing is declared retired at this release. Retired requirement leaves are out of scope (`BL-0317`). Frozen-history folders that already exist (`docs/reviews/`, `docs/implementation/verification/`, `docs/architecture/adr/`, the pipeline archives) are unchanged by this leaf. `FS-135` check 2 and Open Questions 1, 4, 5 and 6 are `06`'s to align with these accepted choices.
+  - **Notes:** **Met as built by `IP-1092`** (`VERIFIED` 2026-10-31, `VR-1092` v2.0; `FS-135` check 2; the check lives in `spacesim/tests/test_doc_integrity.py`). *(Updated 2026-10-31, pass 5.)* The two design choices that earlier text flagged for the owner were accepted as written in the 04 and 06 passes, and the build follows them: (1) a retirement is declared in a `Retired documents` section of the `INDEX.md` of the folder that held the file (replacing `FS-135`'s register file and its Open Questions 1 and 4); (2) a declared path or ID may be named nowhere live except its declaring row, so a supersession note elsewhere names the successor, not the retired file. A retired **root-level** document (`ROADMAP.md`, `CLAUDE.md`-class files) is declared in `docs/INDEX.md`'s `Retired documents` section with its repo-root path, because the repository root has no `INDEX.md` (`FS-135` Open Question 6, resolved the same way). Nothing is declared retired at this release. Retired requirement leaves are out of scope (`BL-0317`). Frozen-history folders that already exist (`docs/reviews/`, `docs/implementation/verification/`, `docs/architecture/adr/`, the pipeline archives) are unchanged by this leaf. `FS-135` check 2 and Open Questions 1, 4, 5 and 6 are `06`'s to align with these accepted choices.
 
 - **NFR-3820 — Each index agrees with its folder** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** Each `INDEX.md` shall list exactly the documents in its folder.

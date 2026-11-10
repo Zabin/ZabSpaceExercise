@@ -8,7 +8,7 @@
 > **Referenced By:** IP-1050 (sibling package, bus/payload command & telemetry), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the executed-effect surface IP-1070 replays and IP-2010 assesses
 > **Feature Reference:** [FS-105 — Spacecraft Operations](../../features/FS-105-spacecraft-operations.md) (§3.2, §3.3, §4)
-> **Supersedes:** [`docs/implementations/IMP-105B-spacecraft-operations-effects-console.md`](../../implementations/IMP-105B-spacecraft-operations-effects-console.md)
+> **Supersedes:** `IMP-105B` (earlier package tier, retired 2026-11-10)
 > **Related Topics:** [`spacesim/engine/effects.py`](../../../spacesim/engine/effects.py), [`spacesim/engine/jam.py`](../../../spacesim/engine/jam.py), [`spacesim/engine/engage.py`](../../../spacesim/engine/engage.py), [`spacesim/engine/cyber.py`](../../../spacesim/engine/cyber.py)
 
 [↑ Master Build Plan](../00-master-build-plan.md) · [Packages index](INDEX.md) · [Docs index](../../INDEX.md)
@@ -111,7 +111,7 @@ kinetic-consequence preview/commit parity is exercised in the same test.
 
 ## Documentation Updates
 
-- Supersedes [`docs/implementations/IMP-105B-spacecraft-operations-effects-console.md`](../../implementations/IMP-105B-spacecraft-operations-effects-console.md).
+- Supersedes `IMP-105B` (earlier package tier, retired 2026-11-10).
 - `ROADMAP.md` Implementation Packages theme updated.
 
 ## Definition of Done

@@ -35,7 +35,7 @@
 > **Referenced By:** none yet
 > **Produces:** structured multi-run/cohort export of IP-2010's measurement dimensions
 > **Feature Reference:** [FS-301 — Research Analytics](../../features/FS-301-research-analytics.md)
-> **Supersedes:** [`docs/implementations/IMP-301A-research-analytics.md`](../../implementations/IMP-301A-research-analytics.md)
+> **Supersedes:** `IMP-301A` (earlier package tier, retired 2026-11-10)
 > **Related Topics:** [`spacesim/session/aar.py`](../../../spacesim/session/aar.py) (the `export_csv` precedent), [`spacesim/engine/simulation.py`](../../../spacesim/engine/simulation.py) (seeded replay)
 
 [↑ Master Build Plan](../00-master-build-plan.md) · [Packages index](INDEX.md) · [Docs index](../../INDEX.md)
@@ -152,7 +152,7 @@ and authorized.)*
 
 *(Implemented 2026-07-04 — all done.)*
 
-- [x] Supersedes [`docs/implementations/IMP-301A-research-analytics.md`](../../implementations/IMP-301A-research-analytics.md)
+- [x] Supersedes `IMP-301A` (earlier package tier, retired 2026-11-10)
   — that file's own banner updated to note this package's authorization/implementation.
 - [x] `ROADMAP.md` Implementation Packages theme updated.
 - [x] `CLAUDE.md`'s Code Map gained `spacesim/tools/research_batch.py` and

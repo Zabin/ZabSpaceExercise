@@ -119,8 +119,7 @@ Scripted vignettes also carry a step-by-step **Tutorial** (View ▾) verified ag
 ```
 space-control-sim/
 ├── README.md                    ← you are here
-├── CLAUDE.md                    agent guide: invariants, code map, build/test commands
-├── memory.md                    rolling design-decision log
+├── CLAUDE.md                    agent guide: invariants, trust model, commands
 ├── spacesim.config.yaml         server host / port / reload
 ├── spacesim/
 │   ├── engine/                  deterministic core — no UI, no network, no wall-clock
@@ -130,7 +129,6 @@ space-control-sim/
 │   └── tests/                   pytest suite (incl. determinism + import-guard)
 └── docs/
     ├── INDEX.md                 ★ START HERE — master documentation router
-    ├── DOCUMENTATION-PLAN.md    information architecture & rationale
     ├── FUTURE-WORK.md           single-source v1.1+ TODO
     ├── build-spec/              ★ the binding v1 spec, 8 modules
     ├── training/                user manual (start at `INDEX.md`) (install → UI → exercises → API → troubleshooting

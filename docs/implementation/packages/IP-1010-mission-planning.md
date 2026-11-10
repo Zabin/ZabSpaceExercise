@@ -8,7 +8,7 @@
 > **Referenced By:** IP-1020 (shares the validate path), IP-1050/IP-1051 (renders this package's preview surface), [00-master-build-plan.md](../00-master-build-plan.md)
 > **Produces:** the planning-preview surface IP-1050/IP-1051's console renders
 > **Feature Reference:** [FS-101 — Mission Planning](../../features/FS-101-mission-planning.md)
-> **Supersedes:** [`docs/implementations/IMP-101A-mission-planning.md`](../../implementations/IMP-101A-mission-planning.md) (content re-derived and re-organized under this package's template; see that file's superseded-by banner)
+> **Supersedes:** `IMP-101A` (earlier package tier, retired 2026-11-10) (content re-derived and re-organized under this package's template; see that file's superseded-by banner)
 > **Related Topics:** [`spacesim/engine/orders.py`](../../../spacesim/engine/orders.py), [`spacesim/session/inprocess.py`](../../../spacesim/session/inprocess.py)
 
 [↑ Master Build Plan](../00-master-build-plan.md) · [Packages index](INDEX.md) · [Docs index](../../INDEX.md)
@@ -120,9 +120,9 @@ new test obligations):
 
 ## Documentation Updates
 
-- This package supersedes [`docs/implementations/IMP-101A-mission-planning.md`](../../implementations/IMP-101A-mission-planning.md)
+- This package supersedes `IMP-101A` (earlier package tier, retired 2026-11-10)
   (superseded-by banner added there per the migration described in
-  [`00-master-build-plan.md`](../00-master-build-plan.md) §"Relationship to the prior `docs/implementations/` corpus").
+  [`00-master-build-plan.md`](../00-master-build-plan.md) §"Relationship to the earlier `IMP-xxxA` package tier").
 - `ROADMAP.md`'s "Theme: Implementation Packages" section updated to point at this package.
 - No other document requires an update — FS-101's existing `Referenced By` field pointing at
   `IMP-101A` remains a valid pointer to an extant (now-superseded, not deleted) document.
