@@ -6,7 +6,7 @@
 
 > **What this is.** A forward planning proposal for the next release after Release 1.0 (GO 2026-11-01),
 > requested by the owner on 2026-11-01. It gathers every candidate item in the tree (backlog, archive,
-> `FUTURE-WORK.md`, candidate requirements, integration reviews, release assessments, learner and manual
+> the former future-work list, candidate requirements, integration reviews, release assessments, learner and manual
 > reviews, strategic review), sorts them, and proposes scope, sequencing, gates and owner decisions.
 >
 > **What this is not.** It is not a requirements change, a Feature Specification, an Implementation
@@ -138,7 +138,7 @@ for IN and STRETCH rows. Dependencies name other rows in this table.
 | D-05 | `BL-0380` | Python floor `>=3.11` but everything validated on 3.13 only | Low | S | D12 | IN | Should |
 | D-06 | backlog bookkeeping (counted) | Live backlog holds 71 `DONE`/`DEDUPED` rows not moved to the archive; stale open rows `BL-0049`, `BL-0292`, `BL-0310` (delivered), plus B-29/B-30 rows | Low | S | — | IN | Must (M0) |
 | D-07 | `BL-0301`; `BL-0358`/`0376` residue | `CLAUDE.md` "Authoritative source" still calls GDS-06–10 scaffold-only (all five are authored, gates closed) and names build-spec counterparts | Low | S | — | IN | Must |
-| D-08 | `BL-0287`, `BL-0292` exit chain, `BL-0293`, `BL-0296`, `BL-0288`, `BL-0291`, `BL-0294`, `BL-0274` | **Retirement sweep:** delete the earlier `IMP-xxxA` package folder (done 2026-11-10); migrate the 6 `spacesim/` files citing build-spec and the §10 phase plan, then delete `docs/build-spec/`; merge DOM files into the GDS ladder and retire; migrate then retire `FUTURE-WORK.md` (the root decision log was retired 2026-11-10); fix contradicting wording; drop `docs/scenarios/` references; give the ICD an owner | Medium (confusion, not product) | L (doc churn) | D-07, retired-documents register | IN | Should (D13 decided yes; the owner calls the cleanup important: **promote to Must if capacity allows**) |
+| D-08 | `BL-0287`, `BL-0292` exit chain, `BL-0293`, `BL-0296`, `BL-0288`, `BL-0291`, `BL-0294`, `BL-0274` | **Retirement sweep:** delete the earlier `IMP-xxxA` package folder (done 2026-11-10); migrate the 6 `spacesim/` files citing build-spec and the §10 phase plan, then delete `docs/build-spec/`; merge DOM files into the GDS ladder and retire; migrate then retire the former future-work list (the root decision log was retired 2026-11-10); fix contradicting wording; drop `docs/scenarios/` references; give the ICD an owner | Medium (confusion, not product) | L (doc churn) | D-07, retired-documents register | IN | Should (D13 decided yes; the owner calls the cleanup important: **promote to Must if capacity allows**) |
 | D-09 | `BL-0393`; rc7 L-4 | `NFR-3810` retired-document check has nothing to check on the real tree | Low | — | D-08 (makes it live) | IN | Should (via D-08) |
 | D-10 | `BL-0149`, `0169`, `0199`, `0203`, `0242`, `0337`, `0349`, `0359`, `0385`; V-1 (`VR-1088` header) | Ledger/header/back-reference drift and stale counts across packages, specs, `ROADMAP.md`, `training/08` | Low | S | — | IN | Must (one batch) |
 | D-11 | `BL-0334`, `0335`, `0336` | Link allow-list keyed on (file, target) hides repeats; sub-index rule unstated in FS-135 | Low–Med | S | — | IN | Should |
@@ -171,12 +171,12 @@ for IN and STRETCH rows. Dependencies name other rows in this table.
 | F-17 | CR-23, CR-24 | TLE checksum/epoch sanity at load; load-time integrity of other in-vignette cross-references | Medium | S–M | `04` | STRETCH | Could |
 | F-18 | CR-25, CR-26 | Range rules for order parameters; unreadable external vignette directory disclosed | Low | S | `04` | STRETCH | Could |
 | F-19 | CNFR-07; R19 | Document the distributed-use security growth path (threat model, token design sketch) — design document only, no build | Medium | S (doc) | D9 | STRETCH | Could |
-| F-20 | `BL-0080`; CR-13; R14; FUTURE-WORK §9 | Coalition / multi-partner play (N-cell, releasability, per-nation ROE) | High (external demand) | XL | `03`, D10 | LATER | — |
+| F-20 | `BL-0080`; CR-13; R14; former future-work list §9 | Coalition / multi-partner play (N-cell, releasability, per-nation ROE) | High (external demand) | XL | `03`, D10 | LATER | — |
 | F-21 | CR-02; LAN trust model (§A.7 item 10) | Per-connection authentication / per-cell tokens | High for non-LAN use | L | F-19, D9 | LATER | — |
 | F-22 | CR-01; CNFR-06; ADR-0024; §A.7 item 8 | AI-Red fog-of-war parity | Medium–High | L | — | LATER | — |
-| F-23 | CR-12; R13; FUTURE-WORK §4 | Proliferated constellations + aggregation UI | High | XL | research | LATER | — |
+| F-23 | CR-12; R13; former future-work list §4 | Proliferated constellations + aggregation UI | High | XL | research | LATER | — |
 | F-24 | CR-15; R15 | Campaign container + time compression | High | XL | `03` | LATER | — |
-| F-25 | CR-14; R11; FUTURE-WORK §7 | Commercial SDA feed / gray actors | Medium | L | — | LATER | — |
+| F-25 | CR-14; R11; former future-work list §7 | Commercial SDA feed / gray actors | Medium | L | — | LATER | — |
 | F-26 | CR-17; R16 | Persistent debris + wire `prop.collision_avoid` to conjunction screening | Medium | L | — | LATER | — |
 | F-27 | CR-16; R17 | Ground-segment-as-terrain cyber | Medium | L | research | LATER | — |
 | F-28 | CR-18 | Cross-session adjudication-consistency support | Low–Med | M | — | LATER | — |
@@ -189,12 +189,12 @@ for IN and STRETCH rows. Dependencies name other rows in this table.
 | F-35 | `BL-0215` | Fence radar "detects more objects" acceptance wording | Low | S | `04` | LATER | — |
 | F-36 | `BL-0281`; CR-27 | Environmental anomaly semantics; repeatable condition-inject re-fire rule | Low | S | `04` | LATER | — |
 | F-37 | CR-03 … CR-11 | Push delivery, command-relationship layering, sustained degradation, observer reassignment, AI-Red preset guidance, save cross-version compatibility (CR-08: **closed by D7**, no compatibility promised), PlannedActivity supertype, AccessWindow persistence, partial authoring-state ownership | mixed | mixed | — | LATER | — |
-| F-38 | FUTURE-WORK §2; R12, R20–R22, R24 | High-fidelity propagator; environment term; human-AI teaming lab; AI-vs-AI; cislunar; training-transfer study | mixed | XL | research | LATER | — |
+| F-38 | former future-work list §2; R12, R20–R22, R24 | High-fidelity propagator; environment term; human-AI teaming lab; AI-vs-AI; cislunar; training-transfer study | mixed | XL | research | LATER | — |
 | F-39 | `BL-0370` | `build_world` mutates its input vignette | Low | S | trigger | LATER | — |
 | F-40 | `BL-0306`; D8(e) | **Genuine APP-6 / MIL-STD-2525 symbology** as close as possible to the real symbol sets, visually recognizable as the same to a user: affiliation frames and space-domain icons on the 2D map and the 3D globe. Replaces the "APP-6-adapted" convention. **Acceptance:** side-by-side recognizability check against the published sets for every affiliation and each space-domain icon used by a shipped vignette | Medium | M–L | F-43, D8 (decided) | IN | Must |
 | F-43 | D8(e) | **Symbology approach research:** choose between an open-source renderer (e.g. `milsymbol`, check its license) and an own SVG set; license / IP check for the symbol artwork and the standards' text; define the visual-recognizability acceptance criteria | — | S–M (research) | `02-research-*` | IN | Must |
-| F-41 | R8 | Headless Monte Carlo harness — delivered as `spacesim/tools/research_batch.py` (`IP-3010`) | — | — | — | DROP | close the FUTURE-WORK line in D-08 |
-| F-42 | FUTURE-WORK §8 | Browser-GUI verification harness — delivered (`IP-1340`, 42 browser tests) | — | — | — | DROP | close in D-08 |
+| F-41 | R8 | Headless Monte Carlo harness — delivered as `spacesim/tools/research_batch.py` (`IP-3010`) | — | — | — | DROP | close the former future-work list line in D-08 |
+| F-42 | former future-work list §8 | Browser-GUI verification harness — delivered (`IP-1340`, 42 browser tests) | — | — | — | DROP | close in D-08 |
 
 Totals: 32 bug rows, 16 documentation rows, 43 feature rows (91). **Must 28** (B-01–B-18, B-32, D-01, D-04, D-06,
 D-07, D-10, D-13, F-03, F-40, F-43). **Should 23** (B-19–B-24, D-02, D-03, D-05, D-08, D-09, D-11, F-01, F-02, F-04–F-07, F-09–F-13, ). **Could 11**
@@ -525,8 +525,8 @@ Documented in `docs/releases/INDEX.md`.
 ---
 
 *Prepared 2026-11-01 for the owner's Release 2.0 scoping. Sources read: `docs/pipeline/backlog.md` (75 open rows) and
-`backlog-archive.md` (closed rows only, by design), `docs/FUTURE-WORK.md`, `docs/feature-planning/01`–`05`,
+`backlog-archive.md` (closed rows only, by design), the former future-work list, `docs/feature-planning/01`–`05`,
 `docs/features/feature-index.md`, the RTM's CR/CNFR rows, `docs/reviews/integration-review-rc3-delta.md`, `-rc7.md`,
 `-unreviewed-packages.md`, `release-assessment-release-candidate-10.md` (REV-REL-004 and addendum),
-`training-review-final-rc11.md` (REV-TRN-013), `strategic-review-2026-07.md` via FUTURE-WORK §13, and
+`training-review-final-rc11.md` (REV-TRN-013), `strategic-review-2026-07.md` via former future-work list §13, and
 `.claude/skills/README.md`.*

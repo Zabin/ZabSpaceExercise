@@ -28,7 +28,7 @@ the C2 chain a contact delivers. Each of the three adjacent topics names the dow
 something it deliberately does *not* cover. This topic closes that gap: it gives the implementer
 the real data-return discipline (priority-lane scheduling, partial/selective dump, bitrate-limited
 playback) behind `execute_downlink`'s `bitrate_cap_kbps`/`priority`/`partial_dump` parameters
-(FUTURE-WORK §11.A.4).
+(former future-work list §11.A.4).
 
 ## 2. Scope
 
@@ -91,7 +91,7 @@ which stored products go down first, at what bitrate the link budget for that sp
 actually supports, and whether a partial selective dump is sufficient instead of waiting for a
 longer contact to empty the whole buffer. `execute_downlink`'s extended parameters
 (`bitrate_cap_kbps`, `priority`, `partial_dump`) model exactly this planning discipline; the
-"legacy single-token `delivers`" default path (FUTURE-WORK §11.A.4) is the simplified case where the
+"legacy single-token `delivers`" default path (former future-work list §11.A.4) is the simplified case where the
 whole buffer goes down in one undifferentiated dump — appropriate as a default but not the real
 operational norm once a vignette wants downlink contention to matter.
 
@@ -114,7 +114,7 @@ operational norm once a vignette wants downlink contention to matter.
 ## 6. Feature Mapping
 
 FS-105 (Spacecraft Operations) is the direct consumer — `execute_downlink`'s extended parameters
-(FUTURE-WORK §11.A.4) are the implemented feature this topic grounds.
+(former future-work list §11.A.4) are the implemented feature this topic grounds.
 
 ## 7. Related Topics
 

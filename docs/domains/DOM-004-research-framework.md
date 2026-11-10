@@ -7,7 +7,7 @@
 > **Referenced By:** DOM-002, DOM-005, FS-301
 > **Produces:** the research encyclopedia program (R100-R500, see MSTR-007), FS-301 Research Analytics
 > **Feature Mapping:** FS-301
-> **Related Topics:** [`docs/FUTURE-WORK.md`](../FUTURE-WORK.md) §12, MSTR-007 (Research Philosophy), DOM-005 (Validation)
+> **Related Topics:** the former future-work list §12, MSTR-007 (Research Philosophy), DOM-005 (Validation)
 
 [↑ Docs index](../INDEX.md)
 

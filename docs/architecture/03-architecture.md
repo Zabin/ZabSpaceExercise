@@ -207,7 +207,7 @@ exercise.
   `_blue_satellites`/`_red_assets`/`_first_vulnerable` implementation reads `world` (ground truth)
   directly rather than through `SessionAPI`/`CellView` like a human Red would. Per ADR-0024,
   AI-Red's permanent-internal classification is locked in; this ground-truth-access gap is tracked
-  separately as a future-work item (`FUTURE-WORK.md` §1 "AI-Red fog-of-war parity"), not an open
+  separately as a future-work item (former future-work list §1 "AI-Red fog-of-war parity"), not an open
   boundary-classification question.
 - **`aar.py`** — After-Action Review: replay/scrub to any `EventLog` point, branch-compare,
   `snapshot_at`. Read-only against the engine; never the live session.
@@ -463,7 +463,7 @@ real GDS-03 revision — this section is a placeholder for that future work, not
 | Commercial / Gray-Actor Class (new) | No actor class exists between Blue/Red/neutral for commercial SDA providers or commercial SATCOM/imagery either cell could lease or target — a distinct ownership/targeting-ambiguity concept from today's binary Blue/Red ownership (GDS-04 §1.2) | `strategic-review-2026-07.md` §1.7, §6.2 R11, FC-10, GAP-03 |
 | Campaign / Session-Persistence Container (new) | Session (GDS-04 §1.14) is a single 2-hour episode with no cross-session persistence; custody decay over weeks, co-orbital loitering over months, and Δv budgets over years are all invisible at the current scale | `strategic-review-2026-07.md` W7, §6.3 R15, FC-13 |
 | Ground-Segment-as-Terrain Cyber Model (new) | Cyber today resolves per-asset (ADR-0012's exception); ground stations, networks, and the C2 chain are treated only as access endpoints (GDS-04 §1.4), not as attackable/defendable objects whose compromise could falsify telemetry or deny uplink | `strategic-review-2026-07.md` §6.3 R17, FC-11, GAP-12 |
-| Persistent Debris / STM Environment Layer (new) | The debris-cone estimate (`engine/engage.py`) is advisory only; `prop.collision_avoid` is unwired (`FUTURE-WORK.md` §2); a persistent environment layer would make kinetic consequence world-changing and durable across the rest of a session rather than momentary | `strategic-review-2026-07.md` §6.3 R16, FC-08, GAP-02 |
+| Persistent Debris / STM Environment Layer (new) | The debris-cone estimate (`engine/engage.py`) is advisory only; `prop.collision_avoid` is unwired (former future-work list §2); a persistent environment layer would make kinetic consequence world-changing and durable across the rest of a session rather than momentary | `strategic-review-2026-07.md` §6.3 R16, FC-08, GAP-02 |
 
 Each row above restates an Open Question already recorded in GDS-01/GDS-04 from the architecture
 angle, or a candidate component newly named by `strategic-review-2026-07.md` Part 2's Future
@@ -484,7 +484,7 @@ committed.
    in — no future pluggable/external AI-Red is planned, so the placement does not need revisiting
    on that account. A separate, narrower gap remains open: AI-Red's current ground-truth access
    (it reads `world` directly rather than through a `CellView`) is tracked as a future-work item,
-   not a boundary-classification question — see `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" and
+   not a boundary-classification question — see the former future-work list §1 "AI-Red fog-of-war parity" and
    `architecture/adr/ADR-0024-ai-red-boundary-classification.md`.
 3. ~~Whether telemetry/scene "pure render" helpers belong to the engine or the session layer.~~ —
    **resolved by ADR-0025.** The placement rule is: a pure render/diagnostic helper belongs in

@@ -38,7 +38,6 @@ Carried over from the earlier documentation plan (retired 2026-11-10), which thi
 ```
 docs/
 ├── INDEX.md                      ← master router
-├── FUTURE-WORK.md                ← cross-cutting living TODO (v1.1+), incl. §12 research-expansion plan
 │
 ├── master/                       ← NEW: MSTR-001..007, the stable program-defining documents
 │   ├── MSTR-001-program-vision.md

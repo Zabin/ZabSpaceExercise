@@ -12,7 +12,7 @@
 > [`build-spec/05-workflows-and-state-machines.md`](../build-spec/05-workflows-and-state-machines.md)
 > §13–14, [`training/05-core-concepts.md`](../training/05-core-concepts.md),
 > [`training/07-white-cell-facilitation.md`](../training/07-white-cell-facilitation.md),
-> [`CLAUDE.md`](../../CLAUDE.md) ("LAN trust model"), [`FUTURE-WORK.md`](../FUTURE-WORK.md),
+> [`CLAUDE.md`](../../CLAUDE.md) ("LAN trust model"), the former future-work list,
 > [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
 > reconciliation" below), [`adr/ADR-0024-ai-red-boundary-classification.md`](adr/ADR-0024-ai-red-boundary-classification.md),
 > [`adr/ADR-0026-rlock-lan-scaling-ceiling.md`](adr/ADR-0026-rlock-lan-scaling-ceiling.md),
@@ -322,7 +322,7 @@ invented:
 6. ~~AI-Red's epistemic parity with human cells.~~ — **resolved by ADR-0024.** AI-Red's current
    ground-truth access (`redai.py` reads `world` directly rather than through a fog-of-war-filtered
    `CellView`) is recorded as a known gap, not accepted as deliberate design — filtered-view parity
-   with human cells is required as future work, tracked in `FUTURE-WORK.md` §1 "AI-Red fog-of-war
+   with human cells is required as future work, tracked in the former future-work list §1 "AI-Red fog-of-war
    parity." AI-Red's permanently-internal boundary classification (Open Question 2 elsewhere in the
    ladder) is locked in separately and is not affected by this gap. See
    `architecture/adr/ADR-0024-ai-red-boundary-classification.md`. The space domain's own historical

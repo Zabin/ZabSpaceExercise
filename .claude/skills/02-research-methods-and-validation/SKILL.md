@@ -39,7 +39,7 @@ significant mean"), redirect to `docs/training/`; do not write that into the enc
 | [`docs/domains/DOM-002-assessment-framework.md`](../../../docs/domains/DOM-002-assessment-framework.md) | What to measure (§4 measurement dimensions), how to score it (§5 rubric model), how to report it — the dependent-variable/instrument-design substrate this tier's statistics/measurement topics ground. |
 | [`docs/domains/DOM-005-validation-framework.md`](../../../docs/domains/DOM-005-validation-framework.md) | The verification-vs-validation distinction (§3), the validation method for fidelity claims (§4) and for assessment instruments (§5), Monte Carlo as the validation workhorse (§6). |
 | Engine grounding | `spacesim/engine/rng.py` (`SeededRng` — the Monte Carlo repeatability mechanism), `spacesim/tests/test_determinism.py` (the Phase-1 determinism property test — the verification precedent this tier's `R409` points to), `docs/reviews/AUDIT-2026-06-UI-TTC.md` §2 (the power-rate recalibration — this project's only worked validation example to date). |
-| Feature Mapping targets | FS-201 (Competency Assessment), FS-301 (Research Analytics), any future feature-effectiveness study or Monte Carlo experimentation harness (`docs/FUTURE-WORK.md` §13 R8). |
+| Feature Mapping targets | FS-201 (Competency Assessment), FS-301 (Research Analytics), any future feature-effectiveness study or Monte Carlo experimentation harness (former future-work list §13 R8). |
 
 ## Current state (read this before choosing a workflow)
 
@@ -48,7 +48,7 @@ significant mean"), redirect to `docs/training/`; do not write that into the enc
 at every substantive claim site, and a `### Sources` subsection on every `##` section (live URL +
 Wayback snapshot + accessed date, or a cited `spacesim/`/`docs/` file:line for claims about this
 project's own practice). This closed GAP-13 (tracked in
-[`docs/FUTURE-WORK.md`](../../../docs/FUTURE-WORK.md) §13, Recommendation R1) for this tier,
+The former future-work list §13, Recommendation R1) for this tier,
 completing the R500-then-R400 sequencing that recommendation specified. As with R100/R300, "closed"
 means *complete*, not *frozen* — do not bulk-author new topics by default; add a new `R4xx` row
 (`⛔ Planned` first, index-before-content) only on a genuine gap.

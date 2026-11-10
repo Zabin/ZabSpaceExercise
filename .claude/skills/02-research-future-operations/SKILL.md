@@ -50,7 +50,7 @@ All 9 topics carry the mandatory §2 Scope section (MSTR-007 §4.2), inline cita
 substantive claim site, a `### Sources` subsection on every `##` section (live URL + Wayback
 snapshot + accessed date, or a cited `spacesim/session/redai.py`/`engine/recovery.py` file:line for
 present-tense in-world-AI claims), and the mandatory DOM-008 §6 tag line. This closed GAP-13
-(tracked in [`docs/FUTURE-WORK.md`](../../../docs/FUTURE-WORK.md) §13, Recommendation R1) for this
+(tracked in the former future-work list §13, Recommendation R1) for this
 tier; per that recommendation's sequencing, **R400 (Research Methods,
 `02-research-methods-and-validation`) is now the GAP-13 priority.** As with R100/R300, "closed" means
 *complete*, not *frozen* — do not bulk-author new topics by default; add a new `R5xx` row

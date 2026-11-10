@@ -129,7 +129,6 @@ space-control-sim/
 │   └── tests/                   pytest suite (incl. determinism + import-guard)
 └── docs/
     ├── INDEX.md                 ★ START HERE — master documentation router
-    ├── FUTURE-WORK.md           single-source v1.1+ TODO
     ├── build-spec/              ★ the binding v1 spec, 8 modules
     ├── training/                user manual (start at `INDEX.md`) (install → UI → exercises → API → troubleshooting
     │                            + role-scoped per-cell manuals: 12 White / 13 Blue / 14 Red + 15 traceability

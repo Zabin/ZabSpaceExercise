@@ -257,7 +257,7 @@ table) before being treated as in-scope.
    decision across all three. A narrower, separate gap remains tracked as future work, not as an
    open actor-classification question: AI-Red currently reads ground truth (`world`) directly
    rather than through a fog-of-war-filtered `CellView` like a human Red operator would — see
-   `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity" and
+   the former future-work list §1 "AI-Red fog-of-war parity" and
    `architecture/adr/ADR-0024-ai-red-boundary-classification.md`.
 3. **Ground-site/sensor data provenance.** `vignettes/GROUND-INFRASTRUCTURE.md` documents
    real-world ground-station coordinates baked into vignette content. Whether these coordinates

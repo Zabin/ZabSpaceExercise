@@ -142,7 +142,7 @@ doctrine requires AI-Red's *output* (not its internal decision process) to respe
 
 - **CNFR-06** (AI-Red epistemic parity/fairness as a quality attribute) is an explicitly excluded
   candidate NFR in the requirements baseline — ADR-0024 accepts AI-Red's direct ground-truth read
-  as a permanent, accepted v1 deviation, tracked only as future work (`FUTURE-WORK.md` §1), not a
+  as a permanent, accepted v1 deviation, tracked only as future work (former future-work list §1), not a
   v1 commitment this Feature must meet.
 - This Feature does not itself cross any fog-of-war trust boundary that a human Red operator
   wouldn't also be inside — it reads *more* than a human Red operator would (via INT-0015), which

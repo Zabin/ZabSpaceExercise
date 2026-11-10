@@ -7,7 +7,7 @@
 > **Referenced By:** FS-105, [R316](R316-joint-and-combined-operations.md), [R132](R132-proliferated-constellation-c2-and-mesh-operations.md)
 > **Produces:** implementation constraints for any future constellation-aggregation feature
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
-> **Related Topics:** [R106](R106-mission-operations.md) (Mission Operations), `docs/FUTURE-WORK.md` (constellation aggregation, deferred)
+> **Related Topics:** [R106](R106-mission-operations.md) (Mission Operations), the former future-work list (constellation aggregation, deferred)
 > **Last Reviewed:** 2026-06-27
 > **Primary Sources Consulted:** 0 (Tier C only — see §3 Sources)
 
@@ -25,7 +25,7 @@ fleet-level abstractions the engine doesn't have.
 Covers: why the simulator deliberately omits a fleet-level constellation aggregation primitive, and
 what the clock-lag watchdog actually gates instead. Does **not** cover: the per-satellite operations
 loop constellation operations compose from ([R106](R106-mission-operations.md)), or any future aggregation feature's design
-(tracked only as a `docs/FUTURE-WORK.md` deferred item, not specified here).
+(tracked only as a the former future-work list deferred item, not specified here).
 
 ## 3. Concepts
 
@@ -40,7 +40,7 @@ vignette author and operator, not a distinct data structure.
 "constellation health" object; an operator commanding three satellites in a constellation issues
 three separate orders through the same `OrderSystem` each individual satellite would use alone.
 Aggregation (a single fleet-level dashboard rollup, batch tasking) is a documented, deferred
-capability (`docs/FUTURE-WORK.md`), not a missing bug.
+capability (the former future-work list), not a missing bug.
 
 **The clock-lag watchdog is the actual scaling constraint, not a constellation-size cap.**
 `SessionManager._record_catch_up_lag` warns White Cell when the hardware can't keep up with the
@@ -77,7 +77,7 @@ plane-spacing, revisit cadence) through ordinary per-satellite orders.
 - **Do not invent a parallel "fleet" or "constellation" engine entity** to implement a
   constellation-flavored feature — compose it from existing per-`Asset` primitives unless and until
   a real aggregation Implementation Package is authorized.
-- **If you pick up constellation aggregation from FUTURE-WORK**, scope it as its own Implementation
+- **If you pick up constellation aggregation from the former future-work list**, scope it as its own Implementation
   Package (batch order issuance, rollup SOH view) rather than smuggling fleet-level state into
   `Asset` or `BusState`, which are deliberately single-satellite models.
 - **A vignette depicting a constellation should use ordinary multiple `Asset` entries**, not a new
@@ -94,4 +94,4 @@ fleet-aggregation feature would need its own FS entry, not a silent extension of
 ## 7. Related Topics
 
 [R106](R106-mission-operations.md) (Mission Operations — the per-satellite loop constellation operations compose from),
-`docs/FUTURE-WORK.md` (the authoritative deferred-work entry for constellation aggregation).
+The former future-work list (the authoritative deferred-work entry for constellation aggregation).

@@ -13,7 +13,7 @@
 > at all" question), [R108](R108-constellation-operations.md) (Constellation Operations — fleet-level
 > loss and the sizing guideline reconstitution would restore), [R132](R132-proliferated-constellation-c2-and-mesh-operations.md)
 > (Proliferated-Constellation C2 — the scale regime where attrition tolerance and reconstitution
-> cadence matter most), `docs/FUTURE-WORK.md` §12.4.6 (the `09-emerging-tech.md` primer stub that
+> cadence matter most), the former future-work list §12.4.6 (the `09-emerging-tech.md` primer stub that
 > already names on-orbit refueling as future citation-backbone content)
 > **Last Reviewed:** 2026-07-01
 > **Primary Sources Consulted:** 3
@@ -203,6 +203,6 @@ reconstitution/servicing mechanics are scoped, the FS-xxx should cite this topic
 Δv-economy model this topic extends to the between-mission resupply question), [R108](R108-constellation-operations.md)
 (Constellation Operations — the sizing guideline reconstitution would restore after loss),
 [R132](R132-proliferated-constellation-c2-and-mesh-operations.md) (Proliferated-Constellation C2 —
-the scale at which reconstitution's deterrent logic, per §3, actually applies), `docs/FUTURE-WORK.md`
+the scale at which reconstitution's deterrent logic, per §3, actually applies), the former future-work list
 §12.4.6 (the deferred `09-emerging-tech.md` primer stub already naming on-orbit refueling as future
 content).

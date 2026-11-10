@@ -38,5 +38,5 @@ Practice, and Tufte (1983, graphical integrity/Lie Factor). Grounded in DOM-002 
 — six measurement dimensions as the dependent-variable/instrument-design substrate) and DOM-005
 (Validation Framework — the verification/validation distinction and the `AUDIT-2026-06-UI-TTC.md` §2
 worked validation precedent, cited directly at [R410](R410-validation.md)). Per
-`docs/FUTURE-WORK.md` §13 (Recommendation R1), R500 (Future Operations) closed first and R400 second,
+The former future-work list §13 (Recommendation R1), R500 (Future Operations) closed first and R400 second,
 completing GAP-13 remediation across both tiers. Last reviewed across the tier: 2026-07-02.

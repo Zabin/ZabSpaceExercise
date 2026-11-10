@@ -64,7 +64,7 @@ one process, fog-of-war filtered server-side at the `SessionAPI`/`CellController
 - **`SessionAPI` as the single seam.** Every browser client (LAN or local) hits the same
   `InProcessSession` via HTTP polling; the server-authoritative lazy clock on `SessionManager`
   advances sim time exactly once regardless of polling-tab count. The multiplayer transport is in
-  production — see `FUTURE-WORK.md` §1.
+  production — see the former future-work list §1.
 
 ### 7.3 The 2D views (v1 mandatory)
 - **ECI view:** inertial frame — orbits as closed paths, sub-satellite ground track on a 2D

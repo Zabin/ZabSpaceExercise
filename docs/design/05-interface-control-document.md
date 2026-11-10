@@ -591,7 +591,7 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
   principle (§3 principle 2) that every other cell-facing read obeys — AI-Red reads `world`
   directly instead of through a `CellView` like a human Red operator would. ADR-0024 locks in that
   this will not be reclassified as an external-actor boundary question, but the read-path parity
-  gap itself remains open, tracked in `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity." Restated here
+  gap itself remains open, tracked in the former future-work list §1 "AI-Red fog-of-war parity." Restated here
   because an ICD is exactly the place a structural exception like this belongs to be visible
   (see §7.9).
 
@@ -752,7 +752,7 @@ on — they are listed so a reviewer can triage them, not as a backlog this docu
    request, rather than making ad-hoc security decisions under delivery pressure when that request
    arrives. Not actioned here — the growth-path document itself does not yet exist — but named so a
    future reader of this gap knows the recommended next step and where it is tracked
-   (`FUTURE-WORK.md`, [architecture-update.md](../reviews/architecture-update.md) R19 disposition).
+   (the former future-work list, [architecture-update.md](../reviews/architecture-update.md) R19 disposition).
 3. **Bidirectional arrows vs. structural cycles.** §3 principle 4 states the dependency graph is
    one-directional (ADR-0023) and that bidirectional arrows in §6.1/§6.2 represent request/response
    traffic, not code-level circularity. Reviewed against GDS-03 §3's explicit dependency-graph

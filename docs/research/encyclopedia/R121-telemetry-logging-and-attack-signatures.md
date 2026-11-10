@@ -80,7 +80,7 @@ jam-driven term in `_attack_term` (`jam = 1.0 - _mitigation(asset)`) — mitigat
 symptom rather than erasing it, so a well-mitigated jam still shows as a smaller deviation, never a
 clean nominal trace; this preserves a meaningful contrast against the no-attack nominal overlay.
 
-**Spoofing is modeled as a distinct symptom from jamming by design.** Per the `FUTURE-WORK §10.C.14`
+**Spoofing is modeled as a distinct symptom from jamming by design.** Per the `former future-work list §10.C.14`
 comments at `telemetry.py:61,93,169-171`, a spoof outcome only perturbs `integrity_flag` (toward
 `0.0`) while leaving link-quality parameters (`rx_power_dbm`, `cn0_dbhz`, `ber`) at nominal — this is
 a deliberate asymmetry: spoofing looks like nothing is wrong on the link itself, distinguishing it

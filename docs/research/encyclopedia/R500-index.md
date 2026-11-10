@@ -31,7 +31,7 @@ Skitka, Cummings, Cannon-Bowers/Salas/Converse, Newell & Simon). Each topic's DO
 AI, coding-agent practice, both, or neither) is intact from the original draft. [R509](R509-ai-integration-patterns.md) is the
 tier's capstone, synthesizing R501-R508's findings into six reusable integration patterns without
 re-deriving their citations (see R509 §3 Sources for the per-pattern attribution). Per
-`docs/FUTURE-WORK.md` §13 (Recommendation R1), R500 was sequenced first for GAP-13 remediation
+The former future-work list §13 (Recommendation R1), R500 was sequenced first for GAP-13 remediation
 ("zero citations, most speculative claims") — with this tier closed, **R400 (Research Methods) is
 now the GAP-13 priority**, per the `02-research-methods-and-validation` skill's workflow. Last reviewed
 across the tier: 2026-07-02.

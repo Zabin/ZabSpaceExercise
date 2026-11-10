@@ -44,7 +44,7 @@ This Feature couples a declared space-weather index time series (F10.7 solar flu
 geomagnetic index) into two consequences that are unwired today:
 
 - `engine/perturbations.py`'s `secular_drag_decay()` exists, but the runtime propagator never
-  calls it (`FR-1230`'s Rationale; `docs/FUTURE-WORK.md` §2, §13 R12, GAP-01).
+  calls it (`FR-1230`'s Rationale; the former future-work list §2, §13 R12, GAP-01).
 - Environment-induced anomalies have no rate at all (`FR-4440`).
 
 Both couplings must stay deterministic. The index values are declared at declared simulated times
@@ -67,7 +67,7 @@ and are never read from a wall clock or an outside service (`CLAUDE.md` invarian
   and is unchanged.
 - Drag on TLE-backed assets. sgp4 carries its own drag term (ADR-0039 decision 7).
 - Numerical (non-secular) drag integration. That belongs to the `HighFidelityPropagator` seam
-  (FUTURE-WORK §2).
+  (former future-work list §2).
 - Any operator-facing UI for authoring or plotting the series. No requirement asks for one.
 
 ## Requirements Implemented

@@ -6,14 +6,14 @@
 > **Dependencies:** [R108](R108-constellation-operations.md), [R118](R118-space-surveillance-networks.md)
 > **Referenced By:** [R504](R504-future-space-warfare-concepts.md)
 > **Produces:** research grounding for any future constellation-aggregation Implementation Package
-> (deferred item, `docs/FUTURE-WORK.md` §4)
+> (deferred item, the former future-work list §4)
 > **Feature Mapping:** none yet — research-first per this topic's own scope (§2); the eventual
 > consumer is a not-yet-authorized aggregation feature, not FS-105 directly
 > **Related Topics:** [R108](R108-constellation-operations.md) (Constellation Operations — the ≤3-sat
 > individually-operated model this topic explains what changes beyond), [R118](R118-space-surveillance-networks.md)
 > (Space Surveillance Networks — request-based tasking at scale), [R104](R104-collection-management.md)
 > (Collection Management — tasking contention, which proliferated scale multiplies), ADR-0019
-> (sizing guideline, not engine cap), `docs/FUTURE-WORK.md` §4 (constellation aggregation, deferred)
+> (sizing guideline, not engine cap), the former future-work list §4 (constellation aggregation, deferred)
 > **Last Reviewed:** 2026-07-01
 > **Primary Sources Consulted:** 2
 
@@ -28,7 +28,7 @@ recommendation R13): [R108](R108-constellation-operations.md) documents *why* th
 deliberately caps constellations at ≤3 individually-operated satellites (ADR-0019) — a v1 scoping
 choice, not a domain fact. This topic supplies the missing other half: what actually changes,
 operationally, at real proliferated scale (tens to hundreds of satellites per architecture), so
-that if/when constellation aggregation (`docs/FUTURE-WORK.md` §4) is authorized, it is designed
+that if/when constellation aggregation (former future-work list §4) is authorized, it is designed
 against the real operator's unit of command rather than a scaled-up version of the current
 per-asset drill-down. Per this topic's own scope, **it does not design that feature** — it is
 research-first grounding, consistent with MSTR-007 §2's "give the implementer domain understanding"
@@ -43,7 +43,7 @@ technical) concept; and exception-based health monitoring as the real answer to 
 drill-down not scaling. Does **not** cover: the ≤3-sat, individually-operated model itself
 ([R108](R108-constellation-operations.md), unchanged and still the correct model below that
 threshold), the design of any future aggregation feature (explicitly out of scope — tracked only as
-a `docs/FUTURE-WORK.md` deferred item), or SSN request-based tasking mechanics
+a the former future-work list deferred item), or SSN request-based tasking mechanics
 ([R118](R118-space-surveillance-networks.md), which this topic's tasking-workload discussion draws
 on but does not restate).
 
@@ -166,7 +166,7 @@ teaching a workflow no real proliferated-fleet operator actually uses.
   logic** — a naive scale-up of per-satellite request queues will not represent the real bottleneck,
   which is aggregate layer capacity, not any single satellite's schedule.
 - **This topic does not authorize starting an aggregation Implementation Package.** Per
-  `docs/FUTURE-WORK.md` §4 and ADR-0019, constellation aggregation above 3 sats remains a deferred,
+  the former future-work list §4 and ADR-0019, constellation aggregation above 3 sats remains a deferred,
   not-yet-scoped v2 item; this topic's role is to ensure that when it *is* scoped, the design starts
   from real proliferated-operations precedent rather than an assumption-free scale-up of R108's
   ≤3-sat model.
@@ -184,4 +184,4 @@ explains what changes beyond), [R118](R118-space-surveillance-networks.md) (Spac
 Networks — request-based tasking whose contention this topic's layer-capacity concept extends),
 [R104](R104-collection-management.md) (Collection Management — sensor-tasking contention at
 smaller scale), ADR-0019 (the sizing-guideline decision this topic's real-world scale comparison is
-read against), `docs/FUTURE-WORK.md` §4 (constellation aggregation, the deferred consumer).
+read against), the former future-work list §4 (constellation aggregation, the deferred consumer).

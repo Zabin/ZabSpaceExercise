@@ -340,7 +340,7 @@ review passes actually run against it).
   out-of-band atmospheric-density service call.
 - **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
   B8); `engine/perturbations.py` already implements drag physics (`secular_drag_decay()`) but it is
-  not coupled into the runtime propagator (`docs/FUTURE-WORK.md` §2, §13 R12/GAP-01, previously
+  not coupled into the runtime propagator (former future-work list §2, §13 R12/GAP-01, previously
   accepted-deferred). `R131` v1.1 §3 grounds F10.7 (slow solar-cycle baseline) and Kp/Ap (fast
   geomagnetic index) as the two real numeric inputs density models of this class (NRLMSISE-00,
   JB2008) actually consume together — this requirement is additive to, not a replacement for, the
@@ -363,7 +363,7 @@ review passes actually run against it).
 - **Dependencies:** FR-1210, FR-1120
 - **Source Documents:** `docs/pipeline/backlog.md` `BL-0074` (external validation report, 26 Sep
   2026, item B8); `docs/research/encyclopedia/R131-space-environment-and-space-weather-operations.md`
-  §3 (v1.1); `docs/FUTURE-WORK.md` §2, §13 R12/GAP-01; `ADR-0002`.
+  §3 (v1.1); the former future-work list §2, §13 R12/GAP-01; `ADR-0002`.
 - **Related ADRs:** ADR-0002
 - **Related Requirements:** FR-1210, FR-1120, FR-4410, FR-4440
 
@@ -408,7 +408,7 @@ review passes actually run against it).
 - **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
   B6); every manoeuvre is already deducted from `delta_v_ms` and logged in the `EventLog`
   (`FR-1310`, `FR-7110`), but neither is presented as a per-asset, purpose-tagged ledger a
-  facilitator or operator can review or export — the same gap `docs/FUTURE-WORK.md`'s "Δv panel"
+  facilitator or operator can review or export — the same gap the former future-work list's "Δv panel"
   item names.
 - **Priority:** Should
 - **Inputs:** A manoeuvre order carrying an operator-entered purpose tag (free-text or a declared
@@ -425,7 +425,7 @@ review passes actually run against it).
 - **Verification Method:** Test
 - **Dependencies:** FR-1310, FR-7110, FR-3110
 - **Source Documents:** `docs/pipeline/backlog.md` `BL-0072` (external validation report, 26 Sep
-  2026, item B6); `docs/FUTURE-WORK.md` "Δv panel" item; `FR-1310`.
+  2026, item B6); the former future-work list "Δv panel" item; `FR-1310`.
 - **Related ADRs:** (none directly — a presentation/export layer over existing `FR-1310`/`FR-7110`
   state, not a new resource-accounting rule)
 - **Related Requirements:** FR-1310, FR-7110, FR-3110
@@ -497,7 +497,7 @@ review passes actually run against it).
   altitude, and shall make that figure visible to players/facilitator wherever the debris field
   itself is shown.
 - **Rationale:** Project owner's explicit request (external validation report, 26 Sep 2026, item
-  B11); `docs/FUTURE-WORK.md` §13 R16/GAP-02 previously accepted-deferred a fuller persistent-debris
+  B11); the former future-work list §13 R16/GAP-02 previously accepted-deferred a fuller persistent-debris
   environment layer — this requirement is deliberately narrower than that deferred item (and than
   Candidate Requirement `CR-17`'s "persistent, world-changing debris consequence" that gates future
   Access Windows): it is an **informational estimate only**, not a mechanism that changes Access
@@ -521,7 +521,7 @@ review passes actually run against it).
 - **Dependencies:** FR-1410, FR-1230
 - **Source Documents:** `docs/pipeline/backlog.md` `BL-0077` (external validation report, 26 Sep
   2026, item B11); `docs/research/encyclopedia/R117-directed-energy-and-kinetic-effects.md` §3.1
-  (v1.2); `docs/FUTURE-WORK.md` §2, §13 R16/GAP-02; Candidate Requirement `CR-17` (this requirement
+  (v1.2); the former future-work list §2, §13 R16/GAP-02; Candidate Requirement `CR-17` (this requirement
   is deliberately narrower than, not a promotion of, `CR-17`).
 - **Related ADRs:** (none directly — an informational estimate, not a new engine mechanism)
 - **Related Requirements:** FR-1410, FR-1230, FR-1220
@@ -1987,13 +1987,13 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
 - **Dependencies:** FR-4410, FR-1120
 - **Source Documents:** `docs/pipeline/backlog.md` `BL-0070` (external validation report, 26 Sep
   2026, item B4); `CLAUDE.md` invariant 1 (deterministic core); `ADR-0002`; `ADR-0006`;
-  `docs/FUTURE-WORK.md` §13 R18.
+  the former future-work list §13 R18.
 - **Related ADRs:** ADR-0002, ADR-0005, ADR-0006
 - **Related Interfaces:** INT-0016
 - **Related Requirements:** FR-4410, FR-1120, FR-4430
 - **Notes:** *Amended 2026-10-17 (run #160, `BL-0130`, `VR-1062` Finding L1).* The Precondition
   read "a non-repeatable ... inject must not have already fired", which implied that a
-  `repeatable` one may re-fire. Neither source (`BL-0070`/B4, FUTURE-WORK §13 R18) says so, and
+  `repeatable` one may re-fire. Neither source (`BL-0070`/B4, former future-work list §13 R18) says so, and
   none says when a re-fire would happen (every tick the condition holds, or each false-to-true
   transition). As built, a condition-triggered inject fires once whatever its `repeatable` flag.
   The Precondition now states that sourced behaviour. A re-fire rule is candidate `CR-27`.
@@ -3329,7 +3329,7 @@ is no longer required. Same ID, narrower scope.)*
 - **Verification Method:** Test
 - **Dependencies:** FR-7310, FR-6210, FR-6220
 - **Source Documents:** `docs/pipeline/backlog.md` `BL-0078` (external validation report, 26 Sep
-  2026, item B12); `FR-7310`; `FR-6210`; `FR-6220`; `docs/FUTURE-WORK.md` §13 R10 (belief-vs-truth
+  2026, item B12); `FR-7310`; `FR-6210`; `FR-6220`; the former future-work list §13 R10 (belief-vs-truth
   analytics, adjacent).
 - **Related ADRs:** ADR-0002, ADR-0004
 - **Related Interfaces:** INT-0014
@@ -3367,7 +3367,7 @@ is no longer required. Same ID, narrower scope.)*
 - **Dependencies:** FR-7330, FR-4320, FR-6210
 - **Source Documents:** `docs/reviews/integration-review-tranche-3-release-push-remediation.md` `L-4`;
   `docs/implementation/verification/VR-1072-white-only-extension.md` F3; GDS-09 §4;
-  `docs/FUTURE-WORK.md` (hardening) for the trust level.
+  the former future-work list (hardening) for the trust level.
 - **Related ADRs:** ADR-0015, ADR-0016
 - **Related Interfaces:** INT-0014
 - **Related Requirements:** FR-7330, FR-4320, FR-6210, FR-6220
@@ -3860,7 +3860,7 @@ is no longer required. Same ID, narrower scope.)*
   ground-truth read (INT-0015) is also a named, accepted v1 trade-off against the fog-of-war-
   filtered `CellView` a human Red operator uses — this epistemic asymmetry is intentionally not
   remediated in v1 and remains a tracked future-work gap, not an oversight (ADR-0024;
-  `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity").
+  the former future-work list §1 "AI-Red fog-of-war parity").
 - **Priority:** Should
 - **Inputs:** The configured doctrine preset; current `WorldState` (read directly — see Related
   Interfaces note below).
@@ -4199,7 +4199,7 @@ traceability matrix's baseline rows.
   through a fog-of-war-filtered `CellView` (ICD INT-0015; ADR-0024 records this as a tracked
   future-work gap, not settled behavior). A requirement that AI-Red's reads be parity-filtered like
   a human Red operator's cannot be written today because no approved document commits to *when* or
-  *how* this gap closes. **Source:** ADR-0024; `FUTURE-WORK.md` §1 "AI-Red fog-of-war parity."
+  *how* this gap closes. **Source:** ADR-0024; the former future-work list §1 "AI-Red fog-of-war parity."
 - **CR-02 — Per-connection / per-cell authentication.** The LAN trust model is explicitly
   client-side trust with no per-connection authentication (ADR-0015; ICD INT-0001 Open question 2).
   A requirement to authenticate cell selection cannot be written because no approved document
@@ -4365,14 +4365,14 @@ by that promotion.
   constellations cannot be written today because no approved document commits to building this
   layer — it is named only as a not-built, not-scheduled candidate component. **Source:** GDS-03 §5
   "Proliferated-Constellation Aggregation Layer"; `strategic-review-2026-07.md` §6.3 R13, FC-06,
-  GAP-10; `FUTURE-WORK.md` §13.
+  GAP-10; the former future-work list §13.
 - **CR-13 — Coalition / Multi-Cell Generalization.** The Session/CellController model grants Role
   Assignments against exactly Blue and Red (plus White/Observer); no releasability tiers, per-nation
   ROE, or coalition SSN pooling exist for multiple Blue-side cells. A requirement to generalize
   fog-of-war to N cells with asymmetric information-sharing policies cannot be written today because
   no approved document commits to it. **Source:** GDS-03 §5 "Coalition / Multi-Cell
   Generalization"; GDS-04 §3 "Coalition Cell / Multi-Blue Structure"; GDS-02 Open Question 5
-  (coalition-partner actor); `strategic-review-2026-07.md` §6.3 R14, FC-09; `FUTURE-WORK.md` §13.
+  (coalition-partner actor); `strategic-review-2026-07.md` §6.3 R14, FC-09; the former future-work list §13.
 - **CR-14 — Commercial / Gray-Actor Class and purchasable SDA/comms services.** Asset ownership is
   binary (`blue`/`red`/`neutral`, GDS-04 §1.2); no actor class exists for a commercial operator whose
   custody data or SATCOM/imagery services either cell could lease, or whose assets present a
@@ -4381,28 +4381,28 @@ by that promotion.
   document commits to either. **Source:** GDS-02 candidate future external systems table
   ("Commercial SDA/services provider"); GDS-03 §5 "Commercial / Gray-Actor Class"; GDS-04 §3
   "Commercial / Gray Actor"; [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md)
-  A3; `strategic-review-2026-07.md` §1.7, §6.2 R11, FC-10, GAP-03; `FUTURE-WORK.md` §7, §13.
+  A3; `strategic-review-2026-07.md` §1.7, §6.2 R11, FC-10, GAP-03; the former future-work list §7, §13.
 - **CR-15 — Campaign / Session-Persistence Container.** Session is the largest unit of persistent
   state and ends at `ENDED(log written)` (GDS-04 §1.14); no entity represents state that survives
   across Sessions (custody decay over weeks, Δv burn over months, co-orbital loitering). A
   requirement for cross-session persistence or time-compression cannot be written today because no
   approved document commits to it. **Source:** GDS-03 §5 "Campaign / Session-Persistence Container";
   GDS-04 §3 "Campaign / Session-Persistence Container"; `strategic-review-2026-07.md` W7, §6.3 R15,
-  FC-13; `FUTURE-WORK.md` §13.
+  FC-13; the former future-work list §13.
 - **CR-16 — Ground-Segment-as-Terrain Cyber Model.** Cyber effects resolve per-asset today
   (ADR-0012's exception); ground stations, networks, and the C2 chain are modeled only as access
   endpoints (GDS-04 §1.4), not as attackable/defendable objects whose compromise could falsify
   telemetry or deny uplink independent of any single asset's own state. A requirement to model the
   ground segment as contested terrain cannot be written today because no approved document commits
   to it. **Source:** GDS-03 §5 "Ground-Segment-as-Terrain Cyber Model"; `strategic-review-2026-07.md`
-  §6.3 R17, FC-11, GAP-12; `FUTURE-WORK.md` §13.
+  §6.3 R17, FC-11, GAP-12; the former future-work list §13.
 - **CR-17 — Persistent Debris / STM Environment Layer.** The debris-cone estimate
-  (`engine/engage.py`) is advisory only and `prop.collision_avoid` is unwired (`FUTURE-WORK.md` §2);
+  (`engine/engage.py`) is advisory only and `prop.collision_avoid` is unwired (former future-work list §2);
   no persistent environment object represents debris continuing to exist and gate future Access
   Windows after the Effect that created it resolves. A requirement for persistent, world-changing
   debris consequence cannot be written today because no approved document commits to it. **Source:**
   GDS-03 §5 "Persistent Debris / STM Environment Layer"; GDS-04 §3 "Persistent Debris / Environment
-  Object"; `strategic-review-2026-07.md` §6.3 R16, FC-08, GAP-02; `FUTURE-WORK.md` §2, §13.
+  Object"; `strategic-review-2026-07.md` §6.3 R16, FC-08, GAP-02; the former future-work list §2, §13.
 - **CR-18 — Facilitator / cross-session adjudication-consistency support.** GDS-01 §12's "Negative
   training" risk row (added by the strategic-review reconciliation) names "facilitator/adjudication
   drift across sessions with no consistency-support mechanism" as one of four unmitigated

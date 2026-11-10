@@ -234,7 +234,7 @@ both cells' views without error.
 - `learn-multi-asset` (Section C step 3)
 - `nv-coalition-sda`, `nv-mega-constellation`, `nv-frequency-hop-eccm`
 
-**Engine work required for additional vignettes** (tracked in [`../FUTURE-WORK.md`](../FUTURE-WORK.md)):
+**Engine work required for additional vignettes** (tracked in `../FUTURE-WORK.md`):
 - Coalition SDA / shared-track-catalog primitive (§9 strategic)
 - GNSS spoof distinct from GNSS jam (extends `effects.py` outcome set)
 - Conjunction screening + `prop.collision_avoid` (§3 catalog-verb gap, also needed for `nv-isl-relay-debris` to fully realize)

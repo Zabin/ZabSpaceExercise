@@ -13,7 +13,7 @@
 > jamming/spoofing parallels), [R115](R115-electronic-warfare-in-space-operations.md) (Electronic
 > Warfare — the jamming taxonomy this topic's GNSS-specific case sits inside), `docs/research/05-mission-types-and-counters.md`
 > §4 (the pre-existing mission-type primer's PNT mention, already cited in `pnt.flex_power`'s code
-> comment), `docs/FUTURE-WORK.md` §2.2 (the deferred `05b-satcom-pnt.md` primer stub this topic's
+> comment), the former future-work list §2.2 (the deferred `05b-satcom-pnt.md` primer stub this topic's
 > research anticipates)
 > **Last Reviewed:** 2026-07-05
 > **Primary Sources Consulted:** 3
@@ -26,7 +26,7 @@ Identified as **GAP-09** in the Independent Strategic Review Board report
 ([`docs/reviews/strategic-review-2026-07.md`](../../reviews/strategic-review-2026-07.md) Part 3):
 `engine/buscommands.py` already implements four real PNT operator verbs — `pnt.set_integrity`
 (legacy), `pnt.flex_power`, `pnt.set_health_flag`, and `pnt.report_status` — with code comments
-citing IS-GPS-200E and 2 SOPS Master Control Station (MCS) practice, but per `docs/FUTURE-WORK.md`
+citing IS-GPS-200E and 2 SOPS Master Control Station (MCS) practice, but per the former future-work list
 §2.2 no dedicated R1xx topic exists grounding the *operational pattern* those verbs represent: what
 real GNSS jamming/spoofing campaigns look like, and what the defensive playbook (flex power, health
 flags, anti-jam receiver hardware) actually buys an operator. This topic closes that gap so an
@@ -48,7 +48,7 @@ a related but distinct sensing question).
 ## 3. Concepts
 
 **GNSS jamming and spoofing are distinct threat classes with different operational signatures, and
-the simulator's `Outcome` model already tracks this distinction (`FUTURE-WORK.md` item 14) even
+the simulator's `Outcome` model already tracks this distinction (the former future-work list item 14) even
 though no R1xx topic previously grounded why the distinction matters.** Jamming denies signal by
 overpowering it with noise (a *deny* effect in the five-D taxonomy); spoofing forges a false signal
 that a receiver locks onto with high confidence, producing a wrong position/time fix while the
@@ -91,7 +91,7 @@ spot-beam capability that concentrates the power increase over a specific theate
 broadcasting it globally — exactly the `region` parameter `pnt.flex_power`'s code already threads
 through to `payload_state.detail["flex_power_region"]`
 (`engine/buscommands.py:pnt.flex_power`, code comment citing IS-GPS-200E and the GAO M-code report
-per `docs/FUTURE-WORK.md` §2.2). This is a **space-segment-controlled** defense — it is something
+per the former future-work list §2.2). This is a **space-segment-controlled** defense — it is something
 the PNT payload operator (the cell that owns the GPS-analog satellite) does, distinct from anything
 a GPS *user* can do.
 
@@ -162,7 +162,7 @@ judgment call, not a pre-labeled "you are being jammed" indicator.
 
 - **Keep jam and spoof as distinct `Outcome` values wherever a future PNT effect is modeled**, per
   §3's finding that they have different real signatures (denial vs. false-confidence deception) —
-  this already matches the direction of `docs/FUTURE-WORK.md` item 14's `is_link_spoofed` addition;
+  this already matches the direction of the former future-work list item 14's `is_link_spoofed` addition;
   this topic supplies the operational-precedent justification for keeping that distinction rather
   than collapsing spoof into a jam variant.
 - **`pnt.flex_power`'s `region` parameter should stay theater-scoped, not global, when a future

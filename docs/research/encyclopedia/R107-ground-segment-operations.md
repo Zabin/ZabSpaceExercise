@@ -35,7 +35,7 @@ still below the usable contact elevation.
 
 **Per-azimuth mask tables model real terrain.** A station ringed by mountains in one direction has
 a higher effective mask in that azimuth band; `site_mask(az_deg)` looks up the matching `mask_table`
-entry (with wrap-around band support) rather than assuming a uniform horizon — this is FUTURE-WORK
+entry (with wrap-around band support) rather than assuming a uniform horizon — this is former future-work list
 §10.C.12's terrain-aware horizon model, already wired into the predicate.
 
 **A degraded ground station drops out of the access scene entirely.** `scene_from_world` excludes

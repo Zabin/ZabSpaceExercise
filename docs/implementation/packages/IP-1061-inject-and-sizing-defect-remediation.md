@@ -113,7 +113,7 @@ None. All tests go into existing test files (see Tests to Add).
 | `spacesim/content/inject_library.yaml` | Line 19: replace `POST /api/sessions/{sid}/inject_schedule with at_sim_t` with `POST /api/sessions/{sid}/inject with an at_sim_t field (µs sim-UTC)`. Comment only. |
 | `spacesim/tests/test_content.py` | Invert the four cap tests at `:101-125+`: 25 orbital assets and 4 satellites in one group must now **load without error**. Rename them accordingly and retitle the section header to ADR-0019. |
 | `spacesim/tests/test_inject_library.py` | Add the A1 and A3 regression tests (see Tests to Add). |
-| `docs/FUTURE-WORK.md` | §6 ("Sat / fleet caps validation — ✅ implemented"): rewrite to record that the hard cap was removed per ADR-0019 / `NFR-1300` by IP-1061, leaving only the soft guideline and the watchdog. |
+| The former future-work list | §6 ("Sat / fleet caps validation — ✅ implemented"): rewrite to record that the hard cap was removed per ADR-0019 / `NFR-1300` by IP-1061, leaving only the soft guideline and the watchdog. |
 | `docs/vignettes/00-LIBRARY-ARCHITECTURE.md` | `:180` "Satellite caps" bullet: restate as a soft sizing guideline (ADR-0019), not an enforced load-time rule. |
 
 ## Implementation Tasks
@@ -147,7 +147,7 @@ the change.
 4. **A2.** Correct the `inject_library.yaml:19` comment as specified in Files to Modify.
 5. **A4.** Remove both raises in `build_world()`, update the comment, and invert the
    `test_content.py` cap tests.
-6. **Docs.** Apply the FUTURE-WORK §6 and `00-LIBRARY-ARCHITECTURE.md` edits. Add IP-1061 to
+6. **Docs.** Apply the former future-work list §6 and `00-LIBRARY-ARCHITECTURE.md` edits. Add IP-1061 to
    the RTM `Impl. Package` cells for `FR-4410` (alongside `IP-1060`) and `NFR-1300` (replacing
    `UNASSIGNED`).
 7. Run the full suite and both permanent gates, then flip this package to `COMPLETE`.
@@ -183,7 +183,7 @@ All tests below go in `spacesim/tests/test_inject_library.py` unless stated othe
 
 ## Documentation Updates
 
-- `docs/FUTURE-WORK.md` §6 and `docs/vignettes/00-LIBRARY-ARCHITECTURE.md:180` (see Files to
+- the former future-work list §6 and `docs/vignettes/00-LIBRARY-ARCHITECTURE.md:180` (see Files to
   Modify).
 - RTM (`docs/requirements/03-requirements-traceability-matrix.md`): add IP-1061 to the
   `Impl. Package` cells of `FR-4410` and `NFR-1300`, and name the new tests in their test columns.
@@ -206,7 +206,7 @@ All tests below go in `spacesim/tests/test_inject_library.py` unless stated othe
   `inject_schedule`.
 - `build_world()` raises no satellite-count or constellation-size error. The four old cap tests
   are replaced by the two "loads" tests.
-- FUTURE-WORK §6, `00-LIBRARY-ARCHITECTURE.md:180` and the RTM cells are updated.
+- former future-work list §6, `00-LIBRARY-ARCHITECTURE.md:180` and the RTM cells are updated.
 - The full suite is green and both permanent gates are green.
 
 ## Verification Checklist

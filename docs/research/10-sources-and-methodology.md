@@ -10,7 +10,7 @@ status: methodology — applies to every file in this corpus
 
 This file defines the **citation convention, source-quality tiers, and review cadence**
 that every file under `docs/research/` follows. It is the first deliverable of the
-Tier 1 corpus expansion (see `docs/FUTURE-WORK.md` §12) and the canonical reference for
+Tier 1 corpus expansion (see the former future-work list §12) and the canonical reference for
 "what does a citation look like in this corpus." Every later authoring agent and every
 later reviewer consults this file. The convention is intentionally conservative — it
 mirrors the practice of higher-quality Wikipedia articles and most think-tank reports,
@@ -183,7 +183,7 @@ regime for >600 km LEO debris).
 ```
 
 The convention is enforced by the **code cross-linking pass** that runs after each tier
-lands (see `docs/FUTURE-WORK.md` §12.6). The pass walks engine modules, matches hard-coded
+lands (see the former future-work list §12.6). The pass walks engine modules, matches hard-coded
 constants to research-file anchors, and adds the comments. A future audit catching "the
 research says X but the code does Y" drift uses this convention to find the discrepancy.
 
@@ -222,7 +222,7 @@ The banner stays until a refresh pass updates `last_reviewed`.
 
 ### 5.3 Verification pass
 
-After each tier of `docs/FUTURE-WORK.md` §12 lands, a separate **verification pass**
+After each tier of the former future-work list §12 lands, a separate **verification pass**
 runs as an adversarial reviewer agent. The agent:
 
 1. Picks a random sample of 20 cited claims across the files modified in the tier.

@@ -53,7 +53,7 @@ design principles for this surface:
 
 ## 4. Future in-world AI: autonomy and human-AI teaming (forward-looking, R500-tier)
 
-`docs/FUTURE-WORK.md`-tracked and R500-tier topics (autonomous planning, machine reasoning, future
+The former future-work list-tracked and R500-tier topics (autonomous planning, machine reasoning, future
 C2) describe a horizon where Blue or White might be assisted by an AI planner/advisor inside the
 exercise itself — e.g., an AI-suggested COA, an AI custody-fusion assistant. DOM-008's standing
 position: **any such feature must preserve the plan-first invariant (MSTR-002 §2 invariant 4) and

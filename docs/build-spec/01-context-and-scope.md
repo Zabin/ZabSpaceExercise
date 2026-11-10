@@ -54,7 +54,7 @@ operational art of contesting the domain.
   material with fictional default assets.
 - Single-machine hot-seat **and** LAN cooperative both supported (one FastAPI server, N browser
   tabs / machines polling it; fog-of-war enforced server-side at the `SessionAPI` boundary —
-  see `FUTURE-WORK.md` §1). Not a dedicated-server architecture and not internet-public.
+  see the former future-work list §1). Not a dedicated-server architecture and not internet-public.
 - Not a real satellite control system; it simulates the *experience*, not real spacecraft.
 
 ---

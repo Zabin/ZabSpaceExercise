@@ -303,7 +303,7 @@ review passes actually run against it).
   - **Affected subsystems:** `engine/propagator.py`, `engine/access.py`, `engine/effects.py`
   - **Dependencies:** NFR-1900
   - **Source documents:** `GDS-06 NFR-7; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-7; `CLAUDE.md`
-    "Orbital fidelity" key fact; `FUTURE-WORK.md` §2
+    "Orbital fidelity" key fact; the former future-work list §2
   - **Related ADRs:** ADR-0009
 
 ## 7. Security
@@ -847,7 +847,7 @@ Explicitly excluded from the numbered baseline above.
     per-cell tokens as a *future* hardening option, not a v1 requirement; baselining this now would
     contradict an Accepted ADR's Decision.
   - **Source documents:** `architecture/adr/ADR-0015-lan-trust-model.md` (cited as the reason for
-    exclusion); `FUTURE-WORK.md` (where the deferred hardening option is tracked).
+    exclusion); the former future-work list (where the deferred hardening option is tracked).
 
 - **CNFR-05 — Cross-process/crash-recoverable availability**
   - **Description (candidate):** A requirement that an exercise be resumable after a process crash
@@ -863,12 +863,12 @@ Explicitly excluded from the numbered baseline above.
     asymmetry between them be measured/bounded.
   - **Why excluded:** ADR-0024 explicitly accepts AI-Red's direct ground-truth read (INT-0015) as a
     permanent, accepted v1 deviation and tracks remediation only as a future-work item
-    (`FUTURE-WORK.md` §1), not a v1 commitment. The skill's fixed 15-category NFR taxonomy also has
+    (former future-work list §1), not a v1 commitment. The skill's fixed 15-category NFR taxonomy also has
     no Fairness-equivalent category to host a numbered NFR even where one might otherwise be
     warranted. `requirements/01` FR-9110 already discloses this asymmetry qualitatively at the
     functional-requirement level; this candidate records the same gap at the NFR/quality-attribute
     level so it is not visible only on the FR side.
-  - **Source documents:** `architecture/adr/ADR-0024*.md`; `FUTURE-WORK.md` §1 "AI-Red fog-of-war
+  - **Source documents:** `architecture/adr/ADR-0024*.md`; the former future-work list §1 "AI-Red fog-of-war
     parity"; `requirements/01-functional-requirements.md` FR-9110 (cross-reference).
 
 - **CNFR-07 — Distributed-simulation / exercise-interoperability federation *(added 2026-07)***
@@ -885,7 +885,7 @@ Explicitly excluded from the numbered baseline above.
     R19 — has not been done.
   - **Source documents:** `design/05-interface-control-document.md` §7 item 12; `strategic-review-2026-07.md`
     GAP-11, §6.3 R19; [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md)
-    A9 (adjacent — LAN trust model); `FUTURE-WORK.md` §13 "R19."
+    A9 (adjacent — LAN trust model); the former future-work list §13 "R19."
 
 ---
 

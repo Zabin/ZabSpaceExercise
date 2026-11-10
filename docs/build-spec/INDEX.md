@@ -45,4 +45,4 @@ source-code docstrings that cite `§16.9` / `§10`) still resolve to a real head
 ## Phase status (from §10 / §16)
 
 Backend feature-complete through Phase 7; the operator console (§16) and SSN (§17) are implemented
-and test-covered. Deferred items are tracked in [`../FUTURE-WORK.md`](../FUTURE-WORK.md).
+and test-covered. Deferred items are tracked in `../FUTURE-WORK.md`.
