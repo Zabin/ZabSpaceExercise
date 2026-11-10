@@ -24,9 +24,9 @@
 | # | Step | State |
 |---|---|---|
 | 1 | Safety net: CI (full suite on the locked dependencies, dependency audit); session hook installs from the lock; branch-cleanup workflow; 120 stale branches removed; `release-1.0` tag created | **Done** (PR #94, 2026-11-10) |
-| 2 | `CLAUDE.md` cut to the durable guidance; code map moved to `docs/architecture/code-map.md` | **Done** (this pull request) |
-| 3 | Pipeline records: harvest the two reviews' findings into the backlog; short structured journal and backlog entries; archives out of the working tree; the manager and intake skills updated to the new shape | Next |
-| 4 | Documentation retirement sweep (plan item D-08): `docs/build-spec/`, `docs/design/`, `docs/domains/`, `docs/implementations/`, the June audit files, `FUTURE-WORK.md`, `DOCUMENTATION-PLAN.md`, `memory.md`; one traceability matrix; generated media out of Git | Planned |
+| 2 | `CLAUDE.md` cut to the durable guidance; code map moved to `docs/architecture/code-map.md` | **Done** (PR #95, 2026-11-10) |
+| 3 | Pipeline records: harvest the two reviews' findings into the backlog; short journal and backlog rows; the manager and intake skills updated to the new shape. The archive files stay in the tree: they are frozen, are not read in a normal run, and hold the full text | **Done** (this pull request) |
+| 4 | Documentation retirement sweep (plan item D-08): `docs/build-spec/`, `docs/design/`, `docs/domains/`, `docs/implementations/`, the June audit files, `FUTURE-WORK.md`, `DOCUMENTATION-PLAN.md`, `memory.md`; one traceability matrix; generated media out of Git | Next |
 | 5 | Ledgers: one source of truth for package and document status; `ROADMAP.md` and the Master Build Plan reduced to what is current | Planned |
 | 6 | Pipeline skills: shared rules stated once; dated history removed; a route-table seam check added to verification | Planned |
 | 7 | Code, through packages: a behaviour baseline test first (suite counts and a world hash per vignette); then behaviour-preserving splits of `app.js`, `manager.py`, `server.py`; lint and type checks; package history moved out of comments | Planned |

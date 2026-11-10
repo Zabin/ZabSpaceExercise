@@ -56,9 +56,10 @@ Check the backlog — **both** `docs/pipeline/backlog.md` and its closed-entry a
 `docs/pipeline/backlog-archive.md` — (and, for bugs, open findings) for an existing entry covering
 the same thing —
 if found, note the new report on that entry instead of duplicating it. Otherwise append a new
-`BL-xxxx` row to `backlog.md` (next sequential ID — the highest in **either** file + 1): Filed (date + "intake: <requester's ask, condensed>"), Type,
-Summary (with evidence links), Sev/Pri (user's stated priority or the evidence-based severity),
-Entry stage, Disposition `—` (the manager decides), Status `NEW`. Commit as
+`BL-xxxx` row to `backlog.md` (next sequential ID — the highest in **either** file + 1): Filed (date), Type,
+Sev (user's stated priority or the evidence-based severity), Entry stage, Status `NEW`, Summary
+(what is wanted or wrong, who asked, and the evidence by name; at most about 230 characters), Next `—`
+(the manager decides). Rows are short: put long evidence in a file the row names, not in the row. Commit as
 `docs(pipeline): intake BL-xxxx — <summary>`.
 
 ## Rules

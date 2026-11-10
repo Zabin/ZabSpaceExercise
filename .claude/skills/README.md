@@ -96,3 +96,17 @@ and flows forward from there:
   package (`IP-xxxx`) it verifies. `07` names the IDs in `Tests to Add`, `08` applies the marker, `09`
   checks each new test's tag, `04` builds its matrix's Test column from the markers, and `11` audits
   the whole suite for relevance at every release.
+
+## Branching and pull requests
+
+Owner rule (2026-11-10). Trunk-based, and **one open pull request at a time**:
+
+- Branch from `main`, do one piece of work, open one pull request.
+- CI must be green (the full suite on the locked dependencies, plus the dependency audit). Then
+  squash-merge. The `Branch cleanup` workflow deletes the branch when the pull request closes.
+- Open the next pull request only after the last one has merged. Never stack branches, and never
+  leave a branch behind.
+- Package work still needs its pipeline gates (authorization, independent verification) before it
+  merges; a release GO is the owner's.
+- Cloud sessions cannot push tags or delete branches. Tags and sweeps are done by running the
+  `Branch cleanup` workflow.
