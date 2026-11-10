@@ -8,7 +8,7 @@
 > **Produces:** UX/cognitive-load constraints consumed by every operator-console Feature Specification
 > **Feature Mapping:** FS-105, FS-106
 > **Related Topics:** [`docs/design/09-gui-principles.md`](../design/09-gui-principles.md),
-> [`docs/AUDIT-2026-06-UI-TTC.md`](../AUDIT-2026-06-UI-TTC.md), R207 (cognitive bias), R206 (bounded rationality)
+> [`docs/reviews/AUDIT-2026-06-UI-TTC.md`](../reviews/AUDIT-2026-06-UI-TTC.md), R207 (cognitive bias), R206 (bounded rationality)
 
 [↑ Docs index](../INDEX.md)
 

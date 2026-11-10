@@ -55,7 +55,7 @@ authoring:
 2. **Citation-rot maintenance** — per the methodology's review cadence, re-verify live URLs still
    resolve, refresh Wayback snapshots and `accessed` dates, and flag any source that 404s with no
    live replacement.
-3. **Depth/gap fill** — when an audit (e.g. `docs/AUDIT-2026-06*.md`) or a new feature reveals a
+3. **Depth/gap fill** — when an audit (e.g. `docs/reviews/AUDIT-2026-06*.md`) or a new feature reveals a
    topic was under-specified for implementation, expand that topic's §3 Concepts / §5 Implementation
    Guidance rather than letting the gap leak into ad hoc spec prose.
 

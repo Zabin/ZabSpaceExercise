@@ -102,7 +102,7 @@ All **already complete**:
 ## Tests to Add
 
 None — covered by the order-system and bus-model test suites (verb-by-verb gating and
-physical-outcome assertions). The June 2026 commands audit (`docs/AUDIT-2026-06-COMMANDS.md`) is
+physical-outcome assertions). The June 2026 commands audit (`docs/reviews/AUDIT-2026-06-COMMANDS.md`) is
 the record of the cut/kept verb decisions this catalog reflects.
 
 ## Documentation Updates

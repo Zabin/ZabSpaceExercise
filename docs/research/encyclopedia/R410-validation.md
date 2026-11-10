@@ -48,7 +48,7 @@ model's own internal spec.
 **Face validity as the cheapest, weakest check.** Does the model/metric look, on inspection by a
 domain-knowledgeable reviewer, like it represents the claimed phenomenon — useful as a first filter,
 but easily fooled by a model that looks right but behaves wrong in an edge case, which is exactly
-what the [`AUDIT-2026-06-UI-TTC.md`](../../AUDIT-2026-06-UI-TTC.md) §2 bug was: a power-calibration
+what the [`AUDIT-2026-06-UI-TTC.md`](../../reviews/AUDIT-2026-06-UI-TTC.md) §2 bug was: a power-calibration
 formula that likely looked reasonable on inspection but produced a wrong result under specific
 conditions.
 
@@ -75,7 +75,7 @@ regime is not automatically validated for an extended one.
 ### Sources
 
 - *This project's own worked validation precedent* —
-  [`docs/AUDIT-2026-06-UI-TTC.md`](../../AUDIT-2026-06-UI-TTC.md) §2 (the power-calibration bug DOM-005
+  [`docs/reviews/AUDIT-2026-06-UI-TTC.md`](../../reviews/AUDIT-2026-06-UI-TTC.md) §2 (the power-calibration bug DOM-005
   §4 cites).
 - Uses the Boehm (1981) and Sargent V&V-framework citations already fully recorded at
   [R409](R409-verification.md) §3's Sources subsection (Boehm's "building the right product"

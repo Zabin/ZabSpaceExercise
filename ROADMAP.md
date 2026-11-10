@@ -41,9 +41,9 @@ with — not a build order. On any conflict the `docs/architecture/` GDS ladder 
 
 | ID | Document | Path | Depends on | Status |
 |---|---|---|---|---|
-| AU-01 | Full-codebase audit, June 2026 (research/docs/engine/security/tests, 5 streams) | `docs/AUDIT-2026-06.md` | all themes | ✅ |
-| AU-02 | Commands audit — order/verb realism, probability mechanics, form UX | `docs/AUDIT-2026-06-COMMANDS.md` | AU-01, DS-13 | ✅ |
-| AU-03 | UI + TT&C audit — panel layout, power model, telemetry, target picker | `docs/AUDIT-2026-06-UI-TTC.md` | AU-02 | ✅ |
+| AU-01 | Full-codebase audit, June 2026 (research/docs/engine/security/tests, 5 streams) | `docs/reviews/AUDIT-2026-06.md` | all themes | ✅ |
+| AU-02 | Commands audit — order/verb realism, probability mechanics, form UX | `docs/reviews/AUDIT-2026-06-COMMANDS.md` | AU-01, DS-13 | ✅ |
+| AU-03 | UI + TT&C audit — panel layout, power model, telemetry, target picker | `docs/reviews/AUDIT-2026-06-UI-TTC.md` | AU-02 | ✅ |
 
 ## Theme: Build Spec (legacy reference, superseded — `docs/build-spec/`)
 

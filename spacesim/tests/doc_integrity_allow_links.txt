@@ -17,7 +17,6 @@ docs/research/03-counterspace-taxonomy.md -> 03e-cyber.md | BL-0292 cleanup swee
 docs/research/03-counterspace-taxonomy.md -> 03f-nuclear-emp.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
 docs/research/04-orbital-mechanics-primer.md -> ../../04a-propagator-fidelity.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
 docs/research/04-orbital-mechanics-primer.md -> ../../06-bus-and-payload-operations.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
-docs/research/04-orbital-mechanics-primer.md -> ../../AUDIT-2026-06-UI-TTC.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
 docs/research/04-orbital-mechanics-primer.md -> ../03-counterspace-taxonomy.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
 docs/research/04-orbital-mechanics-primer.md -> 03a-da-asat-systems.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
 docs/research/04-orbital-mechanics-primer.md -> 03b-coorbital-rpo.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)

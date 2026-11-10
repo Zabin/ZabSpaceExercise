@@ -463,15 +463,15 @@ and analysis tasks (§12.5). It is the long version of the short plan that used 
 ### 12.1 Why this matters now — project context for the expansion
 
 The simulator has matured rapidly over the last six months. The June 2026 audit pass
-(`docs/AUDIT-2026-06.md`) reviewed every layer of the project for completeness, accuracy,
+(`docs/reviews/AUDIT-2026-06.md`) reviewed every layer of the project for completeness, accuracy,
 and quality and produced concrete remediation across research, documentation, tests, and
-code. The follow-on commands audit (`docs/AUDIT-2026-06-COMMANDS.md`) replaced the
+code. The follow-on commands audit (`docs/reviews/AUDIT-2026-06-COMMANDS.md`) replaced the
 `success_prob` operator override with derived probabilities, introduced the four-class
 `INTERCEPTORS` database (`bmd_adapted` / `mrbm_kkv` / `abm_heavy` / `coorbital`) sourced from
 the open-source DA-ASAT test record (SC-19, Burnt Frost, Mission Shakti, Nudol), and cut 14
 Dead/Cosmetic verbs while adding three realism verbs (`mw.add_stare_area`,
 `satcom.geolocate_interference`, `wx.request_sector`). The TT&C audit
-(`docs/AUDIT-2026-06-UI-TTC.md`) discovered that the vignette power rates drove a ~63%
+(`docs/reviews/AUDIT-2026-06-UI-TTC.md`) discovered that the vignette power rates drove a ~63%
 depth-of-discharge sawtooth every orbit and recalibrated them to a realistic ~21% DoD. Each
 of those changes rests on assertions about how real systems actually work — and yet the
 `docs/research/` corpus that should *be* that body of evidence carries **zero cited URLs**
@@ -1084,7 +1084,7 @@ tasks: (a) cite the SCOS-2000 / L3Harris InControl / Aerospace TOR-2013-00293 re
 already named at the foot of the file; (b) cite the per-bus-class platform pages
 (Lockheed A2100, Boeing 702, Airbus E3000); (c) cite NASA-STD-7009 / ECSS-E-ST-70 for the
 operator-procedure perspective; (d) cite the realistic DoD-per-orbit literature that the
-TT&C audit (`docs/AUDIT-2026-06-UI-TTC.md`) referenced when recalibrating power rates.
+TT&C audit (`docs/reviews/AUDIT-2026-06-UI-TTC.md`) referenced when recalibrating power rates.
 Analysis tasks: (a) reconcile claims with `engine/bus.py` and the recently-calibrated
 power rates in every vignette; (b) document the operator-loop-driven structure
 (contact → pass-plan → dump → review) that the engine's `bus_tick` / `refresh_ground_view`
@@ -1232,7 +1232,7 @@ calibration subsection is the highest-priority single subsection in Tier 1.**
   *Spacecraft Power Systems*, Larson/Wertz SMAD power chapter, NASA-HDBK-4002A,
   real-LEO performance reports for the 15–25% DoD/orbit range that justifies the audit's
   0.0001 SoC/s drain rate. ~70 lines, ~10 cites. `Used by:` `engine/bus.py:advance_bus`,
-  every vignette's `power.drain_rate_per_s`, `docs/AUDIT-2026-06-UI-TTC.md`.
+  every vignette's `power.drain_rate_per_s`, `docs/reviews/AUDIT-2026-06-UI-TTC.md`.
 - §1.6.5 *Payload ops — SATCOM.* WGS MAJE + AEHF/Milstar anti-jam + Eutelsat Quantum.
   ~50 lines, ~8 cites. `Used by:` `engine/buscommands.py:satcom.*` verbs.
 - §1.6.6 *Payload ops — ISR (EO/IR + SAR).* Maxar / Planet / Capella tasking APIs.
@@ -1252,7 +1252,7 @@ calibration subsection is the highest-priority single subsection in Tier 1.**
 
 - §1.7.1 *The treaty floor (OST 1967, Registration 1976, Liability 1972).* Inline-link
   treaty texts from UNOOSA. ~60 lines, ~8 cites. `Used by:` `session/manager.py` ROE
-  defaults, `docs/AUDIT-2026-06-COMMANDS.md` §M2 framing.
+  defaults, `docs/reviews/AUDIT-2026-06-COMMANDS.md` §M2 framing.
 - §1.7.2 *LOAC applied to space.* *Tallinn Manual 2.0* for cyber-in-space, *Woomera
   Manual* and *MILAMOS Manual* drafts. ~50 lines, ~6 cites. `Used by:` ROE chip text in
   `content/vignettes/intro_brief/roe_note`.
@@ -1367,7 +1367,7 @@ material; (d) for PDV-Mk2, cite the Indian DRDO Mission Shakti public material a
 post-test debris analyses; (e) anchor each test with a primary date-stamped citation
 plus a Wayback snapshot. Analysis tasks: (a) author the per-system table that becomes
 the inline source for `engine/engage.py:INTERCEPTORS`; (b) cross-reference the audit's
-discussion (`docs/AUDIT-2026-06-COMMANDS.md` §M2 and the realism research §14) and
+discussion (`docs/reviews/AUDIT-2026-06-COMMANDS.md` §M2 and the realism research §14) and
 ensure the file is the canonical replacement for that discussion; (c) add bidirectional
 `Used by:` / `# Source:` cross-links. Output: ~700 lines.
 

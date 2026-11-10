@@ -168,7 +168,7 @@ The "I transmit noise / false signal to deny / corrupt the receiver" axis. All e
 
 #### Jamming
 
-- **2.4.1 Uplink jamming — ground TX → space RX.** Ground jammer radiates noise into the satellite's receive band; the satellite's transponder cannot lock on the legitimate uplink. **Wide blast radius** — denies the entire user base served by that transponder, not just one ground site. Operational example: [USSF Counter Communications System Block 10.2 (CCS Block 10.2)](https://www.spaceforce.mil/News/Article/2113447/counter-communications-system-block-102-achieves-ioc-ready-for-the-warfighter/), declared IOC 9 March 2020 — explicitly the Space Force's "first offensive weapon system" and **uplink-only** by design. Russian equivalents in the [Tirada-2](https://www.kyivpost.com/post/26469) and Bylina program lines per [SWF 2025 Russia chapter](https://swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report). Engine: `jam_footprint` literal with the ground jammer's horizon predicate; the engine's `jam.link_target` parameter (per [`docs/AUDIT-2026-06-COMMANDS.md` §N9](../AUDIT-2026-06-COMMANDS.md)) selects uplink-vs-downlink-vs-crosslink scope.
+- **2.4.1 Uplink jamming — ground TX → space RX.** Ground jammer radiates noise into the satellite's receive band; the satellite's transponder cannot lock on the legitimate uplink. **Wide blast radius** — denies the entire user base served by that transponder, not just one ground site. Operational example: [USSF Counter Communications System Block 10.2 (CCS Block 10.2)](https://www.spaceforce.mil/News/Article/2113447/counter-communications-system-block-102-achieves-ioc-ready-for-the-warfighter/), declared IOC 9 March 2020 — explicitly the Space Force's "first offensive weapon system" and **uplink-only** by design. Russian equivalents in the [Tirada-2](https://www.kyivpost.com/post/26469) and Bylina program lines per [SWF 2025 Russia chapter](https://swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report). Engine: `jam_footprint` literal with the ground jammer's horizon predicate; the engine's `jam.link_target` parameter (per [`docs/reviews/AUDIT-2026-06-COMMANDS.md` §N9](../reviews/AUDIT-2026-06-COMMANDS.md)) selects uplink-vs-downlink-vs-crosslink scope.
 
 - **2.4.2 Downlink jamming (local) — ground TX → ground RX.** Ground jammer radiates into a user-receiver's band; the user can't hear the satellite. **Local effect** (a GPS-denied bubble over a city, a SATCOM-denied bubble over an operating area), but **wide deployment** (every user in the bubble is denied). The canonical large-scale fielding is the Russian [Pole-21](https://tass.com/defense/1088451) networked GNSS-jam node — dozens of nodes deployed on cellular masts form a regional GNSS-denial network, first observed in occupied Luhansk in early 2019 per [SWF 2025 Russia chapter](https://swfound.org/publications-and-reports/2025-global-counterspace-capabilities-report). Engine: `jam_footprint` with the user-bubble centered on the jammer site; the ground-to-ground geometry is the jammer's RF horizon to the user receiver (limited by terrain).
 
@@ -632,7 +632,7 @@ needs a third upstream input: **is the satellite illuminated, and if so, how muc
 Every PV-array charge tick, every optical-sensor "target sunlit, site dark" predicate,
 and every solar-radiation-pressure perturbation depends on a single scalar — the fraction
 of the solar disk visible at sim time `t`. Getting that scalar wrong by even a binary
-step costs the power model exactly the way the [TT&C audit](../AUDIT-2026-06-UI-TTC.md)
+step costs the power model exactly the way the [TT&C audit](../reviews/AUDIT-2026-06-UI-TTC.md)
 found in June 2026: an unsmoothed terminator crossing turned a recoverable ~21%
 depth-of-discharge into a ~63% sawtooth that collapsed the per-orbit energy budget. The
 forward link is the bus / payload power calibration in
@@ -666,7 +666,7 @@ makes when it routes fictional satellites through analytic Kepler+J2 (§3).
 Pre-audit, [`engine/busmodel.py:_sunlit`](../../spacesim/engine/busmodel.py) fed a
 **binary** `is_sunlit` boolean into `advance_bus`: at terminator the EPS charge term
 flipped instantly from `+charge_rate` to `−drain_rate`, producing a square-wave DoD
-curve. The [TT&C audit (2026-06-12)](../AUDIT-2026-06-UI-TTC.md) §2 traced the
+curve. The [TT&C audit (2026-06-12)](../reviews/AUDIT-2026-06-UI-TTC.md) §2 traced the
 resulting 1.00→0.37 sawtooth — ~63% DoD per ~97-minute orbit, roughly 3–4× a real LEO
 bus — to that step discontinuity layered on a mis-calibrated drain rate (`0.0003` SoC/s
 in vignette YAML). The fix recalibrated drain to `0.0001` SoC/s across all ten vignettes
@@ -724,8 +724,8 @@ propagator).
   dawn-dusk eclipse-fraction trade-off) — [live](https://landsat.gsfc.nasa.gov/article/geometry-of-a-sun-synchronous-orbit)
   · [snapshot](https://web.archive.org/web/2026*/https://landsat.gsfc.nasa.gov/article/geometry-of-a-sun-synchronous-orbit)
   · accessed 2026-06-12.
-- *Project audit* (`docs/AUDIT-2026-06-UI-TTC.md` §2: binary `is_sunlit` replaced by
-  smooth `eclipse_fraction()` in `busmodel._sunlit`; charge/drain recalibrated) — [local file](../../AUDIT-2026-06-UI-TTC.md).
+- *Project audit* (`docs/reviews/AUDIT-2026-06-UI-TTC.md` §2: binary `is_sunlit` replaced by
+  smooth `eclipse_fraction()` in `busmodel._sunlit`; charge/drain recalibrated) — [local file](../reviews/AUDIT-2026-06-UI-TTC.md).
 
 ---
 
@@ -762,7 +762,7 @@ composed action against `POST /order/validate` on every edit and pre-disables th
 **Issue** button with the engine's own reason — `no_valid_window`,
 `payload_unavailable`, `via_unknown` — so a trainee never clicks "Issue" on an
 order that can't fire. The Gantt and ribbon were tuned for visual consistency in
-the [June 2026 UI audit](../AUDIT-2026-06-UI-TTC.md) §3.
+the [June 2026 UI audit](../reviews/AUDIT-2026-06-UI-TTC.md) §3.
 
 Time-advance is exposed as a small set of horizons rather than a free scrub.
 White Cell drives **+1m / +10m / +1h** buttons that call `POST /step` and let the
@@ -817,7 +817,7 @@ surfaces ultimately renders).
 - **Engine modules sourced by this file.** [`engine/orbit.py:classify_regime`](../../spacesim/engine/orbit.py) (§1), [`engine/access.py`](../../spacesim/engine/access.py) (§2 — the six channel literals), [`engine/propagator.py`](../../spacesim/engine/propagator.py) (§3 — the `Propagator` Protocol seam), [`engine/simtime.py`](../../spacesim/engine/simtime.py) + [`engine/clock.py`](../../spacesim/engine/clock.py) + [`engine/eventlog.py`](../../spacesim/engine/eventlog.py) (§4), [`engine/sun.py`](../../spacesim/engine/sun.py) + [`engine/busmodel.py`](../../spacesim/engine/busmodel.py) (§5 — the audit-introduced smooth `_sunlit`), [`ui_web/static/app.js`](../../spacesim/ui_web/static/app.js) (§6).
 - **Forward-references to Tier 3 deep-dives.** Per-fidelity-tier accuracy and validation methodology in [`04a-propagator-fidelity.md`](04a-propagator-fidelity.md). Debris evolution and conjunction screening in [`04b-debris-and-conjunction.md`](04b-debris-and-conjunction.md). The Tier 3 files are deferred — both are queued in [`FUTURE-WORK.md` §12.5.3](../FUTURE-WORK.md#1253-tier-3--counterspace-systems-and-physics).
 - **Sibling primer files.** [`03-counterspace-taxonomy.md`](03-counterspace-taxonomy.md) for the counterspace categories and the five D's; [`05-mission-types-and-counters.md`](05-mission-types-and-counters.md) for the per-mission counters that each regime hosts; [`06-bus-and-payload-operations.md`](06-bus-and-payload-operations.md) for the bus-level consumers of the §5 eclipse model and the §3 propagator output.
-- **Audit predecessor.** [`docs/AUDIT-2026-06-UI-TTC.md`](../AUDIT-2026-06-UI-TTC.md) — the TT&C audit that introduced the smooth `eclipse_fraction` in `busmodel._sunlit` (§5) and the recalibrated battery DoD per orbit consumed by [`06-bus-and-payload-operations.md` §1.6.4](06-bus-and-payload-operations.md).
+- **Audit predecessor.** [`docs/reviews/AUDIT-2026-06-UI-TTC.md`](../reviews/AUDIT-2026-06-UI-TTC.md) — the TT&C audit that introduced the smooth `eclipse_fraction` in `busmodel._sunlit` (§5) and the recalibrated battery DoD per orbit consumed by [`06-bus-and-payload-operations.md` §1.6.4](06-bus-and-payload-operations.md).
 - **Research encyclopedia.** [`encyclopedia/R101-orbital-mechanics-for-operations.md`](encyclopedia/R101-orbital-mechanics-for-operations.md) — the implementation-focused counterpart that consumes this file's full derivations (already cited in the reverse direction); [`encyclopedia/R102-space-domain-awareness.md`](encyclopedia/R102-space-domain-awareness.md) for the SSA/SDA consumers of §3's propagator output.
 
 *Last reviewed: 2026-06-12. Pending review: every 12 months from `last_reviewed`.*
