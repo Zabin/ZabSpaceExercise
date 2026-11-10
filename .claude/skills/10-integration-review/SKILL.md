@@ -45,7 +45,7 @@ isn't, stop and report which, rather than reviewing around the hole.
 4. **Traceability coherence** — the RTM, feature catalog, Master Build Plan, package index, and
    `ROADMAP.md` tell the same story about what this set delivered; cross-references are
    bidirectional and unbroken.
-5. **Documentation coherence** — `CLAUDE.md`'s code map and status line, the affected `INDEX.md`
+5. **Documentation coherence** — the code map (`docs/architecture/code-map.md`), `CLAUDE.md`'s status paragraph, the affected `INDEX.md`
    files, and the training/manual docs reflect the integrated result, not per-package snapshots.
    Include the **per-cell training manuals**: for each user-facing feature this scope changed, use
    `docs/training/15-manual-traceability.md` §15.1 to spot-check that the mapped White/Blue/Red

@@ -172,6 +172,7 @@ space-weather index-mapping Open Questions, `BL-0104`/`BL-0121`).
 | Document | Purpose | Owning stage | Status |
 |---|---|---|---|
 | [strategic-assumptions-register.md](strategic-assumptions-register.md) | The hidden strategic assumptions behind the vision and the triggers that make each one worth re-examining (from `reviews/strategic-review-2026-07.md` §1.3, R6.1-R3). | `01-vision` | ♻️ Living |
+| [code-map.md](code-map.md) | Where each piece of the simulator lives, module by module (moved out of `CLAUDE.md` on 2026-11-10). | `08-code-implementation` | ♻️ Living |
 
 ## Related
 
