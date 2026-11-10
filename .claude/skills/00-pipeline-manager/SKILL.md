@@ -37,10 +37,11 @@ The manager's persistent memory of **position**. Two parts:
    *moved*, per **Archives** below):
 
    ```markdown
-   | # | Date | Mode | Skill invoked | Target | Outcome | Next step recorded |
+   | # | Date | Mode | Skill | Target | Outcome | Next |
    ```
 
-   One row per manager run, including `status`/`sync`/`triage` runs (skill invoked = `—`) and runs
+   **Rows are short:** the Outcome at most about 260 characters. The detail is in what the run
+   produced (a report, a package, a commit); name it, do not restate it. One row per manager run, including `status`/`sync`/`triage` runs (skill invoked = `—`) and runs
    that stopped at a gate (outcome = `GATE: <what's needed>`), so the log shows stalls, not just
    wins.
 
@@ -56,13 +57,18 @@ archive**: the next ID is the highest in either file + 1.
 | Field | Content |
 |---|---|
 | **ID** | `BL-xxxx`, sequential |
-| **Filed** | Date + source (which run/VR/report/intake produced it) |
+| **Filed** | Date |
 | **Type** | `feature` / `bug` / `finding` / `recommendation` / `design-question` / `gate` / `research-gap` / `doc-defect` / `manual-impact` |
-| **Summary** | One sentence; link the source artifact |
-| **Sev/Pri** | The source's severity, or the user's stated priority for intake items |
+| **Sev** | The source's severity, or the user's stated priority for intake items |
 | **Entry stage** | The pipeline stage where the item enters when worked (e.g. a code bug → `07`, a spec gap → `06`, a research gap → `02`) |
-| **Disposition** | The manager's recorded decision on *when* it will be addressed (see lifecycle) |
-| **Status** | `NEW` → `SCHEDULED` / `DEFERRED` / `NEEDS-USER` → `IN PIPELINE` → `DONE` / `REJECTED` |
+| **Status** | `NEW` → `SCHEDULED` / `DEFERRED` / `NEEDS-USER` → `IN PIPELINE` → `DONE` / `REJECTED`; `DECIDED` = the owner answered and the action is still owed |
+| **Summary** | What is wrong or wanted, and the source artifact by name (review and finding number, VR, run). At most about 230 characters |
+| **Next** | The manager's decision on *when* it will be addressed (see lifecycle). At most about 190 characters; replace it when it changes, do not append history |
+
+**Rows are short on purpose.** The live files are read on every run, so their size is paid for
+every time. Detail belongs in the artifact a row came from. A row is never a running log: when its
+disposition changes, the Next cell is rewritten. A closed row moves to the archive in the run
+after it closes.
 
 **Writers:** this skill (harvest + triage + status flips) and `00-intake` (appends `NEW` entries).
 Stage skills never write the backlog — their findings reach it through this skill's harvest step,
@@ -87,14 +93,16 @@ the sections it names exist and a `09-training-manual-review` covering them is o
 The live files hold the working state; history moves to a frozen archive so the live files stay
 readable. The archives are part of the same record, not a separate one:
 
-- **What may move.** Backlog rows whose Status is `DONE` / `CLOSED` / `REJECTED` / `DEDUPED`, and
-  run-log rows older than the last ~15 runs (plus any superseded Position block). Nothing open —
+- **What moves.** Backlog rows whose Status is `DONE` / `CLOSED` / `REJECTED` / `DEDUPED`, in the
+  run after they close, and run-log rows older than the last ~15 runs. Nothing open —
   `NEW` / `SCHEDULED` / `DEFERRED` / `NEEDS-USER` / `DECIDED` / `IN PIPELINE` — ever leaves the
   live backlog, however old.
+- **The 2026-11-10 compaction.** Open rows were shortened that day; the archive's "Open entries
+  before the 2026-11-10 compaction" section holds each one's full earlier text. Read it when a
+  short row is not enough.
 - **How it moves.** Verbatim and in original order, appended to the end of the archive's table;
-  never summarized, reworded, re-dispositioned, or dropped. A row lives in exactly one of the two
-  files. Archiving is optional bookkeeping — do it only when a live file has grown unwieldy, in
-  its own commit, and note it in that run's log row.
+  never summarized, reworded, re-dispositioned, or dropped. Do it as part of the run's own
+  journal-and-backlog commit.
 - **Frozen once moved.** An archived row is never edited again. If a closed item needs reopening,
   file a new live entry that cites the archived ID — don't move the old row back.
 - **When to read the archives.** Step 1 reads only the live files. Open an archive when a run-log
