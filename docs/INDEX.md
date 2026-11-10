@@ -22,7 +22,7 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 | **Feature Planning** | `05-feature-decomposition` skill output — Release Plan, Epic Catalog, Feature Catalog (`FEAT-xxxx`), Dependency Graph, and Review, decomposed from the approved requirements baseline. Upstream of, and distinct from, `docs/features/`'s `FS-xxx` specs. **Release record:** [REV-REL-004](reviews/release-assessment-release-candidate-10.md) — Release 1 declared GO by the owner, 2026-11-01. **Release 2.0 plan (proposal):** [`feature-planning/06-release-2-plan.md`](feature-planning/06-release-2-plan.md). | [`feature-planning/INDEX.md`](feature-planning/INDEX.md) |
 | **Implementation** | Implementation Packages (`IP-xxxx`) — how each Feature Spec is (or would be) built, as-built docs for FS-101-107 and forward designs for FS-201/FS-301, plus the Master Build Plan (sequence/critical path/dependency graph). Supersedes the prior `implementations/` (`IMP-xxxA`) tier, retained for history. | [`implementation/00-master-build-plan.md`](implementation/00-master-build-plan.md) · [`implementation/packages/INDEX.md`](implementation/packages/INDEX.md) |
 | **Releases** | The release archive (`11-release-readiness`): one Release Manifest per release — commit, `archive/` ref and tag, counts, dependency lock, known deviations, reviews relied on — plus how to restore a released version. | [`releases/INDEX.md`](releases/INDEX.md) |
-| **Pipeline** | The pipeline's persistent memory: the `00-pipeline-manager` journal (position + append-only run log) and the backlog (findings harvested from every run + `00-intake`-filed features/bugs, each with a triage disposition). Writers: the manager (both files) and `00-intake` (backlog appends); the tree's ledgers stay authoritative. Closed backlog entries and pre-#181 journal history are frozen, verbatim, in the two archive files. | [`pipeline/pipeline-journal.md`](pipeline/pipeline-journal.md) · [`pipeline/backlog.md`](pipeline/backlog.md) · [`pipeline/handoff-release-2.md`](pipeline/handoff-release-2.md) · archives: [`pipeline/pipeline-journal-archive.md`](pipeline/pipeline-journal-archive.md) · [`pipeline/backlog-archive.md`](pipeline/backlog-archive.md) |
+| **Pipeline** | The pipeline's persistent memory: the `00-pipeline-manager` journal (position + append-only run log) and the backlog (findings harvested from every run + `00-intake`-filed features/bugs, each with a triage disposition). Writers: the manager (both files) and `00-intake` (backlog appends); the tree's ledgers stay authoritative. Closed backlog entries and pre-#181 journal history are frozen, verbatim, in the two archive files. | [`pipeline/pipeline-journal.md`](pipeline/pipeline-journal.md) · [`pipeline/backlog.md`](pipeline/backlog.md) · [`pipeline/refactor-plan.md`](pipeline/refactor-plan.md) · archives: [`pipeline/pipeline-journal-archive.md`](pipeline/pipeline-journal-archive.md) · [`pipeline/backlog-archive.md`](pipeline/backlog-archive.md) |
 | **Build Spec** | The binding v1 specification — context, requirements, architecture, milestones, operator console, SSN. | [`build-spec/INDEX.md`](build-spec/INDEX.md) |
 | **Training** | User-facing manual — install, run, first exercise, facilitation, API, troubleshooting, plus **role-scoped per-cell manuals** (White / Blue / Red) and their feature ⇄ manual traceability matrix. | [`training/INDEX.md`](training/INDEX.md) |
 | **Design** | Architecture & design corpus (the *how*) — engine, data model, interfaces, UI, catalog, Δv. | [`design/INDEX.md`](design/INDEX.md) |
@@ -47,12 +47,14 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 
 ## Retired documents
 
-none
+| Former path | Former ID | Retired | Successor |
+|---|---|---|---|
+| `docs/pipeline/handoff-release-2.md` |  | 2026-11-10 | `docs/pipeline/refactor-plan.md` |
 
 ## Root-level guides (not under `docs/`)
 
 - `../README.md` — project overview & quick start.
-- `../CLAUDE.md` — durable agent guide: invariants, code map, build/test commands.
+- `../CLAUDE.md` — durable agent guide: invariants, trust model, working rules, commands (the code map is `architecture/code-map.md`).
 - `../memory.md` — rolling design-decision log.
 
 ## Theme-directory mapping (historical note)

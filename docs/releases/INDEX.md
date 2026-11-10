@@ -26,14 +26,14 @@ history is the archive. Each release gets:
 
 | Release | Date | Commit | Archive ref | Manifest |
 |---|---|---|---|---|
-| 1.0 | 2026-11-01 | `82436ba` | `archive/release-1.0` (tag `release-1.0`: pending) | [release-1.0.md](release-1.0.md) |
+| 1.0 | 2026-11-01 | `82436ba` | `archive/release-1.0` (tag `release-1.0`) | [release-1.0.md](release-1.0.md) |
 
 ## How to restore a release
 
 ```bash
 git fetch origin
 git checkout archive/release-1.0        # the archive branch ref (always present)
-git checkout release-1.0                # the annotated tag, once it exists on the remote
+git checkout release-1.0                # the annotated tag
 git checkout -b maint/release-1.0 archive/release-1.0   # a maintenance (hotfix) branch from the archive
 ```
 
@@ -41,3 +41,11 @@ Then follow the manifest's "How to run" (install from the release's own `require
 
 Optional offline copy: `git bundle create release-1.0.bundle archive/release-1.0`, restored with
 `git clone release-1.0.bundle spacesim-1.0`.
+
+## Branch housekeeping
+
+On 2026-11-10 the `Branch cleanup` workflow removed 120 stale `claude/*` branches. Their names and
+commit ids are in [`branches-removed-2026-11-10.txt`](branches-removed-2026-11-10.txt). Two old
+branches with work that never reached `main` were kept: `claude/pipeline-skill-h31gs5` and
+`claude/planning-docs-review-rmZwP`. From that date a pull request's branch is deleted when the
+pull request closes.

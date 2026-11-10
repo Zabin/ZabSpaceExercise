@@ -14,7 +14,7 @@
 | Release commit | **`82436ba2e592d9a9afb91d4f93f8df8fffe07e00`** on `main` — "Release 1: remediation, verification, training corpus and release records (#84)", the merge of PR #84 (parents `79641c7`, `7335362`) |
 | Evidence commit | `935fd44` (`claude/release-candidate-12`); `82436ba` descends from it by documentation and record changes only (assessment condition 1) |
 | Archive branch ref | **`archive/release-1.0`** → `82436ba` (pushed to `origin`) |
-| Archive tag | **tag: pending (push blocked by the environment; create `release-1.0` on `82436ba` in GitHub if desired).** An annotated tag `release-1.0` exists locally in the main checkout only. |
+| Archive tag | **`release-1.0`** (annotated) → `82436ba`, on `origin`. Created 2026-11-10 by the `Branch cleanup` workflow; cloud sessions cannot push tags, so tags are made by a workflow run on GitHub. |
 
 ## 2. Assessment and reviews relied on
 
