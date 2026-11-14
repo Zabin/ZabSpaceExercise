@@ -33,7 +33,7 @@
 | 4b | The three June audit files moved into `docs/reviews/` | Done (PR #98) |
 | 4d (B2) | `FUTURE-WORK.md` retired: open items not already in the Release 2.0 plan filed as `BL-0445`–`BL-0450`; 59 documents reworded | Done (PR #99) |
 | A1 | Successor map for `docs/build-spec/` and `docs/design/` (§8): 45 cited sections mapped, the two open decisions made, 26 code files listed for C4 | Done (this pull request) |
-| A4 | Behaviour baseline: `spacesim/tests/test_behaviour_baseline.py` pins a scripted two-hour run of each of the 19 vignettes (world, event log, pending queue, cell views, acknowledgements) plus save, reload and replay equality; re-bless rule added to §3 | Done (this pull request) |
+| A4 | Behaviour baseline: `spacesim/tests/test_behaviour_baseline.py` pins a scripted two-hour run of each of the 19 vignettes (world, event log, pending queue, cell views, acknowledgements) plus save, reload and replay equality; re-bless and float rules added to §3 | Done (this pull request) |
 | 4c, 4e, 4f, 5, 6, 7 | See the packets below | Paused |
 
 ## 3. Rules for every session, whatever its tier
@@ -72,6 +72,10 @@ and never hand-edited. It pins simulator behaviour only; the suite's test counts
 - A **defect-fix package** may re-bless it (`SPACESIM_REBLESS_BASELINE=1 python3 -m pytest
   spacesim/tests/test_behaviour_baseline.py`), but only for the vignettes its fix explains. Its
   pull request lists the old and new hashes per vignette, and its verifier approves them.
+- **Float rule.** Floats differ in their last bits between CPUs (OpenBLAS picks a kernel per CPU
+  model), so each document is pinned as an exact hash of everything except its floats, plus the
+  floats themselves, compared within 1e-8 relative. Nothing is rounded. Replay, save and reload
+  stay bit-exact.
 
 ### The retirement loop (used by every step-4 packet)
 

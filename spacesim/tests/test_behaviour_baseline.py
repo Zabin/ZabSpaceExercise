@@ -10,13 +10,26 @@ in eight steps. What comes out is hashed and compared with the committed
 
 What is pinned per vignette:
 
-* ``world``    — SHA-256 of the final ground-truth world (canonical JSON, sorted keys);
-* ``eventlog`` — SHA-256 of the whole event log;
-* ``pending``  — SHA-256 of what a save carries beyond the log: pending scheduled events, the
-  order registry and the SSN requests;
-* ``views``    — SHA-256 of the fog-filtered Blue and Red views and the objectives;
+* ``world``    — the final ground-truth world;
+* ``eventlog`` — the whole event log;
+* ``pending``  — what a save carries beyond the log: pending scheduled events, the order registry
+  and the SSN requests;
+* ``views``    — the fog-filtered Blue and Red views and the objectives;
+* ``floats``   — the floating-point values of those four documents (see the float rule);
 * ``acks``     — every acknowledgement the script received, in order, readable;
 * ``final_time``, ``eventlog_entries`` — plain numbers, to make a mismatch easier to read.
+
+The float rule. The engine's floats are reproducible on one machine but not bit-for-bit across
+CPUs: NumPy's linear algebra runs on OpenBLAS, which picks a kernel per CPU model (run with
+``OPENBLAS_CORETYPE=Haswell`` to see it), and the last bits differ by up to about 4e-11 relative
+in ill-conditioned orbital elements. So each document is pinned in two parts. Its *exact part* is
+a SHA-256 of the canonical JSON (sorted keys) with every float replaced by a marker: every
+integer, string, boolean, key, list length and the position and type of every float must match
+exactly. Its floats are stored in traversal order and compared one by one within
+``FLOAT_REL_TOL`` (1e-8 relative, about 250 times the largest cross-kernel difference seen, and
+far below any change in behaviour). Nothing is rounded before hashing, so no value can sit on a
+rounding boundary and flip between machines. Replay, save/reload and the sleep run are compared
+on one machine and stay bit-exact.
 
 Wall time never reaches the engine: ``SessionManager.start()`` arms the lazy real-time clock, and
 pausing it folds the elapsed wall time into the simulation, so the harness freezes ``time.time``
@@ -64,7 +77,12 @@ N_STEPS = 8
 ORDER_ROUNDS = {0: 0, 2: 1, 5: 2}  # before step index -> order-round number
 RED_DOCTRINE_BEFORE = (0, 4)      # Red-doctrine steps: at the start and at one simulated hour
 FROZEN_WALL = 1_800_000_000.0     # the instant the wall clock is frozen at across start + pause
-PINNED = ("world", "eventlog", "pending", "views", "acks", "final_time", "eventlog_entries")
+SECTIONS = ("world", "eventlog", "pending", "views")
+EXACT = (*SECTIONS, "acks", "final_time", "eventlog_entries")   # compared with ==
+PINNED = (*EXACT, "floats")                                     # floats: within the tolerance
+FLOAT_REL_TOL = 1e-8     # see "The float rule" above
+FLOAT_ABS_TOL = 1e-12    # for values at or next to zero
+FLOAT_MARK = "\x00float"
 
 VIGNETTE_IDS = sorted(v["id"] for v in list_vignettes() if v.get("origin") == "built-in")
 
@@ -93,18 +111,68 @@ class Digest:
     eventlog_entries: int
 
 
-def _digest(api: InProcessSession, sid: str) -> Digest:
+def _documents(api: InProcessSession, sid: str) -> dict:
+    """The four documents that describe a session, as plain JSON-ready data."""
     save = api.save(sid)
-    log = _dump(api._sessions[sid].sim.eventlog)
-    return Digest(
-        world=_sha(_dump(api.get_godview(sid))),
-        eventlog=_sha(log),
-        pending=_sha({k: save[k] for k in ("pending", "orders", "ssn_requests")}),
-        views=_sha({"blue": _dump(api.get_view(sid, "blue")), "red": _dump(api.get_view(sid, "red")),
-                    "objectives": api.objectives(sid)}),
-        final_time=save["final_time"],
-        eventlog_entries=len(log["entries"]),
-    )
+    return {
+        "world": _dump(api.get_godview(sid)),
+        "eventlog": _dump(api._sessions[sid].sim.eventlog),
+        "pending": {k: save[k] for k in ("pending", "orders", "ssn_requests")},
+        "views": {"blue": _dump(api.get_view(sid, "blue")), "red": _dump(api.get_view(sid, "red")),
+                  "objectives": api.objectives(sid)},
+    }
+
+
+def _digest(api: InProcessSession, sid: str) -> Digest:
+    """Bit-exact hashes, floats included: for comparisons made on one machine."""
+    docs = _documents(api, sid)
+    return Digest(world=_sha(docs["world"]), eventlog=_sha(docs["eventlog"]),
+                  pending=_sha(docs["pending"]), views=_sha(docs["views"]),
+                  final_time=docs["world"]["now"], eventlog_entries=len(docs["eventlog"]["entries"]))
+
+
+# -- the portable form: exact part + floats ------------------------------------------------------
+def _split(obj, path: str, floats: list, paths: list):
+    """Return ``obj`` with each float replaced by a marker; collect the floats and their paths in
+    canonical (sorted-key) traversal order. ``bool`` and ``int`` are not floats and stay exact."""
+    if isinstance(obj, float):
+        floats.append(obj)
+        paths.append(path)
+        return FLOAT_MARK
+    if isinstance(obj, dict):
+        return {k: _split(obj[k], f"{path}/{k}", floats, paths) for k in sorted(obj)}
+    if isinstance(obj, list):
+        return [_split(v, f"{path}/{i}", floats, paths) for i, v in enumerate(obj)]
+    return obj
+
+
+def _portable(docs: dict) -> tuple[dict, dict]:
+    """``({section: exact-part hash, "floats": {section: [...]}}, {section: [float paths]})``."""
+    out: dict = {"floats": {}}
+    paths: dict = {}
+    for name in SECTIONS:
+        floats: list = []
+        paths[name] = []
+        out[name] = _sha(_split(docs[name], "", floats, paths[name]))
+        out["floats"][name] = floats
+    return out, paths
+
+
+def _floats_close(want: float, got: float) -> bool:
+    return abs(want - got) <= max(FLOAT_ABS_TOL, FLOAT_REL_TOL * max(abs(want), abs(got)))
+
+
+def _float_mismatches(want: dict, got: dict, paths: dict) -> list[str]:
+    """Readable lines for every float outside the tolerance (or a float count that changed)."""
+    out = []
+    for name in SECTIONS:
+        w, g = want[name], got[name]
+        if len(w) != len(g):
+            out.append(f"{name}: {len(w)} floats in the baseline, {len(g)} now")
+            continue
+        out.extend(f"{name}{paths[name][i]}: baseline {a!r} -> now {b!r}"
+                   for i, (a, b) in enumerate(zip(w, g)) if not _floats_close(a, b))
+    return out
 
 
 # -- the scripted exercise -----------------------------------------------------------------------
@@ -235,12 +303,12 @@ class Exercise:
     reloaded: Digest         # save -> JSON text -> load, before any further step
     live_continued: Digest   # the live session one step further
     reloaded_continued: Digest   # the reloaded session one step further
+    portable: dict           # the live session in the portable form (exact parts + floats)
+    float_paths: dict        # where each float of ``portable`` lives, for messages
 
     def pinned(self) -> dict:
-        d = self.live
-        return {"world": d.world, "eventlog": d.eventlog, "pending": d.pending, "views": d.views,
-                "final_time": d.final_time, "eventlog_entries": d.eventlog_entries,
-                "acks": list(self.acks)}
+        return {**self.portable, "final_time": self.live.final_time,
+                "eventlog_entries": self.live.eventlog_entries, "acks": list(self.acks)}
 
 
 @functools.cache
@@ -248,6 +316,7 @@ def exercise(vignette_id: str) -> Exercise:
     """The scripted run and its save/reload/replay companions, computed once per vignette."""
     api, sid, acks = run_script(vignette_id)
     live = _digest(api, sid)
+    portable, float_paths = _portable(_documents(api, sid))
     sim = api._sessions[sid].sim
     replayed = replay(sim._initial_state, sim._seed, sim.eventlog, handlers=sim.handlers(),
                       final_time=sim.clock.now)
@@ -258,7 +327,8 @@ def exercise(vignette_id: str) -> Exercise:
         assert ack.ok, ack.reason
     return Exercise(live=live, acks=tuple(acks), replayed_world=_sha(_dump(replayed)),
                     reloaded=reloaded, live_continued=_digest(api, sid),
-                    reloaded_continued=_digest(api, reloaded_sid))
+                    reloaded_continued=_digest(api, reloaded_sid),
+                    portable=portable, float_paths=float_paths)
 
 
 def _committed() -> dict:
@@ -292,21 +362,57 @@ def test_scripted_run_matches_the_baseline(vignette_id):
     if os.environ.get(REBLESS_ENV) == "1":
         _rebless(vignette_id)
         return
-    got = exercise(vignette_id).pinned()
+    ex = exercise(vignette_id)
+    got = ex.pinned()
     want = _committed()["vignettes"][vignette_id]
-    moved = [k for k in PINNED if got[k] != want[k]]
+    moved = [k for k in EXACT if got[k] != want[k]]
+    floats = _float_mismatches(want["floats"], got["floats"], ex.float_paths)
+    lines = [f"  {k}: baseline {want[k]} -> now {got[k]}" for k in moved if k != "acks"]
     if "acks" in moved:
         pairs = list(zip(want["acks"], got["acks"]))
         first = next((i for i, (a, b) in enumerate(pairs) if a != b), len(pairs))
-        detail = (f"first differing acknowledgement #{first}:\n  baseline: "
-                  f"{want['acks'][first] if first < len(want['acks']) else '<none>'}\n  now:      "
-                  f"{got['acks'][first] if first < len(got['acks']) else '<none>'}")
-    else:
-        detail = "\n".join(f"  {k}: baseline {want[k]} -> now {got[k]}" for k in moved)
-    assert not moved, (
-        f"behaviour moved for vignette '{vignette_id}' in: {', '.join(moved)}\n{detail}\n"
+        lines.append(f"  first differing acknowledgement #{first}:\n    baseline: "
+                     f"{want['acks'][first] if first < len(want['acks']) else '<none>'}\n    now:      "
+                     f"{got['acks'][first] if first < len(got['acks']) else '<none>'}")
+    lines += [f"  float {line}" for line in floats[:12]]
+    if len(floats) > 12:
+        lines.append(f"  ... and {len(floats) - 12} more floats")
+    assert not moved and not floats, (
+        f"behaviour moved for vignette '{vignette_id}' in: "
+        f"{', '.join(moved + (['floats'] if floats else []))}\n" + "\n".join(lines) + "\n"
         "A behaviour-preserving change must not move the baseline (refactor-plan.md §3)."
     )
+
+
+def test_portable_comparison_is_still_sensitive():
+    """The float rule hides the last bits and nothing else: a float moved by one part in a million,
+    a float that became an integer, an integer off by one and a dropped float are all caught."""
+    doc = {"now": 1899784800000000, "orbit": {"a_m": 6977714.458269298, "e": 8.196301708160927e-05},
+           "hits": [0.0, 1.0, 3], "ok": True}
+
+    def portable(d):
+        floats, paths = [], []
+        return _sha(_split(d, "", floats, paths)), floats, paths
+
+    sha, floats, paths = portable(doc)
+    assert paths == ["/hits/0", "/hits/1", "/orbit/a_m", "/orbit/e"]
+    one = {s: [] for s in SECTIONS}
+
+    def mismatches(new_floats):
+        return _float_mismatches({**one, "world": floats}, {**one, "world": new_floats},
+                                 {**one, "world": paths})
+
+    assert mismatches(list(floats)) == []
+    last_bits = [floats[0], floats[1], floats[2] * (1 + 4e-11), floats[3] * (1 - 4e-11)]
+    assert mismatches(last_bits) == []                      # the cross-CPU difference: accepted
+    for i in range(len(floats)):                            # one part in a million, or zero moved
+        moved = list(floats)
+        moved[i] = moved[i] * (1 + 1e-6) if moved[i] else 1e-9
+        assert len(mismatches(moved)) == 1, paths[i]
+    assert mismatches(floats[:-1]) != []                    # a float disappeared
+    for change in ({"now": doc["now"] + 1}, {"hits": [0.0, 1, 3]}, {"hits": [0.0, 1.0, 4]},
+                   {"ok": False}, {"orbit": {"a_m": doc["orbit"]["a_m"]}}):
+        assert portable({**doc, **change})[0] != sha, change   # the exact part moved
 
 
 @pytest.mark.parametrize("vignette_id", VIGNETTE_IDS)
@@ -343,3 +449,4 @@ def test_baseline_covers_exactly_the_built_in_library():
     assert sorted(doc["vignettes"]) == VIGNETTE_IDS
     for vid, row in doc["vignettes"].items():
         assert sorted(row) == sorted(PINNED), vid
+        assert sorted(row["floats"]) == sorted(SECTIONS), vid
