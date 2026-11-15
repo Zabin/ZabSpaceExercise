@@ -796,3 +796,28 @@ cancels one order per cell and changes one ROE flag. It does **not** run:
 **Not part of any move:** splitting `_exec_payload` per action, hoisting imports, removing the
 unused import, unifying the two release paths, or renaming a private method. Each is a separate
 package with its own tests.
+
+## 10. Tier reallocation (owner, 2026-11-15: Fable quota at 90%)
+
+Fable is reserved for what only it can do. **Everything else in §4 moves to Opus**, with a fresh Opus
+session verifying (not the author). A packet that stops under §3 rule 9 for a reason the plan names
+goes to Fable only if it is on the list below.
+
+**Fable, essential only (read-only review and one design):**
+
+| ID | What Fable does | Why it cannot move |
+|---|---|---|
+| F1 | **A7, `BL-0432` design only** (bus-tick horizon): choose tick-to-ceiling or stop-the-clock, write the requirement text and the save/event-log compatibility rule. | The choice changes every event log and what happens to saved exercises. |
+| F2 | **Diff review, not authoring,** of the three risky moves: §9.1 moves 7 and 8 (`manager.py` inject queue and handler bodies) and §9.2 move 6 (`orders.py` handler bodies). Opus writes them; Fable reads the diff against the baseline and the §9 rules and answers approve / change. | A mistake there corrupts replay or saves without failing a test. A review costs a fraction of authoring. |
+
+**Moved to Opus (with what Fable's work leaves behind):**
+- **A2** domain-files map: Opus, using A1's method (§8) and its lessons (short-form citations, mis-numbered section references); F2-style spot check is optional.
+- **A3** ledger design and **A8** gate inventory: Opus; both are low-urgency (steps 5 and 6).
+- **A5c, A5d** `server.py` and `app.js` plans: Opus, same format as §9.1 and §9.2.
+- **Move 0** (tests the baseline lacks): Opus writes characterisation tests that pin current behaviour (handler registry, save key order, `dry_run` mirrors `issue`, a failing manoeuvre at execute, execute-payload keys, `get_series` for another cell's asset). They must pass on unmodified code; a verifier checks that each fails when the behaviour is deliberately broken.
+- **A6** the `manager.py` and `orders.py` moves: Opus, one move per PR, in §9 order; moves 7, 8 and 6 wait for F2 review.
+- **A7, `BL-0431`** (order previews leak truth): Opus designs it; the default is *belief-based preview, refuse when the actor or target is not the caller's own or tracked*; the owner confirms before it is built, because it is a fog-of-war decision.
+- **A9** final review: a fresh Opus session; independence matters more than tier.
+
+**Stop rule change.** §3 rule 9 says "hand back to Tier A". Read it as: leave the branch pushed without a PR, write what happened in the chat, and the owner decides whether it is an F1/F2 item or waits.
+
