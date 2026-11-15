@@ -472,3 +472,64 @@ One subsection per file. A5a is `session/manager.py`; `engine/orders.py`, `ui_we
   `SessionManager.validate_save` and `manager._time.time`. `tools/render_manual.py` calls `_h_inject`.
 - Imported from the module: `SessionManager`, `BUS_TICK_PERIOD_S`, `ROLE_SCOPE_BY_VERB`,
   `INJECT_EFFECT_TYPES`, `validate_inject_effects`.
+
+#### 9.1.2 Target modules
+
+All six are new files under `spacesim/session/`. `SessionManager` keeps every method name it has
+today; a moved method becomes a one-line delegate (`return reads.get_series(self, …)`).
+
+| Module | Moves in | Stays on `SessionManager` |
+|---|---|---|
+| `role_scope.py` | `ROLE_SCOPE_BY_VERB`; bodies of `_role_covers`, `_entry_covers`, `_roles_needed_covers`, `role_scope_check`, `role_scope_for`, `staffing_report` | The delegates; `assign_role`, `_role_refusal`; the `role_assignments` and `seats_declared` attributes. |
+| `inject_effects.py` | Lines 48–142 whole; `_apply_inject_effects` as `apply_inject_effects(world, effects, rng, prop)`; `_notice_by_owner`; `_skip_inject_effect` | `_apply_inject_effects(world, effects, rng)`, which passes `self.osys.prop` (read at call time). The two static helpers have no outside caller and are not kept. |
+| `inject_queue.py` | `list_injects`, `_inject_overrides`, `_inject_applied`, `pending_injects`, `cancel_inject`, `edit_inject`, `_pending_row`, `_log_inject_admin`, `fire_inject`, `_inject_effects`, `_fired_condition_inject_ids`, `_condition_inject_already_fired`; the bodies of the four handlers (§9.1.3) | The delegates for the five public methods; the four `_h_*` methods; the `_white_inject_seq` attribute. |
+| `saves.py` | `_is_int`, `_row_problem`, `SAVE_FORMAT`, `SUPPORTED_SAVE_FORMATS`; bodies of `validate_save`, `_check_final_time_span`, `_eventlog_entry_count`, `save_state` | `validate_save` as a `staticmethod` delegate (a test patches it on the class; `inprocess.py` calls it on the class); `save_state`; **`from_state` whole**; the three class constants, which the delegate passes in as arguments. |
+| `force_edit.py` | Bodies of the 13 force-edit and Creator methods (lines 700–853, 875–953) | The delegates for the 11 public methods and `_force_add_omm_object` (a test calls it). |
+| `reads.py` | `_owns`; bodies of `get_telemetry`, `get_series`, `telemetry_export`, `alarms`, `windows_ahead`, `next_contacts`, `maneuver_ledger`, `list_orders`, `recovery_status`, `get_ric_view`, `get_tle`, `controller_view`; `_RECOVERY_STEPS` | The delegates. `get_view`, `get_scene`, `get_godview`, `get_eventlog`, `objectives` are one line each and do not move. |
+
+After the six moves `manager.py` is about 800 lines: `__init__`, lifecycle, time control, the lazy
+clock, rewind and undo, order intents, `from_state`, the SSN and recovery wrappers, and delegates.
+
+Rules for every move:
+
+1. **Functions that take the manager, not helper objects.** Each moved body becomes a module-level
+   function whose first parameter is the manager (`aar.worlds_at_times(mgr, …)` is the existing
+   pattern). Nothing is captured at construction: `from_state` replaces `sim.eventlog`, and
+   `Simulation._rebuild` replaces `sim.world`, `sim.rng` and `sim.scheduler`, so a cached reference
+   goes stale without failing.
+2. **Copy each read exactly.** `self.world`, `self.sim.world` and a handler's `world` argument are
+   different objects during replay. Do not tidy one into another.
+3. **No new module imports `spacesim.session.manager` at run time** (`TYPE_CHECKING` only).
+   `ephemeris.py` already imports `BUS_TICK_PERIOD_S` from it, and the manager imports `aar` and
+   `ephemeris` inside functions; every function-local import stays function-local.
+4. **Names imported from the module stay importable from it:** the manager re-imports
+   `ROLE_SCOPE_BY_VERB`, `INJECT_EFFECT_TYPES` and `validate_inject_effects`. `BUS_TICK_PERIOD_S`
+   and `manager._time` do not move.
+5. **Bodies move verbatim,** comments included; error strings are asserted by tests.
+   Package-history comments are A5's to rule on (C4): keep them through the move.
+
+#### 9.1.3 Registered handlers
+
+`Simulation` holds one callable per kind and calls it live, in `_rebuild` (rewind, undo, resume),
+in `_record_failed_event`, and in every `replay(…, handlers=sim.handlers())` (`aar.py`, tests).
+
+- **What is registered does not change.** `__init__` keeps its four `register_handler` lines where
+  they are: `inject`, `condition_check`, `inject_admin`, then `OrderSystem` and `BusSystem`, then
+  `env_anomaly_check`, then `RecoverySystem` and `SSNSystem`. The callables stay the bound methods
+  `self._h_inject`, `self._h_condition_check`, `self._h_inject_admin`,
+  `self._h_env_anomaly_check`. Registering a module function or a `partial` is rejected: it
+  changes `sim.handlers()` and breaks the callers of `mgr._h_inject`.
+- **Only the bodies move.** Each method becomes
+  `inject_queue.h_inject(self, world, payload, rng)` and so on. The moved body:
+  - mutates the **same** `payload` dict it was handed (`payload["skipped"]`, `payload["fired"]`);
+    `Simulation.advance_to` appends that object to the log after the handler returns. No copy, no
+    rebuilt dict, no changed key order inside `fired` rows (`inject_id`, `value`; `asset`, `p`);
+  - reads `mgr.sim.eventlog`, `mgr.vignette`, `mgr.ctx` and `mgr.osys.prop` at call time, and
+    state only from its `world` argument, never `mgr.world`;
+  - applies effects through `mgr._apply_inject_effects(world, …, rng)`, as now;
+  - in `h_env_anomaly_check`, draws `rng.random()` once per listed asset **before** any skip, and
+    receives the tick period as an argument (`BUS_TICK_PERIOD_S` stays in `manager.py`).
+- **`_h_inject_admin`** is nine lines and need not move; it goes with the others only to keep the
+  four together.
+- **`apply_inject_effects`** keeps the branch order of the 12 effect types, each
+  `world.messages.append` in place, and the `continue` inside the `scripted_manoeuvre` `except`.
