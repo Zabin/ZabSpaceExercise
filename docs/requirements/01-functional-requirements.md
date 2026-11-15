@@ -2512,7 +2512,7 @@ is no longer required. Same ID, narrower scope.)*
   identifies the missing element by name.
 - **Verification Method:** Test
 - **Dependencies:** None
-- **Source Documents:** GDS-04 §1.1 "Constraints", §9; build-spec/02 §5.5 FR-S3 (binding
+- **Source Documents:** GDS-04 §1.1 "Constraints"; GDS-05 §5 FR-S3 (binding
   statement).
 - **Related ADRs:** ADR-0007, ADR-0036
 - **Related Interfaces:** INT-0011
@@ -2550,8 +2550,8 @@ is no longer required. Same ID, narrower scope.)*
   lines, loading it is refused, the error names that asset, and no session is created.
 - **Verification Method:** Test
 - **Dependencies:** FR-5310
-- **Source Documents:** GDS-04 §1.3 "Constraints"; `design/04-data-model.md` §9 (legacy reference
-  cited by GDS-04); `FR-5310` Description.
+- **Source Documents:** GDS-04 §1.3 "Constraints"; GDS-07 §10 "Validation rules (as built)";
+  `FR-5310` Description.
 - **Related ADRs:** ADR-0007
 - **Related Interfaces:** INT-0011
 - **Related Requirements:** FR-5310, FR-5210, FR-5220
@@ -2586,8 +2586,8 @@ is no longer required. Same ID, narrower scope.)*
   whose cyber unit declares no location loads.
 - **Verification Method:** Test
 - **Dependencies:** FR-5310
-- **Source Documents:** GDS-04 §1.2 "Purpose" and "Constraints"; `design/04-data-model.md` §9
-  (legacy reference cited by GDS-04); ADR-0012 "Decision" and "Rationale" (the cyber exception).
+- **Source Documents:** GDS-04 §1.2 "Purpose" and "Constraints"; GDS-07 §10 "Validation rules (as
+  built)"; ADR-0012 "Decision" and "Rationale" (the cyber exception).
 - **Related ADRs:** ADR-0007, ADR-0012
 - **Related Interfaces:** INT-0011
 - **Related Requirements:** FR-5310, FR-1420
@@ -2835,7 +2835,7 @@ is no longer required. Same ID, narrower scope.)*
   `CellView` never includes a Red-only `Track` that Blue has no custody of.
 - **Verification Method:** Test
 - **Dependencies:** FR-6110, FR-1510
-- **Source Documents:** GDS-04 §8 Fog-of-war view model; ICD INT-0007; ADR-0004.
+- **Source Documents:** GDS-04 §1.11 Cell View (fog-of-war view model); ICD INT-0007; ADR-0004.
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0006, INT-0007
 - **Related Requirements:** FR-6110, FR-1510, FR-4610
@@ -3028,7 +3028,7 @@ is no longer required. Same ID, narrower scope.)*
   request is rejected and no `WorldState` change occurs.
 - **Verification Method:** Test
 - **Dependencies:** FR-6210
-- **Source Documents:** GDS-01 §2; GDS-02 §2 row 5; ICD INT-0005; build-spec/02 §6 OR-5 (binding
+- **Source Documents:** GDS-01 §2; GDS-02 §2 row 5; ICD INT-0005; GDS-05 §7 OR-5 (binding
   statement).
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0005, INT-0006
@@ -3058,7 +3058,7 @@ is no longer required. Same ID, narrower scope.)*
   is explicitly selected.
 - **Verification Method:** Demonstration
 - **Dependencies:** FR-6410
-- **Source Documents:** GDS-05 "Operational Rules" OR-3 (OQ1); build-spec/02 §6 OR-3.
+- **Source Documents:** GDS-05 "Operational Rules" OR-3 (OQ1).
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0001, INT-0006
 - **Related Requirements:** FR-6410, FR-6210
@@ -3088,7 +3088,7 @@ is no longer required. Same ID, narrower scope.)*
   state reproduces a `WorldState` history identical to the one recorded live.
 - **Verification Method:** Test
 - **Dependencies:** FR-1120
-- **Source Documents:** GDS-04 §7 `EventLogEntry`; build-spec/02 §5.6 FR-L1 (binding statement).
+- **Source Documents:** GDS-04 §1.14 `EventLogEntry`; GDS-05 §6 FR-L1 (binding statement).
 - **Related ADRs:** ADR-0002
 - **Related Interfaces:** INT-0008, INT-0014
 - **Related Requirements:** FR-1120, FR-7200, FR-7300
@@ -4223,15 +4223,15 @@ traceability matrix's baseline rows.
 - **CR-08 — Save-file/Snapshot cross-version compatibility.** GDS-04 Open Question 4 (restated in
   ICD §7 issue 7) leaves open whether a save produced by one engine build is expected to load under
   a later build — no approved document commits to a compatibility guarantee, so FR-7210 above is
-  scoped only to same-build round trips. **Source:** GDS-04 §10 Open Question 4; ICD §7 issue 7.
+  scoped only to same-build round trips. **Source:** GDS-04 "Open Questions" 4; ICD §7 issue 7.
 - **CR-09 — Unified supertype for Planned Activity and SSN Request.** GDS-04 Open Question 3
   (restated in ICD §7 issue 6) leaves open whether these two "request now, result later" entities
   should share a formal supertype; no approved document commits to such a refactor. **Source:**
-  GDS-04 §10 Open Question 3; ICD §7 issue 6.
+  GDS-04 "Open Questions" 3; ICD §7 issue 6.
 - **CR-10 — AccessWindow as a persisted vs. derived entity.** GDS-04 Open Question 2 (restated in
   ICD §7 issue 5) leaves open whether `AccessWindow` must be a stored record for some future AAR
   display, or remains purely recomputed; no approved document commits either way. **Source:**
-  GDS-04 §10 Open Question 2; ICD §7 issue 5.
+  GDS-04 "Open Questions" 2; ICD §7 issue 5.
 - **CR-11 — Partial vignette-authoring state ownership.** ICD §7 issue 10 flags that where
   in-progress, unsaved vignette-builder state lives (server-session-scoped vs. browser-local) is
   unstated by any approved document — this may indicate a missing interface, not merely a missing
