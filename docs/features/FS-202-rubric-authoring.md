@@ -157,7 +157,7 @@ ADR should be expected for unauthorized candidate scope.
 
 ## Related Interfaces
 
-None identified — no ICD interface in `docs/design/05-interface-control-document.md` explicitly
+None identified — no ICD interface in `docs/architecture/interface-control-document.md` explicitly
 names a rubric-authoring boundary. This is a gap for Phase 8 traceability review if FS-202 is ever
 authorized.
 

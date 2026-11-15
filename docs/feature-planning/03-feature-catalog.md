@@ -52,7 +52,7 @@ Source baseline read in full: `docs/requirements/01-functional-requirements.md` 
 leaves + 18 Candidate Requirements CR-01–CR-18), `docs/requirements/02-non-functional-requirements.md`
 (23 baselined NFR leaves + 7 Candidate CNFR-01–CNFR-07), `docs/requirements/03-requirements-
 traceability-matrix.md`, `docs/architecture/00`–`05` (GDS-00–05, all merge-gate-closed), the ADR
-index (`ADR-0001`–`ADR-0031`, all Accepted), `docs/design/05-interface-control-document.md` (ICD,
+index (`ADR-0001`–`ADR-0031`, all Accepted), `docs/architecture/interface-control-document.md` (ICD,
 `INT-0001`–`INT-0016`), `docs/domains/DOM-001`–`009`, and `docs/reviews/strategic-review-2026-07.md`
 (Future Concepts FC-01–FC-15, Gap Analysis GAP-01–GAP-13).
 

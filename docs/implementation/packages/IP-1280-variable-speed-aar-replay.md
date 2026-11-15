@@ -125,7 +125,7 @@ deterministic function, no wall-clock read or global RNG use introduced.
   controller.
 - `docs/requirements/03-requirements-traceability-matrix.md` — `FR-7330`'s row's `Impl.
   Package`/`Test` cells updated from `UNASSIGNED` to `IP-1280`/the named test files.
-- `docs/design/05-interface-control-document.md` — `INT-0014`'s prose updated to note this
+- `docs/architecture/interface-control-document.md` — `INT-0014`'s prose updated to note this
   package's playback-mode stretch alongside `FR-7410`/`FR-7420`'s existing export-format stretch
   (citation-only, per `BL-0093`'s own tracked note — not an ICD redesign).
 - `docs/features/FS-128-variable-speed-aar-replay.md` — `Referenced By` metadata gains this

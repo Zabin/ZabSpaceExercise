@@ -238,7 +238,7 @@ RNG use, and no new `engine/` import-boundary crossing.
 
 - `CLAUDE.md` Code Map — a new `session/ephemeris.py` entry added; `session/aar.py`'s entry gains
   the `state_at_time()` addition note.
-- `docs/design/05-interface-control-document.md` — `INT-0014`'s entry prose updated to note the
+- `docs/architecture/interface-control-document.md` — `INT-0014`'s entry prose updated to note the
   now-generalized time-span replay read (no interface ID/shape change, per this package's own
   Interfaces section — a citation update, not an ICD edit; the documented-shape stretch itself
   remains routed to whoever next touches the ICD, per `BL-0093`).

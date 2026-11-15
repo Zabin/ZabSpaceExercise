@@ -182,5 +182,5 @@ None directly — neither FR-4110 nor FR-4210 cites an ADR in the requirements b
 
 ## Related Interfaces
 
-INT-0002 — per `docs/design/05-interface-control-document.md` (also this document's sole
+INT-0002 — per `docs/architecture/interface-control-document.md` (also this document's sole
 Interfaces Used entry).

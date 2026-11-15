@@ -110,7 +110,7 @@ not distribute responsibilities across them in a formal table. Flagged as an Ope
 
 Per the verified mapping for FS-102: INT-0004 (Blue/Red Cell Operator ↔ Operator Console) and
 INT-0008 (SessionManager → Simulation Engine Clock/Scheduler/EventLog/OrderSystem) — per
-`docs/design/05-interface-control-document.md`. The source document does not itself cite ICD
+`docs/architecture/interface-control-document.md`. The source document does not itself cite ICD
 interface IDs; these are carried forward from the verified Related Interfaces mapping (field 21).
 
 ## Data Model Changes
@@ -213,4 +213,4 @@ ADR-0011 (six access channels taxonomy) — `docs/architecture/adr/ADR-0011-six-
 ## Related Interfaces
 
 INT-0004 (Blue/Red Cell Operator ↔ Operator Console); INT-0008 (SessionManager → Simulation Engine
-Clock/Scheduler/EventLog/OrderSystem) — per `docs/design/05-interface-control-document.md`.
+Clock/Scheduler/EventLog/OrderSystem) — per `docs/architecture/interface-control-document.md`.

@@ -83,7 +83,7 @@ authorization and a full FS authoring pass, per the "Next step if authorized" se
 ## Interfaces Used
 
 Per the verified mapping for FS-108: INT-0016 (White Cell Inject Application → Simulation Engine
-WorldState, direct mutation bypass) — per `docs/design/05-interface-control-document.md`. This
+WorldState, direct mutation bypass) — per `docs/architecture/interface-control-document.md`. This
 interface already exists for the underlying inject execution path ([FS-106](FS-106-white-cell-dashboard.md)); FS-108 would be an
 authoring-ergonomics layer above it, not a new interface.
 
@@ -156,7 +156,7 @@ should be expected for unauthorized candidate scope.
 ## Related Interfaces
 
 INT-0016 (White Cell Inject Application → Simulation Engine WorldState, direct mutation bypass) —
-per `docs/design/05-interface-control-document.md`. This interface would be consumed by FS-108's
+per `docs/architecture/interface-control-document.md`. This interface would be consumed by FS-108's
 authoring layer if authorized; it is not a new interface introduced by this feature.
 
 ---

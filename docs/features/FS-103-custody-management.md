@@ -116,7 +116,7 @@ Question below.
 ## Interfaces Used
 
 Per the verified mapping for FS-103: INT-0007 (CellController → Simulation Engine
-Custody/TrackCatalog) — per `docs/design/05-interface-control-document.md`. The source document
+Custody/TrackCatalog) — per `docs/architecture/interface-control-document.md`. The source document
 does not itself cite ICD interface IDs; this is carried forward from the verified Related Interfaces
 mapping (field 21).
 
@@ -220,4 +220,4 @@ ADR-0013 (custody confidence decay and weapons-quality gate) —
 ## Related Interfaces
 
 INT-0007 (CellController → Simulation Engine Custody/TrackCatalog) — per
-`docs/design/05-interface-control-document.md`.
+`docs/architecture/interface-control-document.md`.

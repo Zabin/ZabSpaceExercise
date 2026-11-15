@@ -8,7 +8,7 @@
 > **Produces:** GDS-10
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** [`design/07-api-and-networking.md`](../design/07-api-and-networking.md) (merge
-> source — superseded by this document), [`design/05-interface-control-document.md`](../design/05-interface-control-document.md)
+> source — superseded by this document), [`interface-control-document.md`](interface-control-document.md)
 > (the interface inventory, `INT-0001`…`INT-0016`; companion to this document — see below),
 > [GDS-08](08-ui-architecture.md) (the screens that call this API),
 > [GDS-07](07-data-model.md) (the payload shapes), [GDS-06](06-non-functional-requirements.md)
@@ -32,7 +32,7 @@ code, and this document is the contract that code must keep.
 |---|---|---|
 | `design/07-api-and-networking.md` | Sketch | **Superseded.** A pre-implementation design; its contract is restated here as built. |
 | **GDS-09 (this document)** | Contract | **Authoritative** for the two programmatic interfaces — `SessionAPI` (`INT-0006`) and HTTP (`INT-0001`–`INT-0005`) — and for authorization, delivery, errors and limits across them. |
-| `design/05-interface-control-document.md` | Inventory | **Authoritative for the interface inventory**: every interface between components (`INT-0001`…`INT-0016`), with participants and data. Owned by `03`. It closes its own §7 issue 1 ("no baselined wire-level contract") by citing this document. It moves under `docs/architecture/` in the single cleanup sweep with the rest of `docs/design/` (see "Merge gate"). |
+| `interface-control-document.md` | Inventory | **Authoritative for the interface inventory**: every interface between components (`INT-0001`…`INT-0016`), with participants and data. Owned by `03`. It closes its own §7 issue 1 ("no baselined wire-level contract") by citing this document. It was moved under `docs/architecture/` on 2026-11-15 (refactor packet B1a). |
 
 ---
 
@@ -250,8 +250,8 @@ event-log entries in a loaded save; 10,000 samples per time-span export.
   builds have no way to detect a mismatch. Acceptable while the client is served by the same server
   that hosts the API; a question only if a separate client ever appears.
 - **OQ3 — ICD re-issue.** The ICD asks to be re-issued once GDS-07 and GDS-09 exist, to replace its
-  "not specified" fields with citations of them (its own merge gate). That, plus its move under
-  `docs/architecture/`, is `03`'s follow-up work (`BL-0294`).
+  "not specified" fields with citations of them (its own merge gate). That is `03`'s follow-up
+  work (`BL-0294`); its move under `docs/architecture/` is done.
 - **OQ4 — Playback cursor per session or per seat.** There is one playback cursor per session, so a
   player's own-cell start replaces White's cursor (`FR-7340` Notes; `VR-1077`, accepted as shipped).
   Whether each seat should get its own cursor is a design question for `06`/`07`, not decided here.

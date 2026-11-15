@@ -157,5 +157,5 @@ FR-4510's own "Related ADRs: (none directly)" field).
 
 ## Related Interfaces
 
-INT-0002, INT-0001 — per `docs/design/05-interface-control-document.md` (both are also this
+INT-0002, INT-0001 — per `docs/architecture/interface-control-document.md` (both are also this
 document's Interfaces Used).

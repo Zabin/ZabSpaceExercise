@@ -173,6 +173,7 @@ space-weather index-mapping Open Questions, `BL-0104`/`BL-0121`).
 |---|---|---|---|
 | [strategic-assumptions-register.md](strategic-assumptions-register.md) | The hidden strategic assumptions behind the vision and the triggers that make each one worth re-examining (from `reviews/strategic-review-2026-07.md` §1.3, R6.1-R3). | `01-vision` | ♻️ Living |
 | [code-map.md](code-map.md) | Where each piece of the simulator lives, module by module (moved out of `CLAUDE.md` on 2026-11-10). | `08-code-implementation` | ♻️ Living |
+| [interface-control-document.md](interface-control-document.md) | Interface Control Document: the sixteen `INT-` component interfaces, a leaf reference beside GDS-07 and GDS-09 (moved from the retired design corpus on 2026-11-15; re-issue against GDS-07/09 is `BL-0294`). | `03-architecture-design-synthesis` | ♻️ Living |
 
 ## Related
 

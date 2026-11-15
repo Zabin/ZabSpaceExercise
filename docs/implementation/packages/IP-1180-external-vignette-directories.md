@@ -237,7 +237,7 @@ introduced) but must be re-run green per this repository's mandatory workflow.
   enumeration + generalized traversal-guard note; `content/vignette_export.py`'s entry gains the
   user-save-directory retargeting note.
 - `spacesim.config.yaml` — the new `content:` section documented by example (see Files to Modify).
-- `docs/design/05-interface-control-document.md` — `INT-0011`/`INT-0012` entries' prose updated to
+- `docs/architecture/interface-control-document.md` — `INT-0011`/`INT-0012` entries' prose updated to
   note the now-plural set of load/save roots (no interface ID/shape change, per this package's own
   Interfaces section above — a citation update, not an ICD edit).
 - `docs/requirements/03-requirements-traceability-matrix.md` — `FR-5410`/`FR-5420`/`NFR-3700` rows'

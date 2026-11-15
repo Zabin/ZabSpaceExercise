@@ -4,24 +4,24 @@
 > "ICD change log" below).
 > **Inputs consumed (approved baseline only):**
 > [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md) (Encyclopedia),
-> [`architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) (GDS-01,
-> ConOps), [`architecture/02-system-context.md`](../architecture/02-system-context.md) (GDS-02,
-> System Context), [`architecture/03-architecture.md`](../architecture/03-architecture.md) (GDS-03,
-> System Architecture), [`architecture/04-domain-model.md`](../architecture/04-domain-model.md)
-> (GDS-04, Domain Model), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001
+> [`architecture/01-concept-of-operations.md`](01-concept-of-operations.md) (GDS-01,
+> ConOps), [`architecture/02-system-context.md`](02-system-context.md) (GDS-02,
+> System Context), [`architecture/03-architecture.md`](03-architecture.md) (GDS-03,
+> System Architecture), [`architecture/04-domain-model.md`](04-domain-model.md)
+> (GDS-04, Domain Model), [`architecture/adr/INDEX.md`](adr/INDEX.md) (ADR-0001
 > through ADR-0033, all `Accepted` except `ADR-0029`, `Superseded` by `ADR-0033` — neither new ADR
 > touches an ICD interface, so no ICD content changes as a result),
 > [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) (reconciled in two
 > passes — see "ICD change log" below), [`reviews/architecture-update.md`](../reviews/architecture-update.md).
 > **Inputs explicitly NOT treated as authoritative here** (see "ICD Issues Requiring Resolution"
-> §1): `design/04-data-model.md` and `design/07-api-and-networking.md` — both are pre-GDS design
-> documents that describe wire-level/schema detail at a finer grain than anything in the approved
-> list above has yet baselined (their formal successors, **GDS-07 Data Model** and **GDS-09 API
-> Specification**, are both `⛔ Planned (scaffold only)` per `architecture/INDEX.md`). Where this
-> ICD cites them below, it is for descriptive context only, flagged inline, never as the source of
-> a contract.
+> §1): the pre-GDS data-model and API/networking design documents of the retired design corpus,
+> which described wire-level/schema detail at a finer grain than anything in the approved list
+> above had then baselined. Their content now lives in **[GDS-07 Data Model](07-data-model.md)** and
+> **[GDS-09 API Specification](09-api-specification.md)** (both `⛔ Planned (scaffold only)` when
+> this ICD was issued; re-issue against them is backlog `BL-0294`). Where this ICD cites them
+> below, it is for descriptive context only, flagged inline, never as the source of a contract.
 
-[↑ Design index](INDEX.md) · [Docs index](../INDEX.md)
+[↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
 ## 1. Purpose
 
@@ -50,10 +50,10 @@ that interface's **Open questions** field and in §7, rather than inventing an a
 
 **Out of scope:**
 - Wire-level message shapes, HTTP verbs, JSON field names, or status codes (GDS-09's job, not yet
-  authored). Where `design/07-api-and-networking.md`'s abstract `SessionAPI` method names are
+  authored). Where the abstract `SessionAPI` method names (now GDS-09 §2) are
   useful as a descriptive label for an interface, they are cited as illustrative, non-binding detail.
-- Persistence schema field types/units (GDS-07's job, not yet authored; `design/04-data-model.md`
-  is cited the same way as `design/07` above — descriptive, non-binding).
+- Persistence schema field types/units (GDS-07's job, not yet authored when this ICD was issued; GDS-07
+  is cited the same way as GDS-09 above — descriptive, non-binding).
 - Anything inside a single component (e.g. `EffectResolver → WorldState` is intra-Simulation-Engine,
   not a component interface — GDS-03 §2.1 already owns that boundary internally).
 - Any of the GDS-03 §5 / GDS-02 "candidate future" systems (coalition C2 interface, external
@@ -231,7 +231,7 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Postconditions:** A Planned Activity is created in `DRAFT`/`PLANNED` state (GDS-04 §1.7
   lifecycle); execution and its resulting Effect/Track update happen later, gated by the window.
 - **Error handling:** Rejections (ownership/window/resources/ROE/track-gate failures) are returned
-  as normal feedback, not exceptions — restated from `design/07-api-and-networking.md` §6 as
+  as normal feedback, not exceptions — restated from GDS-09 §7 as
   descriptive, non-binding context; the approved baseline (GDS-04 §1.7 Constraints) confirms
   validation happens at both accept-time and execute-time but does not itself specify the error
   channel's shape.
@@ -275,9 +275,9 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Data exchanged:** Operator/White-Cell intents in (everything named in INT-0002–0005); `CellView`/
   god-view/AAR/Ack responses out.
 - **Message/data structure:** In-process Python calls today (GDS-03 §2.2 "Interfaces"); the abstract
-  shape `design/07-api-and-networking.md` §2 sketches (`SessionAPI` Protocol with methods like
+  shape GDS-09 §2 sketches (`SessionAPI` Protocol with methods like
   `issue_order`, `get_view`, `play`/`pause`, `fire_inject`, `save`) is cited here as descriptive,
-  non-binding illustration only — it is a pre-GDS design document, not the approved contract.
+  non-binding illustration only — it was a pre-GDS design document when this ICD was issued.
 - **Direction:** Bidirectional (call/response).
 - **Frequency/timing:** Every operator/White-Cell action and every view read goes through this seam.
 - **Preconditions:** None beyond a constructed Session object.
@@ -737,7 +737,7 @@ assembling the interface-level view this document provides. None of the followin
 on — they are listed so a reviewer can triage them, not as a backlog this document is committing to.
 
 1. **No baselined wire-level contract for any interface.** Every interface above that crosses a
-   process/component boundary (INT-0001, INT-0006 most acutely) cites `design/07-api-and-networking.md`
+   process/component boundary (INT-0001, INT-0006 most acutely) cites the pre-GDS API design (now GDS-09)
    only as descriptive, non-binding illustration, because GDS-09 (API Specification) and GDS-07
    (Data Model) are both `⛔ Planned (scaffold only)`. This ICD can name *what* crosses each
    boundary but not yet *how it is shaped on the wire*. **Missing interface detail**, not a missing
@@ -789,7 +789,7 @@ on — they are listed so a reviewer can triage them, not as a backlog this docu
     object/ownership needed), reusing the existing session registry/locking/eviction machinery
     unmodified. See INT-0003's own entry above for the concrete route shapes.
 11. **Possible missing interface: push-based state delivery.** GDS-02/03 describe INT-0001 as
-    HTTP-polling-based. `design/07-api-and-networking.md` §3 (non-binding) describes a documented-
+    HTTP-polling-based. GDS-09 §5 (non-binding here) describes a documented-
     but-not-built future WebSocket push migration. Whether this future capability should be named as
     its own forward-looking interface entry now (as GDS-03 §5 does for forward-looking subsystems)
     or left entirely out of an ICD scoped to the as-built system is left to the reviewer — this

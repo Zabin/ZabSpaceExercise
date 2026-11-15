@@ -158,5 +158,5 @@ ADR-0004 (fog-of-war at the boundary) —
 
 ## Related Interfaces
 
-INT-0005, INT-0006 — per `docs/design/05-interface-control-document.md` (both are also this
+INT-0005, INT-0006 — per `docs/architecture/interface-control-document.md` (both are also this
 document's Interfaces Used).

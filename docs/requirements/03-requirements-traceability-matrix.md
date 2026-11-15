@@ -77,7 +77,7 @@ Inputs read in full to build this matrix: the research encyclopedia index
 (`docs/architecture/00`–`05`), the ADR index
 ([`docs/architecture/adr/INDEX.md`](../architecture/adr/INDEX.md), ADR-0001–ADR-0035, 34
 `Accepted` and 1 `Superseded` — `ADR-0029` by `ADR-0033`), the Interface Control Document
-([`docs/design/05-interface-control-document.md`](../design/05-interface-control-document.md)),
+([`docs/architecture/interface-control-document.md`](../architecture/interface-control-document.md)),
 the [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md), and both
 requirements documents in full (every FR/NFR/Candidate leaf and its explicit fields).
 
@@ -779,7 +779,7 @@ for the full derivation and review), this matrix gained:
 [`02-non-functional-requirements.md`](02-non-functional-requirements.md) ·
 [`requirements-change-log.md`](requirements-change-log.md) ·
 [`../reviews/requirements-review.md`](../reviews/requirements-review.md) ·
-[`../design/05-interface-control-document.md`](../design/05-interface-control-document.md) ·
+[`../architecture/interface-control-document.md`](../architecture/interface-control-document.md) ·
 [`../architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) ·
 [`../architecture/10-requirements-traceability-matrix.md`](../architecture/10-requirements-traceability-matrix.md)
 (GDS-10, scaffold-only — not authored by this document)

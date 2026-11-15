@@ -215,7 +215,7 @@ No new production module — every addition fits the existing `session/manager.p
     language ("this operator seat is not assigned to that asset" / "that command belongs to the
     other role on this asset").
 - `spacesim/ui_web/static/index.html` — the operator-seat input.
-- `docs/design/05-interface-control-document.md` — `INT-0004`/`INT-0006` entries gain the optional
+- `docs/architecture/interface-control-document.md` — `INT-0004`/`INT-0006` entries gain the optional
   `seat` (closes the staleness `ADS-3500` flagged).
 - `CLAUDE.md` — one Code Map bullet (role-scope helper, `roles/scope` route, `role_assignments` now
   persisted in a save) and one sentence in the LAN-trust paragraph (the operator seat is
@@ -315,7 +315,7 @@ Permanent gates (Verification Checklist): `test_determinism.py`, `test_import_gu
 
 ## Documentation Updates
 
-- `docs/design/05-interface-control-document.md` — `INT-0004`/`INT-0006` gain `seat`.
+- `docs/architecture/interface-control-document.md` — `INT-0004`/`INT-0006` gain `seat`.
 - `CLAUDE.md` — Code Map bullet and the LAN-trust sentence (above).
 - `ROADMAP.md` — this package's row (status `READY`); the generated RTM Test column for
   `FR-3510`/`FR-3520` (`--origin-report=rtm`).

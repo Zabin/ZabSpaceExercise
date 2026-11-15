@@ -213,5 +213,5 @@ classification) — `docs/architecture/adr/ADR-0024-ai-red-boundary-classificati
 
 ## Related Interfaces
 
-INT-0008, INT-0015 — per `docs/design/05-interface-control-document.md` (both are also this
+INT-0008, INT-0015 — per `docs/architecture/interface-control-document.md` (both are also this
 document's Interfaces Used).

@@ -278,7 +278,7 @@ seat), in `FEAT-4300` beside `FR-4310` (run #212 sweep).
 ## Interfaces Used
 
 INT-0002 (White Cell Facilitator ↔ Operator Console, exercise control) — per
-`docs/design/05-interface-control-document.md`. INT-0003 (in-app scenario builder) is **removed**
+`docs/architecture/interface-control-document.md`. INT-0003 (in-app scenario builder) is **removed**
 from this revision's Interfaces Used: on inspection, this document's actual Scope (god-view,
 injects, clock, adjudication) does not touch the in-app vignette builder that INT-0003 describes;
 that interface belongs to `FEAT-5100` (In-App Iterative Vignette Builder), a different, currently
@@ -576,6 +576,6 @@ fog-of-war filter path) bear on the new leaves; no new ADR is needed.
 ## Related Interfaces
 
 INT-0002 (White Cell Facilitator ↔ Operator Console, exercise control) — per
-`docs/design/05-interface-control-document.md`. INT-0003 is related context (consumed by a
+`docs/architecture/interface-control-document.md`. INT-0003 is related context (consumed by a
 different, unspecified Feature — FEAT-5100 in the Feature Catalog) but is not directly used by this
 document — see Interfaces Used.
