@@ -225,4 +225,4 @@ ADR-0027 (scenario-authoring boundary); ADR-0007 (content as data).
 
 INT-0002 (White Cell Facilitator ↔ Operator Console, exercise control); INT-0003 (in-app scenario
 builder); INT-0011 (SessionManager → Content & Data, vignette/template load) — per
-`docs/design/05-interface-control-document.md`.
+`docs/architecture/interface-control-document.md`.

@@ -68,7 +68,7 @@ package's files (`engine/orders.py`, `engine/access.py`) are exactly the files t
 
 ## Interfaces
 
-Per `docs/design/05-interface-control-document.md` and FS-101's verified Related Interfaces field:
+Per `docs/architecture/interface-control-document.md` and FS-101's verified Related Interfaces field:
 **INT-0006** (Console → SessionAPI seam, the transport this preview surface rides), **INT-0008**
 (SessionManager → Simulation Engine Clock/Scheduler/EventLog/OrderSystem, where `dry_run()` lives).
 

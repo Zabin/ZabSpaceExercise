@@ -176,5 +176,5 @@ ADR-0004's usual server-side mechanism).
 
 ## Related Interfaces
 
-INT-0001, INT-0006 — per `docs/design/05-interface-control-document.md` (both are also this
+INT-0001, INT-0006 — per `docs/architecture/interface-control-document.md` (both are also this
 document's Interfaces Used).

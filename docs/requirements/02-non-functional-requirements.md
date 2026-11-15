@@ -35,7 +35,7 @@
 > (GDS-02, System Context), [`architecture/04-domain-model.md`](../architecture/04-domain-model.md)
 > (GDS-04), [`architecture/05-functional-requirements.md`](../architecture/05-functional-requirements.md)
 > (GDS-05), [`requirements/01-functional-requirements.md`](01-functional-requirements.md)
-> (FR-1xxx baseline), [`design/05-interface-control-document.md`](../design/05-interface-control-document.md)
+> (FR-1xxx baseline), [`architecture/interface-control-document.md`](../architecture/interface-control-document.md)
 > (ICD), [`training/01-install-and-run.md`](../training/01-install-and-run.md) (configuration
 > surface), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001 through ADR-0033,
 > all `Accepted` except `ADR-0029`, `Superseded` by `ADR-0033`), [`architecture/strategic-assumptions-register.md`](../architecture/strategic-assumptions-register.md)
@@ -883,7 +883,7 @@ Explicitly excluded from the numbered baseline above.
     boundary, not as a commitment to ever add federation; a GAP-11 compatibility study of the
     `SessionAPI` seam (INT-0006) — recommended before any transport rework, per the review's own
     R19 — has not been done.
-  - **Source documents:** `design/05-interface-control-document.md` §7 item 12; `strategic-review-2026-07.md`
+  - **Source documents:** `architecture/interface-control-document.md` §7 item 12; `strategic-review-2026-07.md`
     GAP-11, §6.3 R19; [Strategic Assumptions Register](../architecture/strategic-assumptions-register.md)
     A9 (adjacent — LAN trust model); the former future-work list §13 "R19."
 

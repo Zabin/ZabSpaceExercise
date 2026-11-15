@@ -118,7 +118,7 @@
 > ConOps), [`architecture/02-system-context.md`](../architecture/02-system-context.md) (GDS-02,
 > System Context), [`architecture/03-architecture.md`](../architecture/03-architecture.md) (GDS-03,
 > System Architecture), [`architecture/04-domain-model.md`](../architecture/04-domain-model.md)
-> (GDS-04, Domain Model), [`design/05-interface-control-document.md`](../design/05-interface-control-document.md)
+> (GDS-04, Domain Model), [`architecture/interface-control-document.md`](../architecture/interface-control-document.md)
 > (ICD), [`architecture/adr/INDEX.md`](../architecture/adr/INDEX.md) (ADR-0001 through ADR-0033, all
 > `Accepted` except `ADR-0029`, `Superseded` by `ADR-0033`), [`architecture/strategic-assumptions-register.md`](../architecture/strategic-assumptions-register.md)
 > (added 2026-07).

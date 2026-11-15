@@ -240,7 +240,7 @@ alongside ADR-0017 as an adjacent assessment/scoring-stakeholder decision).
 
 ## Related Interfaces
 
-None identified — no ICD interface in `docs/design/05-interface-control-document.md` explicitly
+None identified — no ICD interface in `docs/architecture/interface-control-document.md` explicitly
 names the competency assessment scoring or report boundary as a distinct interface. This is a
 traceability gap for Phase 8 review if a named interface is required for the IMP-201A implementation
 design.

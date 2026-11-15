@@ -173,7 +173,7 @@ not a defect in this pass, a disclosed sequencing consequence.
   `_evict_if_full()` mechanism as the concrete v1 answer for that future touch to cite.
 - `CLAUDE.md`'s Code Map — `content/vignette_export.py` entry added; `session/inprocess.py`'s
   entry gained the `create_draft_session`/`save_vignette` addition.
-- `docs/design/05-interface-control-document.md`'s `INT-0003` entry — updated from "not yet
+- `docs/architecture/interface-control-document.md`'s `INT-0003` entry — updated from "not yet
   implemented"/open-question framing to reflect this package's concrete route shapes; §7 Issue 10
   marked resolved.
 - `docs/requirements/03-requirements-traceability-matrix.md` — `FR-5110`'s Test/Impl. Package

@@ -15,12 +15,12 @@
 ## 1. Purpose
 
 A single cross-cutting glossary so that "custody," "fog-of-war," "access window," etc. mean exactly
-one thing everywhere in this documentation tree. The build-spec glossary
-(`build-spec/04-nfr-milestones-and-risks.md` §12) and the training glossary
-(`training/09-troubleshooting-and-glossary.md`) remain authoritative for operator-facing wording;
+one thing everywhere in this documentation tree. This glossary is authoritative; the v1 build
+specification's glossary (its §12) was merged into §2 here. The training glossary
+(`training/09-troubleshooting-and-glossary.md`) carries operator-facing wording for the same terms;
 this document is the superset used by domain/research/feature/implementation authors, including
 terms from decision science, military analysis, and research methods that the operator-facing
-glossaries do not need.
+glossary does not need.
 
 ## 2. Core simulation terms
 
@@ -42,6 +42,14 @@ glossaries do not need.
 | **Determinism** | `(initial_state, ordered eventlog, seed) → byte-identical state`, always — the property that makes rewind/undo/branch exact. |
 | **Replay-safe** | A function that computes a view without mutating `WorldState` or consuming RNG (e.g. `scene.py`, `telemetry.py`, `orders.dry_run()`). |
 | **Dry run** | A read-only mirror of `OrderSystem.issue()` that validates and resolves the delivery path without scheduling/booking anything — powers "why can't I do this" UI affordances. |
+| **Bus** | The spacecraft vehicle (power, attitude, thermal, propulsion, C&DH, comms). |
+| **ECI / RIC** | Earth-Centered Inertial frame / Radial-In-track-Cross-track relative frame. |
+| **Hot seat** | One terminal shared by many roles, swapped in turn. |
+| **ISL** | Inter-Satellite Link (crosslink); a rare faster command path. |
+| **PlannedActivity** | Unified scheduled command or collection task (as built: `engine/orders.py::Order`; GDS-07 Departures). |
+| **Payload** | The mission equipment (SATCOM, ISR, SIGINT, SDA, space-control, etc.). |
+| **SDA** | Space Domain Awareness; the belief state from which views are rendered. |
+| **TLE** | Two-Line Element set (orbital state from Space-Track or manual entry). |
 
 ## 3. Decision-science terms (Tier R200 vocabulary)
 

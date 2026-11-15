@@ -89,7 +89,7 @@ responsibilities in a formal table. Flagged as an Open Question below.
 ## Interfaces Used
 
 Per the verified mapping for FS-107: INT-0014 (Session Layer AAR/Replay → Simulation Engine
-EventLog/WorldState) — per `docs/design/05-interface-control-document.md`. The source document does
+EventLog/WorldState) — per `docs/architecture/interface-control-document.md`. The source document does
 not itself cite ICD interface IDs; this is carried forward from the verified Related Interfaces
 mapping (field 21).
 
@@ -188,4 +188,4 @@ for future ADR authoring if the AAR replay-safety contract is judged to warrant 
 ## Related Interfaces
 
 INT-0014 (Session Layer AAR/Replay → Simulation Engine EventLog/WorldState) — per
-`docs/design/05-interface-control-document.md`.
+`docs/architecture/interface-control-document.md`.

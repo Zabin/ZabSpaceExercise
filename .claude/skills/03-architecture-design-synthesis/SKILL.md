@@ -55,7 +55,7 @@ multiple plausible architectures, or load-bearing assumptions nobody has written
 | Asset | Role |
 |---|---|
 | [`architecture/INDEX.md`](../../../docs/architecture/INDEX.md) + `01-concept-of-operations.md`…`10-requirements-traceability-matrix.md` + `ADS-xxx-*.md` + `adr/` | The Design Synthesis tier this skill authors (`00-vision.md` is `01-vision`'s). |
-| The Interface Control Document | `docs/design/05-interface-control-document.md` (`INT-xxxx`) — owned here (`BL-0294`); it is `GDS-09` material and moves under `docs/architecture/` when GDS-09 is authored. |
+| The Interface Control Document | `docs/architecture/interface-control-document.md` (`INT-xxxx`) — owned here (`BL-0294`); it is `GDS-09` companion material; re-issue against GDS-07/09 is still owed. |
 | Grounding inputs | `docs/domains/DOM-xxx-*.md`, `docs/research/encyclopedia/R1xx-R6xx` + `docs/research/01-07` primers, `docs/design/`, `docs/training/`, `MSTR-001` — and, for the ladder specifically, the per-level "merges from" existing document named in `architecture/INDEX.md` §1. `docs/build-spec/` and `docs/design/` (apart from the ICD) are **legacy, non-binding reference** (`CLAUDE.md` "Authoritative source"): read them for orientation, never cite them as binding. |
 | Downstream consumer | `docs/features/FS-xxx-*.md` — the next stage in the chain; both the ladder's `GDS-05`/`GDS-06` and a cluster's `ADS-xxx` Decision Log should read as direct inputs to drafting or revising an FS-xxx. |
 

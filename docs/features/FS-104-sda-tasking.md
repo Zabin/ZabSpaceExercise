@@ -95,7 +95,7 @@ an Open Question below.
 
 Per the verified mapping for FS-104: INT-0009 (CellController/SessionAPI → Mock SSN) and INT-0010
 (Mock SSN → Simulation Engine Scheduler/EventLog/Custody, delivery) — per
-`docs/design/05-interface-control-document.md`. The source document does not itself cite ICD
+`docs/architecture/interface-control-document.md`. The source document does not itself cite ICD
 interface IDs; these are carried forward from the verified Related Interfaces mapping (field 21).
 
 ## Data Model Changes
@@ -190,4 +190,4 @@ ADR-0010 (mock SSN is internal, not external) —
 ## Related Interfaces
 
 INT-0009 (CellController/SessionAPI → Mock SSN); INT-0010 (Mock SSN → Simulation Engine
-Scheduler/EventLog/Custody, delivery) — per `docs/design/05-interface-control-document.md`.
+Scheduler/EventLog/Custody, delivery) — per `docs/architecture/interface-control-document.md`.

@@ -2,7 +2,7 @@
 > **Version:** 1.1
 > **Status:** ✅ Authored
 > **Dependencies:** [GDS-04](04-domain-model.md) §1.10 (Role Assignment), [GDS-03](03-architecture.md)
-> §2.2 (Session/Application Layer), `design/05-interface-control-document.md` INT-0004/INT-0006
+> §2.2 (Session/Application Layer), `interface-control-document.md` INT-0004/INT-0006
 > (grounding input — see Decision Log for why this document, not the ICD, is the record of the
 > amendment), `docs/requirements/01-functional-requirements.md` FR-3510/FR-3520
 > **Referenced By:** [FS-116](../features/FS-116-role-scoped-command-catalog.md)
@@ -155,14 +155,14 @@ requirements from being implementable:
   two-value enumeration rather than adding a third).
 - Must remain additive to every existing interface call site (no existing vignette, test, or client
   call may require modification to keep working).
-- `docs/build-spec/` and `docs/design/05-interface-control-document.md` are grounding inputs, not
+- `docs/build-spec/` and `docs/architecture/interface-control-document.md` are grounding inputs, not
   documents this skill's authority edits directly (`03-architecture-design-synthesis`'s own Scope
   table) — the interface amendment is recorded here as this cluster's authoritative decision, per
   `architecture/INDEX.md`'s blanket supersession declaration, rather than by editing the ICD file.
 
 ## 8. Risks
 
-- **The ICD (`design/05-interface-control-document.md`) itself still reads INT-0004/INT-0006 as
+- **The ICD (`interface-control-document.md`) itself still reads INT-0004/INT-0006 as
   carrying only `cell`, not `seat`, until someone updates it.** This document's decision is
   authoritative (per the supersession declaration), but the ICD's own text will read stale until
   either a future `GDS-09` authoring pass merges this decision in, or `FS-116`'s own eventual

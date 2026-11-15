@@ -7,7 +7,7 @@ the three documents the review's findings were applied against:
 
 - [`docs/requirements/01-functional-requirements.md`](01-functional-requirements.md)
 - [`docs/requirements/02-non-functional-requirements.md`](02-non-functional-requirements.md)
-- [`docs/design/05-interface-control-document.md`](../design/05-interface-control-document.md)
+- [`docs/architecture/interface-control-document.md`](../architecture/interface-control-document.md)
 
 **Scope discipline applied throughout:** no new capability was introduced. Every change either (a)
 promotes a behavior already described in an approved source document (GDS architecture ladder,
@@ -175,7 +175,7 @@ rather than silently skipped or force-fitted.
 
 ---
 
-## docs/design/05-interface-control-document.md
+## docs/architecture/interface-control-document.md
 
 ### CHG-013
 - **Previous state:** INT-0015's Preconditions read only "Red's seat is configured to use an
@@ -679,4 +679,4 @@ applied as edits, to avoid manufacturing changes the findings themselves do not 
 [`docs/reviews/requirements-review.md`](../reviews/requirements-review.md) ·
 [`docs/requirements/01-functional-requirements.md`](01-functional-requirements.md) ·
 [`docs/requirements/02-non-functional-requirements.md`](02-non-functional-requirements.md) ·
-[`docs/design/05-interface-control-document.md`](../design/05-interface-control-document.md)
+[`docs/architecture/interface-control-document.md`](../architecture/interface-control-document.md)

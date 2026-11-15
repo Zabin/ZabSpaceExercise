@@ -312,5 +312,5 @@ core; resume relies on it), ADR-0015 (LAN trust model; `/save` exposes ground tr
 
 ## Related Interfaces
 
-INT-0011, INT-0012 — per `docs/design/05-interface-control-document.md` (both are also this
+INT-0011, INT-0012 — per `docs/architecture/interface-control-document.md` (both are also this
 document's Interfaces Used).

@@ -204,6 +204,6 @@ applies as a constraint on the batch-run mechanism, but does not name FS-301 spe
 
 ## Related Interfaces
 
-None identified — no ICD interface in `docs/design/05-interface-control-document.md` explicitly
+None identified — no ICD interface in `docs/architecture/interface-control-document.md` explicitly
 names the research-export or instrument-grade research boundary. This is a traceability gap for
 Phase 8 review if a named interface is required for the IMP-301A implementation design.
