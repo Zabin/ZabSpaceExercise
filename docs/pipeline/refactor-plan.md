@@ -35,6 +35,7 @@
 | A1 | Successor map for `docs/build-spec/` and `docs/design/` (§8): 45 cited sections mapped, the two open decisions made, 26 code files listed for C4 | Done (this pull request) |
 | A4 | Behaviour baseline: `spacesim/tests/test_behaviour_baseline.py` pins a scripted two-hour run of each of the 19 vignettes (world, event log, pending queue, cell views, acknowledgements) plus save, reload and replay equality; re-bless and float rules added to §3 | Done (this pull request) |
 | A5a | Split plan for `session/manager.py` (§9.1): inventory, six target modules, handler rules, nine ordered moves with tier and check, do-not-move list. `orders.py`, `server.py`, `app.js` (A5b to A5d) not planned yet | Done (this pull request) |
+| A5b | Split plan for `engine/orders.py` (§9.2): inventory, four target modules, handler rules, seven ordered moves with tier and check, do-not-move list. `server.py`, `app.js` (A5c, A5d) not planned yet | Done (this pull request) |
 | 4c, 4e, 4f, 5, 6, 7 | See the packets below | Paused |
 
 ## 3. Rules for every session, whatever its tier
@@ -429,8 +430,9 @@ misses. C4 uses the table above: for example `07-operator-console.md` §16.9 bec
 
 ## 9. A5 split plans
 
-One subsection per file. A5a is `session/manager.py`; `engine/orders.py`, `ui_web/server.py` and
-`static/app.js` (A5b to A5d) are not planned yet. Line numbers are `main` at `f49f710`.
+One subsection per file. A5a is `session/manager.py` and A5b is `engine/orders.py`;
+`ui_web/server.py` and `static/app.js` (A5c, A5d) are not planned yet. Line numbers are `main` at
+`f49f710` (§9.1) and `a6c085c` (§9.2).
 
 ### 9.1 `session/manager.py` (1,917 lines)
 
@@ -596,3 +598,42 @@ and one future-dated inject, changes ROE, steps, saves, reloads and replays. It 
 
 **Ruling for C4:** package-history comments (`IP-xxxx`, `BL-xxxx`) stay and move with their code;
 no move edits a comment.
+
+### 9.2 `engine/orders.py` (1,285 lines)
+
+#### 9.2.1 Responsibility inventory
+
+| Lines | What | Owns |
+|---|---|---|
+| 43–57 | `ACTION_CHANNEL`, `MAX_COMMANDS_PER_PASS` | Action → access channel (`None` = cyber, not window-gated); the per-pass uplink cap (imported by `test_queue.py`). |
+| 59–163 | `OBSERVE_NUMERIC_PARAMS`, `_requested_beam_mode`, `_observe_params_ok`, `ORDER_PARAM_RULES`, `_finite_float_ok`, `_param_value_ok`, `_order_params_ok`, `_engage_rounds` | Pure param checks. The two `*_params_ok` functions **delete `None` keys from the order's own `params` dict**, for `dry_run` and `issue` alike. |
+| 166–175 | `BAR_DURATION_S` | Gantt bar widths: display data, imported inside a function by `inprocess.py`. |
+| 178–190 | `Order` | The order record. Imported by 37 files; a save restores it with `Order(**row)`. |
+| 193–203 | `scene_from_world` | World → access `Scene`, dropping degraded sites and sensors. Imported at module level by `ssn.py`, `recovery.py`, `manager.py`, `engine/__init__.py` and 3 test files. |
+| 207–256 | `OrderSystem.__init__` | The state (`roe`, `_static_roe`, `resolver`, `prop`, `access_config`, `horizon`, `wq_threshold`, `auto_cue_ssn`, four booking dicts, `orders`, `_order_counter`, `gating_rules`, `_pending`) and **eight handler registrations**. |
+| 259–301, 425–452 | `issue`, `dry_run`, `_plan`, `_continue_plan` | The pipeline: mint the id, validate, hold a gated order (appends `effect_gate_request`), dispatch by action, plan jam, engage and downlink inline. `commit` is the only difference between preview and issue. |
+| 303–393 | `_order_classification`, `_matching_gate`, `rebuild_pending`, `decide_gated_order`, `_h_noop` | Effect gating (`FR-3430`): appends `effect_gate_decision`; rebuilds `_pending` from the log on resume. |
+| 395–423 | `_effective_roe`, `_h_roe_change`, `issue_roe_change` | ROE (`FR-3440`): point-in-time value folded from `_static_roe` and the log's `roe_change` entries; the `self.roe` cache; appends `roe_change`. |
+| 454–498 | `_release_bookings_on_execute`, `cancel` | Booking release on execute (from three handlers) and on cancel. The two are **not** symmetric: cancel leaves a zero count in `_pass_bookings`, execute removes the key. |
+| 500–559, 752–763 | `_ap`, `_plan_command`, `_best_isl_window`, `_window_endpoints`, `_next_window` | Window search; the three delivery paths (stored program, ground uplink, ISL relay), earliest wins; the per-pass cap. |
+| 561–662 | `_plan_collection`, `_candidate_sensors`, `_observe_payload_type`, `_observe_modes`, `_auto_blocked_by_cue`, `_contended`, `_resolve_sensor_id` | Sensor tasking: candidate choice, contention, bookings; adds `sensor_id` and `window_end` to the payload (`_rebind` rebuilds bookings from them). Sets `order.actor`, in preview too. |
+| 665–750 | `_validate` | Refusal order: action, params, then observe rules or ownership, then per-action (ROE as of `issued_at`, ammo, weapons-quality track, Δv, verb, station). |
+| 766–830 | `_observation_phase_angle_deg`, `_delivery_keys`, `_delivery_jammed`, `_jammed_record` | Phase-angle geometry; delivery-path keys written at plan time and read at execute time. |
+| 832–1064 | `_exec_payload` | Builds the `(kind, payload)` the handler will receive, per action. Reads three different clocks: `order.issued_at` (custody confidence), `win.start` (phase angle), `self.world.now` (footprint). Called only when `commit`. |
+| 1066–1120 | `_mark_cyber_queued`, `_plan_cyber` | Cyber: no window; builds the effect and schedules it at `clock.now`. |
+| 1123–1285 | `_h_effect`, `_h_maneuver`, `_h_downlink`, `_h_command`, `_h_observe` | The replayed execute handlers. |
+
+**Who reaches in** (`git grep`, outside `orders.py`):
+
+- `manager.py` calls `issue`, `dry_run`, `cancel`, `decide_gated_order`, `issue_roe_change`,
+  `rebuild_pending`; reads `orders`, `prop`, `access_config`; **writes** `world`, `auto_cue_ssn`,
+  `_order_counter`; `_rebind` clears `orders`, `_pending` and the four booking dicts and refills
+  `_sensor_bookings`. `inprocess.py` and `assessment.py` read `orders` and `prop`.
+- `ssn.py` and `recovery.py` import only `scene_from_world`. `tools/render_manual.py` calls `_ap()`.
+- Tests read or set `_pending`, the four booking dicts, `_order_counter`, `_static_roe`, `roe`,
+  `prop`, `sim`, `world`, `auto_cue_ssn`; call `_effective_roe`, `_exec_payload`, `_ap`,
+  `_h_maneuver`, `_h_command`; and one **patches `OrderSystem._exec_payload` on the class**
+  (`test_order_param_hardening.py`). The string `_contended` in the baseline is the refusal reason
+  `sensor_contended`, not the method.
+- Imported from the module: `Order`, `OrderSystem`, `scene_from_world`, `MAX_COMMANDS_PER_PASS`,
+  `BAR_DURATION_S`.
