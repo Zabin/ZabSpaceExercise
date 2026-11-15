@@ -34,6 +34,7 @@
 | 4d (B2) | `FUTURE-WORK.md` retired: open items not already in the Release 2.0 plan filed as `BL-0445`–`BL-0450`; 59 documents reworded | Done (PR #99) |
 | A1 | Successor map for `docs/build-spec/` and `docs/design/` (§8): 45 cited sections mapped, the two open decisions made, 26 code files listed for C4 | Done (this pull request) |
 | A4 | Behaviour baseline: `spacesim/tests/test_behaviour_baseline.py` pins a scripted two-hour run of each of the 19 vignettes (world, event log, pending queue, cell views, acknowledgements) plus save, reload and replay equality; re-bless and float rules added to §3 | Done (this pull request) |
+| A5a | Split plan for `session/manager.py` (§9.1): inventory, six target modules, handler rules, nine ordered moves with tier and check, do-not-move list. `orders.py`, `server.py`, `app.js` (A5b to A5d) not planned yet | Done (this pull request) |
 | 4c, 4e, 4f, 5, 6, 7 | See the packets below | Paused |
 
 ## 3. Rules for every session, whatever its tier
@@ -425,3 +426,173 @@ misses. C4 uses the table above: for example `07-operator-console.md` §16.9 bec
    IP-1160, IP-1173, IP-1180, IP-1210, IP-1280 on the ICD): the content they added is carried
    (`roles_needed`, the payload sub-models and `roe` are in GDS-07 §5). Repoint the ICD ones to the
    new path; reword the `design/04` ones under rule (b).
+
+## 9. A5 split plans
+
+One subsection per file. A5a is `session/manager.py`; `engine/orders.py`, `ui_web/server.py` and
+`static/app.js` (A5b to A5d) are not planned yet. Line numbers are `main` at `f49f710`.
+
+### 9.1 `session/manager.py` (1,917 lines)
+
+#### 9.1.1 Responsibility inventory
+
+| Lines | What | Owns |
+|---|---|---|
+| 34 | `BUS_TICK_PERIOD_S` | Tick period of the bus, condition-check and anomaly grids. Imported from here by `session/ephemeris.py` and 6 test files. |
+| 36–46 | `ROLE_SCOPE_BY_VERB` | Verb → `bus` / `payload` role table (imported by 2 test files). |
+| 48–142 | `INJECT_EFFECT_TYPES`, `_INJECT_REQUIRED_KEYS`, `_MANEUVER_MODES`, `_inject_effect_problem`, `validate_inject_effects` | Inject validation. Pure; called at the White boundary and inside the replayed handler. |
+| 145–194 | `_is_int`, `_row_problem`, `SUPPORTED_SAVE_FORMATS`, `SAVE_FORMAT` | Save row checks and the format gate. |
+| 198–203, 1270 | `MAX_EVENTLOG_REPLAY_ENTRIES`, `MAX_CLOCK_RATE`, `MAX_SAVE_SPAN_US` | Class constants, read as `SessionManager.X` by tests, `session/aar.py` and `inprocess.py`. |
+| 205–303 | `__init__` | Builds the world, `Simulation`, `OrderSystem`, `BusSystem`, `RecoverySystem`, `SSNSystem`; **registers the four session handlers**; lock and lazy-clock fields. |
+| 306–387 | `assign_role`, `_role_covers`, `_entry_covers`, `_roles_needed_covers`, `role_scope_check`, `role_scope_for`, `_role_refusal`, `staffing_report` | Seat-to-role bindings and the role gate (`FR-3510`/`FR-3520`/`FR-4210`). Reads only. |
+| 390–453 | `start`, `_arm_schedule` | Lifecycle; queues bus ticks, condition and anomaly checks, scripted injects; re-arms after a rewind from the retained log. |
+| 456–503 | `_span_ceiling`, `_require_finite`, `step`, `_span_message`, `advance_to` | Manual time control and its bounds; re-anchors the lazy clock. |
+| 505–603 | `set_clock`, `_catch_up_locked`, `_record_catch_up_lag`, `catch_up`, `clock_state` | The server-side lazy clock (the only wall-clock reads in the file) and the lag watchdog. |
+| 605–665 | `rewind_to`, `undo_last`, `_rebind` | Rewind and undo; repoints `world`, clears order and SSN registries, rebuilds sensor bookings. |
+| 668–698 | `issue_order`, `validate_order`, `_order_ack` | Order intents: role gate, then `OrderSystem`. |
+| 700–853, 875–953 | `_authoring_problems`, `add_tle`, `_force_add_tle_object`, `_force_add_omm_object`, `bulk_import`, `save_as_scenario`, `add_ground_asset`, `creator_state`, `creator_set_state`, `creator_edit_asset`, `creator_delete_asset`, `creator_scene`, `declare_seats` | White force edits and the Vignette Creator. Each write re-baselines `sim._initial_state`. |
+| 855–873, 956–1025 | `maneuver_ledger`, `list_orders`, `cancel_order`, `decide_gated_order`, `issue_roe_change`, `windows_ahead`, `next_contacts` | Queue reads (fog by owner) and three thin `OrderSystem` wrappers. |
+| 1028–1086 | `_RECOVERY_STEPS`, `recovery_status`, `begin_recovery`, four `*ssn*` methods | Recovery strip and SSN wrappers. |
+| 1088–1212 | `list_injects`, `_inject_overrides`, `_inject_applied`, `pending_injects`, `cancel_inject`, `edit_inject`, `_pending_row`, `_log_inject_admin`, `_h_inject_admin` | Pending-inject queue (`FR-4450`): state folded from `inject_admin` log entries; cancel and edit are logged events. |
+| 1215–1440 | `save_state`, `_check_final_time_span`, `_eventlog_entry_count`, `validate_save`, `from_state` | Save, save validation, resume. |
+| 1443–1500 | `alarms`, `fire_inject`, `_inject_effects` | Alarm rollup; the White inject entry point (immediate or future-dated). |
+| 1503–1632 | `get_view`, `get_scene`, `get_ric_view`, `get_tle`, `_owns`, `get_telemetry`, `get_series`, `telemetry_export`, `get_godview`, `controller_view`, `get_eventlog`, `objectives` | Reads. `_owns` is the fog check for every per-asset read. |
+| 1635–1917 | `_h_inject`, `_apply_inject_effects` (12 effect types), `_h_env_anomaly_check`, `_notice_by_owner`, `_skip_inject_effect`, `_fired_condition_inject_ids`, `_condition_inject_already_fired`, `_h_condition_check` | The replayed handlers and the effect dispatch. |
+
+**Who reaches in** (`git grep`, outside `manager.py`):
+
+- `inprocess.py` calls 60 public methods and reads `world`, `sim`, `osys`, `ctx`, `vignette`,
+  `classification`, `started`, `seats_declared`, `load_warnings`, plus the private `_lock`,
+  `_catch_up_locked()` and `_clock_running`. `server.py` never touches the manager directly.
+- `aar.py`, `ephemeris.py` and `assessment.py` take the manager as an argument and read `sim`,
+  `ctx`, `osys`, `world`, `vignette`, `objectives()`, `MAX_SAVE_SPAN_US`; `aar.py` replays with
+  `mgr.sim.handlers()`, so the registered callables run against worlds that are not `mgr.world`.
+- Tests read or set `_clock_running`, `_wall_anchor`, `_sim_anchor`, `_rate`,
+  `_catch_up_lag_history`; call `_record_catch_up_lag`, `_apply_inject_effects` (3 files),
+  `_h_inject`, `_force_add_omm_object`; write `sim._initial_state`; patch
+  `SessionManager.validate_save` and `manager._time.time`. `tools/render_manual.py` calls `_h_inject`.
+- Imported from the module: `SessionManager`, `BUS_TICK_PERIOD_S`, `ROLE_SCOPE_BY_VERB`,
+  `INJECT_EFFECT_TYPES`, `validate_inject_effects`.
+
+#### 9.1.2 Target modules
+
+All six are new files under `spacesim/session/`. `SessionManager` keeps every method name it has
+today; a moved method becomes a one-line delegate (`return reads.get_series(self, …)`).
+
+| Module | Moves in | Stays on `SessionManager` |
+|---|---|---|
+| `role_scope.py` | `ROLE_SCOPE_BY_VERB`; bodies of `_role_covers`, `_entry_covers`, `_roles_needed_covers`, `role_scope_check`, `role_scope_for`, `staffing_report` | The delegates; `assign_role`, `_role_refusal`; the `role_assignments` and `seats_declared` attributes. |
+| `inject_effects.py` | Lines 48–142 whole; `_apply_inject_effects` as `apply_inject_effects(world, effects, rng, prop)`; `_notice_by_owner`; `_skip_inject_effect` | `_apply_inject_effects(world, effects, rng)`, which passes `self.osys.prop` (read at call time). The two static helpers have no outside caller and are not kept. |
+| `inject_queue.py` | `list_injects`, `_inject_overrides`, `_inject_applied`, `pending_injects`, `cancel_inject`, `edit_inject`, `_pending_row`, `_log_inject_admin`, `fire_inject`, `_inject_effects`, `_fired_condition_inject_ids`, `_condition_inject_already_fired`; the bodies of the four handlers (§9.1.3) | The delegates for the five public methods; the four `_h_*` methods; the `_white_inject_seq` attribute. |
+| `saves.py` | `_is_int`, `_row_problem`, `SAVE_FORMAT`, `SUPPORTED_SAVE_FORMATS`; bodies of `validate_save`, `_check_final_time_span`, `_eventlog_entry_count`, `save_state` | `validate_save` as a `staticmethod` delegate (a test patches it on the class; `inprocess.py` calls it on the class); `save_state`; **`from_state` whole**; the three class constants, which the delegate passes in as arguments. |
+| `force_edit.py` | Bodies of the 13 force-edit and Creator methods (lines 700–853, 875–953) | The delegates for the 10 public methods and `_force_add_omm_object` (a test calls it). |
+| `reads.py` | `_owns`; bodies of `get_telemetry`, `get_series`, `telemetry_export`, `alarms`, `windows_ahead`, `next_contacts`, `maneuver_ledger`, `list_orders`, `recovery_status`, `get_ric_view`, `get_tle`, `controller_view`; `_RECOVERY_STEPS` | The delegates. `get_view`, `get_scene`, `get_godview`, `get_eventlog`, `objectives` are one line each and do not move. |
+
+After the six moves `manager.py` is about 800 lines: `__init__`, lifecycle, time control, the lazy
+clock, rewind and undo, order intents, `from_state`, the SSN and recovery wrappers, and delegates.
+
+Rules for every move:
+
+1. **Functions that take the manager, not helper objects.** Each moved body becomes a module-level
+   function whose first parameter is the manager (`aar.worlds_at_times(mgr, …)` is the existing
+   pattern). Nothing is captured at construction: `from_state` replaces `sim.eventlog`, and
+   `Simulation._rebuild` replaces `sim.world`, `sim.rng` and `sim.scheduler`, so a cached reference
+   goes stale without failing.
+2. **Copy each read exactly.** `self.world`, `self.sim.world` and a handler's `world` argument are
+   different objects during replay. Do not tidy one into another.
+3. **No new module imports `spacesim.session.manager` at run time** (`TYPE_CHECKING` only).
+   `ephemeris.py` already imports `BUS_TICK_PERIOD_S` from it, and the manager imports `aar` and
+   `ephemeris` inside functions; every function-local import stays function-local.
+4. **Names imported from the module stay importable from it:** the manager re-imports
+   `ROLE_SCOPE_BY_VERB`, `INJECT_EFFECT_TYPES` and `validate_inject_effects`. `BUS_TICK_PERIOD_S`
+   and `manager._time` do not move.
+5. **Bodies move verbatim,** comments included; error strings are asserted by tests.
+   Package-history comments move with their code (§9.1.6).
+
+#### 9.1.3 Registered handlers
+
+`Simulation` holds one callable per kind and calls it live, in `_rebuild` (rewind, undo, resume),
+in `_record_failed_event`, and in every `replay(…, handlers=sim.handlers())` (`aar.py`, tests).
+
+- **What is registered does not change.** `__init__` keeps its four `register_handler` lines where
+  they are: `inject`, `condition_check`, `inject_admin`, then `OrderSystem` and `BusSystem`, then
+  `env_anomaly_check`, then `RecoverySystem` and `SSNSystem`. The callables stay the bound methods
+  `self._h_inject`, `self._h_condition_check`, `self._h_inject_admin`,
+  `self._h_env_anomaly_check`. Registering a module function or a `partial` is rejected: it
+  changes `sim.handlers()` and breaks the callers of `mgr._h_inject`.
+- **Only the bodies move.** Each method becomes
+  `inject_queue.h_inject(self, world, payload, rng)` and so on. The moved body:
+  - mutates the **same** `payload` dict it was handed (`payload["skipped"]`, `payload["fired"]`);
+    `Simulation.advance_to` appends that object to the log after the handler returns. No copy, no
+    rebuilt dict, no changed key order inside `fired` rows (`inject_id`, `value`; `asset`, `p`);
+  - reads `mgr.sim.eventlog`, `mgr.vignette`, `mgr.ctx` and `mgr.osys.prop` at call time, and
+    state only from its `world` argument, never `mgr.world`;
+  - applies effects through `mgr._apply_inject_effects(world, …, rng)`, as now;
+  - in `h_env_anomaly_check`, draws `rng.random()` once per listed asset **before** any skip, and
+    receives the tick period as an argument (`BUS_TICK_PERIOD_S` stays in `manager.py`).
+- **`_h_inject_admin`** is nine lines and need not move; it goes with the others only to keep the
+  four together.
+- **`apply_inject_effects`** keeps the branch order of the 12 effect types, each
+  `world.messages.append` in place, and the `continue` inside the `scripted_manoeuvre` `except`.
+
+#### 9.1.4 The moves, in order: invariant, check and tier
+
+One move per pull request, smallest and safest first. **Every move** runs the whole suite, and:
+the baseline file is byte-identical (`git diff --exit-code spacesim/tests/baseline/`);
+`test_determinism.py` and `test_import_guard.py` pass; no test file is in the diff;
+`sorted(dir(SessionManager))` and the module's public names are the same before and after;
+`git diff --color-moved=dimmed-zebra` shows moved lines plus delegates and nothing else; a save
+written on `main` before the move loads after it and continues to the same world. "Opus" below
+means the tier under Tier A can do it against these checks; A6 still assigns it.
+
+| # | Move | Could break | Tests that judge it (beyond the baseline) | Tier |
+|---|---|---|---|---|
+| 0 | **Tests first** (tests only): the three pins in §9.1.5 | Nothing; it makes moves 5, 7 and 8 judgeable | Itself | Tier A: it defines what the later moves are judged by |
+| 1 | `role_scope.py` | Role gate order (ownership before role; a missing seat skips the gate); fog in `role_scope_for` | `test_role_scope_enforcement.py` (29), `test_session_setup.py`, `test_role_scope_console_static.py` | Opus: pure reads, no log, no clock |
+| 2 | `reads.py` | Fog: `_owns` must stay the first statement of each per-asset read; White reads through `get_godview()`; `get_series` must keep replaying, not back-dating | `test_telemetry.py` (26), `test_queue.py`, `test_recovery_session.py`, `test_session_features.py`, `test_ephemeris.py`, `test_controller_view.py`, `test_defensive_audit_2026.py` (fog endpoint matrix), `test_web.py` | Opus: read-only and mechanical |
+| 3 | `force_edit.py` | The `started` guard; the re-baseline of `sim._initial_state` straight after each write (rewind and the save's content portion depend on it); all-or-nothing `creator_set_state` | `test_vignette_creator_session.py`, `test_vignette_creator_ui.py`, `test_authoring_boundary_validation.py` (27), `test_bulk_import_session.py`, `test_self_contained_save.py` | Opus: mechanical; the baseline is blind here, the named tests are not |
+| 4 | `saves.py`, validation half (`validate_save` and its helpers) | Which refusal wins (check order); the class constants; the class-level patch point | `test_save_load_robustness.py` (22), `test_save_format_gate.py`, `test_save_eventlog_cap.py`, `test_undo_clock_floor.py`, `test_defensive_audit_2026.py` | Opus: one pure function |
+| 5 | `saves.py`, `save_state` body | The save's keys and content (pre-start edits, force-added assets); old saves | Baseline save → reload → continue; `test_self_contained_save.py` (12); move 0's key pin | Opus, after move 0 |
+| 6 | `inject_effects.py` | Replay: branch order, message order, `prop` read at call time, `rng` handed through; validation shared by the boundary and the handler | `test_inject_effects_v2.py` (20), `test_inject_library.py`, `test_inject_notice_fog.py`, `test_space_weather_index.py` | Opus with Tier A reading the diff: verbatim, but it runs inside replay and the baseline fires only some of the 12 types |
+| 7 | `inject_queue.py`, queue half (everything but the handler bodies) | Event-log contents: `rev` numbering, `white-<n>` handles, schedule-then-`advance_to(now)` order, `self.world` reassigned after it; `_arm_schedule` re-arms from these folds | `test_pending_inject_queue.py` (19), `test_inject_rewind_rearm.py` (22), `test_activity_fog_matrix.py` | **Tier A only:** it writes the log, and a wrong `rev` or handle passes the baseline |
+| 8 | `inject_queue.py`, the four handler bodies | Everything in §9.1.3 | `test_condition_triggered_injects.py`, `test_space_weather_index.py`, `test_failure_atomic_events.py`, `test_aar.py`; move 0's registry pin | **Tier A only:** the baseline never runs two of the four handlers |
+
+Moves 1 to 5 are genuinely mechanical. Move 6 is mechanical in a dangerous place. Moves 7 and 8
+are the risky ones; if the owner wants the smallest safe refactor, stop after move 6
+(`manager.py` is then about 1,000 lines).
+
+#### 9.1.5 What the baseline does not cover
+
+The baseline loads, starts, orders, cancels an order, submits an SSN request, fires one immediate
+and one future-dated inject, changes ROE, steps, saves, reloads and replays. It does **not** run:
+
+| Not in the baseline | Covered by |
+|---|---|
+| `_h_condition_check` and `_h_env_anomaly_check` (no library vignette declares either) | `test_condition_triggered_injects.py`, `test_space_weather_index.py` (both assert `fired` and replay equality) |
+| A skipped inject (`payload["skipped"]`), edit and cancel of a pending inject | `test_pending_inject_queue.py` |
+| Rewind and undo, and the re-arm after them | `test_inject_rewind_rearm.py`, `test_undo_clock_floor.py`, `test_time_advance_bound.py`, `test_condition_triggered_injects.py` |
+| The role gate (the script names no operator seat) | `test_role_scope_enforcement.py` |
+| Force edits and the Creator | Move 3's tests |
+| Save refusals, legacy saves | Move 4's tests, `test_self_contained_save.py` |
+| Per-asset reads (telemetry, series, export, windows, ledger, recovery) | Move 2's tests |
+| The FR-4430 effect types, `reveal_asset`, `conjunction_warning`, `spawn_debris` unless a vignette fires them in two hours | Move 6's tests |
+| The lazy clock (frozen by design) | `test_web.py`, `test_white_control_correctness.py`, `test_clock_lag_watchdog.py`; nothing moves |
+| **The handler registry:** kinds, order, owning object and method name of every `sim.handlers()` entry | **Uncovered: needs a test first** (move 0) |
+| **The save's top-level keys and their order** | **Uncovered: needs a test first** (move 0) |
+| **`get_series` for another cell's asset returns `None`** at the manager | **Uncovered: needs a test first** (move 0); the other per-asset reads each have one |
+
+#### 9.1.6 Do not move
+
+| Stays in `manager.py` | Reason |
+|---|---|
+| `__init__` | Construction order is registration order, and `OrderSystem`, `RecoverySystem` and `SSNSystem` share `osys.access_config`. |
+| `start`, `_arm_schedule` | The tick grids' anchor, the `>=` / `>` asymmetry between first arm and re-arm, and the no-double-fire rule live in one place; the baseline only sees the first arm. |
+| `set_clock`, `_catch_up_locked`, `_record_catch_up_lag`, `catch_up`, `clock_state`, the anchor fields, `_lock`, `import time as _time` | The only wall-clock reads. Tests set the five fields and patch `manager._time.time`; `inprocess.py` takes `_lock` and calls `_catch_up_locked`. A clock object would need a property shim per field and buys nothing. |
+| `step`, `advance_to`, `rewind_to`, `undo_last`, `_span_ceiling`, `_span_message`, `_require_finite` | Each re-anchors the lazy clock after moving time; refusal must come before any state change. |
+| `_rebind` | It reaches into private registries of `OrderSystem` and `SSNSystem`; it belongs with their owner until A5b decides `orders.py`. |
+| `from_state` | Its order is the resume contract: install the log, `_rebuild`, `_rebind`, pending events, orders and counters, SSN, the inject handle counter. It calls `cls(…)`. |
+| `issue_order`, `validate_order`, `_order_ack`, the `OrderSystem`, SSN and recovery wrappers, `begin_recovery` | Already thin; `issue_order` is where the role gate meets the engine. |
+| `BUS_TICK_PERIOD_S`, the three class constants | Imported or read from here by `ephemeris.py`, `aar.py`, `inprocess.py` and tests. |
+
+**Ruling for C4:** package-history comments (`IP-xxxx`, `BL-xxxx`) stay and move with their code;
+no move edits a comment.
