@@ -425,3 +425,50 @@ misses. C4 uses the table above: for example `07-operator-console.md` §16.9 bec
    IP-1160, IP-1173, IP-1180, IP-1210, IP-1280 on the ICD): the content they added is carried
    (`roles_needed`, the payload sub-models and `roe` are in GDS-07 §5). Repoint the ICD ones to the
    new path; reword the `design/04` ones under rule (b).
+
+## 9. A5 split plans
+
+One subsection per file. A5a is `session/manager.py`; `engine/orders.py`, `ui_web/server.py` and
+`static/app.js` (A5b to A5d) are not planned yet. Line numbers are `main` at `f49f710`.
+
+### 9.1 `session/manager.py` (1,917 lines)
+
+#### 9.1.1 Responsibility inventory
+
+| Lines | What | Owns |
+|---|---|---|
+| 34 | `BUS_TICK_PERIOD_S` | Tick period of the bus, condition-check and anomaly grids. Imported from here by `session/ephemeris.py` and 6 test files. |
+| 36–46 | `ROLE_SCOPE_BY_VERB` | Verb → `bus` / `payload` role table (imported by 2 test files). |
+| 48–142 | `INJECT_EFFECT_TYPES`, `_INJECT_REQUIRED_KEYS`, `_MANEUVER_MODES`, `_inject_effect_problem`, `validate_inject_effects` | Inject validation. Pure; called at the White boundary and inside the replayed handler. |
+| 145–194 | `_is_int`, `_row_problem`, `SUPPORTED_SAVE_FORMATS`, `SAVE_FORMAT` | Save row checks and the format gate. |
+| 198–203, 1270 | `MAX_EVENTLOG_REPLAY_ENTRIES`, `MAX_CLOCK_RATE`, `MAX_SAVE_SPAN_US` | Class constants, read as `SessionManager.X` by tests, `session/aar.py` and `inprocess.py`. |
+| 205–303 | `__init__` | Builds the world, `Simulation`, `OrderSystem`, `BusSystem`, `RecoverySystem`, `SSNSystem`; **registers the four session handlers**; lock and lazy-clock fields. |
+| 306–387 | `assign_role`, `_role_covers`, `_entry_covers`, `_roles_needed_covers`, `role_scope_check`, `role_scope_for`, `_role_refusal`, `staffing_report` | Seat-to-role bindings and the role gate (`FR-3510`/`FR-3520`/`FR-4210`). Reads only. |
+| 390–453 | `start`, `_arm_schedule` | Lifecycle; queues bus ticks, condition and anomaly checks, scripted injects; re-arms after a rewind from the retained log. |
+| 456–503 | `_span_ceiling`, `_require_finite`, `step`, `_span_message`, `advance_to` | Manual time control and its bounds; re-anchors the lazy clock. |
+| 505–603 | `set_clock`, `_catch_up_locked`, `_record_catch_up_lag`, `catch_up`, `clock_state` | The server-side lazy clock (the only wall-clock reads in the file) and the lag watchdog. |
+| 605–665 | `rewind_to`, `undo_last`, `_rebind` | Rewind and undo; repoints `world`, clears order and SSN registries, rebuilds sensor bookings. |
+| 668–698 | `issue_order`, `validate_order`, `_order_ack` | Order intents: role gate, then `OrderSystem`. |
+| 700–853, 875–953 | `_authoring_problems`, `add_tle`, `_force_add_tle_object`, `_force_add_omm_object`, `bulk_import`, `save_as_scenario`, `add_ground_asset`, `creator_state`, `creator_set_state`, `creator_edit_asset`, `creator_delete_asset`, `creator_scene`, `declare_seats` | White force edits and the Vignette Creator. Each write re-baselines `sim._initial_state`. |
+| 855–873, 956–1025 | `maneuver_ledger`, `list_orders`, `cancel_order`, `decide_gated_order`, `issue_roe_change`, `windows_ahead`, `next_contacts` | Queue reads (fog by owner) and three thin `OrderSystem` wrappers. |
+| 1028–1086 | `_RECOVERY_STEPS`, `recovery_status`, `begin_recovery`, four `*ssn*` methods | Recovery strip and SSN wrappers. |
+| 1088–1212 | `list_injects`, `_inject_overrides`, `_inject_applied`, `pending_injects`, `cancel_inject`, `edit_inject`, `_pending_row`, `_log_inject_admin`, `_h_inject_admin` | Pending-inject queue (`FR-4450`): state folded from `inject_admin` log entries; cancel and edit are logged events. |
+| 1215–1440 | `save_state`, `_check_final_time_span`, `_eventlog_entry_count`, `validate_save`, `from_state` | Save, save validation, resume. |
+| 1443–1500 | `alarms`, `fire_inject`, `_inject_effects` | Alarm rollup; the White inject entry point (immediate or future-dated). |
+| 1503–1632 | `get_view`, `get_scene`, `get_ric_view`, `get_tle`, `_owns`, `get_telemetry`, `get_series`, `telemetry_export`, `get_godview`, `controller_view`, `get_eventlog`, `objectives` | Reads. `_owns` is the fog check for every per-asset read. |
+| 1635–1917 | `_h_inject`, `_apply_inject_effects` (12 effect types), `_h_env_anomaly_check`, `_notice_by_owner`, `_skip_inject_effect`, `_fired_condition_inject_ids`, `_condition_inject_already_fired`, `_h_condition_check` | The replayed handlers and the effect dispatch. |
+
+**Who reaches in** (`git grep`, outside `manager.py`):
+
+- `inprocess.py` calls 60 public methods and reads `world`, `sim`, `osys`, `ctx`, `vignette`,
+  `classification`, `started`, `seats_declared`, `load_warnings`, plus the private `_lock`,
+  `_catch_up_locked()` and `_clock_running`. `server.py` never touches the manager directly.
+- `aar.py`, `ephemeris.py` and `assessment.py` take the manager as an argument and read `sim`,
+  `ctx`, `osys`, `world`, `vignette`, `objectives()`, `MAX_SAVE_SPAN_US`; `aar.py` replays with
+  `mgr.sim.handlers()`, so the registered callables run against worlds that are not `mgr.world`.
+- Tests read or set `_clock_running`, `_wall_anchor`, `_sim_anchor`, `_rate`,
+  `_catch_up_lag_history`; call `_record_catch_up_lag`, `_apply_inject_effects` (3 files),
+  `_h_inject`, `_force_add_omm_object`; write `sim._initial_state`; patch
+  `SessionManager.validate_save` and `manager._time.time`. `tools/render_manual.py` calls `_h_inject`.
+- Imported from the module: `SessionManager`, `BUS_TICK_PERIOD_S`, `ROLE_SCOPE_BY_VERB`,
+  `INJECT_EFFECT_TYPES`, `validate_inject_effects`.
