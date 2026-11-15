@@ -28,8 +28,9 @@
 > restated as the owner's check-latest, try, validate, hold-back, then pin procedure with the lock file
 > `requirements.lock` named — see [`requirements-change-log.md`](requirements-change-log.md) CHG-037.)
 > **Authoritative inputs:**
-> [`build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §9
-> (NFR-1…NFR-10 — the legacy, pre-GDS NFR tag scheme),
+> the retired v1 build specification §9
+> (NFR-1…NFR-10 — the legacy, pre-GDS NFR tag scheme, now carried by
+> [`architecture/06-non-functional-requirements.md`](../architecture/06-non-functional-requirements.md), GDS-06),
 > [`architecture/03-architecture.md`](../architecture/03-architecture.md) (GDS-03, System
 > Architecture), [`architecture/02-system-context.md`](../architecture/02-system-context.md)
 > (GDS-02, System Context), [`architecture/04-domain-model.md`](../architecture/04-domain-model.md)
@@ -49,16 +50,16 @@
 ## A note on the requirement tag schemes — read before using this document
 
 **Updated 2026-10-23.** GDS-06 (Non-functional Requirements) is now authored with its merge gate
-closed and **supersedes** `docs/build-spec/04-nfr-milestones-and-risks.md` §9. GDS-06 states each
+closed and **supersedes** the retired v1 build specification §9. GDS-06 states each
 quality attribute as a tag (`NFR-1`…`NFR-19`; `NFR-1`…`NFR-10` keep the legacy build-spec numbers);
 this document elaborates each tag into leaves (`NFR-1100`…) with full traceability fields. Every
 leaf's **Source documents** field now names its GDS-06 tag first. The legacy build-spec citations
-that remain are historical only and go when build-spec retires (`BL-0292`).
+were removed when the build specification retired (refactor packet B1b, `BL-0292`).
 
 This document is a hierarchical, traceable **elaboration** of that legacy tag scheme, in the same
-non-competing relationship `requirements/01-functional-requirements.md` holds with build-spec/02 §5
-(see that document's own header note, also corrected 2026-07). Each `NFR-1xxx`-series requirement
-below is cross-referenced to its corresponding build-spec `NFR-N` tag in its **Source documents**
+non-competing relationship `requirements/01-functional-requirements.md` holds with the build
+specification's §5 (see that document's own header note, also corrected 2026-07). Each `NFR-1xxx`-series requirement
+below is cross-referenced to its corresponding `NFR-N` tag, now cited at GDS-06, in its **Source documents**
 field where a correspondence exists, for historical traceability only; the traceability scaffolding
 (Rationale, Metric/verification method, Dependencies, Related ADRs) this document adds is what the
 build-spec's terse tag list does not itself carry, not evidence the tag "binds." Any apparent
@@ -89,7 +90,7 @@ review passes actually run against it).
   - **Affected subsystems:** `engine/` (propagator, access provider), `session/` (clock
     catch-up), `ui_web/` (client poll loop)
   - **Dependencies:** NFR-1200 (hardware floor)
-  - **Source documents:** `GDS-06 NFR-4; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-4; §11 Risks row
+  - **Source documents:** `GDS-06 NFR-4`; GDS-01 §12 Risks row
     "Wall-clock + heavy propagation stalls the UI"
   - **Related ADRs:** ADR-0009 (moderate orbital fidelity), ADR-0014 (lazy-clock multiplayer)
 
@@ -104,7 +105,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `ui_web/` (globe.js, world.js, graph.js rendering)
   - **Dependencies:** None
-  - **Source documents:** `GDS-06 NFR-2; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-2
+  - **Source documents:** `GDS-06 NFR-2`
   - **Related ADRs:** ADR-0019 (sizing guideline, not engine cap), ADR-0020 (tech stack)
 
 ## 2. Scalability
@@ -156,7 +157,7 @@ review passes actually run against it).
   - **Affected subsystems:** `engine/` (all modules — no wall-clock reads, no global RNG outside
     `rng.py`), `engine/eventlog.py`, `engine/simulation.py`
   - **Dependencies:** None
-  - **Source documents:** `GDS-06 NFR-3; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-3; `CLAUDE.md`
+  - **Source documents:** `GDS-06 NFR-3`; `CLAUDE.md`
     "Load-bearing invariants" #1
   - **Related ADRs:** ADR-0002 (deterministic core)
 
@@ -185,7 +186,7 @@ review passes actually run against it).
   - **Affected subsystems:** `content/vignette.py` (load/validate), `engine/orders.py`
     (validate/dry_run)
   - **Dependencies:** NFR-1500
-  - **Source documents:** `GDS-06 NFR-6; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-6, §3.3
+  - **Source documents:** `GDS-06 NFR-6`
   - **Related ADRs:** None identified
 
 - **NFR-1610 — Failure-atomic event application** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
@@ -249,7 +250,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `engine/` (all modules), test suite
   - **Dependencies:** NFR-1500
-  - **Source documents:** `GDS-06 NFR-7; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-7; `CLAUDE.md`
+  - **Source documents:** `GDS-06 NFR-7`; `CLAUDE.md`
     "Load-bearing invariants" #2
   - **Related ADRs:** ADR-0002, ADR-0007 (content-as-data)
 
@@ -302,7 +303,7 @@ review passes actually run against it).
   - **Priority:** Should
   - **Affected subsystems:** `engine/propagator.py`, `engine/access.py`, `engine/effects.py`
   - **Dependencies:** NFR-1900
-  - **Source documents:** `GDS-06 NFR-7; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-7; `CLAUDE.md`
+  - **Source documents:** `GDS-06 NFR-7`; `CLAUDE.md`
     "Orbital fidelity" key fact; the former future-work list §2
   - **Related ADRs:** ADR-0009
 
@@ -325,7 +326,7 @@ review passes actually run against it).
   - **Affected subsystems:** `content/vignette.py` (load/validate), all subsystems (no
     scenario-embedded code execution)
   - **Dependencies:** NFR-2300
-  - **Source documents:** `GDS-06 NFR-5; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-5
+  - **Source documents:** `GDS-06 NFR-5`
   - **Related ADRs:** ADR-0018 (offline-first runtime)
 
 - **NFR-2300 — Documented LAN trust boundary (client-side cell selection)**
@@ -405,7 +406,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `engine/eventlog.py` (`Snapshot`, state hashing), `engine/world.py`
   - **Dependencies:** NFR-1500
-  - **Source documents:** `GDS-06 NFR-3; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-3
+  - **Source documents:** `GDS-06 NFR-3`
   - **Related ADRs:** ADR-0002
 
 - **NFR-2410 — Read paths leave state unchanged** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
@@ -428,8 +429,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `engine/eventlog.py`, `session/aar.py`
   - **Dependencies:** NFR-2400
-  - **Source documents:** `GDS-06 NFR-12; architecture/05-functional-requirements.md` FR-L1/FR-L2;
-    `build-spec/04-nfr-milestones-and-risks.md` §10 M7
+  - **Source documents:** `GDS-06 NFR-12`; `architecture/05-functional-requirements.md` FR-L1/FR-L2
   - **Related ADRs:** ADR-0002
 
 ## 9. Observability
@@ -489,7 +489,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** All (`spacesim/tests/`)
   - **Dependencies:** NFR-1500, NFR-1900
-  - **Source documents:** `GDS-06 NFR-7; CLAUDE.md` "Test-driven workflow (mandatory)"; `build-spec/06-test-plan-and-schedule.md`
+  - **Source documents:** `GDS-06 NFR-7`; `CLAUDE.md` "Test-driven workflow (mandatory)"
   - **Related ADRs:** ADR-0002
 
 - **NFR-2810 — Fidelity claims validated against cited reference values** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
@@ -558,7 +558,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** Build/dependency manifest, `spacesim/` (no OS-specific imports)
   - **Dependencies:** None
-  - **Source documents:** `GDS-06 NFR-8; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-8
+  - **Source documents:** `GDS-06 NFR-8`
   - **Related ADRs:** ADR-0020 (tech stack)
 
 ## 14. Usability
@@ -575,8 +575,7 @@ review passes actually run against it).
   - **Priority:** Should
   - **Affected subsystems:** `ui_web/static/` (`app.js`, `style.css`, `globe.js`)
   - **Dependencies:** None
-  - **Source documents:** `GDS-06 NFR-9; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-9;
-    `design/09-gui-principles.md`
+  - **Source documents:** `GDS-06 NFR-9`; GDS-08 §2, §8
   - **Related ADRs:** None identified
 
 - **NFR-3010 — Belief is visibly distinguishable from ground truth** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
@@ -649,7 +648,7 @@ review passes actually run against it).
   - **Priority:** Must
   - **Affected subsystems:** `ui_web/static/` (banner component), `session/aar.py` (export paths)
   - **Dependencies:** None
-  - **Source documents:** `GDS-06 NFR-10; build-spec/04-nfr-milestones-and-risks.md` §9 NFR-10;
+  - **Source documents:** `GDS-06 NFR-10`;
     `architecture/05-functional-requirements.md` FR-W5
   - **Related ADRs:** None identified
 
@@ -829,7 +828,7 @@ Explicitly excluded from the numbered baseline above.
   - **Why excluded:** Per this skill's evidentiary rule, no source document states a numeric target
     — only qualitative language ("interactive frame rates," "responsive," "without stalling"). No
     number is invented; NFR-1100/NFR-1200 above are written qualitatively instead.
-  - **Source documents:** None found (gap in `build-spec/04` §9 NFR-2/NFR-4).
+  - **Source documents:** None found (gap in GDS-06 NFR-2/NFR-4; GDS-06 OQ4).
 
 - **CNFR-03 — Formal accreditation / RMF readiness as a standalone requirement**
   - **Description (candidate):** A requirement stating the system shall pass a specific
@@ -837,7 +836,7 @@ Explicitly excluded from the numbered baseline above.
   - **Why excluded:** `build-spec/04` §9 NFR-5 explicitly states "no formal accreditation required
     for v1" — only that v1 choices should not *block* a later review. Promoting this to a positive
     accreditation requirement would contradict the source's own stated scope.
-  - **Source documents:** `build-spec/04-nfr-milestones-and-risks.md` §9 NFR-5 (cited as the reason
+  - **Source documents:** GDS-06 NFR-5 (cited as the reason
     for exclusion, not as support for the candidate).
 
 - **CNFR-04 — Per-cell authentication / token-based access control**
@@ -854,8 +853,8 @@ Explicitly excluded from the numbered baseline above.
     or restart, beyond the documented single-sitting model.
   - **Why excluded:** `build-spec/01`'s decision log lists "Save/resume mid-exercise" as v2-deferred
     by name; no v1 source document commits to crash-recoverable availability.
-  - **Source documents:** `build-spec/01-context-and-scope.md` (decision log) — cited as the reason
-    for exclusion.
+  - **Source documents:** the retired v1 build specification §3.2 (deferred list) — cited as the
+    reason for exclusion.
 
 - **CNFR-06 — AI-Red epistemic parity / fairness as a quality attribute**
   - **Description (candidate):** A requirement that AI-Red's read access be held to the same

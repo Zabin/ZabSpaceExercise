@@ -11,7 +11,7 @@ the three documents the review's findings were applied against:
 
 **Scope discipline applied throughout:** no new capability was introduced. Every change either (a)
 promotes a behavior already described in an approved source document (GDS architecture ladder,
-an Accepted ADR, or `build-spec/`) into a checkable leaf/field that did not previously exist, (b)
+an Accepted ADR, or the since-retired v1 build specification) into a checkable leaf/field that did not previously exist, (b)
 adds a qualitative disclosure of an already-decided trade-off, or (c) corrects/backfills a
 cross-reference. Numbering stability was maintained: every new FR leaf uses the existing
 gap-numbering convention (a new `x20`/`x10`/`x600` slot under its existing parent group); no

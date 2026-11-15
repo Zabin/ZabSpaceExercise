@@ -126,23 +126,24 @@
 
 ## A note on a pre-existing requirement tag scheme — read before using this document
 
-`docs/build-spec/02-requirements-and-operations.md` §5–6 contains a legacy, pre-GDS requirement-tag
+The retired v1 build specification §5–6 contained a legacy, pre-GDS requirement-tag
 scheme: **FR-E1–E8** (engine), **FR-B1–B5** (bus/payload), **FR-P1–P6** (planning/tasking),
 **FR-W1–W7** (White Cell), **FR-S1–S3** (scenario builder), **FR-L1–L2** (logging), and **OR-1–OR8**
-(hot-seat operations). **Corrected 2026-07 (was previously stated as "the build spec wins" —
+(hot-seat operations); GDS-05 §1–§7 now carries the same tags. **Corrected 2026-07 (was previously stated as "the build spec wins" —
 see `reviews/requirements-update-report.md`, which fixes this document to match the correction
 [`ADR-0031`](../architecture/adr/ADR-0031-governance-record-consistency.md) already made to the
 identically-stale language in `architecture/00-vision.md` §7):** per `CLAUDE.md`'s "Authoritative
 source & reading order" and `architecture/INDEX.md`'s blanket-supersession declaration,
-`docs/architecture/` (the GDS ladder) is authoritative over `docs/build-spec/` in its entirety,
+`docs/architecture/` (the GDS ladder) is authoritative over that build specification in its entirety,
 including for GDS-05 specifically (`architecture/05-functional-requirements.md`, `✅ Authored,
-merge gate closed`, per `ROADMAP.md`) — build-spec/02 §5–6 is **legacy reference only, not
+merge gate closed`, per `ROADMAP.md`) — its §5–6 was **legacy reference only, not
 binding**. This document is **not** a second, competing requirements baseline: it is a hierarchical
 elaboration of the same underlying capabilities, re-derived independently from the GDS-01–04/ICD/ADR
-baseline named above (not from build-spec/02 itself, which is intentionally excluded from this
-pass's authoritative-input list), and **cross-referenced** to the corresponding build-spec tag(s) in
-each requirement's **Source Documents** field where a correspondence exists, purely for historical
-traceability — the build-spec tag carries no binding weight where it conflicts with this document,
+baseline named above (not from the build specification itself, which was intentionally excluded from this
+pass's authoritative-input list), and **cross-referenced** to the corresponding tag(s) in
+each requirement's **Source Documents** field where a correspondence exists (cited at their GDS-05
+home since the build specification retired), purely for historical
+traceability — the build specification's tag wording carries no binding weight where it conflicts with this document,
 GDS-05, or any other authored GDS level.
 
 This document is accompanied by a Non-Functional Requirements baseline
@@ -202,7 +203,7 @@ review passes actually run against it).
   the resulting `WorldState` is byte-identical both times.
 - **Verification Method:** Test
 - **Dependencies:** FR-1110, FR-7100
-- **Source Documents:** GDS-01 §7; GDS-03 §2.1, §4 "Determinism"; build-spec/02 §5.1 FR-E2 (binding
+- **Source Documents:** GDS-01 §7; GDS-03 §2.1, §4 "Determinism"; GDS-05 §1 FR-E2 (binding
   statement); ADR-0002.
 - **Related ADRs:** ADR-0002
 - **Related Interfaces:** INT-0008, INT-0014
@@ -295,7 +296,7 @@ review passes actually run against it).
 - **Verification Method:** Test
 - **Dependencies:** None
 - **Source Documents:** GDS-01 §11 ("orbital fidelity model... assumed sufficient"); GDS-03 §2.1;
-  build-spec/02 §5.1 FR-E3 (binding statement); ADR-0009.
+  GDS-05 §1 FR-E3 (binding statement); ADR-0009.
 - **Related ADRs:** ADR-0009
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-1220, FR-5200
@@ -323,7 +324,7 @@ review passes actually run against it).
   within the documented tolerance, for each of the six channels.
 - **Verification Method:** Test
 - **Dependencies:** FR-1210
-- **Source Documents:** `CLAUDE.md` "Six access channels"; GDS-03 §2.1; build-spec/02 §5.1 FR-E4
+- **Source Documents:** `CLAUDE.md` "Six access channels"; GDS-03 §2.1; GDS-05 §1 FR-E4
   (binding statement); ADR-0011.
 - **Related ADRs:** ADR-0011
 - **Related Interfaces:** INT-0008
@@ -390,8 +391,8 @@ review passes actually run against it).
   `delta_v_ms = X - cost`.
 - **Verification Method:** Test
 - **Dependencies:** FR-1210
-- **Source Documents:** GDS-04 §3 (Asset `resources.delta_v_ms`), §9 validation rules; build-spec/02
-  §5.1 FR-E5 (binding statement).
+- **Source Documents:** GDS-04 §1.2 (Asset `resources.delta_v_ms`) and its "Constraints"; GDS-05
+  §1 FR-E5 (binding statement).
 - **Related ADRs:** (none directly — restates a GDS-04 validation rule)
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-1210, FR-3110
@@ -457,7 +458,7 @@ review passes actually run against it).
 - **Verification Method:** Test
 - **Dependencies:** FR-1220
 - **Source Documents:** `CLAUDE.md` "Five effect categories... Cyber is the exception"; GDS-03
-  §2.1; build-spec/02 §5.1 FR-E6 (binding statement); ADR-0012.
+  §2.1; GDS-05 §1 FR-E6 (binding statement); ADR-0012.
 - **Related ADRs:** ADR-0012
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-1220, FR-1420, FR-1510
@@ -482,7 +483,7 @@ review passes actually run against it).
   vector/posture, not by window state).
 - **Verification Method:** Test
 - **Dependencies:** FR-1410
-- **Source Documents:** `CLAUDE.md` "Cyber is the exception"; build-spec/02 §5.1 FR-E8 (binding
+- **Source Documents:** `CLAUDE.md` "Cyber is the exception"; GDS-05 §1 FR-E8 (binding
   statement); ADR-0012.
 - **Related ADRs:** ADR-0012
 - **Related Interfaces:** INT-0008
@@ -621,9 +622,8 @@ review passes actually run against it).
   the salvo", which covered only a hit.)*
 - **Verification Method:** Test
 - **Dependencies:** FR-1410
-- **Source Documents:** GDS-04 §1.2 "Persistent state" and "Constraints"; `design/04-data-model.md`
-  §9 (legacy reference, cited by GDS-04 for the same rule); `FR-1310` (precedent form for
-  `delta_v_ms`).
+- **Source Documents:** GDS-04 §1.2 "Persistent state" and "Constraints"; GDS-07 §10 "Validation
+  rules (as built)"; `FR-1310` (precedent form for `delta_v_ms`).
 - **Related ADRs:** (none directly — restates a GDS-04 validation rule)
 - **Related Requirements:** FR-1310, FR-1410, FR-3110
 - **Notes:** *(new 2026-10-16, `BL-0226`, run #142)* Only the ammunition bound is baselined. The
@@ -748,7 +748,7 @@ review passes actually run against it).
   `T1` yields a value `≥ C0`.
 - **Verification Method:** Test
 - **Dependencies:** FR-1220
-- **Source Documents:** GDS-04 §1.9, §5 (`Track.confidence`); build-spec/02 §5.1 FR-E7 (binding
+- **Source Documents:** GDS-04 §1.9, §5 (`Track.confidence`); GDS-05 §1 FR-E7 (binding
   statement); ADR-0013.
 - **Related ADRs:** ADR-0013
 - **Related Interfaces:** INT-0007, INT-0010
@@ -1084,7 +1084,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   hard limit transitions it to `red`.
 - **Verification Method:** Test
 - **Dependencies:** None
-- **Source Documents:** GDS-04 §3 `bus_state`; build-spec/02 §5.2 FR-B1 (binding statement).
+- **Source Documents:** GDS-04 §1.2 `bus_state`; GDS-05 §2 FR-B1 (binding statement).
 - **Related ADRs:** (none directly)
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-2210, FR-2310, FR-2510
@@ -1109,7 +1109,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   rejected; given full onboard storage, an ISR collection action is rejected.
 - **Verification Method:** Test
 - **Dependencies:** FR-2110
-- **Source Documents:** GDS-04 §3; build-spec/02 §5.2 FR-B2 (binding statement).
+- **Source Documents:** GDS-04 §1.2; GDS-05 §2 FR-B2 (binding statement).
 - **Related ADRs:** (none directly)
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-2110, FR-2410
@@ -1139,7 +1139,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   occurs.
 - **Verification Method:** Test
 - **Dependencies:** FR-1220, FR-2110
-- **Source Documents:** GDS-04 §3 `last_telemetry_time`; build-spec/02 §5.2 FR-B3 (binding
+- **Source Documents:** GDS-04 §3 `last_telemetry_time`; GDS-05 §2 FR-B3 (binding
   statement).
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0007, INT-0008
@@ -1237,7 +1237,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   are offered and a SIGINT-only action (e.g., geolocation collection) is not.
 - **Verification Method:** Test
 - **Dependencies:** FR-2210
-- **Source Documents:** GDS-01 §6; build-spec/02 §5.2 FR-B4 (binding statement).
+- **Source Documents:** GDS-01 §6; GDS-05 §2 FR-B4 (binding statement).
 - **Related ADRs:** (none directly)
 - **Related Interfaces:** INT-0004, INT-0008
 - **Related Requirements:** FR-2210, FR-3500
@@ -1269,8 +1269,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   a stable `nominal` state.
 - **Verification Method:** Test
 - **Dependencies:** FR-2110, FR-2210
-- **Source Documents:** `docs/design/12-safe-mode-loop.md` (descriptive elaboration); GDS-04 §3
-  `safe_mode`; build-spec/02 §5.2 FR-B5 (binding statement).
+- **Source Documents:** GDS-04 §1.2 `safe_mode`; GDS-05 §2 FR-B5 (binding statement).
 - **Related ADRs:** (none directly)
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-2110, FR-3110
@@ -1303,7 +1302,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   operator cancellation removes it from the active queue with no effect on `WorldState`.
 - **Verification Method:** Test
 - **Dependencies:** FR-1220
-- **Source Documents:** GDS-01 §10; GDS-04 §6.5 `PlannedActivity`; build-spec/02 §5.3 FR-P1
+- **Source Documents:** GDS-01 §10; GDS-04 §1.7 `PlannedActivity`; GDS-05 §3 FR-P1
   (binding statement); ADR-0005.
 - **Related ADRs:** ADR-0005
 - **Related Interfaces:** INT-0004, INT-0006, INT-0008
@@ -1328,7 +1327,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   active queue.
 - **Verification Method:** Test
 - **Dependencies:** FR-3110
-- **Source Documents:** GDS-04 §6.5 `PlannedActivity` lifecycle.
+- **Source Documents:** GDS-04 §1.7 `PlannedActivity` lifecycle.
 - **Related ADRs:** ADR-0005
 - **Related Interfaces:** INT-0004, INT-0006
 - **Related Requirements:** FR-3110
@@ -1356,7 +1355,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   first.
 - **Verification Method:** Test
 - **Dependencies:** FR-1220
-- **Source Documents:** GDS-04 §1.13 SSN Request; build-spec/02 §5.3 FR-P2 (binding statement);
+- **Source Documents:** GDS-04 §1.13 SSN Request; GDS-05 §3 FR-P2 (binding statement);
   ADR-0010.
 - **Related ADRs:** ADR-0010
 - **Related Interfaces:** INT-0009
@@ -1409,7 +1408,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   would under the same rewind.
 - **Verification Method:** Test
 - **Dependencies:** FR-3110, FR-3210
-- **Source Documents:** GDS-04 §6.5 (`PlannedActivity.kind`); build-spec/02 §5.3 FR-P3 (binding
+- **Source Documents:** GDS-04 §1.7 (`PlannedActivity.kind`); GDS-05 §3 FR-P3 (binding
   statement).
 - **Related ADRs:** (none directly)
 - **Related Interfaces:** INT-0008
@@ -1450,7 +1449,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   `fail_reason`, and no resource is consumed.
 - **Verification Method:** Test
 - **Dependencies:** FR-3110, FR-1310, FR-1520
-- **Source Documents:** GDS-04 §6.5 "Validation"; build-spec/02 §5.3 FR-P4 (binding statement).
+- **Source Documents:** GDS-04 §1.7 "Constraints" (validation); GDS-05 §3 FR-P4 (binding statement).
 - **Related ADRs:** ADR-0005, ADR-0013
 - **Related Interfaces:** INT-0008
 - **Related Requirements:** FR-3110, FR-1310, FR-1520, FR-3420
@@ -1575,7 +1574,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   command for that Asset does not appear in the offered command list and is rejected if submitted.
 - **Verification Method:** Test
 - **Dependencies:** None
-- **Source Documents:** GDS-04 §1.10 Role Assignment; build-spec/02 §5.3 FR-P5 (binding statement).
+- **Source Documents:** GDS-04 §1.10 Role Assignment; GDS-05 §3 FR-P5 (binding statement).
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0004
 - **Related Requirements:** FR-2410, FR-3110, FR-3520
@@ -1608,8 +1607,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   command submitted directly for Asset X (bypassing the order panel) is rejected.
 - **Verification Method:** Test
 - **Dependencies:** None
-- **Source Documents:** GDS-05 "Operational Rules" OR-2; GDS-04 §1.10 Role Assignment;
-  build-spec/02 §6 OR-2 (binding statement).
+- **Source Documents:** GDS-05 "Operational Rules" OR-2; GDS-04 §1.10 Role Assignment.
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0004, INT-0006
 - **Related Requirements:** FR-3510
@@ -1652,7 +1650,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   Session uses every parameter's documented default value.
 - **Verification Method:** Test
 - **Dependencies:** FR-5310
-- **Source Documents:** GDS-01 §5; build-spec/02 §5.4 FR-W1 (binding statement).
+- **Source Documents:** GDS-01 §5; GDS-05 §4 FR-W1 (binding statement).
 - **Related ADRs:** (none directly)
 - **Related Interfaces:** INT-0002
 - **Related Requirements:** FR-4210, FR-5310
@@ -1678,7 +1676,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   system reports it as unsatisfied rather than allowing the exercise to start silently understaffed.
 - **Verification Method:** Test
 - **Dependencies:** FR-4110
-- **Source Documents:** GDS-01 §5 step 2; GDS-04 §1.10 Role Assignment; build-spec/02 §5.4 FR-W2
+- **Source Documents:** GDS-01 §5 step 2; GDS-04 §1.10 Role Assignment; GDS-05 §4 FR-W2
   (binding statement).
 - **Related ADRs:** (none directly)
 - **Related Interfaces:** INT-0002
@@ -1706,7 +1704,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   to are stated in `FR-4330`.
 - **Verification Method:** Test
 - **Dependencies:** FR-1110
-- **Source Documents:** GDS-01 §10; build-spec/02 §5.4 FR-W3 (binding statement); ADR-0016.
+- **Source Documents:** GDS-01 §10; GDS-05 §4 FR-W3 (binding statement); ADR-0016.
 - **Related ADRs:** ADR-0016
 - **Related Interfaces:** INT-0002
 - **Related Requirements:** FR-1110, FR-6300, FR-4320, FR-4330
@@ -1843,7 +1841,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   effects to an unsaved run.
 - **Verification Method:** Test
 - **Dependencies:** FR-1120
-- **Source Documents:** GDS-04 §1.12 Inject; build-spec/02 §5.4 FR-W4 (binding statement);
+- **Source Documents:** GDS-04 §1.12 Inject; GDS-05 §4 FR-W4 (binding statement);
   ADR-0005.
 - **Related ADRs:** ADR-0005
 - **Related Interfaces:** INT-0002, INT-0016
@@ -1869,7 +1867,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   export file produced during that session displays/embeds banner X.
 - **Verification Method:** Test
 - **Dependencies:** FR-5100
-- **Source Documents:** GDS-01 §4; build-spec/02 §5.4 FR-W5 (binding statement).
+- **Source Documents:** GDS-01 §4; GDS-05 §4 FR-W5 (binding statement).
 - **Related ADRs:** (none directly)
 - **Related Interfaces:** INT-0002, INT-0001
 - **Related Requirements:** FR-5100, FR-7300
@@ -1895,7 +1893,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   a Red-seated operator would see via INT-0004, no more and no less.
 - **Verification Method:** Test
 - **Dependencies:** FR-6200
-- **Source Documents:** GDS-04 §8 Fog-of-war view model; build-spec/02 §5.4 FR-W6 (binding
+- **Source Documents:** GDS-04 §1.11 Cell View (fog-of-war view model); GDS-05 §4 FR-W6 (binding
   statement); ADR-0004.
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0002, INT-0007
@@ -1921,7 +1919,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   score or win/loss field.
 - **Verification Method:** Inspection
 - **Dependencies:** None
-- **Source Documents:** GDS-01 §10; build-spec/02; ADR-0017.
+- **Source Documents:** GDS-01 §10; GDS-05 §4 FR-W7; ADR-0017.
 - **Related ADRs:** ADR-0017, ADR-0029
 - **Related Interfaces:** (none — absence of an interface)
 - **Related Requirements:** FR-7100, FR-7300
@@ -1947,7 +1945,7 @@ leaves constrain what a sensor *can* observe and how effectively, not how taskin
   effect on the next evaluation of that dial, with no session restart.
 - **Verification Method:** Demonstration
 - **Dependencies:** None
-- **Source Documents:** GDS-05 "White Cell control" FR-W7; build-spec/02 §5.4.
+- **Source Documents:** GDS-05 "White Cell control" FR-W7.
 - **Related ADRs:** (none directly)
 - **Related Interfaces:** INT-0002
 - **Related Requirements:** FR-4710
@@ -2514,7 +2512,7 @@ is no longer required. Same ID, narrower scope.)*
   identifies the missing element by name.
 - **Verification Method:** Test
 - **Dependencies:** None
-- **Source Documents:** GDS-04 §1.1 "Constraints", §9; build-spec/02 §5.5 FR-S3 (binding
+- **Source Documents:** GDS-04 §1.1 "Constraints"; GDS-05 §5 FR-S3 (binding
   statement).
 - **Related ADRs:** ADR-0007, ADR-0036
 - **Related Interfaces:** INT-0011
@@ -2552,8 +2550,8 @@ is no longer required. Same ID, narrower scope.)*
   lines, loading it is refused, the error names that asset, and no session is created.
 - **Verification Method:** Test
 - **Dependencies:** FR-5310
-- **Source Documents:** GDS-04 §1.3 "Constraints"; `design/04-data-model.md` §9 (legacy reference
-  cited by GDS-04); `FR-5310` Description.
+- **Source Documents:** GDS-04 §1.3 "Constraints"; GDS-07 §10 "Validation rules (as built)";
+  `FR-5310` Description.
 - **Related ADRs:** ADR-0007
 - **Related Interfaces:** INT-0011
 - **Related Requirements:** FR-5310, FR-5210, FR-5220
@@ -2588,8 +2586,8 @@ is no longer required. Same ID, narrower scope.)*
   whose cyber unit declares no location loads.
 - **Verification Method:** Test
 - **Dependencies:** FR-5310
-- **Source Documents:** GDS-04 §1.2 "Purpose" and "Constraints"; `design/04-data-model.md` §9
-  (legacy reference cited by GDS-04); ADR-0012 "Decision" and "Rationale" (the cyber exception).
+- **Source Documents:** GDS-04 §1.2 "Purpose" and "Constraints"; GDS-07 §10 "Validation rules (as
+  built)"; ADR-0012 "Decision" and "Rationale" (the cyber exception).
 - **Related ADRs:** ADR-0007, ADR-0012
 - **Related Interfaces:** INT-0011
 - **Related Requirements:** FR-5310, FR-1420
@@ -2837,7 +2835,7 @@ is no longer required. Same ID, narrower scope.)*
   `CellView` never includes a Red-only `Track` that Blue has no custody of.
 - **Verification Method:** Test
 - **Dependencies:** FR-6110, FR-1510
-- **Source Documents:** GDS-04 §8 Fog-of-war view model; ICD INT-0007; ADR-0004.
+- **Source Documents:** GDS-04 §1.11 Cell View (fog-of-war view model); ICD INT-0007; ADR-0004.
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0006, INT-0007
 - **Related Requirements:** FR-6110, FR-1510, FR-4610
@@ -3030,7 +3028,7 @@ is no longer required. Same ID, narrower scope.)*
   request is rejected and no `WorldState` change occurs.
 - **Verification Method:** Test
 - **Dependencies:** FR-6210
-- **Source Documents:** GDS-01 §2; GDS-02 §2 row 5; ICD INT-0005; build-spec/02 §6 OR-5 (binding
+- **Source Documents:** GDS-01 §2; GDS-02 §2 row 5; ICD INT-0005; GDS-05 §7 OR-5 (binding
   statement).
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0005, INT-0006
@@ -3060,7 +3058,7 @@ is no longer required. Same ID, narrower scope.)*
   is explicitly selected.
 - **Verification Method:** Demonstration
 - **Dependencies:** FR-6410
-- **Source Documents:** GDS-05 "Operational Rules" OR-3 (OQ1); build-spec/02 §6 OR-3.
+- **Source Documents:** GDS-05 "Operational Rules" OR-3 (OQ1).
 - **Related ADRs:** ADR-0004
 - **Related Interfaces:** INT-0001, INT-0006
 - **Related Requirements:** FR-6410, FR-6210
@@ -3090,7 +3088,7 @@ is no longer required. Same ID, narrower scope.)*
   state reproduces a `WorldState` history identical to the one recorded live.
 - **Verification Method:** Test
 - **Dependencies:** FR-1120
-- **Source Documents:** GDS-04 §7 `EventLogEntry`; build-spec/02 §5.6 FR-L1 (binding statement).
+- **Source Documents:** GDS-04 §1.14 `EventLogEntry`; GDS-05 §6 FR-L1 (binding statement).
 - **Related ADRs:** ADR-0002
 - **Related Interfaces:** INT-0008, INT-0014
 - **Related Requirements:** FR-1120, FR-7200, FR-7300
@@ -4225,15 +4223,15 @@ traceability matrix's baseline rows.
 - **CR-08 — Save-file/Snapshot cross-version compatibility.** GDS-04 Open Question 4 (restated in
   ICD §7 issue 7) leaves open whether a save produced by one engine build is expected to load under
   a later build — no approved document commits to a compatibility guarantee, so FR-7210 above is
-  scoped only to same-build round trips. **Source:** GDS-04 §10 Open Question 4; ICD §7 issue 7.
+  scoped only to same-build round trips. **Source:** GDS-04 "Open Questions" 4; ICD §7 issue 7.
 - **CR-09 — Unified supertype for Planned Activity and SSN Request.** GDS-04 Open Question 3
   (restated in ICD §7 issue 6) leaves open whether these two "request now, result later" entities
   should share a formal supertype; no approved document commits to such a refactor. **Source:**
-  GDS-04 §10 Open Question 3; ICD §7 issue 6.
+  GDS-04 "Open Questions" 3; ICD §7 issue 6.
 - **CR-10 — AccessWindow as a persisted vs. derived entity.** GDS-04 Open Question 2 (restated in
   ICD §7 issue 5) leaves open whether `AccessWindow` must be a stored record for some future AAR
   display, or remains purely recomputed; no approved document commits either way. **Source:**
-  GDS-04 §10 Open Question 2; ICD §7 issue 5.
+  GDS-04 "Open Questions" 2; ICD §7 issue 5.
 - **CR-11 — Partial vignette-authoring state ownership.** ICD §7 issue 10 flags that where
   in-progress, unsaved vignette-builder state lives (server-session-scoped vs. browser-local) is
   unstated by any approved document — this may indicate a missing interface, not merely a missing
