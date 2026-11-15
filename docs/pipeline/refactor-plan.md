@@ -35,6 +35,7 @@
 | A1 | Successor map for `docs/build-spec/` and `docs/design/` (§8): 45 cited sections mapped, the two open decisions made, 26 code files listed for C4 | Done (this pull request) |
 | A4 | Behaviour baseline: `spacesim/tests/test_behaviour_baseline.py` pins a scripted two-hour run of each of the 19 vignettes (world, event log, pending queue, cell views, acknowledgements) plus save, reload and replay equality; re-bless and float rules added to §3 | Done (this pull request) |
 | A5a | Split plan for `session/manager.py` (§9.1): inventory, six target modules, handler rules, nine ordered moves with tier and check, do-not-move list. `orders.py`, `server.py`, `app.js` (A5b to A5d) not planned yet | Done (this pull request) |
+| A5b | Split plan for `engine/orders.py` (§9.2): inventory, five target modules, handler rules, seven ordered moves with tier and check, do-not-move list. `server.py`, `app.js` (A5c, A5d) not planned yet | Done (this pull request) |
 | 4c, 4e, 4f, 5, 6, 7 | See the packets below | Paused |
 
 ## 3. Rules for every session, whatever its tier
@@ -429,8 +430,9 @@ misses. C4 uses the table above: for example `07-operator-console.md` §16.9 bec
 
 ## 9. A5 split plans
 
-One subsection per file. A5a is `session/manager.py`; `engine/orders.py`, `ui_web/server.py` and
-`static/app.js` (A5b to A5d) are not planned yet. Line numbers are `main` at `f49f710`.
+One subsection per file. A5a is `session/manager.py` and A5b is `engine/orders.py`;
+`ui_web/server.py` and `static/app.js` (A5c, A5d) are not planned yet. Line numbers are `main` at
+`f49f710` (§9.1) and `a6c085c` (§9.2).
 
 ### 9.1 `session/manager.py` (1,917 lines)
 
@@ -596,3 +598,201 @@ and one future-dated inject, changes ROE, steps, saves, reloads and replays. It 
 
 **Ruling for C4:** package-history comments (`IP-xxxx`, `BL-xxxx`) stay and move with their code;
 no move edits a comment.
+
+### 9.2 `engine/orders.py` (1,285 lines)
+
+#### 9.2.1 Responsibility inventory
+
+| Lines | What | Owns |
+|---|---|---|
+| 43–57 | `ACTION_CHANNEL`, `MAX_COMMANDS_PER_PASS` | Action → access channel (`None` = cyber, not window-gated); the per-pass uplink cap (imported by `test_queue.py`). |
+| 59–163 | `OBSERVE_NUMERIC_PARAMS`, `_requested_beam_mode`, `_observe_params_ok`, `ORDER_PARAM_RULES`, `_finite_float_ok`, `_param_value_ok`, `_order_params_ok`, `_engage_rounds` | Pure param checks. The two `*_params_ok` functions **delete `None` keys from the order's own `params` dict**, for `dry_run` and `issue` alike. |
+| 166–175 | `BAR_DURATION_S` | Gantt bar widths: display data, imported inside a function by `inprocess.py`. |
+| 178–190 | `Order` | The order record. Imported by 37 files; a save restores it with `Order(**row)`. |
+| 193–203 | `scene_from_world` | World → access `Scene`, dropping degraded sites and sensors. Imported at module level by `ssn.py`, `recovery.py`, `manager.py`, `engine/__init__.py` and 3 test files. |
+| 207–256 | `OrderSystem.__init__` | The state (`roe`, `_static_roe`, `resolver`, `prop`, `access_config`, `horizon`, `wq_threshold`, `auto_cue_ssn`, four booking dicts, `orders`, `_order_counter`, `gating_rules`, `_pending`) and **eight handler registrations**. |
+| 259–301, 425–452 | `issue`, `dry_run`, `_plan`, `_continue_plan` | The pipeline: mint the id, validate, hold a gated order (appends `effect_gate_request`), dispatch by action, plan jam, engage and downlink inline. `commit` is the only difference between preview and issue. |
+| 303–393 | `_order_classification`, `_matching_gate`, `rebuild_pending`, `decide_gated_order`, `_h_noop` | Effect gating (`FR-3430`): appends `effect_gate_decision`; rebuilds `_pending` from the log on resume. |
+| 395–423 | `_effective_roe`, `_h_roe_change`, `issue_roe_change` | ROE (`FR-3440`): point-in-time value folded from `_static_roe` and the log's `roe_change` entries; the `self.roe` cache; appends `roe_change`. |
+| 454–498 | `_release_bookings_on_execute`, `cancel` | Booking release on execute (from three handlers) and on cancel. The two are **not** symmetric: cancel leaves a zero count in `_pass_bookings`, execute removes the key. |
+| 500–559, 752–763 | `_ap`, `_plan_command`, `_best_isl_window`, `_window_endpoints`, `_next_window` | Window search; the three delivery paths (stored program, ground uplink, ISL relay), earliest wins; the per-pass cap. |
+| 561–662 | `_plan_collection`, `_candidate_sensors`, `_observe_payload_type`, `_observe_modes`, `_auto_blocked_by_cue`, `_contended`, `_resolve_sensor_id` | Sensor tasking: candidate choice, contention, bookings; adds `sensor_id` and `window_end` to the payload (`_rebind` rebuilds bookings from them). Sets `order.actor`, in preview too. |
+| 665–750 | `_validate` | Refusal order: action, params, then observe rules or ownership, then per-action (ROE as of `issued_at`, ammo, weapons-quality track, Δv, verb, station). |
+| 766–830 | `_observation_phase_angle_deg`, `_delivery_keys`, `_delivery_jammed`, `_jammed_record` | Phase-angle geometry; delivery-path keys written at plan time and read at execute time. |
+| 832–1064 | `_exec_payload` | Builds the `(kind, payload)` the handler will receive, per action. Reads three different clocks: `order.issued_at` (custody confidence), `win.start` (phase angle), `self.world.now` (footprint). Called only when `commit`. |
+| 1066–1120 | `_mark_cyber_queued`, `_plan_cyber` | Cyber: no window; builds the effect and schedules it at `clock.now`. |
+| 1123–1285 | `_h_effect`, `_h_maneuver`, `_h_downlink`, `_h_command`, `_h_observe` | The replayed execute handlers. |
+
+**Who reaches in** (`git grep`, outside `orders.py`):
+
+- `manager.py` calls `issue`, `dry_run`, `cancel`, `decide_gated_order`, `issue_roe_change`,
+  `rebuild_pending`; reads `orders`, `prop`, `access_config`; **writes** `world`, `auto_cue_ssn`,
+  `_order_counter`; `_rebind` clears `orders`, `_pending` and the four booking dicts and refills
+  `_sensor_bookings`. `inprocess.py` and `assessment.py` read `orders` and `prop`.
+- `ssn.py` and `recovery.py` import only `scene_from_world`. `tools/render_manual.py` calls `_ap()`.
+- Tests read or set `_pending`, the four booking dicts, `_order_counter`, `_static_roe`, `roe`,
+  `prop`, `sim`, `world`, `auto_cue_ssn`; call `_effective_roe`, `_exec_payload`, `_ap`,
+  `_h_maneuver`, `_h_command`; and one **patches `OrderSystem._exec_payload` on the class**
+  (`test_order_param_hardening.py`). The string `_contended` in the baseline is the refusal reason
+  `sensor_contended`, not the method.
+- Imported from the module: `Order`, `OrderSystem`, `scene_from_world`, `MAX_COMMANDS_PER_PASS`,
+  `BAR_DURATION_S`.
+
+#### 9.2.2 Target modules
+
+All five are new files under `spacesim/engine/`. `OrderSystem` keeps **every** method name it has
+today, private ones included; a moved method becomes a one-line delegate
+(`return order_planning.plan_command(self, order, commit)`).
+
+| Module | Moves in | Stays in `orders.py` |
+|---|---|---|
+| `order_params.py` | Lines 43–163 whole: `ACTION_CHANNEL`, `MAX_COMMANDS_PER_PASS`, and the eight param names of §9.2.1. Imports `math`, `typing` and the channel constants from `access.py`; nothing else | A re-import of all ten names, so `orders.ACTION_CHANNEL` and `orders.MAX_COMMANDS_PER_PASS` still resolve. |
+| `order_validation.py` | Bodies of `_validate`, `_resolve_sensor_id`, `_observe_payload_type`, `_observe_modes` (read-only; shared by validation, sensor choice and the observe payload) | The four delegates. |
+| `order_payloads.py` | Bodies of `_exec_payload`, `_observation_phase_angle_deg`, `_delivery_keys` | The delegates; `_delivery_keys` stays a `staticmethod`. `_exec_payload` **must** stay a method: a test patches it on the class. |
+| `order_planning.py` | Bodies of `_plan_command`, `_best_isl_window`, `_plan_collection`, `_candidate_sensors`, `_auto_blocked_by_cue`, `_contended`, `_window_endpoints`, `_next_window`, `_plan_cyber`, `_mark_cyber_queued` | The delegates; `_ap`; the four booking dicts (the moved planners write them through `osys`). |
+| `order_handlers.py` | Bodies of the five execute handlers (§9.2.3); `_delivery_jammed`, `_jammed_record` | The five bound `_h_*` methods; the two `staticmethod` delegates. |
+
+`order_params.py` is the leaf that validation, payloads and planning share; `order_handlers.py`
+imports none of the other four. After the moves `orders.py` is about 480 lines: the re-import,
+`BAR_DURATION_S`, `Order`, `scene_from_world`, `__init__`, `issue`, `dry_run`, `_plan`,
+`_continue_plan`, gating, ROE, bookings release, `cancel`, `_ap` and the delegates.
+
+Rules for every move:
+
+1. **Functions that take the order system.** Each moved body becomes a module-level function whose
+   first parameter is `osys`. The only edits to a body are `self` → `osys` and the dedent. The
+   check is mechanical: dedent the new body, replace `osys` with `self`, and diff it against the
+   old method; the diff must be empty.
+2. **Every call to another `OrderSystem` method still goes through `osys.<name>(…)`,** never
+   straight to the sibling module function. That keeps the class-level patch of `_exec_payload`
+   working, and keeps each delegate the single way in.
+3. **Read at call time; cache nothing.** `_rebind` replaces `osys.world`; `from_state` replaces
+   `osys.sim.eventlog`; `Simulation._rebuild` replaces `sim.world`, `sim.rng`, `sim.scheduler`;
+   the manager sets `osys.auto_cue_ssn` after construction. No helper object holds a reference.
+4. **Copy each clock read exactly.** `osys.sim.clock.now`, `osys.world.now`, a handler's
+   `world.now`, `order.issued_at` and `win.start` are five different things; `_exec_payload` uses
+   three of them on purpose.
+5. **Import boundary.** A new module imports only the standard library, NumPy and
+   `spacesim.engine.*`; never `random`, `time`, `datetime`, `session`, `ui_web` or `content`
+   (`test_import_guard.py` scans `engine/` recursively, so new files are covered without an edit).
+   **No new module imports `spacesim.engine.orders` at run time** (`Order` and `OrderSystem` under
+   `TYPE_CHECKING` only): `orders.py` imports them, and `ssn.py` and `recovery.py` import
+   `orders.py` at module level.
+6. **Function-local imports stay function-local,** each in the function it is in now. The
+   `engine.ssn` import inside `_h_observe` is a real cycle (`ssn` → `orders` → handlers → `ssn`);
+   the others (`jam`, `engage`, `cyber`, `isr`, `geometry`, `sun`, `orbit`, `bus`) are not, but
+   hoisting them changes what loads when and is not a move. The unused `classify_regime` import in
+   the engage branch moves too; packet C3 removes it, not a move.
+7. **`commit` branches move whole.** No planner is split into a "compute" half and a "write" half:
+   the order *payload → status → booking → schedule* inside each planner is what makes a failed
+   payload leave nothing behind (`IP-1052` Design Decision 3).
+8. **Bodies move verbatim,** comments included; refusal strings are asserted by tests and pinned in
+   the baseline's acknowledgements. `engine/__init__.py` does not change. Each move adds its new
+   module to `docs/architecture/code-map.md` in the same pull request.
+
+#### 9.2.3 Registered handlers
+
+`Simulation` holds one callable per kind and calls it live, in `_rebuild` (rewind, undo, resume),
+in `_record_failed_event`, and in every `replay(…, handlers=sim.handlers())`. So a handler runs
+against worlds that are not `osys.world`, with the session's own `OrderSystem` as `self`.
+
+- **What is registered does not change.** `__init__` keeps its eight `register_handler` lines, in
+  this order: `execute_effect`, `execute_maneuver`, `execute_observe`, `execute_downlink`,
+  `effect_gate_request`, `effect_gate_decision`, `roe_change`, `execute_command`. The callables
+  stay the bound methods `self._h_effect` and so on. A module function or a `partial` is rejected:
+  it changes `sim.handlers()`, breaks the tests that call `osys._h_maneuver` and
+  `osys._h_command`, and loses the instance state the handlers use.
+- **`_h_noop` and `_h_roe_change` do not move** (§9.2.6).
+- **Only the bodies of the five execute handlers move,** each to
+  `order_handlers.h_effect(osys, world, payload, rng)` and so on. Every moved body:
+  - takes world state only from its `world` argument, never `osys.world`; from `osys` it reads
+    only `resolver`, `prop`, `auto_cue_ssn` and the three methods below, at call time;
+  - keeps every `payload[...]` and `payload.get(...)` as written. `payload["actor"]` raises on a
+    missing key and `payload.get("delivery_path") or "ground_uplink"` does not: that difference is
+    how a payload saved before `IP-1085` or `IP-1320` still replays (no `delivery_path`, a stray
+    `consume.power_w`);
+  - passes the `rng` it was handed, untouched.
+- **RNG.** Planning draws nothing. The only draws in the file happen inside
+  `osys.resolver.resolve(effect, world, rng)` in `h_effect`. Its early return (ammo re-check
+  failed) comes **before** that call and must stay before it: no resolution, no draw, nothing
+  charged. The ammo charge stays **after** resolution. `issue_roe_change` hands `sim.rng` to
+  `_h_roe_change`, which draws nothing; do not add a draw anywhere.
+- **Payloads mutated in place.** `h_maneuver` writes `payload["applied"]`, then
+  `payload["remaining_delta_v_ms"]`, on the **same** dict it was handed; `Simulation.advance_to`
+  appends that object to the log after the handler returns, and the manoeuvre ledger reads it. No
+  copy, no rebuilt dict. The other four do not write to `payload`; keep it so.
+- **Bookings.** `h_maneuver`, `h_command` and `h_observe` call
+  `osys._release_bookings_on_execute(payload.get("__order_id"))` as their **first** statement,
+  before any early return. `h_effect` and `h_downlink` do not call it (jam, engage and downlink
+  take no booking); do not add it. The call changes the live booking dicts even when the handler
+  is replaying; that is today's behaviour.
+- **`h_observe`'s auto-cue** calls `osys.auto_cue_ssn.submit_request(…)` from inside a handler:
+  it mints an SSN request id and schedules events, live and in replay alike
+  (`_record_failed_event` swaps in a scratch scheduler for this reason). Keep the call, its guard
+  (`0.3 < confidence < 0.85`, not characterised, no open request) and its place at the end.
+- **Plan-time payload keys are log content.** `__order_id`, `sensor_id`, `window_end`,
+  `delivery_path`, `relay` and `custody_confidence_at_decision` are written by the planners and by
+  `_exec_payload`, logged, and read back (`_rebind`, `assessment.py`, the handlers). Their names
+  and the order they are added in do not change.
+
+#### 9.2.4 The moves, in order: invariant, check and tier
+
+One move per pull request, smallest and safest first. **Every move** runs the whole suite, and:
+the baseline file is byte-identical (`git diff --exit-code spacesim/tests/baseline/`);
+`test_determinism.py` and `test_import_guard.py` pass; no test file is in the diff;
+`sorted(dir(OrderSystem))` is unchanged and every name in `dir(spacesim.engine.orders)` is still
+there; rule 1's body diff is empty for every moved function; `import spacesim.engine.ssn`,
+`import spacesim.engine.recovery` and `import spacesim.engine.orders` each succeed as the first
+import of a fresh interpreter (the cycle check); a save written on `main` before the move loads
+after it and continues to the same world. "Opus-safe" means the tier under Tier A can do it against
+these checks; "Fable-only" means Tier A only. A6 still assigns each one.
+
+| # | Move | Could break | Tests that judge it (beyond the baseline) | Tier |
+|---|---|---|---|---|
+| 0 | **Tests first** (tests only): the three pins in §9.2.5 | Nothing; it makes moves 2 to 6 judgeable | Itself | Fable-only: it defines what the later moves are judged by |
+| 1 | `order_params.py` | The in-place `None` drop; names read as `orders.X` | `test_order_param_hardening.py` (12), `test_observe_order_remediation.py` (9), `test_effect_resource_bounds.py` (13), `test_queue.py` | Opus-safe: pure functions and two constants, no state |
+| 2 | `order_validation.py` | Which refusal wins (check order); ROE read as of `order.issued_at` through `osys._effective_roe`; the weapons-quality check at `clock.now` | The baseline's 952 acknowledgements (nine refusal reasons); `test_orders.py` (26), `test_validate_order.py`, `test_beam_mode_modality.py`, `test_sensor_modality_wiring.py`, `test_bus_commands.py` (62), `test_content.py` | Opus-safe: read-only, and the baseline sees every refusal string |
+| 3 | `order_payloads.py` | Derived probabilities and gain; the three clocks (rule 4); payload keys; the class-level patch point | `test_derived_probabilities.py` (13), `test_isr.py` (42), `test_phase_angle_gain.py` (14), `test_orders.py` (custody confidence, engage replay), `test_jam_delivery_paths.py`, `test_order_param_hardening.py` (the patch); move 0's key pin | Opus-safe with Tier A reading the diff: verbatim, but 230 lines of numbers and the baseline never builds an engage payload |
+| 4 | `order_planning.py`, command half: `_plan_command`, `_best_isl_window`, `_window_endpoints`, `_next_window` | Earliest-wins and its tie-break (`min` keeps the first of stored, ground, ISL); the per-pass cap; no booking for a stored program; preview books nothing | Baseline paths and windows; `test_queue.py`, `test_planning.py`, `test_jam_delivery_paths.py`, `test_bus_commands.py`; move 0's preview pin | Opus-safe, after move 0: mechanical; it writes bookings, which the preview pin watches |
+| 5 | `order_planning.py`, sensor and cyber half: the other six | `order.actor` set before the payload is built; `sensor_id` and `window_end` in the payload (`_rebind` rebuilds bookings from them); contended versus no window; cyber effect built before the queued mark, scheduled at `clock.now` | `test_observe_order_remediation.py`, `test_planning.py` (rewind rebuild), `test_queue.py`, `test_orders.py`, `test_derived_probabilities.py`; move 0's preview pin | Opus-safe with Tier A reading the diff: mechanical, but it writes log content that rewind depends on |
+| 6 | `order_handlers.py` | Everything in §9.2.3 | `test_orders.py`, `test_effect_resource_bounds.py` (two replay tests), `test_jam_delivery_paths.py` (replay per path), `test_future_work.py` (auto-cue), `test_session.py` (blocked downlink), `test_failure_atomic_events.py`, `test_aar.py`; move 0's execute pin and the registry pin | **Fable-only:** it runs inside replay; the baseline never runs a kinetic engagement, a jammed delivery, a failed re-check or an auto-cue |
+
+Moves 1, 2 and 4 are genuinely mechanical. Moves 3 and 5 are mechanical in places the baseline
+sees only in part. Move 6 is the risky one and buys the least (about 190 lines); if the owner wants
+the smallest safe refactor, stop after move 5 (`orders.py` is then about 670 lines).
+
+#### 9.2.5 What the baseline does not cover
+
+The baseline issues 952 orders: all seven actions, the three delivery paths, the sensor path and
+cyber; every action is queued at least once **except `engage`** (refused all 114 times). It
+cancels one order per cell and changes one ROE flag. It does **not** run:
+
+| Not in the baseline | Covered by |
+|---|---|
+| `dry_run` at all (the script only issues) | `test_validate_order.py` (5, one downlink order), `test_orders.py`, `test_effect_resource_bounds.py`, `test_jam_delivery_paths.py`, `test_order_param_hardening.py`, each for one case |
+| **`dry_run` as a mirror:** same status, reason, path, window and actor as `issue` for all seven actions, and no change to the log, RNG state, scheduler, `orders`, `_order_counter`, `_pending` or the four booking dicts | **Uncovered: needs a test first** (move 0, preview pin: the baseline's own order list, previewed then issued, on a few vignettes) |
+| Gating and the pending-approval resume (no library vignette declares gating rules) | `test_orders.py` (4), `test_gated_order_resume.py` (14); nothing here moves |
+| The ROE point-in-time derivation (the baseline shows it only as a refusal string) | `test_orders.py` (change affects later orders, not earlier ones), `test_content.py`, `test_ssn.py`; it stays in `orders.py` |
+| A queued `engage`: its payload, kinetic resolution, the ammo charge, the execute-time re-check | `test_orders.py`, `test_effect_resource_bounds.py`, `test_derived_probabilities.py` |
+| Jam and cyber execution: queued 38 and 42 times, but whether a jam window opens inside two hours is not asserted | `test_derived_probabilities.py`, `test_jam_delivery_paths.py` (10), `test_safe_mode.py`, `test_orders.py` |
+| Sensor bookings beyond the refusal string: release on execute, on cancel, rebuild after rewind | `test_observe_order_remediation.py`, `test_queue.py`, `test_planning.py`, `test_defensive_audit_2026.py` |
+| The per-pass cap (`pass_capacity_full` never occurs) | `test_queue.py` |
+| Jammed delivery, blocked downlink, auto-cue, phase angle, beam modes, `requires_cue` | `test_jam_delivery_paths.py`, `test_session.py`, `test_future_work.py`, `test_phase_angle_gain.py`, `test_beam_mode_modality.py`, `test_orders.py` |
+| **A manoeuvre that fails at execute** (`payload["applied"]` is `False`: jammed, or Δv gone) and its replay | **Uncovered: needs a test first** (move 0, execute pin: one scripted session that runs all five execute kinds including this and a queued engage, then asserts replay equality) |
+| **Payload key names and order** (the baseline hashes with sorted keys) | **Uncovered: needs a test first** (move 0, key pin: the key list of each of the five execute payloads) |
+| The handler registry | Uncovered; §9.1 move 0's registry pin covers these eight kinds too and must merge before move 6 |
+
+#### 9.2.6 Do not move
+
+| Stays in `orders.py` | Reason |
+|---|---|
+| `Order`, `scene_from_world`, `BAR_DURATION_S` | Imported from here by 37 files, by `ssn.py` and `recovery.py` at module level, and by `inprocess.py`. Moving `scene_from_world` would end the `ssn` → `orders` cycle, but that is a design change, not a move. |
+| `__init__` | Registration order, and every attribute the manager and the tests read or write. |
+| `issue`, `dry_run`, `_plan`, `_continue_plan` | The mirror is only checkable while both entry points and the single `commit` flag sit together. `issue` registers the order **after** planning returns; `dry_run` mints no id. |
+| `_order_classification`, `_matching_gate`, `rebuild_pending`, `decide_gated_order`, `_effective_roe`, `issue_roe_change`, `_h_roe_change`, `_h_noop` | They append to the log directly (handler applied, then append; pending entry deleted, decision appended, then planning resumed). The baseline is blind to gating. 130 lines; not worth the risk. |
+| `cancel`, `_release_bookings_on_execute`, the four booking dicts, `orders`, `_pending`, `_order_counter` | `_rebind`, `from_state` and nine test files reach them by name. The two release paths differ (§9.2.1); do not unify them. |
+| `_ap` | Called by a test and by `tools/render_manual.py`. `_next_window` builds the same provider inline; do not fold one into the other in a move. |
+
+**Not part of any move:** splitting `_exec_payload` per action, hoisting imports, removing the
+unused import, unifying the two release paths, or renaming a private method. Each is a separate
+package with its own tests.
