@@ -35,7 +35,7 @@
 | A1 | Successor map for `docs/build-spec/` and `docs/design/` (§8): 45 cited sections mapped, the two open decisions made, 26 code files listed for C4 | Done (this pull request) |
 | A4 | Behaviour baseline: `spacesim/tests/test_behaviour_baseline.py` pins a scripted two-hour run of each of the 19 vignettes (world, event log, pending queue, cell views, acknowledgements) plus save, reload and replay equality; re-bless and float rules added to §3 | Done (this pull request) |
 | A5a | Split plan for `session/manager.py` (§9.1): inventory, six target modules, handler rules, nine ordered moves with tier and check, do-not-move list. `orders.py`, `server.py`, `app.js` (A5b to A5d) not planned yet | Done (this pull request) |
-| A5b | Split plan for `engine/orders.py` (§9.2): inventory, four target modules, handler rules, seven ordered moves with tier and check, do-not-move list. `server.py`, `app.js` (A5c, A5d) not planned yet | Done (this pull request) |
+| A5b | Split plan for `engine/orders.py` (§9.2): inventory, five target modules, handler rules, seven ordered moves with tier and check, do-not-move list. `server.py`, `app.js` (A5c, A5d) not planned yet | Done (this pull request) |
 | 4c, 4e, 4f, 5, 6, 7 | See the packets below | Paused |
 
 ## 3. Rules for every session, whatever its tier
@@ -637,3 +637,100 @@ no move edits a comment.
   `sensor_contended`, not the method.
 - Imported from the module: `Order`, `OrderSystem`, `scene_from_world`, `MAX_COMMANDS_PER_PASS`,
   `BAR_DURATION_S`.
+
+#### 9.2.2 Target modules
+
+All five are new files under `spacesim/engine/`. `OrderSystem` keeps **every** method name it has
+today, private ones included; a moved method becomes a one-line delegate
+(`return order_planning.plan_command(self, order, commit)`).
+
+| Module | Moves in | Stays in `orders.py` |
+|---|---|---|
+| `order_params.py` | Lines 43–163 whole: `ACTION_CHANNEL`, `MAX_COMMANDS_PER_PASS`, and the eight param names of §9.2.1. Imports `math`, `typing` and the channel constants from `access.py`; nothing else | A re-import of all ten names, so `orders.ACTION_CHANNEL` and `orders.MAX_COMMANDS_PER_PASS` still resolve. |
+| `order_validation.py` | Bodies of `_validate`, `_resolve_sensor_id`, `_observe_payload_type`, `_observe_modes` (read-only; shared by validation, sensor choice and the observe payload) | The four delegates. |
+| `order_payloads.py` | Bodies of `_exec_payload`, `_observation_phase_angle_deg`, `_delivery_keys` | The delegates; `_delivery_keys` stays a `staticmethod`. `_exec_payload` **must** stay a method: a test patches it on the class. |
+| `order_planning.py` | Bodies of `_plan_command`, `_best_isl_window`, `_plan_collection`, `_candidate_sensors`, `_auto_blocked_by_cue`, `_contended`, `_window_endpoints`, `_next_window`, `_plan_cyber`, `_mark_cyber_queued` | The delegates; `_ap`; the four booking dicts (the moved planners write them through `osys`). |
+| `order_handlers.py` | Bodies of the five execute handlers (§9.2.3); `_delivery_jammed`, `_jammed_record` | The five bound `_h_*` methods; the two `staticmethod` delegates. |
+
+`order_params.py` is the leaf that validation, payloads and planning share; `order_handlers.py`
+imports none of the other four. After the moves `orders.py` is about 480 lines: the re-import,
+`BAR_DURATION_S`, `Order`, `scene_from_world`, `__init__`, `issue`, `dry_run`, `_plan`,
+`_continue_plan`, gating, ROE, bookings release, `cancel`, `_ap` and the delegates.
+
+Rules for every move:
+
+1. **Functions that take the order system.** Each moved body becomes a module-level function whose
+   first parameter is `osys`. The only edits to a body are `self` → `osys` and the dedent. The
+   check is mechanical: dedent the new body, replace `osys` with `self`, and diff it against the
+   old method; the diff must be empty.
+2. **Every call to another `OrderSystem` method still goes through `osys.<name>(…)`,** never
+   straight to the sibling module function. That keeps the class-level patch of `_exec_payload`
+   working, and keeps each delegate the single way in.
+3. **Read at call time; cache nothing.** `_rebind` replaces `osys.world`; `from_state` replaces
+   `osys.sim.eventlog`; `Simulation._rebuild` replaces `sim.world`, `sim.rng`, `sim.scheduler`;
+   the manager sets `osys.auto_cue_ssn` after construction. No helper object holds a reference.
+4. **Copy each clock read exactly.** `osys.sim.clock.now`, `osys.world.now`, a handler's
+   `world.now`, `order.issued_at` and `win.start` are five different things; `_exec_payload` uses
+   three of them on purpose.
+5. **Import boundary.** A new module imports only the standard library, NumPy and
+   `spacesim.engine.*`; never `random`, `time`, `datetime`, `session`, `ui_web` or `content`
+   (`test_import_guard.py` scans `engine/` recursively, so new files are covered without an edit).
+   **No new module imports `spacesim.engine.orders` at run time** (`Order` and `OrderSystem` under
+   `TYPE_CHECKING` only): `orders.py` imports them, and `ssn.py` and `recovery.py` import
+   `orders.py` at module level.
+6. **Function-local imports stay function-local,** each in the function it is in now. The
+   `engine.ssn` import inside `_h_observe` is a real cycle (`ssn` → `orders` → handlers → `ssn`);
+   the others (`jam`, `engage`, `cyber`, `isr`, `geometry`, `sun`, `orbit`, `bus`) are not, but
+   hoisting them changes what loads when and is not a move. The unused `classify_regime` import in
+   the engage branch moves too; packet C3 removes it, not a move.
+7. **`commit` branches move whole.** No planner is split into a "compute" half and a "write" half:
+   the order *payload → status → booking → schedule* inside each planner is what makes a failed
+   payload leave nothing behind (`IP-1052` Design Decision 3).
+8. **Bodies move verbatim,** comments included; refusal strings are asserted by tests and pinned in
+   the baseline's acknowledgements. `engine/__init__.py` does not change. Each move adds its new
+   module to `docs/architecture/code-map.md` in the same pull request.
+
+#### 9.2.3 Registered handlers
+
+`Simulation` holds one callable per kind and calls it live, in `_rebuild` (rewind, undo, resume),
+in `_record_failed_event`, and in every `replay(…, handlers=sim.handlers())`. So a handler runs
+against worlds that are not `osys.world`, with the session's own `OrderSystem` as `self`.
+
+- **What is registered does not change.** `__init__` keeps its eight `register_handler` lines, in
+  this order: `execute_effect`, `execute_maneuver`, `execute_observe`, `execute_downlink`,
+  `effect_gate_request`, `effect_gate_decision`, `roe_change`, `execute_command`. The callables
+  stay the bound methods `self._h_effect` and so on. A module function or a `partial` is rejected:
+  it changes `sim.handlers()`, breaks the tests that call `osys._h_maneuver` and
+  `osys._h_command`, and loses the instance state the handlers use.
+- **`_h_noop` and `_h_roe_change` do not move** (§9.2.6).
+- **Only the bodies of the five execute handlers move,** each to
+  `order_handlers.h_effect(osys, world, payload, rng)` and so on. Every moved body:
+  - takes world state only from its `world` argument, never `osys.world`; from `osys` it reads
+    only `resolver`, `prop`, `auto_cue_ssn` and the three methods below, at call time;
+  - keeps every `payload[...]` and `payload.get(...)` as written. `payload["actor"]` raises on a
+    missing key and `payload.get("delivery_path") or "ground_uplink"` does not: that difference is
+    how a payload saved before `IP-1085` or `IP-1320` still replays (no `delivery_path`, a stray
+    `consume.power_w`);
+  - passes the `rng` it was handed, untouched.
+- **RNG.** Planning draws nothing. The only draws in the file happen inside
+  `osys.resolver.resolve(effect, world, rng)` in `h_effect`. Its early return (ammo re-check
+  failed) comes **before** that call and must stay before it: no resolution, no draw, nothing
+  charged. The ammo charge stays **after** resolution. `issue_roe_change` hands `sim.rng` to
+  `_h_roe_change`, which draws nothing; do not add a draw anywhere.
+- **Payloads mutated in place.** `h_maneuver` writes `payload["applied"]`, then
+  `payload["remaining_delta_v_ms"]`, on the **same** dict it was handed; `Simulation.advance_to`
+  appends that object to the log after the handler returns, and the manoeuvre ledger reads it. No
+  copy, no rebuilt dict. The other four do not write to `payload`; keep it so.
+- **Bookings.** `h_maneuver`, `h_command` and `h_observe` call
+  `osys._release_bookings_on_execute(payload.get("__order_id"))` as their **first** statement,
+  before any early return. `h_effect` and `h_downlink` do not call it (jam, engage and downlink
+  take no booking); do not add it. The call changes the live booking dicts even when the handler
+  is replaying; that is today's behaviour.
+- **`h_observe`'s auto-cue** calls `osys.auto_cue_ssn.submit_request(…)` from inside a handler:
+  it mints an SSN request id and schedules events, live and in replay alike
+  (`_record_failed_event` swaps in a scratch scheduler for this reason). Keep the call, its guard
+  (`0.3 < confidence < 0.85`, not characterised, no open request) and its place at the end.
+- **Plan-time payload keys are log content.** `__order_id`, `sensor_id`, `window_end`,
+  `delivery_path`, `relay` and `custody_confidence_at_decision` are written by the planners and by
+  `_exec_payload`, logged, and read back (`_rebind`, `assessment.py`, the handlers). Their names
+  and the order they are added in do not change.
