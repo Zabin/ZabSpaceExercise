@@ -129,11 +129,10 @@ space-control-sim/
 │   └── tests/                   pytest suite (incl. determinism + import-guard)
 └── docs/
     ├── INDEX.md                 ★ START HERE — master documentation router
-    ├── build-spec/              ★ the binding v1 spec, 8 modules
+    ├── architecture/            ★ the binding GDS-00…GDS-10 ladder, ADRs, code map, interface control document
     ├── training/                user manual (start at `INDEX.md`) (install → UI → exercises → API → troubleshooting
     │                            + role-scoped per-cell manuals: 12 White / 13 Blue / 14 Red + 15 traceability
     │                            + 16 vignette learning path). Co-equal product with the code (MSTR-001 §2).
-    ├── design/                  architecture & design corpus
     ├── research/                doctrine & domain primers (PLA, VKS, USSF, EW, cyber, bus ops)
     ├── vignettes/               scenario library: framework + vignette index
     └── manual/                  generated UI screenshots (tools/render_manual.py)

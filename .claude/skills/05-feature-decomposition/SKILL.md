@@ -432,7 +432,7 @@ docs/
 ```
 
 If a project's actual paths differ from `docs/research/` / `docs/architecture/` /
-`docs/requirements/` (e.g. a separate `docs/design/` for pre-ladder architecture documents, or an
+`docs/requirements/` (e.g. an
 ICD living outside `docs/architecture/`), treat the names above as roles to map onto whatever the
 project's `docs/INDEX.md` actually shows, and record the mapping used at the top of
 `05-feature-review.md` so a reader can audit it. The five output filenames and `docs/features/` as

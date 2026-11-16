@@ -23,7 +23,7 @@ out.
 | 🅿️ | Planned but **not yet authorized** — scoped in detail, no green light to start (the §12 research expansion). |
 
 `Depends on` lists the IDs whose content this document assumes, cites, or must stay consistent
-with — not a build order. On any conflict the `docs/architecture/` GDS ladder is authoritative (`CLAUDE.md`, "Authoritative source & reading order"); `docs/build-spec/` is deprecated legacy reference and wins nowhere.
+with — not a build order. On any conflict the `docs/architecture/` GDS ladder is authoritative (`CLAUDE.md`, "Authoritative source & reading order"); the retired v1 build specification is legacy reference and wins nowhere.
 
 ---
 
@@ -262,9 +262,9 @@ gates; no level has been authored yet.
 | GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | none (companion of requirements/03) | ✅ Authored, merge gate closed — ladder complete |
 
 **Next:** GDS-00 through GDS-10 are authored with merge gates closed (2026-10-22): **the ladder is
-complete.** The entire `docs/architecture/` ladder is authoritative over `docs/build-spec/` and
-`docs/design/` (apart from the ICD), so both retire in the cleanup sweep (`BL-0292`), after the
-`04` pass that takes the ladder's hand-offs (`BL-0298`). Build-spec retires once GDS-10 closes (`BL-0292`).
+complete.** The entire `docs/architecture/` ladder is authoritative over the v1 build specification and
+design corpus, so both retire in the cleanup sweep (`BL-0292`), after the
+`04` pass that takes the ladder's hand-offs (`BL-0298`). The build specification retires once GDS-10 closes (`BL-0292`).
 
 **Strategic review disposition (2026-07):** [`reviews/strategic-review-2026-07.md`](docs/reviews/strategic-review-2026-07.md)
 was dispositioned in full by [`reviews/architecture-update.md`](docs/reviews/architecture-update.md)
@@ -955,7 +955,7 @@ FS → IMP → Code → Tests) for all 11 Feature Specifications:
 > `docs/architecture/` is now resolved per option (a) — it was aspirational MSTR-006 §5 scope, now
 > given real content: the `ADS-xxx` Design Synthesis tier (`MSTR-005` §3a/§4,
 > `docs/architecture/INDEX.md`, the theme table above), produced by the
-> `03-architecture-design-synthesis` skill. It does not replace `docs/design/`, which stays the
+> `03-architecture-design-synthesis` skill. It does not replace the v1 design corpus (since retired into the ladder), which was the
 > detailed "how" for architecture that exists or is being built — `ADS-xxx` is upstream of that,
 > synthesizing domain+research inputs before a Feature Spec commits to a shape (`MSTR-005` §3a).
 > `docs/scenarios/` remains unresolved — still empty, still unclear whether it should eventually

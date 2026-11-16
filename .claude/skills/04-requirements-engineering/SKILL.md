@@ -48,7 +48,7 @@ Read, in this order, before writing anything:
 | Path | Role |
 |---|---|
 | `docs/research/` | Encyclopedia / grounding facts — *why* a requirement is true, never a source of new facts to add. |
-| `docs/design/` | Concept of Operations, System Context, Architecture, Domain Model (or your project's equivalent names/locations for these). |
+| `docs/architecture/` | The GDS ladder: Concept of Operations, System Context, Architecture, Domain Model (or your project's equivalent names/locations for these). |
 | `docs/architecture/adr/` | Architecture Decision Records — binding decisions a requirement must not contradict. |
 
 If a project's actual layout differs (e.g. a combined `docs/architecture/` ladder instead of a
@@ -77,8 +77,8 @@ half-finished requirements set.
 
 ### Step 0 — Read the inputs and build a source map
 
-Before drafting a single requirement, read every document in `docs/research/`, `docs/design/`,
-and `docs/architecture/adr/`. While reading, keep a running list (in your own working notes, not
+Before drafting a single requirement, read every document in `docs/research/` and `docs/architecture/`
+(including `adr/`). While reading, keep a running list (in your own working notes, not
 a deliverable) of:
 
 - every distinct **capability** the ConOps/System Context implies the system must provide,
@@ -279,8 +279,7 @@ requirement for the architecture owner to resolve.
 ```
 docs/
 ├── research/                       # input — encyclopedia / grounding (read-only to this skill)
-├── design/                         # input — ConOps, System Context, Architecture, Domain Model
-├── architecture/
+├── architecture/                   # input — GDS ladder: ConOps, System Context, Architecture, Domain Model
 │   └── adr/                        # input — Architecture Decision Records
 └── requirements/                   # output — this skill's sole write scope
     ├── INDEX.md                    # optional, if the project uses per-directory indexes
@@ -290,7 +289,7 @@ docs/
     └── 04-requirements-traceability-matrix.md
 ```
 
-If a project's actual paths differ from `docs/research/` / `docs/design/` /
+If a project's actual paths differ from `docs/research/` / `docs/architecture/` /
 `docs/architecture/adr/` (as in this repository, where the architecture ladder lives under
 `docs/architecture/GDS-*` and ADRs may not yet exist as a separate directory), treat the names
 above as roles to map onto whatever the project's `docs/INDEX.md` actually shows, and record the
@@ -312,7 +311,7 @@ filenames and `docs/requirements/` as the write target stay fixed regardless.
 - If this skill is used in a project that already has its own GDS/ADS-style architecture ladder
   with FR/NFR sections baked into it (as `03-architecture-design-synthesis` does in this repository),
   check whether those sections are meant to be the authoritative input *for* this skill (treat
-  them as part of `docs/design/`) rather than producing a second, competing FR/NFR set — name the
+  them as part of the input corpus) rather than producing a second, competing FR/NFR set — name the
   relationship explicitly in `03-requirements-review.md` rather than leaving two unreconciled
   baselines in the repo.
 
