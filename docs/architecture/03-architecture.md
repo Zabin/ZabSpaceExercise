@@ -354,13 +354,13 @@ or a second tab must never be able to derive state the session layer didn't alre
   not a content library. Curated sample snippets are offered as copy-paste starting points in the
   authoring documentation (option D), not as a runtime construct.
 - Provide the TLE import path: optional Space-Track pull at build time, bundled snapshot fallback,
-  or manual/Keplerian entry (the retired v1 build specification part 01 Decision D2; GDS-02 §4).
+  or manual/Keplerian entry (ADR-0018; GDS-02 §4).
 - Own the save-file format: a complete deterministic session snapshot (history, order queue,
   pending events) for resume.
 
 **Interfaces.** File I/O only (YAML/JSON on local disk) plus the one optional outbound network
 call to Space-Track.org at scenario-build time. No runtime network dependency
-(the retired v1 build specification part 03 (architecture and data) §8.4).
+(GDS-02 §4; ADR-0018).
 
 **Inputs.** Author-written or in-app-builder-produced vignette files; Space-Track API responses
 (optional); manually entered TLEs/Keplerian elements; a session's exported save file (on resume).

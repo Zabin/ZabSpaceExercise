@@ -61,9 +61,10 @@ Concretely:
   realize it (MSTR-005 — the documentation map).
 - Documentation is **versioned, statused, and dependency-tracked** like code (MSTR-006 —
   governance principles).
-- The pre-existing v1 build specification, design corpus, `docs/research/`, `docs/training/`,
+- The pre-existing `docs/research/`, `docs/training/`,
   `docs/vignettes/` corpus is **not replaced**. It is the load-bearing foundation this tree builds
-  on top of and cross-references (MSTR-005 §3).
+  on top of and cross-references (MSTR-005 §3). The binding architecture and requirements source is
+  this ladder.
 
 ## 3. Audience
 
@@ -71,7 +72,7 @@ Concretely:
 |---|---|---|
 | White Cell facilitators | `docs/training/`, `docs/vignettes/`, Mission brief panels | Run exercises, write injects, debrief |
 | Operators (Red/Blue trainees) | `docs/training/`, in-app tutorial panel | Learn the tool and the doctrine it encodes |
-| Human maintainers | The retired v1 build specification (binding), the retired design corpus, `CLAUDE.md` | Understand what is built and why |
+| Human maintainers | `docs/architecture/INDEX.md` (the binding source), `CLAUDE.md` | Understand what is built and why |
 | Future coding LLM agents | `docs/master/`, `docs/domains/`, `docs/research/` (R1xx–R5xx), `docs/features/`, `docs/implementation/` | Implement new capability without inferring intent from code |
 | Researchers / assessment designers | `docs/domains/DOM-002`, `DOM-004`, `DOM-005`, `docs/research/R200`, `R400` | Build measurement and validation on top of the simulator |
 
@@ -136,7 +137,7 @@ The program succeeds when (MSTR-001 §5):
 ## 7. Relationship to the build spec
 
 **Corrected 2026-07 (ADR-0031) — supersedes this section's original text**, which read
-"the v1 build specification remains binding for v1... on any conflict, the build spec wins" and had gone
+"`docs/build-spec/` remains binding for v1... on any conflict, the build spec wins" and had gone
 stale relative to a decision made elsewhere. As of `architecture/INDEX.md`'s blanket-supersession
 declaration (also restated in `CLAUDE.md` "Authoritative source & reading order"),
 [`docs/architecture/`](INDEX.md) — the GDS-00…GDS-10 ladder this document is the root of — is now

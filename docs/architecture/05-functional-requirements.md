@@ -88,7 +88,7 @@ Traces to GDS-04 §1.2 (Asset bus/payload state) and `research/06-bus-and-payloa
 - **FR-B4** Each payload type (SATCOM, ISR-EO, ISR-SAR, SIGINT, SDA, space-control, PNT, missile
   warning, weather) shall expose its **type-specific operator actions and monitors**. *(→ FR-2410)*
 - **FR-B5** The engine shall support **safe mode** with the full attack/detection/recovery loop and
-  its White-Cell dials. *(→ FR-2510; see the retired design corpus part 12 (safe-mode loop))*
+  its White-Cell dials. *(→ FR-2510; dials: `docs/training/12-white-cell-manual.md`)*
 
 ## 3. Command planning & sensor tasking (FR-P)
 
@@ -109,7 +109,7 @@ Traces to GDS-04 §1.7 (Planned Activity); ADR-0005 (plan-first commanding).
 - **FR-P6** For any maneuver, the tool shall present a **delta-v cost preview** before commit — in
   m/s and in "years of service life spent" — and shall track remaining budget, estimated life
   remaining, and drift-when-empty; burns exceeding a configurable years-of-life threshold require a
-  deliberate confirm. *(→ FR-1310; see the retired design corpus part 14 (delta-v economy))*
+  deliberate confirm. *(→ FR-1310; see GDS-05 `FR-E5`)*
 
 Plan-first composition assistants (maneuver, observe, jam, engage, cyber, sigint) compute a
 read-only consequence preview through a non-mutating `/compute` endpoint before an order is

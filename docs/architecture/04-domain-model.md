@@ -64,7 +64,7 @@ artifact (`research/06`, GDS-02 §4 "Data sources").
 
 **Transient state.** None; a Vignette carries no runtime state of its own.
 
-**Constraints.** Must validate at load (the retired v1 build specification part 01 "Error handling" — invalid scenario data
+**Constraints.** Must validate at load (GDS-06 NFR-6 "Robustness" — invalid scenario data
 fails loudly); roles_needed must be satisfiable by the seats White Cell assigns; constellations are
 capped at 3 satellites each, individually operated (`CLAUDE.md` "Key facts").
 
@@ -100,7 +100,7 @@ Snapshot.
 state (GDS-03 §2.1).
 
 **Constraints.** A satellite must have an Orbit; a terrestrial asset must have a location instead
-(the retired design corpus part 04 (data model) §9); resource levels cannot go negative (e.g. `delta_v_ms`); an asset's
+(GDS-07 §10); resource levels cannot go negative (e.g. `delta_v_ms`); an asset's
 payload verbs are gated by its payload type and bus availability (`CLAUDE.md` "Code map" —
 `buscommands.py`).
 
@@ -131,7 +131,7 @@ quantity, not separately stored — recomputing it from the persistent element s
 time is how determinism is preserved (`CLAUDE.md` invariant 1).
 
 **Constraints.** TLE-sourced orbits must parse at load or the Asset is rejected with a clear error
-(the retired design corpus part 04 (data model) §9); a maneuver cannot exceed the owning Asset's remaining
+(GDS-07 §10); a maneuver cannot exceed the owning Asset's remaining
 delta-v budget.
 
 ---
@@ -231,7 +231,7 @@ crash (GDS-03 §2.1).
 **Purpose.** An operator's scheduled intent — "command this Asset" or "task this Sensor" — the
 single domain concept GDS-01 §10's "plan-first commanding" invariant is built on. Commands and
 collection tasks are the same kind of object with two flavors, sharing one lifecycle
-(the retired design corpus part 04 (data model) §6.5).
+(GDS-07 §2).
 
 **Responsibilities.** Names an actor (Asset or Sensor), an intent (a command verb or a collection
 intent), a delivery path (ground uplink / ISL relay / stored program / sensor collect) and, once
@@ -256,7 +256,7 @@ without creating a Planned Activity.
 
 **Constraints.** Validated at both accept-time and execute-time against ownership, a valid window/
 delivery path, resources, ROE/authorities, and — for engagement intents — the weapons-quality Track
-gate (the retired design corpus part 04 (data model) §6.5).
+gate (GDS-07 §2).
 
 ---
 

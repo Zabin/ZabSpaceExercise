@@ -97,7 +97,7 @@ provide, not *how* they are wired in):
 
 | External software | Role at the boundary |
 |---|---|
-| **Skyfield** | Provides the astronomical/SGP4 propagation math underneath real-TLE force-added satellites, and is the fidelity reference the moderate Kepler+J2 model is validated against (the retired v1 build specification part 04 §11 risk row "orbits look 'wrong'"). |
+| **Skyfield** | Provides the astronomical/SGP4 propagation math underneath real-TLE force-added satellites, and is the fidelity reference the moderate Kepler+J2 model is validated against (GDS-01 §12, risk row "orbits look 'wrong'"). |
 | **sgp4** | The TLE propagation algorithm itself, used for any satellite seeded by a real two-line element set. |
 | **A standards-compliant web browser** | The only required client software; no native app, no browser plugin. |
 
@@ -108,7 +108,7 @@ send or receive exercise data — listed for completeness of the boundary pictur
 
 | Source | What it provides | When it crosses the boundary |
 |---|---|---|
-| **Space-Track.org** | Real two-line element sets (TLEs) for force-adding named real satellites | Optional, scenario-build time only; never required at runtime (the retired v1 build specification part 01 Decision D2) |
+| **Space-Track.org** | Real two-line element sets (TLEs) for force-adding named real satellites | Optional, scenario-build time only; never required at runtime (ADR-0018) |
 | **Manual TLE / Keplerian entry** | The fallback data source when Space-Track is unavailable | Scenario-build time, always available offline |
 | **Vignette definition files** | Mission, roles needed, starting orbits, parameters/dials, injects, intro briefs | Load time, read from local disk |
 | **White Cell live input** | Parameter re-tuning, manual injects, clock control | Continuously during a run |

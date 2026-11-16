@@ -359,7 +359,7 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
   §16.1–§16.14 (users, C1–C2, screen architecture, fleet rail, drill-down, compose, recovery,
   per-cell consoles, button-state contract, accessibility, inject builder, activity timeline,
   conjunctions and coaching) into §1–§8; its per-panel endpoint table goes to GDS-09; its verb
-  catalog stays with the retired design corpus part 13 and the code. The retired design corpus part 06 §2–§5 → §7.6 and departures.
+  catalog stays with the code. The retired design corpus part 06 §2–§5 → §7.6 and departures.
 - [x] **Did not claim verified UI behavior beyond what a test asserts.** "Verification status" lists
   the rules the browser suite asserts and states that the rest of the client is not asserted end to
   end; OQ1 asks how far that should extend. (Restated 2026-10-24: the original text said no browser

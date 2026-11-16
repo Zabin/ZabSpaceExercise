@@ -162,7 +162,7 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Preconditions:** White Cell holds the only clock-authority role for the session (ADR-0016).
 - **Postconditions:** Session state (clock, `WorldState`, `EventLog`) reflects the control action;
   an Inject application's effects bypass the normal Planned-Activity path by design (GDS-04 §1.12).
-- **Error handling:** Invalid scenario data fails loudly at load (GDS-06 NFR-6 "Error handling",
+- **Error handling:** Invalid scenario data fails loudly at load (GDS-06 NFR-6 "Robustness",
   cited in GDS-04 §1.1 Constraints); no other error-handling detail is specified at this baseline.
 - **Dependencies:** A loaded/loadable Vignette (INT-0011); exactly one White Cell seat with clock
   authority per session (ADR-0016).
