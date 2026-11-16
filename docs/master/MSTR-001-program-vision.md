@@ -8,7 +8,7 @@
 > **Produces:** the mandate for DOM-001..009 and the entire downstream documentation tree
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** [`MSTR-002`](MSTR-002-architecture-principles.md), [`MSTR-003`](MSTR-003-educational-philosophy.md),
-> [`docs/build-spec/01-context-and-scope.md`](../build-spec/01-context-and-scope.md)
+> [`docs/architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md)
 
 [↑ Docs index](../INDEX.md) · [Master index](MSTR-005-documentation-map.md)
 
@@ -63,11 +63,12 @@ Concretely, this means:
   code verifies — it is delivered when the training artifacts that teach it are current. The
   pedagogical stance itself lives in [`MSTR-003`](MSTR-003-educational-philosophy.md); this bullet
   makes its artifacts first-class citizens of the engineering baseline.
-- The existing `docs/build-spec/`, `docs/design/`, `docs/research/`, `docs/training/`,
-  `docs/vignettes/` corpus is **not replaced**. It is the load-bearing foundation this tree builds
-  on top of and cross-references; see [`MSTR-005`](MSTR-005-documentation-map.md) §3 for exactly how
-  the new (`master/`, `domains/`, `features/`, `implementation/`, `architecture/`, `scenarios/`,
-  expanded `research/`) directories relate to the pre-existing five.
+- The existing `docs/research/`, `docs/training/`, `docs/vignettes/` corpus is **not replaced**. It
+  is the load-bearing foundation this tree builds on top of and cross-references; see
+  [`MSTR-005`](MSTR-005-documentation-map.md) §3 for exactly how the new (`master/`, `domains/`,
+  `features/`, `implementation/`, `architecture/`, `scenarios/`, expanded `research/`) directories
+  relate to the pre-existing themes. The v1 build specification and design corpus were folded into
+  `architecture/` and are retired.
 
 ## 3. Audience
 
@@ -75,7 +76,7 @@ Concretely, this means:
 |---|---|---|
 | White Cell facilitators | `docs/training/`, `docs/vignettes/`, Mission brief panels | Run exercises, write injects, debrief |
 | Operators (Red/Blue trainees) | `docs/training/`, in-app tutorial panel | Learn the tool and the doctrine it encodes |
-| Human maintainers | `docs/build-spec/` (binding), `docs/design/`, `CLAUDE.md` | Understand what is built and why |
+| Human maintainers | `docs/architecture/` (binding), `CLAUDE.md` | Understand what is built and why |
 | **Future coding LLM agents** | `docs/master/`, `docs/domains/`, `docs/research/` (R1xx–R5xx), `docs/features/`, `docs/implementation/` | Implement new capability without inferring intent from code |
 | Researchers / assessment designers | `docs/domains/DOM-002`, `DOM-004`, `DOM-005`, `docs/research/R200`, `R400` | Build measurement and validation on top of the simulator |
 
@@ -102,7 +103,8 @@ single-machine-or-LAN, deterministic, replayable** trainer that:
   byte-identical fidelity.
 
 SpaceSim is the answer to that gap. Its scope is bounded deliberately (see
-[`docs/build-spec/01-context-and-scope.md`](../build-spec/01-context-and-scope.md) §2–3): moderate
+[`docs/architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md) §1, §4, §10 and
+[`docs/architecture/00-vision.md`](../architecture/00-vision.md) §6): moderate
 orbital fidelity (Keplerian + J2, real TLEs via Skyfield), not a numerical-integration-grade
 astrodynamics tool; PME training value, not classified mission rehearsal; cooperative LAN play, not
 a hardened multi-tenant service (see the LAN trust model documented in `CLAUDE.md`).
@@ -146,9 +148,10 @@ The program succeeds when:
 
 ## 7. Relationship to the build spec
 
-[`docs/build-spec/`](../build-spec/INDEX.md) remains **binding** for v1: "on any conflict, the build
-spec wins." This master-document tree does not supersede it — it surrounds it with the
-domain/research/feature/implementation scaffolding the build spec assumed but never formalized.
-Where this tree and the build spec appear to disagree, treat it as a signal that either (a) the
-build spec needs a revision note (tracked as a `BS-0x-REV` item in `ROADMAP.md`), or (b) the new
+The v1 build specification once declared itself binding ("on any conflict, the build
+spec wins."). It is retired: the [`GDS-00`…`GDS-10` ladder](../architecture/INDEX.md) is now the
+single binding architecture and requirements source (see `CLAUDE.md`). This master-document tree
+does not supersede the ladder — it surrounds it with the domain/research/feature/implementation
+scaffolding the ladder assumes. Where this tree and the ladder appear to disagree, treat it as a
+signal that either (a) the ladder needs a revision (raise it through `00-intake`), or (b) the new
 document has mis-stated intent and should be corrected.

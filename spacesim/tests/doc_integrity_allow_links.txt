@@ -8,7 +8,6 @@ docs/research/01-doctrine-western.md -> 05b-satcom-pnt.md | BL-0292 cleanup swee
 docs/research/01-doctrine-western.md -> 05c-sda-and-orbital-warfare.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
 docs/research/02-doctrine-non-western.md -> 02a-doctrine-china.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
 docs/research/02-doctrine-non-western.md -> 02b-doctrine-russia.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
-docs/research/03-counterspace-taxonomy.md -> ../build-spec/03-safe-mode-loop.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
 docs/research/03-counterspace-taxonomy.md -> 03a-da-asat-systems.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
 docs/research/03-counterspace-taxonomy.md -> 03b-coorbital-rpo.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)
 docs/research/03-counterspace-taxonomy.md -> 03c-ew-jamming.md | BL-0292 cleanup sweep / 02-research (primer links to retired build-spec)

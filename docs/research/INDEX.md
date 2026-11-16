@@ -3,7 +3,7 @@
 [↑ Docs index](../INDEX.md)
 
 Doctrine & domain primers — the **why** behind the rules. Background reading that justifies the
-mechanics; the [build spec](../build-spec/INDEX.md) remains authoritative for what's built.
+mechanics; the [architecture ladder](../architecture/INDEX.md) is authoritative for what's built.
 
 | Doc | Topic |
 |---|---|

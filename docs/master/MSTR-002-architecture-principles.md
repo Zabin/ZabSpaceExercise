@@ -7,7 +7,7 @@
 > **Referenced By:** MSTR-007, all DOM-*, all FS-*, all IMP-*, `docs/architecture/`
 > **Produces:** the constraints every Feature Specification and Implementation Package must satisfy
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`docs/design/01-architecture-overview.md`](../design/01-architecture-overview.md),
+> **Related Topics:** [`docs/architecture/03-architecture.md`](../architecture/03-architecture.md),
 > [`CLAUDE.md`](../../CLAUDE.md) §"Load-bearing invariants"
 
 [↑ Docs index](../INDEX.md) · [Master index](MSTR-005-documentation-map.md)
@@ -18,7 +18,7 @@ This document is the **single normative statement** of the architectural constra
 SpaceSim must satisfy, regardless of which layer or feature is being touched. It elevates and
 explains the six invariants already enforced in `CLAUDE.md` and adds the principles a Feature
 Specification or Implementation Package author must reason from when none of the existing
-constraints directly answer a design question. `docs/design/01-architecture-overview.md` is the
+constraints directly answer a design question. `docs/architecture/03-architecture.md` (GDS-03) is the
 detailed *how*; this document is the *why*, kept stable across phases.
 
 ## 2. The six load-bearing invariants
@@ -114,7 +114,7 @@ for every invalid-input case, not just the happy path.
 ## 7. Using this document
 
 When a Feature Specification or Implementation Package author hits a design question not directly
-answered by `docs/build-spec/` or `docs/design/`, the six invariants (§2) and the five derived
+answered by `docs/architecture/`, the six invariants (§2) and the five derived
 principles (§3–§6) are the test to apply: *does the proposed design preserve determinism,
 UI-agnosticism, boundary-enforced fog-of-war, plan-first interaction, sub-stepped time, and
 data-driven content — and does it degrade gracefully rather than crash on bad input?* If yes,

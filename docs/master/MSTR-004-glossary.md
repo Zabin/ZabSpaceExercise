@@ -7,8 +7,7 @@
 > **Referenced By:** all documents in `docs/domains/`, `docs/research/`, `docs/features/`, `docs/implementation/`
 > **Produces:** the canonical term set new documents must reuse rather than re-define
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`docs/build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §12,
-> [`docs/training/09-troubleshooting-and-glossary.md`](../training/09-troubleshooting-and-glossary.md)
+> **Related Topics:** [`docs/training/09-troubleshooting-and-glossary.md`](../training/09-troubleshooting-and-glossary.md)
 
 [↑ Docs index](../INDEX.md) · [Master index](MSTR-005-documentation-map.md)
 

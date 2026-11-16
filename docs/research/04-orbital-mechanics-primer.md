@@ -740,8 +740,7 @@ clock in [`engine/simtime.py`](../../spacesim/engine/simtime.py), the J2 secular
 rates, the Sun-direction analytic in [`engine/sun.py`](../../spacesim/engine/sun.py)
 — all of it surfaces in the GUI as one of four things: a countdown, a coloured
 bar, a Gantt rectangle, or a pre-disabled Issue button. This is by design, and the
-v1 [operator-console specification](../build-spec/07-operator-console.md) (PSD
-Part 4 §16) makes the principle explicit as its load-bearing UI principle P1:
+[UI architecture](../architecture/08-ui-architecture.md) (GDS-08 §2) makes the principle explicit as its load-bearing UI principle P1:
 *geometry is never hidden, but it is always presented as schedule, never as
 ephemeris.*
 

@@ -100,7 +100,8 @@ creation time) — Phase 8 traceability review (§7) is where this is reconciled
 
 If two documents disagree:
 
-1. `docs/build-spec/` wins over everything (MSTR-001 §7) — this is unchanged by the expansion.
+1. `docs/architecture/` (the GDS-00…GDS-10 ladder) wins over everything (`CLAUDE.md`; MSTR-001 §7) —
+   this replaces the former rule that the v1 build specification won.
 2. Within the new tree, a more specific document (an Implementation Package) does not override a
    less specific one (a Feature Specification, a Domain document) on matters of *intent* — if an
    IMP package's design seems to contradict its parent FS's stated purpose, that's a defect in the

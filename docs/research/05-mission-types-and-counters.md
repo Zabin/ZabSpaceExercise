@@ -305,7 +305,7 @@ on the per-platform threat surface.
 ## 5. Turning this into asset templates
 
 Each entry above becomes a YAML template the engine loads (canonical schema in
-[`04-data-model.md`](../design/04-data-model.md)):
+[GDS-07](../architecture/07-data-model.md)):
 
 ```yaml
 asset_template:
