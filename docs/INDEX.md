@@ -7,9 +7,8 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 `architecture/`, `scenarios/`): [`master/MSTR-005-documentation-map.md`](master/MSTR-005-documentation-map.md).
 
 > **Authority:** [`architecture/INDEX.md`](architecture/INDEX.md) (the GDS-00…GDS-10 ladder) is the
-> authoritative architecture and requirements source; the Build Spec is deprecated legacy reference,
-> not a tie-breaker (see `../CLAUDE.md`). Where no GDS level is authored yet, enter the legacy text at
-> [`build-spec/INDEX.md`](build-spec/INDEX.md) for orientation only.
+> authoritative architecture and requirements source; the v1 Build Spec and Design corpus are retired
+> legacy reference, not a tie-breaker (see `../CLAUDE.md`).
 
 ## Themes
 
@@ -23,9 +22,9 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 | **Implementation** | Implementation Packages (`IP-xxxx`) — how each Feature Spec is (or would be) built, as-built docs for FS-101-107 and forward designs for FS-201/FS-301, plus the Master Build Plan (sequence/critical path/dependency graph). Supersedes the prior `implementations/` (`IMP-xxxA`) tier, retained for history. | [`implementation/00-master-build-plan.md`](implementation/00-master-build-plan.md) · [`implementation/packages/INDEX.md`](implementation/packages/INDEX.md) |
 | **Releases** | The release archive (`11-release-readiness`): one Release Manifest per release — commit, `archive/` ref and tag, counts, dependency lock, known deviations, reviews relied on — plus how to restore a released version. | [`releases/INDEX.md`](releases/INDEX.md) |
 | **Pipeline** | The pipeline's persistent memory: the `00-pipeline-manager` journal (position + append-only run log) and the backlog (findings harvested from every run + `00-intake`-filed features/bugs, each with a triage disposition). Writers: the manager (both files) and `00-intake` (backlog appends); the tree's ledgers stay authoritative. Both live files are kept short; closed backlog entries, the full earlier text of open ones, and journal runs #0–#269 are frozen, verbatim, in the two archive files. | [`pipeline/pipeline-journal.md`](pipeline/pipeline-journal.md) · [`pipeline/backlog.md`](pipeline/backlog.md) · [`pipeline/refactor-plan.md`](pipeline/refactor-plan.md) · archives: [`pipeline/pipeline-journal-archive.md`](pipeline/pipeline-journal-archive.md) · [`pipeline/backlog-archive.md`](pipeline/backlog-archive.md) |
-| **Build Spec** | The binding v1 specification — context, requirements, architecture, milestones, operator console, SSN. | [`build-spec/INDEX.md`](build-spec/INDEX.md) |
+| **Build Spec** | Retired v1 specification (legacy reference, pending removal) — superseded by the `architecture/` ladder. | [`build-spec/INDEX.md`](build-spec/INDEX.md) |
 | **Training** | User-facing manual — install, run, first exercise, facilitation, API, troubleshooting, plus **role-scoped per-cell manuals** (White / Blue / Red) and their feature ⇄ manual traceability matrix. | [`training/INDEX.md`](training/INDEX.md) |
-| **Design** | Architecture & design corpus (the *how*) — engine, data model, interfaces, UI, catalog, Δv. | [`design/INDEX.md`](design/INDEX.md) |
+| **Design** | Retired v1 design corpus (legacy reference, pending removal) — superseded by the `architecture/` ladder. | [`design/INDEX.md`](design/INDEX.md) |
 | **Research** | Doctrine & domain primers (the *why*) — Western/non-Western doctrine, counterspace taxonomy, orbital mechanics, bus/payload ops. | [`research/INDEX.md`](research/INDEX.md) |
 | **Vignettes** | Scenario library — the parameter framework + all 19 vignettes (canonical 8 + training-basics + 5 Red COA + 3 mission-set + 1 learning + 1 novel). | [`vignettes/INDEX.md`](vignettes/INDEX.md) |
 
@@ -68,5 +67,5 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 Earlier drafts of the Build Spec referred to companions in `01-research/`,
 `02-vignettes/`, and `03-software-design/`. Those legacy paths were rewritten
 during the Jun 2026 audit (see [`AUDIT-2026-06.md`](reviews/AUDIT-2026-06.md) §B3) and
-now resolve as `docs/research/`, `docs/vignettes/`, and `docs/design/`. Any
+now resolve as `docs/research/`, `docs/vignettes/`, and the v1 design corpus (since retired into `docs/architecture/`). Any
 remaining `01-research/` reference in committed prose is a regression.

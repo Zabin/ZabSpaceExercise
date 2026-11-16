@@ -9,7 +9,7 @@
 > / LAN Session Transport, FS-110 Save & Resume, FS-112 Classification Banner, FS-115 Session Setup
 > **Feature Mapping:** FS-106, FS-107, FS-109 (§6), FS-110 (§6), FS-112, FS-115 (new 2026-07 — §2 below)
 > **Related Topics:** [`docs/training/07-white-cell-facilitation.md`](../training/07-white-cell-facilitation.md),
-> [`docs/build-spec/07-operator-console.md`](../build-spec/07-operator-console.md), R307 (wargaming theory), R308 (red teaming)
+> [`docs/architecture/08-ui-architecture.md`](../architecture/08-ui-architecture.md) (GDS-08 §7), R307 (wargaming theory), R308 (red teaming)
 
 [↑ Docs index](../INDEX.md)
 

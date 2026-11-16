@@ -8,7 +8,7 @@ deterministic engine. This document describes how the library is organized, what
 exists to teach, and where in the doctrine literature each scenario lives.
 
 > **Authority:** the engine contract (schema, channels, payload types, objective metrics) is
-> documented in [`../build-spec/03-architecture-and-data.md`](../build-spec/03-architecture-and-data.md)
+> documented in [`../architecture/07-data-model.md`](../architecture/07-data-model.md) §5 (vignette file)
 > and the matching code paths under `spacesim/engine/`. This document orchestrates *what*
 > vignettes exist and *why* — not *how* the engine runs them.
 

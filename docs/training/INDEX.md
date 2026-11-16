@@ -63,6 +63,6 @@ is no separate "multiplayer build." See module 01 for the workflow.
 
 ## See also
 
-- [`../build-spec/07-operator-console.md`](../build-spec/07-operator-console.md) — the console spec
-  the UI implements.
+- [`../architecture/08-ui-architecture.md`](../architecture/08-ui-architecture.md) — the console architecture
+  (GDS-08) the UI implements.
 - [`../vignettes/INDEX.md`](../vignettes/INDEX.md) — the authored scenario designs behind §6.

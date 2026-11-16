@@ -65,7 +65,7 @@ Each D maps to exactly one literal:
 
 The engine adds two beyond-doctrine literals — `safe_mode` (the bus enters
 recovery-strip safe mode, doctrinally a *defensive* outcome an attacker can *induce*; see
-[`docs/build-spec/03-safe-mode-loop.md`](../build-spec/03-safe-mode-loop.md)) and
+GDS-05 [`FR-B5`](../architecture/05-functional-requirements.md)) and
 `none` (the action resolved but produced no effect, e.g. the seeker missed). Both are
 read by [`ModerateEffectResolver.resolve()`](../../spacesim/engine/effects.py) and emit
 the same telemetry shape as a D outcome.

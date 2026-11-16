@@ -35,8 +35,8 @@ repository refactor is in progress: [`docs/pipeline/refactor-plan.md`](docs/pipe
 | Operator manuals | `docs/training/` (a co-equal product; `15-manual-traceability.md` maps features to manual sections) |
 | Deferred ideas | `docs/pipeline/backlog.md` (`DEFERRED` rows) and the LATER rows of the Release 2.0 plan |
 
-`docs/build-spec/` is **deprecated legacy reference**. The GDS ladder supersedes it entirely, by
-owner instruction. Never cite it as binding; flag a gap instead.
+The v1 build specification and design corpus are **retired legacy reference**. The GDS ladder
+supersedes them entirely, by owner instruction. Never cite them as binding; flag a gap instead.
 
 ## Layout
 

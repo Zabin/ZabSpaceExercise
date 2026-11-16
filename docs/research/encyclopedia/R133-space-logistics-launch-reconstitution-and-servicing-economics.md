@@ -6,7 +6,7 @@
 > **Dependencies:** [R112](R112-propulsion-and-maneuver-planning.md)
 > **Referenced By:** [R504](R504-future-space-warfare-concepts.md)
 > **Produces:** research grounding for any future reconstitution/resupply Implementation Package
-> (deferred item; the nearest existing analog is `SessionManager`'s TLE force-add path, `docs/build-spec/04-nfr-milestones-and-risks.md` §10 P6)
+> (deferred item; the nearest existing analog is `SessionManager`'s TLE force-add path, GDS-05 `FR-S2`)
 > **Feature Mapping:** none yet — research-first per this topic's own scope (§2)
 > **Related Topics:** [R112](R112-propulsion-and-maneuver-planning.md) (Propulsion and Maneuver
 > Planning — the Δv-economy model this topic extends to the "how do you get more Δv/mass on orbit

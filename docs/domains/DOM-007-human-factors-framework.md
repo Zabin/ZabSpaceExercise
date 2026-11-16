@@ -7,7 +7,7 @@
 > **Referenced By:** DOM-001, DOM-002, FS-106, FS-105
 > **Produces:** UX/cognitive-load constraints consumed by every operator-console Feature Specification
 > **Feature Mapping:** FS-105, FS-106
-> **Related Topics:** [`docs/design/09-gui-principles.md`](../design/09-gui-principles.md),
+> **Related Topics:** [`docs/architecture/08-ui-architecture.md`](../architecture/08-ui-architecture.md) (GDS-08 §2, §8),
 > [`docs/reviews/AUDIT-2026-06-UI-TTC.md`](../reviews/AUDIT-2026-06-UI-TTC.md), R207 (cognitive bias), R206 (bounded rationality)
 
 [↑ Docs index](../INDEX.md)
@@ -16,7 +16,7 @@
 
 States the human-factors constraints the operator console (and any future UI feature) must respect
 so that the tool measures and trains *domain* judgment, not UI literacy or incidental cognitive
-load the interface itself introduces. `docs/design/09-gui-principles.md` is the detailed UX design
+load the interface itself introduces. `docs/architecture/08-ui-architecture.md` (GDS-08) is the detailed UX design
 document; this framework is the constraint set that document and every Feature Specification
 touching the console must satisfy.
 
@@ -68,7 +68,7 @@ retrofitting.
 
 ## 6. Accessibility
 
-`docs/build-spec/07-operator-console.md` already specifies accessibility requirements for the v1
+`docs/architecture/08-ui-architecture.md` §8 (GDS-08) already specifies accessibility requirements for the
 console. DOM-007 elevates this to a standing constraint for *every* future Feature Specification
 touching the UI: keyboard navigation (the existing `j/k/c/g` pattern should be extended
 consistently, not forked per-feature with different bindings) and presentation-mode compatibility

@@ -14,7 +14,8 @@
 ## 1. Purpose
 
 This is the map of the *entire* `docs/` tree after the documentation-driven-development expansion —
-both the pre-existing five themes (`build-spec/`, `design/`, `research/`, `training/`, `vignettes/`)
+both the pre-existing themes (`research/`, `training/`, `vignettes/`; the earlier build-specification
+and design themes are retired into `architecture/`)
 and the six new directories this expansion adds (`master/`, `domains/`, `features/`,
 `implementation/`, `architecture/`, `scenarios/`). `docs/INDEX.md` is the live router; this
 document is the rationale and the rule set for where a new document belongs. `ROADMAP.md` is the
@@ -87,21 +88,20 @@ docs/
 ├── scenarios/                     ← NEW: scenario-design guidance distinct from the vignette *content* library
 │   └── (how to design a vignette to hit a training/assessment objective; the vignette files themselves stay in vignettes/)
 │
-├── build-spec/                    ← UNCHANGED: the binding v1 spec, 8 modules — wins on conflict
-├── design/                        ← UNCHANGED: architecture & design corpus (the "how")
 ├── training/                      ← UNCHANGED: user-facing manual
 ├── vignettes/                     ← UNCHANGED: the 19-vignette content library + framework
 └── manual/                        ← UNCHANGED: generated UI screenshots
 ```
 
-## 3. How the new tree relates to the existing five themes
+## 3. How the new tree relates to the pre-existing themes
 
 The expansion does **not** duplicate or replace existing content. Specifically:
 
-- **`build-spec/` stays the binding spec.** `MSTR-002` (Architecture Principles) elevates and
-  explains invariants that `build-spec/` and `design/01-architecture-overview.md` already state;
-  it does not introduce new ones. Where this tree's wording and the build spec's wording differ,
-  the build spec wins (MSTR-001 §7).
+- **The v1 build specification and design corpus are retired.** Their content was folded into the
+  `architecture/` GDS ladder, the single binding source (`architecture/INDEX.md`; `CLAUDE.md`).
+  `MSTR-002` (Architecture Principles) elevates and explains invariants that the ladder already
+  states (GDS-03); it does not introduce new ones. Where this tree's wording and the ladder's
+  wording differ, the ladder wins (MSTR-001 §7).
 - **`research/01-07` are the doctrine/physics primers; the new `research/encyclopedia/` (R1xx-R5xx)
   is a *coding-agent-oriented* encyclopedia** with a different purpose (domain understanding for
   implementation, not doctrinal justification for design choices — see MSTR-007 §2). The
@@ -111,12 +111,10 @@ The expansion does **not** duplicate or replace existing content. Specifically:
 - **`vignettes/` stays the content library** (the 19 YAML scenarios + framework doc). The new
   `scenarios/` directory is about *how to design* a vignette to hit a stated training/assessment
   objective (DOM-001/DOM-002 territory) — process guidance, not additional scenario content.
-- **`design/` stays the detailed "how."** `architecture/` is upstream of that — it's where a
-  capability cluster's research and domain inputs get synthesized into a buildable shape *before*
-  a Feature Specification commits to one, not a record of a decision already made about an
-  existing subsystem. `design/` documents an architecture that exists or is being built; `ADS-xxx`
-  documents in `architecture/` are produced earlier, to decide what `design/` and `features/`
-  should say.
+- **`architecture/` is upstream of `features/`.** It is where a capability cluster's research and
+  domain inputs get synthesized into a buildable shape *before* a Feature Specification commits
+  to one, not a record of a decision already made about an existing subsystem. `ADS-xxx`
+  documents in `architecture/` are produced earlier, to decide what `features/` should say.
 
 ### 3a. The Design Synthesis document shape (`architecture/ADS-xxx-*.md`)
 
@@ -127,7 +125,7 @@ in this order:
 1. **Executive Design Overview** — one paragraph: what capability cluster this covers, what
    problem it solves, and the single biggest design tension it resolves.
 2. **System Architecture** — the seams/interfaces/data flow this cluster needs, expressed at the
-   level `design/01-architecture-overview.md` and `04-data-model.md` already use (engine/session/
+   level GDS-03 (`architecture/03-architecture.md`) and GDS-07 (`architecture/07-data-model.md`) already use (engine/session/
    content/ui boundaries), not literal code.
 3. **Domain Model** — the entities, their relationships, and the invariants that must hold,
    independent of any specific UI or API shape.
@@ -179,9 +177,9 @@ merged in whatever existing-corpus content overlaps it (per-document merge targe
 explicit instruction, not a default convention like the rest of this corpus's looser
 cross-linking expectations (contrast MSTR-006 §5's "best-effort" `Referenced By`).
 
-This ladder is **new, separate content** — it does not silently replace `MSTR-001`, `build-spec/`,
-or `design/`, which stay authoritative until a given `GDS-NN`'s merge step explicitly folds their
-content in. It coexists with, and is a different granularity from, the per-cluster `ADS-xxx` shape
+This ladder is **new, separate content** — it does not silently replace `MSTR-001`; each
+`GDS-NN`'s merge step explicitly folded in the content of the v1 build specification and design
+corpus, both now retired. It coexists with, and is a different granularity from, the per-cluster `ADS-xxx` shape
 in §3a: the ladder is one instance for the whole system; `ADS-xxx` is zero-or-more instances, one
 per capability cluster with real design tension the ladder doesn't resolve at the system level.
 
@@ -238,7 +236,7 @@ Each document in the chain must carry, in its metadata block, the IDs of its imm
    `03-architecture-design-synthesis` skill.
 7. Is it process guidance for designing a vignette/scenario (not the scenario content itself)? →
    `scenarios/`.
-8. Otherwise: does it already have a home in `build-spec/`, `design/`, `research/01-07`,
+8. Otherwise: does it already have a home in `architecture/`, `research/01-07`,
    `training/`, or `vignettes/`? Expand the existing file/theme rather than creating a new top-level
    directory — per the standing instruction to integrate, not replace.
 
