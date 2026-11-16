@@ -40,6 +40,7 @@
 | B1b | Requirement documents: every build-spec/design citation in a *Source documents* line or candidate source repointed to its §8.1 successor or removed where the successor was already there; 16 mis-numbered GDS-04 citations corrected (1 left: `FR-2310`); `CNFR-05` reworded and `BL-0451` filed; out-of-permission Rationale citations listed in the PR for `04` | Done (PR #106) |
 | B1c-1 | Citations of `build-spec/` and `design/` in `docs/architecture/` (not `adr/`), `docs/features/` and `docs/implementation/` (not `verification/`) repointed to the §8.1 successors or named as the retired v1 build specification or design corpus (rule (b)); three commits | Done (PR #107) |
 | B1c-2 | Remaining live citations repointed to the §8.1 successors or reworded as the retired v1 specification or design corpus: `docs/master/`, `docs/research/`, training, vignettes, domains, feature-planning, three skill files, `CLAUDE.md`, `README.md`, `ROADMAP.md`, docs index, backlog; one stale link allow-list line removed. Left for B1d: ROADMAP legacy-theme tables, docs index theme rows, release-plan retirement narratives | Done (PR #108) |
+| B1d | `build-spec/` (9 files) and `design/` (15 files) deleted and declared in `docs/INDEX.md`; live leftovers cleaned first (ROADMAP BS/DS theme tables, architecture provenance lines, release-plan D-07/D-08, docs index theme rows, skill and MSTR nits); `BL-0288` closed and archived; no allow-list line added or changed. Left open: requirement Rationale/Metric/Why-excluded mentions (for `04`), `BL-0294` re-issue, `spacesim/` comment citations (C4, §8.4) | Done (this pull request) |
 | 4c, 4e, 4f, 5, 6, 7 | See the packets below | Paused |
 
 ## 3. Rules for every session, whatever its tier
@@ -388,7 +389,14 @@ without a path or link. (c) Everywhere else, point at the successor.
 `inprocess.py`, `manager.py`, `redai.py`, `scene.py`; `spacesim/ui_web/__init__.py`;
 `spacesim/ui_web/static/app.js` (lines 81 and 195; the second uses the pre-split name
 `00-BUILD-SPECIFICATION.md`); `spacesim/tests/`: `test_bus_commands.py`, `test_import_guard.py`,
-`test_validate_order.py`, `test_ssn.py` (uses the pre-split name `docs/SSN-DESIGN.md`). Most are
+`test_validate_order.py`, `test_ssn.py` (uses the pre-split name `docs/SSN-DESIGN.md`).
+
+**B1d recount (2026-11-16, after the deletion).** 38 comment lines in 28 files still cite either folder
+or a retired basename (`tools/` has none). The two files not in the list above are `spacesim/engine/bus.py`
+(line 1, `12-safe-mode-loop.md` §8: use GDS-05 `FR-B5`) and `spacesim/engine/ssn.py` (three lines, the
+pre-split `docs/SSN-DESIGN.md`: use GDS-03 §2.3 and GDS-04 §1.13; the preset table, delays and capacity rule
+exist only in this file). C4 uses both lists. The earlier estimate of about 41 lines in 7 files could not be
+reproduced; the six-file figure in the release plan and the seven in B1 item 5 are likewise superseded by this count. Most are
 bare basenames in module docstrings (`04-data-model.md` §3), which a search for the folder name
 misses. C4 uses the table above: for example `07-operator-console.md` §16.9 becomes GDS-08 §6.
 
