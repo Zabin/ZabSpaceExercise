@@ -833,3 +833,121 @@ goes to Fable only if it is on the list below.
 
 **Stop rule change.** §3 rule 9 says "hand back to Tier A". Read it as: leave the branch pushed without a PR, write what happened in the chat, and the owner decides whether it is an F1/F2 item or waits.
 
+
+## 11. A2 output — successor map for the domain documents
+
+Made 2026-11-16 at `140be2f`. Input to B3. Short forms are used throughout (`DOM-003 §4`); GDS-NN
+means `docs/architecture/NN-*.md`; "the domains folder" is the folder that holds the domain
+documents (its full path is not written here, because B3 declares it retired and the check polices
+the full form). §4 and §5 say `DOM-001`…`DOM-008`: **there are nine** (`DOM-009`, Doctrine
+Development, exists and is cited by 21 live documents). B3 declares all nine IDs.
+
+**Method.** Every live file (all `*.md`, plus `*.py`, `*.js`, `*.yaml`) was scanned for a `DOM-`
+ID, the folder name, "domain document" and "domain framework", with the section that follows
+(`§n`, `§§n–m`, ranges and lists expanded). Frozen records were excluded: `docs/reviews/`,
+`docs/implementation/verification/`, `docs/architecture/adr/`, the two archive files, the
+journal's run log; so were the domain documents themselves and this file. Each DOM section was then
+read against the GDS ladder, the requirement leaves, the master documents, the skills and the
+pipeline ledgers. **Confirmed** means the DOM text and the successor were both read and the
+successor carries the content (or the DOM text is framing that the successor states). **Partial**
+means the successor carries the requirement-level or one half of the content, or the content lives
+only in a feature specification, a skill or a research topic. **NOT absorbed** means no live
+document outside the domain documents states it. **Navigation** means a "Related topics" section
+with no content. The journal's claim that "most was absorbed" holds for `DOM-005` §3, §4, §6,
+`DOM-007` §3–§6, `DOM-008` §3 and `DOM-002` §5, `DOM-004` §4–§5, and for nothing else:
+GDS-06 to GDS-10 each recorded a DOM merge-gate line (`BL-0293`); GDS-00 to GDS-05 predate the
+instruction and recorded none, so `DOM-001`, `DOM-003` and `DOM-009` were never checked against
+the ladder until this table.
+
+**How B3 uses the table.** (a) A requirement's *Source documents* line: replace the DOM citation
+with the successor in the same row, or remove it where the successor is already on the line.
+(b) A GDS level's own "Absorbs", "Merge gate" and "Departures" text is provenance: keep the
+sentence, name the source as "the retired domain framework (`DOM-005` §3)" only if the ID check
+allows it (see §11.6 finding 2), otherwise as "the retired assessment/validation/... domain
+document". (c) Body text outside the two permitted places: **repoint to the successor** in the
+row, do not merely add "retired". (d) A row marked NOT absorbed or partial in §11.4 is migrated
+first, as its own commit, before any citation of it is touched.
+
+### 11.1 Who cites the domain documents
+
+Live documents citing each ID, by folder (a document citing two IDs counts under each; `*` and
+`xxx` are the generic forms `DOM-*` and `DOM-xxx`). Frozen records and the domain folder itself
+excluded. `training/` has none: the plan's expectation of training citations does not hold.
+
+| ID | requirements | architecture | features | research | master | training | skills | other | **docs** | code |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `DOM-001` | 0 | 1 | 6 | 3 | 4 | 0 | 0 | 2 | 16 | 0 |
+| `DOM-002` | 3 | 4 | 8 | 24 | 4 | 0 | 1 | 6 | 50 | 1 |
+| `DOM-003` | 0 | 0 | 9 | 10 | 3 | 0 | 1 | 3 | 26 | 0 |
+| `DOM-004` | 2 | 2 | 2 | 1 | 4 | 0 | 0 | 4 | 15 | 0 |
+| `DOM-005` | 3 | 4 | 3 | 18 | 5 | 0 | 1 | 5 | 39 | 2 |
+| `DOM-006` | 0 | 1 | 0 | 0 | 2 | 0 | 1 | 0 | 4 | 0 |
+| `DOM-007` | 1 | 2 | 7 | 2 | 2 | 0 | 1 | 3 | 18 | 0 |
+| `DOM-008` | 1 | 1 | 2 | 25 | 3 | 0 | 1 | 1 | 34 | 0 |
+| `DOM-009` | 0 | 1 | 4 | 11 | 3 | 0 | 1 | 1 | 21 | 0 |
+| `DOM-*` / `DOM-xxx` | 0 | 1 / 1 | 0 / 1 | 0 | 3 / 1 | 0 | 0 / 3 | 0 | 4 / 6 | 0 |
+
+Distinct live documents, any form (an ID, the folder path, or "domain document/framework"):
+**116**, with 765 mention lines: `requirements/` 3 (56 lines), `architecture/` 7 (36), `features/` 20
+(169), `research/` 59 (359), `master/` 7 (46), `training/` 0, `.claude/skills/` 7 (46), other 13 (53:
+`ROADMAP.md`, `docs/INDEX.md`, `docs/pipeline/backlog.md`, three `feature-planning/` files, seven
+`implementation/` files). Two code files cite them (`spacesim/session/assessment.py`,
+`spacesim/tools/research_batch.py`; §11.6 finding 5). Frozen files that also cite them and are
+left alone: 16 (six ADRs, one verification report, seven review reports, the two archives).
+
+The requirements are not where the weight is. Only three baseline leaves name a DOM section on
+their *Source documents* line: `FR-10110` (`DOM-002` §§3–6), `FR-10210` (`DOM-004` §§4–6) and
+`NFR-2810` (`DOM-005` §3–§4, with GDS-06 NFR-19 already first on the line); three candidates do
+the same (`CR-19` `DOM-002` §§3–6, `CR-20` `DOM-004` §5, `CR-21` `DOM-004` §6). Outside Source
+lines the requirement files carry 8 more leaf-level mentions that B3 may not reword (Rationale of
+`FR-10110`, `FR-10210`, `NFR-2810`, `NFR-3010`, `NFR-3020`, `NFR-3030`, `NFR-3040`, `NFR-3050`,
+`NFR-3060`; Postconditions of `FR-10210`), and about 40 lines of change-note, section-heading and
+candidate prose (see §11.6 finding 2). The bulk is the 59 research topics (359 lines) and the 20
+feature specifications (169 lines), whose metadata blocks name a DOM as *Dependencies*.
+
+### 11.2 The map, `DOM-001` to `DOM-003`
+
+"Cited" is the number of live documents that cite that section in the form `DOM-nnn §n`.
+
+#### `DOM-001` Training Framework (9 sections)
+
+| § | Content | Successor | Status | Cited |
+|---|---|---|---|---|
+| 1 | Purpose: how SpaceSim teaches | MSTR-001 §2 (training corpus co-equal); MSTR-003 §1–§2; GDS-01 and GDS-00 "Training-corpus elevation" | confirmed (framing) | 0 |
+| 2 | Scope split against DOM-002, -003, -009 | none wanted: the split dies with the DOM ladder | confirmed (framing) | 0 |
+| 3 | Four training-objective classes (mechanical, tactical, operational, judgment) and the `intro_brief` rule | none. GDS-07 §5 has a free-text `learning_objectives` field; `docs/vignettes/00-vignette-framework.md` "Authoring philosophy" says "explicit learning objectives" with no classes | **NOT absorbed** | 0 by section (named by MSTR-005 §4 chain and FS-101 §7) |
+| 4 | Five-step skill progression over the 19 vignettes; design rule "assign every new vignette a slot" | GDS-01 "The learning path is an operational workflow"; `FR-11310`, `FR-11320`, `FR-T2`; `docs/training/16-learning-path.md`. The mapping of each step to an objective class travels only with §3 | confirmed (steps and rule); class labels lost with §3 | 1 (FS-201, loosely: it means per-trainee progression, which is DOM-002 §7) |
+| 5 | `tutorial:` and `intro_brief:` mechanisms | GDS-07 §5 (fields), GDS-08 §4 "Brief" row and §8 menus, `FR-11420` (machine-verified tutorials); `test_vignette_tutorials.py` | confirmed | 0 |
+| 6 | Coaching notes as just-in-time instruction; "inform, never act" | GDS-07 §5 (`coaching`), GDS-08 §7.6 | partial: mechanism carried, the one-line rule "coaching never acts for the cell" is not | 0 |
+| 7 | FS must state objective class and progression slot in "Educational Value" | MSTR-003 §9 (FS must name the training objective it serves) | partial: the class and slot parts need §3 | 1 (FS-101) |
+| 8 | Open work: `training_objectives:` field; cross-check 19 vignettes | overtaken: `learning_objectives` shipped; placement is `docs/training/16-learning-path.md` and `FR-11310` | partial: class tagging not done, and moot unless §3 migrates | 2 (FS-101, same document) |
+| 9 | Related topics | none | navigation | 0 |
+
+#### `DOM-002` Assessment Framework (9 sections)
+
+| § | Content | Successor | Status | Cited |
+|---|---|---|---|---|
+| 1 | Purpose: measuring vs delivering | `FR-10110` Rationale; GDS-07 §8; MSTR-003 §8 | confirmed (framing) | 0 |
+| 2 | Scope split against DOM-001, -005 | none wanted | confirmed (framing) | 0 |
+| 3 | Binary objective-flip is insufficient | MSTR-003 §8 ("competency, not just completion"); `FR-10110`; ADR-0032 | confirmed | 4 |
+| 4 | Six measurement dimensions with data sources | `FR-10110` names all six and implements three; GDS-05 `FR-A1`; GDS-07 §8; FS-201 Scope and System Behaviour (three implemented with sources; the three deferred are named, with a one-line reason each). Definitions and data sources of resource economy, escalation discipline and time-to-decision exist only in `DOM-002` §4 | partial | 13 |
+| 5 | Rubric, not a single score | GDS-05 `FR-A1`; GDS-07 §8; `FR-10110` Postconditions; ADR-0032; FS-201 (tier labels for the three dimensions) | confirmed | 9 |
+| 6 | Automated, facilitator and self-assessment modes | FS-201 System Behaviour "Assessment modes"; FS-107 (the AAR as self-assessment). Nothing in the GDS ladder or the requirements | partial (feature level only) | 7 |
+| 7 | Reporting surface: per exercise, and longitudinal per trainee | per exercise: `FR-10110` Acceptance Criteria, FS-201. Longitudinal: gap, `BL-0303` (DEFERRED), GDS-07 OQ4, Release 2.0 plan F-31, `CR-21` | partial: per-exercise half confirmed, longitudinal half **NOT absorbed** by decision | 3 |
+| 8 | What FS-201 must state | FS-201 itself (Scope, Acceptance Criteria) | confirmed (met in place) | 0 |
+| 9 | Related topics | none | navigation | 2 (R206, R207) |
+
+#### `DOM-003` White Cell Framework (10 sections)
+
+| § | Content | Successor | Status | Cited |
+|---|---|---|---|---|
+| 1 | Purpose: White Cell as instructional designer | MSTR-003 §7; GDS-01 §5, §7; GDS-08 §7.1, §7.6 | confirmed | 3 |
+| 2 | Scope, including session setup (`FS-115`) and classification banner (`FS-112`) | GDS-05 `FR-W1`, `FR-W2`, `FR-W5`; `FR-4110`, `FR-4210`, `FR-4510`; `NFR-3100` | confirmed | 1 |
+| 3 | Authority and visibility; "no back door to ground truth" | `CLAUDE.md` Trust model and invariant 3; GDS-05 `FR-W6`, OR-9; `FR-4610`, `FR-6220`; GDS-09 §4; GDS-08 §5, §7.6 | confirmed | 3 |
+| 4 | Inject mechanism; library as a living content set; design implication for FS-108 | GDS-05 `FR-W4`, `FR-W8`; `FR-4410`, `FR-4450`, `FR-4460`; GDS-07 §4 (inject library artifact); GDS-08 §7.6 (builder). The "add reusable templates, do not script one-offs into a vignette" rule has no home | partial | 6 |
+| 5 | Clock and pacing authority; rewind/undo/branch White-only | GDS-05 `FR-W3`; `FR-4310`, `FR-4320`, `FR-4330`; ADR-0016 | confirmed | 3 |
+| 6 | Session administration (save/resume, discovery, join-by-URL, pop-out) | GDS-05 `FR-L3`; GDS-09 §3, §6; GDS-08 §7.1, §7.9, §8; FS-109, FS-110. The "facilitation concern, not infrastructure" framing stays an Open Question in FS-109 and FS-106 | confirmed | 6 |
+| 7 | White Cell as red-team enabler: see which preset drives Red, switch or tune it mid-exercise | visibility: `NFR-3060`, GDS-06 NFR-9 last bullet, `FR-9110`. Switching or hand-tuning the preset mid-exercise has no leaf | partial | 4 |
+| 8 | What a White-Cell-facing FS must state (authority tier; no new god-view) | no-new-god-view: invariant 3, `FR-6220`. "State the tier" is not in the skill 06 template | partial | 1 |
+| 9 | Open work: FS-108; composing injects into a sequence | FS-108 exists (candidate); vignette-scheduled and condition-triggered injects (`FR-4410`, `FR-4420`) cover part of the second item; composing library templates ahead of a session is unspecified | partial (stale) | 3 |
+| 10 | Related topics | none | navigation | 1 (R307) |
