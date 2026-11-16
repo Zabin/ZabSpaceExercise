@@ -23,7 +23,7 @@ out.
 | 🅿️ | Planned but **not yet authorized** — scoped in detail, no green light to start (the §12 research expansion). |
 
 `Depends on` lists the IDs whose content this document assumes, cites, or must stay consistent
-with — not a build order. On any conflict the `docs/architecture/` GDS ladder is authoritative (`CLAUDE.md`, "Authoritative source & reading order"); the retired v1 build specification is legacy reference and wins nowhere.
+with — not a build order. On any conflict the `docs/architecture/` GDS ladder is authoritative (`CLAUDE.md`, "Where things are" table); the retired v1 build specification is legacy reference and wins nowhere.
 
 ---
 
@@ -32,7 +32,7 @@ with — not a build order. On any conflict the `docs/architecture/` GDS ladder 
 | ID | Document | Path | Depends on | Status |
 |---|---|---|---|---|
 | RT-README | Project overview & quick start | `README.md` | — | ✅ |
-| RT-CLAUDE | Durable agent guide | `CLAUDE.md` | BS-00, all themes | ♻️ |
+| RT-CLAUDE | Durable agent guide | `CLAUDE.md` | all themes | ♻️ |
 | RT-ROADMAP | This file | `ROADMAP.md` | all IDs below | ♻️ |
 | RT-INDEX | Master docs router | `docs/INDEX.md` | all theme indexes | ✅ |
 | RT-FUTURE | Cross-cutting v1.1+ TODO (also the source of the §12 research-expansion plan tracked below) | The former future-work list | — | ♻️ |
@@ -42,55 +42,15 @@ with — not a build order. On any conflict the `docs/architecture/` GDS ladder 
 | ID | Document | Path | Depends on | Status |
 |---|---|---|---|---|
 | AU-01 | Full-codebase audit, June 2026 (research/docs/engine/security/tests, 5 streams) | `docs/reviews/AUDIT-2026-06.md` | all themes | ✅ |
-| AU-02 | Commands audit — order/verb realism, probability mechanics, form UX | `docs/reviews/AUDIT-2026-06-COMMANDS.md` | AU-01, DS-13 | ✅ |
+| AU-02 | Commands audit — order/verb realism, probability mechanics, form UX | `docs/reviews/AUDIT-2026-06-COMMANDS.md` | AU-01 | ✅ |
 | AU-03 | UI + TT&C audit — panel layout, power model, telemetry, target picker | `docs/reviews/AUDIT-2026-06-UI-TTC.md` | AU-02 | ✅ |
 
-## Theme: Build Spec (legacy reference, superseded — `docs/build-spec/`)
+## Retired themes: the v1 build specification and design corpus
 
-> **Superseded in its entirety by `docs/architecture/` (the GDS-00…GDS-10 ladder)**, per
-> `CLAUDE.md`'s "Authoritative source & reading order." No longer "binding v1 spec" — modules below
-> are legacy reference, citable for orientation only, not as a tie-breaker.
-
-| ID | Document | Path | Depends on | Status |
-|---|---|---|---|---|
-| BS-00 | Build Spec index | `build-spec/INDEX.md` | BS-01…BS-08 | ✅ |
-| BS-01 | Context & scope (§0–4) | `build-spec/01-context-and-scope.md` | — | ✅ |
-| BS-02 | Requirements & operations (§5–6) | `build-spec/02-requirements-and-operations.md` | BS-01 | ✅ |
-| BS-03 | Architecture & data (§7–8) | `build-spec/03-architecture-and-data.md` | BS-01, BS-02 | ✅ |
-| BS-04 | NFRs, milestones & risks (§9–12) | `build-spec/04-nfr-milestones-and-risks.md` | BS-03 | ✅ |
-| BS-05 | Workflows & state machines (§13–14) | `build-spec/05-workflows-and-state-machines.md` | BS-03 | ✅ |
-| BS-06 | Test plan & schedule (§15–17 Pt.3) | `build-spec/06-test-plan-and-schedule.md` | BS-04 | ✅ |
-| BS-07 | Operator console spec (§16 Pt.4) | `build-spec/07-operator-console.md` | BS-05 | ✅ |
-| BS-08 | Mock SSN spec (§17 Pt.4) | `build-spec/08-ssn.md` | BS-03 | ✅ |
-
-> `BS-04`'s milestone table still reads through P7; the LAN-multiplayer work that shipped as P8
-> (`RT-FUTURE` §1) post-dates the last build-spec edit. Updating §10's milestone table to record
-> P8 as done is a small open edit — add it as `BS-04-REV` if/when someone does that pass.
-
-## Theme: Design corpus (the *how* — `docs/design/`)
-
-| ID | Document | Path | Depends on | Status |
-|---|---|---|---|---|
-| DS-00 | Design index | `design/INDEX.md` | DS-01…DS-15 | ✅ |
-| DS-01 | Architecture overview | `design/01-architecture-overview.md` | BS-03 | ✅ |
-| DS-02 | Tech stack recommendation | `design/02-tech-stack-recommendation.md` | DS-01 | ✅ |
-| DS-03 | Simulation engine | `design/03-simulation-engine.md` | DS-01 | ✅ |
-| DS-04 | Data model | `design/04-data-model.md` | DS-01 | ✅ |
-| DS-05 | Cell interfaces (Red/Blue/White) | `design/05-cell-interfaces.md` | DS-04 | ✅ |
-| DS-06 | White Cell controls | `design/06-white-cell-controls.md` | DS-05 | ✅ |
-| DS-07 | API & networking | `design/07-api-and-networking.md` | DS-01, DS-04 | ✅ |
-| DS-09 | GUI principles & UX | `design/09-gui-principles.md` | DS-05 | ✅ |
-| DS-10 | SDA 3D viewer | `design/10-sda-3d-viewer.md` | DS-09 | ✅ |
-| DS-11 | Command planning & tasking | `design/11-command-planning-and-tasking.md` | DS-04, BS-05 | ✅ |
-| DS-12 | Safe-mode loop | `design/12-safe-mode-loop.md` | DS-04 | ✅ |
-| DS-13 | Operator command catalog | `design/13-operator-command-catalog.md` | DS-04, DS-11 | ✅ |
-| DS-14 | Delta-V economy | `design/14-delta-v-economy.md` | DS-03 | ✅ |
-| DS-15 | Worked asset templates | `design/15-worked-asset-templates.md` | DS-04, DS-13 | ✅ |
-
-> The LAN multiplayer transport (`RT-FUTURE` §1) shipped as HTTP polling against the existing
-> FastAPI server rather than the `WebSocketSession` stub — `DS-07` describes the seam but has not
-> been revised to describe the polling implementation actually shipped. Flag as `DS-07-REV` if
-> someone picks that up; not currently planned.
+The v1 build specification (`BS-00`…`BS-08`) and design corpus (`DS-00`…`DS-15`) were superseded in
+their entirety by the `docs/architecture/` GDS ladder and have been deleted (refactor packet B1d,
+2026-11-16). Their paths are in the "Retired documents" table of [`docs/INDEX.md`](docs/INDEX.md);
+Git history and `archive/release-1.0` keep the text. Nothing here depends on them any more.
 
 ## Theme: Research corpus (the *why* — `docs/research/`)
 
@@ -244,27 +204,27 @@ parameter sub-schemas and real per-cell ROE enforcement.
 A single, global, top-to-bottom design-synthesis ladder for the whole project, distinct from the
 per-cluster `ADS-xxx` table above. **Strictly gated**: `GDS-(N+1)` cannot start until `GDS-N` is
 authored *and* has merged in whatever existing-corpus content overlaps it (see
-`architecture/INDEX.md` §1's gating rule). Scaffolded as stub files with metadata blocks and merge
-gates; no level has been authored yet.
+`architecture/INDEX.md` §1's gating rule). Every level is now authored and its merge gate closed
+(table below).
 
 | ID | Document | Path | Merges from | Status |
 |---|---|---|---|---|
 | GDS-00 | Vision | `architecture/00-vision.md` | MSTR-001 | ✅ Authored, merge gate closed |
-| GDS-01 | Concept of Operations | `architecture/01-concept-of-operations.md` | build-spec/01, build-spec/04 §11, build-spec/05 §13-14, training/05, training/07 | ✅ Authored, merge gate closed |
-| GDS-02 | System Context | `architecture/02-system-context.md` | build-spec/01 | ✅ Authored, merge gate closed |
-| GDS-03 | Architecture | `architecture/03-architecture.md` | design/01 | ✅ Authored, merge gate closed |
-| GDS-04 | Domain Model | `architecture/04-domain-model.md` | design/04 (entity/relationship portion) | ✅ Authored, merge gate closed |
-| GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | build-spec/02 §5-6 | ✅ Authored, merge gate closed (supersedes build-spec/02 §5-6) |
-| GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | build-spec/04 §9 | ✅ Authored, merge gate closed (supersedes build-spec/04 §9) |
-| GDS-07 | Data Model | `architecture/07-data-model.md` | design/04 (schema portion) | ✅ Authored, merge gate closed (supersedes design/04) |
-| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | design/09, design/05, design/10 | ✅ Authored, merge gate closed (supersedes design/09, /05, /10) |
-| GDS-09 | API Specification | `architecture/09-api-specification.md` | design/07 | ✅ Authored, merge gate closed (supersedes design/07) |
+| GDS-01 | Concept of Operations | `architecture/01-concept-of-operations.md` | the retired v1 build specification §1, §11, §13-14; training/05, training/07 | ✅ Authored, merge gate closed |
+| GDS-02 | System Context | `architecture/02-system-context.md` | the retired v1 build specification §1 | ✅ Authored, merge gate closed |
+| GDS-03 | Architecture | `architecture/03-architecture.md` | the retired design corpus part 01 | ✅ Authored, merge gate closed |
+| GDS-04 | Domain Model | `architecture/04-domain-model.md` | the retired design corpus part 04 (entity/relationship portion) | ✅ Authored, merge gate closed |
+| GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | the retired v1 build specification §5-6 | ✅ Authored, merge gate closed (superseded that text) |
+| GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | the retired v1 build specification §9 | ✅ Authored, merge gate closed (superseded that text) |
+| GDS-07 | Data Model | `architecture/07-data-model.md` | the retired design corpus part 04 (schema portion) | ✅ Authored, merge gate closed (superseded that text) |
+| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | the retired design corpus parts 09, 05, 10 | ✅ Authored, merge gate closed (superseded those parts) |
+| GDS-09 | API Specification | `architecture/09-api-specification.md` | the retired design corpus part 07 | ✅ Authored, merge gate closed (superseded that part) |
 | GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | none (companion of requirements/03) | ✅ Authored, merge gate closed — ladder complete |
 
 **Next:** GDS-00 through GDS-10 are authored with merge gates closed (2026-10-22): **the ladder is
 complete.** The entire `docs/architecture/` ladder is authoritative over the v1 build specification and
-design corpus, so both retire in the cleanup sweep (`BL-0292`), after the
-`04` pass that takes the ladder's hand-offs (`BL-0298`). The build specification retires once GDS-10 closes (`BL-0292`).
+design corpus, so both retired in the cleanup sweep (`BL-0292`; the folders were deleted in refactor
+packet B1d, 2026-11-16). The build specification retired once GDS-10 closed.
 
 **Strategic review disposition (2026-07):** [`reviews/strategic-review-2026-07.md`](docs/reviews/strategic-review-2026-07.md)
 was dispositioned in full by [`reviews/architecture-update.md`](docs/reviews/architecture-update.md)
@@ -975,14 +935,14 @@ FS → IMP → Code → Tests) for all 11 Feature Specifications:
 | ID | Document | Path | Depends on | Status |
 |---|---|---|---|---|
 | TR-00 | Training index | `training/INDEX.md` | TR-01…TR-11 | ✅ |
-| TR-01 | Install & run | `training/01-install-and-run.md` | BS-01 | ✅ |
-| TR-02 | The interface at a glance | `training/02-interface.md` | TR-01, BS-07 | ✅ |
+| TR-01 | Install & run | `training/01-install-and-run.md` | — | ✅ |
+| TR-02 | The interface at a glance | `training/02-interface.md` | TR-01, GDS-08 | ✅ |
 | TR-03 | First exercise (Vignette 1) | `training/03-first-exercise.md` | TR-02, VG-IDX | ✅ |
 | TR-04 | Guided training vignette walkthrough | `training/04-guided-vignette.md` | TR-03 | ✅ |
-| TR-05 | Core concepts | `training/05-core-concepts.md` | TR-02, BS-05 | ✅ |
+| TR-05 | Core concepts | `training/05-core-concepts.md` | TR-02, GDS-01 | ✅ |
 | TR-06 | The full 19-vignette library at a glance | `training/06-the-vignette-library.md` | VG-IDX | ✅ |
-| TR-07 | White Cell facilitation | `training/07-white-cell-facilitation.md` | DS-06 | ✅ |
-| TR-08 | HTTP API reference | `training/08-http-api-reference.md` | DS-07 | ✅ |
+| TR-07 | White Cell facilitation | `training/07-white-cell-facilitation.md` | GDS-08 | ✅ |
+| TR-08 | HTTP API reference | `training/08-http-api-reference.md` | GDS-09 | ✅ |
 | TR-09 | Troubleshooting & glossary | `training/09-troubleshooting-and-glossary.md` | — | ✅ |
 | TR-10 | UI reference (all 15 panels; split 2026-10-17 into `10` + `10a` orders + `10b` views, each with `> Sources:` footers, `BL-0198`/`BL-0232`) | `training/10-ui-reference.md`, `training/10a-ui-reference-orders.md`, `training/10b-ui-reference-views.md` | BS-07, MAN-00 | ✅ |
 | TR-11 | Per-vignette playbooks — how each cell completes objectives, move by move, verified against the engine | `training/11-vignette-playbooks.md` | VG-IDX, TR-06 | ✅ |
@@ -1042,9 +1002,6 @@ way the test-driven workflow in `CLAUDE.md` treats code.
 3. **TR-12** — Playwright DOM/render smoke-test guide. Blocked on a committed e2e harness; the
    commands/UI audits used ad hoc Playwright verification but didn't leave one behind. Authorized;
    not yet started.
-4. **BS-04-REV / DS-07-REV** (optional, not assigned IDs above until someone starts them) — the
-   build spec's milestone table and the API/networking design doc both predate the shipped P8
-   LAN-multiplayer polling implementation and could use a refresh pass. Authorized; not yet started.
 
 Everything else in the documentation corpus is ✅ or ♻️ as of this writing. New planned docs go
 in the relevant theme table above with a fresh ID, not in a separate list — keep this file as the

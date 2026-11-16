@@ -368,8 +368,8 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
   document applies rather than restates (§2, §4). No other DOM section has UI content.
 - [x] **Decision recorded:** **this document is the authoritative UI architecture.**
   the retired design corpus part 09, the retired design corpus part 05 and the retired design corpus part 10 are superseded in full, and the retired v1 build specification part 07 and
-  the retired design corpus part 06 are superseded for their UI content. None is edited here; they retire with build-spec
-  and the rest of the design corpus (apart from the ICD) once GDS-10 closes (`BL-0292`).
+  the retired design corpus part 06 are superseded for their UI content. None was edited here; they retired with the build specification
+  and the rest of the design corpus (apart from the ICD) after GDS-10 closed (`BL-0292`, refactor packet B1d).
 
 ## Next
 

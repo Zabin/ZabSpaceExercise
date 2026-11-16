@@ -330,7 +330,7 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
   edited here; it retires with the rest of the design corpus (apart from the ICD) once GDS-10 closes
   (`BL-0292`). This departs from GDS-04's own merge decision, which kept the retired design corpus part 04 authoritative
   for the schema: that decision predates the owner's 2026-10 instruction to retire the design corpus with
-  build-spec, and with both halves now absorbed nothing in the retired design corpus part 04 remains authoritative.
+  the build specification, and with both halves now absorbed nothing in the retired design corpus part 04 remains authoritative.
 
 ## Next
 

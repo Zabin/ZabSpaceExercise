@@ -274,9 +274,10 @@ event-log entries in a loaded save; 10,000 samples per time-span export.
 - [x] **ICD placement decided.** The ICD stays the authoritative interface inventory, as this
   document's companion, rather than being merged into it: an inventory of sixteen component
   interfaces and a contract for two programmatic ones are different jobs. **The file move under
-  `docs/architecture/` is deferred to the single cleanup sweep** that retires the design corpus and
-  build-spec (`BL-0292`), because 45 files link to its current path and moving it twice would mean
-  two reference sweeps. Its re-issue against GDS-07/09 is `BL-0294`'s remaining work.
+  `docs/architecture/` was deferred to the single cleanup sweep** that retired the design corpus and
+  the build specification (`BL-0292`), because 45 files linked to its former path and moving it twice
+  would have meant two reference sweeps; it moved in refactor packet B1a. Its re-issue against GDS-07/09 is
+  `BL-0294`'s remaining work.
 - [x] **DOM content (`BL-0293`).** No DOM section has API content.
 - [x] **Decision recorded:** **this document is the authoritative API specification**, and
   the retired design corpus part 07 (API and networking) is superseded in full. It is not edited here; it retires with

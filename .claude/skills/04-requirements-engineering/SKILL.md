@@ -290,8 +290,8 @@ docs/
 ```
 
 If a project's actual paths differ from `docs/research/` / `docs/architecture/` /
-`docs/architecture/adr/` (as in this repository, where the architecture ladder lives under
-`docs/architecture/GDS-*` and ADRs may not yet exist as a separate directory), treat the names
+`docs/architecture/adr/` (this repository's do not: the ladder is `docs/architecture/NN-*.md` and
+the ADRs are in `docs/architecture/adr/`), treat the names
 above as roles to map onto whatever the project's `docs/INDEX.md` actually shows, and record the
 mapping used at the top of `03-requirements-review.md` so a reader can audit it. The four output
 filenames and `docs/requirements/` as the write target stay fixed regardless.

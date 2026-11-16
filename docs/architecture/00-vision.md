@@ -137,9 +137,9 @@ The program succeeds when (MSTR-001 §5):
 ## 7. Relationship to the build spec
 
 **Corrected 2026-07 (ADR-0031) — supersedes this section's original text**, which read
-"`docs/build-spec/` remains binding for v1... on any conflict, the build spec wins" and had gone
+"the v1 build specification remains binding for v1... on any conflict, the build spec wins" and had gone
 stale relative to a decision made elsewhere. As of `architecture/INDEX.md`'s blanket-supersession
-declaration (also restated in `CLAUDE.md` "Authoritative source & reading order"),
+declaration (also restated in `CLAUDE.md`'s "Where things are" table),
 [`docs/architecture/`](INDEX.md) — the GDS-00…GDS-10 ladder this document is the root of — is now
 the **single authoritative architecture/requirements source for the whole project, superseding
 the v1 build specification in its entirety**. This supersession is a blanket declaration, not limited to

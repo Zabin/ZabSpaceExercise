@@ -19,7 +19,7 @@ Both are produced by the `03-architecture-design-synthesis` skill
 > source & reading order." This is a blanket declaration, not limited to levels whose merge gate
 > has already closed (GDS-00–05) — it also covers GDS-06–10 below even though they are still
 > scaffold-only: a not-yet-authored GDS level simply has no authoritative content yet, rather than
-> the corresponding build-spec module "winning" by default. The §1 gating rule below (sequential,
+> the corresponding v1 build-specification module "winning" by default. The §1 gating rule below (sequential,
 > merge-gated *authoring* order) is a separate, still-binding process rule about how this ladder
 > gets written — it is not the mechanism by which authority transfers; authority transferred to
 > this directory as a whole already.

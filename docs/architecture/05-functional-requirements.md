@@ -349,8 +349,8 @@ new families cover assessment (`FR-A`) and the training corpus (`FR-T`).
   substance, solely so that existing tag citations (source-code docstrings, the retired v1 build specification
   part 04 §10 acceptance criteria) keep resolving to readable text. This is a deliberate
   departure from the GDS-00–04 merge-gate pattern (where the source document stayed authoritative
-  and the GDS document was a layered extraction) — see `CLAUDE.md`'s updated "Authoritative source
-  & reading order" section for the corresponding update to the project-wide reading order rule.
+  and the GDS document was a layered extraction) — see `CLAUDE.md`'s "Where things are" table
+  for the project-wide reading order rule.
 
 ## Next
 

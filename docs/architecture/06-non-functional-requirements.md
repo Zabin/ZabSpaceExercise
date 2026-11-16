@@ -33,7 +33,7 @@ is mapped under each tag, and the relevant domain-framework content is folded in
 
 | Document | Grain | Role |
 |---|---|---|
-| the retired v1 build specification part 04 (NFRs, milestones and risks) §9 | Tag (`NFR-1`…`NFR-10`) | **Superseded.** Kept on disk only until build-spec is retired (`BL-0292`); new work cites GDS-06 or `requirements/02`. |
+| the retired v1 build specification part 04 (NFRs, milestones and risks) §9 | Tag (`NFR-1`…`NFR-10`) | **Superseded.** Deleted with its folder (`BL-0292`, refactor packet B1d); cite GDS-06 or `requirements/02`. |
 | **GDS-06 (this document)** | Tag (`NFR-1`…`NFR-19`) | **Authoritative for what quality must hold.** `NFR-1`…`NFR-10` keep their legacy numbers so existing citations resolve; `NFR-11`…`NFR-19` state attributes the legacy list never named. |
 | `requirements/02-non-functional-requirements.md` | Leaf (`NFR-1100`…) | **Authoritative for full traceability**: Rationale, Metric/verification method, Priority, Affected subsystems, Dependencies, Related ADRs per leaf. |
 
@@ -328,7 +328,7 @@ Attributes this document states that have no `requirements/02` leaf. Each is for
 - ~~**OQ6 — Single-exercise wording (GDS-05 OQ2).**~~ **Resolved 2026-10-22:** GDS-05's OR-6 was
   reworded to the multi-session reality and its OQ2 closed; `NFR-1800` was corrected in run #211.
 
-## Departures from the legacy build-spec text
+## Departures from the retired v1 build specification
 
 The GDS level is authoritative; these are stated so no one mistakes them for drift:
 
@@ -344,7 +344,7 @@ The GDS level is authoritative; these are stated so no one mistakes them for dri
 - [x] **Absorbed §9 of the retired v1 build specification part 04 (NFRs, milestones and risks).** All ten legacy tags
   (`NFR-1`…`NFR-10`) are restated above under their original numbers, each reconciled with the
   shipped system and mapped to its `requirements/02` leaves; every departure is listed in
-  "Departures from the legacy build-spec text".
+  "Departures from the retired v1 build specification".
 - [x] **Cross-checked against `CLAUDE.md`'s load-bearing invariants.** Every invariant with a
   non-functional character (determinism, UI-agnostic engine, fog-of-war, sub-stepped clock,
   content-as-data) is traceable in the invariant table above, together with two codebase rules

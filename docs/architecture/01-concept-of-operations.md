@@ -94,7 +94,7 @@ Beyond the exercise-time users in §2, restated from GDS-00 §3 (`MSTR-001` §3)
 | CAF and allied space operator community | The training population the tool exists to serve (the retired v1 build specification part 01 §1.1) |
 | PME instructors / White Cell facilitators | Run exercises without a programming background (GDS-00 §5.1) |
 | Researchers / assessment designers | Build measurement and validation on the simulator's data (GDS-00 §3) |
-| Human maintainers | Keep the build-spec-vs-implementation contract honest |
+| Human maintainers | Keep the specification-versus-implementation contract honest |
 | Future coding LLM agents | Extend the simulator from documentation rather than reverse-engineered code (GDS-00 §2–3) |
 
 ## 4. Operational environment
