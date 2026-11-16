@@ -36,6 +36,7 @@
 | A4 | Behaviour baseline: `spacesim/tests/test_behaviour_baseline.py` pins a scripted two-hour run of each of the 19 vignettes (world, event log, pending queue, cell views, acknowledgements) plus save, reload and replay equality; re-bless and float rules added to §3 | Done (this pull request) |
 | A5a | Split plan for `session/manager.py` (§9.1): inventory, six target modules, handler rules, nine ordered moves with tier and check, do-not-move list. `orders.py`, `server.py`, `app.js` (A5b to A5d) not planned yet | Done (this pull request) |
 | A5b | Split plan for `engine/orders.py` (§9.2): inventory, five target modules, handler rules, seven ordered moves with tier and check, do-not-move list. `server.py`, `app.js` (A5c, A5d) not planned yet | Done (this pull request) |
+| A2 | Successor map for the domain documents (§11): 75 sections of nine documents mapped (38 confirmed, 22 partial, 6 not absorbed, 9 navigation), 116 citing live documents counted by folder, six migrate-first items, lessons from B1, 11 findings | Done (this pull request) |
 | B1a | Glossary migration (§8.2 item 1: eight terms into MSTR-004 §2) and the Interface Control Document moved to `docs/architecture/interface-control-document.md` (§8.3 decision 1); live links repointed, old path declared retired; move half of `BL-0294` done | Done (this pull request) |
 | B1b | Requirement documents: every build-spec/design citation in a *Source documents* line or candidate source repointed to its §8.1 successor or removed where the successor was already there; 16 mis-numbered GDS-04 citations corrected (1 left: `FR-2310`); `CNFR-05` reworded and `BL-0451` filed; out-of-permission Rationale citations listed in the PR for `04` | Done (PR #106) |
 | B1c-1 | Citations of `build-spec/` and `design/` in `docs/architecture/` (not `adr/`), `docs/features/` and `docs/implementation/` (not `verification/`) repointed to the §8.1 successors or named as the retired v1 build specification or design corpus (rule (b)); three commits | Done (PR #107) |
@@ -1035,3 +1036,139 @@ research skill (a wrong path, see §11.6 finding 6).
 | 5 | Doctrine review cadence: recheck vignettes and presets after a research revision | none. `docs/research/10` has a review cadence for the research corpus, not for the content built on it | **NOT absorbed** | 1 (R305) |
 | 6 | Open work: `doctrine_basis:` field; link preset names to research | first item shipped under the name `doctrinal_basis`; second item open, no backlog row | partial (stale) | 1 (FS-104, and it cites §6 for the wrong thing, §11.5) |
 | 7 | Related topics | none | navigation | 0 |
+
+### 11.4 Tally and migrate first
+
+**Tally, 75 sections in nine documents:** 38 confirmed, 22 partial, 6 NOT absorbed (`DOM-001` §3,
+`DOM-005` §5, `DOM-006` §1, §5, §7, `DOM-009` §5), 9 navigation. Of the 42 sections a live document
+cites by number: 21 confirmed, 17 partial, 2 NOT absorbed (`DOM-005` §5, `DOM-009` §5), 2
+navigation. Only `DOM-007` is fully confirmed (apart from its navigation section).
+
+**Migrate first.** Each item is its own commit in B3, before any citation of the section is
+touched, wording kept (rule (d)). M1 to M3 are required; M4 to M6 are owner choices, because no live
+document cites the sections by number, and each has a "drop" alternative that loses only what the
+row says.
+
+| # | Content | Move to | Why | Then repoint |
+|---|---|---|---|---|
+| M1 | `DOM-005` §5 (three instrument-validity checks) and §7 (disclosure rule) | FS-201, a new "Validity checks" subsection after System Behaviour, no renumbering | GDS-06 NFR-19 hands it to FS-201 and says it is not absorbed; today FS-201 cites it without stating it | R404, R408, FS-301, IP-2010, IP-3010; the `NFR-2810` and GDS-06 NFR-19 provenance text |
+| M2 | `DOM-008` §4 (advisor, not decider; anything beyond advisory is pending authorization) and the FS-side half of §6 | MSTR-003, a new §2a (no renumbering); the tag convention itself to the R500 index | 17 live documents depend on a constraint that no document outside the R5xx topics and one skill states; ADR-0030 covers only determinism and the `SessionAPI` path | R200-tier topics, R311, R500 index, R501, R503, R506, R507, R509, future-operations skill |
+| M3 | `DOM-002` §4 rows for resource economy, escalation discipline and time-to-decision, with the sentence that all six derive from data the engine already produces | FS-201 Scope, as a short "Deferred dimensions" list | FS-201 defers three dimensions it never defines; 13 documents cite §4 for "six dimensions" | R105, R202, R208, R211, R402, R403; FS-103, FS-105, FS-107, FS-202, FS-301 |
+| M4 | `DOM-001` §3 (objective classes) with the §4 step-to-class mapping | `docs/vignettes/00-vignette-framework.md`, beside "Authoring philosophy" | the only home of the taxonomy that MSTR-005 §4's chain still names | MSTR-005 §4 chain; FS-101 |
+| M5 | `DOM-009` §3 to §5 (translation chain, three principles, review cadence) | the same vignette framework file, a "Doctrine to content" subsection | `doctrinal_basis` ships as tags; the ROE-mapping rule and the cadence are not stated anywhere | FS-103, FS-104, R212, R213, R305 |
+| M6 | `DOM-006` §3 (change classes) and §6 (decision rights), the former future-work list references reworded to the backlog and the Release 2.0 plan | MSTR-006, new §3a and §6a | GDS-06 says it belongs with the MSTR governance documents; nothing was ever moved | GDS-06 merge-gate text; MSTR-005; MSTR-006; the doctrine research skill |
+
+**Recorded gaps, no migration** (an owner decision or a backlog row already exists): the
+longitudinal half of `DOM-002` §7 (`BL-0303`, Release 2.0 plan F-31, GDS-07 OQ4); `DOM-006` §1, §5
+and §7 (accepted loss: no live document cites them); `DOM-003` §4 "reusable templates, not one-offs"
+and §7 "switch or tune the preset mid-exercise" (candidates for FS-108 and FS-111, no move needed);
+`DOM-009` §6's second item (preset names to research documents) has no backlog row and needs one.
+
+### 11.5 Lessons from B1 for B3
+
+1. **Short forms outnumber full forms, and the ID check will not match half of them.** With the ID
+   column filled, the check finds `DOM-005` anywhere (link text, file names, tables) but not
+   `DOM-*`, `DOM-xxx`, "domain document", "domain framework", "Owning domain", or a bare
+   `domains/`. Search for all of these and for the nine file basenames as well (20 feature
+   specifications link them). `docs/INDEX.md` line 6 and MSTR-005's folder tree use `domains/`.
+2. **Section numbers can be wrong at the source.** Of about 60 citations read in context, four are
+   mis-attributed: R412 says `DOM-002` §5 for the three assessment modes (it is §6); FS-104 says
+   `DOM-009` §6 for SSN dispersion presets as doctrine data (§3 to §4); MSTR-002 §2 cites
+   `DOM-001` for a heading "Plan-execute as the unit of learning" that exists only as MSTR-003 §3;
+   FS-201 cites `DOM-001` §4 for per-trainee progression (that is `DOM-002` §7, and see finding 7).
+   The map's "Successor" column says where the *content* went, so B3 reads the sentence, finds the
+   content, then picks the successor; it does not map the number mechanically. About 110 of the
+   roughly 175 section citations were not read in context; B3 reads each as it edits.
+3. **Quoted text is not altered.** R208 quotes `DOM-002` §4 ("time-to-decision... a proxy for...");
+   `FR-10210`'s Rationale quotes `DOM-004` §5. Keep the quotation and change only its attribution,
+   to the successor that now holds the same words. That is why M1 and M3 keep the wording: the
+   quotation must still be true at its new address. The label "DOM-008 §6 tag:" in ten R500 files
+   is a defined term, not a quotation; rename it once, in all ten files, the skill and the index.
+4. **Rationale, Acceptance Criteria and Postconditions are not touched**, but the ID check will
+   find ten of them (finding 2). A requirement's provenance clause ("GDS-06 NFR-9, absorbing
+   `DOM-007` §4") is not its meaning; the owner decides whether deleting the trailing clause is
+   allowed (finding 2).
+5. **A body-text citation with a confirmed successor is repointed, not marked "retired".** The
+   successor is the one in the row, at section level (`DOM-007` §4 becomes GDS-06 NFR-9, and GDS-08
+   §5 for the display rules). A citation of a partial or NOT-absorbed section is repointed to the
+   migrated location (§11.4), never to the GDS level that merely mentions it.
+6. **Metadata blocks are where the count is.** "Dependencies", "Referenced By", "Feature Mapping"
+   and "Related Topics" name a DOM in 20 feature specifications and 59 research topics. Replace a
+   DOM in "Dependencies" or "Feature Mapping" with the GDS section or ADS of the first section
+   that the document cites; drop it from "Referenced By" lists (they describe the retired
+   document's own citers).
+7. **Provenance text in the ladder** ("Absorbs `DOM-005` §3–4", the merge-gate lines, the TRACE
+   rows in GDS-10) is rule (b): keep the sentence. Whether it may keep the ID is finding 2.
+8. **Work one folder per commit**, as B3 already says, in the order: M1 to M3, then
+   `requirements/` (six Source lines), `architecture/` (7 files), `features/` (20), `research/`
+   (59), `master/` and the skills (14), the rest (13).
+9. **Run the gates after each commit**, as in B1d; do not leave the ID row for the last commit,
+   because the check also lists broken links to the nine basenames, which is the only complete
+   list of the files to touch.
+
+### 11.6 Findings
+
+1. **There are nine domain documents, not eight.** §4 (A2) and §5 (B3) say `DOM-001`…`DOM-008`.
+   Declare all nine IDs; `DOM-009` is cited by 21 live documents.
+2. **Owner decision needed before B3: the ID check against provenance text in requirements.** Ten
+   leaf-level mentions sit in Rationale (`FR-10110`, `FR-10210`, `NFR-2810`, `NFR-3010`–`NFR-3060`)
+   and Postconditions (`FR-10210`), and about 40 lines of change notes, the heading "DOM-002/004/005
+   backfill" (in `requirements/01`, `02` and `03`) and candidate prose (`CR-19`–`CR-21`). §3 rule 9
+   forbids rewording Description and Acceptance Criteria only, but the B1 practice and this
+   packet's instruction extend to Rationale. Options: (a) allow B3 to delete the provenance
+   clause "absorbing DOM-nnn §n" and reword the change notes, listing every such line in the pull
+   request for `04` (recommended: none changes a requirement's meaning); (b) fill the ID column
+   later, after `04` has done it. Without (a) or (b) B3 cannot be green.
+3. **This file will fail the check after B3.** It is live. Every line in §4, §5 and §11 that names a
+   DOM ID, and two `docs/domains/` mentions in §4 and §5, become findings once the row exists. B3's last
+   commit rewrites them mechanically (for example `DOM-003` to `domain 003`, and the folder
+   path to "the domains folder"); the instructions here were written plainly so that the table
+   stays readable until then.
+4. **No requirement is left without a source.** `FR-10110` Source (`DOM-002` §§3–6): replace with
+   MSTR-003 §8, GDS-05 `FR-A1`, GDS-07 §8 (FS-201 and ADR-0032 are already on the line).
+   `FR-10210` (`DOM-004` §§4–6): GDS-07 §8, GDS-05 `FR-A2`, `CR-21` (FS-301 and ADR-0033 are on the
+   line). `NFR-2810` (`DOM-005` §3–§4): remove the clause; GDS-06 NFR-19 is already first. `CR-19`,
+   `CR-20`: as `FR-10110` and `FR-10210`. `CR-21` (`DOM-004` §6): FS-301 Scope, MSTR-006 §3.
+5. **Code citations (for C4, and one for a real package).** `spacesim/session/assessment.py` cites
+   `DOM-002`/`DOM-005` in comments (lines 2, 13, 33) and in `DISCLOSURE`, a string shown with
+   every dimension in the competency report (lines 38 to 40: "Face validity only (DOM-005 §5)"; "DOM-002 §5").
+   C4 is comments only, so that string needs its own small code package, with the report text
+   re-checked; nothing in `spacesim/tests/` quotes the literal. `spacesim/tools/research_batch.py` line 6 is a docstring (C4).
+6. **A skill cites the wrong folder.** The doctrine research skill's grounding row names the
+   three domain files under `docs/master/`; they were never there. The same row relies on
+   `DOM-006`, which nothing absorbed. B5 or the skills pass in B3 repairs both.
+7. **FS-201 promises a longitudinal per-trainee report that GDS-07 OQ4 and the White Cell manual
+   say does not exist.** Its User Workflows and System Behaviour sections cite `DOM-001` §4 and
+   `DOM-002` §5 for it. Repointing the citations will make the claim look sourced. Route to
+   `06`/`04`; B3 does not change the claim.
+8. **The domain layer is part of the traceability chain.** MSTR-005 §4 and skill 06 define
+   training objective → domain document → research → ADS → feature specification; ROADMAP's
+   feature and research-tier tables have an "Owning domain" column (about 15 rows);
+   `feature-index.md` has a source column citing `DOM-003` §6 twice. Retiring the layer needs a
+   new top-of-chain. Recommended: the GDS section in the "Successor" column of the first section
+   a document cites (for example FS-110: GDS-05 `FR-L3`), and "Owning domain" renamed "Grounding".
+   The chain text is B3 (master) and B5 (skills).
+9. **The ladder's absorption claims were made for GDS-06 to GDS-10 only.** GDS-00 to GDS-05
+   predate `BL-0293`. This table is the first check of `DOM-001`, `DOM-003` and `DOM-009` against
+   the ladder (and of `DOM-002` §4, §6, `DOM-004` §1 to §3, §6 against anything but GDS-07). The
+   GDS-06 and GDS-08 statements ("no other section has non-functional/UI content") hold, but
+   GDS-08 §7.1 and §7.6 do carry `DOM-003`'s White Cell surface (§3, §4).
+10. **The plan's premises.** "Many cite them as requirement sources": six Source lines.
+    "117 documents": 116 live (plus 16 frozen and two code files), none under `training/`.
+    "Journal runs #197 to #204 say most was absorbed": true of the sections listed at the head of
+    §11, not of the documents (38 of 75 sections confirmed).
+11. **`DOM-009` §6 is stale in one place.** It says `doctrine_basis:` is "not yet implemented";
+    `doctrinal_basis` shipped (GDS-07 §5, 19 of 19 vignettes), but as topic tags, so §3's
+    traceability aim and §6's second item stand. M5 states this.
+
+**Rows for Fable's spot check (uncertain).** (1) `DOM-002` §4 partial: FS-201's one-line reason per
+deferred dimension may be enough to call it confirmed. (2) `DOM-004` §6 partial: the ethics
+boundary is a candidate requirement and an FS non-goal only; confirm no GDS or ADR states it.
+(3) `DOM-001` §4 and `DOM-003` §3, §5, §6 confirmed from requirement titles and the GDS text; the
+learning-path document and each `FR-43xx`/`FR-44xx` leaf were not read line by line. (4) `DOM-007`
+all confirmed from GDS-06 NFR-9 bullets and the `NFR-30xx` leaves; the browser suite's coverage
+was not re-read. (5) `DOM-009` §3 partial: the `doctrinal_basis` values were read in one
+vignette and counted in 19, not read in all. (6) `DOM-006` §3, §6 "homes" (intake stages, skills
+README) were taken from `CLAUDE.md`, `BL-0293` and the plan, not from each skill. (7) The
+migrate-first targets in M4 to M6 are recommendations; the choice of the vignette framework file
+and MSTR-006 is Tier B judgment and may be overruled.
