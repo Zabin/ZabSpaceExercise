@@ -888,6 +888,8 @@ excluded. `training/` has none: the plan's expectation of training citations doe
 | `DOM-009` | 0 | 1 | 4 | 11 | 3 | 0 | 1 | 1 | 21 | 0 |
 | `DOM-*` / `DOM-xxx` | 0 | 1 / 1 | 0 / 1 | 0 | 3 / 1 | 0 | 0 / 3 | 0 | 4 / 6 | 0 |
 
+The "docs" column excludes code files; adding them gives 51 for `DOM-002` and 41 for `DOM-005`, and one more file in the any-form total below (117).
+
 Distinct live documents, any form (an ID, the folder path, or "domain document/framework"):
 **116**, with 765 mention lines: `requirements/` 3 (56 lines), `architecture/` 7 (36), `features/` 20
 (169), `research/` 59 (359), `master/` 7 (46), `training/` 0, `.claude/skills/` 7 (46), other 13 (53:
@@ -964,7 +966,7 @@ feature specifications (169 lines), whose metadata blocks name a DOM as *Depende
 | 3 | Two research activities, not to be conflated; the risk the split guards against | FS-301 Scope ("Two distinct research activities: boundary statement"). MSTR-007 does not state it | partial (feature level only) | 1 |
 | 4 | SpaceSim as an instrument: reproducible, full trace, data-driven manipulation | GDS-07 §8 (the event log is the research record); invariant 6; NFR-3 | confirmed | 2 |
 | 5 | Gap: no export or cohort layer; FS-301 closes it | GDS-07 §8 (`RunRecord`, `research_batch`); GDS-05 `FR-A2`; `FR-10210`; ADR-0033; FS-301 | confirmed | 4 |
-| 6 | Authorization and ethics boundary: no human-subjects feature without go-ahead and the institution's IRB | `CR-21` (candidate, Source cites this section); requirements/01 "Explicitly not authorized by this category"; FS-301 Scope and non-goals; MSTR-006 §3 (authorization gate). Not in the GDS ladder | partial (candidate requirement and FS only) | 3 |
+| 6 | Authorization and ethics boundary: no human-subjects feature without go-ahead and the institution's IRB | `CR-21` (candidate, Source cites this section); requirements/01 "Explicitly not authorized by this category"; FS-301 Scope and non-goals; MSTR-006 §3 (authorization gate); ADR-0033 (Decision: "No human-subjects-research feature is authorized by this decision"). Not in the GDS ladder | partial (candidate requirement and FS only) | 3 |
 | 7 | The encyclopedia is authored under research-method discipline | MSTR-007 §6 (authoring cadence). A remark, not a rule | confirmed (no successor wanted) | 0 |
 | 8 | What FS-301 must state (tag, export schema, non-goal) | FS-301 itself | confirmed (met in place) | 1 |
 | 9 | Related topics | none | navigation | 0 |
@@ -1126,7 +1128,7 @@ and §7 "switch or tune the preset mid-exercise" (candidates for FS-108 and FS-1
    stays readable until then.
 4. **No requirement is left without a source.** `FR-10110` Source (`DOM-002` §§3–6): replace with
    MSTR-003 §8, GDS-05 `FR-A1`, GDS-07 §8 (FS-201 and ADR-0032 are already on the line).
-   `FR-10210` (`DOM-004` §§4–6): GDS-07 §8, GDS-05 `FR-A2`, `CR-21` (FS-301 and ADR-0033 are on the
+   `FR-10210` (`DOM-004` §§4–6): GDS-07 §8, GDS-05 `FR-A2`, `CR-21` and ADR-0033 (the §6 successors, so §6 is not dropped; FS-301 and ADR-0033 are on the
    line). `NFR-2810` (`DOM-005` §3–§4): remove the clause; GDS-06 NFR-19 is already first. `CR-19`,
    `CR-20`: as `FR-10110` and `FR-10210`. `CR-21` (`DOM-004` §6): FS-301 Scope, MSTR-006 §3.
 5. **Code citations (for C4, and one for a real package).** `spacesim/session/assessment.py` cites
@@ -1172,3 +1174,5 @@ vignette and counted in 19, not read in all. (6) `DOM-006` §3, §6 "homes" (int
 README) were taken from `CLAUDE.md`, `BL-0293` and the plan, not from each skill. (7) The
 migrate-first targets in M4 to M6 are recommendations; the choice of the vignette framework file
 and MSTR-006 is Tier B judgment and may be overruled.
+
+**Not independently verified** (an independent Sonnet agent did the spot check, because Fable was unavailable; it approved with two corrections, now applied): the MSTR-006 §6 "escalate" claim used for `DOM-006` §6; each `FR-43xx`/`FR-44xx` leaf's text; and about 110 section citations not read in context.
