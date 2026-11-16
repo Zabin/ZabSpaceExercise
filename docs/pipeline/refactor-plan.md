@@ -899,7 +899,7 @@ The requirements are not where the weight is. Only three baseline leaves name a 
 their *Source documents* line: `FR-10110` (`DOM-002` §§3–6), `FR-10210` (`DOM-004` §§4–6) and
 `NFR-2810` (`DOM-005` §3–§4, with GDS-06 NFR-19 already first on the line); three candidates do
 the same (`CR-19` `DOM-002` §§3–6, `CR-20` `DOM-004` §5, `CR-21` `DOM-004` §6). Outside Source
-lines the requirement files carry 8 more leaf-level mentions that B3 may not reword (Rationale of
+lines the requirement files carry 10 more leaf-level mentions that B3 may not reword (Rationale of
 `FR-10110`, `FR-10210`, `NFR-2810`, `NFR-3010`, `NFR-3020`, `NFR-3030`, `NFR-3040`, `NFR-3050`,
 `NFR-3060`; Postconditions of `FR-10210`), and about 40 lines of change-note, section-heading and
 candidate prose (see §11.6 finding 2). The bulk is the 59 research topics (359 lines) and the 20
