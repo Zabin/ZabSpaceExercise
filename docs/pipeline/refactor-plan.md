@@ -951,3 +951,87 @@ feature specifications (169 lines), whose metadata blocks name a DOM as *Depende
 | 8 | What a White-Cell-facing FS must state (authority tier; no new god-view) | no-new-god-view: invariant 3, `FR-6220`. "State the tier" is not in the skill 06 template | partial | 1 |
 | 9 | Open work: FS-108; composing injects into a sequence | FS-108 exists (candidate); vignette-scheduled and condition-triggered injects (`FR-4410`, `FR-4420`) cover part of the second item; composing library templates ahead of a session is unspecified | partial (stale) | 3 |
 | 10 | Related topics | none | navigation | 1 (R307) |
+
+### 11.3 The map, `DOM-004` to `DOM-009`
+
+#### `DOM-004` Research Framework (9 sections)
+
+| § | Content | Successor | Status | Cited |
+|---|---|---|---|---|
+| 1 | Purpose: encyclopedia program and instrument-grade research | MSTR-007 §1 for the encyclopedia; FS-301 Purpose for instrument-grade use; GDS-00 §3 (researcher audience row) | partial: the umbrella statement is in no GDS or master document | 0 |
+| 2 | Scope | none wanted | confirmed (framing) | 0 |
+| 3 | Two research activities, not to be conflated; the risk the split guards against | FS-301 Scope ("Two distinct research activities: boundary statement"). MSTR-007 does not state it | partial (feature level only) | 1 |
+| 4 | SpaceSim as an instrument: reproducible, full trace, data-driven manipulation | GDS-07 §8 (the event log is the research record); invariant 6; NFR-3 | confirmed | 2 |
+| 5 | Gap: no export or cohort layer; FS-301 closes it | GDS-07 §8 (`RunRecord`, `research_batch`); GDS-05 `FR-A2`; `FR-10210`; ADR-0033; FS-301 | confirmed | 4 |
+| 6 | Authorization and ethics boundary: no human-subjects feature without go-ahead and the institution's IRB | `CR-21` (candidate, Source cites this section); requirements/01 "Explicitly not authorized by this category"; FS-301 Scope and non-goals; MSTR-006 §3 (authorization gate). Not in the GDS ladder | partial (candidate requirement and FS only) | 3 |
+| 7 | The encyclopedia is authored under research-method discipline | MSTR-007 §6 (authoring cadence). A remark, not a rule | confirmed (no successor wanted) | 0 |
+| 8 | What FS-301 must state (tag, export schema, non-goal) | FS-301 itself | confirmed (met in place) | 1 |
+| 9 | Related topics | none | navigation | 0 |
+
+#### `DOM-005` Validation Framework (8 sections)
+
+| § | Content | Successor | Status | Cited |
+|---|---|---|---|---|
+| 1 | Purpose: verification vs validation | GDS-06 NFR-19 (first two sentences) | confirmed | 1 |
+| 2 | Scope: fidelity claims, instrument validity | NFR-19 for fidelity; instrument validity is §5 | confirmed for (a); (b) follows §5 | 0 |
+| 3 | Verification is strong; validation is the gap | GDS-06 NFR-19; NFR-3; `NFR-2810` | confirmed | 3 |
+| 4 | Validation of fidelity claims against cited reference values; the June 2026 power audit as precedent | GDS-06 NFR-19; `NFR-2810` (Source line already names NFR-19) | confirmed | 6 |
+| 5 | Validation of assessment instruments: face validity, internal consistency, sensitivity to manipulation | **none.** GDS-06 NFR-19 says it "is a feature-level method for FS-201, not a system quality attribute, and is not absorbed here"; FS-201 cites it but does not state the three checks; R410 has face validity only | **NOT absorbed** | 7 (R404, R408, FS-201, FS-301, IP-2010, IP-3010, and GDS-06's own "not absorbed" note) and the shipped disclosure string in `session/assessment.py` |
+| 6 | Monte Carlo as validation workhorse; variability across seeds, never inside the engine | GDS-06 NFR-3 ("absorbs DOM-005 §6"); `NFR-1500`; `FR-10210` Postconditions; GDS-07 §8; `research_batch.py` | confirmed | 6 |
+| 7 | Disclosure rule: an IP or metric claiming meaning must cite which §5 checks it passed | FS-201 System Behaviour "Validation discipline"; IP-2010 Definition of Done; `session/assessment.py::DISCLOSURE`. No baseline rule | partial (feature and code level) | 3 |
+| 8 | Related topics | none | navigation | 0 |
+
+#### `DOM-006` Governance Framework (8 sections)
+
+GDS-06's merge gate says "not absorbed: process, not a system quality attribute; belongs with the
+MSTR governance documents". Nothing was ever moved there. Live section citations of this document:
+none; whole-document citations: GDS-06, MSTR-005 (tree), MSTR-006 (one sentence), the doctrine
+research skill (a wrong path, see §11.6 finding 6).
+
+| § | Content | Successor | Status | Cited |
+|---|---|---|---|---|
+| 1 | Purpose: simulator content and feature-scope lifecycle, sibling of MSTR-006 | MSTR-006 §1 names the sibling; the product-content half has no home | **NOT absorbed** | 0 |
+| 2 | Scope | none wanted | confirmed (framing) | 0 |
+| 3 | Four content-change classes and the authorization each needs | class 4 (large undertaking): MSTR-006 §3. Class 2 (scope-expanding needs an FS first): `00-intake` entry stages, `CLAUDE.md` "Pipeline", skills README. Class 3 (rebalancing needs audit and regression test): `CLAUDE.md` "Test-first", the A4 baseline, `NFR-2810`. Class 1 (additive, low risk: record in ROADMAP or vignette index): none. The table itself has no home | partial | 0 |
+| 4 | The former future-work list graduates into FSs; "→ see FS-xxx" | superseded: the list is retired; the successors are `docs/pipeline/backlog.md` (`DEFERRED` rows) and the LATER rows of the Release 2.0 plan (`CLAUDE.md` "Where things are") | confirmed (superseded) | 0 |
+| 5 | Audit reports as the shape of a retrospective review | none. The three June 2026 audits remain under `docs/reviews/` as precedent; the shape guidance is nowhere | **NOT absorbed** (low value) | 0 |
+| 6 | Decision rights table | row 2: MSTR-006 §3; row 4: MSTR-006 §6 (escalate scope or strategic change to the owner) and `CLAUDE.md` invariants; row 1: `00-intake`; row 3 (White Cell judges doctrine balance): none | partial | 0 |
+| 7 | Every FS names the list item it graduates from; every IP names its change class | obsolete for the first half; the second half is in no IP template (skill 07) | **NOT absorbed** | 0 |
+| 8 | Related topics | none | navigation | 0 |
+
+#### `DOM-007` Human Factors Framework (8 sections)
+
+| § | Content | Successor | Status | Cited |
+|---|---|---|---|---|
+| 1 | Purpose | GDS-06 NFR-9 intro; GDS-08 Purpose and §2 | confirmed (framing) | 0 |
+| 2 | Scope | none wanted | confirmed (framing) | 0 |
+| 3 | Intentional vs accidental friction | GDS-06 NFR-9 bullet "Intentional vs accidental friction"; GDS-08 §2; `NFR-3000`; skill 06 "Console Friction" section | confirmed | 5 |
+| 4 | Four cognitive-load principles (belief legible, causes surfaced, summary and detail agree, affordances reflect permission) | GDS-06 NFR-9 bullets 3–6; GDS-08 §5, §6; `NFR-3010`–`NFR-3050`; `NFR-2840` (browser suite) | confirmed | 8 |
+| 5 | Panels follow the panel-manager contract | GDS-06 NFR-9 panel bullet; GDS-08 §4; `NFR-3030` | confirmed | 3 |
+| 6 | Accessibility: consistent keyboard bindings, presentation mode | GDS-06 NFR-9 first bullet; GDS-08 §8; `NFR-3000` | confirmed | 1 |
+| 7 | What FS-105 and FS-106 must state ("Human Factors" consideration) | skill 06 "Console Friction" (owner decision `BL-0312`) | confirmed | 0 |
+| 8 | Related topics | none | navigation | 0 |
+
+#### `DOM-008` AI Integration Framework (7 sections)
+
+| § | Content | Successor | Status | Cited |
+|---|---|---|---|---|
+| 1 | Purpose: in-world AI vs AI that builds the simulator | R500 index and the future-operations skill restate it; no GDS or master text | partial | 0 |
+| 2 | Scope | none wanted | confirmed (framing) | 0 |
+| 3 | In-world AI today: presets as data, seeded RNG, legible to White Cell | GDS-06 NFR-3, NFR-7, NFR-9 (last bullet); `NFR-3060`; ADR-0030, ADR-0021; `FR-9110` | confirmed | 12 |
+| 4 | Future in-world AI: any AI must preserve plan-first; **advisor, not decider**; anything beyond advisory is pending authorization | determinism and "enters only through logged `SessionAPI` calls": ADR-0030, invariants 1 and 4. The **advisor-only constraint and its authorization gate are in no live document** outside the R501–R509 topics and the future-operations skill | partial: the heaviest-cited section in the folder | 17 (R202, R203, R206, R207, R209, R210, R212, R213, R311, the R200 and R500 indexes, R501, R503, R506, R507, R509, the future-operations skill) |
+| 5 | Coding AI: documentation-driven development; a coding agent is not exempt from determinism | MSTR-006 §4, §8; `CLAUDE.md` "Working rules" and "Pipeline"; skills README | confirmed | 3 |
+| 6 | Every R501–R509 topic carries a tag (in-world, coding-agent, or both); an FS proposing in-world AI cites §4 and flags pending authorization | the tag: 10 files carry the literal label "DOM-008 §6 tag" (nine topics and the R500 index); the future-operations skill makes it mandatory. The FS-side rule is in no skill 06 text | partial | 11 |
+| 7 | Related topics | none | navigation | 0 |
+
+#### `DOM-009` Doctrine Development Framework (7 sections)
+
+| § | Content | Successor | Status | Cited |
+|---|---|---|---|---|
+| 1 | Purpose: doctrine becomes playable content without flattening it | MSTR-001 §4 (moderate fidelity); `docs/research/01`–`03`, `07`; skill 02 doctrine | confirmed (framing) | 0 |
+| 2 | Scope | none wanted | confirmed (framing) | 0 |
+| 3 | Translation pipeline (doctrine, then parameters, then vignette or preset content); every threat picture and ROE block traceable to its source | `doctrinal_basis` vignette field: GDS-07 §5, all 19 vignettes, `docs/vignettes/00-vignette-framework.md`. Its values are topic tags (for example `orbital_warfare`), not pointers to research documents, so the traceability the rule asks for is not met | partial | 1 |
+| 4 | Translation principles: data not code; calibrated realism; legal and ROE norms are load-bearing | bullet 1: invariant 6, GDS-06 NFR-7. Bullet 2: MSTR-001 §4. Bullet 3: `docs/research/07`, `FR-P7` (per-cell ROE); the rule "a new effect category or weapon class goes through the legal and ROE mapping before it ships" is not carried | partial | 4 (FS-103, FS-104, R212, R213) |
+| 5 | Doctrine review cadence: recheck vignettes and presets after a research revision | none. `docs/research/10` has a review cadence for the research corpus, not for the content built on it | **NOT absorbed** | 1 (R305) |
+| 6 | Open work: `doctrine_basis:` field; link preset names to research | first item shipped under the name `doctrinal_basis`; second item open, no backlog row | partial (stale) | 1 (FS-104, and it cites §6 for the wrong thing, §11.5) |
+| 7 | Related topics | none | navigation | 0 |
