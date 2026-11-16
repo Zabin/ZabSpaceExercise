@@ -56,7 +56,7 @@ multiple plausible architectures, or load-bearing assumptions nobody has written
 |---|---|
 | [`architecture/INDEX.md`](../../../docs/architecture/INDEX.md) + `01-concept-of-operations.md`…`10-requirements-traceability-matrix.md` + `ADS-xxx-*.md` + `adr/` | The Design Synthesis tier this skill authors (`00-vision.md` is `01-vision`'s). |
 | The Interface Control Document | `docs/architecture/interface-control-document.md` (`INT-xxxx`) — owned here (`BL-0294`); it is `GDS-09` companion material; re-issue against GDS-07/09 is still owed. |
-| Grounding inputs | `docs/domains/DOM-xxx-*.md`, `docs/research/encyclopedia/R1xx-R6xx` + `docs/research/01-07` primers, `docs/training/`, `MSTR-001` — and, for the ladder specifically, the per-level "merges from" existing document named in `architecture/INDEX.md` §1. The v1 build specification and design corpus are retired legacy (`CLAUDE.md` "Authoritative source"): never cite them as binding. |
+| Grounding inputs | `docs/domains/DOM-xxx-*.md`, `docs/research/encyclopedia/R1xx-R6xx` + `docs/research/01-07` primers, `docs/training/`, `MSTR-001` — and, for the ladder specifically, the per-level "merges from" existing document named in `architecture/INDEX.md` §1. The v1 build specification and design corpus are retired legacy (`CLAUDE.md`, "Where things are" table): never cite them as binding. |
 | Downstream consumer | `docs/features/FS-xxx-*.md` — the next stage in the chain; both the ladder's `GDS-05`/`GDS-06` and a cluster's `ADS-xxx` Decision Log should read as direct inputs to drafting or revising an FS-xxx. |
 
 ## Workflow A — the global ladder (`GDS-00`…`GDS-10`)
@@ -147,10 +147,10 @@ doesn't resolve at the system level — see `MSTR-005` §3a.
 - Don't write an `ADS-xxx` for a feature that doesn't need one — per `MSTR-005` §4 this is optional,
   and a one-paragraph-scope feature absorbing the synthesis into its own `FS-xxx` §1-2 is the
   expected, lighter-weight path.
-- The v1 build specification is superseded in its entirety by the GDS ladder (`CLAUDE.md` "Authoritative
-  source"); it never wins a conflict. Where a level or an `ADS-xxx` departs from it, say so, and
+- The v1 build specification is superseded in its entirety by the GDS ladder (`CLAUDE.md`, "Where things are"
+  table); it never wins a conflict. Where a level or an `ADS-xxx` departs from it, say so, and
   where it conflicts with shipped behavior, raise an Open Question instead of resolving it
-  unilaterally. It is retired once GDS-06–GDS-10 close (`BL-0292`).
+  unilaterally. It was retired once GDS-06–GDS-10 closed (`BL-0292`).
 - The retired v1 design corpus is not edited; the ICD this skill owns now lives in
   `docs/architecture/`.
 - An `ADS-xxx`'s Decision Log is the load-bearing artifact for whoever drafts the downstream

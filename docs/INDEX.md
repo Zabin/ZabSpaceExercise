@@ -22,9 +22,7 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 | **Implementation** | Implementation Packages (`IP-xxxx`) — how each Feature Spec is (or would be) built, as-built docs for FS-101-107 and forward designs for FS-201/FS-301, plus the Master Build Plan (sequence/critical path/dependency graph). Supersedes the prior `implementations/` (`IMP-xxxA`) tier, retained for history. | [`implementation/00-master-build-plan.md`](implementation/00-master-build-plan.md) · [`implementation/packages/INDEX.md`](implementation/packages/INDEX.md) |
 | **Releases** | The release archive (`11-release-readiness`): one Release Manifest per release — commit, `archive/` ref and tag, counts, dependency lock, known deviations, reviews relied on — plus how to restore a released version. | [`releases/INDEX.md`](releases/INDEX.md) |
 | **Pipeline** | The pipeline's persistent memory: the `00-pipeline-manager` journal (position + append-only run log) and the backlog (findings harvested from every run + `00-intake`-filed features/bugs, each with a triage disposition). Writers: the manager (both files) and `00-intake` (backlog appends); the tree's ledgers stay authoritative. Both live files are kept short; closed backlog entries, the full earlier text of open ones, and journal runs #0–#269 are frozen, verbatim, in the two archive files. | [`pipeline/pipeline-journal.md`](pipeline/pipeline-journal.md) · [`pipeline/backlog.md`](pipeline/backlog.md) · [`pipeline/refactor-plan.md`](pipeline/refactor-plan.md) · archives: [`pipeline/pipeline-journal-archive.md`](pipeline/pipeline-journal-archive.md) · [`pipeline/backlog-archive.md`](pipeline/backlog-archive.md) |
-| **Build Spec** | Retired v1 specification (legacy reference, pending removal) — superseded by the `architecture/` ladder. | [`build-spec/INDEX.md`](build-spec/INDEX.md) |
 | **Training** | User-facing manual — install, run, first exercise, facilitation, API, troubleshooting, plus **role-scoped per-cell manuals** (White / Blue / Red) and their feature ⇄ manual traceability matrix. | [`training/INDEX.md`](training/INDEX.md) |
-| **Design** | Retired v1 design corpus (legacy reference, pending removal) — superseded by the `architecture/` ladder. | [`design/INDEX.md`](design/INDEX.md) |
 | **Research** | Doctrine & domain primers (the *why*) — Western/non-Western doctrine, counterspace taxonomy, orbital mechanics, bus/payload ops. | [`research/INDEX.md`](research/INDEX.md) |
 | **Vignettes** | Scenario library — the parameter framework + all 19 vignettes (canonical 8 + training-basics + 5 Red COA + 3 mission-set + 1 learning + 1 novel). | [`vignettes/INDEX.md`](vignettes/INDEX.md) |
 
@@ -55,6 +53,8 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 | `docs/AUDIT-2026-06-COMMANDS.md` |  | 2026-11-10 | `docs/reviews/AUDIT-2026-06-COMMANDS.md` |
 | `docs/AUDIT-2026-06-UI-TTC.md` |  | 2026-11-10 | `docs/reviews/AUDIT-2026-06-UI-TTC.md` |
 | `docs/FUTURE-WORK.md` |  | 2026-11-10 | `docs/feature-planning/06-release-2-plan.md` |
+| `docs/build-spec/` |  | 2026-11-16 | `docs/architecture/INDEX.md` |
+| `docs/design/` |  | 2026-11-16 | `docs/architecture/INDEX.md` |
 | `docs/design/05-interface-control-document.md` |  | 2026-11-15 | `docs/architecture/interface-control-document.md` |
 
 ## Root-level guides (not under `docs/`)

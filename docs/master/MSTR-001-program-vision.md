@@ -146,7 +146,7 @@ The program succeeds when:
   current phase produces **only** documentation; see [`MSTR-006`](MSTR-006-governance-principles.md)
   §5 for the implementation-package boundary rule (describe code changes, never write them here).
 
-## 7. Relationship to the build spec
+## 7. Relationship to the retired v1 build specification
 
 The v1 build specification once declared itself binding ("on any conflict, the build
 spec wins."). It is retired: the [`GDS-00`…`GDS-10` ladder](../architecture/INDEX.md) is now the

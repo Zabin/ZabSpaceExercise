@@ -32,7 +32,7 @@
 | 4a | Retired: the earlier `IMP-xxxA` package folder, the earlier documentation plan (now MSTR-005 §1a), the root decision log | Done (PR #97) |
 | 4b | The three June audit files moved into `docs/reviews/` | Done (PR #98) |
 | 4d (B2) | `FUTURE-WORK.md` retired: open items not already in the Release 2.0 plan filed as `BL-0445`–`BL-0450`; 59 documents reworded | Done (PR #99) |
-| A1 | Successor map for `docs/build-spec/` and `docs/design/` (§8): 45 cited sections mapped, the two open decisions made, 26 code files listed for C4 | Done (this pull request) |
+| A1 | Successor map for `build-spec/` and `design/` (§8): 45 cited sections mapped, the two open decisions made, 26 code files listed for C4 | Done (this pull request) |
 | A4 | Behaviour baseline: `spacesim/tests/test_behaviour_baseline.py` pins a scripted two-hour run of each of the 19 vignettes (world, event log, pending queue, cell views, acknowledgements) plus save, reload and replay equality; re-bless and float rules added to §3 | Done (this pull request) |
 | A5a | Split plan for `session/manager.py` (§9.1): inventory, six target modules, handler rules, nine ordered moves with tier and check, do-not-move list. `orders.py`, `server.py`, `app.js` (A5b to A5d) not planned yet | Done (this pull request) |
 | A5b | Split plan for `engine/orders.py` (§9.2): inventory, five target modules, handler rules, seven ordered moves with tier and check, do-not-move list. `server.py`, `app.js` (A5c, A5d) not planned yet | Done (this pull request) |
@@ -40,6 +40,7 @@
 | B1b | Requirement documents: every build-spec/design citation in a *Source documents* line or candidate source repointed to its §8.1 successor or removed where the successor was already there; 16 mis-numbered GDS-04 citations corrected (1 left: `FR-2310`); `CNFR-05` reworded and `BL-0451` filed; out-of-permission Rationale citations listed in the PR for `04` | Done (PR #106) |
 | B1c-1 | Citations of `build-spec/` and `design/` in `docs/architecture/` (not `adr/`), `docs/features/` and `docs/implementation/` (not `verification/`) repointed to the §8.1 successors or named as the retired v1 build specification or design corpus (rule (b)); three commits | Done (PR #107) |
 | B1c-2 | Remaining live citations repointed to the §8.1 successors or reworded as the retired v1 specification or design corpus: `docs/master/`, `docs/research/`, training, vignettes, domains, feature-planning, three skill files, `CLAUDE.md`, `README.md`, `ROADMAP.md`, docs index, backlog; one stale link allow-list line removed. Left for B1d: ROADMAP legacy-theme tables, docs index theme rows, release-plan retirement narratives | Done (PR #108) |
+| B1d | `build-spec/` (9 files) and `design/` (15 files) deleted and declared in `docs/INDEX.md`; live leftovers cleaned first (ROADMAP BS/DS theme tables, architecture provenance lines, release-plan D-07/D-08, docs index theme rows, skill and MSTR nits); `BL-0288` closed and archived; no allow-list line added or changed. Left open: requirement Rationale/Metric/Why-excluded mentions (for `04`), `BL-0294` re-issue, `spacesim/` comment citations (C4, §8.4) | Done (this pull request) |
 | 4c, 4e, 4f, 5, 6, 7 | See the packets below | Paused |
 
 ## 3. Rules for every session, whatever its tier
@@ -105,7 +106,7 @@ of war in ways the suite will not catch. Nobody else starts them.
 
 | ID | Work | Why it is Tier A |
 |---|---|---|
-| **A1** | **Successor map for `docs/build-spec/` and `docs/design/`.** For every section that a live document cites, name the GDS section (or other live document) that now carries it, or say "no successor: migrate first". Decide the new home of the Interface Control Document (`design/05-interface-control-document.md`, backlog `BL-0294`) and of the phase plan in `build-spec/04` §10. Output: a table added to this file. | A wrong row silently misattributes a requirement's source. About 110 documents will be rewritten from it. |
+| **A1** | **Successor map for `build-spec/` and `design/`.** For every section that a live document cites, name the GDS section (or other live document) that now carries it, or say "no successor: migrate first". Decide the new home of the Interface Control Document (`design/05-interface-control-document.md`, backlog `BL-0294`) and of the phase plan in `build-spec/04` §10. Output: a table added to this file. | A wrong row silently misattributes a requirement's source. About 110 documents will be rewritten from it. |
 | **A2** | **Successor map for `docs/domains/` (`DOM-001`…`DOM-008`).** Same shape; 117 documents cite them, many as requirement sources. Confirm for each DOM section that the GDS ladder really absorbed it (journal runs #197–#204 say most was; `BL-0303` records one gap). | Same risk, larger. |
 | **A3** | **Ledger design (step 5).** Decide the single source of truth for package status and document status, what is generated from it, and how `test_doc_integrity.py` (ledger agreement) and `baseline_ids.py` (which reads `packages/INDEX.md` and `feature-index.md`) change. Output: a short design in this file plus the package specification for the test change. | It changes what the suite's own integrity checks mean. |
 | **A4** | **Behaviour baseline.** Design and build, as the first code package, a test that pins current behaviour: the suite's counts, and for each of the 19 vignettes a hash of the world after a fixed scripted run (orders from both cells, an immediate and a future-dated inject, about two simulated hours), plus save → reload → continue equality. **Trap:** `SessionManager.start()` arms the wall-clock anchor and `set_clock(False)` folds elapsed wall time into the simulation, so a naive script hashes a different world every run. The baseline must never let wall time reach the engine. | Every later code packet is judged against it; if it is unsound, they all are. |
@@ -119,14 +120,14 @@ of war in ways the suite will not catch. Nobody else starts them.
 
 Each packet has a Tier A input. Do not start one whose input does not exist yet.
 
-### B1 — Retire `docs/build-spec/` and `docs/design/` (step 4c). Input: A1.
+### B1 — Retire `build-spec/` and `design/` (step 4c). Input: A1.
 
 1. Read A1's table. If a row says "migrate first", do that migration as its own commit in the
    same pull request: move the text into the named successor, keeping its wording.
-2. Run the retirement loop (§3). Declare `docs/build-spec/` and `docs/design/`.
+2. Run the retirement loop (§3). Declare `build-spec/` and `design/`.
 3. Requirements cite these as sources. Change only the **Source documents** line, to the successor
    from A1. Do not touch Description, Rationale or Acceptance Criteria.
-4. `CLAUDE.md` names `docs/build-spec/`; update it. Update
+4. `CLAUDE.md` names `build-spec/`; update it. Update
    `README.md`'s tree and `MSTR-005`'s tree.
 5. Seven source files cite build-spec sections in comments: list them for C4, do not edit them.
 6. Backlog: close `BL-0288`, `BL-0292`'s remainder, `BL-0294`, `BL-0301`'s remainder as they are met.
@@ -388,7 +389,14 @@ without a path or link. (c) Everywhere else, point at the successor.
 `inprocess.py`, `manager.py`, `redai.py`, `scene.py`; `spacesim/ui_web/__init__.py`;
 `spacesim/ui_web/static/app.js` (lines 81 and 195; the second uses the pre-split name
 `00-BUILD-SPECIFICATION.md`); `spacesim/tests/`: `test_bus_commands.py`, `test_import_guard.py`,
-`test_validate_order.py`, `test_ssn.py` (uses the pre-split name `docs/SSN-DESIGN.md`). Most are
+`test_validate_order.py`, `test_ssn.py` (uses the pre-split name `docs/SSN-DESIGN.md`).
+
+**B1d recount (2026-11-16, after the deletion).** 38 comment lines in 28 files still cite either folder
+or a retired basename (`tools/` has none). The two files not in the list above are `spacesim/engine/bus.py`
+(line 1, `12-safe-mode-loop.md` §8: use GDS-05 `FR-B5`) and `spacesim/engine/ssn.py` (three lines, the
+pre-split `docs/SSN-DESIGN.md`: use GDS-03 §2.3 and GDS-04 §1.13; the preset table, delays and capacity rule
+exist only in this file). C4 uses both lists. The earlier estimate of about 41 lines in 7 files could not be
+reproduced; the six-file figure in the release plan and the seven in B1 item 5 are likewise superseded by this count. Most are
 bare basenames in module docstrings (`04-data-model.md` §3), which a search for the folder name
 misses. C4 uses the table above: for example `07-operator-console.md` §16.9 becomes GDS-08 §6.
 
