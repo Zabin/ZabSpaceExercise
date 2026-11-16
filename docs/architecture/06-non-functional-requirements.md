@@ -7,7 +7,7 @@
 > **Referenced By:** GDS-07
 > **Produces:** GDS-07
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md)
+> **Related Topics:** The retired v1 build specification part 04 (NFRs, milestones and risks)
 > §9 (merge source — superseded by this document, see "Merge gate" below),
 > [`requirements/02-non-functional-requirements.md`](../requirements/02-non-functional-requirements.md)
 > (companion hierarchical elaboration with full traceability fields),
@@ -25,7 +25,7 @@ portability, documentation integrity) every capability must preserve. Stated at 
 grain, one tag per attribute, so a stakeholder can ask "is the system X enough" and find the
 statement, its verification method and the requirement leaves that elaborate it.
 
-This document is the result of closing GDS-06's merge gate: `build-spec/04` §9 (`NFR-1`…`NFR-10`)
+This document is the result of closing GDS-06's merge gate: the retired v1 build specification part 04 §9 (`NFR-1`…`NFR-10`)
 is restated and reconciled with the shipped system here, the existing `requirements/02` baseline
 is mapped under each tag, and the relevant domain-framework content is folded in.
 
@@ -33,7 +33,7 @@ is mapped under each tag, and the relevant domain-framework content is folded in
 
 | Document | Grain | Role |
 |---|---|---|
-| `build-spec/04-nfr-milestones-and-risks.md` §9 | Tag (`NFR-1`…`NFR-10`) | **Superseded.** Kept on disk only until build-spec is retired (`BL-0292`); new work cites GDS-06 or `requirements/02`. |
+| the retired v1 build specification part 04 (NFRs, milestones and risks) §9 | Tag (`NFR-1`…`NFR-10`) | **Superseded.** Kept on disk only until build-spec is retired (`BL-0292`); new work cites GDS-06 or `requirements/02`. |
 | **GDS-06 (this document)** | Tag (`NFR-1`…`NFR-19`) | **Authoritative for what quality must hold.** `NFR-1`…`NFR-10` keep their legacy numbers so existing citations resolve; `NFR-11`…`NFR-19` state attributes the legacy list never named. |
 | `requirements/02-non-functional-requirements.md` | Leaf (`NFR-1100`…) | **Authoritative for full traceability**: Rationale, Metric/verification method, Priority, Affected subsystems, Dependencies, Related ADRs per leaf. |
 
@@ -306,7 +306,7 @@ Attributes this document states that have no `requirements/02` leaf. Each is for
   the suite or drop the figure.
 - **C5 — `NFR-2700`** names only host/port/reload; the configuration file now also carries the
   `content:` section (IP-1180).
-- **C6 — every leaf's Source documents field** cites `build-spec/04` §9 `NFR-n`; add the GDS-06 tag
+- **C6 — every leaf's Source documents field** cites the retired v1 build specification part 04 §9 `NFR-n`; add the GDS-06 tag
   alongside, as `requirements/01` did when GDS-05 closed (that document's own open issue 4).
 
 ## Open Questions
@@ -341,7 +341,7 @@ The GDS level is authoritative; these are stated so no one mistakes them for dri
 
 ## Merge gate (closed)
 
-- [x] **Absorbed §9 of `build-spec/04-nfr-milestones-and-risks.md`.** All ten legacy tags
+- [x] **Absorbed §9 of the retired v1 build specification part 04 (NFRs, milestones and risks).** All ten legacy tags
   (`NFR-1`…`NFR-10`) are restated above under their original numbers, each reconciled with the
   shipped system and mapped to its `requirements/02` leaves; every departure is listed in
   "Departures from the legacy build-spec text".
@@ -360,8 +360,8 @@ The GDS level is authoritative; these are stated so no one mistakes them for dri
   the MSTR governance documents `01-vision` now owns); DOM-001–004 and DOM-009 (no non-functional
   content).
 - [x] **Decision recorded:** consistent with GDS-05 and the blanket supersession in `CLAUDE.md`,
-  **this document is the authoritative non-functional statement**, and `build-spec/04` §9 is
-  superseded. `build-spec/04` is not edited here: it is retired as a whole once GDS-10 closes
+  **this document is the authoritative non-functional statement**, and the retired v1 build specification part 04 §9 is
+  superseded. The retired v1 build specification part 04 is not edited here: it is retired as a whole once GDS-10 closes
   (`BL-0292`), and until then `CLAUDE.md` and `architecture/INDEX.md` already mark it legacy and
   non-binding. `requirements/02` stays the leaf-level elaboration, exactly as `requirements/01` is
   for GDS-05; its pending corrections are C1–C6.

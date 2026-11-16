@@ -162,7 +162,7 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Preconditions:** White Cell holds the only clock-authority role for the session (ADR-0016).
 - **Postconditions:** Session state (clock, `WorldState`, `EventLog`) reflects the control action;
   an Inject application's effects bypass the normal Planned-Activity path by design (GDS-04 §1.12).
-- **Error handling:** Invalid scenario data fails loudly at load (`build-spec/01` "Error handling",
+- **Error handling:** Invalid scenario data fails loudly at load (GDS-06 NFR-6 "Error handling",
   cited in GDS-04 §1.1 Constraints); no other error-handling detail is specified at this baseline.
 - **Dependencies:** A loaded/loadable Vignette (INT-0011); exactly one White Cell seat with clock
   authority per session (ADR-0016).
@@ -493,7 +493,7 @@ external-actor row in GDS-02 §2. Interfaces wholly internal to one component (e
 - **Source Component:** C5 (Content & Data)
 - **Destination Component:** C10 (Space-Track.org)
 - **Purpose:** Optionally pull real two-line element sets for force-added named satellites, at
-  scenario-build time only (GDS-02 §3, §4, §9 sequence diagram; `build-spec/01` Decision D2).
+  scenario-build time only (GDS-02 §3, §4, §9 sequence diagram; ADR-0018).
 - **Data exchanged:** A TLE request out; TLE data (or a failure) back.
 - **Message/data structure:** Not specified at this baseline; Space-Track's own external API,
   not a SpaceSim-defined contract.

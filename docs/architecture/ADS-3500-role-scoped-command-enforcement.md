@@ -155,7 +155,7 @@ requirements from being implementable:
   two-value enumeration rather than adding a third).
 - Must remain additive to every existing interface call site (no existing vignette, test, or client
   call may require modification to keep working).
-- `docs/build-spec/` and `docs/architecture/interface-control-document.md` are grounding inputs, not
+- `docs/architecture/INDEX.md` (the GDS ladder) and `docs/architecture/interface-control-document.md` are grounding inputs, not
   documents this skill's authority edits directly (`03-architecture-design-synthesis`'s own Scope
   table) — the interface amendment is recorded here as this cluster's authoritative decision, per
   `architecture/INDEX.md`'s blanket supersession declaration, rather than by editing the ICD file.

@@ -7,7 +7,7 @@
 > **Referenced By:** GDS-06
 > **Produces:** GDS-06
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`build-spec/02-requirements-and-operations.md`](../build-spec/02-requirements-and-operations.md)
+> **Related Topics:** The retired v1 build specification part 02 (requirements and operations)
 > §5–6 (merge source — superseded by this document, see "Merge gate" below),
 > [`requirements/01-functional-requirements.md`](../requirements/01-functional-requirements.md)
 > (companion hierarchical elaboration with full traceability fields — see "Relationship to other
@@ -22,7 +22,7 @@ statement per discrete behavior) and organized by the same six capability groups
 used since the original build spec: simulation engine, bus & payload operations, command planning
 & sensor tasking, White Cell control, scenario builder, and logging — plus the operations/hot-seat
 model that governs how humans use those capabilities. This document is the result of closing
-GDS-05's merge gate: build-spec/02 §5–6 content has been transferred here and build-spec/02 has
+GDS-05's merge gate: the retired v1 build specification part 02 §5–6 content has been transferred here and the retired v1 build specification part 02 has
 been updated to point back to this document as the live source.
 
 ## Relationship to other requirement artifacts
@@ -31,7 +31,7 @@ Three documents now describe functional requirements; each has a distinct, non-c
 
 | Document | Grain | Role |
 |---|---|---|
-| `build-spec/02-requirements-and-operations.md` §5–6 | Capability-tag (`FR-E1`, `OR-3`, …) | **Superseded.** Kept on disk, unchanged, only because source-code docstrings and `04-nfr-milestones-and-risks.md` §10 acceptance criteria cite these tags by ID; the section now carries a pointer to this document as the live text. New work cites GDS-05/`requirements/01`, not this file. |
+| the retired v1 build specification part 02 (requirements and operations) §5–6 | Capability-tag (`FR-E1`, `OR-3`, …) | **Superseded.** Kept on disk, unchanged, only because source-code docstrings and the retired v1 build specification part 04 (NFRs, milestones and risks) §10 acceptance criteria cite these tags by ID; the section now carries a pointer to this document as the live text. New work cites GDS-05/`requirements/01`, not this file. |
 | **GDS-05 (this document)** | Capability-tag, restated | **Authoritative for what must be true**, at the same grain as the original tags so existing citations keep resolving to a real statement. This is the level at which a stakeholder asks "does the system do X" and gets a yes/no-checkable answer. |
 | `requirements/01-functional-requirements.md` | Hierarchical leaf (`FR-1111`) | **Authoritative for full traceability.** Each GDS-05 tag below decomposes into one or more `FR-1xxx` leaves there, each carrying the full field set (Preconditions, Postconditions, Acceptance Criteria, Verification Method, Dependencies, Related ADRs/Interfaces/Requirements) that this document does not repeat. Use `requirements/01` when you need a test plan or a precise acceptance condition; use GDS-05 when you need the capability-level statement and its place in the architecture. |
 
@@ -88,7 +88,7 @@ Traces to GDS-04 §1.2 (Asset bus/payload state) and `research/06-bus-and-payloa
 - **FR-B4** Each payload type (SATCOM, ISR-EO, ISR-SAR, SIGINT, SDA, space-control, PNT, missile
   warning, weather) shall expose its **type-specific operator actions and monitors**. *(→ FR-2410)*
 - **FR-B5** The engine shall support **safe mode** with the full attack/detection/recovery loop and
-  its White-Cell dials. *(→ FR-2510; see `design/12-safe-mode-loop.md`)*
+  its White-Cell dials. *(→ FR-2510; see the retired design corpus part 12 (safe-mode loop))*
 
 ## 3. Command planning & sensor tasking (FR-P)
 
@@ -109,7 +109,7 @@ Traces to GDS-04 §1.7 (Planned Activity); ADR-0005 (plan-first commanding).
 - **FR-P6** For any maneuver, the tool shall present a **delta-v cost preview** before commit — in
   m/s and in "years of service life spent" — and shall track remaining budget, estimated life
   remaining, and drift-when-empty; burns exceeding a configurable years-of-life threshold require a
-  deliberate confirm. *(→ FR-1310; see `design/14-delta-v-economy.md`)*
+  deliberate confirm. *(→ FR-1310; see the retired design corpus part 14 (delta-v economy))*
 
 Plan-first composition assistants (maneuver, observe, jam, engage, cyber, sigint) compute a
 read-only consequence preview through a non-mutating `/compute` endpoint before an order is
@@ -319,11 +319,11 @@ new families cover assessment (`FR-A`) and the training corpus (`FR-T`).
   affordance rather than a session-layer behavior. Left open rather than resolved unilaterally.
   **Resolved (2026-10-17, `BL-0056`):** `requirements/01` now carries `FR-6610` ("Screen-blank
   pending-handoff menu between hot-seat role changes"); OR-3 maps to it.
-- **OQ2 — OR-6 (single exercise per process) vs. multi-session discovery.** `build-spec/02` §6
+- **OQ2 — OR-6 (single exercise per process) vs. multi-session discovery.** the retired v1 build specification part 02 §6
   states "v1 runs a single exercise per process instance," but the shipped `/api/sessions`
   discovery endpoint (P8, LAN multiplayer) suggests multiple `Session` objects can coexist in one
   process. This document restates OR-6 as written in the merge source rather than resolving the
-  apparent tension; flagged for the build-spec/02 owner to confirm whether OR-6's wording is stale
+  apparent tension; flagged for the retired v1 build specification part 02 owner to confirm whether OR-6's wording is stale
   post-P8.
   **Resolved (2026-10-22, `BL-0300`):** the wording was stale. OR-6 now states the as-built model —
   one `Session` per exercise, several sessions per process up to a cap, save and resume into a new
@@ -331,7 +331,7 @@ new families cover assessment (`FR-A`) and the training corpus (`FR-T`).
 
 ## Merge gate (closed)
 
-- [x] **Absorbed build-spec/02 §5–6 in full.** Every `FR-E*`, `FR-B*`, `FR-P*`, `FR-W*`, `FR-S*`,
+- [x] **Absorbed the retired v1 build specification part 02 §5–6 in full.** Every `FR-E*`, `FR-B*`, `FR-P*`, `FR-W*`, `FR-S*`,
   `FR-L*`, and `OR-*` tag is restated above verbatim in substance (wording tightened only where the
   source was duplicative), each cross-referenced to its `requirements/01` FR-1xxx leaf(ves) where
   one exists.
@@ -343,11 +343,11 @@ new families cover assessment (`FR-A`) and the training corpus (`FR-T`).
   cited GDS section or ADR.
 - [x] **Decision recorded:** per this turn's explicit project-owner instruction ("build spec
   document and other older documentation is being replaced by this new hierarchy"), this document
-  — not `build-spec/02-requirements-and-operations.md` §5–6 — is now **the authoritative
-  statement** of these requirements. `build-spec/02-requirements-and-operations.md` §5–6 has been
+  — not the retired v1 build specification part 02 (requirements and operations) §5–6 — is now **the authoritative
+  statement** of these requirements. The retired v1 build specification part 02 (requirements and operations) §5–6 has been
   updated with a pointer to this document (see that file) and is retained on disk, unmodified in
-  substance, solely so that existing tag citations (source-code docstrings, `04-nfr-milestones-
-  and-risks.md` §10 acceptance criteria) keep resolving to readable text. This is a deliberate
+  substance, solely so that existing tag citations (source-code docstrings, the retired v1 build specification
+  part 04 §10 acceptance criteria) keep resolving to readable text. This is a deliberate
   departure from the GDS-00–04 merge-gate pattern (where the source document stayed authoritative
   and the GDS document was a layered extraction) — see `CLAUDE.md`'s updated "Authoritative source
   & reading order" section for the corresponding update to the project-wide reading order rule.

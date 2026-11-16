@@ -41,15 +41,15 @@ Each level absorbed the document named and was gated on the one before:
 | Level | Absorbed | State |
 |---|---|---|
 | GDS-00 Vision | MSTR-001 (stays authoritative) | ✅ |
-| GDS-01 Concept of Operations | build-spec/01, /04 §11, /05 §13–14, training/05, /07 | ✅ |
-| GDS-02 System Context | build-spec/01 | ✅ |
-| GDS-03 Architecture | design/01 | ✅ |
-| GDS-04 Domain Model | design/04 (conceptual half) | ✅ |
-| GDS-05 Functional Requirements | build-spec/02 §5–6 (superseded) | ✅ |
-| GDS-06 Non-functional Requirements | build-spec/04 §9 (superseded); DOM-005, -007, -008 content | ✅ |
-| GDS-07 Data Model | design/04 (schema half; superseded); DOM-002, -004 content | ✅ |
-| GDS-08 UI Architecture | design/09, /05, /10 (superseded); build-spec/07, design/06 UI content | ✅ |
-| GDS-09 API Specification | design/07 (superseded); ICD kept as companion inventory | ✅ |
+| GDS-01 Concept of Operations | the retired v1 build specification parts 01, 04 §11 and 05 §13–14; training/05, /07 | ✅ |
+| GDS-02 System Context | the retired v1 build specification part 01 | ✅ |
+| GDS-03 Architecture | the retired design corpus part 01 | ✅ |
+| GDS-04 Domain Model | the retired design corpus part 04 (conceptual half) | ✅ |
+| GDS-05 Functional Requirements | the retired v1 build specification part 02 §5–6 (superseded) | ✅ |
+| GDS-06 Non-functional Requirements | the retired v1 build specification part 04 §9 (superseded); DOM-005, -007, -008 content | ✅ |
+| GDS-07 Data Model | the retired design corpus part 04 (schema half; superseded); DOM-002, -004 content | ✅ |
+| GDS-08 UI Architecture | the retired design corpus parts 09, 05 and 10 (superseded); the retired v1 build specification part 07, the retired design corpus part 06 UI content | ✅ |
+| GDS-09 API Specification | the retired design corpus part 07 (superseded); ICD kept as companion inventory | ✅ |
 | GDS-10 Traceability (this) | Net-new at tag grain; companion of `requirements/03` | ✅ |
 
 ## 2. Method
@@ -267,7 +267,7 @@ The functional table goes stale the moment a package is verified or a leaf is ad
 - [x] **Decision recorded:** **this document is authoritative for tag-grain traceability and chain
   completeness**; `requirements/03` stays the authoritative leaf-grain matrix, owned by `04`, with
   findings F2–F4 handed to it. With this gate closed, **the GDS ladder is complete**: every topic
-  `docs/build-spec/` and `docs/design/` covered now has an authoritative GDS level, so both can be
+  the v1 build specification and the design corpus covered now has an authoritative GDS level, so both can be
   retired in the cleanup sweep (`BL-0292`), and `CLAUDE.md`'s ladder text can be updated
   (`BL-0301`).
 
@@ -275,4 +275,4 @@ The functional table goes stale the moment a package is verified or a leaf is ad
 
 The ladder is closed. Next, in order: the owner decisions batched in the backlog; the `04` pass that
 takes GDS-06's gaps and corrections (`BL-0298`) and this document's findings F1–F4; then the cleanup
-sweep that retires `docs/build-spec/` and `docs/design/` (apart from the ICD, which moves).
+sweep that retires the v1 build specification and the design corpus (apart from the ICD, which moves).

@@ -7,11 +7,11 @@
 > **Referenced By:** GDS-09
 > **Produces:** GDS-09
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`design/09-gui-principles.md`](../design/09-gui-principles.md),
-> [`design/05-cell-interfaces.md`](../design/05-cell-interfaces.md),
-> [`design/10-sda-3d-viewer.md`](../design/10-sda-3d-viewer.md) (merge sources, superseded by this
-> document); [`build-spec/07-operator-console.md`](../build-spec/07-operator-console.md) and
-> [`design/06-white-cell-controls.md`](../design/06-white-cell-controls.md) (related legacy UI
+> **Related Topics:** The retired design corpus part 09 (GUI principles),
+> the retired design corpus part 05 (cell interfaces),
+> the retired design corpus part 10 (SDA 3D viewer) (merge sources, superseded by this
+> document); the retired v1 build specification part 07 (operator console) and
+> the retired design corpus part 06 (White Cell controls) (related legacy UI
 > material, also absorbed); [GDS-01](01-concept-of-operations.md) (user classes),
 > [GDS-06](06-non-functional-requirements.md) NFR-9 (usability constraints), ADR-0004, ADR-0005,
 > ADR-0008, ADR-0016.
@@ -75,7 +75,7 @@ is never surprised by why an action was or wasn't allowed.
 
 ## 2. Principles
 
-These bind every screen. P1–P7 come from `design/09`, C1–C2 from the console specification, and the
+These bind every screen. P1–P7 come from the retired design corpus part 09, C1–C2 from the console specification, and the
 human-factors constraints in GDS-06 NFR-9 apply on top.
 
 - **P1 — Geometry is never hidden.** Every command is bound to a pass or window; next-contact
@@ -160,7 +160,7 @@ AAR across monitors; every window polls the same server clock.
 
 ## 5. The belief picture (2D map and 3D globe)
 
-The viewers draw **only the viewing cell's belief**, never ground truth (absorbs `design/10` §1–§3):
+The viewers draw **only the viewing cell's belief**, never ground truth (absorbs the retired design corpus part 10 §1–§3):
 
 - **Own assets** always appear at their known state, with orbit path, footprints and health badges:
   the cell commands them, so it knows where they are.
@@ -311,21 +311,21 @@ changes, so the next person does not see the previous cell's picture.
 
 The GDS level is authoritative; these are stated so they are not mistaken for drift:
 
-- **Branches, jump-to-event and commit locks** (`design/06` §2): rewind and undo exist; named
+- **Branches, jump-to-event and commit locks** (the retired design corpus part 06 §2): rewind and undo exist; named
   what-if branches the facilitator switches between, and "lock a point against rewind", were not
   built. AAR branch comparison exists as a read-only report.
-- **Save contents** (`design/06` §5): a save stores the event-log envelope described in GDS-07 §6,
+- **Save contents** (the retired design corpus part 06 §5): a save stores the event-log envelope described in GDS-07 §6,
   not `{initial_state, seed, snapshots, eventlog, branches}`.
-- **Inject effect names** (`design/06` §3): the shipped set is GDS-05's (`message`, `reveal_asset`,
+- **Inject effect names** (the retired design corpus part 06 §3): the shipped set is GDS-05's (`message`, `reveal_asset`,
   `political_consequence`, `patch_cyber_vuln`, `gs_outage`, `space_weather`, `conjunction_warning`,
   `spawn_debris`, `anomaly`, `sensor_outage`, `forced_custody_loss`, `scripted_manoeuvre`), not
-  `design/06`'s list.
-- **Timeline drag-and-drop planning** (`design/09` §4) and **right-click "task sensor on this
-  object"** (`design/10` §5) were not built; planning starts from the command and tasking panels.
-- **Optimistic "queued (pending)" states** (`design/09` §5): the client waits for the server
+  the retired design corpus part 06's list.
+- **Timeline drag-and-drop planning** (the retired design corpus part 09 §4) and **right-click "task sensor on this
+  object"** (the retired design corpus part 10 §5) were not built; planning starts from the command and tasking panels.
+- **Optimistic "queued (pending)" states** (the retired design corpus part 09 §5): the client waits for the server
   response rather than rendering an optimistic state.
-- **Detach viewers** (`build-spec/07` §16.12) became the pop-out layout tokens in §4.
-- **Single-player cell switching** (`design/05`): the seat selector is the same, but it now also
+- **Detach viewers** (the retired v1 build specification part 07 §16.12) became the pop-out layout tokens in §4.
+- **Single-player cell switching** (the retired design corpus part 05): the seat selector is the same, but it now also
   serves LAN multiplayer and the Observer seat.
 
 ## Open Questions
@@ -345,21 +345,21 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
 
 ## Merge gate (closed)
 
-- [x] **Absorbed `design/09-gui-principles.md`**: §1 → §1; §2 (P1–P7) → §2; §3 (visual language) →
+- [x] **Absorbed the retired design corpus part 09 (GUI principles)**: §1 → §1; §2 (P1–P7) → §2; §3 (visual language) →
   §5; §4 (interaction patterns) → §6–§7; §5 (accessibility and deployment) → §8 and §4 (pop-outs);
   §6 (anti-patterns) → §2; §7 (build-phase mapping) dropped as history.
-- [x] **Absorbed `design/05-cell-interfaces.md`**: shared UX elements → §4 and §7; permitted actions
+- [x] **Absorbed the retired design corpus part 05 (cell interfaces)**: shared UX elements → §4 and §7; permitted actions
   by asset kind and the validation steps → §6–§7 (the per-verb list itself is GDS-05 and the command
   catalog's, not repeated); fog of war and attribution → §5; White Cell view → §7.6; single-player
   switching → §3–§4 and departures.
-- [x] **Absorbed `design/10-sda-3d-viewer.md`**: §1–§3 → §5; §4 (time) → §5; §5 (interaction) → §5
+- [x] **Absorbed the retired design corpus part 10 (SDA 3D viewer)**: §1–§3 → §5; §4 (time) → §5; §5 (interaction) → §5
   and departures; §6 (fidelity now vs. later) is GDS-04/GDS-06 material and is not repeated; §7
   (tech notes) → §3; §8 → §5.
-- [x] **Also absorbed the related legacy UI text** the merge sources point to: `build-spec/07`
+- [x] **Also absorbed the related legacy UI text** the merge sources point to: the retired v1 build specification part 07
   §16.1–§16.14 (users, C1–C2, screen architecture, fleet rail, drill-down, compose, recovery,
   per-cell consoles, button-state contract, accessibility, inject builder, activity timeline,
   conjunctions and coaching) into §1–§8; its per-panel endpoint table goes to GDS-09; its verb
-  catalog stays with `design/13` and the code. `design/06` §2–§5 → §7.6 and departures.
+  catalog stays with the retired design corpus part 13 and the code. The retired design corpus part 06 §2–§5 → §7.6 and departures.
 - [x] **Did not claim verified UI behavior beyond what a test asserts.** "Verification status" lists
   the rules the browser suite asserts and states that the rest of the client is not asserted end to
   end; OQ1 asks how far that should extend. (Restated 2026-10-24: the original text said no browser
@@ -367,9 +367,9 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
 - [x] **DOM content (`BL-0293`).** DOM-007 was already absorbed into GDS-06 NFR-9, which this
   document applies rather than restates (§2, §4). No other DOM section has UI content.
 - [x] **Decision recorded:** **this document is the authoritative UI architecture.**
-  `design/09`, `design/05` and `design/10` are superseded in full, and `build-spec/07` and
-  `design/06` are superseded for their UI content. None is edited here; they retire with build-spec
-  and the rest of `docs/design/` (apart from the ICD) once GDS-10 closes (`BL-0292`).
+  the retired design corpus part 09, the retired design corpus part 05 and the retired design corpus part 10 are superseded in full, and the retired v1 build specification part 07 and
+  the retired design corpus part 06 are superseded for their UI content. None is edited here; they retire with build-spec
+  and the rest of the design corpus (apart from the ICD) once GDS-10 closes (`BL-0292`).
 
 ## Next
 
