@@ -226,6 +226,6 @@ The next-contact countdown column is **read-only** (data from `GET /next_contact
 - **HTTP endpoints behind each control:** [`08-http-api-reference.md`](08-http-api-reference.md).
 - **Why each panel exists (narrative):** [`02-interface.md`](02-interface.md), [`05-core-concepts.md`](05-core-concepts.md).
 - **White-Cell facilitation patterns:** [`07-white-cell-facilitation.md`](07-white-cell-facilitation.md).
-- **Build-spec operator-console contract:** [`../build-spec/07-operator-console.md`](../build-spec/07-operator-console.md).
+- **Operator-console architecture (GDS-08):** [`../architecture/08-ui-architecture.md`](../architecture/08-ui-architecture.md).
 
 ---

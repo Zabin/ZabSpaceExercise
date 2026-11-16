@@ -26,7 +26,7 @@ doctrine subject-matter expert from scratch.
 In scope: the translation process from doctrine documents to vignette/ROE/effect parameters, and
 the consistency check that translated content doesn't drift from its doctrinal source over time. Out
 of scope: the doctrine content itself (owned by `docs/research/01-03`, `07`, and the R300 tier) and
-the engine mechanics the doctrine is translated into (owned by `docs/build-spec/`, `docs/design/`).
+the engine mechanics the doctrine is translated into (owned by `docs/architecture/`).
 
 ## 3. The translation pipeline
 
