@@ -13,7 +13,7 @@
 > runner, FS-133 OQ2; the retirement question, FS-133 OQ1); `spacesim/tests/test_training_sources.py`
 > (the existing `Sources:` footer check, `NFR-3400`, the model for this suite);
 > [GDS-06](../architecture/06-non-functional-requirements.md) NFR-18; `BL-0292` (retiring
-> `docs/build-spec/` and most of `docs/design/`)
+> the v1 build specification and most of the design corpus)
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
 
@@ -259,7 +259,7 @@ pattern) — built. No `FS-xxx` prerequisite. Coordinates with FS-133 (shared ru
 - **Allow-lists that never shrink.** A list that only must not grow could sit at 80 entries for
   ever. Mitigation: `10`/`11` cite its size; the owner may set a date to empty it.
 - **False positives on legitimate references.** A live document that discusses a retired file
-  historically (for example, a supersession note naming `build-spec/02`) would fail check 2.
+  historically (for example, a supersession note naming a retired build-specification part) would fail check 2.
   Mitigation: such notes belong in frozen records (ADRs, reviews), and a live note names the
   successor instead (owner decision 2026-10-31; no allowed-referrer list). Residual: a first
   retirement sweep may touch many live files; the empty-at-landing allow-list is the relief valve.
