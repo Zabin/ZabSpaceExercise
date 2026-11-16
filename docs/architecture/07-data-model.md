@@ -7,7 +7,7 @@
 > **Referenced By:** GDS-08
 > **Produces:** GDS-08
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`design/04-data-model.md`](../design/04-data-model.md) (merge source —
+> **Related Topics:** The retired design corpus part 04 (data model) (merge source —
 > persistence/schema portion, superseded by this document; the conceptual-entity portion went to
 > GDS-04), [GDS-04](04-domain-model.md) (the concepts these structures store),
 > [GDS-06](06-non-functional-requirements.md) (NFR-3, NFR-12, NFR-13, NFR-15 constrain them),
@@ -263,11 +263,11 @@ ground-truth reads (`FR-6220`) are the only unfiltered paths.
 
 ---
 
-## Departures from the legacy `design/04-data-model.md`
+## Departures from the legacy design corpus part 04 (data model)
 
 The GDS level is authoritative; these are stated so they are not mistaken for drift:
 
-- **No asset templates.** `design/04` gives each asset a `template` reference and each template a
+- **No asset templates.** the retired design corpus part 04 gives each asset a `template` reference and each template a
   `telemetry_db` and `command_db`. As built, assets are defined inline in the vignette (ADR-0036);
   the telemetry database is computed per subsystem at read time (`engine/telemetry.py`); the command
   catalog is code (`engine/buscommands.py`).
@@ -278,7 +278,7 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
   `up/degraded/down` status were not built; sensors carry range limits, a `network`, a
   `nominal/degraded` health and the IP-1220 modality fields. Tasking contention is computed by the
   order system, not stored on the sensor.
-- **Planned activities.** `design/04`'s `PlannedActivity` with a seven-state lifecycle is, as built,
+- **Planned activities.** the retired design corpus part 04's `PlannedActivity` with a seven-state lifecycle is, as built,
   `engine/orders.py::Order` with statuses `draft`, `queued`, `rejected`, `cancelled`, `executed`,
   plus `pending_approval` for gated orders; collection tasking is an `observe` order.
 - **Effect outcomes** are not a stored type: results go to the event log, `effect_log` and
@@ -311,7 +311,7 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
 
 ## Merge gate (closed)
 
-- [x] **Absorbed the persistence/schema content of `design/04-data-model.md`.** §1 (identifiers and
+- [x] **Absorbed the persistence/schema content of the retired design corpus part 04 (data model).** §1 (identifiers and
   units) → §1; §2 (`OrbitState`) and §3 (assets, ground stations, sensors) → §2; §4 (effects) → §2
   and the departures list; §5 (tracks) → §2; §6 (vignette schema) → §5; §6.5 (planned activities) →
   §2 and departures; §7 (event log, snapshot) → §3, with the save envelope added in §6; §8 (cell
@@ -325,12 +325,12 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
   DOM-002 §5 (rubric, never a single score) into §8. Recorded as a gap rather than absorbed: DOM-002
   §7 (longitudinal per-trainee reporting) → OQ4. No other DOM section has data-model content.
 - [x] **Decision recorded:** **this document is the authoritative data model**, and
-  `design/04-data-model.md` is superseded in full: GDS-04 already took its conceptual portion, and
-  this document takes its schema portion, corrected to the shipped models. `design/04` is not
-  edited here; it retires with the rest of `docs/design/` (apart from the ICD) once GDS-10 closes
-  (`BL-0292`). This departs from GDS-04's own merge decision, which kept `design/04` authoritative
-  for the schema: that decision predates the owner's 2026-10 instruction to retire `design/` with
-  build-spec, and with both halves now absorbed nothing in `design/04` remains authoritative.
+  the retired design corpus part 04 (data model) is superseded in full: GDS-04 already took its conceptual portion, and
+  this document takes its schema portion, corrected to the shipped models. The retired design corpus part 04 is not
+  edited here; it retires with the rest of the design corpus (apart from the ICD) once GDS-10 closes
+  (`BL-0292`). This departs from GDS-04's own merge decision, which kept the retired design corpus part 04 authoritative
+  for the schema: that decision predates the owner's 2026-10 instruction to retire the design corpus with
+  build-spec, and with both halves now absorbed nothing in the retired design corpus part 04 remains authoritative.
 
 ## Next
 

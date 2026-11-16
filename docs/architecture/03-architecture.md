@@ -7,9 +7,9 @@
 > **Referenced By:** GDS-04
 > **Produces:** GDS-04
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`design/01-architecture-overview.md`](../design/01-architecture-overview.md)
-> (merge source), [`build-spec/03-architecture-and-data.md`](../build-spec/03-architecture-and-data.md)
-> §7 (binding v1 architecture summary), [`design/02-tech-stack-recommendation.md`](../design/02-tech-stack-recommendation.md),
+> **Related Topics:** The retired design corpus part 01 (architecture overview)
+> (merge source), the retired v1 build specification part 03 (architecture and data)
+> §7 (binding v1 architecture summary), the retired design corpus part 02 (tech stack),
 > [`CLAUDE.md`](../../CLAUDE.md) ("Load-bearing invariants," "Code map"),
 > [GDS-02](02-system-context.md), [`research/encyclopedia/INDEX.md`](../research/encyclopedia/INDEX.md),
 > [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
@@ -35,7 +35,7 @@
 Decompose SpaceSim — the single system GDS-02 drew a boundary around — into its major internal
 subsystems: what each one is for, what it owns, how it talks to its neighbors, and what it
 deliberately does not do. This document stops at subsystem granularity; it does not design classes,
-methods, or wire-level API shapes (those are GDS-09's concern, and within `docs/design/` are
+methods, or wire-level API shapes (those are GDS-09's concern, and within the design corpus were
 already covered file-by-file for the as-built system).
 
 ---
@@ -43,7 +43,7 @@ already covered file-by-file for the as-built system).
 ## 1. Architectural style
 
 SpaceSim is a **layered, single-process application** with one hard internal seam, restated from
-`design/01-architecture-overview.md` and confirmed still accurate against the as-built system
+the retired design corpus part 01 (architecture overview) and confirmed still accurate against the as-built system
 (`CLAUDE.md` "Code map"):
 
 1. **Deterministic core** (`spacesim/engine/`) — pure simulation: orbits, access, custody, effects,
@@ -53,8 +53,8 @@ SpaceSim is a **layered, single-process application** with one hard internal sea
    everything else. Owns the clock, fog-of-war, multiplayer authority, AAR. This is the layer that
    turns "a deterministic simulation" into "a multi-seat, fog-of-war'd, replayable exercise."
 3. **Presentation** (`spacesim/ui_web/`) — a thin client of the session layer over HTTP. Renders
-   per-cell belief views; sends operator intents back. Swappable in principle (GDS-00/`design/01`
-   originally scoped PyQt as an alternative); shipped as FastAPI + browser (`design/02`
+   per-cell belief views; sends operator intents back. Swappable in principle (GDS-00/the retired design corpus part 01
+   originally scoped PyQt as an alternative); shipped as FastAPI + browser (the retired design corpus part 02
    "Option A").
 4. **Content & data** (`spacesim/content/` + on-disk files) — vignettes (assets, sensors and effects authored inline;
    no template libraries, ADR-0036), TLE sources, save files. Data, not code (`CLAUDE.md` invariant 6).
@@ -157,8 +157,8 @@ source in the engine).
 **Outputs.** An updated `WorldState`; new `EventLog` entries; computed access windows, custody
 states, effect outcomes, and telemetry samples — all ground truth, unfiltered.
 
-**Dependencies.** Skyfield/sgp4 (propagation math, `design/01` §"Cross-references", GDS-02 §3);
-NumPy/pydantic (`design/02-tech-stack-recommendation.md`). No dependency on the session layer,
+**Dependencies.** Skyfield/sgp4 (propagation math, the retired design corpus part 01 §"Cross-references", GDS-02 §3);
+NumPy/pydantic (the retired design corpus part 02 (tech stack)). No dependency on the session layer,
 presentation, or content subsystems' code (only on the data shapes content provides).
 
 **Ownership of data.** Sole owner of `WorldState` (ground truth), `EventLog`, `Track`/custody
@@ -176,7 +176,7 @@ owns the on-disk shape); anything UI-rendering-specific.
 ### 2.2 Session / Application Layer
 
 **Purpose.** Be the one seam between the deterministic engine and everything outside it
-(`design/01-architecture-overview.md` "Action for Claude Code"). Turn a single-threaded
+(the retired design corpus part 01 (architecture overview) "Action for Claude Code"). Turn a single-threaded
 deterministic simulation into a multi-seat, fog-of-war'd, pausable/rewindable, multiplayer-capable
 exercise.
 
@@ -198,7 +198,7 @@ exercise.
   boundary).
 - **`SessionAPI`** — the in-process call interface (`get_cell_view`, `submit_activity`,
   `task_sensor`, `set_time`, `inject`, `load/build/save`) that doubles as the HTTP API's backing
-  implementation; the future-proofed network seam named in `design/01` and now realized as the
+  implementation; the future-proofed network seam named in the retired design corpus part 01 and now realized as the
   FastAPI binding in §2.4, not a separate hop.
 - **`scene.py`** — pure, read-only render-from-custody belief-scene computation (2D map + 3D
   globe inputs); like `telemetry.py`, never mutates state or consumes RNG, so it is replay-safe.
@@ -212,8 +212,8 @@ exercise.
 - **`aar.py`** — After-Action Review: replay/scrub to any `EventLog` point, branch-compare,
   `snapshot_at`. Read-only against the engine; never the live session.
 
-**Interfaces.** `SessionAPI` (in-process Python calls today; `design/01`'s one seam for a future
-network transport — already realized as HTTP, not deferred, per `build-spec/03-architecture-and-data.md`
+**Interfaces.** `SessionAPI` (in-process Python calls today; the retired design corpus part 01's one seam for a future
+network transport — already realized as HTTP, not deferred, per the retired v1 build specification part 03 (architecture and data)
 §7.2). Consumes the engine's pure interfaces (§2.1); is consumed by the presentation layer (§2.4)
 exclusively — no other subsystem calls into the session layer directly.
 
@@ -240,7 +240,7 @@ reconciliation" below).
 
 **Likely implementation technologies.** Plain Python (no framework) — `SessionManager`,
 `CellController`, `SessionAPI` are framework-free by design so they are not coupled to FastAPI
-(`design/01` "UI-agnostic" extended one layer up); already shipped (`CLAUDE.md` "Code map").
+(the retired design corpus part 01 "UI-agnostic" extended one layer up); already shipped (`CLAUDE.md` "Code map").
 
 **Out of scope.** HTTP routing, JSON serialization, browser rendering (§2.4 owns these); orbital/
 effect math (§2.1 owns this); vignette YAML parsing detail (§2.5 owns this, the session layer only
@@ -252,7 +252,7 @@ consumes the parsed result).
 
 **Purpose.** Simulate a shared, contended sensor-tasking resource — the "request and wait" texture
 of a real SSN — entirely inside the same process, with no real external system behind it
-(GDS-02 §1, resolved Open Question 1; `build-spec/08-ssn.md` §17).
+(GDS-02 §1, resolved Open Question 1; the retired v1 build specification part 08 (SSN) §17).
 
 **Responsibilities.**
 - Instantiate a per-cell `SSNNetwork` from a dispersion preset (`sparse`/`regional`/`global`/
@@ -327,9 +327,9 @@ is exercise-authoritative.
 
 **Likely implementation technologies.** FastAPI + Uvicorn (server), vanilla JS modules
 (`app.js`, `globe.js`, `world.js`, `graph.js`) + a committed `world.json` basemap, no client-side
-framework — already decided and shipped (`design/02-tech-stack-recommendation.md` "Option A";
+framework — already decided and shipped (the retired design corpus part 02 (tech stack) "Option A";
 `CLAUDE.md` "Code map"). The originally-scoped PyQt desktop alternative
-(`build-spec/03-architecture-and-data.md` §7.1, written before the web path was chosen) was not
+(the retired v1 build specification part 03 (architecture and data) §7.1, written before the web path was chosen) was not
 built; see "Merge gate" below.
 
 **Out of scope.** Any simulation logic, fog-of-war decisions, or persistence — a browser refresh
@@ -354,13 +354,13 @@ or a second tab must never be able to derive state the session layer didn't alre
   not a content library. Curated sample snippets are offered as copy-paste starting points in the
   authoring documentation (option D), not as a runtime construct.
 - Provide the TLE import path: optional Space-Track pull at build time, bundled snapshot fallback,
-  or manual/Keplerian entry (`build-spec/01` Decision D2; GDS-02 §4).
+  or manual/Keplerian entry (ADR-0018; GDS-02 §4).
 - Own the save-file format: a complete deterministic session snapshot (history, order queue,
   pending events) for resume.
 
 **Interfaces.** File I/O only (YAML/JSON on local disk) plus the one optional outbound network
 call to Space-Track.org at scenario-build time. No runtime network dependency
-(`build-spec/03-architecture-and-data.md` §8.4).
+(GDS-02 §4; ADR-0018).
 
 **Inputs.** Author-written or in-app-builder-produced vignette files; Space-Track API responses
 (optional); manually entered TLEs/Keplerian elements; a session's exported save file (on resume).
@@ -449,7 +449,7 @@ their own — called out so a future reader does not look for a "determinism mod
 **This section describes no existing subsystem.** Everything below is a candidate future
 extension, named because the operator-perspective research repeatedly identifies the same gap, not
 because any of it is scheduled, committed, or implied to exist by §1–§4 above. None of these
-appears in `design/01-architecture-overview.md`, `build-spec/03`, or any shipped code. A future
+appears in the retired design corpus part 01 (architecture overview), the retired v1 build specification part 03, or any shipped code. A future
 feature that wants one of these would need its own `ADS-xxx` (per `architecture/INDEX.md` §2) and a
 real GDS-03 revision — this section is a placeholder for that future work, not a substitute for it.
 
@@ -474,10 +474,10 @@ committed.
 ## Open Questions
 
 1. ~~PyQt alternative's status.~~ — **resolved by ADR-0028.** The project owner authorized a direct
-   rewrite of `build-spec/03-architecture-and-data.md` §7.1/§7.2 to describe the as-built FastAPI +
+   rewrite of the retired v1 build specification part 03 (architecture and data) §7.1/§7.2 to describe the as-built FastAPI +
    browser presentation (citing ADR-0008/this document), retiring the PyQt/PySide description as
    historical rather than leaving it as a permanently flagged tension. That rewrite has been
-   carried out; `build-spec/03` §7.1/§7.2 now reads as as-built. See
+   carried out; the retired v1 build specification part 03 §7.1/§7.2 now reads as as-built. See
    `architecture/adr/ADR-0028-pyqt-build-spec-staleness.md`.
 2. ~~AI-Red's subsystem placement.~~ — **resolved by ADR-0024.** AI-Red's classification as a
    permanently internal, session-layer feature (this document's §2.2 placement, ADR-0021) is locked
@@ -497,7 +497,7 @@ committed.
    file move was required. The rule is adopted prospectively for future helpers. See
    `architecture/adr/ADR-0025-telemetry-scene-placement-split.md`.
 4. ~~No stated ceiling for per-session `RLock` contention under many concurrent LAN clients.~~ —
-   **resolved by ADR-0026.** The stated ceiling is the existing `build-spec/01` §2 concurrency model
+   **resolved by ADR-0026.** The stated ceiling is the existing the retired v1 build specification part 01 §2 concurrency model
    (≤16 total seats: 1–2 White, ≤6 Blue, ≤6 Red, ≤2 Observers) — no new load test was commissioned;
    the project owner adopted the already-documented sizing as the supported ceiling. See
    `architecture/adr/ADR-0026-rlock-lan-scaling-ceiling.md`.
@@ -590,30 +590,30 @@ document's earlier reconciliation sections. No subsystem description in §1–§
 
 ## Merge gate (closed)
 
-- [x] **Absorbed the relevant content of [`design/01-architecture-overview.md`](../design/01-architecture-overview.md)**
+- [x] **Absorbed the relevant content of the retired design corpus part 01 (architecture overview)**
   into this document: its five design principles are restated as §1's architectural style and the
   cross-cutting concerns in §4; its layered-structure diagram is re-expressed as the subsystem
   decomposition in §2 and the Mermaid diagrams in §1/§3; its "how a player action flows" walkthrough
   is folded into §2.1/§2.2's responsibilities; its single-machine-vs-multiplayer table is folded
   into §2.2's "Multiplayer authority" responsibility, updated to reflect that the multiplayer seam
-  has since shipped (`CLAUDE.md` "Code map," `build-spec/03` §7.2) rather than remaining a future
+  has since shipped (`CLAUDE.md` "Code map," the retired v1 build specification part 03 §7.2) rather than remaining a future
   seam as the source document described it at the time it was written.
-- [x] **Also searched and reconciled against `build-spec/03-architecture-and-data.md` §7-8**
+- [x] **Also searched and reconciled against the retired v1 build specification part 03 (architecture and data) §7-8**
   (the binding spec's own architecture summary) since it duplicates ground covered by
-  `design/01`: found one genuine staleness (the PyQt presentation description, §7.1/§7.2) — flagged
+  the retired design corpus part 01: found one genuine staleness (the PyQt presentation description, §7.1/§7.2) — flagged
   as Open Question 1 above rather than silently corrected, per `MSTR-001` §7 (build spec wins on
   conflict; a flagged tension is the correct move, not a unilateral rewrite of binding content).
-  No other contradiction found between `build-spec/03`, `design/01`, and the as-built system
+  No other contradiction found between the retired v1 build specification part 03, the retired design corpus part 01, and the as-built system
   described in `CLAUDE.md`.
 - [x] **Preserved the load-bearing invariants** stated in `CLAUDE.md` §"Load-bearing invariants" —
   all six are explicitly restated or cited: determinism (§2.1, §4), UI-agnostic engine (§1, §3),
   fog-of-war at the boundary (§2.2, §4), plan-first commanding (§2.1, §4), sub-stepped clock (§2.1),
   and content-as-data (§2.5).
-- [x] **Decision recorded:** `design/01-architecture-overview.md` **stays authoritative** for its
+- [x] **Decision recorded:** The retired design corpus part 01 (architecture overview) **stays authoritative** for its
   own audience (a build-order-oriented walkthrough for an implementer building the system from
   scratch, including the historical single-machine-vs-multiplayer framing at the time multiplayer
   was still future work). `GDS-03` is a **subsystem-decomposition extraction** layered above it and
-  above `build-spec/03` §7-8, restated against the current as-built system (post-multiplayer,
+  above the retired v1 build specification part 03 §7-8, restated against the current as-built system (post-multiplayer,
   post-SSN, post-web-UI) rather than the v1-planning-time system either source document originally
   described. Neither source document is demoted to a pointer; this mirrors the resolution pattern
   used for GDS-00/01/02.

@@ -7,8 +7,8 @@
 > **Referenced By:** GDS-03
 > **Produces:** GDS-03
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`build-spec/01-context-and-scope.md`](../build-spec/01-context-and-scope.md)
-> (merge source), [`build-spec/08-ssn.md`](../build-spec/08-ssn.md) §17,
+> **Related Topics:** The retired v1 build specification part 01 (context and scope)
+> (merge source), the retired v1 build specification part 08 (SSN) §17,
 > [`vignettes/GROUND-INFRASTRUCTURE.md`](../vignettes/GROUND-INFRASTRUCTURE.md),
 > [`CLAUDE.md`](../../CLAUDE.md) ("LAN trust model"), [GDS-01](01-concept-of-operations.md),
 > [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
@@ -38,7 +38,7 @@ SpaceSim is the **deterministic exercise engine + session layer + operator conso
 single FastAPI server process that one or more browser clients connect to (GDS-01 §4). Everything
 inside that boundary — the orbital/access/effects engine, the per-cell fog-of-war filtering, the
 in-app scenario builder, the AAR replay, and the **mock Space Surveillance Network (SSN,
-`build-spec/08-ssn.md` §17)** — is **in scope** for this document's "system" side. The SSN's
+the retired v1 build specification part 08 (SSN) §17)** — is **in scope** for this document's "system" side. The SSN's
 request-and-wait flavor reads like an external sensor-tasking service, but it is fully simulated
 inside the same process with no real external system behind it, so it sits inside the boundary,
 not across it (resolved; see "Merge gate" below — this was Open Question 1 in the prior revision).
@@ -70,7 +70,7 @@ flowchart TB
     BR <-->|HTTP polling, per-cell belief view| SS
 ```
 
-(GDS-01 §4 "Operational environment", §9 "External systems"; `build-spec/01` §1.4, §3.1.)
+(GDS-01 §4 "Operational environment", §9 "External systems"; the retired v1 build specification part 01 §1.4, §3.1.)
 
 ## 2. External actors
 
@@ -86,7 +86,7 @@ strictly as *boundary-crossing actors* rather than operational roles:
 | **Observer** | Read-only consumer of god-view or a designated cell's view | Outbound only |
 | **Space-Track.org** | Supplies real TLEs at scenario-build time only — the only actor that is also an external network service rather than a human | Inbound only, optional, build-time |
 
-No other external actor exists in v1 (confirmed against `build-spec/01` §2 and §3 — there is no
+No other external actor exists in v1 (confirmed against the retired v1 build specification part 01 §2 and §3 — there is no
 identity provider, no scoring service, no third-party LMS integration in scope).
 
 ## 3. External software
@@ -97,7 +97,7 @@ provide, not *how* they are wired in):
 
 | External software | Role at the boundary |
 |---|---|
-| **Skyfield** | Provides the astronomical/SGP4 propagation math underneath real-TLE force-added satellites, and is the fidelity reference the moderate Kepler+J2 model is validated against (`build-spec/04` §11 risk row "orbits look 'wrong'"). |
+| **Skyfield** | Provides the astronomical/SGP4 propagation math underneath real-TLE force-added satellites, and is the fidelity reference the moderate Kepler+J2 model is validated against (GDS-01 §12, risk row "orbits look 'wrong'"). |
 | **sgp4** | The TLE propagation algorithm itself, used for any satellite seeded by a real two-line element set. |
 | **A standards-compliant web browser** | The only required client software; no native app, no browser plugin. |
 
@@ -108,7 +108,7 @@ send or receive exercise data — listed for completeness of the boundary pictur
 
 | Source | What it provides | When it crosses the boundary |
 |---|---|---|
-| **Space-Track.org** | Real two-line element sets (TLEs) for force-adding named real satellites | Optional, scenario-build time only; never required at runtime (`build-spec/01` Decision D2) |
+| **Space-Track.org** | Real two-line element sets (TLEs) for force-adding named real satellites | Optional, scenario-build time only; never required at runtime (ADR-0018) |
 | **Manual TLE / Keplerian entry** | The fallback data source when Space-Track is unavailable | Scenario-build time, always available offline |
 | **Vignette definition files** | Mission, roles needed, starting orbits, parameters/dials, injects, intro briefs | Load time, read from local disk |
 | **White Cell live input** | Parameter re-tuning, manual injects, clock control | Continuously during a run |
@@ -243,7 +243,7 @@ table) before being treated as in-scope.
 ## Open Questions
 
 1. ~~SSN (mock Space Surveillance Network) boundary placement~~ — **resolved.** Confirmed: the
-   mock SSN is internal to SpaceSim. `build-spec/08-ssn.md` §17 describes a per-cell `SSNNetwork`
+   mock SSN is internal to SpaceSim. The retired v1 build specification part 08 (SSN) §17 describes a per-cell `SSNNetwork`
    that operators "request and wait" against, structurally resembling an external sensor-tasking
    service, but no real external system backs it — it runs inside the same process as the rest of
    the engine. §1 above states this directly rather than as an inference. A future GDS level
@@ -300,7 +300,7 @@ consolidated, cross-document changelog.
 Synthesized per [`reviews/r313-r317-gap-analysis.md`](../reviews/r313-r317-gap-analysis.md) §3.
 **Scope discipline:** every change below is additive and explicitly forward-looking where it
 touches external-system scope — none of it changes §9's stated current v1 boundary, which is
-binding per `build-spec/01` (`MSTR-001` §7 conflict rule).
+binding per the retired v1 build specification part 01 (`MSTR-001` §7 conflict rule).
 
 - Added "Candidate future external systems" subsection after §9, naming three systems a future
   joint/coalition extension might integrate with, each tied to a specific `R316` citation and
@@ -333,20 +333,20 @@ boundary.
 
 ## Merge gate (closed)
 
-- [x] **Absorbed the relevant content of [`build-spec/01-context-and-scope.md`](../build-spec/01-context-and-scope.md)**
+- [x] **Absorbed the relevant content of the retired v1 build specification part 01 (context and scope)**
   into this document — §1.1–1.4 (problem statement, purpose, training objectives, non-goals) into
   §1/§6/§9 above; §2 (stakeholders) into §2/§5; §3.1 (in-scope) into §4/§6/§7/§8; Decision D2
   (offline-first, Space-Track build-time-only) into §3/§4/§9.
 - [x] **Checked for conflict with the build spec** (binding, wins on conflict per `MSTR-001` §7):
   none found. This document does not state anything about scope, actors, or data flow that
-  contradicts `build-spec/01`; where `build-spec/08-ssn.md` introduced a system not mentioned in
-  `build-spec/01` (the mock SSN), it was reconciled as an **internal** subsystem (§1, Open Question
+  contradicts the retired v1 build specification part 01; where the retired v1 build specification part 08 (SSN) introduced a system not mentioned in
+  the retired v1 build specification part 01 (the mock SSN), it was reconciled as an **internal** subsystem (§1, Open Question
   1) rather than treated as a new external system, avoiding any boundary contradiction.
-- [x] **Decision recorded:** `build-spec/01-context-and-scope.md` **stays authoritative** — it is
+- [x] **Decision recorded:** The retired v1 build specification part 01 (context and scope) **stays authoritative** — it is
   the binding v1 spec and carries requirement tags (FR-x/NFR-x/etc.) this document does not
   duplicate. `GDS-02` is a **boundary-focused extraction**: it restates only the actor/data-flow/
   interface content relevant to a system-context view, omitting the requirements detail, decision
-  log, and acceptance criteria that remain `build-spec/01`'s sole concern. Same resolution pattern
+  log, and acceptance criteria that remain the retired v1 build specification part 01's sole concern. Same resolution pattern
   as GDS-00/GDS-01: no source document is demoted to a pointer.
 
 ## Next

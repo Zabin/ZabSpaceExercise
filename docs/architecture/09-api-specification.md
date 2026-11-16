@@ -7,7 +7,7 @@
 > **Referenced By:** GDS-10
 > **Produces:** GDS-10
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`design/07-api-and-networking.md`](../design/07-api-and-networking.md) (merge
+> **Related Topics:** The retired design corpus part 07 (API and networking) (merge
 > source — superseded by this document), [`interface-control-document.md`](interface-control-document.md)
 > (the interface inventory, `INT-0001`…`INT-0016`; companion to this document — see below),
 > [GDS-08](08-ui-architecture.md) (the screens that call this API),
@@ -30,7 +30,7 @@ code, and this document is the contract that code must keep.
 
 | Document | Grain | Role |
 |---|---|---|
-| `design/07-api-and-networking.md` | Sketch | **Superseded.** A pre-implementation design; its contract is restated here as built. |
+| the retired design corpus part 07 (API and networking) | Sketch | **Superseded.** A pre-implementation design; its contract is restated here as built. |
 | **GDS-09 (this document)** | Contract | **Authoritative** for the two programmatic interfaces — `SessionAPI` (`INT-0006`) and HTTP (`INT-0001`–`INT-0005`) — and for authorization, delivery, errors and limits across them. |
 | `interface-control-document.md` | Inventory | **Authoritative for the interface inventory**: every interface between components (`INT-0001`…`INT-0016`), with participants and data. Owned by `03`. It closes its own §7 issue 1 ("no baselined wire-level contract") by citing this document. It was moved under `docs/architecture/` on 2026-11-15 (refactor packet B1a). |
 
@@ -194,7 +194,7 @@ participant who lies about their seat bypasses them. They close accidental misus
 - **Joining.** Loading a session sets the URL to `…/#sess-N`; any browser that opens it joins that
   session (`GET /api/sessions` lists them). Pop-out windows join the same way with a layout token
   (GDS-08 §4).
-- **No push.** `design/07` planned WebSocket push of view deltas keyed off event-log sequence
+- **No push.** the retired design corpus part 07 planned WebSocket push of view deltas keyed off event-log sequence
   numbers. It was not built; `get_eventlog(since_seq)` exists and would be the delta contract if
   push is ever added.
 
@@ -202,7 +202,7 @@ participant who lies about their seat bypasses them. They close accidental misus
 
 The same `InProcessSession` serves one machine (hot-seat, seat switching) and many (LAN): only the
 number of browsers changes, not the contract, the fog rules or the clock. This is the "contract
-equivalence" `design/07` required: nothing in `engine/` changed for multiplayer.
+equivalence" the retired design corpus part 07 required: nothing in `engine/` changed for multiplayer.
 
 ## 7. Error and validation contract
 
@@ -227,7 +227,7 @@ event-log entries in a loaded save; 10,000 samples per time-span export.
 
 ---
 
-## Departures from the legacy `design/07-api-and-networking.md`
+## Departures from the legacy design corpus part 07 (API and networking)
 
 - **Clock.** `play`/`pause`/`set_multiplier` became one `set_clock(running, rate)` on a
   server-authoritative lazy clock.
@@ -236,7 +236,7 @@ event-log entries in a loaded save; 10,000 samples per time-span export.
   "load an envelope into a new session": the server writes no save file.
 - **Force edits.** `edit_force` became `/force/tle`, `/force/bulk_import` and `/force/ground`.
 - **Push.** WebSocket push was not built (§5).
-- **Authentication and per-role authorization** (`design/07` §5 step 3) were deliberately not added;
+- **Authentication and per-role authorization** (the retired design corpus part 07 §5 step 3) were deliberately not added;
   the trust model above replaces them for v1. What exists is the seat-assertion checks of §4, not authorization.
 
 ## Open Questions
@@ -261,7 +261,7 @@ event-log entries in a loaded save; 10,000 samples per time-span export.
 
 ## Merge gate (closed)
 
-- [x] **Absorbed `design/07-api-and-networking.md`**, each required element explicitly:
+- [x] **Absorbed the retired design corpus part 07 (API and networking)**, each required element explicitly:
   - **The `SessionAPI` boundary** (§1 boundary rule, §2 protocol) → §1–§2, restated as built.
   - **In-process / LAN contract equivalence** (§5 migration) → §6; the migration happened as
     planned, with the web transport instead of a separate server.
@@ -274,13 +274,13 @@ event-log entries in a loaded save; 10,000 samples per time-span export.
 - [x] **ICD placement decided.** The ICD stays the authoritative interface inventory, as this
   document's companion, rather than being merged into it: an inventory of sixteen component
   interfaces and a contract for two programmatic ones are different jobs. **The file move under
-  `docs/architecture/` is deferred to the single cleanup sweep** that retires `docs/design/` and
+  `docs/architecture/` is deferred to the single cleanup sweep** that retires the design corpus and
   build-spec (`BL-0292`), because 45 files link to its current path and moving it twice would mean
   two reference sweeps. Its re-issue against GDS-07/09 is `BL-0294`'s remaining work.
 - [x] **DOM content (`BL-0293`).** No DOM section has API content.
 - [x] **Decision recorded:** **this document is the authoritative API specification**, and
-  `design/07-api-and-networking.md` is superseded in full. It is not edited here; it retires with
-  the rest of `docs/design/` (apart from the ICD) once GDS-10 closes.
+  the retired design corpus part 07 (API and networking) is superseded in full. It is not edited here; it retires with
+  the rest of the design corpus (apart from the ICD) once GDS-10 closes.
 
 ## Next
 

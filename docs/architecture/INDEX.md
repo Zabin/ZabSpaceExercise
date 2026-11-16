@@ -15,7 +15,7 @@ Both are produced by the `03-architecture-design-synthesis` skill
 (`.claude/skills/03-architecture-design-synthesis/`).
 
 > **This directory is now the single authoritative architecture/requirements source for the whole
-> project, superseding `docs/build-spec/` in its entirety**, per `CLAUDE.md`'s "Authoritative
+> project, superseding the retired v1 build specification in its entirety**, per `CLAUDE.md`'s "Authoritative
 > source & reading order." This is a blanket declaration, not limited to levels whose merge gate
 > has already closed (GDS-00–05) — it also covers GDS-06–10 below even though they are still
 > scaffold-only: a not-yet-authored GDS level simply has no authoritative content yet, rather than
@@ -31,15 +31,15 @@ Both are produced by the `03-architecture-design-synthesis` skill
 | ID | Document | Path | Purpose | Merges from (existing doc) | Status |
 |---|---|---|---|---|---|
 | GDS-00 | Vision | `architecture/00-vision.md` | Project goals | `master/MSTR-001-program-vision.md` | ✅ Authored — merge gate closed (MSTR-001 stays authoritative; GDS-00 is a cited derivative restatement) |
-| GDS-01 | Concept of Operations | `architecture/01-concept-of-operations.md` | How users interact with the system | `build-spec/01-context-and-scope.md`, `build-spec/04` §11, `build-spec/05` §13–14, `training/05`, `training/07` (no single existing ConOps — net-new synthesis of scattered material) | ✅ Authored — merge gate closed (all source docs stay independently authoritative; GDS-01 is a consolidation layer above them) |
-| GDS-02 | System Context | `architecture/02-system-context.md` | External systems and interfaces | `build-spec/01-context-and-scope.md` | ✅ Authored — merge gate closed (build-spec/01 stays authoritative; GDS-02 is a boundary-focused extraction) |
-| GDS-03 | Architecture | `architecture/03-architecture.md` | High-level subsystem decomposition | `design/01-architecture-overview.md` | ✅ Authored — merge gate closed (design/01 and build-spec/03 §7-8 stay authoritative; GDS-03 is a subsystem-decomposition extraction restated against the as-built system) |
-| GDS-04 | Domain Model | `architecture/04-domain-model.md` | Core entities and relationships | `design/04-data-model.md` (entity/relationship portion) | ✅ Authored — merge gate closed (design/04-data-model.md stays authoritative for the schema; GDS-04 is a conceptual extraction, the schema portion remains GDS-07's merge target) |
-| GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | The authoritative specification | `build-spec/02-requirements-and-operations.md` §5–6 | ✅ Authored — merge gate closed (build-spec/02 §5–6 superseded; GDS-05 is now authoritative — see its "Merge gate" section) |
-| GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | Performance, reliability, security, usability | `build-spec/04-nfr-milestones-and-risks.md` §9 | ✅ Authored — merge gate closed (build-spec/04 §9 superseded; GDS-06 is authoritative, `requirements/02` its leaf elaboration; gaps G1–G6 and corrections C1–C6 handed to `04`) |
-| GDS-07 | Data Model | `architecture/07-data-model.md` | Persistent data structures | `design/04-data-model.md` (schema portion — same source file as GDS-04, different concern) | ✅ Authored — merge gate closed (design/04 superseded in full: conceptual half in GDS-04, schema half here, corrected to as-built) |
-| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | Screens, navigation, workflows | `design/09-gui-principles.md` (+ `05-cell-interfaces.md`, `10-sda-3d-viewer.md`) | ✅ Authored — merge gate closed (design/09, /05, /10 superseded; build-spec/07 and design/06 superseded for UI content; browser client's verification status stated; restated 2026-10-24 after the `IP-1340` browser suite shipped) |
-| GDS-09 | API Specification | `architecture/09-api-specification.md` | Service boundaries and contracts | `design/07-api-and-networking.md` | ✅ Authored — merge gate closed (design/07 superseded; the ICD stays the companion interface inventory, its file move deferred to the cleanup sweep) |
+| GDS-01 | Concept of Operations | `architecture/01-concept-of-operations.md` | How users interact with the system | the retired v1 build specification part 01 (context and scope), the retired v1 build specification part 04 §11, the retired v1 build specification part 05 §13–14, `training/05`, `training/07` (no single existing ConOps — net-new synthesis of scattered material) | ✅ Authored — merge gate closed (all source docs stay independently authoritative; GDS-01 is a consolidation layer above them) |
+| GDS-02 | System Context | `architecture/02-system-context.md` | External systems and interfaces | the retired v1 build specification part 01 (context and scope) | ✅ Authored — merge gate closed (the retired v1 build specification part 01 stays authoritative; GDS-02 is a boundary-focused extraction) |
+| GDS-03 | Architecture | `architecture/03-architecture.md` | High-level subsystem decomposition | the retired design corpus part 01 (architecture overview) | ✅ Authored — merge gate closed (the retired design corpus part 01 and the retired v1 build specification part 03 §7-8 stay authoritative; GDS-03 is a subsystem-decomposition extraction restated against the as-built system) |
+| GDS-04 | Domain Model | `architecture/04-domain-model.md` | Core entities and relationships | the retired design corpus part 04 (data model) (entity/relationship portion) | ✅ Authored — merge gate closed (the retired design corpus part 04 (data model) stays authoritative for the schema; GDS-04 is a conceptual extraction, the schema portion remains GDS-07's merge target) |
+| GDS-05 | Functional Requirements | `architecture/05-functional-requirements.md` | The authoritative specification | the retired v1 build specification part 02 (requirements and operations) §5–6 | ✅ Authored — merge gate closed (the retired v1 build specification part 02 §5–6 superseded; GDS-05 is now authoritative — see its "Merge gate" section) |
+| GDS-06 | Non-functional Requirements | `architecture/06-non-functional-requirements.md` | Performance, reliability, security, usability | the retired v1 build specification part 04 (NFRs, milestones and risks) §9 | ✅ Authored — merge gate closed (the retired v1 build specification part 04 §9 superseded; GDS-06 is authoritative, `requirements/02` its leaf elaboration; gaps G1–G6 and corrections C1–C6 handed to `04`) |
+| GDS-07 | Data Model | `architecture/07-data-model.md` | Persistent data structures | the retired design corpus part 04 (data model) (schema portion — same source file as GDS-04, different concern) | ✅ Authored — merge gate closed (the retired design corpus part 04 superseded in full: conceptual half in GDS-04, schema half here, corrected to as-built) |
+| GDS-08 | UI Architecture | `architecture/08-ui-architecture.md` | Screens, navigation, workflows | the retired design corpus part 09 (GUI principles) (+ the retired design corpus part 05 (cell interfaces), the retired design corpus part 10 (SDA 3D viewer)) | ✅ Authored — merge gate closed (the retired design corpus parts 09, 05 and 10 superseded; the retired v1 build specification part 07 and the retired design corpus part 06 superseded for UI content; browser client's verification status stated; restated 2026-10-24 after the `IP-1340` browser suite shipped) |
+| GDS-09 | API Specification | `architecture/09-api-specification.md` | Service boundaries and contracts | the retired design corpus part 07 (API and networking) | ✅ Authored — merge gate closed (the retired design corpus part 07 superseded; the ICD stays the companion interface inventory, its file move deferred to the cleanup sweep) |
 | GDS-10 | Requirements Traceability Matrix | `architecture/10-requirements-traceability-matrix.md` | Maps requirements to features, tests, and implementation | *(searched: `requirements/03-requirements-traceability-matrix.md` exists at leaf grain — companion, not merged; `ROADMAP.md`/`MSTR-005` §4 track documents only)* | ✅ Authored — merge gate closed (tag-grain chain completeness; `requirements/03` stays the leaf-grain matrix) |
 
 ### Gating rule (binding)
@@ -53,10 +53,10 @@ top-to-bottom iteration the `03-architecture-design-synthesis` skill will run.
 **Progress:** GDS-00 through GDS-10 are authored — the ladder is complete with their merge gates closed (see their
 Status cells above and each document's own "Merge gate" section for the recorded decision). GDS-05
 was the first level whose merge gate **supersedes** rather than retains its source as authoritative
-— see its own "Merge gate" section for why; GDS-06 does the same for `build-spec/04` §9, GDS-07 for
-`design/04-data-model.md`, GDS-08 for the UI design documents, and GDS-09 for
-`design/07-api-and-networking.md`; GDS-10 traces the requirements to code and tests. Every topic
-`docs/build-spec/` and `docs/design/` covered now has an authoritative GDS level, so both can be
+— see its own "Merge gate" section for why; GDS-06 does the same for the retired v1 build specification part 04 §9, GDS-07 for
+the retired design corpus part 04 (data model), GDS-08 for the UI design documents, and GDS-09 for
+the retired design corpus part 07 (API and networking); GDS-10 traces the requirements to code and tests. Every topic
+the v1 build specification and the design corpus covered now has an authoritative GDS level, so both can be
 retired (`BL-0292`).
 
 Where a level's "Merges from" column says no counterpart was identified, that is not a free pass —
@@ -64,8 +64,8 @@ it means the authoring pass for that level must search the corpus itself before 
 is nothing to merge, and record the (possibly negative) finding in that document's own Open
 Questions before the gate is considered closed.
 
-This is new, separate content — it does not silently replace `MSTR-001`, `build-spec/`, or
-`design/`. Those documents remain authoritative until a given `GDS-NN`'s merge step explicitly
+This is new, separate content — it does not silently replace `MSTR-001`, the retired v1 build specification, or
+the retired design corpus. Those documents remain authoritative until a given `GDS-NN`'s merge step explicitly
 folds their content in and updates their own `Status`/cross-references to point here. Until then,
 treat any apparent disagreement between a `GDS-NN` stub and its existing counterpart as expected,
 not a defect — the stub has no content yet.

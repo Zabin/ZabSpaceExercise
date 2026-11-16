@@ -1000,7 +1000,7 @@ note, an exit code), integration review F-05 (training-manual curl examples, own
 `04` (`BL-0342`, `0345`, `0348`).
 
 **Spec lag flagged upstream.** FS-106 v2.4 predates the 2026-10-24 `FR-4320` extension, and
-GDS-09 §4 / OQ1 and `design/07` still describe the shorter White-only list. `IP-1072` proceeds on
+GDS-09 §4 / OQ1 and the retired design corpus part 07 still describe the shorter White-only list. `IP-1072` proceeds on
 the requirement leaf, which is binding and names the routes; a v2.5 note on FS-106 (`06`) and the GDS
 update (`03`) are recommended.
 

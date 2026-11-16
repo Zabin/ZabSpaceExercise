@@ -224,7 +224,7 @@ serially, `IP-1102` first, as the Master Build Plan orders them.
 ## Risks
 
 - **Spec text lag.** FS-106 v2.4 predates the `FR-4320` extension, and GDS-09 §4 / OQ1 and
-  `design/07` still describe the shorter list. The requirement leaf is binding and names the
+  the retired design corpus part 07 still describe the shorter list. The requirement leaf is binding and names the
   routes, so the package proceeds on it; the recommendation to `06` (a v2.5 note on FS-106) and
   `03` is recorded here for the Master Build Plan, not worked around.
 - **Console flows that create or save from a non-White seat.** A Blue tab that clicks Load or

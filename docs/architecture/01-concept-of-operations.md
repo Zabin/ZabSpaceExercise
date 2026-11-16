@@ -7,9 +7,9 @@
 > **Referenced By:** GDS-02
 > **Produces:** GDS-02
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`build-spec/01-context-and-scope.md`](../build-spec/01-context-and-scope.md),
-> [`build-spec/04-nfr-milestones-and-risks.md`](../build-spec/04-nfr-milestones-and-risks.md) §11,
-> [`build-spec/05-workflows-and-state-machines.md`](../build-spec/05-workflows-and-state-machines.md)
+> **Related Topics:** The retired v1 build specification part 01 (context and scope),
+> the retired v1 build specification part 04 (NFRs, milestones and risks) §11,
+> the retired v1 build specification part 05 (workflows and state machines)
 > §13–14, [`training/05-core-concepts.md`](../training/05-core-concepts.md),
 > [`training/07-white-cell-facilitation.md`](../training/07-white-cell-facilitation.md),
 > [`CLAUDE.md`](../../CLAUDE.md) ("LAN trust model"), the former future-work list,
@@ -48,7 +48,7 @@ API shapes, schemas, or code-level detail belong here (those are GDS-07/GDS-09's
 SpaceSim exists to give space operators and trainees hands-on practice with **space control and
 orbital warfare** under realistic constraints, in an unclassified setting where existing tools
 either model orbits without wargaming (e.g. STK) or require classified infrastructure
-(`build-spec/01` §1.1). Its mission, restated from GDS-00 §1 and `build-spec/01` §1.2–1.3, is to
+(the retired v1 build specification part 01 §1.1). Its mission, restated from GDS-00 §1 and the retired v1 build specification part 01 §1.2–1.3, is to
 teach the *texture* of real space operations — pass-gated command and telemetry, scarce SDA
 sensors, finite fuel, doctrinally grounded counterspace effects — alongside the operational art of
 contesting the domain, while training:
@@ -71,7 +71,7 @@ pattern; the plan-first invariant (§10) is this system's instance of command-by
 
 ## 2. Intended users
 
-Restated from `build-spec/01` §2 (the stakeholders table) and `training/07` §8:
+Restated from the retired v1 build specification part 01 §2 (the stakeholders table) and `training/07` §8:
 
 | User | Role | What they do |
 |---|---|---|
@@ -79,10 +79,10 @@ Restated from `build-spec/01` §2 (the stakeholders table) and `training/07` §8
 | **Blue Cell operators** (up to 6) | Friendly bus/payload ops | Operate assigned Blue assets — SOH monitoring, pass planning, payload tasking, SDA |
 | **Red Cell operators** (up to 6) | Adversary bus/payload ops, or AI-Red | Same operator capabilities as Blue, plus offensive counterspace effects; may instead be played by an AI-Red doctrine preset (`training/05` "Red doctrine & AAR") |
 | **Observers** (up to 2) | Assessment/learning | Read-only view of god-view or a White-Cell-designated cell |
-| **Maintainer** | Builds/evolves the tool | Not an exercise-time role; included for completeness per `build-spec/01` §2 |
+| **Maintainer** | Builds/evolves the tool | Not an exercise-time role; included for completeness per the retired v1 build specification part 01 §2 |
 
 A given human may hold multiple roles across an exercise via **hot-seat handoff** (§6 below); the
-concurrency model is explicitly many-roles-few-humans, not one human per role (`build-spec/01` §2
+concurrency model is explicitly many-roles-few-humans, not one human per role (the retired v1 build specification part 01 §2
 "Concurrency model").
 
 ## 3. Stakeholders
@@ -91,7 +91,7 @@ Beyond the exercise-time users in §2, restated from GDS-00 §3 (`MSTR-001` §3)
 
 | Stakeholder | Interest |
 |---|---|
-| CAF and allied space operator community | The training population the tool exists to serve (`build-spec/01` §1.1) |
+| CAF and allied space operator community | The training population the tool exists to serve (the retired v1 build specification part 01 §1.1) |
 | PME instructors / White Cell facilitators | Run exercises without a programming background (GDS-00 §5.1) |
 | Researchers / assessment designers | Build measurement and validation on the simulator's data (GDS-00 §3) |
 | Human maintainers | Keep the build-spec-vs-implementation contract honest |
@@ -101,16 +101,16 @@ Beyond the exercise-time users in §2, restated from GDS-00 §3 (`MSTR-001` §3)
 
 - **Deployment:** single-machine desktop/laptop, **offline-capable**, hot-seat multi-role play; or
   LAN-cooperative with one FastAPI server and N browser tabs/machines polling it
-  (`build-spec/01` §1.4, §3.1; `CLAUDE.md` "Multiplayer workflow"). Not internet-public, not a
+  (the retired v1 build specification part 01 §1.4, §3.1; `CLAUDE.md` "Multiplayer workflow"). Not internet-public, not a
   dedicated-server architecture.
 - **Hardware floor:** must run acceptably on a typical government laptop with integrated graphics
-  — no discrete GPU assumed (`build-spec/01` §3.3 "Hardware floor").
+  — no discrete GPU assumed (the retired v1 build specification part 01 §3.3 "Hardware floor").
 - **Network posture:** runtime requires no network; the only network dependency is an *optional*
   Space-Track TLE import at scenario-build time, with manual TLE entry as a fallback
-  (`build-spec/01` §3.1, Decision D2).
+  (the retired v1 build specification part 01 §3.1, Decision D2).
 - **Classification:** all content is unclassified training material with fictional default assets;
   a classification banner (UNCLASSIFIED//EXERCISE or //TRAINING) is set at scenario build
-  (`build-spec/01` §1.4, `build-spec/05` §13.1 step 2).
+  (the retired v1 build specification part 01 §1.4, the retired v1 build specification part 05 §13.1 step 2).
 - **Trust model:** cooperative LAN, not adversarial — the cell selector is client-side trust with
   no per-cell authentication; fog-of-war is enforced for cell-scoped endpoints but several
   no-cell ground-truth endpoints (`/godview`, `/eventlog`, `/save`, `/aar*`, `/objectives`)
@@ -119,7 +119,7 @@ Beyond the exercise-time users in §2, restated from GDS-00 §3 (`MSTR-001` §3)
 
 ## 5. High-level operational workflow
 
-Restated from `build-spec/05` §13.1–13.2 and `training/07` §8:
+Restated from the retired v1 build specification part 05 §13.1–13.2 and `training/07` §8:
 
 1. **Set up.** White Cell launches the app, builds or loads a vignette (mission, assets via
    TLE/Keplerian entry, ground sites/sensors, `roles_needed`, tunable parameters and ROE dials,
@@ -140,7 +140,7 @@ Restated from `build-spec/05` §13.1–13.2 and `training/07` §8:
 
 ## 6. Typical user scenarios
 
-Restated from `build-spec/05` §13.3–13.5:
+Restated from the retired v1 build specification part 05 §13.3–13.5:
 
 - **Blue bus operator:** un-blanks into an assigned bus role, reads the fleet SOH rollup, drills
   into a satellite's subsystem telemetry, sees "next contact in 00:06:12 via STATION-A," queues
@@ -161,7 +161,7 @@ Restated from `build-spec/05` §13.3–13.5:
 - **White Cell mid-exercise:** announces a hot-seat handoff, raises Red EW intensity live via a
   tunable parameter, fires a scheduled inject (e.g. a severe space-weather advisory), and narrates
   consequences for a physically legal but tactically unwise action rather than blocking it
-  (`build-spec/01` §3.3 "Error handling").
+  (the retired v1 build specification part 01 §3.3 "Error handling").
 - **Cross-domain dependency (conceptual, not implemented):** every other military domain's
   doctrine treats space support (PNT, SATCOM, ISR, missile warning) as a precondition for its own
   operations, and a joint force depends on synchronized effects across domains rather than any one
@@ -172,7 +172,7 @@ Restated from `build-spec/05` §13.3–13.5:
 
 ## 7. Exercise lifecycle
 
-The session state machine, restated verbatim from `build-spec/05` §14.4:
+The session state machine, restated verbatim from the retired v1 build specification part 05 §14.4:
 
 ```
 SETUP ─▶ ASSIGNED(roles) ─▶ RUNNING ⇄ PAUSED ─▶ ENDED(log written)
@@ -180,7 +180,7 @@ RUNNING ─(rewind)─▶ replays to earlier sim_time, continues  (deterministic
 ```
 
 Layered onto this, three further state machines an operator/facilitator experiences during a run
-(`build-spec/05` §14.1–14.3):
+(the retired v1 build specification part 05 §14.1–14.3):
 
 - **Planned Activity** (command or collection): `DRAFT → PLANNED → ACTIVE → EXECUTED` (commands)
   or `→ REPORTED` (collection); cancellable by the operator at any point before execution;
@@ -201,7 +201,7 @@ invariant 1).
 
 - **Hot-seat (single browser/machine):** White loads a vignette and presses Start, then uses cell
   buttons to switch seats between turns; the outgoing operator's screen is blanked during handoff
-  (`training/07` §8 "Hot-seat vs. LAN cooperative"; `build-spec/01` §2 "Concurrency model").
+  (`training/07` §8 "Hot-seat vs. LAN cooperative"; the retired v1 build specification part 01 §2 "Concurrency model").
 - **LAN cooperative (multi-tab / multi-machine):** White starts the session and shares the URL
   (`…/#sess-N`); each player opens it on their own tab/machine and picks a cell. The
   server-authoritative clock advances exactly once regardless of tab count; only the White tab
@@ -224,19 +224,19 @@ session model itself (clarified per the architecture review — see "Review reco
 
 - **Space-Track.org** — optional TLE import at scenario-build time only; the runtime never
   requires network access. Manual TLE entry or Keplerian-element synthesis is the fallback if
-  Space-Track is unavailable or its auth changes (`build-spec/01` Decision D2;
-  `build-spec/04` §11 risk row "Space-Track unavailable or auth changes").
+  Space-Track is unavailable or its auth changes (the retired v1 build specification part 01 Decision D2;
+  the retired v1 build specification part 04 §11 risk row "Space-Track unavailable or auth changes").
 - **Skyfield / sgp4** — the propagation libraries behind real-satellite TLE force-add
   (`training/05` "Adding real satellites by TLE"); an external dependency, not a live external
   system, but worth naming because TLE-sourced orbits are validated against it
-  (`build-spec/04` §11 risk row "Moderate-fidelity orbits look 'wrong'").
+  (the retired v1 build specification part 04 §11 risk row "Moderate-fidelity orbits look 'wrong'").
 - No other live external system is in scope for v1 — no identity provider, no telemetry/export
-  service, no third-party scoring system. (Confirmed by reviewing `build-spec/01` §3.1–3.2 and
+  service, no third-party scoring system. (Confirmed by reviewing the retired v1 build specification part 01 §3.1–3.2 and
   `CLAUDE.md`; nothing else is referenced as an external dependency.)
 
 ## 10. Operational constraints
 
-Restated from `build-spec/01` §3.1, §3.3, and GDS-00 §6:
+Restated from the retired v1 build specification part 01 §3.1, §3.3, and GDS-00 §6:
 
 - **Sizing guideline (not an engine cap):** ~24 satellites is a soft sizing guideline for typical
   White-Cell facilitator hardware; user-authored vignettes may scale beyond it on capable hosts.
@@ -258,7 +258,7 @@ Restated from `build-spec/01` §3.1, §3.3, and GDS-00 §6:
 
 ## 11. Assumptions
 
-Carried from `build-spec/01` §3.3 ("Assumptions made for round-4 questions," White-Cell
+Carried from the retired v1 build specification part 01 §3.3 ("Assumptions made for round-4 questions," White-Cell
 overridable in scenario data) and GDS-00 §6:
 
 - RIC view origin defaults to the seat's first assigned asset, with a one-click re-origin option
@@ -276,7 +276,7 @@ overridable in scenario data) and GDS-00 §6:
 
 ## 12. Risks
 
-Restated from `build-spec/04` §11 (full mitigation table there); risks most relevant to the
+Restated from the retired v1 build specification part 04 §11 (full mitigation table there); risks most relevant to the
 operational picture, not the engineering one:
 
 | Risk | Operational impact | Mitigation |
@@ -295,17 +295,17 @@ The encyclopedia and existing corpus do not settle the following; flagged here r
 invented:
 
 1. **No dedicated ConOps-equivalent existed anywhere in the corpus before this document.** The
-   merge-gate search (below) confirms `training/` and `build-spec/01` carry the relevant
+   merge-gate search (below) confirms `training/` and the retired v1 build specification part 01 carry the relevant
    operational material in scattered form, but no single document previously stated the full
    operational picture (purpose/users/stakeholders/environment/workflow/lifecycle/modes/external
    systems/constraints/assumptions/risks) in one place. This document is therefore net-new
    synthesis, not a merge of an existing ConOps.
 2. ~~Sizing/performance ceiling for LAN-cooperative play~~ — **resolved by ADR-0026.** The stated
-   ceiling is the existing `build-spec/01` §2 concurrency model (≤16 total seats: 1–2 White, ≤6
+   ceiling is the existing the retired v1 build specification part 01 §2 concurrency model (≤16 total seats: 1–2 White, ≤6
    Blue, ≤6 Red, ≤2 Observers) — the project owner adopted the already-documented sizing as the
    supported ceiling rather than commissioning a new load test. See
    `architecture/adr/ADR-0026-rlock-lan-scaling-ceiling.md`.
-3. **Observer role granularity** — `build-spec/01` §2 states observers get "a designated cell view,
+3. **Observer role granularity** — the retired v1 build specification part 01 §2 states observers get "a designated cell view,
    White-Cell-set," but no document describes whether an observer can be reassigned mid-exercise
    or is fixed at session start. Left open.
 4. **AI-Red doctrine preset selection criteria** — `training/05` names three presets
@@ -423,24 +423,24 @@ records only the changes landed in this document.
 
 ## Merge gate (closed)
 
-- [x] **Searched `docs/training/` and `docs/build-spec/01-context-and-scope.md`** for existing
+- [x] **Searched `docs/training/` and the retired v1 build specification part 01 (context and scope)** for existing
   concept-of-operations material (user roles, session flow, hot-seat/LAN operating model) before
   concluding there was nothing to merge, per the gate's instruction. Found substantial relevant
   material, scattered across multiple documents rather than consolidated:
-  - `build-spec/01-context-and-scope.md` §1–3 (purpose, stakeholders, scope, assumptions) — the
+  - the retired v1 build specification part 01 (context and scope) §1–3 (purpose, stakeholders, scope, assumptions) — the
     single richest source, absorbed into §1–4, §10–11 above.
-  - `build-spec/04-nfr-milestones-and-risks.md` §11 (risk table) — absorbed into §12 above.
-  - `build-spec/05-workflows-and-state-machines.md` §13–14 (operator workflow walkthroughs, state
+  - the retired v1 build specification part 04 (NFRs, milestones and risks) §11 (risk table) — absorbed into §12 above.
+  - the retired v1 build specification part 05 (workflows and state machines) §13–14 (operator workflow walkthroughs, state
     machines) — absorbed into §5–7 above.
   - `training/05-core-concepts.md` and `training/07-white-cell-facilitation.md` — absorbed into
     §6 (scenarios) and §8 (operational modes) above.
 - [x] **Recorded what was found, with citations** — see the inline citations throughout §1–12
   above; every section traces to a specific existing-document section rather than asserting
   uncited claims.
-- [x] **Decision recorded:** none of the source documents (`build-spec/01`, `build-spec/04`,
-  `build-spec/05`, `training/05`, `training/07`) becomes a pointer to this document or is
+- [x] **Decision recorded:** none of the source documents (the retired v1 build specification part 01, the retired v1 build specification part 04,
+  the retired v1 build specification part 05, `training/05`, `training/07`) becomes a pointer to this document or is
   otherwise demoted. **All five stay independently authoritative** for their own audiences
-  (`build-spec/` is binding-spec detail for implementers; `training/` is task-level guidance for
+  (the retired v1 build specification is binding-spec detail for implementers; `training/` is task-level guidance for
   facilitators/operators). `GDS-01` is a **synthesis layer above them**, consolidating the
   operational picture that was previously only inferable by reading all five documents together —
   its value is consolidation and explicit Open Questions, not replacement. This mirrors the

@@ -7,13 +7,13 @@
 > **Referenced By:** GDS-05
 > **Produces:** GDS-05
 > **Feature Mapping:** N/A — program-level
-> **Related Topics:** [`design/04-data-model.md`](../design/04-data-model.md) (merge source —
+> **Related Topics:** The retired design corpus part 04 (data model) (merge source —
 > entity/relationship portion only; the persistence-schema portion is GDS-07's merge target),
 > [GDS-03](03-architecture.md), [GDS-02](02-system-context.md), [GDS-01](01-concept-of-operations.md),
 > [`research/04-orbital-mechanics-primer.md`](../research/04-orbital-mechanics-primer.md),
 > [`research/03-counterspace-taxonomy.md`](../research/03-counterspace-taxonomy.md),
 > [`research/06-bus-and-payload-operations.md`](../research/06-bus-and-payload-operations.md),
-> [`build-spec/08-ssn.md`](../build-spec/08-ssn.md) §17,
+> the retired v1 build specification part 08 (SSN) §17,
 > [`reviews/architecture-review.md`](../reviews/architecture-review.md) (reconciled — see "Review
 > reconciliation" below),
 > [`research/encyclopedia/R313-maritime-operator-perspective.md`](../research/encyclopedia/R313-maritime-operator-perspective.md),
@@ -35,7 +35,7 @@ Name the core domain objects SpaceSim reasons about — what they *mean*, not ho
 This document sits below GDS-03's subsystem boxes and above GDS-07's persistence schema: it answers
 "what concepts does the Simulation Engine and Session Layer actually manipulate?" without
 prescribing classes, fields, or storage formats. Conceptual entities and the invariants tying them
-together only — the literal `pydantic` shapes belong to `design/04-data-model.md` today and to
+together only — the literal `pydantic` shapes belong to the retired design corpus part 04 (data model) today and to
 GDS-07 once authored.
 
 ---
@@ -64,7 +64,7 @@ artifact (`research/06`, GDS-02 §4 "Data sources").
 
 **Transient state.** None; a Vignette carries no runtime state of its own.
 
-**Constraints.** Must validate at load (`build-spec/01` "Error handling" — invalid scenario data
+**Constraints.** Must validate at load (GDS-06 NFR-6 "Robustness" — invalid scenario data
 fails loudly); roles_needed must be satisfiable by the seats White Cell assigns; constellations are
 capped at 3 satellites each, individually operated (`CLAUDE.md` "Key facts").
 
@@ -100,7 +100,7 @@ Snapshot.
 state (GDS-03 §2.1).
 
 **Constraints.** A satellite must have an Orbit; a terrestrial asset must have a location instead
-(`design/04-data-model.md` §9); resource levels cannot go negative (e.g. `delta_v_ms`); an asset's
+(GDS-07 §10); resource levels cannot go negative (e.g. `delta_v_ms`); an asset's
 payload verbs are gated by its payload type and bus availability (`CLAUDE.md` "Code map" —
 `buscommands.py`).
 
@@ -131,7 +131,7 @@ quantity, not separately stored — recomputing it from the persistent element s
 time is how determinism is preserved (`CLAUDE.md` invariant 1).
 
 **Constraints.** TLE-sourced orbits must parse at load or the Asset is rejected with a clear error
-(`design/04-data-model.md` §9); a maneuver cannot exceed the owning Asset's remaining
+(GDS-07 §10); a maneuver cannot exceed the owning Asset's remaining
 delta-v budget.
 
 ---
@@ -189,7 +189,7 @@ outside that queue.
 **Constraints.** Optical sensors require target sunlit + site darkness; weather-sensitive sensors
 can be denied by environmental conditions; task capacity bounds how many concurrent requests a
 Sensor will actually serve (excess requests queue or are declined, per the tasking contention
-model, `design/11-command-planning-and-tasking.md` Part B).
+model, the retired design corpus part 11 (command planning and tasking) Part B).
 
 ---
 
@@ -231,7 +231,7 @@ crash (GDS-03 §2.1).
 **Purpose.** An operator's scheduled intent — "command this Asset" or "task this Sensor" — the
 single domain concept GDS-01 §10's "plan-first commanding" invariant is built on. Commands and
 collection tasks are the same kind of object with two flavors, sharing one lifecycle
-(`design/04-data-model.md` §6.5).
+(GDS-07 §2).
 
 **Responsibilities.** Names an actor (Asset or Sensor), an intent (a command verb or a collection
 intent), a delivery path (ground uplink / ISL relay / stored program / sensor collect) and, once
@@ -256,7 +256,7 @@ without creating a Planned Activity.
 
 **Constraints.** Validated at both accept-time and execute-time against ownership, a valid window/
 delivery path, resources, ROE/authorities, and — for engagement intents — the weapons-quality Track
-gate (`design/04-data-model.md` §6.5).
+gate (GDS-07 §2).
 
 ---
 
@@ -416,7 +416,7 @@ still subject to the same `WorldState` mutation rules as any other event.
 
 **Purpose.** A sensor-tasking request against the mock Space Surveillance Network — the domain
 object behind the "request and wait" texture GDS-03 §2.3 describes, simulated entirely inside the
-process (`build-spec/08-ssn.md` §17).
+process (the retired v1 build specification part 08 (SSN) §17).
 
 **Responsibilities.** Names a requesting cell, a target, and a priority; is resolved against that
 cell's `SSNNetwork` dispersion preset via hybrid-turnaround logic (earliest viable window inside
@@ -594,7 +594,7 @@ not-built as the three Command Relationship/Intent/Decision Cycle concepts alrea
 ## Open Questions
 
 1. **Whether "Effect" should be split into EffectInstance/EffectOutcome at this level.**
-   `design/04-data-model.md` §4 models the attempt and its result as two schema types. This
+   the retired design corpus part 04 (data model) §4 models the attempt and its result as two schema types. This
    document collapses them into one conceptual Effect entity (an attempt that resolves
    immediately into an outcome) because no domain-level concern was found that needs them treated
    as independently long-lived objects — the split in the source document reads as a
@@ -697,7 +697,7 @@ changed.
 
 ## Merge gate (closed)
 
-- [x] **Absorbed the entity/relationship content of [`design/04-data-model.md`](../design/04-data-model.md)**
+- [x] **Absorbed the entity/relationship content of the retired design corpus part 04 (data model)**
   into this document, conceptually rather than schematically: §1 (identifiers/units) is reflected
   only where it shapes a relationship (e.g. an Asset "must have an Orbit"), not reproduced as a
   units table; §2 (Orbit/geometry) → §1.3; §3 (Assets, Ground Stations, Sensors) → §1.2/§1.4/§1.5;
@@ -711,14 +711,14 @@ changed.
   etc.) out of scope, reserving them for GDS-07 — Domain Model answers "what concept and why,"
   GDS-07 will answer "what fields, what storage." Two entities not named as top-level objects in
   the source schema were added here because they are domain-meaningful even though
-  `design/04-data-model.md` treats them as embedded fields rather than named types: **Role
-  Assignment** (implicit in `roles_needed`/seat assignment across `build-spec/01`/GDS-01, never
+  the retired design corpus part 04 (data model) treats them as embedded fields rather than named types: **Role
+  Assignment** (implicit in `roles_needed`/seat assignment across the retired v1 build specification part 01/GDS-01, never
   given its own schema block) and **Session** (the implicit context every schema in the source
   document assumes but never names as an entity in its own right).
 - [x] **Checked for conflict with the build spec and GDS-03**: none found. Every entity here maps
   cleanly onto a GDS-03 subsystem's stated data ownership (§2.1-§2.5 of that document); no entity
   introduced here claims ownership GDS-03 assigned elsewhere.
-- [x] **Decision recorded:** `design/04-data-model.md` **stays authoritative** for its stated
+- [x] **Decision recorded:** The retired design corpus part 04 (data model) **stays authoritative** for its stated
   purpose — the literal `pydantic`-shaped contract for state, including units, field names, and
   YAML shapes this document deliberately omits. `GDS-04` is a **conceptual extraction layered
   above it**, scoped to entities/relationships/invariants only; the schema portion of the same

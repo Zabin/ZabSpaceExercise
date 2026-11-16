@@ -142,7 +142,7 @@ The functional behavior this design commits to, for `06-feature-specification` t
 
 ## 7. Constraints
 
-- `docs/build-spec/` is silent on ephemeris export entirely (it predates this backlog item) — no
+- The retired v1 build specification is silent on ephemeris export entirely (it predates this backlog item) — no
   conflict, nothing to flag.
 - Replaying to many sampled times across a long `[t1, t2]` span is O(samples × eventlog length) with
   the current `replay()` implementation (full replay from `initial_state` each call, per

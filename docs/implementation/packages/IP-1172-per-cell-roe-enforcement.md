@@ -163,7 +163,7 @@ per-cell shape a real, engine-enforced concept; it does not build the authoring 
   to `COMPLETE`.
 - `docs/features/FS-117-vignette-creator.md`'s `Referenced By` metadata — already present (added
   at planning time).
-- `docs/design/04-data-model.md` §6 — `Vignette.roe` field description added; a paragraph added
+- The retired design corpus part 04 (data model) §6, carried by GDS-07 §5 — `Vignette.roe` field description added; a paragraph added
   noting `build_world()` always produces a cell-keyed `ctx.roe` regardless of which path (explicit
   or legacy-fallback) produced it.
 - `docs/vignettes/00-vignette-framework.md` — the "Authorities / ROE" parameter category now notes
