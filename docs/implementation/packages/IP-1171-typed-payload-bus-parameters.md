@@ -192,7 +192,7 @@ the Domain Model the UI will be a thin client over.
 - ✅ `ROADMAP.md` Implementation Packages theme — this package's row updated to `COMPLETE`.
 - ✅ `docs/features/FS-117-vignette-creator.md`'s `Referenced By` metadata — already present
   (added at planning time); confirmed unchanged.
-- ✅ `docs/design/04-data-model.md` §6 — gained the 8 new `PayloadState` sub-model entries, mirroring
+- ✅ the retired design corpus part 04 (data model) §6, carried by GDS-07 §5 — gained the 8 new `PayloadState` sub-model entries, mirroring
   `IP-1151`'s precedent for `RoleRequirement`.
 - ✅ `CLAUDE.md`'s Code Map — `bus.py`'s entry gained a note on the 8 typed sub-models.
 - ✅ `docs/requirements/03-requirements-traceability-matrix.md` — `FR-5170`/`FR-5180`'s Test/Impl.

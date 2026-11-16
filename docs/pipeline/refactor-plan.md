@@ -38,6 +38,7 @@
 | A5b | Split plan for `engine/orders.py` (§9.2): inventory, five target modules, handler rules, seven ordered moves with tier and check, do-not-move list. `server.py`, `app.js` (A5c, A5d) not planned yet | Done (this pull request) |
 | B1a | Glossary migration (§8.2 item 1: eight terms into MSTR-004 §2) and the Interface Control Document moved to `docs/architecture/interface-control-document.md` (§8.3 decision 1); live links repointed, old path declared retired; move half of `BL-0294` done | Done (this pull request) |
 | B1b | Requirement documents: every build-spec/design citation in a *Source documents* line or candidate source repointed to its §8.1 successor or removed where the successor was already there; 16 mis-numbered GDS-04 citations corrected (1 left: `FR-2310`); `CNFR-05` reworded and `BL-0451` filed; out-of-permission Rationale citations listed in the PR for `04` | Done (PR #106) |
+| B1c-1 | Citations of `build-spec/` and `design/` in `docs/architecture/` (not `adr/`), `docs/features/` and `docs/implementation/` (not `verification/`) repointed to the §8.1 successors or named as the retired v1 build specification or design corpus (rule (b)); three commits | Done (PR #107) |
 | 4c, 4e, 4f, 5, 6, 7 | See the packets below | Paused |
 
 ## 3. Rules for every session, whatever its tier

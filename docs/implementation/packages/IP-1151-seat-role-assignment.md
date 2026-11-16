@@ -177,7 +177,7 @@ authorized.)*
   `session/manager.py`'s `assign_role`/`staffing_report`), deviating from this field's original
   "no addition needed" per that clause's own escape valve, mirroring `IP-1120`/`IP-1130`'s
   precedent this same session.
-- Vignette-authoring reference documentation — `docs/design/04-data-model.md` §6 gained a
+- Vignette-authoring reference documentation — the retired design corpus part 04 (data model) §6, carried by GDS-07 §5, gained a
   `RoleRequirement`/`roles_needed` entry, per this field's own instruction ("once implemented").
 
 ## Definition of Done
