@@ -53,6 +53,8 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 | `docs/AUDIT-2026-06-COMMANDS.md` |  | 2026-11-10 | `docs/reviews/AUDIT-2026-06-COMMANDS.md` |
 | `docs/AUDIT-2026-06-UI-TTC.md` |  | 2026-11-10 | `docs/reviews/AUDIT-2026-06-UI-TTC.md` |
 | `docs/FUTURE-WORK.md` |  | 2026-11-10 | `docs/feature-planning/06-release-2-plan.md` |
+| `docs/build-spec/` |  | 2026-11-16 | `docs/architecture/INDEX.md` |
+| `docs/design/` |  | 2026-11-16 | `docs/architecture/INDEX.md` |
 | `docs/design/05-interface-control-document.md` |  | 2026-11-15 | `docs/architecture/interface-control-document.md` |
 
 ## Root-level guides (not under `docs/`)
