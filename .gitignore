@@ -6,3 +6,6 @@ __pycache__/
 .venv/
 venv/
 .claude/worktrees/
+
+# Scratch output of tools/record_walkthrough.py
+tmp_walkthrough/
