@@ -96,6 +96,31 @@ section for the full derivation.
   three first-iteration dimensions have completed those checks; that is an Implementation Package
   and ongoing-validation responsibility.
 
+### Validity checks
+
+Three checks, borrowed from standard instrument-validation practice
+([R410](../research/encyclopedia/R410-validation.md)), applied at whatever scale is actually available (even informally, with a
+handful of exercise runs, before any larger-scale study is authorized: see [FS-301](FS-301-research-analytics.md) Scope and
+[MSTR-006](../master/MSTR-006-governance-principles.md) §3):
+
+1. **Face validity** — does a subject-matter expert (a real space-operations instructor) agree that
+   high scores on a dimension of this report correspond to behavior they'd call competent?
+2. **Internal consistency** — across repeated runs of the same vignette by cells of presumably
+   similar skill, do the dimension scores cluster sensibly rather than swinging on noise (custody
+   confidence decay randomness, Red AI variance)?
+3. **Sensitivity to manipulation** — if a vignette is deliberately made harder along one axis (e.g.
+   tighter ROE, faster custody decay), does the relevant dimension move in the expected
+   direction? (This is literally [R408](../research/encyclopedia/R408-sensitivity-analysis.md)'s sensitivity-analysis method applied to the instrument
+   itself.)
+
+**Disclosure rule.** Any Implementation Package under FS-201 or [FS-301](FS-301-research-analytics.md) that makes a quantitative
+claim about what a metric "means" must cite which of these checks were applied, even informally, and
+must not claim statistical validity beyond what the available sample size supports. A metric that
+has only passed face validity (check 1) should be reported as such, not silently treated as
+validated.
+
+*Moved here from the retired validation domain document (§5 and §7).*
+
 ## Subsystem Responsibilities
 
 The source document does not provide a per-subsystem breakdown. The scoring computation reads from
