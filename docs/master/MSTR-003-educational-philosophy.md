@@ -28,6 +28,25 @@ otherwise either unavailable (classified) or irreversible (real operations) to p
 This claim has direct design consequences, enumerated below. Every consequence is a constraint a
 Feature Specification must respect, not a suggestion.
 
+## 2a. Future in-world AI: advisor, not decider
+
+*Forward-looking, R500-tier. Moved here from the retired AI-integration domain document (§4, and the
+Feature Specification half of §6).*
+
+The backlog's deferred items and the R500-tier topics (autonomous planning, machine reasoning, future
+C2) describe a horizon where Blue or White might be assisted by an AI planner/advisor inside the
+exercise itself — e.g., an AI-suggested COA, an AI custody-fusion assistant. The standing position:
+**any such feature must preserve the plan-first invariant (MSTR-002 §2 invariant 4) and the
+educational philosophy's "judgment must be practiced, not delegated" stance (§2)** — an AI that
+*decides* for the trainee defeats the tool's purpose, even if it would "win" more often. An AI
+*advisor* that surfaces information or options (without acting) is the only shape this should take
+without further explicit design review; treat anything beyond that as 🅿️ pending authorization per
+MSTR-006 §3.
+
+Any Feature Specification proposing an in-world AI capability must cite this section's plan-first/
+advisor-only constraint explicitly and flag itself 🅿️ if it goes beyond advisory. The tag that every
+R500-tier topic carries is defined in the [R500 index](../research/encyclopedia/R500-index.md).
+
 ## 3. Plan-execute as the unit of learning
 
 The atomic unit of operator learning in SpaceSim is **not** "click a button and see an effect," it

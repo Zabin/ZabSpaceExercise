@@ -35,3 +35,14 @@ The former future-work list §13 (Recommendation R1), R500 was sequenced first f
 ("zero citations, most speculative claims") — with this tier closed, **R400 (Research Methods) is
 now the GAP-13 priority**, per the `02-research-methods-and-validation` skill's workflow. Last reviewed
 across the tier: 2026-07-02.
+
+## Tag convention
+
+Every R501-R509 topic must explicitly tag, in its Implementation Guidance section, whether the
+concept it describes applies to in-world AI (Red doctrine presets today; any future advisor) or
+coding-agent practice (this repository's documentation-driven development model) or both, since
+conflating them is the most likely failure mode for this tier (a topic on "machine reasoning" could
+easily drift into discussing LLM-agent practice when the simulator's actual gap is an in-world
+planning assistant, or vice versa). The constraint on in-world AI is stated in
+[MSTR-003](../../master/MSTR-003-educational-philosophy.md) §2a; the constraint on coding-agent
+practice is [MSTR-006](../../master/MSTR-006-governance-principles.md) §4 and §8.
