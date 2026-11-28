@@ -3,7 +3,7 @@
 > **Document ID:** FS-114
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** (GDS-05 "Operational Rules" OR-3-grounded; no owning DOM), [ADR-0004](../architecture/adr/ADR-0004-fog-of-war-at-boundary.md), [FS-109](FS-109-multiplayer-session-transport.md)
+> **Dependencies:** (GDS-05 "Operational Rules" OR-3-grounded), [ADR-0004](../architecture/adr/ADR-0004-fog-of-war-at-boundary.md), [FS-109](FS-109-multiplayer-session-transport.md)
 > **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-6600`, [docs/feature-planning/05-feature-review.md](../feature-planning/05-feature-review.md) Finding F-02, [IP-1140](../implementation/packages/IP-1140-hot-seat-handoff.md)
 > **Produces:** the screen-blank/seat-reselection menu shown during a pending hot-seat hand-off
 > **Feature Mapping:** FS-114 (this document)
@@ -15,8 +15,8 @@
 Feature Specification closing Finding F-02 in `docs/feature-planning/05-feature-review.md`: this
 capability had a real, Must-priority baselined FR (FR-6610, added specifically to close GDS-05's
 own prior Open Question 1) but zero presence in any of the 11 pre-existing `FS-xxx` documents. No
-`docs/domains/` document names hot-seat hand-off as its own domain concept — grounded directly in
-GDS-05's Operational Rules instead, mirroring FS-102's "no owning DOM" precedent.*
+domain framework document (since retired) named hot-seat hand-off as its own domain concept — grounded directly in
+GDS-05's Operational Rules instead, mirroring FS-102's "R103-grounded" precedent.*
 
 ## Feature ID
 

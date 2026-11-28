@@ -12,10 +12,10 @@
 > and once `ADR-0034`/`ADR-0035` (`03-architecture-design-synthesis`, closing `BL-0088`/`BL-0089`)
 > settled the gating access channel (reuses `weapon_engagement`) and confidence tier (follows the
 > reversibility branch; no new tier). No v1.0-scope field's substance changed.
-> **Dependencies:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-007](../domains/DOM-007-human-factors-framework.md), [R103](../research/encyclopedia/R103-satellite-command-and-control.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R107](../research/encyclopedia/R107-ground-segment-operations.md), [R108](../research/encyclopedia/R108-constellation-operations.md),
+> **Dependencies:** [MSTR-003](../master/MSTR-003-educational-philosophy.md), [Vignette framework](../vignettes/00-vignette-framework.md), [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md), [R103](../research/encyclopedia/R103-satellite-command-and-control.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R107](../research/encyclopedia/R107-ground-segment-operations.md), [R108](../research/encyclopedia/R108-constellation-operations.md),
 > [R110](../research/encyclopedia/R110-communications.md), [R111](../research/encyclopedia/R111-power-and-thermal-operations.md), [R112](../research/encyclopedia/R112-propulsion-and-maneuver-planning.md), [R113](../research/encyclopedia/R113-attitude-determination-and-control.md), [R114](../research/encyclopedia/R114-command-and-data-handling.md), [R115](../research/encyclopedia/R115-electronic-warfare-in-space-operations.md), [R116](../research/encyclopedia/R116-cyber-operations-against-space-systems.md),
 > [R117](../research/encyclopedia/R117-directed-energy-and-kinetic-effects.md), [R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md), [R303](../research/encyclopedia/R303-deterrence-theory.md), [R304](../research/encyclopedia/R304-escalation-dynamics.md)
-> **Referenced By:** [FS-132](FS-132-effect-resource-bounds.md) (resource bounds on the engage/jam paths, `FR-1460`/`FR-1470`), [DOM-001](../domains/DOM-001-training-framework.md), [DOM-007](../domains/DOM-007-human-factors-framework.md), all of [R103](../research/encyclopedia/R103-satellite-command-and-control.md)/[R106](../research/encyclopedia/R106-mission-operations.md)-[R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md) (each names FS-105 as a direct or
+> **Referenced By:** [FS-132](FS-132-effect-resource-bounds.md) (resource bounds on the engage/jam paths, `FR-1460`/`FR-1470`), all of [R103](../research/encyclopedia/R103-satellite-command-and-control.md)/[R106](../research/encyclopedia/R106-mission-operations.md)-[R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md) (each names FS-105 as a direct or
 > co-direct consumer), IMP-105A, IMP-105B, [IP-1052](../implementation/packages/IP-1052-order-param-hardening.md) (🟢 `VERIFIED` 2026-10-16, `VR-1052`; order-parameter hardening, `BL-0222`)
 > **Produces:** the executed-state surface consumed by [FS-107](FS-107-after-action-review.md) (AAR replay) and [FS-201](FS-201-competency-assessment.md) (assessment data)
 > **Feature Mapping:** FS-105 (this document)
@@ -81,7 +81,7 @@ yet specify.
 - An operator issues comms-posture commands through the existing bus subsystem panel ([R110](../research/encyclopedia/R110-communications.md) §5).
 - An operator observes power and thermal state causally — understanding *why* SoC or temperature is
   moving (eclipse, heater draw, attack signature), not just seeing a number change ([R111](../research/encyclopedia/R111-power-and-thermal-operations.md) §5,
-  [DOM-007](../domains/DOM-007-human-factors-framework.md) §4).
+  [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md)).
 - An operator commands pointing/attitude mode and understands the console reflects mode-level
   control, not vector-level fidelity ([R113](../research/encyclopedia/R113-attitude-determination-and-control.md) §5).
 - An operator observes the C&DH storage gate before queuing collection or downlink ([R114](../research/encyclopedia/R114-command-and-data-handling.md) §5).
@@ -109,7 +109,7 @@ yet specify.
 
 ### Escalation and doctrine
 - ROE chip state is visible at time of order, grounding escalation-discipline assessment ([R303](../research/encyclopedia/R303-deterrence-theory.md) §5,
-  [DOM-002](../domains/DOM-002-assessment-framework.md) §4).
+  [FS-201 Scope and System Behaviour](FS-201-competency-assessment.md) and [GDS-07 §8](../architecture/07-data-model.md)).
 - Escalation-tagging for kinetic consequence-confirm UX is grounded in [R304](../research/encyclopedia/R304-escalation-dynamics.md), not ad hoc per feature.
 
 ## System Behaviour
@@ -118,7 +118,7 @@ yet specify.
   the console must not present mission operations as an undifferentiated stream of buttons
   disconnected from this cycle.
 - **Power/thermal state must surface causally.** An operator must be able to tell *why* SoC or
-  temperature is moving — not just see the number change ([R111](../research/encyclopedia/R111-power-and-thermal-operations.md) §5, [DOM-007](../domains/DOM-007-human-factors-framework.md) §4).
+  temperature is moving — not just see the number change ([R111](../research/encyclopedia/R111-power-and-thermal-operations.md) §5, [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md)).
 - **Pointing/attitude UI must be honest about ADCS fidelity.** Today's model is mode-level, not
   vector-level; the console must not imply finer pointing control than the engine models ([R113](../research/encyclopedia/R113-attitude-determination-and-control.md) §5).
 - **Storage/downlink gating must be visibly respected.** Any collection or downlink control must
@@ -132,7 +132,7 @@ yet specify.
 - **Window display uses genuine sampled/bisected geometry.** Consistent with [FS-101](FS-101-mission-planning.md) §3's requirement
   for the planning side of the same data ([R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md) §5).
 - **Belief must stay visually distinguishable from ground truth.** Every custody/track display
-  hosted in this console inherits [FS-103](FS-103-custody-management.md) §3's requirement ([DOM-007](../domains/DOM-007-human-factors-framework.md) §4).
+  hosted in this console inherits [FS-103](FS-103-custody-management.md) §3's requirement ([GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md)).
 - **(v1.1) A DE order must resolve to `category="directed_energy"`, never silently to
   `electronic_warfare`.** `FR-1410` names DE as a distinct category, and the engine already
   declares it as one — the gap is purely that no order path reaches it.
@@ -196,17 +196,17 @@ document specifying new Domain Model entities. Flagged as an Open Question below
 
 - The consequence-confirm pattern for kinetic/DE actions provides explicit confirmation before
   irreversible effect execution — not just a disable/enable guard.
-- The pre-disabled-button pattern (per [FS-101](FS-101-mission-planning.md) §3, [DOM-007](../domains/DOM-007-human-factors-framework.md) §4) surfaces constraint reasons ("no window,"
+- The pre-disabled-button pattern (per [FS-101](FS-101-mission-planning.md) §3, [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md)) surfaces constraint reasons ("no window,"
   "insufficient custody," "C&DH gate") before an operator attempts a blocked action.
 - The source document does not enumerate further error states or failure modes.
 
 ## Performance Considerations
 
-- **Intentional friction** ([DOM-007](../domains/DOM-007-human-factors-framework.md) §3): plan-first command latency, window gating, and the
+- **Intentional friction** ([GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §2](../architecture/08-ui-architecture.md)): plan-first command latency, window gating, and the
   consequence-confirm gate are domain-accurate and must read as such, not as UI slowness.
-- **Belief-vs-truth legibility** ([DOM-007](../domains/DOM-007-human-factors-framework.md) §4): every custody/track display in this console inherits
+- **Belief-vs-truth legibility** ([GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md)): every custody/track display in this console inherits
   the load-bearing legibility requirement from [FS-103](FS-103-custody-management.md) §3.
-- **Panel-manager contract** ([DOM-007](../domains/DOM-007-human-factors-framework.md) §5): every new console panel must be a first-class citizen
+- **Panel-manager contract** ([GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §4](../architecture/08-ui-architecture.md)): every new console panel must be a first-class citizen
   of the panel manager (close/float/resize/reset-to-dock) from the start.
 
 ## Security Considerations
@@ -266,7 +266,7 @@ effect). The remaining DE criteria have no Verification Method yet because they 
 
 ## Dependencies
 
-[DOM-001](../domains/DOM-001-training-framework.md), [DOM-007](../domains/DOM-007-human-factors-framework.md), [R103](../research/encyclopedia/R103-satellite-command-and-control.md), [R106](../research/encyclopedia/R106-mission-operations.md)-[R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md), [R303](../research/encyclopedia/R303-deterrence-theory.md), [R304](../research/encyclopedia/R304-escalation-dynamics.md) (per the existing
+[MSTR-003](../master/MSTR-003-educational-philosophy.md) and [Vignette framework](../vignettes/00-vignette-framework.md), [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md), [R103](../research/encyclopedia/R103-satellite-command-and-control.md), [R106](../research/encyclopedia/R106-mission-operations.md)-[R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md), [R303](../research/encyclopedia/R303-deterrence-theory.md), [R304](../research/encyclopedia/R304-escalation-dynamics.md) (per the existing
 metadata block's Dependencies field). [FS-101](FS-101-mission-planning.md) (pre-commit planning), [FS-102](FS-102-command-scheduling.md) (execution lifecycle),
 [FS-103](FS-103-custody-management.md)/[FS-104](FS-104-sda-tasking.md) (custody/tasking surfaces hosted here) are upstream features this console
 displays, not formal dependencies in the metadata block.

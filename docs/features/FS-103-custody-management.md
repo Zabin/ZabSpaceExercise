@@ -11,13 +11,13 @@
 > truth re-synced on every read) — see the new note at the end of System Behaviour. Closes backlog
 > `BL-0068` (external validation report item B2)'s domain-model question for this document.
 > **Status:** ✅ Done
-> **Dependencies:** [DOM-009](../domains/DOM-009-doctrine-development-framework.md), [R105](../research/encyclopedia/R105-custody-theory.md)
-> **Referenced By:** [DOM-009](../domains/DOM-009-doctrine-development-framework.md), [R105](../research/encyclopedia/R105-custody-theory.md), [DOM-002](../domains/DOM-002-assessment-framework.md) (custody quality dimension), IMP-103A, [IP-1210](../implementation/packages/IP-1210-ephemeris-export.md) (Implementation Package for the sibling `FS-121`, ✅ `VERIFIED`, [VR-1210](../implementation/verification/VR-1210-ephemeris-export.md))
+> **Dependencies:** [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md), [R105](../research/encyclopedia/R105-custody-theory.md)
+> **Referenced By:** [R105](../research/encyclopedia/R105-custody-theory.md), IMP-103A, [IP-1210](../implementation/packages/IP-1210-ephemeris-export.md) (Implementation Package for the sibling `FS-121`, ✅ `VERIFIED`, [VR-1210](../implementation/verification/VR-1210-ephemeris-export.md))
 > **Produces:** the custody/track-confidence surface consumed by [FS-104](FS-104-sda-tasking.md) (tasking that updates custody) and
 > [FS-105](FS-105-spacecraft-operations.md) (effects gated by weapons-quality custody)
 > **Feature Mapping:** FS-103 (this document)
 > **Related Topics:** [R104](../research/encyclopedia/R104-collection-management.md) (collection feeding custody), [R115](../research/encyclopedia/R115-electronic-warfare-in-space-operations.md)-[R117](../research/encyclopedia/R117-directed-energy-and-kinetic-effects.md) (effect categories with custody
-> preconditions), [DOM-002](../domains/DOM-002-assessment-framework.md) §4 (custody quality as an assessment dimension), [ADS-1500](../architecture/ADS-1500-per-cell-custody-estimated-state-and-export.md)
+> preconditions), [FS-201 Scope and System Behaviour](FS-201-competency-assessment.md), [GDS-07 §8](../architecture/07-data-model.md) (custody quality as an assessment dimension), [ADS-1500](../architecture/ADS-1500-per-cell-custody-estimated-state-and-export.md)
 > (v1.1 — the estimated-state-history/export design this document's third Open Question is closed by)
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
@@ -37,7 +37,7 @@ Custody Management
 Custody Management is the capability by which a cell builds, maintains, and consults confidence in
 its track picture of an object — the operational expression of fog-of-war's central claim that a
 cell never sees ground truth directly, only a custody-mediated belief. Per [R105](../research/encyclopedia/R105-custody-theory.md) §5, this
-feature is the **direct owner** of the custody model surfaced to operators; [DOM-009](../domains/DOM-009-doctrine-development-framework.md) names it as
+feature is the **direct owner** of the custody model surfaced to operators; [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md) names it as
 one of the two Feature Specifications the doctrine-translation pipeline depends on (the other being
 [FS-104](FS-104-sda-tasking.md)).
 
@@ -77,16 +77,16 @@ rewrite may resolve by inference.
 - **The weapons-quality gate must be visible before an operator attempts a gated action.** Any
   effect category with a custody precondition ([R115](../research/encyclopedia/R115-electronic-warfare-in-space-operations.md)-[R117](../research/encyclopedia/R117-directed-energy-and-kinetic-effects.md)) must expose, ahead of commitment,
   whether the current confidence clears that gate — consistent with the pre-disabled-button
-  pattern ([FS-101](FS-101-mission-planning.md) §3, [DOM-007](../domains/DOM-007-human-factors-framework.md) §4).
-- **Belief must stay visually distinguishable from ground truth.** Per [DOM-007](../domains/DOM-007-human-factors-framework.md) §4, custody
+  pattern ([FS-101](FS-101-mission-planning.md) §3, [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md)).
+- **Belief must stay visually distinguishable from ground truth.** Per [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md), custody
   confidence indicators (color, iconography) must never be conflatable with an assertion of
   ground-truth fact — this is the single most load-bearing UI rule in the entire fog-of-war
   pedagogy, independent of whether the backend already enforces the boundary correctly.
-- **Custody history must be retrievable for after-action review.** [DOM-002](../domains/DOM-002-assessment-framework.md) §4's
+- **Custody history must be retrievable for after-action review.** [FS-201 Scope and System Behaviour](FS-201-competency-assessment.md) and [GDS-07 §8](../architecture/07-data-model.md)'s
   "belief-truth divergence" assessment dimension depends on being able to compare a cell's custody
   confidence at a decision point against ground truth at that same point — custody state must be a
   first-class, queryable part of the historical record, not a transient display-only value.
-- **Doctrine differences live in data, not feature logic.** Per [DOM-009](../domains/DOM-009-doctrine-development-framework.md) §4, a vignette's SSN
+- **Doctrine differences live in data, not feature logic.** Per [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md), a vignette's SSN
   dispersion preset implies sparser or denser collection, but Custody Management's decay/display
   behavior must be uniform across vignettes; the doctrine difference lives in the data feeding it.
 - *(Added v1.1)* **A cell's `Track.state_estimate` is already independent of live ground truth, not
@@ -102,7 +102,7 @@ rewrite may resolve by inference.
   `ADS-1500` Decision 2, `session/aar.py::state_at`'s existing replay-to-a-point mechanism already
   answers "what did cell C believe object X's state was at time T" for any past T — this closes
   this document's own third Open Question below (no `EventLog`/`Snapshot` schema addition is
-  needed for the historical custody record DOM-002 §4's belief-truth-divergence assessment depends
+  needed for the historical custody record [FS-201 Scope and System Behaviour](FS-201-competency-assessment.md) and [GDS-07 §8](../architecture/07-data-model.md)'s belief-truth-divergence assessment depends
   on).
 
 ## Subsystem Responsibilities
@@ -147,7 +147,7 @@ events and on-demand decay tied to actual elapsed sim time may change it (replay
   confidence — only the on-demand decay computation tied to actual elapsed sim time and fresh
   collection events may change it.
 - **Human factors.** Belief/ground-truth legibility (§"System Behaviour" above) is named in
-  [DOM-007](../domains/DOM-007-human-factors-framework.md) §4 as load-bearing for the entire console — this is not a styling choice.
+  [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md) as load-bearing for the entire console — this is not a styling choice.
 
 ## Security Considerations
 
@@ -180,9 +180,9 @@ below.
 
 ## Dependencies
 
-[DOM-009](../domains/DOM-009-doctrine-development-framework.md) and [R105](../research/encyclopedia/R105-custody-theory.md) (per the existing metadata block's Dependencies field). [FS-104](FS-104-sda-tasking.md) and
+[Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md) and [R105](../research/encyclopedia/R105-custody-theory.md) (per the existing metadata block's Dependencies field). [FS-104](FS-104-sda-tasking.md) and
 [FS-105](FS-105-spacecraft-operations.md) are downstream consumers of this feature's output, not upstream dependencies of FS-103
-itself. [DOM-002](../domains/DOM-002-assessment-framework.md) and [R104](../research/encyclopedia/R104-collection-management.md)/[R115](../research/encyclopedia/R115-electronic-warfare-in-space-operations.md)-[R117](../research/encyclopedia/R117-directed-energy-and-kinetic-effects.md) are noted as related topics.
+itself. [FS-201](FS-201-competency-assessment.md) and [R104](../research/encyclopedia/R104-collection-management.md)/[R115](../research/encyclopedia/R115-electronic-warfare-in-space-operations.md)-[R117](../research/encyclopedia/R117-directed-energy-and-kinetic-effects.md) are noted as related topics.
 
 ## Risks
 
@@ -191,7 +191,7 @@ material the document discusses as constraints:
 
 - If belief indicators are styled in a way that can be confused with ground-truth assertions, the
   entire fog-of-war pedagogy is undermined regardless of backend correctness — this is identified
-  as the single most load-bearing UI rule in [DOM-007](../domains/DOM-007-human-factors-framework.md) §4.
+  as the single most load-bearing UI rule in [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md).
 - If custody state is stored only as a transient display value (not a first-class historical
   record), the AAR / assessment consumer ([FS-201](FS-201-competency-assessment.md)'s "belief-truth divergence" dimension) has
   no queryable data to operate on.

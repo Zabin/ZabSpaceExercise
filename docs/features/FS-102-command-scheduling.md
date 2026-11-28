@@ -138,7 +138,7 @@ not enumerate these as a formal state-machine diagram.
 - **Determinism-consistent display.** Window countdown must be computed from the same access-window
   logic the engine actually gates execution on — a display estimate that can disagree with the real
   gate is a defect, not a UI approximation.
-- **Human factors.** The latency chain is intentional friction ([DOM-007](../domains/DOM-007-human-factors-framework.md) §3) — real space operators
+- **Human factors.** The latency chain is intentional friction ([GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §2](../architecture/08-ui-architecture.md)) — real space operators
   cannot collapse the validate→window→execute→confirm chain; the UI's job is to make that chain
   legible, not to hide or fake-shorten it.
 

@@ -8,8 +8,8 @@
 > `VERIFIED` via `VR-2010`. Two criteria are explicitly deferred — see Acceptance Criteria. The
 > earlier note that the capability "remains ⛔ Planned" predates `IP-2010`. IMP-201A
 > is the superseded design-only package.)*
-> **Dependencies:** [DOM-002](../domains/DOM-002-assessment-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md) §7, [DOM-001](../domains/DOM-001-training-framework.md), [R306](../research/encyclopedia/R306-operational-assessment.md), [R310](../research/encyclopedia/R310-effects-based-operations.md)
-> **Referenced By:** [DOM-002](../domains/DOM-002-assessment-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md), [DOM-001](../domains/DOM-001-training-framework.md), [R306](../research/encyclopedia/R306-operational-assessment.md), [R310](../research/encyclopedia/R310-effects-based-operations.md), IMP-201A, [FS-202](FS-202-rubric-authoring.md)
+> **Dependencies:** [MSTR-003](../master/MSTR-003-educational-philosophy.md) §8, [GDS-07](../architecture/07-data-model.md) §8, [R306](../research/encyclopedia/R306-operational-assessment.md), [R310](../research/encyclopedia/R310-effects-based-operations.md)
+> **Referenced By:** [R306](../research/encyclopedia/R306-operational-assessment.md), [R310](../research/encyclopedia/R310-effects-based-operations.md), IMP-201A, [FS-202](FS-202-rubric-authoring.md)
 > **Produces:** the per-cell/per-exercise and longitudinal competency report; export data consumed by
 > [FS-301](FS-301-research-analytics.md)
 > **Feature Mapping:** FS-201 (this document)
@@ -32,14 +32,14 @@ Competency Assessment
 
 Competency Assessment replaces the engine's current binary objective-flip success/failure signal
 with a richer, rubric-based measurement of *how* a cell demonstrated the competency a vignette was
-designed to exercise. Per [DOM-002](../domains/DOM-002-assessment-framework.md) §3, a cell can flip an objective through luck or exploit
+designed to exercise. Per [MSTR-003](../master/MSTR-003-educational-philosophy.md) §8, a cell can flip an objective through luck or exploit
 without ever forming a correct custody-based belief, and conversely can demonstrate excellent
 tradecraft and still lose — the binary signal captures neither case. This spec defines the FS-201
-capability that [DOM-002](../domains/DOM-002-assessment-framework.md) and [DOM-005](../domains/DOM-005-validation-framework.md) both explicitly require.
+capability that [GDS-05](../architecture/05-functional-requirements.md) `FR-A1` and [GDS-06](../architecture/06-non-functional-requirements.md) NFR-19 both explicitly require.
 
 ## Scope
 
-In scope: the six measurement dimensions ([DOM-002](../domains/DOM-002-assessment-framework.md) §4) — with first-iteration scope of three
+In scope: the six measurement dimensions ([GDS-07](../architecture/07-data-model.md) §8 and Deferred dimensions below) — with first-iteration scope of three
 (custody quality, window discipline, belief-truth divergence) and three deferred — the rubric-tier
 reporting model, and the per-cell/per-exercise and longitudinal report surfaces. Out of scope:
 tooling to *author or adjust* rubric tiers ([FS-202](FS-202-rubric-authoring.md), candidate), and multi-run/cohort export for
@@ -77,9 +77,9 @@ section for the full derivation.
 - A facilitator uses the report alongside the [FS-107](FS-107-after-action-review.md) AAR instrument to explain to trainees why
   their rubric tier was assigned — the rubric provides language; the AAR provides the timeline
   evidence.
-- Longitudinally, a trainer tracks a per-trainee progression across multiple exercises ([DOM-001](../domains/DOM-001-training-framework.md) §4):
+- Longitudinally, a trainer tracks a per-trainee progression across multiple exercises (a deferred criterion, `BL-0019`; see Acceptance Criteria):
   the report surfaces dimension-by-dimension trend, never a leaderboard number.
-- The facilitator can apply qualitative facilitator-rubric judgment ([DOM-002](../domains/DOM-002-assessment-framework.md) §6) alongside or
+- The facilitator can apply qualitative facilitator-rubric judgment (see Assessment modes below) alongside or
   instead of the automated dimensions, from the [FS-106](FS-106-white-cell-dashboard.md) White Cell Dashboard.
 - A trainee can use the report in self-assessment mode alongside [FS-107](FS-107-after-action-review.md), with no new engine
   feature required.
@@ -92,21 +92,21 @@ section for the full derivation.
   and AAR's `snapshot_at()` god-view/belief diff ([FS-107](FS-107-after-action-review.md)). **Deferred** (requires baseline data not
   yet structured): resource economy and escalation discipline (need a vignette-specific resource/ROE
   budget baseline); time-to-decision (needs an OODA-loop tightness reference baseline per [R208](../research/encyclopedia/R208-ooda-loops.md)).
-- **Rubric tiers per dimension** ([DOM-002](../domains/DOM-002-assessment-framework.md) §5):
+- **Rubric tiers per dimension** ([GDS-05](../architecture/05-functional-requirements.md) `FR-A1`):
   - *Custody quality:* speculative / adequate / disciplined.
   - *Window discipline:* frequent-invalid-attempts / occasional / disciplined.
   - *Belief-truth divergence:* high-divergence-unaware / high-divergence-aware / low-divergence.
 - **Report surfaces** are per-cell per-exercise (immediate debrief, facilitator-facing summary) and
-  longitudinal per-trainee across exercises ([DOM-001](../domains/DOM-001-training-framework.md) §4) — both present the rubric, never a
-  single leaderboard number, per [DOM-002](../domains/DOM-002-assessment-framework.md) §5.
+  longitudinal per-trainee across exercises (deferred, `BL-0019`) — both present the rubric, never a
+  single leaderboard number, per [GDS-05](../architecture/05-functional-requirements.md) `FR-A1`.
 - **No new gameplay mechanic.** This feature is a read-only analytics layer over existing engine
   state (eventlog, custody history, order log, AAR snapshots). A scoring computation must not
   mutate `WorldState` — consistent with [MSTR-002](../master/MSTR-002-architecture-principles.md) §5's replay-safety principle.
-- **Assessment modes** ([DOM-002](../domains/DOM-002-assessment-framework.md) §6): automated in-engine (always available); facilitator rubric
+- **Assessment modes**: automated in-engine (always available); facilitator rubric
   (White Cell qualitative judgment, surfaced via [FS-106](FS-106-white-cell-dashboard.md)); self-assessment / debrief
   reflection (AAR walkthrough, no new engine feature required per [FS-107](FS-107-after-action-review.md)).
-- **Validation discipline** ([DOM-005](../domains/DOM-005-validation-framework.md) §7): any quantitative claim about what a dimension "means"
-  must cite which DOM-005 §5 validity check(s) were applied. This spec does not claim any of its
+- **Validation discipline** (see Validity checks below): any quantitative claim about what a dimension "means"
+  must cite which of the Validity checks below were applied. This spec does not claim any of its
   three first-iteration dimensions have completed those checks; that is an Implementation Package
   and ongoing-validation responsibility.
 
@@ -179,7 +179,7 @@ Flagged as an Open Question below.
 
 - **No `WorldState` mutation.** The scoring computation must be provably read-only — consistent with
   the replay-safety principle ([MSTR-002](../master/MSTR-002-architecture-principles.md) §5, ADR-0002).
-- **Validation discipline.** Per [DOM-005](../domains/DOM-005-validation-framework.md) §7, any metric reported must disclose which validity
+- **Validation discipline.** Per the disclosure rule under Validity checks, any metric reported must disclose which validity
   check(s) were applied — a metric that has only passed face validity must be reported as such.
 
 ## Security Considerations
@@ -201,12 +201,12 @@ Derived from the source document's capability requirements, restated as checkabl
 - The report is available to White Cell during the exercise and in the facilitated debrief, where
   the facilitator presents it alongside [FS-107](FS-107-after-action-review.md)'s AAR; this is how
   the facilitator-rubric and debrief modes are served in this iteration.
-- No composite single score is produced (per [DOM-002](../domains/DOM-002-assessment-framework.md) §5's explicit rejection of numeric averaging
+- No composite single score is produced (per [GDS-05](../architecture/05-functional-requirements.md) `FR-A1`'s explicit rejection of numeric averaging
   across non-commensurable dimensions).
 
 **Deferred criteria (2026-10-17, not delivered by `IP-2010`, outside `FR-10110`).** `FR-10110`,
 the one baselined requirement this FS implements, requires only the per-cell per-exercise report.
-The two criteria below were written into this FS from DOM-001/DOM-002 and go beyond that
+The two criteria below were written into this FS from the training and assessment domain documents (since retired) and go beyond that
 requirement. They are kept as the Feature's stated direction, but they are **not** acceptance
 conditions for the built Feature. Each would need an owner request (via `00-intake`), then a
 requirement and a package:
@@ -230,7 +230,7 @@ Flagged as an Open Question below.
 
 ## Dependencies
 
-[DOM-002](../domains/DOM-002-assessment-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md) §7, [DOM-001](../domains/DOM-001-training-framework.md), [R306](../research/encyclopedia/R306-operational-assessment.md), [R310](../research/encyclopedia/R310-effects-based-operations.md) (per the existing
+[MSTR-003](../master/MSTR-003-educational-philosophy.md) §8, [GDS-07](../architecture/07-data-model.md) §8, [R306](../research/encyclopedia/R306-operational-assessment.md), [R310](../research/encyclopedia/R310-effects-based-operations.md) (per the existing
 metadata block's Dependencies field). [FS-107](FS-107-after-action-review.md) (belief-truth divergence data source), [FS-103](FS-103-custody-management.md)
 (custody quality data source), [FS-102](FS-102-command-scheduling.md) (window discipline data source via order log) are upstream
 feature outputs that this feature reads; they are not in the metadata block's Dependencies field but
@@ -245,7 +245,7 @@ dependencies of FS-201.
   produce a metric that cannot be meaningfully scored.
 - Any rubric-tier computation that modifies `WorldState` (even temporarily) would violate the
   replay-safety invariant.
-- Per [DOM-005](../domains/DOM-005-validation-framework.md) §7, if a dimension's validity check level is not disclosed in the report,
+- Per the disclosure rule under Validity checks, if a dimension's validity check level is not disclosed in the report,
   it may be misconstrued as fully validated when it has only passed face validity.
 
 ## Open Questions

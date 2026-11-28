@@ -3,7 +3,7 @@
 > **Document ID:** FS-109
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** [DOM-003](../domains/DOM-003-white-cell-framework.md) §6, [ADR-0014](../architecture/adr/ADR-0014-lazy-clock-rlock-multiplayer.md), [ADR-0015](../architecture/adr/ADR-0015-lan-trust-model.md), [ADR-0026](../architecture/adr/ADR-0026-rlock-lan-scaling-ceiling.md)
+> **Dependencies:** [GDS-05 `FR-L3`](../architecture/05-functional-requirements.md), [GDS-09 §3](../architecture/09-api-specification.md), [ADR-0014](../architecture/adr/ADR-0014-lazy-clock-rlock-multiplayer.md), [ADR-0015](../architecture/adr/ADR-0015-lan-trust-model.md), [ADR-0026](../architecture/adr/ADR-0026-rlock-lan-scaling-ceiling.md)
 > **Referenced By:** [FS-106](FS-106-white-cell-dashboard.md) (the White-only clock-control trigger surface this mechanism serves), [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-6300`/`FEAT-6400`
 > **Produces:** the consistent-clock, consistent-lock substrate every cell-facing Feature (Blue/Red/Observer/White) reads through
 > **Feature Mapping:** FS-109 (this document)
@@ -44,7 +44,7 @@ request in the first place (White Cell only — [FS-106](FS-106-white-cell-dashb
 the hot-seat hand-off screen-blank behavior between role changes on one browser (a distinct,
 currently unspecified Feature — `FEAT-6600` in the Feature Catalog); and session
 discovery/join-by-URL-hash as a *facilitator-facing* administrative workflow (that framing remains
-[FS-106](FS-106-white-cell-dashboard.md)/DOM-003 §6's, per this document's Open Questions — this
+[FS-106](FS-106-white-cell-dashboard.md)'s ([GDS-05 `FR-L3`](../architecture/05-functional-requirements.md)), per this document's Open Questions — this
 document specifies the underlying mechanism session discovery relies on: one Session object shared
 across clients, FR-6410).
 
@@ -197,10 +197,10 @@ other `FS-xxx` document is a prerequisite.
   FR document — see Scope). This document does not specify pop-out-window behavior as a result;
   whoever owns the requirements baseline/RTM should resolve which is correct and, if pop-out
   windows genuinely has no FR, add one.
-- **Domain ownership:** `docs/domains/DOM-003-white-cell-framework.md` §6 frames "multiplayer
+- **Domain ownership:** The retired White Cell domain document §6 framed "multiplayer
   session discovery" as White-Cell-domain territory (a facilitation concern). This document
   specifies the underlying mechanism as serving all cells equally, not a White-Cell-specific
-  concern — both framings are individually defensible (DOM-003 for *why the requirement exists*,
+  concern — both framings are individually defensible (the White Cell domain document, since retired, for *why the requirement exists*,
   this document for *what the mechanism does*), but no document reconciles them explicitly. Flagged
   for the domain owner, not resolved here.
 - Whether session-discovery's *facilitator-facing panel* (as opposed to the underlying one-Session-

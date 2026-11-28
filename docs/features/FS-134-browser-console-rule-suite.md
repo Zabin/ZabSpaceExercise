@@ -221,7 +221,7 @@ this suite does not wait for FS-133's backfill.
    tools. Matters only if the project wants every dependency recorded in an ADR. **Resolution
    path:** `03` decides at its next maintenance pass (rides `BL-0311`); the default is that a
    test-only tool already used by the project's own tools needs no ADR.
-3. **The intentional-friction rule (`BL-0312`, review R6).** DOM-007 §3, as absorbed in GDS-06
+3. **The intentional-friction rule (`BL-0312`, review R6).** [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §2](../architecture/08-ui-architecture.md), as absorbed in GDS-06
    NFR-9, asks every console design to say which friction is intentional. This spec touches the
    console's two deliberate frictions — the consequence confirmation (rule c) and the disabled
    Issue button (rule b) — and records them as intentional here: both slow the operator on purpose,

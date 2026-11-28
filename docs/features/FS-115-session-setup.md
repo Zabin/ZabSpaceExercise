@@ -3,7 +3,7 @@
 > **Document ID:** FS-115
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** [DOM-003](../domains/DOM-003-white-cell-framework.md), [FS-105](FS-105-spacecraft-operations.md) (Role Assignment scope this Feature produces), `FEAT-5300` (vignette validation — now [FS-131](FS-131-load-time-vignette-validation.md), added 2026-10-16)
+> **Dependencies:** [GDS-05](../architecture/05-functional-requirements.md), [FS-105](FS-105-spacecraft-operations.md) (Role Assignment scope this Feature produces), `FEAT-5300` (vignette validation — now [FS-131](FS-131-load-time-vignette-validation.md), added 2026-10-16)
 > **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-4100`/`FEAT-4200`, [docs/feature-planning/05-feature-review.md](../feature-planning/05-feature-review.md) Finding F-10, [IP-1150](../implementation/packages/IP-1150-vignette-selection.md) (FR-4110 slice), [IP-1151](../implementation/packages/IP-1151-seat-role-assignment.md) (FR-4210 slice) · [IP-1131](../implementation/packages/IP-1131-verification-coverage-follow-ups.md) (✅ VERIFIED 2026-10-17, VR-1131)
 > **Produces:** the started, staffed Session that every other Feature Specification's workflows begin from
 > **Feature Mapping:** FS-115 (this document)
@@ -125,7 +125,7 @@ NFR in the baseline names vignette-selection or seat-assignment latency specific
 ## Security Considerations
 
 Both vignette selection and seat assignment are exclusively White-Cell-role actions per their own
-FRs — consistent with the project's broader White-Cell-authority model (DOM-003 §3), though neither
+FRs — consistent with the project's broader White-Cell-authority model ([GDS-05 `FR-W6`](../architecture/05-functional-requirements.md) and [GDS-09 §4](../architecture/09-api-specification.md)), though neither
 FR states an explicit rejection behavior for a non-White-Cell attempt the way FR-3520/FR-4310 do
 for their respective domains; flagged as an Open Question.
 
@@ -169,12 +169,12 @@ downstream consumer of the Role Assignment records this Feature produces.
   vignette selection or seat assignment (unlike FR-3520/FR-4310's explicit rejection language) —
   whether this is an intentional omission or a baseline gap is worth raising with the requirements
   owner.
-- `docs/domains/DOM-003-white-cell-framework.md` §2's Scope list does not currently name vignette
+- The retired White Cell domain document's §2 Scope list did not name vignette
   selection/seat assignment explicitly (only "White Cell authority/visibility model, the inject
   mechanism, clock/pacing control, session administration") — this document grounds itself in
-  DOM-003 as the closest fit (both are White-Cell-only setup-phase actions squarely within DOM-003
-  §1's overall purpose), and DOM-003's frontmatter/scope has been updated to reference this
-  document explicitly (see that document).
+  that document as the closest fit (both are White-Cell-only setup-phase actions squarely within its
+  §1's overall purpose), and its frontmatter/scope was updated to reference this
+  document before its retirement; the successor is [GDS-05](../architecture/05-functional-requirements.md).
 
 ## Related ADRs
 

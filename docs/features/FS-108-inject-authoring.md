@@ -3,8 +3,8 @@
 > **Document ID:** FS-108
 > **Version:** 0.1 (candidate scope — not authorized)
 > **Status:** 🅿️ Scoped, not authorized
-> **Dependencies:** [DOM-003](../domains/DOM-003-white-cell-framework.md) §4, §9
-> **Referenced By:** [DOM-003](../domains/DOM-003-white-cell-framework.md)
+> **Dependencies:** [GDS-05 `FR-W4`/`FR-W8`](../architecture/05-functional-requirements.md), [GDS-08 §7.6](../architecture/08-ui-architecture.md), [FS-108](FS-108-inject-authoring.md)
+> **Referenced By:** None identified
 > **Produces:** nothing yet — no Implementation Package may begin against this ID without explicit
 > user go-ahead (see [`MSTR-006`](../master/MSTR-006-governance-principles.md) §3)
 > **Feature Mapping:** FS-108 (this document)
@@ -24,7 +24,7 @@ Inject Authoring *(candidate — not authorized)*
 
 ## Purpose
 
-**This document records candidate scope for an unauthorized feature.** Per [DOM-003](../domains/DOM-003-white-cell-framework.md) §1's
+**This document records candidate scope for an unauthorized feature.** Per [MSTR-003 §7](../master/MSTR-003-educational-philosophy.md)'s
 frontmatter, FS-108 is explicitly marked "(candidate)" everywhere it appears in the existing corpus.
 Per [MSTR-006](../master/MSTR-006-governance-principles.md) §3, the 🅿️ authorization gate applies: this feature may not be
 promoted to a full ✅ specification, and no Implementation Package may begin against this ID,
@@ -43,7 +43,7 @@ and complete.
 
 In scope: templated parameter forms (vs. raw editable JSON) for the existing five inject templates,
 a preview-before-schedule step, and a library browser with search as the template library grows.
-Also candidate (per [DOM-003](../domains/DOM-003-white-cell-framework.md) §9, open work): composing multiple inject templates into a
+Also candidate (per [FS-108](FS-108-inject-authoring.md), open work): composing multiple inject templates into a
 pre-scripted sequence ahead of a session.
 
 Out of scope (even if authorized): the inject *execution* mechanism (`InProcessSession.inject_library()`),
@@ -67,7 +67,7 @@ implementation is moot until authorization is granted.
   previews the inject before scheduling it.
 - The facilitator schedules the authored inject for Now / +seconds / absolute-UTC delivery, as in
   the existing [FS-106](FS-106-white-cell-dashboard.md) mechanism.
-- (Candidate, per [DOM-003](../domains/DOM-003-white-cell-framework.md) §9) The facilitator composes multiple inject templates into a
+- (Candidate, per [FS-108](FS-108-inject-authoring.md)) The facilitator composes multiple inject templates into a
   pre-scripted sequence for a session, ahead of time.
 
 ## System Behaviour
@@ -123,7 +123,7 @@ FS authoring pass is completed per the "Next step if authorized" guidance below.
 
 ## Dependencies
 
-[DOM-003](../domains/DOM-003-white-cell-framework.md) §4, §9 (per the existing metadata block's Dependencies field). [FS-106](FS-106-white-cell-dashboard.md) is the
+[GDS-05 `FR-W4`/`FR-W8`](../architecture/05-functional-requirements.md) and [GDS-08 §7.6](../architecture/08-ui-architecture.md) and [FS-108](FS-108-inject-authoring.md) (per the existing metadata block's Dependencies field). [FS-106](FS-106-white-cell-dashboard.md) is the
 feature this candidate would extend; it is a prerequisite, not a co-dependency.
 
 ## Risks
@@ -131,7 +131,7 @@ feature this candidate would extend; it is a prerequisite, not a co-dependency.
 - Promoting this feature to a full spec or beginning any Implementation Package without explicit
   user go-ahead violates MSTR-006 §3's authorization gate — the 🅿️ status is a hard stop, not a
   soft suggestion.
-- Scoping the sequence-ahead-of-session capability ([DOM-003](../domains/DOM-003-white-cell-framework.md) §9) without deliberate decision would
+- Scoping the sequence-ahead-of-session capability ([FS-108](FS-108-inject-authoring.md)) without deliberate decision would
   silently expand scope beyond the core authoring-ergonomics gap.
 
 ## Open Questions
@@ -143,7 +143,7 @@ feature this candidate would extend; it is a prerequisite, not a co-dependency.
   for Phase 8 review (MSTR-006 §7) but is also moot until authorization is granted.
 - Data Model Changes, Acceptance Criteria, Verification Plan, and Subsystem Responsibilities cannot
   be specified until the feature is authorized and a full FS authoring pass is completed.
-- Whether the pre-scripted sequence capability ([DOM-003](../domains/DOM-003-white-cell-framework.md) §9) should be in scope alongside or
+- Whether the pre-scripted sequence capability ([FS-108](FS-108-inject-authoring.md)) should be in scope alongside or
   deferred relative to the core authoring-ergonomics gap is an open design question for when
   authorization is sought.
 
@@ -163,5 +163,5 @@ authoring layer if authorized; it is not a new interface introduced by this feat
 
 *Next step if authorized:* Promote this document to a full Feature Specification (status ✅,
 version 1.0) following the same 20-field structure used by [FS-101](FS-101-mission-planning.md)–[FS-107](FS-107-after-action-review.md), grounded in
-[DOM-003](../domains/DOM-003-white-cell-framework.md) §4/§9, and complete all conditional fields above before any Implementation Package
+[GDS-05 `FR-W4`/`FR-W8`](../architecture/05-functional-requirements.md) and [GDS-08 §7.6](../architecture/08-ui-architecture.md) and [FS-108](FS-108-inject-authoring.md), and complete all conditional fields above before any Implementation Package
 work begins.

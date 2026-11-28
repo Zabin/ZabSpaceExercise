@@ -3,7 +3,7 @@
 > **Document ID:** FS-111
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** [DOM-009](../domains/DOM-009-doctrine-development-framework.md), [DOM-008](../domains/DOM-008-ai-integration-framework.md), [ADR-0021](../architecture/adr/ADR-0021-ai-red-session-layer-feature.md), [ADR-0024](../architecture/adr/ADR-0024-ai-red-boundary-classification.md), [ADR-0030](../architecture/adr/ADR-0030-ai-determinism-doctrine.md)
+> **Dependencies:** [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md), [GDS-06 NFR-3](../architecture/06-non-functional-requirements.md), [ADR-0021](../architecture/adr/ADR-0021-ai-red-session-layer-feature.md), [ADR-0024](../architecture/adr/ADR-0024-ai-red-boundary-classification.md), [ADR-0030](../architecture/adr/ADR-0030-ai-determinism-doctrine.md)
 > **Referenced By:** [FS-106](FS-106-white-cell-dashboard.md) (the facilitator-facing preset selector/hand-tuning control over this mechanism), [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-9100`
 > **Produces:** Red-attributed Planned Activities, indistinguishable in the event log from human-issued ones
 > **Feature Mapping:** FS-111 (this document)
@@ -19,7 +19,7 @@ Feature Specification, split out of `FS-106-white-cell-dashboard.md` v1.0 per
 automated Red-activity-generation mechanism (its own dedicated ADRs: ADR-0021, ADR-0024, ADR-0030,
 and its own module `session/redai.py`) inside the White Cell facilitator UI document. The
 facilitator's *selection/hand-tuning control* over which preset is active remains
-[FS-106](FS-106-white-cell-dashboard.md)'s scope (DOM-003 §7); this document specifies the
+[FS-106](FS-106-white-cell-dashboard.md)'s scope ([GDS-06 NFR-9](../architecture/06-non-functional-requirements.md)); this document specifies the
 automated mechanism that control drives.*
 
 ## Feature ID
@@ -35,11 +35,10 @@ AI-Red Doctrine Automation
 Substitute for an unseated Red cell by generating Planned Activities consistent with a configured
 doctrine preset, through the same command path a human Red operator would use — per
 `docs/feature-planning/03-feature-catalog.md` `FEAT-9100`'s own Purpose field. Grounded in
-[DOM-009](../domains/DOM-009-doctrine-development-framework.md)'s doctrine-translation process
+the [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md) doctrine-translation process
 (a preset is doctrine translated into an executable Red-cell behavior profile, the same kind of
-translation DOM-009 already grounds for FS-103/FS-104) and in
-[DOM-008](../domains/DOM-008-ai-integration-framework.md)'s cross-cutting AI-integration principles
-(DOM-008's own frontmatter names `redai.py`-derived features as exactly what it expects to touch).
+translation [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md) already grounds for FS-103/FS-104) and in
+the cross-cutting AI-integration principles ([GDS-06 NFR-3](../architecture/06-non-functional-requirements.md); [MSTR-003 §2a](../master/MSTR-003-educational-philosophy.md)).
 
 ## Scope
 
@@ -197,12 +196,12 @@ entries above.
   Feature.
 - Behavior when a doctrine preset's internal logic cannot produce a valid activity (e.g., no legal
   target exists in the current geometry) is not specified in the requirements baseline.
-- **Domain ownership:** this document grounds itself in DOM-009 (doctrine translation) and DOM-008
-  (AI integration, cross-cutting) rather than DOM-003 (which explicitly disclaims owning the
-  generation mechanism itself, per DOM-003 §7's framing of doctrine-preset *quality and
+- **Domain ownership:** this document grounds itself in [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md) (doctrine translation) and [GDS-06 NFR-3](../architecture/06-non-functional-requirements.md)
+  (AI integration, cross-cutting) rather than the retired White Cell domain document (which explicitly disclaimed owning the
+  generation mechanism itself, per that document's §7 framing of doctrine-preset *quality and
   variety* as a "White Cell tooling concern" — the facilitator's control surface, not the
-  mechanism). Neither DOM-009 nor DOM-008's existing frontmatter cited this document before this
-  revision; both have been updated to reference FS-111 (see those documents).
+  mechanism). The retired doctrine-development and AI-integration domain documents did not cite this document before this
+  revision; both were updated to reference FS-111 before their retirement.
 
 ## Related ADRs
 

@@ -2,12 +2,12 @@
 
 > **Document ID:** FS-301
 > **Version:** 1.0
-> **Status:** ✅ Done *(spec only — the underlying capability remains a documented gap per [DOM-004](../domains/DOM-004-research-framework.md) §5;
+> **Status:** ✅ Done *(spec only — the underlying capability remains a documented gap per [GDS-07 §8](../architecture/07-data-model.md);
 > IMP-301A exists as a design-only package per `MSTR-006` §3 — it is not an
 > implementation-authorizing document, and any human-subjects element requires separate
-> authorization + IRB/ethics process per [DOM-004](../domains/DOM-004-research-framework.md) §6)*
-> **Dependencies:** [DOM-004](../domains/DOM-004-research-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md) §7, [DOM-002](../domains/DOM-002-assessment-framework.md) §4
-> **Referenced By:** [DOM-004](../domains/DOM-004-research-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md), [DOM-002](../domains/DOM-002-assessment-framework.md), IMP-301A
+> authorization + IRB/ethics process per [FS-301 Scope](FS-301-research-analytics.md) and [MSTR-006 §3](../master/MSTR-006-governance-principles.md))*
+> **Dependencies:** [MSTR-006](../master/MSTR-006-governance-principles.md) §3, [FS-201 Validity checks](FS-201-competency-assessment.md), [FS-201 Scope and System Behaviour](FS-201-competency-assessment.md), [GDS-07 §8](../architecture/07-data-model.md)
+> **Referenced By:** IMP-301A
 > **Produces:** structured multi-run/cohort export of [FS-201](FS-201-competency-assessment.md)'s measurement dimensions
 > **Feature Mapping:** FS-301 (this document)
 > **Related Topics:** [FS-201](FS-201-competency-assessment.md) (the per-exercise instrument this feature exports at scale)
@@ -26,11 +26,11 @@ Research Analytics
 
 ## Purpose
 
-Research Analytics closes the gap [DOM-004](../domains/DOM-004-research-framework.md) §5 names explicitly: a researcher who wants to use
+Research Analytics closes the gap [GDS-07 §8](../architecture/07-data-model.md) names explicitly: a researcher who wants to use
 SpaceSim as an instrument-grade research apparatus (e.g., studying "does fog-of-war severity affect
 escalation rate") currently has no purpose-built data-export or cohort-management layer and must
 script directly against raw `eventlog`/`save` artifacts. FS-301 is the candidate-closing Feature
-Specification, tagged per [DOM-004](../domains/DOM-004-research-framework.md) §8 as explicitly supporting instrument-grade research rather
+Specification, tagged (see Scope) as explicitly supporting instrument-grade research rather
 than ordinary in-session play. The export feature exists because SpaceSim has the properties a
 research instrument needs — reproducibility (deterministic per-seed replay), full behavioral trace
 (eventlog), and a controlled-manipulation surface (vignette YAML, doctrine presets, Red AI
@@ -38,16 +38,16 @@ parameters as data).
 
 ## Scope
 
-In scope: structured export of run-level data (the [DOM-002](../domains/DOM-002-assessment-framework.md) §4 six measurement dimensions, or
+In scope: structured export of run-level data (the [FS-201 Scope and System Behaviour](FS-201-competency-assessment.md) and [GDS-07 §8](../architecture/07-data-model.md) six measurement dimensions, or
 whichever subset [FS-201](FS-201-competency-assessment.md) implements) across many runs/cohorts, with condition-label metadata
 (vignette, seed, experimental condition) attached.
 
 Out of scope: running or designing actual studies (the researcher's/institution's responsibility,
-governed by [DOM-004](../domains/DOM-004-research-framework.md) §6's ethics boundary); the per-exercise instrument itself ([FS-201](FS-201-competency-assessment.md)); and
+governed by [FS-301 Scope](FS-301-research-analytics.md) and [MSTR-006 §3](../master/MSTR-006-governance-principles.md)'s ethics boundary); the per-exercise instrument itself ([FS-201](FS-201-competency-assessment.md)); and
 statistical-analysis tooling beyond structured export (analysis is the researcher's responsibility,
 using [R401](../research/encyclopedia/R401-experimental-design-and-controls.md)–[R413](../research/encyclopedia/R413-data-analysis-and-reporting.md)'s methods vocabulary).
 
-**Two distinct "research" activities — boundary statement:** Per [DOM-004](../domains/DOM-004-research-framework.md) §3, this feature exists
+**Two distinct "research" activities — boundary statement:** Per [FS-301 Scope](FS-301-research-analytics.md), this feature exists
 for **instrument-grade research** (using SpaceSim to study human decision-making/training
 effectiveness), which is categorically distinct from **encyclopedia authoring** (equipping coding
 agents with domain knowledge, owned by [MSTR-007](../master/MSTR-007-research-philosophy.md)). FS-301 must not be confused with, or
@@ -77,7 +77,7 @@ section for the full derivation.
 ## System Behaviour
 
 - **Export must run across seeded Monte Carlo batches without relaxing engine determinism.** Per
-  [DOM-005](../domains/DOM-005-validation-framework.md) §6, characterizing typical (not single-run) behavior means driving the engine across
+  [GDS-06 NFR-3](../architecture/06-non-functional-requirements.md), characterizing typical (not single-run) behavior means driving the engine across
   many seeds externally — never by introducing non-determinism inside `engine/`. An Implementation
   Package must specify "run N seeded simulations of vignette X, collect distribution of [metric],"
   never "relax determinism to sample variability."
@@ -85,11 +85,11 @@ section for the full derivation.
   The per-run record is exactly [FS-201](FS-201-competency-assessment.md)'s per-exercise rubric output (whichever dimensions
   that spec's current iteration implements), plus run-identifying metadata (vignette ID, seed,
   condition label) that [FS-201](FS-201-competency-assessment.md) itself has no reason to carry for a single exercise.
-- **Any quantitative claim derived from exported data must cite its DOM-005 §5 validity check.**
-  Per [DOM-005](../domains/DOM-005-validation-framework.md) §7, a metric that has only passed face validity must be reported as such in any
+- **Any quantitative claim derived from exported data must cite which [FS-201 Validity check](FS-201-competency-assessment.md) it passed.**
+  Per [FS-201 Validity checks](FS-201-competency-assessment.md), a metric that has only passed face validity must be reported as such in any
   research output this feature enables — FS-301 does not itself elevate a metric's validity merely
   by making it exportable at scale.
-- **No human-subjects research capability is in scope.** Per [DOM-004](../domains/DOM-004-research-framework.md) §6, collecting
+- **No human-subjects research capability is in scope.** Per [FS-301 Scope](FS-301-research-analytics.md) and [MSTR-006 §3](../master/MSTR-006-governance-principles.md), collecting
   de-identified trainee performance across institutions, IRB-gated consent flows, and similar
   human-subjects features are explicitly out of scope without separate authorization and the
   institution's own IRB/ethics process. Any future Implementation Package derived from FS-301 must
@@ -132,7 +132,7 @@ feature's description but not formally specified. Flagged as an Open Question be
 
 ## Performance Considerations
 
-- **Determinism across seeded Monte Carlo batches.** Per [DOM-005](../domains/DOM-005-validation-framework.md) §6, variability is sampled by
+- **Determinism across seeded Monte Carlo batches.** Per [GDS-06 NFR-3](../architecture/06-non-functional-requirements.md), variability is sampled by
   running many seeds, never by introducing non-determinism within a run — this is an architectural
   constraint inherited from the engine's load-bearing determinism invariant (ADR-0002).
 - **Offline-first.** Batch runs must not require network access (per ADR-0018's offline-first
@@ -155,7 +155,7 @@ Derived from the source document's capability requirements, restated as checkabl
 - No non-determinism is introduced inside `engine/` to produce variability — variability is sampled
   by varying the seed across runs.
 - No human-subjects capability (cross-institution data collection, IRB-gated flows) is present.
-- Each exported metric's validity-check level (per DOM-005 §5) is disclosed alongside the metric
+- Each exported metric's validity-check level (per [FS-201 Validity checks](FS-201-competency-assessment.md)) is disclosed alongside the metric
   in any output that claims quantitative meaning.
 
 ## Verification Plan
@@ -167,7 +167,7 @@ an Open Question below.
 
 ## Dependencies
 
-[DOM-004](../domains/DOM-004-research-framework.md), [DOM-005](../domains/DOM-005-validation-framework.md) §7, [DOM-002](../domains/DOM-002-assessment-framework.md) §4 (per the existing metadata block's Dependencies field).
+[MSTR-006](../master/MSTR-006-governance-principles.md) §3, [FS-201 Validity checks](FS-201-competency-assessment.md), [FS-201 Scope and System Behaviour](FS-201-competency-assessment.md) and [GDS-07 §8](../architecture/07-data-model.md) (per the existing metadata block's Dependencies field).
 [FS-201](FS-201-competency-assessment.md) is a functional prerequisite (the instrument whose output this feature exports at
 scale) — it is named in `Produces` / `Related Topics` but not in the metadata block's Dependencies
 field.
@@ -178,7 +178,7 @@ field.
   already-computed output, the two could diverge — a risk named explicitly in the source
   document's capability requirements.
 - If any human-subjects capability is added to an Implementation Package without separate
-  authorization and IRB/ethics process, it violates [DOM-004](../domains/DOM-004-research-framework.md) §6's explicit non-goal statement.
+  authorization and IRB/ethics process, it violates [FS-301 Scope](FS-301-research-analytics.md) and [MSTR-006 §3](../master/MSTR-006-governance-principles.md)'s explicit non-goal statement.
 - Any Implementation Package that introduces non-determinism inside `engine/` to simulate
   variability would violate the load-bearing determinism invariant (ADR-0002).
 
