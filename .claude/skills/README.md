@@ -39,7 +39,7 @@ and routed to the pipeline stage where they belong), never by side-channel imple
 | 11 | `11-release-readiness` | Release Assessment (GO/NO-GO) + baseline update on GO (incl. `README.md` status); at every release also the test relevance audit and the dependency-lock check; after the GO, the mandatory **release archive** (`archive/release-<n>.<m>` ref + tag, Release Manifest) | `docs/reviews/`, trackers, `README.md`, `docs/releases/` |
 
 **Every document has one owner (owner decision, 2026-10-19, `BL-0293`).** A document no stage above
-writes is either legacy (the retired v1 build specification and design corpus, `BL-0292`; `docs/domains/`, being merged into the GDS ladder and retired) or
+writes is either legacy (the retired v1 build specification and design corpus, `BL-0292`; the domain frameworks, retired into the GDS ladder by refactor packet B3) or
 historical (one-off reviews and audits, scheduled for archiving). A new document needs an owning
 stage named here before it is created. Skill files themselves are changed only by owner-authorized
 maintenance commits, recorded in the pipeline journal.

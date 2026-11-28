@@ -1,6 +1,6 @@
 ---
 name: 06-feature-specification
-description: Transform an approved Feature (a Feature Catalog entry, or this project's own DOM/ADS-grounded Feature concept) into a detailed technical design specification under docs/features/specifications/ — one FS-xxxx-name.md per Feature, ready to hand to an Implementation Package. Use when asked to "write the feature spec for FS-xxxx," "turn this approved feature into a design spec," "detail the system behavior/interfaces/data model for a feature," or to bridge an approved Feature Catalog/requirements baseline into implementation-ready detail. This skill performs no new requirements, no architecture redesign, no code, and does not modify the approved Feature it specifies — it is a pure elaboration step between an approved Feature and a downstream implementation package. Do not use it to decompose requirements into features (that belongs to feature-decomposition) or to make architecture decisions (that belongs to architecture-design-synthesis).
+description: Transform an approved Feature (a Feature Catalog entry, or this project's own GDS/ADS-grounded Feature concept) into a detailed technical design specification under docs/features/specifications/ — one FS-xxxx-name.md per Feature, ready to hand to an Implementation Package. Use when asked to "write the feature spec for FS-xxxx," "turn this approved feature into a design spec," "detail the system behavior/interfaces/data model for a feature," or to bridge an approved Feature Catalog/requirements baseline into implementation-ready detail. This skill performs no new requirements, no architecture redesign, no code, and does not modify the approved Feature it specifies — it is a pure elaboration step between an approved Feature and a downstream implementation package. Do not use it to decompose requirements into features (that belongs to feature-decomposition) or to make architecture decisions (that belongs to architecture-design-synthesis).
 ---
 
 # Feature Specification
@@ -85,7 +85,7 @@ Read, in this order, before drafting a single spec:
 | ADRs | Binding decisions the spec's design must remain consistent with. |
 
 If a project's actual layout differs from these roles (e.g. this repository's own
-`docs/domains/DOM-xxx` → `docs/research/encyclopedia/R-xxx` → `docs/architecture/ADS-xxx` chain
+`docs/architecture/GDS-nn` → `docs/research/encyclopedia/R-xxx` → `docs/architecture/ADS-xxx` chain
 feeding its existing `docs/features/FS-1xx-*.md` convention — see Gotchas below), adapt the
 *reading* to whatever artifacts actually carry that role locally, not the *output template* — the
 fixed field set below is the same regardless of how the inputs are organized. Record the mapping
@@ -187,7 +187,7 @@ required only for console-touching Features.)
 | **Error Handling** | Failure modes implied by the requirements/workflows and the observable behavior on each — not implementation-level exception types, the user/system-visible contract |
 | **Performance Considerations** | Any NFR-driven constraint (latency, throughput, determinism, replay-safety) this Feature must respect, cited to its NFR ID |
 | **Security Considerations** | Any NFR/ADR-driven trust-boundary, authorization, or fog-of-war constraint this Feature must respect, cited to its source |
-| **Console Friction** | *Required only when the Feature changes something an operator sees or drives (owner decision `BL-0312`, 2026-10-24); otherwise write "Not applicable: no console surface".* Which friction the design introduces **on purpose** — each item with the training objective that justifies it (for example a consequence confirmation, a disabled Issue until the dry-run passes) — and which friction is **accidental** (extra clicks, stale or buried state), with how the design minimizes it. Cite DOM-007 §3 / GDS-06 NFR-9. |
+| **Console Friction** | *Required only when the Feature changes something an operator sees or drives (owner decision `BL-0312`, 2026-10-24); otherwise write "Not applicable: no console surface".* Which friction the design introduces **on purpose** — each item with the training objective that justifies it (for example a consequence confirmation, a disabled Issue until the dry-run passes) — and which friction is **accidental** (extra clicks, stale or buried state), with how the design minimizes it. Cite GDS-06 NFR-9 and GDS-08 §2. |
 | **Acceptance Criteria** | Concrete, checkable conditions a reviewer could verify pass/fail without consulting this spec's own author — derived from, but not necessarily identical to, the underlying requirements' own Acceptance Criteria |
 | **Verification Plan** | How completion will be checked — Test/Demonstration/Analysis/Inspection per criterion, consistent with the requirements' own Verification Method fields |
 | **Dependencies** | Other `FS-xxxx` IDs (or subsystems) this Feature requires to exist first, per the catalog entry |
@@ -285,7 +285,7 @@ docs/
   Specifications in this repository.** The existing 11 files (`FS-101-mission-planning.md` …
   `FS-301-research-analytics.md`, under `docs/features/`) have been **rewritten in place** to the
   new template — same file paths, same `FS-xxx` IDs, same MSTR-006 §5 metadata blocks, no
-  renumbering. The prior DOM→R→ADS→FS chain (Training Objective → Domain Document (`DOM-xxx`) →
+  renumbering. The prior GDS→R→ADS→FS chain (Training Objective → Grounding (GDS level or ADS) →
   Research → Design Synthesis (`ADS-xxx`) → Feature Spec → IMP) remains the upstream sourcing
   chain for this repository's Feature concepts; this skill's template is now the governing format
   for the FS stage of that chain, absorbing and replacing any prior ad hoc per-section structures.
@@ -294,12 +294,12 @@ docs/
   retroactively to the absorbed 11 files, which remain at their existing paths.
 - **No Feature Catalog exists in this repository yet.** The repo has no `05-feature-decomposition`-
   produced catalog in `docs/features/`. When invoked here for a new Feature Specification, treat
-  the relevant `DOM-xxx`/`ADS-xxx` documents as the "approved Feature" input in place of a Feature
+  the relevant `GDS-nn`/`ADS-xxx` documents as the "approved Feature" input in place of a Feature
   Catalog row, and confirm this is the intended source before drafting.
 - **Check `docs/features/feature-index.md` before assigning a new `FS-xxxx` ID.** The 11 absorbed
   files claim IDs 101–107 (FS-1xx), 108 (🅿️ candidate), 201, 202 (🅿️ candidate), and 301. New
   IDs must not conflict with these.
-- **Don't let a spec re-derive what its Feature Catalog entry (or `DOM-xxx`/`ADS-xxx` equivalent)
+- **Don't let a spec re-derive what its Feature Catalog entry (or `GDS-nn`/`ADS-xxx` equivalent)
   already decided.** `Purpose`, `Scope`, `Dependencies`, `Affected Subsystems/Interfaces`, and
   `Related ADRs` should be carried forward from the upstream entry, not re-litigated.
 - **Don't promote an Open Question to a settled answer just because the spec "needs" one to feel
@@ -336,7 +336,7 @@ Use this as the final gate before presenting a spec as complete:
       ADR already commits to it.
 - [ ] Every genuine ambiguity is recorded as an Open Question with a stated reason and resolution
       path — none silently resolved.
-- [ ] The Feature Catalog (or `DOM-xxx`/`ADS-xxx`) entry itself was not modified.
+- [ ] The Feature Catalog (or `GDS-nn`/`ADS-xxx`) entry itself was not modified.
 - [ ] If this repository's existing `docs/features/FS-1xx-*.md` convention applies instead of a
       Feature Catalog, that distinction is stated explicitly at the top of the new spec or its
       index entry.
@@ -355,7 +355,7 @@ The specification is successful when:
    Implementation Package directly from this spec's System Behaviour, Subsystem Responsibilities,
    Interfaces Used, and Acceptance Criteria sections, without needing to re-derive design decisions
    themselves, and without the spec having made any of those decisions for them prematurely.
-5. **Non-interference** — the approved Feature (catalog entry or `DOM-xxx`/`ADS-xxx` source) is
+5. **Non-interference** — the approved Feature (catalog entry or `GDS-nn`/`ADS-xxx` source) is
    unchanged; this skill only adds a new, more detailed artifact downstream of it.
 
 ## Pipeline position & completion summary (mandatory, every run)

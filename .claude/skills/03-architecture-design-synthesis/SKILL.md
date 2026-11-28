@@ -1,6 +1,6 @@
 ---
 name: 03-architecture-design-synthesis
-description: Synthesize domain framework (DOM-xxx) and research grounding (research/encyclopedia R1xx-R5xx + research/01-07 primers) into Design Synthesis documents under docs/architecture/ — either the global, gated GDS-00...GDS-10 ladder (Vision -> ConOps -> System Context -> Architecture -> Domain Model -> Functional Requirements -> Non-functional Requirements -> Data Model -> UI Architecture -> API Specification -> Requirements Traceability Matrix) or a per-capability-cluster ADS-xxx document, the bridge between domain+research and a Feature Specification. Use when asked "what are the core concepts," "which mechanics are actually required," "which requirements conflict," "what assumptions must be made," "what is the minimum viable implementation," "what is deferred," to advance the next level of the GDS ladder, or to produce/refresh an Executive Design Overview, System Architecture, Domain Model, User Stories, Functional/Non-functional Requirements, Constraints, Risks, Open Questions, or Decision Log before drafting or revising an FS-xxx. This produces design documents, not research documents — do not use it to add new doctrinal/orbital-mechanics claims (that's research-doctrine-exercises / research-ow-orbital-mechanics).
+description: Synthesize the GDS grounding and research grounding (research/encyclopedia R1xx-R5xx + research/01-07 primers) into Design Synthesis documents under docs/architecture/ — either the global, gated GDS-00...GDS-10 ladder (Vision -> ConOps -> System Context -> Architecture -> Domain Model -> Functional Requirements -> Non-functional Requirements -> Data Model -> UI Architecture -> API Specification -> Requirements Traceability Matrix) or a per-capability-cluster ADS-xxx document, the bridge between domain+research and a Feature Specification. Use when asked "what are the core concepts," "which mechanics are actually required," "which requirements conflict," "what assumptions must be made," "what is the minimum viable implementation," "what is deferred," to advance the next level of the GDS ladder, or to produce/refresh an Executive Design Overview, System Architecture, Domain Model, User Stories, Functional/Non-functional Requirements, Constraints, Risks, Open Questions, or Decision Log before drafting or revising an FS-xxx. This produces design documents, not research documents — do not use it to add new doctrinal/orbital-mechanics claims (that's research-doctrine-exercises / research-ow-orbital-mechanics).
 ---
 
 # Architecture / Design Synthesis
@@ -33,7 +33,7 @@ Feature Specification can commit to a shape:
 - What is the minimum viable implementation?
 - What is deferred to a later release?
 
-It consumes [`docs/domains/`](../../../docs/domains/INDEX.md) (the DOM-xxx framework that owns the
+It consumes [`docs/architecture/`](../../../docs/architecture/INDEX.md) (the GDS level that states the
 capability) and [`docs/research/`](../../../docs/research/INDEX.md) (both the `01-07` primers and
 the `encyclopedia/` R1xx-R5xx tiers) as **inputs**, never as something it adds to. If a synthesis
 reveals a genuine domain-knowledge gap (a doctrine question with no R3xx grounding, an orbital
@@ -42,7 +42,7 @@ mechanics question with no R1xx grounding), that gap is handed to
 write research content itself.
 
 It produces **design documents, not research documents**: synthesis, decision, and explicit
-tradeoffs, not new domain-knowledge claims. An `ADS-xxx` cites its grounding `DOM-xxx`/`R-xxx`
+tradeoffs, not new domain-knowledge claims. An `ADS-xxx` cites its grounding `GDS-nn`/`R-xxx`
 documents; it does not re-derive or duplicate their content.
 
 **Not every feature needs this.** Per `MSTR-005` §4, a small/uncontested feature can go straight to
@@ -56,7 +56,7 @@ multiple plausible architectures, or load-bearing assumptions nobody has written
 |---|---|
 | [`architecture/INDEX.md`](../../../docs/architecture/INDEX.md) + `01-concept-of-operations.md`…`10-requirements-traceability-matrix.md` + `ADS-xxx-*.md` + `adr/` | The Design Synthesis tier this skill authors (`00-vision.md` is `01-vision`'s). |
 | The Interface Control Document | `docs/architecture/interface-control-document.md` (`INT-xxxx`) — owned here (`BL-0294`); it is `GDS-09` companion material; re-issue against GDS-07/09 is still owed. |
-| Grounding inputs | `docs/domains/DOM-xxx-*.md`, `docs/research/encyclopedia/R1xx-R6xx` + `docs/research/01-07` primers, `docs/training/`, `MSTR-001` — and, for the ladder specifically, the per-level "merges from" existing document named in `architecture/INDEX.md` §1. The v1 build specification and design corpus are retired legacy (`CLAUDE.md`, "Where things are" table): never cite them as binding. |
+| Grounding inputs | `docs/architecture/0n-*.md`, `docs/research/encyclopedia/R1xx-R6xx` + `docs/research/01-07` primers, `docs/training/`, `MSTR-001` — and, for the ladder specifically, the per-level "merges from" existing document named in `architecture/INDEX.md` §1. The v1 build specification and design corpus are retired legacy (`CLAUDE.md`, "Where things are" table): never cite them as binding. |
 | Downstream consumer | `docs/features/FS-xxx-*.md` — the next stage in the chain; both the ladder's `GDS-05`/`GDS-06` and a cluster's `ADS-xxx` Decision Log should read as direct inputs to drafting or revising an FS-xxx. |
 
 ## Workflow A — the global ladder (`GDS-00`…`GDS-10`)
@@ -77,10 +77,9 @@ the ladder.
    - The "Merges from" document(s) named in its own file and in `architecture/INDEX.md` §1 — pull
      the actual content in, don't just cite it from a distance.
    - Cross-cutting grounding as relevant: `CLAUDE.md` load-bearing invariants,
-     `docs/domains/`, `docs/research/` for any domain claim the level needs.
-   - **DOM content merge (`BL-0293`):** the DOM files are being merged into the ladder and then
-     retired. Fold any DOM content the level covers into the level itself (not as a citation to the
-     DOM file), and record in the level's merge-gate section which DOM sections it absorbed.
+     `docs/research/` for any domain claim the level needs.
+   - **DOM content merge (`BL-0293`):** done; the domain documents were merged into the ladder and
+     retired (refactor packet B3). Their successors are recorded in `docs/pipeline/refactor-plan.md` §11.
 4. **Close that level's merge gate**, checking off each box in its "Merge gate" section and
    recording the actual merge decision (not just "done") — e.g. whether the existing document
    becomes a pointer to this one, stays authoritative, or some other resolution.
@@ -111,7 +110,7 @@ the ladder.
 Use this when a specific capability cluster (not the whole system) has design tension the ladder
 doesn't resolve at the system level — see `MSTR-005` §3a.
 
-1. **Identify the capability cluster.** Which `DOM-xxx` owns it? Which `R-xxx` topics ground it?
+1. **Identify the capability cluster.** Which `GDS-nn` section states it? Which `R-xxx` topics ground it?
    Is there already an `FS-xxx` (even a stub/candidate) this synthesis would feed?
 2. **Check existing coverage first.** Read `architecture/INDEX.md` §2 — has this cluster already
    been synthesized?
@@ -121,7 +120,7 @@ doesn't resolve at the system level — see `MSTR-005` §3a.
 4. **Draft the ten fixed sections** (`MSTR-005` §3a), in order: Executive Design Overview, System
    Architecture, Domain Model, User Stories, Functional Requirements, Non-functional Requirements,
    Constraints, Risks, Open Questions, Decision Log.
-5. **Carry the required metadata block** (`MSTR-006` §5) — `Dependencies` lists the `DOM-xxx`/
+5. **Carry the required metadata block** (`MSTR-006` §5) — `Dependencies` lists the `GDS-nn`/
    `R-xxx` it synthesizes; `Produces` names the `FS-xxx` it feeds.
 6. **Size discipline.** ~8-15 pages equivalent; split into `ADS-xxxA`/`ADS-xxxB` rather than one
    oversized document.
@@ -131,7 +130,7 @@ doesn't resolve at the system level — see `MSTR-005` §3a.
 ### Quality gate (before calling an `ADS-xxx` done)
 
 - [ ] All ten sections present, in order, none reduced to a placeholder.
-- [ ] Every Functional Requirement traces to a specific `DOM-xxx`/`R-xxx` citation.
+- [ ] Every Functional Requirement traces to a specific `GDS-nn`/`R-xxx` citation.
 - [ ] Non-functional Requirements explicitly check against `CLAUDE.md`'s load-bearing invariants.
 - [ ] Open Questions are genuinely open; decisions belong in the Decision Log.
 - [ ] No production code, no literal API/schema definitions.
