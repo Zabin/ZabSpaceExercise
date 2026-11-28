@@ -3,7 +3,7 @@
 Master router for the project's prose docs. Each theme is a directory with its own `INDEX.md`;
 open a theme index, then the one module you need. Structure & rationale (legacy five-theme corpus):
 `DOCUMENTATION-PLAN.md`. Full tree incl. the documentation-driven-development
-expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implementations/`,
+expansion (`master/`, `research/encyclopedia/`, `features/`, `implementations/`,
 `architecture/`, `scenarios/`): [`master/MSTR-005-documentation-map.md`](master/MSTR-005-documentation-map.md).
 
 > **Authority:** [`architecture/INDEX.md`](architecture/INDEX.md) (the GDS-00…GDS-10 ladder) is the
@@ -15,7 +15,6 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 | Theme | What's in it | Start here |
 |---|---|---|
 | **Master** | Program-defining documents (vision, architecture principles, educational philosophy, glossary, doc map, governance, research philosophy) — read MSTR-001 first. | [`master/INDEX.md`](master/INDEX.md) |
-| **Domains** | Capability frameworks (training, assessment, White Cell, research, validation, governance, human factors, AI integration, doctrine development) that generate Feature Specifications. | [`domains/INDEX.md`](domains/INDEX.md) |
 | **Architecture** | Design Synthesis documents (`ADS-xxx`) — domain+research synthesized into architecture/domain-model/requirements/constraints/risks/decisions, upstream of a Feature Spec. | [`architecture/INDEX.md`](architecture/INDEX.md) |
 | **Features** | Feature Specifications (`FS-xxx`) — what each capability must do, with no implementation detail. | [`features/feature-index.md`](features/feature-index.md) |
 | **Feature Planning** | `05-feature-decomposition` skill output — Release Plan, Epic Catalog, Feature Catalog (`FEAT-xxxx`), Dependency Graph, and Review, decomposed from the approved requirements baseline. Upstream of, and distinct from, `docs/features/`'s `FS-xxx` specs. **Release record:** [REV-REL-004](reviews/release-assessment-release-candidate-10.md) — Release 1 declared GO by the owner, 2026-11-01. **Release 2.0 plan (proposal):** [`feature-planning/06-release-2-plan.md`](feature-planning/06-release-2-plan.md). | [`feature-planning/INDEX.md`](feature-planning/INDEX.md) |
@@ -56,6 +55,16 @@ expansion (`master/`, `domains/`, `research/encyclopedia/`, `features/`, `implem
 | `docs/build-spec/` |  | 2026-11-16 | `docs/architecture/INDEX.md` |
 | `docs/design/` |  | 2026-11-16 | `docs/architecture/INDEX.md` |
 | `docs/design/05-interface-control-document.md` |  | 2026-11-15 | `docs/architecture/interface-control-document.md` |
+| `docs/domains/` |  | 2026-11-28 | `docs/architecture/INDEX.md` |
+| `docs/domains/DOM-001-training-framework.md` | DOM-001 | 2026-11-28 | `docs/architecture/INDEX.md` |
+| `docs/domains/DOM-002-assessment-framework.md` | DOM-002 | 2026-11-28 | `docs/architecture/INDEX.md` |
+| `docs/domains/DOM-003-white-cell-framework.md` | DOM-003 | 2026-11-28 | `docs/architecture/INDEX.md` |
+| `docs/domains/DOM-004-research-framework.md` | DOM-004 | 2026-11-28 | `docs/architecture/INDEX.md` |
+| `docs/domains/DOM-005-validation-framework.md` | DOM-005 | 2026-11-28 | `docs/architecture/INDEX.md` |
+| `docs/domains/DOM-006-governance-framework.md` | DOM-006 | 2026-11-28 | `docs/architecture/INDEX.md` |
+| `docs/domains/DOM-007-human-factors-framework.md` | DOM-007 | 2026-11-28 | `docs/architecture/INDEX.md` |
+| `docs/domains/DOM-008-ai-integration-framework.md` | DOM-008 | 2026-11-28 | `docs/architecture/INDEX.md` |
+| `docs/domains/DOM-009-doctrine-development-framework.md` | DOM-009 | 2026-11-28 | `docs/architecture/INDEX.md` |
 
 ## Root-level guides (not under `docs/`)
 
