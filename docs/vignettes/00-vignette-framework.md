@@ -57,6 +57,57 @@ flagged as a side-branch, e.g. a one-off classroom demo) rather than added witho
 difficulty ordering — otherwise the progression degrades into an unordered pile and assessment has
 no stable baseline to assess against.
 
+## Doctrine to content
+
+*Moved here from the retired doctrine-development domain document (§3 to §5).*
+
+### The translation pipeline
+
+```
+Doctrine source            (research/01-02: Western/non-Western counterspace doctrine,
+                             research/03: five-D's taxonomy, research/07: legal norms/ROE,
+                             R301-R312: campaign design, deterrence, escalation, COG, EBO, COA)
+        ↓  (translation step)
+Doctrinal parameters        (which effect categories a Red posture favors, what ROE thresholds
+                             a Blue cell operates under, what custody/SDA assumptions are realistic
+                             for a given scenario's dispersion preset)
+        ↓
+Vignette / Red-preset content (YAML: intro_brief threat picture, ROE block, redai.py preset
+                             selection, SSN dispersion preset)
+```
+
+**Design rule:** every vignette's threat picture and ROE block should be traceable to *which*
+doctrine source(s) informed it (a comment or a `doctrine_basis:` metadata field; the shipped schema
+field is `doctrinal_basis`, shown under Common vignette structure) so that a doctrine update (new
+research, a corrected counterspace taxonomy entry) has a known set of downstream vignettes to
+review, rather than requiring a full-library re-read.
+
+### Translation principles
+
+- **Doctrine informs parameters; it does not become a special case in engine code.** Per MSTR-002
+  §2 invariant 6, a new doctrinal posture should be expressible via existing data hooks
+  (Red preset parameters, ROE chips, SSN dispersion presets) — if it can't be, that's a signal a
+  new *engine primitive* is needed (an Implementation Package, properly specified), not a one-off
+  scripted exception.
+- **Realism is calibrated, not maximized.** Per MSTR-001 §4, fidelity is "moderate, behind
+  interfaces" by design — a vignette's threat picture should be *doctrinally recognizable* to a
+  subject-matter expert, not a literal classified-accurate reproduction. The translation step is
+  where this calibration judgment is made explicit and documented, rather than left as an
+  unstated simplification.
+- **Legal/ROE norms are load-bearing, not flavor.** `research/07-legal-norms-and-roe.md` already
+  maps treaty law (OST), LOAC in space, and the 2022 ASAT-test moratorium to in-sim ROE. The rule:
+  any new effect category or weapon-class capability must go through this same mapping step
+  before it ships in a vignette — a new kinetic option without a corresponding ROE/legal framing is
+  a doctrine-development process failure, not just a content gap.
+
+### Doctrine review cadence
+
+Doctrine is not static — counterspace doctrine and legal norms evolve. A periodic (not necessarily
+fixed-calendar) review pass is recommended: when `docs/research/01-03`/`07` are substantively
+revised, a follow-up pass should check whether existing vignette threat pictures/ROE/Red-preset
+parameters still reflect the updated doctrine, recording any drift as a `ROADMAP.md` or backlog
+item rather than silently leaving stale content in place.
+
 ## Common vignette structure
 
 ```yaml
