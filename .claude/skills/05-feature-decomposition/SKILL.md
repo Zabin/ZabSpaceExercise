@@ -444,7 +444,7 @@ the write target stay fixed regardless.
   repository (`ZabSpaceExercise`), `docs/features/` already exists and is populated —
   `feature-index.md` plus full `FS-101-mission-planning.md`-style documents — governed by a
   *different* chain documented in `docs/master/MSTR-005-documentation-map.md`: `docs/research/` +
-  domain framework → `ADS-xxx` (Architecture Design Synthesis, produced by the
+  the GDS grounding → `ADS-xxx` (Architecture Design Synthesis, produced by the
   `03-architecture-design-synthesis` skill) → `FS-xxx` (a **full single-capability Feature
   Specification document**, the actual implementable spec) → `IMP-xxx` → code → tests. Those
   `FS-xxx` files are not this skill's catalog rows — they are downstream artifacts this skill's

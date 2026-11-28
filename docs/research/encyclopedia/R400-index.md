@@ -2,13 +2,13 @@
 
 [↑ Encyclopedia index](INDEX.md)
 
-Justifies assessment/validation work (DOM-002, DOM-005). 13 topics.
+Justifies assessment/validation work ([FS-201](../../features/FS-201-competency-assessment.md), [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)). 13 topics.
 
 | ID | Title | Scope (one line) | Depends on | Status |
 |---|---|---|---|---|
 | [R401](R401-experimental-design-and-controls.md) | Experimental Design and Controls | Isolating an effect by holding other variables constant. | — | ✅ |
 | [R402](R402-hypotheses-and-variables.md) | Hypotheses and Variables | Stating falsifiable predictions; independent/dependent/confound variables. | [R401](R401-experimental-design-and-controls.md) | ✅ |
-| [R403](R403-statistics-foundations.md) | Statistics Foundations | Descriptive/inferential statistics needed to read DOM-002 outputs. | — | ✅ |
+| [R403](R403-statistics-foundations.md) | Statistics Foundations | Descriptive/inferential statistics needed to read [FS-201](../../features/FS-201-competency-assessment.md) outputs. | — | ✅ |
 | [R404](R404-measurement-theory.md) | Measurement Theory | Scales of measurement, reliability vs. validity. | [R403](R403-statistics-foundations.md) | ✅ |
 | [R405](R405-uncertainty-analysis.md) | Uncertainty Analysis | Propagating and reporting uncertainty in a derived metric. | [R403](R403-statistics-foundations.md) | ✅ |
 | [R406](R406-modeling-practices.md) | Modeling Practices | Building and documenting a model so its assumptions are auditable. | — | ✅ |
@@ -34,8 +34,8 @@ the Belmont Report and 45 CFR 46 (human subjects), and this project's own determ
 consistency), Metropolis & Ulam (1949, Monte Carlo), Saltelli et al. (2008, sensitivity analysis),
 Messick (1995, construct-irrelevant variance), Boehm (1981, verification/validation), Likert (1932),
 Crowne & Marlowe (1960, social desirability bias), the ASA Ethical Guidelines for Statistical
-Practice, and Tufte (1983, graphical integrity/Lie Factor). Grounded in DOM-002 (Assessment Framework
-— six measurement dimensions as the dependent-variable/instrument-design substrate) and DOM-005
+Practice, and Tufte (1983, graphical integrity/Lie Factor). Grounded in [FS-201](../../features/FS-201-competency-assessment.md) (assessment
+— six measurement dimensions as the dependent-variable/instrument-design substrate) and [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)
 (Validation Framework — the verification/validation distinction and the `AUDIT-2026-06-UI-TTC.md` §2
 worked validation precedent, cited directly at [R410](R410-validation.md)). Per
 The former future-work list §13 (Recommendation R1), R500 (Future Operations) closed first and R400 second,

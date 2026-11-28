@@ -4,9 +4,9 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md)
-> **Referenced By:** [R102](R102-space-domain-awareness.md), [R108](R108-constellation-operations.md), [R119](R119-space-situational-data-fusion.md), [R208](R208-ooda-loops.md), [R317](R317-space-operator-perspective.md), DOM-003, DOM-009
+> **Referenced By:** [R102](R102-space-domain-awareness.md), [R108](R108-constellation-operations.md), [R119](R119-space-situational-data-fusion.md), [R208](R208-ooda-loops.md), [R317](R317-space-operator-perspective.md)
 > **Produces:** the doctrinal vocabulary for multi-cell/multi-domain/multinational exercise design — coalition vignettes, joint-targeting-flavored COG/fires objectives, and any future cross-domain or allied-interoperability feature
-> **Feature Mapping:** vignette authoring (`docs/scenarios/`), DOM-003 (White Cell Framework — multi-cell command-relationship modeling), candidate future FS for coalition/multi-domain session design
+> **Feature Mapping:** vignette authoring (`docs/scenarios/`), [GDS-05](../../architecture/05-functional-requirements.md) (White Cell — multi-cell command-relationship modeling), candidate future FS for coalition/multi-domain session design
 > **Related Topics:** [R301](R301-campaign-design.md) (Campaign Design), [R302](R302-operational-art.md) (Operational Art), [R305](R305-mission-analysis.md) (Mission Analysis), [R306](R306-operational-assessment.md)
 > (Operational Assessment), [R309](R309-center-of-gravity-analysis.md) (Center of Gravity Analysis), [R310](R310-effects-based-operations.md) (Effects-Based Operations), [R311](R311-course-of-action-analysis.md)
 > (Course of Action Analysis), [R102](R102-space-domain-awareness.md) (Space Domain Awareness), [R108](R108-constellation-operations.md) (Constellation Operations), [R119](R119-space-situational-data-fusion.md)
@@ -196,7 +196,7 @@ tactical execution of any one tasking is best left to the operator with the most
 picture.
 
 This simulator's White Cell role already embodies a version of centralized authority (god-view,
-clock/pacing control, DOM-003 §3) but does not yet model the Blue-side internal command-philosophy
+clock/pacing control, [GDS-05 `FR-W6`](../../architecture/05-functional-requirements.md) and [GDS-09 §4](../../architecture/09-api-specification.md)) but does not yet model the Blue-side internal command-philosophy
 question of how *centralized planning/decentralized execution* would distribute authority between a
 notional JFSCC-equivalent and individual satellite operators within the Blue cell — today's Blue
 cell is a single undifferentiated role, not an internally-tiered command structure. Any future
@@ -469,10 +469,10 @@ extension of this simulator would actually need to get right.
 ## 6. Feature Mapping
 
 Vignette authoring (`docs/scenarios/`) is the direct consumer for any coalition- or multi-domain-
-flavored scenario narrative; DOM-003 (White Cell Framework) is the consumer for any future internal
+flavored scenario narrative; [GDS-05](../../architecture/05-functional-requirements.md) is the consumer for any future internal
 command-tier or multi-component session-design feature; no dedicated FS-xxx exists yet for a
 genuinely multi-domain or coalition-command-relationship feature — this topic is forward-grounding
-for whichever future FS first proposes one (most likely an extension of DOM-003's multi-cell model
+for whichever future FS first proposes one (most likely an extension of [GDS-05](../../architecture/05-functional-requirements.md)'s multi-cell model
 or a new FS under the candidate "Joint/Coalition Operations" cluster, not yet authorized).
 
 ## 7. Related Topics
@@ -492,6 +492,6 @@ multi-component command-tier feature would need to compose from, per §3.1's gui
 cite as the simulator's one real precedent), [R208](R208-ooda-loops.md) (OODA Loops) and [R210](R210-decision-support-systems.md) (Decision Support
 Systems — the single-operator-scale concepts §3.9 restates at joint-force scale), [R312](R312-space-strategy.md) (Space
 Strategy — the strategic-level theory this topic's operational/tactical-integration layer serves),
-DOM-003 (White Cell Framework) and DOM-009 (Doctrine Development Framework — the consumers of this
+[GDS-05](../../architecture/05-functional-requirements.md) and [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md) (doctrine development — the consumers of this
 topic's command-relationship and JPP vocabulary for any future multi-cell or doctrine-translation
 work).

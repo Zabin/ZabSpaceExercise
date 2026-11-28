@@ -15,6 +15,99 @@ to this schema.
   set-piece or a 3-hour free-play depending on White Cell's parameter choices.
 - **Realism over balance.** Asymmetry is the point. Red and Blue need not have equal tools.
 
+## Training-objective classes and skill progression
+
+*Moved here from the retired training domain document (§3 and §4).*
+
+### Training-objective taxonomy
+
+Every vignette's per-cell `intro_brief` states a mission and success criteria; these are normalized
+into four objective classes so that progression and assessment can be reasoned about systematically
+rather than per-vignette ad hoc:
+
+| Class | Description | Example | Primary mechanic exercised |
+|---|---|---|---|
+| **Mechanical** | Operate the tool correctly: issue a valid order inside a window, read telemetry. | Training-basics tutorial steps | Plan-execute loop ([MSTR-003](../master/MSTR-003-educational-philosophy.md) §3) |
+| **Tactical** | Achieve a stated in-exercise objective against a single, bounded threat picture. | Vignette 1 (LEO ISR denial) | Custody-building, access-window planning |
+| **Operational** | Manage a fleet/constellation under competing demands and resource constraints (Δv, power, sensor tasking contention). | Constellation/mission-set vignettes | Resource economy, tasking deconfliction |
+| **Judgment** | Decide under genuine ambiguity with consequential, sometimes irreversible options. | Red COA vignettes, capstone Vignette 8 | Escalation/ROE reasoning, kinetic-confirm gate |
+
+A vignette should declare, in its `intro_brief` or a future `training_objectives:` schema field
+(see FS-101 candidate scope), which class(es) it primarily exercises — this is what lets assessment
+rubrics ([FS-201](../features/FS-201-competency-assessment.md)) be keyed to objective class rather than per-vignette bespoke criteria.
+
+### Skill-progression model
+
+The 19-vignette library is not flat; it has an implicit progression this section makes explicit:
+
+1. **Onboarding** (training-basics) — mechanical objectives only, ≥5 tutorial steps per cell,
+   reversible effects only.
+2. **Canonical 8** — tactical objectives, increasing custody/window complexity, still mostly
+   reversible effects with at least one kinetic-confirm-gated option introduced by the later
+   numbered vignettes.
+3. **Mission-set (3) and Red COA (5)** — operational objectives: multi-asset fleets, Δv economy,
+   sensor contention, doctrinally-flavored Red behavior presets.
+4. **Learning (1) and Novel (1)** — designed for judgment objectives and for exercising the
+   AAR/branch-compare capability itself.
+5. **Capstone Vignette 8** — multi-domain (`spacesim/content/vignettes/08-multi-domain-taiwan.yaml`),
+   integrates all four objective classes at once; the terminal exercise of the progression.
+
+**Design rule:** a new vignette should be assigned a slot in this progression (or explicitly
+flagged as a side-branch, e.g. a one-off classroom demo) rather than added without regard to
+difficulty ordering — otherwise the progression degrades into an unordered pile and assessment has
+no stable baseline to assess against.
+
+## Doctrine to content
+
+*Moved here from the retired doctrine-development domain document (§3 to §5).*
+
+### The translation pipeline
+
+```
+Doctrine source            (research/01-02: Western/non-Western counterspace doctrine,
+                             research/03: five-D's taxonomy, research/07: legal norms/ROE,
+                             R301-R312: campaign design, deterrence, escalation, COG, EBO, COA)
+        ↓  (translation step)
+Doctrinal parameters        (which effect categories a Red posture favors, what ROE thresholds
+                             a Blue cell operates under, what custody/SDA assumptions are realistic
+                             for a given scenario's dispersion preset)
+        ↓
+Vignette / Red-preset content (YAML: intro_brief threat picture, ROE block, redai.py preset
+                             selection, SSN dispersion preset)
+```
+
+**Design rule:** every vignette's threat picture and ROE block should be traceable to *which*
+doctrine source(s) informed it (a comment or a `doctrine_basis:` metadata field; the shipped schema
+field is `doctrinal_basis`, shown under Common vignette structure) so that a doctrine update (new
+research, a corrected counterspace taxonomy entry) has a known set of downstream vignettes to
+review, rather than requiring a full-library re-read.
+
+### Translation principles
+
+- **Doctrine informs parameters; it does not become a special case in engine code.** Per MSTR-002
+  §2 invariant 6, a new doctrinal posture should be expressible via existing data hooks
+  (Red preset parameters, ROE chips, SSN dispersion presets) — if it can't be, that's a signal a
+  new *engine primitive* is needed (an Implementation Package, properly specified), not a one-off
+  scripted exception.
+- **Realism is calibrated, not maximized.** Per MSTR-001 §4, fidelity is "moderate, behind
+  interfaces" by design — a vignette's threat picture should be *doctrinally recognizable* to a
+  subject-matter expert, not a literal classified-accurate reproduction. The translation step is
+  where this calibration judgment is made explicit and documented, rather than left as an
+  unstated simplification.
+- **Legal/ROE norms are load-bearing, not flavor.** `research/07-legal-norms-and-roe.md` already
+  maps treaty law (OST), LOAC in space, and the 2022 ASAT-test moratorium to in-sim ROE. The rule:
+  any new effect category or weapon-class capability must go through this same mapping step
+  before it ships in a vignette — a new kinetic option without a corresponding ROE/legal framing is
+  a doctrine-development process failure, not just a content gap.
+
+### Doctrine review cadence
+
+Doctrine is not static — counterspace doctrine and legal norms evolve. A periodic (not necessarily
+fixed-calendar) review pass is recommended: when `docs/research/01-03`/`07` are substantively
+revised, a follow-up pass should check whether existing vignette threat pictures/ROE/Red-preset
+parameters still reflect the updated doctrine, recording any drift as a `ROADMAP.md` or backlog
+item rather than silently leaving stale content in place.
+
 ## Common vignette structure
 
 ```yaml

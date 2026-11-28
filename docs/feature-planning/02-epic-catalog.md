@@ -132,7 +132,7 @@ directly from it rather than redrawn (per this skill's Best Practices). Every Fe
 |---|---|
 | **Epic ID** | EP-10000 |
 | **Title** | Assessment & Research Instrumentation |
-| **Purpose** | Rubric-based competency measurement and multi-run/cohort research export — the capability area DOM-002 (Assessment) and DOM-004 (Research) ground, promoted from Candidate Requirements once their blocking ADR conflicts (`ADR-0017`, `ADR-0029`) were resolved by `ADR-0032`/`ADR-0033`. |
+| **Purpose** | Rubric-based competency measurement and multi-run/cohort research export — the capability area the retired assessment and research domain documents grounded, promoted from Candidate Requirements once their blocking ADR conflicts (`ADR-0017`, `ADR-0029`) were resolved by `ADR-0032`/`ADR-0033`. |
 | **Features Included** | FEAT-10100, FEAT-10200 |
 | **Subsystems** | C1 Simulation Engine, C2 Session/Application Layer |
 | **Estimated Scope** | Small in Feature count (two FR leaves), but each was blocked on a direct Accepted-ADR conflict until this session's project-owner decisions resolved them — the only Epic in this catalog whose very existence required an architecture-tier reversal (`FEAT-10200`) or narrowing (`FEAT-10100`), not merely a decomposition choice. |

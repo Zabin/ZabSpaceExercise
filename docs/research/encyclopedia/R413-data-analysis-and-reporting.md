@@ -5,8 +5,8 @@
 > **Status:** ✅ Done
 > **Dependencies:** [R403](R403-statistics-foundations.md), [R412](R412-survey-and-assessment-instrument-design.md)
 > **Referenced By:** —
-> **Produces:** the vocabulary for turning collected exercise data (eventlog, AAR, DOM-002 dimensions, future survey instruments) into a defensible finding rather than a raw data dump
-> **Feature Mapping:** AAR (`spacesim/session/aar.py`), any future cross-session analytics/reporting feature, DOM-002 (Assessment Framework)
+> **Produces:** the vocabulary for turning collected exercise data (eventlog, AAR, [FS-201](../../features/FS-201-competency-assessment.md) dimensions, future survey instruments) into a defensible finding rather than a raw data dump
+> **Feature Mapping:** AAR (`spacesim/session/aar.py`), any future cross-session analytics/reporting feature, [FS-201](../../features/FS-201-competency-assessment.md)
 > **Related Topics:** [R403](R403-statistics-foundations.md) (Statistics Foundations), [R412](R412-survey-and-assessment-instrument-design.md) (Survey and Assessment Instrument
 > Design — a frequent input to this topic's reporting), [R405](R405-uncertainty-analysis.md) (Uncertainty Analysis — uncertainty
 > reporting as part of a defensible finding)
@@ -36,7 +36,7 @@ in a defensible report).
 ## 3. Concepts
 
 **A finding should state its evidentiary basis explicitly.** "Blue's custody discipline improved" is
-a claim; "Blue's median custody-confidence score (DOM-002 dimension) rose from 0.41 to 0.68 across
+a claim; "Blue's median custody-confidence score ([FS-201](../../features/FS-201-competency-assessment.md) dimension) rose from 0.41 to 0.68 across
 sessions 3-7, N=5" is a finding with stated evidence — the difference matters because the first form
 invites unchecked overclaiming and the second is falsifiable by anyone who can re-examine the same
 data.
@@ -66,7 +66,7 @@ formalizes this as the **Lie Factor** — the size of the effect shown in a grap
 actual size of the effect in the underlying data — and states that an honest graphic should keep this
 ratio between 0.95 and 1.05; Tufte specifically names truncated value axes and inconsistent scales
 across compared series as common, avoidable sources of a high Lie Factor. Any future analytics
-dashboard reporting DOM-002 trends across sessions should use consistent, non-misleading axis scales
+dashboard reporting [FS-201](../../features/FS-201-competency-assessment.md) trends across sessions should use consistent, non-misleading axis scales
 and should show the full available data range rather than a flattering excerpt, per Tufte's standard.
 
 **Reporting uncertainty and limitations alongside the finding, not as a footnote.** Per [R405](R405-uncertainty-analysis.md)'s
@@ -107,7 +107,7 @@ introduced in this section.
 ## 5. Implementation Guidance
 
 - **Any future AAR-derived debrief writeup or cross-session report should state its evidentiary
-  basis explicitly** (which sessions, which DOM-002 dimensions, what sample size) alongside any
+  basis explicitly** (which sessions, which [FS-201](../../features/FS-201-competency-assessment.md) dimensions, what sample size) alongside any
   headline finding, per [R403](R403-statistics-foundations.md)/[R405](R405-uncertainty-analysis.md).
 - **Keep description, inference, and recommendation visibly distinct in any report** — a finding
   that moves to a recommendation should explicitly flag the additional judgment involved, not present
@@ -118,7 +118,7 @@ introduced in this section.
   accurate each individual number is.
 - **Any future analytics dashboard should keep its Lie Factor near 1.0 (Tufte's standard)** — use
   consistent, honest chart scales and default to showing the full available data range rather than a
-  curated excerpt; a truncated y-axis on a DOM-002 trend chart is exactly the kind of distortion
+  curated excerpt; a truncated y-axis on a [FS-201](../../features/FS-201-competency-assessment.md) trend chart is exactly the kind of distortion
   Tufte's standard flags.
 
 ## 6. Feature Mapping

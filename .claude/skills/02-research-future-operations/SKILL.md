@@ -1,15 +1,15 @@
 ---
 name: 02-research-future-operations
-description: Produce and refresh the R500-tier future-operations encyclopedia (human-AI teaming, autonomy in space operations, AI decision support, future space warfare concepts, multi-domain operations, machine reasoning, autonomous planning systems, future command and control, AI integration patterns) that grounds forward-looking AI/autonomy context (DOM-008). Use when asked to research AI/autonomy/future-C2/multi-domain topics, to add/extend `docs/research/encyclopedia/R5xx-*` topics, or to gather grounding facts before drafting an FS-xxx/IMP-xxx spec touching in-world AI, autonomy, or future C2. Tier R500 closed its GAP-13 sourcing/scope remediation 2026-07-02 — this is now steady-state maintenance, not a remediation backlog. Not for novice AI tutorials — those belong in `docs/training/`.
+description: Produce and refresh the R500-tier future-operations encyclopedia (human-AI teaming, autonomy in space operations, AI decision support, future space warfare concepts, multi-domain operations, machine reasoning, autonomous planning systems, future command and control, AI integration patterns) that grounds forward-looking AI/autonomy context (MSTR-003 §2a). Use when asked to research AI/autonomy/future-C2/multi-domain topics, to add/extend `docs/research/encyclopedia/R5xx-*` topics, or to gather grounding facts before drafting an FS-xxx/IMP-xxx spec touching in-world AI, autonomy, or future C2. Tier R500 closed its GAP-13 sourcing/scope remediation 2026-07-02 — this is now steady-state maintenance, not a remediation backlog. Not for novice AI tutorials — those belong in `docs/training/`.
 ---
 
 # Research: Future Operations
 
 Produces the **R500-tier encyclopedia** (`docs/research/encyclopedia/R501`–`R509`) and grounds
-[`docs/domains/DOM-008-ai-integration-framework.md`](../../../docs/domains/DOM-008-ai-integration-framework.md)
-— the framework that governs both **in-world AI** (Red doctrine presets today, any future
+[`docs/master/MSTR-003-educational-philosophy.md`](../../../docs/master/MSTR-003-educational-philosophy.md) §2a
+— the constraint on in-world AI, which with the tag convention in the R500 index governs both **in-world AI** (Red doctrine presets today, any future
 trainee-facing advisor) and **coding-agent practice** (this repository's own documentation-driven
-development model), and is explicit that the two must never be conflated (DOM-008 §6). The
+development model), and is explicit that the two must never be conflated (the R500 index, Tag convention). The
 governing rules are
 [`docs/master/MSTR-007-research-philosophy.md`](../../../docs/master/MSTR-007-research-philosophy.md)
 (purpose, tier shape, authoring cadence) and
@@ -25,9 +25,9 @@ this skill does not restate them, it operationalizes them for this domain. Tier 
 
 This skill answers "if an agent is about to spec or build something touching autonomy, an in-world
 AI advisor, Red doctrine posture, or a future C2/multi-domain concept, what does it need to know to
-not get it wrong, and where exactly does DOM-008's advisor-not-decider line sit" — never "explain
+not get it wrong, and where exactly does MSTR-003 §2a's advisor-not-decider line sit" — never "explain
 what AI is" or "speculate freely about future warfare." This tier is inherently more forward-
-looking than R100/R300/R400 (DOM-008 §4 itself calls the human-AI-teaming material
+looking than R100/R300/R400 (MSTR-003 §2a itself calls the human-AI-teaming material
 "forward-looking"), but forward-looking is not a license to skip sourcing: real human-automation-
 teaming research (aviation automation studies, published human-machine-teaming doctrine),
 real named autonomy/AI-planning literature, and real precedent systems are the bar — invented
@@ -39,9 +39,9 @@ capabilities or unsourced predictions presented as settled fact are not. If a re
 | Asset | Role |
 |---|---|
 | [`R500-index.md`](../../../docs/research/encyclopedia/R500-index.md) + `R501`–`R509` | Human-AI teaming, autonomy in space operations, AI decision support, future space warfare concepts, multi-domain operations, machine reasoning, autonomous planning systems, future command and control, AI integration patterns (the tier's capstone). |
-| [`docs/domains/DOM-008-ai-integration-framework.md`](../../../docs/domains/DOM-008-ai-integration-framework.md) | §3 in-world AI today (Red doctrine presets), §4 future in-world AI (autonomy/teaming, explicitly forward-looking/R500-tier), §5 coding AI (this repo's own dev model), §6 what DOM-008 expects from R500-tier documents and any future FS touching AI — the **advisor, not decider** constraint every R5xx topic's Implementation Guidance must respect. |
+| [`MSTR-003`](../../../docs/master/MSTR-003-educational-philosophy.md) §2a, the [R500 index](../../../docs/research/encyclopedia/R500-index.md) Tag convention, [`GDS-06`](../../../docs/architecture/06-non-functional-requirements.md) NFR-3/NFR-9 and [`MSTR-006`](../../../docs/master/MSTR-006-governance-principles.md) §4 | In-world AI today (Red doctrine presets: data, seeded RNG, legible to White Cell), future in-world AI (autonomy/teaming, explicitly forward-looking/R500-tier), coding AI (this repo's own dev model), and what is expected of R500-tier documents and any future FS touching AI — the **advisor, not decider** constraint every R5xx topic's Implementation Guidance must respect. |
 | Engine grounding | `spacesim/session/redai.py` (Red doctrine presets — the only AI that exists in the simulator today; every "future" claim in this tier must be clearly distinguished from this present-tense system). |
-| Feature Mapping targets | Any future in-world AI decision-support feature (🅿️ pending authorization per DOM-008 §4) and any long-horizon FS-xxx touching autonomy or future C2. |
+| Feature Mapping targets | Any future in-world AI decision-support feature (🅿️ pending authorization per MSTR-003 §2a) and any long-horizon FS-xxx touching autonomy or future C2. |
 
 ## Current state (read this before choosing a workflow)
 
@@ -49,7 +49,7 @@ capabilities or unsourced predictions presented as settled fact are not. If a re
 All 9 topics carry the mandatory §2 Scope section (MSTR-007 §4.2), inline citations at every
 substantive claim site, a `### Sources` subsection on every `##` section (live URL + Wayback
 snapshot + accessed date, or a cited `spacesim/session/redai.py`/`engine/recovery.py` file:line for
-present-tense in-world-AI claims), and the mandatory DOM-008 §6 tag line. This closed GAP-13
+present-tense in-world-AI claims), and the mandatory R500 tag line. This closed GAP-13
 (tracked in the former future-work list §13, Recommendation R1) for this
 tier; per that recommendation's sequencing, **R400 (Research Methods,
 `02-research-methods-and-validation`) is now the GAP-13 priority.** As with R100/R300, "closed" means
@@ -77,7 +77,7 @@ tier; per that recommendation's sequencing, **R400 (Research Methods,
    than in any other tier.
 5. **Write the topic file** following the mandatory seven-section shape (MSTR-007 §4: Purpose,
    Scope, Concepts, Operational Context, Implementation Guidance, Feature Mapping, Related Topics),
-   with the DOM-008 §6 tag line directly under the frontmatter/breadcrumb, before §1. Inline-cite
+   with the R500 tag line directly under the frontmatter/breadcrumb, before §1. Inline-cite
    every substantive claim (a named study, a named doctrine publication, a named autonomy-level
    framework, a dated precedent system — no end-of-section-only citation dumps), and add a
    `### Sources` subsection to every `##` section.
@@ -88,30 +88,30 @@ tier; per that recommendation's sequencing, **R400 (Research Methods,
 ### B. Steady-state maintenance
 
 1. **Pre-spec grounding** — before any future in-world-AI-advisor or future-C2 FS-xxx is drafted,
-   verify the relevant `R5xx` topic(s) already cover what's needed against DOM-008 §4/§6.
+   verify the relevant `R5xx` topic(s) already cover what's needed against MSTR-003 §2a and the R500 index Tag convention.
 2. **Citation-rot maintenance** — re-verify live URLs, refresh Wayback snapshots/`accessed` dates.
 3. **Depth/gap fill** — when a new AI-adjacent feature proposal reveals a topic under-specifies the
    advisor-not-decider consequence, expand §5 rather than letting the gap leak into ad hoc spec
-   prose that might quietly cross the DOM-008 §4 line.
+   prose that might quietly cross the MSTR-003 §2a line.
 
 ## Quality gate (before calling a topic/edit done)
 
 - [ ] The file has all seven mandatory sections in order, including a real `## 2. Scope`, plus its
-      DOM-008 §6 tag line intact.
+      R500 tag line intact.
 - [ ] Every AI/autonomy/teaming claim has an inline citation at the claim site — including
       forward-looking claims, which get flagged as speculative rather than left uncited.
 - [ ] Every `##` section has a `### Sources` subsection with live + Wayback snapshot + accessed
       date (or a cited `spacesim/session/redai.py` file:line for present-tense in-world-AI claims).
 - [ ] §5 Implementation Guidance states, concretely, what a future in-world-AI feature or Red
-      doctrine change must and must not do under DOM-008 §4's "advisor, not decider" constraint —
+      doctrine change must and must not do under MSTR-003 §2a's "advisor, not decider" constraint —
       not generic AI-ethics commentary.
 - [ ] No content quietly asserts a future in-world AI capability as if it were already
-      authorized — DOM-008 §4 features remain 🅿️ pending authorization until stated otherwise.
-- [ ] No content duplicates DOM-008's own text; if it would, the topic is a short pointer +
+      authorized — MSTR-003 §2a features remain 🅿️ pending authorization until stated otherwise.
+- [ ] No content duplicates MSTR-003 §2a's own text; if it would, the topic is a short pointer +
       implementation-implications note instead (MSTR-007 §5).
 - [ ] Frontmatter `Dependencies`/`Referenced By`/`Feature Mapping` are bidirectionally consistent,
       and `Status` truthfully reflects whether this checklist passes.
-- [ ] Nothing reads like a 101 AI explainer without moving to the DOM-008-specific implementation
+- [ ] Nothing reads like a 101 AI explainer without moving to the in-world-AI-specific implementation
       nuance; if it does, cut it or point to `docs/training/`.
 - [ ] File length stays in the 3-8 page band.
 
@@ -126,8 +126,8 @@ tier; per that recommendation's sequencing, **R400 (Research Methods,
   source should read as clearly hypothetical, not confidently asserted.
 - **Never let this tier's forward-looking framing bleed into implying an in-world AI advisor
   feature is currently authorized or built.** Only `spacesim/session/redai.py` (Red doctrine
-  presets) exists today; everything else in DOM-008 §4/§6 is 🅿️ pending.
-- Keep the in-world-AI vs. coding-agent-practice distinction crisp per DOM-008 §6 — a topic tagged
+  presets) exists today; everything else in MSTR-003 §2a is 🅿️ pending.
+- Keep the in-world-AI vs. coding-agent-practice distinction crisp per the R500 index Tag convention — a topic tagged
   "coding-agent practice" should ground how *this repository's own agents* work (documentation-
   driven development, the GDS ladder, this very skill-authoring pattern), not get merged with the
   in-world-advisor discussion.

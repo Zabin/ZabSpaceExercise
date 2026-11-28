@@ -6,9 +6,9 @@
 > **Dependencies:** [R401](R401-experimental-design-and-controls.md)
 > **Referenced By:** —
 > **Produces:** the ethics/consent vocabulary applying to any future collection of trainee performance data beyond a single session
-> **Feature Mapping:** any future analytics feature persisting per-trainee data across sessions, DOM-002 (Assessment Framework) if extended to longitudinal trainee tracking
+> **Feature Mapping:** any future analytics feature persisting per-trainee data across sessions, [FS-201](../../features/FS-201-competency-assessment.md) if extended to longitudinal trainee tracking
 > **Related Topics:** [R401](R401-experimental-design-and-controls.md) (Experimental Design and Controls), [R413](R413-data-analysis-and-reporting.md) (Data Analysis and Reporting),
-> DOM-002 (Assessment Framework — currently single-session scoped, not yet a longitudinal
+> [FS-201](../../features/FS-201-competency-assessment.md) (assessment — currently single-session scoped, not yet a longitudinal
 > trainee-tracking system)
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 2 (Tier A U.S. federal human-subjects ethics sources — see §3 Sources)
@@ -17,7 +17,7 @@
 
 ## 1. Purpose
 
-DOM-002's six measurement dimensions currently apply within a single exercise session. If any future
+[FS-201](../../features/FS-201-competency-assessment.md)'s six measurement dimensions currently apply within a single exercise session. If any future
 feature extends this to persisted, cross-session, per-trainee performance tracking (e.g. for a
 training-program competency record), it crosses into human-subjects-research ethical territory this
 topic names — the consent, privacy, and institutional-oversight considerations that apply once data
@@ -46,7 +46,7 @@ three governing principles — **Respect for Persons** (autonomy and informed co
 benefits) — that the current U.S. regulatory system, the
 [Common Rule (45 CFR 46)](https://www.hhs.gov/ohrp/regulations-and-policy/regulations/common-rule/index.html),
 implements as binding regulation for federally funded and many institutional research programs. A
-live in-session DOM-002 score, computed and displayed to the trainee and facilitator during the
+live in-session [FS-201](../../features/FS-201-competency-assessment.md) score, computed and displayed to the trainee and facilitator during the
 exercise and then discarded, is meaningfully different from the same score persisted, attributed to a
 named trainee, and retained for later review or comparison across sessions — the latter is the point
 at which IRB-adjacent (Institutional Review Board) considerations become applicable, even in a PME
@@ -61,7 +61,7 @@ unit-level report, or used in a future research publication about PME effectiven
 
 **Privacy and data minimization.** Collecting and retaining only the data actually needed for the
 stated purpose, and de-identifying or aggregating it where individual-level detail isn't required —
-a feature that persists per-trainee DOM-002 scores should default to the minimum retention/
+a feature that persists per-trainee [FS-201](../../features/FS-201-competency-assessment.md) scores should default to the minimum retention/
 identification level the stated use case actually requires, not retain maximal detail "in case it's
 useful later." This follows from the Belmont Report's Beneficence principle: unnecessary retention of
 identifiable performance data is an unminimized risk with no corresponding benefit.
@@ -120,10 +120,10 @@ sources introduced in this section.
 ## 6. Feature Mapping
 
 Any future analytics feature persisting per-trainee data across sessions is the direct consumer;
-currently no such feature exists (DOM-002 is single-session scoped), making this topic forward-
+currently no such feature exists ([FS-201](../../features/FS-201-competency-assessment.md) is single-session scoped), making this topic forward-
 looking guidance rather than a description of an existing gap.
 
 ## 7. Related Topics
 
-[R401](R401-experimental-design-and-controls.md) (Experimental Design and Controls), [R413](R413-data-analysis-and-reporting.md) (Data Analysis and Reporting), DOM-002 (Assessment
+[R401](R401-experimental-design-and-controls.md) (Experimental Design and Controls), [R413](R413-data-analysis-and-reporting.md) (Data Analysis and Reporting), [FS-201](../../features/FS-201-competency-assessment.md) (Assessment
 Framework).

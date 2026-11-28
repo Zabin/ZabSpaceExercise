@@ -3,8 +3,8 @@
 > **Document ID:** FS-202
 > **Version:** 0.1 (candidate scope — not authorized)
 > **Status:** 🅿️ Scoped, not authorized
-> **Dependencies:** [DOM-002](../domains/DOM-002-assessment-framework.md) §5, §7, [FS-201](FS-201-competency-assessment.md)
-> **Referenced By:** [DOM-002](../domains/DOM-002-assessment-framework.md)
+> **Dependencies:** [GDS-05 `FR-A1`](../architecture/05-functional-requirements.md), [GDS-07 §8](../architecture/07-data-model.md), [FS-201 Deferred criteria](FS-201-competency-assessment.md), [FS-201](FS-201-competency-assessment.md)
+> **Referenced By:** None identified
 > **Produces:** nothing yet — no Implementation Package may begin against this ID without explicit
 > user go-ahead (see [`MSTR-006`](../master/MSTR-006-governance-principles.md) §3)
 > **Feature Mapping:** FS-202 (this document)
@@ -25,7 +25,7 @@ Rubric Authoring *(candidate — not authorized)*
 ## Purpose
 
 **This document records candidate scope for an unauthorized feature.** FS-202 is named as
-"(candidate)" in [DOM-002](../domains/DOM-002-assessment-framework.md)'s own frontmatter (`**Produces:** FS-201 Competency Assessment,
+"(candidate)" in [FS-201](FS-201-competency-assessment.md)'s own frontmatter (`**Produces:** FS-201 Competency Assessment,
 FS-202 (candidate) Rubric Authoring`) — it is not committed scope. Per [MSTR-006](../master/MSTR-006-governance-principles.md) §3, the 🅿️
 authorization gate applies: this feature requires explicit user authorization before promotion to a
 full spec or before any Implementation Package work begins. The 20-field structure used here is for
@@ -33,19 +33,19 @@ format consistency only; it does not authorize or advance the work.
 
 The candidate purpose: extend [FS-201](FS-201-competency-assessment.md)'s fixed rubric tiers with an authoring surface that lets
 instructors adjust or extend the rubric without engine changes — anticipated as a future need once
-FS-201 has field experience, but explicitly not committed in [DOM-002](../domains/DOM-002-assessment-framework.md) the way FS-201's requirements
+FS-201 has field experience, but explicitly not committed in [FS-201](FS-201-competency-assessment.md) the way FS-201's requirements
 are committed in §8.
 
 ## Scope
 
-**Conditional — not authorized.** If authorized (inferred from [DOM-002](../domains/DOM-002-assessment-framework.md) §5/§7):
+**Conditional — not authorized.** If authorized (inferred from [GDS-05 `FR-A1`](../architecture/05-functional-requirements.md) and [GDS-07 §8](../architecture/07-data-model.md) and [FS-201 Deferred criteria](FS-201-competency-assessment.md)):
 
 In scope: adjusting or relabeling rubric tiers for a given course/cohort without engine changes;
 enabling/disabling specific [FS-201](FS-201-competency-assessment.md) dimensions per vignette or training program; defining new
-measurement dimensions beyond [DOM-002](../domains/DOM-002-assessment-framework.md) §4's original six.
+measurement dimensions beyond [FS-201 Scope and System Behaviour](FS-201-competency-assessment.md) and [GDS-07 §8](../architecture/07-data-model.md)'s original six.
 
 Explicit non-goal (even if authorized): any rubric-authoring tool must not introduce a path to
-collapse the rubric into a single composite score — per [DOM-002](../domains/DOM-002-assessment-framework.md) §5's rubric-not-single-score
+collapse the rubric into a single composite score — per [GDS-05 `FR-A1`](../architecture/05-functional-requirements.md) and [GDS-07 §8](../architecture/07-data-model.md)'s rubric-not-single-score
 principle, which remains out of scope for the underlying instrument regardless of authoring
 flexibility.
 
@@ -62,13 +62,13 @@ granted.
 
 ## User Workflows
 
-**Conditional — not authorized.** If authorized, candidate workflows (inferred from [DOM-002](../domains/DOM-002-assessment-framework.md) §5/§7):
+**Conditional — not authorized.** If authorized, candidate workflows (inferred from [GDS-05 `FR-A1`](../architecture/05-functional-requirements.md) and [GDS-07 §8](../architecture/07-data-model.md) and [FS-201 Deferred criteria](FS-201-competency-assessment.md)):
 
 - An instructor adjusts or relabels rubric tiers (e.g., renames "speculative" to a
   course-specific label) for their cohort without requiring engine changes.
 - An instructor enables or disables specific [FS-201](FS-201-competency-assessment.md) dimensions for a given vignette or
   training program.
-- An instructor defines a new measurement dimension beyond [DOM-002](../domains/DOM-002-assessment-framework.md) §4's original six, with
+- An instructor defines a new measurement dimension beyond [FS-201 Scope and System Behaviour](FS-201-competency-assessment.md) and [GDS-07 §8](../architecture/07-data-model.md)'s original six, with
   data-source and tier-definition specified.
 
 ## System Behaviour
@@ -106,7 +106,7 @@ not specify them. Flagged as an Open Question below.
 
 ## Security Considerations
 
-**Conditional — not authorized.** Not addressed in the source document. Per [DOM-002](../domains/DOM-002-assessment-framework.md) §5's
+**Conditional — not authorized.** Not addressed in the source document. Per [GDS-05 `FR-A1`](../architecture/05-functional-requirements.md) and [GDS-07 §8](../architecture/07-data-model.md)'s
 non-single-score principle, the authoring surface must not introduce a path to composite scoring
 regardless of how it is framed.
 
@@ -121,7 +121,7 @@ FS authoring pass is completed per the "Next step if authorized" guidance below.
 
 ## Dependencies
 
-[DOM-002](../domains/DOM-002-assessment-framework.md) §5, §7 and [FS-201](FS-201-competency-assessment.md) (per the existing metadata block's Dependencies field). [FS-201](FS-201-competency-assessment.md)
+[GDS-05 `FR-A1`](../architecture/05-functional-requirements.md) and [GDS-07 §8](../architecture/07-data-model.md) and [FS-201 Deferred criteria](FS-201-competency-assessment.md) and [FS-201](FS-201-competency-assessment.md) (per the existing metadata block's Dependencies field). [FS-201](FS-201-competency-assessment.md)
 is both a dependency and a prerequisite: authoring tooling for an instrument that does not yet have
 an Implementation Package and field experience would be speculative, per the source document's own
 "Next step if authorized" guidance.
@@ -133,7 +133,7 @@ an Implementation Package and field experience would be speculative, per the sou
 - Authorizing rubric authoring before [FS-201](FS-201-competency-assessment.md) has an Implementation Package and field
   experience risks building an authoring surface for a rubric instrument whose tier definitions may
   still change — the source document explicitly names this as the reason authorization should wait.
-- Any authoring path that introduces a composite-score output violates [DOM-002](../domains/DOM-002-assessment-framework.md) §5's explicit
+- Any authoring path that introduces a composite-score output violates [GDS-05 `FR-A1`](../architecture/05-functional-requirements.md) and [GDS-07 §8](../architecture/07-data-model.md)'s explicit
   non-single-score principle.
 
 ## Open Questions
@@ -165,5 +165,5 @@ authorized.
 
 *Next step if authorized:* Promote this document to a full Feature Specification (status ✅,
 version 1.0) following the same 20-field structure used by [FS-101](FS-101-mission-planning.md)–[FS-107](FS-107-after-action-review.md), grounded in
-[DOM-002](../domains/DOM-002-assessment-framework.md) and informed by real usage patterns from [FS-201](FS-201-competency-assessment.md)'s Implementation Package and field
+[FS-201](FS-201-competency-assessment.md) and informed by real usage patterns from [FS-201](FS-201-competency-assessment.md)'s Implementation Package and field
 experience — authoring tooling for an instrument that does not yet exist would be speculative.

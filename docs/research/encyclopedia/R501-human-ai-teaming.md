@@ -5,22 +5,22 @@
 > **Status:** ✅ Done
 > **Dependencies:** —
 > **Referenced By:** [R502](R502-autonomy-in-space-operations.md), [R503](R503-ai-decision-support.md), [R509](R509-ai-integration-patterns.md)
-> **Produces:** the vocabulary for how a human operator and an AI advisor would share a decision loop, framing DOM-008 §4's "advisor not decider" constraint
-> **Feature Mapping:** any future in-world AI decision-support feature (🅿️ pending authorization per DOM-008 §4)
+> **Produces:** the vocabulary for how a human operator and an AI advisor would share a decision loop, framing [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s "advisor not decider" constraint
+> **Feature Mapping:** any future in-world AI decision-support feature (🅿️ pending authorization per [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md))
 > **Related Topics:** [R210](R210-decision-support-systems.md) (Decision Support Systems — the 4-level spectrum this topic's teaming
-> models map onto), DOM-008 (AI Integration Framework — §4's advisor-only constraint), [R503](R503-ai-decision-support.md) (AI
+> models map onto), [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md) (the advisor-only constraint), [R503](R503-ai-decision-support.md) (AI
 > Decision Support)
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 3 (Tier B peer-reviewed human-factors literature — see §3, §4 Sources)
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
 
-**DOM-008 §6 tag:** in-world AI (a future trainee-facing advisor), with implications for coding-agent
+**R500 tag:** in-world AI (a future trainee-facing advisor), with implications for coding-agent
 practice noted in §5 below.
 
 ## 1. Purpose
 
-DOM-008 §4 establishes "advisor, not decider" as the standing constraint on any future in-world AI
+[MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md) establishes "advisor, not decider" as the standing constraint on any future in-world AI
 assistance to a trainee. This topic supplies the human-AI teaming vocabulary that constraint is a
 specific instance of — the general models for how decision authority and information flow are
 divided between a human and an AI system sharing a task, so a future feature proposal can be checked
@@ -30,10 +30,10 @@ against the full range of teaming models, not just the binary "automated or not.
 
 Covers: the general vocabulary for classifying how automation/AI participates in a human's task
 (levels-of-automation taxonomy, over-trust/under-trust failure modes, shared mental models, workload
-allocation) as it applies to DOM-008 §4's "advisor, not decider" constraint on a future in-world AI.
+allocation) as it applies to [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s "advisor, not decider" constraint on a future in-world AI.
 Does **not** cover: the specific degrees of autonomy applicable to bus/payload commanding
 ([R502](R502-autonomy-in-space-operations.md)'s job), the concrete mechanics of what an advisor
-surfaces and how ([R503](R503-ai-decision-support.md)'s job), or DOM-008 §4 itself, which this topic
+surfaces and how ([R503](R503-ai-decision-support.md)'s job), or [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md) itself, which this topic
 grounds but does not restate in full. Also does not cover autonomous *planning* algorithms
 ([R507](R507-autonomous-planning-systems.md)) — this topic is about the human-AI relationship, not
 the AI's internal reasoning method.
@@ -50,7 +50,7 @@ A tool-level AI only responds to explicit queries with no initiative (low levels
 functions); a teammate-level AI proactively surfaces relevant information or analysis without being
 asked but never selects or executes an action (higher levels on acquisition/analysis, low levels on
 decision/action); a delegate-level AI takes autonomous action within a bounded scope (high levels on
-decision and action implementation). DOM-008 §4's "advisor, not decider" line places any future
+decision and action implementation). [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s "advisor, not decider" line places any future
 in-world AI assistance at or below the teammate level on the *decision and action selection* function
 specifically, explicitly ruling out delegate-level autonomous decision-making for the trainee even
 if the AI is teammate- or delegate-level on the acquisition/analysis functions.
@@ -82,7 +82,7 @@ information let teammates predict each other's actions and interpret each other'
 without constant explicit negotiation; a mismatch degrades exactly that predictive ability. A future
 in-world advisor that draws on different information than the trainee currently has access to (e.g.
 ground truth the trainee's fog-of-war view doesn't show) would violate this requirement and create a
-dangerous shared-mental-model mismatch, distinct from and in addition to DOM-008 §4's decision-
+dangerous shared-mental-model mismatch, distinct from and in addition to [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s decision-
 authority constraint.
 
 **Workload and attention allocation.** A well-designed human-AI team allocates the AI to tasks that
@@ -138,11 +138,11 @@ additional sources introduced in this section.
 ## 5. Implementation Guidance
 
 - **Any future in-world AI decision-support feature must be designed at or below the
-  "teammate" level per DOM-008 §4** — surfacing information or flagging a consideration, never taking
+  "teammate" level per [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)** — surfacing information or flagging a consideration, never taking
   or recommending a single "decide this for you" action (the Parasuraman/Sheridan/Wickens
   decision-and-action-selection function, §3, is where the ceiling applies specifically).
 - **A future advisor's information access must be restricted to exactly the same fog-of-war view the
-  trainee has** (per the shared-mental-model concern in §3, and DOM-008 §3's parallel constraint on
+  trainee has** (per the shared-mental-model concern in §3, and [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md)'s parallel constraint on
   Red presets) — an advisor with god-view-derived insight breaks the shared mental model and
   effectively decides for the trainee by surfacing otherwise-unavailable certainty.
 - **Any recommendation the advisor surfaces must expose its basis/confidence, not just a bottom-line
@@ -151,7 +151,7 @@ additional sources introduced in this section.
 - **Evaluate any future advisor feature's effect on trainee workload explicitly** (does it reduce
   attentional burden at high-load moments, or add a new stream to monitor) before building it — per
   the workload-allocation concern in §3.
-- **Coding-agent note (DOM-008 §5):** an agent implementing any future advisor feature is doing
+- **Coding-agent note ([MSTR-006 §4](../../master/MSTR-006-governance-principles.md)):** an agent implementing any future advisor feature is doing
   coding-agent work (b) that builds in-world AI (a); the agent must not relax the advisor's
   information-access constraint "to make the demo more impressive."
 
@@ -164,6 +164,6 @@ authorization).
 
 [R210](R210-decision-support-systems.md) (Decision Support Systems, the 4-level spectrum),
 [R205](R205-cognitive-psychology-foundations.md) (working-memory limits underlying the workload
-concern), DOM-008 (AI Integration Framework §4), [R503](R503-ai-decision-support.md)
+concern), [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md), [R503](R503-ai-decision-support.md)
 (AI Decision Support, the direct downstream elaboration), [R502](R502-autonomy-in-space-operations.md)
 (the bus/payload-specific autonomy-degree vocabulary this topic explicitly defers to).

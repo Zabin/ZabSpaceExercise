@@ -59,7 +59,7 @@ this; a true COA-wargaming feature would need to preview multiple candidate plan
 (not just current-state) Red response, which does not exist today.
 
 **Decision criteria and the commander's final selection.** ADP 5-0 reserves the final choice for the
-commander's judgment, not the matrix's numeric output — directly consistent with DOM-008 §4's
+commander's judgment, not the matrix's numeric output — directly consistent with [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s
 advisor-only constraint: a future COA-comparison feature should present the scored matrix, never
 auto-select a "winning" COA on the operator's behalf.
 
@@ -90,7 +90,7 @@ warrant the extra deliberation time).
   Red-doctrine-preset machinery (`redai.py`) for modeling likely Red response, rather than inventing a
   separate prediction model** — per MSTR-002 §4's seam principle, extend existing interfaces rather
   than parallel-build a new one.
-- **The feature must never auto-select a COA** — per DOM-008 §4 and §3 above, present the scored
+- **The feature must never auto-select a COA** — per [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md) and [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) above, present the scored
   matrix and require an explicit operator choice.
 
 ## 6. Feature Mapping

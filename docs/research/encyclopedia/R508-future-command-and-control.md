@@ -15,7 +15,7 @@
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
 
-**DOM-008 §6 tag:** neither in-world AI nor coding-agent practice directly — forward-looking
+**R500 tag:** neither in-world AI nor coding-agent practice directly — forward-looking
 architectural context informed by [R502](R502-autonomy-in-space-operations.md)/[R507](R507-autonomous-planning-systems.md)'s AI-adjacent concepts.
 
 ## 1. Purpose

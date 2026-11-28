@@ -5,11 +5,11 @@
 > **Status:** ✅ Done
 > **Dependencies:** [R406](R406-modeling-practices.md)
 > **Referenced By:** [R410](R410-validation.md)
-> **Produces:** the formal vocabulary for the verification work DOM-005 §3 already says is strong in this codebase (pytest, the determinism property test)
-> **Feature Mapping:** the entire `spacesim/tests/` suite, DOM-005 §3
+> **Produces:** the formal vocabulary for the verification work [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) already says is strong in this codebase (pytest, the determinism property test)
+> **Feature Mapping:** the entire `spacesim/tests/` suite, [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)
 > **Related Topics:** [R406](R406-modeling-practices.md) (Modeling Practices — the documented assumptions verification checks
-> against), [R410](R410-validation.md) (Validation — the distinct, comparatively weaker discipline DOM-005 identifies as
-> this project's actual gap), DOM-005 (Validation Framework)
+> against), [R410](R410-validation.md) (Validation — the distinct, comparatively weaker discipline [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) identifies as
+> this project's actual gap), [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 2 (Tier A/B foundational software-engineering + M&S sources — see §3 Sources)
 
@@ -17,11 +17,11 @@
 
 ## 1. Purpose
 
-DOM-005 §3 distinguishes verification (already strong in this codebase: pytest, the determinism
+[GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) distinguishes verification (already strong in this codebase: pytest, the determinism
 property test) from validation (the comparative gap). This topic supplies the formal verification
 vocabulary, both to name precisely what the existing strong test suite is already doing well and to
 make the boundary with [R410](R410-validation.md)'s validation explicit, since conflating the two is exactly the mistake
-DOM-005 warns against.
+[GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) warns against.
 
 ## 2. Scope
 
@@ -56,7 +56,7 @@ correctness and architectural/contract correctness.
 
 **Verification is necessary but not sufficient.** A perfectly verified implementation (matches its
 spec exactly) can still be invalid if the spec itself is wrong or unrealistic — this is precisely
-Boehm's and Sargent's point, and DOM-005 §3's application of it: this codebase's verification (469
+Boehm's and Sargent's point, and [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)'s application of it: this codebase's verification (469
 tests green per CLAUDE.md) is strong, but that strength says nothing about whether, e.g., a jam
 success-probability formula's specified shape actually matches real-world EW behavior (a validation
 question).
@@ -83,7 +83,7 @@ foundational in software engineering (Boehm, 1981) and simulation credibility as
 Verification, Validation, and Accreditation — is a formal discipline in military M&S specifically,
 per DoDI 5000.61, already cited at [R406](R406-modeling-practices.md) §3) precisely because a
 heavily-tested system can still produce wrong real-world conclusions if its specification, not its
-implementation, is the source of error — DOM-005 names this exact gap for this project.
+implementation, is the source of error — [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) names this exact gap for this project.
 
 ### Sources
 
@@ -99,16 +99,15 @@ Uses the same sources cited inline in §3 (Boehm 1981; Sargent) plus DoDI 5000.6
   (a documented formula, an architectural invariant, a previously-fixed bug's expected behavior) —
   this keeps the test's scope (verification) visibly distinct from a validation claim ([R410](R410-validation.md)) it
   should not be conflated with.
-- **Do not treat a green test suite as evidence of real-world fidelity** — per DOM-005 §3 and Boehm's
+- **Do not treat a green test suite as evidence of real-world fidelity** — per [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) and Boehm's
   distinction, a passing verification suite establishes the implementation matches its spec, not that
   the spec is a good model of the real phenomenon; that separate claim requires [R410](R410-validation.md)'s validation work.
 
 ## 6. Feature Mapping
 
-The `spacesim/tests/` suite and DOM-005 §3 are the direct consumers.
+The `spacesim/tests/` suite and [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) are the direct consumers.
 
 ## 7. Related Topics
 
 [R406](R406-modeling-practices.md) (Modeling Practices, the documented assumptions verification checks against), [R410](R410-validation.md) (Validation,
-the distinct and comparatively weaker discipline this project still needs), DOM-005 (Validation
-Framework).
+the distinct and comparatively weaker discipline this project still needs), [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) (validation).

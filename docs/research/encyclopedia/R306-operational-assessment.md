@@ -4,10 +4,10 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R310](R310-effects-based-operations.md)
-> **Referenced By:** DOM-002
+> **Referenced By:** 
 > **Produces:** the doctrinal vocabulary distinguishing output/performance/effect measures the existing objective-flip model conflates
 > **Feature Mapping:** FS-201 (Competency Assessment)
-> **Related Topics:** [R310](R310-effects-based-operations.md) (Effects-Based Operations), DOM-002 §3 ("why binary objective-flip is
+> **Related Topics:** [R310](R310-effects-based-operations.md) (Effects-Based Operations), [MSTR-003 §8](../../master/MSTR-003-educational-philosophy.md) ("why binary objective-flip is
 > insufficient" — the exact gap this topic names doctrinally)
 > **Last Reviewed:** 2026-06-27
 > **Primary Sources Consulted:** 1
@@ -16,7 +16,7 @@
 
 ## 1. Purpose
 
-DOM-002 §3 already states, in engineering terms, that binary objective-flip success/failure is
+[MSTR-003 §8](../../master/MSTR-003-educational-philosophy.md) already states, in engineering terms, that binary objective-flip success/failure is
 insufficient evidence of "did the cell win" vs. "did the cell demonstrate competency." This topic
 supplies the formal military-doctrine vocabulary (measures of performance vs. measures of
 effectiveness) for that exact distinction, so a future assessment feature is built on a recognized
@@ -52,7 +52,7 @@ vignette's objective-flip.
 **Assessment as a continuous process, not an end-of-mission verdict.** Joint assessment doctrine
 treats assessment as conducted throughout an operation (are early indicators trending toward or away
 from the intended effect), not only as a final pass/fail — this is the doctrinal argument for why
-DOM-002's proposed measurement dimensions (custody quality, window discipline, etc., tracked across
+[FS-201](../../features/FS-201-competency-assessment.md)'s proposed measurement dimensions (custody quality, window discipline, etc., tracked across
 the exercise) are a more faithful assessment design than a single end-state check.
 
 ### Sources
@@ -66,16 +66,16 @@ the exercise) are a more faithful assessment design than a single end-state chec
 Joint doctrine's MOP/MOE/outcome framework exists precisely because "the task was completed" and
 "the operation achieved its purpose" are routinely different answers in real operations — assessment
 doctrine treats conflating them as a known, named failure mode, which is exactly the failure mode
-DOM-002 §3 independently rediscovered from first principles for this simulator's objective-flip
+[MSTR-003 §8](../../master/MSTR-003-educational-philosophy.md) independently rediscovered from first principles for this simulator's objective-flip
 model.
 
 ## 5. Implementation Guidance
 
-- **A future DOM-002-derived assessment feature should map its dimensions onto this MOP/MOE
+- **A future [FS-201](../../features/FS-201-competency-assessment.md)-derived assessment feature should map its dimensions onto this MOP/MOE
   distinction explicitly** — e.g., "window discipline" and "custody quality" are closer to MOPs
   (was the task executed well); a future "did the cell's actions actually deny Red's objective"
   dimension would be a MOE, and the two should be reported and labeled distinctly, not blended into
-  one score (consistent with DOM-002 §5's rubric-not-single-score principle).
+  one score (consistent with [GDS-05 `FR-A1`](../../architecture/05-functional-requirements.md) and [GDS-07 §8](../../architecture/07-data-model.md)'s rubric-not-single-score principle).
 - **A vignette's `objectives` block (the engine's literal flip-condition) should be understood and
   documented as an MOP-level proxy for a MOE the vignette designer actually cares about** — per [R305](R305-mission-analysis.md),
   a vignette author should be able to state the intended MOE an objective is a proxy for, so a future
@@ -91,5 +91,5 @@ FS-201 (Competency Assessment) is the direct consumer.
 
 ## 7. Related Topics
 
-[R310](R310-effects-based-operations.md) (Effects-Based Operations, the cascading-effects model MOE is built on), DOM-002 §3 (the
+[R310](R310-effects-based-operations.md) (Effects-Based Operations, the cascading-effects model MOE is built on), [MSTR-003 §8](../../master/MSTR-003-educational-philosophy.md) (the
 engineering-level statement of the gap this topic formalizes).

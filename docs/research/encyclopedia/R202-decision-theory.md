@@ -8,7 +8,7 @@
 > **Produces:** the formal vocabulary behind "plan under uncertainty" as MSTR-003 §3 frames it
 > **Feature Mapping:** FS-201 (Competency Assessment), FS-105 (Spacecraft Operations)
 > **Related Topics:** [R201](R201-probability-and-bayesian-reasoning.md) (Probability), [R206](R206-bounded-rationality.md) (Bounded Rationality — the realistic counterpart to
-> this topic's idealized models), [R214](R214-utility-theory.md) (Utility Theory), DOM-002 §4 (the measurement dimensions this
+> this topic's idealized models), [R214](R214-utility-theory.md) (Utility Theory), [FS-201 Scope and System Behaviour](../../features/FS-201-competency-assessment.md), [GDS-07 §8](../../architecture/07-data-model.md) (the measurement dimensions this
 > topic's vocabulary underlies)
 
 > **Last Reviewed:** 2026-07-02
@@ -21,7 +21,7 @@
 Every order an operator issues in this simulator is a decision made under risk or uncertainty about
 geometry, custody, and adversary intent. This topic gives the implementer the standard decision-theory
 vocabulary (decisions under risk vs. uncertainty, expected value, dominance) needed to read MSTR-003's
-educational claims and DOM-002's assessment dimensions precisely, rather than treating "good
+educational claims and [FS-201](../../features/FS-201-competency-assessment.md)'s assessment dimensions precisely, rather than treating "good
 decision" as an unanalyzed intuition.
 
 ## 2. Scope
@@ -84,14 +84,14 @@ designed to make visible and practicable.
 
 - **A future COA-comparison feature ([R212](R212-multi-criteria-decision-analysis.md), [R311](R311-course-of-action-analysis.md)) should let the operator see the decision criterion
   being applied** (EV, dominance, minimax-regret), not silently compute one and present a single
-  recommended choice — per DOM-008 §4, an advisor surfaces information, it does not decide.
+  recommended choice — per [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md), an advisor surfaces information, it does not decide.
 - **Don't conflate the engine's effect-resolution probability (risk) with the operator's situational
   uncertainty** — a UI element showing "Pₖ: 62%" is showing risk; it says nothing about whether the
   operator's belief that the target is hostile (an uncertainty judgment, [R102](R102-space-domain-awareness.md)/[R105](R105-custody-theory.md)) is itself
   correct.
-- **A new assessment dimension (DOM-002 candidate) that scores "decision quality" must state which
+- **A new assessment dimension ([FS-201](../../features/FS-201-competency-assessment.md) candidate) that scores "decision quality" must state which
   decision-theory criterion it is scoring against** (EV-consistency, dominance violations, etc.) —
-  an unstated criterion makes the score unfalsifiable and therefore unusable for DOM-005 validation.
+  an unstated criterion makes the score unfalsifiable and therefore unusable for [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) validation.
 
 ## 6. Feature Mapping
 

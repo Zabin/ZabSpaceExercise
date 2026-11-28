@@ -36,7 +36,7 @@ encyclopedia or the primers.
 | `docs/research/01-doctrine-western.md` | Western counterspace doctrine corpus (CCS, allied publications, the 5-D order, defensive actions, cross-cutting functions, responsible-counterspace norms). |
 | `docs/research/02-doctrine-non-western.md` | Non-Western (PRC/Russia-class) counterspace doctrine corpus — the comparative basis for Red AI posture (`session/redai.py`). |
 | `docs/research/07-legal-norms-and-roe.md` | Treaty floor (OST/Liability/Registration), LOAC-in-space, the 2022 DA-ASAT moratorium, CBMs/norms-under-negotiation — constrains White Cell ROE and ethics gates. |
-| Grounding docs | `docs/master/DOM-003-white-cell-framework.md`, `DOM-009-doctrine-development-framework.md`, `DOM-006-governance-framework.md`. |
+| Grounding docs | `docs/architecture/05-functional-requirements.md` (White Cell requirements), `docs/vignettes/00-vignette-framework.md` (Doctrine to content), `docs/master/MSTR-006-governance-principles.md` §3a and §6a. |
 | Engine/content grounding | `spacesim/session/redai.py` (Red doctrine presets), `spacesim/content/vignettes/coa-*.yaml` (Course-of-Action content), `spacesim/content/vignettes/*.yaml` (scenario/exercise structure), the kinetic consequence-confirm gate in `ui_web` (escalation-dynamics grounded). |
 | Feature Mapping targets | FS-106 (White Cell Dashboard), FS-108 (Inject Authoring), FS-301 (Research Analytics), and any new FS-xxx/vignette touching ROE, escalation, or exercise/scenario design. |
 
@@ -74,7 +74,7 @@ type) that has no topic an author would read first. The recurring invocation pat
    Topics. §5 here means: what should a White Cell rule, Red AI posture function, or vignette author
    do differently *because* this doctrine/theory point is true — never left as pure exposition.
    - Frontmatter mirrors the existing `R301`-style block: Document ID, Version, Status,
-     Dependencies, Referenced By, Produces (DOM-xxx / `redai.py` / vignette files it constrains),
+     Dependencies, Referenced By, Produces (GDS section / `redai.py` / vignette files it constrains),
      Feature Mapping, Related Topics.
    - Inline-cite every doctrinal assertion, named system, dated event, legal interpretation at the
      claim site (§1.1); no end-of-section-only citation lists.
@@ -85,7 +85,7 @@ type) that has no topic an author would read first. The recurring invocation pat
      list growing over time).
    - Keep the file in the 3-8 page band (MSTR-006 §4).
 6. **Cross-link both directions** — `Referenced By`, `Related Topics`, and `Feature Mapping` on the
-   FS-xxx spec(s)/DOM-xxx framework doc(s)/vignette(s) it grounds.
+   FS-xxx spec(s)/GDS section(s)/vignette(s) it grounds.
 7. **Flip the index status** to `✅` once the topic satisfies the quality gate below.
 8. **Verify, then commit.** Commit as `docs(research): R3xx — <what changed>` consistent with this
    branch's existing commit style.

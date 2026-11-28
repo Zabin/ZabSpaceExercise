@@ -20,7 +20,7 @@ operator of this simulator and the doctrine it encodes. Owned by the
 | [R604](R604-cognitive-load-and-scaffolding.md) | Cognitive Load & Scaffolding in Complex-System Training | Managing intrinsic/extraneous load when teaching a many-panel operator console; fidelity/`ops_fidelity` as a scaffolding dial. | R602 | ✅ |
 | [R605](R605-learning-path-and-progression-design.md) | Learning-Path & Progression Design | Novice→expert sequencing, part-task training, and mastery gating — the theory behind `training/16-learning-path.md`'s rung structure. | R601, R604 | ✅ |
 | [R606](R606-minimalist-and-procedural-documentation.md) | Minimalist & Procedural Documentation | Carroll's minimalism, task-oriented manuals, and role-scoped procedure layers — the craft behind the cell manuals' shape. | R602 | ✅ |
-| [R607](R607-assessment-of-learning-in-wargames.md) | Assessment of Learning in Wargames & Exercises | Measuring whether training worked without corrupting the exercise; connects to DOM-002 and the R400 measurement tier. | R603 | ✅ |
+| [R607](R607-assessment-of-learning-in-wargames.md) | Assessment of Learning in Wargames & Exercises | Measuring whether training worked without corrupting the exercise; connects to [FS-201](../../features/FS-201-competency-assessment.md) and the R400 measurement tier. | R603 | ✅ |
 | [R608](R608-software-onboarding-and-tutorial-design.md) | Software Onboarding & Tutorial Design | In-app tutorial/tooltip/guided-first-run patterns; when embedded guidance beats a manual (the `00-training-basics` step-script pattern). | R604, R606 | ✅ |
 
 **Status: 8 of 8 topics authored — tier closed 2026-07-04 (same-day scaffold-to-authored, per the

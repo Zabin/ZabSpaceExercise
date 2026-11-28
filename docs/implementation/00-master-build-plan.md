@@ -1145,7 +1145,7 @@ implementation in this same session.
    an explicit decision-time signal (`custody_confidence_at_decision`, captured in `orders.py`'s
    `_exec_payload()` and read back by the scorer, never reconstructed post-hoc via `aar.state_at()`)
    rather than a post-hoc heuristic. The aware/unaware split reuses the existing
-   `WEAPONS_QUALITY_THRESHOLD` as the "operator-visibly-marginal" band; per DOM-005 §7's
+   `WEAPONS_QUALITY_THRESHOLD` as the "operator-visibly-marginal" band; per [FS-201 Validity checks](../features/FS-201-competency-assessment.md)'s
    validation-disclosure discipline, `IP-2010`'s report surface must still disclose that this band
    was calibrated for the engage hard-gate, not validated as a general perceptual/awareness
    boundary — see `IP-2010`'s own Risks section for the full statement. This is now a build-ready

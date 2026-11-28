@@ -9,8 +9,8 @@
 > invariants (plan-first, fog-of-war at the session boundary, sub-stepped clock, cyber-as-exception)
 > are operator-mindset-correct, not arbitrary engineering choices
 > **Feature Mapping:** vignette authoring generally (`docs/scenarios/`), the capstone Vignette 8 and
-> any future vignette modeling C2 delegation/autonomy, White Cell facilitator design (DOM-003),
-> Red AI posture legibility (DOM-008 §3), future SDA-workflow and constellation-management features
+> any future vignette modeling C2 delegation/autonomy, White Cell facilitator design ([GDS-05](../../architecture/05-functional-requirements.md)),
+> Red AI posture legibility ([GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md), [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md)), future SDA-workflow and constellation-management features
 > **Related Topics:** [R102](R102-space-domain-awareness.md) (Space Domain Awareness),
 > [R105](R105-custody-theory.md) (Custody Theory), [R118](R118-space-surveillance-networks.md)
 > (Space Surveillance Networks), [R120](R120-access-window-and-geometry-planning.md) (Access Window
@@ -699,8 +699,8 @@ facilitator, or decision-support-tool builder should carry forward from this cha
 ## 6. Feature Mapping
 
 Vignette authoring generally (`docs/scenarios/`), the capstone Vignette 8 and any successor modeling
-C2 delegation or autonomy, White Cell facilitator tooling (DOM-003), Red AI posture legibility
-(DOM-008 §3 — a preset's place on the §3.2 graded-control spectrum and its §3.7 escalation posture
+C2 delegation or autonomy, White Cell facilitator tooling ([GDS-05](../../architecture/05-functional-requirements.md)), Red AI posture legibility
+([GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) — a preset's place on the §3.2 graded-control spectrum and its §3.7 escalation posture
 should be documented alongside its tactical parameters), and any future SDA-workflow, constellation-
 management, or servicing/disposal-planning feature.
 

@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ♻️ Living (update whenever a directory or tier is added)
 > **Dependencies:** MSTR-001
-> **Referenced By:** `docs/INDEX.md`, `ROADMAP.md`, MSTR-006, all DOM-*, all FS-*, all IMP-*
+> **Referenced By:** `docs/INDEX.md`, `ROADMAP.md`, MSTR-006, all FS-*, all IMP-*
 > **Produces:** the routing rules every new document must follow
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** > [`ROADMAP.md`](../../ROADMAP.md) (per-document completion tracker)
@@ -16,7 +16,7 @@
 This is the map of the *entire* `docs/` tree after the documentation-driven-development expansion —
 both the pre-existing themes (`research/`, `training/`, `vignettes/`; the earlier build-specification
 and design themes are retired into `architecture/`)
-and the six new directories this expansion adds (`master/`, `domains/`, `features/`,
+and the five new directories this expansion adds (`master/`, `features/`,
 `implementation/`, `architecture/`, `scenarios/`). `docs/INDEX.md` is the live router; this
 document is the rationale and the rule set for where a new document belongs. `ROADMAP.md` is the
 per-document status tracker — this document answers "where does X go," `ROADMAP.md` answers "is X
@@ -49,17 +49,6 @@ docs/
 │   ├── MSTR-006-governance-principles.md
 │   └── MSTR-007-research-philosophy.md
 │
-├── domains/                      ← NEW: DOM-001..009, the frameworks that generate Feature Specs
-│   ├── DOM-001-training-framework.md
-│   ├── DOM-002-assessment-framework.md
-│   ├── DOM-003-white-cell-framework.md
-│   ├── DOM-004-research-framework.md
-│   ├── DOM-005-validation-framework.md
-│   ├── DOM-006-governance-framework.md
-│   ├── DOM-007-human-factors-framework.md
-│   ├── DOM-008-ai-integration-framework.md
-│   └── DOM-009-doctrine-development-framework.md
-│
 ├── research/                     ← EXPANDED: existing 01-07 doctrine/physics primers (unchanged)
 │   │                                + NEW R1xx-R5xx encyclopedia tiers for coding-agent domain understanding
 │   ├── INDEX.md
@@ -81,7 +70,7 @@ docs/
 │   └── packages/IP-1010-… .md
 │
 ├── architecture/                  ← NEW: ADS-xxx Design Synthesis documents (the bridge from
-│   │                                  Domain+Research into a Feature Specification)
+│   │                                  Grounding+Research into a Feature Specification)
 │   ├── INDEX.md
 │   └── ADS-xxx-<slug>.md          ← one per capability cluster; ten fixed sections (§3a)
 │
@@ -110,7 +99,7 @@ The expansion does **not** duplicate or replace existing content. Specifically:
   the physics derivations already written there and focuses instead on implementation implications.
 - **`vignettes/` stays the content library** (the 19 YAML scenarios + framework doc). The new
   `scenarios/` directory is about *how to design* a vignette to hit a stated training/assessment
-  objective (DOM-001/DOM-002 territory) — process guidance, not additional scenario content.
+  objective (the vignette framework and FS-201 territory) — process guidance, not additional scenario content.
 - **`architecture/` is upstream of `features/`.** It is where a capability cluster's research and
   domain inputs get synthesized into a buildable shape *before* a Feature Specification commits
   to one, not a record of a decision already made about an existing subsystem. `ADS-xxx`
@@ -118,7 +107,7 @@ The expansion does **not** duplicate or replace existing content. Specifically:
 
 ### 3a. The Design Synthesis document shape (`architecture/ADS-xxx-*.md`)
 
-Each `ADS-xxx` synthesizes one capability cluster's `DOM-xxx` framework and its grounding
+Each `ADS-xxx` synthesizes one capability cluster's GDS grounding and its research
 `research/encyclopedia/` (R1xx-R5xx) + `research/01-07` primer citations into ten fixed sections,
 in this order:
 
@@ -132,7 +121,7 @@ in this order:
 4. **User Stories** — cell-perspective ("as Blue/Red/White, I need to...") scenarios the cluster
    must support, traceable back to the vignette/training objective that motivates them.
 5. **Functional Requirements** — what the capability must do, numbered, each traceable to a
-   domain (`DOM-xxx`) or research (`R-xxx`) citation.
+   GDS (`GDS-nn`) or research (`R-xxx`) citation.
 6. **Non-functional Requirements** — performance, determinism, fog-of-war, replay-safety, and
    other load-bearing invariants (`CLAUDE.md` §"Load-bearing invariants") that constrain this
    cluster specifically.
@@ -147,7 +136,7 @@ in this order:
     a one-line rationale, so a later reader can see what was considered and rejected.
 
 An `ADS-xxx` never contains production code (MSTR-006 §8) and never duplicates citations already
-established in its grounding `DOM-xxx`/`R-xxx` documents — it cites them, it doesn't re-derive
+established in its grounding `GDS-nn`/`R-xxx` documents — it cites them, it doesn't re-derive
 them. It is a **design document, not a research document**: its job is synthesis and decision, not
 new domain-knowledge claims.
 
@@ -188,13 +177,13 @@ per capability cluster with real design tension the ladder doesn't resolve at th
 Every capability in this program should be expressible as an unbroken chain:
 
 ```
-Training Objective  (named in a vignette's intro_brief / DOM-001's objective taxonomy)
+Training Objective  (named in a vignette's intro_brief / the vignette framework's objective taxonomy)
         ↓
-Domain Document      (DOM-00x — which framework owns this capability)
+Grounding            (GDS level or ADS — which architecture level states this capability)
         ↓
 Research Documents   (R1xx-R5xx — what domain knowledge justifies the design)
         ↓
-Design Synthesis     (ADS-xxx — domain+research synthesized into an architecture, domain model,
+Design Synthesis     (ADS-xxx — grounding+research synthesized into an architecture, domain model,
                        requirements, constraints, risks, and decisions — see §3a)
         ↓
 Feature Specification (FS-xxx — what the capability must do, no implementation detail;
@@ -223,7 +212,7 @@ Each document in the chain must carry, in its metadata block, the IDs of its imm
 ## 5. Where does a new document go? (decision rule)
 
 1. Is it stable, program-defining, and rarely revised? → `master/`.
-2. Does it define *how a domain of capability works* and generate Feature Specs? → `domains/`.
+2. (Retired.) The `domains/` folder held the domain frameworks; they were retired into the GDS ladder, MSTR-003 §2a, MSTR-006 §3a and §6a, FS-201 and the vignette framework. Do not add new ones; state the capability in the GDS ladder instead.
 3. Is it domain knowledge a coding agent needs to implement correctly, written for that audience? →
    `research/encyclopedia/`, tiered R1xx-R5xx by subject (see MSTR-007 §3 for the tier definitions).
 4. Does it describe *what* a capability must do, with no implementation detail? → `features/`,

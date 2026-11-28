@@ -92,7 +92,7 @@ structured as a graduated ladder rather than a flat list.
   notes, not necessarily to the trainee) about whether it represents deliberate or inadvertent
   escalation** — these test different competencies (restraint under deliberate provocation vs.
   recognizing and not over-reacting to an ambiguous signal) and should not be conflated in vignette
-  design or in any future DOM-002 assessment dimension.
+  design or in any future [FS-201](../../features/FS-201-competency-assessment.md) assessment dimension.
 - **Preserve the off-ramp property for any new reversible effect category** — a new effect marked
   `reversible=True` should genuinely have an undo/cool-down path in its mechanics, not just a label;
   per this topic's logic, a falsely-reversible effect undermines the graduated-ladder design's

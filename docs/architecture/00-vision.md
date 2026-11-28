@@ -56,7 +56,7 @@ program's lifetime, than a codebase with good docstrings and no design trail.
 Concretely:
 
 - Every capability the simulator has, or will have, should be traceable from a **training
-  objective** through a **domain framework**, through the **research** that justifies it, to a
+  objective** through its **grounding** (the GDS level or ADS that states it), through the **research** that justifies it, to a
   **Feature Specification**, to one or more **Implementation Packages**, to the code and tests that
   realize it (MSTR-005 — the documentation map).
 - Documentation is **versioned, statused, and dependency-tracked** like code (MSTR-006 —
@@ -73,11 +73,11 @@ Concretely:
 | White Cell facilitators | `docs/training/`, `docs/vignettes/`, Mission brief panels | Run exercises, write injects, debrief |
 | Operators (Red/Blue trainees) | `docs/training/`, in-app tutorial panel | Learn the tool and the doctrine it encodes |
 | Human maintainers | `docs/architecture/INDEX.md` (the binding source), `CLAUDE.md` | Understand what is built and why |
-| Future coding LLM agents | `docs/master/`, `docs/domains/`, `docs/research/` (R1xx–R5xx), `docs/features/`, `docs/implementation/` | Implement new capability without inferring intent from code |
-| Researchers / assessment designers | `docs/domains/DOM-002`, `DOM-004`, `DOM-005`, `docs/research/R200`, `R400` | Build measurement and validation on top of the simulator |
+| Future coding LLM agents | `docs/master/`, `docs/research/` (R1xx–R5xx), `docs/features/`, `docs/implementation/` | Implement new capability without inferring intent from code |
+| Researchers / assessment designers | `docs/architecture/07-data-model.md` §8, `docs/features/FS-201-competency-assessment.md`, `FS-301-research-analytics.md`, `docs/research/R200`, `R400` | Build measurement and validation on top of the simulator |
 
 (MSTR-001 §3; the LLM-agent row is the newest addition to this audience list and the one the
-`master/`/`domains/`/`features/`/`implementation/` tiers are written for — independently
+`master/`/`features/`/`implementation/` tiers are written for — independently
 retrievable, with explicit pointers rather than implicit assumptions, per MSTR-006 §4.)
 
 ## 4. Problem statement
@@ -130,7 +130,7 @@ The program succeeds when (MSTR-001 §5):
   `CLAUDE.md` "LAN trust model").
 - **Not** a vehicle for generating code in the documentation-expansion effort — that phase produces
   **only** documentation (MSTR-006 §5: describe code changes, never write them in `master/`/
-  `domains/`/`features/`/`implementation/`/`architecture/`).
+  `features/`/`implementation/`/`architecture/`).
 
 (MSTR-001 §6.)
 
@@ -159,7 +159,7 @@ statement is likewise superseded by this same declaration.)
   section for each paragraph.
 - [x] **Decision recorded:** `MSTR-001` **stays authoritative**; this document (`GDS-00`) is a
   **derivative restatement**, not a replacement. Rationale: `MSTR-001` is the root document of the
-  entire `master/` tree (`Referenced By: MSTR-002…MSTR-007, all DOM-*, all FS-*`) — dozens of other
+  entire `master/` tree (`Referenced By: MSTR-002…MSTR-007, all FS-*`) — dozens of other
   documents cite it by ID. Demoting it to a pointer would break that referential structure for no
   benefit, since `GDS-00`'s content is, by design, identical in substance. `MSTR-001` should be
   updated only if the underlying vision changes; `GDS-00` exists so the design-synthesis ladder has
@@ -178,8 +178,8 @@ in response to [`reviews/strategic-review-2026-07.md`](../reviews/strategic-revi
 had gone stale relative to `architecture/INDEX.md`'s already-declared blanket supersession of
 the v1 build specification by this ladder. This is a text correction to match a decision already made
 elsewhere, not a new architectural decision — see ADR-0031 for the full reasoning, including why
-the companion DOM-002/DOM-005-vs-FS-201/FS-301 status inconsistency the same review finding named
-is *not* corrected here (it requires actual domain-framework authoring, tracked separately).
+the companion inconsistency the same review finding named, between the assessment and validation domain documents
+(since retired) and FS-201/FS-301, is *not* corrected here (it would have required authoring those documents).
 Status remains `✅ Authored — merge gate closed`; this is an explicitly-instructed amendment, not
 a gate reopening, consistent with the precedent set by GDS-01–04's own reconciliation sections and
 by ADR-0028's equivalent direct correction of stale text in the retired v1 build specification part 03 §7.1/§7.2.

@@ -72,11 +72,11 @@ not a defect — the stub has no content yet.
 
 ## 2. Per-cluster `ADS-xxx` (unchanged)
 
-`ADS-xxx` documents sit between **Domain + Research** and **Feature Specification** in the
+`ADS-xxx` documents sit between **Grounding + Research** and **Feature Specification** in the
 traceability chain (`MSTR-005` §4):
 
 ```
-DOM-xxx (domain framework) + R-xxx (research grounding)
+GDS-nn (the ladder level that states the need) + R-xxx (research grounding)
         ↓
 ADS-xxx (this directory) — architecture, domain model, requirements, constraints, risks, decisions
         ↓
@@ -96,11 +96,11 @@ Architecture, Domain Model, User Stories, Functional Requirements, Non-functiona
 Constraints, Risks, Open Questions, Decision Log. Size discipline: ~8-15 pages equivalent
 (`MSTR-006` §4); split into `ADS-xxxA`/`ADS-xxxB` rather than writing one oversized document.
 
-| ID | Document | Capability cluster | Owning domain | Status |
+| ID | Document | Capability cluster | Grounding | Status |
 |---|---|---|---|---|
-| [ADS-3500](ADS-3500-role-scoped-command-enforcement.md) | Role-Scoped Command Enforcement | (GDS-04 §1.10-grounded; no owning DOM) | ✅ Authored |
-| [ADS-5100A](ADS-5100A-vignette-creator-session-and-ui.md) | Vignette Creator — Authoring Session & UI Architecture | (R1xx-grounded; no owning DOM) | ✅ Authored |
-| [ADS-5100B](ADS-5100B-typed-parameters-and-per-cell-roe.md) | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | (GDS-04-grounded; no owning DOM) | ✅ Authored |
+| [ADS-3500](ADS-3500-role-scoped-command-enforcement.md) | Role-Scoped Command Enforcement | (GDS-04 §1.10-grounded) | ✅ Authored |
+| [ADS-5100A](ADS-5100A-vignette-creator-session-and-ui.md) | Vignette Creator — Authoring Session & UI Architecture | (R1xx-grounded) | ✅ Authored |
+| [ADS-5100B](ADS-5100B-typed-parameters-and-per-cell-roe.md) | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | (GDS-04-grounded) | ✅ Authored |
 | [ADS-1500](ADS-1500-per-cell-custody-estimated-state-and-export.md) | Per-Cell Custody — Estimated-State History & Export | R105-grounded; FS-103 | ✅ Authored |
 
 **ADS-3500 (2026-07-05):** the first `ADS-xxx` authored in this project — resolves two
@@ -159,7 +159,7 @@ Open Questions the ladder left genuinely open and were resolved afterward by exp
 project-owner decision; 2 (ADR-0030–0031) were added in direct response to
 [`reviews/strategic-review-2026-07.md`](../reviews/strategic-review-2026-07.md) — see
 [`reviews/architecture-update.md`](../reviews/architecture-update.md); 2 more (ADR-0032–0033) were
-added to resolve conflicts a `04-requirements-engineering` pass found between `DOM-002`/`004` and
+added to resolve conflicts a `04-requirements-engineering` pass found between the retired assessment and research domain documents and
 `ADR-0017`/`ADR-0029` — see [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md).
 `ADR-0033` supersedes `ADR-0029`, this corpus's first `Superseded` entry; 2 (ADR-0034–0035) closed
 FS-105's directed-energy Open Questions; 2 (ADR-0036–0037) answer the load-validation batch's
@@ -180,5 +180,5 @@ space-weather index-mapping Open Questions, `BL-0104`/`BL-0121`).
 [`MSTR-005`](../master/MSTR-005-documentation-map.md) §3a/§4 (document shape, chain placement),
 [`MSTR-006`](../master/MSTR-006-governance-principles.md) §4/§5/§6 (size discipline, metadata
 block, conflict handling), [`features/feature-index.md`](../features/feature-index.md) (the next
-stage in the chain), [`domains/INDEX.md`](../domains/INDEX.md) (the frameworks this tier draws
+stage in the chain), the research encyclopedia and the GDS ladder (what this tier draws
 from).

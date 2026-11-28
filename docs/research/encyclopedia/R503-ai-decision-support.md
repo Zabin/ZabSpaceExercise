@@ -5,22 +5,22 @@
 > **Status:** ✅ Done
 > **Dependencies:** [R501](R501-human-ai-teaming.md)
 > **Referenced By:** [R506](R506-machine-reasoning.md), [R509](R509-ai-integration-patterns.md)
-> **Produces:** the concrete decision-support-feature vocabulary directly operationalizing DOM-008 §4's "advisor, not decider" line
-> **Feature Mapping:** any future in-world AI decision-support feature (🅿️ pending authorization per DOM-008 §4)
+> **Produces:** the concrete decision-support-feature vocabulary directly operationalizing [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s "advisor, not decider" line
+> **Feature Mapping:** any future in-world AI decision-support feature (🅿️ pending authorization per [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md))
 > **Related Topics:** [R210](R210-decision-support-systems.md) (Decision Support Systems — the general 4-level spectrum this topic
-> applies to the specific in-world-AI case), DOM-008 §4 (the direct governing constraint), [R501](R501-human-ai-teaming.md)
+> applies to the specific in-world-AI case), [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md) (the direct governing constraint), [R501](R501-human-ai-teaming.md)
 > (Human-AI Teaming)
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 1 (Tier B peer-reviewed military-decision-support source, distinct from R210's — see §3 Sources)
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
 
-**DOM-008 §6 tag:** in-world AI (a hypothetical trainee-facing feature; not coding-agent practice).
+**R500 tag:** in-world AI (a hypothetical trainee-facing feature; not coding-agent practice).
 
 ## 1. Purpose
 
 [R210](R210-decision-support-systems.md) supplies the general 4-level decision-support spectrum (data/information/recommendation/
-decision); this topic applies that spectrum specifically to the concrete case DOM-008 §4 already
+decision); this topic applies that spectrum specifically to the concrete case [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md) already
 names — a future in-world AI assistant for the trainee — and works through what such a feature could
 and could not legitimately do under the advisor-only constraint.
 
@@ -37,9 +37,9 @@ about what the feature is allowed to surface to the trainee, not how it computes
 
 ## 3. Concepts
 
-**Where DOM-008 §4's line falls on [R210](R210-decision-support-systems.md)'s spectrum.** [R210](R210-decision-support-systems.md)'s levels 1-2 (data, information) are
+**Where [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s line falls on [R210](R210-decision-support-systems.md)'s spectrum.** [R210](R210-decision-support-systems.md)'s levels 1-2 (data, information) are
 clearly within bounds for any future in-world advisor; level 3 (recommendation — "here is a candidate
-action and why") is the explicit ceiling DOM-008 §4 permits; level 4 (the system decides) is
+action and why") is the explicit ceiling [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md) permits; level 4 (the system decides) is
 explicitly out of bounds — a future feature proposal should be checked against landing at level 3 or
 below, never level 4.
 
@@ -93,7 +93,7 @@ be required to expose its reasoning, not just its conclusion.
 AI decision-support systems in real military and aviation contexts have repeatedly run into exactly
 this tension — a recommendation system technically classified as "advisory" that in practice
 functions as a decision-maker because operators uncritically accept its output under time pressure,
-as documented in the 2003 Patriot fratricide analysis above — which is precisely why DOM-008 §4's
+as documented in the 2003 Patriot fratricide analysis above — which is precisely why [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s
 "advisor, not decider" framing and this topic's explainability requirement matter as design
 constraints, not just labels.
 
@@ -105,7 +105,7 @@ section.
 ## 5. Implementation Guidance
 
 - **Any future in-world AI decision-support feature must cap itself at [R210](R210-decision-support-systems.md)'s level 3
-  (recommendation), never level 4 (decision)**, per DOM-008 §4 — and should expose its underlying
+  (recommendation), never level 4 (decision)**, per [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md) — and should expose its underlying
   reasoning, not just a bare recommendation, per the explainability concern above.
 - **Design the interface to slow down, not speed up, acceptance of a recommendation under time
   pressure** — per the Cummings/Patriot finding (§3), a level-3 feature's formal safety can be
@@ -116,7 +116,7 @@ section.
 - **Evaluate any proposed advisor feature against whether it preserves a genuine judgment task for
   the trainee** — per MSTR-003's plan-execute learning model, an advisor that is always right and
   always deferred to has defeated the exercise's pedagogical purpose even while staying formally
-  within DOM-008 §4's letter.
+  within [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s letter.
 - **Treat an opaque, unexplained recommendation as a design smell** — even if formally level 3, an
   unexplained recommendation functions like automation-bias bait and should be redesigned to expose
   its reasoning before being built.
@@ -124,9 +124,9 @@ section.
 ## 6. Feature Mapping
 
 Any future in-world AI decision-support feature is the direct consumer; none exists yet (🅿️ pending
-authorization per DOM-008 §4).
+authorization per [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)).
 
 ## 7. Related Topics
 
-[R210](R210-decision-support-systems.md) (Decision Support Systems, the general spectrum), DOM-008 §4 (the governing constraint), [R501](R501-human-ai-teaming.md)
+[R210](R210-decision-support-systems.md) (Decision Support Systems, the general spectrum), [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md) (the governing constraint), [R501](R501-human-ai-teaming.md)
 (Human-AI Teaming).

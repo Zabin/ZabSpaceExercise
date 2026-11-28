@@ -11,7 +11,7 @@
 > persistence/schema portion, superseded by this document; the conceptual-entity portion went to
 > GDS-04), [GDS-04](04-domain-model.md) (the concepts these structures store),
 > [GDS-06](06-non-functional-requirements.md) (NFR-3, NFR-12, NFR-13, NFR-15 constrain them),
-> ADR-0002, ADR-0007, ADR-0022, ADR-0036, ADR-0038. Absorbs DOM-002 §5 and DOM-004 §4–§5 (see
+> ADR-0002, ADR-0007, ADR-0022, ADR-0036, ADR-0038. Absorbs the retired assessment domain document §5 and the retired research domain document §4–§5 (see
 > "Merge gate").
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
@@ -222,7 +222,7 @@ back. All time-span exports share one sampling choke point (`ephemeris.sample_ti
 
 ## 8. Research and assessment records
 
-*(Absorbs DOM-004 §4–§5 and DOM-002 §5.)*
+*(Absorbs the retired research domain document §4–§5 and the retired assessment domain document §5.)*
 
 - **The event log is the research record.** Because it is complete and deterministic (NFR-3,
   NFR-12), a run is fully described by vignette + parameter values + seed + event log: a
@@ -297,7 +297,7 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
 - **OQ3 — Two save shapes. Decided 2026-10-23: keep both.** `SavedSession` (engine, the determinism
   test's shape) and `save_state` (session envelope for the web) stay separate; no convergence
   (FS-110 Decision 4).
-- **OQ4 — No persistent learner identity.** DOM-002 §7 asks for per-trainee competency reporting
+- **OQ4 — No persistent learner identity.** The retired assessment domain document §7 asked for per-trainee competency reporting
   across exercises. Nothing stores a trainee identity or links runs over time; `RunRecord` is per
   run and per cell. This is a capability gap, not a data-model defect, and it is a feature
   decision (FS-201 scope), recorded here so the data model does not imply it exists.
@@ -320,10 +320,10 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
 - [x] **Split drawn consistently with GDS-04.** GDS-04 keeps concepts and relationships; this
   document holds field groups, formats, locations and validation, and points back to GDS-04 rather
   than restating what each entity means.
-- [x] **DOM content absorbed (`BL-0293`).** Absorbed: DOM-004 §4 (the event log as reproducible,
+- [x] **DOM content absorbed (`BL-0293`).** Absorbed: the retired research domain document §4 (the event log as reproducible,
   complete research record) and §5 (research export with run metadata, now `RunRecord`) into §8;
-  DOM-002 §5 (rubric, never a single score) into §8. Recorded as a gap rather than absorbed: DOM-002
-  §7 (longitudinal per-trainee reporting) → OQ4. No other DOM section has data-model content.
+  the retired assessment domain document §5 (rubric, never a single score) into §8. Recorded as a gap rather than absorbed: the retired assessment domain document
+  §7 (longitudinal per-trainee reporting) → OQ4. No other domain document section had data-model content.
 - [x] **Decision recorded:** **this document is the authoritative data model**, and
   the retired design corpus part 04 (data model) is superseded in full: GDS-04 already took its conceptual portion, and
   this document takes its schema portion, corrected to the shipped models. The retired design corpus part 04 is not

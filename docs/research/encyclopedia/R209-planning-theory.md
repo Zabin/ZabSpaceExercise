@@ -85,7 +85,7 @@ gap this topic formalizes between plan-as-prediction and plan-as-revisable-commi
   keeping branch points explicit and visible is what makes them debrief-able in the AAR per MSTR-003
   §6.
 - **Don't let a future autonomous planning assistant ([R507](R507-autonomous-planning-systems.md)) silently re-plan on the operator's
-  behalf when conditions change** — per DOM-008 §4, surfacing "this plan's window assumption no
+  behalf when conditions change** — per [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md), surfacing "this plan's window assumption no
   longer holds, reconsider" is advisory; automatically substituting a new plan is not.
 
 ## 6. Feature Mapping

@@ -3,11 +3,11 @@
 > **Document ID:** FS-104
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** [DOM-009](../domains/DOM-009-doctrine-development-framework.md), [R102](../research/encyclopedia/R102-space-domain-awareness.md), [R104](../research/encyclopedia/R104-collection-management.md), [R109](../research/encyclopedia/R109-sensor-operations.md), [R118](../research/encyclopedia/R118-space-surveillance-networks.md), [R119](../research/encyclopedia/R119-space-situational-data-fusion.md)
-> **Referenced By:** [IP-1041](../implementation/packages/IP-1041-observe-order-reason-and-param-remediation.md) (✅ VERIFIED, observe-order remediation, VR-1041), [DOM-009](../domains/DOM-009-doctrine-development-framework.md), [R102](../research/encyclopedia/R102-space-domain-awareness.md), [R104](../research/encyclopedia/R104-collection-management.md), [R109](../research/encyclopedia/R109-sensor-operations.md), [R118](../research/encyclopedia/R118-space-surveillance-networks.md), [R119](../research/encyclopedia/R119-space-situational-data-fusion.md), IMP-104A
+> **Dependencies:** [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md), [R102](../research/encyclopedia/R102-space-domain-awareness.md), [R104](../research/encyclopedia/R104-collection-management.md), [R109](../research/encyclopedia/R109-sensor-operations.md), [R118](../research/encyclopedia/R118-space-surveillance-networks.md), [R119](../research/encyclopedia/R119-space-situational-data-fusion.md)
+> **Referenced By:** [IP-1041](../implementation/packages/IP-1041-observe-order-reason-and-param-remediation.md) (✅ VERIFIED, observe-order remediation, VR-1041), [R102](../research/encyclopedia/R102-space-domain-awareness.md), [R104](../research/encyclopedia/R104-collection-management.md), [R109](../research/encyclopedia/R109-sensor-operations.md), [R118](../research/encyclopedia/R118-space-surveillance-networks.md), [R119](../research/encyclopedia/R119-space-situational-data-fusion.md), IMP-104A
 > **Produces:** fresh custody data consumed by [FS-103](FS-103-custody-management.md)
 > **Feature Mapping:** FS-104 (this document)
-> **Related Topics:** [FS-103](FS-103-custody-management.md) (the custody picture this feature updates), [DOM-009](../domains/DOM-009-doctrine-development-framework.md) §6 (SSN
+> **Related Topics:** [FS-103](FS-103-custody-management.md) (the custody picture this feature updates), [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md) (SSN
 > dispersion presets as doctrine data)
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
@@ -26,7 +26,7 @@ SDA Tasking
 
 SDA Tasking is the capability by which a cell directs its own sensors and/or requests off-board
 (SSN) collection to advance its space domain awareness — detect, track, identify, characterize,
-predict (the SDA chain per [R102](../research/encyclopedia/R102-space-domain-awareness.md) §3). It is the second of [DOM-009](../domains/DOM-009-doctrine-development-framework.md)'s two named Feature
+predict (the SDA chain per [R102](../research/encyclopedia/R102-space-domain-awareness.md) §3). It is the second of [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md)'s two named Feature
 Specifications (alongside [FS-103](FS-103-custody-management.md)) through which doctrine — collection-management posture and
 SSN dispersion realism — becomes playable content.
 
@@ -79,7 +79,7 @@ rewrite may resolve by inference.
 - **Fusion output must extend the existing tasking display, not replace it.** Per [R119](../research/encyclopedia/R119-space-situational-data-fusion.md) §5, any
   richer multi-source fusion capability must layer onto the existing track-confidence display
   ([FS-103](FS-103-custody-management.md)) rather than introducing a second, parallel confidence representation.
-- **Doctrine differences live in data.** Per [DOM-009](../domains/DOM-009-doctrine-development-framework.md) §3-4, a vignette's collection-management
+- **Doctrine differences live in data.** Per [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md), a vignette's collection-management
   posture (sparse/regional/global/proliferated SSN dispersion) is doctrine-derived data feeding
   this feature; SDA Tasking's behavior is uniform across vignettes; doctrine differences live in
   the dispersion-preset parameters, not in the tasking logic.
@@ -158,7 +158,7 @@ an Open Question below.
 
 ## Dependencies
 
-[DOM-009](../domains/DOM-009-doctrine-development-framework.md), [R102](../research/encyclopedia/R102-space-domain-awareness.md), [R104](../research/encyclopedia/R104-collection-management.md), [R109](../research/encyclopedia/R109-sensor-operations.md), [R118](../research/encyclopedia/R118-space-surveillance-networks.md), [R119](../research/encyclopedia/R119-space-situational-data-fusion.md) (per the existing
+[Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md), [R102](../research/encyclopedia/R102-space-domain-awareness.md), [R104](../research/encyclopedia/R104-collection-management.md), [R109](../research/encyclopedia/R109-sensor-operations.md), [R118](../research/encyclopedia/R118-space-surveillance-networks.md), [R119](../research/encyclopedia/R119-space-situational-data-fusion.md) (per the existing
 metadata block's Dependencies field). [FS-103](FS-103-custody-management.md) is a downstream consumer (the custody surface
 this feature feeds), not an upstream dependency of FS-104.
 
@@ -166,7 +166,7 @@ this feature feeds), not an upstream dependency of FS-104.
 
 - If SSN dispersion preset differences require engine special-casing (rather than data parameters),
   Custody Management's stated uniform behavior across vignettes is violated — this risk is named
-  explicitly in [DOM-009](../domains/DOM-009-doctrine-development-framework.md) §4.
+  explicitly in [Vignette framework, Doctrine to content](../vignettes/00-vignette-framework.md).
 - Fusion output introducing a second, parallel confidence representation (rather than layering on
   FS-103's existing display) would create a conflicting confidence indicator, violating [R119](../research/encyclopedia/R119-space-situational-data-fusion.md) §5's
   stated constraint.

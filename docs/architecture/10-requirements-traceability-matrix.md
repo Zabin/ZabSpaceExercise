@@ -46,8 +46,8 @@ Each level absorbed the document named and was gated on the one before:
 | GDS-03 Architecture | the retired design corpus part 01 | ✅ |
 | GDS-04 Domain Model | the retired design corpus part 04 (conceptual half) | ✅ |
 | GDS-05 Functional Requirements | the retired v1 build specification part 02 §5–6 (superseded) | ✅ |
-| GDS-06 Non-functional Requirements | the retired v1 build specification part 04 §9 (superseded); DOM-005, -007, -008 content | ✅ |
-| GDS-07 Data Model | the retired design corpus part 04 (schema half; superseded); DOM-002, -004 content | ✅ |
+| GDS-06 Non-functional Requirements | the retired v1 build specification part 04 §9 (superseded); the retired validation, human-factors and AI-integration domain documents' content | ✅ |
+| GDS-07 Data Model | the retired design corpus part 04 (schema half; superseded); the retired assessment and research domain documents' content | ✅ |
 | GDS-08 UI Architecture | the retired design corpus parts 09, 05 and 10 (superseded); the retired v1 build specification part 07, the retired design corpus part 06 UI content | ✅ |
 | GDS-09 API Specification | the retired design corpus part 07 (superseded); ICD kept as companion inventory | ✅ |
 | GDS-10 Traceability (this) | Net-new at tag grain; companion of `requirements/03` | ✅ |

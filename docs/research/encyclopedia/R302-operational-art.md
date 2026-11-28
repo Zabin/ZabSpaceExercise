@@ -50,7 +50,7 @@ establishing operational and strategic conditions ([JP 5-0](https://www.jcs.mil/
 §IV.3). A vignette's objective set can be read as instantiating one or more lines — e.g. a sequence
 of access windows building toward sustained custody of a regime is a line of operation; "degrade
 adversary SDA confidence" pursued through a mix of EW, cyber, and deception across multiple assets is
-a line of effort — useful vocabulary for DOM-009's doctrine-translation step when justifying why a
+a line of effort — useful vocabulary for [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)'s doctrine-translation step when justifying why a
 vignette's objectives were chosen as they were.
 
 **Operational reach and culmination.** JP 5-0 defines *operational reach* as the distance and
@@ -83,7 +83,7 @@ skill, decide real campaigns.
 ## 5. Implementation Guidance
 
 - **A vignette's `intro_brief` mission statement should be traceable to a line of operation/effort**,
-  even informally — this gives DOM-009's doctrine-translation step a concrete artifact to check, and
+  even informally — this gives [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)'s doctrine-translation step a concrete artifact to check, and
   gives a White Cell facilitator language for explaining to trainees *why* a vignette's objectives
   are shaped the way they are, beyond "these are the win conditions."
 - **A vignette's resource budget (fleet size, Δv allowance, SSN dispersion preset) should be tuned to
@@ -92,7 +92,7 @@ skill, decide real campaigns.
   design choice only when explicitly intended (e.g. an onboarding vignette where resource scarcity
   would distract from the mechanic being taught).
 - **Don't conflate tempo (operational-level pacing across many exchanges) with the engine's
-  time-acceleration control** — White Cell's clock speed (DOM-003 §5) is a facilitation tool, not a
+  time-acceleration control** — White Cell's clock speed ([GDS-05 `FR-W3`](../../architecture/05-functional-requirements.md)) is a facilitation tool, not a
   simulated tempo advantage; a tempo *lesson* should come from the scenario's resource/access design,
   not from literally running the clock faster for one side.
 

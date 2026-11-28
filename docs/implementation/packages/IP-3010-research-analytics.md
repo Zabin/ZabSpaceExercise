@@ -50,7 +50,7 @@ Research Analytics — Multi-Run Export
 
 ## Objective
 
-Close the gap DOM-004 §5 names explicitly: give a researcher a purpose-built batch-run and
+Close the gap [GDS-07 §8](../../architecture/07-data-model.md) names explicitly: give a researcher a purpose-built batch-run and
 structured-export layer (vignette ID, seed, condition label, plus IP-2010's per-run rubric output)
 so instrument-grade research against SpaceSim does not require scripting directly against raw
 `eventlog`/`save` artifacts — without relaxing engine determinism (variability comes from varying
@@ -187,7 +187,7 @@ below holds against the live tree.)*
   anywhere in this package's code — `RunRecord`'s only fields are `vignette_id`/`seed`/
   `condition_label`/`assessment` (IP-2010's own per-cell tier dict); no trainee-identity or
   cross-institution field of any kind.
-- [x] Each exported metric's validity-check level (per DOM-005 §5, inherited from IP-2010's own
+- [x] Each exported metric's validity-check level (per [FS-201 Validity checks](../../features/FS-201-competency-assessment.md), inherited from IP-2010's own
   disclosure) is carried through to the export, not silently dropped — `assessment_report`'s
   `disclosure` field is part of the per-cell dict `RunRecord.assessment` stores verbatim, so it
   round-trips through both `export_csv` (as a `disclosure` column) and `export_json` unchanged.
@@ -230,8 +230,8 @@ live tree, not merely the Implementation Summary.)*
   `IP-2010`'s verification status before signing off on `IP-3010` as built on stable ground.
 - **Authorization risk (resolved 2026-07-03, run #9):** MSTR-006 §3's explicit, separate user
   go-ahead is now on record (`docs/pipeline/pipeline-journal.md` run #9).
-- If any future revision of this package adds a human-subjects capability without triggering DOM-004
-  §6's separate authorization and IRB/ethics process, it violates FS-301's explicit non-goal.
+- If any future revision of this package adds a human-subjects capability without triggering the separate authorization and IRB/ethics process (see [FS-301](../../features/FS-301-research-analytics.md) Scope and
+  [MSTR-006](../../master/MSTR-006-governance-principles.md) §3), it violates FS-301's explicit non-goal.
   **Confirmed respected in the 2026-07-04 implementation** — see Definition of Done.
 - If the batch runner is implemented with any shared mutable state between seeded runs (e.g., a
   cached `Simulation` instance reused across seeds), determinism/reproducibility could be silently

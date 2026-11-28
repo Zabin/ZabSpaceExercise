@@ -237,8 +237,8 @@ process, before the package may advance to `VERIFIED`.)*
 - [x] Deferred dimensions (resource economy, escalation discipline, time-to-decision) are absent
   from the report, not substituted with a default.
 - [x] Every scoring function is verified read-only (no `WorldState` mutation) by a dedicated test.
-- [x] Each reported dimension's report surface discloses that it has not undergone a DOM-005 §5
-  validity check beyond face validity (per FS-201's Validation Discipline requirement) — the report
+- [x] Each reported dimension's report surface discloses that it has not undergone an [FS-201 Validity check](../../features/FS-201-competency-assessment.md)
+  beyond face validity (per FS-201's Validation Discipline requirement) — the report
   must not imply a validated metric.
 - [x] `custody_confidence_at_decision` is populated on every `DECISION_KINDS` event whose order had
   a target the issuing cell held a track on, and is `None` on every event without one, verified by a
@@ -295,7 +295,7 @@ process, before the package may advance to `VERIFIED`.)*
   boundary for every action type this scorer now covers (jam/observe/maneuver targets are not
   gated by it the way engage is). Reusing it as the "operator-visibly-marginal" band is a reasonable,
   non-arbitrary choice — it is the one number already displayed and already meaningful to operators —
-  but it is still a design choice, not a measured fact, and the report's DOM-005 §5 face-validity
+  but it is still a design choice, not a measured fact, and the report's [FS-201 Validity checks](../../features/FS-201-competency-assessment.md) face-validity
   disclosure (Definition of Done, above) must say so explicitly rather than presenting the
   aware/unaware split as validated.
 - Modifying `engine/custody.py`/`engine/orders.py` — files two already-`VERIFIED` packages

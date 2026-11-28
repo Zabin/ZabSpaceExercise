@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Stable
 > **Dependencies:** MSTR-001
-> **Referenced By:** MSTR-007, all DOM-*, all FS-*, all IMP-*, `docs/architecture/`
+> **Referenced By:** MSTR-007, all FS-*, all IMP-*, `docs/architecture/`
 > **Produces:** the constraints every Feature Specification and Implementation Package must satisfy
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** [`docs/architecture/03-architecture.md`](../architecture/03-architecture.md),
@@ -34,7 +34,7 @@ violates one of these is wrong by definition, independent of test results.
    Implementation Package may propose a change that requires relaxing it.
 2. **UI-agnostic engine.** `engine/` imports no UI or transport code, enforced by an AST-scanning
    test (`test_import_guard.py`), not a linter convention. This is what lets the same engine drive a
-   desktop UI, a web UI, or a headless batch-experiment harness (see DOM-004/DOM-005) without
+   desktop UI, a web UI, or a headless batch-experiment harness (see FS-301 and GDS-07 §8) without
    forking core logic.
 3. **Fog-of-war at the boundary.** Filtering to a cell's belief state happens at
    `SessionAPI`/`CellController`, never in the UI layer. A UI bug can leak pixels; it must never be
@@ -43,7 +43,7 @@ violates one of these is wrong by definition, independent of test results.
    say explicitly which side of this boundary it sits on.
 4. **Plan-first.** Operators plan commands that execute at the next valid access window and task
    sensors for collection; they never act instantly on perfect knowledge. This is a pedagogical
-   requirement as much as a technical one — see DOM-001 §"Plan-execute as the unit of learning" —
+   requirement as much as a technical one — see MSTR-003 §3 (Plan-execute as the unit of learning) —
    and it constrains UI design (no "instant fire" button can exist without a window check behind
    it) and engine design (every effect-producing action routes through `OrderSystem`).
 5. **Sub-step the clock.** Advance to the next scheduled event, never past it. A naive large step at

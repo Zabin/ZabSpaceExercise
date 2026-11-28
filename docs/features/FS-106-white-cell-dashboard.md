@@ -34,15 +34,15 @@
 > Scope, User Workflows, System Behaviour, Subsystem Responsibilities, Data Model Changes, State
 > Changes, Error Handling, Security Considerations, Acceptance Criteria, Verification Plan and
 > Risks. No v2.2 field's substance changed.
-> **Dependencies:** [DOM-003](../domains/DOM-003-white-cell-framework.md), [DOM-001](../domains/DOM-001-training-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md)
-> **Referenced By:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md), IMP-106A · [IP-1064](../implementation/packages/IP-1064-condition-inject-follow-ups.md) (✅ VERIFIED 2026-10-17, VR-1064 v2.0), [IP-1065](../implementation/packages/IP-1065-console-and-session-small-fixes.md) (✅ VERIFIED 2026-10-17, VR-1065), [IP-1066](../implementation/packages/IP-1066-pending-inject-edit-cancel.md) (✅ VERIFIED 2026-10-18, [VR-1066](../implementation/verification/VR-1066-pending-inject-edit-cancel.md)), [IP-1067](../implementation/packages/IP-1067-side-by-side-controller-view.md) (✅ VERIFIED 2026-10-18, [VR-1067](../implementation/verification/VR-1067-side-by-side-controller-view.md)), [IP-1068](../implementation/packages/IP-1068-white-only-controls-server-enforcement.md) (✅ VERIFIED 2026-10-24, [VR-1068](../implementation/verification/VR-1068-white-only-controls-server-enforcement.md)); [IP-1072](../implementation/packages/IP-1072-white-only-extension.md) (✅ VERIFIED 2026-10-24, [VR-1072](../implementation/verification/VR-1072-white-only-extension.md)); [IP-1073](../implementation/packages/IP-1073-console-refusal-wiring.md) (✅ VERIFIED 2026-10-24, [VR-1073](../implementation/verification/VR-1073-console-refusal-wiring.md)); [IP-1074](../implementation/packages/IP-1074-white-control-correctness.md) (✅ VERIFIED 2026-10-24, [VR-1074](../implementation/verification/VR-1074-white-control-correctness.md)); [IP-1075](../implementation/packages/IP-1075-undo-clock-floor.md) (✅ VERIFIED 2026-10-24, [VR-1075](../implementation/verification/VR-1075-undo-clock-floor.md)); [IP-1076](../implementation/packages/IP-1076-time-bound-and-console-refusals.md) (✅ VERIFIED 2026-10-24, [VR-1076](../implementation/verification/VR-1076-time-bound-and-console-refusals.md)); [IP-1077](../implementation/packages/IP-1077-aar-playback-seat-checks.md) (✅ VERIFIED 2026-10-24, [VR-1077](../implementation/verification/VR-1077-aar-playback-seat-checks.md))
+> **Dependencies:** [GDS-05](../architecture/05-functional-requirements.md), [MSTR-003](../master/MSTR-003-educational-philosophy.md), [Vignette framework](../vignettes/00-vignette-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md)
+> **Referenced By:** [R106](../research/encyclopedia/R106-mission-operations.md), [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md), [R308](../research/encyclopedia/R308-red-teaming-methodology.md), IMP-106A · [IP-1064](../implementation/packages/IP-1064-condition-inject-follow-ups.md) (✅ VERIFIED 2026-10-17, VR-1064 v2.0), [IP-1065](../implementation/packages/IP-1065-console-and-session-small-fixes.md) (✅ VERIFIED 2026-10-17, VR-1065), [IP-1066](../implementation/packages/IP-1066-pending-inject-edit-cancel.md) (✅ VERIFIED 2026-10-18, [VR-1066](../implementation/verification/VR-1066-pending-inject-edit-cancel.md)), [IP-1067](../implementation/packages/IP-1067-side-by-side-controller-view.md) (✅ VERIFIED 2026-10-18, [VR-1067](../implementation/verification/VR-1067-side-by-side-controller-view.md)), [IP-1068](../implementation/packages/IP-1068-white-only-controls-server-enforcement.md) (✅ VERIFIED 2026-10-24, [VR-1068](../implementation/verification/VR-1068-white-only-controls-server-enforcement.md)); [IP-1072](../implementation/packages/IP-1072-white-only-extension.md) (✅ VERIFIED 2026-10-24, [VR-1072](../implementation/verification/VR-1072-white-only-extension.md)); [IP-1073](../implementation/packages/IP-1073-console-refusal-wiring.md) (✅ VERIFIED 2026-10-24, [VR-1073](../implementation/verification/VR-1073-console-refusal-wiring.md)); [IP-1074](../implementation/packages/IP-1074-white-control-correctness.md) (✅ VERIFIED 2026-10-24, [VR-1074](../implementation/verification/VR-1074-white-control-correctness.md)); [IP-1075](../implementation/packages/IP-1075-undo-clock-floor.md) (✅ VERIFIED 2026-10-24, [VR-1075](../implementation/verification/VR-1075-undo-clock-floor.md)); [IP-1076](../implementation/packages/IP-1076-time-bound-and-console-refusals.md) (✅ VERIFIED 2026-10-24, [VR-1076](../implementation/verification/VR-1076-time-bound-and-console-refusals.md)); [IP-1077](../implementation/packages/IP-1077-aar-playback-seat-checks.md) (✅ VERIFIED 2026-10-24, [VR-1077](../implementation/verification/VR-1077-aar-playback-seat-checks.md))
 > **Produces:** the facilitation surface [FS-108](FS-108-inject-authoring.md) (candidate) would extend; remediation package [IP-1061](../implementation/packages/IP-1061-inject-and-sizing-defect-remediation.md) (`FR-4410` defects, 2026-09-26); [IP-1062](../implementation/packages/IP-1062-condition-triggered-injects-and-new-effects.md) (`FR-4420`/`FR-4430`, ✅ `VERIFIED`, [VR-1062](../implementation/verification/VR-1062-condition-triggered-injects-and-new-effects.md)); remediation package [IP-1063](../implementation/packages/IP-1063-inject-effect-fire-time-validation.md) (`FR-4430`/`FR-4410` inject fire-time validation, `BL-0129`/`BL-0188`, ✅ `VERIFIED`, [VR-1063](../implementation/verification/VR-1063-inject-effect-fire-time-validation.md))
 > **Feature Mapping:** FS-106 (this document)
 > **Related Topics:** [FS-107](FS-107-after-action-review.md) (White-only AAR controls), [FS-109](FS-109-multiplayer-session-transport.md)
 > (the underlying session/clock transport this dashboard's admin panel triggers), [FS-110](FS-110-save-and-resume.md)
 > (the underlying save/resume mechanism this dashboard's admin panel triggers), [FS-111](FS-111-ai-red-doctrine-automation.md)
 > (the underlying doctrine-preset generation mechanism this dashboard's preset selector controls),
-> [DOM-002](../domains/DOM-002-assessment-framework.md) §6 (facilitator-rubric assessment mode, hosted here)
+> [FS-201 System Behaviour (Assessment modes)](FS-201-competency-assessment.md) (facilitator-rubric assessment mode, hosted here)
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
 
@@ -66,7 +66,7 @@ White Cell Dashboard
 
 The White Cell Dashboard is the facilitator's console: unrestricted god-view across both cells,
 inject authoring/scheduling, clock/pacing control authority, and manual adjudication. Per
-[DOM-003](../domains/DOM-003-white-cell-framework.md) §1, it must trace back to White Cell's role
+[MSTR-003 §7](../master/MSTR-003-educational-philosophy.md), it must trace back to White Cell's role
 as instructional designer ([MSTR-003](../master/MSTR-003-educational-philosophy.md) §7), not a
 neutral referee — every capability in this spec exists to let a facilitator *shape* the learning
 experience in real time, not merely observe it.
@@ -178,11 +178,11 @@ seat), in `FEAT-4300` beside `FR-4310` (run #212 sweep).
 ## System Behaviour
 
 - **Must expose unrestricted god-view without granting Red/Blue any new ground-truth access.** Per
-  [DOM-003](../domains/DOM-003-white-cell-framework.md) §3, any new god-view-only capability is
+  [GDS-05 `FR-W6`](../architecture/05-functional-requirements.md) and [GDS-09 §4](../architecture/09-api-specification.md), any new god-view-only capability is
   acceptable; any capability that would let Red/Blue access ground truth through this dashboard is
   a fog-of-war violation regardless of framing.
 - **Inject authoring must work against the existing `inject_library.yaml` mechanism, not duplicate
-  it.** Per [DOM-003](../domains/DOM-003-white-cell-framework.md) §4, the dashboard exposes the
+  it.** Per [GDS-05 `FR-W4`/`FR-W8`](../architecture/05-functional-requirements.md) and [GDS-08 §7.6](../architecture/08-ui-architecture.md), the dashboard exposes the
   five reusable templates with editable-JSON + Now/+seconds/absolute-UTC scheduler (FR-4410); the
   inject *execution* path is engine-side and out of scope to re-implement.
 - **Clock/pacing control authority (FR-4310) must remain exclusively White Cell's**, applying
@@ -211,7 +211,7 @@ seat), in `FEAT-4300` beside `FR-4310` (run #212 sweep).
 - **No automated scoring exists anywhere in the outbound interface set (FR-4710).** Live parameter
   adjustment (FR-4720, e.g. safe-mode dials) takes effect on the next evaluation with no session
   restart.
-- **Red-doctrine-preset visibility and control is a facilitator-tooling requirement** (DOM-003 §7):
+- **Red-doctrine-preset visibility and control is a facilitator-tooling requirement** (visibility: [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md); control: no requirement yet):
   the facilitator needs visibility into which preset drives Red and the ability to switch or
   hand-tune it mid-exercise — an unconvincing or passive Red undermines training per
   [R308](../research/encyclopedia/R308-red-teaming-methodology.md). The preset's own behavior once
@@ -256,11 +256,11 @@ seat), in `FEAT-4300` beside `FR-4310` (run #212 sweep).
     difference between panels is a difference in belief, never a clock skew between reads.
   - **Read-only.** The view grants White Cell no write access to either cell's state through this
     display path (`FR-4620` Postcondition).
-- **Authority-tier statement** (DOM-003 §8): this spec now touches three of DOM-003's four
+- **Authority-tier statement** ([GDS-05 `FR-W6`](../architecture/05-functional-requirements.md)): this spec now touches three of the retired White Cell domain document's four
   authority tiers — visibility (god-view), inject, and clock-trigger — plus manual adjudication.
-  Session administration (§6 of DOM-003) is no longer this document's own System Behaviour; it is
+  Session administration (§6 of that document) is no longer this document's own System Behaviour; it is
   [FS-109](FS-109-multiplayer-session-transport.md)/[FS-110](FS-110-save-and-resume.md)'s (see Open
-  Questions for the resulting DOM-003 framing tension).
+  Questions for the resulting framing tension).
 
 ## Subsystem Responsibilities
 
@@ -270,7 +270,7 @@ seat), in `FEAT-4300` beside `FR-4310` (run #212 sweep).
 | `ui_web/server.py` (the HTTP boundary) | *(v2.4)* Refuses every White Cell control listed under System Behaviour unless the request names the `white` seat (`FR-4310`, `FR-4320`), at the point where the Observer refusal (`IP-1130`) already sits, before the request reaches `SessionAPI`. |
 | `session/manager.py` (`InProcessSession.inject_library()`) | Loads/exposes the five reusable inject templates and applies scheduled/immediate injects (FR-4410). |
 | `session/api.py` (`SessionAPI`) | Serves god-view and view-as-cell requests (FR-4610), reusing the fog-of-war filter FS-106 does not itself implement (that filter's own Feature is `FEAT-6200` in the Feature Catalog, specified by a different, not-yet-authored FS). |
-| `session/redai.py` | Exposes the currently-selected doctrine preset for display and accepts a facilitator's preset-switch/hand-tune request (DOM-003 §7); the preset's own generation behavior is FS-111's subsystem responsibility, not this row's. |
+| `session/redai.py` | Exposes the currently-selected doctrine preset for display and accepts a facilitator's preset-switch/hand-tune request ([GDS-06 NFR-9](../architecture/06-non-functional-requirements.md)); the preset's own generation behavior is FS-111's subsystem responsibility, not this row's. |
 | `ui_web/server.py` / `ui_web/static/` | Renders the dashboard panels (god-view, inject panel, clock controls, adjudication/parameter controls) over the above. *(v2.3)* Also renders the pending-inject queue with its edit and cancel controls, and the side-by-side controller view. |
 | `session/manager.py` (`SessionManager`) *(v2.3)* | Owns the pending-inject queue: listing it, cancelling and editing an entry with the White-only and already-fired checks, recording each cancel or edit in the event log, and reusing the v2.2 whole-inject check for edited effects (`FR-4450`). |
 | `session/api.py` / `session/inprocess.py` *(v2.3)* | Serves the side-by-side controller view as ground truth plus both cells' `CellView`s for one simulated instant, reusing `get_godview`/`get_view` unchanged (`FR-4620`). |
@@ -369,14 +369,14 @@ state only.
   dashboard for the White Cell role (ADR-0016); the requirement that they apply identically and
   simultaneously across all connected clients is FS-109's Performance Consideration, not
   duplicated here.
-- **Human factors.** Per [DOM-003](../domains/DOM-003-white-cell-framework.md) §3, the god-view's
+- **Human factors.** Per [GDS-05 `FR-W6`](../architecture/05-functional-requirements.md) and [GDS-09 §4](../architecture/09-api-specification.md), the god-view's
   role is instructional — the facilitator is shaping learning, not merely observing — and the
   dashboard's design must reflect this purpose.
 
 ## Security Considerations
 
 - The dashboard must not expose any capability that grants Red/Blue ground-truth access — this is
-  the single most critical invariant for this feature (DOM-003 §3).
+  the single most critical invariant for this feature ([GDS-05 `FR-W6`](../architecture/05-functional-requirements.md) and [GDS-09 §4](../architecture/09-api-specification.md)).
 - The LAN trust model (ADR-0015) applies: the dashboard's god-view is one of the no-cell
   ground-truth endpoints. The trust model's multi-client/session-sharing implications are FS-109's
   Security Considerations, not restated here.
@@ -470,8 +470,8 @@ rest of this dashboard's UI.
 propagated by FS-109's mechanism), [FS-110](FS-110-save-and-resume.md) (session-admin save/resume
 requests this dashboard's panel would trigger — see Open Questions on whether that panel remains
 part of this document or FS-110's own UI surface), [FS-111](FS-111-ai-red-doctrine-automation.md)
-(the preset this dashboard lets a facilitator select/tune). [DOM-003](../domains/DOM-003-white-cell-framework.md),
-[DOM-001](../domains/DOM-001-training-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md),
+(the preset this dashboard lets a facilitator select/tune). [GDS-05](../architecture/05-functional-requirements.md),
+[MSTR-003](../master/MSTR-003-educational-philosophy.md) and [Vignette framework](../vignettes/00-vignette-framework.md), [R106](../research/encyclopedia/R106-mission-operations.md),
 [R301](../research/encyclopedia/R301-campaign-design.md), [R307](../research/encyclopedia/R307-wargaming-theory.md),
 [R308](../research/encyclopedia/R308-red-teaming-methodology.md) (unchanged from v1.0).
 [FS-107](FS-107-after-action-review.md) (the AAR instrument this dashboard's controls invoke) and
@@ -485,7 +485,7 @@ dependencies.
   coordinated updates to this document *and* FS-109; the two must be kept in sync explicitly, not
   assumed consistent.
 - Composing multiple inject templates into a pre-scripted sequence ahead of a session is named in
-  DOM-003 §9 as not currently possible — treating it as in scope would be a silent scope addition
+  [FS-108](FS-108-inject-authoring.md) as not currently possible — treating it as in scope would be a silent scope addition
   requiring FS-108 or a new ID (unchanged from v1.0).
 - Granting any capability to Red/Blue through this dashboard that provides indirect ground-truth
   access would compromise the fog-of-war boundary regardless of framing (unchanged from v1.0).
@@ -513,18 +513,18 @@ dependencies.
   its next pass whether to widen `FR-4320`; until then, leaving them as they are is consistent with
   the baseline.
 
-- **DOM-003 §6 framing tension (new in v2.0):** DOM-003 explicitly claims "session administration
+- **Session-administration framing tension (new in v2.0):** the retired White Cell domain document (§6) explicitly claimed "session administration
   (save/resume, multiplayer session discovery)" as White-Cell-domain territory, reasoned as a
   facilitation concern rather than an infrastructure one. This Feature Specification split
   (FS-109/FS-110 now specifying the underlying mechanisms) does not contradict that domain framing
-  — DOM-003 can and does still ground multiple Feature Specifications — but it does mean DOM-003's
+  — that document could and did still ground multiple Feature Specifications — but it did mean its
   own §6 text and Feature Mapping frontmatter should be read as covering FS-109/FS-110 as siblings
-  of FS-106, not as implying those mechanisms belong inside this single document. DOM-003's
-  frontmatter has been updated accordingly (see that document).
+  of FS-106, not as implying those mechanisms belong inside this single document. (The domain
+  document is since retired; the successors are [GDS-05 `FR-L3`](../architecture/05-functional-requirements.md) and [GDS-09 §3](../architecture/09-api-specification.md).)
 - Whether the save/resume and session-discovery *panel UI* (as opposed to the underlying
   mechanism, now FS-109/FS-110) belongs in this document or should move entirely to FS-109/FS-110 is
   unresolved — this revision keeps the panel-triggering workflow bullets here provisionally under
-  "session administration" framing per DOM-003 §6, pending a UI-ownership decision.
+  "session administration" framing per [GDS-05 `FR-L3`](../architecture/05-functional-requirements.md) and [GDS-09 §3](../architecture/09-api-specification.md), pending a UI-ownership decision.
 - Mission-set/campaign-sequence visibility and the cross-cell assess-beat view are grounded in
   R301/R106 but trace to no numbered FR in `docs/requirements/01-functional-requirements.md` —
   unchanged from v1.0, not resolved by this revision.

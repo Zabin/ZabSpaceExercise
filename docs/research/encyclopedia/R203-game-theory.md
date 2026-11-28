@@ -6,9 +6,9 @@
 > **Dependencies:** [R202](R202-decision-theory.md)
 > **Referenced By:** [R213](R213-signaling-theory.md), [R303](R303-deterrence-theory.md), [R304](R304-escalation-dynamics.md), [R308](R308-red-teaming-methodology.md)
 > **Produces:** the strategic-interaction vocabulary behind Red/Blue asymmetric play
-> **Feature Mapping:** FS-105 (Spacecraft Operations), DOM-003 (White Cell — Red posture design)
+> **Feature Mapping:** FS-105 (Spacecraft Operations), [GDS-05](../../architecture/05-functional-requirements.md) (White Cell — Red posture design)
 > **Related Topics:** [R202](R202-decision-theory.md) (Decision Theory), [R213](R213-signaling-theory.md) (Signaling Theory), [R303](R303-deterrence-theory.md) (Deterrence Theory), [R308](R308-red-teaming-methodology.md)
-> (Red Teaming Methodology), DOM-008 §3 (Red AI design principles)
+> (Red Teaming Methodology), [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md), [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) (Red AI design principles)
 
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 2
@@ -50,13 +50,13 @@ simultaneous-move payoff matrices, and a future COA-analysis tool modeling Red/B
 should use the matching representation.
 
 **Red's "strategy" is a doctrine preset, not optimal play.** `redai.py` presets are deliberately
-*doctrinally-flavored and parameterized*, not a game-theoretically optimal adversary — per DOM-008
+*doctrinally-flavored and parameterized*, not a game-theoretically optimal adversary — per [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md)
 §3, this is intentional: a perfectly optimizing Red would not model real (imperfect, doctrine-bound)
 adversary behavior, and would also be pedagogically uninstructive (an unbeatable optimal opponent
 teaches frustration, not tradecraft).
 
 **Bluffing and ambiguity as a strategic resource.** An ambiguous RPO approach (one of the five
-existing inject templates, DOM-003 §4) is the concrete in-sim instance of a game-theoretic
+existing inject templates, [GDS-05 `FR-W4`/`FR-W8`](../../architecture/05-functional-requirements.md) and [GDS-08 §7.6](../../architecture/08-ui-architecture.md)) is the concrete in-sim instance of a game-theoretic
 information-asymmetry move — Red's true intent is deliberately withheld, forcing Blue to act on a
 probability distribution over Red's possible objectives rather than a known type
 — the formal "pooling equilibrium" case worked out in the extensive-form/imperfect-information game
@@ -88,15 +88,15 @@ foundation both [R213](R213-signaling-theory.md) (Signaling Theory) and [R303](R
   framing** (what does this preset assume about Blue's likely response?) so a future facilitator or
   assessment feature can reason about *why* a preset behaves as it does, not just *that* it does.
 - **Don't design Red AI to perfectly best-respond to Blue's actual (not doctrine-typical) play** —
-  per DOM-008 §3, this would make Red an optimal adversary rather than a credible doctrinal one,
+  per [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md), this would make Red an optimal adversary rather than a credible doctrinal one,
   defeating the pedagogical purpose ([R308](R308-red-teaming-methodology.md)).
-- **A future "Red intent" assessment or hint feature must stay within DOM-008 §4's advisor-only
+- **A future "Red intent" assessment or hint feature must stay within [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s advisor-only
   constraint** — surfacing a probability distribution over Red's likely objective is acceptable;
   resolving the ambiguity *for* the player is not.
 
 ## 6. Feature Mapping
 
-DOM-003 (White Cell, Red posture design) and any future Red-AI-tuning feature are the direct
+[GDS-05](../../architecture/05-functional-requirements.md) (White Cell, Red posture design) and any future Red-AI-tuning feature are the direct
 consumers; FS-105 (Spacecraft Operations) inherits the resulting Red behavior as the contested
 environment.
 

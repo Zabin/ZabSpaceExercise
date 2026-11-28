@@ -3,11 +3,11 @@
 > **Document ID:** FS-101
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** [DOM-001](../domains/DOM-001-training-framework.md), [R101](../research/encyclopedia/R101-orbital-mechanics-for-operations.md), [R112](../research/encyclopedia/R112-propulsion-and-maneuver-planning.md), [R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md)
+> **Dependencies:** [MSTR-003](../master/MSTR-003-educational-philosophy.md), [Vignette framework](../vignettes/00-vignette-framework.md), [R101](../research/encyclopedia/R101-orbital-mechanics-for-operations.md), [R112](../research/encyclopedia/R112-propulsion-and-maneuver-planning.md), [R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md)
 > **Referenced By:** [R101](../research/encyclopedia/R101-orbital-mechanics-for-operations.md), [R112](../research/encyclopedia/R112-propulsion-and-maneuver-planning.md), [R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md), [R311](../research/encyclopedia/R311-course-of-action-analysis.md), IMP-101A
 > **Produces:** the planning surface consumed by [FS-105](FS-105-spacecraft-operations.md) once a plan is committed
 > **Feature Mapping:** FS-101 (this document)
-> **Related Topics:** [DOM-001](../domains/DOM-001-training-framework.md) §7, [R311](../research/encyclopedia/R311-course-of-action-analysis.md) (course-of-action analysis, candidate future scope)
+> **Related Topics:** [MSTR-003 §9](../master/MSTR-003-educational-philosophy.md), [R311](../research/encyclopedia/R311-course-of-action-analysis.md) (course-of-action analysis, candidate future scope)
 
 [↑ Feature index](feature-index.md) · [Docs index](../INDEX.md)
 
@@ -89,7 +89,7 @@ capability requirements. Restated as workflow shape, faithfully to that content:
   engine uses to gate execution — not a separately-computed or idealized continuous-access estimate
   that could disagree with what actually happens at execution time.
 - **A rejected/invalid plan must explain why, not just that it failed.** Consistent with the
-  pre-disabled-button pattern ([DOM-007](../domains/DOM-007-human-factors-framework.md) §4), the
+  pre-disabled-button pattern ([GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md)), the
   planning surface should tell the operator *which* constraint blocked the plan (no window, regime
   mismatch, insufficient resource) so the operator learns the domain constraint, not just "no."
 
@@ -129,7 +129,7 @@ does not otherwise describe what state a *committed* plan creates (that is attri
 
 A rejected/invalid plan must surface *which* constraint blocked it — no window, regime mismatch, or
 insufficient resource — rather than a bare failure, per the pre-disabled-button pattern
-([DOM-007](../domains/DOM-007-human-factors-framework.md) §4). The source document does not
+([GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md)). The source document does not
 enumerate a complete failure-mode table beyond these three named constraint categories.
 
 ## Performance Considerations
@@ -171,7 +171,7 @@ convention, not stated in the source document itself. Flagged as an Open Questio
 
 ## Dependencies
 
-[DOM-001](../domains/DOM-001-training-framework.md), [R101](../research/encyclopedia/R101-orbital-mechanics-for-operations.md),
+[MSTR-003](../master/MSTR-003-educational-philosophy.md) and [Vignette framework](../vignettes/00-vignette-framework.md), [R101](../research/encyclopedia/R101-orbital-mechanics-for-operations.md),
 [R112](../research/encyclopedia/R112-propulsion-and-maneuver-planning.md),
 [R120](../research/encyclopedia/R120-access-window-and-geometry-planning.md) (per the existing
 metadata block's Dependencies field). [FS-102](FS-102-command-scheduling.md) and
@@ -186,7 +186,7 @@ restated faithfully from material the document does discuss as constraints/cauti
 - If `training_objectives:` is not made an explicit vignette schema field, the educational-value
   claim in the source document (exercising the "plan against real constraints" competency) remains
   implicit in `intro_brief` prose rather than a structured, checkable artifact — a traceability risk
-  noted in [DOM-001](../domains/DOM-001-training-framework.md) §8.
+  noted in [Vignette framework, Training-objective taxonomy](../vignettes/00-vignette-framework.md).
 - Course-of-action comparison ([R311](../research/encyclopedia/R311-course-of-action-analysis.md)
   §5) being treated as in-scope by a future author without a deliberate scope decision (new FS ID or
   FS-101 revision) is named as a risk to avoid in the source document's non-goals.
@@ -194,7 +194,7 @@ restated faithfully from material the document does discuss as constraints/cauti
 ## Open Questions
 
 - Whether `training_objectives:` should become an explicit vignette schema field (currently implicit
-  in `intro_brief` prose) is flagged in [DOM-001](../domains/DOM-001-training-framework.md) §8 as
+  in `intro_brief` prose) is flagged in [Vignette framework, Training-objective taxonomy](../vignettes/00-vignette-framework.md) as
   candidate scope for an FS-101-derived Implementation Package — not decided in this spec.
 - Course-of-action comparison ([R311](../research/encyclopedia/R311-course-of-action-analysis.md)
   §5) is named as a candidate future extension, not committed scope; if pursued, it should be

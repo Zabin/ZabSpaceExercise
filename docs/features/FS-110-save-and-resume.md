@@ -3,7 +3,7 @@
 > **Document ID:** FS-110
 > **Version:** 2.0
 > **Status:** ✅ Done (v1.0 built; v2.0 additions built by `IP-1101`/`IP-1102`/`IP-1103`, all `VERIFIED` 2026-10-24)
-> **Dependencies:** [ADR-0022](../architecture/adr/ADR-0022-save-file-ownership-split.md), [GDS-07](../architecture/07-data-model.md) §6, [DOM-003](../domains/DOM-003-white-cell-framework.md) §6
+> **Dependencies:** [ADR-0022](../architecture/adr/ADR-0022-save-file-ownership-split.md), [GDS-07](../architecture/07-data-model.md) §6, [GDS-05 `FR-L3`](../architecture/05-functional-requirements.md), [GDS-09 §3](../architecture/09-api-specification.md)
 > **Referenced By:** [IP-1102](../implementation/packages/IP-1102-save-load-robustness.md), [FS-106](FS-106-white-cell-dashboard.md) (the White-only save/resume trigger surface this mechanism serves), [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-7200`
 > **Produces:** the persisted session artifact [FS-107](FS-107-after-action-review.md)'s AAR replay reads from
 > **Implementation:** [IP-1100](../implementation/packages/IP-1100-save-and-resume.md) (v1.0, ✅ VERIFIED); [IP-1101](../implementation/packages/IP-1101-self-contained-saves.md) (v2.0, ✅ VERIFIED 2026-10-24, [VR-1101](../implementation/verification/VR-1101-self-contained-saves.md)); [IP-1102](../implementation/packages/IP-1102-save-load-robustness.md) (✅ VERIFIED 2026-10-24, VR-1102); [IP-1103](../implementation/packages/IP-1103-save-validation-completion.md) (✅ VERIFIED 2026-10-24, VR-1103)
@@ -301,7 +301,7 @@ code paths, not new Feature-level prerequisites.
    fidelity (Risks). **Resolution path:** `07` decides with evidence (a round-trip check over the 19
    shipped vignettes plus force edits); either way the content portion stays in vignette form for
    `FR-7220`.
-5. **Domain ownership** (v1.0, unchanged): DOM-003 §6 frames save/resume as White Cell territory;
+5. **Domain ownership** (v1.0, unchanged): [GDS-05 `FR-L3`](../architecture/05-functional-requirements.md) and [GDS-09 §3](../architecture/09-api-specification.md) frames save/resume as White Cell territory;
    this document specifies the mechanism regardless of who triggers it. Flagged for the domain owner.
 
 ## Related ADRs

@@ -4,12 +4,12 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R205](R205-cognitive-psychology-foundations.md)
-> **Referenced By:** DOM-002, [R301](R301-campaign-design.md)
-> **Produces:** the bias vocabulary DOM-002 §9 uses to keep rubric design from mistaking expected bias for incompetence
+> **Referenced By:** [R301](R301-campaign-design.md)
+> **Produces:** the bias vocabulary the retired assessment domain document §9 used to keep rubric design from mistaking expected bias for incompetence
 > **Feature Mapping:** FS-201 (Competency Assessment)
 > **Related Topics:** [R205](R205-cognitive-psychology-foundations.md) (Cognitive Psychology Foundations), [R201](R201-probability-and-bayesian-reasoning.md) (Probability — the normative
 > baseline biases depart from), [R105](R105-custody-theory.md) (Custody Theory — where misjudgment of confidence is most
-> consequential), DOM-002 §9
+> consequential), the retired assessment domain document §9
 
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 1
@@ -21,8 +21,8 @@
 Custody misjudgment in this simulator is not always a tradecraft failure — sometimes it is a
 predictable, well-documented cognitive bias acting on an otherwise competent operator. This topic
 catalogs the biases most relevant to SDA/custody/engagement decisions so a future assessment rubric
-(DOM-002) does not mistake an expected, human-universal bias for a unique personal failing, per
-DOM-002 §9's explicit caution.
+([FS-201](../../features/FS-201-competency-assessment.md)) does not mistake an expected, human-universal bias for a unique personal failing, per
+the retired assessment domain document §9's explicit caution (as it then stood).
 
 ## 2. Scope
 
@@ -83,14 +83,14 @@ counter-measures rather than relying on individual analyst discipline alone.
 
 ## 5. Implementation Guidance
 
-- **A DOM-002 rubric dimension must distinguish a biased-but-common error pattern from a
+- **A [FS-201](../../features/FS-201-competency-assessment.md) rubric dimension must distinguish a biased-but-common error pattern from a
   competence gap** — e.g., scoring "engaged a track at exactly the confidence threshold under time
   pressure" differently from "engaged a track well below the threshold with no apparent custody
   basis"; the former is consistent with known overconfidence effects under time pressure (a
   pedagogically interesting AAR topic), the latter is a tradecraft gap.
 - **A future AI advisor or coaching-note feature may name a likely bias in a debrief context** (e.g.
   "this read may reflect anchoring on the first SSN product") as a *diagnostic AAR aid*, but per
-  DOM-008 §4 must not pre-empt the decision in real time by correcting for the bias automatically.
+  [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md) must not pre-empt the decision in real time by correcting for the bias automatically.
 - **Don't design UI in a way that amplifies a known bias** — e.g., a persistent "first guess" field
   that stays visible and anchors later judgment, or an alarm system so noisy it induces availability-
   bias over-reaction; [R205](R205-cognitive-psychology-foundations.md)'s salience guidance and this topic's bias catalog should be checked
@@ -98,10 +98,10 @@ counter-measures rather than relying on individual analyst discipline alone.
 
 ## 6. Feature Mapping
 
-FS-201 (Competency Assessment) is the direct consumer — DOM-002's rubric design must consult this
+FS-201 (Competency Assessment) is the direct consumer — [FS-201](../../features/FS-201-competency-assessment.md)'s rubric design must consult this
 catalog before scoring any judgment-quality dimension.
 
 ## 7. Related Topics
 
 [R205](R205-cognitive-psychology-foundations.md) (the perceptual substrate biases act on), [R201](R201-probability-and-bayesian-reasoning.md) (the normative Bayesian baseline biases depart
-from), [R105](R105-custody-theory.md) (Custody Theory, the highest-stakes application), DOM-002 §9.
+from), [R105](R105-custody-theory.md) (Custody Theory, the highest-stakes application), the retired assessment domain document §9.

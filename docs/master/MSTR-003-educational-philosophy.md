@@ -4,8 +4,8 @@
 > **Version:** 1.0
 > **Status:** ✅ Stable
 > **Dependencies:** MSTR-001
-> **Referenced By:** DOM-001, DOM-002, DOM-003, DOM-007, DOM-009, all training-facing FS-2xx
-> **Produces:** the pedagogical constraints DOM-001 (Training) and DOM-002 (Assessment) must satisfy
+> **Referenced By:** all training-facing FS-2xx, the vignette framework
+> **Produces:** the pedagogical constraints the vignette framework (training) and FS-201 (assessment) must satisfy
 > **Feature Mapping:** FS-106 (White Cell Dashboard), FS-107 (After Action Review), FS-201 (Competency Assessment)
 > **Related Topics:** [`docs/training/07-white-cell-facilitation.md`](../training/07-white-cell-facilitation.md),
 > [`docs/vignettes/00-vignette-framework.md`](../vignettes/00-vignette-framework.md)
@@ -27,6 +27,25 @@ otherwise either unavailable (classified) or irreversible (real operations) to p
 
 This claim has direct design consequences, enumerated below. Every consequence is a constraint a
 Feature Specification must respect, not a suggestion.
+
+## 2a. Future in-world AI: advisor, not decider
+
+*Forward-looking, R500-tier. Moved here from the retired AI-integration domain document (§4, and the
+Feature Specification half of §6).*
+
+The backlog's deferred items and the R500-tier topics (autonomous planning, machine reasoning, future
+C2) describe a horizon where Blue or White might be assisted by an AI planner/advisor inside the
+exercise itself — e.g., an AI-suggested COA, an AI custody-fusion assistant. The standing position:
+**any such feature must preserve the plan-first invariant (MSTR-002 §2 invariant 4) and the
+educational philosophy's "judgment must be practiced, not delegated" stance (§2)** — an AI that
+*decides* for the trainee defeats the tool's purpose, even if it would "win" more often. An AI
+*advisor* that surfaces information or options (without acting) is the only shape this should take
+without further explicit design review; treat anything beyond that as 🅿️ pending authorization per
+MSTR-006 §3.
+
+Any Feature Specification proposing an in-world AI capability must cite this section's plan-first/
+advisor-only constraint explicitly and flag itself 🅿️ if it goes beyond advisory. The tag that every
+R500-tier topic carries is defined in the [R500 index](../research/encyclopedia/R500-index.md).
 
 ## 3. Plan-execute as the unit of learning
 
@@ -65,7 +84,7 @@ irrecoverable mistake; advanced vignettes introduce kinetic options once the fun
 internalized, at which point the *consequence* (debris, escalation, the moral/legal weight per
 `docs/research/07-legal-norms-and-roe.md`) becomes the lesson.
 
-**Design consequence:** vignette difficulty progression (DOM-001, DOM-009) should be expressed
+**Design consequence:** vignette difficulty progression (the vignette framework: Skill-progression model, Doctrine to content) should be expressed
 partly in terms of *which effect categories are made available/likely*, not only in terms of fleet
 size or Red aggressiveness.
 
@@ -86,14 +105,14 @@ cannot be debriefed has, pedagogically, only half shipped.
 
 The White Cell is not a neutral rules arbiter in the boardgame sense — it is the **instructor**,
 authoring injects, adjusting pacing, and steering the exercise toward the learning objectives of
-*this* session (DOM-003). The tooling (inject library, coaching notes embedded in vignettes,
+*this* session ([GDS-05](../architecture/05-functional-requirements.md) `FR-W1`…`FR-W8`). The tooling (inject library, coaching notes embedded in vignettes,
 mission-brief panels) exists to reduce the facilitation burden so a subject-matter expert who is
 not a software engineer can run a pedagogically sound exercise without scripting it from scratch.
 
 ## 8. Competency, not just completion
 
 An exercise "succeeding" (objectives flipped) is necessary but not sufficient evidence of learning.
-DOM-002 (Assessment Framework) and the research in R200 (Decision Sciences, especially bounded
+FS-201 (Competency Assessment) and the research in R200 (Decision Sciences, especially bounded
 rationality and decision support) exist to give White Cell and program evaluators a vocabulary for
 *how* a cell succeeded or failed — was custody built deliberately or by luck, was a kinetic option
 taken with appropriate escalation awareness, did the cell's belief track ground truth or diverge —
@@ -112,4 +131,4 @@ its existence in a PME tool, as distinct from a generic game feature.
 - Decision sciences underpinning judgment-under-uncertainty: R201–R214 (Tier R200).
 - Wargaming/red-teaming theory underpinning White Cell design: R301–R312 (Tier R300).
 - Research methods for measuring whether the educational claims in this document actually hold in
-  practice (pre/post assessment, control vignettes): R401–R413 (Tier R400), DOM-005 (Validation).
+  practice (pre/post assessment, control vignettes): R401–R413 (Tier R400), FS-201 "Validity checks" (validation).

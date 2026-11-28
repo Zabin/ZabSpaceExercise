@@ -1,14 +1,14 @@
 ---
 name: 02-research-methods-and-validation
-description: Produce and refresh the R400-tier research-methods encyclopedia (experimental design, hypotheses/variables, statistics, measurement theory, uncertainty analysis, modeling practices, Monte Carlo, sensitivity analysis, verification, validation, human-subjects research, survey/instrument design, data analysis and reporting) that grounds assessment/validation work (DOM-002, DOM-005). Use when asked to research statistics/experiment-design/measurement/validation topics, to add/extend `docs/research/encyclopedia/R4xx-*` topics, or to gather grounding facts before drafting an FS-xxx/IMP-xxx spec or assessment/validation feature that touches measurement, statistical claims, or model V&V. Tier R400 closed its GAP-13 sourcing/scope remediation 2026-07-02 — this is now steady-state maintenance, not a remediation backlog. Not for novice statistics tutorials — those belong in `docs/training/`.
+description: Produce and refresh the R400-tier research-methods encyclopedia (experimental design, hypotheses/variables, statistics, measurement theory, uncertainty analysis, modeling practices, Monte Carlo, sensitivity analysis, verification, validation, human-subjects research, survey/instrument design, data analysis and reporting) that grounds assessment/validation work (FS-201, GDS-06 NFR-19). Use when asked to research statistics/experiment-design/measurement/validation topics, to add/extend `docs/research/encyclopedia/R4xx-*` topics, or to gather grounding facts before drafting an FS-xxx/IMP-xxx spec or assessment/validation feature that touches measurement, statistical claims, or model V&V. Tier R400 closed its GAP-13 sourcing/scope remediation 2026-07-02 — this is now steady-state maintenance, not a remediation backlog. Not for novice statistics tutorials — those belong in `docs/training/`.
 ---
 
 # Research: Research Methods & Validation
 
 Produces the **R400-tier encyclopedia** (`docs/research/encyclopedia/R401`–`R413`) and grounds
-[`docs/domains/DOM-002-assessment-framework.md`](../../../docs/domains/DOM-002-assessment-framework.md)
+[`docs/features/FS-201-competency-assessment.md`](../../../docs/features/FS-201-competency-assessment.md)
 (how learning is measured) and
-[`docs/domains/DOM-005-validation-framework.md`](../../../docs/domains/DOM-005-validation-framework.md)
+[`GDS-06`](../../../docs/architecture/06-non-functional-requirements.md) NFR-19 with FS-201 "Validity checks"
 (how a fidelity claim or an assessment instrument is shown to be sound). The governing rules are
 [`docs/master/MSTR-007-research-philosophy.md`](../../../docs/master/MSTR-007-research-philosophy.md)
 (purpose, tier shape, authoring cadence) and
@@ -36,8 +36,8 @@ significant mean"), redirect to `docs/training/`; do not write that into the enc
 | Asset | Role |
 |---|---|
 | [`R400-index.md`](../../../docs/research/encyclopedia/R400-index.md) + `R401`–`R413` | Experimental design/controls, hypotheses/variables, statistics foundations, measurement theory, uncertainty analysis, modeling practices, Monte Carlo methods, sensitivity analysis, verification, validation, human-subjects research, survey/instrument design, data analysis and reporting. |
-| [`docs/domains/DOM-002-assessment-framework.md`](../../../docs/domains/DOM-002-assessment-framework.md) | What to measure (§4 measurement dimensions), how to score it (§5 rubric model), how to report it — the dependent-variable/instrument-design substrate this tier's statistics/measurement topics ground. |
-| [`docs/domains/DOM-005-validation-framework.md`](../../../docs/domains/DOM-005-validation-framework.md) | The verification-vs-validation distinction (§3), the validation method for fidelity claims (§4) and for assessment instruments (§5), Monte Carlo as the validation workhorse (§6). |
+| [`FS-201`](../../../docs/features/FS-201-competency-assessment.md) and [`GDS-07`](../../../docs/architecture/07-data-model.md) §8 | What to measure (the six measurement dimensions), how to score it (the rubric model), how to report it — the dependent-variable/instrument-design substrate this tier's statistics/measurement topics ground. |
+| [`GDS-06`](../../../docs/architecture/06-non-functional-requirements.md) NFR-19, NFR-3 and [`FS-201`](../../../docs/features/FS-201-competency-assessment.md) "Validity checks" | The verification-vs-validation distinction and the validation method for fidelity claims (NFR-19), for assessment instruments (FS-201 Validity checks), Monte Carlo as the validation workhorse (NFR-3). |
 | Engine grounding | `spacesim/engine/rng.py` (`SeededRng` — the Monte Carlo repeatability mechanism), `spacesim/tests/test_determinism.py` (the Phase-1 determinism property test — the verification precedent this tier's `R409` points to), `docs/reviews/AUDIT-2026-06-UI-TTC.md` §2 (the power-rate recalibration — this project's only worked validation example to date). |
 | Feature Mapping targets | FS-201 (Competency Assessment), FS-301 (Research Analytics), any future feature-effectiveness study or Monte Carlo experimentation harness (former future-work list §13 R8). |
 
@@ -71,7 +71,7 @@ means *complete*, not *frozen* — do not bulk-author new topics by default; add
 5. **Write the topic file** following the mandatory seven-section shape (MSTR-007 §4: Purpose,
    Scope, Concepts, Operational Context, Implementation Guidance, Feature Mapping, Related Topics).
    Scope states what the topic covers and, explicitly, what it defers to a neighboring R4xx topic
-   or to DOM-002/DOM-005 (the boundary test from MSTR-007 §5) — e.g. R404 (Measurement Theory)
+   or to FS-201/NFR-19 (the boundary test from MSTR-007 §5) — e.g. R404 (Measurement Theory)
    explicitly does not re-derive the statistical tests that are R403's job. Inline-cite every
    substantive claim (a named statistical test, a named standard, a named methodology, a dated
    study or handbook edition — no end-of-section-only citation dumps), and add a `### Sources`
@@ -100,10 +100,10 @@ means *complete*, not *frozen* — do not bulk-author new topics by default; add
       site.
 - [ ] Every `##` section has a `### Sources` subsection with live + Wayback snapshot + accessed
       date (or a cited `spacesim/`/`docs/` file:line for claims about this project's own practice).
-- [ ] §5 Implementation Guidance gives concrete consequences for DOM-002/DOM-005, an assessment
+- [ ] §5 Implementation Guidance gives concrete consequences for FS-201/NFR-19, an assessment
       rubric, a validation study design, or a named `spacesim/` module — not generic statistics
       commentary.
-- [ ] No content duplicates DOM-002/DOM-005's own text; if it would, the topic is a short pointer +
+- [ ] No content duplicates FS-201's and NFR-19's own text; if it would, the topic is a short pointer +
       implementation-implications note instead (MSTR-007 §5).
 - [ ] Frontmatter `Dependencies`/`Referenced By`/`Feature Mapping` are bidirectionally consistent,
       and `Status` truthfully reflects whether this checklist passes.

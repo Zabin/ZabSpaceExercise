@@ -8,7 +8,7 @@
 > **Produces:** the vocabulary for translating a vignette's narrative intent into its concrete `objectives` block
 > **Feature Mapping:** vignette authoring (`docs/scenarios/`)
 > **Related Topics:** [R301](R301-campaign-design.md) (Campaign Design), [R302](R302-operational-art.md) (Operational Art), [R311](R311-course-of-action-analysis.md) (Course of Action
-> Analysis), DOM-009 (the translation pipeline this topic's output feeds)
+> Analysis), [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md) (the translation pipeline this topic's output feeds)
 > **Last Reviewed:** 2026-06-27
 > **Primary Sources Consulted:** 1
 
@@ -45,14 +45,14 @@ accomplishing the stated intent, not merely correlate with it.
 §III.2) distinguishes a *constraint* — a required action ("must maintain command uplink to station
 X") — from a *restraint* — a prohibited action ("must not engage without ROE authorization"). ROE
 blocks and ammo/Δv resource limits in a vignette are restraints in this formal sense; access-window
-and custody requirements that must be satisfied to act are constraints — useful vocabulary for DOM-
-009's doctrine-translation step when documenting *why* a vignette's ROE block reads the way it does.
+and custody requirements that must be satisfied to act are constraints — useful vocabulary for the
+[Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md) doctrine-translation step when documenting *why* a vignette's ROE block reads the way it does.
 
 **Essential tasks.** Among all implied tasks, JP 5-0 identifies the essential ones as those without
 which the mission fails even if every other task succeeds — identifying the essential task(s) in a
 vignette design is what determines which `objectives` entries should actually gate "mission success"
 vs. which are secondary/bonus objectives, a distinction the engine's flat objective-flip model
-(DOM-002 §3) doesn't currently make but that vignette *design* should reason about even before any
+([MSTR-003 §8](../../master/MSTR-003-educational-philosophy.md)) doesn't currently make but that vignette *design* should reason about even before any
 engine support exists.
 
 ### Sources
@@ -73,7 +73,7 @@ operations order.
 
 - **A vignette author should be able to point to which `objectives` entries are essential
   (mission-defining) vs. supporting**, even if the engine doesn't yet distinguish them mechanically —
-  this is useful both for DOM-009's doctrine-translation traceability and as input to a future
+  this is useful both for [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)'s doctrine-translation traceability and as input to a future
   weighted-objectives feature (a candidate enhancement, not yet built).
 - **A vignette's ROE block should be authored by explicitly separating constraints from
   restraints** (what must be done vs. what must not be done) — this maps cleanly onto the engine's
@@ -81,15 +81,15 @@ operations order.
   and ROE *prohibitions* (restraints, also enforced by `_validate` but conceptually distinct), and
   keeps a vignette's intent legible to anyone auditing it later.
 - **Don't let an `objectives` block drift from the `intro_brief`'s stated intent over a vignette's
-  revision history** — per DOM-009 §5's doctrine-review-cadence guidance, a revision to either should
+  revision history** — per [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)'s doctrine-review-cadence guidance, a revision to either should
   prompt a check that the other still matches.
 
 ## 6. Feature Mapping
 
-Vignette authoring (`docs/scenarios/`) is the direct consumer; DOM-009's translation pipeline is the
+Vignette authoring (`docs/scenarios/`) is the direct consumer; [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)'s translation pipeline is the
 process this topic's vocabulary feeds.
 
 ## 7. Related Topics
 
 [R301](R301-campaign-design.md) (Campaign Design, the multi-vignette context), [R302](R302-operational-art.md) (Operational Art), [R311](R311-course-of-action-analysis.md) (Course of Action
-Analysis, comparing options before commitment to a mission-analysis-derived task), DOM-009.
+Analysis, comparing options before commitment to a mission-analysis-derived task), [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md).

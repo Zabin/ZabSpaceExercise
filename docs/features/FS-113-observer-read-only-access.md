@@ -3,7 +3,7 @@
 > **Document ID:** FS-113
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** (GDS-01 §2 / GDS-02 §2 row 5-grounded; no owning DOM), [ADR-0004](../architecture/adr/ADR-0004-fog-of-war-at-boundary.md)
+> **Dependencies:** (GDS-01 §2 / GDS-02 §2 row 5-grounded), [ADR-0004](../architecture/adr/ADR-0004-fog-of-war-at-boundary.md)
 > **Referenced By:** [docs/feature-planning/03-feature-catalog.md](../feature-planning/03-feature-catalog.md) `FEAT-6500`, [docs/feature-planning/05-feature-review.md](../feature-planning/05-feature-review.md) Finding F-02, [IP-1130](../implementation/packages/IP-1130-observer-read-only-access.md) · [IP-1131](../implementation/packages/IP-1131-verification-coverage-follow-ups.md) (✅ VERIFIED 2026-10-17, VR-1131)
 > **Produces:** the read-only Observer seat interaction model
 > **Feature Mapping:** FS-113 (this document)
@@ -14,9 +14,9 @@
 *This document follows the `06-feature-specification` skill's 20-field template. It is a **new**
 Feature Specification closing Finding F-02 in `docs/feature-planning/05-feature-review.md`: this
 capability had a real, Must-priority baselined FR (FR-6510) but zero presence in any of the 11
-pre-existing `FS-xxx` documents. No `docs/domains/DOM-xxx` document names Observer as its own
+pre-existing `FS-xxx` documents. No domain framework document (since retired) named Observer as its own
 domain concept — grounded directly in the ConOps/System-Context tier instead, mirroring FS-102's
-"(R103-grounded; no owning DOM)" precedent for a capability with no clean domain home.*
+"(R103-grounded)" precedent for a capability with no clean domain home.*
 
 ## Feature ID
 
@@ -147,9 +147,8 @@ existing `FS-xxx` document is a prerequisite.
   specified in the requirements baseline.
 - **CR-06** (mid-exercise Observer reassignment) is a related, unbaselined candidate requirement —
   not part of this Feature's scope; noted for whoever next reviews the Candidate Requirements list.
-- Whether Observer should have its own `docs/domains/` framework document (this Feature currently
-  has no owning domain at all, unlike almost every other Feature in the catalog) is worth raising
-  with whoever owns `docs/domains/` — not resolved here.
+- Whether Observer should have its own grounding document (this Feature has no owning domain
+  framework, the domain frameworks having been retired) — not resolved here.
 
 ## Related ADRs
 

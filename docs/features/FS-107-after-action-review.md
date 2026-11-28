@@ -3,8 +3,8 @@
 > **Document ID:** FS-107
 > **Version:** 1.0
 > **Status:** ✅ Done
-> **Dependencies:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), [DOM-002](../domains/DOM-002-assessment-framework.md) §6
-> **Referenced By:** [DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), [DOM-002](../domains/DOM-002-assessment-framework.md), IMP-107A, [IP-1077](../implementation/packages/IP-1077-aar-playback-seat-checks.md)
+> **Dependencies:** [MSTR-003](../master/MSTR-003-educational-philosophy.md), [Vignette framework](../vignettes/00-vignette-framework.md), [GDS-05](../architecture/05-functional-requirements.md), [FS-201 System Behaviour (Assessment modes)](FS-201-competency-assessment.md)
+> **Referenced By:** IMP-107A, [IP-1077](../implementation/packages/IP-1077-aar-playback-seat-checks.md)
 > **Produces:** the replay/snapshot surface [FS-201](FS-201-competency-assessment.md)'s "belief-truth divergence" dimension reads from
 > **Feature Mapping:** FS-107 (this document)
 > **Related Topics:** [FS-106](FS-106-white-cell-dashboard.md) (White-only controls that invoke this instrument), [FS-201](FS-201-competency-assessment.md)
@@ -26,7 +26,7 @@ After Action Review
 
 After Action Review is the read-only replay/scrub/branch-compare debrief instrument: the capability
 by which a completed (or in-progress) exercise's full eventlog becomes a teaching artifact rather
-than a discarded record. Named directly in [DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), and [DOM-002](../domains/DOM-002-assessment-framework.md) §6 — three
+than a discarded record. Named directly in the training, White Cell and assessment domain documents (since retired) — three
 independent framing documents all depend on the same underlying instrument for distinct purposes
 (training delivery, facilitation, self-assessment). AAR's educational value is reflective learning:
 letting a trainee or facilitator examine a decision against both the trainee's own belief state at
@@ -66,16 +66,16 @@ rewrite may resolve by inference.
   `aar.py`, replay/scrub/`snapshot_at()` must never mutate `WorldState` — mirroring the replay-
   safety contract `dry_run()`/`scene.py` already establish for plan-time and rendering paths.
 - **Belief-vs-truth comparison must be a first-class capability, not an afterthought.** The
-  god-view-vs-belief-view diff at a given `snapshot_at()` point is explicitly named in [DOM-002](../domains/DOM-002-assessment-framework.md) §4
+  god-view-vs-belief-view diff at a given `snapshot_at()` point is explicitly named in [FS-201 Scope and System Behaviour](FS-201-competency-assessment.md) and [GDS-07 §8](../architecture/07-data-model.md)
   as the data source for the "belief-truth divergence" assessment dimension — AAR must expose this
   diff queryably, not just render a single combined view.
 - **Branch comparison must let a facilitator or trainee examine "what if" without altering the
   canonical record.** A compared branch is itself a replay artifact, not a new committed session
   state.
 - **AAR must double as a self-assessment instrument with no new engine feature beyond itself.** Per
-  [DOM-002](../domains/DOM-002-assessment-framework.md) §6, self-assessment / debrief reflection requires only facilitation guidance ([DOM-003](../domains/DOM-003-white-cell-framework.md))
+  [FS-201 System Behaviour (Assessment modes)](FS-201-competency-assessment.md), self-assessment / debrief reflection requires only facilitation guidance ([GDS-05](../architecture/05-functional-requirements.md))
   on top of this spec — AAR's design must not assume it is purely a facilitator tool.
-- **Belief/ground-truth legibility at every timeline point.** Per [DOM-007](../domains/DOM-007-human-factors-framework.md) §4, the god-view-vs-belief
+- **Belief/ground-truth legibility at every timeline point.** Per [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md), the god-view-vs-belief
   diff display must keep the two visually distinct at every timeline point shown, not just the
   final state.
 
@@ -119,7 +119,7 @@ Model entities is unresolved. Flagged as an Open Question below.
 - **Replay-safety** is the dominant non-functional constraint for this feature — every AAR
   operation must be provably non-mutating.
 - **Human factors.** The god-view/belief diff display must keep the two visually distinct at every
-  timeline point — consistent with [DOM-007](../domains/DOM-007-human-factors-framework.md) §4's load-bearing legibility principle.
+  timeline point — consistent with [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../architecture/08-ui-architecture.md)'s load-bearing legibility principle.
 
 ## Security Considerations
 
@@ -151,7 +151,7 @@ trainee self-use. Flagged as an Open Question below.
 
 ## Dependencies
 
-[DOM-001](../domains/DOM-001-training-framework.md), [DOM-003](../domains/DOM-003-white-cell-framework.md), [DOM-002](../domains/DOM-002-assessment-framework.md) §6 (per the existing metadata block's Dependencies field).
+[MSTR-003](../master/MSTR-003-educational-philosophy.md) and [Vignette framework](../vignettes/00-vignette-framework.md), [GDS-05](../architecture/05-functional-requirements.md), [FS-201 System Behaviour (Assessment modes)](FS-201-competency-assessment.md) (per the existing metadata block's Dependencies field).
 [FS-106](FS-106-white-cell-dashboard.md) (White-only controls that invoke this instrument) and [FS-201](FS-201-competency-assessment.md) (the assessment layer
 reading AAR's belief-truth-divergence data) are adjacent features, not upstream dependencies of
 FS-107 itself.
@@ -159,7 +159,7 @@ FS-107 itself.
 ## Risks
 
 - If the AAR instrument is treated as purely a facilitator tool (and self-assessment use is not
-  designed for from the start), [DOM-002](../domains/DOM-002-assessment-framework.md) §6's stated self-assessment mode is silently excluded —
+  designed for from the start), [FS-201 System Behaviour (Assessment modes)](FS-201-competency-assessment.md)'s stated self-assessment mode is silently excluded —
   the source document explicitly names this as a design requirement, not an afterthought.
 - If `snapshot_at()` or branch operations are implemented with any `WorldState` mutation (even as a
   "temporary" side effect), the live-session replay-safety invariant is violated.

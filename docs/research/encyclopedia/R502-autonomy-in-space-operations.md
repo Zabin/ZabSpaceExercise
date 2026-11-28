@@ -15,7 +15,7 @@
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
 
-**DOM-008 §6 tag:** in-world AI (modeling a real spacecraft's onboard autonomy, distinct from any
+**R500 tag:** in-world AI (modeling a real spacecraft's onboard autonomy, distinct from any
 coding-agent practice).
 
 ## 1. Purpose
