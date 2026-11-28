@@ -50,7 +50,7 @@
 ## A note on the requirement tag schemes — read before using this document
 
 **Updated 2026-10-23.** GDS-06 (Non-functional Requirements) is now authored with its merge gate
-closed and **supersedes** The retired v1 build specification §9. GDS-06 states each
+closed and **supersedes** the retired v1 build specification §9. GDS-06 states each
 quality attribute as a tag (`NFR-1`…`NFR-19`; `NFR-1`…`NFR-10` keep the legacy build-spec numbers);
 this document elaborates each tag into leaves (`NFR-1100`…) with full traceability fields. Every
 leaf's **Source documents** field now names its GDS-06 tag first. The legacy build-spec citations
@@ -853,7 +853,7 @@ Explicitly excluded from the numbered baseline above.
     or restart, beyond the documented single-sitting model.
   - **Why excluded:** `build-spec/01`'s decision log lists "Save/resume mid-exercise" as v2-deferred
     by name; no v1 source document commits to crash-recoverable availability.
-  - **Source documents:** The retired v1 build specification §3.2 (deferred list) — cited as the
+  - **Source documents:** the retired v1 build specification §3.2 (deferred list) — cited as the
     reason for exclusion.
 
 - **CNFR-06 — AI-Red epistemic parity / fairness as a quality attribute**
