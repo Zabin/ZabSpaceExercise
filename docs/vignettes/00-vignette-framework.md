@@ -15,6 +15,48 @@ to this schema.
   set-piece or a 3-hour free-play depending on White Cell's parameter choices.
 - **Realism over balance.** Asymmetry is the point. Red and Blue need not have equal tools.
 
+## Training-objective classes and skill progression
+
+*Moved here from the retired training domain document (§3 and §4).*
+
+### Training-objective taxonomy
+
+Every vignette's per-cell `intro_brief` states a mission and success criteria; these are normalized
+into four objective classes so that progression and assessment can be reasoned about systematically
+rather than per-vignette ad hoc:
+
+| Class | Description | Example | Primary mechanic exercised |
+|---|---|---|---|
+| **Mechanical** | Operate the tool correctly: issue a valid order inside a window, read telemetry. | Training-basics tutorial steps | Plan-execute loop ([MSTR-003](../master/MSTR-003-educational-philosophy.md) §3) |
+| **Tactical** | Achieve a stated in-exercise objective against a single, bounded threat picture. | Vignette 1 (LEO ISR denial) | Custody-building, access-window planning |
+| **Operational** | Manage a fleet/constellation under competing demands and resource constraints (Δv, power, sensor tasking contention). | Constellation/mission-set vignettes | Resource economy, tasking deconfliction |
+| **Judgment** | Decide under genuine ambiguity with consequential, sometimes irreversible options. | Red COA vignettes, capstone Vignette 8 | Escalation/ROE reasoning, kinetic-confirm gate |
+
+A vignette should declare, in its `intro_brief` or a future `training_objectives:` schema field
+(see FS-101 candidate scope), which class(es) it primarily exercises — this is what lets assessment
+rubrics ([FS-201](../features/FS-201-competency-assessment.md)) be keyed to objective class rather than per-vignette bespoke criteria.
+
+### Skill-progression model
+
+The 19-vignette library is not flat; it has an implicit progression this section makes explicit:
+
+1. **Onboarding** (training-basics) — mechanical objectives only, ≥5 tutorial steps per cell,
+   reversible effects only.
+2. **Canonical 8** — tactical objectives, increasing custody/window complexity, still mostly
+   reversible effects with at least one kinetic-confirm-gated option introduced by the later
+   numbered vignettes.
+3. **Mission-set (3) and Red COA (5)** — operational objectives: multi-asset fleets, Δv economy,
+   sensor contention, doctrinally-flavored Red behavior presets.
+4. **Learning (1) and Novel (1)** — designed for judgment objectives and for exercising the
+   AAR/branch-compare capability itself.
+5. **Capstone Vignette 8** — multi-domain (`spacesim/content/vignettes/08-multi-domain-taiwan.yaml`),
+   integrates all four objective classes at once; the terminal exercise of the progression.
+
+**Design rule:** a new vignette should be assigned a slot in this progression (or explicitly
+flagged as a side-branch, e.g. a one-off classroom demo) rather than added without regard to
+difficulty ordering — otherwise the progression degrades into an unordered pile and assessment has
+no stable baseline to assess against.
+
 ## Common vignette structure
 
 ```yaml
