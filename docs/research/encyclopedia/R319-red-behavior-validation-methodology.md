@@ -5,7 +5,7 @@
 > **Status:** ✅ Done
 > **Dependencies:** [R308](R308-red-teaming-methodology.md)
 > **Referenced By:** —
-> **Produces:** doctrinal grounding for [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) (validation, ⛔ Planned) to consume when it
+> **Produces:** doctrinal grounding for [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) and [FS-201 Validity checks](../../features/FS-201-competency-assessment.md) (validation) to consume when they
 > defines concrete validation criteria for `redai.py` doctrine presets and any future AI-Red
 > **Feature Mapping:** none yet — supplies grounding for [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) and the ADR-0024 fog-of-war-parity
 > future-work item; not itself a feature
@@ -13,7 +13,7 @@
 > qualitative doctrinal-plausibility principle this topic supplies a validation *method* for),
 > [R307](R307-wargaming-theory.md) (Wargaming Theory — what an exercise outcome can validly
 > demonstrate, the broader context this topic's narrower Red-fidelity question sits inside),
-> [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) (validation, currently ⛔ Planned — the intended consumer), ADR-0024 (AI-Red
+> [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) and [FS-201 Validity checks](../../features/FS-201-competency-assessment.md) (validation — the intended consumer), ADR-0024 (AI-Red
 > epistemic-parity gap, tracked but unresolved)
 > **Last Reviewed:** 2026-07-01
 > **Primary Sources Consulted:** 0 (Tier C professional-military-journal source; see §3 note)
@@ -32,7 +32,7 @@ that principle rather than merely appearing to. This is precisely the negative-t
 strategic review flags: an exercise run against an unvalidated Red teaches trainees confidently,
 and the confidence is unearned if Red's behavior does not, in fact, resemble any real adversary's.
 This topic supplies the doctrinal grounding a future validation method would draw on; it does not
-itself define [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)'s validation criteria, which remains that document's job once authorized.
+itself define [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)'s validation criteria, which stays the job of validation work under NFR-19 and FS-201 Validity checks.
 
 ## 2. Scope
 
@@ -42,7 +42,7 @@ against "does this produce a fun/winnable exercise," and why these two validatio
 diverge and even conflict. Does **not** cover: the qualitative doctrinal-plausibility principle
 itself ([R308](R308-red-teaming-methodology.md), assumed here as already established), the broader
 question of what a wargame's outcome can validly demonstrate about the real world
-([R307](R307-wargaming-theory.md)), or [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)'s eventual concrete validation criteria and
+([R307](R307-wargaming-theory.md)), or [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)'s concrete validation criteria and
 instrument design (out of scope for a research-tier topic; [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) is a requirement statement,
 not something this skill authors).
 
@@ -98,7 +98,7 @@ any fidelity comparison run against the current implementation would be comparin
 information-privileged decision-maker to a historical record of information-constrained ones,
 an apples-to-oranges comparison regardless of how sophisticated the comparison method is. This is
 why ADR-0024's fog-of-war-parity item is not merely a realism nice-to-have but a **precondition**
-for any future validation methodology [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) might define.
+for any future validation methodology that validation work under NFR-19 and FS-201 might define.
 
 ### Sources
 
@@ -119,11 +119,11 @@ leave the exercise with confidence that has not been earned.
 
 ## 5. Implementation Guidance
 
-- **A future [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) should treat Red-behavior fidelity as its own named
+- **Future validation work under [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) and [FS-201 Validity checks](../../features/FS-201-competency-assessment.md) should treat Red-behavior fidelity as its own named
   validation target, distinct from assessment-instrument validity** ([GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)'s current scope, per
-  its own §2, is framed around fidelity claims and assessment-instrument validity generally; Red
+  its own statement, is framed around fidelity claims and assessment-instrument validity generally; Red
   fidelity is a specific, high-priority instance of the first category this topic's grounding
-  should feed directly into when [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) is authored).
+  should feed directly into when validation work under [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) and FS-201 Validity checks is planned).
 - **Any concrete fidelity check should compare `redai.py` preset action sequences against
   documented historical adversary behavior patterns** (already available in this corpus:
   `research/02-doctrine-non-western.md`'s PRC/Russia-class doctrine corpus), not only against
@@ -139,7 +139,7 @@ leave the exercise with confidence that has not been earned.
 
 ## 6. Feature Mapping
 
-None yet — this topic grounds [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) (currently ⛔ Planned) and the ADR-0024 future-work item; it
+None yet — this topic grounds [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) and FS-201 Validity checks and the ADR-0024 future-work item; it
 does not itself authorize either.
 
 ## 7. Related Topics

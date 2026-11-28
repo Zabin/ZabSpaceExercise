@@ -16,7 +16,7 @@
 
 ## 1. Purpose
 
-the retired White Cell domain document §7 already asserts "an unconvincing or passive Red teaches a false sense of security" as a
+The retired White Cell domain document §7 already asserted "an unconvincing or passive Red teaches a false sense of security" as a
 design principle for `redai.py` doctrine presets, citing this topic. This document supplies the
 red-teaming methodology that backs that assertion, so future preset design and White-Cell-as-Red
 facilitation decisions are grounded in the actual doctrine, not just an inherited assertion.

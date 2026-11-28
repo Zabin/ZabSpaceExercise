@@ -89,7 +89,7 @@ as predictive when they were never designed to be."
 - **Any AAR or assessment feature must avoid language implying a single exercise run "proves" a
   trainee's real-world competency** — per §3's insight-generation framing, report observed behavior
   in *this* run, with the bounded claim that is actually defensible, not an inflated one.
-- **A future research-use feature (FS-301, [FS-301](../../features/FS-301-research-analytics.md)) studying exercise outcomes across many runs must
+- **A future research-use feature ([FS-301](../../features/FS-301-research-analytics.md)) studying exercise outcomes across many runs must
   explicitly declare whether it's making an insight-generation claim (PME-appropriate) or an
   analytical claim (requiring [R401](R401-experimental-design-and-controls.md)-[R413](R413-data-analysis-and-reporting.md)'s full rigor)** — and must not silently upgrade the former
   into the latter.

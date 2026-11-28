@@ -5,7 +5,7 @@
 > **Status:** ✅ Done
 > **Dependencies:** [R205](R205-cognitive-psychology-foundations.md)
 > **Referenced By:** [R301](R301-campaign-design.md)
-> **Produces:** the bias vocabulary the retired assessment domain document §9 uses to keep rubric design from mistaking expected bias for incompetence
+> **Produces:** the bias vocabulary the retired assessment domain document §9 used to keep rubric design from mistaking expected bias for incompetence
 > **Feature Mapping:** FS-201 (Competency Assessment)
 > **Related Topics:** [R205](R205-cognitive-psychology-foundations.md) (Cognitive Psychology Foundations), [R201](R201-probability-and-bayesian-reasoning.md) (Probability — the normative
 > baseline biases depart from), [R105](R105-custody-theory.md) (Custody Theory — where misjudgment of confidence is most
@@ -22,7 +22,7 @@ Custody misjudgment in this simulator is not always a tradecraft failure — som
 predictable, well-documented cognitive bias acting on an otherwise competent operator. This topic
 catalogs the biases most relevant to SDA/custody/engagement decisions so a future assessment rubric
 ([FS-201](../../features/FS-201-competency-assessment.md)) does not mistake an expected, human-universal bias for a unique personal failing, per
-the retired assessment domain document §9's explicit caution.
+the retired assessment domain document §9's explicit caution (as it then stood).
 
 ## 2. Scope
 

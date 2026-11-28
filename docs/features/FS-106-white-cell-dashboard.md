@@ -211,7 +211,7 @@ seat), in `FEAT-4300` beside `FR-4310` (run #212 sweep).
 - **No automated scoring exists anywhere in the outbound interface set (FR-4710).** Live parameter
   adjustment (FR-4720, e.g. safe-mode dials) takes effect on the next evaluation with no session
   restart.
-- **Red-doctrine-preset visibility and control is a facilitator-tooling requirement** ([GDS-06 NFR-9](../architecture/06-non-functional-requirements.md)):
+- **Red-doctrine-preset visibility and control is a facilitator-tooling requirement** (visibility: [GDS-06 NFR-9](../architecture/06-non-functional-requirements.md); control: no requirement yet):
   the facilitator needs visibility into which preset drives Red and the ability to switch or
   hand-tune it mid-exercise — an unconvincing or passive Red undermines training per
   [R308](../research/encyclopedia/R308-red-teaming-methodology.md). The preset's own behavior once
